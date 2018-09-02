@@ -36,6 +36,28 @@
 #include <bits/stl_pair.h>
 #include <ext/type_traits.h>
 
+#define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, _BadMsgId, _DiffMsgId) \
+  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
+			_M_message(_BadMsgId)				\
+			._M_iterator(_Lhs, #_Lhs)			\
+			._M_iterator(_Rhs, #_Rhs));			\
+  _GLIBCXX_DEBUG_VERIFY(_Lhs._M_can_compare(_Rhs),			\
+			_M_message(_DiffMsgId)				\
+			._M_iterator(_Lhs, #_Lhs)			\
+			._M_iterator(_Rhs, #_Rhs))
+
+#define _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(_Lhs, _Rhs)			\
+  _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, __msg_iter_compare_bad,	\
+				 __msg_compare_different)
+
+#define _GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(_Lhs, _Rhs)		\
+  _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, __msg_iter_order_bad,	\
+				 __msg_order_different)
+
+#define _GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS(_Lhs, _Rhs)			\
+  _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs, __msg_distance_bad,	\
+				 __msg_distance_different)
+
 namespace __gnu_debug
 {
   /** Helper struct to deal with sequence offering a before_begin
@@ -180,9 +202,9 @@ namespace __gnu_debug
       template<typename _MutableIterator>
 	_Safe_iterator(
 	  const _Safe_iterator<_MutableIterator, _Sequence,
-	  typename __gnu_cxx::__enable_if<_IsConstant::__value &&
-	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
-					  _Category>::__type>& __x)
+	    typename __gnu_cxx::__enable_if<_IsConstant::__value &&
+	      std::__are_same<_MutableIterator, _OtherIterator>::__value,
+			       _Category>::__type>& __x)
 	_GLIBCXX_NOEXCEPT
 	: _Iter_base(__x.base())
 	{
@@ -374,7 +396,7 @@ namespace __gnu_debug
 
       // Can we advance the iterator @p __n steps (@p __n may be negative)
       bool
-      _M_can_advance(const difference_type& __n) const;
+      _M_can_advance(difference_type __n) const;
 
       // Is the iterator range [*this, __rhs) valid?
       bool
@@ -421,6 +443,44 @@ namespace __gnu_debug
       bool
       _M_is_beginnest() const
       { return _BeforeBeginHelper<_Sequence>::_S_Is_Beginnest(*this); }
+
+      // ------ Operators ------
+
+      typedef _Safe_iterator<_Iterator, _Sequence, iterator_category> _Self;
+
+      friend bool
+      operator==(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(__lhs, __rhs);
+	return __lhs.base() == __rhs.base();
+      }
+
+      template<typename _IteR>
+	friend bool
+	operator==(const _Self& __lhs,
+	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
+	_GLIBCXX_NOEXCEPT
+	{
+	  _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(__lhs, __rhs);
+	  return __lhs.base() == __rhs.base();
+	}
+
+      friend bool
+      operator!=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(__lhs, __rhs);
+	return __lhs.base() != __rhs.base();
+      }
+
+      template<typename _IteR>
+	friend bool
+	operator!=(const _Self& __lhs,
+	  const _Safe_iterator<_IteR, _Sequence, iterator_category>& __rhs)
+	_GLIBCXX_NOEXCEPT
+	{
+	  _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS(__lhs, __rhs);
+	  return __lhs.base() != __rhs.base();
+	}
     };
 
   template<typename _Iterator, typename _Sequence>
@@ -474,8 +534,8 @@ namespace __gnu_debug
       template<typename _MutableIterator>
 	_Safe_iterator(
 	  const _Safe_iterator<_MutableIterator, _Sequence,
-	  typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
-	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
+	    typename __gnu_cxx::__enable_if<_Safe_base::_IsConstant::__value &&
+	      std::__are_same<_MutableIterator, _OtherIterator>::__value,
 			       std::bidirectional_iterator_tag>::__type>& __x)
 	_GLIBCXX_NOEXCEPT
 	: _Safe_base(__x)
@@ -573,6 +633,10 @@ namespace __gnu_debug
       typedef _Safe_iterator<_Iterator, _Sequence,
 			     std::bidirectional_iterator_tag> _Safe_base;
       typedef typename _Safe_base::_OtherIterator _OtherIterator;
+
+      typedef typename _Safe_base::_Self _Self;
+      typedef _Safe_iterator<_OtherIterator, _Sequence,
+			     std::random_access_iterator_tag> _OtherSelf;
 
       typedef typename _Safe_base::_Attach_single _Attach_single;
 
@@ -706,7 +770,7 @@ namespace __gnu_debug
 
       // ------ Random access iterator requirements ------
       reference
-      operator[](const difference_type& __n) const _GLIBCXX_NOEXCEPT
+      operator[](difference_type __n) const _GLIBCXX_NOEXCEPT
       {
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n)
 			      && this->_M_can_advance(__n + 1),
@@ -716,7 +780,7 @@ namespace __gnu_debug
       }
 
       _Safe_iterator&
-      operator+=(const difference_type& __n) _GLIBCXX_NOEXCEPT
+      operator+=(difference_type __n) _GLIBCXX_NOEXCEPT
       {
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
 			      _M_message(__msg_advance_oob)
@@ -726,17 +790,8 @@ namespace __gnu_debug
 	return *this;
       }
 
-      _Safe_iterator
-      operator+(const difference_type& __n) const _GLIBCXX_NOEXCEPT
-      {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(__n),
-			      _M_message(__msg_advance_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	return _Safe_iterator(this->base() + __n, this->_M_sequence);
-      }
-
       _Safe_iterator&
-      operator-=(const difference_type& __n) _GLIBCXX_NOEXCEPT
+      operator-=(difference_type __n) _GLIBCXX_NOEXCEPT
       {
 	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
 			      _M_message(__msg_retreat_oob)
@@ -746,288 +801,107 @@ namespace __gnu_debug
 	return *this;
       }
 
-      _Safe_iterator
-      operator-(const difference_type& __n) const _GLIBCXX_NOEXCEPT
+      friend bool
+      operator<(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
       {
-	_GLIBCXX_DEBUG_VERIFY(this->_M_can_advance(-__n),
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() < __rhs.base();
+      }
+
+      friend bool
+      operator<(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() < __rhs.base();
+      }
+
+      friend bool
+      operator<=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() <= __rhs.base();
+      }
+
+      friend bool
+      operator<=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() <= __rhs.base();
+      }
+
+      friend bool
+      operator>(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() > __rhs.base();
+      }
+
+      friend bool
+      operator>(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() > __rhs.base();
+      }
+
+      friend bool
+      operator>=(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() >= __rhs.base();
+      }
+
+      friend bool
+      operator>=(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS(__lhs, __rhs);
+	return __lhs.base() >= __rhs.base();
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // According to the resolution of DR179 not only the various comparison
+      // operators but also operator- must accept mixed iterator/const_iterator
+      // parameters.
+      friend difference_type
+      operator-(const _Self& __lhs, const _OtherSelf& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS(__lhs, __rhs);
+	return __lhs.base() - __rhs.base();
+      }
+
+      friend difference_type
+      operator-(const _Self& __lhs, const _Self& __rhs) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS(__lhs, __rhs);
+	return __lhs.base() - __rhs.base();
+      }
+
+      friend _Self
+      operator+(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
+			      _M_message(__msg_advance_oob)
+			      ._M_iterator(__x)._M_integer(__n));
+	return _Safe_iterator(__x.base() + __n, __x._M_sequence);
+      }
+
+      friend _Self
+      operator+(difference_type __n, const _Self& __x) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(__n),
+			      _M_message(__msg_advance_oob)
+			      ._M_iterator(__x)._M_integer(__n));
+	return _Safe_iterator(__n + __x.base(), __x._M_sequence);
+      }
+
+      friend _Self
+      operator-(const _Self& __x, difference_type __n) _GLIBCXX_NOEXCEPT
+      {
+	_GLIBCXX_DEBUG_VERIFY(__x._M_can_advance(-__n),
 			      _M_message(__msg_retreat_oob)
-			      ._M_iterator(*this)._M_integer(__n));
-	return _Safe_iterator(this->base() - __n, this->_M_sequence);
+			      ._M_iterator(__x)._M_integer(__n));
+	return _Safe_iterator(__x.base() - __n, __x._M_sequence);
       }
     };
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator==(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() == __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator==(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() == __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator!=(const _Safe_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() != __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator!=(const _Safe_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() != __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator<(const _Safe_iterator<_IteratorL, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() < __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator<(const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() < __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator<=(const _Safe_iterator<_IteratorL, _Sequence,
-				    std::random_access_iterator_tag>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence,
-				    std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() <= __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator<=(const _Safe_iterator<_Iterator, _Sequence,
-				    std::random_access_iterator_tag>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence,
-				    std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() <= __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator>(const _Safe_iterator<_IteratorL, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() > __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator>(const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() > __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator>=(const _Safe_iterator<_IteratorL, _Sequence,
-				    std::random_access_iterator_tag>& __lhs,
-	       const _Safe_iterator<_IteratorR, _Sequence,
-				    std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() >= __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator>=(const _Safe_iterator<_Iterator, _Sequence,
-				    std::random_access_iterator_tag>& __lhs,
-	       const _Safe_iterator<_Iterator, _Sequence,
-				    std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_order_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_order_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() >= __rhs.base();
-    }
-
-  // _GLIBCXX_RESOLVE_LIB_DEFECTS
-  // According to the resolution of DR179 not only the various comparison
-  // operators but also operator- must accept mixed iterator/const_iterator
-  // parameters.
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline typename _Safe_iterator<_IteratorL, _Sequence,
-			std::random_access_iterator_tag>::difference_type
-    operator-(const _Safe_iterator<_IteratorL, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_IteratorR, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_distance_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_distance_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() - __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline typename _Safe_iterator<_Iterator, _Sequence,
-			std::random_access_iterator_tag>::difference_type
-    operator-(const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __lhs,
-	      const _Safe_iterator<_Iterator, _Sequence,
-				   std::random_access_iterator_tag>& __rhs)
-    _GLIBCXX_NOEXCEPT
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_distance_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_distance_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() - __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline _Safe_iterator<_Iterator, _Sequence, std::random_access_iterator_tag>
-    operator+(typename _Safe_iterator<_Iterator,_Sequence,
-		std::random_access_iterator_tag>::difference_type __n,
-	      const _Safe_iterator<_Iterator, _Sequence,
-		std::random_access_iterator_tag>& __i)
-    _GLIBCXX_NOEXCEPT
-    { return __i + __n; }
 
   /** Safe iterators know how to check if they form a valid range. */
   template<typename _Iterator, typename _Sequence, typename _Category>
@@ -1075,6 +949,11 @@ namespace __gnu_debug
     { return __it.base(); }
 
 } // namespace __gnu_debug
+
+#undef _GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS
+#undef _GLIBCXX_DEBUG_VERIFY_REL_OPERANDS
+#undef _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS
+#undef _GLIBCXX_DEBUG_VERIFY_OPERANDS
 
 #include <debug/safe_iterator.tcc>
 

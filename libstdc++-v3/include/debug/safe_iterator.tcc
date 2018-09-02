@@ -82,7 +82,7 @@ namespace __gnu_debug
   template<typename _Iterator, typename _Sequence, typename _Category>
     bool
     _Safe_iterator<_Iterator, _Sequence, _Category>::
-    _M_can_advance(const difference_type& __n) const
+    _M_can_advance(difference_type __n) const
     {
       if (this->_M_singular())
 	return false;

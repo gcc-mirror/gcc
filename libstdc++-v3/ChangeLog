@@ -1,3 +1,55 @@
+2018-09-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<_It, _Seq, _Cat>::_Self): New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>::_Self):
+	New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::_OtherSelf): New.
+	(_GLIBCXX_DEBUG_VERIFY_OPERANDS, _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS)
+	(_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS)
+	(_GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS): Define macros.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::operator+(difference_type)): Use latters, inline as friend.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::operator-(difference_type)): Likewise.
+	(operator==(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator!=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator<(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator<=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator>(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator>=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator-(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator+(difference_type, const _Safe_iterator<>&)): Likewise.
+	(operator-(const _Safe_iterator<>&, difference_type)): Likewise.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_can_advance(difference_type)): Take parameter by
+	copy.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<_It, _Seq>::_Self): New.
+	(_Safe_local_iterator<_It, _Seq>::_OtherSelf): New.
+	(_GLIBCXX_DEBUG_VERIFY_OPERANDS): Define macro.
+	(operator==(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): Use latter, inline as friend.
+	(operator!=(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): Likewise.
+	* testsuite/util/testsuite_containers.h: Include utility.
+	(struct forward_members_unordered<_Tp, bool>): Remove 2nd template
+	parameter.
+	(forward_members_unordered<>::forward_members_unordered(value_type&)):
+	Add using namespace std::rel_ops.
+	Add iterator_concept_checks on local_iterator and const_local_iterator.
+	Add asserts on comparison between const_local_iterator and
+	local_iterator.
+	(struct forward_members_unordered<_Tp, false>): Remove partial
+	specialization.
+	* testsuite/23_containers/forward_list/types/1.cc: New.
+	* testsuite/23_containers/list/types/1.cc: New.
+
 2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/profile_mode.xml: Update three ieeexplore.ieee.org
