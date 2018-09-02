@@ -1058,7 +1058,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	    {
 	      /* We have parsed the complete vlist so initialize the
 	         array descriptor and save it in the format node.  */
-	      gfc_array_i4 *vp = tail->u.udf.vlist;
+	      gfc_full_array_i4 *vp = tail->u.udf.vlist;
 	      GFC_DESCRIPTOR_DATA(vp) = xmalloc (i * sizeof(GFC_INTEGER_4));
 	      GFC_DIMENSION_SET(vp->dim[0],1, i, 1);
 	      memcpy (GFC_DESCRIPTOR_DATA(vp), temp, i * sizeof(GFC_INTEGER_4));

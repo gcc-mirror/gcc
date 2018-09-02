@@ -78,7 +78,7 @@ struct fnode
     {
       char *string;
       int string_len;
-      gfc_array_i4 *vlist;
+      gfc_full_array_i4 *vlist;
     }
     udf;  /* User Defined Format.  */
 
