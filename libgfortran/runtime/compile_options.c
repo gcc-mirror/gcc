@@ -145,6 +145,12 @@ export_proto(set_options);
 void
 set_options (int num, int options[])
 {
+  /* Do not set options if we're not in the main program
+     of a pthread coarray application.  */
+
+  if (_gfortrani_caf_this_image > 0)
+    return;
+
   if (num >= 1)
     compile_options.warn_std = options[0];
   if (num >= 2)

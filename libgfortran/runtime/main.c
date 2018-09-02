@@ -43,6 +43,9 @@ static char **argv_save;
 void
 set_args (int argc, char **argv)
 {
+  if (_gfortrani_caf_this_image > 0)
+    return;
+
   argc_save = argc;
   argv_save = argv;
 }

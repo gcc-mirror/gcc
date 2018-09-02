@@ -5969,20 +5969,6 @@ create_main_function (tree fndecl)
 
   /* Call some libgfortran initialization routines, call then MAIN__().  */
 
-  /* Call _gfortran_caf_init (*argc, ***argv).  */
-  if (flag_coarray == GFC_FCOARRAY_LIB)
-    {
-      tree pint_type, pppchar_type;
-      pint_type = build_pointer_type (integer_type_node);
-      pppchar_type
-	= build_pointer_type (build_pointer_type (pchar_type_node));
-
-      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_init, 2,
-		gfc_build_addr_expr (pint_type, argc),
-		gfc_build_addr_expr (pppchar_type, argv));
-      gfc_add_expr_to_block (&body, tmp);
-    }
-
   /* Call _gfortran_set_args (argc, argv).  */
   TREE_USED (argc) = 1;
   TREE_USED (argv) = 1;
@@ -6085,6 +6071,20 @@ create_main_function (tree fndecl)
 			     gfor_fndecl_set_max_subrecord_length, 1,
 			     build_int_cst (integer_type_node,
 					    flag_max_subrecord_length));
+      gfc_add_expr_to_block (&body, tmp);
+    }
+
+  /* Call _gfortran_caf_init (*argc, ***argv).  */
+  if (flag_coarray == GFC_FCOARRAY_LIB)
+    {
+      tree pint_type, pppchar_type;
+      pint_type = build_pointer_type (integer_type_node);
+      pppchar_type
+	= build_pointer_type (build_pointer_type (pchar_type_node));
+
+      tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_init, 2,
+		gfc_build_addr_expr (pint_type, argc),
+		gfc_build_addr_expr (pppchar_type, argv));
       gfc_add_expr_to_block (&body, tmp);
     }
 

@@ -217,6 +217,9 @@ static variable variable_table[] = {
   /* Print out a backtrace if possible on runtime error */
   { "GFORTRAN_ERROR_BACKTRACE", -1, &options.backtrace, init_boolean },
 
+  /* Number of images to start with -fcoarray=pthread.  */
+  { "GFORTRAN_CAF_IMAGES", 4, &caf_num_images, init_integer },
+
   { NULL, 0, NULL, NULL }
 };
 

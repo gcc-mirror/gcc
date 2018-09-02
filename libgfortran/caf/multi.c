@@ -26,17 +26,23 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include"libcaf.h"
-#include<pthread.h> // gthreads needed here?
-#include<stdlib.h>
-#include<stdio.h>
+#include "libcaf.h"
+#include <pthread.h>
+#include <stdlib.h>
+#include <stdio.h>
 
-// types
+/* Currently compile programs which call this with
+
+$ gfortran -static-libgfortran -fcoarray=lib foo.f90 -pthread -lcaf_multi
+
+*/
 
 int main(int argc, char **argv);
 
+/* Types.  */
+
 typedef struct {
-  int image_num;
+  int this_image;
   int argc;
   char **argv;
 } init_args;
@@ -45,65 +51,76 @@ typedef struct {
   void **base_array;
 } caf_multi_token_t;
 
-// static vars
+typedef struct cond_t {
+  pthread_cond_t cond;
+  int signalled;
+  pthread_mutex_t mutex;
+} cond_t;
 
-__thread int image_num = -1;
-int num_images = -1;
+/* Static variables.  */
+
+__thread int _gfortrani_caf_this_image = -1;
+int caf_num_images = -1;
 pthread_barrier_t sync_all_barrier;
 pthread_t *tidlist;
 
-// functions
+static int *sim;
+static cond_t *cim;
+
+static int cond_init(cond_t *cond);
 
 static void *
-init_image (void *p) {
+init_image (void *p)
+{
   init_args args = *(init_args *) p; 
   free(p);
 
-  image_num = args.image_num;
+  _gfortrani_caf_this_image = args.this_image;
 
-  pthread_barrier_wait(&sync_all_barrier);
+  pthread_barrier_wait (&sync_all_barrier);
 
-  main(args.argc, args.argv); //XXX: Must be called since there is no other
-  			      //     way to set the options for the images
-			      //     since _gfortran_set_option is called
-			      //     after _gfortran_caf_init and options
-			      //     is a local variable in main. It would
-			      //     be better to switch to calling MAIN
-			      //     once we have the new interface.
+ /* XXX: Must be called since there is no other way to set the
+ options for the images since _gfortran_set_option is called after
+ _gfortran_caf_init and options is a local variable in main. It would
+ be better to switch to calling MAIN__ once we have the new
+ interface.  */
+
+  main (args.argc, args.argv);
 
   return NULL;
 }
 
 void
-_gfortran_caf_init (int *argcptr, char ***argvptr) {
-  if (image_num > 0) // to ensure the function is only
-    return	     // executed once after calling main
-		     // recursively
-
-  int i;
-  int nimages = 4; //XXX
+_gfortran_caf_init (int *argcptr, char ***argvptr)
+{
   init_args *args;
-  pthread_t tid;
   
-  num_images = nimages;
-   
-  pthread_barrier_init(&sync_all_barrier, NULL, nimages);  
-  
-  tidlist = malloc(nimages*sizeof(pthread_t));
+  /* Ensure the function is only executed once after calling main
+     recursively.  */
+  if (_gfortrani_caf_this_image > 0)
+    return; 
 
-  for(i = 1; i < num_images; i++) {
-    args = malloc(sizeof(init_args)); 
-    args->image_num = i;
+  pthread_barrier_init (&sync_all_barrier, NULL, caf_num_images);  
+  
+  tidlist = calloc (caf_num_images, sizeof(pthread_t));
+  sim = calloc(caf_num_images * caf_num_images, sizeof(int));
+  cim = calloc(caf_num_images * caf_num_images, sizeof(cond_t));
+
+  for (int i = 0; i < caf_num_images; i++)
+    cond_init(cim + i);
+
+  for (int i = 1; i < caf_num_images; i++) {
+    args = malloc (sizeof (init_args)); 
+    args->this_image = i;
     args->argc = *argcptr;
     args->argv = *argvptr;
-    pthread_create(&tid, NULL, init_image, args);
-    tidlist[i] = tid;
+    pthread_create (tidlist + i, NULL, init_image, args);
   }
   
-  tidlist[0] = pthread_self();
-  image_num = 0;
+  tidlist[0] = pthread_self ();
+  _gfortrani_caf_this_image = 0;
 
-  pthread_barrier_wait(&sync_all_barrier);
+  pthread_barrier_wait (&sync_all_barrier);
 }
 
 /*
@@ -123,7 +140,7 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 	  *t = malloc(sizeof(caf_multi_token_t)); 
 	  (*t)->base_array = malloc(get_num_images()*size);
 	}
-      data->base_addr = (*t)->base_array+image_num*size;
+      data->base_addr = (*t)->base_array+this_image*size;
       pthread_mutex_unlock(&lock);
     }
   else
@@ -158,15 +175,15 @@ void
 _gfortran_caf_finalize(void) 
 { 
   int i;
-  if (image_num != 0)
+  if (_gfortrani_caf_this_image != 0)
     pthread_exit(NULL);
-  for (i = 1; i<num_images; i++)
+  for (i = 1; i < caf_num_images; i++)
     pthread_join(tidlist[i], NULL);
 }
 
 int
 _gfortran_caf_this_image(int distance) {
-  return image_num+1;
+  return _gfortrani_caf_this_image+1;
 }
 
 
@@ -174,11 +191,95 @@ int
 _gfortran_caf_num_images (int distance __attribute__ ((unused)),
 			  int failed __attribute__ ((unused)))
 {
-  return num_images;
+  return caf_num_images;
 }
 
-// Probably has a race condition, if a thread reaches the barrier before
-// all have left, but I'm not certain how that works
+static int
+cond_init(cond_t *cond)
+{
+  pthread_mutex_init (&cond->mutex, NULL);
+  pthread_cond_init (&cond->cond, NULL);
+  cond->signalled = 0;
+  return 0;
+}
+
+static int
+cond_wait (cond_t * cond)
+{
+  while (!cond->signalled)
+    pthread_cond_wait (&cond->cond, &cond->mutex);
+
+  cond->signalled = 0;
+  pthread_mutex_unlock (&cond->mutex);
+  return 0;
+}
+
+static int
+cond_signal (cond_t *cond)
+{
+  cond->signalled = 1;
+  pthread_cond_signal (&cond->cond);
+  pthread_mutex_unlock (&cond->mutex);
+  return 0;
+}
+
+#define A(i,j) (sim[(i) + caf_num_images * (j)])
+
+void
+_gfortran_caf_sync_images (int count __attribute__ ((unused)),
+			   int images[] __attribute__ ((unused)),
+			   int *stat,
+			   char *errmsg __attribute__ ((unused)),
+			   size_t errmsg_len __attribute__ ((unused)))
+{
+  pthread_mutex_t *my_mutex;
+
+  for (int i=0; i < count; i++)
+    {
+      if (images[i] - 1 != _gfortrani_caf_this_image)
+	{
+	  cond_t *other_thread = cim + images[i] - 1;
+	  pthread_mutex_lock (&other_thread->mutex);
+	  A(_gfortrani_caf_this_image, images[i] - 1) ++;
+	  cond_signal(other_thread);
+	}
+    }
+
+  while (1)
+    {
+      int x;
+      int do_wait = 0;
+
+      my_mutex =  &(cim[_gfortrani_caf_this_image].mutex);
+      pthread_mutex_lock (my_mutex);
+
+      for (int i = 0; i < count; i++)
+	{
+	  if (images[i] - 1 != _gfortrani_caf_this_image)
+	    {
+	      x = A(images[i] - 1,_gfortrani_caf_this_image)
+		< A(_gfortrani_caf_this_image, images[i] - 1);
+	      if (x)
+		{
+		  do_wait = 1;
+		  break;
+		}
+	    }
+	}
+
+      if (do_wait)
+	  cond_wait(cim + _gfortrani_caf_this_image);
+      else
+	break;
+    }
+  pthread_mutex_unlock (my_mutex);
+}
+
+#undef A
+
+/* Probably has a race condition, if a thread reaches the barrier
+   before all have left, but I'm not certain how that works.  */
+
 void
 _gfortran_caf_sync_all (int *stat,
 			char *errmsg __attribute__ ((unused)),

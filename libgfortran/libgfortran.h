@@ -1746,7 +1746,8 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
 internal_proto(cshift1_16_c16);
 #endif
 
-/* Define this if we support asynchronous I/O on this platform.  This
-   currently requires weak symbols.  */
+extern int caf_num_images;
+internal_proto(caf_num_images);
+extern __thread int _gfortrani_caf_this_image;
 
 #endif  /* LIBGFOR_H  */

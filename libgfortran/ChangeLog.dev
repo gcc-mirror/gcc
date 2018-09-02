@@ -1,5 +1,30 @@
+2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Nicolas Koenig <koenigni@gcc.gnu.org>
+
+	* caf/multi.c: Some cleanup.
+	(image_num): Rename to _gfortrani_caf_this_image.
+	(sim): New static variable.
+	(cim): Likewise.
+	(cond_t): New type.
+	(init_image): Some reformatting.
+	(_gfortran_caf_init): Handle arrays of conditions and number for
+	sync images.
+	(cond_init): New function.
+	(cond_wait): New function.
+	(cond_signal): New function.
+	(A): Macro to simplify array access.
+	(_gfortran_caf_sync_images): New function.
+	* libgfortran.h (caf_num_images): New static variable.
+	(_gfortrani_caf_this_image): New static variable.
+	* runtime/compile_options.c (set_options): Return early if
+	we are in a dependent image.
+	* runtime/environ.c (static_variable_table): Add
+	GFORTRAN_CAF_IMAGES with default of 4.
+	* runtime/main.c (set_args): Return early if we are in a
+	dependent variable.
+
 2018-08-28  Nicolas Koenig  <koenigni@gcc.gnu.org>
-	
+
 	* caf/multi.c: New file
 
 2018-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
