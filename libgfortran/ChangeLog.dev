@@ -1,4 +1,10 @@
 2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	* caf/multi.c: Remove static variables _gfortrani_caf_this_image
+	and caf_num_images.
+	* runtime/environ.c: Add caf_num_images.
+	* runtime/compile_options.c: Add _gfortrani_caf_this_image.
+
+2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* caf/multi.c (_gfortran_caf_register): New function.
 	(_gfortran_caf_lock): New function.
