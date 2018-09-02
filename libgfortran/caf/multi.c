@@ -123,6 +123,48 @@ _gfortran_caf_init (int *argcptr, char ***argvptr)
   pthread_barrier_wait (&sync_all_barrier);
 }
 
+/* Implementation of caf_register - so far only good enough to allow for
+   CRITICAL / END CRITICAL.  */
+
+void
+_gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
+			gfc_descriptor_t *data, int *stat, char *errmsg,
+			size_t errmsg_len)
+{
+  if (type == CAF_REGTYPE_CRITICAL)
+    {
+      pthread_mutex_t *mutex, **mp;
+      mutex = malloc (sizeof *mutex);
+      pthread_mutex_init (mutex, NULL);
+      mp = token;
+      *mp = mutex;
+    }
+}
+
+/* Implement a lock.  */
+
+void
+_gfortran_caf_lock (caf_token_t token, size_t index,
+		    int image_index __attribute__ ((unused)),
+		    int *aquired_lock, int *stat, char *errmsg, size_t errmsg_len)
+{
+  pthread_mutex_t *mutex;
+  mutex = token;
+  pthread_mutex_lock (mutex);
+}
+
+/* Implement an unlock.  */
+
+void
+_gfortran_caf_unlock (caf_token_t token, size_t index,
+		      int image_index __attribute__ ((unused)),
+		      int *stat, char *errmsg, size_t errmsg_len)
+{
+  pthread_mutex_t *mutex;
+  mutex = token;
+  pthread_mutex_unlock (mutex);
+}
+
 /*
 Doesn't work
 void

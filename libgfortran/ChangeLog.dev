@@ -1,5 +1,11 @@
 2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	* caf/multi.c (_gfortran_caf_register): New function.
+	(_gfortran_caf_lock): New function.
+	(_gfortran_caf_unlock): New function.
+
+2018-09-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	* caf/multi.c (_gfortran_caf_sync_images): Handle
 	SYNC IMAGGES (*) correctly.
 
