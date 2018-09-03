@@ -1,3 +1,11 @@
+2018-09-03  Tom de Vries  <tdevries@suse.de>
+
+	backport from trunk:
+	2018-06-21  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/85859
+	* gcc.dg/pr85859.c: New test.
+
 2018-09-01  Michael Matz  <matz@suse.de>
 
 	Backport from mainline
