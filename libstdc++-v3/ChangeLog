@@ -1,5 +1,9 @@
 2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/stl_vector.h (vector::_Temporary_value::_M_ptr):
+	Return raw pointer not allocator's pointer type.
+	(vector::_Temporary_value::_M_val): Use _M_ptr.
+
 	PR libstdc++/87194
 	* include/bits/stl_map.h
 	(map::map(initializer_list<value_type>, const Compare&, const Alloc&))
