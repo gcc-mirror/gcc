@@ -1914,6 +1914,7 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
       int ranges = 0;
       case_tree_node **npp;
       case_tree_node *left;
+      profile_probability prob = profile_probability::never ();
 
       /* Count the number of entries on branch.  Also count the ranges.  */
 
@@ -1923,6 +1924,7 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	    ranges++;
 
 	  i++;
+	  prob += np->m_c->m_prob;
 	  np = np->m_right;
 	}
 
@@ -1931,39 +1933,35 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	  /* Split this list if it is long enough for that to help.  */
 	  npp = head;
 	  left = *npp;
+	  profile_probability pivot_prob = prob.apply_scale (1, 2);
 
-	  /* If there are just three nodes, split at the middle one.  */
-	  if (i == 3)
-	    npp = &(*npp)->m_right;
-	  else
+	  /* Find the place in the list that bisects the list's total cost,
+	     where ranges count as 2.  */
+	  while (1)
 	    {
-	      /* Find the place in the list that bisects the list's total cost,
-		 where ranges count as 2.
-		 Here I gets half the total cost.  */
-	      i = (i + ranges + 1) / 2;
-	      while (1)
-		{
-		  /* Skip nodes while their cost does not reach that amount.  */
-		  if (!tree_int_cst_equal ((*npp)->m_c->get_low (),
-					   (*npp)->m_c->get_high ()))
-		    i--;
-		  i--;
-		  if (i <= 0)
-		    break;
-		  npp = &(*npp)->m_right;
-		}
+	      /* Skip nodes while their probability does not reach
+		 that amount.  */
+	      prob -= (*npp)->m_c->m_prob;
+	      if (prob.initialized_p ()
+		  && (prob < pivot_prob || ! (*npp)->m_right))
+		break;
+	      npp = &(*npp)->m_right;
 	    }
-	  *head = np = *npp;
-	  *npp = 0;
+
+	  np = *npp;
+ 	  *npp = 0;
+	  *head = np;
 	  np->m_parent = parent;
-	  np->m_left = left;
+	  np->m_left = left == np ? NULL : left;
 
 	  /* Optimize each of the two split parts.  */
 	  balance_case_nodes (&np->m_left, np);
 	  balance_case_nodes (&np->m_right, np);
 	  np->m_c->m_subtree_prob = np->m_c->m_prob;
-	  np->m_c->m_subtree_prob += np->m_left->m_c->m_subtree_prob;
-	  np->m_c->m_subtree_prob += np->m_right->m_c->m_subtree_prob;
+	  if (np->m_left)
+	    np->m_c->m_subtree_prob += np->m_left->m_c->m_subtree_prob;
+	  if (np->m_right)
+	    np->m_c->m_subtree_prob += np->m_right->m_c->m_subtree_prob;
 	}
       else
 	{

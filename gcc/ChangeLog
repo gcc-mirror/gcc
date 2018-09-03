@@ -1,3 +1,17 @@
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/59521
+	* predict.c (set_even_probabilities): Add likely_edges
+	argument and handle cases where we have precisely one
+	likely edge.
+	(combine_predictions_for_bb): Catch also likely_edges.
+	(tree_predict_by_opcode): Handle gswitch statements.
+	* tree-cfg.h (find_case_label_for_value): New declaration.
+	(find_taken_edge_switch_expr): Likewise.
+	* tree-switch-conversion.c (switch_decision_tree::balance_case_nodes):
+	Find pivot in decision tree based on probabily, not by number of
+	nodes.
+
 2018-09-02  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/standards.texi (Standards): Update Objective-C reference.
