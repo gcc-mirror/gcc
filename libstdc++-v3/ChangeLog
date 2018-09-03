@@ -1,5 +1,55 @@
 2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87194
+	* include/bits/stl_map.h
+	(map::map(initializer_list<value_type>, const Compare&, const Alloc&))
+	(map::map(initializer_list<value_type>, const Alloc&))
+	(map::map(InputIterator, InputIterator, const Alloc&))
+	(map::map(InputIterator, InputIterator))
+	(map::map(InputIterator, InputIterator, const Compare&, const Alloc&))
+	(map::insert(InputIterator, InputIterator)):
+	Call _M_insert_range_unique instead of _M_insert_unique.
+	* include/bits/stl_multimap.h
+	(multimap::multimap(initializer_list<value_type>, const C&, const A&))
+	(multimap::multimap(initializer_list<value_type>, const A&))
+	(multimap::multimap(InputIterator, InputIterator, const A&))
+	(multimap::multimap(InputIterator, InputIterator))
+	(multimap::multimap(InputIterator, InputIterator, const C&, const A&))
+	(multimap::insert(InputIterator, InputIterator)): Call
+	_M_insert_range_equal instead of _M_insert_equal.
+	* include/bits/stl_multiset.h
+	(multiset::multiset(InputIterator, InputIterator))
+	(multiset::multiset(InputIterator, InputIterator, const C&, const A&))
+	(multiset::multiset(initializer_list<value_type>, const C&, const A&))
+	(multiset::multiset(initializer_list<value_type>, const A&))
+	(multiset::multiset(InputIterator, InputIterator, const A&))
+	(multiset::insert(InputIterator, InputIterator)): Call
+	_M_insert_range_equal instead of _M_insert_equal.
+	* include/bits/stl_set.h
+	(set::set(InputIterator, InputIterator))
+	(set::set(InputIterator, InputIterator, const Compare&, const Alloc&))
+	(set::set(initializer_list<value_type>, const Compare&, const Alloc&))
+	(set::set(initializer_list<value_type>, const Alloc&))
+	(set::set(InputIterator, InputIterator, const Alloc&))
+	(set::insert(InputIterator, InputIterator)):
+	Call _M_insert_range_unique instead of _M_insert_unique.
+	* include/bits/stl_tree.h
+	[__cplusplus >= 201103L] (_Rb_tree::__same_value_type): New alias
+	template for SFINAE constraints.
+	[__cplusplus >= 201103L] (_Rb_tree::_M_insert_range_unique): Pair of
+	constrained overloads that either insert or emplace, depending on
+	iterator's value_type.
+	[__cplusplus >= 201103L] (_Rb_tree::_M_insert_range_equal): Likewise.
+	[__cplusplus < 201103L] (_Rb_tree::_M_insert_range_unique)
+	(_Rb_tree::_M_insert_range_equal): New functions replacing range
+	versions of _M_insert_unique and _M_insert_equal.
+	(_Rb_tree::_M_insert_unique(_InputIterator, _InputIterator))
+	(_Rb_tree::_M_insert_equal(_InputIterator, _InputIterator)): Remove.
+	* testsuite/23_containers/map/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/multiset/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/set/modifiers/insert/87194.cc: New test.
+
 	PR libstdc++/78595
 	* include/bits/stl_map.h (map::insert(_Pair&&))
 	(map::insert(const_iterator, _Pair&&)): Do emplace instead of insert.
