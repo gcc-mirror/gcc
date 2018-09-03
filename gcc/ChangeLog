@@ -1,3 +1,9 @@
+2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
+
+	* sort.cc (gcc_qsort) [CHECKING_P]: Call qsort_chk.
+	* system.h (qsort): Always redirect to gcc_qsort.  Update comment.
+	* vec.c (qsort_chk): Do not call gcc_qsort.  Update comment.
+
 2018-09-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*mov<mode>_hardfloat32): Remove %U from the
