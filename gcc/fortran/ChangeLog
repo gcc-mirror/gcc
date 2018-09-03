@@ -1,3 +1,8 @@
+2018-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* simplify.c (gfc_simplify_modulo): Re-arrange code to test whether
+	'P' is zero and issue an error if it is.
+
 2018-08-31  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86328

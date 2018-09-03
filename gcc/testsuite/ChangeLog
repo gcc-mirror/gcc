@@ -1,3 +1,7 @@
+2018-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/modulo_check: New test.
+
 2018-09-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87177
