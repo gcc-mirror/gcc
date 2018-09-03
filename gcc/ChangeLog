@@ -1,3 +1,15 @@
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87197
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Mark the new def
+	visited.  CSE the VN_INFO hashtable lookup.
+
+	PR tree-optimization/87169
+	* tree-ssa-sccvn.c (do_rpo_vn): When marking loops for not
+	iterating make sure there's no extra backedges from irreducible
+	regions feeding the header.  Mark the destination block
+	executable.
+
 2018-09-03  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193

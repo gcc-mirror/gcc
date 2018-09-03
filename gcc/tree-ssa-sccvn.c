@@ -1783,11 +1783,13 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
       /* The expression is not yet available, value-number lhs to
 	 the new SSA_NAME we created.  */
       /* Initialize value-number information properly.  */
-      VN_INFO (result)->valnum = result;
-      VN_INFO (result)->value_id = get_next_value_id ();
+      vn_ssa_aux_t result_info = VN_INFO (result);
+      result_info->valnum = result;
+      result_info->value_id = get_next_value_id ();
+      result_info->visited = 1;
       gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
 					  new_stmt);
-      VN_INFO (result)->needs_insertion = true;
+      result_info->needs_insertion = true;
       /* ???  PRE phi-translation inserts NARYs without corresponding
          SSA name result.  Re-use those but set their result according
 	 to the stmt we just built.  */
@@ -1810,7 +1812,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
 	  unsigned int length = vn_nary_length_from_stmt (new_stmt);
 	  vn_nary_op_t vno1
 	    = alloc_vn_nary_op_noinit (length, &vn_tables_insert_obstack);
-	  vno1->value_id = VN_INFO (result)->value_id;
+	  vno1->value_id = result_info->value_id;
 	  vno1->length = length;
 	  vno1->predicated_values = 0;
 	  vno1->u.result = result;
@@ -6360,12 +6362,28 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	       i < loop_depth (loop) - max_depth; ++i)
 	    {
 	      basic_block header = superloop_at_depth (loop, i)->header;
-	      rpo_state[bb_to_rpo[header->index]].iterate = false;
+	      bool non_latch_backedge = false;
 	      edge e;
 	      edge_iterator ei;
 	      FOR_EACH_EDGE (e, ei, header->preds)
 		if (e->flags & EDGE_DFS_BACK)
-		  e->flags |= EDGE_EXECUTABLE;
+		  {
+		    e->flags |= EDGE_EXECUTABLE;
+		    e->dest->flags |= BB_EXECUTABLE;
+		    /* There can be a non-latch backedge into the header
+		       which is part of an outer irreducible region.  We
+		       cannot avoid iterating this block then.  */
+		    if (!dominated_by_p (CDI_DOMINATORS,
+					 e->src, e->dest))
+		      {
+			if (dump_file && (dump_flags & TDF_DETAILS))
+			  fprintf (dump_file, "non-latch backedge %d -> %d "
+				   "forces iteration of loop %d\n",
+				   e->src->index, e->dest->index, loop->num);
+			non_latch_backedge = true;
+		      }
+		  }
+	      rpo_state[bb_to_rpo[header->index]].iterate = non_latch_backedge;
 	    }
     }
 
