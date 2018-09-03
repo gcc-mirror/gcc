@@ -1,3 +1,9 @@
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/87201
+	* tree-switch-conversion.c (switch_decision_tree::balance_case_nodes):
+	Fix parenthesis in an expression.
+
 2018-09-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87197

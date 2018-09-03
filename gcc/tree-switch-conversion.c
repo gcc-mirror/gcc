@@ -1942,8 +1942,8 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	      /* Skip nodes while their probability does not reach
 		 that amount.  */
 	      prob -= (*npp)->m_c->m_prob;
-	      if (prob.initialized_p ()
-		  && (prob < pivot_prob || ! (*npp)->m_right))
+	      if ((prob.initialized_p () && prob < pivot_prob)
+		  || ! (*npp)->m_right)
 		break;
 	      npp = &(*npp)->m_right;
 	    }
