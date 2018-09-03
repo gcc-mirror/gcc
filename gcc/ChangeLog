@@ -1,5 +1,11 @@
 2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
 
+	* bb-reorder.c (edge_order): Convert to C-qsort-style
+	tri-state comparator.
+	(reorder_basic_blocks_simple): Change std::stable_sort to gcc_stablesort.
+
+2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
+
 	* tree-loop-distribution.c (offset_cmp): Convert to C-qsort-style
 	tri-state comparator.
 	(fuse_memset_builtins): Change std::stable_sort to gcc_stablesort.
