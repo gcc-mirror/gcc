@@ -1,3 +1,9 @@
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87200
+	* tree-ssa-sccvn.c (vn_nary_build_or_lookup_1): Valueize a
+	simplify result.
+
 2018-09-03  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/87201

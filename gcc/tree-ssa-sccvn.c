@@ -1759,8 +1759,13 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert)
   gimple *new_stmt = NULL;
   if (res
       && gimple_simplified_result_is_gimple_val (res_op))
-    /* The expression is already available.  */
-    result = res_op->ops[0];
+    {
+      /* The expression is already available.  */
+      result = res_op->ops[0];
+      /* Valueize it, simplification returns sth in AVAIL only.  */
+      if (TREE_CODE (result) == SSA_NAME)
+	result = SSA_VAL (result);
+    }
   else
     {
       tree val = vn_lookup_simplify_result (res_op);
