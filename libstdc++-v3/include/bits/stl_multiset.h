@@ -186,7 +186,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	multiset(_InputIterator __first, _InputIterator __last)
 	: _M_t()
-	{ _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_range_equal(__first, __last); }
 
       /**
        *  @brief  Builds a %multiset from a range.
@@ -204,7 +204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		 const _Compare& __comp,
 		 const allocator_type& __a = allocator_type())
 	: _M_t(__comp, _Key_alloc_type(__a))
-	{ _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_range_equal(__first, __last); }
 
       /**
        *  @brief  %Multiset copy constructor.
@@ -240,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	       const _Compare& __comp = _Compare(),
 	       const allocator_type& __a = allocator_type())
       : _M_t(__comp, _Key_alloc_type(__a))
-      { _M_t._M_insert_equal(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_equal(__l.begin(), __l.end()); }
 
       /// Allocator-extended default constructor.
       explicit
@@ -260,14 +260,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /// Allocator-extended initialier-list constructor.
       multiset(initializer_list<value_type> __l, const allocator_type& __a)
       : _M_t(_Key_alloc_type(__a))
-      { _M_t._M_insert_equal(__l.begin(), __l.end()); }
+      { _M_t._M_insert_range_equal(__l.begin(), __l.end()); }
 
       /// Allocator-extended range constructor.
       template<typename _InputIterator>
 	multiset(_InputIterator __first, _InputIterator __last,
 		 const allocator_type& __a)
 	: _M_t(_Key_alloc_type(__a))
-	{ _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_range_equal(__first, __last); }
 
       /**
        *  The dtor only erases the elements, and note that if the elements
@@ -549,7 +549,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _InputIterator>
 	void
 	insert(_InputIterator __first, _InputIterator __last)
-	{ _M_t._M_insert_equal(__first, __last); }
+	{ _M_t._M_insert_range_equal(__first, __last); }
 
 #if __cplusplus >= 201103L
       /**
