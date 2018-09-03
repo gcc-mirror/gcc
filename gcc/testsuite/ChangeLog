@@ -1,3 +1,8 @@
+2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84980
+	* g++.dg/concepts/pr84980.C: New.
+
 2018-09-03  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/59521
