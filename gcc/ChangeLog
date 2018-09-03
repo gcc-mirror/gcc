@@ -1,3 +1,12 @@
+2018-09-03  Tom de Vries  <tdevries@suse.de>
+
+	backport from trunk:
+	2018-06-21  Tom de Vries  <tdevries@suse.de>
+
+	PR tree-optimization/85859
+	* tree-ssa-tail-merge.c (stmt_local_def): Copy gimple_is_call
+	test with comment from bb_no_side_effects_p.
+
 2018-08-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
