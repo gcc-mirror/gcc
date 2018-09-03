@@ -171,8 +171,6 @@ static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (const gcond *, tree);
-static edge find_taken_edge_switch_expr (const gswitch *, tree);
-static tree find_case_label_for_value (const gswitch *, tree);
 static void lower_phi_internal_fn ();
 
 void
@@ -2436,7 +2434,7 @@ find_taken_edge_cond_expr (const gcond *cond_stmt, tree val)
    If VAL is NULL_TREE, then the current value of SWITCH_STMT's index
    is used.  */
 
-static edge
+edge
 find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
 {
   basic_block dest_bb;
@@ -2466,7 +2464,7 @@ find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
    We can make optimal use here of the fact that the case labels are
    sorted: We can do a binary search for a case matching VAL.  */
 
-static tree
+tree
 find_case_label_for_value (const gswitch *switch_stmt, tree val)
 {
   size_t low, high, n = gimple_switch_num_labels (switch_stmt);

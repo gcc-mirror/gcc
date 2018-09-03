@@ -1,3 +1,10 @@
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/59521
+	* c-c++-common/pr59521-1.c: New test.
+	* c-c++-common/pr59521-2.c: New test.
+	* gcc.dg/tree-prof/pr59521-3.c: New test.
+
 2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/array-init.c: New test.
