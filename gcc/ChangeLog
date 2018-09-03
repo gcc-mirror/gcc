@@ -1,5 +1,13 @@
 2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
 
+	* sort.cc (struct sort_ctx): New field 'nlim'.  Use it...
+	(mergesort): ... here as maximum count for using netsort.
+	(gcc_qsort): Set nlim to 3 if stable sort is requested.
+	(gcc_stablesort): New.
+	* system.h (gcc_stablesort): Declare.
+
+2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sort.cc (gcc_qsort) [CHECKING_P]: Call qsort_chk.
 	* system.h (qsort): Always redirect to gcc_qsort.  Update comment.
 	* vec.c (qsort_chk): Do not call gcc_qsort.  Update comment.
