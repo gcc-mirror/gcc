@@ -1,5 +1,11 @@
 2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/78179
+	* testsuite/26_numerics/headers/cmath/hypot-long-double.cc: New test
+	that runs the long double part of hypot.cc.
+	* testsuite/26_numerics/headers/cmath/hypot.cc: Disable long double
+	tests unless TEST_HYPOT_LONG_DOUBLE is defined.
+
 	* include/bits/stl_vector.h (vector::_Temporary_value::_M_ptr):
 	Return raw pointer not allocator's pointer type.
 	(vector::_Temporary_value::_M_val): Use _M_ptr.
