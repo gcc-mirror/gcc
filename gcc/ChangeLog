@@ -1,5 +1,11 @@
 2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
 
+	* tree-loop-distribution.c (offset_cmp): Convert to C-qsort-style
+	tri-state comparator.
+	(fuse_memset_builtins): Change std::stable_sort to gcc_stablesort.
+
+2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
+
 	* sort.cc (struct sort_ctx): New field 'nlim'.  Use it...
 	(mergesort): ... here as maximum count for using netsort.
 	(gcc_qsort): Set nlim to 3 if stable sort is requested.
