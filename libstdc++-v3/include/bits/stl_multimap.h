@@ -544,12 +544,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(value_type&& __x)
       { return _M_t._M_insert_equal(std::move(__x)); }
 
-      template<typename _Pair, typename = typename
-	       std::enable_if<std::is_constructible<value_type,
-						    _Pair&&>::value>::type>
-	iterator
+      template<typename _Pair>
+	__enable_if_t<is_constructible<value_type, _Pair>::value, iterator>
 	insert(_Pair&& __x)
-	{ return _M_t._M_insert_equal(std::forward<_Pair>(__x)); }
+	{ return _M_t._M_emplace_equal(std::forward<_Pair>(__x)); }
 #endif
       // @}
 
@@ -589,13 +587,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       insert(const_iterator __position, value_type&& __x)
       { return _M_t._M_insert_equal_(__position, std::move(__x)); }
 
-      template<typename _Pair, typename = typename
-	       std::enable_if<std::is_constructible<value_type,
-						    _Pair&&>::value>::type>
-	iterator
+      template<typename _Pair>
+	__enable_if_t<is_constructible<value_type, _Pair&&>::value, iterator>
 	insert(const_iterator __position, _Pair&& __x)
-	{ return _M_t._M_insert_equal_(__position,
-				       std::forward<_Pair>(__x)); }
+	{
+	  return _M_t._M_emplace_hint_equal(__position,
+					    std::forward<_Pair>(__x));
+	}
 #endif
       // @}
 
