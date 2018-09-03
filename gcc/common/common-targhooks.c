@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "common/common-target.h"
 #include "common/common-targhooks.h"
+#include "opts.h"
 
 /* Determine the exception handling mechanism for the target.  */
 
@@ -75,6 +76,14 @@ default_target_handle_option (struct gcc_options *opts ATTRIBUTE_UNUSED,
 			      location_t loc ATTRIBUTE_UNUSED)
 {
   return true;
+}
+
+/* Default version of TARGET_GET_VALID_OPTION_VALUES.  */
+
+vec<const char *>
+default_get_valid_option_values (int, const char *)
+{
+  return vec<const char *> ();
 }
 
 const struct default_options empty_optimization_table[] =

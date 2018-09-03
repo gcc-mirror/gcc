@@ -1,3 +1,8 @@
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* gcc.dg/completion-4.c: New test.
+
 2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84980

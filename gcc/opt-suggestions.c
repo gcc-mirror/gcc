@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "spellcheck.h"
 #include "opt-suggestions.h"
+#include "common/common-target.h"
 #include "selftest.h"
 
 option_proposer::~option_proposer ()
@@ -38,7 +39,7 @@ option_proposer::suggest_option (const char *bad_opt)
 {
   /* Lazily populate m_option_suggestions.  */
   if (!m_option_suggestions)
-    build_option_suggestions ();
+    build_option_suggestions (NULL);
   gcc_assert (m_option_suggestions);
 
   /* "m_option_suggestions" is now populated.  Use it.  */
@@ -80,7 +81,7 @@ option_proposer::get_completions (const char *option_prefix,
     {
       /* Lazily populate m_option_suggestions.  */
       if (!m_option_suggestions)
-	build_option_suggestions ();
+	build_option_suggestions (option_prefix);
       gcc_assert (m_option_suggestions);
 
       for (unsigned i = 0; i < m_option_suggestions->length (); i++)
@@ -108,7 +109,7 @@ option_proposer::suggest_completion (const char *option_prefix)
 }
 
 void
-option_proposer::build_option_suggestions (void)
+option_proposer::build_option_suggestions (const char *prefix)
 {
   gcc_assert (m_option_suggestions == NULL);
   m_option_suggestions = new auto_string_vec ();
@@ -135,8 +136,27 @@ option_proposer::build_option_suggestions (void)
 		}
 	    }
 	  else
-	    add_misspelling_candidates (m_option_suggestions, option,
-					opt_text);
+	    {
+	      if (option->flags & CL_TARGET)
+		{
+		  vec<const char *> option_values
+		    = targetm_common.get_valid_option_values (i, prefix);
+		  if (!option_values.is_empty ())
+		    {
+		      for (unsigned j = 0; j < option_values.length (); j++)
+			{
+			  char *with_arg = concat (opt_text, option_values[j],
+						   NULL);
+			  add_misspelling_candidates (m_option_suggestions, option,
+						      with_arg);
+			  free (with_arg);
+			}
+		    }
+		}
+	      else
+		add_misspelling_candidates (m_option_suggestions, option,
+					    opt_text);
+	    }
 	  break;
 
 	case OPT_fsanitize_:
