@@ -5057,6 +5057,10 @@ Returns true if the target wants GCC's default stack protect runtime support, ot
 Whether this target supports splitting the stack when the options described in @var{opts} have been passed.  This is called after options have been parsed, so the target may reject splitting the stack in some configurations.  The default version of this hook returns false.  If @var{report} is true, this function may issue a warning or error; if @var{report} is false, it must simply return a value
 @end deftypefn
 
+@deftypefn {Common Target Hook} {vec<const char *>} TARGET_GET_VALID_OPTION_VALUES (int @var{option_code}, const char *@var{prefix})
+The hook is used for options that have a non-trivial list of possible option values.  OPTION_CODE is option code of opt_code enum type.  PREFIX is used for bash completion and allows an implementation to return more specific completion based on the prefix.  All string values should be allocated from heap memory and consumers should release them.  The result will be pruned to cases with PREFIX if not NULL.
+@end deftypefn
+
 @node Miscellaneous Register Hooks
 @subsection Miscellaneous register hooks
 @cindex miscellaneous register hooks

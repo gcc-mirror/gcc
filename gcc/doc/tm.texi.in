@@ -3669,6 +3669,8 @@ generic code.
 
 @hook TARGET_SUPPORTS_SPLIT_STACK
 
+@hook TARGET_GET_VALID_OPTION_VALUES
+
 @node Miscellaneous Register Hooks
 @subsection Miscellaneous register hooks
 @cindex miscellaneous register hooks

@@ -1,5 +1,32 @@
 2018-09-03  Martin Liska  <mliska@suse.cz>
 
+	PR driver/83193
+	* common/common-target.def: Add TARGET_GET_VALID_OPTION_VALUES.
+	* common/common-targhooks.c (default_get_valid_option_values):
+	New function.
+	* common/common-targhooks.h (default_get_valid_option_values):
+	Likewise.
+	* common/config/i386/i386-common.c: Move processor_target_table
+	from i386.c.
+	(ix86_get_valid_option_values): New function.
+	(TARGET_GET_VALID_OPTION_VALUES): New macro.
+	* config/i386/i386.c (struct ptt): Move to i386-common.c.
+	(PTA_*): Move all defined masks into i386-common.c.
+	(ix86_function_specific_restore): Use new processor_cost_table.
+	* config/i386/i386.h (struct ptt): Moved from i386.c.
+	(struct pta): Likewise.
+	* doc/tm.texi: Document new TARGET_GET_VALID_OPTION_VALUES.
+	* doc/tm.texi.in: Likewise.
+	* opt-suggestions.c (option_proposer::suggest_option):
+	Pass prefix to build_option_suggestions.
+	(option_proposer::get_completions): Likewise.
+	(option_proposer::build_option_suggestions): Use the new target
+	hook.
+	* opts.c (struct option_help_tuple): New struct.
+	(print_filtered_help): Use the new target hook.
+
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/59521
 	* predict.c (set_even_probabilities): Add likely_edges
 	argument and handle cases where we have precisely one

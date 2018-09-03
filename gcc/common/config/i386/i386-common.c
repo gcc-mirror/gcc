@@ -1459,4 +1459,271 @@ i386_except_unwind_info (struct gcc_options *opts)
 #undef TARGET_SUPPORTS_SPLIT_STACK
 #define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
 
+/* This table must be in sync with enum processor_type in i386.h.  */
+const struct ptt processor_target_table[PROCESSOR_max] =
+{
+  /* The "0:0:8" label alignment specified for some processors generates
+     secondary 8-byte alignment only for those label/jump/loop targets
+     which have primary alignment.  */
+
+  {"generic",        "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"i386",           "4",       "4",       NULL,    "4" },
+  {"i486",           "16",      "16",      "0:0:8", "16"},
+  {"pentium",        "16:8:8",  "16:8:8",  "0:0:8", "16"},
+  {"lakemont",       "16:8:8",  "16:8:8",  "0:0:8", "16"},
+  {"pentiumpro",     "16",      "16:11:8", "0:0:8", "16"},
+  {"pentium4",       NULL,      NULL,      NULL,    NULL},
+  {"nocona",         NULL,      NULL,      NULL,    NULL},
+  {"core2",          "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"nehalem",        "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"sandybridge",    "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"haswell",        "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"bonnell",        "16",      "16:8:8",  "0:0:8", "16"},
+  {"silvermont",     "16",      "16:8:8",  "0:0:8", "16"},
+  {"goldmont",       "16",      "16:8:8",  "0:0:8", "16"},
+  {"goldmont-plus",  "16",      "16:8:8",  "0:0:8", "16"},
+  {"tremont",        "16",      "16:8:8",  "0:0:8", "16"},
+  {"knl",            "16",      "16:8:8",  "0:0:8", "16"},
+  {"knm",            "16",      "16:8:8",  "0:0:8", "16"},
+  {"skylake",        "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"skylake-avx512", "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"cannonlake",     "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"icelake-client", "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"icelake-server", "16:11:8", "16:11:8", "0:0:8", "16"},
+  {"intel",          "16",      "16:8:8",  "0:0:8", "16"},
+  {"geode",          NULL,      NULL,      NULL,    NULL},
+  {"k6",             "32:8:8",  "32:8:8",  "0:0:8", "32"},
+  {"athlon",         "16:8:8",  "16:8:8",  "0:0:8", "16"},
+  {"k8",             "16:8:8",  "16:8:8",  "0:0:8", "16"},
+  {"amdfam10",       "32:25:8", "32:8:8",  "0:0:8", "32"},
+  {"bdver1",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"bdver2",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"bdver3",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"bdver4",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"btver1",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"btver2",         "16:11:8", "16:8:8",  "0:0:8", "11"},
+  {"znver1",         "16",      "16",      "0:0:8", "16"}
+};
+
+const pta processor_alias_table[] =
+{
+  {"i386", PROCESSOR_I386, CPU_NONE, 0},
+  {"i486", PROCESSOR_I486, CPU_NONE, 0},
+  {"i586", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
+  {"pentium", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
+  {"lakemont", PROCESSOR_LAKEMONT, CPU_PENTIUM, PTA_NO_80387},
+  {"pentium-mmx", PROCESSOR_PENTIUM, CPU_PENTIUM, PTA_MMX},
+  {"winchip-c6", PROCESSOR_I486, CPU_NONE, PTA_MMX},
+  {"winchip2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
+  {"c3", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
+  {"samuel-2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
+  {"c3-2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_FXSR},
+  {"nehemiah", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_FXSR},
+  {"c7", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
+  {"esther", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
+  {"i686", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
+  {"pentiumpro", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
+  {"pentium2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, PTA_MMX | PTA_FXSR},
+  {"pentium3", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_FXSR},
+  {"pentium3m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_FXSR},
+  {"pentium-m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
+    PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
+  {"pentium4", PROCESSOR_PENTIUM4, CPU_NONE,
+    PTA_MMX |PTA_SSE | PTA_SSE2 | PTA_FXSR},
+  {"pentium4m", PROCESSOR_PENTIUM4, CPU_NONE,
+    PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
+  {"prescott", PROCESSOR_NOCONA, CPU_NONE,
+    PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
+  {"nocona", PROCESSOR_NOCONA, CPU_NONE,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_CX16 | PTA_NO_SAHF | PTA_FXSR},
+  {"core2", PROCESSOR_CORE2, CPU_CORE2, PTA_CORE2},
+  {"nehalem", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_NEHALEM},
+  {"corei7", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_NEHALEM},
+  {"westmere", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_WESTMERE},
+  {"sandybridge", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
+    PTA_SANDYBRIDGE},
+  {"corei7-avx", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
+    PTA_SANDYBRIDGE},
+  {"ivybridge", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
+    PTA_IVYBRIDGE},
+  {"core-avx-i", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
+    PTA_IVYBRIDGE},
+  {"haswell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
+  {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
+  {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
+  {"skylake", PROCESSOR_SKYLAKE, CPU_HASWELL, PTA_SKYLAKE},
+  {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
+    PTA_SKYLAKE_AVX512},
+  {"cannonlake", PROCESSOR_CANNONLAKE, CPU_HASWELL, PTA_CANNONLAKE},
+  {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
+    PTA_ICELAKE_CLIENT},
+  {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
+    PTA_ICELAKE_SERVER},
+  {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
+  {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
+  {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
+  {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
+  {"goldmont", PROCESSOR_GOLDMONT, CPU_GLM, PTA_GOLDMONT},
+  {"goldmont-plus", PROCESSOR_GOLDMONT_PLUS, CPU_GLM, PTA_GOLDMONT_PLUS},
+  {"tremont", PROCESSOR_TREMONT, CPU_GLM, PTA_TREMONT},
+  {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL},
+  {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM},
+  {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
+  {"geode", PROCESSOR_GEODE, CPU_GEODE,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
+  {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
+  {"k6-2", PROCESSOR_K6, CPU_K6, PTA_MMX | PTA_3DNOW},
+  {"k6-3", PROCESSOR_K6, CPU_K6, PTA_MMX | PTA_3DNOW},
+  {"athlon", PROCESSOR_ATHLON, CPU_ATHLON,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
+  {"athlon-tbird", PROCESSOR_ATHLON, CPU_ATHLON,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
+  {"athlon-4", PROCESSOR_ATHLON, CPU_ATHLON,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
+  {"athlon-xp", PROCESSOR_ATHLON, CPU_ATHLON,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
+  {"athlon-mp", PROCESSOR_ATHLON, CPU_ATHLON,
+    PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
+  {"x86-64", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
+  {"eden-x2", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
+  {"nano", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_FXSR},
+  {"nano-1000", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_FXSR},
+  {"nano-2000", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_FXSR},
+  {"nano-3000", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
+  {"nano-x2", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
+  {"eden-x4", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
+  {"nano-x4", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
+  {"k8", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
+  {"k8-sse3", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
+  {"opteron", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
+  {"opteron-sse3", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
+  {"athlon64", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
+  {"athlon64-sse3", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
+  {"athlon-fx", PROCESSOR_K8, CPU_K8,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
+      | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
+  {"amdfam10", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
+      | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_PRFCHW | PTA_FXSR},
+  {"barcelona", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
+    PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
+      | PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_PRFCHW | PTA_FXSR},
+  {"bdver1", PROCESSOR_BDVER1, CPU_BDVER1,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
+      | PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
+  {"bdver2", PROCESSOR_BDVER2, CPU_BDVER2,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
+      | PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
+      | PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
+  {"bdver3", PROCESSOR_BDVER3, CPU_BDVER3,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
+      | PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
+      | PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE
+      | PTA_XSAVEOPT | PTA_FSGSBASE},
+  {"bdver4", PROCESSOR_BDVER4, CPU_BDVER4,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2
+      | PTA_FMA4 | PTA_XOP | PTA_LWP | PTA_BMI | PTA_BMI2
+      | PTA_TBM | PTA_F16C | PTA_FMA | PTA_PRFCHW | PTA_FXSR
+      | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE | PTA_RDRND
+      | PTA_MOVBE | PTA_MWAITX},
+  {"znver1", PROCESSOR_ZNVER1, CPU_ZNVER1,
+    PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
+      | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2
+      | PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_PRFCHW
+      | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE
+      | PTA_RDRND | PTA_MOVBE | PTA_MWAITX | PTA_ADX | PTA_RDSEED
+      | PTA_CLZERO | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES
+      | PTA_SHA | PTA_LZCNT | PTA_POPCNT},
+  {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
+    PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
+      | PTA_FXSR | PTA_XSAVE},
+  {"btver2", PROCESSOR_BTVER2, CPU_BTVER2,
+    PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
+      | PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
+      | PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
+      | PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW
+      | PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
+
+  {"generic", PROCESSOR_GENERIC, CPU_GENERIC,
+    PTA_64BIT
+      | PTA_HLE /* flags are only used for -march switch.  */ },
+};
+
+int const pta_size = ARRAY_SIZE (processor_alias_table);
+
+/* Provide valid option values for -march and -mtune options.  */
+
+vec<const char *>
+ix86_get_valid_option_values (int option_code,
+			      const char *prefix ATTRIBUTE_UNUSED)
+{
+  vec<const char *> v;
+  v.create (0);
+  opt_code opt = (opt_code) option_code;
+
+  switch (opt)
+    {
+    case OPT_march_:
+      for (unsigned i = 0; i < pta_size; i++)
+	v.safe_push (processor_alias_table[i].name);
+      break;
+    case OPT_mtune_:
+      for (unsigned i = 0; i < PROCESSOR_max; i++)
+	v.safe_push (processor_target_table[i].name);
+      break;
+    default:
+      break;
+    }
+
+  return v;
+}
+
+#undef  TARGET_GET_VALID_OPTION_VALUES
+#define TARGET_GET_VALID_OPTION_VALUES ix86_get_valid_option_values
+
 struct gcc_targetm_common targetm_common = TARGETM_COMMON_INITIALIZER;
