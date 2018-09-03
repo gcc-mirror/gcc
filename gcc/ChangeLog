@@ -1,3 +1,10 @@
+2018-09-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (*mov<mode>_hardfloat32): Remove %U from the
+	lxsdx and stxsdx alternatives.
+	(*mov<mode>_hardfloat64): Ditto.
+	* config/rs6000/vsx.md (*vsx_extract_<mode>_store): Ditto.
+
 2018-09-03  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87200
