@@ -1,3 +1,20 @@
+2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78595
+	* include/bits/stl_map.h (map::insert(_Pair&&))
+	(map::insert(const_iterator, _Pair&&)): Do emplace instead of insert.
+	* include/bits/stl_multimap.h (multimap::insert(_Pair&&))
+	(multimap::insert(const_iterator, _Pair&&)): Likewise.
+	* include/bits/unordered_map.h (unordered_map::insert(_Pair&&))
+	(unordered_map::insert(const_iterator, _Pair&&))
+	(unordered_multimap::insert(_Pair&&))
+	(unordered_multimap::insert(const_iterator, _Pair&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/78595.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/78595.cc: New test.
+	* testsuite/23_containers/unordered_map/modifiers/78595.cc: New test.
+	* testsuite/23_containers/unordered_multimap/modifiers/78595.cc: New
+	test.
+
 2018-09-02  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_iterator.h
