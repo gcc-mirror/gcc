@@ -1667,11 +1667,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ _Alloc_traits::destroy(_M_this->_M_impl, _M_ptr()); }
 
 	value_type&
-	_M_val() { return *reinterpret_cast<_Tp*>(&__buf); }
+	_M_val() { return *_M_ptr(); }
 
       private:
-	pointer
-	_M_ptr() { return pointer_traits<pointer>::pointer_to(_M_val()); }
+	_Tp*
+	_M_ptr() { return reinterpret_cast<_Tp*>(&__buf); }
 
 	vector* _M_this;
 	typename aligned_storage<sizeof(_Tp), alignof(_Tp)>::type __buf;
