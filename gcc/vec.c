@@ -201,21 +201,12 @@ qsort_chk_error (const void *p1, const void *p2, const void *p3,
   internal_error ("qsort checking failed");
 }
 
-/* Wrapper around qsort with checking that CMP is consistent on given input.
-
-   Strictly speaking, passing invalid (non-transitive, non-anti-commutative)
-   comparators to libc qsort can result in undefined behavior.  Therefore we
-   should ideally perform consistency checks prior to invoking qsort, but in
-   order to do that optimally we'd need to sort the array ourselves beforehand
-   with a sorting routine known to be "safe".  Instead, we expect that most
-   implementations in practice will still produce some permutation of input
-   array even for invalid comparators, which enables us to perform checks on
-   the output array.  */
+/* Verify anti-symmetry and transitivity for comparator CMP on sorted array
+   of N SIZE-sized elements pointed to by BASE.  */
 void
 qsort_chk (void *base, size_t n, size_t size,
 	   int (*cmp)(const void *, const void *))
 {
-  gcc_qsort (base, n, size, cmp);
 #if 0
 #define LIM(n) (n)
 #else

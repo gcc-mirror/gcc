@@ -229,4 +229,7 @@ gcc_qsort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
   mergesort (base, &c, n, base, (char *)buf);
   if (buf != scratch)
     free (buf);
+#if CHECKING_P
+  qsort_chk (vbase, n, size, cmp);
+#endif
 }
