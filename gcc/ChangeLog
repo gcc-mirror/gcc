@@ -1,3 +1,9 @@
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87177
+	* tree-ssa-sccvn.c (vuse_ssa_val): Revert previous change, keep
+	cleanup.
+
 2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
 
 	* bb-reorder.c (edge_order): Convert to C-qsort-style

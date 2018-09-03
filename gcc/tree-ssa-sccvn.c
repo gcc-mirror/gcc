@@ -485,16 +485,8 @@ vuse_ssa_val (tree x)
 
   do
     {
-      if (SSA_NAME_IS_DEFAULT_DEF (x))
-	return x;
-      vn_ssa_aux_t tem
-	= vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
-      /* For region-based VN this makes walk_non_aliased_vuses stop walking
-	 when we are about to look at a def outside of the region.  */
-      if (!tem || !tem->visited)
-	return NULL_TREE;
-      gcc_assert (tem->valnum != VN_TOP);
-      x = tem->valnum;
+      x = SSA_VAL (x);
+      gcc_assert (x != VN_TOP);
     }
   while (SSA_NAME_IN_FREE_LIST (x));
 

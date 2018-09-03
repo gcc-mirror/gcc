@@ -1,5 +1,11 @@
 2018-09-03  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87177
+	* gcc.dg/torture/pr87177.c: New testcase.
+	* gcc.dg/torture/pr87177-2.c: Likewise.
+
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87200
 	* gcc.dg/torture/pr87200.c: New testcase.
 
