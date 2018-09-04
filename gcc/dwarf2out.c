@@ -14325,13 +14325,13 @@ based_loc_descr (rtx reg, poly_int64 offset,
 
       if (elim != reg)
 	{
+	  /* Allow hard frame pointer here even if frame pointer
+	    isn't used since hard frame pointer is encoded with
+	    DW_OP_fbreg which uses the DW_AT_frame_base attribute,
+	    not hard frame pointer directly.  */
 	  elim = strip_offset_and_add (elim, &offset);
-	  gcc_assert ((SUPPORTS_STACK_ALIGNMENT
-		       && (elim == hard_frame_pointer_rtx
-			   || elim == stack_pointer_rtx))
-	              || elim == (frame_pointer_needed
-				  ? hard_frame_pointer_rtx
-				  : stack_pointer_rtx));
+	  gcc_assert (elim == hard_frame_pointer_rtx
+		      || elim == stack_pointer_rtx);
 
 	  /* If drap register is used to align stack, use frame
 	     pointer + offset to access stack variables.  If stack
@@ -20512,14 +20512,13 @@ compute_frame_pointer_to_fb_displacement (poly_int64 offset)
      in which to eliminate.  This is because it's stack pointer isn't 
      directly accessible as a register within the ISA.  To work around
      this, assume that while we cannot provide a proper value for
-     frame_pointer_fb_offset, we won't need one either.  */
+     frame_pointer_fb_offset, we won't need one either.  We can use
+     hard frame pointer in debug info even if frame pointer isn't used
+     since hard frame pointer in debug info is encoded with DW_OP_fbreg
+     which uses the DW_AT_frame_base attribute, not hard frame pointer
+     directly.  */
   frame_pointer_fb_offset_valid
-    = ((SUPPORTS_STACK_ALIGNMENT
-	&& (elim == hard_frame_pointer_rtx
-	    || elim == stack_pointer_rtx))
-       || elim == (frame_pointer_needed
-		   ? hard_frame_pointer_rtx
-		   : stack_pointer_rtx));
+    = (elim == hard_frame_pointer_rtx || elim == stack_pointer_rtx);
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
