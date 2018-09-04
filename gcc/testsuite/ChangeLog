@@ -1,3 +1,8 @@
+2018-09-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/86744
+	* gcc.target/i386/addr-sel-1.c: Don't xfail "b\\+1" scan.
+
 2018-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87211
