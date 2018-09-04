@@ -1,3 +1,10 @@
+2018-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87211
+	* tree-ssa-sccvn.c (visit_phi): When value-numbering to a
+	backedge value we're supposed to treat as VARYING also number
+	the PHI to VARYING in case it got a different value-number already.
+
 2018-09-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (vrp_can_optimize_bit_op): Remove.
