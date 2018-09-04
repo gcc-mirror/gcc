@@ -1,3 +1,10 @@
+2018-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87176
+	* tree-ssa-sccvn.c (visit_phi): Remove redundant allsame
+	variable.  When value-numbering a virtual PHI node make sure
+	to not value-number to the backedge value.
+
 2018-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Long Long, Hex Floats): Document support for
