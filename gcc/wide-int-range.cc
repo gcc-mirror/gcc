@@ -403,7 +403,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 
    It is up to the caller to perform the actual folding above.  */
 
-bool
+static bool
 wide_int_range_can_optimize_bit_op (tree_code code,
 				    const wide_int &lb, const wide_int &ub,
 				    const wide_int &mask)
@@ -440,6 +440,68 @@ wide_int_range_can_optimize_bit_op (tree_code code,
   if ((new_mask & lb) == (new_mask & ub))
     return true;
 
+  return false;
+}
+
+/* Helper function for wide_int_range_optimize_bit_op.
+
+   Calculates bounds and mask for a pair of ranges.  The mask is the
+   singleton range among the ranges, if any.  The bounds are the
+   bounds for the remaining range.  */
+
+bool
+wide_int_range_get_mask_and_bounds (wide_int &mask,
+				    wide_int &lower_bound,
+				    wide_int &upper_bound,
+				    const wide_int &vr0_min,
+				    const wide_int &vr0_max,
+				    const wide_int &vr1_min,
+				    const wide_int &vr1_max)
+{
+  if (wi::eq_p (vr1_min, vr1_max))
+    {
+      mask = vr1_min;
+      lower_bound = vr0_min;
+      upper_bound = vr0_max;
+      return true;
+    }
+  else if (wi::eq_p (vr0_min, vr0_max))
+    {
+      mask = vr0_min;
+      lower_bound = vr1_min;
+      upper_bound = vr1_max;
+      return true;
+    }
+  return false;
+}
+
+/* Optimize a bit operation (BIT_AND_EXPR or BIT_IOR_EXPR) if
+   possible.  If so, return TRUE and store the result in
+   [RES_LB, RES_UB].  */
+
+bool
+wide_int_range_optimize_bit_op (wide_int &res_lb, wide_int &res_ub,
+				enum tree_code code,
+				signop sign,
+				const wide_int &vr0_min,
+				const wide_int &vr0_max,
+				const wide_int &vr1_min,
+				const wide_int &vr1_max)
+{
+  gcc_assert (code == BIT_AND_EXPR || code == BIT_IOR_EXPR);
+
+  wide_int lower_bound, upper_bound, mask;
+  if (!wide_int_range_get_mask_and_bounds (mask, lower_bound, upper_bound,
+					   vr0_min, vr0_max, vr1_min, vr1_max))
+    return false;
+  if (wide_int_range_can_optimize_bit_op (code,
+					  lower_bound, upper_bound, mask))
+    {
+      wi::overflow_type ovf;
+      wide_int_binop (res_lb, code, lower_bound, mask, sign, &ovf);
+      wide_int_binop (res_ub, code, upper_bound, mask, sign, &ovf);
+      return true;
+    }
   return false;
 }
 
@@ -489,6 +551,10 @@ wide_int_range_bit_ior (wide_int &wmin, wide_int &wmax,
 			const wide_int &must_be_nonzero1,
 			const wide_int &may_be_nonzero1)
 {
+  if (wide_int_range_optimize_bit_op (wmin, wmax, BIT_IOR_EXPR, sign,
+				      vr0_min, vr0_max,
+				      vr1_min, vr1_max))
+    return true;
   wmin = must_be_nonzero0 | must_be_nonzero1;
   wmax = may_be_nonzero0 | may_be_nonzero1;
   /* If the input ranges contain only positive values we can
@@ -530,6 +596,10 @@ wide_int_range_bit_and (wide_int &wmin, wide_int &wmax,
 			const wide_int &must_be_nonzero1,
 			const wide_int &may_be_nonzero1)
 {
+  if (wide_int_range_optimize_bit_op (wmin, wmax, BIT_AND_EXPR, sign,
+				      vr0_min, vr0_max,
+				      vr1_min, vr1_max))
+    return true;
   wmin = must_be_nonzero0 & must_be_nonzero1;
   wmax = may_be_nonzero0 & may_be_nonzero1;
   /* If both input ranges contain only negative values we can

@@ -1067,49 +1067,6 @@ extract_range_from_multiplicative_op (value_range *vr,
     set_value_range_to_varying (vr);
 }
 
-/* Value range wrapper for wide_int_range_can_optimize_bit_op.
-
-   If a bit operation on two ranges can be easily optimized in terms
-   of a mask, store the optimized new range in VR and return TRUE.  */
-
-static bool
-vrp_can_optimize_bit_op (value_range *vr, enum tree_code code,
-			 const value_range *vr0, const value_range *vr1)
-{
-  tree lower_bound, upper_bound, mask;
-  if (code != BIT_AND_EXPR && code != BIT_IOR_EXPR)
-    return false;
-  if (range_int_cst_singleton_p (vr1))
-    {
-      if (!range_int_cst_p (vr0))
-	return false;
-      mask = vr1->min;
-      lower_bound = vr0->min;
-      upper_bound = vr0->max;
-    }
-  else if (range_int_cst_singleton_p (vr0))
-    {
-      if (!range_int_cst_p (vr1))
-	return false;
-      mask = vr0->min;
-      lower_bound = vr1->min;
-      upper_bound = vr1->max;
-    }
-  else
-    return false;
-  if (wide_int_range_can_optimize_bit_op (code,
-					  wi::to_wide (lower_bound),
-					  wi::to_wide (upper_bound),
-					  wi::to_wide (mask)))
-    {
-      tree min = int_const_binop (code, lower_bound, mask);
-      tree max = int_const_binop (code, upper_bound, mask);
-      set_value_range (vr, VR_RANGE, min, max, NULL);
-      return true;
-    }
-  return false;
-}
-
 /* If BOUND will include a symbolic bound, adjust it accordingly,
    otherwise leave it as is.
 
@@ -1704,9 +1661,6 @@ extract_range_from_binary_expr_1 (value_range *vr,
     }
   else if (code == BIT_AND_EXPR || code == BIT_IOR_EXPR || code == BIT_XOR_EXPR)
     {
-      if (vrp_can_optimize_bit_op (vr, code, &vr0, &vr1))
-	return;
-
       wide_int may_be_nonzero0, may_be_nonzero1;
       wide_int must_be_nonzero0, must_be_nonzero1;
       wide_int wmin, wmax;
