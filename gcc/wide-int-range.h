@@ -109,6 +109,13 @@ extern bool wide_int_range_abs (wide_int &min, wide_int &max,
 				const wide_int &vr0_min,
 				const wide_int &vr0_max,
 				bool overflow_undefined);
+extern bool wide_int_range_convert (wide_int &min, wide_int &max,
+				    signop inner_sign,
+				    unsigned inner_prec,
+				    signop outer_sign,
+				    unsigned outer_prec,
+				    const wide_int &vr0_min,
+				    const wide_int &vr0_max);
 extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
 				enum tree_code code,
 				signop sign, unsigned prec,

@@ -1,3 +1,12 @@
+2018-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int-range.cc (wide_int_range_convert): New.
+	* wide-int-range.h (wide_int_range_convert): New.
+	* tree-vrp.c (extract_range_from_unary_expr): Abstract wide int
+	code into wide_int_range_convert.
+	(extract_range_into_wide_ints): Do not munge anti range constants
+	into the entire domain.  Just return the range back.
+
 2018-09-04  Martin Liska  <mliska@suse.cz>
 
 	* genmatch.c (output_line_directive): Add new argument
