@@ -1,3 +1,8 @@
+2018-09-04  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.c (xtensa_expand_atomic): Reorder AND and
+	XOR operations in NAND case.
+
 2018-09-04  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int-range.cc (wide_int_range_convert): New.
