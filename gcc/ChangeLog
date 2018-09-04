@@ -1,3 +1,9 @@
+2018-09-04  Martin Liska  <mliska@suse.cz>
+
+	* genmatch.c (output_line_directive): Add new argument
+	fnargs.
+	(dt_simplify::gen_1): Encapsulate dump within __builtin_expect.
+
 2018-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (Option Summary): Add whitespace.
