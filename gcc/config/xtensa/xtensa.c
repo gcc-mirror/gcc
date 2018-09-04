@@ -1614,9 +1614,9 @@ xtensa_expand_atomic (enum rtx_code code, rtx target, rtx mem, rtx val,
       break;
 
     case MULT: /* NAND */
-      tmp = expand_simple_binop (SImode, XOR, old, ac.modemask,
+      tmp = expand_simple_binop (SImode, AND, old, val,
 				 NULL_RTX, 1, OPTAB_DIRECT);
-      tmp = expand_simple_binop (SImode, AND, tmp, val,
+      tmp = expand_simple_binop (SImode, XOR, tmp, ac.modemask,
 				 new_rtx, 1, OPTAB_DIRECT);
       break;
 
