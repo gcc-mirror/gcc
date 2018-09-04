@@ -1,5 +1,7 @@
 2018-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/invoke.texi (Option Summary): Add whitespace.
+
 	* doc/invoke.texi (Option Summary): Add -Waligned-new.
 
 2018-09-04  Richard Biener  <rguenther@suse.de>
