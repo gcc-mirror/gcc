@@ -735,6 +735,39 @@ wide_int_range_abs (wide_int &min, wide_int &max,
   return true;
 }
 
+/* Convert range in [VR0_MIN, VR0_MAX] with INNER_SIGN and INNER_PREC,
+   to a range in [MIN, MAX] with OUTER_SIGN and OUTER_PREC.
+
+   Return TRUE if we were able to successfully calculate the new range.
+
+   Caller is responsible for canonicalizing the resulting range.  */
+
+bool
+wide_int_range_convert (wide_int &min, wide_int &max,
+			signop inner_sign,
+			unsigned inner_prec,
+			signop outer_sign,
+			unsigned outer_prec,
+			const wide_int &vr0_min,
+			const wide_int &vr0_max)
+{
+  /* If the conversion is not truncating we can convert the min and
+     max values and canonicalize the resulting range.  Otherwise we
+     can do the conversion if the size of the range is less than what
+     the precision of the target type can represent.  */
+  if (outer_prec >= inner_prec
+      || wi::rshift (wi::sub (vr0_max, vr0_min),
+		     wi::uhwi (outer_prec, inner_prec),
+		     inner_sign) == 0)
+    {
+      min = wide_int::from (vr0_min, outer_prec, inner_sign);
+      max = wide_int::from (vr0_max, outer_prec, inner_sign);
+      return (!wi::eq_p (min, wi::min_value (outer_prec, outer_sign))
+	      || !wi::eq_p (max, wi::max_value (outer_prec, outer_sign)));
+    }
+  return false;
+}
+
 /* Calculate a division operation on two ranges and store the result in
    [WMIN, WMAX] U [EXTRA_MIN, EXTRA_MAX].
 

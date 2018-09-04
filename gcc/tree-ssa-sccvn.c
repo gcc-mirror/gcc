@@ -4180,7 +4180,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
       }
 
   /* If the value we want to use is the backedge and that wasn't visited
-     yet drop to VARYING.  This only happens when not iterating.
+     yet or if we should take it as VARYING but it has a non-VARYING
+     value drop to VARYING.  This only happens when not iterating.
      If we value-number a virtual operand never value-number to the
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
@@ -4190,7 +4191,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
       && TREE_CODE (backedge_val) == SSA_NAME
       && sameval == backedge_val
       && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
-	  || !SSA_VISITED (backedge_val)))
+	  || !SSA_VISITED (backedge_val)
+	  || SSA_VAL (backedge_val) != backedge_val))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);
