@@ -277,7 +277,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Warning Options,,Options to Request or Suppress Warnings}.
 @gccoptlist{-fsyntax-only  -fmax-errors=@var{n}  -Wpedantic @gol
 -pedantic-errors @gol
--w  -Wextra  -Wall  -Waddress  -Waggregate-return -Waligned-new @gol
+-w  -Wextra  -Wall  -Waddress  -Waggregate-return  -Waligned-new @gol
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size}
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
