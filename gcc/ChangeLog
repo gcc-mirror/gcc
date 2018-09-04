@@ -1,3 +1,18 @@
+2018-09-04  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (vrp_can_optimize_bit_op): Remove.
+	(extract_range_from_binary_expr_1): Do not call
+	vrp_can_optimize_bit_op.
+	* wide-int-range.cc (wide_int_range_can_optimize_bit_op): Make
+	static.
+	(wide_int_range_get_mask_and_bounds): New.
+	(wide_int_range_optimize_bit_op): New.
+	(wide_int_range_bit_ior): Call wide_int_range_optimize_bit_op.
+	(wide_int_range_bit_and): Same.
+	* wide-int-range.h (wide_int_range_can_optimize_bit_op): Remove.
+	(wide_int_range_optimize_bit_op): New.
+	(wide_int_range_get_mask_and_bounds): New.
+
 2018-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87176
