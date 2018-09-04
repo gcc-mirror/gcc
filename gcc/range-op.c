@@ -1413,6 +1413,11 @@ operator_bitwise_and::apply_mask_to_pair (irange& r, const wide_int& lb,
 					  const wide_int& mask) const
 {
   wide_int new_lb, new_ub;
+  // FIXME: remove me and remove add back the cast to wide-int-range.cc
+  extern bool wide_int_range_can_optimize_bit_op
+    (tree_code code,
+     const wide_int &lb, const wide_int &ub,
+     const wide_int &mask);
   if (wide_int_range_can_optimize_bit_op (BIT_AND_EXPR, lb, ub, mask))
     {
       new_lb = lb & mask;

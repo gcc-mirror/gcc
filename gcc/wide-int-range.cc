@@ -403,7 +403,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 
    It is up to the caller to perform the actual folding above.  */
 
-static bool
+bool
 wide_int_range_can_optimize_bit_op (tree_code code,
 				    const wide_int &lb, const wide_int &ub,
 				    const wide_int &mask)

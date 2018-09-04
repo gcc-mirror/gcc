@@ -596,7 +596,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
   if (gimple_code (stmt) == GIMPLE_SWITCH && arg == NULL)
     {
       tree taken_case = gimple_switch_default_label (as_a <gswitch *> (stmt));
-      basic_block dest_bb = label_to_block (CASE_LABEL (taken_case));
+      basic_block dest_bb = label_to_block (cfun, CASE_LABEL (taken_case));
       taken_edge = find_edge (m_path[0], dest_bb);
     }
 
