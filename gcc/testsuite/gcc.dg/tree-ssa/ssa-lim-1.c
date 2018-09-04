@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-lim2" } */
+/* { dg-options "-O -fdump-tree-lim2 -fdisable-tree-rvrp" } */
 
 /* This is a variant that does cause fold to place a cast to
    int before testing bit 1.  */

@@ -1,6 +1,6 @@
 /* PR tree-optimization/52267 */
 /* { dg-do link } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdisable-tree-rvrp" } */
 
 extern void link_error (void);
 

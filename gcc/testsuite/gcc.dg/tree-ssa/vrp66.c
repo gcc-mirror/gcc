@@ -1,6 +1,6 @@
 /* PR tree-optimization/52267 */
 /* { dg-do run { target { ! int16 } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdisable-tree-rvrp" } */
 
 extern void abort (void);
 
