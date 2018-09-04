@@ -1,3 +1,12 @@
+2018-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87198
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_XSAVEOPT_SET,
+	OPTION_MASK_ISA_XSAVES_SET, OPTION_MASK_ISA_XSAVEC_SET): Use
+	OPTION_MASK_ISA_XSAVE_SET instead of OPTION_MASK_ISA_XSAVE.
+	(OPTION_MASK_ISA_XSAVE_UNSET): Add OPTION_MASK_ISA_XSAVES_UNSET
+	and OPTION_MASK_ISA_XSAVEC_UNSET.
+
 2018-09-04  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/xtensa.c (xtensa_expand_atomic): Reorder AND and
