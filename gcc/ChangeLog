@@ -1,3 +1,10 @@
+2018-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/86593
+	* dwarf2out.c (based_loc_descr): Allow hard frame pointer even
+	if frame pointer isn't used.
+	(compute_frame_pointer_to_fb_displacement): Likewise.
+
 2018-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87198
