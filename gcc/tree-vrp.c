@@ -995,7 +995,7 @@ ranges_from_anti_range (const value_range *ar,
 /* Extract the components of a value range into a pair of wide ints in
    [WMIN, WMAX].
 
-   If the value range is anything but a VR_RANGE of constants, the
+   If the value range is anything but a VR_*RANGE of constants, the
    resulting wide ints are set to [-MIN, +MAX] for the type.  */
 
 static void inline
@@ -1003,7 +1003,10 @@ extract_range_into_wide_ints (const value_range *vr,
 			      signop sign, unsigned prec,
 			      wide_int &wmin, wide_int &wmax)
 {
-  if (range_int_cst_p (vr))
+  if ((vr->type == VR_RANGE
+       || vr->type == VR_ANTI_RANGE)
+      && TREE_CODE (vr->min) == INTEGER_CST
+      && TREE_CODE (vr->max) == INTEGER_CST)
     {
       wmin = wi::to_wide (vr->min);
       wmax = wi::to_wide (vr->max);
@@ -1850,44 +1853,41 @@ extract_range_from_unary_expr (value_range *vr,
 	  return;
 	}
 
-      /* If VR0 is varying and we increase the type precision, assume
-	 a full range for the following transformation.  */
-      if (vr0.type == VR_VARYING
-	  && INTEGRAL_TYPE_P (inner_type)
-	  && TYPE_PRECISION (inner_type) < TYPE_PRECISION (outer_type))
-	{
-	  vr0.type = VR_RANGE;
-	  vr0.min = TYPE_MIN_VALUE (inner_type);
-	  vr0.max = TYPE_MAX_VALUE (inner_type);
-	}
-
-      /* If VR0 is a constant range or anti-range and the conversion is
-	 not truncating we can convert the min and max values and
-	 canonicalize the resulting range.  Otherwise we can do the
-	 conversion if the size of the range is less than what the
-	 precision of the target type can represent and the range is
-	 not an anti-range.  */
-      if ((vr0.type == VR_RANGE
-	   || vr0.type == VR_ANTI_RANGE)
+      /* We normalize everything to a VR_RANGE, but for constant
+	 anti-ranges we must handle them by leaving the final result
+	 as an anti range.  This allows us to convert things like
+	 ~[0,5] seamlessly.  */
+      value_range_type vr_type = VR_RANGE;
+      if (vr0.type == VR_ANTI_RANGE
 	  && TREE_CODE (vr0.min) == INTEGER_CST
-	  && TREE_CODE (vr0.max) == INTEGER_CST
-	  && (TYPE_PRECISION (outer_type) >= TYPE_PRECISION (inner_type)
-	      || (vr0.type == VR_RANGE
-		  && integer_zerop (int_const_binop (RSHIFT_EXPR,
-		       int_const_binop (MINUS_EXPR, vr0.max, vr0.min),
-		         size_int (TYPE_PRECISION (outer_type)))))))
-	{
-	  tree new_min, new_max;
-	  new_min = force_fit_type (outer_type, wi::to_widest (vr0.min),
-				    0, false);
-	  new_max = force_fit_type (outer_type, wi::to_widest (vr0.max),
-				    0, false);
-	  set_and_canonicalize_value_range (vr, vr0.type,
-					    new_min, new_max, NULL);
-	  return;
-	}
+	  && TREE_CODE (vr0.max) == INTEGER_CST)
+	vr_type = VR_ANTI_RANGE;
 
-      set_value_range_to_varying (vr);
+      /* NOTES: Previously we were returning VARYING for all symbolics, but
+	 we can do better by treating them as [-MIN, +MAX].  For
+	 example, converting [SYM, SYM] from INT to LONG UNSIGNED,
+	 we can return: ~[0x8000000, 0xffffffff7fffffff].
+
+	 We were also failing to convert ~[0,0] from char* to unsigned,
+	 instead choosing to return VR_VARYING.  Now we return ~[0,0].  */
+      wide_int vr0_min, vr0_max, wmin, wmax;
+      signop inner_sign = TYPE_SIGN (inner_type);
+      signop outer_sign = TYPE_SIGN (outer_type);
+      unsigned inner_prec = TYPE_PRECISION (inner_type);
+      unsigned outer_prec = TYPE_PRECISION (outer_type);
+      extract_range_into_wide_ints (&vr0, inner_sign, inner_prec,
+				    vr0_min, vr0_max);
+      if (wide_int_range_convert (wmin, wmax,
+				  inner_sign, inner_prec,
+				  outer_sign, outer_prec,
+				  vr0_min, vr0_max))
+	{
+	  tree min = wide_int_to_tree (outer_type, wmin);
+	  tree max = wide_int_to_tree (outer_type, wmax);
+	  set_and_canonicalize_value_range (vr, vr_type, min, max, NULL);
+	}
+      else
+	set_value_range_to_varying (vr);
       return;
     }
   else if (code == ABS_EXPR)
