@@ -3405,8 +3405,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
 	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_insert_before ("typename ");
 	  if (TREE_CODE (parser->scope) == TYPENAME_TYPE)
-	    error_at (location,
+	    error_at (&richloc,
 		      "need %<typename%> before %<%T::%D::%E%> because "
 		      "%<%T::%D%> is a dependent scope",
 		      TYPE_CONTEXT (parser->scope),
@@ -3415,7 +3417,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		      TYPE_CONTEXT (parser->scope),
 		      TYPENAME_TYPE_FULLNAME (parser->scope));
 	  else
-	    error_at (location, "need %<typename%> before %<%T::%E%> because "
+	    error_at (&richloc, "need %<typename%> before %<%T::%E%> because "
 		      "%qT is a dependent scope",
 		      parser->scope, id, parser->scope);
 	}
@@ -4133,7 +4135,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	      else if (curr_type != CPP_STRING)
 		{
 		  rich_location rich_loc (line_table, tok->location);
-		  rich_loc.add_range (last_tok_loc, false);
+		  rich_loc.add_range (last_tok_loc);
 		  error_at (&rich_loc,
 			    "unsupported non-standard concatenation "
 			    "of string literals");
@@ -15240,11 +15242,15 @@ cp_parser_introduction_list (cp_parser *parser)
       if (is_pack)
 	cp_lexer_consume_token (parser->lexer);
 
+      tree identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	break;
+
       /* Build placeholder. */
       tree parm = build_nt (WILDCARD_DECL);
       DECL_SOURCE_LOCATION (parm)
 	= cp_lexer_peek_token (parser->lexer)->location;
-      DECL_NAME (parm) = cp_parser_identifier (parser);
+      DECL_NAME (parm) = identifier;
       WILDCARD_PACK_P (parm) = is_pack;
       vec_safe_push (introduction_vec, parm);
 
@@ -17755,7 +17761,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  || cp_parser_is_keyword (token, RID_STRUCT))
 	{
 	  gcc_rich_location richloc (token->location);
-	  richloc.add_range (input_location, false);
+	  richloc.add_range (input_location);
 	  richloc.add_fixit_remove ();
 	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
 		   "a scoped enum must not use the %qD keyword",
@@ -21372,16 +21378,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     }
   else if (token->type == CPP_CLOSE_PAREN)
     /* There are no parameters.  */
-    {
-#ifdef SYSTEM_IMPLICIT_EXTERN_C
-      if (in_system_header_at (input_location)
-	  && current_class_type == NULL
-	  && current_lang_name == lang_name_c)
-	return NULL_TREE;
-      else
-#endif
-	return void_list_node;
-    }
+    return void_list_node;
   /* Check for `(void)', too, which is a special case.  */
   else if (token->keyword == RID_VOID
 	   && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
@@ -27176,17 +27173,17 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
      matching identifiers.  */
   tree introduction_list = cp_parser_introduction_list (parser);
 
+  /* Look for closing brace for introduction.  */
+  if (!braces.require_close (parser))
+    return true;
+
   /* The introduction-list shall not be empty.  */
   int nargs = TREE_VEC_LENGTH (introduction_list);
   if (nargs == 0)
     {
-      error ("empty introduction-list");
+      /* In cp_parser_introduction_list we have already issued an error.  */
       return true;
     }
-
-  /* Look for closing brace for introduction.  */
-  if (!braces.require_close (parser))
-    return true;
 
   if (tmpl_decl == error_mark_node)
     {
@@ -28390,7 +28387,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	  gcc_rich_location richloc (location);
 	  if (gnu != decl_specs->gnu_thread_keyword_p)
 	    {
-	      richloc.add_range (decl_specs->locations[ds_thread], false);
+	      richloc.add_range (decl_specs->locations[ds_thread]);
 	      error_at (&richloc,
 			"both %<__thread%> and %<thread_local%> specified");
 	    }

@@ -54,7 +54,7 @@ template <class T>
 int tmplen ()
 {
   static const T
-    a[] = { 1, 2, 333, 0 };         // { dg-warning "\\\[\(-Wnarrowing|-Woverflow\)" "" { target { ! c++98_only } } }
+    a[] = { 1, 2, 333, 0 };         // { dg-warning "\\\[\(-Wnarrowing|-Woverflow\)" }
   return __builtin_strlen (a);
 }
 

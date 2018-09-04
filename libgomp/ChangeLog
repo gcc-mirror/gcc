@@ -1884,7 +1884,7 @@
 	* config/nvptx/affinity.c: Delete to use fallback implementation.
 
 2016-11-23  Alexander Monakov  <amonakov@ispras.ru>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 	    Dmitry Melnik  <dm@ispras.ru>
 
 	* Makefile.am (libgomp_la_SOURCES): Add atomic.c, icv.c, icv-device.c.
@@ -1986,7 +1986,7 @@
 	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
 
 2016-11-23  Martin Liska  <mliska@suse.cz>
-            Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	* plugin/hsa.h: New file.
 	* plugin/hsa_ext_finalize.h: New file.
@@ -2036,7 +2036,7 @@
 	* testsuite/Makefile.in: Likewise.
 
 2016-11-15  Martin Jambor  <mjambor@suse.cz>
-            Alexander Monakov  <amonakov@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.fortran/examples-4/device-1.f90 (e_57_1): Add
 	mapping clauses to target constructs.
@@ -2426,7 +2426,7 @@
 
 2016-05-16  Martin Jambor  <mjambor@suse.cz>
 
-        * testsuite/libgomp.hsa.c/complex-align-2.c: New test.
+	* testsuite/libgomp.hsa.c/complex-align-2.c: New test.
 
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 

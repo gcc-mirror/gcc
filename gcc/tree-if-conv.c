@@ -1079,7 +1079,7 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		&& !(flags & ECF_LOOPING_CONST_OR_PURE)
 		/* We can only vectorize some builtins at the moment,
 		   so restrict if-conversion to those.  */
-		&& DECL_BUILT_IN (fndecl))
+		&& fndecl_built_in_p (fndecl))
 	      return true;
 	  }
 	return false;

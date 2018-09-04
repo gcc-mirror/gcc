@@ -657,7 +657,6 @@ static void
 write_ts_function_decl_tree_pointers (struct output_block *ob, tree expr,
 				      bool ref_p)
 {
-  stream_write_tree (ob, DECL_VINDEX (expr), ref_p);
   /* DECL_STRUCT_FUNCTION is handled by lto_output_function.  */
   stream_write_tree (ob, DECL_FUNCTION_PERSONALITY (expr), ref_p);
   /* Don't stream these when passing things to a different target.  */
@@ -687,7 +686,9 @@ write_ts_type_common_tree_pointers (struct output_block *ob, tree expr,
   stream_write_tree (ob, TYPE_CONTEXT (expr), ref_p);
   /* TYPE_CANONICAL is re-computed during type merging, so no need
      to stream it here.  */
-  stream_write_tree (ob, TYPE_STUB_DECL (expr), ref_p);
+  /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
+     it can not be freed by free_lang_data without triggering ICEs in
+     langhooks.  */
 }
 
 /* Write all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR

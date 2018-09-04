@@ -217,6 +217,7 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
+       x = a;
 +[32m[K      break;[m[K
      [01;35m[Kcase 'b'[m[K:
      [01;35m[K^~~~~~~~[m[K

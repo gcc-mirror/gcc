@@ -14,7 +14,7 @@
 
 2018-05-09  Joshua Watt <jpewhacker@gmail.com>
 
-        * ax_pthread.m4: Add file.
+	* ax_pthread.m4: Add file.
 
 2018-05-08  Richard Biener  <rguenther@suse.de>
 
@@ -451,7 +451,7 @@
 
 	* config/mh-interix: Remove as unneeded.
 	* config/picflag.m4 (i[[34567]]86-*-interix3*):
-        Change triplet to i[[34567]]86-*-interix[[3-9]]*.
+	Change triplet to i[[34567]]86-*-interix[[3-9]]*.
 
 2012-01-04  Andreas Krebbel  <Andreas.Krebbel@de.ibm.com>
 

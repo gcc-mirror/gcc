@@ -47,6 +47,7 @@ struct s5 {
     i = z.i;
   } // { dg-warning "no return statement in function returning non-void" }
   /* { dg-begin-multiline-output "" }
+     i = z.i;
 +    return *this;
    }
    ^
@@ -63,6 +64,7 @@ struct s6 {
     i = z.i;
   } // { dg-warning "no return statement in function returning non-void" }
   /* { dg-begin-multiline-output "" }
+     i = z.i;
 +    return *this;
    }
    ^
@@ -81,6 +83,7 @@ struct s7 {
     i = z.i;
   } // { dg-warning "no return statement in function returning non-void" }
   /* { dg-begin-multiline-output "" }
+     i = z.i;
 +    return *this;
    }
    ^

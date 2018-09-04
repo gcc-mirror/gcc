@@ -161,7 +161,8 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     {
       t = va_arg (*text->args_ptr, tree);
       if (set_locus)
-	text->set_location (0, DECL_SOURCE_LOCATION (t), true);
+	text->set_location (0, DECL_SOURCE_LOCATION (t),
+			    SHOW_RANGE_WITH_CARET);
     }
 
   switch (*spec)

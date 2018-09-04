@@ -16832,6 +16832,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
 	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
 	    finish_range_for_decl (stmt, decl, expr);
+	    if (decomp_first && decl != error_mark_node)
+	      cp_finish_decomp (decl, decomp_first, decomp_cnt);
 	  }
 	else
 	  {
@@ -26077,7 +26079,7 @@ listify (tree arg)
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    
       gcc_rich_location richloc (input_location);
-      maybe_add_include_fixit (&richloc, "<initializer_list>");
+      maybe_add_include_fixit (&richloc, "<initializer_list>", false);
       error_at (&richloc,
 		"deducing from brace-enclosed initializer list"
 		" requires %<#include <initializer_list>%>");

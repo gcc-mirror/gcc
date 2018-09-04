@@ -1532,7 +1532,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
-	    cxx_readonly_error (operand, lv_asm);
+	    cxx_readonly_error (input_location, operand, lv_asm);
 
 	  tree *op = &operand;
 	  while (TREE_CODE (*op) == COMPOUND_EXPR)
@@ -2546,8 +2546,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
 	  if ((complain & tf_warning)
 	      && TREE_CODE (fn) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fn) == BUILT_IN_MEMSET
+	      && fndecl_built_in_p (fn, BUILT_IN_MEMSET)
 	      && vec_safe_length (*args) == 3
 	      && !any_type_dependent_arguments_p (*args))
 	    {

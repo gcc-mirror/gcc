@@ -61,20 +61,14 @@ inline int compare (linenum_type lhs, linenum_type rhs)
   return 0;
 }
 
-/* Reason for creating a new line map with linemap_add.  LC_ENTER is
-   when including a new file, e.g. a #include directive in C.
-   LC_LEAVE is when reaching a file's end.  LC_RENAME is when a file
-   name or line number changes for neither of the above reasons
-   (e.g. a #line directive in C); LC_RENAME_VERBATIM is like LC_RENAME
-   but a filename of "" is not specially interpreted as standard
-   input. LC_ENTER_MACRO is when a macro expansion is about to start.  */
+/* Reason for creating a new line map with linemap_add.  */
 enum lc_reason
 {
-  LC_ENTER = 0,
-  LC_LEAVE,
-  LC_RENAME,
-  LC_RENAME_VERBATIM,
-  LC_ENTER_MACRO,
+  LC_ENTER = 0,		/* Begin #include.  */
+  LC_LEAVE,		/* Return to including file.  */
+  LC_RENAME,		/* Other reason for name change.  */
+  LC_RENAME_VERBATIM,	/* Likewise, but "" != stdin.  */
+  LC_ENTER_MACRO,	/* Begin macro expansion.  */
   /* FIXME: add support for stringize and paste.  */
   LC_HWM /* High Water Mark.  */
 };
@@ -777,8 +771,7 @@ struct GTY(()) line_maps {
      may require allocating a new line_map.  */
   unsigned int max_column_hint;
 
-  /* If non-null, the allocator to use when resizing 'maps'.  If null,
-     xrealloc is used.  */
+  /* The allocator to use when resizing 'maps', defaults to xrealloc.  */
   line_map_realloc reallocator;
 
   /* The allocators' function used to know the actual size it
@@ -1283,6 +1276,36 @@ typedef struct
 
 class range_label;
 
+/* A hint to diagnostic_show_locus on how to print a source range within a
+   rich_location.
+
+   Typically this is SHOW_RANGE_WITH_CARET for the 0th range, and
+   SHOW_RANGE_WITHOUT_CARET for subsequent ranges,
+   but the Fortran frontend uses SHOW_RANGE_WITH_CARET repeatedly for
+   printing things like:
+
+       x = x + y
+           1   2
+       Error: Shapes for operands at (1) and (2) are not conformable
+
+   where "1" and "2" are notionally carets.  */
+
+enum range_display_kind
+{
+  /* Show the pertinent source line(s), the caret, and underline(s).  */
+  SHOW_RANGE_WITH_CARET,
+
+  /* Show the pertinent source line(s) and underline(s), but don't
+     show the caret (just an underline).  */
+  SHOW_RANGE_WITHOUT_CARET,
+
+  /* Just show the source lines; don't show the range itself.
+     This is for use when displaying some line-insertion fix-it hints (for
+     showing the user context on the change, for when it doesn't make sense
+     to highlight the first column on the next line).  */
+  SHOW_LINES_WITHOUT_RANGE
+};
+
 /* A location within a rich_location: a caret&range, with
    the caret potentially flagged for display, and an optional
    label.  */
@@ -1291,16 +1314,7 @@ struct location_range
 {
   source_location m_loc;
 
-  /* Should a caret be drawn for this range?  Typically this is
-     true for the 0th range, and false for subsequent ranges,
-     but the Fortran frontend overrides this for rendering things like:
-
-       x = x + y
-           1   2
-       Error: Shapes for operands at (1) and (2) are not conformable
-
-     where "1" and "2" are notionally carets.  */
-  bool m_show_caret_p;
+  enum range_display_kind m_range_display_kind;
 
   /* If non-NULL, the label for this range.  */
   const range_label *m_label;
@@ -1567,6 +1581,18 @@ class fixit_hint;
    added via
      richloc.add_fixit_replace ("color");
 
+   Example J: fix-it hint: line insertion
+   **************************************
+
+     3 | #include <stddef.h>
+     + |+#include <stdio.h>
+     4 | int the_next_line;
+
+   This rich location has a single range at line 4 column 1, marked
+   with SHOW_LINES_WITHOUT_RANGE (to avoid printing a meaningless caret
+   on the "i" of int).  It has a insertion fix-it hint of the string
+   "#include <stdio.h>\n".
+
    Adding a fix-it hint can fail: for example, attempts to insert content
    at the transition between two line maps may fail due to there being no
    source_location (aka location_t) value to express the new location.
@@ -1610,11 +1636,14 @@ class rich_location
   source_location get_loc (unsigned int idx) const;
 
   void
-  add_range (source_location loc,  bool show_caret_p,
+  add_range (source_location loc,
+	     enum range_display_kind range_display_kind
+	       = SHOW_RANGE_WITHOUT_CARET,
 	     const range_label *label = NULL);
 
   void
-  set_range (unsigned int idx, source_location loc, bool show_caret_p);
+  set_range (unsigned int idx, source_location loc,
+	     enum range_display_kind range_display_kind);
 
   unsigned int get_num_locations () const { return m_ranges.count (); }
 

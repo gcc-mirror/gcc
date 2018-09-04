@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-local-pure-const-details" } */
+/* { dg-options "-O2 -fdump-tree-local-pure-const-details -fdelete-null-pointer-checks" } */
 
 void *g(unsigned n)
 {

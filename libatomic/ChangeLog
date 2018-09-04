@@ -116,7 +116,7 @@
 	* configure.tgt: Add RISC-V tuple.
 
 2017-02-01  Richard Henderson  <rth@redhat.com>
-            Torvald Riegel  <triegel@redhat.com>
+	    Torvald Riegel  <triegel@redhat.com>
 
 	* acinclude.m4: Add #define FAST_ATOMIC_LDST_*.
 	* auto-config.h.in: Regenerate.

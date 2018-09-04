@@ -1,3 +1,38 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (braced_list_to_string): Remove eval parameter.
+	Add some more checks.  Always create zero-terminated STRING_CST.
+	* c-common.h (braced_list_to_string): Adjust prototype.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-common.c (c_cpp_error): Update for conversion of show_caret_p
+	to a tri-state.
+	(maybe_suggest_missing_token_insertion): Likewise.
+	(maybe_add_include_fixit): Add param "override_location".  If set,
+	and source-printing is enabled, then override the rich_location's
+	primary location with that of the insertion point for the fix-it
+	hint, marking it with SHOW_LINES_WITHOUT_RANGE.
+	* c-common.h (extern void maybe_add_include_fixit): Add bool
+	param.
+	* c-format.c (selftest::test_type_mismatch_range_labels): Update
+	for conversion of show_caret_p to a tri-state.
+	* c-warn.c (warn_for_restrict): Likewise.
+	* known-headers.cc
+	(suggest_missing_header::~suggest_missing_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (check_function_restrict): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(check_builtin_function_arguments): Likewise.
+	(reject_gcc_builtin): Likewise.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Likewise.
+
 2018-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87029, Implement -Wredundant-move.
@@ -56,8 +91,8 @@
 2018-08-17  Martin Liska  <mliska@suse.cz>
 
 	* c.opt: Remove Warn, Init and Report for options with
-        Ignore/Deprecated flag. Warning is done automatically for
-        Deprecated flags.
+	Ignore/Deprecated flag. Warning is done automatically for
+	Deprecated flags.
 
 2018-08-16  David Malcolm  <dmalcolm@redhat.com>
 
@@ -370,7 +405,7 @@
 
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* c-attribs.c (handle_no_sanitize_attribute): Iterate all
 	TREE_LIST values.
 
@@ -609,11 +644,11 @@
 
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
-        PR other/70268
-        * c.opt (-fmacro-prefix-map): New option.
-        * c-opts.c (c_common_handle_option): Handle it.
-        * c-lex.c (init_c_lex): Set remap_filename cpp callback.
-        * c-ppoutput.c (init_pp_output): Likewise.
+	PR other/70268
+	* c.opt (-fmacro-prefix-map): New option.
+	* c-opts.c (c_common_handle_option): Handle it.
+	* c-lex.c (init_c_lex): Set remap_filename cpp callback.
+	* c-ppoutput.c (init_pp_output): Likewise.
 
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
@@ -682,7 +717,7 @@
 	Update copyright years.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-pragma.c (init_pragma): Register pragma GCC unroll.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_UNROLL.
@@ -804,7 +839,7 @@
 	* c-common.h (c_switch_covers_all_cases_p): Declare.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* array-notation-common.c: Delete.
 	* c-cilkplus.c: Ditto.
@@ -1162,8 +1197,8 @@
 	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
-            David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* c-common.c (c_common_fixed_point_type_for_size): Use new mode
 	iterators.
@@ -1625,7 +1660,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* c-common.h (cilk_gimplify_call_params_in_spawned_fn): Remove
 	prototype.
 	(cilk_install_body_pedigree_operations): Likewise.
@@ -1949,8 +1984,8 @@
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78165
-        * c-pretty-print (pp_c_integer_constant): Avoid formatting type
-        suffix.
+	* c-pretty-print (pp_c_integer_constant): Avoid formatting type
+	suffix.
 
 2016-12-07  Martin Sebor  <msebor@redhat.com>
 

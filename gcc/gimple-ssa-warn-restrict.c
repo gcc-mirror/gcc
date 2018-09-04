@@ -1777,7 +1777,7 @@ check_call (gcall *call)
     return;
 
   tree func = gimple_call_fndecl (call);
-  if (!func || DECL_BUILT_IN_CLASS (func) != BUILT_IN_NORMAL)
+  if (!func || !fndecl_built_in_p (func, BUILT_IN_NORMAL))
     return;
 
   /* Argument number to extract from the call (depends on the built-in

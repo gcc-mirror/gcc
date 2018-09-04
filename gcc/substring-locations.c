@@ -171,7 +171,7 @@ format_warning_n_va (const substring_loc &fmt_loc,
   gcc_rich_location richloc (primary_loc, primary_label);
 
   if (param_loc != UNKNOWN_LOCATION)
-    richloc.add_range (param_loc, false, param_label);
+    richloc.add_range (param_loc, SHOW_RANGE_WITHOUT_CARET, param_label);
 
   if (!err && corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, corrected_substring);

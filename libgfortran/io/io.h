@@ -100,7 +100,8 @@ array_loop_spec;
 
 /* Subroutine formatted_dtio (struct, unit, iotype, v_list, iostat,
 			      iomsg, (_iotype), (_iomsg))  */
-typedef void (*formatted_dtio)(void *, GFC_INTEGER_4 *, char *, gfc_array_i4 *,
+typedef void (*formatted_dtio)(void *, GFC_INTEGER_4 *, char *,
+			       gfc_full_array_i4 *,
 			       GFC_INTEGER_4 *, char *,
 			       gfc_charlen_type, gfc_charlen_type);
 

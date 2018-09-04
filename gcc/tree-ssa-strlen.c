@@ -336,7 +336,7 @@ get_stridx (tree exp)
 	return idx;
     }
 
-  s = string_constant (exp, &o);
+  s = string_constant (exp, &o, NULL, NULL);
   if (s != NULL_TREE
       && (o == NULL_TREE || tree_fits_shwi_p (o))
       && TREE_STRING_LENGTH (s) > 0)
@@ -581,7 +581,7 @@ get_string_length (strinfo *si)
 
       gcc_assert (is_gimple_call (stmt));
       callee = gimple_call_fndecl (stmt);
-      gcc_assert (callee && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL);
+      gcc_assert (callee && fndecl_built_in_p (callee, BUILT_IN_NORMAL));
       lhs = gimple_call_lhs (stmt);
       /* unshare_strinfo is intentionally not called here.  The (delayed)
 	 transformation of strcpy or strcat into stpcpy is done at the place
@@ -1160,7 +1160,9 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 	 suggests if it's treated as a poor-man's flexible array member.  */
       src = TREE_OPERAND (src, 0);
       bool src_is_array = TREE_CODE (TREE_TYPE (src)) == ARRAY_TYPE;
-      if (src_is_array && !array_at_struct_end_p (src))
+      if (src_is_array
+	  && TREE_CODE (src) != MEM_REF
+	  && !array_at_struct_end_p (src))
 	{
 	  tree type = TREE_TYPE (src);
 	  if (tree size = TYPE_SIZE_UNIT (type))

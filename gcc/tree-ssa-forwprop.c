@@ -1071,7 +1071,7 @@ simplify_gimple_switch_label_vec (gswitch *stmt, tree index_type)
       for (i = 0; i < gimple_switch_num_labels (stmt); i++)
 	{
 	  tree elt = gimple_switch_label (stmt, i);
-	  basic_block target = label_to_block (CASE_LABEL (elt));
+	  basic_block target = label_to_block (cfun, CASE_LABEL (elt));
 	  bitmap_set_bit (target_blocks, target->index);
 	}
       for (ei = ei_start (gimple_bb (stmt)->succs); (e = ei_safe_edge (ei)); )
@@ -1278,7 +1278,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 		 constant length.  */
 	      callee1 = gimple_call_fndecl (stmt1);
 	      if (callee1 == NULL_TREE
-		  || DECL_BUILT_IN_CLASS (callee1) != BUILT_IN_NORMAL
+		  || !fndecl_built_in_p (callee1, BUILT_IN_NORMAL)
 		  || gimple_call_num_args (stmt1) != 3)
 		break;
 	      if (DECL_FUNCTION_CODE (callee1) != BUILT_IN_MEMCPY
@@ -1290,7 +1290,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 	      lhs1 = gimple_call_lhs (stmt1);
 	      if (!tree_fits_uhwi_p (len1))
 		break;
-	      str1 = string_constant (src1, &off1);
+	      str1 = string_constant (src1, &off1, NULL, NULL);
 	      if (str1 == NULL_TREE)
 		break;
 	      if (!tree_fits_uhwi_p (off1)
@@ -2538,7 +2538,7 @@ pass_forwprop::execute (function *fun)
 	      {
 		tree callee = gimple_call_fndecl (stmt);
 		if (callee != NULL_TREE
-		    && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL)
+		    && fndecl_built_in_p (callee, BUILT_IN_NORMAL))
 		  changed = simplify_builtin_call (&gsi, callee);
 		break;
 	      }

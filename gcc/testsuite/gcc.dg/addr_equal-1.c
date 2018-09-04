@@ -2,7 +2,7 @@
 /* { dg-require-effective-target nonpic } */
 /* { dg-require-weak "" } */
 /* { dg-require-alias "" } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fdelete-null-pointer-checks" } */
 /* { dg-skip-if "" { powerpc-ibm-aix* } } */
 void abort (void);
 extern int undef_var0, undef_var1;

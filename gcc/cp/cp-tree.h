@@ -7388,7 +7388,8 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 extern void cxx_incomplete_type_inform 	        (const_tree);
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
-extern void cxx_readonly_error			(tree, enum lvalue_use);
+extern void cxx_readonly_error			(location_t, tree,
+						 enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 extern int abstract_virtuals_error		(abstract_class_use, tree);

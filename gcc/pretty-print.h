@@ -36,7 +36,8 @@ struct text_info
   void **x_data;
   rich_location *m_richloc;
 
-  void set_location (unsigned int idx, location_t loc, bool caret_p);
+  void set_location (unsigned int idx, location_t loc,
+		     enum range_display_kind range_display_kind);
   location_t get_location (unsigned int index_of_location) const;
 };
 

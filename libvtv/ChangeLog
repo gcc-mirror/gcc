@@ -166,7 +166,7 @@
 	* libvtv/configure.ac : Add ACX_LT_HOST_FLAGS. Define VTV_CYGMIN.
 	* libvtv/configure.tgt : (x86_64-*-cygwin*, i?86-*-cygwin*,
 	x86_64-*-mingw*)
-        (i?86-*-mingw*): Add to supported targets.
+	(i?86-*-mingw*): Add to supported targets.
 	* libvtv/vtv_fail.cc : Skip inclusion of execinfo.h on Cygwin and MinGW.
 	(log_error_message): Skip calls to backtrace and backtrace_symbols_fd
 	on Cygwin and MinGW.

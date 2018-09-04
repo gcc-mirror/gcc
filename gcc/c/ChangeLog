@@ -1,3 +1,37 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call braced_list_to_string here ...
+	* c-parser.c (c_parser_declaration_or_fndef): ... instead of here.
+
+2018-08-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-parser.c (c_parser_gimple_binary_expression): Accept infix
+	"__MULT_HIGHPART" for MULT_HIGHPART_EXPR.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-decl.c (implicitly_declare): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* c-objc-common.c (c_tree_printer): Update for conversion of
+	show_caret_p to a tri-state.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (locate_old_decl): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(diagnose_mismatched_decls): Likewise.
+	(merge_decls): Likewise.
+	(warn_if_shadowing): Likewise.
+	(pushdecl): Likewise.
+	(implicitly_declare): Likewise.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Likewise.
+	* c-tree.h (C_DECL_ISNT_PROTOTYPE): Likewise.
+	* c-typeck.c (build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+
 2018-08-20  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/84889
@@ -281,7 +315,7 @@
 	DEBUG_BEGIN_STMTs.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-parser.c (c_parser_while_statement): Add unroll parameter and
 	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
@@ -398,7 +432,7 @@
 	c_switch_covers_all_cases_p returns true.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* Make-lang.in (c/c-array-notation.o): Remove.
 	* c-array-notation.c: Delete.
@@ -1115,7 +1149,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* c-gimplify.c (c_gimplify_expr): Remove calls to
 	cilk_gimplifY_call_params_in_spawned_fn.
 

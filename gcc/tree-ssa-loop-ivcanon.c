@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-cfgcleanup.h"
 #include "builtins.h"
+#include "tree-ssa-sccvn.h"
 
 /* Specifies types of loops that may be unrolled.  */
 
@@ -1318,50 +1319,6 @@ canonicalize_induction_variables (void)
   return 0;
 }
 
-/* Propagate constant SSA_NAMEs defined in basic block BB.  */
-
-static void
-propagate_constants_for_unrolling (basic_block bb)
-{
-  /* Look for degenerate PHI nodes with constant argument.  */
-  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
-    {
-      gphi *phi = gsi.phi ();
-      tree result = gimple_phi_result (phi);
-      tree arg = gimple_phi_arg_def (phi, 0);
-
-      if (! SSA_NAME_OCCURS_IN_ABNORMAL_PHI (result)
-	  && gimple_phi_num_args (phi) == 1
-	  && CONSTANT_CLASS_P (arg))
-	{
-	  replace_uses_by (result, arg);
-	  gsi_remove (&gsi, true);
-	  release_ssa_name (result);
-	}
-      else
-	gsi_next (&gsi);
-    }
-
-  /* Look for assignments to SSA names with constant RHS.  */
-  for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi); )
-    {
-      gimple *stmt = gsi_stmt (gsi);
-      tree lhs;
-
-      if (is_gimple_assign (stmt)
-	  && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt)) == tcc_constant
-	  && (lhs = gimple_assign_lhs (stmt), TREE_CODE (lhs) == SSA_NAME)
-	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-	{
-	  replace_uses_by (lhs, gimple_assign_rhs1 (stmt));
-	  gsi_remove (&gsi, true);
-	  release_ssa_name (lhs);
-	}
-      else
-	gsi_next (&gsi);
-    }
-}
-
 /* Process loops from innermost to outer, stopping at the innermost
    loop we unrolled.  */
 
@@ -1512,10 +1469,14 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer)
 	  EXECUTE_IF_SET_IN_BITMAP (fathers, 0, i, bi)
 	    {
 	      loop_p father = get_loop (cfun, i);
-	      basic_block *body = get_loop_body_in_dom_order (father);
-	      for (unsigned j = 0; j < father->num_nodes; j++)
-		propagate_constants_for_unrolling (body[j]);
-	      free (body);
+	      bitmap exit_bbs = BITMAP_ALLOC (NULL);
+	      loop_exit *exit = father->exits->next;
+	      while (exit->e)
+		{
+		  bitmap_set_bit (exit_bbs, exit->e->dest->index);
+		  exit = exit->next;
+		}
+	      do_rpo_vn (cfun, loop_preheader_edge (father), exit_bbs);
 	    }
 	  BITMAP_FREE (fathers);
 

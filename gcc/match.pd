@@ -776,6 +776,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_not (bit_and:cs (bit_not @0) @1))
  (bit_ior @0 (bit_not @1)))
 
+/* ~(~a | b) --> a & ~b */
+(simplify
+ (bit_not (bit_ior:cs (bit_not @0) @1))
+ (bit_and @0 (bit_not @1)))
+
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
 (simplify
@@ -981,6 +986,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (bit_ior:c @0 @1) (bit_xor:c @1 (bit_not @0)))
  (bit_and @0 @1))
 
+/* (~x | y) & (x | ~y) -> ~(x ^ y) */
+(simplify
+ (bit_and (bit_ior:cs (bit_not @0) @1) (bit_ior:cs @0 (bit_not @1)))
+ (bit_not (bit_xor @0 @1)))
+
+/* (~x | y) ^ (x | ~y) -> x ^ y */
+(simplify
+ (bit_xor (bit_ior:c (bit_not @0) @1) (bit_ior:c @0 (bit_not @1)))
+ (bit_xor @0 @1))
+
 /* ~x & ~y -> ~(x | y)
    ~x | ~y -> ~(x & y) */
 (for op (bit_and bit_ior)
@@ -1027,7 +1042,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for opo (bit_and bit_xor)
      opi (bit_xor bit_and)
  (simplify
-  (opo:c (opi:c @0 @1) @1) 
+  (opo:c (opi:cs @0 @1) @1)
   (bit_and (bit_not @0) @1)))
 
 /* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both

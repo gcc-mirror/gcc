@@ -1,3 +1,238 @@
+2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/78179
+	* testsuite/26_numerics/headers/cmath/hypot-long-double.cc: New test
+	that runs the long double part of hypot.cc.
+	* testsuite/26_numerics/headers/cmath/hypot.cc: Disable long double
+	tests unless TEST_HYPOT_LONG_DOUBLE is defined.
+
+	* include/bits/stl_vector.h (vector::_Temporary_value::_M_ptr):
+	Return raw pointer not allocator's pointer type.
+	(vector::_Temporary_value::_M_val): Use _M_ptr.
+
+	PR libstdc++/87194
+	* include/bits/stl_map.h
+	(map::map(initializer_list<value_type>, const Compare&, const Alloc&))
+	(map::map(initializer_list<value_type>, const Alloc&))
+	(map::map(InputIterator, InputIterator, const Alloc&))
+	(map::map(InputIterator, InputIterator))
+	(map::map(InputIterator, InputIterator, const Compare&, const Alloc&))
+	(map::insert(InputIterator, InputIterator)):
+	Call _M_insert_range_unique instead of _M_insert_unique.
+	* include/bits/stl_multimap.h
+	(multimap::multimap(initializer_list<value_type>, const C&, const A&))
+	(multimap::multimap(initializer_list<value_type>, const A&))
+	(multimap::multimap(InputIterator, InputIterator, const A&))
+	(multimap::multimap(InputIterator, InputIterator))
+	(multimap::multimap(InputIterator, InputIterator, const C&, const A&))
+	(multimap::insert(InputIterator, InputIterator)): Call
+	_M_insert_range_equal instead of _M_insert_equal.
+	* include/bits/stl_multiset.h
+	(multiset::multiset(InputIterator, InputIterator))
+	(multiset::multiset(InputIterator, InputIterator, const C&, const A&))
+	(multiset::multiset(initializer_list<value_type>, const C&, const A&))
+	(multiset::multiset(initializer_list<value_type>, const A&))
+	(multiset::multiset(InputIterator, InputIterator, const A&))
+	(multiset::insert(InputIterator, InputIterator)): Call
+	_M_insert_range_equal instead of _M_insert_equal.
+	* include/bits/stl_set.h
+	(set::set(InputIterator, InputIterator))
+	(set::set(InputIterator, InputIterator, const Compare&, const Alloc&))
+	(set::set(initializer_list<value_type>, const Compare&, const Alloc&))
+	(set::set(initializer_list<value_type>, const Alloc&))
+	(set::set(InputIterator, InputIterator, const Alloc&))
+	(set::insert(InputIterator, InputIterator)):
+	Call _M_insert_range_unique instead of _M_insert_unique.
+	* include/bits/stl_tree.h
+	[__cplusplus >= 201103L] (_Rb_tree::__same_value_type): New alias
+	template for SFINAE constraints.
+	[__cplusplus >= 201103L] (_Rb_tree::_M_insert_range_unique): Pair of
+	constrained overloads that either insert or emplace, depending on
+	iterator's value_type.
+	[__cplusplus >= 201103L] (_Rb_tree::_M_insert_range_equal): Likewise.
+	[__cplusplus < 201103L] (_Rb_tree::_M_insert_range_unique)
+	(_Rb_tree::_M_insert_range_equal): New functions replacing range
+	versions of _M_insert_unique and _M_insert_equal.
+	(_Rb_tree::_M_insert_unique(_InputIterator, _InputIterator))
+	(_Rb_tree::_M_insert_equal(_InputIterator, _InputIterator)): Remove.
+	* testsuite/23_containers/map/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/multiset/modifiers/insert/87194.cc: New test.
+	* testsuite/23_containers/set/modifiers/insert/87194.cc: New test.
+
+	PR libstdc++/78595
+	* include/bits/stl_map.h (map::insert(_Pair&&))
+	(map::insert(const_iterator, _Pair&&)): Do emplace instead of insert.
+	* include/bits/stl_multimap.h (multimap::insert(_Pair&&))
+	(multimap::insert(const_iterator, _Pair&&)): Likewise.
+	* include/bits/unordered_map.h (unordered_map::insert(_Pair&&))
+	(unordered_map::insert(const_iterator, _Pair&&))
+	(unordered_multimap::insert(_Pair&&))
+	(unordered_multimap::insert(const_iterator, _Pair&&)): Likewise.
+	* testsuite/23_containers/map/modifiers/insert/78595.cc: New test.
+	* testsuite/23_containers/multimap/modifiers/insert/78595.cc: New test.
+	* testsuite/23_containers/unordered_map/modifiers/78595.cc: New test.
+	* testsuite/23_containers/unordered_multimap/modifiers/78595.cc: New
+	test.
+
+2018-09-02  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_iterator.h
+	(_Safe_iterator<_It, _Seq, _Cat>::_Self): New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>::_Self):
+	New.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::_OtherSelf): New.
+	(_GLIBCXX_DEBUG_VERIFY_OPERANDS, _GLIBCXX_DEBUG_VERIFY_EQ_OPERANDS)
+	(_GLIBCXX_DEBUG_VERIFY_REL_OPERANDS)
+	(_GLIBCXX_DEBUG_VERIFY_DIST_OPERANDS): Define macros.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::operator+(difference_type)): Use latters, inline as friend.
+	(_Safe_iterator<_It, _Seq, std::random_access_iterator_tag>
+	::operator-(difference_type)): Likewise.
+	(operator==(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator!=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator<(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator<=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator>(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator>=(const _Safe_iterator<>&, const _Safe_iterator<>&)):
+	Likewise.
+	(operator-(const _Safe_iterator<>&, const _Safe_iterator<>&)): Likewise.
+	(operator+(difference_type, const _Safe_iterator<>&)): Likewise.
+	(operator-(const _Safe_iterator<>&, difference_type)): Likewise.
+	* include/debug/safe_iterator.tcc
+	(_Safe_iterator<>::_M_can_advance(difference_type)): Take parameter by
+	copy.
+	* include/debug/safe_local_iterator.h
+	(_Safe_local_iterator<_It, _Seq>::_Self): New.
+	(_Safe_local_iterator<_It, _Seq>::_OtherSelf): New.
+	(_GLIBCXX_DEBUG_VERIFY_OPERANDS): Define macro.
+	(operator==(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): Use latter, inline as friend.
+	(operator!=(const _Safe_local_iterator<>&,
+	const _Safe_local_iterator<>&)): Likewise.
+	* testsuite/util/testsuite_containers.h: Include utility.
+	(struct forward_members_unordered<_Tp, bool>): Remove 2nd template
+	parameter.
+	(forward_members_unordered<>::forward_members_unordered(value_type&)):
+	Add using namespace std::rel_ops.
+	Add iterator_concept_checks on local_iterator and const_local_iterator.
+	Add asserts on comparison between const_local_iterator and
+	local_iterator.
+	(struct forward_members_unordered<_Tp, false>): Remove partial
+	specialization.
+	* testsuite/23_containers/forward_list/types/1.cc: New.
+	* testsuite/23_containers/list/types/1.cc: New.
+
+2018-09-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/profile_mode.xml: Update three ieeexplore.ieee.org
+	references.
+
+2018-08-31  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/10.cc:
+	Add dg-require-fileio.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/11.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/inserters_extractors/wchar_t/5.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/25_algorithms/copy/streambuf_iterators/wchar_t/4.cc:
+	Likewise.
+	* testsuite/25_algorithms/find/istreambuf_iterators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-1.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-3.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/close/wchar_t/12790-4.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/11543.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-3.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/12790-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/12790-4.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ifstream/open/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_character/wchar_t/4.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/2.cc:
+	Likewise.
+	* testsuite/27_io/basic_istream/get/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/getline/wchar_t/5.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/2.cc: Likewise.
+	* testsuite/27_io/basic_istream/ignore/wchar_t/3.cc: Likewise.
+	* testsuite/27_io/basic_istream/seekg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_istream/tellg/wchar_t/sstream.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/cons/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ofstream/open/wchar_t/1.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/1.cc:
+	Likewise.
+	* testsuite/27_io/objects/wchar_t/10.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-2.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-3.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-4.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/12048-5.cc: Likewise.
+	* testsuite/experimental/string_view/inserters/wchar_t/2.cc:
+	Likewise.
+	* testsuite/ext/stdio_sync_filebuf/wchar_t/1.cc: Likewise.
+
+2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* testsuite/experimental/propagate_const/observers/1.cc: Make
+	dependence on -fdelete-null-pointer-checks explicit.
+
+2018-08-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (__clp2): Fix calculation for LLP64
+	targets where sizeof(size_t) > sizeof(long). Avoid undefined shifts
+	of the number of bits in the type.
+	* include/std/bit (__ceil2): Avoid undefined shifts.
+	* testsuite/26_numerics/bit/bit.pow.two/ceil2.cc: Test values with
+	the most signifiant bit set.
+
+	* config/abi/pre/gnu.ver: Add missing exports for mingw.
+
+	* include/ext/pointer.h (_Pointer_adapter): Define operators for
+	pointer arithmetic using long long offsets.
+	* testsuite/ext/ext_pointer/1.cc: Test pointer arithmetic using
+	long long values.
+
+2018-08-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/31413
+	* testsuite/22_locale/time_get/get_date/wchar_t/4.cc: Check D_FMT
+	string for alternative format.
+
+2018-08-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87116
+	* src/filesystem/std-path.cc (path::lexically_normal): When handling
+	a dot-dot filename, preserve an empty final component in the iteration
+	sequence.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Use preferred-separator for
+	root-directory.
+	* testsuite/27_io/filesystem/path/generation/normal.cc: Add new tests
+	for more than two adjacent dot-dot filenames.
+	[_GLIBCXX_FILESYSTEM_IS_WINDOWS]: Replace slashes with
+	preferred-separator in expected normalized strings.
+
 2018-08-25  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR libstdc++/70694

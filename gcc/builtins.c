@@ -208,15 +208,6 @@ is_builtin_name (const char *name)
   return false;
 }
 
-
-/* Return true if DECL is a function symbol representing a built-in.  */
-
-bool
-is_builtin_fn (tree decl)
-{
-  return TREE_CODE (decl) == FUNCTION_DECL && DECL_BUILT_IN (decl);
-}
-
 /* Return true if NODE should be considered for inline expansion regardless
    of the optimization level.  This means whenever a function is invoked with
    its "internal" name, which normally contains the prefix "__builtin".  */
@@ -576,7 +567,7 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
 tree
 c_strlen (tree src, int only_value, unsigned eltsize)
 {
-  gcc_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
+  gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
@@ -598,7 +589,7 @@ c_strlen (tree src, int only_value, unsigned eltsize)
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
   tree memsize;
-  src = string_constant (src, &byteoff, &memsize);
+  src = string_constant (src, &byteoff, &memsize, NULL);
   if (src == 0)
     return NULL_TREE;
 
@@ -665,10 +656,10 @@ c_strlen (tree src, int only_value, unsigned eltsize)
      a null character if we can represent it as a single HOST_WIDE_INT.  */
   if (byteoff == 0)
     eltoff = 0;
-  else if (! tree_fits_shwi_p (byteoff))
+  else if (! tree_fits_uhwi_p (byteoff) || tree_to_uhwi (byteoff) % eltsize)
     eltoff = -1;
   else
-    eltoff = tree_to_shwi (byteoff) / eltsize;
+    eltoff = tree_to_uhwi (byteoff) / eltsize;
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
@@ -699,6 +690,11 @@ c_strlen (tree src, int only_value, unsigned eltsize)
      calculation is needed.  */
   unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
 				strelts - eltoff);
+
+  /* Don't know what to return if there was no zero termination. 
+     Ideally this would turn into a gcc_checking_assert over time.  */
+  if (len > maxelts - eltoff)
+    return NULL_TREE;
 
   return ssize_int (len);
 }
@@ -2979,6 +2975,10 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   tree func = get_callee_fndecl (exp);
 
   tree len = c_strlen (src, 0);
+  /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
+     so these conversions aren't necessary.  */
+  if (len)
+    len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
   if (TREE_CODE (bound) == INTEGER_CST)
     {
@@ -2993,7 +2993,6 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
       if (!len || TREE_CODE (len) != INTEGER_CST)
 	return NULL_RTX;
 
-      len = fold_convert_loc (loc, size_type_node, len);
       len = fold_build2_loc (loc, MIN_EXPR, size_type_node, len, bound);
       return expand_expr (len, target, target_mode, EXPAND_NORMAL);
     }
@@ -8154,11 +8153,8 @@ builtin_mathfn_code (const_tree t)
     return END_BUILTINS;
 
   fndecl = get_callee_fndecl (t);
-  if (fndecl == NULL_TREE
-      || TREE_CODE (fndecl) != FUNCTION_DECL
-      || ! DECL_BUILT_IN (fndecl)
-      || DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_MD)
-    return END_BUILTINS;
+  if (fndecl == NULL_TREE || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+      return END_BUILTINS;
 
   parmlist = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
   init_const_call_expr_arg_iterator (t, &iter);
@@ -8313,9 +8309,8 @@ fold_builtin_expect (location_t loc, tree arg0, tree arg1, tree arg2,
 
   if (TREE_CODE (inner) == CALL_EXPR
       && (fndecl = get_callee_fndecl (inner))
-      && (DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL, BUILT_IN_EXPECT)
-	  || DECL_BUILT_IN_P (fndecl, BUILT_IN_NORMAL,
-			      BUILT_IN_EXPECT_WITH_PROBABILITY)))
+      && (fndecl_built_in_p (fndecl, BUILT_IN_EXPECT)
+	  || fndecl_built_in_p (fndecl, BUILT_IN_EXPECT_WITH_PROBABILITY)))
     return arg0;
 
   inner = inner_arg0;
@@ -9628,9 +9623,7 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
 {
   tree ret = NULL_TREE;
   tree fndecl = get_callee_fndecl (exp);
-  if (fndecl
-      && TREE_CODE (fndecl) == FUNCTION_DECL
-      && DECL_BUILT_IN (fndecl)
+  if (fndecl && fndecl_built_in_p (fndecl)
       /* If CALL_EXPR_VA_ARG_PACK is set, the arguments aren't finalized
 	 yet.  Defer folding until we see all the arguments
 	 (after inlining).  */
@@ -9644,10 +9637,7 @@ fold_call_expr (location_t loc, tree exp, bool ignore)
       if (nargs && TREE_CODE (CALL_EXPR_ARG (exp, nargs - 1)) == CALL_EXPR)
 	{
 	  tree fndecl2 = get_callee_fndecl (CALL_EXPR_ARG (exp, nargs - 1));
-	  if (fndecl2
-	      && TREE_CODE (fndecl2) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
+	  if (fndecl2 && fndecl_built_in_p (fndecl2, BUILT_IN_VA_ARG_PACK))
 	    return NULL_TREE;
 	}
 
@@ -9683,17 +9673,14 @@ fold_builtin_call_array (location_t loc, tree,
 
   tree fndecl = TREE_OPERAND (fn, 0);
   if (TREE_CODE (fndecl) == FUNCTION_DECL
-      && DECL_BUILT_IN (fndecl))
+      && fndecl_built_in_p (fndecl))
     {
       /* If last argument is __builtin_va_arg_pack (), arguments to this
 	 function are not finalized yet.  Defer folding until they are.  */
       if (n && TREE_CODE (argarray[n - 1]) == CALL_EXPR)
 	{
 	  tree fndecl2 = get_callee_fndecl (argarray[n - 1]);
-	  if (fndecl2
-	      && TREE_CODE (fndecl2) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (fndecl2) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fndecl2) == BUILT_IN_VA_ARG_PACK)
+	  if (fndecl2 && fndecl_built_in_p (fndecl2, BUILT_IN_VA_ARG_PACK))
 	    return NULL_TREE;
 	}
       if (avoid_folding_inline_builtin (fndecl))
@@ -10812,9 +10799,7 @@ fold_call_stmt (gcall *stmt, bool ignore)
   tree ret = NULL_TREE;
   tree fndecl = gimple_call_fndecl (stmt);
   location_t loc = gimple_location (stmt);
-  if (fndecl
-      && TREE_CODE (fndecl) == FUNCTION_DECL
-      && DECL_BUILT_IN (fndecl)
+  if (fndecl && fndecl_built_in_p (fndecl)
       && !gimple_call_va_arg_pack_p (stmt))
     {
       int nargs = gimple_call_num_args (stmt);
@@ -10861,8 +10846,7 @@ fold_call_stmt (gcall *stmt, bool ignore)
 void
 set_builtin_user_assembler_name (tree decl, const char *asmspec)
 {
-  gcc_assert (TREE_CODE (decl) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+  gcc_assert (fndecl_built_in_p (decl, BUILT_IN_NORMAL)
 	      && asmspec != 0);
 
   tree builtin = builtin_decl_explicit (DECL_FUNCTION_CODE (decl));
@@ -10882,7 +10866,7 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
 bool
 is_simple_builtin (tree decl)
 {
-  if (decl && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+  if (decl && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (decl))
       {
 	/* Builtins that expand to constants.  */

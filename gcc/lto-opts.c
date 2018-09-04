@@ -78,6 +78,21 @@ lto_write_options (void)
       && !global_options.x_flag_openacc)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 				   "-fno-openacc");
+  /* Append PIC/PIE mode because its default depends on target and it is
+     subject of merging in lto-wrapper.  */
+  if (!global_options_set.x_flag_pic && !global_options_set.x_flag_pie)
+    {
+       append_to_collect_gcc_options (&temporary_obstack, &first_p,
+				      global_options.x_flag_pic == 2
+				      ? "-fPIC"
+				      : global_options.x_flag_pic == 1
+				      ? "-fpic"
+				      : global_options.x_flag_pie == 2
+				      ? "-fPIE"
+				      : global_options.x_flag_pie == 1
+				      ? "-fpie"
+				      : "-fno-pie");
+    }
 
   /* Append options from target hook and store them to offload_lto section.  */
   if (lto_stream_offload_p)

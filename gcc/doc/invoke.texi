@@ -464,7 +464,7 @@ Objective-C and Objective-C++ Dialects}.
 -ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize @gol
 -ftree-loop-vectorize @gol
 -ftree-parallelize-loops=@var{n}  -ftree-pre  -ftree-partial-pre  -ftree-pta @gol
--ftree-reassoc  -ftree-sink  -ftree-slsr  -ftree-sra @gol
+-ftree-reassoc  -ftree-scev-cprop  -ftree-sink  -ftree-slsr  -ftree-sra @gol
 -ftree-switch-conversion  -ftree-tail-merge @gol
 -ftree-ter  -ftree-vectorize  -ftree-vrp  -funconstrained-commons @gol
 -funit-at-a-time  -funroll-all-loops  -funroll-loops @gol
@@ -2179,7 +2179,7 @@ can be omitted, to use a target-specific default value.
 Enable handling of OpenMP directives @code{#pragma omp} in C/C++ and
 @code{!$omp} in Fortran.  When @option{-fopenmp} is specified, the
 compiler generates parallel code according to the OpenMP Application
-Program Interface v4.5 @w{@uref{http://www.openmp.org/}}.  This option
+Program Interface v4.5 @w{@uref{https://www.openmp.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}. @option{-fopenmp} implies
 @option{-fopenmp-simd}.
@@ -7813,6 +7813,7 @@ compilation time.
 -ftree-forwprop @gol
 -ftree-fre @gol
 -ftree-phiprop @gol
+-ftree-scev-cprop @gol
 -ftree-sink @gol
 -ftree-slsr @gol
 -ftree-sra @gol
@@ -9119,6 +9120,15 @@ Create a canonical counter for number of iterations in loops for which
 determining number of iterations requires complicated analysis.  Later
 optimizations then may determine the number easily.  Useful especially
 in connection with unrolling.
+
+@item -ftree-scev-cprop
+@opindex ftree-scev-cprop
+Perform final value replacement.  If a variable is modified in a loop
+in such a way that its value when exiting the loop can be determined using
+only its initial value and the number of loop iterations, replace uses of
+the final value by such a computation, provided it is sufficiently cheap.
+This reduces data dependencies and may allow further simplifications.
+Enabled by default at @option{-O} and higher.
 
 @item -fivopts
 @opindex fivopts
@@ -11076,11 +11086,12 @@ parameter sets a limit on the length of the sets that are computed,
 which prevents the runaway behavior.  Setting a value of 0 for
 this parameter allows an unlimited set length.
 
-@item sccvn-max-scc-size
-Maximum size of a strongly connected component (SCC) during SCCVN
-processing.  If this limit is hit, SCCVN processing for the whole
-function is not done and optimizations depending on it are
-disabled.  The default maximum SCC size is 10000.
+@item rpo-vn-max-loop-depth
+Maximum loop depth that is value-numbered optimistically.  The default
+maximum loop depth is three.  When the limit hits the innermost
+@var{rpo-vn-max-loop-depth} loops and the outermost loop in the
+loop nest are value-numbered optimistically and the remaining ones not.
+The default maximum loop depth is seven.
 
 @item sccvn-max-alias-queries-per-access
 Maximum number of alias-oracle queries we perform when looking for
@@ -24545,12 +24556,10 @@ target-specific.
 
 @item -mstring-compare-inline-limit=@var{num}
 @opindex mstring-compare-inline-limit
-Generate at most @var{num} pairs of load instructions to compare the
-string inline. If the difference or end of string is not found at the
+Compare at most @var{num} string bytes with inline code.
+If the difference or end of string is not found at the
 end of the inline compare a call to @code{strcmp} or @code{strncmp} will
-take care of the rest of the comparison. The default is 8 pairs of
-loads, which will compare 64 bytes on a 64-bit target and 32 bytes on a
-32-bit target.
+take care of the rest of the comparison. The default is 64 bytes.
 
 @item -G @var{num}
 @opindex G

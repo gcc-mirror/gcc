@@ -977,7 +977,7 @@ thread_around_empty_blocks (edge taken_edge,
 	  || TREE_CODE (cond) == CASE_LABEL_EXPR))
     {
       if (TREE_CODE (cond) == CASE_LABEL_EXPR)
-	taken_edge = find_edge (bb, label_to_block (CASE_LABEL (cond)));
+	taken_edge = find_edge (bb, label_to_block (cfun, CASE_LABEL (cond)));
       else
 	taken_edge = find_taken_edge (bb, cond);
 
@@ -1109,7 +1109,7 @@ thread_through_normal_block (edge e,
 	  edge taken_edge;
 	  if (TREE_CODE (cond) == CASE_LABEL_EXPR)
 	    taken_edge = find_edge (e->dest,
-				    label_to_block (CASE_LABEL (cond)));
+				    label_to_block (cfun, CASE_LABEL (cond)));
 	  else
 	    taken_edge = find_taken_edge (e->dest, cond);
 

@@ -58,8 +58,10 @@ public:
 private:
   /* Helper function for option_proposer::suggest_option.  Populate
      m_option_suggestions with candidate strings for misspelled options.
-     The strings will be freed by the option_proposer's dtor.  */
-  void build_option_suggestions ();
+     The strings will be freed by the option_proposer's dtor.
+     PREFIX is used for bash completion suggestions, otherwise
+     it's set to NULL.  */
+  void build_option_suggestions (const char *prefix);
 
   /* Find parameter completions for --param format with SEPARATOR.
      Again, save the completions into results.  */

@@ -1,3 +1,334 @@
+2018-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87176
+	* gcc.dg/torture/pr87176.c: New testcase.
+	* gcc.dg/torture/ssa-fre-1.c: Likewise.
+
+2018-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/modulo_check: New test.
+
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87177
+	* gcc.dg/torture/pr87177.c: New testcase.
+	* gcc.dg/torture/pr87177-2.c: Likewise.
+
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87200
+	* gcc.dg/torture/pr87200.c: New testcase.
+
+2018-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87197
+	* gcc.dg/torture/pr87197.c: New testcase.
+
+	PR tree-optimization/87169
+	* gcc.dg/torture/pr87169.c: New testcase.
+
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* gcc.dg/completion-4.c: New test.
+
+2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84980
+	* g++.dg/concepts/pr84980.C: New.
+
+2018-09-03  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/59521
+	* c-c++-common/pr59521-1.c: New test.
+	* c-c++-common/pr59521-2.c: New test.
+	* gcc.dg/tree-prof/pr59521-3.c: New test.
+
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/array-init.c: New test.
+	* g++.dg/init/string2.C: Remove selector.
+
+2018-09-01  Michael Matz  <matz@suse.de>
+
+	PR tree-optimization/87074
+	* gcc.dg/pr87074.c: New test.
+
+2018-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87168
+	* gcc.dg/torture/pr87168.c: New testcase.
+
+2018-08-31  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* gcc.target/aarch64/scalar_intrinsics.c (test_vnegd_s64): New.
+	* gcc.target/aarch64/vneg_s.c (RUN_TEST_SCALAR): New.
+	(test_vnegd_s64): Likewise.
+	* gcc.target/aarch64/vnegd_64.c: New.
+	* gcc.target/aarch64/vabsd_64.c: New.
+	* gcc.tartget/aarch64/vabs_intrinsic_3.c: New.
+
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87155
+	PR c++/84707
+	* g++.dg/cpp0x/pr87155.C: New.
+	* g++.dg/cpp0x/inline-ns10.C: Adjust.
+
+2018-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87138
+	* gcc.target/i386/avx512bw-pr87138.c: New test.
+
+2018-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86328
+	PR fortran/86760
+	* gfortran.dg/pr86328.f90 : New test.
+	in comment 12 of the PR.
+	* gfortran.dg/pr86760.f90 : New test.
+
+2018-08-30  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* g++.dg/cpp0x/noexcept30.C: Make dependence on
+	-fdelete-null-pointer-checks explicit.
+	* g++.dg/cpp1y/constexpr-82218.C: Likewise.
+	* g++.dg/expr/pmf-3.C: Likewise.
+	* g++.dg/ext/attr-returns-nonnull.C: Likewise.
+	* g++.dg/tree-ssa/lifetime-dse1.C: Likewise.
+	* g++.dg/tree-ssa/pr61034.C: Likewise.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.dg/ipa/pr85734.c: Likewise.
+	* gcc.dg/ipa/propmalloc-1.c: Likewise.
+	* gcc.dg/ipa/propmalloc-2.c: Likewise.
+	* gcc.dg/ipa/propmalloc-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr78154.c: Likewise.
+	* gcc.dg/tree-ssa/pr83648.c: Likewise.
+
+2018-08-30  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/87158
+	* gcc.c-torture/execute/memchr-1.c: Correct big-endian expectations.
+
+2018-08-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR testsuite/86519
+	gcc.dg/strcmpopt_6.c: Remove.
+	gcc.target/aarch64/strcmpopt_6.c: New testcase.
+	gcc.target/i386/strcmpopt_6.c: Likewise.
+
+2018-08-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87147
+	* gcc.dg/torture/pr87147.c: New testcase.
+
+2018-08-30  Tamar Christina  <tamar.christina@arm.com>
+
+ 	* gcc.target/aarch64/large_struct_copy_2.c: New.
+
+2018-08-29  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR middle-end/87053
+	* gcc.c-torture/execute/pr87053.c: New test.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* g++.dg/ubsan/vptr-13.C: New test.
+
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* g++.dg/concepts/pr85265.C: New.
+
+2018-08-29  Martin Sebor  <msebor@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR tree-optimization/86714
+	PR tree-optimization/86711
+	* gcc.c-torture/execute/memchr-1.c: New test.
+	* gcc.c-torture/execute/pr86714.c: New test.
+	* gcc.c-torture/execute/widechar-3.c: New test.
+	* gcc.dg/strlenopt-58.c: New test.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87132
+	* gcc.dg/torture/pr87132.c: New testcase.
+
+2018-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Update expected
+	output to reflect underlining of pertinent parameter in decl
+	for "no known conversion" messages.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* g++.dg/cpp1z/decomp47.C: New test.
+
+2018-08-29  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/simd/vect_su_add_sub.c: Use 32 and 64-bit types
+	where appropriate.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gfortran.dg/pr87117.f90: New testcase.
+
+2018-08-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87126
+	* gcc.dg/tree-ssa/pr87126.c: New testcase.
+
+2018-08-28  MCC CS  <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87009
+	* gcc.dg/pr87009.c: New test.
+
+2018-08-28  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/86631
+	* g++.dg/Walloca1.C: Adjust.
+
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* g++.dg/other/switch4.C: New.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87124
+	* g++.dg/torture/pr87124.C: New testcase.
+
+2017-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80477
+	* gfortran.dg/class_result_7.f90: New test.
+	* gfortran.dg/class_result_8.f90: New test.
+	* gfortran.dg/class_result_9.f90: New test.
+
+	PR fortran/86481
+	* gfortran.dg/allocate_with_source_25.f90: New test.
+
+2018-08-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87099
+	* gcc.dg/pr87099.c: New test.
+
+2018-08-28  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR testsuite/87078
+	* gcc.dg/vect/slp-37.c: Restrict scan tests to vect_hw_misalign.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/pr87117-1.c: New testcase.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/pr87117-2.c: New testcase.
+
+2018-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87117
+	* gcc.dg/lvalue-5.c: New testcase.
+
+2018-08-27  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/87110
+	* gcc.c-torture/compile/pr87110.c: New test.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86914
+	* gcc.dg/strlenopt-57.c: New test.
+
+2018-08-27  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87112
+	* gcc.dg/pr87112.c: New test.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* g++.dg/diagnostic/missing-typename.C: New test.
+
+2018-08-27  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/dse.c: New test.
+
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86993
+	* g++.dg/diagnostic/pr86993.C: New test.
+
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86927
+	* gcc.dg/vect/pr86927.c: New testcase.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87091
+	* gcc.dg/empty.h: New file.
+	* gcc.dg/fixits-pr84852-1.c: Update for move of fix-it hint to
+	top of file and removal of redundant second printing of warning
+	location.
+	* gcc.dg/fixits-pr84852-2.c: Likewise.
+	* gcc.dg/missing-header-fixit-3.c: Likewise.
+	* gcc.dg/missing-header-fixit-4.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Update for
+	conversion of show_caret_p to a tri-state.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87091
+	* g++.dg/pr85523.C: Extend expected output to show line
+	before line-insertion fix-it hint.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c
+	(test_fixit_insert_newline): Add previous line to expected output.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color.c: Likewise.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/86962
+	* gcc.dg/asan/pr86962.c: New test.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/val-prof-10.c: New test.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/86847
+	* gcc.dg/tree-ssa/switch-3.c: New test.
+	* gcc.dg/tree-ssa/vrp105.c: Remove.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/switch-2.c: New test.
+
+2018-08-27  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/torture/20180705-1.C: New testcase.
+	* gcc.dg/tree-ssa/ssa-fre-67.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-14.c: Scan FRE dump.
+	* gcc.dg/tree-ssa/ssa-fre-46.c: Use -O2.
+	* gcc.dg/tree-ssa/vrp92.c: Disable FRE.
+	* gcc.dg/pr83666.c: Drop --param=sccvn-max-scc-size option.
+	* gcc.dg/pr85195.c: Likewise.
+	* gcc.dg/pr85467.c: Likewise.
+	* gcc.dg/torture/pr81790.c: Likewise.
+
+	* gfortran.dg/reassoc_4.f: Change max-completely-peeled-insns
+	param to current default.
+
 2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87065
@@ -26,7 +357,7 @@
 
 2018-08-24  David Malcolm  <dmalcolm@redhat.com>
 
-	PR 87091
+	PR c++/87091
 	* gcc.dg/missing-header-fixit-3.c: Update for changes to how
 	line spans are printed with -fdiagnostics-show-line-numbers.
 

@@ -1,3 +1,9 @@
+2018-09-03  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* inclhack.def (vxworks_ioctl_macro): Remove parentheses from
+	expansion of ioctl macro.
+	* fixincl.x: Regenerate.
+
 2018-07-23  David Edelsohn  <dje.gcc@gmail.com>
 
 	* inclhack.def (aix_unistd): New.
@@ -1256,7 +1262,7 @@
 	* tests/base/math.h: Update.
 
 2007-01-05  Bruce Korb <bkorb@gnu.org>, 
-            Daniel Franke <franke.daniel@gmail.com>
+	    Daniel Franke <franke.daniel@gmail.com>
 
 	PR target/30008
 	* fixincl.tpl (List): separate file name patterns with a NUL byte instead
@@ -1472,7 +1478,7 @@
 	* fixincl.c: Don't include <sys/wait.h> if SEPARATE_FIX_PROC.
 
 2005-05-19  Eric Botcazou  <ebotcazou@libertysurf.fr>
-            Joseph S. Myers  <joseph@codesourcery.com>
+	    Joseph S. Myers  <joseph@codesourcery.com>
 
 	PR target/19933
 	PR target/21315

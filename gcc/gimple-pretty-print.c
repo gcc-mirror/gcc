@@ -911,8 +911,7 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
   if (TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn))
     pp_string (buffer, " [tm-clone]");
   if (TREE_CODE (fn) == FUNCTION_DECL
-      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fn) == BUILT_IN_TM_START
+      && fndecl_built_in_p (fn, BUILT_IN_TM_START)
       && gimple_call_num_args (gs) > 0)
     {
       tree t = gimple_call_arg (gs, 0);
@@ -992,7 +991,7 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
 
       if (cfun && cfun->cfg)
 	{
-	  basic_block dest = label_to_block (label);
+	  basic_block dest = label_to_block (cfun, label);
 	  if (dest)
 	    {
 	      edge label_edge = find_edge (gimple_bb (gs), dest);

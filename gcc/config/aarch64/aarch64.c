@@ -15938,13 +15938,17 @@ aarch64_expand_movmem (rtx *operands)
   /* Convert n to bits to make the rest of the code simpler.  */
   n = n * BITS_PER_UNIT;
 
+  /* Maximum amount to copy in one go.  The AArch64 back-end has integer modes
+     larger than TImode, but we should not use them for loads/stores here.  */
+  const int copy_limit = GET_MODE_BITSIZE (TImode);
+
   while (n > 0)
     {
       /* Find the largest mode in which to do the copy in without over reading
 	 or writing.  */
       opt_scalar_int_mode mode_iter;
       FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
-	if (GET_MODE_BITSIZE (mode_iter.require ()) <= n)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_limit))
 	  cur_mode = mode_iter.require ();
 
       gcc_assert (cur_mode != BLKmode);
@@ -15958,10 +15962,10 @@ aarch64_expand_movmem (rtx *operands)
 	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
 	 byte copy it's more efficient to do two overlapping 8 byte copies than
 	 8 + 6 + 1.  */
-      next_mode = smallest_mode_for_size (n, MODE_INT);
-      int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
-      if (n > 0 && n_bits > n && n_bits <= 8 * BITS_PER_UNIT)
+      if (n > 0 && n <= 8 * BITS_PER_UNIT)
 	{
+	  next_mode = smallest_mode_for_size (n, MODE_INT);
+	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
 	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
 	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
 	  n = n_bits;

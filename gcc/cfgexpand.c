@@ -2616,7 +2616,7 @@ expand_call_stmt (gcall *stmt)
   exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
 
   CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
-  builtin_p = decl && DECL_BUILT_IN (decl);
+  builtin_p = decl && fndecl_built_in_p (decl);
 
   /* If this is not a builtin function, the function type through which the
      call is made may be different from the type of the function.  */
@@ -2655,7 +2655,7 @@ expand_call_stmt (gcall *stmt)
   CALL_EXPR_MUST_TAIL_CALL (exp) = gimple_call_must_tail_p (stmt);
   CALL_EXPR_RETURN_SLOT_OPT (exp) = gimple_call_return_slot_opt_p (stmt);
   if (decl
-      && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
+      && fndecl_built_in_p (decl, BUILT_IN_NORMAL)
       && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (decl)))
     CALL_ALLOCA_FOR_VAR_P (exp) = gimple_call_alloca_for_var_p (stmt);
   else
@@ -3239,7 +3239,7 @@ expand_asm_stmt (gasm *stmt)
 	     may insert further instructions into the same basic block after
 	     asm goto and if we don't do this, insertion of instructions on
 	     the fallthru edge might misbehave.  See PR58670.  */
-	  if (fallthru_bb && label_to_block_fn (cfun, label) == fallthru_bb)
+	  if (fallthru_bb && label_to_block (cfun, label) == fallthru_bb)
 	    {
 	      if (fallthru_label == NULL_RTX)
 	        fallthru_label = gen_label_rtx ();

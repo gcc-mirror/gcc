@@ -5326,8 +5326,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
     {
       /* Avoid diagnosing calls built-ins with a zero size/bound
 	 here.  They are checked in more detail elsewhere.  */
-      if (DECL_BUILT_IN (fndecl)
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	  && nargs == 3
 	  && TREE_CODE (argarray[2]) == INTEGER_CST
 	  && integer_zerop (argarray[2]))
@@ -5755,8 +5754,7 @@ bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 				  tree fndecl, int nargs, tree *args)
 {
-  if (!DECL_BUILT_IN (fndecl)
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -6133,7 +6131,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (0, input_location, true);
+    richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -8011,7 +8009,7 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 	 strlen, and for C++ operators new and delete.
 	 The c_decl_implicit() test avoids false positives for implicitly
 	 declared built-ins with library fallbacks (such as abs).  */
-      && DECL_BUILT_IN (expr)
+      && fndecl_built_in_p (expr)
       && DECL_IS_BUILTIN (expr)
       && !c_decl_implicit (expr)
       && !DECL_ASSEMBLER_NAME_SET_P (expr))
@@ -8338,8 +8336,8 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (0, hint_loc, true);
-      richloc->add_range (old_loc, false);
+      richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
+      richloc->add_range (old_loc);
     }
 }
 
@@ -8477,10 +8475,16 @@ static added_includes_t *added_includes;
    location.
 
    This function is idempotent: a header will be added at most once to
-   any given file.  */
+   any given file.
+
+   If OVERRIDE_LOCATION is true, then if a fix-it is added and will be
+   printed, then RICHLOC's primary location will be replaced by that of
+   the fix-it hint (for use by "inform" notes where the location of the
+   issue has already been reported).  */
 
 void
-maybe_add_include_fixit (rich_location *richloc, const char *header)
+maybe_add_include_fixit (rich_location *richloc, const char *header,
+			 bool override_location)
 {
   location_t loc = richloc->get_loc ();
   const char *file = LOCATION_FILE (loc);
@@ -8508,42 +8512,58 @@ maybe_add_include_fixit (rich_location *richloc, const char *header)
   char *text = xasprintf ("#include %s\n", header);
   richloc->add_fixit_insert_before (include_insert_loc, text);
   free (text);
+
+  if (override_location && global_dc->show_caret)
+    {
+      /* Replace the primary location with that of the insertion point for the
+	 fix-it hint.
+
+	 We use SHOW_LINES_WITHOUT_RANGE so that we don't meaningless print a
+	 caret for the insertion point (or colorize it).
+
+	 Hence we print e.g.:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+
+	 rather than:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+	     | ^
+
+	 avoiding the caret on the first column of line 74.  */
+      richloc->set_range (0, include_insert_loc, SHOW_LINES_WITHOUT_RANGE);
+    }
 }
 
 /* Attempt to convert a braced array initializer list CTOR for array
-   TYPE into a STRING_CST for convenience and efficiency.  When non-null,
-   use EVAL to attempt to evalue constants (used by C++).  Return
-   the converted string on success or null on failure.  */
+   TYPE into a STRING_CST for convenience and efficiency.  Return
+   the converted string on success or the original ctor on failure.  */
 
 tree
-braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
+braced_list_to_string (tree type, tree ctor)
 {
-  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
+  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+    return ctor;
 
   /* If the array has an explicit bound, use it to constrain the size
      of the string.  If it doesn't, be sure to create a string that's
      as long as implied by the index of the last zero specified via
      a designator, as in:
        const char a[] = { [7] = 0 };  */
-  unsigned HOST_WIDE_INT maxelts = HOST_WIDE_INT_M1U;
-  if (tree size = TYPE_SIZE_UNIT (type))
-    {
-      if (tree_fits_uhwi_p (size))
-	{
-	  maxelts = tree_to_uhwi (size);
-	  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+  unsigned HOST_WIDE_INT maxelts = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
 
-	  /* Avoid converting initializers for zero-length arrays.  */
-	  if (!maxelts)
-	    return NULL_TREE;
-	}
-    }
-  else if (!nelts)
-    /* Avoid handling the undefined/erroneous case of an empty
-       initializer for an arrays with unspecified bound.  */
-    return NULL_TREE;
+  /* Avoid converting initializers for zero-length arrays.  */
+  if (!maxelts)
+    return ctor;
 
-  tree eltype = TREE_TYPE (type);
+  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
 
   auto_vec<char> str;
   str.reserve (nelts + 1);
@@ -8553,19 +8573,21 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, index, value)
     {
-      unsigned HOST_WIDE_INT idx = index ? tree_to_uhwi (index) : i;
+      unsigned HOST_WIDE_INT idx = i;
+      if (index)
+	{
+	  if (!tree_fits_uhwi_p (index))
+	    return ctor;
+	  idx = tree_to_uhwi (index);
+	}
 
       /* auto_vec is limited to UINT_MAX elements.  */
       if (idx > UINT_MAX)
-	return NULL_TREE;
+	return ctor;
 
-      /* Attempt to evaluate constants.  */
-      if (eval)
-	value = eval (eltype, value);
-
-      /* Avoid non-constant initializers.  */
+     /* Avoid non-constant initializers.  */
      if (!tree_fits_shwi_p (value))
-	return NULL_TREE;
+	return ctor;
 
       /* Skip over embedded nuls except the last one (initializer
 	 elements are in ascending order of indices).  */
@@ -8573,11 +8595,14 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
       if (!val && i + 1 < nelts)
 	continue;
 
+      if (idx < str.length())
+	return ctor;
+
       /* Bail if the CTOR has a block of more than 256 embedded nuls
 	 due to implicitly initialized elements.  */
       unsigned nchars = (idx - str.length ()) + 1;
       if (nchars > 256)
-	return NULL_TREE;
+	return ctor;
 
       if (nchars > 1)
 	{
@@ -8585,18 +8610,17 @@ braced_list_to_string (tree type, tree ctor, tree (*eval)(tree, tree))
 	  str.quick_grow_cleared (idx);
 	}
 
-      if (idx > maxelts)
-	return NULL_TREE;
+      if (idx >= maxelts)
+	return ctor;
 
       str.safe_insert (idx, val);
     }
 
-  if (!nelts)
-    /* Append a nul for the empty initializer { }.  */
+  /* Append a nul string termination.  */
+  if (str.length () < maxelts)
     str.safe_push (0);
 
-  /* Build a STRING_CST with the same type as the array, which
-     may be an array of unknown bound.  */
+  /* Build a STRING_CST with the same type as the array.  */
   tree res = build_string (str.length (), str.begin ());
   TREE_TYPE (res) = type;
   return res;

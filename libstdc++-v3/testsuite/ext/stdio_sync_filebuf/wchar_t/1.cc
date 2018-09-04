@@ -17,6 +17,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-require-fileio "" }
+
 #include <ext/stdio_sync_filebuf.h>
 #include <cstring>
 #include <testsuite_hooks.h>

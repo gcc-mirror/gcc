@@ -1,3 +1,48 @@
+2018-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* simplify.c (gfc_simplify_modulo): Re-arrange code to test whether
+	'P' is zero and issue an error if it is.
+
+2018-08-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86328
+	PR fortran/86760
+	* trans-array.c (gfc_conv_scalarized_array_ref): Do not fix
+	info->descriptor but pass it directly to gfc_build_array_ref.
+	(gfc_conv_array_ref): Likewise for se->expr.
+	* trans.c (gfc_build_array_ref): If 'decl' is a COMPONENT_REF
+	obtain the span field directly from it.
+
+2017-08-28  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/80477
+	* trans-expr.c (gfc_conv_procedure_call): Allocatable class
+	scalar results being passed to a derived type formal argument
+	are finalized if possible. Otherwise, rely on existing code for
+	deallocation. Make the deallocation of allocatable result
+	components conditional on finalization not taking place. Make
+	the freeing of data components after finalization conditional
+	on the data being NULL.
+	(gfc_trans_arrayfunc_assign): Change the gcc_assert to a
+	condition to return NULL_TREE.
+	(gfc_trans_assignment_1): If the assignment is class to class
+	and the rhs expression must be finalized but the assignment
+	is not marked as a polymorphic assignment, use the vptr copy
+	function instead of gfc_trans_scalar_assign.
+
+	PR fortran/86481
+	* trans-expr.c (gfc_conv_expr_reference): Do not add the post
+	block to the pre block if the expression is to be finalized.
+	* trans-stmt.c (gfc_trans_allocate): If the expr3 must be
+	finalized, load the post block into a finalization block and
+	add it right at the end of the allocation block.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* error.c (gfc_format_decoder): Update for conversion of
+	show_caret_p to a tri-state.
+
 2018-08-25  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/86545
@@ -941,7 +986,7 @@
 	* trans-intrinsic.c (conv_intrinsic_kill, conv_intrinsic_kill_sub): new
 	functions.
 	(gfc_conv_intrinsic_function): Use conv_intrinsic_kill.
-        (gfc_conv_intrinsic_subroutine): Use conv_intrinsic_kill_sub.
+	(gfc_conv_intrinsic_subroutine): Use conv_intrinsic_kill_sub.
 	* trans.h: Declare gfor_fndecl_kill and gfor_fndecl_kill_sub.
 
 2018-03-11  Paul Thomas  <pault@gcc.gnu.org>
@@ -1176,7 +1221,7 @@
 	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
 	(gfc_trans_event_post_wait): Likewise.
 	(gfc_trans_sync): Likewise.
-        (gfc_trans_stop): Use size_t for character lengths, int for exit
+	(gfc_trans_stop): Use size_t for character lengths, int for exit
 	codes.
 
 2018-02-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
@@ -1797,7 +1842,7 @@
 	(gfc_interpret_character): Use gfc_charlen_t.
 	* target-memory.h (gfc_encode_character): Modify prototype.
 	* trans-array.c (gfc_trans_array_ctor_element): Use existing type.
-        (get_array_ctor_var_strlen): Use gfc_conv_mpz_to_tree_type.
+	(get_array_ctor_var_strlen): Use gfc_conv_mpz_to_tree_type.
 	(trans_array_constructor): Use existing type.
 	(get_array_charlen): Likewise.
 	* trans-const.c (gfc_conv_mpz_to_tree_type): New function.

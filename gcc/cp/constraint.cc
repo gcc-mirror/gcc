@@ -1259,6 +1259,9 @@ finish_shorthand_constraint (tree decl, tree constr)
   if (!constr)
     return NULL_TREE;
 
+  if (error_operand_p (constr))
+    return NULL_TREE;
+
   tree proto = CONSTRAINED_PARM_PROTOTYPE (constr);
   tree con = CONSTRAINED_PARM_CONCEPT (constr);
   tree args = CONSTRAINED_PARM_EXTRA_ARGS (constr);

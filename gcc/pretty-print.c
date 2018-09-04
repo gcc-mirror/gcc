@@ -705,10 +705,11 @@ static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
    For use e.g. when implementing "+" in client format decoders.  */
 
 void
-text_info::set_location (unsigned int idx, location_t loc, bool show_caret_p)
+text_info::set_location (unsigned int idx, location_t loc,
+			 enum range_display_kind range_display_kind)
 {
   gcc_checking_assert (m_richloc);
-  m_richloc->set_range (idx, loc, show_caret_p);
+  m_richloc->set_range (idx, loc, range_display_kind);
 }
 
 location_t

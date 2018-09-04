@@ -1,3 +1,122 @@
+2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84980
+	* constraint.cc (finish_shorthand_constraint): Early return if the
+	constraint is erroneous.
+
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (eval_check_narrowing): Remove.
+	(check_initializer): Move call to braced_list_to_string from here ...
+	* typeck2.c (store_init_value): ... to here.
+	(digest_init_r): Remove handing of signed/unsigned char strings.
+
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87155
+	PR c++/84707
+	* name-lookup.c (name_lookup::search_namespace): Don't look at
+	inlines when searching for NULL names.
+
+	* decl.c (decls_match): Remove SYSTEM_IMPLICIT_EXTERN_C matching
+	of return types and parms.
+	* parser.c (cp_parser_parameter_declaration_clause): Likewise,
+	'()' always means '(void)'.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* decl.c (begin_destructor_body): If current_class_type has
+	virtual bases and the primary base is nearly empty virtual base,
+	voidify clearing of vptr and make it conditional on in-charge
+	argument.
+
+2018-08-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85265
+	* parser.c (cp_parser_introduction_list): If cp_parser_identifier
+	returns error_mark_node early exit the loop.
+	(cp_parser_template_introduction): Improve error-recovery, remove
+	error call about empty introduction-list.
+
+2018-08-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (print_conversion_rejection): Add "fn" param and use it
+	for "no known conversion" messages to underline the pertinent
+	param.
+	(print_z_candidate): Supply "fn" to the new param above.
+
+2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87122
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: If
+	processing_template_decl and decl is structured binding decl, call
+	cp_finish_decomp.
+
+2018-08-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/86546
+	* decl.c (finish_case_label): If the type is erroneous early
+	return error_mark_node.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/63392
+	* parser.c (cp_parser_diagnose_invalid_type_name): Add fix-it
+	hint.
+
+2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86993
+	* cp-tree.h (cxx_readonly_error): Add location_t argument.
+	* typeck2.c (cxx_readonly_error): Add LOC argument, pass it to
+	ERROR_FOR_ASSIGNMENT macro and readonly_error.  Add LOC argument
+	to ERROR_FOR_ASSIGNMENT macro, use error_at instead of error and
+	pass LOC to it.  Formatting fixes.
+	* typeck.c (cp_build_unary_op): Pass location to cxx_readonly_error.
+	(cp_build_modify_expr): Pass loc to cxx_readonly_error.
+	* semantics.c (finish_asm_stmt): Pass input_location to
+	cxx_readonly_error.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87091
+	* decl.c (grokdeclarator): Update for conversion of show_caret_p
+	to a tri-state.
+	* error.c (cp_printer): Likewise.
+	* name-lookup.c (maybe_suggest_missing_std_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* parser.c (cp_parser_string_literal): Update for conversion of
+	show_caret_p to a tri-state.
+	(cp_parser_elaborated_type_specifier): Likewise.
+	(set_and_check_decl_spec_loc): Likewise.
+	* pt.c (listify): Update call to maybe_add_include_fixit to not
+	override the location, as it is for an error.
+	* rtti.c (typeid_ok_p): Likewise.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* call.c (build_call_a): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(build_cxx_call): Likewise.
+	* constexpr.c (constexpr_fn_retval): Likewise.
+	(cxx_eval_builtin_function_call): Likewise.
+	(cxx_eval_call_expression): Likewise.
+	(potential_constant_expression_1): Likewise.
+	* cp-gimplify.c (cp_gimplify_expr): Likewise.
+	(cp_fold): Likewise.
+	* decl.c (decls_match): Likewise.
+	(validate_constexpr_redeclaration): Likewise.
+	(duplicate_decls): Likewise.
+	(make_rtl_for_nonlocal_decl): Likewise.
+	* name-lookup.c (consider_binding_level): Likewise.
+	(cp_emit_debug_info_for_using): Likewise.
+	* semantics.c (finish_call_expr): Likewise.
+	* tree.c (builtin_valid_in_constant_expr_p): Likewise.
+
 2018-08-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87080
@@ -296,9 +415,9 @@
 
 2018-07-31  Martin Liska  <mliska@suse.cz>
 
-        PR c++/86653
+	PR c++/86653
 	* parser.c (cp_parser_condition): Initialize non_constant_p
-        to false.
+	to false.
 
 2018-07-28  David Malcolm  <dmalcolm@redhat.com>
 
@@ -3545,7 +3664,7 @@
 2018-01-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (cp_parser_std_attribute_spec): When
-        token_pair::require_open / require_close return false simply
+	token_pair::require_open / require_close return false simply
 	return error_mark_node, avoid duplicate cp_parser_error about
 	expected '(' / ')', respectively.
 
