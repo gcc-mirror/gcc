@@ -4110,11 +4110,11 @@ static bool
 visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 {
   tree result, sameval = VN_TOP, seen_undef = NULL_TREE;
-  tree backedge_name = NULL_TREE;
+  tree backedge_val = NULL_TREE;
+  bool seen_non_backedge = false;
   tree sameval_base = NULL_TREE;
   poly_int64 soff, doff;
   unsigned n_executable = 0;
-  bool allsame = true;
   edge_iterator ei;
   edge e;
 
@@ -4139,11 +4139,13 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	++n_executable;
 	if (TREE_CODE (def) == SSA_NAME)
 	  {
-	    if (e->flags & EDGE_DFS_BACK)
-	      backedge_name = def;
 	    if (!backedges_varying_p || !(e->flags & EDGE_DFS_BACK))
 	      def = SSA_VAL (def);
+	    if (e->flags & EDGE_DFS_BACK)
+	      backedge_val = def;
 	  }
+	if (!(e->flags & EDGE_DFS_BACK))
+	  seen_non_backedge = true;
 	if (def == VN_TOP)
 	  ;
 	/* Ignore undefined defs for sameval but record one.  */
@@ -4172,16 +4174,25 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 			 && known_eq (soff, doff))
 		  continue;
 	      }
-	    allsame = false;
+	    sameval = NULL_TREE;
 	    break;
 	  }
       }
 
   /* If the value we want to use is the backedge and that wasn't visited
-     yet drop to VARYING.  */ 
-  if (backedge_name
-      && sameval == backedge_name
-      && !SSA_VISITED (backedge_name))
+     yet drop to VARYING.  This only happens when not iterating.
+     If we value-number a virtual operand never value-number to the
+     value from the backedge as that confuses the alias-walking code.
+     See gcc.dg/torture/pr87176.c.  If the value is the same on a
+     non-backedge everything is OK though.  */
+  if (backedge_val
+      && !seen_non_backedge
+      && TREE_CODE (backedge_val) == SSA_NAME
+      && sameval == backedge_val
+      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	  || !SSA_VISITED (backedge_val)))
+    /* Note this just drops to VARYING without inserting the PHI into
+       the hashes.  */
     result = PHI_RESULT (phi);
   /* If none of the edges was executable keep the value-number at VN_TOP,
      if only a single edge is exectuable use its value.  */
@@ -4212,7 +4223,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
   /* If all values are the same use that, unless we've seen undefined
      values as well and the value isn't constant.
      CCP/copyprop have the same restriction to not remove uninit warnings.  */
-  else if (allsame
+  else if (sameval
 	   && (! seen_undef || is_gimple_min_invariant (sameval)))
     result = sameval;
   else
