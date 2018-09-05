@@ -1,6 +1,11 @@
 2018-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87095
+	* g++.dg/ubsan/vptr-13.C: New test.
+
 	2018-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86835
