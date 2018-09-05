@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa.h"
 #include "range.h"
 #include "selftest.h"
+#include "wide-int-range.h"
 
 static bool
 range_compatible_p (tree t1, tree t2)
@@ -37,7 +38,7 @@ range_compatible_p (tree t1, tree t2)
     return true;
 
   // FORTRAN has different precision booleans that trigger a false
-  // from types_compatble_p
+  // from types_compatible_p.
   if (TREE_CODE (t1) == BOOLEAN_TYPE && TREE_CODE (t2) == BOOLEAN_TYPE)
       return true;
 
@@ -281,128 +282,87 @@ irange::valid_p () const
   return true;
 }
 
-/* Convert the current range in place into a range of type NEW_TYPE.
-   The type of the original range is changed to the new type.  */
+/* Convert the current range in place into a range of type NEW_TYPE.  */
 
 void
 irange::cast (tree new_type)
 {
-  if (!nitems)
-    {
-      type = new_type;
-      return;
-    }
+  /* If nothing changed, this is a simple type conversion between two
+     variants of the same type.  */
   bool sign_change = TYPE_SIGN (new_type) != TYPE_SIGN (type);
+  unsigned old_precision = TYPE_PRECISION (type);
   unsigned new_precision = TYPE_PRECISION (new_type);
-
-  /* If nothing changed, this may be a useless type conversion between
-     two variants of the same type.  */
-  if (!sign_change && TYPE_PRECISION (type) == new_precision)
+  signop old_sign = TYPE_SIGN (type);
+  signop new_sign = TYPE_SIGN (new_type);
+  if (!nitems
+      || (!sign_change && old_precision == new_precision))
     {
       type = new_type;
-      gcc_assert (!CHECKING_P || valid_p ());
       return;
     }
 
-  /* If any of the old bounds are outside of the representable range
-     for the new type, conservatively default to the entire range of
-     the new type.  */
-  if (new_precision < TYPE_PRECISION (type))
+  /* If the entire range doesn't fit in the new range type, bail.  */
+  wide_int orig_lowest = lower_bound ();
+  wide_int orig_highest = upper_bound ();
+  wide_int tmp1, tmp2;
+  if (!wide_int_range_convert (tmp1, tmp2,
+			       old_sign, old_precision,
+			       new_sign, new_precision,
+			       orig_lowest, orig_highest))
     {
-      /* Get the extreme bounds for the new type, but within the old type,
-	 so we can properly compare them.  */
-      wide_int lbound = wi::to_wide (fold_convert (type,
-						   TYPE_MIN_VALUE (new_type)));
-      wide_int ubound
-	= wi::to_wide (fold_convert (type, TYPE_MAX_VALUE (new_type)));
-
-      if (wi::lt_p (bounds[0], lbound, TYPE_SIGN (type))
-	  || wi::gt_p (bounds[nitems - 1], ubound, TYPE_SIGN (type)))
-	{
-	  bounds[0] = wide_int::from (lbound, new_precision,
-				      TYPE_SIGN (new_type));
-	  bounds[1] = wide_int::from (ubound, new_precision,
-				      TYPE_SIGN (new_type));
-	  type = new_type;
-	  nitems = 2;
-	  gcc_assert (!CHECKING_P || valid_p ());
-	  return;
-	}
+      bounds[0] = wi::min_value (new_precision, new_sign);
+      bounds[1] = wi::max_value (new_precision, new_sign);
+      type = new_type;
+      nitems = 2;
+      return;
     }
 
-  wide_int orig_low = lower_bound ();
-  wide_int orig_high = upper_bound ();
-  wide_int min = wi::min_value (new_precision, TYPE_SIGN (new_type));
-  wide_int max = wi::max_value (new_precision, TYPE_SIGN (new_type));
+  wide_int new_type_min = wi::min_value (new_precision, new_sign);
+  wide_int new_type_max = wi::max_value (new_precision, new_sign);
   for (unsigned i = 0; i < nitems; i += 2)
     {
-      tree b0
-	= fold_convert (new_type, wide_int_to_tree (type, bounds[i]));
-      tree b1
-	= fold_convert (new_type,
-			wide_int_to_tree (type, bounds[i+1]));
-      bool sbit0 = bounds[i].sign_mask () < 0;
-      bool sbit1 = bounds[i + 1].sign_mask () < 0;
-
-      /* If we're not doing a sign change, or we are moving to a
-	 higher precision, we can just blindly chop off bits.  */
-      if (!sign_change
-	  || (TYPE_UNSIGNED (type)
-	      && !TYPE_UNSIGNED (new_type)
-	      && new_precision > TYPE_PRECISION (type))
-	  || sbit0 == sbit1)
+      /* If the new bounds are in the right order, we can do a
+	 straight up conversion.  */
+      wide_int new_min = wide_int::from (bounds[i], new_precision, old_sign);
+      wide_int new_max = wide_int::from (bounds[i + 1], new_precision, old_sign);
+      if (wi::le_p (new_min, new_max, new_sign))
 	{
-	  bounds[i] = wi::to_wide (b0);
-	  bounds[i + 1] = wi::to_wide (b1);
+	  bounds[i] = new_min;
+	  bounds[i + 1] = new_max;
 	}
+      /* Otherwise, the bounds have wrapped and we must handle them
+	 specially as [-MIN,Y][X,MAX].  */
       else
 	{
-	  /* If we're about to go over the maximum number of ranges
-	     allowed, convert to something conservative and cast
-	     again.  */
+	  /* If we're about to go over the maximum number of ranges,
+	     convert to something conservative and cast again.  */
 	  if (nitems >= max_pairs * 2)
 	    {
-	      bounds[0] = orig_low;
-	      bounds[1] = orig_high;
+	      bounds[0] = orig_lowest;
+	      bounds[1] = orig_highest;
 	      nitems = 2;
 	      cast (new_type);
 	      return;
 	    }
-	  /*  If we're about to construct [MIN, b1==MAX].  That's just
-	      the entire range.  */
-	  if (wi::to_wide (b1) == max)
+	  /* Handle wrapping of [X,Y] as [-MIN,Y][X,MAX].  */
+	  bounds[i] = new_type_min;
+	  bounds[i + 1] = new_max;
+	  /* If we're about to construct [-MIN, MAX], no sense
+	     calculating anything else.  */
+	  if (bounds[i + 1] == new_type_max)
 	    {
-	      bounds[0] = min;
-	      bounds[1] = max;
+	      bounds[0] = new_type_min;
+	      bounds[1] = new_type_max;
 	      nitems = 2;
 	      type = new_type;
-	      gcc_assert (!CHECKING_P || valid_p ());
 	      return;
 	    }
-	  /* From no sign bit to sign bit: [15, 150]
-	     => [15,127][-128,-106].  */
-	  if (!sbit0 && sbit1)
-	    {
-	      bounds[i] = min;
-	      bounds[i + 1] = wi::to_wide (b1);
-	      bounds[nitems++] = wi::to_wide (b0);
-	      bounds[nitems++] = max;
-	    }
-	  /* From sign bit to no sign bit: [-5, 5]
-	     => [251,255][0,5].  */
-	  else
-	    {
-	      bounds[i] = min;
-	      bounds[i + 1] = wi::to_wide (b1);
-	      bounds[nitems++] = wi::to_wide (b0);
-	      bounds[nitems++] = max;
-	    }
+	  bounds[nitems++] = new_min;
+	  bounds[nitems++] = new_type_max;
 	}
     }
   type = new_type;
-  if (sign_change)
-    canonicalize ();
-  gcc_assert (!CHECKING_P || (valid_p () && !empty_p ()));
+  canonicalize ();
 }
 
 // Return TRUE if the current range contains ELEMENT.
@@ -476,7 +436,6 @@ irange::canonicalize ()
 	  remove (i + 1, i + 2);
 	}
     }
-  /* See note before for(;;).  */
   gcc_assert (!CHECKING_P || valid_p ());
 }
 
@@ -1209,12 +1168,11 @@ irange_tests ()
   r0.cast (signed_char_type_node);
   ASSERT_TRUE (r0 == rold);
 
-  /* (unsigned char)[-5,5] => [0,255].  */
+  /* (unsigned char)[-5,5] => [0,5][251,255].  */
   r0 = irange (integer_type_node, -5, 5);
   r0.cast (unsigned_char_type_node);
-  r1 = irange (unsigned_char_type_node,
-	       TYPE_MIN_VALUE (unsigned_char_type_node),
-	       TYPE_MAX_VALUE (unsigned_char_type_node));
+  r1 = irange (unsigned_char_type_node, 0, 5);
+  r1.union_ (irange (unsigned_char_type_node, 251, 255));
   ASSERT_TRUE (r0 == r1);
 
   /* (unsigned char)[5U,1974U] => [0,255].  */
@@ -1233,12 +1191,10 @@ irange_tests ()
 			     TYPE_MAX_VALUE (unsigned_char_type_node)));
 
   /* Casting [-120,20] from signed char to unsigned short.
-	(unsigned)[(signed char)-120, (signed char)20]
-     => (unsigned)[0, 0x14][0x88, 0xff]
-     => [0,0x14][0xff88,0xffff].  */
+     => [0, 20][0xff88, 0xffff].  */
   r0 = irange (signed_char_type_node, -120, 20);
   r0.cast (short_unsigned_type_node);
-  r1 = irange (short_unsigned_type_node, 0, 0x14);
+  r1 = irange (short_unsigned_type_node, 0, 20);
   r2 = irange (short_unsigned_type_node, 0xff88, 0xffff);
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
