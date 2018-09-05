@@ -1,3 +1,9 @@
+2018-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87137
+	* stor-layout.c (place_field): Scan forwards to check last
+	bitfield when ms_bitfield_placement is in effect.
+
 2018-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/87225

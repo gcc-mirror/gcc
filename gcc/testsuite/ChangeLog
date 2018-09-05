@@ -1,3 +1,8 @@
+2018-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87137
+	* g++.dg/abi/pr87137.C: New.
+
 2018-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
