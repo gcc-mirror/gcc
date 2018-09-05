@@ -1,5 +1,11 @@
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
+	PR testsuite/87216
+	* gcc.dg/tree-prof/pr59521-3.c: Update scanned pattern
+	to support Dawring names.
+
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/gcov/loop.C: Update test to support new format.
 
 2018-09-04  H.J. Lu  <hongjiu.lu@intel.com>
