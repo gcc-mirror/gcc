@@ -1,3 +1,9 @@
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/87205
+	* gcc.dg/tree-ssa/pr87205-2.c: New test.
+	* gcc.dg/tree-ssa/pr87205.c: New test.
+
 2018-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87217

@@ -2419,8 +2419,13 @@ pass_lower_switch<O0>::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple *stmt = last_stmt (bb);
-      if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	switch_statements.safe_push (stmt);
+      gswitch *swtch;
+      if (stmt && (swtch = dyn_cast<gswitch *> (stmt)))
+	{
+	  if (!O0)
+	    group_case_labels_stmt (swtch);
+	  switch_statements.safe_push (swtch);
+	}
     }
 
   for (unsigned i = 0; i < switch_statements.length (); i++)
