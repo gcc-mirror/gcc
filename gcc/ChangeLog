@@ -1,3 +1,9 @@
+2018-09-06  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR target/86779
+	* config/cris/cris.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Redefine
+	to speculation_safe_value_not_needed.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Bernd Schmidt  <bernds_cb1@t-online.de>
 
