@@ -3898,7 +3898,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "not considering SIMD clones; not yet supported"
 			 " for variable-width vectors.\n");
-      return NULL;
+      return false;
     }
 
   unsigned int badness = 0;
