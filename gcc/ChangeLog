@@ -1,3 +1,21 @@
+2018-09-05  Siddhesh Poyarekar  <siddhesh@sourceware.org>
+	    Kugan Vivekanandarajah  <kugan.vivekanandarajah@linaro.org>
+
+	* config/aarch64/falkor-tag-collision-avoidance.c: New file.
+	* config.gcc (extra_objs): Build it.
+	* config/aarch64/t-aarch64 (falkor-tag-collision-avoidance.o):
+	Likewise.
+	* config/aarch64/aarch64-passes.def
+	(pass_tag_collision_avoidance): New pass.
+	* config/aarch64/aarch64.c (qdf24xx_tunings): Add
+	AARCH64_EXTRA_TUNE_RENAME_LOAD_REGS to tuning_flags.
+	(aarch64_classify_address): Remove static qualifier.
+	(aarch64_address_info, aarch64_address_type): Move to...
+	* config/aarch64/aarch64-protos.h: ... here.
+	(make_pass_tag_collision_avoidance): New function.
+	* config/aarch64/aarch64-tuning-flags.def (rename_load_regs):
+	New tuning flag.
+
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
 	* doc/gcov.texi: Update documentation of humar

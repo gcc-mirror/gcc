@@ -20,3 +20,4 @@
 
 INSERT_PASS_AFTER (pass_regrename, 1, pass_fma_steering);
 INSERT_PASS_BEFORE (pass_reorder_blocks, 1, pass_track_speculation);
+INSERT_PASS_AFTER (pass_machine_reorg, 1, pass_tag_collision_avoidance);

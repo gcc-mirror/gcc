@@ -288,6 +288,49 @@ struct tune_params
   const struct cpu_prefetch_tune *prefetch;
 };
 
+/* Classifies an address.
+
+   ADDRESS_REG_IMM
+       A simple base register plus immediate offset.
+
+   ADDRESS_REG_WB
+       A base register indexed by immediate offset with writeback.
+
+   ADDRESS_REG_REG
+       A base register indexed by (optionally scaled) register.
+
+   ADDRESS_REG_UXTW
+       A base register indexed by (optionally scaled) zero-extended register.
+
+   ADDRESS_REG_SXTW
+       A base register indexed by (optionally scaled) sign-extended register.
+
+   ADDRESS_LO_SUM
+       A LO_SUM rtx with a base register and "LO12" symbol relocation.
+
+   ADDRESS_SYMBOLIC:
+       A constant symbolic address, in pc-relative literal pool.  */
+
+enum aarch64_address_type {
+  ADDRESS_REG_IMM,
+  ADDRESS_REG_WB,
+  ADDRESS_REG_REG,
+  ADDRESS_REG_UXTW,
+  ADDRESS_REG_SXTW,
+  ADDRESS_LO_SUM,
+  ADDRESS_SYMBOLIC
+};
+
+/* Address information.  */
+struct aarch64_address_info {
+  enum aarch64_address_type type;
+  rtx base;
+  rtx offset;
+  poly_int64 const_offset;
+  int shift;
+  enum aarch64_symbol_type symbol_type;
+};
+
 #define AARCH64_FUSION_PAIR(x, name) \
   AARCH64_FUSE_##name##_index, 
 /* Supported fusion operations.  */
@@ -561,6 +604,11 @@ void aarch64_swap_ldrstr_operands (rtx *, bool);
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);
 
+
+extern bool aarch64_classify_address (struct aarch64_address_info *, rtx,
+				      machine_mode, bool,
+				      aarch64_addr_query_type = ADDR_QUERY_M);
+
 /* Defined in common/config/aarch64-common.c.  */
 bool aarch64_handle_option (struct gcc_options *, struct gcc_options *,
 			     const struct cl_decoded_option *, location_t);
@@ -572,6 +620,7 @@ std::string aarch64_get_extension_string_for_isa_flags (unsigned long,
 
 rtl_opt_pass *make_pass_fma_steering (gcc::context *);
 rtl_opt_pass *make_pass_track_speculation (gcc::context *);
+rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);
 
 poly_uint64 aarch64_regmode_natural_size (machine_mode);
 
