@@ -7354,6 +7354,7 @@ extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 extern tree finish_left_unary_fold_expr      (tree, int);
 extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
+extern bool treat_lvalue_as_rvalue_p	     (tree, bool);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);

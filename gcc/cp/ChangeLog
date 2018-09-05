@@ -1,3 +1,12 @@
+2018-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (treat_lvalue_as_rvalue_p): Declare.
+	* except.c (build_throw): Use it.  Use CP_TYPE_VOLATILE_P.
+	* typeck.c (treat_lvalue_as_rvalue_p): No longer static.  Add PARM_OK
+	parameter.
+	(maybe_warn_pessimizing_move): Adjust treat_lvalue_as_rvalue_p call.
+	(check_return_expr): Likewise.
+
 2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84980

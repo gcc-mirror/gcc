@@ -9180,14 +9180,15 @@ can_do_nrvo_p (tree retval, tree functype)
 }
 
 /* Returns true if we should treat RETVAL, an expression being returned,
-   as if it were designated by an rvalue.  See [class.copy.elision].  */
+   as if it were designated by an rvalue.  See [class.copy.elision].
+   PARM_P is true if a function parameter is OK in this context.  */
 
-static bool
-treat_lvalue_as_rvalue_p (tree retval)
+bool
+treat_lvalue_as_rvalue_p (tree retval, bool parm_ok)
 {
   return ((cxx_dialect != cxx98)
 	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
-	      || TREE_CODE (retval) == PARM_DECL)
+	      || (parm_ok && TREE_CODE (retval) == PARM_DECL))
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval));
 }
@@ -9240,7 +9241,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    }
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (treat_lvalue_as_rvalue_p (arg))
+	  else if (treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (loc, OPT_Wredundant_move,
@@ -9525,7 +9526,7 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       bool converted = false;
-      if (treat_lvalue_as_rvalue_p (retval)
+      if (treat_lvalue_as_rvalue_p (retval, /*parm_ok*/true)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
 	{
