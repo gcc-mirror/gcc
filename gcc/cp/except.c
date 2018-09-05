@@ -676,12 +676,9 @@ build_throw (tree exp)
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
 	     treated as an rvalue for the purposes of overload resolution
 	     to favor move constructors over copy constructors.  */
-	  if (/* Must be a local, automatic variable.  */
-	      VAR_P (exp)
-	      && DECL_CONTEXT (exp) == current_function_decl
-	      && ! TREE_STATIC (exp)
+	  if (treat_lvalue_as_rvalue_p (exp, /*parm_ok*/false)
 	      /* The variable must not have the `volatile' qualifier.  */
-	      && !(cp_type_quals (TREE_TYPE (exp)) & TYPE_QUAL_VOLATILE))
+	      && !CP_TYPE_VOLATILE_P (TREE_TYPE (exp)))
 	    {
 	      tree moved = move (exp);
 	      exp_vec = make_tree_vector_single (moved);
