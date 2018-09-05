@@ -1,3 +1,9 @@
+2018-09-05   Pádraig Brady p@draigbrady.com
+
+	PR c++/87185
+	* lambda.c (prune_lambda_captures): Protect against const_vars.get
+	returning NULL.
+
 2018-09-04  Marek Polacek  <polacek@redhat.com>
 
 	* cp-tree.h (treat_lvalue_as_rvalue_p): Declare.

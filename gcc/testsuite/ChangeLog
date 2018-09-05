@@ -1,3 +1,8 @@
+2018-09-05   Pádraig Brady p@draigbrady.com
+
+	PR c++/87185
+	* g++.dg/pr87185.C: New.
+
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/87216
