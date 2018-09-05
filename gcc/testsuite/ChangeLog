@@ -1,3 +1,7 @@
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/loop.C: Update test to support new format.
+
 2018-09-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/86593
