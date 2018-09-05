@@ -78,48 +78,6 @@
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
 
-/* Classifies an address.
-
-   ADDRESS_REG_IMM
-       A simple base register plus immediate offset.
-
-   ADDRESS_REG_WB
-       A base register indexed by immediate offset with writeback.
-
-   ADDRESS_REG_REG
-       A base register indexed by (optionally scaled) register.
-
-   ADDRESS_REG_UXTW
-       A base register indexed by (optionally scaled) zero-extended register.
-
-   ADDRESS_REG_SXTW
-       A base register indexed by (optionally scaled) sign-extended register.
-
-   ADDRESS_LO_SUM
-       A LO_SUM rtx with a base register and "LO12" symbol relocation.
-
-   ADDRESS_SYMBOLIC:
-       A constant symbolic address, in pc-relative literal pool.  */
-
-enum aarch64_address_type {
-  ADDRESS_REG_IMM,
-  ADDRESS_REG_WB,
-  ADDRESS_REG_REG,
-  ADDRESS_REG_UXTW,
-  ADDRESS_REG_SXTW,
-  ADDRESS_LO_SUM,
-  ADDRESS_SYMBOLIC
-};
-
-struct aarch64_address_info {
-  enum aarch64_address_type type;
-  rtx base;
-  rtx offset;
-  poly_int64 const_offset;
-  int shift;
-  enum aarch64_symbol_type symbol_type;
-};
-
 /* Information about a legitimate vector immediate operand.  */
 struct simd_immediate_info
 {
@@ -927,7 +885,7 @@ static const struct tune_params qdf24xx_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  AARCH64_EXTRA_TUNE_RENAME_LOAD_REGS, /* tune_flags.  */
   &qdf24xx_prefetch_tune
 };
 
@@ -5671,10 +5629,10 @@ virt_or_elim_regno_p (unsigned regno)
    If it is, fill in INFO appropriately.  STRICT_P is true if
    REG_OK_STRICT is in effect.  */
 
-static bool
+bool
 aarch64_classify_address (struct aarch64_address_info *info,
 			  rtx x, machine_mode mode, bool strict_p,
-			  aarch64_addr_query_type type = ADDR_QUERY_M)
+			  aarch64_addr_query_type type)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
