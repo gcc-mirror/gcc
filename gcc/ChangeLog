@@ -1,3 +1,10 @@
+2018-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87217
+	* tree-ssa-sccvn.c (vuse_valueize): New.
+	(vn_reference_lookup_pieces): Use it.
+	(vn_reference_lookup): Likewise.
+
 2018-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87137
