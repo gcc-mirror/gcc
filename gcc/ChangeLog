@@ -1,5 +1,12 @@
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Update documentation of humar
+	readable mode.
+	* gcov.c (format_count): Print one decimal place, it provides
+	more fine number of situations like '1G' vs. '1.4G'.
+
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
 	PR target/87164
 	* config/rs6000/rs6000.opt: Mark the option as Deprecated.
 	* optc-gen.awk: Allow 'Var' for Deprecated options in order

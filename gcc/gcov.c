@@ -2216,8 +2216,8 @@ format_count (gcov_type count)
       if (count + divisor / 2 < 1000 * divisor)
 	break;
     }
-  gcov_type r  = (count + divisor / 2) / divisor;
-  sprintf (buffer, "%" PRId64 "%c", r, units[i]);
+  float r = 1.0f * count / divisor;
+  sprintf (buffer, "%.1f%c", r, units[i]);
   return buffer;
 }
 
