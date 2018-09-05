@@ -1,3 +1,11 @@
+2018-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-08-03  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86706
+	* g++.dg/template/pr86706.C: New test.
+
 2018-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from mainline
