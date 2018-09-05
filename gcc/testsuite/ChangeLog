@@ -2,7 +2,7 @@
 
 	PR testsuite/87216
 	* gcc.dg/tree-prof/pr59521-3.c: Update scanned pattern
-	to support Dawring names.
+	to support Darwin names.
 
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
