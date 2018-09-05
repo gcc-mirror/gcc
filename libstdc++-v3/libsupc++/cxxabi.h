@@ -165,10 +165,11 @@ namespace __cxxabiv1
    *  in that case, the demangled name is placed in a region of memory
    *  allocated with malloc.
    *
-   *  @param __length If @a __length is non-NULL, the length of the
+   *  @param __length If @a __length is non-null, the length of the
    *  buffer containing the demangled name is placed in @a *__length.
    *
-   *  @param __status @a *__status is set to one of the following values:
+   *  @param __status If @a __status is non-null, @a *__status is set to
+   *  one of the following values:
    *   0: The demangling operation succeeded.
    *  -1: A memory allocation failure occurred.
    *  -2: @a mangled_name is not a valid name under the C++ ABI mangling rules.

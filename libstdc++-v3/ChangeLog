@@ -1,3 +1,7 @@
+2018-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/cxxabi.h (__cxa_demangle): Clarify doxygen comment.
+
 2018-09-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/78179
