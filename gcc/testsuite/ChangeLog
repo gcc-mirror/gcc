@@ -1,3 +1,13 @@
+2018-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/recip_sqrt_mult_1.c: New test.
+	* gcc.dg/recip_sqrt_mult_2.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_3.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_4.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_5.c: Likewise.
+	* g++.dg/recip_sqrt_mult_1.C: Likewise.
+	* g++.dg/recip_sqrt_mult_2.C: Likewise.
+
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/87205
