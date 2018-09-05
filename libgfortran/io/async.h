@@ -337,8 +337,8 @@ struct adv_cond
 
 typedef struct async_unit
 {
-  pthread_mutex_t io_lock;   /* Lock for doing actual I/O. */
-  pthread_mutex_t lock;      /* Lock for manipulating the queue structure.  */
+  __gthread_mutex_t io_lock;   /* Lock for doing actual I/O. */
+  __gthread_mutex_t lock;      /* Lock for manipulating the queue structure.  */
   bool empty;
   struct
   {
