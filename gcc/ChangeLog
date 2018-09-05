@@ -1,3 +1,9 @@
+2018-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/87134
+	* tree-ssa-sccvn.c (rpo_elim::eliminate_push_avail): Make sure
+	to zero-init the emplaced vec.
+
 2018-09-05  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/87205

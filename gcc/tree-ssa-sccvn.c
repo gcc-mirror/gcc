@@ -5799,6 +5799,7 @@ rpo_elim::eliminate_push_avail (basic_block bb, tree leader)
   if (!existed)
     {
       new (&av) vec<std::pair<int, int> >;
+      av = vNULL;
       av.reserve_exact (2);
     }
   av.safe_push (std::make_pair (bb->index, SSA_NAME_VERSION (leader)));
