@@ -1,4 +1,11 @@
-2018-09-05   Pádraig Brady p@draigbrady.com
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109, wrong overload with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Use NULL instead of 0.  Bail
+	out if performing the maybe-rvalue overload resolution and a conversion
+	function is getting called.
+
+2018-09-05  Pádraig Brady  <p@draigbrady.com>
 
 	PR c++/87185
 	* lambda.c (prune_lambda_captures): Protect against const_vars.get

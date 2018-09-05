@@ -1,3 +1,8 @@
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109, wrong overload with ref-qualifiers.
+	* g++.dg/cpp0x/ref-qual19.C: New test.
+
 2018-09-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	PR testsuite/52665
