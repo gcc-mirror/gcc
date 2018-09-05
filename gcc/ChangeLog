@@ -1,3 +1,10 @@
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR target/87164
+	* config/rs6000/rs6000.opt: Mark the option as Deprecated.
+	* optc-gen.awk: Allow 'Var' for Deprecated options in order
+	to generate a MASK value.
+
 2018-09-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR debug/86593
