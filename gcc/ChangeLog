@@ -1,6 +1,12 @@
 2018-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87138
+	* expmed.c (expand_mult_const): Use immed_wide_int_const instead of
+	gen_int_mode.  Formatting fixes.
+
 	2018-08-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86835

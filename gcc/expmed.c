@@ -3343,19 +3343,21 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  /* Write a REG_EQUAL note on the last insn so that we can cse
 	     multiplication sequences.  Note that if ACCUM is a SUBREG,
 	     we've set the inner register and must properly indicate that.  */
-          tem = op0, nmode = mode;
-          accum_inner = accum;
-          if (GET_CODE (accum) == SUBREG)
+	  tem = op0, nmode = mode;
+	  accum_inner = accum;
+	  if (GET_CODE (accum) == SUBREG)
 	    {
 	      accum_inner = SUBREG_REG (accum);
 	      nmode = GET_MODE (accum_inner);
 	      tem = gen_lowpart (nmode, op0);
 	    }
 
-          insn = get_last_insn ();
-          set_dst_reg_note (insn, REG_EQUAL,
-			    gen_rtx_MULT (nmode, tem,
-					  gen_int_mode (val_so_far, nmode)),
+	  insn = get_last_insn ();
+	  wide_int wval_so_far
+	    = wi::uhwi (val_so_far,
+			GET_MODE_PRECISION (as_a <scalar_mode> (nmode)));
+	  rtx c = immed_wide_int_const (wval_so_far, nmode);
+	  set_dst_reg_note (insn, REG_EQUAL, gen_rtx_MULT (nmode, tem, c),
 			    accum_inner);
 	}
     }
