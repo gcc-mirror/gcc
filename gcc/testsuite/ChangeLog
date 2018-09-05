@@ -1,5 +1,8 @@
 2018-09-05   Pádraig Brady p@draigbrady.com
 
+	PR c++/87137
+	* g++.dg/abi/pr87137.C: New.
+
 	PR c++/87185
 	* g++.dg/pr87185.C: New.
 
