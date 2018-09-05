@@ -1,3 +1,18 @@
+2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* config/nvptx/nvptx-opts.h: New file.
+	* config/nvptx/nvptx.c (nvptx_file_start): Print the correct .target.
+	* config/nvptx/nvptx.h: Include "nvptx-opts.h".
+	(ASM_SPEC): Define.
+	(TARGET_SM35): New macro.
+	* config/nvptx/nvptx.md (atomic_fetch_<logic><mode>): Enable with the
+	correct predicate.
+	* config/nvptx/nvptx.opt (ptx_isa, sm_30, sm_35): New enum and its
+	values.
+	(misa=): New option.
+	* doc/invoke.texi (Nvidia PTX Options): Document -misa.
+
 2018-09-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (truncdfsf2): Remove expander.

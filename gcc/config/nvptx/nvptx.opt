@@ -48,3 +48,17 @@ Generate code that can keep local state uniform across all lanes.
 mgomp
 Target Report Mask(GOMP)
 Generate code for OpenMP offloading: enables -msoft-stack and -muniform-simt.
+
+Enum
+Name(ptx_isa) Type(int)
+Known PTX ISA versions (for use with the -misa= option):
+
+EnumValue
+Enum(ptx_isa) String(sm_30) Value(PTX_ISA_SM30)
+
+EnumValue
+Enum(ptx_isa) String(sm_35) Value(PTX_ISA_SM35)
+
+misa=
+Target RejectNegative ToLower Joined Enum(ptx_isa) Var(ptx_isa_option) Init(PTX_ISA_SM30)
+Specify the version of the ptx ISA to use.
