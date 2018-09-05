@@ -1,3 +1,24 @@
+2018-09-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (truncdfsf2): Remove expander.
+	(truncdfsf2_with_temp): Ditto.
+	(truncxf<mode>2): Ditto.
+	(*truncdfsf_fast_mixed): Remove insn pattern.
+	(*truncdfsf_fast_i387): Ditto.
+	(*truncdfsf_mixed): Ditto.
+	(*truncdfsf_i387): Ditto.
+	(*truncdfsf2_i387_1): Ditto.
+	(*truncxfsf2_mixed): Ditto.
+	(*truncxfdf2_mixed): Ditto.
+	(*truncxf<mode>2_i387_noop): Ditto. Update callers
+	to call gen_truncxf<mode>2 instead.
+	(*truncxf<mode>2_i387): Remove.
+	(reg->reg splitters): Remove splitter pattern.
+	(reg->mem splitters): Ditto.
+
+	(truncdfsf2): New insn pattern.
+	(truncxf<mode>2): Ditto.
+
 2018-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* tree-ssa-math-opts.c (is_mult_by): New function.
