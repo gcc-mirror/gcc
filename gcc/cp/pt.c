@@ -800,6 +800,7 @@ check_specialization_namespace (tree tmpl)
     return true;
   else
     {
+      auto_diagnostic_group d;
       if (permerror (input_location,
 		     "specialization of %qD in different namespace", tmpl))
 	inform (DECL_SOURCE_LOCATION (tmpl),
@@ -2592,6 +2593,7 @@ check_template_variable (tree decl)
     }
   if (template_header_count > wanted)
     {
+      auto_diagnostic_group d;
       bool warned = pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			     "too many template headers for %qD "
 	                     "(should be %d)",
@@ -2724,6 +2726,7 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   if (!nattrs)
     return;
 
+  auto_diagnostic_group d;
   if (warning_at (DECL_SOURCE_LOCATION (spec), OPT_Wmissing_attributes,
 		  "explicit specialization %q#D may be missing attributes",
 		  spec))
@@ -3070,6 +3073,7 @@ check_explicit_specialization (tree declarator,
 	  if (TREE_CODE (decl) == FUNCTION_DECL
 	      && DECL_HIDDEN_FRIEND_P (tmpl))
 	    {
+	      auto_diagnostic_group d;
 	      if (pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 			   "friend declaration %qD is not visible to "
 			   "explicit specialization", tmpl))
@@ -4891,6 +4895,7 @@ process_partial_specialization (tree decl)
 	   && TMPL_ARGS_DEPTH (specargs) == 1
 	   && !get_partial_spec_bindings (maintmpl, maintmpl, specargs))
     {
+      auto_diagnostic_group d;
       if (permerror (input_location, "partial specialization %qD is not "
 		     "more specialized than", decl))
 	inform (DECL_SOURCE_LOCATION (maintmpl), "primary template %qD",
@@ -6682,7 +6687,9 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	     template-parameter.  */
 	  expr = build_converted_constant_expr (type, expr, complain);
 	  if (expr == error_mark_node)
-	    return error_mark_node;
+	    /* Make sure we return NULL_TREE only if we have really issued
+	       an error, as described above.  */
+	    return (complain & tf_error) ? NULL_TREE : error_mark_node;
 	  expr = maybe_constant_value (expr);
 	  expr = convert_from_reference (expr);
 	}
@@ -9352,6 +9359,7 @@ lookup_template_class_1 (tree d1, tree arglist, tree in_decl, tree context,
         {
           if (complain & tf_error)
             {
+	      auto_diagnostic_group d;
               error ("template constraint failure");
               diagnose_constraints (input_location, gen_tmpl, arglist);
             }
@@ -9710,6 +9718,7 @@ finish_template_variable (tree var, tsubst_flags_t complain)
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("use of invalid variable template %qE", var);
 	  diagnose_constraints (location_of (var), templ, arglist);
 	}
@@ -16740,7 +16749,17 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		else
 		  {
 		    int const_init = false;
+		    unsigned int cnt = 0;
+		    tree first = NULL_TREE, ndecl = error_mark_node;
 		    maybe_push_decl (decl);
+
+		    if (VAR_P (decl)
+			&& DECL_DECOMPOSITION_P (decl)
+			&& TREE_TYPE (pattern_decl) != error_mark_node)
+		      ndecl = tsubst_decomp_names (decl, pattern_decl, args,
+						   complain, in_decl, &first,
+						   &cnt);
+
 		    if (VAR_P (decl)
 			&& DECL_PRETTY_FUNCTION_P (decl))
 		      {
@@ -16756,23 +16775,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P
 				    (pattern_decl));
-		    if (VAR_P (decl)
-			&& DECL_DECOMPOSITION_P (decl)
-			&& TREE_TYPE (pattern_decl) != error_mark_node)
-		      {
-			unsigned int cnt;
-			tree first;
-			tree ndecl
-			  = tsubst_decomp_names (decl, pattern_decl, args,
-						 complain, in_decl, &first, &cnt);
-			if (ndecl != error_mark_node)
-			  cp_maybe_mangle_decomp (ndecl, first, cnt);
-			cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
-			if (ndecl != error_mark_node)
-			  cp_finish_decomp (ndecl, first, cnt);
-		      }
-		    else
-		      cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+
+		    if (ndecl != error_mark_node)
+		      cp_maybe_mangle_decomp (ndecl, first, cnt);
+
+		    cp_finish_decl (decl, init, const_init, NULL_TREE, 0);
+
+		    if (ndecl != error_mark_node)
+		      cp_finish_decomp (ndecl, first, cnt);
 		  }
 	      }
 	  }
@@ -16822,6 +16832,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    RANGE_FOR_IVDEP (stmt) = RANGE_FOR_IVDEP (t);
 	    RANGE_FOR_UNROLL (stmt) = RANGE_FOR_UNROLL (t);
 	    finish_range_for_decl (stmt, decl, expr);
+	    if (decomp_first && decl != error_mark_node)
+	      cp_finish_decomp (decl, decomp_first, decomp_cnt);
 	  }
 	else
 	  {
@@ -26067,7 +26079,7 @@ listify (tree arg)
   if (!std_init_list || !DECL_CLASS_TEMPLATE_P (std_init_list))
     {    
       gcc_rich_location richloc (input_location);
-      maybe_add_include_fixit (&richloc, "<initializer_list>");
+      maybe_add_include_fixit (&richloc, "<initializer_list>", false);
       error_at (&richloc,
 		"deducing from brace-enclosed initializer list"
 		" requires %<#include <initializer_list>%>");
@@ -26885,6 +26897,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
           {
             if (complain & tf_warning_or_error)
               {
+		auto_diagnostic_group d;
                 switch (context)
                   {
                   case adc_unspecified:
@@ -27537,6 +27550,8 @@ declare_integer_pack (void)
 			       NULL_TREE, ECF_CONST);
   DECL_DECLARED_CONSTEXPR_P (ipfn) = true;
   DECL_BUILT_IN_CLASS (ipfn) = BUILT_IN_FRONTEND;
+  DECL_FUNCTION_CODE (ipfn)
+    = (enum built_in_function) (int) CP_BUILT_IN_INTEGER_PACK;
 }
 
 /* Set up the hash tables for template instantiations.  */

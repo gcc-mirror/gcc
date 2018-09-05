@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
   DEF_MODE_CLASS (MODE_CC),		/* condition code in a register */ \
   DEF_MODE_CLASS (MODE_INT),		/* integer */			   \
   DEF_MODE_CLASS (MODE_PARTIAL_INT),	/* integer with padding bits */    \
-  DEF_MODE_CLASS (MODE_POINTER_BOUNDS), /* bounds */                       \
   DEF_MODE_CLASS (MODE_FRACT),		/* signed fractional number */	   \
   DEF_MODE_CLASS (MODE_UFRACT),		/* unsigned fractional number */   \
   DEF_MODE_CLASS (MODE_ACCUM),		/* signed accumulator */	   \

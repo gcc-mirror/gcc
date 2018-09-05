@@ -558,11 +558,14 @@ name_lookup::search_namespace (tree scope)
 
   /* Look in exactly namespace. */
   bool found = search_namespace_only (scope);
-  
-  /* Recursively look in its inline children.  */
-  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
-    for (unsigned ix = inlinees->length (); ix--;)
-      found |= search_namespace ((*inlinees)[ix]);
+
+  /* Don't look into inline children, if we're looking for an
+     anonymous name -- it must be in the current scope, if anywhere.  */
+  if (name)
+    /* Recursively look in its inline children.  */
+    if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+      for (unsigned ix = inlinees->length (); ix--;)
+	found |= search_namespace ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -2556,6 +2559,7 @@ check_extern_c_conflict (tree decl)
 
       if (mismatch)
 	{
+	  auto_diagnostic_group d;
 	  pedwarn (input_location, 0,
 		   "conflicting C language linkage declaration %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
@@ -2604,6 +2608,15 @@ c_linkage_bindings (tree name)
   return NULL_TREE;
 }
 
+/* Subroutine of check_local_shadow.  */
+
+static void
+inform_shadowed (tree shadowed)
+{
+  inform (DECL_SOURCE_LOCATION (shadowed),
+	  "shadowed declaration is here");
+}
+
 /* DECL is being declared at a local scope.  Emit suitable shadow
    warnings.  */
 
@@ -2631,7 +2644,6 @@ check_local_shadow (tree decl)
       old_scope = binding->scope;
     }
 
-  tree shadowed = NULL_TREE;
   if (old
       && (TREE_CODE (old) == PARM_DECL
 	  || VAR_P (old)
@@ -2640,13 +2652,29 @@ check_local_shadow (tree decl)
 		  || TREE_CODE (decl) == TYPE_DECL)))
       && DECL_FUNCTION_SCOPE_P (old)
       && (!DECL_ARTIFICIAL (decl)
+	  || is_capture_proxy (decl)
 	  || DECL_IMPLICIT_TYPEDEF_P (decl)
 	  || (VAR_P (decl) && DECL_ANON_UNION_VAR_P (decl))))
     {
       /* DECL shadows a local thing possibly of interest.  */
 
+      /* DR 2211: check that captures and parameters
+	 do not have the same name. */
+      if (is_capture_proxy (decl))
+	{
+	  if (current_lambda_expr ()
+	      && DECL_CONTEXT (old) == lambda_function (current_lambda_expr ())
+	      && TREE_CODE (old) == PARM_DECL
+	      && DECL_NAME (decl) != this_identifier)
+	    {
+	      error_at (DECL_SOURCE_LOCATION (old),
+			"lambda parameter %qD "
+			"previously declared as a capture", old);
+	    }
+	  return;
+	}
       /* Don't complain if it's from an enclosing function.  */
-      if (DECL_CONTEXT (old) == current_function_decl
+      else if (DECL_CONTEXT (old) == current_function_decl
 	  && TREE_CODE (decl) != PARM_DECL
 	  && TREE_CODE (old) == PARM_DECL)
 	{
@@ -2686,6 +2714,7 @@ check_local_shadow (tree decl)
 	       && old_scope == current_binding_level->level_chain
 	       && (old_scope->kind == sk_cond || old_scope->kind == sk_for))
 	{
+	  auto_diagnostic_group d;
 	  error ("redeclaration of %q#D", decl);
 	  inform (DECL_SOURCE_LOCATION (old),
 		  "%q#D previously declared here", old);
@@ -2708,6 +2737,7 @@ check_local_shadow (tree decl)
 		       || current_binding_level->level_chain->kind == sk_catch)
 		   && in_function_try_handler))
 	{
+	  auto_diagnostic_group d;
 	  if (permerror (input_location, "redeclaration of %q#D", decl))
 	    inform (DECL_SOURCE_LOCATION (old),
 		    "%q#D previously declared here", old);
@@ -2748,11 +2778,9 @@ check_local_shadow (tree decl)
       else
 	msg = "declaration of %qD shadows a previous local";
 
+      auto_diagnostic_group d;
       if (warning_at (input_location, warning_code, msg, decl))
-	{
-	  shadowed = old;
-	  goto inform_shadowed;
-	}
+	inform_shadowed (old);
       return;
     }
 
@@ -2777,14 +2805,12 @@ check_local_shadow (tree decl)
 	    || TYPE_PTRFN_P (TREE_TYPE (decl))
 	    || TYPE_PTRMEMFUNC_P (TREE_TYPE (decl)))
 	  {
+	    auto_diagnostic_group d;
 	    if (warning_at (input_location, OPT_Wshadow,
 			    "declaration of %qD shadows a member of %qT",
 			    decl, current_nonlambda_class_type ())
 		&& DECL_P (member))
-	      {
-		shadowed = member;
-		goto inform_shadowed;
-	      }
+	      inform_shadowed (member);
 	  }
 	return;
       }
@@ -2799,20 +2825,15 @@ check_local_shadow (tree decl)
       && !instantiating_current_function_p ())
     /* XXX shadow warnings in outer-more namespaces */
     {
+      auto_diagnostic_group d;
       if (warning_at (input_location, OPT_Wshadow,
 		      "declaration of %qD shadows a global declaration",
 		      decl))
-	{
-	  shadowed = old;
-	  goto inform_shadowed;
-	}
+	inform_shadowed (old);
       return;
     }
 
   return;
-
- inform_shadowed:
-  inform (DECL_SOURCE_LOCATION (shadowed), "shadowed declaration is here");
 }
 
 /* DECL is being pushed inside function CTX.  Set its context, if
@@ -2938,6 +2959,7 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
 		       && !comptypes (TREE_TYPE (decl), TREE_TYPE (other),
 				      COMPARE_REDECLARATION)))
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (DECL_SOURCE_LOCATION (decl),
 			     "local external declaration %q#D", decl))
 		inform (DECL_SOURCE_LOCATION (other),
@@ -5611,7 +5633,7 @@ maybe_suggest_missing_std_header (location_t location, tree name)
   if (cxx_dialect >= header_hint->min_dialect)
     {
       const char *header = header_hint->header;
-      maybe_add_include_fixit (&richloc, header);
+      maybe_add_include_fixit (&richloc, header, true);
       inform (&richloc,
 	      "%<std::%s%> is defined in header %qs;"
 	      " did you forget to %<#include %s%>?",
@@ -5772,7 +5794,7 @@ consider_binding_level (tree name, best_match <tree, const char *> &bm,
 
       /* Skip anticipated decls of builtin functions.  */
       if (TREE_CODE (d) == FUNCTION_DECL
-	  && DECL_BUILT_IN (d)
+	  && fndecl_built_in_p (d)
 	  && DECL_ANTICIPATED (d))
 	continue;
 
@@ -5938,10 +5960,10 @@ lookup_name_fuzzy (tree name, enum lookup_name_fuzzy_kind kind, location_t loc)
       /* If we have an exact match for a macro name, then either the
 	 macro was used with the wrong argument count, or the macro
 	 has been used before it was defined.  */
-      cpp_hashnode *macro = bmm.blithely_get_best_candidate ();
-      if (macro && (macro->flags & NODE_BUILTIN) == 0)
-	return name_hint (NULL,
-			  macro_use_before_def::maybe_make (loc, macro));
+      if (cpp_hashnode *macro = bmm.blithely_get_best_candidate ())
+	if (cpp_user_macro_p (macro))
+	  return name_hint (NULL,
+			    macro_use_before_def::maybe_make (loc, macro));
     }
 
   /* Try the "starts_decl_specifier_p" keywords to detect
@@ -7255,7 +7277,7 @@ cp_emit_debug_info_for_using (tree t, tree context)
      of a builtin function.  */
   if (TREE_CODE (t) == FUNCTION_DECL
       && DECL_EXTERNAL (t)
-      && DECL_BUILT_IN (t))
+      && fndecl_built_in_p (t))
     return;
 
   /* Do not supply context to imported_module_or_decl, if

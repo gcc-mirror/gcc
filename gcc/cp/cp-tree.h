@@ -154,6 +154,24 @@ enum cp_tree_index
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
     CPTI_INIT_LIST_IDENTIFIER,
+    CPTI_FOR_RANGE__IDENTIFIER,
+    CPTI_FOR_BEGIN__IDENTIFIER,
+    CPTI_FOR_END__IDENTIFIER,
+    CPTI_FOR_RANGE_IDENTIFIER,
+    CPTI_FOR_BEGIN_IDENTIFIER,
+    CPTI_FOR_END_IDENTIFIER,
+    CPTI_ABI_TAG_IDENTIFIER,
+    CPTI_ALIGNED_IDENTIFIER,
+    CPTI_BEGIN_IDENTIFIER,
+    CPTI_END_IDENTIFIER,
+    CPTI_GET_IDENTIFIER,
+    CPTI_GNU_IDENTIFIER,
+    CPTI_TUPLE_ELEMENT_IDENTIFIER,
+    CPTI_TUPLE_SIZE_IDENTIFIER,
+    CPTI_TYPE_IDENTIFIER,
+    CPTI_VALUE_IDENTIFIER,
+    CPTI_FUN_IDENTIFIER,
+    CPTI_CLOSURE_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -274,6 +292,24 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
 #define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
+#define for_range__identifier		cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER]
+#define for_begin__identifier		cp_global_trees[CPTI_FOR_BEGIN__IDENTIFIER]
+#define for_end__identifier		cp_global_trees[CPTI_FOR_END__IDENTIFIER]
+#define for_range_identifier		cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
+#define for_begin_identifier		cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
+#define for_end_identifier		cp_global_trees[CPTI_FOR_END_IDENTIFIER]
+#define abi_tag_identifier		cp_global_trees[CPTI_ABI_TAG_IDENTIFIER]
+#define aligned_identifier		cp_global_trees[CPTI_ALIGNED_IDENTIFIER]
+#define begin_identifier		cp_global_trees[CPTI_BEGIN_IDENTIFIER]
+#define end_identifier			cp_global_trees[CPTI_END_IDENTIFIER]
+#define get__identifier			cp_global_trees[CPTI_GET_IDENTIFIER]
+#define gnu_identifier			cp_global_trees[CPTI_GNU_IDENTIFIER]
+#define tuple_element_identifier	cp_global_trees[CPTI_TUPLE_ELEMENT_IDENTIFIER]
+#define tuple_size_identifier		cp_global_trees[CPTI_TUPLE_SIZE_IDENTIFIER]
+#define type_identifier			cp_global_trees[CPTI_TYPE_IDENTIFIER]
+#define value_identifier		cp_global_trees[CPTI_VALUE_IDENTIFIER]
+#define fun_identifier			cp_global_trees[CPTI_FUN_IDENTIFIER]
+#define closure_identifier		cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -3620,7 +3656,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_language_function)
 
-/* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
+/* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
@@ -5930,6 +5966,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
+/* BUILT_IN_FRONTEND function codes.  */
+enum cp_built_in_function {
+  CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+  CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_LAST
+};
+
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
@@ -7345,7 +7388,8 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 extern void cxx_incomplete_type_inform 	        (const_tree);
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
-extern void cxx_readonly_error			(tree, enum lvalue_use);
+extern void cxx_readonly_error			(location_t, tree,
+						 enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 extern int abstract_virtuals_error		(abstract_class_use, tree);
@@ -7354,7 +7398,8 @@ extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flag
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern tree split_nonconstant_init		(tree, tree);
-extern bool check_narrowing			(tree, tree, tsubst_flags_t);
+extern bool check_narrowing			(tree, tree, tsubst_flags_t,
+						 bool = false);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
 extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);
@@ -7536,7 +7581,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
-extern tree maybe_constant_init			(tree, tree = NULL_TREE);
+extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);

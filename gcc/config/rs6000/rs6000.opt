@@ -177,7 +177,7 @@ mno-string
 Target RejectNegative Undocumented Ignore
 
 mstring
-Target RejectNegative Undocumented Warn(%<-mstring%> is deprecated)
+Target RejectNegative Undocumented Deprecated
 
 msoft-float
 Target Report RejectNegative Mask(SOFT_FLOAT) Var(rs6000_isa_flags)
@@ -334,8 +334,8 @@ Target Report Var(rs6000_block_compare_inline_loop_limit) Init(-1) RejectNegativ
 Max number of bytes to compare with loops.
 
 mstring-compare-inline-limit=
-Target Report Var(rs6000_string_compare_inline_limit) Init(8) RejectNegative Joined UInteger Save
-Max number of pairs of load insns for compare.
+Target Report Var(rs6000_string_compare_inline_limit) Init(64) RejectNegative Joined UInteger Save
+Max number of bytes to compare.
 
 misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
@@ -483,8 +483,9 @@ mcrypto
 Target Report Mask(CRYPTO) Var(rs6000_isa_flags)
 Use ISA 2.07 Category:Vector.AES and Category:Vector.SHA2 instructions.
 
+; We can't use Ignore flag because DIRECT_MOVE mask is still used.
 mdirect-move
-Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) Ignore Warn(%qs is deprecated)
+Target Undocumented Mask(DIRECT_MOVE) Var(rs6000_isa_flags) Warn(%qs is deprecated)
 
 mhtm
 Target Report Mask(HTM) Var(rs6000_isa_flags)

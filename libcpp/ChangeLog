@@ -1,3 +1,211 @@
+2018-08-30  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (enum lc_reason): Comment each member
+	separately.
+	(struct line_maps): Fix reallocator comment.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* include/line-map.h (enum range_display_kind): New enum.
+	(struct location_range): Replace field "m_show_caret_p" with
+	"m_range_display_kind", converting from bool to the new enum.
+	(class rich_location): Add example of line insertion fix-it hint.
+	(rich_location::add_range): Convert param "show_caret_p" from bool
+	to enum range_display_kind and rename to "range_display_kind",
+	giving it a default of SHOW_RANGE_WITHOUT_CARET.
+	(rich_location::set_range): Likewise, albeit without a default.
+	* line-map.c (rich_location::rich_location): Update for conversion
+	of show_caret_p to tri-state enum.
+	(rich_location::add_range): Likewise.
+	(rich_location::set_range): Likewise.
+
+2018-08-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR bootstrap/86872
+	* line-map.c (pure_location_p): Return true if linemap_lookup
+	returns NULL.
+	(linemap_add): Set start_location to 0 if we run out of line map
+	space.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h: Fixup some whitespace.
+	(cpp_hashnode): Reduce type to 2 bit & flags to 8.
+
+	* include/cpplib.h (NODE_BUILTIN, NODE_MACRO_ARG): Delete.
+	Renumber others.
+	(enum node_type): Replace NT_MACRO with NT_USER_MACRO,
+	NT_BUILTIN_MACRO, NT_MACRO_ARG.  Delete NT_ASSERTION.
+	(NTV_MACRO, NTV_ANSWER, NTV_BUILTIN, NTV_ARGUMENT, NTV_NONE):
+	Delete.
+	(CPP_HASHNODE_VALUE_IDX): Delete.
+	(union _cpp_hashnode_value): GTY tag from enum node_type directly.
+	(struct cpp_hashnode): Adjust GTY desc for value field.
+	(cpp_user_macro_p, cpp_builtin_macro_p, cpp_macro_p): Adjust.
+	* directives.c (undefine_macros): Clear value.anwers, adjust flag
+	clearing.
+	(_cpp_test_assertion): No need to check NT_ASSERTION.
+	(do_assert, do_unassert): Likewise.
+	* init.c (cpp_init_special_builtins): Set type not flags.
+	* macro.c (struct macro_arg_saved_data): Add type field.
+	(cpp_get_token_1): Check type not NT_VOID.
+	(_cpp_free_definition): Adjust flag clearing.  Nullify
+	value.answers.
+	(_cpp_save_parameter, _cpp_unsave_parameters): Save and restore
+	type.
+	(lex_expansion_token): Check type not flags.
+	(_cpp_create_definition): Set type to NT_USER_MACRO.
+	(_cpp_notify_macro_use): Adjust type checking.
+	* pch.c (write_macdef, count_defs, write_defs, cpp_valid_state)
+	(save_macros): Adjust node type/flag handling.
+	* traditional.c (_cpp_scan_out_logical_line): Check type not flags.
+
+	* directives.c (do_undef): Use cpp_macro_p & cpp_builtin_macro_p.
+	* include/cpplib.h (enum cpp_macro_kind): Remove trailing comma.
+	(cpp_fun_like_macro_p): Make inline, define.
+	* macro.c (cpp_define_lazily): Use UCHAR_MAX.
+	(cpp_fun_like_macro_p): Delete.
+
+	* Makefile.in (TAGS_SOURCES): Remove cpp-id-data.h.
+	* include/cpp-id-data.h: Delete.
+	* internal.h: Include cpplib.h not cpp-id-data.h.
+
+	* include/cpp-id-data.h (struct answer): Delete.
+	* include/cpplib.h (struct answer): Don't forward-declare.
+	(enum cpp_macro_kind): Add cmk_assert.
+	(struct cpp_macro): Union parms and next assert chain.
+	(union _cpp_hashnode_value): 'answer' field is cpp_macro.
+	* directives.c (parse_answer): Convert to use cpp_macro. Return
+	true on success. 
+	(parse_assertion, find_answer, _cpp_test_assertion, cpp_do_assert)
+	(cpp_do_unassert): Convert to use cpp_macro.
+	* macro.c (warn_of_redefinition, _cpp_new_macro)
+	(check_trad_stringification, cpp_macro_definition): Adjust macro
+	parm access.
+	* traditional.c (_cpp_replacement_text_len)
+	(_cpp_copy_replacement_text, _cpp_create_trad_definition): Likewise.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* include/cpplib.h (struct cpp_callbacks): Replace
+	user_builtin_macro with user_lazy_macro.
+	(struct cpp_macro): add lazy field.
+	(enum cpp_builtin_type): Remove BT_FIRST_USER, BT_LAST_USER.
+	(cpp_define_lazily): Declare.
+	* macro.c (enter_macro_context) Use _cpp_maybe_notify_macro_use.
+	(warn_of_redefinition): Use cpp_builtin_macro_p, directly call
+	user_lazy_macro hook.
+	(_cpp_new_macro): Clear lazy field.
+	(cpp_define_lazily): Define.
+	(_cpp_notify_macro_use): Adjust lazy definition code.
+	(cpp_macro_definition): No need to do lazy definition here.
+	* pch.c (write_macdef, save_macros): Likewise.
+
+	* include/cpplib.h (enum cpp_macro_kind): New.
+	(struct cpp_macro): Make body trailing array.  Add kind field,
+	delete traditional flag.
+	* internal.h (_cpp_new_macro): Declare.
+	(_cpp_reserve_room): New inline.
+	(_cpp_commit_buf): Declare.
+	(_cpp_create_trad_definition): Return new macro.
+	* lex.c (_cpp_commit_buff): New.
+	* macro.c (macro_real_token_count): Count backwards.
+	(replace_args): Pointer equality not orderedness.
+	(_cpp_save_parameter): Use _cpp_reserve_room.
+	(alloc_expansion_token): Delete.
+	(lex_expansion_token): Return macro pointer.  Use _cpp_reserve_room.
+	(create_iso_definition): Allocate macro itself.  Adjust for
+	different allocation ordering.
+	(_cpp_new_macro): New.
+	(_cpp_create_definition): Adjust for API changes.
+	* traditional.c (push_replacement_text): Don't set traditional
+	flag.
+	(save_replacement_text): Likewise.
+	(_cpp_create_trad_definition): Allocate macro itself, Adjust for
+	different allocation ordering.
+
+	* cpp-id-data.h (uchar, UC): Move to internal.h
+	(struct cpp_macro): Move to cpplib.h.
+	* internal.h (uchar, UC): From cpp-id-data.h.
+	* include/cpplib.h (struct cpp_macro): From cpp-id-data.h.
+
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (_cpp_save_parameter): Take parmno, not macro.
+	(_cpp_unsave_parameters): Declare.
+	* macro.c (_cpp_save_parameter): Take parm number, not macro.
+	Return true on success.
+	(_cpp_unsave_parameters): New.
+	(parse_params): Take parm_no and variadic pointers, not macro.
+	Reimplement parsing logic.
+	(create_iso_definition): Adjust parse_params changes.  Call
+	_cpp_unsave_parameters here.
+	(_cpp_create_definition): Don't unsave params here.
+	* traditional.c (scan_parameters): Take n_param pointer, adjust.
+	(_cpp_create_trad_definition): Ajust scan_parameters change.  Call
+	_cpp_unsave_parameters.
+
+	* include/cpplib.h (cpp_user_macro_p, cpp_builtin_macro_p)
+	(cpp_macro_p): New inlines.
+	* directives.c (do_pragma_poison): Use cpp_macro_p.
+	(do_ifdef, do_ifndef): Likewise.  Use _cpp_maybe_notify_macro_use.
+	(cpp_pop_definition): Use cpp_macro_p.  Move _cpp_free_definition
+	earlier.  Don't zap node directly.
+	* expr.c (parse_defined): Use _cpp_maybe_notify_macro_use &
+	cpp_macro_p.
+	* files.c (should_stack_file): Use cpp_macro_p.
+	* identifiers.c (cpp_defined): Likewise.
+	* internal.h (_cpp_mark_macro): Use cpp_user_macro_p.
+	(_cpp_notify_macro_use): Declare.
+	(_cpp_maybe_notify_macro_use): New inline.
+	* lex.c (is_macro): Use cpp_macro_p.
+	* macro.c (_cpp_warn_if_unused_macro): Use cpp_user_macro_p.
+	(enter_macro_context): Likewise.
+	(_cpp_create_definition): Use cpp_builtin_macro_p,
+	cpp_user_macro_p.  Move _cpp_free_definition earlier.
+	(_cpp_notify_macro_use): New, broken out of multiple call sites.
+	* traditional.c (fun_like_macro_p): Use cpp_builtin_macro_p.
+	(maybe_start_funlike, _cpp_scan_out_logical_line)
+	(push_replacement_text): Likewise.
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (struct location_range): Add "m_label" field.
+	(class rich_location): Add description of labels to leading
+	comment.
+	(rich_location::rich_location): Add "label" param, defaulting to
+	NULL.
+	(rich_location::add_range): Likewise.
+	(struct label_text): New struct.
+	(class range_label): New abstract base class.
+	* line-map.c (rich_location::rich_location): Add "label" param;
+	use it.
+	(rich_location::add_range): Likewise.
+
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	Make linemap::included_from a location
+	libcpp/
+	* include/line-map.h (struct line_map_ordinary): Replace
+	included_from map index with included_at source_location.
+	(ORDINARY_MAP_INCLUDER_FILE_INDEX): Delete.
+	(LAST_SOURCE_LINE_LOCATION): Delete.
+	(LAST_SOURCE_LINE, LAST_SOURCE_COLUMN): Delete.
+	(linemap_included_from): New.
+	(linemap_included_from_linemap): Declare.
+	(MAIN_FILE_P): Adjust.
+	* line-map.c (linemap_included_from_linemap): New.
+	(lonemap_check_files_exited): Use linemap_included_at.
+	(linemap_add): Adjust inclusion setting.
+	(linemap_dump, linemap_dump_location): Adjust.
+	* directives.c (do_linemarker): Use linemap_included_at.
+
+2018-08-07  Nathan Sidwell  <nathan@acm.org>
+
+	* line-map.c: (linemap_init): Set default allocator here.
+	(new_linemap): Rather than here.  Refactor allocation logic.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (rich_location::set_range): Remove redundant
@@ -94,10 +302,10 @@
 
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
-        PR other/70268
-        * include/cpplib.h (cpp_callbacks::remap_filename): New callback.
-        * macro.c (_cpp_builtin_macro_text): Call remap_filename for
-        __FILE__ and __BASE_FILE__.
+	PR other/70268
+	* include/cpplib.h (cpp_callbacks::remap_filename): New callback.
+	* macro.c (_cpp_builtin_macro_text): Call remap_filename for
+	__FILE__ and __BASE_FILE__.
 
 2018-01-10  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 

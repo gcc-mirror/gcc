@@ -3982,7 +3982,8 @@ resolve_operator (gfc_expr *e)
 	  else if (op2->ts.kind < e->ts.kind)
 	    gfc_convert_type (op2, &e->ts, 2);
 
-	  if (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR)
+	  if (flag_frontend_optimize &&
+	    (e->value.op.op == INTRINSIC_AND || e->value.op.op == INTRINSIC_OR))
 	    {
 	      /* Warn about short-circuiting
 	         with impure function as second operand.  */
@@ -6265,9 +6266,17 @@ resolve_typebound_call (gfc_code* c, const char **name, bool *overridable)
   /* Check that's really a SUBROUTINE.  */
   if (!c->expr1->value.compcall.tbp->subroutine)
     {
-      gfc_error ("%qs at %L should be a SUBROUTINE",
-		 c->expr1->value.compcall.name, &c->loc);
-      return false;
+      if (!c->expr1->value.compcall.tbp->is_generic
+	  && c->expr1->value.compcall.tbp->u.specific
+	  && c->expr1->value.compcall.tbp->u.specific->n.sym
+	  && c->expr1->value.compcall.tbp->u.specific->n.sym->attr.subroutine)
+	c->expr1->value.compcall.tbp->subroutine = 1;
+      else
+	{
+	  gfc_error ("%qs at %L should be a SUBROUTINE",
+		     c->expr1->value.compcall.name, &c->loc);
+	  return false;
+	}
     }
 
   if (!check_typebound_baseobject (c->expr1))
@@ -9271,7 +9280,6 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 static void
 resolve_transfer (gfc_code *code)
 {
-  gfc_typespec *ts;
   gfc_symbol *sym, *derived;
   gfc_ref *ref;
   gfc_expr *exp;
@@ -9307,7 +9315,9 @@ resolve_transfer (gfc_code *code)
 				    _("item in READ")))
     return;
 
-  ts = exp->expr_type == EXPR_STRUCTURE ? &exp->ts : &exp->symtree->n.sym->ts;
+  const gfc_typespec *ts = exp->expr_type == EXPR_STRUCTURE
+			|| exp->expr_type == EXPR_FUNCTION
+			 ? &exp->ts : &exp->symtree->n.sym->ts;
 
   /* Go to actual component transferred.  */
   for (ref = exp->ref; ref; ref = ref->next)
@@ -12130,6 +12140,7 @@ resolve_fl_variable_derived (gfc_symbol *sym, int no_init_flag)
      namespace.  14.6.1.3 of the standard and the discussion on
      comp.lang.fortran.  */
   if (sym->ns != sym->ts.u.derived->ns
+      && !sym->ts.u.derived->attr.use_assoc
       && sym->ns->proc_name->attr.if_source != IFSRC_IFBODY)
     {
       gfc_symbol *s;
@@ -13999,28 +14010,6 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     CLASS_DATA (c)->ts.u.derived
                     = gfc_find_dt_in_generic (CLASS_DATA (c)->ts.u.derived);
 
-  if (!sym->attr.is_class && c->ts.type == BT_DERIVED && !sym->attr.vtype
-      && c->attr.pointer && c->ts.u.derived->components == NULL
-      && !c->ts.u.derived->attr.zero_comp)
-    {
-      gfc_error ("The pointer component %qs of %qs at %L is a type "
-                 "that has not been declared", c->name, sym->name,
-                 &c->loc);
-      return false;
-    }
-
-  if (c->ts.type == BT_CLASS && c->attr.class_ok
-      && CLASS_DATA (c)->attr.class_pointer
-      && CLASS_DATA (c)->ts.u.derived->components == NULL
-      && !CLASS_DATA (c)->ts.u.derived->attr.zero_comp
-      && !UNLIMITED_POLY (c))
-    {
-      gfc_error ("The pointer component %qs of %qs at %L is a type "
-                 "that has not been declared", c->name, sym->name,
-                 &c->loc);
-      return false;
-    }
-
   /* If an allocatable component derived type is of the same type as
      the enclosing derived type, we need a vtable generating so that
      the __deallocate procedure is created.  */
@@ -14255,6 +14244,13 @@ resolve_fl_derived (gfc_symbol *sym)
 			  : &gen_dt->generic->sym->declared_at,
 			  &sym->declared_at))
     return false;
+
+  if (sym->components == NULL && !sym->attr.zero_comp)
+    {
+      gfc_error ("Derived type %qs at %L has not been declared",
+		  sym->name, &sym->declared_at);
+      return false;
+    }
 
   /* Resolve the finalizer procedures.  */
   if (!gfc_resolve_finalizers (sym, NULL))

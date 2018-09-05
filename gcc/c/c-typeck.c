@@ -2207,9 +2207,14 @@ lookup_field (tree type, tree component)
   /* If TYPE_LANG_SPECIFIC is set, then it is a sorted array of pointers
      to the field elements.  Use a binary search on this array to quickly
      find the element.  Otherwise, do a linear search.  TYPE_LANG_SPECIFIC
-     will always be set for structures which have many elements.  */
+     will always be set for structures which have many elements.
 
-  if (TYPE_LANG_SPECIFIC (type) && TYPE_LANG_SPECIFIC (type)->s)
+     Duplicate field checking replaces duplicates with NULL_TREE so
+     TYPE_LANG_SPECIFIC arrays are potentially no longer sorted.  In that
+     case just iterate using DECL_CHAIN.  */
+
+  if (TYPE_LANG_SPECIFIC (type) && TYPE_LANG_SPECIFIC (type)->s
+      && !seen_error ())
     {
       int bot, top, half;
       tree *field_array = &TYPE_LANG_SPECIFIC (type)->s->elts[0];
@@ -2901,6 +2906,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
       if (TREE_CODE (expr.value) == PARM_DECL
 	  && C_ARRAY_PARAMETER (expr.value))
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wsizeof_array_argument,
 			  "%<sizeof%> on array function parameter %qE will "
 			  "return size of %qT", expr.value,
@@ -3102,9 +3108,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   argarray = vec_safe_address (params);
 
   /* Check that arguments to builtin functions match the expectations.  */
-  if (fundecl
-      && DECL_BUILT_IN (fundecl)
-      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL
+  if (fundecl && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL)
       && !check_builtin_function_arguments (loc, arg_loc, fundecl, nargs,
 					    argarray))
     return error_mark_node;
@@ -3227,8 +3231,7 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
      precision should be removed (classification) or not
      (comparison).  */
   if (type_generic
-      && DECL_BUILT_IN (fundecl)
-      && DECL_BUILT_IN_CLASS (fundecl) == BUILT_IN_NORMAL)
+      && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL))
     {
       switch (DECL_FUNCTION_CODE (fundecl))
 	{
@@ -3730,19 +3733,27 @@ parser_build_binary_op (location_t location, enum tree_code code,
 		    "comparison with string literal results in unspecified behavior");
       /* Warn for ptr == '\0', it's likely that it should've been ptr[0].  */
       if (POINTER_TYPE_P (type1)
-	   && null_pointer_constant_p (arg2.value)
-	   && char_type_p (type2)
-	   && warning_at (location, OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	inform (arg1.get_start (), "did you mean to dereference the pointer?");
+	  && null_pointer_constant_p (arg2.value)
+	  && char_type_p (type2))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (location, OPT_Wpointer_compare,
+			    "comparison between pointer and zero character "
+			    "constant"))
+	    inform (arg1.get_start (),
+		      "did you mean to dereference the pointer?");
+	}
       else if (POINTER_TYPE_P (type2)
 	       && null_pointer_constant_p (arg1.value)
-	       && char_type_p (type1)
-	       && warning_at (location, OPT_Wpointer_compare,
-			      "comparison between pointer and zero character "
-			      "constant"))
-	inform (arg2.get_start (), "did you mean to dereference the pointer?");
+	       && char_type_p (type1))
+	{
+	  auto_diagnostic_group d;
+	  if (warning_at (location, OPT_Wpointer_compare,
+			    "comparison between pointer and zero character "
+			    "constant"))
+	    inform (arg2.get_start (),
+		      "did you mean to dereference the pointer?");
+	}
     }
   else if (TREE_CODE_CLASS (code) == tcc_comparison
 	   && (code1 == STRING_CST || code2 == STRING_CST))
@@ -4283,13 +4294,16 @@ build_unary_op (location_t location, enum tree_code code, tree xarg,
 	    e = TREE_OPERAND (e, 1);
 
 	  if ((TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
-	       || truth_value_p (TREE_CODE (e)))
-	      && warning_at (location, OPT_Wbool_operation,
-			     "%<~%> on a boolean expression"))
+	       || truth_value_p (TREE_CODE (e))))
 	    {
-	      gcc_rich_location richloc (location);
-	      richloc.add_fixit_insert_before (location, "!");
-	      inform (&richloc, "did you mean to use logical not?");
+	      auto_diagnostic_group d;
+	      if (warning_at (location, OPT_Wbool_operation,
+				"%<~%> on a boolean expression"))
+		{
+		  gcc_rich_location richloc (location);
+		  richloc.add_fixit_insert_before (location, "!");
+		  inform (&richloc, "did you mean to use logical not?");
+		}
 	    }
 	  if (!noconvert)
 	    arg = default_conversion (arg);
@@ -6192,6 +6206,8 @@ error_init (location_t loc, const char *gmsgid)
 {
   char *ofwhat;
 
+  auto_diagnostic_group d;
+
   /* The gmsgid may be a format string with %< and %>. */
   error_at (loc, gmsgid);
   ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
@@ -6211,7 +6227,7 @@ pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
   source_location exploc = expansion_point_location_if_in_system_header (loc);
-
+  auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
   bool warned = emit_diagnostic_valist (DK_PEDWARN, exploc, opt, gmsgid, &ap);
@@ -6232,6 +6248,8 @@ warning_init (location_t loc, int opt, const char *gmsgid)
 {
   char *ofwhat;
   bool warned;
+
+  auto_diagnostic_group d;
 
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
@@ -6374,8 +6392,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (PLOC, OPT, AR, parmnum, rname))			 \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	{								\
+	  auto_diagnostic_group d;						\
+	  if (pedwarn (PLOC, OPT, AR, parmnum, rname))		\
+	    inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype); \
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS);                                     \
@@ -6400,8 +6421,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		 \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	{								\
+	auto_diagnostic_group d;						\
+	if (pedwarn (PLOC, OPT, AR, parmnum, rname, QUALS))		\
+	  inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);	\
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         pedwarn (LOCATION, OPT, AS, QUALS);				 \
@@ -6426,8 +6450,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     switch (errtype)                                                     \
       {                                                                  \
       case ic_argpass:                                                   \
-        if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))           \
-          inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype);      \
+	{								\
+	  auto_diagnostic_group d;						\
+	  if (warning_at (PLOC, OPT, AR, parmnum, rname, QUALS))	\
+	    inform_for_arg (fundecl, (PLOC), parmnum, type, rhstype); \
+	}								\
         break;                                                           \
       case ic_assign:                                                    \
         warning_at (LOCATION, OPT, AS, QUALS);                           \
@@ -6919,13 +6946,16 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		switch (errtype)
 		  {
 		  case ic_argpass:
-		    if (pedwarn (expr_loc, OPT_Wpointer_sign,
-				 "pointer targets in passing argument %d of "
-				 "%qE differ in signedness", parmnum, rname))
-		      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
-			      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
-			      "expected %qT but argument is of type %qT",
-			      type, rhstype);
+		    {
+		      auto_diagnostic_group d;
+		      range_label_for_type_mismatch rhs_label (rhstype, type);
+		      gcc_rich_location richloc (expr_loc, &rhs_label);
+		      if (pedwarn (&richloc, OPT_Wpointer_sign,
+				   "pointer targets in passing argument %d of "
+				   "%qE differ in signedness", parmnum, rname))
+			inform_for_arg (fundecl, expr_loc, parmnum, type,
+					rhstype);
+		    }
 		    break;
 		  case ic_assign:
 		    pedwarn (location, OPT_Wpointer_sign,
@@ -6976,10 +7006,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	    {
 	    case ic_argpass:
-	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
-			   "passing argument %d of %qE from incompatible "
-			   "pointer type", parmnum, rname))
-		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      {
+		auto_diagnostic_group d;
+		range_label_for_type_mismatch rhs_label (rhstype, type);
+		gcc_rich_location richloc (expr_loc, &rhs_label);
+		if (pedwarn (&richloc, OPT_Wincompatible_pointer_types,
+			     "passing argument %d of %qE from incompatible "
+			     "pointer type", parmnum, rname))
+		  inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	      }
 	      break;
 	    case ic_assign:
 	      pedwarn (location, OPT_Wincompatible_pointer_types,
@@ -7019,10 +7054,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	switch (errtype)
 	  {
 	  case ic_argpass:
-	    if (pedwarn (expr_loc, OPT_Wint_conversion,
-			 "passing argument %d of %qE makes pointer from "
-			 "integer without a cast", parmnum, rname))
-	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	    {
+	      auto_diagnostic_group d;
+	      range_label_for_type_mismatch rhs_label (rhstype, type);
+	      gcc_rich_location richloc (expr_loc, &rhs_label);
+	      if (pedwarn (&richloc, OPT_Wint_conversion,
+			   "passing argument %d of %qE makes pointer from "
+			   "integer without a cast", parmnum, rname))
+		inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	    }
 	    break;
 	  case ic_assign:
 	    pedwarn (location, OPT_Wint_conversion,
@@ -7050,10 +7090,15 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       switch (errtype)
 	{
 	case ic_argpass:
-	  if (pedwarn (expr_loc, OPT_Wint_conversion,
-		       "passing argument %d of %qE makes integer from "
-		       "pointer without a cast", parmnum, rname))
-	    inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	  {
+	    auto_diagnostic_group d;
+	    range_label_for_type_mismatch rhs_label (rhstype, type);
+	    gcc_rich_location richloc (expr_loc, &rhs_label);
+	    if (pedwarn (&richloc, OPT_Wint_conversion,
+			 "passing argument %d of %qE makes integer from "
+			 "pointer without a cast", parmnum, rname))
+	      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+	  }
 	  break;
 	case ic_assign:
 	  pedwarn (location, OPT_Wint_conversion,
@@ -7089,9 +7134,14 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   switch (errtype)
     {
     case ic_argpass:
-      error_at (expr_loc, "incompatible type for argument %d of %qE", parmnum,
-		rname);
-      inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+      {
+	auto_diagnostic_group d;
+	range_label_for_type_mismatch rhs_label (rhstype, type);
+	gcc_rich_location richloc (expr_loc, &rhs_label);
+	error_at (&richloc, "incompatible type for argument %d of %qE", parmnum,
+		  rname);
+	inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
+      }
       break;
     case ic_assign:
       error_at (location, "incompatible types when assigning to type %qT from "
@@ -9330,6 +9380,65 @@ output_init_element (location_t loc, tree value, tree origtype,
     output_pending_init_elements (0, braced_init_obstack);
 }
 
+/* For two FIELD_DECLs in the same chain, return -1 if field1
+   comes before field2, 1 if field1 comes after field2 and
+   0 if field1 == field2.  */
+
+static int
+init_field_decl_cmp (tree field1, tree field2)
+{
+  if (field1 == field2)
+    return 0;
+
+  tree bitpos1 = bit_position (field1);
+  tree bitpos2 = bit_position (field2);
+  if (tree_int_cst_equal (bitpos1, bitpos2))
+    {
+      /* If one of the fields has non-zero bitsize, then that
+	 field must be the last one in a sequence of zero
+	 sized fields, fields after it will have bigger
+	 bit_position.  */
+      if (TREE_TYPE (field1) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (field1))
+	  && integer_nonzerop (TREE_TYPE (field1)))
+	return 1;
+      if (TREE_TYPE (field2) != error_mark_node
+	  && COMPLETE_TYPE_P (TREE_TYPE (field2))
+	  && integer_nonzerop (TREE_TYPE (field2)))
+	return -1;
+      /* Otherwise, fallback to DECL_CHAIN walk to find out
+	 which field comes earlier.  Walk chains of both
+	 fields, so that if field1 and field2 are close to each
+	 other in either order, it is found soon even for large
+	 sequences of zero sized fields.  */
+      tree f1 = field1, f2 = field2;
+      while (1)
+	{
+	  f1 = DECL_CHAIN (f1);
+	  f2 = DECL_CHAIN (f2);
+	  if (f1 == NULL_TREE)
+	    {
+	      gcc_assert (f2);
+	      return 1;
+	    }
+	  if (f2 == NULL_TREE)
+	    return -1;
+	  if (f1 == field2)
+	    return -1;
+	  if (f2 == field1)
+	    return 1;
+	  if (!tree_int_cst_equal (bit_position (f1), bitpos1))
+	    return 1;
+	  if (!tree_int_cst_equal (bit_position (f2), bitpos1))
+	    return -1;
+	}
+    }
+  else if (tree_int_cst_lt (bitpos1, bitpos2))
+    return -1;
+  else
+    return 1;
+}
+
 /* Output any pending elements which have become next.
    As we output elements, constructor_unfilled_{fields,index}
    advances, which may cause other elements to become next;
@@ -9401,25 +9510,18 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	}
       else if (RECORD_OR_UNION_TYPE_P (constructor_type))
 	{
-	  tree ctor_unfilled_bitpos, elt_bitpos;
-
 	  /* If the current record is complete we are done.  */
 	  if (constructor_unfilled_fields == NULL_TREE)
 	    break;
 
-	  ctor_unfilled_bitpos = bit_position (constructor_unfilled_fields);
-	  elt_bitpos = bit_position (elt->purpose);
-	  /* We can't compare fields here because there might be empty
-	     fields in between.  */
-	  if (tree_int_cst_equal (elt_bitpos, ctor_unfilled_bitpos))
-	    {
-	      constructor_unfilled_fields = elt->purpose;
-	      output_init_element (input_location, elt->value, elt->origtype,
-				   true, TREE_TYPE (elt->purpose),
-				   elt->purpose, false, false,
-				   braced_init_obstack);
-	    }
-	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
+	  int cmp = init_field_decl_cmp (constructor_unfilled_fields,
+					 elt->purpose);
+	  if (cmp == 0)
+	    output_init_element (input_location, elt->value, elt->origtype,
+				 true, TREE_TYPE (elt->purpose),
+				 elt->purpose, false, false,
+				 braced_init_obstack);
+	  else if (cmp < 0)
 	    {
 	      /* Advance to the next smaller node.  */
 	      if (elt->left)
@@ -9445,8 +9547,8 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 		    elt = elt->parent;
 		  elt = elt->parent;
 		  if (elt
-		      && (tree_int_cst_lt (ctor_unfilled_bitpos,
-					   bit_position (elt->purpose))))
+		      && init_field_decl_cmp (constructor_unfilled_fields,
+					      elt->purpose) < 0)
 		    {
 		      next = elt->purpose;
 		      break;
@@ -10935,6 +11037,38 @@ build_vec_cmp (tree_code code, tree type,
   return build3 (VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
 }
 
+/* Subclass of range_label for labelling the type of EXPR when reporting
+   a type mismatch between EXPR and OTHER_EXPR.
+   Either or both of EXPR and OTHER_EXPR could be NULL.  */
+
+class maybe_range_label_for_tree_type_mismatch : public range_label
+{
+ public:
+  maybe_range_label_for_tree_type_mismatch (tree expr, tree other_expr)
+  : m_expr (expr), m_other_expr (other_expr)
+  {
+  }
+
+  label_text get_text () const FINAL OVERRIDE
+  {
+    if (m_expr == NULL_TREE
+	|| !EXPR_P (m_expr))
+      return label_text (NULL, false);
+    tree expr_type = TREE_TYPE (m_expr);
+
+    tree other_type = NULL_TREE;
+    if (m_other_expr && EXPR_P (m_other_expr))
+      other_type = TREE_TYPE (m_other_expr);
+
+   range_label_for_type_mismatch inner (expr_type, other_type);
+   return inner.get_text ();
+  }
+
+ private:
+  tree m_expr;
+  tree m_other_expr;
+};
+
 /* Build a binary-operation expression without default conversions.
    CODE is the kind of expression to build.
    LOCATION is the operator's location.
@@ -11807,8 +11941,11 @@ build_binary_op (location_t location, enum tree_code code,
 	  || !vector_types_compatible_elements_p (type0, type1)))
     {
       gcc_rich_location richloc (location);
-      richloc.maybe_add_expr (orig_op0);
-      richloc.maybe_add_expr (orig_op1);
+      maybe_range_label_for_tree_type_mismatch
+	label_for_op0 (orig_op0, orig_op1),
+	label_for_op1 (orig_op1, orig_op0);
+      richloc.maybe_add_expr (orig_op0, &label_for_op0);
+      richloc.maybe_add_expr (orig_op1, &label_for_op1);
       binary_op_error (&richloc, code, type0, type1);
       return error_mark_node;
     }
@@ -12049,8 +12186,11 @@ build_binary_op (location_t location, enum tree_code code,
   if (!result_type)
     {
       gcc_rich_location richloc (location);
-      richloc.maybe_add_expr (orig_op0);
-      richloc.maybe_add_expr (orig_op1);
+      maybe_range_label_for_tree_type_mismatch
+	label_for_op0 (orig_op0, orig_op1),
+	label_for_op1 (orig_op1, orig_op0);
+      richloc.maybe_add_expr (orig_op0, &label_for_op0);
+      richloc.maybe_add_expr (orig_op1, &label_for_op1);
       binary_op_error (&richloc, code, TREE_TYPE (op0), TREE_TYPE (op1));
       return error_mark_node;
     }

@@ -382,7 +382,7 @@ extern void kickoff(void)
   __asm__(GOSYM_PREFIX "runtime.kickoff");
 extern void minit(void)
   __asm__(GOSYM_PREFIX "runtime.minit");
-extern void mstart1(int32)
+extern void mstart1()
   __asm__(GOSYM_PREFIX "runtime.mstart1");
 extern void stopm(void)
   __asm__(GOSYM_PREFIX "runtime.stopm");
@@ -542,7 +542,7 @@ runtime_mstart(void *arg)
 	}
 #endif
 
-	mstart1(0);
+	mstart1();
 
 	// mstart1 does not return, but we need a return statement
 	// here to avoid a compiler warning.
@@ -621,12 +621,12 @@ makeGContext(G* gp, byte* sp, uintptr spsize) {
 // make g->sched refer to the caller's stack segment, because
 // entersyscall is going to return immediately after.
 
-void runtime_entersyscall(int32) __attribute__ ((no_split_stack));
+void runtime_entersyscall() __attribute__ ((no_split_stack));
 static void doentersyscall(uintptr, uintptr)
   __attribute__ ((no_split_stack, noinline));
 
 void
-runtime_entersyscall(int32 dummy __attribute__ ((unused)))
+runtime_entersyscall()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
@@ -638,8 +638,8 @@ runtime_entersyscall(int32 dummy __attribute__ ((unused)))
 	// callee-saved registers to access the TLS variable g.  We
 	// don't want to put the ucontext_t on the stack because it is
 	// large and we can not split the stack here.
-	doentersyscall((uintptr)runtime_getcallerpc(&dummy),
-		       (uintptr)runtime_getcallersp(&dummy));
+	doentersyscall((uintptr)runtime_getcallerpc(),
+		       (uintptr)runtime_getcallersp());
 }
 
 static void
@@ -672,15 +672,15 @@ static void doentersyscallblock(uintptr, uintptr)
 
 // The same as runtime_entersyscall(), but with a hint that the syscall is blocking.
 void
-runtime_entersyscallblock(int32 dummy __attribute__ ((unused)))
+runtime_entersyscallblock()
 {
 	// Save the registers in the g structure so that any pointers
 	// held in registers will be seen by the garbage collector.
 	getcontext(ucontext_arg(&g->gcregs[0]));
 
 	// See comment in runtime_entersyscall.
-	doentersyscallblock((uintptr)runtime_getcallerpc(&dummy),
-			    (uintptr)runtime_getcallersp(&dummy));
+	doentersyscallblock((uintptr)runtime_getcallerpc(),
+			    (uintptr)runtime_getcallersp());
 }
 
 static void

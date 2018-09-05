@@ -1571,7 +1571,7 @@ Optional Features:
   --enable-concept-checks use Boost-derived template checks [default=no]
   --enable-libstdcxx-debug-flags=FLAGS
                           pass compiler FLAGS when building debug library
-                          [default="-gdwarf-4 -g3 -O0"]
+                          [default="-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"]
   --enable-libstdcxx-debug
                           build extra debug library [default=no]
   --enable-cxx-flags=FLAGS
@@ -17932,7 +17932,7 @@ if test "${enable_libstdcxx_debug_flags+set}" = set; then :
       *)          as_fn_error "--enable-libstdcxx-debug-flags needs compiler flags as arguments" "$LINENO" 5 ;;
      esac
 else
-  enable_libstdcxx_debug_flags="-gdwarf-4 -g3 -O0"
+  enable_libstdcxx_debug_flags="-gdwarf-4 -g3 -O0 -D_GLIBCXX_ASSERTIONS"
 fi
 
 

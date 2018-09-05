@@ -8928,65 +8928,75 @@ package body Sem_Ch4 is
            (Anc_Type : Entity_Id;
             Error    : out Boolean)
          is
-            Candidate   : Entity_Id;
-            --  If homonym is a renaming, examine the renamed program
-
-            Cls_Type    : Entity_Id;
-            Hom         : Entity_Id;
-            Hom_Ref     : Node_Id;
-            Success     : Boolean;
-
             function First_Formal_Match
-              (Typ : Entity_Id) return Boolean;
-            --  Predicate to verify that the first formal of a class-wide
-            --  candidate matches the type of the prefix.
+              (Subp_Id : Entity_Id;
+               Typ     : Entity_Id) return Boolean;
+            --  Predicate to verify that the first foramal of class-wide
+            --  subprogram Subp_Id matches type Typ of the prefix.
 
             ------------------------
             -- First_Formal_Match --
             ------------------------
 
             function First_Formal_Match
-             (Typ : Entity_Id) return Boolean
+              (Subp_Id : Entity_Id;
+               Typ     : Entity_Id) return Boolean
             is
-               Ctrl : constant Entity_Id := First_Formal (Candidate);
+               Ctrl : constant Entity_Id := First_Formal (Subp_Id);
+
             begin
-               return Present (Ctrl)
-                 and then
-                   (Base_Type (Etype (Ctrl)) = Typ
-                     or else
-                       (Ekind (Etype (Ctrl)) = E_Anonymous_Access_Type
-                         and then
-                           Base_Type
-                            (Designated_Type (Etype (Ctrl))) = Typ));
+               return
+                 Present (Ctrl)
+                   and then
+                     (Base_Type (Etype (Ctrl)) = Typ
+                       or else
+                         (Ekind (Etype (Ctrl)) = E_Anonymous_Access_Type
+                           and then
+                             Base_Type (Designated_Type (Etype (Ctrl))) =
+                               Typ));
             end First_Formal_Match;
+
+            --  Local variables
+
+            CW_Typ : constant Entity_Id := Class_Wide_Type (Anc_Type);
+
+            Candidate : Entity_Id;
+            --  If homonym is a renaming, examine the renamed program
+
+            Hom      : Entity_Id;
+            Hom_Ref  : Node_Id;
+            Success  : Boolean;
+
+         --  Start of processing for Traverse_Homonyms
 
          begin
             Error := False;
-
-            Cls_Type := Class_Wide_Type (Anc_Type);
-
-            Hom := Current_Entity (Subprog);
 
             --  Find a non-hidden operation whose first parameter is of the
             --  class-wide type, a subtype thereof, or an anonymous access
             --  to same. If in an instance, the operation can be considered
             --  even if hidden (it may be hidden because the instantiation
             --  is expanded after the containing package has been analyzed).
+            --  If the subprogram is a generic actual in an enclosing instance,
+            --  it appears as a renaming that is a candidate interpretation as
+            --  well.
 
+            Hom := Current_Entity (Subprog);
             while Present (Hom) loop
                if Ekind_In (Hom, E_Procedure, E_Function)
                  and then Present (Renamed_Entity (Hom))
                  and then Is_Generic_Actual_Subprogram (Hom)
+                 and then In_Open_Scopes (Scope (Hom))
                then
                   Candidate := Renamed_Entity (Hom);
                else
                   Candidate := Hom;
                end if;
 
-               if Ekind_In (Candidate, E_Procedure, E_Function)
+               if Ekind_In (Candidate, E_Function, E_Procedure)
                  and then (not Is_Hidden (Candidate) or else In_Instance)
                  and then Scope (Candidate) = Scope (Base_Type (Anc_Type))
-                 and then First_Formal_Match (Cls_Type)
+                 and then First_Formal_Match (Candidate, CW_Typ)
                then
                   --  If the context is a procedure call, ignore functions
                   --  in the name of the call.
@@ -9006,16 +9016,16 @@ package body Sem_Ch4 is
                      goto Next_Hom;
                   end if;
 
-                  Set_Etype (Call_Node, Any_Type);
+                  Set_Etype         (Call_Node, Any_Type);
                   Set_Is_Overloaded (Call_Node, False);
                   Success := False;
 
                   if No (Matching_Op) then
                      Hom_Ref := New_Occurrence_Of (Candidate, Sloc (Subprog));
-                     Set_Etype (Call_Node, Any_Type);
-                     Set_Parent (Call_Node, Parent (Node_To_Replace));
 
-                     Set_Name (Call_Node, Hom_Ref);
+                     Set_Etype  (Call_Node, Any_Type);
+                     Set_Name   (Call_Node, Hom_Ref);
+                     Set_Parent (Call_Node, Parent (Node_To_Replace));
 
                      Analyze_One_Call
                        (N          => Call_Node,
@@ -9040,7 +9050,7 @@ package body Sem_Ch4 is
                      --  Check for this case before reporting a real ambiguity.
 
                      if Present
-                        (Valid_Candidate (Success, Call_Node, Candidate))
+                          (Valid_Candidate (Success, Call_Node, Candidate))
                        and then Nkind (Call_Node) /= N_Function_Call
                        and then Candidate /= Matching_Op
                      then

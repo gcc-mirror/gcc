@@ -75,7 +75,7 @@ private:
   json::array *m_root_tuple;
 
   /* The currently open scopes, for expressing nested optimization records.  */
-  vec<json::array *> m_scopes;
+  auto_vec<json::array *> m_scopes;
 };
 
 /* optrecord_json_writer's ctor.  Populate the top-level parts of the
@@ -537,7 +537,7 @@ namespace selftest {
 static void
 test_building_json_from_dump_calls ()
 {
-  temp_dump_context tmp (true);
+  temp_dump_context tmp (true, MSG_NOTE);
   dump_location_t loc;
   dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
   dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);

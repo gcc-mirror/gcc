@@ -102,6 +102,7 @@ static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 static rtx_insn *last_var_location_insn;
 static rtx_insn *cached_next_real_insn;
 static void dwarf2out_decl (tree);
+static bool is_redundant_typedef (const_tree);
 
 #ifndef XCOFF_DEBUGGING_INFO
 #define XCOFF_DEBUGGING_INFO 0
@@ -295,6 +296,10 @@ static unsigned int rnglist_idx;
 
 #ifndef FUNC_BEGIN_LABEL
 #define FUNC_BEGIN_LABEL	"LFB"
+#endif
+
+#ifndef FUNC_SECOND_SECT_LABEL
+#define FUNC_SECOND_SECT_LABEL	"LFSB"
 #endif
 
 #ifndef FUNC_END_LABEL
@@ -1212,21 +1217,24 @@ static void set_cur_line_info_table (section *);
 void
 dwarf2out_switch_text_section (void)
 {
+  char label[MAX_ARTIFICIAL_LABEL_BYTES];
   section *sect;
   dw_fde_ref fde = cfun->fde;
 
   gcc_assert (cfun && fde && fde->dw_fde_second_begin == NULL);
 
+  ASM_GENERATE_INTERNAL_LABEL (label, FUNC_SECOND_SECT_LABEL,
+			       current_function_funcdef_no);
+
+  fde->dw_fde_second_begin = ggc_strdup (label);
   if (!in_cold_section_p)
     {
       fde->dw_fde_end = crtl->subsections.cold_section_end_label;
-      fde->dw_fde_second_begin = crtl->subsections.hot_section_label;
       fde->dw_fde_second_end = crtl->subsections.hot_section_end_label;
     }
   else
     {
       fde->dw_fde_end = crtl->subsections.hot_section_end_label;
-      fde->dw_fde_second_begin = crtl->subsections.cold_section_label;
       fde->dw_fde_second_end = crtl->subsections.cold_section_end_label;
     }
   have_multiple_function_sections = true;
@@ -6455,7 +6463,12 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	  print_indent -= 4;
 	}
       else
-	fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	{
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #\n");
+	  else
+	    fprintf (outfile, " (%p)\n", (void *) val->v.val_loc);
+	}
       break;
     case dw_val_class_loc_list:
       fprintf (outfile, "location list -> label:%s",
@@ -6524,7 +6537,10 @@ print_dw_val (dw_val_node *val, bool recurse, FILE *outfile)
 	    }
 	  else
 	    fprintf (outfile, "die -> %ld", die->die_offset);
-	  fprintf (outfile, " (%p)", (void *) die);
+	  if (flag_dump_noaddr || flag_dump_unnumbered)
+	    fprintf (outfile, " #");
+	  else
+	    fprintf (outfile, " (%p)", (void *) die);
 	}
       else
 	fprintf (outfile, "die -> <null>");
@@ -6614,8 +6630,11 @@ print_loc_descr (dw_loc_descr_ref loc, FILE *outfile)
   for (l = loc; l != NULL; l = l->dw_loc_next)
     {
       print_spaces (outfile);
-      fprintf (outfile, "(%p) %s",
-	       (void *) l,
+      if (flag_dump_noaddr || flag_dump_unnumbered)
+	fprintf (outfile, "#");
+      else
+	fprintf (outfile, "(%p)", (void *) l);
+      fprintf (outfile, " %s",
 	       dwarf_stack_op_name (l->dw_loc_opc));
       if (l->dw_loc_oprnd1.val_class != dw_val_class_none)
 	{
@@ -6642,9 +6661,12 @@ print_die (dw_die_ref die, FILE *outfile)
   unsigned ix;
 
   print_spaces (outfile);
-  fprintf (outfile, "DIE %4ld: %s (%p)\n",
-	   die->die_offset, dwarf_tag_name (die->die_tag),
-	   (void*) die);
+  fprintf (outfile, "DIE %4ld: %s ",
+	   die->die_offset, dwarf_tag_name (die->die_tag));
+  if (flag_dump_noaddr || flag_dump_unnumbered)
+    fprintf (outfile, "#\n");
+  else
+    fprintf (outfile, "(%p)\n", (void*) die);
   print_spaces (outfile);
   fprintf (outfile, "  abbrev id: %lu", die->die_abbrev);
   fprintf (outfile, " offset: %ld", die->die_offset);
@@ -14303,13 +14325,13 @@ based_loc_descr (rtx reg, poly_int64 offset,
 
       if (elim != reg)
 	{
+	  /* Allow hard frame pointer here even if frame pointer
+	    isn't used since hard frame pointer is encoded with
+	    DW_OP_fbreg which uses the DW_AT_frame_base attribute,
+	    not hard frame pointer directly.  */
 	  elim = strip_offset_and_add (elim, &offset);
-	  gcc_assert ((SUPPORTS_STACK_ALIGNMENT
-		       && (elim == hard_frame_pointer_rtx
-			   || elim == stack_pointer_rtx))
-	              || elim == (frame_pointer_needed
-				  ? hard_frame_pointer_rtx
-				  : stack_pointer_rtx));
+	  gcc_assert (elim == hard_frame_pointer_rtx
+		      || elim == stack_pointer_rtx);
 
 	  /* If drap register is used to align stack, use frame
 	     pointer + offset to access stack variables.  If stack
@@ -15476,7 +15498,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
 	  if (dwarf_strict && dwarf_version < 5)
 	    break;
-	  if (REGNO (rtl) > FIRST_PSEUDO_REGISTER)
+	  if (REGNO (rtl) >= FIRST_PSEUDO_REGISTER)
 	    break;
 	  type_die = base_type_for_mode (mode, SCALAR_INT_MODE_P (mode));
 	  if (type_die == NULL)
@@ -16321,6 +16343,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CONST_FIXED:
     case CLRSB:
     case CLOBBER:
+    case CLOBBER_HIGH:
       /* If delegitimize_address couldn't do anything with the UNSPEC, we
 	 can't express it in the debug info.  This can happen e.g. with some
 	 TLS UNSPECs.  */
@@ -20489,14 +20512,13 @@ compute_frame_pointer_to_fb_displacement (poly_int64 offset)
      in which to eliminate.  This is because it's stack pointer isn't 
      directly accessible as a register within the ISA.  To work around
      this, assume that while we cannot provide a proper value for
-     frame_pointer_fb_offset, we won't need one either.  */
+     frame_pointer_fb_offset, we won't need one either.  We can use
+     hard frame pointer in debug info even if frame pointer isn't used
+     since hard frame pointer in debug info is encoded with DW_OP_fbreg
+     which uses the DW_AT_frame_base attribute, not hard frame pointer
+     directly.  */
   frame_pointer_fb_offset_valid
-    = ((SUPPORTS_STACK_ALIGNMENT
-	&& (elim == hard_frame_pointer_rtx
-	    || elim == stack_pointer_rtx))
-       || elim == (frame_pointer_needed
-		   ? hard_frame_pointer_rtx
-		   : stack_pointer_rtx));
+    = (elim == hard_frame_pointer_rtx || elim == stack_pointer_rtx);
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
@@ -20597,7 +20619,7 @@ static void
 add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 		 int forms, struct loc_descr_context *context)
 {
-  dw_die_ref context_die, decl_die;
+  dw_die_ref context_die, decl_die = NULL;
   dw_loc_list_ref list;
   bool strip_conversions = true;
   bool placeholder_seen = false;
@@ -20674,7 +20696,7 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 
       if (decl != NULL_TREE)
 	{
-	  dw_die_ref decl_die = lookup_decl_die (decl);
+	  decl_die = lookup_decl_die (decl);
 
 	  /* ??? Can this happen, or should the variable have been bound
 	     first?  Probably it can, since I imagine that we try to create
@@ -20683,8 +20705,12 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
 	     later parameter.  */
 	  if (decl_die != NULL)
 	    {
-	      add_AT_die_ref (die, attr, decl_die);
-	      return;
+	      if (get_AT (decl_die, DW_AT_location)
+		  || get_AT (decl_die, DW_AT_const_value))
+		{
+		  add_AT_die_ref (die, attr, decl_die);
+		  return;
+		}
 	    }
 	}
     }
@@ -20728,15 +20754,19 @@ add_scalar_info (dw_die_ref die, enum dwarf_attribute attr, tree value,
       || placeholder_seen)
     return;
 
-  if (current_function_decl == 0)
-    context_die = comp_unit_die ();
-  else
-    context_die = lookup_decl_die (current_function_decl);
+  if (!decl_die)
+    {
+      if (current_function_decl == 0)
+	context_die = comp_unit_die ();
+      else
+	context_die = lookup_decl_die (current_function_decl);
 
-  decl_die = new_die (DW_TAG_variable, context_die, value);
-  add_AT_flag (decl_die, DW_AT_artificial, 1);
-  add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, false,
-		      context_die);
+      decl_die = new_die (DW_TAG_variable, context_die, value);
+      add_AT_flag (decl_die, DW_AT_artificial, 1);
+      add_type_attribute (decl_die, TREE_TYPE (value), TYPE_QUAL_CONST, false,
+			  context_die);
+    }
+
   add_AT_location_description (decl_die, DW_AT_location, list);
   add_AT_die_ref (die, attr, decl_die);
 }
@@ -22766,6 +22796,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	     */
 	    || (old_die->die_parent
 		&& old_die->die_parent->die_tag == DW_TAG_module)
+	    || local_scope_p (old_die->die_parent)
 	    || context_die == NULL)
 	   && (DECL_ARTIFICIAL (decl)
 	       || (get_AT_file (old_die, DW_AT_decl_file) == file_index
@@ -24238,6 +24269,7 @@ gen_producer_string (void)
       case OPT_U:
       case OPT_SPECIAL_unknown:
       case OPT_SPECIAL_ignore:
+      case OPT_SPECIAL_deprecated:
       case OPT_SPECIAL_program_name:
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
@@ -24245,6 +24277,8 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:
       case OPT_fdiagnostics_show_caret:
+      case OPT_fdiagnostics_show_labels:
+      case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
       case OPT_fverbose_asm:
       case OPT____:
@@ -25804,7 +25838,7 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 
 /* Is this a typedef we can avoid emitting?  */
 
-bool
+static bool
 is_redundant_typedef (const_tree decl)
 {
   if (TYPE_DECL_IS_STUB (decl))
@@ -26702,8 +26736,11 @@ dwarf2out_decl (tree decl)
     case FUNCTION_DECL:
       /* If we're a nested function, initially use a parent of NULL; if we're
 	 a plain function, this will be fixed up in decls_for_scope.  If
-	 we're a method, it will be ignored, since we already have a DIE.  */
-      if (decl_function_context (decl)
+	 we're a method, it will be ignored, since we already have a DIE.
+	 Avoid doing this late though since clones of class methods may
+	 otherwise end up in limbo and create type DIEs late.  */
+      if (early_dwarf
+	  && decl_function_context (decl)
 	  /* But if we're in terse mode, we don't care about scope.  */
 	  && debug_info_level > DINFO_LEVEL_TERSE)
 	context_die = NULL;
@@ -28249,6 +28286,12 @@ save_macinfo_strings (void)
                 && (debug_str_section->common.flags & SECTION_MERGE) != 0)
               set_indirect_string (find_AT_string (ref->info));
             break;
+	  case DW_MACINFO_start_file:
+	    /* -gsplit-dwarf -g3 will also output filename as indirect
+	       string.  */
+	    if (!dwarf_split_debug_info)
+	      break;
+	    /* Fall through. */
 	  case DW_MACRO_define_strp:
 	  case DW_MACRO_undef_strp:
             set_indirect_string (find_AT_string (ref->info));
@@ -31082,7 +31125,7 @@ reset_dies (dw_die_ref die)
    and generate the DWARF-2 debugging info.  */
 
 static void
-dwarf2out_finish (const char *)
+dwarf2out_finish (const char *filename)
 {
   comdat_type_node *ctnode;
   dw_die_ref main_comp_unit_die;
@@ -31162,6 +31205,12 @@ dwarf2out_finish (const char *)
 #endif
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "DWARF for %s\n", filename);
+      print_die (comp_unit_die (), dump_file);
+    }
 
   /* Initialize sections and labels used for actual assembler output.  */
   unsigned generation = init_sections_and_labels (false);
@@ -31858,6 +31907,11 @@ dwarf2out_early_finish (const char *filename)
   if (in_lto_p)
     {
       early_dwarf_finished = true;
+      if (dump_file)
+	{
+	  fprintf (dump_file, "LTO EARLY DWARF for %s\n", filename);
+	  print_die (comp_unit_die (), dump_file);
+	}
       return;
     }
 
@@ -31935,13 +31989,18 @@ dwarf2out_early_finish (const char *filename)
 
   /* The early debug phase is now finished.  */
   early_dwarf_finished = true;
+  if (dump_file)
+    {
+      fprintf (dump_file, "EARLY DWARF for %s\n", filename);
+      print_die (comp_unit_die (), dump_file);
+    }
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
   if ((!flag_generate_lto && !flag_generate_offload)
-      /* FIXME: Disable debug info generation for PE-COFF targets since the
+      /* FIXME: Disable debug info generation for (PE-)COFF targets since the
 	 copy_lto_debug_sections operation of the simple object support in
 	 libiberty is not implemented for them yet.  */
-      || TARGET_PECOFF)
+      || TARGET_PECOFF || TARGET_COFF)
     return;
 
   /* Now as we are going to output for LTO initialize sections and labels

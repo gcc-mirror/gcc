@@ -1,3 +1,32 @@
+2018-09-04  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* MAINTAINERS: Update my email address.
+
+2018-08-29  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add self to global reviewers list.
+
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	MAINTAINERS: Add c-sky port maintainers.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Revert change in previous commit and
+	join lines.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Remove extra line.
+
+2018-08-06  Naveen H.S  <naveenh@marvell.com>
+
+	* MAINTAINERS: Update my email address.
+
 2018-07-19  DJ Delorie  <dj@redhat.com>
 
 	* MAINTAINERS (m32c, msp43, rl78, libiberty, build): Remove myself
@@ -30,7 +59,7 @@
 
 2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
 
-        * libtool.m4: Sort output of 'find' to enable deterministic builds.
+	* libtool.m4: Sort output of 'find' to enable deterministic builds.
 	* ltmain.sh: Likewise.
 
 2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>

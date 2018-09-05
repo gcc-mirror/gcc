@@ -428,6 +428,9 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET pa_starting_frame_offset
 
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Parse the -mfixed-range= option string.  */
@@ -10680,6 +10683,8 @@ pa_output_addr_vec (rtx lab, rtx body)
 {
   int idx, vlen = XVECLEN (body, 0);
 
+  if (!TARGET_SOM)
+    fputs ("\t.align 4\n", asm_out_file);
   targetm.asm_out.internal_label (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
   if (TARGET_GAS)
     fputs ("\t.begin_brtab\n", asm_out_file);

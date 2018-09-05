@@ -1,6 +1,6 @@
 ! PR rtl-optimization/46804
 ! { dg-do run }
-! { dg-options "-O -fPIC -fexpensive-optimizations -fgcse -foptimize-register-move -fpeel-loops -fno-tree-loop-optimize" }
+! { dg-options "-O -fPIC -fexpensive-optimizations -fgcse -fpeel-loops -fno-tree-loop-optimize" }
 
 program main
   integer, parameter :: n1 = 2, n2 = 3, n3 = 4, slen = 3

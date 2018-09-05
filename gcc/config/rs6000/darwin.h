@@ -119,6 +119,13 @@ extern int darwin_emit_branch_islands;
    mcpu=G5:ppc970;				\
    :ppc}}"
 
+/* We need to jam the crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_CRT1_SPEC
+#define DARWIN_CRT1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %{fgnu-tm: -lcrttms.o}"
+
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
@@ -129,6 +136,12 @@ extern int darwin_emit_branch_islands;
   { "darwin_arch", DARWIN_ARCH_SPEC },		\
   { "darwin_crt2", DARWIN_CRT2_SPEC },		\
   { "darwin_subarch", DARWIN_SUBARCH_SPEC },
+
+/* We need to jam the dylib crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_DYLIB1_SPEC
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -ldylib1.10.5.o)"
 
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START

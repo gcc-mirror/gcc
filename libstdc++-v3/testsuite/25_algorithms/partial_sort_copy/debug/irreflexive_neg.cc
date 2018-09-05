@@ -31,8 +31,8 @@ bad_lower(int lhs, int rhs)
 
 void test01()
 {
-  int ins[] { 0, 1, 2, 3 };
-  int outs[] { 9, 9 };
+  int ins[] = { 0, 1, 2, 3 };
+  int outs[] = { 9, 9 };
   std::partial_sort_copy(ins, ins + 4, outs, outs + 2, bad_lower);
 }
 

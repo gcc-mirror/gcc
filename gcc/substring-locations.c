@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "langhooks.h"
 #include "substring-locations.h"
+#include "gcc-rich-location.h"
 
 /* Emit a warning governed by option OPT, using SINGULAR_GMSGID as the
    format string (or if PLURAL_GMSGID is different from SINGULAR_GMSGID,
@@ -89,6 +90,27 @@ along with GCC; see the file COPYING3.  If not see
      printf(fmt, msg);
             ^~~  ~~~
 
+   If non-NULL, then FMT_LABEL will be used to label the location within the
+   string for cases 1 and 2; if non-NULL, then PARAM_LABEL will be used to label
+   the parameter.  For example with case 1:
+
+    test.c:90:16: warning: '%s' here but arg 2 has 'long' type [-Wformat=]
+     printf ("foo %s bar", long_i + long_j);
+                  ~^       ~~~~~~~~~~~~~~~
+                                  |
+                                  int
+
+   and with case 2:
+
+     test.c:90:10: warning: problem with '%i' here [-Wformat=]
+     printf("hello " INT_FMT " world", msg);
+            ^~~~~~~~~~~~~~~~~~~~~~~~~
+     test.c:19: note: format string is defined here
+     #define INT_FMT "%i"
+                      ~^
+                       |
+                       int
+
    If CORRECTED_SUBSTRING is non-NULL, use it for cases 1 and 2 to provide
    a fix-it hint, suggesting that it should replace the text within the
    substring range.  For example:
@@ -102,7 +124,9 @@ along with GCC; see the file COPYING3.  If not see
 
 bool
 format_warning_n_va (const substring_loc &fmt_loc,
+		     const range_label *fmt_label,
 		     location_t param_loc,
+		     const range_label *param_label,
 		     const char *corrected_substring,
 		     int opt, unsigned HOST_WIDE_INT n,
 		     const char *singular_gmsgid,
@@ -138,10 +162,16 @@ format_warning_n_va (const substring_loc &fmt_loc,
 	}
     }
 
-  rich_location richloc (line_table, primary_loc);
+  /* Only use fmt_label in the initial warning for case 1.  */
+  const range_label *primary_label = NULL;
+  if (substring_within_range)
+    primary_label = fmt_label;
+
+  auto_diagnostic_group d;
+  gcc_rich_location richloc (primary_loc, primary_label);
 
   if (param_loc != UNKNOWN_LOCATION)
-    richloc.add_range (param_loc, false);
+    richloc.add_range (param_loc, SHOW_RANGE_WITHOUT_CARET, param_label);
 
   if (!err && corrected_substring && substring_within_range)
     richloc.add_fixit_replace (fmt_substring_range, corrected_substring);
@@ -173,7 +203,9 @@ format_warning_n_va (const substring_loc &fmt_loc,
     /* Case 2.  */
     if (warned)
       {
-	rich_location substring_richloc (line_table, fmt_substring_loc);
+	/* Use fmt_label in the note for case 2.  */
+	rich_location substring_richloc (line_table, fmt_substring_loc,
+					 fmt_label);
 	if (corrected_substring)
 	  substring_richloc.add_fixit_replace (fmt_substring_range,
 					       corrected_substring);
@@ -188,11 +220,14 @@ format_warning_n_va (const substring_loc &fmt_loc,
 
 bool
 format_warning_va (const substring_loc &fmt_loc,
+		   const range_label *fmt_label,
 		   location_t param_loc,
+		   const range_label *param_label,
 		   const char *corrected_substring,
 		   int opt, const char *gmsgid, va_list *ap)
 {
-  return format_warning_n_va (fmt_loc, param_loc, corrected_substring, opt,
+  return format_warning_n_va (fmt_loc, fmt_label, param_loc, param_label,
+			      corrected_substring, opt,
 			      0, gmsgid, gmsgid, ap);
 }
 
@@ -200,14 +235,16 @@ format_warning_va (const substring_loc &fmt_loc,
 
 bool
 format_warning_at_substring (const substring_loc &fmt_loc,
+			     const range_label *fmt_label,
 			     location_t param_loc,
+			     const range_label *param_label,
 			     const char *corrected_substring,
 			     int opt, const char *gmsgid, ...)
 {
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
-				   opt, gmsgid, &ap);
+  bool warned = format_warning_va (fmt_loc, fmt_label, param_loc, param_label,
+				   corrected_substring, opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -217,7 +254,9 @@ format_warning_at_substring (const substring_loc &fmt_loc,
 
 bool
 format_warning_at_substring_n (const substring_loc &fmt_loc,
+			       const range_label *fmt_label,
 			       location_t param_loc,
+			       const range_label *param_label,
 			       const char *corrected_substring,
 			       int opt, unsigned HOST_WIDE_INT n,
 			       const char *singular_gmsgid,
@@ -225,7 +264,8 @@ format_warning_at_substring_n (const substring_loc &fmt_loc,
 {
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
+  bool warned = format_warning_n_va (fmt_loc, fmt_label, param_loc, param_label,
+				     corrected_substring,
 				     opt, n, singular_gmsgid, plural_gmsgid,
 				     &ap);
   va_end (ap);

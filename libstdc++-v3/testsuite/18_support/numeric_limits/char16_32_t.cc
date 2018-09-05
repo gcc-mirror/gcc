@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <testsuite_hooks.h>
 
-// Test specializations for char16_t and char32_t, in C++0x.
+// Test specializations for char16_t and char32_t, in C++11.
 template<typename T, typename R>
   void
   do_test()
@@ -68,8 +68,8 @@ template<typename T, typename R>
 
 int main()
 {
-  do_test<char16_t, uint_least16_t>();
-  do_test<char32_t, uint_least32_t>();
+  do_test<char16_t, std::uint_least16_t>();
+  do_test<char32_t, std::uint_least32_t>();
 
   return 0;
 }

@@ -29643,6 +29643,16 @@ package body Sem_Prag is
                if Nkind (Original_Node (Stmt)) = N_Expression_Function then
                   return Stmt;
 
+               --  The subprogram declaration is an internally generated spec
+               --  for a stand-alone subrogram body declared inside a protected
+               --  body.
+
+               elsif Present (Corresponding_Body (Stmt))
+                 and then Comes_From_Source (Corresponding_Body (Stmt))
+                 and then Is_Protected_Type (Current_Scope)
+               then
+                  return Stmt;
+
                --  The subprogram is actually an instance housed within an
                --  anonymous wrapper package.
 

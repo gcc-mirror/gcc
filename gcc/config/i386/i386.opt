@@ -842,7 +842,7 @@ Target Report Mask(ISA_CLWB) Var(ix86_isa_flags) Save
 Support CLWB instruction.
 
 mpcommit
-Target Undocumented Warn(%<-mpcommit%> was deprecated)
+Target Deprecated
 ;; Deprecated
 
 mfxsr
@@ -951,7 +951,7 @@ Target Report Mask(ISA_RTM) Var(ix86_isa_flags) Save
 Support RTM built-in functions and code generation.
 
 mmpx
-Target Report Deprecated
+Target Deprecated
 Deprecated in GCC 9.  This switch has no effect.
 
 mmwaitx
@@ -999,8 +999,8 @@ Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
 Use the given symbol for addressing the stack-protector guard.
 
 mmitigate-rop
-Target Var(flag_mitigate_rop)
-Attempt to avoid generating instruction sequences containing ret bytes.
+Target Deprecated
+;; Deprecated
 
 mgeneral-regs-only
 Target Report RejectNegative Mask(GENERAL_REGS_ONLY) Var(ix86_target_flags) Save

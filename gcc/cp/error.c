@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 #include "internal-fn.h"
+#include "gcc-rich-location.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -3287,8 +3288,13 @@ void
 cxx_print_error_function (diagnostic_context *context, const char *file,
 			  diagnostic_info *diagnostic)
 {
+  char *prefix;
+  if (file)
+    prefix = xstrdup (file);
+  else
+    prefix = NULL;
   lhd_print_error_function (context, file, diagnostic);
-  pp_set_prefix (context->printer, file);
+  pp_set_prefix (context->printer, prefix);
   maybe_print_instantiation_context (context);
 }
 
@@ -3316,7 +3322,7 @@ cp_print_error_function (diagnostic_context *context,
     return;
   if (diagnostic_last_function_changed (context, diagnostic))
     {
-      const char *old_prefix = context->printer->prefix;
+      char *old_prefix = pp_take_prefix (context->printer);
       const char *file = LOCATION_FILE (diagnostic_location (diagnostic));
       tree abstract_origin = diagnostic_abstract_origin (diagnostic);
       char *new_prefix = (file && abstract_origin == NULL)
@@ -4025,6 +4031,10 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %D   declaration.
    %E   expression.
    %F   function declaration.
+   %G   gcall *
+   %H   type difference (from).
+   %I   type difference (to).
+   %K   tree
    %L	language as used in extern "lang".
    %O	binary operator.
    %P   function parameter whose position is indicated by an integer.
@@ -4032,9 +4042,7 @@ defer_phase_2_of_type_diff (deferred_printed_type *deferred,
    %S   substitution (template + args)
    %T   type.
    %V   cv-qualifier.
-   %X   exception-specification.
-   %H   type difference (from)
-   %I   type difference (to).  */
+   %X   exception-specification.  */
 static bool
 cp_printer (pretty_printer *pp, text_info *text, const char *spec,
 	    int precision, bool wide, bool set_locus, bool verbose,
@@ -4076,6 +4084,21 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
     case 'E': result = expr_to_string (next_tree);		break;
     case 'F': result = fndecl_to_string (next_tree, verbose);	break;
+    case 'G':
+      percent_G_format (text);
+      return true;
+    case 'H':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'I':
+      defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
+				  buffer_ptr, verbose, *quoted);
+      return true;
+    case 'K':
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
+      return true;
     case 'L': result = language_to_string (next_lang);		break;
     case 'O': result = op_to_string (false, next_tcode);	break;
     case 'P': result = parm_to_string (next_int);		break;
@@ -4090,36 +4113,13 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
-    case 'G':
-      percent_G_format (text);
-      return true;
-
-    case 'K':
-      t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
-      return true;
-
-    case 'H':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_a, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
-
-    case 'I':
-      {
-	defer_phase_2_of_type_diff (&postprocessor->m_type_b, next_tree,
-				    buffer_ptr, verbose, *quoted);
-	return true;
-      }
-
     default:
       return false;
     }
 
   pp_string (pp, result);
   if (set_locus && t != NULL)
-    text->set_location (0, location_of (t), true);
+    text->set_location (0, location_of (t), SHOW_RANGE_WITH_CARET);
   return true;
 #undef next_tree
 #undef next_tcode
@@ -4270,13 +4270,42 @@ qualified_name_lookup_error (tree scope, tree name,
     }
   else if (scope != global_namespace)
     {
+      auto_diagnostic_group d;
       error_at (location, "%qD is not a member of %qD", name, scope);
       if (!suggest_alternative_in_explicit_scope (location, name, scope))
 	suggest_alternatives_for (location, name, false);
     }
   else
     {
+      auto_diagnostic_group d;
       error_at (location, "%<::%D%> has not been declared", name);
       suggest_alternatives_for (location, name, true);
     }
+}
+
+/* C++-specific implementation of range_label::get_text () vfunc for
+   range_label_for_type_mismatch.
+
+   Compare with print_template_differences above.  */
+
+label_text
+range_label_for_type_mismatch::get_text () const
+{
+  if (m_labelled_type == NULL_TREE)
+    return label_text (NULL, false);
+
+  const bool verbose = false;
+  const bool show_color = false;
+
+  const char *result;
+  if (m_other_type
+      && comparable_template_types_p (m_labelled_type, m_other_type))
+    result = type_to_string_with_compare (m_labelled_type, m_other_type,
+					  verbose, show_color);
+  else
+    result = type_to_string (m_labelled_type, verbose, true, NULL, show_color);
+
+  /* Both of the above return GC-allocated buffers, so the caller mustn't
+     free them.  */
+  return label_text (const_cast <char *> (result), false);
 }

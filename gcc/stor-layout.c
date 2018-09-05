@@ -390,7 +390,6 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_ACCUM:
     case MODE_VECTOR_UFRACT:
     case MODE_VECTOR_UACCUM:
-    case MODE_POINTER_BOUNDS:
       return int_mode_for_size (GET_MODE_BITSIZE (mode), 0);
 
     case MODE_RANDOM:
@@ -761,14 +760,19 @@ layout_decl (tree decl, unsigned int known_align)
     {
       tree size = DECL_SIZE_UNIT (decl);
 
-      if (size != 0 && TREE_CODE (size) == INTEGER_CST
-	  && compare_tree_int (size, warn_larger_than_size) > 0)
+      if (size != 0 && TREE_CODE (size) == INTEGER_CST)
 	{
-	  unsigned HOST_WIDE_INT uhwisize = tree_to_uhwi (size);
+	  /* -Wlarger-than= argument of HOST_WIDE_INT_MAX is treated
+	     as if PTRDIFF_MAX had been specified, with the value
+	     being that on the target rather than the host.  */
+	  unsigned HOST_WIDE_INT max_size = warn_larger_than_size;
+	  if (max_size == HOST_WIDE_INT_MAX)
+	    max_size = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
 
-	  warning (OPT_Wlarger_than_, "size of %q+D %wu bytes exceeds "
-		   "maximum object size %wu",
-		   decl, uhwisize, warn_larger_than_size);
+	  if (compare_tree_int (size, max_size) > 0)
+	    warning (OPT_Wlarger_than_, "size of %q+D %E bytes exceeds "
+		     "maximum object size %wu",
+		     decl, size, max_size);
 	}
     }
 

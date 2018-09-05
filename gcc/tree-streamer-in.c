@@ -769,7 +769,6 @@ static void
 lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 					  struct data_in *data_in, tree expr)
 {
-  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
 #ifndef ACCEL_COMPILER
@@ -820,7 +819,6 @@ lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
   TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
   /* TYPE_CANONICAL gets re-computed during type merging.  */
   TYPE_CANONICAL (expr) = NULL_TREE;
-  TYPE_STUB_DECL (expr) = stream_read_tree (ib, data_in);
 }
 
 /* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR

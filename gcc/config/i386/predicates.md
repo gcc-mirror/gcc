@@ -1135,9 +1135,6 @@
 (define_predicate "vsib_mem_operator"
   (match_code "mem"))
 
-(define_predicate "bnd_mem_operator"
-  (match_code "mem"))
-
 ;; Return true if the rtx is known to be at least 32 bits aligned.
 (define_predicate "aligned_operand"
   (match_operand 0 "general_operand")

@@ -4075,7 +4075,7 @@ handle_lhs_call (gcall *stmt, tree lhs, int flags, vec<ce_s> rhsc,
 	 initialized and thus may point to global memory.  All
 	 builtin functions with the malloc attribute behave in a sane way.  */
       if (!fndecl
-	  || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+	  || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	make_constraint_from (vi, nonlocal_id);
       tmpc.var = vi->id;
       tmpc.offset = 0;
@@ -4729,7 +4729,7 @@ find_func_aliases_for_call (struct function *fn, gcall *t)
   varinfo_t fi;
 
   if (fndecl != NULL_TREE
-      && DECL_BUILT_IN (fndecl)
+      && fndecl_built_in_p (fndecl)
       && find_func_aliases_for_builtin_call (fn, t))
     return;
 

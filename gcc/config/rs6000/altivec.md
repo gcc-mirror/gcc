@@ -413,8 +413,7 @@
                    (use (match_operand:SI 1 "call_operand" "s"))])]
  "TARGET_MACHO && (DEFAULT_ABI == ABI_DARWIN) && TARGET_32BIT"         
  "bl %z1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_world"
  [(match_parallel 0 "restore_world_operation"
@@ -441,8 +440,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*save_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -455,8 +453,7 @@
 	   (match_operand:V4SI 4 "altivec_register_operand" "v"))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r11"
   [(match_parallel 0 "any_parallel_operand"
@@ -469,8 +466,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 (define_insn "*restore_vregs_<mode>_r12"
   [(match_parallel 0 "any_parallel_operand"
@@ -483,8 +479,7 @@
 			     (match_operand:P 4 "short_cint_operand" "I"))))])]
   "TARGET_ALTIVEC"
   "bl %1"
-  [(set_attr "type" "branch")
-   (set_attr "length" "4")])
+  [(set_attr "type" "branch")])
 
 ;; Simple binary operations.
 
@@ -608,7 +603,7 @@
   "vcmpbfp %0,%1,%2"
   [(set_attr "type" "veccmp")])
 
-(define_insn "*altivec_eq<mode>"
+(define_insn "altivec_eq<mode>"
   [(set (match_operand:VI2 0 "altivec_register_operand" "=v")
 	(eq:VI2 (match_operand:VI2 1 "altivec_register_operand" "v")
 		(match_operand:VI2 2 "altivec_register_operand" "v")))]
@@ -2047,8 +2042,7 @@
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vperm_v8hiv16qi"
   [(set (match_operand:V16QI 0 "register_operand" "=v,?wo")
@@ -2060,8 +2054,7 @@
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 (define_expand "altivec_vperm_<mode>_uns"
   [(set (match_operand:VM 0 "register_operand")
@@ -2088,8 +2081,7 @@
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 (define_expand "vec_permv16qi"
   [(set (match_operand:V16QI 0 "register_operand")
@@ -2115,8 +2107,7 @@
   "@
    vpermr %0,%1,%2,%3
    xxpermr %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "altivec_vrfip"		; ceil
   [(set (match_operand:V4SF 0 "register_operand" "=v")
@@ -2313,7 +2304,7 @@
 
 ;; Compare vectors producing a vector result and a predicate, setting CR6 to
 ;; indicate a combined status
-(define_insn "*altivec_vcmpequ<VI_char>_p"
+(define_insn "altivec_vcmpequ<VI_char>_p"
   [(set (reg:CC CR6_REGNO)
 	(unspec:CC [(eq:CC (match_operand:VI2 1 "register_operand" "v")
 			   (match_operand:VI2 2 "register_operand" "v"))]
@@ -3273,8 +3264,7 @@
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 (define_insn "vperm_v16qiv8hi"
   [(set (match_operand:V8HI 0 "register_operand" "=v,?wo")
@@ -3286,8 +3276,7 @@
   "@
    vperm %0,%1,%2,%3
    xxperm %x0,%x1,%x3"
-  [(set_attr "type" "vecperm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "vecperm")])
 
 
 (define_expand "vec_unpacku_hi_v16qi"
@@ -3862,8 +3851,7 @@
 	(clz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vclz<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector absolute difference unsigned
 (define_expand "vadu<mode>3"
@@ -3889,8 +3877,7 @@
 	(ctz:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P9_VECTOR"
   "vctz<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector population count
 (define_insn "*p8v_popcount<mode>2"
@@ -3898,8 +3885,7 @@
         (popcount:VI2 (match_operand:VI2 1 "register_operand" "v")))]
   "TARGET_P8_VECTOR"
   "vpopcnt<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector parity
 (define_insn "*p9v_parity<mode>2"
@@ -3907,8 +3893,7 @@
         (parity:VParity (match_operand:VParity 1 "register_operand" "v")))]
   "TARGET_P9_VECTOR"
   "vprtyb<wd> %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Vector Gather Bits by Bytes by Doubleword
 (define_insn "p8v_vgbbd"
@@ -3917,8 +3902,7 @@
 		      UNSPEC_VGBBD))]
   "TARGET_P8_VECTOR"
   "vgbbd %0,%1"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 
 ;; 128-bit binary integer arithmetic
@@ -3932,8 +3916,7 @@
 		   (match_operand:V1TI 2 "register_operand" "v")))]
   "TARGET_VADDUQM"
   "vadduqm %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddcuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3942,8 +3925,7 @@
 		     UNSPEC_VADDCUQ))]
   "TARGET_VADDUQM"
   "vaddcuq %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3951,8 +3933,7 @@
 		    (match_operand:V1TI 2 "register_operand" "v")))]
   "TARGET_VADDUQM"
   "vsubuqm %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubcuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3961,8 +3942,7 @@
 		     UNSPEC_VSUBCUQ))]
   "TARGET_VADDUQM"
   "vsubcuq %0,%1,%2"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddeuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3972,8 +3952,7 @@
 		     UNSPEC_VADDEUQM))]
   "TARGET_VADDUQM"
   "vaddeuqm %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vaddecuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3983,8 +3962,7 @@
 		     UNSPEC_VADDECUQ))]
   "TARGET_VADDUQM"
   "vaddecuq %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubeuqm"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -3994,8 +3972,7 @@
 		   UNSPEC_VSUBEUQM))]
   "TARGET_VADDUQM"
   "vsubeuqm %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "altivec_vsubecuq"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -4005,8 +3982,7 @@
 		     UNSPEC_VSUBECUQ))]
   "TARGET_VADDUQM"
   "vsubecuq %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; We use V2DI as the output type to simplify converting the permute
 ;; bits into an integer
@@ -4098,8 +4074,7 @@
    (clobber (reg:CCFP CR6_REGNO))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 ;; Use a floating point type (V2DFmode) for the compare to set CR6 so that we
 ;; can use the unordered test for BCD nans and add/subtracts that overflow.  An
@@ -4117,8 +4092,7 @@
    (clobber (match_scratch:V1TI 0 "=v"))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "*bcd<bcd_add_sub>_test2"
   [(set (match_operand:V1TI 0 "register_operand" "=v")
@@ -4135,8 +4109,7 @@
 	 (match_operand:V2DF 4 "zero_constant" "j")))]
   "TARGET_P8_VECTOR"
   "bcd<bcd_add_sub>. %0,%1,%2,%3"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecsimple")])
+  [(set_attr "type" "vecsimple")])
 
 (define_insn "darn_32"
   [(set (match_operand:SI 0 "register_operand" "=r")

@@ -20,8 +20,10 @@
 #ifndef _GLIBCXX_TESTSUITE_CONTAINERS_H
 #define _GLIBCXX_TESTSUITE_CONTAINERS_H
 
+#include <bits/boost_concept_check.h>
 #include <cassert>
 #include <testsuite_container_traits.h>
+#include <utility> // for rel_ops.
 
 // Container requirement testing.
 namespace __gnu_test
@@ -169,27 +171,179 @@ namespace __gnu_test
       reverse_members(_Tp& container) { }
     };
 
+  template<typename _Iterator,
+	   bool _Mutable,
+	   typename = typename std::iterator_traits<_Iterator>::iterator_category>
+    struct iterator_concept_checks;
+
   // DR 691.
-  template<typename _Tp, bool = traits<_Tp>::is_unordered::value>
+  template<typename _Tp>
     struct forward_members_unordered
     {
       forward_members_unordered(typename _Tp::value_type& v)
       {
+	// Make sure that even if rel_ops is injected there is no ambiguity
+	// when comparing iterators.
+	using namespace std::rel_ops;
+
 	typedef _Tp					test_type;
 	test_type container;
 	container.insert(v);
+
+	iterator_concept_checks<typename _Tp::local_iterator, false> cc;
+	iterator_concept_checks<typename _Tp::const_local_iterator,
+				false> ccc;
+
 	assert( container.cbegin(0) == container.begin(0) );
 	assert( container.cend(0) == container.end(0) );
 	const typename test_type::size_type bn = container.bucket(1);
 	assert( container.cbegin(bn) != container.cend(bn) );
+	assert( container.cbegin(bn) != container.end(bn) );
+	assert( container.begin(bn) != container.cend(bn) );
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::forward_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_ForwardIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::forward_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_ForwardIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::bidirectional_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_BidirectionalIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::bidirectional_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_BidirectionalIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, false,
+				   std::random_access_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_RandomAccessIteratorConcept<_Iterator>>();
+      }
+    };
+
+  template<typename _Iterator>
+    struct iterator_concept_checks<_Iterator, true,
+				   std::random_access_iterator_tag>
+    {
+      iterator_concept_checks()
+      {
+	using namespace __gnu_cxx;
+	__function_requires<_Mutable_RandomAccessIteratorConcept<_Iterator>>();
       }
     };
 
   template<typename _Tp>
-    struct forward_members_unordered<_Tp, false>
+    struct forward_members
     {
-      forward_members_unordered(_Tp& container) { }
+      forward_members(_Tp& container)
+      {
+	// Make sure that even if rel_ops is injected there is no ambiguity
+	// when comparing iterators.
+	using namespace std::rel_ops;
+
+	typedef traits<_Tp> traits_type;
+	iterator_concept_checks<typename _Tp::iterator,
+				!(traits_type::is_associative::value
+				  || traits_type::is_unordered::value)> cc;
+	iterator_concept_checks<typename _Tp::const_iterator, false> ccc;
+
+	assert( container.cbegin() == container.begin() );
+	assert( container.end() == container.cend() );
+	assert( container.cbegin() != container.cend() );
+	assert( container.cbegin() != container.end() );
+	assert( container.begin() != container.cend() );
+      }
+  };
+
+  template<typename _Tp,
+	   typename
+    = typename std::iterator_traits<typename _Tp::iterator>::iterator_category>
+    struct category_members : forward_members<_Tp>
+    {
+      category_members(_Tp& container)
+	: forward_members<_Tp>(container)
+      { };
     };
+
+  template<typename _Tp>
+    struct category_members<_Tp, std::random_access_iterator_tag>
+    : forward_members<_Tp>
+    {
+      category_members(_Tp& container)
+	: forward_members<_Tp>(container)
+      {
+	// Make sure that even if rel_ops is injected there is no ambiguity
+	// when comparing iterators.
+	using namespace std::rel_ops;
+
+	assert( !(container.begin() < container.begin()) );
+	assert( !(container.cbegin() < container.cbegin()) );
+	assert( !(container.cbegin() < container.begin()) );
+	assert( !(container.begin() < container.cbegin()) );
+	assert( container.begin() <= container.begin() );
+	assert( container.cbegin() <= container.cbegin() );
+	assert( container.cbegin() <= container.begin() );
+	assert( container.begin() <= container.cbegin() );
+
+	assert( !(container.begin() > container.begin()) );
+	assert( !(container.cbegin() > container.cbegin()) );
+	assert( !(container.cbegin() > container.begin()) );
+	assert( !(container.begin() > container.cbegin()) );
+	assert( container.begin() >= container.begin() );
+	assert( container.cbegin() >= container.cbegin() );
+	assert( container.cbegin() >= container.begin() );
+	assert( container.begin() >= container.cbegin() );
+
+	assert( container.begin() - container.begin() == 0 );
+	assert( container.cbegin() - container.cbegin() == 0 );
+	assert( container.cbegin() - container.begin() == 0 );
+	assert( container.begin() - container.cbegin() == 0 );
+
+	assert( container.begin() + 0 == container.begin() );
+	assert( container.cbegin() + 0 == container.cbegin() );
+	assert( 0 + container.begin() == container.begin() );
+	assert( 0 + container.cbegin() == container.cbegin() );
+	assert( container.begin() - 0 == container.begin() );
+	assert( container.cbegin() - 0 == container.cbegin() );
+      }
+  };
 
   template<typename _Tp>
     struct citerator
@@ -201,21 +355,17 @@ namespace __gnu_test
       static test_type _S_container;
 
       // Unconditional.
-      struct forward_members
+      struct members : category_members<_Tp>
       {
-	forward_members()
-	{
-	  assert( _S_container.cbegin() == _S_container.begin() );
-	  assert( _S_container.cend() == _S_container.end() );
-	  assert( _S_container.cbegin() != _S_container.cend() );
-	}
+	members() : category_members<_Tp>(_S_container)
+	{ }
       };
 
       // Run test.
       citerator()
       {
 	populate<test_type> p(_S_container);
-	forward_members m1;
+	members m1;
 	reverse_members<test_type> m2(_S_container);
       }
   };

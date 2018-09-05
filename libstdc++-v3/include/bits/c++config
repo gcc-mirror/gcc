@@ -622,4 +622,22 @@ namespace std
 #define _GLIBCXX_USE_FLOAT128
 #endif
 
+#if __GNUC__ >= 7
+// Assume these are available if the compiler claims to be a recent GCC:
+# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+# define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+#elif defined(__is_identifier)
+// For non-GNU compilers:
+# if ! __is_identifier(__has_unique_object_representations)
+#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+# endif
+# if ! __is_identifier(__is_aggregate)
+#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
+# endif
+# if ! __is_identifier(__builtin_launder)
+#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
+# endif
+#endif // GCC
+
 // End of prewritten config; the settings discovered at configure time follow.

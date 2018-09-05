@@ -3,5 +3,5 @@
 
 void foo()
 {
-  int x[({ return; })];		// { dg-error "non-integral" }
+  int x[({ return; })];		// { dg-error "could not convert|non-integral" }
 }

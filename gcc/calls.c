@@ -715,7 +715,7 @@ gimple_alloca_call_p (const gimple *stmt)
     return false;
 
   fndecl = gimple_call_fndecl (stmt);
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_BUILT_IN_ALLOCA:
@@ -1222,8 +1222,11 @@ alloc_max_size (void)
   if (alloc_object_size_limit)
     return alloc_object_size_limit;
 
-  alloc_object_size_limit
-    = build_int_cst (size_type_node, warn_alloc_size_limit);
+  HOST_WIDE_INT limit = warn_alloc_size_limit;
+  if (limit == HOST_WIDE_INT_MAX)
+    limit = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+
+  alloc_object_size_limit = build_int_cst (size_type_node, limit);
 
   return alloc_object_size_limit;
 }
@@ -1542,10 +1545,10 @@ get_attr_nonstring_decl (tree expr, tree *ref)
 void
 maybe_warn_nonstring_arg (tree fndecl, tree exp)
 {
-  if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return;
 
-  if (TREE_NO_WARNING (exp))
+  if (TREE_NO_WARNING (exp) || !warn_stringop_overflow)
     return;
 
   unsigned nargs = call_expr_nargs (exp);
@@ -1573,7 +1576,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   the range of their known or possible lengths and use it
 	   conservatively as the bound for the unbounded function,
 	   and to adjust the range of the bound of the bounded ones.  */
-	for (unsigned argno = 0; argno < nargs && !*lenrng; argno ++)
+	for (unsigned argno = 0;
+	     argno < MIN (nargs, 2)
+	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST); argno++)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
@@ -1585,12 +1590,12 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     case BUILT_IN_STRNCAT:
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STRNCPY:
-      if (2 < nargs)
+      if (nargs > 2)
 	bound = CALL_EXPR_ARG (exp, 2);
       break;
 
     case BUILT_IN_STRNDUP:
-      if (1 < nargs)
+      if (nargs > 1)
 	bound = CALL_EXPR_ARG (exp, 1);
       break;
 
@@ -1600,7 +1605,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	if (!get_attr_nonstring_decl (arg))
 	  get_range_strlen (arg, lenrng);
 
-	if (1 < nargs)
+	if (nargs > 1)
 	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
       }
@@ -1640,11 +1645,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
-  if (*lenrng)
+  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
     {
       /* Add one for the nul.  */
-      lenrng[0] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[0]),
-			       lenrng[0], size_one_node);
       lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
 			       lenrng[1], size_one_node);
 
@@ -1773,6 +1776,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
       bool warned = false;
 
+      auto_diagnostic_group d;
       if (wi::ltu_p (asize, wibnd))
 	{
 	  if (bndrng[0] == bndrng[1])

@@ -31,6 +31,11 @@
 
 #pragma GCC system_header
 
+#include <bits/c++config.h>
+namespace std _GLIBCXX_VISIBILITY(default) { namespace __debug {
+  template<typename _Tp, typename _Allocator> class deque;
+} } // namespace std::__debug
+
 #include <deque>
 #include <debug/safe_sequence.h>
 #include <debug/safe_container.h>
@@ -55,6 +60,9 @@ namespace __debug
       typedef typename _Base::const_iterator	_Base_const_iterator;
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
+
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
 
     public:
       typedef typename _Base::reference			reference;

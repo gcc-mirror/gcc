@@ -1814,6 +1814,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
 					      here);
 	  if (hint)
@@ -4049,6 +4050,7 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
+	  auto_diagnostic_group d;
 	  name_hint hint = lookup_name_fuzzy (token->value,
 					      FUZZY_LOOKUP_TYPENAME,
 					      token->location);
@@ -6864,14 +6866,18 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 		&& !(TREE_CODE (first_arg) == PARM_DECL			      \
 		     && C_ARRAY_PARAMETER (first_arg)			      \
 		     && warn_sizeof_array_argument))			      \
-	      if (warning_at (stack[sp].loc, OPT_Wsizeof_pointer_div,	      \
-			      "division %<sizeof (%T) / sizeof (%T)%> does "  \
-			      "not compute the number of array elements",     \
-			      type0, type1))				      \
-		if (DECL_P (first_arg))					      \
-		  inform (DECL_SOURCE_LOCATION (first_arg),		      \
-			  "first %<sizeof%> operand was declared here");      \
-	  }								      \
+	      {								\
+		auto_diagnostic_group d;					\
+		if (warning_at (stack[sp].loc, OPT_Wsizeof_pointer_div, \
+				  "division %<sizeof (%T) / sizeof (%T)%> " \
+				  "does not compute the number of array " \
+				  "elements",				\
+				  type0, type1))			\
+		  if (DECL_P (first_arg))				\
+		    inform (DECL_SOURCE_LOCATION (first_arg),		\
+			      "first %<sizeof%> operand was declared here"); \
+	      }								\
+	  }								\
 	break;								      \
       default:								      \
 	break;								      \
@@ -9160,8 +9166,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
 	  if (TREE_CODE (expr.value) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (expr.value) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (expr.value) == BUILT_IN_MEMSET
+	      && fndecl_built_in_p (expr.value, BUILT_IN_MEMSET)
 	      && vec_safe_length (exprlist) == 3)
 	    {
 	      tree arg0 = (*exprlist)[0];
@@ -9179,8 +9184,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
 	      && TREE_CODE (orig_expr.value) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (orig_expr.value) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (orig_expr.value) == BUILT_IN_CONSTANT_P)
+	      && fndecl_built_in_p (orig_expr.value, BUILT_IN_CONSTANT_P))
 	    expr.original_code = C_MAYBE_CONST_EXPR;
 	  expr.original_type = NULL;
 	  if (exprlist)

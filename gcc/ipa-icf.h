@@ -281,6 +281,9 @@ private:
   /* Initialize internal data structures. Bitmap STACK is used for
      bitmap memory allocation process.  */
   void setup (bitmap_obstack *stack);
+
+  /* Because types can be arbitrarily large, avoid quadratic bottleneck.  */
+  static hash_map<const_tree, hashval_t> m_type_hash_cache;
 }; // class sem_item
 
 class sem_function: public sem_item
@@ -524,9 +527,6 @@ public:
   /* Gets a congruence class group based on given HASH value and TYPE.  */
   congruence_class_group *get_group_by_hash (hashval_t hash,
       sem_item_type type);
-
-  /* Because types can be arbitrarily large, avoid quadratic bottleneck.  */
-  hash_map<const_tree, hashval_t> m_type_hash_cache;
 private:
 
   /* For each semantic item, append hash values of references.  */

@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "tree-pass.h" /* for "current_pass".  */
 #include "optinfo-emit-json.h"
+#include "stringpool.h" /* for get_identifier.  */
 
 /* If non-NULL, return one past-the-end of the matching SUBPART of
    the WHOLE string.  */
@@ -63,15 +64,6 @@ dump_flags_t dump_flags;
 bool dumps_are_enabled = false;
 
 
-/* Update the "dumps_are_enabled" global; to be called whenever dump_file
-   or alt_dump_file change.  */
-
-static void
-refresh_dumps_are_enabled ()
-{
-  dumps_are_enabled = (dump_file || alt_dump_file || optinfo_enabled_p ());
-}
-
 /* Set global "dump_file" to NEW_DUMP_FILE, refreshing the "dumps_are_enabled"
    global.  */
 
@@ -80,7 +72,7 @@ set_dump_file (FILE *new_dump_file)
 {
   dumpfile_ensure_any_optinfo_are_flushed ();
   dump_file = new_dump_file;
-  refresh_dumps_are_enabled ();
+  dump_context::get ().refresh_dumps_are_enabled ();
 }
 
 /* Set "alt_dump_file" to NEW_ALT_DUMP_FILE, refreshing the "dumps_are_enabled"
@@ -91,7 +83,7 @@ set_alt_dump_file (FILE *new_alt_dump_file)
 {
   dumpfile_ensure_any_optinfo_are_flushed ();
   alt_dump_file = new_alt_dump_file;
-  refresh_dumps_are_enabled ();
+  dump_context::get ().refresh_dumps_are_enabled ();
 }
 
 #define DUMP_FILE_INFO(suffix, swtch, dkind, num) \
@@ -150,9 +142,10 @@ static const kv_pair<dump_flags_t> dump_options[] =
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
   {"optall", MSG_ALL},
-  {"all", dump_flags_t (~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
-			| TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID
-			| TDF_ENUMERATE_LOCALS | TDF_SCEV | TDF_GIMPLE))},
+  {"all", dump_flags_t (TDF_ALL_VALUES
+			& ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
+			    | TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID
+			    | TDF_ENUMERATE_LOCALS | TDF_SCEV | TDF_GIMPLE))},
   {NULL, TDF_NONE}
 };
 
@@ -405,7 +398,7 @@ dump_open_alternate_stream (struct dump_file_info *dfi)
 /* Construct a dump_user_location_t from STMT (using its location and
    hotness).  */
 
-dump_user_location_t::dump_user_location_t (gimple *stmt)
+dump_user_location_t::dump_user_location_t (const gimple *stmt)
 : m_count (), m_loc (UNKNOWN_LOCATION)
 {
   if (stmt)
@@ -419,7 +412,7 @@ dump_user_location_t::dump_user_location_t (gimple *stmt)
 /* Construct a dump_user_location_t from an RTL instruction (using its
    location and hotness).  */
 
-dump_user_location_t::dump_user_location_t (rtx_insn *insn)
+dump_user_location_t::dump_user_location_t (const rtx_insn *insn)
 : m_count (), m_loc (UNKNOWN_LOCATION)
 {
   if (insn)
@@ -464,6 +457,27 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
     }
 }
 
+/* Print source location to PP if enabled.  */
+
+static void
+dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
+{
+  if (dump_kind)
+    {
+      if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
+	pp_printf (pp, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+		   LOCATION_LINE (loc), LOCATION_COLUMN (loc));
+      else if (current_function_decl)
+	pp_printf (pp, "%s:%d:%d: note: ",
+		   DECL_SOURCE_FILE (current_function_decl),
+		   DECL_SOURCE_LINE (current_function_decl),
+		   DECL_SOURCE_COLUMN (current_function_decl));
+      /* Indentation based on scope depth.  */
+      for (unsigned i = 0; i < get_dump_scope_depth (); i++)
+	pp_character (pp, ' ');
+    }
+}
+
 /* Implementation of dump_context member functions.  */
 
 /* dump_context's dtor.  */
@@ -471,6 +485,59 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
 dump_context::~dump_context ()
 {
   delete m_pending;
+}
+
+/* Update the "dumps_are_enabled" global; to be called whenever dump_file
+   or alt_dump_file change, or when changing dump_context in selftests.  */
+
+void
+dump_context::refresh_dumps_are_enabled ()
+{
+  dumps_are_enabled = (dump_file || alt_dump_file || optinfo_enabled_p ()
+		       || m_test_pp);
+}
+
+/* Print LOC to the appropriate dump destinations, given DUMP_KIND.
+   If optinfos are enabled, begin a new optinfo.  */
+
+void
+dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
+{
+  end_any_optinfo ();
+
+  location_t srcloc = loc.get_location_t ();
+
+  if (dump_file && (dump_kind & pflags))
+    ::dump_loc (dump_kind, dump_file, srcloc);
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    ::dump_loc (dump_kind, alt_dump_file, srcloc);
+
+  /* Support for temp_dump_context in selftests.  */
+  if (m_test_pp && (dump_kind & m_test_pp_flags))
+    ::dump_loc (dump_kind, m_test_pp, srcloc);
+
+  if (optinfo_enabled_p ())
+    {
+      optinfo &info = begin_next_optinfo (loc);
+      info.handle_dump_file_kind (dump_kind);
+    }
+}
+
+/* Make an item for the given dump call, equivalent to print_gimple_stmt.  */
+
+static optinfo_item *
+make_item_for_dump_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
+{
+  pretty_printer pp;
+  pp_needs_newline (&pp) = true;
+  pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
+  pp_newline (&pp);
+
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
+			xstrdup (pp_formatted_text (&pp)));
+  return item;
 }
 
 /* Dump gimple statement GS with SPC indentation spaces and
@@ -481,18 +548,18 @@ dump_context::dump_gimple_stmt (dump_flags_t dump_kind,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
-  if (dump_file && (dump_kind & pflags))
-    print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    print_gimple_stmt (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+  optinfo_item *item
+    = make_item_for_dump_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
+  emit_item (item, dump_kind);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
+      info.add_item (item);
     }
+  else
+    delete item;
 }
 
 /* Similar to dump_gimple_stmt, except additionally print source location.  */
@@ -503,25 +570,24 @@ dump_context::dump_gimple_stmt_loc (dump_flags_t dump_kind,
 				    dump_flags_t extra_dump_flags,
 				    gimple *gs, int spc)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_gimple_stmt (dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
+  dump_loc (dump_kind, loc);
+  dump_gimple_stmt (dump_kind, extra_dump_flags, gs, spc);
+}
 
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_gimple_stmt (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
+/* Make an item for the given dump call, equivalent to print_gimple_expr.  */
 
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_stmt (gs, spc, dump_flags | extra_dump_flags);
-    }
+static optinfo_item *
+make_item_for_dump_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
+{
+  dump_flags |= TDF_RHS_ONLY;
+  pretty_printer pp;
+  pp_needs_newline (&pp) = true;
+  pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
+
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
+			xstrdup (pp_formatted_text (&pp)));
+  return item;
 }
 
 /* Dump gimple statement GS with SPC indentation spaces and
@@ -533,18 +599,18 @@ dump_context::dump_gimple_expr (dump_flags_t dump_kind,
 				dump_flags_t extra_dump_flags,
 				gimple *gs, int spc)
 {
-  if (dump_file && (dump_kind & pflags))
-    print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
+  optinfo_item *item
+    = make_item_for_dump_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
+  emit_item (item, dump_kind);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
+      info.add_item (item);
     }
+  else
+    delete item;
 }
 
 /* Similar to dump_gimple_expr, except additionally print source location.  */
@@ -556,27 +622,29 @@ dump_context::dump_gimple_expr_loc (dump_flags_t dump_kind,
 				    gimple *gs,
 				    int spc)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
-    {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_gimple_expr (dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_gimple_expr (alt_dump_file, gs, spc, dump_flags | extra_dump_flags);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_gimple_expr (gs, spc, dump_flags | extra_dump_flags);
-    }
+  dump_loc (dump_kind, loc);
+  dump_gimple_expr (dump_kind, extra_dump_flags, gs, spc);
 }
 
+/* Make an item for the given dump call, equivalent to print_generic_expr.  */
+
+static optinfo_item *
+make_item_for_dump_generic_expr (tree node, dump_flags_t dump_flags)
+{
+  pretty_printer pp;
+  pp_needs_newline (&pp) = true;
+  pp_translate_identifiers (&pp) = false;
+  dump_generic_node (&pp, node, 0, dump_flags, false);
+
+  location_t loc = UNKNOWN_LOCATION;
+  if (EXPR_HAS_LOCATION (node))
+    loc = EXPR_LOCATION (node);
+
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_TREE, loc,
+			xstrdup (pp_formatted_text (&pp)));
+  return item;
+}
 
 /* Dump expression tree T using EXTRA_DUMP_FLAGS on dump streams if
    DUMP_KIND is enabled.  */
@@ -586,18 +654,18 @@ dump_context::dump_generic_expr (dump_flags_t dump_kind,
 				 dump_flags_t extra_dump_flags,
 				 tree t)
 {
-  if (dump_file && (dump_kind & pflags))
-      print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-      print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
+  optinfo_item *item
+    = make_item_for_dump_generic_expr (t, dump_flags | extra_dump_flags);
+  emit_item (item, dump_kind);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_tree (t, dump_flags | extra_dump_flags);
+      info.add_item (item);
     }
+  else
+    delete item;
 }
 
 
@@ -610,24 +678,238 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
 				     dump_flags_t extra_dump_flags,
 				     tree t)
 {
-  location_t srcloc = loc.get_location_t ();
-  if (dump_file && (dump_kind & pflags))
+  dump_loc (dump_kind, loc);
+  dump_generic_expr (dump_kind, extra_dump_flags, t);
+}
+
+/* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
+   In particular, the formatted chunks are captured as optinfo_item instances,
+   thus retaining metadata about the entities being dumped (e.g. source
+   locations), rather than just as plain text.  */
+
+class dump_pretty_printer : public pretty_printer
+{
+public:
+  dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
+
+  void emit_items (optinfo *dest);
+
+private:
+  /* Information on an optinfo_item that was generated during phase 2 of
+     formatting.  */
+  struct stashed_item
+  {
+    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
+      : buffer_ptr (buffer_ptr_), item (item_) {}
+    const char **buffer_ptr;
+    optinfo_item *item;
+  };
+
+  static bool format_decoder_cb (pretty_printer *pp, text_info *text,
+				 const char *spec, int /*precision*/,
+				 bool /*wide*/, bool /*set_locus*/,
+				 bool /*verbose*/, bool */*quoted*/,
+				 const char **buffer_ptr);
+
+  bool decode_format (text_info *text, const char *spec,
+		      const char **buffer_ptr);
+
+  void stash_item (const char **buffer_ptr, optinfo_item *item);
+
+  void emit_any_pending_textual_chunks (optinfo *dest);
+
+  void emit_item (optinfo_item *item, optinfo *dest);
+
+  dump_context *m_context;
+  dump_flags_t m_dump_kind;
+  auto_vec<stashed_item> m_stashed_items;
+};
+
+/* dump_pretty_printer's ctor.  */
+
+dump_pretty_printer::dump_pretty_printer (dump_context *context,
+					  dump_flags_t dump_kind)
+: pretty_printer (), m_context (context), m_dump_kind (dump_kind),
+  m_stashed_items ()
+{
+  pp_format_decoder (this) = format_decoder_cb;
+}
+
+/* Phase 3 of formatting; compare with pp_output_formatted_text.
+
+   Emit optinfo_item instances for the various formatted chunks from phases
+   1 and 2 (i.e. pp_format).
+
+   Some chunks may already have had their items built (during decode_format).
+   These chunks have been stashed into m_stashed_items; we emit them here.
+
+   For all other purely textual chunks, they are printed into
+   buffer->formatted_obstack, and then emitted as a textual optinfo_item.
+   This consolidates multiple adjacent text chunks into a single text
+   optinfo_item.  */
+
+void
+dump_pretty_printer::emit_items (optinfo *dest)
+{
+  output_buffer *buffer = pp_buffer (this);
+  struct chunk_info *chunk_array = buffer->cur_chunk_array;
+  const char **args = chunk_array->args;
+
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+  gcc_assert (buffer->line_length == 0);
+
+  unsigned stashed_item_idx = 0;
+  for (unsigned chunk = 0; args[chunk]; chunk++)
     {
-      dump_loc (dump_kind, dump_file, srcloc);
-      print_generic_expr (dump_file, t, dump_flags | extra_dump_flags);
+      if (stashed_item_idx < m_stashed_items.length ()
+	  && args[chunk] == *m_stashed_items[stashed_item_idx].buffer_ptr)
+	{
+	  emit_any_pending_textual_chunks (dest);
+	  /* This chunk has a stashed item: use it.  */
+	  emit_item (m_stashed_items[stashed_item_idx++].item, dest);
+	}
+      else
+	/* This chunk is purely textual.  Print it (to
+	   buffer->formatted_obstack), so that we can consolidate adjacent
+	   chunks into one textual optinfo_item.  */
+	pp_string (this, args[chunk]);
     }
 
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      print_generic_expr (alt_dump_file, t, dump_flags | extra_dump_flags);
-    }
+  emit_any_pending_textual_chunks (dest);
 
-  if (optinfo_enabled_p ())
+  /* Ensure that we consumed all of stashed_items.  */
+  gcc_assert (stashed_item_idx == m_stashed_items.length ());
+
+  /* Deallocate the chunk structure and everything after it (i.e. the
+     associated series of formatted strings).  */
+  buffer->cur_chunk_array = chunk_array->prev;
+  obstack_free (&buffer->chunk_obstack, chunk_array);
+}
+
+/* Subroutine of dump_pretty_printer::emit_items
+   for consolidating multiple adjacent pure-text chunks into single
+   optinfo_items (in phase 3).  */
+
+void
+dump_pretty_printer::emit_any_pending_textual_chunks (optinfo *dest)
+{
+  gcc_assert (buffer->obstack == &buffer->formatted_obstack);
+
+  /* Don't emit an item if the pending text is empty.  */
+  if (output_buffer_last_position_in_text (buffer) == NULL)
+    return;
+
+  char *formatted_text = xstrdup (pp_formatted_text (this));
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+			formatted_text);
+  emit_item (item, dest);
+
+  /* Clear the pending text by unwinding formatted_text back to the start
+     of the buffer (without deallocating).  */
+  obstack_free (&buffer->formatted_obstack,
+		buffer->formatted_obstack.object_base);
+}
+
+/* Emit ITEM and take ownership of it.  If DEST is non-NULL, add ITEM
+   to DEST; otherwise delete ITEM.  */
+
+void
+dump_pretty_printer::emit_item (optinfo_item *item, optinfo *dest)
+{
+  m_context->emit_item (item, m_dump_kind);
+  if (dest)
+    dest->add_item (item);
+  else
+    delete item;
+}
+
+/* Record that ITEM (generated in phase 2 of formatting) is to be used for
+   the chunk at BUFFER_PTR in phase 3 (by emit_items).  */
+
+void
+dump_pretty_printer::stash_item (const char **buffer_ptr, optinfo_item *item)
+{
+  gcc_assert (buffer_ptr);
+  gcc_assert (item);
+
+  m_stashed_items.safe_push (stashed_item (buffer_ptr, item));
+}
+
+/* pp_format_decoder callback for dump_pretty_printer, and thus for
+   dump_printf and dump_printf_loc.
+
+   A wrapper around decode_format, for type-safety.  */
+
+bool
+dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
+					const char *spec, int /*precision*/,
+					bool /*wide*/, bool /*set_locus*/,
+					bool /*verbose*/, bool */*quoted*/,
+					const char **buffer_ptr)
+{
+  dump_pretty_printer *opp = static_cast <dump_pretty_printer *> (pp);
+  return opp->decode_format (text, spec, buffer_ptr);
+}
+
+/* Format decoder for dump_pretty_printer, and thus for dump_printf and
+   dump_printf_loc.
+
+   Supported format codes (in addition to the standard pretty_printer ones)
+   are:
+
+   %E: gimple *:
+       Equivalent to: dump_gimple_expr (MSG_*, TDF_SLIM, stmt, 0)
+   %G: gimple *:
+       Equivalent to: dump_gimple_stmt (MSG_*, TDF_SLIM, stmt, 0)
+   %T: tree:
+       Equivalent to: dump_generic_expr (MSG_*, arg, TDF_SLIM).
+
+   FIXME: add symtab_node?
+
+   These format codes build optinfo_item instances, thus capturing metadata
+   about the arguments being dumped, as well as the textual output.  */
+
+bool
+dump_pretty_printer::decode_format (text_info *text, const char *spec,
+				       const char **buffer_ptr)
+{
+  /* Various format codes that imply making an optinfo_item and stashed it
+     for later use (to capture metadata, rather than plain text).  */
+  switch (*spec)
     {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      info.add_tree (t, dump_flags | extra_dump_flags);
+    case 'E':
+      {
+	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+
+	/* Make an item for the stmt, and stash it.  */
+	optinfo_item *item = make_item_for_dump_gimple_expr (stmt, 0, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    case 'G':
+      {
+	gimple *stmt = va_arg (*text->args_ptr, gimple *);
+
+	/* Make an item for the stmt, and stash it.  */
+	optinfo_item *item = make_item_for_dump_gimple_stmt (stmt, 0, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    case 'T':
+      {
+	tree t = va_arg (*text->args_ptr, tree);
+
+	/* Make an item for the tree, and stash it.  */
+	optinfo_item *item = make_item_for_dump_generic_expr (t, TDF_SLIM);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
+    default:
+      return false;
     }
 }
 
@@ -635,32 +917,27 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
 
 void
 dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
-			      va_list ap)
+			      va_list *ap)
 {
-  if (dump_file && (dump_kind & pflags))
-    {
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (dump_file, format, aq);
-      va_end (aq);
-    }
+  dump_pretty_printer pp (this, dump_kind);
 
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (alt_dump_file, format, aq);
-      va_end (aq);
-    }
+  text_info text;
+  text.err_no = errno;
+  text.args_ptr = ap;
+  text.format_spec = format;
 
+  /* Phases 1 and 2, using pp_format.  */
+  pp_format (&pp, &text);
+
+  /* Phase 3.  */
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
-      va_list aq;
-      va_copy (aq, ap);
-      info.add_printf_va (format, aq);
-      va_end (aq);
+      info.handle_dump_file_kind (dump_kind);
+      pp.emit_items (&info);
     }
+  else
+    pp.emit_items (NULL);
 }
 
 /* Similar to dump_printf, except source location is also printed, and
@@ -669,37 +946,39 @@ dump_context::dump_printf_va (dump_flags_t dump_kind, const char *format,
 void
 dump_context::dump_printf_loc_va (dump_flags_t dump_kind,
 				  const dump_location_t &loc,
-				  const char *format, va_list ap)
+				  const char *format, va_list *ap)
 {
-  location_t srcloc = loc.get_location_t ();
+  dump_loc (dump_kind, loc);
+  dump_printf_va (dump_kind, format, ap);
+}
 
-  if (dump_file && (dump_kind & pflags))
+/* Make an item for the given dump call, equivalent to print_dec.  */
+
+template<unsigned int N, typename C>
+static optinfo_item *
+make_item_for_dump_dec (const poly_int<N, C> &value)
+{
+  STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
+  signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
+
+  pretty_printer pp;
+
+  if (value.is_constant ())
+    pp_wide_int (&pp, value.coeffs[0], sgn);
+  else
     {
-      dump_loc (dump_kind, dump_file, srcloc);
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (dump_file, format, aq);
-      va_end (aq);
+      pp_character (&pp, '[');
+      for (unsigned int i = 0; i < N; ++i)
+	{
+	  pp_wide_int (&pp, value.coeffs[i], sgn);
+	  pp_character (&pp, i == N - 1 ? ']' : ',');
+	}
     }
 
-  if (alt_dump_file && (dump_kind & alt_flags))
-    {
-      dump_loc (dump_kind, alt_dump_file, srcloc);
-      va_list aq;
-      va_copy (aq, ap);
-      vfprintf (alt_dump_file, format, aq);
-      va_end (aq);
-    }
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-      va_list aq;
-      va_copy (aq, ap);
-      info.add_printf_va (format, aq);
-      va_end (aq);
-    }
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+			xstrdup (pp_formatted_text (&pp)));
+  return item;
 }
 
 /* Output VALUE in decimal to appropriate dump streams.  */
@@ -708,20 +987,29 @@ template<unsigned int N, typename C>
 void
 dump_context::dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
 {
-  STATIC_ASSERT (poly_coeff_traits<C>::signedness >= 0);
-  signop sgn = poly_coeff_traits<C>::signedness ? SIGNED : UNSIGNED;
-  if (dump_file && (dump_kind & pflags))
-    print_dec (value, dump_file, sgn);
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    print_dec (value, alt_dump_file, sgn);
+  optinfo_item *item = make_item_for_dump_dec (value);
+  emit_item (item, dump_kind);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_poly_int<N,C> (value);
+      info.add_item (item);
     }
+  else
+    delete item;
+}
+
+/* Make an item for the given dump call.  */
+
+static optinfo_item *
+make_item_for_dump_symtab_node (symtab_node *node)
+{
+  location_t loc = DECL_SOURCE_LOCATION (node->decl);
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+			xstrdup (node->dump_name ()));
+  return item;
 }
 
 /* Output the name of NODE on appropriate dump streams.  */
@@ -729,18 +1017,17 @@ dump_context::dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
 void
 dump_context::dump_symtab_node (dump_flags_t dump_kind, symtab_node *node)
 {
-  if (dump_file && (dump_kind & pflags))
-    fprintf (dump_file, "%s", node->dump_name ());
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    fprintf (alt_dump_file, "%s", node->dump_name ());
+  optinfo_item *item = make_item_for_dump_symtab_node (node);
+  emit_item (item, dump_kind);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = ensure_pending_optinfo ();
       info.handle_dump_file_kind (dump_kind);
-      info.add_symtab_node (node);
+      info.add_item (item);
     }
+  else
+    delete item;
 }
 
 /* Get the current dump scope-nesting depth.
@@ -761,28 +1048,31 @@ dump_context::get_scope_depth () const
 void
 dump_context::begin_scope (const char *name, const dump_location_t &loc)
 {
-  /* Specialcase, to avoid going through dump_printf_loc,
-     so that we can create a optinfo of kind OPTINFO_KIND_SCOPE.  */
-
   if (dump_file)
-    {
-      dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
-      fprintf (dump_file, "=== %s ===\n", name);
-    }
+    ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
 
   if (alt_dump_file)
-    {
-      dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
-      fprintf (alt_dump_file, "=== %s ===\n", name);
-    }
+    ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
+
+  /* Support for temp_dump_context in selftests.  */
+  if (m_test_pp)
+    ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
+
+  pretty_printer pp;
+  pp_printf (&pp, "=== %s ===\n", name);
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
+			xstrdup (pp_formatted_text (&pp)));
+  emit_item (item, MSG_NOTE);
 
   if (optinfo_enabled_p ())
     {
-      end_any_optinfo ();
-      optinfo info (loc, OPTINFO_KIND_SCOPE, current_pass);
-      info.add_printf ("=== %s ===", name);
-      info.emit ();
+      optinfo &info = begin_next_optinfo (loc);
+      info.m_kind = OPTINFO_KIND_SCOPE;
+      info.add_item (item);
     }
+  else
+    delete item;
 
   m_scope_depth++;
 }
@@ -830,6 +1120,23 @@ dump_context::end_any_optinfo ()
     m_pending->emit ();
   delete m_pending;
   m_pending = NULL;
+}
+
+/* Emit ITEM to all item destinations (those that don't require
+   consolidation into optinfo instances).  */
+
+void
+dump_context::emit_item (optinfo_item *item, dump_flags_t dump_kind)
+{
+  if (dump_file && (dump_kind & pflags))
+    fprintf (dump_file, "%s", item->get_text ());
+
+  if (alt_dump_file && (dump_kind & alt_flags))
+    fprintf (alt_dump_file, "%s", item->get_text ());
+
+  /* Support for temp_dump_context in selftests.  */
+  if (m_test_pp && (dump_kind & m_test_pp_flags))
+    pp_string (m_test_pp, item->get_text ());
 }
 
 /* The current singleton dump_context, and its default.  */
@@ -909,7 +1216,7 @@ dump_printf (dump_flags_t dump_kind, const char *format, ...)
 {
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_va (dump_kind, format, ap);
+  dump_context::get ().dump_printf_va (dump_kind, format, &ap);
   va_end (ap);
 }
 
@@ -922,7 +1229,7 @@ dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 {
   va_list ap;
   va_start (ap, format);
-  dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, ap);
+  dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, &ap);
   va_end (ap);
 }
 
@@ -1566,12 +1873,18 @@ enable_rtl_dump_file (void)
 /* temp_dump_context's ctor.  Temporarily override the dump_context
    (to forcibly enable optinfo-generation).  */
 
-temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo)
+temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
+				      dump_flags_t test_pp_flags)
+
 : m_context (),
   m_saved (&dump_context ().get ())
 {
   dump_context::s_current = &m_context;
   m_context.m_forcibly_enable_optinfo = forcibly_enable_optinfo;
+  m_context.m_test_pp = &m_pp;
+  m_context.m_test_pp_flags = test_pp_flags;
+
+  dump_context::get ().refresh_dumps_are_enabled ();
 }
 
 /* temp_dump_context's dtor.  Restore the saved dump_context.  */
@@ -1579,6 +1892,16 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo)
 temp_dump_context::~temp_dump_context ()
 {
   dump_context::s_current = m_saved;
+
+  dump_context::get ().refresh_dumps_are_enabled ();
+}
+
+/* 0-terminate the text dumped so far, and return it.  */
+
+const char *
+temp_dump_context::get_dumped_text ()
+{
+  return pp_formatted_text (&m_pp);
 }
 
 namespace selftest {
@@ -1616,6 +1939,29 @@ test_impl_location ()
   }
 #endif
 }
+
+/* Verify that the text dumped so far in CONTEXT equals
+   EXPECTED_TEXT, using LOC for the location of any failure.
+   As a side-effect, the internal buffer is 0-terminated.  */
+
+static void
+verify_dumped_text (const location &loc,
+		    temp_dump_context *context,
+		    const char *expected_text)
+{
+  gcc_assert (context);
+  ASSERT_STREQ_AT (loc, context->get_dumped_text (),
+		   expected_text);
+}
+
+/* Verify that the text dumped so far in CONTEXT equals
+   EXPECTED_TEXT.
+   As a side-effect, the internal buffer is 0-terminated.  */
+
+#define ASSERT_DUMPED_TEXT_EQ(CONTEXT, EXPECTED_TEXT)			\
+  SELFTEST_BEGIN_STMT							\
+    verify_dumped_text (SELFTEST_LOCATION, &(CONTEXT), (EXPECTED_TEXT)); \
+  SELFTEST_END_STMT
 
 /* Verify that ITEM has the expected values.  */
 
@@ -1667,116 +2013,284 @@ test_capture_of_dump_calls (const line_table_case &case_)
   linemap_line_start (line_table, 5, 100);
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
   location_t where = linemap_position_for_column (line_table, 10);
+  if (where > LINE_MAP_MAX_LOCATION_WITH_COLS)
+    return;
 
   dump_location_t loc = dump_location_t::from_location_t (where);
 
-  /* Test of dump_printf.  */
-  {
-    temp_dump_context tmp (true);
-    dump_printf (MSG_NOTE, "int: %i str: %s", 42, "foo");
+  gimple *stmt = gimple_build_return (NULL);
+  gimple_set_location (stmt, where);
 
-    optinfo *info = tmp.get_pending_optinfo ();
-    ASSERT_TRUE (info != NULL);
-    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
-    ASSERT_EQ (info->num_items (), 1);
-    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
-  }
-
-  /* Tree, via dump_generic_expr.  */
-  {
-    temp_dump_context tmp (true);
-    dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
-    dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
-
-    optinfo *info = tmp.get_pending_optinfo ();
-    ASSERT_TRUE (info != NULL);
-    ASSERT_EQ (info->get_location_t (), where);
-    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
-    ASSERT_EQ (info->num_items (), 2);
-    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
-    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
-  }
-
-  /* Tree, via dump_generic_expr_loc.  */
-  {
-    temp_dump_context tmp (true);
-    dump_generic_expr_loc (MSG_NOTE, loc, TDF_SLIM, integer_one_node);
-
-    optinfo *info = tmp.get_pending_optinfo ();
-    ASSERT_TRUE (info != NULL);
-    ASSERT_EQ (info->get_location_t (), where);
-    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
-    ASSERT_EQ (info->num_items (), 1);
-    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
-  }
-
-  /* Gimple.  */
-  {
-    greturn *stmt = gimple_build_return (NULL);
-    gimple_set_location (stmt, where);
-
-    /* dump_gimple_stmt_loc.  */
+  tree test_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			       get_identifier ("test_decl"),
+			       integer_type_node);
+  /* Run all tests twice, with and then without optinfo enabled, to ensure
+     that immediate destinations vs optinfo-based destinations both
+     work, independently of each other, with no leaks.  */
+  for (int i = 0 ; i < 2; i++)
     {
-      temp_dump_context tmp (true);
-      dump_gimple_stmt_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
+      bool with_optinfo = (i == 0);
 
-      optinfo *info = tmp.get_pending_optinfo ();
-      ASSERT_TRUE (info != NULL);
-      ASSERT_EQ (info->num_items (), 1);
-      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+      /* Test of dump_printf.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "int: %i str: %s", 42, "foo");
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "int: 42 str: foo");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_TEXT (info->get_item (0), "int: 42 str: foo");
+	  }
+      }
+
+      /* Test of dump_printf with %T.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "tree: %T", integer_zero_node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "tree: 0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "tree: ");
+	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	  }
+      }
+
+      /* Test of dump_printf with %E.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "gimple: %E", stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
+	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;");
+	  }
+      }
+
+      /* Test of dump_printf with %G.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf (MSG_NOTE, "gimple: %G", stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;\n");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
+	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;\n");
+	  }
+      }
+
+      /* dump_print_loc with multiple format codes.  This tests various
+	 things:
+	 - intermingling of text, format codes handled by the base
+	 pretty_printer, and dump-specific format codes
+	 - multiple dump-specific format codes: some consecutive, others
+	 separated by text, trailing text after the final one.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf_loc (MSG_NOTE, loc, "before %T and %T"
+			 " %i consecutive %E%E after\n",
+			 integer_zero_node, test_decl, 42, stmt, stmt);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp,
+			       "test.txt:5:10: note: before 0 and test_decl"
+			       " 42 consecutive return;return; after\n");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 8);
+	    ASSERT_IS_TEXT (info->get_item (0), "before ");
+	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	    ASSERT_IS_TEXT (info->get_item (2), " and ");
+	    ASSERT_IS_TREE (info->get_item (3), UNKNOWN_LOCATION, "test_decl");
+	    ASSERT_IS_TEXT (info->get_item (4), " 42 consecutive ");
+	    ASSERT_IS_GIMPLE (info->get_item (5), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (6), where, "return;");
+	    ASSERT_IS_TEXT (info->get_item (7), " after\n");
+	  }
+      }
+
+      /* Tree, via dump_generic_expr.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
+	dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: test of tree: 0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
+	    ASSERT_IS_TREE (info->get_item (1), UNKNOWN_LOCATION, "0");
+	  }
+      }
+
+      /* Tree, via dump_generic_expr_loc.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_generic_expr_loc (MSG_NOTE, loc, TDF_SLIM, integer_one_node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: 1");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
+	  }
+      }
+
+      /* Gimple.  */
+      {
+	/* dump_gimple_stmt_loc.  */
+	{
+	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  dump_gimple_stmt_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
+
+	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;\n");
+	  if (with_optinfo)
+	    {
+	      optinfo *info = tmp.get_pending_optinfo ();
+	      ASSERT_TRUE (info != NULL);
+	      ASSERT_EQ (info->num_items (), 1);
+	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	    }
+	}
+
+	/* dump_gimple_stmt.  */
+	{
+	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 2);
+
+	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;\n");
+	  if (with_optinfo)
+	    {
+	      optinfo *info = tmp.get_pending_optinfo ();
+	      ASSERT_TRUE (info != NULL);
+	      ASSERT_EQ (info->num_items (), 1);
+	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	    }
+	}
+
+	/* dump_gimple_expr_loc.  */
+	{
+	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  dump_gimple_expr_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
+
+	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;");
+	  if (with_optinfo)
+	    {
+	      optinfo *info = tmp.get_pending_optinfo ();
+	      ASSERT_TRUE (info != NULL);
+	      ASSERT_EQ (info->num_items (), 1);
+	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	    }
+	}
+
+	/* dump_gimple_expr.  */
+	{
+	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  dump_gimple_expr (MSG_NOTE, TDF_SLIM, stmt, 2);
+
+	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;");
+	  if (with_optinfo)
+	    {
+	      optinfo *info = tmp.get_pending_optinfo ();
+	      ASSERT_TRUE (info != NULL);
+	      ASSERT_EQ (info->num_items (), 1);
+	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	    }
+	}
+      }
+
+      /* poly_int.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_dec (MSG_NOTE, poly_int64 (42));
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "42");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_TEXT (info->get_item (0), "42");
+	  }
+      }
+
+      /* scopes.  */
+      {
+	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
+	{
+	  AUTO_DUMP_SCOPE ("outer scope", stmt);
+	  dump_printf_loc (MSG_NOTE, stmt, "msg 2\n");
+	  {
+	    AUTO_DUMP_SCOPE ("middle scope", stmt);
+	    dump_printf_loc (MSG_NOTE, stmt, "msg 3\n");
+	    {
+	      AUTO_DUMP_SCOPE ("inner scope", stmt);
+	      dump_printf_loc (MSG_NOTE, stmt, "msg 4\n");
+	    }
+	    dump_printf_loc (MSG_NOTE, stmt, "msg 5\n");
+	  }
+	  dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
+	}
+	dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+
+	ASSERT_DUMPED_TEXT_EQ (tmp,
+			       "test.txt:5:10: note: msg 1\n"
+			       "test.txt:5:10: note: === outer scope ===\n"
+			       "test.txt:5:10: note:  msg 2\n"
+			       "test.txt:5:10: note:  === middle scope ===\n"
+			       "test.txt:5:10: note:   msg 3\n"
+			       "test.txt:5:10: note:   === inner scope ===\n"
+			       "test.txt:5:10: note:    msg 4\n"
+			       "test.txt:5:10: note:   msg 5\n"
+			       "test.txt:5:10: note:  msg 6\n"
+			       "test.txt:5:10: note: msg 7\n");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_TEXT (info->get_item (0), "msg 7\n");
+	  }
+      }
     }
-
-    /* dump_gimple_stmt.  */
-    {
-      temp_dump_context tmp (true);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 2);
-
-      optinfo *info = tmp.get_pending_optinfo ();
-      ASSERT_TRUE (info != NULL);
-      ASSERT_EQ (info->num_items (), 1);
-      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
-    }
-
-    /* dump_gimple_expr_loc.  */
-    {
-      temp_dump_context tmp (true);
-      dump_gimple_expr_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
-
-      optinfo *info = tmp.get_pending_optinfo ();
-      ASSERT_TRUE (info != NULL);
-      ASSERT_EQ (info->num_items (), 1);
-      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
-    }
-
-    /* dump_gimple_expr.  */
-    {
-      temp_dump_context tmp (true);
-      dump_gimple_expr (MSG_NOTE, TDF_SLIM, stmt, 2);
-
-      optinfo *info = tmp.get_pending_optinfo ();
-      ASSERT_TRUE (info != NULL);
-      ASSERT_EQ (info->num_items (), 1);
-      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
-    }
-  }
-
-  /* poly_int.  */
-  {
-    temp_dump_context tmp (true);
-    dump_dec (MSG_NOTE, poly_int64 (42));
-
-    optinfo *info = tmp.get_pending_optinfo ();
-    ASSERT_TRUE (info != NULL);
-    ASSERT_EQ (info->num_items (), 1);
-    ASSERT_IS_TEXT (info->get_item (0), "42");
-  }
 
   /* Verify that MSG_* affects optinfo->get_kind (); we tested MSG_NOTE
      above.  */
   {
     /* MSG_OPTIMIZED_LOCATIONS.  */
     {
-      temp_dump_context tmp (true);
+      temp_dump_context tmp (true, MSG_ALL);
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_SUCCESS);
@@ -1784,7 +2298,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
     /* MSG_MISSED_OPTIMIZATION.  */
     {
-      temp_dump_context tmp (true);
+      temp_dump_context tmp (true, MSG_ALL);
       dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_FAILURE);

@@ -2043,6 +2043,16 @@ GLIBCXX_3.4.26 {
     _ZNSt3pmr20null_memory_resourceEv;
     _ZNSt3pmr20get_default_resourceEv;
     _ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE;
+    _ZNSt3pmr25monotonic_buffer_resource13_M_new_bufferE[jmy][jmy];
+    _ZNSt3pmr25monotonic_buffer_resource18_M_release_buffersEv;
+
+    # std::__throw_ios_failure(const char*, int);
+    _ZSt19__throw_ios_failurePKci;
+
+    # std::wistream::ignore(long long, unsigned short)
+    _ZNSt13basic_istreamIwSt11char_traitsIwEE6ignoreExt;
+    # std::basic_filebuf::open(const wchar_t*, openmode)
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
 
 } GLIBCXX_3.4.25;
 

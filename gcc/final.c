@@ -122,11 +122,19 @@ static int last_linenum;
 /* Column number of last NOTE.  */
 static int last_columnnum;
 
-/* Last discriminator written to assembly.  */
+/* Discriminator written to assembly.  */
 static int last_discriminator;
 
-/* Discriminator of current block.  */
+/* Discriminator to be written to assembly for current instruction.
+   Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+
+/* Discriminator identifying current basic block among others sharing
+   the same locus.  */
+static int bb_discriminator;
+
+/* Basic block discriminator for previous instruction.  */
+static int last_bb_discriminator;
 
 /* Highest line number in current block.  */
 static int high_block_linenum;
@@ -1701,6 +1709,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_linenum = LOCATION_LINE (prologue_location);
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
+  last_bb_discriminator = bb_discriminator = 0;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
@@ -2223,6 +2232,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      ASM_OUTPUT_LABEL (asm_out_file,
 				IDENTIFIER_POINTER (cold_function_name));
 #endif
+	      if (dwarf2out_do_frame ()
+	          && cfun->fde->dw_fde_second_begin != NULL)
+		ASM_OUTPUT_LABEL (asm_out_file, cfun->fde->dw_fde_second_begin);
 	    }
 	  break;
 
@@ -2236,8 +2248,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-          discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
-
+	  bb_discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -3144,6 +3155,62 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 }
 
 
+
+/* Map DECLs to instance discriminators.  This is allocated and
+   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   Mappings from this table are saved and restored for LTO, so
+   link-time compilation will have this map set, at least in
+   partitions containing at least one DECL with an associated instance
+   discriminator.  */
+
+decl_to_instance_map_t *decl_to_instance_map;
+
+/* Return the instance number assigned to DECL.  */
+
+static inline int
+map_decl_to_instance (const_tree decl)
+{
+  int *inst;
+
+  if (!decl_to_instance_map || !decl || !DECL_P (decl))
+    return 0;
+
+  inst = decl_to_instance_map->get (decl);
+
+  if (!inst)
+    return 0;
+
+  return *inst;
+}
+
+/* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
+
+static inline void
+maybe_set_discriminator (location_t loc)
+{
+  if (!decl_to_instance_map)
+    discriminator = bb_discriminator;
+  else
+    {
+      tree block = LOCATION_BLOCK (loc);
+
+      while (block && TREE_CODE (block) == BLOCK
+	     && !inlined_function_outer_scope_p (block))
+	block = BLOCK_SUPERCONTEXT (block);
+
+      tree decl;
+
+      if (!block)
+	decl = current_function_decl;
+      else if (DECL_P (block))
+	decl = block;
+      else
+	decl = block_ultimate_origin (block);
+
+      discriminator = map_decl_to_instance (decl);
+    }
+}
+
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
    breakpoint location.  */
@@ -3178,6 +3245,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3192,6 +3260,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (INSN_LOCATION (insn));
     }
   else
     {

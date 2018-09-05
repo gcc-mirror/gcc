@@ -20,28 +20,6 @@
 #include <vector>
 #include <testsuite_hooks.h>
 
-void test01()
-{
-  using namespace __gnu_debug;
-
-  std::vector<int> v1(3, 1);
-  VERIFY( __check_dereferenceable(v1.begin()) );
-  std::vector<int>::iterator it = v1.begin();
-  VERIFY( __check_dereferenceable(it) );
-
-  VERIFY( !__check_dereferenceable(v1.end()) );
-  it = v1.end();
-  VERIFY( !__check_dereferenceable(it) );
-
-  const volatile int* pi = 0;
-  VERIFY( !__check_dereferenceable(pi) );
-
-  int i;
-  pi = &i;
-
-  VERIFY( __check_dereferenceable(pi) );
-}
-
 void test02()
 {
   using namespace __gnu_debug;
@@ -67,7 +45,6 @@ void test02()
 
 int main()
 {
-  test01();
   test02();
   return 0;
 }

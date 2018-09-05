@@ -2198,7 +2198,7 @@ edge.  Rethrowing the exception is represented using @code{RESX_EXPR}.
 @tindex OMP_CLAUSE
 
 All the statements starting with @code{OMP_} represent directives and
-clauses used by the OpenMP API @w{@uref{http://www.openmp.org/}}.
+clauses used by the OpenMP API @w{@uref{https://www.openmp.org}}.
 
 @table @code
 @item OMP_PARALLEL

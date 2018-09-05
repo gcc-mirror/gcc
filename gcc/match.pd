@@ -776,6 +776,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_not (bit_and:cs (bit_not @0) @1))
  (bit_ior @0 (bit_not @1)))
 
+/* ~(~a | b) --> a & ~b */
+(simplify
+ (bit_not (bit_ior:cs (bit_not @0) @1))
+ (bit_and @0 (bit_not @1)))
+
 /* Simplify (~X & Y) to X ^ Y if we know that (X & ~Y) is 0.  */
 #if GIMPLE
 (simplify
@@ -981,6 +986,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (bit_ior:c @0 @1) (bit_xor:c @1 (bit_not @0)))
  (bit_and @0 @1))
 
+/* (~x | y) & (x | ~y) -> ~(x ^ y) */
+(simplify
+ (bit_and (bit_ior:cs (bit_not @0) @1) (bit_ior:cs @0 (bit_not @1)))
+ (bit_not (bit_xor @0 @1)))
+
+/* (~x | y) ^ (x | ~y) -> x ^ y */
+(simplify
+ (bit_xor (bit_ior:c (bit_not @0) @1) (bit_ior:c @0 (bit_not @1)))
+ (bit_xor @0 @1))
+
 /* ~x & ~y -> ~(x | y)
    ~x | ~y -> ~(x & y) */
 (for op (bit_and bit_ior)
@@ -1027,7 +1042,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for opo (bit_and bit_xor)
      opi (bit_xor bit_and)
  (simplify
-  (opo:c (opi:c @0 @1) @1) 
+  (opo:c (opi:cs @0 @1) @1)
   (bit_and (bit_not @0) @1)))
 
 /* Given a bit-wise operation CODE applied to ARG0 and ARG1, see if both
@@ -4937,3 +4952,63 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (inverse_conditions_p (@0, @2)
         && element_precision (type) == element_precision (op_type))
     (view_convert (cond_op @2 @3 @4 @5 (view_convert:op_type @1)))))))
+
+/* For pointers @0 and @2 and nonnegative constant offset @1, look for
+   expressions like:
+
+   A: (@0 + @1 < @2) | (@2 + @1 < @0)
+   B: (@0 + @1 <= @2) | (@2 + @1 <= @0)
+
+   If pointers are known not to wrap, B checks whether @1 bytes starting
+   at @0 and @2 do not overlap, while A tests the same thing for @1 + 1
+   bytes.  A is more efficiently tested as:
+
+   A: (sizetype) (@0 + @1 - @2) > @1 * 2
+
+   The equivalent expression for B is given by replacing @1 with @1 - 1:
+
+   B: (sizetype) (@0 + (@1 - 1) - @2) > (@1 - 1) * 2
+
+   @0 and @2 can be swapped in both expressions without changing the result.
+
+   The folds rely on sizetype's being unsigned (which is always true)
+   and on its being the same width as the pointer (which we have to check).
+
+   The fold replaces two pointer_plus expressions, two comparisons and
+   an IOR with a pointer_plus, a pointer_diff, and a comparison, so in
+   the best case it's a saving of two operations.  The A fold retains one
+   of the original pointer_pluses, so is a win even if both pointer_pluses
+   are used elsewhere.  The B fold is a wash if both pointer_pluses are
+   used elsewhere, since all we end up doing is replacing a comparison with
+   a pointer_plus.  We do still apply the fold under those circumstances
+   though, in case applying it to other conditions eventually makes one of the
+   pointer_pluses dead.  */
+(for ior (truth_orif truth_or bit_ior)
+ (for cmp (le lt)
+  (simplify
+   (ior (cmp:cs (pointer_plus@3 @0 INTEGER_CST@1) @2)
+	(cmp:cs (pointer_plus@4 @2 @1) @0))
+   (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+	&& TYPE_OVERFLOW_WRAPS (sizetype)
+	&& TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (sizetype))
+    /* Calculate the rhs constant.  */
+    (with { offset_int off = wi::to_offset (@1) - (cmp == LE_EXPR ? 1 : 0);
+	    offset_int rhs = off * 2; }
+     /* Always fails for negative values.  */
+     (if (wi::min_precision (rhs, UNSIGNED) <= TYPE_PRECISION (sizetype))
+      /* Since the order of @0 and @2 doesn't matter, let tree_swap_operands_p
+	 pick a canonical order.  This increases the chances of using the
+	 same pointer_plus in multiple checks.  */
+      (with { bool swap_p = tree_swap_operands_p (@0, @2);
+	      tree rhs_tree = wide_int_to_tree (sizetype, rhs); }
+       (if (cmp == LT_EXPR)
+	(gt (convert:sizetype
+	     (pointer_diff:ssizetype { swap_p ? @4 : @3; }
+				     { swap_p ? @0 : @2; }))
+	    { rhs_tree; })
+	(gt (convert:sizetype
+	     (pointer_diff:ssizetype
+	      (pointer_plus { swap_p ? @2 : @0; }
+			    { wide_int_to_tree (sizetype, off); })
+	      { swap_p ? @0 : @2; }))
+	    { rhs_tree; })))))))))

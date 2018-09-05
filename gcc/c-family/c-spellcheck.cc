@@ -45,13 +45,13 @@ name_reserved_for_implementation_p (const char *str)
 static bool
 should_suggest_as_macro_p (cpp_hashnode *hashnode)
 {
-  if (hashnode->type != NT_MACRO)
+  if (!cpp_macro_p (hashnode))
     return false;
 
-  /* Don't suggest names reserved for the implementation, but do suggest the builtin
-     macros such as __FILE__, __LINE__ etc.  */
-  if (name_reserved_for_implementation_p ((const char *)hashnode->ident.str)
-      && !(hashnode->flags & NODE_BUILTIN))
+  /* Don't suggest names reserved for the implementation, but do
+     suggest the builtin macros such as __FILE__, __LINE__ etc.  */
+  if (cpp_user_macro_p (hashnode)
+      && name_reserved_for_implementation_p ((const char *)hashnode->ident.str))
     return false;
 
   return true;

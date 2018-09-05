@@ -80,8 +80,6 @@ main (int argc, char **argv)
 
 /* { dg-final { gdb-test "@main" "type:vs" "volatile struct { const long cli; const signed char csc; }" } } */
 
-/* { dg-final { gdb-test "@main" "type:cvip" "int * const volatile" } } */
-
 /* { dg-final { gdb-test "@main" "type:bar" "struct bar { short s; const short cs; volatile short vs; const volatile short cvs; volatile long long vll; }" } } */
 /* { dg-final { gdb-test "@main" "type:foo" "struct foo { const long cli; const signed char csc; }" } } */
 /* { dg-final { gdb-test "@main" "type:cfoo" "const struct foo { const long cli; const signed char csc; }" } } */

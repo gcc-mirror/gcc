@@ -1168,7 +1168,7 @@ func kickoff() {
 	goexit1()
 }
 
-func mstart1(dummy int32) {
+func mstart1() {
 	_g_ := getg()
 
 	if _g_ != _g_.m.g0 {
@@ -2774,7 +2774,7 @@ func entersyscallblock_handoff() {
 //
 //go:nosplit
 //go:nowritebarrierrec
-func exitsyscall(dummy int32) {
+func exitsyscall() {
 	_g_ := getg()
 
 	_g_.m.locks++ // see comment in entersyscall
@@ -2984,13 +2984,13 @@ func exitsyscallclear(gp *g) {
 //go:linkname syscall_entersyscall syscall.Entersyscall
 //go:nosplit
 func syscall_entersyscall() {
-	entersyscall(0)
+	entersyscall()
 }
 
 //go:linkname syscall_exitsyscall syscall.Exitsyscall
 //go:nosplit
 func syscall_exitsyscall() {
-	exitsyscall(0)
+	exitsyscall()
 }
 
 func beforefork() {
@@ -3418,8 +3418,36 @@ func sigprof(pc uintptr, gp *g, mp *m) {
 		var stklocs [maxCPUProfStack]location
 		n = callers(0, stklocs[:])
 
+		// Issue 26595: the stack trace we've just collected is going
+		// to include frames that we don't want to report in the CPU
+		// profile, including signal handler frames. Here is what we
+		// might typically see at the point of "callers" above for a
+		// signal delivered to the application routine "interesting"
+		// called by "main".
+		//
+		//  0: runtime.sigprof
+		//  1: runtime.sighandler
+		//  2: runtime.sigtrampgo
+		//  3: runtime.sigtramp
+		//  4: <signal handler called>
+		//  5: main.interesting_routine
+		//  6: main.main
+		//
+		// To ensure a sane profile, walk through the frames in
+		// "stklocs" until we find the "runtime.sigtramp" frame, then
+		// report only those frames below the frame one down from
+		// that. If for some reason "runtime.sigtramp" is not present,
+		// don't make any changes.
+		framesToDiscard := 0
 		for i := 0; i < n; i++ {
-			stk[i] = stklocs[i].pc
+			if stklocs[i].function == "runtime.sigtramp" && i+2 < n {
+				framesToDiscard = i + 2
+				n -= framesToDiscard
+				break
+			}
+		}
+		for i := 0; i < n; i++ {
+			stk[i] = stklocs[i+framesToDiscard].pc
 		}
 	}
 

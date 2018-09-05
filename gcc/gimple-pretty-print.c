@@ -911,8 +911,7 @@ dump_gimple_call (pretty_printer *buffer, gcall *gs, int spc,
   if (TREE_CODE (fn) == FUNCTION_DECL && decl_is_tm_clone (fn))
     pp_string (buffer, " [tm-clone]");
   if (TREE_CODE (fn) == FUNCTION_DECL
-      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-      && DECL_FUNCTION_CODE (fn) == BUILT_IN_TM_START
+      && fndecl_built_in_p (fn, BUILT_IN_TM_START)
       && gimple_call_num_args (gs) > 0)
     {
       tree t = gimple_call_arg (gs, 0);
@@ -992,7 +991,7 @@ dump_gimple_switch (pretty_printer *buffer, gswitch *gs, int spc,
 
       if (cfun && cfun->cfg)
 	{
-	  basic_block dest = label_to_block (label);
+	  basic_block dest = label_to_block (cfun, label);
 	  if (dest)
 	    {
 	      edge label_edge = find_edge (gimple_bb (gs), dest);
@@ -2887,20 +2886,13 @@ gimple_dump_bb_for_graph (pretty_printer *pp, basic_block bb)
 
 
 /* Handle the %G format for TEXT.  Same as %K in handle_K_format in
-   tree-pretty-print.c but with a Gimple call statement as an argument.  */
+   tree-pretty-print.c but with a Gimple statement as an argument.  */
 
 void
 percent_G_format (text_info *text)
 {
-  gcall *stmt = va_arg (*text->args_ptr, gcall*);
+  gimple *stmt = va_arg (*text->args_ptr, gimple*);
 
-  /* Build a call expression from the Gimple call statement and
-     pass it to the K formatter that knows how to format it.  */
-  tree exp = build_vl_exp (CALL_EXPR, gimple_call_num_args (stmt) + 3);
-  CALL_EXPR_FN (exp) = gimple_call_fn (stmt);
-  TREE_TYPE (exp) = gimple_call_return_type (stmt);
-  CALL_EXPR_STATIC_CHAIN (exp) = gimple_call_chain (stmt);
-  SET_EXPR_LOCATION (exp, gimple_location (stmt));
-
-  percent_K_format (text, exp);
+  tree block = gimple_block (stmt);
+  percent_K_format (text, gimple_location (stmt), block);
 }

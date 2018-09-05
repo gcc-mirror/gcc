@@ -22,6 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DUMP_CONTEXT_H
 #define GCC_DUMP_CONTEXT_H 1
 
+#include "dumpfile.h"
+#include "pretty-print.h"
+
 /* A class for handling the various dump_* calls.
 
    In particular, this class has responsibility for consolidating
@@ -38,6 +41,10 @@ class dump_context
   static dump_context &get () { return *s_current; }
 
   ~dump_context ();
+
+  void refresh_dumps_are_enabled ();
+
+  void dump_loc (dump_flags_t dump_kind, const dump_location_t &loc);
 
   void dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 			 gimple *gs, int spc);
@@ -67,11 +74,11 @@ class dump_context
 			      tree t);
 
   void dump_printf_va (dump_flags_t dump_kind, const char *format,
-		       va_list ap) ATTRIBUTE_PRINTF (3, 0);
+		       va_list *ap) ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
 
   void dump_printf_loc_va (dump_flags_t dump_kind, const dump_location_t &loc,
-			   const char *format, va_list ap)
-    ATTRIBUTE_PRINTF (4, 0);
+			   const char *format, va_list *ap)
+    ATTRIBUTE_GCC_DUMP_PRINTF (4, 0);
 
   template<unsigned int N, typename C>
   void dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value);
@@ -91,6 +98,8 @@ class dump_context
 
   void end_any_optinfo ();
 
+  void emit_item (optinfo_item *item, dump_flags_t dump_kind);
+
  private:
   optinfo &ensure_pending_optinfo ();
   optinfo &begin_next_optinfo (const dump_location_t &loc);
@@ -105,6 +114,11 @@ class dump_context
   /* The optinfo currently being accumulated since the last dump_*_loc call,
      if any.  */
   optinfo *m_pending;
+
+  /* For use in selftests: if non-NULL, then items are to be printed
+     to this, using the given flags.  */
+  pretty_printer *m_test_pp;
+  dump_flags_t m_test_pp_flags;
 
   /* The currently active dump_context, for use by the dump_* API calls.  */
   static dump_context *s_current;
@@ -121,13 +135,16 @@ class dump_context
 class temp_dump_context
 {
  public:
-  temp_dump_context (bool forcibly_enable_optinfo);
+  temp_dump_context (bool forcibly_enable_optinfo,
+		     dump_flags_t test_pp_flags);
   ~temp_dump_context ();
 
   /* Support for selftests.  */
   optinfo *get_pending_optinfo () const { return m_context.m_pending; }
+  const char *get_dumped_text ();
 
  private:
+  pretty_printer m_pp;
   dump_context m_context;
   dump_context *m_saved;
   bool m_saved_flag_remarks;

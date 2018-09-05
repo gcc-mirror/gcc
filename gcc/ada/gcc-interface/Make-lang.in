@@ -319,6 +319,7 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/g-dynhta.o	\
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
+ ada/libgnat/g-lists.o \
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-u3spch.o	\

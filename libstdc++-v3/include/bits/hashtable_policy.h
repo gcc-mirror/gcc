@@ -32,7 +32,7 @@
 #define _HASHTABLE_POLICY_H 1
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
-#include <cstdint>		// for std::uint_fast64_t
+#include <limits>		// for std::numeric_limits
 #include <bits/stl_algobase.h>	// for std::min.
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -504,27 +504,18 @@ namespace __detail
     { return __num & (__den - 1); }
   };
 
-  /// Compute closest power of 2.
-  _GLIBCXX14_CONSTEXPR
+  /// Compute closest power of 2 not less than __n
   inline std::size_t
   __clp2(std::size_t __n) noexcept
   {
-#if __SIZEOF_SIZE_T__ >= 8
-    std::uint_fast64_t __x = __n;
-#else
-    std::uint_fast32_t __x = __n;
-#endif
-    // Algorithm from Hacker's Delight, Figure 3-3.
-    __x = __x - 1;
-    __x = __x | (__x >> 1);
-    __x = __x | (__x >> 2);
-    __x = __x | (__x >> 4);
-    __x = __x | (__x >> 8);
-    __x = __x | (__x >>16);
-#if __SIZEOF_SIZE_T__ >= 8
-    __x = __x | (__x >>32);
-#endif
-    return __x + 1;
+    // Equivalent to return __n ? std::ceil2(__n) : 0;
+    if (__n < 2)
+      return __n;
+    const unsigned __lz = sizeof(size_t) > sizeof(long)
+      ? __builtin_clzll(__n - 1ull)
+      : __builtin_clzl(__n - 1ul);
+    // Doing two shifts avoids undefined behaviour when __lz == 0.
+    return (size_t(1) << (numeric_limits<size_t>::digits - __lz - 1)) << 1;
   }
 
   /// Rehash policy providing power of 2 bucket numbers. Avoids modulo

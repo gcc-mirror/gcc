@@ -2570,15 +2570,14 @@ set_reduc_phi_uids (reduction_info **slot, void *data ATTRIBUTE_UNUSED)
   return 1;
 }
 
-/* Return true if the type of reduction performed by STMT is suitable
+/* Return true if the type of reduction performed by STMT_INFO is suitable
    for this pass.  */
 
 static bool
-valid_reduction_p (gimple *stmt)
+valid_reduction_p (stmt_vec_info stmt_info)
 {
   /* Parallelization would reassociate the operation, which isn't
      allowed for in-order reductions.  */
-  stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
   vect_reduction_type reduc_type = STMT_VINFO_REDUC_TYPE (stmt_info);
   return reduc_type != FOLD_LEFT_REDUCTION;
 }
@@ -2592,10 +2591,6 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
   loop_vec_info simple_loop_info;
   auto_vec<gphi *, 4> double_reduc_phis;
   auto_vec<gimple *, 4> double_reduc_stmts;
-
-  vec<stmt_vec_info> stmt_vec_infos;
-  stmt_vec_infos.create (50);
-  set_stmt_vec_info_vec (&stmt_vec_infos);
 
   vec_info_shared shared;
   simple_loop_info = vect_analyze_loop_form (loop, &shared);
@@ -2615,10 +2610,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
       if (simple_iv (loop, loop, res, &iv, true))
 	continue;
 
-      gimple *reduc_stmt
-	= vect_force_simple_reduction (simple_loop_info, phi,
+      stmt_vec_info reduc_stmt_info
+	= vect_force_simple_reduction (simple_loop_info,
+				       simple_loop_info->lookup_stmt (phi),
 				       &double_reduc, true);
-      if (!reduc_stmt || !valid_reduction_p (reduc_stmt))
+      if (!reduc_stmt_info || !valid_reduction_p (reduc_stmt_info))
 	continue;
 
       if (double_reduc)
@@ -2627,11 +2623,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 	    continue;
 
 	  double_reduc_phis.safe_push (phi);
-	  double_reduc_stmts.safe_push (reduc_stmt);
+	  double_reduc_stmts.safe_push (reduc_stmt_info->stmt);
 	  continue;
 	}
 
-      build_new_reduction (reduction_list, reduc_stmt, phi);
+      build_new_reduction (reduction_list, reduc_stmt_info->stmt, phi);
     }
   delete simple_loop_info;
 
@@ -2661,12 +2657,15 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 			     &iv, true))
 		continue;
 
-	      gimple *inner_reduc_stmt
-		= vect_force_simple_reduction (simple_loop_info, inner_phi,
+	      stmt_vec_info inner_phi_info
+		= simple_loop_info->lookup_stmt (inner_phi);
+	      stmt_vec_info inner_reduc_stmt_info
+		= vect_force_simple_reduction (simple_loop_info,
+					       inner_phi_info,
 					       &double_reduc, true);
 	      gcc_assert (!double_reduc);
-	      if (inner_reduc_stmt == NULL
-		  || !valid_reduction_p (inner_reduc_stmt))
+	      if (!inner_reduc_stmt_info
+		  || !valid_reduction_p (inner_reduc_stmt_info))
 		continue;
 
 	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
@@ -2676,14 +2675,11 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
     }
 
  gather_done:
-  /* Release the claim on gimple_uid.  */
-  free_stmt_vec_infos (&stmt_vec_infos);
-
   if (reduction_list->elements () == 0)
     return;
 
   /* As gimple_uid is used by the vectorizer in between vect_analyze_loop_form
-     and free_stmt_vec_info_vec, we can set gimple_uid of reduc_phi stmts only
+     and delete simple_loop_info, we can set gimple_uid of reduc_phi stmts only
      now.  */
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)

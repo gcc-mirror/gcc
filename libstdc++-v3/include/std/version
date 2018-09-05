@@ -73,7 +73,9 @@
 #define __cpp_lib_make_unique 201304
 #define __cpp_lib_quoted_string_io 201304
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304
-#define __cpp_lib_shared_timed_mutex 201402
+#ifdef _GLIBCXX_HAS_GTHREADS
+# define __cpp_lib_shared_timed_mutex 201402
+#endif
 #define __cpp_lib_string_udls 201304
 #define __cpp_lib_transformation_trait_aliases 201304
 #define __cpp_lib_transparent_operators 201510
@@ -97,13 +99,19 @@
 #define __cpp_lib_filesystem 201703
 #define __cpp_lib_gcd 201606
 #define __cpp_lib_gcd_lcm 201606
-#define __cpp_lib_has_unique_object_representations 201606
+#ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
+# define __cpp_lib_has_unique_object_representations 201606
+#endif
 #define __cpp_lib_hypot 201603
 #define __cpp_lib_invoke 201411
-#define __cpp_lib_is_aggregate 201703
+#ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
+# define __cpp_lib_is_aggregate 201703
+#endif
 #define __cpp_lib_is_invocable 201703
 #define __cpp_lib_is_swappable 201603
-#define __cpp_lib_launder 201606
+#ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
+# define __cpp_lib_launder 201606
+#endif
 #define __cpp_lib_lcm 201606
 #define __cpp_lib_logical_traits 201510
 #define __cpp_lib_make_from_tuple 201606
@@ -115,8 +123,10 @@
 #define __cpp_lib_not_fn 201603
 #define __cpp_lib_optional 201603
 #define __cpp_lib_sample 201603
-#define __cpp_lib_scoped_lock 201703
-#define __cpp_lib_shared_mutex 201505
+#ifdef _GLIBCXX_HAS_GTHREADS
+# define __cpp_lib_scoped_lock 201703
+# define __cpp_lib_shared_mutex 201505
+#endif
 #define __cpp_lib_shared_ptr_weak_type 201606
 #define __cpp_lib_string_view 201603
 #define __cpp_lib_type_trait_variable_templates 201510L

@@ -3189,7 +3189,8 @@ output_function_exception_table (int section)
   rtx personality = get_personality_function (current_function_decl);
 
   /* Not all functions need anything.  */
-  if (!crtl->uses_eh_lsda)
+  if (!crtl->uses_eh_lsda
+      || targetm_common.except_unwind_info (&global_options) == UI_NONE)
     return;
 
   /* No need to emit any boilerplate stuff for the cold part.  */

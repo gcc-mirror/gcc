@@ -1,3 +1,190 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (braced_list_to_string): Remove eval parameter.
+	Add some more checks.  Always create zero-terminated STRING_CST.
+	* c-common.h (braced_list_to_string): Adjust prototype.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-common.c (c_cpp_error): Update for conversion of show_caret_p
+	to a tri-state.
+	(maybe_suggest_missing_token_insertion): Likewise.
+	(maybe_add_include_fixit): Add param "override_location".  If set,
+	and source-printing is enabled, then override the rich_location's
+	primary location with that of the insertion point for the fix-it
+	hint, marking it with SHOW_LINES_WITHOUT_RANGE.
+	* c-common.h (extern void maybe_add_include_fixit): Add bool
+	param.
+	* c-format.c (selftest::test_type_mismatch_range_labels): Update
+	for conversion of show_caret_p to a tri-state.
+	* c-warn.c (warn_for_restrict): Likewise.
+	* known-headers.cc
+	(suggest_missing_header::~suggest_missing_header): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (check_function_restrict): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(check_builtin_function_arguments): Likewise.
+	(reject_gcc_builtin): Likewise.
+	* c-warn.c (sizeof_pointer_memaccess_warning): Likewise.
+
+2018-08-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87029, Implement -Wredundant-move.
+	* c.opt (Wredundant-move): New option.
+
+2018-08-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86981, Implement -Wpessimizing-move.
+	* c.opt (Wpessimizing-move): New option.
+
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* c-attribs.c (common_handle_aligned_attribute): Add
+	auto_diagnostic_group instance.
+	* c-indentation.c (warn_for_misleading_indentation): Likewise.
+	* c-opts.c (c_common_post_options): Likewise.
+	* c-warn.c (warn_logical_not_parentheses): Likewise.
+	(warn_duplicated_cond_add_or_warn): Likewise.
+	(warn_for_multistatement_macros): Likewise.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Adjust macro parm
+	access.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-cppbuiltin.c (struct lazy_hex_fp_value_struct): Remove macro
+	field.
+	(laxy_hex_fp_value_count): Make unsigned.
+	(lazy_hex_fp_value): Provided with macro & lazy number.  Directly
+	manipulate the macro.
+	(builtin_defin_with_hex_fp_value): Adjust callback name, use
+	cpp_define_lazily.
+
+2018-08-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (enum format_type): Add gcc_dump_printf_format_type.
+	(gcc_dump_printf_length_specs): New.
+	(gcc_dump_printf_flag_pairs): New.
+	(gcc_dump_printf_flag_specs): New.
+	(gcc_dump_printf_char_table): New.
+	(format_types_orig): Add entry for "gcc_dump_printf".
+	(init_dynamic_diag_info): Set up length_char_specs and
+	conversion_specs for gcc_dump_printf_format_type.
+	(handle_format_attribute): Handle gcc_dump_printf_format_type.
+
+2018-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (macro_length, dump_ada_macros): Constify.
+
+	* c-ada-spec.c: Don't #include "cpp-id-data.h"
+	* c-cppbuiltin.c: Likewise.
+
+2018-08-17  Martin Liska  <mliska@suse.cz>
+
+	* c.opt: Remove Warn, Init and Report for options with
+	Ignore/Deprecated flag. Warning is done automatically for
+	Deprecated flags.
+
+2018-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/70693
+	* c-common.c (selftest::c_family_tests): Call
+	selftest::c_indentation_c_tests.
+	* c-common.h (selftest::c_indentation_c_tests): New decl.
+	* c-indentation.c: Include "selftest.h".
+	(next_tab_stop): Add "tab_width" param, rather than accessing
+	cpp_opts.
+	(get_visual_column): Likewise.  Clarify comment.  Bulletproof
+	against reading past the end of the line.
+	(get_first_nws_vis_column): Add "tab_width" param.
+	(detect_intervening_unindent): Likewise.
+	(should_warn_for_misleading_indentation): Read tab width from
+	cpp_opts and pass around.
+	(selftest::test_next_tab_stop): New test.
+	(selftest::assert_get_visual_column_succeeds): New function.
+	(ASSERT_GET_VISUAL_COLUMN_SUCCEEDS): New macro.
+	(selftest::assert_get_visual_column_fails): New function.
+	(ASSERT_GET_VISUAL_COLUMN_FAILS): New macro.
+	(selftest::test_get_visual_column): New test.
+	(selftest::c_indentation_c_tests): New function.
+
+2018-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* c-ada-spec.c (count_ada_macro): Use cpp_user_macro_p.
+	(store_ada_macro): Likewise.
+	* c-ppoutput.c (cb_used_define, dump_macro): Likewise.
+	* c-spellcheck.cc (should-suggest_as_macro_p): Likewise,
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c: Include "selftest-diagnostic.h" and
+	"gcc-rich-location.h".
+	(format_warning_at_char): Pass NULL for new label params of
+	format_warning_va.
+	(class indirection_suffix): New class.
+	(class range_label_for_format_type_mismatch): New class.
+	(format_type_warning): Move logic for generating "*" suffix to
+	class indirection_suffix.  Create "fmt_label" and "param_label"
+	to show their types, and pass them to the
+	format_warning_at_substring calls.
+	(selftest::test_type_mismatch_range_labels): New test.
+	(selftest::c_format_c_tests): Call it.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-common.c (braced_list_to_string): New function.
+	* c-common.h (braced_list_to_string): Declare it.
+
+2018-08-08  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (try_to_locate_new_include_inertion_point): Use
+	linemap_included_from_linemap.
+	* c-lex.c (fe_file_change): Use linemap_included_from.
+	* c-ppoutput.c (pp_file_change): Likewise.
+
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* c-family/c-format.c (gcc_tdiag_char_table): Update comment for "%G".
+	(gcc_cdiag_char_table, gcc_cxxdiag_char_table): Same.
+ 	(init_dynamic_diag_info): Update from "gcall *" to "gimple *".
+ 	* c-format.h (T89_G): Update to be "gimple *" rather than
+ 	"gcall *".
+	(local_gcall_ptr_node): Rename...
+ 	(local_gimple_ptr_node): ...to this.
+
+2018-07-31  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (PP_FORMAT_CHAR_TABLE): New macro, based on existing
+	table entries for gcc_diag_char_table, and the 'Z' entry from
+	gcc_tdiag_char_table, changing the "chain" entry for 'Z' from
+	&gcc_tdiag_char_table[0] to &gcc_diag_char_table[0].
+	(gcc_diag_char_table): Use PP_FORMAT_CHAR_TABLE, implicitly
+	adding missing "Z" for this table.  Remove erroneous "G" and "K"
+	entries.
+	(gcc_tdiag_char_table): Use PP_FORMAT_CHAR_TABLE.  Remove "v".
+	(gcc_cdiag_char_table): Use PP_FORMAT_CHAR_TABLE.
+	(gcc_cxxdiag_char_table): Use PP_FORMAT_CHAR_TABLE.  Remove "v".
+
+2018-07-31  Richard Earnshaw  <rearnsha@arm.com>
+
+	* c-common.c (speculation_safe_resolve_call): New function.
+	(speculation_safe_resolve_params): New function.
+	(speculation_safe_resolve_return): New function.
+	(resolve_overloaded_builtin): Handle __builtin_speculation_safe_value.
+	* c-cppbuiltin.c (c_cpp_builtins): Add pre-define for
+	__HAVE_SPECULATION_SAFE_VALUE.
+
 2018-07-20  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_cpp_error): Remove redundant "line_table"
@@ -218,7 +405,7 @@
 
 2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* c-attribs.c (handle_no_sanitize_attribute): Iterate all
 	TREE_LIST values.
 
@@ -457,11 +644,11 @@
 
 2018-01-18  Boris Kolpackov  <boris@codesynthesis.com>
 
-        PR other/70268
-        * c.opt (-fmacro-prefix-map): New option.
-        * c-opts.c (c_common_handle_option): Handle it.
-        * c-lex.c (init_c_lex): Set remap_filename cpp callback.
-        * c-ppoutput.c (init_pp_output): Likewise.
+	PR other/70268
+	* c.opt (-fmacro-prefix-map): New option.
+	* c-opts.c (c_common_handle_option): Handle it.
+	* c-lex.c (init_c_lex): Set remap_filename cpp callback.
+	* c-ppoutput.c (init_pp_output): Likewise.
 
 2018-01-17  David Malcolm  <dmalcolm@redhat.com>
 
@@ -530,7 +717,7 @@
 	Update copyright years.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-pragma.c (init_pragma): Register pragma GCC unroll.
 	* c-pragma.h (enum pragma_kind): Add PRAGMA_UNROLL.
@@ -652,7 +839,7 @@
 	* c-common.h (c_switch_covers_all_cases_p): Declare.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* array-notation-common.c: Delete.
 	* c-cilkplus.c: Ditto.
@@ -1010,8 +1197,8 @@
 	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
-            David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* c-common.c (c_common_fixed_point_type_for_size): Use new mode
 	iterators.
@@ -1473,7 +1660,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* c-common.h (cilk_gimplify_call_params_in_spawned_fn): Remove
 	prototype.
 	(cilk_install_body_pedigree_operations): Likewise.
@@ -1797,8 +1984,8 @@
 2016-12-08  Martin Sebor  <msebor@redhat.com>
 
 	PR c/78165
-        * c-pretty-print (pp_c_integer_constant): Avoid formatting type
-        suffix.
+	* c-pretty-print (pp_c_integer_constant): Avoid formatting type
+	suffix.
 
 2016-12-07  Martin Sebor  <msebor@redhat.com>
 

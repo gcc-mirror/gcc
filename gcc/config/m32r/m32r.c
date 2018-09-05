@@ -226,6 +226,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET m32r_starting_frame_offset
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by m32r_option_override to initialize various things.  */

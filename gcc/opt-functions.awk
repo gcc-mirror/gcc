@@ -156,7 +156,6 @@ function switch_bit_fields (flags)
 	  hwi_flag \
 	  flag_init("ToLower", flags) \
 	  flag_init("Report", flags) \
-	  flag_init("Deprecated", flags) \
 	  byte_size_flag
 
 	sub(", $", "", result)

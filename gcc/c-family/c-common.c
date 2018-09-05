@@ -5326,8 +5326,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
     {
       /* Avoid diagnosing calls built-ins with a zero size/bound
 	 here.  They are checked in more detail elsewhere.  */
-      if (DECL_BUILT_IN (fndecl)
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      if (fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	  && nargs == 3
 	  && TREE_CODE (argarray[2]) == INTEGER_CST
 	  && integer_zerop (argarray[2]))
@@ -5755,8 +5754,7 @@ bool
 check_builtin_function_arguments (location_t loc, vec<location_t> arg_loc,
 				  tree fndecl, int nargs, tree *args)
 {
-  if (!DECL_BUILT_IN (fndecl)
-      || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return true;
 
   switch (DECL_FUNCTION_CODE (fndecl))
@@ -6133,7 +6131,7 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
       gcc_unreachable ();
     }
   if (done_lexing)
-    richloc->set_range (0, input_location, true);
+    richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
   diagnostic_override_option_index (&diagnostic,
@@ -6455,6 +6453,122 @@ builtin_type_for_size (int size, bool unsignedp)
 {
   tree type = c_common_type_for_size (size, unsignedp);
   return type ? type : error_mark_node;
+}
+
+/* Work out the size of the first argument of a call to
+   __builtin_speculation_safe_value.  Only pointers and integral types
+   are permitted.  Return -1 if the argument type is not supported or
+   the size is too large; 0 if the argument type is a pointer or the
+   size if it is integral.  */
+static enum built_in_function
+speculation_safe_value_resolve_call (tree function, vec<tree, va_gc> *params)
+{
+  /* Type of the argument.  */
+  tree type;
+  int size;
+
+  if (vec_safe_is_empty (params))
+    {
+      error ("too few arguments to function %qE", function);
+      return BUILT_IN_NONE;
+    }
+
+  type = TREE_TYPE ((*params)[0]);
+  if (TREE_CODE (type) == ARRAY_TYPE && c_dialect_cxx ())
+    {
+      /* Force array-to-pointer decay for C++.   */
+      (*params)[0] = default_conversion ((*params)[0]);
+      type = TREE_TYPE ((*params)[0]);
+    }
+
+  if (POINTER_TYPE_P (type))
+    return BUILT_IN_SPECULATION_SAFE_VALUE_PTR;
+
+  if (!INTEGRAL_TYPE_P (type))
+    goto incompatible;
+
+  if (!COMPLETE_TYPE_P (type))
+    goto incompatible;
+
+  size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
+    return ((enum built_in_function)
+	    ((int) BUILT_IN_SPECULATION_SAFE_VALUE_1 + exact_log2 (size)));
+
+ incompatible:
+  /* Issue the diagnostic only if the argument is valid, otherwise
+     it would be redundant at best and could be misleading.  */
+  if (type != error_mark_node)
+    error ("operand type %qT is incompatible with argument %d of %qE",
+	   type, 1, function);
+
+  return BUILT_IN_NONE;
+}
+
+/* Validate and coerce PARAMS, the arguments to ORIG_FUNCTION to fit
+   the prototype for FUNCTION.  The first argument is mandatory, a second
+   argument, if present, must be type compatible with the first.  */
+static bool
+speculation_safe_value_resolve_params (location_t loc, tree orig_function,
+				       vec<tree, va_gc> *params)
+{
+  tree val;
+
+  if (params->length () == 0)
+    {
+      error_at (loc, "too few arguments to function %qE", orig_function);
+      return false;
+    }
+
+  else if (params->length () > 2)
+    {
+      error_at (loc, "too many arguments to function %qE", orig_function);
+      return false;
+    }
+
+  val = (*params)[0];
+  if (TREE_CODE (TREE_TYPE (val)) == ARRAY_TYPE)
+    val = default_conversion (val);
+  if (!(TREE_CODE (TREE_TYPE (val)) == POINTER_TYPE
+	|| TREE_CODE (TREE_TYPE (val)) == INTEGER_TYPE))
+    {
+      error_at (loc,
+		"expecting argument of type pointer or of type integer "
+		"for argument 1");
+      return false;
+    }
+  (*params)[0] = val;
+
+  if (params->length () == 2)
+    {
+      tree val2 = (*params)[1];
+      if (TREE_CODE (TREE_TYPE (val2)) == ARRAY_TYPE)
+	val2 = default_conversion (val2);
+      if (!(TREE_TYPE (val) == TREE_TYPE (val2)
+	    || useless_type_conversion_p (TREE_TYPE (val), TREE_TYPE (val2))))
+	{
+	  error_at (loc, "both arguments must be compatible");
+	  return false;
+	}
+      (*params)[1] = val2;
+    }
+
+  return true;
+}
+
+/* Cast the result of the builtin back to the type of the first argument,
+   preserving any qualifiers that it might have.  */
+static tree
+speculation_safe_value_resolve_return (tree first_param, tree result)
+{
+  tree ptype = TREE_TYPE (first_param);
+  tree rtype = TREE_TYPE (result);
+  ptype = TYPE_MAIN_VARIANT (ptype);
+
+  if (tree_int_cst_equal (TYPE_SIZE (ptype), TYPE_SIZE (rtype)))
+    return convert (ptype, result);
+
+  return result;
 }
 
 /* A helper function for resolve_overloaded_builtin in resolving the
@@ -7111,6 +7225,54 @@ resolve_overloaded_builtin (location_t loc, tree function,
   /* Handle BUILT_IN_NORMAL here.  */
   switch (orig_code)
     {
+    case BUILT_IN_SPECULATION_SAFE_VALUE_N:
+      {
+	tree new_function, first_param, result;
+	enum built_in_function fncode
+	  = speculation_safe_value_resolve_call (function, params);;
+
+	first_param = (*params)[0];
+	if (fncode == BUILT_IN_NONE
+	    || !speculation_safe_value_resolve_params (loc, function, params))
+	  return error_mark_node;
+
+	if (targetm.have_speculation_safe_value (true))
+	  {
+	    new_function = builtin_decl_explicit (fncode);
+	    result = build_function_call_vec (loc, vNULL, new_function, params,
+					      NULL);
+
+	    if (result == error_mark_node)
+	      return result;
+
+	    return speculation_safe_value_resolve_return (first_param, result);
+	  }
+	else
+	  {
+	    /* This target doesn't have, or doesn't need, active mitigation
+	       against incorrect speculative execution.  Simply return the
+	       first parameter to the builtin.  */
+	    if (!targetm.have_speculation_safe_value (false))
+	      /* The user has invoked __builtin_speculation_safe_value
+		 even though __HAVE_SPECULATION_SAFE_VALUE is not
+		 defined: emit a warning.  */
+	      warning_at (input_location, 0,
+			  "this target does not define a speculation barrier; "
+			  "your program will still execute correctly, "
+			  "but incorrect speculation may not be be "
+			  "restricted");
+
+	    /* If the optional second argument is present, handle any side
+	       effects now.  */
+	    if (params->length () == 2
+		&& TREE_SIDE_EFFECTS ((*params)[1]))
+	      return build2 (COMPOUND_EXPR, TREE_TYPE (first_param),
+			     (*params)[1], first_param);
+
+	    return first_param;
+	  }
+      }
+
     case BUILT_IN_ATOMIC_EXCHANGE:
     case BUILT_IN_ATOMIC_COMPARE_EXCHANGE:
     case BUILT_IN_ATOMIC_LOAD:
@@ -7847,7 +8009,7 @@ reject_gcc_builtin (const_tree expr, location_t loc /* = UNKNOWN_LOCATION */)
 	 strlen, and for C++ operators new and delete.
 	 The c_decl_implicit() test avoids false positives for implicitly
 	 declared built-ins with library fallbacks (such as abs).  */
-      && DECL_BUILT_IN (expr)
+      && fndecl_built_in_p (expr)
       && DECL_IS_BUILTIN (expr)
       && !c_decl_implicit (expr)
       && !DECL_ASSEMBLER_NAME_SET_P (expr))
@@ -8174,8 +8336,8 @@ maybe_suggest_missing_token_insertion (rich_location *richloc,
       location_t hint_loc = hint->get_start_loc ();
       location_t old_loc = richloc->get_loc ();
 
-      richloc->set_range (0, hint_loc, true);
-      richloc->add_range (old_loc, false);
+      richloc->set_range (0, hint_loc, SHOW_RANGE_WITH_CARET);
+      richloc->add_range (old_loc);
     }
 }
 
@@ -8206,6 +8368,7 @@ c_family_tests (void)
 {
   c_common_c_tests ();
   c_format_c_tests ();
+  c_indentation_c_tests ();
   c_pretty_print_c_tests ();
   c_spellcheck_cc_tests ();
 }
@@ -8249,8 +8412,8 @@ try_to_locate_new_include_insertion_point (const char *file, location_t loc)
       const line_map_ordinary *ord_map
 	= LINEMAPS_ORDINARY_MAP_AT (line_table, i);
 
-      const line_map_ordinary *from = INCLUDED_FROM (line_table, ord_map);
-      if (from)
+      if (const line_map_ordinary *from
+	  = linemap_included_from_linemap (line_table, ord_map))
 	if (from->to_file == file)
 	  {
 	    last_include_ord_map = from;
@@ -8312,10 +8475,16 @@ static added_includes_t *added_includes;
    location.
 
    This function is idempotent: a header will be added at most once to
-   any given file.  */
+   any given file.
+
+   If OVERRIDE_LOCATION is true, then if a fix-it is added and will be
+   printed, then RICHLOC's primary location will be replaced by that of
+   the fix-it hint (for use by "inform" notes where the location of the
+   issue has already been reported).  */
 
 void
-maybe_add_include_fixit (rich_location *richloc, const char *header)
+maybe_add_include_fixit (rich_location *richloc, const char *header,
+			 bool override_location)
 {
   location_t loc = richloc->get_loc ();
   const char *file = LOCATION_FILE (loc);
@@ -8343,6 +8512,118 @@ maybe_add_include_fixit (rich_location *richloc, const char *header)
   char *text = xasprintf ("#include %s\n", header);
   richloc->add_fixit_insert_before (include_insert_loc, text);
   free (text);
+
+  if (override_location && global_dc->show_caret)
+    {
+      /* Replace the primary location with that of the insertion point for the
+	 fix-it hint.
+
+	 We use SHOW_LINES_WITHOUT_RANGE so that we don't meaningless print a
+	 caret for the insertion point (or colorize it).
+
+	 Hence we print e.g.:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+
+	 rather than:
+
+	 ../x86_64-pc-linux-gnu/libstdc++-v3/include/vector:74:1: note: msg 2
+	  73 | # include <debug/vector>
+	 +++ |+#include <vector>
+	  74 | #endif
+	     | ^
+
+	 avoiding the caret on the first column of line 74.  */
+      richloc->set_range (0, include_insert_loc, SHOW_LINES_WITHOUT_RANGE);
+    }
+}
+
+/* Attempt to convert a braced array initializer list CTOR for array
+   TYPE into a STRING_CST for convenience and efficiency.  Return
+   the converted string on success or the original ctor on failure.  */
+
+tree
+braced_list_to_string (tree type, tree ctor)
+{
+  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (type)))
+    return ctor;
+
+  /* If the array has an explicit bound, use it to constrain the size
+     of the string.  If it doesn't, be sure to create a string that's
+     as long as implied by the index of the last zero specified via
+     a designator, as in:
+       const char a[] = { [7] = 0 };  */
+  unsigned HOST_WIDE_INT maxelts = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  maxelts /= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (type)));
+
+  /* Avoid converting initializers for zero-length arrays.  */
+  if (!maxelts)
+    return ctor;
+
+  unsigned HOST_WIDE_INT nelts = CONSTRUCTOR_NELTS (ctor);
+
+  auto_vec<char> str;
+  str.reserve (nelts + 1);
+
+  unsigned HOST_WIDE_INT i;
+  tree index, value;
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), i, index, value)
+    {
+      unsigned HOST_WIDE_INT idx = i;
+      if (index)
+	{
+	  if (!tree_fits_uhwi_p (index))
+	    return ctor;
+	  idx = tree_to_uhwi (index);
+	}
+
+      /* auto_vec is limited to UINT_MAX elements.  */
+      if (idx > UINT_MAX)
+	return ctor;
+
+     /* Avoid non-constant initializers.  */
+     if (!tree_fits_shwi_p (value))
+	return ctor;
+
+      /* Skip over embedded nuls except the last one (initializer
+	 elements are in ascending order of indices).  */
+      HOST_WIDE_INT val = tree_to_shwi (value);
+      if (!val && i + 1 < nelts)
+	continue;
+
+      if (idx < str.length())
+	return ctor;
+
+      /* Bail if the CTOR has a block of more than 256 embedded nuls
+	 due to implicitly initialized elements.  */
+      unsigned nchars = (idx - str.length ()) + 1;
+      if (nchars > 256)
+	return ctor;
+
+      if (nchars > 1)
+	{
+	  str.reserve (idx);
+	  str.quick_grow_cleared (idx);
+	}
+
+      if (idx >= maxelts)
+	return ctor;
+
+      str.safe_insert (idx, val);
+    }
+
+  /* Append a nul string termination.  */
+  if (str.length () < maxelts)
+    str.safe_push (0);
+
+  /* Build a STRING_CST with the same type as the array.  */
+  tree res = build_string (str.length (), str.begin ());
+  TREE_TYPE (res) = type;
+  return res;
 }
 
 #include "gt-c-family-c-common.h"

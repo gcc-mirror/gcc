@@ -1251,11 +1251,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	     _ForwardIterator __last,
 	     forward_iterator_tag)
     {
-      if (__first == __middle)
-	return __last;
-      else if (__last  == __middle)
-	return __first;
-
       _ForwardIterator __first2 = __middle;
       do
 	{
@@ -1296,11 +1291,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_function_requires(_Mutable_BidirectionalIteratorConcept<
 				  _BidirectionalIterator>)
 
-      if (__first == __middle)
-	return __last;
-      else if (__last  == __middle)
-	return __first;
-
       std::__reverse(__first,  __middle, bidirectional_iterator_tag());
       std::__reverse(__middle, __last,   bidirectional_iterator_tag());
 
@@ -1333,11 +1323,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // concept requirements
       __glibcxx_function_requires(_Mutable_RandomAccessIteratorConcept<
 				  _RandomAccessIterator>)
-
-      if (__first == __middle)
-	return __last;
-      else if (__last  == __middle)
-	return __first;
 
       typedef typename iterator_traits<_RandomAccessIterator>::difference_type
 	_Distance;
@@ -1439,6 +1424,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				  _ForwardIterator>)
       __glibcxx_requires_valid_range(__first, __middle);
       __glibcxx_requires_valid_range(__middle, __last);
+
+      if (__first == __middle)
+	return __last;
+      else if (__last  == __middle)
+	return __first;
 
       return std::__rotate(__first, __middle, __last,
 			   std::__iterator_category(__first));
@@ -1601,9 +1591,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					   __right_len,
 					   __buffer, __buffer_size);
 
-      std::rotate(__left_split, __middle, __right_split);
-      std::advance(__left_split, std::distance(__middle, __right_split));
-      return __left_split;
+      return std::rotate(__left_split, __middle, __right_split);
     }
 
   template<typename _ForwardIterator, typename _Predicate>
@@ -2402,11 +2390,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __last;
 	}
       else
-	{
-	  std::rotate(__first, __middle, __last);
-	  std::advance(__first, std::distance(__middle, __last));
-	  return __first;
-	}
+	return std::rotate(__first, __middle, __last);
     }
 
   /// This is a helper function for the merge routines.
@@ -2513,9 +2497,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __len11 = std::distance(__first, __first_cut);
 	}
 
-      std::rotate(__first_cut, __middle, __second_cut);
-      _BidirectionalIterator __new_middle = __first_cut;
-      std::advance(__new_middle, std::distance(__middle, __second_cut));
+      _BidirectionalIterator __new_middle
+	= std::rotate(__first_cut, __middle, __second_cut);
       std::__merge_without_buffer(__first, __first_cut, __new_middle,
 				  __len11, __len22, __comp);
       std::__merge_without_buffer(__new_middle, __second_cut, __last,

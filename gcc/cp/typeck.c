@@ -1691,6 +1691,7 @@ cxx_sizeof_expr (tree e, tsubst_flags_t complain)
       && DECL_ARRAY_PARAMETER_P (e)
       && (complain & tf_warning))
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Wsizeof_array_argument, "%<sizeof%> on array function "
 		   "parameter %qE will return size of %qT", e, TREE_TYPE (e)))
 	inform (DECL_SOURCE_LOCATION (e), "declared here");
@@ -2208,6 +2209,8 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
       && !same_type_p (t, wchar_type_node))
     return 0;
 
+  location_t loc = EXPR_LOC_OR_LOC (exp, input_location);
+
   STRIP_ANY_LOCATION_WRAPPER (exp);
 
   if (TREE_CODE (exp) == STRING_CST)
@@ -2230,13 +2233,13 @@ string_conv_p (const_tree totype, const_tree exp, int warn)
   if (warn)
     {
       if (cxx_dialect >= cxx11)
-	pedwarn (input_location, OPT_Wwrite_strings,
+	pedwarn (loc, OPT_Wwrite_strings,
 		 "ISO C++ forbids converting a string constant to %qT",
 		 totype);
       else
-	warning (OPT_Wwrite_strings,
-		 "deprecated conversion from string constant to %qT",
-		 totype);
+	warning_at (loc, OPT_Wwrite_strings,
+		    "deprecated conversion from string constant to %qT",
+		    totype);
     }
 
   return 1;
@@ -3697,6 +3700,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
           && (complain & tf_error)
           && !constraints_satisfied_p (function))
         {
+          auto_diagnostic_group d;
           error ("cannot call function %qD", function);
           location_t loc = DECL_SOURCE_LOCATION (function);
           diagnose_constraints (loc, function, NULL_TREE);
@@ -4465,13 +4469,16 @@ cp_build_binary_op (location_t location,
 		   && DECL_ARRAY_PARAMETER_P (first_arg)
 		   && warn_sizeof_array_argument)
 	      && (complain & tf_warning))
-	    if (warning_at (location, OPT_Wsizeof_pointer_div,
-			    "division %<sizeof (%T) / sizeof (%T)%> does "
-			    "not compute the number of array elements",
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (location, OPT_Wsizeof_pointer_div,
+				"division %<sizeof (%T) / sizeof (%T)%> does "
+				"not compute the number of array elements",
 			    type0, type1))
-	      if (DECL_P (first_arg))
-		inform (DECL_SOURCE_LOCATION (first_arg),
-			"first %<sizeof%> operand was declared here");
+		if (DECL_P (first_arg))
+		  inform (DECL_SOURCE_LOCATION (first_arg),
+			    "first %<sizeof%> operand was declared here");
+	    }
 	}
 
       if ((code0 == INTEGER_TYPE || code0 == REAL_TYPE
@@ -4764,12 +4771,15 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type0;
 
-	  if (char_type_p (TREE_TYPE (orig_op1))
-	      && warning (OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	    inform (input_location,
-		    "did you mean to dereference the pointer?");
+	  if (char_type_p (TREE_TYPE (orig_op1)))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wpointer_compare,
+			     "comparison between pointer and zero character "
+			     "constant"))
+		inform (input_location,
+			  "did you mean to dereference the pointer?");
+	    }
 	  warn_for_null_address (location, op0, complain);
 	}
       else if (((code1 == POINTER_TYPE || TYPE_PTRDATAMEM_P (type1))
@@ -4784,12 +4794,15 @@ cp_build_binary_op (location_t location,
 	  else
 	    result_type = type1;
 
-	  if (char_type_p (TREE_TYPE (orig_op0))
-	      && warning (OPT_Wpointer_compare,
-			  "comparison between pointer and zero character "
-			  "constant"))
-	    inform (input_location,
-		    "did you mean to dereference the pointer?");
+	  if (char_type_p (TREE_TYPE (orig_op0)))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning (OPT_Wpointer_compare,
+			     "comparison between pointer and zero character "
+			     "constant"))
+		inform (input_location,
+			"did you mean to dereference the pointer?");
+	    }
 	  warn_for_null_address (location, op1, complain);
 	}
       else if ((code0 == POINTER_TYPE && code1 == POINTER_TYPE)
@@ -6215,9 +6228,10 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	  || TREE_READONLY (arg)) 
         {
           if (complain & tf_error)
-            cxx_readonly_error (arg, ((code == PREINCREMENT_EXPR
-				      || code == POSTINCREMENT_EXPR)
-				     ? lv_increment : lv_decrement));
+	    cxx_readonly_error (location, arg,
+				((code == PREINCREMENT_EXPR
+				  || code == POSTINCREMENT_EXPR)
+				 ? lv_increment : lv_decrement));
           else
             return error_mark_node;
         }
@@ -8146,7 +8160,7 @@ cp_build_modify_expr (location_t loc, tree lhs, enum tree_code modifycode,
 	      && C_TYPE_FIELDS_READONLY (lhstype))))
     {
       if (complain & tf_error)
-	cxx_readonly_error (lhs, lv_assign);
+	cxx_readonly_error (loc, lhs, lv_assign);
       return error_mark_node;
     }
 
@@ -8805,7 +8819,17 @@ convert_for_assignment (tree type, tree rhs,
 		}
 	      else if (fndecl)
 		{
-		  error_at (cp_expr_loc_or_loc (rhs, input_location),
+		  auto_diagnostic_group d;
+		  location_t loc = cp_expr_location (rhs);
+		  range_label_for_type_mismatch rhs_label (rhstype, type);
+		  range_label *label = &rhs_label;
+		  if (loc == UNKNOWN_LOCATION)
+		    {
+		      loc = input_location;
+		      label = NULL;
+		    }
+		  gcc_rich_location richloc (loc, label);
+		  error_at (&richloc,
 			    "cannot convert %qH to %qI",
 			    rhstype, type);
 		  inform (get_fndecl_argument_location (fndecl, parmnum),
@@ -9076,6 +9100,7 @@ maybe_warn_about_returning_address_of_local (tree retval)
 	   || TREE_PUBLIC (whats_returned)))
     {
       bool w = false;
+      auto_diagnostic_group d;
       if (TYPE_REF_P (valtype))
 	w = warning_at (loc, OPT_Wreturn_local_addr,
 			"reference to local variable %qD returned",
@@ -9102,6 +9127,130 @@ maybe_warn_about_returning_address_of_local (tree retval)
   return false;
 }
 
+/* Returns true if DECL is in the std namespace.  */
+
+static bool
+decl_in_std_namespace_p (tree decl)
+{
+  return (decl != NULL_TREE
+	  && DECL_NAMESPACE_STD_P (decl_namespace_context (decl)));
+}
+
+/* Returns true if FN, a CALL_EXPR, is a call to std::move.  */
+
+static bool
+is_std_move_p (tree fn)
+{
+  /* std::move only takes one argument.  */
+  if (call_expr_nargs (fn) != 1)
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "move");
+}
+
+/* Returns true if RETVAL is a good candidate for the NRVO as per
+   [class.copy.elision].  FUNCTYPE is the type the function is declared
+   to return.  */
+
+static bool
+can_do_nrvo_p (tree retval, tree functype)
+{
+  tree result = DECL_RESULT (current_function_decl);
+  return (retval != NULL_TREE
+	  && !processing_template_decl
+	  /* Must be a local, automatic variable.  */
+	  && VAR_P (retval)
+	  && DECL_CONTEXT (retval) == current_function_decl
+	  && !TREE_STATIC (retval)
+	  /* And not a lambda or anonymous union proxy.  */
+	  && !DECL_HAS_VALUE_EXPR_P (retval)
+	  && (DECL_ALIGN (retval) <= DECL_ALIGN (result))
+	  /* The cv-unqualified type of the returned value must be the
+	     same as the cv-unqualified return type of the
+	     function.  */
+	  && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
+			  (TYPE_MAIN_VARIANT (functype)))
+	  /* And the returned value must be non-volatile.  */
+	  && !TYPE_VOLATILE (TREE_TYPE (retval)));
+}
+
+/* Returns true if we should treat RETVAL, an expression being returned,
+   as if it were designated by an rvalue.  See [class.copy.elision].  */
+
+static bool
+treat_lvalue_as_rvalue_p (tree retval)
+{
+  return ((cxx_dialect != cxx98)
+	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
+	      || TREE_CODE (retval) == PARM_DECL)
+	  && DECL_CONTEXT (retval) == current_function_decl
+	  && !TREE_STATIC (retval));
+}
+
+/* Warn about wrong usage of std::move in a return statement.  RETVAL
+   is the expression we are returning; FUNCTYPE is the type the function
+   is declared to return.  */
+
+static void
+maybe_warn_pessimizing_move (tree retval, tree functype)
+{
+  if (!(warn_pessimizing_move || warn_redundant_move))
+    return;
+
+  location_t loc = cp_expr_loc_or_loc (retval, input_location);
+
+  /* C++98 doesn't know move.  */
+  if (cxx_dialect < cxx11)
+    return;
+
+  /* Wait until instantiation time, since we can't gauge if we should do
+     the NRVO until then.  */
+  if (processing_template_decl)
+    return;
+
+  /* This is only interesting for class types.  */
+  if (!CLASS_TYPE_P (functype))
+    return;
+
+  /* We're looking for *std::move<T&> (&arg).  */
+  if (REFERENCE_REF_P (retval)
+      && TREE_CODE (TREE_OPERAND (retval, 0)) == CALL_EXPR)
+    {
+      tree fn = TREE_OPERAND (retval, 0);
+      if (is_std_move_p (fn))
+	{
+	  tree arg = CALL_EXPR_ARG (fn, 0);
+	  STRIP_NOPS (arg);
+	  if (TREE_CODE (arg) == ADDR_EXPR)
+	    arg = TREE_OPERAND (arg, 0);
+	  arg = convert_from_reference (arg);
+	  /* Warn if we could do copy elision were it not for the move.  */
+	  if (can_do_nrvo_p (arg, functype))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (loc, OPT_Wpessimizing_move,
+			      "moving a local object in a return statement "
+			      "prevents copy elision"))
+		inform (loc, "remove %<std::move%> call");
+	    }
+	  /* Warn if the move is redundant.  It is redundant when we would
+	     do maybe-rvalue overload resolution even without std::move.  */
+	  else if (treat_lvalue_as_rvalue_p (arg))
+	    {
+	      auto_diagnostic_group d;
+	      if (warning_at (loc, OPT_Wredundant_move,
+			      "redundant move in return statement"))
+		inform (loc, "remove %<std::move%> call");
+	    }
+	}
+    }
+}
+
 /* Check that returning RETVAL from the current function is valid.
    Return an expression explicitly showing all conversions required to
    change RETVAL into the function return type, and to assign it to
@@ -9119,7 +9268,6 @@ check_return_expr (tree retval, bool *no_warning)
      the declared type is incomplete.  */
   tree functype;
   int fn_returns_value_p;
-  bool named_return_value_okay_p;
 
   *no_warning = false;
 
@@ -9331,24 +9479,7 @@ check_return_expr (tree retval, bool *no_warning)
 
      See finish_function and finalize_nrv for the rest of this optimization.  */
 
-  named_return_value_okay_p = 
-    (retval != NULL_TREE
-     && !processing_template_decl
-     /* Must be a local, automatic variable.  */
-     && VAR_P (retval)
-     && DECL_CONTEXT (retval) == current_function_decl
-     && ! TREE_STATIC (retval)
-     /* And not a lambda or anonymous union proxy.  */
-     && !DECL_HAS_VALUE_EXPR_P (retval)
-     && (DECL_ALIGN (retval) <= DECL_ALIGN (result))
-     /* The cv-unqualified type of the returned value must be the
-        same as the cv-unqualified return type of the
-        function.  */
-     && same_type_p ((TYPE_MAIN_VARIANT (TREE_TYPE (retval))),
-                     (TYPE_MAIN_VARIANT (functype)))
-     /* And the returned value must be non-volatile.  */
-     && ! TYPE_VOLATILE (TREE_TYPE (retval)));
-     
+  bool named_return_value_okay_p = can_do_nrvo_p (retval, functype);
   if (fn_returns_value_p && flag_elide_constructors)
     {
       if (named_return_value_okay_p
@@ -9363,6 +9494,9 @@ check_return_expr (tree retval, bool *no_warning)
      returned.  */
   if (!retval)
     return NULL_TREE;
+
+  if (!named_return_value_okay_p)
+    maybe_warn_pessimizing_move (retval, functype);
 
   /* Do any required conversions.  */
   if (retval == result || DECL_CONSTRUCTOR_P (current_function_decl))
@@ -9391,11 +9525,7 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       bool converted = false;
-      if ((cxx_dialect != cxx98)
-          && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
-	      || TREE_CODE (retval) == PARM_DECL)
-	  && DECL_CONTEXT (retval) == current_function_decl
-	  && !TREE_STATIC (retval)
+      if (treat_lvalue_as_rvalue_p (retval)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
 	{

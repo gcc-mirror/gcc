@@ -329,7 +329,7 @@ static const struct cpu_addrcost_table qdf24xx_addrcost_table =
   1, /* pre_modify  */
   1, /* post_modify  */
   3, /* register_offset  */
-  4, /* register_sextend  */
+  3, /* register_sextend  */
   3, /* register_zextend  */
   2, /* imm_offset  */
 };
@@ -419,6 +419,26 @@ static const struct cpu_vector_cost generic_vector_cost =
   1, /* scalar_store_cost  */
   1, /* vec_int_stmt_cost  */
   1, /* vec_fp_stmt_cost  */
+  2, /* vec_permute_cost  */
+  1, /* vec_to_scalar_cost  */
+  1, /* scalar_to_vec_cost  */
+  1, /* vec_align_load_cost  */
+  1, /* vec_unalign_load_cost  */
+  1, /* vec_unalign_store_cost  */
+  1, /* vec_store_cost  */
+  3, /* cond_taken_branch_cost  */
+  1 /* cond_not_taken_branch_cost  */
+};
+
+/* QDF24XX costs for vector insn classes.  */
+static const struct cpu_vector_cost qdf24xx_vector_cost =
+{
+  1, /* scalar_int_stmt_cost  */
+  1, /* scalar_fp_stmt_cost  */
+  1, /* scalar_load_cost  */
+  1, /* scalar_store_cost  */
+  1, /* vec_int_stmt_cost  */
+  3, /* vec_fp_stmt_cost  */
   2, /* vec_permute_cost  */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
@@ -890,7 +910,7 @@ static const struct tune_params qdf24xx_tunings =
   &qdf24xx_extra_costs,
   &qdf24xx_addrcost_table,
   &qdf24xx_regmove_cost,
-  &generic_vector_cost,
+  &qdf24xx_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
   4, /* memmov_cost  */
@@ -1981,16 +2001,8 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 	  src_lo = gen_lowpart (word_mode, src);
 	  src_hi = gen_highpart (word_mode, src);
 
-	  if (mode == TImode)
-	    {
-	      emit_insn (gen_aarch64_movtilow_di (dst, src_lo));
-	      emit_insn (gen_aarch64_movtihigh_di (dst, src_hi));
-	    }
-	  else
-	    {
-	      emit_insn (gen_aarch64_movtflow_di (dst, src_lo));
-	      emit_insn (gen_aarch64_movtfhigh_di (dst, src_hi));
-	    }
+	  emit_insn (gen_aarch64_movlow_di (mode, dst, src_lo));
+	  emit_insn (gen_aarch64_movhigh_di (mode, dst, src_hi));
 	  return;
 	}
       else if (GP_REGNUM_P (dst_regno) && FP_REGNUM_P (src_regno))
@@ -1998,16 +2010,8 @@ aarch64_split_128bit_move (rtx dst, rtx src)
 	  dst_lo = gen_lowpart (word_mode, dst);
 	  dst_hi = gen_highpart (word_mode, dst);
 
-	  if (mode == TImode)
-	    {
-	      emit_insn (gen_aarch64_movdi_tilow (dst_lo, src));
-	      emit_insn (gen_aarch64_movdi_tihigh (dst_hi, src));
-	    }
-	  else
-	    {
-	      emit_insn (gen_aarch64_movdi_tflow (dst_lo, src));
-	      emit_insn (gen_aarch64_movdi_tfhigh (dst_hi, src));
-	    }
+	  emit_insn (gen_aarch64_movdi_low (mode, dst_lo, src));
+	  emit_insn (gen_aarch64_movdi_high (mode, dst_hi, src));
 	  return;
 	}
     }
@@ -2050,36 +2054,7 @@ aarch64_split_simd_combine (rtx dst, rtx src1, rtx src2)
 	      && register_operand (src1, src_mode)
 	      && register_operand (src2, src_mode));
 
-  rtx (*gen) (rtx, rtx, rtx);
-
-  switch (src_mode)
-    {
-    case E_V8QImode:
-      gen = gen_aarch64_simd_combinev8qi;
-      break;
-    case E_V4HImode:
-      gen = gen_aarch64_simd_combinev4hi;
-      break;
-    case E_V2SImode:
-      gen = gen_aarch64_simd_combinev2si;
-      break;
-    case E_V4HFmode:
-      gen = gen_aarch64_simd_combinev4hf;
-      break;
-    case E_V2SFmode:
-      gen = gen_aarch64_simd_combinev2sf;
-      break;
-    case E_DImode:
-      gen = gen_aarch64_simd_combinedi;
-      break;
-    case E_DFmode:
-      gen = gen_aarch64_simd_combinedf;
-      break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (dst, src1, src2));
+  emit_insn (gen_aarch64_simd_combine (src_mode, dst, src1, src2));
   return;
 }
 
@@ -2095,39 +2070,8 @@ aarch64_split_simd_move (rtx dst, rtx src)
 
   if (REG_P (dst) && REG_P (src))
     {
-      rtx (*gen) (rtx, rtx);
-
       gcc_assert (VECTOR_MODE_P (src_mode));
-
-      switch (src_mode)
-	{
-	case E_V16QImode:
-	  gen = gen_aarch64_split_simd_movv16qi;
-	  break;
-	case E_V8HImode:
-	  gen = gen_aarch64_split_simd_movv8hi;
-	  break;
-	case E_V4SImode:
-	  gen = gen_aarch64_split_simd_movv4si;
-	  break;
-	case E_V2DImode:
-	  gen = gen_aarch64_split_simd_movv2di;
-	  break;
-	case E_V8HFmode:
-	  gen = gen_aarch64_split_simd_movv8hf;
-	  break;
-	case E_V4SFmode:
-	  gen = gen_aarch64_split_simd_movv4sf;
-	  break;
-	case E_V2DFmode:
-	  gen = gen_aarch64_split_simd_movv2df;
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-
-      emit_insn (gen (dst, src));
-      return;
+      emit_insn (gen_aarch64_split_simd_mov (src_mode, dst, src));
     }
 }
 
@@ -6785,6 +6729,12 @@ aarch64_print_operand (FILE *f, rtx x, int code)
       break;
 
     case 'H':
+      if (x == const0_rtx)
+	{
+	  asm_fprintf (f, "xzr");
+	  break;
+	}
+
       if (!REG_P (x) || !GP_REGNUM_P (REGNO (x) + 1))
 	{
 	  output_operand_lossage ("invalid operand for '%%%c'", code);
@@ -7437,51 +7387,6 @@ aarch64_legitimize_address (rtx x, rtx /* orig_x  */, machine_mode mode)
   return x;
 }
 
-/* Return the reload icode required for a constant pool in mode.  */
-static enum insn_code
-aarch64_constant_pool_reload_icode (machine_mode mode)
-{
-  switch (mode)
-    {
-    case E_SFmode:
-      return CODE_FOR_aarch64_reload_movcpsfdi;
-
-    case E_DFmode:
-      return CODE_FOR_aarch64_reload_movcpdfdi;
-
-    case E_TFmode:
-      return CODE_FOR_aarch64_reload_movcptfdi;
-
-    case E_V8QImode:
-      return CODE_FOR_aarch64_reload_movcpv8qidi;
-
-    case E_V16QImode:
-      return CODE_FOR_aarch64_reload_movcpv16qidi;
-
-    case E_V4HImode:
-      return CODE_FOR_aarch64_reload_movcpv4hidi;
-
-    case E_V8HImode:
-      return CODE_FOR_aarch64_reload_movcpv8hidi;
-
-    case E_V2SImode:
-      return CODE_FOR_aarch64_reload_movcpv2sidi;
-
-    case E_V4SImode:
-      return CODE_FOR_aarch64_reload_movcpv4sidi;
-
-    case E_V2DImode:
-      return CODE_FOR_aarch64_reload_movcpv2didi;
-
-    case E_V2DFmode:
-      return CODE_FOR_aarch64_reload_movcpv2dfdi;
-
-    default:
-      gcc_unreachable ();
-    }
-
-  gcc_unreachable ();
-}
 static reg_class_t
 aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 			  reg_class_t rclass,
@@ -7509,7 +7414,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
 	  || targetm.vector_mode_supported_p (GET_MODE (x)))
       && !aarch64_pcrelative_literal_loads)
     {
-      sri->icode = aarch64_constant_pool_reload_icode (mode);
+      sri->icode = code_for_aarch64_reload_movcp (mode, DImode);
       return NO_REGS;
     }
 
@@ -7519,10 +7424,7 @@ aarch64_secondary_reload (bool in_p ATTRIBUTE_UNUSED, rtx x,
       && FP_REGNUM_P (REGNO (x)) && !TARGET_SIMD
       && reg_class_subset_p (rclass, FP_REGS))
     {
-      if (mode == TFmode)
-        sri->icode = CODE_FOR_aarch64_reload_movtf;
-      else if (mode == TImode)
-        sri->icode = CODE_FOR_aarch64_reload_movti;
+      sri->icode = code_for_aarch64_reload_mov (mode);
       return NO_REGS;
     }
 
@@ -9888,43 +9790,6 @@ aarch64_builtin_reciprocal (tree fndecl)
   return aarch64_builtin_rsqrt (DECL_FUNCTION_CODE (fndecl));
 }
 
-typedef rtx (*rsqrte_type) (rtx, rtx);
-
-/* Select reciprocal square root initial estimate insn depending on machine
-   mode.  */
-
-static rsqrte_type
-get_rsqrte_type (machine_mode mode)
-{
-  switch (mode)
-  {
-    case E_DFmode:   return gen_aarch64_rsqrtedf;
-    case E_SFmode:   return gen_aarch64_rsqrtesf;
-    case E_V2DFmode: return gen_aarch64_rsqrtev2df;
-    case E_V2SFmode: return gen_aarch64_rsqrtev2sf;
-    case E_V4SFmode: return gen_aarch64_rsqrtev4sf;
-    default: gcc_unreachable ();
-  }
-}
-
-typedef rtx (*rsqrts_type) (rtx, rtx, rtx);
-
-/* Select reciprocal square root series step insn depending on machine mode.  */
-
-static rsqrts_type
-get_rsqrts_type (machine_mode mode)
-{
-  switch (mode)
-  {
-    case E_DFmode:   return gen_aarch64_rsqrtsdf;
-    case E_SFmode:   return gen_aarch64_rsqrtssf;
-    case E_V2DFmode: return gen_aarch64_rsqrtsv2df;
-    case E_V2SFmode: return gen_aarch64_rsqrtsv2sf;
-    case E_V4SFmode: return gen_aarch64_rsqrtsv4sf;
-    default: gcc_unreachable ();
-  }
-}
-
 /* Emit instruction sequence to compute either the approximate square root
    or its approximate reciprocal, depending on the flag RECP, and return
    whether the sequence was emitted or not.  */
@@ -9969,7 +9834,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
 
   /* Estimate the approximate reciprocal square root.  */
   rtx xdst = gen_reg_rtx (mode);
-  emit_insn ((*get_rsqrte_type (mode)) (xdst, src));
+  emit_insn (gen_aarch64_rsqrte (mode, xdst, src));
 
   /* Iterate over the series twice for SF and thrice for DF.  */
   int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
@@ -9988,7 +9853,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
       rtx x2 = gen_reg_rtx (mode);
       emit_set_insn (x2, gen_rtx_MULT (mode, xdst, xdst));
 
-      emit_insn ((*get_rsqrts_type (mode)) (x1, src, x2));
+      emit_insn (gen_aarch64_rsqrts (mode, x1, src, x2));
 
       if (iterations > 0)
 	emit_set_insn (xdst, gen_rtx_MULT (mode, xdst, x1));
@@ -10011,42 +9876,6 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
   emit_set_insn (dst, gen_rtx_MULT (mode, xdst, x1));
 
   return true;
-}
-
-typedef rtx (*recpe_type) (rtx, rtx);
-
-/* Select reciprocal initial estimate insn depending on machine mode.  */
-
-static recpe_type
-get_recpe_type (machine_mode mode)
-{
-  switch (mode)
-  {
-    case E_SFmode:   return (gen_aarch64_frecpesf);
-    case E_V2SFmode: return (gen_aarch64_frecpev2sf);
-    case E_V4SFmode: return (gen_aarch64_frecpev4sf);
-    case E_DFmode:   return (gen_aarch64_frecpedf);
-    case E_V2DFmode: return (gen_aarch64_frecpev2df);
-    default:         gcc_unreachable ();
-  }
-}
-
-typedef rtx (*recps_type) (rtx, rtx, rtx);
-
-/* Select reciprocal series step insn depending on machine mode.  */
-
-static recps_type
-get_recps_type (machine_mode mode)
-{
-  switch (mode)
-  {
-    case E_SFmode:   return (gen_aarch64_frecpssf);
-    case E_V2SFmode: return (gen_aarch64_frecpsv2sf);
-    case E_V4SFmode: return (gen_aarch64_frecpsv4sf);
-    case E_DFmode:   return (gen_aarch64_frecpsdf);
-    case E_V2DFmode: return (gen_aarch64_frecpsv2df);
-    default:         gcc_unreachable ();
-  }
 }
 
 /* Emit the instruction sequence to compute the approximation for the division
@@ -10076,7 +9905,7 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
 
   /* Estimate the approximate reciprocal.  */
   rtx xrcp = gen_reg_rtx (mode);
-  emit_insn ((*get_recpe_type (mode)) (xrcp, den));
+  emit_insn (gen_aarch64_frecpe (mode, xrcp, den));
 
   /* Iterate over the series twice for SF and thrice for DF.  */
   int iterations = (GET_MODE_INNER (mode) == DFmode) ? 3 : 2;
@@ -10090,7 +9919,7 @@ aarch64_emit_approx_div (rtx quo, rtx num, rtx den)
   rtx xtmp = gen_reg_rtx (mode);
   while (iterations--)
     {
-      emit_insn ((*get_recps_type (mode)) (xtmp, xrcp, den));
+      emit_insn (gen_aarch64_frecps (mode, xtmp, xrcp, den));
 
       if (iterations > 0)
 	emit_set_insn (xrcp, gen_rtx_MULT (mode, xrcp, xtmp));
@@ -10727,6 +10556,13 @@ aarch64_override_options_internal (struct gcc_options *opts)
       && aarch64_tune_params.prefetch->default_opt_level >= 0
       && opts->x_optimize >= aarch64_tune_params.prefetch->default_opt_level)
     opts->x_flag_prefetch_loop_arrays = 1;
+
+  if (opts->x_aarch64_arch_string == NULL)
+    opts->x_aarch64_arch_string = selected_arch->name;
+  if (opts->x_aarch64_cpu_string == NULL)
+    opts->x_aarch64_cpu_string = selected_cpu->name;
+  if (opts->x_aarch64_tune_string == NULL)
+    opts->x_aarch64_tune_string = selected_tune->name;
 
   aarch64_override_options_after_change_1 (opts);
 }
@@ -12602,6 +12438,19 @@ aarch64_conditional_register_usage (void)
 	fixed_regs[i] = 1;
 	call_used_regs[i] = 1;
       }
+
+  /* When tracking speculation, we need a couple of call-clobbered registers
+     to track the speculation state.  It would be nice to just use
+     IP0 and IP1, but currently there are numerous places that just
+     assume these registers are free for other uses (eg pointer
+     authentication).  */
+  if (aarch64_track_speculation)
+    {
+      fixed_regs[SPECULATION_TRACKER_REGNUM] = 1;
+      call_used_regs[SPECULATION_TRACKER_REGNUM] = 1;
+      fixed_regs[SPECULATION_SCRATCH_REGNUM] = 1;
+      call_used_regs[SPECULATION_SCRATCH_REGNUM] = 1;
+    }
 }
 
 /* Walk down the type tree of TYPE counting consecutive base elements.
@@ -14228,19 +14077,7 @@ static void
 aarch64_emit_load_exclusive (machine_mode mode, rtx rval,
 			     rtx mem, rtx model_rtx)
 {
-  rtx (*gen) (rtx, rtx, rtx);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_load_exclusiveqi; break;
-    case E_HImode: gen = gen_aarch64_load_exclusivehi; break;
-    case E_SImode: gen = gen_aarch64_load_exclusivesi; break;
-    case E_DImode: gen = gen_aarch64_load_exclusivedi; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (rval, mem, model_rtx));
+  emit_insn (gen_aarch64_load_exclusive (mode, rval, mem, model_rtx));
 }
 
 /* Emit store exclusive.  */
@@ -14249,19 +14086,7 @@ static void
 aarch64_emit_store_exclusive (machine_mode mode, rtx bval,
 			      rtx rval, rtx mem, rtx model_rtx)
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_store_exclusiveqi; break;
-    case E_HImode: gen = gen_aarch64_store_exclusivehi; break;
-    case E_SImode: gen = gen_aarch64_store_exclusivesi; break;
-    case E_DImode: gen = gen_aarch64_store_exclusivedi; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (bval, rval, mem, model_rtx));
+  emit_insn (gen_aarch64_store_exclusive (mode, bval, rval, mem, model_rtx));
 }
 
 /* Mark the previous jump instruction as unlikely.  */
@@ -14280,23 +14105,6 @@ aarch64_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
   machine_mode mode, cmp_mode;
-  typedef rtx (*gen_cas_fn) (rtx, rtx, rtx, rtx, rtx, rtx, rtx);
-  int idx;
-  gen_cas_fn gen;
-  const gen_cas_fn split_cas[] =
-  {
-    gen_aarch64_compare_and_swapqi,
-    gen_aarch64_compare_and_swaphi,
-    gen_aarch64_compare_and_swapsi,
-    gen_aarch64_compare_and_swapdi
-  };
-  const gen_cas_fn atomic_cas[] =
-  {
-    gen_aarch64_compare_and_swapqi_lse,
-    gen_aarch64_compare_and_swaphi_lse,
-    gen_aarch64_compare_and_swapsi_lse,
-    gen_aarch64_compare_and_swapdi_lse
-  };
 
   bval = operands[0];
   rval = operands[1];
@@ -14339,21 +14147,14 @@ aarch64_expand_compare_and_swap (rtx operands[])
       gcc_unreachable ();
     }
 
-  switch (mode)
-    {
-    case E_QImode: idx = 0; break;
-    case E_HImode: idx = 1; break;
-    case E_SImode: idx = 2; break;
-    case E_DImode: idx = 3; break;
-    default:
-      gcc_unreachable ();
-    }
   if (TARGET_LSE)
-    gen = atomic_cas[idx];
+    emit_insn (gen_aarch64_compare_and_swap_lse (mode, rval, mem, oldval,
+						 newval, is_weak, mod_s,
+						 mod_f));
   else
-    gen = split_cas[idx];
+    emit_insn (gen_aarch64_compare_and_swap (mode, rval, mem, oldval, newval,
+					     is_weak, mod_s, mod_f));
 
-  emit_insn (gen (rval, mem, oldval, newval, is_weak, mod_s, mod_f));
 
   if (mode == QImode || mode == HImode)
     emit_move_insn (operands[1], gen_lowpart (mode, rval));
@@ -14416,26 +14217,15 @@ aarch64_gen_atomic_cas (rtx rval, rtx mem,
 			rtx expected, rtx desired,
 			rtx model)
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
   machine_mode mode;
 
   mode = GET_MODE (mem);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_atomic_casqi; break;
-    case E_HImode: gen = gen_aarch64_atomic_cashi; break;
-    case E_SImode: gen = gen_aarch64_atomic_cassi; break;
-    case E_DImode: gen = gen_aarch64_atomic_casdi; break;
-    default:
-      gcc_unreachable ();
-    }
 
   /* Move the expected value into the CAS destination register.  */
   emit_insn (gen_rtx_SET (rval, expected));
 
   /* Emit the CAS.  */
-  emit_insn (gen (rval, mem, desired, model));
+  emit_insn (gen_aarch64_atomic_cas (mode, rval, mem, desired, model));
 
   /* Compare the expected value with the value loaded by the CAS, to establish
      whether the swap was made.  */
@@ -14494,7 +14284,16 @@ aarch64_split_compare_and_swap (rtx operands[])
 
   if (strong_zero_p)
     {
-      x = gen_rtx_NE (VOIDmode, rval, const0_rtx);
+      if (aarch64_track_speculation)
+	{
+	  /* Emit an explicit compare instruction, so that we can correctly
+	     track the condition codes.  */
+	  rtx cc_reg = aarch64_gen_compare_reg (NE, rval, const0_rtx);
+	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
+	}
+      else
+	x = gen_rtx_NE (VOIDmode, rval, const0_rtx);
+
       x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
       aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
@@ -14512,7 +14311,16 @@ aarch64_split_compare_and_swap (rtx operands[])
 
   if (!is_weak)
     {
-      x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
+      if (aarch64_track_speculation)
+	{
+	  /* Emit an explicit compare instruction, so that we can correctly
+	     track the condition codes.  */
+	  rtx cc_reg = aarch64_gen_compare_reg (NE, scratch, const0_rtx);
+	  x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
+	}
+      else
+	x = gen_rtx_NE (VOIDmode, scratch, const0_rtx);
+
       x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 				gen_rtx_LABEL_REF (Pmode, label1), pc_rtx);
       aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
@@ -14564,91 +14372,7 @@ static void
 aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
 			  rtx mem, rtx model)
 {
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-
-  switch (mode)
-    {
-    case E_QImode: gen = gen_aarch64_atomic_swpqi; break;
-    case E_HImode: gen = gen_aarch64_atomic_swphi; break;
-    case E_SImode: gen = gen_aarch64_atomic_swpsi; break;
-    case E_DImode: gen = gen_aarch64_atomic_swpdi; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (dst, mem, value, model));
-}
-
-/* Operations supported by aarch64_emit_atomic_load_op.  */
-
-enum aarch64_atomic_load_op_code
-{
-  AARCH64_LDOP_PLUS,	/* A + B  */
-  AARCH64_LDOP_XOR,	/* A ^ B  */
-  AARCH64_LDOP_OR,	/* A | B  */
-  AARCH64_LDOP_BIC	/* A & ~B  */
-};
-
-/* Emit an atomic load-operate.  */
-
-static void
-aarch64_emit_atomic_load_op (enum aarch64_atomic_load_op_code code,
-			     machine_mode mode, rtx dst, rtx src,
-			     rtx mem, rtx model)
-{
-  typedef rtx (*aarch64_atomic_load_op_fn) (rtx, rtx, rtx, rtx);
-  const aarch64_atomic_load_op_fn plus[] =
-  {
-    gen_aarch64_atomic_loadaddqi,
-    gen_aarch64_atomic_loadaddhi,
-    gen_aarch64_atomic_loadaddsi,
-    gen_aarch64_atomic_loadadddi
-  };
-  const aarch64_atomic_load_op_fn eor[] =
-  {
-    gen_aarch64_atomic_loadeorqi,
-    gen_aarch64_atomic_loadeorhi,
-    gen_aarch64_atomic_loadeorsi,
-    gen_aarch64_atomic_loadeordi
-  };
-  const aarch64_atomic_load_op_fn ior[] =
-  {
-    gen_aarch64_atomic_loadsetqi,
-    gen_aarch64_atomic_loadsethi,
-    gen_aarch64_atomic_loadsetsi,
-    gen_aarch64_atomic_loadsetdi
-  };
-  const aarch64_atomic_load_op_fn bic[] =
-  {
-    gen_aarch64_atomic_loadclrqi,
-    gen_aarch64_atomic_loadclrhi,
-    gen_aarch64_atomic_loadclrsi,
-    gen_aarch64_atomic_loadclrdi
-  };
-  aarch64_atomic_load_op_fn gen;
-  int idx = 0;
-
-  switch (mode)
-    {
-    case E_QImode: idx = 0; break;
-    case E_HImode: idx = 1; break;
-    case E_SImode: idx = 2; break;
-    case E_DImode: idx = 3; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  switch (code)
-    {
-    case AARCH64_LDOP_PLUS: gen = plus[idx]; break;
-    case AARCH64_LDOP_XOR: gen = eor[idx]; break;
-    case AARCH64_LDOP_OR: gen = ior[idx]; break;
-    case AARCH64_LDOP_BIC: gen = bic[idx]; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (dst, mem, src, model));
+  emit_insn (gen_aarch64_atomic_swp (mode, dst, mem, value, model));
 }
 
 /* Emit an atomic load+operate.  CODE is the operation.  OUT_DATA is the
@@ -14665,7 +14389,7 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
   machine_mode mode = GET_MODE (mem);
   machine_mode wmode = (mode == DImode ? DImode : SImode);
   const bool short_mode = (mode < SImode);
-  aarch64_atomic_load_op_code ldop_code;
+  int ldop_code;
   rtx src;
   rtx x;
 
@@ -14712,15 +14436,15 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
       }
       /* Fall-through.  */
     case PLUS:
-      ldop_code = AARCH64_LDOP_PLUS;
+      ldop_code = UNSPECV_ATOMIC_LDOP_PLUS;
       break;
 
     case IOR:
-      ldop_code = AARCH64_LDOP_OR;
+      ldop_code = UNSPECV_ATOMIC_LDOP_OR;
       break;
 
     case XOR:
-      ldop_code = AARCH64_LDOP_XOR;
+      ldop_code = UNSPECV_ATOMIC_LDOP_XOR;
       break;
 
     case AND:
@@ -14737,7 +14461,7 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
 	if (short_mode)
 	  src = gen_lowpart (mode, src);
       }
-      ldop_code = AARCH64_LDOP_BIC;
+      ldop_code = UNSPECV_ATOMIC_LDOP_BIC;
       break;
 
     default:
@@ -14745,7 +14469,8 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
       gcc_unreachable ();
     }
 
-  aarch64_emit_atomic_load_op (ldop_code, mode, out_data, src, mem, model_rtx);
+  emit_insn (gen_aarch64_atomic_load (ldop_code, mode,
+				      out_data, mem, src, model_rtx));
 
   /* If necessary, calculate the data in memory after the update by redoing the
      operation from values in registers.  */
@@ -14848,7 +14573,16 @@ aarch64_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
   aarch64_emit_store_exclusive (mode, cond, mem,
 				gen_lowpart (mode, new_out), model_rtx);
 
-  x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+  if (aarch64_track_speculation)
+    {
+      /* Emit an explicit compare instruction, so that we can correctly
+	 track the condition codes.  */
+      rtx cc_reg = aarch64_gen_compare_reg (NE, cond, const0_rtx);
+      x = gen_rtx_NE (GET_MODE (cc_reg), cc_reg, const0_rtx);
+    }
+  else
+    x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
+
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
 			    gen_rtx_LABEL_REF (Pmode, label), pc_rtx);
   aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
@@ -14923,8 +14657,8 @@ aarch64_float_const_representable_p (rtx x)
   if (!CONST_DOUBLE_P (x))
     return false;
 
-  /* We don't support HFmode constants yet.  */
-  if (GET_MODE (x) == VOIDmode || GET_MODE (x) == HFmode)
+  if (GET_MODE (x) == VOIDmode
+      || (GET_MODE (x) == HFmode && !TARGET_FP_F16INST))
     return false;
 
   r = *CONST_DOUBLE_REAL_VALUE (x);
@@ -15696,7 +15430,10 @@ aarch64_evpc_sve_tbl (struct expand_vec_perm_d *d)
 
   machine_mode sel_mode = mode_for_int_vector (d->vmode).require ();
   rtx sel = vec_perm_indices_to_rtx (sel_mode, d->perm);
-  aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
+  if (d->one_vector_p)
+    emit_unspec2 (d->target, UNSPEC_TBL, d->op0, force_reg (sel_mode, sel));
+  else
+    aarch64_expand_sve_vec_perm (d->target, d->op0, d->op1, sel);
   return true;
 }
 
@@ -15734,7 +15471,7 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	return true;
       if (d->vec_flags == VEC_SVE_DATA)
 	return aarch64_evpc_sve_tbl (d);
-      else if (d->vec_flags == VEC_SVE_DATA)
+      else if (d->vec_flags == VEC_ADVSIMD)
 	return aarch64_evpc_tbl (d);
     }
   return false;
@@ -15749,7 +15486,8 @@ aarch64_vectorize_vec_perm_const (machine_mode vmode, rtx target, rtx op0,
   struct expand_vec_perm_d d;
 
   /* Check whether the mask can be applied to a single vector.  */
-  if (op0 && rtx_equal_p (op0, op1))
+  if (sel.ninputs () == 1
+      || (op0 && rtx_equal_p (op0, op1)))
     d.one_vector_p = true;
   else if (sel.all_from_input_p (0))
     {
@@ -16200,13 +15938,17 @@ aarch64_expand_movmem (rtx *operands)
   /* Convert n to bits to make the rest of the code simpler.  */
   n = n * BITS_PER_UNIT;
 
+  /* Maximum amount to copy in one go.  The AArch64 back-end has integer modes
+     larger than TImode, but we should not use them for loads/stores here.  */
+  const int copy_limit = GET_MODE_BITSIZE (TImode);
+
   while (n > 0)
     {
       /* Find the largest mode in which to do the copy in without over reading
 	 or writing.  */
       opt_scalar_int_mode mode_iter;
       FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
-	if (GET_MODE_BITSIZE (mode_iter.require ()) <= n)
+	if (GET_MODE_BITSIZE (mode_iter.require ()) <= MIN (n, copy_limit))
 	  cur_mode = mode_iter.require ();
 
       gcc_assert (cur_mode != BLKmode);
@@ -16220,10 +15962,10 @@ aarch64_expand_movmem (rtx *operands)
 	 cheaper.  i.e. less instructions to do so.  For instance doing a 15
 	 byte copy it's more efficient to do two overlapping 8 byte copies than
 	 8 + 6 + 1.  */
-      next_mode = smallest_mode_for_size (n, MODE_INT);
-      int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
-      if (n > 0 && n_bits > n && n_bits <= 8 * BITS_PER_UNIT)
+      if (n > 0 && n <= 8 * BITS_PER_UNIT)
 	{
+	  next_mode = smallest_mode_for_size (n, MODE_INT);
+	  int n_bits = GET_MODE_BITSIZE (next_mode).to_constant ();
 	  src = aarch64_move_pointer (src, (n - n_bits) / BITS_PER_UNIT);
 	  dst = aarch64_move_pointer (dst, (n - n_bits) / BITS_PER_UNIT);
 	  n = n_bits;
@@ -17224,9 +16966,26 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 	return false;
     }
 
-  /* Check if addresses are clobbered by load.  */
-  if (load)
-    for (int i = 0; i < num_insns; i++)
+  /* Check if the registers are of same class.  */
+  rclass = REG_P (reg[0]) && FP_REGNUM_P (REGNO (reg[0]))
+    ? FP_REGS : GENERAL_REGS;
+
+  for (int i = 1; i < num_insns; i++)
+    if (REG_P (reg[i]) && FP_REGNUM_P (REGNO (reg[i])))
+      {
+	if (rclass != FP_REGS)
+	  return false;
+      }
+    else
+      {
+	if (rclass != GENERAL_REGS)
+	  return false;
+      }
+
+  /* Only the last register in the order in which they occur
+     may be clobbered by the load.  */
+  if (rclass == GENERAL_REGS && load)
+    for (int i = 0; i < num_insns - 1; i++)
       if (reg_mentioned_p (reg[i], mem[i]))
 	return false;
 
@@ -17265,22 +17024,6 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
       && !optimize_size
       && MEM_ALIGN (mem[0]) < 8 * BITS_PER_UNIT)
     return false;
-
-  /* Check if the registers are of same class.  */
-  rclass = REG_P (reg[0]) && FP_REGNUM_P (REGNO (reg[0]))
-    ? FP_REGS : GENERAL_REGS;
-
-  for (int i = 1; i < num_insns; i++)
-    if (REG_P (reg[i]) && FP_REGNUM_P (REGNO (reg[i])))
-      {
-	if (rclass != FP_REGS)
-	  return false;
-      }
-    else
-      {
-	if (rclass != GENERAL_REGS)
-	  return false;
-      }
 
   return true;
 }
@@ -17736,6 +17479,45 @@ aarch64_select_early_remat_modes (sbitmap modes)
       if (vec_flags & VEC_ANY_SVE)
 	bitmap_set_bit (modes, i);
     }
+}
+
+/* Override the default target speculation_safe_value.  */
+static rtx
+aarch64_speculation_safe_value (machine_mode mode,
+				rtx result, rtx val, rtx failval)
+{
+  /* Maybe we should warn if falling back to hard barriers.  They are
+     likely to be noticably more expensive than the alternative below.  */
+  if (!aarch64_track_speculation)
+    return default_speculation_safe_value (mode, result, val, failval);
+
+  if (!REG_P (val))
+    val = copy_to_mode_reg (mode, val);
+
+  if (!aarch64_reg_or_zero (failval, mode))
+    failval = copy_to_mode_reg (mode, failval);
+
+  switch (mode)
+    {
+    case E_QImode:
+      emit_insn (gen_despeculate_copyqi (result, val, failval));
+      break;
+    case E_HImode:
+      emit_insn (gen_despeculate_copyhi (result, val, failval));
+      break;
+    case E_SImode:
+      emit_insn (gen_despeculate_copysi (result, val, failval));
+      break;
+    case E_DImode:
+      emit_insn (gen_despeculate_copydi (result, val, failval));
+      break;
+    case E_TImode:
+      emit_insn (gen_despeculate_copyti (result, val, failval));
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return result;
 }
 
 /* Target-specific selftests.  */
@@ -18209,6 +17991,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_SELECT_EARLY_REMAT_MODES
 #define TARGET_SELECT_EARLY_REMAT_MODES aarch64_select_early_remat_modes
+
+#undef TARGET_SPECULATION_SAFE_VALUE
+#define TARGET_SPECULATION_SAFE_VALUE aarch64_speculation_safe_value
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

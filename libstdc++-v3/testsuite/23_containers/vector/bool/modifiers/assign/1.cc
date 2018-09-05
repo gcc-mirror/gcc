@@ -27,7 +27,7 @@ void test01()
 
   std::vector<bool> bv;
 
-  bool array[] { false, true, true };
+  bool array[] = { false, true, true };
   input_iterator_seq seq(array, array + 3);
 
   bv.assign(seq.begin(), seq.end());

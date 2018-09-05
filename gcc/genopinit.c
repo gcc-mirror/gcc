@@ -104,6 +104,63 @@ open_outfile (const char *file_name)
   return f;
 }
 
+/* Declare the maybe_code_for_* function for ONAME, and provide
+   an inline definition of the assserting code_for_* wrapper.  */
+
+static void
+handle_overloaded_code_for (FILE *file, overloaded_name *oname)
+{
+  fprintf (file, "\nextern insn_code maybe_code_for_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%s%s", i == 0 ? "" : ", ", oname->arg_types[i]);
+  fprintf (file, ");\n");
+
+  fprintf (file, "inline insn_code\ncode_for_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%s%s arg%d", i == 0 ? "" : ", ", oname->arg_types[i], i);
+  fprintf (file, ")\n{\n  insn_code code = maybe_code_for_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%sarg%d", i == 0 ? "" : ", ", i);
+  fprintf (file,
+	   ");\n"
+	   "  gcc_assert (code != CODE_FOR_nothing);\n"
+	   "  return code;\n"
+	   "}\n");
+}
+
+/* Declare the maybe_gen_* function for ONAME, and provide
+   an inline definition of the assserting gen_* wrapper.  */
+
+static void
+handle_overloaded_gen (FILE *file, overloaded_name *oname)
+{
+  pattern_stats stats;
+  get_pattern_stats (&stats, XVEC (oname->first_instance->insn, 1));
+
+  fprintf (file, "\nextern rtx maybe_gen_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%s%s", i == 0 ? "" : ", ", oname->arg_types[i]);
+  for (int i = 0; i < stats.num_generator_args; ++i)
+    fprintf (file, ", rtx");
+  fprintf (file, ");\n");
+
+  fprintf (file, "inline rtx\ngen_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%s%s arg%d", i == 0 ? "" : ", ", oname->arg_types[i], i);
+  for (int i = 0; i < stats.num_generator_args; ++i)
+    fprintf (file, ", rtx x%d", i);
+  fprintf (file, ")\n{\n  rtx res = maybe_gen_%s (", oname->name);
+  for (unsigned int i = 0; i < oname->arg_types.length (); ++i)
+    fprintf (file, "%sarg%d", i == 0 ? "" : ", ", i);
+  for (int i = 0; i < stats.num_generator_args; ++i)
+    fprintf (file, ", x%d", i);
+  fprintf (file,
+	   ");\n"
+	   "  gcc_assert (res);\n"
+	   "  return res;\n"
+	   "}\n");
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -220,7 +277,16 @@ main (int argc, const char **argv)
 	   "optab_to_code (optab op)\n"
 	   "{\n"
 	   "  return optab_to_code_[op];\n"
-	   "}\n"
+	   "}\n");
+
+  for (overloaded_name *oname = rtx_reader_ptr->get_overloads ();
+       oname; oname = oname->next)
+    {
+      handle_overloaded_code_for (h_file, oname);
+      handle_overloaded_gen (h_file, oname);
+    }
+
+  fprintf (h_file,
 	   "#endif\n"
 	   "\n"
 	   "extern const struct convert_optab_libcall_d convlib_def[NUM_CONVLIB_OPTABS];\n"

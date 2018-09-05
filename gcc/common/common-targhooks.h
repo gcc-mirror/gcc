@@ -28,6 +28,7 @@ extern bool default_target_handle_option (struct gcc_options *,
 					  struct gcc_options *,
 					  const struct cl_decoded_option *,
 					  location_t);
+extern vec<const char *> default_get_valid_option_values (int, const char *);
 
 extern const struct default_options empty_optimization_table[];
 

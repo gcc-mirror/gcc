@@ -347,6 +347,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   if (node->definition
       && !tree_versionable_function_p (node->decl))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"clones for %<target_clones%> attribute cannot be created");
       const char *reason = NULL;

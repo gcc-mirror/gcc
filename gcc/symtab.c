@@ -2323,7 +2323,7 @@ symtab_node::output_to_lto_symbol_table_p (void)
     return false;
   /* FIXME: Builtins corresponding to real functions probably should have
      symbol table entries.  */
-  if (is_builtin_fn (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
     return false;
 
   /* We have real symbol that should be in symbol table.  However try to trim

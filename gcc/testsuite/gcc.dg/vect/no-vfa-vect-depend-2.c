@@ -51,7 +51,4 @@ int main (void)
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" {xfail { vect_no_align && { ! vect_hw_misalign } } } } } */
-/* Requires reverse for variable-length SVE, which is implemented for
-   by a later patch.  Until then we report it twice, once for SVE and
-   once for 128-bit Advanced SIMD.  */
-/* { dg-final { scan-tree-dump-times "dependence distance negative" 1 "vect" { xfail { aarch64_sve && vect_variable_length } } } } */
+/* { dg-final { scan-tree-dump-times "dependence distance negative" 1 "vect" } } */

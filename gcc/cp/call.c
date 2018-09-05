@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "gcc-rich-location.h"
 
 /* The various kinds of conversion.  */
 
@@ -107,6 +108,9 @@ struct conversion {
      binding a reference directly or decaying to a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
+  /* Whether check_narrowing should only check TREE_CONSTANTs; used
+     in build_converted_constant_expr.  */
+  BOOL_BITFIELD check_narrowing_const_only: 1;
   /* The type of the expression resulting from the conversion.  */
   tree type;
   union {
@@ -385,7 +389,7 @@ build_call_a (tree function, int n, tree *argarray)
   /* Don't pass empty class objects by value.  This is useful
      for tags in STL, which are used to control overload resolution.
      We don't need to handle other cases of copying empty classes.  */
-  if (! decl || ! DECL_BUILT_IN (decl))
+  if (!decl || !fndecl_built_in_p (decl))
     for (i = 0; i < n; i++)
       {
 	tree arg = CALL_EXPR_ARG (function, i);
@@ -1384,6 +1388,8 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	    conv->rank = cr_pbool;
 	  if (NULLPTR_TYPE_P (from) && (flags & LOOKUP_ONLYCONVERTING))
 	    conv->bad_p = true;
+	  if (flags & LOOKUP_NO_NARROWING)
+	    conv->check_narrowing = true;
 	  return conv;
 	}
 
@@ -3426,10 +3432,11 @@ equal_functions (tree fn1, tree fn2)
   return fn1 == fn2;
 }
 
-/* Print information about a candidate being rejected due to INFO.  */
+/* Print information about a candidate FN being rejected due to INFO.  */
 
 static void
-print_conversion_rejection (location_t loc, struct conversion_info *info)
+print_conversion_rejection (location_t loc, struct conversion_info *info,
+			    tree fn)
 {
   tree from = info->from;
   if (!TYPE_P (from))
@@ -3460,8 +3467,12 @@ print_conversion_rejection (location_t loc, struct conversion_info *info)
     inform (loc, "  no known conversion from %qH to %qI",
 	    from, info->to_type);
   else
-    inform (loc, "  no known conversion for argument %d from %qH to %qI",
-	    info->n_arg + 1, from, info->to_type);
+    {
+      if (TREE_CODE (fn) == FUNCTION_DECL)
+	loc = get_fndecl_argument_location (fn, info->n_arg);
+      inform (loc, "  no known conversion for argument %d from %qH to %qI",
+	      info->n_arg + 1, from, info->to_type);
+    }
 }
 
 /* Print information about a candidate with WANT parameters and we found
@@ -3536,10 +3547,10 @@ print_z_candidate (location_t loc, const char *msgstr,
 				   r->u.arity.expected);
 	  break;
 	case rr_arg_conversion:
-	  print_conversion_rejection (cloc, &r->u.conversion);
+	  print_conversion_rejection (cloc, &r->u.conversion, fn);
 	  break;
 	case rr_bad_arg_conversion:
-	  print_conversion_rejection (cloc, &r->u.bad_conversion);
+	  print_conversion_rejection (cloc, &r->u.bad_conversion, fn);
 	  break;
 	case rr_explicit_conversion:
 	  inform (cloc, "  return type %qT of explicit conversion function "
@@ -3964,6 +3975,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  error ("conversion from %qH to %qI is ambiguous",
 		 fromtype, totype);
 	  print_z_candidates (location_of (expr), candidates);
@@ -4152,9 +4164,18 @@ build_converted_constant_expr (tree type, tree expr, tsubst_flags_t complain)
     }
 
   if (conv)
-    expr = convert_like (conv, expr, complain);
+    {
+      conv->check_narrowing = true;
+      conv->check_narrowing_const_only = true;
+      expr = convert_like (conv, expr, complain);
+    }
   else
-    expr = error_mark_node;
+    {
+      if (complain & tf_error)
+	error_at (loc, "could not convert %qE from %qH to %qI", expr,
+		  TREE_TYPE (expr), type);
+      expr = error_mark_node;
+    }
 
   /* Free all the conversions we allocated.  */
   obstack_free (&conversion_obstack, p);
@@ -4267,6 +4288,7 @@ print_error_for_call_failure (tree fn, vec<tree, va_gc> *args,
   if (targs)
     name = lookup_template_function (name, targs);
 
+  auto_diagnostic_group d;
   if (!any_strictly_viable (candidates))
     error_at (loc, "no matching function for call to %<%D(%A)%>",
 	      name, build_tree_list_vec (args));
@@ -4577,6 +4599,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
     {
       if (complain & tf_error)
         {
+          auto_diagnostic_group d;
           error ("no match for call to %<(%T) (%A)%>", TREE_TYPE (obj),
 		 build_tree_list_vec (*args));
           print_z_candidates (location_of (TREE_TYPE (obj)), candidates);
@@ -4590,6 +4613,7 @@ build_op_call_1 (tree obj, vec<tree, va_gc> **args, tsubst_flags_t complain)
 	{
           if (complain & tf_error)
             {
+              auto_diagnostic_group d;
               error ("call of %<(%T) (%A)%> is ambiguous", 
                      TREE_TYPE (obj), build_tree_list_vec (*args));
               print_z_candidates (location_of (TREE_TYPE (obj)), candidates);
@@ -5216,6 +5240,7 @@ build_conditional_expr_1 (location_t loc, tree arg1, tree arg2, tree arg3,
 	{
           if (complain & tf_error)
             {
+              auto_diagnostic_group d;
               op_error (loc, COND_EXPR, NOP_EXPR, arg1, arg2, arg3, FALSE);
               print_z_candidates (loc, candidates);
             }
@@ -5847,6 +5872,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 		  {
 		    /* ... Otherwise, report the more generic
 		       "no matching operator found" error */
+		    auto_diagnostic_group d;
 		    op_error (loc, code, code2, arg1, arg2, arg3, FALSE);
 		    print_z_candidates (loc, candidates);
 		  }
@@ -5862,6 +5888,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      op_error (loc, code, code2, arg1, arg2, arg3, TRUE);
 	      print_z_candidates (loc, candidates);
 	    }
@@ -6298,14 +6325,18 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	     -Wc++14-compat.  */
 	  else if (!flag_sized_deallocation)
 	    {
-	      if ((complain & tf_warning)
-		  && warning (OPT_Wc__14_compat, msg1))
-		inform (DECL_SOURCE_LOCATION (fn), msg2, fn);
+	      if (complain & tf_warning)
+		{
+		  auto_diagnostic_group d;
+		  if (warning (OPT_Wc__14_compat, msg1))
+		    inform (DECL_SOURCE_LOCATION (fn), msg2, fn);
+		}
 	      goto ok;
 	    }
 
 	  if (complain & tf_warning_or_error)
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (input_location, msg1))
 		{
 		  /* Only mention C++14 for namespace-scope delete.  */
@@ -6699,6 +6730,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	{
 	  if (t->kind == ck_user && t->cand->reason)
 	    {
+	      auto_diagnostic_group d;
 	      complained = permerror (loc, "invalid user-defined conversion "
 				      "from %qH to %qI", TREE_TYPE (expr),
 				      totype);
@@ -6736,8 +6768,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    break;
 	}
       if (!complained)
-	complained = permerror (loc, "invalid conversion from %qH to %qI",
-				TREE_TYPE (expr), totype);
+	{
+	  range_label_for_type_mismatch label (TREE_TYPE (expr), totype);
+	  gcc_rich_location richloc (loc, &label);
+	  complained = permerror (&richloc,
+				  "invalid conversion from %qH to %qI",
+				  TREE_TYPE (expr), totype);
+	}
       if (complained && fn)
 	inform (get_fndecl_argument_location (fn, argnum),
 		"  initializing argument %P of %qD", argnum, fn);
@@ -6777,6 +6814,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	    if (CONSTRUCTOR_NELTS (expr) == 0
 		&& FUNCTION_FIRST_USER_PARMTYPE (convfn) != void_list_node)
 	      {
+		auto_diagnostic_group d;
 		if (pedwarn (loc, 0, "converting to %qT from initializer list "
 			     "would use explicit constructor %qD",
 			     totype, convfn))
@@ -6955,6 +6993,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      maybe_print_user_conv_context (convs);
 	      if (fn)
 		inform (DECL_SOURCE_LOCATION (fn),
@@ -7007,6 +7046,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
       expr = build_temp (expr, totype, flags, &diag_kind, complain);
       if (diag_kind && complain)
 	{
+	  auto_diagnostic_group d;
 	  maybe_print_user_conv_context (convs);
 	  if (fn)
 	    inform (DECL_SOURCE_LOCATION (fn),
@@ -7022,6 +7062,7 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
 	if (convs->bad_p && !next_conversion (convs)->bad_p)
 	  {
 	    tree extype = TREE_TYPE (expr);
+	    auto_diagnostic_group d;
 	    if (TYPE_REF_IS_RVALUE (ref_type)
 		&& lvalue_p (expr))
 	      error_at (loc, "cannot bind rvalue reference of type %qH to "
@@ -7142,7 +7183,8 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     }
 
   if (convs->check_narrowing
-      && !check_narrowing (totype, expr, complain))
+      && !check_narrowing (totype, expr, complain,
+			   convs->check_narrowing_const_only))
     return error_mark_node;
 
   warning_sentinel w (warn_zero_as_null_pointer_constant);
@@ -7885,7 +7927,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  /* The implicit move specified in 15.8.3/3 fails "...if the type of
 	     the first parameter of the selected constructor is not an rvalue
-	     reference to the object’s type (possibly cv-qualified)...." */
+	     reference to the object's type (possibly cv-qualified)...." */
 	  gcc_assert (!(complain & tf_error));
 	  tree ptype = convs[0]->type;
 	  if (!TYPE_REF_P (ptype)
@@ -7912,6 +7954,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	{
 	  if (complain & tf_error)
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (input_location, "passing %qT as %<this%> "
 			     "argument discards qualifiers",
 			     TREE_TYPE (argtype)))
@@ -8831,8 +8874,7 @@ build_cxx_call (tree fn, int nargs, tree *argarray,
   /* Check that arguments to builtin functions match the expectations.  */
   if (fndecl
       && !processing_template_decl
-      && DECL_BUILT_IN (fndecl)
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     {
       int i;
 
@@ -9193,6 +9235,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 
       basetype = DECL_CONTEXT (fn);
       name = constructor_name (basetype);
+      auto_diagnostic_group d;
       if (permerror (input_location,
 		     "cannot call constructor %<%T::%D%> directly",
 		     basetype, name))
@@ -9331,6 +9374,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
     {
       if (complain & tf_error)
 	{
+	  auto_diagnostic_group d;
 	  if (!COMPLETE_OR_OPEN_TYPE_P (basetype))
 	    cxx_incomplete_type_error (instance, basetype);
 	  else if (optype)
@@ -9374,6 +9418,7 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
 	      arglist = build_tree_list_vec (user_args);
 	      if (skip_first_for_error)
 		arglist = TREE_CHAIN (arglist);
+	      auto_diagnostic_group d;
 	      if (!any_strictly_viable (candidates))
 		error ("no matching function for call to %<%s(%A)%>",
 		       pretty_name, arglist);
@@ -10280,6 +10325,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 	  tree source = source_type (w->convs[0]);
 	  if (INDIRECT_TYPE_P (source))
 	    source = TREE_TYPE (source);
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wconversion, "choosing %qD over %qD", w->fn, l->fn)
 	      && warning (OPT_Wconversion, "  for conversion from %qH to %qI",
 			  source, w->second_conv->type)) 
@@ -10507,6 +10553,7 @@ joust (struct z_candidate *cand1, struct z_candidate *cand2, bool warn,
 		{
 		  if (complain & tf_error)
 		    {
+		      auto_diagnostic_group d;
 		      if (permerror (input_location,
 				     "default argument mismatch in "
 				     "overload resolution"))
@@ -10558,6 +10605,7 @@ tweak:
 	    return 0;
 	  if (warn)
 	    {
+	      auto_diagnostic_group d;
 	      pedwarn (input_location, 0,
 	      "ISO C++ says that these are ambiguous, even "
 	      "though the worst conversion for the first is better than "
@@ -10742,8 +10790,12 @@ perform_implicit_conversion_flags (tree type, tree expr,
 	  else if (invalid_nonstatic_memfn_p (loc, expr, complain))
 	    /* We gave an error.  */;
 	  else
-	    error_at (loc, "could not convert %qE from %qH to %qI", expr,
-		      TREE_TYPE (expr), type);
+	    {
+	      range_label_for_type_mismatch label (TREE_TYPE (expr), type);
+	      gcc_rich_location rich_loc (loc, &label);
+	      error_at (&rich_loc, "could not convert %qE from %qH to %qI",
+			expr, TREE_TYPE (expr), type);
+	    }
 	}
       expr = error_mark_node;
     }

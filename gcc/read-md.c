@@ -1003,7 +1003,10 @@ md_reader::md_reader (bool compact)
   m_first_dir_md_include (NULL),
   m_last_dir_md_include_ptr (&m_first_dir_md_include),
   m_first_line (0),
-  m_last_line (0)
+  m_last_line (0),
+  m_first_overload (NULL),
+  m_next_overload_ptr (&m_first_overload),
+  m_overloads_htab (NULL)
 {
   /* Set the global singleton pointer.  */
   md_reader_ptr = this;

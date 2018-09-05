@@ -3348,12 +3348,12 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
       return;
 
     case INTRINSIC_AND:
-      code = TRUTH_ANDIF_EXPR;
+      code = flag_frontend_optimize ? TRUTH_ANDIF_EXPR : TRUTH_AND_EXPR;
       lop = 1;
       break;
 
     case INTRINSIC_OR:
-      code = TRUTH_ORIF_EXPR;
+      code = flag_frontend_optimize ? TRUTH_ORIF_EXPR : TRUTH_OR_EXPR;
       lop = 1;
       break;
 
@@ -4886,6 +4886,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
   for (arg = args, argc = 0; arg != NULL;
        arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
+      bool finalized = false;
+
       e = arg->expr;
       fsym = formal ? formal->sym : NULL;
       parm_kind = MISSING;
@@ -5360,7 +5362,42 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      && e->ts.type == BT_CLASS
 		      && !CLASS_DATA (e)->attr.dimension
 		      && !CLASS_DATA (e)->attr.codimension)
-		    parmse.expr = gfc_class_data_get (parmse.expr);
+		    {
+		      parmse.expr = gfc_class_data_get (parmse.expr);
+		      /* The result is a class temporary, whose _data component
+			 must be freed to avoid a memory leak.  */
+		      if (e->expr_type == EXPR_FUNCTION
+			  && CLASS_DATA (e)->attr.allocatable)
+			{
+			  tree zero;
+
+			  gfc_expr *var;
+
+			  /* Borrow the function symbol to make a call to
+			     gfc_add_finalizer_call and then restore it.  */
+			  tmp = e->symtree->n.sym->backend_decl;
+			  e->symtree->n.sym->backend_decl
+					= TREE_OPERAND (parmse.expr, 0);
+			  e->symtree->n.sym->attr.flavor = FL_VARIABLE;
+			  var = gfc_lval_expr_from_sym (e->symtree->n.sym);
+			  finalized = gfc_add_finalizer_call (&parmse.post,
+							      var);
+			  gfc_free_expr (var);
+			  e->symtree->n.sym->backend_decl = tmp;
+			  e->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+
+			  /* Then free the class _data.  */
+			  zero = build_int_cst (TREE_TYPE (parmse.expr), 0);
+			  tmp = fold_build2_loc (input_location, NE_EXPR,
+						 logical_type_node,
+						 parmse.expr, zero);
+			  tmp = build3_v (COND_EXPR, tmp,
+					  gfc_call_free (parmse.expr),
+					  build_empty_stmt (input_location));
+			  gfc_add_expr_to_block (&parmse.post, tmp);
+			  gfc_add_modify (&parmse.post, parmse.expr, zero);
+			}
+		    }
 
 		  /* Wrap scalar variable in a descriptor. We need to convert
 		     the address of a pointer back to the pointer itself before,
@@ -5687,9 +5724,18 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		tmp = build_fold_indirect_ref_loc (input_location, tmp);
 	    }
 
-	  tmp = gfc_deallocate_alloc_comp (e->ts.u.derived, tmp, parm_rank);
-
-	  gfc_prepend_expr_to_block (&post, tmp);
+	  if (!finalized && !e->must_finalize)
+	    {
+	      if ((e->ts.type == BT_CLASS
+		   && GFC_CLASS_TYPE_P (TREE_TYPE (tmp)))
+		  || e->ts.type == BT_DERIVED)
+		tmp = gfc_deallocate_alloc_comp (e->ts.u.derived, tmp,
+						 parm_rank);
+	      else if (e->ts.type == BT_CLASS)
+		tmp = gfc_deallocate_alloc_comp (CLASS_DATA (e)->ts.u.derived,
+						 tmp, parm_rank);
+	      gfc_prepend_expr_to_block (&post, tmp);
+	    }
         }
 
       /* Add argument checking of passing an unallocated/NULL actual to
@@ -6410,7 +6456,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  final_fndecl = gfc_class_vtab_final_get (se->expr);
 	  is_final = fold_build2_loc (input_location, NE_EXPR,
 				      logical_type_node,
- 			    	      final_fndecl,
+				      final_fndecl,
 				      fold_convert (TREE_TYPE (final_fndecl),
 					   	    null_pointer_node));
 	  final_fndecl = build_fold_indirect_ref_loc (input_location,
@@ -6420,28 +6466,43 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     gfc_build_addr_expr (NULL, tmp),
 				     gfc_class_vtab_size_get (se->expr),
 				     boolean_false_node);
- 	  tmp = fold_build3_loc (input_location, COND_EXPR,
+	  tmp = fold_build3_loc (input_location, COND_EXPR,
 				 void_type_node, is_final, tmp,
 				 build_empty_stmt (input_location));
 
 	  if (se->ss && se->ss->loop)
 	    {
-	      gfc_add_expr_to_block (&se->ss->loop->post, tmp);
-	      tmp = gfc_call_free (info->data);
+	      gfc_prepend_expr_to_block (&se->ss->loop->post, tmp);
+	      tmp = fold_build2_loc (input_location, NE_EXPR,
+				     logical_type_node,
+				     info->data,
+				     fold_convert (TREE_TYPE (info->data),
+					   	    null_pointer_node));
+	      tmp = fold_build3_loc (input_location, COND_EXPR,
+				     void_type_node, tmp,
+				     gfc_call_free (info->data),
+				     build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&se->ss->loop->post, tmp);
 	    }
 	  else
 	    {
-	      gfc_add_expr_to_block (&se->post, tmp);
-	      tmp = gfc_class_data_get (se->expr);
-	      tmp = gfc_call_free (tmp);
+	      tree classdata;
+	      gfc_prepend_expr_to_block (&se->post, tmp);
+	      classdata = gfc_class_data_get (se->expr);
+	      tmp = fold_build2_loc (input_location, NE_EXPR,
+				     logical_type_node,
+				     classdata,
+				     fold_convert (TREE_TYPE (classdata),
+					   	    null_pointer_node));
+	      tmp = fold_build3_loc (input_location, COND_EXPR,
+				     void_type_node, tmp,
+				     gfc_call_free (classdata),
+				     build_empty_stmt (input_location));
 	      gfc_add_expr_to_block (&se->post, tmp);
 	    }
-
-no_finalization:
-	  expr->must_finalize = 0;
 	}
 
+no_finalization:
       gfc_add_block_to_block (&se->post, &post);
     }
 
@@ -8072,7 +8133,9 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
       var = gfc_create_var (TREE_TYPE (se->expr), NULL);
       gfc_add_modify (&se->pre, var, se->expr);
     }
-  gfc_add_block_to_block (&se->pre, &se->post);
+
+  if (!expr->must_finalize)
+    gfc_add_block_to_block (&se->pre, &se->post);
 
   /* Take the address of that value.  */
   se->expr = gfc_build_addr_expr (NULL_TREE, var);
@@ -9262,10 +9325,12 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   /* The frontend doesn't seem to bother filling in expr->symtree for intrinsic
      functions.  */
   comp = gfc_get_proc_ptr_comp (expr2);
-  gcc_assert (expr2->value.function.isym
+
+  if (!(expr2->value.function.isym
 	      || (comp && comp->attr.dimension)
 	      || (!comp && gfc_return_by_reference (expr2->value.function.esym)
-		  && expr2->value.function.esym->result->attr.dimension));
+		  && expr2->value.function.esym->result->attr.dimension)))
+    return NULL;
 
   gfc_init_se (&se, NULL);
   gfc_start_block (&se.pre);
@@ -10238,6 +10303,8 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	gfc_add_block_to_block (&loop.post, &rse.post);
     }
 
+  tmp = NULL_TREE;
+
   if (is_poly_assign)
     tmp = trans_class_assignment (&body, expr1, expr2, &lse, &rse,
 				  use_vptr_copy || (lhs_attr.allocatable
@@ -10266,13 +10333,35 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       code.resolved_isym = gfc_intrinsic_subroutine_by_id (GFC_ISYM_CAF_SEND);
       tmp = gfc_conv_intrinsic_subroutine (&code);
     }
-  else
+  else if (!is_poly_assign && expr2->must_finalize
+	   && expr1->ts.type == BT_CLASS
+	   && expr2->ts.type == BT_CLASS)
+    {
+      /* This case comes about when the scalarizer provides array element
+	 references. Use the vptr copy function, since this does a deep
+	 copy of allocatable components, without which the finalizer call */
+      tmp = gfc_get_vptr_from_expr (rse.expr);
+      if (tmp != NULL_TREE)
+	{
+	  tree fcn = gfc_vptr_copy_get (tmp);
+	  if (POINTER_TYPE_P (TREE_TYPE (fcn)))
+	    fcn = build_fold_indirect_ref_loc (input_location, fcn);
+	  tmp = build_call_expr_loc (input_location,
+				     fcn, 2,
+				     gfc_build_addr_expr (NULL, rse.expr),
+				     gfc_build_addr_expr (NULL, lse.expr));
+	}
+    }
+
+  /* If nothing else works, do it the old fashioned way!  */
+  if (tmp == NULL_TREE)
     tmp = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
 				   gfc_expr_is_variable (expr2)
 				   || scalar_to_array
 				   || expr2->expr_type == EXPR_ARRAY,
 				   !(l_is_temp || init_flag) && dealloc,
 				   expr1->symtree->n.sym->attr.codimension);
+
   /* Add the pre blocks to the body.  */
   gfc_add_block_to_block (&body, &rse.pre);
   gfc_add_block_to_block (&body, &lse.pre);

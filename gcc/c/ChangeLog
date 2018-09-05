@@ -1,3 +1,107 @@
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call braced_list_to_string here ...
+	* c-parser.c (c_parser_declaration_or_fndef): ... instead of here.
+
+2018-08-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-parser.c (c_parser_gimple_binary_expression): Accept infix
+	"__MULT_HIGHPART" for MULT_HIGHPART_EXPR.
+
+2018-08-27  David Malcolm  <dmalcolm@redhat.com>
+
+	PR 87091
+	* c-decl.c (implicitly_declare): Update call to
+	maybe_add_include_fixit to suggest overriding the location, as it
+	is for a note.
+	* c-objc-common.c (c_tree_printer): Update for conversion of
+	show_caret_p to a tri-state.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* c-decl.c (locate_old_decl): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	(diagnose_mismatched_decls): Likewise.
+	(merge_decls): Likewise.
+	(warn_if_shadowing): Likewise.
+	(pushdecl): Likewise.
+	(implicitly_declare): Likewise.
+	* c-parser.c (c_parser_postfix_expression_after_primary): Likewise.
+	* c-tree.h (C_DECL_ISNT_PROTOTYPE): Likewise.
+	* c-typeck.c (build_function_call_vec): Likewise.
+	(convert_arguments): Likewise.
+
+2018-08-20  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/84889
+	* c-decl.c (pushtag): Add auto_diagnostic_group instance.
+	(diagnose_mismatched_decls): Likewise, in various places.
+	(warn_if_shadowing): Likewise.
+	(implicit_decl_warning): Likewise.
+	(implicitly_declare): Likewise.
+	(undeclared_variable): Likewise.
+	(declare_label): Likewise.
+	(grokdeclarator): Likewise.
+	(start_function): Likewise.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.
+	(c_parser_parameter_declaration): Likewise.
+	(c_parser_binary_expression): Likewise.
+	* c-typeck.c (c_expr_sizeof_expr): Likewise.
+	(parser_build_binary_op): Likewise.
+	(build_unary_op): Likewise.
+	(error_init): Likewise.
+	(pedwarn_init): Likewise.
+	(warning_init): Likewise.
+	(convert_for_assignment): Likewise.
+
+2018-08-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c: Include "gcc-rich-location.h".
+	(c_tree_printer): Move implemenation of '%T' to...
+	(print_type): ...this new function.
+	(range_label_for_type_mismatch::get_text): New function.
+	* c-typeck.c (convert_for_assignment): Add type labels to the rhs
+	range for the various ic_argpass cases.
+	(class maybe_range_label_for_tree_type_mismatch): New class.
+	(build_binary_op): Use it when calling binary_op_error.
+
+2018-08-15  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+	
+	* c-decl.c (start_decl): Do not warn if variables is named as main
+	and is a local variable.
+
+2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c/19315
+	* c-decl.c (finish_decl): Don't add the 'extern' storage class to
+	objects of unknown size.
+
+2018-08-13  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/71625
+	* c-parser.c (c_parser_declaration_or_fndef): Call
+	braced_list_to_string.
+
+2018-08-03  Bogdan Harjoc  <harjoc@gmail.com>
+
+	PR c/86690
+	* c-typeck.c (lookup_field): Do not use TYPE_LANG_SPECIFIC after
+	errors.
+
+2018-08-01  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/86650
+	* c-objc-common.c (c_tree_printer): Move usage of EXPR_LOCATION (t)
+	and TREE_BLOCK (t) from within percent_K_format	to this callsite.
+
+2018-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/85704
+	* c-typeck.c (init_field_decl_cmp): New function.
+	(output_pending_init_elements): Use it for field comparisons
+	instead of pure bit_position comparisons.
+
 2018-07-12  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.c (c_decl_attributes): Don't diagnose vars without mappable
@@ -211,7 +315,7 @@
 	DEBUG_BEGIN_STMTs.
 
 2017-12-22  Mike Stump  <mikestump@comcast.net>
-            Eric Botcazou  <ebotcazou@adacore.com>
+	    Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-parser.c (c_parser_while_statement): Add unroll parameter and
 	build ANNOTATE_EXPR if present.  Add 3rd operand to ANNOTATE_EXPR.
@@ -328,7 +432,7 @@
 	c_switch_covers_all_cases_p returns true.
 
 2017-11-28  Julia Koval  <julia.koval@intel.com>
-            Sebastian Peryt  <sebastian.peryt@intel.com>
+	    Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* Make-lang.in (c/c-array-notation.o): Remove.
 	* c-array-notation.c: Delete.
@@ -1045,7 +1149,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* c-gimplify.c (c_gimplify_expr): Remove calls to
 	cilk_gimplifY_call_params_in_spawned_fn.
 

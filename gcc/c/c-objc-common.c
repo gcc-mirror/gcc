@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "langhooks.h"
 #include "c-objc-common.h"
+#include "gcc-rich-location.h"
 
 static bool c_tree_printer (pretty_printer *, text_info *, const char *,
 			    int, bool, bool, bool, bool *, const char **);
@@ -61,13 +62,67 @@ c_objc_common_init (void)
   return c_common_init ();
 }
 
+/* Print T to CPP.  */
+
+static void
+print_type (c_pretty_printer *cpp, tree t, bool *quoted)
+{
+  gcc_assert (TYPE_P (t));
+  struct obstack *ob = pp_buffer (cpp)->obstack;
+  char *p = (char *) obstack_base (ob);
+  /* Remember the end of the initial dump.  */
+  int len = obstack_object_size (ob);
+
+  tree name = TYPE_NAME (t);
+  if (name && TREE_CODE (name) == TYPE_DECL && DECL_NAME (name))
+    pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
+  else
+    cpp->type_id (t);
+
+  /* If we're printing a type that involves typedefs, also print the
+     stripped version.  But sometimes the stripped version looks
+     exactly the same, so we don't want it after all.  To avoid
+     printing it in that case, we play ugly obstack games.  */
+  if (TYPE_CANONICAL (t) && t != TYPE_CANONICAL (t))
+    {
+      c_pretty_printer cpp2;
+      /* Print the stripped version into a temporary printer.  */
+      cpp2.type_id (TYPE_CANONICAL (t));
+      struct obstack *ob2 = cpp2.buffer->obstack;
+      /* Get the stripped version from the temporary printer.  */
+      const char *aka = (char *) obstack_base (ob2);
+      int aka_len = obstack_object_size (ob2);
+      int type1_len = obstack_object_size (ob) - len;
+
+      /* If they are identical, bail out.  */
+      if (aka_len == type1_len && memcmp (p + len, aka, aka_len) == 0)
+	return;
+
+      /* They're not, print the stripped version now.  */
+      if (*quoted)
+	pp_end_quote (cpp, pp_show_color (cpp));
+      pp_c_whitespace (cpp);
+      pp_left_brace (cpp);
+      pp_c_ws_string (cpp, _("aka"));
+      pp_c_whitespace (cpp);
+      if (*quoted)
+	pp_begin_quote (cpp, pp_show_color (cpp));
+      cpp->type_id (TYPE_CANONICAL (t));
+      if (*quoted)
+	pp_end_quote (cpp, pp_show_color (cpp));
+      pp_right_brace (cpp);
+      /* No further closing quotes are needed.  */
+      *quoted = false;
+    }
+}
+
 /* Called during diagnostic message formatting process to print a
    source-level entity onto BUFFER.  The meaning of the format specifiers
    is as follows:
    %D: a general decl,
    %E: an identifier or expression,
    %F: a function declaration,
-   %G: a Gimple call statement,
+   %G: a Gimple statement,
    %K: a CALL_EXPR,
    %T: a type.
    %V: a list of type qualifiers from a tree.
@@ -82,7 +137,6 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
 		bool *quoted, const char **)
 {
   tree t = NULL_TREE;
-  tree name;
   // FIXME: the next cast should be a dynamic_cast, when it is permitted.
   c_pretty_printer *cpp = (c_pretty_printer *) pp;
   pp->padding = pp_none;
@@ -99,7 +153,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (*spec == 'K')
     {
       t = va_arg (*text->args_ptr, tree);
-      percent_K_format (text, t);
+      percent_K_format (text, EXPR_LOCATION (t), TREE_BLOCK (t));
       return true;
     }
 
@@ -107,7 +161,8 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
     {
       t = va_arg (*text->args_ptr, tree);
       if (set_locus)
-	text->set_location (0, DECL_SOURCE_LOCATION (t), true);
+	text->set_location (0, DECL_SOURCE_LOCATION (t),
+			    SHOW_RANGE_WITH_CARET);
     }
 
   switch (*spec)
@@ -133,56 +188,8 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       break;
 
     case 'T':
-      {
-	gcc_assert (TYPE_P (t));
-	struct obstack *ob = pp_buffer (cpp)->obstack;
-	char *p = (char *) obstack_base (ob);
-	/* Remember the end of the initial dump.  */
-	int len = obstack_object_size (ob);
-
-	name = TYPE_NAME (t);
-	if (name && TREE_CODE (name) == TYPE_DECL && DECL_NAME (name))
-	  pp_identifier (cpp, lang_hooks.decl_printable_name (name, 2));
-	else
-	  cpp->type_id (t);
-
-	/* If we're printing a type that involves typedefs, also print the
-	   stripped version.  But sometimes the stripped version looks
-	   exactly the same, so we don't want it after all.  To avoid
-	   printing it in that case, we play ugly obstack games.  */
-	if (TYPE_CANONICAL (t) && t != TYPE_CANONICAL (t))
-	  {
-	    c_pretty_printer cpp2;
-	    /* Print the stripped version into a temporary printer.  */
-	    cpp2.type_id (TYPE_CANONICAL (t));
-	    struct obstack *ob2 = cpp2.buffer->obstack;
-	    /* Get the stripped version from the temporary printer.  */
-	    const char *aka = (char *) obstack_base (ob2);
-	    int aka_len = obstack_object_size (ob2);
-	    int type1_len = obstack_object_size (ob) - len;
-
-	    /* If they are identical, bail out.  */
-	    if (aka_len == type1_len && memcmp (p + len, aka, aka_len) == 0)
-	      return true;
-
-	    /* They're not, print the stripped version now.  */
-	    if (*quoted)
-	      pp_end_quote (pp, pp_show_color (pp));
-	    pp_c_whitespace (cpp);
-	    pp_left_brace (cpp);
-	    pp_c_ws_string (cpp, _("aka"));
-	    pp_c_whitespace (cpp);
-	    if (*quoted)
-	      pp_begin_quote (pp, pp_show_color (pp));
-	    cpp->type_id (TYPE_CANONICAL (t));
-	    if (*quoted)
-	      pp_end_quote (pp, pp_show_color (pp));
-	    pp_right_brace (cpp);
-	    /* No further closing quotes are needed.  */
-	    *quoted = false;
-	  }
-	return true;
-      }
+      print_type (cpp, t, quoted);
+      return true;
 
     case 'E':
       if (TREE_CODE (t) == IDENTIFIER_NODE)
@@ -206,6 +213,22 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   pp_string (cpp, _("({anonymous})"));
   return true;
 }
+
+/* C-specific implementation of range_label::get_text () vfunc for
+   range_label_for_type_mismatch.  */
+
+label_text
+range_label_for_type_mismatch::get_text () const
+{
+  if (m_labelled_type == NULL_TREE)
+    return label_text (NULL, false);
+
+  c_pretty_printer cpp;
+  bool quoted = false;
+  print_type (&cpp, m_labelled_type, &quoted);
+  return label_text (xstrdup (pp_formatted_text (&cpp)), true);
+}
+
 
 /* In C and ObjC, all decls have "C" linkage.  */
 bool

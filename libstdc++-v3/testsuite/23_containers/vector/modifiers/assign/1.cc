@@ -27,7 +27,7 @@ void test01()
 
   std::vector<int> v;
 
-  int array[] { 0, 1, 2 };
+  int array[] = { 0, 1, 2 };
   input_iterator_seq seq(array, array + 3);
 
   v.assign(seq.begin(), seq.end());

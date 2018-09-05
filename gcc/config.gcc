@@ -304,7 +304,7 @@ aarch64*-*-*)
 	extra_headers="arm_fp16.h arm_neon.h arm_acle.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
-	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o"
+	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
 	target_has_targetm_common=yes
 	;;
@@ -447,7 +447,7 @@ mips*-*-*)
 	;;
 nds32*)
 	cpu_type=nds32
-	extra_headers="nds32_intrinsic.h"
+	extra_headers="nds32_intrinsic.h nds32_isr.h nds32_init.inc"
 	case ${target} in
 	  nds32*-*-linux*)
 	    extra_options="${extra_options} nds32/nds32-linux.opt"
@@ -1275,6 +1275,70 @@ crisv32-*-linux* | cris-*-linux*)
 		;;
 	  crisv32-*-*)
 		target_cpu_default=32
+		;;
+	esac
+	;;
+csky-*-*)
+	if test x${with_endian} != x; then
+	    case ${with_endian} in
+		big|little)		;;
+		*)
+		    echo "with_endian=${with_endian} not supported."
+		    exit 1
+		    ;;
+	    esac
+	fi
+	if test x${with_float} != x; then
+	    case ${with_float} in
+		soft | hard) ;;
+		*) echo
+		    "Unknown floating point type used in --with-float=$with_float"
+		    exit 1
+		    ;;
+	    esac
+	fi
+	tm_file="csky/csky.h"
+	md_file="csky/csky.md"
+	out_file="csky/csky.c"
+	tm_p_file="${tm_p_file} csky/csky-protos.h"
+	extra_options="${extra_options} csky/csky_tables.opt"
+
+	if test x${enable_tpf_debug} = xyes; then
+	    tm_defines="${tm_defines} ENABLE_TPF_DEBUG"
+	fi
+
+	case ${target} in
+	    csky-*-elf*)
+		tm_file="dbxelf.h elfos.h newlib-stdint.h ${tm_file} csky/csky-elf.h"
+		tmake_file="csky/t-csky csky/t-csky-elf"
+		default_use_cxa_atexit=no
+		;;
+	    csky-*-linux*)
+		tm_file="dbxelf.h elfos.h gnu-user.h linux.h glibc-stdint.h ${tm_file} csky/csky-linux-elf.h"
+		tmake_file="${tmake_file} csky/t-csky csky/t-csky-linux"
+
+		if test "x${enable_multilib}" = xyes ; then
+		    tm_file="$tm_file ./sysroot-suffix.h"
+		    tmake_file="${tmake_file} csky/t-sysroot-suffix"
+		fi
+
+		case ${target} in
+		    csky-*-linux-gnu*)
+			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_GLIBC"
+			;;
+		    csky-*-linux-uclibc*)
+			tm_defines="$tm_defines DEFAULT_LIBC=LIBC_UCLIBC"
+			default_use_cxa_atexit=no
+			;;
+		    *)
+			echo "Unknown target $target"
+			exit 1
+			;;
+		esac
+		;;
+	    *)
+		echo "Unknown target $target"
+		exit 1
 		;;
 	esac
 	;;
@@ -2635,42 +2699,6 @@ powerpcle-*-eabi*)
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	use_gcc_stdint=wrap
 	;;
-rs6000-ibm-aix4.[3456789]* | powerpc-ibm-aix4.[3456789]*)
-	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix43.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix43 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=provide
-	extra_headers=
-	;;
-rs6000-ibm-aix5.1.* | powerpc-ibm-aix5.1.*)
-	tm_file="rs6000/biarch64.h ${tm_file} rs6000/aix.h rs6000/aix51.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	tmake_file="rs6000/t-aix43 t-slibgcc"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=
-	;;
-rs6000-ibm-aix5.2.* | powerpc-ibm-aix5.2.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix52.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix52 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=
-	;;
-rs6000-ibm-aix5.3.* | powerpc-ibm-aix5.3.*)
-	tm_file="${tm_file} rs6000/aix.h rs6000/aix53.h rs6000/xcoff.h rs6000/aix-stdint.h"
-	tmake_file="rs6000/t-aix52 t-slibgcc"
-	extra_options="${extra_options} rs6000/aix64.opt"
-	use_collect2=yes
-	thread_file='aix'
-	use_gcc_stdint=wrap
-	extra_headers=altivec.h
-	;;
 rs6000-ibm-aix6.* | powerpc-ibm-aix6.*)
 	tm_file="${tm_file} rs6000/aix.h rs6000/aix61.h rs6000/xcoff.h rs6000/aix-stdint.h"
 	tmake_file="rs6000/t-aix52 t-slibgcc"
@@ -3831,6 +3859,10 @@ case "${target}" in
 		fi
 		;;
 
+    csky-*-*)
+	supported_defaults="cpu endian float"
+	;;
+
 	arm*-*-*)
 		supported_defaults="arch cpu float tune fpu abi mode tls"
 		for which in cpu tune arch; do
@@ -4574,7 +4606,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
+			"" | native | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
 				# OK
 				;;
 			*)

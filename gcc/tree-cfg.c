@@ -171,8 +171,6 @@ static bool gimple_can_merge_blocks_p (basic_block, basic_block);
 static void remove_bb (basic_block);
 static edge find_taken_edge_computed_goto (basic_block, tree);
 static edge find_taken_edge_cond_expr (const gcond *, tree);
-static edge find_taken_edge_switch_expr (const gswitch *, tree);
-static tree find_case_label_for_value (const gswitch *, tree);
 static void lower_phi_internal_fn ();
 
 void
@@ -389,7 +387,7 @@ lower_phi_internal_fn ()
 	    {
 	      tree arg = gimple_call_arg (stmt, i);
 	      if (TREE_CODE (arg) == LABEL_DECL)
-		pred = label_to_block (arg);
+		pred = label_to_block (cfun, arg);
 	      else
 		{
 		  edge e = find_edge (pred, bb);
@@ -972,15 +970,15 @@ make_edges_bb (basic_block bb, struct omp_region **pcur_region, int *pomp_index)
 	tree label2 = gimple_transaction_label_uninst (txn);
 
 	if (label1)
-	  make_edge (bb, label_to_block (label1), EDGE_FALLTHRU);
+	  make_edge (bb, label_to_block (cfun, label1), EDGE_FALLTHRU);
 	if (label2)
-	  make_edge (bb, label_to_block (label2),
+	  make_edge (bb, label_to_block (cfun, label2),
 		     EDGE_TM_UNINSTRUMENTED | (label1 ? 0 : EDGE_FALLTHRU));
 
 	tree label3 = gimple_transaction_label_over (txn);
 	if (gimple_transaction_subcode (txn)
 	    & (GTMA_HAVE_ABORT | GTMA_IS_OUTER))
-	  make_edge (bb, label_to_block (label3), EDGE_TM_ABORT);
+	  make_edge (bb, label_to_block (cfun, label3), EDGE_TM_ABORT);
 
 	fallthru = false;
       }
@@ -1265,8 +1263,8 @@ make_cond_expr_edges (basic_block bb)
   /* Entry basic blocks for each component.  */
   then_label = gimple_cond_true_label (entry);
   else_label = gimple_cond_false_label (entry);
-  then_bb = label_to_block (then_label);
-  else_bb = label_to_block (else_label);
+  then_bb = label_to_block (cfun, then_label);
+  else_bb = label_to_block (cfun, else_label);
   then_stmt = first_stmt (then_bb);
   else_stmt = first_stmt (else_bb);
 
@@ -1373,7 +1371,7 @@ get_cases_for_edge (edge e, gswitch *t)
     {
       tree elt = gimple_switch_label (t, i);
       tree lab = CASE_LABEL (elt);
-      basic_block label_bb = label_to_block (lab);
+      basic_block label_bb = label_to_block (cfun, lab);
       edge this_edge = find_edge (e->src, label_bb);
 
       /* Add it to the chain of CASE_LABEL_EXPRs referencing E, or create
@@ -1397,8 +1395,7 @@ make_gimple_switch_edges (gswitch *entry, basic_block bb)
 
   for (i = 0; i < n; ++i)
     {
-      tree lab = CASE_LABEL (gimple_switch_label (entry, i));
-      basic_block label_bb = label_to_block (lab);
+      basic_block label_bb = gimple_switch_label_bb (cfun, entry, i);
       make_edge (bb, label_bb, 0);
     }
 }
@@ -1407,7 +1404,7 @@ make_gimple_switch_edges (gswitch *entry, basic_block bb)
 /* Return the basic block holding label DEST.  */
 
 basic_block
-label_to_block_fn (struct function *ifun, tree dest)
+label_to_block (struct function *ifun, tree dest)
 {
   int uid = LABEL_DECL_UID (dest);
 
@@ -1442,7 +1439,7 @@ make_goto_expr_edges (basic_block bb)
   if (simple_goto_p (goto_t))
     {
       tree dest = gimple_goto_dest (goto_t);
-      basic_block label_bb = label_to_block (dest);
+      basic_block label_bb = label_to_block (cfun, dest);
       edge e = make_edge (bb, label_bb, EDGE_FALLTHRU);
       e->goto_locus = gimple_location (goto_t);
       gsi_remove (&last, true);
@@ -1464,7 +1461,7 @@ make_gimple_asm_edges (basic_block bb)
   for (i = 0; i < n; ++i)
     {
       tree label = TREE_VALUE (gimple_asm_label_op (stmt, i));
-      basic_block label_bb = label_to_block (label);
+      basic_block label_bb = label_to_block (cfun, label);
       make_edge (bb, label_bb, 0);
     }
 }
@@ -1496,7 +1493,7 @@ static struct label_record
 static tree
 main_block_label (tree label)
 {
-  basic_block bb = label_to_block (label);
+  basic_block bb = label_to_block (cfun, label);
   tree main_label = label_for_bb[bb->index].label;
 
   /* label_to_block possibly inserted undefined label into the chain.  */
@@ -1773,7 +1770,7 @@ group_case_labels_stmt (gswitch *stmt)
   int i, next_index, new_size;
   basic_block default_bb = NULL;
 
-  default_bb = label_to_block (CASE_LABEL (gimple_switch_default_label (stmt)));
+  default_bb = gimple_switch_default_bb (cfun, stmt);
 
   /* Look for possible opportunities to merge cases.  */
   new_size = i = 1;
@@ -1785,7 +1782,7 @@ group_case_labels_stmt (gswitch *stmt)
       base_case = gimple_switch_label (stmt, i);
 
       gcc_assert (base_case);
-      base_bb = label_to_block (CASE_LABEL (base_case));
+      base_bb = label_to_block (cfun, CASE_LABEL (base_case));
 
       /* Discard cases that have the same destination as the default case or
 	 whose destiniation blocks have already been removed as unreachable.  */
@@ -1806,7 +1803,7 @@ group_case_labels_stmt (gswitch *stmt)
       while (next_index < old_size)
 	{
 	  tree merge_case = gimple_switch_label (stmt, next_index);
-	  basic_block merge_bb = label_to_block (CASE_LABEL (merge_case));
+	  basic_block merge_bb = label_to_block (cfun, CASE_LABEL (merge_case));
 	  wide_int bhp1 = wi::to_wide (base_high) + 1;
 
 	  /* Merge the cases if they jump to the same place,
@@ -2387,7 +2384,7 @@ find_taken_edge_computed_goto (basic_block bb, tree val)
   basic_block dest;
   edge e = NULL;
 
-  dest = label_to_block (val);
+  dest = label_to_block (cfun, val);
   if (dest)
     e = find_edge (bb, dest);
 
@@ -2437,7 +2434,7 @@ find_taken_edge_cond_expr (const gcond *cond_stmt, tree val)
    If VAL is NULL_TREE, then the current value of SWITCH_STMT's index
    is used.  */
 
-static edge
+edge
 find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
 {
   basic_block dest_bb;
@@ -2455,7 +2452,7 @@ find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
       else
 	taken_case = find_case_label_for_value (switch_stmt, val);
     }
-  dest_bb = label_to_block (CASE_LABEL (taken_case));
+  dest_bb = label_to_block (cfun, CASE_LABEL (taken_case));
 
   e = find_edge (gimple_bb (switch_stmt), dest_bb);
   gcc_assert (e);
@@ -2467,7 +2464,7 @@ find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val)
    We can make optimal use here of the fact that the case labels are
    sorted: We can do a binary search for a case matching VAL.  */
 
-static tree
+tree
 find_case_label_for_value (const gswitch *switch_stmt, tree val)
 {
   size_t low, high, n = gimple_switch_num_labels (switch_stmt);
@@ -3427,7 +3424,7 @@ verify_gimple_call (gcall *stmt)
       return true;
     }
 
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     {
       switch (DECL_FUNCTION_CODE (fndecl))
 	{
@@ -5498,7 +5495,7 @@ gimple_verify_flow_info (void)
 	      err = 1;
 	    }
 
-	  if (label_to_block (label) != bb)
+	  if (label_to_block (cfun, label) != bb)
 	    {
 	      error ("label ");
 	      print_generic_expr (stderr, label);
@@ -5655,8 +5652,7 @@ gimple_verify_flow_info (void)
 	    /* Mark all the destination basic blocks.  */
 	    for (i = 0; i < n; ++i)
 	      {
-		tree lab = CASE_LABEL (gimple_switch_label (switch_stmt, i));
-		basic_block label_bb = label_to_block (lab);
+		basic_block label_bb = gimple_switch_label_bb (cfun, switch_stmt, i);
 		gcc_assert (!label_bb->aux || label_bb->aux == (void *)1);
 		label_bb->aux = (void *)1;
 	      }
@@ -5711,8 +5707,8 @@ gimple_verify_flow_info (void)
 	    /* Check that we have all of them.  */
 	    for (i = 0; i < n; ++i)
 	      {
-		tree lab = CASE_LABEL (gimple_switch_label (switch_stmt, i));
-		basic_block label_bb = label_to_block (lab);
+		basic_block label_bb = gimple_switch_label_bb (cfun,
+							       switch_stmt, i);
 
 		if (label_bb->aux != (void *)2)
 		  {
@@ -5936,7 +5932,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 	    for (i = 0; i < n; i++)
 	      {
 		tree elt = gimple_switch_label (switch_stmt, i);
-		if (label_to_block (CASE_LABEL (elt)) == e->dest)
+		if (label_to_block (cfun, CASE_LABEL (elt)) == e->dest)
 		  CASE_LABEL (elt) = label;
 	      }
 	  }
@@ -5952,7 +5948,7 @@ gimple_redirect_edge_and_branch (edge e, basic_block dest)
 	for (i = 0; i < n; ++i)
 	  {
 	    tree cons = gimple_asm_label_op (asm_stmt, i);
-	    if (label_to_block (TREE_VALUE (cons)) == e->dest)
+	    if (label_to_block (cfun, TREE_VALUE (cons)) == e->dest)
 	      {
 		if (!label)
 		  label = gimple_block_label (dest);
@@ -6884,7 +6880,7 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
       /* Remap the region numbers for __builtin_eh_{pointer,filter}.  */
       {
 	tree r, fndecl = gimple_call_fndecl (stmt);
-	if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
 	    case BUILT_IN_EH_COPY_VALUES:
@@ -8305,15 +8301,14 @@ stmt_can_terminate_bb_p (gimple *t)
 
   if (is_gimple_call (t)
       && fndecl
-      && DECL_BUILT_IN (fndecl)
+      && fndecl_built_in_p (fndecl)
       && (call_flags & ECF_NOTHROW)
       && !(call_flags & ECF_RETURNS_TWICE)
       /* fork() doesn't really return twice, but the effect of
          wrapping it in __gcov_fork() which calls __gcov_flush()
 	 and clears the counters before forking has the same
 	 effect as returning twice.  Force a fake edge.  */
-      && !(DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	   && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_FORK))
+      && !fndecl_built_in_p (fndecl, BUILT_IN_FORK))
     return false;
 
   if (is_gimple_call (t))
@@ -9131,21 +9126,52 @@ generate_range_test (basic_block bb, tree index, tree low, tree high,
   tree type = TREE_TYPE (index);
   tree utype = unsigned_type_for (type);
 
-  low = fold_convert (type, low);
-  high = fold_convert (type, high);
+  low = fold_convert (utype, low);
+  high = fold_convert (utype, high);
 
-  tree tmp = make_ssa_name (type);
-  gassign *sub1
-    = gimple_build_assign (tmp, MINUS_EXPR, index, low);
+  gimple_seq seq = NULL;
+  index = gimple_convert (&seq, utype, index);
+  *lhs = gimple_build (&seq, MINUS_EXPR, utype, index, low);
+  *rhs = const_binop (MINUS_EXPR, utype, high, low);
 
-  *lhs = make_ssa_name (utype);
-  gassign *a = gimple_build_assign (*lhs, NOP_EXPR, tmp);
-
-  *rhs = fold_build2 (MINUS_EXPR, utype, high, low);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  gsi_insert_before (&gsi, sub1, GSI_SAME_STMT);
-  gsi_insert_before (&gsi, a, GSI_SAME_STMT);
+  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
 }
+
+/* Return the basic block that belongs to label numbered INDEX
+   of a switch statement.  */
+
+basic_block
+gimple_switch_label_bb (function *ifun, gswitch *gs, unsigned index)
+{
+  return label_to_block (ifun, CASE_LABEL (gimple_switch_label (gs, index)));
+}
+
+/* Return the default basic block of a switch statement.  */
+
+basic_block
+gimple_switch_default_bb (function *ifun, gswitch *gs)
+{
+  return gimple_switch_label_bb (ifun, gs, 0);
+}
+
+/* Return the edge that belongs to label numbered INDEX
+   of a switch statement.  */
+
+edge
+gimple_switch_edge (function *ifun, gswitch *gs, unsigned index)
+{
+  return find_edge (gimple_bb (gs), gimple_switch_label_bb (ifun, gs, index));
+}
+
+/* Return the default edge of a switch statement.  */
+
+edge
+gimple_switch_default_edge (function *ifun, gswitch *gs)
+{
+  return gimple_switch_edge (ifun, gs, 0);
+}
+
 
 /* Emit return warnings.  */
 

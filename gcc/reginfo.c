@@ -782,6 +782,7 @@ globalize_reg (tree decl, int i)
 
   if (global_regs[i])
     {
+      auto_diagnostic_group d;
       warning_at (loc, 0, 
 		  "register of %qD used for multiple global register variables",
 		  decl);
@@ -1098,6 +1099,10 @@ reg_scan_mark_refs (rtx x, rtx_insn *insn)
     case CLOBBER:
       if (MEM_P (XEXP (x, 0)))
 	reg_scan_mark_refs (XEXP (XEXP (x, 0), 0), insn);
+      break;
+
+    case CLOBBER_HIGH:
+      gcc_assert (!(MEM_P (XEXP (x, 0))));
       break;
 
     case SET:

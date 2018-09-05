@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
+#pragma GCC target "+nofp16"
+
 __fp16 f4 ()
 {
   __fp16 a = 0.1;

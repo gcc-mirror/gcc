@@ -1,4 +1,5 @@
 // { dg-require-time "" }
+// { dg-require-cstdint "" }
 
 // Copyright (C) 2005-2018 Free Software Foundation, Inc.
 //

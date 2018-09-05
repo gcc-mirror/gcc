@@ -837,7 +837,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      DFS_follow_tree_edge (DECL_VINDEX (expr));
+      gcc_checking_assert (DECL_VINDEX (expr) == NULL);
       DFS_follow_tree_edge (DECL_FUNCTION_PERSONALITY (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_TARGET (expr));
       DFS_follow_tree_edge (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr));
@@ -857,7 +857,9 @@ DFS::DFS_write_tree_body (struct output_block *ob,
       DFS_follow_tree_edge (TYPE_CONTEXT (expr));
       /* TYPE_CANONICAL is re-computed during type merging, so no need
 	 to follow it here.  */
-      DFS_follow_tree_edge (TYPE_STUB_DECL (expr));
+      /* Do not stream TYPE_STUB_DECL; it is not needed by LTO but currently
+	 it can not be freed by free_lang_data without triggering ICEs in
+	 langhooks.  */
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
@@ -1253,7 +1255,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 
   if (CODE_CONTAINS_STRUCT (code, TS_FUNCTION_DECL))
     {
-      visit (DECL_VINDEX (t));
       visit (DECL_FUNCTION_PERSONALITY (t));
       visit (DECL_FUNCTION_SPECIFIC_TARGET (t));
       visit (DECL_FUNCTION_SPECIFIC_OPTIMIZATION (t));
@@ -1270,7 +1271,6 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	;
       else
 	visit (TYPE_CONTEXT (t));
-      visit (TYPE_STUB_DECL (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
@@ -2038,6 +2038,14 @@ output_struct_function_base (struct output_block *ob, struct function *fn)
   stream_output_location (ob, &bp, fn->function_start_locus);
   stream_output_location (ob, &bp, fn->function_end_locus);
 
+  /* Save the instance discriminator if present.  */
+  int *instance_number_p = NULL;
+  if (decl_to_instance_map)
+    instance_number_p = decl_to_instance_map->get (fn->decl);
+  bp_pack_value (&bp, !!instance_number_p, 1);
+  if (instance_number_p)
+    bp_pack_value (&bp, *instance_number_p, sizeof (int) * CHAR_BIT);
+
   streamer_write_bitpack (&bp);
 }
 
@@ -2610,7 +2618,8 @@ write_symbol (struct streamer_tree_cache_d *cache,
   unsigned char c;
 
   gcc_checking_assert (TREE_PUBLIC (t)
-		       && !is_builtin_fn (t)
+		       && (TREE_CODE (t) != FUNCTION_DECL
+			   || !fndecl_built_in_p (t))
 		       && !DECL_ABSTRACT_P (t)
 		       && (!VAR_P (t) || !DECL_HARD_REGISTER (t)));
 

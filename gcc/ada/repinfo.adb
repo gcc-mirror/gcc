@@ -428,7 +428,7 @@ package body Repinfo is
 
                   List_Entities (E, Bytes_Big_Endian, True);
 
-               elsif Ekind (E) in Formal_Kind and then In_Subprogram then
+               elsif Is_Formal (E) and then In_Subprogram then
                   null;
 
                elsif Ekind_In (E, E_Entry,

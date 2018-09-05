@@ -248,6 +248,18 @@ compute_trims (ao_ref *ref, sbitmap live, int *trim_head, int *trim_tail,
 	 residual handling in mem* and str* functions is usually
 	 reasonably efficient.  */
       *trim_tail = last_orig - last_live;
+
+      /* But don't trim away out of bounds accesses, as this defeats
+	 proper warnings.
+
+	 We could have a type with no TYPE_SIZE_UNIT or we could have a VLA
+	 where TYPE_SIZE_UNIT is not a constant.  */
+      if (*trim_tail
+	  && TYPE_SIZE_UNIT (TREE_TYPE (ref->base))
+	  && TREE_CODE (TYPE_SIZE_UNIT (TREE_TYPE (ref->base))) == INTEGER_CST
+	  && compare_tree_int (TYPE_SIZE_UNIT (TREE_TYPE (ref->base)),
+			       last_orig) <= 0)
+	*trim_tail = 0;
     }
   else
     *trim_tail = 0;

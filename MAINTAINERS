@@ -29,6 +29,7 @@ Michael Meissner				<gnu@the-meissners.org>
 Jason Merrill					<jason@redhat.com>
 David S. Miller					<davem@redhat.com>
 Joseph Myers					<joseph@codesourcery.com>
+Richard Sandiford				<richard.sandiford@arm.com>
 Bernd Schmidt					<bernds_cb1@t-online.de>
 Ian Lance Taylor				<ian@airs.com>
 Jim Wilson					<wilson@tuliptree.org>
@@ -56,6 +57,8 @@ avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
 cris port		Hans-Peter Nilsson	<hp@axis.com>
+c-sky port		Xianmiao Qu		<xianmiao_qu@c-sky.com>
+c-sky port		Yunhai Shang		<yunhai_shang@c-sky.com>
 epiphany port		Joern Rennecke		<gnu@amylaar.uk>
 fr30 port		Nick Clifton		<nickc@redhat.com>
 frv port		Nick Clifton		<nickc@redhat.com>
@@ -188,8 +191,7 @@ c++ runtime libs	Paolo Carlini		<paolo.carlini@oracle.com>
 c++ runtime libs	Ulrich Drepper		<drepper@gmail.com>
 c++ runtime libs	Benjamin De Kosnik	<bkoz@gnu.org>
 c++ runtime libs	Jonathan Wakely		<jwakely@redhat.com>
-c++ runtime libs
-special modes		François Dumont		<fdumont@gcc.gnu.org>
+c++ runtime libs special modes		François Dumont		<fdumont@gcc.gnu.org>
 fixincludes		Bruce Korb		<bkorb@gnu.org>
 *gimpl*			Jakub Jelinek		<jakub@redhat.com>
 *gimpl*			Aldy Hernandez		<aldyh@redhat.com>
@@ -308,6 +310,7 @@ Charles Baylis					<charles.baylis@linaro.org>
 Tejas Belagod					<tejas.belagod@arm.com>
 Jon Beniston					<jon@beniston.com>
 Andrew Bennett					<andrew.bennett@imgtec.com>
+Andrew Benson					<abensonca@gmail.com>
 Daniel Berlin					<dberlin@dberlin.org>
 Jan Beulich					<jbeulich@novell.com>
 David Billinghurst				<David.Billinghurst@riotinto.com>
@@ -392,7 +395,7 @@ Matthew Gretton-Dann				<matthew.gretton-dann@arm.com>
 Yury Gribov					<tetra2005@gmail.com>
 Jon Grimm					<jgrimm2@us.ibm.com>
 Laurent Guerby					<laurent@guerby.net>
-Xuepeng Guo					<terry.guo@arm.com>
+Xuepeng Guo					<terry.xpguo@gmail.com>
 Wei Guozhi					<carrot@google.com>
 Mostafa Hagog					<hagog@gcc.gnu.org>
 Andrew Haley		                        <aph@redhat.com>
@@ -414,7 +417,7 @@ Falk Hueffner					<falk@debian.org>
 Andrew John Hughes				<gnu_andrew@member.fsf.org>
 Dominique d'Humieres				<dominiq@lps.ens.fr>
 Andy Hutchinson					<hutchinsonandy@aim.com>
-Naveen H.S					<Naveen.Hurugalawadi@caviumnetworks.com>
+Naveen H.S					<naveenh@marvell.com>
 Meador Inge					<meadori@codesourcery.com>
 Bernardo Innocenti				<bernie@develer.com>
 Alexander Ivchenko				<aivchenk@gmail.com>
@@ -456,6 +459,7 @@ Terry Laurenzo					<tlaurenzo@gmail.com>
 Alan Lawrence					<alan.lawrence@arm.com>
 Jozef Lawrynowicz				<jozef.l@mittosystems.com>
 Georg-Johann Lay				<avr@gjlay.de>
+Vlad Lazar					<vlad.lazar@arm.com>
 Marc Lehmann					<pcg@goof.com>
 James Lemke					<jim@lemke.org>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>

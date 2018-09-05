@@ -203,7 +203,7 @@ cgraph_externally_visible_p (struct cgraph_node *node,
      using the implicit built-in declarations anymore.  Similarly this enables
      us to remove them as unreachable before actual calls may appear during
      expansion or folding.  */
-  if (DECL_BUILT_IN (node->decl))
+  if (fndecl_built_in_p (node->decl))
     return true;
 
   /* If linker counts on us, we must preserve the function.  */

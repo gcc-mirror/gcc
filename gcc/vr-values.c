@@ -343,7 +343,7 @@ vr_values::vrp_stmt_computes_nonzero (gimple *stmt)
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
 	{
 	  value_range *vr = get_value_range (TREE_OPERAND (base, 0));
-	  if (range_is_nonnull (vr))
+	  if (!range_includes_zero_p (vr))
 	    return true;
 	}
     }
@@ -1107,12 +1107,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	  if (TREE_CODE (arg) == SSA_NAME)
 	    {
 	      value_range *vr0 = get_value_range (arg);
-	      /* If arg is non-zero, then ffs or popcount
-		 are non-zero.  */
-	      if ((vr0->type == VR_RANGE
-		   && range_includes_zero_p (vr0->min, vr0->max) == 0)
-		  || (vr0->type == VR_ANTI_RANGE
-		      && range_includes_zero_p (vr0->min, vr0->max) == 1))
+	      /* If arg is non-zero, then ffs or popcount are non-zero.  */
+	      if (range_includes_zero_p (vr0) == 0)
 		mini = 1;
 	      /* If some high bits are known to be zero,
 		 we can decrease the maximum.  */
@@ -2711,7 +2707,7 @@ vr_values::vrp_visit_switch_stmt (gswitch *stmt, edge *taken_edge_p)
     }
 
   *taken_edge_p = find_edge (gimple_bb (stmt),
-			     label_to_block (CASE_LABEL (val)));
+			     label_to_block (cfun, CASE_LABEL (val)));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3300,10 +3296,10 @@ vr_values::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
   else
     return false;
 
-  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
+  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op0), &vr0, &may_be_nonzero0,
 				  &must_be_nonzero0))
     return false;
-  if (!zero_nonzero_bits_from_vr (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
+  if (!vrp_set_zero_nonzero_bits (TREE_TYPE (op1), &vr1, &may_be_nonzero1,
 				  &must_be_nonzero1))
     return false;
 
@@ -3764,7 +3760,8 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   for (i = 0; i < n2; ++i)
     {
       e = find_edge (gimple_bb (stmt),
-		     label_to_block (CASE_LABEL (TREE_VEC_ELT (vec2, i))));
+		     label_to_block (cfun,
+				     CASE_LABEL (TREE_VEC_ELT (vec2, i))));
       e->aux = (void *)-1;
     }
 

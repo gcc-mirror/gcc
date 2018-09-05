@@ -4559,9 +4559,6 @@ load_generic_interfaces (void)
 	  /* Decide if we need to load this one or not.  */
 	  p = find_use_name_n (name, &i, false);
 
-	  st = find_symbol (gfc_current_ns->sym_root,
-			    name, module_name, 1);
-
 	  if (!p || gfc_find_symbol (p, NULL, 0, &sym))
 	    {
 	      /* Skip the specific names for these cases.  */
@@ -4569,6 +4566,9 @@ load_generic_interfaces (void)
 
 	      continue;
 	    }
+
+	  st = find_symbol (gfc_current_ns->sym_root,
+			    name, module_name, 1);
 
 	  /* If the symbol exists already and is being USEd without being
 	     in an ONLY clause, do not load a new symtree(11.3.2).  */

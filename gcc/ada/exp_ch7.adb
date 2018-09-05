@@ -3995,6 +3995,10 @@ package body Exp_Ch7 is
       --  Check recursively whether a loop or block contains a subprogram that
       --  may need an activation record.
 
+      function First_Local_Scope (L : List_Id) return Entity_Id;
+      --  Find first block or loop that contains a subprogram and is not itself
+      --  nested within another local scope.
+
       --------------------------
       --  Contains_Subprogram --
       --------------------------
@@ -4021,12 +4025,93 @@ package body Exp_Ch7 is
          return False;
       end Contains_Subprogram;
 
+      -----------------------
+      --  Find_Local_Scope --
+      -----------------------
+
+      function First_Local_Scope (L : List_Id) return Entity_Id is
+         Scop : Entity_Id;
+         Stat : Node_Id;
+
+      begin
+         Stat := First (L);
+         while Present (Stat) loop
+            case Nkind (Stat) is
+               when N_Block_Statement =>
+                  if Present (Identifier (Stat)) then
+                     return Entity (Identifier (Stat));
+                  end if;
+
+               when N_Loop_Statement =>
+                  if Contains_Subprogram (Entity (Identifier (Stat))) then
+                     return Entity (Identifier (Stat));
+                  end if;
+
+               when N_If_Statement =>
+                  Scop := First_Local_Scope (Then_Statements (Stat));
+
+                  if Present (Scop) then
+                     return Scop;
+                  end if;
+
+                  Scop := First_Local_Scope (Else_Statements (Stat));
+
+                  if Present (Scop) then
+                     return Scop;
+                  end if;
+
+                  declare
+                     Elif : Node_Id;
+                  begin
+                     Elif := First (Elsif_Parts (Stat));
+
+                     while Present (Elif) loop
+                        Scop := First_Local_Scope (Statements (Elif));
+
+                        if Present (Scop) then
+                           return Scop;
+                        end if;
+
+                        Next (Elif);
+                     end loop;
+                  end;
+
+               when N_Case_Statement =>
+                  declare
+                     Alt : Node_Id;
+                  begin
+                     Alt := First (Alternatives (Stat));
+
+                     while Present (Alt) loop
+                        Scop := First_Local_Scope (Statements (Alt));
+
+                        if Present (Scop) then
+                           return Scop;
+                        end if;
+
+                        Next (Alt);
+                     end loop;
+                  end;
+
+               when N_Subprogram_Body =>
+                  return Defining_Entity (Stat);
+
+               when others =>
+                  null;
+            end case;
+
+            Next (Stat);
+         end loop;
+
+         return Empty;
+      end First_Local_Scope;
+
       --  Local variables
 
       Elab_Body : Node_Id;
       Elab_Call : Node_Id;
       Elab_Proc : Entity_Id;
-      Stat      : Node_Id;
+      Ent       : Entity_Id;
 
    --  Start of processing for Check_Unnesting_Elaboration_Code
 
@@ -4035,16 +4120,10 @@ package body Exp_Ch7 is
         and then Present (Handled_Statement_Sequence (N))
         and then Is_Compilation_Unit (Current_Scope)
       then
-         Stat := First (Statements (Handled_Statement_Sequence (N)));
-         while Present (Stat) loop
-            exit when ((Nkind (Stat) = N_Block_Statement
-                         and then Present (Identifier (Stat)))
-                or else Nkind (Stat) = N_Loop_Statement)
-              and then Contains_Subprogram (Entity (Identifier (Stat)));
-            Next (Stat);
-         end loop;
+         Ent :=
+           First_Local_Scope (Statements (Handled_Statement_Sequence (N)));
 
-         if Present (Stat) then
+         if Present (Ent) then
             Elab_Proc :=
               Make_Defining_Identifier (Loc,
                 Chars => New_Internal_Name ('I'));
@@ -4077,21 +4156,9 @@ package body Exp_Ch7 is
             --  within those blocks will have activation records if they
             --  contain references to entities in the enclosing block.
 
-            Stat :=
-              First (Statements (Handled_Statement_Sequence (Elab_Body)));
-
-            while Present (Stat) loop
-               if (Nkind (Stat) = N_Block_Statement
-                    and then Present (Identifier (Stat)))
-                 or else Nkind (Stat) = N_Loop_Statement
-               then
-                  Set_Scope (Entity (Identifier (Stat)), Elab_Proc);
-
-               elsif Nkind (Stat) = N_Subprogram_Body then
-                  Set_Scope (Defining_Entity (Stat), Elab_Proc);
-               end if;
-
-               Next (Stat);
+            while Present (Ent) loop
+               Set_Scope (Ent, Elab_Proc);
+               Next_Entity (Ent);
             end loop;
          end if;
       end if;

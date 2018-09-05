@@ -36,7 +36,6 @@ typedef struct cpp_macro cpp_macro;
 typedef struct cpp_callbacks cpp_callbacks;
 typedef struct cpp_dir cpp_dir;
 
-struct answer;
 struct _cpp_file;
 
 /* The first three groups, apart from '=', can appear in preprocessor
@@ -605,8 +604,8 @@ struct cpp_callbacks
   /* Callback to identify whether an attribute exists.  */
   int (*has_attribute) (cpp_reader *);
 
-  /* Callback that can change a user builtin into normal macro.  */
-  bool (*user_builtin_macro) (cpp_reader *, cpp_hashnode *);
+  /* Callback that can change a user lazy into normal macro.  */
+  void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
@@ -671,14 +670,81 @@ struct cpp_dir
   dev_t dev;
 };
 
-/* The structure of a node in the hash table.  The hash table has
-   entries for all identifiers: either macros defined by #define
-   commands (type NT_MACRO), assertions created with #assert
-   (NT_ASSERTION), or neither of the above (NT_VOID).  Builtin macros
-   like __LINE__ are flagged NODE_BUILTIN.  Poisoned identifiers are
-   flagged NODE_POISONED.  NODE_OPERATOR (C++ only) indicates an
-   identifier that behaves like an operator such as "xor".
-   NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
+/* The kind of the cpp_macro.  */
+enum cpp_macro_kind {
+  cmk_macro,	/* An ISO macro (token expansion).  */
+  cmk_assert,   /* An assertion.  */
+  cmk_traditional	/* A traditional macro (text expansion).  */
+};
+
+/* Each macro definition is recorded in a cpp_macro structure.
+   Variadic macros cannot occur with traditional cpp.  */
+struct GTY(()) cpp_macro {
+  union cpp_parm_u 
+  {
+    /* Parameters, if any.  If parameter names use extended identifiers,
+       the original spelling of those identifiers, not the canonical
+       UTF-8 spelling, goes here.  */
+    cpp_hashnode ** GTY ((tag ("false"),
+			  nested_ptr (union tree_node,
+	"%h ? CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (%h)) : NULL",
+	"%h ? HT_IDENT_TO_GCC_IDENT (HT_NODE (%h)) : NULL"),
+			  length ("%1.paramc"))) params;
+
+    /* If this is an assertion, the next one in the chain.  */
+    cpp_macro *GTY ((tag ("true"))) next;
+  } GTY ((desc ("%1.kind == cmk_assert"))) parm;
+
+  /* Definition line number.  */
+  source_location line;
+
+  /* Number of tokens in body, or bytes for traditional macros.  */
+  /* Do we really need 2^32-1 range here?  */
+  unsigned int count;
+
+  /* Number of parameters.  */
+  unsigned short paramc;
+
+  /* Non-zero if this is a user-lazy macro, value provided by user.  */
+  unsigned char lazy;
+
+  /* The kind of this macro (ISO, trad or assert) */
+  unsigned kind : 2;
+
+  /* If a function-like macro.  */
+  unsigned int fun_like : 1;
+
+  /* If a variadic macro.  */
+  unsigned int variadic : 1;
+
+  /* If macro defined in system header.  */
+  unsigned int syshdr   : 1;
+
+  /* Nonzero if it has been expanded or had its existence tested.  */
+  unsigned int used     : 1;
+
+  /* Indicate whether the tokens include extra CPP_PASTE tokens at the
+     end to track invalid redefinitions with consecutive CPP_PASTE
+     tokens.  */
+  unsigned int extra_tokens : 1;
+
+  /* 1 bits spare (32-bit). 33 on 64-bit target.  */
+
+  union cpp_exp_u
+  {
+    /* Trailing array of replacement tokens (ISO), or assertion body value.  */
+    cpp_token GTY ((tag ("false"), length ("%1.count"))) tokens[1];
+
+    /* Pointer to replacement text (traditional).  See comment at top
+       of cpptrad.c for how traditional function-like macros are
+       encoded.  */
+    const unsigned char *GTY ((tag ("true"))) text;
+  } GTY ((desc ("%1.kind == cmk_traditional"))) exp;
+};
+
+/* Poisoned identifiers are flagged NODE_POISONED.  NODE_OPERATOR (C++
+   only) indicates an identifier that behaves like an operator such as
+   "xor".  NODE_DIAGNOSTIC is for speed in lex_token: it indicates a
    diagnostic may be required for this node.  Currently this only
    applies to __VA_ARGS__, poisoned identifiers, and -Wc++-compat
    warnings about NODE_OPERATOR.  */
@@ -686,21 +752,21 @@ struct cpp_dir
 /* Hash node flags.  */
 #define NODE_OPERATOR	(1 << 0)	/* C++ named operator.  */
 #define NODE_POISONED	(1 << 1)	/* Poisoned identifier.  */
-#define NODE_BUILTIN	(1 << 2)	/* Builtin macro.  */
-#define NODE_DIAGNOSTIC (1 << 3)	/* Possible diagnostic when lexed.  */
-#define NODE_WARN	(1 << 4)	/* Warn if redefined or undefined.  */
-#define NODE_DISABLED	(1 << 5)	/* A disabled macro.  */
-#define NODE_MACRO_ARG	(1 << 6)	/* Used during #define processing.  */
-#define NODE_USED	(1 << 7)	/* Dumped with -dU.  */
-#define NODE_CONDITIONAL (1 << 8)	/* Conditional macro */
-#define NODE_WARN_OPERATOR (1 << 9)	/* Warn about C++ named operator.  */
+#define NODE_DIAGNOSTIC (1 << 2)	/* Possible diagnostic when lexed.  */
+#define NODE_WARN	(1 << 3)	/* Warn if redefined or undefined.  */
+#define NODE_DISABLED	(1 << 4)	/* A disabled macro.  */
+#define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
+#define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
+#define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
 
 /* Different flavors of hash node.  */
 enum node_type
 {
-  NT_VOID = 0,	   /* No definition yet.  */
-  NT_MACRO,	   /* A macro of some form.  */
-  NT_ASSERTION	   /* Predicate for #assert.  */
+  NT_VOID = 0,	   /* Maybe an assert?  */
+  NT_MACRO_ARG,	   /* A macro arg.  */
+  NT_USER_MACRO,   /* A user macro.  */
+  NT_BUILTIN_MACRO, /* A builtin macro.  */
+  NT_MACRO_MASK = NT_USER_MACRO  /* Mask for either macro kind.  */
 };
 
 /* Different flavors of builtin macro.  _Pragma is an operator, but we
@@ -717,9 +783,7 @@ enum cpp_builtin_type
   BT_PRAGMA,			/* `_Pragma' operator */
   BT_TIMESTAMP,			/* `__TIMESTAMP__' */
   BT_COUNTER,			/* `__COUNTER__' */
-  BT_HAS_ATTRIBUTE,		/* `__has_attribute__(x)' */
-  BT_FIRST_USER,		/* User defined builtin macros.  */
-  BT_LAST_USER = BT_FIRST_USER + 63
+  BT_HAS_ATTRIBUTE		/* `__has_attribute__(x)' */
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
@@ -727,36 +791,19 @@ enum cpp_builtin_type
 #define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
 #define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
 
-/* Specify which field, if any, of the union is used.  */
-
-enum {
-  NTV_MACRO,
-  NTV_ANSWER,
-  NTV_BUILTIN,
-  NTV_ARGUMENT,
-  NTV_NONE
-};
-
-#define CPP_HASHNODE_VALUE_IDX(HNODE)				\
-  ((HNODE.flags & NODE_MACRO_ARG) ? NTV_ARGUMENT		\
-   : HNODE.type == NT_MACRO ? ((HNODE.flags & NODE_BUILTIN) 	\
-			       ? NTV_BUILTIN : NTV_MACRO)	\
-   : HNODE.type == NT_ASSERTION ? NTV_ANSWER			\
-   : NTV_NONE)
-
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
    identifiers in the grammatical sense.  */
 
 union GTY(()) _cpp_hashnode_value {
-  /* If a macro.  */
-  cpp_macro * GTY((tag ("NTV_MACRO"))) macro;
-  /* Answers to an assertion.  */
-  struct answer * GTY ((tag ("NTV_ANSWER"))) answers;
+  /* Assert (maybe NULL) */
+  cpp_macro * GTY((tag ("NT_VOID"))) answers;
+  /* Macro (never NULL) */
+  cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
-  enum cpp_builtin_type GTY ((tag ("NTV_BUILTIN"))) builtin;
+  enum cpp_builtin_type GTY ((tag ("NT_BUILTIN_MACRO"))) builtin;
   /* Macro argument index.  */
-  unsigned short GTY ((tag ("NTV_ARGUMENT"))) arg_index;
+  unsigned short GTY ((tag ("NT_MACRO_ARG"))) arg_index;
 };
 
 struct GTY(()) cpp_hashnode {
@@ -766,10 +813,12 @@ struct GTY(()) cpp_hashnode {
 					   then index into directive table.
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
-  ENUM_BITFIELD(node_type) type : 6;	/* CPP node type.  */
-  unsigned int flags : 10;		/* CPP flags.  */
+  ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
+  unsigned int flags : 8;		/* CPP flags.  */
 
-  union _cpp_hashnode_value GTY ((desc ("CPP_HASHNODE_VALUE_IDX (%1)"))) value;
+  /* 6 bits spare (plus another 32 on 64-bit hosts).  */
+
+  union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
 
 /* A class for iterating through the source locations within a
@@ -890,7 +939,25 @@ extern int cpp_avoid_paste (cpp_reader *, const cpp_token *,
 extern const cpp_token *cpp_get_token (cpp_reader *);
 extern const cpp_token *cpp_get_token_with_location (cpp_reader *,
 						     source_location *);
-extern bool cpp_fun_like_macro_p (cpp_hashnode *);
+inline bool cpp_user_macro_p (const cpp_hashnode *node)
+{
+  return node->type == NT_USER_MACRO;
+}
+inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
+{
+  return node->type == NT_BUILTIN_MACRO;
+}
+inline bool cpp_macro_p (const cpp_hashnode *node)
+{
+  return node->type & NT_MACRO_MASK;
+}
+
+/* Returns true if NODE is a function-like user macro.  */
+inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
+{
+  return cpp_user_macro_p (node) && node->value.macro->fun_like;
+}
+
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
 extern source_location cpp_macro_definition_location (cpp_hashnode *);
@@ -925,6 +992,9 @@ extern void cpp_define_formatted (cpp_reader *pfile,
 extern void cpp_assert (cpp_reader *, const char *);
 extern void cpp_undef (cpp_reader *, const char *);
 extern void cpp_unassert (cpp_reader *, const char *);
+
+/* Mark a node as a lazily defined macro.  */
+extern void cpp_define_lazily (cpp_reader *, cpp_hashnode *node, unsigned N);
 
 /* Undefine all macros and assertions.  */
 extern void cpp_undef_all (cpp_reader *);

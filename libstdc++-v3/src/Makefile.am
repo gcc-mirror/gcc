@@ -28,6 +28,7 @@ else
 filesystem_dir =
 endif
 
+## Keep this list sync'd with acinclude.m4:GLIBCXX_CONFIGURE.
 SUBDIRS = c++98 c++11 c++17 $(filesystem_dir)
 
 # Cross compiler support.

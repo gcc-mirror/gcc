@@ -15,13 +15,13 @@ end
 ! PR77533 - used to ICE after error
 module m2
    type t
-      type(unknown), pointer :: next ! { dg-error "is a type that has not been declared" }
+      type(unknown), pointer :: next ! { dg-error "has not been declared" }
    contains
-      procedure :: s
+      procedure :: s  ! { dg-error "Non-polymorphic passed-object" }
       generic :: write(formatted) => s
    end type
 contains
-   subroutine s(x)
+   subroutine s(x)  ! { dg-error "Too few dummy arguments" }
    end
 end
 

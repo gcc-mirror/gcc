@@ -1017,6 +1017,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
   if (implicit != ICV_CAST && fn
       && lookup_attribute ("nodiscard", DECL_ATTRIBUTES (fn)))
     {
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result,
 		      "ignoring return value of %qD, "
 		      "declared with attribute nodiscard", fn))
@@ -1025,6 +1026,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
   else if (implicit != ICV_CAST
 	   && lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype)))
     {
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result,
 		      "ignoring returned value of type %qT, "
 		      "declared with attribute nodiscard", rettype))
@@ -1043,6 +1045,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 	 result is used, so handle that case here.  */
       if (fn)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wunused_result,
 			  "ignoring return value of %qD, "
 			  "declared with attribute warn_unused_result",

@@ -262,13 +262,6 @@ et-dg-runtest dg-runtest [lsort \
 	[glob -nocomplain $srcdir/$subdir/ggc-*.\[cS\]]] \
 	"" $DEFAULT_VECTCFLAGS
 
-# -ftree-loop-if-convert-stores
-set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS
-lappend DEFAULT_VECTCFLAGS "-ftree-loop-if-convert-stores"
-et-dg-runtest dg-runtest [lsort \
-	[glob -nocomplain $srcdir/$subdir/if-cvt-stores-vect-*.\[cS\]]] \
-	"" $DEFAULT_VECTCFLAGS
-
 # With -O3.
 # Don't allow IPA cloning, because it throws our counts out of whack.
 set DEFAULT_VECTCFLAGS $SAVED_DEFAULT_VECTCFLAGS

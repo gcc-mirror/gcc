@@ -24,7 +24,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 .macro RESTORE_MAC_REGS
-#ifdef NDS32_DX_REGS
+#if __NDS32_DX_REGS__
 	lmw.bim	$r1, [$sp], $r4, #0x0
 	mtusr	$r1, $d0.lo
 	mtusr	$r2, $d0.hi

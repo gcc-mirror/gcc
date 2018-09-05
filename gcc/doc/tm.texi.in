@@ -3669,6 +3669,8 @@ generic code.
 
 @hook TARGET_SUPPORTS_SPLIT_STACK
 
+@hook TARGET_GET_VALID_OPTION_VALUES
+
 @node Miscellaneous Register Hooks
 @subsection Miscellaneous register hooks
 @cindex miscellaneous register hooks
@@ -3766,24 +3768,61 @@ These machine description macros help implement varargs:
 @hook TARGET_SETUP_INCOMING_VARARG_BOUNDS
 
 @node Trampolines
-@section Trampolines for Nested Functions
+@section Support for Nested Functions
+@cindex support for nested functions
 @cindex trampolines for nested functions
-@cindex nested functions, trampolines for
+@cindex descriptors for nested functions
+@cindex nested functions, support for
 
-A @dfn{trampoline} is a small piece of code that is created at run time
-when the address of a nested function is taken.  It normally resides on
-the stack, in the stack frame of the containing function.  These macros
-tell GCC how to generate code to allocate and initialize a
-trampoline.
+Taking the address of a nested function requires special compiler
+handling to ensure that the static chain register is loaded when
+the function is invoked via an indirect call.
 
-The instructions in the trampoline must do two things: load a constant
-address into the static chain register, and jump to the real address of
-the nested function.  On CISC machines such as the m68k, this requires
-two instructions, a move immediate and a jump.  Then the two addresses
-exist in the trampoline as word-long immediate operands.  On RISC
-machines, it is often necessary to load each address into a register in
-two parts.  Then pieces of each address form separate immediate
-operands.
+GCC has traditionally supported nested functions by creating an
+executable @dfn{trampoline} at run time when the address of a nested
+function is taken.  This is a small piece of code which normally
+resides on the stack, in the stack frame of the containing function.
+The trampoline loads the static chain register and then jumps to the
+real address of the nested function.
+
+The use of trampolines requires an executable stack, which is a
+security risk.  To avoid this problem, GCC also supports another
+strategy: using descriptors for nested functions.  Under this model,
+taking the address of a nested function results in a pointer to a
+non-executable function descriptor object.  Initializing the static chain
+from the descriptor is handled at indirect call sites.
+
+On some targets, including HPPA and IA-64, function descriptors may be
+mandated by the ABI or be otherwise handled in a target-specific way
+by the back end in its code generation strategy for indirect calls.
+GCC also provides its own generic descriptor implementation to support the
+@option{-fno-trampolines} option.  In this case runtime detection of
+function descriptors at indirect call sites relies on descriptor
+pointers being tagged with a bit that is never set in bare function
+addresses.  Since GCC's generic function descriptors are
+not ABI-compliant, this option is typically used only on a
+per-language basis (notably by Ada) or when it can otherwise be
+applied to the whole program.
+
+Define the following hook if your backend either implements ABI-specified
+descriptor support, or can use GCC's generic descriptor implementation
+for nested functions.
+
+@hook TARGET_CUSTOM_FUNCTION_DESCRIPTORS
+
+The following macros tell GCC how to generate code to allocate and
+initialize an executable trampoline.  You can also use this interface
+if your back end needs to create ABI-specified non-executable descriptors; in
+this case the "trampoline" created is the descriptor containing data only.
+
+The instructions in an executable trampoline must do two things: load
+a constant address into the static chain register, and jump to the real
+address of the nested function.  On CISC machines such as the m68k,
+this requires two instructions, a move immediate and a jump.  Then the
+two addresses exist in the trampoline as word-long immediate operands.
+On RISC machines, it is often necessary to load each address into a
+register in two parts.  Then pieces of each address form separate
+immediate operands.
 
 The code generated to initialize the trampoline must store the variable
 parts---the static chain value and the function address---into the
@@ -3814,8 +3853,6 @@ is used for aligning trampolines.
 @hook TARGET_TRAMPOLINE_INIT
 
 @hook TARGET_TRAMPOLINE_ADJUST_ADDRESS
-
-@hook TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 
 Implementing trampolines is difficult on many machines because they have
 separate instruction and data caches.  Writing into a stack location
@@ -8100,5 +8137,9 @@ All and all it does not take long to convert ports that the
 maintainer is familiar with.
 
 @end defmac
+
+@hook TARGET_HAVE_SPECULATION_SAFE_VALUE
+
+@hook TARGET_SPECULATION_SAFE_VALUE
 
 @hook TARGET_RUN_TARGET_SELFTESTS

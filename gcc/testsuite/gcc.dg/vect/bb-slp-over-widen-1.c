@@ -63,4 +63,5 @@ main (void)
 
 /* { dg-final { scan-tree-dump "demoting int to signed short" "slp2" { target { ! vect_widen_shift } } } } */
 /* { dg-final { scan-tree-dump "demoting int to unsigned short" "slp2" { target { ! vect_widen_shift } } } } */
+/* { dg-final { scan-tree-dump {\.AVG_FLOOR} "slp2" { target vect_avg_qi } } } */
 /* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp2" } } */

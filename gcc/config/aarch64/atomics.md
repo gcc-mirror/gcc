@@ -20,7 +20,7 @@
 
 ;; Instruction patterns.
 
-(define_expand "atomic_compare_and_swap<mode>"
+(define_expand "@atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")			;; bool out
    (match_operand:ALLI 1 "register_operand" "")			;; val out
    (match_operand:ALLI 2 "aarch64_sync_memory_operand" "")	;; memory
@@ -36,7 +36,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:SI 0 "register_operand" "=&r")	   ;; val out
@@ -61,7 +61,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
@@ -85,7 +85,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>_lse"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:SI 0 "register_operand" "=&r")		;; val out
@@ -111,7 +111,7 @@
   }
 )
 
-(define_insn_and_split "aarch64_compare_and_swap<mode>_lse"
+(define_insn_and_split "@aarch64_compare_and_swap<mode>_lse"
   [(set (reg:CC CC_REGNUM)					;; bool out
     (unspec_volatile:CC [(const_int 0)] UNSPECV_ATOMIC_CMPSW))
    (set (match_operand:GPI 0 "register_operand" "=&r")		;; val out
@@ -496,7 +496,7 @@
   }
 )
 
-(define_insn "aarch64_load_exclusive<mode>"
+(define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
     (zero_extend:SI
       (unspec_volatile:SHORT
@@ -513,7 +513,7 @@
   }
 )
 
-(define_insn "aarch64_load_exclusive<mode>"
+(define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
     (unspec_volatile:GPI
       [(match_operand:GPI 1 "aarch64_sync_memory_operand" "Q")
@@ -529,7 +529,7 @@
   }
 )
 
-(define_insn "aarch64_store_exclusive<mode>"
+(define_insn "@aarch64_store_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=&r")
     (unspec_volatile:SI [(const_int 0)] UNSPECV_SX))
    (set (match_operand:ALLI 1 "aarch64_sync_memory_operand" "=Q")
@@ -586,7 +586,7 @@
 ;; ARMv8.1-A LSE instructions.
 
 ;; Atomic swap with memory.
-(define_insn "aarch64_atomic_swp<mode>"
+(define_insn "@aarch64_atomic_swp<mode>"
  [(set (match_operand:ALLI 0 "register_operand" "+&r")
    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
   (set (match_dup 1)
@@ -609,7 +609,7 @@
 
 ;; Atomic compare-and-swap: HI and smaller modes.
 
-(define_insn "aarch64_atomic_cas<mode>"
+(define_insn "@aarch64_atomic_cas<mode>"
  [(set (match_operand:SI 0 "register_operand" "+&r")		  ;; out
    (zero_extend:SI
     (match_operand:SHORT 1 "aarch64_sync_memory_operand" "+Q")))  ;; memory.
@@ -634,7 +634,7 @@
 
 ;; Atomic compare-and-swap: SI and larger modes.
 
-(define_insn "aarch64_atomic_cas<mode>"
+(define_insn "@aarch64_atomic_cas<mode>"
  [(set (match_operand:GPI 0 "register_operand" "+&r")	      ;; out
    (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))  ;; memory.
   (set (match_dup 1)
@@ -658,7 +658,7 @@
 
 ;; Atomic load-op: Load data, operate, store result, keep data.
 
-(define_insn "aarch64_atomic_load<atomic_ldop><mode>"
+(define_insn "@aarch64_atomic_load<atomic_ldop><mode>"
  [(set (match_operand:ALLI 0 "register_operand" "=r")
    (match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
   (set (match_dup 1)

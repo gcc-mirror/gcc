@@ -158,6 +158,10 @@ misr-vector-size=
 Target RejectNegative Joined UInteger Var(nds32_isr_vector_size) Init(NDS32_DEFAULT_ISR_VECTOR_SIZE)
 Specify the size of each interrupt vector, which must be 4 or 16.
 
+misr-secure=
+Target RejectNegative Joined UInteger Var(nds32_isr_secure_level) Init(0)
+Specify the security level of c-isr for the whole file.
+
 mcache-block-size=
 Target RejectNegative Joined UInteger Var(nds32_cache_block_size) Init(NDS32_DEFAULT_CACHE_BLOCK_SIZE)
 Specify the size of each cache block, which must be a power of 2 between 4 and 512.
@@ -439,6 +443,10 @@ Generate double-precision floating-point instructions.
 mforce-no-ext-dsp
 Target Undocumented Report Mask(FORCE_NO_EXT_DSP)
 Force disable hardware loop, even use -mext-dsp.
+
+msched-prolog-epilog
+Target Var(flag_sched_prolog_epilog) Init(0)
+Permit scheduling of a function's prologue and epilogue sequence.
 
 mret-in-naked-func
 Target Var(flag_ret_in_naked_func) Init(1)

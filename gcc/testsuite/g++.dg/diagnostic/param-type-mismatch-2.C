@@ -12,6 +12,8 @@ int test_1 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_1 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_1\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_1 }
   /* { dg-begin-multiline-output "" }
@@ -30,6 +32,8 @@ int test_2 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_2 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_2\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_2 }
   /* { dg-begin-multiline-output "" }
@@ -51,6 +55,8 @@ int test_3 (int first, const char *second, float third)
   /* { dg-begin-multiline-output "" }
    return callee_3 (first, second, third);
                            ^~~~~~
+                           |
+                           const char*
      { dg-end-multiline-output "" } */
   // { dg-message "initializing argument 2 of 'int callee_3\\(int, const char\\*\\*, float\\)'" "" { target *-*-* } callee_3 }
   /* { dg-begin-multiline-output "" }
@@ -76,7 +82,10 @@ int test_4 (int first, const char *second, float third)
                         ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s4_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s4 { static int member_1 (int one, const char **two, float three); };
+                                           ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* non-static member, with argname.  */
@@ -97,7 +106,10 @@ int test_5 (int first, const char *second, float third)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s5_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s5 { int member_1 (int one, const char **two, float three); };
+                                    ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* non-static member, with argname, via a ptr.  */
@@ -117,7 +129,10 @@ int test_6 (int first, const char *second, float third, s6 *ptr)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s6_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" } 
+ struct s6 { int member_1 (int one, const char **two, float three); };
+                                    ~~~~~~~~~~~~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* Template function.  */
@@ -164,7 +179,10 @@ int test_8 (int first, const char *second, float third)
                         ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s8_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" }
+ struct s8 { static int member_1 (int one, T two, float three); };
+                                           ~~^~~
+     { dg-end-multiline-output "" } */
 }
 
 /* Template class, non-static function.  */
@@ -186,5 +204,8 @@ int test_9 (int first, const char *second, float third)
                  ^~~~~~~~
      { dg-end-multiline-output "" } */
   // { dg-message "no known conversion for argument 2 from 'const char\\*' to 'const char\\*\\*'" "" { target *-*-* } s9_member_1 }
-  // TODO: underline the pertinent param
+  /* { dg-begin-multiline-output "" }
+ struct s9 { int member_1 (int one, T two, float three); };
+                                    ~~^~~
+     { dg-end-multiline-output "" } */
 }

@@ -17,7 +17,6 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-xfail-run-if "AIX long double" { powerpc-ibm-aix* } }
 
 #include <cmath>
 #include <type_traits>
@@ -126,9 +125,13 @@ const long double toler3 = 1e-16l;
 void
 test01()
 {
+  // See hypot-long-double.cc for this macro
+#ifndef TEST_HYPOT_LONG_DOUBLE
   test(data1, toler1);
   test(data2, toler2);
+#else
   test(data3, toler3);
+#endif
 }
 
 int

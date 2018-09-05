@@ -55,7 +55,7 @@ main1 (s *arr)
    }
 
   ptr = arr;
-  /* Not vectorizable: gap in store.  */
+  /* Vectorized as a strided SLP pair.  */
   for (i = 0; i < N; i++)
     {
       res[i].a = ptr->b;
@@ -110,5 +110,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_strided8 } } } */
-
+/* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" { target vect_strided8 } } } */

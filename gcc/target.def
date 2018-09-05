@@ -4156,6 +4156,46 @@ DEFHOOK
  hook_bool_void_true)
 
 DEFHOOK
+(have_speculation_safe_value,
+"This hook is used to determine the level of target support for\n\
+ @code{__builtin_speculation_safe_value}.  If called with an argument\n\
+ of false, it returns true if the target has been modified to support\n\
+ this builtin.  If called with an argument of true, it returns true\n\
+ if the target requires active mitigation execution might be speculative.\n\
+ \n\
+ The default implementation returns false if the target does not define\n\
+ a pattern named @code{speculation_barrier}.  Else it returns true\n\
+ for the first case and whether the pattern is enabled for the current\n\
+ compilation for the second case.\n\
+ \n\
+ For targets that have no processors that can execute instructions\n\
+ speculatively an alternative implemenation of this hook is available:\n\
+ simply redefine this hook to @code{speculation_safe_value_not_needed}\n\
+ along with your other target hooks.",
+bool, (bool active), default_have_speculation_safe_value)
+
+DEFHOOK
+(speculation_safe_value,
+"This target hook can be used to generate a target-specific code\n\
+ sequence that implements the @code{__builtin_speculation_safe_value}\n\
+ built-in function.  The function must always return @var{val} in\n\
+ @var{result} in mode @var{mode} when the cpu is not executing\n\
+ speculatively, but must never return that when speculating until it\n\
+ is known that the speculation will not be unwound.  The hook supports\n\
+ two primary mechanisms for implementing the requirements.  The first\n\
+ is to emit a speculation barrier which forces the processor to wait\n\
+ until all prior speculative operations have been resolved; the second\n\
+ is to use a target-specific mechanism that can track the speculation\n\
+ state and to return @var{failval} if it can determine that\n\
+ speculation must be unwound at a later time.\n\
+ \n\
+ The default implementation simply copies @var{val} to @var{result} and\n\
+ emits a @code{speculation_barrier} instruction if that is defined.",
+rtx, (machine_mode mode, rtx result, rtx val, rtx failval),
+ default_speculation_safe_value)
+ 
+
+DEFHOOK
 (can_use_doloop_p,
  "Return true if it is possible to use low-overhead loops (@code{doloop_end}\n\
 and @code{doloop_begin}) for a particular loop.  @var{iterations} gives the\n\
@@ -4945,21 +4985,22 @@ If this hook is not defined, @var{addr} will be used for function calls.",
 
 DEFHOOKPOD
 (custom_function_descriptors,
- "This hook should be defined to a power of 2 if the target will benefit\n\
-from the use of custom descriptors for nested functions instead of the\n\
-standard trampolines.  Such descriptors are created at run time on the\n\
-stack and made up of data only, but they are non-standard so the generated\n\
-code must be prepared to deal with them.  This hook should be defined to 0\n\
-if the target uses function descriptors for its standard calling sequence,\n\
-like for example HP-PA or IA-64.  Using descriptors for nested functions\n\
-eliminates the need for trampolines that reside on the stack and require\n\
-it to be made executable.\n\
+ "If the target can use GCC's generic descriptor mechanism for nested\n\
+functions, define this hook to a power of 2 representing an unused bit\n\
+in function pointers which can be used to differentiate descriptors at\n\
+run time.  This value gives the number of bytes by which descriptor\n\
+pointers are misaligned compared to function pointers.  For example, on\n\
+targets that require functions to be aligned to a 4-byte boundary, a\n\
+value of either 1 or 2 is appropriate unless the architecture already\n\
+reserves the bit for another purpose, such as on ARM.\n\
 \n\
-The value of the macro is used to parameterize the run-time identification\n\
-scheme implemented to distinguish descriptors from function addresses: it\n\
-gives the number of bytes by which their address is misaligned compared\n\
-with function addresses.  The value of 1 will generally work, unless it is\n\
-already reserved by the target for another purpose, like for example on ARM.",\
+Define this hook to 0 if the target implements ABI support for\n\
+function descriptors in its standard calling sequence, like for example\n\
+HPPA or IA-64.\n\
+\n\
+Using descriptors for nested functions\n\
+eliminates the need for trampolines that reside on the stack and require\n\
+it to be made executable.",\
  int, -1)
 
 /* Return the number of bytes of its own arguments that a function

@@ -735,13 +735,20 @@ compare_type (gfc_symbol *s1, gfc_symbol *s2)
   if (s2->attr.ext_attr & (1 << EXT_ATTR_NO_ARG_CHECK))
     return true;
 
+  return gfc_compare_types (&s1->ts, &s2->ts) || s2->ts.type == BT_ASSUMED;
+}
+
+
+static bool
+compare_type_characteristics (gfc_symbol *s1, gfc_symbol *s2)
+{
   /* TYPE and CLASS of the same declared type are type compatible,
      but have different characteristics.  */
   if ((s1->ts.type == BT_CLASS && s2->ts.type == BT_DERIVED)
       || (s1->ts.type == BT_DERIVED && s2->ts.type == BT_CLASS))
     return false;
 
-  return gfc_compare_types (&s1->ts, &s2->ts) || s2->ts.type == BT_ASSUMED;
+  return compare_type (s1, s2);
 }
 
 
@@ -1309,7 +1316,8 @@ gfc_check_dummy_characteristics (gfc_symbol *s1, gfc_symbol *s2,
   /* Check type and rank.  */
   if (type_must_agree)
     {
-      if (!compare_type (s1, s2) || !compare_type (s2, s1))
+      if (!compare_type_characteristics (s1, s2)
+	  || !compare_type_characteristics (s2, s1))
 	{
 	  snprintf (errmsg, err_len, "Type mismatch in argument '%s' (%s/%s)",
 		    s1->name, gfc_typename (&s1->ts), gfc_typename (&s2->ts));
@@ -1528,7 +1536,7 @@ gfc_check_result_characteristics (gfc_symbol *s1, gfc_symbol *s2,
     return true;
 
   /* Check type and rank.  */
-  if (!compare_type (r1, r2))
+  if (!compare_type_characteristics (r1, r2))
     {
       snprintf (errmsg, err_len, "Type mismatch in function result (%s/%s)",
 		gfc_typename (&r1->ts), gfc_typename (&r2->ts));
@@ -1776,7 +1784,7 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 	  }
 	else
 	  {
-	    /* Only check type and rank.  */
+	    /* Operators: Only check type and rank of arguments.  */
 	    if (!compare_type (f2->sym, f1->sym))
 	      {
 		if (errmsg != NULL)
@@ -1792,6 +1800,15 @@ gfc_compare_interfaces (gfc_symbol *s1, gfc_symbol *s2, const char *name2,
 		  snprintf (errmsg, err_len, "Rank mismatch in argument '%s' "
 			    "(%i/%i)", f1->sym->name, symbol_rank (f1->sym),
 			    symbol_rank (f2->sym));
+		return false;
+	      }
+	    if ((gfc_option.allow_std & GFC_STD_F2008)
+		&& (compare_ptr_alloc(f1->sym, f2->sym)
+		    || compare_ptr_alloc(f2->sym, f1->sym)))
+	      {
+    		if (errmsg != NULL)
+		  snprintf (errmsg, err_len, "Mismatching POINTER/ALLOCATABLE "
+			    "attribute in argument '%s' ", f1->sym->name);
 		return false;
 	      }
 	  }

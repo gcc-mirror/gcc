@@ -12547,7 +12547,7 @@ package body Exp_Ch4 is
             Sel_Comp := Parent (Sel_Comp);
          end loop;
 
-         return Ekind (Entity (Prefix (Sel_Comp))) in Formal_Kind;
+         return Is_Formal (Entity (Prefix (Sel_Comp)));
       end Prefix_Is_Formal_Parameter;
 
    --  Start of processing for Has_Inferable_Discriminants

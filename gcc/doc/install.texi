@@ -366,7 +366,7 @@ download_prerequisites installs.
 @item MPFR Library version 2.4.2 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.mpfr.org/}.  If an MPFR source distribution is found
+@uref{https://www.mpfr.org}.  If an MPFR source distribution is found
 in a subdirectory of your GCC sources named @file{mpfr}, it will be
 built together with GCC.  Alternatively, if MPFR is already installed
 but it is not in your default library search path, the
@@ -378,7 +378,7 @@ download_prerequisites installs.
 @item MPC Library version 0.8.1 (or later)
 
 Necessary to build GCC@.  It can be downloaded from
-@uref{http://www.multiprecision.org/}.  If an MPC source distribution
+@uref{http://www.multiprecision.org/mpc/}.  If an MPC source distribution
 is found in a subdirectory of your GCC sources named @file{mpc}, it
 will be built together with GCC.  Alternatively, if MPC is already
 installed but it is not in your default library search path, the

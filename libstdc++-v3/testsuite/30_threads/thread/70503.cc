@@ -17,7 +17,6 @@
 
 // { dg-do link { target c++11 } }
 // { dg-options "-static" { target *-*-*gnu* } }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target static }
 

@@ -917,6 +917,9 @@ begin
            Get_Back_End_Config_File;
       begin
          if Back_End_Config_File /= null then
+            pragma Gnat_Annotate
+              (CodePeer, Intentional, "test always false",
+               "some variant body will return non null");
             Read_Target_Dependent_Values (Back_End_Config_File.all);
 
          --  Otherwise we get all values from the back end directly

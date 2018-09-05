@@ -27,6 +27,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "fbuf.h"
 #include "format.h"
 #include "unix.h"
+#include "async.h"
 #include <string.h>
 #include <assert.h>
 
@@ -240,7 +241,7 @@ insert_unit (int n)
 #else
   __GTHREAD_MUTEX_INIT_FUNCTION (&u->lock);
 #endif
-  __gthread_mutex_lock (&u->lock);
+  LOCK (&u->lock);
   u->priority = pseudo_random ();
   unit_root = insert (u, unit_root);
   return u;
@@ -327,7 +328,9 @@ get_gfc_unit (int n, int do_create)
   gfc_unit *p;
   int c, created = 0;
 
-  __gthread_mutex_lock (&unit_lock);
+  NOTE ("Unit n=%d, do_create = %d", n, do_create);
+  LOCK (&unit_lock);
+
 retry:
   for (c = 0; c < CACHE_SIZE; c++)
     if (unit_cache[c] != NULL && unit_cache[c]->unit_number == n)
@@ -366,7 +369,7 @@ retry:
     {
       /* Newly created units have their lock held already
 	 from insert_unit.  Just unlock UNIT_LOCK and return.  */
-      __gthread_mutex_unlock (&unit_lock);
+      UNLOCK (&unit_lock);
       return p;
     }
 
@@ -374,10 +377,10 @@ found:
   if (p != NULL && (p->child_dtio == 0))
     {
       /* Fast path.  */
-      if (! __gthread_mutex_trylock (&p->lock))
+      if (! TRYLOCK (&p->lock))
 	{
 	  /* assert (p->closed == 0); */
-	  __gthread_mutex_unlock (&unit_lock);
+	  UNLOCK (&unit_lock);
 	  return p;
 	}
 
@@ -385,15 +388,15 @@ found:
     }
 
 
-  __gthread_mutex_unlock (&unit_lock);
+  UNLOCK (&unit_lock);
 
   if (p != NULL && (p->child_dtio == 0))
     {
-      __gthread_mutex_lock (&p->lock);
+      LOCK (&p->lock);
       if (p->closed)
 	{
-	  __gthread_mutex_lock (&unit_lock);
-	  __gthread_mutex_unlock (&p->lock);
+	  LOCK (&unit_lock);
+	  UNLOCK (&p->lock);
 	  if (predec_waiting_locked (p) == 0)
 	    destroy_unit_mutex (p);
 	  goto retry;
@@ -640,7 +643,7 @@ init_units (void)
 
       fbuf_init (u, 0);
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
 
   if (options.stdout_unit >= 0)
@@ -671,7 +674,7 @@ init_units (void)
 
       fbuf_init (u, 0);
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
 
   if (options.stderr_unit >= 0)
@@ -702,13 +705,13 @@ init_units (void)
       fbuf_init (u, 256);  /* 256 bytes should be enough, probably not doing
                               any kind of exotic formatting to stderr.  */
 
-      __gthread_mutex_unlock (&u->lock);
+      UNLOCK (&u->lock);
     }
   /* The default internal units.  */
   u = insert_unit (GFC_INTERNAL_UNIT);
-  __gthread_mutex_unlock (&u->lock);
+  UNLOCK (&u->lock);
   u = insert_unit (GFC_INTERNAL_UNIT4);
-  __gthread_mutex_unlock (&u->lock);
+  UNLOCK (&u->lock);
 }
 
 
@@ -716,6 +719,9 @@ static int
 close_unit_1 (gfc_unit *u, int locked)
 {
   int i, rc;
+
+  if (ASYNC_IO && u->au)
+    async_close (u->au);
 
   /* If there are previously written bytes from a write with ADVANCE="no"
      Reposition the buffer before closing.  */
@@ -726,7 +732,7 @@ close_unit_1 (gfc_unit *u, int locked)
 
   u->closed = 1;
   if (!locked)
-    __gthread_mutex_lock (&unit_lock);
+    LOCK (&unit_lock);
 
   for (i = 0; i < CACHE_SIZE; i++)
     if (unit_cache[i] == u)
@@ -744,7 +750,7 @@ close_unit_1 (gfc_unit *u, int locked)
     newunit_free (u->unit_number);
 
   if (!locked)
-    __gthread_mutex_unlock (&u->lock);
+    UNLOCK (&u->lock);
 
   /* If there are any threads waiting in find_unit for this unit,
      avoid freeing the memory, the last such thread will free it
@@ -753,7 +759,7 @@ close_unit_1 (gfc_unit *u, int locked)
     destroy_unit_mutex (u);
 
   if (!locked)
-    __gthread_mutex_unlock (&unit_lock);
+    UNLOCK (&unit_lock);
 
   return rc;
 }
@@ -761,7 +767,9 @@ close_unit_1 (gfc_unit *u, int locked)
 void
 unlock_unit (gfc_unit *u)
 {
-  __gthread_mutex_unlock (&u->lock);
+  NOTE ("unlock_unit = %d", u->unit_number);
+  UNLOCK (&u->lock);
+  NOTE ("unlock_unit done");
 }
 
 /* close_unit()-- Close a unit.  The stream is closed, and any memory
@@ -785,10 +793,10 @@ close_unit (gfc_unit *u)
 void
 close_units (void)
 {
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
   while (unit_root != NULL)
     close_unit_1 (unit_root, 1);
-  __gthread_mutex_unlock (&unit_lock);
+  UNLOCK (&unit_lock);
 
   free (newunits);
 
@@ -895,7 +903,7 @@ finish_last_advance_record (gfc_unit *u)
 int
 newunit_alloc (void)
 {
-  __gthread_mutex_lock (&unit_lock);
+  LOCK (&unit_lock);
   if (!newunits)
     {
       newunits = xcalloc (16, 1);
@@ -909,7 +917,7 @@ newunit_alloc (void)
         {
           newunits[ii] = true;
           newunit_lwi = ii + 1;
-	  __gthread_mutex_unlock (&unit_lock);
+	  UNLOCK (&unit_lock);
           return -ii + NEWUNIT_START;
         }
     }
@@ -922,7 +930,7 @@ newunit_alloc (void)
   memset (newunits + old_size, 0, old_size);
   newunits[old_size] = true;
   newunit_lwi = old_size + 1;
-    __gthread_mutex_unlock (&unit_lock);
+    UNLOCK (&unit_lock);
   return -old_size + NEWUNIT_START;
 }
 

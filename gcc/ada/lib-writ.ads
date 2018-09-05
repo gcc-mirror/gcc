@@ -629,13 +629,13 @@ package Lib.Writ is
    --      by the current unit. One Z line is present for each unit that is
    --      only implicitly withed by the current unit. The first parameter is
    --      the unit name in internal format. The second parameter is the file
-   --      name of the file that must be compiled to compile this unit. It is
-   --      usually the file for the body, except for packages which have no
-   --      body. For units that need a body, if the source file for the body
-   --      cannot be found, the file name of the spec is used instead. The
-   --      third parameter is the file name of the library information file
-   --      that contains the results of compiling this unit. The optional
-   --      modifiers are used as follows:
+   --      name of the body unit on which the current compliation depends -
+   --      except when in GNATprove mode. In GNATprove mode, when packages
+   --      which require a body have no associated source file, the file name
+   --      of the spec is used instead to allow partial analysis of incomplete
+   --      sources. The third parameter is the file name of the library
+   --      information file that contains the results of compiling this unit.
+   --      The optional modifiers are used as follows:
 
    --        E   pragma Elaborate applies to this unit
 

@@ -55,6 +55,14 @@ test(UInt x)
     static_assert( std::ceil2(UInt(3) << 64) == (UInt(4) << 64) );
   }
 
+  constexpr UInt msb = UInt(1) << (std::numeric_limits<UInt>::digits - 1);
+  static_assert( std::ceil2( msb ) == msb );
+  // Larger values cannot be represented so the return value is unspecified,
+  // but must still be valid in constant expressions, i.e. not undefined.
+  static_assert( std::ceil2( UInt(msb + 1) ) != 77 );
+  static_assert( std::ceil2( UInt(msb + 2) ) != 77 );
+  static_assert( std::ceil2( UInt(msb + 77) ) != 77 );
+
   return true;
 }
 

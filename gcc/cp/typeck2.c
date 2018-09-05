@@ -67,28 +67,28 @@ binfo_or_else (tree base, tree type)
    value may not be changed thereafter.  */
 
 void
-cxx_readonly_error (tree arg, enum lvalue_use errstring)
+cxx_readonly_error (location_t loc, tree arg, enum lvalue_use errstring)
 {
  
 /* This macro is used to emit diagnostics to ensure that all format
    strings are complete sentences, visible to gettext and checked at
    compile time.  */
  
-#define ERROR_FOR_ASSIGNMENT(AS, ASM, IN, DE, ARG)                      \
+#define ERROR_FOR_ASSIGNMENT(LOC, AS, ASM, IN, DE, ARG)			\
   do {                                                                  \
     switch (errstring)                                                  \
       {                                                                 \
       case lv_assign:							\
-        error(AS, ARG);                                                 \
+	error_at (LOC, AS, ARG);					\
         break;                                                          \
       case lv_asm:							\
-        error(ASM, ARG);                                                \
+	error_at (LOC, ASM, ARG);					\
         break;                                                          \
       case lv_increment:						\
-        error (IN, ARG);                                                \
+	error_at (LOC, IN, ARG);					\
         break;                                                          \
-      case lv_decrement:                                               \
-        error (DE, ARG);                                                \
+      case lv_decrement:                                                \
+	error_at (LOC, DE, ARG);					\
         break;                                                          \
       default:                                                          \
         gcc_unreachable ();                                             \
@@ -101,32 +101,25 @@ cxx_readonly_error (tree arg, enum lvalue_use errstring)
       && DECL_LANG_SPECIFIC (arg)
       && DECL_IN_AGGR_P (arg)
       && !TREE_STATIC (arg))
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-			     "constant field %qD"),
-			  G_("constant field %qD "
-			     "used as %<asm%> output"),
-			  G_("increment of "
-			     "constant field %qD"),
-			  G_("decrement of "
-			     "constant field %qD"),
+    ERROR_FOR_ASSIGNMENT (loc,
+			  G_("assignment of constant field %qD"),
+			  G_("constant field %qD used as %<asm%> output"),
+			  G_("increment of constant field %qD"),
+			  G_("decrement of constant field %qD"),
 			  arg);
   else if (INDIRECT_REF_P (arg)
 	   && TYPE_REF_P (TREE_TYPE (TREE_OPERAND (arg, 0)))
 	   && (VAR_P (TREE_OPERAND (arg, 0))
 	       || TREE_CODE (TREE_OPERAND (arg, 0)) == PARM_DECL))
-    ERROR_FOR_ASSIGNMENT (G_("assignment of "
-                             "read-only reference %qD"),
-                          G_("read-only reference %qD "
-			     "used as %<asm%> output"), 
-                          G_("increment of "
-                             "read-only reference %qD"),
-                          G_("decrement of "
-                             "read-only reference %qD"),
-                          TREE_OPERAND (arg, 0));
+    ERROR_FOR_ASSIGNMENT (loc,
+			  G_("assignment of read-only reference %qD"),
+			  G_("read-only reference %qD used as %<asm%> output"),
+			  G_("increment of read-only reference %qD"),
+			  G_("decrement of read-only reference %qD"),
+			  TREE_OPERAND (arg, 0));
   else
-    readonly_error (input_location, arg, errstring);
+    readonly_error (loc, arg, errstring);
 }
-
 
 /* Structure that holds information about declarations whose type was
    incomplete and we could not check whether it was abstract or not.  */
@@ -315,6 +308,7 @@ abstract_virtuals_error_sfinae (tree decl, tree type, abstract_class_use use,
   if (!(complain & tf_error))
     return 1;
 
+  auto_diagnostic_group d;
   if (decl)
     {
       if (VAR_P (decl))
@@ -813,6 +807,11 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     /* Digest the specified initializer into an expression.  */
     value = digest_init_flags (type, init, flags, tf_warning_or_error);
 
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_STRING_FLAG (TREE_TYPE (type))
+      && TREE_CODE (value) == CONSTRUCTOR)
+    value = braced_list_to_string (type, value);
+
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.
@@ -837,7 +836,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	    value = cxx_constant_init (value, decl);
 	}
       else
-	value = maybe_constant_init (value, decl);
+	value = maybe_constant_init (value, decl, true);
       if (TREE_CODE (value) == CONSTRUCTOR && cp_has_mutable_p (type))
 	/* Poison this CONSTRUCTOR so it can't be copied to another
 	   constexpr variable.  */
@@ -875,10 +874,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 }
 
 
-/* Give diagnostic about narrowing conversions within { }.  */
+/* Give diagnostic about narrowing conversions within { }, or as part of
+   a converted constant expression.  If CONST_ONLY, only check
+   constants.  */
 
 bool
-check_narrowing (tree type, tree init, tsubst_flags_t complain)
+check_narrowing (tree type, tree init, tsubst_flags_t complain, bool const_only)
 {
   tree ftype = unlowered_expr_type (init);
   bool ok = true;
@@ -886,7 +887,9 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 
   if (((!warn_narrowing || !(complain & tf_warning))
        && cxx_dialect == cxx98)
-      || !ARITHMETIC_TYPE_P (type))
+      || !ARITHMETIC_TYPE_P (type)
+      /* Don't emit bogus warnings with e.g. value-dependent trees.  */
+      || instantiation_dependent_expression_p (init))
     return ok;
 
   if (BRACE_ENCLOSED_INITIALIZER_P (init)
@@ -902,9 +905,13 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
       return ok;
     }
 
-  init = fold_non_dependent_expr (init, complain);
+  init = maybe_constant_value (init);
 
-  if (TREE_CODE (type) == INTEGER_TYPE
+  /* If we were asked to only check constants, return early.  */
+  if (const_only && !TREE_CONSTANT (init))
+    return ok;
+
+  if (CP_INTEGRAL_TYPE_P (type)
       && TREE_CODE (ftype) == REAL_TYPE)
     ok = false;
   else if (INTEGRAL_OR_ENUMERATION_TYPE_P (ftype)
@@ -967,7 +974,7 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	{
 	  if (complain & tf_warning)
 	    warning_at (loc, OPT_Wnarrowing, "narrowing conversion of %qE "
-			"from %qH to %qI inside { } is ill-formed in C++11",
+			"from %qH to %qI is ill-formed in C++11",
 			init, ftype, type);
 	  ok = true;
 	}
@@ -975,10 +982,10 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	{
 	  if (complain & tf_warning_or_error)
 	    {
+	      auto_diagnostic_group d;
 	      if ((!almost_ok || pedantic)
 		  && pedwarn (loc, OPT_Wnarrowing,
-			      "narrowing conversion of %qE "
-			      "from %qH to %qI inside { }",
+			      "narrowing conversion of %qE from %qH to %qI",
 			      init, ftype, type)
 		  && almost_ok)
 		inform (loc, " the expression has a constant value but is not "
@@ -991,8 +998,8 @@ check_narrowing (tree type, tree init, tsubst_flags_t complain)
 	  int savederrorcount = errorcount;
 	  global_dc->pedantic_errors = 1;
 	  pedwarn (loc, OPT_Wnarrowing,
-		   "narrowing conversion of %qE from %qH to %qI "
-		   "inside { }", init, ftype, type);
+		   "narrowing conversion of %qE from %qH to %qI ",
+		   init, ftype, type);
 	  if (errorcount == savederrorcount)
 	    ok = true;
 	  global_dc->pedantic_errors = flag_pedantic_errors;

@@ -1,3 +1,9 @@
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* go-gcc.cc (Gcc_backend::call_expression): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
@@ -468,7 +474,7 @@
 2015-07-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gofrontend/backend.h: Fix double word typos.
-        * gofrontend/expressions.cc: Same.
+	* gofrontend/expressions.cc: Same.
 	* gospec.c: Same.
 
 2015-07-07  Andrew MacLeod  <amacleod@redhat.com>

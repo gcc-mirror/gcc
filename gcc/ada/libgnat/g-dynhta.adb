@@ -38,11 +38,10 @@ package body GNAT.Dynamic_HTables is
    -------------------
 
    package body Static_HTable is
-
       function Get_Non_Null (T : Instance) return Elmt_Ptr;
       --  Returns Null_Ptr if Iterator_Started is False or if the Table is
-      --  empty. Returns Iterator_Ptr if non null, or the next non null
-      --  element in table if any.
+      --  empty. Returns Iterator_Ptr if non null, or the next non null element
+      --  in table if any.
 
       ---------
       -- Get --
@@ -363,7 +362,834 @@ package body GNAT.Dynamic_HTables is
       begin
          E.Next := Next;
       end Set_Next;
-
    end Simple_HTable;
+
+   --------------------
+   -- Dynamic_HTable --
+   --------------------
+
+   package body Dynamic_HTable is
+      Minimum_Size : constant Bucket_Range_Type := 32;
+      --  Minimum size of the buckets
+
+      Safe_Compression_Size : constant Bucket_Range_Type :=
+                                Minimum_Size * Compression_Factor;
+      --  Maximum safe size for hash table compression. Beyond this size, a
+      --  compression will violate the minimum size constraint on the buckets.
+
+      Safe_Expansion_Size : constant Bucket_Range_Type :=
+                              Bucket_Range_Type'Last / Expansion_Factor;
+      --  Maximum safe size for hash table expansion. Beyond this size, an
+      --  expansion will overflow the buckets.
+
+      procedure Destroy_Buckets (Bkts : Bucket_Table_Ptr);
+      pragma Inline (Destroy_Buckets);
+      --  Destroy all nodes within buckets Bkts
+
+      procedure Detach (Nod : Node_Ptr);
+      pragma Inline (Detach);
+      --  Detach node Nod from the bucket it resides in
+
+      procedure Ensure_Circular (Head : Node_Ptr);
+      pragma Inline (Ensure_Circular);
+      --  Ensure that dummy head Head is circular with respect to itself
+
+      procedure Ensure_Created (T : Instance);
+      pragma Inline (Ensure_Created);
+      --  Verify that hash table T is created. Raise Not_Created if this is not
+      --  the case.
+
+      procedure Ensure_Unlocked (T : Instance);
+      pragma Inline (Ensure_Unlocked);
+      --  Verify that hash table T is unlocked. Raise Table_Locked if this is
+      --  not the case.
+
+      function Find_Bucket
+        (Bkts : Bucket_Table_Ptr;
+         Key  : Key_Type) return Node_Ptr;
+      pragma Inline (Find_Bucket);
+      --  Find the bucket among buckets Bkts which corresponds to key Key, and
+      --  return its dummy head.
+
+      function Find_Node (Head : Node_Ptr; Key : Key_Type) return Node_Ptr;
+      pragma Inline (Find_Node);
+      --  Traverse a bucket indicated by dummy head Head to determine whether
+      --  there exists a node with key Key. If such a node exists, return it,
+      --  otherwise return null.
+
+      procedure First_Valid_Node
+        (T        : Instance;
+         Low_Bkt  : Bucket_Range_Type;
+         High_Bkt : Bucket_Range_Type;
+         Idx      : out Bucket_Range_Type;
+         Nod      : out Node_Ptr);
+      pragma Inline (First_Valid_Node);
+      --  Find the first valid node in the buckets of hash table T constrained
+      --  by the range Low_Bkt .. High_Bkt. If such a node exists, return its
+      --  bucket index in Idx and reference in Nod. If no such node exists,
+      --  Idx is set to 0 and Nod to null.
+
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Bucket_Table, Bucket_Table_Ptr);
+
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Hash_Table, Instance);
+
+      procedure Free is
+        new Ada.Unchecked_Deallocation (Node, Node_Ptr);
+
+      function Is_Valid (Iter : Iterator) return Boolean;
+      pragma Inline (Is_Valid);
+      --  Determine whether iterator Iter refers to a valid key-value pair
+
+      function Is_Valid (Nod : Node_Ptr; Head : Node_Ptr) return Boolean;
+      pragma Inline (Is_Valid);
+      --  Determine whether node Nod is non-null and does not refer to dummy
+      --  head Head, thus making it valid.
+
+      function Load_Factor (T : Instance) return Threshold_Type;
+      pragma Inline (Load_Factor);
+      --  Calculate the load factor of hash table T
+
+      procedure Lock (T : Instance);
+      pragma Inline (Lock);
+      --  Lock all mutation functionality of hash table T
+
+      procedure Mutate_And_Rehash (T : Instance; Size : Bucket_Range_Type);
+      pragma Inline (Mutate_And_Rehash);
+      --  Replace the buckets of hash table T with a new set of buckets of size
+      --  Size. Rehash all key-value pairs from the old to the new buckets.
+
+      procedure Prepend (Nod : Node_Ptr; Head : Node_Ptr);
+      pragma Inline (Prepend);
+      --  Insert node Nod immediately after dummy head Head
+
+      procedure Unlock (T : Instance);
+      pragma Inline (Unlock);
+      --  Unlock all mutation functionality of hash table T
+
+      ------------
+      -- Create --
+      ------------
+
+      function Create (Initial_Size : Bucket_Range_Type) return Instance is
+         Size : constant Bucket_Range_Type :=
+                           Bucket_Range_Type'Max (Initial_Size, Minimum_Size);
+         --  Ensure that the buckets meet a minimum size
+
+         T : constant Instance := new Hash_Table;
+
+      begin
+         T.Buckets      := new Bucket_Table (0 .. Size - 1);
+         T.Initial_Size := Size;
+
+         return T;
+      end Create;
+
+      ------------
+      -- Delete --
+      ------------
+
+      procedure Delete (T : Instance; Key : Key_Type) is
+         procedure Compress;
+         pragma Inline (Compress);
+         --  Determine whether hash table T requires compression, and if so,
+         --  half its size.
+
+         --------------
+         -- Compress --
+         --------------
+
+         procedure Compress is
+            pragma Assert (T /= null);
+            pragma Assert (T.Buckets /= null);
+
+            Old_Size : constant Bucket_Range_Type := T.Buckets'Length;
+
+         begin
+            --  The ratio of pairs to buckets is under the desited threshold.
+            --  Compress the hash table only when there is still room to do so.
+
+            if Load_Factor (T) < Compression_Threshold
+              and then Old_Size >= Safe_Compression_Size
+            then
+               Mutate_And_Rehash (T, Old_Size / Compression_Factor);
+            end if;
+         end Compress;
+
+         --  Local variables
+
+         Head : Node_Ptr;
+         Nod  : Node_Ptr;
+
+      --  Start of processing for Delete
+
+      begin
+         Ensure_Created  (T);
+         Ensure_Unlocked (T);
+
+         --  Obtain the dummy head of the bucket which should house the
+         --  key-value pair.
+
+         Head := Find_Bucket (T.Buckets, Key);
+
+         --  Try to find a node in the bucket which matches the key
+
+         Nod := Find_Node (Head, Key);
+
+         --  If such a node exists, remove it from the bucket and deallocate it
+
+         if Is_Valid (Nod, Head) then
+            Detach (Nod);
+            Free   (Nod);
+
+            T.Pairs := T.Pairs - 1;
+
+            --  Compress the hash table if the load factor drops below
+            --  Compression_Threshold.
+
+            Compress;
+         end if;
+      end Delete;
+
+      -------------
+      -- Destroy --
+      -------------
+
+      procedure Destroy (T : in out Instance) is
+      begin
+         Ensure_Created  (T);
+         Ensure_Unlocked (T);
+
+         --  Destroy all nodes in all buckets
+
+         Destroy_Buckets (T.Buckets);
+         Free (T.Buckets);
+         Free (T);
+      end Destroy;
+
+      ---------------------
+      -- Destroy_Buckets --
+      ---------------------
+
+      procedure Destroy_Buckets (Bkts : Bucket_Table_Ptr) is
+         procedure Destroy_Bucket (Head : Node_Ptr);
+         pragma Inline (Destroy_Bucket);
+         --  Destroy all nodes in a bucket with dummy head Head
+
+         --------------------
+         -- Destroy_Bucket --
+         --------------------
+
+         procedure Destroy_Bucket (Head : Node_Ptr) is
+            Nod : Node_Ptr;
+
+         begin
+            --  Destroy all valid nodes which follow the dummy head
+
+            while Is_Valid (Head.Next, Head) loop
+               Nod := Head.Next;
+
+               Detach (Nod);
+               Free   (Nod);
+            end loop;
+         end Destroy_Bucket;
+
+      --  Start of processing for Destroy_Buckets
+
+      begin
+         pragma Assert (Bkts /= null);
+
+         for Scan_Idx in Bkts'Range loop
+            Destroy_Bucket (Bkts (Scan_Idx)'Access);
+         end loop;
+      end Destroy_Buckets;
+
+      ------------
+      -- Detach --
+      ------------
+
+      procedure Detach (Nod : Node_Ptr) is
+         pragma Assert (Nod /= null);
+
+         Next : constant Node_Ptr := Nod.Next;
+         Prev : constant Node_Ptr := Nod.Prev;
+
+      begin
+         pragma Assert (Next /= null);
+         pragma Assert (Prev /= null);
+
+         Prev.Next := Next;
+         Next.Prev := Prev;
+
+         Nod.Next := null;
+         Nod.Prev := null;
+      end Detach;
+
+      ---------------------
+      -- Ensure_Circular --
+      ---------------------
+
+      procedure Ensure_Circular (Head : Node_Ptr) is
+         pragma Assert (Head /= null);
+
+      begin
+         if Head.Next = null and then Head.Prev = null then
+            Head.Next := Head;
+            Head.Prev := Head;
+         end if;
+      end Ensure_Circular;
+
+      --------------------
+      -- Ensure_Created --
+      --------------------
+
+      procedure Ensure_Created (T : Instance) is
+      begin
+         if T = null then
+            raise Not_Created;
+         end if;
+      end Ensure_Created;
+
+      ---------------------
+      -- Ensure_Unlocked --
+      ---------------------
+
+      procedure Ensure_Unlocked (T : Instance) is
+      begin
+         pragma Assert (T /= null);
+
+         --  The hash table has at least one outstanding iterator
+
+         if T.Locked > 0 then
+            raise Table_Locked;
+         end if;
+      end Ensure_Unlocked;
+
+      -----------------
+      -- Find_Bucket --
+      -----------------
+
+      function Find_Bucket
+        (Bkts : Bucket_Table_Ptr;
+         Key  : Key_Type) return Node_Ptr
+      is
+         pragma Assert (Bkts /= null);
+
+         Idx : constant Bucket_Range_Type := Hash (Key) mod Bkts'Length;
+
+      begin
+         return Bkts (Idx)'Access;
+      end Find_Bucket;
+
+      ---------------
+      -- Find_Node --
+      ---------------
+
+      function Find_Node (Head : Node_Ptr; Key : Key_Type) return Node_Ptr is
+         pragma Assert (Head /= null);
+
+         Nod : Node_Ptr;
+
+      begin
+         --  Traverse the nodes of the bucket, looking for a key-value pair
+         --  with the same key.
+
+         Nod := Head.Next;
+         while Is_Valid (Nod, Head) loop
+            if Equivalent_Keys (Nod.Key, Key) then
+               return Nod;
+            end if;
+
+            Nod := Nod.Next;
+         end loop;
+
+         return null;
+      end Find_Node;
+
+      ----------------------
+      -- First_Valid_Node --
+      ----------------------
+
+      procedure First_Valid_Node
+        (T        : Instance;
+         Low_Bkt  : Bucket_Range_Type;
+         High_Bkt : Bucket_Range_Type;
+         Idx      : out Bucket_Range_Type;
+         Nod      : out Node_Ptr)
+      is
+         Head : Node_Ptr;
+
+      begin
+         pragma Assert (T /= null);
+         pragma Assert (T.Buckets /= null);
+
+         --  Assume that no valid node exists
+
+         Idx := 0;
+         Nod := null;
+
+         --  Examine the buckets of the hash table within the requested range,
+         --  looking for the first valid node.
+
+         for Scan_Idx in Low_Bkt .. High_Bkt loop
+            Head := T.Buckets (Scan_Idx)'Access;
+
+            --  The bucket contains at least one valid node, return the first
+            --  such node.
+
+            if Is_Valid (Head.Next, Head) then
+               Idx := Scan_Idx;
+               Nod := Head.Next;
+               return;
+            end if;
+         end loop;
+      end First_Valid_Node;
+
+      ---------
+      -- Get --
+      ---------
+
+      function Get (T : Instance; Key : Key_Type) return Value_Type is
+         Head : Node_Ptr;
+         Nod  : Node_Ptr;
+
+      begin
+         Ensure_Created (T);
+
+         --  Obtain the dummy head of the bucket which should house the
+         --  key-value pair.
+
+         Head := Find_Bucket (T.Buckets, Key);
+
+         --  Try to find a node in the bucket which matches the key
+
+         Nod := Find_Node (Head, Key);
+
+         --  If such a node exists, return the value of the key-value pair
+
+         if Is_Valid (Nod, Head) then
+            return Nod.Value;
+         end if;
+
+         return No_Value;
+      end Get;
+
+      --------------
+      -- Has_Next --
+      --------------
+
+      function Has_Next (Iter : Iterator) return Boolean is
+         Is_OK : constant Boolean  := Is_Valid (Iter);
+         T     : constant Instance := Iter.Table;
+
+      begin
+         pragma Assert (T /= null);
+
+         --  The iterator is no longer valid which indicates that it has been
+         --  exhausted. Unlock all mutation functionality of the hash table
+         --  because the iterator cannot be advanced any further.
+
+         if not Is_OK then
+            Unlock (T);
+         end if;
+
+         return Is_OK;
+      end Has_Next;
+
+      --------------
+      -- Is_Valid --
+      --------------
+
+      function Is_Valid (Iter : Iterator) return Boolean is
+      begin
+         --  The invariant of Iterate and Next ensures that the iterator always
+         --  refers to a valid node if there exists one.
+
+         return Iter.Nod /= null;
+      end Is_Valid;
+
+      --------------
+      -- Is_Valid --
+      --------------
+
+      function Is_Valid (Nod : Node_Ptr; Head : Node_Ptr) return Boolean is
+      begin
+         --  A node is valid if it is non-null, and does not refer to the dummy
+         --  head of some bucket.
+
+         return Nod /= null and then Nod /= Head;
+      end Is_Valid;
+
+      -------------
+      -- Iterate --
+      -------------
+
+      function Iterate (T : Instance) return Iterator is
+         Iter : Iterator;
+
+      begin
+         Ensure_Created (T);
+         pragma Assert (T.Buckets /= null);
+
+         --  Initialize the iterator to reference the first valid node in
+         --  the full range of hash table buckets. If no such node exists,
+         --  the iterator is left in a state which does not allow it to
+         --  advance.
+
+         First_Valid_Node
+           (T        => T,
+            Low_Bkt  => T.Buckets'First,
+            High_Bkt => T.Buckets'Last,
+            Idx      => Iter.Idx,
+            Nod      => Iter.Nod);
+
+         --  Associate the iterator with the hash table to allow for future
+         --  mutation functionality unlocking.
+
+         Iter.Table := T;
+
+         --  Lock all mutation functionality of the hash table while it is
+         --  being iterated on.
+
+         Lock (T);
+
+         return Iter;
+      end Iterate;
+
+      -----------------
+      -- Load_Factor --
+      -----------------
+
+      function Load_Factor (T : Instance) return Threshold_Type is
+         pragma Assert (T /= null);
+         pragma Assert (T.Buckets /= null);
+
+      begin
+         --  The load factor is the ratio of key-value pairs to buckets
+
+         return Threshold_Type (T.Pairs) / Threshold_Type (T.Buckets'Length);
+      end Load_Factor;
+
+      ----------
+      -- Lock --
+      ----------
+
+      procedure Lock (T : Instance) is
+      begin
+         --  The hash table may be locked multiple times if multiple iterators
+         --  are operating over it.
+
+         T.Locked := T.Locked + 1;
+      end Lock;
+
+      -----------------------
+      -- Mutate_And_Rehash --
+      -----------------------
+
+      procedure Mutate_And_Rehash (T : Instance; Size : Bucket_Range_Type) is
+         procedure Rehash (From : Bucket_Table_Ptr; To : Bucket_Table_Ptr);
+         pragma Inline (Rehash);
+         --  Remove all nodes from buckets From and rehash them into buckets To
+
+         procedure Rehash_Bucket (Head : Node_Ptr; To : Bucket_Table_Ptr);
+         pragma Inline (Rehash_Bucket);
+         --  Detach all nodes starting from dummy head Head and rehash them
+         --  into To.
+
+         procedure Rehash_Node (Nod : Node_Ptr; To : Bucket_Table_Ptr);
+         pragma Inline (Rehash_Node);
+         --  Rehash node Nod into To
+
+         ------------
+         -- Rehash --
+         ------------
+
+         procedure Rehash (From : Bucket_Table_Ptr; To : Bucket_Table_Ptr) is
+         begin
+            pragma Assert (From /= null);
+            pragma Assert (To /= null);
+
+            for Scan_Idx in From'Range loop
+               Rehash_Bucket (From (Scan_Idx)'Access, To);
+            end loop;
+         end Rehash;
+
+         -------------------
+         -- Rehash_Bucket --
+         -------------------
+
+         procedure Rehash_Bucket (Head : Node_Ptr; To : Bucket_Table_Ptr) is
+            pragma Assert (Head /= null);
+
+            Nod : Node_Ptr;
+
+         begin
+            --  Detach all nodes which follow the dummy head
+
+            while Is_Valid (Head.Next, Head) loop
+               Nod := Head.Next;
+
+               Detach (Nod);
+               Rehash_Node (Nod, To);
+            end loop;
+         end Rehash_Bucket;
+
+         -----------------
+         -- Rehash_Node --
+         -----------------
+
+         procedure Rehash_Node (Nod : Node_Ptr; To : Bucket_Table_Ptr) is
+            pragma Assert (Nod /= null);
+
+            Head : Node_Ptr;
+
+         begin
+            --  Obtain the dummy head of the bucket which should house the
+            --  key-value pair.
+
+            Head := Find_Bucket (To, Nod.Key);
+
+            --  Ensure that the dummy head of an empty bucket is circular with
+            --  respect to itself.
+
+            Ensure_Circular (Head);
+
+            --  Prepend the node to the bucket
+
+            Prepend (Nod, Head);
+         end Rehash_Node;
+
+         --  Local declarations
+
+         Old_Bkts : Bucket_Table_Ptr;
+
+      --  Start of processing for Mutate_And_Rehash
+
+      begin
+         pragma Assert (T /= null);
+
+         Old_Bkts  := T.Buckets;
+         T.Buckets := new Bucket_Table (0 .. Size - 1);
+
+         --  Transfer and rehash all key-value pairs from the old buckets to
+         --  the new buckets.
+
+         Rehash (From => Old_Bkts, To => T.Buckets);
+         Free (Old_Bkts);
+      end Mutate_And_Rehash;
+
+      ----------
+      -- Next --
+      ----------
+
+      procedure Next (Iter : in out Iterator; Key : out Key_Type) is
+         Is_OK : constant Boolean  := Is_Valid (Iter);
+         Saved : constant Node_Ptr := Iter.Nod;
+         T     : constant Instance := Iter.Table;
+         Head  : Node_Ptr;
+
+      begin
+         pragma Assert (T /= null);
+         pragma Assert (T.Buckets /= null);
+
+         --  The iterator is no longer valid which indicates that it has been
+         --  exhausted. Unlock all mutation functionality of the hash table as
+         --  the iterator cannot be advanced any further.
+
+         if not Is_OK then
+            Unlock (T);
+            raise Iterator_Exhausted;
+         end if;
+
+         --  Advance to the next node along the same bucket
+
+         Iter.Nod := Iter.Nod.Next;
+         Head     := T.Buckets (Iter.Idx)'Access;
+
+         --  If the new node is no longer valid, then this indicates that the
+         --  current bucket has been exhausted. Advance to the next valid node
+         --  within the remaining range of buckets. If no such node exists, the
+         --  iterator is left in a state which does not allow it to advance.
+
+         if not Is_Valid (Iter.Nod, Head) then
+            First_Valid_Node
+              (T      => T,
+               Low_Bkt  => Iter.Idx + 1,
+               High_Bkt => T.Buckets'Last,
+               Idx      => Iter.Idx,
+               Nod      => Iter.Nod);
+         end if;
+
+         Key := Saved.Key;
+      end Next;
+
+      -------------
+      -- Prepend --
+      -------------
+
+      procedure Prepend (Nod : Node_Ptr; Head : Node_Ptr) is
+         pragma Assert (Nod /= null);
+         pragma Assert (Head /= null);
+
+         Next : constant Node_Ptr := Head.Next;
+
+      begin
+         Head.Next := Nod;
+         Next.Prev := Nod;
+
+         Nod.Next := Next;
+         Nod.Prev := Head;
+      end Prepend;
+
+      ---------
+      -- Put --
+      ---------
+
+      procedure Put
+        (T     : Instance;
+         Key   : Key_Type;
+         Value : Value_Type)
+      is
+         procedure Expand;
+         pragma Inline (Expand);
+         --  Determine whether hash table T requires expansion, and if so,
+         --  double its size.
+
+         procedure Prepend_Or_Replace (Head : Node_Ptr);
+         pragma Inline (Prepend_Or_Replace);
+         --  Update the value of a node within a bucket with dummy head Head
+         --  whose key is Key to Value. If there is no such node, prepend a new
+         --  key-value pair to the bucket.
+
+         ------------
+         -- Expand --
+         ------------
+
+         procedure Expand is
+            pragma Assert (T /= null);
+            pragma Assert (T.Buckets /= null);
+
+            Old_Size : constant Bucket_Range_Type := T.Buckets'Length;
+
+         begin
+            --  The ratio of pairs to buckets is over the desited threshold.
+            --  Expand the hash table only when there is still room to do so.
+
+            if Load_Factor (T) > Expansion_Threshold
+              and then Old_Size <= Safe_Expansion_Size
+            then
+               Mutate_And_Rehash (T, Old_Size * Expansion_Factor);
+            end if;
+         end Expand;
+
+         ------------------------
+         -- Prepend_Or_Replace --
+         ------------------------
+
+         procedure Prepend_Or_Replace (Head : Node_Ptr) is
+            pragma Assert (Head /= null);
+
+            Nod : Node_Ptr;
+
+         begin
+            --  If the bucket containst at least one valid node, then there is
+            --  a chance that a node with the same key as Key exists. If this
+            --  is the case, the value of that node must be updated.
+
+            Nod := Head.Next;
+            while Is_Valid (Nod, Head) loop
+               if Equivalent_Keys (Nod.Key, Key) then
+                  Nod.Value := Value;
+                  return;
+               end if;
+
+               Nod := Nod.Next;
+            end loop;
+
+            --  At this point the bucket is either empty, or none of the nodes
+            --  match key Key. Prepend a new key-value pair.
+
+            Nod := new Node'(Key, Value, null, null);
+
+            Prepend (Nod, Head);
+         end Prepend_Or_Replace;
+
+         --  Local variables
+
+         Head : Node_Ptr;
+
+      --  Start of processing for Put
+
+      begin
+         Ensure_Created  (T);
+         Ensure_Unlocked (T);
+
+         --  Obtain the dummy head of the bucket which should house the
+         --  key-value pair.
+
+         Head := Find_Bucket (T.Buckets, Key);
+
+         --  Ensure that the dummy head of an empty bucket is circular with
+         --  respect to itself.
+
+         Ensure_Circular (Head);
+
+         --  In case the bucket already contains a node with the same key,
+         --  replace its value, otherwise prepend a new key-value pair.
+
+         Prepend_Or_Replace (Head);
+
+         T.Pairs := T.Pairs + 1;
+
+         --  Expand the hash table if the ratio of pairs to buckets goes over
+         --  Expansion_Threshold.
+
+         Expand;
+      end Put;
+
+      -----------
+      -- Reset --
+      -----------
+
+      procedure Reset (T : Instance) is
+      begin
+         Ensure_Created  (T);
+         Ensure_Unlocked (T);
+
+         --  Destroy all nodes in all buckets
+
+         Destroy_Buckets (T.Buckets);
+         Free (T.Buckets);
+
+         --  Recreate the buckets using the original size from creation time
+
+         T.Buckets := new Bucket_Table (0 .. T.Initial_Size - 1);
+         T.Pairs   := 0;
+      end Reset;
+
+      ----------
+      -- Size --
+      ----------
+
+      function Size (T : Instance) return Pair_Count_Type is
+      begin
+         Ensure_Created (T);
+
+         return T.Pairs;
+      end Size;
+
+      ------------
+      -- Unlock --
+      ------------
+
+      procedure Unlock (T : Instance) is
+      begin
+         --  The hash table may be locked multiple times if multiple iterators
+         --  are operating over it.
+
+         T.Locked := T.Locked - 1;
+      end Unlock;
+   end Dynamic_HTable;
 
 end GNAT.Dynamic_HTables;

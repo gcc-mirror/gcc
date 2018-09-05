@@ -324,9 +324,12 @@ ffi_status ffi_prep_cif_machdep_var(ffi_cif *cif, unsigned int nfixedargs, unsig
 }
 
 /* Low level routine for calling functions */
-extern void ffi_call_asm(void *stack, struct call_context *regs, void (*fn)(void)) FFI_HIDDEN;
+extern void ffi_call_asm (void *stack, struct call_context *regs,
+			  void (*fn) (void), void *closure) FFI_HIDDEN;
 
-void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
+static void
+ffi_call_int (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue,
+	      void *closure)
 {
     /* this is a conservative estimate, assuming a complex return value and
        that all remaining arguments are long long / __int128 */
@@ -366,11 +369,24 @@ void ffi_call(ffi_cif *cif, void (*fn)(void), void *rvalue, void **avalue)
     for (i = 0; i < cif->nargs; i++)
         marshal(&cb, cif->arg_types[i], i >= cif->riscv_nfixedargs, avalue[i]);
 
-    ffi_call_asm((void*)alloc_base, cb.aregs, fn);
+    ffi_call_asm ((void *) alloc_base, cb.aregs, fn, closure);
 
     cb.used_float = cb.used_integer = 0;
     if (!return_by_ref && rvalue)
         unmarshal(&cb, cif->rtype, 0, rvalue);
+}
+
+void
+ffi_call (ffi_cif *cif, void (*fn) (void), void *rvalue, void **avalue)
+{
+  ffi_call_int(cif, fn, rvalue, avalue, NULL);
+}
+
+void
+ffi_call_go (ffi_cif *cif, void (*fn) (void), void *rvalue,
+	     void **avalue, void *closure)
+{
+  ffi_call_int(cif, fn, rvalue, avalue, closure);
 }
 
 extern void ffi_closure_asm(void) FFI_HIDDEN;
@@ -406,11 +422,31 @@ ffi_status ffi_prep_closure_loc(ffi_closure *closure, ffi_cif *cif, void (*fun)(
     return FFI_OK;
 }
 
+extern void ffi_go_closure_asm (void) FFI_HIDDEN;
+
+ffi_status
+ffi_prep_go_closure (ffi_go_closure *closure, ffi_cif *cif,
+		     void (*fun) (ffi_cif *, void *, void **, void *))
+{
+  if (cif->abi <= FFI_FIRST_ABI || cif->abi >= FFI_LAST_ABI)
+    return FFI_BAD_ABI;
+
+  closure->tramp = (void *) ffi_go_closure_asm;
+  closure->cif = cif;
+  closure->fun = fun;
+
+  return FFI_OK;
+}
+
 /* Called by the assembly code with aregs pointing to saved argument registers
    and stack pointing to the stacked arguments.  Return values passed in
    registers will be reloaded from aregs. */
-void FFI_HIDDEN ffi_closure_inner(size_t *stack, call_context *aregs, ffi_closure *closure) {
-    ffi_cif *cif = closure->cif;
+void FFI_HIDDEN
+ffi_closure_inner (ffi_cif *cif,
+		   void (*fun) (ffi_cif *, void *, void **, void *),
+		   void *user_data,
+		   size_t *stack, call_context *aregs)
+{
     void **avalue = alloca(cif->nargs * sizeof(void*));
     /* storage for arguments which will be copied by unmarshal().  We could
        theoretically avoid the copies in many cases and use at most 128 bytes
@@ -436,7 +472,7 @@ void FFI_HIDDEN ffi_closure_inner(size_t *stack, call_context *aregs, ffi_closur
         avalue[i] = unmarshal(&cb, cif->arg_types[i],
             i >= cif->riscv_nfixedargs, astorage + i*MAXCOPYARG);
 
-    (closure->fun)(cif, rvalue, avalue, closure->user_data);
+    fun (cif, rvalue, avalue, user_data);
 
     if (!return_by_ref && cif->rtype->type != FFI_TYPE_VOID) {
         cb.used_integer = cb.used_float = 0;

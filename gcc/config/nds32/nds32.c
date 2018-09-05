@@ -305,6 +305,7 @@ static const struct attribute_spec nds32_attribute_table[] =
   { "nested",       0,  0, false, false, false, false, NULL, NULL },
   { "not_nested",   0,  0, false, false, false, false, NULL, NULL },
   { "nested_ready", 0,  0, false, false, false, false, NULL, NULL },
+  { "critical",     0,  0, false, false, false, false, NULL, NULL },
 
   /* The attributes describing isr register save scheme.  */
   { "save_all",     0,  0, false, false, false, false, NULL, NULL },
@@ -313,6 +314,9 @@ static const struct attribute_spec nds32_attribute_table[] =
   /* The attributes used by reset attribute.  */
   { "nmi",          1,  1, false, false, false, false, NULL, NULL },
   { "warm",         1,  1, false, false, false, false, NULL, NULL },
+
+  /* The attributes describing isr security level. */
+  { "secure",       1,  1, false, false, false, false, NULL, NULL },
 
   /* The attribute telling no prologue/epilogue.  */
   { "naked",        0,  0, false, false, false, false, NULL, NULL },
@@ -518,7 +522,7 @@ nds32_compute_stack_frame (void)
     }
 
   /* Check if this function can omit prologue/epilogue code fragment.
-     If there is 'no_prologue'/'naked' attribute in this function,
+     If there is 'no_prologue'/'naked'/'secure' attribute in this function,
      we can set 'naked_p' flag to indicate that
      we do not have to generate prologue/epilogue.
      Or, if all the following conditions succeed,
@@ -533,6 +537,7 @@ nds32_compute_stack_frame (void)
 		    we do not need to adjust $sp.  */
   if (lookup_attribute ("no_prologue", DECL_ATTRIBUTES (current_function_decl))
       || lookup_attribute ("naked", DECL_ATTRIBUTES (current_function_decl))
+      || lookup_attribute ("secure", DECL_ATTRIBUTES (current_function_decl))
       || (cfun->machine->callee_saved_first_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_last_gpr_regno == SP_REGNUM
 	  && cfun->machine->callee_saved_first_fpr_regno == SP_REGNUM
@@ -2307,14 +2312,17 @@ nds32_function_ok_for_sibcall (tree decl,
 
   /* 1. Do not apply sibling call if -mv3push is enabled,
 	because pop25 instruction also represents return behavior.
-     2. If this function is a variadic function, do not apply sibling call
+     2. If this function is a isr function, do not apply sibling call
+	because it may perform the behavior that user does not expect.
+     3. If this function is a variadic function, do not apply sibling call
 	because the stack layout may be a mess.
-     3. We don't want to apply sibling call optimization for indirect
+     4. We don't want to apply sibling call optimization for indirect
 	sibcall because the pop behavior in epilogue may pollute the
 	content of caller-saved regsiter when the register is used for
 	indirect sibcall.
-     4. In pic mode, it may use some registers for PLT call.  */
+     5. In pic mode, it may use some registers for PLT call.  */
   return (!TARGET_V3PUSH
+	  && !nds32_isr_function_p (current_function_decl)
 	  && (cfun->machine->va_args_size == 0)
 	  && decl
 	  && !flag_pic);
@@ -3968,6 +3976,38 @@ nds32_insert_attributes (tree decl, tree *attributes)
       excp  = lookup_attribute ("exception", func_attrs);
       reset = lookup_attribute ("reset", func_attrs);
 
+      /* The following code may use attribute arguments.  If there is no
+	 argument from source code, it will cause segmentation fault.
+	 Therefore, return dircetly and report error message later.  */
+      if ((intr && TREE_VALUE (intr) == NULL)
+	  || (excp && TREE_VALUE (excp) == NULL)
+	  || (reset && TREE_VALUE (reset) == NULL))
+	return;
+
+      /* ------------------------------------------------------------- */
+      /* FIXME:
+	 FOR BACKWARD COMPATIBILITY, we need to support following patterns:
+
+	     __attribute__((interrupt("XXX;YYY;id=ZZZ")))
+	     __attribute__((exception("XXX;YYY;id=ZZZ")))
+	     __attribute__((reset("vectors=XXX;nmi_func=YYY;warm_func=ZZZ")))
+
+	 If interrupt/exception/reset appears and its argument is a
+	 STRING_CST, we will use other functions to parse string in the
+	 nds32_construct_isr_vectors_information() and then set necessary
+	 isr information in the nds32_isr_vectors[] array.  Here we can
+	 just return immediately to avoid new-syntax checking.  */
+      if (intr != NULL_TREE
+	  && TREE_CODE (TREE_VALUE (TREE_VALUE (intr))) == STRING_CST)
+	return;
+      if (excp != NULL_TREE
+	  && TREE_CODE (TREE_VALUE (TREE_VALUE (excp))) == STRING_CST)
+	return;
+      if (reset != NULL_TREE
+	  && TREE_CODE (TREE_VALUE (TREE_VALUE (reset))) == STRING_CST)
+	return;
+      /* ------------------------------------------------------------- */
+
       if (intr || excp)
 	{
 	  /* Deal with interrupt/exception.  */
@@ -4211,6 +4251,16 @@ nds32_cpu_cpp_builtins(struct cpp_reader *pfile)
   builtin_define ("__nds32__");
   builtin_define ("__NDS32__");
 
+  /* We need to provide builtin macro to describe the size of
+     each vector for interrupt handler under elf toolchain.  */
+  if (!TARGET_LINUX_ABI)
+    {
+      if (TARGET_ISR_VECTOR_SIZE_4_BYTE)
+	builtin_define ("__NDS32_ISR_VECTOR_SIZE_4__");
+      else
+	builtin_define ("__NDS32_ISR_VECTOR_SIZE_16__");
+    }
+
   if (TARGET_HARD_FLOAT)
     builtin_define ("__NDS32_ABI_2FP_PLUS__");
   else
@@ -4342,7 +4392,7 @@ nds32_hard_regno_nregs (unsigned regno ATTRIBUTE_UNUSED,
 static bool
 nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
-  if (regno > FIRST_PSEUDO_REGISTER)
+  if (regno >= FIRST_PSEUDO_REGISTER)
     return true;
 
   if ((TARGET_FPU_SINGLE || TARGET_FPU_DOUBLE) && NDS32_IS_FPR_REGNUM (regno))
@@ -4713,9 +4763,11 @@ nds32_expand_prologue (void)
   if (flag_pic && df_regs_ever_live_p (PIC_OFFSET_TABLE_REGNUM))
     nds32_emit_load_gp ();
 
-  /* Prevent the instruction scheduler from
-     moving instructions across the boundary.  */
-  emit_insn (gen_blockage ());
+  /* If user applies -mno-sched-prolog-epilog option,
+     we need to prevent instructions of function body from being
+     scheduled with stack adjustment in prologue.  */
+  if (!flag_sched_prolog_epilog)
+    emit_insn (gen_blockage ());
 }
 
 /* Function for normal multiple pop epilogue.  */
@@ -4729,9 +4781,11 @@ nds32_expand_epilogue (bool sibcall_p)
      The result will be in cfun->machine.  */
   nds32_compute_stack_frame ();
 
-  /* Prevent the instruction scheduler from
-     moving instructions across the boundary.  */
-  emit_insn (gen_blockage ());
+  /* If user applies -mno-sched-prolog-epilog option,
+     we need to prevent instructions of function body from being
+     scheduled with stack adjustment in epilogue.  */
+  if (!flag_sched_prolog_epilog)
+    emit_insn (gen_blockage ());
 
   /* If the function is 'naked', we do not have to generate
      epilogue code fragment BUT 'ret' instruction.

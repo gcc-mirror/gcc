@@ -288,7 +288,7 @@ expand_normal (tree exp)
 
 /* Return the tree node and offset if a given argument corresponds to
    a string constant.  */
-extern tree string_constant (tree, tree *);
+extern tree string_constant (tree, tree *, tree *, tree *);
 
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, profile_probability);

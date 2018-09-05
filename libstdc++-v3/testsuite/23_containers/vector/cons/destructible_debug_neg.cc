@@ -45,4 +45,4 @@ test02()
 // { dg-error "value type is destructible" "" { target *-*-* } 0 }
 
 // In Debug Mode the "required from here" errors come from <debug/vector>
-// { dg-error "required from here" "" { target *-*-* } 155 }
+// { dg-error "required from here" "" { target *-*-* } 163 }

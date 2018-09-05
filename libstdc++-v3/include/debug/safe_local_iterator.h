@@ -31,6 +31,20 @@
 
 #include <debug/safe_unordered_base.h>
 
+#define _GLIBCXX_DEBUG_VERIFY_OPERANDS(_Lhs, _Rhs) \
+  _GLIBCXX_DEBUG_VERIFY(!_Lhs._M_singular() && !_Rhs._M_singular(),	\
+			_M_message(__msg_iter_compare_bad)		\
+			._M_iterator(_Lhs, "lhs")			\
+			._M_iterator(_Rhs, "rhs"));			\
+  _GLIBCXX_DEBUG_VERIFY(_Lhs._M_can_compare(_Rhs),			\
+			_M_message(__msg_compare_different)		\
+			._M_iterator(_Lhs, "lhs")			\
+			._M_iterator(_Rhs, "rhs"));			\
+  _GLIBCXX_DEBUG_VERIFY(_Lhs._M_in_same_bucket(_Rhs),			\
+			_M_message(__msg_local_iter_compare_bad)	\
+			._M_iterator(_Lhs, "lhs")			\
+			._M_iterator(_Rhs, "rhs"))
+
 namespace __gnu_debug
 {
   /** \brief Safe iterator wrapper.
@@ -51,15 +65,27 @@ namespace __gnu_debug
     {
       typedef _Iterator _Iter_base;
       typedef _Safe_local_iterator_base _Safe_base;
-      typedef typename _Sequence::const_local_iterator _Const_local_iterator;
+
       typedef typename _Sequence::size_type size_type;
 
       typedef std::iterator_traits<_Iterator> _Traits;
 
+      typedef std::__are_same<
+	typename _Sequence::_Base::const_local_iterator,
+	_Iterator> _IsConstant;
+
+      typedef typename __gnu_cxx::__conditional_type<_IsConstant::__value,
+	typename _Sequence::_Base::local_iterator,
+	typename _Sequence::_Base::const_local_iterator>::__type
+      _OtherIterator;
+
+      typedef _Safe_local_iterator _Self;
+      typedef _Safe_local_iterator<_OtherIterator, _Sequence> _OtherSelf;
+
       struct _Attach_single
       { };
 
-      _Safe_local_iterator(const _Iterator& __i, _Safe_sequence_base* __cont,
+      _Safe_local_iterator(_Iterator __i, _Safe_sequence_base* __cont,
 			   _Attach_single) noexcept
       : _Iter_base(__i)
       { _M_attach_single(__cont); }
@@ -82,8 +108,7 @@ namespace __gnu_debug
        * @pre @p seq is not NULL
        * @post this is not singular
        */
-      _Safe_local_iterator(const _Iterator& __i,
-			   const _Safe_sequence_base* __cont)
+      _Safe_local_iterator(_Iterator __i, const _Safe_sequence_base* __cont)
       : _Iter_base(__i), _Safe_base(__cont, _S_constant())
       {
 	_GLIBCXX_DEBUG_VERIFY(!this->_M_singular(),
@@ -132,16 +157,15 @@ namespace __gnu_debug
       template<typename _MutableIterator>
 	_Safe_local_iterator(
 	  const _Safe_local_iterator<_MutableIterator,
-	  typename __gnu_cxx::__enable_if<std::__are_same<
-	      _MutableIterator,
-	      typename _Sequence::local_iterator::iterator_type>::__value,
-					  _Sequence>::__type>& __x)
+	  typename __gnu_cxx::__enable_if<_IsConstant::__value &&
+	    std::__are_same<_MutableIterator, _OtherIterator>::__value,
+					  _Sequence>::__type>& __x) noexcept
 	: _Iter_base(__x.base())
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // DR 408. Is vector<reverse_iterator<char*> > forbidden?
 	  _GLIBCXX_DEBUG_VERIFY(!__x._M_singular()
-				|| __x.base() == _Iterator(),
+				|| __x.base() == _MutableIterator(),
 				_M_message(__msg_init_const_singular)
 				._M_iterator(*this, "this")
 				._M_iterator(__x, "other"));
@@ -272,12 +296,9 @@ namespace __gnu_debug
       // ------ Utilities ------
 
       /// Determine if this is a constant iterator.
-      static bool
+      static constexpr bool
       _S_constant()
-      {
-	return std::__are_same<_Const_local_iterator,
-			       _Safe_local_iterator>::__value;
-      }
+      { return _IsConstant::__value; }
 
       /**
        * @brief Return the underlying iterator
@@ -326,12 +347,13 @@ namespace __gnu_debug
 		     std::pair<difference_type,
 			       _Distance_precision>& __dist_info) const;
 
+      // Get distance to __rhs.
+      typename _Distance_traits<_Iterator>::__type
+      _M_get_distance_to(const _Safe_local_iterator& __rhs) const;
+
       // The sequence this iterator references.
-      typename
-      __gnu_cxx::__conditional_type<std::__are_same<_Const_local_iterator,
-						    _Safe_local_iterator>::__value,
-				    const _Sequence*,
-				    _Sequence*>::__type
+      typename __gnu_cxx::__conditional_type<
+	_IsConstant::__value, const _Sequence*, _Sequence*>::__type
       _M_get_sequence() const
       { return static_cast<_Sequence*>(_M_sequence); }
 
@@ -349,94 +371,35 @@ namespace __gnu_debug
 	_M_in_same_bucket(const _Safe_local_iterator<_Other,
 						     _Sequence>& __other) const
 	{ return bucket() == __other.bucket(); }
+
+      friend inline bool
+      operator==(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_OPERANDS(__lhs, __rhs);
+	return __lhs.base() == __rhs.base();
+      }
+
+      friend inline bool
+      operator==(const _Self& __lhs, const _Self& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_OPERANDS(__lhs, __rhs);
+	return __lhs.base() == __rhs.base();
+      }
+
+      friend inline bool
+      operator!=(const _Self& __lhs, const _OtherSelf& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_OPERANDS(__lhs, __rhs);
+	return __lhs.base() != __rhs.base();
+      }
+
+      friend inline bool
+      operator!=(const _Self& __lhs, const _Self& __rhs) noexcept
+      {
+	_GLIBCXX_DEBUG_VERIFY_OPERANDS(__lhs, __rhs);
+	return __lhs.base() != __rhs.base();
+      }
     };
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator==(const _Safe_local_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_local_iterator<_IteratorR, _Sequence>& __rhs)
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_in_same_bucket(__rhs),
-			    _M_message(__msg_local_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() == __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator==(const _Safe_local_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_local_iterator<_Iterator, _Sequence>& __rhs)
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_in_same_bucket(__rhs),
-			    _M_message(__msg_local_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() == __rhs.base();
-    }
-
-  template<typename _IteratorL, typename _IteratorR, typename _Sequence>
-    inline bool
-    operator!=(const _Safe_local_iterator<_IteratorL, _Sequence>& __lhs,
-	       const _Safe_local_iterator<_IteratorR, _Sequence>& __rhs)
-    {
-      _GLIBCXX_DEBUG_VERIFY(! __lhs._M_singular() && ! __rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_in_same_bucket(__rhs),
-			    _M_message(__msg_local_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() != __rhs.base();
-    }
-
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    operator!=(const _Safe_local_iterator<_Iterator, _Sequence>& __lhs,
-	       const _Safe_local_iterator<_Iterator, _Sequence>& __rhs)
-    {
-      _GLIBCXX_DEBUG_VERIFY(!__lhs._M_singular() && !__rhs._M_singular(),
-			    _M_message(__msg_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_can_compare(__rhs),
-			    _M_message(__msg_compare_different)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      _GLIBCXX_DEBUG_VERIFY(__lhs._M_in_same_bucket(__rhs),
-			    _M_message(__msg_local_iter_compare_bad)
-			    ._M_iterator(__lhs, "lhs")
-			    ._M_iterator(__rhs, "rhs"));
-      return __lhs.base() != __rhs.base();
-    }
-
-  /** Safe local iterators know if they are dereferenceable. */
-  template<typename _Iterator, typename _Sequence>
-    inline bool
-    __check_dereferenceable(const _Safe_local_iterator<_Iterator,
-						       _Sequence>& __x)
-    { return __x._M_dereferenceable(); }
 
   /** Safe local iterators know how to check if they form a valid range. */
   template<typename _Iterator, typename _Sequence>
@@ -446,49 +409,13 @@ namespace __gnu_debug
 		  typename _Distance_traits<_Iterator>::__type& __dist_info)
     { return __first._M_valid_range(__last, __dist_info); }
 
-  /** Safe local iterators need a special method to get distance between each
-      other. */
   template<typename _Iterator, typename _Sequence>
-    inline std::pair<typename std::iterator_traits<_Iterator>::difference_type,
-		     _Distance_precision>
-    __get_distance(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
-		   const _Safe_local_iterator<_Iterator, _Sequence>& __last,
-		   std::input_iterator_tag)
+    inline bool
+    __valid_range(const _Safe_local_iterator<_Iterator, _Sequence>& __first,
+		  const _Safe_local_iterator<_Iterator, _Sequence>& __last)
     {
-      if (__first.base() == __last.base())
-	return { 0, __dp_exact };
-
-      if (__first._M_is_begin())
-	{
-	  if (__last._M_is_end())
-	    return
-	      {
-		__first._M_get_sequence()->bucket_size(__first.bucket()),
-		__dp_exact
-	      };
-
-	  return { 1, __dp_sign };
-	}
-
-      if (__first._M_is_end())
-	{
-	  if (__last._M_is_begin())
-	    return
-	      {
-		-__first._M_get_sequence()->bucket_size(__first.bucket()),
-		__dp_exact
-	      };
-
-	  return { -1, __dp_sign };
-	}
-
-      if (__last._M_is_begin())
-	return { -1, __dp_sign };
-
-      if (__last._M_is_end())
-	return { 1, __dp_sign };
-
-      return { 1, __dp_equality };
+      typename _Distance_traits<_Iterator>::__type __dist_info;
+      return __first._M_valid_range(__last, __dist_info);
     }
 
 #if __cplusplus < 201103L
@@ -503,6 +430,8 @@ namespace __gnu_debug
     { return __it.base(); }
 
 } // namespace __gnu_debug
+
+#undef _GLIBCXX_DEBUG_VERIFY_OPERANDS
 
 #include <debug/safe_local_iterator.tcc>
 

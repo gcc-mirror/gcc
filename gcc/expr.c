@@ -2767,6 +2767,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   /* No current ABI uses variable-sized modes to pass a BLKmnode type.  */
   fixed_size_mode mode = as_a <fixed_size_mode> (mode_in);
   fixed_size_mode dst_mode;
+  scalar_int_mode min_mode;
 
   gcc_assert (TYPE_MODE (TREE_TYPE (src)) == BLKmode);
 
@@ -2796,6 +2797,7 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
   n_regs = (bytes + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
   dst_words = XALLOCAVEC (rtx, n_regs);
   bitsize = MIN (TYPE_ALIGN (TREE_TYPE (src)), BITS_PER_WORD);
+  min_mode = smallest_int_mode_for_size (bitsize);
 
   /* Copy the structure BITSIZE bits at a time.  */
   for (bitpos = 0, xbitpos = padding_correction;
@@ -2814,6 +2816,25 @@ copy_blkmode_to_reg (machine_mode mode_in, tree src)
 
 	  /* Clear the destination before we move anything into it.  */
 	  emit_move_insn (dst_word, CONST0_RTX (word_mode));
+	}
+
+      /* Find the largest integer mode that can be used to copy all or as
+	 many bits as possible of the structure if the target supports larger
+	 copies.  There are too many corner cases here w.r.t to alignments on
+	 the read/writes.  So if there is any padding just use single byte
+	 operations.  */
+      opt_scalar_int_mode mode_iter;
+      if (padding_correction == 0 && !STRICT_ALIGNMENT)
+	{
+	  FOR_EACH_MODE_FROM (mode_iter, min_mode)
+	    {
+	      unsigned int msize = GET_MODE_BITSIZE (mode_iter.require ());
+	      if (msize <= ((bytes * BITS_PER_UNIT) - bitpos)
+		  && msize <= BITS_PER_WORD)
+		bitsize = msize;
+	      else
+		break;
+	    }
 	}
 
       /* We need a new source operand each time bitpos is on a word
@@ -5249,6 +5270,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 		MEM_VOLATILE_P (to_rtx) = 1;
 	    }
 
+	  gcc_checking_assert (known_ge (bitpos, 0));
 	  if (optimize_bitfield_assignment_op (bitsize, bitpos,
 					       bitregion_start, bitregion_end,
 					       mode1, to_rtx, to, from,
@@ -7025,6 +7047,7 @@ store_field (rtx target, poly_int64 bitsize, poly_int64 bitpos,
 	}
 
       /* Store the value in the bitfield.  */
+      gcc_checking_assert (known_ge (bitpos, 0));
       store_bit_field (target, bitsize, bitpos,
 		       bitregion_start, bitregion_end,
 		       mode, temp, reverse);
@@ -10524,6 +10547,14 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	mode2
 	  = CONSTANT_P (op0) ? TYPE_MODE (TREE_TYPE (tem)) : GET_MODE (op0);
 
+	/* Make sure bitpos is not negative, it can wreak havoc later.  */
+	if (maybe_lt (bitpos, 0))
+	  {
+	    gcc_checking_assert (offset == NULL_TREE);
+	    offset = size_int (bits_to_bytes_round_down (bitpos));
+	    bitpos = num_trailing_bits (bitpos);
+	  }
+
 	/* If we have either an offset, a BLKmode result, or a reference
 	   outside the underlying object, we must force it to memory.
 	   Such a case can occur in Ada if we have unchecked conversion
@@ -10774,6 +10805,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& GET_MODE_CLASS (ext_mode) == MODE_INT)
 	      reversep = TYPE_REVERSE_STORAGE_ORDER (type);
 
+	    gcc_checking_assert (known_ge (bitpos, 0));
 	    op0 = extract_bit_field (op0, bitsize, bitpos, unsignedp,
 				     (modifier == EXPAND_STACK_PARM
 				      ? NULL_RTX : target),
@@ -10905,7 +10937,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  }
 
 	/* Check for a built-in function.  */
-	if (fndecl && DECL_BUILT_IN (fndecl))
+	if (fndecl && fndecl_built_in_p (fndecl))
 	  {
 	    gcc_assert (DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_FRONTEND);
 	    return expand_builtin (exp, target, subtarget, tmode, ignore);
@@ -11271,10 +11303,15 @@ is_aligning_offset (const_tree offset, const_tree exp)
 /* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
    non-constant) offset in bytes within the string that ARG is accessing.
-   The type of the offset is sizetype.  */
+   If NONSTR is non-null, consider valid even sequences of characters that
+   aren't nul-terminated strings.  In that case, if ARG refers to such
+   a sequence set *NONSTR to its declaration and clear it otherwise.
+   The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
+   size of the memory is returned.  If MEM_SIZE is zero, the string is
+   only returned when it is properly zero terminated.  */
 
 tree
-string_constant (tree arg, tree *ptr_offset)
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 {
   tree array;
   STRIP_NOPS (arg);
@@ -11328,7 +11365,7 @@ string_constant (tree arg, tree *ptr_offset)
 	return NULL_TREE;
 
       tree offset;
-      if (tree str = string_constant (arg0, &offset))
+      if (tree str = string_constant (arg0, &offset, mem_size, nonstr))
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
@@ -11368,6 +11405,11 @@ string_constant (tree arg, tree *ptr_offset)
   if (TREE_CODE (array) == STRING_CST)
     {
       *ptr_offset = fold_convert (sizetype, offset);
+      if (mem_size)
+	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
+      /* This is not strictly correct.  FIXME in follow-up patch.  */
+      if (nonstr)
+	*nonstr = NULL_TREE;
       return array;
     }
 
@@ -11414,20 +11456,35 @@ string_constant (tree arg, tree *ptr_offset)
   if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
     return NULL_TREE;
 
-  /* Avoid returning a string that doesn't fit in the array
-     it is stored in, like
+  /* Avoid returning an array that is unterminated because it lacks
+     a terminating nul, like
      const char a[4] = "abcde";
-     but do handle those that fit even if they have excess
+     but do handle those that are strings even if they have excess
      initializers, such as in
      const char a[4] = "abc\000\000";
      The excess elements contribute to TREE_STRING_LENGTH()
      but not to strlen().  */
   unsigned HOST_WIDE_INT charsize
     = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
+  /* Compute the lower bound number of elements (not bytes) in the array
+     that the string is used to initialize.  The actual size of the array
+     may be greater if the string is shorter, but the the important
+     data point is whether the literal, inlcuding the terminating nul,
+     fits the array.  */
+  unsigned HOST_WIDE_INT array_elts
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init))) / charsize;
+
+  /* Compute the string length in (wide) characters.  */
   unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
   length = string_length (TREE_STRING_POINTER (init), charsize,
 			  length / charsize);
-  if (compare_tree_int (array_size, length + 1) < 0)
+  if (mem_size)
+    *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
+  if (nonstr)
+    *nonstr = array_elts > length ? NULL_TREE : array;
+
+  if ((!mem_size && !nonstr)
+      && array_elts <= length)
     return NULL_TREE;
 
   *ptr_offset = offset;

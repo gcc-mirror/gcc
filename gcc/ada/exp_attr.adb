@@ -3639,6 +3639,10 @@ package body Exp_Attr is
       --  not want this to go through the fixed-point conversion circuits. Note
       --  that the back end always treats fixed-point as equivalent to the
       --  corresponding integer type anyway.
+      --  However, in order to remove the handling of Do_Range_Check from the
+      --  backend, we force the generation of a check on the result by
+      --  setting the result type appropriately. Apply_Conversion_Checks
+      --  will generate the required expansion.
 
       when Attribute_Fixed_Value
          | Attribute_Integer_Value
@@ -3647,15 +3651,59 @@ package body Exp_Attr is
            Make_Type_Conversion (Loc,
              Subtype_Mark => New_Occurrence_Of (Entity (Pref), Loc),
              Expression   => Relocate_Node (First (Exprs))));
-         Set_Etype (N, Entity (Pref));
+
+         --  Indicate that the result of the conversion may require a
+         --  range check (see below);
+
+         Set_Etype (N, Base_Type (Entity (Pref)));
          Set_Analyzed (N);
 
          --  Note: it might appear that a properly analyzed unchecked
          --  conversion would be just fine here, but that's not the case,
-         --  since the full range checks performed by the following call
+         --  since the full range checks performed by the following code
          --  are critical.
+         --  Given that Fixed-point conversions are not further expanded
+         --  to prevent the involvement of real type operations we have to
+         --  construct two checks explicitly: one on the operand, and one
+         --  on the result. This used to be done in part in the back-end,
+         --  but for other targets (E.g. LLVM) it is preferable to create
+         --  the tests in full in the front-end.
 
-         Apply_Type_Conversion_Checks (N);
+         if Is_Fixed_Point_Type (Etype (N)) then
+            declare
+               Loc     : constant Source_Ptr := Sloc (N);
+               Equiv_T : constant Entity_Id  := Make_Temporary (Loc, 'T', N);
+               Expr    : constant Node_Id    := Expression (N);
+               Fst     : constant Entity_Id  := Root_Type (Etype (N));
+               Decl    : Node_Id;
+
+            begin
+               Decl :=
+                 Make_Full_Type_Declaration (Sloc (N),
+                 Defining_Identifier => Equiv_T,
+                 Type_Definition     =>
+                   Make_Signed_Integer_Type_Definition (Loc,
+                     Low_Bound  =>
+                       Make_Integer_Literal (Loc,
+                         Intval =>
+                           Corresponding_Integer_Value
+                             (Type_Low_Bound (Fst))),
+                     High_Bound =>
+                       Make_Integer_Literal (Loc,
+                         Intval =>
+                           Corresponding_Integer_Value
+                             (Type_High_Bound (Fst)))));
+               Insert_Action (N, Decl);
+
+               --  Verify that the conversion is possible
+
+               Generate_Range_Check (Expr, Equiv_T, CE_Overflow_Check_Failed);
+
+               --  and verify that the result is in range
+
+               Generate_Range_Check (N, Etype (N), CE_Range_Check_Failed);
+            end;
+         end if;
 
       -----------
       -- Floor --

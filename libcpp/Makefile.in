@@ -261,9 +261,8 @@ po/$(PACKAGE).pot: $(libcpp_a_SOURCES)
 	sed 's:$(srcdir)/::g' <po/$(PACKAGE).pot.tmp >po/$(PACKAGE).pot
 	rm po/$(PACKAGE).pot.tmp
 
-TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h ucnid.h \
-    include/line-map.h include/symtab.h include/cpp-id-data.h \
-    include/cpplib.h include/mkdeps.h system.h
+TAGS_SOURCES = $(libcpp_a_SOURCES) internal.h system.h ucnid.h \
+    include/cpplib.h include/line-map.h include/mkdeps.h include/symtab.h
 
 TAGS: $(TAGS_SOURCES)
 	cd $(srcdir) && etags $(TAGS_SOURCES)

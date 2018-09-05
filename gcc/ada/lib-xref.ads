@@ -632,6 +632,11 @@ package Lib.Xref is
       --  Return the closest enclosing subprogram or library-level package.
       --  This ensures that GNATprove can distinguish local variables from
       --  global variables.
+      --
+      --  ??? This routine should only be used for processing related to
+      --  cross-references, where it might return wrong result but must avoid
+      --  crashes on ill-formed source code. It is wrong to use it where exact
+      --  result is needed.
 
       procedure Generate_Dereference
         (N   : Node_Id;

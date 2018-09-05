@@ -304,6 +304,8 @@ pure_location_p (line_maps *set, source_location loc)
     return false;
 
   const line_map *map = linemap_lookup (set, loc);
+  if (map == NULL)
+    return true;
   const line_map_ordinary *ordmap = linemap_check_ordinary (map);
 
   if (loc & ((1U << ordmap->m_range_bits) - 1))
@@ -346,6 +348,8 @@ linemap_init (struct line_maps *set,
 #else
   new (set) line_maps();
 #endif
+  /* Set default reallocator (used for initial alloc too).  */
+  set->reallocator = xrealloc;
   set->highest_location = RESERVED_LOCATION_COUNT - 1;
   set->highest_line = RESERVED_LOCATION_COUNT - 1;
   set->location_adhoc_data_map.htab =
@@ -353,17 +357,25 @@ linemap_init (struct line_maps *set,
   set->builtin_location = builtin_location;
 }
 
+/* Return the ordinary line map from whence MAP was included.  Returns
+   NULL if MAP was not an include.  */
+
+const line_map_ordinary *
+linemap_included_from_linemap (line_maps *set, const line_map_ordinary *map)
+{
+  return linemap_ordinary_map_lookup (set, linemap_included_from (map));
+}
+
 /* Check for and warn about line_maps entered but not exited.  */
 
 void
 linemap_check_files_exited (struct line_maps *set)
 {
-  const line_map_ordinary *map;
   /* Depending upon whether we are handling preprocessed input or
      not, this can be a user error or an ICE.  */
-  for (map = LINEMAPS_LAST_ORDINARY_MAP (set);
+  for (const line_map_ordinary *map = LINEMAPS_LAST_ORDINARY_MAP (set);
        ! MAIN_FILE_P (map);
-       map = INCLUDED_FROM (set, map))
+       map = linemap_included_from_linemap (set, map))
     fprintf (stderr, "line-map.c: file \"%s\" entered but not left\n",
 	     ORDINARY_MAP_FILE_NAME (map));
 }
@@ -376,81 +388,59 @@ linemap_check_files_exited (struct line_maps *set)
 static struct line_map *
 new_linemap (struct line_maps *set,  source_location start_location)
 {
-  struct line_map *result;
-  bool macro_map_p = start_location >= LINE_MAP_MAX_LOCATION;
+  bool macro_p = start_location >= LINE_MAP_MAX_LOCATION;
+  unsigned num_maps_allocated = LINEMAPS_ALLOCATED (set, macro_p);
+  unsigned num_maps_used = LINEMAPS_USED (set, macro_p);
 
-  if (LINEMAPS_USED (set, macro_map_p) == LINEMAPS_ALLOCATED (set, macro_map_p))
+  if (num_maps_used == num_maps_allocated)
     {
-      /* We ran out of allocated line maps. Let's allocate more.  */
-      size_t alloc_size;
+      /* We need more space!  */
+      if (!num_maps_allocated)
+	num_maps_allocated = 128;
+      num_maps_allocated *= 2;
 
-      /* Cast away extern "C" from the type of xrealloc.  */
-      line_map_realloc reallocator = (set->reallocator
-				      ? set->reallocator
-				      : (line_map_realloc) xrealloc);
-      line_map_round_alloc_size_func round_alloc_size =
-	set->round_alloc_size;
-
-      size_t map_size = (macro_map_p
-			 ? sizeof (line_map_macro)
-			 : sizeof (line_map_ordinary));
+      size_t size_of_a_map;
+      void *buffer;
+      if (macro_p)
+	{
+	  size_of_a_map = sizeof (line_map_macro);
+	  buffer = set->info_macro.maps;
+	}
+      else
+	{
+	  size_of_a_map = sizeof (line_map_ordinary);
+	  buffer = set->info_ordinary.maps;
+	}
 
       /* We are going to execute some dance to try to reduce the
 	 overhead of the memory allocator, in case we are using the
 	 ggc-page.c one.
 	 
 	 The actual size of memory we are going to get back from the
-	 allocator is the smallest power of 2 that is greater than the
-	 size we requested.  So let's consider that size then.  */
-
-      alloc_size =
-	(2 * LINEMAPS_ALLOCATED (set, macro_map_p) +  256)
-	* map_size;
-
-      /* Get the actual size of memory that is going to be allocated
-	 by the allocator.  */
-      alloc_size = round_alloc_size (alloc_size);
+	 allocator may well be larger than what we ask for.  Use this
+	 hook to find what that size is.  */
+      size_t alloc_size
+	= set->round_alloc_size (num_maps_allocated * size_of_a_map);
 
       /* Now alloc_size contains the exact memory size we would get if
 	 we have asked for the initial alloc_size amount of memory.
-	 Let's get back to the number of macro map that amounts
-	 to.  */
-      LINEMAPS_ALLOCATED (set, macro_map_p) =
-	alloc_size / map_size;
+	 Let's get back to the number of map that amounts to.  */
+      unsigned num_maps = alloc_size / size_of_a_map;
+      buffer = set->reallocator (buffer, num_maps * size_of_a_map);
+      memset ((char *)buffer + num_maps_used * size_of_a_map, 0,
+	      (num_maps - num_maps_used) * size_of_a_map);
+      if (macro_p)
+	set->info_macro.maps = (line_map_macro *)buffer;
+      else
+	set->info_ordinary.maps = (line_map_ordinary *)buffer;
+      LINEMAPS_ALLOCATED (set, macro_p) = num_maps;
+    }
 
-      /* And now let's really do the re-allocation.  */
-      if (macro_map_p)
-	{
-	  set->info_macro.maps
-	    = (line_map_macro *) (*reallocator) (set->info_macro.maps,
-						 (LINEMAPS_ALLOCATED (set, macro_map_p)
-						  * map_size));
-	  result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
-	}
-      else
-	{
-	  set->info_ordinary.maps =
-	    (line_map_ordinary *) (*reallocator) (set->info_ordinary.maps,
-						  (LINEMAPS_ALLOCATED (set, macro_map_p)
-						   * map_size));
-	  result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
-	}
-      memset (result, 0,
-	      ((LINEMAPS_ALLOCATED (set, macro_map_p)
-		- LINEMAPS_USED (set, macro_map_p))
-	       * map_size));
-    }
-  else
-    {
-      if (macro_map_p)
-	result = &set->info_macro.maps[LINEMAPS_USED (set, macro_map_p)];
-      else
-	result = &set->info_ordinary.maps[LINEMAPS_USED (set, macro_map_p)];
-    }
+  line_map *result = (macro_p ? (line_map *)&set->info_macro.maps[num_maps_used]
+		      : (line_map *)&set->info_ordinary.maps[num_maps_used]);
+  LINEMAPS_USED (set, macro_p)++;
 
   result->start_location = start_location;
-
-  LINEMAPS_USED (set, macro_map_p)++;
 
   return result;
 }
@@ -504,6 +494,11 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
     }
 
   linemap_assert (reason != LC_ENTER_MACRO);
+
+  if (start_location >= LINE_MAP_MAX_LOCATION)
+    /* We ran out of line map space.   */
+    start_location = 0;
+
   line_map_ordinary *map
     = linemap_check_ordinary (new_linemap (set, start_location));
   map->reason = reason;
@@ -514,19 +509,19 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
   if (reason == LC_RENAME_VERBATIM)
     reason = LC_RENAME;
 
+  const line_map_ordinary *from = NULL;
   if (reason == LC_LEAVE)
     {
       /* When we are just leaving an "included" file, and jump to the next
 	 location inside the "includer" right after the #include
 	 "included", this variable points the map in use right before the
 	 #include "included", inside the same "includer" file.  */
-      line_map_ordinary *from;
 
       linemap_assert (!MAIN_FILE_P (map - 1));
       /* (MAP - 1) points to the map we are leaving. The
 	 map from which (MAP - 1) got included should be the map
 	 that comes right before MAP in the same file.  */
-      from = INCLUDED_FROM (set, map - 1);
+      from = linemap_included_from_linemap (set, map - 1);
 
       /* A TO_FILE of NULL is special - we use the natural values.  */
       if (to_file == NULL)
@@ -558,19 +553,24 @@ linemap_add (struct line_maps *set, enum lc_reason reason,
 
   if (reason == LC_ENTER)
     {
-      map->included_from =
-	set->depth == 0 ? -1 : (int) (LINEMAPS_ORDINARY_USED (set) - 2);
+      if (set->depth == 0)
+	map->included_from = 0;
+      else
+	/* The location of the end of the just-closed map.  */
+	map->included_from
+	  = (((map[0].start_location - 1 - map[-1].start_location)
+	      & ~((1 << map[-1].m_column_and_range_bits) - 1))
+	     + map[-1].start_location);
       set->depth++;
       if (set->trace_includes)
 	trace_include (set, map);
     }
   else if (reason == LC_RENAME)
-    map->included_from = ORDINARY_MAP_INCLUDER_FILE_INDEX (&map[-1]);
+    map->included_from = linemap_included_from (&map[-1]);
   else if (reason == LC_LEAVE)
     {
       set->depth--;
-      map->included_from =
-	ORDINARY_MAP_INCLUDER_FILE_INDEX (INCLUDED_FROM (set, map - 1));
+      map->included_from = linemap_included_from (from);
     }
 
   return map;
@@ -1781,17 +1781,13 @@ linemap_dump (FILE *stream, struct line_maps *set, unsigned ix, bool is_macro)
   if (!is_macro)
     {
       const line_map_ordinary *ord_map = linemap_check_ordinary (map);
-      unsigned includer_ix;
-      const line_map_ordinary *includer_map;
-
-      includer_ix = ORDINARY_MAP_INCLUDER_FILE_INDEX (ord_map);
-      includer_map = includer_ix < LINEMAPS_ORDINARY_USED (set)
-		     ? LINEMAPS_ORDINARY_MAP_AT (set, includer_ix)
-		     : NULL;
+      const line_map_ordinary *includer_map
+	= linemap_included_from_linemap (set, ord_map);
 
       fprintf (stream, "File: %s:%d\n", ORDINARY_MAP_FILE_NAME (ord_map),
 	       ORDINARY_MAP_STARTING_LINE_NUMBER (ord_map));
-      fprintf (stream, "Included from: [%d] %s\n", includer_ix,
+      fprintf (stream, "Included from: [%d] %s\n",
+	       includer_map ? int (includer_map - set->info_ordinary.maps) : -1,
 	       includer_map ? ORDINARY_MAP_FILE_NAME (includer_map) : "None");
     }
   else
@@ -1841,9 +1837,11 @@ linemap_dump_location (struct line_maps *set,
       if (e)
 	from = "N/A";
       else
-	from = (INCLUDED_FROM (set, map))
-	  ? LINEMAP_FILE (INCLUDED_FROM (set, map))
-	  : "<NULL>";
+	{
+	  const line_map_ordinary *from_map
+	    = linemap_included_from_linemap (set, map);
+	  from = from_map ? LINEMAP_FILE (from_map) : "<NULL>";
+	}
     }
 
   /* P: path, L: line, C: column, S: in-system-header, M: map address,
@@ -1997,7 +1995,8 @@ line_table_dump (FILE *stream, struct line_maps *set, unsigned int num_ordinary,
 
 /* Construct a rich_location with location LOC as its initial range.  */
 
-rich_location::rich_location (line_maps *set, source_location loc) :
+rich_location::rich_location (line_maps *set, source_location loc,
+			      const range_label *label) :
   m_line_table (set),
   m_ranges (),
   m_column_override (0),
@@ -2006,7 +2005,7 @@ rich_location::rich_location (line_maps *set, source_location loc) :
   m_seen_impossible_fixit (false),
   m_fixits_cannot_be_auto_applied (false)
 {
-  add_range (loc, true);
+  add_range (loc, SHOW_RANGE_WITH_CARET, label);
 }
 
 /* The destructor for class rich_location.  */
@@ -2082,16 +2081,19 @@ rich_location::override_column (int column)
 /* Add the given range.  */
 
 void
-rich_location::add_range (source_location loc, bool show_caret_p)
+rich_location::add_range (source_location loc,
+			  enum range_display_kind range_display_kind,
+			  const range_label *label)
 {
   location_range range;
   range.m_loc = loc;
-  range.m_show_caret_p = show_caret_p;
+  range.m_range_display_kind = range_display_kind;
+  range.m_label = label;
   m_ranges.push (range);
 }
 
 /* Add or overwrite the location given by IDX, setting its location to LOC,
-   and setting its "should my caret be printed" flag to SHOW_CARET_P.
+   and setting its m_range_display_kind to RANGE_DISPLAY_KIND.
 
    It must either overwrite an existing location, or add one *exactly* on
    the end of the array.
@@ -2105,19 +2107,19 @@ rich_location::add_range (source_location loc, bool show_caret_p)
 
 void
 rich_location::set_range (unsigned int idx, source_location loc,
-			  bool show_caret_p)
+			  enum range_display_kind range_display_kind)
 {
   /* We can either overwrite an existing range, or add one exactly
      on the end of the array.  */
   linemap_assert (idx <= m_ranges.count ());
 
   if (idx == m_ranges.count ())
-    add_range (loc,  show_caret_p);
+    add_range (loc, range_display_kind);
   else
     {
       location_range *locrange = get_range (idx);
       locrange->m_loc = loc;
-      locrange->m_show_caret_p = show_caret_p;
+      locrange->m_range_display_kind = range_display_kind;
     }
 
   if (idx == 0)

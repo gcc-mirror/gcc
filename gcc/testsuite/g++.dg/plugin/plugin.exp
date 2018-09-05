@@ -69,6 +69,7 @@ set plugin_test_list [list \
 	  diagnostic-test-inlining-1.C } \
     { show_template_tree_color_plugin.c \
     	  show-template-tree-color.C \
+    	  show-template-tree-color-labels.C \
     	  show-template-tree-color-no-elide-type.C } \
     { comment_plugin.c comments-1.C } \
 ]

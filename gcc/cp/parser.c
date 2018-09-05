@@ -3280,6 +3280,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   to specify an argument list. Emit a useful error message.  */
   if (DECL_TYPE_TEMPLATE_P (decl))
     {
+      auto_diagnostic_group d;
       error_at (location,
 		"invalid use of template-name %qE without an argument list",
 		decl);
@@ -3296,6 +3297,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
   else if (!parser->scope)
     {
       /* Issue an error message.  */
+      auto_diagnostic_group d;
       name_hint hint;
       if (TREE_CODE (id) == IDENTIFIER_NODE)
 	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME, location);
@@ -3370,6 +3372,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
     {
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	{
+	  auto_diagnostic_group d;
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
 	    error_at (location_of (id),
 		      "%qE in namespace %qE does not name a template type",
@@ -3392,6 +3395,7 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && constructor_name_p (id, parser->scope))
 	{
 	  /* A<T>::A<T>() */
+	  auto_diagnostic_group d;
 	  error_at (location, "%<%T::%E%> names the constructor, not"
 		    " the type", parser->scope, id);
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
@@ -3401,8 +3405,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       else if (TYPE_P (parser->scope)
 	       && dependent_scope_p (parser->scope))
 	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_insert_before ("typename ");
 	  if (TREE_CODE (parser->scope) == TYPENAME_TYPE)
-	    error_at (location,
+	    error_at (&richloc,
 		      "need %<typename%> before %<%T::%D::%E%> because "
 		      "%<%T::%D%> is a dependent scope",
 		      TYPE_CONTEXT (parser->scope),
@@ -3411,12 +3417,13 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 		      TYPE_CONTEXT (parser->scope),
 		      TYPENAME_TYPE_FULLNAME (parser->scope));
 	  else
-	    error_at (location, "need %<typename%> before %<%T::%E%> because "
+	    error_at (&richloc, "need %<typename%> before %<%T::%E%> because "
 		      "%qT is a dependent scope",
 		      parser->scope, id, parser->scope);
 	}
       else if (TYPE_P (parser->scope))
 	{
+	  auto_diagnostic_group d;
 	  if (!COMPLETE_TYPE_P (parser->scope))
 	    cxx_incomplete_type_error (location_of (id), NULL_TREE,
 				       parser->scope);
@@ -4128,7 +4135,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	      else if (curr_type != CPP_STRING)
 		{
 		  rich_location rich_loc (line_table, tok->location);
-		  rich_loc.add_range (last_tok_loc, false);
+		  rich_loc.add_range (last_tok_loc);
 		  error_at (&rich_loc,
 			    "unsupported non-standard concatenation "
 			    "of string literals");
@@ -10280,6 +10287,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
     {
       cp_lexer_consume_token (parser->lexer);
       first = false;
+
+      if (!(at_function_scope_p () || parsing_nsdmi ()))
+	error ("non-local lambda expression cannot have a capture-default");
     }
 
   while (cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_SQUARE))
@@ -10638,7 +10648,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
-	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
+	DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
       }
     if (template_param_list)
       {
@@ -11721,7 +11731,7 @@ cp_parser_condition (cp_parser* parser)
       if (cp_parser_parse_definitely (parser))
 	{
 	  tree pushed_scope;
-	  bool non_constant_p;
+	  bool non_constant_p = false;
 	  int flags = LOOKUP_ONLYCONVERTING;
 
 	  if (!cp_parser_check_condition_declarator (parser, declarator, loc))
@@ -11952,8 +11962,8 @@ build_range_temp (tree range_expr)
 				  type_uses_auto (range_type));
 
   /* Create the __range variable.  */
-  range_temp = build_decl (input_location, VAR_DECL,
-			   get_identifier ("__for_range"), range_type);
+  range_temp = build_decl (input_location, VAR_DECL, for_range__identifier,
+			   range_type);
   TREE_USED (range_temp) = 1;
   DECL_ARTIFICIAL (range_temp) = 1;
 
@@ -12060,8 +12070,8 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
     }
 
   /* The new for initialization statement.  */
-  begin = build_decl (input_location, VAR_DECL,
-		      get_identifier ("__for_begin"), iter_type);
+  begin = build_decl (input_location, VAR_DECL, for_begin__identifier,
+		      iter_type);
   TREE_USED (begin) = 1;
   DECL_ARTIFICIAL (begin) = 1;
   pushdecl (begin);
@@ -12071,8 +12081,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 
   if (cxx_dialect >= cxx17)
     iter_type = cv_unqualified (TREE_TYPE (end_expr));
-  end = build_decl (input_location, VAR_DECL,
-		    get_identifier ("__for_end"), iter_type);
+  end = build_decl (input_location, VAR_DECL, for_end__identifier, iter_type);
   TREE_USED (end) = 1;
   DECL_ARTIFICIAL (end) = 1;
   pushdecl (end);
@@ -15233,11 +15242,15 @@ cp_parser_introduction_list (cp_parser *parser)
       if (is_pack)
 	cp_lexer_consume_token (parser->lexer);
 
+      tree identifier = cp_parser_identifier (parser);
+      if (identifier == error_mark_node)
+	break;
+
       /* Build placeholder. */
       tree parm = build_nt (WILDCARD_DECL);
       DECL_SOURCE_LOCATION (parm)
 	= cp_lexer_peek_token (parser->lexer)->location;
-      DECL_NAME (parm) = cp_parser_identifier (parser);
+      DECL_NAME (parm) = identifier;
       WILDCARD_PACK_P (parm) = is_pack;
       vec_safe_push (introduction_vec, parm);
 
@@ -17748,7 +17761,7 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	  || cp_parser_is_keyword (token, RID_STRUCT))
 	{
 	  gcc_rich_location richloc (token->location);
-	  richloc.add_range (input_location, false);
+	  richloc.add_range (input_location);
 	  richloc.add_fixit_remove ();
 	  pedwarn (&richloc, 0, "elaborated-type-specifier for "
 		   "a scoped enum must not use the %qD keyword",
@@ -18616,6 +18629,7 @@ cp_parser_namespace_name (cp_parser* parser)
     {
       if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	{
+	  auto_diagnostic_group d;
 	  error_at (token->location, "%qD is not a namespace-name", identifier);
 	  if (namespace_decl == error_mark_node
 	      && parser->scope && TREE_CODE (parser->scope) == NAMESPACE_DECL)
@@ -21364,16 +21378,7 @@ cp_parser_parameter_declaration_clause (cp_parser* parser)
     }
   else if (token->type == CPP_CLOSE_PAREN)
     /* There are no parameters.  */
-    {
-#ifdef SYSTEM_IMPLICIT_EXTERN_C
-      if (in_system_header_at (input_location)
-	  && current_class_type == NULL
-	  && current_lang_name == lang_name_c)
-	return NULL_TREE;
-      else
-#endif
-	return void_list_node;
-    }
+    return void_list_node;
   /* Check for `(void)', too, which is a special case.  */
   else if (token->keyword == RID_VOID
 	   && (cp_lexer_peek_nth_token (parser->lexer, 2)->type
@@ -21723,7 +21728,8 @@ cp_parser_parameter_declaration (cp_parser *parser,
      parameter was introduced during cp_parser_parameter_declaration,
      change any implicit parameters introduced into packs.  */
   if (parser->implicit_template_parms
-      && (token->type == CPP_ELLIPSIS
+      && ((token->type == CPP_ELLIPSIS
+	   && declarator_can_be_parameter_pack (declarator))
 	  || (declarator && declarator->parameter_pack_p)))
     {
       int latest_template_parm_idx = TREE_VEC_LENGTH
@@ -25342,13 +25348,13 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				   NULL_TREE);
       /* C++11 noreturn attribute is equivalent to GNU's.  */
       if (is_attribute_p ("noreturn", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++14 deprecated attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("deprecated", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* C++17 fallthrough attribute is equivalent to GNU's.  */
       else if (is_attribute_p ("fallthrough", attr_id))
-	TREE_PURPOSE (TREE_PURPOSE (attribute)) = get_identifier ("gnu");
+	TREE_PURPOSE (TREE_PURPOSE (attribute)) = gnu_identifier;
       /* Transactional Memory TS optimize_for_synchronized attribute is
 	 equivalent to GNU transaction_callable.  */
       else if (is_attribute_p ("optimize_for_synchronized", attr_id))
@@ -25368,7 +25374,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
     vec<tree, va_gc> *vec;
     int attr_flag = normal_attr;
 
-    if (attr_ns == get_identifier ("gnu")
+    if (attr_ns == gnu_identifier
 	&& attribute_takes_identifier_p (attr_id))
       /* A GNU attribute that takes an identifier in parameter.  */
       attr_flag = id_attr;
@@ -25581,10 +25587,9 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 
       /* Build the C++-11 representation of an 'aligned'
 	 attribute.  */
-      attributes =
-	build_tree_list (build_tree_list (get_identifier ("gnu"),
-					  get_identifier ("aligned")),
-			 alignas_expr);
+      attributes
+	= build_tree_list (build_tree_list (gnu_identifier,
+					    aligned_identifier), alignas_expr);
     }
 
   return attributes;
@@ -27168,17 +27173,17 @@ cp_parser_template_introduction (cp_parser* parser, bool member_p)
      matching identifiers.  */
   tree introduction_list = cp_parser_introduction_list (parser);
 
+  /* Look for closing brace for introduction.  */
+  if (!braces.require_close (parser))
+    return true;
+
   /* The introduction-list shall not be empty.  */
   int nargs = TREE_VEC_LENGTH (introduction_list);
   if (nargs == 0)
     {
-      error ("empty introduction-list");
+      /* In cp_parser_introduction_list we have already issued an error.  */
       return true;
     }
-
-  /* Look for closing brace for introduction.  */
-  if (!braces.require_close (parser))
-    return true;
 
   if (tmpl_decl == error_mark_node)
     {
@@ -28382,7 +28387,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
 	  gcc_rich_location richloc (location);
 	  if (gnu != decl_specs->gnu_thread_keyword_p)
 	    {
-	      richloc.add_range (decl_specs->locations[ds_thread], false);
+	      richloc.add_range (decl_specs->locations[ds_thread]);
 	      error_at (&richloc,
 			"both %<__thread%> and %<thread_local%> specified");
 	    }

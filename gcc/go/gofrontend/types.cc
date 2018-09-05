@@ -7975,12 +7975,11 @@ Map_type::make_map_type_descriptor_type()
       Type* bool_type = Type::lookup_bool_type();
 
       Struct_type* sf =
-	Type::make_builtin_struct_type(12,
+	Type::make_builtin_struct_type(11,
 				       "", tdt,
 				       "key", ptdt,
 				       "elem", ptdt,
 				       "bucket", ptdt,
-				       "hmap", ptdt,
 				       "keysize", uint8_type,
 				       "indirectkey", bool_type,
 				       "valuesize", uint8_type,
@@ -8063,11 +8062,6 @@ Map_type::do_type_descriptor(Gogo* gogo, Named_type* name)
   ++p;
   go_assert(p->is_field_name("bucket"));
   vals->push_back(Expression::make_type_descriptor(bucket_type, bloc));
-
-  ++p;
-  go_assert(p->is_field_name("hmap"));
-  Type* hmap_type = this->hmap_type(bucket_type);
-  vals->push_back(Expression::make_type_descriptor(hmap_type, bloc));
 
   ++p;
   go_assert(p->is_field_name("keysize"));

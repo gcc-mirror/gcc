@@ -285,208 +285,6 @@ package body Sem_Ch6 is
       LocX : constant Source_Ptr := Sloc (Expr);
       Spec : constant Node_Id    := Specification (N);
 
-      procedure Freeze_Expr_Types (Def_Id : Entity_Id);
-      --  N is an expression function that is a completion and Def_Id its
-      --  defining entity. Freeze before N all the types referenced by the
-      --  expression of the function.
-
-      -----------------------
-      -- Freeze_Expr_Types --
-      -----------------------
-
-      procedure Freeze_Expr_Types (Def_Id : Entity_Id) is
-         function Cloned_Expression return Node_Id;
-         --  Build a duplicate of the expression of the return statement that
-         --  has no defining entities shared with the original expression.
-
-         function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
-         --  Freeze all types referenced in the subtree rooted at Node
-
-         -----------------------
-         -- Cloned_Expression --
-         -----------------------
-
-         function Cloned_Expression return Node_Id is
-            function Clone_Id (Node : Node_Id) return Traverse_Result;
-            --  Tree traversal routine that clones the defining identifier of
-            --  iterator and loop parameter specification nodes.
-
-            --------------
-            -- Clone_Id --
-            --------------
-
-            function Clone_Id (Node : Node_Id) return Traverse_Result is
-            begin
-               if Nkind_In (Node, N_Iterator_Specification,
-                                  N_Loop_Parameter_Specification)
-               then
-                  Set_Defining_Identifier (Node,
-                    New_Copy (Defining_Identifier (Node)));
-               end if;
-
-               return OK;
-            end Clone_Id;
-
-            procedure Clone_Def_Ids is new Traverse_Proc (Clone_Id);
-
-            --  Local variable
-
-            Dup_Expr : constant Node_Id := New_Copy_Tree (Expr);
-
-         --  Start of processing for Cloned_Expression
-
-         begin
-            --  We must duplicate the expression with semantic information to
-            --  inherit the decoration of global entities in generic instances.
-            --  Set the parent of the new node to be the parent of the original
-            --  to get the proper context, which is needed for complete error
-            --  reporting and for semantic analysis.
-
-            Set_Parent (Dup_Expr, Parent (Expr));
-
-            --  Replace the defining identifier of iterators and loop param
-            --  specifications by a clone to ensure that the cloned expression
-            --  and the original expression don't have shared identifiers;
-            --  otherwise, as part of the preanalysis of the expression, these
-            --  shared identifiers may be left decorated with itypes which
-            --  will not be available in the tree passed to the backend.
-
-            Clone_Def_Ids (Dup_Expr);
-
-            return Dup_Expr;
-         end Cloned_Expression;
-
-         ----------------------
-         -- Freeze_Type_Refs --
-         ----------------------
-
-         function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result is
-            procedure Check_And_Freeze_Type (Typ : Entity_Id);
-            --  Check that Typ is fully declared and freeze it if so
-
-            ---------------------------
-            -- Check_And_Freeze_Type --
-            ---------------------------
-
-            procedure Check_And_Freeze_Type (Typ : Entity_Id) is
-            begin
-               --  Skip Itypes created by the preanalysis, and itypes whose
-               --  scope is another type (i.e. component subtypes that depend
-               --  on a discriminant),
-
-               if Is_Itype (Typ)
-                 and then (Scope_Within_Or_Same (Scope (Typ), Def_Id)
-                            or else Is_Type (Scope (Typ)))
-               then
-                  return;
-               end if;
-
-               --  This provides a better error message than generating
-               --  primitives whose compilation fails much later. Refine
-               --  the error message if possible.
-
-               Check_Fully_Declared (Typ, Node);
-
-               if Error_Posted (Node) then
-                  if Has_Private_Component (Typ)
-                    and then not Is_Private_Type (Typ)
-                  then
-                     Error_Msg_NE ("\type& has private component", Node, Typ);
-                  end if;
-
-               else
-                  Freeze_Before (N, Typ);
-               end if;
-            end Check_And_Freeze_Type;
-
-         --  Start of processing for Freeze_Type_Refs
-
-         begin
-            --  Check that a type referenced by an entity can be frozen
-
-            if Is_Entity_Name (Node) and then Present (Entity (Node)) then
-               Check_And_Freeze_Type (Etype (Entity (Node)));
-
-               --  Check that the enclosing record type can be frozen
-
-               if Ekind_In (Entity (Node), E_Component, E_Discriminant) then
-                  Check_And_Freeze_Type (Scope (Entity (Node)));
-               end if;
-
-            --  Freezing an access type does not freeze the designated type,
-            --  but freezing conversions between access to interfaces requires
-            --  that the interface types themselves be frozen, so that dispatch
-            --  table entities are properly created.
-
-            --  Unclear whether a more general rule is needed ???
-
-            elsif Nkind (Node) = N_Type_Conversion
-              and then Is_Access_Type (Etype (Node))
-              and then Is_Interface (Designated_Type (Etype (Node)))
-            then
-               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
-            end if;
-
-            --  An implicit dereference freezes the designated type. In the
-            --  case of a dispatching call whose controlling argument is an
-            --  access type, the dereference is not made explicit, so we must
-            --  check for such a call and freeze the designated type.
-
-            if Nkind (Node) in N_Has_Etype
-              and then Present (Etype (Node))
-              and then Is_Access_Type (Etype (Node))
-              and then Nkind (Parent (Node)) = N_Function_Call
-              and then Node = Controlling_Argument (Parent (Node))
-            then
-               Check_And_Freeze_Type (Designated_Type (Etype (Node)));
-            end if;
-
-            --  No point in posting several errors on the same expression
-
-            if Serious_Errors_Detected > 0 then
-               return Abandon;
-            else
-               return OK;
-            end if;
-         end Freeze_Type_Refs;
-
-         procedure Freeze_References is new Traverse_Proc (Freeze_Type_Refs);
-
-         --  Local variables
-
-         Saved_First_Entity : constant Entity_Id := First_Entity (Def_Id);
-         Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Def_Id);
-         Dup_Expr           : constant Node_Id   := Cloned_Expression;
-
-      --  Start of processing for Freeze_Expr_Types
-
-      begin
-         --  Preanalyze a duplicate of the expression to have available the
-         --  minimum decoration needed to locate referenced unfrozen types
-         --  without adding any decoration to the function expression.
-
-         Push_Scope (Def_Id);
-         Install_Formals (Def_Id);
-
-         Preanalyze_Spec_Expression (Dup_Expr, Etype (Def_Id));
-         End_Scope;
-
-         --  Restore certain attributes of Def_Id since the preanalysis may
-         --  have introduced itypes to this scope, thus modifying attributes
-         --  First_Entity and Last_Entity.
-
-         Set_First_Entity (Def_Id, Saved_First_Entity);
-         Set_Last_Entity  (Def_Id, Saved_Last_Entity);
-
-         if Present (Last_Entity (Def_Id)) then
-            Set_Next_Entity (Last_Entity (Def_Id), Empty);
-         end if;
-
-         --  Freeze all types referenced in the expression
-
-         Freeze_References (Dup_Expr);
-      end Freeze_Expr_Types;
-
       --  Local variables
 
       Asp      : Node_Id;
@@ -600,7 +398,11 @@ package body Sem_Ch6 is
          --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
          if not Inside_A_Generic then
-            Freeze_Expr_Types (Def_Id);
+            Freeze_Expr_Types
+              (Def_Id => Def_Id,
+               Typ    => Etype (Def_Id),
+               Expr   => Expr,
+               N      => N);
          end if;
 
          --  For navigation purposes, indicate that the function is a body
@@ -3347,8 +3149,12 @@ package body Sem_Ch6 is
                end if;
 
                if not Is_Frozen (Typ) then
-                  Set_Is_Frozen (Typ);
-                  Append_New_Elmt (Typ, Result);
+                  if Scope (Typ) /= Current_Scope then
+                     Set_Is_Frozen (Typ);
+                     Append_New_Elmt (Typ, Result);
+                  else
+                     Freeze_Before (N, Typ);
+                  end if;
                end if;
             end Mask_Type;
 
@@ -3838,28 +3644,28 @@ package body Sem_Ch6 is
          --  They are necessary in any case to insure order of elaboration
          --  in gigi.
 
-         if not Is_Frozen (Spec_Id)
+         if Nkind (N) = N_Subprogram_Body
+           and then Was_Expression_Function (N)
+           and then not Has_Completion (Spec_Id)
+           and then Serious_Errors_Detected = 0
            and then (Expander_Active
                       or else ASIS_Mode
-                      or else (Operating_Mode = Check_Semantics
-                                and then Serious_Errors_Detected = 0))
+                      or else Operating_Mode = Check_Semantics)
          then
             --  The body generated for an expression function that is not a
             --  completion is a freeze point neither for the profile nor for
             --  anything else. That's why, in order to prevent any freezing
             --  during analysis, we need to mask types declared outside the
-            --  expression that are not yet frozen.
+            --  expression (and in an outer scope) that are not yet frozen.
 
-            if Nkind (N) = N_Subprogram_Body
-              and then Was_Expression_Function (N)
-              and then not Has_Completion (Spec_Id)
-            then
-               Set_Is_Frozen (Spec_Id);
-               Mask_Types := Mask_Unfrozen_Types (Spec_Id);
-            else
-               Set_Has_Delayed_Freeze (Spec_Id);
-               Freeze_Before (N, Spec_Id);
-            end if;
+            Set_Is_Frozen (Spec_Id);
+            Mask_Types := Mask_Unfrozen_Types (Spec_Id);
+
+         elsif not Is_Frozen (Spec_Id)
+           and then Serious_Errors_Detected = 0
+         then
+            Set_Has_Delayed_Freeze (Spec_Id);
+            Freeze_Before (N, Spec_Id);
          end if;
       end if;
 
@@ -7439,14 +7245,16 @@ package body Sem_Ch6 is
                   end if;
                end;
 
-            --  Functions can override abstract interface functions
+            --  Functions can override abstract interface functions. Return
+            --  types must be subtype conformant.
 
             elsif Ekind (Def_Id) = E_Function
               and then Ekind (Subp) = E_Function
               and then Matches_Prefixed_View_Profile
                          (Parameter_Specifications (Parent (Def_Id)),
                           Parameter_Specifications (Parent (Subp)))
-              and then Etype (Def_Id) = Etype (Subp)
+              and then Conforming_Types
+                         (Etype (Def_Id), Etype (Subp), Subtype_Conformant)
             then
                Candidate := Subp;
 

@@ -426,10 +426,8 @@ AC_SUBST(PTHREAD_CFLAGS)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$libgo_cv_lib_pthread" = yes)
 
-AC_CHECK_LIB([z], [compress], [])
-if test $ac_cv_lib_z_compress = "yes"; then
-  AC_DEFINE(HAVE_ZLIB, 1, [Define if -lz is available.])
-fi
+AC_CHECK_LIB([z], [compress],
+    [AC_DEFINE(HAVE_ZLIB, 1, [Define if -lz is available.])])
 AM_CONDITIONAL(HAVE_ZLIB, test "$ac_cv_lib_z_compress" = yes)
 
 dnl Test whether the linker supports the --compress_debug_sections option.

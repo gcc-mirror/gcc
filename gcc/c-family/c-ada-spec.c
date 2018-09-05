@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-ada-spec.h"
 #include "fold-const.h"
 #include "c-pragma.h"
-#include "cpp-id-data.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -70,7 +69,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
       (*param_len)++;
       for (i = 0; i < macro->paramc; i++)
 	{
-	  cpp_hashnode *param = macro->params[i];
+	  cpp_hashnode *param = macro->parm.params[i];
 
 	  *param_len += NODE_LEN (param);
 
@@ -89,7 +88,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 
   for (j = 0; j < macro->count; j++)
     {
-      cpp_token *token = &macro->exp.tokens[j];
+      const cpp_token *token = &macro->exp.tokens[j];
 
       if (token->flags & PREV_WHITE)
 	(*buffer_len)++;
@@ -102,7 +101,7 @@ macro_length (const cpp_macro *macro, int *supported, int *buffer_len,
 
       if (token->type == CPP_MACRO_ARG)
 	*buffer_len +=
-	  NODE_LEN (macro->params[token->val.macro_arg.arg_no - 1]);
+	  NODE_LEN (macro->parm.params[token->val.macro_arg.arg_no - 1]);
       else
 	/* Include enough extra space to handle e.g. special characters.  */
 	*buffer_len += (cpp_token_len (token) + 1) * 8;
@@ -171,13 +170,12 @@ static int
 count_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED, cpp_hashnode *node,
 		 void *v ATTRIBUTE_UNUSED)
 {
-  const cpp_macro *macro = node->value.macro;
-
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN)
-      && macro->count
-      && *NODE_NAME (node) != '_'
-      && LOCATION_FILE (macro->line) == macro_source_file)
-    max_ada_macros++;
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
+    {
+      const cpp_macro *macro = node->value.macro;
+      if (macro->count && LOCATION_FILE (macro->line) == macro_source_file)
+	max_ada_macros++;
+    }
 
   return 1;
 }
@@ -190,15 +188,13 @@ static int
 store_ada_macro (cpp_reader *pfile ATTRIBUTE_UNUSED,
 		 cpp_hashnode *node, void *macros)
 {
-  const cpp_macro *macro = node->value.macro;
-
-  if (node->type == NT_MACRO
-      && !(node->flags & NODE_BUILTIN)
-      && macro->count
-      && *NODE_NAME (node) != '_'
-      && LOCATION_FILE (macro->line) == macro_source_file)
-    ((cpp_hashnode **) macros)[store_ada_macro_index++] = node;
-
+  if (cpp_user_macro_p (node) && *NODE_NAME (node) != '_')
+    {
+      const cpp_macro *macro = node->value.macro;
+      if (macro->count
+	  && LOCATION_FILE (macro->line) == macro_source_file)
+	((cpp_hashnode **) macros)[store_ada_macro_index++] = node;
+    }
   return 1;
 }
 
@@ -256,7 +252,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 	      *buf_param++ = '(';
 	      for (i = 0; i < macro->paramc; i++)
 		{
-		  cpp_hashnode *param = macro->params[i];
+		  cpp_hashnode *param = macro->parm.params[i];
 
 		  memcpy (buf_param, NODE_NAME (param), NODE_LEN (param));
 		  buf_param += NODE_LEN (param);
@@ -278,7 +274,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 
 	  for (i = 0; supported && i < macro->count; i++)
 	    {
-	      cpp_token *token = &macro->exp.tokens[i];
+	      const cpp_token *token = &macro->exp.tokens[i];
 	      int is_one = 0;
 
 	      if (token->flags & PREV_WHITE)
@@ -295,7 +291,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 		  case CPP_MACRO_ARG:
 		    {
 		      cpp_hashnode *param =
-			macro->params[token->val.macro_arg.arg_no - 1];
+			macro->parm.params[token->val.macro_arg.arg_no - 1];
 		      memcpy (buffer, NODE_NAME (param), NODE_LEN (param));
 		      buffer += NODE_LEN (param);
 		    }
