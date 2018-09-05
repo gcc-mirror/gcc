@@ -1,6 +1,14 @@
 2018-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-08-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86738
+	* constexpr.c (cxx_eval_binary_expression): For arithmetics involving
+	NULL pointer set *non_constant_p to true.
+	(cxx_eval_component_reference): For dereferencing of a NULL pointer,
+	set *non_constant_p to true and return t.
+
 	2018-08-03  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86706
