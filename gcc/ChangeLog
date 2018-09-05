@@ -1,3 +1,10 @@
+2018-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* tree-ssa-math-opts.c (is_mult_by): New function.
+	(is_square_of): Use the above.
+	(optimize_recip_sqrt): New function.
+	(pass_cse_reciprocals::execute): Use the above.
+
 2018-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/87134
