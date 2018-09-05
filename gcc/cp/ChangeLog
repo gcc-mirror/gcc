@@ -3,6 +3,10 @@
 	Backported from mainline
 	2018-08-08  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/86836
+	* pt.c (tsubst_expr): For structured bindings, call tsubst_decomp_names
+	before tsubst_init, not after it.
+
 	PR c++/86738
 	* constexpr.c (cxx_eval_binary_expression): For arithmetics involving
 	NULL pointer set *non_constant_p to true.
