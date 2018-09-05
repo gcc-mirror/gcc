@@ -1,3 +1,18 @@
+2018-09-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR testsuite/52665
+	* lib/gcc-dg.exp (gcc-dg-test-1): Iterate over _required_options.
+	* lib/target-supports.exp (scan-assembler_required_options,
+	scan-assembler-not_required_options,
+	scan-assembler-times_required_options): Add -fno-ident.
+	* lib/scanasm.exp (scan-assembler-times): Fix error message.
+	* c-c++-common/ident-0a.c: New test.
+	* c-c++-common/ident-0b.c: New test.
+	* c-c++-common/ident-1a.c: New test.
+	* c-c++-common/ident-1b.c: New test.
+	* c-c++-common/ident-2a.c: New test.
+	* c-c++-common/ident-2b.c: New test.
+
 2018-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.dg/recip_sqrt_mult_1.c: New test.
