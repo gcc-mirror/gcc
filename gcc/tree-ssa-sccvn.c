@@ -493,6 +493,25 @@ vuse_ssa_val (tree x)
   return x;
 }
 
+/* Similar to the above but used as callback for walk_non_aliases_vuses
+   and thus should stop at unvisited VUSE to not walk across region
+   boundaries.  */
+
+static tree
+vuse_valueize (tree vuse)
+{
+  do
+    {
+      bool visited;
+      vuse = SSA_VAL (vuse, &visited);
+      if (!visited)
+	return NULL_TREE;
+      gcc_assert (vuse != VN_TOP);
+    }
+  while (SSA_NAME_IN_FREE_LIST (vuse));
+  return vuse;
+}
+
 
 /* Return the vn_kind the expression computed by the stmt should be
    associated with.  */
@@ -2573,7 +2592,7 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set, tree type,
 	  (vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						  vn_reference_lookup_2,
 						  vn_reference_lookup_3,
-						  vuse_ssa_val, &vr1);
+						  vuse_valueize, &vr1);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
     }
 
@@ -2629,7 +2648,7 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	(vn_reference_t)walk_non_aliased_vuses (&r, vr1.vuse,
 						vn_reference_lookup_2,
 						vn_reference_lookup_3,
-						vuse_ssa_val, &vr1);
+						vuse_valueize, &vr1);
       gcc_checking_assert (vr1.operands == shared_lookup_references);
       if (wvnresult)
 	{
