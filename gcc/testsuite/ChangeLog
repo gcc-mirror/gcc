@@ -1,3 +1,8 @@
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
+	* g++.dg/warn/Wreturn-local-addr-5.C: New test.
+
 2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
 	    Bernd Schmidt  <bernds_cb1@t-online.de>
 

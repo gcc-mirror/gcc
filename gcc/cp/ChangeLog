@@ -5,6 +5,11 @@
 	out if performing the maybe-rvalue overload resolution and a conversion
 	function is getting called.
 
+	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Handle calls
+	to std::move or std::forward.
+	(is_std_forward_p): New function.
+
 2018-09-05  Pádraig Brady  <p@draigbrady.com>
 
 	PR c++/87185
