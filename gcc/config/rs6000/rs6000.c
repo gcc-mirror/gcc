@@ -15139,9 +15139,11 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
     permute_type = lhs_type;
   else
     {
-      if (TREE_TYPE (lhs_type) == TREE_TYPE (V2DF_type_node))
+      if (types_compatible_p (TREE_TYPE (lhs_type),
+			      TREE_TYPE (V2DF_type_node)))
 	permute_type = V2DI_type_node;
-      else if (TREE_TYPE (lhs_type) == TREE_TYPE (V4SF_type_node))
+      else if (types_compatible_p (TREE_TYPE (lhs_type),
+				   TREE_TYPE (V4SF_type_node)))
 	permute_type = V4SI_type_node;
       else
 	gcc_unreachable ();
