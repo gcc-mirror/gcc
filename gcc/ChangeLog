@@ -1,3 +1,16 @@
+2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_decompose_constant_pool_ref):
+	Remove UNSPEC_LTREL_BASE check.
+	(annotate_constant_pool_refs): Likewise.
+	(find_constant_pool_ref): Likewise.
+	(find_ltrel_base): Removed.
+	(replace_ltrel_base): Removed.
+	(s390_mainpool_finish): Remove replace_ltrel_base call.
+	(s390_chunkify_start): Remove pending LTREL_BASE logic.
+	(s390_chunkify_finish): Remove replace_ltrel_base call.
+	* config/s390/s390.md: Remove UNSPEC_LTREL_BASE.
+
 2018-09-06  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR target/86779
