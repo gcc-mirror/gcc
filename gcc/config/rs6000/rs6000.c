@@ -15772,6 +15772,48 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	 gimple_set_location (g, gimple_location (stmt));
 	 gsi_replace (gsi, g, true);
 	 return true;
+	}
+
+    /* Flavors of vec_splat.  */
+    /* a = vec_splat (b, 0x3) becomes a = { b[3],b[3],b[3],...};  */
+    case ALTIVEC_BUILTIN_VSPLTB:
+    case ALTIVEC_BUILTIN_VSPLTH:
+    case ALTIVEC_BUILTIN_VSPLTW:
+    case VSX_BUILTIN_XXSPLTD_V2DI:
+    case VSX_BUILTIN_XXSPLTD_V2DF:
+      {
+	arg0 = gimple_call_arg (stmt, 0); /* input vector.  */
+	arg1 = gimple_call_arg (stmt, 1); /* index into arg0.  */
+	/* Only fold the vec_splat_*() if arg1 is both a constant value and
+	   is a valid index into the arg0 vector.  */
+	unsigned int n_elts = VECTOR_CST_NELTS (arg0);
+	if (TREE_CODE (arg1) != INTEGER_CST
+	    || TREE_INT_CST_LOW (arg1) > (n_elts -1))
+	  return false;
+	lhs = gimple_call_lhs (stmt);
+	tree lhs_type = TREE_TYPE (lhs);
+	tree arg0_type = TREE_TYPE (arg0);
+	tree splat;
+	if (TREE_CODE (arg0) == VECTOR_CST)
+	  splat = VECTOR_CST_ELT (arg0, TREE_INT_CST_LOW (arg1));
+	else
+	  {
+	    /* Determine (in bits) the length and start location of the
+	       splat value for a call to the tree_vec_extract helper.  */
+	    int splat_elem_size = TREE_INT_CST_LOW (size_in_bytes (arg0_type))
+				  * BITS_PER_UNIT / n_elts;
+	    int splat_start_bit = TREE_INT_CST_LOW (arg1) * splat_elem_size;
+	    tree len = build_int_cst (bitsizetype, splat_elem_size);
+	    tree start = build_int_cst (bitsizetype, splat_start_bit);
+	    splat = tree_vec_extract (gsi, TREE_TYPE (lhs_type), arg0,
+				      len, start);
+	  }
+	/* And finally, build the new vector.  */
+	tree splat_tree = build_vector_from_val (lhs_type, splat);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* vec_mergel (integrals).  */
