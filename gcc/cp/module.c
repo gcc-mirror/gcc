@@ -7749,8 +7749,9 @@ get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodule_mapper_
-	  || opt->opt_index == OPT_fmodules_legacy_
-	  || opt->opt_index == OPT_fmodules_legacy
+	  || opt->opt_index == OPT_fmodule_legacy_
+	  || opt->opt_index == OPT_fmodule_legacy
+	  || opt->opt_index == OPT_fmodule_only
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -11511,7 +11512,7 @@ handle_module_option (unsigned code, const char *str, int num)
       module_mapper_name = str;
       return true;
 
-    case OPT_fmodules_legacy_:
+    case OPT_fmodule_legacy_:
       {
 	/* Default ATOM legacy.  */
 	size_t len = strlen (str);

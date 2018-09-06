@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-legacy=macro-2_a.H -fmodules-atom" }
+// { dg-additional-options "-fmodule-legacy=macro-2_a.H -fmodules-atom" }
 // { dg-module-bmi {"macro-2_a.H"} }
 
 #ifndef MACRO_2a_H

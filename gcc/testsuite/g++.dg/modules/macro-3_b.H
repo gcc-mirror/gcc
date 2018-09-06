@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-legacy=macro-3_b.H -Wno-pedantic -fdump-lang-module" }
+// { dg-additional-options "-fmodule-legacy=macro-3_b.H -Wno-pedantic -fdump-lang-module" }
 
 import "macro-3_a.H";
 ;

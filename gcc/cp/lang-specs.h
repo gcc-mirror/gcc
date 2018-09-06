@@ -48,10 +48,9 @@ along with GCC; see the file COPYING3.  If not see
       "             %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
       "   %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
       "   %(cc1_options) %2"
-      "   %{fmodules-atom:%{!fmodules-legacy*:-fmodules-legacy}}"
       "   %{!fsyntax-only:%{!S:-o %g.s}"
-      "     %{!fdump-ada-spec*:%{!fmodules-*:"
-      "          %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}%V}}}}}",
+      "     %{!fdump-ada-spec*:%{!fmodule-only:%{!fmodule-legacy*:"
+      "          %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}%V}}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
       "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
@@ -62,7 +61,8 @@ along with GCC; see the file COPYING3.  If not see
       "             %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
       "   %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
       "   %(cc1_options) %2"
-      "   %{!fsyntax-only:%(invoke_as)}}}}",
+      "   %{fmodule-only:%{!S:-o %g.s%V}}"
+      "   %{!fsyntax-only:%{!fmodule-only:%(invoke_as)}}}}}",
       CPLUSPLUS_CPP_SPEC, 0, 0},
   {".ii", "@c++-cpp-output", 0, 0, 0},
   {"@c++-cpp-output",

@@ -1,3 +1,19 @@
+2018-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	Add -fmodule-only, rename -fmodules-legacy
+	gcc/c-family/
+	* c.opt (fmodules-legacy*): Rename to ...
+	(fmodule-legacy*): ... here.
+	(fmodule-only): New.
+	gcc/cp/
+	* lang-specs.h: Incorporate -fmodule-only.
+	* module.c (get_option_string, handle_module_option): Adjust.
+	gcc/
+	* doc.invoke.texi: Update module options.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Adjust.
+	* g++.dg/modules/*: Adjust options.
+
 2018-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	libiberty/

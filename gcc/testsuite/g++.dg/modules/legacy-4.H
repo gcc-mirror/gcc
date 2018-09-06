@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-fmodules-legacy=\"legacy-4.H\" -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-4.map" }
+// { dg-additional-options "-fmodule-legacy=\"legacy-4.H\" -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-4.map" }
 
 #include "nope"
 int stop ();

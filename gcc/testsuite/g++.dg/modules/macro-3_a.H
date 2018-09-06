@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodules-legacy=macro-3_a.H -fdump-lang-module" }
+// { dg-additional-options "-fmodule-legacy=macro-3_a.H -fdump-lang-module" }
 
 #ifndef MACRO_3a_H
 #define MACRO_3a_H

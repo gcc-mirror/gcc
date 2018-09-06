@@ -2556,7 +2556,6 @@ errors if these functions are not inlined everywhere they are called.
 
 @item -fmodules-ts
 @itemx -fmodules-atom
-@itemx -fmodules-legacy
 @itemx -fno-modules
 @opindex fmodules-ts
 @opindex fmodules-atom
@@ -2569,15 +2568,20 @@ usually not needed, as that is the default.  For now.
 @item -fno-module-lazy
 @opindex fno-module-lazy
 @opindex fmodule-lazy
-Disable module importing.
+Disable lazy module importing and module mapper creation.
 
-@item -fmodule-legacy=@var{name}
-@item -fmodule-legacy=@var{kind}
-@item -fmodule-legacy=@var{kind}:@var{name}
-Compile as a legacy header module.  The kind may be @samp{system} or
-@samp{user}.  If a name is omitted, the source filename is used.  The
-source filename may be partitioned by a @samp{/./} component, in which
-case the fragment following is used as the name.
+@item -fmodule-legacy
+@itemx -fmodule-legacy[=@var{name}]
+@opindex fmodule-legacy
+Compile as a legacy header module.  The @var{name} may use
+@samp{"..."} or @samp{<...>} to indicate a user or system header, and
+defaults user.  If a name is omitted, the source filename is used.
+The source filename may be partitioned by a @samp{/./} component, in
+which case the fragment following is used as the name.
+
+@item -fmodule-only
+@opindex fmodule-only
+Only emit the module BMI, inhibiting any object file.
 
 @item -fmodule-mapper=@var{[hostname]:port}
 @itemx -fmodule-mapper=|@var{program}
@@ -29788,8 +29792,12 @@ Usually importing a module will load minimal information, defering the
 bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
 
-The @option{-fmodules-legacy} family of options enable compilation of
+The @option{-fmodule-legacy} family of options enable compilation of
 a header file as an Atom legacy header module.
+
+The @option{-fmodule-only} disables generation of the associated
+object file for compiling a module interface.  Only the binary module
+interface is generated.
 
 The @option{-fmodule-preamble} option may be added when preprocessing with
 @option{-E}.  This causes preprocessing to terminate once the Atom
