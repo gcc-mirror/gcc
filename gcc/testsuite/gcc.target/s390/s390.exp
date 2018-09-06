@@ -252,5 +252,14 @@ set-torture-options $MD_TEST_OPTS
 gcc-dg-runtest [lsort [glob -nocomplain $md_tests]] "" "$DEFAULT_CFLAGS"
 torture-finish
 
+# Tests that should pass on all optimization levels.
+foreach t [list $srcdir/$subdir/pr80080-3.c] {
+	torture-init
+	set-torture-options [list -O1 -O2 -O3 -O0 -Os -Ofast -Og]
+	gcc-dg-runtest [list $t] \
+		"" $DEFAULT_CFLAGS
+	torture-finish
+}
+
 # All done.
 dg-finish

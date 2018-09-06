@@ -1825,6 +1825,21 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
   return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx);
 }
 
+/* If MEM is not a legitimate compare-and-swap memory operand, return a new
+   MEM, whose address is a pseudo containing the original MEM's address.  */
+
+static rtx
+s390_legitimize_cs_operand (rtx mem)
+{
+  rtx tmp;
+
+  if (!contains_symbol_ref_p (mem))
+    return mem;
+  tmp = gen_reg_rtx (Pmode);
+  emit_move_insn (tmp, copy_rtx (XEXP (mem, 0)));
+  return change_address (mem, VOIDmode, tmp);
+}
+
 /* Emit a SImode compare and swap instruction setting MEM to NEW_RTX if OLD
    matches CMP.
    Return the correct condition RTL to be placed in the IF_THEN_ELSE of the
@@ -1836,6 +1851,7 @@ s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
 {
   rtx cc;
 
+  mem = s390_legitimize_cs_operand (mem);
   cc = gen_rtx_REG (ccmode, CC_REGNUM);
   switch (GET_MODE (mem))
     {
