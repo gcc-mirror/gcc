@@ -11374,9 +11374,16 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
   if (modules_legacy_p ())
     pop_module_export (0);
 
-  module_state *state = (*modules)[MODULE_PURVIEW];
+  module_state *state = NULL;
+  if (modules_p ())
+    state = (*modules)[MODULE_PURVIEW];
+
   if (!state || !state->exported)
-    ;/* Not a module interface.  */
+    {
+      if (flag_module_only)
+	warning (0,
+		 "not compiling a module interface but %<-fmodule-only%> used");
+    }
   else if (errorcount)
     warning_at (state->loc, 0, "not exporting module due to errors");
   else
@@ -11409,11 +11416,8 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
       ggc_collect ();
     }
 
-  if (state)
-    {
-      if (state->exported && state->filename && errorcount)
-	unlink (state->filename);
-    }
+  if (state && state->exported && state->filename && errorcount)
+    unlink (state->filename);
 
   /* We're done with the undefs now.  */
   cpp_undefs = NULL;

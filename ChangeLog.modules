@@ -1,5 +1,13 @@
 2018-09-06  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/c-family/
+	* c.opt (fmodule-only): Set flag.
+	gcc/cp/
+	* decl2.c (c_parse_final_cleanups): Always call finish_module_parse.
+	* module.c (finish_module_parse): Warn on incorrect -fmodule-only.
+	gcc/testsuite/
+	* g++.dg/modules/only-[123].C: New.
+
 	Add -fmodule-only, rename -fmodules-legacy
 	gcc/c-family/
 	* c.opt (fmodules-legacy*): Rename to ...
