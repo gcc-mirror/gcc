@@ -15487,16 +15487,44 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSLH:
     case ALTIVEC_BUILTIN_VSLW:
     case P8V_BUILTIN_VSLD:
-      arg0 = gimple_call_arg (stmt, 0);
-      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
-	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (arg0))))
-	return false;
-      arg1 = gimple_call_arg (stmt, 1);
-      lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, arg1);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_replace (gsi, g, true);
-      return true;
+      {
+	location_t loc;
+	gimple_seq stmts = NULL;
+	arg0 = gimple_call_arg (stmt, 0);
+	tree arg0_type = TREE_TYPE (arg0);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (arg0_type))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0_type)))
+	  return false;
+	arg1 = gimple_call_arg (stmt, 1);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	loc = gimple_location (stmt);
+	lhs = gimple_call_lhs (stmt);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	int tree_size_in_bits = TREE_INT_CST_LOW (size_in_bytes (arg1_type))
+				* BITS_PER_UNIT;
+	tree element_size = build_int_cst (unsigned_element_type,
+					   tree_size_in_bits / n_elts);
+	tree_vector_builder elts (unsigned_type_for (arg1_type), n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* And finally, do the shift.  */
+	g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, new_arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     /* Flavors of vector shift right.  */
     case ALTIVEC_BUILTIN_VSRB:
     case ALTIVEC_BUILTIN_VSRH:

@@ -1,3 +1,9 @@
+2018-09-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/86731
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Update logic
+	around folding of vec_sl to handle out of range shift values.
+
 2018-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fix_trunc<mode>_fisttp_i387_1): Remove.

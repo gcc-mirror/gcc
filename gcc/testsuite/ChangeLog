@@ -1,3 +1,13 @@
+2018-09-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/86731
+	* gcc.target/powerpc/pr86731.c: New test.
+	* gcc.target/powerpc/pr86731-longlong.c: New test.
+	* gcc.target/powerpc/pr86731-fwrapv.c: New test.
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: New test.
+	* gcc.target/powerpc/pr86731-nogimplefold.c: New test.
+	* gcc.target/powerpc/pr86731-nogimplefold-longlong.c: New test.
+
 2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/80080
