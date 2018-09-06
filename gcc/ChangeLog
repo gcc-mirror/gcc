@@ -1,3 +1,8 @@
+2018-09-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (fold_mergehl_helper): Add types_compatible_p
+	wrappers around TREE_TYPE comparisons.
+
 2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/80080
