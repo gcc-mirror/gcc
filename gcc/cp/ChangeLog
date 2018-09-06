@@ -1,3 +1,7 @@
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (check_initializer): Call cp_complete_array_type.
+
 2018-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87109, wrong overload with ref-qualifiers.

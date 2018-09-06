@@ -5042,6 +5042,8 @@ finish_decl (tree decl, location_t init_loc, tree init,
       if (init && TREE_CODE (init) == CONSTRUCTOR)
 	add_flexible_array_elts_to_size (decl, init);
 
+      complete_flexible_array_elts (DECL_INITIAL (decl));
+
       if (DECL_SIZE (decl) == NULL_TREE && TREE_TYPE (decl) != error_mark_node
 	  && COMPLETE_TYPE_P (TREE_TYPE (decl)))
 	layout_decl (decl, 0);
