@@ -1,3 +1,40 @@
+2018-09-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fix_trunc<mode>_fisttp_i387_1): Remove.
+	Update callers to gen_fix_trunc<mode>_i387_fisttp
+	(fix_trunc<mode>_i387_fisttp): Change operand 0 predicate to
+	nonimmediate_operand.
+	(fix_trunc<mode>_i387_fisttp_with_temp): Remove insn pattern
+	and corresponding splitters.
+	(*fix_trunc<mode>_i387_1): Always expand with fix_trunc<mode>_i387.
+	(fix_truncdi_i387): Change operand 0 predicate to nonimmediate_operand.
+	(fix_truncdi_i387_with_temp): Remove insn pattern
+	and corresponding splitters.
+	(fix_trunc<mode>_i387): Change operand 0 predicate to
+	nonimmediate_operand.
+	(fix_trunc<mode>_i387_with_temp): Remove insn pattern
+	and corresponding splitters.
+	(*fistdi2_1): Remove.
+	(fistdi2): Ditto.
+	(fistdi2_with_temp): Remove insn pattern and corresponding splitters.
+	(lrintxfdi2): Remove expander.  Reimplement as define_insn.
+	(*fist<mode>2_1): Remove.
+	(fist<mode>2): Ditto.
+	(fist<mode>2_with_temp): Remove insn pattern and corresponding
+	splitters.
+	(lrintxf<mode>2): Remove expander.  Reimplement as define_insn.
+	(*fist<mode>2_<rounding>_1): Always expand with fist<mode>2_<rounding>.
+	(fistdi2_<rounding>): Change operand 0 predicate to
+	nonimmediate_operand.
+	(fistdi2_<rounding>_with_temp): Remove insn pattern
+	and corresponding splitters.
+	(fist<mode>2_<rounding>): Change operand 0 predicate to
+	nonimmediate_operand.
+	(fist<mode>2_<rounding>_with_temp): Remove insn pattern
+	and corresponding splitters.
+
+	(*fixuns_trunc<mode>si2_avx512f_zext): Depend on TARGET_SSE_MATH.
+
 2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* varasm.c (output_constructor_regular_field): Check TYPE_SIZE_UNIT of
