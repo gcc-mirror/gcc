@@ -6425,6 +6425,28 @@ complete_array_type (tree *ptype, tree initial_value, bool do_default)
   return failure;
 }
 
+/* INIT is an constructor of a structure with a flexible array member.
+   Complete the flexible array member with a domain based on it's value.  */
+void
+complete_flexible_array_elts (tree init)
+{
+  tree elt, type;
+
+  if (init == NULL_TREE || TREE_CODE (init) != CONSTRUCTOR)
+    return;
+
+  if (vec_safe_is_empty (CONSTRUCTOR_ELTS (init)))
+    return;
+
+  elt = CONSTRUCTOR_ELTS (init)->last ().value;
+  type = TREE_TYPE (elt);
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_SIZE (type) == NULL_TREE)
+    complete_array_type (&TREE_TYPE (elt), elt, false);
+  else
+    complete_flexible_array_elts (elt);
+}
+
 /* Like c_mark_addressable but don't check register qualifier.  */
 void 
 c_common_mark_addressable_vec (tree t)

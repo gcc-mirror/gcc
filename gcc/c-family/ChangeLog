@@ -1,3 +1,8 @@
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (complete_flexible_array_elts): New helper function.
+	* c-common.h (complete_flexible_array_elts): Declare.
+
 2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (braced_list_to_string): Remove eval parameter.
