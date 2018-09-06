@@ -1,5 +1,16 @@
 2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	PR target/80080
+	* config/s390/s390-passes.def: New file.
+	* config/s390/s390-protos.h (class rtl_opt_pass): Add forward
+	declaration.
+	(make_pass_s390_early_mach): Add declaration.
+	* config/s390/s390.c (make_pass_s390_early_mach):
+	(s390_option_override): Remove dynamic registration.
+	* config/s390/t-s390: Add s390-passes.def.
+
+2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	* config/s390/s390.c (s390_decompose_constant_pool_ref):
 	Remove UNSPEC_LTREL_BASE check.
 	(annotate_constant_pool_refs): Likewise.

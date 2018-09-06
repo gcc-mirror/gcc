@@ -10556,6 +10556,12 @@ pass_s390_early_mach::execute (function *fun)
 
 } // anon namespace
 
+rtl_opt_pass *
+make_pass_s390_early_mach (gcc::context *ctxt)
+{
+  return new pass_s390_early_mach (ctxt);
+}
+
 /* Calculate TARGET = REG + OFFSET as s390_emit_prologue would do it.
    - push too big immediates to the literal pool and annotate the refs
    - emit frame related notes for stack pointer changes.  */
@@ -14964,21 +14970,6 @@ s390_option_override (void)
       if (!global_options_set.x_dwarf_version)
 	dwarf_version = 2;
     }
-
-  /* Register a target-specific optimization-and-lowering pass
-     to run immediately before prologue and epilogue generation.
-
-     Registering the pass must be done at start up.  It's
-     convenient to do it here.  */
-  opt_pass *new_pass = new pass_s390_early_mach (g);
-  struct register_pass_info insert_pass_s390_early_mach =
-    {
-      new_pass,			/* pass */
-      "pro_and_epilogue",	/* reference_pass_name */
-      1,			/* ref_pass_instance_number */
-      PASS_POS_INSERT_BEFORE	/* po_op */
-    };
-  register_pass (&insert_pass_s390_early_mach);
 }
 
 #if S390_USE_TARGET_ATTRIBUTE

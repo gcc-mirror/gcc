@@ -18,6 +18,7 @@
 
 TM_H += $(srcdir)/config/s390/s390-builtins.def
 TM_H += $(srcdir)/config/s390/s390-builtin-types.def
+PASSES_EXTRA += $(srcdir)/config/s390/s390-passes.def
 
 s390-c.o: $(srcdir)/config/s390/s390-c.c \
   $(srcdir)/config/s390/s390-protos.h $(CONFIG_H) $(SYSTEM_H) coretypes.h \
