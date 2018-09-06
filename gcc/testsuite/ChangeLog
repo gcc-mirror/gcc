@@ -1,3 +1,10 @@
+2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/pr80080-3.c: New test.
+	* gcc.target/s390/s390.exp: Make sure the new test passes
+	on all optimization levels.
+
 2018-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
