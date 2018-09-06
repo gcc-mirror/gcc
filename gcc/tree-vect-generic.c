@@ -120,7 +120,7 @@ typedef tree (*elem_op_func) (gimple_stmt_iterator *,
 			      tree, tree, tree, tree, tree, enum tree_code,
 			      tree);
 
-static inline tree
+tree
 tree_vec_extract (gimple_stmt_iterator *gsi, tree type,
 		  tree t, tree bitsize, tree bitpos)
 {
