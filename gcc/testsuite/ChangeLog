@@ -1,3 +1,16 @@
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87152 - range-based for loops with initializer broken in templates.
+	* g++.dg/cpp2a/range-for11.C: New test.
+	* g++.dg/cpp2a/range-for12.C: New test.
+	* g++.dg/cpp2a/range-for13.C: New test.
+	* g++.dg/cpp2a/range-for14.C: New test.
+	* g++.dg/cpp2a/range-for15.C: New test.
+	* g++.dg/cpp2a/range-for16.C: New test.
+	* g++.dg/cpp2a/range-for17.C: New test.
+	* g++.dg/cpp2a/range-for18.C: New test.
+	* g++.dg/parse/error61.C (foo): Adjust dg-error.
+
 2018-09-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR target/86731

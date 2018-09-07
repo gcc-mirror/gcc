@@ -1,3 +1,18 @@
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87152 - range-based for loops with initializer broken in templates.
+	* constexpr.c (potential_constant_expression_1) <case RANGE_FOR_STMT>:
+	Recur into RANGE_FOR_INIT_STMT.
+	* cp-tree.def: Add RANGE_FOR_INIT_STMT to RANGE_FOR_STMT.
+	* cp-tree.h (RANGE_FOR_INIT_STMT): Define.
+	* dump.c (cp_dump_tree) <case RANGE_FOR_STMT>: Also dump
+	RANGE_FOR_INIT_STMT.
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: Recur into
+	RANGE_FOR_INIT_STMT.
+	* semantics.c (begin_range_for_stmt): Adjust call to build_stmt.
+	Do put the init statement in RANGE_FOR_INIT_STMT.
+	(finish_range_for_decl): Pop it for templates.
+
 2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* decl.c (check_initializer): Call cp_complete_array_type.

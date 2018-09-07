@@ -4,8 +4,8 @@
 template<int> void foo()
 {
   int x[8];
-  for (int& i, j : x) // { dg-error "multiple" }
-    i = 0; // { dg-error "local variable" }
+  for (int& i, j : x) // { dg-error "multiple|reference" }
+    i = 0;
 }
 
 void bar()
