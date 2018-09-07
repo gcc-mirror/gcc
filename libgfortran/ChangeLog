@@ -1,3 +1,7 @@
+2018-09-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/environ.c (init_unsigned_integer): Remove.
+
 2018-09-05  Hans-Peter Nilsson  <hp@axis.com>
 
 	* io/async.h: Use __gthread_mutex_t, not pthread_mutex_t.
