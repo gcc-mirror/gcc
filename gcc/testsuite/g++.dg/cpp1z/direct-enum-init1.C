@@ -29,34 +29,34 @@ foo ()
   D d6 { G };		// { dg-error "cannot convert 'A' to 'D' in initialization" "" { target c++14_down } }
   E e1 { 5 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   E e2 { -1 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   E e3 { 5.0 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   E e4 { 5.2 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   B b2 = { 7 };		// { dg-error "invalid conversion from 'int' to 'B'" }
   C c2 = { C { 8 } };	// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
 
   D *d7 = new D { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   E *e5 = new E { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v3 = { E { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   V v4 = { 13 };	// { dg-error "cannot convert 'int' to 'E' in initialization" }
   if (B b3 { 5 })	// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
     ;
   if (B b4 { 4.0 })	// { dg-error "cannot convert 'double' to 'B' in initialization" "" { target c++14_down } }
-    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int' inside" "" { target c++17 } .-1 }
+    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int'" "" { target c++17 } .-1 }
   C c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   B b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   B b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
   C c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   C c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }
   C c6 {c + 5};		// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
 }
@@ -65,7 +65,7 @@ struct U
 {
   U () : e { 5 } {}	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
   U (int) : e { 5.0 } {}// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   U (float) : e({ 6 }) {}// { dg-error "list-initializer for non-class type must not be parenthesized" }
 			// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target *-*-* } .-1 }
   E e;
@@ -76,7 +76,7 @@ struct W
   A a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" }
   B b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
   C c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int'" "" { target c++17 } .-1 }
   D d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" }
 };
 
@@ -96,33 +96,33 @@ foo2 ()
   D d6 { G };		// { dg-error "cannot convert 'A' to 'D' in initialization" "" { target c++14_down } }
   E e1 { 5 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   E e2 { -1 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   E e3 { 5.0 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   E e4 { 5.2 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   B b2 = { 7 };		// { dg-error "invalid conversion from 'int' to 'B'" }
   C c2 = { C { 8 } };	// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
   D *d7 = new D { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   E *e5 = new E { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar ({ 10 });		// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   V v2 = { E { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   V v3 = { E { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   V v4 = { 13 };	// { dg-error "cannot convert 'int' to 'E' in initialization" }
   if (B b3 { 5 })	// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
     ;
   if (B b4 { 4.0 })	// { dg-error "cannot convert 'double' to 'B' in initialization" "" { target c++14_down } }
-    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int' inside" "" { target c++17 } .-1 }
+    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int'" "" { target c++17 } .-1 }
   C c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   B b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   B b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
   C c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   C c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }
   C c6 {c + 5};		// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
 }
@@ -132,7 +132,7 @@ struct U2
 {
   U2 () : e { 5 } {}	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
   U2 (int) : e { 5.0 } {}// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   U2 (float) : e({ 6 }) {}
   E e;
 };
@@ -143,7 +143,7 @@ struct W2
   A a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } }
   B b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
   C c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int'" "" { target c++17 } .-1 }
   D d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } }
 };
 
@@ -164,33 +164,33 @@ foo3 ()
   K d6 { G };		// { dg-error "cannot convert 'A' to 'D' in initialization" "" { target c++14_down } }
   L e1 { 5 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   L e2 { -1 };		// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-1' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   L e3 { 5.0 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   L e4 { 5.2 };		// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.\[0-9]*e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   I b2 = { 7 };		// { dg-error "invalid conversion from 'int' to 'B'" }
   J c2 = { J { 8 } };	// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
   K *d7 = new K { 9 };	// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target c++14_down } }
   L *e5 = new L { -4 };	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '-4' from 'int' to 'unsigned char'" "" { target c++17 } .-1 }
   bar3 ({ 10 });	// { dg-error "cannot convert \[^\n\r]* to 'E'" }
   bar3 (E { 9 });	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   M v1 = { { 11 } };	// { dg-error "braces around scalar initializer for type 'E'" }
   M v2 = { L { 12 } };	// { dg-error "cannot convert 'int' to 'E' in initialization" "" { target c++14_down } }
   M v3 = { L { 5.0 } };	// { dg-error "cannot convert 'double' to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   M v4 = { 13 };	// { dg-error "cannot convert 'int' to 'E' in initialization" }
   if (I b3 { 5 })	// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
     ;
   if (I b4 { 4.0 })	// { dg-error "cannot convert 'double' to 'B' in initialization" "" { target c++14_down } }
-    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int' inside" "" { target c++17 } .-1 }
+    ;			// { dg-error "narrowing conversion of '4.0e.0' from 'double' to 'short int'" "" { target c++17 } .-1 }
   J c3 { 8L };		// { dg-error "cannot convert 'long int' to 'C' in initialization" "" { target c++14_down } }
   I b4 {short (c + 5)};	// { dg-error "invalid conversion from 'short int' to 'B'" "" { target c++14_down } }
   I b5 {c + 5};		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of \[^\n\r]* from 'int' to 'short int'" "" { target c++17 } .-1 }
   J c4 { ll };		// { dg-error "cannot convert 'long long int' to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of 'll' from 'long long int' to 'int'" "" { target c++17 } .-1 }
   J c5 {short (c + 5)};	// { dg-error "cannot convert 'short int' to 'C' in initialization" "" { target c++14_down } }
   J c6 {c + 5};		// { dg-error "cannot convert 'int' to 'C' in initialization" "" { target c++14_down } }
 }
@@ -200,7 +200,7 @@ struct U3
 {
   U3 () : e { 5 } {}	// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
   U3 (int) : e { 5.0 } {}// { dg-error "cannot convert \[^\n\r]* to 'E' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '5.0e.0' from 'double' to 'unsigned char'" "" { target c++17 } .-1 }
   U3 (float) : e({ 6 }) {}
   L e;
 };
@@ -211,7 +211,7 @@ struct W3
   H a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } }
   I b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
   J c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++17 } .-1 }
+			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int'" "" { target c++17 } .-1 }
   K d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } }
 };
 
