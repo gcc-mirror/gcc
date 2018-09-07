@@ -1,3 +1,20 @@
+2018-09-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (float<SWI48x:mode><MODEF:mode>2) Enable
+	DImode for x87 on 32bit targets.  Conditionally disable x87 modes
+	with X87_ENABLE_FLOAT.  Remove preparation code.
+	(*float<SWI48:mode><MODEF:mode>2): Rename from
+	*float<SWI48:mode><MODEF:mode>2_mixed.  Handle x87, SSE and mixed
+	math using "enabled" attribute.
+	(*floatdi<MODEF:mode>2_i387): Rename from
+	*float<SWI48x:mode><MODEF:mode>2_i387.  Handle only DImode and
+	enable for 32bit targets only.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm pre-reload splitter): New
+	splitter.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm): Use register_operand
+	as operand 1 predicate.  Rewrite as define_insn_and_split.
+	(floatdi<X87MODEF:mode>2_i387_with_xmm memory input splitter): Remove.
+
 2018-09-06  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (get_true_reg) <case FLOAT_TRUNCATE>: Reorder
