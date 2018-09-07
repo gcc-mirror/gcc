@@ -1,5 +1,10 @@
 2018-09-07  Marek Polacek  <polacek@redhat.com>
 
+	* g++.dg/cpp1z/direct-enum-init1.C: Remove "inside" from diagnostic
+	messages.
+
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
 	PR c++/87152 - range-based for loops with initializer broken in templates.
 	* g++.dg/cpp2a/range-for11.C: New test.
 	* g++.dg/cpp2a/range-for12.C: New test.
