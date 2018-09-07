@@ -1,3 +1,13 @@
+2018-09-07  Janus Weil  <janus@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/86116
+	* interface.c (compare_type): Remove a CLASS/TYPE check.
+	(compare_type_characteristics): New function that behaves like the old
+	'compare_type'.
+	(gfc_check_dummy_characteristics, gfc_check_result_characteristics):
+	Call 'compare_type_characteristics' instead of 'compare_type'.
+
 2018-07-16  Fritz Reese  <fritzoreese@gmail.com>
 
 	PR fortran/83184
