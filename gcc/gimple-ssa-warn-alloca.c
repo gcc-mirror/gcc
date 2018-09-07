@@ -208,7 +208,8 @@ alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
       irange invalid_range (size_type_node, 0, max_size, irange::INVERSE);
       if (r.intersect (invalid_range).empty_p ())
 	return alloca_type_and_limit (ALLOCA_OK);
-      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE);
+      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
+				    wi::to_wide (integer_zero_node));
     }
 
   /* When MAX_SIZE is greater than or equal to PTRDIFF_MAX treat

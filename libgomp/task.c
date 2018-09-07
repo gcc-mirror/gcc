@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "gomp-constants.h"
+#include <assert.h>
 
 typedef struct gomp_task_depend_entry *hash_entry_type;
 
@@ -342,6 +343,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       thr->task = &task;
       if (__builtin_expect (cpyfn != NULL, 0))
 	{
+	  assert (arg_size + arg_align > 1);
 	  char buf[arg_size + arg_align - 1];
 	  char *arg = (char *) (((uintptr_t) buf + arg_align - 1)
 				& ~(uintptr_t) (arg_align - 1));
