@@ -301,6 +301,7 @@ cp_dump_tree (void* dump_info, tree t)
 
     case RANGE_FOR_STMT:
       dump_stmt (di, t);
+      dump_child ("init", RANGE_FOR_INIT_STMT (t));
       dump_child ("decl", RANGE_FOR_DECL (t));
       dump_child ("expr", RANGE_FOR_EXPR (t));
       dump_child ("body", RANGE_FOR_BODY (t));

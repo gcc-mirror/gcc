@@ -16815,6 +16815,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
         stmt = (processing_template_decl
 		? begin_range_for_stmt (NULL_TREE, NULL_TREE)
 		: begin_for_stmt (NULL_TREE, NULL_TREE));
+	RECUR (RANGE_FOR_INIT_STMT (t));
         decl = RANGE_FOR_DECL (t);
         decl = tsubst (decl, args, complain, in_decl);
         maybe_push_decl (decl);

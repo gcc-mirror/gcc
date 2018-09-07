@@ -5767,6 +5767,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case RANGE_FOR_STMT:
+      if (!RECUR (RANGE_FOR_INIT_STMT (t), any))
+	return false;
       if (!RECUR (RANGE_FOR_EXPR (t), any))
 	return false;
       if (!RECUR (RANGE_FOR_BODY (t), any))
