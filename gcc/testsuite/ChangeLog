@@ -1,5 +1,10 @@
 2018-09-08  Marek Polacek  <polacek@redhat.com>
 
+	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
+	* g++.dg/cpp0x/move-return2.C: New test.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
 	* c-c++-common/array-init.c: Add dg-prune-output.
 	* g++.dg/cpp0x/lambda/lambda-const-this.C: Add dg-warning.
 	* g++.dg/cpp0x/lambda/lambda-in-class-neg.C: Likewise.

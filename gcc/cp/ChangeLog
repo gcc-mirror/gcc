@@ -1,3 +1,10 @@
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
+	* call.c (struct conversion): Update commentary.
+	(standard_conversion): Set rvaluedness_matches_p if LOOKUP_PREFER_RVALUE
+	for ck_base.
+
 2018-09-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/86678 - constexpr function with non-constant after return.
