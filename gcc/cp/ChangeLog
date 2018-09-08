@@ -1,3 +1,8 @@
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	* cxx-pretty-print.c (cxx_pretty_printer::statement) <case
+	RANGE_FOR_SMT>: Handle RANGE_FOR_INIT_STMT.
+
 2018-09-07  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87152 - range-based for loops with initializer broken in templates.
