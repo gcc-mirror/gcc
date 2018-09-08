@@ -2021,6 +2021,12 @@ cxx_pretty_printer::statement (tree t)
       pp_cxx_ws_string (this, "for");
       pp_space (this);
       pp_cxx_left_paren (this);
+      if (RANGE_FOR_INIT_STMT (t))
+	{
+	  statement (RANGE_FOR_INIT_STMT (t));
+	  pp_needs_newline (this) = false;
+	  pp_cxx_whitespace (this);
+	}
       statement (RANGE_FOR_DECL (t));
       pp_space (this);
       pp_needs_newline (this) = false;
