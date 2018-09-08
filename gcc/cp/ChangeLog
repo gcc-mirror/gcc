@@ -1,3 +1,10 @@
+2018-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86678 - constexpr function with non-constant after return.
+	* constexpr.c (potential_constant_expression_1): Add jump_target.
+	(breaks): Check for BREAK_STMT.
+	(continues): Check for CONTINUE_STMT.
+
 2018-09-08  Marek Polacek  <polacek@redhat.com>
 
 	* cxx-pretty-print.c (cxx_pretty_printer::statement) <case
