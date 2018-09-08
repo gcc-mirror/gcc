@@ -1,3 +1,23 @@
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/array-init.c: Add dg-prune-output.
+	* g++.dg/cpp0x/lambda/lambda-const-this.C: Add dg-warning.
+	* g++.dg/cpp0x/lambda/lambda-in-class-neg.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-in-class.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nested.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nsdmi1.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nsdmi4.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this17.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this18.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this2.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this8.C: Likewise.
+	* g++.dg/cpp1y/pr64382.C: Likewise.
+	* g++.dg/cpp1y/pr77739.C: Likewise.
+	* g++.dg/cpp1z/lambda-this1.C: Likewise.
+	* g++.dg/cpp1z/lambda-this2.C: Likewise.
+	* g++.dg/template/crash84.C: Adjust dg-error.
+
 2018-09-07  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1z/direct-enum-init1.C: Remove "inside" from diagnostic
