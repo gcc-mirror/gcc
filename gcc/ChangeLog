@@ -1,3 +1,9 @@
+2018-09-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/85458
+	* sel-sched.c (sel_target_adjust_priority): Allow backend adjust
+	priority hook to reduce the priority of EXPR.
+
 2018-09-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (float<SWI48x:mode><MODEF:mode>2) Enable
