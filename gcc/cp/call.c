@@ -102,10 +102,10 @@ struct conversion {
   BOOL_BITFIELD base_p : 1;
   /* If KIND is ck_ref_bind, true when either an lvalue reference is
      being bound to an lvalue expression or an rvalue reference is
-     being bound to an rvalue expression.  If KIND is ck_rvalue,
+     being bound to an rvalue expression.  If KIND is ck_rvalue or ck_base,
      true when we are treating an lvalue as an rvalue (12.8p33).  If
-     KIND is ck_base, always false.  If ck_identity, we will be
-     binding a reference directly or decaying to a pointer.  */
+     ck_identity, we will be binding a reference directly or decaying to
+     a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* Whether check_narrowing should only check TREE_CONSTANTs; used
@@ -1425,6 +1425,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 type.  A temporary object is created to hold the result of
 	 the conversion unless we're binding directly to a reference.  */
       conv->need_temporary_p = !(flags & LOOKUP_NO_TEMP_BIND);
+      if (flags & LOOKUP_PREFER_RVALUE)
+	/* Tell convert_like_real to set LOOKUP_PREFER_RVALUE.  */
+	conv->rvaluedness_matches_p = true;
     }
   else
     return NULL;
