@@ -1,3 +1,10 @@
+2018-09-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (float partial SSE register stall splitter): Move
+	splitter near its instruction pattern.
+	(float_extend partial SSE register stall splitter): Ditto.
+	(float_truncate partial SSE register stall splitter): Ditto.
+
 2018-09-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/86794
