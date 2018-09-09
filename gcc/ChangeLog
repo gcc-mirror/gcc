@@ -1,5 +1,9 @@
 2018-09-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
+	PR target/86794
+	* config/mmix/mmix.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Redefine
+	to speculation_safe_value_not_needed.
+
 	PR target/85666
 	* config/mmix/mmix.c (mmix_assemble_integer): Handle byte-size
 	non-CONST_INT rtx:es using assemble_integer_with_op ".byte".

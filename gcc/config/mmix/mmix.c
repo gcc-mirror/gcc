@@ -224,6 +224,9 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage
 
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
 #undef TARGET_ADDRESS_COST
