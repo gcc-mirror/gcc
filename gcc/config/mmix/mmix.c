@@ -1370,8 +1370,14 @@ mmix_assemble_integer (rtx x, unsigned int size, int aligned_p)
       case 1:
 	if (GET_CODE (x) != CONST_INT)
 	  {
-	    aligned_p = 0;
-	    break;
+	    /* There is no "unaligned byte" op or generic function to
+	       which we can punt, so we have to handle this here.  As
+	       the expression isn't a plain literal, the generated
+	       assembly-code can't be mmixal-equivalent (i.e. "BYTE"
+	       won't work) and thus it's ok to emit the default op
+	       ".byte". */
+	    assemble_integer_with_op ("\t.byte\t", x);
+	    return true;
 	  }
 	fputs ("\tBYTE\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'B');
