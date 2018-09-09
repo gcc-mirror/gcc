@@ -4453,7 +4453,8 @@ Unary_expression::do_get_backend(Translate_context* context)
 	      // initialize the value once, so we can use this directly
 	      // rather than copying it.  In that case we can't make it
 	      // read-only, because the program is permitted to change it.
-	      copy_to_heap = context->function() != NULL;
+	      copy_to_heap = (context->function() != NULL
+                              || context->is_const());
 	    }
 	  std::string asm_name(go_selectively_encode_id(var_name));
 	  Bvariable* implicit =
