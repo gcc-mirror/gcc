@@ -1,3 +1,8 @@
+2018-09-09  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.h (pfatal_with_name): Don't declare here.
+	* gcc.c (pfatal_with_name): Make static.
+
 2018-09-09  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config/csky/csky.md (*cskyv2_adddi3, *cskyv2_subdi3): Add
