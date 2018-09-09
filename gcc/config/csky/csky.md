@@ -919,7 +919,7 @@
    clear the carry bit before adding the lo words.  */
 
 (define_insn_and_split "*cskyv2_adddi3"
-  [(set (match_operand:DI	   0 "register_operand" "=b,&r")
+  [(set (match_operand:DI	   0 "register_operand" "=&b,&r")
 	(plus:DI (match_operand:DI 1 "register_operand" "%0,r")
 		 (match_operand:DI 2 "register_operand" "b, r")))
    (clobber (reg:CC CSKY_CC_REGNUM))]
@@ -1117,7 +1117,7 @@
    set the C bit before subtracting the lo words.  */
 
 (define_insn_and_split "*cskyv2_subdi3"
-  [(set (match_operand:DI	    0 "register_operand" "=b,&r")
+  [(set (match_operand:DI	    0 "register_operand" "=&b,&r")
 	(minus:DI (match_operand:DI 1 "register_operand" "0, r")
 		  (match_operand:DI 2 "register_operand" "b, r")))
    (clobber (reg:CC CSKY_CC_REGNUM))]
