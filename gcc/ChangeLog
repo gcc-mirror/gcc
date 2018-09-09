@@ -1,3 +1,8 @@
+2018-09-09  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/csky.md (*cskyv2_adddi3, *cskyv2_subdi3): Add
+	earlyclobber.
+
 2018-09-08  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR rtl-optimization/85458
