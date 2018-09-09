@@ -1,8 +1,10 @@
 2018-09-09  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/85666
-	* config/mmix/mmix.c (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS): Don't
-	call leaf_function_p, instead use has_hard_reg_initial_val.
+	* config/mmix/mmix.c (mmix_assemble_integer): Handle byte-size
+	non-CONST_INT rtx:es using assemble_integer_with_op ".byte".
+	(MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS): Don't call
+	leaf_function_p, instead use has_hard_reg_initial_val.
 
 2018-09-09  Nathan Sidwell  <nathan@acm.org>
 
