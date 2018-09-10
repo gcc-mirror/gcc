@@ -1,3 +1,9 @@
+2018-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (x87/SSE constant load splitter): Use
+	memory_operand instead of nonimmediate_operand for input operand
+	predicate.
+
 2018-09-09  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (float partial SSE register stall splitter): Move
