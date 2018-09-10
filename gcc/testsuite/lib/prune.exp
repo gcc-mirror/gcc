@@ -45,8 +45,7 @@ proc prune_gcc_output { text } {
     # Diagnostic inclusion stack
     regsub -all "(^|\n)(In file)?\[ \]+included from \[^\n\]*" $text "" text
     regsub -all "(^|\n)\[ \]+from \[^\n\]*" $text "" text
-    regsub -all "(^|\n)(In file)?\[ \]+of module \[^\n\]*" $text "" text
-    regsub -all "(^|\n)(In module)?\[ \]+imported at \[^\n\]*" $text "" text
+    regsub -all "(^|\n)(In|of) module( \[^\n \]*,)? imported at \[^\n\]*" $text "" text
 
     # Ignore informational notes.
     regsub -all "(^|\n)\[^\n\]*: note: \[^\n\]*" $text "" text

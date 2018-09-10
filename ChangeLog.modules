@@ -1,3 +1,13 @@
+2018-09-10  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/
+	* diagnostic.c (diagnostic_report_current_module): Do not line
+	break after module name.
+	gcc/testsuite/
+	* lib/prune.exp (prune_gcc_output): Adjust module loc regexp.
+	* g++.dg/modules/loc-2_[def].C: Adjust dg-regexp.
+	* g++.dg/modules/macro-2_d.C: Likewise.
+
 2018-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/

@@ -613,19 +613,20 @@ diagnostic_report_current_module (diagnostic_context *context, location_t where)
 		{
 		 NULL,
 		 N_("                 from"),
-		 N_("In file included from"),
+		 N_("In file included from"),	/* 2 */
 		 N_("        included from"),
-		 N_("In file of module"),
-		 N_("        of module"),
-		 N_("In module imported at"),
-		 N_("          imported at"),
+		 N_("In module"),		/* 4 */
+		 N_("of module"),
+		 N_("In module imported at"),	/* 6 */
+		 N_("imported at"),
 		};
 
 	      unsigned index = (was_module ? 6 : is_module ? 4
 				: need_inc ? 2 : 0) + !first;
 
 	      pp_verbatim (context->printer, "%s%s %r%s%s%R",
-			   first ? "" : ",\n", G_(msgs[index]),
+			   first ? "" : was_module ? ", " : ",\n",
+			   G_(msgs[index]),
 			   "locus", LINEMAP_FILE (map), line_col);
 	      first = false, need_inc = was_module, was_module = is_module;
 	    }
