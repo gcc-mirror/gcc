@@ -439,63 +439,6 @@ irange::canonicalize ()
   gcc_assert (!CHECKING_P || valid_p ());
 }
 
-/* Insert [x,y] into position POS.  There must be enough space to hold
-   the new sub-range, otherwise this function will abort.  */
-
-void
-irange::insert (const wide_int &x, const wide_int &y, unsigned pos)
-{
-  /* Make sure it will fit.  */
-  gcc_assert (nitems < max_pairs * 2);
-  /* Make sure we're inserting into a sane position.  */
-  gcc_assert (pos <= nitems && pos % 2 == 0);
-
-  if (pos == nitems)
-    return append (x, y);
-
-  for (unsigned i = nitems; i > pos; i -= 2)
-    {
-      bounds[i] = bounds[i - 2];
-      bounds[i + 1] = bounds[i - 1];
-    }
-  bounds[pos] = x;
-  bounds[pos + 1] = y;
-  nitems += 2;
-  canonicalize ();
-}
-
-// Prepend [X,Y] into THIS.
-
-void
-irange::prepend (const wide_int &x, const wide_int &y)
-{
-  /* If we have enough space, shift everything to the right and
-     prepend.  */
-  if (nitems < max_pairs * 2)
-    return insert (x, y, 0);
-  /* Otherwise, merge it with the first entry.  */
-  else
-    bounds[0] = x;
-  canonicalize ();
-}
-
-// Place [X,Y] at the end of THIS.
-
-void
-irange::append (const wide_int &x, const wide_int &y)
-{
-  /* If we have enough space, make space at the end and append.  */
-  if (nitems < max_pairs * 2)
-    {
-      bounds[nitems++] = x;
-      bounds[nitems++] = y;
-    }
-  /* Otherwise, merge it with the last entry.  */
-  else
-    bounds[nitems - 1] = y;
-  canonicalize ();
-}
-
 // Remove the bound entries from [i..j].
 
 void
