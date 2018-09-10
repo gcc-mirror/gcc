@@ -1,3 +1,9 @@
+2018-09-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85395
+	* decl.c (match_binding_attributes): Use correct default accessibility
+	for procedure pointer components.
+
 2018-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* simplify.c (gfc_simplify_modulo): Re-arrange code to test whether
