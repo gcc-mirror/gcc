@@ -1,3 +1,9 @@
+2018-09-10  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (build_vtbl_ref): Remove.
+	(build_vtbl_ref_1): Rename to build_vtbl_ref.
+	(build_vfn_ref): Call build_vtbl_ref instead of build_vtbl_ref_1.
+
 2018-09-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
