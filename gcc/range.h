@@ -55,8 +55,6 @@ class irange
  private:
   /* Number of items in bounds[].  */
   unsigned char nitems;
-  /* Whether or not a set operation overflowed.  */
-  bool overflow;
   /* The type of the range.  */
   tree type;
   /* The pairs of sub-ranges in the range.  */
@@ -92,10 +90,6 @@ class irange
   void set_range (tree t, int x, int y, kind rt = PLAIN);
   void set_range_for_type (tree);
 
-  bool overflow_p () const { return overflow && !TYPE_OVERFLOW_WRAPS (type); }
-  void set_overflow () { overflow = true; }
-  void clear_overflow () { overflow = false; }
-
   unsigned num_pairs () const { return nitems / 2; }
   /* Returns the lower bound of PAIR.  */
   wide_int lower_bound (unsigned pair = 0) const
@@ -115,7 +109,7 @@ class irange
      sub-range to remove.  */
   void remove_pair (unsigned pair) { remove (pair * 2, pair * 2 + 1); }
   void clear () { nitems = 0; }
-  void clear (tree t) { type = t; nitems = 0; overflow = false; }
+  void clear (tree t) { type = t; nitems = 0; }
   bool empty_p () const { return !nitems; }
   bool range_for_type_p () const;
   bool simple_range_p () const { return nitems == 2; }

@@ -71,7 +71,6 @@ irange::set_range (tree typ, const wide_int &lbound,
   gcc_assert (INTEGRAL_TYPE_P (typ) || POINTER_TYPE_P (typ));
   gcc_assert (TYPE_PRECISION (typ) == lbound.get_precision ());
   gcc_assert (lbound.get_precision () == ubound.get_precision ());
-  overflow = false;
   type = typ;
   gcc_assert (wi::le_p (lbound, ubound, TYPE_SIGN (type)));
   if (rt == INVERSE)
@@ -146,7 +145,6 @@ irange::set_range (tree t, int x, int y, kind rt)
 void
 irange::set_range (const irange_storage *storage, tree typ)
 {
-  overflow = false;
   type = typ;
   nitems = 0;
   unsigned i = 0;
@@ -202,7 +200,6 @@ irange::set_range_for_type (tree t)
 irange::irange (const irange &r)
 {
   type = r.type;
-  overflow = false;
   nitems = r.nitems;
   for (unsigned i = 0; i < nitems; ++i)
     bounds[i] = r.bounds[i];
@@ -212,8 +209,7 @@ irange::irange (const irange &r)
 bool
 irange::operator== (const irange &r) const
 {
-  if (!range_compatible_p (type, r.type)
-      || nitems != r.nitems || overflow != r.overflow)
+  if (!range_compatible_p (type, r.type) || nitems != r.nitems)
     return false;
   for (unsigned i = 0; i < nitems; ++i)
     if (!wi::eq_p (bounds[i], r.bounds[i]))
@@ -226,7 +222,6 @@ irange::operator= (const irange &r)
 {
   type = r.type;
   nitems = r.nitems;
-  overflow = r.overflow;
   for (unsigned i = 0; i < nitems; ++i)
     bounds[i] = r.bounds[i];
   return *this;
@@ -247,9 +242,6 @@ irange::range_for_type_p () const
 {
   irange tmp;
   tmp.set_range_for_type (type);
-  /* Clear the overflow bit so two [MIN,MAX] ranges will compare
-     correctly with and without overflow.  */
-  tmp.overflow = overflow;
   return (*this == tmp);
 }
 
@@ -585,8 +577,6 @@ irange::union_ (const irange &r)
     bounds[j] = res [j];
   nitems = i;
     
-  overflow |= r.overflow;
-
   gcc_assert (!CHECKING_P || valid_p ());
   return *this;
 }
@@ -687,8 +677,6 @@ irange::intersect (const irange &r)
   for (unsigned i = 0; i < r.nitems; i += 2)
     union_ (irange (orig_range).intersect (r.bounds[i], r.bounds[i + 1]));
 
-  /* Overflow is sticky only if both ranges overflowed.  */
-  overflow = (orig_range.overflow && r.overflow);
   /* There is no valid_p() check here because the calls to union_
      above would have called valid_p().  */
   return *this;
@@ -836,8 +824,6 @@ irange::dump (pretty_printer *buffer) const
 
   pp_character (buffer, ' ');
   dump_generic_node (buffer, type, 0, TDF_NONE, false);
-  if (overflow)
-    pp_string (buffer, " (overflow)");
   pp_newline_and_flush (buffer);
 }
 

@@ -129,8 +129,6 @@ accumulate_range (irange& r,
 	new_ub = ub;
       r.union_ (new_lb, new_ub);
     }
-  if (ov_lb || ov_ub)
-    r.set_overflow ();
 }
 
 static void
@@ -1201,9 +1199,6 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
   if (lh.empty_p () || rh.empty_p ())
     return true;
 
-  if (lh.overflow_p() || rh.overflow_p ())
-    return false;
-
   /* Try constant cases first to see if we do anything special with them. */
   if (wi::eq_p (lh.upper_bound (), lh.lower_bound ()))
     res = op_ir (code, r, lh.upper_bound (), rh);
@@ -1240,9 +1235,6 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh)
 
   if (lh.empty_p ())
     return true;
-
-  if (lh.overflow_p())
-    return false;
 
   signop s = TYPE_SIGN (type);
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
@@ -1376,8 +1368,8 @@ operator_exact_divide::op1_irange (irange& r,
   // TRUE accuraacy is [6,6][9,9][12,12].  This is unlikely to matter most of
   // the time however.  
   // If op2 is a multiple of 2, we would be able to set some non-zero bits.
-  if (op2.singleton_p (offset) && op_rr (MULT_EXPR, r, lhs, op2) &&
-      !r.overflow_p () && wi::ne_p (offset, 0))   
+  if (op2.singleton_p (offset) && op_rr (MULT_EXPR, r, lhs, op2)
+      && wi::ne_p (offset, 0))
     return true;
   return false;
 }
@@ -2297,10 +2289,6 @@ irange_from_value_range (irange &r, const value_range& vr)
 static bool
 value_range_from_irange (value_range& vr, const irange& r)
 {
-  wi::overflow_type ov;
-  if (r.overflow_p ())
-    return false;
-
   tree type = r.get_type ();
   wide_int w1 = r.lower_bound();
   wide_int w2 = r.upper_bound();
@@ -2313,6 +2301,7 @@ value_range_from_irange (value_range& vr, const irange& r)
       if (r.num_pairs () != 2)
 	return false;
       vr.type = VR_ANTI_RANGE;
+      wi::overflow_type ov;
       w1 = wi::add (r.upper_bound (0), 1, TYPE_SIGN (type), &ov);
       w2 = wi::sub (r.lower_bound (1), 1, TYPE_SIGN (type), &ov);
     }
