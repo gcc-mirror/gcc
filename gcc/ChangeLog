@@ -1,5 +1,28 @@
 2018-09-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (<sincos>xf2): Rename from *<sincos>xf2_i387.
+	(*<sincos>_extend<mode>xf2_i387): Remove insn pattern.
+	(<sincos>mode2): New expander.
+	(sincos_extend<mode>xf3_i387): Remove insn pattern.
+	(sincos -> sin, cos splitters): Remove splitter patterns.
+	(sincos<mode>3): Change operand 2 predicate to general_operand.
+	Extend operand 2 to XFmode and generate sincosxf3 insn.
+	(fptanxf4_i387): Change mode of operands 0 and 3 to SFmode.
+	Change operand 3 predicate to const1_operand.
+	(fptan_extend<mode>xf4_i387): Remove insn pattern.
+	(tanxf2): Update operands in the call to fptanxf4_i387.
+	(tan<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate tanxf3 insn.
+	(atan2xf3): Rename from *fpatanxf3_i387.
+	(fpatan_extend<mode>xf3_i387): Remove insn pattern.
+	(atan2xf3): Remove expander.
+	(atan2<mode<3):  Change operand 1 and 2 predicates to general_operand.
+	Extend operands 1 and 2 to XFmode and generate atan2xf3 insn.
+	(atan<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate atanxf3 insn.
+
+2018-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (x87/SSE constant load splitter): Use
 	memory_operand instead of nonimmediate_operand for input operand
 	predicate.
