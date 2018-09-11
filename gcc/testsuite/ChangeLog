@@ -1,3 +1,8 @@
+2018-09-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87277
+	* gfortran.dg/select_type_43.f90: New test.
+
 2018-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.dg/driver-specs.c: New.
