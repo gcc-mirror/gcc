@@ -1,3 +1,23 @@
+2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fyl2x_extend<mode>xf3_i387): Remove.
+	(log<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate logxf3 insn.
+	(log10<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate log10xf3 insn.
+	(log2<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate log2xf3 insn.
+	(fyl2xp1_extend<mode>xf3_i387): Remove.
+	(log1p<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate log1pxf3 insn.
+	(fxtract_extend<mode>xf3_i387): Remove.
+	(logb<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate logbxf3 insn.
+	(ilogb<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate fxtractxf3_i387 insn.
+	(significand<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate significandxf3 insn.
+
 2018-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c (perror_with_name, pfatal_with_name): Delete.
