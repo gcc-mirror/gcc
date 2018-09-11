@@ -1,3 +1,7 @@
+2018-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (load_specs, execute, run_attempt): Use %qs not '%s'.
+
 2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c (subst_asm_stack_regs): Call replace_reg also
