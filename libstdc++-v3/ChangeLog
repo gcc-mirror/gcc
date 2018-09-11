@@ -1,3 +1,22 @@
+2018-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement LWG 2905 changes to constrain unique_ptr constructors
+	* include/bits/unique_ptr.h (__uniq_ptr_impl): Add assertions to
+	check deleter type.
+	(unique_ptr::unique_ptr(pointer, const deleter_type&)): Add copy
+	constructible constraint.
+	(unique_ptr::unique_ptr(pointer, deleter_type&&)): Disable for
+	deleters of reference type and add move constructible constraint.
+	(unique_ptr::unique_ptr(pointer, remove_reference_t<deleter_type>&&)):
+	Disable for deleters of non-reference type. Define as deleted.
+	(unique_ptr<T[], D>): Likewise.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Replace dg-error
+	directives with unstable line numbers with dg-prune-output.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/lwg2905.cc: New test.
+	* testsuite/20_util/unique_ptr/specialized_algorithms/swap_cxx17.cc:
+	Make deleter types invocable.
+
 2018-09-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/cxxabi.h (__cxa_demangle): Clarify doxygen comment.
