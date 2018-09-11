@@ -1,5 +1,10 @@
 2018-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87278
+	* include/bits/shared_ptr.h (make_shared): Use remove_cv instead of
+	remove_const.
+	* testsuite/20_util/shared_ptr/creation/87278.cc: New test.
+
 	Implement LWG 2905 changes to constrain unique_ptr constructors
 	* include/bits/unique_ptr.h (__uniq_ptr_impl): Add assertions to
 	check deleter type.
