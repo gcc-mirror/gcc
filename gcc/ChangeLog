@@ -1,3 +1,10 @@
+2018-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (perror_with_name, pfatal_with_name): Delete.
+	(load_specs): Use fatal_error.
+	(DELETE_IF_ORDINARY, process_command): Use error.
+	(execute, run_attempt): Use fatal_error.
+
 2018-09-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* diagnostic-core.h (sorry_at): New prototype.
