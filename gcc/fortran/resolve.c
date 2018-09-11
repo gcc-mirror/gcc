@@ -14245,7 +14245,7 @@ resolve_fl_derived (gfc_symbol *sym)
 			  &sym->declared_at))
     return false;
 
-  if (sym->components == NULL && !sym->attr.zero_comp)
+  if (sym->components == NULL && !sym->attr.zero_comp && !sym->attr.use_assoc)
     {
       gfc_error ("Derived type %qs at %L has not been declared",
 		  sym->name, &sym->declared_at);
