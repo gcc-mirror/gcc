@@ -1,3 +1,7 @@
+2018-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/driver-specs.c: New.
+
 2018-09-11  Joey Ye  <joey.ye@arm.com>
 
 	* lib/gcov.exp (verify-intermediate): Add missing close.

@@ -372,8 +372,6 @@ static void give_switch (int, int);
 static int default_arg (const char *, int);
 static void set_multilib_dir (void);
 static void print_multilib_info (void);
-static void perror_with_name (const char *);
-static void pfatal_with_name (const char *) ATTRIBUTE_NORETURN;
 static void display_help (void);
 static void add_preprocessor_option (const char *, int);
 static void add_assembler_option (const char *, int);
@@ -2101,15 +2099,20 @@ load_specs (const char *filename)
   /* Open and stat the file.  */
   desc = open (filename, O_RDONLY, 0);
   if (desc < 0)
-    pfatal_with_name (filename);
+    {
+    failed:
+      /* This leaves DESC open, but the OS will save us.  */
+      fatal_error (input_location, "cannot read spec file '%s': %m", filename);
+    }
+
   if (stat (filename, &statbuf) < 0)
-    pfatal_with_name (filename);
+    goto failed;
 
   /* Read contents of file into BUFFER.  */
   buffer = XNEWVEC (char, statbuf.st_size + 1);
   readlen = read (desc, buffer, (unsigned) statbuf.st_size);
   if (readlen < 0)
-    pfatal_with_name (filename);
+    goto failed;
   buffer[readlen] = 0;
   close (desc);
 
@@ -2490,7 +2493,7 @@ do                                                      \
     if (stat (NAME, &ST) >= 0 && S_ISREG (ST.st_mode))  \
       if (unlink (NAME) < 0)                            \
 	if (VERBOSE_FLAG)                               \
-	  perror_with_name (NAME);                      \
+	  error ("%s: %m", (NAME));			\
   } while (0)
 #endif
 
@@ -3169,13 +3172,11 @@ execute (void)
 			NULL, NULL, &err);
       if (errmsg != NULL)
 	{
-	  if (err == 0)
-	    fatal_error (input_location, errmsg);
-	  else
-	    {
-	      errno = err;
-	      pfatal_with_name (errmsg);
-	    }
+	  errno = err;
+	  fatal_error (input_location,
+		       err ? G_("cannot execute '%s' %s: %m")
+		       : G_("cannot execute '%s' %s"),
+		       string, errmsg);
 	}
 
       if (i && string != commands[i].prog)
@@ -4545,10 +4546,8 @@ process_command (unsigned int decoded_options_count,
 
           if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
 	    {
-	      if (fname[0] == '@' && access (fname + 1, F_OK) < 0)
-		perror_with_name (fname + 1);
-	      else
-		perror_with_name (fname);
+	      bool resp = fname[0] == '@' && access (fname + 1, F_OK) < 0;
+	      error ("%s: %m", fname + resp);
 	    }
           else
 	    add_infile (arg, spec_lang);
@@ -6886,13 +6885,11 @@ run_attempt (const char **new_argv, const char *out_temp,
 		    err_temp, &err);
   if (errmsg != NULL)
     {
-      if (err == 0)
-	fatal_error (input_location, errmsg);
-      else
-	{
-	  errno = err;
-	  pfatal_with_name (errmsg);
-	}
+      errno = err;
+      fatal_error (input_location,
+		   err ? G_ ("cannot execute '%s' %s: %m")
+		   : G_ ("cannot execute '%s' %s"),
+		   new_argv[0], errmsg);
     }
 
   if (!pex_get_status (pex, 1, &exit_status))
@@ -8407,19 +8404,6 @@ save_string (const char *s, int len)
   return result;
 }
 
-void
-pfatal_with_name (const char *name)
-{
-  perror_with_name (name);
-  delete_temp_files ();
-  exit (1);
-}
-
-static void
-perror_with_name (const char *name)
-{
-  error ("%s: %m", name);
-}
 
 static inline void
 validate_switches_from_spec (const char *spec, bool user)
