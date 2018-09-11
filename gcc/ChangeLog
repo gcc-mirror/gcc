@@ -1,5 +1,10 @@
 2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* reg-stack.c (subst_asm_stack_regs): Call replace_reg also
+	for clobbers.  Remove obsolete comment.
+
+2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (define_attr "type"): Remove mpxmov, mpxmk,
 	mpxchk, mpxld and mpxst types.
 	(define_attr length_immediate): Remove all processing of mpx types.
