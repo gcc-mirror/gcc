@@ -1,3 +1,8 @@
+2018-09-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* diagnostic-core.h (sorry_at): New prototype.
+	* diagnostic.c (sorry_at): New function.
+
 2018-09-11  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp (extract_range_from_binary_expr_1): Treat all divisions
