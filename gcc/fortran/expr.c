@@ -1069,6 +1069,7 @@ is_subref_array (gfc_expr * e)
 
   if (e->symtree->n.sym->ts.type == BT_CLASS
       && e->symtree->n.sym->attr.dummy
+      && CLASS_DATA (e->symtree->n.sym)->attr.dimension
       && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
     return true;
 
