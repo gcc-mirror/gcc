@@ -2275,13 +2275,7 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
       int regnum = get_hard_regnum (regstack, clobber_reg[i]);
 
       if (regnum >= 0)
-	{
-	  /* Sigh - clobbers always have QImode.  But replace_reg knows
-	     that these regs can't be MODE_INT and will assert.  Just put
-	     the right reg there without calling replace_reg.  */
-
-	  *clobber_loc[i] = FP_MODE_REG (regnum, DFmode);
-	}
+	replace_reg (clobber_loc[i], regnum);
     }
 
   /* Now remove from REGSTACK any inputs that the asm implicitly popped.  */
