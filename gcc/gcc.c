@@ -2102,7 +2102,7 @@ load_specs (const char *filename)
     {
     failed:
       /* This leaves DESC open, but the OS will save us.  */
-      fatal_error (input_location, "cannot read spec file '%s': %m", filename);
+      fatal_error (input_location, "cannot read spec file %qs: %m", filename);
     }
 
   if (stat (filename, &statbuf) < 0)
@@ -3174,8 +3174,8 @@ execute (void)
 	{
 	  errno = err;
 	  fatal_error (input_location,
-		       err ? G_("cannot execute '%s' %s: %m")
-		       : G_("cannot execute '%s' %s"),
+		       err ? G_("cannot execute %qs: %s: %m")
+		       : G_("cannot execute %qs: %s"),
 		       string, errmsg);
 	}
 
@@ -6887,8 +6887,8 @@ run_attempt (const char **new_argv, const char *out_temp,
     {
       errno = err;
       fatal_error (input_location,
-		   err ? G_ ("cannot execute '%s' %s: %m")
-		   : G_ ("cannot execute '%s' %s"),
+		   err ? G_ ("cannot execute %qs: %s: %m")
+		   : G_ ("cannot execute %qs: %s"),
 		   new_argv[0], errmsg);
     }
 
