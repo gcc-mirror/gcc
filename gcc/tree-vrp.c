@@ -1601,12 +1601,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
       /* Special case explicit division by zero as undefined.  */
       if (range_is_null (&vr1))
 	{
-	  /* However, we must not eliminate a division by zero if
-	     flag_non_call_exceptions.  */
-	  if (cfun->can_throw_non_call_exceptions)
-	    set_value_range_to_varying (vr);
-	  else
-	    set_value_range_to_undefined (vr);
+	  set_value_range_to_undefined (vr);
 	  return;
 	}
 
