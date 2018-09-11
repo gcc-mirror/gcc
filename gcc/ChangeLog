@@ -1,5 +1,13 @@
 2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (define_attr "type"): Remove mpxmov, mpxmk,
+	mpxchk, mpxld and mpxst types.
+	(define_attr length_immediate): Remove all processing of mpx types.
+	(define_attr prefix_0f): Ditto.
+	(define_attr memory): Ditto.
+
+2018-09-11  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (fyl2x_extend<mode>xf3_i387): Remove.
 	(log<mode>2): Change operand 1 predicate to general_operand.
 	Extend operand 1 to XFmode and generate logxf3 insn.
