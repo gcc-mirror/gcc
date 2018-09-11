@@ -1,3 +1,10 @@
+2018-09-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/87277
+	* expr.c (is_subref_array): Add the check of dimensionality for
+	class, dummy, pointer arrays.
+
 2018-09-05  Janus Weil  <janus@gcc.gnu.org>
 
 	Backported from trunk
