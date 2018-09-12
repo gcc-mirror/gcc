@@ -1,4 +1,13 @@
 2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+	    Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR tree-optimization/86844
+	* gimple-ssa-store-merging.c
+	(imm_store_chain_info::coalesce_immediate): For overlapping stores, if
+	there are any overlapping stores in between them, make sure they are
+	also coalesced or we give up completely.
+
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87248
 	* fold-const.c (fold_ternary_loc) <case COND_EXPR>: Verify also that
