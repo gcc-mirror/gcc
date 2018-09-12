@@ -1,6 +1,15 @@
 2018-09-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
+	2018-08-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86989
+	* config/rs6000/rs6000.c (toc_relative_expr_p): Check that the base is
+	the TOC register.
+
+2018-09-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
 	2018-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/86771
