@@ -2976,6 +2976,10 @@ gstrict-dwarf
 Common Driver Report Var(dwarf_strict) Init(0)
 Don't emit DWARF additions beyond selected version.
 
+gdescribe-dies
+Common Driver Report Var(flag_describe_dies) Init(0)
+Add description attributes to some DWARF DIEs that have no name attribute.
+
 gtoggle
 Common Driver Report Var(flag_gtoggle)
 Toggle debug information generation.
