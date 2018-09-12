@@ -1,3 +1,12 @@
+2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/86336
+	* gimplify.c (gimplify_scan_omp_clauses): Set
+	target_firstprivatize_array_bases in OpenACC parallel and kernels
+	region contexts.  Remove GOMP_MAP_FIRSTPRIVATE_REFERENCE clauses from
+	OpenACC data regions.
+
 2018-09-12  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (sqrt_extend<mode>xf3_i387): Remove.
