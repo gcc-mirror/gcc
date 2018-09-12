@@ -1,3 +1,8 @@
+2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87284
+	* gfortran.dg/allocate_with_mold_2.f90: New test.
+
 2018-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82853
