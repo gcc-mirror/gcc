@@ -1,3 +1,7 @@
+2018-09-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* runtime/minimal.c (estr_write): Define in terms of write.
+
 2018-09-12  Andrew Stubbs  <ams@codesourcery.com>
 
 	* runtime/minimal.c (exit): Only work around nvptx bugs on nvptx.
