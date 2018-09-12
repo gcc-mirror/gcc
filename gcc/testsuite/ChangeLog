@@ -1,3 +1,7 @@
+2018-09-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/dfp_to_bfp_rounding.c: New test.
+
 2018-09-12  Jakub Jelinek  <jakub@redhat.com>
 	    Andreas Krebbel  <krebbel@linux.ibm.com>
 
