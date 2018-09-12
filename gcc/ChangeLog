@@ -1,3 +1,8 @@
+2018-09-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (sqrt_extend<mode>xf3_i387): Remove.
+	(sqrt<mode>2): Extend operand 1 to XFmode and generate sqrtxf3 insn.
+
 2018-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87280
