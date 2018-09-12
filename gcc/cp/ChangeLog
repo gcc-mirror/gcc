@@ -1,3 +1,18 @@
+2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Backport from mainline
+	2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+	gcc/cp
+
+	PR c++/87093
+	* method.c (constructible_expr): We're in an unevaluated context
+	in all cases, not just for class targets.
+
+	testsuite/
+
+	PR c++/87093
+	* g++.dg/ext/is_constructible2.C: New.
+
 2018-09-05   Pádraig Brady  <p@draigbrady.com>
 
 	PR c++/87185
