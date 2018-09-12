@@ -5976,15 +5976,24 @@ process_bb (rpo_elim &avail, basic_block bb,
     {
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  if (e->flags & EDGE_EXECUTABLE)
-	    continue;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file,
-		     "marking outgoing edge %d -> %d executable\n",
-		     e->src->index, e->dest->index);
-	  gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
-	  e->flags |= EDGE_EXECUTABLE;
-	  e->dest->flags |= BB_EXECUTABLE;
+	  if (!(e->flags & EDGE_EXECUTABLE))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "marking outgoing edge %d -> %d executable\n",
+			 e->src->index, e->dest->index);
+	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
+	      e->flags |= EDGE_EXECUTABLE;
+	      e->dest->flags |= BB_EXECUTABLE;
+	    }
+	  else if (!(e->dest->flags & BB_EXECUTABLE))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "marking destination block %d reachable\n",
+			 e->dest->index);
+	      e->dest->flags |= BB_EXECUTABLE;
+	    }
 	}
     }
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
@@ -6124,20 +6133,37 @@ process_bb (rpo_elim &avail, basic_block bb,
 	      e->flags |= EDGE_EXECUTABLE;
 	      e->dest->flags |= BB_EXECUTABLE;
 	    }
+	  else if (!(e->dest->flags & BB_EXECUTABLE))
+	    {
+	      if (dump_file && (dump_flags & TDF_DETAILS))
+		fprintf (dump_file,
+			 "marking destination block %d reachable\n",
+			 e->dest->index);
+	      e->dest->flags |= BB_EXECUTABLE;
+	    }
 	}
       else if (gsi_one_before_end_p (gsi))
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    {
-	      if (e->flags & EDGE_EXECUTABLE)
-		continue;
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		fprintf (dump_file,
-			 "marking outgoing edge %d -> %d executable\n",
-			 e->src->index, e->dest->index);
-	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
-	      e->flags |= EDGE_EXECUTABLE;
-	      e->dest->flags |= BB_EXECUTABLE;
+	      if (!(e->flags & EDGE_EXECUTABLE))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "marking outgoing edge %d -> %d executable\n",
+			     e->src->index, e->dest->index);
+		  gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
+		  e->flags |= EDGE_EXECUTABLE;
+		  e->dest->flags |= BB_EXECUTABLE;
+		}
+	      else if (!(e->dest->flags & BB_EXECUTABLE))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "marking destination block %d reachable\n",
+			     e->dest->index);
+		  e->dest->flags |= BB_EXECUTABLE;
+		}
 	    }
 	}
 
@@ -6399,7 +6425,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 		if (e->flags & EDGE_DFS_BACK)
 		  {
 		    e->flags |= EDGE_EXECUTABLE;
-		    e->dest->flags |= BB_EXECUTABLE;
 		    /* There can be a non-latch backedge into the header
 		       which is part of an outer irreducible region.  We
 		       cannot avoid iterating this block then.  */

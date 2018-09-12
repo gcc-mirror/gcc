@@ -1,5 +1,13 @@
 2018-09-12  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87280
+	* tree-ssa-sccvn.c (process_bb): Handle the case of executable
+	edge but unreachable target.
+	(do_rpo_vn): For conservatively handling a PHI only mark
+	the backedge executable but not the block reachable.
+
+2018-09-12  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87266
 	* tree-ssa-sccvn.c (do_rpo_vn): Always iterate to not yet
 	visited blocks.
