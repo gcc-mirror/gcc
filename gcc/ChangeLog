@@ -1,5 +1,13 @@
 2018-09-12  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (vrp_shift_undefined_p): Remove.
+	(extract_range_from_binary_expr_1: Call
+	wide_int_range_shift_undefined_p instead of vrp_shift_undefined_p.
+	* wide-int-range.h (wide_int_range_shift_undefined_p): Do not
+	depend on sign.
+
+2018-09-12  Aldy Hernandez  <aldyh@redhat.com>
+
 	* gimple-ssa-warn-alloca.c
 	(alloca_type_and_limit::alloca_type_and_limit): Initialize limit
 	field for ALLOCA_BOUND_*_LARGE.
