@@ -1,3 +1,13 @@
+2018-09-12  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-08-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/86771
+	* combine.c (try_combine): Do not allow splitting a resulting PARALLEL
+	of two SETs into those two SETs, one to be placed at i2, if that SETs
+	destination is modified between i2 and i3.
+
 2018-09-12  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline

@@ -4007,7 +4007,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      other insns to combine, but the destination of that SET is still live.
 
      Also do this if we started with two insns and (at least) one of the
-     resulting sets is a noop; this noop will be deleted later.  */
+     resulting sets is a noop; this noop will be deleted later.
+
+     Also do this if we started with two insns neither of which was a simple
+     move.  */
 
   else if (insn_code_number < 0 && asm_noperands (newpat) < 0
 	   && GET_CODE (newpat) == PARALLEL
@@ -4035,13 +4038,15 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	 one which uses any regs/memory set in between i2 and i3 can't
 	 be first.  The PARALLEL might also have been pre-existing in i3,
 	 so we need to make sure that we won't wrongly hoist a SET to i2
-	 that would conflict with a death note present in there.  */
+	 that would conflict with a death note present in there, or would
+	 have its dest modified between i2 and i3.  */
       if (!modified_between_p (SET_SRC (set1), i2, i3)
 	  && !(REG_P (SET_DEST (set1))
 	       && find_reg_note (i2, REG_DEAD, SET_DEST (set1)))
 	  && !(GET_CODE (SET_DEST (set1)) == SUBREG
 	       && find_reg_note (i2, REG_DEAD,
 				 SUBREG_REG (SET_DEST (set1))))
+	  && !modified_between_p (SET_DEST (set1), i2, i3)
 	  && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set0))
 	  /* If I3 is a jump, ensure that set0 is a jump so that
 	     we do not create invalid RTL.  */
@@ -4057,6 +4062,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && !(GET_CODE (SET_DEST (set0)) == SUBREG
 		    && find_reg_note (i2, REG_DEAD,
 				      SUBREG_REG (SET_DEST (set0))))
+	       && !modified_between_p (SET_DEST (set0), i2, i3)
 	       && (!HAVE_cc0 || !reg_referenced_p (cc0_rtx, set1))
 	       /* If I3 is a jump, ensure that set1 is a jump so that
 		  we do not create invalid RTL.  */
