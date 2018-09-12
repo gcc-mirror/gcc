@@ -1,5 +1,18 @@
 2018-09-12  Nathan Sidwell  <nathan@acm.org>
 
+	Adding location spans
+	gcc/cp/
+	* module.c (loc_range_t): New range.
+	(struct lmap_interval): New.
+	(lmap_spans): New.
+	(open_interval, close_interval, ordinary_interval)
+	(macro_interval): New.
+	(module_state::write_locations): Write spans.
+	(module_state::write): Write spans.
+	(module_state::atom_preamble): Update spans.
+	(atom_main_file): Initialize spans.
+	(finish_module_parse): Close out span.
+
 	gcc/cp/
 	* parser.c (cp_parser_get_module_preamble_tokens): Don't read past
 	EOF.

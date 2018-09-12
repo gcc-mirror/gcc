@@ -2529,9 +2529,104 @@ trees_out::~trees_out ()
 {
 }
 
-/* Likewise, this cannot be a member of module_state.  */
-
+/* I use half-open [first,second) ranges.  */
 typedef std::pair<unsigned,unsigned> range_t;
+
+/* A range of locations.  */
+typedef std::pair<location_t,location_t> loc_range_t;
+
+/* An interval of line maps.  The line maps here represent a conguous
+   non-imported range.  */
+struct lmap_interval {
+  loc_range_t ordinary;	/* Ordinary map index range. */
+  loc_range_t macro;	/* Macro map index range.  */
+  range_t offsets;	/* Offsets to normalize.  */
+};
+
+/* Spans of the line maps that are occupied by this TU.  I.e. not
+   within imports.  Only extended when in an interface unit.
+   Interval zero corresponds to the forced header linemap(s).  */
+static GTY(()) vec<lmap_interval,va_gc_atomic> *lmap_spans;
+
+/* Open a new linemap interval.  The just-created ordinary map is the
+   first map of the interval.  */
+
+static void
+open_interval (line_maps *lmaps)
+{
+  lmap_interval interval;
+  interval.ordinary.first = interval.ordinary.second
+    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (lmaps));
+  interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+  if (unsigned used = LINEMAPS_MACRO_USED (lmaps))
+    interval.macro.first = interval.macro.second
+      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
+  interval.offsets.first = interval.offsets.second = 0;
+  vec_safe_push (lmap_spans, interval);
+}
+
+/* Close out the current linemap interval.  The just created ordinary
+   map is the first map beyond the interval.  */
+
+static void
+close_interval (line_maps *lmaps)
+{
+  lmap_interval &interval = lmap_spans->last ();
+  if (unsigned used = LINEMAPS_MACRO_USED (lmaps))
+    interval.macro.first
+      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
+  interval.ordinary.second
+    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (lmaps));
+}
+
+/* Given an ordinary location LOC, return the lmap_interval it resides
+   in.  NULL if it is not in an interval.  */
+
+static lmap_interval const *
+ordinary_interval (source_location loc)
+{
+  unsigned len = lmap_spans->length ();
+  unsigned pos = 0;
+  while (len)
+    {
+      unsigned half = len / 2;
+      const lmap_interval &probe = (*lmap_spans)[pos + half];
+      if (loc < probe.ordinary.first)
+	len = half;
+      else if (loc < probe.ordinary.second)
+	return &probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  return NULL;
+}
+
+/* Likewise, given a macro location LOC, return the lmap interval it
+   resides in.  Macro locations are allocated in decreasing value.  */
+static lmap_interval const *
+macro_interval (source_location loc)
+{
+  unsigned len = lmap_spans->length ();
+  unsigned pos = 0;
+  while (len)
+    {
+      unsigned half = len / 2;
+      const lmap_interval &probe = (*lmap_spans)[pos + half];
+      if (loc >= probe.macro.second)
+	len = half;
+      else if (loc >= probe.macro.first)
+	return &probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  return NULL;
+}
 
 /* Data needed by a module during the process of loading.  */
 struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
@@ -2802,6 +2897,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void prepare_locations (line_maps *);
   void write_locations (elf_out *to, line_maps *, bool early, unsigned *crc_ptr);
   bool read_locations (line_maps *, bool early);
+
+ private:
+  void write_locations (elf_out *to, line_maps *, unsigned *crc_ptr);
+  bool read_locations (line_maps *);
 
  private:
   void write_define (bytes_out &, cpp_hashnode *);
@@ -9454,9 +9553,7 @@ spewing::prepare_linemaps (line_maps *lmaps, bool early_p)
     }
 
   unsigned first = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, lwm));
-  unsigned last = (early_p
-		   ? MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, hwm))
-		   : lmaps->highest_location + 1);
+  unsigned last = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, hwm));
 
   (early_p ? early_locs : late_locs).first = first;
   (early_p ? early_locs : late_locs).second = last;
@@ -9480,7 +9577,7 @@ module_state::prepare_locations (line_maps *lmaps)
   if (spew->early_loc_map.second)
     spew->early_loc_map.first = prefix_line_maps_hwm;
 
-  spew->late_loc_map.second = LINEMAPS_ORDINARY_USED (lmaps);
+  spew->late_loc_map.second = LINEMAPS_ORDINARY_USED (lmaps) - 1;
 
   /* Collect the set of file names, location ranges and alignment.  */
   spew->loc_offsets.first = spew->prepare_linemaps (lmaps, true);
@@ -9652,6 +9749,144 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
 		"prefix mismatch, earlier locations are not represented");
 
   return true;
+}
+
+/* Write the location maps.  This also determines the shifts for the
+   location spans.  */
+
+void
+module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
+{
+  dump () && dump ("Writing locations");
+  dump.indent ();
+
+  range_t num_maps (0,0);
+  auto_vec<const char *> filenames;
+
+  /* We first have to figure the remapping of location spans.  */
+  unsigned max_align = 0;
+  location_t used = 0;
+  for (unsigned ix = 0; ix != lmap_spans->length (); ix++)
+    {
+      lmap_interval &interval = (*lmap_spans)[ix];
+      line_map_ordinary const *omap
+	= linemap_check_ordinary (linemap_lookup (lmaps,
+						  interval.ordinary.first));
+
+      if (!omap)
+	/* lookup returns NULL for the initial span.  */
+	omap = LINEMAPS_ORDINARY_MAP_AT (lmaps, 0);
+
+      /* We should exactly match up.  */
+      gcc_checking_assert (MAP_START_LOCATION (omap)
+			   == interval.ordinary.first);
+      unsigned align = 0;
+      line_map_ordinary const *fmap = omap;
+      for (; MAP_START_LOCATION (omap) < interval.ordinary.second; omap++)
+	{
+	  if (ix)
+	    {
+	      const char *fname = ORDINARY_MAP_FILE_NAME (omap);
+
+	      /* We should never find a module linemap in an interval.  */
+	      gcc_checking_assert (!MAP_MODULE_P (omap));
+
+	      /* We expect very few filenames, so just an array.  */
+	      for (unsigned jx = filenames.length (); jx--;)
+		{
+		  const char *name = filenames[jx];
+		  if (0 == strcmp (name, fname))
+		    {
+		      /* Reset the linemap's name, because for things like
+			 preprocessed input we could have multple
+			 instances of the same name, and we'd rather not
+			 percolate that.  */
+		      const_cast <line_map_ordinary *> (omap)->to_file = name;
+		      fname = NULL;
+		      break;
+		    }
+		}
+	      if (fname)
+		filenames.safe_push (fname);
+	    }
+	  if (align < omap->m_column_and_range_bits)
+	    align = omap->m_column_and_range_bits;
+	}
+
+      /* Again, we should finish exactly matched up.  */
+      gcc_checking_assert (MAP_START_LOCATION (omap)
+			   == interval.ordinary.second);
+      unsigned count = omap - fmap;
+
+      /* Do not count the fixed-header interval.  We don't reallocate it.  */
+      if (ix)
+	{
+	  gcc_checking_assert (count);
+	  num_maps.first += count;
+	}
+
+      /* We want to remap the first location of this interval to the
+	 last remapped location of the previous interval (USED).  But
+	 we also have to preserve the bottom ALIGN bits of this
+	 intervals line maps.  */
+      location_t lower = interval.ordinary.first & ~((1u << align) - 1);
+      interval.offsets.first = lower - used;
+      used += MAP_START_LOCATION (omap) - lower;
+      if (max_align < align)
+	max_align = align;
+    }
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  /* Write the filenames.  */
+  unsigned len = filenames.length ();
+  sec.u (len);
+  dump () && dump ("%u source file names", len);
+  for (unsigned ix = 0; ix != len; ix++)
+    {
+      const char *fname = filenames[ix];
+      dump () && dump ("Source file[%u]=%s", ix, fname);
+      sec.str (fname);
+    }
+
+  /* Write the ordinary maps.  */
+  dump () && dump ("Ordinary maps:%u, maxalign:%u", num_maps.first, max_align);
+  sec.u (num_maps.first);
+  sec.u (max_align);
+  sec.u ((*lmap_spans)[1].ordinary.first);
+  for (unsigned ix = 1; ix != lmap_spans->length (); ix++)
+    {
+      lmap_interval &interval = (*lmap_spans)[ix];
+      line_map_ordinary const *omap
+	= linemap_check_ordinary (linemap_lookup (lmaps,
+						  interval.ordinary.first));
+
+      for (; MAP_START_LOCATION (omap) < interval.ordinary.second; omap++)
+	{
+	  sec.u (MAP_START_LOCATION (omap) - interval.offsets.first);
+
+	  /* Making accessors just for here, seems excessive.  */
+	  sec.u (omap->reason);
+	  sec.u (omap->sysp);
+	  sec.u (omap->m_column_and_range_bits);
+	  sec.u (omap->m_range_bits);
+
+	  const char *fname = ORDINARY_MAP_FILE_NAME (omap);
+	  for (unsigned ix = 0; ix != filenames.length (); ix++)
+	    if (filenames[ix] == fname)
+	      {
+		sec.u (ix);
+		break;
+	      }
+	  sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (omap));
+
+	  write_location (sec, linemap_included_from (omap));
+	}
+    }
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".loc"), crc_p);
+  dump.outdent ();
 }
 
 /* Write a define on NODE.  */
@@ -10245,6 +10480,8 @@ module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
   /* Write the line maps.  */
   if (modules_atom_p ())
     {
+      write_locations (to, lmaps, &crc);
+
       write_locations (to, lmaps, true, &crc);
       write_locations (to, lmaps, false, &crc);
       spewer ()->free_filenames ();
@@ -10959,9 +11196,6 @@ module_state::atom_preamble (location_t loc,
   dump.push (NULL);
   dump () && dump ("Processing preamble");
 
-  /* Preserve the state of the line-map.  */
-  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (lmaps);
-
   /* For a consistent order, and avoiding hash table iteration during
      actual import, we create a vector of imports.  */
   auto_vec<module_state *> directs (limit);
@@ -11028,6 +11262,19 @@ module_state::atom_preamble (location_t loc,
       mapper->maybe_uncork (loc);
     }
 
+  /* Preserve the state of the line-map.  */
+  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (lmaps);
+
+  if (interface)
+    {
+      gcc_assert (interface->loc == UNKNOWN_LOCATION);
+      interface->maybe_create_loc (lmaps);
+      close_interval (lmaps);
+    }
+  else
+    /* We're just not interested in line map intervals.  */
+    lmap_spans = NULL;
+
   /* Check we know all the BMIs.  There's no point trying to load any
      if some are missing.  */
   bool ok = true;
@@ -11041,9 +11288,6 @@ module_state::atom_preamble (location_t loc,
 	}
       imp->maybe_create_loc (lmaps);
     }
-
-  if (interface)
-    interface->maybe_create_loc (lmaps);
 
   if (ok)
     {
@@ -11077,6 +11321,9 @@ module_state::atom_preamble (location_t loc,
   dump.pop (0);
 
   unsigned adj = linemap_module_restore (lmaps, pre_hwm);
+
+  if (interface)
+    open_interval (lmaps);
 
   return ok ? int (adj) : -1;
 }
@@ -11177,8 +11424,29 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
    first call sticks.  */
 
 void
-atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
+atom_main_file (line_maps *maps, const line_map_ordinary *map, unsigned ix)
 {
+  if (!lmap_spans)
+    {
+      vec_safe_reserve (lmap_spans, 20);
+
+      /* Create a span for the forced headers.  */
+      lmap_interval interval;
+      interval.ordinary.first = 0;
+      interval.ordinary.second = MAP_START_LOCATION (map);
+      interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+      if (unsigned used = LINEMAPS_MACRO_USED (maps))
+	interval.macro.first
+	  = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (maps, used - 1));
+      interval.offsets.first = interval.offsets.second = 0;
+      lmap_spans->quick_push (interval);
+
+      /* Start an interval for the main file.  */
+      interval.ordinary.first = interval.ordinary.second;
+      interval.macro.second = interval.macro.first;
+      lmap_spans->quick_push (interval);
+    }
+
   if (modules_atom_p () && !prefix_locations_hwm)
     {
       prefix_line_maps_hwm = ix;
@@ -11400,7 +11668,11 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
     {
       int fd = -1;
       int e = ENOENT;
-      
+
+      /* Force the current linemap to close.  */
+      linemap_add (lmaps, LC_RENAME, false, "", 0);
+      close_interval (lmaps);
+
       if (state->filename)
 	{
 	  fd = open (maybe_add_bmi_prefix (state->filename),
