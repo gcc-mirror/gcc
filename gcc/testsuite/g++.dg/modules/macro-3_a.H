@@ -1,5 +1,6 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-legacy=macro-3_a.H -fdump-lang-module" }
+// { dg-module-bmi "\"macro-3_a.H\"" }
 
 #ifndef MACRO_3a_H
 #define MACRO_3a_H

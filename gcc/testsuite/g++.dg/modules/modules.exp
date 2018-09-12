@@ -22,7 +22,7 @@
 # A test case might consist of multiple source files, each is compiled
 # separately, in a well-defined order.  The resulting object files might
 # be optionally linked and optionally executed.  Grouping is indicated by
-# naming files '*_[a-z].C'
+# naming files '*_[a-z].[CH]'
 
 # { dg-module-bmi "[!]module-name" } # an interface file is (not) expected
 # { dg-module-do [link|run] [xfail] [options] } # link [and run]
@@ -226,7 +226,6 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 
 	foreach mode [mode_list $test] {
 	    set module_bmis {}
-	    set module_pre_prunes {}
 	    verbose "Testing $nshort, $mode" 1
 	    dg-test $test $mode $DEFAULT_MODFLAGS
 	    set testcase [string range $test [string length "$srcdir/"] end]
@@ -248,7 +247,6 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    set asm_list {}
 	    foreach test $tests {
 		set module_bmis {}
-		set module_pre_prunes {}
 		set nshort [file tail [file dirname $test]]/[file tail $test]
 		verbose "Testing $nshort, $mode" 1
 		dg-test -keep-output $test $mode $DEFAULT_MODFLAGS

@@ -12897,7 +12897,7 @@ cp_parser_get_module_preamble_tokens (cp_parser *parser)
   cp_lexer *lexer = parser->lexer;
   atom_preamble_state res = APS_NONE;
 
-  for (;;)
+  for (bool eof = false; !eof;)
     {
       atom_preamble_state state
 	= atom_preamble_prefix_peek (true, res != 0, parse_in);
@@ -12921,7 +12921,10 @@ cp_parser_get_module_preamble_tokens (cp_parser *parser)
 					     tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	  if (!state)
-	    break;
+	    {
+	      eof = tok.type == CPP_EOF;
+	      break;
+	    }
 	}
     }
 

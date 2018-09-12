@@ -1,4 +1,5 @@
 // { dg-options "-fmodules-atom -fdump-lang-module" }
+// { dg-module-bmi bob }
 
 export module bob;
 

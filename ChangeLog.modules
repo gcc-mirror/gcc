@@ -1,5 +1,12 @@
 2018-09-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_get_module_preamble_tokens): Don't read past
+	EOF.
+	gcc/testsuite/
+	* g++.dg/modules/ice-1.C: New.
+	* g++.dg/modules/modules.exp: Remove old pruning.
+
 	Implement p1103r0 19.3/2 not-a-keyword.
 	gcc/cp/
 	* module (module_state::write_define): Don't export keywords.

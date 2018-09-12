@@ -1,5 +1,5 @@
 // { dg-additional-options -fmodules-atom }
-
+// { dg-module-bmi bob }
 #if 1
 export module bob;
 #endif
