@@ -1,3 +1,9 @@
+2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/87284
+	* gfortran.dg/allocate_with_mold_2.f90: New test.
+
 2018-09-12  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
