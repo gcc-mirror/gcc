@@ -1,3 +1,9 @@
+2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/87093
+	* method.c (constructible_expr): We're in an unevaluated context
+	in all cases, not just for class targets.
+
 2018-09-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/85110

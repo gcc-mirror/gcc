@@ -1144,11 +1144,11 @@ static tree
 constructible_expr (tree to, tree from)
 {
   tree expr;
+  cp_unevaluated cp_uneval_guard;
   if (CLASS_TYPE_P (to))
     {
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
-      cp_unevaluated cp_uneval_guard;
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
