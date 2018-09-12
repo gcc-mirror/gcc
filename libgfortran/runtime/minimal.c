@@ -197,10 +197,12 @@ sys_abort (void)
 #define st_printf printf
 #undef estr_write
 #define estr_write printf
+#if __nvptx__
 /* Map "exit" to "abort"; see PR85463 '[nvptx] "exit" in offloaded region
    doesn't terminate process'.  */
 #undef exit
 #define exit(...) do { abort (); } while (0)
+#endif
 #undef exit_error
 #define exit_error(...) do { abort (); } while (0)
 
