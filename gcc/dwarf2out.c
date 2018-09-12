@@ -3816,6 +3816,7 @@ static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool);
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
+static void add_desc_attribute (dw_die_ref, tree);
 static void add_gnat_descriptive_type_attribute (dw_die_ref, tree, dw_die_ref);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_scalar_info (dw_die_ref, enum dwarf_attribute, tree, int,
@@ -6029,6 +6030,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
     BLOCK_DIE (decl) = die;
   else
     equate_decl_number_to_die (decl, die);
+
+  add_desc_attribute (die, decl);
 
   /* Add a reference to the DIE providing early debug at $sym + off.  */
   add_AT_external_die_ref (die, DW_AT_abstract_origin, sym, off);
@@ -20536,6 +20539,52 @@ add_name_attribute (dw_die_ref die, const char *name_string)
     }
 }
 
+/* Generate a DW_AT_description attribute given some string value to be included
+   as the value of the attribute.  */
+
+static void
+add_desc_attribute (dw_die_ref die, const char *name_string)
+{
+  if (!flag_describe_dies || (dwarf_version < 3 && dwarf_strict))
+    return;
+
+  if (name_string == NULL || *name_string == 0)
+    return;
+
+  if (demangle_name_func)
+    name_string = (*demangle_name_func) (name_string);
+
+  add_AT_string (die, DW_AT_description, name_string);
+}
+
+/* Generate a DW_AT_description attribute given some decl to be included
+   as the value of the attribute.  */
+
+static void
+add_desc_attribute (dw_die_ref die, tree decl)
+{
+  tree decl_name;
+
+  if (!flag_describe_dies || (dwarf_version < 3 && dwarf_strict))
+    return;
+
+  if (decl == NULL_TREE || !DECL_P (decl))
+    return;
+  decl_name = DECL_NAME (decl);
+
+  if (decl_name != NULL && IDENTIFIER_POINTER (decl_name) != NULL)
+    {
+      const char *name = dwarf2_name (decl, 0);
+      add_desc_attribute (die, name ? name : IDENTIFIER_POINTER (decl_name));
+    }
+  else
+    {
+      char *desc = print_generic_expr_to_str (decl);
+      add_desc_attribute (die, desc);
+      free (desc);
+    }
+}
+
 /* Retrieve the descriptive type of TYPE, if any, make sure it has a
    DIE and attach a DW_AT_GNAT_descriptive_type attribute to the DIE
    of TYPE accordingly.
@@ -21294,12 +21343,17 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl,
       const char *name = dwarf2_name (decl, 0);
       if (name)
 	add_name_attribute (die, name);
+      else
+	add_desc_attribute (die, decl);
+
       if (! DECL_ARTIFICIAL (decl))
 	add_src_coords_attributes (die, decl);
 
       if (!no_linkage_name)
 	add_linkage_name (die, decl);
     }
+  else
+    add_desc_attribute (die, decl);
 
 #ifdef VMS_DEBUGGING_INFO
   /* Get the function's name, as described by its RTL.  This may be different
@@ -23272,6 +23326,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      dw_die_ref die = NULL;
 	      rtx tloc = NULL_RTX, tlocc = NULL_RTX;
 	      rtx arg, next_arg;
+	      tree arg_decl = NULL_TREE;
 
 	      for (arg = (ca_loc->call_arg_loc_note != NULL_RTX
 			  ? XEXP (ca_loc->call_arg_loc_note, 0)
@@ -23336,6 +23391,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		      tdie = lookup_decl_die (tdecl);
 		      if (tdie == NULL)
 			continue;
+		      arg_decl = tdecl;
 		    }
 		  else
 		    continue;
@@ -23352,6 +23408,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    die = gen_call_site_die (decl, subr_die, ca_loc);
 		  cdie = new_die (dwarf_TAG (DW_TAG_call_site_parameter), die,
 				  NULL_TREE);
+		  add_desc_attribute (cdie, arg_decl);
 		  if (reg != NULL)
 		    add_AT_loc (cdie, DW_AT_location, reg);
 		  else if (tdie != NULL)

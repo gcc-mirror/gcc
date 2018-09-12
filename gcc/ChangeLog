@@ -1,3 +1,19 @@
+2018-09-12  Tom de Vries  <tdevries@suse.de>
+
+	* common.opt (gdescribe-dies): Add option.
+	* dwarf2out.c (add_name_and_src_coords_attributes): Add description
+	attribute for artifical and nameless decls.
+	(dwarf2out_register_external_die): Add description attribute to
+	external reference die.
+	(add_desc_attribute): New functions.
+	(gen_subprogram_die): Add description attribute to
+	DW_TAG_call_site_parameter.
+	* tree-pretty-print.c (print_generic_expr_to_str): New function.
+	* tree-pretty-print.h (print_generic_expr_to_str): Declare.
+	* doc/invoke.texi (@item Debugging Options): Add -gdescribe-dies and
+	-gno-describe-dies.
+	(@item -gdescribe-dies): Add.
+
 2018-09-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (vrp_shift_undefined_p): Remove.

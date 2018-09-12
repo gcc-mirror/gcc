@@ -38,6 +38,7 @@ extern void print_generic_decl (FILE *, tree, dump_flags_t);
 extern void print_generic_stmt (FILE *, tree, dump_flags_t = TDF_NONE);
 extern void print_generic_stmt_indented (FILE *, tree, dump_flags_t, int);
 extern void print_generic_expr (FILE *, tree, dump_flags_t = TDF_NONE);
+extern char *print_generic_expr_to_str (tree);
 extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t);
 extern int dump_generic_node (pretty_printer *, tree, int, dump_flags_t, bool);
 extern void print_declaration (pretty_printer *, tree, int, dump_flags_t);
