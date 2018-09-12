@@ -1,3 +1,8 @@
+2018-08-28  Martin Liska  <mliska@suse.cz>
+
+	* constexpr.c (cxx_eval_call_expression): Add quotes
+	to -fconstexpr-depth=.
+
 2018-09-10  Marek Polacek  <polacek@redhat.com>
 
 	* class.c (build_vtbl_ref): Remove.

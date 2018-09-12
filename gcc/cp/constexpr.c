@@ -1669,7 +1669,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     {
       if (!ctx->quiet)
 	error ("%<constexpr%> evaluation depth exceeds maximum of %d (use "
-	       "-fconstexpr-depth= to increase the maximum)",
+	       "%<-fconstexpr-depth=%> to increase the maximum)",
 	       max_constexpr_depth);
       *non_constant_p = true;
       result = error_mark_node;
