@@ -6088,6 +6088,9 @@ extern bool can_convert_arg_bad			(tree, tree, tree, int,
 extern int conv_flags				(int, int, tree, tree, int);
 extern struct conversion * good_conversion	(tree, tree, tree, int, tsubst_flags_t);
 extern location_t get_fndecl_argument_location  (tree, int);
+extern void complain_about_bad_argument	(location_t arg_loc,
+						 tree from_type, tree to_type,
+						 tree fndecl, int parmnum);
 
 
 /* A class for recording information about access failures (e.g. private

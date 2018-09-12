@@ -8820,23 +8820,9 @@ convert_for_assignment (tree type, tree rhs,
 						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
-		{
-		  auto_diagnostic_group d;
-		  location_t loc = cp_expr_location (rhs);
-		  range_label_for_type_mismatch rhs_label (rhstype, type);
-		  range_label *label = &rhs_label;
-		  if (loc == UNKNOWN_LOCATION)
-		    {
-		      loc = input_location;
-		      label = NULL;
-		    }
-		  gcc_rich_location richloc (loc, label);
-		  error_at (&richloc,
-			    "cannot convert %qH to %qI",
-			    rhstype, type);
-		  inform (get_fndecl_argument_location (fndecl, parmnum),
-			  "  initializing argument %P of %qD", parmnum, fndecl);
-		}
+		complain_about_bad_argument (cp_expr_location (rhs),
+					     rhstype, type,
+					     fndecl, parmnum);
 	      else
 		switch (errtype)
 		  {

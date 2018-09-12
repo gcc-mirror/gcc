@@ -1,3 +1,31 @@
+2018-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (struct conversion_info): Add "loc" field.
+	(arg_conversion_rejection): Add "loc" param, using it to
+	initialize the new field.
+	(bad_arg_conversion_rejection): Likewise.
+	(explicit_conversion_rejection): Initialize the new field to
+	UNKNOWN_LOCATION.
+	(template_conversion_rejection): Likewise.
+	(add_function_candidate): Pass on the argument location to the new
+	param of arg_conversion_rejection.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(single_z_candidate): New function.
+	(maybe_get_bad_conversion_for_unmatched_call): New function.
+	(complain_about_bad_argument): New function, based on part of
+	convert_for_assignment.
+	(build_new_method_call_1): Split out handling of the "no viable
+	candidates" case into...
+	(complain_about_no_candidates_for_method_call): ...this new
+	function, and use the new functions above to special-case the
+	handling of a single non-viable candidate due to a bad argument.
+	* cp-tree.h (complain_about_bad_argument): New decl.
+	* typeck.c (convert_for_assignment): Split out one error-handling
+	case into complain_about_bad_argument.
+
 2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

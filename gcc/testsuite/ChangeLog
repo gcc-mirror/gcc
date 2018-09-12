@@ -1,3 +1,18 @@
+2018-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/cpp0x/explicit4.C: Update expected output to reflect
+	special-casing of diagnostic for a single non-viable candidate due
+	to a bad argument.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Likewise.
+	Add test coverage for an unmatched overloaded operator.
+	* g++.dg/expr/pmf-1.C: Likewise.
+	* g++.old-deja/g++.bugs/900330_02.C: Likewise.
+	* g++.old-deja/g++.jason/conversion11.C: Likewise.
+	* g++.old-deja/g++.law/arg11.C: Likewise.
+	* g++.old-deja/g++.law/arm9.C: Likewise.
+	* g++.old-deja/g++.robertl/eb131.C: Likewise.
+
 2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87284
