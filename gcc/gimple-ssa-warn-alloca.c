@@ -128,7 +128,11 @@ struct alloca_type_and_limit {
   alloca_type_and_limit ();
   alloca_type_and_limit (enum alloca_type type,
 			 wide_int i) : type(type), limit(i) { }
-  alloca_type_and_limit (enum alloca_type type) : type(type) { }
+  alloca_type_and_limit (enum alloca_type type) : type(type)
+  { if (type == ALLOCA_BOUND_MAYBE_LARGE
+	|| type == ALLOCA_BOUND_DEFINITELY_LARGE)
+      limit = wi::to_wide (integer_zero_node);
+  }
 };
 
 /* Return the value of the argument N to -Walloca-larger-than= or

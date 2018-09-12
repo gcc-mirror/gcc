@@ -1,3 +1,9 @@
+2018-09-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-warn-alloca.c
+	(alloca_type_and_limit::alloca_type_and_limit): Initialize limit
+	field for ALLOCA_BOUND_*_LARGE.
+
 2018-09-11  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c (load_specs, execute, run_attempt): Use %qs not '%s'.
