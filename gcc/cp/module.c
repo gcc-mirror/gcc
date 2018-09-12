@@ -9666,6 +9666,14 @@ module_state::write_define (bytes_out &sec, cpp_hashnode *node)
      a devil's advocate reading of the standard.  */
   gcc_checking_assert (!macro->extra_tokens);
 
+  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (node)))
+    {
+      warning_at (macro->line, 0,
+		  "not exporting %<#define %E%> as it is a keyword",
+		  HT_IDENT_TO_GCC_IDENT (node));
+      return;
+    }
+
   dump () && dump ("Writing #define %I", HT_IDENT_TO_GCC_IDENT (node));
   sec.cpp_node (node);
   sec.u (macro->count);
@@ -9900,6 +9908,8 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   bytes_out sec (to);
   sec.begin ();
 
+  /* We only record undefs that undefine an imported macro, so we
+     should never find one undefing a keyword.  */
   if (cpp_undefs)
     for (unsigned ix = 0; ix != cpp_undefs->length (); ix++)
       {

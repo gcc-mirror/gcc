@@ -1,3 +1,11 @@
+2018-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	Implement p1103r0 19.3/2 not-a-keyword.
+	gcc/cp/
+	* module (module_state::write_define): Don't export keywords.
+	gcc/testsuite/
+	* g++.dg/modules/legacy-7_{a.H,b.C}: New.
+
 2018-09-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
