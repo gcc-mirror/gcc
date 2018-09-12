@@ -290,6 +290,8 @@ expand_normal (tree exp)
    a string constant.  */
 extern tree string_constant (tree, tree *, tree *, tree *);
 
+extern enum tree_code maybe_optimize_mod_cmp (enum tree_code, tree *, tree *);
+
 /* Two different ways of generating switch statements.  */
 extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, profile_probability);
 extern int try_tablejump (tree, tree, tree, tree, rtx, rtx, profile_probability);

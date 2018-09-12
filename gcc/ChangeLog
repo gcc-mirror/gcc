@@ -1,3 +1,12 @@
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82853
+	* expr.h (maybe_optimize_mod_cmp): Declare.
+	* expr.c (mod_inv): New function.
+	(maybe_optimize_mod_cmp): New function.
+	(do_store_flag): Use it.
+	* cfgexpand.c (expand_gimple_cond): Likewise.
+
 2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
             Julian Brown  <julian@codesourcery.com>
 

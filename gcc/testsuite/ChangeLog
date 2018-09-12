@@ -1,3 +1,9 @@
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82853
+	* gcc.target/i386/pr82853-1.c: New test.
+	* gcc.target/i386/pr82853-2.c: New test.
+
 2018-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87280
