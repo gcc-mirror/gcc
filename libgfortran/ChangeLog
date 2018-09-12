@@ -1,3 +1,7 @@
+2018-09-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	* runtime/minimal.c (exit): Only work around nvptx bugs on nvptx.
+
 2018-09-07  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* runtime/environ.c (init_unsigned_integer): Remove.
