@@ -6471,6 +6471,17 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 		== (EDGE_DFS_BACK|EDGE_EXECUTABLE)
 		&& rpo_state[bb_to_rpo[e->dest->index]].iterate)
 	      {
+		int destidx = bb_to_rpo[e->dest->index];
+		if (!rpo_state[destidx].visited)
+		  {
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      fprintf (dump_file, "Unvisited destination %d\n",
+			       e->dest->index);
+		    if (iterate_to == -1
+			|| destidx < iterate_to)
+		      iterate_to = destidx;
+		    continue;
+		  }
 		if (dump_file && (dump_flags & TDF_DETAILS))
 		  fprintf (dump_file, "Looking for changed values of backedge "
 			   "%d->%d destination PHIs\n",
@@ -6497,7 +6508,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 			    && dump_file && (dump_flags & TDF_DETAILS))
 			  fprintf (dump_file, "PHI was CSEd and hashtable "
 				   "state (changed)\n");
-			int destidx = bb_to_rpo[e->dest->index];
 			if (iterate_to == -1
 			    || destidx < iterate_to)
 			  iterate_to = destidx;

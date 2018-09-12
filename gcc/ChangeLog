@@ -1,3 +1,9 @@
+2018-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87266
+	* tree-ssa-sccvn.c (do_rpo_vn): Always iterate to not yet
+	visited blocks.
+
 2018-09-12  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.md (PFPO_RND_MODE_DFP, PFPO_RND_MODE_BFP): New
