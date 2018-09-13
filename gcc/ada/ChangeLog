@@ -1,5 +1,9 @@
 2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* Makefile.rtl (arm% linux-gnueabi%): Always set EH_MECHANISM to -arm.
+
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
 	PR ada/81103
 	* terminals.c: Do not include termio.h.
 

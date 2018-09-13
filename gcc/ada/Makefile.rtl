@@ -2140,15 +2140,10 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
   system.ads<libgnat/system-linux-arm.ads
 
-  ifeq ($(strip $(filter-out arm%b,$(target_cpu))),)
-    EH_MECHANISM=
-  else
-    EH_MECHANISM=-arm
-  endif
-
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
+  EH_MECHANISM=-arm
   THREADSLIB = -lpthread
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
