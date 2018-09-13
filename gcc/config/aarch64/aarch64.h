@@ -480,6 +480,9 @@ extern unsigned aarch64_architecture_version;
 #undef DONT_USE_BUILTIN_SETJMP
 #define DONT_USE_BUILTIN_SETJMP 1
 
+#undef TARGET_COMPUTE_FRAME_LAYOUT
+#define TARGET_COMPUTE_FRAME_LAYOUT aarch64_layout_frame
+
 /* Register in which the structure value is to be returned.  */
 #define AARCH64_STRUCT_VALUE_REGNUM R8_REGNUM
 
