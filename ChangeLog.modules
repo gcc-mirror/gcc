@@ -1,5 +1,14 @@
 2018-09-13  Nathan Sidwell  <nathan@acm.org>
 
+	Reading location spans (but not using them).
+	gcc/cp/
+	* module.c (loc_range_t): Global typedef.
+	(loc_spans::release): Delete.
+	(slurping): Add new range locs.
+	(module_state::write_locations): Adjust.
+	(module_state::read_locations): New.
+	(module_state::read): Call it.
+
 	Stop passing line_map around.  There is only one.
 	gcc/cp/
 	* cp-tree.h (import_module, declare_module, atom_module_preamble)

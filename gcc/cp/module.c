@@ -2534,6 +2534,9 @@ trees_out::~trees_out ()
 /* I use half-open [first,second) ranges.  */
 typedef std::pair<unsigned,unsigned> range_t;
 
+/* A range of locations.  */
+typedef std::pair<location_t,location_t> loc_range_t;
+
 /* Spans of the line maps that are occupied by this TU.  I.e. not
    within imports.  Only extended when in an interface unit.
    Interval zero corresponds to the forced header linemap(s).  This
@@ -2542,16 +2545,12 @@ typedef std::pair<unsigned,unsigned> range_t;
 class loc_spans
 {
 public:
-  /* A range of locations.  */
-  typedef std::pair<location_t,location_t> loc_range_t;
-
-public:
   /* An interval of line maps.  The line maps here represent a contiguous
      non-imported range.  */
   struct span {
     loc_range_t ordinary;	/* Ordinary map location range. */
-    loc_range_t macro;	/* Macro map location range.  */
-    range_t offsets;	/* Offsets to normalize.  */
+    loc_range_t macro;		/* Macro map location range.  */
+    loc_range_t offsets;	/* Offsets to normalize.  */
   };
 
 private:
@@ -2597,10 +2596,6 @@ public:
 	interval.macro.second = interval.macro.first;
 	spans.quick_push (interval);
       }
-  }
-  void release ()
-  {
-    spans.truncate (0);
   }
 
 public:
@@ -2709,6 +2704,10 @@ struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
   unsigned current;	/* Section currently being loaded.  */
   unsigned remaining;	/* Number of lazy sections yet to read.  */
   unsigned lru;		/* An LRU counter.  */
+
+  /// New location stuff
+  loc_range_t GTY((skip)) ordinary_range;
+  loc_range_t GTY((skip)) macro_range;
 
   bool pre_early_ok;
 
@@ -9826,78 +9825,58 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
   dump () && dump ("Writing locations");
   dump.indent ();
 
-  range_t num_maps (0,0);
+  range_t num_maps (0, 0);
   auto_vec<const char *> filenames;
 
-  /* We first have to figure the remapping of location spans.  */
+  /* We first have to figure the alignment of location spans and determine
+     the unique filenames.  */
   unsigned max_align = 0;
-  location_t used = 0;
-  for (unsigned ix = 0; ix != spans.length (); ix++)
+  for (unsigned ix = 1; ix != spans.length (); ix++)
     {
-      loc_spans::span &interval = spans[ix];
+      loc_spans::span &span = spans[ix];
       line_map_ordinary const *omap
 	= linemap_check_ordinary (linemap_lookup (line_table,
-						  interval.ordinary.first));
-
-      if (!omap)
-	/* lookup returns NULL for the initial span.  */
-	omap = LINEMAPS_ORDINARY_MAP_AT (line_table, 0);
+						  span.ordinary.first));
 
       /* We should exactly match up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap)
-			   == interval.ordinary.first);
+      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
       unsigned align = 0;
       line_map_ordinary const *fmap = omap;
-      for (; MAP_START_LOCATION (omap) < interval.ordinary.second; omap++)
+      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
 	{
-	  if (ix)
+	  const char *fname = ORDINARY_MAP_FILE_NAME (omap);
+
+	  /* We should never find a module linemap in an interval.  */
+	  gcc_checking_assert (!MAP_MODULE_P (omap));
+
+	  /* We expect very few filenames, so just an array.  */
+	  for (unsigned jx = filenames.length (); jx--;)
 	    {
-	      const char *fname = ORDINARY_MAP_FILE_NAME (omap);
-
-	      /* We should never find a module linemap in an interval.  */
-	      gcc_checking_assert (!MAP_MODULE_P (omap));
-
-	      /* We expect very few filenames, so just an array.  */
-	      for (unsigned jx = filenames.length (); jx--;)
+	      const char *name = filenames[jx];
+	      if (0 == strcmp (name, fname))
 		{
-		  const char *name = filenames[jx];
-		  if (0 == strcmp (name, fname))
-		    {
-		      /* Reset the linemap's name, because for things like
-			 preprocessed input we could have multple
-			 instances of the same name, and we'd rather not
-			 percolate that.  */
-		      const_cast <line_map_ordinary *> (omap)->to_file = name;
-		      fname = NULL;
-		      break;
-		    }
+		  /* Reset the linemap's name, because for things like
+		     preprocessed input we could have multple
+		     instances of the same name, and we'd rather not
+		     percolate that.  */
+		  const_cast <line_map_ordinary *> (omap)->to_file = name;
+		  fname = NULL;
+		  break;
 		}
-	      if (fname)
-		filenames.safe_push (fname);
 	    }
+	  if (fname)
+	    filenames.safe_push (fname);
 	  if (align < omap->m_column_and_range_bits)
 	    align = omap->m_column_and_range_bits;
 	}
 
       /* Again, we should finish exactly matched up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap)
-			   == interval.ordinary.second);
+      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.second);
       unsigned count = omap - fmap;
+      gcc_checking_assert (count);
+      num_maps.first += count;
 
-      /* Do not count the fixed-header interval.  We don't reallocate it.  */
-      if (ix)
-	{
-	  gcc_checking_assert (count);
-	  num_maps.first += count;
-	}
-
-      /* We want to remap the first location of this interval to the
-	 last remapped location of the previous interval (USED).  But
-	 we also have to preserve the bottom ALIGN bits of this
-	 intervals line maps.  */
-      location_t lower = interval.ordinary.first & ~((1u << align) - 1);
-      interval.offsets.first = lower - used;
-      used += MAP_START_LOCATION (omap) - lower;
+      span.offsets.first = align;
       if (max_align < align)
 	max_align = align;
     }
@@ -9916,43 +9895,146 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
       sec.str (fname);
     }
 
-  /* Write the ordinary maps.  */
-  dump () && dump ("Ordinary maps:%u, maxalign:%u", num_maps.first, max_align);
-  sec.u (num_maps.first);
-  sec.u (max_align);
-  sec.u (spans[1].ordinary.first);
-  for (unsigned ix = 1; ix != spans.length (); ix++)
-    {
-      loc_spans::span &interval = spans[ix];
-      line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (line_table,
-						  interval.ordinary.first));
+  dump () && dump ("Reserved locations below %u", spans[0].ordinary.second);
+  sec.u (spans[0].ordinary.second); /* The reserved locations.  */
 
-      for (; MAP_START_LOCATION (omap) < interval.ordinary.second; omap++)
-	{
-	  sec.u (MAP_START_LOCATION (omap) - interval.offsets.first);
+  {
+    /* Write the ordinary maps.  */
+    dump () && dump ("Ordinary maps:%u, maxalign:%u", num_maps.first, max_align);
+    sec.u (num_maps.first); /* Num maps.  */
+    sec.u (max_align);	/* Maximum alignment.  */
 
-	  /* Making accessors just for here, seems excessive.  */
-	  sec.u (omap->reason);
-	  sec.u (omap->sysp);
-	  sec.u (omap->m_column_and_range_bits);
-	  sec.u (omap->m_range_bits);
+    location_t offset = ((spans[0].ordinary.second + ((1u << max_align) - 1))
+			 & ~((1u << max_align) - 1));
+    sec.u (offset);
+    for (unsigned ix = 1; ix != spans.length (); ix++)
+      {
+	loc_spans::span &span = spans[ix];
+	line_map_ordinary const *omap
+	  = linemap_check_ordinary (linemap_lookup (line_table,
+						    span.ordinary.first));
+	unsigned align = span.offsets.first;
+	offset = (offset + ((1u << align) - 1)) & ~((1u << align) - 1);
+	location_t base = MAP_START_LOCATION (omap) & ~((1u << align) - 1);
+	span.offsets.first = base - offset;
 
-	  const char *fname = ORDINARY_MAP_FILE_NAME (omap);
-	  for (unsigned ix = 0; ix != filenames.length (); ix++)
-	    if (filenames[ix] == fname)
-	      {
-		sec.u (ix);
-		break;
-	      }
-	  sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (omap));
+	for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+	  {
+	    sec.i (MAP_START_LOCATION (omap) - span.offsets.first);
 
-	  write_location (sec, linemap_included_from (omap));
-	}
-    }
+	    /* Making accessors just for here, seems excessive.  */
+	    sec.u (omap->reason);
+	    sec.u (omap->sysp);
+	    sec.u (omap->m_column_and_range_bits);
+	    sec.u (omap->m_range_bits);
+
+	    const char *fname = ORDINARY_MAP_FILE_NAME (omap);
+	    for (unsigned ix = 0; ix != filenames.length (); ix++)
+	      if (filenames[ix] == fname)
+		{
+		  sec.u (ix);
+		  break;
+		}
+	    sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (omap));
+
+	    /* Write the included from location, which means reading
+	       it while reading in the ordinary maps.  So we'd better
+	       not be getting ahead of ourselves.  */
+	    location_t included_from = linemap_included_from (omap);
+	    gcc_checking_assert (included_from < MAP_START_LOCATION (omap));
+	    // FIXME: write_location (sec, from);
+	  }
+	offset = MAP_START_LOCATION (omap) - span.offsets.first;
+      }
+    sec.u (offset);
+  }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".loc"), crc_p);
   dump.outdent ();
+}
+
+bool
+module_state::read_locations ()
+{
+  bytes_in sec;
+
+  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".loc"))
+    return false;
+  dump () && dump ("Reading locations");
+  dump.indent ();
+
+  /* Read the filename table.  */
+  unsigned len = sec.u ();
+  dump () && dump ("%u source file names", len);
+  auto_vec<const char *> filenames (len);
+  for (unsigned ix = 0; ix != len; ix++)
+    {
+      size_t l;
+      const char *buf = sec.str (&l);
+      char *fname = XNEWVEC (char, l + 1);
+      memcpy (fname, buf, l + 1);
+      dump () && dump ("Source file[%u]=%s", ix, fname);
+      /* We leak these names into the line-map table.  But it
+	 doesn't own them.  */
+      filenames.quick_push (fname);
+    }
+
+  unsigned reserved_loc = sec.u ();
+  dump () && dump ("Reserved locations below %u", reserved_loc);
+  slurp->pre_early_ok = reserved_loc == spans[0].ordinary.second;
+  if (!slurp->pre_early_ok)
+    /* Clue the user in.  */
+    warning_at (loc, 0, "prefix mismatch, early locations are not represented");
+
+  {
+    /* Read the ordinary maps.  */
+    unsigned num_ordinary = sec.u (); 
+    unsigned max_align = sec.u ();
+
+    dump () && dump ("Ordinary maps:%u, maxalign:%u", num_ordinary, max_align);
+
+
+    line_map_ordinary *base = static_cast <line_map_ordinary *>
+      (line_map_new_raw (line_table, false, num_ordinary));
+    location_t offset = ((line_table->highest_location + (1u << max_align))
+			 & ~((1u << max_align) - 1));
+    location_t zero = sec.u ();
+    location_t lwm = offset;
+    slurp->ordinary_range.first = zero;
+
+    for (unsigned ix = 0; ix != num_ordinary; ix++)
+      {
+	line_map_ordinary *map = base + ix;
+	map->start_location = sec.i () - zero + offset;
+	if (map->start_location < lwm)
+	  sec.set_overrun ();
+	lwm = map->start_location;
+	map->reason = lc_reason (sec.u ());
+	map->sysp = sec.u ();
+	map->m_column_and_range_bits = sec.u ();
+	map->m_range_bits = sec.u ();
+
+	unsigned fnum = sec.u ();
+	map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
+	map->to_line = sec.u ();
+
+	//	map->included_from = read_location (sec);
+	if (map->included_from == UNKNOWN_LOCATION)
+	  map->included_from = loc;
+      }
+
+    location_t hwm = sec.u ();
+    slurp->ordinary_range.second = hwm;
+    line_table->highest_location = hwm - zero + offset - 1;
+    if (lwm > line_table->highest_location)
+      sec.set_overrun ();
+  }
+
+  dump.outdent ();
+  if (!sec.end (slurp->from))
+    return false;
+
+  return true;
 }
 
 /* Write a define on NODE.  */
@@ -10579,6 +10661,10 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
 
   if (!read_config (range, unnamed, check_crc))
     return;
+
+  if (modules_atom_p ())
+    if (!read_locations ())
+      return;
 
   /* Read the early locations.  */
   if (modules_atom_p ())
@@ -11334,9 +11420,6 @@ module_state::atom_preamble (location_t loc, cpp_reader *reader)
       interface->maybe_create_loc ();
       spans.close ();
     }
-  else
-    /* We're just not interested in line map intervals.  */
-    spans.release ();
 
   /* Check we know all the BMIs.  There's no point trying to load any
      if some are missing.  */
