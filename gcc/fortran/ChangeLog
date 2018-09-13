@@ -1,3 +1,12 @@
+2018-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from trunk
+	PR fortran/87284
+	* trans-expr.c (gfc_trans_class_init_assign): Access to
+	to array elements of the dynamic type requires that the array
+	reference be added to the class expression and not the _data
+	component, unlike scalar expressions.
+
 2018-09-07  Janus Weil  <janus@gcc.gnu.org>
 
 	Backported from trunk
