@@ -63,9 +63,11 @@ enum GoPragma
   GOPRAGMA_SYSTEMSTACK = 1 << 5,	// Must run on system stack.
   GOPRAGMA_NOWRITEBARRIER = 1 << 6,	// No write barriers.
   GOPRAGMA_NOWRITEBARRIERREC = 1 << 7,	// No write barriers here or callees.
-  GOPRAGMA_CGOUNSAFEARGS = 1 << 8,	// Pointer to arg is pointer to all.
-  GOPRAGMA_UINTPTRESCAPES = 1 << 9,	// uintptr(p) escapes.
-  GOPRAGMA_NOTINHEAP = 1 << 10		// type is not in heap.
+  GOPRAGMA_YESWRITEBARRIERREC = 1 << 8,	// Stops nowritebarrierrec.
+  GOPRAGMA_MARK = 1 << 9,		// Marker for nowritebarrierrec.
+  GOPRAGMA_CGOUNSAFEARGS = 1 << 10,	// Pointer to arg is pointer to all.
+  GOPRAGMA_UINTPTRESCAPES = 1 << 11,	// uintptr(p) escapes.
+  GOPRAGMA_NOTINHEAP = 1 << 12		// type is not in heap.
 };
 
 // A token returned from the lexer.

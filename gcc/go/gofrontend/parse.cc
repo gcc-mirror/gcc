@@ -2360,7 +2360,10 @@ Parse::function_decl(unsigned int pragmas)
 	{ GOPRAGMA_NOINLINE, "noinline", false, true, true },
 	{ GOPRAGMA_SYSTEMSTACK, "systemstack", false, true, true },
 	{ GOPRAGMA_NOWRITEBARRIER, "nowritebarrier", false, true, true },
-	{ GOPRAGMA_NOWRITEBARRIERREC, "nowritebarrierrec", false, true, true },
+	{ GOPRAGMA_NOWRITEBARRIERREC, "nowritebarrierrec", false, true,
+	  true },
+	{ GOPRAGMA_YESWRITEBARRIERREC, "yeswritebarrierrec", false, true,
+	  true },
 	{ GOPRAGMA_CGOUNSAFEARGS, "cgo_unsafe_args", false, true, true },
 	{ GOPRAGMA_UINTPTRESCAPES, "uintptrescapes", true, true, true },
       };
