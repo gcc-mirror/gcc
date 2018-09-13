@@ -135,6 +135,7 @@ var trace struct {
 }
 
 // traceBufHeader is per-P tracing buffer.
+//go:notinheap
 type traceBufHeader struct {
 	link      traceBufPtr              // in trace.empty/full
 	lastTicks uint64                   // when we wrote the last event
@@ -747,7 +748,8 @@ func (tab *traceStackTable) put(pcs []location) uint32 {
 	stk.n = len(pcs)
 	stkpc := stk.stack()
 	for i, pc := range pcs {
-		stkpc[i] = pc
+		// Use memmove to avoid write barrier.
+		memmove(unsafe.Pointer(&stkpc[i]), unsafe.Pointer(&pc), unsafe.Sizeof(pc))
 	}
 	part := int(hash % uintptr(len(tab.tab)))
 	stk.link = tab.tab[part]

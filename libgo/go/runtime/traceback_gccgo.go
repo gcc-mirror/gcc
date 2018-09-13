@@ -186,7 +186,7 @@ func tracebackothers(me *g) {
 	if gp != nil && gp != me {
 		print("\n")
 		goroutineheader(gp)
-		gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
+		gp.traceback = (uintptr)(noescape(unsafe.Pointer(&tb)))
 		getTraceback(me, gp)
 		printtrace(tb.locbuf[:tb.c], nil)
 		printcreatedby(gp)
@@ -220,7 +220,7 @@ func tracebackothers(me *g) {
 			print("\tgoroutine in C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
-			gp.traceback = (*tracebackg)(noescape(unsafe.Pointer(&tb)))
+			gp.traceback = (uintptr)(noescape(unsafe.Pointer(&tb)))
 			getTraceback(me, gp)
 			printtrace(tb.locbuf[:tb.c], nil)
 			printcreatedby(gp)

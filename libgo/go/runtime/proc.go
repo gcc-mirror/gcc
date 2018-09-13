@@ -1140,7 +1140,7 @@ func startTheWorldWithSema(emitTraceEvent bool) int64 {
 func kickoff() {
 	gp := getg()
 
-	if gp.traceback != nil {
+	if gp.traceback != 0 {
 		gtraceback(gp)
 	}
 
@@ -3097,7 +3097,7 @@ func newproc(fn uintptr, arg unsafe.Pointer) *g {
 	} else {
 		resetNewG(newg, &sp, &spsize)
 	}
-	newg.traceback = nil
+	newg.traceback = 0
 
 	if readgstatus(newg) != _Gdead {
 		throw("newproc1: new g is not Gdead")

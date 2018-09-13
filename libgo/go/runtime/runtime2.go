@@ -431,7 +431,7 @@ type g struct {
 
 	isSystemGoroutine bool // whether goroutine is a "system" goroutine
 
-	traceback *tracebackg // stack traceback buffer
+	traceback uintptr // stack traceback buffer
 
 	context      g_ucontext_t // saved context for setcontext
 	stackcontext [10]uintptr  // split-stack context
