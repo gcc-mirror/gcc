@@ -280,17 +280,19 @@ static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 #undef  TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P visium_legitimate_constant_p
 
-#undef TARGET_LRA_P
+#undef  TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P visium_legitimate_address_p
 
-#undef TARGET_PRINT_OPERAND_PUNCT_VALID_P
+#undef  TARGET_PRINT_OPERAND_PUNCT_VALID_P
 #define TARGET_PRINT_OPERAND_PUNCT_VALID_P visium_print_operand_punct_valid_p
-#undef TARGET_PRINT_OPERAND
+
+#undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND visium_print_operand
-#undef TARGET_PRINT_OPERAND_ADDRESS
+
+#undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS visium_print_operand_address
 
 #undef  TARGET_ATTRIBUTE_TABLE
@@ -347,26 +349,29 @@ static HOST_WIDE_INT visium_constant_alignment (const_tree, HOST_WIDE_INT);
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT visium_trampoline_init
 
-#undef TARGET_MD_ASM_ADJUST
+#undef  TARGET_MD_ASM_ADJUST
 #define TARGET_MD_ASM_ADJUST visium_md_asm_adjust
 
-#undef TARGET_FLAGS_REGNUM
+#undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM FLAGS_REGNUM
 
-#undef TARGET_HARD_REGNO_NREGS
+#undef  TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS visium_hard_regno_nregs
 
-#undef TARGET_HARD_REGNO_MODE_OK
+#undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK visium_hard_regno_mode_ok
 
-#undef TARGET_MODES_TIEABLE_P
+#undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P visium_modes_tieable_p
 
-#undef TARGET_CAN_CHANGE_MODE_CLASS
+#undef  TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS visium_can_change_mode_class
 
-#undef TARGET_CONSTANT_ALIGNMENT
+#undef  TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT visium_constant_alignment
+
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
