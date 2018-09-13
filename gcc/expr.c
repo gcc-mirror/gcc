@@ -11523,6 +11523,98 @@ mod_inv (const wide_int &a, const wide_int &b)
   return x1;
 }
 
+/* Optimize x % C1 == C2 for signed modulo if C1 is a power of two and C2
+   is non-zero and C3 ((1<<(prec-1)) | (C1 - 1)):
+   for C2 > 0 to x & C3 == C2
+   for C2 < 0 to x & C3 == (C2 & C3).  */
+enum tree_code
+maybe_optimize_pow2p_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
+{
+  gimple *stmt = get_def_for_expr (*arg0, TRUNC_MOD_EXPR);
+  tree treeop0 = gimple_assign_rhs1 (stmt);
+  tree treeop1 = gimple_assign_rhs2 (stmt);
+  tree type = TREE_TYPE (*arg0);
+  scalar_int_mode mode;
+  if (!is_a <scalar_int_mode> (TYPE_MODE (type), &mode))
+    return code;
+  if (GET_MODE_BITSIZE (mode) != TYPE_PRECISION (type)
+      || TYPE_PRECISION (type) <= 1
+      || TYPE_UNSIGNED (type)
+      /* Signed x % c == 0 should have been optimized into unsigned modulo
+	 earlier.  */
+      || integer_zerop (*arg1)
+      /* If c is known to be non-negative, modulo will be expanded as unsigned
+	 modulo.  */
+      || get_range_pos_neg (treeop0) == 1)
+    return code;
+
+  /* x % c == d where d < 0 && d <= -c should be always false.  */
+  if (tree_int_cst_sgn (*arg1) == -1
+      && -wi::to_widest (treeop1) >= wi::to_widest (*arg1))
+    return code;
+
+  int prec = TYPE_PRECISION (type);
+  wide_int w = wi::to_wide (treeop1) - 1;
+  w |= wi::shifted_mask (0, prec - 1, true, prec);
+  tree c3 = wide_int_to_tree (type, w);
+  tree c4 = *arg1;
+  if (tree_int_cst_sgn (*arg1) == -1)
+    c4 = wide_int_to_tree (type, w & wi::to_wide (*arg1));
+
+  rtx op0 = expand_normal (treeop0);
+  treeop0 = make_tree (TREE_TYPE (treeop0), op0);
+
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  do_pending_stack_adjust ();
+
+  location_t loc = gimple_location (stmt);
+  struct separate_ops ops;
+  ops.code = TRUNC_MOD_EXPR;
+  ops.location = loc;
+  ops.type = TREE_TYPE (treeop0);
+  ops.op0 = treeop0;
+  ops.op1 = treeop1;
+  ops.op2 = NULL_TREE;
+  start_sequence ();
+  rtx mor = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
+				EXPAND_NORMAL);
+  rtx_insn *moinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mocost = seq_cost (moinsns, speed_p);
+  mocost += rtx_cost (mor, mode, EQ, 0, speed_p);
+  mocost += rtx_cost (expand_normal (*arg1), mode, EQ, 1, speed_p);
+
+  ops.code = BIT_AND_EXPR;
+  ops.location = loc;
+  ops.type = TREE_TYPE (treeop0);
+  ops.op0 = treeop0;
+  ops.op1 = c3;
+  ops.op2 = NULL_TREE;
+  start_sequence ();
+  rtx mur = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
+				EXPAND_NORMAL);
+  rtx_insn *muinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mucost = seq_cost (muinsns, speed_p);
+  mucost += rtx_cost (mur, mode, EQ, 0, speed_p);
+  mucost += rtx_cost (expand_normal (c4), mode, EQ, 1, speed_p);
+
+  if (mocost <= mucost)
+    {
+      emit_insn (moinsns);
+      *arg0 = make_tree (TREE_TYPE (*arg0), mor);
+      return code;
+    }
+
+  emit_insn (muinsns);
+  *arg0 = make_tree (TREE_TYPE (*arg0), mur);
+  *arg1 = c4;
+  return code;
+}
+
 /* Attempt to optimize unsigned (X % C1) == C2 (or (X % C1) != C2).
    If C1 is odd to:
    (X - C2) * C3 <= C4 (or >), where
@@ -11561,8 +11653,6 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
   tree treeop1 = gimple_assign_rhs2 (stmt);
   if (TREE_CODE (treeop0) != SSA_NAME
       || TREE_CODE (treeop1) != INTEGER_CST
-      /* x % pow2 is handled right already.  */
-      || integer_pow2p (treeop1)
       /* Don't optimize the undefined behavior case x % 0;
 	 x % 1 should have been optimized into zero, punt if
 	 it makes it here for whatever reason;
@@ -11571,6 +11661,11 @@ maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
       /* Likewise x % c == d where d >= c should be always false.  */
       || tree_int_cst_le (treeop1, *arg1))
     return code;
+
+  /* Unsigned x % pow2 is handled right already, for signed
+     modulo handle it in maybe_optimize_pow2p_mod_cmp.  */
+  if (integer_pow2p (treeop1))
+    return maybe_optimize_pow2p_mod_cmp (code, arg0, arg1);
 
   tree type = TREE_TYPE (*arg0);
   scalar_int_mode mode;

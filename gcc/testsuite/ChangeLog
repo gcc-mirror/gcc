@@ -1,4 +1,11 @@
 2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/87290
+	* gcc.target/i386/pr87290.c: New test.
+	* gcc.c-torture/execute/pr87290.c: New test.
+
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87287
 	* gcc.dg/tree-ssa/pr87287.c: New test.

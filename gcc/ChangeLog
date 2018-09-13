@@ -1,4 +1,11 @@
 2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/87290
+	* expr.c (maybe_optimize_pow2p_mod_cmp): New function.
+	(maybe_optimize_mod_cmp): Use it if integer_pow2p treeop1.
+
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87287
 	* fold-const.c (fold_binary_loc) <case EQ_EXPR>: Move signed modulo
