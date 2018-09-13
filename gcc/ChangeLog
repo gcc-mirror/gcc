@@ -1,3 +1,8 @@
+2018-09-13  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* haifa-sched.c (rank_for_schedule): Schedule by INSN_COST.
+	(rfs_decision): New scheduling decision.
+
 2018-09-13  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/87134
