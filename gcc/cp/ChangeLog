@@ -1,3 +1,120 @@
+2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/87093
+	* method.c (constructible_expr): We're in an unevaluated context
+	in all cases, not just for class targets.
+
+2018-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (struct conversion_info): Add "loc" field.
+	(arg_conversion_rejection): Add "loc" param, using it to
+	initialize the new field.
+	(bad_arg_conversion_rejection): Likewise.
+	(explicit_conversion_rejection): Initialize the new field to
+	UNKNOWN_LOCATION.
+	(template_conversion_rejection): Likewise.
+	(add_function_candidate): Pass on the argument location to the new
+	param of arg_conversion_rejection.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(single_z_candidate): New function.
+	(maybe_get_bad_conversion_for_unmatched_call): New function.
+	(complain_about_bad_argument): New function, based on part of
+	convert_for_assignment.
+	(build_new_method_call_1): Split out handling of the "no viable
+	candidates" case into...
+	(complain_about_no_candidates_for_method_call): ...this new
+	function, and use the new functions above to special-case the
+	handling of a single non-viable candidate due to a bad argument.
+	* cp-tree.h (complain_about_bad_argument): New decl.
+	* typeck.c (convert_for_assignment): Split out one error-handling
+	case into complain_about_bad_argument.
+
+2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/86336
+	* semantics.c (finish_omp_clauses): Treat C++ references the same in
+	OpenACC as OpenMP.
+
+2018-08-28  Martin Liska  <mliska@suse.cz>
+
+	* constexpr.c (cxx_eval_call_expression): Add quotes
+	to -fconstexpr-depth=.
+
+2018-09-10  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (build_vtbl_ref): Remove.
+	(build_vtbl_ref_1): Rename to build_vtbl_ref.
+	(build_vfn_ref): Call build_vtbl_ref instead of build_vtbl_ref_1.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
+	* call.c (struct conversion): Update commentary.
+	(standard_conversion): Set rvaluedness_matches_p if LOOKUP_PREFER_RVALUE
+	for ck_base.
+
+2018-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86678 - constexpr function with non-constant after return.
+	* constexpr.c (potential_constant_expression_1): Add jump_target.
+	(breaks): Check for BREAK_STMT.
+	(continues): Check for CONTINUE_STMT.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	* cxx-pretty-print.c (cxx_pretty_printer::statement) <case
+	RANGE_FOR_SMT>: Handle RANGE_FOR_INIT_STMT.
+
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87152 - range-based for loops with initializer broken in templates.
+	* constexpr.c (potential_constant_expression_1) <case RANGE_FOR_STMT>:
+	Recur into RANGE_FOR_INIT_STMT.
+	* cp-tree.def: Add RANGE_FOR_INIT_STMT to RANGE_FOR_STMT.
+	* cp-tree.h (RANGE_FOR_INIT_STMT): Define.
+	* dump.c (cp_dump_tree) <case RANGE_FOR_STMT>: Also dump
+	RANGE_FOR_INIT_STMT.
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: Recur into
+	RANGE_FOR_INIT_STMT.
+	* semantics.c (begin_range_for_stmt): Adjust call to build_stmt.
+	Do put the init statement in RANGE_FOR_INIT_STMT.
+	(finish_range_for_decl): Pop it for templates.
+
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (check_initializer): Call cp_complete_array_type.
+
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109, wrong overload with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Use NULL instead of 0.  Bail
+	out if performing the maybe-rvalue overload resolution and a conversion
+	function is getting called.
+
+	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Handle calls
+	to std::move or std::forward.
+	(is_std_forward_p): New function.
+
+2018-09-05  Pádraig Brady  <p@draigbrady.com>
+
+	PR c++/87185
+	* lambda.c (prune_lambda_captures): Protect against const_vars.get
+	returning NULL.
+
+2018-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (treat_lvalue_as_rvalue_p): Declare.
+	* except.c (build_throw): Use it.  Use CP_TYPE_VOLATILE_P.
+	* typeck.c (treat_lvalue_as_rvalue_p): No longer static.  Add PARM_OK
+	parameter.
+	(maybe_warn_pessimizing_move): Adjust treat_lvalue_as_rvalue_p call.
+	(check_return_expr): Likewise.
+
 2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84980

@@ -1519,8 +1519,8 @@ prune_lambda_captures (tree body)
       tree cap = *capp;
       if (tree var = var_to_maybe_prune (cap))
 	{
-	  tree *use = *const_vars.get (var);
-	  if (TREE_CODE (*use) == DECL_EXPR)
+	  tree **use = const_vars.get (var);
+	  if (use && TREE_CODE (**use) == DECL_EXPR)
 	    {
 	      /* All uses of this capture were folded away, leaving only the
 		 proxy declaration.  */
@@ -1535,7 +1535,7 @@ prune_lambda_captures (tree body)
 	      *fieldp = DECL_CHAIN (*fieldp);
 
 	      /* And remove the capture proxy declaration.  */
-	      *use = void_node;
+	      **use = void_node;
 	      continue;
 	    }
 	}

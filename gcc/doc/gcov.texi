@@ -255,7 +255,7 @@ lcount:36,1,0
 
 @item -j
 @itemx --human-readable
-Write counts in human readable format (like 24k).
+Write counts in human readable format (like 24.6k).
 
 @item -k
 @itemx --use-colors

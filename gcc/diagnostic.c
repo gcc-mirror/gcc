@@ -1443,6 +1443,18 @@ sorry (const char *gmsgid, ...)
   va_end (ap);
 }
 
+/* Same as above, but use location LOC instead of input_location.  */
+void
+sorry_at (location_t loc, const char *gmsgid, ...)
+{
+  auto_diagnostic_group d;
+  va_list ap;
+  va_start (ap, gmsgid);
+  rich_location richloc (line_table, loc);
+  diagnostic_impl (&richloc, -1, gmsgid, &ap, DK_SORRY);
+  va_end (ap);
+}
+
 /* Return true if an error or a "sorry" has been seen.  Various
    processing is disabled after errors.  */
 bool

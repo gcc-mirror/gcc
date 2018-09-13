@@ -2542,7 +2542,7 @@ enum rfs_decision {
   RFS_SCHED_GROUP, RFS_PRESSURE_DELAY, RFS_PRESSURE_TICK,
   RFS_FEEDS_BACKTRACK_INSN, RFS_PRIORITY, RFS_SPECULATION,
   RFS_SCHED_RANK, RFS_LAST_INSN, RFS_PRESSURE_INDEX,
-  RFS_DEP_COUNT, RFS_TIE, RFS_FUSION, RFS_N };
+  RFS_DEP_COUNT, RFS_TIE, RFS_FUSION, RFS_COST, RFS_N };
 
 /* Corresponding strings for print outs.  */
 static const char *rfs_str[RFS_N] = {
@@ -2550,7 +2550,7 @@ static const char *rfs_str[RFS_N] = {
   "RFS_SCHED_GROUP", "RFS_PRESSURE_DELAY", "RFS_PRESSURE_TICK",
   "RFS_FEEDS_BACKTRACK_INSN", "RFS_PRIORITY", "RFS_SPECULATION",
   "RFS_SCHED_RANK", "RFS_LAST_INSN", "RFS_PRESSURE_INDEX",
-  "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION" };
+  "RFS_DEP_COUNT", "RFS_TIE", "RFS_FUSION", "RFS_COST" };
 
 /* Statistical breakdown of rank_for_schedule decisions.  */
 struct rank_for_schedule_stats_t { unsigned stats[RFS_N]; };
@@ -2802,6 +2802,14 @@ rank_for_schedule (const void *x, const void *y)
 
   if (flag_sched_dep_count_heuristic && val != 0)
     return rfs_result (RFS_DEP_COUNT, val, tmp, tmp2);
+
+  /* Sort by INSN_COST rather than INSN_LUID.  This means that instructions
+     which take longer to execute are prioritised and it leads to more
+     dual-issue opportunities on in-order cores which have this feature.  */
+
+  if (INSN_COST (tmp) != INSN_COST (tmp2))
+    return rfs_result (RFS_COST, INSN_COST (tmp2) - INSN_COST (tmp),
+		       tmp, tmp2);
 
   /* If insns are equally good, sort by INSN_LUID (original insn order),
      so that we make the sort stable.  This minimizes instruction movement,

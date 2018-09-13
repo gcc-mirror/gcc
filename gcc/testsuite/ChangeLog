@@ -1,3 +1,264 @@
+2018-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87263
+	* gcc.dg/torture/pr87263.c: New testcase.
+	* gcc.dg/torture/ssa-fre-2.c: Likewise.
+	* gcc.dg/torture/ssa-fre-3.c: Likewise.
+	* gcc.dg/torture/ssa-fre-4.c: Likewise.
+
+2018-09-13  Omar Sandoval  <osandov@osandov.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86985
+	* gcc.dg/guality/zero-length-array.c: New test.
+
+2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
+
+	PR target/85628
+	* gcc.target/aarch64/combine_bfxil.c: New file.
+	* gcc.target/aarch64/combine_bfxil_2.c: New file.
+
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR middle-end/87290
+	* gcc.target/i386/pr87290.c: New test.
+	* gcc.c-torture/execute/pr87290.c: New test.
+
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87287
+	* gcc.dg/tree-ssa/pr87287.c: New test.
+
+2018-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* g++.dg/cpp0x/explicit4.C: Update expected output to reflect
+	special-casing of diagnostic for a single non-viable candidate due
+	to a bad argument.
+	* g++.dg/diagnostic/param-type-mismatch-2.C: Likewise.
+	Add test coverage for an unmatched overloaded operator.
+	* g++.dg/expr/pmf-1.C: Likewise.
+	* g++.old-deja/g++.bugs/900330_02.C: Likewise.
+	* g++.old-deja/g++.jason/conversion11.C: Likewise.
+	* g++.old-deja/g++.law/arg11.C: Likewise.
+	* g++.old-deja/g++.law/arm9.C: Likewise.
+	* g++.old-deja/g++.robertl/eb131.C: Likewise.
+
+2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87284
+	* gfortran.dg/allocate_with_mold_2.f90: New test.
+
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82853
+	* gcc.target/i386/pr82853-1.c: New test.
+	* gcc.target/i386/pr82853-2.c: New test.
+
+2018-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87280
+	* gcc.dg/torture/pr87280.c: New testcase.
+
+2018-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87266
+	* gcc.dg/torture/pr87266-1.c: New testcase.
+	* gcc.dg/torture/pr87266-2.c: Likewise.
+	* gcc.dg/torture/pr87266-3.c: Likewise.
+	* gcc.dg/torture/pr87266-4.c: Likewise.
+
+2018-09-12  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/dfp_to_bfp_rounding.c: New test.
+
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+	    Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR tree-optimization/86844
+	* gcc.c-torture/execute/pr86844.c: New test.
+	* gcc.dg/store_merging_22.c: New test.
+	* gcc.dg/store_merging_23.c: New test.
+
+2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87248
+	* c-c++-common/torture/pr87248.c: New test.
+
+2018-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/87172
+	* gfortran.dg/iso_c_binding_only_2.f90: New test case.
+
+2018-09-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87277
+	* gfortran.dg/select_type_43.f90: New test.
+
+2018-09-11  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.dg/driver-specs.c: New.
+
+2018-09-11  Joey Ye  <joey.ye@arm.com>
+
+	* lib/gcov.exp (verify-intermediate): Add missing close.
+
+2018-09-11  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86830
+	* gfortran.dg/typebound_call_30.f90: New test case.
+
+2018-09-10  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/85395
+	* gfortran.dg/proc_ptr_comp_52.f90: New test case.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
+	* g++.dg/cpp0x/move-return2.C: New test.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	* c-c++-common/array-init.c: Add dg-prune-output.
+	* g++.dg/cpp0x/lambda/lambda-const-this.C: Add dg-warning.
+	* g++.dg/cpp0x/lambda/lambda-in-class-neg.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-in-class.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nested.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nsdmi1.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-nsdmi4.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this17.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this18.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this2.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-this8.C: Likewise.
+	* g++.dg/cpp1y/pr64382.C: Likewise.
+	* g++.dg/cpp1y/pr77739.C: Likewise.
+	* g++.dg/cpp1z/lambda-this1.C: Likewise.
+	* g++.dg/cpp1z/lambda-this2.C: Likewise.
+	* g++.dg/template/crash84.C: Adjust dg-error.
+
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1z/direct-enum-init1.C: Remove "inside" from diagnostic
+	messages.
+
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87152 - range-based for loops with initializer broken in templates.
+	* g++.dg/cpp2a/range-for11.C: New test.
+	* g++.dg/cpp2a/range-for12.C: New test.
+	* g++.dg/cpp2a/range-for13.C: New test.
+	* g++.dg/cpp2a/range-for14.C: New test.
+	* g++.dg/cpp2a/range-for15.C: New test.
+	* g++.dg/cpp2a/range-for16.C: New test.
+	* g++.dg/cpp2a/range-for17.C: New test.
+	* g++.dg/cpp2a/range-for18.C: New test.
+	* g++.dg/parse/error61.C (foo): Adjust dg-error.
+
+2018-09-06  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR target/86731
+	* gcc.target/powerpc/pr86731.c: New test.
+	* gcc.target/powerpc/pr86731-longlong.c: New test.
+	* gcc.target/powerpc/pr86731-fwrapv.c: New test.
+	* gcc.target/powerpc/pr86731-fwrapv-longlong.c: New test.
+	* gcc.target/powerpc/pr86731-nogimplefold.c: New test.
+	* gcc.target/powerpc/pr86731-nogimplefold-longlong.c: New test.
+
+2018-09-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/pr80080-3.c: New test.
+	* gcc.target/s390/s390.exp: Make sure the new test passes
+	on all optimization levels.
+
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
+	* g++.dg/warn/Wreturn-local-addr-5.C: New test.
+
+2018-09-05  Cesar Philippidis  <cesar@codesourcery.com>
+	    Bernd Schmidt  <bernds_cb1@t-online.de>
+
+	* gcc.target/nvptx/atomic_fetch-1.c: New test.
+	* gcc.target/nvptx/atomic_fetch-1.c: New test.
+
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109, wrong overload with ref-qualifiers.
+	* g++.dg/cpp0x/ref-qual19.C: New test.
+
+2018-09-05  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	PR testsuite/52665
+	* lib/gcc-dg.exp (gcc-dg-test-1): Iterate over _required_options.
+	* lib/target-supports.exp (scan-assembler_required_options,
+	scan-assembler-not_required_options,
+	scan-assembler-times_required_options): Add -fno-ident.
+	* lib/scanasm.exp (scan-assembler-times): Fix error message.
+	* c-c++-common/ident-0a.c: New test.
+	* c-c++-common/ident-0b.c: New test.
+	* c-c++-common/ident-1a.c: New test.
+	* c-c++-common/ident-1b.c: New test.
+	* c-c++-common/ident-2a.c: New test.
+	* c-c++-common/ident-2b.c: New test.
+
+2018-09-05  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/recip_sqrt_mult_1.c: New test.
+	* gcc.dg/recip_sqrt_mult_2.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_3.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_4.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_5.c: Likewise.
+	* g++.dg/recip_sqrt_mult_1.C: Likewise.
+	* g++.dg/recip_sqrt_mult_2.C: Likewise.
+
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/87205
+	* gcc.dg/tree-ssa/pr87205-2.c: New test.
+	* gcc.dg/tree-ssa/pr87205.c: New test.
+
+2018-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87217
+	* gfortran.dg/pr87217.f: New testcase.
+
+2018-09-05   Pádraig Brady p@draigbrady.com
+
+	PR c++/87137
+	* g++.dg/abi/pr87137.C: New.
+
+	PR c++/87185
+	* g++.dg/pr87185.C: New.
+
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/87216
+	* gcc.dg/tree-prof/pr59521-3.c: Update scanned pattern
+	to support Darwin names.
+
+2018-09-05  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/loop.C: Update test to support new format.
+
+2018-09-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR debug/86593
+	* g++.dg/pr86593.C: New test.
+
+2018-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87198
+	* gcc.target/i386/pr87198.c: New test.
+
+2018-09-04  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/86744
+	* gcc.target/i386/addr-sel-1.c: Don't xfail "b\\+1" scan.
+
 2018-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87211

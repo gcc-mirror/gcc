@@ -78,48 +78,6 @@
 /* Defined for convenience.  */
 #define POINTER_BYTES (POINTER_SIZE / BITS_PER_UNIT)
 
-/* Classifies an address.
-
-   ADDRESS_REG_IMM
-       A simple base register plus immediate offset.
-
-   ADDRESS_REG_WB
-       A base register indexed by immediate offset with writeback.
-
-   ADDRESS_REG_REG
-       A base register indexed by (optionally scaled) register.
-
-   ADDRESS_REG_UXTW
-       A base register indexed by (optionally scaled) zero-extended register.
-
-   ADDRESS_REG_SXTW
-       A base register indexed by (optionally scaled) sign-extended register.
-
-   ADDRESS_LO_SUM
-       A LO_SUM rtx with a base register and "LO12" symbol relocation.
-
-   ADDRESS_SYMBOLIC:
-       A constant symbolic address, in pc-relative literal pool.  */
-
-enum aarch64_address_type {
-  ADDRESS_REG_IMM,
-  ADDRESS_REG_WB,
-  ADDRESS_REG_REG,
-  ADDRESS_REG_UXTW,
-  ADDRESS_REG_SXTW,
-  ADDRESS_LO_SUM,
-  ADDRESS_SYMBOLIC
-};
-
-struct aarch64_address_info {
-  enum aarch64_address_type type;
-  rtx base;
-  rtx offset;
-  poly_int64 const_offset;
-  int shift;
-  enum aarch64_symbol_type symbol_type;
-};
-
 /* Information about a legitimate vector immediate operand.  */
 struct simd_immediate_info
 {
@@ -927,7 +885,7 @@ static const struct tune_params qdf24xx_tunings =
   2,	/* min_div_recip_mul_df.  */
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_WEAK,	/* autoprefetcher_model.  */
-  (AARCH64_EXTRA_TUNE_NONE),		/* tune_flags.  */
+  AARCH64_EXTRA_TUNE_RENAME_LOAD_REGS, /* tune_flags.  */
   &qdf24xx_prefetch_tune
 };
 
@@ -1472,6 +1430,13 @@ aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned,
     return mode;
   else
     return SImode;
+}
+
+/* Return true if I's bits are consecutive ones from the MSB.  */
+bool
+aarch64_high_bits_all_ones_p (HOST_WIDE_INT i)
+{
+  return exact_log2 (-i) != HOST_WIDE_INT_M1;
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
@@ -3980,9 +3945,6 @@ aarch64_layout_frame (void)
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
 
-  if (reload_completed && cfun->machine->frame.laid_out)
-    return;
-
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
 #define SLOT_NOT_REQUIRED (-2)
@@ -4526,8 +4488,6 @@ offset_12bit_unsigned_scaled_p (machine_mode mode, poly_int64 offset)
 static sbitmap
 aarch64_get_separate_components (void)
 {
-  aarch64_layout_frame ();
-
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
@@ -4551,7 +4511,7 @@ aarch64_get_separate_components (void)
 
   unsigned reg1 = cfun->machine->frame.wb_candidate1;
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
-  /* If aarch64_layout_frame has chosen registers to store/restore with
+  /* If registers have been chosen to be stored/restored with
      writeback don't interfere with them to avoid having to output explicit
      stack adjustment instructions.  */
   if (reg2 != INVALID_REGNUM)
@@ -4809,8 +4769,6 @@ aarch64_add_cfa_expression (rtx_insn *insn, unsigned int reg,
 void
 aarch64_expand_prologue (void)
 {
-  aarch64_layout_frame ();
-
   poly_int64 frame_size = cfun->machine->frame.frame_size;
   poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
@@ -4923,8 +4881,6 @@ aarch64_use_return_insn_p (void)
   if (crtl->profile)
     return false;
 
-  aarch64_layout_frame ();
-
   return known_eq (cfun->machine->frame.frame_size, 0);
 }
 
@@ -4936,8 +4892,6 @@ aarch64_use_return_insn_p (void)
 void
 aarch64_expand_epilogue (bool for_sibcall)
 {
-  aarch64_layout_frame ();
-
   poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
   poly_int64 final_adjust = cfun->machine->frame.final_adjust;
@@ -5671,10 +5625,10 @@ virt_or_elim_regno_p (unsigned regno)
    If it is, fill in INFO appropriately.  STRICT_P is true if
    REG_OK_STRICT is in effect.  */
 
-static bool
+bool
 aarch64_classify_address (struct aarch64_address_info *info,
 			  rtx x, machine_mode mode, bool strict_p,
-			  aarch64_addr_query_type type = ADDR_QUERY_M)
+			  aarch64_addr_query_type type)
 {
   enum rtx_code code = GET_CODE (x);
   rtx op0, op1;
@@ -7456,8 +7410,6 @@ aarch64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 poly_int64
 aarch64_initial_elimination_offset (unsigned from, unsigned to)
 {
-  aarch64_layout_frame ();
-
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)

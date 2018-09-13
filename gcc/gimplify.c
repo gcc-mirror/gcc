@@ -7513,6 +7513,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       case OMP_TARGET_EXIT_DATA:
       case OACC_DECLARE:
       case OACC_HOST_DATA:
+      case OACC_PARALLEL:
+      case OACC_KERNELS:
 	ctx->target_firstprivatize_array_bases = true;
       default:
 	break;
@@ -8556,7 +8558,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
       if (code == OACC_DATA
 	  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-	  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
+	  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 	remove = true;
       if (remove)
 	*list_p = OMP_CLAUSE_CHAIN (c);

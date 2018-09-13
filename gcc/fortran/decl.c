@@ -10570,7 +10570,8 @@ match_binding_attributes (gfc_typebound_proc* ba, bool generic, bool ppc)
 
 done:
   if (ba->access == ACCESS_UNKNOWN)
-    ba->access = gfc_typebound_default_access;
+    ba->access = ppc ? gfc_current_block()->component_access
+                     : gfc_typebound_default_access;
 
   if (ppc && !seen_ptr)
     {

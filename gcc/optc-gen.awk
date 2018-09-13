@@ -336,8 +336,6 @@ for (i = 0; i < n_opts; i++) {
 			  alias_data = "NULL, NULL, OPT_SPECIAL_deprecated"
         if (warn_message != "NULL")
 				  print "#error Deprecated option with Warn"
-        if (var_name(flags[i]) != "")
-				  print "#error Deprecated option with Var"
         if (flag_set_p("Report", flags[i]))
 				  print "#error Deprecated option with Report"
       }

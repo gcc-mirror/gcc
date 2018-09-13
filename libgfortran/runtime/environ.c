@@ -98,25 +98,6 @@ init_integer (variable * v)
 }
 
 
-/* Initialize an integer environment variable which has to be positive.  */
-
-static void
-init_unsigned_integer (variable * v)
-{
-  char *p, *q;
-
-  p = getenv (v->name);
-  if (p == NULL)
-    return;
-
-  for (q = p; *q; q++)
-    if (!isdigit (*q))
-      return;
-
-  *v->var = atoi (p);
-}
-
-
 /* Initialize a boolean environment variable. We only look at the first
    letter of the value. */
 

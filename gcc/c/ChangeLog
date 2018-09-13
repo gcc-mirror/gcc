@@ -1,3 +1,7 @@
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call complete_flexible_array_elts.
+
 2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-decl.c (finish_decl): Call braced_list_to_string here ...

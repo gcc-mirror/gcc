@@ -31,4 +31,4 @@ int main()
   }
 }
 
-/* { dg-final-use-not-autofdo { scan-assembler "\nfoo:\n.*cmp.*1,.*cmp.*10,.*cmp.*100" { target i?86-*-* x86_64-*-* } } } */
+/* { dg-final-use-not-autofdo { scan-assembler "\n_?foo:\n.*cmp.*1,.*cmp.*10,.*cmp.*100" { target i?86-*-* x86_64-*-* } } } */

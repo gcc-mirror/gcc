@@ -3679,6 +3679,7 @@ static const char *get_AT_string (dw_die_ref, enum dwarf_attribute);
 static int get_AT_flag (dw_die_ref, enum dwarf_attribute);
 static unsigned get_AT_unsigned (dw_die_ref, enum dwarf_attribute);
 static inline dw_die_ref get_AT_ref (dw_die_ref, enum dwarf_attribute);
+static bool is_c (void);
 static bool is_cxx (void);
 static bool is_cxx (const_tree);
 static bool is_fortran (void);
@@ -3816,6 +3817,7 @@ static bool add_location_or_const_value_attribute (dw_die_ref, tree, bool);
 static bool tree_add_const_value_attribute (dw_die_ref, tree);
 static bool tree_add_const_value_attribute_for_decl (dw_die_ref, tree);
 static void add_name_attribute (dw_die_ref, const char *);
+static void add_desc_attribute (dw_die_ref, tree);
 static void add_gnat_descriptive_type_attribute (dw_die_ref, tree, dw_die_ref);
 static void add_comp_dir_attribute (dw_die_ref);
 static void add_scalar_info (dw_die_ref, enum dwarf_attribute, tree, int,
@@ -5442,6 +5444,19 @@ get_AT_file (dw_die_ref die, enum dwarf_attribute attr_kind)
   return a ? AT_file (a) : NULL;
 }
 
+/* Return TRUE if the language is C.  */
+
+static inline bool
+is_c (void)
+{
+  unsigned int lang = get_AT_unsigned (comp_unit_die (), DW_AT_language);
+
+  return (lang == DW_LANG_C || lang == DW_LANG_C89 || lang == DW_LANG_C99
+	  || lang == DW_LANG_C11 || lang == DW_LANG_ObjC);
+
+
+}
+
 /* Return TRUE if the language is C++.  */
 
 static inline bool
@@ -6029,6 +6044,8 @@ dwarf2out_register_external_die (tree decl, const char *sym,
     BLOCK_DIE (decl) = die;
   else
     equate_decl_number_to_die (decl, die);
+
+  add_desc_attribute (die, decl);
 
   /* Add a reference to the DIE providing early debug at $sym + off.  */
   add_AT_external_die_ref (die, DW_AT_abstract_origin, sym, off);
@@ -14325,13 +14342,13 @@ based_loc_descr (rtx reg, poly_int64 offset,
 
       if (elim != reg)
 	{
+	  /* Allow hard frame pointer here even if frame pointer
+	    isn't used since hard frame pointer is encoded with
+	    DW_OP_fbreg which uses the DW_AT_frame_base attribute,
+	    not hard frame pointer directly.  */
 	  elim = strip_offset_and_add (elim, &offset);
-	  gcc_assert ((SUPPORTS_STACK_ALIGNMENT
-		       && (elim == hard_frame_pointer_rtx
-			   || elim == stack_pointer_rtx))
-	              || elim == (frame_pointer_needed
-				  ? hard_frame_pointer_rtx
-				  : stack_pointer_rtx));
+	  gcc_assert (elim == hard_frame_pointer_rtx
+		      || elim == stack_pointer_rtx);
 
 	  /* If drap register is used to align stack, use frame
 	     pointer + offset to access stack variables.  If stack
@@ -20512,14 +20529,13 @@ compute_frame_pointer_to_fb_displacement (poly_int64 offset)
      in which to eliminate.  This is because it's stack pointer isn't 
      directly accessible as a register within the ISA.  To work around
      this, assume that while we cannot provide a proper value for
-     frame_pointer_fb_offset, we won't need one either.  */
+     frame_pointer_fb_offset, we won't need one either.  We can use
+     hard frame pointer in debug info even if frame pointer isn't used
+     since hard frame pointer in debug info is encoded with DW_OP_fbreg
+     which uses the DW_AT_frame_base attribute, not hard frame pointer
+     directly.  */
   frame_pointer_fb_offset_valid
-    = ((SUPPORTS_STACK_ALIGNMENT
-	&& (elim == hard_frame_pointer_rtx
-	    || elim == stack_pointer_rtx))
-       || elim == (frame_pointer_needed
-		   ? hard_frame_pointer_rtx
-		   : stack_pointer_rtx));
+    = (elim == hard_frame_pointer_rtx || elim == stack_pointer_rtx);
 }
 
 /* Generate a DW_AT_name attribute given some string value to be included as
@@ -20534,6 +20550,52 @@ add_name_attribute (dw_die_ref die, const char *name_string)
 	name_string = (*demangle_name_func) (name_string);
 
       add_AT_string (die, DW_AT_name, name_string);
+    }
+}
+
+/* Generate a DW_AT_description attribute given some string value to be included
+   as the value of the attribute.  */
+
+static void
+add_desc_attribute (dw_die_ref die, const char *name_string)
+{
+  if (!flag_describe_dies || (dwarf_version < 3 && dwarf_strict))
+    return;
+
+  if (name_string == NULL || *name_string == 0)
+    return;
+
+  if (demangle_name_func)
+    name_string = (*demangle_name_func) (name_string);
+
+  add_AT_string (die, DW_AT_description, name_string);
+}
+
+/* Generate a DW_AT_description attribute given some decl to be included
+   as the value of the attribute.  */
+
+static void
+add_desc_attribute (dw_die_ref die, tree decl)
+{
+  tree decl_name;
+
+  if (!flag_describe_dies || (dwarf_version < 3 && dwarf_strict))
+    return;
+
+  if (decl == NULL_TREE || !DECL_P (decl))
+    return;
+  decl_name = DECL_NAME (decl);
+
+  if (decl_name != NULL && IDENTIFIER_POINTER (decl_name) != NULL)
+    {
+      const char *name = dwarf2_name (decl, 0);
+      add_desc_attribute (die, name ? name : IDENTIFIER_POINTER (decl_name));
+    }
+  else
+    {
+      char *desc = print_generic_expr_to_str (decl);
+      add_desc_attribute (die, desc);
+      free (desc);
     }
 }
 
@@ -20952,8 +21014,16 @@ add_subscript_info (dw_die_ref type_die, tree type, bool collapse_p)
 
 	  if (!get_AT (subrange_die, DW_AT_lower_bound))
 	    add_bound_info (subrange_die, DW_AT_lower_bound, lower, NULL);
-	  if (upper && !get_AT (subrange_die, DW_AT_upper_bound))
-	    add_bound_info (subrange_die, DW_AT_upper_bound, upper, NULL);
+	  if (!get_AT (subrange_die, DW_AT_upper_bound)
+	      && !get_AT (subrange_die, DW_AT_count))
+	    {
+	      if (upper)
+		add_bound_info (subrange_die, DW_AT_upper_bound, upper, NULL);
+	      else if ((is_c () || is_cxx ()) && COMPLETE_TYPE_P (type))
+		/* Zero-length array.  */
+		add_bound_info (subrange_die, DW_AT_count,
+				build_int_cst (TREE_TYPE (lower), 0), NULL);
+	    }
 	}
 
       /* Otherwise we have an array type with an unspecified length.  The
@@ -21295,12 +21365,17 @@ add_name_and_src_coords_attributes (dw_die_ref die, tree decl,
       const char *name = dwarf2_name (decl, 0);
       if (name)
 	add_name_attribute (die, name);
+      else
+	add_desc_attribute (die, decl);
+
       if (! DECL_ARTIFICIAL (decl))
 	add_src_coords_attributes (die, decl);
 
       if (!no_linkage_name)
 	add_linkage_name (die, decl);
     }
+  else
+    add_desc_attribute (die, decl);
 
 #ifdef VMS_DEBUGGING_INFO
   /* Get the function's name, as described by its RTL.  This may be different
@@ -23273,6 +23348,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	      dw_die_ref die = NULL;
 	      rtx tloc = NULL_RTX, tlocc = NULL_RTX;
 	      rtx arg, next_arg;
+	      tree arg_decl = NULL_TREE;
 
 	      for (arg = (ca_loc->call_arg_loc_note != NULL_RTX
 			  ? XEXP (ca_loc->call_arg_loc_note, 0)
@@ -23337,6 +23413,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		      tdie = lookup_decl_die (tdecl);
 		      if (tdie == NULL)
 			continue;
+		      arg_decl = tdecl;
 		    }
 		  else
 		    continue;
@@ -23353,6 +23430,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		    die = gen_call_site_die (decl, subr_die, ca_loc);
 		  cdie = new_die (dwarf_TAG (DW_TAG_call_site_parameter), die,
 				  NULL_TREE);
+		  add_desc_attribute (cdie, arg_decl);
 		  if (reg != NULL)
 		    add_AT_loc (cdie, DW_AT_location, reg);
 		  else if (tdie != NULL)

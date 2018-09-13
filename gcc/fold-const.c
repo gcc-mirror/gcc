@@ -10661,28 +10661,6 @@ fold_binary_loc (location_t loc, enum tree_code code, tree type,
 	    }
 	}
 
-      /* If this is an NE or EQ comparison of zero against the result of a
-	 signed MOD operation whose second operand is a power of 2, make
-	 the MOD operation unsigned since it is simpler and equivalent.  */
-      if (integer_zerop (arg1)
-	  && !TYPE_UNSIGNED (TREE_TYPE (arg0))
-	  && (TREE_CODE (arg0) == TRUNC_MOD_EXPR
-	      || TREE_CODE (arg0) == CEIL_MOD_EXPR
-	      || TREE_CODE (arg0) == FLOOR_MOD_EXPR
-	      || TREE_CODE (arg0) == ROUND_MOD_EXPR)
-	  && integer_pow2p (TREE_OPERAND (arg0, 1)))
-	{
-	  tree newtype = unsigned_type_for (TREE_TYPE (arg0));
-	  tree newmod = fold_build2_loc (loc, TREE_CODE (arg0), newtype,
-				     fold_convert_loc (loc, newtype,
-						       TREE_OPERAND (arg0, 0)),
-				     fold_convert_loc (loc, newtype,
-						       TREE_OPERAND (arg0, 1)));
-
-	  return fold_build2_loc (loc, code, type, newmod,
-			      fold_convert_loc (loc, newtype, arg1));
-	}
-
       /* Fold ((X >> C1) & C2) == 0 and ((X >> C1) & C2) != 0 where
 	 C1 is a valid shift constant, and C2 is a power of two, i.e.
 	 a single bit.  */
@@ -11607,10 +11585,16 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  && integer_pow2p (arg1)
 	  && TREE_CODE (TREE_OPERAND (arg0, 0)) == BIT_AND_EXPR
 	  && operand_equal_p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1),
-			      arg1, OEP_ONLY_CONST))
+			      arg1, OEP_ONLY_CONST)
+	  /* operand_equal_p compares just value, not precision, so e.g.
+	     arg1 could be 8-bit -128 and be power of two, but BIT_AND_EXPR
+	     second operand 32-bit -128, which is not a power of two (or vice
+	     versa.  */
+	  && integer_pow2p (TREE_OPERAND (TREE_OPERAND (arg0, 0), 1)))
 	return pedantic_non_lvalue_loc (loc,
-				    fold_convert_loc (loc, type,
-						      TREE_OPERAND (arg0, 0)));
+					fold_convert_loc (loc, type,
+							  TREE_OPERAND (arg0,
+									0)));
 
       /* Disable the transformations below for vectors, since
 	 fold_binary_op_with_conditional_arg may undo them immediately,

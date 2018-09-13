@@ -162,6 +162,16 @@ print_generic_expr (FILE *file, tree t, dump_flags_t flags)
   pp_flush (tree_pp);
 }
 
+/* Print a single expression T to string, and return it.  */
+
+char *
+print_generic_expr_to_str (tree t)
+{
+  pretty_printer pp;
+  dump_generic_node (&pp, t, 0, TDF_VOPS|TDF_MEMSYMS, false);
+  return xstrdup (pp_formatted_text (&pp));
+}
+
 /* Dump NAME, an IDENTIFIER_POINTER, sanitized so that D<num> sequences
    in it are replaced with Dxxxx, as long as they are at the start or
    preceded by $ and at the end or followed by $.  See make_fancy_name

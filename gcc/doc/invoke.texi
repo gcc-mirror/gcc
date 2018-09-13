@@ -373,7 +373,7 @@ Objective-C and Objective-C++ Dialects}.
 -ginternal-reset-location-views  -gno-internal-reset-location-views @gol
 -ginline-points  -gno-inline-points @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
--gsplit-dwarf @gol
+-gsplit-dwarf -gdescribe-dies -gno-describe-dies @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
 -fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
@@ -7465,6 +7465,12 @@ separate output file with the extension @file{.dwo}.  This option allows
 the build system to avoid linking files with debug information.  To
 be useful, this option requires a debugger capable of reading @file{.dwo}
 files.
+
+@item -gdescribe-dies
+@opindex gdescribe-dies
+Add description attributes to some DWARF DIEs that have no name attribute,
+such as artificial variables, external references and call site
+parameter DIEs.
 
 @item -gpubnames
 @opindex gpubnames
@@ -22465,6 +22471,12 @@ These options are defined for Nvidia PTX:
 @opindex m32
 @opindex m64
 Generate code for 32-bit or 64-bit ABI.
+
+@item -misa=@var{ISA-string}
+@opindex march
+Generate code for given the specified PTX ISA (e.g.@ @samp{sm_35}).  ISA
+strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
+@samp{sm_35}.  The default ISA is sm_30.
 
 @item -mmainkernel
 @opindex mmainkernel

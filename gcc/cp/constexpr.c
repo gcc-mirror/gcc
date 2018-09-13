@@ -1669,7 +1669,7 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     {
       if (!ctx->quiet)
 	error ("%<constexpr%> evaluation depth exceeds maximum of %d (use "
-	       "-fconstexpr-depth= to increase the maximum)",
+	       "%<-fconstexpr-depth=%> to increase the maximum)",
 	       max_constexpr_depth);
       *non_constant_p = true;
       result = error_mark_node;
@@ -3893,6 +3893,7 @@ breaks (tree *jump_target)
   return *jump_target
     && ((TREE_CODE (*jump_target) == LABEL_DECL
 	 && LABEL_DECL_BREAK (*jump_target))
+	|| TREE_CODE (*jump_target) == BREAK_STMT
 	|| TREE_CODE (*jump_target) == EXIT_EXPR);
 }
 
@@ -3900,8 +3901,10 @@ static bool
 continues (tree *jump_target)
 {
   return *jump_target
-    && TREE_CODE (*jump_target) == LABEL_DECL
-    && LABEL_DECL_CONTINUE (*jump_target);
+    && ((TREE_CODE (*jump_target) == LABEL_DECL
+	 && LABEL_DECL_CONTINUE (*jump_target))
+	|| TREE_CODE (*jump_target) == CONTINUE_STMT);
+
 }
 
 static bool
@@ -4123,7 +4126,7 @@ static tree
 cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 			      bool lval,
 			      bool *non_constant_p, bool *overflow_p,
-			      tree *jump_target)
+			      tree *jump_target /* = NULL */)
 {
   constexpr_ctx new_ctx;
   tree r = t;
@@ -4149,7 +4152,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	  return NULL_TREE;
 	}
     }
-  if (t == error_mark_node)
+  if (error_operand_p (t))
     {
       *non_constant_p = true;
       return t;
@@ -5398,10 +5401,10 @@ check_automatic_or_tls (tree ref)
 
 static bool
 potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
-				 tsubst_flags_t flags)
+				 tsubst_flags_t flags, tree *jump_target)
 {
 #define RECUR(T,RV) \
-  potential_constant_expression_1 ((T), (RV), strict, now, flags)
+  potential_constant_expression_1 ((T), (RV), strict, now, flags, jump_target)
 
   enum { any = false, rval = true };
   int i;
@@ -5412,6 +5415,14 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
   if (t == NULL_TREE)
     return true;
   location_t loc = cp_expr_loc_or_loc (t, input_location);
+
+  if (*jump_target)
+    /* If we are jumping, ignore everything.  This is simpler than the
+       cxx_eval_constant_expression handling because we only need to be
+       conservatively correct, and we don't necessarily have a constant value
+       available, so we don't bother with switch tracking.  */
+    return true;
+
   if (TREE_THIS_VOLATILE (t) && !DECL_P (t))
     {
       if (flags & tf_error)
@@ -5449,11 +5460,19 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case USING_DECL:
     case USING_STMT:
     case PLACEHOLDER_EXPR:
-    case BREAK_STMT:
-    case CONTINUE_STMT:
     case REQUIRES_EXPR:
     case STATIC_ASSERT:
     case DEBUG_BEGIN_STMT:
+      return true;
+
+    case RETURN_EXPR:
+      if (!RECUR (TREE_OPERAND (t, 0), any))
+	return false;
+      /* FALLTHROUGH */
+
+    case BREAK_STMT:
+    case CONTINUE_STMT:
+      *jump_target = t;
       return true;
 
     case PARM_DECL:
@@ -5544,7 +5563,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		       constexpr substitution might not use the value.  */
 		    bool sub_now = false;
 		    if (!potential_constant_expression_1 (x, rval, strict,
-							  sub_now, flags))
+							  sub_now, flags,
+							  jump_target))
 		      return false;
 		    i = 1;
 		  }
@@ -5578,7 +5598,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	       substitution might not use the value of the argument.  */
 	    bool sub_now = false;
 	    if (!potential_constant_expression_1 (x, rv, strict,
-						  sub_now, flags))
+						  sub_now, flags, jump_target))
 	      return false;
           }
         return true;
@@ -5753,6 +5773,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!RECUR (DO_BODY (t), any))
 	return false;
+      if (breaks (jump_target) || continues (jump_target))
+	*jump_target = NULL_TREE;
       return true;
 
     case FOR_STMT:
@@ -5764,13 +5786,19 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!RECUR (FOR_BODY (t), any))
 	return false;
+      if (breaks (jump_target) || continues (jump_target))
+	*jump_target = NULL_TREE;
       return true;
 
     case RANGE_FOR_STMT:
+      if (!RECUR (RANGE_FOR_INIT_STMT (t), any))
+	return false;
       if (!RECUR (RANGE_FOR_EXPR (t), any))
 	return false;
       if (!RECUR (RANGE_FOR_BODY (t), any))
 	return false;
+      if (breaks (jump_target) || continues (jump_target))
+	*jump_target = NULL_TREE;
       return true;
 
     case WHILE_STMT:
@@ -5778,6 +5806,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!RECUR (WHILE_BODY (t), any))
 	return false;
+      if (breaks (jump_target) || continues (jump_target))
+	*jump_target = NULL_TREE;
       return true;
 
     case SWITCH_STMT:
@@ -5961,7 +5991,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case PAREN_EXPR:
     case NON_DEPENDENT_EXPR:
       /* For convenience.  */
-    case RETURN_EXPR:
     case LOOP_EXPR:
     case EXIT_EXPR:
       return RECUR (TREE_OPERAND (t, 0), want_rval);
@@ -6171,7 +6200,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return RECUR (TREE_OPERAND (t, 1), want_rval);
       for (i = 1; i < 3; ++i)
 	if (potential_constant_expression_1 (TREE_OPERAND (t, i),
-					     want_rval, strict, now, tf_none))
+					     want_rval, strict, now,
+					     tf_none, jump_target))
 	  return true;
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
@@ -6202,7 +6232,10 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	tree *target = &TREE_OPERAND (t, 0);
 	/* Gotos representing break and continue are OK.  */
 	if (breaks (target) || continues (target))
-	  return true;
+	  {
+	    *jump_target = *target;
+	    return true;
+	  }
 	if (flags & tf_error)
 	  error_at (loc, "%<goto%> is not a constant expression");
 	return false;
@@ -6220,6 +6253,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return false;
     }
 #undef RECUR
+}
+
+bool
+potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
+				 tsubst_flags_t flags)
+{
+  tree target = NULL_TREE;
+  return potential_constant_expression_1 (t, want_rval, strict, now,
+					  flags, &target);
 }
 
 /* The main entry point to the above.  */

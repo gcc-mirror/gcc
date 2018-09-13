@@ -15,7 +15,7 @@ struct A {
     auto g = [*this] { a++; };		// { dg-error "in read-only object" }
 					// { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
     auto h = [*this] () mutable { a++; };// { dg-error "'*this' capture only available with" "" { target c++14_down } }
-    auto i = [=] { return a; };
+    auto i = [=] { return a; };		// { dg-warning "implicit capture" "" { target c++2a } }
     auto j = [&] { return a; };
     // P0409R2 - C++2A lambda capture [=, this]
     auto k = [=, this] { return a; };// { dg-error "explicit by-copy capture of 'this' redundant with by-copy capture default" "" { target c++17_down } }
@@ -62,7 +62,7 @@ struct C {
     auto d = [this] { return c; };
     auto e = [*this] { return c; };	// { dg-error "use of deleted function" }
 					// { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
-    auto f = [=] { return c; };
+    auto f = [=] { return c; };		// { dg-warning "implicit capture" "" { target c++2a } }
     auto g = [&] { return c; };
     auto h = [this] { bar (); };
     auto i = [*this] { bar (); };	// { dg-error "use of deleted function" }
@@ -77,7 +77,7 @@ struct D {
     auto e = [this] { return d; };
     auto f = [*this] { return d; };	// { dg-error "use of deleted function" }
 					// { dg-error "'*this' capture only available with" "" { target c++14_down } .-1 }
-    auto g = [=] { return d; };
+    auto g = [=] { return d; };		// { dg-warning "implicit capture" "" { target c++2a } }
     auto h = [&] { return d; };
     auto i = [this] { bar (); };
     auto j = [*this] { bar (); };	// { dg-error "use of deleted function" }

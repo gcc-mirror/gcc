@@ -1,3 +1,19 @@
+2018-09-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* runtime/minimal.c (estr_write): Define in terms of write.
+
+2018-09-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	* runtime/minimal.c (exit): Only work around nvptx bugs on nvptx.
+
+2018-09-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/environ.c (init_unsigned_integer): Remove.
+
+2018-09-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* io/async.h: Use __gthread_mutex_t, not pthread_mutex_t.
+
 2018-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* io/io.h: Change declaration of vlist type to

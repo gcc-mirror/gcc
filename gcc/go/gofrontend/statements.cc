@@ -686,7 +686,7 @@ Assignment_statement::do_traverse_assignments(Traverse_assignments* tassign)
 }
 
 // Lower an assignment to a map index expression to a runtime function
-// call.
+// call.  Mark some slice assignments as not requiring a write barrier.
 
 Statement*
 Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
@@ -748,6 +748,21 @@ Assignment_statement::do_lower(Gogo*, Named_object*, Block* enclosing,
       b->add_statement(Statement::make_assignment(indir, ref, loc));
 
       return Statement::make_block_statement(b, loc);
+    }
+
+  // An assignment of the form s = s[:n] does not require a write
+  // barrier, because the pointer value will not change.
+  Array_index_expression* aie = this->rhs_->array_index_expression();
+  if (aie != NULL
+      && aie->end() != NULL
+      && Expression::is_same_variable(this->lhs_, aie->array()))
+    {
+      Numeric_constant nc;
+      unsigned long ival;
+      if (aie->start()->numeric_constant_value(&nc)
+	  && nc.to_unsigned_long(&ival) == Numeric_constant::NC_UL_VALID
+	  && ival == 0)
+	this->omit_write_barrier_ = true;
     }
 
   return this;
@@ -876,7 +891,7 @@ Assignment_statement::do_dump_statement(Ast_dump_context* ast_dump_context)
 
 // Make an assignment statement.
 
-Statement*
+Assignment_statement*
 Statement::make_assignment(Expression* lhs, Expression* rhs,
 			   Location location)
 {

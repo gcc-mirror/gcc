@@ -1825,6 +1825,21 @@ s390_emit_compare (enum rtx_code code, rtx op0, rtx op1)
   return gen_rtx_fmt_ee (code, VOIDmode, cc, const0_rtx);
 }
 
+/* If MEM is not a legitimate compare-and-swap memory operand, return a new
+   MEM, whose address is a pseudo containing the original MEM's address.  */
+
+static rtx
+s390_legitimize_cs_operand (rtx mem)
+{
+  rtx tmp;
+
+  if (!contains_symbol_ref_p (mem))
+    return mem;
+  tmp = gen_reg_rtx (Pmode);
+  emit_move_insn (tmp, copy_rtx (XEXP (mem, 0)));
+  return change_address (mem, VOIDmode, tmp);
+}
+
 /* Emit a SImode compare and swap instruction setting MEM to NEW_RTX if OLD
    matches CMP.
    Return the correct condition RTL to be placed in the IF_THEN_ELSE of the
@@ -1836,6 +1851,7 @@ s390_emit_compare_and_swap (enum rtx_code code, rtx old, rtx mem,
 {
   rtx cc;
 
+  mem = s390_legitimize_cs_operand (mem);
   cc = gen_rtx_REG (ccmode, CC_REGNUM);
   switch (GET_MODE (mem))
     {
@@ -2748,9 +2764,8 @@ s390_short_displacement (rtx disp)
   return false;
 }
 
-/* Attempts to split `ref', which should be either UNSPEC_LTREF or
-   UNSPEC_LTREL_BASE, into (base + `disp').  In case pool base is not known,
-   caller-provided `pool_base' is used.  If successful, also determines the
+/* Attempts to split `ref', which should be UNSPEC_LTREF, into (base + `disp').
+   If successful, also determines the
    following characteristics of `ref': `is_ptr' - whether it can be an
    LA argument, `is_base_ptr' - whether the resulting base is a well-known
    base register (stack/frame pointer, etc), `is_pool_ptr` - whether it is
@@ -2758,8 +2773,7 @@ s390_short_displacement (rtx disp)
    literal pool pointers per insn during or after reload (`B' constraint).  */
 static bool
 s390_decompose_constant_pool_ref (rtx *ref, rtx *disp, bool *is_ptr,
-				  bool *is_base_ptr, bool *is_pool_ptr,
-				  rtx pool_base)
+				  bool *is_base_ptr, bool *is_pool_ptr)
 {
   if (!*ref)
     return true;
@@ -2776,13 +2790,6 @@ s390_decompose_constant_pool_ref (rtx *ref, rtx *disp, bool *is_ptr,
 	  return false;
 
 	*ref = XVECEXP (*ref, 0, 1);
-	break;
-
-      case UNSPEC_LTREL_BASE:
-	if (XVECLEN (*ref, 0) == 1)
-	  *ref = pool_base, *is_pool_ptr = true;
-	else
-	  *ref = XVECEXP (*ref, 0, 1);
 	break;
 
       default:
@@ -2921,12 +2928,12 @@ s390_decompose_address (rtx addr, struct s390_address *out)
 
   /* Validate base register.  */
   if (!s390_decompose_constant_pool_ref (&base, &disp, &pointer, &base_ptr,
-					 &literal_pool, fake_pool_base))
+					 &literal_pool))
     return false;
 
   /* Validate index register.  */
   if (!s390_decompose_constant_pool_ref (&indx, &disp, &pointer, &indx_ptr,
-					 &literal_pool, fake_pool_base))
+					 &literal_pool))
     return false;
 
   /* Prefer to use pointer as base, not index.  */
@@ -8156,16 +8163,6 @@ annotate_constant_pool_refs (rtx *x)
 	}
     }
 
-  /* Annotate LTREL_BASE as well.  */
-  if (GET_CODE (*x) == UNSPEC
-      && XINT (*x, 1) == UNSPEC_LTREL_BASE)
-    {
-      rtx base = cfun->machine->base_reg;
-      *x = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, XVECEXP (*x, 0, 0), base),
-				  UNSPEC_LTREL_BASE);
-      return;
-    }
-
   fmt = GET_RTX_FORMAT (GET_CODE (*x));
   for (i = GET_RTX_LENGTH (GET_CODE (*x)) - 1; i >= 0; i--)
     {
@@ -8195,10 +8192,6 @@ find_constant_pool_ref (rtx x, rtx *ref)
   int i, j;
   const char *fmt;
 
-  /* Ignore LTREL_BASE references.  */
-  if (GET_CODE (x) == UNSPEC
-      && XINT (x, 1) == UNSPEC_LTREL_BASE)
-    return;
   /* Likewise POOL_ENTRY insns.  */
   if (GET_CODE (x) == UNSPEC_VOLATILE
       && XINT (x, 1) == UNSPECV_POOL_ENTRY)
@@ -8280,73 +8273,6 @@ replace_constant_pool_ref (rtx *x, rtx ref, rtx offset)
 	}
     }
 }
-
-/* Check whether X contains an UNSPEC_LTREL_BASE.
-   Return its constant pool symbol if found, NULL_RTX otherwise.  */
-
-static rtx
-find_ltrel_base (rtx x)
-{
-  int i, j;
-  const char *fmt;
-
-  if (GET_CODE (x) == UNSPEC
-      && XINT (x, 1) == UNSPEC_LTREL_BASE)
-    return XVECEXP (x, 0, 0);
-
-  fmt = GET_RTX_FORMAT (GET_CODE (x));
-  for (i = GET_RTX_LENGTH (GET_CODE (x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  rtx fnd = find_ltrel_base (XEXP (x, i));
-	  if (fnd)
-	    return fnd;
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    {
-	      rtx fnd = find_ltrel_base (XVECEXP (x, i, j));
-	      if (fnd)
-		return fnd;
-	    }
-	}
-    }
-
-  return NULL_RTX;
-}
-
-/* Replace any occurrence of UNSPEC_LTREL_BASE in X with its base.  */
-
-static void
-replace_ltrel_base (rtx *x)
-{
-  int i, j;
-  const char *fmt;
-
-  if (GET_CODE (*x) == UNSPEC
-      && XINT (*x, 1) == UNSPEC_LTREL_BASE)
-    {
-      *x = XVECEXP (*x, 0, 1);
-      return;
-    }
-
-  fmt = GET_RTX_FORMAT (GET_CODE (*x));
-  for (i = GET_RTX_LENGTH (GET_CODE (*x)) - 1; i >= 0; i--)
-    {
-      if (fmt[i] == 'e')
-	{
-	  replace_ltrel_base (&XEXP (*x, i));
-	}
-      else if (fmt[i] == 'E')
-	{
-	  for (j = 0; j < XVECLEN (*x, i); j++)
-	    replace_ltrel_base (&XVECEXP (*x, i, j));
-	}
-    }
-}
-
 
 /* We keep a list of constants which we have to add to internal
    constant tables in the middle of large functions.  */
@@ -8832,9 +8758,6 @@ s390_mainpool_finish (struct constant_pool *pool)
 
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (INSN_P (insn))
-	replace_ltrel_base (&PATTERN (insn));
-
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx addr, pool_ref = NULL_RTX;
@@ -8868,7 +8791,6 @@ s390_chunkify_start (void)
 {
   struct constant_pool *curr_pool = NULL, *pool_list = NULL;
   bitmap far_labels;
-  rtx pending_ltrel = NULL_RTX;
   rtx_insn *insn;
 
   /* We need correct insn addresses.  */
@@ -8879,17 +8801,6 @@ s390_chunkify_start (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      /* Check for pending LTREL_BASE.  */
-      if (INSN_P (insn))
-	{
-	  rtx ltrel_base = find_ltrel_base (PATTERN (insn));
-	  if (ltrel_base)
-	    {
-	      gcc_assert (ltrel_base == pending_ltrel);
-	      pending_ltrel = NULL_RTX;
-	    }
-	}
-
       if (NONJUMP_INSN_P (insn) || CALL_P (insn))
 	{
 	  rtx pool_ref = NULL_RTX;
@@ -8904,16 +8815,6 @@ s390_chunkify_start (void)
 
 	      s390_add_constant (curr_pool, constant, mode);
 	      s390_add_pool_insn (curr_pool, insn);
-
-	      /* Don't split the pool chunk between a LTREL_OFFSET load
-		 and the corresponding LTREL_BASE.  */
-	      if (GET_CODE (constant) == CONST
-		  && GET_CODE (XEXP (constant, 0)) == UNSPEC
-		  && XINT (XEXP (constant, 0), 1) == UNSPEC_LTREL_OFFSET)
-		{
-		  gcc_assert (!pending_ltrel);
-		  pending_ltrel = pool_ref;
-		}
 	    }
 	}
 
@@ -8921,8 +8822,6 @@ s390_chunkify_start (void)
 	{
 	  if (curr_pool)
 	    s390_add_pool_insn (curr_pool, insn);
-	  /* An LTREL_BASE must follow within the same basic block.  */
-	  gcc_assert (!pending_ltrel);
 	}
 
       if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_VAR_LOCATION)
@@ -8942,7 +8841,6 @@ s390_chunkify_start (void)
 
   if (curr_pool)
     s390_end_pool (curr_pool, NULL);
-  gcc_assert (!pending_ltrel);
 
   /* Find all labels that are branched into
      from an insn belonging to a different chunk.  */
@@ -9056,9 +8954,6 @@ s390_chunkify_finish (struct constant_pool *pool_list)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (INSN_P (insn))
-	replace_ltrel_base (&PATTERN (insn));
-
       curr_pool = s390_find_pool (pool_list, insn);
       if (!curr_pool)
 	continue;
@@ -10676,6 +10571,12 @@ pass_s390_early_mach::execute (function *fun)
 }
 
 } // anon namespace
+
+rtl_opt_pass *
+make_pass_s390_early_mach (gcc::context *ctxt)
+{
+  return new pass_s390_early_mach (ctxt);
+}
 
 /* Calculate TARGET = REG + OFFSET as s390_emit_prologue would do it.
    - push too big immediates to the literal pool and annotate the refs
@@ -15085,21 +14986,6 @@ s390_option_override (void)
       if (!global_options_set.x_dwarf_version)
 	dwarf_version = 2;
     }
-
-  /* Register a target-specific optimization-and-lowering pass
-     to run immediately before prologue and epilogue generation.
-
-     Registering the pass must be done at start up.  It's
-     convenient to do it here.  */
-  opt_pass *new_pass = new pass_s390_early_mach (g);
-  struct register_pass_info insert_pass_s390_early_mach =
-    {
-      new_pass,			/* pass */
-      "pro_and_epilogue",	/* reference_pass_name */
-      1,			/* ref_pass_instance_number */
-      PASS_POS_INSERT_BEFORE	/* po_op */
-    };
-  register_pass (&insert_pass_s390_early_mach);
 }
 
 #if S390_USE_TARGET_ATTRIBUTE

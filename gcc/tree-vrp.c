@@ -1018,17 +1018,6 @@ extract_range_into_wide_ints (const value_range *vr,
     }
 }
 
-/* Value range wrapper for wide_int_range_shift_undefined_p.  */
-
-static inline bool
-vrp_shift_undefined_p (const value_range &shifter, unsigned prec)
-{
-  tree type = TREE_TYPE (shifter.min);
-  return wide_int_range_shift_undefined_p (TYPE_SIGN (type), prec,
-					   wi::to_wide (shifter.min),
-					   wi::to_wide (shifter.max));
-}
-
 /* Value range wrapper for wide_int_range_multiplicative_op:
 
      *VR = *VR0 .CODE. *VR1.  */
@@ -1549,7 +1538,9 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	   || code == LSHIFT_EXPR)
     {
       if (range_int_cst_p (&vr1)
-	  && !vrp_shift_undefined_p (vr1, prec))
+	  && !wide_int_range_shift_undefined_p (prec,
+						wi::to_wide (vr1.min),
+						wi::to_wide (vr1.max)))
 	{
 	  if (code == RSHIFT_EXPR)
 	    {
@@ -1601,12 +1592,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
       /* Special case explicit division by zero as undefined.  */
       if (range_is_null (&vr1))
 	{
-	  /* However, we must not eliminate a division by zero if
-	     flag_non_call_exceptions.  */
-	  if (cfun->can_throw_non_call_exceptions)
-	    set_value_range_to_varying (vr);
-	  else
-	    set_value_range_to_undefined (vr);
+	  set_value_range_to_undefined (vr);
 	  return;
 	}
 

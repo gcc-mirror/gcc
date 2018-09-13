@@ -61,6 +61,7 @@ extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
 extern void replace_call_with_value (gimple_stmt_iterator *, tree);
+extern tree tree_vec_extract (gimple_stmt_iterator *, tree, tree, tree, tree);
 
 /* gimple_build, functionally matching fold_buildN, outputs stmts
    int the provided sequence, matching and simplifying them on-the-fly.

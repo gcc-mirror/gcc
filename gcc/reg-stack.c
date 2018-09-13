@@ -413,8 +413,9 @@ get_true_reg (rtx *pat)
 	/* Eliminate FP subregister accesses in favor of the
 	   actual FP register in use.  */
 	{
-	  rtx subreg;
-	  if (STACK_REG_P (subreg = SUBREG_REG (*pat)))
+	  rtx subreg = SUBREG_REG (*pat);
+
+	  if (STACK_REG_P (subreg))
 	    {
 	      int regno_off = subreg_regno_offset (REGNO (subreg),
 						   GET_MODE (subreg),
@@ -427,6 +428,12 @@ get_true_reg (rtx *pat)
 	  pat = &XEXP (*pat, 0);
 	  break;
 	}
+
+      case FLOAT_TRUNCATE:
+	if (!flag_unsafe_math_optimizations)
+	  return pat;
+	/* FALLTHRU */
+
       case FLOAT:
       case FIX:
       case FLOAT_EXTEND:
@@ -438,12 +445,6 @@ get_true_reg (rtx *pat)
 	    || XINT (*pat, 1) == UNSPEC_FILD_ATOMIC)
 	  pat = &XVECEXP (*pat, 0, 0);
 	return pat;
-
-      case FLOAT_TRUNCATE:
-	if (!flag_unsafe_math_optimizations)
-	  return pat;
-	pat = &XEXP (*pat, 0);
-	break;
 
       default:
 	return pat;
@@ -2274,13 +2275,7 @@ subst_asm_stack_regs (rtx_insn *insn, stack_ptr regstack)
       int regnum = get_hard_regnum (regstack, clobber_reg[i]);
 
       if (regnum >= 0)
-	{
-	  /* Sigh - clobbers always have QImode.  But replace_reg knows
-	     that these regs can't be MODE_INT and will assert.  Just put
-	     the right reg there without calling replace_reg.  */
-
-	  *clobber_loc[i] = FP_MODE_REG (regnum, DFmode);
-	}
+	replace_reg (clobber_loc[i], regnum);
     }
 
   /* Now remove from REGSTACK any inputs that the asm implicitly popped.  */

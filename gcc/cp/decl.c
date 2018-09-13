@@ -6478,6 +6478,16 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
 	  init_code = store_init_value (decl, init, cleanups, flags);
 
+	  if (DECL_INITIAL (decl)
+	      && TREE_CODE (DECL_INITIAL (decl)) == CONSTRUCTOR
+	      && !vec_safe_is_empty (CONSTRUCTOR_ELTS (DECL_INITIAL (decl))))
+	    {
+	      tree elt = CONSTRUCTOR_ELTS (DECL_INITIAL (decl))->last ().value;
+	      if (TREE_CODE (TREE_TYPE (elt)) == ARRAY_TYPE
+		  && TYPE_SIZE (TREE_TYPE (elt)) == NULL_TREE)
+		cp_complete_array_type (&TREE_TYPE (elt), elt, false);
+	    }
+
 	  if (pedantic && TREE_CODE (type) == ARRAY_TYPE
 	      && DECL_INITIAL (decl)
 	      && TREE_CODE (DECL_INITIAL (decl)) == STRING_CST

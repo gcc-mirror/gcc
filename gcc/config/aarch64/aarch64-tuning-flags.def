@@ -44,4 +44,6 @@ AARCH64_EXTRA_TUNING_OPTION ("cheap_shift_extend", CHEAP_SHIFT_EXTEND)
 /* Disallow load/store pair instructions on Q-registers.  */
 AARCH64_EXTRA_TUNING_OPTION ("no_ldp_stp_qregs", NO_LDP_STP_QREGS)
 
+AARCH64_EXTRA_TUNING_OPTION ("rename_load_regs", RENAME_LOAD_REGS)
+
 #undef AARCH64_EXTRA_TUNING_OPTION

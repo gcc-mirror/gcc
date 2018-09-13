@@ -60,19 +60,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We have no means to tell DWARF 2 about the register stack, so we need
    to store the return address on the stack if an exception can get into
-   this function.  FIXME: Narrow condition.  Before any whole-function
-   analysis, df_regs_ever_live_p () isn't initialized.  We know it's up-to-date
-   after reload_completed; it may contain incorrect information some time
-   before that.  Within a RTL sequence (after a call to start_sequence,
-   such as in RTL expanders), leaf_function_p doesn't see all insns
-   (perhaps any insn).  But regs_ever_live is up-to-date when
-   leaf_function_p () isn't, so we "or" them together to get accurate
-   information.  FIXME: Some tweak to leaf_function_p might be
-   preferable.  */
+   this function.  We'll have an "initial value" recorded for the
+   return-register if we've seen a call instruction emitted.  This note
+   will be inaccurate before instructions are emitted, but the only caller
+   at that time is looking for modulo from stack-boundary, to which the
+   return-address does not contribute, and which is always 0 for MMIX
+   anyway.  Beware of calling leaf_function_p here, as it'll abort if
+   called within a sequence.  */
 #define MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS			\
  (flag_exceptions						\
-  && ((reload_completed && df_regs_ever_live_p (MMIX_rJ_REGNUM))	\
-      || !leaf_function_p ()))
+  && has_hard_reg_initial_val (Pmode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM))
 
 #define IS_MMIX_EH_RETURN_DATA_REG(REGNO)	\
  (crtl->calls_eh_return		\
@@ -226,6 +223,9 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
@@ -1373,8 +1373,14 @@ mmix_assemble_integer (rtx x, unsigned int size, int aligned_p)
       case 1:
 	if (GET_CODE (x) != CONST_INT)
 	  {
-	    aligned_p = 0;
-	    break;
+	    /* There is no "unaligned byte" op or generic function to
+	       which we can punt, so we have to handle this here.  As
+	       the expression isn't a plain literal, the generated
+	       assembly-code can't be mmixal-equivalent (i.e. "BYTE"
+	       won't work) and thus it's ok to emit the default op
+	       ".byte". */
+	    assemble_integer_with_op ("\t.byte\t", x);
+	    return true;
 	  }
 	fputs ("\tBYTE\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'B');

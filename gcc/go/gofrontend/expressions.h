@@ -869,6 +869,11 @@ class Expression
   bool
   is_local_variable() const;
 
+  // Return true if two expressions refer to the same variable or
+  // struct field.
+  static bool
+  is_same_variable(Expression*, Expression*);
+
   // Make the builtin function descriptor type, so that it can be
   // converted.
   static void
@@ -2402,6 +2407,10 @@ class Builtin_call_expression : public Call_expression
   static bool
   array_len_is_constant(Expression* expr);
 
+  Expression*
+  flatten_append(Gogo*, Named_object*, Statement_inserter*, Expression*,
+		 Block*);
+
  protected:
   // This overrides Call_expression::do_lower.
   Expression*
@@ -2458,8 +2467,6 @@ class Builtin_call_expression : public Call_expression
 
   Expression*
   lower_make(Statement_inserter*);
-
-  Expression* flatten_append(Gogo*, Named_object*, Statement_inserter*);
 
   bool
   check_int_value(Expression*, bool is_length, bool* small);

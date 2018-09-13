@@ -22,6 +22,6 @@ void DoSomething(Ding A);
 void foo(Something* pX)
 {
   DoSomething(1);		// { dg-error "could not convert" }
-  pX->DoSomething(1);		// { dg-error "no matching" } 
-  (*pX).DoSomething(1);		// { dg-error "no matching" } 
+  pX->DoSomething(1);		// { dg-error "cannot convert" } 
+  (*pX).DoSomething(1);		// { dg-error "cannot convert" } 
 }
