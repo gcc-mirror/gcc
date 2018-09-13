@@ -624,4 +624,6 @@ rtl_opt_pass *make_pass_tag_collision_avoidance (gcc::context *);
 
 poly_uint64 aarch64_regmode_natural_size (machine_mode);
 
+bool aarch64_high_bits_all_ones_p (HOST_WIDE_INT);
+
 #endif /* GCC_AARCH64_PROTOS_H */

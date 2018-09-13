@@ -1,3 +1,9 @@
+2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
+
+	PR target/85628
+	* gcc.target/aarch64/combine_bfxil.c: New file.
+	* gcc.target/aarch64/combine_bfxil_2.c: New file.
+
 2018-09-13  Jakub Jelinek  <jakub@redhat.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 

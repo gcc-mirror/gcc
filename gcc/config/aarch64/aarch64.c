@@ -1432,6 +1432,13 @@ aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned,
     return SImode;
 }
 
+/* Return true if I's bits are consecutive ones from the MSB.  */
+bool
+aarch64_high_bits_all_ones_p (HOST_WIDE_INT i)
+{
+  return exact_log2 (-i) != HOST_WIDE_INT_M1;
+}
+
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
    that strcpy from constants will be faster.  */
 

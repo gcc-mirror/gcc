@@ -5336,6 +5336,31 @@
   [(set_attr "type" "rev")]
 )
 
+(define_insn "*aarch64_bfxil<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+    (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "r,0")
+		    (match_operand:GPI 3 "const_int_operand" "n, Ulc"))
+	    (and:GPI (match_operand:GPI 2 "register_operand" "0,r")
+		    (match_operand:GPI 4 "const_int_operand" "Ulc, n"))))]
+  "(INTVAL (operands[3]) == ~INTVAL (operands[4]))
+  && (aarch64_high_bits_all_ones_p (INTVAL (operands[3]))
+    || aarch64_high_bits_all_ones_p (INTVAL (operands[4])))"
+  {
+    switch (which_alternative)
+    {
+      case 0:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
+	return "bfxil\\t%<w>0, %<w>1, 0, %3";
+      case 1:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
+	return "bfxil\\t%<w>0, %<w>2, 0, %3";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "bfm")]
+)
+
 ;; There are no canonicalisation rules for the position of the lshiftrt, ashift
 ;; operations within an IOR/AND RTX, therefore we have two patterns matching
 ;; each valid permutation.
