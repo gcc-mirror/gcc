@@ -1,3 +1,10 @@
+2018-09-13  Nathan Sidwell  <nathan@acm.org>
+
+	Refactor location spans
+	gcc/cp/
+	* module.c (class loc_spans): New.  Absorb ...
+	({open,close,ordinary,macro}_interval): ... these.  Update all uses.
+
 2018-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	Adding location spans

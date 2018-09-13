@@ -119,6 +119,8 @@ Classes used:
    depset::hash - hash table of depsets
    depset::tarjan - SCC determinator
 
+   loc_spans - location map data
+
    module_state - module object
 
    slurping - data needed during loading
@@ -2532,29 +2534,99 @@ trees_out::~trees_out ()
 /* I use half-open [first,second) ranges.  */
 typedef std::pair<unsigned,unsigned> range_t;
 
-/* A range of locations.  */
-typedef std::pair<location_t,location_t> loc_range_t;
-
-/* An interval of line maps.  The line maps here represent a conguous
-   non-imported range.  */
-struct lmap_interval {
-  loc_range_t ordinary;	/* Ordinary map index range. */
-  loc_range_t macro;	/* Macro map index range.  */
-  range_t offsets;	/* Offsets to normalize.  */
-};
-
 /* Spans of the line maps that are occupied by this TU.  I.e. not
    within imports.  Only extended when in an interface unit.
-   Interval zero corresponds to the forced header linemap(s).  */
-static GTY(()) vec<lmap_interval,va_gc_atomic> *lmap_spans;
+   Interval zero corresponds to the forced header linemap(s).  This
+   is a singleton object.  */
+
+class loc_spans
+{
+public:
+  /* A range of locations.  */
+  typedef std::pair<location_t,location_t> loc_range_t;
+
+public:
+  /* An interval of line maps.  The line maps here represent a contiguous
+     non-imported range.  */
+  struct span {
+    loc_range_t ordinary;	/* Ordinary map location range. */
+    loc_range_t macro;	/* Macro map location range.  */
+    range_t offsets;	/* Offsets to normalize.  */
+  };
+
+private:
+  auto_vec<span> spans;
+  line_maps *lmaps;
+
+public:
+  loc_spans ()
+    : lmaps (NULL)
+  {
+  }
+  ~loc_spans () {}
+
+public:
+  operator bool () const
+  {
+    return lmaps != NULL;
+  }
+  span &operator[] (unsigned ix)
+  {
+    return spans[ix];
+  }
+  unsigned length () const
+  {
+    return spans.length ();
+  }
+
+public:
+  /* Initializer and releaser.  */
+  void init (line_maps *maps, const line_map_ordinary *map)
+  {
+    gcc_checking_assert (!lmaps && !spans.space (1));
+    lmaps = maps;
+    spans.reserve (20);
+
+    /* Create a span for the forced headers.  */
+    span interval;
+    interval.ordinary.first = 0;
+    interval.ordinary.second = MAP_START_LOCATION (map);
+    interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+    if (unsigned used = LINEMAPS_MACRO_USED (maps))
+      interval.macro.first
+	= MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (maps, used - 1));
+    interval.offsets.first = interval.offsets.second = 0;
+    spans.quick_push (interval);
+
+    /* Start an interval for the main file.  */
+    interval.ordinary.first = interval.ordinary.second;
+    interval.macro.second = interval.macro.first;
+    spans.quick_push (interval);
+  }
+  void release ()
+  {
+    lmaps = NULL;
+    spans.truncate (0);
+  }
+
+public:
+  void open ();
+  void close ();
+
+public:
+  const span *ordinary (location_t);
+  const span *macro (location_t);
+};
+
+static loc_spans spans;
 
 /* Open a new linemap interval.  The just-created ordinary map is the
    first map of the interval.  */
 
-static void
-open_interval (line_maps *lmaps)
+void
+loc_spans::open ()
 {
-  lmap_interval interval;
+  span interval;
   interval.ordinary.first = interval.ordinary.second
     = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (lmaps));
   interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
@@ -2562,16 +2634,16 @@ open_interval (line_maps *lmaps)
     interval.macro.first = interval.macro.second
       = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
   interval.offsets.first = interval.offsets.second = 0;
-  vec_safe_push (lmap_spans, interval);
+  spans.safe_push (interval);
 }
 
 /* Close out the current linemap interval.  The just created ordinary
    map is the first map beyond the interval.  */
 
-static void
-close_interval (line_maps *lmaps)
+void
+loc_spans::close ()
 {
-  lmap_interval &interval = lmap_spans->last ();
+  span &interval = spans.last ();
   if (unsigned used = LINEMAPS_MACRO_USED (lmaps))
     interval.macro.first
       = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
@@ -2582,15 +2654,15 @@ close_interval (line_maps *lmaps)
 /* Given an ordinary location LOC, return the lmap_interval it resides
    in.  NULL if it is not in an interval.  */
 
-static lmap_interval const *
-ordinary_interval (source_location loc)
+const loc_spans::span *
+loc_spans::ordinary (source_location loc)
 {
-  unsigned len = lmap_spans->length ();
+  unsigned len = spans.length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const lmap_interval &probe = (*lmap_spans)[pos + half];
+      const span &probe = spans[pos + half];
       if (loc < probe.ordinary.first)
 	len = half;
       else if (loc < probe.ordinary.second)
@@ -2606,15 +2678,16 @@ ordinary_interval (source_location loc)
 
 /* Likewise, given a macro location LOC, return the lmap interval it
    resides in.  Macro locations are allocated in decreasing value.  */
-static lmap_interval const *
-macro_interval (source_location loc)
+
+const loc_spans::span *
+loc_spans::macro (source_location loc)
 {
-  unsigned len = lmap_spans->length ();
+  unsigned len = spans.length ();
   unsigned pos = 0;
   while (len)
     {
       unsigned half = len / 2;
-      const lmap_interval &probe = (*lmap_spans)[pos + half];
+      const span &probe = spans[pos + half];
       if (loc >= probe.macro.second)
 	len = half;
       else if (loc >= probe.macro.first)
@@ -9766,9 +9839,9 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
   /* We first have to figure the remapping of location spans.  */
   unsigned max_align = 0;
   location_t used = 0;
-  for (unsigned ix = 0; ix != lmap_spans->length (); ix++)
+  for (unsigned ix = 0; ix != spans.length (); ix++)
     {
-      lmap_interval &interval = (*lmap_spans)[ix];
+      loc_spans::span &interval = spans[ix];
       line_map_ordinary const *omap
 	= linemap_check_ordinary (linemap_lookup (lmaps,
 						  interval.ordinary.first));
@@ -9854,10 +9927,10 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
   dump () && dump ("Ordinary maps:%u, maxalign:%u", num_maps.first, max_align);
   sec.u (num_maps.first);
   sec.u (max_align);
-  sec.u ((*lmap_spans)[1].ordinary.first);
-  for (unsigned ix = 1; ix != lmap_spans->length (); ix++)
+  sec.u (spans[1].ordinary.first);
+  for (unsigned ix = 1; ix != spans.length (); ix++)
     {
-      lmap_interval &interval = (*lmap_spans)[ix];
+      loc_spans::span &interval = spans[ix];
       line_map_ordinary const *omap
 	= linemap_check_ordinary (linemap_lookup (lmaps,
 						  interval.ordinary.first));
@@ -11269,11 +11342,11 @@ module_state::atom_preamble (location_t loc,
     {
       gcc_assert (interface->loc == UNKNOWN_LOCATION);
       interface->maybe_create_loc (lmaps);
-      close_interval (lmaps);
+      spans.close ();
     }
   else
     /* We're just not interested in line map intervals.  */
-    lmap_spans = NULL;
+    spans.release ();
 
   /* Check we know all the BMIs.  There's no point trying to load any
      if some are missing.  */
@@ -11323,7 +11396,7 @@ module_state::atom_preamble (location_t loc,
   unsigned adj = linemap_module_restore (lmaps, pre_hwm);
 
   if (interface)
-    open_interval (lmaps);
+    spans.open ();
 
   return ok ? int (adj) : -1;
 }
@@ -11426,26 +11499,8 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
 void
 atom_main_file (line_maps *maps, const line_map_ordinary *map, unsigned ix)
 {
-  if (!lmap_spans)
-    {
-      vec_safe_reserve (lmap_spans, 20);
-
-      /* Create a span for the forced headers.  */
-      lmap_interval interval;
-      interval.ordinary.first = 0;
-      interval.ordinary.second = MAP_START_LOCATION (map);
-      interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
-      if (unsigned used = LINEMAPS_MACRO_USED (maps))
-	interval.macro.first
-	  = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (maps, used - 1));
-      interval.offsets.first = interval.offsets.second = 0;
-      lmap_spans->quick_push (interval);
-
-      /* Start an interval for the main file.  */
-      interval.ordinary.first = interval.ordinary.second;
-      interval.macro.second = interval.macro.first;
-      lmap_spans->quick_push (interval);
-    }
+  if (!spans)
+    spans.init (maps, map);
 
   if (modules_atom_p () && !prefix_locations_hwm)
     {
@@ -11671,7 +11726,7 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
 
       /* Force the current linemap to close.  */
       linemap_add (lmaps, LC_RENAME, false, "", 0);
-      close_interval (lmaps);
+      spans.close ();
 
       if (state->filename)
 	{
