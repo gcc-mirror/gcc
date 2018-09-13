@@ -3036,8 +3036,7 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table,
       vno->hashcode = vn_nary_op_compute_hash (vno);
       gcc_assert (! vno->predicated_values
 		  || (! vno->u.values->next
-		      && vno->u.values->valid_dominated_by_p[0] != EXIT_BLOCK
-		      && vno->u.values->valid_dominated_by_p[1] == EXIT_BLOCK));
+		      && vno->u.values->n == 1));
     }
 
   slot = table->find_slot_with_hash (vno, vno->hashcode, INSERT);
@@ -3216,7 +3215,6 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
   vno1->u.values->result = result;
   vno1->u.values->n = 1;
   vno1->u.values->valid_dominated_by_p[0] = pred_e->dest->index;
-  vno1->u.values->valid_dominated_by_p[1] = EXIT_BLOCK;
   return vn_nary_op_insert_into (vno1, valid_info->nary, true);
 }
 
