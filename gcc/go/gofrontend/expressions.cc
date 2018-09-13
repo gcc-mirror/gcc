@@ -131,6 +131,40 @@ Expression::determine_type_no_context()
   this->do_determine_type(&context);
 }
 
+// Return true if two expressions refer to the same variable or struct
+// field.  This can only be true when there are no side effects.
+
+bool
+Expression::is_same_variable(Expression* a, Expression* b)
+{
+  if (a->classification() != b->classification())
+    return false;
+
+  Var_expression* av = a->var_expression();
+  if (av != NULL)
+    return av->named_object() == b->var_expression()->named_object();
+
+  Field_reference_expression* af = a->field_reference_expression();
+  if (af != NULL)
+    {
+      Field_reference_expression* bf = b->field_reference_expression();
+      return (af->field_index() == bf->field_index()
+	      && Expression::is_same_variable(af->expr(), bf->expr()));
+    }
+
+  Unary_expression* au = a->unary_expression();
+  if (au != NULL)
+    {
+      Unary_expression* bu = b->unary_expression();
+      return (au->op() == OPERATOR_MULT
+	      && bu->op() == OPERATOR_MULT
+	      && Expression::is_same_variable(au->operand(),
+					      bu->operand()));
+    }
+
+  return false;
+}
+
 // Return an expression handling any conversions which must be done during
 // assignment.
 
@@ -7421,7 +7455,7 @@ Builtin_call_expression::do_flatten(Gogo* gogo, Named_object* function,
       break;
 
     case BUILTIN_APPEND:
-      return this->flatten_append(gogo, function, inserter);
+      return this->flatten_append(gogo, function, inserter, NULL, NULL);
 
     case BUILTIN_COPY:
       {
@@ -7658,11 +7692,18 @@ Builtin_call_expression::lower_make(Statement_inserter* inserter)
 
 // Flatten a call to the predeclared append function.  We do this in
 // the flatten phase, not the lowering phase, so that we run after
-// type checking and after order_evaluations.
+// type checking and after order_evaluations.  If ASSIGN_LHS is not
+// NULL, this append is the right-hand-side of an assignment and
+// ASSIGN_LHS is the left-hand-side; in that case, set LHS directly
+// rather than returning a slice.  This lets us omit a write barrier
+// in common cases like a = append(a, ...) when the slice does not
+// need to grow.  ENCLOSING is not NULL iff ASSIGN_LHS is not NULL.
 
 Expression*
 Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
-					Statement_inserter* inserter)
+					Statement_inserter* inserter,
+					Expression* assign_lhs,
+					Block* enclosing)
 {
   if (this->is_error_expression())
     return this;
@@ -7679,6 +7720,8 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   if (args->size() == 1)
     {
       // append(s) evaluates to s.
+      if (assign_lhs != NULL)
+	return NULL;
       return args->front();
     }
 
@@ -7795,14 +7838,46 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
   // FIXME: Mark this index as not requiring bounds checks.
   ref = Expression::make_index(ref, zero, ref2, NULL, loc);
 
-  Expression* rhs = Expression::make_conditional(cond, call, ref, loc);
+  if (assign_lhs == NULL)
+    {
+      Expression* rhs = Expression::make_conditional(cond, call, ref, loc);
 
-  gogo->lower_expression(function, inserter, &rhs);
-  gogo->flatten_expression(function, inserter, &rhs);
+      gogo->lower_expression(function, inserter, &rhs);
+      gogo->flatten_expression(function, inserter, &rhs);
 
-  Expression* lhs = Expression::make_temporary_reference(s1tmp, loc);
-  Statement* assign = Statement::make_assignment(lhs, rhs, loc);
-  inserter->insert(assign);
+      ref = Expression::make_temporary_reference(s1tmp, loc);
+      Statement* assign = Statement::make_assignment(ref, rhs, loc);
+      inserter->insert(assign);
+    }
+  else
+    {
+      gogo->lower_expression(function, inserter, &cond);
+      gogo->flatten_expression(function, inserter, &cond);
+      gogo->lower_expression(function, inserter, &call);
+      gogo->flatten_expression(function, inserter, &call);
+      gogo->lower_expression(function, inserter, &ref);
+      gogo->flatten_expression(function, inserter, &ref);
+
+      Block* then_block = new Block(enclosing, loc);
+      Assignment_statement* assign =
+	Statement::make_assignment(assign_lhs, call, loc);
+      then_block->add_statement(assign);
+
+      Block* else_block = new Block(enclosing, loc);
+      assign = Statement::make_assignment(assign_lhs->copy(), ref, loc);
+      // This assignment will not change the pointer value, so it does
+      // not need a write barrier.
+      assign->set_omit_write_barrier();
+      else_block->add_statement(assign);
+
+      Statement* s = Statement::make_if_statement(cond, then_block,
+						  else_block, loc);
+      inserter->insert(s);
+
+      ref = Expression::make_temporary_reference(s1tmp, loc);
+      assign = Statement::make_assignment(ref, assign_lhs->copy(), loc);
+      inserter->insert(assign);
+    }
 
   if (this->is_varargs())
     {
@@ -7839,12 +7914,17 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  Expression* off = Expression::make_integer_ul(i, int_type, loc);
 	  ref2 = Expression::make_binary(OPERATOR_PLUS, ref2, off, loc);
 	  // FIXME: Mark this index as not requiring bounds checks.
-	  lhs = Expression::make_index(ref, ref2, NULL, NULL, loc);
+	  Expression* lhs = Expression::make_index(ref, ref2, NULL, NULL,
+						   loc);
 	  gogo->lower_expression(function, inserter, &lhs);
 	  gogo->flatten_expression(function, inserter, &lhs);
 	  // The flatten pass runs after the write barrier pass, so we
 	  // need to insert a write barrier here if necessary.
-	  if (!gogo->assign_needs_write_barrier(lhs))
+	  // However, if ASSIGN_LHS is not NULL, we have been called
+	  // directly before the write barrier pass.
+	  Statement* assign;
+	  if (assign_lhs != NULL
+	      || !gogo->assign_needs_write_barrier(lhs))
 	    assign = Statement::make_assignment(lhs, *pa, loc);
 	  else
 	    {
@@ -7855,6 +7935,9 @@ Builtin_call_expression::flatten_append(Gogo* gogo, Named_object* function,
 	  inserter->insert(assign);
 	}
     }
+
+  if (assign_lhs != NULL)
+    return NULL;
 
   return Expression::make_temporary_reference(s1tmp, loc);
 }

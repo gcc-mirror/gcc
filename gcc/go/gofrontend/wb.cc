@@ -16,25 +16,86 @@
 #include "runtime.h"
 #include "gogo.h"
 
-// Mark variables whose addresses are taken.  This has to be done
-// before the write barrier pass and after the escape analysis pass.
-// It would be nice to do this elsewhere but there isn't an obvious
-// place.
+// Mark variables whose addresses are taken and do some other
+// cleanups.  This has to be done before the write barrier pass and
+// after the escape analysis pass.  It would be nice to do this
+// elsewhere but there isn't an obvious place.
 
 class Mark_address_taken : public Traverse
 {
  public:
   Mark_address_taken(Gogo* gogo)
-    : Traverse(traverse_expressions),
-      gogo_(gogo)
+    : Traverse(traverse_functions
+	       | traverse_statements
+	       | traverse_expressions),
+      gogo_(gogo), function_(NULL)
   { }
+
+  int
+  function(Named_object*);
+
+  int
+  statement(Block*, size_t*, Statement*);
 
   int
   expression(Expression**);
 
  private:
+  // General IR.
   Gogo* gogo_;
+  // The function we are traversing.
+  Named_object* function_;
 };
+
+// Record a function.
+
+int
+Mark_address_taken::function(Named_object* no)
+{
+  go_assert(this->function_ == NULL);
+  this->function_ = no;
+  int t = no->func_value()->traverse(this);
+  this->function_ = NULL;
+
+  if (t == TRAVERSE_EXIT)
+    return t;
+  return TRAVERSE_SKIP_COMPONENTS;
+}
+
+// Traverse a statement.
+
+int
+Mark_address_taken::statement(Block* block, size_t* pindex, Statement* s)
+{
+  // If this is an assignment of the form s = append(s, ...), expand
+  // it now, so that we can assign it to the left hand side in the
+  // middle of the expansion and possibly skip a write barrier.
+  Assignment_statement* as = s->assignment_statement();
+  if (as != NULL && !as->lhs()->is_sink_expression())
+    {
+      Call_expression* rce = as->rhs()->call_expression();
+      if (rce != NULL
+	  && rce->builtin_call_expression() != NULL
+	  && (rce->builtin_call_expression()->code()
+	      == Builtin_call_expression::BUILTIN_APPEND)
+          && Expression::is_same_variable(as->lhs(), rce->args()->front()))
+	{
+	  Statement_inserter inserter = Statement_inserter(block, pindex);
+	  Expression* a =
+	    rce->builtin_call_expression()->flatten_append(this->gogo_,
+							   this->function_,
+							   &inserter,
+							   as->lhs(),
+							   block);
+	  go_assert(a == NULL);
+	  // That does the assignment, so remove this statement.
+	  Expression* e = Expression::make_boolean(true, s->location());
+	  Statement* dummy = Statement::make_statement(e, true);
+	  block->replace_statement(*pindex, dummy);
+	}
+    }
+  return TRAVERSE_CONTINUE;
+}
 
 // Mark variable addresses taken.
 
@@ -387,6 +448,10 @@ Write_barriers::statement(Block* block, size_t* pindex, Statement* s)
     case Statement::STATEMENT_ASSIGNMENT:
       {
 	Assignment_statement* as = s->assignment_statement();
+
+	if (as->omit_write_barrier())
+	  break;
+
 	Expression* lhs = as->lhs();
 	Expression* rhs = as->rhs();
 
