@@ -1,3 +1,10 @@
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* varasm.c (compare_constant): Compare type size of STRING_CSTs.
+	(get_constant_size): Don't make STRING_CSTs larger than they are.
+	(check_string_literal): New check function for STRING_CSTs.
+	(output_constant): Use it.
+
 2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/86812
