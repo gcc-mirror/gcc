@@ -1005,7 +1005,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
       {
 	tree type = r.get_type ();
         int prec = TYPE_PRECISION (type);
-	if (!wide_int_range_shift_undefined_p (s, prec, rh_lb, rh_ub))
+	if (!wide_int_range_shift_undefined_p (prec, rh_lb, rh_ub))
 	    return irange_multiplicative_op (code, s, r,
 					     lh_lb, lh_ub, rh_lb, rh_ub);
 	return false;
@@ -1015,7 +1015,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
       {
 	tree type = r.get_type ();
         int prec = TYPE_PRECISION (type);
-	if (!wide_int_range_shift_undefined_p (s, prec, rh_lb, rh_ub)
+	if (!wide_int_range_shift_undefined_p (prec, rh_lb, rh_ub)
 	    && wide_int_range_lshift (new_lb, new_ub,
 				      s, prec, lh_lb, lh_ub, rh_lb, rh_ub,
 				      TYPE_OVERFLOW_UNDEFINED (type),
