@@ -1,3 +1,11 @@
+2018-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87263
+	* gcc.dg/torture/pr87263.c: New testcase.
+	* gcc.dg/torture/ssa-fre-2.c: Likewise.
+	* gcc.dg/torture/ssa-fre-3.c: Likewise.
+	* gcc.dg/torture/ssa-fre-4.c: Likewise.
+
 2018-09-13  Omar Sandoval  <osandov@osandov.com>
 	    Tom de Vries  <tdevries@suse.de>
 
