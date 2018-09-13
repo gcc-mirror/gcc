@@ -1,3 +1,10 @@
+2018-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/87134
+	* tree-ssa-sccvn.c (vn_nary_op_insert_into): Fix assert.
+	(vn_nary_op_insert_pieces_predicated): Do not write useless
+	valid_dominated_by_p entry outside of the allocated storage.
+
 2018-09-13  Omar Sandoval  <osandov@osandov.com>
 	    Tom de Vries  <tdevries@suse.de>
 
