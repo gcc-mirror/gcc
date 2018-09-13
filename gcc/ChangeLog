@@ -1,3 +1,13 @@
+2018-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87263
+	* tree-ssa-sccvn.c (visit_phi): Revert some earlier changes.
+	(struct unwind_state): Add max_rpo field.
+	(do_rpo_vn): Allow up-to-date loop state to be used when not iterating.
+	Compute max_rpo, the max RPO number a block can be backwards reached
+	from.  Re-write non-iterating mode to a RPO ordered worklist approach,
+	separating it from the iterating mode.
+
 2018-09-13  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* haifa-sched.c (rank_for_schedule): Schedule by INSN_COST.
