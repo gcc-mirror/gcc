@@ -3938,9 +3938,6 @@ aarch64_layout_frame (void)
   HOST_WIDE_INT offset = 0;
   int regno, last_fp_reg = INVALID_REGNUM;
 
-  if (reload_completed && cfun->machine->frame.laid_out)
-    return;
-
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
 #define SLOT_NOT_REQUIRED (-2)
@@ -4484,8 +4481,6 @@ offset_12bit_unsigned_scaled_p (machine_mode mode, poly_int64 offset)
 static sbitmap
 aarch64_get_separate_components (void)
 {
-  aarch64_layout_frame ();
-
   sbitmap components = sbitmap_alloc (LAST_SAVED_REGNUM + 1);
   bitmap_clear (components);
 
@@ -4509,7 +4504,7 @@ aarch64_get_separate_components (void)
 
   unsigned reg1 = cfun->machine->frame.wb_candidate1;
   unsigned reg2 = cfun->machine->frame.wb_candidate2;
-  /* If aarch64_layout_frame has chosen registers to store/restore with
+  /* If registers have been chosen to be stored/restored with
      writeback don't interfere with them to avoid having to output explicit
      stack adjustment instructions.  */
   if (reg2 != INVALID_REGNUM)
@@ -4767,8 +4762,6 @@ aarch64_add_cfa_expression (rtx_insn *insn, unsigned int reg,
 void
 aarch64_expand_prologue (void)
 {
-  aarch64_layout_frame ();
-
   poly_int64 frame_size = cfun->machine->frame.frame_size;
   poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
@@ -4881,8 +4874,6 @@ aarch64_use_return_insn_p (void)
   if (crtl->profile)
     return false;
 
-  aarch64_layout_frame ();
-
   return known_eq (cfun->machine->frame.frame_size, 0);
 }
 
@@ -4894,8 +4885,6 @@ aarch64_use_return_insn_p (void)
 void
 aarch64_expand_epilogue (bool for_sibcall)
 {
-  aarch64_layout_frame ();
-
   poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
   HOST_WIDE_INT callee_adjust = cfun->machine->frame.callee_adjust;
   poly_int64 final_adjust = cfun->machine->frame.final_adjust;
@@ -7414,8 +7403,6 @@ aarch64_can_eliminate (const int from ATTRIBUTE_UNUSED, const int to)
 poly_int64
 aarch64_initial_elimination_offset (unsigned from, unsigned to)
 {
-  aarch64_layout_frame ();
-
   if (to == HARD_FRAME_POINTER_REGNUM)
     {
       if (from == ARG_POINTER_REGNUM)

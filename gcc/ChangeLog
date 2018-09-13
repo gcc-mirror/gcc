@@ -1,3 +1,14 @@
+2018-09-13  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_COMPUTE_FRAME_LAYOUT): Define.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Remove
+	aarch64_layout_frame call. 
+	(aarch64_expand_epilogue): Likewise.
+	(aarch64_initial_elimination_offset): Likewise.
+	(aarch64_get_separate_components): Likewise.
+	(aarch64_use_return_insn_p): Likewise.
+	(aarch64_layout_frame): Remove unneeded check.
+
 2018-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* configure.ac: Only append
