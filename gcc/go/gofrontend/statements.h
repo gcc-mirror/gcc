@@ -148,7 +148,7 @@ class Statement
   make_temporary(Type*, Expression*, Location);
 
   // Make an assignment statement.
-  static Statement*
+  static Assignment_statement*
   make_assignment(Expression*, Expression*, Location);
 
   // Make an assignment operation (+=, etc.).
@@ -562,7 +562,7 @@ class Assignment_statement : public Statement
   Assignment_statement(Expression* lhs, Expression* rhs,
 		       Location location)
     : Statement(STATEMENT_ASSIGNMENT, location),
-      lhs_(lhs), rhs_(rhs)
+      lhs_(lhs), rhs_(rhs), omit_write_barrier_(false)
   { }
 
   Expression*
@@ -572,6 +572,14 @@ class Assignment_statement : public Statement
   Expression*
   rhs() const
   { return this->rhs_; }
+
+  bool
+  omit_write_barrier() const
+  { return this->omit_write_barrier_; }
+
+  void
+  set_omit_write_barrier()
+  { this->omit_write_barrier_ = true; }
 
  protected:
   int
@@ -603,6 +611,8 @@ class Assignment_statement : public Statement
   Expression* lhs_;
   // Right hand side--the rvalue.
   Expression* rhs_;
+  // True if we can omit a write barrier from this assignment.
+  bool omit_write_barrier_;
 };
 
 // A statement which creates and initializes a temporary variable.
