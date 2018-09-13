@@ -1,3 +1,8 @@
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81103
+	* terminals.c: Do not include termio.h.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/decl.c (update_profile): Use new function
@@ -367,7 +372,7 @@
 
 2018-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
-	*  libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
+	* libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
 	(mutex_t): Use it for 'lock' and 'data' components.
 	(cond_t): Likewise for 'data' and use single 'flags' component.
 
