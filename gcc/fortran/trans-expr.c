@@ -1476,7 +1476,6 @@ gfc_trans_class_init_assign (gfc_code *code)
   gfc_start_block (&block);
 
   lhs = gfc_copy_expr (code->expr1);
-  gfc_add_data_component (lhs);
 
   rhs = gfc_copy_expr (code->expr1);
   gfc_add_vptr_component (rhs);
@@ -1494,11 +1493,15 @@ gfc_trans_class_init_assign (gfc_code *code)
     {
       gfc_array_spec *tmparr = gfc_get_array_spec ();
       *tmparr = *CLASS_DATA (code->expr1)->as;
+      /* Adding the array ref to the class expression results in correct
+	 indexing to the dynamic type.  */
       gfc_add_full_array_ref (lhs, tmparr);
       tmp = gfc_trans_class_array_init_assign (rhs, lhs, code->expr1);
     }
   else
     {
+      /* Scalar initialization needs the _data component.  */
+      gfc_add_data_component (lhs);
       sz = gfc_copy_expr (code->expr1);
       gfc_add_vptr_component (sz);
       gfc_add_size_component (sz);
