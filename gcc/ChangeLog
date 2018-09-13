@@ -1,3 +1,14 @@
+2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
+
+	PR target/85628
+	* config/aarch64/aarch64.md (*aarch64_bfxil):
+	Define.
+	* config/aarch64/constraints.md (Ulc): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_high_bits_all_ones_p):
+	Define.
+	* config/aarch64/aarch64.c (aarch64_high_bits_all_ones_p):
+	New function.
+
 2018-09-13  Vlad Lazar  <vlad.lazar@arm.com>
 
 	* config/aarch64/aarch64.h (TARGET_COMPUTE_FRAME_LAYOUT): Define.
