@@ -138,6 +138,8 @@ Classes used:
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
+#define NEW_LOC 0
+
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.  It is very
@@ -2542,8 +2544,7 @@ typedef std::pair<location_t,location_t> loc_range_t;
    Interval zero corresponds to the forced header linemap(s).  This
    is a singleton object.  */
 
-class loc_spans
-{
+class loc_spans {
 public:
   /* An interval of line maps.  The line maps here represent a contiguous
      non-imported range.  */
@@ -2708,6 +2709,7 @@ struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
   /// New location stuff
   loc_range_t GTY((skip)) ordinary_range;
   loc_range_t GTY((skip)) macro_range;
+  range_t GTY((skip)) delta;
 
   bool pre_early_ok;
 
@@ -9547,10 +9549,17 @@ module_state::write_location (bytes_out &sec, location_t loc)
     // FIXME: implement macro & adhoc
     loc = UNKNOWN_LOCATION;
 
-  spewing *spew = spewer ();
+#if NEW_LOC
+  const loc_spans::span *span = spans.ordinary (loc);
+  gcc_checking_assert (span); /* We should only be writing locs inside
+				 us.  */
+  sec.u (loc - span->offsets.first);
+#else
+    spewing *spew = spewer ();
   gcc_assert (loc < spew->early_locs.second
 	      || (loc >= spew->late_locs.first && loc < spew->late_locs.second));
   sec.u (unsigned (loc));
+#endif
 }
 
 location_t
@@ -9559,9 +9568,18 @@ module_state::read_location (bytes_in &sec)
   if (!modules_atom_p ())
     return loc;
 
+  location_t loc = UNKNOWN_LOCATION;
+#if NEW_LOC
+  unsigned off = sec.u ();
+  if (off >= slurp->ordinary_range.second)
+    sec.set_overrun ();
+  else if (off >= slurp->ordinary_range.first)
+    loc = off + slurp->delta.first;
+  else if (slurp->pre_early_ok)
+    loc = off;
+#else
   unsigned off = sec.u ();
   slurping *slurp = slurper ();
-  source_location loc = UNKNOWN_LOCATION;
 
   /* late_locs may not have been read in yet.  */
   if (off < slurp->early_locs.first)
@@ -9574,7 +9592,7 @@ module_state::read_location (bytes_in &sec)
     loc = off + slurp->loc_offsets.second;
   else
     sec.set_overrun ();
-
+#endif
   return loc;
 }
 
@@ -9866,8 +9884,8 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 	    }
 	  if (fname)
 	    filenames.safe_push (fname);
-	  if (align < omap->m_column_and_range_bits)
-	    align = omap->m_column_and_range_bits;
+	  if (align < omap->m_range_bits)
+	    align = omap->m_range_bits;
 	}
 
       /* Again, we should finish exactly matched up.  */
@@ -9920,7 +9938,11 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 
 	for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
 	  {
-	    sec.i (MAP_START_LOCATION (omap) - span.offsets.first);
+	    location_t start_loc = MAP_START_LOCATION (omap);
+	    unsigned to = start_loc - span.offsets.first;
+	    dump () && dump ("Span:%u [%u,%u)->%u", ix, start_loc,
+			     MAP_START_LOCATION (omap + 1), to);
+	    sec.u (to);
 
 	    /* Making accessors just for here, seems excessive.  */
 	    sec.u (omap->reason);
@@ -9940,12 +9962,15 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 	    /* Write the included from location, which means reading
 	       it while reading in the ordinary maps.  So we'd better
 	       not be getting ahead of ourselves.  */
-	    location_t included_from = linemap_included_from (omap);
-	    gcc_checking_assert (included_from < MAP_START_LOCATION (omap));
-	    // FIXME: write_location (sec, from);
+	    location_t from = linemap_included_from (omap);
+	    gcc_checking_assert (from < MAP_START_LOCATION (omap));
+#if NEW_LOC
+	    write_location (sec, from);
+#endif
 	  }
 	offset = MAP_START_LOCATION (omap) - span.offsets.first;
       }
+    dump () && dump ("Location hwm:%u", offset);
     sec.u (offset);
   }
 
@@ -10001,14 +10026,21 @@ module_state::read_locations ()
     location_t zero = sec.u ();
     location_t lwm = offset;
     slurp->ordinary_range.first = zero;
+    slurp->delta.first = offset - zero;
 
     for (unsigned ix = 0; ix != num_ordinary; ix++)
       {
 	line_map_ordinary *map = base + ix;
-	map->start_location = sec.i () - zero + offset;
+	unsigned hwm = sec.u ();
+
+	/* Record the current HWM so that the below read_location is
+	   ok.  */
+	slurp->ordinary_range.second = hwm;
+	map->start_location = hwm - zero + offset;
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
 	lwm = map->start_location;
+	dump () && dump ("Map:%u %u->%u", ix, hwm, lwm);
 	map->reason = lc_reason (sec.u ());
 	map->sysp = sec.u ();
 	map->m_column_and_range_bits = sec.u ();
@@ -10018,7 +10050,9 @@ module_state::read_locations ()
 	map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
 	map->to_line = sec.u ();
 
-	//	map->included_from = read_location (sec);
+#if NEW_LOC
+	map->included_from = read_location (sec);
+#endif
 	if (map->included_from == UNKNOWN_LOCATION)
 	  map->included_from = loc;
       }
@@ -10028,6 +10062,7 @@ module_state::read_locations ()
     line_table->highest_location = hwm - zero + offset - 1;
     if (lwm > line_table->highest_location)
       sec.set_overrun ();
+    dump () && dump ("Location hwm:%u", line_table->highest_location + 1);
   }
 
   dump.outdent ();
@@ -10666,10 +10701,11 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
     if (!read_locations ())
       return;
 
+#if !NEW_LOC
   /* Read the early locations.  */
   if (modules_atom_p ())
     read_locations (line_table, true);
-
+#endif
   /* Read the import table.  */
   if (!read_imports (reader, line_table))
     return;
@@ -10706,7 +10742,9 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
   /* Read the late locations.  */
   if (modules_atom_p ())
     {
+#if !NEW_LOC
       read_locations (line_table, false);
+#endif
       /* We'll leak if we returned early, but that's gonna be a fatal
 	 error, so who cares?  */
       slurper ()->free_filenames ();

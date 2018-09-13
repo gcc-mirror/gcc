@@ -1,5 +1,14 @@
 2018-09-13  Nathan Sidwell  <nathan@acm.org>
 
+	Read & write new locations (buggy, disabled).
+	gcc/cp/
+	* module.c (module_state::{read,write}_location): Add new-loc
+	scheme.
+	(module_state::{read,write}_locations): Adjust.
+	(module_state::read): Select location scheme.
+	gcc/testsuite/
+	* g++.dg/modules/loc-1_c.C: Use regexp for note loc.
+
 	Reading location spans (but not using them).
 	gcc/cp/
 	* module.c (loc_range_t): Global typedef.
