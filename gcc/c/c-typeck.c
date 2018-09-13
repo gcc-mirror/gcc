@@ -7485,19 +7485,17 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		}
 	    }
 
-	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != NULL_TREE
 	      && TYPE_SIZE (type) != NULL_TREE
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (inside_init);
+	      unsigned unit = TYPE_PRECISION (typ1) / BITS_PER_UNIT;
 
 	      /* Subtract the size of a single (possibly wide) character
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (compare_tree_int (TYPE_SIZE_UNIT (type),
-				    (len - (TYPE_PRECISION (typ1)
-					    / BITS_PER_UNIT))) < 0)
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len - unit) < 0)
 		pedwarn_init (init_loc, 0,
 			      ("initializer-string for array of chars "
 			       "is too long"));
@@ -7506,8 +7504,17 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		warning_at (init_loc, OPT_Wc___compat,
 			    ("initializer-string for array chars "
 			     "is too long for C++"));
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
+		{
+		  unsigned HOST_WIDE_INT size
+		    = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+		  const char *p = TREE_STRING_POINTER (inside_init);
+
+		  inside_init = build_string (size, p);
+		}
 	    }
 
+	  TREE_TYPE (inside_init) = type;
 	  return inside_init;
 	}
       else if (INTEGRAL_TYPE_P (typ1))
