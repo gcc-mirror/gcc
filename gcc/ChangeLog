@@ -1,3 +1,8 @@
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/86812
+	* config/visium/visium.c (TARGET_HAVE_SPECULATION_SAFE_VALUE): Define.
+
 2018-09-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87263
