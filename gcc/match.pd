@@ -470,7 +470,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_OVERFLOW_UNDEFINED (type)
        && wi::multiple_of_p (wi::to_wide (@1), wi::to_wide (@2),
 			     TYPE_SIGN (type)))
-   { build_zero_cst (type); })))
+   { build_zero_cst (type); }))
+ /* For (X % C) == 0, if X is signed and C is power of 2, use unsigned
+    modulo and comparison, since it is simpler and equivalent.  */
+ (for cmp (eq ne)
+  (simplify
+   (cmp (mod @0 integer_pow2p@2) integer_zerop@1)
+   (if (!TYPE_UNSIGNED (TREE_TYPE (@0)))
+    (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+     (cmp (mod (convert:utype @0) (convert:utype @2)) (convert:utype @1)))))))
 
 /* X % -C is the same as X % C.  */
 (simplify

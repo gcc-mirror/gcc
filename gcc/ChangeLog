@@ -1,3 +1,10 @@
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87287
+	* fold-const.c (fold_binary_loc) <case EQ_EXPR>: Move signed modulo
+	X % C == 0 to X % (unsigned) C == 0 optimization to ...
+	* match.pd (X % C == 0): ... here.  New optimization.
+
 2018-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82853
