@@ -1112,8 +1112,13 @@ digest_init_r (tree type, tree init, int nested, int flags,
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror (loc, "initializer-string for array "
-			   "of chars is too long");
+		{
+		  permerror (loc, "initializer-string for array "
+			     "of chars is too long");
+
+		  init = build_string (size, TREE_STRING_POINTER (init));
+		  TREE_TYPE (init) = type;
+		}
 	    }
 	  return init;
 	}
