@@ -5956,6 +5956,26 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	    {
 	    case EXPR_CONSTANT:
 	      gfc_conv_constant (&se, c->expr);
+
+	      /* See gfortran.dg/charlen_15.f90 for instance.  */
+	      if (TREE_CODE (se.expr) == STRING_CST
+		  && TREE_CODE (type) == ARRAY_TYPE)
+		{
+		  tree atype = type;
+		  while (TREE_CODE (TREE_TYPE (atype)) == ARRAY_TYPE)
+		    atype = TREE_TYPE (atype);
+		  if (TREE_CODE (TREE_TYPE (atype)) == INTEGER_TYPE
+		      && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
+			 > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
+		    {
+		      unsigned HOST_WIDE_INT size
+			= tree_to_uhwi (TYPE_SIZE_UNIT (atype));
+		      const char *p = TREE_STRING_POINTER (se.expr);
+
+		      se.expr = build_string (size, p);
+		      TREE_TYPE (se.expr) = atype;
+		    }
+		}
 	      break;
 
 	    case EXPR_STRUCTURE:
