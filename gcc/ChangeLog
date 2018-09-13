@@ -1,4 +1,12 @@
 2018-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Only append
+	" : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS" to
+	gcc_config_arguments if it was never reconfigured or last reconfigure
+	was with different arguments.
+	* configure: Regenerated.
+
+2018-09-13  Jakub Jelinek  <jakub@redhat.com>
 	    Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR middle-end/87290

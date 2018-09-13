@@ -1744,7 +1744,10 @@ changequote(,)dnl
 if test -f configargs.h ; then
 	# Being re-configured.
 	gcc_config_arguments=`grep configuration_arguments configargs.h | sed -e 's/.*"\([^"]*\)".*/\1/'`
-	gcc_config_arguments="$gcc_config_arguments : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS"
+	gcc_reconf_arguments=`echo "$gcc_config_arguments" | sed -e 's/^.*\( : (reconfigured) .*$\)/\1/'`
+	if [ "$gcc_reconf_arguments" != " : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS" ]; then
+		gcc_config_arguments="$gcc_config_arguments : (reconfigured) $TOPLEVEL_CONFIGURE_ARGUMENTS"
+	fi
 else
 	gcc_config_arguments="$TOPLEVEL_CONFIGURE_ARGUMENTS"
 fi
