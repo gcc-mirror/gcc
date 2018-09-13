@@ -14611,6 +14611,10 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */,
 
   const char *string = TREE_STRING_POINTER (src);
 
+  /* Ideally this would turn into a gcc_checking_assert over time.  */
+  if (string_length > string_size)
+    string_length = string_size;
+
   if (string_length == 0
       || offset >= string_size)
     return NULL;
