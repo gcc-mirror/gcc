@@ -1,3 +1,9 @@
+2018-09-13  Omar Sandoval  <osandov@osandov.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86985
+	* gcc.dg/guality/zero-length-array.c: New test.
+
 2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
 
 	PR target/85628

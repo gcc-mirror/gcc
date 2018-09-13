@@ -1,3 +1,10 @@
+2018-09-13  Omar Sandoval  <osandov@osandov.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86985
+	* dwarf2out.c (is_c): New function.
+	(add_subscript_info): Add DW_AT_count of 0 for C zero-length arrays.
+
 2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
 
 	PR target/85628
