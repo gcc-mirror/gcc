@@ -1922,8 +1922,14 @@ Lex::skip_cpp_comment()
       // function that it calls, needs to use any write barriers, it
       // should emit an error instead.
       // FIXME: Should only work when compiling the runtime package.
-      // FIXME: currently treated the same as go:nowritebarrier
       this->pragmas_ |= GOPRAGMA_NOWRITEBARRIERREC;
+    }
+  else if (verb == "go:yeswritebarrierrec")
+    {
+      // Applies to the next function.  Disables go:nowritebarrierrec
+      // when looking at callees; write barriers are permitted here.
+      // FIXME: Should only work when compiling the runtime package.
+      this->pragmas_ |= GOPRAGMA_YESWRITEBARRIERREC;
     }
   else if (verb == "go:cgo_unsafe_args")
     {

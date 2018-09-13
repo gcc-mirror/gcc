@@ -941,6 +941,9 @@ class Gogo
                    std::vector<Bstatement*>&,
                    Bfunction* init_bfunction);
 
+  void
+  propagate_writebarrierrec();
+
   Named_object*
   write_barrier_variable();
 
