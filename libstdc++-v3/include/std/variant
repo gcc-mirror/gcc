@@ -1296,7 +1296,7 @@ namespace __variant
 
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
-#ifdef __clang__
+#if defined(__clang__) && __clang_major__ <= 7
     public:
       using _Base::_M_u; // See https://bugs.llvm.org/show_bug.cgi?id=31852
     private:
