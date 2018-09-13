@@ -302,7 +302,7 @@ DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
 
 
 // Set *dst = src where dst is a pointer to a pointer and src is a pointer.
-DEF_GO_RUNTIME(WRITEBARRIERPTR, "runtime.writebarrierptr",
+DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 	       P2(POINTER, POINTER), R0())
 
 // Set *dst = *src for an arbitrary type.

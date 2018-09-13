@@ -380,7 +380,7 @@ Gogo::propagate_writebarrierrec()
 // This is compatible with the definition in the runtime package.
 //
 // For types that are pointer shared (pointers, maps, chans, funcs),
-// we replaced the call to typedmemmove with writebarrierptr(&A, B).
+// we replaced the call to typedmemmove with gcWriteBarrier(&A, B).
 // As far as the GC is concerned, all pointers are the same, so it
 // doesn't need the type descriptor.
 //
@@ -391,7 +391,7 @@ Gogo::propagate_writebarrierrec()
 // runtime package, so we could optimize by only testing it once
 // between function calls.
 //
-// A slice could be handled with a call to writebarrierptr plus two
+// A slice could be handled with a call to gcWriteBarrier plus two
 // integer moves.
 
 // Traverse the IR adding write barriers.
@@ -824,7 +824,7 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
     case Type::TYPE_MAP:
     case Type::TYPE_CHANNEL:
       // These types are all represented by a single pointer.
-      call = Runtime::make_call(Runtime::WRITEBARRIERPTR, loc, 2, lhs, rhs);
+      call = Runtime::make_call(Runtime::GCWRITEBARRIER, loc, 2, lhs, rhs);
       break;
 
     case Type::TYPE_STRING:
