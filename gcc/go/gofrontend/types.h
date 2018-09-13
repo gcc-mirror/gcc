@@ -2981,7 +2981,7 @@ class Channel_type : public Type
   make_chan_type_descriptor_type();
 
   static Type*
-  select_type(int ncases);
+  select_case_type();
 
  protected:
   int
