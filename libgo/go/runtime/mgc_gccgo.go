@@ -11,6 +11,11 @@ import (
 	"unsafe"
 )
 
+// For gccgo, use go:linkname to rename compiler-called functions to
+// themselves, so that the compiler will export them.
+//
+//go:linkname gcWriteBarrier runtime.gcWriteBarrier
+
 // gcRoot is a single GC root: a variable plus a ptrmask.
 //go:notinheap
 type gcRoot struct {
@@ -188,12 +193,7 @@ func checkPreempt() {
 //go:nowritebarrier
 func gcWriteBarrier(dst *uintptr, src uintptr) {
 	buf := &getg().m.p.ptr().wbBuf
-	next := buf.next
-	np := next + 2*sys.PtrSize
-	buf.next = np
-	*(*uintptr)(unsafe.Pointer(next)) = src
-	*(*uintptr)(unsafe.Pointer(next + sys.PtrSize)) = *dst
-	if np >= buf.end {
+	if !buf.putFast(src, *dst) {
 		wbBufFlush(dst, src)
 	}
 	*dst = src
