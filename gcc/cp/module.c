@@ -2556,20 +2556,14 @@ public:
 
 private:
   auto_vec<span> spans;
-  line_maps *lmaps;
 
 public:
   loc_spans ()
-    : lmaps (NULL)
   {
   }
   ~loc_spans () {}
 
 public:
-  operator bool () const
-  {
-    return lmaps != NULL;
-  }
   span &operator[] (unsigned ix)
   {
     return spans[ix];
@@ -2581,31 +2575,31 @@ public:
 
 public:
   /* Initializer and releaser.  */
-  void init (line_maps *maps, const line_map_ordinary *map)
+  void init_once (const line_map_ordinary *map)
   {
-    gcc_checking_assert (!lmaps && !spans.space (1));
-    lmaps = maps;
-    spans.reserve (20);
+    if (!spans.length ())
+      {
+	spans.reserve (20);
 
-    /* Create a span for the forced headers.  */
-    span interval;
-    interval.ordinary.first = 0;
-    interval.ordinary.second = MAP_START_LOCATION (map);
-    interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
-    if (unsigned used = LINEMAPS_MACRO_USED (maps))
-      interval.macro.first
-	= MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (maps, used - 1));
-    interval.offsets.first = interval.offsets.second = 0;
-    spans.quick_push (interval);
+	/* Create a span for the forced headers.  */
+	span interval;
+	interval.ordinary.first = 0;
+	interval.ordinary.second = MAP_START_LOCATION (map);
+	interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+	if (unsigned used = LINEMAPS_MACRO_USED (line_table))
+	  interval.macro.first
+	    = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
+	interval.offsets.first = interval.offsets.second = 0;
+	spans.quick_push (interval);
 
-    /* Start an interval for the main file.  */
-    interval.ordinary.first = interval.ordinary.second;
-    interval.macro.second = interval.macro.first;
-    spans.quick_push (interval);
+	/* Start an interval for the main file.  */
+	interval.ordinary.first = interval.ordinary.second;
+	interval.macro.second = interval.macro.first;
+	spans.quick_push (interval);
+      }
   }
   void release ()
   {
-    lmaps = NULL;
     spans.truncate (0);
   }
 
@@ -2628,11 +2622,11 @@ loc_spans::open ()
 {
   span interval;
   interval.ordinary.first = interval.ordinary.second
-    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (lmaps));
+    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
   interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
-  if (unsigned used = LINEMAPS_MACRO_USED (lmaps))
+  if (unsigned used = LINEMAPS_MACRO_USED (line_table))
     interval.macro.first = interval.macro.second
-      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
+      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
   interval.offsets.first = interval.offsets.second = 0;
   spans.safe_push (interval);
 }
@@ -2644,11 +2638,11 @@ void
 loc_spans::close ()
 {
   span &interval = spans.last ();
-  if (unsigned used = LINEMAPS_MACRO_USED (lmaps))
+  if (unsigned used = LINEMAPS_MACRO_USED (line_table))
     interval.macro.first
-      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (lmaps, used - 1));
+      = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
   interval.ordinary.second
-    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (lmaps));
+    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
 }
 
 /* Given an ordinary location LOC, return the lmap_interval it resides
@@ -2882,8 +2876,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Read and write module.  */
-  void write (elf_out *to, cpp_reader *, line_maps *);
-  void read (int fd, int e, cpp_reader *, line_maps *, bool);
+  void write (elf_out *to, cpp_reader *);
+  void read (int fd, int e, cpp_reader *, bool);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -2972,8 +2966,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_locations (line_maps *, bool early);
 
  private:
-  void write_locations (elf_out *to, line_maps *, unsigned *crc_ptr);
-  bool read_locations (line_maps *);
+  void write_locations (elf_out *to, unsigned *crc_ptr);
+  bool read_locations ();
 
  private:
   void write_define (bytes_out &, cpp_hashnode *);
@@ -2987,19 +2981,18 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  public:
   /* Create a location for module.   */
-  void maybe_create_loc (line_maps *lmaps)
+  void maybe_create_loc ()
   {
     gcc_checking_assert (from_loc != UNKNOWN_LOCATION);
     if (loc == UNKNOWN_LOCATION)
       /* Error paths can cause this to be set and then repeated.  */
-      loc = linemap_module_loc (lmaps, from_loc, fullname);
+      loc = linemap_module_loc (line_table, from_loc, fullname);
   }
   void attach (location_t);
-  bool do_import (const char *filename, cpp_reader *, line_maps *,
-		  bool check_crc);
+  bool do_import (const char *filename, cpp_reader *, bool check_crc);
 
  public:
-  static int atom_preamble (location_t loc, cpp_reader *, line_maps *);
+  static int atom_preamble (location_t loc, cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -8118,10 +8111,10 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	{
 	  char *fname = NULL;
 	  unsigned n = dump.push (tup.first);
-	  tup.first->maybe_create_loc (lmaps);
+	  tup.first->maybe_create_loc ();
 	  if (!tup.first->filename)
 	    fname = module_mapper::import_export (tup.first, false);
-	  if (!tup.first->do_import (fname, reader, lmaps, true))
+	  if (!tup.first->do_import (fname, reader, true))
 	    tup.first = NULL;
 	  dump.pop (n);
 	}
@@ -9828,7 +9821,7 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
    location spans.  */
 
 void
-module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
+module_state::write_locations (elf_out *to, unsigned *crc_p)
 {
   dump () && dump ("Writing locations");
   dump.indent ();
@@ -9843,12 +9836,12 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
     {
       loc_spans::span &interval = spans[ix];
       line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (lmaps,
+	= linemap_check_ordinary (linemap_lookup (line_table,
 						  interval.ordinary.first));
 
       if (!omap)
 	/* lookup returns NULL for the initial span.  */
-	omap = LINEMAPS_ORDINARY_MAP_AT (lmaps, 0);
+	omap = LINEMAPS_ORDINARY_MAP_AT (line_table, 0);
 
       /* We should exactly match up.  */
       gcc_checking_assert (MAP_START_LOCATION (omap)
@@ -9932,7 +9925,7 @@ module_state::write_locations (elf_out *to, line_maps *lmaps, unsigned *crc_p)
     {
       loc_spans::span &interval = spans[ix];
       line_map_ordinary const *omap
-	= linemap_check_ordinary (linemap_lookup (lmaps,
+	= linemap_check_ordinary (linemap_lookup (line_table,
 						  interval.ordinary.first));
 
       for (; MAP_START_LOCATION (omap) < interval.ordinary.second; omap++)
@@ -10415,7 +10408,7 @@ space_cmp (const void *a_, const void *b_)
 */
 
 void
-module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
+module_state::write (elf_out *to, cpp_reader *reader)
 {
   unsigned crc = 0;
 
@@ -10433,7 +10426,7 @@ module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
   if (modules_atom_p ())
     {
       spewer ()->alloc_filenames ();
-      prepare_locations (lmaps);
+      prepare_locations (line_table);
     }
 
   /* Find the SCCs. */
@@ -10553,10 +10546,10 @@ module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
   /* Write the line maps.  */
   if (modules_atom_p ())
     {
-      write_locations (to, lmaps, &crc);
+      write_locations (to, &crc);
 
-      write_locations (to, lmaps, true, &crc);
-      write_locations (to, lmaps, false, &crc);
+      write_locations (to, line_table, true, &crc);
+      write_locations (to, line_table, false, &crc);
       spewer ()->free_filenames ();
     }
 
@@ -10574,8 +10567,7 @@ module_state::write (elf_out *to, cpp_reader *reader, line_maps *lmaps)
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
 void
-module_state::read (int fd, int e, cpp_reader *reader, line_maps *lmaps,
-		    bool check_crc)
+module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
 {
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
@@ -10590,10 +10582,10 @@ module_state::read (int fd, int e, cpp_reader *reader, line_maps *lmaps,
 
   /* Read the early locations.  */
   if (modules_atom_p ())
-    read_locations (lmaps, true);
+    read_locations (line_table, true);
 
   /* Read the import table.  */
-  if (!read_imports (reader, lmaps))
+  if (!read_imports (reader, line_table))
     return;
 
   /* Determine the module's number.  */
@@ -10628,7 +10620,7 @@ module_state::read (int fd, int e, cpp_reader *reader, line_maps *lmaps,
   /* Read the late locations.  */
   if (modules_atom_p ())
     {
-      read_locations (lmaps, false);
+      read_locations (line_table, false);
       /* We'll leak if we returned early, but that's gonna be a fatal
 	 error, so who cares?  */
       slurper ()->free_filenames ();
@@ -11024,8 +11016,7 @@ module_state::attach (location_t from)
    know it as.  CRC_PTR points to the CRC value we expect.  */
 
 bool
-module_state::do_import (char const *fname, cpp_reader *reader, line_maps *lmaps,
-			 bool check_crc)
+module_state::do_import (char const *fname, cpp_reader *reader, bool check_crc)
 {
   gcc_assert (global_namespace == current_scope ()
 	      && !is_imported () && loc != UNKNOWN_LOCATION);
@@ -11051,7 +11042,7 @@ module_state::do_import (char const *fname, cpp_reader *reader, line_maps *lmaps
   imported = true;
   lazy_open--;
   
-  read (fd, e, reader, lmaps, check_crc);
+  read (fd, e, reader, check_crc);
   bool failed = check_read (direct && !modules_atom_p ());
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
@@ -11123,13 +11114,13 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 
 void
 import_module (module_state *imp, location_t from_loc, bool exporting,
-	       tree, cpp_reader *reader, line_maps *lmaps)
+	       tree, cpp_reader *reader)
 {
   if (export_depth)
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
-  from_loc = ordinary_loc_of (lmaps, from_loc);
+  from_loc = ordinary_loc_of (line_table, from_loc);
 
   if (!imp->check_not_purview (from_loc))
     return;
@@ -11147,8 +11138,8 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	{
 	  unsigned n = dump.push (imp);
 	  char *fname = module_mapper::import_export (imp, false);
-	  imp->maybe_create_loc (lmaps);
-	  imp->do_import (fname, reader, lmaps, false);
+	  imp->maybe_create_loc ();
+	  imp->do_import (fname, reader, false);
 	  dump.pop (n);
 	}
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -11162,11 +11153,11 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 
 void
 declare_module (module_state *state, location_t from_loc, bool exporting_p,
-		tree, cpp_reader *reader, line_maps *lmaps)
+		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
 
-  from_loc = ordinary_loc_of (lmaps, from_loc);
+  from_loc = ordinary_loc_of (line_table, from_loc);
   if (module_state *purview = (*modules)[MODULE_PURVIEW])
     {
       /* Already declared the module.  */
@@ -11198,8 +11189,8 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
       /* The user may have named the module before the main file.  */
       const line_map_ordinary *map
-	= linemap_check_ordinary (linemap_lookup (lmaps, from_loc));
-      atom_main_file (lmaps, map,
+	= linemap_check_ordinary (linemap_lookup (line_table, from_loc));
+      atom_main_file (line_table, map,
 		      map - LINEMAPS_ORDINARY_MAPS (line_table));
     }
 
@@ -11231,9 +11222,9 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     {
       unsigned n = dump.push (state);
       char *fname = module_mapper::import_export (state, exporting_p);
-      state->maybe_create_loc (lmaps);
+      state->maybe_create_loc ();
       if (!exporting_p)
-	state->do_import (fname, reader, lmaps, false);
+	state->do_import (fname, reader, false);
       else if (fname)
 	state->filename = xstrdup (fname); 
       dump.pop (n);
@@ -11256,8 +11247,7 @@ module_from_cmp (const void *a_, const void *b_)
    this is a module).  */
 
 int
-module_state::atom_preamble (location_t loc,
-			     cpp_reader *reader, line_maps *lmaps)
+module_state::atom_preamble (location_t loc, cpp_reader *reader)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
@@ -11336,12 +11326,12 @@ module_state::atom_preamble (location_t loc,
     }
 
   /* Preserve the state of the line-map.  */
-  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (lmaps);
+  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
 
   if (interface)
     {
       gcc_assert (interface->loc == UNKNOWN_LOCATION);
-      interface->maybe_create_loc (lmaps);
+      interface->maybe_create_loc ();
       spans.close ();
     }
   else
@@ -11359,7 +11349,7 @@ module_state::atom_preamble (location_t loc,
 	  ok = false;
 	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
 	}
-      imp->maybe_create_loc (lmaps);
+      imp->maybe_create_loc ();
     }
 
   if (ok)
@@ -11371,7 +11361,7 @@ module_state::atom_preamble (location_t loc,
 	{
 	  module_state *imp = directs.pop ();
 	  unsigned n = dump.push (imp);
-	  if (imp->is_imported () || imp->do_import (NULL, reader, lmaps, false))
+	  if (imp->is_imported () || imp->do_import (NULL, reader, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
@@ -11388,12 +11378,12 @@ module_state::atom_preamble (location_t loc,
 	 table.  */
       spewing *spew = interface->spewer ();
       spew->early_loc_map.second = pre_hwm;
-      spew->late_loc_map.first = LINEMAPS_ORDINARY_USED (lmaps);
+      spew->late_loc_map.first = LINEMAPS_ORDINARY_USED (line_table);
     }
 
   dump.pop (0);
 
-  unsigned adj = linemap_module_restore (lmaps, pre_hwm);
+  unsigned adj = linemap_module_restore (line_table, pre_hwm);
 
   if (interface)
     spans.open ();
@@ -11497,10 +11487,9 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
    first call sticks.  */
 
 void
-atom_main_file (line_maps *maps, const line_map_ordinary *map, unsigned ix)
+atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 {
-  if (!spans)
-    spans.init (maps, map);
+  spans.init_once (map);
 
   if (modules_atom_p () && !prefix_locations_hwm)
     {
@@ -11510,7 +11499,7 @@ atom_main_file (line_maps *maps, const line_map_ordinary *map, unsigned ix)
 }
 
 bool
-maybe_atom_legacy_module (cpp_reader *reader, line_maps *lmaps)
+maybe_atom_legacy_module (cpp_reader *reader)
 {
   if (!modules_legacy_p ())
     return false;
@@ -11549,11 +11538,11 @@ maybe_atom_legacy_module (cpp_reader *reader, line_maps *lmaps)
     }
 
   location_t loc
-    =  MAP_START_LOCATION (LINEMAPS_MAP_AT (lmaps, false,
+    =  MAP_START_LOCATION (LINEMAPS_MAP_AT (line_table, false,
 					    prefix_line_maps_hwm - 1));
   tree name = get_identifier (module_legacy_name);
 
-  declare_module (get_module (name, NULL), loc, true, NULL, reader, lmaps);
+  declare_module (get_module (name, NULL), loc, true, NULL, reader);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;
@@ -11563,9 +11552,9 @@ maybe_atom_legacy_module (cpp_reader *reader, line_maps *lmaps)
    final location of the preamble.  */
 
 unsigned
-atom_module_preamble (location_t loc, cpp_reader *reader, line_maps *lmaps)
+atom_module_preamble (location_t loc, cpp_reader *reader)
 {
-  int adj = module_state::atom_preamble (loc, reader, lmaps);
+  int adj = module_state::atom_preamble (loc, reader);
   if (adj < 0)
     fatal_error (loc, "returning to gate for a mechanical issue");
 
@@ -11702,7 +11691,7 @@ init_module_processing ()
 /* Finished parsing, write the BMI, if we're a module interface.  */
 
 void
-finish_module_parse (cpp_reader *reader, line_maps *lmaps)
+finish_module_parse (cpp_reader *reader)
 {
   if (modules_legacy_p ())
     pop_module_export (0);
@@ -11725,7 +11714,7 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
       int e = ENOENT;
 
       /* Force the current linemap to close.  */
-      linemap_add (lmaps, LC_RENAME, false, "", 0);
+      linemap_add (line_table, LC_RENAME, false, "", 0);
       spans.close ();
 
       if (state->filename)
@@ -11740,7 +11729,7 @@ finish_module_parse (cpp_reader *reader, line_maps *lmaps)
 
       elf_out to (fd, e);
       if (to.begin ())
-	state->write (&to, reader, lmaps);
+	state->write (&to, reader);
       if (to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));

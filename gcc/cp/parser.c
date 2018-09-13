@@ -12784,7 +12784,7 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   if (!check_module_outermost (token, "module declaration"))
     return UNKNOWN_LOCATION;
 
-  declare_module (mod, token->location, exporting, attrs, parse_in, line_table);
+  declare_module (mod, token->location, exporting, attrs, parse_in);
   return token->location;
 }
 
@@ -12814,8 +12814,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
     gcc_assert (!modules_atom_p ());
   else
     {
-      import_module (mod, token->location, exporting, attrs,
-		     parse_in, line_table);
+      import_module (mod, token->location, exporting, attrs, parse_in);
       return token->location;
     }
   return UNKNOWN_LOCATION;
@@ -39475,14 +39474,13 @@ c_parse_file (void)
 	  atom_preamble_state preamble
 	    = cp_parser_get_module_preamble_tokens (the_parser);
 	  if (preamble & APS_MODULE
-	      || maybe_atom_legacy_module (parse_in, line_table)
+	      || maybe_atom_legacy_module (parse_in)
 	      || preamble & APS_IMPORT)
 	    {
 	      /* There is a non-empty preamble.  */
 	      location_t loc = cp_parser_parse_module_preamble (the_parser);
 	      gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	      if (unsigned adjust
-		  = atom_module_preamble (loc, parse_in, line_table))
+	      if (unsigned adjust = atom_module_preamble (loc, parse_in))
 		cpp_relocate_peeked_tokens (parse_in, adjust);
 	    }
 	}

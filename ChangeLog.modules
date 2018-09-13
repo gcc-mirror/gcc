@@ -1,5 +1,16 @@
 2018-09-13  Nathan Sidwell  <nathan@acm.org>
 
+	Stop passing line_map around.  There is only one.
+	gcc/cp/
+	* cp-tree.h (import_module, declare_module, atom_module_preamble)
+	(finish_module_parse, maybe_atom_legacy_module): Drop line_map
+	arg.
+	* decl2.c (c_parse_final_cleanups): Adjust.
+	* parser.c (cp_parser_module_declaration)
+	(cp_parser_import_declaration, c_parse_file): Adjust.
+	* module.c (loc_spans): Drop lmaps member & adjust.
+	(module_state): Drop line_maps from some but not all members.
+
 	Refactor location spans
 	gcc/cp/
 	* module.c (class loc_spans): New.  Absorb ...
