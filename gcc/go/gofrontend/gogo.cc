@@ -1535,7 +1535,8 @@ Gogo::write_globals()
 	      // Avoid putting runtime.gcRoots itself on the list.
 	      if (this->compiling_runtime()
 		  && this->package_name() == "runtime"
-		  && Gogo::unpack_hidden_name(no->name()) == "gcRoots")
+		  && (Gogo::unpack_hidden_name(no->name()) == "gcRoots"
+                   || Gogo::unpack_hidden_name(no->name()) == "gcRootsIndex"))
 		;
 	      else
 		var_gc.push_back(no);
