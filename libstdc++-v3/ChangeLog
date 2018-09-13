@@ -1,3 +1,8 @@
+2018-09-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (variant) [__clang__]: Limit workaround to
+	Clang 7 and older.
+
 2018-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87278
