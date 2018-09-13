@@ -207,6 +207,7 @@ func main() {
 
 	fn := main_init // make an indirect call, as the linker doesn't know the address of the main package when laying down the runtime
 	fn()
+	createGcRootsIndex()
 	close(main_init_done)
 
 	needUnlock = false

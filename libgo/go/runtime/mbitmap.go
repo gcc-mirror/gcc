@@ -575,19 +575,23 @@ func bulkBarrierPreWrite(dst, src, size uintptr) {
 	if !inheap(dst) {
 		// If dst is a global, use the data or BSS bitmaps to
 		// execute write barriers.
-		roots := gcRoots
-		for roots != nil {
-			for i := 0; i < roots.count; i++ {
-				pr := roots.roots[i]
-				addr := uintptr(pr.decl)
-				if addr <= dst && dst < addr+pr.size {
-					if dst < addr+pr.ptrdata {
-						bulkBarrierBitmap(dst, src, size, dst-addr, pr.gcdata)
-					}
-					return
+		lo := 0
+		hi := len(gcRootsIndex)
+		for lo < hi {
+			m := lo + (hi-lo)/2
+			pr := gcRootsIndex[m]
+			addr := uintptr(pr.decl)
+			if addr <= dst && dst < addr+pr.size {
+				if dst < addr+pr.ptrdata {
+					bulkBarrierBitmap(dst, src, size, dst-addr, pr.gcdata)
 				}
+				return
 			}
-			roots = roots.next
+			if dst < addr {
+				hi = m
+			} else {
+				lo = m + 1
+			}
 		}
 		return
 	}

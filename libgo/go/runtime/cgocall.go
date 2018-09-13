@@ -243,17 +243,21 @@ func cgoCheckUnknownPointer(p unsafe.Pointer, msg string) (base, i uintptr) {
 		return
 	}
 
-	roots := gcRoots
-	for roots != nil {
-		for j := 0; j < roots.count; j++ {
-			pr := roots.roots[j]
-			addr := uintptr(pr.decl)
-			if cgoInRange(p, addr, addr+pr.size) {
-				cgoCheckBits(pr.decl, pr.gcdata, 0, pr.ptrdata)
-				return
-			}
+	lo := 0
+	hi := len(gcRootsIndex)
+	for lo < hi {
+		m := lo + (hi-lo)/2
+		pr := gcRootsIndex[m]
+		addr := uintptr(pr.decl)
+		if cgoInRange(p, addr, addr+pr.size) {
+			cgoCheckBits(pr.decl, pr.gcdata, 0, pr.ptrdata)
+			return
 		}
-		roots = roots.next
+		if uintptr(p) < addr {
+			hi = m
+		} else {
+			lo = m + 1
+		}
 	}
 
 	return
