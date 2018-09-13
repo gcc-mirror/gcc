@@ -1,8 +1,6 @@
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* typeck2.c (digest_init_r): Fix overlength strings.
-	* vtable-class-hierarchy.c (build_key_buffer_arg): Make string literal
-	NUL terminated.
 
 2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
