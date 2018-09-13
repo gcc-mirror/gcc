@@ -1,3 +1,12 @@
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2018-07-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
+	(mutex_t): Use it for 'lock' and 'data' components.
+	(cond_t): Likewise for 'data' and use single 'flags' component.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
