@@ -7409,7 +7409,32 @@ Builtin_call_expression::do_lower(Gogo*, Named_object* function,
 								  loc);
 	    Expression* e3 = Expression::make_temporary_reference(key_temp,
 								  loc);
-	    e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
+
+	    // If the call to delete is deferred, and is in a loop,
+	    // then the loop will only have a single instance of the
+	    // temporary variable.  Passing the address of the
+	    // temporary variable here means that the deferred call
+	    // will see the last value in the loop, not the current
+	    // value.  So for this unusual case copy the value into
+	    // the heap.
+	    if (!this->is_deferred())
+	      e3 = Expression::make_unary(OPERATOR_AND, e3, loc);
+	    else
+	      {
+		Expression* a = Expression::make_allocation(mt->key_type(),
+							    loc);
+		Temporary_statement* atemp =
+		  Statement::make_temporary(NULL, a, loc);
+		inserter->insert(atemp);
+
+		a = Expression::make_temporary_reference(atemp, loc);
+		a = Expression::make_dereference(a, NIL_CHECK_NOT_NEEDED, loc);
+		Statement* s = Statement::make_assignment(a, e3, loc);
+		inserter->insert(s);
+
+		e3 = Expression::make_temporary_reference(atemp, loc);
+	      }
+
 	    return Runtime::make_call(Runtime::MAPDELETE, this->location(),
 				      3, e1, e2, e3);
 	  }
@@ -9024,6 +9049,10 @@ Builtin_call_expression::do_copy()
 
   if (this->varargs_are_lowered())
     bce->set_varargs_are_lowered();
+  if (this->is_deferred())
+    bce->set_is_deferred();
+  if (this->is_concurrent())
+    bce->set_is_concurrent();
   return bce;
 }
 
@@ -9606,8 +9635,16 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 
   // Recognize a call to a builtin function.
   if (fntype->is_builtin())
-    return new Builtin_call_expression(gogo, this->fn_, this->args_,
-				       this->is_varargs_, loc);
+    {
+      Builtin_call_expression* bce =
+	new Builtin_call_expression(gogo, this->fn_, this->args_,
+				    this->is_varargs_, loc);
+      if (this->is_deferred_)
+	bce->set_is_deferred();
+      if (this->is_concurrent_)
+	bce->set_is_concurrent();
+      return bce;
+    }
 
   // If this call returns multiple results, create a temporary
   // variable to hold them.
@@ -10275,6 +10312,10 @@ Call_expression::do_copy()
 
   if (this->varargs_are_lowered_)
     call->set_varargs_are_lowered();
+  if (this->is_deferred_)
+    call->set_is_deferred();
+  if (this->is_concurrent_)
+    call->set_is_concurrent();
   return call;
 }
 
