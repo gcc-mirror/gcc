@@ -567,7 +567,7 @@ warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
    the declaration of the object of which the array is a member or
    element.  Otherwise return null.  */
 
-static tree
+tree
 unterminated_array (tree exp)
 {
   if (TREE_CODE (exp) == SSA_NAME)
@@ -578,7 +578,10 @@ unterminated_array (tree exp)
 
       tree rhs1 = gimple_assign_rhs1 (stmt);
       tree_code code = gimple_assign_rhs_code (stmt);
-      if (code != POINTER_PLUS_EXPR)
+      if (code == ADDR_EXPR
+	  && TREE_CODE (TREE_OPERAND (rhs1, 0)) == ARRAY_REF)
+	rhs1 = rhs1;
+      else if (code != POINTER_PLUS_EXPR)
 	return NULL_TREE;
 
       exp = rhs1;
@@ -3981,8 +3984,13 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 compile-time, not an expression containing a string.  This is
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
-      if (! c_getstr (src) || ! (len = c_strlen (src, 0)))
+      tree nonstr = NULL_TREE;
+      if (!c_getstr (src, NULL)
+	  || !(len = c_strlen (src, 0, &nonstr, 1)))
 	return expand_movstr (dst, src, target, /*endp=*/2);
+
+      if (nonstr && !TREE_NO_WARNING (exp))
+	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, nonstr);
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
