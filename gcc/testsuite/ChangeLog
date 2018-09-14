@@ -1,3 +1,8 @@
+2018-09-14  Martin Sebor  <msebor@redhat.com>
+
+	c++/61941
+	* g++.dg/pr61941.C: New test.
+
 2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/combine_bfi_1.c: Scan for bfi instruction
