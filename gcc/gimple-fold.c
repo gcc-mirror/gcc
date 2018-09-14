@@ -2798,7 +2798,7 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
   location_t loc = gimple_location (stmt);
   tree dest = gimple_call_arg (stmt, 0);
   tree src = gimple_call_arg (stmt, 1);
-  tree fn, len, lenp1;
+  tree fn, lenp1;
 
   /* If the result is unused, replace stpcpy with strcpy.  */
   if (gimple_call_lhs (stmt) == NULL_TREE)
@@ -2811,10 +2811,25 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
       return true;
     }
 
-  len = c_strlen (src, 1);
+  /* Set to non-null if ARG refers to an unterminated array.  */
+  tree nonstr = NULL;
+  tree len = c_strlen (src, 1, &nonstr, 1);
   if (!len
       || TREE_CODE (len) != INTEGER_CST)
-    return false;
+    {
+      nonstr = unterminated_array (src);
+      if (!nonstr)
+	return false;
+    }
+
+  if (nonstr)
+    {
+      /* Avoid folding calls with unterminated arrays.  */
+      if (!gimple_no_warning_p (stmt))
+	warn_string_no_nul (loc, "stpcpy", src, nonstr);
+      gimple_set_no_warning (stmt, true);
+      return false;
+    }
 
   if (optimize_function_for_size_p (cfun)
       /* If length is zero it's small enough.  */
@@ -3077,6 +3092,12 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
 	 'format' is known to contain no % formats.  */
       gimple_seq stmts = NULL;
       gimple *repl = gimple_build_call (fn, 2, dest, fmt);
+
+      /* Propagate the NO_WARNING bit to avoid issuing the same
+	 warning more than once.  */
+      if (gimple_no_warning_p (stmt))
+	gimple_set_no_warning (repl, true);
+
       gimple_seq_add_stmt_without_update (&stmts, repl);
       if (gimple_call_lhs (stmt))
 	{
@@ -3125,6 +3146,12 @@ gimple_fold_builtin_sprintf (gimple_stmt_iterator *gsi)
       /* Convert sprintf (str1, "%s", str2) into strcpy (str1, str2).  */
       gimple_seq stmts = NULL;
       gimple *repl = gimple_build_call (fn, 2, dest, orig);
+
+      /* Propagate the NO_WARNING bit to avoid issuing the same
+	 warning more than once.  */
+      if (gimple_no_warning_p (stmt))
+	gimple_set_no_warning (repl, true);
+
       gimple_seq_add_stmt_without_update (&stmts, repl);
       if (gimple_call_lhs (stmt))
 	{

@@ -1,4 +1,14 @@
 2018-09-14  Martin Sebor  <msebor@redhat.com>
+
+	* builtins.c (unterminated_array): Handle ARRAY_REF.
+	(expand_builtin_stpcpy_1): Detect unterminated char arrays.
+	* builtins.h (unterminated_array): Declare extern.
+	* gimple-fold.c (gimple_fold_builtin_stpcpy): Detect unterminated
+	arrays.
+	(gimple_fold_builtin_sprintf): Propagate NO_WARNING to transformed
+	calls.
+
+2018-09-14  Martin Sebor  <msebor@redhat.com>
 	    Jeff Law  <law@redhat.com>
 
 	* builtins.c (unterminated_array): New.
