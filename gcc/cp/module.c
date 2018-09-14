@@ -2572,29 +2572,37 @@ public:
   }
 
 public:
-  /* Initializer and releaser.  */
-  void init_once (const line_map_ordinary *map)
+  bool init_p () const
   {
-    if (!spans.length ())
-      {
-	spans.reserve (20);
+    return spans.length () != 0;
+  }
+  /* Initializer.  */
+  void init (const line_map_ordinary *map)
+  {
+    gcc_checking_assert (!init_p ());
+    spans.reserve (20);
 
-	/* Create a span for the forced headers.  */
-	span interval;
-	interval.ordinary.first = 0;
-	interval.ordinary.second = MAP_START_LOCATION (map);
-	interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
-	if (unsigned used = LINEMAPS_MACRO_USED (line_table))
-	  interval.macro.first
-	    = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
-	interval.ordinary_delta = interval.macro_delta = 0;
-	spans.quick_push (interval);
+    /* Create a span for the forced headers.  */
+    span interval;
+    interval.ordinary.first = 0;
+    interval.ordinary.second = MAP_START_LOCATION (map);
+    interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+    if (unsigned used = LINEMAPS_MACRO_USED (line_table))
+      interval.macro.first
+	= MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
+    interval.ordinary_delta = interval.macro_delta = 0;
+    spans.quick_push (interval);
+    
+    /* Start an interval for the main file.  */
+    interval.ordinary.first = interval.ordinary.second;
+    interval.macro.second = interval.macro.first;
+    spans.quick_push (interval);
+  }
 
-	/* Start an interval for the main file.  */
-	interval.ordinary.first = interval.ordinary.second;
-	interval.macro.second = interval.macro.first;
-	spans.quick_push (interval);
-      }
+public:
+  location_t main_start () const
+  {
+    return spans[1].ordinary.first;
   }
 
 public:
@@ -3022,8 +3030,6 @@ static const char *module_mapper_name;
 static const char *module_legacy_name;
 
 /* End of the prefix line maps.  */
-static unsigned prefix_line_maps_hwm;
-static unsigned prefix_locations_hwm;
 location_t module_preamble_end_loc;
 
 /* BMI repository path and workspace.  */
@@ -10061,7 +10067,7 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
   if (cpp_user_macro_p (node))
     {
       cpp_macro *macro = node->value.macro;
-      if (!macro->imported && macro->line >= prefix_locations_hwm)
+      if (!macro->imported && macro->line >= spans.main_start ())
 	/* Ignore imports, builtins and forced header macros.  */
 	((auto_vec<cpp_hashnode *> *)data_)->safe_push (node);
     }
@@ -11064,8 +11070,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       /* The user may have named the module before the main file.  */
       const line_map_ordinary *map
 	= linemap_check_ordinary (linemap_lookup (line_table, from_loc));
-      module_note_main_file (line_table, map,
-			     map - LINEMAPS_ORDINARY_MAPS (line_table));
+      module_note_main_file (line_table, map);
     }
 
   /* Copy any importing information we may have already done.  */
@@ -11275,7 +11280,7 @@ static int
 do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 		   const char *header, bool angle)
 {
-  if (!prefix_locations_hwm)
+  if (!spans.init_p ())
     /* Before the main file, don't divert.  */
     return 0;
 
@@ -11348,15 +11353,11 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
    first call sticks.  */
 
 void
-module_note_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
+module_note_main_file (line_maps *lmaps, const line_map_ordinary *map)
 {
-  spans.init_once (map);
-
-  if (modules_atom_p () && !prefix_locations_hwm)
-    {
-      prefix_line_maps_hwm = ix;
-      prefix_locations_hwm = MAP_START_LOCATION (map);
-    }
+  gcc_checking_assert (lmaps == line_table);
+  if (modules_p () && !spans.init_p ())
+    spans.init (map);
 }
 
 bool
@@ -11398,12 +11399,10 @@ maybe_begin_legacy_module (cpp_reader *reader)
       memcpy (name + 1, main + pos, len);
     }
 
-  location_t loc
-    =  MAP_START_LOCATION (LINEMAPS_MAP_AT (line_table, false,
-					    prefix_line_maps_hwm - 1));
   tree name = get_identifier (module_legacy_name);
+  declare_module (get_module (name, NULL),
+		  spans.main_start (), true, NULL, reader);
 
-  declare_module (get_module (name, NULL), loc, true, NULL, reader);
   /* Everything is exported.  */
   push_module_export (false, NULL);
   return true;

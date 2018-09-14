@@ -331,8 +331,7 @@ struct lang_hooks
   void (*initialize_diagnostics) (diagnostic_context *);
 
   /* Beginning the main source file.  */
-  void (*preprocess_main_file) (line_maps *, const line_map_ordinary *,
-				unsigned);
+  void (*preprocess_main_file) (line_maps *, const line_map_ordinary *);
 
   /* Subvert include hook hook.  Ptr to fn returning ptr to fn.  */
   int (*(*preprocess_divert_include) ()) (cpp_reader *, line_maps *,

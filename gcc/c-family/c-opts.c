@@ -1524,11 +1524,10 @@ cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
       && 0 == strcmp (ORDINARY_MAP_FILE_NAME (new_map),
 		      main_input_filename))
     {
-      unsigned ix = new_map - LINEMAPS_ORDINARY_MAPS (line_table);
-
-      if (ix > (cpp_opts->preprocessed ? 2 : 1))
+      if (new_map - LINEMAPS_ORDINARY_MAPS (line_table)
+	  > (cpp_opts->preprocessed ? 2 : 1))
 	/* We're starting the main file.  Inform the FE of that.  */
-	lang_hooks.preprocess_main_file (line_table, new_map, ix);
+	lang_hooks.preprocess_main_file (line_table, new_map);
     }
 
   if (new_map 

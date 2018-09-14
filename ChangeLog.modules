@@ -1,5 +1,19 @@
 2018-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* langhooks.h (preprocess_main_file): Drop index arg.
+	gcc/c-family/
+	* c-opts.c (cb_file_change): Adjust preprocess_main_file hook.
+	gcc/cp/
+	* cp-tree.h (module_node_main_file): Drop index parm.
+	* module.c (loc_spans::init_p, ): New.
+	(loc_spans::init_once): Rename to ...
+	(loc_spans::init): ... here.
+	(loc_spans::main_start): New.
+	(prefix_line_maps_hwm, prefix_locations_hwm): Delete.
+	(maybe_add_macro, declare_module, do_divert_include)
+	(module_note_main_file, maybe_begin_legacy_module): Adjust.
+
 	A grand renaming
 	gcc/cp/
 	* cp-tree.h (atom_preamble_state, atom_preamble_prefix_peek)
