@@ -57,6 +57,9 @@
 #ifndef _XMMINTRIN_H_INCLUDED
 #define _XMMINTRIN_H_INCLUDED
 
+/* Define four value permute mask */
+#define _MM_SHUFFLE(w,x,y,z) (((w) << 6) | ((x) << 4) | ((y) << 2) | (z))
+
 #include <altivec.h>
 
 /* Avoid collisions between altivec.h and strict adherence to C++ and
