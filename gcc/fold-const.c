@@ -14595,6 +14595,10 @@ c_getstr (tree src, unsigned HOST_WIDE_INT *strlen /* = NULL */)
   unsigned HOST_WIDE_INT string_length = TREE_STRING_LENGTH (src);
   unsigned HOST_WIDE_INT string_size = tree_to_uhwi (mem_size);
 
+  /* Ideally this would turn into a gcc_checking_assert over time.  */
+  if (string_length > string_size)
+    string_length = string_size;
+
   const char *string = TREE_STRING_POINTER (src);
 
   /* Ideally this would turn into a gcc_checking_assert over time.  */

@@ -291,8 +291,6 @@ get_addr_stridx (tree exp, tree ptr, unsigned HOST_WIDE_INT *offset_out)
 static int
 get_stridx (tree exp)
 {
-  tree s, o;
-
   if (TREE_CODE (exp) == SSA_NAME)
     {
       if (ssa_ver_to_stridx[SSA_NAME_VERSION (exp)])
@@ -336,18 +334,10 @@ get_stridx (tree exp)
 	return idx;
     }
 
-  s = string_constant (exp, &o, NULL, NULL);
-  if (s != NULL_TREE
-      && (o == NULL_TREE || tree_fits_shwi_p (o))
-      && TREE_STRING_LENGTH (s) > 0)
-    {
-      HOST_WIDE_INT offset = o ? tree_to_shwi (o) : 0;
-      const char *p = TREE_STRING_POINTER (s);
-      int max = TREE_STRING_LENGTH (s) - 1;
+  const char *p = c_getstr (exp);
+  if (p)
+    return ~(int) strlen (p);
 
-      if (p[max] == '\0' && offset >= 0 && offset <= max)
-	return ~(int) strlen (p + offset);
-    }
   return 0;
 }
 

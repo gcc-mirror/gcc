@@ -1335,7 +1335,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	    return false;
 	}
       else
-	val = c_strlen (arg, 1, eltsize);
+	val = c_strlen (arg, 1, NULL, eltsize);
 
       if (!val && fuzzy)
 	{
