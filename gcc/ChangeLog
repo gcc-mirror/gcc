@@ -1,5 +1,9 @@
 2018-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* builtins.c (fold_builtin_strlen): Remove TODO comment.
+
+2018-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
 	revert:
 	2018-07-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 

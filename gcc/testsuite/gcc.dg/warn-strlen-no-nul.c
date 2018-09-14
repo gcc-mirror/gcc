@@ -9,6 +9,7 @@ const char a[5] = "12345";   /* { dg-message "declared here" } */
 
 int v0 = 0;
 int v1 = 1;
+volatile int v2;
 
 void sink (int, ...);
 
@@ -117,10 +118,8 @@ T (v0 ? b[i0] : &b[i3][i0] + i1);    /* { dg-warning "nul" }  */
 T (v0 ? b[i0] : &b[i3][i0] + i1);    /* { dg-warning "nul" }  */
 T (v0 ? b[i1] : &b[i3][i1] + v0);    /* { dg-warning "nul" }  */
 
-/* It's possible to detect the missing nul in the following two
-   expressions but GCC doesn't do it yet.  */
-T (v0 ? &b[3][1] + v0 : b[2]);    /* { dg-warning "nul" "bug" }  */
-T (v0 ? &b[3][v0] : &b[3][v1]);   /* { dg-warning "nul" "bug" }  */
+T (v0 ? &b[3][1] + v0 : b[2]);    /* { dg-warning "nul" }  */
+T (v0 ? &b[3][v0] : &b[3][v1]);   /* { dg-warning "nul" }  */
 
 
 struct A { char a[5], b[5]; };
@@ -299,3 +298,7 @@ T (v0 ? &ba[3].a[1].a[1] :  ba[0].a[0].a);      /* { dg-warning "nul" }  */
 
 T (v0 ? ba[0].a[0].a : ba[0].a[1].b);
 T (v0 ? ba[0].a[1].b : ba[0].a[0].a);
+
+T (v2 ? b[1] : &b[3][1] + v2);    /* { dg-warning "nul" }  */
+T (v2 ? &b[3][1] + v2 : b[2]);    /* { dg-warning "nul" }  */
+T (v2 ? &b[3][v2] : &b[2][v2]);   /* { dg-warning "nul" }  */
