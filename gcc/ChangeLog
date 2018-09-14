@@ -1,5 +1,8 @@
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* expr.c (string_constant): Adjust function comment.
+	Remove bogus check for zero termination.
+
 	* fold-const.c (c_getstr): Clamp STRING_LENGTH to STRING_SIZE.
 
 	* varasm.c (compare_constant): Compare type size of STRING_CSTs.
