@@ -620,7 +620,11 @@ ssa_conflicts_merge (ssa_conflicts *ptr, unsigned x, unsigned y)
     {
       bitmap bz = ptr->conflicts[z];
       if (bz)
-	bitmap_set_bit (bz, x);
+	{
+	  bool was_there = bitmap_clear_bit (bz, y);
+	  gcc_checking_assert (was_there);
+	  bitmap_set_bit (bz, x);
+	}
     }
 
   if (bx)
