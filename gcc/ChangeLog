@@ -1,3 +1,13 @@
+2018-09-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/87188
+	* dojump.c (do_compare_and_jump): Canonicalize function pointers
+	when one operand is a function pointer.  Use POINTER_TYPE_P and
+	FUNC_OR_METHOD_TYPE_P.
+	* expr.c (do_store_flag): Use POINTER_TYPE_P and FUNC_OR_METHOD_TYPE_P.
+	* fold-const.c (build_range_check): Likewise.
+	* match.pd (simple_comparison): Likewise.
+
 2018-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c/82967
