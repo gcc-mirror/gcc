@@ -1,3 +1,8 @@
+2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* io/unix.c (fallback_access): Avoid calling close on
+	uninitialized file descriptor.
+
 2018-09-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* runtime/minimal.c (estr_write): Define in terms of write.
