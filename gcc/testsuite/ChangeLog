@@ -1,3 +1,8 @@
+2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.target/aarch64/combine_bfi_1.c: Scan for bfi instruction
+	rather than pattern name in combine dump.
+
 2018-09-14  Sam Tebbs  <sam.tebbs@arm.com>
 
 	PR target/85628
