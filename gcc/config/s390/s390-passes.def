@@ -17,4 +17,4 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-INSERT_PASS_BEFORE (pass_thread_prologue_and_epilogue, 1, pass_s390_early_mach);
+	  INSERT_PASS_BEFORE (pass_thread_prologue_and_epilogue, 1, pass_s390_early_mach);
