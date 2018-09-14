@@ -1,3 +1,8 @@
+2018-09-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Normalize
+	VR_VARYING for PLUS/MINUS_EXPR.
+
 2018-09-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87263
