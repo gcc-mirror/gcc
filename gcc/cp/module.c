@@ -138,7 +138,7 @@ Classes used:
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
-#define NEW_LOC 0
+#define NEW_LOC 01
 
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
@@ -2551,7 +2551,8 @@ public:
   struct span {
     loc_range_t ordinary;	/* Ordinary map location range. */
     loc_range_t macro;		/* Macro map location range.  */
-    loc_range_t offsets;	/* Offsets to normalize.  */
+    int ordinary_delta;	/* Add to ordinary loc to get serialized loc.  */
+    int macro_delta;	/* Likewise for macro loc.  */
   };
 
 private:
@@ -2589,7 +2590,7 @@ public:
 	if (unsigned used = LINEMAPS_MACRO_USED (line_table))
 	  interval.macro.first
 	    = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
-	interval.offsets.first = interval.offsets.second = 0;
+	interval.ordinary_delta = interval.macro_delta = 0;
 	spans.quick_push (interval);
 
 	/* Start an interval for the main file.  */
@@ -2623,7 +2624,7 @@ loc_spans::open ()
   if (unsigned used = LINEMAPS_MACRO_USED (line_table))
     interval.macro.first = interval.macro.second
       = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
-  interval.offsets.first = interval.offsets.second = 0;
+  interval.ordinary_delta = interval.macro_delta = 0;
   spans.safe_push (interval);
 }
 
@@ -2967,7 +2968,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_locations (line_maps *, bool early);
 
  private:
-  void write_locations (elf_out *to, unsigned *crc_ptr);
+  unsigned prepare_locations ();
+  void write_locations (elf_out *to, unsigned, unsigned *crc_ptr);
   bool read_locations ();
 
  private:
@@ -9553,7 +9555,8 @@ module_state::write_location (bytes_out &sec, location_t loc)
   const loc_spans::span *span = spans.ordinary (loc);
   gcc_checking_assert (span); /* We should only be writing locs inside
 				 us.  */
-  sec.u (loc - span->offsets.first);
+  dump () && dump ("Location %u output %u", loc, loc + span->ordinary_delta);
+  sec.u (loc + span->ordinary_delta);
 #else
     spewing *spew = spewer ();
   gcc_assert (loc < spew->early_locs.second
@@ -9574,7 +9577,10 @@ module_state::read_location (bytes_in &sec)
   if (off >= slurp->ordinary_range.second)
     sec.set_overrun ();
   else if (off >= slurp->ordinary_range.first)
-    loc = off + slurp->delta.first;
+    {
+      loc = off + slurp->delta.first;
+      dump () && dump ("Location %u becoming %u", off, loc);
+    }
   else if (slurp->pre_early_ok)
     loc = off;
 #else
@@ -9834,21 +9840,16 @@ module_state::read_locations (line_maps *lmaps, bool early_p)
   return true;
 }
 
-/* Write the location maps.  This also determines the shifts for the
-   location spans.  */
+/* Prepare the span adjustments.  */
 
-void
-module_state::write_locations (elf_out *to, unsigned *crc_p)
+unsigned
+module_state::prepare_locations ()
 {
-  dump () && dump ("Writing locations");
+  dump () && dump ("Preparing locations");
   dump.indent ();
 
-  range_t num_maps (0, 0);
-  auto_vec<const char *> filenames;
-
-  /* We first have to figure the alignment of location spans and determine
-     the unique filenames.  */
-  unsigned max_align = 0;
+  /* Figure the alignment of location spans.  */
+  unsigned max_rager = 0;  /* Brains! */
   for (unsigned ix = 1; ix != spans.length (); ix++)
     {
       loc_spans::span &span = spans[ix];
@@ -9858,7 +9859,85 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 
       /* We should exactly match up.  */
       gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
-      unsigned align = 0;
+      for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+	{
+	  /* We should never find a module linemap in an interval.  */
+	  gcc_checking_assert (!MAP_MODULE_P (omap));
+
+	  if (max_rager < omap->m_range_bits)
+	    max_rager = omap->m_range_bits;
+	}
+
+      /* Again, we should finish exactly matched up.  */
+      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.second);
+    }
+
+  {
+    /* Adjust the ordinary maps.  */
+    location_t offset = spans[1].ordinary.first;
+    location_t range_mask = (1u << max_rager) - 1;
+
+    dump () && dump ("Ordinary maps range bits:%u, preserve:%x, zero:%u",
+		     max_rager, offset & range_mask, offset & ~range_mask);
+
+    for (unsigned ix = 1; ix != spans.length (); ix++)
+      {
+	loc_spans::span &span = spans[ix];
+	line_map_ordinary const *omap
+	  = linemap_check_ordinary (linemap_lookup (line_table,
+						    span.ordinary.first));
+	location_t base = MAP_START_LOCATION (omap);
+	
+	/* Preserve the low MAX_RAGER bits of base by incrementing OFFSET.  */
+	unsigned low_bits = base & range_mask;
+	if ((offset & range_mask) > low_bits)
+	  low_bits += range_mask + 1;
+	offset = (offset & ~range_mask) + low_bits;
+	span.ordinary_delta = offset - base;
+
+	for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
+	  {
+	    location_t start_loc = MAP_START_LOCATION (omap);
+	    unsigned to = start_loc + span.ordinary_delta;
+
+	    dump () && dump ("Span:%u [%u,%u)->%u", ix, start_loc,
+			     MAP_START_LOCATION (omap + 1), to);
+
+	    /* There should be no change in the low order bits.  */
+	    gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
+	  }
+	/* The ending serialized value.  */
+	offset = MAP_START_LOCATION (omap) + span.ordinary_delta;
+      }
+    dump () && dump ("Location hwm:%u", offset);
+  }
+
+  dump.outdent ();
+  return max_rager;
+}
+
+/* Write the location maps.  This also determines the shifts for the
+   location spans.  */
+
+void
+module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
+{
+  dump () && dump ("Writing locations");
+  dump.indent ();
+
+  range_t num_maps (0, 0);
+  auto_vec<const char *> filenames;
+
+  /* Determine the unique filenames.  */
+  for (unsigned ix = 1; ix != spans.length (); ix++)
+    {
+      loc_spans::span &span = spans[ix];
+      line_map_ordinary const *omap
+	= linemap_check_ordinary (linemap_lookup (line_table,
+						  span.ordinary.first));
+
+      /* We should exactly match up.  */
+      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.first);
       line_map_ordinary const *fmap = omap;
       for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
 	{
@@ -9884,8 +9963,6 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 	    }
 	  if (fname)
 	    filenames.safe_push (fname);
-	  if (align < omap->m_range_bits)
-	    align = omap->m_range_bits;
 	}
 
       /* Again, we should finish exactly matched up.  */
@@ -9893,10 +9970,6 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
       unsigned count = omap - fmap;
       gcc_checking_assert (count);
       num_maps.first += count;
-
-      span.offsets.first = align;
-      if (max_align < align)
-	max_align = align;
     }
 
   bytes_out sec (to);
@@ -9918,37 +9991,40 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 
   {
     /* Write the ordinary maps.  */
-    dump () && dump ("Ordinary maps:%u, maxalign:%u", num_maps.first, max_align);
-    sec.u (num_maps.first); /* Num maps.  */
-    sec.u (max_align);	/* Maximum alignment.  */
+    location_t offset = spans[1].ordinary.first;
+    location_t range_mask = (1u << max_rager) - 1;
 
-    location_t offset = ((spans[0].ordinary.second + ((1u << max_align) - 1))
-			 & ~((1u << max_align) - 1));
-    sec.u (offset);
+    dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
+		     num_maps.first, max_rager, offset & range_mask,
+		     offset & ~range_mask);
+    sec.u (num_maps.first);	/* Num maps.  */
+    sec.u (max_rager);		/* Maximum range bits  */
+    sec.u (offset & range_mask);	/* Bits to preserve.  */
+    sec.u (offset & ~range_mask);
+
     for (unsigned ix = 1; ix != spans.length (); ix++)
       {
 	loc_spans::span &span = spans[ix];
 	line_map_ordinary const *omap
 	  = linemap_check_ordinary (linemap_lookup (line_table,
 						    span.ordinary.first));
-	unsigned align = span.offsets.first;
-	offset = (offset + ((1u << align) - 1)) & ~((1u << align) - 1);
-	location_t base = MAP_START_LOCATION (omap) & ~((1u << align) - 1);
-	span.offsets.first = base - offset;
-
 	for (; MAP_START_LOCATION (omap) < span.ordinary.second; omap++)
 	  {
 	    location_t start_loc = MAP_START_LOCATION (omap);
-	    unsigned to = start_loc - span.offsets.first;
+	    unsigned to = start_loc + span.ordinary_delta;
+
 	    dump () && dump ("Span:%u [%u,%u)->%u", ix, start_loc,
 			     MAP_START_LOCATION (omap + 1), to);
+
+	    /* There should be no change in the low order bits.  */
+	    gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
 	    sec.u (to);
 
 	    /* Making accessors just for here, seems excessive.  */
 	    sec.u (omap->reason);
 	    sec.u (omap->sysp);
-	    sec.u (omap->m_column_and_range_bits);
 	    sec.u (omap->m_range_bits);
+	    sec.u (omap->m_column_and_range_bits - omap->m_range_bits);
 
 	    const char *fname = ORDINARY_MAP_FILE_NAME (omap);
 	    for (unsigned ix = 0; ix != filenames.length (); ix++)
@@ -9968,7 +10044,8 @@ module_state::write_locations (elf_out *to, unsigned *crc_p)
 	    write_location (sec, from);
 #endif
 	  }
-	offset = MAP_START_LOCATION (omap) - span.offsets.first;
+	/* The ending serialized value.  */
+	offset = MAP_START_LOCATION (omap) + span.ordinary_delta;
       }
     dump () && dump ("Location hwm:%u", offset);
     sec.u (offset);
@@ -10014,37 +10091,44 @@ module_state::read_locations ()
   {
     /* Read the ordinary maps.  */
     unsigned num_ordinary = sec.u (); 
-    unsigned max_align = sec.u ();
-
-    dump () && dump ("Ordinary maps:%u, maxalign:%u", num_ordinary, max_align);
-
-
-    line_map_ordinary *base = static_cast <line_map_ordinary *>
-      (line_map_new_raw (line_table, false, num_ordinary));
-    location_t offset = ((line_table->highest_location + (1u << max_align))
-			 & ~((1u << max_align) - 1));
+    unsigned max_rager = sec.u ();
+    unsigned low_bits = sec.u ();
     location_t zero = sec.u ();
+    location_t range_mask = (1u << max_rager) - 1;
+
+    dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
+		     num_ordinary, max_rager, low_bits, zero);
+
+    line_map_ordinary *maps = static_cast <line_map_ordinary *>
+      (line_map_new_raw (line_table, false, num_ordinary));
+
+    location_t offset = line_table->highest_location + 1;
+    /* Ensure offset doesn't go backwards at the start.  */
+    if ((offset & range_mask) > low_bits)
+      offset += range_mask + 1;
+    offset = (offset & ~range_mask);
+
     location_t lwm = offset;
-    slurp->ordinary_range.first = zero;
+    slurp->ordinary_range.first = zero + low_bits;
     slurp->delta.first = offset - zero;
 
     for (unsigned ix = 0; ix != num_ordinary; ix++)
       {
-	line_map_ordinary *map = base + ix;
+	line_map_ordinary *map = &maps[ix];
 	unsigned hwm = sec.u ();
 
 	/* Record the current HWM so that the below read_location is
 	   ok.  */
 	slurp->ordinary_range.second = hwm;
-	map->start_location = hwm - zero + offset;
+	map->start_location = hwm + (offset - zero);
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
 	lwm = map->start_location;
 	dump () && dump ("Map:%u %u->%u", ix, hwm, lwm);
 	map->reason = lc_reason (sec.u ());
 	map->sysp = sec.u ();
-	map->m_column_and_range_bits = sec.u ();
 	map->m_range_bits = sec.u ();
+	map->m_column_and_range_bits = map->m_range_bits + sec.u ();
 
 	unsigned fnum = sec.u ();
 	map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
@@ -10059,7 +10143,7 @@ module_state::read_locations ()
 
     location_t hwm = sec.u ();
     slurp->ordinary_range.second = hwm;
-    line_table->highest_location = hwm - zero + offset - 1;
+    line_table->highest_location = hwm + (offset - zero) - 1;
     if (lwm > line_table->highest_location)
       sec.set_overrun ();
     dump () && dump ("Location hwm:%u", line_table->highest_location + 1);
@@ -10540,10 +10624,15 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   find_dependencies (table);
 
+  unsigned range_bits = 0;
   if (modules_atom_p ())
     {
       spewer ()->alloc_filenames ();
+#if NEW_LOC
+      range_bits = prepare_locations ();
+#else
       prepare_locations (line_table);
+#endif
     }
 
   /* Find the SCCs. */
@@ -10663,11 +10752,13 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the line maps.  */
   if (modules_atom_p ())
     {
-      write_locations (to, &crc);
-
+#if NEW_LOC
+      write_locations (to, range_bits, &crc);
+#else
       write_locations (to, line_table, true, &crc);
       write_locations (to, line_table, false, &crc);
       spewer ()->free_filenames ();
+#endif
     }
 
   if (modules_legacy_p ())

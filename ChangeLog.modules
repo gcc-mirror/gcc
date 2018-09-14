@@ -1,3 +1,11 @@
+2018-09-14  Nathan Sidwell  <nathan@acm.org>
+
+	New locations working
+	gcc/cp/
+	* module.c (module_state::prepare_locations): New, broken out of ...
+	(module_state::write_locations): Adjust.
+	(module_state::read_locations): Fix.
+
 2018-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	Read & write new locations (buggy, disabled).
