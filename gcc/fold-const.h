@@ -187,8 +187,7 @@ extern bool expr_not_equal_to (tree t, const wide_int &);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree const_binop (enum tree_code, tree, tree, tree);
 extern bool negate_mathfn_p (combined_fn);
-extern const char *c_getstr (tree, unsigned HOST_WIDE_INT * = NULL,
-			     unsigned HOST_WIDE_INT * = NULL);
+extern const char *c_getstr (tree, unsigned HOST_WIDE_INT * = NULL);
 extern wide_int tree_nonzero_bits (const_tree);
 
 /* Return OFF converted to a pointer offset type suitable as offset for

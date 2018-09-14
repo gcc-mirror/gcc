@@ -725,6 +725,8 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
       tree srctype, desttype;
       unsigned int src_align, dest_align;
       tree off0;
+      const char *tmp_str;
+      unsigned HOST_WIDE_INT tmp_len;
 
       /* Build accesses at offset zero with a ref-all character type.  */
       off0 = build_int_cst (build_pointer_type_for_mode (char_type_node,
@@ -742,7 +744,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	     confuses the tree-ssa-strlen.c.  This doesn't handle
 	     the case in gcc.dg/strlenopt-8.c which is XFAILed for that
 	     reason.  */
-	  && !c_strlen (src, 2))
+	  && !c_strlen (src, 2)
+	  && !((tmp_str = c_getstr (src, &tmp_len)) != NULL
+	       && memchr (tmp_str, 0, tmp_len) == NULL))
 	{
 	  unsigned ilen = tree_to_uhwi (len);
 	  if (pow2p_hwi (ilen))
