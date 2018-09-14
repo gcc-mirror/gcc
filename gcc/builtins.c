@@ -604,12 +604,12 @@ c_strlen (tree src, int only_value, unsigned eltsize)
      In that case, the elements of the array after the terminating NUL are
      all NUL.  */
   HOST_WIDE_INT strelts = TREE_STRING_LENGTH (src);
-  strelts = strelts / eltsize - 1;
+  strelts = strelts / eltsize;
 
   if (!tree_fits_uhwi_p (memsize))
     return NULL_TREE;
 
-  HOST_WIDE_INT maxelts = tree_to_uhwi (memsize) / eltsize - 1;
+  HOST_WIDE_INT maxelts = tree_to_uhwi (memsize) / eltsize;
 
   /* PTR can point to the byte representation of any string type, including
      char* and wchar_t*.  */
@@ -617,10 +617,6 @@ c_strlen (tree src, int only_value, unsigned eltsize)
 
   if (byteoff && TREE_CODE (byteoff) != INTEGER_CST)
     {
-      /* For empty strings the result should be zero.  */
-      if (maxelts == 0)
-	return ssize_int (0);
-
       /* The code below works only for single byte character types.  */
       if (eltsize != 1)
 	return NULL_TREE;
@@ -632,8 +628,12 @@ c_strlen (tree src, int only_value, unsigned eltsize)
       unsigned len = string_length (ptr, eltsize, strelts);
 
       /* Return when an embedded null character is found or none at all.  */
-      if (len < strelts || len > maxelts)
+      if (len + 1 < strelts || len >= maxelts)
 	return NULL_TREE;
+
+      /* For empty strings the result should be zero.  */
+      if (len == 0)
+	return ssize_int (0);
 
       /* We don't know the starting offset, but we do know that the string
 	 has no internal zero bytes.  If the offset falls within the bounds
@@ -644,7 +644,7 @@ c_strlen (tree src, int only_value, unsigned eltsize)
       offsave = fold_convert (ssizetype, offsave);
       tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
 				      build_int_cst (ssizetype, len));
-      tree lenexp = size_diffop_loc (loc, ssize_int (strelts), offsave);
+      tree lenexp = size_diffop_loc (loc, ssize_int (len), offsave);
       return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
 			      build_zero_cst (ssizetype));
     }
@@ -663,7 +663,7 @@ c_strlen (tree src, int only_value, unsigned eltsize)
 
   /* If the offset is known to be out of bounds, warn, and call strlen at
      runtime.  */
-  if (eltoff < 0 || eltoff > maxelts)
+  if (eltoff < 0 || eltoff >= maxelts)
     {
      /* Suppress multiple warnings for propagated constant strings.  */
       if (only_value != 2
@@ -691,9 +691,9 @@ c_strlen (tree src, int only_value, unsigned eltsize)
   unsigned len = string_length (ptr + eltoff * eltsize, eltsize,
 				strelts - eltoff);
 
-  /* Don't know what to return if there was no zero termination. 
+  /* Don't know what to return if there was no zero termination.
      Ideally this would turn into a gcc_checking_assert over time.  */
-  if (len > maxelts - eltoff)
+  if (len >= maxelts - eltoff)
     return NULL_TREE;
 
   return ssize_int (len);

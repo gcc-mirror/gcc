@@ -1,5 +1,13 @@
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
+	* builtins.c (c_strlen): Handle not zero terminated STRING_CSTs
+	correctly.
+	* fold-const.c (c_getstr): Fix function comment.  Remove unused third
+	argument.  Fix range checks.
+	* fold-const.h (c_getstr): Adjust protoype.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Avoid folding when
+	string is constant but contains no NUL byte.
+
 	* expr.c (string_constant): Adjust function comment.
 	Remove bogus check for zero termination.
 
