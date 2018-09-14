@@ -1415,6 +1415,22 @@ extract_range_from_binary_expr_1 (value_range *vr,
      range and see what we end up with.  */
   if (code == PLUS_EXPR || code == MINUS_EXPR)
     {
+      /* This will normalize things such that calculating
+	 [0,0] - VR_VARYING is not dropped to varying, but is
+	 calculated as [MIN+1, MAX].  */
+      if (vr0.type == VR_VARYING)
+	{
+	  vr0.type = VR_RANGE;
+	  vr0.min = vrp_val_min (expr_type);
+	  vr0.max = vrp_val_max (expr_type);
+	}
+      if (vr1.type == VR_VARYING)
+	{
+	  vr1.type = VR_RANGE;
+	  vr1.min = vrp_val_min (expr_type);
+	  vr1.max = vrp_val_max (expr_type);
+	}
+
       const bool minus_p = (code == MINUS_EXPR);
       tree min_op0 = vr0.min;
       tree min_op1 = minus_p ? vr1.max : vr1.min;
