@@ -1,3 +1,11 @@
+2018-09-14  Bernd Edlinger msebor@redhat.com>
+
+	revert:
+	2018-07-30  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* tree-ssa-forwprop.c (simplify_builtin_call): Don't create a not NUL
+	terminated string literal.
+
 2018-09-14  Martin Sebor  <msebor@redhat.com>
 
 	* builtins.c (unterminated_array): Handle ARRAY_REF.
