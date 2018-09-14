@@ -4,6 +4,13 @@
 extern void abort (void);
 
 unsigned long long
+combine_zero_extended_int (unsigned int a, unsigned int b)
+{
+  /* { dg-final { scan-assembler-not "uxtw\\t" } } */
+  return (a & 0xffff0000ll) | (b & 0x0000ffffll);
+}
+
+unsigned long long
 combine_balanced (unsigned long long a, unsigned long long b)
 {
   return (a & 0xffffffff00000000ll) | (b & 0x00000000ffffffffll);
@@ -71,6 +78,13 @@ foo5 (unsigned int a, unsigned int b, unsigned int *c, unsigned int *d)
   *d = combine_unbalanced_int (b, a);
 }
 
+void
+foo6 (unsigned int a, unsigned int b, unsigned long long *c, unsigned long long *d)
+{
+  *c = combine_zero_extended_int(a, b);
+  *d = combine_zero_extended_int(b, a);
+}
+
 int
 main (void)
 {
@@ -92,7 +106,12 @@ main (void)
   foo5 (a2, b2, &c2, &d2);
   if (c2 != 0x01234598) abort ();
   if (d2 != 0xfedcba67) abort ();
+
+  unsigned long long c3, d3;
+  foo6 (a2, b2, &c3, &d3);
+  if (c3 != 0x0123ba98) abort ();
+  if (d3 != 0xfedc4567) abort ();
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "bfxil\\t" 10 } } */
+/* { dg-final { scan-assembler-times "bfxil\\t" 13 } } */
