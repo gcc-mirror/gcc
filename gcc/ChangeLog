@@ -1,3 +1,30 @@
+2018-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82967
+	* spellcheck.c (get_edit_distance_cutoff): New function.
+	(selftest::test_edit_distance_unit_test_oneway): Rename to...
+	(selftest::test_get_edit_distance_one_way): ...this.
+	(selftest::test_get_edit_distance_unit): Rename to...
+	(selftest::test_get_edit_distance_both_ways): ...this.
+	(selftest::test_edit_distances): Move tests to this new function,
+	and test some more pairs of strings.  Update for above renaming.
+	(selftest::get_old_cutoff): New function.
+	(selftest::test_get_edit_distance_cutoff): New function.
+	(selftest::assert_suggested_for): New function.
+	(ASSERT_SUGGESTED_FOR): New macro.
+	(selftest::assert_not_suggested_for): New function.
+	(ASSERT_NOT_SUGGESTED_FOR): New macro.
+	(selftest::test_suggestions): New function.
+	(selftest::spellcheck_c_tests): Move test_get_edit_distance_unit
+	tests to selftest::test_edit_distances and call it.  Add calls to
+	selftest::test_get_edit_distance_cutoff and
+	selftest::test_suggestions.
+	* spellcheck.h (get_edit_distance_cutoff): New function declaration.
+	(best_match::consider): Replace hard-coded cutoff calculation with
+	a call to...
+	(best_match::get_cutoff): New declaration.
+	(best_match::get_best_meaningful_candidate): Likewise.
+
 2018-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* builtins.c (fold_builtin_strlen): Remove TODO comment.

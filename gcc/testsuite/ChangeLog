@@ -1,3 +1,12 @@
+2018-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c/82967
+	* c-c++-common/attributes-1.c: Remove bogus suggestion from
+	dg-prune-output.
+	* gcc.dg/diagnostic-token-ranges.c (undeclared_identifier): Remove
+	bogus suggestion.
+	* gcc.dg/spellcheck-identifiers-4.c: New test.
+
 2018-09-14  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.dg/warn-strlen-no-nul.c: Add some missing test cases.
