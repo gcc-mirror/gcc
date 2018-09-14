@@ -66,6 +66,9 @@ struct edit_distance_traits<const char *>
   }
 };
 
+extern edit_distance_t get_edit_distance_cutoff (size_t goal_len,
+						 size_t candidate_len);
+
 /* A type for use when determining the best match against a string,
    expressed as a template so that we can match against various
    string-like types (const char *, frontend identifiers, and preprocessor
@@ -119,7 +122,7 @@ class best_match
     /* If the candidate will be unable to beat the criterion in
        get_best_meaningful_candidate, reject it without computing
        the exact distance.  */
-    unsigned int cutoff = MAX (m_goal_len, candidate_len) / 2;
+    edit_distance_t cutoff = get_cutoff (candidate_len);
     if (min_candidate_distance > cutoff)
       return;
 
@@ -151,17 +154,25 @@ class best_match
     m_best_candidate_len = best_candidate_len;
   }
 
+  /* Generate the maximum edit distance for which we consider a suggestion
+     to be meaningful, given a candidate of length CANDIDATE_LEN.  */
+
+  edit_distance_t get_cutoff (size_t candidate_len) const
+  {
+    return ::get_edit_distance_cutoff (m_goal_len, candidate_len);
+  }
+
   /* Get the best candidate so far, but applying a filter to ensure
      that we return NULL if none of the candidates are close to the goal,
      to avoid offering nonsensical suggestions to the user.  */
 
   candidate_t get_best_meaningful_candidate () const
   {
-    /* If more than half of the letters were misspelled, the suggestion is
-       likely to be meaningless.  */
+    /* If the edit distance is too high, the suggestion is likely to be
+       meaningless.  */
     if (m_best_candidate)
       {
-	unsigned int cutoff = MAX (m_goal_len, m_best_candidate_len) / 2;
+	edit_distance_t cutoff = get_cutoff (m_best_candidate_len);
 	if (m_best_distance > cutoff)
 	  return NULL;
     }
