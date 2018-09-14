@@ -132,7 +132,7 @@ static rtx expand_builtin_mempcpy (tree, rtx);
 static rtx expand_builtin_mempcpy_args (tree, tree, tree, rtx, tree, int);
 static rtx expand_builtin_strcat (tree, rtx);
 static rtx expand_builtin_strcpy (tree, rtx);
-static rtx expand_builtin_strcpy_args (tree, tree, rtx);
+static rtx expand_builtin_strcpy_args (tree, tree, tree, rtx);
 static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_stpncpy (tree, rtx);
 static rtx expand_builtin_strncat (tree, rtx);
@@ -561,6 +561,34 @@ warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
 	      "referenced argument declared here");
       TREE_NO_WARNING (arg) = 1;
     }
+}
+
+/* If EXP refers to an unterminated constant character array return
+   the declaration of the object of which the array is a member or
+   element.  Otherwise return null.  */
+
+static tree
+unterminated_array (tree exp)
+{
+  if (TREE_CODE (exp) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (exp);
+      if (!is_gimple_assign (stmt))
+	return NULL_TREE;
+
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code != POINTER_PLUS_EXPR)
+	return NULL_TREE;
+
+      exp = rhs1;
+    }
+
+  tree nonstr = NULL;
+  if (c_strlen (exp, 1, &nonstr, 1) == NULL && nonstr)
+    return nonstr;
+
+  return NULL_TREE;
 }
 
 /* Compute the length of a null-terminated character string or wide
@@ -3879,7 +3907,7 @@ expand_builtin_strcpy (tree exp, rtx target)
 		    src, destsize);
     }
 
-  if (rtx ret = expand_builtin_strcpy_args (dest, src, target))
+  if (rtx ret = expand_builtin_strcpy_args (exp, dest, src, target))
     {
       /* Check to see if the argument was declared attribute nonstring
 	 and if so, issue a warning since at this point it's not known
@@ -3899,8 +3927,17 @@ expand_builtin_strcpy (tree exp, rtx target)
    expand_builtin_strcpy.  */
 
 static rtx
-expand_builtin_strcpy_args (tree dest, tree src, rtx target)
+expand_builtin_strcpy_args (tree exp, tree dest, tree src, rtx target)
 {
+  /* Detect strcpy calls with unterminated arrays..  */
+  if (tree nonstr = unterminated_array (src))
+    {
+      /* NONSTR refers to the non-nul terminated constant array.  */
+      if (!TREE_NO_WARNING (exp))
+	warn_string_no_nul (EXPR_LOCATION (exp), "strcpy", src, nonstr);
+      return NULL_RTX;
+    }
+
   return expand_movstr (dest, src, target, /*endp=*/0);
 }
 
@@ -3960,7 +3997,7 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 
 	  if (CONST_INT_P (len_rtx))
 	    {
-	      ret = expand_builtin_strcpy_args (dst, src, target);
+	      ret = expand_builtin_strcpy_args (exp, dst, src, target);
 
 	      if (ret)
 		{
