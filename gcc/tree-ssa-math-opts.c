@@ -547,7 +547,7 @@ free_bb (struct occurrence *occ)
    depending on the uses of x, r1, r2.  This removes one multiplication and
    allows the sqrt and division operations to execute in parallel.
    DEF_GSI is the gsi of the initial division by sqrt that defines
-   DEF (x in the example abovs).  */
+   DEF (x in the example above).  */
 
 static void
 optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
@@ -947,13 +947,13 @@ pass_cse_reciprocals::execute (function *fun)
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
 	      && TREE_CODE (def) == SSA_NAME)
 	    {
+	      execute_cse_reciprocals_1 (&gsi, def);
+	      stmt = gsi_stmt (gsi);
 	      if (flag_unsafe_math_optimizations
 		  && is_gimple_assign (stmt)
 		  && !stmt_can_throw_internal (stmt)
 		  && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
 		optimize_recip_sqrt (&gsi, def);
-	      else
-		execute_cse_reciprocals_1 (&gsi, def);
 	    }
 	}
 
