@@ -371,8 +371,9 @@ interface_strcmp (const char* s)
    return a non-zero state cookie for atom_preamble_prefix_next.
    Otherwise zero.  */
 
-atom_preamble_state
-atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
+module_preamble_state
+module_preamble_prefix_peek (bool for_parser, bool only_import,
+			     cpp_reader *pfile)
 {
   static int count;
   static source_location peeked_loc;
@@ -382,7 +383,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 
   if (count == flag_module_preamble)
     /* We're forcibly done.  */
-    return APS_NONE;
+    return MPS_NONE;
 
  another:
   /* Peeking does not do macro expansion, but does do #if & #include
@@ -399,7 +400,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
     goto another;
 
   if (!exporting_p && cpp_tok->type == CPP_PRAGMA)
-    return APS_PRAGMA;
+    return MPS_PRAGMA;
 
   if (cpp_tok->type != CPP_NAME)
     {
@@ -435,7 +436,7 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
 	    }
 	}
 
-      return APS_NONE;
+      return MPS_NONE;
     }  
 
   if (cpp_macro_p (cpp_tok->val.node.node))
@@ -460,27 +461,27 @@ atom_preamble_prefix_peek (bool for_parser, bool only_import, cpp_reader *pfile)
   peeked_loc = 0;
   count++;
 
-  return atom_preamble_state ((keyword == RID_IMPORT ? APS_IMPORT : APS_MODULE)
-			      | (3 + exporting_p));
+  return module_preamble_state ((keyword == RID_IMPORT ? MPS_IMPORT : MPS_MODULE)
+				| (3 + exporting_p));
 }
 
 /* We've just eaten a token TOK_TYPE.  Figure out the next state and
    return it.  State 0 means peek again.  */
 
-atom_preamble_state
-atom_preamble_prefix_next (atom_preamble_state state, cpp_reader *pfile,
-			   unsigned ptype, source_location ploc)
+module_preamble_state
+module_preamble_prefix_next (module_preamble_state state, cpp_reader *pfile,
+			     unsigned ptype, source_location ploc)
 {
   /* The caller should have stripped off the IMPORT & MODULE flags.  */
-  gcc_checking_assert (state <= APS_COUNT || state == APS_PRAGMA);
+  gcc_checking_assert (state <= MPS_COUNT || state == MPS_PRAGMA);
 
-  if (state == APS_NAME)
+  if (state == MPS_NAME)
     /* Potentially ate a module name, stop filename tokenizing.  */
     cpp_enable_filename_token (pfile, false);
 
   if (ptype == CPP_EOF)
-    return APS_NONE;
-  else if (state == APS_PRAGMA)
+    return MPS_NONE;
+  else if (state == MPS_PRAGMA)
     {
       if (ptype != CPP_PRAGMA_EOL)
 	return state;
@@ -489,9 +490,9 @@ atom_preamble_prefix_next (atom_preamble_state state, cpp_reader *pfile,
     {
       /* Eat the next token.  */
       if (state != 1 && ptype != CPP_COMMENT && ptype != CPP_PADDING)
-	state = atom_preamble_state (state - 1);
+	state = module_preamble_state (state - 1);
 
-      if (state == APS_NAME)
+      if (state == MPS_NAME)
 	/* Next is module name, permit filename token.  */
 	cpp_enable_filename_token (pfile, true);
       return state;
@@ -499,7 +500,7 @@ atom_preamble_prefix_next (atom_preamble_state state, cpp_reader *pfile,
   else if (cpp_in_macro_expansion_p (pfile))
     warning_at (ploc, 0, "module preamble declaration ends inside macro");
 
-  return APS_NONE;
+  return MPS_NONE;
 }
 
 /* Parse a #pragma whose sole argument is a string constant.

@@ -2696,9 +2696,9 @@ struct GTY(()) slurping {
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
   /* Location remapping.  */
-  loc_range_t GTY((skip)) ordinary_range;
-  loc_range_t GTY((skip)) macro_range;
-  range_t GTY((skip)) delta;
+  loc_range_t GTY((skip)) ordinary_locs;
+  loc_range_t GTY((skip)) macro_locs;
+  range_t GTY((skip)) loc_deltas;
 
   unsigned current;	/* Section currently being loaded.  */
   unsigned remaining;	/* Number of lazy sections yet to read.  */
@@ -2738,7 +2738,7 @@ struct GTY(()) slurping {
 
 slurping::slurping (elf_in *from)
   : unnamed (NULL), remap (NULL), from (from),
-    ordinary_range (0, 0), macro_range (0, 0), delta (0, 0),
+    ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
 }
@@ -2948,7 +2948,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool do_import (const char *filename, cpp_reader *, bool check_crc);
 
  public:
-  static int atom_preamble (location_t loc, cpp_reader *);
+  static int preamble_load (location_t loc, cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -9519,11 +9519,11 @@ module_state::read_location (bytes_in &sec)
 
   location_t loc = UNKNOWN_LOCATION;
   unsigned off = sec.u ();
-  if (off >= slurp->ordinary_range.second)
+  if (off >= slurp->ordinary_locs.second)
     sec.set_overrun ();
-  else if (off >= slurp->ordinary_range.first)
+  else if (off >= slurp->ordinary_locs.first)
     {
-      loc = off + slurp->delta.first;
+      loc = off + slurp->loc_deltas.first;
       dump () && dump ("Location %u becoming %u", off, loc);
     }
   else if (slurp->pre_early_ok)
@@ -9799,8 +9799,8 @@ module_state::read_locations ()
     offset = (offset & ~range_mask);
 
     location_t lwm = offset;
-    slurp->ordinary_range.first = zero + low_bits;
-    slurp->delta.first = offset - zero;
+    slurp->ordinary_locs.first = zero + low_bits;
+    slurp->loc_deltas.first = offset - zero;
 
     for (unsigned ix = 0; ix != num_ordinary; ix++)
       {
@@ -9809,7 +9809,7 @@ module_state::read_locations ()
 
 	/* Record the current HWM so that the below read_location is
 	   ok.  */
-	slurp->ordinary_range.second = hwm;
+	slurp->ordinary_locs.second = hwm;
 	map->start_location = hwm + (offset - zero);
 	if (map->start_location < lwm)
 	  sec.set_overrun ();
@@ -9830,7 +9830,7 @@ module_state::read_locations ()
       }
 
     location_t hwm = sec.u ();
-    slurp->ordinary_range.second = hwm;
+    slurp->ordinary_locs.second = hwm;
     line_table->highest_location = hwm + (offset - zero) - 1;
     if (lwm > line_table->highest_location)
       sec.set_overrun ();
@@ -11064,8 +11064,8 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       /* The user may have named the module before the main file.  */
       const line_map_ordinary *map
 	= linemap_check_ordinary (linemap_lookup (line_table, from_loc));
-      atom_main_file (line_table, map,
-		      map - LINEMAPS_ORDINARY_MAPS (line_table));
+      module_note_main_file (line_table, map,
+			     map - LINEMAPS_ORDINARY_MAPS (line_table));
     }
 
   /* Copy any importing information we may have already done.  */
@@ -11120,7 +11120,7 @@ module_from_cmp (const void *a_, const void *b_)
    this is a module).  */
 
 int
-module_state::atom_preamble (location_t loc, cpp_reader *reader)
+module_state::preamble_load (location_t loc, cpp_reader *reader)
 {
   /* Iterate over the module hash, informing the mapper of every not
      loaded (direct) import.  */
@@ -11255,7 +11255,7 @@ module_state::atom_preamble (location_t loc, cpp_reader *reader)
 /* Track if NODE undefs an imported macro.  */
 
 void
-atom_cpp_undef (cpp_reader *reader, location_t, cpp_hashnode *node)
+module_cpp_undef (cpp_reader *reader, location_t, cpp_hashnode *node)
 {
   if (!modules_legacy_p ())
     {
@@ -11317,7 +11317,7 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 }
 
 cpp_divert_include_t *
-atom_divert_include ()
+maybe_import_include ()
 {
   /* Wlegacy-header should default differently in preprocessing mode
      than in compilation mode.  */
@@ -11348,7 +11348,7 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
    first call sticks.  */
 
 void
-atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
+module_note_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 {
   spans.init_once (map);
 
@@ -11360,7 +11360,7 @@ atom_main_file (line_maps *, const line_map_ordinary *map, unsigned ix)
 }
 
 bool
-maybe_atom_legacy_module (cpp_reader *reader)
+maybe_begin_legacy_module (cpp_reader *reader)
 {
   if (!modules_legacy_p ())
     return false;
@@ -11413,9 +11413,9 @@ maybe_atom_legacy_module (cpp_reader *reader)
    final location of the preamble.  */
 
 unsigned
-atom_module_preamble (location_t loc, cpp_reader *reader)
+module_preamble_load (location_t loc, cpp_reader *reader)
 {
-  int adj = module_state::atom_preamble (loc, reader);
+  int adj = module_state::preamble_load (loc, reader);
   if (adj < 0)
     fatal_error (loc, "returning to gate for a mechanical issue");
 

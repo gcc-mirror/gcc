@@ -1,5 +1,30 @@
 2018-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	A grand renaming
+	gcc/cp/
+	* cp-tree.h (atom_preamble_state, atom_preamble_prefix_peek)
+	(atom_preamble_prefix_next): Rename to ...
+	(atom_preamble_state, atom_preamble_prefix_peek)
+	(atom_preamble_prefix_next): ... here.
+	(atom_cpp_undef, atom_module_preamble, atom_main_file)
+	(atom_divert_include, maybe_atom_legacy_module): Rename to ...
+	(module_cpp_undef, module_preamble_load, module_note_main_file)
+	(maybe_import_include, maybe_begin_legacy_module): ... here.
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_MAIN_FILE)
+	(LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE)
+	(LANG_HOOKS_PREPROCESS_UNDEF, LANG_HOOKS_PREPROCESS_PREAMBLE): Adjust.
+	(module_preamble_fsm): Adjust.
+	* lex.c (atom_preamble_prefix_peek, atom_preamble_prefix_next):
+	Rename to ...
+	(atom_preamble_prefix_peek, atom_preamble_prefix_next): ... here.
+	Adjust.
+	* module.c (atom_cpp_undef, atom_module_preamble, atom_main_file)
+	(atom_divert_include, maybe_atom_legacy_module): Rename to ...
+	(module_cpp_undef, module_preamble_load, module_note_main_file)
+	(maybe_import_include, maybe_begin_legacy_module): Here ... Adust.
+	* parser.c (cp_parser_get_module_preamble_tokens, c_parse_file):
+	Adjust.
+
 	Expunge the spewer
 	gcc/cp/
 	* module.c (struct slurping): No need to tag.

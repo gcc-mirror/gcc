@@ -12887,25 +12887,25 @@ cp_parser_module_proclamation (cp_parser *parser)
   pop_module_export (prev);
 }
 
-/* Tokenize an atom preamble.  Return APS_IMPORT & APS_MODULE
+/* Tokenize an atom preamble.  Return MPS_IMPORT & MPS_MODULE
    mask of preamble decls.  Otherwise zero.  */
 
-static atom_preamble_state
+static module_preamble_state
 cp_parser_get_module_preamble_tokens (cp_parser *parser)
 {
   cp_lexer *lexer = parser->lexer;
-  atom_preamble_state res = APS_NONE;
+  module_preamble_state res = MPS_NONE;
 
   for (bool eof = false; !eof;)
     {
-      atom_preamble_state state
-	= atom_preamble_prefix_peek (true, res != 0, parse_in);
+      module_preamble_state state
+	= module_preamble_prefix_peek (true, res != 0, parse_in);
 
-      if (state == APS_NONE)
+      if (state == MPS_NONE)
 	break;
 
-      res = atom_preamble_state (res | (state & (APS_IMPORT | APS_MODULE)));
-      state = atom_preamble_state (state & (APS_PRAGMA | APS_COUNT));
+      res = module_preamble_state (res | (state & (MPS_IMPORT | MPS_MODULE)));
+      state = module_preamble_state (state & (MPS_PRAGMA | MPS_COUNT));
 
       for (;;)
 	{
@@ -12913,11 +12913,11 @@ cp_parser_get_module_preamble_tokens (cp_parser *parser)
 
 	  /* This will swallow comments for us.  */
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | ((state == APS_NAME)
+					   | ((state == MPS_NAME)
 					      ? C_LEX_STRING_IS_HEADER : 0),
 					   &tok);
-	  state = atom_preamble_prefix_next (state, parse_in, tok.type,
-					     tok.location);
+	  state = module_preamble_prefix_next (state, parse_in, tok.type,
+					       tok.location);
 	  vec_safe_push (lexer->buffer, tok);
 	  if (!state)
 	    {
@@ -39471,16 +39471,16 @@ c_parse_file (void)
     {
       if (modules_atom_p ())
 	{
-	  atom_preamble_state preamble
+	  module_preamble_state preamble
 	    = cp_parser_get_module_preamble_tokens (the_parser);
-	  if (preamble & APS_MODULE
-	      || maybe_atom_legacy_module (parse_in)
-	      || preamble & APS_IMPORT)
+	  if (preamble & MPS_MODULE
+	      || maybe_begin_legacy_module (parse_in)
+	      || preamble & MPS_IMPORT)
 	    {
 	      /* There is a non-empty preamble.  */
 	      location_t loc = cp_parser_parse_module_preamble (the_parser);
 	      gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	      if (unsigned adjust = atom_module_preamble (loc, parse_in))
+	      if (unsigned adjust = module_preamble_load (loc, parse_in))
 		cpp_relocate_peeked_tokens (parse_in, adjust);
 	    }
 	}

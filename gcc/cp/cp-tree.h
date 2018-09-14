@@ -6655,19 +6655,19 @@ extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
 /* Peeking at an atom preamble construct. */
-enum atom_preamble_state
+enum module_preamble_state
 {
- APS_NONE = 0,
- APS_NAME = 2,   /* Next token is module name.  */
- APS_COUNT = 7,  /* A mask.  */
- APS_PRAGMA = 0x8,  /* Found a pragma.  */
- APS_IMPORT = 0x10,  /* Found an import.  */
- APS_MODULE = 0x20   /* Found a module.  */
+ MPS_NONE = 0,
+ MPS_NAME = 2,   /* Next token is module name.  */
+ MPS_COUNT = 7,  /* A mask.  */
+ MPS_PRAGMA = 0x8,  /* Found a pragma.  */
+ MPS_IMPORT = 0x10,  /* Found an import.  */
+ MPS_MODULE = 0x20   /* Found a module.  */
 };
-extern atom_preamble_state atom_preamble_prefix_peek
+extern module_preamble_state module_preamble_prefix_peek
 						(bool, bool, cpp_reader *);
-extern atom_preamble_state atom_preamble_prefix_next
-						(atom_preamble_state,
+extern module_preamble_state module_preamble_prefix_next
+						(module_preamble_state,
 						 cpp_reader *, unsigned,
 						 source_location);
 
@@ -6723,16 +6723,17 @@ extern void pop_module_export (int);
 extern void import_module (module_state *, location_t, bool, tree, cpp_reader *);
 extern void declare_module (module_state *, location_t, bool, tree,
 			    cpp_reader *);
-extern void atom_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
-extern unsigned atom_module_preamble (location_t, cpp_reader *);
+extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern void init_module_processing ();
 extern void finish_module_processing ();
 extern void finish_module_parse (cpp_reader *);
 extern char const *module_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
-extern void atom_main_file (line_maps *, const line_map_ordinary *, unsigned);
-extern cpp_divert_include_t *atom_divert_include ();
-extern bool maybe_atom_legacy_module (cpp_reader *);
+extern void module_note_main_file (line_maps *,
+				   const line_map_ordinary *, unsigned);
+extern cpp_divert_include_t *maybe_import_include ();
+extern bool maybe_begin_legacy_module (cpp_reader *);
+extern unsigned module_preamble_load (location_t, cpp_reader *);
 extern void atom_preamble_end (cpp_reader *, location_t);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);

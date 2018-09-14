@@ -34,7 +34,7 @@ static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
-static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
+static int module_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -79,13 +79,13 @@ static int atom_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_PREPROCESS_MAIN_FILE
-#define LANG_HOOKS_PREPROCESS_MAIN_FILE atom_main_file
+#define LANG_HOOKS_PREPROCESS_MAIN_FILE module_note_main_file
 #undef LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE
-#define LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE atom_divert_include
+#define LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE maybe_import_include
 #undef LANG_HOOKS_PREPROCESS_UNDEF
-#define LANG_HOOKS_PREPROCESS_UNDEF atom_cpp_undef
+#define LANG_HOOKS_PREPROCESS_UNDEF module_cpp_undef
 #undef LANG_HOOKS_PREPROCESS_PREAMBLE
-#define LANG_HOOKS_PREPROCESS_PREAMBLE atom_preamble_fsm
+#define LANG_HOOKS_PREPROCESS_PREAMBLE module_preamble_fsm
 
 #if CHECKING_P
 #undef LANG_HOOKS_RUN_LANG_SELFTESTS
@@ -237,22 +237,22 @@ tree cxx_enum_underlying_base_type (const_tree type)
 /*  ATOM preamble finite state machine.  */
 
 static int
-atom_preamble_fsm (int state, cpp_reader *pfile,
-		   unsigned ptype, source_location ploc)
+module_preamble_fsm (int state, cpp_reader *pfile,
+		     unsigned ptype, source_location ploc)
 {
   if (state)
     {
       unsigned new_state
-	= (atom_preamble_prefix_next
-	   (atom_preamble_state (state & (APS_COUNT | APS_PRAGMA)),
+	= (module_preamble_prefix_next
+	   (module_preamble_state (state & (MPS_COUNT | MPS_PRAGMA)),
 	    pfile, ptype, ploc));
       if (new_state)
-	return (state & (APS_IMPORT | APS_MODULE)) | new_state;
+	return (state & (MPS_IMPORT | MPS_MODULE)) | new_state;
     }
 
-  if (int res = atom_preamble_prefix_peek (false,
-					   state & (APS_IMPORT | APS_MODULE),
-					   pfile))
+  if (int res = module_preamble_prefix_peek (false,
+					     state & (MPS_IMPORT | MPS_MODULE),
+					     pfile))
     /* More preamble.  */
     return res;
 
