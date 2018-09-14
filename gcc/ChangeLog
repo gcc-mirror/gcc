@@ -1,3 +1,7 @@
+2018-09-14  Wei Xiao  <wei3.xiao@intel.com>
+
+	* config/i386/movdirintrin.h: Fix copyright year.
+
 2018-09-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* reg-stack.c: Include regs.h.
