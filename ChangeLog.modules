@@ -1,5 +1,12 @@
 2018-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	Expunge the spewer
+	gcc/cp/
+	* module.c (struct slurping): No need to tag.
+	(struct spewing): Delete.
+	(declare_module, module_state::atom_preamble)
+	(finish_module_parse): Don't deal with it.
+
 	Expunge old location scheme
 	gcc/cp/
 	* module.c (struct slurper): Remove early_locs, late_locs,

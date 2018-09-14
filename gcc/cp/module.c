@@ -124,7 +124,6 @@ Classes used:
    module_state - module object
 
    slurping - data needed during loading
-   spewing : slurping - data needed during interface writing
 
    module_mapper - mapper object
 
@@ -2691,7 +2690,7 @@ loc_spans::macro (source_location loc)
 }
 
 /* Data needed by a module during the process of loading.  */
-struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
+struct GTY(()) slurping {
   vec<mc_slot, va_gc> *unnamed;		/* Unnamed decls.  */
   vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
@@ -2757,22 +2756,6 @@ slurping::~slurping ()
       from = NULL;
     }
 }
-
-/* Additional data needed when writing.  There's only ever one
-   writer, so we don't mind wasting some space of the base class.   */
-
-struct GTY ((tag ("false"))) spewing : public slurping {
- public:
-  range_t GTY((skip)) early_loc_map;	/* Early location line maps.  */
-  range_t GTY((skip)) late_loc_map;		/* Late location line maps.  */
-  
- public:
-  spewing ()
-    : slurping (NULL),
-    early_loc_map (0, 0), late_loc_map (0, 0)
-    {
-    }
-};
 
 /* State of a particular module. */
 
@@ -2842,11 +2825,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     gcc_checking_assert (slurp && slurp->from);
     return slurp;
-  }
-  spewing *spewer () const
-  {
-    gcc_checking_assert (slurp && !slurp->from);
-    return static_cast <spewing *> (slurp);
   }
 
  public:
@@ -11104,7 +11082,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   current_module = MODULE_PURVIEW;
   if (exporting_p)
     {
-      state->slurp = new spewing ();
       state->exported = true;
       state->mod = MODULE_PURVIEW;
     }
@@ -11263,15 +11240,6 @@ module_state::atom_preamble (location_t loc, cpp_reader *reader)
 	    ok = false;
 	  dump.pop (n);
 	}
-    }
-
-  if (interface)
-    {
-      /* Record the size of the hole the preamble created in the line
-	 table.  */
-      spewing *spew = interface->spewer ();
-      spew->early_loc_map.second = pre_hwm;
-      spew->late_loc_map.first = LINEMAPS_ORDINARY_USED (line_table);
     }
 
   dump.pop (0);
@@ -11626,8 +11594,6 @@ finish_module_parse (cpp_reader *reader)
       if (to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));
-      delete state->spewer ();
-      state->slurp = NULL;
 
       dump.pop (n);
       if (!errorcount)
