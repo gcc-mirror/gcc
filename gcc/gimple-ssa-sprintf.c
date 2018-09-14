@@ -1999,13 +1999,6 @@ get_string_length (tree str, unsigned eltsize)
   if (!str)
     return fmtresult ();
 
-  if (tree slen = c_strlen (str, 1, eltsize))
-    {
-      /* Simply return the length of the string.  */
-      fmtresult res (tree_to_shwi (slen));
-      return res;
-    }
-
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of
      arrays that subexpressions of STR may refer to.  Pointers that

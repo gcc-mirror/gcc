@@ -11303,16 +11303,11 @@ is_aligning_offset (const_tree offset, const_tree exp)
 /* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
    non-constant) offset in bytes within the string that ARG is accessing.
-   If NONSTR is non-null, consider valid even sequences of characters that
-   aren't nul-terminated strings.  In that case, if ARG refers to such
-   a sequence set *NONSTR to its declaration and clear it otherwise.
-   The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
-   size of the memory is returned.  The returned STRING_CST object is
-   valid up to TREE_STRING_LENGTH.  Bytes between TREE_STRING_LENGTH
-   and MEM_SIZE are zero.  MEM_SIZE is at least TREE_STRING_LENGTH.  */
+   If MEM_SIZE is non-zero the storage size of the memory is returned.
+   If DECL is non-zero the constant declaration is returned if available.  */
 
 tree
-string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
   tree array;
   STRIP_NOPS (arg);
@@ -11341,6 +11336,12 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 
 	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
 		return NULL_TREE;
+
+	      if (!integer_zerop (array_ref_low_bound (arg)))
+		return NULL_TREE;
+
+	      if (!integer_onep (array_ref_element_size (arg)))
+		return NULL_TREE;
 	    }
 	}
       array = get_addr_base_and_unit_offset (ref, &base_off);
@@ -11366,7 +11367,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 	return NULL_TREE;
 
       tree offset;
-      if (tree str = string_constant (arg0, &offset, mem_size, nonstr))
+      if (tree str = string_constant (arg0, &offset, mem_size, decl))
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
@@ -11396,11 +11397,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       if (TREE_CODE (chartype) != INTEGER_TYPE)
 	return NULL;
 
-      tree charsize = array_ref_element_size (arg);
-      /* Set the non-constant offset to the non-constant index scaled
-	 by the size of the character type.  */
-      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
-			    fold_convert (sizetype, varidx), charsize);
+      offset = fold_convert (sizetype, varidx);
     }
 
   if (TREE_CODE (array) == STRING_CST)
@@ -11408,9 +11405,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       *ptr_offset = fold_convert (sizetype, offset);
       if (mem_size)
 	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
-      /* This is not strictly correct.  FIXME in follow-up patch.  */
-      if (nonstr)
-	*nonstr = NULL_TREE;
+      if (decl)
+	*decl = NULL_TREE;
       gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
 			   >= TREE_STRING_LENGTH (array));
       return array;
@@ -11455,23 +11451,10 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
   if (!init || TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
 
-  /* Compute the lower bound number of elements (not bytes) in the array
-     that the string is used to initialize.  The actual size of the array
-     may be greater if the string is shorter, but the the important
-     data point is whether the literal, inlcuding the terminating nul,
-     fits the array.  */
-  unsigned HOST_WIDE_INT charsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
-  unsigned HOST_WIDE_INT array_elts
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init))) / charsize;
-
-  /* Compute the string length in (wide) characters.  */
-  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
-
   if (mem_size)
     *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
-  if (nonstr)
-    *nonstr = array_elts > length ? NULL_TREE : array;
+  if (decl)
+    *decl = array;
 
   gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
 		       >= TREE_STRING_LENGTH (init));

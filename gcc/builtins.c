@@ -542,6 +542,27 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
   return n;
 }
 
+/* For a call at LOC to a function FN that expects a string in the argument
+   ARG, issue a diagnostic due to it being a called with an argument
+   declared at NONSTR that is a character array with no terminating NUL.  */
+
+void
+warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
+{
+  if (TREE_NO_WARNING (arg))
+    return;
+
+  loc = expansion_point_location_if_in_system_header (loc);
+
+  if (warning_at (loc, OPT_Wstringop_overflow_,
+		  "%qs argument missing terminating nul", fn))
+    {
+      inform (DECL_SOURCE_LOCATION (decl),
+	      "referenced argument declared here");
+      TREE_NO_WARNING (arg) = 1;
+    }
+}
+
 /* Compute the length of a null-terminated character string or wide
    character string handling character sizes of 1, 2, and 4 bytes.
    TREE_STRING_LENGTH is not the right way because it evaluates to
@@ -559,13 +580,18 @@ string_length (const void *ptr, unsigned eltsize, unsigned maxelts)
    accesses.  Note that this implies the result is not going to be emitted
    into the instruction stream.
 
+   If a not zero-terminated string value is encountered and NONSTR is
+   non-zero, the declaration of the string value is assigned to *NONSTR.
+   *NONSTR is accumulating, thus not cleared on success, therefore it has
+   to be initialized to NULL_TREE by the caller.
+
    ELTSIZE is 1 for normal single byte character strings, and 2 or
    4 for wide characer strings.  ELTSIZE is by default 1.
 
    The value returned is of type `ssizetype'.  */
 
 tree
-c_strlen (tree src, int only_value, unsigned eltsize)
+c_strlen (tree src, int only_value, tree *nonstr, unsigned eltsize)
 {
   gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
@@ -574,22 +600,23 @@ c_strlen (tree src, int only_value, unsigned eltsize)
     {
       tree len1, len2;
 
-      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
-      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, eltsize);
+      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, nonstr, eltsize);
+      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, nonstr, eltsize);
       if (tree_int_cst_equal (len1, len2))
 	return len1;
     }
 
   if (TREE_CODE (src) == COMPOUND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
-    return c_strlen (TREE_OPERAND (src, 1), only_value, eltsize);
+    return c_strlen (TREE_OPERAND (src, 1), only_value, nonstr, eltsize);
 
   location_t loc = EXPR_LOC_OR_LOC (src, input_location);
 
   /* Offset from the beginning of the string in bytes.  */
   tree byteoff;
   tree memsize;
-  src = string_constant (src, &byteoff, &memsize, NULL);
+  tree decl;
+  src = string_constant (src, &byteoff, &memsize, &decl);
   if (src == 0)
     return NULL_TREE;
 
@@ -628,8 +655,14 @@ c_strlen (tree src, int only_value, unsigned eltsize)
       unsigned len = string_length (ptr, eltsize, strelts);
 
       /* Return when an embedded null character is found or none at all.  */
-      if (len + 1 < strelts || len >= maxelts)
+      if (len + 1 < strelts)
 	return NULL_TREE;
+      else if (len >= maxelts)
+	{
+	  if (nonstr && decl)
+	    *nonstr = decl;
+	  return NULL_TREE;
+	}
 
       /* For empty strings the result should be zero.  */
       if (len == 0)
@@ -694,7 +727,11 @@ c_strlen (tree src, int only_value, unsigned eltsize)
   /* Don't know what to return if there was no zero termination.
      Ideally this would turn into a gcc_checking_assert over time.  */
   if (len >= maxelts - eltoff)
-    return NULL_TREE;
+    {
+      if (nonstr && decl)
+	*nonstr = decl;
+      return NULL_TREE;
+    }
 
   return ssize_int (len);
 }
@@ -8373,10 +8410,23 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     return NULL_TREE;
   else
     {
-      tree len = c_strlen (arg, 0);
+      tree nonstr = NULL_TREE;
+      tree len = c_strlen (arg, 0, &nonstr);
 
       if (len)
 	return fold_convert_loc (loc, type, len);
+
+      if (!nonstr)
+	c_strlen (arg, 1, &nonstr); /* TODO: add test coverage here.  */
+
+      if (nonstr)
+	{
+	  if (EXPR_HAS_LOCATION (arg))
+	    loc = EXPR_LOCATION (arg);
+	  else if (loc == UNKNOWN_LOCATION)
+	    loc = input_location;
+	  warn_string_no_nul (loc, "strlen", arg, nonstr);
+	}
 
       return NULL_TREE;
     }

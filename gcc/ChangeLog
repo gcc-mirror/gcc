@@ -1,3 +1,23 @@
+2018-09-13  Martin Sebor  <msebor@redhat.com>
+	    Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* builtins.h (c_srlen): Add argument.
+	* builtins.c (warn_string_no_nul): New function.
+	(c_strlen): Add argument and use it.  Update recursive calls.
+	Pass DECL argument to string_constant to get info on non
+	terminated strings.  Update *NONSTR as needed.
+	(fold_builtin_strlen): Add argument to calls to c_strlen.
+	Warn for unterminated arrays.
+	(warn_string_no_null): Add prototype.
+	* expr.c (string_constant): Update arguments.  Update recursive
+	calls appropriately.  Detect missing NUL terminator and outermost
+	declaration its missing in.
+	Improve checks for arrays with nonzero lower bound or elements
+	that are not a single byte.  Simplify offset computation.
+	Simplify checks for non-NUL terminated strings.
+	* gimple-fold.c (get_range_strlen): Add argument to c_strlen call.
+	* gimple-ssa-sprintf.c (get_string_length): Remove unnecessary code.
+
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* builtins.c (c_strlen): Handle not zero terminated STRING_CSTs
