@@ -8462,7 +8462,7 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
 	return fold_convert_loc (loc, type, len);
 
       if (!nonstr)
-	c_strlen (arg, 1, &nonstr); /* TODO: add test coverage here.  */
+	c_strlen (arg, 1, &nonstr);
 
       if (nonstr)
 	{
