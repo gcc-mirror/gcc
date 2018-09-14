@@ -1,3 +1,10 @@
+2018-09-14  Jason Merrill  <jason@redhat.com>
+
+	Fix --enable-gather-detailed-mem-stats.
+	* hash-table.c (hash_table_usage): Change from variable to function.
+	* hash-table.h: Adjust.
+	* Makefile.in: Add missing dependencies on hash-table.h.
+
 2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	PR tree-optimization/87259
