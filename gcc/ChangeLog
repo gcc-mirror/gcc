@@ -1,3 +1,10 @@
+2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	PR tree-optimization/87259
+	PR lto/87283
+	(pass_cse_reciprocals::execute): Run optimize_recip_sqrt after
+	execute_cse_reciprocals_1 has tried transforming.
+
 2018-09-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (extract_range_from_binary_expr_1): Normalize
