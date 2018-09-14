@@ -1,5 +1,12 @@
 2018-09-14  Nathan Sidwell  <nathan@acm.org>
 
+	Expunge old location scheme
+	gcc/cp/
+	* module.c (struct slurper): Remove early_locs, late_locs,
+	loc_offset, filenames.
+	(module_state::{prepare,read,write}_locations): Delete
+	(module_state::{read,write}): Adjust.
+
 	New locations working
 	gcc/cp/
 	* module.c (module_state::prepare_locations): New, broken out of ...

@@ -138,8 +138,6 @@ Classes used:
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
 
-#define NEW_LOC 01
-
 /* MODULE_STAMP is a #define passed in from the Makefile.  When
    present, it is used for version stamping the binary files, and
    indicates experimentalness of the module system.  It is very
@@ -2698,19 +2696,14 @@ struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
   vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
-  vec<const char *, va_gc_atomic> *filenames;
-  range_t GTY((skip)) early_locs;	/* Early locs.  */
-  range_t GTY((skip)) late_locs;	/* Late locs.  */
-  range_t GTY((skip)) loc_offsets;	/* Early and late offsets.  */
+  /* Location remapping.  */
+  loc_range_t GTY((skip)) ordinary_range;
+  loc_range_t GTY((skip)) macro_range;
+  range_t GTY((skip)) delta;
 
   unsigned current;	/* Section currently being loaded.  */
   unsigned remaining;	/* Number of lazy sections yet to read.  */
   unsigned lru;		/* An LRU counter.  */
-
-  /// New location stuff
-  loc_range_t GTY((skip)) ordinary_range;
-  loc_range_t GTY((skip)) macro_range;
-  range_t GTY((skip)) delta;
 
   bool pre_early_ok;
 
@@ -2731,16 +2724,6 @@ struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
     gcc_assert (!unnamed);
     vec_safe_reserve (unnamed, size);
   }
-  void free_filenames ()
-  {
-    vec_free (filenames);
-    filenames = NULL;
-  }
-  void alloc_filenames (unsigned size = 0)
-  {
-    gcc_assert (!filenames);
-    vec_safe_reserve (filenames, size ? size : 10, size != 0);
-  }
 
  public:
   /* GC allocation.  But we must explicitly delete it.   */
@@ -2756,7 +2739,7 @@ struct GTY((tag("true"), desc ("%h.from != NULL"))) slurping {
 
 slurping::slurping (elf_in *from)
   : unnamed (NULL), remap (NULL), from (from),
-    filenames (NULL), early_locs (0, 0), late_locs (0, 0), loc_offsets (0, 0),
+    ordinary_range (0, 0), macro_range (0, 0), delta (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
 }
@@ -2789,9 +2772,6 @@ struct GTY ((tag ("false"))) spewing : public slurping {
     early_loc_map (0, 0), late_loc_map (0, 0)
     {
     }
-
- public:
-  unsigned prepare_linemaps (line_maps *, bool early_p);
 };
 
 /* State of a particular module. */
@@ -2961,11 +2941,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_unnamed (elf_out *to, auto_vec<depset *> &depsets,
 		      unsigned count, unsigned *crc_ptr);
   bool read_unnamed (unsigned count, const range_t &range);
-
- private:
-  void prepare_locations (line_maps *);
-  void write_locations (elf_out *to, line_maps *, bool early, unsigned *crc_ptr);
-  bool read_locations (line_maps *, bool early);
 
  private:
   unsigned prepare_locations ();
@@ -9551,18 +9526,11 @@ module_state::write_location (bytes_out &sec, location_t loc)
     // FIXME: implement macro & adhoc
     loc = UNKNOWN_LOCATION;
 
-#if NEW_LOC
   const loc_spans::span *span = spans.ordinary (loc);
   gcc_checking_assert (span); /* We should only be writing locs inside
 				 us.  */
   dump () && dump ("Location %u output %u", loc, loc + span->ordinary_delta);
   sec.u (loc + span->ordinary_delta);
-#else
-    spewing *spew = spewer ();
-  gcc_assert (loc < spew->early_locs.second
-	      || (loc >= spew->late_locs.first && loc < spew->late_locs.second));
-  sec.u (unsigned (loc));
-#endif
 }
 
 location_t
@@ -9572,7 +9540,6 @@ module_state::read_location (bytes_in &sec)
     return loc;
 
   location_t loc = UNKNOWN_LOCATION;
-#if NEW_LOC
   unsigned off = sec.u ();
   if (off >= slurp->ordinary_range.second)
     sec.set_overrun ();
@@ -9583,261 +9550,8 @@ module_state::read_location (bytes_in &sec)
     }
   else if (slurp->pre_early_ok)
     loc = off;
-#else
-  unsigned off = sec.u ();
-  slurping *slurp = slurper ();
 
-  /* late_locs may not have been read in yet.  */
-  if (off < slurp->early_locs.first)
-    loc = (slurp->pre_early_ok || off <= BUILTINS_LOCATION
-	   ? off : UNKNOWN_LOCATION);
-  else if (off < slurp->early_locs.second)
-    loc = off + slurp->loc_offsets.first;
-  else if (off >= slurp->late_locs.first
-	   && off < slurp->late_locs.second)
-    loc = off + slurp->loc_offsets.second;
-  else
-    sec.set_overrun ();
-#endif
   return loc;
-}
-
-/* Prepare for location streaming.  We break the line maps into two
-   blocks -- those before the preamble processing, and those after.
-   The gap will be occupied by maps from imports (including each
-   import itself).  */
-
-unsigned
-spewing::prepare_linemaps (line_maps *lmaps, bool early_p)
-{
-  unsigned lwm = (early_p ? early_loc_map : late_loc_map).first;
-  unsigned hwm = (early_p ? early_loc_map : late_loc_map).second;
-
-  unsigned mask = 0;
-  for (unsigned ix = lwm; ix != hwm; ix++)
-    {
-      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
-      const char *fname = ORDINARY_MAP_FILE_NAME (map);
-
-      dump () && dump ("Map %u file=%s", ix, fname);
-      if (map->m_column_and_range_bits > mask)
-	mask = map->m_column_and_range_bits;
-      /* We expect very few filenames, so just an array.  */
-      for (unsigned jx = filenames->length (); jx--;)
-	{
-	  const char *name = (*filenames)[jx];
-	  if (0 == strcmp (name, fname))
-	    {
-	      /* Reset the linemap's name, because for things like
-	         preprocessed input we could have multple instances of
-	         the same name, and we'd rather not percolate
-	         that.  */
-	      const_cast <line_map_ordinary *> (map)->to_file = name;
-	      fname = NULL;
-	      break;
-	    }
-	}
-      if (fname)
-	vec_safe_push (filenames, fname);
-    }
-
-  unsigned first = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, lwm));
-  unsigned last = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (lmaps, hwm));
-
-  (early_p ? early_locs : late_locs).first = first;
-  (early_p ? early_locs : late_locs).second = last;
-
-  return mask;
-}
-
-/* Setup for streaming locations.  We break the line maps into two
-   blocks -- those before the preamble processing, and those after.
-   The gap will be occupied by maps from imports (including each
-   import itself).  We detect the preamble map index range, and the
-   locations range for both early and late locs.  */
-
-void
-module_state::prepare_locations (line_maps *lmaps)
-{
-  spewing *spew = spewer ();
-
-  /* Skip over the command-line, built-in and forced header line
-     maps.  We require (& check) them to be the same in all TUs.  */
-  if (spew->early_loc_map.second)
-    spew->early_loc_map.first = prefix_line_maps_hwm;
-
-  spew->late_loc_map.second = LINEMAPS_ORDINARY_USED (lmaps) - 1;
-
-  /* Collect the set of file names, location ranges and alignment.  */
-  spew->loc_offsets.first = spew->prepare_linemaps (lmaps, true);
-  spew->loc_offsets.second = spew->prepare_linemaps (lmaps, false);
-}
-
-/* Write the early or late location maps.  The early maps include the
-   filename table.  */
-// FIXME: I think we'll eventually have to deal with a fragmented line
-// table, because (a) diverted legacy headers can require immediate
-// loading and (b) post-Rapperswill merged TS allows non-preamble
-// 'import' (but I would still like to restrict that somewhat).
-
-void
-module_state::write_locations (elf_out *to, line_maps *lmaps,
-			       bool early_p, unsigned *crc_p)
-{
-  dump () && dump ("Writing %s locations", early_p ? "early" : "late");
-  dump.indent ();
-
-  bytes_out sec (to);
-  sec.begin ();
-
-  spewing *spew = spewer ();
-
-  if (early_p)
-    {
-      /* Write the filename table.  */
-      unsigned len = spew->filenames->length ();
-      sec.u (len);
-      dump () && dump ("%u source file names", len);
-      for (unsigned ix = 0; ix != len; ix++)
-	{
-	  const char *fname = (*spew->filenames)[ix];
-	  dump () && dump ("Source file[%u]=%s", ix, fname);
-	  sec.str (fname);
-	}
-      sec.u (prefix_line_maps_hwm);
-      sec.u (prefix_locations_hwm);
-    }
-
-  unsigned lwm = (early_p ? spew->early_loc_map : spew->late_loc_map).first;
-  unsigned hwm = (early_p ? spew->early_loc_map : spew->late_loc_map).second;
-  sec.u (hwm - lwm);
-  unsigned first = (early_p ? spew->early_locs : spew->late_locs).first;
-  unsigned last =  (early_p ? spew->early_locs : spew->late_locs).second;
-  sec.u (first);
-  sec.u (last);
-  unsigned align = (early_p ? spew->loc_offsets.first
-		    : spew->loc_offsets.second);
-  sec.u (align);
-
-  dump () && dump ("Linemaps:%u locations:[%u:%u) alignment:%u",
-		   hwm - lwm, first, last, align);
-
-  for (unsigned ix = lwm; ix != hwm; ix++)
-    {
-      const line_map_ordinary *map = LINEMAPS_ORDINARY_MAP_AT (lmaps, ix);
-
-      sec.u (MAP_START_LOCATION (map));
-      /* Making accessors just for here, seems excessive.  */
-      sec.u (map->reason);
-      sec.u (map->sysp);
-      sec.u (map->m_column_and_range_bits);
-      sec.u (map->m_range_bits);
-      const char *fname = ORDINARY_MAP_FILE_NAME (map);
-      for (unsigned ix = 0; ix != spew->filenames->length (); ix++)
-	if ((*spew->filenames)[ix] == fname)
-	  {
-	    sec.u (ix);
-	    break;
-	  }
-      sec.u (ORDINARY_MAP_STARTING_LINE_NUMBER (map));
-      write_location (sec, linemap_included_from (map));
-    }
-
-  const char *name = early_p ? MOD_SNAME_PFX ".elo" : MOD_SNAME_PFX ".llo";
-  sec.end (to, to->name (name), crc_p);
-  dump.outdent ();
-}
-
-/* Read the early or late location maps.  The early ones must be read
-   first.  */
-
-bool
-module_state::read_locations (line_maps *lmaps, bool early_p)
-{
-  bytes_in sec;
-
-  const char *name = early_p ? MOD_SNAME_PFX ".elo" : MOD_SNAME_PFX ".llo";
-  if (!sec.begin (loc, slurp->from, name))
-    return false;
-  dump () && dump ("Reading %s locations", early_p ? "early" : "late");
-  dump.indent ();
-
-  slurping *slurp = slurper ();
-  if (early_p)
-    {
-      /* Read the filename table.  */
-      unsigned len = sec.u ();
-      dump () && dump ("%u source file names", len);
-      slurp->alloc_filenames (len);
-      for (unsigned ix = 0; ix != len; ix++)
-	{
-	  size_t l;
-	  const char *buf = sec.str (&l);
-	  char *fname = XNEWVEC (char, l + 1);
-	  memcpy (fname, buf, l + 1);
-	  dump () && dump ("Source file[%u]=%s", ix, fname);
-	  /* We leak these names into the line-map table.  But it
-	     doesn't own them.  */
-	  slurp->filenames->quick_push (fname);
-	}
-
-      unsigned pre_lwm = sec.u ();
-      unsigned pre_loc = sec.u ();
-      slurp->pre_early_ok = (pre_lwm == prefix_line_maps_hwm
-			     && pre_loc == prefix_locations_hwm);
-    }
-
-  unsigned num_maps = sec.u ();
-  unsigned first_loc = sec.u ();
-  unsigned last_loc = sec.u ();
-  unsigned align = sec.u ();
-
-  dump () && dump ("Linemaps:%u locations:[%u:%u) alignment:%u",
-		   num_maps, first_loc, last_loc, align);
-
-
-  /* Map first_loc to > hwm such that align bits are preserved.  */
-  int new_first = ((lmaps->highest_location + (1u << align) - 1)
-		   & ~((1u << align) - 1u));
-  unsigned offset = new_first - first_loc;
-  
-  dump () && dump ("Remap offset %d", int (offset));
-  (early_p ? slurp->early_locs : slurp->late_locs).first = first_loc;
-  (early_p ? slurp->early_locs : slurp->late_locs).second = last_loc;
-  (early_p ? slurp->loc_offsets.first : slurp->loc_offsets.second) = offset;
-
-  line_map_ordinary *base = static_cast <line_map_ordinary *>
-    (line_map_new_raw (lmaps, false, num_maps));
-
-  lmaps->highest_location = last_loc + offset - 1;
-
-  for (unsigned ix = 0; ix != num_maps; ix++)
-    {
-      line_map_ordinary *map = base + ix;
-      map->start_location = sec.u () + offset;
-      map->reason = lc_reason (sec.u ());
-      map->sysp = sec.u ();
-      map->m_column_and_range_bits = sec.u ();
-      map->m_range_bits = sec.u ();
-      unsigned fnum = sec.u ();
-      map->to_file = (fnum < slurp->filenames->length ()
-		      ? (*slurp->filenames)[fnum] : "");
-      map->to_line = sec.u ();
-      map->included_from = read_location (sec);
-      if (map->included_from == UNKNOWN_LOCATION)
-	map->included_from = loc;
-    }
-
-  dump.outdent ();
-  if (!sec.end (slurp->from))
-    return false;
-
-  if (early_p && !slurp->pre_early_ok)
-    /* Clue the user in.  */
-    warning_at (first_loc + offset, 0,
-		"prefix mismatch, earlier locations are not represented");
-
-  return true;
 }
 
 /* Prepare the span adjustments.  */
@@ -10040,9 +9754,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
 	       not be getting ahead of ourselves.  */
 	    location_t from = linemap_included_from (omap);
 	    gcc_checking_assert (from < MAP_START_LOCATION (omap));
-#if NEW_LOC
 	    write_location (sec, from);
-#endif
 	  }
 	/* The ending serialized value.  */
 	offset = MAP_START_LOCATION (omap) + span.ordinary_delta;
@@ -10134,9 +9846,7 @@ module_state::read_locations ()
 	map->to_file = (fnum < filenames.length () ? filenames[fnum] : "");
 	map->to_line = sec.u ();
 
-#if NEW_LOC
 	map->included_from = read_location (sec);
-#endif
 	if (map->included_from == UNKNOWN_LOCATION)
 	  map->included_from = loc;
       }
@@ -10626,14 +10336,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   unsigned range_bits = 0;
   if (modules_atom_p ())
-    {
-      spewer ()->alloc_filenames ();
-#if NEW_LOC
-      range_bits = prepare_locations ();
-#else
-      prepare_locations (line_table);
-#endif
-    }
+    range_bits = prepare_locations ();
 
   /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
@@ -10752,13 +10455,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   /* Write the line maps.  */
   if (modules_atom_p ())
     {
-#if NEW_LOC
       write_locations (to, range_bits, &crc);
-#else
-      write_locations (to, line_table, true, &crc);
-      write_locations (to, line_table, false, &crc);
-      spewer ()->free_filenames ();
-#endif
     }
 
   if (modules_legacy_p ())
@@ -10792,11 +10489,6 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
     if (!read_locations ())
       return;
 
-#if !NEW_LOC
-  /* Read the early locations.  */
-  if (modules_atom_p ())
-    read_locations (line_table, true);
-#endif
   /* Read the import table.  */
   if (!read_imports (reader, line_table))
     return;
@@ -10829,17 +10521,6 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
   /* We should not have been frozen during the importing done by
      read_config.  */
   gcc_assert (!slurp->from->is_frozen ());
-
-  /* Read the late locations.  */
-  if (modules_atom_p ())
-    {
-#if !NEW_LOC
-      read_locations (line_table, false);
-#endif
-      /* We'll leak if we returned early, but that's gonna be a fatal
-	 error, so who cares?  */
-      slurper ()->free_filenames ();
-    }
 
   if (is_legacy ())
     if (!read_defines (reader))
