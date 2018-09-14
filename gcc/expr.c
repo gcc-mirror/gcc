@@ -11532,12 +11532,10 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   /* We won't bother with store-flag operations involving function pointers
      when function pointers must be canonicalized before comparisons.  */
   if (targetm.have_canonicalize_funcptr_for_compare ()
-      && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
-	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
-	       == FUNCTION_TYPE))
-	  || (TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
-		  == FUNCTION_TYPE))))
+      && ((POINTER_TYPE_P (TREE_TYPE (arg0))
+	   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg0))))
+	  || (POINTER_TYPE_P (TREE_TYPE (arg1))
+	      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg1))))))
     return 0;
 
   STRIP_NOPS (arg0);
