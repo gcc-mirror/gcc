@@ -81,7 +81,7 @@ class irange
 						    { set_range (t, x, y, k); }
 
   void set_range (const irange_storage *, tree);
-  void set_range (tree);
+  void set_range (tree ssa);
   void set_range (tree, const wide_int &lbound, const wide_int &ubound,
 		  kind rt = PLAIN);
   void set_range (tree typ, tree lbound, tree ubound,

@@ -885,11 +885,13 @@ irange_pointer_optimization (enum tree_code code, signop s, irange &r,
     {
       irange zero;
       range_zero (&zero, type);
+      r.union_ (zero);
     }
   else if (n == WIDE_INT_RANGE_NONNULL)
     {
       irange nzero;
       range_non_zero (&nzero, type);
+      r.union_ (nzero);
     }
   else
     gcc_unreachable ();
@@ -975,8 +977,9 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 {
   wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
+  tree type = r.get_type ();
 
-  if (POINTER_TYPE_P (r.get_type ()))
+  if (POINTER_TYPE_P (type))
     {
       irange_pointer_optimization (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
       return true;
@@ -988,44 +991,44 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
       wide_int_binop (new_lb, code, lh_lb, rh_lb, s, &ov_lb);
       wide_int_binop (new_ub, code, lh_ub, rh_ub, s, &ov_ub);
       accumulate_range (r, new_lb, ov_lb, new_ub, ov_ub,
-			TYPE_OVERFLOW_WRAPS (r.get_type ()));
+			TYPE_OVERFLOW_WRAPS (type));
       return true;
 
     case MINUS_EXPR:
       wide_int_binop (new_lb, code, lh_lb, rh_ub, s, &ov_lb);
       wide_int_binop (new_ub, code, lh_ub, rh_lb, s, &ov_ub);
       accumulate_range (r, new_lb, ov_lb, new_ub, ov_ub,
-			TYPE_OVERFLOW_WRAPS (r.get_type ()));
+			TYPE_OVERFLOW_WRAPS (type));
       return true;
 
     case MULT_EXPR:
-      return irange_multiplicative_op (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub);
+      if (irange_multiplicative_op (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub))
+	return true;
+      r.set_range_for_type (type);
+      return false;
 
     case RSHIFT_EXPR:
-      {
-	tree type = r.get_type ();
-        int prec = TYPE_PRECISION (type);
-	if (!wide_int_range_shift_undefined_p (prec, rh_lb, rh_ub))
-	    return irange_multiplicative_op (code, s, r,
-					     lh_lb, lh_ub, rh_lb, rh_ub);
-	return false;
-      }
+      if (!wide_int_range_shift_undefined_p (TYPE_PRECISION (type),
+					     rh_lb, rh_ub)
+	  && irange_multiplicative_op (code, s, r,
+				       lh_lb, lh_ub, rh_lb, rh_ub))
+	return true;
+      r.set_range_for_type (type);
+      return false;
 
     case LSHIFT_EXPR:
-      {
-	tree type = r.get_type ();
-        int prec = TYPE_PRECISION (type);
-	if (!wide_int_range_shift_undefined_p (prec, rh_lb, rh_ub)
-	    && wide_int_range_lshift (new_lb, new_ub,
-				      s, prec, lh_lb, lh_ub, rh_lb, rh_ub,
-				      TYPE_OVERFLOW_UNDEFINED (type),
-				      TYPE_OVERFLOW_WRAPS (type)))
-	  {
-	    accumulate_range_and_canonicalize (s, r, new_lb, new_ub);
-	    return true;
-	  }
-	return false;
-      }
+      if (!wide_int_range_shift_undefined_p (TYPE_PRECISION (type),
+					     rh_lb, rh_ub)
+	  && wide_int_range_lshift (new_lb, new_ub, s, TYPE_PRECISION (type),
+				    lh_lb, lh_ub, rh_lb, rh_ub,
+				    TYPE_OVERFLOW_UNDEFINED (type),
+				    TYPE_OVERFLOW_WRAPS (type)))
+	{
+	  accumulate_range_and_canonicalize (s, r, new_lb, new_ub);
+	  return true;
+	}
+      r.set_range_for_type (type);
+      return false;
 
     case BIT_AND_EXPR:
       {
@@ -1039,8 +1042,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
 					      may_be_nonzero_rh,
 					      must_be_nonzero_rh);
-	if (wide_int_range_bit_and (new_lb, new_ub, s,
-				    TYPE_PRECISION (r.get_type ()),
+	if (wide_int_range_bit_and (new_lb, new_ub, s, TYPE_PRECISION (type),
 				    lh_lb, lh_ub,
 				    rh_lb, rh_ub,
 				    must_be_nonzero_lh,
@@ -1052,6 +1054,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    irange_adjust_bit_and_mask (r, s, lh_lb, lh_ub, rh_lb, rh_ub);
 	    return true;
 	  }
+	r.set_range_for_type (type);
 	return false;
       }
 
@@ -1076,6 +1079,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    accumulate_range (r, new_lb, new_ub);
 	    return true;
 	  }
+	r.set_range_for_type (type);
 	return false;
       }
 
@@ -1089,8 +1093,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	wide_int_range_set_zero_nonzero_bits (s, rh_lb, rh_ub,
 					      may_be_nonzero_rh,
 					      must_be_nonzero_rh);
-	if (wide_int_range_bit_xor (new_lb, new_ub, s,
-				    TYPE_PRECISION (r.get_type ()),
+	if (wide_int_range_bit_xor (new_lb, new_ub, s, TYPE_PRECISION (type),
 				    must_be_nonzero_lh,
 				    may_be_nonzero_lh,
 				    must_be_nonzero_rh,
@@ -1099,16 +1102,17 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    accumulate_range (r, new_lb, new_ub);
 	    return true;
 	  }
+	r.set_range_for_type (type);
 	return false;
       }
 
     case TRUNC_MOD_EXPR:
-      if (wide_int_range_zero_p (rh_lb, rh_ub,
-				 TYPE_PRECISION (r.get_type ())))
-	return false;
-
-      wide_int_range_trunc_mod (new_lb, new_ub, s,
-				TYPE_PRECISION (r.get_type ()),
+      if (wide_int_range_zero_p (rh_lb, rh_ub, TYPE_PRECISION (type)))
+	{
+	  /* An empty range means undefined.  */
+	  return false;
+	}
+      wide_int_range_trunc_mod (new_lb, new_ub, s, TYPE_PRECISION (type),
 				lh_lb, lh_ub, rh_lb, rh_ub);
       accumulate_range (r, new_lb, new_ub);
       return true;
@@ -1119,12 +1123,15 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
     case ROUND_DIV_EXPR:
     case CEIL_DIV_EXPR:
       {
+	/* If we know we will divide by zero, return an empty range,
+	   which will be interpreted as undefined.  */
+	if (rh_lb == 0 && rh_ub == 0)
+	  return false;
+
 	wide_int extra_min, extra_max;
 	bool extra_range_p;
-	tree type = r.get_type ();
-
 	if (wide_int_range_div (new_lb, new_ub, code, s,
-				TYPE_PRECISION (r.get_type ()),
+				TYPE_PRECISION (type),
 				lh_lb, lh_ub,
 				rh_lb, rh_ub,
 				TYPE_OVERFLOW_UNDEFINED (type),
@@ -1136,6 +1143,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	      accumulate_range (r, extra_min, extra_max);
 	    return true;
 	  }
+	r.set_range_for_type (type);
 	return false;
       }
 
@@ -1149,6 +1157,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	  r.union_ (new_lb, new_ub);
 	  return true;
 	}
+      r.set_range_for_type (type);
       return false;
 
     default:

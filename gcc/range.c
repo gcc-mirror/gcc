@@ -293,30 +293,28 @@ irange::cast (tree new_type)
       return;
     }
 
-  /* If the entire range doesn't fit in the new range type, bail.  */
   wide_int orig_lowest = lower_bound ();
   wide_int orig_highest = upper_bound ();
-  wide_int tmp1, tmp2;
-  if (!wide_int_range_convert (tmp1, tmp2,
-			       old_sign, old_precision,
-			       new_sign, new_precision,
-			       orig_lowest, orig_highest))
-    {
-      bounds[0] = wi::min_value (new_precision, new_sign);
-      bounds[1] = wi::max_value (new_precision, new_sign);
-      type = new_type;
-      nitems = 2;
-      return;
-    }
-
   wide_int new_type_min = wi::min_value (new_precision, new_sign);
   wide_int new_type_max = wi::max_value (new_precision, new_sign);
-  for (unsigned i = 0; i < nitems; i += 2)
+  unsigned n = nitems;
+  for (unsigned i = 0; i < n; i += 2)
     {
+      /* If this sub-range doesn't fit in the new range type, bail.  */
+      wide_int new_min, new_max;
+      if (!wide_int_range_convert (new_min, new_max,
+				   old_sign, old_precision,
+				   new_sign, new_precision,
+				   bounds[i], bounds[i + 1]))
+	{
+	  bounds[0] = new_type_min;
+	  bounds[1] = new_type_max;
+	  type = new_type;
+	  nitems = 2;
+	  return;
+	}
       /* If the new bounds are in the right order, we can do a
 	 straight up conversion.  */
-      wide_int new_min = wide_int::from (bounds[i], new_precision, old_sign);
-      wide_int new_max = wide_int::from (bounds[i + 1], new_precision, old_sign);
       if (wi::le_p (new_min, new_max, new_sign))
 	{
 	  bounds[i] = new_min;
@@ -402,9 +400,10 @@ irange::canonicalize ()
     return;
 
   /* Fix any out of order ranges: [10,20][-5,5] into [-5,5][10,20].  */
+  signop sign = TYPE_SIGN (type);
   for (unsigned i = 0; i < (unsigned) nitems; i += 2)
     for (unsigned j = i + 2; j < (unsigned) nitems; j += 2)
-      if (wi::gt_p (bounds[i], bounds[j], TYPE_SIGN (type)))
+      if (wi::gt_p (bounds[i], bounds[j], sign))
 	{
 	  wide_int t1 = bounds[i];
 	  wide_int t2 = bounds[i + 1];
@@ -413,20 +412,32 @@ irange::canonicalize ()
 	  bounds[j] = t1;
 	  bounds[j + 1] = t2;
 	}
-
-  /* Merge any edges that touch.
-     [9,10][11,20] => [9,20].  */
-  for (unsigned i = 1; i < (unsigned) (nitems - 2); i += 2)
+  /* Merge sub-ranges when appropriate.  */
+  unsigned i = 0;
+  while (i < (unsigned) (nitems - 2))
     {
       wi::overflow_type ovf;
-      wide_int x = wi::add (bounds[i], 1, TYPE_SIGN (type), &ovf);
-      /* No need to check for overflow here for the +1, since the
-	 middle ranges cannot have MAXINT.  */
-      if (x == bounds[i + 1])
+      /* Merge edges that touch:
+	 [9,10][11,20] => [9,20],
+	 [9,10][10,20] => [9,20].  */
+      if (bounds[i + 1] == bounds[i + 2]
+	  || (wi::add (bounds[i + 1], 1, sign, &ovf) == bounds[i + 2]
+	      && !ovf))
 	{
-	  bounds[i] = bounds[i + 2];
-	  remove (i + 1, i + 2);
+	  bounds[i + 1] = bounds[i + 3];
+	  remove (i + 2, i + 3);
 	}
+      /* Merge pairs that bleed into each other:
+	 [10,20][11,18] => [10,20]
+	 [10,20][15,30] => [10,30].  */
+      else if (wi::le_p (bounds[i], bounds[i + 2], sign)
+	       && wi::ge_p (bounds[i + 1], bounds[i + 2], sign))
+	{
+	  bounds[i + 1] = wi::max (bounds[i + 1], bounds[i + 3], sign);
+	  remove (i + 2, i + 3);
+	}
+      else
+	i += 2;
     }
   gcc_assert (!CHECKING_P || valid_p ());
 }
@@ -934,11 +945,38 @@ irange_to_value_range (value_range &vr, const irange &r)
     }
   tree type = r.get_type ();
   unsigned int precision = TYPE_PRECISION (type);
-  if (r.num_pairs () == 2
-      && r.lower_bound () == wi::min_value (precision, TYPE_SIGN (type))
-      && r.upper_bound () == wi::max_value (precision, TYPE_SIGN (type)))
+  /* Represent non-zero correctly.  */
+  if (TYPE_UNSIGNED (type)
+      && r.num_pairs () == 1
+      && r.lower_bound () == wi::uhwi (1, precision)
+      && r.upper_bound () == wi::max_value (precision, UNSIGNED))
     {
-      irange tmp = irange_invert (r);
+      vr.type = VR_ANTI_RANGE;
+      vr.min = vr.max = build_int_cst (type, 0);
+    }
+  /* Represent anti-ranges.  */
+  else if ((r.num_pairs () == 2
+	    || r.num_pairs () == 3)
+	   /* Do not get confused by booleans.  */
+	   && TYPE_PRECISION (type) != 1
+	   && r.lower_bound () == wi::min_value (precision, TYPE_SIGN (type))
+	   && r.upper_bound () == wi::max_value (precision, TYPE_SIGN (type)))
+    {
+      irange tmp = r;
+      if (r.num_pairs () == 3)
+	{
+	  /* Hack to make up for the fact that we can compute finer
+	     grained ranges that VRP can only approximate with an
+	     anti-range.  Attempt to reconstruct sub-ranges of the form:
+
+		[0, 94][96, 127][0xff80, 0xffff] => ~[95,95]
+		[0, 1][3, 0x7fffffff][0xff..80000000, 0xff..ff] => ~[2, 2].  */
+
+	  // Merge the last two bounds.
+	  tmp.set_range (type, r.lower_bound (0), r.upper_bound (0));
+	  tmp.union_ (r.lower_bound (1), r.upper_bound ());
+	}
+      tmp = irange_invert (tmp);
       vr.min = wide_int_to_tree (type, tmp.lower_bound ());
       vr.max = wide_int_to_tree (type, tmp.upper_bound ());
       vr.type = VR_ANTI_RANGE;
@@ -1127,12 +1165,10 @@ irange_tests ()
   r2 = irange (short_unsigned_type_node, 0xff88, 0xffff);
   r1.union_ (r2);
   ASSERT_TRUE (r0 == r1);
-  /* Casting back to signed char (a smaller type), would be outside of
-     the range, we it'll be the entire range of the signed char.  */
+  /* A truncating cast back to signed char will work because [-120, 20]
+     is representable in signed char.  */
   r0.cast (signed_char_type_node);
-  ASSERT_TRUE (r0 == irange (signed_char_type_node,
-			     TYPE_MIN_VALUE (signed_char_type_node),
-			     TYPE_MAX_VALUE (signed_char_type_node)));
+  ASSERT_TRUE (r0 == irange (signed_char_type_node, -120, 20));
 
   /* unsigned char -> signed short
 	(signed short)[(unsigned char)25, (unsigned char)250]
