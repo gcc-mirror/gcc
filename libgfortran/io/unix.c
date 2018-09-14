@@ -150,13 +150,21 @@ fallback_access (const char *path, int mode)
 {
   int fd;
 
-  if ((mode & R_OK) && (fd = open (path, O_RDONLY)) < 0)
-    return -1;
-  close (fd);
+  if (mode & R_OK)
+    {
+      if ((fd = open (path, O_RDONLY)) < 0)
+	return -1;
+      else
+	close (fd);
+    }
 
-  if ((mode & W_OK) && (fd = open (path, O_WRONLY)) < 0)
-    return -1;
-  close (fd);
+  if (mode & W_OK)
+    {
+      if ((fd = open (path, O_WRONLY)) < 0)
+	return -1;
+      else
+	close (fd);
+    }
 
   if (mode == F_OK)
     {
