@@ -1,3 +1,11 @@
+2018-09-14  Carl Love  <cel@us.ibm.com>
+
+        Backport from trunk
+        2018-09-14  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/emmintrin.h: Add _MM_SHUFFLE2.
+	* config/rs6000/xmmintrin.h: Add _MM_SHUFFLE.
+
 2018-09-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
