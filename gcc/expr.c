@@ -11307,8 +11307,9 @@ is_aligning_offset (const_tree offset, const_tree exp)
    aren't nul-terminated strings.  In that case, if ARG refers to such
    a sequence set *NONSTR to its declaration and clear it otherwise.
    The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
-   size of the memory is returned.  If MEM_SIZE is zero, the string is
-   only returned when it is properly zero terminated.  */
+   size of the memory is returned.  The returned STRING_CST object is
+   valid up to TREE_STRING_LENGTH.  Bytes between TREE_STRING_LENGTH
+   and MEM_SIZE are zero.  MEM_SIZE is at least TREE_STRING_LENGTH.  */
 
 tree
 string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
@@ -11410,6 +11411,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       /* This is not strictly correct.  FIXME in follow-up patch.  */
       if (nonstr)
 	*nonstr = NULL_TREE;
+      gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
+			   >= TREE_STRING_LENGTH (array));
       return array;
     }
 
@@ -11452,40 +11455,26 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
   if (!init || TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
 
-  tree array_size = DECL_SIZE_UNIT (array);
-  if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
-    return NULL_TREE;
-
-  /* Avoid returning an array that is unterminated because it lacks
-     a terminating nul, like
-     const char a[4] = "abcde";
-     but do handle those that are strings even if they have excess
-     initializers, such as in
-     const char a[4] = "abc\000\000";
-     The excess elements contribute to TREE_STRING_LENGTH()
-     but not to strlen().  */
-  unsigned HOST_WIDE_INT charsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
   /* Compute the lower bound number of elements (not bytes) in the array
      that the string is used to initialize.  The actual size of the array
      may be greater if the string is shorter, but the the important
      data point is whether the literal, inlcuding the terminating nul,
      fits the array.  */
+  unsigned HOST_WIDE_INT charsize
+    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
   unsigned HOST_WIDE_INT array_elts
     = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init))) / charsize;
 
   /* Compute the string length in (wide) characters.  */
   unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
-  length = string_length (TREE_STRING_POINTER (init), charsize,
-			  length / charsize);
+
   if (mem_size)
     *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
   if (nonstr)
     *nonstr = array_elts > length ? NULL_TREE : array;
 
-  if ((!mem_size && !nonstr)
-      && array_elts <= length)
-    return NULL_TREE;
+  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
+		       >= TREE_STRING_LENGTH (init));
 
   *ptr_offset = offset;
   return init;
