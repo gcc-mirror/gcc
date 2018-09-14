@@ -1,3 +1,18 @@
+2018-09-14  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* builtins.c (unterminated_array): New.
+	(expand_builtin_strcpy): Adjust.
+	(expand_builtin_strcpy_args): Detect unterminated arrays.
+	* gimple-fold.c (get_maxval_strlen): Add argument.  Detect
+	unterminated arrays.
+	* gimple-fold.h (get_maxval_strlen): Add argument.
+	(gimple_fold_builtin_strcpy): Detec unterminated arrays.
+
+	* gimple-fold.c (get_range_strlen): Add argument.
+	(get_maxval_strlen): Adjust.
+	* gimple-fold.h (get_range_strlen): Add argument.
+
 2018-09-14  Wei Xiao  <wei3.xiao@intel.com>
 
 	* config/i386/movdirintrin.h: Fix copyright year.

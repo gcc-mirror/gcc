@@ -1280,12 +1280,13 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
    obtained from the upper bound of an array at the end of a struct.
    Such an array may hold a string that's longer than its upper bound
    due to it being used as a poor-man's flexible array member.
+   Pass NONSTR through to children.
    ELTSIZE is 1 for normal single byte character strings, and 2 or
    4 for wide characer strings.  ELTSIZE is by default 1.  */
 
 static bool
 get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
-		  int fuzzy, bool *flexp, unsigned eltsize = 1)
+		  int fuzzy, bool *flexp, unsigned eltsize, tree *nonstr)
 {
   tree var, val = NULL_TREE;
   gimple *def_stmt;
@@ -1307,7 +1308,8 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	      if (TREE_CODE (aop0) == INDIRECT_REF
 		  && TREE_CODE (TREE_OPERAND (aop0, 0)) == SSA_NAME)
 		return get_range_strlen (TREE_OPERAND (aop0, 0), length,
-					 visited, type, fuzzy, flexp, eltsize);
+					 visited, type, fuzzy, flexp,
+					 eltsize, nonstr);
 	    }
 	  else if (TREE_CODE (TREE_OPERAND (op, 0)) == COMPONENT_REF && fuzzy)
 	    {
@@ -1335,13 +1337,14 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	    return false;
 	}
       else
-	val = c_strlen (arg, 1, NULL, eltsize);
+	val = c_strlen (arg, 1, nonstr, eltsize);
 
       if (!val && fuzzy)
 	{
 	  if (TREE_CODE (arg) == ADDR_EXPR)
 	    return get_range_strlen (TREE_OPERAND (arg, 0), length,
-				     visited, type, fuzzy, flexp, eltsize);
+				     visited, type, fuzzy, flexp,
+				     eltsize, nonstr);
 
 	  if (TREE_CODE (arg) == ARRAY_REF)
 	    {
@@ -1484,7 +1487,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
           {
             tree rhs = gimple_assign_rhs1 (def_stmt);
 	    return get_range_strlen (rhs, length, visited, type, fuzzy, flexp,
-				     eltsize);
+				     eltsize, nonstr);
           }
 	else if (gimple_assign_rhs_code (def_stmt) == COND_EXPR)
 	  {
@@ -1493,7 +1496,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 
 	    for (unsigned int i = 0; i < 2; i++)
 	      if (!get_range_strlen (ops[i], length, visited, type, fuzzy,
-				     flexp, eltsize))
+				     flexp, eltsize, nonstr))
 		{
 		  if (fuzzy == 2)
 		    *maxlen = build_all_ones_cst (size_type_node);
@@ -1521,7 +1524,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
               continue;
 
 	    if (!get_range_strlen (arg, length, visited, type, fuzzy, flexp,
-				   eltsize))
+				   eltsize, nonstr))
 	      {
 		if (fuzzy == 2)
 		  *maxlen = build_all_ones_cst (size_type_node);
@@ -1554,21 +1557,30 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
    if we can determine string length minimum and maximum; it will use
    the minimum from the ones where it can be determined.
    STRICT false should be only used for warning code.
+   When non-null, clear *NONSTR if ARG refers to a constant array
+   that is known not be nul-terminated.  Otherwise set it to
+   the declaration of the constant non-terminated array.
 
    ELTSIZE is 1 for normal single byte character strings, and 2 or
    4 for wide characer strings.  ELTSIZE is by default 1.  */
 
 bool
-get_range_strlen (tree arg, tree minmaxlen[2], unsigned eltsize, bool strict)
+get_range_strlen (tree arg, tree minmaxlen[2], unsigned eltsize,
+		  bool strict, tree *nonstr /* = NULL */)
 {
   bitmap visited = NULL;
 
   minmaxlen[0] = NULL_TREE;
   minmaxlen[1] = NULL_TREE;
 
+  tree nonstrbuf;
+  if (!nonstr)
+    nonstr = &nonstrbuf;
+  *nonstr = NULL_TREE;
+
   bool flexarray = false;
   if (!get_range_strlen (arg, minmaxlen, &visited, 1, strict ? 1 : 2,
-			 &flexarray, eltsize))
+			 &flexarray, eltsize, nonstr))
     {
       minmaxlen[0] = NULL_TREE;
       minmaxlen[1] = NULL_TREE;
@@ -1580,19 +1592,39 @@ get_range_strlen (tree arg, tree minmaxlen[2], unsigned eltsize, bool strict)
   return flexarray;
 }
 
+/* Return the maximum string length for ARG, counting by TYPE
+   (1, 2 or 4 for normal or wide chars).  NONSTR indicates
+   if the caller is prepared to handle unterminated strings.
+
+   If an unterminated string is discovered and our caller handles
+   unterminated strings, then bubble up the offending DECL and
+   return the maximum size.  Otherwise return NULL.  */
+
 tree
-get_maxval_strlen (tree arg, int type)
+get_maxval_strlen (tree arg, int type, tree *nonstr /* = NULL */)
 {
   bitmap visited = NULL;
   tree len[2] = { NULL_TREE, NULL_TREE };
 
   bool dummy;
-  if (!get_range_strlen (arg, len, &visited, type, 0, &dummy))
+  /* Set to non-null if ARG refers to an untermianted array.  */
+  tree mynonstr = NULL_TREE;
+  if (!get_range_strlen (arg, len, &visited, type, 0, &dummy, 1, &mynonstr))
     len[1] = NULL_TREE;
   if (visited)
     BITMAP_FREE (visited);
 
-  return len[1];
+  if (nonstr)
+    {
+      /* For callers prepared to handle unterminated arrays set
+	 *NONSTR to point to the declaration of the array and return
+	 the maximum length/size. */
+      *nonstr = mynonstr;
+      return len[1];
+    }
+
+  /* Fail if the constant array isn't nul-terminated.  */
+  return mynonstr ? NULL_TREE : len[1];
 }
 
 
@@ -1635,7 +1667,19 @@ gimple_fold_builtin_strcpy (gimple_stmt_iterator *gsi,
   if (!fn)
     return false;
 
-  tree len = get_maxval_strlen (src, 0);
+  /* Set to non-null if ARG refers to an unterminated array.  */
+  tree nonstr = NULL;
+  tree len = get_maxval_strlen (src, 0, &nonstr);
+
+  if (nonstr)
+    {
+      /* Avoid folding calls with unterminated arrays.  */
+      if (!gimple_no_warning_p (stmt))
+	warn_string_no_nul (loc, "strcpy", src, nonstr);
+      gimple_set_no_warning (stmt, true);
+      return false;
+    }
+
   if (!len)
     return false;
 
@@ -3506,12 +3550,15 @@ static bool
 gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
 {
   gimple *stmt = gsi_stmt (*gsi);
+  tree arg = gimple_call_arg (stmt, 0);
 
   wide_int minlen;
   wide_int maxlen;
 
+  /* Set to non-null if ARG refers to an unterminated array.  */
+  tree nonstr;
   tree lenrange[2];
-  if (!get_range_strlen (gimple_call_arg (stmt, 0), lenrange, 1, true)
+  if (!get_range_strlen (arg, lenrange, 1, true, &nonstr)
       && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
       && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
     {

@@ -1,4 +1,9 @@
 2018-09-14  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gcc.dg/warn-strcpy-no-nul.c: New test.
+
+2018-09-14  Martin Sebor  <msebor@redhat.com>
 
 	c++/61941
 	* g++.dg/pr61941.C: New test.
