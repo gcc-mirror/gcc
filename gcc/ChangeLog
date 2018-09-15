@@ -1,3 +1,9 @@
+2018-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/86864
+	* cfgexpand.c (expand_gimple_basic_block): Be prepared for a BARRIER
+	before and after a JUMP_TABLE_DATA.
+
 2018-09-14  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR middle-end/87188
