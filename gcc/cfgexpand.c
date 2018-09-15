@@ -5817,6 +5817,8 @@ expand_gimple_basic_block (basic_block bb, bool disable_tail_calls)
     last = PREV_INSN (last);
   if (JUMP_TABLE_DATA_P (last))
     last = PREV_INSN (PREV_INSN (last));
+  if (BARRIER_P (last))
+    last = PREV_INSN (last);
   BB_END (bb) = last;
 
   update_bb_for_insn (bb);
