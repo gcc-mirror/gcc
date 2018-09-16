@@ -1,3 +1,12 @@
+2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37802
+	* frontend-passes.c (B_ERROR): New macro for matmul bounds
+	checking error messages.
+	(C_ERROR): Likewise.
+	(inline_matmul_assign): Reorganize bounds checking, use B_ERROR
+	and C_ERROR macros.
+
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* trans-array.c (gfc_conv_array_initializer): Remove excess precision

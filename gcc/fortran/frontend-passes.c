@@ -3748,6 +3748,15 @@ check_conjg_transpose_variable (gfc_expr *e, bool *conjg, bool *transpose)
   return NULL;
 }
 
+/* Macros for unified error messages.  */
+
+#define B_ERROR(n) _("Incorrect extent in argument B in MATMUL intrinsic in " \
+		     "dimension " #n ": is %ld, should be %ld")
+
+#define C_ERROR(n) _("Array bound mismatch for dimension " #n " of array " \
+		     "(%ld/%ld)")
+
+
 /* Inline assignments of the form c = matmul(a,b).
    Handle only the cases currently where b and c are rank-two arrays.
 
@@ -3793,6 +3802,7 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   gfc_code *if_limit = NULL;
   gfc_code **next_code_point;
   bool conjg_a, conjg_b, transpose_a, transpose_b;
+  bool realloc_c;
 
   if (co->op != EXEC_ASSIGN)
     return 0;
@@ -3958,169 +3968,140 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
   assign_zero->expr1->no_bounds_check = 1;
   assign_zero->expr2 = zero_e;
 
+  realloc_c = flag_realloc_lhs && gfc_is_reallocatable_lhs (expr1);
+
+  if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
+    {
+      gfc_code *test;
+      gfc_expr *a2, *b1, *c1, *c2, *a1, *b2;
+
+      switch (m_case)
+	{
+	case A2B1:
+
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	  test = runtime_error_ne (b1, a2, B_ERROR(1));
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	      test = runtime_error_ne (c1, a1, C_ERROR(1));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	case A1B2:
+
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	  test = runtime_error_ne (b1, a1, B_ERROR(1));
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	      test = runtime_error_ne (c1, b2, C_ERROR(1));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	case A2B2:
+
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	  test = runtime_error_ne (b1, a2, B_ERROR(1));
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	      test = runtime_error_ne (c1, a1, C_ERROR(1));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+
+	      c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
+	      b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	      test = runtime_error_ne (c2, b2, C_ERROR(2));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	case A2B2T:
+
+	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	  /* matrix_b is transposed, hence dimension 1 for the error message.  */
+	  test = runtime_error_ne (b2, a2, B_ERROR(1));
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	      test = runtime_error_ne (c1, a1, C_ERROR(1));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+
+	      c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
+	      b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	      test = runtime_error_ne (c2, b1, C_ERROR(2));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	case A2TB2:
+
+	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
+	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
+	  test = runtime_error_ne (b1, a1, B_ERROR(1));
+	  *next_code_point = test;
+	  next_code_point = &test->next;
+
+	  if (!realloc_c)
+	    {
+	      c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
+	      a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
+	      test = runtime_error_ne (c1, a2, C_ERROR(1));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+
+	      c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
+	      b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
+	      test = runtime_error_ne (c2, b2, C_ERROR(2));
+	      *next_code_point = test;
+	      next_code_point = &test->next;
+	    }
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
   /* Handle the reallocation, if needed.  */
-  if (flag_realloc_lhs && gfc_is_reallocatable_lhs (expr1))
+
+  if (realloc_c)
     {
       gfc_code *lhs_alloc;
-
-      /* Only need to check a single dimension for the A2B2 case for
-	 bounds checking, the rest will be allocated.  Also check this
-	 for A2B1.   */
-
-      if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
-	{
-	  gfc_code *test;
-	  if (m_case == A2B2 || m_case == A2B1)
-	    {
-	      gfc_expr *a2, *b1;
-
-	      a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
-	      b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	      test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
-				       "in MATMUL intrinsic: Is %ld, should be %ld");
-	      *next_code_point = test;
-	      next_code_point = &test->next;
-	    }
-	  else if (m_case == A1B2)
-	    {
-	      gfc_expr *a1, *b1;
-
-	      a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
-	      b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	      test = runtime_error_ne (b1, a1, "Dimension of array B incorrect "
-				       "in MATMUL intrinsic: Is %ld, should be %ld");
-	      *next_code_point = test;
-	      next_code_point = &test->next;
-	    }
-	}
 
       lhs_alloc = matmul_lhs_realloc (expr1, matrix_a, matrix_b, m_case);
 
       *next_code_point = lhs_alloc;
       next_code_point = &lhs_alloc->next;
 
-    }
-  else if (gfc_option.rtcheck & GFC_RTCHECK_BOUNDS)
-    {
-      gfc_code *test;
-      gfc_expr *a2, *b1, *c1, *c2, *a1, *b2;
-
-      if (m_case == A2B2 || m_case == A2B1)
-	{
-	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
-	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	  test = runtime_error_ne (b1, a2, "Dimension of array B incorrect "
-				   "in MATMUL intrinsic: Is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
-	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
-
-	  if (m_case == A2B2)
-	    test = runtime_error_ne (c1, a1, "Incorrect extent in return array in "
-				     "MATMUL intrinsic for dimension 1: "
-				     "is %ld, should be %ld");
-	  else if (m_case == A2B1)
-	    test = runtime_error_ne (c1, a1, "Incorrect extent in return array in "
-				     "MATMUL intrinsic: "
-				     "is %ld, should be %ld");
-
-
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-	}
-      else if (m_case == A1B2)
-	{
-	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
-	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	  test = runtime_error_ne (b1, a1, "Dimension of array B incorrect "
-				   "in MATMUL intrinsic: Is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
-	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
-
-	  test = runtime_error_ne (c1, b2, "Incorrect extent in return array in "
-				   "MATMUL intrinsic: "
-				   "is %ld, should be %ld");
-
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-	}
-
-      if (m_case == A2B2)
-	{
-	  c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
-	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
-	  test = runtime_error_ne (c2, b2, "Incorrect extent in return array in "
-				   "MATMUL intrinsic for dimension 2: is %ld, should be %ld");
-
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-	}
-
-      if (m_case == A2B2T)
-	{
-	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
-	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
-	  test = runtime_error_ne (c1, a1, "Incorrect extent in return array in "
-				   "MATMUL intrinsic for dimension 1: "
-				   "is %ld, should be %ld");
-
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
-	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-	  test = runtime_error_ne (c2, b1, "Incorrect extent in return array in "
-				   "MATMUL intrinsic for dimension 2: "
-				   "is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
-	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
-
-	  test = runtime_error_ne (b2, a2, "Incorrect extent in argument B in "
-				   "MATMUL intrnisic for dimension 2: "
-				   "is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	}
-
-      if (m_case == A2TB2)
-	{
-	  c1 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 1);
-	  a2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 2);
-
-	  test = runtime_error_ne (c1, a2, "Incorrect extent in return array in "
-				   "MATMUL intrinsic for dimension 1: "
-				   "is %ld, should be %ld");
-
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  c2 = get_array_inq_function (GFC_ISYM_SIZE, expr1, 2);
-	  b2 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 2);
-	  test = runtime_error_ne (c2, b2, "Incorrect extent in return array in "
-				   "MATMUL intrinsic for dimension 2: "
-				   "is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	  a1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_a, 1);
-	  b1 = get_array_inq_function (GFC_ISYM_SIZE, matrix_b, 1);
-
-	  test = runtime_error_ne (b1, a1, "Incorrect extent in argument B in "
-				   "MATMUL intrnisic for dimension 2: "
-				   "is %ld, should be %ld");
-	  *next_code_point = test;
-	  next_code_point = &test->next;
-
-	}
     }
 
   *next_code_point = assign_zero;

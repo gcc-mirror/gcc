@@ -1,3 +1,16 @@
+2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37802
+	* gfortran.dg/matmul_bounds_13.f90: New test case.
+	* gfortran.dg/inline_matmul_15.f90:  Adjust test for runtime
+	error.
+	* gfortran.dg/matmul_5.f90: Likewise.
+	* gfortran.dg/matmul_bounds_10.f90: Likewise.
+	* gfortran.dg/matmul_bounds_11.f90: Likewise.
+	* gfortran.dg/matmul_bounds_2.f90: Likewise.
+	* gfortran.dg/matmul_bounds_4.f90: Likewise.
+	* gfortran.dg/matmul_bounds_5.f90: Likewise.
+
 2018-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/compile/20180915-1.c: New test.
