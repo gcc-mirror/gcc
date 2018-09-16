@@ -3139,11 +3139,16 @@ public:
     batching = true;
     return batching;
   }
-  void uncork ()
+  void uncork (location_t loc)
   {
-    batching = false;
+    if (batching)
+      {
+	batching = false;
+	/* Need to disable gnu-printf zero-length format warning.  */
+	send_command (loc, "%s", "");
+      }
   }
-  bool corked () const
+  bool is_corked () const
   {
     return batching;
   }
@@ -3153,16 +3158,11 @@ public:
   }
 
 public:
-  void imex_query (const module_state *, int dir);
+  void imex_query (const module_state *, bool exporting);
   char *imex_response (const module_state *state)
   {
     return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
   }
-  void bewait_cmd (location_t loc)
-  {
-    send_command (loc, "BEWAIT");
-  }
-  module_state *bewait_response (location_t);
   int divert_include (cpp_reader *, line_maps *, location_t, const char *, bool);
 
 public:
@@ -3170,7 +3170,7 @@ public:
      uncorked.  */
   void maybe_uncork (location_t loc)
   {
-    while (corked ())
+    while (is_corked ())
       if (get_response (loc) > 0)
 	response_unexpected (loc);
   }
@@ -7381,22 +7381,21 @@ module_mapper::send_command (location_t loc, const char *format, ...)
   else if (end != buffer)
     *end++ = '-';
 
-  if (*format)
-    for (;;)
-      {
-	va_list args;
-	va_start (args, format);
-	size_t available = (buffer + size) - end;
-	actual = vsnprintf (end, available, format, args);
-	va_end (args);
-	if (actual < available)
-	  break;
+  for (;;)
+    {
+      va_list args;
+      va_start (args, format);
+      size_t available = (buffer + size) - end;
+      actual = vsnprintf (end, available, format, args);
+      va_end (args);
+      if (actual < available)
+	break;
 
-	size = size * 2 + actual + 20;
-	char *next = XRESIZEVEC (char, buffer, size);
-	end = next + (end - buffer);
-	buffer = pos = next;
-      }
+      size = size * 2 + actual + 20;
+      char *next = XRESIZEVEC (char, buffer, size);
+      end = next + (end - buffer);
+      buffer = pos = next;
+    }
 
   if (batching)
     dump () && dump ("Mapper pending request:%s", end);
@@ -7626,10 +7625,6 @@ module_mapper::response_word (location_t loc, const char *option, ...)
     IMPORT module-name
     	-> OK bmipath
 	-> ERROR
-    BYIMPORT module-name
-    	No response
-    BEWAIT
-	-> module-name OK bmipath
     EXPORT module-name
     	-> OK bmipath
     DONE module-name
@@ -7675,14 +7670,13 @@ module_mapper::handshake (location_t loc, const char *cookie)
   return ok;
 }
 
-/* BYIMPORT, IMPORT or EXPORT query.  */
+/* IMPORT or EXPORT query.  */
 
 void
-module_mapper::imex_query (const module_state *state, int importing)
+module_mapper::imex_query (const module_state *state, bool exporting)
 {
   send_command (state->from_loc, "%sPORT %s",
-		!importing ? "EX" : "BYIM" + importing + 1,
-		state->fullname);
+		exporting ? "EX" : "IM",  state->fullname);
 }
 
 /* Response to import/export query.  */
@@ -7712,38 +7706,6 @@ module_mapper::bmi_response (const module_state *state)
   return filename;
 }
 
-/* A response to a bewait request.  */
-
-module_state *
-module_mapper::bewait_response (location_t loc)
-{
-  if (get_response (loc) <= 0)
-    return NULL;
-
-  const char *name = response_token (loc);
-  if (!name)
-    return NULL;
-  if (0 == strcmp (name, "-"))
-    {
-      if (0 != response_word (loc, "ERROR", NULL))
-	error_at (loc, "mapper bewait failure: %s", response_error ());
-      return NULL;
-    }
-  else if (module_state *state = get_module (name))
-    {
-      char *fname = bmi_response (state);
-      if (!state->direct || state->filename)
-	error_at (loc, "unexpected bewait reponse from mapper %qs", name);
-      else if (fname)
-	state->filename = xstrdup (fname);
-      return state;
-    }
-  else
-    response_unexpected (loc);
-
-  return NULL;
-}
-
 /* Import query.  */
 
 char *
@@ -7753,7 +7715,7 @@ module_mapper::import_export (const module_state *state, bool export_p)
 
   if (mapper->is_server ())
     {
-      mapper->imex_query (state, export_p ? 0 : +1);
+      mapper->imex_query (state, export_p);
       return mapper->imex_response (state);
     }
 
@@ -11165,40 +11127,25 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
   if (!mapper->is_file ())
     {
       /* Send batched request to mapper.  */
-      if (directs.length ())
-	mapper->cork ();
+      mapper->cork ();
       if (interface)
-	mapper->imex_query (interface, 0);
-      if (directs.length ())
-	{
-	  /* Put in reverse source order, for consistency.  */
-	  (directs.qsort) (module_from_cmp);
-	  for (unsigned ix = directs.length (); ix--;)
-	    mapper->imex_query (directs[ix], -1);
-	  mapper->uncork ();
-	  mapper->bewait_cmd (loc);
-	}
+	mapper->imex_query (interface, true);
+
+      /* Put in reverse source order, for consistency.  */
+      (directs.qsort) (module_from_cmp);
+      for (unsigned ix = directs.length (); ix--;)
+	mapper->imex_query (directs[ix], false);
+      mapper->uncork (loc);
 
       /* Read the mapper's responses.  */
       if (interface)
 	if (char *fname = mapper->imex_response (interface))
 	  interface->filename = xstrdup (fname);
-      if (directs.length ())
+      for (unsigned ix = directs.length (); ix--;)
 	{
-	  bool bewait = true;
-	  for (unsigned ix = directs.length (); ix--;)
-	    {
-	      if (!mapper->corked ())
-		{
-		  if (!bewait)
-		    mapper->bewait_cmd (loc);
-		  bewait = !bewait;
-		}
-	      if (module_state *imp = mapper->bewait_response (loc))
-		dump () && dump ("Received BMI name for %M", imp);
-	      else
-		break;
-	    }
+	  module_state *imp = directs[ix];
+	  if (char *fname = mapper->imex_response (imp))
+	    imp->filename = xstrdup (fname);
 	}
       mapper->maybe_uncork (loc);
     }
@@ -11574,7 +11521,7 @@ finish_module_parse (cpp_reader *reader)
       int e = ENOENT;
 
       /* Force the current linemap to close.  */
-      linemap_add (line_table, LC_RENAME, false, "", 0);
+      linemap_add (line_table, LC_ENTER, false, "", 0);
       spans.close ();
 
       if (state->filename)

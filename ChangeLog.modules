@@ -1,3 +1,13 @@
+2018-09-16  Nathan Sidwell  <nathan@acm.org>
+
+	Remove BYIMPORT, BEWAIT.
+	gcc/cp/
+	* module.c (module_mapper::uncork): Send blank command.
+	(module_mapper::imex_query): Take exported_p bool.
+	(module_mapper::bewait_{cmd,response}): Delete.
+	(module_mapper::send_command): Don't shortcut blank format.
+	(module_state::preamble_load): Avoid async commands.
+
 2018-09-14  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
