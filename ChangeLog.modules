@@ -1,5 +1,10 @@
 2018-09-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (C++ Modules): Update mapper protocol.
+	* cxx-mapper.c (client): Remove bewait, forget members.
+	(client::action): Remove BYIMPORT, BEWAIT & RESET.
+
 	Remove BYIMPORT, BEWAIT.
 	gcc/cp/
 	* module.c (module_mapper::uncork): Send blank command.

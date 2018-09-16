@@ -29668,18 +29668,6 @@ should accept and respond to the following commands:
 
 @table @gcctabopt
 
-@item BEWAIT
-Request for an asynchronous response.  The response is as for a
-non-asynchronous query, except it is prefixed by @samp{@var{module}},
-so it may be linked to the orignal request.  If there is no
-outstanding asynchronous query, an error response of @samp{- ERROR
-[@var{msg}]} should be given.  Asynchronous requests need not be
-responded to in order.
-
-@item BYIMPORT @var{module}
-An asynchronous query for an import.  There is no immediate response.
-A later response to a @samp{BEWAIT} query will provide response data.
-
 @item DONE @var{module}
 The compilation has completed the interface of @var{module}.
 There is no response.  Note that the compilation may not have
@@ -29710,11 +29698,6 @@ import response includes a module name, that will be the imported
 module.  Otherwise the import shall be @var{header}.  A subsequent
 @samp{IMPORT} or @samp{BYIMPORT} query will be forthcoming.
 
-@item RESET
-This command resets the server.  There is no response.  It may be
-needed when a preamble rescan happens.  Any unresponded @samp{BEIMPORT}
-requests are dropped.
-
 @end table
 
 It is recommended that any unrecognized command causes an @samp{ERROR}
@@ -29725,16 +29708,13 @@ a @samp{+} character, before waiting for a response another request
 should be made.  That too may begin with @samp{+}.  The final request
 of the batch should begin with @samp{-}, and may be empty.  Similarly
 responses may be batched, both in response to a set of batched
-requests, or as a result of a batched @samp{AWAIT} request (including
-a batch consisting of a single @samp{AWAIT}).  Each non-ultimate line
-of a batched response begins with a @samp{+}.  The final line should
-begin with @samp{-}, and may otherwise be empty.  Response to a
-batched request are in request order, except that a batch of
-@samp{ASYNC} requests provides only a single @samp{OK}.  Servers
-should not commence responses until all requests of a batch have been
-received.  There may be a fixed-capacity pipe between client and
-server, and sending responses before the client has started reading
-could result in deadlock.
+requests.  Each non-ultimate line of a batched response begins with a
+@samp{+}.  The final line should begin with @samp{-}, and may
+otherwise be empty.  Response to a batched request are in request
+order.  Servers should not commence responses until all requests of a
+batch have been received.  There may be a fixed-capacity pipe between
+client and server, and sending responses before the client has started
+reading could result in deadlock.
 
 The following metavariables were used:
 

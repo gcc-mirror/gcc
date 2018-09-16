@@ -827,7 +827,6 @@ public:
   };
 
 private:
-  vector<char *> bewait;
   buffer read;
   buffer write;
   const char *cookie;
@@ -893,7 +892,6 @@ public:
 #endif
 
 private:
-  void forget ();
   void imex_response (unsigned id, const char *module, bool deferred);
 
 public:
@@ -915,14 +913,6 @@ client::~client ()
 {
   flag_noisy && noisy ("%u:destroyed", id);
   gcc_assert (read.get_fd () < 0 && write.get_fd () < 0);
-  forget ();
-}
-
-void
-client::forget ()
-{
-  for (; bewait.size (); bewait.pop_back ())
-    XDELETEVEC (bewait.back ());
 }
 
 /* Manipulate the EPOLL state, or do nothing, if there is epoll.  */
@@ -1084,15 +1074,14 @@ client::action ()
 
 	case TALKING:
 	  {
-	    int word = read.get_word (id, "IMPORT", "EXPORT", "DONE", "BYIMPORT",
-				      "INCLUDE", "BEWAIT", "RESET", NULL);
+	    int word = read.get_word (id, "IMPORT", "EXPORT", "DONE",
+				      "INCLUDE", NULL);
 	    switch (word)
 	      {
 	      case 0: /* IMPORT */
 	      case 1: /* EXPORT */
 	      case 2: /* DONE */
-	      case 3: /* BYIMPORT */
-	      case 4: /* INCLUDE */
+	      case 3: /* INCLUDE */
 		{
 		  char *module = read.get_token (id);
 		  read.get_eol (id);
@@ -1102,19 +1091,11 @@ client::action ()
 		    case 1:
 		      imex_response (id, module, false);
 		      break;
-		    case 3:
-		      {
-			size_t l = strlen (module);
-			char *pend = XNEWVEC (char, l + 1);
-			memcpy (pend, module, l + 1);
-			bewait.push_back (pend);
-		      }
-		      /* FALLTHROUGH */
 		    case 2:
 		      /* No response.  */
 		      break;
 
-		    case 4:
+		    case 3:
 		      {
 			/* We may want to tell the compiler go look on
 			   the search path.  */
@@ -1140,28 +1121,6 @@ client::action ()
 		    }
 		  
 		}
-		break;
-
-	      case 5: /* BEWAIT */
-		if (bewait.size ())
-		  {
-		    if (batched && !write.corking ())
-		      write.cork (true);
-		    do
-		      {
-			char *pend = bewait.back ();
-			bewait.pop_back ();
-			imex_response (id, pend, true);
-			XDELETEVEC (pend);
-		      }
-		    while (batched && bewait.size ());
-		  }
-		else
-		  write.send_response (id, "- ERROR No pending byimport");
-		break;
-
-	      case 6: /* RESET */
-		forget ();
 		break;
 
 	      default:
