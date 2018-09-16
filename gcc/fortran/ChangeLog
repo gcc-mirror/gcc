@@ -1,3 +1,10 @@
+2018-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86484
+	PR fortran/84543
+	* match.c (gfc_match_assignment): For a polymorphic assignment,
+	make sure that the vtab for the rhs type is generated.
+
 2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37802
