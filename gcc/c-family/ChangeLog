@@ -1,3 +1,9 @@
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (format_warning_at_char): Update for introduction of
+	format_string_diagnostic_t.
+	(format_type_warning): Likewise.
+
 2018-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/63886

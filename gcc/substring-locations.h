@@ -74,43 +74,43 @@ class substring_loc
   int m_end_idx;
 };
 
-/* Functions for emitting a warning about a format string.  */
+/* A bundle of state for emitting a diagnostic relating to a format string.  */
 
-extern bool format_warning_va (const substring_loc &fmt_loc,
-			       const range_label *fmt_label,
-			       location_t param_loc,
-			       const range_label *param_label,
-			       const char *corrected_substring,
-			       int opt, const char *gmsgid, va_list *ap)
-  ATTRIBUTE_GCC_DIAG (7, 0);
+class format_string_diagnostic_t
+{
+ public:
+  format_string_diagnostic_t (const substring_loc &fmt_loc,
+			      const range_label *fmt_label,
+			      location_t param_loc,
+			      const range_label *param_label,
+			      const char *corrected_substring);
 
-extern bool format_warning_n_va (const substring_loc &fmt_loc,
-				 const range_label *fmt_label,
-				 location_t param_loc,
-				 const range_label *param_label,
-				 const char *corrected_substring,
-				 int opt, unsigned HOST_WIDE_INT n,
-				 const char *singular_gmsgid,
-				 const char *plural_gmsgid, va_list *ap)
-  ATTRIBUTE_GCC_DIAG (8, 0) ATTRIBUTE_GCC_DIAG (9, 0);
+  /* Functions for emitting a warning about a format string.  */
 
-extern bool format_warning_at_substring (const substring_loc &fmt_loc,
-					 const range_label *fmt_label,
-					 location_t param_loc,
-					 const range_label *param_label,
-					 const char *corrected_substring,
-					 int opt, const char *gmsgid, ...)
-  ATTRIBUTE_GCC_DIAG (7, 8);
+  bool emit_warning_va (int opt, const char *gmsgid, va_list *ap) const
+    ATTRIBUTE_GCC_DIAG (3, 0);
 
-extern bool format_warning_at_substring_n (const substring_loc &fmt_loc,
-					   const range_label *fmt_label,
-					   location_t param_loc,
-					   const range_label *param_label,
-					   const char *corrected_substring,
-					   int opt, unsigned HOST_WIDE_INT n,
-					   const char *singular_gmsgid,
-					   const char *plural_gmsgid, ...)
-  ATTRIBUTE_GCC_DIAG (8, 10) ATTRIBUTE_GCC_DIAG (9, 10);
+  bool emit_warning_n_va (int opt, unsigned HOST_WIDE_INT n,
+			  const char *singular_gmsgid,
+			  const char *plural_gmsgid, va_list *ap) const
+  ATTRIBUTE_GCC_DIAG (4, 0) ATTRIBUTE_GCC_DIAG (5, 0);
+
+  bool emit_warning (int opt, const char *gmsgid, ...) const
+    ATTRIBUTE_GCC_DIAG (3, 4);
+
+  bool emit_warning_n (int opt, unsigned HOST_WIDE_INT n,
+		       const char *singular_gmsgid,
+		       const char *plural_gmsgid, ...) const
+  ATTRIBUTE_GCC_DIAG (4, 6) ATTRIBUTE_GCC_DIAG (5, 6);
+
+ private:
+  const substring_loc &m_fmt_loc;
+  const range_label *m_fmt_label;
+  location_t m_param_loc;
+  const range_label *m_param_label;
+  const char *m_corrected_substring;
+};
+
 
 /* Implementation detail, for use when implementing
    LANG_HOOKS_GET_SUBSTRING_LOCATION.  */
