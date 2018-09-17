@@ -1,3 +1,10 @@
+2018-09-17  Cesar Philippidis  <cesar@codesourcery.com>
+	    Bernd Schmidt <bernds_cb1@t-online.de>
+
+	* gcc.target/nvptx/atomic-fetch-2.c: Rename to ...
+	* gcc.target/nvptx/atomic_fetch-2.c: ... this.
+	* gcc.target/nvptx/atomic_fetch-3.c: New test.
+
 2018-09-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87328
