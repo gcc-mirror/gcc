@@ -1,3 +1,22 @@
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (class layout_range): Add field
+	"m_original_idx".
+	(layout_range::layout_range): Add "original_idx" param and use it
+	to initialize new field.
+	(make_range): Use 0 for original_idx.
+	(layout::layout): Pass in index to calls to
+	maybe_add_location_range.
+	(layout::maybe_add_location_range): Add param "original_idx" and
+	pass it on to layout_range.
+	(layout::print_any_labels): Pass on range->m_original_idx to
+	get_text call.
+	(gcc_rich_location::add_location_if_nearby): Use 0 for
+	original_idx.
+	* gcc-rich-location.h (text_range_label::get_text): Update for new
+	param.
+	(range_label_for_type_mismatch::get_text): Likewise.
+
 2018-09-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_emit_i387_log1p): Emit fldln2 earlier.

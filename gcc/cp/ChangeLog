@@ -1,3 +1,8 @@
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (range_label_for_type_mismatch::get_text): Update for
+	new param.
+
 2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* typeck2.c (digest_init_r): Fix overlength strings.

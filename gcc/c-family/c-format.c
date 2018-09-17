@@ -3597,9 +3597,9 @@ class range_label_for_format_type_mismatch
   {
   }
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
   {
-    label_text text = range_label_for_type_mismatch::get_text ();
+    label_text text = range_label_for_type_mismatch::get_text (range_idx);
     if (text.m_buffer == NULL)
       return text;
 

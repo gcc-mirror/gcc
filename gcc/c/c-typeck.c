@@ -11056,7 +11056,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
   {
   }
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
   {
     if (m_expr == NULL_TREE
 	|| !EXPR_P (m_expr))
@@ -11068,7 +11068,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
       other_type = TREE_TYPE (m_other_expr);
 
    range_label_for_type_mismatch inner (expr_type, other_type);
-   return inner.get_text ();
+   return inner.get_text (range_idx);
   }
 
  private:

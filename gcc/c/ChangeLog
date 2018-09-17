@@ -1,3 +1,10 @@
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (range_label_for_type_mismatch::get_text):
+	Update for new param.
+	* c-typeck.c (maybe_range_label_for_tree_type_mismatch::get_text):
+	Likewise.
+
 2018-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/63886

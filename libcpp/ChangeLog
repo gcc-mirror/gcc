@@ -1,3 +1,8 @@
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (range_label::get_text): Add param
+	"range_idx".
+
 2018-08-30  Nathan Sidwell  <nathan@acm.org>
 
 	* include/line-map.h (enum lc_reason): Comment each member
