@@ -311,6 +311,14 @@ struct processor_costs {
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
 					  vectorizer cost model.  */
+
+  /* The "0:0:8" label alignment specified for some processors generates
+     secondary 8-byte alignment only for those label/jump/loop targets
+     which have primary alignment.  */
+  const char *const align_loop;		/* Loop alignment.  */
+  const char *const align_jump;		/* Jump alignment.  */
+  const char *const align_label;	/* Label alignment.  */
+  const char *const align_func;		/* Function alignment.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -2278,19 +2286,7 @@ enum processor_type
 };
 
 #if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
-/* Processor target table, indexed by processor number */
-struct ptt
-{
-  const char *const name;			/* processor name  */
-
-  /* Default alignments.  */
-  const char *const align_loop;
-  const char *const align_jump;
-  const char *const align_label;
-  const char *const align_func;
-};
-
-extern const struct ptt processor_target_table[PROCESSOR_max];
+extern const char *const processor_names[PROCESSOR_max];
 
 #include "wide-int-bitmask.h"
 
