@@ -1,3 +1,17 @@
+2018-09-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (truncxf<mode>2_i387_noop_unspec): Change
+	operand 0 predicate to nonimmediate operand.
+	(rint<mode>2_frndint): Remove insn pattern.
+	(rint<mode>2): Change operand 1 predicate to general_operand.
+	Extend operand 1 to XFmode and generate rintxf2 insn.
+	(frndintxf2_<rounding>): Rename from frndint<mode>2_<rounding>.
+	Do not use X87MODEF mode macro.
+	(frndintxf2_<rounding>_i387): Rename from
+	frndint<mode>2_<rounding>_i387.  Do not use X87MODEF mode macro.
+	(<rounding_insn><mode>2): For non-SSE modes, extend operand 1
+	to XFmode and generate significandxf3 insn.
+
 2018-09-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87328
