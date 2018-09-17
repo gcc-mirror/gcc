@@ -1,3 +1,17 @@
+2018-09-17  Martin Liska  <mliska@suse.cz>
+
+	* common/config/i386/i386-common.c (ix86_get_valid_option_values):
+	Use processor_names table.
+	* config/i386/i386.c (ix86_default_align): Use
+	processor_cost_table for alignment values.
+	(ix86_option_override_internal): Use processor_names.
+	(ix86_function_specific_print): Likewise.
+	* config/i386/i386.h (struct processor_costs):
+	Add alignment values.
+	(struct ptt): Remove and replace with const char *.
+	* config/i386/x86-tune-costs.h (struct processor_costs):
+	Declare default alignments for all costs.
+
 2018-09-17  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Do not special case

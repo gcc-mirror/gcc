@@ -3352,13 +3352,13 @@ ix86_default_align (struct gcc_options *opts)
 {
   /* -falign-foo without argument: supply one.  */
   if (opts->x_flag_align_loops && !opts->x_str_align_loops)
-    opts->x_str_align_loops = processor_target_table[ix86_tune].align_loop;
+    opts->x_str_align_loops = processor_cost_table[ix86_tune]->align_loop;
   if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
-    opts->x_str_align_jumps = processor_target_table[ix86_tune].align_jump;
+    opts->x_str_align_jumps = processor_cost_table[ix86_tune]->align_jump;
   if (opts->x_flag_align_labels && !opts->x_str_align_labels)
-    opts->x_str_align_labels = processor_target_table[ix86_tune].align_label;
+    opts->x_str_align_labels = processor_cost_table[ix86_tune]->align_label;
   if (opts->x_flag_align_functions && !opts->x_str_align_functions)
-    opts->x_str_align_functions = processor_target_table[ix86_tune].align_func;
+    opts->x_str_align_functions = processor_cost_table[ix86_tune]->align_func;
 }
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook.  */
@@ -3488,8 +3488,7 @@ ix86_option_override_internal (bool main_args_p,
 	opts->x_ix86_tune_string = opts->x_ix86_arch_string;
       if (!opts->x_ix86_tune_string)
 	{
-	  opts->x_ix86_tune_string
-	    = processor_target_table[TARGET_CPU_DEFAULT].name;
+	  opts->x_ix86_tune_string = processor_names[TARGET_CPU_DEFAULT];
 	  ix86_tune_defaulted = 1;
 	}
 
@@ -4940,12 +4939,12 @@ ix86_function_specific_print (FILE *file, int indent,
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
 	   indent, "",
-	   ptr->arch, processor_target_table[ptr->arch].name);
+	   ptr->arch, processor_names[ptr->arch]);
 
   gcc_assert (ptr->tune < PROCESSOR_max);
   fprintf (file, "%*stune = %d (%s)\n",
 	   indent, "",
-	   ptr->tune, processor_target_table[ptr->tune].name);
+	   ptr->tune, processor_names[ptr->tune]);
 
   fprintf (file, "%*sbranch_cost = %d\n", indent, "", ptr->branch_cost);
 
