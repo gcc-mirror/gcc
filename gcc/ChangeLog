@@ -1,5 +1,18 @@
 2018-09-17  Martin Liska  <mliska@suse.cz>
 
+	* doc/gcov.texi: Document new option --use-hotness-colors.
+	* gcov.c (struct source_info): Declare new field.
+	(source_info::source_info): Set default for maximum_count.
+	(print_usage): Add new -q option.
+	(process_args): Process it.
+	(accumulate_line_info): Save src->maximum_count.
+	(output_line_beginning): Make color line number if
+	flag_use_hotness_colors is set.
+	(output_line_details): Pass default argument value.
+	(output_lines): Pass src->maximum_count.
+
+2018-09-17  Martin Liska  <mliska@suse.cz>
+
 	* common/config/i386/i386-common.c (ix86_get_valid_option_values):
 	Use processor_names table.
 	* config/i386/i386.c (ix86_default_align): Use
