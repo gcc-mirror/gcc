@@ -1,3 +1,8 @@
+2018-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87301
+	* gcc.dg/torture/pr87301.c: New testcase.
+
 2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85954

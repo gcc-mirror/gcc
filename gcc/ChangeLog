@@ -1,3 +1,9 @@
+2018-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87301
+	* tree-ssa-sccvn.c (eliminate_dom_walker::eliminate_cleanup): Properly
+	clean EH info from leftover copy assignments.
+
 2018-09-17  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/85871
