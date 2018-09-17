@@ -8744,6 +8744,14 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
+      if (sym->ts.deferred && target->expr_type == EXPR_VARIABLE
+	  && target->symtree->n.sym->attr.dummy
+	  && sym->ts.u.cl == target->ts.u.cl)
+	{
+	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
+	  sym->ts.deferred = 1;
+	}
+
       if (!sym->ts.u.cl->length
 	  && !sym->ts.deferred
 	  && target->expr_type == EXPR_CONSTANT)
@@ -8756,7 +8764,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		&& target->expr_type != EXPR_VARIABLE)
 	{
-	  sym->ts.u.cl = gfc_get_charlen();
+	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
 	  sym->ts.deferred = 1;
 
 	  /* This is reset in trans-stmt.c after the assignment
