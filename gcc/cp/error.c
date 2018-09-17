@@ -4289,7 +4289,7 @@ qualified_name_lookup_error (tree scope, tree name,
    Compare with print_template_differences above.  */
 
 label_text
-range_label_for_type_mismatch::get_text () const
+range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
     return label_text (NULL, false);

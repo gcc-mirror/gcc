@@ -109,7 +109,7 @@ class text_range_label : public range_label
  public:
   text_range_label (const char *text) : m_text (text) {}
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned /*range_idx*/) const FINAL OVERRIDE
   {
     return label_text (const_cast <char *> (m_text), false);
   }
@@ -155,7 +155,7 @@ class range_label_for_type_mismatch : public range_label
   {
   }
 
-  label_text get_text () const OVERRIDE;
+  label_text get_text (unsigned range_idx) const OVERRIDE;
 
  protected:
   tree m_labelled_type;

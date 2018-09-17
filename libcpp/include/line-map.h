@@ -1808,8 +1808,10 @@ class range_label
  public:
   virtual ~range_label () {}
 
-  /* Get localized text for the label.  */
-  virtual label_text get_text () const = 0;
+  /* Get localized text for the label.
+     The RANGE_IDX is provided, allowing for range_label instances to be
+     shared by multiple ranges if need be (the "flyweight" design pattern).  */
+  virtual label_text get_text (unsigned range_idx) const = 0;
 };
 
 /* A fix-it hint: a suggested insertion, replacement, or deletion of text.
