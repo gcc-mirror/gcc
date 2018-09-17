@@ -1,3 +1,8 @@
+2018-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87328
+	* gcc.dg/torture/pr87328.c: New testcase.
+
 2018-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/63886

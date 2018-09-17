@@ -1,3 +1,11 @@
+2018-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87328
+	* tree-ssa-sccvn.c (process_bb): Remove assertion about not
+	visiting unexecutable backedges when not iterating.
+	(do_rpo_vn): Mark all edges not executable even when not
+	iterating.
+
 2018-09-17  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/63886

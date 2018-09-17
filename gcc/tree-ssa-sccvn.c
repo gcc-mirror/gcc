@@ -5978,7 +5978,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 		fprintf (dump_file,
 			 "marking outgoing edge %d -> %d executable\n",
 			 e->src->index, e->dest->index);
-	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 	      e->flags |= EDGE_EXECUTABLE;
 	      e->dest->flags |= BB_EXECUTABLE;
 	    }
@@ -6125,7 +6124,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 			 "marking known outgoing %sedge %d -> %d executable\n",
 			 e->flags & EDGE_DFS_BACK ? "back-" : "",
 			 e->src->index, e->dest->index);
-	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 	      e->flags |= EDGE_EXECUTABLE;
 	      e->dest->flags |= BB_EXECUTABLE;
 	    }
@@ -6148,7 +6146,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 		    fprintf (dump_file,
 			     "marking outgoing edge %d -> %d executable\n",
 			     e->src->index, e->dest->index);
-		  gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 		  e->flags |= EDGE_EXECUTABLE;
 		  e->dest->flags |= BB_EXECUTABLE;
 		}
@@ -6390,10 +6387,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	{
 	  if (e->flags & EDGE_DFS_BACK)
 	    has_backedges = true;
-	  if (! iterate && (e->flags & EDGE_DFS_BACK))
-	    e->flags |= EDGE_EXECUTABLE;
-	  else
-	    e->flags &= ~EDGE_EXECUTABLE;
+	  e->flags &= ~EDGE_EXECUTABLE;
 	  if (e == entry)
 	    continue;
 	  if (bb_to_rpo[e->src->index] > i)
