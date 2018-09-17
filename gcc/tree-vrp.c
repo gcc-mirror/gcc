@@ -1894,11 +1894,6 @@ extract_range_from_unary_expr (value_range *vr,
     }
   else if (code == ABS_EXPR)
     {
-      if (vr0.type != VR_RANGE || symbolic_range_p (&vr0))
-	{
-	  set_value_range_to_varying (vr);
-	  return;
-	}
       wide_int wmin, wmax;
       wide_int vr0_min, vr0_max;
       extract_range_into_wide_ints (&vr0, sign, prec, vr0_min, vr0_max);
