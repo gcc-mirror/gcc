@@ -339,13 +339,16 @@ struct source_info
 
   coverage_info coverage;
 
+  /* Maximum line count in the source file.  */
+  unsigned int maximum_count;
+
   /* Functions in this source file.  These are in ascending line
      number order.  */
   vector <function_info *> functions;
 };
 
 source_info::source_info (): index (0), name (NULL), file_time (),
-  lines (), coverage (), functions ()
+  lines (), coverage (), maximum_count (0), functions ()
 {
 }
 
@@ -501,6 +504,10 @@ static int flag_verbose = 0;
 /* Print colored output.  */
 
 static int flag_use_colors = 0;
+
+/* Use perf-like colors to indicate hot lines.  */
+
+static int flag_use_hotness_colors = 0;
 
 /* Output count information for every basic block, not merely those
    that contain line number information.  */
@@ -839,6 +846,7 @@ print_usage (int error_p)
   fnotice (file, "  -n, --no-output                 Do not create an output file\n");
   fnotice (file, "  -o, --object-directory DIR|FILE Search for object files in DIR or called FILE\n");
   fnotice (file, "  -p, --preserve-paths            Preserve all pathname components\n");
+  fnotice (file, "  -q, --use-hotness-colors        Emit perf-like colored output for hot lines\n");
   fnotice (file, "  -r, --relative-only             Only show data for relative sources\n");
   fnotice (file, "  -s, --source-prefix DIR         Source prefix to elide\n");
   fnotice (file, "  -t, --stdout                    Output to stdout instead of a file\n");
@@ -890,6 +898,7 @@ static const struct option options[] =
   { "display-progress",     no_argument,       NULL, 'd' },
   { "hash-filenames",	    no_argument,       NULL, 'x' },
   { "use-colors",	    no_argument,       NULL, 'k' },
+  { "use-hotness-colors",   no_argument,       NULL, 'q' },
   { 0, 0, 0, 0 }
 };
 
@@ -900,7 +909,7 @@ process_args (int argc, char **argv)
 {
   int opt;
 
-  const char *opts = "abcdfhijklmno:prs:tuvwx";
+  const char *opts = "abcdfhijklmno:pqrs:tuvwx";
   while ((opt = getopt_long (argc, argv, opts, options, NULL)) != -1)
     {
       switch (opt)
@@ -928,6 +937,9 @@ process_args (int argc, char **argv)
 	  break;
 	case 'k':
 	  flag_use_colors = 1;
+	  break;
+	case 'q':
+	  flag_use_hotness_colors = 1;
 	  break;
 	case 'm':
 	  flag_demangled_names = 1;
@@ -2580,6 +2592,9 @@ static void accumulate_line_info (line_info *line, source_info *src,
       /* Now, add the count of loops entirely on this line.  */
       count += get_cycles_count (*line);
       line->count = count;
+
+      if (line->count > src->maximum_count)
+	src->maximum_count = line->count;
     }
 
   if (line->exists && add_coverage)
@@ -2756,7 +2771,8 @@ output_line_beginning (FILE *f, bool exists, bool unexceptional,
 		       bool has_unexecuted_block,
 		       gcov_type count, unsigned line_num,
 		       const char *exceptional_string,
-		       const char *unexceptional_string)
+		       const char *unexceptional_string,
+		       unsigned int maximum_count)
 {
   string s;
   if (exists)
@@ -2806,7 +2822,23 @@ output_line_beginning (FILE *f, bool exists, bool unexceptional,
       pad_count_string (s);
     }
 
-  fprintf (f, "%s:%5u", s.c_str (), line_num);
+  /* Format line number in output.  */
+  char buffer[16];
+  sprintf (buffer, "%5u", line_num);
+  string linestr (buffer);
+
+  if (flag_use_hotness_colors && maximum_count)
+    {
+      if (count * 2 > maximum_count) /* > 50%.  */
+	linestr.insert (0, SGR_SEQ (COLOR_BG_RED));
+      else if (count * 5 > maximum_count) /* > 20%.  */
+	linestr.insert (0, SGR_SEQ (COLOR_BG_YELLOW));
+      else if (count * 10 > maximum_count) /* > 10%.  */
+	linestr.insert (0, SGR_SEQ (COLOR_BG_GREEN));
+      linestr += SGR_RESET;
+    }
+
+  fprintf (f, "%s:%s", s.c_str (), linestr.c_str ());
 }
 
 static void
@@ -2839,7 +2871,7 @@ output_line_details (FILE *f, const line_info *line, unsigned line_num)
 	      output_line_beginning (f, line->exists,
 				     (*it)->exceptional, false,
 				     (*it)->count, line_num,
-				     "%%%%%", "$$$$$");
+				     "%%%%%", "$$$$$", 0);
 	      fprintf (f, "-block %2d", ix++);
 	      if (flag_verbose)
 		fprintf (f, " (BB %u)", (*it)->id);
@@ -2901,6 +2933,15 @@ output_lines (FILE *gcov_file, const source_info *src)
 
   FILE *source_file;
   const char *retval;
+
+  /* Print legend of color hotness syntax.  */
+  if (flag_use_hotness_colors)
+    fprintf (gcov_file, "%s", DEFAULT_LINE_START "Hotness legend: " \
+	     SGR_SEQ (COLOR_BG_RED) "> 50%" SGR_RESET " " \
+	     SGR_SEQ (COLOR_BG_YELLOW) "> 20%" SGR_RESET " " \
+	     SGR_SEQ (COLOR_BG_GREEN) "> 10%" SGR_RESET "\n");
+
+  fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
   if (!multiple_files)
@@ -2964,7 +3005,7 @@ output_lines (FILE *gcov_file, const source_info *src)
 	 line so that tabs won't be messed up.  */
       output_line_beginning (gcov_file, line->exists, line->unexceptional,
 			     line->has_unexecuted_block, line->count,
-			     line_num, "=====", "#####");
+			     line_num, "=====", "#####", src->maximum_count);
 
       print_source_line (gcov_file, source_lines, line_num);
       output_line_details (gcov_file, line, line_num);
@@ -3009,7 +3050,8 @@ output_lines (FILE *gcov_file, const source_info *src)
 					 line->unexceptional,
 					 line->has_unexecuted_block,
 					 line->count,
-					 l, "=====", "#####");
+					 l, "=====", "#####",
+					 src->maximum_count);
 
 		  print_source_line (gcov_file, source_lines, l);
 		  output_line_details (gcov_file, line, l);
