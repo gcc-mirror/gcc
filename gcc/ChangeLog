@@ -1,3 +1,9 @@
+2018-09-17  Cesar Philippidis  <cesar@codesourcery.com>
+	    Bernd Schmidt <bernds_cb1@t-online.de>
+
+	* config/nvptx/nvptx.md (atomic_fetch_<logic><mode>): Enable with
+	SImode args.
+
 2018-09-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (truncxf<mode>2_i387_noop_unspec): Change
