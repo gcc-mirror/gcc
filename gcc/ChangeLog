@@ -1,3 +1,9 @@
+2018-09-17  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/85871
+	* gcov.c (output_intermediate_file): Fix out of bounds
+	access.
+
 2018-09-17  Vineet Gupta  <vgupta@synopsys.com>
 
 	* config/arc/arc.c: Object attributes for core4 not reflected
