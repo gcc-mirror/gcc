@@ -5461,7 +5461,10 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 		if (is_gimple_assign (stmt))
 		  {
 		    gimple_assign_set_rhs_from_tree (&gsi, sprime);
-		    update_stmt (gsi_stmt (gsi));
+		    stmt = gsi_stmt (gsi);
+		    update_stmt (stmt);
+		    if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		      bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 		    continue;
 		  }
 		else
