@@ -1,5 +1,13 @@
 2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/64120
+	* trans-decl.c (gfc_get_symbol_decl): Flag allocatable, scalar
+	characters with a variable length expression for deferred init.
+	(gfc_trans_deferred_vars): Perform the assignment for these
+	symbols by calling gfc_conv_string_length.
+
+2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/85954
 	* resolve.c (resolve_assoc_var): If the target expression is a
 	deferred charlen dummy and the associate name shares the
