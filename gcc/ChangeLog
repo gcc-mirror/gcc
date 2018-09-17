@@ -1,3 +1,7 @@
+2018-09-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_i387_log1p): Emit fldln2 earlier.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* gimple-ssa-sprintf.c (fmtwarn): Update for introduction of

@@ -43941,20 +43941,20 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   rtx test;
 
   emit_insn (gen_absxf2 (tmp, op1));
+  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   test = gen_rtx_GE (VOIDmode, tmp,
     const_double_from_real_value (
        REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode),
        XFmode));
-  emit_jump_insn (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
+  emit_jump_insn
+    (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
 
-  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   emit_insn (gen_fyl2xp1xf3_i387 (op0, op1, tmp2));
   emit_jump (label2);
 
   emit_label (label1);
   emit_move_insn (tmp, CONST1_RTX (XFmode));
   emit_insn (gen_addxf3 (tmp, op1, tmp));
-  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   emit_insn (gen_fyl2xxf3_i387 (op0, tmp, tmp2));
 
   emit_label (label2);
