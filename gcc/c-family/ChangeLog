@@ -1,3 +1,8 @@
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* c.opt (Wabsolute-value): New.
+
 2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (complete_flexible_array_elts): New helper function.

@@ -6281,6 +6281,14 @@ example, warn if an unsigned variable is compared against zero with
 @code{<} or @code{>=}.  This warning is also enabled by
 @option{-Wextra}.
 
+@item -Wabsolute-value @r{(C and Objective-C only)}
+@opindex Wabsolute-value
+@opindex Wno-absolute-value
+Warn when a wrong absolute value function seems to be used or when it
+does not have any effect because its argument is an unsigned type.
+This warning be suppressed with an explicit type cast and it is also
+enabled by @option{-Wextra}.
+
 @include cppwarnopts.texi
 
 @item -Wbad-function-cast @r{(C and Objective-C only)}

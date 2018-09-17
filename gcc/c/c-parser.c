@@ -9101,6 +9101,144 @@ sizeof_ptr_memacc_comptypes (tree type1, tree type2)
   return comptypes (type1, type2) == 1;
 }
 
+/* Warn for patterns where abs-like function appears to be used incorrectly,
+   gracely ignore any non-abs-like function.  The warning location should be
+   LOC.  FNDECL is the declaration of called function, it must be a
+   BUILT_IN_NORMAL function.  ARG is the first and only argument of the
+   call.  */
+
+static void
+warn_for_abs (location_t loc, tree fndecl, tree arg)
+{
+  tree atype = TREE_TYPE (arg);
+
+  /* Casts from pointers (and thus arrays and fndecls) will generate
+     -Wint-conversion warnings.  Most other wrong types hopefully lead to type
+     mismatch errors.  TODO: Think about what to do with FIXED_POINT_TYPE_P
+     types and possibly other exotic types.  */
+  if (!INTEGRAL_TYPE_P (atype)
+      && !SCALAR_FLOAT_TYPE_P (atype)
+      && TREE_CODE (atype) != COMPLEX_TYPE)
+    return;
+
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    case BUILT_IN_ABS:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
+      if (!INTEGRAL_TYPE_P (atype))
+	{
+	  if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using integer absolute value function %qD when "
+			"argument is of floating point type %qT",
+			fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using integer absolute value function %qD when "
+			"argument is of complex type %qT", fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      if (TYPE_UNSIGNED (atype))
+	warning_at (loc, OPT_Wabsolute_value,
+		    "taking the absolute value of unsigned type %qT "
+		    "has no effect", atype);
+      break;
+
+    CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
+      if (!SCALAR_FLOAT_TYPE_P (atype)
+	  || DECIMAL_FLOAT_MODE_P (TYPE_MODE (atype)))
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD "
+			"when argument is of integer type %qT", fndecl, atype);
+	  else if (DECIMAL_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD "
+			"when argument is of decimal floating point type %qT",
+			fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD when "
+			"argument is of complex type %qT", fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      break;
+
+    CASE_FLT_FN (BUILT_IN_CABS):
+      if (TREE_CODE (atype) != COMPLEX_TYPE)
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using complex absolute value function %qD when "
+			"argument is of integer type %qT", fndecl, atype);
+	  else if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using complex absolute value function %qD when "
+			"argument is of floating point type %qT",
+			fndecl, atype);
+	  else
+	    gcc_unreachable ();
+
+	  return;
+	}
+      break;
+
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
+      if (!DECIMAL_FLOAT_TYPE_P (atype))
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of integer type %qT",
+			fndecl, atype);
+	  else if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of floating point "
+			"type %qT", fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of complex type %qT",
+			fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      break;
+
+    default:
+      return;
+    }
+
+  tree ftype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+  if (TREE_CODE (atype) == COMPLEX_TYPE)
+    {
+      gcc_assert (TREE_CODE (ftype) == COMPLEX_TYPE);
+      atype = TREE_TYPE (atype);
+      ftype = TREE_TYPE (ftype);
+    }
+
+  if (TYPE_PRECISION (ftype) < TYPE_PRECISION (atype))
+    warning_at (loc, OPT_Wabsolute_value,
+		"absolute value function %qD given an argument of type %qT "
+		"but has parameter of type %qT which may cause truncation "
+		"of value", fndecl, atype, ftype);
+}
+
+
 /* Parse a postfix expression after the initial primary or compound
    literal; that is, parse a series of postfix operators.
 
@@ -9165,13 +9303,19 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      expr.value, exprlist,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
-	  if (TREE_CODE (expr.value) == FUNCTION_DECL
-	      && fndecl_built_in_p (expr.value, BUILT_IN_MEMSET)
-	      && vec_safe_length (exprlist) == 3)
+	  if (TREE_CODE (expr.value) == FUNCTION_DECL)
 	    {
-	      tree arg0 = (*exprlist)[0];
-	      tree arg2 = (*exprlist)[2];
-	      warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
+	      if (fndecl_built_in_p (expr.value, BUILT_IN_MEMSET)
+		  && vec_safe_length (exprlist) == 3)
+		{
+		  tree arg0 = (*exprlist)[0];
+		  tree arg2 = (*exprlist)[2];
+		  warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
+		}
+	      if (warn_absolute_value
+		  && fndecl_built_in_p (expr.value, BUILT_IN_NORMAL)
+		  && vec_safe_length (exprlist) == 1)
+		warn_for_abs (expr_loc, expr.value, (*exprlist)[0]);
 	    }
 
 	  start = expr.get_start ();

@@ -1,3 +1,9 @@
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* gcc.dg/warn-abs-1.c: New test.
+	* gcc.dg/dfp/warn-abs-2.c: Likewise.
+
 2018-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Don't pass
