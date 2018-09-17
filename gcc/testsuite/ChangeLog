@@ -1,3 +1,8 @@
+2018-09-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.exp: Don't pass
+	TEST_ALWAYS_FLAGS to HOSTCXX.
+
 2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64120
