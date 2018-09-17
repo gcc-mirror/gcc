@@ -728,10 +728,13 @@ wide_int_range_abs (wide_int &min, wide_int &max,
     }
 
   /* If the new range has its limits swapped around (MIN > MAX), then
-     the operation caused one of them to wrap around, mark the new
-     range VARYING.  */
+     the operation caused one of them to wrap around.  The only thing
+     we know is that the result is positive.  */
   if (wi::gt_p (min, max, sign))
-      return false;
+    {
+      min = wi::zero (prec);
+      max = max_value;
+    }
   return true;
 }
 
