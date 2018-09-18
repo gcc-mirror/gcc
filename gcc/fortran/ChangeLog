@@ -1,5 +1,13 @@
 2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/87239
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character elemental function results to
+	a realocatable lhs must not be added to the exterior block but
+	must go to the loop body.
+
+2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/87336
 	* trans-array.c (gfc_get_array_span): Try to get the element
 	length of incomplete types. Return NULL_TREE otherwise.
