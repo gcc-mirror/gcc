@@ -1,6 +1,12 @@
 2018-09-18  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
+	PR fortran/85395
+	* gfortran.dg/proc_ptr_comp_52.f90: New test case.
+
+2018-09-18  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
 	PR fortran/86830
 	* gfortran.dg/typebound_call_30.f90: New test case.
 
