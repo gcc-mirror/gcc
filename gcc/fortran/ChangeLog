@@ -1,3 +1,23 @@
+2018-09-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/29550
+	* gfortran.h (gfc_expr): Add external_blas flag.
+	* frontend-passes.c (matrix_case): Add case A2TB2T.
+	(optimize_namespace): Handle flag_external_blas by
+	calling call_external_blas.
+	(get_array_inq_function): Add argument okind. If
+	it is nonzero, use it as the kind of argument
+	to be used.
+	(inline_limit_check): Remove m_case argument, add
+	limit argument instead.  Remove assert about m_case.
+	Set the limit for inlining from the limit argument.
+	(matmul_lhs_realloc): Handle case A2TB2T.
+	(inline_matmul_assign): Handle inline limit for other cases with
+	two rank-two matrices.  Remove no-op calls to inline_limit_check.
+	(call_external_blas): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Do not add
+	argument to external BLAS if external_blas is already set.
+
 2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87239

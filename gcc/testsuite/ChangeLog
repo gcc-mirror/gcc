@@ -1,3 +1,19 @@
+2018-09-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/29550
+	* gfortran.dg/inline_matmul_13.f90: Adjust count for
+	_gfortran_matmul.
+	* gfortran.dg/inline_matmul_16.f90: Likewise.
+	* gfortran.dg/promotion_2.f90: Add -fblas-matmul-limit=1.  Scan
+	for dgemm instead of dgemm_.  Add call to random_number to make
+	standard conforming.
+	* gfortran.dg/matmul_blas_1.f90: New test.
+	* gfortran.dg/matmul_bounds_14.f: New test.
+	* gfortran.dg/matmul_bounds_15.f: New test.
+	* gfortran.dg/matmul_bounds_16.f: New test.
+	* gfortran.dg/blas_gemm_routines.f: New test / additional file for
+	preceding tests.
+
 2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87239
