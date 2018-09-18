@@ -1,5 +1,11 @@
 2018-09-17  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (extract_range_from_unary_expr): Special case all
+	pointer conversions.
+	Do not do anything special for anti-ranges.
+
+2018-09-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (extract_range_from_unary_expr): Do not special case
 	symbolics or VR_VARYING ranges for ABS_EXPR.
 	* wide-int-range.cc (wide_int_range_abs): Return positive numbers
