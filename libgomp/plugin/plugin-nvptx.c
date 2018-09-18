@@ -192,20 +192,20 @@ cuda_error (CUresult r)
 static unsigned int instantiated_devices = 0;
 static pthread_mutex_t ptx_dev_lock = PTHREAD_MUTEX_INITIALIZER;
 
+struct cuda_map
+{
+  CUdeviceptr d;
+  size_t size;
+  bool active;
+  struct cuda_map *next;
+};
+
 struct ptx_stream
 {
   CUstream stream;
   pthread_t host_thread;
   bool multithreaded;
-
-  CUdeviceptr d;
-  void *h;
-  void *h_begin;
-  void *h_end;
-  void *h_next;
-  void *h_prev;
-  void *h_tail;
-
+  struct cuda_map *map;
   struct ptx_stream *next;
 };
 
@@ -217,101 +217,114 @@ struct nvptx_thread
   struct ptx_device *ptx_dev;
 };
 
+static struct cuda_map *
+cuda_map_create (size_t size)
+{
+  struct cuda_map *map = GOMP_PLUGIN_malloc (sizeof (struct cuda_map));
+
+  assert (map);
+
+  map->next = NULL;
+  map->size = size;
+  map->active = false;
+
+  CUDA_CALL_ERET (NULL, cuMemAlloc, &map->d, size);
+  assert (map->d);
+
+  return map;
+}
+
+static void
+cuda_map_destroy (struct cuda_map *map)
+{
+  CUDA_CALL_ASSERT (cuMemFree, map->d);
+  free (map);
+}
+
+/* The following map_* routines manage the CUDA device memory that
+   contains the data mapping arguments for cuLaunchKernel.  Each
+   asynchronous PTX stream may have multiple pending kernel
+   invocations, which are launched in a FIFO order.  As such, the map
+   routines maintains a queue of cuLaunchKernel arguments.
+
+   Calls to map_push and map_pop must be guarded by ptx_event_lock.
+   Likewise, calls to map_init and map_fini are guarded by
+   ptx_dev_lock inside GOMP_OFFLOAD_init_device and
+   GOMP_OFFLOAD_fini_device, respectively.  */
+
 static bool
 map_init (struct ptx_stream *s)
 {
   int size = getpagesize ();
 
   assert (s);
-  assert (!s->d);
-  assert (!s->h);
 
-  CUDA_CALL (cuMemAllocHost, &s->h, size);
-  CUDA_CALL (cuMemHostGetDevicePointer, &s->d, s->h, 0);
+  s->map = cuda_map_create (size);
 
-  assert (s->h);
-
-  s->h_begin = s->h;
-  s->h_end = s->h_begin + size;
-  s->h_next = s->h_prev = s->h_tail = s->h_begin;
-
-  assert (s->h_next);
-  assert (s->h_end);
   return true;
 }
 
 static bool
 map_fini (struct ptx_stream *s)
 {
-  CUDA_CALL (cuMemFreeHost, s->h);
+  assert (s->map->next == NULL);
+  assert (!s->map->active);
+
+  cuda_map_destroy (s->map);
+
   return true;
 }
 
 static void
 map_pop (struct ptx_stream *s)
 {
-  assert (s != NULL);
-  assert (s->h_next);
-  assert (s->h_prev);
-  assert (s->h_tail);
-
-  s->h_tail = s->h_next;
-
-  if (s->h_tail >= s->h_end)
-    s->h_tail = s->h_begin + (int) (s->h_tail - s->h_end);
-
-  if (s->h_next == s->h_tail)
-    s->h_prev = s->h_next;
-
-  assert (s->h_next >= s->h_begin);
-  assert (s->h_tail >= s->h_begin);
-  assert (s->h_prev >= s->h_begin);
-
-  assert (s->h_next <= s->h_end);
-  assert (s->h_tail <= s->h_end);
-  assert (s->h_prev <= s->h_end);
-}
-
-static void
-map_push (struct ptx_stream *s, size_t size, void **h, void **d)
-{
-  int left;
-  int offset;
+  struct cuda_map *next;
 
   assert (s != NULL);
 
-  left = s->h_end - s->h_next;
-
-  assert (s->h_prev);
-  assert (s->h_next);
-
-  if (size >= left)
+  if (s->map->next == NULL)
     {
-      assert (s->h_next == s->h_prev);
-      s->h_next = s->h_prev = s->h_tail = s->h_begin;
+      s->map->active = false;
+      return;
     }
 
-  assert (s->h_next);
+  next = s->map->next;
+  cuda_map_destroy (s->map);
+  s->map = next;
+}
 
-  offset = s->h_next - s->h;
+static CUdeviceptr
+map_push (struct ptx_stream *s, size_t size)
+{
+  struct cuda_map *map = NULL, *t = NULL;
 
-  *d = (void *)(s->d + offset);
-  *h = (void *)(s->h + offset);
+  assert (s);
+  assert (s->map);
 
-  s->h_prev = s->h_next;
-  s->h_next += size;
+  /* Each PTX stream requires a separate data region to store the
+     launch arguments for cuLaunchKernel.  Allocate a new
+     cuda_map and push it to the end of the list.  */
+  if (s->map->active)
+    {
+      map = cuda_map_create (size);
 
-  assert (s->h_prev);
-  assert (s->h_next);
+      for (t = s->map; t->next != NULL; t = t->next)
+	;
 
-  assert (s->h_next >= s->h_begin);
-  assert (s->h_tail >= s->h_begin);
-  assert (s->h_prev >= s->h_begin);
-  assert (s->h_next <= s->h_end);
-  assert (s->h_tail <= s->h_end);
-  assert (s->h_prev <= s->h_end);
+      t->next = map;
+    }
+  else if (s->map->size < size)
+    {
+      cuda_map_destroy (s->map);
+      map = cuda_map_create (size);
+    }
+  else
+    map = s->map;
 
-  return;
+  s->map = map;
+  s->map->active = true;
+
+  return s->map->d;
 }
 
 /* Target data function launch information.  */
@@ -442,8 +455,6 @@ init_streams_for_device (struct ptx_device *ptx_dev, int concurrency)
   null_stream->stream = NULL;
   null_stream->host_thread = pthread_self ();
   null_stream->multithreaded = true;
-  null_stream->d = (CUdeviceptr) NULL;
-  null_stream->h = NULL;
   if (!map_init (null_stream))
     return false;
 
@@ -578,8 +589,6 @@ select_stream_for_async (int async, pthread_t thread, bool create,
 	  s->host_thread = thread;
 	  s->multithreaded = false;
 
-	  s->d = (CUdeviceptr) NULL;
-	  s->h = NULL;
 	  if (!map_init (s))
 	    {
 	      pthread_mutex_unlock (&ptx_dev->stream_lock);
@@ -1120,7 +1129,8 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   int i;
   struct ptx_stream *dev_str;
   void *kargs[1];
-  void *hp, *dp;
+  void *hp;
+  CUdeviceptr dp;
   struct nvptx_thread *nvthd = nvptx_thread ();
   int warp_size = nvthd->ptx_dev->warp_size;
   const char *maybe_abort_msg = "(perhaps abort was called)";
@@ -1295,17 +1305,19 @@ nvptx_exec (void (*fn), size_t mapnum, void **hostaddrs, void **devaddrs,
   /* This reserves a chunk of a pre-allocated page of memory mapped on both
      the host and the device. HP is a host pointer to the new chunk, and DP is
      the corresponding device pointer.  */
-  map_push (dev_str, mapnum * sizeof (void *), &hp, &dp);
+  pthread_mutex_lock (&ptx_event_lock);
+  dp = map_push (dev_str, mapnum * sizeof (void *));
+  pthread_mutex_unlock (&ptx_event_lock);
 
   GOMP_PLUGIN_debug (0, "  %s: prepare mappings\n", __FUNCTION__);
 
   /* Copy the array of arguments to the mapped page.  */
+  hp = alloca(sizeof(void *) * mapnum);
   for (i = 0; i < mapnum; i++)
     ((void **) hp)[i] = devaddrs[i];
 
-  /* Copy the (device) pointers to arguments to the device (dp and hp might in
-     fact have the same value on a unified-memory system).  */
-  CUDA_CALL_ASSERT (cuMemcpy, (CUdeviceptr) dp, (CUdeviceptr) hp,
+  /* Copy the (device) pointers to arguments to the device */
+  CUDA_CALL_ASSERT (cuMemcpyHtoD, dp, hp,
 		    mapnum * sizeof (void *));
   GOMP_PLUGIN_debug (0, "  %s: kernel %s: launch"
 		     " gangs=%u, workers=%u, vectors=%u\n",
