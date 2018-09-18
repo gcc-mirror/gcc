@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "vr-values.h"
 #include "builtins.h"
 #include "wide-int-range.h"
+#include "range.h"
+#include "range-op.h"
 
 /* Set of SSA names found live during the RPO traversal of the function
    for still active basic-blocks.  */
@@ -1225,6 +1227,221 @@ set_value_range_with_overflow (value_range &vr,
     }
 }
 
+static inline void
+ranger_fold_binary (value_range *vr, enum tree_code code, tree expr_type,
+		    const value_range *vr0, const value_range *vr1);
+static inline void
+ranger_fold_unary (value_range *vr, enum tree_code code, tree expr_type,
+		   const value_range *vr0, tree vr0_type);
+
+/* Canonicalize a value_range into something we can all agree on.  For
+   instance, we canonicalize [-MIN, +MAX] into VR_VARYING.  This will
+   help in comparing the results from VRP and the ranger.  */
+
+static inline void
+canonicalize_value_range (value_range *vr, tree expr_type)
+{
+  if (vr->type == VR_VARYING || vr->type == VR_UNDEFINED)
+    return;
+  if (!INTEGRAL_TYPE_P (expr_type) && !POINTER_TYPE_P (expr_type))
+    return;
+  // [-MIN,+MAX] is VR_VARYING.
+  if (INTEGRAL_TYPE_P (expr_type)
+      && TYPE_MIN_VALUE (expr_type)
+      && operand_equal_p (TYPE_MIN_VALUE (expr_type), vr->min, 0)
+      && operand_equal_p (TYPE_MAX_VALUE (expr_type), vr->max, 0))
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+  // The canonicalizations below are only needed when comparing with VRP.
+  if (flag_ranges_mode != RANGES_CHECKING)
+    return;
+  // An unsigned of [1, MAX] is the same thing as non-zero.
+  tree max;
+  if (TYPE_UNSIGNED (expr_type)
+      && vr->type == VR_RANGE
+      && integer_onep (vr->min)
+      && ((INTEGRAL_TYPE_P (expr_type) && vrp_val_is_max (vr->max))
+	  /* This is vrp_val_is_max but for pointers.  It is needed
+	     because vrp_val_is_max returns NULL for pointers instead
+	     of returning its upper bit bound.  */
+	  || (POINTER_TYPE_P (expr_type)
+	      && ((max = upper_bound_in_type (expr_type, expr_type)))
+	      && (max == vr->max
+		  || operand_equal_p (vr->max, max, 0)))))
+    {
+      set_value_range_to_nonnull (vr, expr_type);
+      return;
+    }
+}
+
+/* Given an operation CODE on a pair of ranges (VR0 and VR1), compare
+   two results (OLD_VR and NEW_VR) and abort if they don't agree.  */
+
+static void
+compare_value_ranges (tree_code code,
+		      const value_range *vr0, const value_range *vr1,
+		      const value_range *old_vr, const value_range *new_vr,
+		      tree expr_type)
+{
+  if (old_vr->type == new_vr->type
+      && (old_vr->type == VR_VARYING
+	  || old_vr->type == VR_UNDEFINED))
+    return;
+  if (old_vr->type == new_vr->type
+      && operand_equal_p (old_vr->min, new_vr->min, 0)
+      && operand_equal_p (old_vr->max, new_vr->max, 0))
+    return;
+
+  fprintf (stderr, "------------\n");
+  fprintf (stderr, "Value ranges from VRP and ranger do not agree!\n");
+  fprintf (stderr, "CODE: %s\n", get_tree_code_name (code));
+  fprintf (stderr, "TYPE = ");
+  debug_generic_stmt (expr_type);
+  if (CONVERT_EXPR_CODE_P (code))
+    {
+      fprintf (stderr, "\tFROM TYPE = ");
+      debug_generic_stmt (TREE_TYPE (vr0->max));
+    }
+  fprintf (stderr, "vr0: ");
+  vr0->dump ();
+  if (TREE_CODE_CLASS (code) != tcc_unary)
+    {
+      fprintf (stderr, "vr1: ");
+      vr1->dump ();
+    }
+  fprintf (stderr, "VRP returned: ");
+  old_vr->dump ();
+  fprintf (stderr, "Ranger returned: ");
+  new_vr->dump ();
+
+  // Debugging aid.  See below.
+  if (getenv("HACK"))
+    {
+      // If debugging, place a breakpoint here and see what happened.
+      value_range vrtmp = VR_INITIALIZER;
+      if (TREE_CODE_CLASS (code) == tcc_unary)
+	{
+	  enum ranges_mode save = flag_ranges_mode;
+	  flag_ranges_mode = RANGES_VRP;
+	  extract_range_from_unary_expr (&vrtmp, code, expr_type,
+					 vr0, TREE_TYPE (vr0->max));
+	  flag_ranges_mode = save;
+
+	  ranger_fold_unary (&vrtmp, code, expr_type,
+			     vr0, TREE_TYPE (vr0->max));
+	}
+      else
+	{
+	  extract_range_from_binary_expr_1 (&vrtmp, code, expr_type,
+					    vr0, vr1);
+	  ranger_fold_binary (&vrtmp, code, expr_type, vr0, vr1);
+	}
+    }
+  gcc_unreachable();
+}
+
+// Normalize a value_range that may contain symbolics, and store the
+// result as an irange in IR.
+
+static inline void
+normalize_value_range_to_irange (irange &ir, const value_range *vr,
+				 tree expr_type)
+{
+  /* Some operators like the shift operators have differing operand types.
+     For example, UINT64 = UINT64 << INT32 is valid gimple.
+
+     Consequently, use the known operand type if known, otherwise use
+     the type of the entire operation.  */
+  tree vr_type;
+  if (vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE)
+    vr_type = TREE_TYPE (vr->min);
+  else
+    vr_type = expr_type;
+
+  if (vr->type == VR_RANGE || vr->type == VR_ANTI_RANGE)
+    {
+      if (TREE_CODE (vr->min) == INTEGER_CST
+	  && TREE_CODE (vr->max) == INTEGER_CST)
+	value_range_to_irange (ir, vr_type, *vr);
+      /* This will return ~[0,0] for [&var, &var].  */
+      else if (POINTER_TYPE_P (vr_type) && !range_includes_zero_p (vr))
+	range_non_zero (&ir, vr_type);
+      else
+	ir.set_range_for_type (vr_type);
+    }
+  else
+    ir.set_range_for_type (vr_type);
+}
+
+/* Call the ranger to perform operation CODE on two operands (IR0 and IR1).
+   Convert the result to a value_range and return it in VR.  */
+
+static inline void
+ranger_fold (value_range *vr, enum tree_code code,
+	     const irange &ir0, const irange &ir1)
+{
+  irange_operator *op = irange_op_handler (code);
+  irange res;
+  if (!op)
+    {
+      set_value_range_to_varying (vr);
+      return;
+    }
+  if (!op->fold_range (res, ir0, ir1))
+    {
+      if (res.empty_p ())
+	set_value_range_to_undefined (vr);
+      else
+	set_value_range_to_varying (vr);
+      return;
+    }
+  if (res.empty_p ())
+    {
+      set_value_range_to_undefined (vr);
+      return;
+    }
+  irange_to_value_range (*vr, res);
+}
+
+/* ranger_fold wrapper for binary operators.  */
+
+static inline void
+ranger_fold_binary (value_range *vr, enum tree_code code, tree expr_type,
+		    const value_range *vr0, const value_range *vr1)
+{
+  irange res, vr0_irange, vr1_irange;
+  normalize_value_range_to_irange (vr0_irange, vr0, expr_type);
+  normalize_value_range_to_irange (vr1_irange, vr1, expr_type);
+  ranger_fold (vr, code, vr0_irange, vr1_irange);
+}
+
+/* ranger_fold wrapper for unary operators.  */
+
+static inline void
+ranger_fold_unary (value_range *vr, enum tree_code code, tree expr_type,
+		   const value_range *vr0, tree vr0_type)
+{
+  /* This is done this early because this is the point where we have
+     knowledge of VRP symbolics (for stuff like [25, SSA]).  */
+  if (CONVERT_EXPR_CODE_P (code)
+      && (POINTER_TYPE_P (expr_type) || POINTER_TYPE_P (vr0_type)))
+    {
+      if (!range_includes_zero_p (vr0))
+	set_value_range_to_nonnull (vr, expr_type);
+      else if (range_is_null (vr0))
+	set_value_range_to_null (vr, expr_type);
+      else
+	set_value_range_to_varying (vr);
+      return;
+    }
+  irange res, vr0_irange, vr1_irange;
+  normalize_value_range_to_irange (vr0_irange, vr0, vr0_type);
+  vr1_irange.set_range_for_type (expr_type);
+  ranger_fold (vr, code, vr0_irange, vr1_irange);
+}
+
 /* Extract range information from a binary operation CODE based on
    the ranges of each of its operands *VR0 and *VR1 with resulting
    type EXPR_TYPE.  The resulting range is stored in *VR.  */
@@ -1364,6 +1581,36 @@ extract_range_from_binary_expr_1 (value_range *vr,
     {
       set_value_range_to_varying (vr);
       return;
+    }
+
+  if (flag_ranges_mode & RANGES_RANGER)
+    {
+      /* Pass on PLUS/MINUS of symbolics.  */
+      if ((code == PLUS_EXPR || code == MINUS_EXPR)
+	  && (((vr0.type == VR_RANGE || vr0.type == VR_ANTI_RANGE)
+	       && symbolic_range_p (&vr0))
+	      || ((vr1.type == VR_RANGE || vr1.type == VR_ANTI_RANGE)
+		  && symbolic_range_p (&vr1))))
+	;
+      else
+	{
+	  /* Call the ranger, and then verify the result with VRP if
+	     RANGES_CHECKING.  */
+	  ranger_fold_binary (vr, code, expr_type, vr0_, vr1_);
+	  canonicalize_value_range (vr, expr_type);
+	  if (flag_ranges_mode == RANGES_CHECKING)
+	    {
+	      value_range old_vr = VR_INITIALIZER;
+	      enum ranges_mode save = flag_ranges_mode;
+	      flag_ranges_mode = RANGES_VRP;
+	      extract_range_from_binary_expr_1 (&old_vr, code, expr_type,
+						vr0_, vr1_);
+	      flag_ranges_mode = save;
+	      canonicalize_value_range (&old_vr, expr_type);
+	      compare_value_ranges (code, vr0_, vr1_, &old_vr, vr, expr_type);
+	    }
+	  return;
+	}
     }
 
   /* Now evaluate the expression to determine the new range.  */
@@ -1791,6 +2038,37 @@ extract_range_from_unary_expr (value_range *vr,
   if (vr0.type == VR_UNDEFINED)
     {
       set_value_range_to_undefined (vr);
+      return;
+    }
+
+  if (flag_ranges_mode & RANGES_RANGER
+      /* Pass on NEGATE_EXPR and BIT_NOT_EXPR for now, as they degrade
+	 into a MINUS, which may contain specially handled
+	 symbolics.  */
+      && code != NEGATE_EXPR
+      && code != BIT_NOT_EXPR)
+    {
+      /* Call the ranger, and then verify the result with VRP if
+	 RANGES_CHECKING.  */
+      ranger_fold_unary (vr, code, type, &vr0, op0_type);
+      canonicalize_value_range (vr, type);
+      if (flag_ranges_mode == RANGES_CHECKING)
+	{
+	  value_range old_vr = VR_INITIALIZER;
+	  value_range vr1 = VR_INITIALIZER;
+
+	  enum ranges_mode save = flag_ranges_mode;
+	  flag_ranges_mode = RANGES_VRP;
+	  extract_range_from_unary_expr (&old_vr, code, type,
+					 &vr0, op0_type);
+	  flag_ranges_mode = save;
+
+	  canonicalize_value_range (&old_vr, type);
+	  vr1.type = VR_RANGE;
+	  vr1.min = vrp_val_min (type);
+	  vr1.max = vrp_val_max (type);
+	  compare_value_ranges (code, &vr0, &vr1, &old_vr, vr, type);
+	}
       return;
     }
 

@@ -279,6 +279,23 @@ irange::valid_p () const
 void
 irange::cast (tree new_type)
 {
+  /* If the expression involves a pointer, we are only interested in
+     determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
+  if (POINTER_TYPE_P (new_type) || POINTER_TYPE_P (type))
+    {
+      if (!contains_p (0))
+	{
+	  // Don't use range_non_zero because it will use cast().
+	  irange nz (new_type, 0, 0, irange::INVERSE);
+	  *this = nz;
+	}
+      else if (zero_p ())
+	range_zero (this, new_type);
+      else
+	set_range_for_type (new_type);
+      return;
+    }
+
   /* If nothing changed, this is a simple type conversion between two
      variants of the same type.  */
   bool sign_change = TYPE_SIGN (new_type) != TYPE_SIGN (type);

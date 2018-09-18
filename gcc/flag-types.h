@@ -137,6 +137,15 @@ enum ira_algorithm
   IRA_ALGORITHM_PRIORITY
 };
 
+/* Which method to use for operations on ranges.  */
+enum ranges_mode
+{
+  RANGES_VRP = 1,
+  RANGES_RANGER = 2,
+  /* Use both VPR and the ranger, and verify that the results agree.  */
+  RANGES_CHECKING = 3,
+};
+
 /* The regions used for the integrated register allocator (IRA).  */
 enum ira_region
 {
