@@ -1815,6 +1815,7 @@ reg_overlap_mentioned_p (const_rtx x, const_rtx in)
  recurse:
   switch (GET_CODE (x))
     {
+    case CLOBBER:
     case STRICT_LOW_PART:
     case ZERO_EXTRACT:
     case SIGN_EXTRACT:
@@ -4757,17 +4758,17 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
 
-          /* On many CISC machines, accessing an object in a wider mode
+	  /* On many CISC machines, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
 	     not known to be zero.  */
 	  rtx_code extend_op;
 	  if ((!WORD_REGISTER_OPERATIONS
 	       /* If this is a typical RISC machine, we only have to worry
 		  about the way loads are extended.  */
+	       || !MEM_P (SUBREG_REG (x))
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
-		   : extend_op != ZERO_EXTEND)
-	       || (!MEM_P (SUBREG_REG (x)) && !REG_P (SUBREG_REG (x))))
+		   : extend_op != ZERO_EXTEND))
 	      && xmode_width > inner_width)
 	    nonzero
 	      |= (GET_MODE_MASK (GET_MODE (x)) & ~GET_MODE_MASK (inner_mode));
