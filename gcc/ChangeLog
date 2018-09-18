@@ -1,3 +1,11 @@
+2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	Backport from trunk
+	2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/86882
+	* rtlanal.c (reg_overlap_mentioned_p): Handle CLOBBER.
+
 2018-09-18  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
