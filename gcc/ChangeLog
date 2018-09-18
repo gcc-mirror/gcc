@@ -1,3 +1,8 @@
+2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/86882
+	* rtlanal.c (reg_overlap_mentioned_p): Handle CLOBBER.
+
 2018-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*<code>extend<mode>xf2): Macroize insn from
