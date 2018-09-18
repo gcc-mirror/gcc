@@ -1,3 +1,11 @@
+2018-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_ld_v2_maps): New test.
+	* configure: Regenerate.
+	* Makefile.in (solaris_ld_v2_maps): New variable.
+	* config/t-slibgcc-sld (libgcc-unwind.map): Emit v2 mapfile syntax
+	if supported.
+
 2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86951
