@@ -1068,7 +1068,8 @@ output_intermediate_file (FILE *gcov_file, source_info *src)
 	}
 
       /* Follow with lines associated with the source file.  */
-      output_intermediate_line (gcov_file, &src->lines[line_num], line_num);
+      if (line_num < src->lines.size ())
+	output_intermediate_line (gcov_file, &src->lines[line_num], line_num);
     }
 }
 

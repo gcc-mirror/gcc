@@ -1,3 +1,12 @@
+2018-09-18  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-09-17  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/85871
+	* gcov.c (output_intermediate_file): Fix out of bounds
+	access.
+
 2018-09-16  Hans-Peter Nilsson  <hp@bitrange.com>
 
 	PR target/85666
