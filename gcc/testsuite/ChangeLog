@@ -1,3 +1,8 @@
+2018-09-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86881
+	* g++.dg/warn/pr86881.C: New.
+
 2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from trunk

@@ -1,3 +1,8 @@
+2018-09-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86881
+	* name-lookup.c (check_local_shadow): Ignore auto types.
+
 2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Backport from mainline
