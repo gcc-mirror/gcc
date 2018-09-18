@@ -1,5 +1,5 @@
 // PR c++/86881 ICE with shadow warning
-// { dg-do compile { c++11 } }
+// { dg-do compile { target c++11 } }
 // { dg-additional-options { -Wshadow-compatible-local } }}
 
 void a() {
