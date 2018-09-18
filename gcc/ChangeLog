@@ -1,3 +1,8 @@
+2018-09-18  Marek Polacek  <polacek@redhat.com>
+
+	P1064R0 - Allowing Virtual Function Calls in Constant Expressions
+	* gimple-fold.c (gimple_get_virt_method_for_vtable): Adjust assert.
+
 2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md: Remove old "Cygnus sibcall" comment.

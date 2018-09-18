@@ -5583,11 +5583,13 @@ layout_var_decl (tree decl)
 void
 maybe_commonize_var (tree decl)
 {
+  /* Don't mess with __FUNCTION__ and similar.  */
+  if (DECL_ARTIFICIAL (decl))
+    return;
+
   /* Static data in a function with comdat linkage also has comdat
      linkage.  */
   if ((TREE_STATIC (decl)
-       /* Don't mess with __FUNCTION__.  */
-       && ! DECL_ARTIFICIAL (decl)
        && DECL_FUNCTION_SCOPE_P (decl)
        && vague_linkage_p (DECL_CONTEXT (decl)))
       || (TREE_PUBLIC (decl) && DECL_INLINE_VAR_P (decl)))
@@ -6774,6 +6776,10 @@ initialize_artificial_var (tree decl, vec<constructor_elt, va_gc> *v)
   gcc_assert (TREE_CODE (init) == CONSTRUCTOR);
   DECL_INITIAL (decl) = init;
   DECL_INITIALIZED_P (decl) = 1;
+  /* Mark the decl as constexpr so that we can access its content
+     at compile time.  */
+  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+  DECL_DECLARED_CONSTEXPR_P (decl) = true;
   determine_visibility (decl);
   layout_var_decl (decl);
   maybe_commonize_var (decl);
@@ -10854,12 +10860,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
-      if (constexpr_p)
+      if (constexpr_p && cxx_dialect < cxx2a)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
-	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
-		    "and %<constexpr%>", dname);
+	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
+		   "%<virtual%> and %<constexpr%> only in -std=c++2a or "
+		   "-std=gnu++2a", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);

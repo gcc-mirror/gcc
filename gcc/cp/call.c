@@ -8399,10 +8399,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
     maybe_warn_class_memaccess (input_location, fn, args);
 
-  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
-      /* Don't mess with virtual lookup in instantiate_non_dependent_expr;
-	 virtual functions can't be constexpr.  */
-      && !in_template_function ())
+  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t;
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (argarray[0])),

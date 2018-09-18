@@ -4209,7 +4209,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
+      /* is_really_empty_class doesn't take into account _vptr, so initializing
+	 otherwise empty class with { } would overwrite the initializer that
+	 initialize_vtable created for us.  */
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
+	  && !TYPE_POLYMORPHIC_P (TREE_TYPE (t))
 	  && is_really_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
@@ -4778,7 +4782,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case MODOP_EXPR:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
-    case OBJ_TYPE_REF:
     case NON_DEPENDENT_EXPR:
     case BASELINK:
     case OFFSET_REF:
@@ -4787,6 +4790,34 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		  "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
+
+    case OBJ_TYPE_REF:
+      {
+	/* Virtual function call.  Let the constexpr machinery figure out
+	   the dynamic type.  */
+	int token = tree_to_shwi (OBJ_TYPE_REF_TOKEN (t));
+	tree obj = OBJ_TYPE_REF_OBJECT (t);
+	obj = cxx_eval_constant_expression (ctx, obj, lval, non_constant_p,
+					    overflow_p);
+	/* We expect something in the form of &x.D.2103.D.2094; get x. */
+	if (TREE_CODE (obj) != ADDR_EXPR)
+	  {
+	    if (!ctx->quiet)
+	      error_at (cp_expr_loc_or_loc (t, input_location),
+			"expression %qE is not a constant expression", t);
+	    *non_constant_p = true;
+	    return t;
+	  }
+	obj = TREE_OPERAND (obj, 0);
+	while (handled_component_p (obj))
+	  obj = TREE_OPERAND (obj, 0);
+	tree objtype = TREE_TYPE (obj);
+	/* Find the function decl in the virtual functions list.  TOKEN is
+	   the DECL_VINDEX that says which function we're looking for.  */
+	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
+	r = TREE_VALUE (chain_index (token, virtuals));
+	break;
+      }
 
     case PLACEHOLDER_EXPR:
       /* Use of the value or address of the current object.  */
@@ -5871,13 +5902,20 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OACC_UPDATE:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
-    case OBJ_TYPE_REF:
     case TRANSACTION_EXPR:
     case ASM_EXPR:
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
+      return false;
+
+    case OBJ_TYPE_REF:
+      if (cxx_dialect >= cxx2a)
+	/* In C++2a virtual calls can be constexpr, don't give up yet.  */
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "virtual functions cannot be constexpr before C++2a");
       return false;
 
     case TYPEID_EXPR:

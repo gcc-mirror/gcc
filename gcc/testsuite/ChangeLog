@@ -1,3 +1,19 @@
+2018-09-18  Marek Polacek  <polacek@redhat.com>
+
+	P1064R0 - Allowing Virtual Function Calls in Constant Expressions
+	* g++.dg/cpp0x/constexpr-virtual5.C: Adjust dg-error.
+	* g++.dg/cpp2a/constexpr-virtual1.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual2.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual3.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual4.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual5.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual6.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual7.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual8.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual9.C: New test.
+	* g++.dg/diagnostic/virtual-constexpr.C: Skip for C++2a.  Use
+	-pedantic-errors.  Adjust dg-error.
+
 2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87336

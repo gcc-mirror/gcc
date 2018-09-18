@@ -9266,6 +9266,7 @@ build_vtbl_initializer (tree binfo,
       tree vcall_index;
       tree fn, fn_original;
       tree init = NULL_TREE;
+      tree idx = size_int (jx++);
 
       fn = BV_FN (v);
       fn_original = fn;
@@ -9369,7 +9370,7 @@ build_vtbl_initializer (tree binfo,
 	  int i;
 	  if (init == size_zero_node)
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
-	      CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, init);
+	      CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
 	  else
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
 	      {
@@ -9377,11 +9378,11 @@ build_vtbl_initializer (tree binfo,
 				     fn, build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 
-		CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, fdesc);
+		CONSTRUCTOR_APPEND_ELT (*inits, idx, fdesc);
 	      }
 	}
       else
-	CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, init);
+	CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
     }
 }
 
