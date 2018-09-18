@@ -1,3 +1,18 @@
+2018-09-18  Marek Polacek  <polacek@redhat.com>
+
+	P1064R0 - Allowing Virtual Function Calls in Constant Expressions
+	* call.c (build_over_call): No longer check if we're outside a template
+	function.
+	* class.c (build_vtbl_initializer): Build vtable's constructor with
+	indexes.
+	* constexpr.c (cxx_eval_constant_expression): Don't ignore _vptr's
+	initializer.  Handle OBJ_TYPE_REF.
+	(potential_constant_expression_1): Handle OBJ_TYPE_REF.
+	* decl.c (maybe_commonize_var): Bail out for any DECL_ARTIFICIAL.
+	(initialize_artificial_var): Mark the variable as constexpr.
+	(grokdeclarator): Change error to pedwarn.  Only warn when
+	pedantic and not C++2a.
+
 2018-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85065
