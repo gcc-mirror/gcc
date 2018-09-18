@@ -1,3 +1,12 @@
+2018-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (__uniq_ptr_impl): Remove static assertion
+	checking invocable condition.
+	(unique_ptr::~unique_ptr, unique_ptr::reset): Restore static assertion
+	here, where types must be complete. Pass pointer to deleter as an
+	rvalue.
+	* testsuite/20_util/unique_ptr/requirements/incomplete.cc: New test.
+
 2018-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (variant) [__clang__]: Limit workaround to
