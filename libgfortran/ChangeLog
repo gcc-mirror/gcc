@@ -1,3 +1,11 @@
+2018-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	Backport from trunk
+	2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* io/unix.c (fallback_access): Avoid calling close on
+	uninitialized file descriptor.
+
 2018-08-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
