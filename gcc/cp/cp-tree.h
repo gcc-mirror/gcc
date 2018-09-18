@@ -1877,6 +1877,8 @@ struct GTY(()) language_function {
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
 
+#define NON_ERROR(NODE) ((NODE) == error_mark_node ? NULL_TREE : (NODE))
+
 /* TRUE if a tree code represents a statement.  */
 extern bool statement_code_p[MAX_TREE_CODES];
 

@@ -26121,7 +26121,7 @@ struct auto_hash : default_hash_traits<tree>
 inline hashval_t
 auto_hash::hash (tree t)
 {
-  if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+  if (tree c = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (t)))
     /* Matching constrained-type-specifiers denote the same template
        parameter, so hash the constraint.  */
     return hash_placeholder_constraint (c);
@@ -26880,7 +26880,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   /* Check any placeholder constraints against the deduced type. */
   if (flag_concepts && !processing_template_decl)
-    if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (auto_node))
+    if (tree constr = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
       {
         /* Use the deduced type to check the associated constraints. If we
            have a partial-concept-id, rebuild the argument list so that

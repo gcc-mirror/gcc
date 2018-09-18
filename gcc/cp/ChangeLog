@@ -1,3 +1,10 @@
+2018-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85065
+	* cp-tree.h (NON_ERROR): New.
+	* pt.c (auto_hash::hash): Use it.
+	(do_auto_deduction): Likewise.
+
 2018-09-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86881
