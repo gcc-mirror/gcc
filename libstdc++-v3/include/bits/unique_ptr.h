@@ -142,8 +142,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert( !is_rvalue_reference<_Dp>::value,
 		     "unique_ptr's deleter type must be a function object type"
 		     " or an lvalue reference type" );
-      static_assert( __is_invocable<_Dp&, pointer&>::value,
-	             "unique_ptr's deleter must be invocable with a pointer" );
 
       __uniq_ptr_impl() = default;
       __uniq_ptr_impl(pointer __p) : _M_t() { _M_ptr() = __p; }
@@ -282,9 +280,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Destructor, invokes the deleter if the stored pointer is not null.
       ~unique_ptr() noexcept
       {
+	static_assert(__is_invocable<deleter_type&, pointer>::value,
+		      "unique_ptr's deleter must be invocable with a pointer");
 	auto& __ptr = _M_t._M_ptr();
 	if (__ptr != nullptr)
-	  get_deleter()(__ptr);
+	  get_deleter()(std::move(__ptr));
 	__ptr = pointer();
       }
 
@@ -389,10 +389,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       reset(pointer __p = pointer()) noexcept
       {
+	static_assert(__is_invocable<deleter_type&, pointer>::value,
+		      "unique_ptr's deleter must be invocable with a pointer");
 	using std::swap;
 	swap(_M_t._M_ptr(), __p);
 	if (__p != pointer())
-	  get_deleter()(__p);
+	  get_deleter()(std::move(__p));
       }
 
       /// Exchange the pointer and deleter with another object.
