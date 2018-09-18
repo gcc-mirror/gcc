@@ -1,3 +1,8 @@
+2018-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<code>extend<mode>xf2): Macroize insn from
+	*<code>extendsfxf2 and *<code>extenddfxf2 using MODEF mode iterator.
+
 2018-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/87353
