@@ -2764,6 +2764,13 @@ check_local_shadow (tree decl)
 	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
 		   || (!dependent_type_p (TREE_TYPE (decl))
 		       && !dependent_type_p (TREE_TYPE (old))
+		       /* If the new decl uses auto, we don't yet know
+			  its type (the old type cannot be using auto
+			  at this point, without also being
+			  dependent).  This is an indication we're
+			  (now) doing the shadow checking too
+			  early.  */
+		       && !type_uses_auto (TREE_TYPE (decl))
 		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
 				       tf_none))))
 	warning_code = OPT_Wshadow_compatible_local;
