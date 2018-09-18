@@ -849,10 +849,22 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
   else
     {
       /* If none of the fancy stuff works, the span is the element
-	 size of the array.  */
+	 size of the array. Attempt to deal with unbounded character
+	 types if possible. Otherwise, return NULL_TREE.  */
       tmp = gfc_get_element_type (TREE_TYPE (desc));
-      tmp = fold_convert (gfc_array_index_type,
-			  size_in_bytes (tmp));
+      if (tmp && TREE_CODE (tmp) == ARRAY_TYPE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)) == NULL_TREE)
+	{
+	  if (expr->expr_type == EXPR_VARIABLE
+	      && expr->ts.type == BT_CHARACTER)
+	    tmp = fold_convert (gfc_array_index_type,
+				gfc_get_expr_charlen (expr));
+	  else
+	    tmp = NULL_TREE;
+	}
+      else
+	tmp = fold_convert (gfc_array_index_type,
+			    size_in_bytes (tmp));
     }
   return tmp;
 }
@@ -7074,7 +7086,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
 	      /* ....and set the span field.  */
 	      tmp = gfc_get_array_span (desc, expr);
-	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
+	      if (tmp != NULL_TREE)
+		gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
 	    }
 	  else if (se->want_pointer)
 	    {
@@ -7344,13 +7357,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       desc = info->descriptor;
       if (se->direct_byref && !se->byref_noassign)
 	{
-	  /* For pointer assignments we fill in the destination....  */
+	  /* For pointer assignments we fill in the destination.  */
 	  parm = se->expr;
 	  parmtype = TREE_TYPE (parm);
-
-	  /* ....and set the span field.  */
-	  tmp = gfc_get_array_span (desc, expr);
-	  gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 	}
       else
 	{
@@ -7387,6 +7396,11 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 		}
 	    }
 	}
+
+      /* Set the span field.  */
+      tmp = gfc_get_array_span (desc, expr);
+      if (tmp != NULL_TREE)
+	gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 
       offset = gfc_index_zero_node;
 
