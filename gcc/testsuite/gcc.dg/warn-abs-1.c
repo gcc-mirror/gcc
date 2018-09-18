@@ -1,4 +1,5 @@
-/* { dg-do compile } */
+/* { dg-do compile { target float128 } } */
+/* { dg-skip-if "incomplete long double support" { { newlib } && large_long_double } }  */
 /* { dg-options "-Wabsolute-value" } */
 
 #include <stdlib.h>

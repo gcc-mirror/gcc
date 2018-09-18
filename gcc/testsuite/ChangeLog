@@ -1,3 +1,8 @@
+2018-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gcc.dg/warn-abs-1.c: Require float128 target.
+	Skip if large_long_double newlib target.
+
 2018-09-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86881
