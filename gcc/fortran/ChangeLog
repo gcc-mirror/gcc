@@ -1,3 +1,12 @@
+2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87336
+	* trans-array.c (gfc_get_array_span): Try to get the element
+	length of incomplete types. Return NULL_TREE otherwise.
+	(gfc_conv_expr_descriptor): Only set the 'span' field if the
+	above does not return NULL_TREE. Set 'span' field if possible
+	for all new descriptors.
+
 2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/64120
