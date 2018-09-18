@@ -1,5 +1,9 @@
 2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md: Remove old "Cygnus sibcall" comment.
+
+2018-09-18  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	PR rtl-optimization/86882
 	* rtlanal.c (reg_overlap_mentioned_p): Handle CLOBBER.
 
