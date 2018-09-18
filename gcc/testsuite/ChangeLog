@@ -1,5 +1,12 @@
 2018-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+    * gcc.target/aarch64/spellcheck_1.c:
+    Make architecture suggestion optional.
+    * gcc.target/aarch64/spellcheck_4.c:
+    Likewise.
+
+2018-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* gcc.target/aarch64/combine_bfxil.c: Avoid passing pointers to
 	functions.
 
