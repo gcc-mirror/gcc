@@ -1543,6 +1543,13 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Dummy variables should already have been created.  */
       gcc_assert (sym->backend_decl);
 
+      /* However, the string length of deferred arrays must be set.  */
+      if (sym->ts.type == BT_CHARACTER
+	  && sym->ts.deferred
+	  && sym->attr.dimension
+	  && sym->attr.allocatable)
+	gfc_defer_symbol_init (sym);
+
       if (sym->attr.pointer && sym->attr.dimension && sym->ts.type != BT_CLASS)
 	GFC_DECL_PTR_ARRAY_P (sym->backend_decl) = 1;
 

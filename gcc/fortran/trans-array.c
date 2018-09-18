@@ -9497,6 +9497,9 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   sym = expr->symtree->n.sym;
 
+  if (sym->attr.associate_var)
+    return false;
+
   /* An allocatable class variable with no reference.  */
   if (sym->ts.type == BT_CLASS
       && CLASS_DATA (sym)->attr.allocatable
