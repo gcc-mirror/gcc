@@ -1,3 +1,15 @@
+2018-09-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/87135
+	* src/c++11/hashtable_c++0x.cc:
+	(_Prime_rehash_policy::_M_next_bkt): Return a prime no smaller than
+	requested size, but not necessarily greater.
+	(_Prime_rehash_policy::_M_need_rehash): Rehash only if target size is
+	strictly greater than next resize threshold.
+	* testsuite/23_containers/unordered_map/modifiers/reserve.cc: Adapt test
+	to validate that there is no rehash as long as number of insertion is
+	lower or equal to the reserved number of elements.
+
 2018-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/unique_ptr.h (__uniq_ptr_impl): Remove static assertion
