@@ -1,3 +1,10 @@
+2018-09-18  Hans-Peter Nilsson  <hp@bitrange.com>
+
+	Handle a library implementation of ffs calling __builtin_ffs.
+	* config/mmix/mmix.c (TARGET_INIT_LIBFUNCS): Override with...
+	(mmix_init_libfuncs): New function: make __builtin_ffs expand
+	to __ffsdi2.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (class layout_range): Add field
