@@ -1,5 +1,6 @@
 2018-09-18  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	PR testsuite/87339
 	* gcc.dg/warn-abs-1.c: Require float128 target.
 	Skip if large_long_double newlib target.
 
