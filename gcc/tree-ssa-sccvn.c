@@ -6374,6 +6374,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   vn_valueize = rpo_vn_valueize;
 
   /* Initialize the unwind state and edge/BB executable state.  */
+  bool need_max_rpo_iterate = false;
   for (int i = 0; i < n; ++i)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
@@ -6388,11 +6389,14 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	  if (e->flags & EDGE_DFS_BACK)
 	    has_backedges = true;
 	  e->flags &= ~EDGE_EXECUTABLE;
-	  if (e == entry)
+	  if (iterate || e == entry)
 	    continue;
 	  if (bb_to_rpo[e->src->index] > i)
-	    rpo_state[i].max_rpo = MAX (rpo_state[i].max_rpo,
-					bb_to_rpo[e->src->index]);
+	    {
+	      rpo_state[i].max_rpo = MAX (rpo_state[i].max_rpo,
+					  bb_to_rpo[e->src->index]);
+	      need_max_rpo_iterate = true;
+	    }
 	  else
 	    rpo_state[i].max_rpo
 	      = MAX (rpo_state[i].max_rpo,
@@ -6402,6 +6406,35 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
     }
   entry->flags |= EDGE_EXECUTABLE;
   entry->dest->flags |= BB_EXECUTABLE;
+
+  /* When there are irreducible regions the simplistic max_rpo computation
+     above for the case of backedges doesn't work and we need to iterate
+     until there are no more changes.  */
+  unsigned nit = 0;
+  while (need_max_rpo_iterate)
+    {
+      nit++;
+      need_max_rpo_iterate = false;
+      for (int i = 0; i < n; ++i)
+	{
+	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      if (e == entry)
+		continue;
+	      int max_rpo = MAX (rpo_state[i].max_rpo,
+				 rpo_state[bb_to_rpo[e->src->index]].max_rpo);
+	      if (rpo_state[i].max_rpo != max_rpo)
+		{
+		  rpo_state[i].max_rpo = max_rpo;
+		  need_max_rpo_iterate = true;
+		}
+	    }
+	}
+    }
+  statistics_histogram_event (cfun, "RPO max_rpo iterations", nit);
 
   /* As heuristic to improve compile-time we handle only the N innermost
      loops and the outermost one optimistically.  */
