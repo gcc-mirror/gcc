@@ -1,3 +1,11 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87357 - missing -Wconversion warning
+	* decl.c (grok_op_properties): Remove diagnostic parts mentioning
+	a conversion to a reference to void.  Use
+	same_type_ignoring_top_level_qualifiers_p rather than comparing types
+	directly.
+
 2018-09-18  Marek Polacek  <polacek@redhat.com>
 
 	P1064R0 - Allowing Virtual Function Calls in Constant Expressions

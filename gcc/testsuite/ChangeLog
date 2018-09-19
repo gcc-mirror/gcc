@@ -1,3 +1,8 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87357 - missing -Wconversion warning
+	* g++.dg/warn/Wconversion5.C: New test.
+
 2018-09-19  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* gcc.target/aarch64/atomic-store.c: New.
