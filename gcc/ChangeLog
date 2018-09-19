@@ -1,3 +1,8 @@
+2018-09-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/87361
+	* rtlanal.c (nonzero_bits1): Revert accidental change.
+
 2018-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87349
