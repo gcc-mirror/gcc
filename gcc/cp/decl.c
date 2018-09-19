@@ -13553,15 +13553,11 @@ grok_op_properties (tree decl, bool complain)
 	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
       if (VOID_TYPE_P (t))
-	warning_at (loc, OPT_Wconversion,
-		    ref
-		    ? G_("conversion to a reference to void "
-			 "will never use a type conversion operator")
-		    : G_("conversion to void "
-			 "will never use a type conversion operator"));
+	warning_at (loc, OPT_Wconversion, "conversion to void "
+		    "will never use a type conversion operator");
       else if (class_type)
 	{
-	  if (t == class_type)
+	  if (same_type_ignoring_top_level_qualifiers_p (t, class_type))
 	    warning_at (loc, OPT_Wconversion,
 			ref
 			? G_("conversion to a reference to the same type "
