@@ -2939,11 +2939,12 @@ a set bit indicates it is taken from @var{vec1}.
 @item (vec_select:@var{m} @var{vec1} @var{selection})
 This describes an operation that selects parts of a vector.  @var{vec1} is
 the source vector, and @var{selection} is a @code{parallel} that contains a
-@code{const_int} for each of the subparts of the result vector, giving the
-number of the source subpart that should be stored into it.
-The result mode @var{m} is either the submode for a single element of
-@var{vec1} (if only one subpart is selected), or another vector mode
-with that element submode (if multiple subparts are selected).
+@code{const_int} (or another expression, if the selection can be made at
+runtime) for each of the subparts of the result vector, giving the number of
+the source subpart that should be stored into it.  The result mode @var{m} is
+either the submode for a single element of @var{vec1} (if only one subpart is
+selected), or another vector mode with that element submode (if multiple
+subparts are selected).
 
 @findex vec_concat
 @item (vec_concat:@var{m} @var{x1} @var{x2})

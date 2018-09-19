@@ -3604,7 +3604,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  gcc_assert (mode == GET_MODE_INNER (GET_MODE (trueop0)));
 	  gcc_assert (GET_CODE (trueop1) == PARALLEL);
 	  gcc_assert (XVECLEN (trueop1, 0) == 1);
-	  gcc_assert (CONST_INT_P (XVECEXP (trueop1, 0, 0)));
+
+	  /* We can't reason about selections made at runtime.  */
+	  if (!CONST_INT_P (XVECEXP (trueop1, 0, 0)))
+	    return 0;
 
 	  if (vec_duplicate_p (trueop0, &elt0))
 	    return elt0;
@@ -3703,7 +3706,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		{
 		  rtx x = XVECEXP (trueop1, 0, i);
 
-		  gcc_assert (CONST_INT_P (x));
+		  if (!CONST_INT_P (x))
+		    return 0;
+
 		  RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0,
 						       INTVAL (x));
 		}

@@ -1,3 +1,9 @@
+2018-09-19  Andrew Stubbs  <ams@codesourcery.com>
+
+	* doc/rtl.texi: Adjust vec_select description.
+	* simplify-rtx.c (simplify_binary_operation_1): Allow VEC_SELECT to use
+	non-constant selectors.
+
 2018-09-19  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* config/aarch64/aarch64-protos.h
