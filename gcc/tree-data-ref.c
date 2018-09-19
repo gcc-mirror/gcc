@@ -1322,13 +1322,9 @@ bool
 runtime_alias_check_p (ddr_p ddr, struct loop *loop, bool speed_p)
 {
   if (dump_enabled_p ())
-    {
-      dump_printf (MSG_NOTE, "consider run-time aliasing test between ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
-      dump_printf (MSG_NOTE,  " and ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf (MSG_NOTE,
+		 "consider run-time aliasing test between %T and %T\n",
+		 DR_REF (DDR_A (ddr)), DR_REF (DDR_B (ddr)));
 
   if (!speed_p)
     {
@@ -1469,17 +1465,9 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
       if (*dr_a1 == *dr_a2 && *dr_b1 == *dr_b2)
 	{
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf (MSG_NOTE, "found equal ranges ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
+	    dump_printf (MSG_NOTE, "found equal ranges %T, %T and %T, %T\n",
+			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
+			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pairs->ordered_remove (i--);
 	  continue;
 	}
@@ -1576,17 +1564,9 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      dr_a1->align = MIN (dr_a1->align, new_align);
 	    }
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf (MSG_NOTE, "merging ranges for ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
+	    dump_printf (MSG_NOTE, "merging ranges for %T, %T and %T, %T\n",
+			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
+			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pairs->ordered_remove (i);
 	  i--;
 	}
@@ -1925,13 +1905,9 @@ create_runtime_alias_checks (struct loop *loop,
       const dr_with_seg_len& dr_b = (*alias_pairs)[i].second;
 
       if (dump_enabled_p ())
-	{
-	  dump_printf (MSG_NOTE, "create runtime check for data references ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a.dr));
-	  dump_printf (MSG_NOTE, " and ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b.dr));
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf (MSG_NOTE,
+		     "create runtime check for data references %T and %T\n",
+		     DR_REF (dr_a.dr), DR_REF (dr_b.dr));
 
       /* Create condition expression for each pair data references.  */
       create_intersect_range_checks (loop, &part_cond_expr, dr_a, dr_b);

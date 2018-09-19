@@ -1,3 +1,83 @@
+2018-09-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* tree-data-ref.c (runtime_alias_check_p): Use formatted printing
+	with %T in place of calls to dump_generic_expr.
+	(prune_runtime_alias_test_list): Likewise.
+	(create_runtime_alias_checks): Likewise.
+	* tree-vect-data-refs.c (vect_check_nonzero_value): Likewise.
+	(vect_analyze_data_ref_dependence): Likewise.
+	(vect_slp_analyze_data_ref_dependence): Likewise.
+	(vect_record_base_alignment): Likewise.  Use %G in place of call
+	to dump_gimple_stmt.
+	(vect_compute_data_ref_alignment): Likewise.
+	(verify_data_ref_alignment): Likewise.
+	(vect_find_same_alignment_drs): Likewise.
+	(vect_analyze_group_access_1): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(dependence_distance_ge_vf): Likewise.
+	(dump_lower_bound): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_find_stmt_data_reference): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	(vect_create_data_ref_ptr): Likewise.
+	* tree-vect-loop-manip.c (vect_set_loop_condition): Likewise.
+	(vect_can_advance_ivs_p): Likewise.
+	(vect_update_ivs_after_vectorizer): Likewise.
+	(vect_gen_prolog_loop_niters): Likewise.
+	(vect_prepare_for_masked_peels): Likewise.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt): Likewise.
+	(vect_determine_vectorization_factor): Likewise.
+	(vect_is_simple_iv_evolution): Likewise.
+	(vect_analyze_scalar_cycles_1): Likewise.
+	(vect_analyze_loop_operations): Likewise.
+	(report_vect_op): Likewise.
+	(vect_is_slp_reduction): Likewise.
+	(check_reduction_path): Likewise.
+	(vect_is_simple_reduction): Likewise.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vect_finalize_reduction:): Likewise.
+	(vectorizable_induction): Likewise.
+	(vect_transform_loop_stmt): Likewise.
+	(vect_transform_loop): Likewise.
+	(optimize_mask_stores): Likewise.
+	* tree-vect-patterns.c (vect_pattern_detected): Likewise.
+	(vect_split_statement): Likewise.
+	(vect_recog_over_widening_pattern): Likewise.
+	(vect_recog_average_pattern): Likewise.
+	(vect_determine_min_output_precision_1): Likewise.
+	(vect_determine_precisions_from_range): Likewise.
+	(vect_determine_precisions_from_users): Likewise.
+	(vect_mark_pattern_stmts): Likewise.
+	(vect_pattern_recog_1): Likewise.
+	* tree-vect-slp.c (vect_get_and_check_slp_defs): Likewise.
+	(vect_record_max_nunits): Likewise.
+	(vect_build_slp_tree_1): Likewise.
+	(vect_build_slp_tree_2): Likewise.
+	(vect_print_slp_tree): Likewise.
+	(vect_analyze_slp_instance): Likewise.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_detect_hybrid_slp_1): Likewise.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_slp_analyze_bb_1): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (vect_mark_relevant): Likewise.
+	(vect_mark_stmts_to_be_vectorized): Likewise.
+	(vect_init_vector_1): Likewise.
+	(vect_get_vec_def_for_operand): Likewise.
+	(vect_finish_stmt_generation_1): Likewise.
+	(vect_check_load_store_mask): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_load): Likewise.
+	(vect_analyze_stmt): Likewise.
+	(vect_is_simple_use): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	(vect_get_mask_type_for_stmt): Likewise.
+	* tree-vectorizer.c (increase_alignment): Likewise.
+
 2018-09-19  Andrew Stubbs  <ams@codesourcery.com>
 
 	* doc/rtl.texi: Adjust vec_select description.

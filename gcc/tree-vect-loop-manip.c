@@ -943,10 +943,8 @@ vect_set_loop_condition (struct loop *loop, loop_vec_info loop_vinfo,
     gsi_remove (&loop_cond_gsi, true);
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, cond_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "New loop exit condition: %G",
+		     cond_stmt);
 }
 
 /* Helper routine of slpeel_tree_duplicate_loop_to_edge_cfg.
@@ -1383,10 +1381,8 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
       gphi *phi = gsi.phi ();
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi_info->stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location, "Analyze phi: %G",
+			 phi_info->stmt);
 
       /* Skip virtual phi's. The data dependences that are associated with
 	 virtual defs/uses (i.e., memory accesses) are analyzed elsewhere.
@@ -1506,11 +1502,8 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       gphi *phi1 = gsi1.phi ();
       stmt_vec_info phi_info = loop_vinfo->lookup_stmt (phi);
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "vect_update_ivs_after_vectorizer: phi: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_update_ivs_after_vectorizer: phi: %G", phi);
 
       /* Skip reduction and virtual phis.  */
       if (!iv_phi_p (phi_info))
@@ -1677,12 +1670,8 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
     }
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "niters for prolog loop: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, iters);
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "niters for prolog loop: %T\n", iters);
 
   var = create_tmp_var (niters_type, "prolog_loop_niters");
   iters_name = force_gimple_operand (iters, &new_stmts, false, var);
@@ -1801,12 +1790,9 @@ vect_prepare_for_masked_peels (loop_vec_info loop_vinfo)
     }
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "misalignment for fully-masked loop: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, misalign_in_elems);
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "misalignment for fully-masked loop: %T\n",
+		     misalign_in_elems);
 
   LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo) = misalign_in_elems;
 

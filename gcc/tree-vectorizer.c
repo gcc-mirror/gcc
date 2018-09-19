@@ -1425,9 +1425,7 @@ increase_alignment (void)
       if (alignment && vect_can_force_dr_alignment_p (decl, alignment))
         {
 	  vnode->increase_alignment (alignment);
-          dump_printf (MSG_NOTE, "Increasing alignment of decl: ");
-          dump_generic_expr (MSG_NOTE, TDF_SLIM, decl);
-          dump_printf (MSG_NOTE, "\n");
+          dump_printf (MSG_NOTE, "Increasing alignment of decl: %T\n", decl);
         }
     }
 
