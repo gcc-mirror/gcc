@@ -1,3 +1,8 @@
+2018-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84109
+	* gfortran.dg/elemental_function_3.f90 : New test.
+
 2018-09-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87357 - missing -Wconversion warning

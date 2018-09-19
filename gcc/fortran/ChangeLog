@@ -1,3 +1,11 @@
+2018-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84109
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character intrinsic elemental function
+	results to a realocatable lhs must not be added to the exterior
+	block if they are array valued but must go to the loop body.
+
 2018-09-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/29550
