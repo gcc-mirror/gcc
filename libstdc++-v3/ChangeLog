@@ -1,3 +1,9 @@
+2018-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<_TraitsT>::_M_clone()):
+	Remove __glibcxx_assert statements and use map::find instead of
+	map::operator[].
+
 2018-09-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/87135
