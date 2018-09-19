@@ -3310,7 +3310,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		{
 		  /* Replace cc_use_loc with entire new RTX.  */
 		  SUBST (*cc_use_loc,
-			 gen_rtx_fmt_ee (compare_code, compare_mode,
+			 gen_rtx_fmt_ee (compare_code, GET_MODE (*cc_use_loc),
 					 newpat_dest, const0_rtx));
 		  undobuf.other_insn = cc_use_insn;
 		}
@@ -3319,7 +3319,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 		  /* Just replace the CC reg with a new mode.  */
 		  SUBST (XEXP (*cc_use_loc, 0), newpat_dest);
 		  undobuf.other_insn = cc_use_insn;
-		}	      
+		}
 	    }
 
 	  /* Now we modify the current newpat:
