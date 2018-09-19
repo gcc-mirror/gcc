@@ -225,6 +225,11 @@
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
 
+(define_memory_constraint "Ust"
+  "@internal
+  A memory address with 9bit unscaled offset."
+  (match_operand 0 "aarch64_9bit_offset_memory_operand"))
+
 (define_memory_constraint "Ump"
   "@internal
   A memory address suitable for a load/store pair operation."

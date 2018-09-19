@@ -1,3 +1,22 @@
+2018-09-19  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/aarch64/aarch64-protos.h
+	(aarch64_offset_9bit_signed_unscaled_p): New declaration.
+	* config/aarch64/aarch64.md (arches): New "rcpc8_4" attribute value.
+	(arch_enabled): Add check for "rcpc8_4" attribute value of "arch".
+	* config/aarch64/aarch64.h (AARCH64_FL_RCPC8_4): New bitfield.
+	(AARCH64_FL_FOR_ARCH8_4): Include AARCH64_FL_RCPC8_4.
+	(AARCH64_FL_PROFILE): Move index so flags are ordered.
+	(AARCH64_ISA_RCPC8_4): New flag.
+	* config/aarch64/aarch64.c (offset_9bit_signed_unscaled_p): Renamed
+	to aarch64_offset_9bit_signed_unscaled_p.
+	* config/aarch64/atomics.md (atomic_store<mode>): Allow offset
+	and use stlur.
+	* config/aarch64/constraints.md (Ust): New constraint.
+	* config/aarch64/predicates.md.
+	(aarch64_9bit_offset_memory_operand): New predicate.
+	(aarch64_rcpc_memory_operand): New predicate.
+
 2018-09-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/87361

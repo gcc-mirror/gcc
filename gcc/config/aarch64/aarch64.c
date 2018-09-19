@@ -4452,9 +4452,9 @@ aarch64_offset_7bit_signed_scaled_p (machine_mode mode, poly_int64 offset)
 
 /* Return true if OFFSET is a signed 9-bit value.  */
 
-static inline bool
-offset_9bit_signed_unscaled_p (machine_mode mode ATTRIBUTE_UNUSED,
-			       poly_int64 offset)
+bool
+aarch64_offset_9bit_signed_unscaled_p (machine_mode mode ATTRIBUTE_UNUSED,
+				       poly_int64 offset)
 {
   HOST_WIDE_INT const_offset;
   return (offset.is_constant (&const_offset)
@@ -5721,7 +5721,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     instruction memory accesses.  */
 	  if (mode == TImode || mode == TFmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (DImode, offset)
-		    && (offset_9bit_signed_unscaled_p (mode, offset)
+		    && (aarch64_offset_9bit_signed_unscaled_p (mode, offset)
 			|| offset_12bit_unsigned_scaled_p (mode, offset)));
 
 	  /* A 7bit offset check because OImode will emit a ldp/stp
@@ -5735,7 +5735,8 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	     ldr/str instructions (only big endian will get here).  */
 	  if (mode == CImode)
 	    return (aarch64_offset_7bit_signed_scaled_p (TImode, offset)
-		    && (offset_9bit_signed_unscaled_p (V16QImode, offset + 32)
+		    && (aarch64_offset_9bit_signed_unscaled_p (V16QImode,
+							       offset + 32)
 			|| offset_12bit_unsigned_scaled_p (V16QImode,
 							   offset + 32)));
 
@@ -5775,7 +5776,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
-	    return (offset_9bit_signed_unscaled_p (mode, offset)
+	    return (aarch64_offset_9bit_signed_unscaled_p (mode, offset)
 		    || offset_12bit_unsigned_scaled_p (mode, offset));
 	}
 
@@ -5828,7 +5829,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 	   */
 	  if (mode == TImode || mode == TFmode)
 	    return (aarch64_offset_7bit_signed_scaled_p (mode, offset)
-		    && offset_9bit_signed_unscaled_p (mode, offset));
+		    && aarch64_offset_9bit_signed_unscaled_p (mode, offset));
 
 	  if (load_store_pair_p)
 	    return ((known_eq (GET_MODE_SIZE (mode), 4)
@@ -5836,7 +5837,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		     || known_eq (GET_MODE_SIZE (mode), 16))
 		    && aarch64_offset_7bit_signed_scaled_p (mode, offset));
 	  else
-	    return offset_9bit_signed_unscaled_p (mode, offset);
+	    return aarch64_offset_9bit_signed_unscaled_p (mode, offset);
 	}
       return false;
 

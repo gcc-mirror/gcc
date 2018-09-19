@@ -263,7 +263,7 @@
 ;; alternative). This attribute is used to compute attribute "enabled", use type
 ;; "any" to enable an alternative in all cases.
 
-(define_enum "arches" [ any fp simd sve fp16])
+(define_enum "arches" [ any rcpc8_4 fp simd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -284,6 +284,9 @@
   (if_then_else
     (ior
 	(eq_attr "arch" "any")
+
+	(and (eq_attr "arch" "rcpc8_4")
+	     (match_test "AARCH64_ISA_RCPC8_4"))
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))

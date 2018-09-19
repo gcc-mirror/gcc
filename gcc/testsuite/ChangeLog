@@ -1,3 +1,7 @@
+2018-09-19  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.target/aarch64/atomic-store.c: New.
+
 2018-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87349
