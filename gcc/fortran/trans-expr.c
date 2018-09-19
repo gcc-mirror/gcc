@@ -10279,18 +10279,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
      parameter available to the caller; gfortran saves it in the .mod files.
      NOTE ALSO: The concatenation operation generates a temporary pointer,
      whose allocation must go to the innermost loop.
-     NOTE ALSO (2): A character conversion may generate a temporary, too.  */
+     NOTE ALSO (2): Elemental functions may generate a temporary, too.  */
   if (flag_realloc_lhs
       && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred
       && !(lss != gfc_ss_terminator
+	   && rss != gfc_ss_terminator
 	   && ((expr2->expr_type == EXPR_FUNCTION
 		&& expr2->value.function.esym != NULL
 		   && expr2->value.function.esym->attr.elemental)
-	       || (expr2->expr_type == EXPR_OP
-		   && expr2->value.op.op == INTRINSIC_CONCAT)
 	       || (expr2->expr_type == EXPR_FUNCTION
 		   && expr2->value.function.isym != NULL
-		   && expr2->value.function.isym->id == GFC_ISYM_CONVERSION))))
+		   && expr2->value.function.isym->elemental)
+	       || (expr2->expr_type == EXPR_OP
+		   && expr2->value.op.op == INTRINSIC_CONCAT))))
     gfc_add_block_to_block (&block, &rse.pre);
 
   /* Nullify the allocatable components corresponding to those of the lhs
