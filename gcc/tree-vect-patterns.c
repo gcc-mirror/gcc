@@ -88,10 +88,7 @@ static void
 vect_pattern_detected (const char *name, gimple *stmt)
 {
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "%s: detected: ", name);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "%s: detected: %G", name, stmt);
 }
 
 /* Associate pattern statement PATTERN_STMT with ORIG_STMT_INFO and
@@ -639,11 +636,8 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
       vect_init_pattern_stmt (stmt1, orig_stmt2_info, vectype);
 
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Splitting pattern statement: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Splitting pattern statement: %G", stmt2_info->stmt);
 
       /* Since STMT2_INFO is a pattern statement, we can change it
 	 in-situ without worrying about changing the code for the
@@ -652,10 +646,9 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
 
       if (dump_enabled_p ())
 	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "into: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
-	  dump_printf_loc (MSG_NOTE, vect_location, "and: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
+	  dump_printf_loc (MSG_NOTE, vect_location, "into: %G", stmt1);
+	  dump_printf_loc (MSG_NOTE, vect_location, "and: %G",
+			   stmt2_info->stmt);
 	}
 
       gimple_seq *def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (orig_stmt2_info);
@@ -683,11 +676,8 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
 	return false;
 
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Splitting statement: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt2_info->stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Splitting statement: %G", stmt2_info->stmt);
 
       /* Add STMT1 as a singleton pattern definition sequence.  */
       gimple_seq *def_seq = &STMT_VINFO_PATTERN_DEF_SEQ (stmt2_info);
@@ -702,10 +692,8 @@ vect_split_statement (stmt_vec_info stmt2_info, tree new_rhs,
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "into pattern statements: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt1, 0);
-	  dump_printf_loc (MSG_NOTE, vect_location, "and: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt2, 0);
+			   "into pattern statements: %G", stmt1);
+	  dump_printf_loc (MSG_NOTE, vect_location, "and: %G", new_stmt2);
 	}
 
       return true;
@@ -1662,13 +1650,8 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
     return NULL;
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "demoting ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, type);
-      dump_printf (MSG_NOTE, " to ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, new_type);
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "demoting %T to %T\n",
+		     type, new_type);
 
   /* Calculate the rhs operands for an operation on NEW_TYPE.  */
   tree ops[3] = {};
@@ -1684,11 +1667,8 @@ vect_recog_over_widening_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   gimple_set_location (pattern_stmt, gimple_location (last_stmt));
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "created pattern stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created pattern stmt: %G", pattern_stmt);
 
   pattern_stmt = vect_convert_output (last_stmt_info, type,
 				      pattern_stmt, new_vectype);
@@ -1831,11 +1811,8 @@ vect_recog_average_pattern (stmt_vec_info last_stmt_info, tree *type_out)
   gimple_set_location (average_stmt, gimple_location (last_stmt));
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "created pattern stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, average_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created pattern stmt: %G", average_stmt);
 
   return vect_convert_output (last_stmt_info, type, average_stmt, new_vectype);
 }
@@ -4411,12 +4388,9 @@ vect_determine_min_output_precision_1 (stmt_vec_info stmt_info, tree lhs)
     }
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "only the low %d bits of ",
-		       precision);
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, lhs);
-      dump_printf (MSG_NOTE, " are significant\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "only the low %d bits of %T are significant\n",
+		     precision, lhs);
   stmt_info->min_output_precision = precision;
   return true;
 }
@@ -4524,13 +4498,10 @@ vect_determine_precisions_from_range (stmt_vec_info stmt_info, gassign *stmt)
     return;
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
-		       " without loss of precision: ",
-		       sign == SIGNED ? "signed" : "unsigned",
-		       value_precision);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
+		     " without loss of precision: %G",
+		     sign == SIGNED ? "signed" : "unsigned",
+		     value_precision, stmt);
 
   vect_set_operation_type (stmt_info, type, value_precision, sign);
   vect_set_min_input_precision (stmt_info, type, value_precision);
@@ -4599,13 +4570,10 @@ vect_determine_precisions_from_users (stmt_vec_info stmt_info, gassign *stmt)
   if (operation_precision < precision)
     {
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
-			   " without affecting users: ",
-			   TYPE_UNSIGNED (type) ? "unsigned" : "signed",
-			   operation_precision);
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location, "can narrow to %s:%d"
+			 " without affecting users: %G",
+			 TYPE_UNSIGNED (type) ? "unsigned" : "signed",
+			 operation_precision, stmt);
       vect_set_operation_type (stmt_info, type, operation_precision,
 			       TYPE_SIGN (type));
     }
@@ -4727,11 +4695,8 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
 	 sequence.  */
       orig_pattern_stmt = orig_stmt_info->stmt;
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "replacing earlier pattern ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, orig_pattern_stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "replacing earlier pattern %G", orig_pattern_stmt);
 
       /* To keep the book-keeping simple, just swap the lhs of the
 	 old and new statements, so that the old one has a valid but
@@ -4741,10 +4706,7 @@ vect_mark_pattern_stmts (stmt_vec_info orig_stmt_info, gimple *pattern_stmt,
       gimple_set_lhs (pattern_stmt, old_lhs);
 
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "with ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location, "with %G", pattern_stmt);
 
       /* Switch to the statement that ORIG replaces.  */
       orig_stmt_info = STMT_VINFO_RELATED_STMT (orig_stmt_info);
@@ -4830,11 +4792,9 @@ vect_pattern_recog_1 (vect_recog_func *recog_func, stmt_vec_info stmt_info)
  
   /* Found a vectorizable pattern.  */
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "%s pattern recognized: ", recog_func->name);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "%s pattern recognized: %G",
+		     recog_func->name, pattern_stmt);
 
   /* Mark the stmts that are involved in the pattern. */
   vect_mark_pattern_stmts (stmt_info, pattern_stmt, pattern_vectype);
