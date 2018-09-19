@@ -22394,7 +22394,7 @@ cp_parser_initializer_list (cp_parser* parser, bool* non_constant_p)
 			  "%<.%s%> designator used multiple times in "
 			  "the same initializer list",
 			  IDENTIFIER_POINTER (designator));
-		(*v)[i].index = NULL_TREE;
+		(*v)[i].index = error_mark_node;
 	      }
 	    else
 	      IDENTIFIER_MARKED (designator) = 1;

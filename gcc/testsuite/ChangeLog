@@ -1,3 +1,8 @@
+2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/87324
+	* g++.dg/cpp0x/desig5.C: New.
+
 2018-09-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84109

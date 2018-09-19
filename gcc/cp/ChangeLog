@@ -1,3 +1,9 @@
+2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/87324
+	* parser.c (cp_parser_initializer_list): Assign error_mark_node
+	to the index upon error.
+
 2018-09-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87357 - missing -Wconversion warning
