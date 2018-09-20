@@ -1,3 +1,19 @@
+2018-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_str_startswith): New macro.
+	* decl.c (variable_decl, gfc_match_end): Use it.
+	* iresolve.c (is_trig_resolved): Ditto.
+	* module.c (load_omp_udrs, read_module): Ditto.
+	* options.c (gfc_handle_runtime_check_option): Ditto.
+	* primary.c (match_arg_list_function): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* interface.c (dtio_op): Replace strncmp by strcmp.
+	* resolve.c (resolve_actual_arglist, resolve_function): Ditto.
+	* trans-expr.c (conv_arglist_function): Ditto.
+	* trans-intrinsic.c (gfc_conv_ieee_arithmetic_function): Replace macro
+	STARTS_WITH by gfc_str_startswith.
+
 2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* dump-parse-tree.c (show_omp_clauses): Add missing omp list_types

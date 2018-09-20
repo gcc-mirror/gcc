@@ -2529,7 +2529,7 @@ variable_decl (int elem)
     }
 
   /* %FILL components may not have initializers.  */
-  if (strncmp (name, "%FILL", 5) == 0 && gfc_match_eos () != MATCH_YES)
+  if (gfc_str_startswith (name, "%FILL") && gfc_match_eos () != MATCH_YES)
     {
       gfc_error ("%qs entity cannot have an initializer at %C", "%FILL");
       m = MATCH_ERROR;
@@ -7811,7 +7811,7 @@ gfc_match_end (gfc_statement *st)
     {
     case COMP_ASSOCIATE:
     case COMP_BLOCK:
-      if (!strncmp (block_name, "block@", strlen("block@")))
+      if (gfc_str_startswith (block_name, "block@"))
 	block_name = NULL;
       break;
 

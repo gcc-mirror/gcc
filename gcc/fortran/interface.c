@@ -122,9 +122,9 @@ fold_unary_intrinsic (gfc_intrinsic_op op)
 static gfc_intrinsic_op
 dtio_op (char* mode)
 {
-  if (strncmp (mode, "formatted", 9) == 0)
+  if (strcmp (mode, "formatted") == 0)
     return INTRINSIC_FORMATTED;
-  if (strncmp (mode, "unformatted", 9) == 0)
+  if (strcmp (mode, "unformatted") == 0)
     return INTRINSIC_UNFORMATTED;
   return INTRINSIC_NONE;
 }
