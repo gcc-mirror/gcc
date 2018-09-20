@@ -341,14 +341,6 @@ misel
 Target Report Mask(ISEL) Var(rs6000_isa_flags)
 Generate isel instructions.
 
-misel=no
-Target RejectNegative Alias(misel) NegativeAlias Warn(%<-misel=no%> is deprecated; use %<-mno-isel%> instead)
-Deprecated option.  Use -mno-isel instead.
-
-misel=yes
-Target RejectNegative Alias(misel) Warn(%<-misel=yes%> is deprecated; use %<-misel%> instead)
-Deprecated option.  Use -misel instead.
-
 mdebug=
 Target RejectNegative Joined
 -mdebug=	Enable debug output.
