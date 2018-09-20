@@ -9958,7 +9958,59 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 
 ;; These patterns are at the bottom so the non atomic versions are preferred.
 
-;; Implement atomic DImode load using 64-bit floating point load.
+(define_expand "atomic_storeqi"
+  [(match_operand:QI 0 "memory_operand")                ;; memory
+   (match_operand:QI 1 "register_operand")              ;; val out
+   (match_operand:SI 2 "const_int_operand")]            ;; model
+  ""
+{
+  if (TARGET_SYNC_LIBCALL)
+    {
+      rtx mem = operands[0];
+      rtx val = operands[1];
+      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
+	DONE;
+    }
+  FAIL;
+})
+
+;; Implement atomic HImode stores using exchange.
+
+(define_expand "atomic_storehi"
+  [(match_operand:HI 0 "memory_operand")                ;; memory
+   (match_operand:HI 1 "register_operand")              ;; val out
+   (match_operand:SI 2 "const_int_operand")]            ;; model
+  ""
+{
+  if (TARGET_SYNC_LIBCALL)
+    {
+      rtx mem = operands[0];
+      rtx val = operands[1];
+      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
+	DONE;
+    }
+  FAIL;
+})
+
+;; Implement atomic SImode store using exchange.
+
+(define_expand "atomic_storesi"
+  [(match_operand:SI 0 "memory_operand")                ;; memory
+   (match_operand:SI 1 "register_operand")              ;; val out
+   (match_operand:SI 2 "const_int_operand")]            ;; model
+  ""
+{
+  if (TARGET_SYNC_LIBCALL)
+    {
+      rtx mem = operands[0];
+      rtx val = operands[1];
+      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
+	DONE;
+    }
+  FAIL;
+})
+
+;; Implement atomic DImode load.
 
 (define_expand "atomic_loaddi"
   [(match_operand:DI 0 "register_operand")              ;; val out
@@ -9998,6 +10050,14 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   ""
 {
   enum memmodel model;
+
+  if (TARGET_SYNC_LIBCALL)
+    {
+      rtx mem = operands[0];
+      rtx val = operands[1];
+      if (pa_maybe_emit_compare_and_swap_exchange_loop (NULL_RTX, mem, val))
+	DONE;
+    }
 
   if (TARGET_64BIT || TARGET_DISABLE_FPREGS || TARGET_SOFT_FLOAT)
     FAIL;
