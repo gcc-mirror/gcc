@@ -1,3 +1,10 @@
+2018-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109 - wrong ctor with maybe-rvalue semantics.
+	* call.c (build_user_type_conversion_1): Refine the maybe-rvalue
+	check to only return if we're converting the return value to a base
+	class.
+
 2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
 	* g++spec.c (lang_specific_driver): Handle -r like -nostdlib.

@@ -4034,10 +4034,12 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     conv->bad_p = true;
 
   /* We're performing the maybe-rvalue overload resolution and
-     a conversion function is in play.  This isn't going to work
-     because we would not end up with a suitable constructor.  */
+     a conversion function is in play.  Reject converting the return
+     value of the conversion function to a base class.  */
   if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
-    return NULL;
+    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
+      if (t->kind == ck_base)
+	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
