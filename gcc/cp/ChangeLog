@@ -1,3 +1,8 @@
+2018-09-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87075 - ICE with constexpr array initialization.
+	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
+
 2018-09-19  Marek Polacek  <polacek@redhat.com>
 
 	Add -Wclass-conversion.
