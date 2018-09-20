@@ -1,3 +1,7 @@
+2018-09-20  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Add -Wno-init-list-lifetime to C++ Language Options.
+
 2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/87288

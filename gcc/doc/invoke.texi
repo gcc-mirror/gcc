@@ -229,7 +229,7 @@ in the following sections.
 -fext-numeric-literals @gol
 -Wabi=@var{n}  -Wabi-tag  -Wconversion-null  -Wctor-dtor-privacy @gol
 -Wdelete-non-virtual-dtor -Wdeprecated-copy  -Wliteral-suffix @gol
--Wmultiple-inheritance @gol
+-Wmultiple-inheritance -Wno-init-list-lifetime @gol
 -Wnamespaces  -Wnarrowing @gol
 -Wpessimizing-move  -Wredundant-move @gol
 -Wnoexcept  -Wnoexcept-type  -Wclass-memaccess @gol
