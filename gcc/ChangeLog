@@ -1,3 +1,10 @@
+2018-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete
+	VECTOR_OTHER.
+	* config/rs6000/rs6000.c (rs6000_debug_vector_unit): Delete
+	case VECTOR_OTHER.
+
 2018-09-20  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Add -Wno-init-list-lifetime to C++ Language Options.
