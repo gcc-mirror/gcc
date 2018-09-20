@@ -1,3 +1,9 @@
+2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR tree-optimization/86877
+	* tree-vect-loop.c (vect_analyze_loop_2): Call
+	vect_verify_datarefs_alignment.
+
 2018-09-19  Marek Polacek  <polacek@redhat.com>
 
 	* doc/invoke.texi: Document -Wclass-conversion.
