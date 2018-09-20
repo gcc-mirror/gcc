@@ -1,5 +1,8 @@
 2018-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
+	* config/pa/pa.c (pa_adjust_priority): Delete.
+	(TARGET_SCHED_ADJUST_PRIORITY): Delete define.
+
 	* config/pa/pa.md (atomic_storeqi): Restore deleted expander.
 	(atomic_storehi): Likewise.
 	(atomic_storesi): Likewise.
