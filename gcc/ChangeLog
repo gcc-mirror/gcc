@@ -1,3 +1,10 @@
+2018-09-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (atomic_storeqi): Restore deleted expander.
+	(atomic_storehi): Likewise.
+	(atomic_storesi): Likewise.
+	(atomic_loaddi): Restore compare and swap exchange loop code.
+
 2018-09-12  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	Backport from trunk
