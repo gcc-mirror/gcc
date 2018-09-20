@@ -17,7 +17,7 @@
 
 // { dg-options "-std=gnu++17" }
 // { dg-do run { target c++17 } }
-// { dg-xfail-run-if "PR 78179" { powerpc-ibm-aix* hppa-*-linux* nios2-*-* } }
+// { dg-xfail-run-if "PR 78179" { arm*-*-* hppa-*-linux* nios2-*-* powerpc-ibm-aix* } }
 
 // Run the long double tests from hypot.cc separately, because they fail on a
 // number of targets. See PR libstdc++/78179 for details.
