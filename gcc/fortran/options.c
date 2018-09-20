@@ -565,7 +565,7 @@ gfc_handle_runtime_check_option (const char *arg)
 	      result = 1;
 	      break;
 	    }
-	  else if (optname[n] && pos > 3 && strncmp ("no-", arg, 3) == 0
+	  else if (optname[n] && pos > 3 && gfc_str_startswith (arg, "no-")
 		   && strncmp (optname[n], arg+3, pos-3) == 0)
 	    {
 	      gfc_option.rtcheck &= ~optmask[n];

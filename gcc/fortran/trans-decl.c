@@ -1828,7 +1828,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
     GFC_DECL_ASSOCIATE_VAR_P (decl) = 1;
 
   if (sym->attr.vtab
-      || (sym->name[0] == '_' && strncmp ("__def_init", sym->name, 10) == 0))
+      || (sym->name[0] == '_' && gfc_str_startswith (sym->name, "__def_init")))
     TREE_READONLY (decl) = 1;
 
   return decl;

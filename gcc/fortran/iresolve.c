@@ -698,7 +698,7 @@ is_trig_resolved (gfc_expr *f)
   /* We know we've already resolved the function if we see the lib call
      starting with '__'.  */
   return (f->value.function.name != NULL
-	  && strncmp ("__", f->value.function.name, 2) == 0);
+	  && gfc_str_startswith (f->value.function.name, "__"));
 }
 
 /* Return a shallow copy of the function expression f.  The original expression

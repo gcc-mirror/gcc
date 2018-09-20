@@ -3310,6 +3310,9 @@ bool gfc_is_compile_time_shape (gfc_array_spec *);
 bool gfc_ref_dimen_size (gfc_array_ref *, int dimen, mpz_t *, mpz_t *);
 
 
+#define gfc_str_startswith(str, pref) \
+	(strncmp ((str), (pref), strlen (pref)) == 0)
+
 /* interface.c -- FIXME: some of these should be in symbol.c */
 void gfc_free_interface (gfc_interface *);
 bool gfc_compare_derived_types (gfc_symbol *, gfc_symbol *);

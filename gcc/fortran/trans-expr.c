@@ -4705,14 +4705,14 @@ conv_arglist_function (gfc_se *se, gfc_expr *expr, const char *name)
      indirectly for %LOC, else by reference.  Thus %REF
      is a "do-nothing" and %LOC is the same as an F95
      pointer.  */
-  if (strncmp (name, "%VAL", 4) == 0)
+  if (strcmp (name, "%VAL") == 0)
     gfc_conv_expr (se, expr);
-  else if (strncmp (name, "%LOC", 4) == 0)
+  else if (strcmp (name, "%LOC") == 0)
     {
       gfc_conv_expr_reference (se, expr);
       se->expr = gfc_build_addr_expr (NULL, se->expr);
     }
-  else if (strncmp (name, "%REF", 4) == 0)
+  else if (strcmp (name, "%REF") == 0)
     gfc_conv_expr_reference (se, expr);
   else
     gfc_error ("Unknown argument list function at %L", &expr->where);
@@ -5869,7 +5869,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
       /* When calling __copy for character expressions to unlimited
 	 polymorphic entities, the dst argument needs a string length.  */
       if (sym->name[0] == '_' && e && e->ts.type == BT_CHARACTER
-	  && strncmp (sym->name, "__vtab_CHARACTER", 16) == 0
+	  && gfc_str_startswith (sym->name, "__vtab_CHARACTER")
 	  && arg->next && arg->next->expr
 	  && (arg->next->expr->ts.type == BT_DERIVED
 	      || arg->next->expr->ts.type == BT_CLASS)
