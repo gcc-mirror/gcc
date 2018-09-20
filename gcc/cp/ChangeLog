@@ -1,3 +1,7 @@
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* g++spec.c (lang_specific_driver): Handle -r like -nostdlib.
+
 2018-09-20  Jason Merrill  <jason@redhat.com>
 
 	PR c++/87075 - ICE with constexpr array initialization.

@@ -1,3 +1,16 @@
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* g++.dg/ipa/pr64059.C: Removed now redundant -nostdlib.
+	* g++.dg/lto/20081109-1_0.C: Likewise.
+	* g++.dg/lto/20090302_0.C: Likewise.
+	* g++.dg/lto/pr45621_0.C: Likewise.
+	* g++.dg/lto/pr60567_0.C: Likewise.
+	* g++.dg/lto/pr62026.C: Likewise.
+	* gcc.dg/lto/pr45736_0.c: Likewise.
+	* gcc.dg/lto/pr52634_0.c: Likewise.
+	* gfortran.dg/lto/20091016-1_0.f90: Likewise.
+	* gfortran.dg/lto/pr79108_0.f90: Likewise.
+
 2018-09-20  Alexandre Oliva <oliva@adacore.com>
 
 	PR middle-end/87054

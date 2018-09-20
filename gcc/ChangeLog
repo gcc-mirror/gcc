@@ -1,3 +1,12 @@
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* gcc.c (LINK_COMMAND_SPEC): Handle -r like -nostdlib.
+	(VTABLE_VERIFICATION_SPEC): Likewise.
+	(SANITIZER_EARLY_SPEC): Likewise.
+	(SANITIZER_SPEC): Likewise.
+	* config/darwin.h (LINK_COMMAND_SPEC): Likewise.
+	* doc/invoke.texi (Link Options): Document -r.
+
 2018-09-20  Richard Biener <rguenther@suse.de>
 
 	PR middle-end/87054

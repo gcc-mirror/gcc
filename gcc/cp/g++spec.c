@@ -184,6 +184,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  break;
 
 	case OPT_c:
+	case OPT_r:
 	case OPT_S:
 	case OPT_E:
 	case OPT_M:

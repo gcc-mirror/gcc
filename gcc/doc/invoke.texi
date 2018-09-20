@@ -521,7 +521,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
--pie  -pthread  -rdynamic @gol
+-pie  -pthread  -r  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -12585,6 +12585,11 @@ GNU/Linux targets, most other Unix derivatives, and also on
 x86 Cygwin and MinGW targets.  On some targets this option also sets 
 flags for the preprocessor, so it should be used consistently for both
 compilation and linking.
+
+@item -r
+@opindex r
+Produce a relocatable object as output.  This is also known as partial
+linking.
 
 @item -rdynamic
 @opindex rdynamic
