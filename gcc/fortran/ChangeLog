@@ -1,3 +1,8 @@
+2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Add missing omp list_types
+	and reorder the switch cases to match the enum in gfortran.h.
+
 2018-09-19  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/84109
