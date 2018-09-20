@@ -237,6 +237,7 @@ in the following sections.
 -Weffc++  -Wstrict-null-sentinel  -Wtemplates @gol
 -Wno-non-template-friend  -Wold-style-cast @gol
 -Woverloaded-virtual  -Wno-pmf-conversions @gol
+-Wno-class-conversion  -Wno-terminate @gol
 -Wsign-promo  -Wvirtual-inheritance}
 
 @item Objective-C and Objective-C++ Language Options
@@ -3367,6 +3368,13 @@ use the STL.  One may also use using directives and qualified names.
 @opindex Wno-terminate
 Disable the warning about a throw-expression that will immediately
 result in a call to @code{terminate}.
+
+@item -Wno-class-conversion @r{(C++ and Objective-C++ only)}
+@opindex Wno-class-conversion
+@opindex Wclass-conversion
+Disable the warning about the case when a conversion function converts an
+object to the same type, to a base class of that type, or to void; such
+a conversion function will never be called.
 @end table
 
 @node Objective-C and Objective-C++ Dialect Options

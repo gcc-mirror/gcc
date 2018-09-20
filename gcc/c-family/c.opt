@@ -850,6 +850,10 @@ Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
 
+Wclass-conversion
+C++ ObjC++ Var(warn_class_conversion) Init(1) Warning
+Warn when a conversion function will never be called due to the type it converts to.
+
 Wclass-memaccess
 C++ ObjC++ Var(warn_class_memaccess) Warning LangEnabledBy(C++ ObjC++, Wall)
 Warn for unsafe raw memory writes to objects of class types.

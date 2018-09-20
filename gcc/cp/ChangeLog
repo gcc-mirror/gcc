@@ -1,3 +1,9 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	Add -Wclass-conversion.
+	* decl.c (grok_op_properties): Change a warning from -Wconversion to
+	-Wclass-conversion.  Make it print the types.
+
 2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/87324
