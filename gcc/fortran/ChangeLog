@@ -1,3 +1,7 @@
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* gfortranspec.c (lang_specific_driver): Handle -r like -nostdlib.
+
 2018-09-20  Janus Weil  <janus@gcc.gnu.org>
 
 	* gfortran.h (gfc_str_startswith): New macro.

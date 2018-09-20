@@ -1,3 +1,7 @@
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* gospec.c (lang_specific_driver): Handle -r like -nostdlib.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* go-gcc.cc (Gcc_backend::call_expression): Use new function

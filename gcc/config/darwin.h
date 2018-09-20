@@ -180,20 +180,20 @@ extern GTY(()) int darwin_ms_struct;
    "%X %{s} %{t} %{Z} %{u*} \
     %{e*} %{r} \
     %{o*}%{!o:-o a.out} \
-    %{!nostdlib:%{!nostartfiles:%S}} \
+    %{!nostdlib:%{!r:%{!nostartfiles:%S}}} \
     %{L*} %(link_libgcc) %o %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1): \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libgomp.a%s; : -lgomp } } \
     %{fgnu-tm: \
       %{static|static-libgcc|static-libstdc++|static-libgfortran: libitm.a%s; : -litm } } \
-    %{!nostdlib:%{!nodefaultlibs:\
+    %{!nostdlib:%{!r:%{!nodefaultlibs:\
       %{%:sanitize(address): -lasan } \
       %{%:sanitize(undefined): -lubsan } \
       %(link_ssp) \
       " DARWIN_EXPORT_DYNAMIC " %<rdynamic \
       %(link_gcc_c_sequence) \
-    }}\
-    %{!nostdlib:%{!nostartfiles:%E}} %{T*} %{F*} }}}}}}}"
+    }}}\
+    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*} %{F*} }}}}}}}"
 
 #define DSYMUTIL "\ndsymutil"
 
