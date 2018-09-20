@@ -1,5 +1,12 @@
 2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/87288
+	* gcc.dg/vect/pr87288-1.c: New test.
+	* gcc.dg/vect/pr87288-2.c: Likewise,
+	* gcc.dg/vect/pr87288-3.c: Likewise.
+
+2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/86877
 	* gfortran.dg/vect/vect-8-epilogue.F90: New test.
 

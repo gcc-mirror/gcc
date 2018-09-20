@@ -1,5 +1,11 @@
 2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
+	PR tree-optimization/87288
+	* tree-vect-loop.c (vect_analyze_loop_2): Take PEELING_FOR_GAPS
+	into account when determining PEELING_FOR_NITERS.
+
+2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
+
 	PR tree-optimization/86877
 	* tree-vect-loop.c (vect_analyze_loop_2): Call
 	vect_verify_datarefs_alignment.
