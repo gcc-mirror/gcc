@@ -1113,7 +1113,6 @@ See RS/6000 and PowerPC Options.
 -mblock-compare-inline-loop-limit=@var{num} @gol
 -mstring-compare-inline-limit=@var{num} @gol
 -misel  -mno-isel @gol
--misel=yes  -misel=no @gol
 -mvrsave  -mno-vrsave @gol
 -mmulhw  -mno-mulhw @gol
 -mdlmzb  -mno-dlmzb @gol
@@ -23935,10 +23934,6 @@ This is a PowerPC 32-bit SYSV ABI option.
 @opindex misel
 @opindex mno-isel
 This switch enables or disables the generation of ISEL instructions.
-
-@item -misel=@var{yes/no}
-This switch has been deprecated.  Use @option{-misel} and
-@option{-mno-isel} instead.
 
 @item -mvsx
 @itemx -mno-vsx

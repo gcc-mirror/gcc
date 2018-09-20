@@ -1,5 +1,11 @@
 2018-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.opt (misel=no, misel=yes): Delete.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Delete -misel=yes and
+	-misel=no.
+
+2018-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/rs6000-opts.h (enum rs6000_vector): Delete
 	VECTOR_OTHER.
 	* config/rs6000/rs6000.c (rs6000_debug_vector_unit): Delete
