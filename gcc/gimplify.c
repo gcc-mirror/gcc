@@ -12538,9 +12538,15 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       /* An lvalue will do.  Take the address of the expression, store it
 	 in a temporary, and replace the expression with an INDIRECT_REF of
 	 that temporary.  */
+      tree ref_alias_type = reference_alias_ptr_type (*expr_p);
+      unsigned int ref_align = get_object_alignment (*expr_p);
+      tree ref_type = TREE_TYPE (*expr_p);
       tmp = build_fold_addr_expr_loc (input_location, *expr_p);
       gimplify_expr (&tmp, pre_p, post_p, is_gimple_reg, fb_rvalue);
-      *expr_p = build_simple_mem_ref (tmp);
+      if (TYPE_ALIGN (ref_type) != ref_align)
+	ref_type = build_aligned_type (ref_type, ref_align);
+      *expr_p = build2 (MEM_REF, ref_type,
+			tmp, build_zero_cst (ref_alias_type));
     }
   else if ((fallback & fb_rvalue) && is_gimple_reg_rhs_or_call (*expr_p))
     {

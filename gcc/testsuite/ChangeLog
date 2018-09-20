@@ -1,3 +1,8 @@
+2018-09-20  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/87054
+	* gcc.dg/pr87054.c: New.
+
 2018-09-20  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR tree-optimization/87288
