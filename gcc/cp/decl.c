@@ -13544,7 +13544,7 @@ grok_op_properties (tree decl, bool complain)
   /* Warn about conversion operators that will never be used.  */
   if (IDENTIFIER_CONV_OP_P (name)
       && ! DECL_TEMPLATE_INFO (decl)
-      && warn_conversion)
+      && warn_class_conversion)
     {
       tree t = TREE_TYPE (name);
       int ref = TYPE_REF_P (t);
@@ -13553,27 +13553,29 @@ grok_op_properties (tree decl, bool complain)
 	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
       if (VOID_TYPE_P (t))
-	warning_at (loc, OPT_Wconversion, "conversion to void "
-		    "will never use a type conversion operator");
+	warning_at (loc, OPT_Wclass_conversion, "converting %qT to %<void%> "
+		    "will never use a type conversion operator", class_type);
       else if (class_type)
 	{
 	  if (same_type_ignoring_top_level_qualifiers_p (t, class_type))
-	    warning_at (loc, OPT_Wconversion,
+	    warning_at (loc, OPT_Wclass_conversion,
 			ref
-			? G_("conversion to a reference to the same type "
+			? G_("converting %qT to a reference to the same type "
 			     "will never use a type conversion operator")
-			: G_("conversion to the same type "
-			     "will never use a type conversion operator"));
+			: G_("converting %qT to the same type "
+			     "will never use a type conversion operator"),
+			class_type);
 	  /* Don't force t to be complete here.  */
 	  else if (MAYBE_CLASS_TYPE_P (t)
 		   && COMPLETE_TYPE_P (t)
 		   && DERIVED_FROM_P (t, class_type))
-	    warning_at (loc, OPT_Wconversion,
+	    warning_at (loc, OPT_Wclass_conversion,
 			ref
-			? G_("conversion to a reference to a base class "
-			     "will never use a type conversion operator")
-			: G_("conversion to a base class "
-			     "will never use a type conversion operator"));
+			? G_("converting %qT to a reference to a base class "
+			     "%qT will never use a type conversion operator")
+			: G_("converting %qT to a base class %qT "
+			     "will never use a type conversion operator"),
+			class_type, t);
 	}
     }
 

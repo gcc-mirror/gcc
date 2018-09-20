@@ -1,3 +1,13 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/conversion/op4.C: Add dg-warning.
+	* g++.dg/warn/Wclass-conversion1.C: New test.
+	* g++.dg/warn/Wclass-conversion2.C: New test.
+	* g++.dg/warn/Wconversion5.C: Remove file.
+	* g++.dg/warn/conversion-function-1.C: Use -Wno-class-converison.
+	* g++.old-deja/g++.bugs/900215_01.C: Adjust dg-warning.
+	* g++.old-deja/g++.jason/conversion5.C: Likewise.
+
 2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/87324

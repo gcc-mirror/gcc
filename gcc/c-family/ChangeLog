@@ -1,3 +1,7 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wclass-conversion): New.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (range_label_for_format_type_mismatch::get_text):

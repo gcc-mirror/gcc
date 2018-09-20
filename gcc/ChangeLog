@@ -1,3 +1,7 @@
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* doc/invoke.texi: Document -Wclass-conversion.
+
 2018-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.c (pa_adjust_priority): Delete.
