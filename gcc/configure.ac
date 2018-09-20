@@ -3146,6 +3146,15 @@ case "${target}" in
   ;;
 esac
 
+gcc_GAS_CHECK_FEATURE([line table is_stmt support],
+ gcc_cv_as_is_stmt,
+ [2,16,92],,
+[	.text
+	.file 1 "conf.c"
+	.loc 1 1 0 is_stmt 1],,
+[AC_DEFINE(HAVE_GAS_LOC_STMT, 1,
+  [Define if your assembler supports the .loc is_stmt sub-directive.])])
+
 gcc_GAS_CHECK_FEATURE([line table discriminator support],
  gcc_cv_as_discriminator,
  [2,19,51],,

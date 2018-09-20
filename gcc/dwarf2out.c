@@ -27931,8 +27931,10 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 
       if (is_stmt != table->is_stmt)
 	{
+#if HAVE_GAS_LOC_STMT
 	  fputs (" is_stmt ", asm_out_file);
 	  putc (is_stmt ? '1' : '0', asm_out_file);
+#endif
 	}
       if (SUPPORTS_DISCRIMINATOR && discriminator != 0)
 	{
