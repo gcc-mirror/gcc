@@ -1979,20 +1979,21 @@ start_over:
   if (!ok)
     return false;
 
-  /* Do not invoke vect_enhance_data_refs_alignment for eplilogue
-     vectorization.  */
+  /* Do not invoke vect_enhance_data_refs_alignment for epilogue
+     vectorization, since we do not want to add extra peeling or
+     add versioning for alignment.  */
   if (!LOOP_VINFO_EPILOGUE_P (loop_vinfo))
-    {
     /* This pass will decide on using loop versioning and/or loop peeling in
        order to enhance the alignment of data references in the loop.  */
     ok = vect_enhance_data_refs_alignment (loop_vinfo);
-    if (!ok)
-      {
-	if (dump_enabled_p ())
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "bad data alignment.\n");
-        return false;
-      }
+  else
+    ok = vect_verify_datarefs_alignment (loop_vinfo);
+  if (!ok)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "bad data alignment.\n");
+      return false;
     }
 
   if (slp)
