@@ -30,7 +30,7 @@ template<typename _USet>
     auto bkts = us.bucket_count();
     for (int i = 0; i != threshold; ++i)
       {
-	if (i == nb_reserved)
+	if (i >= nb_reserved)
 	  {
 	    nb_reserved = bkts;
 	    us.reserve(nb_reserved);
