@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-ada-spec.h"
 #include "fold-const.h"
 #include "c-pragma.h"
+#include "diagnostic.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -2698,6 +2699,16 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		dump_ada_node (buffer, t, type, spc, false, true);
 		TREE_VISITED (t) = 1;
 		return 1;
+	      }
+
+	    /* ??? Packed record layout is not supported.  */
+	    if (TYPE_PACKED (TREE_TYPE (t)))
+	      {
+		warning_at (DECL_SOURCE_LOCATION (t), 0,
+			    "unsupported record layout");
+		pp_string (buffer, "pragma Compile_Time_Warning (True, ");
+		pp_string (buffer, "\"probably incorrect record layout\");");
+		newline_and_indent (buffer, spc);
 	      }
 
 	    if (orig && TYPE_NAME (orig))
