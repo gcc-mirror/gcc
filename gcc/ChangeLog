@@ -1,5 +1,11 @@
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Remove -lc_internal.
+	Merge block comment with the one ahead of VXWORKS_LIBS_RTP. Then:
+	(VXWORKS_LIBS_RTP): Minor reordering.
+
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (STARTFILE_PREFIX_SPEC): Define.
 	(VXWORKS_LIBS_DIR_RTP): Remove definition and use.
 
