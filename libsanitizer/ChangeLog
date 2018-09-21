@@ -1,3 +1,14 @@
+2017-09-21  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from the gcc-7-branch:
+	2018-05-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR sanitizer/85835
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Don't
+	include <sys/ustat.h> for Linux.
+	(SIZEOF_STRUCT_USTAT): New.
+	(struct_ustat_sz): Use SIZEOF_STRUCT_USTAT for Linux.
+
 2017-09-07  Matthias Klose  <doko@ubuntu.com>
 
 	Backported from mainline
