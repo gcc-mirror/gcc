@@ -4960,6 +4960,9 @@ instantiate_constexpr_fns (tree t)
 }
 
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   STRICT has the same sense as for constant_value_1: true if we only allow
+   conforming C++ constant expressions, or false if we want a constant value
+   even if it doesn't conform.
    PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
