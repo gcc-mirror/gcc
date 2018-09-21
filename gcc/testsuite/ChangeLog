@@ -1,5 +1,12 @@
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc.dg/nested-func-11.c: New test.
+
+	* lib/target-supports.exp (check_effective_target_tls_runtime): Make
+	more robust and remove target-specific handling.
+
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.c-torture/execute/20180921-1.c: New test.
 
 2018-09-20  Marek Polacek  <polacek@redhat.com>

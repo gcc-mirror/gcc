@@ -1,3 +1,8 @@
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Return false
+	if the call takes a static chain.
+
 2018-09-21  Martin Liska  <mliska@suse.cz>
 
 	* auto-profile.c (autofdo_source_profile::read): Do not
