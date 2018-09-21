@@ -3157,6 +3157,9 @@ The @code{noreturn} keyword does not affect the exceptional path when that
 applies: a @code{noreturn}-marked function may still return to the caller
 by throwing an exception or calling @code{longjmp}.
 
+In order to preserve backtraces, GCC will never turn calls to
+@code{noreturn} functions into tail calls.
+
 Do not assume that registers saved by the calling function are
 restored before calling the @code{noreturn} function.
 
