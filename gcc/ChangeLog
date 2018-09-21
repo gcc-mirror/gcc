@@ -1,3 +1,7 @@
+2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config.gcc (nds32*-*-*): Set TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/86990
