@@ -65,14 +65,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
-/* The references to __init and __fini will be satisfied by
-   libc_internal.a, and some versions of VxWorks rely on explicit
-   extra libraries for system calls.  */
+/* For VxWorks static rtps, the system provides libc_internal.a, a superset of
+   libgcc.a that we need to use e.g. to satisfy references to __init and
+   __fini.  We still want our libgcc to prevail for symbols it would provide
+   (e.g. register save entry points), so re-place it here between libraries
+   that might reference it and libc_internal.  Also, some versions of VxWorks
+   rely on explicit extra libraries for system calls.  */
 
 #define VXWORKS_SYSCALL_LIBS_RTP
 
 #define VXWORKS_LIBS_RTP \
-  VXWORKS_SYSCALL_LIBS_RTP " -lc -lgcc -lc_internal -lnet -ldsi"
+  VXWORKS_SYSCALL_LIBS_RTP " -lnet -ldsi -lc -lgcc -lc_internal"
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
@@ -118,13 +121,8 @@ along with GCC; see the file COPYING3.  If not see
  %{mrtp:%{!shared:%{!non-static:-static}		\
  		  %{non-static:--force-dynamic --export-dynamic}}}"
 
-/* For VxWorks static rtps, the system provides libc_internal.a, a superset
-   of libgcc.a that we want to use.  Make sure not to dynamically export any
-   of its symbols, though, and always look for libgcc.a first so that we get
-   the latest versions of the GNU intrinsics during our builds.  */
 #undef VXWORKS_LIBGCC_SPEC
-#define VXWORKS_LIBGCC_SPEC \
-  "-lgcc %{mrtp:%{!shared:--exclude-libs=libc_internal,libgcc -lc_internal}}"
+#define VXWORKS_LIBGCC_SPEC "-lgcc"
 
 #undef VXWORKS_STARTFILE_SPEC
 #define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"
