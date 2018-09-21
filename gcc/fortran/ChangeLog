@@ -1,3 +1,9 @@
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-stmt.c (gfc_trans_allocate): Don't deallocate alloc
+	components if must_finalize is set for expr3.
+
 2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
             Kwok Cheung Yeung  <kcy@codesourcery.com>
 
