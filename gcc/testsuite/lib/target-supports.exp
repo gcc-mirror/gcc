@@ -879,13 +879,8 @@ proc check_effective_target_tls_emulated {} {
 # Return 1 if TLS executables can run correctly, 0 otherwise.
 
 proc check_effective_target_tls_runtime {} {
-    # The runtime does not have TLS support, but just
-    # running the test below is insufficient to show this.
-    if { [istarget msp430-*-*] || [istarget visium-*-*] } {
-	return 0
-    }
     return [check_runtime tls_runtime {
-	__thread int thr = 0;
+	__thread int thr __attribute__((tls_model("global-dynamic"))) = 0;
 	int main (void) { return thr; }
     } [add_options_for_tls ""]]
 }
