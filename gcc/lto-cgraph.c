@@ -693,39 +693,14 @@ lto_output_ref (struct lto_simple_output_block *ob, struct ipa_ref *ref,
 static void
 output_profile_summary (struct lto_simple_output_block *ob)
 {
-  unsigned h_ix;
-  struct bitpack_d bp;
-
   if (profile_info)
     {
       /* We do not output num and run_max, they are not used by
          GCC profile feedback and they are difficult to merge from multiple
          units.  */
-      gcc_assert (profile_info->runs);
-      streamer_write_uhwi_stream (ob->main_stream, profile_info->runs);
-      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_max);
+      unsigned runs = (profile_info->runs);
+      streamer_write_uhwi_stream (ob->main_stream, runs);
 
-      /* sum_all is needed for computing the working set with the
-         histogram.  */
-      streamer_write_gcov_count_stream (ob->main_stream, profile_info->sum_all);
-
-      /* Create and output a bitpack of non-zero histogram entries indices.  */
-      bp = bitpack_create (ob->main_stream);
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        bp_pack_value (&bp, profile_info->histogram[h_ix].num_counters > 0, 1);
-      streamer_write_bitpack (&bp);
-      /* Now stream out only those non-zero entries.  */
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          if (!profile_info->histogram[h_ix].num_counters)
-            continue;
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].num_counters);
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].min_value);
-          streamer_write_gcov_count_stream (ob->main_stream,
-                                      profile_info->histogram[h_ix].cum_value);
-         }
       /* IPA-profile computes hot bb threshold based on cumulated
 	 whole program profile.  We need to stream it down to ltrans.  */
        if (flag_wpa)
@@ -1591,46 +1566,16 @@ input_refs (struct lto_input_block *ib,
     }
 }
 	    
-
-static gcov_summary lto_gcov_summary;
-
 /* Input profile_info from IB.  */
 static void
 input_profile_summary (struct lto_input_block *ib,
 		       struct lto_file_decl_data *file_data)
 {
-  unsigned h_ix;
-  struct bitpack_d bp;
   unsigned int runs = streamer_read_uhwi (ib);
   if (runs)
     {
       file_data->profile_info.runs = runs;
-      file_data->profile_info.sum_max = streamer_read_gcov_count (ib);
-      file_data->profile_info.sum_all = streamer_read_gcov_count (ib);
 
-      memset (file_data->profile_info.histogram, 0,
-              sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-      /* Input the bitpack of non-zero histogram indices.  */
-      bp = streamer_read_bitpack (ib);
-      /* Read in and unpack the full bitpack, flagging non-zero
-         histogram entries by setting the num_counters non-zero.  */
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          file_data->profile_info.histogram[h_ix].num_counters
-              = bp_unpack_value (&bp, 1);
-        }
-      for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-        {
-          if (!file_data->profile_info.histogram[h_ix].num_counters)
-            continue;
-
-          file_data->profile_info.histogram[h_ix].num_counters
-              = streamer_read_gcov_count (ib);
-          file_data->profile_info.histogram[h_ix].min_value
-              = streamer_read_gcov_count (ib);
-          file_data->profile_info.histogram[h_ix].cum_value
-              = streamer_read_gcov_count (ib);
-        }
       /* IPA-profile computes hot bb threshold based on cumulated
 	 whole program profile.  We need to stream it down to ltrans.  */
       if (flag_ltrans)
@@ -1645,13 +1590,10 @@ static void
 merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
 {
   struct lto_file_decl_data *file_data;
-  unsigned int j, h_ix;
+  unsigned int j;
   gcov_unsigned_t max_runs = 0;
   struct cgraph_node *node;
   struct cgraph_edge *edge;
-  gcov_type saved_sum_all = 0;
-  gcov_summary *saved_profile_info = 0;
-  int saved_scale = 0;
 
   /* Find unit with maximal number of runs.  If we ever get serious about
      roundoff errors, we might also consider computing smallest common
@@ -1672,70 +1614,8 @@ merge_profile_summaries (struct lto_file_decl_data **file_data_vec)
       return;
     }
 
-  profile_info = &lto_gcov_summary;
-  lto_gcov_summary.runs = max_runs;
-  lto_gcov_summary.sum_max = 0;
-  memset (lto_gcov_summary.histogram, 0,
-          sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-
-  /* Rescale all units to the maximal number of runs.
-     sum_max can not be easily merged, as we have no idea what files come from
-     the same run.  We do not use the info anyway, so leave it 0.  */
-  for (j = 0; (file_data = file_data_vec[j]) != NULL; j++)
-    if (file_data->profile_info.runs)
-      {
-	int scale = GCOV_COMPUTE_SCALE (max_runs,
-                                        file_data->profile_info.runs);
-	lto_gcov_summary.sum_max
-            = MAX (lto_gcov_summary.sum_max,
-                   apply_scale (file_data->profile_info.sum_max, scale));
-	lto_gcov_summary.sum_all
-            = MAX (lto_gcov_summary.sum_all,
-                   apply_scale (file_data->profile_info.sum_all, scale));
-        /* Save a pointer to the profile_info with the largest
-           scaled sum_all and the scale for use in merging the
-           histogram.  */
-        if (!saved_profile_info
-            || lto_gcov_summary.sum_all > saved_sum_all)
-          {
-            saved_profile_info = &file_data->profile_info;
-            saved_sum_all = lto_gcov_summary.sum_all;
-            saved_scale = scale;
-          }
-      }
-
-  gcc_assert (saved_profile_info);
-
-  /* Scale up the histogram from the profile that had the largest
-     scaled sum_all above.  */
-  for (h_ix = 0; h_ix < GCOV_HISTOGRAM_SIZE; h_ix++)
-    {
-      /* Scale up the min value as we did the corresponding sum_all
-         above. Use that to find the new histogram index.  */
-      gcov_type scaled_min
-          = apply_scale (saved_profile_info->histogram[h_ix].min_value,
-                         saved_scale);
-      /* The new index may be shared with another scaled histogram entry,
-         so we need to account for a non-zero histogram entry at new_ix.  */
-      unsigned new_ix = gcov_histo_index (scaled_min);
-      lto_gcov_summary.histogram[new_ix].min_value
-          = (lto_gcov_summary.histogram[new_ix].num_counters
-             ? MIN (lto_gcov_summary.histogram[new_ix].min_value, scaled_min)
-             : scaled_min);
-      /* Some of the scaled counter values would ostensibly need to be placed
-         into different (larger) histogram buckets, but we keep things simple
-         here and place the scaled cumulative counter value in the bucket
-         corresponding to the scaled minimum counter value.  */
-      lto_gcov_summary.histogram[new_ix].cum_value
-          += apply_scale (saved_profile_info->histogram[h_ix].cum_value,
-                          saved_scale);
-      lto_gcov_summary.histogram[new_ix].num_counters
-          += saved_profile_info->histogram[h_ix].num_counters;
-    }
-
-  /* Watch roundoff errors.  */
-  if (lto_gcov_summary.sum_max < max_runs)
-    lto_gcov_summary.sum_max = max_runs;
+  profile_info = XCNEW (gcov_summary);
+  profile_info->runs = max_runs;
 
   /* If merging already happent at WPA time, we are done.  */
   if (flag_ltrans)
@@ -1813,10 +1693,6 @@ input_symtab (void)
     }
 
   merge_profile_summaries (file_data_vec);
-
-  if (!flag_auto_profile)
-    get_working_sets ();
-
 
   /* Clear out the aux field that was used to store enough state to
      tell which nodes should be overwritten.  */
