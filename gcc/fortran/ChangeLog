@@ -1,3 +1,12 @@
+2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
+            Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-expr.c (gfc_trans_structure_assign): Ensure that the first
+	argument of a call to _gfortran_caf_register is of size_type_node.
+	* trans-intrinsic.c (conv_intrinsic_event_query): Convert computed
+	index to a size_type_node type.
+	* trans-stmt.c (gfc_trans_event_post_wait): Likewise.
+
 2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
 	* gfortranspec.c (lang_specific_driver): Handle -r like -nostdlib.
