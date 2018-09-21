@@ -2199,64 +2199,65 @@ operator_addr_expr::op1_irange (irange& r, const irange& lhs,
 
 class irange_op_table
 {
-  irange_operator *irange_tree[MAX_TREE_CODES];
 public:
   irange_op_table ();
   inline irange_operator *operator[] (enum tree_code code);
+private:
+  irange_operator *m_irange_tree[MAX_TREE_CODES];
 } irange_tree;
 
 irange_operator *irange_op_table::operator[] (enum tree_code code)
 {
   gcc_assert (code > 0 && code < MAX_TREE_CODES);
-  return irange_tree[code];
+  return m_irange_tree[code];
 }
 
 irange_op_table::irange_op_table ()
 {
-  irange_tree[LT_EXPR] = &op_lt;
-  irange_tree[LE_EXPR] = &op_le;
-  irange_tree[GT_EXPR] = &op_gt;
-  irange_tree[GE_EXPR] = &op_ge;
-  irange_tree[NE_EXPR] = &op_not_equal;
-  irange_tree[EQ_EXPR] = &op_equal;
+  m_irange_tree[LT_EXPR] = &op_lt;
+  m_irange_tree[LE_EXPR] = &op_le;
+  m_irange_tree[GT_EXPR] = &op_gt;
+  m_irange_tree[GE_EXPR] = &op_ge;
+  m_irange_tree[NE_EXPR] = &op_not_equal;
+  m_irange_tree[EQ_EXPR] = &op_equal;
 
-  irange_tree[PLUS_EXPR] = &op_plus;
-  irange_tree[MINUS_EXPR] = &op_minus;
-  irange_tree[MULT_EXPR] = &op_mult;
-  irange_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
-  irange_tree[FLOOR_DIV_EXPR] = &op_floor_div;
-  irange_tree[ROUND_DIV_EXPR] = &op_round_div;
-  irange_tree[CEIL_DIV_EXPR] = &op_ceil_div;
-  irange_tree[EXACT_DIV_EXPR] = &op_exact_div;
+  m_irange_tree[PLUS_EXPR] = &op_plus;
+  m_irange_tree[MINUS_EXPR] = &op_minus;
+  m_irange_tree[MULT_EXPR] = &op_mult;
+  m_irange_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
+  m_irange_tree[FLOOR_DIV_EXPR] = &op_floor_div;
+  m_irange_tree[ROUND_DIV_EXPR] = &op_round_div;
+  m_irange_tree[CEIL_DIV_EXPR] = &op_ceil_div;
+  m_irange_tree[EXACT_DIV_EXPR] = &op_exact_div;
   
-  irange_tree[NOP_EXPR] = &op_cast;
-  irange_tree[CONVERT_EXPR] = &op_cast;
+  m_irange_tree[NOP_EXPR] = &op_cast;
+  m_irange_tree[CONVERT_EXPR] = &op_cast;
 
-  irange_tree[TRUTH_AND_EXPR] = &op_logical_and;
-  irange_tree[TRUTH_OR_EXPR] = &op_logical_or;
-  irange_tree[TRUTH_NOT_EXPR] = &op_logical_not;
+  m_irange_tree[TRUTH_AND_EXPR] = &op_logical_and;
+  m_irange_tree[TRUTH_OR_EXPR] = &op_logical_or;
+  m_irange_tree[TRUTH_NOT_EXPR] = &op_logical_not;
 
-  irange_tree[BIT_AND_EXPR] = &op_bitwise_and;
-  irange_tree[BIT_IOR_EXPR] = &op_bitwise_or;
-  irange_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
-  irange_tree[BIT_NOT_EXPR] = &op_bitwise_not;
+  m_irange_tree[BIT_AND_EXPR] = &op_bitwise_and;
+  m_irange_tree[BIT_IOR_EXPR] = &op_bitwise_or;
+  m_irange_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
+  m_irange_tree[BIT_NOT_EXPR] = &op_bitwise_not;
 
-  irange_tree[INTEGER_CST] = &op_integer_cst;
-  irange_tree[SSA_NAME] = &op_ssa_name;
+  m_irange_tree[INTEGER_CST] = &op_integer_cst;
+  m_irange_tree[SSA_NAME] = &op_ssa_name;
 
-  irange_tree[ABS_EXPR] = &op_abs;
-  irange_tree[MIN_EXPR] = &op_min;
-  irange_tree[MAX_EXPR] = &op_max;
-  irange_tree[NEGATE_EXPR] = &op_negate;
-  irange_tree[PAREN_EXPR] = &op_identity;
-  irange_tree[OBJ_TYPE_REF] = &op_identity;
-  irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
-  irange_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
+  m_irange_tree[ABS_EXPR] = &op_abs;
+  m_irange_tree[MIN_EXPR] = &op_min;
+  m_irange_tree[MAX_EXPR] = &op_max;
+  m_irange_tree[NEGATE_EXPR] = &op_negate;
+  m_irange_tree[PAREN_EXPR] = &op_identity;
+  m_irange_tree[OBJ_TYPE_REF] = &op_identity;
+  m_irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
+  m_irange_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
 
-  irange_tree[LSHIFT_EXPR] = &op_lshift;
-  irange_tree[RSHIFT_EXPR] = &op_rshift;
+  m_irange_tree[LSHIFT_EXPR] = &op_lshift;
+  m_irange_tree[RSHIFT_EXPR] = &op_rshift;
 
-  irange_tree[ADDR_EXPR] = &op_addr;
+  m_irange_tree[ADDR_EXPR] = &op_addr;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
@@ -2266,79 +2267,3 @@ irange_op_handler (enum tree_code code)
 {
   return irange_tree[code];
 }
-
-static bool
-irange_from_value_range (irange &r, const value_range& vr)
-{
-  wide_int w1, w2;
-  tree type = TREE_TYPE (vr.min);
-  wi::overflow_type ov;
-
-  if (TREE_CODE (vr.min) != INTEGER_CST || TREE_CODE (vr.max) != INTEGER_CST)
-    return false;
-
-  if (vr.type != VR_RANGE || vr.type != VR_ANTI_RANGE)
-    return false;
-
-  w1 = wi::to_wide (vr.min);
-  w2 = wi::to_wide (vr.max);
-  if (vr.type == VR_RANGE)
-    r.set_range (type, w1, w2);
-  else
-    {
-      w1 = wi::sub (w1, 1, TYPE_SIGN (type), &ov);
-      w2 = wi::add (w2, 1, TYPE_SIGN (type), &ov);
-      r.set_range (type, min_limit (type), w1);
-      r.union_ (irange (type, w2, max_limit (type)));
-    }
-
-  return true;
-}
-
-static bool
-value_range_from_irange (value_range& vr, const irange& r)
-{
-  tree type = r.get_type ();
-  wide_int w1 = r.lower_bound();
-  wide_int w2 = r.upper_bound();
-  wide_int min = min_limit (type);
-  wide_int max = max_limit (type);
-
-  // check for anti range
-  if (w1 == min && w2 == max)
-    {
-      if (r.num_pairs () != 2)
-	return false;
-      vr.type = VR_ANTI_RANGE;
-      wi::overflow_type ov;
-      w1 = wi::add (r.upper_bound (0), 1, TYPE_SIGN (type), &ov);
-      w2 = wi::sub (r.lower_bound (1), 1, TYPE_SIGN (type), &ov);
-    }
-  else
-    vr.type = VR_RANGE;
-
-  vr.min = wide_int_to_tree (type, w1);
-  vr.max = wide_int_to_tree (type, w2);
-  return true;
-}
-
-// Fold constant value ranges by using the range_ops code.
-bool fold_value_range (value_range& vr, enum tree_code code,
-		       value_range& vr0, value_range& vr1)
-{
-  irange res, v0, v1;
-  if (!irange_op_handler (code))
-    return false;
-
-  if (!irange_from_value_range (v0, vr0) || !irange_from_value_range (v1, vr1))
-    return false;
-
-  if (irange_op_handler (code)->fold_range (res, v0, v1))
-    if (value_range_from_irange (vr, res))
-      return true;
-  
-  vr.type = VR_VARYING;
-  return true; 
-}
-
-
