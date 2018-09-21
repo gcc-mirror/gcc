@@ -1,3 +1,12 @@
+2018-09-21  Shaokun Zhang  <zhangshaokun@hisilicon.com>
+            Bo Zhou  <zbo.zhou@hisilicon.com>
+
+	* config/aarch64/aarch64-cores.def (tsv110): New CPU.
+	* config/aarch64/aarch64-tune.md: Regenerated.
+	* doc/invoke.texi (AArch64 Options/-mtune): Add "tsv110".
+	* config/aarch64/aarch64.c (tsv110_tunings): New tuning table.
+	* config/aarch64/aarch64-cost-tables.h: Add "tsv110" extra costs.
+
 2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
 	    Julian Brown  <julian@codesourcery.com>
 
