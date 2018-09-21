@@ -5364,7 +5364,7 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
     /* No evaluation needed.  */;
   else
     t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
-					  !allow_non_constant,
+					  /*strict*/false,
 					  pretend_const_required, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {

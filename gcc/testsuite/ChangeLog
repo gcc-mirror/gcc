@@ -1,3 +1,8 @@
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* g++.dg/cpp1y/func_constexpr2.C: New test.
+
 2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77325
