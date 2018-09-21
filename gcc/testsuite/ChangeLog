@@ -1,3 +1,7 @@
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20180921-1.c: New test.
+
 2018-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87109 - wrong ctor with maybe-rvalue semantics.
