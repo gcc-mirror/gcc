@@ -1,3 +1,7 @@
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
+        * config.gcc: Prepend vxworks-dummy.h to tm_file for powerpc*
+
 2018-09-21  Shaokun Zhang  <zhangshaokun@hisilicon.com>
             Bo Zhou  <zbo.zhou@hisilicon.com>
 
