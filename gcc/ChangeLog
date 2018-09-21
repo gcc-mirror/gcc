@@ -1,3 +1,68 @@
+2018-09-21  Martin Liska  <mliska@suse.cz>
+
+	* auto-profile.c (autofdo_source_profile::read): Do not
+	set sum_all.
+	(read_profile): Do not add working sets.
+	(read_autofdo_file): Remove sum_all.
+	(afdo_callsite_hot_enough_for_early_inline): Remove const
+	qualifier.
+	* coverage.c (struct counts_entry): Remove gcov_summary.
+	(read_counts_file): Read new GCOV_TAG_OBJECT_SUMMARY,
+	do not support GCOV_TAG_PROGRAM_SUMMARY.
+	(get_coverage_counts): Remove summary and expected
+	arguments.
+	* coverage.h (get_coverage_counts): Likewise.
+	* doc/gcov-dump.texi: Remove -w option.
+	* gcov-dump.c (dump_working_sets): Remove.
+	(main): Do not support '-w' option.
+	(print_usage): Likewise.
+	(tag_summary): Likewise.
+	* gcov-io.c (gcov_write_summary): Do not dump
+	histogram.
+	(gcov_read_summary): Likewise.
+	(gcov_histo_index): Remove.
+	(gcov_histogram_merge): Likewise.
+	(compute_working_sets): Likewise.
+	* gcov-io.h (GCOV_TAG_OBJECT_SUMMARY): Mark
+	it not obsolete.
+	(GCOV_TAG_PROGRAM_SUMMARY): Mark it obsolete.
+	(GCOV_TAG_SUMMARY_LENGTH): Adjust.
+	(GCOV_HISTOGRAM_SIZE): Remove.
+	(GCOV_HISTOGRAM_BITVECTOR_SIZE): Likewise.
+	(struct gcov_summary): Simplify rapidly just
+	to runs and sum_max fields.
+	(gcov_histo_index): Remove.
+	(NUM_GCOV_WORKING_SETS): Likewise.
+	(compute_working_sets): Likewise.
+	* gcov-tool.c (print_overlap_usage_message): Remove
+	trailing empty line.
+	* gcov.c (read_count_file): Read GCOV_TAG_OBJECT_SUMMARY.
+	(output_lines): Remove program related line.
+	* ipa-profile.c (ipa_profile): Do not consider GCOV histogram.
+	* lto-cgraph.c (output_profile_summary): Do not stream GCOV
+	histogram.
+	(input_profile_summary): Do not read it.
+	(merge_profile_summaries): And do not merge it.
+	(input_symtab): Do not call removed function.
+	* modulo-sched.c (sms_schedule): Do not print sum_max.
+	* params.def (HOT_BB_COUNT_FRACTION): Reincarnate param that was
+	removed when histogram method was invented.
+	(HOT_BB_COUNT_WS_PERMILLE): Mention that it's used only in LTO
+	mode.
+	* postreload-gcse.c (eliminate_partially_redundant_load): Fix
+	GCOV coding style.
+	* predict.c (get_hot_bb_threshold): Use HOT_BB_COUNT_FRACTION
+	and dump selected value.
+	* profile.c (add_working_set): Remove.
+	(get_working_sets): Likewise.
+	(find_working_set): Likewise.
+	(get_exec_counts): Do not work with working sets.
+	(read_profile_edge_counts): Do not inform as sum_max is removed.
+	(compute_branch_probabilities): Likewise.
+	(compute_value_histograms): Remove argument for call of
+	get_coverage_counts.
+	* profile.h: Do not make gcov_summary const.
+
 2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
 
 	* config.gcc (nds32*-*-*): Set TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0.

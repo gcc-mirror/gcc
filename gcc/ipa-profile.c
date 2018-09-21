@@ -25,13 +25,6 @@ along with GCC; see the file COPYING3.  If not see
      from profile feedback. This histogram is complete only with LTO,
      otherwise it contains information only about the current unit.
 
-     Similar histogram is also estimated by coverage runtime.  This histogram
-     is not dependent on LTO, but it suffers from various defects; first
-     gcov runtime is not weighting individual basic block by estimated execution
-     time and second the merging of multiple runs makes assumption that the
-     histogram distribution did not change.  Consequentely histogram constructed
-     here may be more precise.
-
      The information is used to set hot/cold thresholds.
    - Next speculative indirect call resolution is performed:  the local
      profile pass assigns profile-id to each function and provide us with a
@@ -512,25 +505,7 @@ ipa_profile (void)
       gcov_type threshold;
 
       gcc_assert (overall_size);
-      if (dump_file)
-	{
-	  gcov_type min, cumulated_time = 0, cumulated_size = 0;
 
-	  fprintf (dump_file, "Overall time: %" PRId64"\n",
-		   (int64_t)overall_time);
-	  min = get_hot_bb_threshold ();
-          for (i = 0; i < (int)histogram.length () && histogram[i]->count >= min;
-	       i++)
-	    {
-	      cumulated_time += histogram[i]->count * histogram[i]->time;
-	      cumulated_size += histogram[i]->size;
-	    }
-	  fprintf (dump_file, "GCOV min count: %" PRId64
-		   " Time:%3.2f%% Size:%3.2f%%\n", 
-		   (int64_t)min,
-		   cumulated_time * 100.0 / overall_time,
-		   cumulated_size * 100.0 / overall_size);
-	}
       cutoff = (overall_time * PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE) + 500) / 1000;
       threshold = 0;
       for (i = 0; cumulated < cutoff; i++)
@@ -557,6 +532,7 @@ ipa_profile (void)
 		   cumulated_time * 100.0 / overall_time,
 		   cumulated_size * 100.0 / overall_size);
 	}
+
       if (threshold > get_hot_bb_threshold ()
 	  || in_lto_p)
 	{

@@ -867,7 +867,6 @@ autofdo_source_profile::read ()
       function_instance::function_instance_stack stack;
       function_instance *s = function_instance::read_function_instance (
           &stack, gcov_read_counter ());
-      afdo_profile_info->sum_all += s->total_count ();
       map_[s->name ()] = s;
     }
   return true;
@@ -958,23 +957,6 @@ read_profile (void)
 
   /* autofdo_module_profile.  */
   fake_read_autofdo_module_profile ();
-
-  /* Read in the working set.  */
-  if (gcov_read_unsigned () != GCOV_TAG_AFDO_WORKING_SET)
-    {
-      error ("cannot read working set from %s", auto_profile_file);
-      return;
-    }
-
-  /* Skip the length of the section.  */
-  gcov_read_unsigned ();
-  gcov_working_set_t set[128];
-  for (unsigned i = 0; i < 128; i++)
-    {
-      set[i].num_counters = gcov_read_unsigned ();
-      set[i].min_counter = gcov_read_counter ();
-    }
-  add_working_set (set);
 }
 
 /* From AutoFDO profiles, find values inside STMT for that we want to measure
@@ -1685,7 +1667,6 @@ read_autofdo_file (void)
   autofdo::afdo_profile_info = XNEW (gcov_summary);
   autofdo::afdo_profile_info->runs = 1;
   autofdo::afdo_profile_info->sum_max = 0;
-  autofdo::afdo_profile_info->sum_all = 0;
 
   /* Read the profile from the profile file.  */
   autofdo::read_profile ();
@@ -1712,7 +1693,7 @@ afdo_callsite_hot_enough_for_early_inline (struct cgraph_edge *edge)
   if (count > 0)
     {
       bool is_hot;
-      const gcov_summary *saved_profile_info = profile_info;
+      gcov_summary *saved_profile_info = profile_info;
       /* At early inline stage, profile_info is not set yet. We need to
          temporarily set it to afdo_profile_info to calculate hotness.  */
       profile_info = autofdo::afdo_profile_info;

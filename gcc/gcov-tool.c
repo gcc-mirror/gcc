@@ -423,7 +423,6 @@ print_overlap_usage_message (int error_p)
   fnotice (file, "    -o, --object                        Print object level info\n");
   fnotice (file, "    -t <float>, --hot_threshold <float> Set the threshold for hotness\n");
   fnotice (file, "    -v, --verbose                       Verbose mode\n");
-
 }
 
 static const struct option overlap_options[] =

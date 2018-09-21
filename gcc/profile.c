@@ -84,11 +84,7 @@ struct bb_profile_info {
 
 /* Counter summary from the last set of coverage counts read.  */
 
-const gcov_summary *profile_info;
-
-/* Counter working set information computed from the current counter
-   summary. Not initialized unless profile_info summary is non-NULL.  */
-static gcov_working_set_t gcov_working_sets[NUM_GCOV_WORKING_SETS];
+gcov_summary *profile_info;
 
 /* Collect statistics on the performance of this pass for the entire source
    file.  */
@@ -102,14 +98,6 @@ static int total_num_passes;
 static int total_num_times_called;
 static int total_hist_br_prob[20];
 static int total_num_branches;
-
-/* Helper function to update gcov_working_sets.  */
-
-void add_working_set (gcov_working_set_t *set) {
-  int i = 0;
-  for (; i < NUM_GCOV_WORKING_SETS; i++)
-    gcov_working_sets[i] = set[i];
-}
 
 /* Forward declarations.  */
 static void find_spanning_tree (struct edge_list *);
@@ -207,60 +195,6 @@ instrument_values (histogram_values values)
 }
 
 
-/* Fill the working set information into the profile_info structure.  */
-
-void
-get_working_sets (void)
-{
-  unsigned ws_ix, pctinc, pct;
-  gcov_working_set_t *ws_info;
-
-  if (!profile_info)
-    return;
-
-  compute_working_sets (profile_info, gcov_working_sets);
-
-  if (dump_file)
-    {
-      fprintf (dump_file, "Counter working sets:\n");
-      /* Multiply the percentage by 100 to avoid float.  */
-      pctinc = 100 * 100 / NUM_GCOV_WORKING_SETS;
-      for (ws_ix = 0, pct = pctinc; ws_ix < NUM_GCOV_WORKING_SETS;
-           ws_ix++, pct += pctinc)
-        {
-          if (ws_ix == NUM_GCOV_WORKING_SETS - 1)
-            pct = 9990;
-          ws_info = &gcov_working_sets[ws_ix];
-          /* Print out the percentage using int arithmatic to avoid float.  */
-          fprintf (dump_file, "\t\t%u.%02u%%: num counts=%u, min counter="
-                   "%" PRId64 "\n",
-                   pct / 100, pct - (pct / 100 * 100),
-                   ws_info->num_counters,
-                   (int64_t)ws_info->min_counter);
-        }
-    }
-}
-
-/* Given a the desired percentage of the full profile (sum_all from the
-   summary), multiplied by 10 to avoid float in PCT_TIMES_10, returns
-   the corresponding working set information. If an exact match for
-   the percentage isn't found, the closest value is used.  */
-
-gcov_working_set_t *
-find_working_set (unsigned pct_times_10)
-{
-  unsigned i;
-  if (!profile_info)
-    return NULL;
-  gcc_assert (pct_times_10 <= 1000);
-  if (pct_times_10 >= 999)
-    return &gcov_working_sets[NUM_GCOV_WORKING_SETS - 1];
-  i = pct_times_10 * NUM_GCOV_WORKING_SETS / 1000;
-  if (!i)
-    return &gcov_working_sets[0];
-  return &gcov_working_sets[i - 1];
-}
-
 /* Computes hybrid profile for all matching entries in da_file.  
    
    CFG_CHECKSUM is the precomputed checksum for the CFG.  */
@@ -283,20 +217,13 @@ get_exec_counts (unsigned cfg_checksum, unsigned lineno_checksum)
 	  num_edges++;
     }
 
-  counts = get_coverage_counts (GCOV_COUNTER_ARCS, num_edges, cfg_checksum,
-				lineno_checksum, &profile_info);
+  counts = get_coverage_counts (GCOV_COUNTER_ARCS, cfg_checksum,
+				lineno_checksum);
   if (!counts)
     return NULL;
 
-  get_working_sets ();
-
-  if (dump_file && profile_info)
-    fprintf (dump_file, "Merged %u profiles with maximal count %u.\n",
-	     profile_info->runs, (unsigned) profile_info->sum_max);
-
   return counts;
 }
-
 
 static bool
 is_edge_inconsistent (vec<edge, va_gc> *edges)
@@ -439,29 +366,7 @@ read_profile_edge_counts (gcov_type *exec_counts)
 	  {
 	    num_edges++;
 	    if (exec_counts)
-	      {
-		edge_gcov_count (e) = exec_counts[exec_counts_pos++];
-		if (edge_gcov_count (e) > profile_info->sum_max)
-		  {
-		    if (flag_profile_correction)
-		      {
-			static bool informed = 0;
-			if (dump_enabled_p () && !informed)
-			  {
-			    dump_location_t loc
-			      = dump_location_t::from_location_t
-			        (input_location);
-			    dump_printf_loc (MSG_NOTE, loc,
-					     "corrupted profile info: edge count"
-					     " exceeds maximal count\n");
-			  }
-			informed = 1;
-		      }
-		    else
-		      error ("corrupted profile info: edge from %i to %i exceeds maximal count",
-			     bb->index, e->dest->index);
-		  }
-	      }
+	      edge_gcov_count (e) = exec_counts[exec_counts_pos++];
 	    else
 	      edge_gcov_count (e) = 0;
 
@@ -510,12 +415,6 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 
   bb_gcov_counts.safe_grow_cleared (last_basic_block_for_fn (cfun));
   edge_gcov_counts = new hash_map<edge,gcov_type>;
-
-  if (profile_info->sum_all < profile_info->sum_max)
-    {
-      error ("corrupted profile info: sum_all is smaller than sum_max");
-      exec_counts = NULL;
-    }
 
   /* Attach extra info block to each bb.  */
   alloc_aux_for_blocks (sizeof (struct bb_profile_info));
@@ -871,10 +770,9 @@ compute_value_histograms (histogram_values values, unsigned cfg_checksum,
 	  continue;
 	}
 
-      histogram_counts[t] =
-	get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
-			     n_histogram_counters[t], cfg_checksum,
-			     lineno_checksum, NULL);
+      histogram_counts[t] = get_coverage_counts (COUNTER_FOR_HIST_TYPE (t),
+						 cfg_checksum,
+						 lineno_checksum);
       if (histogram_counts[t])
 	any = 1;
       act_count[t] = histogram_counts[t];

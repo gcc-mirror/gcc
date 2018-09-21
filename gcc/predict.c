@@ -129,12 +129,13 @@ static gcov_type min_count = -1;
 gcov_type
 get_hot_bb_threshold ()
 {
-  gcov_working_set_t *ws;
   if (min_count == -1)
     {
-      ws = find_working_set (PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE));
-      gcc_assert (ws);
-      min_count = ws->min_counter;
+      min_count
+	= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      if (dump_file)
+	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
+		 min_count);
     }
   return min_count;
 }

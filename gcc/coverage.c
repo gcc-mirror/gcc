@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "params.h"
 #include "auto-profile.h"
+#include "profile.h"
 
 #include "gcov-io.c"
 
@@ -73,7 +74,6 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
-  gcov_summary summary;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -185,8 +185,6 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  gcov_summary summary;
-  unsigned new_summary = 1;
   gcov_unsigned_t tag;
   int is_error = 0;
   unsigned lineno_checksum = 0;
@@ -236,27 +234,12 @@ read_counts_file (void)
 	    }
 	  else
 	    fn_ident = lineno_checksum = cfg_checksum = 0;
-	  new_summary = 1;
 	}
-      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
+      else if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	{
-	  struct gcov_summary sum;
-
-	  if (new_summary)
-	    memset (&summary, 0, sizeof (summary));
-
-	  gcov_read_summary (&sum);
-	  summary.runs += sum.runs;
-	  summary.sum_all += sum.sum_all;
-	  if (summary.run_max < sum.run_max)
-	    summary.run_max = sum.run_max;
-	  summary.sum_max += sum.sum_max;
-          if (new_summary)
-	    memcpy (summary.histogram, sum.histogram,
-		sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-          else
-	    gcov_histogram_merge (summary.histogram, sum.histogram);
-	  new_summary = 0;
+	  profile_info = XCNEW (gcov_summary);
+	  profile_info->runs = gcov_read_unsigned ();
+	  profile_info->sum_max = gcov_read_unsigned ();
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
@@ -276,9 +259,6 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-	      if (elt.ctr == GCOV_COUNTER_ARCS)
-		entry->summary = summary;
-              entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
 	  else if (entry->lineno_checksum != lineno_checksum
@@ -291,22 +271,6 @@ read_counts_file (void)
 	      delete counts_hash;
 	      counts_hash = NULL;
 	      break;
-	    }
-	  else if (entry->summary.num != n_counts)
-	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
-	      error ("number of counters is %d instead of %d", entry->summary.num, n_counts);
-	      delete counts_hash;
-	      counts_hash = NULL;
-	      break;
-	    }
-	  else
-	    {
-	      entry->summary.runs += summary.runs;
-	      entry->summary.sum_all += summary.sum_all;
-	      if (entry->summary.run_max < summary.run_max)
-		entry->summary.run_max = summary.run_max;
-	      entry->summary.sum_max += summary.sum_max;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
@@ -330,9 +294,8 @@ read_counts_file (void)
 /* Returns the counters for a particular tag.  */
 
 gcov_type *
-get_coverage_counts (unsigned counter, unsigned expected,
-                     unsigned cfg_checksum, unsigned lineno_checksum,
-		     const gcov_summary **summary)
+get_coverage_counts (unsigned counter, unsigned cfg_checksum,
+		     unsigned lineno_checksum)
 {
   counts_entry *entry, elt;
 
@@ -363,14 +326,13 @@ get_coverage_counts (unsigned counter, unsigned expected,
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
-  if (!entry || !entry->summary.num)
+  if (!entry)
     /* The function was not emitted, or is weak and not chosen in the
        final executable.  Silently fail, because there's nothing we
        can do about it.  */
     return NULL;
   
-  if (entry->cfg_checksum != cfg_checksum
-      || entry->summary.num != expected)
+  if (entry->cfg_checksum != cfg_checksum)
     {
       static int warned = 0;
       bool warning_printed = false;
@@ -413,9 +375,6 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	       " the profile data may be out of date",
 	       DECL_ASSEMBLER_NAME (current_function_decl));
     }
-
-  if (summary)
-    *summary = &entry->summary;
 
   return entry->counts;
 }
