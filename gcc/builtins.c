@@ -5863,14 +5863,21 @@ static rtx
 get_builtin_sync_mem (tree loc, machine_mode mode)
 {
   rtx addr, mem;
+  int addr_space = TYPE_ADDR_SPACE (POINTER_TYPE_P (TREE_TYPE (loc))
+				    ? TREE_TYPE (TREE_TYPE (loc))
+				    : TREE_TYPE (loc));
+  scalar_int_mode addr_mode = targetm.addr_space.address_mode (addr_space);
 
-  addr = expand_expr (loc, NULL_RTX, ptr_mode, EXPAND_SUM);
-  addr = convert_memory_address (Pmode, addr);
+  addr = expand_expr (loc, NULL_RTX, addr_mode, EXPAND_SUM);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't
      satisfy the full barrier semantics of the intrinsic.  */
-  mem = validize_mem (gen_rtx_MEM (mode, addr));
+  mem = gen_rtx_MEM (mode, addr);
+
+  set_mem_addr_space (mem, addr_space);
+
+  mem = validize_mem (mem);
 
   /* The alignment needs to be at least according to that of the mode.  */
   set_mem_align (mem, MAX (GET_MODE_ALIGNMENT (mode),

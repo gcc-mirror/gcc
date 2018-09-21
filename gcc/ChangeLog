@@ -1,3 +1,8 @@
+2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* builtins.c (get_builtin_sync_mem): Handle address spaces.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Return false
