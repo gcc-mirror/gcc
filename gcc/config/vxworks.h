@@ -77,16 +77,18 @@ along with GCC; see the file COPYING3.  If not see
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
    and its structure is fixed and does not depend on the arch.  We can thus
-   tell gcc where to look for when linking with RTP libraries.  */
+   tell gcc where to look for when linking with RTP libraries.  Use
+   STARTFILE_PREFIX_SPEC for this, instead of explicit -L options in LIB_SPEC,
+   so they survive -nodefaultlibs.  */
 
 /* On Vx7 RTP, we need to drag the __tls__ symbol to trigger initialization of
    tlsLib, responsible for TLS support by the OS.  */
 
 #if TARGET_VXWORKS7
-#define VXWORKS_LIBS_DIR_RTP "-L%:getenv(VSB_DIR /usr/lib/common)"
+#undef  STARTFILE_PREFIX_SPEC
+#define STARTFILE_PREFIX_SPEC "%:getenv(VSB_DIR /usr/lib/common)"
 #define TLS_SYM "-u __tls__"
 #else
-#define VXWORKS_LIBS_DIR_RTP ""
 #define TLS_SYM ""
 #endif
 
@@ -95,8 +97,7 @@ along with GCC; see the file COPYING3.  If not see
 "%{mrtp:%{shared:-u " USER_LABEL_PREFIX "__init -u " USER_LABEL_PREFIX "__fini} \
 	%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
 		  " TLS_SYM " \
-		  --start-group " VXWORKS_LIBS_RTP " --end-group} \
-        " VXWORKS_LIBS_DIR_RTP "}"
+		  --start-group " VXWORKS_LIBS_RTP " --end-group}}"
 
 /* The no-op spec for "-shared" below is present because otherwise GCC
    will treat it as an unrecognized option.  */
