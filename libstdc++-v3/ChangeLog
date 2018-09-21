@@ -1,3 +1,12 @@
+2018-09-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/87135
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Use __builtin_floor to compute _M_next_resize.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc: Adapt.
+	* testsuite/23_containers/unordered_set/hash_policy/prime_rehash.cc:
+	Adapt.
+
 2018-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/headers/cmath/hypot-long-double.cc: Remove.
