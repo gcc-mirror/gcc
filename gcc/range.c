@@ -919,7 +919,6 @@ irange_to_value_range (value_range &vr, const irange &r)
       irange tmp = r;
       if (r.num_pairs () == 3)
 	{
-	  // FIXME: Still needed?
 	  // Hack to make up for the fact that we can compute finer
 	  // grained ranges that VRP can only approximate with an
 	  // anti-range.  Attempt to reconstruct sub-ranges of the form:
