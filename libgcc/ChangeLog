@@ -1,3 +1,9 @@
+2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/linux-unwind.h (struct _rt_sigframe): Use struct
+	ucontext_t type instead.
+	(nds32_fallback_frame_state): Remove struct _sigframe statement.
+
 2018-09-21  Kito Cheng  <kito.cheng@gmail.com>
 
 	* config/nds32/t-nds32-glibc: New file.
