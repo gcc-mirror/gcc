@@ -1,5 +1,16 @@
 2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/77325
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): If the
+	rhs has a charlen expression, convert that and use it.
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character array vars to a realocatable
+	lhs should not be added to the exterior block since vector
+	indices, for example, generate temporaries indexed within the
+	loop.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/87359
 	* trans-stmt.c (gfc_trans_allocate): Don't deallocate alloc
 	components if must_finalize is set for expr3.
