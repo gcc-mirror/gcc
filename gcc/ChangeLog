@@ -1,5 +1,12 @@
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config.gcc: Enforce def of TARGET_VXWORKS64 to 1 from
+	triplet, similar to support for VxWorks7.
+	* config/vxworks-dummy.h: Provide a default definition
+	of TARGET_VXWORKS64 to 0.
+
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (TARGET_VXWORKS7): Move default definition ...
 	* config/vxworks-dummy.h: here.
 
