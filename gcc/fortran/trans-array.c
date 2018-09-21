@@ -9964,6 +9964,15 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	      tmp = concat_str_length (expr2);
 	      expr2->ts.u.cl->backend_decl = gfc_evaluate_now (tmp, &fblock);
 	    }
+	  else if (!tmp && expr2->ts.u.cl->length)
+	    {
+	      gfc_se tmpse;
+	      gfc_init_se (&tmpse, NULL);
+	      gfc_conv_expr_type (&tmpse, expr2->ts.u.cl->length,
+				  gfc_charlen_type_node);
+	      tmp = tmpse.expr;
+	      expr2->ts.u.cl->backend_decl = gfc_evaluate_now (tmp, &fblock);
+	    }
 	  tmp = fold_convert (TREE_TYPE (expr1->ts.u.cl->backend_decl), tmp);
 	}
 

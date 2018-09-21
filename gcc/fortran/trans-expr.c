@@ -10275,17 +10275,21 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   /* When assigning a character function result to a deferred-length variable,
      the function call must happen before the (re)allocation of the lhs -
      otherwise the character length of the result is not known.
-     NOTE: This relies on having the exact dependence of the length type
+     NOTE 1: This relies on having the exact dependence of the length type
      parameter available to the caller; gfortran saves it in the .mod files.
-     NOTE ALSO: The concatenation operation generates a temporary pointer,
+     NOTE 2: Vector array references generate an index temporary that must
+     not go outside the loop. Otherwise, variables should not generate
+     a pre block.
+     NOTE 3: The concatenation operation generates a temporary pointer,
      whose allocation must go to the innermost loop.
-     NOTE ALSO (2): Elemental functions may generate a temporary, too.  */
+     NOTE 4: Elemental functions may generate a temporary, too.  */
   if (flag_realloc_lhs
       && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred
       && !(lss != gfc_ss_terminator
 	   && rss != gfc_ss_terminator
-	   && ((expr2->expr_type == EXPR_FUNCTION
-		&& expr2->value.function.esym != NULL
+	   && ((expr2->expr_type == EXPR_VARIABLE && expr2->rank)
+	       || (expr2->expr_type == EXPR_FUNCTION
+		   && expr2->value.function.esym != NULL
 		   && expr2->value.function.esym->attr.elemental)
 	       || (expr2->expr_type == EXPR_FUNCTION
 		   && expr2->value.function.isym != NULL
