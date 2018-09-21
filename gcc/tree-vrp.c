@@ -121,10 +121,6 @@ static bitmap need_assert_for;
    ASSERT_EXPRs for SSA name N_I should be inserted.  */
 static assert_locus **asserts_for;
 
-vec<edge> to_remove_edges;
-vec<switch_update> to_update_switch_stmts;
-
-
 /* Return the maximum value for TYPE.  */
 
 tree
@@ -6404,9 +6400,6 @@ vrp_dom_walker::after_dom_children (basic_block bb)
 static void
 identify_jump_threads (class vr_values *vr_values)
 {
-  int i;
-  edge e;
-
   /* Ugh.  When substituting values earlier in this pass we can
      wipe the dominance information.  So rebuild the dominator
      information as we need it within the jump threading code.  */
@@ -6418,11 +6411,6 @@ identify_jump_threads (class vr_values *vr_values)
      EDGE_DFS_BACK is not accurate at this time so we have to
      recompute it.  */
   mark_dfs_back_edges ();
-
-  /* Do not thread across edges we are about to remove.  Just marking
-     them as EDGE_IGNORE will do.  */
-  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
-    e->flags |= EDGE_IGNORE;
 
   /* Allocate our unwinder stack to unwind any temporary equivalences
      that might be recorded.  */
@@ -6436,10 +6424,6 @@ identify_jump_threads (class vr_values *vr_values)
   vrp_dom_walker walker (CDI_DOMINATORS, equiv_stack, avail_exprs_stack);
   walker.vr_values = vr_values;
   walker.walk (cfun->cfg->x_entry_block_ptr);
-
-  /* Clear EDGE_IGNORE.  */
-  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
-    e->flags &= ~EDGE_IGNORE;
 
   /* We do not actually update the CFG or SSA graphs at this point as
      ASSERT_EXPRs are still in the IL and cfg cleanup code does not yet
@@ -6557,9 +6541,6 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 static unsigned int
 execute_vrp (bool warn_array_bounds_p)
 {
-  int i;
-  edge e;
-  switch_update *su;
 
   loop_optimizer_init (LOOPS_NORMAL | LOOPS_HAVE_RECORDED_EXITS);
   rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
@@ -6570,8 +6551,6 @@ execute_vrp (bool warn_array_bounds_p)
      EDGE_DFS_BACK.  */
   insert_range_assertions ();
 
-  to_remove_edges.create (10);
-  to_update_switch_stmts.create (5);
   threadedge_initialize_values ();
 
   /* For visiting PHI nodes we need EDGE_DFS_BACK computed.  */
@@ -6623,35 +6602,7 @@ execute_vrp (bool warn_array_bounds_p)
      processing by the pass manager.  */
   thread_through_all_blocks (false);
 
-  /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
-     CFG in a broken state and requires a cfg_cleanup run.  */
-  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
-    remove_edge (e);
-  /* Update SWITCH_EXPR case label vector.  */
-  FOR_EACH_VEC_ELT (to_update_switch_stmts, i, su)
-    {
-      size_t j;
-      size_t n = TREE_VEC_LENGTH (su->vec);
-      tree label;
-      gimple_switch_set_num_labels (su->stmt, n);
-      for (j = 0; j < n; j++)
-	gimple_switch_set_label (su->stmt, j, TREE_VEC_ELT (su->vec, j));
-      /* As we may have replaced the default label with a regular one
-	 make sure to make it a real default label again.  This ensures
-	 optimal expansion.  */
-      label = gimple_switch_label (su->stmt, 0);
-      CASE_LOW (label) = NULL_TREE;
-      CASE_HIGH (label) = NULL_TREE;
-    }
-
-  if (to_remove_edges.length () > 0)
-    {
-      free_dominance_info (CDI_DOMINATORS);
-      loops_state_set (LOOPS_NEED_FIXUP);
-    }
-
-  to_remove_edges.release ();
-  to_update_switch_stmts.release ();
+  vrp_prop.vr_values.cleanup_edges_and_switches ();
   threadedge_finalize_values ();
 
   scev_finalize ();

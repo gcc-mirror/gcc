@@ -4,6 +4,27 @@
 	* doc/extend.texi (Common Function Attributes): Mention that
 	noreturn suppresses tail call optimization.
 
+2018-09-21  Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-evrp.c (evrp_dom_walker::cleanup): Call
+	vr_values::cleanup_edges_and_switches.
+	* tree-vrp.c (to_remove_edges, to_update_switch_stmts): Moved into
+	vr_values class.
+	(identify_jump_threads): Remove EDGE_IGNORE handling.
+	(execute_vrp): Move handling of to_remove_edges and
+	to_update_switch_stmts into vr_values class member functions.
+	* tree-vrp.h (switch_update, to_remove_edges): Remove declarations.
+	(to_update_switch_stmts): Likewise.
+	* vr-values.c: Include cfghooks.h. 
+	(vr_values::vr_values): Initialize to_remove_edges and
+	to_update_switch_stmts.
+	(vr_values::~vr_values): Verify to_remove_edges and
+	to_update_switch_stmts are empty.
+	(vr_values::simplify_switch_using_ranges): Set EDGE_IGNORE as needed.
+	(vr_values::cleanup_edges_and_switches): New member function.
+	* vr-values.h (vr_values): Add cleanup_edges_and_switches member
+	function.  Add new data members.
+
 2018-09-21  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/87309

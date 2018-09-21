@@ -47,6 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "attribs.h"
 #include "vr-values.h"
+#include "cfghooks.h"
 
 /* Set value range VR to a non-negative range of type TYPE.  */
 
@@ -1918,6 +1919,8 @@ vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
   vr_value = XCNEWVEC (value_range *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
   bitmap_obstack_initialize (&vrp_equiv_obstack);
+  to_remove_edges.create (10);
+  to_update_switch_stmts.create (5);
 }
 
 /* Free VRP lattice.  */
@@ -1934,6 +1937,12 @@ vr_values::~vr_values ()
      and not available.  */
   vr_value = NULL;
   vr_phi_edge_counts = NULL;
+
+  /* If there are entries left in TO_REMOVE_EDGES or TO_UPDATE_SWITCH_STMTS
+     then an EVRP client did not clean up properly.  Catch it now rather
+     than seeing something more obscure later.  */
+  gcc_assert (to_remove_edges.is_empty ()
+	      && to_update_switch_stmts.is_empty ());
 }
 
 
@@ -3780,6 +3789,7 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
 	}
       to_remove_edges.safe_push (e);
       e->flags &= ~EDGE_EXECUTABLE;
+      e->flags |= EDGE_IGNORE;
     }
 
   /* And queue an update for the stmt.  */
@@ -3787,6 +3797,45 @@ vr_values::simplify_switch_using_ranges (gswitch *stmt)
   su.vec = vec2;
   to_update_switch_stmts.safe_push (su);
   return false;
+}
+
+void
+vr_values::cleanup_edges_and_switches (void)
+{
+  int i;
+  edge e;
+  switch_update *su;
+
+  /* Remove dead edges from SWITCH_EXPR optimization.  This leaves the
+     CFG in a broken state and requires a cfg_cleanup run.  */
+  FOR_EACH_VEC_ELT (to_remove_edges, i, e)
+    remove_edge (e);
+
+  /* Update SWITCH_EXPR case label vector.  */
+  FOR_EACH_VEC_ELT (to_update_switch_stmts, i, su)
+    {
+      size_t j;
+      size_t n = TREE_VEC_LENGTH (su->vec);
+      tree label;
+      gimple_switch_set_num_labels (su->stmt, n);
+      for (j = 0; j < n; j++)
+	gimple_switch_set_label (su->stmt, j, TREE_VEC_ELT (su->vec, j));
+      /* As we may have replaced the default label with a regular one
+	 make sure to make it a real default label again.  This ensures
+	 optimal expansion.  */
+      label = gimple_switch_label (su->stmt, 0);
+      CASE_LOW (label) = NULL_TREE;
+      CASE_HIGH (label) = NULL_TREE;
+    }
+
+  if (!to_remove_edges.is_empty ())
+    {
+      free_dominance_info (CDI_DOMINATORS);
+      loops_state_set (LOOPS_NEED_FIXUP);
+    }
+
+  to_remove_edges.release ();
+  to_update_switch_stmts.release ();
 }
 
 /* Simplify an integral conversion from an SSA name in STMT.  */

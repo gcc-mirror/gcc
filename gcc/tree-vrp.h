@@ -122,13 +122,4 @@ extern int value_inside_range (tree, tree, tree);
 extern tree get_single_symbol (tree, bool *, tree *);
 extern void maybe_set_nonzero_bits (edge, tree);
 extern value_range_type determine_value_range (tree, wide_int *, wide_int *);
-
-struct switch_update {
-  gswitch *stmt;
-  tree vec;
-};
-
-extern vec<edge> to_remove_edges;
-extern vec<switch_update> to_update_switch_stmts;
-
 #endif /* GCC_TREE_VRP_H */
