@@ -179,7 +179,7 @@ ssa_block_ranges::ssa_block_ranges (tree t)
   m_tab.safe_grow_cleared (last_basic_block_for_fn (cfun));
 
   // Create the cached type range.
-  tr.set_range_for_type (t);
+  tr.set_varying (t);
   m_type_range = irange_storage::ggc_alloc_init (tr);
 
   m_tab[ENTRY_BLOCK_PTR_FOR_FN (cfun)->index] = m_type_range;
@@ -221,7 +221,7 @@ ssa_block_ranges::get_bb_range (irange& r, const basic_block bb)
   irange_storage *m = m_tab[bb->index];
   if (m)
     {
-      r.set_range (m, m_type);
+      r = irange (m, m_type);
       return true;
     }
   return false;
@@ -408,7 +408,7 @@ path_ranger::get_global_ssa_range (irange& r, tree name)
     }
 
   // No good range determined, use default value.
-  r.set_range (name);
+  r = range_from_ssa (name);
   m_globals->set_global_range (name, r);
   return true;
 }
@@ -437,7 +437,7 @@ path_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
     return false;
   if (m_non_null->non_null_deref_p (name, bb))
     {
-      r.set_range (type, 0, 0, irange::INVERSE);
+      range_non_zero (&r, type);
       return true;
     }
   return false;
@@ -471,7 +471,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
     determine_block (name, e->src, def_bb);
 
   // Start with an empty range.
-  block_result.clear (TREE_TYPE (name));
+  block_result.set_undefined (TREE_TYPE (name));
   // And union all the ranges on the incoming edges.
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
@@ -491,7 +491,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
 
       // If there is no range yet, and the previous block has a pointer
       // dereference, adjust the range.
-      if (pred_range.range_for_type_p ())
+      if (pred_range.varying_p ())
         non_null_deref_in_block (pred_range, name, src);
 
       // If the predecessor block refines the range on the incoming edge,
@@ -506,11 +506,11 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
       block_result.union_ (pred_range);
 
       // If we get to range_for_type, we can stop looking.
-      if (block_result.range_for_type_p ())
+      if (block_result.varying_p ())
         break;
     }
 
-  if (block_result.range_for_type_p ())
+  if (block_result.varying_p ())
     m_block_cache->set_bb_range_for_type (name, bb);
   else
     m_block_cache->set_bb_range (name, bb, block_result);
@@ -563,7 +563,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
       r.intersect (block_range);
     }
 
-  return !r.range_for_type_p ();
+  return !r.varying_p ();
 }
 
 
@@ -583,24 +583,24 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
     {
       // If it is in this block, evaluate it.
       if (!path_range_stmt (r, stmt))
-        r.set_range (name);
+        r = range_from_ssa (name);
     }
   else
     // The name comes from outside this block, so evaluate it's value on
     // entry to the block. 
     if (!path_range_entry (r, name, bb))
-      r.set_range (name);
+      r = range_from_ssa (name);
 
   // If result is range for type, see if there is a non-null reference
   // somewhere in this block. 
-  if (r.range_for_type_p ())
+  if (r.varying_p ())
     non_null_deref_in_block (r, name, bb);
 
   // Now intersect the initial range with what NAME evaluates to on this edge.
   irange edge_range;
   if (range_on_edge (edge_range, name, e))
     r.intersect (edge_range);
-  return !r.range_for_type_p ();
+  return !r.varying_p ();
 }
 
 // Return a range for the phi node PHI in R.
@@ -619,11 +619,11 @@ path_ranger::process_phi (irange &r, gphi *phi)
     return true;
 
   // Avoid infinite recursion by initializing global cache 
-  phi_range.set_range (phi_def);
+  phi_range = range_from_ssa (phi_def);
   set_global_ssa_range (phi_def, phi_range);
  
   // And start with an empty range, unioning in each argument's range.
-  r.clear (TREE_TYPE (phi_def));
+  r.set_undefined (TREE_TYPE (phi_def));
   for (x = 0; x < gimple_phi_num_args (phi); x++)
     {
       irange arg_range;
@@ -640,7 +640,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
 
       r.union_ (arg_range);
       // ONce its range_for_type, stop looking.
-      if (r.range_for_type_p ())
+      if (r.varying_p ())
 	break;
     }
 
@@ -657,7 +657,7 @@ path_ranger::process_call (irange& r, gimple *call)
   gcall *call_stmt = as_a<gcall *> (call);
   if (gimple_call_nonnull_result_p (call_stmt))
     {
-      r.set_range (gimple_call_return_type (call_stmt), 0, 0, irange::INVERSE);
+      range_non_zero (&r, gimple_call_return_type (call_stmt));
       return true;
     }
   return false;
@@ -682,7 +682,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     {
       gphi *phi = as_a <gphi *> (g);
       if (process_phi (r, phi))
-        return !r.range_for_type_p ();
+        return !r.varying_p ();
       return false;
     }
 
@@ -695,10 +695,10 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     {
       // If this STMT has already been processed, return that value. 
       if (has_global_ssa_range (r, name))
-	return !r.range_for_type_p ();
+	return !r.varying_p ();
      
-      // avoid infinite recursion by initializing global cache 
-      r.set_range (name);
+      // avoid infinite recursion by initializing global cache
+      r = range_from_ssa (name);
       set_global_ssa_range (name, r);
     }
 
@@ -732,7 +732,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
 	clear_global_ssa_range (name);
     }
   if (res)
-    return !r.range_for_type_p ();
+    return !r.varying_p ();
   return false;
 }
 
@@ -745,7 +745,7 @@ path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
     return false;
 
   if (get_operand_range (r, name, g))
-    return !r.range_for_type_p ();
+    return !r.varying_p ();
   return false;
 }
 
@@ -840,7 +840,7 @@ path_ranger::path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
 	r.intersect (redge);
     }
 
-  return !r.range_for_type_p ();
+  return !r.varying_p ();
 }
 
 /* The same as above, but handle the case where BBS are a path of
@@ -862,7 +862,7 @@ path_ranger::path_range_list_reverse (irange &r, tree name,
 	r.intersect (redge);
     }
 
-  return !r.range_for_type_p ();
+  return !r.varying_p ();
 }
 
 // Print the known table values ro file F.
@@ -900,7 +900,7 @@ path_ranger::exercise (FILE *output)
 	      tree name = ssa_name (x);
 	      if (name && path_range_entry (range, name, bb))
 		{
-		  if (output && !range.range_for_type_p ())
+		  if (output && !range.varying_p ())
 		    {
 		      // avoid printing global values that are just global
 		      irange gl;
@@ -953,7 +953,7 @@ path_ranger::exercise (FILE *output)
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
 	      if (ssa_name(x) && has_global_ssa_range (range, ssa_name (x))
-		  && !range.range_for_type_p ())
+		  && !range.varying_p ())
 	        {
 		  gimple *s = SSA_NAME_DEF_STMT (ssa_name (x));
 		  if (s && gimple_bb (s) == bb)
@@ -996,7 +996,7 @@ path_ranger::exercise (FILE *output)
 		    {
 		      if (path_range_edge (range, name, e))
 			{
-			  if (!range.range_for_type_p ())
+			  if (!range.varying_p ())
 			    {
 			      printed = true;
 			      fprintf (output, "     %d->%d ", e->src->index,

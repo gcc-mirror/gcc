@@ -1369,10 +1369,10 @@ normalize_value_range_to_irange (irange &ir, const value_range *vr,
       else if (POINTER_TYPE_P (vr_type) && !range_includes_zero_p (vr))
 	range_non_zero (&ir, vr_type);
       else
-	ir.set_range_for_type (vr_type);
+	ir.set_varying (vr_type);
     }
   else
-    ir.set_range_for_type (vr_type);
+    ir.set_varying (vr_type);
 }
 
 /* Call the ranger to perform operation CODE on two operands (IR0 and IR1).
@@ -1391,13 +1391,13 @@ ranger_fold (value_range *vr, enum tree_code code,
     }
   if (!op->fold_range (res, ir0, ir1))
     {
-      if (res.empty_p ())
+      if (res.undefined_p ())
 	set_value_range_to_undefined (vr);
       else
 	set_value_range_to_varying (vr);
       return;
     }
-  if (res.empty_p ())
+  if (res.undefined_p ())
     {
       set_value_range_to_undefined (vr);
       return;
@@ -1438,7 +1438,7 @@ ranger_fold_unary (value_range *vr, enum tree_code code, tree expr_type,
     }
   irange res, vr0_irange, vr1_irange;
   normalize_value_range_to_irange (vr0_irange, vr0, vr0_type);
-  vr1_irange.set_range_for_type (expr_type);
+  vr1_irange.set_varying (expr_type);
   ranger_fold (vr, code, vr0_irange, vr1_irange);
 }
 

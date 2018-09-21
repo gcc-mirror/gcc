@@ -205,12 +205,25 @@ alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
   irange r;
   if (TREE_CODE (len) == SSA_NAME
       && ranger.path_range_on_stmt (r, len, stmt)
-      && !r.range_for_type_p ())
+      && !r.varying_p ())
     {
-      // The invalid bits are anything outside of [0..MAX_SIZE].
+      // The invalid bits are anything outside of [MAX_SIZE, +MAX].
       // If our range is outside of this, the bound may be large.
-      irange invalid_range (size_type_node, 0, max_size, irange::INVERSE);
-      if (r.intersect (invalid_range).empty_p ())
+      irange invalid_range (size_type_node,
+			    build_int_cst (size_type_node, max_size),
+			    TYPE_MAX_VALUE (size_type_node));
+      /* FIXME:
+	 This needs to be looked at.  It causes:
+	 > FAIL: gcc.dg/Walloca-10.c  (test for warnings, line 22)
+	 > FAIL: gcc.dg/Walloca-12.c  (test for warnings, line 11)
+	 > FAIL: gcc.dg/Walloca-1.c  (test for warnings, line 27)
+	 > FAIL: gcc.dg/Walloca-2.c  (test for warnings, line 39)
+	 > FAIL: gcc.dg/Walloca-3.c  (test for warnings, line 16)
+	 > FAIL: gcc.dg/Walloca-larger-than.c  (test for warnings, line 24)
+	 > FAIL: gcc.dg/Wvla-larger-than-2.c  (test for warnings, line 26)
+	 > FAIL: gcc.dg/Wvla-larger-than-2.c  (test for warnings, line 37)
+      */
+      //if (r.intersect (invalid_range).undefined_p ())
 	return alloca_type_and_limit (ALLOCA_OK);
       return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
 				    wi::to_wide (integer_zero_node));

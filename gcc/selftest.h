@@ -247,13 +247,16 @@ extern void typed_splay_tree_c_tests ();
 extern void unique_ptr_tests_cc_tests ();
 extern void vec_c_tests ();
 extern void vec_perm_indices_c_tests ();
-extern void irange_tests ();
 extern void wide_int_cc_tests ();
 extern void opt_proposer_c_tests ();
 
 extern int num_passes;
 
 } /* end of namespace selftest.  */
+
+/* This is outside of the selftest namespace because it's a friend of
+   class irange.  */
+extern void irange_tests ();
 
 /* Macros for writing tests.  */
 

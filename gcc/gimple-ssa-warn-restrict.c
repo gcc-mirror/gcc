@@ -301,7 +301,7 @@ maybe_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
 static bool
 anti_range_p (const irange &r, irange &anti)
 {
-  tree type = r.get_type ();
+  tree type = r.type ();
   unsigned int precision = TYPE_PRECISION (type);
   wide_int min = wi::min_value (precision, TYPE_SIGN (type));
   wide_int max = wi::max_value (precision, TYPE_SIGN (type));
@@ -309,7 +309,7 @@ anti_range_p (const irange &r, irange &anti)
   if (r.num_pairs () == 2
       && r.lower_bound () == min && r.upper_bound () == max)
     {
-      anti = irange_invert (r);
+      anti = range_invert (r);
       gcc_assert (anti.num_pairs () == 1);
       return true;
     }

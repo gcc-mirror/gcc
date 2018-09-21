@@ -1321,7 +1321,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
 	  irange positives, orig = r;
 	  range_positives (&positives, exptype);
 	  r.intersect (positives);
-	  if (r.empty_p ())
+	  if (r.undefined_p ())
 	    r = orig;
 	}
       /* This will transform [5,10][20,MAX] into [5,10].  */

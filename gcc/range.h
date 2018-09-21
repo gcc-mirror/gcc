@@ -23,329 +23,263 @@ along with GCC; see the file COPYING3.  If not see
 
 class irange_storage;
 
-/* This is a class for working with ranges, currently integer ones.
-   With it you can specify a range of [5,10] (5 through 10 inclusive),
-   or even ranges including multi-part ranges [-10,5][30,40][50,60].
-   This last one specifies the union of the different sub-ranges.
+// This is a class for working with ranges, currently integer ones.
+// With it you can specify a range of [5,10] or even ranges including
+// multi-part ranges [-10,5][30,40][50,60].
+//
+// Inverse ranges are represented as an actual range.  For instance,
+// the inverse of 0 is [-MIN,-1][1,+MAX] for a signed integer.
+//
+// Methods are provided for intersecting and uniting ranges, as well
+// as converting between them.  In performing any of these operations,
+// when no efficient way can be computed, we may default to a more
+// conservative range.
+//
+// For example, the inverse of [5,10][15,20][30,40] is actually
+// [-MIN,4][11,14][21,29][41,+MAX].  If this cannot be efficiently or
+// quickly computed, we may opt to represent the inverse as
+// [-MIN,4][41,+MAX] which is an equivalent conservative
+// representation.
+//
+// This class is not meant to live in long term storage.
+// Consequently, there are no GTY markers.  For long term storage, use
+// the irange_storage class described later.
 
-   Inverse ranges are represented as an actual range.  For instance,
-   the inverse of 0 is [-MIN,-1][1,+MAX] for a signed integer.
-
-   Methods are provided for intersecting and uniting ranges, as well
-   as converting between them.  In performing any of these operations,
-   when no efficient way can be computed, we may default to a more
-   conservative range.
-
-   For example, the inverse of [5,10][15,20][30,40] is actually
-   [-MIN,4][11,14][21,29][41,+MAX].  If this cannot be efficiently or
-   quickly computed, we may opt to represent the inverse as
-   [-MIN,4][41,+MAX] which is an equivalent conservative
-   representation.
-
-   This class is not meant to live in long term storage (GC).
-   Consequently, there are no GTY markers.  For long term storage, use
-   the irange_storage class described later.  */
 class irange
 {
   friend class irange_storage;
- public:
-  /* Maximum number of pairs of ranges allowed.  */
-  static const unsigned int max_pairs = 3;
-
- private:
-  /* Number of items in bounds[].  */
-  unsigned char nitems;
-  /* The type of the range.  */
-  tree type;
-  /* The pairs of sub-ranges in the range.  */
-  wide_int bounds[max_pairs * 2];
-
-  void remove (unsigned i, unsigned j);
-  void canonicalize ();
+  friend void irange_tests ();
 
  public:
-  /* When constructing a range, this specifies wether this is a
-     regular range, or the inverse of a range.  */
+  // Denotes whether this a regular or the inverse of a range.
   enum kind { PLAIN, INVERSE };
-  irange () { type = NULL_TREE; nitems = 0; }
-  explicit irange (tree t) { set_range (t); }
-  irange (tree typ, const wide_int &lbound, const wide_int &ubound,
-	  kind rt = PLAIN)
-    { set_range (typ, lbound, ubound, rt); }
-  irange (tree typ, tree lbound, tree ubound,
-	  kind rt = PLAIN)
-    { set_range (typ, wi::to_wide (lbound), wi::to_wide (ubound), rt); }
-  irange (const irange &);
-  irange (const irange_storage *stor, tree typ) { set_range (stor, typ); }
-  irange (tree t, int x, int y, kind k = PLAIN)
-						    { set_range (t, x, y, k); }
 
-  void set_range (const irange_storage *, tree);
-  void set_range (tree ssa);
-  void set_range (tree, const wide_int &lbound, const wide_int &ubound,
-		  kind rt = PLAIN);
-  void set_range (tree typ, tree lbound, tree ubound,
-		  kind rt = PLAIN)
-    { set_range (typ, wi::to_wide (lbound), wi::to_wide (ubound), rt);  }
-  void set_range (tree t, int x, int y, kind rt = PLAIN);
-  void set_range_for_type (tree);
+  irange ();
+  irange (tree type);
+  irange (tree type, const wide_int &, const wide_int &, kind = PLAIN);
+  irange (tree type, tree, tree, kind = PLAIN);
+  irange (const irange_storage *, tree type);
 
-  unsigned num_pairs () const { return nitems / 2; }
-  /* Returns the lower bound of PAIR.  */
-  wide_int lower_bound (unsigned pair = 0) const
-    {
-      gcc_assert (nitems != 0 && pair <= num_pairs ());
-      return bounds[pair * 2];
-    }
-  /* Returns the uppermost bound.  */
-  wide_int upper_bound () const
-    {
-      gcc_assert (nitems != 0);
-      return bounds[nitems - 1];
-    }
+  void set_varying (tree);
+  void set_undefined (tree = NULL);
+
+  unsigned num_pairs () const;
+  void remove_pair (unsigned pair);
+  wide_int lower_bound (unsigned pair = 0) const;
+  wide_int upper_bound () const;
   wide_int upper_bound (unsigned pair) const;
 
-  /* Remove a sub-range from a range.  PAIR is the zero-based
-     sub-range to remove.  */
-  void remove_pair (unsigned pair) { remove (pair * 2, pair * 2 + 1); }
-  void clear () { nitems = 0; }
-  void clear (tree t) { type = t; nitems = 0; }
-  bool empty_p () const { return !nitems; }
-  bool range_for_type_p () const;
-  bool simple_range_p () const { return nitems == 2; }
-  bool zero_p () const { return *this == irange (type, 0, 0); }
-  bool non_zero_p () const
-    {
-      irange nz;
-      nz.set_range (type, 0, 0, INVERSE);
-      return *this == nz;
-    }
-  inline bool singleton_p (wide_int &) const;
+  tree type () const { return m_type; }
 
-  void dump () const;
-  void dump (pretty_printer *pp) const;
-  void dump (FILE *) const;
-
-  bool valid_p () const;
   void cast (tree type);
+
+  bool undefined_p () const;
+  bool varying_p () const;
+  bool zero_p () const;
+  bool non_zero_p () const;
+  bool singleton_p (wide_int &) const;
   bool contains_p (const wide_int &element) const;
   bool contains_p (tree) const;
-  bool contains_p (int) const;
-
-  tree get_type () const { return type; }
-
-  void intersect_mask (const wide_int& mask);
-
-  irange& operator= (const irange &r);
-  irange& operator= (tree t);
 
   bool operator== (const irange &r) const;
-  bool operator!= (const irange &r) const { return !(*this == r); }
+  bool operator!= (const irange &r) const;
 
   irange &union_ (const wide_int &x, const wide_int &y);
   irange &union_ (const irange &r);
   irange &intersect (const wide_int &x, const wide_int &y);
   irange &intersect (const irange &r);
   irange &invert ();
-};
 
-/* Return TRUE if range contains exactly one element.  If so, set ELEM
-   to said element.  */
+  void dump () const;
+  void dump (FILE *) const;
 
-inline bool
-irange::singleton_p (wide_int &elem) const
-{
-  if (num_pairs () == 1 && bounds[0] == bounds[1])
-    {
-      elem = bounds[0];
-      return true;
-    }
-  return false;
-}
+private:
+  void init (tree type, const wide_int &, const wide_int &, kind = PLAIN);
+  void init (tree type, tree, tree, kind = PLAIN);
+  void init (const irange_storage *, tree);
+  void canonicalize ();
+  void set_lower_bound (unsigned pair, const wide_int &);
+  void set_upper_bound (unsigned pair, const wide_int &);
+  void dump (pretty_printer *pp) const;
+  bool valid_p () const;
 
-/* Return R1 U R2.  */
-static inline
-irange irange_union (const irange &r1, const irange &r2)
-{
-  return irange (r1).union_ (r2);
-}
-
-/* Return R1 ^ R2.  */
-static inline
-irange irange_intersect (const irange &r1, const irange &r2)
-{
-  return irange (r1).intersect (r2);
-}
-
-/* Return the inverse range of R1.  */
-static inline
-irange irange_invert (const irange &r1)
-{
-  return irange (r1).invert ();
-}
+  tree m_type;
+  unsigned char m_nitems;
+  static const unsigned int m_max_pairs = 3;
+  wide_int m_bounds[m_max_pairs * 2];
+}; // class irange
 
 void range_zero (irange *r, tree type);
-void range_one (irange *r, tree type);
-bool range_non_zero (irange *r, tree type);
-static inline void
-range_positives (irange *r, tree type)
-{
-  r->set_range (type, build_int_cst (type, 0), TYPE_MAX_VALUE (type));
-}
-static inline void
-range_negatives (irange *r, tree type)
-{
-  r->set_range (type, TYPE_MIN_VALUE (type), build_int_cst (type, -1));
-}
+void range_non_zero (irange *r, tree type);
+irange range_intersect (const irange &, const irange &);
+irange range_union (const irange &, const irange &);
+irange range_invert (const irange &);
+irange range_from_ssa (tree ssa);
+void range_positives (irange *r, tree type);
+void range_negatives (irange *r, tree type);
+void value_range_to_irange (irange &, tree type, const value_range &);
+void value_range_to_irange (irange &, tree type, enum value_range_type kind,
+			    const wide_int &, const wide_int &);
+void irange_to_value_range (value_range &, const irange &);
 
-/* Convert a value_range to an irange and store it in R.
-   TYPE is the SSA type.
-   KIND, MIN, and MAX are as in a value_range.  */
-
-static inline void
-value_range_to_irange (irange &r,
-		       tree type, enum value_range_type kind,
-		       const wide_int &min, const wide_int &max)
+inline
+irange::irange () : m_type (NULL), m_nitems (0)
 {
-  gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
-  if (kind == VR_VARYING || kind == VR_UNDEFINED)
-    r.set_range_for_type (type);
-  else
-    r.set_range (type, min, max,
-		 kind == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
 }
 
-/* Same as above, but takes an entire value_range instead of piecemeal.  */
-
-static inline void
-value_range_to_irange (irange &r, tree type, const value_range &vr)
+inline wide_int
+irange::lower_bound (unsigned pair) const
 {
-  if (vr.type == VR_VARYING || vr.type == VR_UNDEFINED)
-    r.set_range_for_type (type);
-  else
-    value_range_to_irange (r, TREE_TYPE (vr.min), vr.type,
-			   wi::to_wide (vr.min),
-			   wi::to_wide (vr.max));
+  return m_bounds[pair * 2];
 }
 
-void irange_to_value_range (value_range &vr, const irange &);
+inline wide_int
+irange::upper_bound () const
+{
+  return m_bounds[m_nitems - 1];
+}
 
-/* An irange is inefficient when it comes to memory, so this class is
-   used to store iranges in memory (off of an SSA_NAME likely).  It is
-   a variable length structure that contains the sub-range pairs as
-   well as the non-zero bitmask.  The number of entries are
-   irnage::max_pairs * 2 + 1 (to accomodate the non-zero bits).
+inline wide_int
+irange::upper_bound (unsigned pair) const
+{
+  return m_bounds[pair * 2 + 1];
+}
 
-   To store an irange class X into this memory efficient irange_storage
-   class use:
+inline void
+irange::set_lower_bound (unsigned pair, const wide_int &i)
+{
+  m_bounds[pair * 2 ] = i;
+}
 
-	irange X;
-	irange_storage *stow = irange_storage::ggc_alloc_init (X);
-   or
-	irange_storage *stow = irange_storage::ggc_alloc (precision);
-	stow->set_irange (X);
+inline void
+irange::set_upper_bound (unsigned pair, const wide_int &i)
+{
+  m_bounds[pair * 2 + 1] = i;
+}
 
-   To convert it back to an irange use:
+inline unsigned
+irange::num_pairs () const
+{
+  return m_nitems / 2;
+}
 
-	tree type = ...;
-	irange X (stow, type);
-   or
-	if (SSA_NAME_RANGE_INFO (ssa)) {
-	  irange X (ssa);
-	  ...
-	}
-   or
-	irange x;
-	stow->extract_irange (x, TYPE);
+inline bool
+irange::undefined_p () const
+{
+  return !m_nitems;
+}
 
-   To get at the nonzero bits use:
+inline void
+irange::set_undefined (tree type)
+{
+  if (type)
+    m_type = type;
+  m_nitems = 0;
+}
 
-	irange_storage *stow = ...;
-	stow->set_nonzero_bits();
-	stow->get_nonzero_bits();
-*/
+// Return TYPE if it is a valid type for irange to operator on.
+// Otherwise return NULL.
+
+static inline tree
+valid_irange_type (tree type)
+{
+  if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
+    return type;
+  return NULL;
+}
+
+// Return SSA if it is an SSA_NAME with a valid type for irange to
+// operator on.  Otherwise return NULL.
+
+static inline tree
+valid_irange_ssa (tree ssa)
+{
+  if (ssa && TREE_CODE (ssa) == SSA_NAME && !SSA_NAME_IS_VIRTUAL_OPERAND (ssa)
+      && valid_irange_type (TREE_TYPE (ssa)))
+    return ssa;
+  return NULL;
+}
+
+// An irange is memory inefficient, so this class is used to store
+// them in memory.  It is a variable length structure that contains
+// the sub-range pairs as well as the non-zero bitmask.  The number of
+// entries are m_max_pairs * 2 + 1 (to accomodate the non-zero bits).
+//
+// To store an irange class X into an irange_storage use:
+//
+// 	irange X;
+// 	irange_storage *stow = irange_storage::ggc_alloc_init (X);
+//
+// To convert it back into an irange use:
+//
+// 	tree type = ...;
+// 	irange X (stow, type);
+// or
+// 	if (SSA_NAME_RANGE_INFO (ssa)) {
+// 	  irange X (ssa);
+// 	  ...
+// 	}
+//
+// To get at the nonzero bits:
+//
+// 	irange_storage *stow = ...;
+// 	stow->set_nonzero_bits();
+// 	stow->get_nonzero_bits();
 
 class GTY((variable_size)) irange_storage
 {
   friend class irange;
+
  public:
-  /* These are the pair of subranges for the irange.  The last
-     wide_int allocated is a mask representing which bits in an
-     integer are known to be non-zero.  */
-  trailing_wide_ints<irange::max_pairs * 2 + 1> trailing_bounds;
-
   void set_irange (const irange &);
-  /* Returns the size of an irange_storage with PRECISION.  */
-  static size_t size (unsigned precision)
-  { return sizeof (irange_storage)
-      /* There is a +1 for the non-zero bits field.  */
-      + trailing_wide_ints<irange::max_pairs * 2 + 1>::extra_size (precision);
-  }
-  /* Allocate GC memory for an irange_storage with PRECISION.
+  void set_nonzero_bits (const wide_int &);
+  wide_int get_nonzero_bits ();
+  static irange_storage *ggc_alloc_init (const irange &);
 
-     Note: The precision is set, but the irange_storage returned is
-     otherwise uninitialized.  The caller must still call
-     stow->set_irange().  */
-  static irange_storage *ggc_alloc (unsigned precision)
-  { irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
-							  (size (precision)));
-    stow->trailing_bounds.set_precision (precision);
-    stow->set_nonzero_bits (wi::shwi (-1, precision));
-    return stow;
-  }
-  /* Like irange_storage::ggc_alloc (), but initialize the storage to
-     the range in IR.  */
-  static irange_storage *ggc_alloc_init (const irange &ir)
-  {
-    unsigned precision = TYPE_PRECISION (ir.type);
-    irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
-							  (size (precision)));
-    stow->set_irange (ir);
-    stow->set_nonzero_bits (wi::shwi (-1, precision));
-    return stow;
-  }
-  /* Extract the current range onto OUTPUT with a type of TYP.
-     Returns the range.  */
-  inline irange &extract_irange (irange &output, tree typ);
-  /* Set the nonzero bit mask to WI.  */
-  void set_nonzero_bits (const wide_int &wi)
-  { trailing_bounds[irange::max_pairs * 2] = wi; }
-  /* Return the nonzero bits in the range.  */
-  wide_int get_nonzero_bits (void)
-  { return trailing_bounds[irange::max_pairs * 2]; }
+ private:
+  static size_t size (unsigned precision);
+
+  // The last wide_int in this field is a mask representing which bits in
+  // an integer are known to be non-zero.
+  trailing_wide_ints<irange::m_max_pairs * 2 + 1> trailing_bounds;
 };
 
-/* Extract the range in THIS and store it in OUTPUT with a type of TYP.
-   Returns OUTPUT.  */
+// Return the nonzero bits in the range.
 
-inline irange &
-irange_storage::extract_irange (irange &output, tree typ)
+inline wide_int
+irange_storage::get_nonzero_bits ()
 {
-  output.set_range (this, typ);
-  return output;
+  return trailing_bounds[irange::m_max_pairs * 2];
 }
 
-// ----------------------------------------------------------------------
-
-/* Return T if it is a valid type for irange to operator on. 
-   Otherwise return NULL_TREE.  */
-static inline
-tree valid_irange_type (tree t)
+// Set the nonzero bit mask to WI.
+inline void
+irange_storage::set_nonzero_bits (const wide_int &wi)
 {
-  if (t && (INTEGRAL_TYPE_P (t) || POINTER_TYPE_P (t)))
-    return t;
-  return NULL_TREE;
+  trailing_bounds[irange::m_max_pairs * 2] = wi;
 }
 
-/* Return T if it is an SSA_NAME and a valid type for irange to operator on. 
-   Otherwise return NULL_TREE.  */
-static inline
-tree valid_irange_ssa (tree t)
+// Returns the size of an irange_storage with PRECISION.
+
+inline size_t
+irange_storage::size (unsigned precision)
 {
-  if (t && TREE_CODE (t) == SSA_NAME && !SSA_NAME_IS_VIRTUAL_OPERAND (t)
-      && valid_irange_type (TREE_TYPE (t)))
-    return t;
-  return NULL_TREE;
+  return sizeof (irange_storage)
+    /* There is a +1 for the non-zero bits field.  */
+    + trailing_wide_ints<irange::m_max_pairs * 2 + 1>::extra_size (precision);
+}
+
+// Allocate GC memory for an irange_storage with PRECISION and initialize it to IR.
+
+inline irange_storage *
+irange_storage::ggc_alloc_init (const irange &ir)
+{
+  unsigned precision = TYPE_PRECISION (ir.m_type);
+  irange_storage *stow = static_cast<irange_storage *> (ggc_internal_alloc
+							(size (precision)));
+  stow->set_irange (ir);
+  stow->set_nonzero_bits (wi::shwi (-1, precision));
+  return stow;
 }
 
 #endif // GCC_RANGE_H

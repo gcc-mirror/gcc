@@ -424,9 +424,11 @@ gori_map::dump(FILE *f)
 
 /* -------------------------------------------------------------------------*/
 
-block_ranger::block_ranger () : m_bool_zero (boolean_type_node, 0, 0),
-				m_bool_one (boolean_type_node, 1, 1)
+block_ranger::block_ranger ()
 {
+  unsigned prec = TYPE_PRECISION (boolean_type_node);
+  m_bool_zero = irange (boolean_type_node, wi::zero (prec), wi::zero (prec));
+  m_bool_one = irange (boolean_type_node, wi::one (prec), wi::one (prec));
   m_gori = new gori_map ();
 }
 
@@ -450,11 +452,11 @@ block_ranger::get_operand_range (irange& r, tree op,
 
   // Integers are simply a range [op,op].
   if (TREE_CODE (op) == INTEGER_CST)
-    r.set_range (TREE_TYPE (op), op, op);
+    r = irange (TREE_TYPE (op), op, op);
   else
     // IF its an ssa_name, query gcc's current global range, if one is known.
     if (TREE_CODE (op) == SSA_NAME)
-      r = op;
+      r = range_from_ssa (op);
     else
       // If an operand is an ADDR_EXPR constant (Which can happen in a phi
       // argument) simply check to see if its a non-zero.
@@ -463,16 +465,16 @@ block_ranger::get_operand_range (irange& r, tree op,
 	  bool ov;
 	  // handle &var which can show up in phi arguments
 	  if (tree_single_nonzero_warnv_p (op, &ov))
-	    r.set_range (TREE_TYPE (op), 0, 0, irange::INVERSE);
+	    range_non_zero (&r, TREE_TYPE (op));
 	  else
-	    r.set_range_for_type (TREE_TYPE (op));
+	    r.set_varying (TREE_TYPE (op));
 	}
       else
         // If its a TYPE node, set the range for the type.
 	if (TYPE_P (op))
-	  r.set_range_for_type (op);
+	  r.set_varying (op);
 	else // Default to range for the type of the expression.   */
-	  r.set_range_for_type (TREE_TYPE (op));
+	  r.set_varying (TREE_TYPE (op));
 
   return true;
 }
@@ -539,7 +541,7 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
     }
   if (!ret || !stmt.fold_logical (r, lhs, op1_true, op1_false, op2_true,
 				  op2_false))
-    r.set_range_for_type (TREE_TYPE (name));
+    r.set_varying (TREE_TYPE (name));
   return true;
 }
 
@@ -559,9 +561,9 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
     return false;
 
   // Empty ranges are viral as they are on a path which isn't executable.
-  if (lhs.empty_p ())
+  if (lhs.undefined_p ())
     {
-      r.clear (TREE_TYPE (name));
+      r.set_undefined (TREE_TYPE (name));
       return true;
     }
 

@@ -63,9 +63,9 @@ min_limit (const_tree type)
 inline bool
 empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
 {
-  if (op1.empty_p () || op2.empty_p ())
+  if (op1.undefined_p () || op2.undefined_p ())
     {
-      r.clear (type);
+      r.set_undefined (type);
       return true;
     }
   else
@@ -88,7 +88,7 @@ accumulate_range (irange& r,
 		  const wide_int &ub, wi::overflow_type ov_ub,
 		  bool overflow_wraps = false)
 {
-  tree type = r.get_type ();
+  tree type = r.type ();
   if (overflow_wraps)
     {
       // No overflow or both overflow or underflow.  The range can be
@@ -108,7 +108,7 @@ accumulate_range (irange& r,
 	  r.union_ (min_limit (type), ub);
 	}
       else
-	r.set_range_for_type (type);
+	r.set_varying (type);
     }
   else
     {
@@ -157,7 +157,7 @@ accumulate_range_and_canonicalize (signop s,
      add_to_range to create the range correctly.  This is essentially
      what set_and_canonicalize_value_range was doing.  */
   wi::overflow_type overflow;
-  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.get_type ());
+  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.type ());
   if (wi::gt_p (new_lb, new_ub, s))
     {
       overflow = wi::OVF_OVERFLOW;
@@ -212,16 +212,16 @@ static bool_range_state
 get_bool_state (irange& r, const irange& lhs, tree val_type)
 {
   /* If there is no result, then this is unexectuable, so no range. */
-  if (lhs.empty_p ())
+  if (lhs.undefined_p ())
     {
-      r.clear (val_type);
+      r.set_undefined (val_type);
       return BRS_EMPTY;
     }
 
   // if the bounds arent the same, then its not a constant.  */
   if (!wi::eq_p (lhs.upper_bound (), lhs.lower_bound ()))
     {
-      r.set_range_for_type (val_type);
+      r.set_varying (val_type);
       return BRS_FULL;
     }
 
@@ -251,6 +251,20 @@ operator_equal::dump (FILE *f) const
   fprintf (f, " == ");
 }
 
+static irange
+range_true ()
+{
+  unsigned prec = TYPE_PRECISION (boolean_type_node);
+  return irange (boolean_type_node, wi::one (prec), wi::one (prec));
+}
+
+static irange
+range_false ()
+{
+  unsigned prec = TYPE_PRECISION (boolean_type_node);
+  return irange (boolean_type_node, wi::zero (prec), wi::zero (prec));
+}
+
 /* Fold comparison of the 2 ranges.  */
 bool
 operator_equal::fold_range (irange& r, const irange& op1,
@@ -265,19 +279,19 @@ operator_equal::fold_range (irange& r, const irange& op1,
       && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
     {
       if (wi::eq_p (op1.lower_bound (), op2.upper_bound()))
-	r.set_range (boolean_type_node, 1, 1);
+	r = range_true ();
       else
-	r.set_range (boolean_type_node, 0, 0);
+	r = range_false ();
     }
   else
     {
       /* If ranges do not intersect, we know the range is not equal, otherwise
          we don;t really know anything for sure.  */
-      r = irange_intersect (op1, op2);
-      if (r.empty_p ())
-	r.set_range (boolean_type_node, 0, 0);
+      r = range_intersect (op1, op2);
+      if (r.undefined_p ())
+	r = range_false ();
       else
-	r.set_range_for_type (boolean_type_node);
+	r.set_varying (boolean_type_node);
     }
 
   return true;
@@ -287,15 +301,15 @@ bool
 operator_equal::op1_irange (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_FALSE:
         /* If the result is false, the only time we know anything is if OP2 is
 	   a constant.  */
 	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = irange_invert (op2);
+	  r = range_invert (op2);
 	else
-	  r.set_range_for_type (op2.get_type ());
+	  r.set_varying (op2.type ());
 	break;
 
       case BRS_TRUE:
@@ -355,19 +369,19 @@ operator_not_equal::fold_range (irange& r, const irange& op1,
       && wi::eq_p (op2.lower_bound (), op2.upper_bound ()))
     {
       if (wi::ne_p (op1.lower_bound (), op2.upper_bound()))
-	r.set_range (boolean_type_node, 1, 1);
+	r = range_true ();
       else
-	r.set_range (boolean_type_node, 0, 0);
+	r = range_false ();
     }
   else
     {
       /* If ranges do not intersect, we know the range is not equal, otherwise
          we don;t really know anything for sure.  */
-      r = irange_intersect (op1, op2);
-      if (r.empty_p ())
-	r.set_range (boolean_type_node, 1, 1);
+      r = range_intersect (op1, op2);
+      if (r.undefined_p ())
+	r = range_true ();
       else
-	r.set_range_for_type (boolean_type_node);
+	r.set_varying (boolean_type_node);
     }
 
   return true;
@@ -378,15 +392,15 @@ bool
 operator_not_equal::op1_irange (irange& r, const irange& lhs,
 				const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_TRUE:
         /* If the result is true, the only time we know anything is if OP2 is
 	   a constant.  */
 	if (wi::eq_p (op2.lower_bound(), op2.upper_bound()))
-	  r = irange_invert (op2);
+	  r = range_invert (op2);
 	else
-	  r.set_range_for_type (op2.get_type ());
+	  r.set_varying (op2.type ());
 	break;
 
       case BRS_FALSE:
@@ -421,16 +435,16 @@ build_lt (irange& r, tree type, const wide_int& val)
 
   /* If val - 1 underflows, check is X < MIN, which is an empty range.  */
   if (ov)
-    r.clear (type);
+    r.set_undefined (type);
   else
-    r.set_range (type, min_limit (type), lim);
+    r = irange (type, min_limit (type), lim);
 }
 
 /* (X <= VAL) produces the a range of [MIN, VAL]  */
 static void
 build_le (irange& r, tree type, const wide_int& val)
 {
-  r.set_range (type, min_limit (type), val);
+  r = irange (type, min_limit (type), val);
 }
 
 /* (X > VAL) produces the a range of [VAL + 1, MAX]  */
@@ -441,16 +455,16 @@ build_gt (irange& r, tree type, const wide_int& val)
   wide_int lim = wi::add (val, 1, TYPE_SIGN (type), &ov);
   /* If val + 1 overflows, check is for X > MAX , which is an empty range.  */
   if (ov)
-    r.clear (type);
+    r.set_undefined (type);
   else
-    r.set_range (type, lim, max_limit (type));
+    r = irange (type, lim, max_limit (type));
 }
 
 /* (X >= val) produces the a range of [VAL, MAX]  */
 static void
 build_ge (irange& r, tree type, const wide_int& val)
 {
-  r.set_range (type, val, max_limit (type));
+  r = irange (type, val, max_limit (type));
 }
 
 
@@ -480,16 +494,16 @@ operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
   if (empty_range_check (r, op1, op2, boolean_type_node))
     return true;
 
-  signop sign = TYPE_SIGN (op1.get_type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::lt_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r.set_range (boolean_type_node, 1, 1);
+    r = range_true ();
   else
     if (!wi::lt_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r.set_range (boolean_type_node, 0 ,0);
+      r = range_false ();
     else 
-      r.set_range_for_type (boolean_type_node);
+      r.set_varying (boolean_type_node);
   return true;
 }
 
@@ -497,14 +511,14 @@ operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
 bool
 operator_lt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_TRUE:
-	build_lt (r, op2.get_type (), op2.upper_bound ());
+	build_lt (r, op2.type (), op2.upper_bound ());
 	break;
 
       case BRS_FALSE:
-	build_ge (r, op2.get_type (), op2.lower_bound ());
+	build_ge (r, op2.type (), op2.lower_bound ());
 	break;
 
       default:
@@ -517,14 +531,14 @@ operator_lt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 bool
 operator_lt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 {
-  switch (get_bool_state (r, lhs, op1.get_type ()))
+  switch (get_bool_state (r, lhs, op1.type ()))
     {
       case BRS_FALSE:
-	build_le (r, op1.get_type (), op1.upper_bound ());
+	build_le (r, op1.type (), op1.upper_bound ());
 	break;
 
       case BRS_TRUE:
-	build_gt (r, op1.get_type (), op1.lower_bound ());
+	build_gt (r, op1.type (), op1.lower_bound ());
 	break;
 
       default:
@@ -559,30 +573,30 @@ operator_le::fold_range (irange& r, const irange& op1, const irange& op2) const
   if (empty_range_check (r, op1, op2, boolean_type_node))
     return true;
 
-  signop sign = TYPE_SIGN (op1.get_type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::le_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r.set_range (boolean_type_node, 1, 1);
+    r = range_true ();
   else
     if (!wi::le_p (op1.lower_bound (), op2.upper_bound (), sign))
-      r.set_range (boolean_type_node, 0 ,0);
+      r = range_false ();
     else 
-      r.set_range_for_type (boolean_type_node);
+      r.set_varying (boolean_type_node);
   return true;
 }
 
 bool
 operator_le::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_TRUE:
-	build_le (r, op2.get_type (), op2.upper_bound ());
+	build_le (r, op2.type (), op2.upper_bound ());
 	break;
 
       case BRS_FALSE:
-	build_gt (r, op2.get_type (), op2.lower_bound ());
+	build_gt (r, op2.type (), op2.lower_bound ());
 	break;
 
       default:
@@ -595,14 +609,14 @@ operator_le::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 bool
 operator_le::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 {
-  switch (get_bool_state (r, lhs, op1.get_type ()))
+  switch (get_bool_state (r, lhs, op1.type ()))
     {
       case BRS_FALSE:
-	build_lt (r, op1.get_type (), op1.upper_bound ());
+	build_lt (r, op1.type (), op1.upper_bound ());
 	break;
 
       case BRS_TRUE:
-	build_ge (r, op1.get_type (), op1.lower_bound ());
+	build_ge (r, op1.type (), op1.lower_bound ());
 	break;
 
       default:
@@ -638,16 +652,16 @@ operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
   if (empty_range_check (r, op1, op2, boolean_type_node))
     return true;
 
-  signop sign = TYPE_SIGN (op1.get_type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::gt_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r.set_range (boolean_type_node, 1, 1);
+    r = range_true ();
   else
     if (!wi::gt_p (op1.upper_bound (), op2.lower_bound (), sign))
-    r.set_range (boolean_type_node, 0, 0);
+      r = range_false ();
     else 
-      r.set_range_for_type (boolean_type_node);
+      r.set_varying (boolean_type_node);
 
   return true;
 }
@@ -655,14 +669,14 @@ operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
 bool
 operator_gt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_TRUE:
-	build_gt (r, op2.get_type (), op2.lower_bound ());
+	build_gt (r, op2.type (), op2.lower_bound ());
 	break;
 
       case BRS_FALSE:
-	build_le (r, op2.get_type (), op2.upper_bound ());
+	build_le (r, op2.type (), op2.upper_bound ());
 	break;
 
       default:
@@ -675,14 +689,14 @@ operator_gt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 bool
 operator_gt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 {
-  switch (get_bool_state (r, lhs, op1.get_type ()))
+  switch (get_bool_state (r, lhs, op1.type ()))
     {
       case BRS_FALSE:
-	build_ge (r, op1.get_type (), op1.lower_bound ());
+	build_ge (r, op1.type (), op1.lower_bound ());
 	break;
 
       case BRS_TRUE:
-	build_lt (r, op1.get_type (), op1.upper_bound ());
+	build_lt (r, op1.type (), op1.upper_bound ());
 	break;
 
       default:
@@ -718,16 +732,16 @@ operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
   if (empty_range_check (r, op1, op2, boolean_type_node))
     return true;
 
-  signop sign = TYPE_SIGN (op1.get_type ());
-  gcc_checking_assert (sign == TYPE_SIGN (op2.get_type ()));
+  signop sign = TYPE_SIGN (op1.type ());
+  gcc_checking_assert (sign == TYPE_SIGN (op2.type ()));
 
   if (wi::ge_p (op1.lower_bound (), op2.upper_bound (), sign))
-    r.set_range (boolean_type_node, 1 , 1);
+    r = range_true ();
   else
     if (!wi::ge_p (op1.upper_bound (), op2.lower_bound (), sign))
-      r.set_range (boolean_type_node, 0 , 0);
+      r = range_false ();
     else 
-      r.set_range_for_type (boolean_type_node);
+      r.set_varying (boolean_type_node);
 
   return true;
 } 
@@ -735,14 +749,14 @@ operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
 bool
 operator_ge::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 {
-  switch (get_bool_state (r, lhs, op2.get_type ()))
+  switch (get_bool_state (r, lhs, op2.type ()))
     {
       case BRS_TRUE:
-	build_ge (r, op2.get_type (), op2.lower_bound ());
+	build_ge (r, op2.type (), op2.lower_bound ());
 	break;
 
       case BRS_FALSE:
-	build_lt (r, op2.get_type (), op2.upper_bound ());
+	build_lt (r, op2.type (), op2.upper_bound ());
 	break;
 
       default:
@@ -755,14 +769,14 @@ operator_ge::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 bool
 operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 {
-  switch (get_bool_state (r, lhs, op1.get_type ()))
+  switch (get_bool_state (r, lhs, op1.type ()))
     {
       case BRS_FALSE:
-	build_gt (r, op1.get_type (), op1.lower_bound ());
+	build_gt (r, op1.type (), op1.lower_bound ());
 	break;
 
       case BRS_TRUE:
-	build_le (r, op1.get_type (), op1.upper_bound ());
+	build_le (r, op1.type (), op1.upper_bound ());
 	break;
 
       default:
@@ -784,9 +798,9 @@ irange_multiplicative_op (enum tree_code code, signop s, irange& r,
 			  const wide_int& rh_lb, const wide_int& rh_ub)
 {
   wide_int new_lb, new_ub;
-  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (r.get_type ());
-  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.get_type ());
-  unsigned prec = TYPE_PRECISION (r.get_type ());
+  bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (r.type ());
+  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.type ());
+  unsigned prec = TYPE_PRECISION (r.type ());
   if (wide_int_range_multiplicative_op (new_lb, new_ub,
 					code, s, prec,
 					lh_lb, lh_ub, rh_lb, rh_ub,
@@ -876,11 +890,11 @@ irange_pointer_optimization (enum tree_code code, signop s, irange &r,
 			     const wide_int &lh_lb, const wide_int &lh_ub,
 			     const wide_int &rh_lb, const wide_int &rh_ub)
 {
-  tree type = r.get_type ();
+  tree type = r.type ();
   wide_int_range_nullness n;
   n = wide_int_range_pointer (code, s, lh_lb, lh_ub, rh_lb, rh_ub);
   if (n == WIDE_INT_RANGE_UNKNOWN)
-    r.set_range_for_type (type);
+    r.set_varying (type);
   else if (n == WIDE_INT_RANGE_NULL)
     {
       irange zero;
@@ -914,9 +928,10 @@ irange_adjust_bit_and_mask (irange &r, signop s,
      this to [0,0][4, 60].  */
   wide_int mask, lower_bound, upper_bound;
   int tz;
-  tree type = r.get_type ();
-  irange zero (type, 0, 0);
-  bool range_contains_zero = !irange_intersect (r, zero).empty_p ();
+  tree type = r.type ();
+  irange zero;
+  range_zero (&zero, type);
+  bool range_contains_zero = !range_intersect (r, zero).undefined_p ();
   if (range_contains_zero
       && wide_int_range_get_mask_and_bounds (mask,
 					     lower_bound,
@@ -938,16 +953,16 @@ irange_adjust_bit_and_mask (irange &r, signop s,
       else
 	{
 	  positives = r;
-	  negatives.clear (type);
+	  negatives.set_undefined (type);
 	}
-      if (!positives.empty_p ())
+      if (!positives.undefined_p ())
 	{
 	  // Mask out the positive numbers that can't happen.
 	  lb = wi::shifted_mask (tz, 1, false, prec);
 	  ub = positives.upper_bound();
 	  positives.intersect (lb, ub);
 	}
-      if (!negatives.empty_p ())
+      if (!negatives.undefined_p ())
 	{
 	  // Mask out the negatives numbers that can't happen.
 	  lb = wi::min_value (prec, s);
@@ -977,7 +992,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 {
   wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
-  tree type = r.get_type ();
+  tree type = r.type ();
 
   if (POINTER_TYPE_P (type))
     {
@@ -1004,7 +1019,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
     case MULT_EXPR:
       if (irange_multiplicative_op (code, s, r, lh_lb, lh_ub, rh_lb, rh_ub))
 	return true;
-      r.set_range_for_type (type);
+      r.set_varying (type);
       return false;
 
     case RSHIFT_EXPR:
@@ -1013,7 +1028,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	  && irange_multiplicative_op (code, s, r,
 				       lh_lb, lh_ub, rh_lb, rh_ub))
 	return true;
-      r.set_range_for_type (type);
+      r.set_varying (type);
       return false;
 
     case LSHIFT_EXPR:
@@ -1027,7 +1042,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	  accumulate_range_and_canonicalize (s, r, new_lb, new_ub);
 	  return true;
 	}
-      r.set_range_for_type (type);
+      r.set_varying (type);
       return false;
 
     case BIT_AND_EXPR:
@@ -1054,7 +1069,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    irange_adjust_bit_and_mask (r, s, lh_lb, lh_ub, rh_lb, rh_ub);
 	    return true;
 	  }
-	r.set_range_for_type (type);
+	r.set_varying (type);
 	return false;
       }
 
@@ -1079,7 +1094,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    accumulate_range (r, new_lb, new_ub);
 	    return true;
 	  }
-	r.set_range_for_type (type);
+	r.set_varying (type);
 	return false;
       }
 
@@ -1102,7 +1117,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	    accumulate_range (r, new_lb, new_ub);
 	    return true;
 	  }
-	r.set_range_for_type (type);
+	r.set_varying (type);
 	return false;
       }
 
@@ -1143,21 +1158,21 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 	      accumulate_range (r, extra_min, extra_max);
 	    return true;
 	  }
-	r.set_range_for_type (type);
+	r.set_varying (type);
 	return false;
       }
 
     case ABS_EXPR:
       if (wide_int_range_abs (new_lb, new_ub,
-			      TYPE_SIGN (r.get_type ()),
-			      TYPE_PRECISION (r.get_type ()),
+			      TYPE_SIGN (r.type ()),
+			      TYPE_PRECISION (r.type ()),
 			      lh_lb, lh_ub,
-			      TYPE_OVERFLOW_UNDEFINED (r.get_type ())))
+			      TYPE_OVERFLOW_UNDEFINED (r.type ())))
 	{
 	  r.union_ (new_lb, new_ub);
 	  return true;
 	}
-      r.set_range_for_type (type);
+      r.set_varying (type);
       return false;
 
     default:
@@ -1170,8 +1185,8 @@ static bool
 op_ir (enum tree_code code, irange& r, const wide_int& lh, const irange& rh)
 {
   unsigned x;
-  signop s = TYPE_SIGN (r.get_type ());
-  r.clear (r.get_type ());
+  signop s = TYPE_SIGN (r.type ());
+  r.set_undefined (r.type ());
   for (x = 0; x < rh.num_pairs () ; x++)
     {
       if (!op_wi (code, s, r, lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
@@ -1185,9 +1200,9 @@ static bool
 op_ri (enum tree_code code, irange& r, const irange& lh, const wide_int& rh)
 {
   unsigned x;
-  signop s = TYPE_SIGN (r.get_type ());
+  signop s = TYPE_SIGN (r.type ());
 
-  r.clear (r.get_type ());
+  r.set_undefined (r.type ());
   for (x = 0; x < lh.num_pairs () ; x++)
     {
       if (!op_wi (code, s, r, lh.lower_bound (x), lh.upper_bound (x), rh, rh))
@@ -1201,11 +1216,11 @@ static bool
 op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 {
   bool res = false;
-  tree type = lh.get_type ();
+  tree type = lh.type ();
   // Clear and set result type.
-  r.clear (type);
+  r.set_undefined (type);
 
-  if (lh.empty_p () || rh.empty_p ())
+  if (lh.undefined_p () || rh.undefined_p ())
     return true;
 
   /* Try constant cases first to see if we do anything special with them. */
@@ -1229,7 +1244,7 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 	  }
     }
 
-  return res && !r.range_for_type_p ();
+  return res && !r.varying_p ();
 }
 
 /* Perform a unary operation on a range.  */
@@ -1238,11 +1253,11 @@ static bool
 op_rr_unary (enum tree_code code, irange &r, const irange &lh)
 {
   bool res = false;
-  tree type = lh.get_type ();
+  tree type = lh.type ();
   // Clear and set result type.
-  r.clear (type);
+  r.set_undefined (type);
 
-  if (lh.empty_p ())
+  if (lh.undefined_p ())
     return true;
 
   signop s = TYPE_SIGN (type);
@@ -1255,7 +1270,7 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh)
       if (!res)
 	return false;
     }
-  return res && !r.range_for_type_p ();
+  return res && !r.varying_p ();
 }
 
 class basic_operator : public irange_operator
@@ -1283,7 +1298,7 @@ basic_operator::dump (FILE *f) const
 bool
 basic_operator::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
+  if (empty_range_check (r, lh, rh, lh.type ()))
     return true;
 
   return op_rr (code, r, lh, rh);
@@ -1399,7 +1414,7 @@ bool
 operator_shift::op1_irange (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
-  tree type = lhs.get_type ();
+  tree type = lhs.type ();
   wide_int w2;
   if (empty_range_check (r, lhs, op2, type))
     return true;
@@ -1411,7 +1426,7 @@ operator_shift::op1_irange (irange& r, const irange& lhs,
      sleepless nights.  */
 
   // Negative shifts are undefined, as well as shift >= precision
-  if (wi::lt_p (op2.lower_bound (), 0, TYPE_SIGN (op2.get_type ())))
+  if (wi::lt_p (op2.lower_bound (), 0, TYPE_SIGN (op2.type ())))
     return false;
   if (wi::ge_p (op2.upper_bound (), TYPE_PRECISION (type), UNSIGNED))
     return false;
@@ -1468,20 +1483,20 @@ operator_cast::dump (FILE *f) const
 bool
 operator_cast::fold_range (irange& r, const irange& lh, const irange& rh) const
 {
-  if (empty_range_check (r, lh, rh, rh.get_type ()))
+  if (empty_range_check (r, lh, rh, rh.type ()))
     return true;
 
-  if (lh.get_type () != rh.get_type ())
+  if (lh.type () != rh.type ())
     {
       /* Handle conversion so they become the same type.  */
       r = lh;
-      r.cast (rh.get_type ());
+      r.cast (rh.type ());
       r.intersect (rh);
     }
   else
     /* If they are the same type, the result should be the intersection of
        the two ranges.  */
-    r = irange_intersect (lh, rh);
+    r = range_intersect (lh, rh);
   return true;
 }
 
@@ -1489,8 +1504,8 @@ bool
 operator_cast::op1_irange (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
-  tree lhs_type = lhs.get_type ();
-  tree op2_type = op2.get_type ();
+  tree lhs_type = lhs.type ();
+  tree op2_type = op2.type ();
   irange op_type;
 
   /* If the precision of the LHS is smaller than the precision of the RHS,
@@ -1518,17 +1533,17 @@ operator_cast::op1_irange (irange& r, const irange& lhs,
   if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (op2_type))
     {
       /* Cast the range of the RHS to the type of the LHS. */
-      op_type.set_range_for_type (op2_type);
+      op_type.set_varying (op2_type);
       op_type.cast (lhs_type);
 
       /* Intersect this with the LHS range will produce the RHS range.  */
-      r = irange_intersect (lhs, op_type);
+      r = range_intersect (lhs, op_type);
     }
   else
     r = lhs;
 
   /* Cast the calculated range to the type of the RHS.  */
-  r.cast (op2.get_type ());
+  r.cast (op2.type ());
 
   return true;
 }
@@ -1566,17 +1581,18 @@ operator_logical_and::fold_range (irange& r, const irange& lh,
   if ((wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (lh.upper_bound (), 0))
       || (wi::eq_p (lh.lower_bound (), 0) && wi::eq_p (rh.upper_bound (), 0)))
     {
-      r.set_range (boolean_type_node, boolean_false_node, boolean_false_node);
+      r = range_false ();
       return true;
     }
 
   // To reach this point, there must be a logical 1 on each side, and the only
   // remaining question is whether there is a zero or not.
 
-  if (lh.contains_p (0) || rh.contains_p (0))
-    r.set_range (boolean_type_node, boolean_false_node, boolean_true_node);
+  if (lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ())))
+      || rh.contains_p (wi::zero (TYPE_PRECISION (rh.type ()))))
+    r.set_varying (boolean_type_node);
   else
-    r.set_range (boolean_type_node, boolean_true_node, boolean_true_node);
+    r = range_true ();
   
   return true;
 }
@@ -1587,17 +1603,17 @@ bool
 operator_logical_and::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
-   switch (get_bool_state (r, lhs, op2.get_type ()))
+   switch (get_bool_state (r, lhs, op2.type ()))
      {
        /* A true result means both sides of the AND must be true.  */
        case BRS_TRUE:
-         r.set_range (boolean_type_node, 1, 1);
+         r = range_true ();
 	 break;
      
        /* Any other result means only one side has to be false, the other
 	  side can be anything. SO we cant be sure of any result here.  */
       default:
-        r.set_range_for_type (boolean_type_node);
+        r.set_varying (boolean_type_node);
 	break;
     }
   return true;
@@ -1626,11 +1642,11 @@ operator_bitwise_and::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (lhs.get_type (), boolean_type_node))
+  if (types_compatible_p (lhs.type (), boolean_type_node))
     return op_logical_and.op1_irange (r, lhs, op2);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
-  r.set_range_for_type (lhs.get_type ());
+  r.set_varying (lhs.type ());
   return true;
 }
 
@@ -1667,7 +1683,7 @@ operator_logical_or::fold_range (irange& r, const irange& lh,
   if (empty_range_check (r, lh, rh, boolean_type_node))
     return true;
 
-  r = irange_union (lh, rh);
+  r = range_union (lh, rh);
   return true;
 }
 
@@ -1675,17 +1691,17 @@ bool
 operator_logical_or::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
-   switch (get_bool_state (r, lhs, op2.get_type ()))
+   switch (get_bool_state (r, lhs, op2.type ()))
      {
        /* A false result means both sides of the OR must be false.  */
        case BRS_FALSE:
-         r.set_range (boolean_type_node, 0 , 0);
+         r = range_false ();
 	 break;
      
        /* Any other result means only one side has to be true, the other
 	  side can be anything. SO we cant be sure of any result here.  */
       default:
-        r.set_range_for_type (boolean_type_node);
+        r.set_varying (boolean_type_node);
 	break;
     }
   return true;
@@ -1714,11 +1730,11 @@ operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
-  if (types_compatible_p (lhs.get_type (), boolean_type_node))
+  if (types_compatible_p (lhs.type (), boolean_type_node))
     return op_logical_or.op1_irange (r, lhs, op2);
 
   /* For now do nothing with bitwise OR of iranges, just return the type. */
-  r.set_range_for_type (lhs.get_type ());
+  r.set_varying (lhs.type ());
   return true;
 }
 
@@ -1780,10 +1796,10 @@ operator_logical_not::fold_range (irange& r, const irange& lh,
   if (empty_range_check (r, lh, rh, boolean_type_node))
     return true;
 
-  if (lh.range_for_type_p () || lh.empty_p ())
+  if (lh.varying_p () || lh.undefined_p ())
     r = lh;
   else
-    r = irange_invert (lh);
+    r = range_invert (lh);
   return true;
 }
 
@@ -1791,10 +1807,10 @@ bool
 operator_logical_not::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
-  if (lhs.range_for_type_p () || lhs.empty_p ())
+  if (lhs.varying_p () || lhs.undefined_p ())
     r = lhs;
   else
-    r = irange_invert (lhs);
+    r = range_invert (lhs);
   return true;
 }
 
@@ -1818,7 +1834,7 @@ bool
 operator_bitwise_not::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
-  tree type = lh.get_type ();
+  tree type = lh.type ();
   if (empty_range_check (r, lh, rh, type))
     return true;
 
@@ -1827,7 +1843,9 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
     return op_logical_not.fold_range (r, lh, rh);
 
   // ~X is simply -1 - X.
-  irange minusone (type, -1, -1);
+  irange minusone (type,
+		   wi::minus_one (TYPE_PRECISION (type)),
+		   wi::minus_one (TYPE_PRECISION (type)));
   return op_rr (MINUS_EXPR, r, minusone, lh);
 }
 
@@ -1835,13 +1853,15 @@ bool
 operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
-  tree type = lhs.get_type ();
+  tree type = lhs.type ();
   /* If this is a boolean not, call the logical version.  */
   if (types_compatible_p (type, boolean_type_node))
     return op_logical_not.op1_irange (r, lhs, op2);
 
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
-  irange minusone (type, -1, -1);
+  irange minusone (type,
+		   wi::minus_one (TYPE_PRECISION (type)),
+		   wi::minus_one (TYPE_PRECISION (type)));
   return op_rr (MINUS_EXPR, r, minusone, lhs);
 }
 
@@ -1927,20 +1947,21 @@ bool
 operator_pointer_plus::fold_range (irange& r, const irange& lh,
 				   const irange& rh) const
 {
-  if (empty_range_check (r, lh, rh, lh.get_type ()))
+  if (empty_range_check (r, lh, rh, lh.type ()))
     return true;
 
   // For pointer types we are mostly concerned with NULL and NON-NULL.
   // If either side is non-null, the result will be non-null.
-  if (!lh.contains_p (0) || !rh.contains_p (0))
-    r.set_range (lh.get_type (), 0, 0, irange::INVERSE);
+  if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ())))
+      || !rh.contains_p (wi::zero (TYPE_PRECISION (rh.type ()))))
+    range_non_zero (&r, lh.type ());
   else
     {
       // Can't perform a union since the RH is a different type from the LH.
       if (lh.zero_p () && rh.zero_p ())
         r = lh;
       else
-	r.set_range_for_type (lh.get_type ());
+	r.set_varying (lh.type ());
     }
   return true;
 }
@@ -1984,7 +2005,7 @@ bool
 operator_abs::fold_range (irange &r,
 			  const irange &lh, const irange& rh) const
 {
-  tree type = rh.get_type ();
+  tree type = rh.type ();
   if (empty_range_check (r, lh, rh, type))
     return true;
 
@@ -1995,7 +2016,7 @@ bool
 operator_abs::op1_irange (irange& r,
 			  const irange& lhs, const irange& op2) const
 {
-  tree type = lhs.get_type ();
+  tree type = lhs.type ();
   if (empty_range_check (r, lhs, op2, type))
     return true;
   if (TYPE_UNSIGNED (type))
@@ -2040,11 +2061,12 @@ bool
 operator_negate::fold_range (irange &r,
 			     const irange &lh, const irange& rh) const
 {
-  tree type = rh.get_type ();
+  tree type = rh.type ();
   if (empty_range_check (r, lh, rh, type))
     return true;
   // -X is simply 0 - X.
-  irange zero (type, 0, 0);
+  irange zero;
+  range_zero (&zero, type);
   return op_rr (MINUS_EXPR, r, zero, lh);
 }
 
@@ -2081,13 +2103,13 @@ operator_min_max::fold_range (irange& r, const irange& lh,
 {
   wide_int lb, ub;
   wi::overflow_type ov;
-  tree type = lh.get_type ();
+  tree type = lh.type ();
 
   if (empty_range_check (r, lh, rh, type))
     return true;
 
   // Start with the union of both ranges  
-  r = irange_union (lh, rh);
+  r = range_union (lh, rh);
 
   // For pointer types we are concerned with NULL and NON-NULL.
   // Min max result in this case is a strict union.
@@ -2109,10 +2131,10 @@ bool
 operator_min_max::op1_irange (irange& r, const irange& lhs,
 			      const irange& op2) const
 {
-  if (empty_range_check (r, lhs, op2, lhs.get_type ()))
+  if (empty_range_check (r, lhs, op2, lhs.type ()))
     return true;
 
-  if (POINTER_TYPE_P (lhs.get_type ()))
+  if (POINTER_TYPE_P (lhs.type ()))
     return false;
   
   // Until this can be examined closer...  Im not convinces this is right
@@ -2125,17 +2147,17 @@ operator_min_max::op1_irange (irange& r, const irange& lhs,
       // If the upper bound is set by the other operand, we have no idea
       // what this upper could be, otherwise it HAS to be the upper bound.
       if (wi::eq_p (lhs.upper_bound (), op2.upper_bound ()))
-	ub = max_limit (lhs.get_type ());
+	ub = max_limit (lhs.type ());
     }
   else
     {
       // this operand.   Otherwise, it could be any value to MAX_TYPE as the
       // upper bound comes from the other operand.
       if (wi::eq_p (lhs.lower_bound (), op2.lower_bound ()))
-	lb = min_limit (lhs.get_type ());
+	lb = min_limit (lhs.type ());
     }
 
-  r. set_range (lhs.get_type (), lb, ub);
+  r = irange (lhs.type (), lb, ub);
   return true;
 }
 
@@ -2170,15 +2192,15 @@ bool
 operator_addr_expr::fold_range (irange& r, const irange& lh,
 			  const irange& rh) const
 {
-  if (empty_range_check (r, lh, rh, rh.get_type ()))
+  if (empty_range_check (r, lh, rh, rh.type ()))
     return true;
 
   // Return a non-null pointer of the LHS type (passed in op2)
   if (lh.zero_p ())
-    r.set_range (rh.get_type (), 0, 0);
+    range_zero (&r, rh.type ());
   else
-    if (!lh.contains_p (0))
-      r.set_range (rh.get_type (), 0, 0, irange::INVERSE);
+    if (!lh.contains_p (wi::zero (TYPE_PRECISION (lh.type ()))))
+      range_non_zero (&r, rh.type ());
     else
       return false;
   return true;

@@ -498,7 +498,7 @@ thread_jumps::resolve_control_statement (gimple *stmt, tree name,
 	    irange label_range (TREE_TYPE (name), case_low, case_high);
 	    /* If NAME can fall into one of the switch cases, we can't
 	       be sure where the switch will land.  */
-	    if (!irange_intersect (range_for_name, label_range).empty_p ())
+	    if (!range_intersect (range_for_name, label_range).undefined_p ())
 	      return false;
 	    /* If we have an exact match, for example, a case of 3..10
 	       with a known range of [3,10], then we know we will
@@ -583,7 +583,7 @@ thread_jumps::profitable_jump_thread_path (basic_block bbi, tree name,
       return NULL;
     }
 
-  if (range_for_name.empty_p ())
+  if (range_for_name.undefined_p ())
     return NULL;
 
   gimple *stmt = get_gimple_control_stmt (m_path[0]);
@@ -954,7 +954,7 @@ thread_jumps::register_jump_thread_path_if_profitable (tree name,
 						       const irange &range,
 						       basic_block def_bb)
 {
-  if (range.empty_p ())
+  if (range.undefined_p ())
     return;
 
   bool irreducible = false;

@@ -164,8 +164,9 @@ range_stmt::fold_logical (irange& r, const irange& lhs, const irange& op1_true,
   if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
     {
       irange r1;
-      irange bool_zero (boolean_type_node, 0, 0);
-      irange bool_one (boolean_type_node, 1, 1);
+      unsigned prec = TYPE_PRECISION (boolean_type_node);
+      irange bool_zero (boolean_type_node, wi::zero (prec), wi::zero (prec));
+      irange bool_one (boolean_type_node, wi::one (prec), wi::one (prec));
       if (fold_logical (r1, bool_zero, op1_true, op1_false, op2_true,
 			op2_false) &&
 	  fold_logical (r, bool_one, op1_true, op1_false, op2_true, op2_false))
@@ -199,14 +200,14 @@ range_stmt::fold_logical (irange& r, const irange& lhs, const irange& op1_true,
       case TRUTH_AND_EXPR:
       case BIT_AND_EXPR:
         if (!lhs.zero_p ())
-	  r = irange_intersect (op1_true, op2_true);
+	  r = range_intersect (op1_true, op2_true);
 	else
 	  {
 	    /* The FALSE side is the union of the other 3 cases.  */
-	    irange ff = irange_intersect (op1_false, op2_false);
-	    irange tf = irange_intersect (op1_true, op2_false);
-	    irange ft = irange_intersect (op1_false, op2_true);
-	    r = irange_union (ff, tf);
+	    irange ff = range_intersect (op1_false, op2_false);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (ff, tf);
 	    r.union_ (ft);
 	  }
         break;
@@ -217,15 +218,15 @@ range_stmt::fold_logical (irange& r, const irange& lhs, const irange& op1_true,
       case TRUTH_OR_EXPR:
       case BIT_IOR_EXPR:
         if (lhs.zero_p ())
-	  r = irange_intersect (op1_false, op2_false);
+	  r = range_intersect (op1_false, op2_false);
 	else
 	  {
 	    /* The TRUE side of the OR operation will be the union of the other
 	       three combinations.  */
-	    irange tt = irange_intersect (op1_true, op2_true);
-	    irange tf = irange_intersect (op1_true, op2_false);
-	    irange ft = irange_intersect (op1_false, op2_true);
-	    r = irange_union (tt, tf);
+	    irange tt = range_intersect (op1_true, op2_true);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (tt, tf);
 	    r.union_ (ft);
 	  }
 	break;
@@ -247,9 +248,9 @@ range_stmt::fold (irange &res, const irange& r1) const
   tree lhs = gimple_get_lhs (m_g);
   /* Single ssa operations require the LHS type as the second range.  */
   if (lhs)
-    r2.set_range_for_type (TREE_TYPE (lhs));
+    r2.set_varying (TREE_TYPE (lhs));
   else
-    r2.clear (r1.get_type ());
+    r2.set_undefined (r1.type ());
 
   return handler()->fold_range (res, r1, r2);
 }
@@ -273,12 +274,12 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range) const
 {  
   irange type_range;
   // An empty range is viral, so return an empty range.
-  if (lhs_range.empty_p ())
+  if (lhs_range.undefined_p ())
     {
-      r.clear (TREE_TYPE (operand1 ()));
+      r.set_undefined (TREE_TYPE (operand1 ()));
       return true;
     }
-  type_range.set_range_for_type (TREE_TYPE (operand1 ()));
+  type_range.set_varying (TREE_TYPE (operand1 ()));
   return handler ()->op1_irange (r, lhs_range, type_range);
 }
 
@@ -299,9 +300,9 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range,
   // gcc_assert (operand2 () != NULL);
   
   // An empty range is viral, so return an empty range.
-  if (op2_range.empty_p () || lhs_range.empty_p ())
+  if (op2_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.clear (op2_range.get_type ());
+      r.set_undefined (op2_range.type ());
       return true;
     }
   return handler ()->op1_irange (r, lhs_range, op2_range);
@@ -316,9 +317,9 @@ range_stmt::op2_irange (irange& r, const irange& lhs_range,
 			const irange& op1_range) const
 {  
   // An empty range is viral, so return an empty range.
-  if (op1_range.empty_p () || lhs_range.empty_p ())
+  if (op1_range.undefined_p () || lhs_range.undefined_p ())
     {
-      r.clear (op1_range.get_type ());
+      r.set_undefined (op1_range.type ());
       return true;
     }
   return handler ()->op2_irange (r, lhs_range, op1_range);
