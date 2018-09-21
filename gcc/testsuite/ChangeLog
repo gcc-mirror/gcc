@@ -1,3 +1,8 @@
+2018-09-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp113.c: Disable EVRP.
+	* gcc.dg/tree-ssa/vrp120.c: New test.
+
 2018-09-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87372 - __func__ constexpr evaluation.
