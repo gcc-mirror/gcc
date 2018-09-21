@@ -10729,7 +10729,9 @@ conv_intrinsic_event_query (gfc_code *code)
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
 				     integer_type_node, extent, tmp);
 	      index = fold_build2_loc (input_location, PLUS_EXPR,
-				       integer_type_node, index, tmp);
+				       gfc_array_index_type, index,
+				       fold_convert (gfc_array_index_type,
+						     tmp));
 	      if (i < ar->dimen - 1)
 		{
 		  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
@@ -10753,6 +10755,7 @@ conv_intrinsic_event_query (gfc_code *code)
 	  stat = gfc_create_var (integer_type_node, "stat");
 	}
 
+      index = fold_convert (size_type_node, index);
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_query, 5,
                                    token, index, image_index, count
 				   ? gfc_build_addr_expr (NULL, count) : count,

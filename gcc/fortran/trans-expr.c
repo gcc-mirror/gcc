@@ -7733,7 +7733,7 @@ gfc_trans_structure_assign (tree dest, gfc_expr * expr, bool init, bool coarray)
 		 suffices to recognize the data as array.  */
 	      if (rank < 0)
 		rank = 1;
-	      size = integer_zero_node;
+	      size = build_zero_cst (size_type_node);
 	      desc = field;
 	      gfc_add_modify (&block, gfc_conv_descriptor_rank (desc),
 			      build_int_cst (signed_char_type_node, rank));

@@ -1096,7 +1096,8 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
 	  tmp = fold_build2_loc (input_location, MULT_EXPR,
 				 integer_type_node, extent, tmp);
 	  index = fold_build2_loc (input_location, PLUS_EXPR,
-				   integer_type_node, index, tmp);
+				   gfc_array_index_type, index,
+				   fold_convert (gfc_array_index_type, tmp));
 	  if (i < ar->dimen - 1)
 	    {
 	      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
@@ -1130,6 +1131,7 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
       stat = gfc_create_var (integer_type_node, "stat");
     }
 
+  index = fold_convert (size_type_node, index);
   if (op == EXEC_EVENT_POST)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_post, 6,
 			       token, index, image_index,
