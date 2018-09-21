@@ -164,10 +164,10 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE (TARGET_VXWORKS64 ? "long int" : "int")
 
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE (TARGET_VXWORKS64 ? "long unsigned int" : "unsigned int")
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
