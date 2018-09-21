@@ -1,5 +1,9 @@
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-c++-common/dump-ada-spec-14.c: New test.
+
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc.dg/nested-func-11.c: New test.
 
 	* lib/target-supports.exp (check_effective_target_tls_runtime): Make
