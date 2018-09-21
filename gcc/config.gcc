@@ -941,6 +941,11 @@ case ${target} in
       tm_defines="$tm_defines TARGET_VXWORKS7=1"
       ;;
   esac
+  case $target in
+    *64-*-vxworks*)
+      tm_defines="$tm_defines TARGET_VXWORKS64=1"
+      ;;
+  esac
   ;;
 *-*-elf|arc*-*-elf*)
   # Assume that newlib is being used and so __cxa_atexit is provided.
