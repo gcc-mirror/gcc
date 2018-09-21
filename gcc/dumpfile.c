@@ -1048,14 +1048,14 @@ dump_context::get_scope_depth () const
 void
 dump_context::begin_scope (const char *name, const dump_location_t &loc)
 {
-  if (dump_file)
+  if (dump_file && (MSG_NOTE & pflags))
     ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
 
-  if (alt_dump_file)
+  if (alt_dump_file && (MSG_NOTE & alt_flags))
     ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
 
   /* Support for temp_dump_context in selftests.  */
-  if (m_test_pp)
+  if (m_test_pp && (MSG_NOTE & m_test_pp_flags))
     ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
 
   pretty_printer pp;
@@ -2303,6 +2303,29 @@ test_capture_of_dump_calls (const line_table_case &case_)
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_FAILURE);
     }
+  }
+
+  /* Verify that MSG_* affect AUTO_DUMP_SCOPE and the dump calls.  */
+  {
+    temp_dump_context tmp (false, MSG_OPTIMIZED_LOCATIONS);
+    dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
+    {
+      AUTO_DUMP_SCOPE ("outer scope", stmt);
+      dump_printf_loc (MSG_NOTE, stmt, "msg 2\n");
+      {
+	AUTO_DUMP_SCOPE ("middle scope", stmt);
+	dump_printf_loc (MSG_NOTE, stmt, "msg 3\n");
+	{
+	  AUTO_DUMP_SCOPE ("inner scope", stmt);
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt, "msg 4\n");
+	}
+	dump_printf_loc (MSG_NOTE, stmt, "msg 5\n");
+      }
+      dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
+    }
+    dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+
+    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note:    msg 4\n");
   }
 }
 

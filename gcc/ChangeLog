@@ -1,3 +1,11 @@
+2018-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87309
+	* dumpfile.c (dump_context::begin_scope): Filter the dump_loc
+	calls with pflags and alt_flags.
+	(selftest::test_capture_of_dump_calls): Add test of interaction of
+	MSG_OPTIMIZED_LOCATIONS with AUTO_DUMP_SCOPE.
+
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
 	* config.gcc: Factorize and comment inclusion of vxworks-dummy.h.
