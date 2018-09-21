@@ -1,3 +1,10 @@
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86990
+	* gimple-ssa-store-merging.c (imm_store_chain_info:coalesce_immediate):
+	Check that the entire merged store group is made of constants only for
+	overlapping stores.
+
 2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
 	* gcc.c (LINK_COMMAND_SPEC): Handle -r like -nostdlib.
