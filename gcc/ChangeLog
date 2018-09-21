@@ -1,5 +1,10 @@
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config/vxworks.h (STARTFILE_PREFIX_SPEC): Define.
+	(VXWORKS_LIBS_DIR_RTP): Remove definition and use.
+
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (SIZE_TYPE): Account for TARGET_VXWORKS64.
 	(PTRDIFF_TYPE): Likewise.
 
