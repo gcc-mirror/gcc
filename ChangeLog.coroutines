@@ -1,0 +1,11 @@
+2018-09-21  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Branch creation from trunk:264468
+	Use this Changelog for all branch changes, including merges.
+
+	gcc/REVISION: New (branch identifier).
+
+Local Variables:
+mode: change-log
+change-log-default-name: "ChangeLog.coroutines"
+End:
