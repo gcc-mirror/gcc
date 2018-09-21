@@ -23,11 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
 
-/* If TARGET_VXWORKS7 is undefined, then we're not targeting it.  */
-#ifndef TARGET_VXWORKS7
-#define TARGET_VXWORKS7 0
-#endif
-
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
    like a traditional Unix, with more external files.  Most of our specs
