@@ -1,5 +1,9 @@
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config/vxworks.h (CLEAR_INSN_CACHE): #define to 1.
+
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (VXWORKS_LIBGCC_SPEC): Remove -lc_internal.
 	Merge block comment with the one ahead of VXWORKS_LIBS_RTP. Then:
 	(VXWORKS_LIBS_RTP): Minor reordering.
