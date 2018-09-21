@@ -1,5 +1,9 @@
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
 
+	* config.gcc: Factorize and comment inclusion of vxworks-dummy.h.
+
+2018-09-21  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (CLEAR_INSN_CACHE): #define to 1.
 
 2018-09-21  Olivier Hainque  <hainque@adacore.com>
