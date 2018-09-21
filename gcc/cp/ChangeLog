@@ -1,3 +1,9 @@
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* constexpr.c (maybe_constant_init_1): Pass false for strict down to
+	cxx_eval_outermost_constant_expr.
+
 2018-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87109 - wrong ctor with maybe-rvalue semantics.
