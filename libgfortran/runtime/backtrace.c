@@ -68,6 +68,7 @@ static void
 error_callback (void *data, const char *msg, int errnum)
 {
   struct mystate *state = (struct mystate *) data;
+  struct iovec iov[5];
 #define ERRHDR "\nCould not print backtrace: "
 
   if (errnum < 0)
@@ -77,21 +78,31 @@ error_callback (void *data, const char *msg, int errnum)
     }
   else if (errnum == 0)
     {
-      estr_write (ERRHDR);
-      estr_write (msg);
-      estr_write ("\n");
+      iov[0].iov_base = (char*) ERRHDR;
+      iov[0].iov_len = strlen (ERRHDR);
+      iov[1].iov_base = (char*) msg;
+      iov[1].iov_len = strlen (msg);
+      iov[2].iov_base = (char*) "\n";
+      iov[2].iov_len = 1;
+      estr_writev (iov, 3);
     }
   else
     {
       char errbuf[256];
       if (state->in_signal_handler)
 	{
-	  estr_write (ERRHDR);
-	  estr_write (msg);
-	  estr_write (", errno: ");
+	  iov[0].iov_base = (char*) ERRHDR;
+	  iov[0].iov_len = strlen (ERRHDR);
+	  iov[1].iov_base = (char*) msg;
+	  iov[1].iov_len = strlen (msg);
+	  iov[2].iov_base = (char*) ", errno: ";
+	  iov[2].iov_len = strlen (iov[2].iov_base);
 	  const char *p = gfc_itoa (errnum, errbuf, sizeof (errbuf));
-	  estr_write (p);
-	  estr_write ("\n");
+	  iov[3].iov_base = (char*) p;
+	  iov[3].iov_len = strlen (p);
+	  iov[4].iov_base = (char*) "\n";
+	  iov[4].iov_len = 1;
+	  estr_writev (iov, 5);
 	}
       else
 	st_printf (ERRHDR "%s: %s\n", msg,
