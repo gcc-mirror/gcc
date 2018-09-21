@@ -27793,6 +27793,12 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree fntype;
 
+  /* The sibcall epilogue may clobber the static chain register.
+     ??? We could work harder and avoid that, but it's probably
+     not worth the hassle in practice.  */
+  if (CALL_EXPR_STATIC_CHAIN (exp))
+    return false;
+
   if (decl)
     fntype = TREE_TYPE (decl);
   else
