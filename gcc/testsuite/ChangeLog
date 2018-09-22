@@ -1,3 +1,8 @@
+2018-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/87318
+	* gfortran.dg/dtio_1.f90: Update test to valid code.
+
 2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85603
