@@ -7667,6 +7667,8 @@ fi
 
 
 
+# ACX_BUGURL([https://gcc.gnu.org/bugs/])
+# '\#' needed to escape hash to Make
 
 
 # Check whether --with-bugurl was given.
@@ -7679,7 +7681,7 @@ if test "${with_bugurl+set}" = set; then :
 	   ;;
      esac
 else
-  BUGURL="https://gcc.gnu.org/bugs/"
+  BUGURL="https://gcc.gnu.org/wiki/cxx-coroutines\#Bugs"
 
 fi
 
@@ -18463,7 +18465,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18466 "configure"
+#line 18468 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18569,7 +18571,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18572 "configure"
+#line 18574 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
