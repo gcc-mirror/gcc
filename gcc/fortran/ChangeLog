@@ -1,3 +1,16 @@
+2018-09-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41453
+	* trans.h (gfc_conv_expr_reference): Add optional argument
+	add_clobber to prototype.
+	(gfc_conv_procedure_call):  Set add_clobber argument to
+	gfc_conv_procedure_reference to true for scalar, INTENT(OUT),
+	non-pointer, non-allocatable, non-dummy variables whose type
+	is neither BT_CHARACTER, BT_DERIVED or BT_CLASS, but only if
+	the procedure is not elemental.
+	* trans-expr.c (gfc_conv_procedure_reference): Add clobber
+	statement before call if add_clobber is set.
+
 2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/85603

@@ -5276,8 +5276,17 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			}
 		    }
 		  else
-		    gfc_conv_expr_reference (&parmse, e);
+		    {
+		      bool add_clobber;
+		      add_clobber = fsym && fsym->attr.intent == INTENT_OUT
+			&& !fsym->attr.allocatable && !fsym->attr.pointer
+			&& !e->symtree->n.sym->attr.pointer
+			&& !e->symtree->n.sym->attr.dummy  /* See PR 41453.  */
+			&& e->ts.type != BT_CHARACTER && e->ts.type != BT_DERIVED
+			&& e->ts.type != BT_CLASS && !sym->attr.elemental;
 
+		      gfc_conv_expr_reference (&parmse, e, add_clobber);
+		    }
 		  /* Catch base objects that are not variables.  */
 		  if (e->ts.type == BT_CLASS
 			&& e->expr_type != EXPR_VARIABLE
@@ -8060,7 +8069,7 @@ gfc_conv_expr_type (gfc_se * se, gfc_expr * expr, tree type)
    values only.  */
 
 void
-gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
+gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 {
   gfc_ss *ss;
   tree var;
@@ -8099,6 +8108,16 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 	  gfc_add_modify (&se->pre, var, se->expr);
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
+	}
+      else if (add_clobber)
+	{
+	  tree clobber;
+	  tree var;
+	  /* FIXME: This fails if var is passed by reference, see PR
+	     41453.  */
+	  var = expr->symtree->n.sym->backend_decl;
+	  clobber = build_clobber (TREE_TYPE (var));
+	  gfc_add_modify (&se->pre, var, clobber);
 	}
       return;
     }
