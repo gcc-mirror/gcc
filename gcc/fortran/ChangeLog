@@ -1,3 +1,9 @@
+2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Test
+	the charlen backend_decl before using the VAR_P macro.
+
 2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77325
