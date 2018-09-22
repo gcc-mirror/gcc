@@ -9950,7 +9950,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
     {
       if (expr2->ts.deferred)
 	{
-	  if (VAR_P (expr2->ts.u.cl->backend_decl))
+	  if (expr2->ts.u.cl->backend_decl
+	      && VAR_P (expr2->ts.u.cl->backend_decl))
 	    tmp = expr2->ts.u.cl->backend_decl;
 	  else
 	    tmp = rss->info->string_length;
