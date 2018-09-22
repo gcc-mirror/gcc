@@ -207,11 +207,11 @@ alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
       && ranger.path_range_on_stmt (r, len, stmt)
       && !r.varying_p ())
     {
-      // The invalid bits are anything outside of [MAX_SIZE, +MAX].
-      // If our range is outside of this, the bound may be large.
+      // The invalid bits are anything outside of [0, MAX_SIZE].
       irange invalid_range (size_type_node,
+			    build_int_cst (size_type_node, 0),
 			    build_int_cst (size_type_node, max_size),
-			    TYPE_MAX_VALUE (size_type_node));
+			    irange::INVERSE);
       /* FIXME:
 	 This needs to be looked at.  It causes:
 	 > FAIL: gcc.dg/Walloca-10.c  (test for warnings, line 22)
