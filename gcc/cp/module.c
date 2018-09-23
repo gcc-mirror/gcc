@@ -2772,6 +2772,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
+  bitmap legacies;	/* Transitive legacy import graph */
 
   module_state *parent;
 
@@ -2790,9 +2791,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned short subst;		/* subst number if !0.  */
   unsigned crc;		/* CRC we saw reading it in. */
 
-  bool legacy : 1;
-
-  bool direct : 1;	/* A direct import.  */
+  bool legacy : 1;	/* Is a legacy import.  */
+  bool direct : 1;	/* A direct import of TU.  */
   bool exported : 1;	/* We are exported.  */
   bool imported : 1;	/* Import has been done.  */
 
@@ -2975,6 +2975,7 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 
 module_state::module_state (tree name, module_state *parent)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
+    legacies (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), slurp (NULL),
     fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
@@ -10268,11 +10269,6 @@ void
 module_state::write (elf_out *to, cpp_reader *reader)
 {
   unsigned crc = 0;
-
-  if (!our_opts)
-    our_opts = get_option_string ();
-  write_readme (to, our_opts);
-
   depset::hash table (200);
 
   /* Find the set of decls we must write out.  */
@@ -10385,6 +10381,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
   gcc_assert (range.second == to->get_section_limit ()
 	      && spaces.length () == n_spaces);
 
+  if (!our_opts)
+    our_opts = get_option_string ();
+  /* Human-readable info.  */
+  write_readme (to, our_opts);
+
   /* Write the namespaces.  */
   (spaces.qsort) (space_cmp);
   write_namespaces (to, table, spaces, &crc);
@@ -10455,8 +10456,11 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
       else
 	{
 	  vec_safe_push (modules, this);
+	  /* We always import and export ourselves. */
 	  bitmap_set_bit (imports, ix);
 	  bitmap_set_bit (exports, ix);
+	  if (is_legacy ())
+	    bitmap_set_bit (legacies, ix);
 	}
       mod = ix;
     }
@@ -10611,9 +10615,16 @@ void
 module_state::set_import (module_state const *other, bool is_export)
 {
   gcc_checking_assert (this != other);
+  /* We see OTHER's exports (which include OTHER).  */
   bitmap_ior_into (imports, other->exports);
+
   if (is_export)
+    /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
+
+  if (other->is_legacy ())
+    /* We only see OTHER's legacies if it is legacy.  */
+    bitmap_ior_into (legacies, other->legacies);
 }
 
 static GTY(()) module_state *proclaimer;

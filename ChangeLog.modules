@@ -1,3 +1,13 @@
+2018-09-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules (module_state): Add legacies bitmap.
+	(module_state::write): Write README later.
+	(module_state::read): Set legacies bit.
+	(module_state::set_import): Update legacies.
+	gcc/testsuite/
+	* g++.dg/modules/unnamed-1_b.C: Update.
+
 2018-09-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
