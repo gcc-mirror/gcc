@@ -1,3 +1,7 @@
+2018-09-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/service.texi (Service): Switch the fsf.org link to https.
+
 2018-09-22  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	PR target/86798
