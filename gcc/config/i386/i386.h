@@ -1315,10 +1315,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    For any two classes, it is very desirable that there be another
    class that represents their union.
 
-   It might seem that class BREG is unnecessary, since no useful 386
-   opcode needs reg %ebx.  But some systems pass args to the OS in ebx,
-   and the "b" register constraint is useful in asms for syscalls.
-
    The flags, fpsr and fpcr registers are in no class.  */
 
 enum reg_class
@@ -1339,7 +1335,6 @@ enum reg_class
   SSE_FIRST_REG,
   NO_REX_SSE_REGS,
   SSE_REGS,
-  EVEX_SSE_REGS,
   ALL_SSE_REGS,
   MMX_REGS,
   FP_TOP_SSE_REGS,
@@ -1348,10 +1343,10 @@ enum reg_class
   FLOAT_INT_REGS,
   INT_SSE_REGS,
   FLOAT_INT_SSE_REGS,
-  MASK_EVEX_REGS,
   MASK_REGS,
-  MOD4_SSE_REGS,
-  ALL_REGS, LIM_REG_CLASSES
+  ALL_MASK_REGS,
+  ALL_REGS,
+  LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES ((int) LIM_REG_CLASSES)
@@ -1365,7 +1360,7 @@ enum reg_class
 #define MMX_CLASS_P(CLASS) \
   ((CLASS) == MMX_REGS)
 #define MASK_CLASS_P(CLASS) \
-  reg_class_subset_p ((CLASS), MASK_REGS)
+  reg_class_subset_p ((CLASS), ALL_MASK_REGS)
 #define MAYBE_INTEGER_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), GENERAL_REGS)
 #define MAYBE_FLOAT_CLASS_P(CLASS) \
@@ -1375,7 +1370,7 @@ enum reg_class
 #define MAYBE_MMX_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), MMX_REGS)
 #define MAYBE_MASK_CLASS_P(CLASS) \
-  reg_classes_intersect_p ((CLASS), MASK_REGS)
+  reg_classes_intersect_p ((CLASS), ALL_MASK_REGS)
 
 #define Q_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), Q_REGS)
@@ -1401,7 +1396,6 @@ enum reg_class
    "SSE_FIRST_REG",			\
    "NO_REX_SSE_REGS",			\
    "SSE_REGS",				\
-   "EVEX_SSE_REGS",			\
    "ALL_SSE_REGS",			\
    "MMX_REGS",				\
    "FP_TOP_SSE_REGS",			\
@@ -1410,9 +1404,8 @@ enum reg_class
    "FLOAT_INT_REGS",			\
    "INT_SSE_REGS",			\
    "FLOAT_INT_SSE_REGS",		\
-   "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
-   "MOD4_SSE_REGS",			\
+   "ALL_MASK_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1421,41 +1414,39 @@ enum reg_class
    Note that CLOBBERED_REGS are calculated by
    TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
-#define REG_CLASS_CONTENTS                                              \
-{     { 0x00,       0x0,    0x0 },                                       \
-      { 0x01,       0x0,    0x0 },       /* AREG */                      \
-      { 0x02,       0x0,    0x0 },       /* DREG */                      \
-      { 0x04,       0x0,    0x0 },       /* CREG */                      \
-      { 0x08,       0x0,    0x0 },       /* BREG */                      \
-      { 0x10,       0x0,    0x0 },       /* SIREG */                     \
-      { 0x20,       0x0,    0x0 },       /* DIREG */                     \
-      { 0x03,       0x0,    0x0 },       /* AD_REGS */                   \
-      { 0x07,       0x0,    0x0 },       /* CLOBBERED_REGS */            \
-      { 0x0f,       0x0,    0x0 },       /* Q_REGS */                    \
-  { 0x1100f0,    0x1fe0,    0x0 },       /* NON_Q_REGS */                \
-      { 0x7e,    0x1fe0,    0x0 },       /* TLS_GOTBASE_REGS */		 \
-      { 0x7f,    0x1fe0,    0x0 },       /* INDEX_REGS */                \
-  { 0x1100ff,       0x0,    0x0 },       /* LEGACY_REGS */               \
-  { 0x1100ff,    0x1fe0,    0x0 },       /* GENERAL_REGS */              \
-     { 0x100,       0x0,    0x0 },       /* FP_TOP_REG */                \
-    { 0x0200,       0x0,    0x0 },       /* FP_SECOND_REG */             \
-    { 0xff00,       0x0,    0x0 },       /* FLOAT_REGS */                \
-  { 0x200000,       0x0,    0x0 },       /* SSE_FIRST_REG */             \
-{ 0x1fe00000,  0x000000,    0x0 },       /* NO_REX_SSE_REGS */           \
-{ 0x1fe00000,  0x1fe000,    0x0 },       /* SSE_REGS */                  \
-       { 0x0,0xffe00000,   0x1f },       /* EVEX_SSE_REGS */             \
-{ 0x1fe00000,0xffffe000,   0x1f },       /* ALL_SSE_REGS */              \
-{ 0xe0000000,      0x1f,    0x0 },       /* MMX_REGS */                  \
-{ 0x1fe00100,0xffffe000,   0x1f },       /* FP_TOP_SSE_REG */            \
-{ 0x1fe00200,0xffffe000,   0x1f },       /* FP_SECOND_SSE_REG */         \
-{ 0x1fe0ff00,0xffffe000,   0x1f },       /* FLOAT_SSE_REGS */            \
-{   0x11ffff,    0x1fe0,    0x0 },       /* FLOAT_INT_REGS */            \
-{ 0x1ff100ff,0xffffffe0,   0x1f },       /* INT_SSE_REGS */              \
-{ 0x1ff1ffff,0xffffffe0,   0x1f },       /* FLOAT_INT_SSE_REGS */        \
-       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */            \
-       { 0x0,       0x0, 0x1fe0 },       /* MASK_REGS */                 \
-{ 0x1fe00000,0xffffe000,   0x1f },       /* MOD4_SSE_REGS */		 \
-{ 0xffffffff,0xffffffff,0x1ffff }		\
+#define REG_CLASS_CONTENTS						\
+{      { 0x0,        0x0,    0x0 },	/* NO_REGS */			\
+      { 0x01,        0x0,    0x0 },	/* AREG */			\
+      { 0x02,        0x0,    0x0 },	/* DREG */			\
+      { 0x04,        0x0,    0x0 },	/* CREG */			\
+      { 0x08,        0x0,    0x0 },	/* BREG */			\
+      { 0x10,        0x0,    0x0 },	/* SIREG */			\
+      { 0x20,        0x0,    0x0 },	/* DIREG */			\
+      { 0x03,        0x0,    0x0 },	/* AD_REGS */			\
+      { 0x07,        0x0,    0x0 },	/* CLOBBERED_REGS */		\
+      { 0x0f,        0x0,    0x0 },	/* Q_REGS */			\
+  { 0x1100f0,        0x0,    0x0 },	/* NON_Q_REGS */		\
+      { 0x7e,     0x1fe0,    0x0 },	/* TLS_GOTBASE_REGS */		\
+      { 0x7f,     0x1fe0,    0x0 },	/* INDEX_REGS */		\
+  { 0x1100ff,        0x0,    0x0 },	/* LEGACY_REGS */		\
+  { 0x1100ff,     0x1fe0,    0x0 },	/* GENERAL_REGS */		\
+     { 0x100,        0x0,    0x0 },	/* FP_TOP_REG */		\
+    { 0x0200,        0x0,    0x0 },	/* FP_SECOND_REG */		\
+    { 0xff00,        0x0,    0x0 },	/* FLOAT_REGS */		\
+  { 0x200000,        0x0,    0x0 },	/* SSE_FIRST_REG */		\
+{ 0x1fe00000,        0x0,    0x0 },	/* NO_REX_SSE_REGS */		\
+{ 0x1fe00000,   0x1fe000,    0x0 },	/* SSE_REGS */			\
+{ 0x1fe00000, 0xffffe000,   0x1f },	/* ALL_SSE_REGS */		\
+{ 0xe0000000,       0x1f,    0x0 },	/* MMX_REGS */			\
+{ 0x1fe00100, 0xffffe000,   0x1f },	/* FP_TOP_SSE_REG */		\
+{ 0x1fe00200, 0xffffe000,   0x1f },	/* FP_SECOND_SSE_REG */		\
+{ 0x1fe0ff00, 0xffffe000,   0x1f },	/* FLOAT_SSE_REGS */		\
+{   0x11ffff,     0x1fe0,    0x0 },	/* FLOAT_INT_REGS */		\
+{ 0x1ff100ff, 0xffffffe0,   0x1f },	/* INT_SSE_REGS */		\
+{ 0x1ff1ffff, 0xffffffe0,   0x1f },	/* FLOAT_INT_SSE_REGS */	\
+       { 0x0,        0x0, 0x1fc0 },	/* MASK_REGS */			\
+       { 0x0,        0x0, 0x1fe0 },	/* ALL_MASK_REGS */		\
+{ 0xffffffff, 0xffffffff, 0x1fff }	/* ALL_REGS  */			\
 }
 
 /* The same information, inverted:

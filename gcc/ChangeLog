@@ -1,3 +1,48 @@
+2018-09-23   Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum reg_class): Rename MASK_REGS to
+	ALL_MASK_REGS and MASK_EVEX_REGS to MASK_REGS.
+	(MASK_CLASS_P): Update for rename.
+	(MAYBE_MASK_CLASS_P): Ditto.
+	(REG_CLASS_NAMES): Update.
+	(REG_CLASS_CONTENT): Update.
+	* config/i386/i386.c (regclass_map): Update for MASK_REG
+	and ALL_MASK_REGS rename.
+	* config/i386/constraints.md (Yk): Update for rename.
+	(k): Ditto.
+
+2018-09-23   Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (enum reg_class): Remove
+	EVEX_SSE_REGS and MOD4_SSE_REGS.
+	(REG_CLASS_NAMES): Update.
+	(REG_CLASS_CONTENT): Update.
+	* config/i386/i386.c (regclass_map): Declare AVX-512 SSE
+	registers as ALL_SSE_REGS.
+	(ix86_additional_allocno_class_p): Remove.
+	(TARGET_ADDITIONAL_ALLOCNO_CLASS_P): Remove.
+	(ix86_register_priority): Lower priority of EVEX SSE registers.
+	Use IN_RANGE macro where appropriate.
+	(ix86_hard_regno_mode_ok): Merge AVX-5124FMAPS and
+	AVX-5124VNNIW checks.
+	(ix86_modes_tieable_p): Tie 512-bit SSE modes.
+	* config/i386/sse.md (avx5124fmaddps_4fmaddps)
+	(avx5124fmaddps_4fmaddps_mask, avx5124fmaddps_4fmaddps_maskz)
+	(avx5124fmaddps_4fmaddss, avx5124fmaddps_4fmaddss_mask)
+	(avx5124fmaddps_4fmaddss_maskz, avx5124fmaddps_4fnmaddps)
+	(avx5124fmaddps_4fnmaddps_mask, avx5124fmaddps_4fnmaddps_maskz)
+	(avx5124fmaddps_4fnmaddss, avx5124fmaddps_4fnmaddss_mask)
+	(avx5124fmaddps_4fnmaddss_maskz, avx5124vnniw_vp4dpwssd)
+	(avx5124vnniw_vp4dpwssd_mask, avx5124vnniw_vp4dpwssd_maskz)
+	(avx5124vnniw_vp4dpwssds, avx5124vnniw_vp4dpwssds_mask)
+	(avx5124vnniw_vp4dpwssds_maskz): Use "v" instead of "Yh" constraint.
+	* config/i386/constraints.md (Yh): Remove.
+
+2018-09-23   Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (regclass_map): Declare integer REX registers
+        as GENERAL_REGS.
+
 2018-09-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/service.texi (Service): Switch the fsf.org link to https.
@@ -25,7 +70,7 @@
 	to_update_switch_stmts into vr_values class member functions.
 	* tree-vrp.h (switch_update, to_remove_edges): Remove declarations.
 	(to_update_switch_stmts): Likewise.
-	* vr-values.c: Include cfghooks.h. 
+	* vr-values.c: Include cfghooks.h.
 	(vr_values::vr_values): Initialize to_remove_edges and
 	to_update_switch_stmts.
 	(vr_values::~vr_values): Verify to_remove_edges and
@@ -776,7 +821,7 @@
 
 	* config/aarch64/aarch64.h (TARGET_COMPUTE_FRAME_LAYOUT): Define.
 	* config/aarch64/aarch64.c (aarch64_expand_prologue): Remove
-	aarch64_layout_frame call. 
+	aarch64_layout_frame call.
 	(aarch64_expand_epilogue): Likewise.
 	(aarch64_initial_elimination_offset): Likewise.
 	(aarch64_get_separate_components): Likewise.
@@ -1329,7 +1374,8 @@
 
 	* bb-reorder.c (edge_order): Convert to C-qsort-style
 	tri-state comparator.
-	(reorder_basic_blocks_simple): Change std::stable_sort to gcc_stablesort.
+	(reorder_basic_blocks_simple): Change std::stable_sort to
+	gcc_stablesort.
 
 2018-09-03  Alexander Monakov  <amonakov@ispras.ru>
 
@@ -1927,7 +1973,8 @@
 	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
 	* gimple-low.c (lower_stmt): Likewise.
 	* gimple-pretty-print.c (dump_gimple_call): Likewise.
-	* gimple-ssa-warn-restrict.c (wrestrict_dom_walker::check_call): Likewise.
+	* gimple-ssa-warn-restrict.c (wrestrict_dom_walker::check_call):
+	Likewise.
 	* gimple.c (gimple_build_call_from_tree): Likewise.
 	(gimple_call_builtin_p): Likewise.
 	(gimple_call_combined_fn): Likewise.
@@ -2495,7 +2542,7 @@
 	* config/darwin10.h (LINK_GCC_C_SEQUENCE_SPEC): Adjust to use the
 	Darwin10-specific unwinder-shim.
 	* config/darwin12.h (LINK_GCC_C_SEQUENCE_SPEC): Remove.
-	* config/rs6000/darwin.h (DARWIN_CRT1_SPEC, DARWIN_DYLIB1_SPEC): 
+	* config/rs6000/darwin.h (DARWIN_CRT1_SPEC, DARWIN_DYLIB1_SPEC):
 	New to cater for Darwin10 Rosetta.
 
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
