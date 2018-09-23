@@ -10663,7 +10663,7 @@ conv_intrinsic_event_query (gfc_code *code)
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree tmp, token, image_index;
-      tree index = size_zero_node;
+      tree index = build_zero_cst (gfc_array_index_type);
 
       if (event_expr->expr_type == EXPR_FUNCTION
 	  && event_expr->value.function.isym
@@ -10716,29 +10716,25 @@ conv_intrinsic_event_query (gfc_code *code)
 	  desc = argse.expr;
 	  *ar = ar2;
 
-	  extent = integer_one_node;
+	  extent = build_one_cst (gfc_array_index_type);
 	  for (i = 0; i < ar->dimen; i++)
 	    {
 	      gfc_init_se (&argse, NULL);
-	      gfc_conv_expr_type (&argse, ar->start[i], integer_type_node);
+	      gfc_conv_expr_type (&argse, ar->start[i], gfc_array_index_type);
 	      gfc_add_block_to_block (&argse.pre, &argse.pre);
 	      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     integer_type_node, argse.expr,
-				     fold_convert(integer_type_node, lbound));
+				     TREE_TYPE (lbound), argse.expr, lbound);
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
-				     integer_type_node, extent, tmp);
+				     TREE_TYPE (tmp), extent, tmp);
 	      index = fold_build2_loc (input_location, PLUS_EXPR,
-				       gfc_array_index_type, index,
-				       fold_convert (gfc_array_index_type,
-						     tmp));
+				       TREE_TYPE (tmp), index, tmp);
 	      if (i < ar->dimen - 1)
 		{
 		  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
 		  tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-		  tmp = fold_convert (integer_type_node, tmp);
 		  extent = fold_build2_loc (input_location, MULT_EXPR,
-					    integer_type_node, extent, tmp);
+					    TREE_TYPE (tmp), extent, tmp);
 		}
 	    }
 	}

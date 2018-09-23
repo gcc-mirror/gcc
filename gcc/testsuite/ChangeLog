@@ -1,3 +1,8 @@
+2018-09-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_alloc_4.f90: Fix scan patterns.
+	* gfortran.dg/coarray_lock_7.f90: Likewise.
+
 2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87395
