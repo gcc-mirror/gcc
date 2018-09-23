@@ -1,3 +1,12 @@
+2017-09-23  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from the gcc-7-branch:
+	2018-05-31  Matthias Klose  <doko@ubuntu.com>
+
+	PR sanitizer/86012
+	* sanitizer_common/sanitizer_platform_limits_posix.cc: Define
+	SIZEOF_STRUCT_USTAT for 32bit sparc.
+
 2017-09-21  Matthias Klose  <doko@ubuntu.com>
 
 	Backported from the gcc-7-branch:
