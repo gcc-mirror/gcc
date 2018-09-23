@@ -1,3 +1,9 @@
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87395
+	* gfc_conv_procedure_call: Reformat comments slightly. Do not add
+	clobber on INTENT(OUT) for saved variables.
+
 2018-09-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/41453

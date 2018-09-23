@@ -5281,7 +5281,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      add_clobber = fsym && fsym->attr.intent == INTENT_OUT
 			&& !fsym->attr.allocatable && !fsym->attr.pointer
 			&& !e->symtree->n.sym->attr.pointer
-			&& !e->symtree->n.sym->attr.dummy  /* See PR 41453.  */
+			/* See PR 41453.  */
+			&& !e->symtree->n.sym->attr.dummy
+			/* FIXME - PR 87395 and PR 41453  */
+			&& e->symtree->n.sym->attr.save == SAVE_NONE 
 			&& e->ts.type != BT_CHARACTER && e->ts.type != BT_DERIVED
 			&& e->ts.type != BT_CLASS && !sym->attr.elemental;
 
