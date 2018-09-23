@@ -244,25 +244,25 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* flags, fpsr, fpcr, frame */
   NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
   /* SSE registers */
-  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* MMX registers */
-  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
-  MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
   /* REX registers */
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   /* SSE REX registers */
-  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* AVX-512 SSE registers */
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
   /* Mask registers.  */
-  MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS
+  ALL_MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS,
+  MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -10856,15 +10856,6 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
   return (!cfun->machine->no_caller_saved_registers
 	  || (!epilogue_completed
 	      && df_regs_ever_live_p (regno)));
-}
-
-/* Return true if register class CL should be an additional allocno
-   class.  */
-
-static bool
-ix86_additional_allocno_class_p (reg_class_t cl)
-{
-  return cl == MOD4_SSE_REGS;
 }
 
 /* Return TRUE if we need to save REGNO.  */
@@ -39017,12 +39008,14 @@ ix86_register_priority (int hard_regno)
     return 1;
   /* New x86-64 int registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_INT_REG <= hard_regno && hard_regno <= LAST_REX_INT_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
     return 2;
   /* New x86-64 SSE registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_SSE_REG <= hard_regno && hard_regno <= LAST_REX_SSE_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
     return 2;
+  if (IN_RANGE (hard_regno, FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG))
+    return 1;
   /* Usage of AX register results in smaller code.  Prefer it.  */
   if (hard_regno == AX_REG)
     return 4;
@@ -39659,16 +39652,11 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
-      /* For AVX-5124FMAPS allow V64SFmode for special regnos.  */
+      /* For AVX-5124FMAPS or AVX-5124VNNIW
+	 allow V64SF and V64SI modes for special regnos.  */
       if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SFmode)
-	return true;
-
-      /* For AVX-5124VNNIW allow V64SImode for special regnos.  */
-      if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SImode)
+	  && (mode == V64SFmode || mode == V64SImode)
+	  && MOD4_SSE_REGNO_P (regno))
 	return true;
 
       /* TODO check for QI/HI scalars.  */
@@ -39796,6 +39784,10 @@ ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
      any other mode acceptable to SSE registers.  */
+  if (GET_MODE_SIZE (mode2) == 64
+      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
+    return (GET_MODE_SIZE (mode1) == 64
+	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
   if (GET_MODE_SIZE (mode2) == 32
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
     return (GET_MODE_SIZE (mode1) == 32
@@ -51112,9 +51104,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
-
-#undef TARGET_ADDITIONAL_ALLOCNO_CLASS_P
-#define TARGET_ADDITIONAL_ALLOCNO_CLASS_P ix86_additional_allocno_class_p
 
 #undef TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
 #define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID ix86_addr_space_zero_address_valid
