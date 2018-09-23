@@ -1,3 +1,11 @@
+2018-09-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-expr.c (gfc_caf_get_image_index): Do array index
+	calculations in gfc_array_index_type.
+	* trans-intrinsic.c (conv_intrinsic_event_query): Likewise.
+	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
+	(gfc_trans_event_post_wait): Likewise.
+
 2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87395
