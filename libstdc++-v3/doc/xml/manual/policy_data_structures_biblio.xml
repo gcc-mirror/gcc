@@ -1139,7 +1139,7 @@
     <biblioentry xml:id="biblio.nelson96stlpq">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://marknelson.us/1996/01/01/priority-queues/">Priority Queues and the STL
+	      xlink:href="https://marknelson.us/posts/1996/01/01/priority-queues.html">Priority Queues and the STL
 	</link>
       </title>
       <date>

@@ -1,3 +1,8 @@
+2018-09-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Update link
+	to "Priority Queues and the STL".
+
 2018-09-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/using_exceptions.xml: Move boost.orgs link to
