@@ -2,7 +2,7 @@
 // { dg-options "-O2" }
 
 #ifndef T
-# ifdef __SSE__
+# if __SIZEOF_INT128__ && defined __SSE__
 #  define T __int128
 # else
 #  define T long

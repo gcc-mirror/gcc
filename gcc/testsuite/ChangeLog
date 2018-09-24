@@ -1,3 +1,8 @@
+2018-09-24  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/87054
+	* gcc.dg/pr87054.c: Adjust for no __int128 on x86.
+
 2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87395
