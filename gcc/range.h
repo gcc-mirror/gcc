@@ -95,7 +95,6 @@ class irange
 
 private:
   void init (tree type, const wide_int &, const wide_int &, kind = PLAIN);
-  void init (tree type, tree, tree, kind = PLAIN);
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);

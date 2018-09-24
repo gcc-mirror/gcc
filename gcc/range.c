@@ -64,7 +64,8 @@ subtract_one (const wide_int &x, tree type, wi::overflow_type &overflow)
 // Set range from wide ints.
 
 void
-irange::init (tree type, const wide_int &lbound, const wide_int &ubound, kind rt)
+irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
+	      kind rt)
 {
   gcc_assert (valid_irange_type (type));
   gcc_assert (TYPE_PRECISION (type) == lbound.get_precision ());
@@ -125,14 +126,6 @@ range_from_ssa (tree ssa)
   irange tmp;
   value_range_to_irange (tmp, type, kind, min, max);
   return tmp;
-}
-
-// Set range from a pair of trees.
-
-void
-irange::init (tree type, tree lbound, tree ubound, kind rt)
-{
-  init (type, wi::to_wide (lbound), wi::to_wide (ubound), rt);
 }
 
 // Set range from the full domain of TYPE.
