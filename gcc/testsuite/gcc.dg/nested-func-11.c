@@ -1,16 +1,16 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -fno-omit-frame-pointer" } */
 
-int __attribute__((noipa)) foo (int i)
+int __attribute__((noclone,noinline)) foo (int i)
 {
   int a;
 
-  void __attribute__((noipa)) nested2 (int i)
+  void __attribute__((noclone,noinline)) nested2 (int i)
   {
     a = i;
   }
 
-  void  __attribute__((noipa)) nested1 (int i)
+  void  __attribute__((noclone,noinline)) nested1 (int i)
   {
     int b[32];
 
