@@ -1,3 +1,9 @@
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* method.c (lazily_declare_fn): During error-recovery add_method
+	may return false.
+
 2018-09-18  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86881
