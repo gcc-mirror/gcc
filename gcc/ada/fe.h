@@ -85,7 +85,7 @@ extern void Set_RM_Size			(Entity_Id, Uint);
 extern Boolean Is_Entity_Name		(Node_Id);
 
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
-extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
+extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, unsigned char);
 
 /* errout: */
 

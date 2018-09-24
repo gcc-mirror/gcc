@@ -1,3 +1,9 @@
+2018-09-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/87396
+	* fe.h (Get_Attribute_Definition_Clause): Use 'unsigned char' instead
+	of 'char' as the type of the second parameter.
+
 2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Makefile.rtl (arm% linux-gnueabi%): Always set EH_MECHANISM to -arm.
