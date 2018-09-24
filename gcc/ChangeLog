@@ -1,3 +1,9 @@
+2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* config/s390/s390.c (s390_emit_epilogue): Do not use PARALLEL
+	RETURN+USE when returning via %r14.
+
 2018-09-24  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (output_lines): Print colorization legend
