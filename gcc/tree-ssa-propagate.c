@@ -168,10 +168,18 @@ add_ssa_edge (tree var)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
       gimple *use_stmt = USE_STMT (use_p);
+      basic_block use_bb = gimple_bb (use_stmt);
 
       /* If we did not yet simulate the block wait for this to happen
          and do not add the stmt to the SSA edge worklist.  */
-      if (! (gimple_bb (use_stmt)->flags & BB_VISITED))
+      if (! (use_bb->flags & BB_VISITED))
+	continue;
+
+      /* If this is a use on a not yet executable edge do not bother to
+	 queue it.  */
+      if (gimple_code (use_stmt) == GIMPLE_PHI
+	  && !(EDGE_PRED (use_bb, PHI_ARG_INDEX_FROM_USE (use_p))->flags
+	       & EDGE_EXECUTABLE))
 	continue;
 
       if (prop_simulate_again_p (use_stmt)

@@ -1,3 +1,10 @@
+2018-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (add_ssa_edge): Avoid adding PHIs to
+	the worklist when the edge of the respective argument isn't
+	executable.
+
 2018-09-23   Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (enum reg_class): Rename MASK_REGS to
