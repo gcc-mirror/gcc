@@ -1,3 +1,8 @@
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85774
+	* g++.dg/asan/pr85774.C: New test.
+
 2018-09-24  Alexandre Oliva <oliva@adacore.com>
 
 	PR middle-end/87054
