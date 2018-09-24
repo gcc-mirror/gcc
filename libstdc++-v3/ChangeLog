@@ -1,3 +1,8 @@
+2018-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Move link to "UTF-8 and Unicode FAQ"
+	to https.
+
 2018-09-24  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/policy_data_structures_biblio.xml: Update link
