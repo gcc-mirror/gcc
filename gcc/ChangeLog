@@ -1,3 +1,13 @@
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85774
+	* asan.c: Make asan_handled_variables extern.
+	* asan.h: Likewise.
+	* cfgexpand.c (expand_stack_vars): Make sure
+	a representative is unpoison if another
+	variable in the partition is handled by
+	use-after-scope sanitization.
+
 2018-09-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63155
