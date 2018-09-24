@@ -1,3 +1,8 @@
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* g++.dg/cpp0x/pr85070.C: New.
+
 2018-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82699

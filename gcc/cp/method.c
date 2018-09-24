@@ -2421,7 +2421,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 
   /* Add it to the class  */
   bool added = add_method (type, fn, false);
-  gcc_assert (added);
+  gcc_assert (added || errorcount);
 
   /* Add it to TYPE_FIELDS.  */
   if (sfk == sfk_destructor

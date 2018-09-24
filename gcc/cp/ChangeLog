@@ -1,3 +1,9 @@
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* method.c (lazily_declare_fn): During error-recovery add_method
+	may return false.
+
 2018-09-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87372 - __func__ constexpr evaluation.
