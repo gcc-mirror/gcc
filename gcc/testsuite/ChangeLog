@@ -1,3 +1,9 @@
+2018-09-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR testsuite/86952
+	* gcc.target/powerpc/p8-vec-xl-xst-v2.c: Add and
+	update expected codegen
+
 2018-09-24  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/goacc/nested-parallelism.f90: New test.

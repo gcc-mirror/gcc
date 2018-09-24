@@ -59,6 +59,5 @@ bartle (vector unsigned short x, unsigned short * address)
   vec_xst (x, 0, address);
 }
 
-/* { dg-final { scan-assembler-times "lvx" 4 } } */
-/* { dg-final { scan-assembler-times "stvx"  4 } } */
-/* { dg-final { scan-assembler-times "xxpermdi" 0 } } */
+/* { dg-final { scan-assembler-times {\mlxvd2x\M} 4 } } */
+/* { dg-final { scan-assembler-times {\mstxvd2x\M} 4 } } */
