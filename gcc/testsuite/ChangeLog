@@ -1,3 +1,9 @@
+2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/risbg-ll-3.c: Expect conditional returns.
+	* gcc.target/s390/zvector/vec-cmp-2.c: Likewise.
+
 2018-09-24  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/85774

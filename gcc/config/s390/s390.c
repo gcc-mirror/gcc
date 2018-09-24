@@ -11082,7 +11082,7 @@ s390_emit_prologue (void)
 void
 s390_emit_epilogue (bool sibcall)
 {
-  rtx frame_pointer, return_reg, cfa_restores = NULL_RTX;
+  rtx frame_pointer, return_reg = NULL_RTX, cfa_restores = NULL_RTX;
   int area_bottom, area_top, offset = 0;
   int next_offset;
   int i;
@@ -11191,10 +11191,6 @@ s390_emit_epilogue (bool sibcall)
 
     }
 
-  /* Return register.  */
-
-  return_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-
   /* Restore call saved gprs.  */
 
   if (cfun_frame_layout.first_restore_gpr != -1)
@@ -11284,7 +11280,19 @@ s390_emit_epilogue (bool sibcall)
   s390_restore_gprs_from_fprs ();
 
   if (! sibcall)
-    emit_jump_insn (gen_return_use (return_reg));
+    {
+      if (!return_reg && !s390_can_use_return_insn ())
+        /* We planned to emit (return), be we are not allowed to.  */
+        return_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
+
+      if (return_reg)
+        /* Emit (return) and (use).  */
+        emit_jump_insn (gen_return_use (return_reg));
+      else
+        /* The fact that RETURN_REGNUM is used is already reflected by
+           EPILOGUE_USES.  Emit plain (return).  */
+        emit_jump_insn (gen_return ());
+    }
 }
 
 /* Implement TARGET_SET_UP_BY_PROLOGUE.  */
