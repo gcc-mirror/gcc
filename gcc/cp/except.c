@@ -1187,7 +1187,7 @@ type_throw_all_p (const_tree type)
    constant-expression of EXPR.  COMPLAIN is as for tsubst.  */
 
 tree
-build_noexcept_spec (tree expr, int complain)
+build_noexcept_spec (tree expr, tsubst_flags_t complain)
 {
   /* This isn't part of the signature, so don't bother trying to evaluate
      it until instantiation.  */
