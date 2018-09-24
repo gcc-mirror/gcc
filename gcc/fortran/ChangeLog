@@ -1,3 +1,8 @@
+2018-09-24  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (resolve_oacc_loop_blocks):
+
 2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87397

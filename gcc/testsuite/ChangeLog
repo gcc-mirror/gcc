@@ -1,3 +1,7 @@
+2018-09-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/nested-parallelism.f90: New test.
+
 2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/80080
