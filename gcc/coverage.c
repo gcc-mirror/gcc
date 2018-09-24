@@ -336,12 +336,13 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
     {
       static int warned = 0;
       bool warning_printed = false;
-      tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
       warning_printed =
-	warning_at (input_location, OPT_Wcoverage_mismatch,
-		    "the control flow of function %qE does not match "
-		    "its profile data (counter %qs)", id, ctr_names[counter]);
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wcoverage_mismatch,
+		    "the control flow of function %qD does not match "
+		    "its profile data (counter %qs)", current_function_decl,
+		    ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
@@ -370,10 +371,11 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
     }
   else if (entry->lineno_checksum != lineno_checksum)
     {
-      warning (OPT_Wcoverage_mismatch,
-               "source locations for function %qE have changed,"
-	       " the profile data may be out of date",
-	       DECL_ASSEMBLER_NAME (current_function_decl));
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_mismatch,
+		  "source locations for function %qD have changed,"
+		  " the profile data may be out of date",
+		  current_function_decl);
     }
 
   return entry->counts;
