@@ -58,7 +58,7 @@ class irange
   irange (tree type);
   irange (tree type, const wide_int &, const wide_int &, kind = PLAIN);
   irange (tree type, tree, tree, kind = PLAIN);
-  irange (const irange_storage *, tree type);
+  irange (tree type, const irange_storage *);
 
   void set_varying (tree);
   void set_undefined (tree = NULL);
@@ -96,7 +96,6 @@ class irange
 private:
   void init (tree type, const wide_int &, const wide_int &, kind = PLAIN);
   void init (tree type, tree, tree, kind = PLAIN);
-  void init (const irange_storage *, tree);
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
@@ -207,18 +206,13 @@ valid_irange_ssa (tree ssa)
 //
 // To store an irange class X into an irange_storage use:
 //
-// 	irange X;
+// 	irange X = ...;
 // 	irange_storage *stow = irange_storage::ggc_alloc_init (X);
 //
 // To convert it back into an irange use:
 //
 // 	tree type = ...;
-// 	irange X (stow, type);
-// or
-// 	if (SSA_NAME_RANGE_INFO (ssa)) {
-// 	  irange X (ssa);
-// 	  ...
-// 	}
+// 	irange X (type, stow);
 //
 // To get at the nonzero bits:
 //

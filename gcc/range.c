@@ -110,30 +110,6 @@ irange::init (tree type, const wide_int &lbound, const wide_int &ubound, kind rt
     }
 }
 
-// Set range from an IRANGE_STORAGE.
-
-void
-irange::init (const irange_storage *storage, tree type)
-{
-  m_type = type;
-  m_nitems = 0;
-  unsigned i = 0;
-  unsigned precision = wi::get_precision (storage->trailing_bounds[0]);
-  gcc_assert (precision == TYPE_PRECISION (type));
-  while (i < m_max_pairs * 2)
-    {
-      wide_int lo = storage->trailing_bounds[i];
-      wide_int hi = storage->trailing_bounds[i + 1];
-      // A nonsensical sub-range of [1,0] marks the end of valid ranges.
-      if (lo == wi::one (precision) && hi == wi::zero (precision))
-	break;
-      m_bounds[i] = lo;
-      m_bounds[i + 1] = hi;
-      i += 2;
-    }
-  m_nitems = i;
-}
-
 // Set range from an SSA_NAME's available range.  If there is no
 // available range, build a range for its entire domain.
 
@@ -185,9 +161,25 @@ irange::irange (tree type, tree lbound, tree ubound, kind rt)
   init (type, wi::to_wide (lbound), wi::to_wide (ubound), rt);
 }
 
-irange::irange (const irange_storage *stor, tree type)
+irange::irange (tree type, const irange_storage *storage)
 {
-  init (stor, type);
+  m_type = type;
+  m_nitems = 0;
+  unsigned i = 0;
+  unsigned precision = wi::get_precision (storage->trailing_bounds[0]);
+  gcc_assert (precision == TYPE_PRECISION (type));
+  while (i < m_max_pairs * 2)
+    {
+      wide_int lo = storage->trailing_bounds[i];
+      wide_int hi = storage->trailing_bounds[i + 1];
+      // A nonsensical sub-range of [1,0] marks the end of valid ranges.
+      if (lo == wi::one (precision) && hi == wi::zero (precision))
+	break;
+      m_bounds[i] = lo;
+      m_bounds[i + 1] = hi;
+      i += 2;
+    }
+  m_nitems = i;
 }
 
 bool
@@ -1460,7 +1452,7 @@ irange_tests ()
   // Test irange_storage.
   r0 = irange (integer_type_node, INT (5), INT (10));
   irange_storage *stow = irange_storage::ggc_alloc_init (r0);
-  r1 = irange (stow, integer_type_node);
+  r1 = irange (integer_type_node, stow);
   ASSERT_TRUE (r0 == r1);
 
   // Test zero_p().

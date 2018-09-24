@@ -71,7 +71,7 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
   irange_storage *stow = m_tab[SSA_NAME_VERSION (name)];
   if (stow)
     {
-      r = irange (stow, TREE_TYPE (name));
+      r = irange (TREE_TYPE (name), stow);
       return true;
     }
   r = range_from_ssa (name);

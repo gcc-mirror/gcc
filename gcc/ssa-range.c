@@ -221,7 +221,7 @@ ssa_block_ranges::get_bb_range (irange& r, const basic_block bb)
   irange_storage *m = m_tab[bb->index];
   if (m)
     {
-      r = irange (m, m_type);
+      r = irange (m_type, m);
       return true;
     }
   return false;
