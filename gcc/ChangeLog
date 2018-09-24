@@ -1,5 +1,27 @@
 2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	* genattrtab.c (mk_attr_alt): Use alternative_mask.
+	(attr_rtx_1): Adjust caching to match the new EQ_ATTR_ALT field
+        types.
+	(check_attr_test): Use alternative_mask.
+	(get_attr_value): Likewise.
+	(compute_alternative_mask): Use alternative_mask and XWINT.
+	(make_alternative_compare): Use alternative_mask.
+	(attr_alt_subset_p): Use XWINT.
+	(attr_alt_subset_of_compl_p): Likewise.
+	(attr_alt_intersection): Use alternative_mask and XWINT.
+	(attr_alt_union): Likewise.
+	(attr_alt_complement): Use HOST_WIDE_INT and XWINT.
+        (mk_attr_alt): Use alternative_mask and HOST_WIDE_INT.
+	(simplify_test_exp): Use alternative_mask and XWINT.
+	(write_test_expr): Use alternative_mask and XWINT, adjust bit
+        number calculation to support 64 bits.  Generate code that
+        checks 64-bit masks.
+	(main): Use alternative_mask.
+	* rtl.def (EQ_ATTR_ALT): Change field types from ii to ww.
+
+2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	PR target/80080
 	* config/s390/s390.c (s390_emit_epilogue): Do not use PARALLEL
 	RETURN+USE when returning via %r14.
