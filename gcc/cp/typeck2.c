@@ -2215,7 +2215,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
    know what we're doing.  */
 
 tree
-add_exception_specifier (tree list, tree spec, int complain)
+add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
 {
   bool ok;
   tree core = spec;
