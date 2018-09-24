@@ -1,5 +1,11 @@
 2018-09-24  Martin Liska  <mliska@suse.cz>
 
+	* coverage.c (get_coverage_counts): Use warning_at
+	with current_function_decl location. Use %qD in warning
+	message.
+
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
 	* memory-block.h (memory_block_pool::release): Annotate with
 	valgrind that the memory is not accessible.
 
