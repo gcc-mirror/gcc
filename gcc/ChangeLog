@@ -1,5 +1,10 @@
 2018-09-24  Martin Liska  <mliska@suse.cz>
 
+	* memory-block.h (memory_block_pool::release): Annotate with
+	valgrind that the memory is not accessible.
+
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/85774
 	* asan.c: Make asan_handled_variables extern.
 	* asan.h: Likewise.
