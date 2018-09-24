@@ -126,9 +126,7 @@ func cgoCheckTypedBlock(typ *_type, src unsafe.Pointer, off, size uintptr) {
 		roots = roots.next
 	}
 
-	aoff := uintptr(src) - mheap_.arena_start
-	idx := aoff >> _PageShift
-	s := mheap_.spans[idx]
+	s := spanOfUnchecked(uintptr(src))
 	if s.state == _MSpanManual {
 		// There are no heap bits for value stored on the stack.
 		// For a channel receive src might be on the stack of some
@@ -151,9 +149,7 @@ func cgoCheckTypedBlock(typ *_type, src unsafe.Pointer, off, size uintptr) {
 		if i >= off && bits&bitPointer != 0 {
 			v := *(*unsafe.Pointer)(add(src, i))
 			if cgoIsGoPointer(v) {
-				systemstack(func() {
-					throw(cgoWriteBarrierFail)
-				})
+				throw(cgoWriteBarrierFail)
 			}
 		}
 		hbits = hbits.next()
@@ -186,9 +182,7 @@ func cgoCheckBits(src unsafe.Pointer, gcbits *byte, off, size uintptr) {
 			if bits&1 != 0 {
 				v := *(*unsafe.Pointer)(add(src, i))
 				if cgoIsGoPointer(v) {
-					systemstack(func() {
-						throw(cgoWriteBarrierFail)
-					})
+					throw(cgoWriteBarrierFail)
 				}
 			}
 		}

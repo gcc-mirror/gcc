@@ -60,16 +60,29 @@ extern void __go_runtime_error (int32) __attribute__ ((noreturn));
 void
 __go_runtime_error (int32 i)
 {
+  struct funcfileline_return fileline;
+  bool in_runtime;
+
+  fileline = runtime_funcfileline ((uintptr) runtime_getcallerpc(), 0);
+  in_runtime = (fileline.retfn.len > 0
+		&& (__builtin_strncmp ((const char *) fileline.retfn.str,
+				      "runtime.", 8)
+		    == 0));
+
   switch (i)
     {
     case SLICE_INDEX_OUT_OF_BOUNDS:
     case ARRAY_INDEX_OUT_OF_BOUNDS:
     case STRING_INDEX_OUT_OF_BOUNDS:
+      if (in_runtime)
+	runtime_throw ("index out of range");
       runtime_panicstring ("index out of range");
 
     case SLICE_SLICE_OUT_OF_BOUNDS:
     case ARRAY_SLICE_OUT_OF_BOUNDS:
     case STRING_SLICE_OUT_OF_BOUNDS:
+      if (in_runtime)
+	runtime_throw ("slice bounds out of range");
       runtime_panicstring ("slice bounds out of range");
 
     case NIL_DEREFERENCE:

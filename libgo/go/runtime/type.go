@@ -20,10 +20,28 @@ type _type struct {
 	hashfn  func(unsafe.Pointer, uintptr) uintptr
 	equalfn func(unsafe.Pointer, unsafe.Pointer) bool
 
-	gcdata *byte
-	string *string
+	gcdata  *byte
+	_string *string
 	*uncommontype
 	ptrToThis *_type
+}
+
+func (t *_type) string() string {
+	return *t._string
+}
+
+// pkgpath returns the path of the package where t was defined, if
+// available. This is not the same as the reflect package's PkgPath
+// method, in that it returns the package path for struct and interface
+// types, not just named types.
+func (t *_type) pkgpath() string {
+	if u := t.uncommontype; u != nil {
+		if u.pkgPath == nil {
+			return ""
+		}
+		return *u.pkgPath
+	}
+	return ""
 }
 
 // Return whether two type descriptors are equal.
@@ -38,7 +56,7 @@ func eqtype(t1, t2 *_type) bool {
 	case t1.kind != t2.kind || t1.hash != t2.hash:
 		return false
 	default:
-		return *t1.string == *t2.string
+		return t1.string() == t2.string()
 	}
 }
 

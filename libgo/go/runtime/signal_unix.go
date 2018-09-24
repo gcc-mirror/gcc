@@ -112,6 +112,8 @@ func initsig(preinit bool) {
 			// set SA_ONSTACK if necessary.
 			if fwdSig[i] != _SIG_DFL && fwdSig[i] != _SIG_IGN {
 				setsigstack(i)
+			} else if fwdSig[i] == _SIG_IGN {
+				sigInitIgnored(i)
 			}
 			continue
 		}
@@ -398,14 +400,6 @@ func dieFromSignal(sig uint32) {
 	osyield()
 	osyield()
 
-	// On Darwin we may still fail to die, because raise sends the
-	// signal to the whole process rather than just the current thread,
-	// and osyield just sleeps briefly rather than letting all other
-	// threads run. See issue 20315. Sleep longer.
-	if GOOS == "darwin" {
-		usleep(100)
-	}
-
 	// If we are still somehow running, just exit with the wrong status.
 	exit(2)
 }
@@ -444,7 +438,10 @@ func raisebadsignal(sig uint32, c *sigctxt) {
 	// re-installing sighandler. At this point we can just
 	// return and the signal will be re-raised and caught by
 	// the default handler with the correct context.
-	if (isarchive || islibrary) && handler == _SIG_DFL && c.sigcode() != _SI_USER {
+	//
+	// On FreeBSD, the libthr sigaction code prevents
+	// this from working so we fall through to raise.
+	if GOOS != "freebsd" && (isarchive || islibrary) && handler == _SIG_DFL && c.sigcode() != _SI_USER {
 		return
 	}
 
@@ -464,6 +461,7 @@ func raisebadsignal(sig uint32, c *sigctxt) {
 	setsig(sig, getSigtramp())
 }
 
+//go:nosplit
 func crash() {
 	if GOOS == "darwin" {
 		// OS X core dumps are linear dumps of the mapped memory,

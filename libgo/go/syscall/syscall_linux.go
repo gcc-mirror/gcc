@@ -6,6 +6,11 @@ package syscall
 
 import "unsafe"
 
+func rawSyscallNoError(trap, a1, a2, a3 uintptr) (r1, r2 uintptr) {
+	r1, r2, _ = RawSyscall(trap, a1, a2, a3)
+	return
+}
+
 func direntIno(buf []byte) (uint64, bool) {
 	return readInt(buf, unsafe.Offsetof(Dirent{}.Ino), unsafe.Sizeof(Dirent{}.Ino))
 }
