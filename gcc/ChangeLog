@@ -1,3 +1,14 @@
+2018-09-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82699
+	* config/i386/i386.c (rest_of_insert_endbranch): Set
+	endbr_queued_at_entrance to true and don't insert ENDBR if
+	x86_function_profiler will be called.
+	(x86_function_profiler): Insert ENDBR if endbr_queued_at_entrance
+	is true.
+	* config/i386/i386.h (machine_function): Add
+	endbr_queued_at_entrance.
+
 2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* genattrtab.c (mk_attr_alt): Use alternative_mask.
