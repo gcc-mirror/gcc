@@ -1,3 +1,11 @@
+2018-09-24  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (mostlyclean-local): Run chmod on check-go-dir to
+	make sure it is writable.
+	(check-go-tools): Likewise.
+	(check-vet): Copy internal/objabi to check-vet-dir.
+	* Makefile.in: Rebuild.
+
 2018-05-09  Ian Lance Taylor  <iant@golang.org>
 
 	* Makefile.am (check-go-tool): Don't copy zstdpkglist.go.

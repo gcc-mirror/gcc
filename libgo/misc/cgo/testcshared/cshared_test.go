@@ -201,6 +201,16 @@ func run(t *testing.T, env []string, args ...string) string {
 	t.Helper()
 	cmd := exec.Command(args[0], args[1:]...)
 	cmd.Env = env
+
+	if GOOS != "windows" {
+		// TestUnexportedSymbols relies on file descriptor 30
+		// being closed when the program starts, so enforce
+		// that in all cases. (The first three descriptors are
+		// stdin/stdout/stderr, so we just need to make sure
+		// that cmd.ExtraFiles[27] exists and is nil.)
+		cmd.ExtraFiles = make([]*os.File, 28)
+	}
+
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		t.Fatalf("command failed: %v\n%v\n%s\n", args, err, out)
@@ -322,7 +332,11 @@ func TestExportedSymbolsWithDynamicLoad(t *testing.T) {
 
 	createHeadersOnce(t)
 
-	runCC(t, "-o", cmd, "main1.c", "-ldl")
+	if GOOS != "freebsd" {
+		runCC(t, "-o", cmd, "main1.c", "-ldl")
+	} else {
+		runCC(t, "-o", cmd, "main1.c")
+	}
 	adbPush(t, cmd)
 
 	defer os.Remove(bin)
@@ -411,7 +425,11 @@ func testSignalHandlers(t *testing.T, pkgname, cfile, cmd string) {
 		"-o", libname, pkgname,
 	)
 	adbPush(t, libname)
-	runCC(t, "-pthread", "-o", cmd, cfile, "-ldl")
+	if GOOS != "freebsd" {
+		runCC(t, "-pthread", "-o", cmd, cfile, "-ldl")
+	} else {
+		runCC(t, "-pthread", "-o", cmd, cfile)
+	}
 	adbPush(t, cmd)
 
 	bin := cmdToRun(cmd)

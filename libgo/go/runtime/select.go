@@ -94,7 +94,7 @@ func selparkcommit(gp *g, _ unsafe.Pointer) bool {
 }
 
 func block() {
-	gopark(nil, nil, "select (no cases)", traceEvGoStop, 1) // forever
+	gopark(nil, nil, waitReasonSelectNoCases, traceEvGoStop, 1) // forever
 }
 
 // selectgo implements the select statement.
@@ -307,7 +307,7 @@ loop:
 
 	// wait for someone to wake us up
 	gp.param = nil
-	gopark(selparkcommit, nil, "select", traceEvGoBlockSelect, 1)
+	gopark(selparkcommit, nil, waitReasonSelect, traceEvGoBlockSelect, 1)
 
 	sellock(scases, lockorder)
 

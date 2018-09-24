@@ -15,7 +15,7 @@ import (
 // names and numbers for platforms that don't have a complete list of
 // protocol numbers.
 //
-// See http://www.iana.org/assignments/protocol-numbers
+// See https://www.iana.org/assignments/protocol-numbers
 //
 // On Unix, this map is augmented by readProtocols via lookupProtocol.
 var protocols = map[string]int{
@@ -133,8 +133,23 @@ type Resolver struct {
 	// If nil, the default dialer is used.
 	Dial func(ctx context.Context, network, address string) (Conn, error)
 
+	// lookupGroup merges LookupIPAddr calls together for lookups for the same
+	// host. The lookupGroup key is the LookupIPAddr.host argument.
+	// The return values are ([]IPAddr, error).
+	lookupGroup singleflight.Group
+
 	// TODO(bradfitz): optional interface impl override hook
 	// TODO(bradfitz): Timeout time.Duration?
+}
+
+func (r *Resolver) preferGo() bool     { return r != nil && r.PreferGo }
+func (r *Resolver) strictErrors() bool { return r != nil && r.StrictErrors }
+
+func (r *Resolver) getLookupGroup() *singleflight.Group {
+	if r == nil {
+		return &DefaultResolver.lookupGroup
+	}
+	return &r.lookupGroup
 }
 
 // LookupHost looks up the given host using the local resolver.
@@ -147,11 +162,11 @@ func LookupHost(host string) (addrs []string, err error) {
 // It returns a slice of that host's addresses.
 func (r *Resolver) LookupHost(ctx context.Context, host string) (addrs []string, err error) {
 	// Make sure that no matter what we do later, host=="" is rejected.
-	// ParseIP, for example, does accept empty strings.
+	// parseIP, for example, does accept empty strings.
 	if host == "" {
 		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host}
 	}
-	if ip := ParseIP(host); ip != nil {
+	if ip, _ := parseIPZone(host); ip != nil {
 		return []string{host}, nil
 	}
 	return r.lookupHost(ctx, host)
@@ -175,12 +190,12 @@ func LookupIP(host string) ([]IP, error) {
 // It returns a slice of that host's IPv4 and IPv6 addresses.
 func (r *Resolver) LookupIPAddr(ctx context.Context, host string) ([]IPAddr, error) {
 	// Make sure that no matter what we do later, host=="" is rejected.
-	// ParseIP, for example, does accept empty strings.
+	// parseIP, for example, does accept empty strings.
 	if host == "" {
 		return nil, &DNSError{Err: errNoSuchHost.Error(), Name: host}
 	}
-	if ip := ParseIP(host); ip != nil {
-		return []IPAddr{{IP: ip}}, nil
+	if ip, zone := parseIPZone(host); ip != nil {
+		return []IPAddr{{IP: ip, Zone: zone}}, nil
 	}
 	trace, _ := ctx.Value(nettrace.TraceKey{}).(*nettrace.Trace)
 	if trace != nil && trace.DNSStart != nil {
@@ -201,7 +216,7 @@ func (r *Resolver) LookupIPAddr(ctx context.Context, host string) ([]IPAddr, err
 	lookupGroupCtx, lookupGroupCancel := context.WithCancel(context.Background())
 
 	dnsWaitGroup.Add(1)
-	ch, called := lookupGroup.DoChan(host, func() (interface{}, error) {
+	ch, called := r.getLookupGroup().DoChan(host, func() (interface{}, error) {
 		defer dnsWaitGroup.Done()
 		return testHookLookupIP(lookupGroupCtx, resolverFunc, host)
 	})
@@ -218,7 +233,7 @@ func (r *Resolver) LookupIPAddr(ctx context.Context, host string) ([]IPAddr, err
 		// let the lookup continue uncanceled, and let later
 		// lookups with the same key share the result.
 		// See issues 8602, 20703, 22724.
-		if lookupGroup.ForgetUnshared(host) {
+		if r.getLookupGroup().ForgetUnshared(host) {
 			lookupGroupCancel()
 		} else {
 			go func() {
@@ -240,12 +255,6 @@ func (r *Resolver) LookupIPAddr(ctx context.Context, host string) ([]IPAddr, err
 		return lookupIPReturn(r.Val, r.Err, r.Shared)
 	}
 }
-
-// lookupGroup merges LookupIPAddr calls together for lookups
-// for the same host. The lookupGroup key is is the LookupIPAddr.host
-// argument.
-// The return values are ([]IPAddr, error).
-var lookupGroup singleflight.Group
 
 // lookupIPReturn turns the return values from singleflight.Do into
 // the return values from LookupIP.

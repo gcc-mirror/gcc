@@ -415,10 +415,6 @@ func TestCountByte(t *testing.T) {
 			if p != j+1 {
 				t.Errorf("TestCountByte.Count(%q, 100) = %d", b[i:i+window], p)
 			}
-			pGeneric := CountGeneric(b[i:i+window], []byte{100})
-			if pGeneric != j+1 {
-				t.Errorf("TestCountByte.CountGeneric(%q, 100) = %d", b[i:i+window], p)
-			}
 		}
 	}
 
@@ -465,10 +461,6 @@ func TestCountByteNoMatch(t *testing.T) {
 			p := Count(b[i:i+window], []byte{0})
 			if p != 0 {
 				t.Errorf("TestCountByteNoMatch(%q, 0) = %d", b[i:i+window], p)
-			}
-			pGeneric := CountGeneric(b[i:i+window], []byte{0})
-			if pGeneric != 0 {
-				t.Errorf("TestCountByteNoMatch.CountGeneric(%q, 100) = %d", b[i:i+window], p)
 			}
 			for j := 0; j < window; j++ {
 				b[i+j] = byte(0)

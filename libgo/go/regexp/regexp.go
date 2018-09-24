@@ -16,7 +16,7 @@
 // (This is a property not guaranteed by most open source
 // implementations of regular expressions.) For more information
 // about this property, see
-//	http://swtch.com/~rsc/regexp/regexp1.html
+//	https://swtch.com/~rsc/regexp/regexp1.html
 // or any book about automata theory.
 //
 // All characters are UTF-8-encoded code points.
@@ -30,8 +30,8 @@
 // matches of the entire expression. Empty matches abutting a preceding
 // match are ignored. The return value is a slice containing the successive
 // return values of the corresponding non-'All' routine. These routines take
-// an extra integer argument, n; if n >= 0, the function returns at most n
-// matches/submatches.
+// an extra integer argument, n. If n >= 0, the function returns at most n
+// matches/submatches; otherwise, it returns all of them.
 //
 // If 'String' is present, the argument is a string; otherwise it is a slice
 // of bytes; return values are adjusted as appropriate.
@@ -151,7 +151,7 @@ func Compile(expr string) (*Regexp, error) {
 // specifies that the match be chosen to maximize the length of the first
 // subexpression, then the second, and so on from left to right.
 // The POSIX rule is computationally prohibitive and not even well-defined.
-// See http://swtch.com/~rsc/regexp/regexp2.html#posix for details.
+// See https://swtch.com/~rsc/regexp/regexp2.html#posix for details.
 func CompilePOSIX(expr string) (*Regexp, error) {
 	return compile(expr, syntax.POSIX, true)
 }
@@ -226,6 +226,11 @@ func (re *Regexp) get() *machine {
 // grow to the maximum number of simultaneous matches
 // run using re.  (The cache empties when re gets garbage collected.)
 func (re *Regexp) put(z *machine) {
+	// Remove references to input data that we no longer need.
+	z.inputBytes.str = nil
+	z.inputString.str = ""
+	z.inputReader.r = nil
+
 	re.mu.Lock()
 	re.machine = append(re.machine, z)
 	re.mu.Unlock()
@@ -235,9 +240,9 @@ func (re *Regexp) put(z *machine) {
 // It simplifies safe initialization of global variables holding compiled regular
 // expressions.
 func MustCompile(str string) *Regexp {
-	regexp, error := Compile(str)
-	if error != nil {
-		panic(`regexp: Compile(` + quote(str) + `): ` + error.Error())
+	regexp, err := Compile(str)
+	if err != nil {
+		panic(`regexp: Compile(` + quote(str) + `): ` + err.Error())
 	}
 	return regexp
 }
@@ -246,9 +251,9 @@ func MustCompile(str string) *Regexp {
 // It simplifies safe initialization of global variables holding compiled regular
 // expressions.
 func MustCompilePOSIX(str string) *Regexp {
-	regexp, error := CompilePOSIX(str)
-	if error != nil {
-		panic(`regexp: CompilePOSIX(` + quote(str) + `): ` + error.Error())
+	regexp, err := CompilePOSIX(str)
+	if err != nil {
+		panic(`regexp: CompilePOSIX(` + quote(str) + `): ` + err.Error())
 	}
 	return regexp
 }
@@ -424,25 +429,27 @@ func (re *Regexp) LiteralPrefix() (prefix string, complete bool) {
 	return re.prefix, re.prefixComplete
 }
 
-// MatchReader reports whether the Regexp matches the text read by the
-// RuneReader.
+// MatchReader reports whether the text returned by the RuneReader
+// contains any match of the regular expression re.
 func (re *Regexp) MatchReader(r io.RuneReader) bool {
 	return re.doMatch(r, nil, "")
 }
 
-// MatchString reports whether the Regexp matches the string s.
+// MatchString reports whether the string s
+// contains any match of the regular expression re.
 func (re *Regexp) MatchString(s string) bool {
 	return re.doMatch(nil, nil, s)
 }
 
-// Match reports whether the Regexp matches the byte slice b.
+// Match reports whether the byte slice b
+// contains any match of the regular expression re.
 func (re *Regexp) Match(b []byte) bool {
 	return re.doMatch(nil, b, "")
 }
 
-// MatchReader checks whether a textual regular expression matches the text
-// read by the RuneReader. More complicated queries need to use Compile and
-// the full Regexp interface.
+// MatchReader reports whether the text returned by the RuneReader
+// contains any match of the regular expression pattern.
+// More complicated queries need to use Compile and the full Regexp interface.
 func MatchReader(pattern string, r io.RuneReader) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
@@ -451,9 +458,9 @@ func MatchReader(pattern string, r io.RuneReader) (matched bool, err error) {
 	return re.MatchReader(r), nil
 }
 
-// MatchString checks whether a textual regular expression
-// matches a string. More complicated queries need
-// to use Compile and the full Regexp interface.
+// MatchString reports whether the string s
+// contains any match of the regular expression pattern.
+// More complicated queries need to use Compile and the full Regexp interface.
 func MatchString(pattern string, s string) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
@@ -462,9 +469,9 @@ func MatchString(pattern string, s string) (matched bool, err error) {
 	return re.MatchString(s), nil
 }
 
-// Match checks whether a textual regular expression
-// matches a byte slice. More complicated queries need
-// to use Compile and the full Regexp interface.
+// MatchString reports whether the byte slice b
+// contains any match of the regular expression pattern.
+// More complicated queries need to use Compile and the full Regexp interface.
 func Match(pattern string, b []byte) (matched bool, err error) {
 	re, err := Compile(pattern)
 	if err != nil {
@@ -623,9 +630,9 @@ func init() {
 	}
 }
 
-// QuoteMeta returns a string that quotes all regular expression metacharacters
+// QuoteMeta returns a string that escapes all regular expression metacharacters
 // inside the argument text; the returned string is a regular expression matching
-// the literal text. For example, QuoteMeta(`[foo]`) returns `\[foo\]`.
+// the literal text.
 func QuoteMeta(s string) string {
 	// A byte loop is correct because all metacharacters are ASCII.
 	var i int
@@ -670,7 +677,9 @@ func (re *Regexp) pad(a []int) []int {
 	return a
 }
 
-// Find matches in slice b if b is non-nil, otherwise find matches in string s.
+// allMatches calls deliver at most n times
+// with the location of successive matches in the input text.
+// The input text is b if non-nil, otherwise s.
 func (re *Regexp) allMatches(s string, b []byte, n int, deliver func([]int)) {
 	var end int
 	if b == nil {
@@ -984,13 +993,13 @@ func (re *Regexp) FindAll(b []byte, n int) [][]byte {
 	if n < 0 {
 		n = len(b) + 1
 	}
-	result := make([][]byte, 0, startSize)
+	var result [][]byte
 	re.allMatches("", b, n, func(match []int) {
+		if result == nil {
+			result = make([][]byte, 0, startSize)
+		}
 		result = append(result, b[match[0]:match[1]])
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1002,13 +1011,13 @@ func (re *Regexp) FindAllIndex(b []byte, n int) [][]int {
 	if n < 0 {
 		n = len(b) + 1
 	}
-	result := make([][]int, 0, startSize)
+	var result [][]int
 	re.allMatches("", b, n, func(match []int) {
+		if result == nil {
+			result = make([][]int, 0, startSize)
+		}
 		result = append(result, match[0:2])
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1020,13 +1029,13 @@ func (re *Regexp) FindAllString(s string, n int) []string {
 	if n < 0 {
 		n = len(s) + 1
 	}
-	result := make([]string, 0, startSize)
+	var result []string
 	re.allMatches(s, nil, n, func(match []int) {
+		if result == nil {
+			result = make([]string, 0, startSize)
+		}
 		result = append(result, s[match[0]:match[1]])
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1038,13 +1047,13 @@ func (re *Regexp) FindAllStringIndex(s string, n int) [][]int {
 	if n < 0 {
 		n = len(s) + 1
 	}
-	result := make([][]int, 0, startSize)
+	var result [][]int
 	re.allMatches(s, nil, n, func(match []int) {
+		if result == nil {
+			result = make([][]int, 0, startSize)
+		}
 		result = append(result, match[0:2])
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1056,8 +1065,11 @@ func (re *Regexp) FindAllSubmatch(b []byte, n int) [][][]byte {
 	if n < 0 {
 		n = len(b) + 1
 	}
-	result := make([][][]byte, 0, startSize)
+	var result [][][]byte
 	re.allMatches("", b, n, func(match []int) {
+		if result == nil {
+			result = make([][][]byte, 0, startSize)
+		}
 		slice := make([][]byte, len(match)/2)
 		for j := range slice {
 			if match[2*j] >= 0 {
@@ -1066,9 +1078,6 @@ func (re *Regexp) FindAllSubmatch(b []byte, n int) [][][]byte {
 		}
 		result = append(result, slice)
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1080,13 +1089,13 @@ func (re *Regexp) FindAllSubmatchIndex(b []byte, n int) [][]int {
 	if n < 0 {
 		n = len(b) + 1
 	}
-	result := make([][]int, 0, startSize)
+	var result [][]int
 	re.allMatches("", b, n, func(match []int) {
+		if result == nil {
+			result = make([][]int, 0, startSize)
+		}
 		result = append(result, match)
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1098,8 +1107,11 @@ func (re *Regexp) FindAllStringSubmatch(s string, n int) [][]string {
 	if n < 0 {
 		n = len(s) + 1
 	}
-	result := make([][]string, 0, startSize)
+	var result [][]string
 	re.allMatches(s, nil, n, func(match []int) {
+		if result == nil {
+			result = make([][]string, 0, startSize)
+		}
 		slice := make([]string, len(match)/2)
 		for j := range slice {
 			if match[2*j] >= 0 {
@@ -1108,9 +1120,6 @@ func (re *Regexp) FindAllStringSubmatch(s string, n int) [][]string {
 		}
 		result = append(result, slice)
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
@@ -1123,13 +1132,13 @@ func (re *Regexp) FindAllStringSubmatchIndex(s string, n int) [][]int {
 	if n < 0 {
 		n = len(s) + 1
 	}
-	result := make([][]int, 0, startSize)
+	var result [][]int
 	re.allMatches(s, nil, n, func(match []int) {
+		if result == nil {
+			result = make([][]int, 0, startSize)
+		}
 		result = append(result, match)
 	})
-	if len(result) == 0 {
-		return nil
-	}
 	return result
 }
 
