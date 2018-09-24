@@ -430,23 +430,6 @@ irange::canonicalize ()
   gcc_assert (!CHECKING_P || valid_p ());
 }
 
-// THIS = THIS U [X,Y]
-
-irange &
-irange::union_ (const wide_int &x, const wide_int &y)
-{
-  if (undefined_p ())
-    {
-      m_nitems = 2;
-      m_bounds[0] = x;
-      m_bounds[1] = y;
-      gcc_assert (!CHECKING_P || valid_p ());
-      return *this;
-    }
-  irange tmp (m_type, x, y);
-  return union_ (tmp);
-}
-
 // THIS = THIS U R
 
 irange &
@@ -913,7 +896,7 @@ irange_to_value_range (value_range &vr, const irange &r)
 	  //
 	  // Merge the last two bounds.
 	  tmp = irange (type, r.lower_bound (0), r.upper_bound (0));
-	  tmp.union_ (r.lower_bound (1), r.upper_bound ());
+	  tmp.union_ (irange (type, r.lower_bound (1), r.upper_bound ()));
 	}
       tmp = range_invert (tmp);
       vr.min = wide_int_to_tree (type, tmp.lower_bound ());

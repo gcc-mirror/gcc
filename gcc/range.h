@@ -84,9 +84,7 @@ class irange
   bool operator== (const irange &r) const;
   bool operator!= (const irange &r) const;
 
-  irange &union_ (const wide_int &x, const wide_int &y);
   irange &union_ (const irange &r);
-  irange &intersect (const wide_int &x, const wide_int &y);
   irange &intersect (const irange &r);
   irange &invert ();
 
@@ -98,6 +96,7 @@ private:
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
+  irange &intersect (const wide_int &x, const wide_int &y);
   void dump (pretty_printer *pp) const;
   bool valid_p () const;
 

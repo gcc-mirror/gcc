@@ -94,18 +94,18 @@ accumulate_range (irange& r,
       // No overflow or both overflow or underflow.  The range can be
       // used as is.
       if (ov_lb == ov_ub)
-	r.union_ (lb, ub);
+	r.union_ (irange (type, lb, ub));
       // Underflow on the lower bound.
       else if (ov_lb == wi::OVF_UNDERFLOW && ov_ub == wi::OVF_NONE)
 	{
-	  r.union_ (min_limit (type), ub);
-	  r.union_ (lb, max_limit (type));
+	  r.union_ (irange (type, min_limit (type), ub));
+	  r.union_ (irange (type, lb, max_limit (type)));
 	}
       // Overflow on the upper bound.
       else if (ov_lb == wi::OVF_NONE && ov_ub == wi::OVF_OVERFLOW)
 	{
-	  r.union_ (lb, max_limit (type));
-	  r.union_ (min_limit (type), ub);
+	  r.union_ (irange (type, lb, max_limit (type)));
+	  r.union_ (irange (type, min_limit (type), ub));
 	}
       else
 	r.set_varying (type);
@@ -127,7 +127,7 @@ accumulate_range (irange& r,
 	new_ub = max_limit (type);
       else
 	new_ub = ub;
-      r.union_ (new_lb, new_ub);
+      r.union_ (irange (type, new_lb, new_ub));
     }
 }
 
@@ -960,14 +960,15 @@ irange_adjust_bit_and_mask (irange &r, signop s,
 	  // Mask out the positive numbers that can't happen.
 	  lb = wi::shifted_mask (tz, 1, false, prec);
 	  ub = positives.upper_bound();
-	  positives.intersect (lb, ub);
+	  if (wi::le_p (lb, ub, s))
+	    positives.intersect (irange (type, lb, ub));
 	}
       if (!negatives.undefined_p ())
 	{
 	  // Mask out the negatives numbers that can't happen.
 	  lb = wi::min_value (prec, s);
 	  ub = wi::shifted_mask (0, tz, true, prec);
-	  negatives.intersect (lb, ub);
+	  negatives.intersect (irange (type, lb, ub));
 	}
       r = positives;
       r.union_ (negatives);
@@ -1169,7 +1170,7 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 			      lh_lb, lh_ub,
 			      TYPE_OVERFLOW_UNDEFINED (r.type ())))
 	{
-	  r.union_ (new_lb, new_ub);
+	  r.union_ (irange (r.type (), new_lb, new_ub));
 	  return true;
 	}
       r.set_varying (type);
@@ -2032,7 +2033,9 @@ operator_abs::op1_irange (irange& r,
   // Then add the negative of each pair:
   // ABS(op1) = [5,20] would yield op1 => [-20,-5][5,20].
   for (unsigned i = 0; i < positives.num_pairs (); ++i)
-    r.union_ (-positives.upper_bound (i), -positives.lower_bound (i));
+    r.union_ (irange (type,
+		      -positives.upper_bound (i),
+		      -positives.lower_bound (i)));
   return true;
 }
 
