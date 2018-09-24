@@ -1,5 +1,11 @@
 2018-09-24  Martin Liska  <mliska@suse.cz>
 
+	* gcov.c (output_lines): Print colorization legend
+	for both flag_use_colors and flag_use_hotness_colors.
+	Reword the help.
+
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
 	* coverage.c (get_coverage_counts): Use warning_at
 	with current_function_decl location. Use %qD in warning
 	message.

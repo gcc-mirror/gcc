@@ -2933,9 +2933,19 @@ output_lines (FILE *gcov_file, const source_info *src)
   FILE *source_file;
   const char *retval;
 
-  /* Print legend of color hotness syntax.  */
+  /* Print colorization legend.  */
+  if (flag_use_colors)
+    fprintf (gcov_file, "%s",
+	     DEFAULT_LINE_START "Colorization: profile count: " \
+	     SGR_SEQ (COLOR_BG_CYAN) "zero coverage (exceptional)" SGR_RESET \
+	     " " \
+	     SGR_SEQ (COLOR_BG_RED) "zero coverage (unexceptional)" SGR_RESET \
+	     " " \
+	     SGR_SEQ (COLOR_BG_MAGENTA) "unexecuted block" SGR_RESET "\n");
+
   if (flag_use_hotness_colors)
-    fprintf (gcov_file, "%s", DEFAULT_LINE_START "Hotness legend: " \
+    fprintf (gcov_file, "%s",
+	     DEFAULT_LINE_START "Colorization: line numbers: hotness: " \
 	     SGR_SEQ (COLOR_BG_RED) "> 50%" SGR_RESET " " \
 	     SGR_SEQ (COLOR_BG_YELLOW) "> 20%" SGR_RESET " " \
 	     SGR_SEQ (COLOR_BG_GREEN) "> 10%" SGR_RESET "\n");
