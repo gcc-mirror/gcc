@@ -1304,7 +1304,9 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
       if (allow_zero)
 	range_zero (&r, exptype);
       else
-	r.remove_pair (0);
+	r.intersect (irange (exptype,
+			     r.lower_bound (0),
+			     r.upper_bound (0), irange::INVERSE));
       range[0] = wide_int_to_tree (exptype, r.lower_bound ());
       range[1] = wide_int_to_tree (exptype, r.upper_bound ());
       return true;
@@ -1326,7 +1328,10 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
 	}
       /* This will transform [5,10][20,MAX] into [5,10].  */
       else if (r.upper_bound () == wi::to_wide (TYPE_MAX_VALUE (exptype)))
-	r.remove_pair (r.num_pairs () - 1);
+	r.intersect (irange (exptype,
+			     r.lower_bound (r.num_pairs () - 1),
+			     r.upper_bound (r.num_pairs () - 1),
+			     irange::INVERSE));
     }
 
   range[0] = wide_int_to_tree (exptype, r.lower_bound ());

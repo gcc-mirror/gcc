@@ -64,7 +64,6 @@ class irange
   void set_undefined (tree = NULL);
 
   unsigned num_pairs () const;
-  void remove_pair (unsigned pair);
   wide_int lower_bound (unsigned pair = 0) const;
   wide_int upper_bound () const;
   wide_int upper_bound (unsigned pair) const;
@@ -96,6 +95,7 @@ private:
   void canonicalize ();
   void set_lower_bound (unsigned pair, const wide_int &);
   void set_upper_bound (unsigned pair, const wide_int &);
+  void remove_pair (unsigned pair);
   irange &intersect (const wide_int &x, const wide_int &y);
   void dump (pretty_printer *pp) const;
   bool valid_p () const;
