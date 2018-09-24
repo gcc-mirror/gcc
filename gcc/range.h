@@ -73,8 +73,8 @@ class irange
 
   void cast (tree type);
 
-  bool undefined_p () const;
   bool varying_p () const;
+  bool undefined_p () const;
   bool zero_p () const;
   bool non_zero_p () const;
   bool singleton_p (wide_int &) const;
@@ -161,18 +161,18 @@ irange::num_pairs () const
   return m_nitems / 2;
 }
 
-inline bool
-irange::undefined_p () const
-{
-  return !m_nitems;
-}
-
 inline void
 irange::set_undefined (tree type)
 {
   if (type)
     m_type = type;
   m_nitems = 0;
+}
+
+inline bool
+irange::undefined_p () const
+{
+  return !m_nitems;
 }
 
 // Return TYPE if it is a valid type for irange to operator on.

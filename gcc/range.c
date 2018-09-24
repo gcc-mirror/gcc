@@ -128,16 +128,6 @@ range_from_ssa (tree ssa)
   return tmp;
 }
 
-// Set range from the full domain of TYPE.
-
-void
-irange::set_varying (tree type)
-{
-  wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-  wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
-  init (type, min, max);
-}
-
 irange::irange (tree type)
 {
   set_varying (type);
@@ -190,6 +180,16 @@ bool
 irange::operator!= (const irange &r) const
 {
   return !(*this == r);
+}
+
+// Set range from the full domain of TYPE.
+
+void
+irange::set_varying (tree type)
+{
+  wide_int min = wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  wide_int max = wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type));
+  init (type, min, max);
 }
 
 // Return true if this range is the full range for its type.
