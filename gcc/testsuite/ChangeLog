@@ -1,3 +1,8 @@
+2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87401
+	* gfortran.dg/intent_out_12.f90: New test.
+
 2018-09-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	PR testsuite/86952
