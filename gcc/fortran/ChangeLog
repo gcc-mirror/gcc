@@ -1,3 +1,9 @@
+2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87397
+	* gfc_conv_procedure_call: Do not add clobber on INTENT(OUT)
+	for variables in an associate statement.
+
 2018-09-24  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
