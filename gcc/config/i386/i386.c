@@ -18880,11 +18880,6 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
 	return mode;
       break;
 
-    case I387_MASK_PM:
-      if (mode == I387_CW_MASK_PM)
-	return mode;
-      break;
-
     default:
       gcc_unreachable ();
     }
@@ -18907,7 +18902,6 @@ ix86_mode_needed (int entity, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return ix86_i387_mode_needed (entity, insn);
     default:
       gcc_unreachable ();
@@ -18968,7 +18962,6 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return mode;
     default:
       gcc_unreachable ();
@@ -19021,7 +19014,6 @@ ix86_mode_entry (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19056,7 +19048,6 @@ ix86_mode_exit (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19106,12 +19097,6 @@ emit_i387_cw_initialization (int mode)
       emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
       emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
       slot = SLOT_CW_CEIL;
-      break;
-
-    case I387_CW_MASK_PM:
-      /* mask precision exception for nearbyint() */
-      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
-      slot = SLOT_CW_MASK_PM;
       break;
 
     default:
@@ -19169,7 +19154,6 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       if (mode != I387_CW_ANY
 	  && mode != I387_CW_UNINITIALIZED)
 	emit_i387_cw_initialization (mode);
