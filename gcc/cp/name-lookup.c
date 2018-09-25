@@ -3291,21 +3291,6 @@ cp_binding_level_debug (cp_binding_level *scope, int line, const char *action)
     verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
 }
 
-/* Return the estimated initial size of the hashtable of a NAMESPACE
-   scope.  */
-
-static inline size_t
-namespace_scope_ht_size (tree ns)
-{
-  tree name = DECL_NAME (ns);
-
-  return name == std_identifier
-    ? NAMESPACE_STD_HT_SIZE
-    : (name == global_identifier
-       ? GLOBAL_SCOPE_HT_SIZE
-       : NAMESPACE_ORDINARY_HT_SIZE);
-}
-
 /* A chain of binding_level structures awaiting reuse.  */
 
 static GTY((deletable)) cp_binding_level *free_binding_level;

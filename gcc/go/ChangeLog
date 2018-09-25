@@ -1,3 +1,18 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* gofrontend/escape.cc (Gogo::analyze_escape): Remove
+	usage of a parameter.
+	(Gogo::assign_connectivity): Likewise.
+	(class Escape_analysis_tag): Likewise.
+	(Gogo::tag_function): Likewise.
+	* gofrontend/expressions.cc (Call_expression::do_type): Likewise.
+	* gofrontend/gogo.h (class Gogo): Likewise.
+	* gofrontend/types.cc (class Call_multiple_result_type): Likewise.
+	(Type::make_call_multiple_result_type): Likewise.
+	* gofrontend/types.h (class Type): Likewise.
+	* gofrontend/wb.cc (class Check_escape): Likewise.
+	(Gogo::add_write_barriers): Likewise.
+
 2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
 
 	* gospec.c (lang_specific_driver): Handle -r like -nostdlib.

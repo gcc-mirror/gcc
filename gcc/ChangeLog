@@ -1,5 +1,37 @@
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
+	* alias.c (set_dest_equal_p): Remove unused function.
+	* config/i386/i386.c (def_builtin_pure2): Likewise.
+	* diagnostic-show-locus.c (class layout): Remove
+	unused field.
+	(layout::layout): Likewise here.
+	* dump-context.h (class temp_dump_context): Likewise.
+	* dwarf2out.c (add_AT_fde_ref): Remove unused function.
+	(add_AT_loclistsptr): Likewise.
+	(add_AT_offset): Likewise.
+	(get_AT_hi_pc): Likewise.
+	(is_comdat_die): Likewise.
+	(type_is_enum): Likewise.
+	(ceiling): Likewise.
+	(add_AT_vms_delta): Likewise.
+	(is_class_die): Likewise.
+	* edit-context.c (class line_event): Remove unused field.
+	* graphite-sese-to-poly.c (tree_int_to_gmp): Remove
+	unused function.
+	* ipa-cp.c (ipa_get_vr_lat): Likewise.
+	* lra-constraints.c (ok_for_index_p_nonstrict): Likewise.
+	(ok_for_base_p_nonstrict): Likewise.
+	* tree-chrec.c (is_not_constant_evolution): Likewise.
+	(chrec_fold_poly_cst): Likewise.
+	* tree-if-conv.c (has_pred_critical_p): Likewise.
+	* tree-ssa-coalesce.c (print_exprs): Likewise.
+	* tree-ssa-pre.c (bitmap_set_contains_expr): Likewise.
+	* tree-ssa-uninit.c (is_and_or_or_p): Likewise.
+	* tree-vrp.c (value_ranges_intersect_p): Likewise.
+	(value_range_nonnegative_p): Likewise.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
 	* config/powerpcspe/powerpcspe.c (rs6000_output_function_epilogue):
 	Do not handle "GNU Pascal".
 	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):

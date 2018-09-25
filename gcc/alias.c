@@ -3270,15 +3270,6 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
   return memory_modified;
 }
 
-/* Return TRUE if the destination of a set is rtx identical to
-   ITEM.  */
-static inline bool
-set_dest_equal_p (const_rtx set, const_rtx item)
-{
-  rtx dest = SET_DEST (set);
-  return rtx_equal_p (dest, item);
-}
-
 /* Initialize the aliasing machinery.  Initialize the REG_KNOWN_VALUE
    array.  */
 

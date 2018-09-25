@@ -61,26 +61,6 @@ gfc_advance_chain (tree t, int n)
   return t;
 }
 
-
-/* Strip off a legitimate source ending from the input
-   string NAME of length LEN.  */
-
-static inline void
-remove_suffix (char *name, int len)
-{
-  int i;
-
-  for (i = 2; i < 8 && len > i; i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
-}
-
-
 /* Creates a variable declaration with a given TYPE.  */
 
 tree
