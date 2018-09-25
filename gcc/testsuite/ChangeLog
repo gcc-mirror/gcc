@@ -1,3 +1,8 @@
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/coarray_lock_7.f90: Adjust scan-tree-dump-times for
+	ILP32.
+
 2018-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87402
