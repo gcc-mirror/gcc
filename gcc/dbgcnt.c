@@ -138,7 +138,7 @@ dbg_cnt_process_single_pair (const char *arg)
   int high, low;
 
   if (value1 == NULL)
-    return NULL;
+    return false;
 
   if (value2 == NULL)
     {

@@ -1511,7 +1511,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].dkind == dkind))
+      if (dump_files[i].dkind == dkind)
         {
           const char *old_filename = dump_files[i].pfilename;
           dump_files[i].pstate = -1;
@@ -1532,7 +1532,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if ((m_extra_dump_files[i].dkind == dkind))
+      if (m_extra_dump_files[i].dkind == dkind)
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;
