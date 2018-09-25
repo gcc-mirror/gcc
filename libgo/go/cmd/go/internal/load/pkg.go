@@ -953,8 +953,14 @@ func disallowInternal(srcDir string, importer *Package, importerPath string, p *
 	}
 
 	// We can't check standard packages with gccgo.
-	if cfg.BuildContext.Compiler == "gccgo" && p.Standard {
-		return p
+	if cfg.BuildContext.Compiler == "gccgo" {
+		if importer == nil {
+			if p.Standard {
+				return p
+			}
+		} else if importer.Standard || strings.HasPrefix(importerPath, "cmd/") {
+			return p
+		}
 	}
 
 	// The stack includes p.ImportPath.
