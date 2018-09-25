@@ -1393,11 +1393,6 @@ Complex floating point modes.  By default these are @code{QCmode},
 @code{HCmode}, @code{SCmode}, @code{DCmode}, @code{XCmode}, and
 @code{TCmode}.
 
-@findex MODE_FUNCTION
-@item MODE_FUNCTION
-Algol or Pascal function variables including a static chain.
-(These are not currently implemented).
-
 @findex MODE_CC
 @item MODE_CC
 Modes representing condition code values.  These are @code{CCmode} plus

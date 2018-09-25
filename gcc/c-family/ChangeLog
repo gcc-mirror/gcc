@@ -1,3 +1,8 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (c_common_truthvalue_conversion):
+	Remove Pascal from documentation.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c: Include diagnostic.h.
