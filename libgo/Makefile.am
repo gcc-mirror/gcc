@@ -532,6 +532,14 @@ s-version: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
+cpugen.go: s-cpu; @true
+s-cpu: Makefile
+	rm -f cpugen.go.tmp
+	echo "package cpu" > cpugen.go.tmp
+	echo "const CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
@@ -962,6 +970,9 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
+
+extra_go_files_internal_cpu = cpugen.go
+internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
 
 extra_go_files_internal_goroot = zstdpkglist.go
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)

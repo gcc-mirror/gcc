@@ -73,6 +73,11 @@ if ! grep '^const F_DUPFD_CLOEXEC' ${OUT} >/dev/null 2>&1; then
   echo "const F_DUPFD_CLOEXEC = 0" >> ${OUT}
 fi
 
+# The internal/poll package requires F_GETPIPE_SZ to be defined.
+if ! grep '^const F_GETPIPE_SZ' ${OUT} >/dev/null 2>&1; then
+  echo "const F_GETPIPE_SZ = 0" >> ${OUT}
+fi
+
 # AIX 7.1 is a 64 bits value for _FCLOEXEC (referenced by O_CLOEXEC)
 # which leads to a constant overflow when using O_CLOEXEC in some
 # go code. Issue wan not present in 6.1 (no O_CLOEXEC) and is no
