@@ -1,5 +1,15 @@
 2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/rs6000.md (*movcc_internal1): Use set_attr_alternative.
+	(*call_indirect_nonlocal_sysv<mode>): Ditto.
+	(*call_value_indirect_nonlocal_sysv<mode>): Ditto.
+	(*sibcall_nonlocal_sysv<mode>): Ditto.
+	(*sibcall_value_nonlocal_sysv<mode>): Ditto.
+	(<bd>_<mode>): Ditto.
+	(<bd>tf_<mode>): Ditto.
+
+2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config/rs6000/altivec.md (*altivec_mov<mode>): Write the output
 	control string as a list of templates instead of as C code.
 	(*altivec_movti): Ditto.
