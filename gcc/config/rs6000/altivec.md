@@ -245,21 +245,16 @@
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    case 8: return "#";
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);
+   #"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*,*")
    (set_attr "length" "4,4,4,20,20,20,4,8,32")])
 
@@ -272,20 +267,15 @@
   "VECTOR_MEM_ALTIVEC_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*")])
 
 ;; Load up a vector with the most significant bit set by loading up -1 and
