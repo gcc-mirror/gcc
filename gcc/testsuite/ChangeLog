@@ -1,3 +1,7 @@
+2018-09-25  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/weak-1.c: New.
+
 2018-09-25  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/warn-stpcpy-no-nul.c: Drop unnecessary xfails.
