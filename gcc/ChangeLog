@@ -1,5 +1,10 @@
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
+	* ipa-fnsummary.c (estimate_node_size_and_time): Scale by two
+	integers and not by a float value.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
 	PR fortran/87394
 	* dbgcnt.c (dbg_cnt_process_single_pair): Return false
 	instead of NULL.
