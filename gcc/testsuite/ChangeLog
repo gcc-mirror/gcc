@@ -1,3 +1,11 @@
+2018-09-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/70150
+	* gcc.dg/20020312-2.c (dg-additional-options): Set to "-no-pie"
+	for pie_enabled target.
+	* gcc.dg/uninit-19.c: Check pie_enabled for PIC.
+	* gcc.target/i386/pr34256.c: Likewise.
+
 2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85070
