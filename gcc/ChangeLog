@@ -1,3 +1,23 @@
+2018-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (frndintxf2_mask_pm): Remove.
+	(frndintxf2_mask_pm_i387): Ditto.
+	(nearbyintxf2): Rewrite expander pattern to match rintxf2.
+	Enable for !flag_trapping_math.
+	(nearbyint<mode>2): Enable x87 modes for !flag_trapping_math.
+	Enable SSE modes for TARGET_SSE4_1 and expand them with round insn.
+	Change operand 1 predicate to nonimmediate_operand.
+	(attr "i387_cw"): Remove mask_pm.
+	* config/i386/i386.h (enum ix86_stack_slot): Remove SLOT_CW_MASK_PM.
+	(enum ix86_entity): Remove I387_MASK_PM.
+	* config/i386/i386.c (ix86_i387_mode_needed): Do not
+	handle I387_MASK_PM.
+	(ix86_mode_needed): Ditto.
+	(ix86_mode_after): Ditto.
+	(ix86_mode_entry): Ditto.
+	(ix86_mode_exit): Ditto.
+	(emit_i387_cw_initialization): Do not handle I387_CW_MASK_PM.
+
 2018-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* vr-values.c (vr_values::vr_values): Initialize to_remove_edges and
