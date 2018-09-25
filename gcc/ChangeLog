@@ -1,3 +1,10 @@
+2018-09-24  Jim Wilson  <jimw@sifive.com>
+
+	PR target/87391
+	* config/riscv/riscv.h (STACK_BOUNDARY): Test riscv_abi == ABI_ILP32E
+	not TARGET_RVE.
+	(ABI_STACK_BOUNDARY, MAX_ARGS_IN_REGISTERS): Likewise.
+
 2018-09-24  Andrew Pinski  <apinski@marvell.com>
 
 	*  config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Don't
