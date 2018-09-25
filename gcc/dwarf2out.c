@@ -5868,7 +5868,7 @@ add_AT_external_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind,
   /* ???  We probably want to share these, thus put a ref to the DIE
      we create here to the external_die_map entry.  */
   dw_die_ref ref = new_die_raw (die->die_tag);
-  ref->die_id.die_symbol = IDENTIFIER_POINTER (get_identifier (symbol));
+  ref->die_id.die_symbol = symbol;
   ref->die_offset = offset;
   ref->with_offset = 1;
   add_AT_die_ref (die, attr_kind, ref);
@@ -5966,8 +5966,6 @@ maybe_create_die_with_external_ref (tree decl)
     case TRANSLATION_UNIT_DECL:
       {
 	die = comp_unit_die ();
-	dw_die_ref import = new_die (DW_TAG_imported_unit, die, NULL_TREE);
-	add_AT_external_die_ref (import, DW_AT_import, sym, off);
 	/* We re-target all CU decls to the LTRANS CU DIE, so no need
 	   to create a DIE for the original CUs.  */
 	return die;
@@ -21134,19 +21132,21 @@ add_abstract_origin_attribute (dw_die_ref die, tree origin)
 {
   dw_die_ref origin_die = NULL;
 
-  if (DECL_P (origin))
+  /* For late LTO debug output we want to refer directly to the abstract
+     DIE in the early debug rather to the possibly existing concrete
+     instance and avoid creating that just for this purpose.  */
+  sym_off_pair *desc;
+  if (in_lto_p
+      && external_die_map
+      && (desc = external_die_map->get (origin)))
     {
-      sym_off_pair *desc;
-      if (in_lto_p
-	  && external_die_map
-	  && (desc = external_die_map->get (origin)))
-	{
-	  add_AT_external_die_ref (die, DW_AT_abstract_origin,
-				   desc->sym, desc->off);
-	  return;
-	}
-      origin_die = lookup_decl_die (origin);
+      add_AT_external_die_ref (die, DW_AT_abstract_origin,
+			       desc->sym, desc->off);
+      return;
     }
+
+  if (DECL_P (origin))
+    origin_die = lookup_decl_die (origin);
   else if (TYPE_P (origin))
     origin_die = lookup_type_die (origin);
   else if (TREE_CODE (origin) == BLOCK)
@@ -22458,21 +22458,15 @@ dwarf2out_abstract_function (tree decl)
   if (DECL_IGNORED_P (decl))
     return;
 
-  /* Do not lazily create a DIE for decl here just because we
-     got called via debug_hooks->outlining_inline_function.  */
-  if (in_lto_p
-      && external_die_map
-      && external_die_map->get (decl))
+  /* In LTO we're all set.  We already created abstract instances
+     early and we want to avoid creating a concrete instance of that
+     if we don't output it.  */
+  if (in_lto_p)
     return;
 
   old_die = lookup_decl_die (decl);
-  /* With early debug we always have an old DIE unless we are in LTO
-     and the user did not compile but only link with debug.  */
-  if (in_lto_p && ! old_die)
-    return;
   gcc_assert (old_die != NULL);
-  if (get_AT (old_die, DW_AT_inline)
-      || get_AT (old_die, DW_AT_abstract_origin))
+  if (get_AT (old_die, DW_AT_inline))
     /* We've already generated the abstract instance.  */
     return;
 
@@ -31907,8 +31901,15 @@ dwarf2out_early_finish (const char *filename)
 	{
 	  unsigned i;
 	  tree tu;
-	  FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, tu)
-	    maybe_create_die_with_external_ref (tu);
+	  if (external_die_map)
+	    FOR_EACH_VEC_SAFE_ELT (all_translation_units, i, tu)
+	      if (sym_off_pair *desc = external_die_map->get (tu))
+		{
+		  dw_die_ref import = new_die (DW_TAG_imported_unit,
+					       comp_unit_die (), NULL_TREE);
+		  add_AT_external_die_ref (import, DW_AT_import,
+					   desc->sym, desc->off);
+		}
 	}
 
       early_dwarf_finished = true;
