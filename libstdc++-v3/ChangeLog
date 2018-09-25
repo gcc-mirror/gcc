@@ -1,3 +1,10 @@
+2018-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87431
+	* include/std/variant (_Variant_storage<true, _Types...>::_M_valid):
+	Avoid runtime test when all alternatives are scalars and so cannot
+	throw during initialization.
+
 2018-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/codecvt.xml: Move link to "UTF-8 and Unicode FAQ"
