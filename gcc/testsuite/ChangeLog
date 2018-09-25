@@ -1,3 +1,10 @@
+2018-09-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/87339
+	* gcc.dg/warn-abs-1.c: Do not test _Float128.  Remove dg-skip-if and
+	float125 target.
+	* gcc.target/i386/warn-abs-3.c: New test.
+
 2018-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81246
