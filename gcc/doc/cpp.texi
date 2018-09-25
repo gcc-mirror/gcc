@@ -194,7 +194,7 @@ will be removed, and the Makefile will not work.
 
 Having said that, you can often get away with using cpp on things which
 are not C@.  Other Algol-ish programming languages are often safe
-(Pascal, Ada, etc.) So is assembly, with caution.  @option{-traditional-cpp}
+(Ada, etc.) So is assembly, with caution.  @option{-traditional-cpp}
 mode preserves more white space, and is otherwise more permissive.  Many
 of the problems can be avoided by writing C or C++ style comments
 instead of native language comments, and keeping macros simple.

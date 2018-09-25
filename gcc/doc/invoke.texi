@@ -1450,9 +1450,6 @@ Ada source code file containing a library unit body (a subprogram or
 package body).  Such files are also called @dfn{bodies}.
 
 @c GCC also knows about some suffixes for languages not yet included:
-@c Pascal:
-@c @var{file}.p
-@c @var{file}.pas
 @c Ratfor:
 @c @var{file}.r
 

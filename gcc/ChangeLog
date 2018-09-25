@@ -1,5 +1,21 @@
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
+	* config/powerpcspe/powerpcspe.c (rs6000_output_function_epilogue):
+	Do not handle "GNU Pascal".
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Likewise.
+	* config/sparc/sparc.c (sparc_pass_by_reference): Remove Pascal
+	from documentation. Likewise.
+	* dbxout.c (dbxout_range_type): Likewise.
+	* doc/cpp.texi: Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/frontends.texi: Likewise.
+	* doc/invoke.texi: Remove Pascal entry.
+	* tree.def (CLEANUP_POINT_EXPR): Likewise.
+	* doc/rtl.texi (MODE_FUNCTION): Remove not used entry.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
 	PR middle-end/86078
 	* doc/invoke.texi: Document all parameters and remove default
 	of the parameters.

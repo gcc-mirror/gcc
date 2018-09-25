@@ -7516,9 +7516,8 @@ sparc_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 {
   if (TARGET_ARCH32)
     /* Original SPARC 32-bit ABI says that structures and unions,
-       and quad-precision floats are passed by reference.  For Pascal,
-       also pass arrays by reference.  All other base types are passed
-       in registers.
+       and quad-precision floats are passed by reference.
+       All base types are passed in registers.
 
        Extended ABI (as implemented by the Sun compiler) says that all
        complex floats are passed by reference.  Pass complex integers

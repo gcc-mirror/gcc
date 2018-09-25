@@ -1715,7 +1715,7 @@ dbxout_range_type (tree type, tree low, tree high)
   if (TREE_TYPE (type))
     dbxout_type (TREE_TYPE (type), 0);
   else if (TREE_CODE (type) != INTEGER_TYPE)
-    dbxout_type (type, 0); /* E.g. Pascal's ARRAY [BOOLEAN] of INTEGER */
+    dbxout_type (type, 0);
   else
     {
       /* Traditionally, we made sure 'int' was type 1, and builtin types
