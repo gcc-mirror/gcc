@@ -1,3 +1,31 @@
+2018-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/83941
+	* dwarf2out.c (struct sym_off_pair): New.
+	(external_die_map): New global.
+	(lookup_decl_die): When in LTO create DIEs lazily from the
+	external_die_map.
+	(lookup_block_die): New function, create DIEs lazily in LTO.
+	(equate_block_to_die): New function.
+	(dwarf2out_die_ref_for_decl): During WPA get the association
+	from the external DIE map.
+	(dwarf2out_register_external_die): Record mapping into the
+	external DIE map.
+	(maybe_create_die_with_external_ref): New function split out from
+	DIE generation part of old dwarf2out_register_external_die.
+	(add_abstract_origin_attribute): Do not return the DIE.  When
+	in LTO reference externals directly.
+	(dwarf2out_abstract_function): When in LTO ignore calls for
+	decls with external DIEs (already present abstract instances).
+	(gen_call_site_die): Adjust.
+	(add_high_low_attributes): Likewise.
+	(gen_lexical_block_die): Likewise.
+	(gen_inlined_subroutine_die): Likewie.
+	(gen_block_die): Likewise.
+	(dwarf2out_inline_entry): Likewise.
+	(dwarf2out_early_finish): In LTRANS phase create DW_TAG_imported_unit
+	DIEs.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	* ipa-fnsummary.c (estimate_node_size_and_time): Scale by two
