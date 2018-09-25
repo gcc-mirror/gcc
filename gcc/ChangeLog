@@ -1,3 +1,24 @@
+2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/86987
+	* config/rs6000/altivec.md (altivec_vspltb): Use
+	const_0_to_15_operand instead of u5bit_cint_operand.
+	(*altivec_vspltb_internal): Ditto.
+	(altivec_vspltb_direct): Ditto.
+	(altivec_vsplth): Use const_0_to_7_operand instead of
+	u5bit_cint_operand.
+	(*altivec_vsplth_internal): Ditto.
+	(altivec_vsplth_direct): Ditto.
+	(altivec_vspltw): Use const_0_to_3_operand instead of
+	u5bit_cint_operand.
+	(*altivec_vspltw_internal): Ditto.
+	(altivec_vspltw_direct): Ditto.
+	(altivec_vspltsf): Ditto.
+	(*altivec_vspltsf_internal): Ditto.
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Handle the
+	various splats with the proper size immediate.  Reorder the various
+	cases by ascending size of immediate, and put all such together.
+
 2018-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR debug/83941

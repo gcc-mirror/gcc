@@ -13456,13 +13456,58 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return const0_rtx;
 
-  if (icode == CODE_FOR_altivec_vcfux
+  if (icode == CODE_FOR_unpackv1ti
+	   || icode == CODE_FOR_unpackkf
+	   || icode == CODE_FOR_unpacktf
+	   || icode == CODE_FOR_unpackif
+	   || icode == CODE_FOR_unpacktd)
+    {
+      /* Only allow 1-bit unsigned literals. */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+	{
+	  error ("argument 2 must be a 1-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltw)
+    {
+      /* Only allow 2-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~3)
+	{
+	  error ("argument 2 must be a 2-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vsplth)
+    {
+      /* Only allow 3-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~7)
+	{
+	  error ("argument 2 must be a 3-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltb)
+    {
+      /* Only allow 4-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~15)
+	{
+	  error ("argument 2 must be a 4-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs
-      || icode == CODE_FOR_altivec_vspltb
-      || icode == CODE_FOR_altivec_vsplth
-      || icode == CODE_FOR_altivec_vspltw)
+      || icode == CODE_FOR_altivec_vctuxs)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
@@ -13504,21 +13549,6 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 127))
 	{
 	  error ("argument 2 must be a 7-bit unsigned literal");
-	  return CONST0_RTX (tmode);
-	}
-    }
-  else if (icode == CODE_FOR_unpackv1ti
-	   || icode == CODE_FOR_unpackkf
-	   || icode == CODE_FOR_unpacktf
-	   || icode == CODE_FOR_unpackif
-	   || icode == CODE_FOR_unpacktd)
-    {
-      /* Only allow 1-bit unsigned literals. */
-      STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
-	{
-	  error ("argument 2 must be a 1-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
     }
