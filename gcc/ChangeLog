@@ -1,3 +1,9 @@
+2018-09-25  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR bootstrap/87417
+	* rtl.c (rtx_code_size): Take into account that EQ_ATTR_ALT
+	contains HOST_WIDE_INTs when computing its size.
+
 2018-09-24  Jim Wilson  <jimw@sifive.com>
 
 	PR target/87391
