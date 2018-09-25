@@ -1,3 +1,9 @@
+2018-09-24  Andrew Pinski  <apinski@marvell.com>
+
+	*  config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Don't
+	access prev before checking it for NULLness in the
+	AARCH64_FUSE_CMP_BRANCH case.
+
 2018-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82699
