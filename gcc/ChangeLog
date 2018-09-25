@@ -1,3 +1,15 @@
+2018-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR debug/83941
+	* dwarf2out.c (add_AT_external_die_ref): Remove now redundant
+	GC-ification.
+	(maybe_create_die_with_external_ref): Do not create
+	DW_TAG_imported_unit here.
+	(add_abstract_origin_attribute): Handle external BLOCK refs.
+	(dwarf2out_abstract_function): Simplify LTO case.
+	(dwarf2out_early_finish): Create DW_TAG_imported_unit explicitely
+	rather than using maybe_create_die_with_external_ref.
+
 2018-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (frndintxf2_mask_pm): Remove.
