@@ -1,3 +1,7 @@
+2018-09-25  Alexandre Oliva <oliva@adacore.com>
+
+	* gnat.dg/dinst.adb: Adjust for locviews.
+
 2018-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* g++.dg/ext/altivec-6.C: Updated vec_splat() calls.
