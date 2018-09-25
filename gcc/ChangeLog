@@ -1,3 +1,9 @@
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* vr-values.c (vr_values::vr_values): Initialize to_remove_edges and
+	to_update_switch_stmts to vNULL instead of calling create on them
+	immediately.
+
 2018-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87402

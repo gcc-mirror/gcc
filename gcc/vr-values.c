@@ -1919,8 +1919,8 @@ vr_values::vr_values () : vrp_value_range_pool ("Tree VRP value ranges")
   vr_value = XCNEWVEC (value_range *, num_vr_values);
   vr_phi_edge_counts = XCNEWVEC (int, num_ssa_names);
   bitmap_obstack_initialize (&vrp_equiv_obstack);
-  to_remove_edges.create (10);
-  to_update_switch_stmts.create (5);
+  to_remove_edges = vNULL;
+  to_update_switch_stmts = vNULL;
 }
 
 /* Free VRP lattice.  */
