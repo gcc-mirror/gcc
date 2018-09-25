@@ -1,3 +1,8 @@
+2018-09-25  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (riscv_split_symbol): Mark auipc label as weak
+	when target symbol is weak.
+
 2018-09-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c/87387
