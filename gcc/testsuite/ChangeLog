@@ -1,3 +1,11 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-09-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85774
+	* g++.dg/asan/pr85774.C: New test.
+
 2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85070
