@@ -464,15 +464,6 @@ SSA_VAL (tree x, bool *visited = NULL)
   return tem && tem->visited ? tem->valnum : x;
 }
 
-/* Return whether X was visited.  */
-
-inline bool
-SSA_VISITED (tree x)
-{
-  vn_ssa_aux_t tem = vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
-  return tem && tem->visited;
-}
-
 /* Return the SSA value of the VUSE x, supporting released VDEFs
    during elimination which will value-number the VDEF to the
    associated VUSE (but not substitute in the whole lattice).  */
@@ -4196,7 +4187,10 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	  }
       }
 
-  /* If we value-number a virtual operand never value-number to the
+  /* If the value we want to use is flowing over the backedge and we
+     should take it as VARYING but it has a non-VARYING value drop to
+     VARYING.
+     If we value-number a virtual operand never value-number to the
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
      non-backedge everything is OK though.  */
@@ -4204,7 +4198,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
       && !seen_non_backedge
       && TREE_CODE (backedge_val) == SSA_NAME
       && sameval == backedge_val
-      && SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val))
+      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	  || SSA_VAL (backedge_val) != backedge_val))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);

@@ -1,5 +1,12 @@
 2018-09-25  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87402
+	* tree-ssa-sccvn.c (SSA_VISITED): Remove unused function.
+	(visit_phi): Re-instantiate handling of supposed to be VARYING
+	but non-VARYING backedge value.
+
+2018-09-25  Richard Biener  <rguenther@suse.de>
+
 	PR debug/83941
 	* dwarf2out.c (struct sym_off_pair): New.
 	(external_die_map): New global.

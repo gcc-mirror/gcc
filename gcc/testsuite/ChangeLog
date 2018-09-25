@@ -1,3 +1,8 @@
+2018-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87402
+	* gcc.dg/torture/pr87402.c: New testcase.
+
 2018-09-25  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR testsuite/70150
