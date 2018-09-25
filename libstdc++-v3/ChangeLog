@@ -1,3 +1,8 @@
+2018-09-25  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/condition_variable (condition_variable::wait_for): Use
+	steady clock in overload that uses a predicate.
+
 2018-09-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87431
