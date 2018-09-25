@@ -844,27 +844,6 @@ value_inside_range (tree val, tree min, tree max)
 }
 
 
-/* Return true if value ranges VR0 and VR1 have a non-empty
-   intersection.
-
-   Benchmark compile/20001226-1.c compilation time after changing this
-   function.
-   */
-
-static inline bool
-value_ranges_intersect_p (const value_range *vr0, const value_range *vr1)
-{
-  /* The value ranges do not intersect if the maximum of the first range is
-     less than the minimum of the second range or vice versa.
-     When those relations are unknown, we can't do any better.  */
-  if (operand_less_p (vr0->max, vr1->min) != 0)
-    return false;
-  if (operand_less_p (vr1->max, vr0->min) != 0)
-    return false;
-  return true;
-}
-
-
 /* Return TRUE if *VR includes the value zero.  */
 
 bool
@@ -884,23 +863,6 @@ range_includes_zero_p (const value_range *vr)
       return res == 0 || res == -2;
     }
   return value_inside_range (zero, vr->min, vr->max) != 0;
-}
-
-/* Return true if *VR is know to only contain nonnegative values.  */
-
-static inline bool
-value_range_nonnegative_p (const value_range *vr)
-{
-  /* Testing for VR_ANTI_RANGE is not useful here as any anti-range
-     which would return a useful value should be encoded as a 
-     VR_RANGE.  */
-  if (vr->type == VR_RANGE)
-    {
-      int result = compare_values (vr->min, integer_zero_node);
-      return (result == 0 || result == 1);
-    }
-
-  return false;
 }
 
 /* If *VR has a value rante that is a single constant value return that,

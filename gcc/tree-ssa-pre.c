@@ -825,12 +825,6 @@ bitmap_set_contains_value (bitmap_set_t set, unsigned int value_id)
   return bitmap_bit_p (&set->values, value_id);
 }
 
-static inline bool
-bitmap_set_contains_expr (bitmap_set_t set, const pre_expr expr)
-{
-  return bitmap_bit_p (&set->expressions, get_expression_id (expr));
-}
-
 /* Return true if two bitmap sets are equal.  */
 
 static bool

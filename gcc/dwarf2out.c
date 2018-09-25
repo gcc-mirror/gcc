@@ -3649,7 +3649,6 @@ static void add_AT_specification (dw_die_ref, dw_die_ref);
 static inline dw_die_ref AT_ref (dw_attr_node *);
 static inline int AT_ref_external (dw_attr_node *);
 static inline void set_AT_ref_external (dw_attr_node *, int);
-static void add_AT_fde_ref (dw_die_ref, enum dwarf_attribute, unsigned);
 static void add_AT_loc (dw_die_ref, enum dwarf_attribute, dw_loc_descr_ref);
 static inline dw_loc_descr_ref AT_loc (dw_attr_node *);
 static void add_AT_loc_list (dw_die_ref, enum dwarf_attribute,
@@ -3665,16 +3664,11 @@ static void add_AT_symview (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lbl_id (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_lineptr (dw_die_ref, enum dwarf_attribute, const char *);
 static void add_AT_macptr (dw_die_ref, enum dwarf_attribute, const char *);
-static void add_AT_loclistsptr (dw_die_ref, enum dwarf_attribute,
-				const char *);
-static void add_AT_offset (dw_die_ref, enum dwarf_attribute,
-			   unsigned HOST_WIDE_INT);
 static void add_AT_range_list (dw_die_ref, enum dwarf_attribute,
                                unsigned long, bool);
 static inline const char *AT_lbl (dw_attr_node *);
 static dw_attr_node *get_AT (dw_die_ref, enum dwarf_attribute);
 static const char *get_AT_low_pc (dw_die_ref);
-static const char *get_AT_hi_pc (dw_die_ref);
 static const char *get_AT_string (dw_die_ref, enum dwarf_attribute);
 static int get_AT_flag (dw_die_ref, enum dwarf_attribute);
 static unsigned get_AT_unsigned (dw_die_ref, enum dwarf_attribute);
@@ -3716,7 +3710,6 @@ static int same_dw_val_p (const dw_val_node *, const dw_val_node *, int *);
 static int same_attr_p (dw_attr_node *, dw_attr_node *, int *);
 static int same_die_p (dw_die_ref, dw_die_ref, int *);
 static int is_type_die (dw_die_ref);
-static int is_comdat_die (dw_die_ref);
 static inline bool is_template_instantiation (dw_die_ref);
 static int is_declaration_die (dw_die_ref);
 static int should_move_die_to_comdat (dw_die_ref);
@@ -3773,7 +3766,6 @@ static int decl_quals (const_tree);
 static dw_die_ref modified_type_die (tree, int, bool, dw_die_ref);
 static dw_die_ref generic_parameter_die (tree, tree, bool, dw_die_ref);
 static dw_die_ref template_parameter_pack_die (tree, tree, dw_die_ref);
-static int type_is_enum (const_tree);
 static unsigned int dbx_reg_number (const_rtx);
 static void add_loc_descr_op_piece (dw_loc_descr_ref *, int);
 static dw_loc_descr_ref reg_loc_descriptor (rtx, enum var_init_status);
@@ -3796,7 +3788,6 @@ static dw_loc_list_ref loc_list_from_tree (tree, int,
 					   struct loc_descr_context *);
 static dw_loc_descr_ref loc_descriptor_from_tree (tree, int,
 						  struct loc_descr_context *);
-static HOST_WIDE_INT ceiling (HOST_WIDE_INT, unsigned int);
 static tree field_type (const_tree);
 static unsigned int simple_type_align_in_bits (const_tree);
 static unsigned int simple_decl_align_in_bits (const_tree);
@@ -3910,8 +3901,6 @@ static void prune_unused_types (void);
 static int maybe_emit_file (struct dwarf_file_data *fd);
 static inline const char *AT_vms_delta1 (dw_attr_node *);
 static inline const char *AT_vms_delta2 (dw_attr_node *);
-static inline void add_AT_vms_delta (dw_die_ref, enum dwarf_attribute,
-				     const char *, const char *);
 static void append_entry_to_tmpl_value_parm_die_table (dw_die_ref, tree);
 static void gen_remaining_tmpl_value_param_die_attribute (void);
 static bool generic_type_p (tree);
@@ -4836,20 +4825,6 @@ set_AT_ref_external (dw_attr_node *a, int i)
   a->dw_attr_val.v.val_die_ref.external = i;
 }
 
-/* Add an FDE reference attribute value to a DIE.  */
-
-static inline void
-add_AT_fde_ref (dw_die_ref die, enum dwarf_attribute attr_kind, unsigned int targ_fde)
-{
-  dw_attr_node attr;
-
-  attr.dw_attr = attr_kind;
-  attr.dw_attr_val.val_class = dw_val_class_fde_ref;
-  attr.dw_attr_val.val_entry = NULL;
-  attr.dw_attr_val.v.val_fde_index = targ_fde;
-  add_dwarf_attr (die, &attr);
-}
-
 /* Add a location description attribute value to a DIE.  */
 
 static inline void
@@ -5160,22 +5135,6 @@ AT_file (dw_attr_node *a)
   return a->dw_attr_val.v.val_file;
 }
 
-/* Add a vms delta attribute value to a DIE.  */
-
-static inline void
-add_AT_vms_delta (dw_die_ref die, enum dwarf_attribute attr_kind,
-		  const char *lbl1, const char *lbl2)
-{
-  dw_attr_node attr;
-
-  attr.dw_attr = attr_kind;
-  attr.dw_attr_val.val_class = dw_val_class_vms_delta;
-  attr.dw_attr_val.val_entry = NULL;
-  attr.dw_attr_val.v.val_vms_delta.lbl1 = xstrdup (lbl1);
-  attr.dw_attr_val.v.val_vms_delta.lbl2 = xstrdup (lbl2);
-  add_dwarf_attr (die, &attr);
-}
-
 /* Add a symbolic view identifier attribute value to a DIE.  */
 
 static inline void
@@ -5227,22 +5186,6 @@ add_AT_lineptr (dw_die_ref die, enum dwarf_attribute attr_kind,
 }
 
 /* Add a section offset attribute value to a DIE, an offset into the
-   debug_loclists section.  */
-
-static inline void
-add_AT_loclistsptr (dw_die_ref die, enum dwarf_attribute attr_kind,
-		    const char *label)
-{
-  dw_attr_node attr;
-
-  attr.dw_attr = attr_kind;
-  attr.dw_attr_val.val_class = dw_val_class_loclistsptr;
-  attr.dw_attr_val.val_entry = NULL;
-  attr.dw_attr_val.v.val_lbl_id = xstrdup (label);
-  add_dwarf_attr (die, &attr);
-}
-
-/* Add a section offset attribute value to a DIE, an offset into the
    debug_macinfo section.  */
 
 static inline void
@@ -5255,21 +5198,6 @@ add_AT_macptr (dw_die_ref die, enum dwarf_attribute attr_kind,
   attr.dw_attr_val.val_class = dw_val_class_macptr;
   attr.dw_attr_val.val_entry = NULL;
   attr.dw_attr_val.v.val_lbl_id = xstrdup (label);
-  add_dwarf_attr (die, &attr);
-}
-
-/* Add an offset attribute value to a DIE.  */
-
-static inline void
-add_AT_offset (dw_die_ref die, enum dwarf_attribute attr_kind,
-	       unsigned HOST_WIDE_INT offset)
-{
-  dw_attr_node attr;
-
-  attr.dw_attr = attr_kind;
-  attr.dw_attr_val.val_class = dw_val_class_offset;
-  attr.dw_attr_val.val_entry = NULL;
-  attr.dw_attr_val.v.val_offset = offset;
   add_dwarf_attr (die, &attr);
 }
 
@@ -5379,18 +5307,6 @@ static inline const char *
 get_AT_low_pc (dw_die_ref die)
 {
   dw_attr_node *a = get_AT (die, DW_AT_low_pc);
-
-  return a ? AT_lbl (a) : NULL;
-}
-
-/* Return the "high pc" attribute value, typically associated with a subprogram
-   DIE.  Return null if the "high pc" attribute is either not present, or if it
-   cannot be represented as an assembler label identifier.  */
-
-static inline const char *
-get_AT_hi_pc (dw_die_ref die)
-{
-  dw_attr_node *a = get_AT (die, DW_AT_high_pc);
 
   return a ? AT_lbl (a) : NULL;
 }
@@ -7907,36 +7823,6 @@ is_type_die (dw_die_ref die)
     }
 }
 
-/* Returns 1 iff C is the sort of DIE that should go into a COMDAT CU.
-   Basically, we want to choose the bits that are likely to be shared between
-   compilations (types) and leave out the bits that are specific to individual
-   compilations (functions).  */
-
-static int
-is_comdat_die (dw_die_ref c)
-{
-  /* I think we want to leave base types and __vtbl_ptr_type in the main CU, as
-     we do for stabs.  The advantage is a greater likelihood of sharing between
-     objects that don't include headers in the same order (and therefore would
-     put the base types in a different comdat).  jason 8/28/00 */
-
-  if (c->die_tag == DW_TAG_base_type)
-    return 0;
-
-  if (c->die_tag == DW_TAG_pointer_type
-      || c->die_tag == DW_TAG_reference_type
-      || c->die_tag == DW_TAG_rvalue_reference_type
-      || c->die_tag == DW_TAG_const_type
-      || c->die_tag == DW_TAG_volatile_type)
-    {
-      dw_die_ref t = get_AT_ref (c, DW_AT_type);
-
-      return t ? is_comdat_die (t) : 0;
-    }
-
-  return is_type_die (c);
-}
-
 /* Returns true iff C is a compile-unit DIE.  */
 
 static inline bool
@@ -7963,15 +7849,6 @@ static inline bool
 is_namespace_die (dw_die_ref c)
 {
   return c && c->die_tag == DW_TAG_namespace;
-}
-
-/* Returns true iff C is a class or structure DIE.  */
-
-static inline bool
-is_class_die (dw_die_ref c)
-{
-  return c && (c->die_tag == DW_TAG_class_type
-               || c->die_tag == DW_TAG_structure_type);
 }
 
 /* Return non-zero if this DIE is a template parameter.  */
@@ -13703,15 +13580,6 @@ template_parameter_pack_die (tree parm_pack,
   return die;
 }
 
-/* Given a pointer to an arbitrary ..._TYPE tree node, return true if it is
-   an enumerated type.  */
-
-static inline int
-type_is_enum (const_tree type)
-{
-  return TREE_CODE (type) == ENUMERAL_TYPE;
-}
-
 /* Return the DBX register number described by a given RTL node.  */
 
 static unsigned int
@@ -18931,15 +18799,6 @@ loc_descriptor_from_tree (tree loc, int want_address,
       return NULL;
     }
   return ret->expr;
-}
-
-/* Given a value, round it up to the lowest multiple of `boundary'
-   which is not less than the value itself.  */
-
-static inline HOST_WIDE_INT
-ceiling (HOST_WIDE_INT value, unsigned int boundary)
-{
-  return (((value + boundary - 1) / boundary) * boundary);
 }
 
 /* Given a pointer to what is assumed to be a FIELD_DECL node, return a

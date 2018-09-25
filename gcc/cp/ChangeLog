@@ -1,3 +1,9 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* name-lookup.c (namespace_scope_ht_size): Remove
+	unused function.
+	* parser.c (cp_lexer_next_token_is_not_keyword): Likewise.
+
 2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85070

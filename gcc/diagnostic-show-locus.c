@@ -289,7 +289,6 @@ class layout
  private:
   diagnostic_context *m_context;
   pretty_printer *m_pp;
-  diagnostic_t m_diagnostic_kind;
   location_t m_primary_loc;
   expanded_location m_exploc;
   colorizer m_colorizer;
@@ -886,7 +885,6 @@ layout::layout (diagnostic_context * context,
 		diagnostic_t diagnostic_kind)
 : m_context (context),
   m_pp (context->printer),
-  m_diagnostic_kind (diagnostic_kind),
   m_primary_loc (richloc->get_range (0)->m_loc),
   m_exploc (richloc->get_expanded_location (0)),
   m_colorizer (context, diagnostic_kind),

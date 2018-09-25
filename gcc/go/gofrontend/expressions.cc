@@ -10089,7 +10089,7 @@ Call_expression::do_type()
   else if (results->size() == 1)
     ret = results->begin()->type();
   else
-    ret = Type::make_call_multiple_result_type(this);
+    ret = Type::make_call_multiple_result_type();
 
   this->type_ = ret;
 

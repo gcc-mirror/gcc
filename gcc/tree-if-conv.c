@@ -1114,19 +1114,6 @@ all_preds_critical_p (basic_block bb)
   return true;
 }
 
-/* Returns true if at least one successor in on critical edge.  */
-static inline bool
-has_pred_critical_p (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (EDGE_COUNT (e->src->succs) > 1)
-      return true;
-  return false;
-}
-
 /* Return true when BB is if-convertible.  This routine does not check
    basic block's statements and phis.
 

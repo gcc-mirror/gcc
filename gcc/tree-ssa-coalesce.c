@@ -988,22 +988,6 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
   return graph;
 }
 
-
-/* Shortcut routine to print messages to file F of the form:
-   "STR1 EXPR1 STR2 EXPR2 STR3."  */
-
-static inline void
-print_exprs (FILE *f, const char *str1, tree expr1, const char *str2,
-	     tree expr2, const char *str3)
-{
-  fprintf (f, "%s", str1);
-  print_generic_expr (f, expr1, TDF_SLIM);
-  fprintf (f, "%s", str2);
-  print_generic_expr (f, expr2, TDF_SLIM);
-  fprintf (f, "%s", str3);
-}
-
-
 /* Print a failure to coalesce a MUST_COALESCE pair X and Y.  */
 
 static inline void

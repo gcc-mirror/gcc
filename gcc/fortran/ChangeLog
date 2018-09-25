@@ -1,3 +1,8 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* trans.c (remove_suffix): Remove
+	unused function.
+
 2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87397

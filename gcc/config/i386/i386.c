@@ -30221,21 +30221,6 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
   return decl;
 }
 
-/* Like def_builtin, but also marks the function decl "pure".  */
-
-static inline tree
-def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
-		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
-{
-  tree decl = def_builtin2 (mask, name, tcode, code);
-  if (decl)
-    DECL_PURE_P (decl) = 1;
-  else
-    ix86_builtins_isa[(int) code].pure_p = true;
-
-  return decl;
-}
-
 /* Add any new builtin functions for a given ISA that may not have been
    declared.  This saves a bit of space compared to adding all of the
    declarations to the tree, even if we didn't use them.  */
