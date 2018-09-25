@@ -1,3 +1,10 @@
+2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/altivec.md (*altivec_mov<mode>): Write the output
+	control string as a list of templates instead of as C code.
+	(*altivec_movti): Ditto.
+	* config/rs6000/darwin.md (movdf_low_di): Ditto.
+
 2018-09-25  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (riscv_split_symbol): Mark auipc label as weak
