@@ -1,5 +1,11 @@
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
+	PR fortran/87394
+	* decl.c (add_hidden_procptr_result): Simplify condition
+	as we are in branch witch 'case1 || case2'.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
 	* trans.c (remove_suffix): Remove
 	unused function.
 

@@ -1,5 +1,14 @@
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
+	PR fortran/87394
+	* dbgcnt.c (dbg_cnt_process_single_pair): Return false
+	instead of NULL.
+	* dumpfile.c (dump_enable_all): Remove extra parenthesis.
+	* gcov-tool.c: Declare the function with ATTRIBUTE_NORETURN.
+	* godump.c (go_format_type): Remove extra parenthesis.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
 	* alias.c (set_dest_equal_p): Remove unused function.
 	* config/i386/i386.c (def_builtin_pure2): Likewise.
 	* diagnostic-show-locus.c (class layout): Remove
