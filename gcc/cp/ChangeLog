@@ -1,3 +1,9 @@
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Only
+	look through COMPONENT_REFs with DECL_FIELD_IS_BASE FIELD_DECLs.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	* name-lookup.c (namespace_scope_ht_size): Remove

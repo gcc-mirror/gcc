@@ -1,3 +1,10 @@
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* g++.dg/other/pr87398.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual10.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual11.C: New test.
+
 2018-09-25  Martin Jambor  <mjambor@suse.cz>
 
 	PR testsuite/87339
