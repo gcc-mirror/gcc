@@ -1,3 +1,8 @@
+2018-09-25  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/warn-stpcpy-no-nul.c: Drop unnecessary xfails.
+	* gcc.dg/warn-stplen-no-nul.c: Likewise.
+
 2018-09-25  Alexandre Oliva <oliva@adacore.com>
 
 	* gnat.dg/dinst.adb: Adjust for locviews.

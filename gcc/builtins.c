@@ -570,28 +570,9 @@ warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
 tree
 unterminated_array (tree exp)
 {
-  if (TREE_CODE (exp) == SSA_NAME)
-    {
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (!is_gimple_assign (stmt))
-	return NULL_TREE;
-
-      tree rhs1 = gimple_assign_rhs1 (stmt);
-      tree_code code = gimple_assign_rhs_code (stmt);
-      if (code == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (rhs1, 0)) == ARRAY_REF)
-	rhs1 = rhs1;
-      else if (code != POINTER_PLUS_EXPR)
-	return NULL_TREE;
-
-      exp = rhs1;
-    }
-
   tree nonstr = NULL;
-  if (c_strlen (exp, 1, &nonstr, 1) == NULL && nonstr)
-    return nonstr;
-
-  return NULL_TREE;
+  c_strlen (exp, 1, &nonstr);
+  return nonstr;
 }
 
 /* Compute the length of a null-terminated character string or wide

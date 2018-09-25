@@ -71,13 +71,13 @@ void test_two_dim_array (char *d)
   T (&b[3][1] + 1);     /* { dg-warning "nul" }  */
   T (&b[3][v0]);        /* { dg-warning "nul" }  */
   T (&b[3][1] + v0);    /* { dg-warning "nul" }  */
-  T (&b[3][v0] + v1);   /* { dg-warning "nul" "bug ???" { xfail *-*-* } }  */
+  T (&b[3][v0] + v1);   /* { dg-warning "nul" }  */
 
   T (&b[i3][i1]);       /* { dg-warning "nul" }  */
   T (&b[i3][i1] + i1);  /* { dg-warning "nul" }  */
   T (&b[i3][v0]);       /* { dg-warning "nul" }  */
   T (&b[i3][i1] + v0);  /* { dg-warning "nul" }  */
-  T (&b[i3][v0] + v1);  /* { dg-warning "nul" "bug ???" { xfail *-*-* } }  */
+  T (&b[i3][v0] + v1);  /* { dg-warning "nul" }  */
 
   T (v0 ? "" : b[0]);
   T (v0 ? "" : b[1]);

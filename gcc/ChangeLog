@@ -1,3 +1,10 @@
+2018-09-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c/87387
+        * builtins.c (unterminated_array): Simplify.
+	* expr.c (string_constant): Handle SSA_NAME.  Add more exceptions
+	where pointer arithmetic is safe.
+
 2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/86987
