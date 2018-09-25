@@ -16518,8 +16518,6 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
       && any_condjump_p (curr))
     {
-      enum attr_type prev_type = get_attr_type (prev);
-
       unsigned int condreg1, condreg2;
       rtx cc_reg_1;
       aarch64_fixed_condition_code_regs (&condreg1, &condreg2);
@@ -16529,6 +16527,8 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && prev
 	  && modified_in_p (cc_reg_1, prev))
 	{
+	  enum attr_type prev_type = get_attr_type (prev);
+
 	  /* FIXME: this misses some which is considered simple arthematic
 	     instructions for ThunderX.  Simple shifts are missed here.  */
 	  if (prev_type == TYPE_ALUS_SREG

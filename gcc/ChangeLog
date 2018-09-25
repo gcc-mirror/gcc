@@ -1,3 +1,9 @@
+2018-09-24  Andrew Pinski  <apinski@marvell.com>
+
+	*  config/aarch64/aarch64.c (aarch_macro_fusion_pair_p): Don't
+	access prev before checking it for NULLness in the
+	AARCH64_FUSE_CMP_BRANCH case.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Return false
