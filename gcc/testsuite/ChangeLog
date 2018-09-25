@@ -1,3 +1,14 @@
+2018-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* g++.dg/ext/altivec-6.C: Updated vec_splat() calls.
+	* gcc.target/powerpc/fold-vec-splat-char.c: Remove invalid
+	vec_splat calls from recently added tests. Update instruction counts.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-int.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-pixel.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-short.c: Same.
+
 2018-09-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87425
