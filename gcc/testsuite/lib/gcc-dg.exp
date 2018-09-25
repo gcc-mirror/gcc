@@ -299,9 +299,11 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     foreach x [split $finalcode "\n"] {
 	set finalcmd [lindex $x 0]
 	if { [info procs ${finalcmd}_required_options] != "" } {
-	    set req [${finalcmd}_required_options]
-	    if { $req != "" && [lsearch -exact $extra_tool_flags $req] == -1 } {
-		lappend extra_tool_flags $req
+	    foreach req [${finalcmd}_required_options] {
+		if { $req != ""
+		     && [lsearch -exact $extra_tool_flags $req] == -1 } {
+		    lappend extra_tool_flags $req
+		}
 	    }
 	}
     }

@@ -33,6 +33,17 @@ runtime_atoi(const byte *p, intgo len)
 	return n;
 }
 
+// A random number from the GNU/Linux auxv array.
+static uint32 randomNumber;
+
+// Set the random number from Go code.
+
+void
+setRandomNumber(uint32 r)
+{
+	randomNumber = r;
+}
+
 #if defined(__i386__) || defined(__x86_64__) || defined (__s390__) || defined (__s390x__)
 
 // When cputicks is just asm instructions, skip the split stack
@@ -85,8 +96,8 @@ runtime_cputicks(void)
 #else
   // Currently cputicks() is used in blocking profiler and to seed runtime·fastrand().
   // runtime·nanotime() is a poor approximation of CPU ticks that is enough for the profiler.
-  // TODO: need more entropy to better seed fastrand.
-  return runtime_nanotime();
+  // randomNumber provides better seeding of fastrand.
+  return runtime_nanotime() + randomNumber;
 #endif
 }
 
@@ -193,7 +204,6 @@ runtime_cpuinit()
 		}
 	}
 	if (__get_cpuid(1, &eax, &ebx, &ecx, &edx)) {
-		setCpuidECX(ecx);
 #if defined(__i386__)
 		if ((edx & bit_SSE2) != 0) {
 			hasSSE2 = true;

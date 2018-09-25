@@ -310,14 +310,16 @@ package Checks is
    --  then OK is True on return, and Lo and Hi are set to a conservative
    --  estimate of the possible range of values of N. Thus if OK is True on
    --  return, the value of the subexpression N is known to lie in the range
-   --  Lo .. Hi (inclusive). If the expression is not of a discrete type, or
-   --  some kind of error condition is detected, then OK is False on exit, and
-   --  Lo/Hi are set to No_Uint. Thus the significance of OK being False on
-   --  return is that no useful information is available on the range of the
-   --  expression. Assume_Valid determines whether the processing is allowed to
-   --  assume that values are in range of their subtypes. If it is set to True,
-   --  then this assumption is valid, if False, then processing is done using
-   --  base types to allow invalid values.
+   --  Lo .. Hi (inclusive). For enumeration and character literals the values
+   --  returned are the Pos value in the relevant enumeration type. If the
+   --  expression is not of a discrete type, or some kind of error condition
+   --  is detected, then OK is False on exit, and Lo/Hi are set to No_Uint.
+   --  Thus the significance of OK being False on return is that no useful
+   --  information is available on the range of the expression. Assume_Valid
+   --  determines whether the processing is allowed to assume that values are
+   --  in range of their subtypes. If it is set to True, then this assumption
+   --  is valid, if False, then processing is done using base types to allow
+   --  invalid values.
 
    procedure Determine_Range_R
      (N            : Node_Id;

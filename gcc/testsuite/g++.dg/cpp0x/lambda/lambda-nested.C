@@ -7,7 +7,7 @@ struct A {
   A(): i(42) { }
   int f() {
     return [this]{
-      return [=]{ return i; }();
+      return [=]{ return i; }(); // { dg-warning "implicit capture" "" { target c++2a } }
     }();
   }
 };

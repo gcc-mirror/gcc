@@ -19,8 +19,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <optional>
-#include <testsuite_hooks.h>
-
 #include <string>
 #include <memory>
 
@@ -37,8 +35,6 @@ int main()
     std::optional<std::unique_ptr<int>> oup2 = new int;  // { dg-error "conversion" }
     struct U { explicit U(std::in_place_t); };
     std::optional<U> ou(std::in_place); // { dg-error "no matching" }
-    // { dg-error "no type" "" { target { *-*-* } } 1020 }
-    // { dg-error "no type" "" { target { *-*-* } } 1030 }
-    // { dg-error "no type" "" { target { *-*-* } } 1087 }
   }
 }
+// { dg-prune-output "no type .*enable_if" }

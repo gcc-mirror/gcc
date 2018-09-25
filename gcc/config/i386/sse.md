@@ -19951,7 +19951,7 @@
   [(set (match_operand:V16SF 0 "register_operand" "=v")
 	(unspec:V16SF
 	  [(match_operand:V16SF 1 "register_operand" "0")
-	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V64SF 2 "register_operand" "v")
 	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD))]
   "TARGET_AVX5124FMAPS"
   "v4fmaddps\t{%3, %g2, %0|%0, %g2, %3}"
@@ -19963,7 +19963,7 @@
   [(set (match_operand:V16SF 0 "register_operand" "=v")
 	(vec_merge:V16SF
 	  (unspec:V16SF
-	     [(match_operand:V64SF 1 "register_operand" "Yh")
+	     [(match_operand:V64SF 1 "register_operand" "v")
 	      (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FMADD)
 	  (match_operand:V16SF 3 "register_operand" "0")
 	  (match_operand:HI 4 "register_operand" "Yk")))]
@@ -19978,7 +19978,7 @@
 	(vec_merge:V16SF
 	  (unspec:V16SF
 	    [(match_operand:V16SF 1 "register_operand" "0")
-	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V64SF 2 "register_operand" "v")
 	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD)
 	  (match_operand:V16SF 4 "const0_operand" "C")
 	  (match_operand:HI 5 "register_operand" "Yk")))]
@@ -19992,7 +19992,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(unspec:V4SF
 	  [(match_operand:V4SF 1 "register_operand" "0")
-	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V64SF 2 "register_operand" "v")
 	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD))]
   "TARGET_AVX5124FMAPS"
   "v4fmaddss\t{%3, %x2, %0|%0, %x2, %3}"
@@ -20004,7 +20004,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_merge:V4SF
 	  (unspec:V4SF
-	    [(match_operand:V64SF 1 "register_operand" "Yh")
+	    [(match_operand:V64SF 1 "register_operand" "v")
 	     (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FMADD)
 	  (match_operand:V4SF 3 "register_operand" "0")
 	  (match_operand:QI 4 "register_operand" "Yk")))]
@@ -20019,7 +20019,7 @@
 	(vec_merge:V4SF
 	  (unspec:V4SF
 	    [(match_operand:V4SF 1 "register_operand" "0")
-	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V64SF 2 "register_operand" "v")
 	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FMADD)
 	  (match_operand:V4SF 4 "const0_operand" "C")
 	  (match_operand:QI 5 "register_operand" "Yk")))]
@@ -20033,7 +20033,7 @@
   [(set (match_operand:V16SF 0 "register_operand" "=v")
 	(unspec:V16SF
 	  [(match_operand:V16SF 1 "register_operand" "0")
-	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V64SF 2 "register_operand" "v")
 	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD))]
   "TARGET_AVX5124FMAPS"
   "v4fnmaddps\t{%3, %g2, %0|%0, %g2, %3}"
@@ -20045,7 +20045,7 @@
   [(set (match_operand:V16SF 0 "register_operand" "=v")
 	(vec_merge:V16SF
 	  (unspec:V16SF
-	     [(match_operand:V64SF 1 "register_operand" "Yh")
+	     [(match_operand:V64SF 1 "register_operand" "v")
 	      (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FNMADD)
 	  (match_operand:V16SF 3 "register_operand" "0")
 	  (match_operand:HI 4 "register_operand" "Yk")))]
@@ -20060,7 +20060,7 @@
 	(vec_merge:V16SF
 	  (unspec:V16SF
 	    [(match_operand:V16SF 1 "register_operand" "0")
-	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V64SF 2 "register_operand" "v")
 	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD)
 	  (match_operand:V16SF 4 "const0_operand" "C")
 	  (match_operand:HI 5 "register_operand" "Yk")))]
@@ -20074,7 +20074,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(unspec:V4SF
 	  [(match_operand:V4SF 1 "register_operand" "0")
-	   (match_operand:V64SF 2 "register_operand" "Yh")
+	   (match_operand:V64SF 2 "register_operand" "v")
 	   (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD))]
   "TARGET_AVX5124FMAPS"
   "v4fnmaddss\t{%3, %x2, %0|%0, %x2, %3}"
@@ -20086,7 +20086,7 @@
   [(set (match_operand:V4SF 0 "register_operand" "=v")
 	(vec_merge:V4SF
 	  (unspec:V4SF
-	    [(match_operand:V64SF 1 "register_operand" "Yh")
+	    [(match_operand:V64SF 1 "register_operand" "v")
 	     (match_operand:V4SF 2 "memory_operand" "m")] UNSPEC_VP4FNMADD)
 	  (match_operand:V4SF 3 "register_operand" "0")
 	  (match_operand:QI 4 "register_operand" "Yk")))]
@@ -20101,7 +20101,7 @@
 	(vec_merge:V4SF
 	  (unspec:V4SF
 	    [(match_operand:V4SF 1 "register_operand" "0")
-	     (match_operand:V64SF 2 "register_operand" "Yh")
+	     (match_operand:V64SF 2 "register_operand" "v")
 	     (match_operand:V4SF 3 "memory_operand" "m")] UNSPEC_VP4FNMADD)
 	  (match_operand:V4SF 4 "const0_operand" "C")
 	  (match_operand:QI 5 "register_operand" "Yk")))]
@@ -20115,7 +20115,7 @@
   [(set (match_operand:V16SI 0 "register_operand" "=v")
 	(unspec:V16SI
 	  [(match_operand:V16SI 1 "register_operand" "0")
-	   (match_operand:V64SI 2 "register_operand" "Yh")
+	   (match_operand:V64SI 2 "register_operand" "v")
 	   (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSD))]
   "TARGET_AVX5124VNNIW"
   "vp4dpwssd\t{%3, %g2, %0|%0, %g2, %3}"
@@ -20127,7 +20127,7 @@
   [(set (match_operand:V16SI 0 "register_operand" "=v")
 	(vec_merge:V16SI
 	  (unspec:V16SI
-	     [(match_operand:V64SI 1 "register_operand" "Yh")
+	     [(match_operand:V64SI 1 "register_operand" "v")
 	      (match_operand:V4SI 2 "memory_operand" "m")] UNSPEC_VP4DPWSSD)
 	  (match_operand:V16SI 3 "register_operand" "0")
 	  (match_operand:HI 4 "register_operand" "Yk")))]
@@ -20142,7 +20142,7 @@
 	(vec_merge:V16SI
 	  (unspec:V16SI
 	    [(match_operand:V16SI 1 "register_operand" "0")
-	     (match_operand:V64SI 2 "register_operand" "Yh")
+	     (match_operand:V64SI 2 "register_operand" "v")
 	     (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSD)
 	  (match_operand:V16SI 4 "const0_operand" "C")
 	  (match_operand:HI 5 "register_operand" "Yk")))]
@@ -20156,7 +20156,7 @@
   [(set (match_operand:V16SI 0 "register_operand" "=v")
 	(unspec:V16SI
 	  [(match_operand:V16SI 1 "register_operand" "0")
-	   (match_operand:V64SI 2 "register_operand" "Yh")
+	   (match_operand:V64SI 2 "register_operand" "v")
 	   (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSDS))]
   "TARGET_AVX5124VNNIW"
   "vp4dpwssds\t{%3, %g2, %0|%0, %g2, %3}"
@@ -20168,7 +20168,7 @@
   [(set (match_operand:V16SI 0 "register_operand" "=v")
 	(vec_merge:V16SI
 	  (unspec:V16SI
-	     [(match_operand:V64SI 1 "register_operand" "Yh")
+	     [(match_operand:V64SI 1 "register_operand" "v")
 	      (match_operand:V4SI 2 "memory_operand" "m")] UNSPEC_VP4DPWSSDS)
 	  (match_operand:V16SI 3 "register_operand" "0")
 	  (match_operand:HI 4 "register_operand" "Yk")))]
@@ -20183,7 +20183,7 @@
 	(vec_merge:V16SI
 	  (unspec:V16SI
 	    [(match_operand:V16SI 1 "register_operand" "0")
-	     (match_operand:V64SI 2 "register_operand" "Yh")
+	     (match_operand:V64SI 2 "register_operand" "v")
 	     (match_operand:V4SI 3 "memory_operand" "m")] UNSPEC_VP4DPWSSDS)
 	  (match_operand:V16SI 4 "const0_operand" "C")
 	  (match_operand:HI 5 "register_operand" "Yk")))]

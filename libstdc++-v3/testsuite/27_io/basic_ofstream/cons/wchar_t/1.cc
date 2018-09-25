@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target *-*-mingw* } }
+// { dg-require-fileio "" }
 
 #include <fstream>
 #include <testsuite_hooks.h>

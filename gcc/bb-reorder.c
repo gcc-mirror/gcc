@@ -91,7 +91,6 @@
 */
 
 #include "config.h"
-#define INCLUDE_ALGORITHM /* stable_sort */
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -2351,13 +2350,20 @@ reorder_basic_blocks_software_trace_cache (void)
   FREE (bbd);
 }
 
-/* Return true if edge E1 is more desirable as a fallthrough edge than
-   edge E2 is.  */
+/* Order edges by execution frequency, higher first.  */
 
-static bool
-edge_order (edge e1, edge e2)
+static int
+edge_order (const void *ve1, const void *ve2)
 {
-  return e1->count () > e2->count ();
+  edge e1 = *(const edge *) ve1;
+  edge e2 = *(const edge *) ve2;
+  profile_count c1 = e1->count ();
+  profile_count c2 = e2->count ();
+  /* Since profile_count::operator< does not establish a strict weak order
+     in presence of uninitialized counts, use 'max': this makes them appear
+     as if having execution frequency less than any initialized count.  */
+  profile_count m = c1.max (c2);
+  return (m == c2) - (m == c1);
 }
 
 /* Reorder basic blocks using the "simple" algorithm.  This tries to
@@ -2410,7 +2416,7 @@ reorder_basic_blocks_simple (void)
      all edges are equally desirable.  */
 
   if (optimize_function_for_speed_p (cfun))
-    std::stable_sort (edges, edges + n, edge_order);
+    gcc_stablesort (edges, n, sizeof *edges, edge_order);
 
   /* Now decide which of those edges to make fallthrough edges.  We set
      BB_VISITED if a block already has a fallthrough successor assigned

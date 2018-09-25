@@ -32,6 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "diagnostic.h"
 #include "version.h"
 #include "demangle.h"
+#include "gcov-io.h"
 
 /* Borrowed from basic-block.h.  */
 #define RDIV(X,Y) (((X) + (Y) / 2) / (Y))
@@ -79,6 +80,8 @@ static int k_ctrs_mask[GCOV_COUNTERS];
 static struct gcov_ctr_info k_ctrs[GCOV_COUNTERS];
 /* Number of kind of counters that have been seen.  */
 static int k_ctrs_types;
+/* The object summary being processed.  */
+static struct gcov_summary *curr_object_summary;
 
 /* Merge functions for counters.  */
 #define DEF_GCOV_COUNTER(COUNTER, NAME, FN_TYPE) __gcov_merge ## FN_TYPE,
@@ -131,7 +134,6 @@ static const tag_format_t tag_table[] =
   {GCOV_TAG_ARCS, "ARCS", tag_arcs},
   {GCOV_TAG_LINES, "LINES", tag_lines},
   {GCOV_TAG_OBJECT_SUMMARY, "OBJECT_SUMMARY", tag_summary},
-  {GCOV_TAG_PROGRAM_SUMMARY, "PROGRAM_SUMMARY", tag_summary},
   {0, NULL, NULL}
 };
 
@@ -223,9 +225,8 @@ tag_counters (unsigned tag, unsigned length)
 static void
 tag_summary (unsigned tag ATTRIBUTE_UNUSED, unsigned length ATTRIBUTE_UNUSED)
 {
-  struct gcov_summary summary;
-
-  gcov_read_summary (&summary);
+  curr_object_summary = (gcov_summary *) xcalloc (sizeof (gcov_summary), 1);
+  gcov_read_summary (curr_object_summary);
 }
 
 /* This function is called at the end of reading a gcda file.
@@ -239,7 +240,8 @@ read_gcda_finalize (struct gcov_info *obj_info)
   set_fn_ctrs (curr_fn_info);
   obstack_ptr_grow (&fn_info, curr_fn_info);
 
-  /* We set the following fields: merge, n_functions, and functions.  */
+  /* We set the following fields: merge, n_functions, functions
+     and summary.  */
   obj_info->n_functions = num_fn_info;
   obj_info->functions = (const struct gcov_fn_info**) obstack_finish (&fn_info);
 
@@ -299,6 +301,7 @@ read_gcda_file (const char *filename)
   obstack_init (&fn_info);
   num_fn_info = 0;
   curr_fn_info = 0;
+  curr_object_summary = NULL;
   {
     size_t len = strlen (filename) + 1;
     char *str_dup = (char*) xmalloc (len);
@@ -892,8 +895,6 @@ calculate_2_entries (const unsigned long v1, const unsigned long v2,
 }
 
 /*  Compute the overlap score between GCOV_INFO1 and GCOV_INFO2.
-    SUM_1 is the sum_all for profile1 where GCOV_INFO1 belongs.
-    SUM_2 is the sum_all for profile2 where GCOV_INFO2 belongs.
     This function also updates cumulative score CUM_1_RESULT and
     CUM_2_RESULT.  */
 
@@ -1048,12 +1049,6 @@ struct overlap_t {
 /* Cumlative overlap dscore for profile1 and profile2.  */
 static double overlap_sum_1, overlap_sum_2;
 
-/* sum_all for profile1 and profile2.  */
-static gcov_type p1_sum_all, p2_sum_all;
-
-/* run_max for profile1 and profile2.  */
-static gcov_type p1_run_max, p2_run_max;
-
 /* The number of gcda files in the profiles.  */
 static unsigned gcda_files[2];
 
@@ -1200,10 +1195,6 @@ matched_gcov_info (const struct gcov_info *info1, const struct gcov_info *info2)
   return 1;
 }
 
-/* Defined in libgcov-driver.c.  */
-extern gcov_unsigned_t compute_summary (struct gcov_info *,
-					struct gcov_summary *);
-
 /* Compute the overlap score of two profiles with the head of GCOV_LIST1 and
    GCOV_LIST1. Return a number ranging from [0.0, 1.0], with 0.0 meaning no
    match and 1.0 meaning a perfect match.  */
@@ -1212,20 +1203,10 @@ static double
 calculate_overlap (struct gcov_info *gcov_list1,
                    struct gcov_info *gcov_list2)
 {
-  struct gcov_summary this_prg;
   unsigned list1_cnt = 0, list2_cnt= 0, all_cnt;
   unsigned int i, j;
   const struct gcov_info *gi_ptr;
   struct overlap_t *all_infos;
-
-  compute_summary (gcov_list1, &this_prg);
-  overlap_sum_1 = (double) (this_prg.sum_all);
-  p1_sum_all = this_prg.sum_all;
-  p1_run_max = this_prg.run_max;
-  compute_summary (gcov_list2, &this_prg);
-  overlap_sum_2 = (double) (this_prg.sum_all);
-  p2_sum_all = this_prg.sum_all;
-  p2_run_max = this_prg.run_max;
 
   for (gi_ptr = gcov_list1; gi_ptr; gi_ptr = gi_ptr->next)
     list1_cnt++;
@@ -1334,10 +1315,6 @@ calculate_overlap (struct gcov_info *gcov_list1,
 	  cold_gcda_files[1], both_cold_cnt);
   printf ("    zero files:  %12u\t%12u\t%12u\n", zero_gcda_files[0],
 	  zero_gcda_files[1], both_zero_cnt);
-  printf ("       sum_all:  %12" PRId64 "\t%12" PRId64 "\n",
-	  p1_sum_all, p2_sum_all);
-  printf ("       run_max:  %12" PRId64 "\t%12" PRId64 "\n",
-	  p1_run_max, p2_run_max);
 
   return prg_val;
 }

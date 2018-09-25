@@ -32,19 +32,16 @@
 
 #include <signal.h>
 #include <asm/unistd.h>
+#include <sys/ucontext.h>
 
 /* Exactly the same layout as the kernel structures, unique names.  */
 
 /* arch/nds32/kernel/signal.c */
-struct _sigframe {
-    struct ucontext uc;
-    unsigned long retcode;
-};
-
 struct _rt_sigframe {
   siginfo_t info;
-  struct _sigframe sig;
+  struct ucontext_t uc;
 };
+
 #define SIGRETURN 0xeb0e0a64
 #define RT_SIGRETURN 0xab150a64
 
@@ -80,17 +77,10 @@ nds32_fallback_frame_state (struct _Unwind_Context *context,
        SWI_SYS_SIGRETURN    -> (0xeb0e0a64)
        SWI_SYS_RT_SIGRETURN -> (0xab150a64)
      FIXME: Currently we only handle little endian (EL) case.  */
-  if (pc[0] == SIGRETURN)
+  if (pc[0] == SIGRETURN || pc[0] == RT_SIGRETURN)
     {
       /* Using '_sigfame' memory address to locate kernal's sigcontext.
 	 The sigcontext structures in arch/nds32/include/asm/sigcontext.h.  */
-      struct _sigframe *rt_;
-      rt_ = context->cfa;
-      sc_ = &rt_->uc.uc_mcontext;
-    }
-  else if (pc[0] == RT_SIGRETURN)
-    {
-      /* Using '_sigfame' memory address to locate kernal's sigcontext.  */
       struct _rt_sigframe *rt_;
       rt_ = context->cfa;
       sc_ = &rt_->sig.uc.uc_mcontext;

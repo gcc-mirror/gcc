@@ -1038,6 +1038,7 @@ extern tree fold_offsetof (tree, tree = size_type_node,
 			   tree_code ctx = ERROR_MARK);
 
 extern int complete_array_type (tree *, tree, bool);
+extern void complete_flexible_array_elts (tree);
 
 extern tree builtin_type_for_size (int, bool);
 
@@ -1327,16 +1328,18 @@ excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
 extern int c_flt_eval_method (bool ts18661_p);
 extern void add_no_sanitize_value (tree node, unsigned int flags);
 
-extern void maybe_add_include_fixit (rich_location *, const char *);
+extern void maybe_add_include_fixit (rich_location *, const char *, bool);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
+extern tree braced_list_to_string (tree, tree);
 
 #if CHECKING_P
 namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
+  extern void c_indentation_c_tests (void);
   extern void c_pretty_print_c_tests (void);
   extern void c_spellcheck_cc_tests (void);
 

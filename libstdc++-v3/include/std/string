@@ -52,4 +52,24 @@
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
 
+#if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  namespace pmr {
+    template<typename _Tp> class polymorphic_allocator;
+    template<typename _CharT, typename _Traits = char_traits<_CharT>>
+      using basic_string = std::basic_string<_CharT, _Traits,
+					     polymorphic_allocator<_CharT>>;
+    using string    = basic_string<char>;
+    using u16string = basic_string<char16_t>;
+    using u32string = basic_string<char32_t>;
+#ifdef _GLIBCXX_USE_WCHAR_T
+    using wstring   = basic_string<wchar_t>;
+#endif
+  } // namespace pmr
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++17
+
 #endif /* _GLIBCXX_STRING */

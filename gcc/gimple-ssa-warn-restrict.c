@@ -88,7 +88,7 @@ class wrestrict_dom_walker : public dom_walker
   bool handle_gimple_call (gimple_stmt_iterator *);
 
  private:
-  void check_call (gcall *);
+  void check_call (gimple *);
 };
 
 edge
@@ -102,8 +102,7 @@ wrestrict_dom_walker::before_dom_children (basic_block bb)
       if (!is_gimple_call (stmt))
 	continue;
 
-      if (gcall *call = as_a <gcall *> (stmt))
-	check_call (call);
+      check_call (stmt);
     }
 
   return NULL;
@@ -192,7 +191,7 @@ class builtin_access
     return detect_overlap != &builtin_access::generic_overlap;
   }
 
-  builtin_access (gcall *, builtin_memref &, builtin_memref &);
+  builtin_access (gimple *, builtin_memref &, builtin_memref &);
 
   /* Entry point to determine overlap.  */
   bool overlap ();
@@ -563,7 +562,7 @@ builtin_memref::offset_out_of_bounds (int strict, offset_int ooboff[2]) const
 /* Create an association between the memory references DST and SRC
    for access by a call EXPR to a memory or string built-in funtion.  */
 
-builtin_access::builtin_access (gcall *call, builtin_memref &dst,
+builtin_access::builtin_access (gimple *call, builtin_memref &dst,
 				builtin_memref &src)
 : dstref (&dst), srcref (&src), sizrange (), ovloff (), ovlsiz (),
   dstoff (), srcoff (), dstsiz (), srcsiz ()
@@ -1324,7 +1323,7 @@ builtin_access::overlap ()
    Return true when one has been detected, false otherwise.  */
 
 static bool
-maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
+maybe_diag_overlap (location_t loc, gimple *call, builtin_access &acs)
 {
   if (!acs.overlap ())
     return false;
@@ -1577,7 +1576,7 @@ maybe_diag_overlap (location_t loc, gcall *call, builtin_access &acs)
    has been issued.  */
 
 static bool
-maybe_diag_offset_bounds (location_t loc, gcall *call, tree func, int strict,
+maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
 			  tree expr, const builtin_memref &ref)
 {
   if (!warn_array_bounds)
@@ -1619,6 +1618,7 @@ maybe_diag_offset_bounds (location_t loc, gcall *call, tree func, int strict,
       if (DECL_P (ref.base)
 	  && TREE_CODE (type = TREE_TYPE (ref.base)) == ARRAY_TYPE)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Warray_bounds,
 			  "%G%qD pointer overflow between offset %s "
 			  "and size %s accessing array %qD with type %qT",
@@ -1651,6 +1651,7 @@ maybe_diag_offset_bounds (location_t loc, gcall *call, tree func, int strict,
 
       if (DECL_P (ref.base))
 	{
+	  auto_diagnostic_group d;
 	  if ((ref.basesize < maxobjsize
 	       && warning_at (loc, OPT_Warray_bounds,
 			      form
@@ -1722,7 +1723,7 @@ maybe_diag_offset_bounds (location_t loc, gcall *call, tree func, int strict,
    if/when appropriate.  */
 
 void
-wrestrict_dom_walker::check_call (gcall *call)
+wrestrict_dom_walker::check_call (gimple *call)
 {
   /* Avoid checking the call if it has already been diagnosed for
      some reason.  */
@@ -1730,7 +1731,7 @@ wrestrict_dom_walker::check_call (gcall *call)
     return;
 
   tree func = gimple_call_fndecl (call);
-  if (!func || DECL_BUILT_IN_CLASS (func) != BUILT_IN_NORMAL)
+  if (!func || !fndecl_built_in_p (func, BUILT_IN_NORMAL))
     return;
 
   /* Argument number to extract from the call (depends on the built-in
@@ -1822,7 +1823,7 @@ wrestrict_dom_walker::check_call (gcall *call)
    detected and diagnosed, true otherwise.  */
 
 bool
-check_bounds_or_overlap (gcall *call, tree dst, tree src, tree dstsize,
+check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 			 tree srcsize, bool bounds_only /* = false */)
 {
   location_t loc = gimple_nonartificial_location (call);

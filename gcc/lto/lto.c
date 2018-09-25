@@ -894,7 +894,7 @@ lto_maybe_register_decl (struct data_in *data_in, tree t, unsigned ix)
   if (TREE_CODE (t) == VAR_DECL)
     lto_register_var_decl_in_symtab (data_in, t, ix);
   else if (TREE_CODE (t) == FUNCTION_DECL
-	   && !DECL_BUILT_IN (t))
+	   && !fndecl_built_in_p (t))
     lto_register_function_decl_in_symtab (data_in, t, ix);
 }
 
@@ -2923,7 +2923,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   FOR_EACH_SYMBOL (snode)
     if (snode->externally_visible && snode->real_symbol_p ()
 	&& snode->lto_file_data && snode->lto_file_data->resolution_map
-	&& !is_builtin_fn (snode->decl)
+	&& !(TREE_CODE (snode->decl) == FUNCTION_DECL
+	     && fndecl_built_in_p (snode->decl))
 	&& !(VAR_P (snode->decl) && DECL_HARD_REGISTER (snode->decl)))
       {
 	ld_plugin_symbol_resolution_t *res;
@@ -3419,7 +3420,9 @@ lto_main (void)
 	    lto_promote_statics_nonwpa ();
 
 	  /* Annotate the CU DIE and mark the early debug phase as finished.  */
+	  debuginfo_early_start ();
 	  debug_hooks->early_finish ("<artificial>");
+	  debuginfo_early_stop ();
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 

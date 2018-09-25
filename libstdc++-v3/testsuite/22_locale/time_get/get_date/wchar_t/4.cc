@@ -25,6 +25,8 @@
 #include <sstream>
 #include <testsuite_hooks.h>
 
+static bool debian_date_format();
+
 void test01()
 {
   using namespace std;
@@ -46,7 +48,7 @@ void test01()
 			   0x5e74, L'1', L'2', 0x6708, L'1', L'7',
 			   0x65e5 , 0x0 };
 
-  iss.str(wstr);
+  iss.str(debian_date_format() ? wstr+2 : wstr);
   iterator_type is_it01(iss);
   tm time01;
   tim_get.get_date(is_it01, end, iss, errorstate, &time01);
@@ -54,6 +56,26 @@ void test01()
   VERIFY( time01.tm_mon == 11 );
   VERIFY( time01.tm_mday == 17 );
   VERIFY( time01.tm_year == 103 );
+}
+
+#include <locale.h>
+#if __has_include(<langinfo.h>)
+# include <langinfo.h>
+#endif
+
+static bool debian_date_format()
+{
+#ifdef D_FMT
+  if (setlocale(LC_TIME, "zh_TW.UTF-8") != NULL)
+  {
+    // See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=31413
+    // and https://gcc.gnu.org/bugzilla/show_bug.cgi?id=71641#c2
+    if (*nl_langinfo(D_FMT) == '%')
+      return true;
+    setlocale(LC_TIME, "C");
+  }
+#endif
+  return false;
 }
 
 int main()

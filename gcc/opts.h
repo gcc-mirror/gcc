@@ -106,8 +106,6 @@ struct cl_option
   BOOL_BITFIELD cl_tolower : 1;
   /* Report argument with -fverbose-asm  */
   BOOL_BITFIELD cl_report : 1;
-  /* Deprecated option  */
-  BOOL_BITFIELD cl_deprecated: 1;
   /* Argument is an unsigned integer with an optional byte suffix.  */
   BOOL_BITFIELD cl_byte_size: 1;
   /* Offset of field for this option in struct gcc_options, or
@@ -219,7 +217,6 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
-#define CL_ERR_DEPRECATED	(1 << 7) /* Deprecated option.  */
 
 /* Structure describing the result of decoding an option.  */
 

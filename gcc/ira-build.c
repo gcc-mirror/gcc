@@ -1876,6 +1876,11 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
       create_insn_allocnos (XEXP (x, 0), NULL, true);
       return;
     }
+  else if (code == CLOBBER_HIGH)
+    {
+      gcc_assert (REG_P (XEXP (x, 0)) && HARD_REGISTER_P (XEXP (x, 0)));
+      return;
+    }
   else if (code == MEM)
     {
       create_insn_allocnos (XEXP (x, 0), NULL, false);

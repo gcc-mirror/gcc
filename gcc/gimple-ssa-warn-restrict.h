@@ -20,7 +20,7 @@
 
 #ifndef GIMPLE_SSA_WARN_RESTRICT_H
 
-extern bool check_bounds_or_overlap (gcall *, tree, tree, tree, tree,
+extern bool check_bounds_or_overlap (gimple *, tree, tree, tree, tree,
 				     bool = false);
 
 #endif /* GIMPLE_SSA_WARN_RESTRICT_H */

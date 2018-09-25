@@ -157,9 +157,10 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
+#define AARCH64_FL_RCPC8_4    (1 << 20)  /* Has ARMv8.4-a RCPC extensions.  */
 
 /* Statistical Profiling extensions.  */
-#define AARCH64_FL_PROFILE    (1 << 20)
+#define AARCH64_FL_PROFILE    (1 << 21)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -178,7 +179,7 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
 
 /* Macros to test ISA flags.  */
 
@@ -199,6 +200,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
+#define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -479,6 +481,9 @@ extern unsigned aarch64_architecture_version;
 /* Don't use __builtin_setjmp until we've defined it.  */
 #undef DONT_USE_BUILTIN_SETJMP
 #define DONT_USE_BUILTIN_SETJMP 1
+
+#undef TARGET_COMPUTE_FRAME_LAYOUT
+#define TARGET_COMPUTE_FRAME_LAYOUT aarch64_layout_frame
 
 /* Register in which the structure value is to be returned.  */
 #define AARCH64_STRUCT_VALUE_REGNUM R8_REGNUM

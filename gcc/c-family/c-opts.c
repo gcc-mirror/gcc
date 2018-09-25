@@ -931,6 +931,7 @@ c_common_post_options (const char **pfilename)
       warn_abi_version = latest_abi_version;
       if (flag_abi_version == latest_abi_version)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
 	    {
 	      inform (input_location, "-Wabi warns about differences "

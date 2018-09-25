@@ -459,7 +459,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       explicit
       vector(size_type __n, const allocator_type& __a = allocator_type())
-      : _Base(__n, __a)
+      : _Base(_S_check_init_len(__n, __a), __a)
       { _M_default_initialize(__n); }
 
       /**
@@ -472,7 +472,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        */
       vector(size_type __n, const value_type& __value,
 	     const allocator_type& __a = allocator_type())
-      : _Base(__n, __a)
+      : _Base(_S_check_init_len(__n, __a), __a)
       { _M_fill_initialize(__n, __value); }
 #else
       /**
@@ -486,7 +486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       explicit
       vector(size_type __n, const value_type& __value = value_type(),
 	     const allocator_type& __a = allocator_type())
-      : _Base(__n, __a)
+      : _Base(_S_check_init_len(__n, __a), __a)
       { _M_fill_initialize(__n, __value); }
 #endif
 
@@ -872,7 +872,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       /**  Returns the size() of the largest possible %vector.  */
       size_type
       max_size() const _GLIBCXX_NOEXCEPT
-      { return _Alloc_traits::max_size(_M_get_Tp_allocator()); }
+      { return _S_max_size(_M_get_Tp_allocator()); }
 
 #if __cplusplus >= 201103L
       /**
@@ -1485,7 +1485,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	_M_initialize_dispatch(_Integer __n, _Integer __value, __true_type)
 	{
-	  this->_M_impl._M_start = _M_allocate(static_cast<size_type>(__n));
+	  this->_M_impl._M_start = _M_allocate(_S_check_init_len(
+		static_cast<size_type>(__n), _M_get_Tp_allocator()));
 	  this->_M_impl._M_end_of_storage =
 	    this->_M_impl._M_start + static_cast<size_type>(__n);
 	  _M_fill_initialize(static_cast<size_type>(__n), __value);
@@ -1528,7 +1529,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			    std::forward_iterator_tag)
 	{
 	  const size_type __n = std::distance(__first, __last);
-	  this->_M_impl._M_start = this->_M_allocate(__n);
+	  this->_M_impl._M_start
+	    = this->_M_allocate(_S_check_init_len(__n, _M_get_Tp_allocator()));
 	  this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
 	  this->_M_impl._M_finish =
 	    std::__uninitialized_copy_a(__first, __last,
@@ -1665,11 +1667,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{ _Alloc_traits::destroy(_M_this->_M_impl, _M_ptr()); }
 
 	value_type&
-	_M_val() { return *reinterpret_cast<_Tp*>(&__buf); }
+	_M_val() { return *_M_ptr(); }
 
       private:
-	pointer
-	_M_ptr() { return pointer_traits<pointer>::pointer_to(_M_val()); }
+	_Tp*
+	_M_ptr() { return reinterpret_cast<_Tp*>(&__buf); }
 
 	vector* _M_this;
 	typename aligned_storage<sizeof(_Tp), alignof(_Tp)>::type __buf;
@@ -1707,8 +1709,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	if (max_size() - size() < __n)
 	  __throw_length_error(__N(__s));
 
-	const size_type __len = size() + std::max(size(), __n);
+	const size_type __len = size() + (std::max)(size(), __n);
 	return (__len < size() || __len > max_size()) ? max_size() : __len;
+      }
+
+      // Called by constructors to check initial size.
+      static size_type
+      _S_check_init_len(size_type __n, const allocator_type& __a)
+      {
+	if (__n > _S_max_size(_Tp_alloc_type(__a)))
+	  __throw_length_error(
+	      __N("cannot create std::vector larger than max_size()"));
+	return __n;
+      }
+
+      static size_type
+      _S_max_size(const _Tp_alloc_type& __a) _GLIBCXX_NOEXCEPT
+      {
+	const size_t __diffmax = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max;
+	const size_t __allocmax = _Alloc_traits::max_size(__a);
+	return (std::min)(__diffmax, __allocmax);
       }
 
       // Internal erase functions follow.

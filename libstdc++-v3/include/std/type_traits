@@ -144,6 +144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
+  template<typename... _Bn>
+    inline constexpr bool __or_v = __or_<_Bn...>::value;
+  template<typename... _Bn>
+    inline constexpr bool __and_v = __and_<_Bn...>::value;
+
 #define __cpp_lib_logical_traits 201510
 
   template<typename... _Bn>
@@ -2956,15 +2961,6 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#if __GNUC__ >= 7
-# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-#elif defined(__is_identifier)
-// For non-GNU compilers:
-# if ! __is_identifier(__has_unique_object_representations)
-#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-# endif
-#endif
-
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
@@ -2979,19 +2975,9 @@ template <typename _From, typename _To>
     inline constexpr bool has_unique_object_representations_v
       = has_unique_object_representations<_Tp>::value;
 #endif
-#undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
-
-#if __GNUC__ >= 7
-# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined(__is_identifier)
-// For non-GNU compilers:
-# if ! __is_identifier(__is_aggregate)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-# endif
-#endif
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-#define __cpp_lib_is_aggregate 201703
+# define __cpp_lib_is_aggregate 201703
   /// is_aggregate
   template<typename _Tp>
     struct is_aggregate
@@ -3001,8 +2987,6 @@ template <typename _From, typename _To>
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
 #endif
-#undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-
 #endif // C++17
 
 #if __cplusplus > 201703L

@@ -19,4 +19,3 @@ male_indirect_jump (long offset)
 /* { dg-final { scan-assembler-not "push(?:l|q)\[ \t\]*_?dispatch"  } } */
 /* { dg-final { scan-assembler-not "pushq\[ \t\]%rax" } } */
 /* { dg-final { scan-assembler-not "__x86_indirect_thunk\n" } } */
-/* { dg-final { scan-assembler-not "__x86_indirect_thunk_bnd\n" } } */

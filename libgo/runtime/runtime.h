@@ -268,7 +268,7 @@ void*	runtime_sysAlloc(uintptr, uint64*)
 void	runtime_sysFree(void*, uintptr, uint64*)
   __asm__ (GOSYM_PREFIX "runtime.sysFree");
 void	runtime_mprofinit(void);
-#define runtime_getcallersp(p) __builtin_frame_address(0)
+#define runtime_getcallersp() __builtin_frame_address(0)
 void	runtime_mcall(FuncVal*)
   __asm__ (GOSYM_PREFIX "runtime.mcall");
 int32	runtime_timediv(int64, int32, int32*)
@@ -305,12 +305,10 @@ void	runtime_schedtrace(bool)
 void	runtime_goparkunlock(Lock*, String, byte, intgo)
   __asm__ (GOSYM_PREFIX "runtime.goparkunlock");
 void	runtime_tsleep(int64, const char*);
-void	runtime_entersyscall(int32)
+void	runtime_entersyscall()
   __asm__ (GOSYM_PREFIX "runtime.entersyscall");
-void	runtime_entersyscallblock(int32)
+void	runtime_entersyscallblock()
   __asm__ (GOSYM_PREFIX "runtime.entersyscallblock");
-void	runtime_exitsyscall(int32)
-  __asm__ (GOSYM_PREFIX "runtime.exitsyscall");
 G*	__go_go(void (*pfn)(void*), void*);
 int32	runtime_callers(int32, Location*, int32, bool keep_callers);
 int64	runtime_nanotime(void)	// monotonic time
@@ -385,7 +383,7 @@ bool	runtime_notetsleepg(Note*, int64)  // false - timeout
 #define runtime_munmap munmap
 #define runtime_madvise madvise
 #define runtime_memclr(buf, size) __builtin_memset((buf), 0, (size))
-#define runtime_getcallerpc(p) __builtin_return_address(0)
+#define runtime_getcallerpc() __builtin_return_address(0)
 
 #ifdef __rtems__
 void __wrap_rtems_task_variable_add(void **);
@@ -405,8 +403,6 @@ void runtime_panic(Eface)
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
-     __asm__ (GOSYM_PREFIX "runtime.NewTypeAssertionError");
 void	runtime_newErrorCString(const char*, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
@@ -481,10 +477,10 @@ extern void *getitab(const struct __go_type_descriptor *,
   __asm__ (GOSYM_PREFIX "runtime.getitab");
 
 extern void runtime_cpuinit(void);
+extern void setRandomNumber(uint32)
+  __asm__ (GOSYM_PREFIX "runtime.setRandomNumber");
 extern void setIsCgo(void)
   __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
-extern void setCpuidECX(uint32)
-  __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");
 extern void setSupportAES(bool)
   __asm__ (GOSYM_PREFIX "runtime.setSupportAES");
 extern void typedmemmove(const Type *, void *, const void *)
@@ -495,3 +491,14 @@ extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern void setpagesize(uintptr_t)
   __asm__(GOSYM_PREFIX "runtime.setpagesize");
+
+struct funcfileline_return
+{
+  String retfn;
+  String retfile;
+  intgo retline;
+};
+
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
+  __asm__ (GOSYM_PREFIX "runtime.funcfileline");

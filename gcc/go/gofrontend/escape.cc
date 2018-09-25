@@ -1361,7 +1361,13 @@ Escape_analysis_assign::statement(Block*, size_t*, Statement* s)
       {
         Expression* init = s->temporary_statement()->init();
         if (init != NULL)
-          this->assign(Node::make_node(s), Node::make_node(init));
+	  {
+	    Node* n = Node::make_node(init);
+	    if (s->temporary_statement()->value_escapes())
+	      this->assign(this->context_->sink(), n);
+	    else
+	      this->assign(Node::make_node(s), n);
+	  }
       }
       break;
 
@@ -1613,15 +1619,6 @@ Escape_analysis_assign::expression(Expression** pexpr)
                   // of the key.
                   Node* key_node = Node::make_node(call->args()->back());
                   this->assign_deref(this->context_->sink(), key_node);
-                }
-                break;
-
-              case Runtime::SELECTSEND:
-                {
-                  // Send to a channel, lose track. The last argument is
-                  // the address of the value to send.
-                  Node* arg_node = Node::make_node(call->args()->back());
-                  this->assign_deref(this->context_->sink(), arg_node);
                 }
                 break;
 
@@ -2228,8 +2225,12 @@ Escape_analysis_assign::assign(Node* dst, Node* src)
         case Expression::EXPRESSION_TEMPORARY_REFERENCE:
           {
             // Temporary is tracked through the underlying Temporary_statement.
-            Statement* t = dst->expr()->temporary_reference_expression()->statement();
-            dst = Node::make_node(t);
+            Temporary_statement* t =
+	      dst->expr()->temporary_reference_expression()->statement();
+	    if (t->value_escapes())
+	      dst = this->context_->sink();
+	    else
+	      dst = Node::make_node(t);
           }
           break;
 

@@ -1440,7 +1440,6 @@
 (define_code_iterator any_logic [and ior xor])
 (define_code_attr logic [(and "and") (ior "or") (xor "xor")])
 
-;; Currently disabled until we add better subtarget support - requires sm_32.
 (define_insn "atomic_fetch_<logic><mode>"
   [(set (match_operand:SDIM 1 "memory_operand" "+m")
 	(unspec_volatile:SDIM
@@ -1450,7 +1449,7 @@
 	  UNSPECV_LOCK))
    (set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(match_dup 1))]
-  "0"
+  "<MODE>mode == SImode || TARGET_SM35"
   "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;"
   [(set_attr "atomic" "true")])
 

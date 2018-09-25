@@ -145,9 +145,12 @@ custom_diagnostic_finalizer (diagnostic_context *context,
 
 static void
 add_range (rich_location *richloc, location_t start, location_t finish,
-	   bool show_caret_p)
+	   enum range_display_kind range_display_kind
+	     = SHOW_RANGE_WITHOUT_CARET,
+	   const range_label *label = NULL)
 {
-  richloc->add_range (make_location (start, start, finish), show_caret_p);
+  richloc->add_range (make_location (start, start, finish), range_display_kind,
+		      label);
 }
 
 /* Exercise the diagnostic machinery to emit various warnings,
@@ -175,8 +178,8 @@ test_show_locus (function *fun)
     {
       const int line = fnstart_line + 2;
       rich_location richloc (line_table, get_loc (line, 15));
-      add_range (&richloc, get_loc (line, 10), get_loc (line, 14), false);
-      add_range (&richloc, get_loc (line, 16), get_loc (line, 16), false);
+      add_range (&richloc, get_loc (line, 10), get_loc (line, 14));
+      add_range (&richloc, get_loc (line, 16), get_loc (line, 16));
       warning_at (&richloc, 0, "test");
     }
 
@@ -184,28 +187,32 @@ test_show_locus (function *fun)
     {
       const int line = fnstart_line + 2;
       rich_location richloc (line_table, get_loc (line, 24));
-      add_range (&richloc, get_loc (line, 6), get_loc (line, 22), false);
-      add_range (&richloc, get_loc (line, 26), get_loc (line, 43), false);
+      add_range (&richloc, get_loc (line, 6), get_loc (line, 22));
+      add_range (&richloc, get_loc (line, 26), get_loc (line, 43));
       warning_at (&richloc, 0, "test");
     }
 
   if (0 == strcmp (fnname, "test_multiline"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (line_table, get_loc (line + 1, 7));
-      add_range (&richloc, get_loc (line, 7), get_loc (line, 23), false);
-      add_range (&richloc, get_loc (line + 1, 9), get_loc (line + 1, 26),
-		 false);
+      text_range_label label ("label");
+      rich_location richloc (line_table, get_loc (line + 1, 7), &label);
+      add_range (&richloc, get_loc (line, 7), get_loc (line, 23));
+      add_range (&richloc, get_loc (line + 1, 9), get_loc (line + 1, 26));
       warning_at (&richloc, 0, "test");
     }
 
   if (0 == strcmp (fnname, "test_many_lines"))
     {
       const int line = fnstart_line + 2;
-      rich_location richloc (line_table, get_loc (line + 5, 7));
-      add_range (&richloc, get_loc (line, 7), get_loc (line + 4, 65), false);
+      text_range_label label0 ("label 0");
+      text_range_label label1 ("label 1");
+      text_range_label label2 ("label 2");
+      rich_location richloc (line_table, get_loc (line + 5, 7), &label0);
+      add_range (&richloc, get_loc (line, 7), get_loc (line + 4, 65),
+		 SHOW_RANGE_WITHOUT_CARET, &label1);
       add_range (&richloc, get_loc (line + 5, 9), get_loc (line + 10, 61),
-		 false);
+		 SHOW_RANGE_WITHOUT_CARET, &label2);
       warning_at (&richloc, 0, "test");
     }
 
@@ -231,16 +238,42 @@ test_show_locus (function *fun)
     }
 
   /* Example of a very wide line, where the information of interest
-     is beyond the width of the terminal (hardcoded above).  */
+     is beyond the width of the terminal (hardcoded above), with
+     a secondary location that exactly fits on the left-margin.  */
   if (0 == strcmp (fnname, "test_very_wide_line"))
     {
       const int line = fnstart_line + 2;
       global_dc->show_ruler_p = true;
+      text_range_label label0 ("label 0");
+      text_range_label label1 ("label 1");
       rich_location richloc (line_table,
 			     make_location (get_loc (line, 94),
 					    get_loc (line, 90),
-					    get_loc (line, 98)));
+					    get_loc (line, 98)),
+			     &label0);
+      richloc.add_range (get_loc (line, 35), SHOW_RANGE_WITHOUT_CARET,
+			 &label1);
       richloc.add_fixit_replace ("bar * foo");
+      warning_at (&richloc, 0, "test");
+      global_dc->show_ruler_p = false;
+    }
+
+  /* Likewise, but with a secondary location that's immediately before
+     the left margin; the location and label should be gracefully dropped.  */
+  if (0 == strcmp (fnname, "test_very_wide_line_2"))
+    {
+      const int line = fnstart_line + 2;
+      global_dc->show_ruler_p = true;
+      text_range_label label0 ("label 0");
+      text_range_label label1 ("label 1");
+      rich_location richloc (line_table,
+			     make_location (get_loc (line, 94),
+					    get_loc (line, 90),
+					    get_loc (line, 98)),
+			     &label0);
+      richloc.add_fixit_replace ("bar * foo");
+      richloc.add_range (get_loc (line, 34), SHOW_RANGE_WITHOUT_CARET,
+			 &label1);
       warning_at (&richloc, 0, "test");
       global_dc->show_ruler_p = false;
     }
@@ -252,7 +285,7 @@ test_show_locus (function *fun)
       location_t caret_a = get_loc (line, 7);
       location_t caret_b = get_loc (line, 11);
       rich_location richloc (line_table, caret_a);
-      add_range (&richloc, caret_b, caret_b, true);
+      add_range (&richloc, caret_b, caret_b, SHOW_RANGE_WITH_CARET);
       global_dc->caret_chars[0] = 'A';
       global_dc->caret_chars[1] = 'B';
       warning_at (&richloc, 0, "test");
@@ -370,7 +403,7 @@ test_show_locus (function *fun)
       location_t caret_a = get_loc (line, 5);
       location_t caret_b = get_loc (line - 1, 19);
       rich_location richloc (line_table, caret_a);
-      richloc.add_range (caret_b, true);
+      richloc.add_range (caret_b, SHOW_RANGE_WITH_CARET);
       global_dc->caret_chars[0] = '1';
       global_dc->caret_chars[1] = '2';
       warning_at (&richloc, 0, "test");
@@ -391,13 +424,14 @@ test_show_locus (function *fun)
 
   /* Example of many locations and many fixits.
      Underline (separately) every word in a comment, and convert them
-     to upper case.  */
+     to upper case.  Give all of the ranges labels (sharing one label).  */
   if (0 == strcmp (fnname, "test_many_nested_locations"))
     {
       const char *file = LOCATION_FILE (fnstart);
       const int start_line = fnstart_line + 2;
       const int finish_line = start_line + 7;
       location_t loc = get_loc (start_line - 1, 2);
+      text_range_label label ("label");
       rich_location richloc (line_table, loc);
       for (int line = start_line; line <= finish_line; line++)
 	{
@@ -418,7 +452,7 @@ test_show_locus (function *fun)
 		      location_t word
 			= make_location (start_of_word, start_of_word,
 					 end_of_word);
-		      richloc.add_range (word, true);
+		      richloc.add_range (word, SHOW_RANGE_WITH_CARET, &label);
 
 		      /* Add a fixit, converting to upper case.  */
 		      char_span word_span = content.subspan (start_idx, idx - start_idx);

@@ -46,13 +46,13 @@ namespace __detail
   {
     // Optimize lookups involving the first elements of __prime_list.
     // (useful to speed-up, eg, constructors)
-    static const unsigned char __fast_bkt[13]
-      = { 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11, 13, 13 };
+    static const unsigned char __fast_bkt[]
+      = { 2, 2, 2, 3, 5, 5, 7, 7, 11, 11, 11, 11, 13, 13 };
 
-    if (__n <= 12)
+    if (__n < sizeof(__fast_bkt))
       {
 	_M_next_resize =
-	  __builtin_ceil(__fast_bkt[__n] * (long double)_M_max_load_factor);
+	  __builtin_floor(__fast_bkt[__n] * (long double)_M_max_load_factor);
 	return __fast_bkt[__n];
       }
 
@@ -65,9 +65,8 @@ namespace __detail
     // iterator that can be dereferenced to get the last prime.
     constexpr auto __last_prime = __prime_list + __n_primes - 1;
 
-    // Look for 'n + 1' to make sure returned value will be greater than n.
     const unsigned long* __next_bkt =
-      std::lower_bound(__prime_list + 6, __last_prime, __n + 1);
+      std::lower_bound(__prime_list + 6, __last_prime, __n);
 
     if (__next_bkt == __last_prime)
       // Set next resize to the max value so that we never try to rehash again
@@ -76,7 +75,7 @@ namespace __detail
       _M_next_resize = std::size_t(-1);
     else
       _M_next_resize =
-	__builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
+	__builtin_floor(*__next_bkt * (long double)_M_max_load_factor);
 
     return *__next_bkt;
   }
@@ -95,7 +94,7 @@ namespace __detail
   _M_need_rehash(std::size_t __n_bkt, std::size_t __n_elt,
 		 std::size_t __n_ins) const
   {
-    if (__n_elt + __n_ins >= _M_next_resize)
+    if (__n_elt + __n_ins > _M_next_resize)
       {
 	long double __min_bkts = (__n_elt + __n_ins)
 				   / (long double)_M_max_load_factor;

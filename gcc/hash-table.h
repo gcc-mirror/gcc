@@ -561,7 +561,7 @@ private:
 #include "mem-stats.h"
 #include "hash-map.h"
 
-extern mem_alloc_description<mem_usage> hash_table_usage;
+extern mem_alloc_description<mem_usage>& hash_table_usage (void);
 
 /* Support function for statistics.  */
 extern void dump_hash_table_loc_statistics (void);
@@ -580,7 +580,7 @@ hash_table<Descriptor, Allocator>::hash_table (size_t size, bool ggc, bool
   size = prime_tab[size_prime_index].prime;
 
   if (m_gather_mem_stats)
-    hash_table_usage.register_descriptor (this, origin, ggc
+    hash_table_usage ().register_descriptor (this, origin, ggc
 					  FINAL_PASS_MEM_STAT);
 
   m_entries = alloc_entries (size PASS_MEM_STAT);
@@ -600,7 +600,7 @@ hash_table<Descriptor, Allocator>::hash_table (const hash_table &h, bool ggc,
   size_t size = h.m_size;
 
   if (m_gather_mem_stats)
-    hash_table_usage.register_descriptor (this, origin, ggc
+    hash_table_usage ().register_descriptor (this, origin, ggc
 					  FINAL_PASS_MEM_STAT);
 
   value_type *nentries = alloc_entries (size PASS_MEM_STAT);
@@ -630,7 +630,7 @@ hash_table<Descriptor, Allocator>::~hash_table ()
     ggc_free (m_entries);
 
   if (m_gather_mem_stats)
-    hash_table_usage.release_instance_overhead (this,
+    hash_table_usage ().release_instance_overhead (this,
 						sizeof (value_type) * m_size,
 						true);
 }
@@ -644,7 +644,7 @@ hash_table<Descriptor, Allocator>::alloc_entries (size_t n MEM_STAT_DECL) const
   value_type *nentries;
 
   if (m_gather_mem_stats)
-    hash_table_usage.register_instance_overhead (sizeof (value_type) * n, this);
+    hash_table_usage ().register_instance_overhead (sizeof (value_type) * n, this);
 
   if (!m_ggc)
     nentries = Allocator <value_type> ::data_alloc (n);
@@ -736,7 +736,7 @@ hash_table<Descriptor, Allocator>::expand ()
   value_type *nentries = alloc_entries (nsize);
 
   if (m_gather_mem_stats)
-    hash_table_usage.release_instance_overhead (this, sizeof (value_type)
+    hash_table_usage ().release_instance_overhead (this, sizeof (value_type)
 						    * osize);
 
   m_entries = nentries;

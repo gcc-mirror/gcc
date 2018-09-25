@@ -25,6 +25,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-ref.h"
 #include "plugin-api.h"
 
+extern void debuginfo_early_init (void);
+extern void debuginfo_init (void);
+extern void debuginfo_fini (void);
+extern void debuginfo_start (void);
+extern void debuginfo_stop (void);
+extern void debuginfo_early_start (void);
+extern void debuginfo_early_stop (void);
+
 class ipa_opt_pass_d;
 typedef ipa_opt_pass_d *ipa_opt_pass;
 

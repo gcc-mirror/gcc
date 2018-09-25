@@ -178,6 +178,7 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
   xloc = expand_location (location);
   floc = expand_location (cfun_loc);
+  auto_diagnostic_group d;
   if (warning_at (location, wc, gmsgid, expr))
     {
       TREE_NO_WARNING (expr) = 1;
@@ -724,7 +725,7 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
 		{
 		  tree tl = gimple_switch_label (gs, idx);
-		  if (e->dest == label_to_block (CASE_LABEL (tl)))
+		  if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
 		    {
 		      if (!l)
 			l = tl;

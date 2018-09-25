@@ -1090,6 +1090,21 @@ wrap_help (const char *help,
   while (remaining);
 }
 
+/* Data structure used to print list of valid option values.  */
+
+struct option_help_tuple
+{
+  option_help_tuple (int code, vec<const char *> values):
+    m_code (code), m_values (values)
+  {}
+
+  /* Code of an option.  */
+  int m_code;
+
+  /* List of possible values.  */
+  vec<const char *> m_values;
+};
+
 /* Print help for a specific front-end, etc.  */
 static void
 print_filtered_help (unsigned int include_flags,
@@ -1142,6 +1157,8 @@ print_filtered_help (unsigned int include_flags,
 
   if (!opts->x_help_enum_printed)
     opts->x_help_enum_printed = XCNEWVAR (char, cl_enums_count);
+
+  auto_vec<option_help_tuple> help_tuples;
 
   for (i = 0; i < cl_options_count; i++)
     {
@@ -1303,6 +1320,13 @@ print_filtered_help (unsigned int include_flags,
       if (option->var_type == CLVC_ENUM
 	  && opts->x_help_enum_printed[option->var_enum] != 2)
 	opts->x_help_enum_printed[option->var_enum] = 1;
+      else
+	{
+	  vec<const char *> option_values
+	    = targetm_common.get_valid_option_values (i, NULL);
+	  if (!option_values.is_empty ())
+	    help_tuples.safe_push (option_help_tuple (i, option_values));
+	}
     }
 
   if (! found)
@@ -1365,6 +1389,15 @@ print_filtered_help (unsigned int include_flags,
 	}
       printf ("\n\n");
       opts->x_help_enum_printed[i] = 2;
+    }
+
+  for (unsigned i = 0; i < help_tuples.length (); i++)
+    {
+      const struct cl_option *option = cl_options + help_tuples[i].m_code;
+      printf ("  Known valid arguments for %s option:\n   ", option->opt_text);
+      for (unsigned j = 0; j < help_tuples[i].m_values.length (); j++)
+	printf (" %s", help_tuples[i].m_values[j]);
+      printf ("\n\n");
     }
 }
 
@@ -2173,6 +2206,14 @@ common_handle_option (struct gcc_options *opts,
  
     case OPT_fdiagnostics_show_caret:
       dc->show_caret = value;
+      break;
+
+    case OPT_fdiagnostics_show_labels:
+      dc->show_labels_p = value;
+      break;
+
+    case OPT_fdiagnostics_show_line_numbers:
+      dc->show_line_numbers_p = value;
       break;
 
     case OPT_fdiagnostics_color_:

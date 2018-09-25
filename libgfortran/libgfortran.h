@@ -88,6 +88,10 @@ extern long double __strtold (const char *, char **);
 #include <sys/types.h>
 #endif
 
+#ifdef HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#endif
+
 #ifdef __MINGW32__
 typedef off64_t gfc_offset;
 #else
@@ -701,8 +705,15 @@ internal_proto(exit_error);
 extern ssize_t estr_write (const char *);
 internal_proto(estr_write);
 
-extern int st_vprintf (const char *, va_list);
-internal_proto(st_vprintf);
+#if !defined(HAVE_WRITEV) && !defined(HAVE_SYS_UIO_H)
+struct iovec {
+  void  *iov_base;    /* Starting address */
+  size_t iov_len;     /* Number of bytes to transfer */
+};
+#endif
+
+extern ssize_t estr_writev (const struct iovec *iov, int iovcnt);
+internal_proto(estr_writev);
 
 extern int st_printf (const char *, ...)
   __attribute__((format (gfc_printf, 1, 2)));
@@ -737,6 +748,9 @@ internal_proto(translate_error);
 
 extern void generate_error (st_parameter_common *, int, const char *);
 iexport_proto(generate_error);
+
+extern bool generate_error_common (st_parameter_common *, int, const char *);
+iexport_proto(generate_error_common);
 
 extern void generate_warning (st_parameter_common *, const char *);
 internal_proto(generate_warning);
@@ -1743,5 +1757,7 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
 internal_proto(cshift1_16_c16);
 #endif
 
+/* Define this if we support asynchronous I/O on this platform.  This
+   currently requires weak symbols.  */
 
 #endif  /* LIBGFOR_H  */

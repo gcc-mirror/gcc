@@ -15,6 +15,6 @@ struct a {
 
 a::a()
 {
-	foo( &junk ); // { dg-error "match" } junk is an unqualified-id.
-	foo( &bar );  // { dg-error "match" } bar is an unqualified-id.
+	foo( &junk ); // { dg-error "cannot convert" } junk is an unqualified-id.
+	foo( &bar );  // { dg-error "cannot convert" } bar is an unqualified-id.
 }

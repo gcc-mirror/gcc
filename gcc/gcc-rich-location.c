@@ -38,24 +38,26 @@ along with GCC; see the file COPYING3.  If not see
 #include "cpplib.h"
 #include "diagnostic.h"
 
-/* Add a range to the rich_location, covering expression EXPR. */
+/* Add a range to the rich_location, covering expression EXPR,
+   using LABEL if non-NULL. */
 
 void
-gcc_rich_location::add_expr (tree expr)
+gcc_rich_location::add_expr (tree expr, range_label *label)
 {
   gcc_assert (expr);
 
   if (CAN_HAVE_RANGE_P (expr))
-    add_range (EXPR_LOCATION (expr), false);
+    add_range (EXPR_LOCATION (expr), SHOW_RANGE_WITHOUT_CARET, label);
 }
 
-/* If T is an expression, add a range for it to the rich_location.  */
+/* If T is an expression, add a range for it to the rich_location,
+   using LABEL if non-NULL. */
 
 void
-gcc_rich_location::maybe_add_expr (tree t)
+gcc_rich_location::maybe_add_expr (tree t, range_label *label)
 {
   if (EXPR_P (t))
-    add_expr (t);
+    add_expr (t, label);
 }
 
 /* Add a fixit hint suggesting replacing the range at MISSPELLED_TOKEN_LOC

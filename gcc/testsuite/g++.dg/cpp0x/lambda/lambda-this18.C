@@ -18,7 +18,7 @@ template <class U>
 void
 A<T>::bar ()
 {
-  auto f = [this] () { auto g = [=] () { a.foo (); }; g (); };
+  auto f = [this] () { auto g = [=] () { a.foo (); }; g (); }; // { dg-warning "implicit capture" "" { target c++2a } }
   f ();
 }
 

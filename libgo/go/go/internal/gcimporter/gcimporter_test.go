@@ -141,9 +141,21 @@ func TestVersionHandling(t *testing.T) {
 		}
 		pkgpath := "./" + name[:len(name)-2]
 
+		if testing.Verbose() {
+			t.Logf("importing %s", name)
+		}
+
 		// test that export data can be imported
 		_, err := Import(make(map[string]*types.Package), pkgpath, dir, nil)
 		if err != nil {
+			// ok to fail if it fails with a newer version error for select files
+			if strings.Contains(err.Error(), "newer version") {
+				switch name {
+				case "test_go1.11_999b.a", "test_go1.11_999i.a":
+					continue
+				}
+				// fall through
+			}
 			t.Errorf("import %q failed: %v", pkgpath, err)
 			continue
 		}
@@ -200,11 +212,24 @@ var importedObjectTests = []struct {
 	name string
 	want string
 }{
+	// non-interfaces
+	{"crypto.Hash", "type Hash uint"},
+	{"go/ast.ObjKind", "type ObjKind int"},
+	{"go/types.Qualifier", "type Qualifier func(*Package) string"},
+	{"go/types.Comparable", "func Comparable(T Type) bool"},
 	{"math.Pi", "const Pi untyped float"},
+	{"math.Sin", "func Sin(x float64) float64"},
+	{"go/ast.NotNilFilter", "func NotNilFilter(_ string, v reflect.Value) bool"},
+	{"go/internal/gcimporter.BImportData", "func BImportData(fset *go/token.FileSet, imports map[string]*go/types.Package, data []byte, path string) (_ int, pkg *go/types.Package, err error)"},
+
+	// interfaces
+	{"context.Context", "type Context interface{Deadline() (deadline time.Time, ok bool); Done() <-chan struct{}; Err() error; Value(key interface{}) interface{}}"},
+	{"crypto.Decrypter", "type Decrypter interface{Decrypt(rand io.Reader, msg []byte, opts DecrypterOpts) (plaintext []byte, err error); Public() PublicKey}"},
+	{"encoding.BinaryMarshaler", "type BinaryMarshaler interface{MarshalBinary() (data []byte, err error)}"},
 	{"io.Reader", "type Reader interface{Read(p []byte) (n int, err error)}"},
 	{"io.ReadWriter", "type ReadWriter interface{Reader; Writer}"},
-	{"math.Sin", "func Sin(x float64) float64"},
-	// TODO(gri) add more tests
+	{"go/ast.Node", "type Node interface{End() go/token.Pos; Pos() go/token.Pos}"},
+	{"go/types.Type", "type Type interface{String() string; Underlying() Type}"},
 }
 
 func TestImportedTypes(t *testing.T) {
@@ -238,6 +263,46 @@ func TestImportedTypes(t *testing.T) {
 		got := types.ObjectString(obj, types.RelativeTo(pkg))
 		if got != test.want {
 			t.Errorf("%s: got %q; want %q", test.name, got, test.want)
+		}
+
+		if named, _ := obj.Type().(*types.Named); named != nil {
+			verifyInterfaceMethodRecvs(t, named, 0)
+		}
+	}
+}
+
+// verifyInterfaceMethodRecvs verifies that method receiver types
+// are named if the methods belong to a named interface type.
+func verifyInterfaceMethodRecvs(t *testing.T, named *types.Named, level int) {
+	// avoid endless recursion in case of an embedding bug that lead to a cycle
+	if level > 10 {
+		t.Errorf("%s: embeds itself", named)
+		return
+	}
+
+	iface, _ := named.Underlying().(*types.Interface)
+	if iface == nil {
+		return // not an interface
+	}
+
+	// check explicitly declared methods
+	for i := 0; i < iface.NumExplicitMethods(); i++ {
+		m := iface.ExplicitMethod(i)
+		recv := m.Type().(*types.Signature).Recv()
+		if recv == nil {
+			t.Errorf("%s: missing receiver type", m)
+			continue
+		}
+		if recv.Type() != named {
+			t.Errorf("%s: got recv type %s; want %s", m, recv.Type(), named)
+		}
+	}
+
+	// check embedded interfaces (if they are named, too)
+	for i := 0; i < iface.NumEmbeddeds(); i++ {
+		// embedding of interfaces cannot have cycles; recursion will terminate
+		if etype, _ := iface.EmbeddedType(i).(*types.Named); etype != nil {
+			verifyInterfaceMethodRecvs(t, etype, level+1)
 		}
 	}
 }
@@ -455,6 +520,47 @@ func TestIssue20046(t *testing.T) {
 	if m, index, indirect := types.LookupFieldOrMethod(obj.Type(), false, nil, "M"); m == nil {
 		t.Fatalf("V.M not found (index = %v, indirect = %v)", index, indirect)
 	}
+}
+func TestIssue25301(t *testing.T) {
+	skipSpecialPlatforms(t)
+
+	// This package only handles gc export data.
+	if runtime.Compiler != "gc" {
+		t.Skipf("gc-built packages not available (compiler = %s)", runtime.Compiler)
+	}
+
+	// On windows, we have to set the -D option for the compiler to avoid having a drive
+	// letter and an illegal ':' in the import path - just skip it (see also issue #3483).
+	if runtime.GOOS == "windows" {
+		t.Skip("avoid dealing with relative paths/drive letters on windows")
+	}
+
+	if f := compile(t, "testdata", "issue25301.go"); f != "" {
+		defer os.Remove(f)
+	}
+
+	importPkg(t, "./testdata/issue25301")
+}
+
+func TestIssue25596(t *testing.T) {
+	skipSpecialPlatforms(t)
+
+	// This package only handles gc export data.
+	if runtime.Compiler != "gc" {
+		t.Skipf("gc-built packages not available (compiler = %s)", runtime.Compiler)
+	}
+
+	// On windows, we have to set the -D option for the compiler to avoid having a drive
+	// letter and an illegal ':' in the import path - just skip it (see also issue #3483).
+	if runtime.GOOS == "windows" {
+		t.Skip("avoid dealing with relative paths/drive letters on windows")
+	}
+
+	if f := compile(t, "testdata", "issue25596.go"); f != "" {
+		defer os.Remove(f)
+	}
+
+	importPkg(t, "./testdata/issue25596")
 }
 
 func importPkg(t *testing.T, path string) *types.Package {

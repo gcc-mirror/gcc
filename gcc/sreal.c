@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 sreal::dump (FILE *file) const
 {
-  fprintf (file, "(%" PRIi64 " * 2^%d)", m_sig, m_exp);
+  fprintf (file, "(%" PRIi64 " * 2^%d)", (int64_t)m_sig, m_exp);
 }
 
 DEBUG_FUNCTION void
@@ -114,7 +114,7 @@ sreal::to_int () const
   if (m_exp >= SREAL_PART_BITS)
     return sign * INTTYPE_MAXIMUM (int64_t);
   if (m_exp > 0)
-    return sign * (SREAL_ABS (m_sig) << m_exp);
+    return sign * (SREAL_ABS ((int64_t)m_sig) << m_exp);
   if (m_exp < 0)
     return m_sig >> -m_exp;
   return m_sig;
@@ -138,7 +138,8 @@ sreal
 sreal::operator+ (const sreal &other) const
 {
   int dexp;
-  sreal tmp, r;
+  sreal tmp;
+  int64_t r_sig, r_exp;
 
   const sreal *a_p = this, *b_p = &other, *bb;
 
@@ -146,10 +147,14 @@ sreal::operator+ (const sreal &other) const
     std::swap (a_p, b_p);
 
   dexp = a_p->m_exp - b_p->m_exp;
-  r.m_exp = a_p->m_exp;
+  r_exp = a_p->m_exp;
   if (dexp > SREAL_BITS)
     {
-      r.m_sig = a_p->m_sig;
+      r_sig = a_p->m_sig;
+
+      sreal r;
+      r.m_sig = r_sig;
+      r.m_exp = r_exp;
       return r;
     }
 
@@ -162,8 +167,8 @@ sreal::operator+ (const sreal &other) const
       bb = &tmp;
     }
 
-  r.m_sig = a_p->m_sig + bb->m_sig;
-  r.normalize ();
+  r_sig = a_p->m_sig + (int64_t)bb->m_sig;
+  sreal r (r_sig, r_exp);
   return r;
 }
 
@@ -174,7 +179,8 @@ sreal
 sreal::operator- (const sreal &other) const
 {
   int dexp;
-  sreal tmp, r;
+  sreal tmp;
+  int64_t r_sig, r_exp;
   const sreal *bb;
   const sreal *a_p = this, *b_p = &other;
 
@@ -186,10 +192,14 @@ sreal::operator- (const sreal &other) const
     }
 
   dexp = a_p->m_exp - b_p->m_exp;
-  r.m_exp = a_p->m_exp;
+  r_exp = a_p->m_exp;
   if (dexp > SREAL_BITS)
     {
-      r.m_sig = sign * a_p->m_sig;
+      r_sig = sign * a_p->m_sig;
+
+      sreal r;
+      r.m_sig = r_sig;
+      r.m_exp = r_exp;
       return r;
     }
   if (dexp == 0)
@@ -201,8 +211,8 @@ sreal::operator- (const sreal &other) const
       bb = &tmp;
     }
 
-  r.m_sig = sign * (a_p->m_sig - bb->m_sig);
-  r.normalize ();
+  r_sig = sign * ((int64_t) a_p->m_sig - (int64_t)bb->m_sig);
+  sreal r (r_sig, r_exp);
   return r;
 }
 
@@ -212,17 +222,14 @@ sreal
 sreal::operator* (const sreal &other) const
 {
   sreal r;
-  if (absu_hwi (m_sig) < SREAL_MIN_SIG || absu_hwi (other.m_sig) < SREAL_MIN_SIG)
+  if (absu_hwi (m_sig) < SREAL_MIN_SIG
+      || absu_hwi (other.m_sig) < SREAL_MIN_SIG)
     {
       r.m_sig = 0;
       r.m_exp = -SREAL_MAX_EXP;
     }
   else
-    {
-      r.m_sig = m_sig * other.m_sig;
-      r.m_exp = m_exp + other.m_exp;
-      r.normalize ();
-    }
+    r.normalize (m_sig * (int64_t) other.m_sig, m_exp + other.m_exp);
 
   return r;
 }
@@ -233,11 +240,9 @@ sreal
 sreal::operator/ (const sreal &other) const
 {
   gcc_checking_assert (other.m_sig != 0);
-  sreal r;
-  r.m_sig
-    = SREAL_SIGN (m_sig) * (SREAL_ABS (m_sig) << SREAL_PART_BITS) / other.m_sig;
-  r.m_exp = m_exp - other.m_exp - SREAL_PART_BITS;
-  r.normalize ();
+  sreal r (SREAL_SIGN (m_sig)
+	   * ((int64_t)SREAL_ABS (m_sig) << SREAL_PART_BITS) / other.m_sig,
+	   m_exp - other.m_exp - SREAL_PART_BITS);
   return r;
 }
 
@@ -272,15 +277,15 @@ namespace selftest {
 static void
 sreal_verify_basics (void)
 {
-  sreal minimum = INT_MIN;
-  sreal maximum = INT_MAX;
+  sreal minimum = INT_MIN/2;
+  sreal maximum = INT_MAX/2;
 
   sreal seven = 7;
   sreal minus_two = -2;
   sreal minus_nine = -9;
 
-  ASSERT_EQ (INT_MIN, minimum.to_int ());
-  ASSERT_EQ (INT_MAX, maximum.to_int ());
+  ASSERT_EQ (INT_MIN/2, minimum.to_int ());
+  ASSERT_EQ (INT_MAX/2, maximum.to_int ());
 
   ASSERT_FALSE (minus_two < minus_two);
   ASSERT_FALSE (seven < seven);

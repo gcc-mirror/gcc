@@ -421,12 +421,15 @@ find_implicit_erroneous_behavior (void)
 			  if (gimple_return_retval (return_stmt) != lhs)
 			    continue;
 
-			  if (warning_at (gimple_location (use_stmt),
-					  OPT_Wreturn_local_addr,
-					  "function may return address "
-					  "of local variable"))
-			    inform (DECL_SOURCE_LOCATION(valbase),
-				    "declared here");
+			  {
+			    auto_diagnostic_group d;
+			    if (warning_at (gimple_location (use_stmt),
+					      OPT_Wreturn_local_addr,
+					      "function may return address "
+					      "of local variable"))
+			      inform (DECL_SOURCE_LOCATION(valbase),
+					"declared here");
+			  }
 
 			  if (gimple_bb (use_stmt) == bb)
 			    {
@@ -543,10 +546,13 @@ find_explicit_erroneous_behavior (void)
 		      else
 			msg = N_("function may return address of "
 				 "local variable");
-
-		      if (warning_at (gimple_location (stmt),
-				      OPT_Wreturn_local_addr, msg))
-			inform (DECL_SOURCE_LOCATION(valbase), "declared here");
+		      {
+			auto_diagnostic_group d;
+			if (warning_at (gimple_location (stmt),
+					  OPT_Wreturn_local_addr, msg))
+			  inform (DECL_SOURCE_LOCATION(valbase),
+				  "declared here");
+		      }
 		      tree zero = build_zero_cst (TREE_TYPE (val));
 		      gimple_return_set_retval (return_stmt, zero);
 		      update_stmt (stmt);

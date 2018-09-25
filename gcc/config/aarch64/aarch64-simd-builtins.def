@@ -413,8 +413,6 @@
   BUILTIN_VALL (BINOP, trn1, 0)
   BUILTIN_VALL (BINOP, trn2, 0)
 
-  /* Implemented by
-     aarch64_frecp<FRECP:frecp_suffix><mode>.  */
   BUILTIN_GPF_F16 (UNOP, frecpe, 0)
   BUILTIN_GPF_F16 (UNOP, frecpx, 0)
 

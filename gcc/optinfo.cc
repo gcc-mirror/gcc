@@ -34,11 +34,11 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "selftest.h"
 
-/* optinfo_item's ctor.  */
+/* optinfo_item's ctor.  Takes ownership of TEXT.  */
 
 optinfo_item::optinfo_item (enum optinfo_item_kind kind, location_t location,
-			    char *text, bool owned)
-: m_kind (kind), m_location (location), m_text (text), m_owned (owned)
+			    char *text)
+: m_kind (kind), m_location (location), m_text (text)
 {
 }
 
@@ -46,8 +46,7 @@ optinfo_item::optinfo_item (enum optinfo_item_kind kind, location_t location,
 
 optinfo_item::~optinfo_item ()
 {
-  if (m_owned)
-    free (m_text);
+  free (m_text);
 }
 
 /* Get a string from KIND.  */
@@ -81,7 +80,17 @@ optinfo::~optinfo ()
     delete item;
 }
 
-/* Emit the optinfo to all of the active destinations.  */
+/* Add ITEM to this optinfo.  */
+
+void
+optinfo::add_item (optinfo_item *item)
+{
+  gcc_assert (item);
+  m_items.safe_push (item);
+}
+
+/* Emit the optinfo to all of the "non-immediate" destinations
+   (emission to "immediate" destinations is done by emit_item).  */
 
 void
 optinfo::emit ()
@@ -101,120 +110,6 @@ optinfo::handle_dump_file_kind (dump_flags_t dump_kind)
     m_kind = OPTINFO_KIND_FAILURE;
   else if (dump_kind & MSG_NOTE)
     m_kind = OPTINFO_KIND_NOTE;
-}
-
-/* Append a string literal to this optinfo.  */
-
-void
-optinfo::add_string (const char *str)
-{
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			const_cast <char *> (str), false);
-  m_items.safe_push (item);
-}
-
-/* Append printf-formatted text to this optinfo.  */
-
-void
-optinfo::add_printf (const char *format, ...)
-{
-  va_list ap;
-  va_start (ap, format);
-  add_printf_va (format, ap);
-  va_end (ap);
-}
-
-/* Append printf-formatted text to this optinfo.  */
-
-void
-optinfo::add_printf_va (const char *format, va_list ap)
-{
-  char *formatted_text = xvasprintf (format, ap);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			formatted_text, true);
-  m_items.safe_push (item);
-}
-
-/* Append a gimple statement to this optinfo, equivalent to
-   print_gimple_stmt.  */
-
-void
-optinfo::add_gimple_stmt (gimple *stmt, int spc, dump_flags_t dump_flags)
-{
-  pretty_printer pp;
-  pp_needs_newline (&pp) = true;
-  pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
-  pp_newline (&pp);
-
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
-			xstrdup (pp_formatted_text (&pp)), true);
-  m_items.safe_push (item);
-}
-
-/* Append a gimple statement to this optinfo, equivalent to
-   print_gimple_expr.  */
-
-void
-optinfo::add_gimple_expr (gimple *stmt, int spc, dump_flags_t dump_flags)
-{
-  dump_flags |= TDF_RHS_ONLY;
-  pretty_printer pp;
-  pp_needs_newline (&pp) = true;
-  pp_gimple_stmt_1 (&pp, stmt, spc, dump_flags);
-
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_GIMPLE, gimple_location (stmt),
-			xstrdup (pp_formatted_text (&pp)), true);
-  m_items.safe_push (item);
-}
-
-/* Append a tree node to this optinfo, equivalent to print_generic_expr.  */
-
-void
-optinfo::add_tree (tree node, dump_flags_t dump_flags)
-{
-  pretty_printer pp;
-  pp_needs_newline (&pp) = true;
-  pp_translate_identifiers (&pp) = false;
-  dump_generic_node (&pp, node, 0, dump_flags, false);
-
-  location_t loc = UNKNOWN_LOCATION;
-  if (EXPR_HAS_LOCATION (node))
-    loc = EXPR_LOCATION (node);
-
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TREE, loc,
-			xstrdup (pp_formatted_text (&pp)), true);
-  m_items.safe_push (item);
-}
-
-/* Append a symbol table node to this optinfo.  */
-
-void
-optinfo::add_symtab_node (symtab_node *node)
-{
-  location_t loc = DECL_SOURCE_LOCATION (node->decl);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
-			xstrdup (node->dump_name ()), true);
-  m_items.safe_push (item);
-}
-
-/* Append the decimal represenation of a wide_int_ref to this
-   optinfo.  */
-
-void
-optinfo::add_dec (const wide_int_ref &wi, signop sgn)
-{
-  char buf[WIDE_INT_PRINT_BUFFER_SIZE];
-  print_dec (wi, buf, sgn);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_TEXT, UNKNOWN_LOCATION,
-			xstrdup (buf), true);
-  m_items.safe_push (item);
 }
 
 /* Should optinfo instances be created?

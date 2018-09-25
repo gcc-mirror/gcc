@@ -92,7 +92,7 @@ extern bool cselib_dummy_expand_value_rtx_cb (rtx, bitmap, int,
 					      cselib_expand_callback, void *);
 extern rtx cselib_subst_to_values (rtx, machine_mode);
 extern rtx cselib_subst_to_values_from_insn (rtx, machine_mode, rtx_insn *);
-extern void cselib_invalidate_rtx (rtx);
+extern void cselib_invalidate_rtx (rtx, const_rtx = NULL);
 
 extern void cselib_reset_table (unsigned int);
 extern unsigned int cselib_get_next_uid (void);

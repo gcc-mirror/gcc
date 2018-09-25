@@ -44,7 +44,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #pragma GCC diagnostic ignored "-Wsized-deallocation"
 
 _GLIBCXX_WEAK_DEFINITION void
-operator delete(void* ptr, std::align_val_t) _GLIBCXX_USE_NOEXCEPT
+operator delete(void* ptr, std::align_val_t) noexcept
 {
 #if _GLIBCXX_HAVE_ALIGNED_ALLOC || _GLIBCXX_HAVE_POSIX_MEMALIGN \
     || _GLIBCXX_HAVE_MEMALIGN

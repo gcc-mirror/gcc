@@ -163,14 +163,20 @@ namespace pmr
 
       template<typename _Tp1, typename... _Args>
 	__attribute__((__nonnull__))
-	typename __not_pair<_Tp>::type
+	typename __not_pair<_Tp1>::type
 	construct(_Tp1* __p, _Args&&... __args)
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 2969. polymorphic_allocator::construct() shouldn't pass resource()
-	  auto __use_tag
-	    = __use_alloc<_Tp1, polymorphic_allocator, _Args...>(*this);
-	  _S_construct(__use_tag, __p, std::forward<_Args>(__args)...);
+	  using __use_tag
+	    = std::__uses_alloc_t<_Tp1, polymorphic_allocator, _Args...>;
+	  if constexpr (is_base_of_v<__uses_alloc0, __use_tag>)
+	    ::new(__p) _Tp1(std::forward<_Args>(__args)...);
+	  else if constexpr (is_base_of_v<__uses_alloc1_, __use_tag>)
+	    ::new(__p) _Tp1(allocator_arg, *this,
+			    std::forward<_Args>(__args)...);
+	  else
+	    ::new(__p) _Tp1(std::forward<_Args>(__args)..., *this);
 	}
 
       template<typename _Tp1, typename _Tp2,
@@ -188,8 +194,8 @@ namespace pmr
 	  index_sequence_for<_Args2...> __y_i;
 
 	  ::new(__p) pair<_Tp1, _Tp2>(piecewise_construct,
-				      _S_construct_p(__x_tag, __x, __x_i),
-				      _S_construct_p(__y_tag, __y, __y_i));
+				      _S_construct_p(__x_tag, __x_i, __x),
+				      _S_construct_p(__y_tag, __y_i, __y));
 	}
 
       template<typename _Tp1, typename _Tp2>
@@ -247,31 +253,13 @@ namespace pmr
       using __uses_alloc1_ = __uses_alloc1<polymorphic_allocator>;
       using __uses_alloc2_ = __uses_alloc2<polymorphic_allocator>;
 
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc0, _Tp1* __p, _Args&&... __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)...); }
-
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc1_ __ua, _Tp1* __p, _Args&&... __args)
-	{
-	  ::new(__p) _Tp1(allocator_arg, *__ua._M_a,
-			  std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp1, typename... _Args>
-	static void
-	_S_construct(__uses_alloc2_ __ua, _Tp1* __p, _Args&&... __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)..., *__ua._M_a); }
-
       template<typename _Ind, typename... _Args>
 	static tuple<_Args&&...>
 	_S_construct_p(__uses_alloc0, _Ind, tuple<_Args...>& __t)
 	{ return std::move(__t); }
 
       template<size_t... _Ind, typename... _Args>
-	static tuple<allocator_arg_t, polymorphic_allocator&, _Args&&...>
+	static tuple<allocator_arg_t, polymorphic_allocator, _Args&&...>
 	_S_construct_p(__uses_alloc1_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{
@@ -281,7 +269,7 @@ namespace pmr
 	}
 
       template<size_t... _Ind, typename... _Args>
-	static tuple<_Args&&..., polymorphic_allocator&>
+	static tuple<_Args&&..., polymorphic_allocator>
 	_S_construct_p(__uses_alloc2_ __ua, index_sequence<_Ind...>,
 		       tuple<_Args...>& __t)
 	{ return { std::get<_Ind>(std::move(__t))..., *__ua._M_a }; }
@@ -365,7 +353,8 @@ namespace pmr
     void
     release() noexcept
     {
-      _Chunk::release(_M_head, _M_upstream);
+      if (_M_head)
+	_M_release_buffers();
 
       // reset to initial state at contruction:
       if ((_M_current_buf = _M_orig_buf))
@@ -392,19 +381,14 @@ namespace pmr
       if (__bytes == 0)
 	__bytes = 1; // Ensures we don't return the same pointer twice.
 
-      if (auto __p = std::align(__alignment, __bytes, _M_current_buf, _M_avail))
+      void* __p = std::align(__alignment, __bytes, _M_current_buf, _M_avail);
+      if (!__p)
 	{
-	  _M_current_buf = (char*)_M_current_buf + __bytes;
-	  _M_avail -= __bytes;
-	  return __p;
+	  _M_new_buffer(__bytes, __alignment);
+	  __p = _M_current_buf;
 	}
-
-      const size_t __n = std::max(__bytes, _M_next_bufsiz);
-      const size_t __m = std::max(__alignment, alignof(std::max_align_t));
-      auto [__p, __size] = _Chunk::allocate(_M_upstream, __n, __m, _M_head);
-      _M_current_buf = (char*)__p + __bytes;
-      _M_avail = __size - __bytes;
-      _M_next_bufsiz *= _S_growth_factor;
+      _M_current_buf = (char*)_M_current_buf + __bytes;
+      _M_avail -= __bytes;
       return __p;
     }
 
@@ -417,6 +401,15 @@ namespace pmr
     { return this == &__other; }
 
   private:
+    // Update _M_current_buf and _M_avail to refer to a new buffer with
+    // at least the specified size and alignment, allocated from upstream.
+    void
+    _M_new_buffer(size_t __bytes, size_t __alignment);
+
+    // Deallocate all buffers obtained from upstream.
+    void
+    _M_release_buffers() noexcept;
+
     static size_t
     _S_next_bufsize(size_t __buffer_size) noexcept
     {
@@ -437,68 +430,7 @@ namespace pmr
     void* const			_M_orig_buf = nullptr;
     size_t const		_M_orig_size = _M_next_bufsiz;
 
-    // Memory allocated by the upstream resource is managed in a linked list
-    // of _Chunk objects. A _Chunk object recording the size and alignment of
-    // the allocated block and a pointer to the previous chunk is placed
-    // at end of the block.
-    class _Chunk
-    {
-    public:
-      // Return the address and size of a block of memory allocated from __r,
-      // of at least __size bytes and aligned to __align.
-      // Add a new _Chunk to the front of the linked list at __head.
-      static pair<void*, size_t>
-      allocate(memory_resource* __r, size_t __size, size_t __align,
-	       _Chunk*& __head)
-      {
-	__size = std::__ceil2(__size + sizeof(_Chunk));
-	void* __p = __r->allocate(__size, __align);
-	// Add a chunk defined by (__p, __size, __align) to linked list __head.
-	void* const __back = (char*)__p + __size - sizeof(_Chunk);
-	__head = ::new(__back) _Chunk(__size, __align, __head);
-	return { __p, __size - sizeof(_Chunk) };
-      }
-
-      // Return every chunk in linked list __head to resource __r.
-      static void
-      release(_Chunk*& __head, memory_resource* __r) noexcept
-      {
-	_Chunk* __next = __head;
-	__head = nullptr;
-	while (__next)
-	  {
-	    _Chunk* __ch = __next;
-	    __builtin_memcpy(&__next, __ch->_M_next, sizeof(_Chunk*));
-
-	    __glibcxx_assert(__ch->_M_canary != 0);
-	    __glibcxx_assert(__ch->_M_canary == (__ch->_M_size|__ch->_M_align));
-
-	    if (__ch->_M_canary != (__ch->_M_size | __ch->_M_align))
-	      return; // buffer overflow detected!
-
-	    size_t __size = (1u << __ch->_M_size);
-	    size_t __align = (1u << __ch->_M_align);
-	    void* __start = (char*)(__ch + 1) - __size;
-	    __r->deallocate(__start, __size, __align);
-	  }
-      }
-
-    private:
-      _Chunk(size_t __size, size_t __align, _Chunk* __next) noexcept
-      : _M_size(std::__log2p1(__size) - 1),
-	_M_align(std::__log2p1(__align) - 1)
-      {
-	__builtin_memcpy(_M_next, &__next, sizeof(__next));
-	_M_canary = _M_size | _M_align;
-      }
-
-      unsigned char _M_canary;
-      unsigned char _M_size;
-      unsigned char _M_align;
-      unsigned char _M_next[sizeof(_Chunk*)];
-    };
-    static_assert(alignof(_Chunk) == 1);
-
+    class _Chunk;
     _Chunk* _M_head = nullptr;
   };
 

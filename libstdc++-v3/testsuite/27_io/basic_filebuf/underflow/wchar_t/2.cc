@@ -1,4 +1,5 @@
 // { dg-require-namedlocale "se_NO.UTF-8" }
+// { dg-require-fileio "" }
 
 // 2003-09-04  Petur Runolfsson  <peturr02@ru.is>
 

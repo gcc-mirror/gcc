@@ -5181,7 +5181,8 @@ static void arc_file_start (void)
 	       TARGET_OPTFPE ? 1 : 0);
   if (TARGET_V2)
     asm_fprintf (asm_out_file, "\t.arc_attribute Tag_ARC_CPU_variation, %d\n",
-		 arc_tune == ARC_TUNE_CORE_3 ? 3 : 2);
+		 (arc_tune < ARC_TUNE_CORE_3) ? 2 :
+		 (arc_tune == ARC_TUNE_CORE_3 ? 3 : 4));
 }
 
 /* Implement `TARGET_ASM_FILE_END'.  */

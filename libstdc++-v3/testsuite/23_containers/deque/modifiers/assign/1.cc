@@ -27,7 +27,7 @@ int main()
 {
   std::deque<int> d;
 
-  int array[] { 0, 1, 2 };
+  int array[] = { 0, 1, 2 };
   input_iterator_seq seq(array, array + 3);
 
   d.assign(seq.begin(), seq.end());

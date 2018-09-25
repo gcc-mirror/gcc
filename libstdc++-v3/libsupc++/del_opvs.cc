@@ -28,7 +28,7 @@
 #include "new"
 
 _GLIBCXX_WEAK_DEFINITION void
-operator delete[] (void *ptr, std::size_t) _GLIBCXX_USE_NOEXCEPT
+operator delete[] (void *ptr, std::size_t) noexcept
 {
   ::operator delete[] (ptr);
 }

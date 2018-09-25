@@ -1297,6 +1297,12 @@
 #endif
 
 
+/* Define if your assembler supports the .loc is_stmt sub-directive. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_GAS_LOC_STMT
+#endif
+
+
 /* Define if your assembler supports specifying the maximum number of bytes to
    skip when using the GAS .p2align command. */
 #ifndef USED_FOR_TARGET

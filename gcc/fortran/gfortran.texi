@@ -879,8 +879,7 @@ than @code{(/.../)}.  Type-specification for array constructors like
 @item Extensions to the specification and initialization expressions,
 including the support for intrinsics with real and complex arguments.
 
-@item Support for the asynchronous input/output syntax; however, the
-data transfer is currently always synchronously performed. 
+@item Support for the asynchronous input/output.
 
 @item
 @cindex @code{FLUSH} statement
@@ -1178,11 +1177,13 @@ might in some way or another become visible to the programmer.
 * KIND Type Parameters::
 * Internal representation of LOGICAL variables::
 * Evaluation of logical expressions::
+* MAX and MIN intrinsics with REAL NaN arguments::
 * Thread-safety of the runtime library::
 * Data consistency and durability::
 * Files opened without an explicit ACTION= specifier::
 * File operations on symbolic links::
 * File format of unformatted sequential files::
+* Asynchronous I/O::
 @end menu
 
 
@@ -1263,6 +1264,21 @@ result of the expression can be established without them.  However, since not
 all compilers do that, and such an optimization can potentially modify the
 program flow and subsequent results, GNU Fortran throws warnings for such
 situations with the @option{-Wfunction-elimination} flag.
+
+
+@node MAX and MIN intrinsics with REAL NaN arguments
+@section MAX and MIN intrinsics with REAL NaN arguments
+@cindex MAX, MIN, NaN
+
+The Fortran standard does not specify what the result of the
+@code{MAX} and @code{MIN} intrinsics are if one of the arguments is a
+@code{NaN}.  Accordingly, the GNU Fortran compiler does not specify
+that either, as this allows for faster and more compact code to be
+generated.  If the programmer wishes to take some specific action in
+case one of the arguments is a @code{NaN}, it is necessary to
+explicitly test the arguments before calling @code{MAX} or @code{MIN},
+e.g. with the @code{IEEE_IS_NAN} function from the intrinsic module
+@code{IEEE_ARITHMETIC}.
 
 
 @node Thread-safety of the runtime library
@@ -1485,6 +1501,21 @@ program main
   if (all (a == b)) print *,'success!'
 end program main
 @end smallexample
+
+@node Asynchronous I/O
+@section Asynchronous I/O
+@cindex input/output, asynchronous
+@cindex asynchronous I/O
+
+Asynchronous I/O is supported if the program is linked against the
+POSIX thread library. If that is not the case, all I/O is performed
+as synchronous. On systems which do not support pthread condition
+variables, such as AIX, I/O is also performed as synchronous.
+
+On some systems, such as Darwin or Solaris, the POSIX thread library
+is always linked in, so asynchronous I/O is always performed. On other
+sytems, such as Linux, it is necessary to specify @option{-pthread},
+@option{-lpthread} or @option{-fopenmp} during the linking step.
 
 @c ---------------------------------------------------------------------
 @c Extensions

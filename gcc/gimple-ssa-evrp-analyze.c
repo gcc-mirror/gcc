@@ -119,12 +119,7 @@ evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
 			wi::to_wide (vr->max));
     }
   else if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	   && ((vr->type == VR_RANGE
-		&& range_includes_zero_p (vr->min,
-					  vr->max) == 0)
-	       || (vr->type == VR_ANTI_RANGE
-		   && range_includes_zero_p (vr->min,
-					     vr->max) == 1)))
+	   && range_includes_zero_p (vr) == 0)
     set_ptr_nonnull (lhs);
 }
 

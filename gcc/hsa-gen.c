@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message, __VA_ARGS__); \
@@ -81,6 +82,7 @@ along with GCC; see the file COPYING3.  If not see
   do \
   { \
     hsa_fail_cfun (); \
+    auto_diagnostic_group d; \
     if (warning_at (EXPR_LOCATION (hsa_cfun->m_decl), OPT_Whsa, \
 		    HSA_SORRY_MSG)) \
       inform (location, message); \
@@ -3473,7 +3475,6 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   e->flags &= ~EDGE_FALLTHRU;
   e->flags |= EDGE_TRUE_VALUE;
 
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   tree index_tree = gimple_switch_index (s);
   tree lowest = get_switch_low (s);
   tree highest = get_switch_high (s);
@@ -3497,9 +3498,7 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
 
   hbb->append_insn (new hsa_insn_cbr (cmp_reg));
 
-  tree default_label = gimple_switch_default_label (s);
-  basic_block default_label_bb = label_to_block_fn (func,
-						    CASE_LABEL (default_label));
+  basic_block default_label_bb = gimple_switch_default_bb (cfun, s);
 
   if (!gimple_seq_empty_p (phi_nodes (default_label_bb)))
     {
@@ -3534,7 +3533,7 @@ gen_hsa_insns_for_switch_stmt (gswitch *s, hsa_bb *hbb)
   for (unsigned i = 1; i < labels; i++)
     {
       tree label = gimple_switch_label (s, i);
-      basic_block bb = label_to_block_fn (func, CASE_LABEL (label));
+      basic_block bb = label_to_block (cfun, CASE_LABEL (label));
 
       unsigned HOST_WIDE_INT sub_low
 	= tree_to_uhwi (int_const_binop (MINUS_EXPR, CASE_LOW (label), lowest));
@@ -5301,8 +5300,7 @@ gen_hsa_insns_for_call (gimple *stmt, hsa_bb *hbb)
       tree function_decl = gimple_call_fndecl (stmt);
       /* Prefetch pass can create type-mismatching prefetch builtin calls which
 	 fail the gimple_call_builtin_p test above.  Handle them here.  */
-      if (DECL_BUILT_IN_CLASS (function_decl)
-	  && DECL_FUNCTION_CODE (function_decl) == BUILT_IN_PREFETCH)
+      if (fndecl_built_in_p (function_decl, BUILT_IN_PREFETCH))
 	return;
 
       if (function_decl == NULL_TREE)
@@ -6288,12 +6286,11 @@ LD:    hard_work_3 ();
 static bool
 convert_switch_statements (void)
 {
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   basic_block bb;
 
   bool modified_cfg = false;
 
-  FOR_EACH_BB_FN (bb, func)
+  FOR_EACH_BB_FN (bb, cfun)
   {
     gimple_stmt_iterator gsi = gsi_last_bb (bb);
     if (gsi_end_p (gsi))
@@ -6316,7 +6313,7 @@ convert_switch_statements (void)
 	tree index_type = TREE_TYPE (index);
 	tree default_label = gimple_switch_default_label (s);
 	basic_block default_label_bb
-	  = label_to_block_fn (func, CASE_LABEL (default_label));
+	  = label_to_block (cfun, CASE_LABEL (default_label));
 	basic_block cur_bb = bb;
 
 	auto_vec <edge> new_edges;
@@ -6328,8 +6325,7 @@ convert_switch_statements (void)
 	   should be fixed after we add new collection of edges.  */
 	for (unsigned i = 0; i < labels; i++)
 	  {
-	    tree label = gimple_switch_label (s, i);
-	    basic_block label_bb = label_to_block_fn (func, CASE_LABEL (label));
+	    basic_block label_bb = gimple_switch_label_bb (cfun, s, i);
 	    edge e = find_edge (bb, label_bb);
 	    edge_counts.safe_push (e->count ());
 	    edge_probabilities.safe_push (e->probability);
@@ -6411,8 +6407,7 @@ convert_switch_statements (void)
 
 	    gsi_insert_before (&cond_gsi, c, GSI_SAME_STMT);
 
-	    basic_block label_bb
-	      = label_to_block_fn (func, CASE_LABEL (label));
+	    basic_block label_bb = label_to_block (cfun, CASE_LABEL (label));
 	    edge new_edge = make_edge (cur_bb, label_bb, EDGE_TRUE_VALUE);
 	    profile_probability prob_sum = sum_slice <profile_probability>
 		 (edge_probabilities, i, labels, profile_probability::never ())
@@ -6479,10 +6474,9 @@ convert_switch_statements (void)
 static void
 expand_builtins ()
 {
-  function *func = DECL_STRUCT_FUNCTION (current_function_decl);
   basic_block bb;
 
-  FOR_EACH_BB_FN (bb, func)
+  FOR_EACH_BB_FN (bb, cfun)
   {
     for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
 	 gsi_next (&gsi))

@@ -1,3 +1,325 @@
+2018-09-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/87396
+	* fe.h (Get_Attribute_Definition_Clause): Use 'unsigned char' instead
+	of 'char' as the type of the second parameter.
+
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* Makefile.rtl (arm% linux-gnueabi%): Always set EH_MECHANISM to -arm.
+
+2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81103
+	* terminals.c: Do not include termio.h.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/decl.c (update_profile): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	* gcc-interface/gigi.h (call_is_atomic_load): Likewise.
+	* gcc-interface/utils.c (gnat_pushdecl): Likewise.
+
+2018-08-23  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* exp_unst.ads: Fix typo 'exapnded' to 'expanded'.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb, contracts.adb, exp_aggr.adb, exp_attr.adb,
+	exp_ch6.adb, exp_ch7.adb, exp_ch9.adb, exp_unst.adb,
+	exp_util.adb, freeze.adb, gnatlink.adb, layout.adb,
+	lib-writ.adb, lib-xref-spark_specific.adb, sem_ch13.adb,
+	sem_ch3.adb, sem_ch6.adb, sem_res.adb, sem_util.adb, sinfo.ads,
+	sprint.adb: Minor reformatting.
+
+2018-08-21  Jerome Lambourg  <lambourg@adacore.com>
+
+	* vxlink-bind.adb, vxlink-bind.ads, vxlink-link.adb,
+	vxlink-link.ads, vxlink-main.adb, vxlink.adb, vxlink.ads: Add a
+	new tool vxlink to handle VxWorks constructors in DKMs.
+	* gcc-interface/Makefile.in: add rules to build vxlink
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper, Mask_Type):
+	Refine the handling of freezing types for expression functions
+	that are not completions, when analyzing the generated body for
+	the function: the body is inserted at the end of the enclosing
+	declarative part, and its analysis may freeze types declared in
+	the same scope that have not been frozen yet.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb: Remove Freeze_Expr_Types.
+	* freeze.ads, freeze.adb (Freeze_Expr_Types): Moved from
+	sem_ch6.adb, and extended to handle other expressions that may
+	contain unfrozen types that must be frozen in their proper
+	scopes.
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract): If the
+	contract is for the generated body of an expression function
+	that is a completion, traverse the expressions for pre- and
+	postconditions to freeze all types before adding the contract
+	code within the subprogram body.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch10.adb: Remove the with and use clause for unit Ghost.
+	(Analyze_With_Clause): Do not mark a with clause which mentions
+	an ignored Ghost code for elimination.
+
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* lib-writ.adb (Write_Unit_Information): Handle pragmas removed
+	by the expander.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Synchronized_Overriding): The conformance
+	between an overriding protected operation and the overridden
+	abstract progenitor operation requires subtype conformance;
+	requiring equality of return types in the case of a function is
+	too restrictive and leads to spurious errors when the return
+	type is a generic actual.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Timed_Entry_Call,
+	Expand_Conditional_Entry_Call): Use Reset_Scopes_Of to set
+	properly the scope of all entities created in blocks generated
+	by the expansion of these constructs.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Build_Predicate_Functioss): Apply
+	Reset_Quantified_Variables_Scope after predicate function has
+	been analyzed, so that the scope can be reset on the generated
+	loop statements that have replaced the quantified expressions.
+
+2018-08-21  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, einfo.adb (Private_View, Shadow_Entities): Remove
+	obsolete code.
+
+2018-08-21  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb (Check_Call_Statement): Check global and formal
+	parameter permissions at call sites.
+	(Check_Callable_Body): Assume permissions on globals and
+	parameters depending on their modes then analyse the body
+	operations.
+	(Check_Declaration): Consider both deep (including elementary
+	access) object declarations and normal variables. First check
+	whether the deep object is of Ownership Aspec True or not, then,
+	depending on its initialization, assign the appropriate state.
+	Check related to non access type variables deal with
+	initialization value permissions.
+	(Check_Expression): Check nodes used in the expression being
+	analyzed.
+	(Check_Globals): Call by Check_Call_Statement to perform the
+	check on globals.
+	(Check_List): Call Check_Node on each element of the list.
+	(Check_Loop_Statement): Check the Iteration_Scheme and loop
+	statements.
+	(Check_Node): Main traversal procedure to check safe pointer usage.
+	(Check_Package_Body): Check subprogram's body.
+	(Check_Param_In): Take a formal and an actual parameter and
+	Check the permission of every in-mode parameter.
+	(Check_Param_Out): Take a formal and an actual parameter and
+	check the state of out-mode and in out-mode parameters.
+	(Check_Statement): Check statements other than procedure call.
+	(Get_Perm, Get_Perm_Or_Tree, Get_Perm_Tree): Find out the state
+	related to the given name.
+	(Is_Deep): Return True if an object is of access type or has
+	subfields of access type.
+	(Perm_Error, Perm_Error_Subprogram_End): Add an error message
+	whenever the found state on the given name is different from the
+	one expected (in the statement being analyzed).
+	(Process_Path): Given an operation and a current state, call
+	Perm_Error if there is any mismatch.
+	(Return_Declarations, Return_Globals, Return_The_Global): Check
+	the state of a given name at the end of the subprogram. These
+	procedures may change depending on how we shall finally deal
+	with globals and the rhs state in a move operation.
+	(Set_Perm_Extensions, Set_Perm_Prefixes_Borrow,
+	Set_Perm_Prefixes, Setup_Globals, Setup_Parameter_Or_Global,
+	Setup_Parameters): Set up the new states to the given node and
+	up and down the tree after an operation.
+	(Has_Ownership_Aspect_True): This function may disappear later
+	when the Ownership Aspect will be implemented in the FE.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Resolve correctly a parameterless
+	call that returns an access type whose designated type is the
+	component type of an array, when the function has no defaulted
+	parameters.
+
+2018-08-21  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Document entries of the target parametrization file.
+	* gnat_ugn.texi: Regenerate.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb: Set scope of elaboration flag for 'Access.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sprint.adb: Add guard on printing aspects.
+
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* exp_cg.adb (Generate_CG_Output): Handle calls removed by the
+	expander.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* layout.adb: Do not set size of access subprogram if unnesting.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb: Remove warnings for access to subprograms when
+	unnesting is active.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): If the component type
+	is limited, the array must be constructed in place, so set flag
+	In_Place_Assign_OK_For_Declaration accordingly. This prevents
+	improper copying of an array of tasks during initialization.
+
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): Always suppress an
+	unchecked conversion around the actual for an In parameter
+	passed by copy.
+
+2018-08-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Is_Possibly_Unaligned_Object): For the case of a
+	selected component inherited in a record extension and subject
+	to a representation clause, retrieve the position and size from
+	the original record component.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (New_External_Entity): Type of
+	Suffix_Index must be Int, not Nat, so that a negative value can
+	be used to generate a unique name for an external object, as
+	specified in Tbuild.New_External_Name.
+	(Scope_Within): Handle private type whose completion is a
+	synchronized type (For unnesting).
+	* itypes.ads, itypes.adb (Create_Itype): Ditto
+	* sem_ch3.adb (Constrain_Corresponding_Record): Generate a
+	unique name for the created subtype, because there may be
+	several discriminated tasks present in the same scope, and each
+	needs its distinct corresponding record subtype.
+
+2018-08-21  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Update
+	documentation of dimensionality analysis.
+	* gnat_ugn.texi: Regenerate.
+	* Makefile.rtl, impunit.adb: Consider the new units.
+	* libgnat/s-dfmkio.ads, libgnat/s-dfmopr.ads,
+	libgnat/s-diflmk.ads: New units based on Float.
+	* libgnat/s-dilomk.ads, libgnat/s-dlmkio.ads,
+	libgnat/s-dlmopr.ads: New units based on Long_Float.
+	* libgnat/s-dmotpr.ads: Rename to libgnat/s-dgmgop.ads and turn
+	into an instance of
+	System.Dim.Generic_Mks.Generic_Other_Prefixes.
+	* libgnat/s-dimmks.ads: Rename to libgnat/s-digemk.ads and turn
+	into an instance of System.Dim.Generic_Mks.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* impunit.adb: Add g-lists to the set of non-implementation
+	units.
+	* libgnat/g-lists.adb, libgnat/g-lists.ads: New unit.
+	* Makefile.rtl: Add g-lists to the set of non-tasking units.
+	* gcc-interface/Make-lang.in: Add g-lists to the set of files
+	used by gnat1.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch9.adb (Reset_Scopes): Do not recurse into type
+	declarations when resetting the scope of entities declared the
+	procedures generated for entry bodies and accept alternatives.
+	Use the entity of the procedure declaration, not its body, as
+	the new scope.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Elaboration_Entity): Include entries and entry
+	families in the set of legal entities.
+	(Elaboration_Entity_Required): Include entries and entry
+	families in the set of legal entities.
+	(Set_Elaboration_Entity): Include entries and entry families in
+	the set of legal entities.
+	(Set_Elaboration_Entity_Required): Include entries and entry
+	families in the set of legal entities.
+	(Write_Field13_Name): Update the output of attribute
+	Elaboration_Entity.
+	* einfo.ads: Attributes Elaboration_Entity and
+	Elaboration_Entity_Required now apply to entries and entry
+	families.
+
+2018-08-21  Arnaud Charlet  <charlet@adacore.com>
+
+	* set_targ.adb: Mark some CodePeer message as Intentional.
+
+2018-08-21  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Force the freezing of an
+	expression function that is called to provide a default value
+	for a defaulted discriminant in an object initialization.
+
+2018-08-21  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-dynhta.adb, libgnat/g-dynhta.ads: New package
+	Dynamic_HTable.
+
+2018-08-21  Javier Miranda  <miranda@adacore.com>
+
+	* checks.ads (Determine_Range): Adding documentation.
+	* checks.adb (Determine_Range): Don't deal with enumerated types
+	with non-standard representation.
+	(Convert_And_Check_Range): For conversion of enumeration types
+	with non standard representation to an integer type perform a
+	direct conversion to the target integer type.
+
+2018-08-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.ads, lib-xref-spark_specific.adb
+	(Enclosing_Subprogram_Or_Library_Package): Now roughtly works
+	for pragmas that come from aspect specifications.
+
+2018-08-21  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* sa_messages.ads, sa_messages.adb: New source files.
+
+2018-08-03  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	Reverts
+	2018-07-06  Jim Wilson  <jimw@sifive.com>
+
+	* Make-generated.in (treeprs.ads): Use $(GNATMAKE) instead of gnatmake.
+	(einfo.h, sinfo.h, stamp-snames, stamp-nmake): Likewise.
+	* gcc-interface/Makefile.in (xoscons): Likewise.
+
+2018-07-31  Alexandre Oliva  <oliva@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* gcc-interface/trans.c: Include debug.h.
+	(file_map): New static variable.
+	(gigi): Set it.  Create decl_to_instance_map when needed.
+	(Subprogram_Body_to_gnu): Pass gnu_subprog_decl to...
+	(Sloc_to_locus): ... this.  Add decl parm, map it to instance.
+	* gcc-interface/gigi.h (Sloc_to_locus): Adjust declaration.
+
 2018-07-31  Arnaud Charlet  <charlet@adacore.com>
 
 	* clean.adb, gnatchop.adb, gnatfind.adb, gnatls.adb,
@@ -60,7 +382,7 @@
 
 2018-07-31  Eric Botcazou  <ebotcazou@adacore.com>
 
-	*  libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
+	* libgnarl/s-osinte__solaris.ads (upad64_t): New private type.
 	(mutex_t): Use it for 'lock' and 'data' components.
 	(cond_t): Likewise for 'data' and use single 'flags' component.
 

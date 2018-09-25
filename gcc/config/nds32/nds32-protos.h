@@ -138,11 +138,11 @@ extern bool nds32_valid_stack_push_pop_p (rtx, bool);
 
 /* Auxiliary functions for bit operation detection.  */
 
-extern int nds32_can_use_bclr_p (int);
-extern int nds32_can_use_bset_p (int);
-extern int nds32_can_use_btgl_p (int);
+extern bool nds32_can_use_bclr_p (HOST_WIDE_INT);
+extern bool nds32_can_use_bset_p (HOST_WIDE_INT);
+extern bool nds32_can_use_btgl_p (HOST_WIDE_INT);
 
-extern int nds32_can_use_bitci_p (int);
+extern bool nds32_can_use_bitci_p (HOST_WIDE_INT);
 
 extern bool nds32_const_double_range_ok_p (rtx, machine_mode,
 					   HOST_WIDE_INT, HOST_WIDE_INT);
@@ -307,6 +307,7 @@ extern void nds32_construct_isr_vectors_information (tree, const char *);
 extern void nds32_asm_file_start_for_isr (void);
 extern void nds32_asm_file_end_for_isr (void);
 extern bool nds32_isr_function_p (tree);
+extern bool nds32_isr_function_critical_p (tree);
 
 /* Auxiliary functions for cost calculation.  */
 

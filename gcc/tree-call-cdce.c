@@ -737,7 +737,7 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
 
   call = bi_call;
   fn = gimple_call_fndecl (call);
-  gcc_assert (fn && DECL_BUILT_IN (fn));
+  gcc_assert (fn && fndecl_built_in_p (fn));
   fnc = DECL_FUNCTION_CODE (fn);
   *nconds = 0;
 

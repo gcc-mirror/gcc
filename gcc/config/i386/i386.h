@@ -311,6 +311,14 @@ struct processor_costs {
 					  cost model.  */
   const int cond_not_taken_branch_cost;/* Cost of not taken branch for
 					  vectorizer cost model.  */
+
+  /* The "0:0:8" label alignment specified for some processors generates
+     secondary 8-byte alignment only for those label/jump/loop targets
+     which have primary alignment.  */
+  const char *const align_loop;		/* Loop alignment.  */
+  const char *const align_jump;		/* Jump alignment.  */
+  const char *const align_label;	/* Label alignment.  */
+  const char *const align_func;		/* Function alignment.  */
 };
 
 extern const struct processor_costs *ix86_cost;
@@ -1033,9 +1041,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      0,   0,    0,    0,    0,    0,    0,    0,		\
 /*  k0,  k1, k2, k3, k4, k5, k6, k7*/				\
-     0,  0,   0,  0,  0,  0,  0,  0,				\
-/*   b0, b1, b2, b3*/						\
-     0,  0,  0,  0 }
+     0,  0,   0,  0,  0,  0,  0,  0 }
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -1072,9 +1078,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*xmm24,xmm25,xmm26,xmm27,xmm28,xmm29,xmm30,xmm31*/		\
      6,    6,     6,    6,    6,    6,    6,    6,		\
  /* k0,  k1,  k2,  k3,  k4,  k5,  k6,  k7*/			\
-     1,   1,   1,   1,   1,   1,   1,   1,			\
-/*   b0, b1, b2, b3*/						\
-     1,  1,  1,  1 }
+     1,   1,   1,   1,   1,   1,   1,   1 }
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -1090,8 +1094,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,	\
    33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
    48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,	\
-   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77,  \
-   78, 79, 80 }
+   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76 }
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1312,10 +1315,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    For any two classes, it is very desirable that there be another
    class that represents their union.
 
-   It might seem that class BREG is unnecessary, since no useful 386
-   opcode needs reg %ebx.  But some systems pass args to the OS in ebx,
-   and the "b" register constraint is useful in asms for syscalls.
-
    The flags, fpsr and fpcr registers are in no class.  */
 
 enum reg_class
@@ -1336,7 +1335,6 @@ enum reg_class
   SSE_FIRST_REG,
   NO_REX_SSE_REGS,
   SSE_REGS,
-  EVEX_SSE_REGS,
   ALL_SSE_REGS,
   MMX_REGS,
   FP_TOP_SSE_REGS,
@@ -1345,10 +1343,10 @@ enum reg_class
   FLOAT_INT_REGS,
   INT_SSE_REGS,
   FLOAT_INT_SSE_REGS,
-  MASK_EVEX_REGS,
   MASK_REGS,
-  MOD4_SSE_REGS,
-  ALL_REGS, LIM_REG_CLASSES
+  ALL_MASK_REGS,
+  ALL_REGS,
+  LIM_REG_CLASSES
 };
 
 #define N_REG_CLASSES ((int) LIM_REG_CLASSES)
@@ -1362,7 +1360,7 @@ enum reg_class
 #define MMX_CLASS_P(CLASS) \
   ((CLASS) == MMX_REGS)
 #define MASK_CLASS_P(CLASS) \
-  reg_class_subset_p ((CLASS), MASK_REGS)
+  reg_class_subset_p ((CLASS), ALL_MASK_REGS)
 #define MAYBE_INTEGER_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), GENERAL_REGS)
 #define MAYBE_FLOAT_CLASS_P(CLASS) \
@@ -1372,7 +1370,7 @@ enum reg_class
 #define MAYBE_MMX_CLASS_P(CLASS) \
   reg_classes_intersect_p ((CLASS), MMX_REGS)
 #define MAYBE_MASK_CLASS_P(CLASS) \
-  reg_classes_intersect_p ((CLASS), MASK_REGS)
+  reg_classes_intersect_p ((CLASS), ALL_MASK_REGS)
 
 #define Q_CLASS_P(CLASS) \
   reg_class_subset_p ((CLASS), Q_REGS)
@@ -1398,7 +1396,6 @@ enum reg_class
    "SSE_FIRST_REG",			\
    "NO_REX_SSE_REGS",			\
    "SSE_REGS",				\
-   "EVEX_SSE_REGS",			\
    "ALL_SSE_REGS",			\
    "MMX_REGS",				\
    "FP_TOP_SSE_REGS",			\
@@ -1407,9 +1404,8 @@ enum reg_class
    "FLOAT_INT_REGS",			\
    "INT_SSE_REGS",			\
    "FLOAT_INT_SSE_REGS",		\
-   "MASK_EVEX_REGS",			\
    "MASK_REGS",				\
-   "MOD4_SSE_REGS",			\
+   "ALL_MASK_REGS",			\
    "ALL_REGS" }
 
 /* Define which registers fit in which classes.  This is an initializer
@@ -1418,41 +1414,39 @@ enum reg_class
    Note that CLOBBERED_REGS are calculated by
    TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
-#define REG_CLASS_CONTENTS                                              \
-{     { 0x00,       0x0,    0x0 },                                       \
-      { 0x01,       0x0,    0x0 },       /* AREG */                      \
-      { 0x02,       0x0,    0x0 },       /* DREG */                      \
-      { 0x04,       0x0,    0x0 },       /* CREG */                      \
-      { 0x08,       0x0,    0x0 },       /* BREG */                      \
-      { 0x10,       0x0,    0x0 },       /* SIREG */                     \
-      { 0x20,       0x0,    0x0 },       /* DIREG */                     \
-      { 0x03,       0x0,    0x0 },       /* AD_REGS */                   \
-      { 0x07,       0x0,    0x0 },       /* CLOBBERED_REGS */            \
-      { 0x0f,       0x0,    0x0 },       /* Q_REGS */                    \
-  { 0x1100f0,    0x1fe0,    0x0 },       /* NON_Q_REGS */                \
-      { 0x7e,    0x1fe0,    0x0 },       /* TLS_GOTBASE_REGS */		 \
-      { 0x7f,    0x1fe0,    0x0 },       /* INDEX_REGS */                \
-  { 0x1100ff,       0x0,    0x0 },       /* LEGACY_REGS */               \
-  { 0x1100ff,    0x1fe0,    0x0 },       /* GENERAL_REGS */              \
-     { 0x100,       0x0,    0x0 },       /* FP_TOP_REG */                \
-    { 0x0200,       0x0,    0x0 },       /* FP_SECOND_REG */             \
-    { 0xff00,       0x0,    0x0 },       /* FLOAT_REGS */                \
-  { 0x200000,       0x0,    0x0 },       /* SSE_FIRST_REG */             \
-{ 0x1fe00000,  0x000000,    0x0 },       /* NO_REX_SSE_REGS */           \
-{ 0x1fe00000,  0x1fe000,    0x0 },       /* SSE_REGS */                  \
-       { 0x0,0xffe00000,   0x1f },       /* EVEX_SSE_REGS */             \
-{ 0x1fe00000,0xffffe000,   0x1f },       /* ALL_SSE_REGS */              \
-{ 0xe0000000,      0x1f,    0x0 },       /* MMX_REGS */                  \
-{ 0x1fe00100,0xffffe000,   0x1f },       /* FP_TOP_SSE_REG */            \
-{ 0x1fe00200,0xffffe000,   0x1f },       /* FP_SECOND_SSE_REG */         \
-{ 0x1fe0ff00,0xffffe000,   0x1f },       /* FLOAT_SSE_REGS */            \
-{   0x11ffff,    0x1fe0,    0x0 },       /* FLOAT_INT_REGS */            \
-{ 0x1ff100ff,0xffffffe0,   0x1f },       /* INT_SSE_REGS */              \
-{ 0x1ff1ffff,0xffffffe0,   0x1f },       /* FLOAT_INT_SSE_REGS */        \
-       { 0x0,       0x0, 0x1fc0 },       /* MASK_EVEX_REGS */            \
-       { 0x0,       0x0, 0x1fe0 },       /* MASK_REGS */                 \
-{ 0x1fe00000,0xffffe000,   0x1f },       /* MOD4_SSE_REGS */		 \
-{ 0xffffffff,0xffffffff,0x1ffff }		\
+#define REG_CLASS_CONTENTS						\
+{      { 0x0,        0x0,    0x0 },	/* NO_REGS */			\
+      { 0x01,        0x0,    0x0 },	/* AREG */			\
+      { 0x02,        0x0,    0x0 },	/* DREG */			\
+      { 0x04,        0x0,    0x0 },	/* CREG */			\
+      { 0x08,        0x0,    0x0 },	/* BREG */			\
+      { 0x10,        0x0,    0x0 },	/* SIREG */			\
+      { 0x20,        0x0,    0x0 },	/* DIREG */			\
+      { 0x03,        0x0,    0x0 },	/* AD_REGS */			\
+      { 0x07,        0x0,    0x0 },	/* CLOBBERED_REGS */		\
+      { 0x0f,        0x0,    0x0 },	/* Q_REGS */			\
+  { 0x1100f0,        0x0,    0x0 },	/* NON_Q_REGS */		\
+      { 0x7e,     0x1fe0,    0x0 },	/* TLS_GOTBASE_REGS */		\
+      { 0x7f,     0x1fe0,    0x0 },	/* INDEX_REGS */		\
+  { 0x1100ff,        0x0,    0x0 },	/* LEGACY_REGS */		\
+  { 0x1100ff,     0x1fe0,    0x0 },	/* GENERAL_REGS */		\
+     { 0x100,        0x0,    0x0 },	/* FP_TOP_REG */		\
+    { 0x0200,        0x0,    0x0 },	/* FP_SECOND_REG */		\
+    { 0xff00,        0x0,    0x0 },	/* FLOAT_REGS */		\
+  { 0x200000,        0x0,    0x0 },	/* SSE_FIRST_REG */		\
+{ 0x1fe00000,        0x0,    0x0 },	/* NO_REX_SSE_REGS */		\
+{ 0x1fe00000,   0x1fe000,    0x0 },	/* SSE_REGS */			\
+{ 0x1fe00000, 0xffffe000,   0x1f },	/* ALL_SSE_REGS */		\
+{ 0xe0000000,       0x1f,    0x0 },	/* MMX_REGS */			\
+{ 0x1fe00100, 0xffffe000,   0x1f },	/* FP_TOP_SSE_REG */		\
+{ 0x1fe00200, 0xffffe000,   0x1f },	/* FP_SECOND_SSE_REG */		\
+{ 0x1fe0ff00, 0xffffe000,   0x1f },	/* FLOAT_SSE_REGS */		\
+{   0x11ffff,     0x1fe0,    0x0 },	/* FLOAT_INT_REGS */		\
+{ 0x1ff100ff, 0xffffffe0,   0x1f },	/* INT_SSE_REGS */		\
+{ 0x1ff1ffff, 0xffffffe0,   0x1f },	/* FLOAT_INT_SSE_REGS */	\
+       { 0x0,        0x0, 0x1fc0 },	/* MASK_REGS */			\
+       { 0x0,        0x0, 0x1fe0 },	/* ALL_MASK_REGS */		\
+{ 0xffffffff, 0xffffffff, 0x1fff }	/* ALL_REGS  */			\
 }
 
 /* The same information, inverted:
@@ -2043,8 +2037,7 @@ do {							\
  "xmm20", "xmm21", "xmm22", "xmm23",					\
  "xmm24", "xmm25", "xmm26", "xmm27",					\
  "xmm28", "xmm29", "xmm30", "xmm31",					\
- "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7",			\
- "bnd0", "bnd1", "bnd2", "bnd3" }
+ "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7" }
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
@@ -2282,6 +2275,144 @@ enum processor_type
   PROCESSOR_ZNVER1,
   PROCESSOR_max
 };
+
+#if !defined(IN_LIBGCC2) && !defined(IN_TARGET_LIBS) && !defined(IN_RTS)
+extern const char *const processor_names[PROCESSOR_max];
+
+#include "wide-int-bitmask.h"
+
+const wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
+const wide_int_bitmask PTA_3DNOW_A (HOST_WIDE_INT_1U << 1);
+const wide_int_bitmask PTA_64BIT (HOST_WIDE_INT_1U << 2);
+const wide_int_bitmask PTA_ABM (HOST_WIDE_INT_1U << 3);
+const wide_int_bitmask PTA_AES (HOST_WIDE_INT_1U << 4);
+const wide_int_bitmask PTA_AVX (HOST_WIDE_INT_1U << 5);
+const wide_int_bitmask PTA_BMI (HOST_WIDE_INT_1U << 6);
+const wide_int_bitmask PTA_CX16 (HOST_WIDE_INT_1U << 7);
+const wide_int_bitmask PTA_F16C (HOST_WIDE_INT_1U << 8);
+const wide_int_bitmask PTA_FMA (HOST_WIDE_INT_1U << 9);
+const wide_int_bitmask PTA_FMA4 (HOST_WIDE_INT_1U << 10);
+const wide_int_bitmask PTA_FSGSBASE (HOST_WIDE_INT_1U << 11);
+const wide_int_bitmask PTA_LWP (HOST_WIDE_INT_1U << 12);
+const wide_int_bitmask PTA_LZCNT (HOST_WIDE_INT_1U << 13);
+const wide_int_bitmask PTA_MMX (HOST_WIDE_INT_1U << 14);
+const wide_int_bitmask PTA_MOVBE (HOST_WIDE_INT_1U << 15);
+const wide_int_bitmask PTA_NO_SAHF (HOST_WIDE_INT_1U << 16);
+const wide_int_bitmask PTA_PCLMUL (HOST_WIDE_INT_1U << 17);
+const wide_int_bitmask PTA_POPCNT (HOST_WIDE_INT_1U << 18);
+const wide_int_bitmask PTA_PREFETCH_SSE (HOST_WIDE_INT_1U << 19);
+const wide_int_bitmask PTA_RDRND (HOST_WIDE_INT_1U << 20);
+const wide_int_bitmask PTA_SSE (HOST_WIDE_INT_1U << 21);
+const wide_int_bitmask PTA_SSE2 (HOST_WIDE_INT_1U << 22);
+const wide_int_bitmask PTA_SSE3 (HOST_WIDE_INT_1U << 23);
+const wide_int_bitmask PTA_SSE4_1 (HOST_WIDE_INT_1U << 24);
+const wide_int_bitmask PTA_SSE4_2 (HOST_WIDE_INT_1U << 25);
+const wide_int_bitmask PTA_SSE4A (HOST_WIDE_INT_1U << 26);
+const wide_int_bitmask PTA_SSSE3 (HOST_WIDE_INT_1U << 27);
+const wide_int_bitmask PTA_TBM (HOST_WIDE_INT_1U << 28);
+const wide_int_bitmask PTA_XOP (HOST_WIDE_INT_1U << 29);
+const wide_int_bitmask PTA_AVX2 (HOST_WIDE_INT_1U << 30);
+const wide_int_bitmask PTA_BMI2 (HOST_WIDE_INT_1U << 31);
+const wide_int_bitmask PTA_RTM (HOST_WIDE_INT_1U << 32);
+const wide_int_bitmask PTA_HLE (HOST_WIDE_INT_1U << 33);
+const wide_int_bitmask PTA_PRFCHW (HOST_WIDE_INT_1U << 34);
+const wide_int_bitmask PTA_RDSEED (HOST_WIDE_INT_1U << 35);
+const wide_int_bitmask PTA_ADX (HOST_WIDE_INT_1U << 36);
+const wide_int_bitmask PTA_FXSR (HOST_WIDE_INT_1U << 37);
+const wide_int_bitmask PTA_XSAVE (HOST_WIDE_INT_1U << 38);
+const wide_int_bitmask PTA_XSAVEOPT (HOST_WIDE_INT_1U << 39);
+const wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
+const wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
+const wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
+const wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
+/* Hole after PTA_MPX was removed.  */
+const wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
+const wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
+const wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
+const wide_int_bitmask PTA_XSAVEC (HOST_WIDE_INT_1U << 48);
+const wide_int_bitmask PTA_XSAVES (HOST_WIDE_INT_1U << 49);
+const wide_int_bitmask PTA_AVX512DQ (HOST_WIDE_INT_1U << 50);
+const wide_int_bitmask PTA_AVX512BW (HOST_WIDE_INT_1U << 51);
+const wide_int_bitmask PTA_AVX512VL (HOST_WIDE_INT_1U << 52);
+const wide_int_bitmask PTA_AVX512IFMA (HOST_WIDE_INT_1U << 53);
+const wide_int_bitmask PTA_AVX512VBMI (HOST_WIDE_INT_1U << 54);
+const wide_int_bitmask PTA_CLWB (HOST_WIDE_INT_1U << 55);
+const wide_int_bitmask PTA_MWAITX (HOST_WIDE_INT_1U << 56);
+const wide_int_bitmask PTA_CLZERO (HOST_WIDE_INT_1U << 57);
+const wide_int_bitmask PTA_NO_80387 (HOST_WIDE_INT_1U << 58);
+const wide_int_bitmask PTA_PKU (HOST_WIDE_INT_1U << 59);
+const wide_int_bitmask PTA_AVX5124VNNIW (HOST_WIDE_INT_1U << 60);
+const wide_int_bitmask PTA_AVX5124FMAPS (HOST_WIDE_INT_1U << 61);
+const wide_int_bitmask PTA_AVX512VPOPCNTDQ (HOST_WIDE_INT_1U << 62);
+const wide_int_bitmask PTA_SGX (HOST_WIDE_INT_1U << 63);
+const wide_int_bitmask PTA_AVX512VNNI (0, HOST_WIDE_INT_1U);
+const wide_int_bitmask PTA_GFNI (0, HOST_WIDE_INT_1U << 1);
+const wide_int_bitmask PTA_VAES (0, HOST_WIDE_INT_1U << 2);
+const wide_int_bitmask PTA_AVX512VBMI2 (0, HOST_WIDE_INT_1U << 3);
+const wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
+const wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
+const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
+const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
+const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
+const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
+
+const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
+  | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
+const wide_int_bitmask PTA_NEHALEM = PTA_CORE2 | PTA_SSE4_1 | PTA_SSE4_2
+  | PTA_POPCNT;
+const wide_int_bitmask PTA_WESTMERE = PTA_NEHALEM | PTA_AES | PTA_PCLMUL;
+const wide_int_bitmask PTA_SANDYBRIDGE = PTA_WESTMERE | PTA_AVX | PTA_XSAVE
+  | PTA_XSAVEOPT;
+const wide_int_bitmask PTA_IVYBRIDGE = PTA_SANDYBRIDGE | PTA_FSGSBASE
+  | PTA_RDRND | PTA_F16C;
+const wide_int_bitmask PTA_HASWELL = PTA_IVYBRIDGE | PTA_AVX2 | PTA_BMI
+  | PTA_BMI2 | PTA_LZCNT | PTA_FMA | PTA_MOVBE | PTA_HLE;
+const wide_int_bitmask PTA_BROADWELL = PTA_HASWELL | PTA_ADX | PTA_PRFCHW
+  | PTA_RDSEED;
+const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_CLFLUSHOPT
+  | PTA_XSAVEC | PTA_XSAVES | PTA_SGX;
+const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
+  | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
+  | PTA_CLWB;
+const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
+  | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
+  | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
+const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
+  | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
+  | PTA_RDPID | PTA_CLWB;
+const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
+  | PTA_WBNOINVD;
+const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
+  | PTA_AVX512F | PTA_AVX512CD;
+const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
+const wide_int_bitmask PTA_SILVERMONT = PTA_WESTMERE | PTA_MOVBE | PTA_RDRND;
+const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_SHA | PTA_XSAVE
+  | PTA_RDSEED | PTA_XSAVEC | PTA_XSAVES | PTA_CLFLUSHOPT | PTA_XSAVEOPT
+  | PTA_FSGSBASE;
+const wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
+  | PTA_SGX;
+const wide_int_bitmask PTA_TREMONT = PTA_GOLDMONT_PLUS | PTA_CLWB
+  | PTA_GFNI;
+const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
+  | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
+
+#ifndef GENERATOR_FILE
+
+#include "insn-attr-common.h"
+
+struct pta
+{
+  const char *const name;		/* processor name or nickname.  */
+  const enum processor_type processor;
+  const enum attr_cpu schedule;
+  const wide_int_bitmask flags;
+};
+
+extern const pta processor_alias_table[];
+extern int const pta_size;
+#endif
+
+#endif
 
 extern enum processor_type ix86_tune;
 extern enum processor_type ix86_arch;
@@ -2615,6 +2746,9 @@ struct GTY(()) machine_function {
 
   /* Nonzero if the function places outgoing arguments on stack.  */
   BOOL_BITFIELD outgoing_args_on_stack : 1;
+
+  /* If true, ENDBR is queued at function entrance.  */
+  BOOL_BITFIELD endbr_queued_at_entrance : 1;
 
   /* The largest alignment, in bytes, of stack slot actually used.  */
   unsigned int max_used_stack_alignment;

@@ -98,7 +98,7 @@ along with GCC; see the file COPYING3.  If not see
    Signalize that because we have fde-glibc, we don't need all C shared libs
    linked against -lgcc_s.  */
 #undef LINK_EH_SPEC
-#define LINK_EH_SPEC "--eh-frame-hdr"
+#define LINK_EH_SPEC "--eh-frame-hdr "
 #endif
 
 #undef SUBTARGET_CPP_SPEC

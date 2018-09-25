@@ -2392,6 +2392,10 @@ extract_low_bits (machine_mode mode, machine_mode src_mode, rtx src)
     return NULL_RTX;
 
   src = gen_lowpart (src_int_mode, src);
+  if (!validate_subreg (int_mode, src_int_mode, src,
+			subreg_lowpart_offset (int_mode, src_int_mode)))
+    return NULL_RTX;
+
   src = convert_modes (int_mode, src_int_mode, src, true);
   src = gen_lowpart (mode, src);
   return src;
@@ -3343,19 +3347,21 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  /* Write a REG_EQUAL note on the last insn so that we can cse
 	     multiplication sequences.  Note that if ACCUM is a SUBREG,
 	     we've set the inner register and must properly indicate that.  */
-          tem = op0, nmode = mode;
-          accum_inner = accum;
-          if (GET_CODE (accum) == SUBREG)
+	  tem = op0, nmode = mode;
+	  accum_inner = accum;
+	  if (GET_CODE (accum) == SUBREG)
 	    {
 	      accum_inner = SUBREG_REG (accum);
 	      nmode = GET_MODE (accum_inner);
 	      tem = gen_lowpart (nmode, op0);
 	    }
 
-          insn = get_last_insn ();
-          set_dst_reg_note (insn, REG_EQUAL,
-			    gen_rtx_MULT (nmode, tem,
-					  gen_int_mode (val_so_far, nmode)),
+	  insn = get_last_insn ();
+	  wide_int wval_so_far
+	    = wi::uhwi (val_so_far,
+			GET_MODE_PRECISION (as_a <scalar_mode> (nmode)));
+	  rtx c = immed_wide_int_const (wval_so_far, nmode);
+	  set_dst_reg_note (insn, REG_EQUAL, gen_rtx_MULT (nmode, tem, c),
 			    accum_inner);
 	}
     }
@@ -5541,6 +5547,9 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (mode == VOIDmode)
     mode = GET_MODE (op0);
 
+  if (CONST_SCALAR_INT_P (op1))
+    canonicalize_comparison (mode, &code, &op1);
+
   /* For some comparisons with 1 and -1, we can convert this to
      comparisons with zero.  This will often produce more opportunities for
      store-flag insns.  */
@@ -6161,6 +6170,106 @@ emit_store_flag_force (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   return target;
 }
+
+/* Helper function for canonicalize_cmp_for_target.  Swap between inclusive
+   and exclusive ranges in order to create an equivalent comparison.  See
+   canonicalize_cmp_for_target for the possible cases.  */
+
+static enum rtx_code
+equivalent_cmp_code (enum rtx_code code)
+{
+  switch (code)
+    {
+    case GT:
+      return GE;
+    case GE:
+      return GT;
+    case LT:
+      return LE;
+    case LE:
+      return LT;
+    case GTU:
+      return GEU;
+    case GEU:
+      return GTU;
+    case LTU:
+      return LEU;
+    case LEU:
+      return LTU;
+
+    default:
+      return code;
+    }
+}
+
+/* Choose the more appropiate immediate in scalar integer comparisons.  The
+   purpose of this is to end up with an immediate which can be loaded into a
+   register in fewer moves, if possible.
+
+   For each integer comparison there exists an equivalent choice:
+     i)   a >  b or a >= b + 1
+     ii)  a <= b or a <  b + 1
+     iii) a >= b or a >  b - 1
+     iv)  a <  b or a <= b - 1
+
+   MODE is the mode of the first operand.
+   CODE points to the comparison code.
+   IMM points to the rtx containing the immediate.  *IMM must satisfy
+   CONST_SCALAR_INT_P on entry and continues to satisfy CONST_SCALAR_INT_P
+   on exit.  */
+
+void
+canonicalize_comparison (machine_mode mode, enum rtx_code *code, rtx *imm)
+{
+  if (!SCALAR_INT_MODE_P (mode))
+    return;
+
+  int to_add = 0;
+  enum signop sgn = unsigned_condition_p (*code) ? UNSIGNED : SIGNED;
+
+  /* Extract the immediate value from the rtx.  */
+  wide_int imm_val = rtx_mode_t (*imm, mode);
+
+  if (*code == GT || *code == GTU || *code == LE || *code == LEU)
+    to_add = 1;
+  else if (*code == GE || *code == GEU || *code == LT || *code == LTU)
+    to_add = -1;
+  else
+    return;
+
+  /* Check for overflow/underflow in the case of signed values and
+     wrapping around in the case of unsigned values.  If any occur
+     cancel the optimization.  */
+  wi::overflow_type overflow = wi::OVF_NONE;
+  wide_int imm_modif;
+
+  if (to_add == 1)
+    imm_modif = wi::add (imm_val, 1, sgn, &overflow);
+  else
+    imm_modif = wi::sub (imm_val, 1, sgn, &overflow);
+
+  if (overflow)
+    return;
+
+  /* The following creates a pseudo; if we cannot do that, bail out.  */
+  if (!can_create_pseudo_p ())
+    return;
+
+  rtx reg = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+  rtx new_imm = immed_wide_int_const (imm_modif, mode);
+
+  rtx_insn *old_rtx = gen_move_insn (reg, *imm);
+  rtx_insn *new_rtx = gen_move_insn (reg, new_imm);
+
+  /* Update the immediate and the code.  */
+  if (insn_cost (old_rtx, true) > insn_cost (new_rtx, true))
+    {
+      *code = equivalent_cmp_code (*code);
+      *imm = new_imm;
+    }
+}
+
+
 
 /* Perform possibly multi-word comparison and conditional jump to LABEL
    if ARG1 OP ARG2 true where ARG1 and ARG2 are of mode MODE.  This is

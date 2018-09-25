@@ -123,27 +123,6 @@ namespace pmr {
   template<typename _Tp>
     class polymorphic_allocator
     {
-      using __uses_alloc1_ = __uses_alloc1<memory_resource*>;
-      using __uses_alloc2_ = __uses_alloc2<memory_resource*>;
-
-      template<typename _Tp1, typename... _Args>
-	void
-	_M_construct(__uses_alloc0, _Tp1* __p, _Args&&... __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)...); }
-
-      template<typename _Tp1, typename... _Args>
-	void
-	_M_construct(__uses_alloc1_, _Tp1* __p, _Args&&...  __args)
-	{
-	  ::new(__p) _Tp1(allocator_arg, this->resource(),
-			  std::forward<_Args>(__args)...);
-	}
-
-      template<typename _Tp1, typename... _Args>
-	void
-	_M_construct(__uses_alloc2_, _Tp1* __p, _Args&&...  __args)
-	{ ::new(__p) _Tp1(std::forward<_Args>(__args)..., this->resource()); }
-
     public:
       using value_type = _Tp;
 
@@ -178,10 +157,8 @@ namespace pmr {
 	void
 	construct(_Tp1* __p, _Args&&... __args)
 	{
-	  memory_resource* const __resource = this->resource();
-	  auto __use_tag
-	    = __use_alloc<_Tp1, memory_resource*, _Args...>(__resource);
-	  _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
+	  std::__uses_allocator_construct(this->resource(), __p,
+					  std::forward<_Args>(__args)...);
 	}
 
       // Specializations for pair using piecewise construction
@@ -193,9 +170,9 @@ namespace pmr {
 	{
 	  memory_resource* const __resource = this->resource();
 	  auto __x_use_tag =
-	    __use_alloc<_Tp1, memory_resource*, _Args1...>(__resource);
+	    std::__use_alloc<_Tp1, memory_resource*, _Args1...>(__resource);
 	  auto __y_use_tag =
-	    __use_alloc<_Tp2, memory_resource*, _Args2...>(__resource);
+	    std::__use_alloc<_Tp2, memory_resource*, _Args2...>(__resource);
 
 	  ::new(__p) std::pair<_Tp1, _Tp2>(piecewise_construct,
 					   _M_construct_p(__x_use_tag, __x),
@@ -247,6 +224,9 @@ namespace pmr {
       memory_resource* resource() const { return _M_resource; }
 
     private:
+      using __uses_alloc1_ = __uses_alloc1<memory_resource*>;
+      using __uses_alloc2_ = __uses_alloc2<memory_resource*>;
+
       template<typename _Tuple>
 	_Tuple&&
 	_M_construct_p(__uses_alloc0, _Tuple& __t)

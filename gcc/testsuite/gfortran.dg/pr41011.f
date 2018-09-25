@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O3 -fwhole-file" }
+! { dg-options "-O3" }
       CALL UVSET(NX,NY,NZ,HVAR,ZET,NP,DZ,DKM,UM,VM,UG,VG,TM,DCDX, ! { dg-warning "Rank mismatch" }
      *ITY,ISH,NSMT,F)
          CALL DCTDX(NX,NY,NX1,NFILT,C(MLAG),DCDX(MLAG),HELP,HELPA,

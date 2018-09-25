@@ -72,6 +72,13 @@ struct cluster
   /* Emit GIMPLE code to handle the cluster.  */
   virtual void emit (tree, tree, tree, basic_block) = 0;
 
+  /* Return true if a cluster handles only a single case value and the
+     value is not a range.  */
+  virtual bool is_single_value_p ()
+  {
+    return false;
+  }
+
   /* Return range of a cluster.  If value would overflow in type of LOW,
      then return 0.  */
   static unsigned HOST_WIDE_INT get_range (tree low, tree high)
@@ -159,6 +166,11 @@ struct simple_cluster: public cluster
   void emit (tree, tree, tree, basic_block)
   {
     gcc_unreachable ();
+  }
+
+  bool is_single_value_p ()
+  {
+    return tree_int_cst_equal (get_low (), get_high ());
   }
 
   /* Low value of the case.  */
@@ -329,8 +341,10 @@ This transformation was contributed by Roger Sayle, see this e-mail:
 struct bit_test_cluster: public group_cluster
 {
   /* Constructor.  */
-  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end)
-  :group_cluster (clusters, start, end)
+  bit_test_cluster (vec<cluster *> &clusters, unsigned start, unsigned end,
+		    bool handles_entire_switch)
+  :group_cluster (clusters, start, end),
+  m_handles_entire_switch (handles_entire_switch)
   {}
 
   cluster_type
@@ -396,7 +410,11 @@ struct bit_test_cluster: public group_cluster
    Returns the newly created basic block.  */
   static basic_block hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 						    tree cond,
-						    basic_block case_bb);
+						    basic_block case_bb,
+						    profile_probability prob);
+
+  /* True when the jump table handles an entire switch statement.  */
+  bool m_handles_entire_switch;
 
   /* Maximum number of different basic blocks that can be handled by
      a bit test.  */
@@ -428,6 +446,12 @@ struct case_tree_node
 {
   /* Empty Constructor.  */
   case_tree_node ();
+
+  /* Return true when it has a child.  */
+  bool has_child ()
+  {
+    return m_left != NULL || m_right != NULL;
+  }
 
   /* Left son in binary tree.  */
   case_tree_node *m_left;
@@ -513,10 +537,6 @@ struct switch_decision_tree
   /* Attempt to expand CLUSTERS as a decision tree.  Return true when
      expanded.  */
   bool try_switch_expansion (vec<cluster *> &clusters);
-
-  /* Reset the aux field of all outgoing edges of switch basic block.  */
-  inline void reset_out_edges_aux ();
-
   /* Compute the number of case labels that correspond to each outgoing edge of
      switch statement.  Record this information in the aux field of the edge.
      */
@@ -575,6 +595,15 @@ struct switch_decision_tree
 					      tree op1, tree_code comparison,
 					      basic_block label_bb,
 					      profile_probability prob);
+
+  /* Generate code to jump to LABEL if OP0 and OP1 are equal in mode MODE.
+     PROB is the probability of jumping to LABEL_BB.  */
+  static basic_block do_jump_if_equal (basic_block bb, tree op0, tree op1,
+				       basic_block label_bb,
+				       profile_probability prob);
+
+  /* Reset the aux field of all outgoing edges of switch basic block.  */
+  static inline void reset_out_edges_aux (gswitch *swtch);
 
   /* Switch statement.  */
   gswitch *m_switch;
@@ -838,9 +867,9 @@ struct switch_conversion
 };
 
 void
-switch_decision_tree::reset_out_edges_aux ()
+switch_decision_tree::reset_out_edges_aux (gswitch *swtch)
 {
-  basic_block bb = gimple_bb (m_switch);
+  basic_block bb = gimple_bb (swtch);
   edge e;
   edge_iterator ei;
   FOR_EACH_EDGE (e, ei, bb->succs)

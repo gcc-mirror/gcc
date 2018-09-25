@@ -1984,7 +1984,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
 	tree fndecl = gimple_call_fndecl (stmt);
 	tree rhs, lhs;
 
-	if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 	  switch (DECL_FUNCTION_CODE (fndecl))
 	    {
 	    case BUILT_IN_EH_POINTER:
@@ -2231,7 +2231,7 @@ make_eh_dispatch_edges (geh_dispatch *stmt)
     case ERT_TRY:
       for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	{
-	  dst = label_to_block (c->label);
+	  dst = label_to_block (cfun, c->label);
 	  make_edge (src, dst, 0);
 
 	  /* A catch-all handler doesn't have a fallthru.  */
@@ -2241,7 +2241,7 @@ make_eh_dispatch_edges (geh_dispatch *stmt)
       break;
 
     case ERT_ALLOWED_EXCEPTIONS:
-      dst = label_to_block (r->u.allowed.label);
+      dst = label_to_block (cfun, r->u.allowed.label);
       make_edge (src, dst, 0);
       break;
 
@@ -2270,7 +2270,7 @@ make_eh_edges (gimple *stmt)
   gcc_assert (lp != NULL);
 
   src = gimple_bb (stmt);
-  dst = label_to_block (lp->post_landing_pad);
+  dst = label_to_block (cfun, lp->post_landing_pad);
   make_edge (src, dst, EDGE_EH);
 }
 
@@ -2389,7 +2389,7 @@ redirect_eh_dispatch_edge (geh_dispatch *stmt, edge e, basic_block new_bb)
     case ERT_TRY:
       for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	{
-	  old_bb = label_to_block (c->label);
+	  old_bb = label_to_block (cfun, c->label);
 	  if (old_bb == e->dest)
 	    {
 	      c->label = new_lab;
@@ -2399,7 +2399,7 @@ redirect_eh_dispatch_edge (geh_dispatch *stmt, edge e, basic_block new_bb)
       break;
 
     case ERT_ALLOWED_EXCEPTIONS:
-      old_bb = label_to_block (r->u.allowed.label);
+      old_bb = label_to_block (cfun, r->u.allowed.label);
       gcc_assert (old_bb == e->dest);
       r->u.allowed.label = new_lab;
       any_changed = true;
@@ -3329,7 +3329,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	  else
 	    {
 	      lab = *slot;
-	      new_bb = label_to_block (lab);
+	      new_bb = label_to_block (cfun, lab);
 	    }
 
 	  gcc_assert (EDGE_COUNT (bb->succs) == 0);
@@ -3733,7 +3733,7 @@ lower_eh_dispatch (basic_block src, geh_dispatch *stmt)
 	    while (tp_node);
 	    if (! have_label)
 	      {
-	        remove_edge (find_edge (src, label_to_block (lab)));
+		remove_edge (find_edge (src, label_to_block (cfun, lab)));
 	        redirected = true;
 	      }
 	  }
@@ -4046,7 +4046,7 @@ maybe_remove_unreachable_handlers (void)
   FOR_EACH_VEC_SAFE_ELT (cfun->eh->lp_array, i, lp)
     if (lp && lp->post_landing_pad)
       {
-	if (label_to_block (lp->post_landing_pad) == NULL)
+	if (label_to_block (cfun, lp->post_landing_pad) == NULL)
 	  {
 	    remove_unreachable_handlers ();
 	    return;
@@ -4110,7 +4110,7 @@ remove_unreachable_handlers_no_lp (void)
 static bool
 unsplit_eh (eh_landing_pad lp)
 {
-  basic_block bb = label_to_block (lp->post_landing_pad);
+  basic_block bb = label_to_block (cfun, lp->post_landing_pad);
   gimple_stmt_iterator gsi;
   edge e_in, e_out;
 
@@ -4475,7 +4475,7 @@ infinite_empty_loop_p (edge e_first)
 static bool
 cleanup_empty_eh (eh_landing_pad lp)
 {
-  basic_block bb = label_to_block (lp->post_landing_pad);
+  basic_block bb = label_to_block (cfun, lp->post_landing_pad);
   gimple_stmt_iterator gsi;
   gimple *resx;
   eh_region new_region;
@@ -4795,7 +4795,7 @@ verify_eh_edges (gimple *stmt)
       return true;
     }
 
-  if (eh_edge->dest != label_to_block (lp->post_landing_pad))
+  if (eh_edge->dest != label_to_block (cfun, lp->post_landing_pad))
     {
       error ("Incorrect EH edge %i->%i", bb->index, eh_edge->dest->index);
       return true;
@@ -4827,7 +4827,7 @@ verify_eh_dispatch_edge (geh_dispatch *stmt)
     case ERT_TRY:
       for (c = r->u.eh_try.first_catch; c ; c = c->next_catch)
 	{
-	  dst = label_to_block (c->label);
+	  dst = label_to_block (cfun, c->label);
 	  e = find_edge (src, dst);
 	  if (e == NULL)
 	    {
@@ -4846,7 +4846,7 @@ verify_eh_dispatch_edge (geh_dispatch *stmt)
       break;
 
     case ERT_ALLOWED_EXCEPTIONS:
-      dst = label_to_block (r->u.allowed.label);
+      dst = label_to_block (cfun, r->u.allowed.label);
       e = find_edge (src, dst);
       if (e == NULL)
 	{

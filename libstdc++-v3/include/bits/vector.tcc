@@ -293,6 +293,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	if (__len > capacity())
 	  {
+	    _S_check_init_len(__len, _M_get_Tp_allocator());
 	    pointer __tmp(_M_allocate_and_copy(__len, __first, __last));
 	    _GLIBCXX_ASAN_ANNOTATE_REINIT;
 	    std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,

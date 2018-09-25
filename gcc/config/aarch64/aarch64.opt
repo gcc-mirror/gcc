@@ -117,23 +117,23 @@ Enum(aarch64_tls_size) String(48) Value(48)
 
 march=
 Target RejectNegative ToLower Joined Var(aarch64_arch_string)
--march=ARCH	Use features of architecture ARCH.
+Use features of architecture ARCH.
 
 mcpu=
 Target RejectNegative ToLower Joined Var(aarch64_cpu_string)
--mcpu=CPU	Use features of and optimize for CPU.
+Use features of and optimize for CPU.
 
 mtune=
 Target RejectNegative ToLower Joined Var(aarch64_tune_string)
--mtune=CPU	Optimize for CPU.
+Optimize for CPU.
 
 mabi=
 Target RejectNegative Joined Enum(aarch64_abi) Var(aarch64_abi) Init(AARCH64_ABI_DEFAULT)
--mabi=ABI	Generate code that conforms to the specified ABI.
+Generate code that conforms to the specified ABI.
 
 moverride=
 Target RejectNegative ToLower Joined Var(aarch64_override_tune_string)
--moverride=STRING	Power users only! Override CPU optimization parameters.
+-moverride=<string>	Power users only! Override CPU optimization parameters.
 
 Enum
 Name(aarch64_abi) Type(int)
@@ -167,20 +167,20 @@ EnumValue
 Enum(aarch64_ra_sign_scope_t) String(all) Value(AARCH64_FUNCTION_ALL)
 
 mlow-precision-recip-sqrt
-Common Var(flag_mrecip_low_precision_sqrt) Optimization
+Target Var(flag_mrecip_low_precision_sqrt) Optimization
 Enable the reciprocal square root approximation.  Enabling this reduces
 precision of reciprocal square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 
 mlow-precision-sqrt
-Common Var(flag_mlow_precision_sqrt) Optimization
+Target Var(flag_mlow_precision_sqrt) Optimization
 Enable the square root approximation.  Enabling this reduces
 precision of square root results to about 16 bits for
 single precision and to 32 bits for double precision.
 If enabled, it implies -mlow-precision-recip-sqrt.
 
 mlow-precision-div
-Common Var(flag_mlow_precision_div) Optimization
+Target Var(flag_mlow_precision_div) Optimization
 Enable the division approximation.  Enabling this reduces
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
@@ -209,8 +209,12 @@ Enum(sve_vector_bits) String(2048) Value(SVE_2048)
 
 msve-vector-bits=
 Target RejectNegative Joined Enum(sve_vector_bits) Var(aarch64_sve_vector_bits) Init(SVE_SCALABLE)
--msve-vector-bits=N	Set the number of bits in an SVE vector register to N.
+-msve-vector-bits=<number>	Set the number of bits in an SVE vector register to N.
 
 mverbose-cost-dump
-Common Undocumented Var(flag_aarch64_verbose_cost)
+Target Undocumented Var(flag_aarch64_verbose_cost)
 Enables verbose cost model dumping in the debug dump files.
+
+mtrack-speculation
+Target Var(aarch64_track_speculation)
+Generate code to track when the CPU might be speculating incorrectly.

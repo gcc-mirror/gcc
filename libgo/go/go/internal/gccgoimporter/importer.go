@@ -13,9 +13,7 @@ import (
 	"go/types"
 	"io"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 )
 
@@ -100,26 +98,9 @@ func openExportFile(fpath string) (reader io.ReadSeeker, closer io.Closer, err e
 		reader = f
 		return
 
-	case archiveMagic, aixbigafMagic:
-		// TODO(pcc): Read the archive directly instead of using "ar".
-		f.Close()
-		closer = nil
-		var cmd *exec.Cmd
-
-		if runtime.GOOS == "aix" && runtime.GOARCH == "ppc64" {
-			// AIX puts both 32-bit and 64-bit objects in the same archive.
-			// Tell the AIX "ar" command to only care about 64-bit objects.
-			cmd = exec.Command("ar", "-X64", "p", fpath)
-		} else {
-			cmd = exec.Command("ar", "p", fpath)
-		}
-		var out []byte
-		out, err = cmd.Output()
-		if err != nil {
-			return
-		}
-
-		objreader = bytes.NewReader(out)
+	case archiveMagic:
+		reader, err = arExportData(f)
+		return
 
 	default:
 		objreader = f
@@ -171,26 +152,29 @@ func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Impo
 
 		var reader io.ReadSeeker
 		var fpath string
+		var rc io.ReadCloser
 		if lookup != nil {
 			if p := imports[pkgpath]; p != nil && p.Complete() {
 				return p, nil
 			}
-			rc, err := lookup(pkgpath)
-			if err == nil && rc != nil {
-				defer rc.Close()
-				rs, ok := rc.(io.ReadSeeker)
-				if !ok {
-					return nil, fmt.Errorf("gccgo importer requires lookup to return an io.ReadSeeker, have %T", rc)
-				}
-				reader = rs
-				fpath = "<lookup " + pkgpath + ">"
-				// Take name from Name method (like on os.File) if present.
-				if n, ok := rc.(interface{ Name() string }); ok {
-					fpath = n.Name()
-				}
+			rc, err = lookup(pkgpath)
+			if err != nil {
+				return nil, err
 			}
 		}
-		if reader == nil {
+		if rc != nil {
+			defer rc.Close()
+			rs, ok := rc.(io.ReadSeeker)
+			if !ok {
+				return nil, fmt.Errorf("gccgo importer requires lookup to return an io.ReadSeeker, have %T", rc)
+			}
+			reader = rs
+			fpath = "<lookup " + pkgpath + ">"
+			// Take name from Name method (like on os.File) if present.
+			if n, ok := rc.(interface{ Name() string }); ok {
+				fpath = n.Name()
+			}
+		} else {
 			fpath, err = findExportFile(searchpaths, pkgpath)
 			if err != nil {
 				return nil, err
@@ -206,17 +190,24 @@ func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Impo
 			reader = r
 		}
 
-		var magic [4]byte
-		_, err = reader.Read(magic[:])
-		if err != nil {
-			return
-		}
-		_, err = reader.Seek(0, io.SeekStart)
+		var magics string
+		magics, err = readMagic(reader)
 		if err != nil {
 			return
 		}
 
-		switch string(magic[:]) {
+		if magics == archiveMagic {
+			reader, err = arExportData(reader)
+			if err != nil {
+				return
+			}
+			magics, err = readMagic(reader)
+			if err != nil {
+				return
+			}
+		}
+
+		switch magics {
 		case gccgov1Magic, gccgov2Magic:
 			var p parser
 			p.init(fpath, reader, imports)
@@ -247,9 +238,22 @@ func GetImporter(searchpaths []string, initmap map[*types.Package]InitData) Impo
 		// 	}
 
 		default:
-			err = fmt.Errorf("unrecognized magic string: %q", string(magic[:]))
+			err = fmt.Errorf("unrecognized magic string: %q", magics)
 		}
 
 		return
 	}
+}
+
+// readMagic reads the four bytes at the start of a ReadSeeker and
+// returns them as a string.
+func readMagic(reader io.ReadSeeker) (string, error) {
+	var magic [4]byte
+	if _, err := reader.Read(magic[:]); err != nil {
+		return "", err
+	}
+	if _, err := reader.Seek(0, io.SeekStart); err != nil {
+		return "", err
+	}
+	return string(magic[:]), nil
 }

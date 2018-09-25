@@ -157,8 +157,19 @@ along with GCC; see the file COPYING3.  If not see
 #undef MAKE_DECL_ONE_ONLY
 #define MAKE_DECL_ONE_ONLY(DECL) (DECL_WEAK (DECL) = 1)
 
+#undef TARGET_COFF
+#define TARGET_COFF 1
+
+/* Kludge because of missing COFF support for early LTO debug.  */
+#undef  TARGET_ASM_LTO_START
+#define TARGET_ASM_LTO_START i386_djgpp_asm_lto_start
+#undef  TARGET_ASM_LTO_END
+#define TARGET_ASM_LTO_END i386_djgpp_asm_lto_end
+
 /* Function protypes for gcc/i386/djgpp.c */
 
 void
 i386_djgpp_asm_named_section(const char *name, unsigned int flags,
 			     tree decl);
+void i386_djgpp_asm_lto_start (void);
+void i386_djgpp_asm_lto_end (void);

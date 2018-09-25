@@ -1,13 +1,26 @@
+2018-08-23  Nathan Sidwell  <nathan@acm.org>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR driver/87056
+	* pex-unix.c (pex_unix_exec_child): Duplicate bad_fn into local
+	scopes to avoid potential clobber.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* pex-unix.c (pex_child_error): Delete.
+	(pex_unix_exec_child): Commonize error paths to single message &
+	exit.
+
 2018-07-30  Tom Tromey  <tom@tromey.com>
 
 	* cplus-dem.c (remember_Btype): Don't call memcpy with LEN==0.
 
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
-        PR lto/86548
+	PR lto/86548
 	* make-temp-file.c (TEMP_FILE): Remove leading 'cc'.
 	(make_temp_file): Call make_temp_file_with_prefix with
-        first argument set to NULL.
+	first argument set to NULL.
 	(make_temp_file_with_prefix): Support also prefix.
 
 2018-07-19  Eli Zaretskii  <eliz@gnu.org>
@@ -916,8 +929,8 @@
 	* functions.texi: Regenerate.
 
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
-            Ben Elliston  <bje@au.ibm.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* xvasprintf.c: New file.
 	* vprintf-support.h: Likewise.

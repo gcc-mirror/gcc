@@ -101,12 +101,14 @@ def find_type(orig, name):
 
 _versioned_namespace = '__8::'
 
-def is_specialization_of(type, template_name):
+def is_specialization_of(x, template_name):
     "Test if a type is a given template instantiation."
     global _versioned_namespace
+    if type(x) is gdb.Type:
+        x = x.tag
     if _versioned_namespace:
-        return re.match('^std::(%s)?%s<.*>$' % (_versioned_namespace, template_name), type) is not None
-    return re.match('^std::%s<.*>$' % template_name, type) is not None
+        return re.match('^std::(%s)?%s<.*>$' % (_versioned_namespace, template_name), x) is not None
+    return re.match('^std::%s<.*>$' % template_name, x) is not None
 
 def strip_versioned_namespace(typename):
     global _versioned_namespace
@@ -413,17 +415,26 @@ class StdTuplePrinter:
     "Print a std::tuple"
 
     class _iterator(Iterator):
+        @staticmethod
+        def _is_nonempty_tuple (nodes):
+            if len (nodes) == 2:
+                if is_specialization_of (nodes[1].type, '__tuple_base'):
+                    return True
+            elif len (nodes) == 1:
+                return True
+            elif len (nodes) == 0:
+                return False
+            raise ValueError("Top of tuple tree does not consist of a single node.")
+
         def __init__ (self, head):
             self.head = head
 
             # Set the base class as the initial head of the
             # tuple.
             nodes = self.head.type.fields ()
-            if len (nodes) == 1:
+            if self._is_nonempty_tuple (nodes):
                 # Set the actual head to the first pair.
                 self.head  = self.head.cast (nodes[0].type)
-            elif len (nodes) != 0:
-                raise ValueError("Top of tuple tree does not consist of a single node.")
             self.count = 0
 
         def __iter__ (self):
@@ -1229,6 +1240,39 @@ class StdExpPathPrinter:
         return self._iterator(self.val['_M_cmpts'])
 
 
+class StdPairPrinter:
+    "Print a std::pair object, with 'first' and 'second' as children"
+
+    def __init__(self, typename, val):
+        self.val = val
+
+    class _iter(Iterator):
+        "An iterator for std::pair types. Returns 'first' then 'second'."
+
+        def __init__(self, val):
+            self.val = val
+            self.which = 'first'
+
+        def __iter__(self):
+            return self
+
+        def __next__(self):
+            if self.which is None:
+                raise StopIteration
+            which = self.which
+            if which == 'first':
+                self.which = 'second'
+            else:
+                self.which = None
+            return (which, self.val[which])
+
+    def children(self):
+        return self._iter(self.val)
+
+    def to_string(self):
+        return None
+
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -1629,6 +1673,7 @@ def build_libstdcxx_dictionary ():
     libstdcxx_printer.add_container('std::', 'map', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multimap', StdMapPrinter)
     libstdcxx_printer.add_container('std::', 'multiset', StdSetPrinter)
+    libstdcxx_printer.add_version('std::', 'pair', StdPairPrinter)
     libstdcxx_printer.add_version('std::', 'priority_queue',
                                   StdStackOrQueuePrinter)
     libstdcxx_printer.add_version('std::', 'queue', StdStackOrQueuePrinter)

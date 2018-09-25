@@ -211,12 +211,14 @@ struct format_result
      the return value optimization.  */
   bool knownrange;
 
-  /* True if no individual directive resulted in more than 4095 bytes
-     of output (the total NUMBER_CHARS_{MIN,MAX} might be greater).
-     Implementations are not required to handle directives that produce
-     more than 4K bytes (leading to undefined behavior) and so when one
-     is found it disables the return value optimization.  */
-  bool under4k;
+  /* True if no individual directive could fail or result in more than
+     4095 bytes of output (the total NUMBER_CHARS_{MIN,MAX} might be
+     greater).  Implementations are not required to handle directives
+     that produce more than 4K bytes (leading to undefined behavior)
+     and so when one is found it disables the return value optimization.
+     Similarly, directives that can fail (such as wide character
+     directives) disable the optimization.  */
+  bool posunder4k;
 
   /* True when a floating point directive has been seen in the format
      string.  */
@@ -441,156 +443,20 @@ target_strtol10 (const char **ps, const char **erange)
   return val;
 }
 
-/* Return the constant initial value of DECL if available or DECL
-   otherwise.  Same as the synonymous function in c/c-typeck.c.  */
-
-static tree
-decl_constant_value (tree decl)
-{
-  if (/* Don't change a variable array bound or initial value to a constant
-	 in a place where a variable is invalid.  Note that DECL_INITIAL
-	 isn't valid for a PARM_DECL.  */
-      current_function_decl != 0
-      && TREE_CODE (decl) != PARM_DECL
-      && !TREE_THIS_VOLATILE (decl)
-      && TREE_READONLY (decl)
-      && DECL_INITIAL (decl) != 0
-      && TREE_CODE (DECL_INITIAL (decl)) != ERROR_MARK
-      /* This is invalid if initial value is not constant.
-	 If it has either a function call, a memory reference,
-	 or a variable, then re-evaluating it could give different results.  */
-      && TREE_CONSTANT (DECL_INITIAL (decl))
-      /* Check for cases where this is sub-optimal, even though valid.  */
-      && TREE_CODE (DECL_INITIAL (decl)) != CONSTRUCTOR)
-    return DECL_INITIAL (decl);
-  return decl;
-}
-
 /* Given FORMAT, set *PLOC to the source location of the format string
    and return the format string if it is known or null otherwise.  */
 
 static const char*
 get_format_string (tree format, location_t *ploc)
 {
-  if (VAR_P (format))
-    {
-      /* Pull out a constant value if the front end didn't.  */
-      format = decl_constant_value (format);
-      STRIP_NOPS (format);
-    }
-
-  if (integer_zerop (format))
-    {
-      /* FIXME: Diagnose null format string if it hasn't been diagnosed
-	 by -Wformat (the latter diagnoses only nul pointer constants,
-	 this pass can do better).  */
-      return NULL;
-    }
-
-  HOST_WIDE_INT offset = 0;
-
-  if (TREE_CODE (format) == POINTER_PLUS_EXPR)
-    {
-      tree arg0 = TREE_OPERAND (format, 0);
-      tree arg1 = TREE_OPERAND (format, 1);
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      if (TREE_CODE (arg1) != INTEGER_CST)
-	return NULL;
-
-      format = arg0;
-
-      /* POINTER_PLUS_EXPR offsets are to be interpreted signed.  */
-      if (!cst_and_fits_in_hwi (arg1))
-	return NULL;
-
-      offset = int_cst_value (arg1);
-    }
-
-  if (TREE_CODE (format) != ADDR_EXPR)
-    return NULL;
-
   *ploc = EXPR_LOC_OR_LOC (format, input_location);
 
-  format = TREE_OPERAND (format, 0);
-
-  if (TREE_CODE (format) == ARRAY_REF
-      && tree_fits_shwi_p (TREE_OPERAND (format, 1))
-      && (offset += tree_to_shwi (TREE_OPERAND (format, 1))) >= 0)
-    format = TREE_OPERAND (format, 0);
-
-  if (offset < 0)
-    return NULL;
-
-  tree array_init;
-  tree array_size = NULL_TREE;
-
-  if (VAR_P (format)
-      && TREE_CODE (TREE_TYPE (format)) == ARRAY_TYPE
-      && (array_init = decl_constant_value (format)) != format
-      && TREE_CODE (array_init) == STRING_CST)
-    {
-      /* Extract the string constant initializer.  Note that this may
-	 include a trailing NUL character that is not in the array (e.g.
-	 const char a[3] = "foo";).  */
-      array_size = DECL_SIZE_UNIT (format);
-      format = array_init;
-    }
-
-  if (TREE_CODE (format) != STRING_CST)
-    return NULL;
-
-  tree type = TREE_TYPE (format);
-
-  scalar_int_mode char_mode;
-  if (!is_int_mode (TYPE_MODE (TREE_TYPE (type)), &char_mode)
-      || GET_MODE_SIZE (char_mode) != 1)
-    {
-      /* Wide format string.  */
-      return NULL;
-    }
-
-  const char *fmtstr = TREE_STRING_POINTER (format);
-  unsigned fmtlen = TREE_STRING_LENGTH (format);
-
-  if (array_size)
-    {
-      /* Variable length arrays can't be initialized.  */
-      gcc_assert (TREE_CODE (array_size) == INTEGER_CST);
-
-      if (tree_fits_shwi_p (array_size))
-	{
-	  HOST_WIDE_INT array_size_value = tree_to_shwi (array_size);
-	  if (array_size_value > 0
-	      && array_size_value == (int) array_size_value
-	      && fmtlen > array_size_value)
-	    fmtlen = array_size_value;
-	}
-    }
-  if (offset)
-    {
-      if (offset >= fmtlen)
-	return NULL;
-
-      fmtstr += offset;
-      fmtlen -= offset;
-    }
-
-  if (fmtlen < 1 || fmtstr[--fmtlen] != 0)
-    {
-      /* FIXME: Diagnose an unterminated format string if it hasn't been
-	 diagnosed by -Wformat.  Similarly to a null format pointer,
-	 -Wformay diagnoses only nul pointer constants, this pass can
-	 do better).  */
-      return NULL;
-    }
-
-  return fmtstr;
+  return c_getstr (format);
 }
 
 /* For convenience and brevity, shorter named entrypoints of
-   format_warning_at_substring and format_warning_at_substring_n.
+   format_string_diagnostic_t::emit_warning_va and
+   format_string_diagnostic_t::emit_warning_n_va.
    These have to be functions with the attribute so that exgettext
    works properly.  */
 
@@ -599,10 +465,11 @@ ATTRIBUTE_GCC_DIAG (5, 6)
 fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
 	 const char *corrected_substring, int opt, const char *gmsgid, ...)
 {
+  format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
+				   corrected_substring);
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, param_loc, corrected_substring,
-				   opt, gmsgid, &ap);
+  bool warned = diag.emit_warning_va (opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -614,11 +481,12 @@ fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
 	   const char *corrected_substring, int opt, unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
+  format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
+				   corrected_substring);
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool warned = format_warning_n_va (fmt_loc, param_loc, corrected_substring,
-				     opt, n, singular_gmsgid, plural_gmsgid,
-				     &ap);
+  bool warned = diag.emit_warning_n_va (opt, n, singular_gmsgid, plural_gmsgid,
+					&ap);
   va_end (ap);
 
   return warned;
@@ -650,7 +518,7 @@ struct fmtresult
   fmtresult (unsigned HOST_WIDE_INT min = HOST_WIDE_INT_MAX)
   : argmin (), argmax (),
     knownrange (min < HOST_WIDE_INT_MAX),
-    nullp ()
+    mayfail (), nullp ()
   {
     range.min = min;
     range.max = min;
@@ -664,7 +532,7 @@ struct fmtresult
 	     unsigned HOST_WIDE_INT likely = HOST_WIDE_INT_MAX)
   : argmin (), argmax (),
     knownrange (min < HOST_WIDE_INT_MAX && max < HOST_WIDE_INT_MAX),
-    nullp ()
+    mayfail (), nullp ()
   {
     range.min = min;
     range.max = max;
@@ -693,6 +561,10 @@ struct fmtresult
      a directive's argument or its bounds and not the result of
      heuristics that depend on warning levels.  */
   bool knownrange;
+
+  /* True for a directive that may fail (such as wide character
+     directives).  */
+  bool mayfail;
 
   /* True when the argument is a null pointer.  */
   bool nullp;
@@ -2014,8 +1886,15 @@ format_floating (const directive &dir, tree arg, vr_values *)
 
       res.range.likely = res.range.min;
       res.range.max = res.range.min;
-      /* The inlikely maximum is "[-/+]infinity" or "[-/+]nan".  */
-      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 3);
+      /* The unlikely maximum is "[-/+]infinity" or "[-/+][qs]nan".
+	 For NaN, the C/POSIX standards specify two formats:
+	   "[-/+]nan"
+	 and
+	   "[-/+]nan(n-char-sequence)"
+	 No known printf implementation outputs the latter format but AIX
+	 outputs QNaN and SNaN for quiet and signalling NaN, respectively,
+	 so the unlikely maximum reflects that.  */
+      res.range.unlikely = sign + (real_isinf (rvp) ? 8 : 4);
 
       /* The range for infinity and NaN is known unless either width
 	 or precision is unknown.  Width has the same effect regardless
@@ -2117,17 +1996,10 @@ format_floating (const directive &dir, tree arg, vr_values *)
    Used by the format_string function below.  */
 
 static fmtresult
-get_string_length (tree str)
+get_string_length (tree str, unsigned eltsize)
 {
   if (!str)
     return fmtresult ();
-
-  if (tree slen = c_strlen (str, 1))
-    {
-      /* Simply return the length of the string.  */
-      fmtresult res (tree_to_shwi (slen));
-      return res;
-    }
 
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of
@@ -2135,7 +2007,7 @@ get_string_length (tree str)
      aren't known to point any such arrays result in LENRANGE[1] set
      to SIZE_MAX.  */
   tree lenrange[2];
-  bool flexarray = get_range_strlen (str, lenrange);
+  bool flexarray = get_range_strlen (str, lenrange, eltsize);
 
   if (lenrange [0] || lenrange [1])
     {
@@ -2187,7 +2059,7 @@ get_string_length (tree str)
       return res;
     }
 
-  return get_string_length (NULL_TREE);
+  return fmtresult ();
 }
 
 /* Return the minimum and maximum number of characters formatted
@@ -2202,7 +2074,8 @@ format_character (const directive &dir, tree arg, vr_values *vr_values)
 
   res.knownrange = true;
 
-  if (dir.modifier == FMT_LEN_l)
+  if (dir.specifier == 'C'
+      || dir.modifier == FMT_LEN_l)
     {
       /* A wide character can result in as few as zero bytes.  */
       res.range.min = 0;
@@ -2217,13 +2090,20 @@ format_character (const directive &dir, tree arg, vr_values *vr_values)
 	      res.range.likely = 0;
 	      res.range.unlikely = 0;
 	    }
-	  else if (min > 0 && min < 128)
+	  else if (min >= 0 && min < 128)
 	    {
+	      /* Be conservative if the target execution character set
+		 is not a 1-to-1 mapping to the source character set or
+		 if the source set is not ASCII.  */
+	      bool one_2_one_ascii
+		= (target_to_host_charmap[0] == 1 && target_to_host ('a') == 97);
+
 	      /* A wide character in the ASCII range most likely results
 		 in a single byte, and only unlikely in up to MB_LEN_MAX.  */
-	      res.range.max = 1;
+	      res.range.max = one_2_one_ascii ? 1 : target_mb_len_max ();;
 	      res.range.likely = 1;
 	      res.range.unlikely = target_mb_len_max ();
+	      res.mayfail = !one_2_one_ascii;
 	    }
 	  else
 	    {
@@ -2232,6 +2112,8 @@ format_character (const directive &dir, tree arg, vr_values *vr_values)
 	      res.range.max = target_mb_len_max ();
 	      res.range.likely = 2;
 	      res.range.unlikely = res.range.max;
+	      /* Converting such a character may fail.  */
+	      res.mayfail = true;
 	    }
 	}
       else
@@ -2241,6 +2123,7 @@ format_character (const directive &dir, tree arg, vr_values *vr_values)
 	  res.range.max = target_mb_len_max ();
 	  res.range.likely = 2;
 	  res.range.unlikely = res.range.max;
+	  res.mayfail = true;
 	}
     }
   else
@@ -2266,7 +2149,8 @@ format_string (const directive &dir, tree arg, vr_values *)
   fmtresult res;
 
   /* Compute the range the argument's length can be in.  */
-  fmtresult slen = get_string_length (arg);
+  int count_by = dir.specifier == 'S' || dir.modifier == FMT_LEN_l ? 4 : 1;
+  fmtresult slen = get_string_length (arg, count_by);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
     {
@@ -2276,7 +2160,8 @@ format_string (const directive &dir, tree arg, vr_values *)
       /* A '%s' directive with a string argument with constant length.  */
       res.range = slen.range;
 
-      if (dir.modifier == FMT_LEN_l)
+      if (dir.specifier == 'S'
+	  || dir.modifier == FMT_LEN_l)
 	{
 	  /* In the worst case the length of output of a wide string S
 	     is bounded by MB_LEN_MAX * wcslen (S).  */
@@ -2302,6 +2187,10 @@ format_string (const directive &dir, tree arg, vr_values *)
 	  /* Even a non-empty wide character string need not convert into
 	     any bytes.  */
 	  res.range.min = 0;
+
+	  /* A non-empty wide character conversion may fail.  */
+	  if (slen.range.max > 0)
+	    res.mayfail = true;
 	}
       else
 	{
@@ -2340,7 +2229,8 @@ format_string (const directive &dir, tree arg, vr_values *)
 	 at level 2.  This result is adjust upward for width (if it's
 	 specified).  */
 
-      if (dir.modifier == FMT_LEN_l)
+      if (dir.specifier == 'S'
+	  || dir.modifier == FMT_LEN_l)
 	{
 	  /* A wide character converts to as few as zero bytes.  */
 	  slen.range.min = 0;
@@ -2352,6 +2242,10 @@ format_string (const directive &dir, tree arg, vr_values *)
 
 	  if (slen.range.likely < target_int_max ())
 	    slen.range.unlikely *= target_mb_len_max ();
+
+	  /* A non-empty wide character conversion may fail.  */
+	  if (slen.range.max > 0)
+	    res.mayfail = true;
 	}
 
       res.range = slen.range;
@@ -2904,11 +2798,14 @@ format_directive (const sprintf_dom_walker::call_info &info,
      of 4095 bytes required to be supported?  */
   bool minunder4k = fmtres.range.min < 4096;
   bool maxunder4k = fmtres.range.max < 4096;
-  /* Clear UNDER4K in the overall result if the maximum has exceeded
-     the 4k (this is necessary to avoid the return valuye optimization
+  /* Clear POSUNDER4K in the overall result if the maximum has exceeded
+     the 4k (this is necessary to avoid the return value optimization
      that may not be safe in the maximum case).  */
   if (!maxunder4k)
-    res->under4k = false;
+    res->posunder4k = false;
+  /* Also clear POSUNDER4K if the directive may fail.  */
+  if (fmtres.mayfail)
+    res->posunder4k = false;
 
   if (!warned
       /* Only warn at level 2.  */
@@ -3354,12 +3251,15 @@ parse_directive (sprintf_dom_walker::call_info &info,
       dir.fmtfunc = format_none;
       break;
 
+    case 'C':
     case 'c':
+      /* POSIX wide character and C/POSIX narrow character.  */
       dir.fmtfunc = format_character;
       break;
 
     case 'S':
     case 's':
+      /* POSIX wide string and C/POSIX narrow character string.  */
       dir.fmtfunc = format_string;
       break;
 
@@ -3517,10 +3417,10 @@ sprintf_dom_walker::compute_format_length (call_info &info,
   res->range.min = res->range.max = 0;
 
   /* No directive has been seen yet so the length of output is bounded
-     by the known range [0, 0] (with no conversion producing more than
-     4K bytes) until determined otherwise.  */
+     by the known range [0, 0] (with no conversion resulting in a failure
+     or producing more than 4K bytes) until determined otherwise.  */
   res->knownrange = true;
-  res->under4k = true;
+  res->posunder4k = true;
   res->floating = false;
   res->warned = false;
 
@@ -3588,7 +3488,7 @@ is_call_safe (const sprintf_dom_walker::call_info &info,
 	      const format_result &res, bool under4k,
 	      unsigned HOST_WIDE_INT retval[2])
 {
-  if (under4k && !res.under4k)
+  if (under4k && !res.posunder4k)
     return false;
 
   /* The minimum return value.  */

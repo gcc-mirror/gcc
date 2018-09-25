@@ -1,3 +1,25 @@
+2018-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/87130
+	* lto.c (read_cgraph_and_symbols): Fix thinko, revert
+	to behavior before r263887.
+
+2018-08-27  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c (handle_const_attribute): Use new function
+	fndecl_built_in_p and remove check for FUNCTION_DECL if
+	possible.
+	* lto-symtab.c (lto_symtab_merge_p): Likewise.
+	(lto_symtab_merge_decls_1): Likewise.
+	(lto_symtab_merge_symbols): Likewise.
+	* lto.c (lto_maybe_register_decl): Likewise.
+	(read_cgraph_and_symbols): Likewise.
+
+2018-08-21  Tom de Vries  <tdevries@suse.de>
+
+	* lto.c (lto_main):  Call debuginfo_early_start and
+	debuginfo_early_stop.
+
 2018-07-20  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/82063
@@ -27,12 +49,12 @@
 2018-06-20  Martin Liska  <mliska@suse.cz>
 
 	* lto-symtab.c (lto_symtab_merge_p): Remove not valid
-        FIXME comment.
+	FIXME comment.
 
 2018-06-19  Martin Liska  <mliska@suse.cz>
 
 	* lto-partition.c (add_symbol_to_partition_1): Use symbol_summary::get instead
-        of get_create.
+	of get_create.
 	(undo_partition): Likewise.
 	(lto_balanced_map): Likewise.
 
@@ -272,11 +294,11 @@
 
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
-        * lto.c (unify_scc): Truncate DIE reference queue for dropped SCCs.
-        (lto_read_decls): Process TRANSLATION_UNIT_DECLs.  Remove
-        TYPE_DECL debug processing, register DIE references from
-        prevailing SCCs with the debug machinery.
-        (lto_section_with_id): Handle LTO debug sections.
+	* lto.c (unify_scc): Truncate DIE reference queue for dropped SCCs.
+	(lto_read_decls): Process TRANSLATION_UNIT_DECLs.  Remove
+	TYPE_DECL debug processing, register DIE references from
+	prevailing SCCs with the debug machinery.
+	(lto_section_with_id): Handle LTO debug sections.
 
 2017-08-16  Nathan Sidwell  <nathan@acm.org>
 
@@ -349,7 +371,7 @@
 
 2017-05-01  Xi Ruoyao  <ryxi@stu.xidian.edu.cn>
 
-        PR c++/80038
+	PR c++/80038
 	* lto-lang.c (lto_init): Set in_lto_p earlier.
 
 2017-04-12  Richard Biener  <rguenther@suse.de>
@@ -508,7 +530,7 @@
 	decls have no assemblernames.
 
 2016-01-19  Martin Liska  <mliska@suse.cz>
-            Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	* lto-partition.c: Include "hsa.h"
 	(add_symbol_to_partition_1): Put hsa implementations into the
@@ -2137,7 +2159,7 @@
 
 2012-06-18  Lawrence Crowl  <crowl@google.com>
 
-        * lto.c (do_whole_program_analysis):  Rename use of TV_PHASE_CGRAPH to
+	* lto.c (do_whole_program_analysis):  Rename use of TV_PHASE_CGRAPH to
 	TV_PHASE_OPT_GEN.  Use new timevar TV_PHASE_STREAM_OUT around the call
 	to lto_wpa_write_files.
 	(lto_main):  Rename use of TV_PHASE_CGRAPH to TV_PHASE_OPT_GEN.  Move
@@ -2193,7 +2215,7 @@
 2012-04-16  Jan Hubicka  <jh@suse.cz>
 
 	* lto.c (read_cgraph_and_symbols): Use FOR_EACH
-        walkers to walk cgraph and varpool.
+	walkers to walk cgraph and varpool.
 	(materialize_cgraph): Likewise.
 	* lto-partition.c (lto_1_to_1_map): Likewise.
 	(lto_balanced_map): Likewise.
@@ -2753,7 +2775,7 @@
 2010-10-03  Andi Kleen  <ak@linux.intel.com>
 
     	* lto.c (lto_file_finalize): Replace gcc_assert for missing section
-          with fatal_error.
+	  with fatal_error.
 
 2010-09-28  Jan Hubicka  <jh@suse.cz>
 
@@ -2856,7 +2878,7 @@
 2010-07-10  Andi Kleen  <ak@linux.intel.com>
 
 	PR lto/44992
-        * lto.c: Include splay-tree.h
+	* lto.c: Include splay-tree.h
 	(lto_resolution_read): Change to walk file_ids tree and parse
 	extra file_id in resolution file.
 	(lto_section_with_id): Add.
@@ -2909,7 +2931,7 @@
 
 2010-07-04  Jan Hubicka  <jh@suse.cz>
 
-        * lto.c (read_cgraph_and_symbols): Dump cgraph before merging.
+	* lto.c (read_cgraph_and_symbols): Dump cgraph before merging.
 
 2010-06-13  Richard Guenther  <rguenther@suse.de>
 
@@ -3328,7 +3350,7 @@
 	* lto.c (lto_resolution_read): Add more checks. Discard rest of line.
 
 2009-11-04  Richard Guenther  <rguenther@suse.de>
-            Rafael Avila de Espindola  <espindola@google.com>
+	    Rafael Avila de Espindola  <espindola@google.com>
 
 	* lto-elf.c (lto_elf_build_section_table): Add the base offset.
 	(lto_elf_file_open): Handle offsets in arguments name@offest.

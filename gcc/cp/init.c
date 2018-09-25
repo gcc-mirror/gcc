@@ -915,6 +915,7 @@ perform_member_init (tree member, tree init)
 	    {
 	      /* TYPE_NEEDS_CONSTRUCTING can be set just because we have a
 		 vtable; still give this diagnostic.  */
+	      auto_diagnostic_group d;
 	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
 			     "uninitialized const member in %q#T", type))
 		inform (DECL_SOURCE_LOCATION (member),
@@ -932,6 +933,7 @@ perform_member_init (tree member, tree init)
 	  /* member traversal: note it leaves init NULL */
 	  if (TYPE_REF_P (type))
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
 			     "uninitialized reference member in %q#T", type))
 		inform (DECL_SOURCE_LOCATION (member),
@@ -939,6 +941,7 @@ perform_member_init (tree member, tree init)
 	    }
 	  else if (CP_TYPE_CONST_P (type))
 	    {
+	      auto_diagnostic_group d;
 	      if (permerror (DECL_SOURCE_LOCATION (current_function_decl),
 			     "uninitialized const member in %q#T", type))
 		  inform (DECL_SOURCE_LOCATION (member),
@@ -3255,6 +3258,7 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	  || CP_DECL_CONTEXT (alloc_fn) == global_namespace)
       && !aligned_allocation_fn_p (alloc_fn))
     {
+      auto_diagnostic_group d;
       if (warning (OPT_Waligned_new_, "%<new%> of type %qT with extended "
 		   "alignment %d", elt_type, TYPE_ALIGN_UNIT (elt_type)))
 	{
@@ -3831,16 +3835,19 @@ build_vec_delete_1 (tree base, tree maxindex, tree type,
 
   if (!COMPLETE_TYPE_P (type))
     {
-      if ((complain & tf_warning)
-	  && warning (OPT_Wdelete_incomplete,
-		      "possible problem detected in invocation of "
-		      "delete [] operator:"))
-       {
-         cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
-         inform (input_location, "neither the destructor nor the "
-                 "class-specific operator delete [] will be called, "
-                 "even if they are declared when the class is defined");
-       }
+      if (complain & tf_warning)
+	{
+	  auto_diagnostic_group d;
+	  if (warning (OPT_Wdelete_incomplete,
+			 "possible problem detected in invocation of "
+			 "delete [] operator:"))
+	    {
+	      cxx_incomplete_type_diagnostic (base, type, DK_WARNING);
+	      inform (input_location, "neither the destructor nor the "
+			"class-specific operator delete [] will be called, "
+			"even if they are declared when the class is defined");
+	    }
+	}
       /* This size won't actually be used.  */
       size_exp = size_one_node;
       goto no_destructor;
@@ -4712,16 +4719,19 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 	  complete_type (type);
 	  if (!COMPLETE_TYPE_P (type))
 	    {
-	      if ((complain & tf_warning)
-		  && warning (OPT_Wdelete_incomplete,
-			      "possible problem detected in invocation of "
-			      "delete operator:"))
+	      if (complain & tf_warning)
 		{
-		  cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
-		  inform (input_location,
-			  "neither the destructor nor the class-specific "
-			  "operator delete will be called, even if they are "
-			  "declared when the class is defined");
+		  auto_diagnostic_group d;
+		  if (warning (OPT_Wdelete_incomplete,
+				 "possible problem detected in invocation of "
+				 "delete operator:"))
+		    {
+		      cxx_incomplete_type_diagnostic (addr, type, DK_WARNING);
+		      inform (input_location,
+				"neither the destructor nor the class-specific "
+				"operator delete will be called, even if they "
+				"are declared when the class is defined");
+		    }
 		}
 	    }
 	  else if (deleting && warn_delnonvdtor

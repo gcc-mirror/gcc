@@ -31,7 +31,7 @@ func checkBool(f *File, n ast.Node) {
 		return
 	}
 
-	comm := op.commutativeSets(e)
+	comm := op.commutativeSets(f, e)
 	for _, exprs := range comm {
 		op.checkRedundant(f, exprs)
 		op.checkSuspect(f, exprs)
@@ -53,14 +53,14 @@ var (
 // expressions in e that are connected by op.
 // For example, given 'a || b || f() || c || d' with the or op,
 // commutativeSets returns {{b, a}, {d, c}}.
-func (op boolOp) commutativeSets(e *ast.BinaryExpr) [][]ast.Expr {
+func (op boolOp) commutativeSets(f *File, e *ast.BinaryExpr) [][]ast.Expr {
 	exprs := op.split(e)
 
 	// Partition the slice of expressions into commutative sets.
 	i := 0
 	var sets [][]ast.Expr
 	for j := 0; j <= len(exprs); j++ {
-		if j == len(exprs) || hasSideEffects(exprs[j]) {
+		if j == len(exprs) || hasSideEffects(f, exprs[j]) {
 			if i < j {
 				sets = append(sets, exprs[i:j])
 			}
@@ -136,16 +136,27 @@ func (op boolOp) checkSuspect(f *File, exprs []ast.Expr) {
 }
 
 // hasSideEffects reports whether evaluation of e has side effects.
-func hasSideEffects(e ast.Expr) bool {
+func hasSideEffects(f *File, e ast.Expr) bool {
 	safe := true
 	ast.Inspect(e, func(node ast.Node) bool {
 		switch n := node.(type) {
-		// Using CallExpr here will catch conversions
-		// as well as function and method invocations.
-		// We'll live with the false negatives for now.
 		case *ast.CallExpr:
-			safe = false
-			return false
+			typVal := f.pkg.types[n.Fun]
+			switch {
+			case typVal.IsType():
+				// Type conversion, which is safe.
+			case typVal.IsBuiltin():
+				// Builtin func, conservatively assumed to not
+				// be safe for now.
+				safe = false
+				return false
+			default:
+				// A non-builtin func or method call.
+				// Conservatively assume that all of them have
+				// side effects for now.
+				safe = false
+				return false
+			}
 		case *ast.UnaryExpr:
 			if n.Op == token.ARROW {
 				safe = false

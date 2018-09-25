@@ -807,7 +807,7 @@ surely_varying_stmt_p (gimple *stmt)
       tree fndecl, fntype = gimple_call_fntype (stmt);
       if (!gimple_call_lhs (stmt)
 	  || ((fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
-	      && !DECL_BUILT_IN (fndecl)
+	      && !fndecl_built_in_p (fndecl)
 	      && !lookup_attribute ("assume_aligned",
 				    TYPE_ATTRIBUTES (fntype))
 	      && !lookup_attribute ("alloc_align",
@@ -2560,7 +2560,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
 
       callee = gimple_call_fndecl (stmt);
       if (!callee
-	  || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+	  || !fndecl_built_in_p (callee, BUILT_IN_NORMAL)
 	  /* All regular builtins are ok, just obviously not alloca.  */
 	  || ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (callee)))
 	return NULL_TREE;
@@ -2596,9 +2596,7 @@ optimize_stack_restore (gimple_stmt_iterator i)
       if (is_gimple_call (stack_save))
 	{
 	  callee = gimple_call_fndecl (stack_save);
-	  if (callee
-	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_STACK_SAVE)
+	  if (callee && fndecl_built_in_p (callee, BUILT_IN_STACK_SAVE))
 	    {
 	      gimple_stmt_iterator stack_save_gsi;
 	      tree rhs;
@@ -3195,7 +3193,7 @@ pass_fold_builtins::execute (function *fun)
 	    }
 
 	  callee = gimple_call_fndecl (stmt);
-	  if (!callee || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+	  if (!callee || !fndecl_built_in_p (callee, BUILT_IN_NORMAL))
 	    {
 	      gsi_next (&i);
 	      continue;
@@ -3370,8 +3368,7 @@ pass_fold_builtins::execute (function *fun)
 	    }
 	  callee = gimple_call_fndecl (stmt);
 	  if (!callee
-              || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
-	      || DECL_FUNCTION_CODE (callee) == fcode)
+	      || !fndecl_built_in_p (callee, fcode))
 	    gsi_next (&i);
 	}
     }
@@ -3454,9 +3451,10 @@ pass_post_ipa_warn::execute (function *fun)
 			continue;
 
 		      location_t loc = gimple_location (stmt);
+		      auto_diagnostic_group d;
 		      if (warning_at (loc, OPT_Wnonnull,
 				      "%Gargument %u null where non-null "
-				      "expected", as_a <gcall *>(stmt), i + 1))
+				      "expected", stmt, i + 1))
 			{
 			  tree fndecl = gimple_call_fndecl (stmt);
 			  if (fndecl && DECL_IS_BUILTIN (fndecl))

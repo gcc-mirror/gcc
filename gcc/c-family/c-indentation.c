@@ -23,15 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "c-common.h"
 #include "c-indentation.h"
+#include "selftest.h"
 
 extern cpp_options *cpp_opts;
 
 /* Round up VIS_COLUMN to nearest tab stop. */
 
 static unsigned int
-next_tab_stop (unsigned int vis_column)
+next_tab_stop (unsigned int vis_column, unsigned int tab_width)
 {
-  const unsigned int tab_width = cpp_opts->tabstop;
   vis_column = ((vis_column + tab_width) / tab_width) * tab_width;
   return vis_column;
 }
@@ -43,12 +43,13 @@ next_tab_stop (unsigned int vis_column)
    Returns true if a conversion was possible, writing the result to OUT,
    otherwise returns false.  If FIRST_NWS is not NULL, then write to it
    the visual column corresponding to the first non-whitespace character
-   on the line.  */
+   on the line (up to or before EXPLOC).  */
 
 static bool
 get_visual_column (expanded_location exploc, location_t loc,
 		   unsigned int *out,
-		   unsigned int *first_nws)
+		   unsigned int *first_nws,
+		   unsigned int tab_width)
 {
   /* PR c++/68819: if the column number is zero, we presumably
      had a location_t > LINE_MAP_MAX_LOCATION_WITH_COLS, and so
@@ -73,6 +74,8 @@ get_visual_column (expanded_location exploc, location_t loc,
   char_span line = location_get_source_line (exploc.file, exploc.line);
   if (!line)
     return false;
+  if ((size_t)exploc.column > line.length ())
+    return false;
   unsigned int vis_column = 0;
   for (int i = 1; i < exploc.column; i++)
     {
@@ -85,7 +88,7 @@ get_visual_column (expanded_location exploc, location_t loc,
 	}
 
       if (ch == '\t')
-	vis_column = next_tab_stop (vis_column);
+	vis_column = next_tab_stop (vis_column, tab_width);
       else
        vis_column++;
     }
@@ -106,7 +109,8 @@ get_visual_column (expanded_location exploc, location_t loc,
 
 static bool
 get_first_nws_vis_column (const char *file, int line_num,
-			  unsigned int *first_nws)
+			  unsigned int *first_nws,
+			  unsigned int tab_width)
 {
   gcc_assert (first_nws);
 
@@ -125,7 +129,7 @@ get_first_nws_vis_column (const char *file, int line_num,
 	}
 
       if (ch == '\t')
-	vis_column = next_tab_stop (vis_column);
+	vis_column = next_tab_stop (vis_column, tab_width);
       else
 	vis_column++;
     }
@@ -178,7 +182,8 @@ static bool
 detect_intervening_unindent (const char *file,
 			     int body_line,
 			     int next_stmt_line,
-			     unsigned int vis_column)
+			     unsigned int vis_column,
+			     unsigned int tab_width)
 {
   gcc_assert (file);
   gcc_assert (next_stmt_line > body_line);
@@ -186,7 +191,7 @@ detect_intervening_unindent (const char *file,
   for (int line = body_line + 1; line < next_stmt_line; line++)
     {
       unsigned int line_vis_column;
-      if (get_first_nws_vis_column (file, line, &line_vis_column))
+      if (get_first_nws_vis_column (file, line, &line_vis_column, tab_width))
 	if (line_vis_column < vis_column)
 	  return true;
     }
@@ -289,6 +294,8 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
   expanded_location next_stmt_exploc = expand_location (next_stmt_loc);
   expanded_location guard_exploc = expand_location (guard_loc);
 
+  const unsigned int tab_width = cpp_opts->tabstop;
+
   /* They must be in the same file.  */
   if (next_stmt_exploc.file != body_exploc.file)
     return false;
@@ -334,7 +341,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 	  unsigned int guard_line_first_nws;
 	  if (!get_visual_column (guard_exploc, guard_loc,
 				  &guard_vis_column,
-				  &guard_line_first_nws))
+				  &guard_line_first_nws, tab_width))
 	    return false;
 	  /* Heuristic: only warn if the guard is the first thing
 	     on its line.  */
@@ -394,15 +401,15 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 	 it's not clear that it's meaningful to look at indentation.  */
       if (!get_visual_column (next_stmt_exploc, next_stmt_loc,
 			      &next_stmt_vis_column,
-			      &next_stmt_line_first_nws))
+			      &next_stmt_line_first_nws, tab_width))
 	return false;
       if (!get_visual_column (body_exploc, body_loc,
 			      &body_vis_column,
-			      &body_line_first_nws))
+			      &body_line_first_nws, tab_width))
 	return false;
       if (!get_visual_column (guard_exploc, guard_loc,
 			      &guard_vis_column,
-			      &guard_line_first_nws))
+			      &guard_line_first_nws, tab_width))
 	return false;
 
       /* If the line where the next stmt starts has non-whitespace
@@ -486,7 +493,7 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 	  int vis_column = MIN (next_stmt_vis_column, body_vis_column);
 	  if (detect_intervening_unindent (body_exploc.file, body_exploc.line,
 					   next_stmt_exploc.line,
-					   vis_column))
+					   vis_column, tab_width))
 	    return false;
 
 	  /* Otherwise, they are visually aligned: issue a warning.  */
@@ -602,6 +609,7 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 					      body_tinfo,
 					      next_tinfo))
     {
+      auto_diagnostic_group d;
       if (warning_at (guard_tinfo.location, OPT_Wmisleading_indentation,
 		      "this %qs clause does not guard...",
 		      guard_tinfo_to_string (guard_tinfo.keyword)))
@@ -611,3 +619,160 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 		guard_tinfo_to_string (guard_tinfo.keyword));
     }
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Verify that next_tab_stop works as expected.  */
+
+static void
+test_next_tab_stop ()
+{
+  const unsigned int tab_width = 8;
+
+  ASSERT_EQ (next_tab_stop (0, tab_width), 8);
+  ASSERT_EQ (next_tab_stop (1, tab_width), 8);
+  ASSERT_EQ (next_tab_stop (7, tab_width), 8);
+
+  ASSERT_EQ (next_tab_stop (8, tab_width), 16);
+  ASSERT_EQ (next_tab_stop (9, tab_width), 16);
+  ASSERT_EQ (next_tab_stop (15, tab_width), 16);
+
+  ASSERT_EQ (next_tab_stop (16, tab_width), 24);
+  ASSERT_EQ (next_tab_stop (17, tab_width), 24);
+  ASSERT_EQ (next_tab_stop (23, tab_width), 24);
+}
+
+/* Verify that the given call to get_visual_column succeeds, with
+   the given results.  */
+
+static void
+assert_get_visual_column_succeeds (const location &loc,
+				   const char *file, int line, int column,
+				   const unsigned int tab_width,
+				   unsigned int expected_visual_column,
+				   unsigned int expected_first_nws)
+{
+  expanded_location exploc;
+  exploc.file = file;
+  exploc.line = line;
+  exploc.column = column;
+  exploc.data = NULL;
+  exploc.sysp = false;
+  unsigned int actual_visual_column;
+  unsigned int actual_first_nws;
+  bool result = get_visual_column (exploc, UNKNOWN_LOCATION,
+				   &actual_visual_column,
+				   &actual_first_nws, tab_width);
+  ASSERT_TRUE_AT (loc, result);
+  ASSERT_EQ_AT (loc, actual_visual_column, expected_visual_column);
+  ASSERT_EQ_AT (loc, actual_first_nws, expected_first_nws);
+}
+
+/* Verify that the given call to get_visual_column succeeds, with
+   the given results.  */
+
+#define ASSERT_GET_VISUAL_COLUMN_SUCCEEDS(FILENAME, LINE, COLUMN,	\
+					  TAB_WIDTH,			\
+					  EXPECTED_VISUAL_COLUMN,	\
+					  EXPECTED_FIRST_NWS)		\
+  SELFTEST_BEGIN_STMT							\
+    assert_get_visual_column_succeeds (SELFTEST_LOCATION,		\
+				       FILENAME, LINE, COLUMN,		\
+				       TAB_WIDTH,			\
+				       EXPECTED_VISUAL_COLUMN,		\
+				       EXPECTED_FIRST_NWS);		\
+  SELFTEST_END_STMT
+
+/* Verify that the given call to get_visual_column fails gracefully.  */
+
+static void
+assert_get_visual_column_fails (const location &loc,
+				const char *file, int line, int column,
+				const unsigned int tab_width)
+{
+  expanded_location exploc;
+  exploc.file = file;
+  exploc.line = line;
+  exploc.column = column;
+  exploc.data = NULL;
+  exploc.sysp = false;
+  unsigned int actual_visual_column;
+  unsigned int actual_first_nws;
+  bool result = get_visual_column (exploc, UNKNOWN_LOCATION,
+				   &actual_visual_column,
+				   &actual_first_nws, tab_width);
+  ASSERT_FALSE_AT (loc, result);
+}
+
+/* Verify that the given call to get_visual_column fails gracefully.  */
+
+#define ASSERT_GET_VISUAL_COLUMN_FAILS(FILENAME, LINE, COLUMN,	\
+				       TAB_WIDTH)		\
+  SELFTEST_BEGIN_STMT						\
+    assert_get_visual_column_fails (SELFTEST_LOCATION,		\
+				    FILENAME, LINE, COLUMN,	\
+				    TAB_WIDTH);		\
+  SELFTEST_END_STMT
+
+/* Verify that get_visual_column works as expected.  */
+
+static void
+test_get_visual_column ()
+{
+  /* Create a tempfile with a mixture of tabs and spaces.
+
+     Both lines have either a space or a tab, then " line N",
+     for 8 characters in total.
+
+     1-based "columns" (w.r.t. to line 1):
+     .....................0000000001111.
+     .....................1234567890123.  */
+  const char *content = ("  line 1\n"
+			 "\t line 2\n");
+  line_table_test ltt;
+  temp_source_file tmp (SELFTEST_LOCATION, ".txt", content);
+
+  const unsigned int tab_width = 8;
+  const char *file = tmp.get_filename ();
+
+  /* Line 1 (space-based indentation).  */
+  {
+    const int line = 1;
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 1, tab_width, 0, 0);
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 2, tab_width, 1, 1);
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 3, tab_width, 2, 2);
+    /* first_nws should have stopped increasing.  */
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 4, tab_width, 3, 2);
+    /* Verify the end-of-line boundary.  */
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 8, tab_width, 7, 2);
+    ASSERT_GET_VISUAL_COLUMN_FAILS (file, line, 9, tab_width);
+  }
+
+  /* Line 2 (tab-based indentation).  */
+  {
+    const int line = 2;
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 1, tab_width, 0, 0);
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 2, tab_width, 8, 8);
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 3, tab_width, 9, 9);
+    /* first_nws should have stopped increasing.  */
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 4, tab_width, 10, 9);
+    /* Verify the end-of-line boundary.  */
+    ASSERT_GET_VISUAL_COLUMN_SUCCEEDS (file, line, 8, tab_width, 14, 9);
+    ASSERT_GET_VISUAL_COLUMN_FAILS (file, line, 9, tab_width);
+  }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+c_indentation_c_tests ()
+{
+  test_next_tab_stop ();
+  test_get_visual_column ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

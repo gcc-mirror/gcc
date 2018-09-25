@@ -55,6 +55,7 @@ struct sort_ctx
   char   *out; // output buffer
   size_t n;    // number of elements
   size_t size; // element size
+  size_t nlim; // limit for network sort
 };
 
 /* Helper for netsort. Permute, possibly in-place, 2 or 3 elements,
@@ -178,7 +179,7 @@ do {                                  \
 static void
 mergesort (char *in, sort_ctx *c, size_t n, char *out, char *tmp)
 {
-  if (likely (n <= 5))
+  if (likely (n <= c->nlim))
     {
       c->out = out;
       c->n = n;
@@ -221,12 +222,25 @@ gcc_qsort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
 {
   if (n < 2)
     return;
+  size_t nlim = 5;
+  bool stable = (ssize_t) size < 0;
+  if (stable)
+    nlim = 3, size = ~size;
   char *base = (char *)vbase;
-  sort_ctx c = {cmp, base, n, size};
+  sort_ctx c = {cmp, base, n, size, nlim};
   long long scratch[32];
   size_t bufsz = (n / 2) * size;
   void *buf = bufsz <= sizeof scratch ? scratch : xmalloc (bufsz);
   mergesort (base, &c, n, base, (char *)buf);
   if (buf != scratch)
     free (buf);
+#if CHECKING_P
+  qsort_chk (vbase, n, size, cmp);
+#endif
+}
+
+void
+gcc_stablesort (void *vbase, size_t n, size_t size, cmp_fn *cmp)
+{
+  gcc_qsort (vbase, n, ~size, cmp);
 }

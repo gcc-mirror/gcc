@@ -3437,4 +3437,7 @@ mn10300_reorg (void)
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P mn10300_modes_tieable_p
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 struct gcc_target targetm = TARGET_INITIALIZER;

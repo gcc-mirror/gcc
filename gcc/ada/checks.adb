@@ -4490,6 +4490,11 @@ package body Checks is
 
         or else not Is_Discrete_Type (Typ)
 
+        --  Don't deal with enumerated types with non-standard representation
+
+        or else (Is_Enumeration_Type (Typ)
+                   and then Present (Enum_Pos_To_Rep (Base_Type (Typ))))
+
         --  Ignore type for which an error has been posted, since range in
         --  this case may well be a bogosity deriving from the error. Also
         --  ignore if error posted on the reference node.
@@ -6758,9 +6763,36 @@ package body Checks is
       -----------------------------
 
       procedure Convert_And_Check_Range is
-         Tnn : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Tnn       : constant Entity_Id := Make_Temporary (Loc, 'T', N);
+         Conv_Node : Node_Id;
 
       begin
+         --  For enumeration types with non-standard representation this is a
+         --  direct conversion from the enumeration type to the target integer
+         --  type, which is treated by the back end as a normal integer type
+         --  conversion, treating the enumeration type as an integer, which is
+         --  exactly what we want. We set Conversion_OK to make sure that the
+         --  analyzer does not complain about what otherwise might be an
+         --  illegal conversion.
+
+         if Is_Enumeration_Type (Source_Base_Type)
+           and then Present (Enum_Pos_To_Rep (Source_Base_Type))
+           and then Is_Integer_Type (Target_Base_Type)
+         then
+            Conv_Node :=
+              OK_Convert_To
+                (Typ  => Target_Base_Type,
+                 Expr => Duplicate_Subexpr (N));
+
+         --  Common case
+
+         else
+            Conv_Node :=
+              Make_Type_Conversion (Loc,
+                Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
+                Expression   => Duplicate_Subexpr (N));
+         end if;
+
          --  We make a temporary to hold the value of the converted value
          --  (converted to the base type), and then do the test against this
          --  temporary. The conversion itself is replaced by an occurrence of
@@ -6776,10 +6808,7 @@ package body Checks is
              Defining_Identifier => Tnn,
              Object_Definition   => New_Occurrence_Of (Target_Base_Type, Loc),
              Constant_Present    => True,
-             Expression          =>
-               Make_Type_Conversion (Loc,
-                 Subtype_Mark => New_Occurrence_Of (Target_Base_Type, Loc),
-                 Expression   => Duplicate_Subexpr (N))),
+             Expression          => Conv_Node),
 
            Make_Raise_Constraint_Error (Loc,
              Condition =>

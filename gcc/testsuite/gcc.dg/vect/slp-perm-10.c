@@ -50,4 +50,6 @@ int main ()
 }
 
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target vect_perm } } } */
-/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm } } } */
+/* SLP fails for variable-length SVE because the load size is greater
+   than the minimum vector size.  */
+/* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target vect_perm xfail { aarch64_sve && vect_variable_length } } } } */

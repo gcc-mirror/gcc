@@ -104,8 +104,8 @@ cpp_defined (cpp_reader *pfile, const unsigned char *str, int len)
 
   node = CPP_HASHNODE (ht_lookup (pfile->hash_table, str, len, HT_NO_INSERT));
 
-  /* If it's of type NT_MACRO, it cannot be poisoned.  */
-  return node && node->type == NT_MACRO;
+  /* If it's a macro, it cannot have been poisoned.  */
+  return node && cpp_macro_p (node);
 }
 
 /* We don't need a proxy since the hash table's identifier comes first

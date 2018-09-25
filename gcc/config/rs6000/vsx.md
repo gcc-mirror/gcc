@@ -1412,7 +1412,7 @@
     }
 })
 
-(define_insn "*vsx_ld_elemrev_v16qi_internal"
+(define_insn "vsx_ld_elemrev_v16qi_internal"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
         (vec_select:V16QI
           (match_operand:V16QI 1 "memory_operand" "Z")
@@ -3265,10 +3265,9 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    stfd%U0%X0 %1,%0
-   stxsd%U0x %x1,%y0
+   stxsdx %x1,%y0
    stxsd %1,%0"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpstore")])
 
 ;; Variable V2DI/V2DF extract shift
 (define_insn "vsx_vslo_<mode>"
@@ -5050,6 +5049,22 @@
 	 UNSPEC_VCMPNEZB))]
   "TARGET_P9_VECTOR"
   "vcmpnezb %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Byte predicate or record-form
+(define_insn "vcmpnezb_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZB))
+   (set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI
+	 [(match_dup 1)
+	  (match_dup 2)]
+	 UNSPEC_VCMPNEZB))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezb. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Compare Not Equal Half Word (specified/not+eq:)

@@ -168,6 +168,7 @@
   VUNSPEC_MCRR2		; Represent the coprocessor mcrr2 instruction.
   VUNSPEC_MRRC		; Represent the coprocessor mrrc instruction.
   VUNSPEC_MRRC2		; Represent the coprocessor mrrc2 instruction.
+  VUNSPEC_SPECULATION_BARRIER ; Represents an unconditional speculation barrier.
 ])
 
 ;; Enumerators for NEON unspecs.

@@ -9,7 +9,7 @@
 // Large spans are the subject of this file. Spans consisting of less than
 // _MaxMHeapLists are held in lists of like sized spans. Larger spans
 // are held in a treap. See https://en.wikipedia.org/wiki/Treap or
-// http://faculty.washington.edu/aragon/pubs/rst89.pdf for an overview.
+// https://faculty.washington.edu/aragon/pubs/rst89.pdf for an overview.
 // sema.go also holds an implementation of a treap.
 //
 // Each treapNode holds a single span. The treap is sorted by page size
@@ -43,7 +43,7 @@ type treapNode struct {
 	parent    *treapNode // direct parent of this node, nil if root
 	npagesKey uintptr    // number of pages in spanKey, used as primary sort key
 	spanKey   *mspan     // span of size npagesKey, used as secondary sort key
-	priority  uint32     // random number used by treap algorithm keep tree probablistically balanced
+	priority  uint32     // random number used by treap algorithm to keep tree probabilistically balanced
 }
 
 func (t *treapNode) init() {
@@ -137,7 +137,7 @@ func (root *mTreap) insert(span *mspan) {
 	// npagesKeys, it is kept balanced on average by maintaining a heap ordering
 	// on the priority: s.priority <= both s.right.priority and s.right.priority.
 	// https://en.wikipedia.org/wiki/Treap
-	// http://faculty.washington.edu/aragon/pubs/rst89.pdf
+	// https://faculty.washington.edu/aragon/pubs/rst89.pdf
 
 	t := (*treapNode)(mheap_.treapalloc.alloc())
 	t.init()

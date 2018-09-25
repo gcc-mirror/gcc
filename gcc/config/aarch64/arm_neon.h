@@ -11822,6 +11822,18 @@ vabsq_s64 (int64x2_t __a)
   return __builtin_aarch64_absv2di (__a);
 }
 
+/* Try to avoid moving between integer and vector registers.
+   For why the cast to unsigned is needed check the vnegd_s64 intrinsic.
+   There is a testcase related to this issue:
+   gcc.target/aarch64/vabsd_s64.c.  */
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vabsd_s64 (int64_t __a)
+{
+  return __a < 0 ? - (uint64_t) __a : __a;
+}
+
 /* vadd */
 
 __extension__ extern __inline int64_t
@@ -22905,6 +22917,25 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vneg_s64 (int64x1_t __a)
 {
   return -__a;
+}
+
+/* According to the ACLE, the negative of the minimum (signed)
+   value is itself.  This leads to a semantics mismatch, as this is
+   undefined behaviour in C.  The value range predictor is not
+   aware that the negation of a negative number can still be negative
+   and it may try to fold the expression.  See the test in
+   gcc.target/aarch64/vnegd_s64.c for an example.
+
+   The cast below tricks the value range predictor to include
+   INT64_MIN in the range it computes.  So for x in the range
+   [INT64_MIN, y] the range prediction after vnegd_s64 (x) will
+   be ~[INT64_MIN + 1, y].  */
+
+__extension__ extern __inline int64_t
+__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
+vnegd_s64 (int64_t __a)
+{
+  return - (uint64_t) __a;
 }
 
 __extension__ extern __inline float32x4_t

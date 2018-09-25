@@ -427,7 +427,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	fputs (" autoinline", file);
       if (code == FUNCTION_DECL && DECL_UNINLINABLE (node))
 	fputs (" uninlinable", file);
-      if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
+      if (code == FUNCTION_DECL && fndecl_built_in_p (node))
 	fputs (" built-in", file);
       if (code == FUNCTION_DECL && DECL_STATIC_CHAIN (node))
 	fputs (" static-chain", file);
@@ -502,7 +502,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  print_node (file, "size", DECL_SIZE (node), indent + 4);
 	  print_node (file, "unit-size", DECL_SIZE_UNIT (node), indent + 4);
 
-	  if (code != FUNCTION_DECL || DECL_BUILT_IN (node))
+	  if (code != FUNCTION_DECL || fndecl_built_in_p (node))
 	    indent_to (file, indent + 3);
 
 	  if (DECL_USER_ALIGN (node))
@@ -514,7 +514,7 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	    fprintf (file, " offset_align " HOST_WIDE_INT_PRINT_UNSIGNED,
 		     DECL_OFFSET_ALIGN (node));
 
-	  if (code == FUNCTION_DECL && DECL_BUILT_IN (node))
+	  if (code == FUNCTION_DECL && fndecl_built_in_p (node))
 	    {
 	      if (DECL_BUILT_IN_CLASS (node) == BUILT_IN_MD)
 		fprintf (file, " built-in: BUILT_IN_MD:%d", DECL_FUNCTION_CODE (node));

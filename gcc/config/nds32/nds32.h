@@ -367,7 +367,8 @@ enum nds32_isr_nested_type
 {
   NDS32_NESTED,
   NDS32_NOT_NESTED,
-  NDS32_NESTED_READY
+  NDS32_NESTED_READY,
+  NDS32_CRITICAL
 };
 
 /* Define structure to record isr information.
@@ -394,6 +395,13 @@ struct nds32_isr_info
      It should be set to NDS32_NOT_NESTED by default
      unless user specifies attribute to change it.  */
   enum nds32_isr_nested_type nested_type;
+
+  /* Secure isr level.
+     Currently we have 0-3 security level.
+     It should be set to 0 by default.
+     For security processors, this is determined by secure
+     attribute or compiler options.  */
+  unsigned int security_level;
 
   /* Total vectors.
      The total vectors = interrupt + exception numbers + reset.
@@ -849,8 +857,10 @@ enum nds32_builtins
 
 /* ------------------------------------------------------------------------ */
 
-#define TARGET_ISA_V2   (nds32_arch_option == ARCH_V2)
+#define TARGET_ISR_VECTOR_SIZE_4_BYTE \
+  (nds32_isr_vector_size == 4)
 
+#define TARGET_ISA_V2   (nds32_arch_option == ARCH_V2)
 #define TARGET_ISA_V3 \
   (nds32_arch_option == ARCH_V3 \
    || nds32_arch_option == ARCH_V3J \

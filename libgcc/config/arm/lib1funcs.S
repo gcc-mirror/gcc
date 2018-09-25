@@ -1533,6 +1533,50 @@ LSYM(Lover12):
 #error "This is only for ARM EABI GNU/Linux"
 #endif
 #endif /* L_clear_cache */
+
+#ifdef L_speculation_barrier
+	FUNC_START speculation_barrier
+#if __ARM_ARCH >= 7
+	isb
+	dsb sy
+#elif defined __ARM_EABI__ && defined __linux__
+	/* We don't have a speculation barrier directly for this
+	   platform/architecture variant.  But we can use a kernel
+	   clear_cache service routine which will emit such instructions
+	   if run on a later version of the architecture.  We don't
+	   really want to flush the cache, but we must give it a valid
+	   address, so just clear pc..pc+1.  */
+#if defined __thumb__ && !defined __thumb2__
+	push	{r7}
+	mov	r7, #0xf
+	lsl	r7, #16
+	add	r7, #2
+	adr	r0, . + 4
+	add	r1, r0, #1
+	mov	r2, #0
+	svc	0
+	pop	{r7}
+#else
+	do_push	{r7}
+#ifdef __ARM_ARCH_6T2__
+	movw	r7, #2
+	movt	r7, #0xf
+#else
+	mov	r7, #0xf0000
+	add	r7, r7, #2
+#endif
+	add	r0, pc, #0	/* ADR.  */
+	add	r1, r0, #1
+	mov	r2, #0
+	svc	0
+	do_pop	{r7}
+#endif /* Thumb1 only */
+#else
+#warning "No speculation barrier defined for this platform"
+#endif
+	RET
+	FUNC_END speculation_barrier
+#endif
 /* ------------------------------------------------------------------------ */
 /* Dword shift operations.  */
 /* All the following Dword shift variants rely on the fact that

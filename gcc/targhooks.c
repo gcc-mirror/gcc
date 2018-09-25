@@ -2154,6 +2154,23 @@ std_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   if (indirect)
     type = build_pointer_type (type);
 
+  if (targetm.calls.split_complex_arg
+      && TREE_CODE (type) == COMPLEX_TYPE
+      && targetm.calls.split_complex_arg (type))
+    {
+      tree real_part, imag_part;
+
+      real_part = std_gimplify_va_arg_expr (valist,
+					    TREE_TYPE (type), pre_p, NULL);
+      real_part = get_initialized_tmp_var (real_part, pre_p, NULL);
+
+      imag_part = std_gimplify_va_arg_expr (unshare_expr (valist),
+					    TREE_TYPE (type), pre_p, NULL);
+      imag_part = get_initialized_tmp_var (imag_part, pre_p, NULL);
+
+      return build2 (COMPLEX_EXPR, type, real_part, imag_part);
+   }
+
   align = PARM_BOUNDARY / BITS_PER_UNIT;
   boundary = targetm.calls.function_arg_boundary (TYPE_MODE (type), type);
 
@@ -2312,6 +2329,45 @@ tree
 default_preferred_else_value (unsigned, tree type, unsigned, tree *)
 {
   return build_zero_cst (type);
+}
+
+/* Default implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE.  */
+bool
+default_have_speculation_safe_value (bool active ATTRIBUTE_UNUSED)
+{
+#ifdef HAVE_speculation_barrier
+  return active ? HAVE_speculation_barrier : true;
+#else
+  return false;
+#endif
+}
+/* Alternative implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE
+   that can be used on targets that never have speculative execution.  */
+bool
+speculation_safe_value_not_needed (bool active)
+{
+  return !active;
+}
+
+/* Default implementation of the speculation-safe-load builtin.  This
+   implementation simply copies val to result and generates a
+   speculation_barrier insn, if such a pattern is defined.  */
+rtx
+default_speculation_safe_value (machine_mode mode ATTRIBUTE_UNUSED,
+				rtx result, rtx val,
+				rtx failval ATTRIBUTE_UNUSED)
+{
+  emit_move_insn (result, val);
+
+#ifdef HAVE_speculation_barrier
+  /* Assume the target knows what it is doing: if it defines a
+     speculation barrier, but it is not enabled, then assume that one
+     isn't needed.  */
+  if (HAVE_speculation_barrier)
+    emit_insn (gen_speculation_barrier ());
+#endif
+
+  return result;
 }
 
 #include "gt-targhooks.h"

@@ -121,7 +121,14 @@ package body Exp_CG is
       for J in Call_Graph_Nodes.First .. Call_Graph_Nodes.Last loop
          N := Call_Graph_Nodes.Table (J);
 
-         if Nkind (N) in N_Subprogram_Call then
+         --  No action needed for subprogram calls removed by the expander
+         --  (for example, calls to ignored ghost entities).
+
+         if Nkind (N) = N_Null_Statement then
+            pragma Assert (Nkind (Original_Node (N)) in N_Subprogram_Call);
+            null;
+
+         elsif Nkind (N) in N_Subprogram_Call then
             Write_Call_Info (N);
 
          else pragma Assert (Nkind (N) = N_Defining_Identifier);

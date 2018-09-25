@@ -654,6 +654,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
       return x;
 
     case CLOBBER:
+    case CLOBBER_HIGH:
     case SET:
       gcc_unreachable ();
 
@@ -804,6 +805,16 @@ mark_not_eliminable (rtx x, machine_mode mem_mode)
 	  if (ep->to_rtx == XEXP (x, 0)
 	      && ep->to_rtx != hard_frame_pointer_rtx)
 	    setup_can_eliminate (ep, false);
+      return;
+
+    case CLOBBER_HIGH:
+      gcc_assert (REG_P (XEXP (x, 0)));
+      gcc_assert (REGNO (XEXP (x, 0)) < FIRST_PSEUDO_REGISTER);
+      for (ep = reg_eliminate;
+	   ep < &reg_eliminate[NUM_ELIMINABLE_REGS];
+	   ep++)
+	if (reg_is_clobbered_by_clobber_high (ep->to_rtx, XEXP (x, 0)))
+	  setup_can_eliminate (ep, false);
       return;
 
     case SET:

@@ -115,25 +115,36 @@ A @code{define_insn} is an RTL expression containing four or five operands:
 
 @enumerate
 @item
-An optional name.  The presence of a name indicates that this instruction
-pattern can perform a certain standard job for the RTL-generation
-pass of the compiler.  This pass knows certain names and will use
-the instruction patterns with those names, if the names are defined
-in the machine description.
+An optional name @var{n}.  When a name is present, the compiler
+automically generates a C++ function @samp{gen_@var{n}} that takes
+the operands of the instruction as arguments and returns the instruction's
+rtx pattern.  The compiler also assigns the instruction a unique code
+@samp{CODE_FOR_@var{n}}, with all such codes belonging to an enum
+called @code{insn_code}.
+
+These names serve one of two purposes.  The first is to indicate that the
+instruction performs a certain standard job for the RTL-generation
+pass of the compiler, such as a move, an addition, or a conditional
+jump.  The second is to help the target generate certain target-specific
+operations, such as when implementing target-specific intrinsic functions.
+
+It is better to prefix target-specific names with the name of the
+target, to avoid any clash with current or future standard names.
 
 The absence of a name is indicated by writing an empty string
 where the name should go.  Nameless instruction patterns are never
 used for generating RTL code, but they may permit several simpler insns
 to be combined later on.
 
-Names that are not thus known and used in RTL-generation have no
-effect; they are equivalent to no name at all.
-
 For the purpose of debugging the compiler, you may also specify a
 name beginning with the @samp{*} character.  Such a name is used only
 for identifying the instruction in RTL dumps; it is equivalent to having
 a nameless pattern for all other purposes.  Names beginning with the
 @samp{*} character are not required to be unique.
+
+The name may also have the form @samp{@@@var{n}}.  This has the same
+effect as a name @samp{@var{n}}, but in addition tells the compiler to
+generate further helper functions; see @ref{Parameterized Names} for details.
 
 @item
 The @dfn{RTL template}: This is a vector of incomplete RTL expressions
@@ -2120,6 +2131,42 @@ Check for 64 bits wide constants for add/sub instructions
 @item G
 Floating point constant that is legal for store immediate
 @end table
+
+@item C-SKY---@file{config/csky/constraints.md}
+@table @code
+
+@item a
+The mini registers r0 - r7.
+
+@item b
+The low registers r0 - r15.
+
+@item c
+C register.
+
+@item y
+HI and LO registers.
+
+@item l
+LO register.
+
+@item h
+HI register.
+
+@item v
+Vector registers.
+
+@item z
+Stack pointer register (SP).
+@end table
+
+@ifset INTERNALS
+The C-SKY back end supports a large set of additional constraints
+that are only useful for instruction selection or splitting rather
+than inline asm, such as constraints representing constant integer
+ranges accepted by particular instruction encodings.
+Refer to the source code for details.
+@end ifset
 
 @item Epiphany---@file{config/epiphany/constraints.md}
 @table @code
@@ -7032,6 +7079,21 @@ should be defined to an instruction that orders both loads and stores
 before the instruction with respect to loads and stores after the instruction.
 This pattern has no operands.
 
+@cindex @code{speculation_barrier} instruction pattern
+@item @samp{speculation_barrier}
+If the target can support speculative execution, then this pattern should
+be defined to an instruction that will block subsequent execution until
+any prior speculation conditions has been resolved.  The pattern must also
+ensure that the compiler cannot move memory operations past the barrier,
+so it needs to be an UNSPEC_VOLATILE pattern.  The pattern has no
+operands.
+
+If this pattern is not defined then the default expansion of
+@code{__builtin_speculation_safe_value} will emit a warning.  You can
+suppress this warning by defining this pattern with a final condition
+of @code{0} (zero), which tells the compiler that a speculation
+barrier is not needed for this target.
+
 @cindex @code{sync_compare_and_swap@var{mode}} instruction pattern
 @item @samp{sync_compare_and_swap@var{mode}}
 This pattern, if defined, emits code for an atomic compare-and-swap
@@ -10476,6 +10538,7 @@ facilities to make this process easier.
 * Code Iterators::         Doing the same for codes.
 * Int Iterators::          Doing the same for integers.
 * Subst Iterators::	   Generating variations of patterns for define_subst.
+* Parameterized Names::	   Specifying iterator values in C++ code.
 @end menu
 
 @node Mode Iterators
@@ -10870,5 +10933,102 @@ replaced in the first copy of the original RTL-template.
 
 @var{subst-applied-value} is a value with which subst-attribute would be
 replaced in the second copy of the original RTL-template.
+
+@node Parameterized Names
+@subsection Parameterized Names
+@cindex @samp{@@} in instruction pattern names
+Ports sometimes need to apply iterators using C++ code, in order to
+get the code or RTL pattern for a specific instruction.  For example,
+suppose we have the @samp{neon_vq<absneg><mode>} pattern given above:
+
+@smallexample
+(define_int_iterator QABSNEG [UNSPEC_VQABS UNSPEC_VQNEG])
+
+(define_int_attr absneg [(UNSPEC_VQABS "abs") (UNSPEC_VQNEG "neg")])
+
+(define_insn "neon_vq<absneg><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      QABSNEG))]
+  @dots{}
+)
+@end smallexample
+
+A port might need to generate this pattern for a variable
+@samp{QABSNEG} value and a variable @samp{VDQIW} mode.  There are two
+ways of doing this.  The first is to build the rtx for the pattern
+directly from C++ code; this is a valid technique and avoids any risk
+of combinatorial explosion.  The second is to prefix the instruction
+name with the special character @samp{@@}, which tells GCC to generate
+the four additional functions below.  In each case, @var{name} is the
+name of the instruction without the leading @samp{@@} character,
+without the @samp{<@dots{}>} placeholders, and with any underscore
+before a @samp{<@dots{}>} placeholder removed if keeping it would
+lead to a double or trailing underscore.
+
+@table @samp
+@item insn_code maybe_code_for_@var{name} (@var{i1}, @var{i2}, @dots{})
+See whether replacing the first @samp{<@dots{}>} placeholder with
+iterator value @var{i1}, the second with iterator value @var{i2}, and
+so on, gives a valid instruction.  Return its code if so, otherwise
+return @code{CODE_FOR_nothing}.
+
+@item insn_code code_for_@var{name} (@var{i1}, @var{i2}, @dots{})
+Same, but abort the compiler if the requested instruction does not exist.
+
+@item rtx maybe_gen_@var{name} (@var{i1}, @var{i2}, @dots{}, @var{op0}, @var{op1}, @dots{})
+Check for a valid instruction in the same way as
+@code{maybe_code_for_@var{name}}.  If the instruction exists,
+generate an instance of it using the operand values given by @var{op0},
+@var{op1}, and so on, otherwise return null.
+
+@item rtx gen_@var{name} (@var{i1}, @var{i2}, @dots{}, @var{op0}, @var{op1}, @dots{})
+Same, but abort the compiler if the requested instruction does not exist,
+or if the instruction generator invoked the @code{FAIL} macro.
+@end table
+
+For example, changing the pattern above to:
+
+@smallexample
+(define_insn "@@neon_vq<absneg><mode>"
+  [(set (match_operand:VDQIW 0 "s_register_operand" "=w")
+	(unspec:VDQIW [(match_operand:VDQIW 1 "s_register_operand" "w")
+		       (match_operand:SI 2 "immediate_operand" "i")]
+		      QABSNEG))]
+  @dots{}
+)
+@end smallexample
+
+would define the same patterns as before, but in addition would generate
+the four functions below:
+
+@smallexample
+insn_code maybe_code_for_neon_vq (int, machine_mode);
+insn_code code_for_neon_vq (int, machine_mode);
+rtx maybe_gen_neon_vq (int, machine_mode, rtx, rtx, rtx);
+rtx gen_neon_vq (int, machine_mode, rtx, rtx, rtx);
+@end smallexample
+
+Calling @samp{code_for_neon_vq (UNSPEC_VQABS, V8QImode)}
+would then give @code{CODE_FOR_neon_vqabsv8qi}.
+
+It is possible to have multiple @samp{@@} patterns with the same
+name and same types of iterator.  For example:
+
+@smallexample
+(define_insn "@@some_arithmetic_op<mode>"
+  [(set (match_operand:INTEGER_MODES 0 "register_operand") @dots{})]
+  @dots{}
+)
+
+(define_insn "@@some_arithmetic_op<mode>"
+  [(set (match_operand:FLOAT_MODES 0 "register_operand") @dots{})]
+  @dots{}
+)
+@end smallexample
+
+would produce a single set of functions that handles both
+@code{INTEGER_MODES} and @code{FLOAT_MODES}.
 
 @end ifset

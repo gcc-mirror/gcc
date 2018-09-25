@@ -72,8 +72,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort. %0"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "tabort<wd>c"
   [(parallel
@@ -98,8 +97,7 @@
    (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>c. %0,%1,%2"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "tabort<wd>ci"
   [(parallel
@@ -124,8 +122,7 @@
    (set (match_operand:BLK 4) (unspec:BLK [(match_dup 4)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabort<wd>ci. %0,%1,%2"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "tbegin"
   [(parallel
@@ -146,8 +143,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tbegin. %0"
-  [(set_attr "type" "htm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htm")])
 
 (define_expand "tcheck"
   [(parallel
@@ -166,8 +162,7 @@
    (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tcheck %0"
-  [(set_attr "type" "htm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htm")])
 
 (define_expand "tend"
   [(parallel
@@ -188,8 +183,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tend. %0"
-  [(set_attr "type" "htm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htm")])
 
 (define_expand "trechkpt"
   [(parallel
@@ -208,8 +202,7 @@
    (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "trechkpt."
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "treclaim"
   [(parallel
@@ -230,8 +223,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "treclaim. %0"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "tsr"
   [(parallel
@@ -252,8 +244,7 @@
    (set (match_operand:BLK 2) (unspec:BLK [(match_dup 2)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tsr. %0"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_expand "ttest"
   [(parallel
@@ -272,8 +263,7 @@
    (set (match_operand:BLK 1) (unspec:BLK [(match_dup 1)] UNSPEC_HTM_FENCE))]
   "TARGET_HTM"
   "tabortwci. 0,1,0"
-  [(set_attr "type" "htmsimple")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htmsimple")])
 
 (define_insn "htm_mfspr_<mode>"
   [(set (match_operand:GPR 0 "gpc_reg_operand" "=r")
@@ -282,8 +272,7 @@
 			     UNSPECV_HTM_MFSPR))]
   "TARGET_HTM"
   "mfspr %0,%1";
-  [(set_attr "type" "htm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htm")])
 
 (define_insn "htm_mtspr_<mode>"
   [(set (match_operand:GPR 2 "htm_spr_reg_operand" "")
@@ -292,5 +281,4 @@
 			     UNSPECV_HTM_MTSPR))]
   "TARGET_HTM"
   "mtspr %1,%0";
-  [(set_attr "type" "htm")
-   (set_attr "length" "4")])
+  [(set_attr "type" "htm")])

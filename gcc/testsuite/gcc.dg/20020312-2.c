@@ -111,6 +111,11 @@ extern void abort (void);
 /* No pic register.  */
 #elif defined (__nvptx__)
 /* No pic register.  */
+#elif defined (__csky__)
+/* Pic register is r28, but some cores only have r0-r15.  */
+# if defined (__CK807__) || defined (__CK810__)
+#   define PIC_REG  "r28"
+# endif
 #else
 # error "Modify the test for your target."
 #endif

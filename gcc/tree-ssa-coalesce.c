@@ -620,7 +620,11 @@ ssa_conflicts_merge (ssa_conflicts *ptr, unsigned x, unsigned y)
     {
       bitmap bz = ptr->conflicts[z];
       if (bz)
-	bitmap_set_bit (bz, x);
+	{
+	  bool was_there = bitmap_clear_bit (bz, y);
+	  gcc_checking_assert (was_there);
+	  bitmap_set_bit (bz, x);
+	}
     }
 
   if (bx)
@@ -1575,22 +1579,9 @@ gimple_can_coalesce_p (tree name1, tree name2)
 
   /* If the types are not the same, see whether they are compatible.  This
      (for example) allows coalescing when the types are fundamentally the
-     same, but just have different names.
-
-     In the non-optimized case, we must first test TYPE_CANONICAL because
-     we use it to compute the partition_to_base_index of the map.  */
-  if (flag_tree_coalesce_vars)
-    {
-      if (types_compatible_p (t1, t2))
-	goto check_modes;
-    }
-  else
-    {
-      if (TYPE_CANONICAL (t1)
-	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
-	  && types_compatible_p (t1, t2))
-	goto check_modes;
-    }
+     same, but just have different names.  */
+  if (types_compatible_p (t1, t2))
+    goto check_modes;
 
   return false;
 }
@@ -1716,89 +1707,6 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
   partition_delete (tentative);
 }
 
-/* Hashtable helpers.  */
-
-struct tree_int_map_hasher : nofree_ptr_hash <tree_int_map>
-{
-  static inline hashval_t hash (const tree_int_map *);
-  static inline bool equal (const tree_int_map *, const tree_int_map *);
-};
-
-inline hashval_t
-tree_int_map_hasher::hash (const tree_int_map *v)
-{
-  return tree_map_base_hash (v);
-}
-
-inline bool
-tree_int_map_hasher::equal (const tree_int_map *v, const tree_int_map *c)
-{
-  return tree_int_map_eq (v, c);
-}
-
-/* This routine will initialize the basevar fields of MAP with base
-   names.  Partitions will share the same base if they have the same
-   SSA_NAME_VAR, or, being anonymous variables, the same type.  This
-   must match gimple_can_coalesce_p in the non-optimized case.  */
-
-static void
-compute_samebase_partition_bases (var_map map)
-{
-  int x, num_part;
-  tree var;
-  struct tree_int_map *m, *mapstorage;
-
-  num_part = num_var_partitions (map);
-  hash_table<tree_int_map_hasher> tree_to_index (num_part);
-  /* We can have at most num_part entries in the hash tables, so it's
-     enough to allocate so many map elements once, saving some malloc
-     calls.  */
-  mapstorage = m = XNEWVEC (struct tree_int_map, num_part);
-
-  /* If a base table already exists, clear it, otherwise create it.  */
-  free (map->partition_to_base_index);
-  map->partition_to_base_index = (int *) xmalloc (sizeof (int) * num_part);
-
-  /* Build the base variable list, and point partitions at their bases.  */
-  for (x = 0; x < num_part; x++)
-    {
-      struct tree_int_map **slot;
-      unsigned baseindex;
-      var = partition_to_var (map, x);
-      if (SSA_NAME_VAR (var)
-	  && (!VAR_P (SSA_NAME_VAR (var))
-	      || !DECL_IGNORED_P (SSA_NAME_VAR (var))))
-	m->base.from = SSA_NAME_VAR (var);
-      else
-	/* This restricts what anonymous SSA names we can coalesce
-	   as it restricts the sets we compute conflicts for.
-	   Using TREE_TYPE to generate sets is the easiest as
-	   type equivalency also holds for SSA names with the same
-	   underlying decl.
-
-	   Check gimple_can_coalesce_p when changing this code.  */
-	m->base.from = (TYPE_CANONICAL (TREE_TYPE (var))
-			? TYPE_CANONICAL (TREE_TYPE (var))
-			: TREE_TYPE (var));
-      /* If base variable hasn't been seen, set it up.  */
-      slot = tree_to_index.find_slot (m, INSERT);
-      if (!*slot)
-	{
-	  baseindex = m - mapstorage;
-	  m->to = baseindex;
-	  *slot = m;
-	  m++;
-	}
-      else
-	baseindex = (*slot)->to;
-      map->partition_to_base_index[x] = baseindex;
-    }
-
-  map->num_basevars = m - mapstorage;
-
-  free (mapstorage);
-}
-
 /* Given an initial var_map MAP, coalesce variables and return a partition map
    with the resulting coalesce.  Note that this function is called in either
    live range computation context or out-of-ssa context, indicated by MAP.  */
@@ -1820,10 +1728,7 @@ coalesce_ssa_name (var_map map)
 
   partition_view_bitmap (map, used_in_copies);
 
-  if (flag_tree_coalesce_vars)
-    compute_optimized_partition_bases (map, used_in_copies, cl);
-  else
-    compute_samebase_partition_bases (map);
+  compute_optimized_partition_bases (map, used_in_copies, cl);
 
   if (num_var_partitions (map) < 1)
     {

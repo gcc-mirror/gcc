@@ -85,6 +85,9 @@ typedef double __m128d __attribute__ ((__vector_size__ (16), __may_alias__));
 typedef long long __m128i_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 typedef double __m128d_u __attribute__ ((__vector_size__ (16), __may_alias__, __aligned__ (1)));
 
+/* Define two value permute mask */
+#define _MM_SHUFFLE2(x,y) (((x) << 1) | (y))
+
 /* Create a vector with element 0 as F and the rest zero.  */
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_set_sd (double __F)

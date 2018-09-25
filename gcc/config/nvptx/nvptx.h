@@ -21,9 +21,15 @@
 #ifndef GCC_NVPTX_H
 #define GCC_NVPTX_H
 
+#ifndef NVPTX_OPTS_H
+#include "config/nvptx/nvptx-opts.h"
+#endif
+
 /* Run-time Target.  */
 
 #define STARTFILE_SPEC "%{mmainkernel:crt0.o}"
+
+#define ASM_SPEC "%{misa=*:-m %*}"
 
 #define TARGET_CPU_CPP_BUILTINS()		\
   do						\
@@ -86,6 +92,8 @@
 #define POINTER_SIZE (TARGET_ABI64 ? 64 : 32)
 #define Pmode (TARGET_ABI64 ? DImode : SImode)
 #define STACK_SIZE_MODE Pmode
+
+#define TARGET_SM35 (ptx_isa_option >= PTX_ISA_SM35)
 
 /* Registers.  Since ptx is a virtual target, we just define a few
    hard registers for special purposes and leave pseudos unallocated.

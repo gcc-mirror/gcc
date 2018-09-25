@@ -529,7 +529,9 @@ compile_file (void)
       dwarf2out_frame_finish ();
 #endif
 
+      debuginfo_start ();
       (*debug_hooks->finish) (main_input_filename);
+      debuginfo_stop ();
       timevar_pop (TV_SYMOUT);
 
       /* Output some stuff at end of file if nec.  */
@@ -1112,6 +1114,10 @@ general_init (const char *argv0, bool init_signals)
 
   global_dc->show_caret
     = global_options_init.x_flag_diagnostics_show_caret;
+  global_dc->show_labels_p
+    = global_options_init.x_flag_diagnostics_show_labels;
+  global_dc->show_line_numbers_p
+    = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
   global_dc->show_column
@@ -1183,6 +1189,7 @@ general_init (const char *argv0, bool init_signals)
   symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
+  debuginfo_early_init ();
   finish_params ();
 }
 
@@ -2077,6 +2084,7 @@ finalize (bool no_backend)
   if (!no_backend)
     {
       statistics_fini ();
+      debuginfo_fini ();
 
       g->get_passes ()->finish_optimization_passes ();
 
@@ -2154,6 +2162,7 @@ do_compile ()
           init_final (main_input_filename);
           coverage_init (aux_base_name);
           statistics_init ();
+          debuginfo_init ();
           invoke_plugin_callbacks (PLUGIN_START_UNIT, NULL);
 
           timevar_stop (TV_PHASE_SETUP);
