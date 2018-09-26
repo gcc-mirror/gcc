@@ -960,9 +960,14 @@ package body Lib.Writ is
 
                   --  In GNATprove mode we must write the spec of a unit which
                   --  requires a body if that body is not found. This will
-                  --  allow partial analysis on incomplete sources.
+                  --  allow partial analysis on incomplete sources. Also, in
+                  --  the case of a unit that is a remote call interface, the
+                  --  bodies of packages may not exist but still may form a
+                  --  valid program - so we handle that here as well.
 
-                  if GNATprove_Mode then
+                  if GNATprove_Mode
+                    or else Is_Remote_Call_Interface (Cunit_Entity (Unum))
+                  then
                      Body_Fname :=
                        Get_File_Name
                          (Uname    => Get_Body_Name (Uname),
