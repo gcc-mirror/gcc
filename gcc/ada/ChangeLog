@@ -1,5 +1,13 @@
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract): The
+	analysis of preconditions specified by pragmas (rather than
+	aspects) is not delayed, and therefore expressions functions
+	that are completions do not need special handling during
+	expansion.
+
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb: Fix handling of up level references for entries.
 
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
