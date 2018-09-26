@@ -1,3 +1,8 @@
+2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67655
+	* g++.dg/concepts/pr67655.C: New.
+
 2018-09-26  Thomas Quinot  <quinot@adacore.com>
 
 	* gnat.dg/sso13.adb: New testcase.
