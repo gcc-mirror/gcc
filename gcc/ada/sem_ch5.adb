@@ -2203,6 +2203,19 @@ package body Sem_Ch5 is
 
       Preanalyze_Range (Iter_Name);
 
+      --  If the domain of iteration is a function call, make sure the function
+      --  itself is frozen. This is an issue if this is a local expression
+      --  function.
+
+      if Nkind (Iter_Name) = N_Function_Call
+        and then Is_Entity_Name (Name (Iter_Name))
+        and then Full_Analysis
+        and then (In_Assertion_Expr = 0
+                   or else Assertions_Enabled)
+      then
+         Freeze_Before (N, Entity (Name (Iter_Name)));
+      end if;
+
       --  Set the kind of the loop variable, which is not visible within the
       --  iterator name.
 
@@ -4136,10 +4149,10 @@ package body Sem_Ch5 is
       Full_Analysis := False;
       Expander_Mode_Save_And_Set (False);
 
-      --  In addition to the above we must ecplicity suppress the
-      --  generation of freeze nodes which might otherwise be generated
-      --  during resolution of the range (e.g. if given by an attribute
-      --  that will freeze its prefix).
+      --  In addition to the above we must explicitly suppress the generation
+      --  of freeze nodes that might otherwise be generated during resolution
+      --  of the range (e.g. if given by an attribute that will freeze its
+      --  prefix).
 
       Set_Must_Not_Freeze (R_Copy);
 
