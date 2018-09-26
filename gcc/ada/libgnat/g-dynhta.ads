@@ -283,20 +283,10 @@ package GNAT.Dynamic_HTables is
    --
    --  The destruction of the table reclaims all storage occupied by it.
 
-   --  The following type denotes the underlying range of the hash table
-   --  buckets.
-
-   type Bucket_Range_Type is mod 2 ** 32;
-
    --  The following type denotes the multiplicative factor used in expansion
    --  and compression of the hash table.
 
    subtype Factor_Type is Bucket_Range_Type range 2 .. 100;
-
-   --  The following type denotes the number of key-value pairs stored in the
-   --  hash table.
-
-   type Pair_Count_Type is range 0 .. 2 ** 31 - 1;
 
    --  The following type denotes the threshold range used in expansion and
    --  compression of the hash table.
@@ -333,10 +323,9 @@ package GNAT.Dynamic_HTables is
       --  that the size of the buckets will be halved once the load factor
       --  drops below 0.5.
 
-      with function Equivalent_Keys
+      with function "="
              (Left  : Key_Type;
               Right : Key_Type) return Boolean;
-      --  Determine whether two keys are equivalent
 
       with function Hash (Key : Key_Type) return Bucket_Range_Type;
       --  Map an arbitrary key into the range of buckets
@@ -353,52 +342,44 @@ package GNAT.Dynamic_HTables is
       type Instance is private;
       Nil : constant Instance;
 
-      Not_Created : exception;
-      --  This exception is raised when the hash table has not been created by
-      --  routine Create, and an attempt is made to read or mutate its state.
-
-      Table_Locked : exception;
-      --  This exception is raised when the hash table is being iterated on,
-      --  and an attempt is made to mutate its state.
-
-      function Create (Initial_Size : Bucket_Range_Type) return Instance;
+      function Create (Initial_Size : Positive) return Instance;
       --  Create a new table with bucket capacity Initial_Size. This routine
       --  must be called at the start of a hash table's lifetime.
 
       procedure Delete (T : Instance; Key : Key_Type);
       --  Delete the value which corresponds to key Key from hash table T. The
       --  routine has no effect if the value is not present in the hash table.
-      --  This action will raise Table_Locked if the hash table has outstanding
+      --  This action will raise Iterated if the hash table has outstanding
       --  iterators. If the load factor drops below Compression_Threshold, the
       --  size of the buckets is decreased by Copression_Factor.
 
       procedure Destroy (T : in out Instance);
       --  Destroy the contents of hash table T, rendering it unusable. This
       --  routine must be called at the end of a hash table's lifetime. This
-      --  action will raise Table_Locked if the hash table has outstanding
+      --  action will raise Iterated if the hash table has outstanding
       --  iterators.
 
       function Get (T : Instance; Key : Key_Type) return Value_Type;
       --  Obtain the value which corresponds to key Key from hash table T. If
       --  the value does not exist, return No_Value.
 
-      procedure Put
-        (T     : Instance;
-         Key   : Key_Type;
-         Value : Value_Type);
+      function Is_Empty (T : Instance) return Boolean;
+      --  Determine whether hash table T is empty
+
+      procedure Put (T : Instance; Key : Key_Type; Value : Value_Type);
       --  Associate value Value with key Key in hash table T. If the table
       --  already contains a mapping of the same key to a previous value, the
-      --  previous value is overwritten. This action will raise Table_Locked
-      --  if the hash table has outstanding iterators. If the load factor goes
+      --  previous value is overwritten. This action will raise Iterated if
+      --  the hash table has outstanding iterators. If the load factor goes
       --  over Expansion_Threshold, the size of the buckets is increased by
       --  Expansion_Factor.
 
       procedure Reset (T : Instance);
       --  Destroy the contents of hash table T, and reset it to its initial
-      --  created state. This action will raise Table_Locked if the hash table
+      --  created state. This action will raise Iterated if the hash table
       --  has outstanding iterators.
 
-      function Size (T : Instance) return Pair_Count_Type;
+      function Size (T : Instance) return Natural;
       --  Obtain the number of key-value pairs in hash table T
 
       -------------------------
@@ -420,10 +401,6 @@ package GNAT.Dynamic_HTables is
 
       type Iterator is private;
 
-      Iterator_Exhausted : exception;
-      --  This exception is raised when an iterator is exhausted and further
-      --  attempts to advance it are made by calling routine Next.
-
       function Iterate (T : Instance) return Iterator;
       --  Obtain an iterator over the keys of hash table T. This action locks
       --  all mutation functionality of the associated hash table.
@@ -433,9 +410,7 @@ package GNAT.Dynamic_HTables is
       --  iterator has been exhausted, restore all mutation functionality of
       --  the associated hash table.
 
-      procedure Next
-        (Iter : in out Iterator;
-         Key  : out Key_Type);
+      procedure Next (Iter : in out Iterator; Key : out Key_Type);
       --  Return the current key referenced by iterator Iter and advance to
       --  the next available key. If the iterator has been exhausted and
       --  further attempts are made to advance it, this routine restores
@@ -487,10 +462,10 @@ package GNAT.Dynamic_HTables is
          Initial_Size : Bucket_Range_Type := 0;
          --  The initial size of the buckets as specified at creation time
 
-         Locked : Natural := 0;
+         Iterators : Natural := 0;
          --  Number of outstanding iterators
 
-         Pairs : Pair_Count_Type := 0;
+         Pairs : Natural := 0;
          --  Number of key-value pairs in the buckets
       end record;
 

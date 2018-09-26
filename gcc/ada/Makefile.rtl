@@ -445,6 +445,7 @@ GNATRTL_NONTASKING_OBJS= \
   g-sehash$(objext) \
   g-sercom$(objext) \
   g-sestin$(objext) \
+  g-sets$(objext) \
   g-sha1$(objext) \
   g-sha224$(objext) \
   g-sha256$(objext) \
