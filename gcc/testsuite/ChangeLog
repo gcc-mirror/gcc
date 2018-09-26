@@ -1,3 +1,7 @@
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/sso13.adb: New testcase.
+
 2018-09-26  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/warn16.adb: New testcase.
