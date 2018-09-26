@@ -1,3 +1,11 @@
+2018-09-26  Javier Miranda  <miranda@adacore.com>
+
+	* sem_res.adb (Resolve_Actuals): If the formal is a class-wide
+	type conversion then do not skip resolving and expanding the
+	conversion; required to displace the pointer to the object and
+	reference the dispatch table associated with the target
+	interface type.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* libgnat/g-dynhta.adb (Prepend_Or_Replace): Update the number
