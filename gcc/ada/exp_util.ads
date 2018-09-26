@@ -585,8 +585,9 @@ package Exp_Util is
    function Find_Interface_Tag
      (T     : Entity_Id;
       Iface : Entity_Id) return Entity_Id;
-   --  Ada 2005 (AI-251): Given a type T implementing the interface Iface,
-   --  return the record component containing the tag of Iface.
+   --  Ada 2005 (AI-251): Given a type T and an interface Iface, return the
+   --  record component containing the tag of Iface if T implements Iface or
+   --  Empty if it does not.
 
    function Find_Prim_Op (T : Entity_Id; Name : Name_Id) return Entity_Id;
    --  Find the first primitive operation of a tagged type T with name Name.
