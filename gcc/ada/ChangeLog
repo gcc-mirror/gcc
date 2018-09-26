@@ -1,3 +1,7 @@
+2018-09-26  Jerome Lambourg  <lambourg@adacore.com>
+
+	* vxlink.adb: Kill a CodePeer warning.
+
 2018-09-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/87396
