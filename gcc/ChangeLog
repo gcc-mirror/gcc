@@ -1,3 +1,10 @@
+2018-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87414
+	* config/i386/i386.c: Include debug.h and dwarf2out.h.
+	(output_indirect_thunk): Emit DW_CFA_def_cfa_offset after the
+	call.
+
 2018-09-25  Andrew Stubbs  <ams@codesourcery.com>
 
 	* builtins.c (get_builtin_sync_mem): Force address mode conversion.
