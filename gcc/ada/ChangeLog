@@ -1,3 +1,9 @@
+2018-09-26  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Install_Null_Excluding_Check): Do not add
+	null-excluding checks when the tree may not be fully decorated.
+	This patch cascade errors.
+
 2018-09-26  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Remove test for
