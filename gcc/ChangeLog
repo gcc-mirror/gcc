@@ -1,5 +1,29 @@
 2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.h (enum reg_class): Remove FP_TOP_SSE_REGS
+	and FP_SECOND_SSE_REGS.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	* config/i386/i386.c (ix86_preferred_reload_class) Do not handle
+	FP_TOP_SSE_REGS and FP_SECOND_SSE_REGS classes.
+	(ix86_preferred_output_reload_class): Ditto.
+	* config/i386/i386.md (fix_trunc<mode>_i387_fisttp): Change "=&1f"
+	clobber constraint to "=&f".
+	(fix_truncdi_i387): Ditto.
+	(lrintxfdi2): Ditto.
+	(fistdi2_<rounding>): Ditto.
+	(fpremxf4_i387): Change "=u" constraint to "=f".
+	(fprem1xf4_i387): Ditto.
+	(sincosxf3): Ditto.
+	(fptanxf4_i387): Ditto.
+	(fxtractxf3_i387): Ditto.
+	(fscalexf4_i387): Ditto.
+	(atan2xf3): Change "u" constraint to "f".
+	(fyl2xxf3_i387): Ditto.
+	(fyl2xp1xf3_i387): Ditto.
+
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/87439
 	* config/i386/i386.h (NUM_MODES_FOR_MODE_SWITCHING): Update
 	for removed I387_MASK_PM entity.
