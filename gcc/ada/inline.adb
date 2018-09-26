@@ -1615,7 +1615,7 @@ package body Inline is
             Set_Is_Inlined_Always (Subp, False);
 
             if Debug_Flag_Underscore_F then
-               Error_Msg_NE (Msg & "p?", N, Subp);
+               Error_Msg_NE (Msg, N, Subp);
             end if;
 
          elsif Has_Pragma_Inline_Always (Subp) then
@@ -1645,7 +1645,7 @@ package body Inline is
          Set_Is_Inlined_Always (Subp, False);
 
          if Debug_Flag_Underscore_F then
-            Error_Msg_NE (Msg & "p?", N, Subp);
+            Error_Msg_NE (Msg, N, Subp);
          end if;
 
       else
