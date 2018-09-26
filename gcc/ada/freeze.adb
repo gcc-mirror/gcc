@@ -7824,11 +7824,20 @@ package body Freeze is
       --  minimum decoration needed to locate referenced unfrozen types
       --  without adding any decoration to the function expression.
 
-      Push_Scope (Def_Id);
-      Install_Formals (Def_Id);
+      --  This routine is also applied to expressions in the contract for
+      --  the subprogram. If that happens when expanding the code for
+      --  pre/postconditions during expansion of the subprogram body, the
+      --  subprogram is already installed.
 
-      Preanalyze_Spec_Expression (Dup_Expr, Typ);
-      End_Scope;
+      if Def_Id /= Current_Scope then
+         Push_Scope (Def_Id);
+         Install_Formals (Def_Id);
+
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+         End_Scope;
+      else
+         Preanalyze_Spec_Expression (Dup_Expr, Typ);
+      end if;
 
       --  Restore certain attributes of Def_Id since the preanalysis may
       --  have introduced itypes to this scope, thus modifying attributes
