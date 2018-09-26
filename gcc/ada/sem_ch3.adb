@@ -1919,8 +1919,8 @@ package body Sem_Ch3 is
          if Is_Limited_Record (Typ) then
             return True;
 
-         --  If the root type is limited (and not a limited interface)
-         --  so is the current type
+         --  If the root type is limited (and not a limited interface) so is
+         --  the current type.
 
          elsif Is_Limited_Record (R)
            and then (not Is_Interface (R) or else not Is_Limited_Interface (R))
@@ -1931,8 +1931,8 @@ package body Sem_Ch3 is
          --  limited record parent that is not an interface.
 
          elsif R /= P
-            and then Is_Limited_Record (P)
-            and then not Is_Interface (P)
+           and then Is_Limited_Record (P)
+           and then not Is_Interface (P)
          then
             return True;
 

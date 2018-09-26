@@ -864,8 +864,8 @@ package Snames is
    Name_Warn                           : constant Name_Id := N + $;
    Name_Working_Storage                : constant Name_Id := N + $;
 
-   --  OpenAcc-specific clause names
-   --  Parallel, Kernels, Data
+   --  OpenAcc-specific clause names for Parallel, Kernels, Data
+
    Name_Acc_If                         : constant Name_Id := N + $;
    Name_Acc_Private                    : constant Name_Id := N + $;
    Name_Attach                         : constant Name_Id := N + $;
@@ -884,13 +884,15 @@ package Snames is
    Name_Reduction                      : constant Name_Id := N + $;
    Name_Vector_Length                  : constant Name_Id := N + $;
    Name_Wait                           : constant Name_Id := N + $;
+
    --  Loop
+
+   Name_Auto                           : constant Name_Id := N + $;
    Name_Collapse                       : constant Name_Id := N + $;
    Name_Gang                           : constant Name_Id := N + $;
-   Name_Worker                         : constant Name_Id := N + $;
    Name_Seq                            : constant Name_Id := N + $;
-   Name_Auto                           : constant Name_Id := N + $;
    Name_Tile                           : constant Name_Id := N + $;
+   Name_Worker                         : constant Name_Id := N + $;
 
    --  Names of recognized attributes. The entries with the comment "Ada 83"
    --  are attributes that are defined in Ada 83, but not in Ada 95. These

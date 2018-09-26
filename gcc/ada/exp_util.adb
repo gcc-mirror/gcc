@@ -9151,10 +9151,10 @@ package body Exp_Util is
                  Aliased_Present    => False,
                  Subtype_Indication => New_Occurrence_Of (Constr_Root, Loc))));
 
-         Set_Reverse_Storage_Order (Equiv_Type,
-           Reverse_Storage_Order (Base_Type (Root_Utyp)));
-         Set_Reverse_Bit_Order (Equiv_Type,
-           Reverse_Bit_Order (Base_Type (Root_Utyp)));
+         Set_Reverse_Storage_Order
+           (Equiv_Type, Reverse_Storage_Order (Base_Type (Root_Utyp)));
+         Set_Reverse_Bit_Order
+           (Equiv_Type, Reverse_Bit_Order (Base_Type (Root_Utyp)));
       end if;
 
       Append_To (Comp_List,

@@ -5134,11 +5134,11 @@ package Sinfo is
       --  Iteration_Scheme (Node2) (set to Empty if no iteration scheme)
       --  Statements (List3)
       --  End_Label (Node4)
+      --  Is_OpenAcc_Environment (Flag13-Sem)
+      --  Is_OpenAcc_Loop (Flag14-Sem)
       --  Has_Created_Identifier (Flag15)
       --  Is_Null_Loop (Flag16)
       --  Suppress_Loop_Warnings (Flag17)
-      --  Is_OpenAcc_Environment (Flag13-Sem)
-      --  Is_OpenAcc_Loop (Flag14-Sem)
 
       --  Note: the parser fills in the Identifier field if there is an
       --  explicit loop identifier. Otherwise the parser leaves this field
