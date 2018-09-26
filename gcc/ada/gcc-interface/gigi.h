@@ -214,9 +214,6 @@ extern void destroy_gnat_decl (void);
 /* Highest number in the front-end node table.  */
 extern int max_gnat_nodes;
 
-/* Current node being treated, in case abort called.  */
-extern Node_Id error_gnat_node;
-
 /* True when gigi is being called on an analyzed but unexpanded
    tree, and the only purpose of the call is to properly annotate
    types with representation information.  */

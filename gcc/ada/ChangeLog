@@ -1,5 +1,15 @@
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/gigi.h (error_gnat_node): Delete.
+	* gcc-interface/trans.c (error_gnat_node): Likewise.
+	(gigi): Replace it with Current_Error_Node.
+	(gnat_to_gnu): Likewise.
+	* gcc-interface/utils.c (rest_of_subprog_body_compilation):
+	Likewise.
+	* gcc-interface/misc.c (internal_error_function): Do not set it.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Adjust
 	code retrieving the address when a clause has already been
 	processed.
