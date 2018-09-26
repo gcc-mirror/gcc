@@ -514,13 +514,48 @@
    (set_attr "mode" "SI")])
 
 (define_insn "*subsi3_extended2"
-  [(set (match_operand:DI                        0 "register_operand" "=r")
+  [(set (match_operand:DI                        0 "register_operand" "= r")
 	(sign_extend:DI
-	  (subreg:SI (minus:DI (match_operand:DI 1 "reg_or_0_operand" " r")
-			       (match_operand:DI 2 "register_operand" " r"))
+	  (subreg:SI (minus:DI (match_operand:DI 1 "reg_or_0_operand" " rJ")
+			       (match_operand:DI 2 "register_operand" "  r"))
 		     0)))]
   "TARGET_64BIT"
   "subw\t%0,%z1,%2"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn "negdi2"
+  [(set (match_operand:DI         0 "register_operand" "=r")
+	(neg:DI (match_operand:DI 1 "register_operand" " r")))]
+  "TARGET_64BIT"
+  "neg\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "DI")])
+
+(define_insn "negsi2"
+  [(set (match_operand:SI         0 "register_operand" "=r")
+	(neg:SI (match_operand:SI 1 "register_operand" " r")))]
+  ""
+  { return TARGET_64BIT ? "negw\t%0,%1" : "neg\t%0,%1"; }
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn "*negsi2_extended"
+  [(set (match_operand:DI          0 "register_operand" "=r")
+	(sign_extend:DI
+	 (neg:SI (match_operand:SI 1 "register_operand" " r"))))]
+  "TARGET_64BIT"
+  "negw\t%0,%1"
+  [(set_attr "type" "arith")
+   (set_attr "mode" "SI")])
+
+(define_insn "*negsi2_extended2"
+  [(set (match_operand:DI                     0 "register_operand" "=r")
+	(sign_extend:DI
+	 (subreg:SI (neg:DI (match_operand:DI 1 "register_operand" " r"))
+	 	    0)))]
+  "TARGET_64BIT"
+  "negw\t%0,%1"
   [(set_attr "type" "arith")
    (set_attr "mode" "SI")])
 
