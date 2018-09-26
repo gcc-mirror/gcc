@@ -1,3 +1,10 @@
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Iterator_Specification): Add conditional
+	to freeze called functions within iterator specifications during
+	full analysis.
+	(Preanalyze_Range): Minor typo fix.
+
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch6.adb (Analyze_Function_Return): If the return type has
