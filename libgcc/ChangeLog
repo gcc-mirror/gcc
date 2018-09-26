@@ -1,3 +1,7 @@
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
 2018-09-21  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/vxcache.c: New file.  Provide __clear_cache, based on
