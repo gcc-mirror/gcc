@@ -15,13 +15,12 @@ import "macro-3_a.H";
 
 #endif
 
-// { dg-final { scan-lang-dump {Reading #define MACRO_3a_H} module } }
-// { dg-final { scan-lang-dump {Reading #define foo} module } }
-// { dg-final { scan-lang-dump {Reading #define bar} module } }
-// { dg-final { scan-lang-dump-not {Reading #define bob} module } }
+// { dg-final { scan-lang-dump {Read new macro #define MACRO_3a_H at} module } }
+// { dg-final { scan-lang-dump {Read new macro #define foo at} module } }
+// { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
+// { dg-final { scan-lang-dump-not {Read [^ ]* macro #define bob at} module } }
 
-// { dg-final { scan-lang-dump {Writing #undef foo} module } }
-// { dg-final { scan-lang-dump {Writing #undef bar} module } }
-// { dg-final { scan-lang-dump {Writing #define MACRO_3b_H} module } }
-// { dg-final { scan-lang-dump {Writing #define bob} module } }
-// { dg-final { scan-lang-dump {Writing #define bar} module } }
+// { dg-final { scan-lang-dump {Writing macro #define MACRO_3b_H at} module } }
+// { dg-final { scan-lang-dump {Writing macro #define bob at} module } }
+// { dg-final { scan-lang-dump {Writing macro #undef & #define bar at} module } }
+// { dg-final { scan-lang-dump {Writing macro #undef foo at} module } }

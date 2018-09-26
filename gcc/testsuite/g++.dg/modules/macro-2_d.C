@@ -1,9 +1,14 @@
 // { dg-additional-options -fmodules-atom }
 
+#define BINKY(X) X
+
 import "macro-2_a.H";
 import "macro-2_b.H";
 
-// { dg-regexp "In module \"macro-2_b.H\", imported at \[^\n]*macro-2_d.C:4:\n\[^\n]*macro-2_b.H:21: error: incompatible redefinition of macro 'BAR_BAD'\nIn module \"macro-2_a.H\", imported at \[^\n]*macro-2_d.C:3:\n\[^\n]*macro-2_a.H:11: note: current definition\n" }
+int FOO_OK = BAR_OK(1);
 
-// { dg-regexp "In module \"macro-2_b.H\", imported at \[^\n]*macro-2_d.C:4:\n\[^\n]*macro-2_b.H:20: error: incompatible redefinition of macro 'FOO_BAD'\nIn module \"macro-2_a.H\", imported at \[^\n]*macro-2_d.C:3:\n\[^\n]*macro-2_a.H:10: note: current definition\n" }
+int BAR_BAD;
+// { dg-regexp "\[^\n]*macro-2_d.C:10:5: error: inconsistent imported macro definition 'BAR_BAD'\nIn module \"macro-2_a.H\", imported at \[^\n]*macro-2_d.C:5:\n\[^\n]*macro-2_a.H:11: note: #define BAR_BAD\nIn module \"macro-2_b.H\", imported at \[^\n]*macro-2_d.C:6:\n\[^\n]*macro-2_b.H:21: note: #define BAR_BAD" }
 
+int FOO_BAD;
+// { dg-regexp "\[^\n]*macro-2_d.C:13:5: error: inconsistent imported macro definition 'FOO_BAD'\nIn module \"macro-2_a.H\", imported at \[^\n]*macro-2_d.C:5:\n\[^\n]*macro-2_a.H:10: note: #define FOO_BAD\nIn module \"macro-2_b.H\", imported at \[^\n]*macro-2_d.C:6:\n\[^\n]*macro-2_b.H:20: note: #define FOO_BAD" }

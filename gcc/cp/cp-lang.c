@@ -84,6 +84,8 @@ static int module_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #define LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE maybe_import_include
 #undef LANG_HOOKS_PREPROCESS_UNDEF
 #define LANG_HOOKS_PREPROCESS_UNDEF module_cpp_undef
+#undef LANG_HOOKS_PREPROCESS_DEFERRED_MACRO
+#define LANG_HOOKS_PREPROCESS_DEFERRED_MACRO module_cpp_deferred_macro
 #undef LANG_HOOKS_PREPROCESS_PREAMBLE
 #define LANG_HOOKS_PREPROCESS_PREAMBLE module_preamble_fsm
 

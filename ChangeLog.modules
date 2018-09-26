@@ -1,3 +1,58 @@
+2018-09-26  Nathan Sidwell  <nathan@acm.org>
+
+	Macro import and export (corrected).
+	libcpp/
+	* include/cpplib.h (cpp_callbacks): Add user_deferred_macro.
+	(NODE_DEFERRED_MACRO): New.
+	(cpp_hashnode): Increase flags size.
+	(cpp_deferred_macro_p, cpp_set_deferred_macro): New.
+	(cpp_compare_macros): Take two macros.
+	* internal.h (_cpp_notify_macro_use): Take source location, return bool.
+	(_cpp_maybe_notify_macro_use): Likewise.
+	* directives.c (do_undef): Don't warn about unresolved deferred
+	macros.
+	(do_ifdef, do_ifndef): Cope with deferred macros evaporating.
+	* expr.c (parse_defined): Likewise.
+	* macro.c (undefer_macro): New.
+	(enter_macro_context): Adjust notify call.
+	(cpp_get_token_1): Deal with deferred nodes.
+	(warn_of_redefinition):  Node extraction of compare, call ...
+	(cpp_compare_macros): ... this to compare two macros.
+	(cpp_create_definition): Adjust compare call.
+	(_cpp_notify_macro_use): Deal with deferred macros.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_DEFERRED_MACRO): New.
+	* langhooks.h (struct langhooks): Add preprocess_deferred_macro.
+	gcc/c-family/
+	* c-lex.c (init_c_lex): Register deferred_macro hook.
+	gcc/cp/
+	* cp-tree.h (module_cpp_deferred_macro): Declare.
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_DEFERRED_MACRO): Override.
+	* module.c (bytes_in::random_access): New.
+	(elf_in::{preserve,release}): New.
+	(slurping::{legacies,macros}): New fields.
+	(slurping::close): New.
+	(module_state::legacies): Remove field.
+	(module_state::slurper): Delete.
+	(module_state::{read,write}_config): Add number of macros.
+	(module_state::{read,write}_define{,s}): Reimplement.
+	(module_state::{undef,deferred}_macro): New.
+	(cpp_undefs): Delete.
+	(struct macro_export, struct macro_import): New.
+	(get_macro_{export,import}): New.
+	(maybe_add_macro,macro_loc_cmp): Adjust.
+	(module_state::{read,write}): Adjust.
+	(module_state::check_read): Adjust.
+	(module_state::set_import): Adjust.
+	(module_state::freeze_an_elf): Preserve macros.
+	(import_module): Update legacies bitmap.
+	(module_cpp_undef): Call module_state::undef_macro.
+	(module_cpp_deferred_macro): New.
+	(finish_module_parse): Free macro state.
+	gcc/testsuite/
+	* g++.dg/modules/macro-2_*: Adjust tests.
+	* g++.dg/modules/macro-3_*: Likewise.
+
 2018-09-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

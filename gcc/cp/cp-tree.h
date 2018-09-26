@@ -6724,6 +6724,8 @@ extern void import_module (module_state *, location_t, bool, tree, cpp_reader *)
 extern void declare_module (module_state *, location_t, bool, tree,
 			    cpp_reader *);
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
+extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
+					     location_t, cpp_hashnode *);
 extern void init_module_processing ();
 extern void finish_module_processing ();
 extern void finish_module_parse (cpp_reader *);

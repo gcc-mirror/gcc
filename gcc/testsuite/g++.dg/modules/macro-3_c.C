@@ -18,14 +18,11 @@ int main ()
   return 0;
 }
 
-// { dg-final { scan-lang-dump {Reading #define MACRO_3a_H} module } }
-// { dg-final { scan-lang-dump {Reading #define foo} module } }
-// { dg-final { scan-lang-dump {Reading #define bar} module } }
+// { dg-final { scan-lang-dump {Read new macro #define MACRO_3a_H at} module } }
+// { dg-final { scan-lang-dump {Read new macro #define foo at} module } }
+// { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 
-// { dg-final { scan-lang-dump {Reading #undef foo} module } }
-// { dg-final { scan-lang-dump {Reading #undef bar} module } }
-// { dg-final { scan-lang-dump {Reading #define MACRO_3b_H} module } }
-// { dg-final { scan-lang-dump {Reading #define bob} module } }
-// { dg-final { scan-lang-dump {Reading #define bar} module } }
-
-
+// { dg-final { scan-lang-dump {Read add macro #undef foo} module } }
+// { dg-final { scan-lang-dump {Read new macro #define MACRO_3b_H} module } }
+// { dg-final { scan-lang-dump {Read new macro #define bob} module } }
+// { dg-final { scan-lang-dump {Read add macro #undef & #define bar} module } }

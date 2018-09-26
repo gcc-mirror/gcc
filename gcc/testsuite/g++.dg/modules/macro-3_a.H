@@ -13,7 +13,8 @@
 
 #endif
 
-// { dg-final { scan-lang-dump {Writing #define MACRO_3a_H} module } }
-// { dg-final { scan-lang-dump {Writing #define foo} module } }
-// { dg-final { scan-lang-dump {Writing #define bar} module } }
-// { dg-final { scan-lang-dump-not {Writing #define bob} module } }
+// { dg-final { scan-lang-dump {Writing macro #define MACRO_3a_H at} module } }
+// { dg-final { scan-lang-dump {Writing macro #define foo at} module } }
+// { dg-final { scan-lang-dump {Writing macro #define bar at} module } }
+// { dg-final { scan-lang-dump-not {Writing macro #define bob at} module } }
+// { dg-final { scan-lang-dump-not {Writing macro #undef nothing at} module } }

@@ -99,6 +99,7 @@ init_c_lex (void)
       cb->undef = lang_hooks.preprocess_undef;
       lang_hooks.preprocess_undef = NULL;
     }
+  cb->user_deferred_macro = lang_hooks.preprocess_deferred_macro;
 }
 
 struct c_fileinfo *

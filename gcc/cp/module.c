@@ -125,6 +125,9 @@ Classes used:
 
    slurping - data needed during loading
 
+   macro_import - imported macro data
+   macro_export - exported macro data
+
    module_mapper - mapper object
 
    The ELROND objects use mmap, for both reading and writing.  If mmap
@@ -480,6 +483,16 @@ public:
   bool more_p () const
   {
     return pos != size;
+  }
+
+public:
+  /* Start reading at OFFSET.  */
+  void random_access (unsigned offset)
+  {
+    if (offset > size)
+      set_overrun ();
+    pos = offset;
+    bit_pos = bit_val = 0;
   }
 
 public:
@@ -1268,6 +1281,31 @@ public:
   }
   void freeze ();
   void defrost (const char *);
+
+  /* If BYTES is in the mmapped area, allocate a new buffer for it.  */
+  void preserve (bytes_in &bytes)
+  {
+#ifdef MAPPED_READING
+    if (hdr.buffer && bytes.buffer >= hdr.buffer
+	&& bytes.buffer < hdr.buffer + hdr.pos)
+      {
+	char *buf = bytes.buffer;
+	bytes.buffer = data::simple_memory.grow (NULL, bytes.size);
+	memcpy (bytes.buffer, buf, bytes.size);
+      }
+#endif
+  }
+  /* If BYTES is not in SELF's mmapped area, free it.  SELF might be
+     NULL. */
+  static void release (elf_in *self, bytes_in &bytes)
+  {
+#ifdef MAPPED_READING
+    if (!(self && self->hdr.buffer && bytes.buffer >= self->hdr.buffer
+	  && bytes.buffer < self->hdr.buffer + self->hdr.pos))
+#endif
+      data::simple_memory.shrink (bytes.buffer);
+    bytes.buffer = NULL;
+  }
 
 public:
   static void grow (data &data, unsigned needed)
@@ -2703,6 +2741,15 @@ struct GTY(()) slurping {
   vec<unsigned, va_gc_atomic> *remap;	/* Module owner remapping.  */
   elf_in *GTY((skip)) from;     	/* The elf loader.  */
 
+  /* This map is only for legacy imports themselves -- the global
+     legacies bitmap hold it for the current TU.  */
+  bitmap legacies;	/* Transitive direct legacy import graph. */
+
+  /* This object points into the mmapped area, unless we're not doing
+     that, or we got frozen or closed.  In those cases it points to a
+     buffer it owns.  */
+  bytes_in macros;      /* Macro definitions.  */
+
   /* Location remapping.  */
   loc_range_t GTY((skip)) ordinary_locs;
   loc_range_t GTY((skip)) macro_locs;
@@ -2717,6 +2764,18 @@ struct GTY(()) slurping {
  public:
   slurping (elf_in *);
   ~slurping ();
+
+ public:
+  /* Close the ELF file, if it's open.  */
+  void close ()
+  {
+    if (from)
+      {
+	from->end ();
+	delete from;
+	from = NULL;
+      }
+  }
 
  public:
   void alloc_remap (unsigned size)
@@ -2746,6 +2805,7 @@ struct GTY(()) slurping {
 
 slurping::slurping (elf_in *from)
   : unnamed (NULL), remap (NULL), from (from),
+    legacies (BITMAP_GGC_ALLOC ()), macros (),
     ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
@@ -2757,12 +2817,9 @@ slurping::~slurping ()
   remap = NULL;
   vec_free (unnamed);
   unnamed = NULL;
-  if (from)
-    {
-      from->end ();
-      delete from;
-      from = NULL;
-    }
+  if (macros.size)
+    elf_in::release (from, macros);
+  close ();
 }
 
 /* State of a particular module. */
@@ -2772,7 +2829,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* We always import & export ourselves.  */
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
-  bitmap legacies;	/* Transitive legacy import graph */
 
   module_state *parent;
 
@@ -2829,13 +2885,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool check_not_purview (location_t loc);
 
  public:
-  slurping *slurper () const
-  {
-    gcc_checking_assert (slurp && slurp->from);
-    return slurp;
-  }
-
- public:
   void mangle ();
 
  public:
@@ -2874,8 +2923,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
-		     unsigned unnamed, unsigned crc);
-  bool read_config (range_t &sec_range, unsigned &unnamed, bool);
+		     unsigned unnamed, unsigned macros, unsigned crc);
+  bool read_config (range_t &sec_range, unsigned &unnamed, unsigned &macros,
+		    bool);
 
  private:
   /* Serialize various definitions. */
@@ -2934,14 +2984,18 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_locations ();
 
  private:
-  void write_define (bytes_out &, cpp_hashnode *);
-  cpp_macro *read_define (bytes_in &, cpp_reader *, cpp_hashnode *);
-  void write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
-  bool read_defines (cpp_reader *);
+  cpp_macro *read_define (bytes_in &, cpp_reader *) const;
+  void write_define (bytes_out &, const cpp_macro *);
+  unsigned write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  bool read_defines (cpp_reader *, unsigned count);
+
+ public:
+  static void undef_macro (cpp_reader *, location_t, cpp_hashnode *);
+  static cpp_macro *deferred_macro (cpp_reader *, location_t, cpp_hashnode *);
 
  public:
   void write_location (bytes_out &, location_t);
-  location_t read_location (bytes_in &);
+  location_t read_location (bytes_in &) const;
 
  public:
   /* Create a location for module.   */
@@ -2975,7 +3029,6 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 
 module_state::module_state (tree name, module_state *parent)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    legacies (BITMAP_GGC_ALLOC ()),
     parent (parent), name (name), slurp (NULL),
     fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
@@ -3038,9 +3091,6 @@ static char *bmi_repo;
 static size_t bmi_repo_length;
 static char *bmi_path;
 static size_t bmi_path_alloc;
-
-/* Undefined imported macros.  */
-static GTY(()) vec<tree, va_gc> *cpp_undefs;
 
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
@@ -8134,7 +8184,8 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
 void
 module_state::write_config (elf_out *to, const char *opt_str,
 			    const range_t &sec_range,
-			    unsigned unnamed, unsigned inner_crc)
+			    unsigned unnamed, unsigned macros,
+			    unsigned inner_crc)
 {
   bytes_out cfg (to);
 
@@ -8180,6 +8231,9 @@ module_state::write_config (elf_out *to, const char *opt_str,
   dump () && dump ("Unnamed %u decls", unnamed);
   cfg.u (unnamed);
 
+  dump () && dump ("Macros %u", macros);
+  cfg.u (macros);
+
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
   cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
@@ -8187,7 +8241,8 @@ module_state::write_config (elf_out *to, const char *opt_str,
 }
 
 bool
-module_state::read_config (range_t &sec_range, unsigned &unnamed, bool check_crc)
+module_state::read_config (range_t &sec_range, unsigned &unnamed,
+			   unsigned &macros, bool check_crc)
 {
   bytes_in cfg;
 
@@ -8303,6 +8358,9 @@ module_state::read_config (range_t &sec_range, unsigned &unnamed, bool check_crc
 
   unnamed = cfg.u ();
   dump () && dump ("%u unnamed decls", unnamed);
+
+  macros = cfg.u ();
+  dump () && dump ("Macros %u", macros);
 
   if (sec_range.first > sec_range.second
       || sec_range.second > slurp->from->get_section_limit ())
@@ -9476,12 +9534,14 @@ module_state::write_location (bytes_out &sec, location_t loc)
   const loc_spans::span *span = spans.ordinary (loc);
   gcc_checking_assert (span); /* We should only be writing locs inside
 				 us.  */
-  dump () && dump ("Location %u output %u", loc, loc + span->ordinary_delta);
+  /* This is too noisy, it'd be nice to have some command line
+     control.  */
+  //  dump () && dump ("Location %u output %u", loc, loc + span->ordinary_delta);
   sec.u (loc + span->ordinary_delta);
 }
 
 location_t
-module_state::read_location (bytes_in &sec)
+module_state::read_location (bytes_in &sec) const
 {
   if (!modules_atom_p ())
     return loc;
@@ -9493,7 +9553,7 @@ module_state::read_location (bytes_in &sec)
   else if (off >= slurp->ordinary_locs.first)
     {
       loc = off + slurp->loc_deltas.first;
-      dump () && dump ("Location %u becoming %u", off, loc);
+      //     dump () && dump ("Location %u becoming %u", off, loc);
     }
   else if (slurp->pre_early_ok)
     loc = off;
@@ -9813,28 +9873,11 @@ module_state::read_locations ()
   return true;
 }
 
-/* Write a define on NODE.  */
+/* Serialize the definition of MACRO.  */
 
 void
-module_state::write_define (bytes_out &sec, cpp_hashnode *node)
+module_state::write_define (bytes_out &sec, const cpp_macro *macro)
 {
-  cpp_macro *macro = node->value.macro;
-
-  gcc_checking_assert (macro->kind == cmk_macro && !macro->lazy);
-  /* I don't want to deal with this corner case, that I suspect is
-     a devil's advocate reading of the standard.  */
-  gcc_checking_assert (!macro->extra_tokens);
-
-  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (node)))
-    {
-      warning_at (macro->line, 0,
-		  "not exporting %<#define %E%> as it is a keyword",
-		  HT_IDENT_TO_GCC_IDENT (node));
-      return;
-    }
-
-  dump () && dump ("Writing #define %I", HT_IDENT_TO_GCC_IDENT (node));
-  sec.cpp_node (node);
   sec.u (macro->count);
 
   sec.b (macro->fun_like);
@@ -9913,13 +9956,11 @@ module_state::write_define (bytes_out &sec, cpp_hashnode *node)
     }
 }
 
-/* Read a define for NODE.  Return it, do not install it. */
+/* Read a macro definition.  */
 
 cpp_macro *
-module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node)
+module_state::read_define (bytes_in &sec, cpp_reader *reader) const
 {
-  dump () && dump ("Reading #define %I", HT_IDENT_TO_GCC_IDENT (node));
-
   unsigned count = sec.u ();
   /* We rely on knowing cpp_reader's hash table is ident_hash, and
      it's subobject allocator is stringpool_ggc_alloc and that is just
@@ -10022,139 +10063,497 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader, cpp_hashnode *node
   return macro;
 }
 
-/* If NODE is a writable macro, append the vec data_ points to.  */
+/* Exported macro data.  */
+struct macro_export {
+  cpp_hashnode *node;
+  cpp_macro *def;
+  location_t undef_loc;
+  int offset;
+};
+
+/* Imported macro data.  */
+class macro_import {
+public:
+  struct one {
+#ifdef WORDS_BIGENDIAN
+    int offset;
+#endif
+    /* We need to ensure we don't use the LSB for representation, as
+       that's the union discriminator below.  */
+    unsigned : 1;
+    unsigned mod : 15;
+    bool has_undef : 1;
+    bool has_def : 1;
+    unsigned : 1;
+#ifndef WORDS_BIGENDIAN
+    int offset;
+#endif
+  };
+
+private:
+  typedef vec<one, va_heap, vl_embed> *many;
+
+  cpp_hashnode *node;
+  union either { // discriminated by bit 0
+    macro_import::many many;
+    macro_import::one one;
+  } u;
+
+private:
+  bool is_one () const
+  {
+    return bool (intptr_t (u.many) & 1);
+  }
+public:
+  bool occupied () const
+  {
+    return node != NULL;
+  }
+
+public:
+  unsigned length () const
+  {
+    gcc_checking_assert (occupied ());
+    return is_one () ? 1 : u.many->length ();
+  }
+  one &operator[] (unsigned ix)
+  {
+    gcc_checking_assert (occupied ());
+    if (is_one ())
+      {
+	gcc_checking_assert (!ix);
+	return u.one;
+      }
+    else
+      return (*u.many)[ix];
+  }
+
+public:
+  one &exported (cpp_hashnode *n);
+  one &append (cpp_hashnode *n, const one &o);
+
+public:
+  struct traits {
+    typedef macro_import value_type;
+    typedef cpp_hashnode *compare_type;
+
+    static inline hashval_t hash (const value_type &v)
+    {
+      return hash (v.node);
+    }
+    static inline hashval_t hash (const compare_type c)
+    {
+      return c->ident.hash_value;
+    }
+    static inline bool equal (const value_type &v, const compare_type c)
+    {
+      return v.node == c;
+    }
+
+    static bool is_empty (const value_type &v)
+    {
+      return v.node == NULL;
+    }
+    static void mark_empty (value_type &v)
+    {
+      v.node = NULL;
+    }
+    static void remove (value_type &)
+    {
+      /* Do nothing, only happens at destruction.   */
+    }
+
+    /* Nothing is deletable.  Everything is insertable.  */
+    static bool is_deleted (const value_type) { return false; }
+    static void mark_deleted (value_type) { gcc_unreachable (); }
+  };
+};
+
+static hash_table<macro_import::traits> *macro_imports;
+static vec<macro_export, va_heap, vl_embed> *macro_exports;
+static GTY(()) bitmap legacies;
+
+/* O is a new import to append to the list for.  If we're an empty
+   set, initialize us.  */
+
+macro_import::one &
+macro_import::append (cpp_hashnode *n, const one &o)
+{
+  if (!occupied ())
+    {
+      node = n;
+      u.one = o;
+      u.many = many (intptr_t (u.many) | 1);
+      return u.one;
+    }
+  else
+    {
+      gcc_checking_assert (node == n);
+      bool one = is_one ();
+      many m = one ? NULL : u.many;
+      vec_safe_reserve (m, 1 + one);
+      if (one)
+	{
+	  u.many = many (intptr_t (u.many) & ~intptr_t (0));
+	  m->quick_push (u.one);
+	}
+      u.many = m;
+      return *u.many->quick_push (o);
+    }
+}
+
+/* We're going to export something on node N.  Make sure the first
+   import slot is us.  */
+
+macro_import::one &
+macro_import::exported (cpp_hashnode *n)
+{
+  if (occupied () && !(*this)[0].mod)
+    return (*this)[0];
+
+  one v;
+  v.mod = 0;
+  v.offset = -1;
+  v.has_def = v.has_undef = 0;
+  one *a = &append (n, v);
+  if (!is_one ())
+    {
+      one &f = (*this)[0];
+      *a = f;
+      f = v;
+      a = &f;
+    }
+  return *a;
+}
+
+/* Get the (possibly empty) macro imports for NODE.  */
+
+static macro_import &
+get_macro_imports (cpp_hashnode *node)
+{
+  if (!macro_imports)
+    macro_imports = new hash_table<macro_import::traits> (100);
+  return *macro_imports->find_slot_with_hash
+    (node, macro_import::traits::hash (node), INSERT);
+}
+
+/* Get the macro export for export EXP of NODE.  */
+
+static macro_export &
+get_macro_export (cpp_hashnode *node, macro_import::one &exp)
+{
+  if (exp.offset >= 0)
+    return (*macro_exports)[exp.offset];
+
+  vec_safe_reserve (macro_exports, 1);
+  exp.offset = macro_exports->length ();
+  macro_export exported = {node, NULL, UNKNOWN_LOCATION, -1};
+
+  return *macro_exports->quick_push (exported);
+}
+
+/* If NODE is an exportable macro, add it to the export set.  */
 
 static int
-maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
+maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *)
 {
   if (cpp_user_macro_p (node))
-    {
-      cpp_macro *macro = node->value.macro;
+    if (cpp_macro *macro = node->value.macro)
+      /* Ignore imported & builtins and forced header macros.  */
       if (!macro->imported && macro->line >= spans.main_start ())
-	/* Ignore imports, builtins and forced header macros.  */
-	((auto_vec<cpp_hashnode *> *)data_)->safe_push (node);
-    }
+	{
+	  gcc_checking_assert (macro->kind == cmk_macro && !macro->lazy);
+	  /* I don't want to deal with this corner case, that I suspect is
+	     a devil's advocate reading of the standard.  */
+	  gcc_checking_assert (!macro->extra_tokens);
+
+	  macro_import &slot = get_macro_imports (node);
+	  macro_import::one &imports = slot.exported (node);
+	  macro_export &exp = get_macro_export (node, imports);
+	  imports.has_def = true;
+	  exp.def = macro;
+	}
 
   return 1; /* Don't stop.  */
 }
 
+/* Order macro exports A_ and B_ by location.  */
+
 static int
 macro_loc_cmp (const void *a_, const void *b_)
 {
-  const cpp_macro *a = (*((const cpp_hashnode *const *)a_))->value.macro;
-  const cpp_macro *b = (*((const cpp_hashnode *const *)b_))->value.macro;
-  if (a->line < b->line)
+  const macro_export *a = (const macro_export *)a_;
+  const macro_export *b = (const macro_export *)b_;
+  location_t loc_a = a->def ? a->def->line : a->undef_loc;
+  location_t loc_b = b->def ? b->def->line : b->undef_loc;
+
+  if (loc_a < loc_b)
     return +1;
-  else if (a->line > b->line)
+  else if (loc_a > loc_b)
     return -1;
   else
     return 0;
 }
 
-/* Write out the macro definitions.  We're compiling a legacy header,
-   so we expect at least one.  */
+/* Write out the exported defines.  This is two sections, one
+   containing the definitions, the other a table of node names.  */
 
-void
+unsigned
 module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 {
-  dump () && dump ("Writing #defines");
+  dump () && dump ("Writing macros");
   dump.indent ();
 
-  auto_vec<cpp_hashnode *> macros;
-  cpp_forall_identifiers (reader, maybe_add_macro, &macros);
-  (macros.qsort) (macro_loc_cmp);
+  cpp_forall_identifiers (reader, maybe_add_macro, NULL);
 
-  bytes_out sec (to);
-  sec.begin ();
+  unsigned count = 0;
+  if (macro_exports)
+    {
+      dump () && dump ("No more than %u macros", macro_exports->length ());
+      (macro_exports->qsort) (macro_loc_cmp);
 
-  /* We only record undefs that undefine an imported macro, so we
-     should never find one undefing a keyword.  */
-  if (cpp_undefs)
-    for (unsigned ix = 0; ix != cpp_undefs->length (); ix++)
-      {
-	tree id = (*cpp_undefs)[ix];
-	dump () && dump ("Writing #undef %I", id);
-	sec.cpp_node (CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id)));
-      }
-  sec.str (NULL, 0);
+      /* Write the defs */
+      bytes_out sec (to);
+      sec.begin ();
 
-  for (unsigned ix = macros.length (); ix--;)
-    write_define (sec, macros[ix]);
+      for (unsigned ix = macro_exports->length (); ix--;)
+	{
+	  macro_export &mac = (*macro_exports)[ix];
 
-  /* End marker.  */
-  sec.str (NULL, 0);
+	  if (!(mac.node->flags & NODE_DEFERRED_MACRO))
+	    /* This undef never undefs an import, so it's not
+	       exported.  */
+	    mac.undef_loc = UNKNOWN_LOCATION;
+	  if (mac.undef_loc == UNKNOWN_LOCATION && !mac.def)
+	    continue;
 
-  /* Write a padding bit to ensure the bool block is at least 4 bytes
-     from the end.  */
-  sec.u (0);
+	  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (mac.node)))
+	    {
+	      warning_at (mac.def->line, 0,
+			  "not exporting %<#define %E%> as it is a keyword",
+			  HT_IDENT_TO_GCC_IDENT (mac.node));
+	      continue;
+	    }
 
-  sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
+	  count++;
+	  mac.offset = sec.pos;
+	  dump () && dump ("Writing macro %s%s%s %I at %u",
+			   mac.undef_loc != UNKNOWN_LOCATION ? "#undef" : "",
+			   mac.undef_loc != UNKNOWN_LOCATION && mac.def
+			   ? " & " : "",
+			   mac.def ? "#define" : "",
+			   HT_IDENT_TO_GCC_IDENT (mac.node), mac.offset);
+	  if (mac.undef_loc != UNKNOWN_LOCATION)
+	    write_location (sec, mac.undef_loc);
+	  if (mac.def)
+	    write_define (sec, mac.def);
+	}
+      sec.end (to, to->name (MOD_SNAME_PFX ".def"), crc_p);
+
+      if (count)
+	{
+	  /* Write the table.  */
+	  bytes_out sec (to);
+	  sec.begin ();
+
+	  for (unsigned ix = macro_exports->length (); ix--;)
+	    {
+	      macro_export &mac = (*macro_exports)[ix];
+
+	      if (mac.offset < 0)
+		continue;
+	      sec.cpp_node (mac.node);
+	      sec.u (((mac.undef_loc != UNKNOWN_LOCATION) << 0)
+		     | ((mac.def != NULL) << 1));
+	      sec.u (mac.offset);
+	    }
+	  sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
+	}
+    }
+
   dump.outdent ();
+  return count;
 }
 
-bool
-module_state::read_defines (cpp_reader *reader)
-{
-  bytes_in sec;
+/* Read in the macro name table.  The definitions are unpacked lazily
+   on use.  */
 
-  if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".mac"))
+bool
+module_state::read_defines (cpp_reader *, unsigned count)
+{
+  /* Read the table.  */
+  {
+    bytes_in sec;
+
+    if (!sec.begin (loc, slurp->from, MOD_SNAME_PFX ".mac"))
+      return false;
+    dump () && dump ("Reading macro table");
+    dump.indent ();
+
+    dump () && dump ("%u macros", count);
+    while (count--)
+      {
+	cpp_hashnode *node = sec.cpp_node ();
+	macro_import::one one;
+	unsigned flags = sec.u ();
+	one.mod = mod;
+	one.has_undef = (flags >> 0) & 1;
+	one.has_def = (flags >> 1) & 1;
+	one.offset = sec.u ();
+
+	macro_import &slot = get_macro_imports (node);
+
+	dump () && dump ("Read %s macro %s%s%s %I at %u",
+			 slot.occupied () ? "add" : "new",
+			 one.has_undef ? "#undef" : "",
+			 one.has_undef && one.has_def ? " & " : "",
+			 one.has_def ? "#define" : "",
+			 HT_IDENT_TO_GCC_IDENT (node),
+			 one.offset);
+	slot.append (node, one);
+
+	if (cpp_macro *cur = cpp_set_deferred_macro (node))
+	  if (!cur->imported)
+	    {
+	      macro_import::one &imports = slot.exported (node);
+	      macro_export &exp = get_macro_export (node, imports);
+	      exp.def = cur;
+	      imports.has_def = true;
+	      dump () && dump ("Saving current #define %I",
+			       HT_IDENT_TO_GCC_IDENT (node));
+	    }
+      }
+    dump.outdent ();
+    if (!sec.end (slurp->from))
+      return false;
+  }
+
+  /* Get the def section.  */
+  if (!slurp->macros.begin (loc, slurp->from, MOD_SNAME_PFX ".def"))
     return false;
-  dump () && dump ("Reading #defines");
+
+  return true;
+}
+
+/* NODE is being undefined at LOC.  Record it in the export table, if
+   necessary.  */
+
+void
+module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
+{
+  unsigned n = dump.push (NULL);
+
+  macro_import &slot = get_macro_imports (node);
+  macro_import::one &imports = slot.exported (node);
+  macro_export &exp = get_macro_export (node, imports);
+
+  /* We don't know if there'll be a later import that defines this
+     macro and we override it.  (At least, that's what I think the
+     semantics are supposed to be?)  */
+  exp.undef_loc = loc;
+  imports.has_undef = true;
+  exp.def = NULL;
+  imports.has_def = false;
+
+  dump () && dump ("Recording macro #undef %I", HT_IDENT_TO_GCC_IDENT (node));
+
+  dump.pop (n);
+}
+
+/* NODE is a deferred macro node.  Determine the defintion and return
+   it, with NULL if undefined.  May issue diagnostics.  */
+
+cpp_macro *
+module_state::deferred_macro (cpp_reader *reader, location_t loc,
+			      cpp_hashnode *node)
+{
+  macro_import &slot = get_macro_imports (node);
+  gcc_checking_assert (slot.occupied ());
+
+  unsigned n = dump.push (NULL);
+  dump () && dump ("Deferred macro %I", HT_IDENT_TO_GCC_IDENT (node));
   dump.indent ();
 
-  /* Process the undefs.  */
-  while (cpp_hashnode *node = sec.cpp_node ())
+  bitmap hidden (BITMAP_GGC_ALLOC ());
+
+  /* Calculate the set of not-visible legacy imports.  */
+  for (unsigned ix = slot.length (); ix--;)
     {
-      dump () && dump ("Reading #undef %I", HT_IDENT_TO_GCC_IDENT (node));
-      if (!cpp_user_macro_p (node)
-	  || !node->value.macro->imported)
-	warning_at (loc, 0, "imported definition of %qE not found by undef",
-		    HT_IDENT_TO_GCC_IDENT (node));
-      else
+      const macro_import::one &one = slot[ix];
+      if (one.has_undef && !bitmap_bit_p (hidden, one.mod))
 	{
-	  node->type = NT_VOID;
-	  node->value.answers = NULL;
+	  bitmap_ior_into (hidden, one.mod
+			   ? (*modules)[one.mod]->slurp->legacies : legacies);
+	  bitmap_clear_bit (hidden, one.mod);
 	}
     }
 
-  /* Process the defines.  */
-  while (cpp_hashnode *node = sec.cpp_node ())
+  /* Now find the macros that are still visible.  */
+  bool failed = false;
+  cpp_macro *def = NULL;
+  auto_vec<macro_export> defs (slot.length ());
+  for (unsigned ix = slot.length (); ix--;)
     {
-      if (cpp_macro *macro = read_define (sec, reader, node))
+      const macro_import::one &one = slot[ix];
+      if (!bitmap_bit_p (hidden, one.mod))
 	{
-	  if (cpp_macro_p (node))
+	  macro_export *pushed = NULL;
+	  if (one.mod)
 	    {
-	      /* we already have a macro.  Check it is the same.  */
-	      if (!cpp_compare_macros (reader, node, macro))
-		macro = NULL;
-	      else
+	      const module_state *imp = (*modules)[one.mod];
+	      bytes_in &sec = imp->slurp->macros;
+	      macro_export e = {node, NULL, UNKNOWN_LOCATION, 0};
+	      if (!sec.get_overrun ())
 		{
-		  error_at (macro->line,
-			    "incompatible redefinition of macro %qs",
-			    NODE_NAME (node));
-		  if (cpp_user_macro_p (node))
-		    inform (node->value.macro->line, "current definition");
+		  dump () && dump ("Reading macro %s%s%s %I module %M at %u",
+				   one.has_undef ? "#undef" : "",
+				   one.has_undef && one.has_def ? " & " : "",
+				   one.has_def ? "#define" : "",
+				   HT_IDENT_TO_GCC_IDENT (node), imp,
+				   one.offset);
+		  sec.random_access (one.offset);
+		  if (one.has_undef)
+		    e.undef_loc = imp->read_location (sec);
+		  if (one.has_def)
+		    e.def = imp->read_define (sec, reader);
+		  if (sec.get_overrun ())
+		    error_at (loc, "macro definitions of %qE corrupted",
+			      imp->name);
+		  else
+		    pushed = defs.quick_push (e);
 		}
 	    }
-
-	  if (macro)
+	  else
+	    pushed = defs.quick_push ((*macro_exports)[one.offset]);
+	  if (pushed && pushed->def)
 	    {
-	      /* Install the macro.  */
-	      node->value.macro = macro;
-	      node->type = NT_USER_MACRO;
-	      node->flags &= NODE_USED;
+	      if (!def)
+		def = pushed->def;
+	      else if (cpp_compare_macros (def, pushed->def))
+		failed = true;
 	    }
 	}
     }
 
-  /* Read the padding.  */
-  if (sec.u ())
-    sec.set_overrun ();
+  if (failed)
+    {
+      error_at (loc, "inconsistent imported macro definition %qE",
+		HT_IDENT_TO_GCC_IDENT (node));
+      for (unsigned ix = defs.length (); ix--;)
+	{
+	  macro_export &e = defs[ix];
+	  if (e.undef_loc)
+	    inform (e.undef_loc, "#undef %E", HT_IDENT_TO_GCC_IDENT (node));
+	  if (e.def)
+	    inform (e.def->line, "#define %E", HT_IDENT_TO_GCC_IDENT (node));
+	}
+      def = NULL;
+    }
 
   dump.outdent ();
-  if (!sec.end (slurp->from))
-    return false;
-  return true;
+  dump.pop (n);
+
+  return def;
 }
 
 /* Recursively find all the namespace bindings of NS.
@@ -10405,11 +10804,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
       write_locations (to, range_bits, &crc);
     }
 
+  unsigned macros = 0;
   if (modules_legacy_p ())
-    write_defines (to, reader, &crc);
+    macros = write_defines (to, reader, &crc);
 
   /* And finish up.  */
-  write_config (to, our_opts, range, unnamed, crc);
+  write_config (to, our_opts, range, unnamed, macros, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
@@ -10428,8 +10828,9 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
 
   range_t range;
   unsigned unnamed;
+  unsigned macros;
 
-  if (!read_config (range, unnamed, check_crc))
+  if (!read_config (range, unnamed, macros, check_crc))
     return;
 
   if (modules_atom_p ())
@@ -10460,7 +10861,7 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
 	  bitmap_set_bit (imports, ix);
 	  bitmap_set_bit (exports, ix);
 	  if (is_legacy ())
-	    bitmap_set_bit (legacies, ix);
+	    bitmap_set_bit (slurp->legacies, ix);
 	}
       mod = ix;
     }
@@ -10472,8 +10873,8 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
      read_config.  */
   gcc_assert (!slurp->from->is_frozen ());
 
-  if (is_legacy ())
-    if (!read_defines (reader))
+  if (macros && is_legacy ())
+    if (!read_defines (reader, macros))
       return;
 
   /* Read the namespace hierarchy. */
@@ -10551,6 +10952,8 @@ module_state::check_read (bool outermost, tree ns, tree id)
   if (done)
     {
       lazy_open++;
+      if (slurp->macros.size)
+	slurp->from->preserve (slurp->macros);
       slurp->from->end ();
     }
 
@@ -10582,7 +10985,11 @@ module_state::check_read (bool outermost, tree ns, tree id)
     }
 
   if (done)
-    slurped ();
+    {
+      slurp->close ();
+      if (!is_legacy ())
+	slurped ();
+    }
 
   if (e && outermost)
     fatal_error (loc, "jumping off the crazy train to crashville");
@@ -10622,9 +11029,9 @@ module_state::set_import (module_state const *other, bool is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
-  if (other->is_legacy ())
+  if (is_legacy () && other->is_legacy () && mod != MODULE_PURVIEW)
     /* We only see OTHER's legacies if it is legacy.  */
-    bitmap_ior_into (legacies, other->legacies);
+    bitmap_ior_into (slurp->legacies, other->slurp->legacies);
 }
 
 static GTY(()) module_state *proclaimer;
@@ -10920,7 +11327,11 @@ module_state::freeze_an_elf ()
   if (victim)
     {
       dump () && dump ("Freezing %s", victim->filename);
-      victim->slurp->from->freeze ();
+      slurping *slurp = victim->slurp;
+      if (slurp->macros.size)
+	/* Save the macro definitions to a buffer.  */
+	slurp->from->preserve (slurp->macros);
+      slurp->from->freeze ();
       lazy_open++;
     }
   else
@@ -10996,6 +11407,8 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	  dump.pop (n);
 	}
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported);
+      if (imp->is_legacy ())
+	bitmap_ior_into (legacies, imp->slurp->legacies);
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -11197,7 +11610,11 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 	  if (imp->is_imported () || imp->do_import (NULL, reader, false))
 	    {
 	      if (imp->mod != MODULE_PURVIEW)
-		(*modules)[MODULE_NONE]->set_import (imp, imp->exported);
+		{
+		  (*modules)[MODULE_NONE]->set_import (imp, imp->exported);
+		  if (imp->is_legacy ())
+		    bitmap_ior_into (legacies, imp->slurp->legacies);
+		}
 	    }
 	  else
 	    ok = false;
@@ -11218,7 +11635,7 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 /* Track if NODE undefs an imported macro.  */
 
 void
-module_cpp_undef (cpp_reader *reader, location_t, cpp_hashnode *node)
+module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
 {
   if (!modules_legacy_p ())
     {
@@ -11228,8 +11645,15 @@ module_cpp_undef (cpp_reader *reader, location_t, cpp_hashnode *node)
       else
 	cpp_get_callbacks (reader)->undef = NULL;
     }
-  else if (cpp_user_macro_p (node) && node->value.macro->imported)
-    vec_safe_push (cpp_undefs, HT_IDENT_TO_GCC_IDENT (node));
+  else
+    module_state::undef_macro (reader, loc, node);
+}
+
+cpp_macro *
+module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
+			   cpp_hashnode *node)
+{
+  return module_state::deferred_macro (reader, loc, node);
 }
 
 /* Figure out whether to treat HEADER as an include or an import.  */
@@ -11444,6 +11868,8 @@ init_module_processing ()
 
   gcc_checking_assert (!fixed_trees);
 
+  legacies = BITMAP_GGC_ALLOC ();
+
   dump.push (NULL);
 
   /* Determine lazy handle bound.  */
@@ -11561,8 +11987,16 @@ finish_module_parse (cpp_reader *reader)
   if (state && state->exported && state->filename && errorcount)
     unlink (state->filename);
 
-  /* We're done with the undefs now.  */
-  cpp_undefs = NULL;
+  /* We're done with the macro tables now.  */
+  vec_free (macro_exports);
+  delete macro_imports;
+  macro_imports = NULL;
+  legacies = NULL;
+  if (modules)
+    for (unsigned ix = modules->length (); ix--;)
+      if (module_state *state = (*modules)[ix])
+	if (state->is_legacy ())
+	  state->slurped ();
 }
 
 /* We're now done with everything but the module names.  */

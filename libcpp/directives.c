@@ -696,7 +696,9 @@ do_undef (cpp_reader *pfile)
 				   pfile->directive_line, 0,
 				   "undefining \"%s\"", NODE_NAME (node));
 
-	  if (CPP_OPTION (pfile, warn_unused_macros))
+	  if ((!(node->flags & NODE_DEFERRED_MACRO)
+	       || node->value.macro)
+	      && CPP_OPTION (pfile, warn_unused_macros))
 	    _cpp_warn_if_unused_macro (pfile, node, NULL);
 
 	  _cpp_free_definition (node);
@@ -2002,8 +2004,10 @@ do_ifdef (cpp_reader *pfile)
 	     'bool', and 'pixel' to act as conditional keywords.  This messes
 	     up tests like #ifndef bool.  */
 	  skip = !cpp_macro_p (node) || (node->flags & NODE_CONDITIONAL);
+	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))
+	    /* It wasn't a macro after all.  */
+	    skip = true;
 	  _cpp_mark_macro_used (node);
-	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);
@@ -2032,8 +2036,10 @@ do_ifndef (cpp_reader *pfile)
 	     up tests like #ifndef bool.  */
 	  skip = (cpp_macro_p (node)
 		  && !(node->flags & NODE_CONDITIONAL));
+	  if (!_cpp_maybe_notify_macro_use (pfile, node, pfile->directive_line))
+	    /* It wasn't a macro after all.  */
+	    skip = false;
 	  _cpp_mark_macro_used (node);
-	  _cpp_maybe_notify_macro_use (pfile, node);
 	  if (pfile->cb.used)
 	    pfile->cb.used (pfile, pfile->directive_line, node);
 	  check_eol (pfile, false);

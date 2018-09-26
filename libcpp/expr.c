@@ -1064,8 +1064,8 @@ parse_defined (cpp_reader *pfile)
         cpp_pedwarning (pfile, CPP_W_EXPANSION_TO_DEFINED,
 		        "this use of \"defined\" may not be portable");
 
+      _cpp_maybe_notify_macro_use (pfile, node, token->src_loc);
       _cpp_mark_macro_used (node);
-      _cpp_maybe_notify_macro_use (pfile, node);
 
       /* A possible controlling macro of the form #if !defined ().
 	 _cpp_parse_expr checks there was no other junk on the line.  */

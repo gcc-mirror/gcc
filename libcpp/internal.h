@@ -631,11 +631,14 @@ cpp_in_primary_file (cpp_reader *pfile)
 }
 
 /* In macro.c */
-extern void _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node);
-inline void _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node)
+extern bool _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+				   source_location);
+inline bool _cpp_maybe_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
+					 source_location loc)
 {
   if (!(node->flags & NODE_USED))
-    _cpp_notify_macro_use (pfile, node);
+    return _cpp_notify_macro_use (pfile, node, loc);
+  return true;
 }
 extern cpp_macro *_cpp_new_macro (cpp_reader *, cpp_macro_kind, void *);
 extern void _cpp_free_definition (cpp_hashnode *);

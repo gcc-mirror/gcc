@@ -610,6 +610,10 @@ struct cpp_callbacks
   /* Callback that can change a user lazy into normal macro.  */
   void (*user_lazy_macro) (cpp_reader *, cpp_macro *, unsigned);
 
+  /* Callback to handle deferred cpp_macros.  */
+  cpp_macro *(*user_deferred_macro) (cpp_reader *, source_location,
+				     cpp_hashnode *);
+
   /* Callback to parse SOURCE_DATE_EPOCH from environment.  */
   time_t (*get_source_date_epoch) (cpp_reader *);
 
@@ -769,6 +773,7 @@ struct GTY(()) cpp_macro {
 #define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
+#define NODE_DEFERRED_MACRO (1 << 8)	/* A deferred macro (sticky).  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -809,7 +814,7 @@ enum cpp_builtin_type
 union GTY(()) _cpp_hashnode_value {
   /* Assert (maybe NULL) */
   cpp_macro * GTY((tag ("NT_VOID"))) answers;
-  /* Macro (never NULL) */
+  /* Macro (maybe NULL) */
   cpp_macro * GTY((tag ("NT_USER_MACRO"))) macro;
   /* Code for a builtin macro.  */
   enum cpp_builtin_type GTY ((tag ("NT_BUILTIN_MACRO"))) builtin;
@@ -825,9 +830,11 @@ struct GTY(()) cpp_hashnode {
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
-  unsigned int flags : 8;		/* CPP flags.  */
+  unsigned int flags : 9;		/* CPP flags.  */
 
-  /* 6 bits spare (plus another 32 on 64-bit hosts).  */
+  /* 5 bits spare.  */
+
+  /* On a 64-bit system here resides 32 bits of padding.  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -962,6 +969,21 @@ inline bool cpp_builtin_macro_p (const cpp_hashnode *node)
 inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_MACRO_MASK;
+}
+inline bool cpp_deferred_macro_p (const cpp_hashnode *node)
+{
+  return node->flags & NODE_DEFERRED_MACRO;
+}
+inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node)
+{
+  cpp_macro *old = node->value.macro;
+
+  node->value.macro = NULL;
+  node->type = NT_USER_MACRO;
+  node->flags &= ~NODE_USED;
+  node->flags |= NODE_DEFERRED_MACRO;
+
+  return old;
 }
 
 /* Returns true if NODE is a function-like user macro.  */
@@ -1259,7 +1281,7 @@ extern void cpp_scan_nooutput (cpp_reader *);
 extern int  cpp_sys_macro_p (cpp_reader *);
 extern unsigned char *cpp_quote_string (unsigned char *, const unsigned char *,
 					unsigned int);
-extern bool cpp_compare_macros (cpp_reader *pfile, cpp_hashnode *node,
+extern bool cpp_compare_macros (const cpp_macro *macro1,
 				const cpp_macro *macro2);
 
 /* In files.c */
