@@ -1,3 +1,11 @@
+2018-09-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Remove test for
+	Comes_From_Source, which prevented implicit conversions from
+	being applied to anonymous access-to-subprogram formals in
+	constant declartions that arise from instance associations for
+	generic formal objects.  Add RM and AARM references to comment.
+
 2018-09-26  Olivier Hainque  <hainque@adacore.com>
 
 	* opt.ads (OpenAcc_Enabled): New flag. False by default. True

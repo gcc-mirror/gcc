@@ -4286,12 +4286,11 @@ package body Sem_Ch3 is
          else
 
             --  If the expression is a formal that is a "subprogram pointer"
-            --  this is illegal in accessibility terms. Add an explicit
-            --  conversion to force the corresponding check, as is done for
-            --  assignments.
+            --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
+            --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
+            --  the corresponding check, as is done for assignments.
 
-            if Comes_From_Source (N)
-              and then Is_Entity_Name (E)
+            if Is_Entity_Name (E)
               and then Present (Entity (E))
               and then Is_Formal (Entity (E))
               and then
