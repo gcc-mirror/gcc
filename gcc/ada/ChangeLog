@@ -1,3 +1,7 @@
+2018-09-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* back_end.adb (Scan_Compiler_Arguments): Store -G xxx switches.
+
 2018-09-26  Yannick Moy  <moy@adacore.com>
 
 	* errout.ads: Update comment for insertion character '?'.
