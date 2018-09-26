@@ -27730,7 +27730,10 @@ package body Sem_Prag is
                --  it must be an extra (SPARK RM 7.2.4(3)).
 
                else
-                  SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+                  pragma Assert (Present (Global));
+                  Error_Msg_Sloc := Sloc (Global);
+                  SPARK_Msg_NE ("extra global item & does not refine or " &
+                                "repeat any global item #", Item, Item_Id);
                end if;
             end if;
          end Check_Refined_Global_Item;
