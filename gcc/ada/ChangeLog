@@ -1,3 +1,9 @@
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Add extra condition
+	to check for unmarked subprogram references coming from
+	renamings.
+
 2018-09-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* back_end.adb (Scan_Compiler_Arguments): Store -G xxx switches.
