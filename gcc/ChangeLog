@@ -1,3 +1,8 @@
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_reorg): Skip Thumb reorg pass for thunks.
+	(arm32_output_mi_thunk): Deal with long calls.
+
 2018-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR debug/87428

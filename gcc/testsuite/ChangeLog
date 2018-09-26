@@ -1,3 +1,10 @@
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/vthunk1.C: Rename to...
+	* g++.dg/other/thunk1.C: ...this.
+	* g++.dg/other/thunk2a.C: New test.
+	* g++.dg/other/thunk2b.C: Likewise.
+
 2018-09-25  Jim Wilson  <jimw@sifive.com>
 
 	* gcc.target/riscv/weak-1.c: New.
