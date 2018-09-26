@@ -1,3 +1,9 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Make_Predicate_Call): Use OK_Convert_To when
+	applying a predicate check to prevent spurious errors when
+	private ancestors are involved.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Allocator): Ensure that the use of the

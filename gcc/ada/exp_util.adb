@@ -9313,14 +9313,16 @@ package body Exp_Util is
 
       --  If the type is tagged, the expression may be class-wide, in which
       --  case it has to be converted to its root type, given that the
-      --  generated predicate function is not dispatching.
+      --  generated predicate function is not dispatching. The conversion
+      --  is type-safe and does not need validation, which matters when
+      --  private extensions are involved.
 
       if Is_Tagged_Type (Typ) then
          Call :=
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Func_Id, Loc),
              Parameter_Associations =>
-               New_List (Convert_To (Typ, Relocate_Node (Expr))));
+               New_List (OK_Convert_To (Typ, Relocate_Node (Expr))));
       else
          Call :=
            Make_Function_Call (Loc,

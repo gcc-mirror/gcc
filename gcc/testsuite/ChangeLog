@@ -1,3 +1,15 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate2-containers.ads,
+	gnat.dg/predicate2-project-name_values.ads,
+	gnat.dg/predicate2-project-registry-attribute.ads,
+	gnat.dg/predicate2-project-registry.ads,
+	gnat.dg/predicate2-project-typ-set.ads,
+	gnat.dg/predicate2-project-typ.ads,
+	gnat.dg/predicate2-project.ads,
+	gnat.dg/predicate2-source_reference.ads, gnat.dg/predicate2.ads,
+	gnat.dg/predicate2_main.adb: New testcase.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/dynhash1.adb: New testcase.
