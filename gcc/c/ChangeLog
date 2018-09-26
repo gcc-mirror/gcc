@@ -1,3 +1,9 @@
+2018-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* c-typeck.c (build_binary_op): Use excess precision for
+	comparisons of integers and floating-point for C11 and later.
+
 2018-09-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/87347
