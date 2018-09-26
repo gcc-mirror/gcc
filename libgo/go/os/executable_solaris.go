@@ -4,14 +4,18 @@
 
 package os
 
-import "syscall"
+import (
+	"syscall"
+	_ "unsafe" // for go:linkname
+)
 
-var executablePath string // set by sysauxv in ../runtime/os3_solaris.go
+// solarisExecutablePath is defined in the runtime package.
+func solarisExecutablePath() string
 
 var initCwd, initCwdErr = Getwd()
 
 func executable() (string, error) {
-	path := executablePath
+	path := solarisExecutablePath()
 	if len(path) == 0 {
 		path, err := syscall.Getexecname()
 		if err != nil {
