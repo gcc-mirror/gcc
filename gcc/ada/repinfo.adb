@@ -1358,7 +1358,8 @@ package body Repinfo is
          Starting_First_Bit : Uint := Uint_0;
          Prefix             : String := "")
       is
-         Comp : Entity_Id;
+         Comp  : Entity_Id;
+         First : Boolean := True;
 
       begin
          Comp := First_Component_Or_Discriminant (Ent);
@@ -1411,6 +1412,15 @@ package body Repinfo is
                     Spos, Sbit, Prefix & Name_Buffer (1 .. Name_Len) & ".");
 
                   goto Continue;
+               end if;
+
+               if List_Representation_Info_To_JSON then
+                  if First then
+                     Write_Eol;
+                     First := False;
+                  else
+                     Write_Line (",");
+                  end if;
                end if;
 
                List_Component_Layout (Comp,
@@ -1678,7 +1688,11 @@ package body Repinfo is
          Write_Line (",");
          Write_Str ("  ""record"": [");
 
-         List_Structural_Record_Layout (Ent, Ent);
+         if Is_Base_Type (Ent) then
+            List_Structural_Record_Layout (Ent, Ent);
+         else
+            List_Record_Layout (Ent);
+         end if;
 
          Write_Eol;
          Write_Str ("  ]");
