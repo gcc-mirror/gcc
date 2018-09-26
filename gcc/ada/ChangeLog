@@ -1,3 +1,10 @@
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* lib-writ.adb, lib-writ.ads (Write_With_Lines): Add
+	documentation and an extra conditional check for RCI units so
+	that generated ali files will list the spec only instead of a
+	body when a body is not found.
+
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (error_gnat_node): Delete.
