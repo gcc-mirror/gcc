@@ -1,3 +1,9 @@
+2018-09-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): -gnatd_A sets
+	Opt.Disable_ALI_File.
+	* debug.adb: Update debug flags documentation.
+
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract): The
