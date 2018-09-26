@@ -5850,6 +5850,7 @@ get_builtin_sync_mem (tree loc, machine_mode mode)
   scalar_int_mode addr_mode = targetm.addr_space.address_mode (addr_space);
 
   addr = expand_expr (loc, NULL_RTX, addr_mode, EXPAND_SUM);
+  addr = convert_memory_address (addr_mode, addr);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't

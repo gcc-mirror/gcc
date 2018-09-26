@@ -1,3 +1,7 @@
+2018-09-25  Andrew Stubbs  <ams@codesourcery.com>
+
+	* builtins.c (get_builtin_sync_mem): Force address mode conversion.
+
 2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (enum reg_class): Remove FP_TOP_SSE_REGS
