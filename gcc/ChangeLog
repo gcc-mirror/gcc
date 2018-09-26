@@ -1,3 +1,11 @@
+2018-09-26  Jeff Law  <law@redhat.com>
+
+	Revert
+	2018-09-26  Alexey Neyman  <stilor@att.net>
+
+	* graphite.h: Include <isl/id.h> and <isl/space.h>; these
+	headers are no longer pulled in by <isl/val.h>.
+
 2018-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR debug/87443
