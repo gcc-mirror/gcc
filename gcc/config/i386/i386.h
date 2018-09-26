@@ -1337,8 +1337,6 @@ enum reg_class
   SSE_REGS,
   ALL_SSE_REGS,
   MMX_REGS,
-  FP_TOP_SSE_REGS,
-  FP_SECOND_SSE_REGS,
   FLOAT_SSE_REGS,
   FLOAT_INT_REGS,
   INT_SSE_REGS,
@@ -1398,8 +1396,6 @@ enum reg_class
    "SSE_REGS",				\
    "ALL_SSE_REGS",			\
    "MMX_REGS",				\
-   "FP_TOP_SSE_REGS",			\
-   "FP_SECOND_SSE_REGS",		\
    "FLOAT_SSE_REGS",			\
    "FLOAT_INT_REGS",			\
    "INT_SSE_REGS",			\
@@ -1438,8 +1434,6 @@ enum reg_class
 { 0x1fe00000,   0x1fe000,    0x0 },	/* SSE_REGS */			\
 { 0x1fe00000, 0xffffe000,   0x1f },	/* ALL_SSE_REGS */		\
 { 0xe0000000,       0x1f,    0x0 },	/* MMX_REGS */			\
-{ 0x1fe00100, 0xffffe000,   0x1f },	/* FP_TOP_SSE_REG */		\
-{ 0x1fe00200, 0xffffe000,   0x1f },	/* FP_SECOND_SSE_REG */		\
 { 0x1fe0ff00, 0xffffe000,   0x1f },	/* FLOAT_SSE_REGS */		\
 {   0x11ffff,     0x1fe0,    0x0 },	/* FLOAT_INT_REGS */		\
 { 0x1ff100ff, 0xffffffe0,   0x1f },	/* INT_SSE_REGS */		\

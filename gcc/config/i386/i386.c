@@ -39043,10 +39043,6 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 	  /* Limit class to FP regs.  */
 	  if (FLOAT_CLASS_P (regclass))
 	    return FLOAT_REGS;
-	  else if (regclass == FP_TOP_SSE_REGS)
-	    return FP_TOP_REG;
-	  else if (regclass == FP_SECOND_SSE_REGS)
-	    return FP_SECOND_REG;
 	}
 
       return NO_REGS;
@@ -39092,14 +39088,7 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
   if (IS_STACK_MODE (mode))
-    {
-      if (regclass == FP_TOP_SSE_REGS)
-	return FP_TOP_REG;
-      else if (regclass == FP_SECOND_SSE_REGS)
-	return FP_SECOND_REG;
-      else
-	return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
-    }
+    return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
 
   return regclass;
 }
