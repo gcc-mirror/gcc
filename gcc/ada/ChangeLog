@@ -1,3 +1,11 @@
+2018-09-26  Yannick Moy  <moy@adacore.com>
+
+	* errout.ads: Update comment for insertion character '?'.
+	* inline.adb: Use simple insertion character '?' for GNATprove
+	info messages.
+	* sem_res.adb (Resolve_Call): Issue an info message on inlining
+	in GNATprove mode.
+
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Type_Conversion_Checks): Do not generate a

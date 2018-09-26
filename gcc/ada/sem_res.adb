@@ -6842,9 +6842,15 @@ package body Sem_Res is
                     ("cannot inline & (possible check on input parameters)?",
                      N, Nam_UA);
 
-               --  Otherwise, inline the call
+               --  Otherwise, inline the call, issuing an info message when
+               --  -gnatd_f is set.
 
                else
+                  if Debug_Flag_Underscore_F then
+                     Error_Msg_NE
+                       ("info: analyzing call to & in context?", N, Nam_UA);
+                  end if;
+
                   Expand_Inlined_Call (N, Nam_UA, Nam);
                end if;
             end if;
