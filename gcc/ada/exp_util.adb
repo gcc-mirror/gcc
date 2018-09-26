@@ -9004,12 +9004,17 @@ package body Exp_Util is
    --  Generate the following code:
 
    --   type Equiv_T is record
-   --     _parent :  T (List of discriminant constraints taken from Exp);
+   --     _parent : T (List of discriminant constraints taken from Exp);
    --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
    --   end Equiv_T;
    --
-   --   ??? Note that this type does not guarantee same alignment as all
-   --   derived types
+   --  ??? Note that this type does not guarantee same alignment as all
+   --  derived types
+   --
+   --  Note: for the freezing circuitry, this looks like a record extension,
+   --  and so we need to make sure that the scalar storage order is the same
+   --  as that of the parent type. (This does not change anything for the
+   --  representation of the extension part.)
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -9017,6 +9022,7 @@ package body Exp_Util is
    is
       Loc         : constant Source_Ptr := Sloc (E);
       Root_Typ    : constant Entity_Id  := Root_Type (T);
+      Root_Utyp   : constant Entity_Id  := Underlying_Type (Root_Typ);
       List_Def    : constant List_Id    := Empty_List;
       Comp_List   : constant List_Id    := New_List;
       Equiv_Type  : Entity_Id;
@@ -9147,6 +9153,11 @@ package body Exp_Util is
                Make_Component_Definition (Loc,
                  Aliased_Present    => False,
                  Subtype_Indication => New_Occurrence_Of (Constr_Root, Loc))));
+
+         Set_Reverse_Storage_Order (Equiv_Type,
+           Reverse_Storage_Order (Base_Type (Root_Utyp)));
+         Set_Reverse_Bit_Order (Equiv_Type,
+           Reverse_Bit_Order (Base_Type (Root_Utyp)));
       end if;
 
       Append_To (Comp_List,
