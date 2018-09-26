@@ -5267,8 +5267,9 @@ package body Exp_Ch6 is
                         Set_Comes_From_Source (Pool_Allocator, True);
                      end if;
 
-                     --  The allocator is returned on the secondary stack.
+                     --  The allocator is returned on the secondary stack
 
+                     Check_Restriction (No_Secondary_Stack, N);
                      Set_Storage_Pool (SS_Allocator, RTE (RE_SS_Pool));
                      Set_Procedure_To_Call
                        (SS_Allocator, RTE (RE_SS_Allocate));

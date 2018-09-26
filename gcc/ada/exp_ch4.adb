@@ -4417,6 +4417,7 @@ package body Exp_Ch4 is
             Set_Storage_Pool (N, Pool);
 
             if Is_RTE (Pool, RE_SS_Pool) then
+               Check_Restriction (No_Secondary_Stack, N);
                Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
 
             --  In the case of an allocator for a simple storage pool, locate
