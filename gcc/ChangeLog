@@ -1,3 +1,15 @@
+2018-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87428
+	PR debug/87362
+	* tree-inline.c (expand_call_inline): When the location
+	of the call is UNKNOWN_LOCATION use DECL_SOURCE_LOCATION
+	or BUILTINS_LOCATION for the BLOCK_SOURCE_LOCATION of
+	the inserted BLOCK to make inlined_function_outer_scope_p
+	recognize it.
+	* dwarf2out.c (add_call_src_coords_attributes): Do not add
+	coords for reserved locations.
+
 2018-09-25  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (*movcc_internal1): Use set_attr_alternative.
