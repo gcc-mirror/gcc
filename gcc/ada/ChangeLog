@@ -1,3 +1,21 @@
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Ensure that the use of the
+	secondary stack does not clash with restriction
+	No_Secondary_Stack.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Ensure that
+	the use of the secondary stack does not clash with restriction
+	No_Secondary_Stack.
+	* sem_ch5.adb (Analyze_Loop_Statement): Wrap the loop in a block
+	prior to analysis in order to either provide a local scope for
+	an iterator, or ensure that the secondary stack is properly
+	managed.
+	(Check_Call): Account for the case where the tree may be
+	unanalyzed or contain prior errors.
+	(Has_Call_Using_Secondary_Stack): Renamed to Has_Sec_Stack_Call.
+	Update all uses of the subprogram.
+	(Prepare_Loop_Statement): New routine.
+
 2018-09-26  Javier Miranda  <miranda@adacore.com>
 
 	* sem_res.adb (Resolve_Actuals): If the formal is a class-wide
