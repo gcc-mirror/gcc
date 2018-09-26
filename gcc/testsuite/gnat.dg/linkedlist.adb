@@ -1,6 +1,7 @@
 --  { dg-do run }
 
 with Ada.Text_IO; use Ada.Text_IO;
+with GNAT;        use GNAT;
 with GNAT.Lists;  use GNAT.Lists;
 
 procedure Linkedlist is
@@ -97,14 +98,14 @@ procedure Linkedlist is
    procedure Test_Last;
    --  Verify that Last properly returns the tail of a list
 
-   procedure Test_Length;
-   --  Verify that Length returns the correct length of a list
-
    procedure Test_Prepend;
    --  Verify that Prepend properly inserts at the head of a list
 
    procedure Test_Replace;
    --  Verify that Replace properly substitutes old elements with new ones
+
+   procedure Test_Size;
+   --  Verify that Size returns the correct size of a list
 
    -----------------
    -- Check_Empty --
@@ -116,7 +117,7 @@ procedure Linkedlist is
       Low_Elem  : Integer;
       High_Elem : Integer)
    is
-      Len : constant Element_Count_Type := Length (L);
+      Len : constant Natural := Size (L);
 
    begin
       for Elem in Low_Elem .. High_Elem loop
@@ -142,7 +143,7 @@ procedure Linkedlist is
          Append (L, 1);
          Put_Line ("ERROR: " & Caller & ": Append: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line ("ERROR: " & Caller & ": Append: unexpected exception");
@@ -154,7 +155,7 @@ procedure Linkedlist is
       exception
          when List_Empty =>
             null;
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line ("ERROR: " & Caller & ": Delete: unexpected exception");
@@ -166,7 +167,7 @@ procedure Linkedlist is
       exception
          when List_Empty =>
             null;
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line
@@ -179,10 +180,10 @@ procedure Linkedlist is
       exception
          when List_Empty =>
             null;
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
-            Put_Line
+            Put_Line 
               ("ERROR: " & Caller & ": Delete_Last: unexpected exception");
       end;
 
@@ -190,7 +191,7 @@ procedure Linkedlist is
          Destroy (L);
          Put_Line ("ERROR: " & Caller & ": Destroy: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line ("ERROR: " & Caller & ": Destroy: unexpected exception");
@@ -200,10 +201,10 @@ procedure Linkedlist is
          Insert_After (L, 1, 2);
          Put_Line ("ERROR: " & Caller & ": Insert_After: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
-            Put_Line
+            Put_Line 
               ("ERROR: " & Caller & ": Insert_After: unexpected exception");
       end;
 
@@ -212,7 +213,7 @@ procedure Linkedlist is
          Put_Line
            ("ERROR: " & Caller & ": Insert_Before: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line
@@ -223,7 +224,7 @@ procedure Linkedlist is
          Prepend (L, 1);
          Put_Line ("ERROR: " & Caller & ": Prepend: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line ("ERROR: " & Caller & ": Prepend: unexpected exception");
@@ -233,7 +234,7 @@ procedure Linkedlist is
          Replace (L, 1, 2);
          Put_Line ("ERROR: " & Caller & ": Replace: no exception raised");
       exception
-         when List_Locked =>
+         when Iterated =>
             null;
          when others =>
             Put_Line ("ERROR: " & Caller & ": Replace: unexpected exception");
@@ -384,7 +385,7 @@ procedure Linkedlist is
    -----------------
 
    procedure Test_Create is
-      Count : Element_Count_Type;
+      Count : Natural;
       Flag  : Boolean;
       Iter  : Iterator;
       L     : Instance;
@@ -508,16 +509,6 @@ procedure Linkedlist is
       end;
 
       begin
-         Count := Length (L);
-         Put_Line ("ERROR: Test_Create: Length: no exception raised");
-      exception
-         when Not_Created =>
-            null;
-         when others =>
-            Put_Line ("ERROR: Test_Create: Length: unexpected exception");
-      end;
-
-      begin
          Prepend (L, 1);
          Put_Line ("ERROR: Test_Create: Prepend: no exception raised");
       exception
@@ -535,6 +526,16 @@ procedure Linkedlist is
             null;
          when others =>
             Put_Line ("ERROR: Test_Create: Replace: unexpected exception");
+      end;
+
+      begin
+         Count := Size (L);
+         Put_Line ("ERROR: Test_Create: Size: no exception raised");
+      exception
+         when Not_Created =>
+            null;
+         when others =>
+            Put_Line ("ERROR: Test_Create: Size: unexpected exception");
       end;
    end Test_Create;
 
@@ -654,7 +655,7 @@ procedure Linkedlist is
 
       --  At this point the list should be completely empty
 
-      Check_Empty
+      Check_Empty 
         (Caller    => "Test_Delete_First",
          L         => L,
          Low_Elem  => Low_Elem,
@@ -1055,44 +1056,6 @@ procedure Linkedlist is
       Destroy (L);
    end Test_Last;
 
-   -----------------
-   -- Test_Length --
-   -----------------
-
-   procedure Test_Length is
-      L   : Instance := Create;
-      Len : Element_Count_Type;
-
-   begin
-      Len := Length (L);
-
-      if Len /= 0 then
-         Put_Line ("ERROR: Test_Length: wrong length");
-         Put_Line ("expected: 0");
-         Put_Line ("got     :" & Len'Img);
-      end if;
-
-      Populate_With_Append (L, 1, 2);
-      Len := Length (L);
-
-      if Len /= 2 then
-         Put_Line ("ERROR: Test_Length: wrong length");
-         Put_Line ("expected: 2");
-         Put_Line ("got     :" & Len'Img);
-      end if;
-
-      Populate_With_Append (L, 3, 6);
-      Len := Length (L);
-
-      if Len /= 6 then
-         Put_Line ("ERROR: Test_Length: wrong length");
-         Put_Line ("expected: 6");
-         Put_Line ("got     :" & Len'Img);
-      end if;
-
-      Destroy (L);
-   end Test_Length;
-
    ------------------
    -- Test_Prepend --
    ------------------
@@ -1143,6 +1106,44 @@ procedure Linkedlist is
       Destroy (L);
    end Test_Replace;
 
+   ---------------
+   -- Test_Size --
+   ---------------
+
+   procedure Test_Size is
+      L : Instance := Create;
+      S : Natural;
+
+   begin
+      S := Size (L);
+
+      if S /= 0 then
+         Put_Line ("ERROR: Test_Size: wrong size");
+         Put_Line ("expected: 0");
+         Put_Line ("got     :" & S'Img);
+      end if;
+
+      Populate_With_Append (L, 1, 2);
+      S := Size (L);
+
+      if S /= 2 then
+         Put_Line ("ERROR: Test_Size: wrong size");
+         Put_Line ("expected: 2");
+         Put_Line ("got     :" & S'Img);
+      end if;
+
+      Populate_With_Append (L, 3, 6);
+      S := Size (L);
+
+      if S /= 6 then
+         Put_Line ("ERROR: Test_Size: wrong size");
+         Put_Line ("expected: 6");
+         Put_Line ("got     :" & S'Img);
+      end if;
+
+      Destroy (L);
+   end Test_Size;
+
 --  Start of processing for Operations
 
 begin
@@ -1178,7 +1179,7 @@ begin
       High_Elem => 5);
 
    Test_Last;
-   Test_Length;
    Test_Prepend;
    Test_Replace;
+   Test_Size;
 end Linkedlist;

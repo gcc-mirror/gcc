@@ -1,3 +1,51 @@
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gcc-interface/Make-lang.in: Add unit GNAT.Sets to the list of
+	front end sources.
+	* impunit.adb: Add unit GNAT.Sets to the list of predefined
+	units.
+	* Makefile.rtl: Add unit GNAT.Sets to the list of non-tasking
+	units.
+	* libgnat/g-sets.adb: New unit.
+	* libgnat/g-sets.ads: New unit.
+	* libgnat/g-dynhta.adb (Minimum_Size): Decrease to 8 in order to
+	allow for small sets.  Update all occurrences of Table_Locked to
+	Iterated.
+	(Ensure_Unlocked): Query the number of iterators.
+	(Find_Node): Use the supplied equality.
+	(Is_Empty): New routine.
+	(Lock): Update the number of iterators.
+	(Prepend_Or_Replace): Use the supplied equality.
+	(Size): Update the return type.
+	(Unlock): Update the number of iterators.
+	* libgnat/g-dynhta.ads: Update all occurrences of Table_Locked
+	to Iterated.  Rename formal subprogram Equivalent_Keys to "=".
+	(Bucket_Range_Type, Pair_Count_Type): Remove types.
+	(Not_Created, Table_Locked, Iterator_Exhausted): Remove
+	exceptions.
+	(Hash_Table): Update to store the number of iterators rather
+	than locks.
+	(Is_Empty): New routine.
+	(Size): Update the return type.
+	* libgnat/g-lists.adb: Update all occurrences of List_Locked to
+	Iterated.
+	(Ensure_Unlocked): Query the number of iterators.
+	(Length): Remove.
+	(Lock): Update the number of iterators.
+	(Size): New routine.
+	(Unlock): Update the number of iterators.
+	* libgnat/g-lists.ads: Update all occurrences of List_Locked to
+	Iterated.
+	(Element_Count_Type): Remove type.
+	(Not_Created, Table_Locked, Iterator_Exhausted): Remove
+	exceptions.
+	(Linked_List): Update type to store the number of iterators
+	rather than locks.
+	(Length): Remove.
+	(Size): New routine.
+	* libgnat/gnat.ads (Bucket_Range_Type): New type.
+	(Iterated, Iterator_Exhausted, and Not_Created): New exceptions.
+
 2018-09-26  Javier Miranda  <miranda@adacore.com>
 
 	* checks.adb (Install_Null_Excluding_Check): Do not add

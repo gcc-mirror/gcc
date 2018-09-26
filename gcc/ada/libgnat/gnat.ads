@@ -34,4 +34,24 @@
 package GNAT is
    pragma Pure;
 
+   --  The following type denotes the range of buckets for various hashed
+   --  data structures in the GNAT unit hierarchy.
+
+   type Bucket_Range_Type is mod 2 ** 32;
+
+   --  The following exception is raised whenever an attempt is made to mutate
+   --  the state of a data structure that is being iterated on.
+
+   Iterated : exception;
+
+   --  The following exception is raised when an iterator is exhausted and
+   --  further attempts are made to advance it.
+
+   Iterator_Exhausted : exception;
+
+   --  The following exception is raised whenever an attempt is made to mutate
+   --  the state of a data structure that has not been created yet.
+
+   Not_Created : exception;
+
 end GNAT;

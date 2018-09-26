@@ -49,13 +49,9 @@ package GNAT.Lists is
    --
    --    <various operations>
    --
-   --    Destroy (List)
+   --    Destroy (List);
    --
    --  The destruction of the list reclaims all storage occupied by it.
-
-   --  The following type denotes the number of elements stored in a list
-
-   type Element_Count_Type is range 0 .. 2 ** 31 - 1;
 
    generic
       type Element_Type is private;
@@ -73,21 +69,14 @@ package GNAT.Lists is
       type Instance is private;
       Nil : constant Instance;
 
+      --  The following exception is raised when the list is empty, and an
+      --  attempt is made to delete an element from it.
+
       List_Empty : exception;
-      --  This exception is raised when the list is empty, and an attempt is
-      --  made to delete an element from it.
-
-      List_Locked : exception;
-      --  This exception is raised when the list is being iterated on, and an
-      --  attempt is made to mutate its state.
-
-      Not_Created : exception;
-      --  This exception is raised when the list has not been created by
-      --  routine Create, and an attempt is made to read or mutate its state.
 
       procedure Append (L : Instance; Elem : Element_Type);
       --  Insert element Elem at the end of list L. This action will raise
-      --  List_Locked if the list has outstanding iterators.
+      --  Iterated if the list has outstanding iterators.
 
       function Contains (L : Instance; Elem : Element_Type) return Boolean;
       --  Determine whether list L contains element Elem
@@ -100,23 +89,23 @@ package GNAT.Lists is
       --  not present. This action will raise
       --
       --    * List_Empty if the list is empty.
-      --    * List_Locked if the list has outstanding iterators.
+      --    * Iterated if the list has outstanding iterators.
 
       procedure Delete_First (L : Instance);
       --  Delete an element from the start of list L. This action will raise
       --
       --    * List_Empty if the list is empty.
-      --    * List_Locked if the list has outstanding iterators.
+      --    * Iterated if the list has outstanding iterators.
 
       procedure Delete_Last (L : Instance);
       --  Delete an element from the end of list L. This action will raise
       --
       --    * List_Empty if the list is empty.
-      --    * List_Locked if the list has outstanding iterators.
+      --    * Iterated if the list has outstanding iterators.
 
       procedure Destroy (L : in out Instance);
       --  Destroy the contents of list L. This routine must be called at the
-      --  end of a list's lifetime. This action will raise List_Locked if the
+      --  end of a list's lifetime. This action will raise Iterated if the
       --  list has outstanding iterators.
 
       function First (L : Instance) return Element_Type;
@@ -129,7 +118,7 @@ package GNAT.Lists is
          Elem  : Element_Type);
       --  Insert new element Elem after element After in list L. The routine
       --  has no effect if After is not present. This action will raise
-      --  List_Locked if the list has outstanding iterators.
+      --  Iterated if the list has outstanding iterators.
 
       procedure Insert_Before
         (L      : Instance;
@@ -137,7 +126,7 @@ package GNAT.Lists is
          Elem   : Element_Type);
       --  Insert new element Elem before element Before in list L. The routine
       --  has no effect if After is not present. This action will raise
-      --  List_Locked if the list has outstanding iterators.
+      --  Iterated if the list has outstanding iterators.
 
       function Is_Empty (L : Instance) return Boolean;
       --  Determine whether list L is empty
@@ -146,12 +135,9 @@ package GNAT.Lists is
       --  Obtain an element from the end of list L. This action will raise
       --  List_Empty if the list is empty.
 
-      function Length (L : Instance) return Element_Count_Type;
-      --  Obtain the number of elements in list L
-
       procedure Prepend (L : Instance; Elem : Element_Type);
       --  Insert element Elem at the start of list L. This action will raise
-      --  List_Locked if the list has outstanding iterators.
+      --  Iterated if the list has outstanding iterators.
 
       procedure Replace
         (L        : Instance;
@@ -159,7 +145,10 @@ package GNAT.Lists is
          New_Elem : Element_Type);
       --  Replace old element Old_Elem with new element New_Elem in list L. The
       --  routine has no effect if Old_Elem is not present. This action will
-      --  raise List_Locked if the list has outstanding iterators.
+      --  raise Iterated if the list has outstanding iterators.
+
+      function Size (L : Instance) return Natural;
+      --  Obtain the number of elements in list L
 
       -------------------------
       -- Iterator operations --
@@ -179,10 +168,6 @@ package GNAT.Lists is
 
       type Iterator is private;
 
-      Iterator_Exhausted : exception;
-      --  This exception is raised when an iterator is exhausted and further
-      --  attempts to advance it are made by calling routine Next.
-
       function Iterate (L : Instance) return Iterator;
       --  Obtain an iterator over the elements of list L. This action locks all
       --  mutation functionality of the associated list.
@@ -192,9 +177,7 @@ package GNAT.Lists is
       --  iterator has been exhausted, restore all mutation functionality of
       --  the associated list.
 
-      procedure Next
-        (Iter : in out Iterator;
-         Elem : out Element_Type);
+      procedure Next (Iter : in out Iterator; Elem : out Element_Type);
       --  Return the current element referenced by iterator Iter and advance
       --  to the next available element. If the iterator has been exhausted
       --  and further attempts are made to advance it, this routine restores
@@ -216,10 +199,10 @@ package GNAT.Lists is
       --  The following type represents a list
 
       type Linked_List is record
-         Elements : Element_Count_Type := 0;
+         Elements : Natural := 0;
          --  The number of elements in the list
 
-         Locked : Natural := 0;
+         Iterators : Natural := 0;
          --  Number of outstanding iterators
 
          Nodes : aliased Node;

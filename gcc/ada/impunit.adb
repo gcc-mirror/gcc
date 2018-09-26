@@ -298,6 +298,7 @@ package body Impunit is
     ("g-semaph", F),  -- GNAT.Semaphores
     ("g-sercom", F),  -- GNAT.Serial_Communications
     ("g-sestin", F),  -- GNAT.Secondary_Stack_Info
+    ("g-sets  ", F),  -- GNAT.Sets
     ("g-sha1  ", F),  -- GNAT.SHA1
     ("g-sha224", F),  -- GNAT.SHA224
     ("g-sha256", F),  -- GNAT.SHA256
