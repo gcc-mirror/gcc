@@ -347,7 +347,6 @@ internal_error_function (diagnostic_context *context, const char *msgid,
   sp_loc.Bounds = &temp_loc;
   sp_loc.Array = loc;
 
-  Current_Error_Node = error_gnat_node;
   Compiler_Abort (sp, sp_loc, true);
 }
 

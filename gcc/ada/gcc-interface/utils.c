@@ -3389,7 +3389,7 @@ void
 rest_of_subprog_body_compilation (tree subprog_decl)
 {
   /* We cannot track the location of errors past this point.  */
-  error_gnat_node = Empty;
+  Current_Error_Node = Empty;
 
   /* If we're only annotating types, don't actually compile this function.  */
   if (type_annotate_only)

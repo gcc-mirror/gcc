@@ -86,9 +86,6 @@ struct List_Header *List_Headers_Ptr;
 /* Highest number in the front-end node table.  */
 int max_gnat_nodes;
 
-/* Current node being treated, in case abort called.  */
-Node_Id error_gnat_node;
-
 /* True when gigi is being called on an analyzed but unexpanded
    tree, and the only purpose of the call is to properly annotate
    types with representation information.  */
@@ -719,7 +716,7 @@ gigi (Node_Id gnat_root,
   destroy_gnat_utils ();
 
   /* We cannot track the location of errors past this point.  */
-  error_gnat_node = Empty;
+  Current_Error_Node = Empty;
 }
 
 /* Return a subprogram decl corresponding to __gnat_rcheck_xx for the given
@@ -5910,7 +5907,7 @@ gnat_to_gnu (Node_Id gnat_node)
   bool sync = false;
 
   /* Save node number for error message and set location information.  */
-  error_gnat_node = gnat_node;
+  Current_Error_Node = gnat_node;
   Sloc_to_locus (Sloc (gnat_node), &input_location);
 
   /* If we are only annotating types and this node is a statement, return
