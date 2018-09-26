@@ -1,3 +1,9 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Is_Onown_Limited): A derived type whose parent P
+	is a derived limited record is not itself limited if P is a
+	derived limited interface.
+
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb (Has_Referencer): Remove Top_Level parameter and

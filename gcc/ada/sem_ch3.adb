@@ -1928,9 +1928,12 @@ package body Sem_Ch3 is
             return True;
 
          --  Else the type may have a limited interface progenitor, but a
-         --  limited record parent.
+         --  limited record parent that is not an interface.
 
-         elsif R /= P and then Is_Limited_Record (P) then
+         elsif R /= P
+            and then Is_Limited_Record (P)
+            and then not Is_Interface (P)
+         then
             return True;
 
          else
