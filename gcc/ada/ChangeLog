@@ -1,3 +1,16 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* contracts.adb (Expand_Subprogram_Contract,
+	Process_Preconditions_For): Apply Freeze_Expr_Types to the
+	expression for a precondition of an expression function that is
+	a completion, when the completion appears in the private part
+	and the declaration it completes is in the visible part of the
+	same package.
+	* freeze.adb (Freeze_Expr_Types): Do not establish the scope of
+	the operation if it is already installed, as will be the case
+	when called to analyze the contract oc the subprogram (which
+	happens when generating code inside the subprogram body).
+
 2018-09-26  Maroua Maalej  <maalej@adacore.com>
 
 	* sem_spark.adb (Check_Param_In, Setup_Parameter_Or_Global):
