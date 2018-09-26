@@ -24091,18 +24091,16 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
     }
   else if (BLOCK_ABSTRACT_ORIGIN (stmt))
     {
-      /* If this is an inlined instance, create a new lexical die for
-	 anything below to attach DW_AT_abstract_origin to.  */
+      /* If this is an inlined or conrecte instance, create a new lexical
+	 die for anything below to attach DW_AT_abstract_origin to.  */
       if (old_die)
-	{
-	  stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
-	  equate_block_to_die (stmt, stmt_die);
-	  old_die = NULL;
-	}
+	stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
 
       tree origin = block_ultimate_origin (stmt);
-      if (origin != NULL_TREE && origin != stmt)
+      if (origin != NULL_TREE && (origin != stmt || old_die))
 	add_abstract_origin_attribute (stmt_die, origin);
+
+      old_die = NULL;
     }
 
   if (old_die)
