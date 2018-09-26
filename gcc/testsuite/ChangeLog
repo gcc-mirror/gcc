@@ -1,3 +1,8 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate3.adb, gnat.dg/predicate3_pkg.ads: New
+	testcase.
+
 2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67656
