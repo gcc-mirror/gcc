@@ -544,6 +544,9 @@ package body GNAT.Dynamic_HTables is
             Detach (Nod);
             Free   (Nod);
 
+            --  The number of key-value pairs is updated when the hash table
+            --  contains a valid node which represents the pair.
+
             T.Pairs := T.Pairs - 1;
 
             --  Compress the hash table if the load factor drops below
@@ -1121,6 +1124,11 @@ package body GNAT.Dynamic_HTables is
             Nod := new Node'(Key, Value, null, null);
 
             Prepend (Nod, Head);
+
+            --  The number of key-value pairs must be updated for a prepend,
+            --  never for a replace.
+
+            T.Pairs := T.Pairs + 1;
          end Prepend_Or_Replace;
 
          --  Local variables
@@ -1147,8 +1155,6 @@ package body GNAT.Dynamic_HTables is
          --  replace its value, otherwise prepend a new key-value pair.
 
          Prepend_Or_Replace (Head);
-
-         T.Pairs := T.Pairs + 1;
 
          --  Expand the hash table if the ratio of pairs to buckets goes over
          --  Expansion_Threshold.

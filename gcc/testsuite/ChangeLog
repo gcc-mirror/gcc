@@ -1,5 +1,9 @@
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/dynhash1.adb: New testcase.
+
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/sets1.adb: New testcase.
 	* gnat.dg/dynhash.adb, gnat.dg/linkedlist.adb: Update testcases
 	to new API.
