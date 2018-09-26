@@ -1,3 +1,10 @@
+2018-09-26  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb (Check_Param_In, Setup_Parameter_Or_Global):
+	Change the operation associated to assigning to an IN parameter.
+	In SPARK, IN access-to-variable is an observe operation for a
+	function, and borrow operation for a procedure.
+
 2018-09-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* vxlink.adb: Minor reformatting.
