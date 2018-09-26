@@ -1,3 +1,10 @@
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Package_Body): Capture and restore
+	the full compilation context.
+	(Instantiate_Subprogram_Body): Capture and restore the full
+	compilation context.
+
 2018-09-26  Yannick Moy  <moy@adacore.com>
 
 	* debug.adb: Add use for -gnatd_f switch.
