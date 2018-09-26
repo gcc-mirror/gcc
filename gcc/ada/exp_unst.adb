@@ -260,8 +260,8 @@ package body Exp_Unst is
          E := Ultimate_Alias (E);
 
          --  The body of a protected operation has a different name and
-         --  has been scanned at this point, and thus has an entry in
-         --  the subprogram table.
+         --  has been scanned at this point, and thus has an entry in the
+         --  subprogram table.
 
          if E = Sub and then Convention (E) = Convention_Protected then
             E := Protected_Body_Subprogram (E);
@@ -541,19 +541,17 @@ package body Exp_Unst is
                      if Nkind (N) = N_Attribute_Reference then
                         declare
                            Attr : constant Attribute_Id :=
-                             Get_Attribute_Id (Attribute_Name (N));
+                                    Get_Attribute_Id (Attribute_Name (N));
+                           DT   : Boolean := False;
+
                         begin
                            if (Attr = Attribute_First
                                  or else Attr = Attribute_Last
                                  or else Attr = Attribute_Length)
                              and then Is_Constrained (Etype (Prefix (N)))
                            then
-                              declare
-                                 DT : Boolean := False;
-                              begin
-                                 Check_Static_Type
-                                   (Etype (Prefix (N)), Empty, DT);
-                              end;
+                              Check_Static_Type
+                                (Etype (Prefix (N)), Empty, DT);
                            end if;
                         end;
                      end if;
@@ -2022,21 +2020,23 @@ package body Exp_Unst is
                                  --  N_Loop_Parameter_Specification or to
                                  --  an N_Iterator_Specification.
 
-                                 if Nkind_In (Ins, N_Iterator_Specification,
-                                              N_Loop_Parameter_Specification)
+                                 if Nkind_In
+                                      (Ins, N_Iterator_Specification,
+                                            N_Loop_Parameter_Specification)
                                  then
-                                    --  Quantified expression are rewrittne
-                                    --  as loops during expansion.
+                                    --  Quantified expression are rewritten as
+                                    --  loops during expansion.
 
                                     if Nkind (Parent (Ins)) =
-                                      N_Quantified_Expression
+                                         N_Quantified_Expression
                                     then
                                        null;
 
                                     else
                                        Ins :=
                                          First
-                                         (Statements (Parent (Parent (Ins))));
+                                           (Statements
+                                             (Parent (Parent (Ins))));
                                        Insert_Before (Ins, Asn);
                                     end if;
 

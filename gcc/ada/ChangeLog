@@ -1,5 +1,11 @@
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* contracts.adb, exp_unst.adb, exp_util.adb, gnat1drv.adb,
+	opt.ads, par-prag.adb, sem_ch3.adb, sem_ch5.adb, sem_prag.adb,
+	sinfo.ads, snames.ads-tmpl: Minor reformatting.
+
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gcc-interface/Make-lang.in: Add unit GNAT.Sets to the list of
 	front end sources.
 	* impunit.adb: Add unit GNAT.Sets to the list of predefined

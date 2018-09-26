@@ -2210,8 +2210,7 @@ package body Sem_Ch5 is
       if Nkind (Iter_Name) = N_Function_Call
         and then Is_Entity_Name (Name (Iter_Name))
         and then Full_Analysis
-        and then (In_Assertion_Expr = 0
-                   or else Assertions_Enabled)
+        and then (In_Assertion_Expr = 0 or else Assertions_Enabled)
       then
          Freeze_Before (N, Entity (Name (Iter_Name)));
       end if;

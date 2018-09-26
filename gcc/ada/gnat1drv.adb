@@ -161,7 +161,7 @@ procedure Gnat1drv is
          Modify_Tree_For_C := True;
       end if;
 
-      --  -gnatd_A disables generation of ALI files.
+      --  -gnatd_A disables generation of ALI files
 
       if Debug_Flag_Underscore_AA then
          Disable_ALI_File := True;
