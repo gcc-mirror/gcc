@@ -7570,13 +7570,33 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* And we only deal with 'Address if the object has a Freeze node.  */
       gnat_temp = Entity (Name (gnat_node));
-      if (No (Freeze_Node (gnat_temp)))
-	break;
+      if (Freeze_Node (gnat_temp))
+	{
+	  tree gnu_address = gnat_to_gnu (Expression (gnat_node));
 
-      /* Get the value to use as the address and save it as the equivalent
-	 for the object.  When it is frozen, gnat_to_gnu_entity will do the
-	 right thing.  */
-      save_gnu_tree (gnat_temp, gnat_to_gnu (Expression (gnat_node)), true);
+	  /* Get the value to use as the address and save it as the equivalent
+	     for the object; when it is frozen, gnat_to_gnu_entity will do the
+	     right thing.  For a subprogram, put the naked address but build a
+	     meaningfull expression for an object in case its address is taken
+	     before the Freeze node is encountered; this can happen if the type
+	     of the object is limited and it is initialized with the result of
+	     a function call.  */
+	  if (Is_Subprogram (gnat_temp))
+	    gnu_result = gnu_address;
+	  else
+	    {
+	      tree gnu_type = gnat_to_gnu_type (Etype (gnat_temp));
+	      /* Drop atomic and volatile qualifiers for the expression.  */
+	      gnu_type = TYPE_MAIN_VARIANT (gnu_type);
+	      gnu_type
+		= build_reference_type_for_mode (gnu_type, ptr_mode, true);
+	      gnu_address = convert (gnu_type, gnu_address);
+	      gnu_result
+		= build_unary_op (INDIRECT_REF, NULL_TREE, gnu_address);
+	    }
+
+	  save_gnu_tree (gnat_temp, gnu_result, true);
+	}
       break;
 
     case N_Enumeration_Representation_Clause:
