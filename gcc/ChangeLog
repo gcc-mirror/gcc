@@ -1,3 +1,18 @@
+2018-09-26  Martin Sebor  <msebor@redhat.com>
+
+	* tree.c (zerop): Change return type to bool.
+	(integer_zerop, integer_onep, integer_each_onep): Same.
+	(integer_all_onesp, integer_minus_onep, integer_pow2p): Same.
+	(integer_nonzerop, integer_truep, tree_ctz, real_zerop): Same.
+	(real_onep, real_minus_onep, chain_index): Same.
+	(print_type_hash_statistics, type_list_equal): Same.
+	* tree.h (zerop): Same.
+	(zerop, integer_zerop, integer_onep, integer_each_onep): Same.
+	(integer_all_onesp, integer_minus_onep, integer_pow2p): Same.
+	(integer_nonzerop, integer_truep, tree_ctz, real_zerop): Same.
+	(real_onep, real_minus_onep, chain_index): Same.
+	(print_type_hash_statistics, type_list_equal): Same.
+
 2018-09-26  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.h (FUNCTION_ARG_REGNO_P): Fix comment.
