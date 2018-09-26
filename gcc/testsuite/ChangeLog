@@ -5,6 +5,12 @@
 
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/addr12.adb, gnat.dg/addr12_a.adb,
+	gnat.dg/addr12_a.ads, gnat.dg/addr12_b.adb,
+	gnat.dg/addr12_b.ads, gnat.dg/addr12_c.ads: New testcase.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* g++.dg/other/vthunk1.C: Rename to...
 	* g++.dg/other/thunk1.C: ...this.
 	* g++.dg/other/thunk2a.C: New test.

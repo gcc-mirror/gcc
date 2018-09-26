@@ -1,3 +1,12 @@
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Adjust
+	code retrieving the address when a clause has already been
+	processed.
+	* gcc-interface/trans.c (gnat_to_gnu)
+	<N_Attribute_Definition_Clause>: For an object with a Freeze
+	node, build a meaningful expression.
+
 2018-09-26  Arnaud Charlet  <charlet@adacore.com>
 
 	* gnat1drv.adb (Adjust_Global_Switches): -gnatd_A sets

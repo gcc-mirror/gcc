@@ -1147,10 +1147,10 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	if (definition && Present (Address_Clause (gnat_entity)))
 	  {
 	    const Node_Id gnat_clause = Address_Clause (gnat_entity);
-	    Node_Id gnat_address = Expression (gnat_clause);
-	    tree gnu_address
-	      = present_gnu_tree (gnat_entity)
-		? get_gnu_tree (gnat_entity) : gnat_to_gnu (gnat_address);
+	    const Node_Id gnat_address = Expression (gnat_clause);
+	    tree gnu_address = present_gnu_tree (gnat_entity)
+			       ? TREE_OPERAND (get_gnu_tree (gnat_entity), 0)
+			       : gnat_to_gnu (gnat_address);
 
 	    save_gnu_tree (gnat_entity, NULL_TREE, false);
 
