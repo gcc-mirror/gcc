@@ -1,3 +1,7 @@
+2018-09-26  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.h (FUNCTION_ARG_REGNO_P): Fix comment.
+
 2018-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87414
