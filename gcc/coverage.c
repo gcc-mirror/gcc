@@ -304,16 +304,23 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
     {
       static int warned = 0;
 
-      if (!warned++ && dump_enabled_p ())
+      if (!warned++)
 	{
-	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	  warning (OPT_Wmissing_profile,
+		   "%qs profile count data file not found",
+		   da_file_name);
+	  if (dump_enabled_p ())
+	    {
+	      dump_user_location_t loc
+		= dump_user_location_t::from_location_t (input_location);
+	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			       "file %s not found\n",
+			       da_file_name);
+	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
 			   (flag_guess_branch_prob
-			    ? "file %s not found, execution counts estimated\n"
-			    : "file %s not found, execution counts assumed to "
-			    "be zero\n"),
-			   da_file_name);
+			    ? "execution counts estimated\n"
+			    : "execution counts assumed to be zero\n"));
+	    }
 	}
       return NULL;
     }
@@ -327,10 +334,17 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
   if (!entry)
-    /* The function was not emitted, or is weak and not chosen in the
-       final executable.  Silently fail, because there's nothing we
-       can do about it.  */
-    return NULL;
+    {
+      if (counter == GCOV_COUNTER_ARCS)
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wmissing_profile,
+		    "profile for function %qD not found in profile data",
+		    current_function_decl);
+      /* The function was not emitted, or is weak and not chosen in the
+	 final executable.  Silently fail, because there's nothing we
+	 can do about it.  */
+      return NULL;
+    }
   
   if (entry->cfg_checksum != cfg_checksum)
     {

@@ -1,3 +1,10 @@
+2018-09-26  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR gcov-profile/86957
+	* common.opt: New warning option -Wmissing-profile.
+	* coverage.c (get_coverage_counts): Add warning for missing .gcda file.
+	* doc/invoke.texi: Document -Wmissing-profile.
+
 2018-09-26  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.md (subsi3_extended2): Add J constraint.

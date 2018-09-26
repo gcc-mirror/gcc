@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-include-dirs @gol
+-Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
@@ -4215,8 +4215,8 @@ Warn about an invalid memory access that is found by Pointer Bounds Checker
 @opindex Wcoverage-mismatch
 Warn if feedback profiles do not match when using the
 @option{-fprofile-use} option.
-If a source file is changed between compiling with @option{-fprofile-gen} and
-with @option{-fprofile-use}, the files with the profile feedback can fail
+If a source file is changed between compiling with @option{-fprofile-generate}
+and with @option{-fprofile-use}, the files with the profile feedback can fail
 to match the source file and GCC cannot use the profile feedback
 information.  By default, this warning is enabled and is treated as an
 error.  @option{-Wno-coverage-mismatch} can be used to disable the
@@ -4819,6 +4819,23 @@ This warning is enabled by @option{-Wall}.
 @opindex Wmissing-include-dirs
 @opindex Wno-missing-include-dirs
 Warn if a user-supplied include directory does not exist.
+
+@item -Wmissing-profile
+@opindex Wmissing-profile
+@opindex Wno-missing-profile
+Warn if feedback profiles are missing when using the
+@option{-fprofile-use} option.
+This option diagnoses those cases where a new function or a new file is added
+to the user code between compiling with @option{-fprofile-generate} and with
+@option{-fprofile-use}, without regenerating the profiles.  In these cases, the
+profile feedback data files do not contain any profile feedback information for
+the newly added function or file respectively.  Also, in the case when profile
+count data (.gcda) files are removed, GCC cannot use any profile feedback
+information.  In all these cases, warnings are issued to inform the user that a
+profile generation step is due.  @option{-Wno-missing-profile} can be used to
+disable the warning.  Ignoring the warning can result in poorly optimized code.
+Completely disabling the warning is not recommended and should be done only
+when non-existent profile data is justified.
 
 @item -Wmultistatement-macros
 @opindex Wmultistatement-macros
@@ -9917,8 +9934,9 @@ Before you can use this option, you must first generate profiling information.
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
-@option{-Wcoverage-mismatch}.  Note this may result in poorly optimized
-code.
+@option{-Wno-error=coverage-mismatch}.  Note this may result in poorly
+optimized code.  Additionally, by default, GCC also emits a warning message if
+the feedback profiles do not exist (See @option{-Wmissing-profile}).
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
