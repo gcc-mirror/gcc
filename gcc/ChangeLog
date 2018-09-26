@@ -116,6 +116,7 @@
 
 2018-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/71278
 	* config/i386/i386.md (frndintxf2_mask_pm): Remove.
 	(frndintxf2_mask_pm_i387): Ditto.
 	(nearbyintxf2): Rewrite expander pattern to match rintxf2.
