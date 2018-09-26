@@ -1,5 +1,10 @@
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Task_Type>: In
+	-gnatct mode, process the discriminants only for a definition.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.adb (List_Record_Layout): Be prepared for JSON output.
 	(List_Record_Info): Use the flat representation for record
 	subtypes in the JSON format.

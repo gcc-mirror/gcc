@@ -4158,7 +4158,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 part of the associated body so they need to be translated.  */
       if (type_annotate_only && gnat_equiv_type == gnat_entity)
 	{
-	  if (Has_Discriminants (gnat_entity)
+	  if (definition
+	      && Has_Discriminants (gnat_entity)
 	      && Root_Type (gnat_entity) == gnat_entity)
 	    {
 	      tree gnu_field_list = NULL_TREE;
