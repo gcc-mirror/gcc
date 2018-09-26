@@ -1,3 +1,10 @@
+2018-09-26  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb (Check_Loop_Statement): Fix a bug related to
+	loop exit environment.
+	(Check_Statement): fixing a bug when comparing the source and
+	target in an assignment statement.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch12.adb (Instantiate_Package_Body): Capture and restore
