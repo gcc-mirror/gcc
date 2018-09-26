@@ -1,3 +1,7 @@
+2018-09-26  Arnaud Charlet  <charlet@adacore.com>
+
+	* vxlink.adb: Minor reformatting.
+
 2018-09-26  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch9.adb, layout.adb, sem_attr.adb, sem_res.adb: Fix
