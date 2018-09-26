@@ -1,3 +1,7 @@
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/sso12.adb: New testcase.
+
 2018-09-26  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/expr_func8.adb: New testcase.

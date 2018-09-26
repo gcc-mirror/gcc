@@ -1,3 +1,10 @@
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* exp_util.adb (Make_CW_Equivalent_Type): Propagate bit order
+	and scalar storage order from root type to classwide equivalent
+	type, to prevent rejection of the equivalent type by the
+	freezing circuitry.
+
 2018-09-26  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch5.adb (Analyze_Iterator_Specification): Add conditional
