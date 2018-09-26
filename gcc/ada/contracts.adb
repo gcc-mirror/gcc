@@ -620,7 +620,9 @@ package body Contracts is
 
                Prag := Pre_Post_Conditions (Items);
                while Present (Prag) loop
-                  if Freeze_Types then
+                  if Freeze_Types
+                    and then Present (Corresponding_Aspect (Prag))
+                  then
                      Freeze_Expr_Types
                        (Def_Id => Subp_Id,
                         Typ    => Standard_Boolean,
