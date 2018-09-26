@@ -1,3 +1,7 @@
+2018-09-26  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/interface8.adb, gnat.dg/interface8.ads: New testcase.
+
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/predicate2-containers.ads,
