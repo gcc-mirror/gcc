@@ -2499,7 +2499,7 @@ enum avx_u128_state
 
 #define NUM_MODES_FOR_MODE_SWITCHING			\
   { X86_DIRFLAG_ANY, AVX_U128_ANY,			\
-    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY, I387_CW_ANY }
+    I387_CW_ANY, I387_CW_ANY, I387_CW_ANY }
 
 
 /* Avoid renaming of stack registers, as doing so in combination with
