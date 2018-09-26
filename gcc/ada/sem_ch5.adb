@@ -3429,7 +3429,8 @@ package body Sem_Ch5 is
          --  for transformation if needed.
 
          procedure Wrap_Loop_Statement (Manage_Sec_Stack : Boolean);
-         pragma Inline (Wrap_Loop_Statement);
+         pragma Inline    (Wrap_Loop_Statement);
+         pragma No_Return (Wrap_Loop_Statement);
          --  Wrap loop statement N within a block. Flag Manage_Sec_Stack must
          --  be set when the block must mark and release the secondary stack.
 
