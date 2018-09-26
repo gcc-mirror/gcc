@@ -2710,7 +2710,8 @@ Alternatively, you may run the script using the following command line:
   :switch:`-P {file}`
     Indicates the name of the project file that describes the set of sources
     to be processed. The exact set of argument sources depends on other options
-    specified, see below.
+    specified, see below. An aggregate project is allowed as the file parameter
+    only if it has exactly one non-aggregate project being aggregated.
 
 
   .. index:: -U (gnatmetric)
@@ -4151,7 +4152,8 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`-P {file}`
     Indicates the name of the project file that describes the set of sources
-    to be processed.
+    to be processed. An aggregate project is allowed as the file parameter only
+    if it has exactly one non-aggregate project being aggregated.
 
 
   .. index:: -X (gnatstub)

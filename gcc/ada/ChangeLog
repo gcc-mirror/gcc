@@ -1,3 +1,8 @@
+2018-09-26  Sergey Rybin  <rybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Add note about
+	processing of aggregate projects in gnatmetric and gnatstub.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* contracts.adb, exp_unst.adb, exp_util.adb, gnat1drv.adb,
