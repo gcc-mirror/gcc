@@ -505,13 +505,12 @@ package body Sem_SPARK is
    type Checking_Mode is
 
      (Read,
-      --  Default mode. Checks that paths have Read_Perm permission.
+      --  Default mode
 
       Move,
-      --  Regular moving semantics. Checks that paths have
-      --  Unrestricted permission. After moving a path, its permission is set
-      --  to Unrestricted and the permission of its extensions is set
-      --  to Unrestricted.
+      --  Regular moving semantics. Checks that paths have Unrestricted
+      --  permission. After moving a path, the permission of both it and
+      --  its extensions are set to Unrestricted.
 
       Assign,
       --  Used for the target of an assignment, or an actual parameter with
@@ -1985,14 +1984,22 @@ package body Sem_SPARK is
 
                if not Is_Access_Constant (Etype (Formal)) then
 
-                  --  Formal IN parameter, named/anonymous access to variable
+                  --  Formal IN parameter, named/anonymous access-to-variable
                   --  type.
+                  --
+                  --  In SPARK, IN access-to-variable is an observe operation
+                  --  for a function, and a borrow operation for a procedure.
 
-                  Current_Checking_Mode := Borrow;
-                  Check_Node (Actual);
+                  if Ekind (Scope (Formal)) = E_Function then
+                     Current_Checking_Mode := Observe;
+                     Check_Node (Actual);
+                  else
+                     Current_Checking_Mode := Borrow;
+                     Check_Node (Actual);
+                  end if;
 
-               --  Formal IN parameter, access to constant type
-               --  Formal IN parameter, access to named constant type
+               --  Formal IN parameter, access-to-constant type
+               --  Formal IN parameter, access-to-named-constant type
 
                elsif not Is_Anonymous_Access_Type (Etype (Formal)) then
                   Error_Msg_N ("assignment not allowed, Ownership Aspect"
@@ -3396,7 +3403,7 @@ package body Sem_SPARK is
             end if;
 
             declare
-               --  Set state to Borrowed to the path and any of its prefixes
+               --  Set state to Moved to the path and any of its prefixes
 
                Tree : constant Perm_Tree_Access :=
                  Set_Perm_Prefixes (N, Moved);
@@ -3410,7 +3417,7 @@ package body Sem_SPARK is
                   return;
                end if;
 
-               --  Set state to Borrowed on any strict extension of the path
+               --  Set state to Moved on any strict extension of the path
 
                Set_Perm_Extensions (Tree, Moved);
             end;
@@ -4466,18 +4473,24 @@ package body Sem_SPARK is
 
          when E_In_Parameter =>
 
-            --  Handling global variables as in parameters here
-            --  Remove the following condition once decided how globals
-            --  should be considered.
+            --  Handling global variables as IN parameters here.
+            --  Remove the following condition once it's decided how globals
+            --  should be considered. ???
+            --
+            --  In SPARK, IN access-to-variable is an observe operation for
+            --  a function, and a borrow operation for a procedure.
 
             if not Global_Var then
                if (Is_Access_Type (Etype (Id))
-                   and then Is_Access_Constant (Etype (Id))
-                   and then Is_Anonymous_Access_Type (Etype (Id)))
+                    and then Is_Access_Constant (Etype (Id))
+                    and then Is_Anonymous_Access_Type (Etype (Id)))
+                 or else
+                   (Is_Access_Type (Etype (Id))
+                     and then Ekind (Scope (Id)) = E_Function)
                  or else
                    (not Is_Access_Type (Etype (Id))
-                    and then Is_Deep (Etype (Id))
-                    and then not Is_Anonymous_Access_Type (Etype (Id)))
+                     and then Is_Deep (Etype (Id))
+                     and then not Is_Anonymous_Access_Type (Etype (Id)))
                then
                   Elem.all.Tree.Permission := Observed;
                   Elem.all.Tree.Children_Permission := Observed;
