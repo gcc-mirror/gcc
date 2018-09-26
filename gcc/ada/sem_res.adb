@@ -3809,6 +3809,7 @@ package body Sem_Res is
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
               and then not Is_Class_Wide_Type (Etype (Expression (A)))
+              and then not Is_Interface (Etype (A))
             then
                if Ekind (F) = E_In_Out_Parameter
                  and then Is_Array_Type (Etype (F))
