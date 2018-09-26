@@ -1,3 +1,8 @@
+2018-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/87347
+	* gcc.dg/pr87347.c: New test.
+
 2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71131

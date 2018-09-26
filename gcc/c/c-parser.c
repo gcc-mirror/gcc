@@ -9102,8 +9102,8 @@ sizeof_ptr_memacc_comptypes (tree type1, tree type2)
 }
 
 /* Warn for patterns where abs-like function appears to be used incorrectly,
-   gracely ignore any non-abs-like function.  The warning location should be
-   LOC.  FNDECL is the declaration of called function, it must be a
+   gracefully ignore any non-abs-like function.  The warning location should
+   be LOC.  FNDECL is the declaration of called function, it must be a
    BUILT_IN_NORMAL function.  ARG is the first and only argument of the
    call.  */
 
@@ -9222,6 +9222,9 @@ warn_for_abs (location_t loc, tree fndecl, tree arg)
     default:
       return;
     }
+
+  if (!TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+    return;
 
   tree ftype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
   if (TREE_CODE (atype) == COMPLEX_TYPE)
