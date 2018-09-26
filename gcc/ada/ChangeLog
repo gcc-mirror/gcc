@@ -1,3 +1,14 @@
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Do not generate a
+	range check on the expression of the conversion if it involves a
+	fixed-point type, as such conversions are handled specially
+	during expansion.
+	* exp_ch4.adb (Expand_N_Type_Conversion): In a conversion from
+	Fixed to Integer, use the base type of the expression to ensure
+	that the caller will generate the proper constraint check when
+	needed.
+
 2018-09-26  Maroua Maalej  <maalej@adacore.com>
 
 	* sem_spark.adb (Check_Loop_Statement): Fix a bug related to
