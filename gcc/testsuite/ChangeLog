@@ -1,3 +1,8 @@
+2018-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87443
+	* gcc.dg/debug/dwarf2/inline5.c: New testcase.
+
 2018-09-26  Martin Jambor  <mjambor@suse.cz>
 
 	PR c/87347

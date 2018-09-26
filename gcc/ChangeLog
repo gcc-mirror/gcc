@@ -1,3 +1,10 @@
+2018-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87443
+	* dwarf2out.c (gen_lexical_block_die): Do not equate inline
+	or concrete instance DIE to the tree.  Create abstract origin
+	attributes also for concrete instances.
+
 2018-09-26  Alexey Neyman  <stilor@att.net>
 
 	* graphite.h: Include <isl/id.h> and <isl/space.h>; these
