@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 // +build !plan9
-// +build !solaris
 // +build !windows
 // +build !nacl
 // +build !freebsd
