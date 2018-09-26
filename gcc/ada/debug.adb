@@ -150,7 +150,7 @@ package body Debug is
    --  d_c
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
-   --  d_f
+   --  d_f  Issue info messages related to GNATprove usage
    --  d_g
    --  d_h
    --  d_i  Ignore activations and calls to instances for elaboration
@@ -830,6 +830,11 @@ package body Debug is
    --  d_e  The compiler ignores simple entry calls, asynchronous transfer of
    --       control, conditional entry calls, timed entry calls, and requeue
    --       statements in both the static and dynamic elaboration models.
+
+   --  d_f  Issue info messages related to GNATprove usage to help users
+   --       understand analysis results. By default these are not issued as
+   --       beginners find them confusing. Set automatically by GNATprove when
+   --       switch --info is used.
 
    --  d_i  The compiler ignores calls and task activations when they target a
    --       subprogram or task type defined in an external instance for both
