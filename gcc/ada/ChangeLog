@@ -1,5 +1,17 @@
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_ch7.adb (Has_Referencer): Remove Top_Level parameter and
+	add In_Nested_Instance and
+	Has_Outer_Referencer_Of_Non_Subprograms parameters.  Rename
+	Has_Non_Subprograms_Referencer variable into
+	Has_Referencer_Of_Non_Subprograms and initialize it with the new
+	third parameter.  Adjust recursive calls and to the renaming.
+	Replace test on Top_Level with test on In_Nested_Instance to
+	decide whether to clear the Is_Public flag on entities.
+	(Hide_Public_Entities): Adjust call to Has_Referencer.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_disp.adb (Expand_Interface_Conversion): Use Present test.
 	(Expand_Interface_Thunk): Propagate debug info setting from
 	target.
