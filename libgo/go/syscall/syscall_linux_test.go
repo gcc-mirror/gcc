@@ -302,6 +302,10 @@ func TestSyscallNoError(t *testing.T) {
 		t.Skip("skipping root only test")
 	}
 
+	if syscall.Sys_GETEUID == 0 {
+		t.Skip("skipping because there is no geteuid system call")
+	}
+
 	// Copy the test binary to a location that a non-root user can read/execute
 	// after we drop privileges
 	tempDir, err := ioutil.TempDir("", "TestSyscallNoError")
