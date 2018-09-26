@@ -1,3 +1,9 @@
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* libgnat/g-dynhta.adb (Prepend_Or_Replace): Update the number
+	of key-value pairs in the hash table only when adding a brand
+	new pair.
+
 2018-09-26  Sergey Rybin  <rybin@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Add note about
