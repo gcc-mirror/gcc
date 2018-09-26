@@ -1,3 +1,9 @@
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* sem_ch13.adb (Inherit_Aspects_At_Freeze_Point): For a
+	representation item that is an N_Aspect_Definition, retrieve the
+	entity it applies to using the Entity attribute.
+
 2018-09-26  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb (Analyze_Subprogram_Renaming): Add extra condition
