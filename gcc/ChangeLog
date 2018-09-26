@@ -1,3 +1,14 @@
+2018-09-26  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* config/arm/arm.c (arm_split_compare_and_swap, arm_split_atomic_op):
+	Use new helper functions.
+	* config/arm/sync.md (atomic_load<mode>, atomic_store<mode>):
+	Use new helper functions.
+	* config/arm/aarch-common-protos.h (aarch_mm_needs_acquire,
+	aarch_mm_needs_release): New declarations.
+	* config/arm/aarch-common.c (aarch_mm_needs_acquire,
+	aarch_mm_needs_release): New.
+
 2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/arm/arm.c (arm_reorg): Skip Thumb reorg pass for thunks.
