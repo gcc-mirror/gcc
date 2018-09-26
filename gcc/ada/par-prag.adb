@@ -1516,6 +1516,10 @@ begin
          | Pragma_Warning_As_Error
          | Pragma_Weak_External
          | Pragma_Validity_Checks
+         | Pragma_Acc_Data
+         | Pragma_Acc_Kernels
+         | Pragma_Acc_Loop
+         | Pragma_Acc_Parallel
       =>
          null;
 
