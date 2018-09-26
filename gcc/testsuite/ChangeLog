@@ -1,3 +1,7 @@
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/warn16.adb: New testcase.
+
 2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/elab7.adb, gnat.dg/elab7_pkg1.adb,
