@@ -1,3 +1,8 @@
+2018-09-26  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch9.adb, layout.adb, sem_attr.adb, sem_res.adb: Fix
+	miscellaneous typos.
+
 2018-09-26  Jerome Lambourg  <lambourg@adacore.com>
 
 	* vxlink.adb: Kill a CodePeer warning.
