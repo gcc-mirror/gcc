@@ -2335,6 +2335,15 @@ package Opt is
 
    --    The only special comment sequence allowed is --!
 
+   -------------
+   -- OpenAcc --
+   -------------
+
+   OpenAcc_Enabled : Boolean := False;
+   --  GNAT
+   --  Indicates whether OpenAcc pragmas should be taken into account.
+   --  Set True by use of -fopenacc.
+
    --------------------------
    -- Private Declarations --
    --------------------------

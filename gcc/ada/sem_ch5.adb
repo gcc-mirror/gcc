@@ -3361,6 +3361,9 @@ package body Sem_Ch5 is
 
    procedure Analyze_Loop_Statement (N : Node_Id) is
 
+      function Disable_Constant (N : Node_Id) return Traverse_Result;
+      --  If N represents an E_Variable entity, set Is_True_Constant To False
+
       function Is_Container_Iterator (Iter : Node_Id) return Boolean;
       --  Given a loop iteration scheme, determine whether it is an Ada 2012
       --  container iteration.
@@ -3370,6 +3373,25 @@ package body Sem_Ch5 is
       --  capture finalization actions that may be generated for container
       --  iterators. Prevents infinite recursion when block is analyzed.
       --  Routine is a noop if loop is single statement within source block.
+
+      ----------------------
+      -- Disable_Constant --
+      ----------------------
+
+      function Disable_Constant (N : Node_Id) return Traverse_Result is
+      begin
+         if Is_Entity_Name (N)
+            and then Present (Entity (N))
+            and then Ekind (Entity (N)) = E_Variable
+         then
+            Set_Is_True_Constant (Entity (N), False);
+         end if;
+         return OK;
+      end Disable_Constant;
+
+      procedure Disable_Constants is new Traverse_Proc (Disable_Constant);
+      --  Helper for Analyze_Loop_Statement, to unset Is_True_Constant on
+      --  variables referenced within an OpenACC environment.
 
       ---------------------------
       -- Is_Container_Iterator --
@@ -3811,6 +3833,15 @@ package body Sem_Ch5 is
 
       if No (Iter) and then not Has_Exit (Ent) then
          Check_Unreachable_Code (Stmt);
+      end if;
+
+      --  Variables referenced within a loop subject to possible OpenACC
+      --  offloading may be implicitly written to as part of the OpenACC
+      --  transaction.  Clear flags possibly conveying that they are constant,
+      --  set for example when the code does not explicitly assign them.
+
+      if Is_OpenAcc_Environment (Stmt) then
+         Disable_Constants (Stmt);
       end if;
    end Analyze_Loop_Statement;
 

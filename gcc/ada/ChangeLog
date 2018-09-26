@@ -1,3 +1,42 @@
+2018-09-26  Olivier Hainque  <hainque@adacore.com>
+
+	* opt.ads (OpenAcc_Enabled): New flag. False by default. True
+	when OpenACC pragmas are requested to be honored, when -fopenacc
+	is found on the command line.
+	* back_end.adb (Scan_Compiler_Arguments): Set OpenACC_Enabled if
+	-fopenacc is seen on the command line.
+	* sinfo.adb, sinfo.ads (Is_OpenAcc_Environment): New
+	flag/predicate on Loop statements which embed an Acc_Kernels,
+	Acc_Parallel or Acc_Data pragma.
+	(Is_OpenAcc_Loop): New flag/predicate on Loop statements which
+	embed an Acc_Loop pragma.
+	(Set_Is_OpenAcc_Environment, Set_Is_OpenAcc_Loop): Setters for
+	the new flags.
+	* par-prag.adb (Prag): Handle Acc_Data, Acc_Loop, Acc_Parallel
+	and Acc_Kernels pragmas.  Nothing to do here, all handled by
+	sem_prag.
+	* sem_prag.adb (Acc_First, Acc_Next,
+	Validate_Acc_Condition_Clause, Validate_Acc_Data_Clause,
+	Validate_Acc_Int_Expr_Clause, Validate_Acc_Int_Expr_List_Clause,
+	Validate_Acc_Loop_Collapse, Validate_Acc_Loop_Gang,
+	Validate_Acc_Loop_Vector, Validate_Acc_Loop_Worker,
+	Validate_Acc_Name_Reduction, Validate_Acc_Size_Expressions): New
+	helper for Analyze_Pragma, to handle OpenACC pragmas.
+	(Analyze_Pragma): Handle Acc_Data, Acc_Loop, Acc_Parallel and
+	Acc_Kernels pragmas.
+	* sem_ch5.adb (Disable_Constant): Unset Is_True_Constant on
+	variable entity, action for ...
+	(Disable_Constants): Helper for Analyze_Loop_Statement, to ...
+	(Analyze_Loop_Statement): Disable True_Constant on variables
+	referenced within an OpenACC environment.
+	* snames.ads-tmpl: Declare Name_Ids for the OpenACC directives
+	and clauses we can handle. Remove an exraneous whitespace before
+	columns, preventing line length overflow in the generated spec
+	with Ids now reaching beyond 999.
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Document
+	pragma Acc_Parallel, Acc_Loop, Acc_Kernels and Acc_Data.
+	* gnat_rm.texi: Regenerate.
+
 2018-09-26  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Is_Onown_Limited): A derived type whose parent P
