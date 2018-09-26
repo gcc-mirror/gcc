@@ -138,6 +138,12 @@ if ! grep '^const SYS_GETDENTS64 ' ${OUT} >/dev/null 2>&1; then
   echo "const SYS_GETDENTS64 = 0" >> ${OUT}
 fi
 
+# The syscall package wants the geteuid system call number.  It isn't
+# defined on Alpha, which only provides the getresuid system call.
+if ! grep '^const SYS_GETEUID ' ${OUT} >/dev/null 2>&1; then
+  echo "const SYS_GETEUID = 0" >> ${OUT}
+fi
+
 # Stat constants.
 grep '^const _S_' gen-sysinfo.go | \
   sed -e 's/^\(const \)_\(S_[^= ]*\)\(.*\)$/\1\2 = _\2/' >> ${OUT}
