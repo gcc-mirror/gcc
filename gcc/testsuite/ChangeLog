@@ -1,3 +1,8 @@
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* g++.dg/expr/unary4.C: New.
+
 2018-09-26  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR gcov-profile/86957

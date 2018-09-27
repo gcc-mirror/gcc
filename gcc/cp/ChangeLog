@@ -1,3 +1,9 @@
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* semantics.c (finish_unary_op_expr): Check return value of
+	build_x_unary_op for error_mark_node.
+
 2018-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87398
