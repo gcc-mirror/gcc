@@ -1,5 +1,10 @@
 2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/67544
+	* g++.dg/concepts/pr67544.C: New.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/84940
 	* g++.dg/expr/unary4.C: New.
 
