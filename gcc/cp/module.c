@@ -10065,17 +10065,20 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader) const
 
 /* Exported macro data.  */
 struct macro_export {
-  cpp_hashnode *node;
   cpp_macro *def;
   location_t undef_loc;
-  int offset;
+
+  macro_export ()
+    :def (NULL), undef_loc (UNKNOWN_LOCATION)
+  {
+  }
 };
 
 /* Imported macro data.  */
 class macro_import {
 public:
-  struct one {
-#ifdef WORDS_BIGENDIAN
+  struct slot {
+#if defined (WORDS_BIGENDIAN) && SIZEOF_VOID_P == 8
     int offset;
 #endif
     /* We need to ensure we don't use the LSB for representation, as
@@ -10085,177 +10088,143 @@ public:
     bool has_undef : 1;
     bool has_def : 1;
     unsigned : 1;
-#ifndef WORDS_BIGENDIAN
+#if !(defined (WORDS_BIGENDIAN) && SIZEOF_VOID_P == 8)
     int offset;
 #endif
+
+  public:
+    slot (unsigned mod)
+      : mod (mod), has_undef (false), has_def (false)
+    {
+      offset = -1;
+    }
   };
 
 private:
-  typedef vec<one, va_heap, vl_embed> *many;
-
-  cpp_hashnode *node;
-  union either { // discriminated by bit 0
-    macro_import::many many;
-    macro_import::one one;
+  typedef vec<slot, va_heap, vl_embed> ary_t;
+  union either {
+    /* discriminated by bit 0 */
+    ary_t *ary;
+    /* We have to type-erase this, because of the constructor.  */
+    unsigned single[2];
   } u;
 
-private:
-  bool is_one () const
-  {
-    return bool (intptr_t (u.many) & 1);
-  }
 public:
-  bool occupied () const
+  macro_import ()
   {
-    return node != NULL;
+    u.ary = NULL;
+  }
+
+private:
+  bool single_p () const
+  {
+    return bool (intptr_t (u.ary) & 1);
+  }
+  bool occupied_p () const
+  {
+    return u.ary != NULL;
   }
 
 public:
   unsigned length () const
   {
-    gcc_checking_assert (occupied ());
-    return is_one () ? 1 : u.many->length ();
+    gcc_checking_assert (occupied_p ());
+    return single_p () ? 1 : u.ary->length ();
   }
-  one &operator[] (unsigned ix)
+  slot &operator[] (unsigned ix)
   {
-    gcc_checking_assert (occupied ());
-    if (is_one ())
+    gcc_checking_assert (occupied_p ());
+    if (single_p ())
       {
 	gcc_checking_assert (!ix);
-	return u.one;
+	return *reinterpret_cast <slot *> (u.single);
       }
     else
-      return (*u.many)[ix];
+      return (*u.ary)[ix];
   }
 
 public:
-  one &exported (cpp_hashnode *n);
-  one &append (cpp_hashnode *n, const one &o);
-
-public:
-  struct traits {
-    typedef macro_import value_type;
-    typedef cpp_hashnode *compare_type;
-
-    static inline hashval_t hash (const value_type &v)
-    {
-      return hash (v.node);
-    }
-    static inline hashval_t hash (const compare_type c)
-    {
-      return c->ident.hash_value;
-    }
-    static inline bool equal (const value_type &v, const compare_type c)
-    {
-      return v.node == c;
-    }
-
-    static bool is_empty (const value_type &v)
-    {
-      return v.node == NULL;
-    }
-    static void mark_empty (value_type &v)
-    {
-      v.node = NULL;
-    }
-    static void remove (value_type &)
-    {
-      /* Do nothing, only happens at destruction.   */
-    }
-
-    /* Nothing is deletable.  Everything is insertable.  */
-    static bool is_deleted (const value_type) { return false; }
-    static void mark_deleted (value_type) { gcc_unreachable (); }
-  };
+  slot &exported ();
+  slot &append (unsigned);
 };
-
-static hash_table<macro_import::traits> *macro_imports;
-static vec<macro_export, va_heap, vl_embed> *macro_exports;
-static GTY(()) bitmap legacies;
 
 /* O is a new import to append to the list for.  If we're an empty
    set, initialize us.  */
 
-macro_import::one &
-macro_import::append (cpp_hashnode *n, const one &o)
+macro_import::slot &
+macro_import::append (unsigned mod)
 {
-  if (!occupied ())
+  if (!occupied_p ())
     {
-      node = n;
-      u.one = o;
-      u.many = many (intptr_t (u.many) | 1);
-      return u.one;
+      *reinterpret_cast <slot *> (u.single) = slot (mod);
+      u.ary = (ary_t *)(intptr_t (u.ary) | 1);
+      return *reinterpret_cast <slot *> (u.single);
     }
   else
     {
-      gcc_checking_assert (node == n);
-      bool one = is_one ();
-      many m = one ? NULL : u.many;
-      vec_safe_reserve (m, 1 + one);
-      if (one)
-	{
-	  u.many = many (intptr_t (u.many) & ~intptr_t (0));
-	  m->quick_push (u.one);
-	}
-      u.many = m;
-      return *u.many->quick_push (o);
+      bool single = single_p ();
+      ary_t *m = single ? NULL : u.ary;
+      vec_safe_reserve (m, 1 + single);
+      if (single)
+	m->quick_push (*reinterpret_cast <slot *> (u.single));
+      u.ary = m;
+      return *u.ary->quick_push (slot (mod));
     }
 }
 
-/* We're going to export something on node N.  Make sure the first
-   import slot is us.  */
+/* We're going to export something.  Make sure the first import slot
+   is us.  */
 
-macro_import::one &
-macro_import::exported (cpp_hashnode *n)
+macro_import::slot &
+macro_import::exported ()
 {
-  if (occupied () && !(*this)[0].mod)
+  if (occupied_p () && !(*this)[0].mod)
     return (*this)[0];
 
-  one v;
-  v.mod = 0;
-  v.offset = -1;
-  v.has_def = v.has_undef = 0;
-  one *a = &append (n, v);
-  if (!is_one ())
+  slot *a = &append (0);
+  if (!single_p ())
     {
-      one &f = (*this)[0];
-      *a = f;
-      f = v;
+      slot &f = (*this)[0];
+      std::swap (f, *a);
       a = &f;
     }
   return *a;
 }
+
+static vec<macro_import, va_heap, vl_embed> *macro_imports;
+static vec<macro_export, va_heap, vl_embed> *macro_exports;
+static GTY(()) bitmap legacies;
 
 /* Get the (possibly empty) macro imports for NODE.  */
 
 static macro_import &
 get_macro_imports (cpp_hashnode *node)
 {
-  if (!macro_imports)
-    macro_imports = new hash_table<macro_import::traits> (100);
-  return *macro_imports->find_slot_with_hash
-    (node, macro_import::traits::hash (node), INSERT);
+  if (node->deferred)
+    return (*macro_imports)[node->deferred - 1];
+
+  vec_safe_reserve (macro_imports, 1);
+  node->deferred = macro_imports->length () + 1;
+  return *vec_safe_push (macro_imports, macro_import ());
 }
 
 /* Get the macro export for export EXP of NODE.  */
 
 static macro_export &
-get_macro_export (cpp_hashnode *node, macro_import::one &exp)
+get_macro_export (macro_import::slot &slot)
 {
-  if (exp.offset >= 0)
-    return (*macro_exports)[exp.offset];
+  if (slot.offset >= 0)
+    return (*macro_exports)[slot.offset];
 
   vec_safe_reserve (macro_exports, 1);
-  exp.offset = macro_exports->length ();
-  macro_export exported = {node, NULL, UNKNOWN_LOCATION, -1};
-
-  return *macro_exports->quick_push (exported);
+  slot.offset = macro_exports->length ();
+  return *macro_exports->quick_push (macro_export ());
 }
 
 /* If NODE is an exportable macro, add it to the export set.  */
 
 static int
-maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *)
+maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *macros_)
 {
   if (cpp_user_macro_p (node))
     if (cpp_macro *macro = node->value.macro)
@@ -10267,25 +10236,49 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *)
 	     a devil's advocate reading of the standard.  */
 	  gcc_checking_assert (!macro->extra_tokens);
 
-	  macro_import &slot = get_macro_imports (node);
-	  macro_import::one &imports = slot.exported (node);
-	  macro_export &exp = get_macro_export (node, imports);
-	  imports.has_def = true;
+	  macro_import::slot &slot = get_macro_imports (node).exported ();
+	  macro_export &exp = get_macro_export (slot);
+	  slot.has_def = true;
 	  exp.def = macro;
 	}
+
+  if (node->deferred)
+    {
+      macro_import &imports = (*macro_imports)[node->deferred - 1];
+      macro_import::slot &slot = imports[0];
+      if (!slot.mod)
+	{
+	  if (slot.has_undef)
+	    {
+	      for (unsigned ix = imports.length (); --ix;)
+		if (imports[ix].has_def)
+		  goto is_hiding;
+	      slot.has_undef = false;
+	    is_hiding:;
+	    }
+
+	  if (slot.has_def || slot.has_undef)
+	    static_cast <auto_vec<cpp_hashnode *> *> (macros_)->safe_push (node);
+	}
+    }
 
   return 1; /* Don't stop.  */
 }
 
-/* Order macro exports A_ and B_ by location.  */
+/* Order cpp_hashnodes A_ and B_ by their exported macro locations.  */
 
 static int
 macro_loc_cmp (const void *a_, const void *b_)
 {
-  const macro_export *a = (const macro_export *)a_;
-  const macro_export *b = (const macro_export *)b_;
-  location_t loc_a = a->def ? a->def->line : a->undef_loc;
-  location_t loc_b = b->def ? b->def->line : b->undef_loc;
+  const cpp_hashnode *node_a = *(const cpp_hashnode *const *)a_;
+  macro_import &import_a = (*macro_imports)[node_a->deferred - 1];
+  const macro_export &export_a = (*macro_exports)[import_a[0].offset];
+  location_t loc_a = export_a.def ? export_a.def->line : export_a.undef_loc;
+
+  const cpp_hashnode *node_b = *(const cpp_hashnode *const *)b_;
+  macro_import &import_b = (*macro_imports)[node_b->deferred - 1];
+  const macro_export &export_b = (*macro_exports)[import_b[0].offset];
+  location_t loc_b = export_b.def ? export_b.def->line : export_b.undef_loc;
 
   if (loc_a < loc_b)
     return +1;
@@ -10304,45 +10297,46 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
   dump () && dump ("Writing macros");
   dump.indent ();
 
-  cpp_forall_identifiers (reader, maybe_add_macro, NULL);
+  auto_vec<cpp_hashnode *> macros;
+  cpp_forall_identifiers (reader, maybe_add_macro, &macros);
 
   unsigned count = 0;
-  if (macro_exports)
+  if (macros.length ())
     {
-      dump () && dump ("No more than %u macros", macro_exports->length ());
-      (macro_exports->qsort) (macro_loc_cmp);
+      dump () && dump ("No more than %u macros", macros.length ());
+
+      (macros.qsort) (macro_loc_cmp);
 
       /* Write the defs */
       bytes_out sec (to);
       sec.begin ();
 
-      for (unsigned ix = macro_exports->length (); ix--;)
+      for (unsigned ix = macros.length (); ix--;)
 	{
-	  macro_export &mac = (*macro_exports)[ix];
+	  cpp_hashnode *node = macros[ix];
+	  macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
+	  gcc_assert (!slot.mod && (slot.has_undef || slot.has_def));
 
-	  if (!(mac.node->flags & NODE_DEFERRED_MACRO))
-	    /* This undef never undefs an import, so it's not
-	       exported.  */
-	    mac.undef_loc = UNKNOWN_LOCATION;
-	  if (mac.undef_loc == UNKNOWN_LOCATION && !mac.def)
-	    continue;
+	  macro_export &mac = (*macro_exports)[slot.offset];
+	  gcc_assert (slot.has_undef == (mac.undef_loc != UNKNOWN_LOCATION)
+		      && slot.has_def == (mac.def != NULL));
 
-	  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (mac.node)))
+	  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (node)))
 	    {
 	      warning_at (mac.def->line, 0,
 			  "not exporting %<#define %E%> as it is a keyword",
-			  HT_IDENT_TO_GCC_IDENT (mac.node));
+			  HT_IDENT_TO_GCC_IDENT (node));
+	      slot.offset = 0;
 	      continue;
 	    }
 
 	  count++;
-	  mac.offset = sec.pos;
+	  slot.offset = sec.pos;
 	  dump () && dump ("Writing macro %s%s%s %I at %u",
-			   mac.undef_loc != UNKNOWN_LOCATION ? "#undef" : "",
-			   mac.undef_loc != UNKNOWN_LOCATION && mac.def
-			   ? " & " : "",
-			   mac.def ? "#define" : "",
-			   HT_IDENT_TO_GCC_IDENT (mac.node), mac.offset);
+			   slot.has_undef ? "#undef" : "",
+			   slot.has_undef && slot.has_def ? " & " : "",
+			   slot.has_def ? "#define" : "",
+			   HT_IDENT_TO_GCC_IDENT (node), slot.offset);
 	  if (mac.undef_loc != UNKNOWN_LOCATION)
 	    write_location (sec, mac.undef_loc);
 	  if (mac.def)
@@ -10356,16 +10350,18 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	  bytes_out sec (to);
 	  sec.begin ();
 
-	  for (unsigned ix = macro_exports->length (); ix--;)
+	  for (unsigned ix = macros.length (); ix--;)
 	    {
-	      macro_export &mac = (*macro_exports)[ix];
+	      const cpp_hashnode *node = macros[ix];
+	      macro_import::slot &slot = (*macro_imports)[node->deferred - 1][0];
 
-	      if (mac.offset < 0)
-		continue;
-	      sec.cpp_node (mac.node);
-	      sec.u (((mac.undef_loc != UNKNOWN_LOCATION) << 0)
-		     | ((mac.def != NULL) << 1));
-	      sec.u (mac.offset);
+	      if (slot.offset)
+		{
+		  sec.cpp_node (node);
+		  sec.u ((slot.has_undef << 0)
+			 | ((slot.has_def) << 1));
+		  sec.u (slot.offset);
+		}
 	    }
 	  sec.end (to, to->name (MOD_SNAME_PFX ".mac"), crc_p);
 	}
@@ -10394,31 +10390,28 @@ module_state::read_defines (cpp_reader *, unsigned count)
     while (count--)
       {
 	cpp_hashnode *node = sec.cpp_node ();
-	macro_import::one one;
+	macro_import &imp = get_macro_imports (node);
+	macro_import::slot &slot = imp.append (mod);
 	unsigned flags = sec.u ();
-	one.mod = mod;
-	one.has_undef = (flags >> 0) & 1;
-	one.has_def = (flags >> 1) & 1;
-	one.offset = sec.u ();
-
-	macro_import &slot = get_macro_imports (node);
+	slot.has_undef = (flags >> 0) & 1;
+	slot.has_def = (flags >> 1) & 1;
+	slot.offset = sec.u ();
 
 	dump () && dump ("Read %s macro %s%s%s %I at %u",
-			 slot.occupied () ? "add" : "new",
-			 one.has_undef ? "#undef" : "",
-			 one.has_undef && one.has_def ? " & " : "",
-			 one.has_def ? "#define" : "",
+			 imp.length () > 1 ? "add" : "new",
+			 slot.has_undef ? "#undef" : "",
+			 slot.has_undef && slot.has_def ? " & " : "",
+			 slot.has_def ? "#define" : "",
 			 HT_IDENT_TO_GCC_IDENT (node),
-			 one.offset);
-	slot.append (node, one);
+			 slot.offset);
 
 	if (cpp_macro *cur = cpp_set_deferred_macro (node))
 	  if (!cur->imported)
 	    {
-	      macro_import::one &imports = slot.exported (node);
-	      macro_export &exp = get_macro_export (node, imports);
+	      macro_import::slot &slot = imp.exported ();
+	      macro_export &exp = get_macro_export (slot);
 	      exp.def = cur;
-	      imports.has_def = true;
+	      slot.has_def = true;
 	      dump () && dump ("Saving current #define %I",
 			       HT_IDENT_TO_GCC_IDENT (node));
 	    }
@@ -10443,17 +10436,16 @@ module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
 {
   unsigned n = dump.push (NULL);
 
-  macro_import &slot = get_macro_imports (node);
-  macro_import::one &imports = slot.exported (node);
-  macro_export &exp = get_macro_export (node, imports);
+  macro_import::slot &slot = get_macro_imports (node).exported ();
+  macro_export &exp = get_macro_export (slot);
 
   /* We don't know if there'll be a later import that defines this
      macro and we override it.  (At least, that's what I think the
      semantics are supposed to be?)  */
   exp.undef_loc = loc;
-  imports.has_undef = true;
+  slot.has_undef = true;
   exp.def = NULL;
-  imports.has_def = false;
+  slot.has_def = false;
 
   dump () && dump ("Recording macro #undef %I", HT_IDENT_TO_GCC_IDENT (node));
 
@@ -10467,8 +10459,7 @@ cpp_macro *
 module_state::deferred_macro (cpp_reader *reader, location_t loc,
 			      cpp_hashnode *node)
 {
-  macro_import &slot = get_macro_imports (node);
-  gcc_checking_assert (slot.occupied ());
+  macro_import &imports = (*macro_imports)[node->deferred - 1];
 
   unsigned n = dump.push (NULL);
   dump () && dump ("Deferred macro %I", HT_IDENT_TO_GCC_IDENT (node));
@@ -10477,54 +10468,55 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   bitmap hidden (BITMAP_GGC_ALLOC ());
 
   /* Calculate the set of not-visible legacy imports.  */
-  for (unsigned ix = slot.length (); ix--;)
+  for (unsigned ix = imports.length (); ix--;)
     {
-      const macro_import::one &one = slot[ix];
-      if (one.has_undef && !bitmap_bit_p (hidden, one.mod))
+      const macro_import::slot &slot = imports[ix];
+      if (slot.has_undef && !bitmap_bit_p (hidden, slot.mod))
 	{
-	  bitmap_ior_into (hidden, one.mod
-			   ? (*modules)[one.mod]->slurp->legacies : legacies);
-	  bitmap_clear_bit (hidden, one.mod);
+	  bitmap_ior_into (hidden, slot.mod
+			   ? (*modules)[slot.mod]->slurp->legacies : legacies);
+	  bitmap_clear_bit (hidden, slot.mod);
 	}
     }
 
   /* Now find the macros that are still visible.  */
   bool failed = false;
   cpp_macro *def = NULL;
-  auto_vec<macro_export> defs (slot.length ());
-  for (unsigned ix = slot.length (); ix--;)
+  auto_vec<macro_export> defs (imports.length ());
+  for (unsigned ix = imports.length (); ix--;)
     {
-      const macro_import::one &one = slot[ix];
-      if (!bitmap_bit_p (hidden, one.mod))
+      const macro_import::slot &slot = imports[ix];
+      if (!bitmap_bit_p (hidden, slot.mod))
 	{
 	  macro_export *pushed = NULL;
-	  if (one.mod)
+	  if (slot.mod)
 	    {
-	      const module_state *imp = (*modules)[one.mod];
+	      const module_state *imp = (*modules)[slot.mod];
 	      bytes_in &sec = imp->slurp->macros;
-	      macro_export e = {node, NULL, UNKNOWN_LOCATION, 0};
 	      if (!sec.get_overrun ())
 		{
 		  dump () && dump ("Reading macro %s%s%s %I module %M at %u",
-				   one.has_undef ? "#undef" : "",
-				   one.has_undef && one.has_def ? " & " : "",
-				   one.has_def ? "#define" : "",
+				   slot.has_undef ? "#undef" : "",
+				   slot.has_undef && slot.has_def ? " & " : "",
+				   slot.has_def ? "#define" : "",
 				   HT_IDENT_TO_GCC_IDENT (node), imp,
-				   one.offset);
-		  sec.random_access (one.offset);
-		  if (one.has_undef)
-		    e.undef_loc = imp->read_location (sec);
-		  if (one.has_def)
-		    e.def = imp->read_define (sec, reader);
+				   slot.offset);
+		  sec.random_access (slot.offset);
+
+		  macro_export exp;
+		  if (slot.has_undef)
+		    exp.undef_loc = imp->read_location (sec);
+		  if (slot.has_def)
+		    exp.def = imp->read_define (sec, reader);
 		  if (sec.get_overrun ())
 		    error_at (loc, "macro definitions of %qE corrupted",
 			      imp->name);
 		  else
-		    pushed = defs.quick_push (e);
+		    pushed = defs.quick_push (exp);
 		}
 	    }
 	  else
-	    pushed = defs.quick_push ((*macro_exports)[one.offset]);
+	    pushed = defs.quick_push ((*macro_exports)[slot.offset]);
 	  if (pushed && pushed->def)
 	    {
 	      if (!def)
@@ -10541,11 +10533,11 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 		HT_IDENT_TO_GCC_IDENT (node));
       for (unsigned ix = defs.length (); ix--;)
 	{
-	  macro_export &e = defs[ix];
-	  if (e.undef_loc)
-	    inform (e.undef_loc, "#undef %E", HT_IDENT_TO_GCC_IDENT (node));
-	  if (e.def)
-	    inform (e.def->line, "#define %E", HT_IDENT_TO_GCC_IDENT (node));
+	  macro_export &exp = defs[ix];
+	  if (exp.undef_loc)
+	    inform (exp.undef_loc, "#undef %E", HT_IDENT_TO_GCC_IDENT (node));
+	  if (exp.def)
+	    inform (exp.def->line, "#define %E", HT_IDENT_TO_GCC_IDENT (node));
 	}
       def = NULL;
     }
@@ -11989,8 +11981,7 @@ finish_module_parse (cpp_reader *reader)
 
   /* We're done with the macro tables now.  */
   vec_free (macro_exports);
-  delete macro_imports;
-  macro_imports = NULL;
+  vec_free (macro_imports);
   legacies = NULL;
   if (modules)
     for (unsigned ix = modules->length (); ix--;)

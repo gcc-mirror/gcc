@@ -773,7 +773,6 @@ struct GTY(()) cpp_macro {
 #define NODE_USED	(1 << 5)	/* Dumped with -dU.  */
 #define NODE_CONDITIONAL (1 << 6)	/* Conditional macro */
 #define NODE_WARN_OPERATOR (1 << 7)	/* Warn about C++ named operator.  */
-#define NODE_DEFERRED_MACRO (1 << 8)	/* A deferred macro (sticky).  */
 
 /* Different flavors of hash node.  */
 enum node_type
@@ -830,11 +829,13 @@ struct GTY(()) cpp_hashnode {
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned char rid_code;		/* Rid code - for front ends.  */
   ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
-  unsigned int flags : 9;		/* CPP flags.  */
+  unsigned int flags : 8;		/* CPP flags.  */
 
   /* 5 bits spare.  */
 
-  /* On a 64-bit system here resides 32 bits of padding.  */
+  /* On a 64-bit system there would be 32-bits of padding to the value
+     field.  So placing the deferred index here is not costly.   */
+  unsigned deferred;			/* Deferred index, (unless zero).  */
 
   union _cpp_hashnode_value GTY ((desc ("%1.type"))) value;
 };
@@ -970,10 +971,6 @@ inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_MACRO_MASK;
 }
-inline bool cpp_deferred_macro_p (const cpp_hashnode *node)
-{
-  return node->flags & NODE_DEFERRED_MACRO;
-}
 inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node)
 {
   cpp_macro *old = node->value.macro;
@@ -981,7 +978,6 @@ inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node)
   node->value.macro = NULL;
   node->type = NT_USER_MACRO;
   node->flags &= ~NODE_USED;
-  node->flags |= NODE_DEFERRED_MACRO;
 
   return old;
 }

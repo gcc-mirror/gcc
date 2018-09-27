@@ -3581,16 +3581,17 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
   macro->lazy = num + 1;
 }
 
+/* NODE is a deferred macro, resolve it, returning the definition
+   (which may be NULL).  */
 static cpp_macro *
 undefer_macro (cpp_reader *pfile, cpp_hashnode *node, source_location loc)
 {
-  cpp_macro *macro = pfile->cb.user_deferred_macro (pfile, loc, node);
-  if (macro)
-    node->value.macro = macro;
-  else
+  node->value.macro = pfile->cb.user_deferred_macro (pfile, loc, node);
+
+  if (!node->value.macro)
     node->type = NT_VOID;
 
-  return macro;
+  return node->value.macro;
 }
 
 /* Notify the use of NODE in a macro-aware context (i.e. expanding it,

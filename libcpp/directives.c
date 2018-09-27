@@ -696,8 +696,7 @@ do_undef (cpp_reader *pfile)
 				   pfile->directive_line, 0,
 				   "undefining \"%s\"", NODE_NAME (node));
 
-	  if ((!(node->flags & NODE_DEFERRED_MACRO)
-	       || node->value.macro)
+	  if (node->value.macro
 	      && CPP_OPTION (pfile, warn_unused_macros))
 	    _cpp_warn_if_unused_macro (pfile, node, NULL);
 

@@ -1,5 +1,29 @@
 2018-09-26  Nathan Sidwell  <nathan@acm.org>
 
+	Add deferred cpp_hashnode field. Replace macro_imports hash table
+	with vector and refactor.
+	libcpp/
+	* include/cpplib.h (NODE_DEFERRED_MACRO): Delete.
+	(cpp_hashnode): Reduce flags width.  Add deferred field.
+	(cpp_deferred_macro_p): Delete.
+	(cpp_set_deferred_macro): Don't set flag.
+	* directives.c (do_undef): Adjust deferred check.
+	* macro.c (undefer_macro): Adjust.
+	gcc/cp/
+	* module.c (macro_export): Drop node field.  Add ctor.
+	(macro_import): Rename one to struct slot.  Add ctors, type
+	erase.  Delete struct traits.
+	(macro_imports): Change to vec type.
+	(macro_import::{append,exported}): Adjust.
+	(get_macro_{imports,exports}): Allocate node deferred index,
+	adjust.
+	(maybe_add_macro): Add to macros vector, check unexported undefs
+	here.
+	(macro_loc_cmp): Reimplement.
+	(module_state::{read,write}_macros): Adjust.
+	(module_state::{undef,deferred}_macro): Likewise.
+	(finish_module_parse): Adjust deallocation.
+
 	Macro import and export (corrected).
 	libcpp/
 	* include/cpplib.h (cpp_callbacks): Add user_deferred_macro.
