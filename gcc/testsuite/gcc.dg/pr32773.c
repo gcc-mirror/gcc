@@ -1,6 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fprofile-use -fopt-info" } */
-/* { dg-options "-O -m4 -fprofile-use -fopt-info" { target sh-*-* } } */
+/* { dg-options "-O -fprofile-use -fopt-info -Wno-missing-profile" } */
+/* { dg-options "-O -m4 -fprofile-use -fopt-info -Wno-missing-profile" { target sh-*-* } } */
 
 void foo (int *p)
 {

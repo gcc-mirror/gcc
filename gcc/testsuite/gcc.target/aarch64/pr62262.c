@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fprofile-use" } */
+/* { dg-options "-O2 -fprofile-use -Wno-missing-profile" } */
 
 static inline int CLZ(int mask) {
    return mask ? __builtin_clz(mask) : 32;

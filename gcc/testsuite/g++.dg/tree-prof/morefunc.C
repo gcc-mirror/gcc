@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile -fdump-ipa-afdo -Wno-attributes -Wno-coverage-mismatch" } */
+/* { dg-options "-O2 -fno-devirtualize --param=profile-func-internal-id=0 -fdump-ipa-profile -fdump-ipa-afdo -Wno-attributes -Wno-coverage-mismatch -Wno-missing-profile" } */
 #include "reorder_class1.h"
 #include "reorder_class2.h"
 
