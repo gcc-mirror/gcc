@@ -1,3 +1,9 @@
+2018-09-27  Martin Sebor  <msebor@redhat.com>
+
+	* tree.h (tree_to_shwi): Add attribute nonnull and pure.
+	(tree_to_poly_int64, tree_to_uhwi, tree_to_poly_uint64): Same.
+	(int_fits_type_p): Same.
+
 2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (FPCR_REG): Remove.
