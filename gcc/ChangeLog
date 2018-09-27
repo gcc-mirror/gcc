@@ -1,3 +1,11 @@
+2018-09-27  Andrew Stubbs  <ams@codesourcery.com>
+            Tom de Vries  <tom@codesourcery.com>
+
+	PR 82089
+
+	* expmed.c (emit_cstore): Fix handling of result_mode == BImode and
+	STORE_FLAG_VALUE == 1.
+
 2018-09-27  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.md (PPA_TX_ABORT, PPA_OOO_BARRIER): New
