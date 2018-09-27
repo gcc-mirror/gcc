@@ -1,3 +1,10 @@
+2018-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/37801
+	PR debug/87440
+	* gcc.dg/debug/dwarf2/inline2.c: Adjust.
+	* gcc.dg/debug/dwarf2/inline4.c: New testcase.
+
 2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/67544

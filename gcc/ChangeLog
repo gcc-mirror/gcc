@@ -1,3 +1,14 @@
+2018-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/37801
+	PR debug/87440
+	* dwarf2out.c (set_block_origin_self): Do not mark outermost
+	block as we do not output that.
+	(gen_inlined_subroutine_die): Elide the originally outermost
+	block, matching what we do for concrete instances.
+	(decls_for_scope): Add parameter specifying whether to recurse
+	to subblocks.
+
 2018-09-27  Andrew Stubbs  <ams@codesourcery.com>
             Tom de Vries  <tom@codesourcery.com>
 
