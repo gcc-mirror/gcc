@@ -7898,7 +7898,7 @@ get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
-	  || opt->opt_index == OPT_fmodule_macros
+	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
 	  || opt->opt_index == OPT_fmodule_preamble_
