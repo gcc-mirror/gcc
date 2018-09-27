@@ -241,10 +241,8 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* FP registers */
   FP_TOP_REG, FP_SECOND_REG, FLOAT_REGS, FLOAT_REGS,
   FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,
-  /* arg pointer */
-  NON_Q_REGS,
-  /* flags, fpsr, fpcr, frame */
-  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
+  /* arg pointer, flags, fpsr, frame */
+  NON_Q_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
   /* SSE registers */
   SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS,
   SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
@@ -273,7 +271,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
   12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -289,7 +287,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
   33, 34, 35, 36, 37, 38, 39, 40,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
   8,9,10,11,12,13,14,15,		/* extended integer registers */
@@ -357,7 +355,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
   11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
-  -1, 9, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, 9, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -17372,8 +17370,7 @@ print_reg (rtx x, int code, FILE *file)
 
   if (regno == ARG_POINTER_REGNUM
       || regno == FRAME_POINTER_REGNUM
-      || regno == FPSR_REG
-      || regno == FPCR_REG)
+      || regno == FPSR_REG)
     {
       output_operand_lossage
 	("invalid use of register '%s'", reg_names[regno]);

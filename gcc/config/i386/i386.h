@@ -1026,8 +1026,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define FIXED_REGISTERS						\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  0, 0, 0, 0, 0, 0, 0, 1, 0,  0,  0,  0,  0,  0,  0,  0,	\
-/*arg,flags,fpsr,fpcr,frame*/					\
-    1,    1,   1,   1,    1,					\
+/*arg,flags,fpsr,frame*/					\
+    1,    1,   1,    1,						\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
@@ -1063,8 +1063,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define CALL_USED_REGISTERS					\
 /*ax,dx,cx,bx,si,di,bp,sp,st,st1,st2,st3,st4,st5,st6,st7*/	\
 {  1, 1, 1, 0, 4, 4, 0, 1, 1,  1,  1,  1,  1,  1,  1,  1,	\
-/*arg,flags,fpsr,fpcr,frame*/					\
-    1,   1,    1,   1,    1,					\
+/*arg,flags,fpsr,frame*/					\
+    1,   1,    1,    1,						\
 /*xmm0,xmm1,xmm2,xmm3,xmm4,xmm5,xmm6,xmm7*/			\
      1,   1,   1,   1,   1,   1,   6,   6,			\
 /* mm0, mm1, mm2, mm3, mm4, mm5, mm6, mm7*/			\
@@ -1089,12 +1089,12 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    The ADJUST_REG_ALLOC_ORDER actually overwrite the order,
    so this is just empty initializer for array.  */
 
-#define REG_ALLOC_ORDER 					\
-{  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17,\
-   18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32,	\
-   33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,  \
-   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,	\
-   63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76 }
+#define REG_ALLOC_ORDER							\
+{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,			\
+  16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,	\
+  32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
+  48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
+  64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75 }
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -1315,7 +1315,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    For any two classes, it is very desirable that there be another
    class that represents their union.
 
-   The flags, fpsr and fpcr registers are in no class.  */
+   The flags and fpsr registers are in no class.  */
 
 enum reg_class
 {
@@ -1411,36 +1411,36 @@ enum reg_class
    TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
 #define REG_CLASS_CONTENTS						\
-{      { 0x0,        0x0,    0x0 },	/* NO_REGS */			\
-      { 0x01,        0x0,    0x0 },	/* AREG */			\
-      { 0x02,        0x0,    0x0 },	/* DREG */			\
-      { 0x04,        0x0,    0x0 },	/* CREG */			\
-      { 0x08,        0x0,    0x0 },	/* BREG */			\
-      { 0x10,        0x0,    0x0 },	/* SIREG */			\
-      { 0x20,        0x0,    0x0 },	/* DIREG */			\
-      { 0x03,        0x0,    0x0 },	/* AD_REGS */			\
-      { 0x07,        0x0,    0x0 },	/* CLOBBERED_REGS */		\
-      { 0x0f,        0x0,    0x0 },	/* Q_REGS */			\
-  { 0x1100f0,        0x0,    0x0 },	/* NON_Q_REGS */		\
-      { 0x7e,     0x1fe0,    0x0 },	/* TLS_GOTBASE_REGS */		\
-      { 0x7f,     0x1fe0,    0x0 },	/* INDEX_REGS */		\
-  { 0x1100ff,        0x0,    0x0 },	/* LEGACY_REGS */		\
-  { 0x1100ff,     0x1fe0,    0x0 },	/* GENERAL_REGS */		\
-     { 0x100,        0x0,    0x0 },	/* FP_TOP_REG */		\
-    { 0x0200,        0x0,    0x0 },	/* FP_SECOND_REG */		\
-    { 0xff00,        0x0,    0x0 },	/* FLOAT_REGS */		\
-  { 0x200000,        0x0,    0x0 },	/* SSE_FIRST_REG */		\
-{ 0x1fe00000,        0x0,    0x0 },	/* NO_REX_SSE_REGS */		\
-{ 0x1fe00000,   0x1fe000,    0x0 },	/* SSE_REGS */			\
-{ 0x1fe00000, 0xffffe000,   0x1f },	/* ALL_SSE_REGS */		\
-{ 0xe0000000,       0x1f,    0x0 },	/* MMX_REGS */			\
-{ 0x1fe0ff00, 0xffffe000,   0x1f },	/* FLOAT_SSE_REGS */		\
-{   0x11ffff,     0x1fe0,    0x0 },	/* FLOAT_INT_REGS */		\
-{ 0x1ff100ff, 0xffffffe0,   0x1f },	/* INT_SSE_REGS */		\
-{ 0x1ff1ffff, 0xffffffe0,   0x1f },	/* FLOAT_INT_SSE_REGS */	\
-       { 0x0,        0x0, 0x1fc0 },	/* MASK_REGS */			\
-       { 0x0,        0x0, 0x1fe0 },	/* ALL_MASK_REGS */		\
-{ 0xffffffff, 0xffffffff, 0x1fff }	/* ALL_REGS  */			\
+{      { 0x0,        0x0,   0x0 },	/* NO_REGS */			\
+      { 0x01,        0x0,   0x0 },	/* AREG */			\
+      { 0x02,        0x0,   0x0 },	/* DREG */			\
+      { 0x04,        0x0,   0x0 },	/* CREG */			\
+      { 0x08,        0x0,   0x0 },	/* BREG */			\
+      { 0x10,        0x0,   0x0 },	/* SIREG */			\
+      { 0x20,        0x0,   0x0 },	/* DIREG */			\
+      { 0x03,        0x0,   0x0 },	/* AD_REGS */			\
+      { 0x07,        0x0,   0x0 },	/* CLOBBERED_REGS */		\
+      { 0x0f,        0x0,   0x0 },	/* Q_REGS */			\
+   { 0x900f0,        0x0,   0x0 },	/* NON_Q_REGS */		\
+      { 0x7e,      0xff0,   0x0 },	/* TLS_GOTBASE_REGS */		\
+      { 0x7f,      0xff0,   0x0 },	/* INDEX_REGS */		\
+   { 0x900ff,        0x0,   0x0 },	/* LEGACY_REGS */		\
+   { 0x900ff,      0xff0,   0x0 },	/* GENERAL_REGS */		\
+     { 0x100,        0x0,   0x0 },	/* FP_TOP_REG */		\
+     { 0x200,        0x0,   0x0 },	/* FP_SECOND_REG */		\
+    { 0xff00,        0x0,   0x0 },	/* FLOAT_REGS */		\
+  { 0x100000,        0x0,   0x0 },	/* SSE_FIRST_REG */		\
+ { 0xff00000,        0x0,   0x0 },	/* NO_REX_SSE_REGS */		\
+ { 0xff00000,    0xff000,   0x0 },	/* SSE_REGS */			\
+ { 0xff00000, 0xfffff000,   0xf },	/* ALL_SSE_REGS */		\
+{ 0xf0000000,        0xf,   0x0 },	/* MMX_REGS */			\
+ { 0xff0ff00, 0xfffff000,   0xf },	/* FLOAT_SSE_REGS */		\
+ {   0x9ffff,      0xff0,   0x0 },	/* FLOAT_INT_REGS */		\
+ { 0xff900ff, 0xfffffff0,   0xf },	/* INT_SSE_REGS */		\
+ { 0xff9ffff, 0xfffffff0,   0xf },	/* FLOAT_INT_SSE_REGS */	\
+       { 0x0,        0x0, 0xfe0 },	/* MASK_REGS */			\
+       { 0x0,        0x0, 0xff0 },	/* ALL_MASK_REGS */		\
+{ 0xffffffff, 0xffffffff, 0xfff }	/* ALL_REGS  */			\
 }
 
 /* The same information, inverted:
@@ -2022,7 +2022,7 @@ do {							\
 #define HI_REGISTER_NAMES						\
 {"ax","dx","cx","bx","si","di","bp","sp",				\
  "st","st(1)","st(2)","st(3)","st(4)","st(5)","st(6)","st(7)",		\
- "argp", "flags", "fpsr", "fpcr", "frame",				\
+ "argp", "flags", "fpsr", "frame",					\
  "xmm0","xmm1","xmm2","xmm3","xmm4","xmm5","xmm6","xmm7",		\
  "mm0", "mm1", "mm2", "mm3", "mm4", "mm5", "mm6", "mm7",		\
  "r8", "r9", "r10", "r11", "r12", "r13", "r14", "r15",			\
@@ -2037,29 +2037,31 @@ do {							\
 
 /* Table of additional register names to use in user input.  */
 
-#define ADDITIONAL_REGISTER_NAMES \
-{ { "eax", 0 }, { "edx", 1 }, { "ecx", 2 }, { "ebx", 3 },		\
-  { "esi", 4 }, { "edi", 5 }, { "ebp", 6 }, { "esp", 7 },		\
-  { "rax", 0 }, { "rdx", 1 }, { "rcx", 2 }, { "rbx", 3 },		\
-  { "rsi", 4 }, { "rdi", 5 }, { "rbp", 6 }, { "rsp", 7 },		\
-  { "al", 0 }, { "dl", 1 }, { "cl", 2 }, { "bl", 3 },			\
-  { "ah", 0 }, { "dh", 1 }, { "ch", 2 }, { "bh", 3 },			\
-  { "ymm0", 21}, { "ymm1", 22}, { "ymm2", 23}, { "ymm3", 24},		\
-  { "ymm4", 25}, { "ymm5", 26}, { "ymm6", 27}, { "ymm7", 28},		\
-  { "ymm8", 45}, { "ymm9", 46}, { "ymm10", 47}, { "ymm11", 48},		\
-  { "ymm12", 49}, { "ymm13", 50}, { "ymm14", 51}, { "ymm15", 52},	\
-  { "ymm16", 53}, { "ymm17", 54}, { "ymm18", 55}, { "ymm19", 56},	\
-  { "ymm20", 57}, { "ymm21", 58}, { "ymm22", 59}, { "ymm23", 60},	\
-  { "ymm24", 61}, { "ymm25", 62}, { "ymm26", 63}, { "ymm27", 64},	\
-  { "ymm28", 65}, { "ymm29", 66}, { "ymm30", 67}, { "ymm31", 68},	\
-  { "zmm0", 21}, { "zmm1", 22}, { "zmm2", 23}, { "zmm3", 24},		\
-  { "zmm4", 25}, { "zmm5", 26}, { "zmm6", 27}, { "zmm7", 28},		\
-  { "zmm8", 45}, { "zmm9", 46}, { "zmm10", 47}, { "zmm11", 48},		\
-  { "zmm12", 49}, { "zmm13", 50}, { "zmm14", 51}, { "zmm15", 52},	\
-  { "zmm16", 53}, { "zmm17", 54}, { "zmm18", 55}, { "zmm19", 56},	\
-  { "zmm20", 57}, { "zmm21", 58}, { "zmm22", 59}, { "zmm23", 60},	\
-  { "zmm24", 61}, { "zmm25", 62}, { "zmm26", 63}, { "zmm27", 64},	\
-  { "zmm28", 65}, { "zmm29", 66}, { "zmm30", 67}, { "zmm31", 68} }
+#define ADDITIONAL_REGISTER_NAMES						\
+{										\
+  { "eax", AX_REG }, { "edx", DX_REG }, { "ecx", CX_REG }, { "ebx", BX_REG },	\
+  { "esi", SI_REG }, { "edi", DI_REG }, { "ebp", BP_REG }, { "esp", SP_REG },	\
+  { "rax", AX_REG }, { "rdx", DX_REG }, { "rcx", CX_REG }, { "rbx", BX_REG },	\
+  { "rsi", SI_REG }, { "rdi", DI_REG }, { "rbp", BP_REG }, { "rsp", SP_REG },	\
+  { "al", AX_REG }, { "dl", DX_REG }, { "cl", CX_REG }, { "bl", BX_REG },	\
+  { "ah", AX_REG }, { "dh", DX_REG }, { "ch", CX_REG }, { "bh", BX_REG },	\
+  { "ymm0", XMM0_REG }, { "ymm1", XMM1_REG }, { "ymm2", XMM2_REG }, { "ymm3", XMM3_REG }, \
+  { "ymm4", XMM4_REG }, { "ymm5", XMM5_REG }, { "ymm6", XMM6_REG }, { "ymm7", XMM7_REG }, \
+  { "ymm8", XMM8_REG }, { "ymm9", XMM9_REG }, { "ymm10", XMM10_REG }, { "ymm11", XMM11_REG }, \
+  { "ymm12", XMM12_REG }, { "ymm13", XMM13_REG }, { "ymm14", XMM14_REG }, { "ymm15", XMM15_REG }, \
+  { "ymm16", XMM16_REG }, { "ymm17", XMM17_REG }, { "ymm18", XMM18_REG }, { "ymm19", XMM19_REG }, \
+  { "ymm20", XMM20_REG }, { "ymm21", XMM21_REG }, { "ymm22", XMM22_REG }, { "ymm23", XMM23_REG }, \
+  { "ymm24", XMM24_REG }, { "ymm25", XMM25_REG }, { "ymm26", XMM26_REG }, { "ymm27", XMM27_REG }, \
+  { "ymm28", XMM28_REG }, { "ymm29", XMM29_REG }, { "ymm30", XMM30_REG }, { "ymm31", XMM31_REG }, \
+  { "zmm0", XMM0_REG }, { "zmm1", XMM1_REG }, { "zmm2", XMM2_REG }, { "zmm3", XMM3_REG }, \
+  { "zmm4", XMM4_REG }, { "zmm5", XMM5_REG }, { "zmm6", XMM6_REG }, { "zmm7", XMM7_REG }, \
+  { "zmm8", XMM8_REG }, { "zmm9", XMM9_REG }, { "zmm10", XMM10_REG }, { "zmm11", XMM11_REG }, \
+  { "zmm12", XMM12_REG }, { "zmm13", XMM13_REG }, { "zmm14", XMM14_REG }, { "zmm15", XMM15_REG }, \
+  { "zmm16", XMM16_REG }, { "zmm17", XMM17_REG }, { "zmm18", XMM18_REG }, { "zmm19", XMM19_REG }, \
+  { "zmm20", XMM20_REG }, { "zmm21", XMM21_REG }, { "zmm22", XMM22_REG }, { "zmm23", XMM23_REG }, \
+  { "zmm24", XMM24_REG }, { "zmm25", XMM25_REG }, { "zmm26", XMM26_REG }, { "zmm27", XMM27_REG }, \
+  { "zmm28", XMM28_REG }, { "zmm29", XMM29_REG }, { "zmm30", XMM30_REG }, { "zmm31", XMM31_REG }  \
+}
 
 /* Note we are omitting these since currently I don't know how
 to get gcc to use these, since they want the same but different
