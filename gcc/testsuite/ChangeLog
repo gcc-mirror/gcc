@@ -1,5 +1,10 @@
 2018-09-27  Richard Biener  <rguenther@suse.de>
 
+	PR testsuite/87451
+	* gcc.dg/debug/dwarf2/inline5.c: Deal with different comment characters.
+
+2018-09-27  Richard Biener  <rguenther@suse.de>
+
 	PR debug/37801
 	PR debug/87440
 	* gcc.dg/debug/dwarf2/inline2.c: Adjust.
