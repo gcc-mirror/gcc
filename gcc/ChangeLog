@@ -1,3 +1,23 @@
+2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (FPSR_REG): Remove.
+	(x86_fnstcw_1): Use (const_int 0) instead of FPCR_REG.
+	(x86_fldcw_1): Remove insn pattern.
+	(fnstenv): Do not clobber FPCR_REG.
+	(fldenv): Ditto.
+	* config/i386/i386.h (FIXED_REGISTERS) Remove fpsr register.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.
+	(HI_REGISTER_NAMES): Ditto.
+	(ADDITIONAL_REGISTER_NAMES): Use defines instead
+	of numerical constants.
+	* config/i386/i386.c (regclass_map): Remove fpsr register.
+	(dbx_register_map): Ditto.
+	(dbx64_register_map): Ditto.
+	(svr4_dbx_register_map): Ditto.
+	(print_reg): Do not handle FPCR_REG.
+
 2018-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/87149

@@ -1,3 +1,9 @@
+2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/rtl/x86_64/dfinit.c: Update scan-rtl-dump string.
+	* gcc.dg/rtl/x86_64/times-two.c.before-df.c: Ditto.
+	* gcc.target/i386/pr79804.c (foo): Use register "19", not "20".
+
 2018-09-27  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/pr60518.C: Add -Wno-missing-profile.
