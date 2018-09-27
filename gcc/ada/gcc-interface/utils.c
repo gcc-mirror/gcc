@@ -990,15 +990,16 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
     }
   else
     {
+      tree type_size = TYPE_ADA_SIZE (type);
       /* Do not try to shrink the size if the RM size is not constant.  */
       if (TYPE_CONTAINS_TEMPLATE_P (type)
-	  || !tree_fits_uhwi_p (TYPE_ADA_SIZE (type)))
+	  || !tree_fits_uhwi_p (type_size))
 	return type;
 
       /* Round the RM size up to a unit boundary to get the minimal size
 	 for a BLKmode record.  Give up if it's already the size and we
 	 don't need to lower the alignment.  */
-      new_size = tree_to_uhwi (TYPE_ADA_SIZE (type));
+      new_size = tree_to_uhwi (type_size);
       new_size = (new_size + BITS_PER_UNIT - 1) & -BITS_PER_UNIT;
       if (new_size == size && (max_align == 0 || align <= max_align))
 	return type;
@@ -5307,20 +5308,21 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      to its size, sign- or zero-extend the result.  But we need not do this
      if the input is also an integral type and both are unsigned or both are
      signed and have the same precision.  */
+  tree type_rm_size;
   if (!notrunc_p
       && INTEGRAL_TYPE_P (type)
       && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
-      && TYPE_RM_SIZE (type)
-      && tree_int_cst_compare (TYPE_RM_SIZE (type), TYPE_SIZE (type)) < 0
+      && (type_rm_size = TYPE_RM_SIZE (type))
+      && tree_int_cst_compare (type_rm_size, TYPE_SIZE (type)) < 0
       && !(INTEGRAL_TYPE_P (etype)
 	   && type_unsigned_for_rm (type) == type_unsigned_for_rm (etype)
 	   && (type_unsigned_for_rm (type)
-	       || tree_int_cst_compare (TYPE_RM_SIZE (type),
+	       || tree_int_cst_compare (type_rm_size,
 					TYPE_RM_SIZE (etype)
 					? TYPE_RM_SIZE (etype)
 					: TYPE_SIZE (etype)) == 0)))
     {
-      if (integer_zerop (TYPE_RM_SIZE (type)))
+      if (integer_zerop (type_rm_size))
 	expr = build_int_cst (type, 0);
       else
 	{
@@ -5330,7 +5332,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  tree shift_expr
 	    = convert (base_type,
 		       size_binop (MINUS_EXPR,
-				   TYPE_SIZE (type), TYPE_RM_SIZE (type)));
+				   TYPE_SIZE (type), type_rm_size));
 	  expr
 	    = convert (type,
 		       build_binary_op (RSHIFT_EXPR, base_type,

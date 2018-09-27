@@ -1,3 +1,9 @@
+2018-09-27  Martin Sebor  <msebor@redhat.com>
+
+	* gcc-interface/utils.c (make_packable_type): Introduce a temporary
+	to avoid -Wnonnull.
+	(unchecked_convert): Same.
+
 2018-09-26  Elisa Barboni  <barboni@adacore.com>
 
 	* sem_prag.adb (Check_Refined_Global_Item): Improve error
