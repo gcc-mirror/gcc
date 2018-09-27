@@ -1,3 +1,11 @@
+2018-09-27  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md (PPA_TX_ABORT, PPA_OOO_BARRIER): New
+	constant definitions.
+	("tx_assist"): Replace magic number with PPA_TX_ABORT.
+	("*ppa"): Enable pattern also for -march=zEC12 -mno-htm.
+	("speculation_barrier"): New expander definition.
+
 2018-09-26  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	PR gcov-profile/86957
