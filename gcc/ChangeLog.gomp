@@ -1,3 +1,24 @@
+2018-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_VOID_SIZE_SIZE_PTR): New.
+	* omp-builtins.def (BUILT_IN_GOMP_TASKGROUP_REDUCTION_REGISTER,
+	BUILT_IN_GOMP_TASKGROUP_REDUCTION_UNREGISTER,
+	BUILT_IN_GOMP_TASK_REDUCTION_REMAP): New builtins.
+	* omp-low.c (use_pointer_for_field): Use is_global_var instead
+	of TREE_STATIC || DECL_EXTERNAL, and apply only if not privatized
+	in outer contexts.
+	(scan_sharing_clauses): Handle OMP_CLAUSE_IN_REDUCTION in task
+	contexts.  Handle OMP_CLAUSE_TASK_REDUCTION.
+	(scan_omp_1_stmt): Call scan_sharing_clauses for taskgroups.
+	(lower_rec_input_clauses): Handle OMP_CLAUSE_IN_REDUCTION.  Set
+	TREE_THIS_NOTRAP instead of just noop testing it.
+	(lower_send_clauses): Handle OMP_CLAUSE_IN_REDUCTION.
+	(omp_task_reductions_find_first, omp_task_reduction_iterate,
+	lower_omp_task_reductions): New functions.
+	(lower_omp_taskgroup): Handle taskgroup reductions.
+	(create_task_copyfn): Handle OMP_CLAUSE_IN_REDUCTION and
+	OMP_CLAUSE_REDUCTION clauses.
+
 2018-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_omp_depend): Load block from elt 5 instead

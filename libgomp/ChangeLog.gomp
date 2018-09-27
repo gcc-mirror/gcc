@@ -1,3 +1,27 @@
+2018-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* configure.ac: Check for aligned_alloc, posix_memalign, memalign
+	and _aligned_malloc.
+	* libgomp.h (gomp_aligned_alloc, gomp_aligned_free): New prototypes.
+	(struct gomp_taskgroup): Add reductions field.
+	* libgomp.map (GOMP_5.0): Export GOMP_taskgroup_reduction_register,
+	GOMP_taskgroup_reduction_unregister and GOMP_task_reduction_remap.
+	* task.c (GOMP_taskgroup_start): Initialize taskgroup->reductions.
+	(GOMP_taskgroup_reduction_register,
+	GOMP_taskgroup_reduction_unregister, GOMP_task_reduction_remap): New
+	functions.
+	* alloc.c (gomp_aligned_alloc, gomp_aligned_free): New functions.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* testsuite/libgomp.c-c++-common/task-reduction-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-2.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-3.c: New test.
+	* testsuite/libgomp.c++/task-reduction-1.C: New test.
+	* testsuite/libgomp.c++/task-reduction-2.C: New test.
+	* testsuite/libgomp.c++/task-reduction-3.C: New test.
+	* testsuite/libgomp.c++/task-reduction-4.C: New test.
+	* testsuite/libgomp.c++/task-reduction-5.C: New test.
+
 2018-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/depend-iterator-1.c: Add tests for

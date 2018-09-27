@@ -318,6 +318,9 @@ GOMP_5.0 {
   global:
 	GOMP_taskwait_depend;
 	GOMP_teams_reg;
+	GOMP_taskgroup_reduction_register;
+	GOMP_taskgroup_reduction_unregister;
+	GOMP_task_reduction_remap;
 } GOMP_4.5;
 
 OACC_2.0 {

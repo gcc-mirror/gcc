@@ -1,3 +1,7 @@
+2018-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* types.def (BT_FN_VOID_SIZE_SIZE_PTR): New.
+
 2018-05-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-openmp.c (gfc_trans_omp_atomic): Set OMP_ATOMIC_MEMORY_ORDER

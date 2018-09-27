@@ -219,6 +219,7 @@ m4_include([plugin/configfrag.ac])
 
 # Check for functions needed.
 AC_CHECK_FUNCS(getloadavg clock_gettime strtoull)
+AC_CHECK_FUNCS(aligned_alloc posix_memalign memalign _aligned_malloc)
 
 # Check for broken semaphore implementation on darwin.
 # sem_init returns: sem_init error: Function not implemented.

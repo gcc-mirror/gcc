@@ -5685,7 +5685,8 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 	      if (TREE_ADDRESSABLE (DECL_EXPR_DECL (stmts[0])))
 		cxx_mark_addressable (placeholder);
 	      if (TREE_ADDRESSABLE (DECL_EXPR_DECL (stmts[1]))
-		  && !TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
+		  && (decl_placeholder
+		      || !TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c)))))
 		cxx_mark_addressable (decl_placeholder ? decl_placeholder
 				      : OMP_CLAUSE_DECL (c));
 	      tree omp_out = placeholder;
@@ -5711,7 +5712,9 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 	    {
 	      gcc_assert (TREE_CODE (stmts[3]) == DECL_EXPR
 			  && TREE_CODE (stmts[4]) == DECL_EXPR);
-	      if (TREE_ADDRESSABLE (DECL_EXPR_DECL (stmts[3])))
+	      if (TREE_ADDRESSABLE (DECL_EXPR_DECL (stmts[3]))
+		  && (decl_placeholder
+		      || !TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c)))))
 		cxx_mark_addressable (decl_placeholder ? decl_placeholder
 				      : OMP_CLAUSE_DECL (c));
 	      if (TREE_ADDRESSABLE (DECL_EXPR_DECL (stmts[4])))

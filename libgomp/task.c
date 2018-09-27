@@ -1768,7 +1768,7 @@ GOMP_taskgroup_start (void)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   struct gomp_task *task = thr->task;
-  struct gomp_taskgroup *taskgroup;
+  struct gomp_taskgroup *taskgroup, *prev;
 
   /* If team is NULL, all tasks are executed as
      GOMP_TASK_UNDEFERRED tasks and thus all children tasks of
@@ -1777,9 +1777,11 @@ GOMP_taskgroup_start (void)
   if (team == NULL)
     return;
   taskgroup = gomp_malloc (sizeof (struct gomp_taskgroup));
-  taskgroup->prev = task->taskgroup;
+  prev = task->taskgroup;
+  taskgroup->prev = prev;
   priority_queue_init (&taskgroup->taskgroup_queue);
   taskgroup->in_taskgroup_wait = false;
+  taskgroup->reductions = prev ? prev->reductions : NULL;
   taskgroup->cancelled = false;
   taskgroup->num_children = 0;
   gomp_sem_init (&taskgroup->taskgroup_sem, 0);
@@ -1946,6 +1948,182 @@ GOMP_taskgroup_end (void)
   task->taskgroup = taskgroup->prev;
   gomp_sem_destroy (&taskgroup->taskgroup_sem);
   free (taskgroup);
+}
+
+/* The format of data is:
+   data[0]	cnt
+   data[1]	size
+   data[2]	alignment (on output array pointer)
+   data[3]	allocator (-1 if malloc allocator)
+   data[4]	next pointer
+   data[5]	used internally (htab pointer)
+   data[6]	used internally (end of array)
+   cnt times
+   ent[0]	address
+   ent[1]	offset
+   ent[2]	used internally (pointer to data[0]).  */
+
+void
+GOMP_taskgroup_reduction_register (uintptr_t *data)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_task *task = thr->task;
+  unsigned nthreads = team ? team->nthreads : 1;
+  size_t total_cnt = 0;
+  uintptr_t *d = data;
+  uintptr_t *old = task->taskgroup->reductions;
+  do
+    {
+      size_t sz = d[1] * nthreads;
+      /* Should use omp_alloc if d[3] is not -1.  */
+      void *ptr = gomp_aligned_alloc (d[2], sz);
+      memset (ptr, '\0', sz);
+      d[2] = (uintptr_t) ptr;
+      d[5] = 0;
+      d[6] = d[2] + sz;
+      total_cnt += d[0];
+      if (d[4] == 0)
+	{
+	  d[4] = (uintptr_t) old;
+	  break;
+	}
+      else
+	d = (uintptr_t *) d[4];
+    }
+  while (1);
+  struct htab *old_htab = NULL;
+  if (old && old[5])
+    {
+      old_htab = (struct htab *) old[5];
+      total_cnt += htab_elements (old_htab);
+    }
+  struct htab *new_htab = htab_create (total_cnt);
+  if (old_htab)
+    {
+      /* Copy old hash table, like in htab_expand.  */
+      hash_entry_type *p, *olimit;
+      new_htab->n_elements = htab_elements (old_htab);
+      olimit = old_htab->entries + old_htab->size;
+      p = old_htab->entries;
+      do
+	{
+	  hash_entry_type x = *p;
+	  if (x != HTAB_EMPTY_ENTRY && x != HTAB_DELETED_ENTRY)
+	    *find_empty_slot_for_expand (new_htab, htab_hash (x)) = x;
+	  p++;
+	}
+      while (p < olimit);
+    }
+  d = data;
+  do
+    {
+      size_t j;
+      for (j = 0; j < d[0]; ++j)
+	{
+	  uintptr_t *p = d + 7 + j * 3;
+	  p[2] = (uintptr_t) d;
+	  /* Ugly hack, hash_entry_type is defined for the task dependencies,
+	     which hash on the first element which is a pointer.  We need
+	     to hash also on the first sizeof (uintptr_t) bytes which contain
+	     a pointer.  Hide the cast from the compiler.  */
+	  hash_entry_type n;
+	  __asm ("" : "=g" (n) : "0" (p));
+	  *htab_find_slot (&new_htab, n, INSERT) = n;
+	}
+      if (d[4] == (uintptr_t) old)
+	break;
+      else
+	d = (uintptr_t *) d[4];
+    }
+  while (1);
+  d[5] = (uintptr_t) new_htab;
+  task->taskgroup->reductions = data;
+}
+
+void
+GOMP_taskgroup_reduction_unregister (uintptr_t *data)
+{
+  uintptr_t *d = data;
+  htab_free ((struct htab *) data[5]);
+  do
+    {
+      gomp_aligned_free ((void *) d[2]);
+      d = (uintptr_t *) d[4];
+    }
+  while (d && !d[5]);
+}
+
+/* For i = 0 to cnt-1, remap ptrs[i] which is either address of the
+   original list item or address of previously remapped original list
+   item to address of the private copy, store that to ptrs[i].
+   For i < cntorig, additionally set ptrs[cnt+i] to the address of
+   the original list item.  */
+
+void
+GOMP_task_reduction_remap (size_t cnt, size_t cntorig, void **ptrs)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_task *task = thr->task;
+  unsigned id = thr->ts.team_id;
+  uintptr_t *data = task->taskgroup->reductions;
+  uintptr_t *d;
+  struct htab *reduction_htab = (struct htab *) data[5];
+  size_t i;
+  for (i = 0; i < cnt; ++i)
+    {
+      hash_entry_type ent, n;
+      __asm ("" : "=g" (ent) : "0" (ptrs + i));
+      n = htab_find (reduction_htab, ent);
+      if (n)
+	{
+	  uintptr_t *p;
+	  __asm ("" : "=g" (p) : "0" (n));
+	  /* At this point, p[0] should be equal to (uintptr_t) ptrs[i],
+	     p[1] is the offset within the allocated chunk for each
+	     thread, p[2] is the array registered with
+	     GOMP_taskgroup_reduction_register, d[2] is the base of the
+	     allocated memory and d[1] is the size of the allocated chunk
+	     for one thread.  */
+	  d = (uintptr_t *) p[2];
+	  ptrs[i] = (void *) (d[2] + id * d[1] + p[1]);
+	  if (__builtin_expect (i < cntorig, 0))
+	    ptrs[cnt + i] = (void *) p[0];
+	  continue;
+	}
+      d = data;
+      while (d != NULL)
+	{
+	  if ((uintptr_t) ptrs[i] >= d[2] && (uintptr_t) ptrs[i] < d[6])
+	    break;
+	  d = (uintptr_t *) d[4];
+	}
+      if (d == NULL)
+	gomp_fatal ("couldn't find matching task_reduction or reduction with "
+		    "task modifier for %p", ptrs[i]);
+      uintptr_t off = ((uintptr_t) ptrs[i] - d[2]) % d[1];
+      ptrs[i] = (void *) (d[2] + id * d[1] + off);
+      if (__builtin_expect (i < cntorig, 0))
+	{
+	  size_t lo = 0, hi = d[0] - 1;
+	  while (lo <= hi)
+	    {
+	      size_t m = (lo + hi) / 2;
+	      if (d[7 + 3 * m + 1] < off)
+		lo = m + 1;
+	      else if (d[7 + 3 * m + 1] == off)
+		{
+		  ptrs[cnt + i] = (void *) d[7 + 3 * m];
+		  break;
+		}
+	      else
+		hi = m - 1;
+	    }
+	  if (lo > hi)
+	    gomp_fatal ("couldn't find matching task_reduction or reduction "
+			"with task modifier for %p", ptrs[i]);
+	}
+    }
 }
 
 int

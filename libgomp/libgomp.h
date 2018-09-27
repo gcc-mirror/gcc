@@ -89,6 +89,9 @@ enum memmodel
 extern void *gomp_malloc (size_t) __attribute__((malloc));
 extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
 extern void *gomp_realloc (void *, size_t);
+extern void *gomp_aligned_alloc (size_t, size_t)
+  __attribute__((malloc, alloc_size (2)));
+extern void gomp_aligned_free (void *);
 
 /* Avoid conflicting prototypes of alloca() in system headers by using
    GCC's builtin alloca().  */
@@ -474,6 +477,7 @@ struct gomp_taskgroup
   struct gomp_taskgroup *prev;
   /* Queue of tasks that belong in this taskgroup.  */
   struct priority_queue taskgroup_queue;
+  uintptr_t *reductions;
   bool in_taskgroup_wait;
   bool cancelled;
   gomp_sem_t taskgroup_sem;
