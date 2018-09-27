@@ -3867,7 +3867,7 @@ static void gen_subroutine_type_die (tree, dw_die_ref);
 static void gen_typedef_die (tree, dw_die_ref);
 static void gen_type_die (tree, dw_die_ref);
 static void gen_block_die (tree, dw_die_ref);
-static void decls_for_scope (tree, dw_die_ref);
+static void decls_for_scope (tree, dw_die_ref, bool = true);
 static bool is_naming_typedef_decl (const_tree);
 static inline dw_die_ref get_context_die (tree);
 static void gen_namespace_die (tree, dw_die_ref);
@@ -24147,7 +24147,23 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
         add_high_low_attributes (stmt, subr_die);
       add_call_src_coords_attributes (stmt, subr_die);
 
-      decls_for_scope (stmt, subr_die);
+      /* The inliner creates an extra BLOCK for the parameter setup,
+         we want to merge that with the actual outermost BLOCK of the
+	 inlined function to avoid duplicate locals in consumers.
+	 Do that by doing the recursion to subblocks on the single subblock
+	 of STMT.  */
+      bool unwrap_one = false;
+      if (BLOCK_SUBBLOCKS (stmt) && !BLOCK_CHAIN (BLOCK_SUBBLOCKS (stmt)))
+	{
+	  tree origin = block_ultimate_origin (BLOCK_SUBBLOCKS (stmt));
+	  if (origin
+	      && TREE_CODE (origin) == BLOCK
+	      && BLOCK_SUPERCONTEXT (origin) == decl)
+	    unwrap_one = true;
+	}
+      decls_for_scope (stmt, subr_die, !unwrap_one);
+      if (unwrap_one)
+	decls_for_scope (BLOCK_SUBBLOCKS (stmt), subr_die);
     }
 }
 
@@ -25775,7 +25791,7 @@ process_scope_var (tree stmt, tree decl, tree origin, dw_die_ref context_die)
    all of its sub-blocks.  */
 
 static void
-decls_for_scope (tree stmt, dw_die_ref context_die)
+decls_for_scope (tree stmt, dw_die_ref context_die, bool recurse)
 {
   tree decl;
   unsigned int i;
@@ -25818,10 +25834,11 @@ decls_for_scope (tree stmt, dw_die_ref context_die)
 
   /* Output the DIEs to represent all sub-blocks (and the items declared
      therein) of this block.  */
-  for (subblocks = BLOCK_SUBBLOCKS (stmt);
-       subblocks != NULL;
-       subblocks = BLOCK_CHAIN (subblocks))
-    gen_block_die (subblocks, context_die);
+  if (recurse)
+    for (subblocks = BLOCK_SUBBLOCKS (stmt);
+	 subblocks != NULL;
+	 subblocks = BLOCK_CHAIN (subblocks))
+      gen_block_die (subblocks, context_die);
 }
 
 /* Is this a typedef we can avoid emitting?  */
