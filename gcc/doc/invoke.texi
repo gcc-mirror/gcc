@@ -2583,6 +2583,12 @@ which case the fragment following is used as the name.
 @opindex fmodule-only
 Only emit the module BMI, inhibiting any object file.
 
+@item -fforce-module-macros
+@opindex fforce-module-macros
+Load legacy module macros at end of compilation.  This is not standard
+conforming, but can be helpful to confirm all imported macros are
+consistent.
+
 @item -fmodule-mapper=@var{[hostname]:port}
 @itemx -fmodule-mapper=|@var{program}
 @itemx -fmodule-mapper==@var{socket}

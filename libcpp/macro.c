@@ -310,7 +310,6 @@ static void replace_args (cpp_reader *, cpp_hashnode *, cpp_macro *,
 static _cpp_buff *funlike_invocation_p (cpp_reader *, cpp_hashnode *,
 					_cpp_buff **, unsigned *);
 static cpp_macro *create_iso_definition (cpp_reader *);
-static cpp_macro *undefer_macro (cpp_reader *, cpp_hashnode *, source_location);
 
 /* #define directive parsing and handling.  */
 
@@ -2734,7 +2733,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
       if (!(node->flags & NODE_USED)
 	  && node->type == NT_USER_MACRO
 	  && !node->value.macro
-	  && !undefer_macro (pfile, node, result->src_loc))
+	  && !cpp_get_deferred_macro (pfile, node, result->src_loc))
 	break;
 
       if (!(node->flags & NODE_DISABLED))
@@ -3007,7 +3006,7 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
   cpp_macro *macro1 = node->value.macro;
   if (!macro1)
     {
-      macro1 = undefer_macro (pfile, node, macro2->line);
+      macro1 = cpp_get_deferred_macro (pfile, node, macro2->line);
       if (!macro1)
 	return false;
     }
@@ -3583,8 +3582,9 @@ cpp_define_lazily (cpp_reader *pfile, cpp_hashnode *node, unsigned num)
 
 /* NODE is a deferred macro, resolve it, returning the definition
    (which may be NULL).  */
-static cpp_macro *
-undefer_macro (cpp_reader *pfile, cpp_hashnode *node, source_location loc)
+cpp_macro *
+cpp_get_deferred_macro (cpp_reader *pfile, cpp_hashnode *node,
+			source_location loc)
 {
   node->value.macro = pfile->cb.user_deferred_macro (pfile, loc, node);
 
@@ -3610,7 +3610,7 @@ _cpp_notify_macro_use (cpp_reader *pfile, cpp_hashnode *node,
 	cpp_macro *macro = node->value.macro;
 	if (!macro)
 	  {
-	    macro = undefer_macro (pfile, node, loc);
+	    macro = cpp_get_deferred_macro (pfile, node, loc);
 	    if (!macro)
 	      return false;
 	  }

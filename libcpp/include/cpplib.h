@@ -981,6 +981,8 @@ inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node)
 
   return old;
 }
+cpp_macro *cpp_get_deferred_macro (cpp_reader *, cpp_hashnode *,
+				   source_location);
 
 /* Returns true if NODE is a function-like user macro.  */
 inline bool cpp_fun_like_macro_p (cpp_hashnode *node)

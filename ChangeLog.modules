@@ -1,3 +1,19 @@
+2018-09-27  Nathan Sidwell  <nathan@acm.org>
+
+	Add -fforce-module-macros
+	libcpp/
+	* include/cpplib.h (get_deferred_macro): Declare.
+	* macro.c (undefer_macro): Rename to ...
+	(get_deferred_macro): ... here.  Adjust callers.
+	gcc/
+	* doc/invoke.texi (fforce-module-macros): Document.
+	gcc/c-family/
+	* c.opt (fforce-module-macros): New.
+	gcc/cp/
+	* module.c (get_option_string): Prune more options.
+	(load_macros): New.
+	(finish_module_parse): Walk identifiers, if forcing macros.
+
 2018-09-26  Nathan Sidwell  <nathan@acm.org>
 
 	Add deferred cpp_hashnode field. Replace macro_imports hash table

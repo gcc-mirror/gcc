@@ -1565,6 +1565,10 @@ fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing
 
+fforce-module-macros
+C++ ObjC++ RejectNegative Var(flag_module_macros) Init(0)
+Ensure all imported macros are loaded
+
 Wlegacy-header
 C++ ObjC++ Var(warn_legacy_header) Init(-1) Warning
 Warn about post-preamble legacy headers

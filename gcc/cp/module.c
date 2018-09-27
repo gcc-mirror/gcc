@@ -7885,33 +7885,52 @@ get_option_string  ()
       if (opt->opt_index >= N_OPTS)
 	continue;
 
-      /* Some module-related options we don't need to preserve.  */
+      /* Not an option (a filename or somesuch).  */
+      if (text[0] != '-')
+	continue;
+
+      /* Not -f* -g* -m* -O* -std=* */
+      if (!strchr ("fgmO", text[1])
+	  && 0 != strncmp (&text[1], "std=", 4))
+	continue;
+
+      /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_preamble_
-	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
+	  || opt->opt_index == OPT_fmodule_macros
+	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
+	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
 
-      /* -f* -g* -m* -O* -std=* */
-      if (text[0] != '-'
-	  || (!strchr ("fgmO", text[1])
-	      && 0 != strncmp (&text[1], "std=", 4)))
+      /* Drop random options.  */
+      if (opt->opt_index == OPT_frandom_seed
+	  || opt->opt_index == OPT_frandom_seed_)
 	continue;
 
-      /* Some random options we shouldn't preserve.  */
-      if (opt->opt_index == OPT_frandom_seed
-	  || opt->opt_index == OPT_frandom_seed_
-	  /* Drop any diagnostic formatting options.  */
-	  || opt->opt_index == OPT_fmessage_length_
+      /* Drop -fpic.  */
+      if (opt->opt_index == OPT_fpic
+	  || opt->opt_index == OPT_fPIC
+	  || opt->opt_index == OPT_fPIE)
+	continue;
+
+      /* Drop profiling.  */
+      if (opt->opt_index >= OPT_fprofile
+	   && opt->opt_index <= OPT_fprofile_values)
+	continue;
+
+      /* Drop diagnostic formatting options.  */
+      if (opt->opt_index == OPT_fmessage_length_
 	  || (opt->opt_index >= OPT_fdiagnostics_color_
-	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree)
-	  /* Drop any dump control options.  */
-	  || (opt->opt_index >= OPT_fdump_
-	      && opt->opt_index <= OPT_fdump_unnumbered_links))
+	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree))
+	continue;
+
+      /* Drop any dump control options.  */
+      if (opt->opt_index >= OPT_fdump_
+	  && opt->opt_index <= OPT_fdump_unnumbered_links)
 	continue;
 
       size_t l = strlen (text);
@@ -11924,6 +11943,24 @@ init_module_processing ()
   ggc_collect ();
 }
 
+/* If NODE is a deferred macro, load it.  */
+
+static int
+load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
+{
+  if (cpp_user_macro_p (node)
+      && !(node->flags & NODE_USED)
+      && !node->value.macro)
+    {
+      cpp_macro *macro = cpp_get_deferred_macro (reader, node, input_location);
+      dump () && dump ("Loaded macro #%s %I",
+		       macro ? "define" : "undef",
+		       HT_IDENT_TO_GCC_IDENT (node));
+    }
+
+  return 1;
+}
+
 /* Finished parsing, write the BMI, if we're a module interface.  */
 
 void
@@ -11931,6 +11968,15 @@ finish_module_parse (cpp_reader *reader)
 {
   if (modules_legacy_p ())
     pop_module_export (0);
+
+  if (flag_module_macros)
+    {
+      /* Force loading of any remaining deferred macros.  This will
+	 produce diagnostics if they are ill-formed.  */
+      unsigned n = dump.push (NULL);
+      cpp_forall_identifiers (reader, load_macros, NULL);
+      dump.pop (n);
+    }
 
   module_state *state = NULL;
   if (modules_p ())
