@@ -1,5 +1,10 @@
 2018-09-27  Nathan Sidwell  <nathan@acm.org>
 
+	No speculative undefs.
+	gcc/cp/
+	* module.c (maybe_add_macro): Simplify.
+	(module_state::undef_macro): Only add undef for a deferred macro.
+
 	Add -fforce-module-macros
 	libcpp/
 	* include/cpplib.h (get_deferred_macro): Declare.

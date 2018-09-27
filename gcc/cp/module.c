@@ -10210,8 +10210,19 @@ macro_import::exported ()
   return *a;
 }
 
+/* The import (&exported) macros.  cpp_hasnode's deferred field
+   indexes this array (offset by 1, so zero means 'not present'.  */
+
 static vec<macro_import, va_heap, vl_embed> *macro_imports;
+
+/* The exported macros.  A macro_import slot's zeroth element's offset
+   indexes this array.  If the zeroth slot is not for module zero,
+   there is no export.  */
+
 static vec<macro_export, va_heap, vl_embed> *macro_exports;
+
+/* The reachable set of legacy imports from this TU.  */
+
 static GTY(()) bitmap legacies;
 
 /* Get the (possibly empty) macro imports for NODE.  */
@@ -10245,6 +10256,8 @@ get_macro_export (macro_import::slot &slot)
 static int
 maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *macros_)
 {
+  bool exporting = false;
+
   if (cpp_user_macro_p (node))
     if (cpp_macro *macro = node->value.macro)
       /* Ignore imported & builtins and forced header macros.  */
@@ -10259,27 +10272,22 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *macros_)
 	  macro_export &exp = get_macro_export (slot);
 	  slot.has_def = true;
 	  exp.def = macro;
+	  exporting = true;
 	}
 
-  if (node->deferred)
+  if (!exporting && node->deferred)
     {
       macro_import &imports = (*macro_imports)[node->deferred - 1];
       macro_import::slot &slot = imports[0];
       if (!slot.mod)
 	{
-	  if (slot.has_undef)
-	    {
-	      for (unsigned ix = imports.length (); --ix;)
-		if (imports[ix].has_def)
-		  goto is_hiding;
-	      slot.has_undef = false;
-	    is_hiding:;
-	    }
-
-	  if (slot.has_def || slot.has_undef)
-	    static_cast <auto_vec<cpp_hashnode *> *> (macros_)->safe_push (node);
+	  gcc_checking_assert (slot.has_def || slot.has_undef);
+	  exporting = true;
 	}
     }
+
+  if (exporting)
+    static_cast <auto_vec<cpp_hashnode *> *> (macros_)->safe_push (node);
 
   return 1; /* Don't stop.  */
 }
@@ -10453,14 +10461,15 @@ module_state::read_defines (cpp_reader *, unsigned count)
 void
 module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
 {
+  if (!node->deferred)
+    /* The macro is not imported, so our undef is irrelevant.  */
+    return;
+  
   unsigned n = dump.push (NULL);
 
-  macro_import::slot &slot = get_macro_imports (node).exported ();
+  macro_import::slot &slot = (*macro_imports)[node->deferred - 1].exported ();
   macro_export &exp = get_macro_export (slot);
 
-  /* We don't know if there'll be a later import that defines this
-     macro and we override it.  (At least, that's what I think the
-     semantics are supposed to be?)  */
   exp.undef_loc = loc;
   slot.has_undef = true;
   exp.def = NULL;
