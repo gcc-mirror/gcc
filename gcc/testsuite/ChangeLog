@@ -1,3 +1,8 @@
+2018-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.dg/ext/altivec-6.C: Change the vec_splat second argument to a
+	valid value, in the "vector bool int" case.
+
 2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/rtl/x86_64/dfinit.c: Update scan-rtl-dump string.

@@ -26,5 +26,5 @@ void foo(void) {
    elements in the referenced vector.  */
   vbs = vec_splat(vbs, 4);
   vp = vec_splat(vp, 1);
-  vbi = vec_splat(vbi, 15);  
+  vbi = vec_splat(vbi, 3);  
 }
