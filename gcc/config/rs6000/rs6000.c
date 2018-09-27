@@ -3871,48 +3871,6 @@ rs6000_option_override_internal (bool global_init_p)
   else if (OPTION_TARGET_CPU_DEFAULT)
     cpu_index = rs6000_cpu_name_lookup (OPTION_TARGET_CPU_DEFAULT);
 
-  if (cpu_index >= 0)
-    {
-      const char *unavailable_cpu = NULL;
-      switch (processor_target_table[cpu_index].processor)
-	{
-#ifndef HAVE_AS_POWER9
-	case PROCESSOR_POWER9:
-	  unavailable_cpu = "power9";
-	  break;
-#endif
-#ifndef HAVE_AS_POWER8
-	case PROCESSOR_POWER8:
-	  unavailable_cpu = "power8";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTD
-	case PROCESSOR_POWER7:
-	  unavailable_cpu = "power7";
-	  break;
-#endif
-#ifndef HAVE_AS_DFP
-	case PROCESSOR_POWER6:
-	  unavailable_cpu = "power6";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTB
-	case PROCESSOR_POWER5:
-	  unavailable_cpu = "power5";
-	  break;
-#endif
-	default:
-	  break;
-	}
-      if (unavailable_cpu)
-	{
-	  cpu_index = -1;
-	  warning (0, "will not generate %qs instructions because "
-		   "assembler lacks %qs support", unavailable_cpu,
-		   unavailable_cpu);
-	}
-    }
-
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
      with those from the cpu, except for options that were explicitly set.  If
@@ -16018,7 +15976,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      overload table in rs6000-c.c to switch between the two.  If we don't have
      the proper assembler, don't do this switch because CODE_FOR_*kf* and
      CODE_FOR_*tf* will be CODE_FOR_nothing.  */
-#ifdef HAVE_AS_POWER9
   if (FLOAT128_IEEE_P (TFmode))
     switch (icode)
       {
@@ -16039,7 +15996,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
       }
-#endif
 
   if (TARGET_DEBUG_BUILTIN)
     {
