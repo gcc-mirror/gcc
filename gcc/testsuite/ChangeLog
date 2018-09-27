@@ -1,3 +1,16 @@
+2018-09-27  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/pr60518.C: Add -Wno-missing-profile.
+	* g++.dg/torture/pr59265.C: Likewise.
+	* g++.dg/tree-prof/morefunc.C: Likewise.
+	* g++.dg/tree-ssa/dom-invalid.C: Likewise.
+	* gcc.dg/pr26570.c: Likewise.
+	* gcc.dg/pr32773.c: Likewise.
+	* gcc.dg/pr40209.c: Likewise.
+	* gcc.dg/pr51957-1.c: Likewise.
+	* gcc.dg/pr80747.c: Likewise.
+	* gcc.target/aarch64/pr62262.c: Likewise.
+
 2018-09-27  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/87451

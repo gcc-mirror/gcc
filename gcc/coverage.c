@@ -314,12 +314,10 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	      dump_user_location_t loc
 		= dump_user_location_t::from_location_t (input_location);
 	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			       "file %s not found\n",
-			       da_file_name);
-	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
-			   (flag_guess_branch_prob
-			    ? "execution counts estimated\n"
-			    : "execution counts assumed to be zero\n"));
+			       "file %s not found, %s\n", da_file_name,
+			       (flag_guess_branch_prob
+				? "execution counts estimated"
+				: "execution counts assumed to be zero"));
 	    }
 	}
       return NULL;
