@@ -1,3 +1,19 @@
+2018-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87149
+	* config.in (HAVE_AS_CMPB, HAVE_AS_DFP, HAVE_AS_FPRND, HAVE_AS_MFPGPR,
+	HAVE_AS_POPCNTB, HAVE_AS_POPCNTD, HAVE_AS_POWER8, HAVE_AS_POWER9):
+	Delete, always treat as true.
+	* config/powerpcspe/powerpcspe.c (rs6000_option_override_internal):
+	Ditto.  Simplify remaining code.
+	* config/powerpcspe/powerpcspe.h: Ditto.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Ditto.
+	Simplify remaining code.
+	(rs6000_expand_builtin): Ditto.
+	* config/rs6000/rs6000.h: Ditto.
+	* configure.ac: Ditto.
+	* configure: Regenerate.
+
 2018-09-27  Martin Liska  <mliska@suse.cz>
 
 	* coverage.c (get_coverage_counts): Revert the formatting
