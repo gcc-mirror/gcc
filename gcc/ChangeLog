@@ -1,6 +1,7 @@
 2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (FPSR_REG): Remove.
+	* config/i386/i386.md (FPCR_REG): Remove.
+	(UNSPEC_FLDCW): Remove.
 	(x86_fnstcw_1): Use (const_int 0) instead of FPCR_REG.
 	(x86_fldcw_1): Remove insn pattern.
 	(fnstenv): Do not clobber FPCR_REG.
