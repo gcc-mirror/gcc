@@ -1,5 +1,9 @@
 2018-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c++/task-reduction-5.C (main): Add forgotten
+	checks.
+	* testsuite/libgomp.c++/task-reduction-6.C: New test.
+
 	* configure.ac: Check for aligned_alloc, posix_memalign, memalign
 	and _aligned_malloc.
 	* libgomp.h (gomp_aligned_alloc, gomp_aligned_free): New prototypes.

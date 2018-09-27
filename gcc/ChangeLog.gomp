@@ -1,5 +1,8 @@
 2018-09-27  Jakub Jelinek  <jakub@redhat.com>
 
+	* omp-low.c (lower_rec_input_clauses): Fix handling of
+	OMP_CLAUSE_REDUCTION_OMP_ORIG_REF for task array reductions.
+
 	* builtin-types.def (BT_FN_VOID_SIZE_SIZE_PTR): New.
 	* omp-builtins.def (BUILT_IN_GOMP_TASKGROUP_REDUCTION_REGISTER,
 	BUILT_IN_GOMP_TASKGROUP_REDUCTION_UNREGISTER,
