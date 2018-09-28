@@ -1,6 +1,11 @@
 2018-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.h (CC_REGNO): Remove FPSR_REGS.
+	* config/i386/i386.h (SSE_REGNO): Fix check for FIRST_REX_SSE_REG.
+	(GET_SSE_REGNO): Rename from SSE_REGNO.  Update all uses for rename.
+
+2018-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (CC_REGNO): Remove FPSR_REG.
 	* config/i386/i386.c (ix86_fixed_condition_code_regs): Use
 	INVALID_REGNUM instead of FPSR_REG.
 	(ix86_md_asm_adjust): Do not clobber FPSR_REG.
