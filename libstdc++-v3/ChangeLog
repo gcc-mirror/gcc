@@ -1,3 +1,10 @@
+2018-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/functions.h
+	(__foreign_iterator_aux3(const _Safe_iterator<>&, const _InputeIter&,
+	const _InputIter&, __true_type)): Use empty() rather than begin() ==
+	end().
+
 2018-09-25  Mike Crowe  <mac@mcrowe.com>
 
 	* include/std/condition_variable (condition_variable::wait_for): Use
