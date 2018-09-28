@@ -1,5 +1,10 @@
 2018-09-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* opt-suggestions.c (option_proposer::build_option_suggestions):
+	Release	"option_values".
+
+2018-09-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* coverage.c (get_coverage_counts): Convert problem-reporting dump
 	messages from MSG_OPTIMIZED_LOCATIONS to MSG_MISSED_OPTIMIZATION.
 	* dumpfile.c (kind_as_string): New function.
