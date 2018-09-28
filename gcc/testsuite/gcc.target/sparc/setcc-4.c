@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target lp64 } */
-/* { dg-options "-O1 -mno-vis3" } */
+/* { dg-options "-O1 -mno-vis3 -mno-vis4" } */
 
 long neq (long a, long b)
 {

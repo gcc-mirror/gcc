@@ -1,3 +1,33 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc-protos.h (sparc_branch_cost): Declare.
+	* config/sparc/sparc.h (BRANCH_COST): Call sparc_branch_cost.
+	* config/sparc/sparc.c (struct processor_costs): Add branch_cost field.
+	(cypress_costs): Set it.
+	(supersparc_costs): Likewise.
+	(hypersparc_costs): Likewise.
+	(leon_cost): Likewise.
+	(leon3_costs): Likewise.
+	(sparclet_costs): Likewise.
+	(ultrasparc_costs): Likewise.
+	(ultrasparc_costs): Likewise.
+	(niagara_costs): Likewise.
+	(niagara2_costs): Likewise.
+	(niagara3_costs): Likewise.
+	(niagara4_costs): Likewise.
+	(niagara7_costs): Likewise.
+	(m8_costs): Likewise.
+	(TARGET_CAN_FOLLOW_JUMP): Define.
+	(pass_work_around_errata::gate): Minor tweak.
+	(sparc_option_override): Remove MASK_FSMULD mask for V7 processors.
+	Do not set both MASK_VIS4 and MASK_VIS4B for M8 processor.
+	Automaitcally clear MASK_FSMULD mask for V7 processors.
+	(sparc_can_follow_jump): New static function.
+	(output_ubranch): Deal with CROSSING_JUMP_P.
+	(sparc_use_sched_lookahead): Rewrite using switch statement.
+	(sparc_issue_rate): Reorder.
+	(sparc_branch_cost): New function.
+
 2018-09-27  Martin Sebor  <msebor@redhat.com>
 
 	* tree.h (tree_to_shwi): Add attribute nonnull and pure.
