@@ -1,3 +1,14 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20160229-1.c: Minor tweak.
+	* gcc.target/sparc/cbcond-2.c: Likewise.
+	* gcc.target/sparc/movcc-1.c: Add -mcpu=v9 option.
+	* gcc.target/sparc/movcc-2.c: Minor tweak.
+	* gcc.target/sparc/overflow-3.c: Likewise.
+	* gcc.target/sparc/overflow-4.c: Add -mno-vis4 option.
+	* gcc.target/sparc/overflow-5.c: Minor tweak.
+	* gcc.target/sparc/setcc-4.c: Add -mno-vis4 option.
+
 2018-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* g++.dg/ext/altivec-6.C: Change the vec_splat second argument to a
