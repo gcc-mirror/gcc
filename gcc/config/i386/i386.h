@@ -1501,7 +1501,7 @@ enum reg_class
 #define MMX_REGNO_P(N) IN_RANGE ((N), FIRST_MMX_REG, LAST_MMX_REG)
 
 #define CC_REG_P(X) (REG_P (X) && CC_REGNO_P (REGNO (X)))
-#define CC_REGNO_P(X) ((X) == FLAGS_REG || (X) == FPSR_REG)
+#define CC_REGNO_P(X) ((X) == FLAGS_REG)
 
 #define MOD4_SSE_REG_P(X) (REG_P (X) && MOD4_SSE_REGNO_P (REGNO (X)))
 #define MOD4_SSE_REGNO_P(N) ((N) == XMM0_REG  \
