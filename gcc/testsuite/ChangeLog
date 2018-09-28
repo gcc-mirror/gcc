@@ -1,3 +1,8 @@
+2018-09-28  Steve Ellcey  <sellcey@cavium.com>
+
+	PR testsuite/87433
+	* gcc.dg/zero_bits_compound-1.c: Do not run on aarch64*-*-*.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.target/sparc/20160229-1.c: Minor tweak.
