@@ -3558,8 +3558,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* Disable this optimization if we're casting a function pointer
 	  type on targets that require function pointer canonicalization.  */
        && !(targetm.have_canonicalize_funcptr_for_compare ()
-	    && POINTER_TYPE_P (TREE_TYPE (@00))
-	    && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@00))))
+	    && ((POINTER_TYPE_P (TREE_TYPE (@00))
+		 && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@00))))
+		|| (POINTER_TYPE_P (TREE_TYPE (@10))
+		    && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@10))))))
        && single_use (@0))
    (if (TYPE_PRECISION (TREE_TYPE (@00)) == TYPE_PRECISION (TREE_TYPE (@0))
 	&& (TREE_CODE (@10) == INTEGER_CST
