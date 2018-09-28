@@ -1,3 +1,33 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* calls.c (expand_call): Try to do a tail call for thunks at -O0 too.
+	* cgraph.h (struct cgraph_thunk_info): Add indirect_offset.
+	(cgraph_node::create_thunk): Add indirect_offset parameter.
+	(thunk_adjust): Likewise.
+	* cgraph.c (cgraph_node::create_thunk): Add indirect_offset parameter
+	and initialize the corresponding field with it.
+	(cgraph_node::dump): Dump indirect_offset field.
+	* cgraphclones.c (duplicate_thunk_for_node): Deal with indirect_offset.
+	* cgraphunit.c (cgraph_node::analyze): Be prepared for external thunks.
+	(thunk_adjust): Add indirect_offset parameter and deal with it.
+	(cgraph_node::expand_thunk): Deal with the indirect_offset field and
+	pass it to thunk_adjust.  Do not call the target hook if it's non-zero
+	or if the thunk is external or local.  Fix formatting.  Do not chain
+	the RESULT_DECL to BLOCK_VARS.  Pass the static chain to the target,
+	if any, in the GIMPLE representation.
+	* ipa-icf.c (sem_function::equals_wpa): Deal with indirect_offset.
+	* lto-cgraph.c (lto_output_node): Write indirect_offset field.
+	(input_node): Read indirect_offset field.
+	* tree-inline.c (expand_call_inline): Pass indirect_offset field in the
+	call to thunk_adjust.
+	* tree-nested.c (struct nesting_info): Add thunk_p field.
+	(create_nesting_tree): Set it.
+	(convert_all_function_calls): Copy static chain from targets to thunks.
+	(finalize_nesting_tree_1): Return early for thunks.
+	(unnest_nesting_tree_1): Do not finalize thunks.
+	(gimplify_all_functions): Do not gimplify thunks.
+
 2018-09-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* opt-suggestions.c (option_proposer::build_option_suggestions):

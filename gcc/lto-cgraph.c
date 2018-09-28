@@ -556,6 +556,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
 	  + (node->thunk.add_pointer_bounds_args != 0) * 8);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.fixed_offset);
       streamer_write_uhwi_stream (ob->main_stream, node->thunk.virtual_value);
+      streamer_write_uhwi_stream (ob->main_stream, node->thunk.indirect_offset);
     }
   streamer_write_hwi_stream (ob->main_stream, node->profile_id);
   if (DECL_STATIC_CONSTRUCTOR (node->decl))
@@ -1271,10 +1272,12 @@ input_node (struct lto_file_decl_data *file_data,
       int type = streamer_read_uhwi (ib);
       HOST_WIDE_INT fixed_offset = streamer_read_uhwi (ib);
       HOST_WIDE_INT virtual_value = streamer_read_uhwi (ib);
+      HOST_WIDE_INT indirect_offset = streamer_read_uhwi (ib);
 
       node->thunk.fixed_offset = fixed_offset;
-      node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_value = virtual_value;
+      node->thunk.indirect_offset = indirect_offset;
+      node->thunk.this_adjusting = (type & 2);
       node->thunk.virtual_offset_p = (type & 4);
       node->thunk.add_pointer_bounds_args = (type & 8);
     }

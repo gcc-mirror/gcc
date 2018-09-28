@@ -375,7 +375,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   gcc_checking_assert (funcn);
   thunk_node = funcn->create_thunk (thunk_fndecl, function,
 				    this_adjusting, fixed_offset, virtual_value,
-				    virtual_offset, alias);
+				    0, virtual_offset, alias);
   if (DECL_ONE_ONLY (function))
     thunk_node->add_to_same_comdat_group (funcn);
 

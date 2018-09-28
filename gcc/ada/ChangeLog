@@ -1,3 +1,19 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (is_cplusplus_method): Do not require C++
+	convention on Interfaces.
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Try to create a
+	bona-fide thunk and hand it over to the middle-end.
+	(get_controlling_type): New function.
+	(use_alias_for_thunk_p): Likewise.
+	(thunk_labelno): New static variable.
+	(make_covariant_thunk): New function.
+	(maybe_make_gnu_thunk): Likewise.
+	* gcc-interface/utils.c (finish_subprog_decl): Set DECL_CONTEXT of the
+	result DECL here instead of...
+	(end_subprog_body): ...here.
+
 2018-09-27  Martin Sebor  <msebor@redhat.com>
 
 	* gcc-interface/utils.c (make_packable_type): Introduce a temporary

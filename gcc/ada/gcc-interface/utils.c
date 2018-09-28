@@ -3294,6 +3294,7 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
 
   DECL_ARTIFICIAL (result_decl) = 1;
   DECL_IGNORED_P (result_decl) = 1;
+  DECL_CONTEXT (result_decl) = decl;
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
 
@@ -3368,9 +3369,6 @@ end_subprog_body (tree body)
   BLOCK_SUPERCONTEXT (current_binding_level->block) = fndecl;
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
-
-  /* Mark the RESULT_DECL as being in this subprogram. */
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
 
   /* The body should be a BIND_EXPR whose BLOCK is the top-level one.  */
   if (TREE_CODE (body) == BIND_EXPR)
