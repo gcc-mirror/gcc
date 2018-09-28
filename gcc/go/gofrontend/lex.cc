@@ -2764,7 +2764,7 @@ Lex::is_unicode_uppercase(unsigned int c)
 // mangled name which includes only ASCII characters.
 
 bool
-Lex::is_exported_name(const std::string& name)
+Lex::is_exported_mangled_name(const std::string& name)
 {
   unsigned char c = name[0];
   if (c != '.')
@@ -2789,6 +2789,18 @@ Lex::is_exported_name(const std::string& name)
 	}
       return Lex::is_unicode_uppercase(ci);
     }
+}
+
+// Return whether the identifier NAME should be exported.  NAME is a
+// an unmangled utf-8 string and may contain non-ASCII characters.
+
+bool
+Lex::is_exported_name(const std::string& name)
+{
+  unsigned int uchar;
+  if (Lex::fetch_char(name.c_str(), &uchar) != 0)
+    return Lex::is_unicode_letter(uchar) && Lex::is_unicode_uppercase(uchar);
+  return false;
 }
 
 // Return whether the identifier NAME contains an invalid character.
