@@ -216,14 +216,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define TARGET_MFCRF 0
 #endif
 
-/* Define TARGET_LWSYNC_INSTRUCTION if the assembler knows about lwsync.  If
-   not, generate the lwsync code as an integer constant.  */
-#ifdef HAVE_AS_LWSYNC
-#define TARGET_LWSYNC_INSTRUCTION 1
-#else
-#define TARGET_LWSYNC_INSTRUCTION 0
-#endif
-
 /* Define TARGET_TLS_MARKERS if the target assembler does not support
    arg markers for __tls_get_addr calls.  */
 #ifndef HAVE_AS_TLS_MARKERS

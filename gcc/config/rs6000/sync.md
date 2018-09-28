@@ -91,13 +91,10 @@
 	(unspec:BLK [(match_dup 0)] UNSPEC_LWSYNC))]
   ""
 {
-  /* Some AIX assemblers don't accept lwsync, so we use a .long.  */
   if (TARGET_NO_LWSYNC)
     return "sync";
-  else if (TARGET_LWSYNC_INSTRUCTION)
-    return "lwsync";
   else
-    return ".long 0x7c2004ac";
+    return "lwsync";
 }
   [(set_attr "type" "sync")])
 

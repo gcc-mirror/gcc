@@ -528,12 +528,6 @@
 #endif
 
 
-/* Define if your assembler supports LWSYNC instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_LWSYNC
-#endif
-
-
 /* Define if your assembler supports the -mabi option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MABI_OPTION
