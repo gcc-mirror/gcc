@@ -1,3 +1,12 @@
+2018-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (CC_REGNO): Remove FPSR_REGS.
+	* config/i386/i386.c (ix86_fixed_condition_code_regs): Use
+	INVALID_REGNUM instead of FPSR_REG.
+	(ix86_md_asm_adjust): Do not clobber FPSR_REG.
+	* config/i386/i386.md: Update comment of FP compares.
+	(fldenv): Do not clobber FPSR_REG.
+
 2018-09-28  Richard Biener  <rguenther@suse.de>
 
 	* tree.h (BLOCK_ORIGIN): New.
