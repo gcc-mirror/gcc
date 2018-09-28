@@ -1,3 +1,9 @@
+2018-09-26  Steve Ellcey  <sellcey@cavium.com>
+
+	PR testsuite/87433
+	* gcc.target/aarch64/ashltidisi.c: Expect 3 asr instructions
+	instead of 4.
+
 2018-09-28  Steve Ellcey  <sellcey@cavium.com>
 
 	PR testsuite/87433
