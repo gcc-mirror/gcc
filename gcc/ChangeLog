@@ -1,3 +1,13 @@
+2018-09-28  Andrew Stubbs  <ams@codesourcery.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* simplify-rtx.c (simplify_merge_mask): New function.
+	(simplify_ternary_operation): Use it, also see if VEC_MERGEs with the
+	same masks are used in op1 or op2.
+	(test_vec_merge): New function.
+	(test_vector_ops): Call test_vec_merge.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc-protos.h (sparc_branch_cost): Declare.
