@@ -1,5 +1,16 @@
 2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config/rs6000/driver-rs6000.c (asm_names): Adjust the entries for
+	power5 .. power9 to remove indirection.
+	* config/rs6000/rs6000.h (ASM_CPU_POWER5_SPEC, ASM_CPU_POWER6_SPEC,
+	ASM_CPU_POWER7_SPEC, ASM_CPU_POWER8_SPEC, ASM_CPU_POWER9_SPEC,
+	ASM_CPU_476_SPEC): Delete.
+	(ASM_CPU_SPEC): Adjust.
+	(EXTRA_SPECS): Delete asm_cpu_power5, asm_cpu_power6, asm_cpu_power7,
+	asm_cpu_power8, asm_cpu_power9, asm_cpu_476.
+
+2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config.in: Delete HAVE_AS_DCI.
 	* config/powerpcspe/powerpcspe.h: Treat HAVE_AS_DCI as always true.
 	* config/rs6000/rs6000.h: Ditto.

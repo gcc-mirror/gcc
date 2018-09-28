@@ -72,14 +72,6 @@
 #define PPC405_ERRATUM77 0
 #endif
 
-#define ASM_CPU_POWER5_SPEC "-mpower5"
-#define ASM_CPU_POWER6_SPEC "-mpower6 -maltivec"
-#define ASM_CPU_POWER7_SPEC "-mpower7"
-#define ASM_CPU_POWER8_SPEC "-mpower8"
-#define ASM_CPU_POWER9_SPEC "-mpower9"
-
-#define ASM_CPU_476_SPEC "-m476"
-
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to
    provide the default assembler options if the user uses -mcpu=native, so if
@@ -93,16 +85,16 @@
 %{mcpu=cell: -mcell} \
 %{mcpu=power3: -mppc64} \
 %{mcpu=power4: -mpower4} \
-%{mcpu=power5: %(asm_cpu_power5)} \
-%{mcpu=power5+: %(asm_cpu_power5)} \
-%{mcpu=power6: %(asm_cpu_power6) -maltivec} \
-%{mcpu=power6x: %(asm_cpu_power6) -maltivec} \
-%{mcpu=power7: %(asm_cpu_power7)} \
-%{mcpu=power8: %{!mpower9-vector: %(asm_cpu_power8)}} \
-%{mcpu=power9: %(asm_cpu_power9)} \
+%{mcpu=power5: -mpower5} \
+%{mcpu=power5+: -mpower5} \
+%{mcpu=power6: -mpower6 -maltivec} \
+%{mcpu=power6x: -mpower6 -maltivec} \
+%{mcpu=power7: -mpower7} \
+%{mcpu=power8: %{!mpower9-vector: -mpower8}} \
+%{mcpu=power9: -mpower9} \
 %{mcpu=a2: -ma2} \
 %{mcpu=powerpc: -mppc} \
-%{mcpu=powerpc64le: %(asm_cpu_power8)} \
+%{mcpu=powerpc64le: -mpower8} \
 %{mcpu=rs64a: -mppc64} \
 %{mcpu=401: -mppc} \
 %{mcpu=403: -m403} \
@@ -112,8 +104,8 @@
 %{mcpu=440fp: -m440} \
 %{mcpu=464: -m440} \
 %{mcpu=464fp: -m440} \
-%{mcpu=476: %(asm_cpu_476)} \
-%{mcpu=476fp: %(asm_cpu_476)} \
+%{mcpu=476: -m476} \
+%{mcpu=476fp: -m476} \
 %{mcpu=505: -mppc} \
 %{mcpu=601: -m601} \
 %{mcpu=602: -mppc} \
@@ -145,9 +137,9 @@
 %{mcpu=e5500: -me5500} \
 %{mcpu=e6500: -me6500} \
 %{maltivec: -maltivec} \
-%{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: %(asm_cpu_power7)}} \
-%{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: %(asm_cpu_power8)}} \
-%{mpower9-vector: %{!mcpu*|mcpu=power8: %(asm_cpu_power9)}} \
+%{mvsx: -mvsx %{!maltivec: -maltivec} %{!mcpu*: -mpower7}} \
+%{mpower8-vector|mcrypto|mdirect-move|mhtm: %{!mcpu*: -mpower8}} \
+%{mpower9-vector: %{!mcpu*|mcpu=power8: -mpower9}} \
 -many"
 
 #define CPP_DEFAULT_SPEC ""
@@ -172,12 +164,6 @@
   { "asm_cpu_native",		ASM_CPU_NATIVE_SPEC },			\
   { "asm_default",		ASM_DEFAULT_SPEC },			\
   { "cc1_cpu",			CC1_CPU_SPEC },				\
-  { "asm_cpu_power5",		ASM_CPU_POWER5_SPEC },			\
-  { "asm_cpu_power6",		ASM_CPU_POWER6_SPEC },			\
-  { "asm_cpu_power7",		ASM_CPU_POWER7_SPEC },			\
-  { "asm_cpu_power8",		ASM_CPU_POWER8_SPEC },			\
-  { "asm_cpu_power9",		ASM_CPU_POWER9_SPEC },			\
-  { "asm_cpu_476",		ASM_CPU_476_SPEC },			\
   SUBTARGET_EXTRA_SPECS
 
 /* -mcpu=native handling only makes sense with compiler running on
