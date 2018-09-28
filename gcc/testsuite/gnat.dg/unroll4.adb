@@ -23,4 +23,4 @@ package body Unroll4 is
 
 end Unroll4;
 
--- { dg-final { scan-rtl-dump-times "note: loop unrolled 7 times" 2 "loop2_unroll" } }
+-- { dg-final { scan-rtl-dump-times "optimized: loop unrolled 7 times" 2 "loop2_unroll" } }

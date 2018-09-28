@@ -1,3 +1,34 @@
+2018-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/unroll-1.c: Update expected output from "note" to
+	"optimized".
+	* c-c++-common/unroll-2.c: Likewise.
+	* c-c++-common/unroll-3.c: Likewise.
+	* g++.dg/tree-ssa/dom-invalid.C: Update expected output from
+	dg-message to dg-missed.  Convert param from -fopt-info to
+	-fopt-info-missed-ipa.
+	* g++.dg/tree-ssa/pr81408.C: Update expected output from
+	dg-message to dg-missed.
+	* g++.dg/vect/slp-pr56812.cc: Update expected output from
+	dg-message to dg-optimized.
+	* gcc.dg/pr26570.c: Update expected output from dg-message to
+	dg-missed.  Convert param from -fopt-info to
+	-fopt-info-missed-ipa.
+	* gcc.dg/pr32773.c: Likewise.
+	* gcc.dg/tree-ssa/pr19210-1.c: Update expected output from
+	dg-message to dg-missed.
+	* gcc.dg/unroll-2.c: Update expected output from dg-message to
+	dg-optimized.
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: Likewise.  Convert param
+	from -fopt-info to -fopt-info-vec.
+	* gfortran.dg/directive_unroll_1.f90: Update expected output from
+	"note" to "optimized".
+	* gfortran.dg/directive_unroll_2.f90: Likewise.
+	* gfortran.dg/directive_unroll_3.f90: Likewise.
+	* gnat.dg/unroll4.adb: Likewise.
+	* lib/gcc-dg.exp (dg-optimized): New procedure.
+	(dg-missed): New procedure.
+
 2018-09-28  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/87390

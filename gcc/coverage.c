@@ -313,7 +313,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	    {
 	      dump_user_location_t loc
 		= dump_user_location_t::from_location_t (input_location);
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
 			       "file %s not found, %s\n", da_file_name,
 			       (flag_guess_branch_prob
 				? "execution counts estimated"
@@ -359,7 +359,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	{
 	  dump_user_location_t loc
 	    = dump_user_location_t::from_location_t (input_location);
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -367,14 +367,14 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                                "coverage mismatch ignored\n");
-	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
+	      dump_printf (MSG_MISSED_OPTIMIZATION,
                            flag_guess_branch_prob
                            ? G_("execution counts estimated\n")
                            : G_("execution counts assumed to be zero\n"));
 	      if (!flag_guess_branch_prob)
-		dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		dump_printf (MSG_MISSED_OPTIMIZATION,
                              "this can result in poorly optimized code\n");
 	    }
 	}
