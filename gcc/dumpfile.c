@@ -437,6 +437,27 @@ dump_user_location_t::from_function_decl (tree fndecl)
 			       DECL_SOURCE_LOCATION (fndecl));
 }
 
+/* Extract the MSG_* component from DUMP_KIND and return a string for use
+   as a prefix to dump messages.
+   These match the strings in optinfo_verbosity_options and thus the
+   "OPTIONS" within "-fopt-info-OPTIONS".  */
+
+static const char *
+kind_as_string (dump_flags_t dump_kind)
+{
+  switch (dump_kind & MSG_ALL)
+    {
+    default:
+      gcc_unreachable ();
+    case MSG_OPTIMIZED_LOCATIONS:
+      return "optimized";
+    case MSG_MISSED_OPTIMIZATION:
+      return "missed";
+    case MSG_NOTE:
+      return "note";
+    }
+}
+
 /* Print source location on DFILE if enabled.  */
 
 static void
@@ -445,13 +466,14 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-        fprintf (dfile, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+        fprintf (dfile, "%s:%d:%d: ", LOCATION_FILE (loc),
                  LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-        fprintf (dfile, "%s:%d:%d: note: ",
+        fprintf (dfile, "%s:%d:%d: ",
                  DECL_SOURCE_FILE (current_function_decl),
                  DECL_SOURCE_LINE (current_function_decl),
                  DECL_SOURCE_COLUMN (current_function_decl));
+      fprintf (dfile, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       fprintf (dfile, "%*s", get_dump_scope_depth (), "");
     }
@@ -465,13 +487,14 @@ dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-	pp_printf (pp, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+	pp_printf (pp, "%s:%d:%d: ", LOCATION_FILE (loc),
 		   LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-	pp_printf (pp, "%s:%d:%d: note: ",
+	pp_printf (pp, "%s:%d:%d: ",
 		   DECL_SOURCE_FILE (current_function_decl),
 		   DECL_SOURCE_LINE (current_function_decl),
 		   DECL_SOURCE_COLUMN (current_function_decl));
+      pp_printf (pp, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       for (unsigned i = 0; i < get_dump_scope_depth (); i++)
 	pp_character (pp, ' ');
@@ -2325,7 +2348,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
     }
     dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
 
-    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note:    msg 4\n");
+    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: optimized:    msg 4\n");
   }
 }
 

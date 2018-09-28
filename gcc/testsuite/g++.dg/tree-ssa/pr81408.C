@@ -86,7 +86,7 @@ a::H t;
 void
 ShowHelpListCommands ()
 {
-  for (auto c : t) /* { dg-message "note: missed loop optimization: niters analysis .*" } */
+  for (auto c : t) /* { dg-missed "missed loop optimization: niters analysis .*" } */
     a::ax << c.ay << a::av;
 }
 

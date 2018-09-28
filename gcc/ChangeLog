@@ -1,3 +1,12 @@
+2018-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* coverage.c (get_coverage_counts): Convert problem-reporting dump
+	messages from MSG_OPTIMIZED_LOCATIONS to MSG_MISSED_OPTIMIZATION.
+	* dumpfile.c (kind_as_string): New function.
+	(dump_loc): Rather than a hardcoded prefix of "note: ", use
+	kind_as_string to vary the prefix based on dump_kind.
+	(selftest::test_capture_of_dump_calls): Update for above.
+
 2018-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (SSE_REGNO): Fix check for FIRST_REX_SSE_REG.
