@@ -78,11 +78,7 @@
 #define ASM_CPU_POWER8_SPEC "-mpower8"
 #define ASM_CPU_POWER9_SPEC "-mpower9"
 
-#ifdef HAVE_AS_DCI
 #define ASM_CPU_476_SPEC "-m476"
-#else
-#define ASM_CPU_476_SPEC "-mpower4"
-#endif
 
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-rs6000.c to

@@ -1,5 +1,13 @@
 2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
+	* config.in: Delete HAVE_AS_DCI.
+	* config/powerpcspe/powerpcspe.h: Treat HAVE_AS_DCI as always true.
+	* config/rs6000/rs6000.h: Ditto.
+	* configure.ac: Delete HAVE_AS_DCI.
+	* configure: Regenerate.
+
+2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
 	* config.in (HAVE_AS_LWSYNC): Delete.
 	* config/powerpcspe/powerpcspe.h (TARGET_LWSYNC_INSTRUCTION): Delete.
 	* config/powerpcspe/sync.md (*lwsync): Always generate lwsync, never
