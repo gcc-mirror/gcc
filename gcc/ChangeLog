@@ -1,3 +1,8 @@
+2018-09-28  John David Anglin  <danglin@gcc.gnu.org>
+
+	* match.pd (simple_comparison): Don't optimize if either operand is
+	a function pointer when target needs function pointer canonicalization.
+
 2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/driver-rs6000.c (asm_names): Adjust the entries for
