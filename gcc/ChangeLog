@@ -1,3 +1,13 @@
+2018-09-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	Backport from mainline
+	2018-08-20  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/87033
+	* config/rs6000/rs6000.md (extendsi<mode>2): Change constraints
+	from 'Y' to 'YZ' to enable the LWAX instruction to be generated
+	for indexed loads.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/rs6000/rs6000.c (rs6000_function_ok_for_sibcall): Return false
