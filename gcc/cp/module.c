@@ -10122,9 +10122,12 @@ public:
 private:
   typedef vec<slot, va_heap, vl_embed> ary_t;
   union either {
-    /* discriminated by bit 0 */
+    /* Discriminated by bit 0.  The expected case is that there will
+       be exactly one slot per macro, hence the effort of packing
+       that.  */
     ary_t *ary;
-    /* We have to type-erase this, because of the constructor.  */
+    /* This is a slot, but we have to type-erase it, because of its
+       constructor.  */
     unsigned single[2];
   } u;
 
@@ -10432,6 +10435,10 @@ module_state::read_defines (cpp_reader *, unsigned count)
 			 HT_IDENT_TO_GCC_IDENT (node),
 			 slot.offset);
 
+	/* We'll leak an imported definition's TOKEN_FLD_STR's data
+	   here.  But that only happens when we've had to resolve the
+	   deferred macro before this import -- why are you doing
+	   that?  */
 	if (cpp_macro *cur = cpp_set_deferred_macro (node))
 	  if (!cur->imported)
 	    {
@@ -10481,7 +10488,15 @@ module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
 }
 
 /* NODE is a deferred macro node.  Determine the defintion and return
-   it, with NULL if undefined.  May issue diagnostics.  */
+   it, with NULL if undefined.  May issue diagnostics.
+
+   This can leak memory, when merging declarations -- the string
+   contents (TOKEN_FLD_STR) of each definition are allocated in
+   unreclaimable cpp objstack.  Only one will win.  However, I do not
+   expect this to be common -- mostly macros have a single point of
+   definition.  Perhaps we could restore the objstack to its position
+   after the first imported definition (if that wins)?  The macros
+   themselves are GC'd.  */
 
 cpp_macro *
 module_state::deferred_macro (cpp_reader *reader, location_t loc,
@@ -10493,17 +10508,21 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   dump () && dump ("Deferred macro %I", HT_IDENT_TO_GCC_IDENT (node));
   dump.indent ();
 
-  bitmap hidden (BITMAP_GGC_ALLOC ());
+  bitmap visible (BITMAP_GGC_ALLOC ());
+  if (!(imports[0].has_undef && !imports[0].mod))
+    bitmap_copy (visible, legacies);
+  bitmap_set_bit (visible, 0);
 
   /* Calculate the set of not-visible legacy imports.  */
   for (unsigned ix = imports.length (); ix--;)
     {
       const macro_import::slot &slot = imports[ix];
-      if (slot.has_undef && !bitmap_bit_p (hidden, slot.mod))
+      if (slot.has_undef && slot.mod && bitmap_bit_p (visible, slot.mod))
 	{
-	  bitmap_ior_into (hidden, slot.mod
-			   ? (*modules)[slot.mod]->slurp->legacies : legacies);
-	  bitmap_clear_bit (hidden, slot.mod);
+	  bitmap_and_compl_into (visible, slot.mod
+				 ? (*modules)[slot.mod]->slurp->legacies
+				 : legacies);
+	  bitmap_set_bit (visible, slot.mod);
 	}
     }
 
@@ -10514,7 +10533,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   for (unsigned ix = imports.length (); ix--;)
     {
       const macro_import::slot &slot = imports[ix];
-      if (!bitmap_bit_p (hidden, slot.mod))
+      if (bitmap_bit_p (visible, slot.mod))
 	{
 	  macro_export *pushed = NULL;
 	  if (slot.mod)
@@ -11961,6 +11980,7 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
       && !(node->flags & NODE_USED)
       && !node->value.macro)
     {
+      /* It would be nice to have a location for input file.  */
       cpp_macro *macro = cpp_get_deferred_macro (reader, node, input_location);
       dump () && dump ("Loaded macro #%s %I",
 		       macro ? "define" : "undef",
