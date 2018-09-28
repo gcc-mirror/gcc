@@ -1,3 +1,15 @@
+2018-09-28  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config.in (HAVE_AS_LWSYNC): Delete.
+	* config/powerpcspe/powerpcspe.h (TARGET_LWSYNC_INSTRUCTION): Delete.
+	* config/powerpcspe/sync.md (*lwsync): Always generate lwsync, never
+	do it as a .long .
+	* config/rs6000/rs6000.h (TARGET_LWSYNC_INSTRUCTION): Delete.
+	* config/rs6000/sync.md (*lwsync): Always generate lwsync, never do it
+	as a .long .
+	* configure.ac: Delete HAVE_AS_LWSYNC.
+	* configure: Regenerate.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 
