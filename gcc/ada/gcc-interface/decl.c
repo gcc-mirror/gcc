@@ -4851,15 +4851,15 @@ is_cplusplus_method (Entity_Id gnat_entity)
   if (Convention (gnat_entity) != Convention_CPP)
     return false;
 
-  /* And that the type of the first parameter (indirectly) has it too.  */
+  /* And that the type of the first parameter (indirectly) has it too, but
+     we make an exception for Interfaces because they need not be imported.  */
   Entity_Id gnat_first = First_Formal (gnat_entity);
   if (No (gnat_first))
     return false;
-
   Entity_Id gnat_type = Etype (gnat_first);
   if (Is_Access_Type (gnat_type))
     gnat_type = Directly_Designated_Type (gnat_type);
-  if (Convention (gnat_type) != Convention_CPP)
+  if (Convention (gnat_type) != Convention_CPP && !Is_Interface (gnat_type))
     return false;
 
   /* This is the main case: a C++ virtual method imported as a primitive

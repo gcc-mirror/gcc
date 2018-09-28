@@ -4473,7 +4473,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 			 GSI_NEW_STMT);
       gcc_assert (id->src_node->thunk.this_adjusting);
       op = thunk_adjust (&iter, op, 1, id->src_node->thunk.fixed_offset,
-			 virtual_offset);
+			 virtual_offset, id->src_node->thunk.indirect_offset);
 
       gimple_call_set_arg (stmt, 0, op);
       gimple_call_set_fndecl (stmt, edge->callee->decl);

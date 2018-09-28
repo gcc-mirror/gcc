@@ -1,3 +1,8 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* method.c (use_thunk): Adjust call to cgraph_node::create_thunk.
+
 2018-09-28  Richard Biener  <rguenther@suse.de>
 
 	* error.c (cp_print_error_function): Simplify by eliding
