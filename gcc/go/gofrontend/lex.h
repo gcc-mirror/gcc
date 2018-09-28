@@ -408,6 +408,11 @@ class Lex
   // Return whether the identifier NAME should be exported.  NAME is a
   // mangled name which includes only ASCII characters.
   static bool
+  is_exported_mangled_name(const std::string& name);
+
+  // Return whether the identifier NAME should be exported.  NAME is
+  // an unmangled utf-8 string and may contain non-ASCII characters.
+  static bool
   is_exported_name(const std::string& name);
 
   // Return whether the identifier NAME is invalid.  When we see an
