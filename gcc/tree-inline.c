@@ -704,7 +704,7 @@ remap_block (tree *block, copy_body_data *id)
   old_block = *block;
   new_block = make_node (BLOCK);
   TREE_USED (new_block) = TREE_USED (old_block);
-  BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
+  BLOCK_ABSTRACT_ORIGIN (new_block) = BLOCK_ORIGIN (old_block);
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
   BLOCK_NONLOCALIZED_VARS (new_block)
     = vec_safe_copy (BLOCK_NONLOCALIZED_VARS (old_block));

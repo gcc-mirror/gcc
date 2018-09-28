@@ -561,12 +561,7 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
 	  will not be emitted properly.  */
        if (inlined_function_outer_scope_p (scope))
 	 {
-	   tree ao = scope;
-
-	   while (ao
-		  && TREE_CODE (ao) == BLOCK
-		  && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	     ao = BLOCK_ABSTRACT_ORIGIN (ao);
+	   tree ao = BLOCK_ORIGIN (scope);
 	   if (ao
 	       && TREE_CODE (ao) == FUNCTION_DECL
 	       && DECL_DECLARED_INLINE_P (ao)

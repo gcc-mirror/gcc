@@ -11964,12 +11964,6 @@ block_nonartificial_location (tree block)
 	 && BLOCK_ABSTRACT_ORIGIN (block))
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-      while (TREE_CODE (ao) == BLOCK
-	     && BLOCK_ABSTRACT_ORIGIN (ao)
-	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
       if (TREE_CODE (ao) == FUNCTION_DECL)
 	{
 	  /* If AO is an artificial inline, point RET to the
@@ -12150,16 +12144,7 @@ block_ultimate_origin (const_tree block)
     return NULL_TREE;
   else
     {
-      tree ret_val;
-      tree lookahead = immediate_origin;
-
-      do
-	{
-	  ret_val = lookahead;
-	  lookahead = (TREE_CODE (ret_val) == BLOCK
-		       ? BLOCK_ABSTRACT_ORIGIN (ret_val) : NULL);
-	}
-      while (lookahead != NULL && lookahead != ret_val);
+      tree ret_val = immediate_origin;
 
       /* The block's abstract origin chain may not be the *ultimate* origin of
 	 the block. It could lead to a DECL that has an abstract origin set.
