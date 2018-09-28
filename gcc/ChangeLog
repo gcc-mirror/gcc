@@ -1,3 +1,20 @@
+2018-09-28  Richard Biener  <rguenther@suse.de>
+
+	* tree.h (BLOCK_ORIGIN): New.
+	* omp-expand.c (grid_expand_target_grid_body): Assign
+	BLOCK_ORIGIN to BLOCK_ABSTRACT_ORIGIN.
+	* tree-inline.c (remap_block): Likewise.
+	* auto-profile.c (get_function_decl_from_block): Simplify
+	by eliding the BLOCK_ABSTRACT_ORIGIN chasing.
+	* langhooks.c (lhd_print_error_function): Likewise.
+	* optinfo-emit-json.cc (optrecord_json_writer::inlining_chain_to):
+	Likewise.
+	* tree-ssa-live.c (remove_unused_scope_block_p): Likewise.
+	* tree.c (block_nonartificial_location): Likewise.
+	(block_ultimate_origin): Likewise.
+	* tree-pretty-print.c (percent_K_format): Likewise.  Remove
+	no longer needed LTO case.
+
 2018-09-28  Andrew Stubbs  <ams@codesourcery.com>
 	    Jan Hubicka  <jh@suse.cz>
 	    Martin Jambor  <mjambor@suse.cz>

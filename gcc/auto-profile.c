@@ -354,17 +354,10 @@ get_combined_location (location_t loc, tree decl)
 static tree
 get_function_decl_from_block (tree block)
 {
-  tree decl;
-
-  if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (block)) == UNKNOWN_LOCATION)
+  if (!inlined_function_outer_scope_p (block))
     return NULL_TREE;
 
-  for (decl = BLOCK_ABSTRACT_ORIGIN (block);
-       decl && (TREE_CODE (decl) == BLOCK);
-       decl = BLOCK_ABSTRACT_ORIGIN (decl))
-    if (TREE_CODE (decl) == FUNCTION_DECL)
-      break;
-  return decl;
+  return BLOCK_ABSTRACT_ORIGIN (block);
 }
 
 /* Store inline stack for STMT in STACK.  */

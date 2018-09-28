@@ -1,3 +1,8 @@
+2018-09-28  Richard Biener  <rguenther@suse.de>
+
+	* error.c (cp_print_error_function): Simplify by eliding
+	the BLOCK_ABSTRACT_ORIGIN chasing.
+
 2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84940
