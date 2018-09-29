@@ -1,3 +1,8 @@
+2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87370
+	* gcc.target/i386/pr87370.c: New test.
+
 2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65667
