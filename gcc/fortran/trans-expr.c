@@ -10207,7 +10207,11 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	   || TREE_CODE (rse.string_length) == INDIRECT_REF))
     string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
   else if (expr2->ts.type == BT_CHARACTER)
-    string_length = rse.string_length;
+    {
+      if (expr1->ts.deferred && gfc_check_dependency (expr1, expr2, false))
+	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+      string_length = rse.string_length;
+    }
   else
     string_length = NULL_TREE;
 
