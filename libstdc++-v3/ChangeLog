@@ -1,3 +1,9 @@
+2018-09-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/gnu/fdl-1.3.xml: The Free Software Foundation web
+	site now uses https. Also omit the unnecessary trailing slash.
+	* doc/xml/gnu/gpl-3.0.xml: Ditto.
+
 2018-09-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/functions.h
