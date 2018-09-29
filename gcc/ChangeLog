@@ -1,3 +1,9 @@
+2018-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87467
+	* config/i386/avx512fintrin.h (_mm512_abs_pd, _mm512_mask_abs_pd): Use
+	__m512d type for __A argument rather than __m512.
+
 2018-09-28  John David Anglin  <danglin@gcc.gnu.org>
 
 	* match.pd (simple_comparison): Don't optimize if either operand is
