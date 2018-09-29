@@ -1,3 +1,9 @@
+2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87370
+	* config/i386/i386.c (construct_container): Use TImode for
+	BLKmode values in 2 integer registers.
+
 2018-09-29  Jeff Law  <law@redhat.com>
 
 	* builtins.c (unterminated_array): Pass in c_strlen_data * to
