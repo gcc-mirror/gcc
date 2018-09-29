@@ -1,3 +1,9 @@
+2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65667
+	* trans-expr.c (gfc_trans_assignment_1): If there is dependency
+	fix the rse stringlength.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	PR fortran/87394
