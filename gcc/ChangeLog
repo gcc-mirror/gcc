@@ -1,3 +1,19 @@
+2018-09-29  Jeff Law  <law@redhat.com>
+
+	* builtins.c (unterminated_array): Pass in c_strlen_data * to
+	c_strlen rather than just a tree *.
+	(c_strlen): Change NONSTR argument to a c_strlen_data pointer.
+	Update recursive calls appropriately.  If caller did not provide a
+	suitable data pointer, create a local one.  When a non-terminated
+	string is discovered, bubble up information about the string via the
+	c_strlen_data object.
+	* builtins.h (c_strlen): Update prototype.
+	(c_strlen_data): New structure.
+	* gimple-fold.c (get_range_strlen): Update calls to c_strlen.
+	For a type 2 call, if c_strlen indicates a non-terminated string
+	use the length of the non-terminated string.
+	(gimple_fold_builtin_stpcpy): Update calls to c_strlen.
+
 2018-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87467
@@ -302,8 +318,8 @@
 	* config/i386/i386.h (NUM_MODES_FOR_MODE_SWITCHING): Update
 	for removed I387_MASK_PM entity.
 
-2018-09-26  Jeff Law  <law@redhat.com>
 
+2018-09-26  Jeff Law  <law@redhat.com>
 	Revert
 	2018-09-26  Alexey Neyman  <stilor@att.net>
 
