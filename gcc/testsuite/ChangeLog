@@ -1,3 +1,11 @@
+2018-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87467
+	* gcc.target/i386/avx512f-abspd-1.c (SIZE): Divide by two.
+	(CALC): Use double instead of float.
+	(TEST): Adjust to test _mm512_abs_pd and _mm512_mask_abs_pd rather than
+	_mm512_abs_ps and _mm512_mask_abs_ps.
+
 2018-09-27  Michael Meissner  <meissner@linux.ibm.com>
 
 	Backport from mainline
