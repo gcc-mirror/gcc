@@ -1,5 +1,10 @@
 2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
+	* doc/xml/manual/messages.xml: Switch link to www.oracle.com
+	to https.
+
+2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
+	
 	* doc/xml/manual/policy_data_structures_biblio.xml: Update
 	link to Microsoft Component Model Object Technologies.
 
