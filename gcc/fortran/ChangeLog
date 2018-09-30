@@ -1,3 +1,10 @@
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* trans-decl.c (gfc_get_symbol_decl): A deferred character
+	length pointer that is initialized needs the string length to
+	be initialized as well.
+
 2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65667
