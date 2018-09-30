@@ -1,3 +1,34 @@
+2018-09-30  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	* ira-lives.c (make_hard_regno_born): Rename from this...
+	(make_hard_regno_live): ... to this.  Remove update to conflict
+	information.  Update function comment.
+	(make_hard_regno_dead): Add conflict information update.  Update
+	function comment.
+	(make_object_born): Rename from this...
+	(make_object_live): ... to this.  Remove update to conflict information.
+	Update function comment.
+	(make_object_dead):  Add conflict information update.  Update function
+	comment.
+	(mark_pseudo_regno_live): Call make_object_live.
+	(mark_pseudo_regno_subword_live): Likewise.
+	(mark_hard_reg_dead): Update function comment.
+	(mark_hard_reg_live): Call make_hard_regno_live.
+	(process_bb_node_lives): Likewise.
+	* lra-lives.c (make_hard_regno_born): Rename from this...
+	(make_hard_regno_live): ... to this.  Remove update to conflict
+	information.  Remove now uneeded check_pic_pseudo_p argument.
+	Update function comment.
+	(make_hard_regno_dead): Add check_pic_pseudo_p argument and add update
+	to conflict information.  Update function comment.
+	(mark_pseudo_live): Remove update to conflict information.  Update
+	function comment.
+	(mark_pseudo_dead): Add conflict information update.
+	(mark_regno_live): Call make_hard_regno_live.
+	(mark_regno_dead): Call make_hard_regno_dead with new arguement.
+	(process_bb_lives): Call make_hard_regno_live and make_hard_regno_dead.
+
 2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87370
