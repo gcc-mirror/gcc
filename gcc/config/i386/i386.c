@@ -18957,8 +18957,8 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
 
-  if (vzeroupper_operation (pat, VOIDmode)
-      || vzeroall_operation (pat, VOIDmode))
+  if (vzeroupper_pattern (pat, VOIDmode)
+      || vzeroall_pattern (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
   /* We know that state is clean after CALL insn if there are no

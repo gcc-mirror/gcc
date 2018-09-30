@@ -1,3 +1,17 @@
+2018-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/mmx.md (EMMS): New int iterator.
+	(emms): New int attribute.
+	(mmx_<emms>): Macroize insn from *mmx_emms and *mmx_femms using
+	EMMS int iterator.  Explicitly declare clobbers.
+	(mmx_emms): Remove expander.
+	(mmx_femms): Ditto.
+	* config/i386/predicates.md (emms_operation): Remove predicate.
+	(vzeroall_pattern): New predicate.
+	(vzeroupper_pattern): Rename from vzeroupper_operation.
+	* config/i386/i386.c (ix86_avx_u128_mode_after): Use
+	vzeroupper_pattern and vzeroall_pattern predicates.
+
 2018-09-30  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/86939
@@ -94,7 +108,7 @@
 	* configure: Regenerate.
 
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
-            Pierre-Marie de Rodat  <derodat@adacore.com>
+	    Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* calls.c (expand_call): Try to do a tail call for thunks at -O0 too.
 	* cgraph.h (struct cgraph_thunk_info): Add indirect_offset.
@@ -268,7 +282,7 @@
 	to subblocks.
 
 2018-09-27  Andrew Stubbs  <ams@codesourcery.com>
-            Tom de Vries  <tom@codesourcery.com>
+	    Tom de Vries  <tom@codesourcery.com>
 
 	PR 82089
 
@@ -428,7 +442,7 @@
 2018-09-25  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR c/87387
-        * builtins.c (unterminated_array): Simplify.
+	* builtins.c (unterminated_array): Simplify.
 	* expr.c (string_constant): Handle SSA_NAME.  Add more exceptions
 	where pointer arithmetic is safe.
 
@@ -629,7 +643,7 @@
 
 	* genattrtab.c (mk_attr_alt): Use alternative_mask.
 	(attr_rtx_1): Adjust caching to match the new EQ_ATTR_ALT field
-        types.
+	types.
 	(check_attr_test): Use alternative_mask.
 	(get_attr_value): Likewise.
 	(compute_alternative_mask): Use alternative_mask and XWINT.
@@ -639,11 +653,11 @@
 	(attr_alt_intersection): Use alternative_mask and XWINT.
 	(attr_alt_union): Likewise.
 	(attr_alt_complement): Use HOST_WIDE_INT and XWINT.
-        (mk_attr_alt): Use alternative_mask and HOST_WIDE_INT.
+	(mk_attr_alt): Use alternative_mask and HOST_WIDE_INT.
 	(simplify_test_exp): Use alternative_mask and XWINT.
 	(write_test_expr): Use alternative_mask and XWINT, adjust bit
-        number calculation to support 64 bits.  Generate code that
-        checks 64-bit masks.
+	number calculation to support 64 bits.  Generate code that
+	checks 64-bit masks.
 	(main): Use alternative_mask.
 	* rtl.def (EQ_ATTR_ALT): Change field types from ii to ww.
 
@@ -730,7 +744,7 @@
 2018-09-23   Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (regclass_map): Declare integer REX registers
-        as GENERAL_REGS.
+	as GENERAL_REGS.
 
 2018-09-23  Gerald Pfeifer  <gerald@pfeifer.com>
 
@@ -818,7 +832,7 @@
 	* config.gcc: Prepend vxworks-dummy.h to tm_file for powerpc*
 
 2018-09-21  Shaokun Zhang  <zhangshaokun@hisilicon.com>
-            Bo Zhou  <zbo.zhou@hisilicon.com>
+	    Bo Zhou  <zbo.zhou@hisilicon.com>
 
 	* config/aarch64/aarch64-cores.def (tsv110): New CPU.
 	* config/aarch64/aarch64-tune.md: Regenerated.
@@ -1549,7 +1563,7 @@
 	* cfgexpand.c (expand_gimple_cond): Likewise.
 
 2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
-            Julian Brown  <julian@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
 
 	PR middle-end/86336
 	* gimplify.c (gimplify_scan_omp_clauses): Set
