@@ -307,6 +307,15 @@ get_array_span (tree type, tree decl)
 					TYPE_SIZE_UNIT (TREE_TYPE (type))),
 			  span);
     }
+  else if (type && TREE_CODE (type) == ARRAY_TYPE
+	   && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+	   && integer_zerop (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+    {
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+	span = gfc_conv_descriptor_span_get (decl);
+      else
+	span = NULL_TREE;
+    }
   /* Likewise for class array or pointer array references.  */
   else if (TREE_CODE (decl) == FIELD_DECL
 	   || VAR_OR_FUNCTION_DECL_P (decl)

@@ -1,5 +1,14 @@
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/70752
+	PR fortran/72709
+	* gfortran.dg/deferred_character_25.f90 : New test.
+	* gfortran.dg/deferred_character_26.f90 : New test.
+	* gfortran.dg/deferred_character_27.f90 : New test to verify
+	that PR82617 remains fixed.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/70149
 	* gfortran.dg/deferred_character_24.f90 : New test.
 

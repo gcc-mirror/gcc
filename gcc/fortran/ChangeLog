@@ -1,5 +1,24 @@
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/70752
+	PR fortran/72709
+	* trans-array.c (gfc_conv_scalarized_array_ref): If this is a
+	deferred type and the info->descriptor is present, use the
+	info->descriptor
+	(gfc_conv_array_ref): Is the se expr is a descriptor type, pass
+	it as 'decl' rather than the symbol backend_decl.
+	(gfc_array_allocate): If the se string_length is a component
+	reference, fix it and use it for the expression string length
+	if the latter is not a variable type. If it is a variable do
+	an assignment. Make use of component ref string lengths to set
+	the descriptor 'span'.
+	(gfc_conv_expr_descriptor): For pointer assignment, do not set
+	the span field if gfc_get_array_span returns zero.
+	* trans.c (get_array_span): If the upper bound a character type
+	is zero, use the descriptor span if available.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/70149
 	* trans-decl.c (gfc_get_symbol_decl): A deferred character
 	length pointer that is initialized needs the string length to
