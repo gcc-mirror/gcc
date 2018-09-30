@@ -1,3 +1,8 @@
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* gfortran.dg/deferred_character_24.f90 : New test.
+
 2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87370
