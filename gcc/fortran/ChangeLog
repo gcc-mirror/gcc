@@ -1,5 +1,12 @@
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/87359
+	* trans-array.c (gfc_is_reallocatable_lhs): Correct the problem
+	introduced by r264358, which prevented components of associate
+	names from being reallocated on assignment.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
 	PR fortran/70752
 	PR fortran/72709
 	* trans-array.c (gfc_conv_scalarized_array_ref): If this is a
