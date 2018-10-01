@@ -1,3 +1,25 @@
+2018-10-01  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (__builtin_mffsl): New.
+	(__builtin_mtfsb0): New.
+	(__builtin_mtfsb1): New.
+	( __builtin_set_fpscr_rn): New.
+	(__builtin_set_fpscr_drn): New.
+	* config/rs6000/rs6000.c (rs6000_expand_mtfsb_builtin): Add.
+	(rs6000_expand_set_fpscr_rn_builtin): Add.
+	(rs6000_expand_set_fpscr_drn_builtin): Add.
+	(rs6000_expand_builtin): Add case statement entries for
+	RS6000_BUILTIN_MTFSB0, RS6000_BUILTIN_MTFSB1,
+	RS6000_BUILTIN_SET_FPSCR_RN, RS6000_BUILTIN_SET_FPSCR_DRN,
+	RS6000_BUILTIN_MFFSL.
+	(rs6000_init_builtins): Add ftype initialization and def_builtin
+	calls for __builtin_mffsl, __builtin_mtfsb0, __builtin_mtfsb1,
+	__builtin_set_fpscr_rn, __builtin_set_fpscr_drn.
+	* config/rs6000.md (rs6000_mtfsb0, rs6000_mtfsb1, rs6000_mffscrn,
+	rs6000_mffscdrn): Add define_insn.
+	(rs6000_set_fpscr_rn, rs6000_set_fpscr_drn): Add define_expand.
+	* doc/extend.texi: Add documentation for the builtins.
+
 2018-10-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87465

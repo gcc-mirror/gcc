@@ -1,3 +1,11 @@
+2018-10-01  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/test_mffsl-p9.c: New file.
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: New file.
+	* gcc.target/powerpc/test_fpscr_drn_builtin.c: New file.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: New file.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: New file.
+
 2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65677
