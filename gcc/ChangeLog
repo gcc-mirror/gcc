@@ -1,5 +1,13 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
+	* params.c (validate_param): New.
+	(add_params): Use it.
+	(set_param_value): Refactor param validation into validate_param.
+	(diagnostic.h): Include.
+	* diagnostic.h (diagnostic_ready_p): New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
 	* params.c (set_param_value):
 	Add index of parameter being validated.
 	* common/common-target.def (option_validate_param): New.
