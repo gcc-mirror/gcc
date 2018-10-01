@@ -1,5 +1,17 @@
 2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (*add_n): Clean up pattern, update instruction
+	constraints.
+	(ashlsi3_insn): Update instruction constraints.
+	(ashrsi3_insn): Likewise.
+	(rotrsi3): Likewise.
+	(add_shift): Likewise.
+	* config/arc/constraints.md (Csz): New 32 bit constraint. It
+	avoids placing in the limm field small constants which, otherwise,
+	could end into a small instruction.
+
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (maddsidi4_split): Don't use dmac if the
 	destination register is not odd-even.
 	(umaddsidi4_split): Likewise.
