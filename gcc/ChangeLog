@@ -1,3 +1,8 @@
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Add assert.
+
 2018-10-01  Jeff Law  <law@redhat.com>
 	    Richard Sandiford <richard.sandiford@linaro.org>
 	    Tamar Christina  <tamar.christina@arm.com>
