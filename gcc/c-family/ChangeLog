@@ -1,3 +1,8 @@
+2018-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Get to the main type variant.
+	(dump_ada_node): Add const keyword.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	* c-common.c (c_common_truthvalue_conversion):
