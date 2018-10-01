@@ -1,5 +1,11 @@
 2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/testsuite/
+	* coroutines/coroutines.exp: New.
+	* coroutines/coro-pre-proc.C: New.
+
+2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/c-family/
 	* c.opt (fcoroutines, fcoroutines-ts): New.
 	* c-cppbuiltin.c (c_cpp_builtins): Add __cpp_coroutines.
