@@ -1,5 +1,14 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
+	* common/config/aarch64/aarch64-common.c (TARGET_OPTION_DEFAULT_PARAM,
+	aarch64_option_default_param):	New.
+	(params.h): Include.
+	(TARGET_OPTION_VALIDATE_PARAM, aarch64_option_validate_param): New.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Simplify
+	stack-clash protection validation code.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
 	* params.c (validate_param): New.
 	(add_params): Use it.
 	(set_param_value): Refactor param validation into validate_param.

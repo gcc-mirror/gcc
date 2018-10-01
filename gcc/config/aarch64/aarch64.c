@@ -11002,10 +11002,6 @@ aarch64_override_options_internal (struct gcc_options *opts)
 
   /* Validate the guard size.  */
   int guard_size = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
-  if (guard_size != 12 && guard_size != 16)
-    error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
-	   "size.  Given value %d (%llu KB) is out of range.",
-	   guard_size, (1ULL << guard_size) / 1024ULL);
 
   /* Enforce that interval is the same size as size so the mid-end does the
      right thing.  */
