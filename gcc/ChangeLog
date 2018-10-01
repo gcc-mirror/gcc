@@ -1,6 +1,17 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
+	* configure.ac: Add stack-clash-protection-guard-size.
+	* doc/install.texi: Document it.
+	* config.in (DEFAULT_STK_CLASH_GUARD_SIZE): New.
+	* params.def: Update comment for guard-size.
+	(PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+	PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL): Update description.
+	* configure: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
 	* config/aarch64/aarch64.h (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,
 	STACK_DYNAMIC_OFFSET): New.
 	* config/aarch64/aarch64.c (aarch64_layout_frame):
