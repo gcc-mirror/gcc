@@ -6309,7 +6309,7 @@ archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD)
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
      emit_insn (gen_macd (operands[0], operands[1], operands[2]));
    else
      {
@@ -6409,7 +6409,7 @@ archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD)
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
      emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
    else
      {

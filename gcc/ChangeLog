@@ -1,3 +1,9 @@
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddsidi4_split): Don't use dmac if the
+	destination register is not odd-even.
+	(umaddsidi4_split): Likewise.
+
 2018-10-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.c (expand_call_inline): Store origin of fn

@@ -1,3 +1,7 @@
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-3.c: New file.
+
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87359
