@@ -450,6 +450,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECLTYPE_FOR_REF_CAPTURE (in DECLTYPE_TYPE)
       CONSTRUCTOR_C99_COMPOUND_LITERAL (in CONSTRUCTOR)
       OVL_NESTED_P (in OVERLOAD)
+      COROUTINE_RETURN_P (in RETURN_EXPR)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -500,6 +501,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
       LABEL_DECL_CDTOR (in LABEL_DECL)
    3: DECL_IN_AGGR_P.
+      DECL_COROUTINE_FUNCTION_P (in a FUNCTION_DECL)
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
@@ -4844,6 +4846,19 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define QUALIFIED_NAME_IS_TEMPLATE(NODE) \
   (TREE_LANG_FLAG_1 (SCOPE_REF_CHECK (NODE)))
 
+/* [coroutines]
+
+*/
+
+/* True if RETURN_EXPR is a co-routine return.  */
+#define COROUTINE_RETURN_P(NODE) \
+  TREE_LANG_FLAG_3 (RETURN_EXPR_CHECK (NODE))
+
+/* True if NODE is a co-routine FUNCTION_DECL.  */
+#define DECL_COROUTINE_FUNCTION_P(NODE) \
+  DECL_LANG_FLAG_3 (FUNCTION_DECL_CHECK (NODE))
+
+
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
    as an expr in operand 1, and integer_zero_node in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
@@ -6887,6 +6902,8 @@ extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
 extern void finish_do_stmt		(tree, tree, bool, unsigned short);
 extern tree finish_return_stmt			(tree);
+extern bool co_return_context_valid_p		(location_t, tree);
+extern tree finish_co_return_stmt		(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
 extern void finish_init_stmt			(tree);
@@ -7331,6 +7348,7 @@ extern tree composite_pointer_type		(tree, tree, tree, tree,
 extern tree merge_types				(tree, tree);
 extern tree strip_array_domain			(tree);
 extern tree check_return_expr			(tree, bool *);
+extern tree check_co_return_expr		(tree, bool *);
 extern tree cp_build_binary_op                  (location_t,
 						 enum tree_code, tree, tree,
 						 tsubst_flags_t);

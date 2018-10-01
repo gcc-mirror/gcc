@@ -10845,6 +10845,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_BREAK:
 	case RID_CONTINUE:
 	case RID_RETURN:
+	case RID_CO_RETURN:
 	case RID_GOTO:
 	  statement = cp_parser_jump_statement (parser);
 	  break;
@@ -12454,6 +12455,7 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
      continue ;
      return expression [opt] ;
      return braced-init-list ;
+     coroutine-return-statement;
      goto identifier ;
 
    GNU extension:
@@ -12524,6 +12526,7 @@ cp_parser_jump_statement (cp_parser* parser)
       cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
       break;
 
+    case RID_CO_RETURN:
     case RID_RETURN:
       {
 	tree expr;
@@ -12544,6 +12547,18 @@ cp_parser_jump_statement (cp_parser* parser)
 	/* Build the return-statement.  */
 	if (current_function_auto_return_pattern && in_discarded_stmt)
 	  /* Don't deduce from a discarded return statement.  */;
+	else if (keyword == RID_CO_RETURN)
+	  {
+	    /* Check the context first, so that we point the diagnostics
+	       to the keyword being wrong, rather than the expr.  */
+	    if (co_return_context_valid_p (token->location, expr))
+	      statement = finish_co_return_stmt (expr);
+	    else
+	      statement = error_mark_node;
+	    // IDS : dummy it to the same as return for now.
+	    warning_at (token->location, 0,
+		    "co_return parsed, but not implemented.");
+	  }
 	else
 	  statement = finish_return_stmt (expr);
 	/* Look for the final `;'.  */

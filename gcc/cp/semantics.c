@@ -927,6 +927,117 @@ finish_return_stmt (tree expr)
   return r;
 }
 
+/* Check that it's valid to have a co_return keyword here.
+   True if this is a valid context (we don't check the content
+   of the expr - except to decide if the promise_type needs as
+   return_void() or a return_value().  */
+
+bool
+co_return_context_valid_p (location_t kw, tree expr)
+{
+  /* This is arranged in order of prohibitions in the TS.  */
+  if (DECL_MAIN_P (current_function_decl))
+    {
+      // [6.6.1, main shall not be a coroutine].
+      error_at (kw, "%<co_return%> cannot be used in"
+		" the %<main%> function");
+      return false;
+    }
+
+  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl))
+    {
+      // [10.1.5, not constexpr specifier].
+      error_at (kw, "%<co_return%> cannot be used in"
+		" a %<constexpr%> function");
+      cp_function_chain->invalid_constexpr = true;
+      return false;
+    }
+
+  if (current_function_auto_return_pattern)
+    {
+      // [10.1.6.4, not auto specifier].
+      error_at (kw, "%<co_return%> cannot be used in"
+		" a function with a deduced return type");
+      return false;
+    }
+
+  if (varargs_function_p (current_function_decl))
+    {
+      // [11.4.4, shall not be varargs].
+      error_at (kw, "%<co_return%> cannot be used in"
+		" a varargs function");
+      return false;
+    }
+
+  if (DECL_CONSTRUCTOR_P (current_function_decl))
+    {
+      // [15.1, A constructor shall not be a coroutine.
+      error_at (kw, "%<co_return%> cannot be used in a constructor");
+      return false;
+    }
+
+  if (DECL_DESTRUCTOR_P (current_function_decl))
+    {
+      // [15.2, A destructor shall not be a coroutine.
+      error_at (kw, "%<co_return%> cannot be used in a destructor");
+      return false;
+    }
+
+  /* If the promise object doesn't have the correct return call then there's
+     a mis-match between the co_return <expr> and this.  It's not clear if 
+     this is the right place to diagnose this : FIXME: decide. */
+  if (expr == NULL_TREE)
+    {
+      /* Need to check for the result_void() promise member.  */
+    }
+   else
+    {
+      /* Need to check for the result_value() promise member.  */
+    }
+
+  /* Makes no sense for a co-routine really. */
+  if (TREE_THIS_VOLATILE (current_function_decl))
+    warning_at (kw, 0, "function declared %<noreturn%> has a"
+		" %<co_return%> statement");
+
+  return true;
+}
+
+/* Finish a co-return-statement.
+   Defer expansion so, apart from marking the function as a co-routine,
+   keep this as a RETURN_EXPR.  */
+
+tree
+finish_co_return_stmt (tree expr)
+{
+  tree r;
+  bool no_warning;
+
+  expr = check_co_return_expr (expr, &no_warning);
+
+  if (error_operand_p (expr))
+    return error_mark_node;
+
+  /* Suppress -Wreturn-type for co_return, we need to check indirectly
+     whether the promise type has a suitable return_void/return_value.  */
+  if (warn_return_type)
+    TREE_NO_WARNING (current_function_decl) = true;
+
+  if (!processing_template_decl && warn_sequence_point)
+    verify_sequence_points (expr);    
+
+  r = build_stmt (input_location, RETURN_EXPR, expr);
+  TREE_NO_WARNING (r) |= no_warning;
+  COROUTINE_RETURN_P (r) = 1;
+  r = add_stmt (r);
+
+  /* The current function has now become a coroutine, if it wasn't
+     already.  */
+  DECL_COROUTINE_FUNCTION_P (current_function_decl) = 1;
+
+  return r;
+}
+
 /* Begin the scope of a for-statement or a range-for-statement.
    Both the returned trees are to be used in a call to
    begin_for_stmt or begin_range_for_stmt.  */

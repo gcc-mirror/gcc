@@ -9590,6 +9590,18 @@ check_return_expr (tree retval, bool *no_warning)
   return retval;
 }
 
+/* placeholder; in case we really need something more than the contextual
+   checks.  */
+tree
+check_co_return_expr (tree retval, bool *no_warning)
+{
+
+  *no_warning = false;
+
+  return retval;
+}
+
+
 
 /* Returns nonzero if the pointer-type FROM can be converted to the
    pointer-type TO via a qualification conversion.  If CONSTP is -1,

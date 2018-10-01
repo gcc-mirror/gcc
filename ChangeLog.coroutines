@@ -1,5 +1,21 @@
 2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* cp-tree.h (COROUTINE_RETURN_P, DECL_COROUTINE_FUNCTION_P): New.
+	* typecheck.c (check_co_return_expr): New.
+	* semantics.c (co_return_context_valid_p, finish_co_return_stmt) New.
+	* parser.c (cp_parser_statement): handle RID_CO_RETURN.
+	(cp_parser_jump_statement): handle RID_CO_RETURN.
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h: New.
+	* g++.dg/coroutines/coro-auto-fn.C: New.
+	* g++.dg/coroutines/coro-constexpr-fn.C: New.
+	* g++.dg/coroutines/coro-context-ctor-dtor.C: New.
+	* g++.dg/coroutines/coro-context-main.C: New.
+	* g++.dg/coroutines/coro-context-vararg.C: New.
+
+2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/c-family/
 	* c-common.h (RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
 	D_CXX_COROUTINES, D_CXX_COROUTINES_FLAGS): New.
