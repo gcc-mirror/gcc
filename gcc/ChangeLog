@@ -1,3 +1,10 @@
+2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Store origin of fn
+	in BLOCK_ABSTRACT_ORIGIN for the inline BLOCK.
+	* tree.c (block_ultimate_origin): Simplify and do some
+	checking.
+
 2018-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (EMMS): New int iterator.
