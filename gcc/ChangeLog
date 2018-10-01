@@ -1,3 +1,19 @@
+2018-10-01  Jeff Law  <law@redhat.com>
+	    Richard Sandiford <richard.sandiford@linaro.org>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.md
+	(probe_stack_range): Add k (SP) constraint.
+	* config/aarch64/aarch64.h (STACK_CLASH_CALLER_GUARD,
+	STACK_CLASH_MAX_UNROLL_PAGES): New.
+	* config/aarch64/aarch64.c (aarch64_output_probe_stack_range): Emit
+	stack probes for stack clash.
+	(aarch64_allocate_and_probe_stack_space): New.
+	(aarch64_expand_prologue): Use it.
+	(aarch64_expand_epilogue): Likewise and update IP regs re-use criteria.
+	(aarch64_sub_sp): Add emit_move_imm optional param.
+
 2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
 
 	PR tree-optimization/87261

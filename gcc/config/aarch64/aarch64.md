@@ -6503,7 +6503,7 @@
 )
 
 (define_insn "probe_stack_range"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=rk")
 	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")
 			     (match_operand:DI 2 "register_operand" "r")]
 			      UNSPECV_PROBE_STACK_RANGE))]

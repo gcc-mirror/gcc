@@ -1,3 +1,31 @@
+2018-10-01  Jeff Law  <law@redhat.com>
+	    Richard Sandiford <richard.sandiford@linaro.org>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.target/aarch64/stack-check-12.c: New.
+	* gcc.target/aarch64/stack-check-13.c: New.
+	* gcc.target/aarch64/stack-check-cfa-1.c: New.
+	* gcc.target/aarch64/stack-check-cfa-2.c: New.
+	* gcc.target/aarch64/stack-check-prologue-1.c: New.
+	* gcc.target/aarch64/stack-check-prologue-10.c: New.
+	* gcc.target/aarch64/stack-check-prologue-11.c: New.
+	* gcc.target/aarch64/stack-check-prologue-12.c: New.
+	* gcc.target/aarch64/stack-check-prologue-13.c: New.
+	* gcc.target/aarch64/stack-check-prologue-14.c: New.
+	* gcc.target/aarch64/stack-check-prologue-15.c: New.
+	* gcc.target/aarch64/stack-check-prologue-2.c: New.
+	* gcc.target/aarch64/stack-check-prologue-3.c: New.
+	* gcc.target/aarch64/stack-check-prologue-4.c: New.
+	* gcc.target/aarch64/stack-check-prologue-5.c: New.
+	* gcc.target/aarch64/stack-check-prologue-6.c: New.
+	* gcc.target/aarch64/stack-check-prologue-7.c: New.
+	* gcc.target/aarch64/stack-check-prologue-8.c: New.
+	* gcc.target/aarch64/stack-check-prologue-9.c: New.
+	* gcc.target/aarch64/stack-check-prologue.h: New.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Add AArch64.
+
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* lib/target-supports.exp (check_cached_effective_target_indexed): New.
