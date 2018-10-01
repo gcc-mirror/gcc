@@ -1,6 +1,22 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
+	* gcc.dg/pr82788.c: Skip for AArch64.
+	* gcc.dg/guality/vla-1.c: Turn off stack-clash.
+	* gcc.target/aarch64/subsp.c: Likewise.
+	* gcc.dg/params/blocksort-part.c: Skip stack-clash checks
+	on AArch64.
+	* gcc.dg/stack-check-10.c: Add AArch64 specific checks.
+	* gcc.dg/stack-check-12.c: ILP32 fixup.
+	* gcc.dg/stack-check-5.c: Add AArch64 specific checks.
+	* gcc.dg/stack-check-6a.c: Skip on AArch64, we don't support this.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_frame_pointer_for_non_leaf): AArch64 does not
+	require frame pointer for non-leaf functions.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
 	* gcc.target/aarch64/stack-check-alloca-1.c: New.
 	* gcc.target/aarch64/stack-check-alloca-10.c: New.
 	* gcc.target/aarch64/stack-check-alloca-2.c: New.
