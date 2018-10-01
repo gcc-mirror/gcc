@@ -1062,7 +1062,7 @@
     <biblioentry xml:id="biblio.mscom">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="https://www.microsoft.com/com/">
+	      xlink:href="https://docs.microsoft.com/en-us/windows/desktop/com/the-component-object-model">
 	  COM: Component Model Object Technologies
 	</link>
       </title>
@@ -1139,7 +1139,7 @@
     <biblioentry xml:id="biblio.nelson96stlpq">
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://marknelson.us/1996/01/01/priority-queues/">Priority Queues and the STL
+	      xlink:href="https://marknelson.us/posts/1996/01/01/priority-queues.html">Priority Queues and the STL
 	</link>
       </title>
       <date>

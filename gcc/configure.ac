@@ -4526,51 +4526,6 @@ gd:
 	  [Define if your assembler supports mfcr field.])])
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5"
-	.csect .text[[PR]]
-	popcntb 3,3';;
-      *) conftest_s='	.machine power5
-	.text
-	popcntb 3,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([popcntb support],
-      gcc_cv_as_powerpc_popcntb, [2,17,0],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POPCNTB, 1,
-	  [Define if your assembler supports popcntb field.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5x"
-	.csect .text[[PR]]
-	frin 1,1';;
-      *) conftest_s='	.machine power5
-	.text
-	frin 1,1';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([fp round support],
-      gcc_cv_as_powerpc_fprnd, [2,17,0],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_FPRND, 1,
-	  [Define if your assembler supports fprnd.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	mffgpr 1,3';;
-      *) conftest_s='	.machine power6
-	.text
-	mffgpr 1,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([move fp gpr support],
-      gcc_cv_as_powerpc_mfpgpr, [2,19,2],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_MFPGPR, 1,
-	  [Define if your assembler supports mffgpr and mftgpr.])])
-
-    case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
@@ -4590,36 +4545,6 @@ LCF0:
 	  [Define if your assembler supports R_PPC_REL16 relocs.])])
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	cmpb 3,4,5';;
-      *) conftest_s='	.machine power6
-	.text
-	cmpb 3,4,5';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([compare bytes support],
-      gcc_cv_as_powerpc_cmpb, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_CMPB, 1,
-	  [Define if your assembler supports cmpb.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	dadd 1,2,3';;
-      *) conftest_s='	.machine power6
-	.text
-	dadd 1,2,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([decimal float support],
-      gcc_cv_as_powerpc_dfp, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_DFP, 1,
-	  [Define if your assembler supports DFP instructions.])])
-
-    case $target in
       *-*-aix*) conftest_s='	.machine "pwr7"
 	.csect .text[[PR]]
 	lxvd2x 1,2,3';;
@@ -4633,75 +4558,6 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_VSX, 1,
 	  [Define if your assembler supports VSX instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr7"
-	.csect .text[[PR]]
-	popcntd 3,3';;
-      *) conftest_s='	.machine power7
-	.text
-	popcntd 3,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([popcntd support],
-      gcc_cv_as_powerpc_popcntd, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POPCNTD, 1,
-	  [Define if your assembler supports POPCNTD instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr8"
-	.csect .text[[PR]]';;
-      *) conftest_s='	.machine power8
-	.text';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([power8 support],
-      gcc_cv_as_powerpc_power8, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POWER8, 1,
-	  [Define if your assembler supports POWER8 instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr9"
-	.csect .text[[PR]]';;
-      *) conftest_s='	.machine power9
-	.text';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([power9 support],
-      gcc_cv_as_powerpc_power9, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POWER9, 1,
-	  [Define if your assembler supports POWER9 instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.csect .text[[PR]]
-	lwsync';;
-      *) conftest_s='	.text
-	lwsync';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([lwsync support],
-      gcc_cv_as_powerpc_lwsync, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_LWSYNC, 1,
-	  [Define if your assembler supports LWSYNC instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "476"
-	.csect .text[[PR]]
-	dci 0';;
-      *) conftest_s='	.machine "476"
-	.text
-	dci 0';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([data cache invalidate support],
-      gcc_cv_as_powerpc_dci, [9,99,0], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_DCI, 1,
-	  [Define if your assembler supports the DCI/ICI instructions.])])
 
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_powerpc_gnu_attribute, [2,18,0],,

@@ -1896,6 +1896,14 @@ package Sinfo is
    --    can be determined to be null at compile time. This is used to remove
    --    the loop entirely at expansion time.
 
+   --  Is_OpenAcc_Environment (Flag13-Sem)
+   --    This flag is set in an N_Loop_Statement node if it contains an
+   --    Acc_Data, Acc_Parallel or Add_Kernels pragma.
+
+   --  Is_OpenAcc_Loop (Flag14-Sem)
+   --    This flag is set in an N_Loop_Statement node if it contains an
+   --    OpenAcc_Loop pragma.
+
    --  Is_Overloaded (Flag5-Sem)
    --    A flag present in all expression nodes. Used temporarily during
    --    overloading determination. The setting of this flag is not relevant
@@ -5126,6 +5134,8 @@ package Sinfo is
       --  Iteration_Scheme (Node2) (set to Empty if no iteration scheme)
       --  Statements (List3)
       --  End_Label (Node4)
+      --  Is_OpenAcc_Environment (Flag13-Sem)
+      --  Is_OpenAcc_Loop (Flag14-Sem)
       --  Has_Created_Identifier (Flag15)
       --  Is_Null_Loop (Flag16)
       --  Suppress_Loop_Warnings (Flag17)
@@ -9847,6 +9857,12 @@ package Sinfo is
    function Is_Null_Loop
      (N : Node_Id) return Boolean;    -- Flag16
 
+   function Is_OpenAcc_Environment
+     (N : Node_Id) return Boolean;    -- Flag13
+
+   function Is_OpenAcc_Loop
+     (N : Node_Id) return Boolean;    -- Flag14
+
    function Is_Overloaded
      (N : Node_Id) return Boolean;    -- Flag5
 
@@ -10944,6 +10960,12 @@ package Sinfo is
 
    procedure Set_Is_Null_Loop
      (N : Node_Id; Val : Boolean := True);    -- Flag16
+
+   procedure Set_Is_OpenAcc_Environment
+     (N : Node_Id; Val : Boolean := True);    -- Flag13
+
+   procedure Set_Is_OpenAcc_Loop
+     (N : Node_Id; Val : Boolean := True);    -- Flag14
 
    procedure Set_Is_Overloaded
      (N : Node_Id; Val : Boolean := True);    -- Flag5
@@ -13450,6 +13472,8 @@ package Sinfo is
    pragma Inline (Is_Known_Guaranteed_ABE);
    pragma Inline (Is_Machine_Number);
    pragma Inline (Is_Null_Loop);
+   pragma Inline (Is_OpenAcc_Environment);
+   pragma Inline (Is_OpenAcc_Loop);
    pragma Inline (Is_Overloaded);
    pragma Inline (Is_Power_Of_2_For_Shift);
    pragma Inline (Is_Prefixed_Call);
@@ -13812,6 +13836,8 @@ package Sinfo is
    pragma Inline (Set_Is_Known_Guaranteed_ABE);
    pragma Inline (Set_Is_Machine_Number);
    pragma Inline (Set_Is_Null_Loop);
+   pragma Inline (Set_Is_OpenAcc_Environment);
+   pragma Inline (Set_Is_OpenAcc_Loop);
    pragma Inline (Set_Is_Overloaded);
    pragma Inline (Set_Is_Power_Of_2_For_Shift);
    pragma Inline (Set_Is_Prefixed_Call);

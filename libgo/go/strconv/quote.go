@@ -237,6 +237,10 @@ func unhex(b byte) (v rune, ok bool) {
 // If set to zero, it does not permit either escape and allows both quote characters to appear unescaped.
 func UnquoteChar(s string, quote byte) (value rune, multibyte bool, tail string, err error) {
 	// easy cases
+	if len(s) == 0 {
+		err = ErrSyntax
+		return
+	}
 	switch c := s[0]; {
 	case c == quote && (quote == '\'' || quote == '"'):
 		err = ErrSyntax
@@ -385,7 +389,9 @@ func Unquote(s string) (string, error) {
 	if !contains(s, '\\') && !contains(s, quote) {
 		switch quote {
 		case '"':
-			return s, nil
+			if utf8.ValidString(s) {
+				return s, nil
+			}
 		case '\'':
 			r, size := utf8.DecodeRuneInString(s)
 			if size == len(s) && (r != utf8.RuneError || size != 1) {

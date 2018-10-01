@@ -1,3 +1,15 @@
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
+2018-09-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxcache.c: New file.  Provide __clear_cache, based on
+	the cacheTextUpdate VxWorks service.
+	* config/t-vxworks (LIB2ADD): Add vxcache.c.
+	(LIB2FUNCS_EXCLUDE): Add _clear_cache.
+	* config/t-vxwoks7: Likewise.
+
 2018-09-21  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c (crc32_unsigned): Remove.

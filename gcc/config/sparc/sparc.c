@@ -139,6 +139,9 @@ struct processor_costs {
 
   /* penalty for shifts, due to scheduling rules etc. */
   const int shift_penalty;
+
+  /* cost of a (predictable) branch.  */
+  const int branch_cost;
 };
 
 static const
@@ -163,6 +166,7 @@ struct processor_costs cypress_costs = {
   COSTS_N_INSNS (1), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -187,6 +191,7 @@ struct processor_costs supersparc_costs = {
   COSTS_N_INSNS (4), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   1, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -211,6 +216,7 @@ struct processor_costs hypersparc_costs = {
   COSTS_N_INSNS (17), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -235,6 +241,7 @@ struct processor_costs leon_costs = {
   COSTS_N_INSNS (5), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -259,6 +266,7 @@ struct processor_costs leon3_costs = {
   COSTS_N_INSNS (35), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -283,6 +291,7 @@ struct processor_costs sparclet_costs = {
   COSTS_N_INSNS (5), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  3 /* branch cost */
 };
 
 static const
@@ -307,6 +316,7 @@ struct processor_costs ultrasparc_costs = {
   COSTS_N_INSNS (68), /* idivX */
   COSTS_N_INSNS (2), /* movcc/movr */
   2, /* shift penalty */
+  2 /* branch cost */
 };
 
 static const
@@ -331,6 +341,7 @@ struct processor_costs ultrasparc3_costs = {
   COSTS_N_INSNS (71), /* idivX */
   COSTS_N_INSNS (2), /* movcc/movr */
   0, /* shift penalty */
+  2 /* branch cost */
 };
 
 static const
@@ -355,6 +366,7 @@ struct processor_costs niagara_costs = {
   COSTS_N_INSNS (72), /* idivX */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  4 /* branch cost */
 };
 
 static const
@@ -379,6 +391,7 @@ struct processor_costs niagara2_costs = {
   COSTS_N_INSNS (26), /* idivX, average of 12 - 41 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  5 /* branch cost */
 };
 
 static const
@@ -403,6 +416,7 @@ struct processor_costs niagara3_costs = {
   COSTS_N_INSNS (30), /* idivX, average of 16 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  5 /* branch cost */
 };
 
 static const
@@ -427,6 +441,7 @@ struct processor_costs niagara4_costs = {
   COSTS_N_INSNS (35), /* idivX, average of 26 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  2 /* branch cost */
 };
 
 static const
@@ -451,6 +466,7 @@ struct processor_costs niagara7_costs = {
   COSTS_N_INSNS (35), /* idivX, average of 26 - 44 cycle range */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  1 /* branch cost */
 };
 
 static const
@@ -475,6 +491,7 @@ struct processor_costs m8_costs = {
   COSTS_N_INSNS (30), /* udivx/sdivx */
   COSTS_N_INSNS (1), /* movcc/movr */
   0, /* shift penalty */
+  1 /* branch cost */
 };
 
 static const struct processor_costs *sparc_costs = &cypress_costs;
@@ -693,6 +710,7 @@ static bool sparc_can_change_mode_class (machine_mode, machine_mode,
 static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
 static bool sparc_vectorize_vec_perm_const (machine_mode, rtx, rtx, rtx,
 					    const vec_perm_indices &);
+static bool sparc_can_follow_jump (const rtx_insn *, const rtx_insn *);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -945,6 +963,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_VECTORIZE_VEC_PERM_CONST
 #define TARGET_VECTORIZE_VEC_PERM_CONST sparc_vectorize_vec_perm_const
+
+#undef TARGET_CAN_FOLLOW_JUMP
+#define TARGET_CAN_FOLLOW_JUMP sparc_can_follow_jump
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1523,8 +1544,9 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
     {
-      return sparc_fix_at697f || sparc_fix_ut699 || sparc_fix_b2bst
-	  || sparc_fix_gr712rc || sparc_fix_ut700 || sparc_fix_lost_divsqrt;
+      return sparc_fix_at697f
+	     || sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc
+	     || sparc_fix_b2bst || sparc_fix_lost_divsqrt;
     }
 
   virtual unsigned int execute (function *)
@@ -1657,24 +1679,24 @@ sparc_option_override (void)
     const int disable;
     const int enable;
   } const cpu_table[] = {
-    { "v7",		MASK_ISA|MASK_FSMULD, 0 },
-    { "cypress",	MASK_ISA|MASK_FSMULD, 0 },
+    { "v7",		MASK_ISA, 0 },
+    { "cypress",	MASK_ISA, 0 },
     { "v8",		MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
     { "hypersparc",	MASK_ISA, MASK_V8 },
     { "leon",		MASK_ISA|MASK_FSMULD, MASK_V8|MASK_LEON },
     { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
-    { "leon3v7",	MASK_ISA|MASK_FSMULD, MASK_LEON3 },
-    { "sparclite",	MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
+    { "leon3v7",	MASK_ISA, MASK_LEON3 },
+    { "sparclite",	MASK_ISA, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { "f934",		MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
+    { "f934",		MASK_ISA, MASK_SPARCLITE },
     { "sparclite86x",	MASK_ISA|MASK_FPU, MASK_SPARCLITE },
-    { "sparclet",	MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
+    { "sparclet",	MASK_ISA, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "tsc701",		MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
+    { "tsc701",		MASK_ISA, MASK_SPARCLET },
     { "v9",		MASK_ISA, MASK_V9 },
     /* UltraSPARC I, II, IIi */
     { "ultrasparc",	MASK_ISA,
@@ -1701,7 +1723,7 @@ sparc_option_override (void)
       MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC },
     /* UltraSPARC M8 */
     { "m8",		MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC|MASK_VIS4B }
+      MASK_V9|MASK_POPC|MASK_VIS4B|MASK_FMAF|MASK_CBCOND|MASK_SUBXC }
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1844,6 +1866,10 @@ sparc_option_override (void)
 		   & ~(target_flags_explicit & MASK_FEATURES)
 		   );
 
+  /* FsMULd is a V8 instruction.  */
+  if (!TARGET_V8 && !TARGET_V9)
+    target_flags &= ~MASK_FSMULD;
+
   /* -mvis2 implies -mvis.  */
   if (TARGET_VIS2)
     target_flags |= MASK_VIS;
@@ -1897,8 +1923,8 @@ sparc_option_override (void)
   /* Enable applicable errata workarounds for LEON3FT.  */
   if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
     {
-    sparc_fix_b2bst = 1;
-    sparc_fix_lost_divsqrt = 1;
+      sparc_fix_b2bst = 1;
+      sparc_fix_lost_divsqrt = 1;
     }
 
   /* Disable FsMULd for the UT699 since it doesn't work correctly.  */
@@ -7516,9 +7542,8 @@ sparc_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 {
   if (TARGET_ARCH32)
     /* Original SPARC 32-bit ABI says that structures and unions,
-       and quad-precision floats are passed by reference.  For Pascal,
-       also pass arrays by reference.  All other base types are passed
-       in registers.
+       and quad-precision floats are passed by reference.
+       All base types are passed in registers.
 
        Extended ABI (as implemented by the Sun compiler) says that all
        complex floats are passed by reference.  Pass complex integers
@@ -8004,6 +8029,19 @@ sparc_preferred_simd_mode (scalar_mode mode)
   return word_mode;
 }
 
+/* Implement TARGET_CAN_FOLLOW_JUMP.  */
+
+static bool
+sparc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
+{
+  /* Do not fold unconditional jumps that have been created for crossing
+     partition boundaries.  */
+  if (CROSSING_JUMP_P (followee) && !CROSSING_JUMP_P (follower))
+    return false;
+
+  return true;
+}
+
 /* Return the string to output an unconditional branch to LABEL, which is
    the operand number of the label.
 
@@ -8019,9 +8057,8 @@ output_ubranch (rtx dest, rtx_insn *insn)
 
   /* Even if we are trying to use cbcond for this, evaluate
      whether we can use V9 branches as our backup plan.  */
-
   delta = 5000000;
-  if (INSN_ADDRESSES_SET_P ())
+  if (!CROSSING_JUMP_P (insn) && INSN_ADDRESSES_SET_P ())
     delta = (INSN_ADDRESSES (INSN_UID (dest))
 	     - INSN_ADDRESSES (INSN_UID (insn)));
 
@@ -10159,22 +10196,25 @@ sparc_sched_init (FILE *dump ATTRIBUTE_UNUSED,
 static int
 sparc_use_sched_lookahead (void)
 {
-  if (sparc_cpu == PROCESSOR_NIAGARA
-      || sparc_cpu == PROCESSOR_NIAGARA2
-      || sparc_cpu == PROCESSOR_NIAGARA3)
-    return 0;
-  if (sparc_cpu == PROCESSOR_NIAGARA4
-      || sparc_cpu == PROCESSOR_NIAGARA7
-      || sparc_cpu == PROCESSOR_M8)
-    return 2;
-  if (sparc_cpu == PROCESSOR_ULTRASPARC
-      || sparc_cpu == PROCESSOR_ULTRASPARC3)
-    return 4;
-  if ((1 << sparc_cpu) &
-      ((1 << PROCESSOR_SUPERSPARC) | (1 << PROCESSOR_HYPERSPARC) |
-       (1 << PROCESSOR_SPARCLITE86X)))
-    return 3;
-  return 0;
+  switch (sparc_cpu)
+    {
+    case PROCESSOR_ULTRASPARC:
+    case PROCESSOR_ULTRASPARC3:
+      return 4;
+    case PROCESSOR_SUPERSPARC:
+    case PROCESSOR_HYPERSPARC:
+    case PROCESSOR_SPARCLITE86X:
+      return 3;
+    case PROCESSOR_NIAGARA4:
+    case PROCESSOR_NIAGARA7:
+    case PROCESSOR_M8:
+      return 2;
+    case PROCESSOR_NIAGARA:
+    case PROCESSOR_NIAGARA2:
+    case PROCESSOR_NIAGARA3:
+    default:
+      return 0;
+    }
 }
 
 static int
@@ -10182,28 +10222,60 @@ sparc_issue_rate (void)
 {
   switch (sparc_cpu)
     {
+    case PROCESSOR_ULTRASPARC:
+    case PROCESSOR_ULTRASPARC3:
+    case PROCESSOR_M8:
+      return 4;
+    case PROCESSOR_SUPERSPARC:
+      return 3;
+    case PROCESSOR_HYPERSPARC:
+    case PROCESSOR_SPARCLITE86X:
+    case PROCESSOR_V9:
+      /* Assume V9 processors are capable of at least dual-issue.  */
+    case PROCESSOR_NIAGARA4:
+    case PROCESSOR_NIAGARA7:
+      return 2;
     case PROCESSOR_NIAGARA:
     case PROCESSOR_NIAGARA2:
     case PROCESSOR_NIAGARA3:
     default:
       return 1;
-    case PROCESSOR_NIAGARA4:
-    case PROCESSOR_NIAGARA7:
-    case PROCESSOR_V9:
-      /* Assume V9 processors are capable of at least dual-issue.  */
-      return 2;
-    case PROCESSOR_SUPERSPARC:
-      return 3;
-    case PROCESSOR_HYPERSPARC:
-    case PROCESSOR_SPARCLITE86X:
-      return 2;
-    case PROCESSOR_ULTRASPARC:
-    case PROCESSOR_ULTRASPARC3:
-    case PROCESSOR_M8:
-      return 4;
     }
 }
 
+int
+sparc_branch_cost (bool speed_p, bool predictable_p)
+{
+  if (!speed_p)
+    return 2;
+
+  /* For pre-V9 processors we use a single value (usually 3) to take into
+     account the potential annulling of the delay slot (which ends up being
+     a bubble in the pipeline slot) plus a cycle to take into consideration
+     the instruction cache effects.
+
+     On V9 and later processors, which have branch prediction facilities,
+     we take into account whether the branch is (easily) predictable.  */
+  const int cost = sparc_costs->branch_cost;
+
+  switch (sparc_cpu)
+    {
+    case PROCESSOR_V9:
+    case PROCESSOR_ULTRASPARC:
+    case PROCESSOR_ULTRASPARC3:
+    case PROCESSOR_NIAGARA:
+    case PROCESSOR_NIAGARA2:
+    case PROCESSOR_NIAGARA3:
+    case PROCESSOR_NIAGARA4:
+    case PROCESSOR_NIAGARA7:
+    case PROCESSOR_M8:
+      return cost + (predictable_p ? 0 : 2);
+
+    default:
+      return cost;
+    }
+}
+      
 static int
 set_extends (rtx_insn *insn)
 {

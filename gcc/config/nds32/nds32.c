@@ -5877,6 +5877,9 @@ nds32_use_blocks_for_constant_p (machine_mode mode,
 #undef TARGET_USE_BLOCKS_FOR_CONSTANT_P
 #define TARGET_USE_BLOCKS_FOR_CONSTANT_P nds32_use_blocks_for_constant_p
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 
 /* ------------------------------------------------------------------------ */
 

@@ -50,8 +50,8 @@ func DecodedLen(x int) int { return x / 2 }
 // Decode decodes src into DecodedLen(len(src)) bytes,
 // returning the actual number of bytes written to dst.
 //
-// Decode expects that src contain only hexadecimal
-// characters and that src should have an even length.
+// Decode expects that src contains only hexadecimal
+// characters and that src has even length.
 // If the input is malformed, Decode returns the number
 // of bytes decoded before the error.
 func Decode(dst, src []byte) (int, error) {
@@ -101,10 +101,10 @@ func EncodeToString(src []byte) string {
 
 // DecodeString returns the bytes represented by the hexadecimal string s.
 //
-// DecodeString expects that src contain only hexadecimal
-// characters and that src should have an even length.
-// If the input is malformed, DecodeString returns a string
-// containing the bytes decoded before the error.
+// DecodeString expects that src contains only hexadecimal
+// characters and that src has even length.
+// If the input is malformed, DecodeString returns
+// the bytes decoded before the error.
 func DecodeString(s string) ([]byte, error) {
 	src := []byte(s)
 	// We can use the source slice itself as the destination
@@ -211,6 +211,7 @@ type dumper struct {
 	buf        [14]byte
 	used       int  // number of bytes in the current line
 	n          uint // number of bytes, total
+	closed     bool
 }
 
 func toChar(b byte) byte {
@@ -221,6 +222,10 @@ func toChar(b byte) byte {
 }
 
 func (h *dumper) Write(data []byte) (n int, err error) {
+	if h.closed {
+		return 0, errors.New("encoding/hex: dumper closed")
+	}
+
 	// Output lines look like:
 	// 00000010  2e 2f 30 31 32 33 34 35  36 37 38 39 3a 3b 3c 3d  |./0123456789:;<=|
 	// ^ offset                          ^ extra space              ^ ASCII of line.
@@ -277,6 +282,10 @@ func (h *dumper) Write(data []byte) (n int, err error) {
 
 func (h *dumper) Close() (err error) {
 	// See the comments in Write() for the details of this format.
+	if h.closed {
+		return
+	}
+	h.closed = true
 	if h.used == 0 {
 		return
 	}

@@ -19,53 +19,38 @@ type Error interface {
 
 // A TypeAssertionError explains a failed type assertion.
 type TypeAssertionError struct {
-	interfaceString string
-	concreteString  string
-	assertedString  string
-	missingMethod   string // one method needed by Interface, missing from Concrete
+	_interface    *_type
+	concrete      *_type
+	asserted      *_type
+	missingMethod string // one method needed by Interface, missing from Concrete
 }
 
 func (*TypeAssertionError) RuntimeError() {}
 
 func (e *TypeAssertionError) Error() string {
-	inter := e.interfaceString
-	if inter == "" {
-		inter = "interface"
+	inter := "interface"
+	if e._interface != nil {
+		inter = e._interface.string()
 	}
-	if e.concreteString == "" {
-		return "interface conversion: " + inter + " is nil, not " + e.assertedString
+	as := e.asserted.string()
+	if e.concrete == nil {
+		return "interface conversion: " + inter + " is nil, not " + as
 	}
+	cs := e.concrete.string()
 	if e.missingMethod == "" {
-		return "interface conversion: " + inter + " is " + e.concreteString +
-			", not " + e.assertedString
+		msg := "interface conversion: " + inter + " is " + cs + ", not " + as
+		if cs == as {
+			// provide slightly clearer error message
+			if e.concrete.pkgpath() != e.asserted.pkgpath() {
+				msg += " (types from different packages)"
+			} else {
+				msg += " (types from different scopes)"
+			}
+		}
+		return msg
 	}
-	return "interface conversion: " + e.concreteString + " is not " + e.assertedString +
+	return "interface conversion: " + cs + " is not " + as +
 		": missing method " + e.missingMethod
-}
-
-// For calling from C.
-func NewTypeAssertionError(ps1, ps2, ps3 *string, pmeth *string, ret *interface{}) {
-	var s1, s2, s3, meth string
-
-	if ps1 != nil {
-		s1 = *ps1
-	}
-	if ps2 != nil {
-		s2 = *ps2
-	}
-	if ps3 != nil {
-		s3 = *ps3
-	}
-	if pmeth != nil {
-		meth = *pmeth
-	}
-
-	// For gccgo, strip out quoted strings.
-	s1 = unquote(s1)
-	s2 = unquote(s2)
-	s3 = unquote(s3)
-
-	*ret = &TypeAssertionError{s1, s2, s3, meth}
 }
 
 // Remove quoted strings from gccgo reflection strings.
@@ -135,7 +120,7 @@ type stringer interface {
 
 func typestring(x interface{}) string {
 	e := efaceOf(&x)
-	return *e._type.string
+	return e._type.string()
 }
 
 // printany prints an argument passed to panic.

@@ -51,7 +51,7 @@ func bgsweep(c chan int) {
 	lock(&sweep.lock)
 	sweep.parked = true
 	c <- 1
-	goparkunlock(&sweep.lock, "GC sweep wait", traceEvGoBlock, 1)
+	goparkunlock(&sweep.lock, waitReasonGCSweepWait, traceEvGoBlock, 1)
 
 	for {
 		for gosweepone() != ^uintptr(0) {
@@ -70,7 +70,7 @@ func bgsweep(c chan int) {
 			continue
 		}
 		sweep.parked = true
-		goparkunlock(&sweep.lock, "GC sweep wait", traceEvGoBlock, 1)
+		goparkunlock(&sweep.lock, waitReasonGCSweepWait, traceEvGoBlock, 1)
 	}
 }
 

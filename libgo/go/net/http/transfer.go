@@ -11,15 +11,17 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"net/http/httptrace"
 	"net/http/internal"
 	"net/textproto"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"golang_org/x/net/lex/httplex"
+	"golang_org/x/net/http/httpguts"
 )
 
 // ErrLineTooLong is returned when reading request or response bodies
@@ -105,6 +107,17 @@ func newTransferWriter(r interface{}) (t *transferWriter, err error) {
 		if t.ContentLength < 0 && len(t.TransferEncoding) == 0 && t.shouldSendChunkedRequestBody() {
 			t.TransferEncoding = []string{"chunked"}
 		}
+		// If there's a body, conservatively flush the headers
+		// to any bufio.Writer we're writing to, just in case
+		// the server needs the headers early, before we copy
+		// the body and possibly block. We make an exception
+		// for the common standard library in-memory types,
+		// though, to avoid unnecessary TCP packets on the
+		// wire. (Issue 22088.)
+		if t.ContentLength != 0 && !isKnownInMemoryReader(t.Body) {
+			t.FlushHeaders = true
+		}
+
 		atLeastHTTP11 = true // Transport requests are always 1.1 or 2.0
 	case *Response:
 		t.IsResponse = true
@@ -268,10 +281,13 @@ func (t *transferWriter) shouldSendContentLength() bool {
 	return false
 }
 
-func (t *transferWriter) WriteHeader(w io.Writer) error {
+func (t *transferWriter) writeHeader(w io.Writer, trace *httptrace.ClientTrace) error {
 	if t.Close && !hasToken(t.Header.get("Connection"), "close") {
 		if _, err := io.WriteString(w, "Connection: close\r\n"); err != nil {
 			return err
+		}
+		if trace != nil && trace.WroteHeaderField != nil {
+			trace.WroteHeaderField("Connection", []string{"close"})
 		}
 	}
 
@@ -285,9 +301,15 @@ func (t *transferWriter) WriteHeader(w io.Writer) error {
 		if _, err := io.WriteString(w, strconv.FormatInt(t.ContentLength, 10)+"\r\n"); err != nil {
 			return err
 		}
+		if trace != nil && trace.WroteHeaderField != nil {
+			trace.WroteHeaderField("Content-Length", []string{strconv.FormatInt(t.ContentLength, 10)})
+		}
 	} else if chunked(t.TransferEncoding) {
 		if _, err := io.WriteString(w, "Transfer-Encoding: chunked\r\n"); err != nil {
 			return err
+		}
+		if trace != nil && trace.WroteHeaderField != nil {
+			trace.WroteHeaderField("Transfer-Encoding", []string{"chunked"})
 		}
 	}
 
@@ -309,13 +331,16 @@ func (t *transferWriter) WriteHeader(w io.Writer) error {
 			if _, err := io.WriteString(w, "Trailer: "+strings.Join(keys, ",")+"\r\n"); err != nil {
 				return err
 			}
+			if trace != nil && trace.WroteHeaderField != nil {
+				trace.WroteHeaderField("Trailer", keys)
+			}
 		}
 	}
 
 	return nil
 }
 
-func (t *transferWriter) WriteBody(w io.Writer) error {
+func (t *transferWriter) writeBody(w io.Writer) error {
 	var err error
 	var ncopy int64
 
@@ -390,7 +415,7 @@ func (t *transferReader) protoAtLeast(m, n int) bool {
 }
 
 // bodyAllowedForStatus reports whether a given response status code
-// permits a body. See RFC 2616, section 4.4.
+// permits a body. See RFC 7230, section 3.3.
 func bodyAllowedForStatus(status int) bool {
 	switch {
 	case status >= 100 && status <= 199:
@@ -411,7 +436,7 @@ var (
 func suppressedHeaders(status int) []string {
 	switch {
 	case status == 304:
-		// RFC 2616 section 10.3.5: "the response MUST NOT include other entity-headers"
+		// RFC 7232 section 4.1
 		return suppressedHeaders304
 	case !bodyAllowedForStatus(status):
 		return suppressedHeadersNoBody
@@ -482,7 +507,7 @@ func readTransfer(msg interface{}, r *bufio.Reader) (err error) {
 
 	// If there is no Content-Length or chunked Transfer-Encoding on a *Response
 	// and the status is not 1xx, 204 or 304, then the body is unbounded.
-	// See RFC 2616, section 4.4.
+	// See RFC 7230, section 3.3.
 	switch msg.(type) {
 	case *Response:
 		if realLength == -1 &&
@@ -601,7 +626,7 @@ func (t *transferReader) fixTransferEncoding() error {
 	return nil
 }
 
-// Determine the expected body length, using RFC 2616 Section 4.4. This
+// Determine the expected body length, using RFC 7230 Section 3.3. This
 // function is not a method, because ultimately it should be shared by
 // ReadResponse and ReadRequest.
 func fixLength(isResponse bool, status int, requestMethod string, header Header, te []string) (int64, error) {
@@ -667,7 +692,7 @@ func fixLength(isResponse bool, status int, requestMethod string, header Header,
 	header.Del("Content-Length")
 
 	if isRequest {
-		// RFC 2616 neither explicitly permits nor forbids an
+		// RFC 7230 neither explicitly permits nor forbids an
 		// entity-body on a GET request so we permit one if
 		// declared, but we default to 0 here (not -1 below)
 		// if there's no mention of a body.
@@ -690,9 +715,9 @@ func shouldClose(major, minor int, header Header, removeCloseHeader bool) bool {
 	}
 
 	conv := header["Connection"]
-	hasClose := httplex.HeaderValuesContainsToken(conv, "close")
+	hasClose := httpguts.HeaderValuesContainsToken(conv, "close")
 	if major == 1 && minor == 0 {
-		return hasClose || !httplex.HeaderValuesContainsToken(conv, "keep-alive")
+		return hasClose || !httpguts.HeaderValuesContainsToken(conv, "keep-alive")
 	}
 
 	if hasClose && removeCloseHeader {
@@ -1008,4 +1033,20 @@ func (fr finishAsyncByteRead) Read(p []byte) (n int, err error) {
 		p[0] = rres.b
 	}
 	return
+}
+
+var nopCloserType = reflect.TypeOf(ioutil.NopCloser(nil))
+
+// isKnownInMemoryReader reports whether r is a type known to not
+// block on Read. Its caller uses this as an optional optimization to
+// send fewer TCP packets.
+func isKnownInMemoryReader(r io.Reader) bool {
+	switch r.(type) {
+	case *bytes.Reader, *bytes.Buffer, *strings.Reader:
+		return true
+	}
+	if reflect.TypeOf(r) == nopCloserType {
+		return isKnownInMemoryReader(reflect.ValueOf(r).Field(0).Interface().(io.Reader))
+	}
+	return false
 }

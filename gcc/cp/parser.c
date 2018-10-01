@@ -922,14 +922,6 @@ cp_lexer_nth_token_is_keyword (cp_lexer* lexer, size_t n, enum rid keyword)
   return cp_lexer_peek_nth_token (lexer, n)->keyword == keyword;
 }
 
-/* Return true if the next token is not the indicated KEYWORD.  */
-
-static inline bool
-cp_lexer_next_token_is_not_keyword (cp_lexer* lexer, enum rid keyword)
-{
-  return cp_lexer_peek_token (lexer)->keyword != keyword;
-}
-
 /* Return true if KEYWORD can start a decl-specifier.  */
 
 bool

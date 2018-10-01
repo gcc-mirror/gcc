@@ -52,7 +52,7 @@ namespace __detail
     if (__n < sizeof(__fast_bkt))
       {
 	_M_next_resize =
-	  __builtin_ceil(__fast_bkt[__n] * (long double)_M_max_load_factor);
+	  __builtin_floor(__fast_bkt[__n] * (long double)_M_max_load_factor);
 	return __fast_bkt[__n];
       }
 
@@ -75,7 +75,7 @@ namespace __detail
       _M_next_resize = std::size_t(-1);
     else
       _M_next_resize =
-	__builtin_ceil(*__next_bkt * (long double)_M_max_load_factor);
+	__builtin_floor(*__next_bkt * (long double)_M_max_load_factor);
 
     return *__next_bkt;
   }

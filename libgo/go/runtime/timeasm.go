@@ -7,7 +7,7 @@
 // so that time.now and nanotime return the same monotonic clock readings.
 
 // +build ignore
-// +build darwin,amd64 darwin,386 windows
+// +build windows
 
 package runtime
 

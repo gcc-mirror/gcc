@@ -983,8 +983,6 @@ Import::read_name()
   std::string ret = this->read_identifier();
   if (ret == "?")
     ret.clear();
-  else if (!Lex::is_exported_name(ret))
-    ret = '.' + this->package_->pkgpath() + '.' + ret;
   return ret;
 }
 

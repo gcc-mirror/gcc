@@ -1607,13 +1607,16 @@ package body Inline is
          then
             null;
 
-         --  In GNATprove mode, issue a warning, and indicate that the
-         --  subprogram is not always inlined by setting flag Is_Inlined_Always
-         --  to False.
+         --  In GNATprove mode, issue a warning when -gnatd_f is set, and
+         --  indicate that the subprogram is not always inlined by setting
+         --  flag Is_Inlined_Always to False.
 
          elsif GNATprove_Mode then
             Set_Is_Inlined_Always (Subp, False);
-            Error_Msg_NE (Msg & "p?", N, Subp);
+
+            if Debug_Flag_Underscore_F then
+               Error_Msg_NE (Msg, N, Subp);
+            end if;
 
          elsif Has_Pragma_Inline_Always (Subp) then
 
@@ -1634,12 +1637,16 @@ package body Inline is
 
          Error_Msg_NE (Msg (Msg'First .. Msg'Last - 1), N, Subp);
 
-      --  In GNATprove mode, issue a warning, and indicate that the subprogram
-      --  is not always inlined by setting flag Is_Inlined_Always to False.
+      --  In GNATprove mode, issue a warning when -gnatd_f is set, and
+      --  indicate that the subprogram is not always inlined by setting
+      --  flag Is_Inlined_Always to False.
 
       elsif GNATprove_Mode then
          Set_Is_Inlined_Always (Subp, False);
-         Error_Msg_NE (Msg & "p?", N, Subp);
+
+         if Debug_Flag_Underscore_F then
+            Error_Msg_NE (Msg, N, Subp);
+         end if;
 
       else
 

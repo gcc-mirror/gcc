@@ -64,6 +64,11 @@ a full argument: to allow -mfoo=bar, use CGO_CFLAGS_ALLOW='-mfoo.*',
 not just CGO_CFLAGS_ALLOW='-mfoo'. Similarly named variables control
 the allowed CPPFLAGS, CXXFLAGS, FFLAGS, and LDFLAGS.
 
+Also for security reasons, only a limited set of characters are
+permitted, notably alphanumeric characters and a few symbols, such as
+'.', that will not be interpreted in unexpected ways. Attempts to use
+forbidden characters will get a "malformed #cgo argument" error.
+
 When building, the CGO_CFLAGS, CGO_CPPFLAGS, CGO_CXXFLAGS, CGO_FFLAGS and
 CGO_LDFLAGS environment variables are added to the flags derived from
 these directives. Package-specific flags should be set using the
@@ -99,17 +104,24 @@ compiled with the C compiler. Any .cc, .cpp, or .cxx files will be
 compiled with the C++ compiler. Any .f, .F, .for or .f90 files will be
 compiled with the fortran compiler. Any .h, .hh, .hpp, or .hxx files will
 not be compiled separately, but, if these header files are changed,
-the C and C++ files will be recompiled. The default C and C++
-compilers may be changed by the CC and CXX environment variables,
-respectively; those environment variables may include command line
-options.
+the package (including its non-Go source files) will be recompiled.
+Note that changes to files in other directories do not cause the package
+to be recompiled, so all non-Go source code for the package should be
+stored in the package directory, not in subdirectories.
+The default C and C++ compilers may be changed by the CC and CXX
+environment variables, respectively; those environment variables
+may include command line options.
 
 The cgo tool is enabled by default for native builds on systems where
 it is expected to work. It is disabled by default when
 cross-compiling. You can control this by setting the CGO_ENABLED
 environment variable when running the go tool: set it to 1 to enable
 the use of cgo, and to 0 to disable it. The go tool will set the
-build constraint "cgo" if cgo is enabled.
+build constraint "cgo" if cgo is enabled. The special import "C"
+implies the "cgo" build constraint, as though the file also said
+"// +build cgo".  Therefore, if cgo is disabled, files that import
+"C" will not be built by the go tool. (For more about build constraints
+see https://golang.org/pkg/go/build/#hdr-Build_Constraints).
 
 When cross-compiling, you must specify a C cross-compiler for cgo to
 use. You can do this by setting the generic CC_FOR_TARGET or the
@@ -218,6 +230,26 @@ actually requires a pointer to the first element of the array.
 C compilers are aware of this calling convention and adjust
 the call accordingly, but Go cannot. In Go, you must pass
 the pointer to the first element explicitly: C.f(&C.x[0]).
+
+Calling variadic C functions is not supported. It is possible to
+circumvent this by using a C function wrapper. For example:
+
+	package main
+
+	// #include <stdio.h>
+	// #include <stdlib.h>
+	//
+	// static void myprint(char* s) {
+	//   printf("%s\n", s);
+	// }
+	import "C"
+	import "unsafe"
+
+	func main() {
+		cs := C.CString("Hello from stdio")
+		C.myprint(cs)
+		C.free(unsafe.Pointer(cs))
+	}
 
 A few special functions convert between Go and C types
 by making copies of the data. In pseudo-Go definitions:
@@ -347,6 +379,14 @@ It is possible to defeat this enforcement by using the unsafe package,
 and of course there is nothing stopping the C code from doing anything
 it likes. However, programs that break these rules are likely to fail
 in unexpected and unpredictable ways.
+
+Note: the current implementation has a bug. While Go code is permitted
+to write nil or a C pointer (but not a Go pointer) to C memory, the
+current implementation may sometimes cause a runtime error if the
+contents of the C memory appear to be a Go pointer. Therefore, avoid
+passing uninitialized C memory to Go code if the Go code is going to
+store pointer values in it. Zero out the memory in C before passing it
+to Go.
 
 Special cases
 

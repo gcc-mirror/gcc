@@ -666,6 +666,10 @@ struct GTY(()) cgraph_thunk_info {
      VIRTUAL_OFFSET_P is true.  */
   HOST_WIDE_INT virtual_value;
 
+  /* Offset from "this" to get the offset to adjust "this".  Zero means: this
+     offset is to be ignored.  */
+  HOST_WIDE_INT indirect_offset;
+
   /* Thunk target, i.e. the method that this thunk wraps.  Depending on the
      TARGET_USE_LOCAL_THUNK_ALIAS_P macro, this may have to be a new alias.  */
   tree alias;
@@ -1033,6 +1037,7 @@ public:
   cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
 			      HOST_WIDE_INT fixed_offset,
 			      HOST_WIDE_INT virtual_value,
+			      HOST_WIDE_INT indirect_offset,
 			      tree virtual_offset,
 			      tree real_alias);
 
@@ -2373,7 +2378,8 @@ void cgraphunit_c_finalize (void);
     IN_SSA is true if the gimple is in SSA.  */
 basic_block init_lowered_empty_function (tree, bool, profile_count);
 
-tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree);
+tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree,
+		   HOST_WIDE_INT);
 /* In cgraphclones.c  */
 
 tree clone_function_name_1 (const char *, const char *);

@@ -1,3 +1,32 @@
+2018-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Check for writev and sys/uio.h.
+	* libgfortran.h: Include sys/uio.h.
+	(st_vprintf): Remove prototype.
+	(struct iovec): Define if not available.
+	(estr_writev): New prototype.
+	* runtime/backtrace.c (error_callback): Use estr_writev.
+	* runtime/error.c (ST_VPRINTF_SIZE): Remove.
+	(estr_writev): New function.
+	(st_vprintf): Remove.
+	(gf_vsnprintf): New function.
+	(ST_ERRBUF_SIZE): New macro.
+	(st_printf): Use vsnprintf.
+	(os_error): Use estr_writev.
+	(runtime_error): Use vsnprintf and estr_writev.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(internal_error): Use estr_writev.
+	(generate_error_common): Likewise.
+	(generate_warning): Likewise.
+	(notify_std): Likewise.
+	* runtime/pause.c (pause_string): Likewise.
+	* runtime/stop.c (report_exception): Likewise.
+	(stop_string): Likewise.
+	(error_stop_string): Likewise.
+
 2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/37802

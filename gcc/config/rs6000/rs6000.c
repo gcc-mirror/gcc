@@ -3871,48 +3871,6 @@ rs6000_option_override_internal (bool global_init_p)
   else if (OPTION_TARGET_CPU_DEFAULT)
     cpu_index = rs6000_cpu_name_lookup (OPTION_TARGET_CPU_DEFAULT);
 
-  if (cpu_index >= 0)
-    {
-      const char *unavailable_cpu = NULL;
-      switch (processor_target_table[cpu_index].processor)
-	{
-#ifndef HAVE_AS_POWER9
-	case PROCESSOR_POWER9:
-	  unavailable_cpu = "power9";
-	  break;
-#endif
-#ifndef HAVE_AS_POWER8
-	case PROCESSOR_POWER8:
-	  unavailable_cpu = "power8";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTD
-	case PROCESSOR_POWER7:
-	  unavailable_cpu = "power7";
-	  break;
-#endif
-#ifndef HAVE_AS_DFP
-	case PROCESSOR_POWER6:
-	  unavailable_cpu = "power6";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTB
-	case PROCESSOR_POWER5:
-	  unavailable_cpu = "power5";
-	  break;
-#endif
-	default:
-	  break;
-	}
-      if (unavailable_cpu)
-	{
-	  cpu_index = -1;
-	  warning (0, "will not generate %qs instructions because "
-		   "assembler lacks %qs support", unavailable_cpu,
-		   unavailable_cpu);
-	}
-    }
-
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
      with those from the cpu, except for options that were explicitly set.  If
@@ -13456,13 +13414,58 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return const0_rtx;
 
-  if (icode == CODE_FOR_altivec_vcfux
+  if (icode == CODE_FOR_unpackv1ti
+	   || icode == CODE_FOR_unpackkf
+	   || icode == CODE_FOR_unpacktf
+	   || icode == CODE_FOR_unpackif
+	   || icode == CODE_FOR_unpacktd)
+    {
+      /* Only allow 1-bit unsigned literals. */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+	{
+	  error ("argument 2 must be a 1-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltw)
+    {
+      /* Only allow 2-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~3)
+	{
+	  error ("argument 2 must be a 2-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vsplth)
+    {
+      /* Only allow 3-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~7)
+	{
+	  error ("argument 2 must be a 3-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltb)
+    {
+      /* Only allow 4-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~15)
+	{
+	  error ("argument 2 must be a 4-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs
-      || icode == CODE_FOR_altivec_vspltb
-      || icode == CODE_FOR_altivec_vsplth
-      || icode == CODE_FOR_altivec_vspltw)
+      || icode == CODE_FOR_altivec_vctuxs)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
@@ -13504,21 +13507,6 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 127))
 	{
 	  error ("argument 2 must be a 7-bit unsigned literal");
-	  return CONST0_RTX (tmode);
-	}
-    }
-  else if (icode == CODE_FOR_unpackv1ti
-	   || icode == CODE_FOR_unpackkf
-	   || icode == CODE_FOR_unpacktf
-	   || icode == CODE_FOR_unpackif
-	   || icode == CODE_FOR_unpacktd)
-    {
-      /* Only allow 1-bit unsigned literals. */
-      STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
-	{
-	  error ("argument 2 must be a 1-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
     }
@@ -15988,7 +15976,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      overload table in rs6000-c.c to switch between the two.  If we don't have
      the proper assembler, don't do this switch because CODE_FOR_*kf* and
      CODE_FOR_*tf* will be CODE_FOR_nothing.  */
-#ifdef HAVE_AS_POWER9
   if (FLOAT128_IEEE_P (TFmode))
     switch (icode)
       {
@@ -16009,7 +15996,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
       }
-#endif
 
   if (TARGET_DEBUG_BUILTIN)
     {
@@ -28408,7 +28394,7 @@ rs6000_output_function_epilogue (FILE *file)
       /* Language type.  Unfortunately, there does not seem to be any
 	 official way to discover the language being compiled, so we
 	 use language_string.
-	 C is 0.  Fortran is 1.  Pascal is 2.  Ada is 3.  C++ is 9.
+	 C is 0.  Fortran is 1.  Ada is 3.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
 	 a number, so for now use 9.  LTO, Go and JIT aren't assigned numbers
 	 either, so for now use 0.  */
@@ -28420,8 +28406,6 @@ rs6000_output_function_epilogue (FILE *file)
       else if (! strcmp (language_string, "GNU F77")
 	       || lang_GNU_Fortran ())
 	i = 1;
-      else if (! strcmp (language_string, "GNU Pascal"))
-	i = 2;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
       else if (lang_GNU_CXX ()

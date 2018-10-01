@@ -26,7 +26,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Statement Exprs::     Putting statements and declarations inside expressions.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
-* Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
+* Nested Functions::    Nested function in GNU C.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -3156,6 +3156,9 @@ uninitialized variables.
 The @code{noreturn} keyword does not affect the exceptional path when that
 applies: a @code{noreturn}-marked function may still return to the caller
 by throwing an exception or calling @code{longjmp}.
+
+In order to preserve backtraces, GCC will never turn calls to
+@code{noreturn} functions into tail calls.
 
 Do not assume that registers saved by the calling function are
 restored before calling the @code{noreturn} function.

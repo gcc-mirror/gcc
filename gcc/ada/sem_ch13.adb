@@ -11446,6 +11446,26 @@ package body Sem_Ch13 is
       --  specification node whose correponding pragma (if any) is present in
       --  the Rep Item chain of the entity it has been specified to.
 
+      function Rep_Item_Entity (Rep_Item : Node_Id) return Entity_Id;
+      --  Return the entity for which Rep_Item is specified
+
+      ---------------------
+      -- Rep_Item_Entity --
+      ---------------------
+
+      function Rep_Item_Entity (Rep_Item : Node_Id) return Entity_Id is
+      begin
+         if Nkind (Rep_Item) = N_Aspect_Specification then
+            return Entity (Rep_Item);
+
+         else
+            pragma Assert (Nkind_In (Rep_Item,
+                                     N_Pragma,
+                                     N_Attribute_Definition_Clause));
+            return Entity (Name (Rep_Item));
+         end if;
+      end Rep_Item_Entity;
+
       --------------------------------------------------
       -- Is_Pragma_Or_Corr_Pragma_Present_In_Rep_Item --
       --------------------------------------------------
@@ -11650,8 +11670,8 @@ package body Sem_Ch13 is
                  and then Has_Rep_Item (Typ, Name_Bit_Order)
                then
                   Set_Reverse_Bit_Order (Bas_Typ,
-                    Reverse_Bit_Order (Entity (Name
-                      (Get_Rep_Item (Typ, Name_Bit_Order)))));
+                    Reverse_Bit_Order (Rep_Item_Entity
+                      (Get_Rep_Item (Typ, Name_Bit_Order))));
                end if;
             end if;
 

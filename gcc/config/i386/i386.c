@@ -89,6 +89,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "wide-int-bitmask.h"
 #include "tree-vector-builder.h"
+#include "debug.h"
+#include "dwarf2out.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -239,30 +241,28 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* FP registers */
   FP_TOP_REG, FP_SECOND_REG, FLOAT_REGS, FLOAT_REGS,
   FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,
-  /* arg pointer */
-  NON_Q_REGS,
-  /* flags, fpsr, fpcr, frame */
-  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
+  /* arg pointer, flags, fpsr, frame */
+  NON_Q_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
   /* SSE registers */
-  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* MMX registers */
-  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
-  MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
   /* REX registers */
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   /* SSE REX registers */
-  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* AVX-512 SSE registers */
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
   /* Mask registers.  */
-  MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS
+  ALL_MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS,
+  MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -271,7 +271,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
   12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -287,7 +287,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
   33, 34, 35, 36, 37, 38, 39, 40,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
   8,9,10,11,12,13,14,15,		/* extended integer registers */
@@ -355,7 +355,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
   11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
-  -1, 9, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, 9, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -2593,11 +2593,17 @@ rest_of_insert_endbranch (void)
 			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
       && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
-      cet_eb = gen_nop_endbr ();
+      /* Queue ENDBR insertion to x86_function_profiler.  */
+      if (crtl->profile && flag_fentry)
+	cfun->machine->endbr_queued_at_entrance = true;
+      else
+	{
+	  cet_eb = gen_nop_endbr ();
 
-      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-      insn = BB_HEAD (bb);
-      emit_insn_before (cet_eb, insn);
+	  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	  insn = BB_HEAD (bb);
+	  emit_insn_before (cet_eb, insn);
+	}
     }
 
   bb = 0;
@@ -7863,7 +7869,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       case X86_64_SSEDF_CLASS:
 	if (mode != BLKmode)
 	  return gen_reg_or_parallel (mode, orig_mode,
-				      SSE_REGNO (sse_regno));
+				      GET_SSE_REGNO (sse_regno));
 	break;
       case X86_64_X87_CLASS:
       case X86_64_COMPLEX_X87_CLASS:
@@ -7879,7 +7885,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[1] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 4
       && regclass[0] == X86_64_SSE_CLASS
       && regclass[1] == X86_64_SSEUP_CLASS
@@ -7887,7 +7893,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[3] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 8
       && regclass[0] == X86_64_SSE_CLASS
       && regclass[1] == X86_64_SSEUP_CLASS
@@ -7899,7 +7905,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[7] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 2
       && regclass[0] == X86_64_X87_CLASS
       && regclass[1] == X86_64_X87UP_CLASS)
@@ -7908,9 +7914,22 @@ construct_container (machine_mode mode, machine_mode orig_mode,
   if (n == 2
       && regclass[0] == X86_64_INTEGER_CLASS
       && regclass[1] == X86_64_INTEGER_CLASS
-      && (mode == CDImode || mode == TImode)
+      && (mode == CDImode || mode == TImode || mode == BLKmode)
       && intreg[0] + 1 == intreg[1])
-    return gen_rtx_REG (mode, intreg[0]);
+    {
+      if (mode == BLKmode)
+	{
+	  /* Use TImode for BLKmode values in 2 integer registers.  */
+	  exp[0] = gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (TImode, intreg[0]),
+				      GEN_INT (0));
+	  ret = gen_rtx_PARALLEL (mode, rtvec_alloc (1));
+	  XVECEXP (ret, 0, 0) = exp[0];
+	  return ret;
+	}
+      else
+	return gen_rtx_REG (mode, intreg[0]);
+    }
 
   /* Otherwise figure out the entries of the PARALLEL.  */
   for (i = 0; i < n; i++)
@@ -7946,7 +7965,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (SFmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
@@ -7954,7 +7973,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (DFmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
@@ -8000,7 +8019,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (tmpmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (pos*8));
 	    sse_regno++;
 	    break;
@@ -9316,7 +9335,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 	  set_mem_alias_set (mem, set);
 	  set_mem_align (mem, GET_MODE_ALIGNMENT (smode));
 
-	  emit_move_insn (mem, gen_rtx_REG (smode, SSE_REGNO (i)));
+	  emit_move_insn (mem, gen_rtx_REG (smode, GET_SSE_REGNO (i)));
 	}
 
       emit_label (label);
@@ -10464,6 +10483,23 @@ output_indirect_thunk (unsigned int regno)
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
+  /* The above call insn pushed a word to stack.  Adjust CFI info.  */
+  if (flag_asynchronous_unwind_tables && dwarf2out_do_frame ())
+    {
+      if (! dwarf2out_do_cfi_asm ())
+	{
+	  dw_cfi_ref xcfi = ggc_cleared_alloc<dw_cfi_node> ();
+	  xcfi->dw_cfi_opc = DW_CFA_advance_loc4;
+	  xcfi->dw_cfi_oprnd1.dw_cfi_addr = ggc_strdup (indirectlabel2);
+	  vec_safe_push (cfun->fde->dw_fde_cfi, xcfi);
+	}
+      dw_cfi_ref xcfi = ggc_cleared_alloc<dw_cfi_node> ();
+      xcfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
+      xcfi->dw_cfi_oprnd1.dw_cfi_offset = 2 * UNITS_PER_WORD;
+      vec_safe_push (cfun->fde->dw_fde_cfi, xcfi);
+      dwarf2out_emit_cfi (xcfi);
+    }
+
   if (regno != INVALID_REGNUM)
     {
       /* MOV.  */
@@ -10856,15 +10892,6 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
   return (!cfun->machine->no_caller_saved_registers
 	  || (!epilogue_completed
 	      && df_regs_ever_live_p (regno)));
-}
-
-/* Return true if register class CL should be an additional allocno
-   class.  */
-
-static bool
-ix86_additional_allocno_class_p (reg_class_t cl)
-{
-  return cl == MOD4_SSE_REGS;
 }
 
 /* Return TRUE if we need to save REGNO.  */
@@ -17356,8 +17383,7 @@ print_reg (rtx x, int code, FILE *file)
 
   if (regno == ARG_POINTER_REGNUM
       || regno == FRAME_POINTER_REGNUM
-      || regno == FPSR_REG
-      || regno == FPCR_REG)
+      || regno == FPSR_REG)
     {
       output_operand_lossage
 	("invalid use of register '%s'", reg_names[regno]);
@@ -18883,11 +18909,6 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
 	return mode;
       break;
 
-    case I387_MASK_PM:
-      if (mode == I387_CW_MASK_PM)
-	return mode;
-      break;
-
     default:
       gcc_unreachable ();
     }
@@ -18910,7 +18931,6 @@ ix86_mode_needed (int entity, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return ix86_i387_mode_needed (entity, insn);
     default:
       gcc_unreachable ();
@@ -18937,8 +18957,8 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
 
-  if (vzeroupper_operation (pat, VOIDmode)
-      || vzeroall_operation (pat, VOIDmode))
+  if (vzeroupper_pattern (pat, VOIDmode)
+      || vzeroall_pattern (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
   /* We know that state is clean after CALL insn if there are no
@@ -18971,7 +18991,6 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return mode;
     default:
       gcc_unreachable ();
@@ -19024,7 +19043,6 @@ ix86_mode_entry (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19059,7 +19077,6 @@ ix86_mode_exit (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19109,12 +19126,6 @@ emit_i387_cw_initialization (int mode)
       emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
       emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
       slot = SLOT_CW_CEIL;
-      break;
-
-    case I387_CW_MASK_PM:
-      /* mask precision exception for nearbyint() */
-      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
-      slot = SLOT_CW_MASK_PM;
       break;
 
     default:
@@ -19172,7 +19183,6 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       if (mode != I387_CW_ANY
 	  && mode != I387_CW_UNINITIALIZED)
 	emit_i387_cw_initialization (mode);
@@ -21972,7 +21982,7 @@ static bool
 ix86_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 {
   *p1 = FLAGS_REG;
-  *p2 = FPSR_REG;
+  *p2 = INVALID_REGNUM;
   return true;
 }
 
@@ -30220,21 +30230,6 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
-
-  return decl;
-}
-
-/* Like def_builtin, but also marks the function decl "pure".  */
-
-static inline tree
-def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
-		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
-{
-  tree decl = def_builtin2 (mask, name, tcode, code);
-  if (decl)
-    DECL_PURE_P (decl) = 1;
-  else
-    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -39017,12 +39012,14 @@ ix86_register_priority (int hard_regno)
     return 1;
   /* New x86-64 int registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_INT_REG <= hard_regno && hard_regno <= LAST_REX_INT_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
     return 2;
   /* New x86-64 SSE registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_SSE_REG <= hard_regno && hard_regno <= LAST_REX_SSE_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
     return 2;
+  if (IN_RANGE (hard_regno, FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG))
+    return 1;
   /* Usage of AX register results in smaller code.  Prefer it.  */
   if (hard_regno == AX_REG)
     return 4;
@@ -39075,10 +39072,6 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 	  /* Limit class to FP regs.  */
 	  if (FLOAT_CLASS_P (regclass))
 	    return FLOAT_REGS;
-	  else if (regclass == FP_TOP_SSE_REGS)
-	    return FP_TOP_REG;
-	  else if (regclass == FP_SECOND_SSE_REGS)
-	    return FP_SECOND_REG;
 	}
 
       return NO_REGS;
@@ -39124,14 +39117,7 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
   if (IS_STACK_MODE (mode))
-    {
-      if (regclass == FP_TOP_SSE_REGS)
-	return FP_TOP_REG;
-      else if (regclass == FP_SECOND_SSE_REGS)
-	return FP_SECOND_REG;
-      else
-	return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
-    }
+    return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
 
   return regclass;
 }
@@ -39659,16 +39645,11 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
-      /* For AVX-5124FMAPS allow V64SFmode for special regnos.  */
+      /* For AVX-5124FMAPS or AVX-5124VNNIW
+	 allow V64SF and V64SI modes for special regnos.  */
       if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SFmode)
-	return true;
-
-      /* For AVX-5124VNNIW allow V64SImode for special regnos.  */
-      if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SImode)
+	  && (mode == V64SFmode || mode == V64SImode)
+	  && MOD4_SSE_REGNO_P (regno))
 	return true;
 
       /* TODO check for QI/HI scalars.  */
@@ -39796,6 +39777,10 @@ ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
      any other mode acceptable to SSE registers.  */
+  if (GET_MODE_SIZE (mode2) == 64
+      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
+    return (GET_MODE_SIZE (mode1) == 64
+	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
   if (GET_MODE_SIZE (mode2) == 32
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
     return (GET_MODE_SIZE (mode1) == 32
@@ -41211,6 +41196,10 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
   const char *mcount_name = (flag_fentry ? MCOUNT_NAME_BEFORE_PROLOGUE
 					 : MCOUNT_NAME);
+
+  if (cfun->machine->endbr_queued_at_entrance)
+    fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
@@ -43680,9 +43669,6 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 		    vec<const char *> &constraints,
 		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
 {
-  clobbers.safe_push (gen_rtx_REG (CCFPmode, FPSR_REG));
-  SET_HARD_REG_BIT (clobbered_regs, FPSR_REG);
-
   bool saw_asm_flag = false;
 
   start_sequence ();
@@ -51112,9 +51098,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
-
-#undef TARGET_ADDITIONAL_ALLOCNO_CLASS_P
-#define TARGET_ADDITIONAL_ALLOCNO_CLASS_P ix86_additional_allocno_class_p
 
 #undef TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
 #define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID ix86_addr_space_zero_address_valid

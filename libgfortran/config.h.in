@@ -762,6 +762,9 @@
 /* Define to 1 if you have the <sys/types.h> header file. */
 #undef HAVE_SYS_TYPES_H
 
+/* Define to 1 if you have the <sys/uio.h> header file. */
+#undef HAVE_SYS_UIO_H
+
 /* Define to 1 if you have the <sys/wait.h> header file. */
 #undef HAVE_SYS_WAIT_H
 
@@ -827,6 +830,9 @@
 
 /* Define if target has a reliable stat. */
 #undef HAVE_WORKING_STAT
+
+/* Define to 1 if you have the `writev' function. */
+#undef HAVE_WRITEV
 
 /* Define to 1 if you have the <xlocale.h> header file. */
 #undef HAVE_XLOCALE_H

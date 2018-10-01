@@ -405,16 +405,6 @@ ipa_get_poly_ctx_lat (struct ipa_node_params *info, int i)
   return &plats->ctxlat;
 }
 
-/* Return the lattice corresponding to the value range of the Ith formal
-   parameter of the function described by INFO.  */
-
-static inline ipcp_vr_lattice *
-ipa_get_vr_lat (struct ipa_node_params *info, int i)
-{
-  struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-  return &plats->m_value_range;
-}
-
 /* Return whether LAT is a lattice with a single constant and without an
    undefined value.  */
 

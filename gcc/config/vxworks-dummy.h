@@ -22,9 +22,17 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-/* True if we're targeting VxWorks.  */
+/* True if we're targeting VxWorks, VxWorks7 and/or 64bit.  */
 #ifndef TARGET_VXWORKS
 #define TARGET_VXWORKS 0
+#endif
+
+#ifndef TARGET_VXWORKS7
+#define TARGET_VXWORKS7 0
+#endif
+
+#ifndef TARGET_VXWORKS64
+#define TARGET_VXWORKS64 0
 #endif
 
 /* True if generating code for a VxWorks RTP.  */

@@ -570,28 +570,10 @@ warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
 tree
 unterminated_array (tree exp)
 {
-  if (TREE_CODE (exp) == SSA_NAME)
-    {
-      gimple *stmt = SSA_NAME_DEF_STMT (exp);
-      if (!is_gimple_assign (stmt))
-	return NULL_TREE;
-
-      tree rhs1 = gimple_assign_rhs1 (stmt);
-      tree_code code = gimple_assign_rhs_code (stmt);
-      if (code == ADDR_EXPR
-	  && TREE_CODE (TREE_OPERAND (rhs1, 0)) == ARRAY_REF)
-	rhs1 = rhs1;
-      else if (code != POINTER_PLUS_EXPR)
-	return NULL_TREE;
-
-      exp = rhs1;
-    }
-
-  tree nonstr = NULL;
-  if (c_strlen (exp, 1, &nonstr, 1) == NULL && nonstr)
-    return nonstr;
-
-  return NULL_TREE;
+  c_strlen_data data;
+  memset (&data, 0, sizeof (c_strlen_data));
+  c_strlen (exp, 1, &data);
+  return data.decl;
 }
 
 /* Compute the length of a null-terminated character string or wide
@@ -611,10 +593,12 @@ unterminated_array (tree exp)
    accesses.  Note that this implies the result is not going to be emitted
    into the instruction stream.
 
-   If a not zero-terminated string value is encountered and NONSTR is
-   non-zero, the declaration of the string value is assigned to *NONSTR.
-   *NONSTR is accumulating, thus not cleared on success, therefore it has
-   to be initialized to NULL_TREE by the caller.
+   Additional information about the string accessed may be recorded
+   in DATA.  For example, if SRC references an unterminated string,
+   then the declaration will be stored in the DECL field.   If the
+   length of the unterminated string can be determined, it'll be
+   stored in the LEN field.  Note this length could well be different
+   than what a C strlen call would return.
 
    ELTSIZE is 1 for normal single byte character strings, and 2 or
    4 for wide characer strings.  ELTSIZE is by default 1.
@@ -622,8 +606,16 @@ unterminated_array (tree exp)
    The value returned is of type `ssizetype'.  */
 
 tree
-c_strlen (tree src, int only_value, tree *nonstr, unsigned eltsize)
+c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 {
+  /* If we were not passed a DATA pointer, then get one to a local
+     structure.  That avoids having to check DATA for NULL before
+     each time we want to use it.  */
+  c_strlen_data local_strlen_data;
+  memset (&local_strlen_data, 0, sizeof (c_strlen_data));
+  if (!data)
+    data = &local_strlen_data;
+
   gcc_checking_assert (eltsize == 1 || eltsize == 2 || eltsize == 4);
   STRIP_NOPS (src);
   if (TREE_CODE (src) == COND_EXPR
@@ -631,15 +623,15 @@ c_strlen (tree src, int only_value, tree *nonstr, unsigned eltsize)
     {
       tree len1, len2;
 
-      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, nonstr, eltsize);
-      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, nonstr, eltsize);
+      len1 = c_strlen (TREE_OPERAND (src, 1), only_value, data, eltsize);
+      len2 = c_strlen (TREE_OPERAND (src, 2), only_value, data, eltsize);
       if (tree_int_cst_equal (len1, len2))
 	return len1;
     }
 
   if (TREE_CODE (src) == COMPOUND_EXPR
       && (only_value || !TREE_SIDE_EFFECTS (TREE_OPERAND (src, 0))))
-    return c_strlen (TREE_OPERAND (src, 1), only_value, nonstr, eltsize);
+    return c_strlen (TREE_OPERAND (src, 1), only_value, data, eltsize);
 
   location_t loc = EXPR_LOC_OR_LOC (src, input_location);
 
@@ -685,13 +677,15 @@ c_strlen (tree src, int only_value, tree *nonstr, unsigned eltsize)
 	 start searching for it.  */
       unsigned len = string_length (ptr, eltsize, strelts);
 
-      /* Return when an embedded null character is found or none at all.  */
+      /* Return when an embedded null character is found or none at all.
+	 In the latter case, set the DECL/LEN field in the DATA structure
+	 so that callers may examine them.  */
       if (len + 1 < strelts)
 	return NULL_TREE;
       else if (len >= maxelts)
 	{
-	  if (nonstr && decl)
-	    *nonstr = decl;
+	  data->decl = decl;
+	  data->len = ssize_int (len);
 	  return NULL_TREE;
 	}
 
@@ -756,11 +750,12 @@ c_strlen (tree src, int only_value, tree *nonstr, unsigned eltsize)
 				strelts - eltoff);
 
   /* Don't know what to return if there was no zero termination.
-     Ideally this would turn into a gcc_checking_assert over time.  */
+     Ideally this would turn into a gcc_checking_assert over time.
+     Set DECL/LEN so callers can examine them.  */
   if (len >= maxelts - eltoff)
     {
-      if (nonstr && decl)
-	*nonstr = decl;
+      data->decl = decl;
+      data->len = ssize_int (len);
       return NULL_TREE;
     }
 
@@ -3984,13 +3979,14 @@ expand_builtin_stpcpy_1 (tree exp, rtx target, machine_mode mode)
 	 compile-time, not an expression containing a string.  This is
 	 because the latter will potentially produce pessimized code
 	 when used to produce the return value.  */
-      tree nonstr = NULL_TREE;
+      c_strlen_data data;
+      memset (&data, 0, sizeof (c_strlen_data));
       if (!c_getstr (src, NULL)
-	  || !(len = c_strlen (src, 0, &nonstr, 1)))
+	  || !(len = c_strlen (src, 0, &data, 1)))
 	return expand_movstr (dst, src, target, /*endp=*/2);
 
-      if (nonstr && !TREE_NO_WARNING (exp))
-	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, nonstr);
+      if (data.decl && !TREE_NO_WARNING (exp))
+	warn_string_no_nul (EXPR_LOCATION (exp), "stpcpy", src, data.decl);
 
       lenp1 = size_binop_loc (loc, PLUS_EXPR, len, ssize_int (1));
       ret = expand_builtin_mempcpy_args (dst, src, lenp1,
@@ -5869,6 +5865,7 @@ get_builtin_sync_mem (tree loc, machine_mode mode)
   scalar_int_mode addr_mode = targetm.addr_space.address_mode (addr_space);
 
   addr = expand_expr (loc, NULL_RTX, addr_mode, EXPAND_SUM);
+  addr = convert_memory_address (addr_mode, addr);
 
   /* Note that we explicitly do not want any alias information for this
      memory, so that we kill all other live memories.  Otherwise we don't
@@ -8462,22 +8459,23 @@ fold_builtin_strlen (location_t loc, tree type, tree arg)
     return NULL_TREE;
   else
     {
-      tree nonstr = NULL_TREE;
-      tree len = c_strlen (arg, 0, &nonstr);
+      c_strlen_data data;
+      memset (&data, 0, sizeof (c_strlen_data));
+      tree len = c_strlen (arg, 0, &data);
 
       if (len)
 	return fold_convert_loc (loc, type, len);
 
-      if (!nonstr)
-	c_strlen (arg, 1, &nonstr);
+      if (!data.decl)
+	c_strlen (arg, 1, &data);
 
-      if (nonstr)
+      if (data.decl)
 	{
 	  if (EXPR_HAS_LOCATION (arg))
 	    loc = EXPR_LOCATION (arg);
 	  else if (loc == UNKNOWN_LOCATION)
 	    loc = input_location;
-	  warn_string_no_nul (loc, "strlen", arg, nonstr);
+	  warn_string_no_nul (loc, "strlen", arg, data.decl);
 	}
 
       return NULL_TREE;

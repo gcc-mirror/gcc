@@ -40,8 +40,10 @@ package body VxLink is
    Error_State    : Boolean := False;
 
    function Triplet return String;
+   --  ??? missing spec
 
    function Which (Exe : String) return String;
+   --  ??? missing spec
 
    -------------
    -- Triplet --
@@ -69,8 +71,7 @@ package body VxLink is
    -- Which --
    -----------
 
-   function Which (Exe : String) return String
-   is
+   function Which (Exe : String) return String is
       Suffix   : GNAT.OS_Lib.String_Access := Get_Executable_Suffix;
       Basename : constant String := Exe & Suffix.all;
       Path     : GNAT.OS_Lib.String_Access := Getenv ("PATH");
@@ -108,8 +109,7 @@ package body VxLink is
    -- Set_Verbose --
    -----------------
 
-   procedure Set_Verbose (Value : Boolean)
-   is
+   procedure Set_Verbose (Value : Boolean) is
    begin
       Verbose := Value;
    end Set_Verbose;
@@ -118,8 +118,7 @@ package body VxLink is
    -- Is_Verbose --
    ----------------
 
-   function Is_Verbose return Boolean
-   is
+   function Is_Verbose return Boolean is
    begin
       return Verbose;
    end Is_Verbose;
@@ -128,8 +127,7 @@ package body VxLink is
    -- Set_Error_State --
    ---------------------
 
-   procedure Set_Error_State (Message : String)
-   is
+   procedure Set_Error_State (Message : String) is
    begin
       Log_Error ("Error: " & Message);
       Error_State := True;
@@ -140,8 +138,7 @@ package body VxLink is
    -- Is_Error_State --
    --------------------
 
-   function Is_Error_State return Boolean
-   is
+   function Is_Error_State return Boolean is
    begin
       return Error_State;
    end Is_Error_State;
@@ -150,8 +147,7 @@ package body VxLink is
    -- Log_Info --
    --------------
 
-   procedure Log_Info (S : String)
-   is
+   procedure Log_Info (S : String) is
    begin
       if Verbose then
          Ada.Text_IO.Put_Line (S);
@@ -162,8 +158,7 @@ package body VxLink is
    -- Log_Error --
    ---------------
 
-   procedure Log_Error (S : String)
-   is
+   procedure Log_Error (S : String) is
    begin
       Ada.Text_IO.Put_Line (Ada.Text_IO.Standard_Error, S);
    end Log_Error;
@@ -172,8 +167,7 @@ package body VxLink is
    -- Run --
    ---------
 
-   procedure Run (Arguments : Arguments_List)
-   is
+   procedure Run (Arguments : Arguments_List) is
       Output : constant String := Run (Arguments);
    begin
       if not Is_Error_State then
@@ -187,13 +181,12 @@ package body VxLink is
    -- Run --
    ---------
 
-   function Run (Arguments : Arguments_List) return String
-   is
+   function Run (Arguments : Arguments_List) return String is
       Args       : GNAT.OS_Lib.Argument_List_Access :=
                      new GNAT.OS_Lib.Argument_List
                        (1 .. Natural (Arguments.Length) - 1);
       Base       : constant String := Base_Name (Arguments.First_Element);
-      Status     : aliased Integer := 0;
+
       Debug_Line : Unbounded_String;
       Add_Quotes : Boolean;
 
@@ -234,17 +227,23 @@ package body VxLink is
       end if;
 
       declare
-         Ret : constant String :=
-                 Get_Command_Output
-                   (Command    => Arguments.First_Element,
-                    Arguments  => Args.all,
-                    Input      => "",
-                    Status     => Status'Access,
-                    Err_To_Out => True);
+         Status : aliased Integer := 0;
+         Ret    : constant String :=
+                    Get_Command_Output
+                      (Command    => Arguments.First_Element,
+                       Arguments  => Args.all,
+                       Input      => "",
+                       Status     => Status'Access,
+                       Err_To_Out => True);
+
       begin
          GNAT.OS_Lib.Free (Args);
 
          if Status /= 0 then
+            pragma Annotate (Codepeer, False_Positive,
+                             "test always false",
+                             "Status modified by Get_Command_Output");
+
             Ada.Text_IO.Put_Line (Ret);
             Set_Error_State
               (Base_Name (Arguments.First_Element) &
@@ -259,8 +258,7 @@ package body VxLink is
    -- Gcc --
    ---------
 
-   function Gcc return String
-   is
+   function Gcc return String is
    begin
       return Which (Triplet & "gcc");
    end Gcc;
@@ -269,8 +267,7 @@ package body VxLink is
    -- Gxx --
    ---------
 
-   function Gxx return String
-   is
+   function Gxx return String is
    begin
       return Which (Triplet & "g++");
    end Gxx;
@@ -279,8 +276,7 @@ package body VxLink is
    -- Nm --
    --------
 
-   function Nm return String
-   is
+   function Nm return String is
    begin
       return Which (Triplet & "nm");
    end Nm;

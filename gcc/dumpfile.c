@@ -437,6 +437,27 @@ dump_user_location_t::from_function_decl (tree fndecl)
 			       DECL_SOURCE_LOCATION (fndecl));
 }
 
+/* Extract the MSG_* component from DUMP_KIND and return a string for use
+   as a prefix to dump messages.
+   These match the strings in optinfo_verbosity_options and thus the
+   "OPTIONS" within "-fopt-info-OPTIONS".  */
+
+static const char *
+kind_as_string (dump_flags_t dump_kind)
+{
+  switch (dump_kind & MSG_ALL)
+    {
+    default:
+      gcc_unreachable ();
+    case MSG_OPTIMIZED_LOCATIONS:
+      return "optimized";
+    case MSG_MISSED_OPTIMIZATION:
+      return "missed";
+    case MSG_NOTE:
+      return "note";
+    }
+}
+
 /* Print source location on DFILE if enabled.  */
 
 static void
@@ -445,13 +466,14 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-        fprintf (dfile, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+        fprintf (dfile, "%s:%d:%d: ", LOCATION_FILE (loc),
                  LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-        fprintf (dfile, "%s:%d:%d: note: ",
+        fprintf (dfile, "%s:%d:%d: ",
                  DECL_SOURCE_FILE (current_function_decl),
                  DECL_SOURCE_LINE (current_function_decl),
                  DECL_SOURCE_COLUMN (current_function_decl));
+      fprintf (dfile, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       fprintf (dfile, "%*s", get_dump_scope_depth (), "");
     }
@@ -465,13 +487,14 @@ dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-	pp_printf (pp, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+	pp_printf (pp, "%s:%d:%d: ", LOCATION_FILE (loc),
 		   LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-	pp_printf (pp, "%s:%d:%d: note: ",
+	pp_printf (pp, "%s:%d:%d: ",
 		   DECL_SOURCE_FILE (current_function_decl),
 		   DECL_SOURCE_LINE (current_function_decl),
 		   DECL_SOURCE_COLUMN (current_function_decl));
+      pp_printf (pp, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       for (unsigned i = 0; i < get_dump_scope_depth (); i++)
 	pp_character (pp, ' ');
@@ -1048,14 +1071,14 @@ dump_context::get_scope_depth () const
 void
 dump_context::begin_scope (const char *name, const dump_location_t &loc)
 {
-  if (dump_file)
+  if (dump_file && (MSG_NOTE & pflags))
     ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
 
-  if (alt_dump_file)
+  if (alt_dump_file && (MSG_NOTE & alt_flags))
     ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
 
   /* Support for temp_dump_context in selftests.  */
-  if (m_test_pp)
+  if (m_test_pp && (MSG_NOTE & m_test_pp_flags))
     ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
 
   pretty_printer pp;
@@ -1511,7 +1534,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].dkind == dkind))
+      if (dump_files[i].dkind == dkind)
         {
           const char *old_filename = dump_files[i].pfilename;
           dump_files[i].pstate = -1;
@@ -1532,7 +1555,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if ((m_extra_dump_files[i].dkind == dkind))
+      if (m_extra_dump_files[i].dkind == dkind)
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;
@@ -2303,6 +2326,29 @@ test_capture_of_dump_calls (const line_table_case &case_)
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_FAILURE);
     }
+  }
+
+  /* Verify that MSG_* affect AUTO_DUMP_SCOPE and the dump calls.  */
+  {
+    temp_dump_context tmp (false, MSG_OPTIMIZED_LOCATIONS);
+    dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
+    {
+      AUTO_DUMP_SCOPE ("outer scope", stmt);
+      dump_printf_loc (MSG_NOTE, stmt, "msg 2\n");
+      {
+	AUTO_DUMP_SCOPE ("middle scope", stmt);
+	dump_printf_loc (MSG_NOTE, stmt, "msg 3\n");
+	{
+	  AUTO_DUMP_SCOPE ("inner scope", stmt);
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, stmt, "msg 4\n");
+	}
+	dump_printf_loc (MSG_NOTE, stmt, "msg 5\n");
+      }
+      dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
+    }
+    dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+
+    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: optimized:    msg 4\n");
   }
 }
 

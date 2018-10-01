@@ -617,6 +617,7 @@ cgraph_node *
 cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 			   HOST_WIDE_INT fixed_offset,
 			   HOST_WIDE_INT virtual_value,
+			   HOST_WIDE_INT indirect_offset,
 			   tree virtual_offset,
 			   tree real_alias)
 {
@@ -635,6 +636,7 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.virtual_value = virtual_value;
+  node->thunk.indirect_offset = indirect_offset;
   node->thunk.alias = real_alias;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_offset_p = virtual_offset != NULL;
@@ -2099,10 +2101,11 @@ cgraph_node::dump (FILE *f)
         fprintf (f, "  of %s (asm: %s)",
 		 lang_hooks.decl_printable_name (thunk.alias, 2),
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
-      fprintf (f, " fixed offset %i virtual value %i has "
-	       "virtual offset %i)\n",
+      fprintf (f, " fixed offset %i virtual value %i indirect_offset %i "
+		  "has virtual offset %i\n",
 	       (int)thunk.fixed_offset,
 	       (int)thunk.virtual_value,
+	       (int)thunk.indirect_offset,
 	       (int)thunk.virtual_offset_p);
     }
   if (alias && thunk.alias

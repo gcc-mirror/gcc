@@ -287,6 +287,8 @@ evrp_dom_walker::cleanup (void)
       gimple *stmt = stmts_to_fixup.pop ();
       fixup_noreturn_call (stmt);
     }
+
+  evrp_folder.vr_values->cleanup_edges_and_switches ();
 }
 
 /* Main entry point for the early vrp pass which is a simplified non-iterative

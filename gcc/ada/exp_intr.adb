@@ -402,7 +402,10 @@ package body Exp_Intr is
       end if;
 
       --  Rewrite and analyze the call to the instance as a class-wide
-      --  conversion of the call to the actual constructor.
+      --  conversion of the call to the actual constructor. When the result
+      --  type is a class-wide interface type this conversion is required to
+      --  force the displacement of the pointer to the object to reference the
+      --  corresponding dispatch table.
 
       Rewrite (N, Convert_To (Result_Typ, Cnstr_Call));
 

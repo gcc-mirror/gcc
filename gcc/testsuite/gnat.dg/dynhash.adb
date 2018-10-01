@@ -1,6 +1,7 @@
 --  { dg-do run }
 
 with Ada.Text_IO;          use Ada.Text_IO;
+with GNAT;                 use GNAT;
 with GNAT.Dynamic_HTables; use GNAT.Dynamic_HTables;
 
 procedure Dynhash is
@@ -14,14 +15,14 @@ procedure Dynhash is
       Expansion_Factor      => 2,
       Compression_Threshold => 0.3,
       Compression_Factor    => 2,
-      Equivalent_Keys       => "=",
+      "="                   => "=",
       Hash                  => Hash);
    use DHT;
 
    function Create_And_Populate
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type) return Instance;
+      Init_Size : Positive) return Instance;
    --  Create a hash table with initial size Init_Size and populate it with
    --  key-value pairs where both keys and values are in the range Low_Key
    --  .. High_Key.
@@ -50,19 +51,19 @@ procedure Dynhash is
    procedure Check_Size
      (Caller    : String;
       T         : Instance;
-      Exp_Count : Pair_Count_Type);
+      Exp_Count : Natural);
    --  Ensure that the count of key-value pairs of hash table T matches
    --  expected count Exp_Count. Emit an error if this is not the case.
 
-   procedure Test_Create (Init_Size : Bucket_Range_Type);
+   procedure Test_Create (Init_Size : Positive);
    --  Verify that all dynamic hash table operations fail on a non-created
    --  table of size Init_Size.
 
    procedure Test_Delete_Get_Put_Size
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Exp_Count : Pair_Count_Type;
-      Init_Size : Bucket_Range_Type);
+      Exp_Count : Natural;
+      Init_Size : Positive);
    --  Verify that
    --
    --    * Put properly inserts values in the hash table.
@@ -78,7 +79,7 @@ procedure Dynhash is
    procedure Test_Iterate
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type);
+      Init_Size : Positive);
    --  Verify that iterators
    --
    --    * Properly visit each key exactly once.
@@ -88,7 +89,7 @@ procedure Dynhash is
    --  Low_Key and High_Key denote the range of keys to be inserted, retrieved,
    --  and deleted. Init_Size denotes the initial size of the table.
 
-   procedure Test_Iterate_Empty (Init_Size : Bucket_Range_Type);
+   procedure Test_Iterate_Empty (Init_Size : Positive);
    --  Verify that an iterator over an empty hash table
    --
    --    * Does not visit any key
@@ -100,7 +101,7 @@ procedure Dynhash is
    procedure Test_Iterate_Forced
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type);
+      Init_Size : Positive);
    --  Verify that an iterator that is forcefully advanced by just Next
    --
    --    * Properly visit each key exactly once.
@@ -113,7 +114,7 @@ procedure Dynhash is
    procedure Test_Replace
      (Low_Val   : Integer;
       High_Val  : Integer;
-      Init_Size : Bucket_Range_Type);
+      Init_Size : Positive);
    --  Verify that Put properly updates the value of a particular key. Low_Val
    --  and High_Val denote the range of values to be updated. Init_Size denotes
    --  the initial size of the table.
@@ -121,7 +122,7 @@ procedure Dynhash is
    procedure Test_Reset
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type);
+      Init_Size : Positive);
    --  Verify that Reset properly destroy and recreats a hash table. Low_Key
    --  and High_Key denote the range of keys to be inserted in the hash table.
    --  Init_Size denotes the initial size of the table.
@@ -133,7 +134,7 @@ procedure Dynhash is
    function Create_And_Populate
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type) return Instance
+      Init_Size : Positive) return Instance
    is
       T : Instance;
 
@@ -232,7 +233,7 @@ procedure Dynhash is
          Delete (T, 1);
          Put_Line ("ERROR: " & Caller & ": Delete: no exception raised");
       exception
-         when Table_Locked =>
+         when Iterated =>
             null;
          when others =>
            Put_Line ("ERROR: " & Caller & ": Delete: unexpected exception");
@@ -242,7 +243,7 @@ procedure Dynhash is
          Destroy (T);
          Put_Line ("ERROR: " & Caller & ": Destroy: no exception raised");
       exception
-         when Table_Locked =>
+         when Iterated =>
             null;
          when others =>
            Put_Line ("ERROR: " & Caller & ": Destroy: unexpected exception");
@@ -252,7 +253,7 @@ procedure Dynhash is
          Put (T, 1, 1);
          Put_Line ("ERROR: " & Caller & ": Put: no exception raised");
       exception
-         when Table_Locked =>
+         when Iterated =>
             null;
          when others =>
            Put_Line ("ERROR: " & Caller & ": Put: unexpected exception");
@@ -262,7 +263,7 @@ procedure Dynhash is
          Reset (T);
          Put_Line ("ERROR: " & Caller & ": Reset: no exception raised");
       exception
-         when Table_Locked =>
+         when Iterated =>
             null;
          when others =>
            Put_Line ("ERROR: " & Caller & ": Reset: unexpected exception");
@@ -273,12 +274,12 @@ procedure Dynhash is
    -- Check_Size --
    ----------------
 
-   procedure Check_Size
+   procedure Check_Size 
      (Caller    : String;
       T         : Instance;
-      Exp_Count : Pair_Count_Type)
+      Exp_Count : Natural)
    is
-      Count : constant Pair_Count_Type := Size (T);
+      Count : constant Natural := Size (T);
 
    begin
       if Count /= Exp_Count then
@@ -301,8 +302,8 @@ procedure Dynhash is
    -- Test_Create --
    -----------------
 
-   procedure Test_Create (Init_Size : Bucket_Range_Type) is
-      Count : Pair_Count_Type;
+   procedure Test_Create (Init_Size : Positive) is
+      Count : Natural;
       Iter  : Iterator;
       T     : Instance;
       Val   : Integer;
@@ -397,8 +398,8 @@ procedure Dynhash is
    procedure Test_Delete_Get_Put_Size
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Exp_Count : Pair_Count_Type;
-      Init_Size : Bucket_Range_Type)
+      Exp_Count : Natural;
+      Init_Size : Positive)
    is
       Exp_Val : Integer;
       T       : Instance;
@@ -478,7 +479,7 @@ procedure Dynhash is
    procedure Test_Iterate
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type)
+      Init_Size : Positive)
    is
       Iter_1 : Iterator;
       Iter_2 : Iterator;
@@ -527,7 +528,7 @@ procedure Dynhash is
       --  operations of the hash table because all outstanding iterators have
       --  been exhausted.
 
-      Check_Keys
+      Check_Keys 
         (Caller   => "Test_Iterate",
          Iter     => Iter_2,
          Low_Key  => Low_Key,
@@ -548,7 +549,7 @@ procedure Dynhash is
    -- Test_Iterate_Empty --
    ------------------------
 
-   procedure Test_Iterate_Empty (Init_Size : Bucket_Range_Type) is
+   procedure Test_Iterate_Empty (Init_Size : Positive) is
       Iter : Iterator;
       Key  : Integer;
       T    : Instance;
@@ -594,7 +595,7 @@ procedure Dynhash is
    procedure Test_Iterate_Forced
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type)
+      Init_Size : Positive)
    is
       Iter : Iterator;
       Key  : Integer;
@@ -649,7 +650,7 @@ procedure Dynhash is
    procedure Test_Replace
      (Low_Val   : Integer;
       High_Val  : Integer;
-      Init_Size : Bucket_Range_Type)
+      Init_Size : Positive)
    is
       Key : constant Integer := 1;
       T   : Instance;
@@ -681,10 +682,10 @@ procedure Dynhash is
    -- Test_Reset --
    ----------------
 
-   procedure Test_Reset
+   procedure Test_Reset 
      (Low_Key   : Integer;
       High_Key  : Integer;
-      Init_Size : Bucket_Range_Type)
+      Init_Size : Positive)
    is
       T : Instance;
 

@@ -3289,7 +3289,7 @@ c_common_truthvalue_conversion (location_t location, tree expr)
  	tree inner = TREE_OPERAND (expr, 0);
 	if (decl_with_nonnull_addr_p (inner))
 	  {
-	    /* Common Ada/Pascal programmer's mistake.  */
+	    /* Common Ada programmer's mistake.  */
 	    warning_at (location,
 			OPT_Waddress,
 			"the address of %qD will always evaluate as %<true%>",

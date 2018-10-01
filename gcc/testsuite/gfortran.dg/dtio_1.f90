@@ -7,8 +7,8 @@
 !    to control execution.
 ! 3) Tests parsing of the optional vlist, passing in and using it to
 !    generate a user defined format string.
-! 4) Tests passing an iostat or iomsg out of libgfortranthe child procedure back to
-!    the parent.
+! 4) Tests passing an iostat or iomsg out of the libgfortran child
+!    procedure back to the parent.
 !
 MODULE p
   USE ISO_FORTRAN_ENV
@@ -33,7 +33,6 @@ CONTAINS
     INTEGER :: myios
 
     udfmt='(*(g0))'
-    iomsg = "SUCCESS"
     iostat=0
     if (iotype.eq."DT") then
       if (size(vlist).ne.0) print *, 36
@@ -64,6 +63,7 @@ CONTAINS
     if (iotype.eq."NAMELIST") then
       if (size(vlist).ne.0) print *, 59
       iostat=6000
+      iomsg = "NAMELIST not implemented in pwf"
     endif
   END SUBROUTINE pwf
 
@@ -78,7 +78,6 @@ CONTAINS
     INTEGER :: myios
     real :: areal
     udfmt='(*(g0))'
-    iomsg = "SUCCESS"
     iostat=0
     if (iotype.eq."DT") then
       if (size(vlist).ne.0) print *, 36
@@ -109,8 +108,8 @@ CONTAINS
     if (iotype.eq."NAMELIST") then
       if (size(vlist).ne.0) print *, 59
       iostat=6000
+      iomsg = "NAMELIST not implemented in prf"
     endif
-    !READ (UNIT = UNIT, FMT = *) dtv%name, dtv%age
   END SUBROUTINE prf
 
 END MODULE p
@@ -126,12 +125,12 @@ PROGRAM test
   chairman%age=62
   member%name="George"
   member%age=42
-  astring = "FAILURE"
+  astring = "SUCCESS"
   write (10, "(DT'zeroth',3x, DT'three'(11,4,10),11x,DT'two'(8,2))", &
          & iostat=myiostat, iomsg=astring) member, chairman, member
   if (myiostat.ne.0) STOP 3
   if (astring.ne."SUCCESS") STOP 4
-  astring = "FAILURE"
+  astring = "SUCCESS"
   write (10, *, iostat=myiostat, iomsg=astring) member, chairman, member
   if (myiostat.ne.0) STOP 5
   if (astring.ne."SUCCESS") STOP 6
@@ -141,7 +140,7 @@ PROGRAM test
   chairman%age=99
   member%name="bogus2"
   member%age=66
-  astring = "FAILURE"
+  astring = "SUCCESS"
   read(10,"(DT'zeroth',3x, DT'three'(11,4,10),11x,DT'two'(8,2))") member, chairman, member
   if (member%name.ne."George") STOP 7
   if (chairman%name.ne."    Charlie") STOP 8
@@ -151,12 +150,12 @@ PROGRAM test
   chairman%age=99
   member%name="bogus2"
   member%age=66
-  astring = "FAILURE"
+  astring = "SAME"
   read (10, *, iostat=myiostat, iomsg=astring) member, chairman, member
   ! The user defined procedure reads to the end of the line/file, then finalizing the parent
   ! reads past, so we wrote a blank line above. User needs to address these nuances in their
   ! procedures. (subject to interpretation)
-  if (astring.ne."SUCCESS") STOP 11
+  if (astring.ne."SAME" .or. myiostat.ne.0) STOP 11
   if (member%name.ne."George") STOP 12
   if (chairman%name.ne."Charlie") STOP 13
   if (member%age.ne.42) STOP 14

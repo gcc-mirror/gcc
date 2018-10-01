@@ -1103,6 +1103,11 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 
 	  label = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 	  SYMBOL_REF_FLAGS (label) |= SYMBOL_FLAG_LOCAL;
+	  /* ??? Ugly hack to make weak symbols work.  May need to change the
+	     RTL for the auipc and/or low patterns to get a better fix for
+	     this.  */
+	  if (! nonzero_address_p (addr))
+	    SYMBOL_REF_WEAK (label) = 1;
 
 	  if (temp == NULL)
 	    temp = gen_reg_rtx (Pmode);

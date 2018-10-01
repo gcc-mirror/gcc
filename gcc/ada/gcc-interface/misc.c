@@ -77,9 +77,6 @@ int optimize;
 #undef optimize_size
 int optimize_size;
 
-#undef flag_compare_debug
-int flag_compare_debug;
-
 #undef flag_short_enums
 int flag_short_enums;
 
@@ -284,7 +281,6 @@ gnat_post_options (const char **pfilename ATTRIBUTE_UNUSED)
   gnat_encodings = global_options.x_gnat_encodings;
   optimize = global_options.x_optimize;
   optimize_size = global_options.x_optimize_size;
-  flag_compare_debug = global_options.x_flag_compare_debug;
   flag_stack_check = global_options.x_flag_stack_check;
   flag_short_enums = global_options.x_flag_short_enums;
 
@@ -347,7 +343,6 @@ internal_error_function (diagnostic_context *context, const char *msgid,
   sp_loc.Bounds = &temp_loc;
   sp_loc.Array = loc;
 
-  Current_Error_Node = error_gnat_node;
   Compiler_Abort (sp, sp_loc, true);
 }
 

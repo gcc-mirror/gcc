@@ -439,6 +439,8 @@ namespace __variant
       constexpr bool
       _M_valid() const noexcept
       {
+	if constexpr ((is_scalar_v<_Types> && ...))
+	  return true;
 	return this->_M_index != __index_type(variant_npos);
       }
 

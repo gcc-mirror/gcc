@@ -403,8 +403,6 @@ void runtime_panic(Eface)
 /*
  * runtime c-called (but written in Go)
  */
-void	runtime_newTypeAssertionError(const String*, const String*, const String*, const String*, Eface*)
-     __asm__ (GOSYM_PREFIX "runtime.NewTypeAssertionError");
 void	runtime_newErrorCString(const char*, Eface*)
      __asm__ (GOSYM_PREFIX "runtime.NewErrorCString");
 
@@ -479,10 +477,10 @@ extern void *getitab(const struct __go_type_descriptor *,
   __asm__ (GOSYM_PREFIX "runtime.getitab");
 
 extern void runtime_cpuinit(void);
+extern void setRandomNumber(uint32)
+  __asm__ (GOSYM_PREFIX "runtime.setRandomNumber");
 extern void setIsCgo(void)
   __asm__ (GOSYM_PREFIX "runtime.setIsCgo");
-extern void setCpuidECX(uint32)
-  __asm__ (GOSYM_PREFIX "runtime.setCpuidECX");
 extern void setSupportAES(bool)
   __asm__ (GOSYM_PREFIX "runtime.setSupportAES");
 extern void typedmemmove(const Type *, void *, const void *)
@@ -493,3 +491,14 @@ extern Sched* runtime_getsched(void)
   __asm__ (GOSYM_PREFIX "runtime.getsched");
 extern void setpagesize(uintptr_t)
   __asm__(GOSYM_PREFIX "runtime.setpagesize");
+
+struct funcfileline_return
+{
+  String retfn;
+  String retfile;
+  intgo retline;
+};
+
+struct funcfileline_return
+runtime_funcfileline (uintptr targetpc, int32 index)
+  __asm__ (GOSYM_PREFIX "runtime.funcfileline");

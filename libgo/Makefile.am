@@ -532,6 +532,14 @@ s-version: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
+cpugen.go: s-cpu; @true
+s-cpu: Makefile
+	rm -f cpugen.go.tmp
+	echo "package cpu" > cpugen.go.tmp
+	echo "const CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
@@ -541,6 +549,7 @@ s-objabi: Makefile
 	echo 'const defaultGO386 = `sse2`' >> objabi.go.tmp
 	echo 'const defaultGOARM = `5`' >> objabi.go.tmp
 	echo 'const defaultGOMIPS = `hardfloat`' >> objabi.go.tmp
+	echo 'const defaultGOMIPS64 = `hardfloat`' >> objabi.go.tmp
 	echo 'const defaultGOOS = runtime.GOOS' >> objabi.go.tmp
 	echo 'const defaultGOARCH = runtime.GOARCH' >> objabi.go.tmp
 	echo 'const defaultGO_EXTLINK_ENABLED = ``' >> objabi.go.tmp
@@ -608,7 +617,7 @@ noinst_DATA += zdefaultcc.go
 zstdpkglist.go: s-zstdpkglist; @true
 s-zstdpkglist: Makefile
 	rm -f zstdpkglist.go.tmp
-	echo 'package build' > zstdpkglist.go.tmp
+	echo 'package goroot' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
 	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
@@ -707,6 +716,7 @@ PACKAGES = $(shell cat $(srcdir)/libgo-packages.txt)
 libgo_go_objs = \
 	$(addsuffix .lo,$(PACKAGES)) \
 	bytes/index.lo \
+	internal/bytealg/bytealg.lo \
 	reflect/makefunc_ffi_c.lo \
 	strings/index.lo \
 	$(syscall_lib_clone_lo) \
@@ -718,7 +728,8 @@ libgo_go_objs = \
 	log/syslog/syslog_c.lo \
 	$(os_lib_inotify_lo) \
 	runtime/internal/atomic_c.lo \
-	sync/atomic_c.lo
+	sync/atomic_c.lo \
+	internal/cpu/cpu_gccgo.lo
 
 libgo_ldflags = \
 	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
@@ -960,8 +971,11 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
 
-extra_go_files_go_build = zstdpkglist.go
-go/build.lo.dep: $(extra_go_files_go_build)
+extra_go_files_internal_cpu = cpugen.go
+internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
+
+extra_go_files_internal_goroot = zstdpkglist.go
+internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 
 extra_go_files_go_types = gccgosizes.go
 go/types.lo.dep: $(extra_go_files_go_types)
@@ -976,6 +990,16 @@ extra_check_libs_cmd_go_internal_cache = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_imports = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_modconv = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_modfetch = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_modfetch_codehost = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_modfile = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_modload = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_module = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_mvs = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_search = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_web2 = $(abs_builddir)/libgotool.a
 extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 
 extra_check_libs_cmd_vet_internal_cfg = $(abs_builddir)/libgotool.a
@@ -990,6 +1014,9 @@ bytes/index.lo: go/bytes/indexbyte.c runtime.inc
 strings/index.lo: go/strings/indexbyte.c runtime.inc
 	@$(MKDIR_P) strings
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/strings/indexbyte.c
+internal/bytealg/bytealg.lo: go/internal/bytealg/bytealg.c runtime.inc
+	@$(MKDIR_P) internal/bytealg
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/bytealg/bytealg.c
 
 # Use a C function with a fixed number of arguments to call a C
 # varargs function.
@@ -1023,6 +1050,11 @@ syscall/signame.lo: go/syscall/signame.c runtime.inc
 syscall/wait.lo: go/syscall/wait.c runtime.inc
 	@$(MKDIR_P) syscall
 	$(LTCOMPILE) -c -o $@ $(srcdir)/go/syscall/wait.c
+
+# internal/cpu needs some C code.
+internal/cpu/cpu_gccgo.lo: go/internal/cpu/cpu_gccgo.c runtime.inc
+	@$(MKDIR_P) internal/cpu
+	$(LTCOMPILE) -c -o $@ $(srcdir)/go/internal/cpu/cpu_gccgo.c
 
 # Solaris 11.4 changed the type of fields in struct stat.
 # Use a build tag, based on a configure check, to cope.

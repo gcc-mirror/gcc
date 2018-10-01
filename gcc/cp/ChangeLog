@@ -1,3 +1,43 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* method.c (use_thunk): Adjust call to cgraph_node::create_thunk.
+
+2018-09-28  Richard Biener  <rguenther@suse.de>
+
+	* error.c (cp_print_error_function): Simplify by eliding
+	the BLOCK_ABSTRACT_ORIGIN chasing.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* semantics.c (finish_unary_op_expr): Check return value of
+	build_x_unary_op for error_mark_node.
+
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Only
+	look through COMPONENT_REFs with DECL_FIELD_IS_BASE FIELD_DECLs.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* name-lookup.c (namespace_scope_ht_size): Remove
+	unused function.
+	* parser.c (cp_lexer_next_token_is_not_keyword): Likewise.
+
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* method.c (lazily_declare_fn): During error-recovery add_method
+	may return false.
+
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* constexpr.c (maybe_constant_init_1): Pass false for strict down to
+	cxx_eval_outermost_constant_expr.
+
 2018-09-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87109 - wrong ctor with maybe-rvalue semantics.

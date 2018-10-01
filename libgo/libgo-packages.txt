@@ -19,7 +19,8 @@ crypto/dsa
 crypto/ecdsa
 crypto/elliptic
 crypto/hmac
-crypto/internal/cipherhw
+crypto/internal/randutil
+crypto/internal/subtle
 crypto/md5
 crypto/rand
 crypto/rc4
@@ -70,12 +71,16 @@ go/printer
 go/scanner
 go/token
 go/types
+golang_org/x/crypto/internal/chacha20
 golang_org/x/crypto/chacha20poly1305
 golang_org/x/crypto/chacha20poly1305/internal/chacha20
 golang_org/x/crypto/cryptobyte
 golang_org/x/crypto/cryptobyte/asn1
 golang_org/x/crypto/curve25519
 golang_org/x/crypto/poly1305
+golang_org/x/net/dns/dnsmessage
+golang_org/x/net/http/httpguts
+golang_org/x/net/http/httpproxy
 golang_org/x/net/http2/hpack
 golang_org/x/net/idna
 golang_org/x/net/internal/nettest
@@ -103,6 +108,9 @@ image/internal/imageutil
 image/jpeg
 image/png
 index/suffixarray
+internal/bytealg
+internal/cpu
+internal/goroot
 internal/nettrace
 internal/poll
 internal/race

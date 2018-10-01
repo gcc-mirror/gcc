@@ -90,6 +90,7 @@ do {							\
   if (ivin != (VAL)					\
       || ((PREC_OK) && ivout != ivin)			\
       || ((PREC_OK) && ivout != (VAL))			\
-      || fv1 != (VAL) || fv2 != (VAL) || fv1 != fv2)	\
+      || fv1 != (FT) (VAL) || fv2 != (FT) (VAL)		\
+      || fv1 != fv2)					\
     abort ();						\
 } while (0)

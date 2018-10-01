@@ -305,7 +305,9 @@ package Errout is
    --      Note: this usage is obsolete, use ?? ?*? ?$? ?x? ?X? to specify
    --      the string to be added when Warn_Doc_Switch is set to True. If this
    --      switch is True, then for simple ? messages it has no effect. This
-   --      simple form is to ease transition and will be removed later.
+   --      simple form is to ease transition and may be removed later except
+   --      for GNATprove-specific messages (info and warnings) which are not
+   --      subject to the same GNAT warning switches.
 
    --    Insertion character ?? (Two question marks: default warning)
    --      Like ?, but if the flag Warn_Doc_Switch is True, adds the string

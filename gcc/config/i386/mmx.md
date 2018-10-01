@@ -1570,68 +1570,34 @@
    (set_attr "znver1_decode" "vector")
    (set_attr "mode" "DI")])
 
-(define_expand "mmx_emms"
-  [(match_par_dup 0 [(const_int 0)])]
-  "TARGET_MMX"
-{
-  int regno;
+(define_int_iterator EMMS
+  [(UNSPECV_EMMS "TARGET_MMX")
+   (UNSPECV_FEMMS "TARGET_3DNOW")])
 
-  operands[0] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (17));
+(define_int_attr emms
+  [(UNSPECV_EMMS "emms")
+   (UNSPECV_FEMMS "femms")])
 
-  XVECEXP (operands[0], 0, 0)
-    = gen_rtx_UNSPEC_VOLATILE (VOIDmode, gen_rtvec (1, const0_rtx),
-			       UNSPECV_EMMS);
-
-  for (regno = 0; regno < 8; regno++)
-    {
-      XVECEXP (operands[0], 0, regno + 1)
-	= gen_rtx_CLOBBER (VOIDmode,
-			   gen_rtx_REG (XFmode, FIRST_STACK_REG + regno));
-
-      XVECEXP (operands[0], 0, regno + 9)
-	= gen_rtx_CLOBBER (VOIDmode,
-			   gen_rtx_REG (DImode, FIRST_MMX_REG + regno));
-    }
-})
-
-(define_insn "*mmx_emms"
-  [(match_parallel 0 "emms_operation"
-    [(unspec_volatile [(const_int 0)] UNSPECV_EMMS)])]
-  "TARGET_MMX"
-  "emms"
-  [(set_attr "type" "mmx")
-   (set_attr "modrm" "0")
-   (set_attr "memory" "none")])
-
-(define_expand "mmx_femms"
-  [(match_par_dup 0 [(const_int 0)])]
-  "TARGET_3DNOW"
-{
-  int regno;
-
-  operands[0] = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (17));
-
-  XVECEXP (operands[0], 0, 0)
-    = gen_rtx_UNSPEC_VOLATILE (VOIDmode, gen_rtvec (1, const0_rtx),
-			       UNSPECV_FEMMS);
-
-  for (regno = 0; regno < 8; regno++)
-    {
-      XVECEXP (operands[0], 0, regno + 1)
-	= gen_rtx_CLOBBER (VOIDmode,
-			   gen_rtx_REG (XFmode, FIRST_STACK_REG + regno));
-
-      XVECEXP (operands[0], 0, regno + 9)
-	= gen_rtx_CLOBBER (VOIDmode,
-			   gen_rtx_REG (DImode, FIRST_MMX_REG + regno));
-    }
-})
-
-(define_insn "*mmx_femms"
-  [(match_parallel 0 "emms_operation"
-    [(unspec_volatile [(const_int 0)] UNSPECV_FEMMS)])]
-  "TARGET_3DNOW"
-  "femms"
+(define_insn "mmx_<emms>"
+  [(unspec_volatile [(const_int 0)] EMMS)
+   (clobber (reg:XF ST0_REG))
+   (clobber (reg:XF ST1_REG))
+   (clobber (reg:XF ST2_REG))
+   (clobber (reg:XF ST3_REG))
+   (clobber (reg:XF ST4_REG))
+   (clobber (reg:XF ST5_REG))
+   (clobber (reg:XF ST6_REG))
+   (clobber (reg:XF ST7_REG))
+   (clobber (reg:DI MM0_REG))
+   (clobber (reg:DI MM1_REG))
+   (clobber (reg:DI MM2_REG))
+   (clobber (reg:DI MM3_REG))
+   (clobber (reg:DI MM4_REG))
+   (clobber (reg:DI MM5_REG))
+   (clobber (reg:DI MM6_REG))
+   (clobber (reg:DI MM7_REG))]
+  ""
+  "<emms>"
   [(set_attr "type" "mmx")
    (set_attr "modrm" "0")
    (set_attr "memory" "none")])

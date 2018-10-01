@@ -210,17 +210,6 @@ Caller (int skip)
 /* Look up the function name, file name, and line number for a PC.  */
 
 struct funcfileline_return
-{
-  String retfn;
-  String retfile;
-  intgo retline;
-};
-
-struct funcfileline_return
-runtime_funcfileline (uintptr targetpc, int32 index)
-  __asm__ (GOSYM_PREFIX "runtime.funcfileline");
-
-struct funcfileline_return
 runtime_funcfileline (uintptr targetpc, int32 index)
 {
   struct funcfileline_return ret;

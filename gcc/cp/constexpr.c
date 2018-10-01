@@ -4812,7 +4812,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    return t;
 	  }
 	obj = TREE_OPERAND (obj, 0);
-	while (handled_component_p (obj))
+	while (TREE_CODE (obj) == COMPONENT_REF
+	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
 	  obj = TREE_OPERAND (obj, 0);
 	tree objtype = TREE_TYPE (obj);
 	/* Find the function decl in the virtual functions list.  TOKEN is
@@ -4960,6 +4961,9 @@ instantiate_constexpr_fns (tree t)
 }
 
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   STRICT has the same sense as for constant_value_1: true if we only allow
+   conforming C++ constant expressions, or false if we want a constant value
+   even if it doesn't conform.
    PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
@@ -5361,7 +5365,7 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
     /* No evaluation needed.  */;
   else
     t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
-					  !allow_non_constant,
+					  /*strict*/false,
 					  pretend_const_required, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {

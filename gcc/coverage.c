@@ -304,16 +304,21 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
     {
       static int warned = 0;
 
-      if (!warned++ && dump_enabled_p ())
+      if (!warned++)
 	{
-	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   (flag_guess_branch_prob
-			    ? "file %s not found, execution counts estimated\n"
-			    : "file %s not found, execution counts assumed to "
-			    "be zero\n"),
-			   da_file_name);
+	  warning (OPT_Wmissing_profile,
+		   "%qs profile count data file not found",
+		   da_file_name);
+	  if (dump_enabled_p ())
+	    {
+	      dump_user_location_t loc
+		= dump_user_location_t::from_location_t (input_location);
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			       "file %s not found, %s\n", da_file_name,
+			       (flag_guess_branch_prob
+				? "execution counts estimated"
+				: "execution counts assumed to be zero"));
+	    }
 	}
       return NULL;
     }
@@ -327,26 +332,34 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
   if (!entry)
-    /* The function was not emitted, or is weak and not chosen in the
-       final executable.  Silently fail, because there's nothing we
-       can do about it.  */
-    return NULL;
+    {
+      if (counter == GCOV_COUNTER_ARCS)
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wmissing_profile,
+		    "profile for function %qD not found in profile data",
+		    current_function_decl);
+      /* The function was not emitted, or is weak and not chosen in the
+	 final executable.  Silently fail, because there's nothing we
+	 can do about it.  */
+      return NULL;
+    }
   
   if (entry->cfg_checksum != cfg_checksum)
     {
       static int warned = 0;
       bool warning_printed = false;
-      tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
       warning_printed =
-	warning_at (input_location, OPT_Wcoverage_mismatch,
-		    "the control flow of function %qE does not match "
-		    "its profile data (counter %qs)", id, ctr_names[counter]);
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wcoverage_mismatch,
+		    "the control flow of function %qD does not match "
+		    "its profile data (counter %qs)", current_function_decl,
+		    ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
 	    = dump_user_location_t::from_location_t (input_location);
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -354,14 +367,14 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                                "coverage mismatch ignored\n");
-	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
+	      dump_printf (MSG_MISSED_OPTIMIZATION,
                            flag_guess_branch_prob
                            ? G_("execution counts estimated\n")
                            : G_("execution counts assumed to be zero\n"));
 	      if (!flag_guess_branch_prob)
-		dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		dump_printf (MSG_MISSED_OPTIMIZATION,
                              "this can result in poorly optimized code\n");
 	    }
 	}
@@ -370,10 +383,11 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
     }
   else if (entry->lineno_checksum != lineno_checksum)
     {
-      warning (OPT_Wcoverage_mismatch,
-               "source locations for function %qE have changed,"
-	       " the profile data may be out of date",
-	       DECL_ASSEMBLER_NAME (current_function_decl));
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_mismatch,
+		  "source locations for function %qD have changed,"
+		  " the profile data may be out of date",
+		  current_function_decl);
     }
 
   return entry->counts;

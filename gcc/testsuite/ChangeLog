@@ -1,3 +1,425 @@
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* gfortran.dg/associate_40.f90 : New test.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70752
+	PR fortran/72709
+	* gfortran.dg/deferred_character_25.f90 : New test.
+	* gfortran.dg/deferred_character_26.f90 : New test.
+	* gfortran.dg/deferred_character_27.f90 : New test to verify
+	that PR82617 remains fixed.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* gfortran.dg/deferred_character_24.f90 : New test.
+
+2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87370
+	* gcc.target/i386/pr87370.c: New test.
+
+2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65667
+	* gfortran.dg/dependency_52.f90 : New test.
+
+2018-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87467
+	* gcc.target/i386/avx512f-abspd-1.c (SIZE): Divide by two.
+	(CALC): Use double instead of float.
+	(TEST): Adjust to test _mm512_abs_pd and _mm512_mask_abs_pd rather than
+	_mm512_abs_ps and _mm512_mask_abs_ps.
+
+2018-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/unroll-1.c: Update expected output from "note" to
+	"optimized".
+	* c-c++-common/unroll-2.c: Likewise.
+	* c-c++-common/unroll-3.c: Likewise.
+	* g++.dg/tree-ssa/dom-invalid.C: Update expected output from
+	dg-message to dg-missed.  Convert param from -fopt-info to
+	-fopt-info-missed-ipa.
+	* g++.dg/tree-ssa/pr81408.C: Update expected output from
+	dg-message to dg-missed.
+	* g++.dg/vect/slp-pr56812.cc: Update expected output from
+	dg-message to dg-optimized.
+	* gcc.dg/pr26570.c: Update expected output from dg-message to
+	dg-missed.  Convert param from -fopt-info to
+	-fopt-info-missed-ipa.
+	* gcc.dg/pr32773.c: Likewise.
+	* gcc.dg/tree-ssa/pr19210-1.c: Update expected output from
+	dg-message to dg-missed.
+	* gcc.dg/unroll-2.c: Update expected output from dg-message to
+	dg-optimized.
+	* gcc.dg/vect/nodump-vect-opt-info-1.c: Likewise.  Convert param
+	from -fopt-info to -fopt-info-vec.
+	* gfortran.dg/directive_unroll_1.f90: Update expected output from
+	"note" to "optimized".
+	* gfortran.dg/directive_unroll_2.f90: Likewise.
+	* gfortran.dg/directive_unroll_3.f90: Likewise.
+	* gnat.dg/unroll4.adb: Likewise.
+	* lib/gcc-dg.exp (dg-optimized): New procedure.
+	(dg-missed): New procedure.
+
+2018-09-28  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* gcc.dg/torture/fp-int-convert.h (TEST_I_F_VAL): Convert integer
+	values explicitly to target type for comparison.
+
+2018-09-28  Steve Ellcey  <sellcey@cavium.com>
+
+	PR testsuite/87433
+	* gcc.target/aarch64/ashltidisi.c: Expect 3 asr instructions
+	instead of 4.
+
+2018-09-28  Steve Ellcey  <sellcey@cavium.com>
+
+	PR testsuite/87433
+	* gcc.dg/zero_bits_compound-1.c: Do not run on aarch64*-*-*.
+
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20160229-1.c: Minor tweak.
+	* gcc.target/sparc/cbcond-2.c: Likewise.
+	* gcc.target/sparc/movcc-1.c: Add -mcpu=v9 option.
+	* gcc.target/sparc/movcc-2.c: Minor tweak.
+	* gcc.target/sparc/overflow-3.c: Likewise.
+	* gcc.target/sparc/overflow-4.c: Add -mno-vis4 option.
+	* gcc.target/sparc/overflow-5.c: Minor tweak.
+	* gcc.target/sparc/setcc-4.c: Add -mno-vis4 option.
+
+2018-09-27  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* g++.dg/ext/altivec-6.C: Change the vec_splat second argument to a
+	valid value, in the "vector bool int" case.
+
+2018-09-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/rtl/x86_64/dfinit.c: Update scan-rtl-dump string.
+	* gcc.dg/rtl/x86_64/times-two.c.before-df.c: Ditto.
+	* gcc.target/i386/pr79804.c (foo): Use register "19", not "20".
+
+2018-09-27  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/pr60518.C: Add -Wno-missing-profile.
+	* g++.dg/torture/pr59265.C: Likewise.
+	* g++.dg/tree-prof/morefunc.C: Likewise.
+	* g++.dg/tree-ssa/dom-invalid.C: Likewise.
+	* gcc.dg/pr26570.c: Likewise.
+	* gcc.dg/pr32773.c: Likewise.
+	* gcc.dg/pr40209.c: Likewise.
+	* gcc.dg/pr51957-1.c: Likewise.
+	* gcc.dg/pr80747.c: Likewise.
+	* gcc.target/aarch64/pr62262.c: Likewise.
+
+2018-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/87451
+	* gcc.dg/debug/dwarf2/inline5.c: Deal with different comment characters.
+
+2018-09-27  Richard Biener  <rguenther@suse.de>
+
+	PR debug/37801
+	PR debug/87440
+	* gcc.dg/debug/dwarf2/inline2.c: Adjust.
+	* gcc.dg/debug/dwarf2/inline4.c: New testcase.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67544
+	* g++.dg/concepts/pr67544.C: New.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* g++.dg/expr/unary4.C: New.
+
+2018-09-26  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	PR gcov-profile/86957
+	* gcc.dg/Wmissing-profile.c: New test.
+
+2018-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* gcc.target/i386/excess-precision-9.c,
+	gcc.target/i386/excess-precision-10.c: New tests.
+
+2018-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR debug/87443
+	* gcc.dg/debug/dwarf2/inline5.c: New testcase.
+
+2018-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/87347
+	* gcc.dg/pr87347.c: New test.
+
+2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71131
+	* g++.dg/concepts/pr71131.C: New.
+
+2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71127
+	* g++.dg/concepts/pr71127.C: New.
+
+2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67655
+	* g++.dg/concepts/pr67655.C: New.
+
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/sso13.adb: New testcase.
+
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/warn16.adb: New testcase.
+
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/elab7.adb, gnat.dg/elab7_pkg1.adb,
+	gnat.dg/elab7_pkg1.ads, gnat.dg/elab7_pkg2.adb,
+	gnat.dg/elab7_pkg2.ads: New testcase.
+
+2018-09-26  Javier Miranda  <miranda@adacore.com>
+
+	* gnat.dg/interface8.adb, gnat.dg/interface8.ads: New testcase.
+
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate2-containers.ads,
+	gnat.dg/predicate2-project-name_values.ads,
+	gnat.dg/predicate2-project-registry-attribute.ads,
+	gnat.dg/predicate2-project-registry.ads,
+	gnat.dg/predicate2-project-typ-set.ads,
+	gnat.dg/predicate2-project-typ.ads,
+	gnat.dg/predicate2-project.ads,
+	gnat.dg/predicate2-source_reference.ads, gnat.dg/predicate2.ads,
+	gnat.dg/predicate2_main.adb: New testcase.
+
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/dynhash1.adb: New testcase.
+
+2018-09-26  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/sets1.adb: New testcase.
+	* gnat.dg/dynhash.adb, gnat.dg/linkedlist.adb: Update testcases
+	to new API.
+
+2018-09-26  Thomas Quinot  <quinot@adacore.com>
+
+	* gnat.dg/sso12.adb: New testcase.
+
+2018-09-26  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/expr_func8.adb: New testcase.
+
+2018-09-26  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/predicate3.adb, gnat.dg/predicate3_pkg.ads: New
+	testcase.
+
+2018-09-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/67656
+	* g++.dg/concepts/pr67656.C: New.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/addr12.adb, gnat.dg/addr12_a.adb,
+	gnat.dg/addr12_a.ads, gnat.dg/addr12_b.adb,
+	gnat.dg/addr12_b.ads, gnat.dg/addr12_c.ads: New testcase.
+
+2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/vthunk1.C: Rename to...
+	* g++.dg/other/thunk1.C: ...this.
+	* g++.dg/other/thunk2a.C: New test.
+	* g++.dg/other/thunk2b.C: Likewise.
+
+2018-09-25  Jim Wilson  <jimw@sifive.com>
+
+	* gcc.target/riscv/weak-1.c: New.
+
+2018-09-25  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/warn-stpcpy-no-nul.c: Drop unnecessary xfails.
+	* gcc.dg/warn-stplen-no-nul.c: Likewise.
+
+2018-09-25  Alexandre Oliva <oliva@adacore.com>
+
+	* gnat.dg/dinst.adb: Adjust for locviews.
+
+2018-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* g++.dg/ext/altivec-6.C: Updated vec_splat() calls.
+	* gcc.target/powerpc/fold-vec-splat-char.c: Remove invalid
+	vec_splat calls from recently added tests. Update instruction counts.
+	* gcc.target/powerpc/fold-vec-splat-floatdouble.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-int.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-longlong.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-pixel.c: Same.
+	* gcc.target/powerpc/fold-vec-splat-short.c: Same.
+
+2018-09-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87425
+	* g++.dg/cpp2a/constexpr-virtual12.C: New test.
+
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* g++.dg/other/pr87398.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual10.C: New test.
+	* g++.dg/cpp2a/constexpr-virtual11.C: New test.
+
+2018-09-25  Martin Jambor  <mjambor@suse.cz>
+
+	PR testsuite/87339
+	* gcc.dg/warn-abs-1.c: Do not test _Float128.  Remove dg-skip-if and
+	float125 target.
+	* gcc.target/i386/warn-abs-3.c: New test.
+
+2018-09-25  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81246
+	* g++.dg/cpp0x/pr81246.C: New.
+
+2018-09-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82699
+	* gcc.target/i386/pr82699-5.c: Add -fno-pic for ia32.
+	* gcc.target/i386/pr82699-6.c: Add -fno-pic.
+
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/coarray_lock_7.f90: Adjust scan-tree-dump-times for
+	ILP32.
+
+2018-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87402
+	* gcc.dg/torture/pr87402.c: New testcase.
+
+2018-09-25  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR testsuite/70150
+	* gcc.dg/20020312-2.c (dg-additional-options): Set to "-no-pie"
+	for pie_enabled target.
+	* gcc.dg/uninit-19.c: Check pie_enabled for PIC.
+	* gcc.target/i386/pr34256.c: Likewise.
+
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* g++.dg/cpp0x/pr85070.C: New.
+
+2018-09-24  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82699
+	* gcc.target/i386/pr82699-1.c: New file.
+	* gcc.target/i386/pr82699-2.c: Likewise.
+	* gcc.target/i386/pr82699-3.c: Likewise.
+	* gcc.target/i386/pr82699-4.c: Likewise.
+	* gcc.target/i386/pr82699-5.c: Likewise.
+	* gcc.target/i386/pr82699-6.c: Likewise.
+
+2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87401
+	* gfortran.dg/intent_out_12.f90: New test.
+
+2018-09-24  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	PR testsuite/86952
+	* gcc.target/powerpc/p8-vec-xl-xst-v2.c: Add and
+	update expected codegen
+
+2018-09-24  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/nested-parallelism.f90: New test.
+
+2018-09-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/80080
+	* gcc.target/s390/risbg-ll-3.c: Expect conditional returns.
+	* gcc.target/s390/zvector/vec-cmp-2.c: Likewise.
+
+2018-09-24  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/85774
+	* g++.dg/asan/pr85774.C: New test.
+
+2018-09-24  Alexandre Oliva <oliva@adacore.com>
+
+	PR middle-end/87054
+	* gcc.dg/pr87054.c: Adjust for no __int128 on x86.
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87395
+	* gfortran.dg/intent_out_11.f90: New test.
+
+2018-09-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* gfortran.dg/coarray_lib_alloc_4.f90: Fix scan patterns.
+	* gfortran.dg/coarray_lock_7.f90: Likewise.
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87395
+	* gfortran.dg/intent_out_10.f90: New test.
+
+2018-09-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41453
+	* gfortran.dg/intent_optimize_2.f90: New test.
+
+2018-09-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/87318
+	* gfortran.dg/dtio_1.f90: Update test to valid code.
+
+2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* gfortran.dg/deferred_character_23.f90 : New test.
+
+2018-09-21  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp113.c: Disable EVRP.
+	* gcc.dg/tree-ssa/vrp120.c: New test.
+
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* g++.dg/cpp1y/func_constexpr2.C: New test.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77325
+	* gfortran.dg/deferred_character_22.f90 : New test.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* gfortran.dg/finalize_33.f90 : New test.
+
+2018-09-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87309
+	* gcc.dg/pr87309.c: New test.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-14.c: New test.

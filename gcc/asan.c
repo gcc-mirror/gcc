@@ -253,7 +253,7 @@ static tree last_alloca_addr;
 /* Set of variable declarations that are going to be guarded by
    use-after-scope sanitizer.  */
 
-static hash_set<tree> *asan_handled_variables = NULL;
+hash_set<tree> *asan_handled_variables = NULL;
 
 hash_set <tree> *asan_used_labels = NULL;
 

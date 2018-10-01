@@ -125,13 +125,12 @@ const long double toler3 = 1e-16l;
 void
 test01()
 {
-  // See hypot-long-double.cc for this macro
-#ifndef TEST_HYPOT_LONG_DOUBLE
   test(data1, toler1);
   test(data2, toler2);
-#else
-  test(data3, toler3);
-#endif
+  if (sizeof(long double) > sizeof(double))
+    test(data3, toler3);
+  else
+    test(data3, (long double)toler1);
 }
 
 int

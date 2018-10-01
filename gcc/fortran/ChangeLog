@@ -1,3 +1,120 @@
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-array.c (gfc_is_reallocatable_lhs): Correct the problem
+	introduced by r264358, which prevented components of associate
+	names from being reallocated on assignment.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70752
+	PR fortran/72709
+	* trans-array.c (gfc_conv_scalarized_array_ref): If this is a
+	deferred type and the info->descriptor is present, use the
+	info->descriptor
+	(gfc_conv_array_ref): Is the se expr is a descriptor type, pass
+	it as 'decl' rather than the symbol backend_decl.
+	(gfc_array_allocate): If the se string_length is a component
+	reference, fix it and use it for the expression string length
+	if the latter is not a variable type. If it is a variable do
+	an assignment. Make use of component ref string lengths to set
+	the descriptor 'span'.
+	(gfc_conv_expr_descriptor): For pointer assignment, do not set
+	the span field if gfc_get_array_span returns zero.
+	* trans.c (get_array_span): If the upper bound a character type
+	is zero, use the descriptor span if available.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* trans-decl.c (gfc_get_symbol_decl): A deferred character
+	length pointer that is initialized needs the string length to
+	be initialized as well.
+
+2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65667
+	* trans-expr.c (gfc_trans_assignment_1): If there is dependency
+	fix the rse stringlength.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/87394
+	* decl.c (add_hidden_procptr_result): Simplify condition
+	as we are in branch witch 'case1 || case2'.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* trans.c (remove_suffix): Remove
+	unused function.
+
+2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87397
+	* gfc_conv_procedure_call: Do not add clobber on INTENT(OUT)
+	for variables in an associate statement.
+
+2018-09-24  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (resolve_oacc_loop_blocks):
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87397
+	* gfc_conv_procedure_call: Do not add clobber on INTENT(OUT)
+	for variables having the dimension attribute.
+
+2018-09-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-expr.c (gfc_caf_get_image_index): Do array index
+	calculations in gfc_array_index_type.
+	* trans-intrinsic.c (conv_intrinsic_event_query): Likewise.
+	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
+	(gfc_trans_event_post_wait): Likewise.
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87395
+	* gfc_conv_procedure_call: Reformat comments slightly. Do not add
+	clobber on INTENT(OUT) for saved variables.
+
+2018-09-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41453
+	* trans.h (gfc_conv_expr_reference): Add optional argument
+	add_clobber to prototype.
+	(gfc_conv_procedure_call):  Set add_clobber argument to
+	gfc_conv_procedure_reference to true for scalar, INTENT(OUT),
+	non-pointer, non-allocatable, non-dummy variables whose type
+	is neither BT_CHARACTER, BT_DERIVED or BT_CLASS, but only if
+	the procedure is not elemental.
+	* trans-expr.c (gfc_conv_procedure_reference): Add clobber
+	statement before call if add_clobber is set.
+
+2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Test
+	the charlen backend_decl before using the VAR_P macro.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77325
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): If the
+	rhs has a charlen expression, convert that and use it.
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character array vars to a realocatable
+	lhs should not be added to the exterior block since vector
+	indices, for example, generate temporaries indexed within the
+	loop.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-stmt.c (gfc_trans_allocate): Don't deallocate alloc
+	components if must_finalize is set for expr3.
+
 2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
             Kwok Cheung Yeung  <kcy@codesourcery.com>
 

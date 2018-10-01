@@ -6463,7 +6463,7 @@ add_hidden_procptr_result (gfc_symbol *sym)
       gfc_symtree *stree;
       if (case1)
 	gfc_get_sym_tree ("ppr@", gfc_current_ns, &stree, false);
-      else if (case2)
+      else
 	{
 	  gfc_symtree *st2;
 	  gfc_get_sym_tree ("ppr@", gfc_current_ns->parent, &stree, false);

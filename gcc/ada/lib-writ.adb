@@ -226,10 +226,6 @@ package body Lib.Writ is
       Num_Sdep : Nat := 0;
       --  Number of active entries in Sdep_Table
 
-      flag_compare_debug : Int;
-      pragma Import (C, flag_compare_debug);
-      --  Import from toplev.c
-
       -----------------------
       -- Local Subprograms --
       -----------------------
@@ -960,9 +956,14 @@ package body Lib.Writ is
 
                   --  In GNATprove mode we must write the spec of a unit which
                   --  requires a body if that body is not found. This will
-                  --  allow partial analysis on incomplete sources.
+                  --  allow partial analysis on incomplete sources. Also, in
+                  --  the case of a unit that is a remote call interface, the
+                  --  bodies of packages may not exist but still may form a
+                  --  valid program - so we handle that here as well.
 
-                  if GNATprove_Mode then
+                  if GNATprove_Mode
+                    or else Is_Remote_Call_Interface (Cunit_Entity (Unum))
+                  then
                      Body_Fname :=
                        Get_File_Name
                          (Uname    => Get_Body_Name (Uname),
@@ -1074,9 +1075,7 @@ package body Lib.Writ is
       --  We never write an ALI file if the original operating mode was
       --  syntax-only (-gnats switch used in compiler invocation line)
 
-      if Original_Operating_Mode = Check_Syntax
-        or flag_compare_debug /= 0
-      then
+      if Original_Operating_Mode = Check_Syntax then
          return;
       end if;
 

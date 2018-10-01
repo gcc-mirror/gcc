@@ -85,16 +85,25 @@ func TestBuilderReset(t *testing.T) {
 }
 
 func TestBuilderGrow(t *testing.T) {
+	if runtime.Compiler == "gccgo" {
+		t.Skip("skip for gccgo until escape analysis improves")
+	}
 	for _, growLen := range []int{0, 100, 1000, 10000, 100000} {
-		var b Builder
-		b.Grow(growLen)
 		p := bytes.Repeat([]byte{'a'}, growLen)
-		allocs := numAllocs(func() { b.Write(p) })
-		if allocs > 0 {
-			t.Errorf("growLen=%d: allocation occurred during write", growLen)
+		allocs := testing.AllocsPerRun(100, func() {
+			var b Builder
+			b.Grow(growLen) // should be only alloc, when growLen > 0
+			b.Write(p)
+			if b.String() != string(p) {
+				t.Fatalf("growLen=%d: bad data written after Grow", growLen)
+			}
+		})
+		wantAllocs := 1
+		if growLen == 0 {
+			wantAllocs = 0
 		}
-		if b.String() != string(p) {
-			t.Errorf("growLen=%d: bad data written after Grow", growLen)
+		if g, w := int(allocs), wantAllocs; g != w {
+			t.Errorf("growLen=%d: got %d allocs during Write; want %v", growLen, g, w)
 		}
 	}
 }
@@ -168,16 +177,17 @@ func TestBuilderWriteByte(t *testing.T) {
 
 func TestBuilderAllocs(t *testing.T) {
 	if runtime.Compiler == "gccgo" {
-		t.Skip("skip for gccgo until escape analysis enabled by default")
+		t.Skip("skip for gccgo until escape analysis improves")
 	}
 	var b Builder
-	b.Grow(5)
+	const msg = "hello"
+	b.Grow(len(msg) * 2) // because AllocsPerRun does an extra "warm-up" iteration
 	var s string
-	allocs := numAllocs(func() {
+	allocs := int(testing.AllocsPerRun(1, func() {
 		b.WriteString("hello")
 		s = b.String()
-	})
-	if want := "hello"; s != want {
+	}))
+	if want := msg + msg; s != want {
 		t.Errorf("String: got %#q; want %#q", s, want)
 	}
 	if allocs > 0 {
@@ -195,15 +205,6 @@ func TestBuilderAllocs(t *testing.T) {
 	if n != 1 {
 		t.Errorf("Builder allocs = %v; want 1", n)
 	}
-}
-
-func numAllocs(fn func()) uint64 {
-	defer runtime.GOMAXPROCS(runtime.GOMAXPROCS(1))
-	var m1, m2 runtime.MemStats
-	runtime.ReadMemStats(&m1)
-	fn()
-	runtime.ReadMemStats(&m2)
-	return m2.Mallocs - m1.Mallocs
 }
 
 func TestBuilderCopyPanic(t *testing.T) {
@@ -304,4 +305,53 @@ func TestBuilderCopyPanic(t *testing.T) {
 			t.Errorf("%s: panicked = %v; want %v", tt.name, got, tt.wantPanic)
 		}
 	}
+}
+
+var someBytes = []byte("some bytes sdljlk jsklj3lkjlk djlkjw")
+
+var sinkS string
+
+func benchmarkBuilder(b *testing.B, f func(b *testing.B, numWrite int, grow bool)) {
+	b.Run("1Write_NoGrow", func(b *testing.B) {
+		b.ReportAllocs()
+		f(b, 1, false)
+	})
+	b.Run("3Write_NoGrow", func(b *testing.B) {
+		b.ReportAllocs()
+		f(b, 3, false)
+	})
+	b.Run("3Write_Grow", func(b *testing.B) {
+		b.ReportAllocs()
+		f(b, 3, true)
+	})
+}
+
+func BenchmarkBuildString_Builder(b *testing.B) {
+	benchmarkBuilder(b, func(b *testing.B, numWrite int, grow bool) {
+		for i := 0; i < b.N; i++ {
+			var buf Builder
+			if grow {
+				buf.Grow(len(someBytes) * numWrite)
+			}
+			for i := 0; i < numWrite; i++ {
+				buf.Write(someBytes)
+			}
+			sinkS = buf.String()
+		}
+	})
+}
+
+func BenchmarkBuildString_ByteBuffer(b *testing.B) {
+	benchmarkBuilder(b, func(b *testing.B, numWrite int, grow bool) {
+		for i := 0; i < b.N; i++ {
+			var buf bytes.Buffer
+			if grow {
+				buf.Grow(len(someBytes) * numWrite)
+			}
+			for i := 0; i < numWrite; i++ {
+				buf.Write(someBytes)
+			}
+			sinkS = buf.String()
+		}
+	})
 }

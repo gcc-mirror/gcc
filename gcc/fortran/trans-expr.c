@@ -2095,60 +2095,56 @@ gfc_caf_get_image_index (stmtblock_t *block, gfc_expr *e, tree desc)
 				  integer_zero_node);
     }
 
-  img_idx = integer_zero_node;
-  extent = integer_one_node;
+  img_idx = build_zero_cst (gfc_array_index_type);
+  extent = build_one_cst (gfc_array_index_type);
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (desc)))
     for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
       {
 	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
+	gfc_conv_expr_type (&se, ref->u.ar.start[i], gfc_array_index_type);
 	gfc_add_block_to_block (block, &se.pre);
 	lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr,
-			       fold_convert(integer_type_node, lbound));
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
+			       TREE_TYPE (lbound), se.expr, lbound);
+	tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
 			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   img_idx, tmp);
+	img_idx = fold_build2_loc (input_location, PLUS_EXPR,
+				   TREE_TYPE (tmp), img_idx, tmp);
 	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
 	  {
 	    ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
 	    tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-	    tmp = fold_convert (integer_type_node, tmp);
 	    extent = fold_build2_loc (input_location, MULT_EXPR,
-				      integer_type_node, extent, tmp);
+				      TREE_TYPE (tmp), extent, tmp);
 	  }
       }
   else
     for (i = ref->u.ar.dimen; i < ref->u.ar.dimen + ref->u.ar.codimen; i++)
       {
 	gfc_init_se (&se, NULL);
-	gfc_conv_expr_type (&se, ref->u.ar.start[i], integer_type_node);
+	gfc_conv_expr_type (&se, ref->u.ar.start[i], gfc_array_index_type);
 	gfc_add_block_to_block (block, &se.pre);
 	lbound = GFC_TYPE_ARRAY_LBOUND (TREE_TYPE (desc), i);
-	lbound = fold_convert (integer_type_node, lbound);
 	tmp = fold_build2_loc (input_location, MINUS_EXPR,
-			       integer_type_node, se.expr, lbound);
-	tmp = fold_build2_loc (input_location, MULT_EXPR, integer_type_node,
+			       TREE_TYPE (lbound), se.expr, lbound);
+	tmp = fold_build2_loc (input_location, MULT_EXPR, TREE_TYPE (tmp),
 			       extent, tmp);
-	img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
+	img_idx = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (tmp),
 				   img_idx, tmp);
 	if (i < ref->u.ar.dimen + ref->u.ar.codimen - 1)
 	  {
 	    ubound = GFC_TYPE_ARRAY_UBOUND (TREE_TYPE (desc), i);
-	    ubound = fold_convert (integer_type_node, ubound);
 	    tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				      integer_type_node, ubound, lbound);
-	    tmp = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-				   tmp, integer_one_node);
+				   TREE_TYPE (ubound), ubound, lbound);
+	    tmp = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (tmp),
+				   tmp, build_one_cst (TREE_TYPE (tmp)));
 	    extent = fold_build2_loc (input_location, MULT_EXPR,
-				      integer_type_node, extent, tmp);
+				      TREE_TYPE (tmp), extent, tmp);
 	  }
       }
-  img_idx = fold_build2_loc (input_location, PLUS_EXPR, integer_type_node,
-			     img_idx, integer_one_node);
-  return img_idx;
+  img_idx = fold_build2_loc (input_location, PLUS_EXPR, TREE_TYPE (img_idx),
+			     img_idx, build_one_cst (TREE_TYPE (img_idx)));
+  return fold_convert (integer_type_node, img_idx);
 }
 
 
@@ -5276,8 +5272,22 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			}
 		    }
 		  else
-		    gfc_conv_expr_reference (&parmse, e);
+		    {
+		      bool add_clobber;
+		      add_clobber = fsym && fsym->attr.intent == INTENT_OUT
+			&& !fsym->attr.allocatable && !fsym->attr.pointer
+			&& !e->symtree->n.sym->attr.dimension
+			&& !e->symtree->n.sym->attr.pointer
+			/* See PR 41453.  */
+			&& !e->symtree->n.sym->attr.dummy
+			/* FIXME - PR 87395 and PR 41453  */
+			&& e->symtree->n.sym->attr.save == SAVE_NONE 
+			&& !e->symtree->n.sym->attr.associate_var
+			&& e->ts.type != BT_CHARACTER && e->ts.type != BT_DERIVED
+			&& e->ts.type != BT_CLASS && !sym->attr.elemental;
 
+		      gfc_conv_expr_reference (&parmse, e, add_clobber);
+		    }
 		  /* Catch base objects that are not variables.  */
 		  if (e->ts.type == BT_CLASS
 			&& e->expr_type != EXPR_VARIABLE
@@ -8060,7 +8070,7 @@ gfc_conv_expr_type (gfc_se * se, gfc_expr * expr, tree type)
    values only.  */
 
 void
-gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
+gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr, bool add_clobber)
 {
   gfc_ss *ss;
   tree var;
@@ -8099,6 +8109,16 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 	  gfc_add_modify (&se->pre, var, se->expr);
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
+	}
+      else if (add_clobber)
+	{
+	  tree clobber;
+	  tree var;
+	  /* FIXME: This fails if var is passed by reference, see PR
+	     41453.  */
+	  var = expr->symtree->n.sym->backend_decl;
+	  clobber = build_clobber (TREE_TYPE (var));
+	  gfc_add_modify (&se->pre, var, clobber);
 	}
       return;
     }
@@ -10187,7 +10207,11 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	   || TREE_CODE (rse.string_length) == INDIRECT_REF))
     string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
   else if (expr2->ts.type == BT_CHARACTER)
-    string_length = rse.string_length;
+    {
+      if (expr1->ts.deferred && gfc_check_dependency (expr1, expr2, false))
+	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+      string_length = rse.string_length;
+    }
   else
     string_length = NULL_TREE;
 
@@ -10275,17 +10299,21 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   /* When assigning a character function result to a deferred-length variable,
      the function call must happen before the (re)allocation of the lhs -
      otherwise the character length of the result is not known.
-     NOTE: This relies on having the exact dependence of the length type
+     NOTE 1: This relies on having the exact dependence of the length type
      parameter available to the caller; gfortran saves it in the .mod files.
-     NOTE ALSO: The concatenation operation generates a temporary pointer,
+     NOTE 2: Vector array references generate an index temporary that must
+     not go outside the loop. Otherwise, variables should not generate
+     a pre block.
+     NOTE 3: The concatenation operation generates a temporary pointer,
      whose allocation must go to the innermost loop.
-     NOTE ALSO (2): Elemental functions may generate a temporary, too.  */
+     NOTE 4: Elemental functions may generate a temporary, too.  */
   if (flag_realloc_lhs
       && expr2->ts.type == BT_CHARACTER && expr1->ts.deferred
       && !(lss != gfc_ss_terminator
 	   && rss != gfc_ss_terminator
-	   && ((expr2->expr_type == EXPR_FUNCTION
-		&& expr2->value.function.esym != NULL
+	   && ((expr2->expr_type == EXPR_VARIABLE && expr2->rank)
+	       || (expr2->expr_type == EXPR_FUNCTION
+		   && expr2->value.function.esym != NULL
 		   && expr2->value.function.esym->attr.elemental)
 	       || (expr2->expr_type == EXPR_FUNCTION
 		   && expr2->value.function.isym != NULL

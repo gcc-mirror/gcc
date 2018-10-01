@@ -3692,8 +3692,16 @@ package body Sem_Ch8 is
       --  and mark any use_package_clauses that affect the visibility of the
       --  implicit generic actual.
 
+      --  Also, we may be looking at an internal renaming of a user-defined
+      --  subprogram created for a generic formal subprogram association,
+      --  which will also have to be marked here. This can occur when the
+      --  corresponding formal subprogram contains references to other generic
+      --  formals.
+
       if Is_Generic_Actual_Subprogram (New_S)
-        and then (Is_Intrinsic_Subprogram (New_S) or else From_Default (N))
+        and then (Is_Intrinsic_Subprogram (New_S)
+                   or else From_Default (N)
+                   or else Nkind (N) = N_Subprogram_Renaming_Declaration)
       then
          Mark_Use_Clauses (New_S);
 

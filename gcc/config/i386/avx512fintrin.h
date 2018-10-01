@@ -7798,7 +7798,7 @@ _mm512_mask_abs_ps (__m512 __W, __mmask16 __U, __m512 __A)
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_abs_pd (__m512 __A)
+_mm512_abs_pd (__m512d __A)
 {
   return (__m512d) _mm512_and_epi64 ((__m512i) __A,
 				     _mm512_set1_epi64 (0x7fffffffffffffffLL));
@@ -7806,7 +7806,7 @@ _mm512_abs_pd (__m512 __A)
 
 extern __inline __m512d
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_abs_pd (__m512d __W, __mmask8 __U, __m512 __A)
+_mm512_mask_abs_pd (__m512d __W, __mmask8 __U, __m512d __A)
 {
   return (__m512d)
 	 _mm512_mask_and_epi64 ((__m512i) __W, __U, (__m512i) __A,

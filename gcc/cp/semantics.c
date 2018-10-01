@@ -2727,13 +2727,14 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   /* TODO: build_x_unary_op doesn't always honor the location.  */
   result.set_location (combined_loc);
 
-  tree result_ovl, expr_ovl;
+  if (result == error_mark_node)
+    return result;
 
   if (!(complain & tf_warning))
     return result;
 
-  result_ovl = result;
-  expr_ovl = expr;
+  tree result_ovl = result;
+  tree expr_ovl = expr;
 
   if (!processing_template_decl)
     expr_ovl = cp_fully_fold (expr_ovl);
