@@ -1,3 +1,8 @@
+2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87465
+	* gcc.dg/tree-ssa/cunroll-15.c: New testcase.
+
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
