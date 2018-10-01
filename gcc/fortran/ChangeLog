@@ -1,3 +1,9 @@
+2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* trans-expr.c (gfc_trans_assignment_1): Set the 'identical'
+	flag in the call to gfc_check_dependency.
+
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87359
@@ -33,7 +39,7 @@
 
 2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/65667
+	PR fortran/65677
 	* trans-expr.c (gfc_trans_assignment_1): If there is dependency
 	fix the rse stringlength.
 
