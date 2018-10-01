@@ -1,3 +1,15 @@
+2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/c-family/
+	* c.opt (fcoroutines, fcoroutines-ts): New.
+	* c-cppbuiltin.c (c_cpp_builtins): Add __cpp_coroutines.
+	gcc/
+	* doc/invoke.texi (fcoroutines): New description.
+
+2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Merge trunk r264732.
+
 2018-09-22  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/

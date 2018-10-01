@@ -2457,6 +2457,10 @@ Set the maximum number of iterations for a loop in C++14 constexpr functions
 to @var{n}.  A limit is needed to detect infinite loops during
 constant expression evaluation.  The default is 262144 (1<<18).
 
+@item -fcoroutines
+@opindex fcoroutines
+Enable support for the C++ coroutines extension (experimental).
+
 @item -fdeduce-init-list
 @opindex fdeduce-init-list
 Enable deduction of a template type parameter as
