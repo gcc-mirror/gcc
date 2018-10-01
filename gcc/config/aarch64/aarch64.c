@@ -10992,6 +10992,37 @@ aarch64_override_options_internal (struct gcc_options *opts)
 			 opts->x_param_values,
 			 global_options_set.x_param_values);
 
+  /* If the user hasn't changed it via configure then set the default to 64 KB
+     for the backend.  */
+  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+			 DEFAULT_STK_CLASH_GUARD_SIZE == 0
+			   ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
+
+  /* Validate the guard size.  */
+  int guard_size = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  if (guard_size != 12 && guard_size != 16)
+    error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+	   "size.  Given value %d (%llu KB) is out of range.",
+	   guard_size, (1ULL << guard_size) / 1024ULL);
+
+  /* Enforce that interval is the same size as size so the mid-end does the
+     right thing.  */
+  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
+			 guard_size,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
+
+  /* The maybe_set calls won't update the value if the user has explicitly set
+     one.  Which means we need to validate that probing interval and guard size
+     are equal.  */
+  int probe_interval
+    = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  if (guard_size != probe_interval)
+    error ("stack clash guard size '%d' must be equal to probing interval "
+	   "'%d'", guard_size, probe_interval);
+
   /* Enable sw prefetching at specified optimization level for
      CPUS that have prefetch.  Lower optimization level threshold by 1
      when profiling is enabled.  */
