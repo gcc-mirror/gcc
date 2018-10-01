@@ -252,8 +252,13 @@ changequote([,])dnl
 #ifdef __x86_64__
 #error 64-bit
 #endif],
-[GOARCH=386],
-[GOARCH=amd64])
+	[GOARCH=386],
+	AC_COMPILE_IFELSE([
+#ifdef __ILP32__
+#error x32
+#endif],
+	[GOARCH=amd64],
+	[GOARCH=amd64p32]))
     ;;
   ia64-*-*)
     GOARCH=ia64
