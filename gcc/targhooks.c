@@ -2310,8 +2310,10 @@ default_excess_precision (enum excess_precision_type ATTRIBUTE_UNUSED)
   return FLT_EVAL_METHOD_PROMOTE_TO_FLOAT;
 }
 
-bool
-default_stack_clash_protection_final_dynamic_probe (rtx residual ATTRIBUTE_UNUSED)
+/* Default implementation for
+  TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE.  */
+HOST_WIDE_INT
+default_stack_clash_protection_alloca_probe_range (void)
 {
   return 0;
 }

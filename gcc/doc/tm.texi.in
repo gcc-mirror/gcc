@@ -2841,7 +2841,7 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
-@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
+@hook TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE
 
 @need 2000
 @node Frame Registers
