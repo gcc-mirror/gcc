@@ -166,6 +166,7 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
+static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -4020,6 +4021,84 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
+/* Emit the probe loop for doing stack clash probes and stack adjustments for
+   SVE.  This emits probes from BASE to BASE - ADJUSTMENT based on a guard size
+   of GUARD_SIZE.  When a probe is emitted it is done at most
+   MIN_PROBE_THRESHOLD bytes from the current BASE at an interval of
+   at most MIN_PROBE_THRESHOLD.  By the end of this function
+   BASE = BASE - ADJUSTMENT.  */
+
+const char *
+aarch64_output_probe_sve_stack_clash (rtx base, rtx adjustment,
+				      rtx min_probe_threshold, rtx guard_size)
+{
+  /* This function is not allowed to use any instruction generation function
+     like gen_ and friends.  If you do you'll likely ICE during CFG validation,
+     so instead emit the code you want using output_asm_insn.  */
+  gcc_assert (flag_stack_clash_protection);
+  gcc_assert (CONST_INT_P (min_probe_threshold) && CONST_INT_P (guard_size));
+  gcc_assert (INTVAL (guard_size) > INTVAL (min_probe_threshold));
+
+  /* The minimum required allocation before the residual requires probing.  */
+  HOST_WIDE_INT residual_probe_guard = INTVAL (min_probe_threshold);
+
+  /* Clamp the value down to the nearest value that can be used with a cmp.  */
+  residual_probe_guard = aarch64_clamp_to_uimm12_shift (residual_probe_guard);
+  rtx probe_offset_value_rtx = gen_int_mode (residual_probe_guard, Pmode);
+
+  gcc_assert (INTVAL (min_probe_threshold) >= residual_probe_guard);
+  gcc_assert (aarch64_uimm12_shift (residual_probe_guard));
+
+  static int labelno = 0;
+  char loop_start_lab[32];
+  char loop_end_lab[32];
+  rtx xops[2];
+
+  ASM_GENERATE_INTERNAL_LABEL (loop_start_lab, "SVLPSPL", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (loop_end_lab, "SVLPEND", labelno++);
+
+  /* Emit loop start label.  */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_start_lab);
+
+  /* ADJUSTMENT < RESIDUAL_PROBE_GUARD.  */
+  xops[0] = adjustment;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("cmp\t%0, %1", xops);
+
+  /* Branch to end if not enough adjustment to probe.  */
+  fputs ("\tb.lt\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_end_lab);
+  fputc ('\n', asm_out_file);
+
+  /* BASE = BASE - RESIDUAL_PROBE_GUARD.  */
+  xops[0] = base;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+
+  /* Probe at BASE.  */
+  xops[1] = const0_rtx;
+  output_asm_insn ("str\txzr, [%0, %1]", xops);
+
+  /* ADJUSTMENT = ADJUSTMENT - RESIDUAL_PROBE_GUARD.  */
+  xops[0] = adjustment;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+
+  /* Branch to start if still more bytes to allocate.  */
+  fputs ("\tb\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_start_lab);
+  fputc ('\n', asm_out_file);
+
+  /* No probe leave.  */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_end_lab);
+
+  /* BASE = BASE - ADJUSTMENT.  */
+  xops[0] = base;
+  xops[1] = adjustment;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+  return "";
+}
+
 /* Determine whether a frame chain needs to be generated.  */
 static bool
 aarch64_needs_frame_chain (void)
@@ -4877,21 +4956,73 @@ aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
 	}
     }
 
-  HOST_WIDE_INT size;
   /* If SIZE is not large enough to require probing, just adjust the stack and
      exit.  */
-  if (!poly_size.is_constant (&size)
-      || known_lt (poly_size, min_probe_threshold)
+  if (known_lt (poly_size, min_probe_threshold)
       || !flag_stack_clash_protection)
     {
       aarch64_sub_sp (temp1, temp2, poly_size, frame_related_p);
       return;
     }
 
+  HOST_WIDE_INT size;
+  /* Handle the SVE non-constant case first.  */
+  if (!poly_size.is_constant (&size))
+    {
+     if (dump_file)
+      {
+	fprintf (dump_file, "Stack clash SVE prologue: ");
+	print_dec (poly_size, dump_file);
+	fprintf (dump_file, " bytes, dynamic probing will be required.\n");
+      }
+
+      /* First calculate the amount of bytes we're actually spilling.  */
+      aarch64_add_offset (Pmode, temp1, CONST0_RTX (Pmode),
+			  poly_size, temp1, temp2, false, true);
+
+      rtx_insn *insn = get_last_insn ();
+
+      if (frame_related_p)
+	{
+	  /* This is done to provide unwinding information for the stack
+	     adjustments we're about to do, however to prevent the optimizers
+	     from removing the R15 move and leaving the CFA note (which would be
+	     very wrong) we tie the old and new stack pointer together.
+	     The tie will expand to nothing but the optimizers will not touch
+	     the instruction.  */
+	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, R15_REGNUM);
+	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
+	  emit_insn (gen_stack_tie (stack_ptr_copy, stack_pointer_rtx));
+
+	  /* We want the CFA independent of the stack pointer for the
+	     duration of the loop.  */
+	  add_reg_note (insn, REG_CFA_DEF_CFA, stack_ptr_copy);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      rtx probe_const = gen_int_mode (min_probe_threshold, Pmode);
+      rtx guard_const = gen_int_mode (guard_size, Pmode);
+
+      insn = emit_insn (gen_probe_sve_stack_clash (Pmode, stack_pointer_rtx,
+						   stack_pointer_rtx, temp1,
+						   probe_const, guard_const));
+
+      /* Now reset the CFA register if needed.  */
+      if (frame_related_p)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				      gen_int_mode (poly_size, Pmode)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      return;
+    }
+
   if (dump_file)
     fprintf (dump_file,
-	     "Stack clash AArch64 prologue: " HOST_WIDE_INT_PRINT_DEC " bytes"
-	     ", probing will be required.\n", size);
+	     "Stack clash AArch64 prologue: " HOST_WIDE_INT_PRINT_DEC
+	     " bytes, probing will be required.\n", size);
 
   /* Round size to the nearest multiple of guard_size, and calculate the
      residual as the difference between the original size and the rounded
@@ -5494,6 +5625,20 @@ aarch64_uimm12_shift (HOST_WIDE_INT val)
 	  );
 }
 
+/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
+   that can be created with a left shift of 0 or 12.  */
+static HOST_WIDE_INT
+aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
+{
+  /* Check to see if the value fits in 24 bits, as that is the maximum we can
+     handle correctly.  */
+  gcc_assert ((val & 0xffffff) == val);
+
+  if (((val & 0xfff) << 0) == val)
+    return val;
+
+  return val & (0xfff << 12);
+}
 
 /* Return true if val is an immediate that can be loaded into a
    register by a MOVZ instruction.  */
