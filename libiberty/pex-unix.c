@@ -60,9 +60,9 @@ extern int errno;
 #endif
 
 #ifdef vfork /* Autoconf may define this to fork for us. */
-# define IS_FAKE_VFORK 1
+# define VFORK_STRING "fork"
 #else
-# define IS_FAKE_VFORK 0
+# define VFORK_STRING "vfork"
 #endif
 #ifdef HAVE_VFORK_H
 #include <vfork.h>
@@ -569,7 +569,7 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     int toclose, const char **errmsg, int *err)
 {
   pid_t pid = -1;
-  /* Tuple to comminicate error from child to parent.  We can safely
+  /* Tuple to communicate error from child to parent.  We can safely
      transfer string literal pointers as both run with identical
      address mappings.  */
   struct fn_err 
@@ -626,12 +626,22 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 
   switch (pid)
     {
+    case -1:
+      if (do_pipe)
+	{
+	  close (pipes[0]);
+	  close (pipes[1]);
+	}
+      *err = errno;
+      *errmsg = VFORK_STRING;
+      return (pid_t) -1;
+
     case 0:
+      /* Child process.  */
       {
 	struct fn_err failed;
 	failed.fn = NULL;
 
-	/* Child process.  */
 	if (do_pipe)
 	  close (pipes[0]);
 	if (!failed.fn && in != STDIN_FILE_NO)
@@ -705,19 +715,10 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 #undef writeerr
 	  }
 
-	_exit (retval);
+	/* Exit with -2 if the error output failed, too.  */
+	_exit (retval < 0 ? -2 : -1);
       }
       /* NOTREACHED */
-      return (pid_t) -1;
-
-    case -1:
-      if (do_pipe)
-	{
-	  close (pipes[0]);
-	  close (pipes[1]);
-	}
-      *err = errno;
-      *errmsg = IS_FAKE_VFORK ? "fork" : "vfork";
       return (pid_t) -1;
 
     default:

@@ -1,4 +1,4 @@
-/* -*- C++ -*- modules.  Experimental!
+/* C++ modules.  Experimental!
    Copyright (C) 2017-2018 Free Software Foundation, Inc.
    Written by Nathan Sidwell <nathan@acm.org> while at FaceBook
 
