@@ -1,5 +1,12 @@
 2018-10-01  Nathan Sidwell  <nathan@acm.org>
 
+	Avoid UB type punning union shenanigans
+	gcc/cp/
+	* module.c (macro_import::slot): Explicitly code bit
+	manipulation.  Update all users.
+	gcc/testsuite/
+	* g++.dg/modules/adhoc-1_b.C: Adjust regexp for wierd dejagnu/TCL bug.
+
 	AdHoc locations
 	gcc/cp/
 	* modules.c (dumper): Add LOCATIONS, flags.
