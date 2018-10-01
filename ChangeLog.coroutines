@@ -1,5 +1,15 @@
 2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/c-family/
+	* c-common.h (RID_CO_AWAIT, RID_CO_YIELD, RID_CO_RETURN,
+	D_CXX_COROUTINES, D_CXX_COROUTINES_FLAGS): New.
+	* c-common.c (c_common_reswords): co_await, co_yield,
+	co_return New keywords.
+	gcc/cp/
+	* lex.c (init_reswords): Handle flag_coroutines.
+
+2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* coroutines/coroutines.exp: New.
 	* coroutines/coro-pre-proc.C: New.

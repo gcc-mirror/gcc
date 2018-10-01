@@ -525,6 +525,11 @@ const struct c_common_resword c_common_reswords[] =
   { "concept",		RID_CONCEPT,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
   { "requires", 	RID_REQUIRES,	D_CXX_CONCEPTS_FLAGS | D_CXXWARN },
 
+  /* Coroutines-related keywords */
+  { "co_await",		RID_CO_AWAIT,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+  { "co_yield",		RID_CO_YIELD,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+  { "co_return", 	RID_CO_RETURN,	D_CXX_COROUTINES_FLAGS | D_CXXWARN },
+
   /* These Objective-C keywords are recognized only immediately after
      an '@'.  */
   { "compatibility_alias", RID_AT_ALIAS,	D_OBJC },
