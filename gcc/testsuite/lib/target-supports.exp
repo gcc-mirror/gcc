@@ -8396,10 +8396,6 @@ proc check_effective_target_supports_stack_clash_protection { } {
 # Return 1 if the target creates a frame pointer for non-leaf functions
 # Note we ignore cases where we apply tail call optimization here.
 proc check_effective_target_frame_pointer_for_non_leaf { } {
-  if { [istarget aarch*-*-*] } {
-	return 1
-  }
-
   # Solaris/x86 defaults to -fno-omit-frame-pointer.
   if { [istarget i?86-*-solaris*] || [istarget x86_64-*-solaris*] } {
     return 1

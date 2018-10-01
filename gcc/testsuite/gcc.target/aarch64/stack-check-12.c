@@ -2,12 +2,14 @@
 /* { dg-options "-O2 -fstack-clash-protection --param stack-clash-protection-guard-size=16 -fno-asynchronous-unwind-tables -fno-unwind-tables" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
-extern void arf (unsigned long int *, unsigned long int *);
+typedef unsigned __attribute__((mode(DI))) uint64_t;
+
+extern void arf (uint64_t *, uint64_t *);
 void
 frob ()
 {
-  unsigned long int num[10000];
-  unsigned long int den[10000];
+  uint64_t num[10000];
+  uint64_t den[10000];
   arf (den, num);
 }
 
