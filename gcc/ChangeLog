@@ -1,6 +1,20 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
+	* explow.c (anti_adjust_stack_and_probe_stack_clash): Support custom
+	probe ranges.
+	* target.def (stack_clash_protection_alloca_probe_range): New.
+	(stack_clash_protection_final_dynamic_probe): Remove.
+	* targhooks.h (default_stack_clash_protection_alloca_probe_range) New.
+	(default_stack_clash_protection_final_dynamic_probe): Remove.
+	* targhooks.c: Likewise.
+	* doc/tm.texi.in (TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE): New.
+	(TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE): Remove.
+	* doc/tm.texi: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
 	* config/aarch64/aarch64-protos.h (aarch64_output_probe_sve_stack_clash): New.
 	* config/aarch64/aarch64.c (aarch64_output_probe_sve_stack_clash,
 	aarch64_clamp_to_uimm12_shift): New.
