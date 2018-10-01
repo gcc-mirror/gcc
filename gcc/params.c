@@ -209,7 +209,7 @@ set_param_value (const char *name, int value,
     error ("maximum value of parameter %qs is %u",
 	   compiler_params[i].option,
 	   compiler_params[i].max_value);
-  else
+  else if (targetm_common.option_validate_param (value, (int)i))
     set_param_value_internal ((compiler_param) i, value,
 			      params, params_set, true);
 }

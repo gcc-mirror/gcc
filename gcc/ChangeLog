@@ -1,5 +1,15 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
+	* params.c (set_param_value):
+	Add index of parameter being validated.
+	* common/common-target.def (option_validate_param): New.
+	* common/common-targhooks.h (default_option_validate_param): New.
+	* common/common-targhooks.c (default_option_validate_param): New.
+	* doc/tm.texi.in (TARGET_OPTION_VALIDATE_PARAM): New.
+	* doc/tm.texi: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
 	PR target/86486
 	* config/aarch64/aarch64.c (aarch64_override_options_internal):
 	Add validation for stack-clash parameters and set defaults.
