@@ -1,5 +1,6 @@
 2018-10-01  Carl Love  <cel@us.ibm.com>
 
+	PR 69431
 	* gcc.target/powerpc/test_mffsl-p9.c: New file.
 	* gcc.target/powerpc/test_fpscr_rn_builtin.c: New file.
 	* gcc.target/powerpc/test_fpscr_drn_builtin.c: New file.
