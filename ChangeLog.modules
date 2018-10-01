@@ -1,3 +1,15 @@
+2018-10-01  Nathan Sidwell  <nathan@acm.org>
+
+	AdHoc locations
+	gcc/cp/
+	* modules.c (dumper): Add LOCATIONS, flags.
+	(dumper::operator()): Add default arg.
+	(dumper::push): Set flags.
+	(module_state::{read,write}_location): Serialize adhoc locs.
+	(module_state::deferred_macro): Optimize current TU undef case.
+	gcc/testsuite/
+	* g++.dg/modules/adhoc-1_[ab].C: New.
+
 2018-09-28  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

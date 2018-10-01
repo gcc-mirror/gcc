@@ -3252,6 +3252,10 @@ module_mapper *module_mapper::mapper;
 /* A dumping machinery.  */
 
 class dumper {
+public:
+  enum {
+    LOCATIONS = TDF_LINENO
+  };
 private:
   struct impl {
     typedef vec<module_state *, va_heap, vl_embed> stack_t;
@@ -3267,6 +3271,7 @@ private:
 public:
   /* The dumper.  */
   impl *dumps;
+  dump_flags_t flags;
 
 public:
   /* Push/pop module state dumping.  */
@@ -3291,16 +3296,20 @@ public:
 
 public:
   /* Is dump enabled?.  */
-  bool operator () ()
+  bool operator () (int mask = 0)
   {
-    return dumps && dumps->stream;
+    if (!dumps || !dumps->stream)
+      return false;
+    if (mask && !(mask & flags))
+      return false;
+    return true;
   }
   /* Dump some information.  */
   bool operator () (const char *, ...);
 };
 
 /* The dumper.  */
-static dumper dump = {0};
+static dumper dump = {0, dump_flags_t (0)};
 
 /* Push to dumping M.  Return previous indentation level.  */
 
@@ -3312,7 +3321,7 @@ dumper::push (module_state *m)
   if (!dumps || !dumps->stack.length ())
     {
       blank = dumps != NULL;
-      stream = dump_begin (module_dump_id, NULL);
+      stream = dump_begin (module_dump_id, &flags);
       if (!stream)
 	return 0;
     }
@@ -9546,17 +9555,34 @@ module_state::write_location (bytes_out &sec, location_t loc)
   if (!modules_atom_p ())
     return;
 
-  if (!IS_ORDINARY_LOC (loc))
-    // FIXME: implement macro & adhoc
-    loc = UNKNOWN_LOCATION;
-
-  const loc_spans::span *span = spans.ordinary (loc);
-  gcc_checking_assert (span); /* We should only be writing locs inside
-				 us.  */
-  /* This is too noisy, it'd be nice to have some command line
-     control.  */
-  //  dump () && dump ("Location %u output %u", loc, loc + span->ordinary_delta);
-  sec.u (loc + span->ordinary_delta);
+  if (IS_ADHOC_LOC (loc))
+    {
+      dump (dumper::LOCATIONS) && dump ("Adhoc location");
+      sec.u (MAX_SOURCE_LOCATION + 1);
+      location_t locus = get_location_from_adhoc_loc (line_table, loc);
+      write_location (sec, locus);
+      source_range range = get_range_from_loc (line_table, loc);
+      write_location (sec,
+		      range.m_start == locus ? UNKNOWN_LOCATION : range.m_start);
+      write_location (sec, range.m_finish);
+    }
+  else if (IS_MACRO_LOC (loc))
+    {
+      sec.u (UNKNOWN_LOCATION);
+    }
+  else if (IS_ORDINARY_LOC (loc))
+    {
+      const loc_spans::span *span = spans.ordinary (loc);
+      gcc_checking_assert (span); /* We should only be writing locs
+				     inside us.  */
+      /* This is too noisy, it'd be nice to have some command line
+	 control.  */
+      dump (dumper::LOCATIONS)
+	&& dump ("Location %u output %u", loc, loc + span->ordinary_delta);
+      sec.u (loc + span->ordinary_delta);
+    }
+  else
+    gcc_unreachable ();
 }
 
 location_t
@@ -9567,15 +9593,34 @@ module_state::read_location (bytes_in &sec) const
 
   location_t loc = UNKNOWN_LOCATION;
   unsigned off = sec.u ();
-  if (off >= slurp->ordinary_locs.second)
-    sec.set_overrun ();
-  else if (off >= slurp->ordinary_locs.first)
+  if (IS_ADHOC_LOC (off))
     {
-      loc = off + slurp->loc_deltas.first;
-      //     dump () && dump ("Location %u becoming %u", off, loc);
+      dump (dumper::LOCATIONS) && dump ("Adhoc location");
+      location_t locus = read_location (sec);
+      source_range range;
+      range.m_start = read_location (sec);
+      if (range.m_start == UNKNOWN_LOCATION)
+	range.m_start = locus;
+      range.m_finish = read_location (sec);
+      loc = get_combined_adhoc_loc (line_table, locus, range, NULL);
     }
-  else if (slurp->pre_early_ok)
-    loc = off;
+  else if (IS_MACRO_LOC (off))
+    {
+    }
+  else if (IS_ORDINARY_LOC (off))
+    {
+      if (off >= slurp->ordinary_locs.second)
+	sec.set_overrun ();
+      else if (off >= slurp->ordinary_locs.first)
+	{
+	  loc = off + slurp->loc_deltas.first;
+	  dump (dumper::LOCATIONS) && dump ("Location %u becoming %u", off, loc);
+	}
+      else if (slurp->pre_early_ok)
+	loc = off;
+    }
+  else
+    sec.set_overrun ();
 
   return loc;
 }
@@ -10509,22 +10554,24 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   dump.indent ();
 
   bitmap visible (BITMAP_GGC_ALLOC ());
-  if (!(imports[0].has_undef && !imports[0].mod))
-    bitmap_copy (visible, legacies);
-  bitmap_set_bit (visible, 0);
 
-  /* Calculate the set of not-visible legacy imports.  */
-  for (unsigned ix = imports.length (); ix--;)
+  if (!(imports[0].has_undef && !imports[0].mod))
     {
-      const macro_import::slot &slot = imports[ix];
-      if (slot.has_undef && slot.mod && bitmap_bit_p (visible, slot.mod))
+      /* Calculate the set of visible legacy imports.  */
+      bitmap_copy (visible, legacies);
+      for (unsigned ix = imports.length (); ix--;)
 	{
-	  bitmap_and_compl_into (visible, slot.mod
-				 ? (*modules)[slot.mod]->slurp->legacies
-				 : legacies);
-	  bitmap_set_bit (visible, slot.mod);
+	  const macro_import::slot &slot = imports[ix];
+	  if (slot.has_undef && bitmap_bit_p (visible, slot.mod))
+	    {
+	      bitmap_and_compl_into (visible, slot.mod
+				     ? (*modules)[slot.mod]->slurp->legacies
+				     : legacies);
+	      bitmap_set_bit (visible, slot.mod);
+	    }
 	}
     }
+  bitmap_set_bit (visible, 0);
 
   /* Now find the macros that are still visible.  */
   bool failed = false;
