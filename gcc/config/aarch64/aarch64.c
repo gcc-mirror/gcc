@@ -4094,6 +4094,11 @@ aarch64_layout_frame (void)
       offset = 2 * UNITS_PER_WORD;
     }
 
+  /* With stack-clash, LR must be saved in non-leaf functions.  */
+  gcc_assert (crtl->is_leaf
+	      || (cfun->machine->frame.reg_offset[R30_REGNUM]
+		  != SLOT_NOT_REQUIRED));
+
   /* Now assign stack slots for them.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
     if (cfun->machine->frame.reg_offset[regno] == SLOT_REQUIRED)
