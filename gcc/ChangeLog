@@ -1,3 +1,10 @@
+2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87261
+	* match.pd: Remove trailing whitespace.
+	Add (x & y) | ~(x | y) -> ~(x ^ y),
+	(~x | y) ^ (x ^ y) -> x | ~y and (x ^ y) | ~(x | y) -> ~(x & y)
+
 2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.md (*add_n): Clean up pattern, update instruction
