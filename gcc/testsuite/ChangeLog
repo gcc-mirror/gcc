@@ -1,3 +1,11 @@
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.target/aarch64/stack-check-prologue-16.c: New test
+	* gcc.target/aarch64/stack-check-cfa-3.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_24.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_24_run.c: New test.
+
 2018-10-01  Jeff Law  <law@redhat.com>
 	    Richard Sandiford <richard.sandiford@linaro.org>
 	    Tamar Christina  <tamar.christina@arm.com>

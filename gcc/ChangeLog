@@ -1,6 +1,15 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
+	* config/aarch64/aarch64-protos.h (aarch64_output_probe_sve_stack_clash): New.
+	* config/aarch64/aarch64.c (aarch64_output_probe_sve_stack_clash,
+	aarch64_clamp_to_uimm12_shift): New.
+	(aarch64_allocate_and_probe_stack_space): Add SVE specific section.
+	* config/aarch64/aarch64.md (probe_sve_stack_clash): New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
 	* config/aarch64/aarch64.c (aarch64_layout_frame): Add assert.
 
 2018-10-01  Jeff Law  <law@redhat.com>

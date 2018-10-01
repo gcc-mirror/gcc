@@ -6514,6 +6514,25 @@
   [(set_attr "length" "32")]
 )
 
+;; This instruction is used to generate the stack clash stack adjustment and
+;; probing loop.  We can't change the control flow during prologue and epilogue
+;; code generation.  So we must emit a volatile unspec and expand it later on.
+
+(define_insn "@probe_sve_stack_clash_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=rk")
+	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
+			    (match_operand:P 2 "register_operand" "r")
+			    (match_operand:P 3 "const_int_operand" "n")
+			    (match_operand:P 4 "aarch64_plus_immediate" "L")]
+			     UNSPECV_PROBE_STACK_RANGE))]
+  "TARGET_SVE"
+{
+  return aarch64_output_probe_sve_stack_clash (operands[0], operands[2],
+					       operands[3], operands[4]);
+}
+  [(set_attr "length" "28")]
+)
+
 ;; Named pattern for expanding thread pointer reference.
 (define_expand "get_thread_pointerdi"
   [(match_operand:DI 0 "register_operand" "=r")]
