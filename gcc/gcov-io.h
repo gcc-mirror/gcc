@@ -133,17 +133,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    blocks they are for.
 
    The data file contains the following records.
-        data: {unit summary:object summary:program* function-data*}*
+	data: {unit summary:object function-data*}*
 	unit: header int32:checksum
-        function-data:	announce_function present counts
+	function-data:	announce_function present counts
 	announce_function: header int32:ident
 		int32:lineno_checksum int32:cfg_checksum
 	present: header int32:present
 	counts: header int64:count*
-	summary: int32:checksum int32:num int32:runs int64:sum
-		 int64:max int64:sum_max histogram
-        histogram: {int32:bitvector}8 histogram-buckets*
-        histogram-buckets: int32:num int64:min int64:sum
+	summary: int32:checksum int32:runs int32:sum_max
 
    The ANNOUNCE_FUNCTION record is the same as that in the note file,
    but without the source location.  The COUNTS gives the
@@ -190,7 +187,7 @@ typedef uint64_t gcov_type_unsigned;
 
 #define ATTRIBUTE_HIDDEN
 
-#endif /* !IN_LIBGOCV */
+#endif /* !IN_LIBGCOV */
 
 #ifndef GCOV_LINKAGE
 #define GCOV_LINKAGE extern
@@ -240,9 +237,9 @@ typedef uint64_t gcov_type_unsigned;
 #define GCOV_TAG_COUNTER_BASE 	 ((gcov_unsigned_t)0x01a10000)
 #define GCOV_TAG_COUNTER_LENGTH(NUM) ((NUM) * 2)
 #define GCOV_TAG_COUNTER_NUM(LENGTH) ((LENGTH) / 2)
-#define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000) /* Obsolete */
-#define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000)
-#define GCOV_TAG_SUMMARY_LENGTH(NUM) (1 + (10 + 3 * 2) + (NUM) * 5)
+#define GCOV_TAG_OBJECT_SUMMARY  ((gcov_unsigned_t)0xa1000000)
+#define GCOV_TAG_PROGRAM_SUMMARY ((gcov_unsigned_t)0xa3000000) /* Obsolete */
+#define GCOV_TAG_SUMMARY_LENGTH (2)
 #define GCOV_TAG_AFDO_FILE_NAMES ((gcov_unsigned_t)0xaa000000)
 #define GCOV_TAG_AFDO_FUNCTION ((gcov_unsigned_t)0xac000000)
 #define GCOV_TAG_AFDO_WORKING_SET ((gcov_unsigned_t)0xaf000000)
@@ -307,43 +304,12 @@ GCOV_COUNTERS
 #define GCOV_ARC_FAKE		(1 << 1)
 #define GCOV_ARC_FALLTHROUGH	(1 << 2)
 
-/* Structured records.  */
-
-/* Structure used for each bucket of the log2 histogram of counter values.  */
-typedef struct
-{
-  /* Number of counters whose profile count falls within the bucket.  */
-  gcov_unsigned_t num_counters;
-  /* Smallest profile count included in this bucket.  */
-  gcov_type min_value;
-  /* Cumulative value of the profile counts in this bucket.  */
-  gcov_type cum_value;
-} gcov_bucket_type;
-
-/* For a log2 scale histogram with each range split into 4
-   linear sub-ranges, there will be at most 64 (max gcov_type bit size) - 1 log2
-   ranges since the lowest 2 log2 values share the lowest 4 linear
-   sub-range (values 0 - 3).  This is 252 total entries (63*4).  */
-
-#define GCOV_HISTOGRAM_SIZE 252
-
-/* How many unsigned ints are required to hold a bit vector of non-zero
-   histogram entries when the histogram is written to the gcov file.
-   This is essentially a ceiling divide by 32 bits.  */
-#define GCOV_HISTOGRAM_BITVECTOR_SIZE (GCOV_HISTOGRAM_SIZE + 31) / 32
-
 /* Object & program summary record.  */
 
 struct gcov_summary
 {
-  gcov_unsigned_t checksum;	/* Checksum of program.  */
-  gcov_unsigned_t num;		/* Number of counters.  */
   gcov_unsigned_t runs;		/* Number of program runs.  */
-  gcov_type sum_all;		/* Sum of all counters accumulated.  */
-  gcov_type run_max;		/* Maximum value on a single run.  */
   gcov_type sum_max;    	/* Sum of individual run max values.  */
-  gcov_bucket_type histogram[GCOV_HISTOGRAM_SIZE]; /* Histogram of
-						      counter values.  */
 };
 
 #if !defined(inhibit_libc)
@@ -380,33 +346,10 @@ GCOV_LINKAGE void gcov_write_unsigned (gcov_unsigned_t) ATTRIBUTE_HIDDEN;
 
 #if !IN_GCOV && !IN_LIBGCOV
 /* Available only in compiler */
-GCOV_LINKAGE unsigned gcov_histo_index (gcov_type value);
 GCOV_LINKAGE void gcov_write_string (const char *);
 GCOV_LINKAGE void gcov_write_filename (const char *);
 GCOV_LINKAGE gcov_position_t gcov_write_tag (gcov_unsigned_t);
 GCOV_LINKAGE void gcov_write_length (gcov_position_t /*position*/);
-#endif
-
-#if IN_GCOV <= 0 && !IN_LIBGCOV
-/* Available in gcov-dump and the compiler.  */
-
-/* Number of data points in the working set summary array. Using 128
-   provides information for at least every 1% increment of the total
-   profile size. The last entry is hardwired to 99.9% of the total.  */
-#define NUM_GCOV_WORKING_SETS 128
-
-/* Working set size statistics for a given percentage of the entire
-   profile (sum_all from the counter summary).  */
-typedef struct gcov_working_set_info
-{
-  /* Number of hot counters included in this working set.  */
-  unsigned num_counters;
-  /* Smallest counter included in this working set.  */
-  gcov_type min_counter;
-} gcov_working_set_t;
-
-GCOV_LINKAGE void compute_working_sets (const gcov_summary *summary,
-                                        gcov_working_set_t *gcov_working_sets);
 #endif
 
 #if IN_GCOV > 0

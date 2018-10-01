@@ -1,3 +1,257 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* method.c (use_thunk): Adjust call to cgraph_node::create_thunk.
+
+2018-09-28  Richard Biener  <rguenther@suse.de>
+
+	* error.c (cp_print_error_function): Simplify by eliding
+	the BLOCK_ABSTRACT_ORIGIN chasing.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* semantics.c (finish_unary_op_expr): Check return value of
+	build_x_unary_op for error_mark_node.
+
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Only
+	look through COMPONENT_REFs with DECL_FIELD_IS_BASE FIELD_DECLs.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* name-lookup.c (namespace_scope_ht_size): Remove
+	unused function.
+	* parser.c (cp_lexer_next_token_is_not_keyword): Likewise.
+
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* method.c (lazily_declare_fn): During error-recovery add_method
+	may return false.
+
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* constexpr.c (maybe_constant_init_1): Pass false for strict down to
+	cxx_eval_outermost_constant_expr.
+
+2018-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109 - wrong ctor with maybe-rvalue semantics.
+	* call.c (build_user_type_conversion_1): Refine the maybe-rvalue
+	check to only return if we're converting the return value to a base
+	class.
+
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* g++spec.c (lang_specific_driver): Handle -r like -nostdlib.
+
+2018-09-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87075 - ICE with constexpr array initialization.
+	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	Add -Wclass-conversion.
+	* decl.c (grok_op_properties): Change a warning from -Wconversion to
+	-Wclass-conversion.  Make it print the types.
+
+2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/87324
+	* parser.c (cp_parser_initializer_list): Assign error_mark_node
+	to the index upon error.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87357 - missing -Wconversion warning
+	* decl.c (grok_op_properties): Remove diagnostic parts mentioning
+	a conversion to a reference to void.  Use
+	same_type_ignoring_top_level_qualifiers_p rather than comparing types
+	directly.
+
+2018-09-18  Marek Polacek  <polacek@redhat.com>
+
+	P1064R0 - Allowing Virtual Function Calls in Constant Expressions
+	* call.c (build_over_call): No longer check if we're outside a template
+	function.
+	* class.c (build_vtbl_initializer): Build vtable's constructor with
+	indexes.
+	* constexpr.c (cxx_eval_constant_expression): Don't ignore _vptr's
+	initializer.  Handle OBJ_TYPE_REF.
+	(potential_constant_expression_1): Handle OBJ_TYPE_REF.
+	* decl.c (maybe_commonize_var): Bail out for any DECL_ARTIFICIAL.
+	(initialize_artificial_var): Mark the variable as constexpr.
+	(grokdeclarator): Change error to pedwarn.  Only warn when
+	pedantic and not C++2a.
+
+2018-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85065
+	* cp-tree.h (NON_ERROR): New.
+	* pt.c (auto_hash::hash): Use it.
+	(do_auto_deduction): Likewise.
+
+2018-09-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86881
+	* name-lookup.c (check_local_shadow): Ignore auto types.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (range_label_for_type_mismatch::get_text): Update for
+	new param.
+
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck2.c (digest_init_r): Fix overlength strings.
+
+2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR c++/87093
+	* method.c (constructible_expr): We're in an unevaluated context
+	in all cases, not just for class targets.
+
+2018-09-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/85110
+	* call.c (struct conversion_info): Add "loc" field.
+	(arg_conversion_rejection): Add "loc" param, using it to
+	initialize the new field.
+	(bad_arg_conversion_rejection): Likewise.
+	(explicit_conversion_rejection): Initialize the new field to
+	UNKNOWN_LOCATION.
+	(template_conversion_rejection): Likewise.
+	(add_function_candidate): Pass on the argument location to the new
+	param of arg_conversion_rejection.
+	(add_conv_candidate): Likewise.
+	(build_builtin_candidate): Likewise.
+	(build_user_type_conversion_1): Likewise.
+	(single_z_candidate): New function.
+	(maybe_get_bad_conversion_for_unmatched_call): New function.
+	(complain_about_bad_argument): New function, based on part of
+	convert_for_assignment.
+	(build_new_method_call_1): Split out handling of the "no viable
+	candidates" case into...
+	(complain_about_no_candidates_for_method_call): ...this new
+	function, and use the new functions above to special-case the
+	handling of a single non-viable candidate due to a bad argument.
+	* cp-tree.h (complain_about_bad_argument): New decl.
+	* typeck.c (convert_for_assignment): Split out one error-handling
+	case into complain_about_bad_argument.
+
+2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/86336
+	* semantics.c (finish_omp_clauses): Treat C++ references the same in
+	OpenACC as OpenMP.
+
+2018-08-28  Martin Liska  <mliska@suse.cz>
+
+	* constexpr.c (cxx_eval_call_expression): Add quotes
+	to -fconstexpr-depth=.
+
+2018-09-10  Marek Polacek  <polacek@redhat.com>
+
+	* class.c (build_vtbl_ref): Remove.
+	(build_vtbl_ref_1): Rename to build_vtbl_ref.
+	(build_vfn_ref): Call build_vtbl_ref instead of build_vtbl_ref_1.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87150 - wrong ctor with maybe-rvalue semantics.
+	* call.c (struct conversion): Update commentary.
+	(standard_conversion): Set rvaluedness_matches_p if LOOKUP_PREFER_RVALUE
+	for ck_base.
+
+2018-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/86678 - constexpr function with non-constant after return.
+	* constexpr.c (potential_constant_expression_1): Add jump_target.
+	(breaks): Check for BREAK_STMT.
+	(continues): Check for CONTINUE_STMT.
+
+2018-09-08  Marek Polacek  <polacek@redhat.com>
+
+	* cxx-pretty-print.c (cxx_pretty_printer::statement) <case
+	RANGE_FOR_SMT>: Handle RANGE_FOR_INIT_STMT.
+
+2018-09-07  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87152 - range-based for loops with initializer broken in templates.
+	* constexpr.c (potential_constant_expression_1) <case RANGE_FOR_STMT>:
+	Recur into RANGE_FOR_INIT_STMT.
+	* cp-tree.def: Add RANGE_FOR_INIT_STMT to RANGE_FOR_STMT.
+	* cp-tree.h (RANGE_FOR_INIT_STMT): Define.
+	* dump.c (cp_dump_tree) <case RANGE_FOR_STMT>: Also dump
+	RANGE_FOR_INIT_STMT.
+	* pt.c (tsubst_expr) <case RANGE_FOR_STMT>: Recur into
+	RANGE_FOR_INIT_STMT.
+	* semantics.c (begin_range_for_stmt): Adjust call to build_stmt.
+	Do put the init statement in RANGE_FOR_INIT_STMT.
+	(finish_range_for_decl): Pop it for templates.
+
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (check_initializer): Call cp_complete_array_type.
+
+2018-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109, wrong overload with ref-qualifiers.
+	* call.c (build_user_type_conversion_1): Use NULL instead of 0.  Bail
+	out if performing the maybe-rvalue overload resolution and a conversion
+	function is getting called.
+
+	PR c++/86982, -Wreturn-local-addr and std::move and std::forward.
+	* typeck.c (maybe_warn_about_returning_address_of_local): Handle calls
+	to std::move or std::forward.
+	(is_std_forward_p): New function.
+
+2018-09-05  Pádraig Brady  <p@draigbrady.com>
+
+	PR c++/87185
+	* lambda.c (prune_lambda_captures): Protect against const_vars.get
+	returning NULL.
+
+2018-09-04  Marek Polacek  <polacek@redhat.com>
+
+	* cp-tree.h (treat_lvalue_as_rvalue_p): Declare.
+	* except.c (build_throw): Use it.  Use CP_TYPE_VOLATILE_P.
+	* typeck.c (treat_lvalue_as_rvalue_p): No longer static.  Add PARM_OK
+	parameter.
+	(maybe_warn_pessimizing_move): Adjust treat_lvalue_as_rvalue_p call.
+	(check_return_expr): Likewise.
+
+2018-09-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84980
+	* constraint.cc (finish_shorthand_constraint): Early return if the
+	constraint is erroneous.
+
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* decl.c (eval_check_narrowing): Remove.
+	(check_initializer): Move call to braced_list_to_string from here ...
+	* typeck2.c (store_init_value): ... to here.
+	(digest_init_r): Remove handing of signed/unsigned char strings.
+
+2018-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87155
+	PR c++/84707
+	* name-lookup.c (name_lookup::search_namespace): Don't look at
+	inlines when searching for NULL names.
+
+	* decl.c (decls_match): Remove SYSTEM_IMPLICIT_EXTERN_C matching
+	of return types and parms.
+	* parser.c (cp_parser_parameter_declaration_clause): Likewise,
+	'()' always means '(void)'.
+
 2018-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87095

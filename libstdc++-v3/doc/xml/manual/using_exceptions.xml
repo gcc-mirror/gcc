@@ -447,7 +447,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.boost.org/community/error_handling.html">
+	      xlink:href="https://www.boost.org/community/error_handling.html">
 	Error and Exception Handling
 	</link>
       </title>
@@ -464,7 +464,7 @@ is called.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.boost.org/community/exception_safety.html">
+	      xlink:href="https://www.boost.org/community/exception_safety.html">
 	Exception-Safety in Generic Components
 	</link>
       </title>

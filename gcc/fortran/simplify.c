@@ -5525,52 +5525,55 @@ gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
   gfc_expr *result;
   int kind;
 
-  if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
+  /* First check p.  */
+  if (p->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* p shall not be 0.  */
+  switch (p->ts.type)
+    {
+      case BT_INTEGER:
+	if (mpz_cmp_ui (p->value.integer, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MODULO at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      case BT_REAL:
+	if (mpfr_cmp_ui (p->value.real, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MODULO at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      default:
+	gfc_internal_error ("gfc_simplify_modulo(): Bad arguments");
+    }
+
+  if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
   kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
   result = gfc_get_constant_expr (a->ts.type, kind, &a->where);
 
-  switch (a->ts.type)
-    {
-      case BT_INTEGER:
-	if (mpz_cmp_ui (p->value.integer, 0) == 0)
-	  {
-	    /* Result is processor-dependent. This processor just opts
-	      to not handle it at all.  */
-	    gfc_error ("Second argument of MODULO at %L is zero", &a->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
+  if (a->ts.type == BT_INTEGER)
 	mpz_fdiv_r (result->value.integer, a->value.integer, p->value.integer);
-
-	break;
-
-      case BT_REAL:
-	if (mpfr_cmp_ui (p->value.real, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument of MODULO at %L is zero", &p->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-
-	gfc_set_model_kind (kind);
-	mpfr_fmod (result->value.real, a->value.real, p->value.real,
-		   GFC_RND_MODE);
-	if (mpfr_cmp_ui (result->value.real, 0) != 0)
-	  {
-	    if (mpfr_signbit (a->value.real) != mpfr_signbit (p->value.real))
-	      mpfr_add (result->value.real, result->value.real, p->value.real,
-			GFC_RND_MODE);
-	  }
-	else
-	  mpfr_copysign (result->value.real, result->value.real,
-			 p->value.real, GFC_RND_MODE);
-	break;
-
-      default:
-	gfc_internal_error ("gfc_simplify_modulo(): Bad arguments");
+  else
+    {
+      gfc_set_model_kind (kind);
+      mpfr_fmod (result->value.real, a->value.real, p->value.real,
+                 GFC_RND_MODE);
+      if (mpfr_cmp_ui (result->value.real, 0) != 0)
+        {
+          if (mpfr_signbit (a->value.real) != mpfr_signbit (p->value.real))
+            mpfr_add (result->value.real, result->value.real, p->value.real,
+                      GFC_RND_MODE);
+	    }
+	  else
+        mpfr_copysign (result->value.real, result->value.real,
+                       p->value.real, GFC_RND_MODE);
     }
 
   return range_check (result, "MODULO");

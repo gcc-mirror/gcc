@@ -1,6 +1,6 @@
 ! { dg-lto-do link }
 ! { dg-lto-options {{ -Ofast -flto --param ggc-min-expand=0 --param ggc-min-heapsize=0 }} }
-! { dg-extra-ld-options "-r -nostdlib" }
+! { dg-extra-ld-options "-r" }
 
 MODULE Errorcheck_mod
 CONTAINS

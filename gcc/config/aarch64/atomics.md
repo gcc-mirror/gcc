@@ -481,9 +481,9 @@
 )
 
 (define_insn "atomic_store<mode>"
-  [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "=Q")
+  [(set (match_operand:ALLI 0 "aarch64_rcpc_memory_operand" "=Q,Ust")
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 1 "general_operand" "rZ")
+      [(match_operand:ALLI 1 "general_operand" "rZ,rZ")
        (match_operand:SI 2 "const_int_operand")]			;; model
       UNSPECV_STL))]
   ""
@@ -491,9 +491,12 @@
     enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
     if (is_mm_relaxed (model) || is_mm_consume (model) || is_mm_acquire (model))
       return "str<atomic_sfx>\t%<w>1, %0";
-    else
+    else if (which_alternative == 0)
       return "stlr<atomic_sfx>\t%<w>1, %0";
+    else
+      return "stlur<atomic_sfx>\t%<w>1, %0";
   }
+  [(set_attr "arch" "*,rcpc8_4")]
 )
 
 (define_insn "@aarch64_load_exclusive<mode>"

@@ -299,12 +299,6 @@ optrecord_json_writer::inlining_chain_to_json (location_t loc)
 	     && BLOCK_ABSTRACT_ORIGIN (block))
 	{
 	  tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-	  while (TREE_CODE (ao) == BLOCK
-		 && BLOCK_ABSTRACT_ORIGIN (ao)
-		 && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	    ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
 	  if (TREE_CODE (ao) == FUNCTION_DECL)
 	    {
 	      fndecl = ao;

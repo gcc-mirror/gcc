@@ -534,3 +534,15 @@
   unsigned HOST_WIDE_INT val = INTVAL (op);
   return val <= 128 && val % 8 == 0;
 })
+
+;; Certain operations (e.g. CS) cannot access SYMBOL_REF directly, it needs to
+;; be loaded into some register first.  In theory, if we put a SYMBOL_REF into
+;; a corresponding insn anyway, reload will generate a load for it, but, when
+;; coupled with constant propagation, this will lead to an inefficient code
+;; (see PR 80080).
+
+(define_predicate "nonsym_memory_operand"
+  (match_code "mem")
+{
+  return memory_operand (op, mode) && !contains_symbol_ref_p (op);
+})

@@ -60,17 +60,9 @@ You should have received a copy of the GNU General Public License
         (mem:DF (lo_sum:DI (match_operand:DI 1 "gpc_reg_operand" "b,b")
                            (match_operand 2 "" ""))))]
   "TARGET_MACHO && TARGET_HARD_FLOAT && TARGET_64BIT"
-{
-  switch (which_alternative)
-    {
-      case 0:
-	return "lfd %0,lo16(%2)(%1)";
-      case 1:
-	return "ld %0,lo16(%2)(%1)";
-      default:
-	gcc_unreachable ();
-    }
-}
+  "@
+   lfd %0,lo16(%2)(%1)
+   ld %0,lo16(%2)(%1)"
   [(set_attr "type" "load")])
 
 (define_insn "movdf_low_st_si"

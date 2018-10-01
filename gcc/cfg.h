@@ -169,7 +169,7 @@ class auto_edge_flag : public auto_flag<int>
 {
 public:
   auto_edge_flag (function *fun)
-    : auto_flag (&fun->cfg->edge_flags_allocated) {}
+    : auto_flag<int> (&fun->cfg->edge_flags_allocated) {}
 };
 
 /* RAII class to allocate a bb flag for temporary use.  You have
@@ -178,7 +178,7 @@ class auto_bb_flag : public auto_flag<int>
 {
 public:
   auto_bb_flag (function *fun)
-    : auto_flag (&fun->cfg->bb_flags_allocated) {}
+    : auto_flag<int> (&fun->cfg->bb_flags_allocated) {}
 };
 
 #endif /* GCC_CFG_H */

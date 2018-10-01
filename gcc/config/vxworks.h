@@ -23,11 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
 
-/* If TARGET_VXWORKS7 is undefined, then we're not targeting it.  */
-#ifndef TARGET_VXWORKS7
-#define TARGET_VXWORKS7 0
-#endif
-
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
    like a traditional Unix, with more external files.  Most of our specs
@@ -70,28 +65,33 @@ along with GCC; see the file COPYING3.  If not see
 
 #endif
 
-/* The references to __init and __fini will be satisfied by
-   libc_internal.a, and some versions of VxWorks rely on explicit
-   extra libraries for system calls.  */
+/* For VxWorks static rtps, the system provides libc_internal.a, a superset of
+   libgcc.a that we need to use e.g. to satisfy references to __init and
+   __fini.  We still want our libgcc to prevail for symbols it would provide
+   (e.g. register save entry points), so re-place it here between libraries
+   that might reference it and libc_internal.  Also, some versions of VxWorks
+   rely on explicit extra libraries for system calls.  */
 
 #define VXWORKS_SYSCALL_LIBS_RTP
 
 #define VXWORKS_LIBS_RTP \
-  VXWORKS_SYSCALL_LIBS_RTP " -lc -lgcc -lc_internal -lnet -ldsi"
+  VXWORKS_SYSCALL_LIBS_RTP " -lnet -ldsi -lc -lgcc -lc_internal"
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
    and its structure is fixed and does not depend on the arch.  We can thus
-   tell gcc where to look for when linking with RTP libraries.  */
+   tell gcc where to look for when linking with RTP libraries.  Use
+   STARTFILE_PREFIX_SPEC for this, instead of explicit -L options in LIB_SPEC,
+   so they survive -nodefaultlibs.  */
 
 /* On Vx7 RTP, we need to drag the __tls__ symbol to trigger initialization of
    tlsLib, responsible for TLS support by the OS.  */
 
 #if TARGET_VXWORKS7
-#define VXWORKS_LIBS_DIR_RTP "-L%:getenv(VSB_DIR /usr/lib/common)"
+#undef  STARTFILE_PREFIX_SPEC
+#define STARTFILE_PREFIX_SPEC "%:getenv(VSB_DIR /usr/lib/common)"
 #define TLS_SYM "-u __tls__"
 #else
-#define VXWORKS_LIBS_DIR_RTP ""
 #define TLS_SYM ""
 #endif
 
@@ -100,8 +100,7 @@ along with GCC; see the file COPYING3.  If not see
 "%{mrtp:%{shared:-u " USER_LABEL_PREFIX "__init -u " USER_LABEL_PREFIX "__fini} \
 	%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
 		  " TLS_SYM " \
-		  --start-group " VXWORKS_LIBS_RTP " --end-group} \
-        " VXWORKS_LIBS_DIR_RTP "}"
+		  --start-group " VXWORKS_LIBS_RTP " --end-group}}"
 
 /* The no-op spec for "-shared" below is present because otherwise GCC
    will treat it as an unrecognized option.  */
@@ -122,13 +121,8 @@ along with GCC; see the file COPYING3.  If not see
  %{mrtp:%{!shared:%{!non-static:-static}		\
  		  %{non-static:--force-dynamic --export-dynamic}}}"
 
-/* For VxWorks static rtps, the system provides libc_internal.a, a superset
-   of libgcc.a that we want to use.  Make sure not to dynamically export any
-   of its symbols, though, and always look for libgcc.a first so that we get
-   the latest versions of the GNU intrinsics during our builds.  */
 #undef VXWORKS_LIBGCC_SPEC
-#define VXWORKS_LIBGCC_SPEC \
-  "-lgcc %{mrtp:%{!shared:--exclude-libs=libc_internal,libgcc -lc_internal}}"
+#define VXWORKS_LIBGCC_SPEC "-lgcc"
 
 #undef VXWORKS_STARTFILE_SPEC
 #define	VXWORKS_STARTFILE_SPEC "%{mrtp:%{!shared:-l:crt0.o}}"
@@ -169,10 +163,10 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define VXWORKS_GOTT_INDEX "__GOTT_INDEX__"
 
 #undef PTRDIFF_TYPE
-#define PTRDIFF_TYPE "int"
+#define PTRDIFF_TYPE (TARGET_VXWORKS64 ? "long int" : "int")
 
 #undef SIZE_TYPE
-#define SIZE_TYPE "unsigned int"
+#define SIZE_TYPE (TARGET_VXWORKS64 ? "long unsigned int" : "unsigned int")
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function
@@ -211,6 +205,10 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* The diab linker does not handle .gnu_attribute sections.  */
 #undef HAVE_AS_GNU_ATTRIBUTE
+
+/* We provide our own version of __clear_cache in libgcc, using a separate C
+   file to facilitate #inclusion of VxWorks header files.  */
+#define CLEAR_INSN_CACHE 1
 
 /* Default dwarf control values, for non-gdb debuggers that come with
    VxWorks.  */

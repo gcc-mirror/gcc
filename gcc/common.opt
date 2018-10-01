@@ -811,6 +811,10 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match.
 
+Wmissing-profile
+Common Var(warn_missing_profile) Init(1) Warning
+Warn in case profiles in -fprofile-use do not exist.
+
 Wvector-operation-performance
 Common Var(warn_vector_operation_performance) Warning
 Warn when a vector operation is compiled outside the SIMD.
@@ -2975,6 +2979,10 @@ Emit progressive recommended breakpoint locations.
 gstrict-dwarf
 Common Driver Report Var(dwarf_strict) Init(0)
 Don't emit DWARF additions beyond selected version.
+
+gdescribe-dies
+Common Driver Report Var(flag_describe_dies) Init(0)
+Add description attributes to some DWARF DIEs that have no name attribute.
 
 gtoggle
 Common Driver Report Var(flag_gtoggle)

@@ -673,7 +673,7 @@ codecvt usage.
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.cl.cam.ac.uk/~mgk25/unicode.html">
+	      xlink:href="https://www.cl.cam.ac.uk/~mgk25/unicode.html">
       UTF-8 and Unicode FAQ for Unix/Linux
 	</link>
       </title>

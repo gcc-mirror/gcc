@@ -1101,8 +1101,8 @@ begin_range_for_stmt (tree scope, tree init)
 {
   begin_maybe_infinite_loop (boolean_false_node);
 
-  tree r = build_stmt (input_location, RANGE_FOR_STMT,
-		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (input_location, RANGE_FOR_STMT, NULL_TREE, NULL_TREE,
+		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -1110,22 +1110,23 @@ begin_range_for_stmt (tree scope, tree init)
       scope = begin_for_scope (&init);
     }
 
-  /* RANGE_FOR_STMTs do not use nor save the init tree, so we
-     pop it now.  */
-  if (init)
-    pop_stmt_list (init);
+  /* Since C++20, RANGE_FOR_STMTs can use the init tree, so save it.  */
+  RANGE_FOR_INIT_STMT (r) = init;
   RANGE_FOR_SCOPE (r) = scope;
 
   return r;
 }
 
 /* Finish the head of a range-based for statement, which may
-   be given by RANGE_FOR_STMT. DECL must be the declaration
+   be given by RANGE_FOR_STMT.  DECL must be the declaration
    and EXPR must be the loop expression. */
 
 void
 finish_range_for_decl (tree range_for_stmt, tree decl, tree expr)
 {
+  if (processing_template_decl)
+    RANGE_FOR_INIT_STMT (range_for_stmt)
+      = pop_stmt_list (RANGE_FOR_INIT_STMT (range_for_stmt));
   RANGE_FOR_DECL (range_for_stmt) = decl;
   RANGE_FOR_EXPR (range_for_stmt) = expr;
   add_stmt (range_for_stmt);
@@ -2726,13 +2727,14 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   /* TODO: build_x_unary_op doesn't always honor the location.  */
   result.set_location (combined_loc);
 
-  tree result_ovl, expr_ovl;
+  if (result == error_mark_node)
+    return result;
 
   if (!(complain & tf_warning))
     return result;
 
-  result_ovl = result;
-  expr_ovl = expr;
+  tree result_ovl = result;
+  tree expr_ovl = expr;
 
   if (!processing_template_decl)
     expr_ovl = cp_fully_fold (expr_ovl);
@@ -6878,7 +6880,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	handle_map_references:
 	  if (!remove
 	      && !processing_template_decl
-	      && (ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
+	      && ort != C_ORT_DECLARE_SIMD
 	      && TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
 	    {
 	      t = OMP_CLAUSE_DECL (c);

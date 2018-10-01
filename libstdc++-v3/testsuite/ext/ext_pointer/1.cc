@@ -180,11 +180,25 @@ void test04() {
   VERIFY(bPtr3 == aPtr);
 }
 
+// Check that long long values can be used for pointer arithmetic.
+void test05()
+{
+  A a[2] = { 1, 2 };
+  A_pointer p = a;
+  A_pointer q = p + 0ull;
+  VERIFY( p == q );
+  q += 0ll;
+  VERIFY( p == q );
+  q += 1ll;
+  VERIFY( q->i == p[1ll].i );
+}
+
 int main()
 {
   test01();
   test02();
   test03();
   test04();
+  test05();
   return 0;
 }

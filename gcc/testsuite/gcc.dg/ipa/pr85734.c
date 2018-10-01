@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wsuggest-attribute=malloc" } */
+/* { dg-options "-O2 -Wsuggest-attribute=malloc -fdelete-null-pointer-checks" } */
 
 __attribute__((noinline))
 static void *f1(__SIZE_TYPE__ sz) /* { dg-bogus "function might be candidate for attribute 'malloc'" } */

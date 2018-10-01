@@ -338,7 +338,7 @@ runtime_mcall(FuncVal *fv)
 		gp = runtime_g();
 		mp = gp->m;
 
-		if(gp->traceback != nil)
+		if(gp->traceback != 0)
 			gtraceback(gp);
 	}
 	if (gp == nil || !gp->fromgogo) {
@@ -443,7 +443,7 @@ void getTraceback(G* me, G* gp)
 #endif
 	getcontext(ucontext_arg(&me->context[0]));
 
-	if (gp->traceback != nil) {
+	if (gp->traceback != 0) {
 		runtime_gogo(gp);
 	}
 }
@@ -457,8 +457,8 @@ gtraceback(G* gp)
 	Traceback* traceback;
 	M* holdm;
 
-	traceback = gp->traceback;
-	gp->traceback = nil;
+	traceback = (Traceback*)gp->traceback;
+	gp->traceback = 0;
 	holdm = gp->m;
 	if(holdm != nil && holdm != g->m)
 		runtime_throw("gtraceback: m is not nil");
@@ -510,7 +510,7 @@ runtime_mstart(void *arg)
 	// multiple times via the setcontext call in mcall.
 	getcontext(ucontext_arg(&gp->context[0]));
 
-	if(gp->traceback != nil) {
+	if(gp->traceback != 0) {
 		// Got here from getTraceback.
 		// I'm not sure this ever actually happens--getTraceback
 		// may always go to the getcontext call in mcall.

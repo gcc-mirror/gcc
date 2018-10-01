@@ -4916,7 +4916,7 @@ fix = {
 
     c_fix       = format;
     c_fix_arg   = "%0\n"
-        "#define ioctl(fd, func, arg) (ioctl)(fd, func, (int)(arg))\n";
+        "#define ioctl(fd, func, arg) ioctl(fd, func, (int)(arg))\n";
     c_fix_arg   = "extern[\t ]+int[\t ]+ioctl[\t ]*\\([\t ,[:alnum:]]*\\);";
         
     test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";

@@ -92,6 +92,9 @@ AARCH64_CORE("cortex-a76",  cortexa76, cortexa57, 8_2A,  AARCH64_FL_FOR_ARCH8_2 
 
 /* ARMv8.4-A Architecture Processors.  */
 
+/* HiSilicon ('H') cores. */
+AARCH64_CORE("tsv110",     tsv110,    cortexa57,    8_4A, AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_F16 | AARCH64_FL_AES | AARCH64_FL_SHA2, tsv110,   0x48, 0xd01, -1)
+
 /* Qualcomm ('Q') cores. */
 AARCH64_CORE("saphira",     saphira,    falkor,    8_4A,  AARCH64_FL_FOR_ARCH8_4 | AARCH64_FL_CRYPTO | AARCH64_FL_RCPC, saphira,   0x51, 0xC01, -1)
 

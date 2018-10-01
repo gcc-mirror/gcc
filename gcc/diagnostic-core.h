@@ -96,6 +96,7 @@ extern bool permerror (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern bool permerror (rich_location *, const char *,
 				   ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void sorry (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
+extern void sorry_at (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void inform (location_t, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void inform (rich_location *, const char *, ...) ATTRIBUTE_GCC_DIAG(2,3);
 extern void inform_n (location_t, unsigned HOST_WIDE_INT, const char *,

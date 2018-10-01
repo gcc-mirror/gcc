@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-options "-fdelete-null-pointer-checks" }
 
 // Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //

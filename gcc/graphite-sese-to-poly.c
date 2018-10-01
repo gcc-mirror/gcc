@@ -58,14 +58,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "graphite.h"
 
-/* Assigns to RES the value of the INTEGER_CST T.  */
-
-static inline void
-tree_int_to_gmp (tree t, mpz_t res)
-{
-  wi::to_mpz (wi::to_wide (t), res, TYPE_SIGN (TREE_TYPE (t)));
-}
-
 /* Return an isl identifier for the polyhedral basic block PBB.  */
 
 static isl_id *

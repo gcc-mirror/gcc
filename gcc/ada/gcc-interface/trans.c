@@ -86,9 +86,6 @@ struct List_Header *List_Headers_Ptr;
 /* Highest number in the front-end node table.  */
 int max_gnat_nodes;
 
-/* Current node being treated, in case abort called.  */
-Node_Id error_gnat_node;
-
 /* True when gigi is being called on an analyzed but unexpanded
    tree, and the only purpose of the call is to properly annotate
    types with representation information.  */
@@ -250,6 +247,7 @@ static bool set_end_locus_from_node (tree, Node_Id);
 static int lvalue_required_p (Node_Id, tree, bool, bool);
 static tree build_raise_check (int, enum exception_info_kind);
 static tree create_init_temporary (const char *, tree, tree *, Node_Id);
+static bool maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk);
 
 /* Hooks for debug info back-ends, only supported and used in a restricted set
    of configurations.  */
@@ -719,7 +717,7 @@ gigi (Node_Id gnat_root,
   destroy_gnat_utils ();
 
   /* We cannot track the location of errors past this point.  */
-  error_gnat_node = Empty;
+  Current_Error_Node = Empty;
 }
 
 /* Return a subprogram decl corresponding to __gnat_rcheck_xx for the given
@@ -3794,6 +3792,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   if (Was_Expression_Function (gnat_node))
     DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
 
+  /* Try to create a bona-fide thunk and hand it over to the middle-end.  */
+  if (Is_Thunk (gnat_subprog_id)
+      && maybe_make_gnu_thunk (gnat_subprog_id, gnu_subprog_decl))
+    return;
+
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
   gnu_subprog_language = ggc_cleared_alloc<language_function> ();
@@ -5910,7 +5913,7 @@ gnat_to_gnu (Node_Id gnat_node)
   bool sync = false;
 
   /* Save node number for error message and set location information.  */
-  error_gnat_node = gnat_node;
+  Current_Error_Node = gnat_node;
   Sloc_to_locus (Sloc (gnat_node), &input_location);
 
   /* If we are only annotating types and this node is a statement, return
@@ -7570,13 +7573,33 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* And we only deal with 'Address if the object has a Freeze node.  */
       gnat_temp = Entity (Name (gnat_node));
-      if (No (Freeze_Node (gnat_temp)))
-	break;
+      if (Freeze_Node (gnat_temp))
+	{
+	  tree gnu_address = gnat_to_gnu (Expression (gnat_node));
 
-      /* Get the value to use as the address and save it as the equivalent
-	 for the object.  When it is frozen, gnat_to_gnu_entity will do the
-	 right thing.  */
-      save_gnu_tree (gnat_temp, gnat_to_gnu (Expression (gnat_node)), true);
+	  /* Get the value to use as the address and save it as the equivalent
+	     for the object; when it is frozen, gnat_to_gnu_entity will do the
+	     right thing.  For a subprogram, put the naked address but build a
+	     meaningfull expression for an object in case its address is taken
+	     before the Freeze node is encountered; this can happen if the type
+	     of the object is limited and it is initialized with the result of
+	     a function call.  */
+	  if (Is_Subprogram (gnat_temp))
+	    gnu_result = gnu_address;
+	  else
+	    {
+	      tree gnu_type = gnat_to_gnu_type (Etype (gnat_temp));
+	      /* Drop atomic and volatile qualifiers for the expression.  */
+	      gnu_type = TYPE_MAIN_VARIANT (gnu_type);
+	      gnu_type
+		= build_reference_type_for_mode (gnu_type, ptr_mode, true);
+	      gnu_address = convert (gnu_type, gnu_address);
+	      gnu_result
+		= build_unary_op (INDIRECT_REF, NULL_TREE, gnu_address);
+	    }
+
+	  save_gnu_tree (gnat_temp, gnu_result, true);
+	}
       break;
 
     case N_Enumeration_Representation_Clause:
@@ -10314,6 +10337,242 @@ static tree
 get_elaboration_procedure (void)
 {
   return gnu_elab_proc_stack->last ();
+}
+
+/* Return the controlling type of a dispatching subprogram.  */
+
+static Entity_Id
+get_controlling_type (Entity_Id subprog)
+{
+  /* This is modelled on Expand_Interface_Thunk.  */
+  Entity_Id controlling_type = Etype (First_Formal (subprog));
+  if (Is_Access_Type (controlling_type))
+    controlling_type = Directly_Designated_Type (controlling_type);
+  controlling_type = Underlying_Type (controlling_type);
+  if (Is_Concurrent_Type (controlling_type))
+    controlling_type = Corresponding_Record_Type (controlling_type);
+  controlling_type = Base_Type (controlling_type);
+  return controlling_type;
+}
+
+/* Return whether we should use an alias for the TARGET of a thunk
+   in order to make the call generated in the thunk local.  */
+
+static bool
+use_alias_for_thunk_p (tree target)
+{
+  /* We cannot generate a local call in this case.  */
+  if (DECL_EXTERNAL (target))
+    return false;
+
+  /* The call is already local in this case.  */
+  if (TREE_CODE (DECL_CONTEXT (target)) == FUNCTION_DECL)
+    return false;
+
+  return TARGET_USE_LOCAL_THUNK_ALIAS_P (target);
+}
+
+static GTY(()) unsigned long thunk_labelno = 0;
+
+/* Create an alias for TARGET to be used as the target of a thunk.  */
+
+static tree
+make_alias_for_thunk (tree target)
+{
+  char buf[64];
+  targetm.asm_out.generate_internal_label (buf, "LTHUNK", thunk_labelno++);
+
+  tree alias = build_decl (DECL_SOURCE_LOCATION (target), TREE_CODE (target),
+			   get_identifier (buf), TREE_TYPE (target));
+
+  DECL_LANG_SPECIFIC (alias) = DECL_LANG_SPECIFIC (target);
+  DECL_CONTEXT (alias) = DECL_CONTEXT (target);
+  TREE_READONLY (alias) = TREE_READONLY (target);
+  TREE_THIS_VOLATILE (alias) = TREE_THIS_VOLATILE (target);
+  DECL_ARTIFICIAL (alias) = 1;
+  DECL_INITIAL (alias) = error_mark_node;
+  DECL_ARGUMENTS (alias) = copy_list (DECL_ARGUMENTS (target));
+  TREE_ADDRESSABLE (alias) = 1;
+  SET_DECL_ASSEMBLER_NAME (alias, DECL_NAME (alias));
+
+  cgraph_node *n = cgraph_node::create_same_body_alias (alias, target);
+  gcc_assert (n);
+
+  return alias;
+}
+
+/* Create the covariant part of the {GNAT,GNU}_THUNK.  */
+
+static tree
+make_covariant_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
+{
+  tree gnu_name = create_concat_name (gnat_thunk, "CV");
+  tree gnu_cv_thunk
+    = build_decl (DECL_SOURCE_LOCATION (gnu_thunk), TREE_CODE (gnu_thunk),
+		  gnu_name, TREE_TYPE (gnu_thunk));
+
+  DECL_ARGUMENTS (gnu_cv_thunk) = copy_list (DECL_ARGUMENTS (gnu_thunk));
+  DECL_RESULT (gnu_cv_thunk) = copy_node (DECL_RESULT (gnu_thunk));
+  DECL_CONTEXT (DECL_RESULT (gnu_cv_thunk)) = gnu_cv_thunk;
+
+  DECL_LANG_SPECIFIC (gnu_cv_thunk) = DECL_LANG_SPECIFIC (gnu_thunk);
+  DECL_CONTEXT (gnu_cv_thunk) = DECL_CONTEXT (gnu_thunk);
+  TREE_READONLY (gnu_cv_thunk) = TREE_READONLY (gnu_thunk);
+  TREE_THIS_VOLATILE (gnu_cv_thunk) = TREE_THIS_VOLATILE (gnu_thunk);
+  TREE_PUBLIC (gnu_cv_thunk) = TREE_PUBLIC (gnu_thunk);
+  DECL_ARTIFICIAL (gnu_cv_thunk) = 1;
+
+  return gnu_cv_thunk;
+}
+
+/* Try to create a GNU thunk for {GNAT,GNU}_THUNK and return true on success.
+
+   GNU thunks are more efficient than GNAT thunks because they don't call into
+   the runtime to retrieve the offset used in the displacement operation, but
+   they are tailored to C++ and thus too limited to support the full range of
+   thunks generated in Ada.  Here's the complete list of limitations:
+
+     1. Multi-controlling thunks, i.e thunks with more than one controlling
+	parameter, are simply not supported.
+
+     2. Covariant thunks, i.e. thunks for which the result is also controlling,
+	are split into a pair of (this, covariant-only) thunks.
+
+     3. Variable-offset thunks, i.e. thunks for which the offset depends on the
+	object and not only on its type, are supported as 2nd class citizens.
+
+     4. External thunks, i.e. thunks for which the target is not declared in
+	the same unit as the thunk, are supported as 2nd class citizens.
+
+     5. Local thunks, i.e. thunks generated for a local type, are supported as
+	2nd class citizens.  */
+
+static bool
+maybe_make_gnu_thunk (Entity_Id gnat_thunk, tree gnu_thunk)
+{
+  const Entity_Id gnat_target = Thunk_Entity (gnat_thunk);
+
+  /* Check that the first formal of the target is the only controlling one.  */
+  Entity_Id gnat_formal = First_Formal (gnat_target);
+  if (!Is_Controlling_Formal (gnat_formal))
+    return false;
+  for (gnat_formal = Next_Formal (gnat_formal);
+       Present (gnat_formal);
+       gnat_formal = Next_Formal (gnat_formal))
+    if (Is_Controlling_Formal (gnat_formal))
+      return false;
+
+  /* Look for the types that control the target and the thunk.  */
+  const Entity_Id gnat_controlling_type = get_controlling_type (gnat_target);
+  const Entity_Id gnat_interface_type = get_controlling_type (gnat_thunk);
+
+  /* Now compute whether the former covers the latter.  */
+  const Entity_Id gnat_interface_tag
+    = Is_Interface (gnat_interface_type)
+      ? Find_Interface_Tag (gnat_controlling_type, gnat_interface_type)
+      : Empty;
+  tree gnu_interface_tag
+    = Present (gnat_interface_tag)
+      ? gnat_to_gnu_field_decl (gnat_interface_tag)
+      : NULL_TREE;
+  tree gnu_interface_offset
+    = gnu_interface_tag ? byte_position (gnu_interface_tag) : NULL_TREE;
+
+  /* There are three ways to retrieve the offset between the interface view
+     and the base object.  Either the controlling type covers the interface
+     type and the offset of the corresponding tag is fixed, in which case it
+     can be statically encoded in the thunk (see FIXED_OFFSET below).  Or the
+     controlling type doesn't cover the interface type but is of fixed size,
+     in which case the offset is stored in the dispatch table, two pointers
+     above the dispatch table address (see VIRTUAL_VALUE below).  Otherwise,
+     the offset is variable and is stored right after the tag in every object
+     (see INDIRECT_OFFSET below).  See also a-tags.ads for more details.  */
+  HOST_WIDE_INT fixed_offset, virtual_value, indirect_offset;
+  tree virtual_offset;
+
+  if (gnu_interface_offset && TREE_CODE (gnu_interface_offset) == INTEGER_CST)
+    {
+      fixed_offset = - tree_to_shwi (gnu_interface_offset);
+      virtual_value = 0;
+      virtual_offset = NULL_TREE;
+      indirect_offset = 0;
+    }
+  else if (!gnu_interface_offset
+	   && !Is_Variable_Size_Record (gnat_controlling_type))
+    {
+      fixed_offset = 0;
+      virtual_value = - 2 * (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT);
+      virtual_offset = build_int_cst (integer_type_node, virtual_value);
+      indirect_offset = 0;
+    }
+  else
+    {
+      /* Covariant thunks with variable offset are not supported.  */
+      if (Has_Controlling_Result (gnat_target))
+	return false;
+
+      fixed_offset = 0;
+      virtual_value = 0;
+      virtual_offset = NULL_TREE;
+      indirect_offset = (HOST_WIDE_INT) (POINTER_SIZE / BITS_PER_UNIT);
+    }
+
+  tree gnu_target = gnat_to_gnu_entity (gnat_target, NULL_TREE, false);
+
+  /* Thunk and target must have the same nesting level, if any.  */
+  gcc_assert (DECL_CONTEXT (gnu_thunk) == DECL_CONTEXT (gnu_target));
+
+  /* If the target returns by invisible reference and is external, apply the
+     same transformation as Subprogram_Body_to_gnu here.  */
+  if (TREE_ADDRESSABLE (TREE_TYPE (gnu_target))
+      && DECL_EXTERNAL (gnu_target)
+      && !POINTER_TYPE_P (TREE_TYPE (DECL_RESULT (gnu_target))))
+    {
+      TREE_TYPE (DECL_RESULT (gnu_target))
+	= build_reference_type (TREE_TYPE (DECL_RESULT (gnu_target)));
+      relayout_decl (DECL_RESULT (gnu_target));
+    }
+
+  /* The thunk expander requires the return types of thunk and target to be
+     compatible, which is not fully the case with the CICO mechanism.  */
+  if (TYPE_CI_CO_LIST (TREE_TYPE (gnu_thunk)))
+    {
+      tree gnu_target_type = TREE_TYPE (gnu_target);
+      gcc_assert (TYPE_CI_CO_LIST (gnu_target_type));
+      TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (gnu_thunk)))
+	= TYPE_CANONICAL (TREE_TYPE (gnu_target_type));
+    }
+
+  cgraph_node *target_node = cgraph_node::get_create (gnu_target);
+
+  /* If the return type of the target is a controlling type, then we need
+     both an usual this thunk and a covariant thunk in this order:
+
+       this thunk  -->  covariant thunk  -->  target
+
+     For covariant thunks, we can only handle a fixed offset.  */
+  if (Has_Controlling_Result (gnat_target))
+    {
+      gcc_assert (fixed_offset < 0);
+      tree gnu_cv_thunk = make_covariant_thunk (gnat_thunk, gnu_thunk);
+      target_node->create_thunk (gnu_cv_thunk, gnu_target, false,
+				 - fixed_offset, 0, 0,
+				 NULL_TREE, gnu_target);
+
+      gnu_target = gnu_cv_thunk;
+    }
+
+  /* We may also need to create an alias for the target in order to make
+     the call local, depending on the linkage of the target.  */
+  tree gnu_alias = use_alias_for_thunk_p (gnu_target)
+		  ? make_alias_for_thunk (gnu_target)
+		  : gnu_target;
+
+  target_node->create_thunk (gnu_thunk, gnu_target, true,
+			     fixed_offset, virtual_value, indirect_offset,
+			     virtual_offset, gnu_alias);
+
+  return true;
 }
 
 /* Initialize the table that maps GNAT codes to GCC codes for simple

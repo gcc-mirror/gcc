@@ -2665,7 +2665,7 @@ build/version.o:  version.c version.h \
 build/errors.o : errors.c $(BCONFIG_H) $(SYSTEM_H) errors.h
 build/gensupport.o: gensupport.c $(BCONFIG_H) $(SYSTEM_H) 		\
   $(CORETYPES_H) $(GTM_H) $(RTL_BASE_H) $(OBSTACK_H) errors.h		\
-  $(HASHTAB_H) $(READ_MD_H) $(GENSUPPORT_H)
+  $(HASHTAB_H) $(READ_MD_H) $(GENSUPPORT_H) $(HASH_TABLE_H)
 build/ggc-none.o : ggc-none.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) 	\
   $(GGC_H)
 build/min-insn-modes.o : min-insn-modes.c $(BCONFIG_H) $(SYSTEM_H)	\
@@ -2680,7 +2680,7 @@ build/read-rtl.o: read-rtl.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
 build/rtl.o: rtl.c $(BCONFIG_H) $(CORETYPES_H) $(GTM_H) $(SYSTEM_H)	\
   $(RTL_H) $(GGC_H) errors.h
 build/vec.o : vec.c $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(VEC_H)	\
-  $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
+  $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H) $(HASH_TABLE_H)
 build/hash-table.o : hash-table.c $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/sort.o : sort.cc $(BCONFIG_H) $(SYSTEM_H)

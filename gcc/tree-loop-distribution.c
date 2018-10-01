@@ -90,7 +90,6 @@ along with GCC; see the file COPYING3.  If not see
 	data reuse.  */
 
 #include "config.h"
-#define INCLUDE_ALGORITHM /* stable_sort */
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
@@ -2561,12 +2560,14 @@ version_for_distribution_p (vec<struct partition *> *partitions,
 
 /* Compare base offset of builtin mem* partitions P1 and P2.  */
 
-static bool
-offset_cmp (struct partition *p1, struct partition *p2)
+static int
+offset_cmp (const void *vp1, const void *vp2)
 {
-  gcc_assert (p1 != NULL && p1->builtin != NULL);
-  gcc_assert (p2 != NULL && p2->builtin != NULL);
-  return p1->builtin->dst_base_offset < p2->builtin->dst_base_offset;
+  struct partition *p1 = *(struct partition *const *) vp1;
+  struct partition *p2 = *(struct partition *const *) vp2;
+  unsigned HOST_WIDE_INT o1 = p1->builtin->dst_base_offset;
+  unsigned HOST_WIDE_INT o2 = p2->builtin->dst_base_offset;
+  return (o2 < o1) - (o1 < o2);
 }
 
 /* Fuse adjacent memset builtin PARTITIONS if possible.  This is a special
@@ -2618,8 +2619,8 @@ fuse_memset_builtins (vec<struct partition *> *partitions)
 	}
 
       /* Stable sort is required in order to avoid breaking dependence.  */
-      std::stable_sort (&(*partitions)[i],
-			&(*partitions)[i] + j - i, offset_cmp);
+      gcc_stablesort (&(*partitions)[i], j - i, sizeof (*partitions)[i],
+		      offset_cmp);
       /* Continue with next partition.  */
       i = j;
     }

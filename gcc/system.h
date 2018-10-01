@@ -1197,17 +1197,15 @@ helper_const_non_const_cast (const char *p)
 /* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
 
-/* qsort comparator consistency checking: except in release-checking compilers,
-   redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
+/* GCC qsort API-compatible functions: except in release-checking compilers,
+   redirect 4-argument qsort calls to gcc_qsort; keep 1-argument invocations
    corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
 void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
 void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
+void gcc_stablesort (void *, size_t, size_t,
+		     int (*)(const void *, const void *));
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
-#if CHECKING_P
-#define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
-#else
 #define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
-#endif
 
 #endif /* ! GCC_SYSTEM_H */

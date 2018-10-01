@@ -43,6 +43,7 @@ extern void sparc_override_options (void);
 extern void sparc_output_scratch_registers (FILE *);
 extern void sparc_target_macros (void);
 extern void sparc_emit_membar_for_model (enum memmodel, int, int);
+extern int sparc_branch_cost (bool, bool);
 
 #ifdef RTX_CODE
 extern machine_mode select_cc_mode (enum rtx_code, rtx, rtx);

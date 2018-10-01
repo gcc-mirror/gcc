@@ -102,10 +102,10 @@ struct conversion {
   BOOL_BITFIELD base_p : 1;
   /* If KIND is ck_ref_bind, true when either an lvalue reference is
      being bound to an lvalue expression or an rvalue reference is
-     being bound to an rvalue expression.  If KIND is ck_rvalue,
+     being bound to an rvalue expression.  If KIND is ck_rvalue or ck_base,
      true when we are treating an lvalue as an rvalue (12.8p33).  If
-     KIND is ck_base, always false.  If ck_identity, we will be
-     binding a reference directly or decaying to a pointer.  */
+     ck_identity, we will be binding a reference directly or decaying to
+     a pointer.  */
   BOOL_BITFIELD rvaluedness_matches_p: 1;
   BOOL_BITFIELD check_narrowing: 1;
   /* Whether check_narrowing should only check TREE_CONSTANTs; used
@@ -436,6 +436,8 @@ struct conversion_info {
   tree from;
   /* The type of the parameter.  */
   tree to_type;
+  /* The location of the argument.  */
+  location_t loc;
 };
   
 struct rejection_reason {
@@ -627,24 +629,28 @@ arity_rejection (tree first_arg, int expected, int actual)
 }
 
 static struct rejection_reason *
-arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to)
+arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to,
+			  location_t loc)
 {
   struct rejection_reason *r = alloc_rejection (rr_arg_conversion);
   int adjust = first_arg != NULL_TREE;
   r->u.conversion.n_arg = n_arg - adjust;
   r->u.conversion.from = from;
   r->u.conversion.to_type = to;
+  r->u.conversion.loc = loc;
   return r;
 }
 
 static struct rejection_reason *
-bad_arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to)
+bad_arg_conversion_rejection (tree first_arg, int n_arg, tree from, tree to,
+			      location_t loc)
 {
   struct rejection_reason *r = alloc_rejection (rr_bad_arg_conversion);
   int adjust = first_arg != NULL_TREE;
   r->u.bad_conversion.n_arg = n_arg - adjust;
   r->u.bad_conversion.from = from;
   r->u.bad_conversion.to_type = to;
+  r->u.bad_conversion.loc = loc;
   return r;
 }
 
@@ -655,6 +661,7 @@ explicit_conversion_rejection (tree from, tree to)
   r->u.conversion.n_arg = 0;
   r->u.conversion.from = from;
   r->u.conversion.to_type = to;
+  r->u.conversion.loc = UNKNOWN_LOCATION;
   return r;
 }
 
@@ -665,6 +672,7 @@ template_conversion_rejection (tree from, tree to)
   r->u.conversion.n_arg = 0;
   r->u.conversion.from = from;
   r->u.conversion.to_type = to;
+  r->u.conversion.loc = UNKNOWN_LOCATION;
   return r;
 }
 
@@ -1425,6 +1433,9 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 	 type.  A temporary object is created to hold the result of
 	 the conversion unless we're binding directly to a reference.  */
       conv->need_temporary_p = !(flags & LOOKUP_NO_TEMP_BIND);
+      if (flags & LOOKUP_PREFER_RVALUE)
+	/* Tell convert_like_real to set LOOKUP_PREFER_RVALUE.  */
+	conv->rvaluedness_matches_p = true;
     }
   else
     return NULL;
@@ -2254,14 +2265,17 @@ add_function_candidate (struct z_candidate **candidates,
       if (! t)
 	{
 	  viable = 0;
-	  reason = arg_conversion_rejection (first_arg, i, argtype, to_type);
+	  reason = arg_conversion_rejection (first_arg, i, argtype, to_type,
+					     EXPR_LOCATION (arg));
 	  break;
 	}
 
       if (t->bad_p)
 	{
 	  viable = -1;
-	  reason = bad_arg_conversion_rejection (first_arg, i, arg, to_type);
+	  reason = bad_arg_conversion_rejection (first_arg, i, arg, to_type,
+						 EXPR_LOCATION (arg));
+
 	}
     }
 
@@ -2350,7 +2364,8 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
       if (t->bad_p)
 	{
 	  viable = -1;
-	  reason = bad_arg_conversion_rejection (NULL_TREE, i, arg, convert_type);
+	  reason = bad_arg_conversion_rejection (NULL_TREE, i, arg, convert_type,
+						 EXPR_LOCATION (arg));
 	}
 
       if (i == 0)
@@ -2411,13 +2426,14 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
 	  /* We need something for printing the candidate.  */
 	  t = build_identity_conv (types[i], NULL_TREE);
 	  reason = arg_conversion_rejection (NULL_TREE, i, argtypes[i],
-					     types[i]);
+					     types[i], EXPR_LOCATION (args[i]));
 	}
       else if (t->bad_p)
 	{
 	  viable = 0;
 	  reason = bad_arg_conversion_rejection (NULL_TREE, i, args[i],
-						 types[i]);
+						 types[i],
+						 EXPR_LOCATION (args[i]));
 	}
       convs[i] = t;
     }
@@ -2436,7 +2452,8 @@ build_builtin_candidate (struct z_candidate **candidates, tree fnname,
 	{
 	  viable = 0;
 	  reason = arg_conversion_rejection (NULL_TREE, 0, argtypes[2],
-					     boolean_type_node);
+					     boolean_type_node,
+					     EXPR_LOCATION (args[2]));
 	}
     }
 
@@ -3927,7 +3944,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	    {
 	      cand->viable = 0;
 	      cand->reason = arg_conversion_rejection (NULL_TREE, -2,
-						       rettype, totype);
+						       rettype, totype,
+						       EXPR_LOCATION (expr));
 	    }
 	  else if (DECL_NONCONVERTING_P (cand->fn)
 		   && ics->rank > cr_exact)
@@ -3947,7 +3965,8 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
 	      cand->viable = -1;
 	      cand->reason
 		= bad_arg_conversion_rejection (NULL_TREE, -2,
-						rettype, totype);
+						rettype, totype,
+						EXPR_LOCATION (expr));
 	    }
 	  else if (primary_template_specialization_p (cand->fn)
 		   && ics->rank > cr_exact)
@@ -3971,7 +3990,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     }
 
   cand = tourney (candidates, complain);
-  if (cand == 0)
+  if (cand == NULL)
     {
       if (complain & tf_error)
 	{
@@ -4013,6 +4032,14 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   conv->cand = cand;
   if (cand->viable == -1)
     conv->bad_p = true;
+
+  /* We're performing the maybe-rvalue overload resolution and
+     a conversion function is in play.  Reject converting the return
+     value of the conversion function to a base class.  */
+  if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
+    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
+      if (t->kind == ck_base)
+	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -8374,10 +8401,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
     maybe_warn_class_memaccess (input_location, fn, args);
 
-  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
-      /* Don't mess with virtual lookup in instantiate_non_dependent_expr;
-	 virtual functions can't be constexpr.  */
-      && !in_template_function ())
+  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t;
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (argarray[0])),
@@ -9156,6 +9180,129 @@ name_as_c_string (tree name, tree type, bool *free_p)
   return CONST_CAST (char *, pretty_name);
 }
 
+/* If CANDIDATES contains exactly one candidate, return it, otherwise
+   return NULL.  */
+
+static z_candidate *
+single_z_candidate (z_candidate *candidates)
+{
+  if (candidates == NULL)
+    return NULL;
+
+  if (candidates->next)
+    return NULL;
+
+  return candidates;
+}
+
+/* If CANDIDATE is invalid due to a bad argument type, return the
+   pertinent conversion_info.
+
+   Otherwise, return NULL.  */
+
+static const conversion_info *
+maybe_get_bad_conversion_for_unmatched_call (const z_candidate *candidate)
+{
+  /* Must be an rr_arg_conversion or rr_bad_arg_conversion.  */
+  rejection_reason *r = candidate->reason;
+
+  if (r == NULL)
+    return NULL;
+
+  switch (r->code)
+    {
+    default:
+      return NULL;
+
+    case rr_arg_conversion:
+      return &r->u.conversion;
+
+    case rr_bad_arg_conversion:
+      return &r->u.bad_conversion;
+    }
+}
+
+/* Issue an error and note complaining about a bad argument type at a
+   callsite with a single candidate FNDECL.
+
+   ARG_LOC is the location of the argument (or UNKNOWN_LOCATION, in which
+   case input_location is used).
+   FROM_TYPE is the type of the actual argument; TO_TYPE is the type of
+   the formal parameter.  */
+
+void
+complain_about_bad_argument (location_t arg_loc,
+			     tree from_type, tree to_type,
+			     tree fndecl, int parmnum)
+{
+  auto_diagnostic_group d;
+  range_label_for_type_mismatch rhs_label (from_type, to_type);
+  range_label *label = &rhs_label;
+  if (arg_loc == UNKNOWN_LOCATION)
+    {
+      arg_loc = input_location;
+      label = NULL;
+    }
+  gcc_rich_location richloc (arg_loc, label);
+  error_at (&richloc,
+	    "cannot convert %qH to %qI",
+	    from_type, to_type);
+  inform (get_fndecl_argument_location (fndecl, parmnum),
+	  "  initializing argument %P of %qD", parmnum, fndecl);
+}
+
+/* Subroutine of build_new_method_call_1, for where there are no viable
+   candidates for the call.  */
+
+static void
+complain_about_no_candidates_for_method_call (tree instance,
+					      z_candidate *candidates,
+					      tree explicit_targs,
+					      tree basetype,
+					      tree optype, tree name,
+					      bool skip_first_for_error,
+					      vec<tree, va_gc> *user_args)
+{
+  auto_diagnostic_group d;
+  if (!COMPLETE_OR_OPEN_TYPE_P (basetype))
+    cxx_incomplete_type_error (instance, basetype);
+  else if (optype)
+    error ("no matching function for call to %<%T::operator %T(%A)%#V%>",
+	   basetype, optype, build_tree_list_vec (user_args),
+	   TREE_TYPE (instance));
+  else
+    {
+      /* Special-case for when there's a single candidate that's failing
+	 due to a bad argument type.  */
+      if (z_candidate *candidate = single_z_candidate (candidates))
+	  if (const conversion_info *conv
+		= maybe_get_bad_conversion_for_unmatched_call (candidate))
+	    {
+	      complain_about_bad_argument (conv->loc,
+					   conv->from, conv->to_type,
+					   candidate->fn, conv->n_arg);
+	      return;
+	    }
+
+      tree arglist = build_tree_list_vec (user_args);
+      tree errname = name;
+      bool twiddle = false;
+      if (IDENTIFIER_CDTOR_P (errname))
+	{
+	  twiddle = IDENTIFIER_DTOR_P (errname);
+	  errname = constructor_name (basetype);
+	}
+      if (explicit_targs)
+	errname = lookup_template_function (errname, explicit_targs);
+      if (skip_first_for_error)
+	arglist = TREE_CHAIN (arglist);
+      error ("no matching function for call to %<%T::%s%E(%A)%#V%>",
+	     basetype, &"~"[!twiddle], errname, arglist,
+	     TREE_TYPE (instance));
+    }
+  print_z_candidates (location_of (name), candidates);
+}
+
 /* Build a call to "INSTANCE.FN (ARGS)".  If FN_P is non-NULL, it will
    be set, upon return, to the function called.  ARGS may be NULL.
    This may change ARGS.  */
@@ -9373,34 +9520,11 @@ build_new_method_call_1 (tree instance, tree fns, vec<tree, va_gc> **args,
   if (!any_viable_p)
     {
       if (complain & tf_error)
-	{
-	  auto_diagnostic_group d;
-	  if (!COMPLETE_OR_OPEN_TYPE_P (basetype))
-	    cxx_incomplete_type_error (instance, basetype);
-	  else if (optype)
-	    error ("no matching function for call to %<%T::operator %T(%A)%#V%>",
-		   basetype, optype, build_tree_list_vec (user_args),
-		   TREE_TYPE (instance));
-	  else
-	    {
-	      tree arglist = build_tree_list_vec (user_args);
-	      tree errname = name;
-	      bool twiddle = false;
-	      if (IDENTIFIER_CDTOR_P (errname))
-		{
-		  twiddle = IDENTIFIER_DTOR_P (errname);
-		  errname = constructor_name (basetype);
-		}
-	      if (explicit_targs)
-		errname = lookup_template_function (errname, explicit_targs);
-	      if (skip_first_for_error)
-		arglist = TREE_CHAIN (arglist);
-	      error ("no matching function for call to %<%T::%s%E(%A)%#V%>",
-		     basetype, &"~"[!twiddle], errname, arglist,
-		     TREE_TYPE (instance));
-	    }
-	  print_z_candidates (location_of (name), candidates);
-	}
+	complain_about_no_candidates_for_method_call (instance, candidates,
+						      explicit_targs, basetype,
+						      optype, name,
+						      skip_first_for_error,
+						      user_args);
       call = error_mark_node;
     }
   else

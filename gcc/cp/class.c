@@ -129,7 +129,6 @@ static void maybe_warn_about_overly_private_class (tree);
 static void add_implicitly_declared_members (tree, tree*, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree build_simple_base_path (tree expr, tree binfo);
-static tree build_vtbl_ref_1 (tree, tree);
 static void build_vtbl_initializer (tree, tree, tree, tree, int *,
 				    vec<constructor_elt, va_gc> **);
 static bool check_bitfield_decl (tree);
@@ -695,8 +694,8 @@ build_vfield_ref (tree datum, tree type)
    cases for INSTANCE which we take care of here, mainly to avoid
    creating extra tree nodes when we don't have to.  */
 
-static tree
-build_vtbl_ref_1 (tree instance, tree idx)
+tree
+build_vtbl_ref (tree instance, tree idx)
 {
   tree aref;
   tree vtbl = NULL_TREE;
@@ -726,14 +725,6 @@ build_vtbl_ref_1 (tree instance, tree idx)
   return aref;
 }
 
-tree
-build_vtbl_ref (tree instance, tree idx)
-{
-  tree aref = build_vtbl_ref_1 (instance, idx);
-
-  return aref;
-}
-
 /* Given a stable object pointer INSTANCE_PTR, return an expression which
    yields a function pointer corresponding to vtable element INDEX.  */
 
@@ -742,8 +733,7 @@ build_vfn_ref (tree instance_ptr, tree idx)
 {
   tree aref;
 
-  aref = build_vtbl_ref_1 (cp_build_fold_indirect_ref (instance_ptr),
-                           idx);
+  aref = build_vtbl_ref (cp_build_fold_indirect_ref (instance_ptr), idx);
 
   /* When using function descriptors, the address of the
      vtable entry is treated as a function pointer.  */
@@ -9277,6 +9267,7 @@ build_vtbl_initializer (tree binfo,
       tree vcall_index;
       tree fn, fn_original;
       tree init = NULL_TREE;
+      tree idx = size_int (jx++);
 
       fn = BV_FN (v);
       fn_original = fn;
@@ -9380,7 +9371,7 @@ build_vtbl_initializer (tree binfo,
 	  int i;
 	  if (init == size_zero_node)
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
-	      CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, init);
+	      CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
 	  else
 	    for (i = 0; i < TARGET_VTABLE_USES_DESCRIPTORS; ++i)
 	      {
@@ -9388,11 +9379,11 @@ build_vtbl_initializer (tree binfo,
 				     fn, build_int_cst (NULL_TREE, i));
 		TREE_CONSTANT (fdesc) = 1;
 
-		CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, fdesc);
+		CONSTRUCTOR_APPEND_ELT (*inits, idx, fdesc);
 	      }
 	}
       else
-	CONSTRUCTOR_APPEND_ELT (*inits, NULL_TREE, init);
+	CONSTRUCTOR_APPEND_ELT (*inits, idx, init);
     }
 }
 

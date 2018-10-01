@@ -744,6 +744,7 @@ s-zdefaultcc: Makefile
 	$(STAMP) $@ 
 
 mostlyclean-local:
+	-chmod -R u+w check-go-dir
 	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir
 
 @NATIVE_TRUE@go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
@@ -807,6 +808,7 @@ mostlyclean-local:
 
 # check-go-tool runs `go test cmd/go` in our environment.
 @NATIVE_TRUE@check-go-tool: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
+@NATIVE_TRUE@	-chmod -R u+w check-go-dir
 @NATIVE_TRUE@	rm -rf check-go-dir cmd_go-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/go
 @NATIVE_TRUE@	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
@@ -876,8 +878,10 @@ mostlyclean-local:
 # check-vet runs `go test cmd/vet` in our environment.
 @NATIVE_TRUE@check-vet: go$(EXEEXT) $(noinst_PROGRAMS) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf check-vet-dir cmd_vet-testlog
-@NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/cmd
+@NATIVE_TRUE@	$(MKDIR_P) check-vet-dir/src/cmd/internal
 @NATIVE_TRUE@	cp -r $(cmdsrcdir)/vet check-vet-dir/src/cmd/
+@NATIVE_TRUE@	cp -r $(cmdsrcdir)/internal/objabi check-vet-dir/src/cmd/internal
+@NATIVE_TRUE@	cp $(libgodir)/objabi.go check-vet-dir/src/cmd/internal/objabi/
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	abs_checkdir=`cd check-vet-dir && $(PWD_COMMAND)`; \
 @NATIVE_TRUE@	echo "cd check-vet-dir/src/cmd/vet && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.timeout=$(GOTOOLS_TEST_TIMEOUT)s -test.v" > cmd_vet-testlog

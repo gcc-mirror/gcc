@@ -1107,14 +1107,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-/* On some system termio is either absent or including it will disable termios
-   (HP-UX) */
-#if !defined (__hpux__) && !defined (BSD) && !defined (__APPLE__) \
-  && !defined (__rtems__) && !defined (__QNXNTO__)
-#   include <termio.h>
-#endif
-
 #include <sys/ioctl.h>
 #include <termios.h>
 #include <fcntl.h>
@@ -1130,7 +1122,6 @@ __gnat_setup_winsize (void *desc, int rows, int columns)
 #   include <sys/signal.h>
 #endif
 #if defined (__hpux__)
-#   include <sys/termio.h>
 #   include <sys/stropts.h>
 #endif
 

@@ -1,4 +1,4 @@
-/* { dg-options "-O" } */
+/* { dg-options "-O -fno-stack-clash-protection" } */
 
 int foo (void *);
 

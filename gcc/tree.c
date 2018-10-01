@@ -2475,7 +2475,7 @@ grow_tree_vec (tree v, int len MEM_STAT_DECL)
 /* Return 1 if EXPR is the constant zero, whether it is integral, float or
    fixed, and scalar, complex or vector.  */
 
-int
+bool
 zerop (const_tree expr)
 {
   return (integer_zerop (expr)
@@ -2486,7 +2486,7 @@ zerop (const_tree expr)
 /* Return 1 if EXPR is the integer constant zero or a complex constant
    of zero.  */
 
-int
+bool
 integer_zerop (const_tree expr)
 {
   switch (TREE_CODE (expr))
@@ -2508,7 +2508,7 @@ integer_zerop (const_tree expr)
 /* Return 1 if EXPR is the integer constant one or the corresponding
    complex constant.  */
 
-int
+bool
 integer_onep (const_tree expr)
 {
   switch (TREE_CODE (expr))
@@ -2530,7 +2530,7 @@ integer_onep (const_tree expr)
 /* Return 1 if EXPR is the integer constant one.  For complex and vector,
    return 1 if every piece is the integer constant one.  */
 
-int
+bool
 integer_each_onep (const_tree expr)
 {
   if (TREE_CODE (expr) == COMPLEX_CST)
@@ -2543,13 +2543,13 @@ integer_each_onep (const_tree expr)
 /* Return 1 if EXPR is an integer containing all 1's in as much precision as
    it contains, or a complex or vector whose subparts are such integers.  */
 
-int
+bool
 integer_all_onesp (const_tree expr)
 {
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_all_onesp (TREE_REALPART (expr))
       && integer_all_onesp (TREE_IMAGPART (expr)))
-    return 1;
+    return true;
 
   else if (TREE_CODE (expr) == VECTOR_CST)
     return (VECTOR_CST_NPATTERNS (expr) == 1
@@ -2557,7 +2557,7 @@ integer_all_onesp (const_tree expr)
 	    && integer_all_onesp (VECTOR_CST_ENCODED_ELT (expr, 0)));
 
   else if (TREE_CODE (expr) != INTEGER_CST)
-    return 0;
+    return false;
 
   return (wi::max_value (TYPE_PRECISION (TREE_TYPE (expr)), UNSIGNED)
 	  == wi::to_wide (expr));
@@ -2565,7 +2565,7 @@ integer_all_onesp (const_tree expr)
 
 /* Return 1 if EXPR is the integer constant minus one.  */
 
-int
+bool
 integer_minus_onep (const_tree expr)
 {
   if (TREE_CODE (expr) == COMPLEX_CST)
@@ -2578,16 +2578,16 @@ integer_minus_onep (const_tree expr)
 /* Return 1 if EXPR is an integer constant that is a power of 2 (i.e., has only
    one bit on).  */
 
-int
+bool
 integer_pow2p (const_tree expr)
 {
   if (TREE_CODE (expr) == COMPLEX_CST
       && integer_pow2p (TREE_REALPART (expr))
       && integer_zerop (TREE_IMAGPART (expr)))
-    return 1;
+    return true;
 
   if (TREE_CODE (expr) != INTEGER_CST)
-    return 0;
+    return false;
 
   return wi::popcount (wi::to_wide (expr)) == 1;
 }
@@ -2595,7 +2595,7 @@ integer_pow2p (const_tree expr)
 /* Return 1 if EXPR is an integer constant other than zero or a
    complex constant other than zero.  */
 
-int
+bool
 integer_nonzerop (const_tree expr)
 {
   return ((TREE_CODE (expr) == INTEGER_CST
@@ -2609,7 +2609,7 @@ integer_nonzerop (const_tree expr)
    return 1 if every piece is the integer constant minus one
    (representing the value TRUE).  */
 
-int
+bool
 integer_truep (const_tree expr)
 {
   if (TREE_CODE (expr) == VECTOR_CST)
@@ -2619,7 +2619,7 @@ integer_truep (const_tree expr)
 
 /* Return 1 if EXPR is the fixed-point constant zero.  */
 
-int
+bool
 fixed_zerop (const_tree expr)
 {
   return (TREE_CODE (expr) == FIXED_CST
@@ -2764,7 +2764,7 @@ tree_ctz (const_tree expr)
 /* Return 1 if EXPR is the real constant zero.  Trailing zeroes matter for
    decimal float constants, so don't return 1 for them.  */
 
-int
+bool
 real_zerop (const_tree expr)
 {
   switch (TREE_CODE (expr))
@@ -2794,7 +2794,7 @@ real_zerop (const_tree expr)
    Trailing zeroes matter for decimal float constants, so don't return
    1 for them.  */
 
-int
+bool
 real_onep (const_tree expr)
 {
   switch (TREE_CODE (expr))
@@ -2817,7 +2817,7 @@ real_onep (const_tree expr)
 /* Return 1 if EXPR is the real constant minus one.  Trailing zeroes
    matter for decimal float constants, so don't return 1 for them.  */
 
-int
+bool
 real_minus_onep (const_tree expr)
 {
   switch (TREE_CODE (expr))
@@ -2839,7 +2839,7 @@ real_minus_onep (const_tree expr)
 
 /* Nonzero if EXP is a constant or a cast of a constant.  */
 
-int
+bool
 really_constant_p (const_tree exp)
 {
   /* This is not quite the same as STRIP_NOPS.  It does more.  */
@@ -2954,17 +2954,17 @@ chain_index (int idx, tree chain)
 
 /* Return nonzero if ELEM is part of the chain CHAIN.  */
 
-int
+bool
 chain_member (const_tree elem, const_tree chain)
 {
   while (chain)
     {
       if (elem == chain)
-	return 1;
+	return true;
       chain = DECL_CHAIN (chain);
     }
 
-  return 0;
+  return false;
 }
 
 /* Return the length of a chain of nodes chained through TREE_CHAIN.
@@ -5519,9 +5519,14 @@ find_decls_types_r (tree *tp, int *ws, void *data)
       fld_worklist_push (TYPE_POINTER_TO (t), fld);
       fld_worklist_push (TYPE_REFERENCE_TO (t), fld);
       fld_worklist_push (TYPE_NAME (t), fld);
-      /* Do not walk TYPE_NEXT_PTR_TO or TYPE_NEXT_REF_TO.  We do not stream
-	 them and thus do not and want not to reach unused pointer types
-	 this way.  */
+      /* While we do not stream TYPE_POINTER_TO and TYPE_REFERENCE_TO
+	 lists, we may look types up in these lists and use them while
+	 optimizing the function body.  Thus we need to free lang data
+	 in them.  */
+      if (TREE_CODE (t) == POINTER_TYPE)
+        fld_worklist_push (TYPE_NEXT_PTR_TO (t), fld);
+      if (TREE_CODE (t) == REFERENCE_TYPE)
+        fld_worklist_push (TYPE_NEXT_REF_TO (t), fld);
       if (!POINTER_TYPE_P (t))
 	fld_worklist_push (TYPE_MIN_VALUE_RAW (t), fld);
       /* TYPE_MAX_VALUE_RAW is TYPE_BINFO for record types.  */
@@ -6707,7 +6712,7 @@ print_type_hash_statistics (void)
    return 1 if the lists contain the same types in the same order.
    Also, the TREE_PURPOSEs must match.  */
 
-int
+bool
 type_list_equal (const_tree l1, const_tree l2)
 {
   const_tree t1, t2;
@@ -6718,7 +6723,7 @@ type_list_equal (const_tree l1, const_tree l2)
 	    && ! (1 == simple_cst_equal (TREE_PURPOSE (t1), TREE_PURPOSE (t2))
 		  && (TREE_TYPE (TREE_PURPOSE (t1))
 		      == TREE_TYPE (TREE_PURPOSE (t2))))))
-      return 0;
+      return false;
 
   return t1 == t2;
 }
@@ -11959,12 +11964,6 @@ block_nonartificial_location (tree block)
 	 && BLOCK_ABSTRACT_ORIGIN (block))
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-      while (TREE_CODE (ao) == BLOCK
-	     && BLOCK_ABSTRACT_ORIGIN (ao)
-	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
       if (TREE_CODE (ao) == FUNCTION_DECL)
 	{
 	  /* If AO is an artificial inline, point RET to the
@@ -12125,47 +12124,26 @@ prepare_target_option_nodes_for_pch (void)
       TREE_TARGET_GLOBALS (*iter) = NULL;
 }
 
-/* Determine the "ultimate origin" of a block.  The block may be an inlined
-   instance of an inlined instance of a block which is local to an inline
-   function, so we have to trace all of the way back through the origin chain
-   to find out what sort of node actually served as the original seed for the
-   given block.  */
+/* Determine the "ultimate origin" of a block.  */
 
 tree
 block_ultimate_origin (const_tree block)
 {
-  tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
+  tree origin = BLOCK_ABSTRACT_ORIGIN (block);
 
   /* BLOCK_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
-  if (BLOCK_ABSTRACT (block) && immediate_origin == block)
+  if (BLOCK_ABSTRACT (block) && origin == block)
     return NULL_TREE;
 
-  if (immediate_origin == NULL_TREE)
+  if (origin == NULL_TREE)
     return NULL_TREE;
   else
     {
-      tree ret_val;
-      tree lookahead = immediate_origin;
-
-      do
-	{
-	  ret_val = lookahead;
-	  lookahead = (TREE_CODE (ret_val) == BLOCK
-		       ? BLOCK_ABSTRACT_ORIGIN (ret_val) : NULL);
-	}
-      while (lookahead != NULL && lookahead != ret_val);
-
-      /* The block's abstract origin chain may not be the *ultimate* origin of
-	 the block. It could lead to a DECL that has an abstract origin set.
-	 If so, we want that DECL's abstract origin (which is what DECL_ORIGIN
-	 will give us if it has one).  Note that DECL's abstract origins are
-	 supposed to be the most distant ancestor (or so decl_ultimate_origin
-	 claims), so we don't need to loop following the DECL origins.  */
-      if (DECL_P (ret_val))
-	return DECL_ORIGIN (ret_val);
-
-      return ret_val;
+      gcc_checking_assert ((DECL_P (origin)
+			    && DECL_ORIGIN (origin) == origin)
+			   || BLOCK_ORIGIN (origin) == origin);
+      return origin;
     }
 }
 

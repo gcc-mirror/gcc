@@ -3550,8 +3550,21 @@ package body Checks is
                   Apply_Float_Conversion_Check (Expr, Target_Type);
 
                else
-                  Apply_Scalar_Range_Check
-                    (Expr, Target_Type, Fixed_Int => Conv_OK);
+                  --  Conversions involving fixed-point types are expanded
+                  --  separately, and do not need a Range_Check flag, except
+                  --  in SPARK_Mode, where the explicit constraint check will
+                  --  not be generated.
+
+                  if SPARK_Mode = On
+                    or else (not Is_Fixed_Point_Type (Expr_Type)
+                              and then not Is_Fixed_Point_Type (Target_Type))
+                  then
+                     Apply_Scalar_Range_Check
+                       (Expr, Target_Type, Fixed_Int => Conv_OK);
+
+                  else
+                     Set_Do_Range_Check (Expression (N), False);
+                  end if;
 
                   --  If the target type has predicates, we need to indicate
                   --  the need for a check, even if Determine_Range finds that
@@ -7755,6 +7768,13 @@ package body Checks is
    --  Start of processing for Install_Null_Excluding_Check
 
    begin
+      --  No need to add null-excluding checks when the tree may not be fully
+      --  decorated.
+
+      if Serious_Errors_Detected > 0 then
+         return;
+      end if;
+
       pragma Assert (Is_Access_Type (Typ));
 
       --  No check inside a generic, check will be emitted in instance

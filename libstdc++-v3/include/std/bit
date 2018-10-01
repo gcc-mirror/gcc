@@ -195,9 +195,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __ceil2(_Tp __x) noexcept
     {
       constexpr auto _Nd = numeric_limits<_Tp>::digits;
-      if (__x == 0)
+      if (__x == 0 || __x == 1)
         return 1;
-      return (_Tp)1u << (_Nd - std::__countl_zero((_Tp)(__x - 1u)));
+      const unsigned __n = _Nd - std::__countl_zero((_Tp)(__x - 1u));
+      const _Tp __y_2 = (_Tp)1u << (__n - 1u);
+      return __y_2 << 1u;
     }
 
   template<typename _Tp>

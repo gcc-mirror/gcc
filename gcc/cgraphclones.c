@@ -274,10 +274,11 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (cs->caller->thunk.thunk_p
-	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
 	&& cs->caller->thunk.fixed_offset == thunk->thunk.fixed_offset
-	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p
-	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value)
+	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value
+	&& cs->caller->thunk.indirect_offset == thunk->thunk.indirect_offset
+	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
+	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p)
       return cs->caller;
 
   tree new_decl;

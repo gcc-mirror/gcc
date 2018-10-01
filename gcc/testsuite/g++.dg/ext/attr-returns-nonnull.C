@@ -4,7 +4,7 @@
 // does not "inherit" attribute nonnull from an argument declared with
 // one in the primary template.
 // { dg-do compile }
-// { dg-options "-O -Wall -fdump-tree-optimized" }
+// { dg-options "-O -Wall -fdump-tree-optimized -fdelete-null-pointer-checks" }
 
 template <class T>
 void* __attribute__ ((returns_nonnull))

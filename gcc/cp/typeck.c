@@ -63,6 +63,8 @@ static tree lookup_destructor (tree, tree, tree, tsubst_flags_t);
 static void error_args_num (location_t, tree, bool);
 static int convert_arguments (tree, vec<tree, va_gc> **, tree, int,
                               tsubst_flags_t);
+static bool is_std_move_p (tree);
+static bool is_std_forward_p (tree);
 
 /* Do `exp = require_complete_type (exp);' to make sure exp
    does not have an incomplete type.  (That includes void types.)
@@ -8818,23 +8820,9 @@ convert_for_assignment (tree type, tree rhs,
 						   parmnum, complain, flags);
 		}
 	      else if (fndecl)
-		{
-		  auto_diagnostic_group d;
-		  location_t loc = cp_expr_location (rhs);
-		  range_label_for_type_mismatch rhs_label (rhstype, type);
-		  range_label *label = &rhs_label;
-		  if (loc == UNKNOWN_LOCATION)
-		    {
-		      loc = input_location;
-		      label = NULL;
-		    }
-		  gcc_rich_location richloc (loc, label);
-		  error_at (&richloc,
-			    "cannot convert %qH to %qI",
-			    rhstype, type);
-		  inform (get_fndecl_argument_location (fndecl, parmnum),
-			  "  initializing argument %P of %qD", parmnum, fndecl);
-		}
+		complain_about_bad_argument (cp_expr_location (rhs),
+					     rhstype, type,
+					     fndecl, parmnum);
 	      else
 		switch (errtype)
 		  {
@@ -9071,6 +9059,15 @@ maybe_warn_about_returning_address_of_local (tree retval)
       STRIP_NOPS (whats_returned);
     }
 
+  /* As a special case, we handle a call to std::move or std::forward.  */
+  if (TREE_CODE (whats_returned) == CALL_EXPR
+      && (is_std_move_p (whats_returned)
+	  || is_std_forward_p (whats_returned)))
+    {
+      tree arg = CALL_EXPR_ARG (whats_returned, 0);
+      return maybe_warn_about_returning_address_of_local (arg);
+    }
+
   if (TREE_CODE (whats_returned) != ADDR_EXPR)
     return false;
   whats_returned = TREE_OPERAND (whats_returned, 0);
@@ -9136,6 +9133,23 @@ decl_in_std_namespace_p (tree decl)
 	  && DECL_NAMESPACE_STD_P (decl_namespace_context (decl)));
 }
 
+/* Returns true if FN, a CALL_EXPR, is a call to std::forward.  */
+
+static bool
+is_std_forward_p (tree fn)
+{
+  /* std::forward only takes one argument.  */
+  if (call_expr_nargs (fn) != 1)
+    return false;
+
+  tree fndecl = cp_get_callee_fndecl_nofold (fn);
+  if (!decl_in_std_namespace_p (fndecl))
+    return false;
+
+  tree name = DECL_NAME (fndecl);
+  return name && id_equal (name, "forward");
+}
+
 /* Returns true if FN, a CALL_EXPR, is a call to std::move.  */
 
 static bool
@@ -9180,14 +9194,15 @@ can_do_nrvo_p (tree retval, tree functype)
 }
 
 /* Returns true if we should treat RETVAL, an expression being returned,
-   as if it were designated by an rvalue.  See [class.copy.elision].  */
+   as if it were designated by an rvalue.  See [class.copy.elision].
+   PARM_P is true if a function parameter is OK in this context.  */
 
-static bool
-treat_lvalue_as_rvalue_p (tree retval)
+bool
+treat_lvalue_as_rvalue_p (tree retval, bool parm_ok)
 {
   return ((cxx_dialect != cxx98)
 	  && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
-	      || TREE_CODE (retval) == PARM_DECL)
+	      || (parm_ok && TREE_CODE (retval) == PARM_DECL))
 	  && DECL_CONTEXT (retval) == current_function_decl
 	  && !TREE_STATIC (retval));
 }
@@ -9240,7 +9255,7 @@ maybe_warn_pessimizing_move (tree retval, tree functype)
 	    }
 	  /* Warn if the move is redundant.  It is redundant when we would
 	     do maybe-rvalue overload resolution even without std::move.  */
-	  else if (treat_lvalue_as_rvalue_p (arg))
+	  else if (treat_lvalue_as_rvalue_p (arg, /*parm_ok*/true))
 	    {
 	      auto_diagnostic_group d;
 	      if (warning_at (loc, OPT_Wredundant_move,
@@ -9525,7 +9540,7 @@ check_return_expr (tree retval, bool *no_warning)
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
       bool converted = false;
-      if (treat_lvalue_as_rvalue_p (retval)
+      if (treat_lvalue_as_rvalue_p (retval, /*parm_ok*/true)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
 	{

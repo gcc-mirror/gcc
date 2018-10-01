@@ -369,7 +369,7 @@ package body GNAT.Dynamic_HTables is
    --------------------
 
    package body Dynamic_HTable is
-      Minimum_Size : constant Bucket_Range_Type := 32;
+      Minimum_Size : constant Bucket_Range_Type := 8;
       --  Minimum size of the buckets
 
       Safe_Compression_Size : constant Bucket_Range_Type :=
@@ -401,8 +401,8 @@ package body GNAT.Dynamic_HTables is
 
       procedure Ensure_Unlocked (T : Instance);
       pragma Inline (Ensure_Unlocked);
-      --  Verify that hash table T is unlocked. Raise Table_Locked if this is
-      --  not the case.
+      --  Verify that hash table T is unlocked. Raise Iterated if this is not
+      --  the case.
 
       function Find_Bucket
         (Bkts : Bucket_Table_Ptr;
@@ -472,9 +472,10 @@ package body GNAT.Dynamic_HTables is
       -- Create --
       ------------
 
-      function Create (Initial_Size : Bucket_Range_Type) return Instance is
+      function Create (Initial_Size : Positive) return Instance is
          Size : constant Bucket_Range_Type :=
-                           Bucket_Range_Type'Max (Initial_Size, Minimum_Size);
+                           Bucket_Range_Type'Max
+                             (Bucket_Range_Type (Initial_Size), Minimum_Size);
          --  Ensure that the buckets meet a minimum size
 
          T : constant Instance := new Hash_Table;
@@ -542,6 +543,9 @@ package body GNAT.Dynamic_HTables is
          if Is_Valid (Nod, Head) then
             Detach (Nod);
             Free   (Nod);
+
+            --  The number of key-value pairs is updated when the hash table
+            --  contains a valid node which represents the pair.
 
             T.Pairs := T.Pairs - 1;
 
@@ -661,8 +665,8 @@ package body GNAT.Dynamic_HTables is
 
          --  The hash table has at least one outstanding iterator
 
-         if T.Locked > 0 then
-            raise Table_Locked;
+         if T.Iterators > 0 then
+            raise Iterated;
          end if;
       end Ensure_Unlocked;
 
@@ -697,7 +701,7 @@ package body GNAT.Dynamic_HTables is
 
          Nod := Head.Next;
          while Is_Valid (Nod, Head) loop
-            if Equivalent_Keys (Nod.Key, Key) then
+            if Nod.Key = Key then
                return Nod;
             end if;
 
@@ -798,6 +802,17 @@ package body GNAT.Dynamic_HTables is
       end Has_Next;
 
       --------------
+      -- Is_Empty --
+      --------------
+
+      function Is_Empty (T : Instance) return Boolean is
+      begin
+         Ensure_Created (T);
+
+         return T.Pairs = 0;
+      end Is_Empty;
+
+      --------------
       -- Is_Valid --
       --------------
 
@@ -880,7 +895,7 @@ package body GNAT.Dynamic_HTables is
          --  The hash table may be locked multiple times if multiple iterators
          --  are operating over it.
 
-         T.Locked := T.Locked + 1;
+         T.Iterators := T.Iterators + 1;
       end Lock;
 
       -----------------------
@@ -1046,11 +1061,7 @@ package body GNAT.Dynamic_HTables is
       -- Put --
       ---------
 
-      procedure Put
-        (T     : Instance;
-         Key   : Key_Type;
-         Value : Value_Type)
-      is
+      procedure Put (T : Instance; Key : Key_Type; Value : Value_Type) is
          procedure Expand;
          pragma Inline (Expand);
          --  Determine whether hash table T requires expansion, and if so,
@@ -1099,7 +1110,7 @@ package body GNAT.Dynamic_HTables is
 
             Nod := Head.Next;
             while Is_Valid (Nod, Head) loop
-               if Equivalent_Keys (Nod.Key, Key) then
+               if Nod.Key = Key then
                   Nod.Value := Value;
                   return;
                end if;
@@ -1113,6 +1124,11 @@ package body GNAT.Dynamic_HTables is
             Nod := new Node'(Key, Value, null, null);
 
             Prepend (Nod, Head);
+
+            --  The number of key-value pairs must be updated for a prepend,
+            --  never for a replace.
+
+            T.Pairs := T.Pairs + 1;
          end Prepend_Or_Replace;
 
          --  Local variables
@@ -1139,8 +1155,6 @@ package body GNAT.Dynamic_HTables is
          --  replace its value, otherwise prepend a new key-value pair.
 
          Prepend_Or_Replace (Head);
-
-         T.Pairs := T.Pairs + 1;
 
          --  Expand the hash table if the ratio of pairs to buckets goes over
          --  Expansion_Threshold.
@@ -1172,7 +1186,7 @@ package body GNAT.Dynamic_HTables is
       -- Size --
       ----------
 
-      function Size (T : Instance) return Pair_Count_Type is
+      function Size (T : Instance) return Natural is
       begin
          Ensure_Created (T);
 
@@ -1188,7 +1202,7 @@ package body GNAT.Dynamic_HTables is
          --  The hash table may be locked multiple times if multiple iterators
          --  are operating over it.
 
-         T.Locked := T.Locked - 1;
+         T.Iterators := T.Iterators - 1;
       end Unlock;
    end Dynamic_HTable;
 

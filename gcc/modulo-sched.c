@@ -1449,10 +1449,6 @@ sms_schedule (void)
                   fprintf (dump_file, "%" PRId64 "max %" PRId64,
                            (int64_t) trip_count, (int64_t) max_trip_count);
                   fprintf (dump_file, "\n");
-	      	  fprintf (dump_file, "SMS profile-sum-max ");
-	      	  fprintf (dump_file, "%" PRId64,
-	          	   (int64_t) profile_info->sum_max);
-	      	  fprintf (dump_file, "\n");
 	    	}
 	    }
           continue;
@@ -1566,10 +1562,6 @@ sms_schedule (void)
 	      fprintf (dump_file, "SMS loop-count ");
 	      fprintf (dump_file, "%" PRId64,
 	               (int64_t) bb->count.to_gcov_type ());
-	      fprintf (dump_file, "\n");
-	      fprintf (dump_file, "SMS profile-sum-max ");
-	      fprintf (dump_file, "%" PRId64,
-	               (int64_t) profile_info->sum_max);
 	      fprintf (dump_file, "\n");
 	    }
 	  fprintf (dump_file, "SMS doloop\n");

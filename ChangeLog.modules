@@ -1,5 +1,7 @@
 2018-10-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r264765.
+
 	gcc/cp/
 	* lang-specs.h: Error out on -fcoroutines.
 

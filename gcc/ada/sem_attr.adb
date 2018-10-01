@@ -11249,9 +11249,9 @@ package body Sem_Attr is
                      --  The above sets the Scope of the flag entity to the
                      --  current scope, in which the attribute appears, but
                      --  the flag declaration has been inserted after that
-                     --  of Subp_Id, so the scope of the flag the same as
+                     --  of Subp_Id, so the scope of the flag is the same as
                      --  that of Subp_Id. This is relevant when unnesting,
-                     --  whereh processing depends on correct scope settingl
+                     --  where processing depends on correct scope setting.
 
                      Set_Scope (Flag_Id, Scop);
                   end if;

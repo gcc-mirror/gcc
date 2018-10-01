@@ -227,6 +227,8 @@ void sem_item::set_hash (hashval_t hash)
   m_hash_set = true;
 }
 
+hash_map<const_tree, hashval_t> sem_item::m_type_hash_cache;
+
 /* Semantic function constructor that uses STACK as bitmap memory stack.  */
 
 sem_function::sem_function (bitmap_obstack *stack)
@@ -591,6 +593,8 @@ sem_function::equals_wpa (sem_item *item,
         return return_false_with_msg ("thunk fixed_offset mismatch");
       if (cnode->thunk.virtual_value != cnode2->thunk.virtual_value)
         return return_false_with_msg ("thunk virtual_value mismatch");
+      if (cnode->thunk.indirect_offset != cnode2->thunk.indirect_offset)
+        return return_false_with_msg ("thunk indirect_offset mismatch");
       if (cnode->thunk.this_adjusting != cnode2->thunk.this_adjusting)
         return return_false_with_msg ("thunk this_adjusting mismatch");
       if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)
@@ -1587,7 +1591,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  return;
 	}
 
-      hashval_t *val = optimizer->m_type_hash_cache.get (type);
+      hashval_t *val = m_type_hash_cache.get (type);
 
       if (!val)
 	{
@@ -1607,7 +1611,7 @@ sem_item::add_type (const_tree type, inchash::hash &hstate)
 	  hstate2.add_int (nf);
 	  hash = hstate2.end ();
 	  hstate.add_hwi (hash);
-	  optimizer->m_type_hash_cache.put (type, hash);
+	  m_type_hash_cache.put (type, hash);
 	}
       else
         hstate.add_hwi (*val);

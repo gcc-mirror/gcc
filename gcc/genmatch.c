@@ -184,7 +184,7 @@ fprintf_indent (FILE *f, unsigned int indent, const char *format, ...)
 
 static void
 output_line_directive (FILE *f, source_location location,
-		       bool dumpfile = false)
+		       bool dumpfile = false, bool fnargs = false)
 {
   const line_map_ordinary *map;
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
@@ -202,7 +202,11 @@ output_line_directive (FILE *f, source_location location,
 	file = loc.file;
       else
 	++file;
-      fprintf (f, "%s:%d", file, loc.line);
+
+      if (fnargs)
+	fprintf (f, "\"%s\", %d", file, loc.line);
+      else
+	fprintf (f, "%s:%d", file, loc.line);
     }
   else
     /* Other gen programs really output line directives here, at least for
@@ -3305,11 +3309,13 @@ dt_simplify::gen_1 (FILE *f, int indent, bool gimple, operand *result)
 	}
     }
 
-  fprintf_indent (f, indent, "if (dump_file && (dump_flags & TDF_FOLDING)) "
+  fprintf_indent (f, indent, "if (__builtin_expect (dump_file && (dump_flags & TDF_FOLDING), 0)) "
 	   "fprintf (dump_file, \"Applying pattern ");
+  fprintf (f, "%%s:%%d, %%s:%%d\\n\", ");
   output_line_directive (f,
-			 result ? result->location : s->match->location, true);
-  fprintf (f, ", %%s:%%d\\n\", __FILE__, __LINE__);\n");
+			 result ? result->location : s->match->location, true,
+			 true);
+  fprintf (f, ", __FILE__, __LINE__);\n");
 
   if (!result)
     {

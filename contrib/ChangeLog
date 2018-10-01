@@ -1,3 +1,12 @@
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-rtags-warnings.py: New file.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/86078
+	* check-params-in-docs.py: New file.
+
 2018-08-17  Jojo  <jijie_rong@c-sky.com>
 	    Huibin Wang  <huibin_wang@c-sky.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

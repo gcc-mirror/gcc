@@ -2300,7 +2300,6 @@ rs6000_debug_vector_unit (enum rs6000_vector v)
     case VECTOR_ALTIVEC:   ret = "altivec";   break;
     case VECTOR_VSX:	   ret = "vsx";       break;
     case VECTOR_P8_VECTOR: ret = "p8_vector"; break;
-    case VECTOR_OTHER:	   ret = "other";     break;
     default:		   ret = "unknown";   break;
     }
 
@@ -3871,48 +3870,6 @@ rs6000_option_override_internal (bool global_init_p)
     cpu_index = main_target_opt->x_rs6000_cpu_index;
   else if (OPTION_TARGET_CPU_DEFAULT)
     cpu_index = rs6000_cpu_name_lookup (OPTION_TARGET_CPU_DEFAULT);
-
-  if (cpu_index >= 0)
-    {
-      const char *unavailable_cpu = NULL;
-      switch (processor_target_table[cpu_index].processor)
-	{
-#ifndef HAVE_AS_POWER9
-	case PROCESSOR_POWER9:
-	  unavailable_cpu = "power9";
-	  break;
-#endif
-#ifndef HAVE_AS_POWER8
-	case PROCESSOR_POWER8:
-	  unavailable_cpu = "power8";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTD
-	case PROCESSOR_POWER7:
-	  unavailable_cpu = "power7";
-	  break;
-#endif
-#ifndef HAVE_AS_DFP
-	case PROCESSOR_POWER6:
-	  unavailable_cpu = "power6";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTB
-	case PROCESSOR_POWER5:
-	  unavailable_cpu = "power5";
-	  break;
-#endif
-	default:
-	  break;
-	}
-      if (unavailable_cpu)
-	{
-	  cpu_index = -1;
-	  warning (0, "will not generate %qs instructions because "
-		   "assembler lacks %qs support", unavailable_cpu,
-		   unavailable_cpu);
-	}
-    }
 
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
@@ -13303,6 +13260,13 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
     /* Builtin not supported on this processor.  */
     return 0;
 
+  if (icode == CODE_FOR_rs6000_mffsl
+      && rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_mffsl() not supported with -msoft-float");
+      return const0_rtx;
+    }
+
   if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
@@ -13351,6 +13315,134 @@ rs6000_expand_mtfsf_builtin (enum insn_code icode, tree exp)
     op1 = copy_to_mode_reg (mode1, op1);
 
   pat = GEN_FCN (icode) (op0, op1);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+
+static rtx
+rs6000_expand_mtfsb_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_mtfsb0 and __builtin_mtfsb1 not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* Only allow bit numbers 0 to 31.  */
+  if (!u5bit_cint_operand (op0, VOIDmode))
+    {
+       error ("Argument must be a constant between 0 and 31.");
+       return const0_rtx;
+     }
+
+  pat = GEN_FCN (icode) (op0);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+
+static rtx
+rs6000_expand_set_fpscr_rn_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+  machine_mode mode0 = insn_data[icode].operand[0].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_set_fpscr_rn not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* If the argument is a constant, check the range. Argument can only be a
+     2-bit value.  Unfortunately, can't check the range of the value at
+     compile time if the argument is a variable.  The least significant two
+     bits of the argument, regardless of type, are used to set the rounding
+     mode.  All other bits are ignored.  */
+  if (GET_CODE (op0) == CONST_INT && !const_0_to_3_operand(op0, VOIDmode))
+    {
+      error ("Argument must be a value between 0 and 3.");
+      return const0_rtx;
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  pat = GEN_FCN (icode) (op0);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+static rtx
+rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+  machine_mode mode0 = insn_data[icode].operand[0].mode;
+
+  if (TARGET_32BIT)
+    /* Builtin not supported in 32-bit mode.  */
+    fatal_error (input_location,
+		 "__builtin_set_fpscr_drn is not supported in 32-bit mode.");
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_set_fpscr_drn not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* If the argument is a constant, check the range. Agrument can only be a
+     3-bit value.  Unfortunately, can't check the range of the value at
+     compile time if the argument is a variable. The least significant two
+     bits of the argument, regardless of type, are used to set the rounding
+     mode.  All other bits are ignored.  */
+  if (GET_CODE (op0) == CONST_INT && !const_0_to_7_operand(op0, VOIDmode))
+   {
+      error ("Argument must be a value between 0 and 7.");
+      return const0_rtx;
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  pat = GEN_FCN (icode) (op0);
   if (! pat)
     return const0_rtx;
   emit_insn (pat);
@@ -13457,13 +13549,58 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return const0_rtx;
 
-  if (icode == CODE_FOR_altivec_vcfux
+  if (icode == CODE_FOR_unpackv1ti
+	   || icode == CODE_FOR_unpackkf
+	   || icode == CODE_FOR_unpacktf
+	   || icode == CODE_FOR_unpackif
+	   || icode == CODE_FOR_unpacktd)
+    {
+      /* Only allow 1-bit unsigned literals. */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+	{
+	  error ("argument 2 must be a 1-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltw)
+    {
+      /* Only allow 2-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~3)
+	{
+	  error ("argument 2 must be a 2-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vsplth)
+    {
+      /* Only allow 3-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~7)
+	{
+	  error ("argument 2 must be a 3-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltb)
+    {
+      /* Only allow 4-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~15)
+	{
+	  error ("argument 2 must be a 4-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs
-      || icode == CODE_FOR_altivec_vspltb
-      || icode == CODE_FOR_altivec_vsplth
-      || icode == CODE_FOR_altivec_vspltw)
+      || icode == CODE_FOR_altivec_vctuxs)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
@@ -13505,21 +13642,6 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 127))
 	{
 	  error ("argument 2 must be a 7-bit unsigned literal");
-	  return CONST0_RTX (tmode);
-	}
-    }
-  else if (icode == CODE_FOR_unpackv1ti
-	   || icode == CODE_FOR_unpackkf
-	   || icode == CODE_FOR_unpacktf
-	   || icode == CODE_FOR_unpackif
-	   || icode == CODE_FOR_unpacktd)
-    {
-      /* Only allow 1-bit unsigned literals. */
-      STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
-	{
-	  error ("argument 2 must be a 1-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
     }
@@ -15139,9 +15261,11 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
     permute_type = lhs_type;
   else
     {
-      if (TREE_TYPE (lhs_type) == TREE_TYPE (V2DF_type_node))
+      if (types_compatible_p (TREE_TYPE (lhs_type),
+			      TREE_TYPE (V2DF_type_node)))
 	permute_type = V2DI_type_node;
-      else if (TREE_TYPE (lhs_type) == TREE_TYPE (V4SF_type_node))
+      else if (types_compatible_p (TREE_TYPE (lhs_type),
+				   TREE_TYPE (V4SF_type_node)))
 	permute_type = V4SI_type_node;
       else
 	gcc_unreachable ();
@@ -15485,16 +15609,44 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSLH:
     case ALTIVEC_BUILTIN_VSLW:
     case P8V_BUILTIN_VSLD:
-      arg0 = gimple_call_arg (stmt, 0);
-      if (INTEGRAL_TYPE_P (TREE_TYPE (TREE_TYPE (arg0)))
-	  && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (TREE_TYPE (arg0))))
-	return false;
-      arg1 = gimple_call_arg (stmt, 1);
-      lhs = gimple_call_lhs (stmt);
-      g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, arg1);
-      gimple_set_location (g, gimple_location (stmt));
-      gsi_replace (gsi, g, true);
-      return true;
+      {
+	location_t loc;
+	gimple_seq stmts = NULL;
+	arg0 = gimple_call_arg (stmt, 0);
+	tree arg0_type = TREE_TYPE (arg0);
+	if (INTEGRAL_TYPE_P (TREE_TYPE (arg0_type))
+	    && !TYPE_OVERFLOW_WRAPS (TREE_TYPE (arg0_type)))
+	  return false;
+	arg1 = gimple_call_arg (stmt, 1);
+	tree arg1_type = TREE_TYPE (arg1);
+	tree unsigned_arg1_type = unsigned_type_for (TREE_TYPE (arg1));
+	tree unsigned_element_type = unsigned_type_for (TREE_TYPE (arg1_type));
+	loc = gimple_location (stmt);
+	lhs = gimple_call_lhs (stmt);
+	/* Force arg1 into the range valid matching the arg0 type.  */
+	/* Build a vector consisting of the max valid bit-size values.  */
+	int n_elts = VECTOR_CST_NELTS (arg1);
+	int tree_size_in_bits = TREE_INT_CST_LOW (size_in_bytes (arg1_type))
+				* BITS_PER_UNIT;
+	tree element_size = build_int_cst (unsigned_element_type,
+					   tree_size_in_bits / n_elts);
+	tree_vector_builder elts (unsigned_type_for (arg1_type), n_elts, 1);
+	for (int i = 0; i < n_elts; i++)
+	  elts.safe_push (element_size);
+	tree modulo_tree = elts.build ();
+	/* Modulo the provided shift value against that vector.  */
+	tree unsigned_arg1 = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					   unsigned_arg1_type, arg1);
+	tree new_arg1 = gimple_build (&stmts, loc, TRUNC_MOD_EXPR,
+				      unsigned_arg1_type, unsigned_arg1,
+				      modulo_tree);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* And finally, do the shift.  */
+	g = gimple_build_assign (lhs, LSHIFT_EXPR, arg0, new_arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
     /* Flavors of vector shift right.  */
     case ALTIVEC_BUILTIN_VSRB:
     case ALTIVEC_BUILTIN_VSRH:
@@ -15770,6 +15922,48 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	 gimple_set_location (g, gimple_location (stmt));
 	 gsi_replace (gsi, g, true);
 	 return true;
+	}
+
+    /* Flavors of vec_splat.  */
+    /* a = vec_splat (b, 0x3) becomes a = { b[3],b[3],b[3],...};  */
+    case ALTIVEC_BUILTIN_VSPLTB:
+    case ALTIVEC_BUILTIN_VSPLTH:
+    case ALTIVEC_BUILTIN_VSPLTW:
+    case VSX_BUILTIN_XXSPLTD_V2DI:
+    case VSX_BUILTIN_XXSPLTD_V2DF:
+      {
+	arg0 = gimple_call_arg (stmt, 0); /* input vector.  */
+	arg1 = gimple_call_arg (stmt, 1); /* index into arg0.  */
+	/* Only fold the vec_splat_*() if arg1 is both a constant value and
+	   is a valid index into the arg0 vector.  */
+	unsigned int n_elts = VECTOR_CST_NELTS (arg0);
+	if (TREE_CODE (arg1) != INTEGER_CST
+	    || TREE_INT_CST_LOW (arg1) > (n_elts -1))
+	  return false;
+	lhs = gimple_call_lhs (stmt);
+	tree lhs_type = TREE_TYPE (lhs);
+	tree arg0_type = TREE_TYPE (arg0);
+	tree splat;
+	if (TREE_CODE (arg0) == VECTOR_CST)
+	  splat = VECTOR_CST_ELT (arg0, TREE_INT_CST_LOW (arg1));
+	else
+	  {
+	    /* Determine (in bits) the length and start location of the
+	       splat value for a call to the tree_vec_extract helper.  */
+	    int splat_elem_size = TREE_INT_CST_LOW (size_in_bytes (arg0_type))
+				  * BITS_PER_UNIT / n_elts;
+	    int splat_start_bit = TREE_INT_CST_LOW (arg1) * splat_elem_size;
+	    tree len = build_int_cst (bitsizetype, splat_elem_size);
+	    tree start = build_int_cst (bitsizetype, splat_start_bit);
+	    splat = tree_vec_extract (gsi, TREE_TYPE (lhs_type), arg0,
+				      len, start);
+	  }
+	/* And finally, build the new vector.  */
+	tree splat_tree = build_vector_from_val (lhs_type, splat);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* vec_mergel (integrals).  */
@@ -15917,7 +16111,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      overload table in rs6000-c.c to switch between the two.  If we don't have
      the proper assembler, don't do this switch because CODE_FOR_*kf* and
      CODE_FOR_*tf* will be CODE_FOR_nothing.  */
-#ifdef HAVE_AS_POWER9
   if (FLOAT128_IEEE_P (TFmode))
     switch (icode)
       {
@@ -15938,7 +16131,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
       }
-#endif
 
   if (TARGET_DEBUG_BUILTIN)
     {
@@ -16008,6 +16200,24 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case RS6000_BUILTIN_MFFS:
       return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffs, target);
+
+    case RS6000_BUILTIN_MTFSB0:
+      return rs6000_expand_mtfsb_builtin (CODE_FOR_rs6000_mtfsb0, exp);
+
+    case RS6000_BUILTIN_MTFSB1:
+      return rs6000_expand_mtfsb_builtin (CODE_FOR_rs6000_mtfsb1, exp);
+
+    case RS6000_BUILTIN_SET_FPSCR_RN:
+      return rs6000_expand_set_fpscr_rn_builtin (CODE_FOR_rs6000_set_fpscr_rn,
+						 exp);
+
+    case RS6000_BUILTIN_SET_FPSCR_DRN:
+      return
+        rs6000_expand_set_fpscr_drn_builtin (CODE_FOR_rs6000_set_fpscr_drn,
+					     exp);
+
+    case RS6000_BUILTIN_MFFSL:
+      return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffsl, target);
 
     case RS6000_BUILTIN_MTFSF:
       return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp);
@@ -16391,6 +16601,29 @@ rs6000_init_builtins (void)
 
   ftype = build_function_type_list (double_type_node, NULL_TREE);
   def_builtin ("__builtin_mffs", ftype, RS6000_BUILTIN_MFFS);
+
+  ftype = build_function_type_list (double_type_node, NULL_TREE);
+  def_builtin ("__builtin_mffsl", ftype, RS6000_BUILTIN_MFFSL);
+
+  ftype = build_function_type_list (void_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_mtfsb0", ftype, RS6000_BUILTIN_MTFSB0);
+
+  ftype = build_function_type_list (void_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_mtfsb1", ftype, RS6000_BUILTIN_MTFSB1);
+
+  ftype = build_function_type_list (void_type_node,
+				    intDI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_set_fpscr_rn", ftype, RS6000_BUILTIN_SET_FPSCR_RN);
+
+  ftype = build_function_type_list (void_type_node,
+				    intDI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_set_fpscr_drn", ftype, RS6000_BUILTIN_SET_FPSCR_DRN);
 
   ftype = build_function_type_list (void_type_node,
 				    intSI_type_node, double_type_node,
@@ -24260,6 +24493,12 @@ rs6000_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree fntype;
 
+  /* The sibcall epilogue may clobber the static chain register.
+     ??? We could work harder and avoid that, but it's probably
+     not worth the hassle in practice.  */
+  if (CALL_EXPR_STATIC_CHAIN (exp))
+    return false;
+
   if (decl)
     fntype = TREE_TYPE (decl);
   else
@@ -28331,7 +28570,7 @@ rs6000_output_function_epilogue (FILE *file)
       /* Language type.  Unfortunately, there does not seem to be any
 	 official way to discover the language being compiled, so we
 	 use language_string.
-	 C is 0.  Fortran is 1.  Pascal is 2.  Ada is 3.  C++ is 9.
+	 C is 0.  Fortran is 1.  Ada is 3.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
 	 a number, so for now use 9.  LTO, Go and JIT aren't assigned numbers
 	 either, so for now use 0.  */
@@ -28343,8 +28582,6 @@ rs6000_output_function_epilogue (FILE *file)
       else if (! strcmp (language_string, "GNU F77")
 	       || lang_GNU_Fortran ())
 	i = 1;
-      else if (! strcmp (language_string, "GNU Pascal"))
-	i = 2;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
       else if (lang_GNU_CXX ()

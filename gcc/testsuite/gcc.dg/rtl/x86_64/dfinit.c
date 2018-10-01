@@ -112,5 +112,5 @@ int __RTL (startwith ("no-opt dfinit")) test_1 (int i, int j, int k)
    frontend, the exit block use of reg 0 (ax) wasn't picked up
    on, due to not setting up crtl->return_rtx based on
    DECL_RESULT (fndecl).  */
-/* { dg-final { scan-rtl-dump ";;  exit block uses.*0 .ax. 6 .bp. 7 .sp. 20 .frame." "dfinit" } } */
+/* { dg-final { scan-rtl-dump ";;  exit block uses.*0 .ax. 6 .bp. 7 .sp. 19 .frame." "dfinit" } } */
 /* { dg-final { scan-rtl-dump ";;  regs ever live.*0 .ax. 1 .dx. 4 .si. 5 .di. 17 .flags." "dfinit" } } */

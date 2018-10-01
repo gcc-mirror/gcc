@@ -263,7 +263,7 @@
 ;; alternative). This attribute is used to compute attribute "enabled", use type
 ;; "any" to enable an alternative in all cases.
 
-(define_enum "arches" [ any fp simd sve fp16])
+(define_enum "arches" [ any rcpc8_4 fp simd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -284,6 +284,9 @@
   (if_then_else
     (ior
 	(eq_attr "arch" "any")
+
+	(and (eq_attr "arch" "rcpc8_4")
+	     (match_test "AARCH64_ISA_RCPC8_4"))
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))
@@ -5336,6 +5339,58 @@
   [(set_attr "type" "rev")]
 )
 
+(define_insn "*aarch64_bfxil<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r,r")
+    (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "r,0")
+		    (match_operand:GPI 3 "const_int_operand" "n, Ulc"))
+	    (and:GPI (match_operand:GPI 2 "register_operand" "0,r")
+		    (match_operand:GPI 4 "const_int_operand" "Ulc, n"))))]
+  "(INTVAL (operands[3]) == ~INTVAL (operands[4]))
+  && (aarch64_high_bits_all_ones_p (INTVAL (operands[3]))
+    || aarch64_high_bits_all_ones_p (INTVAL (operands[4])))"
+  {
+    switch (which_alternative)
+    {
+      case 0:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
+	return "bfxil\\t%<w>0, %<w>1, 0, %3";
+      case 1:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
+	return "bfxil\\t%<w>0, %<w>2, 0, %3";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "bfm")]
+)
+
+; Zero-extended version of above (aarch64_bfxil)
+(define_insn "*aarch64_bfxilsi_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (ior:SI (and:SI (match_operand:SI 1 "register_operand"
+					"r,0")
+		    (match_operand:SI 3 "const_int_operand" "n, Ulc"))
+	    (and:SI (match_operand:SI 2 "register_operand" "0,r")
+		    (match_operand:SI 4 "const_int_operand" "Ulc, n")))))]
+  "(INTVAL (operands[3]) == ~INTVAL (operands[4]))
+  && (aarch64_high_bits_all_ones_p (INTVAL (operands[3]))
+    || aarch64_high_bits_all_ones_p (INTVAL (operands[4])))"
+  {
+    switch (which_alternative)
+    {
+      case 0:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
+	return "bfxil\\t%0, %1, 0, %3";
+      case 1:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
+	return "bfxil\\t%0, %2, 0, %3";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "bfm")]
+)
+
 ;; There are no canonicalisation rules for the position of the lshiftrt, ashift
 ;; operations within an IOR/AND RTX, therefore we have two patterns matching
 ;; each valid permutation.
@@ -6448,7 +6503,7 @@
 )
 
 (define_insn "probe_stack_range"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=rk")
 	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")
 			     (match_operand:DI 2 "register_operand" "r")]
 			      UNSPECV_PROBE_STACK_RANGE))]
@@ -6457,6 +6512,25 @@
   return aarch64_output_probe_stack_range (operands[0], operands[2]);
 }
   [(set_attr "length" "32")]
+)
+
+;; This instruction is used to generate the stack clash stack adjustment and
+;; probing loop.  We can't change the control flow during prologue and epilogue
+;; code generation.  So we must emit a volatile unspec and expand it later on.
+
+(define_insn "@probe_sve_stack_clash_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=rk")
+	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
+			    (match_operand:P 2 "register_operand" "r")
+			    (match_operand:P 3 "const_int_operand" "n")
+			    (match_operand:P 4 "aarch64_plus_immediate" "L")]
+			     UNSPECV_PROBE_STACK_RANGE))]
+  "TARGET_SVE"
+{
+  return aarch64_output_probe_sve_stack_clash (operands[0], operands[2],
+					       operands[3], operands[4]);
+}
+  [(set_attr "length" "28")]
 )
 
 ;; Named pattern for expanding thread pointer reference.

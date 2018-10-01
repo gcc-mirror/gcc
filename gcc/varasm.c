@@ -3146,7 +3146,9 @@ compare_constant (const tree t1, const tree t2)
       return FIXED_VALUES_IDENTICAL (TREE_FIXED_CST (t1), TREE_FIXED_CST (t2));
 
     case STRING_CST:
-      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2)))
+      if (TYPE_MODE (TREE_TYPE (t1)) != TYPE_MODE (TREE_TYPE (t2))
+	  || int_size_in_bytes (TREE_TYPE (t1))
+	     != int_size_in_bytes (TREE_TYPE (t2)))
 	return 0;
 
       return (TREE_STRING_LENGTH (t1) == TREE_STRING_LENGTH (t2)
@@ -3303,8 +3305,9 @@ get_constant_size (tree exp)
   HOST_WIDE_INT size;
 
   size = int_size_in_bytes (TREE_TYPE (exp));
-  if (TREE_CODE (exp) == STRING_CST)
-    size = MAX (TREE_STRING_LENGTH (exp), size);
+  gcc_checking_assert (size >= 0);
+  gcc_checking_assert (TREE_CODE (exp) != STRING_CST
+		       || size >= TREE_STRING_LENGTH (exp));
   return size;
 }
 
@@ -4773,6 +4776,30 @@ initializer_constant_valid_for_bitfield_p (tree value)
   return false;
 }
 
+/* Check if a STRING_CST fits into the field.
+   Tolerate only the case when the NUL termination
+   does not fit into the field.   */
+
+static bool
+check_string_literal (tree string, unsigned HOST_WIDE_INT size)
+{
+  tree type = TREE_TYPE (string);
+  tree eltype = TREE_TYPE (type);
+  unsigned HOST_WIDE_INT elts = tree_to_uhwi (TYPE_SIZE_UNIT (eltype));
+  unsigned HOST_WIDE_INT mem_size = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+  int len = TREE_STRING_LENGTH (string);
+
+  if (elts != 1 && elts != 2 && elts != 4)
+    return false;
+  if (len < 0 || len % elts != 0)
+    return false;
+  if (size < (unsigned)len)
+    return false;
+  if (mem_size != size)
+    return false;
+  return true;
+}
+
 /* output_constructor outer state of relevance in recursive calls, typically
    for nested aggregate bitfields.  */
 
@@ -4941,6 +4968,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
 	case STRING_CST:
 	  thissize
 	    = MIN ((unsigned HOST_WIDE_INT)TREE_STRING_LENGTH (exp), size);
+	  gcc_checking_assert (check_string_literal (exp, size));
 	  assemble_string (TREE_STRING_POINTER (exp), thissize);
 	  break;
 	case VECTOR_CST:
@@ -5160,6 +5188,8 @@ output_constructor_regular_field (oc_local_state *local)
 	     on the chain is a TYPE_DECL of the enclosing struct.  */
 	  const_tree next = DECL_CHAIN (local->field);
 	  gcc_assert (!fieldsize || !next || TREE_CODE (next) != FIELD_DECL);
+	  tree size = TYPE_SIZE_UNIT (TREE_TYPE (local->val));
+	  gcc_checking_assert (compare_tree_int (size, fieldsize) == 0);
 	}
       else
 	fieldsize = tree_to_uhwi (DECL_SIZE_UNIT (local->field));

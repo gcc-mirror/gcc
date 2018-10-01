@@ -304,7 +304,7 @@ aarch64*-*-*)
 	extra_headers="arm_fp16.h arm_neon.h arm_acle.h"
 	c_target_objs="aarch64-c.o"
 	cxx_target_objs="aarch64-c.o"
-	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o"
+	extra_objs="aarch64-builtins.o aarch-common.o cortex-a57-fma-steering.o aarch64-speculation.o falkor-tag-collision-avoidance.o"
 	target_gtfiles="\$(srcdir)/config/aarch64/aarch64-builtins.c"
 	target_has_targetm_common=yes
 	;;
@@ -588,7 +588,6 @@ i[34567]86-*-*)
 	if test "x$enable_frame_pointer" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_FRAME_POINTER=1"
 	fi
-	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 x86_64-*-*)
 	case ${with_abi} in
@@ -615,14 +614,9 @@ x86_64-*-*)
 	if test "x$enable_frame_pointer" = xyes; then
 		tm_defines="${tm_defines} USE_IX86_FRAME_POINTER=1"
 	fi
-	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 arm*-*-*)
 	tm_p_file="arm/arm-flags.h ${tm_p_file} arm/aarch-common-protos.h"
-	tm_file="vxworks-dummy.h ${tm_file}"
-	;;
-mips*-*-* | sh*-*-* | sparc*-*-*)
-	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 esac
 
@@ -941,6 +935,11 @@ case ${target} in
       tm_defines="$tm_defines TARGET_VXWORKS7=1"
       ;;
   esac
+  case $target in
+    *64-*-vxworks*)
+      tm_defines="$tm_defines TARGET_VXWORKS64=1"
+      ;;
+  esac
   ;;
 *-*-elf|arc*-*-elf*)
   # Assume that newlib is being used and so __cxa_atexit is provided.
@@ -1144,7 +1143,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	    ;;
 	esac
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi arm/t-linux-eabi"
-	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	tm_file="$tm_file arm/bpabi.h arm/linux-eabi.h arm/aout.h arm/arm.h"
 	# Generation of floating-point instructions requires at least ARMv5te.
 	if [ "$with_float" = "hard" -o "$with_float" = "softfp" ] ; then
 	    target_cpu_cname="arm10e"
@@ -1164,7 +1163,7 @@ arm*-*-linux-*)			# ARM GNU/Linux with ELF
 arm*-*-uclinux*eabi*)		# ARM ucLinux
 	tm_file="dbxelf.h elfos.h arm/unknown-elf.h arm/elf.h arm/linux-gas.h arm/uclinux-elf.h glibc-stdint.h"
 	tmake_file="${tmake_file} arm/t-arm arm/t-arm-elf arm/t-bpabi"
-	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h vxworks-dummy.h arm/arm.h"
+	tm_file="$tm_file arm/bpabi.h arm/uclinux-eabi.h arm/aout.h arm/arm.h"
 	target_cpu_cname="arm7tdmi"
 	# The EABI requires the use of __cxa_atexit.
 	default_use_cxa_atexit=yes
@@ -1208,7 +1207,7 @@ arm*-*-eabi* | arm*-*-symbianelf* | arm*-*-rtems* | arm*-*-fuchsia*)
 	  target_cpu_cname="arm10tdmi"
 	  ;;
 	esac
-	tm_file="${tm_file} arm/aout.h vxworks-dummy.h arm/arm.h"
+	tm_file="${tm_file} arm/aout.h arm/arm.h"
 	;;
 avr-*-*)
 	tm_file="elfos.h avr/elf.h avr/avr-arch.h avr/avr.h avr/specs.h dbxelf.h avr/avr-stdint.h"
@@ -4454,7 +4453,7 @@ case "${target}" in
 			;;
 		glibc)
 			# OK
-			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=1"
+			tm_defines="${tm_defines} TARGET_DEFAULT_TLSDESC_TRAMPOLINE=0"
 			;;
 		uclibc)
 			;;
@@ -4732,6 +4731,18 @@ case "${target}" in
 			;;
 		esac
 		;;
+esac
+
+# Targets for which there is at least one VxWorks port should include
+# vxworks-dummy.h to allow safe references to various TARGET_VXWORKS kinds
+# of markers from other files in the port, including the vxworks*.h files to
+# distinguish VxWorks variants such as VxWorks 7 or 64).
+
+case ${target} in
+arm*-*-* | i[34567]86-*-* | mips*-*-* | powerpc*-*-* | sh*-*-* \
+| sparc*-*-* | x86_64-*-*)
+	tm_file="vxworks-dummy.h ${tm_file}"
+	;;
 esac
 
 # Set some miscellaneous flags for particular targets.

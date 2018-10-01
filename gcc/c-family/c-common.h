@@ -1048,6 +1048,7 @@ extern tree fold_offsetof (tree, tree = size_type_node,
 			   tree_code ctx = ERROR_MARK);
 
 extern int complete_array_type (tree *, tree, bool);
+extern void complete_flexible_array_elts (tree);
 
 extern tree builtin_type_for_size (int, bool);
 
@@ -1341,7 +1342,7 @@ extern void maybe_add_include_fixit (rich_location *, const char *, bool);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
-extern tree braced_list_to_string (tree, tree, tree (*)(tree, tree) = NULL);
+extern tree braced_list_to_string (tree, tree);
 
 #if CHECKING_P
 namespace selftest {

@@ -3347,19 +3347,21 @@ expand_mult_const (machine_mode mode, rtx op0, HOST_WIDE_INT val,
 	  /* Write a REG_EQUAL note on the last insn so that we can cse
 	     multiplication sequences.  Note that if ACCUM is a SUBREG,
 	     we've set the inner register and must properly indicate that.  */
-          tem = op0, nmode = mode;
-          accum_inner = accum;
-          if (GET_CODE (accum) == SUBREG)
+	  tem = op0, nmode = mode;
+	  accum_inner = accum;
+	  if (GET_CODE (accum) == SUBREG)
 	    {
 	      accum_inner = SUBREG_REG (accum);
 	      nmode = GET_MODE (accum_inner);
 	      tem = gen_lowpart (nmode, op0);
 	    }
 
-          insn = get_last_insn ();
-          set_dst_reg_note (insn, REG_EQUAL,
-			    gen_rtx_MULT (nmode, tem,
-					  gen_int_mode (val_so_far, nmode)),
+	  insn = get_last_insn ();
+	  wide_int wval_so_far
+	    = wi::uhwi (val_so_far,
+			GET_MODE_PRECISION (as_a <scalar_mode> (nmode)));
+	  rtx c = immed_wide_int_const (wval_so_far, nmode);
+	  set_dst_reg_note (insn, REG_EQUAL, gen_rtx_MULT (nmode, tem, c),
 			    accum_inner);
 	}
     }
@@ -5462,11 +5464,14 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
      If STORE_FLAG_VALUE does not have the sign bit set when
      interpreted in MODE, we can do this conversion as unsigned, which
      is usually more efficient.  */
-  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (result_mode))
+  if (GET_MODE_PRECISION (int_target_mode) > GET_MODE_PRECISION (result_mode))
     {
-      convert_move (target, subtarget,
-		    val_signbit_known_clear_p (result_mode,
-					       STORE_FLAG_VALUE));
+      gcc_assert (GET_MODE_PRECISION (result_mode) != 1
+		  || STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1);
+
+      bool unsignedp = (STORE_FLAG_VALUE >= 0);
+      convert_move (target, subtarget, unsignedp);
+
       op0 = target;
       result_mode = int_target_mode;
     }

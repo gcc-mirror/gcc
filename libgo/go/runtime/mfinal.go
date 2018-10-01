@@ -142,7 +142,7 @@ func runfinq() {
 		if fb == nil {
 			fing = gp
 			fingwait = true
-			goparkunlock(&finlock, "finalizer wait", traceEvGoBlock, 1)
+			goparkunlock(&finlock, waitReasonFinalizerWait, traceEvGoBlock, 1)
 			continue
 		}
 		unlock(&finlock)
@@ -233,8 +233,8 @@ func runfinq() {
 // is not guaranteed to run, because there is no ordering that
 // respects the dependencies.
 //
-// The finalizer for obj is scheduled to run at some arbitrary time after
-// obj becomes unreachable.
+// The finalizer is scheduled to run at some arbitrary time after the
+// program can no longer reach the object to which obj points.
 // There is no guarantee that finalizers will run before a program exits,
 // so typically they are useful only for releasing non-memory resources
 // associated with an object during a long-running program.
@@ -284,7 +284,7 @@ func SetFinalizer(obj interface{}, finalizer interface{}) {
 		throw("runtime.SetFinalizer: first argument is nil")
 	}
 	if etyp.kind&kindMask != kindPtr {
-		throw("runtime.SetFinalizer: first argument is " + *etyp.string + ", not pointer")
+		throw("runtime.SetFinalizer: first argument is " + etyp.string() + ", not pointer")
 	}
 	ot := (*ptrtype)(unsafe.Pointer(etyp))
 	if ot.elem == nil {
@@ -292,9 +292,9 @@ func SetFinalizer(obj interface{}, finalizer interface{}) {
 	}
 
 	// find the containing object
-	_, base, _ := findObject(e.data)
+	base, _, _ := findObject(uintptr(e.data), 0, 0, false)
 
-	if base == nil {
+	if base == 0 {
 		// 0-length objects are okay.
 		if e.data == unsafe.Pointer(&zerobase) {
 			return
@@ -314,7 +314,7 @@ func SetFinalizer(obj interface{}, finalizer interface{}) {
 		return
 	}
 
-	if e.data != base {
+	if uintptr(e.data) != base {
 		// As an implementation detail we allow to set finalizers for an inner byte
 		// of an object if it could come from tiny alloc (see mallocgc for details).
 		if ot.elem == nil || ot.elem.kind&kindNoPointers == 0 || ot.elem.size >= maxTinySize {
@@ -333,14 +333,14 @@ func SetFinalizer(obj interface{}, finalizer interface{}) {
 	}
 
 	if ftyp.kind&kindMask != kindFunc {
-		throw("runtime.SetFinalizer: second argument is " + *ftyp.string + ", not a function")
+		throw("runtime.SetFinalizer: second argument is " + ftyp.string() + ", not a function")
 	}
 	ft := (*functype)(unsafe.Pointer(ftyp))
 	if ft.dotdotdot {
-		throw("runtime.SetFinalizer: cannot pass " + *etyp.string + " to finalizer " + *ftyp.string + " because dotdotdot")
+		throw("runtime.SetFinalizer: cannot pass " + etyp.string() + " to finalizer " + ftyp.string() + " because dotdotdot")
 	}
 	if len(ft.in) != 1 {
-		throw("runtime.SetFinalizer: cannot pass " + *etyp.string + " to finalizer " + *ftyp.string)
+		throw("runtime.SetFinalizer: cannot pass " + etyp.string() + " to finalizer " + ftyp.string())
 	}
 	fint := ft.in[0]
 	switch {
@@ -363,7 +363,7 @@ func SetFinalizer(obj interface{}, finalizer interface{}) {
 			goto okarg
 		}
 	}
-	throw("runtime.SetFinalizer: cannot pass " + *etyp.string + " to finalizer " + *ftyp.string)
+	throw("runtime.SetFinalizer: cannot pass " + etyp.string() + " to finalizer " + ftyp.string())
 okarg:
 	// make sure we have a finalizer goroutine
 	createfing()
@@ -377,46 +377,6 @@ okarg:
 			throw("runtime.SetFinalizer: finalizer already set")
 		}
 	})
-}
-
-// Look up pointer v in heap. Return the span containing the object,
-// the start of the object, and the size of the object. If the object
-// does not exist, return nil, nil, 0.
-func findObject(v unsafe.Pointer) (s *mspan, x unsafe.Pointer, n uintptr) {
-	c := gomcache()
-	c.local_nlookup++
-	if sys.PtrSize == 4 && c.local_nlookup >= 1<<30 {
-		// purge cache stats to prevent overflow
-		lock(&mheap_.lock)
-		purgecachedstats(c)
-		unlock(&mheap_.lock)
-	}
-
-	// find span
-	arena_start := mheap_.arena_start
-	arena_used := mheap_.arena_used
-	if uintptr(v) < arena_start || uintptr(v) >= arena_used {
-		return
-	}
-	p := uintptr(v) >> pageShift
-	q := p - arena_start>>pageShift
-	s = mheap_.spans[q]
-	if s == nil {
-		return
-	}
-	x = unsafe.Pointer(s.base())
-
-	if uintptr(v) < uintptr(x) || uintptr(v) >= uintptr(unsafe.Pointer(s.limit)) || s.state != mSpanInUse {
-		s = nil
-		x = nil
-		return
-	}
-
-	n = s.elemsize
-	if s.spanclass.sizeclass() != 0 {
-		x = add(x, (uintptr(v)-uintptr(x))/n*n)
-	}
-	return
 }
 
 // Mark KeepAlive as noinline so that it is easily detectable as an intrinsic.

@@ -68,6 +68,9 @@ class vr_values
   value_range *allocate_value_range (void)
     { return vrp_value_range_pool.allocate (); }
 
+  /* */
+  void cleanup_edges_and_switches (void);
+
  private:
   void add_equivalence (bitmap *, const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
@@ -124,6 +127,19 @@ class vr_values
      number of executable edges we saw the last time we visited the
      node.  */
   int *vr_phi_edge_counts;
+
+  /* Vectors of edges that need removing and switch statements that
+     need updating.  It is expected that a pass using the simplification
+     routines will, at the end of the pass, clean up the edges and
+     switch statements.  The class dtor will try to detect cases
+     that do not follow that expectation.  */
+  struct switch_update {
+    gswitch *stmt;
+    tree vec;
+  };
+
+  vec<edge> to_remove_edges;
+  vec<switch_update> to_update_switch_stmts;
 };
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }

@@ -162,6 +162,16 @@ print_generic_expr (FILE *file, tree t, dump_flags_t flags)
   pp_flush (tree_pp);
 }
 
+/* Print a single expression T to string, and return it.  */
+
+char *
+print_generic_expr_to_str (tree t)
+{
+  pretty_printer pp;
+  dump_generic_node (&pp, t, 0, TDF_VOPS|TDF_MEMSYMS, false);
+  return xstrdup (pp_formatted_text (&pp));
+}
+
 /* Dump NAME, an IDENTIFIER_POINTER, sanitized so that D<num> sequences
    in it are replaced with Dxxxx, as long as they are at the start or
    preceded by $ and at the end or followed by $.  See make_fancy_name
@@ -3966,35 +3976,11 @@ percent_K_format (text_info *text, location_t loc, tree block)
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   *pp_ti_abstract_origin (text) = NULL;
 
-  if (in_lto_p)
-    {
-      /* ???  LTO drops all BLOCK_ABSTRACT_ORIGINs apart from those
-         representing the outermost block of an inlined function.
-	 So walk the BLOCK tree until we hit such a scope.  */
-      while (block
-	     && TREE_CODE (block) == BLOCK)
-	{
-	  if (inlined_function_outer_scope_p (block))
-	    {
-	      *pp_ti_abstract_origin (text) = block;
-	      break;
-	    }
-	  block = BLOCK_SUPERCONTEXT (block);
-	}
-      return;
-    }
-
   while (block
 	 && TREE_CODE (block) == BLOCK
 	 && BLOCK_ABSTRACT_ORIGIN (block))
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-      while (TREE_CODE (ao) == BLOCK
-	     && BLOCK_ABSTRACT_ORIGIN (ao)
-	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
       if (TREE_CODE (ao) == FUNCTION_DECL)
 	{
 	  *pp_ti_abstract_origin (text) = block;

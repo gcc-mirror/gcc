@@ -11303,15 +11303,11 @@ is_aligning_offset (const_tree offset, const_tree exp)
 /* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
    non-constant) offset in bytes within the string that ARG is accessing.
-   If NONSTR is non-null, consider valid even sequences of characters that
-   aren't nul-terminated strings.  In that case, if ARG refers to such
-   a sequence set *NONSTR to its declaration and clear it otherwise.
-   The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
-   size of the memory is returned.  If MEM_SIZE is zero, the string is
-   only returned when it is properly zero terminated.  */
+   If MEM_SIZE is non-zero the storage size of the memory is returned.
+   If DECL is non-zero the constant declaration is returned if available.  */
 
 tree
-string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
   tree array;
   STRIP_NOPS (arg);
@@ -11340,6 +11336,12 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 
 	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
 		return NULL_TREE;
+
+	      if (!integer_zerop (array_ref_low_bound (arg)))
+		return NULL_TREE;
+
+	      if (!integer_onep (array_ref_element_size (arg)))
+		return NULL_TREE;
 	    }
 	}
       array = get_addr_base_and_unit_offset (ref, &base_off);
@@ -11365,16 +11367,51 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 	return NULL_TREE;
 
       tree offset;
-      if (tree str = string_constant (arg0, &offset, mem_size, nonstr))
+      if (tree str = string_constant (arg0, &offset, mem_size, decl))
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
-	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
 	  tree type = TREE_TYPE (arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
+	  return str;
+	}
+      return NULL_TREE;
+    }
+  else if (TREE_CODE (arg) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (arg);
+      if (!is_gimple_assign (stmt))
+	return NULL_TREE;
+
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code == ADDR_EXPR)
+	return string_constant (rhs1, ptr_offset, mem_size, decl);
+      else if (code != POINTER_PLUS_EXPR)
+	return NULL_TREE;
+
+      tree offset;
+      if (tree str = string_constant (rhs1, &offset, mem_size, decl))
+	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (rhs1))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs1))) == ARRAY_TYPE
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
+	    return NULL_TREE;
+
+	  tree rhs2 = gimple_assign_rhs2 (stmt);
+	  tree type = TREE_TYPE (rhs2);
+	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, rhs2);
 	  return str;
 	}
       return NULL_TREE;
@@ -11395,11 +11432,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       if (TREE_CODE (chartype) != INTEGER_TYPE)
 	return NULL;
 
-      tree charsize = array_ref_element_size (arg);
-      /* Set the non-constant offset to the non-constant index scaled
-	 by the size of the character type.  */
-      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
-			    fold_convert (sizetype, varidx), charsize);
+      offset = fold_convert (sizetype, varidx);
     }
 
   if (TREE_CODE (array) == STRING_CST)
@@ -11407,9 +11440,10 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       *ptr_offset = fold_convert (sizetype, offset);
       if (mem_size)
 	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
-      /* This is not strictly correct.  FIXME in follow-up patch.  */
-      if (nonstr)
-	*nonstr = NULL_TREE;
+      if (decl)
+	*decl = NULL_TREE;
+      gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
+			   >= TREE_STRING_LENGTH (array));
       return array;
     }
 
@@ -11452,43 +11486,348 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
   if (!init || TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
 
-  tree array_size = DECL_SIZE_UNIT (array);
-  if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
-    return NULL_TREE;
-
-  /* Avoid returning an array that is unterminated because it lacks
-     a terminating nul, like
-     const char a[4] = "abcde";
-     but do handle those that are strings even if they have excess
-     initializers, such as in
-     const char a[4] = "abc\000\000";
-     The excess elements contribute to TREE_STRING_LENGTH()
-     but not to strlen().  */
-  unsigned HOST_WIDE_INT charsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
-  /* Compute the lower bound number of elements (not bytes) in the array
-     that the string is used to initialize.  The actual size of the array
-     may be greater if the string is shorter, but the the important
-     data point is whether the literal, inlcuding the terminating nul,
-     fits the array.  */
-  unsigned HOST_WIDE_INT array_elts
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init))) / charsize;
-
-  /* Compute the string length in (wide) characters.  */
-  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
-  length = string_length (TREE_STRING_POINTER (init), charsize,
-			  length / charsize);
   if (mem_size)
     *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
-  if (nonstr)
-    *nonstr = array_elts > length ? NULL_TREE : array;
+  if (decl)
+    *decl = array;
 
-  if ((!mem_size && !nonstr)
-      && array_elts <= length)
-    return NULL_TREE;
+  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
+		       >= TREE_STRING_LENGTH (init));
 
   *ptr_offset = offset;
   return init;
+}
+
+/* Compute the modular multiplicative inverse of A modulo M
+   using extended Euclid's algorithm.  Assumes A and M are coprime.  */
+static wide_int
+mod_inv (const wide_int &a, const wide_int &b)
+{
+  /* Verify the assumption.  */
+  gcc_checking_assert (wi::eq_p (wi::gcd (a, b), 1));
+
+  unsigned int p = a.get_precision () + 1;
+  gcc_checking_assert (b.get_precision () + 1 == p);
+  wide_int c = wide_int::from (a, p, UNSIGNED);
+  wide_int d = wide_int::from (b, p, UNSIGNED);
+  wide_int x0 = wide_int::from (0, p, UNSIGNED);
+  wide_int x1 = wide_int::from (1, p, UNSIGNED);
+
+  if (wi::eq_p (b, 1))
+    return wide_int::from (1, p, UNSIGNED);
+
+  while (wi::gt_p (c, 1, UNSIGNED))
+    {
+      wide_int t = d;
+      wide_int q = wi::divmod_trunc (c, d, UNSIGNED, &d);
+      c = t;
+      wide_int s = x0;
+      x0 = wi::sub (x1, wi::mul (q, x0));
+      x1 = s;
+    }
+  if (wi::lt_p (x1, 0, SIGNED))
+    x1 += d;
+  return x1;
+}
+
+/* Optimize x % C1 == C2 for signed modulo if C1 is a power of two and C2
+   is non-zero and C3 ((1<<(prec-1)) | (C1 - 1)):
+   for C2 > 0 to x & C3 == C2
+   for C2 < 0 to x & C3 == (C2 & C3).  */
+enum tree_code
+maybe_optimize_pow2p_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
+{
+  gimple *stmt = get_def_for_expr (*arg0, TRUNC_MOD_EXPR);
+  tree treeop0 = gimple_assign_rhs1 (stmt);
+  tree treeop1 = gimple_assign_rhs2 (stmt);
+  tree type = TREE_TYPE (*arg0);
+  scalar_int_mode mode;
+  if (!is_a <scalar_int_mode> (TYPE_MODE (type), &mode))
+    return code;
+  if (GET_MODE_BITSIZE (mode) != TYPE_PRECISION (type)
+      || TYPE_PRECISION (type) <= 1
+      || TYPE_UNSIGNED (type)
+      /* Signed x % c == 0 should have been optimized into unsigned modulo
+	 earlier.  */
+      || integer_zerop (*arg1)
+      /* If c is known to be non-negative, modulo will be expanded as unsigned
+	 modulo.  */
+      || get_range_pos_neg (treeop0) == 1)
+    return code;
+
+  /* x % c == d where d < 0 && d <= -c should be always false.  */
+  if (tree_int_cst_sgn (*arg1) == -1
+      && -wi::to_widest (treeop1) >= wi::to_widest (*arg1))
+    return code;
+
+  int prec = TYPE_PRECISION (type);
+  wide_int w = wi::to_wide (treeop1) - 1;
+  w |= wi::shifted_mask (0, prec - 1, true, prec);
+  tree c3 = wide_int_to_tree (type, w);
+  tree c4 = *arg1;
+  if (tree_int_cst_sgn (*arg1) == -1)
+    c4 = wide_int_to_tree (type, w & wi::to_wide (*arg1));
+
+  rtx op0 = expand_normal (treeop0);
+  treeop0 = make_tree (TREE_TYPE (treeop0), op0);
+
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  do_pending_stack_adjust ();
+
+  location_t loc = gimple_location (stmt);
+  struct separate_ops ops;
+  ops.code = TRUNC_MOD_EXPR;
+  ops.location = loc;
+  ops.type = TREE_TYPE (treeop0);
+  ops.op0 = treeop0;
+  ops.op1 = treeop1;
+  ops.op2 = NULL_TREE;
+  start_sequence ();
+  rtx mor = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
+				EXPAND_NORMAL);
+  rtx_insn *moinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mocost = seq_cost (moinsns, speed_p);
+  mocost += rtx_cost (mor, mode, EQ, 0, speed_p);
+  mocost += rtx_cost (expand_normal (*arg1), mode, EQ, 1, speed_p);
+
+  ops.code = BIT_AND_EXPR;
+  ops.location = loc;
+  ops.type = TREE_TYPE (treeop0);
+  ops.op0 = treeop0;
+  ops.op1 = c3;
+  ops.op2 = NULL_TREE;
+  start_sequence ();
+  rtx mur = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
+				EXPAND_NORMAL);
+  rtx_insn *muinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mucost = seq_cost (muinsns, speed_p);
+  mucost += rtx_cost (mur, mode, EQ, 0, speed_p);
+  mucost += rtx_cost (expand_normal (c4), mode, EQ, 1, speed_p);
+
+  if (mocost <= mucost)
+    {
+      emit_insn (moinsns);
+      *arg0 = make_tree (TREE_TYPE (*arg0), mor);
+      return code;
+    }
+
+  emit_insn (muinsns);
+  *arg0 = make_tree (TREE_TYPE (*arg0), mur);
+  *arg1 = c4;
+  return code;
+}
+
+/* Attempt to optimize unsigned (X % C1) == C2 (or (X % C1) != C2).
+   If C1 is odd to:
+   (X - C2) * C3 <= C4 (or >), where
+   C3 is modular multiplicative inverse of C1 and 1<<prec and
+   C4 is ((1<<prec) - 1) / C1 or ((1<<prec) - 1) / C1 - 1 (the latter
+   if C2 > ((1<<prec) - 1) % C1).
+   If C1 is even, S = ctz (C1) and C2 is 0, use
+   ((X * C3) r>> S) <= C4, where C3 is modular multiplicative
+   inverse of C1>>S and 1<<prec and C4 is (((1<<prec) - 1) / (C1>>S)) >> S.
+
+   For signed (X % C1) == 0 if C1 is odd to (all operations in it
+   unsigned):
+   (X * C3) + C4 <= 2 * C4, where
+   C3 is modular multiplicative inverse of (unsigned) C1 and 1<<prec and
+   C4 is ((1<<(prec - 1) - 1) / C1).
+   If C1 is even, S = ctz(C1), use
+   ((X * C3) + C4) r>> S <= (C4 >> (S - 1))
+   where C3 is modular multiplicative inverse of (unsigned)(C1>>S) and 1<<prec
+   and C4 is ((1<<(prec - 1) - 1) / (C1>>S)) & (-1<<S).
+
+   See the Hacker's Delight book, section 10-17.  */
+enum tree_code
+maybe_optimize_mod_cmp (enum tree_code code, tree *arg0, tree *arg1)
+{
+  gcc_checking_assert (code == EQ_EXPR || code == NE_EXPR);
+  gcc_checking_assert (TREE_CODE (*arg1) == INTEGER_CST);
+
+  if (optimize < 2)
+    return code;
+
+  gimple *stmt = get_def_for_expr (*arg0, TRUNC_MOD_EXPR);
+  if (stmt == NULL)
+    return code;
+
+  tree treeop0 = gimple_assign_rhs1 (stmt);
+  tree treeop1 = gimple_assign_rhs2 (stmt);
+  if (TREE_CODE (treeop0) != SSA_NAME
+      || TREE_CODE (treeop1) != INTEGER_CST
+      /* Don't optimize the undefined behavior case x % 0;
+	 x % 1 should have been optimized into zero, punt if
+	 it makes it here for whatever reason;
+	 x % -c should have been optimized into x % c.  */
+      || compare_tree_int (treeop1, 2) <= 0
+      /* Likewise x % c == d where d >= c should be always false.  */
+      || tree_int_cst_le (treeop1, *arg1))
+    return code;
+
+  /* Unsigned x % pow2 is handled right already, for signed
+     modulo handle it in maybe_optimize_pow2p_mod_cmp.  */
+  if (integer_pow2p (treeop1))
+    return maybe_optimize_pow2p_mod_cmp (code, arg0, arg1);
+
+  tree type = TREE_TYPE (*arg0);
+  scalar_int_mode mode;
+  if (!is_a <scalar_int_mode> (TYPE_MODE (type), &mode))
+    return code;
+  if (GET_MODE_BITSIZE (mode) != TYPE_PRECISION (type)
+      || TYPE_PRECISION (type) <= 1)
+    return code;
+
+  signop sgn = UNSIGNED;
+  /* If both operands are known to have the sign bit clear, handle
+     even the signed modulo case as unsigned.  treeop1 is always
+     positive >= 2, checked above.  */
+  if (!TYPE_UNSIGNED (type) && get_range_pos_neg (treeop0) != 1)
+    sgn = SIGNED;
+
+  if (!TYPE_UNSIGNED (type))
+    {
+      if (tree_int_cst_sgn (*arg1) == -1)
+	return code;
+      type = unsigned_type_for (type);
+      if (!type || TYPE_MODE (type) != TYPE_MODE (TREE_TYPE (*arg0)))
+	return code;
+    }
+
+  int prec = TYPE_PRECISION (type);
+  wide_int w = wi::to_wide (treeop1);
+  int shift = wi::ctz (w);
+  /* Unsigned (X % C1) == C2 is equivalent to (X - C2) % C1 == 0 if
+     C2 <= -1U % C1, because for any Z >= 0U - C2 in that case (Z % C1) != 0.
+     If C1 is odd, we can handle all cases by subtracting
+     C4 below.  We could handle even the even C1 and C2 > -1U % C1 cases
+     e.g. by testing for overflow on the subtraction, punt on that for now
+     though.  */
+  if ((sgn == SIGNED || shift) && !integer_zerop (*arg1))
+    {
+      if (sgn == SIGNED)
+	return code;
+      wide_int x = wi::umod_trunc (wi::mask (prec, false, prec), w);
+      if (wi::gtu_p (wi::to_wide (*arg1), x))
+	return code;
+    }
+
+  imm_use_iterator imm_iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, treeop0)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      /* Punt if treeop0 is used in the same bb in a division
+	 or another modulo with the same divisor.  We should expect
+	 the division and modulo combined together.  */
+      if (use_stmt == stmt
+	  || gimple_bb (use_stmt) != gimple_bb (stmt))
+	continue;
+      if (!is_gimple_assign (use_stmt)
+	  || (gimple_assign_rhs_code (use_stmt) != TRUNC_DIV_EXPR
+	      && gimple_assign_rhs_code (use_stmt) != TRUNC_MOD_EXPR))
+	continue;
+      if (gimple_assign_rhs1 (use_stmt) != treeop0
+	  || !operand_equal_p (gimple_assign_rhs2 (use_stmt), treeop1, 0))
+	continue;
+      return code;
+    }
+
+  w = wi::lrshift (w, shift);
+  wide_int a = wide_int::from (w, prec + 1, UNSIGNED);
+  wide_int b = wi::shifted_mask (prec, 1, false, prec + 1);
+  wide_int m = wide_int::from (mod_inv (a, b), prec, UNSIGNED);
+  tree c3 = wide_int_to_tree (type, m);
+  tree c5 = NULL_TREE;
+  wide_int d, e;
+  if (sgn == UNSIGNED)
+    {
+      d = wi::divmod_trunc (wi::mask (prec, false, prec), w, UNSIGNED, &e);
+      /* Use <= floor ((1<<prec) - 1) / C1 only if C2 <= ((1<<prec) - 1) % C1,
+	 otherwise use < or subtract one from C4.  E.g. for
+	 x % 3U == 0 we transform this into x * 0xaaaaaaab <= 0x55555555, but
+	 x % 3U == 1 already needs to be
+	 (x - 1) * 0xaaaaaaabU <= 0x55555554.  */
+      if (!shift && wi::gtu_p (wi::to_wide (*arg1), e))
+	d -= 1;
+      if (shift)
+	d = wi::lrshift (d, shift);
+    }
+  else
+    {
+      e = wi::udiv_trunc (wi::mask (prec - 1, false, prec), w);
+      if (!shift)
+	d = wi::lshift (e, 1);
+      else
+	{
+	  e = wi::bit_and (e, wi::mask (shift, true, prec));
+	  d = wi::lrshift (e, shift - 1);
+	}
+      c5 = wide_int_to_tree (type, e);
+    }
+  tree c4 = wide_int_to_tree (type, d);
+
+  rtx op0 = expand_normal (treeop0);
+  treeop0 = make_tree (TREE_TYPE (treeop0), op0);
+
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  do_pending_stack_adjust ();
+
+  location_t loc = gimple_location (stmt);
+  struct separate_ops ops;
+  ops.code = TRUNC_MOD_EXPR;
+  ops.location = loc;
+  ops.type = TREE_TYPE (treeop0);
+  ops.op0 = treeop0;
+  ops.op1 = treeop1;
+  ops.op2 = NULL_TREE;
+  start_sequence ();
+  rtx mor = expand_expr_real_2 (&ops, NULL_RTX, TYPE_MODE (ops.type),
+				EXPAND_NORMAL);
+  rtx_insn *moinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mocost = seq_cost (moinsns, speed_p);
+  mocost += rtx_cost (mor, mode, EQ, 0, speed_p);
+  mocost += rtx_cost (expand_normal (*arg1), mode, EQ, 1, speed_p);
+
+  tree t = fold_convert_loc (loc, type, treeop0);
+  if (!integer_zerop (*arg1))
+    t = fold_build2_loc (loc, MINUS_EXPR, type, t, fold_convert (type, *arg1));
+  t = fold_build2_loc (loc, MULT_EXPR, type, t, c3);
+  if (sgn == SIGNED)
+    t = fold_build2_loc (loc, PLUS_EXPR, type, t, c5);
+  if (shift)
+    {
+      tree s = build_int_cst (NULL_TREE, shift);
+      t = fold_build2_loc (loc, RROTATE_EXPR, type, t, s);
+    }
+
+  start_sequence ();
+  rtx mur = expand_normal (t);
+  rtx_insn *muinsns = get_insns ();
+  end_sequence ();
+
+  unsigned mucost = seq_cost (muinsns, speed_p);
+  mucost += rtx_cost (mur, mode, LE, 0, speed_p);
+  mucost += rtx_cost (expand_normal (c4), mode, LE, 1, speed_p);
+
+  if (mocost <= mucost)
+    {
+      emit_insn (moinsns);
+      *arg0 = make_tree (TREE_TYPE (*arg0), mor);
+      return code;
+    }
+
+  emit_insn (muinsns);
+  *arg0 = make_tree (type, mur);
+  *arg1 = c4;
+  return code == EQ_EXPR ? LE_EXPR : GT_EXPR;
 }
 
 /* Generate code to calculate OPS, and exploded expression
@@ -11538,17 +11877,15 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   /* We won't bother with store-flag operations involving function pointers
      when function pointers must be canonicalized before comparisons.  */
   if (targetm.have_canonicalize_funcptr_for_compare ()
-      && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
-	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
-	       == FUNCTION_TYPE))
-	  || (TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
-		  == FUNCTION_TYPE))))
+      && ((POINTER_TYPE_P (TREE_TYPE (arg0))
+	   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg0))))
+	  || (POINTER_TYPE_P (TREE_TYPE (arg1))
+	      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg1))))))
     return 0;
 
   STRIP_NOPS (arg0);
   STRIP_NOPS (arg1);
-  
+
   /* For vector typed comparisons emit code to generate the desired
      all-ones or all-zeros mask.  Conveniently use the VEC_COND_EXPR
      expander for this.  */
@@ -11564,6 +11901,24 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
 	  tree if_false = constant_boolean_node (false, ops->type);
 	  return expand_vec_cond_expr (ops->type, ifexp, if_true,
 				       if_false, target);
+	}
+    }
+
+  /* Optimize (x % C1) == C2 or (x % C1) != C2 if it is beneficial
+     into (x - C2) * C3 < C4.  */
+  if ((ops->code == EQ_EXPR || ops->code == NE_EXPR)
+      && TREE_CODE (arg0) == SSA_NAME
+      && TREE_CODE (arg1) == INTEGER_CST)
+    {
+      enum tree_code code = maybe_optimize_mod_cmp (ops->code, &arg0, &arg1);
+      if (code != ops->code)
+	{
+	  struct separate_ops nops = *ops;
+	  nops.code = ops->code = code;
+	  nops.op0 = arg0;
+	  nops.op1 = arg1;
+	  nops.type = TREE_TYPE (arg0);
+	  return do_store_flag (&nops, target, mode);
 	}
     }
 

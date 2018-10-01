@@ -271,6 +271,10 @@ Warn if a subobject has an abi_tag attribute that the complete object type does 
 Wpsabi
 C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Warning Undocumented LangEnabledBy(C ObjC C++ ObjC++,Wabi)
 
+Wabsolute-value
+C ObjC Var(warn_absolute_value) Warning EnabledBy(Wextra)
+Warn on suspicious calls of standard functions computing absolute values.
+
 Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious uses of memory addresses.
@@ -845,6 +849,10 @@ Warn if C++17 noexcept function type will change the mangled name of a symbol.
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
+
+Wclass-conversion
+C++ ObjC++ Var(warn_class_conversion) Init(1) Warning
+Warn when a conversion function will never be called due to the type it converts to.
 
 Wclass-memaccess
 C++ ObjC++ Var(warn_class_memaccess) Warning LangEnabledBy(C++ ObjC++, Wall)

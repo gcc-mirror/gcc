@@ -55,10 +55,20 @@ extern void wide_int_range_set_zero_nonzero_bits (signop,
 						  const wide_int &ub,
 						  wide_int &may_be_nonzero,
 						  wide_int &must_be_nonzero);
-extern bool wide_int_range_can_optimize_bit_op (tree_code,
-						const wide_int &lb,
-						const wide_int &ub,
-						const wide_int &mask);
+extern bool wide_int_range_optimize_bit_op (wide_int &res_lb, wide_int &res_ub,
+					    enum tree_code code,
+					    signop sign,
+					    const wide_int &vr0_lb,
+					    const wide_int &vr0_ub,
+					    const wide_int &vr1_lb,
+					    const wide_int &vr1_ub);
+extern bool wide_int_range_get_mask_and_bounds (wide_int &mask,
+						wide_int &lower_bound,
+						wide_int &upper_bound,
+						const wide_int &vr0_min,
+						const wide_int &vr0_max,
+						const wide_int &vr1_min,
+						const wide_int &vr1_max);
 extern bool wide_int_range_bit_xor (wide_int &wmin, wide_int &wmax,
 				    signop sign,
 				    unsigned prec,
@@ -99,6 +109,13 @@ extern bool wide_int_range_abs (wide_int &min, wide_int &max,
 				const wide_int &vr0_min,
 				const wide_int &vr0_max,
 				bool overflow_undefined);
+extern bool wide_int_range_convert (wide_int &min, wide_int &max,
+				    signop inner_sign,
+				    unsigned inner_prec,
+				    signop outer_sign,
+				    unsigned outer_prec,
+				    const wide_int &vr0_min,
+				    const wide_int &vr0_max);
 extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
 				enum tree_code code,
 				signop sign, unsigned prec,
@@ -114,7 +131,7 @@ extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
 /* Return TRUE if shifting by range [MIN, MAX] is undefined behavior.  */
 
 inline bool
-wide_int_range_shift_undefined_p (signop sign, unsigned prec,
+wide_int_range_shift_undefined_p (unsigned prec,
 				  const wide_int &min, const wide_int &max)
 {
   /* ?? Note: The original comment said this only applied to
@@ -125,7 +142,7 @@ wide_int_range_shift_undefined_p (signop sign, unsigned prec,
      behavior from the shift operation.  We cannot even trust
      SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
      shifts, and the operation at the tree level may be widened.  */
-  return wi::lt_p (min, 0, sign) || wi::ge_p (max, prec, sign);
+  return wi::sign_mask (min) || wi::ge_p (max, prec, UNSIGNED);
 }
 
 /* Calculate MIN/MAX_EXPR of two ranges and store the result in [MIN, MAX].  */

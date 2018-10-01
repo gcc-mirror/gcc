@@ -2007,6 +2007,8 @@ struct GTY(()) language_function {
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
 
+#define NON_ERROR(NODE) ((NODE) == error_mark_node ? NULL_TREE : (NODE))
+
 /* TRUE if a tree code represents a statement.  */
 extern bool statement_code_p[MAX_TREE_CODES];
 
@@ -5034,6 +5036,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define RANGE_FOR_BODY(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
 #define RANGE_FOR_SCOPE(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 3)
 #define RANGE_FOR_UNROLL(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 4)
+#define RANGE_FOR_INIT_STMT(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 5)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
@@ -6193,6 +6196,9 @@ extern bool can_convert_arg_bad			(tree, tree, tree, int,
 extern int conv_flags				(int, int, tree, tree, int);
 extern struct conversion * good_conversion	(tree, tree, tree, int, tsubst_flags_t);
 extern location_t get_fndecl_argument_location  (tree, int);
+extern void complain_about_bad_argument	(location_t arg_loc,
+						 tree from_type, tree to_type,
+						 tree fndecl, int parmnum);
 
 
 /* A class for recording information about access failures (e.g. private
@@ -6561,7 +6567,7 @@ extern void perform_deferred_noexcept_checks	(void);
 extern bool nothrow_spec_p			(const_tree);
 extern bool type_noexcept_p			(const_tree);
 extern bool type_throw_all_p			(const_tree);
-extern tree build_noexcept_spec			(tree, int);
+extern tree build_noexcept_spec			(tree, tsubst_flags_t);
 extern void choose_personality_routine		(enum languages);
 extern tree build_must_not_throw_expr		(tree,tree);
 extern tree eh_type_info			(tree);
@@ -7519,6 +7525,7 @@ extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 extern tree finish_left_unary_fold_expr      (tree, int);
 extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
+extern bool treat_lvalue_as_rvalue_p	     (tree, bool);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
@@ -7573,7 +7580,7 @@ extern tree build_x_arrow			(location_t, tree,
 						 tsubst_flags_t);
 extern tree build_m_component_ref		(tree, tree, tsubst_flags_t);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
-extern tree add_exception_specifier		(tree, tree, int);
+extern tree add_exception_specifier		(tree, tree, tsubst_flags_t);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */

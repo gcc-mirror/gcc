@@ -450,6 +450,7 @@ c_parser_gimple_statement (c_parser *parser, gimple_seq *seq)
 
    gimple-binary-expression:
      gimple-unary-expression * gimple-unary-expression
+     gimple-unary-expression __MULT_HIGHPART gimple-unary-expression
      gimple-unary-expression / gimple-unary-expression
      gimple-unary-expression % gimple-unary-expression
      gimple-unary-expression + gimple-unary-expression
@@ -544,6 +545,16 @@ c_parser_gimple_binary_expression (c_parser *parser)
     case CPP_OR_OR:
       c_parser_error (parser, "%<||%> not valid in GIMPLE");
       return ret;
+    case CPP_NAME:
+	{
+	  tree id = c_parser_peek_token (parser)->value;
+	  if (strcmp (IDENTIFIER_POINTER (id), "__MULT_HIGHPART") == 0)
+	    {
+	      code = MULT_HIGHPART_EXPR;
+	      break;
+	    }
+	}
+      /* Fallthru.  */
     default:
       /* Not a binary expression.  */
       return lhs;

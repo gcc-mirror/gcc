@@ -39,7 +39,7 @@ type Response struct {
 
 	// Header maps header keys to values. If the response had multiple
 	// headers with the same key, they may be concatenated, with comma
-	// delimiters.  (Section 4.2 of RFC 2616 requires that multiple headers
+	// delimiters.  (RFC 7230, section 3.2.2 requires that multiple headers
 	// be semantically equivalent to a comma-delimited sequence.) When
 	// Header values are duplicated by other fields in this struct (e.g.,
 	// ContentLength, TransferEncoding, Trailer), the field values are
@@ -201,7 +201,7 @@ func ReadResponse(r *bufio.Reader, req *Request) (*Response, error) {
 	return resp, nil
 }
 
-// RFC 2616: Should treat
+// RFC 7234, section 5.4: Should treat
 //	Pragma: no-cache
 // like
 //	Cache-Control: no-cache
@@ -293,7 +293,7 @@ func (r *Response) Write(w io.Writer) error {
 	if err != nil {
 		return err
 	}
-	err = tw.WriteHeader(w)
+	err = tw.writeHeader(w, nil)
 	if err != nil {
 		return err
 	}
@@ -319,7 +319,7 @@ func (r *Response) Write(w io.Writer) error {
 	}
 
 	// Write body and trailer
-	err = tw.WriteBody(w)
+	err = tw.writeBody(w)
 	if err != nil {
 		return err
 	}

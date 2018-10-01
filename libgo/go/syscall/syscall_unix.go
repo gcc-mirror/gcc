@@ -99,6 +99,16 @@ func RawSyscall6(trap, a1, a2, a3, a4, a5, a6 uintptr) (r1, r2 uintptr, err Errn
 	return r, 0, err
 }
 
+// clen returns the index of the first NULL byte in n or len(n) if n contains no NULL byte.
+func clen(n []byte) int {
+	for i := 0; i < len(n); i++ {
+		if n[i] == 0 {
+			return i
+		}
+	}
+	return len(n)
+}
+
 // Mmap manager, for use by operating system-specific implementations.
 // Gccgo only has one implementation but we do this to correspond to gc.
 

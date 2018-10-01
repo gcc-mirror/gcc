@@ -129,12 +129,13 @@ static gcov_type min_count = -1;
 gcov_type
 get_hot_bb_threshold ()
 {
-  gcov_working_set_t *ws;
   if (min_count == -1)
     {
-      ws = find_working_set (PARAM_VALUE (HOT_BB_COUNT_WS_PERMILLE));
-      gcc_assert (ws);
-      min_count = ws->min_counter;
+      min_count
+	= profile_info->sum_max / PARAM_VALUE (HOT_BB_COUNT_FRACTION);
+      if (dump_file)
+	fprintf (dump_file, "Setting hotness threshold to %" PRId64 ".\n",
+		 min_count);
     }
   return min_count;
 }
@@ -827,11 +828,14 @@ unlikely_executed_bb_p (basic_block bb)
 /* We can not predict the probabilities of outgoing edges of bb.  Set them
    evenly and hope for the best.  If UNLIKELY_EDGES is not null, distribute
    even probability for all edges not mentioned in the set.  These edges
-   are given PROB_VERY_UNLIKELY probability.  */
+   are given PROB_VERY_UNLIKELY probability.  Similarly for LIKELY_EDGES,
+   if we have exactly one likely edge, make the other edges predicted
+   as not probable.  */
 
 static void
 set_even_probabilities (basic_block bb,
-			hash_set<edge> *unlikely_edges = NULL)
+			hash_set<edge> *unlikely_edges = NULL,
+			hash_set<edge_prediction *> *likely_edges = NULL)
 {
   unsigned nedges = 0, unlikely_count = 0;
   edge e = NULL;
@@ -843,7 +847,7 @@ set_even_probabilities (basic_block bb,
       all -= e->probability;
     else if (!unlikely_executed_edge_p (e))
       {
-        nedges ++;
+	nedges++;
         if (unlikely_edges != NULL && unlikely_edges->contains (e))
 	  {
 	    all -= profile_probability::very_unlikely ();
@@ -852,26 +856,54 @@ set_even_probabilities (basic_block bb,
       }
 
   /* Make the distribution even if all edges are unlikely.  */
+  unsigned likely_count = likely_edges ? likely_edges->elements () : 0;
   if (unlikely_count == nedges)
     {
       unlikely_edges = NULL;
       unlikely_count = 0;
     }
 
-  unsigned c = nedges - unlikely_count;
+  /* If we have one likely edge, then use its probability and distribute
+     remaining probabilities as even.  */
+  if (likely_count == 1)
+    {
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->probability.initialized_p ())
+	  ;
+	else if (!unlikely_executed_edge_p (e))
+	  {
+	    edge_prediction *prediction = *likely_edges->begin ();
+	    int p = prediction->ep_probability;
+	    profile_probability prob
+	      = profile_probability::from_reg_br_prob_base (p);
+	    profile_probability remainder = prob.invert ();
 
-  FOR_EACH_EDGE (e, ei, bb->succs)
-    if (e->probability.initialized_p ())
-      ;
-    else if (!unlikely_executed_edge_p (e))
-      {
-	if (unlikely_edges != NULL && unlikely_edges->contains (e))
-	  e->probability = profile_probability::very_unlikely ();
+	    if (prediction->ep_edge == e)
+	      e->probability = prob;
+	    else
+	      e->probability = remainder.apply_scale (1, nedges - 1);
+	  }
 	else
-	  e->probability = all.apply_scale (1, c).guessed ();
-      }
-    else
-      e->probability = profile_probability::never ();
+	  e->probability = profile_probability::never ();
+    }
+  else
+    {
+      /* Make all unlikely edges unlikely and the rest will have even
+	 probability.  */
+      unsigned scale = nedges - unlikely_count;
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	if (e->probability.initialized_p ())
+	  ;
+	else if (!unlikely_executed_edge_p (e))
+	  {
+	    if (unlikely_edges != NULL && unlikely_edges->contains (e))
+	      e->probability = profile_probability::very_unlikely ();
+	    else
+	      e->probability = all.apply_scale (1, scale);
+	  }
+	else
+	  e->probability = profile_probability::never ();
+    }
 }
 
 /* Add REG_BR_PROB note to JUMP with PROB.  */
@@ -1175,6 +1207,7 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
   if (nedges != 2)
     {
       hash_set<edge> unlikely_edges (4);
+      hash_set<edge_prediction *> likely_edges (4);
 
       /* Identify all edges that have a probability close to very unlikely.
 	 Doing the approach for very unlikely doesn't worth for doing as
@@ -1182,11 +1215,16 @@ combine_predictions_for_bb (basic_block bb, bool dry_run)
       edge_prediction **preds = bb_predictions->get (bb);
       if (preds)
 	for (pred = *preds; pred; pred = pred->ep_next)
-	  if (pred->ep_probability <= PROB_VERY_UNLIKELY)
-	    unlikely_edges.add (pred->ep_edge);
+	  {
+	    if (pred->ep_probability <= PROB_VERY_UNLIKELY)
+	      unlikely_edges.add (pred->ep_edge);
+	    if (pred->ep_probability >= PROB_VERY_LIKELY
+		|| pred->ep_predictor == PRED_BUILTIN_EXPECT)
+	      likely_edges.add (pred);
+	  }
 
       if (!dry_run)
-	set_even_probabilities (bb, &unlikely_edges);
+	set_even_probabilities (bb, &unlikely_edges, &likely_edges);
       clear_bb_predictions (bb);
       if (dump_file)
 	{
@@ -2575,7 +2613,30 @@ tree_predict_by_opcode (basic_block bb)
   enum br_predictor predictor;
   HOST_WIDE_INT probability;
 
-  if (!stmt || gimple_code (stmt) != GIMPLE_COND)
+  if (!stmt)
+    return;
+
+  if (gswitch *sw = dyn_cast <gswitch *> (stmt))
+    {
+      tree index = gimple_switch_index (sw);
+      tree val = expr_expected_value (index, auto_bitmap (),
+				      &predictor, &probability);
+      if (val && TREE_CODE (val) == INTEGER_CST)
+	{
+	  edge e = find_taken_edge_switch_expr (sw, val);
+	  if (predictor == PRED_BUILTIN_EXPECT)
+	    {
+	      int percent = PARAM_VALUE (BUILTIN_EXPECT_PROBABILITY);
+	      gcc_assert (percent >= 0 && percent <= 100);
+	      predict_edge (e, PRED_BUILTIN_EXPECT,
+			    HITRATE (percent));
+	    }
+	  else
+	    predict_edge_def (e, predictor, TAKEN);
+	}
+    }
+
+  if (gimple_code (stmt) != GIMPLE_COND)
     return;
   FOR_EACH_EDGE (then_edge, ei, bb->succs)
     if (then_edge->flags & EDGE_TRUE_VALUE)

@@ -807,6 +807,11 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
     /* Digest the specified initializer into an expression.  */
     value = digest_init_flags (type, init, flags, tf_warning_or_error);
 
+  if (TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_STRING_FLAG (TREE_TYPE (type))
+      && TREE_CODE (value) == CONSTRUCTOR)
+    value = braced_list_to_string (type, value);
+
   value = extend_ref_init_temps (decl, value, cleanups);
 
   /* In C++11 constant expression is a semantic, not syntactic, property.
@@ -1058,9 +1063,7 @@ digest_init_r (tree type, tree init, int nested, int flags,
 
 	  if (TYPE_PRECISION (typ1) == BITS_PER_UNIT)
 	    {
-	      if (char_type != char_type_node
-		  && char_type != signed_char_type_node
-		  && char_type != unsigned_char_type_node)
+	      if (char_type != char_type_node)
 		{
 		  if (complain & tf_error)
 		    error_at (loc, "char-array initialized from wide string");
@@ -1109,8 +1112,13 @@ digest_init_r (tree type, tree init, int nested, int flags,
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror (loc, "initializer-string for array "
-			   "of chars is too long");
+		{
+		  permerror (loc, "initializer-string for array "
+			     "of chars is too long");
+
+		  init = build_string (size, TREE_STRING_POINTER (init));
+		  TREE_TYPE (init) = type;
+		}
 	    }
 	  return init;
 	}
@@ -2207,7 +2215,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
    know what we're doing.  */
 
 tree
-add_exception_specifier (tree list, tree spec, int complain)
+add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
 {
   bool ok;
   tree core = spec;

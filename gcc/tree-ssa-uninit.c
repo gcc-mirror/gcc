@@ -1586,16 +1586,6 @@ is_superset_of (pred_chain_union preds1, pred_chain_union preds2)
   return true;
 }
 
-/* Returns true if TC is AND or OR.  */
-
-static inline bool
-is_and_or_or_p (enum tree_code tc, tree type)
-{
-  return (tc == BIT_IOR_EXPR
-	  || (tc == BIT_AND_EXPR
-	      && (type == 0 || TREE_CODE (type) == BOOLEAN_TYPE)));
-}
-
 /* Returns true if X1 is the negate of X2.  */
 
 static inline bool

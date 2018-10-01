@@ -1,3 +1,49 @@
+2018-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Get to the main type variant.
+	(dump_ada_node): Add const keyword.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (c_common_truthvalue_conversion):
+	Remove Pascal from documentation.
+
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include diagnostic.h.
+	(dump_ada_declaration) <RECORD_TYPE>: Issue a warning on packed layout.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wclass-conversion): New.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (range_label_for_format_type_mismatch::get_text):
+	Update for new param.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (format_warning_at_char): Update for introduction of
+	format_string_diagnostic_t.
+	(format_type_warning): Likewise.
+
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* c.opt (Wabsolute-value): New.
+
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (complete_flexible_array_elts): New helper function.
+	* c-common.h (complete_flexible_array_elts): Declare.
+
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-common.c (braced_list_to_string): Remove eval parameter.
+	Add some more checks.  Always create zero-terminated STRING_CST.
+	* c-common.h (braced_list_to_string): Adjust prototype.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091

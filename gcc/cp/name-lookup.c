@@ -791,11 +791,14 @@ name_lookup::search_namespace (tree scope)
 
   /* Look in exactly namespace. */
   bool found = search_namespace_only (scope);
-  
-  /* Recursively look in its inline children.  */
-  if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
-    for (unsigned ix = inlinees->length (); ix--;)
-      found |= search_namespace ((*inlinees)[ix]);
+
+  /* Don't look into inline children, if we're looking for an
+     anonymous name -- it must be in the current scope, if anywhere.  */
+  if (name)
+    /* Recursively look in its inline children.  */
+    if (vec<tree, va_gc> *inlinees = DECL_NAMESPACE_INLINEES (scope))
+      for (unsigned ix = inlinees->length (); ix--;)
+	found |= search_namespace ((*inlinees)[ix]);
 
   if (found)
     mark_found (scope);
@@ -3067,6 +3070,13 @@ check_local_shadow (tree decl)
 	       && (same_type_p (TREE_TYPE (old), TREE_TYPE (decl))
 		   || (!dependent_type_p (TREE_TYPE (decl))
 		       && !dependent_type_p (TREE_TYPE (old))
+		       /* If the new decl uses auto, we don't yet know
+			  its type (the old type cannot be using auto
+			  at this point, without also being
+			  dependent).  This is an indication we're
+			  (now) doing the shadow checking too
+			  early.  */
+		       && !type_uses_auto (TREE_TYPE (decl))
 		       && can_convert (TREE_TYPE (old), TREE_TYPE (decl),
 				       tf_none))))
 	warning_code = OPT_Wshadow_compatible_local;
@@ -3915,21 +3925,6 @@ cp_binding_level_debug (cp_binding_level *scope, int line, const char *action)
 	      scope->this_entity, (void *) scope, line);
   else
     verbatim ("%s %s %p %d\n", action, desc, (void *) scope, line);
-}
-
-/* Return the estimated initial size of the hashtable of a NAMESPACE
-   scope.  */
-
-static inline size_t
-namespace_scope_ht_size (tree ns)
-{
-  tree name = DECL_NAME (ns);
-
-  return name == std_identifier
-    ? NAMESPACE_STD_HT_SIZE
-    : (name == global_identifier
-       ? GLOBAL_SCOPE_HT_SIZE
-       : NAMESPACE_ORDINARY_HT_SIZE);
 }
 
 /* A chain of binding_level structures awaiting reuse.  */

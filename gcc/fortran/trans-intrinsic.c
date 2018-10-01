@@ -4055,6 +4055,7 @@ gfc_conv_intrinsic_funcall (gfc_se * se, gfc_expr * expr)
      to be able to call the BLAS ?gemm functions if required and possible.  */
   append_args = NULL;
   if (expr->value.function.isym->id == GFC_ISYM_MATMUL
+      && !expr->external_blas
       && sym->ts.type != BT_LOGICAL)
     {
       tree cint = gfc_get_int_type (gfc_c_int_kind);
@@ -8937,36 +8938,32 @@ gfc_conv_ieee_arithmetic_function (gfc_se * se, gfc_expr * expr)
 {
   const char *name = expr->value.function.name;
 
-#define STARTS_WITH(A,B) (strncmp((A), (B), strlen(B)) == 0)
-
-  if (STARTS_WITH (name, "_gfortran_ieee_is_nan"))
+  if (gfc_str_startswith (name, "_gfortran_ieee_is_nan"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISNAN, 1);
-  else if (STARTS_WITH (name, "_gfortran_ieee_is_finite"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_is_finite"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISFINITE, 1);
-  else if (STARTS_WITH (name, "_gfortran_ieee_unordered"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_unordered"))
     conv_intrinsic_ieee_builtin (se, expr, BUILT_IN_ISUNORDERED, 2);
-  else if (STARTS_WITH (name, "_gfortran_ieee_is_normal"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_is_normal"))
     conv_intrinsic_ieee_is_normal (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_is_negative"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_is_negative"))
     conv_intrinsic_ieee_is_negative (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_copy_sign"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_copy_sign"))
     conv_intrinsic_ieee_copy_sign (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_scalb"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_scalb"))
     conv_intrinsic_ieee_scalb (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_next_after"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_next_after"))
     conv_intrinsic_ieee_next_after (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_rem"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_rem"))
     conv_intrinsic_ieee_rem (se, expr);
-  else if (STARTS_WITH (name, "_gfortran_ieee_logb"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_logb"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_LOGB);
-  else if (STARTS_WITH (name, "_gfortran_ieee_rint"))
+  else if (gfc_str_startswith (name, "_gfortran_ieee_rint"))
     conv_intrinsic_ieee_logb_rint (se, expr, BUILT_IN_RINT);
   else
     /* It is not among the functions we translate directly.  We return
        false, so a library function call is emitted.  */
     return false;
-
-#undef STARTS_WITH
 
   return true;
 }
@@ -10666,7 +10663,7 @@ conv_intrinsic_event_query (gfc_code *code)
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree tmp, token, image_index;
-      tree index = size_zero_node;
+      tree index = build_zero_cst (gfc_array_index_type);
 
       if (event_expr->expr_type == EXPR_FUNCTION
 	  && event_expr->value.function.isym
@@ -10719,27 +10716,25 @@ conv_intrinsic_event_query (gfc_code *code)
 	  desc = argse.expr;
 	  *ar = ar2;
 
-	  extent = integer_one_node;
+	  extent = build_one_cst (gfc_array_index_type);
 	  for (i = 0; i < ar->dimen; i++)
 	    {
 	      gfc_init_se (&argse, NULL);
-	      gfc_conv_expr_type (&argse, ar->start[i], integer_type_node);
+	      gfc_conv_expr_type (&argse, ar->start[i], gfc_array_index_type);
 	      gfc_add_block_to_block (&argse.pre, &argse.pre);
 	      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     integer_type_node, argse.expr,
-				     fold_convert(integer_type_node, lbound));
+				     TREE_TYPE (lbound), argse.expr, lbound);
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
-				     integer_type_node, extent, tmp);
+				     TREE_TYPE (tmp), extent, tmp);
 	      index = fold_build2_loc (input_location, PLUS_EXPR,
-				       integer_type_node, index, tmp);
+				       TREE_TYPE (tmp), index, tmp);
 	      if (i < ar->dimen - 1)
 		{
 		  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
 		  tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-		  tmp = fold_convert (integer_type_node, tmp);
 		  extent = fold_build2_loc (input_location, MULT_EXPR,
-					    integer_type_node, extent, tmp);
+					    TREE_TYPE (tmp), extent, tmp);
 		}
 	    }
 	}
@@ -10756,6 +10751,7 @@ conv_intrinsic_event_query (gfc_code *code)
 	  stat = gfc_create_var (integer_type_node, "stat");
 	}
 
+      index = fold_convert (size_type_node, index);
       tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_query, 5,
                                    token, index, image_index, count
 				   ? gfc_build_addr_expr (NULL, count) : count,

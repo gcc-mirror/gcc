@@ -7,6 +7,7 @@
 
 /* { dg-do run } */
 /* { dg-options "-O -fno-pic" } */
+/* { dg-additional-options "-no-pie" { target pie_enabled } } */
 /* { dg-require-effective-target nonlocal_goto } */
 
 extern void abort (void);

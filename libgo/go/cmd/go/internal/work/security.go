@@ -112,6 +112,7 @@ var validCompilerFlags = []*regexp.Regexp{
 	re(`--sysroot=([^@\-].*)`),
 	re(`-w`),
 	re(`-x([^@\-].*)`),
+	re(`-v`),
 }
 
 var validCompilerFlagsWithNextArg = []string{
@@ -135,6 +136,7 @@ var validLinkerFlags = []*regexp.Regexp{
 	re(`-f(no-)?(pic|PIC|pie|PIE)`),
 	re(`-f(no-)?openmp(-simd)?`),
 	re(`-fsanitize=([^@\-].*)`),
+	re(`-flat_namespace`),
 	re(`-g([^@\-].*)?`),
 	re(`-headerpad_max_install_names`),
 	re(`-m(abi|arch|cpu|fpu|tune)=([^@\-].*)`),
@@ -150,6 +152,7 @@ var validLinkerFlags = []*regexp.Regexp{
 	re(`-shared`),
 	re(`-?-static([-a-z0-9+]*)`),
 	re(`-?-stdlib=([^@\-].*)`),
+	re(`-v`),
 
 	// Note that any wildcards in -Wl need to exclude comma,
 	// since -Wl splits its argument at commas and passes

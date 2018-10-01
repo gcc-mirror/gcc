@@ -1,3 +1,25 @@
+2018-09-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct cuda_map): New.
+	(struct ptx_stream): Replace d, h, h_begin, h_end, h_next, h_prev,
+	h_tail with (cuda_map *) map.
+	(cuda_map_create): New function.
+	(cuda_map_destroy): New function.
+	(map_init): Update to use a linked list of cuda_map objects.
+	(map_fini): Likewise.
+	(map_pop): Likewise.
+	(map_push): Likewise.  Return CUdeviceptr instead of void.
+	(init_streams_for_device): Remove stales references to ptx_stream
+	members.
+	(select_stream_for_async): Likewise.
+	(nvptx_exec): Update call to map_init.
+
+2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/86336
+	* testsuite/libgomp.oacc-c++/non-scalar-data.C: Remove XFAIL.
+
 2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
 	Thomas Koenig <tkoenig@gcc.gnu.org>
 

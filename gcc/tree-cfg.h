@@ -102,6 +102,8 @@ extern tree gimplify_build2 (gimple_stmt_iterator *, enum tree_code,
 extern tree gimplify_build1 (gimple_stmt_iterator *, enum tree_code,
 			     tree, tree);
 extern void extract_true_false_edges_from_block (basic_block, edge *, edge *);
+extern tree find_case_label_for_value (const gswitch *switch_stmt, tree val);
+extern edge find_taken_edge_switch_expr (const gswitch *switch_stmt, tree val);
 extern unsigned int execute_fixup_cfg (void);
 extern unsigned int split_critical_edges (void);
 extern basic_block insert_cond_bb (basic_block, gimple *, gimple *,

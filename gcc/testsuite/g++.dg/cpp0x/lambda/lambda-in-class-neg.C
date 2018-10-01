@@ -18,8 +18,9 @@ class C {
       [&] () -> void { this->m_i = 3; } ();
       assert(m_i == 3);
       [=] () -> void { m_i = 4; } (); // copies 'this' or --copies-m_i--?
+// { dg-warning "implicit capture" "" { target c++2a } .-1 }
       assert(m_i == 4);
-      [=] () -> void { this->m_i = 5; } ();
+      [=] () -> void { this->m_i = 5; } (); // { dg-warning "implicit capture" "" { target c++2a } }
       assert(m_i == 5);
     }
 

@@ -89,6 +89,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "wide-int-bitmask.h"
 #include "tree-vector-builder.h"
+#include "debug.h"
+#include "dwarf2out.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -239,30 +241,28 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   /* FP registers */
   FP_TOP_REG, FP_SECOND_REG, FLOAT_REGS, FLOAT_REGS,
   FLOAT_REGS, FLOAT_REGS, FLOAT_REGS, FLOAT_REGS,
-  /* arg pointer */
-  NON_Q_REGS,
-  /* flags, fpsr, fpcr, frame */
-  NO_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
+  /* arg pointer, flags, fpsr, frame */
+  NON_Q_REGS, NO_REGS, NO_REGS, NON_Q_REGS,
   /* SSE registers */
-  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_FIRST_REG, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* MMX registers */
-  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
-  MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
+  MMX_REGS, MMX_REGS, MMX_REGS, MMX_REGS,
   /* REX registers */
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
-  NON_Q_REGS, NON_Q_REGS, NON_Q_REGS, NON_Q_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
+  GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   /* SSE REX registers */
-  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
-  SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
+  SSE_REGS, SSE_REGS, SSE_REGS, SSE_REGS,
   /* AVX-512 SSE registers */
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
-  EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS, EVEX_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
+  ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS, ALL_SSE_REGS,
   /* Mask registers.  */
-  MASK_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS,
-  MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS, MASK_EVEX_REGS
+  ALL_MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS,
+  MASK_REGS, MASK_REGS, MASK_REGS, MASK_REGS
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -271,7 +271,7 @@ int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
   12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
   29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -287,7 +287,7 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
   33, 34, 35, 36, 37, 38, 39, 40,	/* fp regs */
-  -1, -1, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
   17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
   41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
   8,9,10,11,12,13,14,15,		/* extended integer registers */
@@ -355,7 +355,7 @@ int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
   0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
   11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
-  -1, 9, -1, -1, -1,			/* arg, flags, fpsr, fpcr, frame */
+  -1, 9, -1, -1,			/* arg, flags, fpsr, frame */
   21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
   29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
   -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
@@ -828,63 +828,46 @@ static tree (*ix86_veclib_handler) (combined_fn, tree, tree);
 static tree ix86_veclibabi_svml (combined_fn, tree, tree);
 static tree ix86_veclibabi_acml (combined_fn, tree, tree);
 
-/* Processor target table, indexed by processor number */
-struct ptt
-{
-  const char *const name;			/* processor name  */
-  const struct processor_costs *cost;		/* Processor costs */
-
-  /* Default alignments.  */
-  const char *const align_loop;
-  const char *const align_jump;
-  const char *const align_label;
-  const char *const align_func;
-};
-
 /* This table must be in sync with enum processor_type in i386.h.  */ 
-static const struct ptt processor_target_table[PROCESSOR_max] =
+static const struct processor_costs *processor_cost_table[PROCESSOR_max] =
 {
-/* The "0:0:8" label alignment specified for some processors generates
-   secondary 8-byte alignment only for those label/jump/loop targets
-   which have primary alignment.  */
-
-  {"generic",        &generic_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"i386",           &i386_cost,       "4",       "4",       NULL,    "4" },
-  {"i486",           &i486_cost,       "16",      "16",      "0:0:8", "16"},
-  {"pentium",        &pentium_cost,    "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"lakemont",       &lakemont_cost,   "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"pentiumpro",     &pentiumpro_cost, "16",      "16:11:8", "0:0:8", "16"},
-  {"pentium4",       &pentium4_cost,   NULL,      NULL,      NULL,    NULL},
-  {"nocona",         &nocona_cost,     NULL,      NULL,      NULL,    NULL},
-  {"core2",          &core_cost,       "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"nehalem",        &core_cost,       "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"sandybridge",    &core_cost,       "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"haswell",        &core_cost,       "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"bonnell",        &atom_cost,       "16",      "16:8:8",  "0:0:8", "16"},
-  {"silvermont",     &slm_cost,        "16",      "16:8:8",  "0:0:8", "16"},
-  {"goldmont",       &slm_cost,        "16",      "16:8:8",  "0:0:8", "16"},
-  {"goldmont-plus",  &slm_cost,        "16",      "16:8:8",  "0:0:8", "16"},
-  {"tremont",	     &slm_cost,	       "16",	  "16:8:8",  "0:0:8", "16"},
-  {"knl",            &slm_cost,        "16",      "16:8:8",  "0:0:8", "16"},
-  {"knm",            &slm_cost,        "16",      "16:8:8",  "0:0:8", "16"},
-  {"skylake",        &skylake_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"skylake-avx512", &skylake_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"cannonlake",     &skylake_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"icelake-client", &skylake_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"icelake-server", &skylake_cost,    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"intel",          &intel_cost,      "16",      "16:8:8",  "0:0:8", "16"},
-  {"geode",          &geode_cost,      NULL,      NULL,      NULL,    NULL},
-  {"k6",             &k6_cost,         "32:8:8",  "32:8:8",  "0:0:8", "32"},
-  {"athlon",         &athlon_cost,     "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"k8",             &k8_cost,         "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"amdfam10",       &amdfam10_cost,   "32:25:8", "32:8:8",  "0:0:8", "32"},
-  {"bdver1",         &bdver1_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver2",         &bdver2_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver3",         &bdver3_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver4",         &bdver4_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"btver1",         &btver1_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"btver2",         &btver2_cost,     "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"znver1",         &znver1_cost,     "16",      "16",      "0:0:8", "16"}
+  &generic_cost,
+  &i386_cost,
+  &i486_cost,
+  &pentium_cost,
+  &lakemont_cost,
+  &pentiumpro_cost,
+  &pentium4_cost,
+  &nocona_cost,
+  &core_cost,
+  &core_cost,
+  &core_cost,
+  &core_cost,
+  &atom_cost,
+  &slm_cost,
+  &slm_cost,
+  &slm_cost,
+  &slm_cost,
+  &slm_cost,
+  &slm_cost,
+  &skylake_cost,
+  &skylake_cost,
+  &skylake_cost,
+  &skylake_cost,
+  &skylake_cost,
+  &intel_cost,
+  &geode_cost,
+  &k6_cost,
+  &athlon_cost,
+  &k8_cost,
+  &amdfam10_cost,
+  &bdver1_cost,
+  &bdver2_cost,
+  &bdver3_cost,
+  &bdver4_cost,
+  &btver1_cost,
+  &btver2_cost,
+  &znver1_cost,
 };
 
 static unsigned int
@@ -2610,11 +2593,17 @@ rest_of_insert_endbranch (void)
 			 TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
       && !cgraph_node::get (cfun->decl)->only_called_directly_p ())
     {
-      cet_eb = gen_nop_endbr ();
+      /* Queue ENDBR insertion to x86_function_profiler.  */
+      if (crtl->profile && flag_fentry)
+	cfun->machine->endbr_queued_at_entrance = true;
+      else
+	{
+	  cet_eb = gen_nop_endbr ();
 
-      bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-      insn = BB_HEAD (bb);
-      emit_insn_before (cet_eb, insn);
+	  bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	  insn = BB_HEAD (bb);
+	  emit_insn_before (cet_eb, insn);
+	}
     }
 
   bb = 0;
@@ -3369,13 +3358,13 @@ ix86_default_align (struct gcc_options *opts)
 {
   /* -falign-foo without argument: supply one.  */
   if (opts->x_flag_align_loops && !opts->x_str_align_loops)
-    opts->x_str_align_loops = processor_target_table[ix86_tune].align_loop;
+    opts->x_str_align_loops = processor_cost_table[ix86_tune]->align_loop;
   if (opts->x_flag_align_jumps && !opts->x_str_align_jumps)
-    opts->x_str_align_jumps = processor_target_table[ix86_tune].align_jump;
+    opts->x_str_align_jumps = processor_cost_table[ix86_tune]->align_jump;
   if (opts->x_flag_align_labels && !opts->x_str_align_labels)
-    opts->x_str_align_labels = processor_target_table[ix86_tune].align_label;
+    opts->x_str_align_labels = processor_cost_table[ix86_tune]->align_label;
   if (opts->x_flag_align_functions && !opts->x_str_align_functions)
-    opts->x_str_align_functions = processor_target_table[ix86_tune].align_func;
+    opts->x_str_align_functions = processor_cost_table[ix86_tune]->align_func;
 }
 
 /* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE hook.  */
@@ -3385,6 +3374,8 @@ ix86_override_options_after_change (void)
 {
   ix86_default_align (&global_options);
 }
+
+
 
 /* Override various settings based on options.  If MAIN_ARGS_P, the
    options are from the command line, otherwise they are from
@@ -3399,317 +3390,6 @@ ix86_option_override_internal (bool main_args_p,
   int i;
   unsigned HOST_WIDE_INT ix86_arch_mask;
   const bool ix86_tune_specified = (opts->x_ix86_tune_string != NULL);
-
-  const wide_int_bitmask PTA_3DNOW (HOST_WIDE_INT_1U << 0);
-  const wide_int_bitmask PTA_3DNOW_A (HOST_WIDE_INT_1U << 1);
-  const wide_int_bitmask PTA_64BIT (HOST_WIDE_INT_1U << 2);
-  const wide_int_bitmask PTA_ABM (HOST_WIDE_INT_1U << 3);
-  const wide_int_bitmask PTA_AES (HOST_WIDE_INT_1U << 4);
-  const wide_int_bitmask PTA_AVX (HOST_WIDE_INT_1U << 5);
-  const wide_int_bitmask PTA_BMI (HOST_WIDE_INT_1U << 6);
-  const wide_int_bitmask PTA_CX16 (HOST_WIDE_INT_1U << 7);
-  const wide_int_bitmask PTA_F16C (HOST_WIDE_INT_1U << 8);
-  const wide_int_bitmask PTA_FMA (HOST_WIDE_INT_1U << 9);
-  const wide_int_bitmask PTA_FMA4 (HOST_WIDE_INT_1U << 10);
-  const wide_int_bitmask PTA_FSGSBASE (HOST_WIDE_INT_1U << 11);
-  const wide_int_bitmask PTA_LWP (HOST_WIDE_INT_1U << 12);
-  const wide_int_bitmask PTA_LZCNT (HOST_WIDE_INT_1U << 13);
-  const wide_int_bitmask PTA_MMX (HOST_WIDE_INT_1U << 14);
-  const wide_int_bitmask PTA_MOVBE (HOST_WIDE_INT_1U << 15);
-  const wide_int_bitmask PTA_NO_SAHF (HOST_WIDE_INT_1U << 16);
-  const wide_int_bitmask PTA_PCLMUL (HOST_WIDE_INT_1U << 17);
-  const wide_int_bitmask PTA_POPCNT (HOST_WIDE_INT_1U << 18);
-  const wide_int_bitmask PTA_PREFETCH_SSE (HOST_WIDE_INT_1U << 19);
-  const wide_int_bitmask PTA_RDRND (HOST_WIDE_INT_1U << 20);
-  const wide_int_bitmask PTA_SSE (HOST_WIDE_INT_1U << 21);
-  const wide_int_bitmask PTA_SSE2 (HOST_WIDE_INT_1U << 22);
-  const wide_int_bitmask PTA_SSE3 (HOST_WIDE_INT_1U << 23);
-  const wide_int_bitmask PTA_SSE4_1 (HOST_WIDE_INT_1U << 24);
-  const wide_int_bitmask PTA_SSE4_2 (HOST_WIDE_INT_1U << 25);
-  const wide_int_bitmask PTA_SSE4A (HOST_WIDE_INT_1U << 26);
-  const wide_int_bitmask PTA_SSSE3 (HOST_WIDE_INT_1U << 27);
-  const wide_int_bitmask PTA_TBM (HOST_WIDE_INT_1U << 28);
-  const wide_int_bitmask PTA_XOP (HOST_WIDE_INT_1U << 29);
-  const wide_int_bitmask PTA_AVX2 (HOST_WIDE_INT_1U << 30);
-  const wide_int_bitmask PTA_BMI2 (HOST_WIDE_INT_1U << 31);
-  const wide_int_bitmask PTA_RTM (HOST_WIDE_INT_1U << 32);
-  const wide_int_bitmask PTA_HLE (HOST_WIDE_INT_1U << 33);
-  const wide_int_bitmask PTA_PRFCHW (HOST_WIDE_INT_1U << 34);
-  const wide_int_bitmask PTA_RDSEED (HOST_WIDE_INT_1U << 35);
-  const wide_int_bitmask PTA_ADX (HOST_WIDE_INT_1U << 36);
-  const wide_int_bitmask PTA_FXSR (HOST_WIDE_INT_1U << 37);
-  const wide_int_bitmask PTA_XSAVE (HOST_WIDE_INT_1U << 38);
-  const wide_int_bitmask PTA_XSAVEOPT (HOST_WIDE_INT_1U << 39);
-  const wide_int_bitmask PTA_AVX512F (HOST_WIDE_INT_1U << 40);
-  const wide_int_bitmask PTA_AVX512ER (HOST_WIDE_INT_1U << 41);
-  const wide_int_bitmask PTA_AVX512PF (HOST_WIDE_INT_1U << 42);
-  const wide_int_bitmask PTA_AVX512CD (HOST_WIDE_INT_1U << 43);
-  /* Hole after PTA_MPX was removed.  */
-  const wide_int_bitmask PTA_SHA (HOST_WIDE_INT_1U << 45);
-  const wide_int_bitmask PTA_PREFETCHWT1 (HOST_WIDE_INT_1U << 46);
-  const wide_int_bitmask PTA_CLFLUSHOPT (HOST_WIDE_INT_1U << 47);
-  const wide_int_bitmask PTA_XSAVEC (HOST_WIDE_INT_1U << 48);
-  const wide_int_bitmask PTA_XSAVES (HOST_WIDE_INT_1U << 49);
-  const wide_int_bitmask PTA_AVX512DQ (HOST_WIDE_INT_1U << 50);
-  const wide_int_bitmask PTA_AVX512BW (HOST_WIDE_INT_1U << 51);
-  const wide_int_bitmask PTA_AVX512VL (HOST_WIDE_INT_1U << 52);
-  const wide_int_bitmask PTA_AVX512IFMA (HOST_WIDE_INT_1U << 53);
-  const wide_int_bitmask PTA_AVX512VBMI (HOST_WIDE_INT_1U << 54);
-  const wide_int_bitmask PTA_CLWB (HOST_WIDE_INT_1U << 55);
-  const wide_int_bitmask PTA_MWAITX (HOST_WIDE_INT_1U << 56);
-  const wide_int_bitmask PTA_CLZERO (HOST_WIDE_INT_1U << 57);
-  const wide_int_bitmask PTA_NO_80387 (HOST_WIDE_INT_1U << 58);
-  const wide_int_bitmask PTA_PKU (HOST_WIDE_INT_1U << 59);
-  const wide_int_bitmask PTA_AVX5124VNNIW (HOST_WIDE_INT_1U << 60);
-  const wide_int_bitmask PTA_AVX5124FMAPS (HOST_WIDE_INT_1U << 61);
-  const wide_int_bitmask PTA_AVX512VPOPCNTDQ (HOST_WIDE_INT_1U << 62);
-  const wide_int_bitmask PTA_SGX (HOST_WIDE_INT_1U << 63);
-  const wide_int_bitmask PTA_AVX512VNNI (0, HOST_WIDE_INT_1U);
-  const wide_int_bitmask PTA_GFNI (0, HOST_WIDE_INT_1U << 1);
-  const wide_int_bitmask PTA_VAES (0, HOST_WIDE_INT_1U << 2);
-  const wide_int_bitmask PTA_AVX512VBMI2 (0, HOST_WIDE_INT_1U << 3);
-  const wide_int_bitmask PTA_VPCLMULQDQ (0, HOST_WIDE_INT_1U << 4);
-  const wide_int_bitmask PTA_AVX512BITALG (0, HOST_WIDE_INT_1U << 5);
-  const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
-  const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
-  const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
-  const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
-
-  const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
-    | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
-  const wide_int_bitmask PTA_NEHALEM = PTA_CORE2 | PTA_SSE4_1 | PTA_SSE4_2
-    | PTA_POPCNT;
-  const wide_int_bitmask PTA_WESTMERE = PTA_NEHALEM | PTA_AES | PTA_PCLMUL;
-  const wide_int_bitmask PTA_SANDYBRIDGE = PTA_WESTMERE | PTA_AVX | PTA_XSAVE
-    | PTA_XSAVEOPT;
-  const wide_int_bitmask PTA_IVYBRIDGE = PTA_SANDYBRIDGE | PTA_FSGSBASE
-    | PTA_RDRND | PTA_F16C;
-  const wide_int_bitmask PTA_HASWELL = PTA_IVYBRIDGE | PTA_AVX2 | PTA_BMI
-    | PTA_BMI2 | PTA_LZCNT | PTA_FMA | PTA_MOVBE | PTA_HLE;
-  const wide_int_bitmask PTA_BROADWELL = PTA_HASWELL | PTA_ADX | PTA_PRFCHW
-    | PTA_RDSEED;
-  const wide_int_bitmask PTA_SKYLAKE = PTA_BROADWELL | PTA_CLFLUSHOPT
-    | PTA_XSAVEC | PTA_XSAVES | PTA_SGX;
-  const wide_int_bitmask PTA_SKYLAKE_AVX512 = PTA_SKYLAKE | PTA_AVX512F
-    | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
-    | PTA_CLWB;
-  const wide_int_bitmask PTA_CANNONLAKE = PTA_SKYLAKE | PTA_AVX512F
-    | PTA_AVX512CD | PTA_AVX512VL | PTA_AVX512BW | PTA_AVX512DQ | PTA_PKU
-    | PTA_AVX512VBMI | PTA_AVX512IFMA | PTA_SHA;
-  const wide_int_bitmask PTA_ICELAKE_CLIENT = PTA_CANNONLAKE | PTA_AVX512VNNI
-    | PTA_GFNI | PTA_VAES | PTA_AVX512VBMI2 | PTA_VPCLMULQDQ | PTA_AVX512BITALG
-    | PTA_RDPID | PTA_CLWB;
-  const wide_int_bitmask PTA_ICELAKE_SERVER = PTA_ICELAKE_CLIENT | PTA_PCONFIG
-    | PTA_WBNOINVD;
-  const wide_int_bitmask PTA_KNL = PTA_BROADWELL | PTA_AVX512PF | PTA_AVX512ER
-    | PTA_AVX512F | PTA_AVX512CD;
-  const wide_int_bitmask PTA_BONNELL = PTA_CORE2 | PTA_MOVBE;
-  const wide_int_bitmask PTA_SILVERMONT = PTA_WESTMERE | PTA_MOVBE | PTA_RDRND;
-  const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_SHA | PTA_XSAVE
-    | PTA_RDSEED | PTA_XSAVEC | PTA_XSAVES | PTA_CLFLUSHOPT | PTA_XSAVEOPT
-    | PTA_FSGSBASE;
-  const wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
-    | PTA_SGX;
-  const wide_int_bitmask PTA_TREMONT = PTA_GOLDMONT_PLUS | PTA_CLWB
-    | PTA_GFNI;
-  const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW
-    | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ;
-
-  static struct pta
-    {
-      const char *const name;		/* processor name or nickname.  */
-      const enum processor_type processor;
-      const enum attr_cpu schedule;
-      const wide_int_bitmask flags;
-    }
-  const processor_alias_table[] =
-    {
-      {"i386", PROCESSOR_I386, CPU_NONE, 0},
-      {"i486", PROCESSOR_I486, CPU_NONE, 0},
-      {"i586", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
-      {"pentium", PROCESSOR_PENTIUM, CPU_PENTIUM, 0},
-      {"lakemont", PROCESSOR_LAKEMONT, CPU_PENTIUM, PTA_NO_80387},
-      {"pentium-mmx", PROCESSOR_PENTIUM, CPU_PENTIUM, PTA_MMX},
-      {"winchip-c6", PROCESSOR_I486, CPU_NONE, PTA_MMX},
-      {"winchip2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
-      {"c3", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
-      {"samuel-2", PROCESSOR_I486, CPU_NONE, PTA_MMX | PTA_3DNOW},
-      {"c3-2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE | PTA_FXSR},
-      {"nehemiah", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-        PTA_MMX | PTA_SSE | PTA_FXSR},
-      {"c7", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-        PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
-      {"esther", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-        PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
-      {"i686", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
-      {"pentiumpro", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, 0},
-      {"pentium2", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO, PTA_MMX | PTA_FXSR},
-      {"pentium3", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE | PTA_FXSR},
-      {"pentium3m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE | PTA_FXSR},
-      {"pentium-m", PROCESSOR_PENTIUMPRO, CPU_PENTIUMPRO,
-	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
-      {"pentium4", PROCESSOR_PENTIUM4, CPU_NONE,
-	PTA_MMX |PTA_SSE | PTA_SSE2 | PTA_FXSR},
-      {"pentium4m", PROCESSOR_PENTIUM4, CPU_NONE,
-	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_FXSR},
-      {"prescott", PROCESSOR_NOCONA, CPU_NONE,
-	PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
-      {"nocona", PROCESSOR_NOCONA, CPU_NONE,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_CX16 | PTA_NO_SAHF | PTA_FXSR},
-      {"core2", PROCESSOR_CORE2, CPU_CORE2, PTA_CORE2},
-      {"nehalem", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_NEHALEM},
-      {"corei7", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_NEHALEM},
-      {"westmere", PROCESSOR_NEHALEM, CPU_NEHALEM, PTA_WESTMERE},
-      {"sandybridge", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
-	PTA_SANDYBRIDGE},
-      {"corei7-avx", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
-	PTA_SANDYBRIDGE},
-      {"ivybridge", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
-	PTA_IVYBRIDGE},
-      {"core-avx-i", PROCESSOR_SANDYBRIDGE, CPU_NEHALEM,
-	PTA_IVYBRIDGE},
-      {"haswell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
-      {"core-avx2", PROCESSOR_HASWELL, CPU_HASWELL, PTA_HASWELL},
-      {"broadwell", PROCESSOR_HASWELL, CPU_HASWELL, PTA_BROADWELL},
-      {"skylake", PROCESSOR_SKYLAKE, CPU_HASWELL, PTA_SKYLAKE},
-      {"skylake-avx512", PROCESSOR_SKYLAKE_AVX512, CPU_HASWELL,
-        PTA_SKYLAKE_AVX512},
-      {"cannonlake", PROCESSOR_CANNONLAKE, CPU_HASWELL, PTA_CANNONLAKE},
-      {"icelake-client", PROCESSOR_ICELAKE_CLIENT, CPU_HASWELL,
-	PTA_ICELAKE_CLIENT},
-      {"icelake-server", PROCESSOR_ICELAKE_SERVER, CPU_HASWELL,
-	PTA_ICELAKE_SERVER},
-      {"bonnell", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
-      {"atom", PROCESSOR_BONNELL, CPU_ATOM, PTA_BONNELL},
-      {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
-      {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
-      {"goldmont", PROCESSOR_GOLDMONT, CPU_GLM, PTA_GOLDMONT},
-      {"goldmont-plus", PROCESSOR_GOLDMONT_PLUS, CPU_GLM, PTA_GOLDMONT_PLUS},
-      {"tremont", PROCESSOR_TREMONT, CPU_GLM, PTA_TREMONT},
-      {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL},
-      {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM},
-      {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
-      {"geode", PROCESSOR_GEODE, CPU_GEODE,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
-      {"k6", PROCESSOR_K6, CPU_K6, PTA_MMX},
-      {"k6-2", PROCESSOR_K6, CPU_K6, PTA_MMX | PTA_3DNOW},
-      {"k6-3", PROCESSOR_K6, CPU_K6, PTA_MMX | PTA_3DNOW},
-      {"athlon", PROCESSOR_ATHLON, CPU_ATHLON,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
-      {"athlon-tbird", PROCESSOR_ATHLON, CPU_ATHLON,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
-      {"athlon-4", PROCESSOR_ATHLON, CPU_ATHLON,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
-      {"athlon-xp", PROCESSOR_ATHLON, CPU_ATHLON,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
-      {"athlon-mp", PROCESSOR_ATHLON, CPU_ATHLON,
-	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_FXSR},
-      {"x86-64", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
-      {"eden-x2", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3 | PTA_FXSR},
-      {"nano", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_FXSR},
-      {"nano-1000", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_FXSR},
-      {"nano-2000", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_FXSR},
-      {"nano-3000", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
-      {"nano-x2", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
-      {"eden-x4", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
-      {"nano-x4", PROCESSOR_K8, CPU_K8,
-        PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-        | PTA_SSSE3 | PTA_SSE4_1 | PTA_FXSR},
-      {"k8", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
-      {"k8-sse3", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
-      {"opteron", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
-      {"opteron-sse3", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
-      {"athlon64", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
-      {"athlon64-sse3", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_SSE3 | PTA_NO_SAHF | PTA_FXSR},
-      {"athlon-fx", PROCESSOR_K8, CPU_K8,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE
-	| PTA_SSE2 | PTA_NO_SAHF | PTA_FXSR},
-      {"amdfam10", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
-	| PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_PRFCHW | PTA_FXSR},
-      {"barcelona", PROCESSOR_AMDFAM10, CPU_AMDFAM10,
-	PTA_64BIT | PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_SSE | PTA_SSE2
-	| PTA_SSE3 | PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_PRFCHW | PTA_FXSR},
-      {"bdver1", PROCESSOR_BDVER1, CPU_BDVER1,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
-	| PTA_XOP | PTA_LWP | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
-      {"bdver2", PROCESSOR_BDVER2, CPU_BDVER2,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
-	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
-	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE},
-      {"bdver3", PROCESSOR_BDVER3, CPU_BDVER3,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_FMA4
-	| PTA_XOP | PTA_LWP | PTA_BMI | PTA_TBM | PTA_F16C
-	| PTA_FMA | PTA_PRFCHW | PTA_FXSR | PTA_XSAVE 
-	| PTA_XSAVEOPT | PTA_FSGSBASE},
-      {"bdver4", PROCESSOR_BDVER4, CPU_BDVER4,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2 
-	| PTA_FMA4 | PTA_XOP | PTA_LWP | PTA_BMI | PTA_BMI2 
-	| PTA_TBM | PTA_F16C | PTA_FMA | PTA_PRFCHW | PTA_FXSR 
-	| PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE | PTA_RDRND
-	| PTA_MOVBE | PTA_MWAITX},
-      {"znver1", PROCESSOR_ZNVER1, CPU_ZNVER1,
-	PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2 | PTA_SSE3
-	| PTA_SSE4A | PTA_CX16 | PTA_ABM | PTA_SSSE3 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX | PTA_AVX2
-	| PTA_BMI | PTA_BMI2 | PTA_F16C | PTA_FMA | PTA_PRFCHW
-	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT | PTA_FSGSBASE
-	| PTA_RDRND | PTA_MOVBE | PTA_MWAITX | PTA_ADX | PTA_RDSEED
-	| PTA_CLZERO | PTA_CLFLUSHOPT | PTA_XSAVEC | PTA_XSAVES
-	| PTA_SHA | PTA_LZCNT | PTA_POPCNT},
-      {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
-	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_PRFCHW
-	| PTA_FXSR | PTA_XSAVE},
-      {"btver2", PROCESSOR_BTVER2, CPU_BTVER2,
-	PTA_64BIT | PTA_MMX |  PTA_SSE  | PTA_SSE2 | PTA_SSE3
-	| PTA_SSSE3 | PTA_SSE4A |PTA_ABM | PTA_CX16 | PTA_SSE4_1
-	| PTA_SSE4_2 | PTA_AES | PTA_PCLMUL | PTA_AVX
-	| PTA_BMI | PTA_F16C | PTA_MOVBE | PTA_PRFCHW
-	| PTA_FXSR | PTA_XSAVE | PTA_XSAVEOPT},
-
-      {"generic", PROCESSOR_GENERIC, CPU_GENERIC,
-	PTA_64BIT
-	| PTA_HLE /* flags are only used for -march switch.  */ },
-    };
 
   /* -mrecip options.  */
   static struct
@@ -3727,7 +3407,6 @@ ix86_option_override_internal (bool main_args_p,
       { "vec-sqrt",  RECIP_MASK_VEC_SQRT },
     };
 
-  int const pta_size = ARRAY_SIZE (processor_alias_table);
 
   /* Turn off both OPTION_MASK_ABI_64 and OPTION_MASK_ABI_X32 if
      TARGET_64BIT_DEFAULT is true and TARGET_64BIT is false.  */
@@ -3815,8 +3494,7 @@ ix86_option_override_internal (bool main_args_p,
 	opts->x_ix86_tune_string = opts->x_ix86_arch_string;
       if (!opts->x_ix86_tune_string)
 	{
-	  opts->x_ix86_tune_string
-	    = processor_target_table[TARGET_CPU_DEFAULT].name;
+	  opts->x_ix86_tune_string = processor_names[TARGET_CPU_DEFAULT];
 	  ix86_tune_defaulted = 1;
 	}
 
@@ -4383,7 +4061,7 @@ ix86_option_override_internal (bool main_args_p,
 	}
     }
 
-  ix86_tune_cost = processor_target_table[ix86_tune].cost;
+  ix86_tune_cost = processor_cost_table[ix86_tune];
   /* TODO: ix86_cost should be chosen at instruction or function granuality
      so for cold code we use size_cost even in !optimize_size compilation.  */
   if (opts->x_optimize_size)
@@ -5180,7 +4858,7 @@ ix86_function_specific_restore (struct gcc_options *opts,
   opts->x_ix86_tune_memset_strategy = ptr->x_ix86_tune_memset_strategy;
   opts->x_ix86_tune_no_default = ptr->x_ix86_tune_no_default;
   opts->x_ix86_veclibabi_type = ptr->x_ix86_veclibabi_type;
-  ix86_tune_cost = processor_target_table[ix86_tune].cost;
+  ix86_tune_cost = processor_cost_table[ix86_tune];
   /* TODO: ix86_cost should be chosen at instruction or function granuality
      so for cold code we use size_cost even in !optimize_size compilation.  */
   if (opts->x_optimize_size)
@@ -5267,12 +4945,12 @@ ix86_function_specific_print (FILE *file, int indent,
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
 	   indent, "",
-	   ptr->arch, processor_target_table[ptr->arch].name);
+	   ptr->arch, processor_names[ptr->arch]);
 
   gcc_assert (ptr->tune < PROCESSOR_max);
   fprintf (file, "%*stune = %d (%s)\n",
 	   indent, "",
-	   ptr->tune, processor_target_table[ptr->tune].name);
+	   ptr->tune, processor_names[ptr->tune]);
 
   fprintf (file, "%*sbranch_cost = %d\n", indent, "", ptr->branch_cost);
 
@@ -8191,7 +7869,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       case X86_64_SSEDF_CLASS:
 	if (mode != BLKmode)
 	  return gen_reg_or_parallel (mode, orig_mode,
-				      SSE_REGNO (sse_regno));
+				      GET_SSE_REGNO (sse_regno));
 	break;
       case X86_64_X87_CLASS:
       case X86_64_COMPLEX_X87_CLASS:
@@ -8207,7 +7885,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[1] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 4
       && regclass[0] == X86_64_SSE_CLASS
       && regclass[1] == X86_64_SSEUP_CLASS
@@ -8215,7 +7893,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[3] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 8
       && regclass[0] == X86_64_SSE_CLASS
       && regclass[1] == X86_64_SSEUP_CLASS
@@ -8227,7 +7905,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
       && regclass[7] == X86_64_SSEUP_CLASS
       && mode != BLKmode)
     return gen_reg_or_parallel (mode, orig_mode,
-				SSE_REGNO (sse_regno));
+				GET_SSE_REGNO (sse_regno));
   if (n == 2
       && regclass[0] == X86_64_X87_CLASS
       && regclass[1] == X86_64_X87UP_CLASS)
@@ -8236,9 +7914,22 @@ construct_container (machine_mode mode, machine_mode orig_mode,
   if (n == 2
       && regclass[0] == X86_64_INTEGER_CLASS
       && regclass[1] == X86_64_INTEGER_CLASS
-      && (mode == CDImode || mode == TImode)
+      && (mode == CDImode || mode == TImode || mode == BLKmode)
       && intreg[0] + 1 == intreg[1])
-    return gen_rtx_REG (mode, intreg[0]);
+    {
+      if (mode == BLKmode)
+	{
+	  /* Use TImode for BLKmode values in 2 integer registers.  */
+	  exp[0] = gen_rtx_EXPR_LIST (VOIDmode,
+				      gen_rtx_REG (TImode, intreg[0]),
+				      GEN_INT (0));
+	  ret = gen_rtx_PARALLEL (mode, rtvec_alloc (1));
+	  XVECEXP (ret, 0, 0) = exp[0];
+	  return ret;
+	}
+      else
+	return gen_rtx_REG (mode, intreg[0]);
+    }
 
   /* Otherwise figure out the entries of the PARALLEL.  */
   for (i = 0; i < n; i++)
@@ -8274,7 +7965,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (SFmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
@@ -8282,7 +7973,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (DFmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (i*8));
 	    sse_regno++;
 	    break;
@@ -8328,7 +8019,7 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
 				   gen_rtx_REG (tmpmode,
-						SSE_REGNO (sse_regno)),
+						GET_SSE_REGNO (sse_regno)),
 				   GEN_INT (pos*8));
 	    sse_regno++;
 	    break;
@@ -9644,7 +9335,7 @@ setup_incoming_varargs_64 (CUMULATIVE_ARGS *cum)
 	  set_mem_alias_set (mem, set);
 	  set_mem_align (mem, GET_MODE_ALIGNMENT (smode));
 
-	  emit_move_insn (mem, gen_rtx_REG (smode, SSE_REGNO (i)));
+	  emit_move_insn (mem, gen_rtx_REG (smode, GET_SSE_REGNO (i)));
 	}
 
       emit_label (label);
@@ -10792,6 +10483,23 @@ output_indirect_thunk (unsigned int regno)
 
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, indirectlabel2);
 
+  /* The above call insn pushed a word to stack.  Adjust CFI info.  */
+  if (flag_asynchronous_unwind_tables && dwarf2out_do_frame ())
+    {
+      if (! dwarf2out_do_cfi_asm ())
+	{
+	  dw_cfi_ref xcfi = ggc_cleared_alloc<dw_cfi_node> ();
+	  xcfi->dw_cfi_opc = DW_CFA_advance_loc4;
+	  xcfi->dw_cfi_oprnd1.dw_cfi_addr = ggc_strdup (indirectlabel2);
+	  vec_safe_push (cfun->fde->dw_fde_cfi, xcfi);
+	}
+      dw_cfi_ref xcfi = ggc_cleared_alloc<dw_cfi_node> ();
+      xcfi->dw_cfi_opc = DW_CFA_def_cfa_offset;
+      xcfi->dw_cfi_oprnd1.dw_cfi_offset = 2 * UNITS_PER_WORD;
+      vec_safe_push (cfun->fde->dw_fde_cfi, xcfi);
+      dwarf2out_emit_cfi (xcfi);
+    }
+
   if (regno != INVALID_REGNUM)
     {
       /* MOV.  */
@@ -11184,15 +10892,6 @@ ix86_hard_regno_scratch_ok (unsigned int regno)
   return (!cfun->machine->no_caller_saved_registers
 	  || (!epilogue_completed
 	      && df_regs_ever_live_p (regno)));
-}
-
-/* Return true if register class CL should be an additional allocno
-   class.  */
-
-static bool
-ix86_additional_allocno_class_p (reg_class_t cl)
-{
-  return cl == MOD4_SSE_REGS;
 }
 
 /* Return TRUE if we need to save REGNO.  */
@@ -17684,8 +17383,7 @@ print_reg (rtx x, int code, FILE *file)
 
   if (regno == ARG_POINTER_REGNUM
       || regno == FRAME_POINTER_REGNUM
-      || regno == FPSR_REG
-      || regno == FPCR_REG)
+      || regno == FPSR_REG)
     {
       output_operand_lossage
 	("invalid use of register '%s'", reg_names[regno]);
@@ -19211,11 +18909,6 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
 	return mode;
       break;
 
-    case I387_MASK_PM:
-      if (mode == I387_CW_MASK_PM)
-	return mode;
-      break;
-
     default:
       gcc_unreachable ();
     }
@@ -19238,7 +18931,6 @@ ix86_mode_needed (int entity, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return ix86_i387_mode_needed (entity, insn);
     default:
       gcc_unreachable ();
@@ -19265,8 +18957,8 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
 
-  if (vzeroupper_operation (pat, VOIDmode)
-      || vzeroall_operation (pat, VOIDmode))
+  if (vzeroupper_pattern (pat, VOIDmode)
+      || vzeroall_pattern (pat, VOIDmode))
     return AVX_U128_CLEAN;
 
   /* We know that state is clean after CALL insn if there are no
@@ -19299,7 +18991,6 @@ ix86_mode_after (int entity, int mode, rtx_insn *insn)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return mode;
     default:
       gcc_unreachable ();
@@ -19352,7 +19043,6 @@ ix86_mode_entry (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19387,7 +19077,6 @@ ix86_mode_exit (int entity)
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       return I387_CW_ANY;
     default:
       gcc_unreachable ();
@@ -19437,12 +19126,6 @@ emit_i387_cw_initialization (int mode)
       emit_insn (gen_andhi3 (reg, reg, GEN_INT (~0x0c00)));
       emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0800)));
       slot = SLOT_CW_CEIL;
-      break;
-
-    case I387_CW_MASK_PM:
-      /* mask precision exception for nearbyint() */
-      emit_insn (gen_iorhi3 (reg, reg, GEN_INT (0x0020)));
-      slot = SLOT_CW_MASK_PM;
       break;
 
     default:
@@ -19500,7 +19183,6 @@ ix86_emit_mode_set (int entity, int mode, int prev_mode ATTRIBUTE_UNUSED,
     case I387_TRUNC:
     case I387_FLOOR:
     case I387_CEIL:
-    case I387_MASK_PM:
       if (mode != I387_CW_ANY
 	  && mode != I387_CW_UNINITIALIZED)
 	emit_i387_cw_initialization (mode);
@@ -22300,7 +21982,7 @@ static bool
 ix86_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
 {
   *p1 = FLAGS_REG;
-  *p2 = FPSR_REG;
+  *p2 = INVALID_REGNUM;
   return true;
 }
 
@@ -30548,21 +30230,6 @@ def_builtin_const2 (HOST_WIDE_INT mask, const char *name,
     TREE_READONLY (decl) = 1;
   else
     ix86_builtins_isa[(int) code].const_p = true;
-
-  return decl;
-}
-
-/* Like def_builtin, but also marks the function decl "pure".  */
-
-static inline tree
-def_builtin_pure2 (HOST_WIDE_INT mask, const char *name,
-		   enum ix86_builtin_func_type tcode, enum ix86_builtins code)
-{
-  tree decl = def_builtin2 (mask, name, tcode, code);
-  if (decl)
-    DECL_PURE_P (decl) = 1;
-  else
-    ix86_builtins_isa[(int) code].pure_p = true;
 
   return decl;
 }
@@ -39345,12 +39012,14 @@ ix86_register_priority (int hard_regno)
     return 1;
   /* New x86-64 int registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_INT_REG <= hard_regno && hard_regno <= LAST_REX_INT_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_INT_REG, LAST_REX_INT_REG))
     return 2;
   /* New x86-64 SSE registers result in bigger code size.  Discourage
      them.  */
-  if (FIRST_REX_SSE_REG <= hard_regno && hard_regno <= LAST_REX_SSE_REG)
+  if (IN_RANGE (hard_regno, FIRST_REX_SSE_REG, LAST_REX_SSE_REG))
     return 2;
+  if (IN_RANGE (hard_regno, FIRST_EXT_REX_SSE_REG, LAST_EXT_REX_SSE_REG))
+    return 1;
   /* Usage of AX register results in smaller code.  Prefer it.  */
   if (hard_regno == AX_REG)
     return 4;
@@ -39403,10 +39072,6 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
 	  /* Limit class to FP regs.  */
 	  if (FLOAT_CLASS_P (regclass))
 	    return FLOAT_REGS;
-	  else if (regclass == FP_TOP_SSE_REGS)
-	    return FP_TOP_REG;
-	  else if (regclass == FP_SECOND_SSE_REGS)
-	    return FP_SECOND_REG;
 	}
 
       return NO_REGS;
@@ -39452,14 +39117,7 @@ ix86_preferred_output_reload_class (rtx x, reg_class_t regclass)
     return MAYBE_SSE_CLASS_P (regclass) ? ALL_SSE_REGS : NO_REGS;
 
   if (IS_STACK_MODE (mode))
-    {
-      if (regclass == FP_TOP_SSE_REGS)
-	return FP_TOP_REG;
-      else if (regclass == FP_SECOND_SSE_REGS)
-	return FP_SECOND_REG;
-      else
-	return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
-    }
+    return FLOAT_CLASS_P (regclass) ? regclass : NO_REGS;
 
   return regclass;
 }
@@ -39987,16 +39645,11 @@ ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	      || VALID_AVX512F_SCALAR_MODE (mode)))
 	return true;
 
-      /* For AVX-5124FMAPS allow V64SFmode for special regnos.  */
+      /* For AVX-5124FMAPS or AVX-5124VNNIW
+	 allow V64SF and V64SI modes for special regnos.  */
       if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SFmode)
-	return true;
-
-      /* For AVX-5124VNNIW allow V64SImode for special regnos.  */
-      if ((TARGET_AVX5124FMAPS || TARGET_AVX5124VNNIW)
-	  && MOD4_SSE_REGNO_P (regno)
-	  && mode == V64SImode)
+	  && (mode == V64SFmode || mode == V64SImode)
+	  && MOD4_SSE_REGNO_P (regno))
 	return true;
 
       /* TODO check for QI/HI scalars.  */
@@ -40124,6 +39777,10 @@ ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
   /* If MODE2 is only appropriate for an SSE register, then tie with
      any other mode acceptable to SSE registers.  */
+  if (GET_MODE_SIZE (mode2) == 64
+      && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
+    return (GET_MODE_SIZE (mode1) == 64
+	    && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode1));
   if (GET_MODE_SIZE (mode2) == 32
       && ix86_hard_regno_mode_ok (FIRST_SSE_REG, mode2))
     return (GET_MODE_SIZE (mode1) == 32
@@ -41539,6 +41196,10 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 {
   const char *mcount_name = (flag_fentry ? MCOUNT_NAME_BEFORE_PROLOGUE
 					 : MCOUNT_NAME);
+
+  if (cfun->machine->endbr_queued_at_entrance)
+    fprintf (file, "\t%s\n", TARGET_64BIT ? "endbr64" : "endbr32");
+
   if (TARGET_64BIT)
     {
 #ifndef NO_PROFILE_COUNTERS
@@ -44008,9 +43669,6 @@ ix86_md_asm_adjust (vec<rtx> &outputs, vec<rtx> &/*inputs*/,
 		    vec<const char *> &constraints,
 		    vec<rtx> &clobbers, HARD_REG_SET &clobbered_regs)
 {
-  clobbers.safe_push (gen_rtx_REG (CCFPmode, FPSR_REG));
-  SET_HARD_REG_BIT (clobbered_regs, FPSR_REG);
-
   bool saw_asm_flag = false;
 
   start_sequence ();
@@ -44269,20 +43927,20 @@ void ix86_emit_i387_log1p (rtx op0, rtx op1)
   rtx test;
 
   emit_insn (gen_absxf2 (tmp, op1));
+  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   test = gen_rtx_GE (VOIDmode, tmp,
     const_double_from_real_value (
        REAL_VALUE_ATOF ("0.29289321881345247561810596348408353", XFmode),
        XFmode));
-  emit_jump_insn (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
+  emit_jump_insn
+    (gen_cbranchxf4 (test, XEXP (test, 0), XEXP (test, 1), label1));
 
-  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   emit_insn (gen_fyl2xp1xf3_i387 (op0, op1, tmp2));
   emit_jump (label2);
 
   emit_label (label1);
   emit_move_insn (tmp, CONST1_RTX (XFmode));
   emit_insn (gen_addxf3 (tmp, op1, tmp));
-  emit_move_insn (tmp2, standard_80387_constant_rtx (4)); /* fldln2 */
   emit_insn (gen_fyl2xxf3_i387 (op0, tmp, tmp2));
 
   emit_label (label2);
@@ -51440,9 +51098,6 @@ ix86_run_selftests (void)
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
-
-#undef TARGET_ADDITIONAL_ALLOCNO_CLASS_P
-#define TARGET_ADDITIONAL_ALLOCNO_CLASS_P ix86_additional_allocno_class_p
 
 #undef TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID
 #define TARGET_ADDR_SPACE_ZERO_ADDRESS_VALID ix86_addr_space_zero_address_valid

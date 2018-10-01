@@ -147,7 +147,6 @@ class temp_dump_context
   pretty_printer m_pp;
   dump_context m_context;
   dump_context *m_saved;
-  bool m_saved_flag_remarks;
 };
 
 #endif /* CHECKING_P */

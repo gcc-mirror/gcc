@@ -39,3 +39,4 @@ f3 (void)
    need a frame pointer.  Otherwise neither should.  */
 /* { dg-final { scan-rtl-dump-times "Stack clash no frame pointer needed" 2 "pro_and_epilogue" { target { ! frame_pointer_for_non_leaf } } } } */
 /* { dg-final { scan-rtl-dump-times "Stack clash frame pointer needed" 2 "pro_and_epilogue" { target { frame_pointer_for_non_leaf } } } } */
+/* { dg-final { scan-rtl-dump-times "Stack clash no probe small stack adjustment in prologue" 2 "pro_and_epilogue" { target { aarch64*-*-* } } } } */

@@ -218,7 +218,7 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
    range_label_for_type_mismatch.  */
 
 label_text
-range_label_for_type_mismatch::get_text () const
+range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
     return label_text (NULL, false);

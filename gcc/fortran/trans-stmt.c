@@ -841,7 +841,7 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
   if (flag_coarray == GFC_FCOARRAY_LIB)
     {
       tree tmp, token, image_index, errmsg, errmsg_len;
-      tree index = size_zero_node;
+      tree index = build_zero_cst (gfc_array_index_type);
       tree caf_decl = gfc_get_tree_for_caf_expr (code->expr1);
 
       if (code->expr1->symtree->n.sym->ts.type != BT_DERIVED
@@ -884,27 +884,25 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 	  desc = argse.expr;
 	  *ar = ar2;
 
-	  extent = integer_one_node;
+	  extent = build_one_cst (gfc_array_index_type);
 	  for (i = 0; i < ar->dimen; i++)
 	    {
 	      gfc_init_se (&argse, NULL);
-	      gfc_conv_expr_type (&argse, ar->start[i], integer_type_node);
+	      gfc_conv_expr_type (&argse, ar->start[i], gfc_array_index_type);
 	      gfc_add_block_to_block (&argse.pre, &argse.pre);
 	      lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	      tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				     integer_type_node, argse.expr,
-				     fold_convert(integer_type_node, lbound));
+				     TREE_TYPE (lbound), argse.expr, lbound);
 	      tmp = fold_build2_loc (input_location, MULT_EXPR,
-				     integer_type_node, extent, tmp);
+				     TREE_TYPE (tmp), extent, tmp);
 	      index = fold_build2_loc (input_location, PLUS_EXPR,
-				       integer_type_node, index, tmp);
+				       TREE_TYPE (tmp), index, tmp);
 	      if (i < ar->dimen - 1)
 		{
 		  ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
 		  tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-		  tmp = fold_convert (integer_type_node, tmp);
 		  extent = fold_build2_loc (input_location, MULT_EXPR,
-					    integer_type_node, extent, tmp);
+					    TREE_TYPE (tmp), extent, tmp);
 		}
 	    }
 	}
@@ -938,6 +936,7 @@ gfc_trans_lock_unlock (gfc_code *code, gfc_exec_op op)
 	  lock_acquired = gfc_create_var (integer_type_node, "acquired");
 	}
 
+      index = fold_convert (size_type_node, index);
       if (op == EXEC_LOCK)
 	tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_lock, 7,
                                    token, index, image_index,
@@ -1038,7 +1037,7 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
 
   gfc_start_block (&se.pre);
   tree tmp, token, image_index, errmsg, errmsg_len;
-  tree index = size_zero_node;
+  tree index = build_zero_cst (gfc_array_index_type);
   tree caf_decl = gfc_get_tree_for_caf_expr (code->expr1);
 
   if (code->expr1->symtree->n.sym->ts.type != BT_DERIVED
@@ -1083,27 +1082,25 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
       desc = argse.expr;
       *ar = ar2;
 
-      extent = integer_one_node;
+      extent = build_one_cst (gfc_array_index_type);
       for (i = 0; i < ar->dimen; i++)
 	{
 	  gfc_init_se (&argse, NULL);
-	  gfc_conv_expr_type (&argse, ar->start[i], integer_type_node);
+	  gfc_conv_expr_type (&argse, ar->start[i], gfc_array_index_type);
 	  gfc_add_block_to_block (&argse.pre, &argse.pre);
 	  lbound = gfc_conv_descriptor_lbound_get (desc, gfc_rank_cst[i]);
 	  tmp = fold_build2_loc (input_location, MINUS_EXPR,
-				 integer_type_node, argse.expr,
-				 fold_convert(integer_type_node, lbound));
+				 TREE_TYPE (lbound), argse.expr, lbound);
 	  tmp = fold_build2_loc (input_location, MULT_EXPR,
-				 integer_type_node, extent, tmp);
+				 TREE_TYPE (tmp), extent, tmp);
 	  index = fold_build2_loc (input_location, PLUS_EXPR,
-				   integer_type_node, index, tmp);
+				   TREE_TYPE (tmp), index, tmp);
 	  if (i < ar->dimen - 1)
 	    {
 	      ubound = gfc_conv_descriptor_ubound_get (desc, gfc_rank_cst[i]);
 	      tmp = gfc_conv_array_extent_dim (lbound, ubound, NULL);
-	      tmp = fold_convert (integer_type_node, tmp);
 	      extent = fold_build2_loc (input_location, MULT_EXPR,
-					integer_type_node, extent, tmp);
+					TREE_TYPE (tmp), extent, tmp);
 	    }
 	}
     }
@@ -1130,6 +1127,7 @@ gfc_trans_event_post_wait (gfc_code *code, gfc_exec_op op)
       stat = gfc_create_var (integer_type_node, "stat");
     }
 
+  index = fold_convert (size_type_node, index);
   if (op == EXEC_EVENT_POST)
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_event_post, 6,
 			       token, index, image_index,
@@ -5996,7 +5994,8 @@ gfc_trans_allocate (gfc_code * code)
       if ((code->expr3->ts.type == BT_DERIVED
 	   || code->expr3->ts.type == BT_CLASS)
 	  && (code->expr3->expr_type != EXPR_VARIABLE || temp_obj_created)
-	  && code->expr3->ts.u.derived->attr.alloc_comp)
+	  && code->expr3->ts.u.derived->attr.alloc_comp
+	  && !code->expr3->must_finalize)
 	{
 	  tmp = gfc_deallocate_alloc_comp (code->expr3->ts.u.derived,
 					   expr3, code->expr3->rank);

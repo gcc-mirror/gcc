@@ -4417,6 +4417,7 @@ package body Exp_Ch4 is
             Set_Storage_Pool (N, Pool);
 
             if Is_RTE (Pool, RE_SS_Pool) then
+               Check_Restriction (No_Secondary_Stack, N);
                Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
 
             --  In the case of an allocator for a simple storage pool, locate
@@ -11692,6 +11693,11 @@ package body Exp_Ch4 is
 
             elsif Is_Integer_Type (Etype (N)) then
                Expand_Convert_Fixed_To_Integer (N);
+
+               --  The result of the conversion might need a range check,
+               --   so do not assume that the result is in bounds.
+
+               Set_Etype (N, Base_Type (Target_Type));
 
             else
                pragma Assert (Is_Floating_Point_Type (Etype (N)));

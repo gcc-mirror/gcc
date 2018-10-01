@@ -2701,16 +2701,90 @@ imm_store_chain_info::coalesce_immediate_stores ()
 		    merged_store->start + merged_store->width - 1))
 	{
 	  /* Only allow overlapping stores of constants.  */
-	  if (info->rhs_code == INTEGER_CST
-	      && merged_store->stores[0]->rhs_code == INTEGER_CST
-	      && check_no_overlap (m_store_info, i, INTEGER_CST,
-				   MAX (merged_store->last_order, info->order),
-				   MAX (merged_store->start
-					+ merged_store->width,
-					info->bitpos + info->bitsize)))
+	  if (info->rhs_code == INTEGER_CST)
 	    {
-	      merged_store->merge_overlapping (info);
-	      goto done;
+	      bool only_constants = true;
+	      store_immediate_info *infoj;
+	      unsigned int j;
+	      FOR_EACH_VEC_ELT (merged_store->stores, j, infoj)
+		if (infoj->rhs_code != INTEGER_CST)
+		  {
+		    only_constants = false;
+		    break;
+		  }
+	      unsigned int last_order
+		= MAX (merged_store->last_order, info->order);
+	      unsigned HOST_WIDE_INT end
+		= MAX (merged_store->start + merged_store->width,
+		       info->bitpos + info->bitsize);
+	      if (only_constants
+		  && check_no_overlap (m_store_info, i, INTEGER_CST,
+				       last_order, end))
+		{
+		  /* check_no_overlap call above made sure there are no
+		     overlapping stores with non-INTEGER_CST rhs_code
+		     in between the first and last of the stores we've
+		     just merged.  If there are any INTEGER_CST rhs_code
+		     stores in between, we need to merge_overlapping them
+		     even if in the sort_by_bitpos order there are other
+		     overlapping stores in between.  Keep those stores as is.
+		     Example:
+			MEM[(int *)p_28] = 0;
+			MEM[(char *)p_28 + 3B] = 1;
+			MEM[(char *)p_28 + 1B] = 2;
+			MEM[(char *)p_28 + 2B] = MEM[(char *)p_28 + 6B];
+		     We can't merge the zero store with the store of two and
+		     not merge anything else, because the store of one is
+		     in the original order in between those two, but in
+		     store_by_bitpos order it comes after the last store that
+		     we can't merge with them.  We can merge the first 3 stores
+		     and keep the last store as is though.  */
+		  unsigned int len = m_store_info.length (), k = i;
+		  for (unsigned int j = i + 1; j < len; ++j)
+		    {
+		      store_immediate_info *info2 = m_store_info[j];
+		      if (info2->bitpos >= end)
+			break;
+		      if (info2->order < last_order)
+			{
+			  if (info2->rhs_code != INTEGER_CST)
+			    {
+			      /* Normally check_no_overlap makes sure this
+				 doesn't happen, but if end grows below, then
+				 we need to process more stores than
+				 check_no_overlap verified.  Example:
+				    MEM[(int *)p_5] = 0;
+				    MEM[(short *)p_5 + 3B] = 1;
+				    MEM[(char *)p_5 + 4B] = _9;
+				    MEM[(char *)p_5 + 2B] = 2;  */
+			      k = 0;
+			      break;
+			    }
+			  k = j;
+			  end = MAX (end, info2->bitpos + info2->bitsize);
+			}
+		    }
+
+		  if (k != 0)
+		    {
+		      merged_store->merge_overlapping (info);
+
+		      for (unsigned int j = i + 1; j <= k; j++)
+			{
+			  store_immediate_info *info2 = m_store_info[j];
+			  gcc_assert (info2->bitpos < end);
+			  if (info2->order < last_order)
+			    {
+			      gcc_assert (info2->rhs_code == INTEGER_CST);
+			      merged_store->merge_overlapping (info2);
+			    }
+			  /* Other stores are kept and not merged in any
+			     way.  */
+			}
+		      ignore = k;
+		      goto done;
+		    }
+		}
 	    }
 	}
       /* |---store 1---||---store 2---|

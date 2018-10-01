@@ -455,7 +455,8 @@ get_format_string (tree format, location_t *ploc)
 }
 
 /* For convenience and brevity, shorter named entrypoints of
-   format_warning_at_substring and format_warning_at_substring_n.
+   format_string_diagnostic_t::emit_warning_va and
+   format_string_diagnostic_t::emit_warning_n_va.
    These have to be functions with the attribute so that exgettext
    works properly.  */
 
@@ -464,10 +465,11 @@ ATTRIBUTE_GCC_DIAG (5, 6)
 fmtwarn (const substring_loc &fmt_loc, location_t param_loc,
 	 const char *corrected_substring, int opt, const char *gmsgid, ...)
 {
+  format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
+				   corrected_substring);
   va_list ap;
   va_start (ap, gmsgid);
-  bool warned = format_warning_va (fmt_loc, NULL, param_loc, NULL,
-				   corrected_substring, opt, gmsgid, &ap);
+  bool warned = diag.emit_warning_va (opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -479,12 +481,12 @@ fmtwarn_n (const substring_loc &fmt_loc, location_t param_loc,
 	   const char *corrected_substring, int opt, unsigned HOST_WIDE_INT n,
 	   const char *singular_gmsgid, const char *plural_gmsgid, ...)
 {
+  format_string_diagnostic_t diag (fmt_loc, NULL, param_loc, NULL,
+				   corrected_substring);
   va_list ap;
   va_start (ap, plural_gmsgid);
-  bool warned = format_warning_n_va (fmt_loc, NULL, param_loc, NULL,
-				     corrected_substring,
-				     opt, n, singular_gmsgid, plural_gmsgid,
-				     &ap);
+  bool warned = diag.emit_warning_n_va (opt, n, singular_gmsgid, plural_gmsgid,
+					&ap);
   va_end (ap);
 
   return warned;
@@ -1998,13 +2000,6 @@ get_string_length (tree str, unsigned eltsize)
 {
   if (!str)
     return fmtresult ();
-
-  if (tree slen = c_strlen (str, 1, eltsize))
-    {
-      /* Simply return the length of the string.  */
-      fmtresult res (tree_to_shwi (slen));
-      return res;
-    }
 
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of

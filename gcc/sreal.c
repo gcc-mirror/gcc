@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 void
 sreal::dump (FILE *file) const
 {
-  fprintf (file, "(%" PRIi64 " * 2^%d)", m_sig, m_exp);
+  fprintf (file, "(%" PRIi64 " * 2^%d)", (int64_t)m_sig, m_exp);
 }
 
 DEBUG_FUNCTION void
@@ -114,7 +114,7 @@ sreal::to_int () const
   if (m_exp >= SREAL_PART_BITS)
     return sign * INTTYPE_MAXIMUM (int64_t);
   if (m_exp > 0)
-    return sign * (SREAL_ABS (m_sig) << m_exp);
+    return sign * (SREAL_ABS ((int64_t)m_sig) << m_exp);
   if (m_exp < 0)
     return m_sig >> -m_exp;
   return m_sig;
@@ -167,7 +167,7 @@ sreal::operator+ (const sreal &other) const
       bb = &tmp;
     }
 
-  r_sig = a_p->m_sig + bb->m_sig;
+  r_sig = a_p->m_sig + (int64_t)bb->m_sig;
   sreal r (r_sig, r_exp);
   return r;
 }
@@ -211,7 +211,7 @@ sreal::operator- (const sreal &other) const
       bb = &tmp;
     }
 
-  r_sig = sign * ((int64_t) a_p->m_sig - bb->m_sig);
+  r_sig = sign * ((int64_t) a_p->m_sig - (int64_t)bb->m_sig);
   sreal r (r_sig, r_exp);
   return r;
 }
@@ -277,15 +277,15 @@ namespace selftest {
 static void
 sreal_verify_basics (void)
 {
-  sreal minimum = INT_MIN;
-  sreal maximum = INT_MAX;
+  sreal minimum = INT_MIN/2;
+  sreal maximum = INT_MAX/2;
 
   sreal seven = 7;
   sreal minus_two = -2;
   sreal minus_nine = -9;
 
-  ASSERT_EQ (INT_MIN, minimum.to_int ());
-  ASSERT_EQ (INT_MAX, maximum.to_int ());
+  ASSERT_EQ (INT_MIN/2, minimum.to_int ());
+  ASSERT_EQ (INT_MAX/2, maximum.to_int ());
 
   ASSERT_FALSE (minus_two < minus_two);
   ASSERT_FALSE (seven < seven);

@@ -1,3 +1,50 @@
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
+2018-09-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxcache.c: New file.  Provide __clear_cache, based on
+	the cacheTextUpdate VxWorks service.
+	* config/t-vxworks (LIB2ADD): Add vxcache.c.
+	(LIB2FUNCS_EXCLUDE): Add _clear_cache.
+	* config/t-vxwoks7: Likewise.
+
+2018-09-21  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (crc32_unsigned): Remove.
+	(gcov_histogram_insert): Likewise.
+	(gcov_compute_histogram): Likewise.
+	(compute_summary): Simplify rapidly.
+	(merge_one_data): Do not handle PROGRAM_SUMMARY tag.
+	(merge_summary): Rapidly simplify.
+	(dump_one_gcov): Ignore gcov_summary.
+	(gcov_do_dump): Do not handle program summary, it's not
+	used.
+	* libgcov-util.c (tag_summary): Remove.
+	(read_gcda_finalize): Fix coding style.
+	(read_gcda_file): Initialize curr_object_summary.
+	(compute_summary): Remove.
+	(calculate_overlap): Remove settings of run_max.
+
+2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/linux-unwind.h (struct _rt_sigframe): Use struct
+	ucontext_t type instead.
+	(nds32_fallback_frame_state): Remove struct _sigframe statement.
+
+2018-09-21  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/t-nds32-glibc: New file.
+
+2018-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_ld_v2_maps): New test.
+	* configure: Regenerate.
+	* Makefile.in (solaris_ld_v2_maps): New variable.
+	* config/t-slibgcc-sld (libgcc-unwind.map): Emit v2 mapfile syntax
+	if supported.
+
 2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86951

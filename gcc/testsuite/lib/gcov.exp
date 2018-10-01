@@ -133,6 +133,7 @@ proc verify-intermediate { testname testcase file } {
 	fail "$testname expected 'branch:' tag not found"
 	incr failed
     }
+    close $fd
     return $failed
 }
 

@@ -849,10 +849,22 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
   else
     {
       /* If none of the fancy stuff works, the span is the element
-	 size of the array.  */
+	 size of the array. Attempt to deal with unbounded character
+	 types if possible. Otherwise, return NULL_TREE.  */
       tmp = gfc_get_element_type (TREE_TYPE (desc));
-      tmp = fold_convert (gfc_array_index_type,
-			  size_in_bytes (tmp));
+      if (tmp && TREE_CODE (tmp) == ARRAY_TYPE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (tmp)) == NULL_TREE)
+	{
+	  if (expr->expr_type == EXPR_VARIABLE
+	      && expr->ts.type == BT_CHARACTER)
+	    tmp = fold_convert (gfc_array_index_type,
+				gfc_get_expr_charlen (expr));
+	  else
+	    tmp = NULL_TREE;
+	}
+      else
+	tmp = fold_convert (gfc_array_index_type,
+			    size_in_bytes (tmp));
     }
   return tmp;
 }
@@ -3411,14 +3423,12 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar)
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
      gfc_build_array_ref.  */
-  if (is_pointer_array (info->descriptor))
+  if (is_pointer_array (info->descriptor)
+      || (expr && expr->ts.deferred && info->descriptor
+	  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor))))
     {
       if (TREE_CODE (info->descriptor) == COMPONENT_REF)
-	{
-	  decl = gfc_evaluate_now (info->descriptor, &se->pre);
-	  GFC_DECL_PTR_ARRAY_P (decl) = 1;
-	  TREE_USED (decl) = 1;
-	}
+	decl = info->descriptor;
       else if (TREE_CODE (info->descriptor) == INDIRECT_REF)
 	decl = TREE_OPERAND (info->descriptor, 0);
 
@@ -3659,11 +3669,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
       && is_pointer_array (se->expr))
     {
       if (TREE_CODE (se->expr) == COMPONENT_REF)
-	{
-	  decl = gfc_evaluate_now (se->expr, &se->pre);
-	  GFC_DECL_PTR_ARRAY_P (decl) = 1;
-	  TREE_USED (decl) = 1;
-	}
+	decl = se->expr;
       else if (TREE_CODE (se->expr) == INDIRECT_REF)
 	decl = TREE_OPERAND (se->expr, 0);
       else
@@ -3672,7 +3678,16 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   else if (expr->ts.deferred
 	   || (sym->ts.type == BT_CHARACTER
 	       && sym->attr.select_type_temporary))
-    decl = sym->backend_decl;
+    {
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se->expr)))
+	{
+	  decl = se->expr;
+	  if (TREE_CODE (decl) == INDIRECT_REF)
+	    decl = TREE_OPERAND (decl, 0);
+	}
+      else
+	decl = sym->backend_decl;
+    }
   else if (sym->ts.type == BT_CLASS)
     decl = NULL_TREE;
 
@@ -5757,6 +5772,19 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
   overflow = integer_zero_node;
 
+  if (expr->ts.type == BT_CHARACTER
+      && TREE_CODE (se->string_length) == COMPONENT_REF
+      && expr->ts.u.cl->backend_decl != se->string_length)
+    {
+      if (VAR_P (expr->ts.u.cl->backend_decl))
+	gfc_add_modify (&se->pre, expr->ts.u.cl->backend_decl,
+			fold_convert (TREE_TYPE (expr->ts.u.cl->backend_decl),
+				      se->string_length));
+      else
+	expr->ts.u.cl->backend_decl = gfc_evaluate_now (se->string_length,
+							&se->pre);
+    }
+
   gfc_init_block (&set_descriptor_block);
   /* Take the corank only from the actual ref and not from the coref.  The
      later will mislead the generation of the array dimensions for allocatable/
@@ -5846,10 +5874,26 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
   /* Pointer arrays need the span field to be set.  */
   if (is_pointer_array (se->expr)
       || (expr->ts.type == BT_CLASS
-	  && CLASS_DATA (expr)->attr.class_pointer))
+	  && CLASS_DATA (expr)->attr.class_pointer)
+      || (expr->ts.type == BT_CHARACTER
+	  && TREE_CODE (se->string_length) == COMPONENT_REF))
     {
       if (expr3 && expr3_elem_size != NULL_TREE)
 	tmp = expr3_elem_size;
+      else if (se->string_length
+	       && TREE_CODE (se->string_length) == COMPONENT_REF)
+	{
+	  if (expr->ts.kind != 1)
+	    {
+	      tmp = build_int_cst (gfc_array_index_type, expr->ts.kind);
+	      tmp = fold_build2_loc (input_location, MULT_EXPR,
+				    gfc_array_index_type, tmp,
+				    fold_convert (gfc_array_index_type,
+						  se->string_length));
+	    }
+	  else
+	    tmp = se->string_length;
+	}
       else
 	tmp = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (se->expr)));
       tmp = fold_convert (gfc_array_index_type, tmp);
@@ -5964,6 +6008,26 @@ gfc_conv_array_initializer (tree type, gfc_expr * expr)
 	    {
 	    case EXPR_CONSTANT:
 	      gfc_conv_constant (&se, c->expr);
+
+	      /* See gfortran.dg/charlen_15.f90 for instance.  */
+	      if (TREE_CODE (se.expr) == STRING_CST
+		  && TREE_CODE (type) == ARRAY_TYPE)
+		{
+		  tree atype = type;
+		  while (TREE_CODE (TREE_TYPE (atype)) == ARRAY_TYPE)
+		    atype = TREE_TYPE (atype);
+		  if (TREE_CODE (TREE_TYPE (atype)) == INTEGER_TYPE
+		      && tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (se.expr)))
+			 > tree_to_uhwi (TYPE_SIZE_UNIT (atype)))
+		    {
+		      unsigned HOST_WIDE_INT size
+			= tree_to_uhwi (TYPE_SIZE_UNIT (atype));
+		      const char *p = TREE_STRING_POINTER (se.expr);
+
+		      se.expr = build_string (size, p);
+		      TREE_TYPE (se.expr) = atype;
+		    }
+		}
 	      break;
 
 	    case EXPR_STRUCTURE:
@@ -7062,7 +7126,8 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
 	      /* ....and set the span field.  */
 	      tmp = gfc_get_array_span (desc, expr);
-	      gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
+	      if (tmp != NULL_TREE && !integer_zerop (tmp))
+		gfc_conv_descriptor_span_set (&se->pre, se->expr, tmp);
 	    }
 	  else if (se->want_pointer)
 	    {
@@ -7332,13 +7397,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       desc = info->descriptor;
       if (se->direct_byref && !se->byref_noassign)
 	{
-	  /* For pointer assignments we fill in the destination....  */
+	  /* For pointer assignments we fill in the destination.  */
 	  parm = se->expr;
 	  parmtype = TREE_TYPE (parm);
-
-	  /* ....and set the span field.  */
-	  tmp = gfc_get_array_span (desc, expr);
-	  gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 	}
       else
 	{
@@ -7375,6 +7436,11 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 		}
 	    }
 	}
+
+      /* Set the span field.  */
+      tmp = gfc_get_array_span (desc, expr);
+      if (tmp != NULL_TREE)
+	gfc_conv_descriptor_span_set (&loop.pre, parm, tmp);
 
       offset = gfc_index_zero_node;
 
@@ -9508,8 +9574,12 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   sym = expr->symtree->n.sym;
 
+  if (sym->attr.associate_var && !expr->ref)
+    return false;
+
   /* An allocatable class variable with no reference.  */
   if (sym->ts.type == BT_CLASS
+      && !sym->attr.associate_var
       && CLASS_DATA (sym)->attr.allocatable
       && expr->ref && expr->ref->type == REF_COMPONENT
       && strcmp (expr->ref->u.c.component->name, "_data") == 0
@@ -9518,9 +9588,10 @@ gfc_is_reallocatable_lhs (gfc_expr *expr)
 
   /* An allocatable variable.  */
   if (sym->attr.allocatable
-	&& expr->ref
-	&& expr->ref->type == REF_ARRAY
-	&& expr->ref->u.ar.type == AR_FULL)
+      && !sym->attr.associate_var
+      && expr->ref
+      && expr->ref->type == REF_ARRAY
+      && expr->ref->u.ar.type == AR_FULL)
     return true;
 
   /* All that can be left are allocatable components.  */
@@ -9921,7 +9992,8 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
     {
       if (expr2->ts.deferred)
 	{
-	  if (VAR_P (expr2->ts.u.cl->backend_decl))
+	  if (expr2->ts.u.cl->backend_decl
+	      && VAR_P (expr2->ts.u.cl->backend_decl))
 	    tmp = expr2->ts.u.cl->backend_decl;
 	  else
 	    tmp = rss->info->string_length;
@@ -9933,6 +10005,15 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
 	      && expr2->value.op.op == INTRINSIC_CONCAT)
 	    {
 	      tmp = concat_str_length (expr2);
+	      expr2->ts.u.cl->backend_decl = gfc_evaluate_now (tmp, &fblock);
+	    }
+	  else if (!tmp && expr2->ts.u.cl->length)
+	    {
+	      gfc_se tmpse;
+	      gfc_init_se (&tmpse, NULL);
+	      gfc_conv_expr_type (&tmpse, expr2->ts.u.cl->length,
+				  gfc_charlen_type_node);
+	      tmp = tmpse.expr;
 	      expr2->ts.u.cl->backend_decl = gfc_evaluate_now (tmp, &fblock);
 	    }
 	  tmp = fold_convert (TREE_TYPE (expr1->ts.u.cl->backend_decl), tmp);

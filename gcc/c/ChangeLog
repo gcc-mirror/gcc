@@ -1,3 +1,46 @@
+2018-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* c-typeck.c (build_binary_op): Use excess precision for
+	comparisons of integers and floating-point for C11 and later.
+
+2018-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/87347
+	* c-parser.c (warn_for_abs): Bail out if TYPE_ARG_TYPES is NULL.  Fix
+        comment.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (range_label_for_type_mismatch::get_text):
+	Update for new param.
+	* c-typeck.c (maybe_range_label_for_tree_type_mismatch::get_text):
+	Likewise.
+
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* c-parser.c: (warn_for_abs): New function.
+	(c_parser_postfix_expression_after_primary): Call it.
+
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-typeck.c (digest_init): Shorten overlength strings.
+
+2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call complete_flexible_array_elts.
+
+2018-09-02  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-decl.c (finish_decl): Call braced_list_to_string here ...
+	* c-parser.c (c_parser_declaration_or_fndef): ... instead of here.
+
+2018-08-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	* gimple-parser.c (c_parser_gimple_binary_expression): Accept infix
+	"__MULT_HIGHPART" for MULT_HIGHPART_EXPR.
+
 2018-08-27  David Malcolm  <dmalcolm@redhat.com>
 
 	PR 87091

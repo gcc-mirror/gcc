@@ -172,6 +172,13 @@
   A constraint that matches the immediate constant -1."
   (match_test "op == constm1_rtx"))
 
+(define_constraint "Ulc"
+ "@internal
+ A constraint that matches a constant integer whose bits are consecutive ones
+ from the MSB."
+ (and (match_code "const_int")
+      (match_test "aarch64_high_bits_all_ones_p (ival)")))
+
 (define_constraint "Usv"
   "@internal
    A constraint that matches a VG-based constant that can be loaded by
@@ -217,6 +224,11 @@
  "A memory address which uses a single base register with no offset."
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
+
+(define_memory_constraint "Ust"
+  "@internal
+  A memory address with 9bit unscaled offset."
+  (match_operand 0 "aarch64_9bit_offset_memory_operand"))
 
 (define_memory_constraint "Ump"
   "@internal

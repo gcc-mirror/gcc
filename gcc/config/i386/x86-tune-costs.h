@@ -111,6 +111,10 @@ struct processor_costs ix86_size_cost = {/* costs for tuning for size */
   ix86_size_memset,
   COSTS_N_BYTES (1),			/* cond_taken_branch_cost.  */
   COSTS_N_BYTES (1),			/* cond_not_taken_branch_cost.  */
+  NULL,					/* Loop alignment.  */
+  NULL,					/* Jump alignment.  */
+  NULL,					/* Label alignment.  */
+  NULL,					/* Func alignment.  */
 };
 
 /* Processor costs (relative to an add) */
@@ -197,6 +201,10 @@ struct processor_costs i386_cost = {	/* 386 specific costs */
   i386_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "4",					/* Loop alignment.  */
+  "4",					/* Jump alignment.  */
+  NULL,					/* Label alignment.  */
+  "4",					/* Func alignment.  */
 };
 
 static stringop_algs i486_memcpy[2] = {
@@ -284,6 +292,10 @@ struct processor_costs i486_cost = {	/* 486 specific costs */
   i486_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16",					/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 static stringop_algs pentium_memcpy[2] = {
@@ -369,6 +381,10 @@ struct processor_costs pentium_cost = {
   pentium_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:8:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 static const
@@ -447,6 +463,10 @@ struct processor_costs lakemont_cost = {
   pentium_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:8:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* PentiumPro has optimized rep instructions for blocks aligned by 8 bytes
@@ -540,6 +560,10 @@ struct processor_costs pentiumpro_cost = {
   pentiumpro_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 static stringop_algs geode_memcpy[2] = {
@@ -625,6 +649,10 @@ struct processor_costs geode_cost = {
   geode_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  NULL,					/* Loop alignment.  */
+  NULL,					/* Jump alignment.  */
+  NULL,					/* Label alignment.  */
+  NULL,					/* Func alignment.  */
 };
 
 static stringop_algs k6_memcpy[2] = {
@@ -712,6 +740,10 @@ struct processor_costs k6_cost = {
   k6_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "32:8:8",				/* Loop alignment.  */
+  "32:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "32",					/* Func alignment.  */
 };
 
 /* For some reason, Athlon deals better with REP prefix (relative to loops)
@@ -800,6 +832,10 @@ struct processor_costs athlon_cost = {
   athlon_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:8:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* K8 has optimized REP instruction for medium sized blocks, but for very
@@ -897,6 +933,10 @@ struct processor_costs k8_cost = {
   k8_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:8:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* AMDFAM10 has optimized REP instruction for medium sized blocks, but for
@@ -1001,6 +1041,10 @@ struct processor_costs amdfam10_cost = {
   amdfam10_memset,
   COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "32:25:8",				/* Loop alignment.  */
+  "32:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "32",					/* Func alignment.  */
 };
 
 /*  BDVER1 has optimized REP instruction for medium sized blocks, but for
@@ -1099,6 +1143,10 @@ const struct processor_costs bdver1_cost = {
   bdver1_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 /*  BDVER2 has optimized REP instruction for medium sized blocks, but for
@@ -1198,6 +1246,10 @@ const struct processor_costs bdver2_cost = {
   bdver2_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 
@@ -1296,6 +1348,10 @@ struct processor_costs bdver3_cost = {
   bdver3_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 /*  BDVER4 has optimized REP instruction for medium sized blocks, but for
@@ -1393,6 +1449,10 @@ struct processor_costs bdver4_cost = {
   bdver4_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 
@@ -1513,6 +1573,10 @@ struct processor_costs znver1_cost = {
   znver1_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16",					/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* skylake_cost should produce code tuned for Skylake familly of CPUs.  */
@@ -1605,6 +1669,10 @@ struct processor_costs skylake_cost = {
   skylake_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
   /* BTVER1 has optimized REP instruction for medium sized blocks, but for
      very small blocks it is better to use loop. For large blocks, libcall can
@@ -1694,6 +1762,10 @@ const struct processor_costs btver1_cost = {
   btver1_memset,
   COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 static stringop_algs btver2_memcpy[2] = {
@@ -1781,6 +1853,10 @@ const struct processor_costs btver2_cost = {
   btver2_memset,
   COSTS_N_INSNS (2),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "11",					/* Func alignment.  */
 };
 
 static stringop_algs pentium4_memcpy[2] = {
@@ -1867,6 +1943,10 @@ struct processor_costs pentium4_cost = {
   pentium4_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  NULL,					/* Loop alignment.  */
+  NULL,					/* Jump alignment.  */
+  NULL,					/* Label alignment.  */
+  NULL,					/* Func alignment.  */
 };
 
 static stringop_algs nocona_memcpy[2] = {
@@ -1956,6 +2036,10 @@ struct processor_costs nocona_cost = {
   nocona_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  NULL,					/* Loop alignment.  */
+  NULL,					/* Jump alignment.  */
+  NULL,					/* Label alignment.  */
+  NULL,					/* Func alignment.  */
 };
 
 static stringop_algs atom_memcpy[2] = {
@@ -2043,6 +2127,10 @@ struct processor_costs atom_cost = {
   atom_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 static stringop_algs slm_memcpy[2] = {
@@ -2130,6 +2218,10 @@ struct processor_costs slm_cost = {
   slm_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 static stringop_algs intel_memcpy[2] = {
@@ -2217,6 +2309,10 @@ struct processor_costs intel_cost = {
   intel_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16",					/* Loop alignment.  */
+  "16:8:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* Generic should produce code tuned for Core-i7 (and newer chips)
@@ -2313,6 +2409,10 @@ struct processor_costs generic_cost = {
   generic_memset,
   COSTS_N_INSNS (4),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (2),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 
 /* core_cost should produce code tuned for Core familly of CPUs.  */
@@ -2416,5 +2516,9 @@ struct processor_costs core_cost = {
   core_memset,
   COSTS_N_INSNS (3),			/* cond_taken_branch_cost.  */
   COSTS_N_INSNS (1),			/* cond_not_taken_branch_cost.  */
+  "16:11:8",				/* Loop alignment.  */
+  "16:11:8",				/* Jump alignment.  */
+  "0:0:8",				/* Label alignment.  */
+  "16",					/* Func alignment.  */
 };
 

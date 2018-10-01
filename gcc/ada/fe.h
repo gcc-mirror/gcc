@@ -85,7 +85,7 @@ extern void Set_RM_Size			(Entity_Id, Uint);
 extern Boolean Is_Entity_Name		(Node_Id);
 
 #define Get_Attribute_Definition_Clause einfo__get_attribute_definition_clause
-extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, char);
+extern Node_Id Get_Attribute_Definition_Clause (Entity_Id, unsigned char);
 
 /* errout: */
 
@@ -159,8 +159,10 @@ extern void Get_External_Name	(Entity_Id, Boolean, String_Pointer);
 /* exp_util: */
 
 #define Is_Fully_Repped_Tagged_Type exp_util__is_fully_repped_tagged_type
+#define Find_Interface_Tag exp_util__find_interface_tag
 
 extern Boolean Is_Fully_Repped_Tagged_Type      (Entity_Id);
+extern Entity_Id Find_Interface_Tag		(Entity_Id, Entity_Id);
 
 /* lib: */
 
@@ -269,12 +271,14 @@ extern Boolean Is_OK_Static_Subtype	(Entity_Id);
 #define Defining_Entity			sem_util__defining_entity
 #define First_Actual			sem_util__first_actual
 #define Next_Actual			sem_util__next_actual
+#define Is_Variable_Size_Record 	sem_util__is_variable_size_record
 #define Requires_Transient_Scope	sem_util__requires_transient_scope
 
 extern Entity_Id Defining_Entity	(Node_Id);
 extern Node_Id First_Actual		(Node_Id);
 extern Node_Id Next_Actual		(Node_Id);
-extern Boolean Requires_Transient_Scope (Entity_Id);
+extern Boolean Is_Variable_Size_Record 	(Entity_Id Id);
+extern Boolean Requires_Transient_Scope	(Entity_Id);
 
 /* sinfo: */
 

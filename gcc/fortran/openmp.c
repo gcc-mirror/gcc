@@ -5853,7 +5853,7 @@ resolve_oacc_loop_blocks (gfc_code *code)
 			     &code->loc);
 		if (c->code->ext.omp_clauses->vector)
 		  gfc_error ("Loop parallelized across gangs is not allowed "
-			     "inside loop parallelized across workers at %L",
+			     "inside loop parallelized across vectors at %L",
 			     &code->loc);
 	      }
 	    if (code->ext.omp_clauses->worker)

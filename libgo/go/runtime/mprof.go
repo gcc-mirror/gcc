@@ -436,7 +436,7 @@ var mutexprofilerate uint64 // fraction sampled
 // reported. The previous rate is returned.
 //
 // To turn off profiling entirely, pass rate 0.
-// To just read the current rate, pass rate -1.
+// To just read the current rate, pass rate < 0.
 // (For n>1 the details of sampling may change.)
 func SetMutexProfileFraction(rate int) int {
 	if rate < 0 {
@@ -833,7 +833,7 @@ func tracealloc(p unsafe.Pointer, size uintptr, typ *_type) {
 	if typ == nil {
 		print("tracealloc(", p, ", ", hex(size), ")\n")
 	} else {
-		print("tracealloc(", p, ", ", hex(size), ", ", *typ.string, ")\n")
+		print("tracealloc(", p, ", ", hex(size), ", ", typ.string(), ")\n")
 	}
 	if gp.m.curg == nil || gp == gp.m.curg {
 		goroutineheader(gp)

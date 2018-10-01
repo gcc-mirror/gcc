@@ -132,6 +132,7 @@ gcov [@option{-v}|@option{--version}] [@option{-h}|@option{--help}]
      [@option{-n}|@option{--no-output}]
      [@option{-o}|@option{--object-directory} @var{directory|file}]
      [@option{-p}|@option{--preserve-paths}]
+     [@option{-q}|@option{--use-hotness-colors}]
      [@option{-r}|@option{--relative-only}]
      [@option{-s}|@option{--source-prefix} @var{directory}]
      [@option{-t}|@option{--stdout}]
@@ -255,7 +256,7 @@ lcount:36,1,0
 
 @item -j
 @itemx --human-readable
-Write counts in human readable format (like 24k).
+Write counts in human readable format (like 24.6k).
 
 @item -k
 @itemx --use-colors
@@ -263,7 +264,6 @@ Write counts in human readable format (like 24k).
 Use colors for lines of code that have zero coverage.  We use red color for
 non-exceptional lines and cyan for exceptional.  Same colors are used for
 basic blocks with @option{-a} option.
-
 
 @item -l
 @itemx --long-file-names
@@ -304,6 +304,12 @@ translated to @samp{#} characters, @file{.} directory components
 removed and unremoveable @file{..}
 components renamed to @samp{^}.  This is useful if sourcefiles are in several
 different directories.
+
+@item -q
+@itemx --use-hotness-colors
+
+Emit perf-like colored output for hot lines.  Legend of the color scale
+is printed at the very beginning of the output file.
 
 @item -r
 @itemx --relative-only

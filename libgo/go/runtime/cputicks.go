@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// // +build !arm
+// // +build !arm64
+// // +build !mips64
+// // +build !mips64le
+// // +build !mips
+// // +build !mipsle
+// // +build !wasm
+
 package runtime
 
 // careful: cputicks is not guaranteed to be monotonic! In particular, we have

@@ -6,7 +6,7 @@
 //   xxhash: https://code.google.com/p/xxhash/
 // cityhash: https://code.google.com/p/cityhash/
 
-// +build amd64 amd64p32 arm64 mips64 mips64le ppc64 ppc64le s390x alpha arm64be ia64 mips64p32 mips64p32le sparc64 riscv64
+// +build amd64 amd64p32 arm64 mips64 mips64le ppc64 ppc64le s390x wasm alpha arm64be ia64 mips64p32 mips64p32le sparc64 riscv64
 
 package runtime
 
@@ -26,7 +26,8 @@ const (
 )
 
 func memhash(p unsafe.Pointer, seed, s uintptr) uintptr {
-	if GOARCH == "amd64" && GOOS != "nacl" && useAeshash {
+	if (GOARCH == "amd64" || GOARCH == "arm64") &&
+		GOOS != "nacl" && useAeshash {
 		return aeshash(p, seed, s)
 	}
 	h := uint64(seed + s*hashkey[0])
