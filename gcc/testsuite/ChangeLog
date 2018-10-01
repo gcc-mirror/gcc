@@ -1,3 +1,9 @@
+2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* gfortran.dg/dependency_52.f90 : Expand the test to check both
+	the call to adjustl and direct assignment of the substring.
+
 2018-10-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87465
