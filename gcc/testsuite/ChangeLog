@@ -1,3 +1,8 @@
+2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87261
+	* gcc.dg/pr87261.c: New test.
+
 2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/tph_addx.c: New test.
