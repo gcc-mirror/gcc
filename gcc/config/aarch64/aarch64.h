@@ -88,6 +88,10 @@
    before probing has to be done for stack clash protection.  */
 #define STACK_CLASH_CALLER_GUARD 1024
 
+/* This value represents the minimum amount of bytes we expect the function's
+   outgoing arguments to be when stack-clash is enabled.  */
+#define STACK_CLASH_MIN_BYTES_OUTGOING_ARGS 8
+
 /* This value controls how many pages we manually unroll the loop for when
    generating stack clash probes.  */
 #define STACK_CLASH_MAX_UNROLL_PAGES 4
@@ -1075,5 +1079,18 @@ extern poly_uint16 aarch64_sve_vg;
 #endif
 
 #define REGMODE_NATURAL_SIZE(MODE) aarch64_regmode_natural_size (MODE)
+
+/* Allocate a minimum of STACK_CLASH_MIN_BYTES_OUTGOING_ARGS bytes for the
+   outgoing arguments if stack clash protection is enabled.  This is essential
+   as the extra arg space allows us to skip a check in alloca.  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)			   \
+   ((flag_stack_clash_protection			   \
+     && cfun->calls_alloca				   \
+     && known_lt (crtl->outgoing_args_size,		   \
+		  STACK_CLASH_MIN_BYTES_OUTGOING_ARGS))    \
+    ? ROUND_UP (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,       \
+		STACK_BOUNDARY / BITS_PER_UNIT)		   \
+    : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
 #endif /* GCC_AARCH64_H */
