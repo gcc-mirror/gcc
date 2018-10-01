@@ -1,6 +1,23 @@
 2018-10-01  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/86486
+	* gcc.target/aarch64/stack-check-alloca-1.c: New.
+	* gcc.target/aarch64/stack-check-alloca-10.c: New.
+	* gcc.target/aarch64/stack-check-alloca-2.c: New.
+	* gcc.target/aarch64/stack-check-alloca-3.c: New.
+	* gcc.target/aarch64/stack-check-alloca-4.c: New.
+	* gcc.target/aarch64/stack-check-alloca-5.c: New.
+	* gcc.target/aarch64/stack-check-alloca-6.c: New.
+	* gcc.target/aarch64/stack-check-alloca-7.c: New.
+	* gcc.target/aarch64/stack-check-alloca-8.c: New.
+	* gcc.target/aarch64/stack-check-alloca-9.c: New.
+	* gcc.target/aarch64/stack-check-alloca.h: New.
+	* gcc.target/aarch64/stack-check-14.c: New.
+	* gcc.target/aarch64/stack-check-15.c: New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
 	* gcc.target/aarch64/stack-check-prologue-16.c: New test
 	* gcc.target/aarch64/stack-check-cfa-3.c: New test.
 	* gcc.target/aarch64/sve/struct_vect_24.c: New test.

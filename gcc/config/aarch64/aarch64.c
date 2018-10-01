@@ -4129,6 +4129,10 @@ aarch64_layout_frame (void)
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
 
+  /* Adjust the outgoing arguments size if required.  Keep it in sync with what
+     the mid-end is doing.  */
+  crtl->outgoing_args_size = STACK_DYNAMIC_OFFSET (cfun);
+
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
 
@@ -4898,6 +4902,16 @@ aarch64_set_handled_components (sbitmap components)
     if (bitmap_bit_p (components, regno))
       cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
+
+/* On AArch64 we have an ABI defined safe buffer.  This constant is used to
+   determining the probe offset for alloca.  */
+
+static HOST_WIDE_INT
+aarch64_stack_clash_protection_alloca_probe_range (void)
+{
+  return STACK_CLASH_CALLER_GUARD;
+}
+
 
 /* Allocate POLY_SIZE bytes of stack space using TEMP1 and TEMP2 as scratch
    registers.  If POLY_SIZE is not large enough to require a probe this function
@@ -18412,6 +18426,10 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
+
+#undef TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE
+#define TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE \
+  aarch64_stack_clash_protection_alloca_probe_range
 
 #undef TARGET_COMPUTE_PRESSURE_CLASSES
 #define TARGET_COMPUTE_PRESSURE_CLASSES aarch64_compute_pressure_classes
