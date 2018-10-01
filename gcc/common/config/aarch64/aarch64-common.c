@@ -30,6 +30,7 @@
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "params.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -41,6 +42,10 @@
 
 #undef	TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE aarch_option_optimization_table
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS aarch64_option_default_params
+#undef TARGET_OPTION_VALIDATE_PARAM
+#define TARGET_OPTION_VALIDATE_PARAM aarch64_option_validate_param
 
 /* Set default optimization options.  */
 static const struct default_options aarch_option_optimization_table[] =
@@ -59,6 +64,49 @@ static const struct default_options aarch_option_optimization_table[] =
 #endif
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
+
+/* Implement target validation TARGET_OPTION_DEFAULT_PARAM.  */
+
+static bool
+aarch64_option_validate_param (const int value, const int param)
+{
+  /* Check that both parameters are the same.  */
+  if (param == (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)
+    {
+      if (value != 12 && value != 16)
+	{
+	  error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+		 "size.  Given value %d (%llu KB) is out of range",
+		 value, (1ULL << value) / 1024ULL);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+
+static void
+aarch64_option_default_params (void)
+{
+  /* We assume the guard page is 64k.  */
+  int index = (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE;
+  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+			   DEFAULT_STK_CLASH_GUARD_SIZE == 0
+			     ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE);
+
+  int guard_size
+    = default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
+  /* Set the interval parameter to be the same as the guard size.  This way the
+     mid-end code does the right thing for us.  */
+  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
+			   guard_size);
+
+  /* Validate the options.  */
+  aarch64_option_validate_param (guard_size, index);
+}
 
 /* Implement TARGET_HANDLE_OPTION.
    This function handles the target specific options for CPU/target selection.
