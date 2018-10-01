@@ -753,6 +753,10 @@ Set target-dependent initial values of fields in @var{opts}.
 Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
 @end deftypefn
 
+@deftypefn {Common Target Hook} bool TARGET_OPTION_VALIDATE_PARAM (int, @var{int})
+Validate target-dependent value for @option{--param} settings, using calls to @code{set_param_value}.
+@end deftypefn
+
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
