@@ -1,5 +1,6 @@
 2018-10-01  Carl Love  <cel@us.ibm.com>
 
+	PR 69431
 	* config/rs6000/rs6000-builtin.def (__builtin_mffsl): New.
 	(__builtin_mtfsb0): New.
 	(__builtin_mtfsb1): New.
