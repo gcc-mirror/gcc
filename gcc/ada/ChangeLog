@@ -1,3 +1,13 @@
+2018-09-30  Alexandre Oliva <oliva@adacore.com>
+
+	* gcc-interface/lang-specs.h (default_compilers): When given
+	fcompare-debug-second, adjust auxbase like cc1, and pass
+	gnatd_A.
+	* gcc-interface/misc.c (flag_compare_debug): Remove variable.
+	(gnat_post_options): Do not set it.
+	* lib-writ.adb (flag_compare_debug): Remove import.
+	(Write_ALI): Do not test it.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 
