@@ -4535,7 +4535,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
       if (loc == UNKNOWN_LOCATION)
 	loc = BUILTINS_LOCATION;
       id->block = make_node (BLOCK);
-      BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
+      BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
       BLOCK_SOURCE_LOCATION (id->block) = loc;
       prepend_lexical_block (gimple_block (stmt), id->block);
     }

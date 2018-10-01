@@ -12124,38 +12124,26 @@ prepare_target_option_nodes_for_pch (void)
       TREE_TARGET_GLOBALS (*iter) = NULL;
 }
 
-/* Determine the "ultimate origin" of a block.  The block may be an inlined
-   instance of an inlined instance of a block which is local to an inline
-   function, so we have to trace all of the way back through the origin chain
-   to find out what sort of node actually served as the original seed for the
-   given block.  */
+/* Determine the "ultimate origin" of a block.  */
 
 tree
 block_ultimate_origin (const_tree block)
 {
-  tree immediate_origin = BLOCK_ABSTRACT_ORIGIN (block);
+  tree origin = BLOCK_ABSTRACT_ORIGIN (block);
 
   /* BLOCK_ABSTRACT_ORIGIN can point to itself; ignore that if
      we're trying to output the abstract instance of this function.  */
-  if (BLOCK_ABSTRACT (block) && immediate_origin == block)
+  if (BLOCK_ABSTRACT (block) && origin == block)
     return NULL_TREE;
 
-  if (immediate_origin == NULL_TREE)
+  if (origin == NULL_TREE)
     return NULL_TREE;
   else
     {
-      tree ret_val = immediate_origin;
-
-      /* The block's abstract origin chain may not be the *ultimate* origin of
-	 the block. It could lead to a DECL that has an abstract origin set.
-	 If so, we want that DECL's abstract origin (which is what DECL_ORIGIN
-	 will give us if it has one).  Note that DECL's abstract origins are
-	 supposed to be the most distant ancestor (or so decl_ultimate_origin
-	 claims), so we don't need to loop following the DECL origins.  */
-      if (DECL_P (ret_val))
-	return DECL_ORIGIN (ret_val);
-
-      return ret_val;
+      gcc_checking_assert ((DECL_P (origin)
+			    && DECL_ORIGIN (origin) == origin)
+			   || BLOCK_ORIGIN (origin) == origin);
+      return origin;
     }
 }
 
