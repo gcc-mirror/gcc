@@ -11209,7 +11209,7 @@ int_cst_value (const_tree x)
 tree
 signed_or_unsigned_type_for (int unsignedp, tree type)
 {
-  if (TREE_CODE (type) == INTEGER_TYPE && TYPE_UNSIGNED (type) == unsignedp)
+  if (ANY_INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
   if (TREE_CODE (type) == VECTOR_TYPE)
@@ -11221,6 +11221,17 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
       if (inner == inner2)
 	return type;
       return build_vector_type (inner2, TYPE_VECTOR_SUBPARTS (type));
+    }
+
+  if (TREE_CODE (type) == COMPLEX_TYPE)
+    {
+      tree inner = TREE_TYPE (type);
+      tree inner2 = signed_or_unsigned_type_for (unsignedp, inner);
+      if (!inner2)
+	return NULL_TREE;
+      if (inner == inner2)
+	return type;
+      return build_complex_type (inner2);
     }
 
   if (!INTEGRAL_TYPE_P (type)
