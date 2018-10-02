@@ -2473,24 +2473,28 @@
    (match_operand:V4DF 1 "register_operand")]
   "TARGET_AVX"
 {
-  rtx tmp = gen_reg_rtx (V4DFmode);
-  rtx tmp2 = gen_reg_rtx (V4DFmode);
-  rtx vec_res = gen_reg_rtx (V4DFmode);
-  emit_insn (gen_avx_haddv4df3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_avx_vperm2f128v4df3 (tmp2, tmp, tmp, GEN_INT (1)));
-  emit_insn (gen_addv4df3 (vec_res, tmp, tmp2));
-  emit_insn (gen_vec_extractv4dfdf (operands[0], vec_res, const0_rtx));
+  rtx tmp = gen_reg_rtx (V2DFmode);
+  emit_insn (gen_vec_extract_hi_v4df (tmp, operands[1]));
+  rtx tmp2 = gen_reg_rtx (V2DFmode);
+  emit_insn (gen_addv2df3 (tmp2, tmp, gen_lowpart (V2DFmode, operands[1])));
+  rtx tmp3 = gen_reg_rtx (V2DFmode);
+  emit_insn (gen_vec_interleave_highv2df (tmp3, tmp2, tmp2));
+  emit_insn (gen_adddf3 (operands[0],
+			 gen_lowpart (DFmode, tmp2),
+			 gen_lowpart (DFmode, tmp3)));
   DONE;
 })
 
 (define_expand "reduc_plus_scal_v2df"
   [(match_operand:DF 0 "register_operand")
    (match_operand:V2DF 1 "register_operand")]
-  "TARGET_SSE3"
+  "TARGET_SSE2"
 {
   rtx tmp = gen_reg_rtx (V2DFmode);
-  emit_insn (gen_sse3_haddv2df3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_vec_extractv2dfdf (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_interleave_highv2df (tmp, operands[1], operands[1]));
+  emit_insn (gen_adddf3 (operands[0],
+			 gen_lowpart (DFmode, tmp),
+			 gen_lowpart (DFmode, operands[1])));
   DONE;
 })
 
