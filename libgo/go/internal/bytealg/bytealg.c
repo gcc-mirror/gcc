@@ -10,6 +10,33 @@
 #include "runtime.h"
 #include "array.h"
 
+#ifndef HAVE_MEMMEM
+
+#define memmem goMemmem
+
+static const void *goMemmem(const void *in, size_t inl, const void *s, size_t sl) {
+	const char *p;
+	char first;
+	const char *stop;
+
+	if (sl == 0) {
+		return in;
+	}
+	if (inl < sl) {
+		return nil;
+	}
+	first = *(const char *)(s);
+	stop = (const char *)(in) + (inl - sl);
+	for (p = (const char *)(in); p <= stop; p++) {
+		if (*p == first && __builtin_memcmp(p + 1, (const char *)(s) + 1, sl - 1) == 0) {
+			return (const void *)(p);
+		}
+	}
+	return nil;
+}
+
+#endif
+
 intgo Compare(struct __go_open_array, struct __go_open_array)
   __asm__(GOSYM_PREFIX "internal_bytealg.Compare")
   __attribute__((no_split_stack));
