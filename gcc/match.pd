@@ -2669,6 +2669,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (mult (convert1? (exact_div @0 @@1)) (convert2? @1))
   (convert @0))
 
+/* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
+(for op (plus minus)
+ (simplify
+  (mult (convert1? (op (convert2? (exact_div @0 INTEGER_CST@@1)) INTEGER_CST@2)) @1)
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@2))
+       && tree_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@2)))
+   (with
+     {
+       wi::overflow_type overflow;
+       wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
+			       TYPE_SIGN (type), &overflow);
+     }
+     (if (types_match (type, TREE_TYPE (@2))
+ 	 && types_match (TREE_TYPE (@0), TREE_TYPE (@2)) && !overflow)
+      (op @0 { wide_int_to_tree (type, mul); })
+      (with { tree utype = unsigned_type_for (type); }
+       (convert (op (convert:utype @0)
+		    (mult (convert:utype @1) (convert:utype @2))))))))))
+
 /* Canonicalization of binary operations.  */
 
 /* Convert X + -C into X - C.  */
