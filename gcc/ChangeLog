@@ -1,5 +1,11 @@
 2018-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (fxam<mode>2_i387_with_temp): Remove.
+	(isinfxf2): Ditto.
+	(isinf<mode>2): Ditto.
+
+2018-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.c (ix86_emit_i387_round): Extend op1 to XFmode
 	before emitting fxam.  Perform calculations in XFmode.
 
