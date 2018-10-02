@@ -1345,14 +1345,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	  /* If we potentially had a non-terminated string, then
 	     bubble that information up to the caller.  */
 	  if (!val)
-	    {
-	      *nonstr = data.decl;
-	      /* If TYPE is asking for a maximum, then use any
-		 length (including the length of an unterminated
-		 string) for VAL.  */
-	      if (type == 2)
-		val = data.len;
-	    }
+	    *nonstr = data.decl;
 	}
 
       if (!val && fuzzy)
