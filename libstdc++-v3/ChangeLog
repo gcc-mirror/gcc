@@ -1,3 +1,9 @@
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87258
+	* include/bits/stl_bvector.h (vector::begin(), vector::cbegin()):
+	Rebuild _M_start with an explicit 0 offset.
+
 2018-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (__gen_vtable_impl::__visit_invoke): Call __get
