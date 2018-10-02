@@ -1,5 +1,10 @@
 2018-10-02  Andreas Krebbel  <krebbel@linux.ibm.com>
 
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Add
+	0x3907 as CPU model number.
+
+2018-10-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
 	* common/config/s390/s390-common.c: Rename PF_ARCH12 to PF_Z14.
 	* config/s390/s390.h (enum processor_flags): Rename PF_ARCH12 to
 	PF_Z14.  Rename TARGET_CPU_ARCH12 to TARGET_CPU_Z14,
