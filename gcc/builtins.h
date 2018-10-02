@@ -111,7 +111,7 @@ extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
 extern void warn_string_no_nul (location_t, const char *, tree, tree);
-extern tree unterminated_array (tree);
+extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern tree max_object_size ();
 
 #endif /* GCC_BUILTINS_H */
