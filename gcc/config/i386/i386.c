@@ -43951,24 +43951,27 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
 {
   machine_mode inmode = GET_MODE (op1);
   machine_mode outmode = GET_MODE (op0);
-  rtx e1, e2, res, tmp, tmp1, half;
+  rtx e1 = gen_reg_rtx (XFmode);
+  rtx e2 = gen_reg_rtx (XFmode);
   rtx scratch = gen_reg_rtx (HImode);
   rtx flags = gen_rtx_REG (CCNOmode, FLAGS_REG);
+  rtx half = const_double_from_real_value (dconsthalf, XFmode);
+  rtx res = gen_reg_rtx (outmode);
   rtx_code_label *jump_label = gen_label_rtx ();
-  rtx insn;
-  rtx (*gen_abs) (rtx, rtx);
-  rtx (*gen_neg) (rtx, rtx);
+  rtx (*floor_insn) (rtx, rtx);
+  rtx (*neg_insn) (rtx, rtx);
+  rtx insn, tmp;
 
   switch (inmode)
     {
     case E_SFmode:
-      gen_abs = gen_abssf2;
-      break;
     case E_DFmode:
-      gen_abs = gen_absdf2;
+      tmp = gen_reg_rtx (XFmode);
+
+      emit_insn (gen_rtx_SET (tmp, gen_rtx_FLOAT_EXTEND (XFmode, op1)));
+      op1 = tmp;
       break;
     case E_XFmode:
-      gen_abs = gen_absxf2;
       break;
     default:
       gcc_unreachable ();
@@ -43977,84 +43980,61 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
   switch (outmode)
     {
     case E_SFmode:
-      gen_neg = gen_negsf2;
+      floor_insn = gen_frndintxf2_floor;
+      neg_insn = gen_negsf2;
       break;
     case E_DFmode:
-      gen_neg = gen_negdf2;
+      floor_insn = gen_frndintxf2_floor;
+      neg_insn = gen_negdf2;
       break;
     case E_XFmode:
-      gen_neg = gen_negxf2;
+      floor_insn = gen_frndintxf2_floor;
+      neg_insn = gen_negxf2;
       break;
     case E_HImode:
-      gen_neg = gen_neghi2;
+      floor_insn = gen_lfloorxfhi2;
+      neg_insn = gen_neghi2;
       break;
     case E_SImode:
-      gen_neg = gen_negsi2;
+      floor_insn = gen_lfloorxfsi2;
+      neg_insn = gen_negsi2;
       break;
     case E_DImode:
-      gen_neg = gen_negdi2;
+      floor_insn = gen_lfloorxfdi2;
+      neg_insn = gen_negdi2;
       break;
     default:
       gcc_unreachable ();
     }
 
-  e1 = gen_reg_rtx (inmode);
-  e2 = gen_reg_rtx (inmode);
-  res = gen_reg_rtx (outmode);
-
-  half = const_double_from_real_value (dconsthalf, inmode);
-
   /* round(a) = sgn(a) * floor(fabs(a) + 0.5) */
 
   /* scratch = fxam(op1) */
-  emit_insn (gen_rtx_SET (scratch,
-			  gen_rtx_UNSPEC (HImode, gen_rtvec (1, op1),
-					  UNSPEC_FXAM)));
+  emit_insn (gen_fxamxf2_i387 (scratch, op1));
+
   /* e1 = fabs(op1) */
-  emit_insn (gen_abs (e1, op1));
+  emit_insn (gen_absxf2 (e1, op1));
 
   /* e2 = e1 + 0.5 */
-  half = force_reg (inmode, half);
-  emit_insn (gen_rtx_SET (e2, gen_rtx_PLUS (inmode, e1, half)));
+  half = force_reg (XFmode, half);
+  emit_insn (gen_rtx_SET (e2, gen_rtx_PLUS (XFmode, e1, half)));
 
   /* res = floor(e2) */
-  if (inmode != XFmode)
-    {
-      tmp1 = gen_reg_rtx (XFmode);
-
-      emit_insn (gen_rtx_SET (tmp1, gen_rtx_FLOAT_EXTEND (XFmode, e2)));
-    }
-  else
-    tmp1 = e2;
-
   switch (outmode)
     {
     case E_SFmode:
     case E_DFmode:
       {
-	rtx tmp0 = gen_reg_rtx (XFmode);
+	tmp = gen_reg_rtx (XFmode);
 
-	emit_insn (gen_frndintxf2_floor (tmp0, tmp1));
-
+	emit_insn (floor_insn (tmp, e2));
 	emit_insn (gen_rtx_SET (res,
-				gen_rtx_UNSPEC (outmode, gen_rtvec (1, tmp0),
+				gen_rtx_UNSPEC (outmode, gen_rtvec (1, tmp),
 						UNSPEC_TRUNC_NOOP)));
       }
       break;
-    case E_XFmode:
-      emit_insn (gen_frndintxf2_floor (res, tmp1));
-      break;
-    case E_HImode:
-      emit_insn (gen_lfloorxfhi2 (res, tmp1));
-      break;
-    case E_SImode:
-      emit_insn (gen_lfloorxfsi2 (res, tmp1));
-      break;
-    case E_DImode:
-      emit_insn (gen_lfloorxfdi2 (res, tmp1));
-	break;
     default:
-      gcc_unreachable ();
+      emit_insn (floor_insn (res, e2));
     }
 
   /* flags = signbit(a) */
@@ -44069,7 +44049,7 @@ void ix86_emit_i387_round (rtx op0, rtx op1)
   predict_jump (REG_BR_PROB_BASE * 50 / 100);
   JUMP_LABEL (insn) = jump_label;
 
-  emit_insn (gen_neg (res, res));
+  emit_insn (neg_insn (res, res));
 
   emit_label (jump_label);
   LABEL_NUSES (jump_label) = 1;
