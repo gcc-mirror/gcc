@@ -1,3 +1,14 @@
+2018-10-02  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* builtins.c (unterminated_array): Add new arguments.
+	If argument is not terminated, bubble up size and exact
+	state to callers.
+	(expand_builtin_strnlen): Detect, avoid expanding
+	and diagnose unterminated arrays.
+	(c_strlen): Fill in offset of start of unterminated strings.
+	* builtins.h (unterminated_array): Update prototype.
+
 2018-10-02  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/sse.md (reduc_plus_scal_v4df): Avoid the use
