@@ -11,7 +11,9 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"sync"
+	"syscall"
 	"testing"
 )
 
@@ -225,6 +227,10 @@ func testSpliceReaderAtEOF(t *testing.T) {
 	serverUp.Close()
 	_, err, handled := splice(serverDown.(*TCPConn).fd, serverUp)
 	if !handled {
+		if serr, ok := err.(*os.SyscallError); ok && serr.Syscall == "pipe2" && serr.Err == syscall.ENOSYS {
+			t.Skip("pipe2 not supported")
+		}
+
 		t.Errorf("closed connection: got err = %v, handled = %t, want handled = true", err, handled)
 	}
 	lr := &io.LimitedReader{
