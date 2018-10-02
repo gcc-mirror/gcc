@@ -1,3 +1,8 @@
+2018-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87081
+	* gcc.target/powerpc/vec-init-6.c: Fix expected asm.
+
 2018-10-01  Martin Sebor  <msebor@redhat.com>
 
 	* gcc.dg/warn-strnlen-no-nul.c: New.
