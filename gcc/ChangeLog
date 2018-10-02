@@ -1,5 +1,9 @@
 2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
 
+	* match.pd (((X /[ex] A) +- B) * A): New transformation.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
 	PR middle-end/87319
 	* fold-const.c (fold_plusminus_mult_expr): Handle complex and vectors.
 	* tree.c (signed_or_unsigned_type_for): Handle complex.
