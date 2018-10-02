@@ -1,3 +1,8 @@
+2018-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (make_return_insns): Use emit_copy_of_insn_after for the
+	insns in the delay slot and add_insn_after for the jump insn.
+
 2018-10-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.c (expand_call_inline): Use the location of
