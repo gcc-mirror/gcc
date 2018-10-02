@@ -1,3 +1,13 @@
+2018-10-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* common/config/s390/s390-common.c: Rename PF_ARCH12 to PF_Z14.
+	* config/s390/s390.h (enum processor_flags): Rename PF_ARCH12 to
+	PF_Z14.  Rename TARGET_CPU_ARCH12 to TARGET_CPU_Z14,
+	TARGET_CPU_ARCH12_P to TARGET_CPU_Z14_P, TARGET_ARCH12 to
+	TARGET_Z14, and TARGET_ARCH12_P to TARGET_Z14_P.
+	* config/s390/s390.md: Likewise. Rename also the cpu attribute
+	value from arch12 to z14.
+
 2018-10-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (fxam<mode>2_i387_with_temp): Remove.
