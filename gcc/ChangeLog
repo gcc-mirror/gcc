@@ -1,5 +1,18 @@
 2018-10-02  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* dojump.h (do_jump): Delete.
+	(do_jump_1): Likewise.
+	(split_comparison): Move around.
+	* dojump.c (do_jump): Make static.
+	(do_jump_1): Likewise.
+	(jumpifnot): Move around.
+	(jumpifnot_1): Likewise.
+	(jumpif): Likewise.
+	(jumpif_1): Likewise.
+	* expr.c (expand_expr_real_1): Call jumpif[not] instead of do_jump.
+
+2018-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* reorg.c (make_return_insns): Use emit_copy_of_insn_after for the
 	insns in the delay slot and add_insn_after for the jump insn.
 
