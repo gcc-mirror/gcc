@@ -1,3 +1,7 @@
+2018-10-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/os/uclibc/os_defines.h (__NO_STRING_INLINES): Delete.
+
 2018-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/allocator.xml: Adjust link to "Reconsidering
@@ -13,7 +17,7 @@
 	to https.
 
 2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/policy_data_structures_biblio.xml: Update
 	link to Microsoft Component Model Object Technologies.
 
