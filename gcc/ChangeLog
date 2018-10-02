@@ -1,3 +1,10 @@
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Use the location of
+	the callee declaration for the inline-entry marker.
+	* final.c (notice_source_line): Remove special-casing of
+	NOTE_INSN_INLINE_ENTRY.
+
 2018-10-01  Carl Love  <cel@us.ibm.com>
 
 	PR 69431
