@@ -1,3 +1,10 @@
+2018-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Call __get
+	directly instead of get, as caller ensures correct index is used.
+	(holds_alternative, get, get_if): Remove redundant inline specifiers.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Likewise.
+
 2018-10-02  Joseph Myers  <joseph@codesourcery.com>
 
 	* testsuite/lib/libstdc++.exp (libstdc++_init): Use
