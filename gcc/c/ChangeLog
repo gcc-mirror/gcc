@@ -1,3 +1,7 @@
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.c (warn_if_shadowing): Do not test DECL_FROM_INLINE.
+
 2018-09-26  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/87390

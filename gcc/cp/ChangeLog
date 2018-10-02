@@ -1,3 +1,7 @@
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* name-lookup.c (check_local_shadow): Do not test DECL_FROM_INLINE.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 

@@ -2784,9 +2784,7 @@ warn_if_shadowing (tree new_decl)
         || warn_shadow_local
         || warn_shadow_compatible_local)
       /* No shadow warnings for internally generated vars.  */
-      || DECL_IS_BUILTIN (new_decl)
-      /* No shadow warnings for vars made for inlining.  */
-      || DECL_FROM_INLINE (new_decl))
+      || DECL_IS_BUILTIN (new_decl))
     return;
 
   /* Is anything being shadowed?  Invisible decls do not count.  */
