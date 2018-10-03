@@ -1,3 +1,13 @@
+2018-10-03  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-sprintf.c (struct fmtresult): Add new member and
+	initialize it.
+	(get_string_length): Detect unterminated arrays.
+	(format_string): Same.
+	(format_directive): Warn about unterminated arrays.
+	(handle_gimple_call): Mark statements with no_warning as needed.
+
 2018-10-03  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv-c.c (riscv_cpu_cpp_builtins): For ABI_ILP32E,
