@@ -73,3 +73,7 @@ Target has split I&D.
 munix-asm
 Target RejectNegative Report Mask(UNIX_ASM) Negative(mdec-asm)
 Use UNIX assembler syntax.
+
+mlra
+Target Report Mask(LRA)
+Use LRA register allocator

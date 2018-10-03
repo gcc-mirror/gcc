@@ -70,19 +70,19 @@
   (and (match_code "const_double")
        (match_test "op == CONST0_RTX (GET_MODE (op))")))
 
-(define_constraint "Q"
+(define_memory_constraint "Q"
   "Memory reference that requires an additional word after the opcode"
   (and (match_code "mem")
        (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
                     && !simple_memory_operand (op, GET_MODE (op))")))
 
-(define_constraint "R"
+(define_memory_constraint "R"
   "Memory reference that is encoded within the opcode"
   (and (match_code "mem")
        (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
                     && simple_memory_operand (op, GET_MODE (op))")))
 
-(define_constraint "D"
+(define_memory_constraint "D"
   "Memory reference that is encoded within the opcode, and not push or pop"
   (and (match_code "mem")
        (match_test "memory_address_p (GET_MODE (op), XEXP (op, 0))
