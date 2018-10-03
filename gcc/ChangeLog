@@ -1,3 +1,8 @@
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<absneg:code>extendsfdf2): Remove.
+	(*<absneg:code>extend<mode>xf2): Ditto.
+
 2018-10-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR tree-optimization/87415
