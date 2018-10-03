@@ -3061,6 +3061,10 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_CXX_DESTRUCTOR_P(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.cxx_destructor)
 
+/* In FUNCTION_DECL, this is set if this function is a lambda function.  */
+#define DECL_LAMBDA_FUNCTION(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.lambda_function)
+
 /* In FUNCTION_DECL that represent an virtual method this is set when
    the method is final.  */
 #define DECL_FINAL_P(NODE)\

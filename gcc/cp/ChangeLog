@@ -1,3 +1,12 @@
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* parser.c (cp_parser_lambda_declarator_opt):
+	Set DECL_LAMBDA_FUNCTION for lambdas.
+
 2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/85070

@@ -1,3 +1,15 @@
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* coverage.c (coverage_begin_function): Do not
+	mark lambdas as artificial.
+	* tree-core.h (struct GTY): Remove tm_clone_flag
+	and introduce new lambda_function.
+	* tree.h (DECL_LAMBDA_FUNCTION): New macro.
+
 2018-10-02  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
