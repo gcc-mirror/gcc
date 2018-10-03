@@ -1,3 +1,13 @@
+2018-10-03  Paul Koning  <ni1d@arrl.net>
+
+	Enable LRA register allocator for PDP11.
+	* config/pdp11/constraints.md (Q): Use define_memory_constraint.
+	(R): Likewise.
+	(D): Likewise.
+	* config/pdp11/pdp11.c (pdp11_lra_p): New function.
+	* config/pdp11/pdp11.opt (-mlra): New option.
+	* doc/invoke.texi (PDP-11 Options): Document -mlra.
+
 2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*<absneg:code>extendsfdf2): Remove.
