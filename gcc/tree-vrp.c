@@ -1800,9 +1800,14 @@ extract_range_from_unary_expr (value_range *vr,
       tree inner_type = op0_type;
       tree outer_type = type;
 
-      /* If the expression evaluates to a pointer, we are only interested in
-	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
-      if (POINTER_TYPE_P (type))
+      /* If the expression involves a pointer, we are only interested in
+	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).
+
+	 This may lose precision when converting (char *)~[0,2] to
+	 int, because we'll forget that the pointer can also not be 1
+	 or 2.  In practice we don't care, as this is some idiot
+	 storing a magic constant to a pointer.  */
+      if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
 	{
 	  if (!range_includes_zero_p (&vr0))
 	    set_value_range_to_nonnull (vr, type);
@@ -1813,15 +1818,12 @@ extract_range_from_unary_expr (value_range *vr,
 	  return;
 	}
 
-      /* We normalize everything to a VR_RANGE, but for constant
-	 anti-ranges we must handle them by leaving the final result
-	 as an anti range.  This allows us to convert things like
-	 ~[0,5] seamlessly.  */
-      value_range_type vr_type = VR_RANGE;
-      if (vr0.type == VR_ANTI_RANGE
-	  && TREE_CODE (vr0.min) == INTEGER_CST
-	  && TREE_CODE (vr0.max) == INTEGER_CST)
-	vr_type = VR_ANTI_RANGE;
+      /* The POINTER_TYPE_P code above will have dealt with all
+	 pointer anti-ranges.  Any remaining anti-ranges at this point
+	 will be integer conversions from SSA names that will be
+	 normalized into VARYING.  For instance: ~[x_55, x_55].  */
+      gcc_assert (vr0.type != VR_ANTI_RANGE
+		  || TREE_CODE (vr0.min) != INTEGER_CST);
 
       /* NOTES: Previously we were returning VARYING for all symbolics, but
 	 we can do better by treating them as [-MIN, +MAX].  For
@@ -1844,7 +1846,7 @@ extract_range_from_unary_expr (value_range *vr,
 	{
 	  tree min = wide_int_to_tree (outer_type, wmin);
 	  tree max = wide_int_to_tree (outer_type, wmax);
-	  set_and_canonicalize_value_range (vr, vr_type, min, max, NULL);
+	  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
 	}
       else
 	set_value_range_to_varying (vr);
