@@ -122,122 +122,6 @@ range_stmt::validate_stmt (gimple *s)
 }
 
 
-/* Return TRUE if code with operands of type TYPE is a boolean
-   evaluation.  These are important to identify as both sides of a logical
-   binary expression must be evaluated in order to calculate a range.  */
-bool
-range_stmt::logical_expr_p () const
-{
-  /* Look for boolean and/or condition.  */
-  switch (get_code ())
-    {
-      case TRUTH_AND_EXPR:
-      case TRUTH_OR_EXPR:
-        return true;
-
-      case BIT_AND_EXPR:
-      case BIT_IOR_EXPR:
-        // Bitwise operations on single bits are logical too.
-        if (types_compatible_p (TREE_TYPE (operand1 ()), boolean_type_node))
-	  return true;
-	break;
-
-      default:
-        break;
-    }
-  return false;
-}
-
-
-/* Evaluate a binary logical expression given true and false ranges for each
-   of the operands. Base the result on the value in the LHS.  */
-bool
-range_stmt::fold_logical (irange& r, const irange& lhs, const irange& op1_true,
-			  const irange& op1_false, const irange& op2_true,
-			  const irange& op2_false) const
-{
-  gcc_checking_assert (logical_expr_p ());
- 
-  /* If the LHS can be TRUE OR FALSE, then both need to be evaluated and
-     combined, otherwise any range restrictions that have been determined
-     leading up to this point would be lost.  */
-  if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
-    {
-      irange r1;
-      unsigned prec = TYPE_PRECISION (boolean_type_node);
-      irange bool_zero (boolean_type_node, wi::zero (prec), wi::zero (prec));
-      irange bool_one (boolean_type_node, wi::one (prec), wi::one (prec));
-      if (fold_logical (r1, bool_zero, op1_true, op1_false, op2_true,
-			op2_false) &&
-	  fold_logical (r, bool_one, op1_true, op1_false, op2_true, op2_false))
-	{
-	  r.union_ (r1);
-	  return true;
-	}
-      return false;
-
-    }
-
-  /* Now combine based on whether the result is TRUE or FALSE.  */
-  switch (get_code ())
-    {
-
-      /* A logical operation on two ranges is executed with operand ranges that
-	 have been determined for both a TRUE and FALSE result..
-	 Assuming x_8 is an unsigned char:
-		b_1 = x_8 < 20
-		b_2 = x_8 > 5
-	 if we are looking for the range of x_8, the operand ranges will be:
-	 will be: 
-	 b_1 TRUE	x_8 = [0, 19]
-	 b_1 FALSE  	x_8 = [20, 255]
-	 b_2 TRUE 	x_8 = [6, 255]
-	 b_2 FALSE	x_8 = [0,5]. */
-	       
-      /*	c_2 = b_1 && b_2
-	 The result of an AND operation with a TRUE result is the intersection
-	 of the 2 TRUE ranges, [0,19] intersect [6,255]  ->   [6, 19]. */
-      case TRUTH_AND_EXPR:
-      case BIT_AND_EXPR:
-        if (!lhs.zero_p ())
-	  r = range_intersect (op1_true, op2_true);
-	else
-	  {
-	    /* The FALSE side is the union of the other 3 cases.  */
-	    irange ff = range_intersect (op1_false, op2_false);
-	    irange tf = range_intersect (op1_true, op2_false);
-	    irange ft = range_intersect (op1_false, op2_true);
-	    r = range_union (ff, tf);
-	    r.union_ (ft);
-	  }
-        break;
-
-      /* 	c_2 = b_1 || b_2
-	 An OR operation will only take the FALSE path if both operands are
-	 false, so [20, 255] intersect [0, 5] is the union: [0,5][20,255].  */
-      case TRUTH_OR_EXPR:
-      case BIT_IOR_EXPR:
-        if (lhs.zero_p ())
-	  r = range_intersect (op1_false, op2_false);
-	else
-	  {
-	    /* The TRUE side of the OR operation will be the union of the other
-	       three combinations.  */
-	    irange tt = range_intersect (op1_true, op2_true);
-	    irange tf = range_intersect (op1_true, op2_false);
-	    irange ft = range_intersect (op1_false, op2_true);
-	    r = range_union (tt, tf);
-	    r.union_ (ft);
-	  }
-	break;
-
-      default:
-        gcc_unreachable ();
-    }
-
-  return true;
-}
-
 /* This method will attempt to resolve a unary expression with value R1 to
    a range.  If the expression can be resolved, true is returned, and the
    range is returned in RES.  */
@@ -352,5 +236,144 @@ range_stmt::dump (FILE *f) const
 
 }
 
+
+/* Return TRUE if code with operands of type TYPE is a boolean
+   evaluation.  These are important to identify as both sides of a logical
+   binary expression must be evaluated in order to calculate a range.  */
+bool
+logical_combine_stmt_p (gimple *s)
+{
+  range_stmt rn(s);
+  if (!rn.valid ())
+    return false;
+
+  /* Look for boolean and/or condition.  */
+  switch (gimple_expr_code (s))
+    {
+      case TRUTH_AND_EXPR:
+      case TRUTH_OR_EXPR:
+        return true;
+
+      case BIT_AND_EXPR:
+      case BIT_IOR_EXPR:
+        // Bitwise operations on single bits are logical too.
+        if (types_compatible_p (TREE_TYPE (rn.operand1 ()), boolean_type_node))
+	  return true;
+	break;
+
+      default:
+        break;
+    }
+  return false;
+}
+
+
+/* Evaluate a binary logical expression given true and false ranges for each
+   of the operands. Base the result on the value in the LHS.  */
+bool
+logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
+			   const irange& op1_true,
+			   const irange& op1_false,
+			   const irange& op2_true,
+			   const irange& op2_false)
+{
+  range_stmt stmt(s);
+  gcc_checking_assert (logical_combine_stmt_p (s));
+ 
+  /* If the LHS can be TRUE OR FALSE, then both need to be evaluated and
+     combined, otherwise any range restrictions that have been determined
+     leading up to this point would be lost.  */
+  if (!wi::eq_p (lhs.lower_bound(), lhs.upper_bound()))
+    {
+      irange r1;
+      unsigned prec = TYPE_PRECISION (boolean_type_node);
+      irange bool_zero (boolean_type_node, wi::zero (prec), wi::zero (prec));
+      irange bool_one (boolean_type_node, wi::one (prec), wi::one (prec));
+      if (logical_combine_stmt_fold (r1, s, bool_zero, op1_true, op1_false,
+				     op2_true, op2_false) &&
+	  logical_combine_stmt_fold (r, s, bool_one, op1_true, op1_false,
+				     op2_true, op2_false))
+	{
+	  r.union_ (r1);
+	  return true;
+	}
+      return false;
+
+    }
+
+  /* Now combine based on whether the result is TRUE or FALSE.  */
+  switch (gimple_expr_code (s))
+    {
+
+      /* A logical operation on two ranges is executed with operand ranges that
+	 have been determined for both a TRUE and FALSE result..
+	 Assuming x_8 is an unsigned char:
+		b_1 = x_8 < 20
+		b_2 = x_8 > 5
+	 if we are looking for the range of x_8, the operand ranges will be:
+	 will be: 
+	 b_1 TRUE	x_8 = [0, 19]
+	 b_1 FALSE  	x_8 = [20, 255]
+	 b_2 TRUE 	x_8 = [6, 255]
+	 b_2 FALSE	x_8 = [0,5]. */
+	       
+      /*	c_2 = b_1 && b_2
+	 The result of an AND operation with a TRUE result is the intersection
+	 of the 2 TRUE ranges, [0,19] intersect [6,255]  ->   [6, 19]. */
+      case TRUTH_AND_EXPR:
+      case BIT_AND_EXPR:
+        if (!lhs.zero_p ())
+	  r = range_intersect (op1_true, op2_true);
+	else
+	  {
+	    /* The FALSE side is the union of the other 3 cases.  */
+	    irange ff = range_intersect (op1_false, op2_false);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (ff, tf);
+	    r.union_ (ft);
+	  }
+        break;
+
+      /* 	c_2 = b_1 || b_2
+	 An OR operation will only take the FALSE path if both operands are
+	 false, so [20, 255] intersect [0, 5] is the union: [0,5][20,255].  */
+      case TRUTH_OR_EXPR:
+      case BIT_IOR_EXPR:
+        if (lhs.zero_p ())
+	  r = range_intersect (op1_false, op2_false);
+	else
+	  {
+	    /* The TRUE side of the OR operation will be the union of the other
+	       three combinations.  */
+	    irange tt = range_intersect (op1_true, op2_true);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (tt, tf);
+	    r.union_ (ft);
+	  }
+	break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  return true;
+}
+
+/* Return the range implied by edge E for a branch statement in R.  */
+void gori_branch_edge_range (irange& r, edge e)
+{
+  gcc_assert (gori_branch_stmt_p (last_stmt (e->src)));
+
+  if (e->flags & EDGE_TRUE_VALUE)
+    r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
+  else if (e->flags & EDGE_FALSE_VALUE)
+    r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
+  else
+    gcc_unreachable ();
+
+  return;
+}
 
 

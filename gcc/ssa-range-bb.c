@@ -45,18 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "ssa-range-bb.h"
 
-// Return the last stmt in block BB if it is interesting for range info. 
-static inline gimple *
-last_stmt_gori (basic_block bb)
-{
-  gimple *stmt;
-
-  stmt = last_stmt (bb);
-  if (stmt && gimple_code (stmt) == GIMPLE_COND)
-    return stmt;
-  return NULL;
-}
-
 // If NAME is defined in block BB, return the gimple statement pointer, 
 // otherwise return NULL>
 inline gimple *
@@ -315,7 +303,6 @@ gori_map::calc_def_chain (tree name, basic_block bb)
 {
   gimple *stmt = SSA_NAME_DEF_STMT (name);
   unsigned v = SSA_NAME_VERSION (name);
-  range_stmt rn;
 
   if (!stmt || gimple_bb (stmt) != bb || is_a <gphi *> (stmt))
     {
@@ -345,8 +332,8 @@ gori_map::calculate_gori (basic_block bb)
 
   // If this block's last statement may generate range informaiton, 
   // go calculate it.
-  stmt = last_stmt_gori (bb);
-  if (stmt)
+  stmt = last_stmt (bb);
+  if (gori_branch_stmt_p (stmt))
     process_stmt (stmt, m_outgoing[bb->index], bb);
 }
 
@@ -484,7 +471,7 @@ block_ranger::get_operand_range (irange& r, tree op,
 // using NAME and resolve the outcome based on the logical operator.  
 bool
 block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
-		       const irange& lhs)
+			       const irange& lhs)
 {
   range_stmt op_stmt;
   irange op1_range, op2_range;
@@ -539,8 +526,8 @@ block_ranger::process_logical (range_stmt stmt, irange& r, tree name,
 	  ret &= get_operand_range (op2_false, name, stmt);
 	}
     }
-  if (!ret || !stmt.fold_logical (r, lhs, op1_true, op1_false, op2_true,
-				  op2_false))
+  if (!ret || !logical_combine_stmt_fold (r, stmt, lhs, op1_true, op1_false,
+					  op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
   return true;
 }
@@ -596,8 +583,9 @@ block_ranger::get_range_from_stmt (range_stmt stmt, irange& r, tree name,
         return false;
     }
 
-  // Check for boolean cases which require developing ranges and combining. 
-  if (stmt.logical_expr_p ())
+  // Check for boolean combination cases which require developing ranges 
+  // and combining the results based on the operation. 
+  if (logical_combine_stmt_p (stmt))
     return process_logical (stmt, r, name, lhs);
 
   // Reaching this point means NAME is not in this stmt, but one of the
@@ -689,11 +677,12 @@ block_ranger::range_p (basic_block bb, tree name)
 }
 
 
-// Calcualte a range for NAME on edge E, returning ther result in R.
+// Calculate a range for NAME on edge E, returning ther result in R.
 bool
 block_ranger::range_on_edge (irange& r, tree name, edge e)
 {
   gimple *stmt;
+  irange lhs_range;
   basic_block bb = e->src;
 
   if (!valid_irange_ssa (name))
@@ -702,18 +691,12 @@ block_ranger::range_on_edge (irange& r, tree name, edge e)
   // If this block doesnt produce ranges for NAME, bail now.
   if (!range_p (bb, name))
     return false;
+  
+  stmt = last_stmt (bb);
+  gcc_assert (gori_branch_stmt_p (stmt));
+  gori_branch_edge_range (lhs_range, e);
 
-  stmt = last_stmt_gori (bb);
-  gcc_assert (stmt);
-
-  // Generate a range for either the TRUE or FALSE edge.
-  if (e->flags & EDGE_TRUE_VALUE)
-    return get_range_from_stmt (stmt, r, name, m_bool_one);
-
-  if (e->flags & EDGE_FALSE_VALUE)
-    return get_range_from_stmt (stmt, r, name, m_bool_zero);
-
-  return false;
+  return get_range_from_stmt (stmt, r, name, lhs_range);
 }
 
 

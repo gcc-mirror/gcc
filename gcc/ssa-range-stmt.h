@@ -63,19 +63,14 @@ public:
   bool op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
 
-  bool logical_expr_p () const;
-  bool fold_logical (irange& r, const irange& lhs, const irange& op1_true,
-		     const irange& op1_false, const irange& op2_true,
-		     const irange& op2_false) const;
 
   void dump (FILE *f) const;
-private:
+protected:
   gimple *m_g;
   void validate_stmt (gimple *s);
   class irange_operator *handler() const;
   tree_code get_code () const;
 };
-
 
 /* Initialize a range statement to invalid.  */
 inline
@@ -167,5 +162,23 @@ range_stmt::handler () const
 {
   return irange_op_handler (get_code ());
 }
+
+
+
+inline bool
+gori_branch_stmt_p (gimple *s)
+{
+  return (s && gimple_code (s) == GIMPLE_COND);
+}
+
+extern void gori_branch_edge_range (irange& r, edge e);
+extern bool logical_combine_stmt_p (gimple *s);
+extern bool logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
+				       const irange& op1_true,
+				       const irange& op1_false,
+				       const irange& op2_true,
+				       const irange& op2_false);
+
+
 
 #endif /* GCC_SSA_RANGE_STMT_H */

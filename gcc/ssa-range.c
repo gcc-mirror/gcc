@@ -611,16 +611,9 @@ path_ranger::process_phi (irange &r, gphi *phi)
   tree phi_def = gimple_phi_result (phi);
   unsigned x;
 
-  if (!valid_irange_ssa (phi_def))
-    return false;
-
-  // If this node has already been processed, just return it.
-  if (has_global_ssa_range (r, phi_def))
-    return true;
-
-  // Avoid infinite recursion by initializing global cache 
-  phi_range = range_from_ssa (phi_def);
-  set_global_ssa_range (phi_def, phi_range);
+  // Global cache has already been initialized in path_range_stmt
+  if (!has_global_ssa_range (phi_range, phi_def))
+    internal_error ("Must set global range cache before calling process_phi.");
  
   // And start with an empty range, unioning in each argument's range.
   r.set_undefined (TREE_TYPE (phi_def));
@@ -639,7 +632,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
 	  }
 
       r.union_ (arg_range);
-      // ONce its range_for_type, stop looking.
+      // Once its range_for_type, stop looking.
       if (r.varying_p ())
 	break;
     }
@@ -648,7 +641,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
   r.intersect (phi_range);
   // This now becomes the global range for PHI_DEF.
   set_global_ssa_range (phi_def, r);
-  return true;
+  return !r.varying_p ();
 }
 
 bool
@@ -669,30 +662,23 @@ path_ranger::process_call (irange& r, gimple *call)
 bool
 path_ranger::path_range_stmt (irange& r, gimple *g)
 {
-  tree name = gimple_get_lhs (g);
+  tree name;
   irange range_op1, range_op2;
   range_stmt rn;
-  bool res;
+  bool res, is_phi;
 
-  if (name && !valid_irange_ssa (name))
-    return false;
+  is_phi = is_a<gphi *> (g);
+  if (is_phi)
+    name = gimple_phi_result (g);
+  else
+    name = gimple_get_lhs (g);
 
-  // Handle PHI here since class range_stmt does not.
-  if (is_a <gphi *> (g))
-    {
-      gphi *phi = as_a <gphi *> (g);
-      if (process_phi (r, phi))
-        return !r.varying_p ();
-      return false;
-    }
-
-  // Look for nonnull results and other such things here.
-  if (gimple_code (g) == GIMPLE_CALL)
-    return process_call (r, g);
- 
   // Not all statements have a LHS.  */
   if (name)
     {
+      if (!valid_irange_ssa (name))
+        return false;
+
       // If this STMT has already been processed, return that value. 
       if (has_global_ssa_range (r, name))
 	return !r.varying_p ();
@@ -700,6 +686,17 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
       // avoid infinite recursion by initializing global cache
       r = range_from_ssa (name);
       set_global_ssa_range (name, r);
+    }
+
+  // Look for nonnull results and other such things here.
+  if (gimple_code (g) == GIMPLE_CALL)
+    return process_call (r, g);
+ 
+  // Handle PHI here since class range_stmt does not.
+  if (is_phi)
+    {
+      gphi *phi = as_a <gphi *> (g);
+      return process_phi (r, phi);
     }
 
   rn = g;
