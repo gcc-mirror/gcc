@@ -1116,6 +1116,15 @@ set_value_range_with_overflow (value_range &vr,
   const unsigned int prec = TYPE_PRECISION (type);
   vr.type = VR_RANGE;
   vr.equiv = NULL;
+
+  /* For one bit precision if max < min, then the swapped
+     range covers all values.  */
+  if (prec == 1 && wi::lt_p (wmax, wmin, sgn))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
   if (TYPE_OVERFLOW_WRAPS (type))
     {
       /* If overflow wraps, truncate the values and adjust the
