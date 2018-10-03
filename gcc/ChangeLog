@@ -1,3 +1,8 @@
+2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR other/87353
+	* doc/invoke.texi (Link Options): Fix formatting and grammar.
+
 2018-10-03  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
