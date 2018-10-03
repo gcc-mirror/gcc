@@ -1,3 +1,8 @@
+2018-10-03  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-c.c (riscv_cpu_cpp_builtins): For ABI_ILP32E,
+	also define __riscv_abi_rve.  Delete trailing white space.
+
 2018-10-03  Paul Koning  <ni1d@arrl.net>
 
 	Enable LRA register allocator for PDP11.
