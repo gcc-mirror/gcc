@@ -1,3 +1,9 @@
+2018-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/87415
+	* tree-vrp.c (set_value_range_with_overflow): Special case one bit
+	precision fields.
+
 2018-10-02  Jeff Law  <law@redhat.com>
 
 	* gimple-fold.c (get_range_strlen): Only set *nonstr when
