@@ -1,3 +1,11 @@
+2018-10-03  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+
 2018-08-17  John David Anglin  <danglin@gcc.gnu.org>
 
 	Backport from mainline
