@@ -1,3 +1,11 @@
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2018-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (SSE_REGNO): Fix check for FIRST_REX_SSE_REG.
+	(GET_SSE_REGNO): Rename from SSE_REGNO.  Update all uses for rename.
+
 2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR other/87353
