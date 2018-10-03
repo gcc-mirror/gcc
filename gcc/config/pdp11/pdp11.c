@@ -230,7 +230,7 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 #define TARGET_PREFERRED_OUTPUT_RELOAD_CLASS pdp11_preferred_output_reload_class
 
 #undef  TARGET_LRA_P
-#define TARGET_LRA_P hook_bool_void_false
+#define TARGET_LRA_P pdp11_lra_p
 
 #undef  TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P pdp11_legitimate_address_p
@@ -990,6 +990,12 @@ pdp11_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
+
+static bool
+pdp11_lra_p (void)
+{
+  return TARGET_LRA;
+}
 
 /* Register to register moves are cheap if both are general
    registers.  */
