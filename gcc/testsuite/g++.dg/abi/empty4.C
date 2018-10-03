@@ -37,6 +37,16 @@ struct B
   B (long c) {m = c;}
 };
 
+#if __cpp_attributes
+struct B2
+{
+  [[no_unique_address]] Inter empty;
+  NonPod m;
+
+  B2 (long c) {m = c;}
+};
+#endif
+
 struct C : NonPod, Inter
 {
   C (long c) : NonPod (c), Inter () {}
@@ -65,6 +75,7 @@ int main ()
   if (b2.m.m != 0x32333435)
     return 2;	// we copied padding, which clobbered b2.m.m
   
+  {
   B c (0x12131415);
   was = c.m.m;
   c = 0x22232425;
@@ -76,6 +87,22 @@ int main ()
 
   if (c.m.m != 0x22232425)
     return 4;
+  }
+#if __cpp_attributes
+  {
+  B2 c (0x12131415);
+  was = c.m.m;
+  c = 0x22232425;
+  if (was != now)
+    return 3;
+  
+  B2 d (0x32333435);
+  c.empty = d.empty;
+
+  if (c.m.m != 0x22232425)
+    return 4;
+  }    
+#endif
 
   C e (0x32333435);
 
