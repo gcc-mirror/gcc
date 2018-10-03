@@ -1,3 +1,13 @@
+2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59439
+	* src/c++98/locale.cc (locale::locale(const locale&)): Bypass
+	reference count updates for the classic locale.
+	(locale::~locale()): Likewise.
+	(locale::operator=(const locale&)): Likewise.
+	* src/c++98/locale_init.cc (locale::locale()): Likewise.
+	(locale::global(const locale&)): Likewise.
+
 2018-10-03  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/map.h
