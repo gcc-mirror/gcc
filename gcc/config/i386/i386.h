@@ -1557,10 +1557,10 @@ enum reg_class
 #define FIRST_FLOAT_REG FIRST_STACK_REG
 #define STACK_TOP_P(X) (REG_P (X) && REGNO (X) == FIRST_FLOAT_REG)
 
-#define SSE_REGNO(N) \
-  ((N) < 8 ? FIRST_SSE_REG + (N) \
-         : (N) <= LAST_REX_SSE_REG ? (FIRST_REX_SSE_REG + (N) - 8) \
-                                   : (FIRST_EXT_REX_SSE_REG + (N) - 16))
+#define GET_SSE_REGNO(N)			\
+  ((N) < 8 ? FIRST_SSE_REG + (N)		\
+   : (N) < 16 ? FIRST_REX_SSE_REG + (N) - 8	\
+   : FIRST_EXT_REX_SSE_REG + (N) - 16)
 
 /* The class value for index registers, and the one for base regs.  */
 

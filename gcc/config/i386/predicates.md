@@ -1499,7 +1499,7 @@
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != REG
 	  || GET_MODE (SET_DEST (elt)) != V8SImode
-	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i)
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
 	  || SET_SRC (elt) != CONST0_RTX (V8SImode))
 	return false;
     }

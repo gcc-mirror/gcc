@@ -17245,7 +17245,7 @@
 
   for (regno = 0; regno < nregs; regno++)
     XVECEXP (operands[0], 0, regno + 1)
-      = gen_rtx_SET (gen_rtx_REG (V8SImode, SSE_REGNO (regno)),
+      = gen_rtx_SET (gen_rtx_REG (V8SImode, GET_SSE_REGNO (regno)),
 		     CONST0_RTX (V8SImode));
 })
 
