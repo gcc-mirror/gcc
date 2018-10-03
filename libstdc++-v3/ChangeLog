@@ -1,3 +1,44 @@
+2018-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/map.h
+	(map<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(map<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(map<>::insert(value_type&&)): Likewise.
+	(map<>::insert<>(_Pair&&)): Likewise.
+	(map<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(map<>::try_emplace): Likewise.
+	(map<>::insert_or_assign): Likewise.
+	(map<>::insert(node_type&&)): Likewise.
+	(map<>::insert(const_iterator, node_type&&)): Likewise.
+	(map<>::erase(const_iterator)): Likewise.
+	(map<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multimap.h
+	(multimap<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multimap<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multimap<>::insert<>(_Pair&&)): Likewise.
+	(multimap<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(multimap<>::insert(node_type&&)): Likewise.
+	(multimap<>::insert(const_iterator, node_type&&)): Likewise.
+	(multimap<>::erase(const_iterator)): Likewise.
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h
+	(set<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(set<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(set<>::insert(value_type&&)): Likewise.
+	(set<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(set<>::insert(const_iterator, node_type&&)): Likewise.
+	(set<>::erase(const_iterator)): Likewise.
+	(set<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multiset.h
+	(multiset<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multiset<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multiset<>::insert<>(value_type&&)): Likewise.
+	(multiset<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(multiset<>::insert(node_type&&)): Likewise.
+	(multiset<>::insert(const_iterator, node_type&&)): Likewise.
+	(multiset<>::erase(const_iterator)): Likewise.
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
 2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/87258
