@@ -1,3 +1,8 @@
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* g++.dg/gcov/pr86109.C: New test.
+
 2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
 
 	* gcc.dg/tree-ssa/muldiv-1.c: New file.
