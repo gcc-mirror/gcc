@@ -1,4 +1,12 @@
-2018-10-3  Aldy Hernandez  <aldyh@redhat.com>
+2018-10-02  Jeff Law  <law@redhat.com>
+
+	* gimple-fold.c (get_range_strlen): Only set *nonstr when
+	an unterminated string is discovered.  Bubble up range
+	even for unterminated strings.
+	(gimple_fold_builtin_strlen): Do not fold if get_range_strlen
+	indicates the string was not terminated via NONSTR.
+
+2018-10-03  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (extract_range_from_unary_expr): Special case all
 	pointer conversions.
