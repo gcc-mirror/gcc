@@ -2631,7 +2631,7 @@ copy_loops (copy_body_data *id,
     }
 }
 
-/* Call cgraph_redirect_edge_call_stmt_to_callee on all calls in BB */
+/* Call redirect_call_stmt_to_callee on all calls in BB.  */
 
 void
 redirect_all_calls (copy_body_data * id, basic_block bb)

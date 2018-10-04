@@ -1,3 +1,10 @@
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82625
+	* multiple_target.c (redirect_to_specific_clone): New function.
+	(ipa_target_clone): Use it.
+	* tree-inline.c: Fix comment.
+
 2018-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.c (gcc::dump_manager::dump_manager): Initialize new
