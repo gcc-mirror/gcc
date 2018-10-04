@@ -1280,7 +1280,8 @@ find_looparound_phi (struct loop *loop, dref ref, dref root)
   memset (&init_dr, 0, sizeof (struct data_reference));
   DR_REF (&init_dr) = init_ref;
   DR_STMT (&init_dr) = phi;
-  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, loop))
+  if (!dr_analyze_innermost (&DR_INNERMOST (&init_dr), init_ref, loop,
+			     init_stmt))
     return NULL;
 
   if (!valid_initializer_p (&init_dr, ref->distance + 1, root->ref))

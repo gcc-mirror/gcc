@@ -562,6 +562,21 @@ dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
 {
   end_any_optinfo ();
 
+  dump_loc_immediate (dump_kind, loc);
+
+  if (optinfo_enabled_p ())
+    {
+      optinfo &info = begin_next_optinfo (loc);
+      info.handle_dump_file_kind (dump_kind);
+    }
+}
+
+/* As dump_loc above, but without starting a new optinfo. */
+
+void
+dump_context::dump_loc_immediate (dump_flags_t dump_kind,
+				  const dump_location_t &loc)
+{
   location_t srcloc = loc.get_location_t ();
 
   if (dump_file && apply_dump_filter_p (dump_kind, pflags))
@@ -573,12 +588,6 @@ dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
   /* Support for temp_dump_context in selftests.  */
   if (m_test_pp && apply_dump_filter_p (dump_kind, m_test_pp_flags))
     ::dump_loc (dump_kind, m_test_pp, srcloc);
-
-  if (optinfo_enabled_p ())
-    {
-      optinfo &info = begin_next_optinfo (loc);
-      info.handle_dump_file_kind (dump_kind);
-    }
 }
 
 /* Make an item for the given dump call, equivalent to print_gimple_stmt.  */
@@ -738,49 +747,6 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
   dump_loc (dump_kind, loc);
   dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
-
-/* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
-   In particular, the formatted chunks are captured as optinfo_item instances,
-   thus retaining metadata about the entities being dumped (e.g. source
-   locations), rather than just as plain text.  */
-
-class dump_pretty_printer : public pretty_printer
-{
-public:
-  dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
-
-  void emit_items (optinfo *dest);
-
-private:
-  /* Information on an optinfo_item that was generated during phase 2 of
-     formatting.  */
-  struct stashed_item
-  {
-    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
-      : buffer_ptr (buffer_ptr_), item (item_) {}
-    const char **buffer_ptr;
-    optinfo_item *item;
-  };
-
-  static bool format_decoder_cb (pretty_printer *pp, text_info *text,
-				 const char *spec, int /*precision*/,
-				 bool /*wide*/, bool /*set_locus*/,
-				 bool /*verbose*/, bool */*quoted*/,
-				 const char **buffer_ptr);
-
-  bool decode_format (text_info *text, const char *spec,
-		      const char **buffer_ptr);
-
-  void stash_item (const char **buffer_ptr, optinfo_item *item);
-
-  void emit_any_pending_textual_chunks (optinfo *dest);
-
-  void emit_item (optinfo_item *item, optinfo *dest);
-
-  dump_context *m_context;
-  dump_flags_t m_dump_kind;
-  auto_vec<stashed_item> m_stashed_items;
-};
 
 /* dump_pretty_printer's ctor.  */
 
@@ -1732,7 +1698,12 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
     return 0;
 
   ptr = option_value;
-  flags = MSG_ALL_PRIORITIES;
+
+  /* Retain "user-facing" and "internals" messages, but filter out
+     those from an opt_problem being re-emitted at the top level
+     (MSG_PRIORITY_REEMITTED), so as to avoid duplicate messages
+     messing up scan-tree-dump-times" in DejaGnu tests.  */
+  flags = MSG_PRIORITY_USER_FACING | MSG_PRIORITY_INTERNALS;
 
   while (*ptr)
     {
@@ -1830,8 +1801,9 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
   *filename = NULL;
 
   /* Default to filtering out "internals" messages, and retaining
-     "user-facing" messages.  */
-  *flags = MSG_PRIORITY_USER_FACING;
+     "user-facing" messages, and those from an opt_problem being
+     re-emitted at the top level.  */
+  *flags = MSG_PRIORITY_USER_FACING | MSG_PRIORITY_REEMITTED;
 
   *optgroup_flags = OPTGROUP_NONE;
 
@@ -1981,19 +1953,26 @@ enable_rtl_dump_file (void)
 
 #if CHECKING_P
 
+namespace selftest {
+
 /* temp_dump_context's ctor.  Temporarily override the dump_context
    (to forcibly enable optinfo-generation).  */
 
 temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
+				      bool forcibly_enable_dumping,
 				      dump_flags_t test_pp_flags)
-
 : m_context (),
   m_saved (&dump_context ().get ())
 {
   dump_context::s_current = &m_context;
   m_context.m_forcibly_enable_optinfo = forcibly_enable_optinfo;
-  m_context.m_test_pp = &m_pp;
-  m_context.m_test_pp_flags = test_pp_flags;
+  /* Conditionally enable the test dump, so that we can verify both the
+     dump_enabled_p and the !dump_enabled_p cases in selftests.  */
+  if (forcibly_enable_dumping)
+    {
+      m_context.m_test_pp = &m_pp;
+      m_context.m_test_pp_flags = test_pp_flags;
+    }
 
   dump_context::get ().refresh_dumps_are_enabled ();
 }
@@ -2014,8 +1993,6 @@ temp_dump_context::get_dumped_text ()
 {
   return pp_formatted_text (&m_pp);
 }
-
-namespace selftest {
 
 /* Verify that the dump_location_t constructors capture the source location
    at which they were called (provided that the build compiler is sufficiently
@@ -2055,7 +2032,7 @@ test_impl_location ()
    EXPECTED_TEXT, using LOC for the location of any failure.
    As a side-effect, the internal buffer is 0-terminated.  */
 
-static void
+void
 verify_dumped_text (const location &loc,
 		    temp_dump_context *context,
 		    const char *expected_text)
@@ -2065,18 +2042,9 @@ verify_dumped_text (const location &loc,
 		   expected_text);
 }
 
-/* Verify that the text dumped so far in CONTEXT equals
-   EXPECTED_TEXT.
-   As a side-effect, the internal buffer is 0-terminated.  */
-
-#define ASSERT_DUMPED_TEXT_EQ(CONTEXT, EXPECTED_TEXT)			\
-  SELFTEST_BEGIN_STMT							\
-    verify_dumped_text (SELFTEST_LOCATION, &(CONTEXT), (EXPECTED_TEXT)); \
-  SELFTEST_END_STMT
-
 /* Verify that ITEM has the expected values.  */
 
-static void
+void
 verify_item (const location &loc,
 	     const optinfo_item *item,
 	     enum optinfo_item_kind expected_kind,
@@ -2087,30 +2055,6 @@ verify_item (const location &loc,
   ASSERT_EQ_AT (loc, item->get_location (), expected_location);
   ASSERT_STREQ_AT (loc, item->get_text (), expected_text);
 }
-
-/* Verify that ITEM is a text item, with EXPECTED_TEXT.  */
-
-#define ASSERT_IS_TEXT(ITEM, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TEXT, \
-		 UNKNOWN_LOCATION, (EXPECTED_TEXT));		    \
-  SELFTEST_END_STMT
-
-/* Verify that ITEM is a tree item, with the expected values.  */
-
-#define ASSERT_IS_TREE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TREE, \
-		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
-  SELFTEST_END_STMT
-
-/* Verify that ITEM is a gimple item, with the expected values.  */
-
-#define ASSERT_IS_GIMPLE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_GIMPLE, \
-		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
-  SELFTEST_END_STMT
 
 /* Verify that calls to the dump_* API are captured and consolidated into
    optimization records. */
@@ -2144,7 +2088,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "int: %i str: %s", 42, "foo");
 
@@ -2161,7 +2105,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %T.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "tree: %T", integer_zero_node);
 
@@ -2179,7 +2123,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %E.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %E", stmt);
 
@@ -2197,7 +2141,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %G.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %G", stmt);
 
@@ -2220,7 +2164,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	 - multiple dump-specific format codes: some consecutive, others
 	 separated by text, trailing text after the final one.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf_loc (MSG_NOTE, loc, "before %T and %T"
 			 " %i consecutive %E%E after\n",
@@ -2248,7 +2192,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Tree, via dump_generic_expr.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
 	dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
@@ -2268,7 +2212,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Tree, via dump_generic_expr_loc.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_generic_expr_loc (MSG_NOTE, loc, TDF_SLIM, integer_one_node);
 
@@ -2288,7 +2232,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
       {
 	/* dump_gimple_stmt_loc.  */
 	{
-	  temp_dump_context tmp (with_optinfo,
+	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
 
@@ -2304,7 +2248,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_stmt.  */
 	{
-	  temp_dump_context tmp (with_optinfo,
+	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 2);
 
@@ -2320,7 +2264,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_expr_loc.  */
 	{
-	  temp_dump_context tmp (with_optinfo,
+	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
 
@@ -2336,7 +2280,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_expr.  */
 	{
-	  temp_dump_context tmp (with_optinfo,
+	  temp_dump_context tmp (with_optinfo, true,
 				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr (MSG_NOTE, TDF_SLIM, stmt, 2);
 
@@ -2353,7 +2297,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* poly_int.  */
       {
-	temp_dump_context tmp (with_optinfo,
+	temp_dump_context tmp (with_optinfo, true,
 			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_dec (MSG_NOTE, poly_int64 (42));
 
@@ -2378,7 +2322,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  if (j / 2)
 	    dump_filter |= MSG_PRIORITY_INTERNALS;
 
-	  temp_dump_context tmp (with_optinfo, dump_filter);
+	  temp_dump_context tmp (with_optinfo, true, dump_filter);
 	  /* Emit various messages, mostly with implicit priority.  */
 	  dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
 	  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS, stmt,
@@ -2460,7 +2404,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
   {
     /* MSG_OPTIMIZED_LOCATIONS.  */
     {
-      temp_dump_context tmp (true, MSG_ALL_KINDS);
+      temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_SUCCESS);
@@ -2468,7 +2412,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
     /* MSG_MISSED_OPTIMIZATION.  */
     {
-      temp_dump_context tmp (true, MSG_ALL_KINDS);
+      temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_FAILURE);
@@ -2477,7 +2421,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
   /* Verify that MSG_* affect AUTO_DUMP_SCOPE and the dump calls.  */
   {
-    temp_dump_context tmp (false,
+    temp_dump_context tmp (false, true,
 			   MSG_OPTIMIZED_LOCATIONS | MSG_ALL_PRIORITIES);
     dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
     {

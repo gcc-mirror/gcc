@@ -2071,7 +2071,7 @@ vect_analyze_slp_instance (vec_info *vinfo,
 /* Check if there are stmts in the loop can be vectorized using SLP.  Build SLP
    trees of packed scalar stmts if SLP is possible.  */
 
-bool
+opt_result
 vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 {
   unsigned int i;
@@ -2111,7 +2111,7 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size)
 				   max_tree_size);
     }
 
-  return true;
+  return opt_result::success ();
 }
 
 

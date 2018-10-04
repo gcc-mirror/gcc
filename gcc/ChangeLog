@@ -1,5 +1,172 @@
 2018-10-04  David Malcolm  <dmalcolm@redhat.com>
 
+	* Makefile.in (OBJS): Add opt-problem.o.
+	* dump-context.h: Include "selftest.h.
+	(selftest::temp_dump_context): New forward decl.
+	(class dump_context): Make friend of class
+	selftest::temp_dump_context.
+	(dump_context::dump_loc_immediate): New decl.
+	(class dump_pretty_printer): Move here from dumpfile.c.
+	(class temp_dump_context): Move to namespace selftest.
+	(temp_dump_context::temp_dump_context): Add param
+	"forcibly_enable_dumping".
+	(selftest::verify_dumped_text):
+	(ASSERT_DUMPED_TEXT_EQ): Move here from dumpfile.c.
+	(selftest::verify_item):
+	(ASSERT_IS_TEXT): Move here from dumpfile.c.
+	(ASSERT_IS_TREE): Likewise.
+	(ASSERT_IS_GIMPLE): Likewise.
+	* dumpfile.c (dump_context::dump_loc): Move immediate dumping
+	to...
+	(dump_context::dump_loc_immediate): ...this new function.
+	(class dump_pretty_printer): Move to dump-context.h.
+	(dump_switch_p_1): Don't enable MSG_PRIORITY_REEMITTED.
+	(opt_info_switch_p_1): Enable MSG_PRIORITY_REEMITTED.
+	(temp_dump_context::temp_dump_context): Move to "selftest"
+	namespace.  Add param "forcibly_enable_dumping", and use it to
+	conditionalize the use of m_pp;
+	(selftest::verify_dumped_text): Make non-static.
+	(ASSERT_DUMPED_TEXT_EQ): Move to dump-context.h.
+	(selftest::verify_item): Make non-static.
+	(ASSERT_IS_TEXT): Move to dump-context.h.
+	(ASSERT_IS_TREE): Likewise.
+	(ASSERT_IS_GIMPLE): Likewise.
+	(selftest::test_capture_of_dump_calls): Pass "true" for new
+	param of temp_dump_context.
+	* dumpfile.h (enum dump_flag): Add MSG_PRIORITY_REEMITTED, adding
+	it to MSG_ALL_PRIORITIES.  Update values of TDF_COMPARE_DEBUG and
+	TDF_COMPARE_DEBUG.
+	* opt-problem.cc: New file.
+	* opt-problem.h: New file.
+	* optinfo-emit-json.cc
+	(selftest::test_building_json_from_dump_calls): Pass "true" for
+	new param of temp_dump_context.
+	* optinfo.cc (optinfo_kind_to_dump_flag): New function.
+	(optinfo::emit_for_opt_problem): New function.
+	(optinfo::emit): Clarity which emit_item is used.
+	* optinfo.h (optinfo::get_dump_location): New accessor.
+	(optinfo::emit_for_opt_problem): New decl.
+	(optinfo::emit): Make const.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::opt_problem_cc_tests.
+	* selftest.h (selftest::opt_problem_cc_tests): New decl.
+	* tree-data-ref.c (dr_analyze_innermost): Convert return type from
+	bool to opt_result, converting fprintf messages to
+	opt_result::failure_at calls.  Add "stmt" param for use by the
+	failure_at calls.
+	(create_data_ref): Pass "stmt" to the dr_analyze_innermost call.
+	(runtime_alias_check_p): Convert return type from bool to
+	opt_result, converting dump_printf calls to
+	opt_result::failure_at, using the statement DDR_A for their
+	location.
+	(find_data_references_in_stmt): Convert return type from bool to
+	opt_result, converting "return false" to opt_result::failure_at
+	with a new message.
+	* tree-data-ref.h: Include "opt-problem.h".
+	(dr_analyze_innermost): Convert return type from bool to opt_result,
+	and add a const gimple * param.
+	(find_data_references_in_stmt): Convert return type from bool to
+	opt_result.
+	(runtime_alias_check_p): Likewise.
+	* tree-predcom.c (find_looparound_phi): Pass "init_stmt" to
+	dr_analyze_innermost.
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test):
+	Convert return type from bool to opt_result, adding a message for
+	the PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS zero case.
+	(vect_analyze_data_ref_dependence): Convert return type from bool
+	to opt_result.  Change sense of return type from "false"
+	effectively meaning "no problems" to "false" meaning a problem,
+	so that "return false" becomes "return opt_result::success".
+	Convert "return true" calls to opt_result::failure_at, using
+	the location of statement A rather than vect_location.
+	(vect_analyze_data_ref_dependences): Convert return type from bool
+	to opt_result.
+	(verify_data_ref_alignment): Likewise, converting dump_printf_loc
+	calls to opt_result::failure_at, using the stmt location rather
+	than vect_location.
+	(vect_verify_datarefs_alignment): Convert return type from bool
+	to opt_result.
+	(vect_enhance_data_refs_alignment): Likewise.  Split local "stat"
+	into multiple more-tightly-scoped copies.
+	(vect_analyze_data_refs_alignment): Convert return type from bool
+	to opt_result.
+	(vect_analyze_data_ref_accesses): Likewise, converting a
+	"return false" to a "return opt_result::failure_at", adding a
+	new message.
+	(vect_prune_runtime_alias_test_list): Convert return type from
+	bool to opt_result, converting dump_printf_loc to
+	opt_result::failure_at.  Add a %G to show the pertinent statement,
+	and use the stmt's location rather than vect_location.
+	(vect_find_stmt_data_reference): Convert return type from
+	bool to opt_result, converting dump_printf_loc to
+	opt_result::failure_at, using stmt's location.
+	(vect_analyze_data_refs):  Convert return type from bool to
+	opt_result.  Convert "return false" to "return
+	opt_result::failure_at", adding messages as needed.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt_1): Convert return
+	type from bool to opt_result.
+	(vect_determine_vf_for_stmt): Likewise.
+	(vect_determine_vectorization_factor): Likewise, converting
+	dump_printf_loc to opt_result::failure_at, using location of phi
+	rather than vect_location.
+	(vect_analyze_loop_form_1): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls, retaining the use of
+	vect_location.
+	(vect_analyze_loop_form): Convert return type from loop_vec_info
+	to opt_loop_vec_info.
+	(vect_analyze_loop_operations): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls, using the location
+	of phi/stmt rather than vect_location where available.  Convert
+	various "return false" to "return opt_result::failure_at" with
+	"unsupported phi" messages.
+	(vect_get_datarefs_in_loop): Convert return type from bool to
+	opt_result.  Add a message for the
+	PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS failure.
+	(vect_analyze_loop_2): Convert return type from bool to
+	opt_result.  Ensure "ok" is set to a opt_result::failure_at before
+	each "goto again;", adding new messages where needed.
+	Add "unsupported grouped {store|load}" messages.
+	(vect_analyze_loop): Convert return type from loop_vec_info to
+	opt_loop_vec_info.
+	* tree-vect-slp.c (vect_analyze_slp): Convert return type from
+	bool to opt_result.
+	* tree-vect-stmts.c (process_use): Likewise, converting
+	dump_printf_loc call and using stmt location, rather than
+	vect_location.
+	(vect_mark_stmts_to_be_vectorized): Likeise.
+	(vect_analyze_stmt): Likewise, adding a %G.
+	(vect_get_vector_types_for_stmt): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls and using stmt
+	location, rather than vect_location.
+	(vect_get_mask_type_for_stmt): Convert return type from tree to
+	opt_tree, converting dump_printf_loc calls and using stmt location.
+	* tree-vectorizer.c: Include "opt-problem.h.
+	(try_vectorize_loop_1): Flag "Analyzing loop at" dump message as
+	MSG_PRIORITY_INTERNALS.  Convert local "loop_vinfo" from
+	loop_vec_info to opt_loop_vec_info.  If if fails, and dumping is
+	enabled, use it to report at the top level "couldn't vectorize
+	loop" followed by the problem.
+	* tree-vectorizer.h (opt_loop_vec_info): New typedef.
+	(vect_mark_stmts_to_be_vectorized): Convert return type from bool
+	to opt_result.
+	(vect_analyze_stmt): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	(tree vect_get_mask_type_for_stmt): Likewise.
+	(vect_analyze_data_ref_dependences): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_find_stmt_data_reference): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	(vect_analyze_loop): Convert return type from loop_vec_info to
+	opt_loop_vec_info.
+	(vect_analyze_loop_form): Likewise.
+	(vect_analyze_slp): Convert return type from bool to opt_result.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
 	* doc/invoke.texi (-fopt-info): Document new "internals"
 	sub-option.
 	* dump-context.h (dump_context::apply_dump_filter_p): New decl.
