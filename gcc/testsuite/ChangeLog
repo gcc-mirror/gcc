@@ -1,5 +1,10 @@
 2018-10-04  Martin Liska  <mliska@suse.cz>
 
+	PR c/87483
+	* gcc.dg/pr87483.c: New test.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/82625
 	* g++.dg/ext/pr82625.C: New test.
 
