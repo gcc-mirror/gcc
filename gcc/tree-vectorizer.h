@@ -1420,7 +1420,11 @@ extern dump_user_location_t vect_location;
    and then calling
      dump_end_scope ();
    once the object goes out of scope, thus capturing the nesting of
-   the scopes.  */
+   the scopes.
+
+   These scopes affect dump messages within them: dump messages at the
+   top level implicitly default to MSG_PRIORITY_USER_FACING, whereas those
+   in a nested scope implicitly default to MSG_PRIORITY_INTERNALS.  */
 
 #define DUMP_VECT_SCOPE(MSG) \
   AUTO_DUMP_SCOPE (MSG, vect_location)

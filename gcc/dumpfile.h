@@ -145,6 +145,9 @@ enum dump_flag
   /* Dump folding details.  */
   TDF_FOLDING = (1 << 21),
 
+  /* MSG_* flags for expressing the kinds of message to
+     be emitted by -fopt-info.  */
+
   /* -fopt-info optimized sources.  */
   MSG_OPTIMIZED_LOCATIONS = (1 << 22),
 
@@ -154,15 +157,37 @@ enum dump_flag
   /* General optimization info.  */
   MSG_NOTE = (1 << 24),
 
-  MSG_ALL = (MSG_OPTIMIZED_LOCATIONS
-	     | MSG_MISSED_OPTIMIZATION
-	     | MSG_NOTE),
+  /* Mask for selecting MSG_-kind flags.  */
+  MSG_ALL_KINDS = (MSG_OPTIMIZED_LOCATIONS
+		   | MSG_MISSED_OPTIMIZATION
+		   | MSG_NOTE),
+
+  /* MSG_PRIORITY_* flags for expressing the priority levels of message
+     to be emitted by -fopt-info, and filtering on them.
+     By default, messages at the top-level dump scope are "user-facing",
+     whereas those that are in nested scopes are implicitly "internals".
+     This behavior can be overridden for a given dump message by explicitly
+     specifying one of the MSG_PRIORITY_* flags.
+
+     By default, dump files show both kinds of message, whereas -fopt-info
+     only shows "user-facing" messages, and requires the "-internals"
+     sub-option of -fopt-info to show the internal messages.  */
+
+  /* Implicitly supplied for messages at the top-level dump scope.  */
+  MSG_PRIORITY_USER_FACING = (1 << 25),
+
+  /* Implicitly supplied for messages within nested dump scopes.  */
+  MSG_PRIORITY_INTERNALS = (1 << 26),
+
+  /* Mask for selecting MSG_PRIORITY_* flags.  */
+  MSG_ALL_PRIORITIES = (MSG_PRIORITY_USER_FACING
+			| MSG_PRIORITY_INTERNALS),
 
   /* Dumping for -fcompare-debug.  */
-  TDF_COMPARE_DEBUG = (1 << 25),
+  TDF_COMPARE_DEBUG = (1 << 27),
 
   /* All values.  */
-  TDF_ALL_VALUES = (1 << 26) - 1
+  TDF_ALL_VALUES = (1 << 28) - 1
 };
 
 /* Dump flags type.  */
@@ -549,7 +574,11 @@ class auto_dump_scope
    and then calling
      dump_end_scope ();
    once the object goes out of scope, thus capturing the nesting of
-   the scopes.  */
+   the scopes.
+
+   These scopes affect dump messages within them: dump messages at the
+   top level implicitly default to MSG_PRIORITY_USER_FACING, whereas those
+   in a nested scope implicitly default to MSG_PRIORITY_INTERNALS.  */
 
 #define AUTO_DUMP_SCOPE(NAME, LOC) \
   auto_dump_scope scope (NAME, LOC)

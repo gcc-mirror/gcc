@@ -100,6 +100,8 @@ class dump_context
 
   void emit_item (optinfo_item *item, dump_flags_t dump_kind);
 
+  bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
+
  private:
   optinfo &ensure_pending_optinfo ();
   optinfo &begin_next_optinfo (const dump_location_t &loc);

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopt-info-note" } */
+/* { dg-options "-fopt-info-note-internals" } */
 
 extern void test_string_literal (void);
 extern void test_tree (void);
@@ -20,5 +20,11 @@ void test_remarks (void)
 
   /* Dump messages in nested scopes are not printed by default, and
      require "-internals".  */
-  test_scopes ();
+  test_scopes (); /* { dg-line test_scopes_line } */
+  /* { dg-message "=== outer scope ===" "" { target *-*-* } test_scopes_line } */
+  /* { dg-message " at outer scope" "" { target *-*-* } test_scopes_line } */
+  /* { dg-message " === middle scope ===" "" { target *-*-* } test_scopes_line } */
+  /* { dg-message "  at middle scope" "" { target *-*-* } test_scopes_line } */
+  /* { dg-message "  === innermost scope ===" "" { target *-*-* } test_scopes_line } */
+  /* { dg-message "   at innermost scope" "" { target *-*-* } test_scopes_line } */
 }
