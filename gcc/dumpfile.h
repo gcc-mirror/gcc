@@ -179,15 +179,22 @@ enum dump_flag
   /* Implicitly supplied for messages within nested dump scopes.  */
   MSG_PRIORITY_INTERNALS = (1 << 26),
 
+  /* Supplied when an opt_problem generated in a nested scope is re-emitted
+     at the top-level.   We want to default to showing these in -fopt-info
+     output, but to *not* show them in dump files, as the message would be
+     shown twice, messing up "scan-tree-dump-times" in DejaGnu tests.  */
+  MSG_PRIORITY_REEMITTED = (1 << 27),
+
   /* Mask for selecting MSG_PRIORITY_* flags.  */
   MSG_ALL_PRIORITIES = (MSG_PRIORITY_USER_FACING
-			| MSG_PRIORITY_INTERNALS),
+			| MSG_PRIORITY_INTERNALS
+			| MSG_PRIORITY_REEMITTED),
 
   /* Dumping for -fcompare-debug.  */
-  TDF_COMPARE_DEBUG = (1 << 27),
+  TDF_COMPARE_DEBUG = (1 << 28),
 
   /* All values.  */
-  TDF_ALL_VALUES = (1 << 28) - 1
+  TDF_ALL_VALUES = (1 << 29) - 1
 };
 
 /* Dump flags type.  */

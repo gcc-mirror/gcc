@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-pretty-print.h"
+#include "opt-problem.h"
 
 
 /* Loop or bb location, with hotness information.  */
@@ -860,12 +861,24 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   vect_location = find_loop_location (loop);
   if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION
       && dump_enabled_p ())
-    dump_printf (MSG_NOTE, "\nAnalyzing loop at %s:%d\n",
+    dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+		 "\nAnalyzing loop at %s:%d\n",
 		 LOCATION_FILE (vect_location.get_location_t ()),
 		 LOCATION_LINE (vect_location.get_location_t ()));
 
-  loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
+  /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
+  opt_loop_vec_info loop_vinfo
+    = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
   loop->aux = loop_vinfo;
+
+  if (!loop_vinfo)
+    if (dump_enabled_p ())
+      if (opt_problem *problem = loop_vinfo.get_problem ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "couldn't vectorize loop\n");
+	  problem->emit_and_clear ();
+	}
 
   if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
     {
