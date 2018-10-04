@@ -1,3 +1,7 @@
+2018-10-03  Jeff Law  <law@redhat.comg>
+
+        * trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
+
 2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65677
