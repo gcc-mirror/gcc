@@ -1,3 +1,10 @@
+2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: New test.
+	* gnat.dg/string_merge2.adb: New test.
+	* gcc.dg/merge-all-constants-1.c: Adjust test.
+	* gcc.dg/merge-all-constants-2.c: New test.
+
 2018-10-04  Bill Seurer  <seurer@linux.vnet.ibm.com>
 
 	PR target/87486
