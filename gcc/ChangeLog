@@ -1,5 +1,11 @@
 2018-10-04  Martin Liska  <mliska@suse.cz>
 
+	PR c/87483
+	* cgraphunit.c (process_function_and_variable_attributes):
+	Warn about a function with alias attribute and a body.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/82625
 	* multiple_target.c (redirect_to_specific_clone): New function.
 	(ipa_target_clone): Use it.

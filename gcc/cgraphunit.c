@@ -784,6 +784,12 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
 	}
+      else if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl))
+	  && node->definition
+	  && !node->alias)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		    "%<alias%> attribute ignored"
+		    " because function is defined");
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl))
 	  && !DECL_DECLARED_INLINE_P (decl)
