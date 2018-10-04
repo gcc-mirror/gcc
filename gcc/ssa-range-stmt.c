@@ -164,7 +164,7 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range) const
       return true;
     }
   type_range.set_varying (TREE_TYPE (operand1 ()));
-  return handler ()->op1_irange (r, lhs_range, type_range);
+  return handler ()->op1_range (r, lhs_range, type_range);
 }
 
 /* This method will evaluate a range for operand 1 of a binary expression
@@ -189,7 +189,7 @@ range_stmt::op1_irange (irange& r, const irange& lhs_range,
       r.set_undefined (op2_range.type ());
       return true;
     }
-  return handler ()->op1_irange (r, lhs_range, op2_range);
+  return handler ()->op1_range (r, lhs_range, op2_range);
 }
 
 /* This method will evaluate a range for operand 2 of a binary expression
@@ -206,7 +206,7 @@ range_stmt::op2_irange (irange& r, const irange& lhs_range,
       r.set_undefined (op1_range.type ());
       return true;
     }
-  return handler ()->op2_irange (r, lhs_range, op1_range);
+  return handler ()->op2_range (r, lhs_range, op1_range);
 }
 
 /* This method will dump the internal state of the statement summary.  */

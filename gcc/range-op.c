@@ -176,7 +176,7 @@ accumulate_range_and_canonicalize (signop s,
 
 
 bool
-irange_operator::fold_range (irange& r ATTRIBUTE_UNUSED,
+range_operator::fold_range (irange& r ATTRIBUTE_UNUSED,
 			     const irange& op1 ATTRIBUTE_UNUSED,
 			     const irange& op2 ATTRIBUTE_UNUSED) const
 {
@@ -185,7 +185,7 @@ irange_operator::fold_range (irange& r ATTRIBUTE_UNUSED,
 
 
 bool
-irange_operator::op1_irange (irange& r ATTRIBUTE_UNUSED,
+range_operator::op1_range (irange& r ATTRIBUTE_UNUSED,
 			     const irange& lhs ATTRIBUTE_UNUSED,
 			     const irange& op2 ATTRIBUTE_UNUSED) const
 {
@@ -193,7 +193,7 @@ irange_operator::op1_irange (irange& r ATTRIBUTE_UNUSED,
 }
 
 bool
-irange_operator::op2_irange (irange& r ATTRIBUTE_UNUSED,
+range_operator::op2_range (irange& r ATTRIBUTE_UNUSED,
 			     const irange& lhs ATTRIBUTE_UNUSED,
 			     const irange& op1 ATTRIBUTE_UNUSED) const
 {
@@ -232,16 +232,16 @@ get_bool_state (irange& r, const irange& lhs, tree val_type)
 }
 
 
-class operator_equal : public irange_operator
+class operator_equal : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			       const irange& val) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			       const irange& val) const;
 } op_equal;
 
@@ -298,7 +298,7 @@ operator_equal::fold_range (irange& r, const irange& op1,
 }
 
 bool
-operator_equal::op1_irange (irange& r, const irange& lhs,
+operator_equal::op1_range (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
@@ -325,10 +325,10 @@ operator_equal::op1_irange (irange& r, const irange& lhs,
 
 
 bool
-operator_equal::op2_irange (irange& r, const irange& lhs,
+operator_equal::op2_range (irange& r, const irange& lhs,
 			    const irange& op1) const
 {
-  return operator_equal::op1_irange (r, lhs, op1);
+  return operator_equal::op1_range (r, lhs, op1);
 }
 
 
@@ -336,16 +336,16 @@ operator_equal::op2_irange (irange& r, const irange& lhs,
 
 /* Range operator for def = op1 != op2. */
 
-class operator_not_equal : public irange_operator
+class operator_not_equal : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_not_equal;
 
@@ -389,7 +389,7 @@ operator_not_equal::fold_range (irange& r, const irange& op1,
 
 /* Calculate the range of op1 being == to VAL based on LHS.  */
 bool
-operator_not_equal::op1_irange (irange& r, const irange& lhs,
+operator_not_equal::op1_range (irange& r, const irange& lhs,
 				const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
@@ -416,10 +416,10 @@ operator_not_equal::op1_irange (irange& r, const irange& lhs,
 
 
 bool
-operator_not_equal::op2_irange (irange& r, const irange& lhs,
+operator_not_equal::op2_range (irange& r, const irange& lhs,
 				const irange& op1) const
 {
-  return operator_not_equal::op1_irange (r, lhs, op1);
+  return operator_not_equal::op1_range (r, lhs, op1);
 }
 
 
@@ -469,14 +469,14 @@ build_ge (irange& r, tree type, const wide_int& val)
 
 
 
-class operator_lt :  public irange_operator
+class operator_lt :  public range_operator
 {
 public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
   virtual void dump (FILE *f) const;
@@ -509,7 +509,7 @@ operator_lt::fold_range (irange& r, const irange& op1, const irange& op2) const
 
 
 bool
-operator_lt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+operator_lt::op1_range (irange& r, const irange& lhs, const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
     {
@@ -529,7 +529,7 @@ operator_lt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 
 
 bool
-operator_lt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
+operator_lt::op2_range (irange& r, const irange& lhs, const irange& op1) const
 {
   switch (get_bool_state (r, lhs, op1.type ()))
     {
@@ -548,14 +548,14 @@ operator_lt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 
 }
 
-class operator_le :  public irange_operator
+class operator_le :  public range_operator
 {
 public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
   virtual void dump (FILE *f) const;
@@ -587,7 +587,7 @@ operator_le::fold_range (irange& r, const irange& op1, const irange& op2) const
 }
 
 bool
-operator_le::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+operator_le::op1_range (irange& r, const irange& lhs, const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
     {
@@ -607,7 +607,7 @@ operator_le::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 
 
 bool
-operator_le::op2_irange (irange& r, const irange& lhs, const irange& op1) const
+operator_le::op2_range (irange& r, const irange& lhs, const irange& op1) const
 {
   switch (get_bool_state (r, lhs, op1.type ()))
     {
@@ -627,14 +627,14 @@ operator_le::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 }
 
 
-class operator_gt :  public irange_operator
+class operator_gt :  public range_operator
 {
 public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
   virtual void dump (FILE *f) const;
@@ -667,7 +667,7 @@ operator_gt::fold_range (irange& r, const irange& op1, const irange& op2) const
 }
 
 bool
-operator_gt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+operator_gt::op1_range (irange& r, const irange& lhs, const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
     {
@@ -687,7 +687,7 @@ operator_gt::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 
 
 bool
-operator_gt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
+operator_gt::op2_range (irange& r, const irange& lhs, const irange& op1) const
 {
   switch (get_bool_state (r, lhs, op1.type ()))
     {
@@ -707,14 +707,14 @@ operator_gt::op2_irange (irange& r, const irange& lhs, const irange& op1) const
 }
 
 
-class operator_ge :  public irange_operator
+class operator_ge :  public range_operator
 {
 public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
   virtual void dump (FILE *f) const;
@@ -747,7 +747,7 @@ operator_ge::fold_range (irange& r, const irange& op1, const irange& op2) const
 } 
 
 bool
-operator_ge::op1_irange (irange& r, const irange& lhs, const irange& op2) const
+operator_ge::op1_range (irange& r, const irange& lhs, const irange& op2) const
 {
   switch (get_bool_state (r, lhs, op2.type ()))
     {
@@ -767,7 +767,7 @@ operator_ge::op1_irange (irange& r, const irange& lhs, const irange& op2) const
 
 
 bool
-operator_ge::op2_irange (irange& r, const irange& lhs, const irange& op1) const
+operator_ge::op2_range (irange& r, const irange& lhs, const irange& op1) const
 {
   switch (get_bool_state (r, lhs, op1.type ()))
     {
@@ -1274,7 +1274,7 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh)
   return res && !r.varying_p ();
 }
 
-class basic_operator : public irange_operator
+class basic_operator : public range_operator
 {
 private:
   enum tree_code code;
@@ -1310,9 +1310,9 @@ class operator_plus : public basic_operator
 {
 public:
   operator_plus (): basic_operator (PLUS_EXPR) { }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 
 } op_plus;
@@ -1321,14 +1321,14 @@ public:
 /* Adjust irange to be in terms of op1. 
    Given [range] = op1 + val,  op1 = [range] - val.  */
 bool
-operator_plus::op1_irange (irange& r, const irange& lhs,
+operator_plus::op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
   return op_rr (MINUS_EXPR, r, lhs, op2);
 }
 
 bool
-operator_plus::op2_irange (irange& r, const irange& lhs,
+operator_plus::op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
   return op_rr (MINUS_EXPR, r, lhs, op1);
@@ -1339,16 +1339,16 @@ class operator_minus : public basic_operator
 {
 public:
   operator_minus () : basic_operator (MINUS_EXPR) { }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_minus;
 
 /* Adjust irange to be in terms of op1. 
    Given lhs = op1 - op2,  op1 = lhs + op2.  */
 bool
-operator_minus::op1_irange (irange& r, const irange& lhs,
+operator_minus::op1_range (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
   return op_rr (PLUS_EXPR, r, lhs, op2);
@@ -1357,7 +1357,7 @@ operator_minus::op1_irange (irange& r, const irange& lhs,
 /* Adjust irange to be in terms of op2. 
    Given lhs = op1 - op2,  -op2 = lhs - op1, therefore op2 = op1 - lhs.  */
 bool
-operator_minus::op2_irange (irange& r, const irange& lhs,
+operator_minus::op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const
 {
   return op_rr (MINUS_EXPR, r, op1 ,lhs);
@@ -1374,7 +1374,7 @@ class operator_exact_divide : public basic_operator
 {
 public:
   operator_exact_divide () : basic_operator (EXACT_DIV_EXPR) { }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
 } op_exact_div;
@@ -1382,7 +1382,7 @@ public:
 
 // Adjust irange to be in terms of op1. 
 bool
-operator_exact_divide::op1_irange (irange& r,
+operator_exact_divide::op1_range (irange& r,
 				   const irange& lhs,
 				   const irange& op2) const
 {
@@ -1404,7 +1404,7 @@ class operator_shift : public basic_operator
 {
 public:
   operator_shift (enum tree_code c) : basic_operator (c) { }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 };
 
@@ -1412,7 +1412,7 @@ operator_shift op_lshift (LSHIFT_EXPR);
 operator_shift op_rshift (RSHIFT_EXPR);
 
 bool
-operator_shift::op1_irange (irange& r, const irange& lhs,
+operator_shift::op1_range (irange& r, const irange& lhs,
 			    const irange& op2) const
 {
   tree type = lhs.type ();
@@ -1458,13 +1458,13 @@ operator_shift::op1_irange (irange& r, const irange& lhs,
 
 /*  ----------------------------------------------------------------------  */
 
-class operator_cast: public irange_operator
+class operator_cast: public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 
 } op_cast;
@@ -1502,7 +1502,7 @@ operator_cast::fold_range (irange& r, const irange& lh, const irange& rh) const
 }
 
 bool
-operator_cast::op1_irange (irange& r, const irange& lhs,
+operator_cast::op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const
 {
   tree lhs_type = lhs.type ();
@@ -1553,14 +1553,14 @@ operator_cast::op1_irange (irange& r, const irange& lhs,
 
 // Bitwise and logical ops. 
 
-class operator_logical_and : public irange_operator
+class operator_logical_and : public range_operator
 {
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_logical_and;
 
@@ -1601,7 +1601,7 @@ operator_logical_and::fold_range (irange& r, const irange& lh,
 
 
 bool
-operator_logical_and::op1_irange (irange& r, const irange& lhs,
+operator_logical_and::op1_range (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
    switch (get_bool_state (r, lhs, op2.type ()))
@@ -1621,10 +1621,10 @@ operator_logical_and::op1_irange (irange& r, const irange& lhs,
 }
 
 bool
-operator_logical_and::op2_irange (irange& r, const irange& lhs,
+operator_logical_and::op2_range (irange& r, const irange& lhs,
 				  const irange& op1) const
 {
-  return operator_logical_and::op1_irange (r, lhs, op1);
+  return operator_logical_and::op1_range (r, lhs, op1);
 }
 
 class operator_bitwise_and : public basic_operator
@@ -1632,19 +1632,19 @@ class operator_bitwise_and : public basic_operator
 public:
   operator_bitwise_and () : basic_operator (BIT_AND_EXPR) { }
   virtual void dump (FILE *f) const { fprintf (f, " & "); }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_bitwise_and;
 
 bool
-operator_bitwise_and::op1_irange (irange& r, const irange& lhs,
+operator_bitwise_and::op1_range (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
   if (types_compatible_p (lhs.type (), boolean_type_node))
-    return op_logical_and.op1_irange (r, lhs, op2);
+    return op_logical_and.op1_range (r, lhs, op2);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
   r.set_varying (lhs.type ());
@@ -1652,21 +1652,21 @@ operator_bitwise_and::op1_irange (irange& r, const irange& lhs,
 }
 
 bool
-operator_bitwise_and::op2_irange (irange& r, const irange& lhs,
+operator_bitwise_and::op2_range (irange& r, const irange& lhs,
 				  const irange& op1) const
 {
-  return operator_bitwise_and::op1_irange (r, lhs, op1);
+  return operator_bitwise_and::op1_range (r, lhs, op1);
 }
 
 
-class operator_logical_or : public irange_operator
+class operator_logical_or : public range_operator
 {
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_logical_or;
 
@@ -1689,7 +1689,7 @@ operator_logical_or::fold_range (irange& r, const irange& lh,
 }
 
 bool
-operator_logical_or::op1_irange (irange& r, const irange& lhs,
+operator_logical_or::op1_range (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
    switch (get_bool_state (r, lhs, op2.type ()))
@@ -1709,10 +1709,10 @@ operator_logical_or::op1_irange (irange& r, const irange& lhs,
 }
 
 bool
-operator_logical_or::op2_irange (irange& r, const irange& lhs,
+operator_logical_or::op2_range (irange& r, const irange& lhs,
 				  const irange& op1) const
 {
-  return operator_logical_or::op1_irange (r, lhs, op1);
+  return operator_logical_or::op1_range (r, lhs, op1);
 }
 
 class operator_bitwise_or : public basic_operator
@@ -1720,19 +1720,19 @@ class operator_bitwise_or : public basic_operator
 public:
   operator_bitwise_or () : basic_operator (BIT_IOR_EXPR) { }
   virtual void dump (FILE *f) const { fprintf (f, " | "); }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_bitwise_or;
 
 bool
-operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
+operator_bitwise_or::op1_range (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
   if (types_compatible_p (lhs.type (), boolean_type_node))
-    return op_logical_or.op1_irange (r, lhs, op2);
+    return op_logical_or.op1_range (r, lhs, op2);
 
   /* For now do nothing with bitwise OR of iranges, just return the type. */
   r.set_varying (lhs.type ());
@@ -1740,17 +1740,17 @@ operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
 }
 
 bool
-operator_bitwise_or::op2_irange (irange& r, const irange& lhs,
+operator_bitwise_or::op2_range (irange& r, const irange& lhs,
 				  const irange& op1) const
 {
-  return operator_bitwise_or::op1_irange (r, lhs, op1);
+  return operator_bitwise_or::op1_range (r, lhs, op1);
 }
 
 class operator_bitwise_xor : public basic_operator
 {
 public:
   operator_bitwise_xor (): basic_operator (BIT_XOR_EXPR) { }
-  /* FIXME: Andrew can implement the op1_irange and op2_irange variants
+  /* FIXME: Andrew can implement the op1_range and op2_range variants
      when he returns from leave :-P.  */
 } op_bitwise_xor;
 
@@ -1758,16 +1758,16 @@ class operator_trunc_mod : public basic_operator
 {
 public:
   operator_trunc_mod (): basic_operator (TRUNC_MOD_EXPR) { }
-  /* FIXME: Andrew can implement the op1_irange and op2_irange variants
+  /* FIXME: Andrew can implement the op1_range and op2_range variants
      when he returns from leave :-P.  */
 } op_trunc_mod;
 
-class operator_logical_not : public irange_operator
+class operator_logical_not : public range_operator
 {
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_logical_not;
 
@@ -1805,7 +1805,7 @@ operator_logical_not::fold_range (irange& r, const irange& lh,
 }
 
 bool
-operator_logical_not::op1_irange (irange& r, const irange& lhs,
+operator_logical_not::op1_range (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
   if (lhs.varying_p () || lhs.undefined_p ())
@@ -1816,12 +1816,12 @@ operator_logical_not::op1_irange (irange& r, const irange& lhs,
 }
 
 
-class operator_bitwise_not : public irange_operator
+class operator_bitwise_not : public range_operator
 {
 public:
   void dump (FILE *f) const;
   virtual bool fold_range (irange& r, const irange& lh, const irange& rh) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_bitwise_not;
 
@@ -1851,13 +1851,13 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
 }
 
 bool
-operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
+operator_bitwise_not::op1_range (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
   tree type = lhs.type ();
   /* If this is a boolean not, call the logical version.  */
   if (types_compatible_p (type, boolean_type_node))
-    return op_logical_not.op1_irange (r, lhs, op2);
+    return op_logical_not.op1_range (r, lhs, op2);
 
   // ~X is -1 - X and since bitwise NOT is involutary...do it again.
   irange minusone (type,
@@ -1870,7 +1870,7 @@ operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
 /*  ----------------------------------------------------------------------  */
 
 
-class operator_cst : public irange_operator
+class operator_cst : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
@@ -1895,14 +1895,14 @@ operator_cst::fold_range (irange& r, const irange& lh,
 
 
 
-class operator_ssa_name : public irange_operator
+class operator_ssa_name : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_ssa_name;
 
@@ -1921,7 +1921,7 @@ operator_ssa_name::fold_range (irange& r, const irange& lh,
 }
 
 bool
-operator_ssa_name::op1_irange (irange& r, const irange& lhs,
+operator_ssa_name::op1_range (irange& r, const irange& lhs,
 			       const irange& op2 ATTRIBUTE_UNUSED) const
 {
   r = lhs;
@@ -1929,7 +1929,7 @@ operator_ssa_name::op1_irange (irange& r, const irange& lhs,
 }
 
 
-class operator_pointer_plus : public irange_operator
+class operator_pointer_plus : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
@@ -1968,7 +1968,7 @@ operator_pointer_plus::fold_range (irange& r, const irange& lh,
 }
 
 // Unary identity function.
-class operator_identity : public irange_operator
+class operator_identity : public range_operator
 {
   tree_code code;
  public:
@@ -1976,7 +1976,7 @@ class operator_identity : public irange_operator
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange &op2 ATTRIBUTE_UNUSED) const
   { r = op1; return false; }
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange &op2 ATTRIBUTE_UNUSED) const
   { r = lhs; return false; }
 } op_identity;
@@ -1992,13 +1992,13 @@ operator_identity::dump (FILE *f) const
     gcc_unreachable ();
 }
 
-class operator_abs : public irange_operator
+class operator_abs : public range_operator
 {
  public:
   virtual void dump (FILE *f) const { fprintf (f, " ABS_EXPR "); }
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r,
+  virtual bool op1_range (irange& r,
 			   const irange& lhs, const irange& op2) const;
 } op_abs;
 
@@ -2014,7 +2014,7 @@ operator_abs::fold_range (irange &r,
 }
 
 bool
-operator_abs::op1_irange (irange& r,
+operator_abs::op1_range (irange& r,
 			  const irange& lhs, const irange& op2) const
 {
   tree type = lhs.type ();
@@ -2039,7 +2039,7 @@ operator_abs::op1_irange (irange& r,
   return true;
 }
 
-class operator_negate : public irange_operator
+class operator_negate : public range_operator
 {
   tree_code code;
  public:
@@ -2047,7 +2047,7 @@ class operator_negate : public irange_operator
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const
     { return fold_range (r, lhs, op2); } // NEGATE is involutory :-P.
 } op_negate;
@@ -2073,7 +2073,7 @@ operator_negate::fold_range (irange &r,
   return op_rr (MINUS_EXPR, r, zero, lh);
 }
 
-class operator_min_max : public irange_operator
+class operator_min_max : public range_operator
 {
   tree_code code;
 public:
@@ -2082,9 +2082,9 @@ public:
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 } op_min (MIN_EXPR), op_max (MAX_EXPR);
 
@@ -2131,7 +2131,7 @@ operator_min_max::fold_range (irange& r, const irange& lh,
 }
 
 bool
-operator_min_max::op1_irange (irange& r, const irange& lhs,
+operator_min_max::op1_range (irange& r, const irange& lhs,
 			      const irange& op2) const
 {
   if (empty_range_check (r, lhs, op2, lhs.type ()))
@@ -2165,23 +2165,23 @@ operator_min_max::op1_irange (irange& r, const irange& lhs,
 }
 
 bool
-operator_min_max::op2_irange (irange& r, const irange& lhs,
+operator_min_max::op2_range (irange& r, const irange& lhs,
 			      const irange& op1) const
 {
-  return operator_min_max::op1_irange (r, lhs, op1);
+  return operator_min_max::op1_range (r, lhs, op1);
 }
 
 
 
 
-class operator_addr_expr : public irange_operator
+class operator_addr_expr : public range_operator
 {
 public:
   virtual void dump (FILE *f) const;
 
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
 } op_addr;
 
@@ -2212,83 +2212,83 @@ operator_addr_expr::fold_range (irange& r, const irange& lh,
 // The same functionality for fold() applies to op1_range...
 // effectively copying the non-nullness.
 bool
-operator_addr_expr::op1_irange (irange& r, const irange& lhs,
+operator_addr_expr::op1_range (irange& r, const irange& lhs,
 			        const irange& op2) const
 {
   return operator_addr_expr::fold_range (r, lhs, op2);
 }
 /*  ----------------------------------------------------------------------  */
 
-/* Create the irange operator table as a local object in this file, and the
+/* Create the range operator table as a local object in this file, and the
    constructor should be automatically called before it is used.  */
 
-class irange_op_table
+class range_op_table
 {
 public:
-  irange_op_table ();
-  inline irange_operator *operator[] (enum tree_code code);
+  range_op_table ();
+  inline range_operator *operator[] (enum tree_code code);
 private:
-  irange_operator *m_irange_tree[MAX_TREE_CODES];
-} irange_tree;
+  range_operator *m_range_tree[MAX_TREE_CODES];
+} range_tree;
 
-irange_operator *irange_op_table::operator[] (enum tree_code code)
+range_operator *range_op_table::operator[] (enum tree_code code)
 {
   gcc_assert (code > 0 && code < MAX_TREE_CODES);
-  return m_irange_tree[code];
+  return m_range_tree[code];
 }
 
-irange_op_table::irange_op_table ()
+range_op_table::range_op_table ()
 {
-  m_irange_tree[LT_EXPR] = &op_lt;
-  m_irange_tree[LE_EXPR] = &op_le;
-  m_irange_tree[GT_EXPR] = &op_gt;
-  m_irange_tree[GE_EXPR] = &op_ge;
-  m_irange_tree[NE_EXPR] = &op_not_equal;
-  m_irange_tree[EQ_EXPR] = &op_equal;
+  m_range_tree[LT_EXPR] = &op_lt;
+  m_range_tree[LE_EXPR] = &op_le;
+  m_range_tree[GT_EXPR] = &op_gt;
+  m_range_tree[GE_EXPR] = &op_ge;
+  m_range_tree[NE_EXPR] = &op_not_equal;
+  m_range_tree[EQ_EXPR] = &op_equal;
 
-  m_irange_tree[PLUS_EXPR] = &op_plus;
-  m_irange_tree[MINUS_EXPR] = &op_minus;
-  m_irange_tree[MULT_EXPR] = &op_mult;
-  m_irange_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
-  m_irange_tree[FLOOR_DIV_EXPR] = &op_floor_div;
-  m_irange_tree[ROUND_DIV_EXPR] = &op_round_div;
-  m_irange_tree[CEIL_DIV_EXPR] = &op_ceil_div;
-  m_irange_tree[EXACT_DIV_EXPR] = &op_exact_div;
+  m_range_tree[PLUS_EXPR] = &op_plus;
+  m_range_tree[MINUS_EXPR] = &op_minus;
+  m_range_tree[MULT_EXPR] = &op_mult;
+  m_range_tree[TRUNC_DIV_EXPR] = &op_trunc_div;
+  m_range_tree[FLOOR_DIV_EXPR] = &op_floor_div;
+  m_range_tree[ROUND_DIV_EXPR] = &op_round_div;
+  m_range_tree[CEIL_DIV_EXPR] = &op_ceil_div;
+  m_range_tree[EXACT_DIV_EXPR] = &op_exact_div;
   
-  m_irange_tree[NOP_EXPR] = &op_cast;
-  m_irange_tree[CONVERT_EXPR] = &op_cast;
+  m_range_tree[NOP_EXPR] = &op_cast;
+  m_range_tree[CONVERT_EXPR] = &op_cast;
 
-  m_irange_tree[TRUTH_AND_EXPR] = &op_logical_and;
-  m_irange_tree[TRUTH_OR_EXPR] = &op_logical_or;
-  m_irange_tree[TRUTH_NOT_EXPR] = &op_logical_not;
+  m_range_tree[TRUTH_AND_EXPR] = &op_logical_and;
+  m_range_tree[TRUTH_OR_EXPR] = &op_logical_or;
+  m_range_tree[TRUTH_NOT_EXPR] = &op_logical_not;
 
-  m_irange_tree[BIT_AND_EXPR] = &op_bitwise_and;
-  m_irange_tree[BIT_IOR_EXPR] = &op_bitwise_or;
-  m_irange_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
-  m_irange_tree[BIT_NOT_EXPR] = &op_bitwise_not;
+  m_range_tree[BIT_AND_EXPR] = &op_bitwise_and;
+  m_range_tree[BIT_IOR_EXPR] = &op_bitwise_or;
+  m_range_tree[BIT_XOR_EXPR] = &op_bitwise_xor;
+  m_range_tree[BIT_NOT_EXPR] = &op_bitwise_not;
 
-  m_irange_tree[INTEGER_CST] = &op_integer_cst;
-  m_irange_tree[SSA_NAME] = &op_ssa_name;
+  m_range_tree[INTEGER_CST] = &op_integer_cst;
+  m_range_tree[SSA_NAME] = &op_ssa_name;
 
-  m_irange_tree[ABS_EXPR] = &op_abs;
-  m_irange_tree[MIN_EXPR] = &op_min;
-  m_irange_tree[MAX_EXPR] = &op_max;
-  m_irange_tree[NEGATE_EXPR] = &op_negate;
-  m_irange_tree[PAREN_EXPR] = &op_identity;
-  m_irange_tree[OBJ_TYPE_REF] = &op_identity;
-  m_irange_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
-  m_irange_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
+  m_range_tree[ABS_EXPR] = &op_abs;
+  m_range_tree[MIN_EXPR] = &op_min;
+  m_range_tree[MAX_EXPR] = &op_max;
+  m_range_tree[NEGATE_EXPR] = &op_negate;
+  m_range_tree[PAREN_EXPR] = &op_identity;
+  m_range_tree[OBJ_TYPE_REF] = &op_identity;
+  m_range_tree[POINTER_PLUS_EXPR] = &op_pointer_plus;
+  m_range_tree[TRUNC_MOD_EXPR] = &op_trunc_mod;
 
-  m_irange_tree[LSHIFT_EXPR] = &op_lshift;
-  m_irange_tree[RSHIFT_EXPR] = &op_rshift;
+  m_range_tree[LSHIFT_EXPR] = &op_lshift;
+  m_range_tree[RSHIFT_EXPR] = &op_rshift;
 
-  m_irange_tree[ADDR_EXPR] = &op_addr;
+  m_range_tree[ADDR_EXPR] = &op_addr;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
 
-irange_operator *
-irange_op_handler (enum tree_code code)
+range_operator *
+range_op_handler (enum tree_code code)
 {
-  return irange_tree[code];
+  return range_tree[code];
 }

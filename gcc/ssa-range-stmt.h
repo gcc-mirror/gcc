@@ -68,7 +68,7 @@ public:
 protected:
   gimple *m_g;
   void validate_stmt (gimple *s);
-  class irange_operator *handler() const;
+  class range_operator *handler() const;
   tree_code get_code () const;
 };
 
@@ -157,10 +157,10 @@ range_stmt::ssa_operand2 () const
   return NULL_TREE;
 }
 
-inline irange_operator *
+inline range_operator *
 range_stmt::handler () const
 {
-  return irange_op_handler (get_code ());
+  return range_op_handler (get_code ());
 }
 
 

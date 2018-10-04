@@ -1382,7 +1382,7 @@ static inline void
 ranger_fold (value_range *vr, enum tree_code code,
 	     const irange &ir0, const irange &ir1)
 {
-  irange_operator *op = irange_op_handler (code);
+  range_operator *op = range_op_handler (code);
   irange res;
   if (!op)
     {

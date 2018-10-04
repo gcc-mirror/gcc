@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 //       ie   0 = op1 - op2 implies op2 has the same range as op1.
 
 
-class irange_operator
+class range_operator
 {
 public:
   virtual void dump (FILE *f) const = 0;
@@ -53,18 +53,18 @@ public:
   virtual bool fold_range (irange& r, const irange& op1,
 			   const irange& op2) const;
 
-  // Set the range for op? in the general case. R is the range for the LHS
+  // Set the range for op? in the general case. LHS is the range for the LHS
   // of the expression, VAL is the range for the other operand, and
   // the result is returned in R.
   // ie   [range] = op1 + VAL
   // This is re-formed as  new_range = [range] - VAL.
-  // Return TRUE if the operation could be performd and the range is valid.  */
-  virtual bool op1_irange (irange& r, const irange& lhs,
+  // Return TRUE if the operation could be performed and the range is valid.  */
+  virtual bool op1_range (irange& r, const irange& lhs,
 			   const irange& op2) const;
-  virtual bool op2_irange (irange& r, const irange& lhs,
+  virtual bool op2_range (irange& r, const irange& lhs,
 			   const irange& op1) const;
 };
 
-extern irange_operator *irange_op_handler(enum tree_code code);
+extern range_operator *range_op_handler(enum tree_code code);
 
 #endif // GCC_RANGE_OP_H
