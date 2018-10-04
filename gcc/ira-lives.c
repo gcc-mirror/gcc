@@ -1207,8 +1207,9 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		     call, if this function receives a nonlocal
 		     goto.  */
 		  if (cfun->has_nonlocal_label
-		      || find_reg_note (insn, REG_SETJMP,
-					NULL_RTX) != NULL_RTX)
+		      || (!targetm.setjmp_preserves_nonvolatile_regs_p ()
+			  && (find_reg_note (insn, REG_SETJMP, NULL_RTX)
+			      != NULL_RTX)))
 		    {
 		      SET_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj));
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));

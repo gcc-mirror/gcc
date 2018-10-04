@@ -895,8 +895,9 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 	  sparseset_ior (pseudos_live_through_calls,
 			 pseudos_live_through_calls, pseudos_live);
 	  if (cfun->has_nonlocal_label
-	      || find_reg_note (curr_insn, REG_SETJMP,
-				NULL_RTX) != NULL_RTX)
+	      || (!targetm.setjmp_preserves_nonvolatile_regs_p ()
+		  && (find_reg_note (curr_insn, REG_SETJMP, NULL_RTX)
+		      != NULL_RTX)))
 	    sparseset_ior (pseudos_live_through_setjumps,
 			   pseudos_live_through_setjumps, pseudos_live);
 	}
