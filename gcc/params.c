@@ -87,12 +87,10 @@ add_params (const param_info params[], size_t n)
   if (!diagnostic_ready_p ())
     diagnostic_initialize (global_dc, 0);
 
-  /* Now perform some validation and set the value if it validates.  */
-  for (size_t i = 0; i < n; i++)
-    {
-       if (validate_param (dst_params[i].default_value, dst_params[i], (int)i))
-	  dst_params[i].default_value = dst_params[i].default_value;
-    }
+  /* Now perform some validation and validation failures trigger an error so
+     initialization will stop.  */
+  for (size_t i = num_compiler_params - n; i < n; i++)
+    validate_param (params[i].default_value, params[i], (int)i);
 }
 
 /* Add all parameters and default values that can be set in both the

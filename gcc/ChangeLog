@@ -1,3 +1,7 @@
+2018-10-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* params.c (add_params): Fix initialization.
+
 2018-10-04  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/84107
