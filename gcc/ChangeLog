@@ -1,3 +1,10 @@
+2018-10-03  Jeff Law  <law@redhat.com>
+
+        * gimple-ssa-sprintf.c (format_string): Do not hardcode size of
+        target's wchar_t.
+        * tree.c (get_typenode_from_name): Moved from fortran/trans-types.c.
+        * tree.h (get_typenode_from_name): Prototype.
+
 2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*cmp<X87MODEF:mode>_<SWI24:mode>_i387):

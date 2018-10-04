@@ -2179,7 +2179,19 @@ format_string (const directive &dir, tree arg, vr_values *)
   fmtresult res;
 
   /* Compute the range the argument's length can be in.  */
-  int count_by = dir.specifier == 'S' || dir.modifier == FMT_LEN_l ? 4 : 1;
+  int count_by = 1;
+  if (dir.specifier == 'S' || dir.modifier == FMT_LEN_l)
+    {
+      /* Get a node for a C type that will be the same size
+	 as a wchar_t on the target.  */
+      tree node = get_typenode_from_name (MODIFIED_WCHAR_TYPE);
+
+      /* Now that we have a suitable node, get the number of
+	 bytes it occupies.  */
+      count_by = int_size_in_bytes (node); 
+      gcc_checking_assert (count_by == 2 || count_by == 4);
+    }
+
   fmtresult slen = get_string_length (arg, count_by);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)

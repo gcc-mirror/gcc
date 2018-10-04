@@ -4987,6 +4987,9 @@ extern tree get_base_address (tree t);
    of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_element_size (tree);
 
+/* Return a typenode for the "standard" C type with a given name.  */
+extern tree get_typenode_from_name (const char *);
+
 /* Return a tree representing the upper bound of the array mentioned in
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_up_bound (tree);
