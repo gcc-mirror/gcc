@@ -74,11 +74,6 @@
 	* ipa-inline.c (inline_to_all_callers_1):
 	Call ultimate_alias_target for node being inlined.
 
-2018-10-04  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
-
-	* lra-constraints.c (process_address_1): Bail out for all
-	satisfied fixed constraints.
-
 2018-10-03  Jeff Law  <law@redhat.com>
 
         * gimple-ssa-sprintf.c (format_string): Do not hardcode size of
