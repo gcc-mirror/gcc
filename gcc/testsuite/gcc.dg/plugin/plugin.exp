@@ -102,7 +102,8 @@ set plugin_test_list [list \
     { expensive_selftests_plugin.c \
 	  expensive-selftests-1.c } \
     { dump_plugin.c \
-	  dump-1.c } \
+	  dump-1.c \
+	  dump-2.c } \
 ]
 
 foreach plugin_test $plugin_test_list {

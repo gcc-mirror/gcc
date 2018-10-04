@@ -1,3 +1,11 @@
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump-1.c: Update expected output for test_scopes
+	due to "-internals" not being selected.
+	* gcc.dg/plugin/dump-2.c: New test, based on dump-1.c, with
+	"-internals" added to re-enable the output from test_scopes.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add dump-2.c.
+
 2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* gnat.dg/string_merge1.adb: New test.

@@ -1,3 +1,45 @@
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fopt-info): Document new "internals"
+	sub-option.
+	* dump-context.h (dump_context::apply_dump_filter_p): New decl.
+	* dumpfile.c (dump_options): Update for renaming of MSG_ALL to
+	MSG_ALL_KINDS.
+	(optinfo_verbosity_options): Add "internals".
+	(kind_as_string): Update for renaming of MSG_ALL to MSG_ALL_KINDS.
+	(dump_context::apply_dump_filter_p): New member function.
+	(dump_context::dump_loc): Use apply_dump_filter_p rather than
+	explicitly masking the dump_kind.
+	(dump_context::begin_scope): Increment the scope depth first.  Use
+	apply_dump_filter_p rather than explicitly masking the dump_kind.
+	(dump_context::emit_item): Use apply_dump_filter_p rather than
+	explicitly masking the dump_kind.
+	(dump_dec): Likewise.
+	(dump_hex): Likewise.
+	(dump_switch_p_1): Default to MSG_ALL_PRIORITIES.
+	(opt_info_switch_p_1): Default to MSG_PRIORITY_USER_FACING.
+	(opt_info_switch_p): Update handling of default
+	MSG_OPTIMIZED_LOCATIONS to cope with default of
+	MSG_PRIORITY_USER_FACING.
+	(dump_basic_block): Use apply_dump_filter_p rather than explicitly
+	masking the dump_kind.
+	(selftest::test_capture_of_dump_calls): Update test_dump_context
+	instances to use MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING rather
+	than MSG_ALL.  Generalize scope test to be run at all four
+	combinations of with/without MSG_PRIORITY_USER_FACING and
+	MSG_PRIORITY_INTERNALS, adding examples of explicit priority
+	for each of the two values.
+	* dumpfile.h (enum dump_flag): Add comment about the MSG_* flags.
+	Rename MSG_ALL to MSG_ALL_KINDS.  Add MSG_PRIORITY_USER_FACING,
+	MSG_PRIORITY_INTERNALS, and MSG_ALL_PRIORITIES, updating the
+	values for TDF_COMPARE_DEBUG and TDF_ALL_VALUES.
+	(AUTO_DUMP_SCOPE): Add a note to the comment about the interaction
+	with MSG_PRIORITY_*.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Mark versioning
+	dump messages as MSG_PRIORITY_USER_FACING.
+	* tree-vectorizer.h (DUMP_VECT_SCOPE): Add a note to the comment
+	about the interaction with MSG_PRIORITY_*.
+
 2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* varasm.c (output_constant): Add new parameter merge_strings.

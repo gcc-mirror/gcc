@@ -14207,14 +14207,21 @@ Controls optimization dumps from various optimization passes. If the
 @samp{-} separated option keywords to select the dump details and
 optimizations.  
 
-The @var{options} can be divided into two groups: options describing the
-verbosity of the dump, and options describing which optimizations
-should be included. The options from both the groups can be freely
-mixed as they are non-overlapping. However, in case of any conflicts,
+The @var{options} can be divided into three groups:
+@enumerate
+@item
+options describing what kinds of messages should be emitted,
+@item
+options describing the verbosity of the dump, and
+@item
+options describing which optimizations should be included.
+@end enumerate
+The options from each group can be freely mixed as they are
+non-overlapping. However, in case of any conflicts,
 the later options override the earlier options on the command
 line. 
 
-The following options control the dump verbosity:
+The following options control which kinds of messages should be emitted:
 
 @table @samp
 @item optimized
@@ -14231,6 +14238,15 @@ transformations, more detailed messages about decisions etc.
 @item all
 Print detailed optimization information. This includes
 @samp{optimized}, @samp{missed}, and @samp{note}.
+@end table
+
+The following option controls the dump verbosity:
+
+@table @samp
+@item internals
+By default, only ``high-level'' messages are emitted. This option enables
+additional, more detailed, messages, which are likely to only be of interest
+to GCC developers.
 @end table
 
 One or more of the following option keywords can be used to describe a
@@ -14253,8 +14269,9 @@ the optimization groups listed above.
 @end table
 
 If @var{options} is
-omitted, it defaults to @samp{optimized-optall}, which means to dump all
-info about successful optimizations from all the passes.  
+omitted, it defaults to @samp{optimized-optall}, which means to dump messages
+about successful optimizations from all the passes, omitting messages
+that are treated as ``internals''.
 
 If the @var{filename} is provided, then the dumps from all the
 applicable optimizations are concatenated into the @var{filename}.
