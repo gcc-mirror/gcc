@@ -1,3 +1,24 @@
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.c (gcc::dump_manager::dump_manager): Initialize new
+	fields.
+	(gcc::dump_manager::~dump_manager): Free m_optinfo_filename.
+	(gcc::dump_manager::register_pass): New member function, adapted
+	from loop body in gcc::pass_manager::register_pass, adding a
+	call to update_dfi_for_opt_info.
+	(gcc::dump_manager::opt_info_enable_passes): Store the
+	-fopt-info options into the new fields.  Move the loop
+	bodies into...
+	(gcc::dump_manager::update_dfi_for_opt_info): ...this new member
+	function.
+	* dumpfile.h (struct opt_pass): New forward decl.
+	(gcc::dump_manager::register_pass): New decl.
+	(gcc::dump_manager::update_dfi_for_opt_info): New decl.
+	(class gcc::dump_manager): Add fields "m_optgroup_flags",
+	"m_optinfo_flags", and "m_optinfo_filename".
+	* passes.c (gcc::pass_manager::register_pass): Move all of the
+	dump-handling code to gcc::dump_manager::register_pass.
+
 2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87466
