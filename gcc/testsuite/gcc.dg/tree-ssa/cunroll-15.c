@@ -19,4 +19,5 @@ int Test(void)
 /* { dg-final { scan-tree-dump-times "optimized:\[^\n\r\]*completely unrolled" 2 "cunroll" } } */
 /* When SLP vectorization is enabled the following will fail because DOM
    doesn't know how to deal with the vectorized initializer of in.  */
-/* { dg-final { scan-tree-dump "return 1;" "optimized" } } */
+/* DOM also doesn't know to CSE in[1] with in = *.LC0 thus the list of targets this fails.  */
+/* { dg-final { scan-tree-dump "return 1;" "optimized" { xfail { arm*-*-* powerpc-*-* } } } } */
