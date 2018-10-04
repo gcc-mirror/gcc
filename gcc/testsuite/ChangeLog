@@ -1,3 +1,8 @@
+2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/85787
+	* gcc.dg/ipa/propmalloc-4.c: New test.
+
 2018-10-04  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/cunroll-15.c: Add XFAILs for arm and powerpc.
