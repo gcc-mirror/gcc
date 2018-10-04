@@ -1378,22 +1378,16 @@ c_finish_options (void)
 {
   if (!cpp_opts->preprocessed)
     {
-      size_t i;
+      const line_map_ordinary *bltin_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<built-in>"), 0));
+      cb_file_change (parse_in, bltin_map);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table,
-							   LC_RENAME, 0,
-							   _("<built-in>"),
-							   0)));
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (parse_in, &builtins_loc);
-
+      cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
-
-      cpp_stop_forcing_token_locations (parse_in);
 
       /* We're about to send user input to cpplib, so make it warn for
 	 things that we previously (when we sent it internal definitions)
@@ -1406,11 +1400,14 @@ c_finish_options (void)
 	 their acceptance on the -std= setting.  */
       cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-							   _("<command-line>"), 0)));
+      const line_map_ordinary *cmd_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<command-line>"), 0));
+      cb_file_change (parse_in, cmd_map);
 
-      for (i = 0; i < deferred_count; i++)
+      /* All command line defines must have the same location.  */
+      cpp_force_token_locations (parse_in, cmd_map->start_location);
+      for (size_t i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];
 
@@ -1427,35 +1424,30 @@ c_finish_options (void)
 	    }
 	}
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-
-      /* Handle -imacros after -D and -U.  */
-      for (i = 0; i < deferred_count; i++)
-	{
-	  struct deferred_opt *opt = &deferred_opts[i];
-
-	  if (opt->code == OPT_imacros
-	      && cpp_push_include (parse_in, opt->arg))
-	    {
-	      /* Disable push_command_line_include callback for now.  */
-	      include_cursor = deferred_count + 1;
-	      cpp_scan_nooutput (parse_in);
-	    }
-	}
+      cpp_stop_forcing_token_locations (parse_in);
     }
-  else
-    {
-      if (cpp_opts->directives_only)
-	cpp_init_special_builtins (parse_in);
+  else if (cpp_opts->directives_only)
+    cpp_init_special_builtins (parse_in);
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-    }
+  /* Start the main input file, if the debug writer wants it. */
+  if (debug_hooks->start_end_main_source_file
+      && !flag_preprocess_only)
+    (*debug_hooks->start_source_file) (0, this_input_filename);
+
+  if (!cpp_opts->preprocessed)
+    /* Handle -imacros after -D and -U.  */
+    for (size_t i = 0; i < deferred_count; i++)
+      {
+	struct deferred_opt *opt = &deferred_opts[i];
+
+	if (opt->code == OPT_imacros
+	    && cpp_push_include (parse_in, opt->arg))
+	  {
+	    /* Disable push_command_line_include callback for now.  */
+	    include_cursor = deferred_count + 1;
+	    cpp_scan_nooutput (parse_in);
+	  }
+      }
 
   include_cursor = 0;
   push_command_line_include ();

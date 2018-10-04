@@ -574,9 +574,9 @@ struct cpp_reader
   /* List of saved macros by push_macro.  */
   struct def_pragma_macro *pushed_macros;
 
-  /* If non-null, the lexer will use this location for the next token
+  /* If non-zero, the lexer will use this location for the next token
      instead of getting a location from the linemap.  */
-  source_location *forced_token_location_p;
+  source_location forced_token_location;
 };
 
 /* Character classes.  Based on the more primitive macros in safe-ctype.h.

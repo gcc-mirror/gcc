@@ -1,4 +1,35 @@
+2018-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	Dump command line macros, better command line locs
+	libcpp/
+	* include/cpplib.h (cpp_force_token_locations): Take location, not
+	pointer.
+	* internal.h (cpp_reader): Replace forced_token_location_p with
+	forced_token_location.
+	* init.c (cpp_create_reader): Adjust.
+	* lex.c (_cpp_lex_direct, cpp_force_token_locations): Adjust.
+	(cpp_stop_forcing_token_locations): Adjust.
+	gcc/c-family/
+	* c-opts.c (c_finish_options): Force command line locations.
+	gcc/cp/
+	* module.cc (loc_spans::init): Add fixed and cmd line locs.
+	(loc_spans::SPAN_*): New.
+	(loc_spans::cmd_line): New.
+	(module_state::read_location): Adjust, return module loc for
+	UNKNOWN.
+	(module_state::{prepare,read,write}_locations): Adjust.
+	(maybe_add_macro): Write cmd_line macros.
+	(load_macros): Location is main source file.
+	gcc/fortran/
+	* cpp.c (gfc_cpp_init): Adjust token forcing.
+	gcc/testsuite/
+	* g++.dg/modules/macro-4_[de].C: Adjust regexp.
+	* g++.dg/modules/macro-5_*: New.
+
 2018-10-01  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r264769.
+	Slip in module.c -> module.cc rename
 
 	Merge trunk r264765.
 

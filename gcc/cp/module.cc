@@ -2620,15 +2620,28 @@ public:
     gcc_checking_assert (!init_p ());
     spans.reserve (20);
 
-    /* Create a span for the forced headers.  */
     span interval;
-    interval.ordinary.first = 0;
-    interval.ordinary.second = MAP_START_LOCATION (map);
     interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+    interval.ordinary_delta = interval.macro_delta = 0;
+
+    /* A span for fixed locs.  */
+    interval.ordinary.second
+      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
+    spans.quick_push (interval);
+
+    /* A span for the command line.  */
+    interval.ordinary.first
+      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 2));
+    interval.ordinary.second
+      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 3));
+    spans.quick_push (interval);
+
+    /* Create a span for the forced headers.  */
+    interval.ordinary.first = interval.ordinary.second;
+    interval.ordinary.second = MAP_START_LOCATION (map);
     if (unsigned used = LINEMAPS_MACRO_USED (line_table))
       interval.macro.first
 	= MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
-    interval.ordinary_delta = interval.macro_delta = 0;
     spans.quick_push (interval);
     
     /* Start an interval for the main file.  */
@@ -2638,9 +2651,20 @@ public:
   }
 
 public:
+  enum {
+	SPAN_RESERVED = 0,
+	SPAN_CMD_LINE = 1,
+	SPAN_FORCED = 2,
+	SPAN_MAIN = 3
+  };
+public:
   location_t main_start () const
   {
-    return spans[1].ordinary.first;
+    return spans[SPAN_MAIN].ordinary.first;
+  }
+  location_t cmd_line () const
+  {
+    return spans[SPAN_CMD_LINE].ordinary.first;
   }
 
 public:
@@ -8209,6 +8233,7 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
    u:unnamed
 */
 
+// FIXME serialize legacy header controlling macro and perform deduping
 void
 module_state::write_config (elf_out *to, const char *opt_str,
 			    const range_t &sec_range,
@@ -9591,18 +9616,19 @@ module_state::read_location (bytes_in &sec) const
   if (!modules_atom_p ())
     return loc;
 
-  location_t loc = UNKNOWN_LOCATION;
+  location_t locus = UNKNOWN_LOCATION;
   unsigned off = sec.u ();
   if (IS_ADHOC_LOC (off))
     {
       dump (dumper::LOCATIONS) && dump ("Adhoc location");
-      location_t locus = read_location (sec);
+      locus = read_location (sec);
       source_range range;
       range.m_start = read_location (sec);
-      if (range.m_start == UNKNOWN_LOCATION)
+      if (range.m_start == loc)
 	range.m_start = locus;
       range.m_finish = read_location (sec);
-      loc = get_combined_adhoc_loc (line_table, locus, range, NULL);
+      if (locus != loc && range.m_start != loc && range.m_finish != loc)
+	locus = get_combined_adhoc_loc (line_table, locus, range, NULL);
     }
   else if (IS_MACRO_LOC (off))
     {
@@ -9613,16 +9639,19 @@ module_state::read_location (bytes_in &sec) const
 	sec.set_overrun ();
       else if (off >= slurp->ordinary_locs.first)
 	{
-	  loc = off + slurp->loc_deltas.first;
+	  locus = off + slurp->loc_deltas.first;
 	  dump (dumper::LOCATIONS) && dump ("Location %u becoming %u", off, loc);
 	}
       else if (slurp->pre_early_ok)
-	loc = off;
+	locus = off;
     }
   else
     sec.set_overrun ();
 
-  return loc;
+  if (locus == UNKNOWN_LOCATION)
+    locus = loc;
+
+  return locus;
 }
 
 /* Prepare the span adjustments.  */
@@ -9633,9 +9662,14 @@ module_state::prepare_locations ()
   dump () && dump ("Preparing locations");
   dump.indent ();
 
+  /* Map the command line to UNKNOWN_LOCATION, which will map to the
+     module upon loading.  */
+  spans[loc_spans::SPAN_CMD_LINE].ordinary_delta
+    = -spans[loc_spans::SPAN_CMD_LINE].ordinary.first;
+
   /* Figure the alignment of location spans.  */
   unsigned max_rager = 0;  /* Brains! */
-  for (unsigned ix = 1; ix != spans.length (); ix++)
+  for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
     {
       loc_spans::span &span = spans[ix];
       line_map_ordinary const *omap
@@ -9659,13 +9693,13 @@ module_state::prepare_locations ()
 
   {
     /* Adjust the ordinary maps.  */
-    location_t offset = spans[1].ordinary.first;
+    location_t offset = spans[loc_spans::SPAN_MAIN].ordinary.first;
     location_t range_mask = (1u << max_rager) - 1;
 
     dump () && dump ("Ordinary maps range bits:%u, preserve:%x, zero:%u",
 		     max_rager, offset & range_mask, offset & ~range_mask);
 
-    for (unsigned ix = 1; ix != spans.length (); ix++)
+    for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
       {
 	loc_spans::span &span = spans[ix];
 	line_map_ordinary const *omap
@@ -9714,7 +9748,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
   auto_vec<const char *> filenames;
 
   /* Determine the unique filenames.  */
-  for (unsigned ix = 1; ix != spans.length (); ix++)
+  for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
     {
       loc_spans::span &span = spans[ix];
       line_map_ordinary const *omap
@@ -9771,12 +9805,14 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
       sec.str (fname);
     }
 
-  dump () && dump ("Reserved locations below %u", spans[0].ordinary.second);
-  sec.u (spans[0].ordinary.second); /* The reserved locations.  */
+  /* The reserved locations.  */
+  dump () && dump ("Reserved locations below %u",
+		   spans[loc_spans::SPAN_MAIN - 1].ordinary.second);
+  sec.u (spans[loc_spans::SPAN_MAIN - 1].ordinary.second);
 
   {
     /* Write the ordinary maps.  */
-    location_t offset = spans[1].ordinary.first;
+    location_t offset = spans[loc_spans::SPAN_MAIN].ordinary.first;
     location_t range_mask = (1u << max_rager) - 1;
 
     dump () && dump ("Ordinary maps:%u, range bits:%u, preserve:%x, zero:%u",
@@ -9787,7 +9823,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
     sec.u (offset & range_mask);	/* Bits to preserve.  */
     sec.u (offset & ~range_mask);
 
-    for (unsigned ix = 1; ix != spans.length (); ix++)
+    for (unsigned ix = loc_spans::SPAN_MAIN; ix != spans.length (); ix++)
       {
 	loc_spans::span &span = spans[ix];
 	line_map_ordinary const *omap
@@ -9866,7 +9902,8 @@ module_state::read_locations ()
 
   unsigned reserved_loc = sec.u ();
   dump () && dump ("Reserved locations below %u", reserved_loc);
-  slurp->pre_early_ok = reserved_loc == spans[0].ordinary.second;
+  slurp->pre_early_ok = reserved_loc
+    == spans[loc_spans::SPAN_FORCED].ordinary.second;
   if (!slurp->pre_early_ok)
     /* Clue the user in.  */
     warning_at (loc, 0, "prefix mismatch, early locations are not represented");
@@ -9895,7 +9932,7 @@ module_state::read_locations ()
     slurp->ordinary_locs.first = zero + low_bits;
     slurp->loc_deltas.first = offset - zero;
 
-    for (unsigned ix = 0; ix != num_ordinary; ix++)
+    for (unsigned ix = 0; ix != num_ordinary && !sec.get_overrun (); ix++)
       {
 	line_map_ordinary *map = &maps[ix];
 	unsigned hwm = sec.u ();
@@ -9918,8 +9955,6 @@ module_state::read_locations ()
 	map->to_line = sec.u ();
 
 	map->included_from = read_location (sec);
-	if (map->included_from == UNKNOWN_LOCATION)
-	  map->included_from = loc;
       }
 
     location_t hwm = sec.u ();
@@ -10334,14 +10369,16 @@ get_macro_export (macro_import::slot &slot)
 /* If NODE is an exportable macro, add it to the export set.  */
 
 static int
-maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *macros_)
+maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *data_)
 {
   bool exporting = false;
 
   if (cpp_user_macro_p (node))
     if (cpp_macro *macro = node->value.macro)
       /* Ignore imported & builtins and forced header macros.  */
-      if (!macro->imported && macro->line >= spans.main_start ())
+      if (!macro->imported
+	  && (macro->line >= spans.main_start ()
+	      || macro->line == spans.cmd_line ()))
 	{
 	  gcc_checking_assert (macro->kind == cmk_macro && !macro->lazy);
 	  /* I don't want to deal with this corner case, that I suspect is
@@ -10367,7 +10404,7 @@ maybe_add_macro (cpp_reader *, cpp_hashnode *node, void *macros_)
     }
 
   if (exporting)
-    static_cast <auto_vec<cpp_hashnode *> *> (macros_)->safe_push (node);
+    static_cast <auto_vec<cpp_hashnode *> *> (data_)->safe_push (node);
 
   return 1; /* Don't stop.  */
 }
@@ -10397,6 +10434,7 @@ macro_loc_cmp (const void *a_, const void *b_)
 
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
+// FIXME: Write command line defines
 
 unsigned
 module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
@@ -10996,6 +11034,10 @@ module_state::read (int fd, int e, cpp_reader *reader, bool check_crc)
      read_config.  */
   gcc_assert (!slurp->from->is_frozen ());
 
+  // FIXME: It would be better if we could lazily load the macros when
+  // we know this is reachable from top level.  Store the section
+  // now.  Map them on need (or freeze).  Use this module's bitmap of
+  // reachable legacies to know what to load.
   if (macros && is_legacy ())
     if (!read_defines (reader, macros))
       return;
@@ -11860,6 +11902,8 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
 void
 module_note_main_file (line_maps *lmaps, const line_map_ordinary *map)
 {
+  // FIXME:extract main-file loc from lmap[0]
+  // Find command line locs lmap[2] ... ENTER or LEAVE
   gcc_checking_assert (lmaps == line_table);
   if (modules_p () && !spans.init_p ())
     spans.init (map);
@@ -12060,12 +12104,15 @@ init_module_processing ()
 static int
 load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
 {
+  source_location main_loc
+    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
+
   if (cpp_user_macro_p (node)
       && !(node->flags & NODE_USED)
       && !node->value.macro)
     {
       /* It would be nice to have a location for input file.  */
-      cpp_macro *macro = cpp_get_deferred_macro (reader, node, input_location);
+      cpp_macro *macro = cpp_get_deferred_macro (reader, node, main_loc);
       dump () && dump ("Loaded macro #%s %I",
 		       macro ? "define" : "undef",
 		       HT_IDENT_TO_GCC_IDENT (node));

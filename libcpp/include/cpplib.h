@@ -1307,7 +1307,7 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 			   struct save_macro_data *);
 
 /* In lex.c */
-extern void cpp_force_token_locations (cpp_reader *, source_location *);
+extern void cpp_force_token_locations (cpp_reader *, source_location);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
 
 /* In expr.c */

@@ -578,8 +578,7 @@ gfc_cpp_init (void)
     {
       /* Make sure all of the builtins about to be declared have
 	BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (cpp_in, &builtins_loc);
+	cpp_force_token_locations (cpp_in, BUILTINS_LOCATION);
 
       cpp_define_builtins (cpp_in);
 
