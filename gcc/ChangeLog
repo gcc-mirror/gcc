@@ -1,3 +1,17 @@
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84107
+	* tree-profile.c (init_ic_make_global_vars):
+	Remove ic_void_ptr_var and ic_gcov_type_ptr_var.
+	Come up with new ic_tuple* variables.  Emit
+	__gcov_indirect_call{,_topn} variables.
+	(gimple_gen_ic_profiler): Access the variable
+	and emit gimple.
+	(gimple_gen_ic_func_profiler): Access
+	__gcov_indirect_call.callee field.
+	(gimple_init_gcov_profiler): Use ptr_type_node.
+	* value-prof.c (gimple_ic): Use ptr_type_node.
+
 2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/85787

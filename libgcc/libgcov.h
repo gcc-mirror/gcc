@@ -226,6 +226,15 @@ struct gcov_master
   gcov_unsigned_t version;
   struct gcov_root *root;
 };
+
+struct indirect_call_tuple
+{
+  /* Callee function.  */
+  void *callee;
+
+  /* Pointer to counters.  */
+  gcov_type *counters;
+};
   
 /* Exactly one of these will be active in the process.  */
 extern struct gcov_master __gcov_master;
