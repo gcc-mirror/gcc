@@ -1,3 +1,8 @@
+2018-10-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: List myself as "libgomp (OpenACC)" and "OpenACC"
+	maintainer.
+
 2018-09-13  Matthew Malcomson  <matthew.malcomson@arm.com>
 
 	* MAINTAINERS (Write After Approval): Add self.
