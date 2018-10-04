@@ -1,3 +1,7 @@
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-c++-common/Wprio-ctor-dtor.c: New test.
+
 2018-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/vect/nodump-vect-opt-info-2.c: New test.

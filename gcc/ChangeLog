@@ -1,3 +1,8 @@
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* doc/invoke.texi (-Wno-prio-ctor-dtor): Document new warning
+	-Wno-prio-ctor-dtor.
+
 2018-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS): Add opt-problem.o.

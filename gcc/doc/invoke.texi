@@ -324,7 +324,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wno-pedantic-ms-format @gol
 -Wplacement-new  -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
--Wno-pragmas  -Wredundant-decls  -Wrestrict  -Wno-return-local-addr @gol
+-Wno-pragmas  -Wno-prio-ctor-dtor -Wredundant-decls @gol
+-Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshadow=global,  -Wshadow=local,  -Wshadow=compatible-local @gol
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
@@ -5328,6 +5329,16 @@ the warnings are only enabled by the @option{-Wall} command-line option.
 Do not warn about misuses of pragmas, such as incorrect parameters,
 invalid syntax, or conflicts between pragmas.  See also
 @option{-Wunknown-pragmas}.
+
+@item -Wno-prio-ctor-dtor
+@opindex Wno-prio-ctor-dtor
+@opindex Wprio-ctor-dtor
+Do not warn if a priority from 0 to 100 is used for constructor or destructor.
+The use of constructor and destructor attributes allow you to assign a
+priority to the constructor/destructor to control its order of execution
+before @code{main} is called or after it returns.  The priority values must be
+greater than 100 as the compiler reserves priority values between 0--100 for
+the implementation.
 
 @item -Wstrict-aliasing
 @opindex Wstrict-aliasing
