@@ -177,12 +177,16 @@ gcc::dump_manager::dump_manager ():
   m_next_dump (FIRST_AUTO_NUMBERED_DUMP),
   m_extra_dump_files (NULL),
   m_extra_dump_files_in_use (0),
-  m_extra_dump_files_alloced (0)
+  m_extra_dump_files_alloced (0),
+  m_optgroup_flags (OPTGROUP_NONE),
+  m_optinfo_flags (TDF_NONE),
+  m_optinfo_filename (NULL)
 {
 }
 
 gcc::dump_manager::~dump_manager ()
 {
+  free (m_optinfo_filename);
   for (size_t i = 0; i < m_extra_dump_files_in_use; i++)
     {
       dump_file_info *dfi = &m_extra_dump_files[i];
@@ -1512,6 +1516,50 @@ dump_flag_name (int phase) const
   return dfi->swtch;
 }
 
+/* Handle -fdump-* and -fopt-info for a pass added after
+   command-line options are parsed (those from plugins and
+   those from backends).
+
+   Because the registration of plugin/backend passes happens after the
+   command-line options are parsed, the options that specify single
+   pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
+   passes. Therefore we currently can only enable dumping of
+   new passes when the 'dump-all' flags (e.g. -fdump-tree-all)
+   are specified.  This is done here.
+
+   Similarly, the saved -fopt-info options are wired up to the new pass.  */
+
+void
+gcc::dump_manager::register_pass (opt_pass *pass)
+{
+  gcc_assert (pass);
+
+  register_one_dump_file (pass);
+
+  dump_file_info *pass_dfi = get_dump_file_info (pass->static_pass_number);
+  gcc_assert (pass_dfi);
+
+  enum tree_dump_index tdi;
+  if (pass->type == SIMPLE_IPA_PASS
+      || pass->type == IPA_PASS)
+    tdi = TDI_ipa_all;
+  else if (pass->type == GIMPLE_PASS)
+    tdi = TDI_tree_all;
+  else
+    tdi = TDI_rtl_all;
+  const dump_file_info *tdi_dfi = get_dump_file_info (tdi);
+  gcc_assert (tdi_dfi);
+
+  /* Check if dump-all flag is specified.  */
+  if (tdi_dfi->pstate)
+    {
+      pass_dfi->pstate = tdi_dfi->pstate;
+      pass_dfi->pflags = tdi_dfi->pflags;
+    }
+
+  update_dfi_for_opt_info (pass_dfi);
+}
+
 /* Finish a tree dump for PHASE. STREAM is the stream created by
    dump_begin.  */
 
@@ -1587,45 +1635,45 @@ opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
 			const char *filename)
 {
   int n = 0;
-  size_t i;
 
-  for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
-    {
-      if ((dump_files[i].optgroup_flags & optgroup_flags))
-        {
-          const char *old_filename = dump_files[i].alt_filename;
-          /* Since this file is shared among different passes, it
-             should be opened in append mode.  */
-          dump_files[i].alt_state = 1;
-          dump_files[i].alt_flags |= flags;
-          n++;
-          /* Override the existing filename.  */
-          if (filename)
-            dump_files[i].alt_filename = xstrdup (filename);
-          if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
-        }
-    }
+  m_optgroup_flags = optgroup_flags;
+  m_optinfo_flags = flags;
+  m_optinfo_filename = xstrdup (filename);
 
-  for (i = 0; i < m_extra_dump_files_in_use; i++)
-    {
-      if ((m_extra_dump_files[i].optgroup_flags & optgroup_flags))
-        {
-          const char *old_filename = m_extra_dump_files[i].alt_filename;
-          /* Since this file is shared among different passes, it
-             should be opened in append mode.  */
-          m_extra_dump_files[i].alt_state = 1;
-          m_extra_dump_files[i].alt_flags |= flags;
-          n++;
-          /* Override the existing filename.  */
-          if (filename)
-            m_extra_dump_files[i].alt_filename = xstrdup (filename);
-          if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
-        }
-    }
+  for (size_t i = TDI_none + 1; i < (size_t) TDI_end; i++)
+    if (update_dfi_for_opt_info (&dump_files[i]))
+      n++;
+
+  for (size_t i = 0; i < m_extra_dump_files_in_use; i++)
+    if (update_dfi_for_opt_info (&m_extra_dump_files[i]))
+      n++;
 
   return n;
+}
+
+/* Use the saved -fopt-info options to update DFI.
+   Return true if the dump is enabled.  */
+
+bool
+gcc::dump_manager::update_dfi_for_opt_info (dump_file_info *dfi) const
+{
+  gcc_assert (dfi);
+
+  if (!(dfi->optgroup_flags & m_optgroup_flags))
+    return false;
+
+  const char *old_filename = dfi->alt_filename;
+  /* Since this file is shared among different passes, it
+     should be opened in append mode.  */
+  dfi->alt_state = 1;
+  dfi->alt_flags |= m_optinfo_flags;
+  /* Override the existing filename.  */
+  if (m_optinfo_filename)
+    dfi->alt_filename = xstrdup (m_optinfo_filename);
+  if (old_filename && m_optinfo_filename != old_filename)
+    free (CONST_CAST (char *, old_filename));
+
+  return true;
 }
 
 /* Parse ARG as a dump switch. Return nonzero if it is, and store the

@@ -566,6 +566,8 @@ extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
 
+struct opt_pass;
+
 namespace gcc {
 
 /* A class for managing all of the various dump files used by the
@@ -634,6 +636,8 @@ public:
   const char *
   dump_flag_name (int phase) const;
 
+  void register_pass (opt_pass *pass);
+
 private:
 
   int
@@ -649,6 +653,8 @@ private:
   opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
 			  const char *filename);
 
+  bool update_dfi_for_opt_info (dump_file_info *dfi) const;
+
 private:
 
   /* Dynamically registered dump files and switches.  */
@@ -656,6 +662,12 @@ private:
   struct dump_file_info *m_extra_dump_files;
   size_t m_extra_dump_files_in_use;
   size_t m_extra_dump_files_alloced;
+
+  /* Stored values from -fopt-info, for handling passes created after
+     option-parsing (by backends and by plugins).  */
+  optgroup_flags_t m_optgroup_flags;
+  dump_flags_t m_optinfo_flags;
+  char *m_optinfo_filename;
 
   /* Grant access to dump_enable_all.  */
   friend bool ::enable_rtl_dump_file (void);
