@@ -1,3 +1,14 @@
+2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87466
+	* target.def (setjmp_preserves_nonvolatile_regs_p): New target hook.
+	* doc/tm.texi.in (TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* ira-lives.c (process_bb_node_lives): Use the new target hook.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* config/rs6000/rs6000.c (TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P):
+	Define.
+
 2018-10-04  Tamar Christina  <tamar.christina@arm.com>
 
 	* params.c (add_params): Fix initialization.

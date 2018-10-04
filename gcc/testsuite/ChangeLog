@@ -1,3 +1,8 @@
+2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87466
+	* gcc.target/powerpc/pr87466.c: New test.
+
 2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/85787
