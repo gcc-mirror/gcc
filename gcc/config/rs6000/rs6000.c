@@ -1978,6 +1978,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_GLOBALIZE_DECL_NAME
 #define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
 #endif
+
+#undef TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
+#define TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P hook_bool_void_true
 
 
 /* Processor table.  */

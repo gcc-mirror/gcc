@@ -3123,6 +3123,21 @@ In order to enforce the representation of @code{mode},\n\
  int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
+ DEFHOOK
+(setjmp_preserves_nonvolatile_regs_p,
+ "On some targets, it is assumed that the compiler will spill all pseudos\n\
+  that are live across a call to @code{setjmp}, while other targets treat\n\
+  @code{setjmp} calls as normal function calls.\n\
+  \n\
+  This hook returns false if @code{setjmp} calls do not preserve all\n\
+  non-volatile registers so that gcc that must spill all pseudos that are\n\
+  live across @code{setjmp} calls.  Define this to return true if the\n\
+  target does not need to spill all pseudos live across @code{setjmp} calls.\n\
+  The default implementation conservatively assumes all pseudos must be\n\
+  spilled across @code{setjmp} calls.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
 DEFHOOK
 (valid_pointer_mode,

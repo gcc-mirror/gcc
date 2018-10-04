@@ -11008,6 +11008,19 @@ In order to enforce the representation of @code{mode},
 @code{mode}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P (void)
+On some targets, it is assumed that the compiler will spill all pseudos
+  that are live across a call to @code{setjmp}, while other targets treat
+  @code{setjmp} calls as normal function calls.
+  
+  This hook returns false if @code{setjmp} calls do not preserve all
+  non-volatile registers so that gcc that must spill all pseudos that are
+  live across @code{setjmp} calls.  Define this to return true if the
+  target does not need to spill all pseudos live across @code{setjmp} calls.
+  The default implementation conservatively assumes all pseudos must be
+  spilled across @code{setjmp} calls.
+@end deftypefn
+
 @defmac STORE_FLAG_VALUE
 A C expression describing the value returned by a comparison operator
 with an integral mode and stored by a store-flag instruction
