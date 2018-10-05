@@ -1758,6 +1758,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && TREE_CODE (length) != INTEGER_CST
       && TREE_CODE (sym->ts.u.cl->backend_decl) != INDIRECT_REF)
     {
+      length = fold_convert (gfc_charlen_type_node, length);
       gfc_finish_var_decl (length, sym);
       if (!sym->attr.associate_var
 	  && TREE_CODE (length) == VAR_DECL
@@ -1767,6 +1768,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 	  DECL_INITIAL (length) = gfc_conv_initializer (len, &len->ts,
 							TREE_TYPE (length),
 							false, false, false);
+	  DECL_INITIAL (length) = fold_convert (gfc_charlen_type_node,
+						DECL_INITIAL (length));
 	}
       else
 	gcc_assert (!sym->value);

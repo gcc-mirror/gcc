@@ -1,6 +1,13 @@
+2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87487
+	* trans-decl.c (gfc_get_symbol_decl): Make sure that deferred
+	character length pointer initializer has the right type to fix
+	problem with deferred_character_24.f90 on big endian.
+
 2018-10-03  Jeff Law  <law@redhat.comg>
 
-        * trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
+	* trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
 
 2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
