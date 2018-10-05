@@ -292,6 +292,15 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 #undef TARGET_INVALID_WITHIN_DOLOOP
 #define TARGET_INVALID_WITHIN_DOLOOP hook_constcharptr_const_rtx_insn_null
 
+#undef  TARGET_CXX_GUARD_TYPE
+#define TARGET_CXX_GUARD_TYPE pdp11_guard_type
+
+#undef  TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT
+#define TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT hook_bool_void_false
+
+#undef  TARGET_CXX_LIBRARY_RTTI_COMDAT
+#define TARGET_CXX_LIBRARY_RTTI_COMDAT hook_bool_void_false
+
 #undef TARGET_HAVE_SPECULATION_SAFE_VALUE
 #define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
@@ -1700,6 +1709,13 @@ pdp11_can_change_mode_class (machine_mode from,
     return false;
   
   return !reg_classes_intersect_p (FPU_REGS, rclass);
+}
+
+/* Implement TARGET_CXX_GUARD_TYPE */
+static tree
+pdp11_guard_type (void)
+{
+  return short_integer_type_node;
 }
 
 /* TARGET_PREFERRED_RELOAD_CLASS
