@@ -78,12 +78,31 @@ proc dg-begin-multiline-output { args } {
 # Mark the end of an expected multiline output
 # All lines up to here since the last dg-begin-multiline-output are
 # expected to be seen.
+#
+# dg-end-multiline-output comment [{ target/xfail selector }]
 
 proc dg-end-multiline-output { args } {
     global _multiline_last_beginning_line
     verbose "dg-end-multiline-output: args: $args" 3
     set line [expr [lindex $args 0] - 1]
     verbose "multiline output lines: $_multiline_last_beginning_line-$line" 3
+
+    if { [llength $args] > 3 } {
+	error "[lindex $args 0]: too many arguments"
+	return
+    }
+
+    set maybe_x ""
+    if { [llength $args] >= 3 } {
+	switch [dg-process-target [lindex $args 2]] {
+	    "F" { set maybe_x "x" }
+	    "P" { set maybe_x "" }
+	    "N" {
+		# If we get "N", this output doesn't apply to us so ignore it.
+		return
+	    }
+	}
+    }
 
     upvar 1 prog prog
     verbose "prog: $prog" 3
@@ -93,8 +112,8 @@ proc dg-end-multiline-output { args } {
     set lines [_get_lines $prog $_multiline_last_beginning_line $line]
 
     verbose "lines: $lines" 3
-    # Create an entry of the form:  first-line, last-line, lines
-    set entry [list $_multiline_last_beginning_line $line $lines]
+    # Create an entry of the form:  first-line, last-line, lines, maybe_x
+    set entry [list $_multiline_last_beginning_line $line $lines $maybe_x]
     global multiline_expected_outputs
     lappend multiline_expected_outputs $entry
     verbose "within dg-end-multiline-output: multiline_expected_outputs: $multiline_expected_outputs" 3
@@ -118,6 +137,7 @@ proc handle-multiline-outputs { text } {
 	set start_line [lindex $entry 0]
 	set end_line   [lindex $entry 1]
 	set multiline  [lindex $entry 2]
+	set maybe_x    [lindex $entry 3]
 	verbose "  multiline: $multiline" 3
 	set rexp [_build_multiline_regex $multiline $index]
 	verbose "rexp: ${rexp}" 4
@@ -130,10 +150,10 @@ proc handle-multiline-outputs { text } {
 
 	# Use "regsub" to attempt to prune the pattern from $text
 	if {[regsub -line $rexp $text "" text]} {
-	    # Success; the multiline pattern was pruned.
-	    pass "$title was found: \"$escaped_regex\""
+	    # The multiline pattern was pruned.
+	    ${maybe_x}pass "$title was found: \"$escaped_regex\""
 	} else {
-	    fail "$title not found: \"$escaped_regex\""
+	    ${maybe_x}fail "$title not found: \"$escaped_regex\""
 	}
 
 	set index [expr $index + 1]
