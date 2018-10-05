@@ -67,7 +67,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef  ASM_SPEC
 #define ASM_SPEC \
-  "--32 %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
+  "--32 %{msse2avx:%{!mavx:-msse2avx}}"
 
 #undef  SUBTARGET_EXTRA_SPECS
 #define SUBTARGET_EXTRA_SPECS \
