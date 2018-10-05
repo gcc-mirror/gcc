@@ -671,7 +671,7 @@ extern bool _cpp_find_failed (_cpp_file *);
 extern void _cpp_mark_file_once_only (cpp_reader *, struct _cpp_file *);
 extern void _cpp_fake_include (cpp_reader *, const char *);
 extern bool _cpp_stack_file (cpp_reader *, _cpp_file*, bool,
-			     source_location);
+			     source_location, bool = true);
 extern bool _cpp_stack_include (cpp_reader *, const char *, int,
 				enum include_type, source_location);
 extern int _cpp_compare_file_date (cpp_reader *, const char *, int);

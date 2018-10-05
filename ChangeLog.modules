@@ -1,3 +1,23 @@
+2018-10-05  Nathan Sidwell  <nathan@acm.org>
+
+	Mainfile loc has no line number.
+	libcpp/
+	* internal.h (_cpp_stack_file): Add line_one_p arg.
+	* files.c (_cpp_stack_file): Likewise.  Use it.
+	* include/cpplib.h (cpp_read_main_file): Add line_one_p arg.
+	* init.c (cpp_read_main_file): Likewise, use it.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Start main file on line zero.
+	(push_command_line_include): Call preprocess_main_file hook here ...
+	(cb_file_change): ... except when reading preprocessed source.
+	* c.opt: Add full stops.
+	gcc/cp/
+	* module.cc (module_note_main_file): Remove fixmes fixed yesterday.
+	gcc/testsuite/
+	* g++.dg/modules/macro-4_[de].C: Adjust regexp.
+	* g++.dg/modules/macro-5_c.C: Likewise.
+	* lib/options.exp (check_for_options): Fix comment typos.
+
 2018-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	Dump command line macros, better command line locs

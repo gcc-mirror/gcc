@@ -1061,7 +1061,7 @@ c_common_post_options (const char **pfilename)
   input_location = UNKNOWN_LOCATION;
 
   *pfilename = this_input_filename
-    = cpp_read_main_file (parse_in, in_fnames[0]);
+    = cpp_read_main_file (parse_in, in_fnames[0], cpp_opts->preprocessed);
   /* Don't do any compilation or preprocessing if there is no input file.  */
   if (this_input_filename == NULL)
     {
@@ -1490,9 +1490,15 @@ push_command_line_include (void)
       include_cursor++;
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = cpp_warn_unused_macros;
-      /* Restore the line map from <command line>.  */
+      /* Restore the line map back to the main file.  */
       if (!cpp_opts->preprocessed)
-	cpp_change_file (parse_in, LC_RENAME, this_input_filename);
+	{
+	  cpp_change_file (parse_in, LC_RENAME, this_input_filename);
+	  if (lang_hooks.preprocess_main_file)
+	    /* We're starting the main file.  Inform the FE of that.  */
+	    lang_hooks.preprocess_main_file
+	      (line_table, LINEMAPS_LAST_ORDINARY_MAP (line_table));
+	}
 
       /* Set this here so the client can change the option if it wishes,
 	 and after stacking the main file so we don't trace the main file.  */
@@ -1509,18 +1515,11 @@ cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
   else
     fe_file_change (new_map);
 
-  if (new_map
+  if (new_map && cpp_opts->preprocessed
       && lang_hooks.preprocess_main_file && MAIN_FILE_P (new_map)
-      && new_map->reason == (cpp_opts->preprocessed
-			     ? LC_RENAME_VERBATIM : LC_RENAME)
-      && 0 == strcmp (ORDINARY_MAP_FILE_NAME (new_map),
-		      main_input_filename))
-    {
-      if (new_map - LINEMAPS_ORDINARY_MAPS (line_table)
-	  > (cpp_opts->preprocessed ? 2 : 1))
-	/* We're starting the main file.  Inform the FE of that.  */
-	lang_hooks.preprocess_main_file (line_table, new_map);
-    }
+      && new_map - LINEMAPS_ORDINARY_MAPS (line_table) > 2)
+    /* We're starting the main file.  Inform the FE of that.  */
+    lang_hooks.preprocess_main_file (line_table, new_map);
 
   if (new_map 
       && (new_map->reason == LC_ENTER || new_map->reason == LC_RENAME))

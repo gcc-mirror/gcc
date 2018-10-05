@@ -892,7 +892,7 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
    stacked.  Use LOC for any diagnostics.  */
 bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
-		 source_location loc)
+		 source_location loc, bool line_one_p)
 {
   cpp_buffer *buffer;
   int sysp;
@@ -929,7 +929,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
   pfile->mi_cmacro = 0;
 
   /* Generate the call back.  */
-  _cpp_do_file_change (pfile, LC_ENTER, file->path, 1, sysp);
+  _cpp_do_file_change (pfile, LC_ENTER, file->path, line_one_p ? 1 : 0, sysp);
 
   return true;
 }

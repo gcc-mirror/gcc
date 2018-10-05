@@ -11902,8 +11902,6 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
 void
 module_note_main_file (line_maps *lmaps, const line_map_ordinary *map)
 {
-  // FIXME:extract main-file loc from lmap[0]
-  // Find command line locs lmap[2] ... ENTER or LEAVE
   gcc_checking_assert (lmaps == line_table);
   if (modules_p () && !spans.init_p ())
     spans.init (map);

@@ -47,7 +47,7 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
     set gcc_output [gcc_target_compile $filename.c $filename.x executable $gcc_options]
     remote_file build delete $filename.c $filename.x $filename.gcno
 
-    # Verify that COMPILER_PATTERRNS appear in gcc output.
+    # Verify that COMPILER_PATTERNS appear in gcc output.
     foreach pattern [split $compiler_patterns "\n"] {
 	if {$pattern != ""} {
 	    if {[regexp -line -- "$pattern" $gcc_output]} {
@@ -62,7 +62,7 @@ proc check_for_options {language gcc_options compiler_patterns compiler_non_patt
 	}
     }
 
-    # Verify that COMPILER_NON_PATTERRNS do not appear in gcc output.
+    # Verify that COMPILER_NON_PATTERNS do not appear in gcc output.
     foreach pattern [split $compiler_non_patterns "\n"] {
 	if {$pattern != ""} {
 	    if {![regexp -line -- "$pattern" $gcc_output result]} {
