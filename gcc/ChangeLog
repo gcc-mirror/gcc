@@ -1,3 +1,20 @@
+2018-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (tree_block::abstract_flag): Remove.
+	(tree_block::block_num): Make full 32bits.
+	* tree.def (BLOCK): Remove docs about BLOCK_ABSTRACT.
+	* tree.h (BLOCK_ABSTRACT): Remove.
+	* dwarf2out.c (gen_lexical_block_die): Remove dead code
+	resulting from BLOCK_ABSTRACT being always false.
+	(gen_inlined_subroutine_die): Likewise.
+	(gen_block_die): Likewise.
+	* tree.c (block_ultimate_origin): Likewise.
+	* tree-pretty-print.c (dump_block_node): Remove code dealing
+	with BLOCK_ABSTRACT.
+	* tree-ssa-live.c (dump_scope_block): Likewise.
+	* tree-streamer-in.c (unpack_ts_block_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_block_value_fields): Likewise.
+
 2018-10-05   Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_add_stmt_cost): When scalar cost

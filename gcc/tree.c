@@ -12142,11 +12142,6 @@ block_ultimate_origin (const_tree block)
 {
   tree origin = BLOCK_ABSTRACT_ORIGIN (block);
 
-  /* BLOCK_ABSTRACT_ORIGIN can point to itself; ignore that if
-     we're trying to output the abstract instance of this function.  */
-  if (BLOCK_ABSTRACT (block) && origin == block)
-    return NULL_TREE;
-
   if (origin == NULL_TREE)
     return NULL_TREE;
   else
