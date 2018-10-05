@@ -1,3 +1,10 @@
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (unnamed mfcr scc_comparison_operator
+	patterns): Merge SI and DI patterns to a GPR pattern.
+	(unnamed define_insn and define_split for record form of that): Merge
+	to a single define_insn_and_split pattern.
+
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/56856
