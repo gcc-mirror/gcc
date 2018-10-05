@@ -1,3 +1,28 @@
+2018-10-05  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/71625
+	* /gcc.target/aarch64/vclz.c (test_vclz_s8): Add noinline attribute.
+	(test_vclz_s16): Ditto.
+	(test_vclz_s32): Ditto.
+	(test_vclzq_s8): Ditto.
+	(test_vclzq_s16): Ditto.
+	(test_vclzq_s32): Ditto.
+	(test_vclz_u8): Ditto.
+	(test_vclz_u16): Ditto.
+	(test_vclz_u32): Ditto.
+	(test_vclzq_u8): Ditto.
+	(test_vclzq_u16): Ditto.
+	(test_vclzq_u32): Ditto.
+	* gcc.target/aarch64/vneg_s.c (test_vneg_s8): Ditto.
+	(test_vneg_s16): Ditto.
+	(test_vneg_s32): Ditto.
+	(test_vneg_s64): Ditto.
+	(test_vnegd_s64): Ditto.
+	(test_vnegq_s8): Ditto.
+	(test_vnegq_s16): Ditto.
+	(test_vnegq_s32): Ditto.
+	(test_vnegq_s64): Ditto.
+
 2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/87509
