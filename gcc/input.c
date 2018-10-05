@@ -813,10 +813,10 @@ expand_location (source_location loc)
    "<built-in>".  */
 
 expanded_location
-expand_location_to_spelling_point (source_location loc)
+expand_location_to_spelling_point (source_location loc,
+				   enum location_aspect aspect)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/false,
-			    LOCATION_ASPECT_CARET);
+  return expand_location_1 (loc, /*expansion_point_p=*/false, aspect);
 }
 
 /* The rich_location class within libcpp requires a way to expand
@@ -1397,24 +1397,32 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       source_range src_range = get_range_from_loc (line_table, strlocs[i]);
 
       if (src_range.m_start >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
-	/* If the string is within a macro expansion, we can't get at the
-	   end location.  */
-	return "macro expansion";
+	{
+	  /* If the string token was within a macro expansion, then we can
+	     cope with it for the simple case where we have a single token.
+	     Otherwise, bail out.  */
+	  if (src_range.m_start != src_range.m_finish)
+	    return "macro expansion";
+	}
+      else
+	{
+	  if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	    /* If so, we can't reliably determine where the token started within
+	       its line.  */
+	    return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
 
-      if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
-	/* If so, we can't reliably determine where the token started within
-	   its line.  */
-	return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
-
-      if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
-	/* If so, we can't reliably determine where the token finished within
-	   its line.  */
-	return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+	  if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	    /* If so, we can't reliably determine where the token finished
+	       within its line.  */
+	    return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+	}
 
       expanded_location start
-	= expand_location_to_spelling_point (src_range.m_start);
+	= expand_location_to_spelling_point (src_range.m_start,
+					     LOCATION_ASPECT_START);
       expanded_location finish
-	= expand_location_to_spelling_point (src_range.m_finish);
+	= expand_location_to_spelling_point (src_range.m_finish,
+					     LOCATION_ASPECT_FINISH);
       if (start.file != finish.file)
 	return "range endpoints are in different files";
       if (start.line != finish.line)

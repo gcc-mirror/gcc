@@ -1,3 +1,13 @@
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* input.c (expand_location_to_spelling_point): Add param "aspect"
+	and use rather than hardcoding LOCATION_ASPECT_CARET.
+	(get_substring_ranges_for_loc): Handle the case of a single token
+	within a macro expansion.
+	* input.h (expand_location_to_spelling_point): Add "aspect" param,
+	defaulting to LOCATION_ASPECT_CARET.
+
 2018-10-05  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.c (TARGET_CXX_GUARD_TYPE): Define.

@@ -1,3 +1,14 @@
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* call.c (build_over_call): Build a vec of locations of the
+	arguments before the call to maybe_constant_value, and pass to
+	check_function_arguments.
+	* cp-lang.c (LANG_HOOKS_GET_SUBSTRING_LOCATION): Define as
+	c_get_substring_location.
+	* parser.c (cp_parser_string_literal): Capture string
+	concatenation locations.
+
 2018-10-04  Nathan Sidwell  <nathan@acm.org>
 
 	* lang-specs.h: Use string contatenation, not line splicing.

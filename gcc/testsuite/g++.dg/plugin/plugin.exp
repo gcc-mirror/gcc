@@ -67,6 +67,11 @@ set plugin_test_list [list \
 	  diagnostic-test-expressions-1.C } \
     { ../../gcc.dg/plugin/diagnostic_plugin_test_inlining.c \
 	  diagnostic-test-inlining-1.C } \
+    { ../../gcc.dg/plugin/diagnostic_plugin_test_string_literals.c \
+	  ../../gcc.dg/plugin/diagnostic-test-string-literals-1.c \
+	  ../../gcc.dg/plugin/diagnostic-test-string-literals-2.c \
+	  ../../gcc.dg/plugin/diagnostic-test-string-literals-3.c \
+	  ../../gcc.dg/plugin/diagnostic-test-string-literals-4.c } \
     { show_template_tree_color_plugin.c \
     	  show-template-tree-color.C \
     	  show-template-tree-color-labels.C \
