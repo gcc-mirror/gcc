@@ -1,5 +1,12 @@
 2018-10-05  Paul Koning  <ni1d@arrl.net>
 
+	* config/pdp11/pdp11.c (TARGET_CXX_GUARD_TYPE): Define.
+	(TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Define.
+	(TARGET_CXX_LIBRARY_RTTI_COMDAT): Define.
+	(pdp11_guard_type): New function.
+
+2018-10-05  Paul Koning  <ni1d@arrl.net>
+
 	* config/pdp11/pdp11.h (FLOAT_TYPE_SIZE): Always 32.
 	* config/pdp11/pdp11.opt (mfloat32): Remove.
 	(mfloat64): Remove.
