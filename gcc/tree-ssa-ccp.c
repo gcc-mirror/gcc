@@ -1119,7 +1119,7 @@ ccp_propagate::visit_phi (gphi *phi)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file,
-	      "\n    Argument #%d (%d -> %d %sexecutable)\n",
+	      "\tArgument #%d (%d -> %d %sexecutable)\n",
 	      i, e->src->index, e->dest->index,
 	      (e->flags & EDGE_EXECUTABLE) ? "" : "not ");
 	}
