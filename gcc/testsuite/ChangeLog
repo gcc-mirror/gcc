@@ -1,3 +1,11 @@
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (proc dg-end-multiline-output): Check argument
+	count.  If there's a 3rd argument, use dg-process-target on it,
+	bailing out, or recording expected failures as "maybe_x".
+	(proc handle-multiline-outputs): Extract "maybe_x", and use it
+	to convert pass/fail into xpass/xfail.
+
 2018-10-05  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/87490
