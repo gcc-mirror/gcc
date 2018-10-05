@@ -49486,17 +49486,21 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 {
   unsigned *cost = (unsigned *) data;
   unsigned retval = 0;
+  bool scalar_p
+    = (kind == scalar_stmt || kind == scalar_load || kind == scalar_store);
 
   tree vectype = stmt_info ? stmt_vectype (stmt_info) : NULL_TREE;
   int stmt_cost = - 1;
 
   bool fp = false;
-  machine_mode mode = TImode;
+  machine_mode mode = scalar_p ? SImode : TImode;
 
   if (vectype != NULL)
     {
       fp = FLOAT_TYPE_P (vectype);
       mode = TYPE_MODE (vectype);
+      if (scalar_p)
+	mode = TYPE_MODE (TREE_TYPE (vectype));
     }
 
   if ((kind == vector_stmt || kind == scalar_stmt)
