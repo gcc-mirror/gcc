@@ -1007,7 +1007,6 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mint32  -mno-int16 -mint16  -mno-int32 @gol
--mfloat32  -mno-float64 -mfloat64  -mno-float32 @gol
 -msplit -munix-asm  -mdec-asm -mgnu-asm -mlra}
 
 @emph{picoChip Options}
@@ -22721,18 +22720,6 @@ Use 16-bit @code{int}.  This is the default.
 @opindex mint32
 @opindex mno-int16
 Use 32-bit @code{int}.
-
-@item -mfloat64
-@itemx -mno-float32
-@opindex mfloat64
-@opindex mno-float32
-Use 64-bit @code{float}.  This is the default.
-
-@item -mfloat32
-@itemx -mno-float64
-@opindex mfloat32
-@opindex mno-float64
-Use 32-bit @code{float}.
 
 @item -msplit
 @opindex msplit

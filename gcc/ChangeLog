@@ -1,3 +1,11 @@
+2018-10-05  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.h (FLOAT_TYPE_SIZE): Always 32.
+	* config/pdp11/pdp11.opt (mfloat32): Remove.
+	(mfloat64): Remove.
+	* doc/invoke.texi (pdp11 -mfloat32): Remove:
+	(pdp11 -mfloat64): Remove.
+
 2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*cmpxf_i387): Change operand 2 predicate
