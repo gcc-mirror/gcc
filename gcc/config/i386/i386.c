@@ -22258,45 +22258,38 @@ ix86_fp_compare_code_to_integer (enum rtx_code code)
 /* Generate insn patterns to do a floating point compare of OPERANDS.  */
 
 static rtx
-ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
+ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
 {
   bool unordered_compare = ix86_unordered_fp_compare (code);
-  machine_mode intcmp_mode;
-  rtx tmp, tmp2;
+  machine_mode cmp_mode;
+  rtx tmp, scratch;
 
   code = ix86_prepare_fp_compare_args (code, &op0, &op1);
+
+  tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
+  if (unordered_compare)
+    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
 
   /* Do fcomi/sahf based test when profitable.  */
   switch (ix86_fp_comparison_strategy (code))
     {
     case IX86_FPCMP_COMI:
-      intcmp_mode = CCFPmode;
-      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      if (unordered_compare)
-	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      cmp_mode = CCFPmode;
       emit_insn (gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp));
       break;
 
     case IX86_FPCMP_SAHF:
-      intcmp_mode = CCFPmode;
-      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      if (unordered_compare)
-	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
-      tmp = gen_rtx_SET (gen_rtx_REG (CCFPmode, FLAGS_REG), tmp);
-      if (!scratch)
-	scratch = gen_reg_rtx (HImode);
-      tmp2 = gen_rtx_CLOBBER (VOIDmode, scratch);
-      emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, tmp, tmp2)));
+      cmp_mode = CCFPmode;
+      tmp = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), UNSPEC_FNSTSW);
+      scratch = gen_reg_rtx (HImode);
+      emit_insn (gen_rtx_SET (scratch, tmp));
+      emit_insn (gen_x86_sahf_1 (scratch));
       break;
 
     case IX86_FPCMP_ARITH:
-      /* Sadness wrt reg-stack pops killing fpsr -- gotta get fnstsw first.  */
-      tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      if (unordered_compare)
-	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
+      cmp_mode = CCNOmode;
       tmp = gen_rtx_UNSPEC (HImode, gen_rtvec (1, tmp), UNSPEC_FNSTSW);
-      if (!scratch)
-	scratch = gen_reg_rtx (HImode);
+      scratch = gen_reg_rtx (HImode);
       emit_insn (gen_rtx_SET (scratch, tmp));
 
       /* In the unordered case, we have to check C2 for NaN's, which
@@ -22304,7 +22297,6 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	 So do some bit twiddling on the value we've got in AH to come
 	 up with an appropriate set of condition codes.  */
 
-      intcmp_mode = CCNOmode;
       switch (code)
 	{
 	case GT:
@@ -22319,7 +22311,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	      emit_insn (gen_andqi_ext_1 (scratch, scratch, GEN_INT (0x45)));
 	      emit_insn (gen_addqi_ext_1 (scratch, scratch, constm1_rtx));
 	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x44)));
-	      intcmp_mode = CCmode;
+	      cmp_mode = CCmode;
 	      code = GEU;
 	    }
 	  break;
@@ -22329,7 +22321,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	    {
 	      emit_insn (gen_andqi_ext_1 (scratch, scratch, GEN_INT (0x45)));
 	      emit_insn (gen_cmpqi_ext_3 (scratch, const1_rtx));
-	      intcmp_mode = CCmode;
+	      cmp_mode = CCmode;
 	      code = EQ;
 	    }
 	  else
@@ -22359,7 +22351,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	      emit_insn (gen_andqi_ext_1 (scratch, scratch, GEN_INT (0x45)));
 	      emit_insn (gen_addqi_ext_1 (scratch, scratch, constm1_rtx));
 	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x40)));
-	      intcmp_mode = CCmode;
+	      cmp_mode = CCmode;
 	      code = LTU;
 	    }
 	  else
@@ -22374,7 +22366,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
 	    {
 	      emit_insn (gen_andqi_ext_1 (scratch, scratch, GEN_INT (0x45)));
 	      emit_insn (gen_cmpqi_ext_3 (scratch, GEN_INT (0x40)));
-	      intcmp_mode = CCmode;
+	      cmp_mode = CCmode;
 	      code = EQ;
 	    }
 	  else
@@ -22420,7 +22412,7 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1, rtx scratch)
   /* Return the test that should be put into the flags user, i.e.
      the bcc, scc, or cmov instruction.  */
   return gen_rtx_fmt_ee (code, VOIDmode,
-			 gen_rtx_REG (intcmp_mode, FLAGS_REG),
+			 gen_rtx_REG (cmp_mode, FLAGS_REG),
 			 const0_rtx);
 }
 
@@ -22435,7 +22427,7 @@ ix86_expand_compare (enum rtx_code code, rtx op0, rtx op1)
   else if (SCALAR_FLOAT_MODE_P (GET_MODE (op0)))
     {
       gcc_assert (!DECIMAL_FLOAT_MODE_P (GET_MODE (op0)));
-      ret = ix86_expand_fp_compare (code, op0, op1, NULL_RTX);
+      ret = ix86_expand_fp_compare (code, op0, op1);
     }
   else
     ret = ix86_expand_int_compare (code, op0, op1);
@@ -22735,7 +22727,7 @@ ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 	 we decide to expand comparison using arithmetic that is not
 	 too common scenario.  */
       start_sequence ();
-      compare_op = ix86_expand_fp_compare (code, op0, op1, NULL_RTX);
+      compare_op = ix86_expand_fp_compare (code, op0, op1);
       compare_seq = get_insns ();
       end_sequence ();
 

@@ -15,6 +15,19 @@
 
 2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*cmpxf_cc_i387): Remove pattern.
+	(*cmp<mode>_cc_i387): Ditto.
+	(*cmpu<mode>_cc_i387): Ditto.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Ditto.
+	* config/i386/i386.c (ix86_expand_fp_compare): Remove
+	"scratch" argument.
+	<case IX86_FPCMP_SAHF>: Do not generate pattern with HImode clobber.
+	Emit x86_sahf_1 pattern.
+	(ix86_expand_compare): Update call to ix86_expand_fp_compare.
+	(ix86_expand_carry_flag_compare): Ditto.
+
+2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386.md (*cmpxf_i387): Change operand 2 predicate
 	to reg_or_0_operand.  Add "C" constraint.
 	(*cmpxf_cc_i387): Ditto.
