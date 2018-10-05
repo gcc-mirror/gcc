@@ -1,3 +1,8 @@
+2018-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: Fix test expectations.
+	* gnat.dg/string_merge2.adb: Likewise.
+
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/56856
