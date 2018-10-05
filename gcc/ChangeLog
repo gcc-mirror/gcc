@@ -1,3 +1,10 @@
+2018-10-05  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (f<quiet_pattern>_quiet<ANYF:mode><X:mode>4):
+	Add define_expand.  Add ! HONOR_SNANS check to current pattern.  Add
+	new pattern using HONOR_SNANS that emits one extra instruction.
+
 2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.md (unnamed mfcr scc_comparison_operator
