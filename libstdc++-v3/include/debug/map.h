@@ -519,7 +519,7 @@ namespace __debug
 	for (_Base_const_iterator __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::cend(),
 				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));

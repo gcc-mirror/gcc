@@ -1,3 +1,30 @@
+2018-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(_Rb_tree_iterator<>::operator==): Make inline friend.
+	(_Rb_tree_iterator<>::operator!=): Likewise.
+	(_Rb_tree_const_iterator<>::operator==): Likewise.
+	(_Rb_tree_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator!=(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator==(const _Rb_tree<>&, const _Rb_tree<>&)): Make inline friend.
+	(operator<(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator!=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise and
+	deprecate.
+	(operator>(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator<=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator>=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	* include/debug/map.h (map<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multimap.h
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h (set<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multiset.h
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
 2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/59439

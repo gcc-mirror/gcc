@@ -260,11 +260,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef _Tp* pointer;
 
       typedef bidirectional_iterator_tag iterator_category;
-      typedef ptrdiff_t		  difference_type;
+      typedef ptrdiff_t			 difference_type;
 
-      typedef _Rb_tree_iterator<_Tp>	_Self;
-      typedef _Rb_tree_node_base::_Base_ptr _Base_ptr;
-      typedef _Rb_tree_node<_Tp>*	   _Link_type;
+      typedef _Rb_tree_iterator<_Tp>		_Self;
+      typedef _Rb_tree_node_base::_Base_ptr	_Base_ptr;
+      typedef _Rb_tree_node<_Tp>*		_Link_type;
 
       _Rb_tree_iterator() _GLIBCXX_NOEXCEPT
       : _M_node() { }
@@ -311,13 +311,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node == __x._M_node; }
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node != __x._M_node; }
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node != __y._M_node; }
 
       _Base_ptr _M_node;
   };
@@ -390,28 +390,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node == __x._M_node; }
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const _GLIBCXX_NOEXCEPT
-      { return _M_node != __x._M_node; }
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) _GLIBCXX_NOEXCEPT
+      { return __x._M_node != __y._M_node; }
 
       _Base_ptr _M_node;
     };
-
-  template<typename _Val>
-    inline bool
-    operator==(const _Rb_tree_iterator<_Val>& __x,
-	       const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_node == __y._M_node; }
-
-  template<typename _Val>
-    inline bool
-    operator!=(const _Rb_tree_iterator<_Val>& __x,
-	       const _Rb_tree_const_iterator<_Val>& __y) _GLIBCXX_NOEXCEPT
-    { return __x._M_node != __y._M_node; }
 
   void
   _Rb_tree_insert_and_rebalance(const bool __insert_left,
@@ -1616,55 +1604,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 #endif // C++17
+
+      friend bool
+      operator==(const _Rb_tree& __x, const _Rb_tree& __y)
+      {
+	return __x.size() == __y.size()
+	  && std::equal(__x.begin(), __x.end(), __y.begin());
+      }
+
+      friend bool
+      operator<(const _Rb_tree& __x, const _Rb_tree& __y)
+      {
+	return std::lexicographical_compare(__x.begin(), __x.end(),
+					    __y.begin(), __y.end());
+      }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator!=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__x == __y); }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator>(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return __y < __x; }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator<=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__y < __x); }
+
+      friend bool _GLIBCXX_DEPRECATED
+      operator>=(const _Rb_tree& __x, const _Rb_tree& __y)
+      { return !(__x < __y); }
     };
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator==(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    {
-      return __x.size() == __y.size()
-	     && std::equal(__x.begin(), __x.end(), __y.begin());
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator<(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	      const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    {
-      return std::lexicographical_compare(__x.begin(), __x.end(), 
-					  __y.begin(), __y.end());
-    }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator!=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__x == __y); }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator>(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	      const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return __y < __x; }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator<=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__y < __x); }
-
-  template<typename _Key, typename _Val, typename _KeyOfValue,
-	   typename _Compare, typename _Alloc>
-    inline bool
-    operator>=(const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __x,
-	       const _Rb_tree<_Key, _Val, _KeyOfValue, _Compare, _Alloc>& __y)
-    { return !(__x < __y); }
 
   template<typename _Key, typename _Val, typename _KeyOfValue,
 	   typename _Compare, typename _Alloc>
