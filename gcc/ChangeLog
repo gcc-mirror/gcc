@@ -1,5 +1,16 @@
 2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
 
+	* config/i386/i386.md (*cmpxf_i387): Change operand 2 predicate
+	to reg_or_0_operand.  Add "C" constraint.
+	(*cmpxf_cc_i387): Ditto.
+	(*cmp<mode>_i387): Change operand 2 predicate
+	to nonimm_or_0_operand.  Add "C" constraint.
+	(*cmp<mode>_cc_i387): Ditto.
+	(*cmp<mode>_0_i387): Remove insn pattern.
+	(*cmp<mode>_0_cc_i387): Ditto.
+
+2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/constraints.md ("C"): Do not depend on TARGET_SSE.
 	* config/i386/predicates.md (nonimm_or_0_operand): Rename
 	from vector_move_operand.  Update all uses.
