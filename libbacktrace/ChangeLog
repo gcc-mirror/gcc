@@ -1,3 +1,9 @@
+2018-10-05  Ian Lance Taylor  <iant@golang.org>
+
+	PR libbacktrace/87529
+	* backtrace.h: Document that backtrace_create_state should be
+	called only once.
+
 2018-08-05 Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* configure.ac: Move define of HAVE_ZLIB into check for -lz.
