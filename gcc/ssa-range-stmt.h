@@ -34,11 +34,8 @@ along with GCC; see the file COPYING3.  If not see
    Current support is for unary and binary statements.  The expression or its
    operands can be resolved to a range if 2 of the 3 operands have ranges
    supplied for them. 
+*/
    
-   This class is intended to be a lightweight overlay of a 'gimple *'
-   pointer, and can be passed by value. It can be created from a gimple stmt
-   and converted back to a gimple statement by default.  */
-
 class range_stmt
 {
 public:
@@ -46,8 +43,15 @@ public:
   range_stmt (gimple *stmt);
   range_stmt &operator= (gimple *stmt);
 
-  bool valid () const;
-  operator gimple *() const;
+  gimple *gimple_stmt () const;
+
+  bool range_op_p () const;
+  bool logical_combine_p () const;
+  bool branch_p() const;
+  bool phi_p () const;
+  bool call_p () const;
+
+  tree lhs () const;
 
   tree operand1 () const;
   tree operand2 () const;
@@ -63,13 +67,18 @@ public:
   bool op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
 
+  void outgoing_edge_range (irange& r, edge e) const;
+  bool fold_logical_combine (irange& r, const irange& lhs,
+                             const irange& op1_true,
+                             const irange& op1_false,
+                             const irange& op2_true,
+                             const irange& op2_false) const;
 
   void dump (FILE *f) const;
-protected:
+private:
   gimple *m_g;
   void validate_stmt (gimple *s);
   class range_operator *handler() const;
-  tree_code get_code () const;
 };
 
 /* Initialize a range statement to invalid.  */
@@ -96,21 +105,50 @@ range_stmt::operator= (gimple *s)
 
 /* Return true is this is a valid range summary.  */
 inline bool
-range_stmt::valid () const
+range_stmt::range_op_p () const
 {
-  return m_g != NULL;
+  return (m_g && handler () != NULL);
 }
 
-inline 
-range_stmt::operator gimple *() const
+inline bool
+range_stmt::branch_p () const
+{
+  return (m_g && gimple_code (m_g) == GIMPLE_COND);
+}
+
+inline bool
+range_stmt::call_p () const
+{
+  return (m_g && gimple_code (m_g) == GIMPLE_CALL);
+}
+
+inline bool
+range_stmt::phi_p () const
+{
+  return (m_g && gimple_code (m_g) == GIMPLE_PHI);
+}
+
+inline tree
+range_stmt::lhs () const
+{
+  switch (gimple_code (m_g))
+    {
+      case GIMPLE_PHI:
+	return gimple_phi_result (m_g);
+      case GIMPLE_ASSIGN:
+	return gimple_assign_lhs (m_g);
+      case GIMPLE_CALL:
+	return gimple_call_lhs (m_g);
+      default:
+        break;
+    }
+  return NULL;
+}
+
+inline gimple *
+range_stmt::gimple_stmt () const
 {
   return m_g;
-}
-
-inline tree_code
-range_stmt::get_code () const
-{
-  return gimple_expr_code (m_g);
 }
 
 /* Return the second operand of the statement, if there is one.  Otherwise
@@ -160,25 +198,10 @@ range_stmt::ssa_operand2 () const
 inline range_operator *
 range_stmt::handler () const
 {
-  return range_op_handler (get_code ());
+  enum gimple_code code = gimple_code (m_g);
+  if (code == GIMPLE_ASSIGN || code == GIMPLE_COND)
+    return range_op_handler (gimple_expr_code (m_g));
+  return NULL;
 }
-
-
-
-inline bool
-gori_branch_stmt_p (gimple *s)
-{
-  return (s && gimple_code (s) == GIMPLE_COND);
-}
-
-extern void gori_branch_edge_range (irange& r, edge e);
-extern bool logical_combine_stmt_p (gimple *s);
-extern bool logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
-				       const irange& op1_true,
-				       const irange& op1_false,
-				       const irange& op2_true,
-				       const irange& op2_false);
-
-
 
 #endif /* GCC_SSA_RANGE_STMT_H */

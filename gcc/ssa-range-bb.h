@@ -61,9 +61,9 @@ private:
   class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
   irange m_bool_zero;		/* Bolean zero cached.  */
   irange m_bool_one;		/* Bolean true cached.  */
-  bool process_logical (range_stmt stmt, irange& r, tree name,
+  bool process_logical (range_stmt& stmt, irange& r, tree name,
 			const irange& lhs);
-  bool get_range_from_stmt (range_stmt stmt, irange& r, tree name,
+  bool get_range_from_stmt (gimple *s, irange& r, tree name,
 			    const irange& lhs);
 };
 

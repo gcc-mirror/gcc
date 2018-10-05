@@ -58,7 +58,7 @@ range_stmt::operand1 () const
       case GIMPLE_ASSIGN:
         {
 	  tree expr = gimple_assign_rhs1 (m_g);
-	  if (get_code() == ADDR_EXPR)
+	  if (gimple_assign_rhs_code (m_g) == ADDR_EXPR)
 	    {
 	      // If the base address is an SSA_NAME, return it. 
 	      // if its range is non-zero, then we know the pointer is non-zero.
@@ -83,40 +83,79 @@ range_stmt::operand1 () const
   return NULL;
 }
 
+/* Return TRUE if code with operands of type TYPE is a boolean
+   evaluation.  These are important to identify as both sides of a logical
+   binary expression must be evaluated in order to calculate a range.  */
+bool
+range_stmt::logical_combine_p () const
+{
+  if (gimple_code (m_g) != GIMPLE_ASSIGN)
+    return false;
+
+  /* Look for boolean and/or condition.  */
+  switch (gimple_expr_code (m_g))
+    {
+      case TRUTH_AND_EXPR:
+      case TRUTH_OR_EXPR:
+        return true;
+
+      case BIT_AND_EXPR:
+      case BIT_IOR_EXPR:
+        // Bitwise operations on single bits are logical too.
+        if (types_compatible_p (TREE_TYPE (operand1 ()), boolean_type_node))
+	  return true;
+	break;
+
+      default:
+        break;
+    }
+  return false;
+}
+
+
 /* Validate that the statement and all operands of this expression are
    operable on iranges. If it is valid, set the stmt pointer.  */
 void
 range_stmt::validate_stmt (gimple *s)
 {
+  m_g = s;
+  if (!s)
+    return;
+
   // Check for supported statements
   switch (gimple_code (s))
     {
+      case GIMPLE_PHI:
+      case GIMPLE_CALL:
+        return;
+
       case GIMPLE_COND:
       case GIMPLE_ASSIGN:
-	m_g = s;
-        break;
+	// Must have a ranger operation handler as well.
+	if (handler ())
+	  {
+	    // Now verify all the operanmds are compatible
+	    tree op1 = operand1 ();
+	    tree op2 = operand2 ();
+	    tree ssa1 = valid_irange_ssa (op1);
+	    tree ssa2 = valid_irange_ssa (op2);
+
+	    if (ssa1 || (TREE_CODE (op1) == INTEGER_CST &&
+			 !TREE_OVERFLOW (op1))) 
+	      {
+		// If this is a unary operation, we are done. 
+		if (!op2)
+		  return;
+		// Check parameters of the second operand.
+		if (ssa2 || (TREE_CODE (op2) == INTEGER_CST &&
+			     !TREE_OVERFLOW (op2)))
+		  return;
+	      }
+	  }
+	break;
 
       default:
-        m_g = NULL;
-    }
-
-  // Must have a ranger operation handler as well.
-  if (m_g && handler ())
-    {
-      // Now verify all the operanmds are compatible
-      tree op1 = operand1 ();
-      tree op2 = operand2 ();
-      tree ssa1 = valid_irange_ssa (op1);
-      tree ssa2 = valid_irange_ssa (op2);
-
-      if (ssa1 || (TREE_CODE (op1) == INTEGER_CST && !TREE_OVERFLOW (op1))) 
-	{
-	  // IF this is a unary operation, we are done. 
-	  if (!op2)
-	   return;
-	  if (ssa2 || (TREE_CODE (op2) == INTEGER_CST && !TREE_OVERFLOW (op2)))
-	   return;
-	}
+        break;
     }
   m_g = NULL;
 }
@@ -129,10 +168,9 @@ bool
 range_stmt::fold (irange &res, const irange& r1) const
 {
   irange r2;
-  tree lhs = gimple_get_lhs (m_g);
   /* Single ssa operations require the LHS type as the second range.  */
-  if (lhs)
-    r2.set_varying (TREE_TYPE (lhs));
+  if (lhs ())
+    r2.set_varying (TREE_TYPE (lhs ()));
   else
     r2.set_undefined (r1.type ());
 
@@ -213,13 +251,12 @@ range_stmt::op2_irange (irange& r, const irange& lhs_range,
 void
 range_stmt::dump (FILE *f) const
 {
-  tree lhs = gimple_get_lhs (m_g);
   tree op1 = operand1 ();
   tree op2 = operand2 ();
 
-  if (lhs)
+  if (lhs ())
     {
-      print_generic_expr (f, lhs, TDF_SLIM);
+      print_generic_expr (f, lhs (), TDF_SLIM);
       fprintf (f, " = ");
     }
 
@@ -237,48 +274,17 @@ range_stmt::dump (FILE *f) const
 }
 
 
-/* Return TRUE if code with operands of type TYPE is a boolean
-   evaluation.  These are important to identify as both sides of a logical
-   binary expression must be evaluated in order to calculate a range.  */
-bool
-logical_combine_stmt_p (gimple *s)
-{
-  range_stmt rn(s);
-  if (!rn.valid ())
-    return false;
-
-  /* Look for boolean and/or condition.  */
-  switch (gimple_expr_code (s))
-    {
-      case TRUTH_AND_EXPR:
-      case TRUTH_OR_EXPR:
-        return true;
-
-      case BIT_AND_EXPR:
-      case BIT_IOR_EXPR:
-        // Bitwise operations on single bits are logical too.
-        if (types_compatible_p (TREE_TYPE (rn.operand1 ()), boolean_type_node))
-	  return true;
-	break;
-
-      default:
-        break;
-    }
-  return false;
-}
-
 
 /* Evaluate a binary logical expression given true and false ranges for each
    of the operands. Base the result on the value in the LHS.  */
 bool
-logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
-			   const irange& op1_true,
-			   const irange& op1_false,
-			   const irange& op2_true,
-			   const irange& op2_false)
+range_stmt::fold_logical_combine (irange& r, const irange& lhs,
+				  const irange& op1_true,
+				  const irange& op1_false,
+				  const irange& op2_true,
+				  const irange& op2_false) const
 {
-  range_stmt stmt(s);
-  gcc_checking_assert (logical_combine_stmt_p (s));
+  gcc_checking_assert (logical_combine_p ());
  
   /* If the LHS can be TRUE OR FALSE, then both need to be evaluated and
      combined, otherwise any range restrictions that have been determined
@@ -289,10 +295,10 @@ logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
       unsigned prec = TYPE_PRECISION (boolean_type_node);
       irange bool_zero (boolean_type_node, wi::zero (prec), wi::zero (prec));
       irange bool_one (boolean_type_node, wi::one (prec), wi::one (prec));
-      if (logical_combine_stmt_fold (r1, s, bool_zero, op1_true, op1_false,
-				     op2_true, op2_false) &&
-	  logical_combine_stmt_fold (r, s, bool_one, op1_true, op1_false,
-				     op2_true, op2_false))
+      if (fold_logical_combine (r1, bool_zero, op1_true, op1_false, op2_true,
+				op2_false) &&
+	  fold_logical_combine (r, bool_one, op1_true, op1_false, op2_true,
+				op2_false))
 	{
 	  r.union_ (r1);
 	  return true;
@@ -302,7 +308,7 @@ logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
     }
 
   /* Now combine based on whether the result is TRUE or FALSE.  */
-  switch (gimple_expr_code (s))
+  switch (gimple_expr_code (m_g))
     {
 
       /* A logical operation on two ranges is executed with operand ranges that
@@ -362,9 +368,11 @@ logical_combine_stmt_fold (irange& r, gimple *s, const irange& lhs,
 }
 
 /* Return the range implied by edge E for a branch statement in R.  */
-void gori_branch_edge_range (irange& r, edge e)
+void
+range_stmt::outgoing_edge_range (irange& r, edge e) const
 {
-  gcc_assert (gori_branch_stmt_p (last_stmt (e->src)));
+  gcc_checking_assert (last_stmt (e->src) == gimple_stmt ()); 
+  gcc_checking_assert (branch_p ());
 
   if (e->flags & EDGE_TRUE_VALUE)
     r = irange (boolean_type_node, boolean_true_node, boolean_true_node);

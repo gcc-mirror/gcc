@@ -605,10 +605,11 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 
 // Return a range for the phi node PHI in R.
 bool
-path_ranger::process_phi (irange &r, gphi *phi)
+path_ranger::process_phi (irange &r, gimple *g)
 {
-  irange phi_range;
+  gphi *phi = as_a <gphi *> (g);
   tree phi_def = gimple_phi_result (phi);
+  irange phi_range;
   unsigned x;
 
   // Global cache has already been initialized in path_range_stmt
@@ -664,15 +665,13 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
 {
   tree name;
   irange range_op1, range_op2;
-  range_stmt rn;
-  bool res, is_phi;
+  range_stmt rn (g);
+  bool res;
 
-  is_phi = is_a<gphi *> (g);
-  if (is_phi)
-    name = gimple_phi_result (g);
-  else
-    name = gimple_get_lhs (g);
-
+  if (!rn.gimple_stmt ())
+    return false;
+  
+  name = rn.lhs ();
   // Not all statements have a LHS.  */
   if (name)
     {
@@ -689,18 +688,16 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     }
 
   // Look for nonnull results and other such things here.
-  if (gimple_code (g) == GIMPLE_CALL)
+  if (rn.call_p ())
     return process_call (r, g);
  
   // Handle PHI here since class range_stmt does not.
-  if (is_phi)
+  if (rn.phi_p ())
     {
-      gphi *phi = as_a <gphi *> (g);
-      return process_phi (r, phi);
+      return process_phi (r, g);
     }
 
-  rn = g;
-  if (!rn.valid ())
+  if (!rn.range_op_p ())
     return false;
 
   // Evaluate operand 1.
