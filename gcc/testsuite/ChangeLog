@@ -1,3 +1,9 @@
+2018-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87490
+	* gcc.dg/pr87490.c: New test.
+	* gcc.dg/warn-strnlen-no-nul-2.c: Same.
+
 2018-10-05  Steve Ellcey  <sellcey@cavium.com>
 
 	PR tree-optimization/71625
