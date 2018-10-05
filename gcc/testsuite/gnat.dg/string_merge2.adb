@@ -15,5 +15,3 @@ end;
 --     .string "ABCD"
 
 -- { dg-final { scan-assembler-times "\\.rodata\\.str" 1 } }
--- { dg-final { scan-assembler-times "\\.string" 1 } }
--- { dg-final { scan-assembler-times "\"ABCD\"" 1 } }
