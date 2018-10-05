@@ -1,5 +1,25 @@
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/56856
+	* g++.dg/ext/builtin4.C: Set expected location for warning to the
+	correct location within the format string.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add the plugin and
+	files for testing locations within string literal locations from
+	the C frontend.
+	* g++.dg/warn/Wformat-method.C: New test.
+	* g++.dg/warn/Wformat-pr71863.C: New test.
+	* g++.dg/warn/Wformat-ranges-c++11.C: New test.
+	* g++.dg/warn/Wformat-ranges.C: New test, based on
+	gcc.dg/format/diagnostic-ranges.c.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): Generalize expected output to work with
+	both C and C++.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c
+	(test_stringified_token_1): Likewise.
+	(test_stringified_token_3): Likewise.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
 	* lib/multiline.exp (proc dg-end-multiline-output): Check argument
 	count.  If there's a 3rd argument, use dg-process-target on it,
 	bailing out, or recording expected failures as "maybe_x".
