@@ -1,5 +1,11 @@
 2018-10-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state): Add controlling_macro, unionize slurp
+	with alias.  Add accessors.  Use them.
+	(module_state::{read,do_import,read_config}): Drop check_crc arg.
+	(module_state::read_imports): Zap direct_p before importing.
+
 	Use 'include translation' terminology.
 	gcc/c-family/
 	* c-opts.c (c_common_post_options): Adjust.
