@@ -10734,7 +10734,8 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	  if (exp.undef_loc)
 	    inform (exp.undef_loc, "#undef %E", HT_IDENT_TO_GCC_IDENT (node));
 	  if (exp.def)
-	    inform (exp.def->line, "#define %E", HT_IDENT_TO_GCC_IDENT (node));
+	    inform (exp.def->line, "#define %s",
+		    cpp_macro_definition (reader, node, exp.def));
 	}
       def = NULL;
     }

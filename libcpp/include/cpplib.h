@@ -991,9 +991,14 @@ inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
   return cpp_user_macro_p (node) && node->value.macro->fun_like;
 }
 
-extern const unsigned char *cpp_macro_definition (cpp_reader *,
-						  cpp_hashnode *);
-extern source_location cpp_macro_definition_location (cpp_hashnode *);
+extern const unsigned char *cpp_macro_definition (cpp_reader *, cpp_hashnode *);
+extern const unsigned char *cpp_macro_definition (cpp_reader *, cpp_hashnode *,
+						  const cpp_macro *);
+inline source_location cpp_macro_definition_location (cpp_hashnode *node)
+{
+  const cpp_macro *macro = node->value.macro;
+  return macro ? macro->line : 0;
+}
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern void cpp_relocate_peeked_tokens (cpp_reader *, unsigned);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);

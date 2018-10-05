@@ -1,6 +1,23 @@
 2018-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::deferred_macro): Print macro
+	definition.
+	gcc/testsuite/
+	* g++.dg/modules/macro-2_d.C: Adjust regexps.
+	* g++.dg/modules/macro-4_[de].C: Likewise.
+	* g++.dg/modules/macro-5_c.C: Likewise.
+	libcpp/
+	* include/cpplib.h (cpp_macro_definition): Add overload.
+	(cpp_macro_definition_location): Make inline, adjust.
+	* macro.c (get_deferred_or_lazy_macro): New, broken out of ...
+	(_cpp_notify_macro_use): ... here.  Call it.
+	(warn_of_redefinition): Call it.
+	(cpp_macro_definition): Split into two overloads. Deal with
+	deferred macros.
+	(cpp_macro_definition_location): Delete.
+
+	gcc/cp/
 	* module.cc (module_state): Add controlling_macro, unionize slurp
 	with alias.  Add accessors.  Use them.
 	(module_state::{read,do_import,read_config}): Drop check_crc arg.
