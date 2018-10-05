@@ -1124,9 +1124,6 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
   if (flags & TDF_ADDRESS)
     pp_printf (pp, "[%p] ", (void *) block);
 
-  if (BLOCK_ABSTRACT (block))
-    pp_string (pp, "[abstract] ");
-
   if (TREE_ASM_WRITTEN (block))
     pp_string (pp, "[written] ");
 

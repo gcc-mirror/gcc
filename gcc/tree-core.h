@@ -1481,8 +1481,7 @@ struct GTY(()) tree_block {
   struct tree_base base;
   tree chain;
 
-  unsigned abstract_flag : 1;
-  unsigned block_num : 31;
+  unsigned block_num;
 
   location_t locus;
   location_t end_locus;
