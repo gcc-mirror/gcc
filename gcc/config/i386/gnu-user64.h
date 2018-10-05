@@ -50,7 +50,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ASM_SPEC "%{" SPEC_32 ":--32} \
  %{" SPEC_64 ":--64} \
  %{" SPEC_X32 ":--x32} \
- %{!mno-sse2avx:%{mavx:-msse2avx}} %{msse2avx:%{!mavx:-msse2avx}}"
+ %{msse2avx:%{!mavx:-msse2avx}}"
 
 #define GNU_USER_TARGET_LINK_SPEC				   \
                   "%{" SPEC_64 ":-m " GNU_USER_LINK_EMULATION64 "} \
