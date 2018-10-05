@@ -1,3 +1,9 @@
+2018-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87490
+	* builtins.c (expand_builtin_strnlen): Handle a null data.decl
+	consistently.
+
 2018-10-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63155

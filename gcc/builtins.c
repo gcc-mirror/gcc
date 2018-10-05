@@ -3151,20 +3151,38 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
       TREE_NO_WARNING (exp) = true;
 
+  bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
-    return NULL_RTX;
-
-  if (!TREE_NO_WARNING (exp)
-      && wi::ltu_p (wi::to_wide (len), min)
-      && warning_at (loc, OPT_Wstringop_overflow_,
-		     "%K%qD specified bound [%wu, %wu] "
-		     "exceeds the size %E of unterminated array",
-		     exp, func, min.to_uhwi (), max.to_uhwi (), len))
     {
-      inform (DECL_SOURCE_LOCATION (data.decl),
-	      "referenced argument declared here");
-      TREE_NO_WARNING (exp) = true;
+      data.decl = unterminated_array (src, &len, &exact);
+      if (!data.decl)
+	return NULL_RTX;
     }
+
+  if (data.decl
+      && !TREE_NO_WARNING (exp)
+      && (wi::ltu_p (wi::to_wide (len), min)
+	  || !exact))
+    {
+      location_t warnloc
+	= expansion_point_location_if_in_system_header (loc);
+
+      if (warning_at (warnloc, OPT_Wstringop_overflow_,
+		      exact
+		      ? G_("%K%qD specified bound [%wu, %wu] exceeds "
+			   "the size %E of unterminated array")
+		      : G_("%K%qD specified bound [%wu, %wu] may exceed "
+			   "the size of at most %E of unterminated array"),
+		      exp, func, min.to_uhwi (), max.to_uhwi (), len))
+	{
+	  inform (DECL_SOURCE_LOCATION (data.decl),
+		  "referenced argument declared here");
+	  TREE_NO_WARNING (exp) = true;
+	}
+    }
+
+  if (data.decl)
+    return NULL_RTX;
 
   if (wi::gtu_p (min, wi::to_wide (len)))
     return expand_expr (len, target, target_mode, EXPAND_NORMAL);
