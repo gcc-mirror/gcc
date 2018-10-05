@@ -3238,7 +3238,8 @@ public:
   {
     return get_response (state->from_loc) > 0 ? bmi_response (state) : NULL;
   }
-  int divert_include (cpp_reader *, line_maps *, location_t, const char *, bool);
+  int translate_include (cpp_reader *, line_maps *, location_t,
+			 const char *, bool);
 
 public:
   /* After a response that may be corked, eat blank lines until it is
@@ -7825,14 +7826,15 @@ module_mapper::export_done (const module_state *state)
   return ok;
 }
 
-/* Include diversion.  Query if include FILE should be turned into an
-   import of a legacy header.  Return 0 if it should remain a #include.
-   If READER is non-NULL, do the diversion by pushing a buffer
-   containing the diverted text (ending in two \n's).  Return non-zero
-   indicator of who owns the pushed buffer.  */
+/* Include translation.  Query if include FILE should be turned into
+   an import of a legacy header.  Return 0 if it should remain a
+   #include.  If READER is non-NULL, do the translation by pushing a
+   buffer containing the translation text (ending in two \n's).
+   Return non-zero indicator of who owns the pushed buffer.  */
 
-int module_mapper::divert_include (cpp_reader *reader, line_maps *lmaps,
-				   location_t loc, const char *file, bool angle)
+int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
+				      location_t loc,
+				      const char *file, bool angle)
 {
   send_command (loc, "INCLUDE %c%s%c",
 		angle ? '<' : '"', file, angle ? '>' : '"');
@@ -11824,8 +11826,8 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
 /* Figure out whether to treat HEADER as an include or an import.  */
 
 static int
-do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
-		   const char *header, bool angle)
+do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
+		      const char *header, bool angle)
 {
   if (!spans.init_p ())
     /* Before the main file, don't divert.  */
@@ -11836,13 +11838,13 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 
   dump.push (NULL);
 
-  dump () && dump ("Checking %sdiversion of include %c%s%c",
+  dump () && dump ("Checking %sinclude translation %c%s%c",
 		   reader ? "" : "post-preamble ",
 		   angle ? '<' : '"', header, angle ? '>' : '"');
   int res = 0;
   module_mapper *mapper = module_mapper::get (loc);
   if (mapper->is_live ())
-    res = mapper->divert_include (reader, lmaps, loc, header, angle);
+    res = mapper->translate_include (reader, lmaps, loc, header, angle);
 
   if (reader)
     dump () && dump (res ? "Diverting include to import"
@@ -11868,7 +11870,7 @@ do_divert_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   return res;
 }
 
-cpp_divert_include_t *
+cpp_translate_include_t *
 maybe_import_include ()
 {
   /* Wlegacy-header should default differently in preprocessing mode
@@ -11878,7 +11880,7 @@ maybe_import_include ()
 
   /* We enable include diversion in atom mode -- not just legacy
      header mode.  */
-  return modules_atom_p () ? do_divert_include : NULL;
+  return modules_atom_p () ? do_translate_include : NULL;
 }
 
 void
@@ -11890,7 +11892,7 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
     {
       /* Turn off incude diversion.  */
       cpp_callbacks *cb = cpp_get_callbacks (reader);
-      cb->divert_include = NULL;
+      cb->translate_include = NULL;
     }
 }
 

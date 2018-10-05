@@ -865,16 +865,16 @@ do_include_common (cpp_reader *pfile, enum include_type type)
       /* Get out of macro context, if we are.  */
       skip_rest_of_line (pfile);
 
-      if (type == IT_INCLUDE && pfile->cb.divert_include)
-	if (int div = pfile->cb.divert_include (pfile, pfile->line_table,
-						location, fname, angle_brackets))
+      if (type == IT_INCLUDE && pfile->cb.translate_include)
+	if (int tran = pfile->cb.translate_include
+	    (pfile, pfile->line_table, location, fname, angle_brackets))
 	  {
-	    /* We've been diverted to a pushed buffer ending in two
+	    /* We've been translated to a pushed buffer ending in two
 	       \n's.  */
 	    cpp_buffer *buffer = CPP_BUFFER (pfile);
 	    gcc_assert (buffer->rlimit[-1] == '\n'
 			&& buffer->rlimit[-2] == '\n');
-	    if (div > 0)
+	    if (tran > 0)
 	      buffer->to_free = buffer->buf;
 
 	    /* Adjust the line back one to cover the #include itself.  */

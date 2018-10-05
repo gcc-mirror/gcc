@@ -1,5 +1,28 @@
 2018-10-05  Nathan Sidwell  <nathan@acm.org>
 
+	Use 'include translation' terminology.
+	gcc/c-family/
+	* c-opts.c (c_common_post_options): Adjust.
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE): Override.
+	* cp-tree.h (maybe_import_include): Adjust return type.
+	* module.cc (module_mapper::translate_include): Replace ...
+	(module_mapper::divert_include): ... this.
+	(do_translate_include): Replace ...
+	(do_divert_include): ... this.
+	(maybe_import_include, atom_preamble_end): Adjust.
+	gcc/
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_DIVERT_INCLUDE): Replace
+	with ...
+	(LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE): ... this.
+	* langhooks.h (struct lang_hooks): Replace
+	preprocess_divert_include with preprocess_translate_include.
+	libcpp/
+	* directives.c (do_include_common): Adjust.
+	* include/cpplib.h (cpp_divert_include_t): Rename to ...
+	(cpp_translate_include_t): ... this.
+	(struct cpp_callbacks): Replace divert_include with translate_include.
+
 	Mainfile loc has no line number.
 	libcpp/
 	* internal.h (_cpp_stack_file): Add line_one_p arg.

@@ -6738,7 +6738,7 @@ extern void finish_module_parse (cpp_reader *);
 extern char const *module_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void module_note_main_file (line_maps *, const line_map_ordinary *);
-extern cpp_divert_include_t *maybe_import_include ();
+extern cpp_translate_include_t *maybe_import_include ();
 extern bool maybe_begin_legacy_module (cpp_reader *);
 extern unsigned module_preamble_load (location_t, cpp_reader *);
 extern void atom_preamble_end (cpp_reader *, location_t);
