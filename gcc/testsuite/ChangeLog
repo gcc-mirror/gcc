@@ -1,3 +1,14 @@
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87509
+	* gcc.target/powerpc/test_fpscr_drn_builtin.c: Use hard_dfp instead
+	of dfp_hw.  Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: Ditto.  Require
+	lp64.
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: Ditto.
+	* gcc.target/powerpc/test_mffsl.c: Ditto.
+
 2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
 
 	* c-c++-common/Wprio-ctor-dtor.c: New test.

@@ -1,3 +1,11 @@
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87509
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_SET_FPSCR_DRN): Use
+	RS6000_BTM_DFP.
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_rn): Require the operand
+	to be DImode.  When using mffscrn, force the operand to a register.
+
 2018-10-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*fop_<X87MODEF:mode>_2_i387): Macroize insn
