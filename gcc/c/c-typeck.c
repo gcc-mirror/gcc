@@ -11249,6 +11249,20 @@ build_binary_op (location_t location, enum tree_code code,
     case EXACT_DIV_EXPR:
       may_need_excess_precision = true;
       break;
+
+    case EQ_EXPR:
+    case NE_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case GT_EXPR:
+      /* Excess precision for implicit conversions of integers to
+	 floating point in C11 and later.  */
+      may_need_excess_precision = (flag_isoc11
+				   && (ANY_INTEGRAL_TYPE_P (type0)
+				       || ANY_INTEGRAL_TYPE_P (type1)));
+      break;
+
     default:
       may_need_excess_precision = false;
       break;

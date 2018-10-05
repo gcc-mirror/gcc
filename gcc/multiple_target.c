@@ -451,6 +451,54 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   return ret;
 }
 
+/* When NODE is a target clone, consider all callees and redirect
+   to a clone with equal target attributes.  That prevents multiple
+   multi-versioning dispatches and a call-chain can be optimized.  */
+
+static void
+redirect_to_specific_clone (cgraph_node *node)
+{
+  cgraph_function_version_info *fv = node->function_version ();
+  if (fv == NULL)
+    return;
+
+  tree attr_target = lookup_attribute ("target", DECL_ATTRIBUTES (node->decl));
+  if (attr_target == NULL_TREE)
+    return;
+
+  /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
+  for (cgraph_edge *e = node->callees; e ; e = e->next_callee)
+    {
+      cgraph_function_version_info *fv2 = e->callee->function_version ();
+      if (!fv2)
+	continue;
+
+      tree attr_target2 = lookup_attribute ("target",
+					    DECL_ATTRIBUTES (e->callee->decl));
+
+      /* Function is not calling proper target clone.  */
+      if (!attribute_list_equal (attr_target, attr_target2))
+	{
+	  while (fv2->prev != NULL)
+	    fv2 = fv2->prev;
+
+	  /* Try to find a clone with equal target attribute.  */
+	  for (; fv2 != NULL; fv2 = fv2->next)
+	    {
+	      cgraph_node *callee = fv2->this_node;
+	      attr_target2 = lookup_attribute ("target",
+					       DECL_ATTRIBUTES (callee->decl));
+	      if (attribute_list_equal (attr_target, attr_target2))
+		{
+		  e->redirect_callee (callee);
+		  e->redirect_call_stmt_to_callee ();
+		  break;
+		}
+	    }
+	}
+    }
+}
+
 static unsigned int
 ipa_target_clone (void)
 {
@@ -463,6 +511,9 @@ ipa_target_clone (void)
 
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
+
+  FOR_EACH_FUNCTION (node)
+    redirect_to_specific_clone (node);
 
   return 0;
 }

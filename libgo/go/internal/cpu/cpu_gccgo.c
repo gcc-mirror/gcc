@@ -52,12 +52,18 @@ struct xgetbv_ret xgetbv(void)
 #pragma GCC target("xsave")
 
 struct xgetbv_ret xgetbv(void) {
-	long long r;
 	struct xgetbv_ret ret;
 
-	r = _xgetbv(0);
-	ret.eax = r & 0xffffffff;
-	ret.edx = r >> 32;
+        // At some point, use call to _xgetbv() instead:
+        //
+        //       long long r = _xgetbv(0);
+        //       ret.eax = r & 0xffffffff;
+        //       ret.edx = r >> 32;
+        //
+        unsigned int __eax, __edx, __xcr_no = 0;
+        __asm__ ("xgetbv" : "=a" (__eax), "=d" (__edx) : "c" (__xcr_no));
+        ret.eax = __eax;
+        ret.edx = __edx;
 	return ret;
 }
 

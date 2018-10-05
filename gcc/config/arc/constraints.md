@@ -435,6 +435,12 @@
 	       && !arc_legitimate_pic_addr_p (op)
 	       && !satisfies_constraint_I (op)"))
 
+(define_constraint "Csz"
+  "a 32 bit constant avoided when compiling for size."
+  (match_test "immediate_operand (op, VOIDmode)
+	       && !arc_legitimate_pic_addr_p (op)
+	       && !(satisfies_constraint_I (op) && optimize_size)"))
+
 ; Note that the 'cryptic' register constraints will not make reload use the
 ; associated class to reload into, but this will not penalize reloading of any
 ; other operands, or using an alternate part of the same alternative.

@@ -152,6 +152,7 @@ option_proposer::build_option_suggestions (const char *prefix)
 			  free (with_arg);
 			}
 		    }
+		  option_values.release ();
 		}
 	      else
 		add_misspelling_candidates (m_option_suggestions, option,

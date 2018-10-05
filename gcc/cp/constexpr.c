@@ -4812,7 +4812,8 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    return t;
 	  }
 	obj = TREE_OPERAND (obj, 0);
-	while (handled_component_p (obj))
+	while (TREE_CODE (obj) == COMPONENT_REF
+	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
 	  obj = TREE_OPERAND (obj, 0);
 	tree objtype = TREE_TYPE (obj);
 	/* Find the function decl in the virtual functions list.  TOKEN is

@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package cpu
+package unix
 
-const CacheLineSize = 64
+// Linux getrandom system call number.
+// See GetRandom in getrandom_linux.go.
+const randomTrap uintptr = 0x40000000 + 318

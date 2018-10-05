@@ -123,7 +123,7 @@ namespace __gnu_debug
     {
       if (__other == __other_end)
 	return true;  // inserting nothing is safe even if not foreign iters
-      if (__it._M_get_sequence()->begin() == __it._M_get_sequence()->end())
+      if (__it._M_get_sequence()->empty())
 	return true;  // can't be self-inserting if self is empty
       return __foreign_iterator_aux4(__it, std::__addressof(*__other));
     }

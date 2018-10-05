@@ -1,3 +1,10 @@
+2018-10-01  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac (checkfuncs): Add pipe2.
+	* config.in, configure: Rebuilt.
+	* pex-unix.c (pex_unix_exec_child): Comminicate errors from child
+	to parent with a pipe, when possible.
+
 2018-08-23  Nathan Sidwell  <nathan@acm.org>
 	    Martin Liska  <mliska@suse.cz>
 

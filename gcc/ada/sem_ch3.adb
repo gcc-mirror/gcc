@@ -1919,8 +1919,8 @@ package body Sem_Ch3 is
          if Is_Limited_Record (Typ) then
             return True;
 
-         --  If the root type is limited (and not a limited interface)
-         --  so is the current type
+         --  If the root type is limited (and not a limited interface) so is
+         --  the current type.
 
          elsif Is_Limited_Record (R)
            and then (not Is_Interface (R) or else not Is_Limited_Interface (R))
@@ -1928,9 +1928,12 @@ package body Sem_Ch3 is
             return True;
 
          --  Else the type may have a limited interface progenitor, but a
-         --  limited record parent.
+         --  limited record parent that is not an interface.
 
-         elsif R /= P and then Is_Limited_Record (P) then
+         elsif R /= P
+           and then Is_Limited_Record (P)
+           and then not Is_Interface (P)
+         then
             return True;
 
          else
@@ -4283,12 +4286,11 @@ package body Sem_Ch3 is
          else
 
             --  If the expression is a formal that is a "subprogram pointer"
-            --  this is illegal in accessibility terms. Add an explicit
-            --  conversion to force the corresponding check, as is done for
-            --  assignments.
+            --  this is illegal in accessibility terms (see RM 3.10.2 (13.1/2)
+            --  and AARM 3.10.2 (13.b/2)). Add an explicit conversion to force
+            --  the corresponding check, as is done for assignments.
 
-            if Comes_From_Source (N)
-              and then Is_Entity_Name (E)
+            if Is_Entity_Name (E)
               and then Present (Entity (E))
               and then Is_Formal (Entity (E))
               and then

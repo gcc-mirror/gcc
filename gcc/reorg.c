@@ -3638,18 +3638,13 @@ make_return_insns (rtx_insn *first)
 	 insns for its delay slots, if it needs some.  */
       if (ANY_RETURN_P (PATTERN (jump_insn)))
 	{
-	  rtx_insn *prev = PREV_INSN (insn);
+	  rtx_insn *after = PREV_INSN (insn);
 
 	  delete_related_insns (insn);
-	  for (i = 1; i < XVECLEN (pat, 0); i++)
-	    {
-	      rtx_insn *in_seq_insn = as_a<rtx_insn *> (XVECEXP (pat, 0, i));
-	      prev = emit_insn_after_setloc (PATTERN (in_seq_insn), prev,
-					     INSN_LOCATION (in_seq_insn));
-	    }
-
-	  insn = emit_jump_insn_after_setloc (PATTERN (jump_insn), prev,
-					      INSN_LOCATION (jump_insn));
+	  insn = jump_insn;
+	  for (i = 1; i < pat->len (); i++)
+	    after = emit_copy_of_insn_after (pat->insn (i), after);
+	  add_insn_after (insn, after, NULL);
 	  emit_barrier_after (insn);
 
 	  if (slots)

@@ -481,7 +481,7 @@ package body Exp_Ch9 is
    --  to be E. Bod is either a block or a subprogram body.  Used after
    --  expanding various kinds of entry bodies into their corresponding
    --  constructs. This is needed during unnesting to determine whether a
-   --  body geenrated for an entry or an accept alternative includes uplevel
+   --  body generated for an entry or an accept alternative includes uplevel
    --  references.
 
    function Trivial_Accept_OK return Boolean;
@@ -14854,7 +14854,7 @@ package body Exp_Ch9 is
       function Reset_Scope (N : Node_Id) return Traverse_Result;
       --  Temporaries may have been declared during expansion of the procedure
       --  created for an entry body or an accept alternative. Indicate that
-      --  their scope is the new body, to unsure proper generation of uplevel
+      --  their scope is the new body, to ensure proper generation of uplevel
       --  references where needed during unnesting.
 
       procedure Reset_Scopes is new Traverse_Proc (Reset_Scope);

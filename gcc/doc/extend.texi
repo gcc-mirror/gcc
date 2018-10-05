@@ -26,7 +26,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * Statement Exprs::     Putting statements and declarations inside expressions.
 * Local Labels::        Labels local to a block.
 * Labels as Values::    Getting pointers to labels, and computed gotos.
-* Nested Functions::    As in Algol and Pascal, lexical scoping of functions.
+* Nested Functions::    Nested function in GNU C.
 * Constructing Calls::  Dispatching a call to another function.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * Conditionals::        Omitting the middle operand of a @samp{?:} expression.
@@ -15781,6 +15781,10 @@ uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
 __ibm128 __builtin_unpack_ibm128 (__ibm128, int);
 __ibm128 __builtin_pack_ibm128 (double, double);
+double __builtin_mffs (void);
+void __builtin_mtfsb0 (const int);
+void __builtin_mtfsb1 (const int);
+void __builtin_set_fpscr_rn (int);
 @end smallexample
 
 The @code{__builtin_ppc_get_timebase} and @code{__builtin_ppc_mftb}
@@ -15789,7 +15793,21 @@ functions generate instructions to read the Time Base Register.  The
 instructions and always returns the 64 bits of the Time Base Register.
 The @code{__builtin_ppc_mftb} function always generates one instruction and
 returns the Time Base Register value as an unsigned long, throwing away
-the most significant word on 32-bit environments.
+the most significant word on 32-bit environments.  The @code{__builtin_mffs}
+return the value of the FPSCR register.  Note, ISA 3.0 supports the
+@code{__builtin_mffsl()} which permits software to read the control and
+non-sticky status bits in the FSPCR without the higher latency associated with
+accessing the sticky status bits.  The
+@code{__builtin_mtfsb0} and @code{__builtin_mtfsb1} take the bit to change
+as an argument.  The valid bit range is between 0 and 31.  The builtins map to
+the @code{mtfsb0} and @code{mtfsb1} instructions which take the argument and
+add 32.  Hence these instructions only modify the FPSCR[32:63] bits by
+changing the specified bit to a zero or one respectively.  The
+@code{__builtin_set_fpscr_rn} builtin allows changing both of the floating
+point rounding mode bits.  The argument is a 2-bit value.  The argument can
+either be a const int or stored in a variable. The builtin uses the ISA 3.0
+instruction @code{mffscrn} if available, otherwise it reads the FPSCR, masks
+the current rounding mode bits out and OR's in the new value.
 
 @node Basic PowerPC Built-in Functions Available on ISA 2.05
 @subsubsection Basic PowerPC Built-in Functions Available on ISA 2.05
@@ -15825,6 +15843,7 @@ The following built-in functions are available
 when hardware decimal floating point
 (@option{-mhard-dfp}) is available:
 @smallexample
+void __builtin_set_fpscr_drn(int);
 _Decimal64 __builtin_ddedpd (int, _Decimal64);
 _Decimal128 __builtin_ddedpdq (int, _Decimal128);
 _Decimal64 __builtin_denbcd (int, _Decimal64);
@@ -15839,6 +15858,14 @@ long long __builtin_dxex (_Decimal64);
 long long __builtin_dxexq (_Decimal128);
 _Decimal128 __builtin_pack_dec128 (unsigned long long, unsigned long long);
 unsigned long long __builtin_unpack_dec128 (_Decimal128, int);
+
+The @code{__builtin_set_fpscr_drn} builtin allows changing the three decimal
+floating point rounding mode bits.  The argument is a 3-bit value.  The
+argument can either be a const int or the value can be stored in a variable.
+The builtin uses the ISA 3.0 instruction @code{mffscdrn} if available.
+Otherwise the builtin reads the FPSCR, masks the current decimal rounding
+mode bits out and OR's in the new value.
+
 @end smallexample
 
 The following functions require @option{-mhard-float},
@@ -16040,6 +16067,9 @@ int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov (unsigned int comparison, _Decimal128 value);
 int __builtin_dfp_dtstsfi_ov_dd (unsigned int comparison, _Decimal64 value);
 int __builtin_dfp_dtstsfi_ov_td (unsigned int comparison, _Decimal128 value);
+
+double __builtin_mffsl(void);
+
 @end smallexample
 The @code{__builtin_byte_in_set} function requires a
 64-bit environment supporting ISA 3.0 or later.  This function returns
@@ -16090,6 +16120,12 @@ The @code{__builtin_dfp_dtstsfi_ov_dd} and
 @code{__builtin_dfp_dtstsfi_ov_td} functions behave similarly, but
 require that the type of the @code{value} argument be
 @code{__Decimal64} and @code{__Decimal128} respectively.
+
+The @code{__builtin_mffsl} uses the ISA 3.0 @code{mffsl} instruction to read
+the FPSCR.  The instruction is a lower latency version of the @code{mffs}
+instruction.  If the @code{mffsl} instruction is not available, then the
+builtin uses the older @code{mffs} instruction to read the FPSCR.
+
 
 @node PowerPC AltiVec/VSX Built-in Functions
 @subsection PowerPC AltiVec/VSX Built-in Functions

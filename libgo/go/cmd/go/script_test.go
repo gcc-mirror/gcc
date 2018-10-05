@@ -78,6 +78,7 @@ var extraEnvKeys = []string{
 
 	// For gccgo testing.
 	"GO_TESTING_GOTOOLS",
+	"GCCGO",
 	"GCCGOTOOLDIR",
 }
 

@@ -245,21 +245,16 @@
   "VECTOR_MEM_ALTIVEC_P (<MODE>mode)
    && (register_operand (operands[0], <MODE>mode) 
        || register_operand (operands[1], <MODE>mode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    case 8: return "#";
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);
+   #"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*,*")
    (set_attr "length" "4,4,4,20,20,20,4,8,32")])
 
@@ -272,20 +267,15 @@
   "VECTOR_MEM_ALTIVEC_P (TImode)
    && (register_operand (operands[0], TImode) 
        || register_operand (operands[1], TImode))"
-{
-  switch (which_alternative)
-    {
-    case 0: return "stvx %1,%y0";
-    case 1: return "lvx %0,%y1";
-    case 2: return "vor %0,%1,%1";
-    case 3: return "#";
-    case 4: return "#";
-    case 5: return "#";
-    case 6: return "vxor %0,%0,%0";
-    case 7: return output_vec_const_move (operands);
-    default: gcc_unreachable ();
-    }
-}
+  "@
+   stvx %1,%y0
+   lvx %0,%y1
+   vor %0,%1,%1
+   #
+   #
+   #
+   vxor %0,%0,%0
+   * return output_vec_const_move (operands);"
   [(set_attr "type" "vecstore,vecload,veclogical,store,load,*,veclogical,*")])
 
 ;; Load up a vector with the most significant bit set by loading up -1 and
@@ -1861,7 +1851,7 @@
 (define_expand "altivec_vspltb"
   [(use (match_operand:V16QI 0 "register_operand"))
    (use (match_operand:V16QI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_15_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1877,7 +1867,7 @@
         (vec_duplicate:V16QI
 	 (vec_select:QI (match_operand:V16QI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
+			 [(match_operand:QI 2 "const_0_to_15_operand" "")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1890,7 +1880,7 @@
 (define_insn "altivec_vspltb_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
         (unspec:V16QI [(match_operand:V16QI 1 "register_operand" "v")
-	               (match_operand:QI 2 "u5bit_cint_operand" "i")]
+	               (match_operand:QI 2 "const_0_to_15_operand" "i")]
                       UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vspltb %0,%1,%2"
@@ -1899,7 +1889,7 @@
 (define_expand "altivec_vsplth"
   [(use (match_operand:V8HI 0 "register_operand"))
    (use (match_operand:V8HI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_7_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1915,7 +1905,7 @@
 	(vec_duplicate:V8HI
 	 (vec_select:HI (match_operand:V8HI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "")]))))]
+			 [(match_operand:QI 2 "const_0_to_7_operand" "")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1928,7 +1918,7 @@
 (define_insn "altivec_vsplth_direct"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
         (unspec:V8HI [(match_operand:V8HI 1 "register_operand" "v")
-                      (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      (match_operand:QI 2 "const_0_to_7_operand" "i")]
                      UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vsplth %0,%1,%2"
@@ -1937,7 +1927,7 @@
 (define_expand "altivec_vspltw"
   [(use (match_operand:V4SI 0 "register_operand"))
    (use (match_operand:V4SI 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_3_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1953,7 +1943,7 @@
 	(vec_duplicate:V4SI
 	 (vec_select:SI (match_operand:V4SI 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "i")]))))]
+			 [(match_operand:QI 2 "const_0_to_3_operand" "i")]))))]
   "TARGET_ALTIVEC"
 {
   if (!BYTES_BIG_ENDIAN)
@@ -1966,7 +1956,7 @@
 (define_insn "altivec_vspltw_direct"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (unspec:V4SI [(match_operand:V4SI 1 "register_operand" "v")
-                      (match_operand:QI 2 "u5bit_cint_operand" "i")]
+                      (match_operand:QI 2 "const_0_to_3_operand" "i")]
                      UNSPEC_VSPLT_DIRECT))]
   "TARGET_ALTIVEC"
   "vspltw %0,%1,%2"
@@ -1975,7 +1965,7 @@
 (define_expand "altivec_vspltsf"
   [(use (match_operand:V4SF 0 "register_operand"))
    (use (match_operand:V4SF 1 "register_operand"))
-   (use (match_operand:QI 2 "u5bit_cint_operand"))]
+   (use (match_operand:QI 2 "const_0_to_3_operand"))]
   "TARGET_ALTIVEC"
 {
   rtvec v = gen_rtvec (1, operands[2]);
@@ -1991,7 +1981,7 @@
 	(vec_duplicate:V4SF
 	 (vec_select:SF (match_operand:V4SF 1 "register_operand" "v")
 			(parallel
-			 [(match_operand:QI 2 "u5bit_cint_operand" "i")]))))]
+			 [(match_operand:QI 2 "const_0_to_3_operand" "i")]))))]
   "VECTOR_UNIT_ALTIVEC_P (V4SFmode)"
 {
   if (!BYTES_BIG_ENDIAN)

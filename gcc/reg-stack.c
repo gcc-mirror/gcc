@@ -1818,7 +1818,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      case UNSPEC_FRNDINT_FLOOR:
 	      case UNSPEC_FRNDINT_CEIL:
 	      case UNSPEC_FRNDINT_TRUNC:
-	      case UNSPEC_FRNDINT_MASK_PM:
 
 		/* Above insns operate on the top of the stack.  */
 

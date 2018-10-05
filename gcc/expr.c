@@ -11155,10 +11155,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  {
 	    rtx_code_label *label = gen_label_rtx ();
 	    int value = TREE_CODE (rhs) == BIT_IOR_EXPR;
-	    do_jump (TREE_OPERAND (rhs, 1),
-		     value ? label : 0,
-		     value ? 0 : label,
-		     profile_probability::uninitialized ());
+	    profile_probability prob = profile_probability::uninitialized ();
+ 	    if (value)
+ 	      jumpifnot (TREE_OPERAND (rhs, 1), label, prob);
+ 	    else
+ 	      jumpif (TREE_OPERAND (rhs, 1), label, prob);
 	    expand_assignment (lhs, build_int_cst (TREE_TYPE (rhs), value),
 			       false);
 	    do_pending_stack_adjust ();
@@ -11372,11 +11373,46 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
-	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
 	  tree type = TREE_TYPE (arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
+	  return str;
+	}
+      return NULL_TREE;
+    }
+  else if (TREE_CODE (arg) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (arg);
+      if (!is_gimple_assign (stmt))
+	return NULL_TREE;
+
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code == ADDR_EXPR)
+	return string_constant (rhs1, ptr_offset, mem_size, decl);
+      else if (code != POINTER_PLUS_EXPR)
+	return NULL_TREE;
+
+      tree offset;
+      if (tree str = string_constant (rhs1, &offset, mem_size, decl))
+	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (rhs1))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs1))) == ARRAY_TYPE
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
+	    return NULL_TREE;
+
+	  tree rhs2 = gimple_assign_rhs2 (stmt);
+	  tree type = TREE_TYPE (rhs2);
+	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, rhs2);
 	  return str;
 	}
       return NULL_TREE;

@@ -166,6 +166,7 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 static machine_mode aarch64_simd_container_mode (scalar_mode, poly_int64);
 static bool aarch64_print_address_internal (FILE*, machine_mode, rtx,
 					    aarch64_addr_query_type);
+static HOST_WIDE_INT aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -2816,10 +2817,11 @@ aarch64_add_sp (rtx temp1, rtx temp2, poly_int64 delta, bool emit_move_imm)
    if nonnull.  */
 
 static inline void
-aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta, bool frame_related_p)
+aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta, bool frame_related_p,
+		bool emit_move_imm = true)
 {
   aarch64_add_offset (Pmode, stack_pointer_rtx, stack_pointer_rtx, -delta,
-		      temp1, temp2, frame_related_p);
+		      temp1, temp2, frame_related_p, emit_move_imm);
 }
 
 /* Set DEST to (vec_series BASE STEP).  */
@@ -3979,13 +3981,33 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   /* Loop.  */
   ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_lab);
 
+  HOST_WIDE_INT stack_clash_probe_interval
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
   /* TEST_ADDR = TEST_ADDR + PROBE_INTERVAL.  */
   xops[0] = reg1;
-  xops[1] = GEN_INT (PROBE_INTERVAL);
+  HOST_WIDE_INT interval;
+  if (flag_stack_clash_protection)
+    interval = stack_clash_probe_interval;
+  else
+    interval = PROBE_INTERVAL;
+
+  gcc_assert (aarch64_uimm12_shift (interval));
+  xops[1] = GEN_INT (interval);
+
   output_asm_insn ("sub\t%0, %0, %1", xops);
 
-  /* Probe at TEST_ADDR.  */
-  output_asm_insn ("str\txzr, [%0]", xops);
+  /* If doing stack clash protection then we probe up by the ABI specified
+     amount.  We do this because we're dropping full pages at a time in the
+     loop.  But if we're doing non-stack clash probing, probe at SP 0.  */
+  if (flag_stack_clash_protection)
+    xops[1] = GEN_INT (STACK_CLASH_CALLER_GUARD);
+  else
+    xops[1] = CONST0_RTX (GET_MODE (xops[1]));
+
+  /* Probe at TEST_ADDR.  If we're inside the loop it is always safe to probe
+     by this amount for each iteration.  */
+  output_asm_insn ("str\txzr, [%0, %1]", xops);
 
   /* Test if TEST_ADDR == LAST_ADDR.  */
   xops[1] = reg2;
@@ -3996,6 +4018,84 @@ aarch64_output_probe_stack_range (rtx reg1, rtx reg2)
   assemble_name_raw (asm_out_file, loop_lab);
   fputc ('\n', asm_out_file);
 
+  return "";
+}
+
+/* Emit the probe loop for doing stack clash probes and stack adjustments for
+   SVE.  This emits probes from BASE to BASE - ADJUSTMENT based on a guard size
+   of GUARD_SIZE.  When a probe is emitted it is done at most
+   MIN_PROBE_THRESHOLD bytes from the current BASE at an interval of
+   at most MIN_PROBE_THRESHOLD.  By the end of this function
+   BASE = BASE - ADJUSTMENT.  */
+
+const char *
+aarch64_output_probe_sve_stack_clash (rtx base, rtx adjustment,
+				      rtx min_probe_threshold, rtx guard_size)
+{
+  /* This function is not allowed to use any instruction generation function
+     like gen_ and friends.  If you do you'll likely ICE during CFG validation,
+     so instead emit the code you want using output_asm_insn.  */
+  gcc_assert (flag_stack_clash_protection);
+  gcc_assert (CONST_INT_P (min_probe_threshold) && CONST_INT_P (guard_size));
+  gcc_assert (INTVAL (guard_size) > INTVAL (min_probe_threshold));
+
+  /* The minimum required allocation before the residual requires probing.  */
+  HOST_WIDE_INT residual_probe_guard = INTVAL (min_probe_threshold);
+
+  /* Clamp the value down to the nearest value that can be used with a cmp.  */
+  residual_probe_guard = aarch64_clamp_to_uimm12_shift (residual_probe_guard);
+  rtx probe_offset_value_rtx = gen_int_mode (residual_probe_guard, Pmode);
+
+  gcc_assert (INTVAL (min_probe_threshold) >= residual_probe_guard);
+  gcc_assert (aarch64_uimm12_shift (residual_probe_guard));
+
+  static int labelno = 0;
+  char loop_start_lab[32];
+  char loop_end_lab[32];
+  rtx xops[2];
+
+  ASM_GENERATE_INTERNAL_LABEL (loop_start_lab, "SVLPSPL", labelno);
+  ASM_GENERATE_INTERNAL_LABEL (loop_end_lab, "SVLPEND", labelno++);
+
+  /* Emit loop start label.  */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_start_lab);
+
+  /* ADJUSTMENT < RESIDUAL_PROBE_GUARD.  */
+  xops[0] = adjustment;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("cmp\t%0, %1", xops);
+
+  /* Branch to end if not enough adjustment to probe.  */
+  fputs ("\tb.lt\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_end_lab);
+  fputc ('\n', asm_out_file);
+
+  /* BASE = BASE - RESIDUAL_PROBE_GUARD.  */
+  xops[0] = base;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+
+  /* Probe at BASE.  */
+  xops[1] = const0_rtx;
+  output_asm_insn ("str\txzr, [%0, %1]", xops);
+
+  /* ADJUSTMENT = ADJUSTMENT - RESIDUAL_PROBE_GUARD.  */
+  xops[0] = adjustment;
+  xops[1] = probe_offset_value_rtx;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
+
+  /* Branch to start if still more bytes to allocate.  */
+  fputs ("\tb\t", asm_out_file);
+  assemble_name_raw (asm_out_file, loop_start_lab);
+  fputc ('\n', asm_out_file);
+
+  /* No probe leave.  */
+  ASM_OUTPUT_INTERNAL_LABEL (asm_out_file, loop_end_lab);
+
+  /* BASE = BASE - ADJUSTMENT.  */
+  xops[0] = base;
+  xops[1] = adjustment;
+  output_asm_insn ("sub\t%0, %0, %1", xops);
   return "";
 }
 
@@ -4028,6 +4128,10 @@ aarch64_layout_frame (void)
   int regno, last_fp_reg = INVALID_REGNUM;
 
   cfun->machine->frame.emit_frame_chain = aarch64_needs_frame_chain ();
+
+  /* Adjust the outgoing arguments size if required.  Keep it in sync with what
+     the mid-end is doing.  */
+  crtl->outgoing_args_size = STACK_DYNAMIC_OFFSET (cfun);
 
 #define SLOT_NOT_REQUIRED (-2)
 #define SLOT_REQUIRED     (-1)
@@ -4072,6 +4176,11 @@ aarch64_layout_frame (void)
       cfun->machine->frame.wb_candidate2 = R30_REGNUM;
       offset = 2 * UNITS_PER_WORD;
     }
+
+  /* With stack-clash, LR must be saved in non-leaf functions.  */
+  gcc_assert (crtl->is_leaf
+	      || (cfun->machine->frame.reg_offset[R30_REGNUM]
+		  != SLOT_NOT_REQUIRED));
 
   /* Now assign stack slots for them.  */
   for (regno = R0_REGNUM; regno <= R30_REGNUM; regno++)
@@ -4794,6 +4903,250 @@ aarch64_set_handled_components (sbitmap components)
       cfun->machine->reg_is_wrapped_separately[regno] = true;
 }
 
+/* On AArch64 we have an ABI defined safe buffer.  This constant is used to
+   determining the probe offset for alloca.  */
+
+static HOST_WIDE_INT
+aarch64_stack_clash_protection_alloca_probe_range (void)
+{
+  return STACK_CLASH_CALLER_GUARD;
+}
+
+
+/* Allocate POLY_SIZE bytes of stack space using TEMP1 and TEMP2 as scratch
+   registers.  If POLY_SIZE is not large enough to require a probe this function
+   will only adjust the stack.  When allocating the stack space
+   FRAME_RELATED_P is then used to indicate if the allocation is frame related.
+   FINAL_ADJUSTMENT_P indicates whether we are allocating the outgoing
+   arguments.  If we are then we ensure that any allocation larger than the ABI
+   defined buffer needs a probe so that the invariant of having a 1KB buffer is
+   maintained.
+
+   We emit barriers after each stack adjustment to prevent optimizations from
+   breaking the invariant that we never drop the stack more than a page.  This
+   invariant is needed to make it easier to correctly handle asynchronous
+   events, e.g. if we were to allow the stack to be dropped by more than a page
+   and then have multiple probes up and we take a signal somewhere in between
+   then the signal handler doesn't know the state of the stack and can make no
+   assumptions about which pages have been probed.  */
+
+static void
+aarch64_allocate_and_probe_stack_space (rtx temp1, rtx temp2,
+					poly_int64 poly_size,
+					bool frame_related_p,
+					bool final_adjustment_p)
+{
+  HOST_WIDE_INT guard_size
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
+  /* When doing the final adjustment for the outgoing argument size we can't
+     assume that LR was saved at position 0.  So subtract it's offset from the
+     ABI safe buffer so that we don't accidentally allow an adjustment that
+     would result in an allocation larger than the ABI buffer without
+     probing.  */
+  HOST_WIDE_INT min_probe_threshold
+    = final_adjustment_p
+      ? guard_used_by_caller - cfun->machine->frame.reg_offset[LR_REGNUM]
+      : guard_size - guard_used_by_caller;
+
+  poly_int64 frame_size = cfun->machine->frame.frame_size;
+
+  /* We should always have a positive probe threshold.  */
+  gcc_assert (min_probe_threshold > 0);
+
+  if (flag_stack_clash_protection && !final_adjustment_p)
+    {
+      poly_int64 initial_adjust = cfun->machine->frame.initial_adjust;
+      poly_int64 final_adjust = cfun->machine->frame.final_adjust;
+
+      if (known_eq (frame_size, 0))
+	{
+	  dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
+	}
+      else if (known_lt (initial_adjust, guard_size - guard_used_by_caller)
+	       && known_lt (final_adjust, guard_used_by_caller))
+	{
+	  dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+	}
+    }
+
+  /* If SIZE is not large enough to require probing, just adjust the stack and
+     exit.  */
+  if (known_lt (poly_size, min_probe_threshold)
+      || !flag_stack_clash_protection)
+    {
+      aarch64_sub_sp (temp1, temp2, poly_size, frame_related_p);
+      return;
+    }
+
+  HOST_WIDE_INT size;
+  /* Handle the SVE non-constant case first.  */
+  if (!poly_size.is_constant (&size))
+    {
+     if (dump_file)
+      {
+	fprintf (dump_file, "Stack clash SVE prologue: ");
+	print_dec (poly_size, dump_file);
+	fprintf (dump_file, " bytes, dynamic probing will be required.\n");
+      }
+
+      /* First calculate the amount of bytes we're actually spilling.  */
+      aarch64_add_offset (Pmode, temp1, CONST0_RTX (Pmode),
+			  poly_size, temp1, temp2, false, true);
+
+      rtx_insn *insn = get_last_insn ();
+
+      if (frame_related_p)
+	{
+	  /* This is done to provide unwinding information for the stack
+	     adjustments we're about to do, however to prevent the optimizers
+	     from removing the R15 move and leaving the CFA note (which would be
+	     very wrong) we tie the old and new stack pointer together.
+	     The tie will expand to nothing but the optimizers will not touch
+	     the instruction.  */
+	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, R15_REGNUM);
+	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
+	  emit_insn (gen_stack_tie (stack_ptr_copy, stack_pointer_rtx));
+
+	  /* We want the CFA independent of the stack pointer for the
+	     duration of the loop.  */
+	  add_reg_note (insn, REG_CFA_DEF_CFA, stack_ptr_copy);
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      rtx probe_const = gen_int_mode (min_probe_threshold, Pmode);
+      rtx guard_const = gen_int_mode (guard_size, Pmode);
+
+      insn = emit_insn (gen_probe_sve_stack_clash (Pmode, stack_pointer_rtx,
+						   stack_pointer_rtx, temp1,
+						   probe_const, guard_const));
+
+      /* Now reset the CFA register if needed.  */
+      if (frame_related_p)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			gen_rtx_PLUS (Pmode, stack_pointer_rtx,
+				      gen_int_mode (poly_size, Pmode)));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      return;
+    }
+
+  if (dump_file)
+    fprintf (dump_file,
+	     "Stack clash AArch64 prologue: " HOST_WIDE_INT_PRINT_DEC
+	     " bytes, probing will be required.\n", size);
+
+  /* Round size to the nearest multiple of guard_size, and calculate the
+     residual as the difference between the original size and the rounded
+     size.  */
+  HOST_WIDE_INT rounded_size = ROUND_DOWN (size, guard_size);
+  HOST_WIDE_INT residual = size - rounded_size;
+
+  /* We can handle a small number of allocations/probes inline.  Otherwise
+     punt to a loop.  */
+  if (rounded_size <= STACK_CLASH_MAX_UNROLL_PAGES * guard_size)
+    {
+      for (HOST_WIDE_INT i = 0; i < rounded_size; i += guard_size)
+	{
+	  aarch64_sub_sp (NULL, temp2, guard_size, true);
+	  emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					   guard_used_by_caller));
+	  emit_insn (gen_blockage ());
+	}
+      dump_stack_clash_frame_info (PROBE_INLINE, size != rounded_size);
+    }
+  else
+    {
+      /* Compute the ending address.  */
+      aarch64_add_offset (Pmode, temp1, stack_pointer_rtx, -rounded_size,
+			  temp1, NULL, false, true);
+      rtx_insn *insn = get_last_insn ();
+
+      /* For the initial allocation, we don't have a frame pointer
+	 set up, so we always need CFI notes.  If we're doing the
+	 final allocation, then we may have a frame pointer, in which
+	 case it is the CFA, otherwise we need CFI notes.
+
+	 We can determine which allocation we are doing by looking at
+	 the value of FRAME_RELATED_P since the final allocations are not
+	 frame related.  */
+      if (frame_related_p)
+	{
+	  /* We want the CFA independent of the stack pointer for the
+	     duration of the loop.  */
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, temp1, rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      /* This allocates and probes the stack.  Note that this re-uses some of
+	 the existing Ada stack protection code.  However we are guaranteed not
+	 to enter the non loop or residual branches of that code.
+
+	 The non-loop part won't be entered because if our allocation amount
+	 doesn't require a loop, the case above would handle it.
+
+	 The residual amount won't be entered because TEMP1 is a mutliple of
+	 the allocation size.  The residual will always be 0.  As such, the only
+	 part we are actually using from that code is the loop setup.  The
+	 actual probing is done in aarch64_output_probe_stack_range.  */
+      insn = emit_insn (gen_probe_stack_range (stack_pointer_rtx,
+					       stack_pointer_rtx, temp1));
+
+      /* Now reset the CFA register if needed.  */
+      if (frame_related_p)
+	{
+	  add_reg_note (insn, REG_CFA_DEF_CFA,
+			plus_constant (Pmode, stack_pointer_rtx, rounded_size));
+	  RTX_FRAME_RELATED_P (insn) = 1;
+	}
+
+      emit_insn (gen_blockage ());
+      dump_stack_clash_frame_info (PROBE_LOOP, size != rounded_size);
+    }
+
+  /* Handle any residuals.  Residuals of at least MIN_PROBE_THRESHOLD have to
+     be probed.  This maintains the requirement that each page is probed at
+     least once.  For initial probing we probe only if the allocation is
+     more than GUARD_SIZE - buffer, and for the outgoing arguments we probe
+     if the amount is larger than buffer.  GUARD_SIZE - buffer + buffer ==
+     GUARD_SIZE.  This works that for any allocation that is large enough to
+     trigger a probe here, we'll have at least one, and if they're not large
+     enough for this code to emit anything for them, The page would have been
+     probed by the saving of FP/LR either by this function or any callees.  If
+     we don't have any callees then we won't have more stack adjustments and so
+     are still safe.  */
+  if (residual)
+    {
+      HOST_WIDE_INT residual_probe_offset = guard_used_by_caller;
+      /* If we're doing final adjustments, and we've done any full page
+	 allocations then any residual needs to be probed.  */
+      if (final_adjustment_p && rounded_size != 0)
+	min_probe_threshold = 0;
+      /* If doing a small final adjustment, we always probe at offset 0.
+	 This is done to avoid issues when LR is not at position 0 or when
+	 the final adjustment is smaller than the probing offset.  */
+      else if (final_adjustment_p && rounded_size == 0)
+	residual_probe_offset = 0;
+
+      aarch64_sub_sp (temp1, temp2, residual, frame_related_p);
+      if (residual >= min_probe_threshold)
+	{
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Stack clash AArch64 prologue residuals: "
+		     HOST_WIDE_INT_PRINT_DEC " bytes, probing will be required."
+		     "\n", residual);
+
+	    emit_stack_probe (plus_constant (Pmode, stack_pointer_rtx,
+					     residual_probe_offset));
+	  emit_insn (gen_blockage ());
+	}
+    }
+}
+
 /* Add a REG_CFA_EXPRESSION note to INSN to say that register REG
    is saved at BASE + OFFSET.  */
 
@@ -4821,7 +5174,7 @@ aarch64_add_cfa_expression (rtx_insn *insn, unsigned int reg,
 	|  local variables              | <-- frame_pointer_rtx
 	|                               |
 	+-------------------------------+
-	|  padding0                     | \
+	|  padding                      | \
 	+-------------------------------+  |
 	|  callee-saved registers       |  | frame.saved_regs_size
 	+-------------------------------+  |
@@ -4840,7 +5193,23 @@ aarch64_add_cfa_expression (rtx_insn *insn, unsigned int reg,
 
    Dynamic stack allocations via alloca() decrease stack_pointer_rtx
    but leave frame_pointer_rtx and hard_frame_pointer_rtx
-   unchanged.  */
+   unchanged.
+
+   By default for stack-clash we assume the guard is at least 64KB, but this
+   value is configurable to either 4KB or 64KB.  We also force the guard size to
+   be the same as the probing interval and both values are kept in sync.
+
+   With those assumptions the callee can allocate up to 63KB (or 3KB depending
+   on the guard size) of stack space without probing.
+
+   When probing is needed, we emit a probe at the start of the prologue
+   and every PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE bytes thereafter.
+
+   We have to track how much space has been allocated and the only stores
+   to the stack we track as implicit probes are the FP/LR stores.
+
+   For outgoing arguments we probe if the size is larger than 1KB, such that
+   the ABI specified buffer is maintained for the next callee.  */
 
 /* Generate the prologue instructions for entry into a function.
    Establish the stack frame by decreasing the stack pointer with a
@@ -4889,7 +5258,16 @@ aarch64_expand_prologue (void)
   rtx ip0_rtx = gen_rtx_REG (Pmode, IP0_REGNUM);
   rtx ip1_rtx = gen_rtx_REG (Pmode, IP1_REGNUM);
 
-  aarch64_sub_sp (ip0_rtx, ip1_rtx, initial_adjust, true);
+  /* In theory we should never have both an initial adjustment
+     and a callee save adjustment.  Verify that is the case since the
+     code below does not handle it for -fstack-clash-protection.  */
+  gcc_assert (known_eq (initial_adjust, 0) || callee_adjust == 0);
+
+  /* Will only probe if the initial adjustment is larger than the guard
+     less the amount of the guard reserved for use by the caller's
+     outgoing args.  */
+  aarch64_allocate_and_probe_stack_space (ip0_rtx, ip1_rtx, initial_adjust,
+					  true, false);
 
   if (callee_adjust != 0)
     aarch64_push_regs (reg1, reg2, callee_adjust);
@@ -4945,7 +5323,11 @@ aarch64_expand_prologue (void)
 			     callee_adjust != 0 || emit_frame_chain);
   aarch64_save_callee_saves (DFmode, callee_offset, V0_REGNUM, V31_REGNUM,
 			     callee_adjust != 0 || emit_frame_chain);
-  aarch64_sub_sp (ip1_rtx, ip0_rtx, final_adjust, !frame_pointer_needed);
+
+  /* We may need to probe the final adjustment if it is larger than the guard
+     that is assumed by the called.  */
+  aarch64_allocate_and_probe_stack_space (ip1_rtx, ip0_rtx, final_adjust,
+					  !frame_pointer_needed, true);
 }
 
 /* Return TRUE if we can use a simple_return insn.
@@ -4985,10 +5367,21 @@ aarch64_expand_epilogue (bool for_sibcall)
   /* A stack clash protection prologue may not have left IP0_REGNUM or
      IP1_REGNUM in a usable state.  The same is true for allocations
      with an SVE component, since we then need both temporary registers
-     for each allocation.  */
+     for each allocation.  For stack clash we are in a usable state if
+     the adjustment is less than GUARD_SIZE - GUARD_USED_BY_CALLER.  */
+  HOST_WIDE_INT guard_size
+    = 1 << PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+  HOST_WIDE_INT guard_used_by_caller = STACK_CLASH_CALLER_GUARD;
+
+  /* We can re-use the registers when the allocation amount is smaller than
+     guard_size - guard_used_by_caller because we won't be doing any probes
+     then.  In such situations the register should remain live with the correct
+     value.  */
   bool can_inherit_p = (initial_adjust.is_constant ()
-			&& final_adjust.is_constant ()
-			&& !flag_stack_clash_protection);
+			&& final_adjust.is_constant ())
+			&& (!flag_stack_clash_protection
+			     || known_lt (initial_adjust,
+					  guard_size - guard_used_by_caller));
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
   bool need_barrier_p
@@ -5016,8 +5409,10 @@ aarch64_expand_epilogue (bool for_sibcall)
 			hard_frame_pointer_rtx, -callee_offset,
 			ip1_rtx, ip0_rtx, callee_adjust == 0);
   else
-    aarch64_add_sp (ip1_rtx, ip0_rtx, final_adjust,
-		    !can_inherit_p || df_regs_ever_live_p (IP1_REGNUM));
+     /* The case where we need to re-use the register here is very rare, so
+	avoid the complicated condition and just always emit a move if the
+	immediate doesn't fit.  */
+     aarch64_add_sp (ip1_rtx, ip0_rtx, final_adjust, true);
 
   aarch64_restore_callee_saves (DImode, callee_offset, R0_REGNUM, R30_REGNUM,
 				callee_adjust != 0, &cfi_ops);
@@ -5244,6 +5639,20 @@ aarch64_uimm12_shift (HOST_WIDE_INT val)
 	  );
 }
 
+/* Returns the nearest value to VAL that will fit as a 12-bit unsigned immediate
+   that can be created with a left shift of 0 or 12.  */
+static HOST_WIDE_INT
+aarch64_clamp_to_uimm12_shift (HOST_WIDE_INT val)
+{
+  /* Check to see if the value fits in 24 bits, as that is the maximum we can
+     handle correctly.  */
+  gcc_assert ((val & 0xffffff) == val);
+
+  if (((val & 0xfff) << 0) == val)
+    return val;
+
+  return val & (0xfff << 12);
+}
 
 /* Return true if val is an immediate that can be loaded into a
    register by a MOVZ instruction.  */
@@ -10582,6 +10991,33 @@ aarch64_override_options_internal (struct gcc_options *opts)
   maybe_set_param_value (PARAM_SCHED_PRESSURE_ALGORITHM, SCHED_PRESSURE_MODEL,
 			 opts->x_param_values,
 			 global_options_set.x_param_values);
+
+  /* If the user hasn't changed it via configure then set the default to 64 KB
+     for the backend.  */
+  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+			 DEFAULT_STK_CLASH_GUARD_SIZE == 0
+			   ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
+
+  /* Validate the guard size.  */
+  int guard_size = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
+  /* Enforce that interval is the same size as size so the mid-end does the
+     right thing.  */
+  maybe_set_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
+			 guard_size,
+			 opts->x_param_values,
+			 global_options_set.x_param_values);
+
+  /* The maybe_set calls won't update the value if the user has explicitly set
+     one.  Which means we need to validate that probing interval and guard size
+     are equal.  */
+  int probe_interval
+    = PARAM_VALUE (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL);
+  if (guard_size != probe_interval)
+    error ("stack clash guard size '%d' must be equal to probing interval "
+	   "'%d'", guard_size, probe_interval);
 
   /* Enable sw prefetching at specified optimization level for
      CPUS that have prefetch.  Lower optimization level threshold by 1
@@ -16510,8 +16946,6 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
   if (aarch64_fusion_enabled_p (AARCH64_FUSE_CMP_BRANCH)
       && any_condjump_p (curr))
     {
-      enum attr_type prev_type = get_attr_type (prev);
-
       unsigned int condreg1, condreg2;
       rtx cc_reg_1;
       aarch64_fixed_condition_code_regs (&condreg1, &condreg2);
@@ -16521,6 +16955,8 @@ aarch_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	  && prev
 	  && modified_in_p (cc_reg_1, prev))
 	{
+	  enum attr_type prev_type = get_attr_type (prev);
+
 	  /* FIXME: this misses some which is considered simple arthematic
 	     instructions for ThunderX.  Simple shifts are missed here.  */
 	  if (prev_type == TYPE_ALUS_SREG
@@ -18017,6 +18453,10 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
+
+#undef TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE
+#define TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE \
+  aarch64_stack_clash_protection_alloca_probe_range
 
 #undef TARGET_COMPUTE_PRESSURE_CLASSES
 #define TARGET_COMPUTE_PRESSURE_CLASSES aarch64_compute_pressure_classes

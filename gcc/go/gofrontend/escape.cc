@@ -979,7 +979,7 @@ Gogo::analyze_escape()
       for (std::vector<Named_object*>::iterator fn = stack.begin();
            fn != stack.end();
            ++fn)
-        this->tag_function(context, *fn);
+	this->tag_function(*fn);
 
       if (this->debug_escape_level() != 0)
 	{
@@ -1232,10 +1232,10 @@ Escape_analysis_loop::statement(Block*, size_t*, Statement* s)
 class Escape_analysis_assign : public Traverse
 {
 public:
-  Escape_analysis_assign(Escape_context* context, Named_object* fn)
+  Escape_analysis_assign(Escape_context* context)
     : Traverse(traverse_statements
 	       | traverse_expressions),
-      context_(context), fn_(fn)
+      context_(context)
   { }
 
   // Model statements within a function as assignments and flows between nodes.
@@ -1272,8 +1272,6 @@ public:
 private:
   // The escape context for this set of functions.
   Escape_context* context_;
-  // The current function being analyzed.
-  Named_object* fn_;
 };
 
 // Helper function to detect self assignment like the following.
@@ -2703,7 +2701,7 @@ Gogo::assign_connectivity(Escape_context* context, Named_object* fn)
   int save_depth = context->loop_depth();
   context->set_loop_depth(1);
 
-  Escape_analysis_assign ea(context, fn);
+  Escape_analysis_assign ea(context);
   Function::Results* res = fn->func_value()->result_variables();
   if (res != NULL)
     {
@@ -3266,17 +3264,13 @@ Gogo::propagate_escape(Escape_context* context, Node* dst)
 class Escape_analysis_tag
 {
  public:
-  Escape_analysis_tag(Escape_context* context)
-    : context_(context)
+  Escape_analysis_tag()
   { }
 
   // Add notes to the function's type about the escape information of its
   // input parameters.
   void
   tag(Named_object* fn);
-
- private:
-  Escape_context* context_;
 };
 
 void
@@ -3384,9 +3378,9 @@ Escape_analysis_tag::tag(Named_object* fn)
 // retain analysis results across imports.
 
 void
-Gogo::tag_function(Escape_context* context, Named_object* fn)
+Gogo::tag_function(Named_object* fn)
 {
-  Escape_analysis_tag eat(context);
+  Escape_analysis_tag eat;
   eat.tag(fn);
 }
 

@@ -344,7 +344,6 @@ static void
 pack_ts_block_value_fields (struct output_block *ob,
 			    struct bitpack_d *bp, tree expr)
 {
-  bp_pack_value (bp, BLOCK_ABSTRACT (expr), 1);
   /* BLOCK_NUMBER is recomputed.  */
   /* Stream BLOCK_SOURCE_LOCATION for the limited cases we can handle - those
      that represent inlined function scopes.

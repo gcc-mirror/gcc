@@ -9,7 +9,7 @@
 
 #include <xmmintrin.h>
 
-bool foo (int x) /* { dg-error "unknown type name 'bool'; did you mean '_Bool'?" } */
+bool foo (int x) /* { dg-error "unknown type name 'bool'" } */
 {
   return x == 2;
 }

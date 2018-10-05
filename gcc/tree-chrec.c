@@ -41,53 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Extended folder for chrecs.  */
 
-/* Determines whether CST is not a constant evolution.  */
-
-static inline bool
-is_not_constant_evolution (const_tree cst)
-{
-  return (TREE_CODE (cst) == POLYNOMIAL_CHREC);
-}
-
-/* Fold CODE for a polynomial function and a constant.  */
-
-static inline tree
-chrec_fold_poly_cst (enum tree_code code,
-		     tree type,
-		     tree poly,
-		     tree cst)
-{
-  gcc_assert (poly);
-  gcc_assert (cst);
-  gcc_assert (TREE_CODE (poly) == POLYNOMIAL_CHREC);
-  gcc_checking_assert (!is_not_constant_evolution (cst));
-  gcc_checking_assert (useless_type_conversion_p (type, chrec_type (poly)));
-
-  switch (code)
-    {
-    case PLUS_EXPR:
-      return build_polynomial_chrec
-	(CHREC_VARIABLE (poly),
-	 chrec_fold_plus (type, CHREC_LEFT (poly), cst),
-	 CHREC_RIGHT (poly));
-
-    case MINUS_EXPR:
-      return build_polynomial_chrec
-	(CHREC_VARIABLE (poly),
-	 chrec_fold_minus (type, CHREC_LEFT (poly), cst),
-	 CHREC_RIGHT (poly));
-
-    case MULT_EXPR:
-      return build_polynomial_chrec
-	(CHREC_VARIABLE (poly),
-	 chrec_fold_multiply (type, CHREC_LEFT (poly), cst),
-	 chrec_fold_multiply (type, CHREC_RIGHT (poly), cst));
-
-    default:
-      return chrec_dont_know;
-    }
-}
-
 /* Fold the addition of two polynomial functions.  */
 
 static inline tree

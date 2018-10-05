@@ -1,3 +1,25 @@
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84107
+	* libgcov-profiler.c (__gcov_indirect_call):
+	Change type to indirect_call_tuple.
+	(struct indirect_call_tuple): New struct.
+	(__gcov_indirect_call_topn_profiler): Change type.
+	(__gcov_indirect_call_profiler_v2): Use the new
+	variables.
+	* libgcov.h (struct indirect_call_tuple): New struct
+	definition.
+
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcc2.c (isnan): Use __builtin_isnan.
+	(isfinite): Use __builtin_isfinite.
+	(isinf): Use __builtin_isinf.
+
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
 2018-09-21  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/vxcache.c: New file.  Provide __clear_cache, based on
@@ -101,7 +123,7 @@
 	unordered store to release lock.
 	(__sync_lock_release_8): Likewise.
 	(SYNC_LOCK_RELEASE_2): Remove define.
-	 
+
 2018-08-02  Nicolas Pitre <nico@fluxnic.net>
 
 	PR libgcc/86512
@@ -412,7 +434,7 @@
 
 	* config/pa/fptr.c (_dl_read_access_allowed): New.
 	(__canonicalize_funcptr_for_compare): Use it.
-	
+
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83917
@@ -509,21 +531,21 @@
 	* config/rl78/t-rl78: Added smindi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/smaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added smaxdi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/umaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
-	
+
 2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/83452
 	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
 	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
-	
+
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/value-unwind.h (aarch64_vg): New function.

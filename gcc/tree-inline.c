@@ -704,7 +704,7 @@ remap_block (tree *block, copy_body_data *id)
   old_block = *block;
   new_block = make_node (BLOCK);
   TREE_USED (new_block) = TREE_USED (old_block);
-  BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
+  BLOCK_ABSTRACT_ORIGIN (new_block) = BLOCK_ORIGIN (old_block);
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
   BLOCK_NONLOCALIZED_VARS (new_block)
     = vec_safe_copy (BLOCK_NONLOCALIZED_VARS (old_block));
@@ -2631,7 +2631,7 @@ copy_loops (copy_body_data *id,
     }
 }
 
-/* Call cgraph_redirect_edge_call_stmt_to_callee on all calls in BB */
+/* Call redirect_call_stmt_to_callee on all calls in BB.  */
 
 void
 redirect_all_calls (copy_body_data * id, basic_block bb)
@@ -4473,7 +4473,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 			 GSI_NEW_STMT);
       gcc_assert (id->src_node->thunk.this_adjusting);
       op = thunk_adjust (&iter, op, 1, id->src_node->thunk.fixed_offset,
-			 virtual_offset);
+			 virtual_offset, id->src_node->thunk.indirect_offset);
 
       gimple_call_set_arg (stmt, 0, op);
       gimple_call_set_fndecl (stmt, edge->callee->decl);
@@ -4527,10 +4527,16 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
      not refer to them in any way to not break GC for locations.  */
   if (gimple_block (stmt))
     {
+      /* We do want to assign a not UNKNOWN_LOCATION BLOCK_SOURCE_LOCATION
+         to make inlined_function_outer_scope_p return true on this BLOCK.  */
+      location_t loc = LOCATION_LOCUS (gimple_location (stmt));
+      if (loc == UNKNOWN_LOCATION)
+	loc = LOCATION_LOCUS (DECL_SOURCE_LOCATION (fn));
+      if (loc == UNKNOWN_LOCATION)
+	loc = BUILTINS_LOCATION;
       id->block = make_node (BLOCK);
-      BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
-      BLOCK_SOURCE_LOCATION (id->block) 
-	= LOCATION_LOCUS (gimple_location (stmt));
+      BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
+      BLOCK_SOURCE_LOCATION (id->block) = loc;
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
@@ -4586,7 +4592,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     {
       gimple_stmt_iterator si = gsi_last_bb (bb);
       gsi_insert_after (&si, gimple_build_debug_inline_entry
-			(id->block, input_location), GSI_NEW_STMT);
+			(id->block, DECL_SOURCE_LOCATION (id->src_fn)),
+			GSI_NEW_STMT);
     }
 
   if (DECL_INITIAL (fn))

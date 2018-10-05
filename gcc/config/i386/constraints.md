@@ -254,10 +254,9 @@
 
 ;; This can theoretically be any mode's CONST0_RTX.
 (define_constraint "C"
-  "SSE constant zero operand."
-  (and (match_test "TARGET_SSE")
-       (ior (match_test "op == const0_rtx")
-	    (match_operand 0 "const0_operand"))))
+  "Constant zero operand."
+  (ior (match_test "op == const0_rtx")
+       (match_operand 0 "const0_operand")))
 
 ;; Constant-or-symbol-reference constraints.
 

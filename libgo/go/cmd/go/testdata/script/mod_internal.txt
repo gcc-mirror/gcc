@@ -16,11 +16,11 @@ stderr 'use of internal package golang.org/x/.* not allowed'
 
 # Internal packages in the standard library should not leak into modules.
 ! go build ./fromstd
-[!gccgo] stderr 'use of internal package internal/testenv not allowed'
+stderr 'use of internal package internal/testenv not allowed'
 
 # Packages found via standard-library vendoring should not leak.
 ! go build ./fromstdvendor
-[!gccgo] stderr 'use of vendored package golang_org/x/net/http/httpguts not allowed'
+stderr 'use of vendored package golang_org/x/net/http/httpguts not allowed'
 
 env GO111MODULE=off
 ! go build ./fromstdvendor

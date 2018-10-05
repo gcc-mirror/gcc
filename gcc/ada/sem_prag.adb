@@ -3685,6 +3685,12 @@ package body Sem_Prag is
       -- Local Subprograms --
       -----------------------
 
+      function Acc_First (N : Node_Id) return Node_Id;
+      --  Helper function to iterate over arguments given to OpenAcc pragmas
+
+      function Acc_Next (N : Node_Id) return Node_Id;
+      --  Helper function to iterate over arguments given to OpenAcc pragmas
+
       procedure Acquire_Warning_Match_String (Arg : Node_Id);
       --  Used by pragma Warnings (Off, string), and Warn_As_Error (string) to
       --  get the given string argument, and place it in Name_Buffer, adding
@@ -4233,6 +4239,89 @@ package body Sem_Prag is
       --  GNAT_Ravenscar_EDF, or Ravenscar. N is the corresponding pragma node,
       --  which is used for error messages on any constructs violating the
       --  profile.
+
+      procedure Validate_Acc_Condition_Clause (Clause : Node_Id);
+      --  Make sure the argument of a given Acc_If clause is a Boolean
+
+      procedure Validate_Acc_Data_Clause (Clause : Node_Id);
+      --  Make sure the argument of an OpenAcc data clause (e.g. Copy, Copyin,
+      --  Copyout...) is an identifier or an aggregate of identifiers.
+
+      procedure Validate_Acc_Int_Expr_Clause (Clause : Node_Id);
+      --  Make sure the argument of an OpenAcc clause is an Integer expression
+
+      procedure Validate_Acc_Int_Expr_List_Clause (Clause : Node_Id);
+      --  Make sure the argument of an OpenAcc clause is an Integer expression
+      --  or a list of Integer expressions.
+
+      procedure Validate_Acc_Loop_Collapse (Clause : Node_Id);
+      --  Make sure that the parent loop of the Acc_Loop(Collapse => N) pragma
+      --  contains at least N-1 nested loops.
+
+      procedure Validate_Acc_Loop_Gang (Clause : Node_Id);
+      --  Make sure the argument of the Gang clause of a Loop directive is
+      --  either an integer expression or a (Static => integer expressions)
+      --  aggregate.
+
+      procedure Validate_Acc_Loop_Vector (Clause : Node_Id);
+      --  When this procedure is called in a construct offloaded by an
+      --  Acc_Kernels pragma, makes sure that a Vector_Length clause does
+      --  not exist on said pragma. In all cases, make sure the argument
+      --  is an Integer expression.
+
+      procedure Validate_Acc_Loop_Worker (Clause : Node_Id);
+      --  When this procedure is called in a construct offloaded by an
+      --  Acc_Parallel pragma, makes sure that no argument has been given.
+      --  When this procedure is called in a construct offloaded by an
+      --  Acc_Kernels pragma and if Loop_Worker was given an argument,
+      --  makes sure that the Num_Workers clause does not appear on the
+      --  Acc_Kernels pragma and that the argument is an integer.
+
+      procedure Validate_Acc_Name_Reduction (Clause : Node_Id);
+      --  Make sure the reduction clause is an aggregate made of a string
+      --  representing a supported reduction operation (i.e. "+", "*", "and",
+      --  "or", "min" or "max") and either an identifier or aggregate of
+      --  identifiers.
+
+      procedure Validate_Acc_Size_Expressions (Clause : Node_Id);
+      --  Makes sure that Clause is either an integer expression or an
+      --  association with a Static as name and a list of integer expressions
+      --  or "*" strings on the right hand side.
+
+      ---------------
+      -- Acc_First --
+      ---------------
+
+      function Acc_First (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (N) = N_Aggregate then
+            if Present (Expressions (N)) then
+               return First (Expressions (N));
+
+            elsif Present (Component_Associations (N)) then
+               return Expression (First (Component_Associations (N)));
+            end if;
+         end if;
+
+         return N;
+      end Acc_First;
+
+      --------------
+      -- Acc_Next --
+      --------------
+
+      function Acc_Next (N : Node_Id) return Node_Id is
+      begin
+         if Nkind (Parent (N)) = N_Component_Association then
+            return Expression (Next (Parent (N)));
+
+         elsif Nkind (Parent (N)) = N_Aggregate then
+            return Next (N);
+
+         else
+            return Empty;
+         end if;
+      end Acc_Next;
 
       ----------------------------------
       -- Acquire_Warning_Match_String --
@@ -11082,6 +11171,308 @@ package body Sem_Prag is
          end if;
       end Set_Ravenscar_Profile;
 
+      -----------------------------------
+      -- Validate_Acc_Condition_Clause --
+      -----------------------------------
+
+      procedure Validate_Acc_Condition_Clause (Clause : Node_Id) is
+      begin
+         Analyze_And_Resolve (Clause);
+
+         if not Is_Boolean_Type (Etype (Clause)) then
+            Error_Pragma ("expected a boolean");
+         end if;
+      end Validate_Acc_Condition_Clause;
+
+      ------------------------------
+      -- Validate_Acc_Data_Clause --
+      ------------------------------
+
+      procedure Validate_Acc_Data_Clause (Clause : Node_Id) is
+         Expr : Node_Id;
+
+      begin
+         Expr := Acc_First (Clause);
+         while Present (Expr) loop
+            if Nkind (Expr) /= N_Identifier then
+               Error_Pragma ("expected an identifer");
+            end if;
+
+            Analyze_And_Resolve (Expr);
+
+            Expr := Acc_Next (Expr);
+         end loop;
+      end Validate_Acc_Data_Clause;
+
+      ----------------------------------
+      -- Validate_Acc_Int_Expr_Clause --
+      ----------------------------------
+
+      procedure Validate_Acc_Int_Expr_Clause (Clause : Node_Id) is
+      begin
+         Analyze_And_Resolve (Clause);
+
+         if not Is_Integer_Type (Etype (Clause)) then
+            Error_Pragma_Arg ("expected an integer", Clause);
+         end if;
+      end Validate_Acc_Int_Expr_Clause;
+
+      ---------------------------------------
+      -- Validate_Acc_Int_Expr_List_Clause --
+      ---------------------------------------
+
+      procedure Validate_Acc_Int_Expr_List_Clause (Clause : Node_Id) is
+         Expr : Node_Id;
+
+      begin
+         Expr := Acc_First (Clause);
+         while Present (Expr) loop
+            Analyze_And_Resolve (Expr);
+
+            if not Is_Integer_Type (Etype (Expr)) then
+               Error_Pragma ("expected an integer");
+            end if;
+
+            Expr := Acc_Next (Expr);
+         end loop;
+      end Validate_Acc_Int_Expr_List_Clause;
+
+      --------------------------------
+      -- Validate_Acc_Loop_Collapse --
+      --------------------------------
+
+      procedure Validate_Acc_Loop_Collapse (Clause : Node_Id) is
+         Count    : Uint;
+         Par_Loop : Node_Id;
+         Stmt     : Node_Id;
+
+      begin
+         --  Make sure the argument is a positive integer
+
+         Analyze_And_Resolve (Clause);
+
+         Count := Static_Integer (Clause);
+         if Count = No_Uint or else Count < 1 then
+            Error_Pragma_Arg ("expected a positive integer", Clause);
+         end if;
+
+         --  Then, make sure we have at least Count-1 tightly-nested loops
+         --  (i.e. loops with no statements in between).
+
+         Par_Loop := Parent (Parent (Parent (Clause)));
+         Stmt     := First (Statements (Par_Loop));
+
+         --  Skip first pragmas in the parent loop
+
+         while Present (Stmt) and then Nkind (Stmt) = N_Pragma loop
+            Next (Stmt);
+         end loop;
+
+         if not Present (Next (Stmt)) then
+            while Nkind (Stmt) = N_Loop_Statement and Count > 1 loop
+               Stmt := First (Statements (Stmt));
+               exit when Present (Next (Stmt));
+
+               Count := Count - 1;
+            end loop;
+         end if;
+
+         if Count > 1 then
+            Error_Pragma_Arg
+              ("Collapse argument too high or loops not tightly nested",
+               Clause);
+         end if;
+      end Validate_Acc_Loop_Collapse;
+
+      ----------------------------
+      -- Validate_Acc_Loop_Gang --
+      ----------------------------
+
+      procedure Validate_Acc_Loop_Gang (Clause : Node_Id) is
+      begin
+         Error_Pragma_Arg ("Loop_Gang not implemented", Clause);
+      end Validate_Acc_Loop_Gang;
+
+      ------------------------------
+      -- Validate_Acc_Loop_Vector --
+      ------------------------------
+
+      procedure Validate_Acc_Loop_Vector (Clause : Node_Id) is
+      begin
+         Error_Pragma_Arg ("Loop_Vector not implemented", Clause);
+      end Validate_Acc_Loop_Vector;
+
+      -------------------------------
+      --  Validate_Acc_Loop_Worker --
+      -------------------------------
+
+      procedure Validate_Acc_Loop_Worker (Clause : Node_Id) is
+      begin
+         Error_Pragma_Arg ("Loop_Worker not implemented", Clause);
+      end Validate_Acc_Loop_Worker;
+
+      ---------------------------------
+      -- Validate_Acc_Name_Reduction --
+      ---------------------------------
+
+      procedure Validate_Acc_Name_Reduction (Clause : Node_Id) is
+
+         --  ??? On top of the following operations, the OpenAcc spec adds the
+         --  "bitwise and", "bitwise or" and modulo for C and ".eqv" and
+         --  ".neqv" for Fortran. Can we, should we and how do we support them
+         --  in Ada?
+
+         type Reduction_Op is (Add_Op, Mul_Op, Max_Op, Min_Op, And_Op, Or_Op);
+
+         function To_Reduction_Op (Op : String) return Reduction_Op;
+         --  Convert operator Op described by a String into its corresponding
+         --  enumeration value.
+
+         ---------------------
+         -- To_Reduction_Op --
+         ---------------------
+
+         function To_Reduction_Op (Op : String) return Reduction_Op is
+         begin
+            if Op = "+" then
+               return Add_Op;
+
+            elsif Op = "*" then
+               return Mul_Op;
+
+            elsif Op = "max" then
+               return Max_Op;
+
+            elsif Op = "min" then
+               return Min_Op;
+
+            elsif Op = "and" then
+               return And_Op;
+
+            elsif Op = "or" then
+               return Or_Op;
+
+            else
+               Error_Pragma ("unsuported reduction operation");
+            end if;
+         end To_Reduction_Op;
+
+         --  Local variables
+
+         Seen : constant Elist_Id := New_Elmt_List;
+
+         Expr      : Node_Id;
+         Reduc_Op  : Node_Id;
+         Reduc_Var : Node_Id;
+
+      --  Start of processing for Validate_Acc_Name_Reduction
+
+      begin
+         --  Reduction operations appear in the following form:
+         --    ("+" => (a, b), "*" => c)
+
+         Expr := First (Component_Associations (Clause));
+         while Present (Expr) loop
+            Reduc_Op := First (Choices (Expr));
+            String_To_Name_Buffer (Strval (Reduc_Op));
+
+            case To_Reduction_Op (Name_Buffer (1 .. Name_Len)) is
+               when Add_Op
+                  | Mul_Op
+                  | Max_Op
+                  | Min_Op
+               =>
+                  Reduc_Var := Acc_First (Expression (Expr));
+                  while Present (Reduc_Var) loop
+                     Analyze_And_Resolve (Reduc_Var);
+
+                     if Contains (Seen, Entity (Reduc_Var)) then
+                        Error_Pragma ("variable used in multiple reductions");
+
+                     else
+                        if Nkind (Reduc_Var) /= N_Identifier
+                          or not Is_Numeric_Type (Etype (Reduc_Var))
+                        then
+                           Error_Pragma
+                             ("expected an identifier for a Numeric");
+                        end if;
+
+                        Append_Elmt (Entity (Reduc_Var), Seen);
+                     end if;
+
+                     Reduc_Var := Acc_Next (Reduc_Var);
+                  end loop;
+
+               when And_Op
+                  | Or_Op
+               =>
+                  Reduc_Var := Acc_First (Expression (Expr));
+                  while Present (Reduc_Var) loop
+                     Analyze_And_Resolve (Reduc_Var);
+
+                     if Contains (Seen, Entity (Reduc_Var)) then
+                        Error_Pragma ("variable used in multiple reductions");
+
+                     else
+                        if Nkind (Reduc_Var) /= N_Identifier
+                          or not Is_Boolean_Type (Etype (Reduc_Var))
+                        then
+                           Error_Pragma
+                             ("expected a variable of type boolean");
+                        end if;
+
+                        Append_Elmt (Entity (Reduc_Var), Seen);
+                     end if;
+
+                     Reduc_Var := Acc_Next (Reduc_Var);
+                  end loop;
+            end case;
+
+            Next (Expr);
+         end loop;
+      end Validate_Acc_Name_Reduction;
+
+      -----------------------------------
+      -- Validate_Acc_Size_Expressions --
+      -----------------------------------
+
+      procedure Validate_Acc_Size_Expressions (Clause : Node_Id) is
+         function Validate_Size_Expr (Expr : Node_Id) return Boolean;
+         --  A size expr is either an integer expression or "*"
+
+         ------------------------
+         -- Validate_Size_Expr --
+         ------------------------
+
+         function Validate_Size_Expr (Expr : Node_Id) return Boolean is
+         begin
+            if Nkind (Expr) = N_Operator_Symbol then
+               return Get_String_Char (Strval (Expr), 1) = Get_Char_Code ('*');
+            end if;
+
+            Analyze_And_Resolve (Expr);
+
+            return Is_Integer_Type (Etype (Expr));
+         end Validate_Size_Expr;
+
+         --  Local variables
+
+         Expr : Node_Id;
+
+      --  Start of processing for Validate_Acc_Size_Expressions
+
+      begin
+         Expr := Acc_First (Clause);
+         while Present (Expr) loop
+            if not Validate_Size_Expr (Expr) then
+               Error_Pragma
+                 ("Size expressions should be either integers or '*'");
+            end if;
+
+            Expr := Acc_Next (Expr);
+         end loop;
+      end Validate_Acc_Size_Expressions;
+
    --  Start of processing for Analyze_Pragma
 
    begin
@@ -12024,6 +12415,306 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_Initializes);
             Analyze_If_Present (Pragma_Initial_Condition);
          end Abstract_State;
+
+         --------------
+         -- Acc_Data --
+         --------------
+
+         when Pragma_Acc_Data => Acc_Data : declare
+            Clause_Names : constant Name_List :=
+              (Name_Attach,
+               Name_Copy,
+               Name_Copy_In,
+               Name_Copy_Out,
+               Name_Create,
+               Name_Delete,
+               Name_Detach,
+               Name_Device_Ptr,
+               Name_No_Create,
+               Name_Present);
+
+            Clause  : Node_Id;
+            Clauses : Args_List (Clause_Names'Range);
+
+         begin
+            if not OpenAcc_Enabled then
+               return;
+            end if;
+
+            GNAT_Pragma;
+
+            if Nkind (Parent (N)) /= N_Loop_Statement then
+               Error_Pragma
+                 ("Acc_Data pragma should be placed in loop or block "
+                  & "statements");
+            end if;
+
+            Gather_Associations (Clause_Names, Clauses);
+
+            for Id in Clause_Names'First .. Clause_Names'Last loop
+               Clause := Clauses (Id);
+
+               if Present (Clause) then
+                  case Clause_Names (Id) is
+                     when Name_Copy
+                        | Name_Copy_In
+                        | Name_Copy_Out
+                        | Name_Create
+                        | Name_Device_Ptr
+                        | Name_Present
+                     =>
+                        Validate_Acc_Data_Clause (Clause);
+
+                     when Name_Attach
+                        | Name_Detach
+                        | Name_Delete
+                        | Name_No_Create
+                      =>
+                        Error_Pragma ("unsupported pragma clause");
+
+                     when others =>
+                        raise Program_Error;
+                  end case;
+               end if;
+            end loop;
+
+            Set_Is_OpenAcc_Environment (Parent (N));
+         end Acc_Data;
+
+         --------------
+         -- Acc_Loop --
+         --------------
+
+         when Pragma_Acc_Loop => Acc_Loop : declare
+            Clause_Names : constant Name_List :=
+              (Name_Auto,
+               Name_Collapse,
+               Name_Gang,
+               Name_Independent,
+               Name_Acc_Private,
+               Name_Reduction,
+               Name_Seq,
+               Name_Tile,
+               Name_Vector,
+               Name_Worker);
+
+            Clause  : Node_Id;
+            Clauses : Args_List (Clause_Names'Range);
+            Par     : Node_Id;
+
+         begin
+            if not OpenAcc_Enabled then
+               return;
+            end if;
+
+            GNAT_Pragma;
+
+            --  Make sure the pragma is in an openacc construct
+
+            Check_Loop_Pragma_Placement;
+
+            Par := Parent (N);
+            while Present (Par)
+              and then (Nkind (Par) /= N_Loop_Statement
+                         or else not Is_OpenAcc_Environment (Par))
+            loop
+               Par := Parent (Par);
+            end loop;
+
+            if not Is_OpenAcc_Environment (Par) then
+               Error_Pragma
+                 ("Acc_Loop directive must be associated with an OpenAcc "
+                  & "construct region");
+            end if;
+
+            Gather_Associations (Clause_Names, Clauses);
+
+            for Id in Clause_Names'First .. Clause_Names'Last loop
+               Clause := Clauses (Id);
+
+               if Present (Clause) then
+                  case Clause_Names (Id) is
+                     when Name_Auto
+                        | Name_Independent
+                        | Name_Seq
+                     =>
+                        null;
+
+                     when Name_Collapse =>
+                        Validate_Acc_Loop_Collapse (Clause);
+
+                     when Name_Gang =>
+                        Validate_Acc_Loop_Gang (Clause);
+
+                     when Name_Acc_Private =>
+                        Validate_Acc_Data_Clause (Clause);
+
+                     when Name_Reduction =>
+                        Validate_Acc_Name_Reduction (Clause);
+
+                     when Name_Tile =>
+                        Validate_Acc_Size_Expressions (Clause);
+
+                     when Name_Vector =>
+                        Validate_Acc_Loop_Vector (Clause);
+
+                     when Name_Worker =>
+                        Validate_Acc_Loop_Worker (Clause);
+
+                     when others =>
+                        raise Program_Error;
+                  end case;
+               end if;
+            end loop;
+
+            Set_Is_OpenAcc_Loop (Parent (N));
+         end Acc_Loop;
+
+         ----------------------------------
+         -- Acc_Parallel and Acc_Kernels --
+         ----------------------------------
+
+         when Pragma_Acc_Parallel
+            | Pragma_Acc_Kernels
+         =>
+         Acc_Kernels_Or_Parallel : declare
+            Clause_Names : constant Name_List :=
+              (Name_Acc_If,
+               Name_Async,
+               Name_Copy,
+               Name_Copy_In,
+               Name_Copy_Out,
+               Name_Create,
+               Name_Default,
+               Name_Device_Ptr,
+               Name_Device_Type,
+               Name_Num_Gangs,
+               Name_Num_Workers,
+               Name_Present,
+               Name_Vector_Length,
+               Name_Wait,
+
+               --  Parallel only
+
+               Name_Acc_Private,
+               Name_First_Private,
+               Name_Reduction,
+
+               --  Kernels only
+
+               Name_Attach,
+               Name_No_Create);
+
+            Clause  : Node_Id;
+            Clauses : Args_List (Clause_Names'Range);
+
+         begin
+            if not OpenAcc_Enabled then
+               return;
+            end if;
+
+            GNAT_Pragma;
+            Check_Loop_Pragma_Placement;
+
+            if Nkind (Parent (N)) /= N_Loop_Statement then
+               Error_Pragma
+                 ("pragma should be placed in loop or block statements");
+            end if;
+
+            Gather_Associations (Clause_Names, Clauses);
+
+            for Id in Clause_Names'First .. Clause_Names'Last loop
+               Clause := Clauses (Id);
+
+               if Present (Clause) then
+                  if Chars (Parent (Clause)) = No_Name then
+                     Error_Pragma ("all arguments should be associations");
+                  else
+                     case Clause_Names (Id) is
+
+                        --  Note: According to the OpenAcc Standard v2.6,
+                        --  Async's argument should be optional. Because this
+                        --  complicates parsing the clause, the argument is
+                        --  made mandatory. The standard defines two negative
+                        --  values, acc_async_noval and acc_async_sync. When
+                        --  given acc_async_noval as value, the clause should
+                        --  behave as if no argument was given. According to
+                        --  the standard, acc_async_noval is defined in header
+                        --  files for C and Fortran, thus this value should
+                        --  probably be defined in the OpenAcc Ada library once
+                        --  it is implemented.
+
+                        when Name_Async
+                           | Name_Num_Gangs
+                           | Name_Num_Workers
+                           | Name_Vector_Length
+                        =>
+                           Validate_Acc_Int_Expr_Clause (Clause);
+
+                        when Name_Acc_If =>
+                           Validate_Acc_Condition_Clause (Clause);
+
+                        --  Unsupported by GCC
+
+                        when Name_Attach
+                           | Name_No_Create
+                        =>
+                           Error_Pragma ("unsupported clause");
+
+                        when Name_Acc_Private
+                           | Name_First_Private
+                        =>
+                           if Prag_Id /= Pragma_Acc_Parallel then
+                              Error_Pragma
+                                ("argument is only available for 'Parallel' "
+                                 & "construct");
+                           else
+                              Validate_Acc_Data_Clause (Clause);
+                           end if;
+
+                        when Name_Copy
+                           | Name_Copy_In
+                           | Name_Copy_Out
+                           | Name_Create
+                           | Name_Device_Ptr
+                           | Name_Present
+                        =>
+                           Validate_Acc_Data_Clause (Clause);
+
+                        when Name_Reduction =>
+                           if Prag_Id /= Pragma_Acc_Parallel then
+                              Error_Pragma
+                                ("argument is only available for 'Parallel' "
+                                 & "construct");
+                           else
+                              Validate_Acc_Name_Reduction (Clause);
+                           end if;
+
+                        when Name_Default =>
+                           if Chars (Clause) /= Name_None then
+                              Error_Pragma ("expected none");
+                           end if;
+
+                        when Name_Device_Type =>
+                           Error_Pragma ("unsupported pragma clause");
+
+                        --  Similar to Name_Async, Name_Wait's arguments should
+                        --  be optional. However, this can be simulated using
+                        --  acc_async_noval, hence, we do not bother making the
+                        --  argument optional for now.
+
+                        when Name_Wait =>
+                           Validate_Acc_Int_Expr_List_Clause (Clause);
+
+                        when others =>
+                           raise Program_Error;
+                     end case;
+                  end if;
+               end if;
+            end loop;
+
+            Set_Is_OpenAcc_Environment (Parent (N));
+         end Acc_Kernels_Or_Parallel;
 
          ------------
          -- Ada_83 --
@@ -27039,7 +27730,10 @@ package body Sem_Prag is
                --  it must be an extra (SPARK RM 7.2.4(3)).
 
                else
-                  SPARK_Msg_NE ("extra global item &", Item, Item_Id);
+                  pragma Assert (Present (Global));
+                  Error_Msg_Sloc := Sloc (Global);
+                  SPARK_Msg_NE ("extra global item & does not refine or " &
+                                "repeat any global item #", Item, Item_Id);
                end if;
             end if;
          end Check_Refined_Global_Item;
@@ -30117,6 +30811,10 @@ package body Sem_Prag is
    Sig_Flags : constant array (Pragma_Id) of Int :=
      (Pragma_Abort_Defer                    => -1,
       Pragma_Abstract_State                 => -1,
+      Pragma_Acc_Data                       =>  0,
+      Pragma_Acc_Kernels                    =>  0,
+      Pragma_Acc_Loop                       =>  0,
+      Pragma_Acc_Parallel                   =>  0,
       Pragma_Ada_83                         => -1,
       Pragma_Ada_95                         => -1,
       Pragma_Ada_05                         => -1,

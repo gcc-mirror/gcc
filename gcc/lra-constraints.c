@@ -630,33 +630,6 @@ get_reload_reg (enum op_type type, machine_mode mode, rtx original,
 }
 
 
-
-/* The page contains code to extract memory address parts.  */
-
-/* Wrapper around REGNO_OK_FOR_INDEX_P, to allow pseudos.  */
-static inline bool
-ok_for_index_p_nonstrict (rtx reg)
-{
-  unsigned regno = REGNO (reg);
-
-  return regno >= FIRST_PSEUDO_REGISTER || REGNO_OK_FOR_INDEX_P (regno);
-}
-
-/* A version of regno_ok_for_base_p for use here, when all pseudos
-   should count as OK.	Arguments as for regno_ok_for_base_p.  */
-static inline bool
-ok_for_base_p_nonstrict (rtx reg, machine_mode mode, addr_space_t as,
-			 enum rtx_code outer_code, enum rtx_code index_code)
-{
-  unsigned regno = REGNO (reg);
-
-  if (regno >= FIRST_PSEUDO_REGISTER)
-    return true;
-  return ok_for_base_p_1 (regno, mode, as, outer_code, index_code);
-}
-
-
-
 /* The page contains major code to choose the current insn alternative
    and generate reloads for it.	 */
 

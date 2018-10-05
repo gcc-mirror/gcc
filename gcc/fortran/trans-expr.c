@@ -5281,7 +5281,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 			/* See PR 41453.  */
 			&& !e->symtree->n.sym->attr.dummy
 			/* FIXME - PR 87395 and PR 41453  */
-			&& e->symtree->n.sym->attr.save == SAVE_NONE 
+			&& e->symtree->n.sym->attr.save == SAVE_NONE
 			&& !e->symtree->n.sym->attr.associate_var
 			&& e->ts.type != BT_CHARACTER && e->ts.type != BT_DERIVED
 			&& e->ts.type != BT_CLASS && !sym->attr.elemental;
@@ -10207,7 +10207,11 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	   || TREE_CODE (rse.string_length) == INDIRECT_REF))
     string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
   else if (expr2->ts.type == BT_CHARACTER)
-    string_length = rse.string_length;
+    {
+      if (expr1->ts.deferred && gfc_check_dependency (expr1, expr2, true))
+	rse.string_length = gfc_evaluate_now (rse.string_length, &rse.pre);
+      string_length = rse.string_length;
+    }
   else
     string_length = NULL_TREE;
 

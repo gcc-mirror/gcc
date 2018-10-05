@@ -1414,6 +1414,11 @@ These features are extensions to the traditional
 SVR4-based MIPS ABIs and require support from GNU binutils
 and the runtime C library.
 
+@item --with-stack-clash-protection-guard-size=@var{size}
+On certain targets this option sets the default stack clash protection guard
+size as a power of two in bytes.  On AArch64 @var{size} is required to be either
+12 (4KB) or 16 (64KB).
+
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.

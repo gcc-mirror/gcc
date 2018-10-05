@@ -315,7 +315,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-include-dirs @gol
+-Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
@@ -324,7 +324,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wno-pedantic-ms-format @gol
 -Wplacement-new  -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
--Wno-pragmas  -Wredundant-decls  -Wrestrict  -Wno-return-local-addr @gol
+-Wno-pragmas  -Wno-prio-ctor-dtor -Wredundant-decls @gol
+-Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshadow=global,  -Wshadow=local,  -Wshadow=compatible-local @gol
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
@@ -1006,8 +1007,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mint32  -mno-int16 -mint16  -mno-int32 @gol
--mfloat32  -mno-float64 -mfloat64  -mno-float32 @gol
--msplit -munix-asm  -mdec-asm -mgnu-asm}
+-msplit -munix-asm  -mdec-asm -mgnu-asm -mlra}
 
 @emph{picoChip Options}
 @gccoptlist{-mae=@var{ae_type}  -mvliw-lookahead=@var{N} @gol
@@ -1450,9 +1450,6 @@ Ada source code file containing a library unit body (a subprogram or
 package body).  Such files are also called @dfn{bodies}.
 
 @c GCC also knows about some suffixes for languages not yet included:
-@c Pascal:
-@c @var{file}.p
-@c @var{file}.pas
 @c Ratfor:
 @c @var{file}.r
 
@@ -4218,8 +4215,8 @@ Warn about an invalid memory access that is found by Pointer Bounds Checker
 @opindex Wcoverage-mismatch
 Warn if feedback profiles do not match when using the
 @option{-fprofile-use} option.
-If a source file is changed between compiling with @option{-fprofile-gen} and
-with @option{-fprofile-use}, the files with the profile feedback can fail
+If a source file is changed between compiling with @option{-fprofile-generate}
+and with @option{-fprofile-use}, the files with the profile feedback can fail
 to match the source file and GCC cannot use the profile feedback
 information.  By default, this warning is enabled and is treated as an
 error.  @option{-Wno-coverage-mismatch} can be used to disable the
@@ -4823,6 +4820,23 @@ This warning is enabled by @option{-Wall}.
 @opindex Wno-missing-include-dirs
 Warn if a user-supplied include directory does not exist.
 
+@item -Wmissing-profile
+@opindex Wmissing-profile
+@opindex Wno-missing-profile
+Warn if feedback profiles are missing when using the
+@option{-fprofile-use} option.
+This option diagnoses those cases where a new function or a new file is added
+to the user code between compiling with @option{-fprofile-generate} and with
+@option{-fprofile-use}, without regenerating the profiles.  In these cases, the
+profile feedback data files do not contain any profile feedback information for
+the newly added function or file respectively.  Also, in the case when profile
+count data (.gcda) files are removed, GCC cannot use any profile feedback
+information.  In all these cases, warnings are issued to inform the user that a
+profile generation step is due.  @option{-Wno-missing-profile} can be used to
+disable the warning.  Ignoring the warning can result in poorly optimized code.
+Completely disabling the warning is not recommended and should be done only
+when non-existent profile data is justified.
+
 @item -Wmultistatement-macros
 @opindex Wmultistatement-macros
 @opindex Wno-multistatement-macros
@@ -5314,6 +5328,16 @@ the warnings are only enabled by the @option{-Wall} command-line option.
 Do not warn about misuses of pragmas, such as incorrect parameters,
 invalid syntax, or conflicts between pragmas.  See also
 @option{-Wunknown-pragmas}.
+
+@item -Wno-prio-ctor-dtor
+@opindex Wno-prio-ctor-dtor
+@opindex Wprio-ctor-dtor
+Do not warn if a priority from 0 to 100 is used for constructor or destructor.
+The use of constructor and destructor attributes allow you to assign a
+priority to the constructor/destructor to control its order of execution
+before @code{main} is called or after it returns.  The priority values must be
+greater than 100 as the compiler reserves priority values between 0--100 for
+the implementation.
 
 @item -Wstrict-aliasing
 @opindex Wstrict-aliasing
@@ -9920,8 +9944,9 @@ Before you can use this option, you must first generate profiling information.
 
 By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
-@option{-Wcoverage-mismatch}.  Note this may result in poorly optimized
-code.
+@option{-Wno-error=coverage-mismatch}.  Note this may result in poorly
+optimized code.  Additionally, by default, GCC also emits a warning message if
+the feedback profiles do not exist (See @option{-Wmissing-profile}).
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
@@ -10428,19 +10453,22 @@ The names of specific parameters, and the meaning of the values, are
 tied to the internals of the compiler, and are subject to change
 without notice in future releases.
 
+In order to get minimal, maximal and default value of a parameter,
+one can use @option{--help=param -Q} options.
+
 In each case, the @var{value} is an integer.  The allowable choices for
 @var{name} are:
 
 @table @gcctabopt
 @item predictable-branch-outcome
 When branch is predicted to be taken with probability lower than this threshold
-(in percent), then it is considered well predictable. The default is 10.
+(in percent), then it is considered well predictable.
 
 @item max-rtl-if-conversion-insns
 RTL if-conversion tries to remove conditional branches around a block and
 replace them with conditionally executed instructions.  This parameter
 gives the maximum number of instructions in a block which should be
-considered for if-conversion.  The default is 10, though the compiler will
+considered for if-conversion.  The compiler will
 also use other heuristics to decide whether if-conversion is likely to be
 profitable.
 
@@ -10466,12 +10494,11 @@ probably small improvement in executable size.
 The minimum number of instructions that must be matched at the end
 of two blocks before cross-jumping is performed on them.  This
 value is ignored in the case where all instructions in the block being
-cross-jumped from are matched.  The default value is 5.
+cross-jumped from are matched.
 
 @item max-grow-copy-bb-insns
 The maximum code size expansion factor when copying basic blocks
 instead of jumping.  The expansion is relative to a jump instruction.
-The default value is 8.
 
 @item max-goto-duplication-insns
 The maximum number of instructions to duplicate to a block that jumps
@@ -10479,7 +10506,7 @@ to a computed goto.  To avoid @math{O(N^2)} behavior in a number of
 passes, GCC factors computed gotos early in the compilation process,
 and unfactors them as late as possible.  Only computed jumps at the
 end of a basic blocks with no more than max-goto-duplication-insns are
-unfactored.  The default value is 8.
+unfactored.
 
 @item max-delay-slot-insn-search
 The maximum number of instructions to consider when looking for an
@@ -10506,7 +10533,7 @@ optimization is not done.
 @item max-gcse-insertion-ratio
 If the ratio of expression insertions to deletions is larger than this value
 for any expression, then RTL PRE inserts or removes the expression and thus
-leaves partially redundant computations in the instruction stream.  The default value is 20.
+leaves partially redundant computations in the instruction stream.
 
 @item max-pending-list-length
 The maximum number of pending dependencies scheduling allows
@@ -10525,7 +10552,6 @@ This number sets the maximum number of instructions (counted in GCC's
 internal representation) in a single function that the tree inliner
 considers for inlining.  This only affects functions declared
 inline and methods implemented in a class declaration (C++).
-The default value is 400.
 
 @item max-inline-insns-auto
 When you use @option{-finline-functions} (included in @option{-O3}),
@@ -10533,14 +10559,12 @@ a lot of functions that would otherwise not be considered for inlining
 by the compiler are investigated.  To those functions, a different
 (more restrictive) limit compared to functions declared inline can
 be applied.
-The default value is 30.
 
 @item inline-min-speedup
 When estimated performance improvement of caller + callee runtime exceeds this
 threshold (in percent), the function can be inlined regardless of the limit on
 @option{--param max-inline-insns-single} and @option{--param
 max-inline-insns-auto}.
-The default value is 15.
 
 @item large-function-insns
 The limit specifying really large functions.  For functions larger than this
@@ -10548,11 +10572,10 @@ limit after inlining, inlining is constrained by
 @option{--param large-function-growth}.  This parameter is useful primarily
 to avoid extreme compilation time caused by non-linear algorithms used by the
 back end.
-The default value is 2700.
 
 @item large-function-growth
 Specifies maximal growth of large function caused by inlining in percents.
-The default value is 100 which limits large function growth to 2.0 times
+For example, parameter value 100 limits large function growth to 2.0 times
 the original size.
 
 @item large-unit-insns
@@ -10565,26 +10588,26 @@ A, the growth of unit is 300\% and yet such inlining is very sane.  For very
 large units consisting of small inlineable functions, however, the overall unit
 growth limit is needed to avoid exponential explosion of code size.  Thus for
 smaller units, the size is increased to @option{--param large-unit-insns}
-before applying @option{--param inline-unit-growth}.  The default is 10000.
+before applying @option{--param inline-unit-growth}.
 
 @item inline-unit-growth
 Specifies maximal overall growth of the compilation unit caused by inlining.
-The default value is 20 which limits unit growth to 1.2 times the original
+For example, parameter value 20 limits unit growth to 1.2 times the original
 size. Cold functions (either marked cold via an attribute or by profile
 feedback) are not accounted into the unit size.
 
 @item ipcp-unit-growth
 Specifies maximal overall growth of the compilation unit caused by
-interprocedural constant propagation.  The default value is 10 which limits
+interprocedural constant propagation.  For example, parameter value 10 limits
 unit growth to 1.1 times the original size.
 
 @item large-stack-frame
 The limit specifying large stack frames.  While inlining the algorithm is trying
-to not grow past this limit too much.  The default value is 256 bytes.
+to not grow past this limit too much.
 
 @item large-stack-frame-growth
 Specifies maximal growth of large stack frames caused by inlining in percents.
-The default value is 1000 which limits large stack frame growth to 11 times
+For example, parameter value 1000 limits large stack frame growth to 11 times
 the original size.
 
 @item max-inline-insns-recursive
@@ -10597,8 +10620,7 @@ function can grow into by performing recursive inlining.
 declared inline.
 For functions not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
-enabled; @option{--param max-inline-insns-recursive-auto} applies instead.  The
-default value is 450.
+enabled; @option{--param max-inline-insns-recursive-auto} applies instead.
 
 @item max-inline-recursive-depth
 @itemx max-inline-recursive-depth-auto
@@ -10607,8 +10629,7 @@ Specifies the maximum recursion depth used for recursive inlining.
 @option{--param max-inline-recursive-depth} applies to functions
 declared inline.  For functions not declared inline, recursive inlining
 happens only when @option{-finline-functions} (included in @option{-O3}) is
-enabled; @option{--param max-inline-recursive-depth-auto} applies instead.  The
-default value is 8.
+enabled; @option{--param max-inline-recursive-depth-auto} applies instead.
 
 @item min-inline-recursive-probability
 Recursive inlining is profitable only for function having deep recursion
@@ -10620,12 +10641,10 @@ When profile feedback is available (see @option{-fprofile-generate}) the actual
 recursion depth can be guessed from the probability that function recurses
 via a given call expression.  This parameter limits inlining only to call
 expressions whose probability exceeds the given threshold (in percents).
-The default value is 10.
 
 @item early-inlining-insns
 Specify growth that the early inliner can make.  In effect it increases
 the amount of inlining for code having a large abstraction penalty.
-The default value is 14.
 
 @item max-early-inliner-iterations
 Limit of iterations of the early inliner.  This basically bounds
@@ -10634,20 +10653,19 @@ Deeper chains are still handled by late inlining.
 
 @item comdat-sharing-probability
 Probability (in percent) that C++ inline function with comdat visibility
-are shared across multiple compilation units.  The default value is 20.
+are shared across multiple compilation units.
 
 @item profile-func-internal-id
 A parameter to control whether to use function internal id in profile
 database lookup. If the value is 0, the compiler uses an id that
 is based on function assembler name and filename, which makes old profile
 data more tolerant to source changes such as function reordering etc.
-The default value is 0.
 
 @item min-vect-loop-bound
 The minimum number of iterations under which loops are not vectorized
 when @option{-ftree-vectorize} is used.  The number of iterations after
 vectorization needs to be greater than the value specified by this option
-to allow vectorization.  The default value is 0.
+to allow vectorization.
 
 @item gcse-cost-distance-ratio
 Scaling factor in calculation of maximum distance an expression
@@ -10655,7 +10673,7 @@ can be moved by GCSE optimizations.  This is currently supported only in the
 code hoisting pass.  The bigger the ratio, the more aggressive code hoisting
 is with simple expressions, i.e., the expressions that have cost
 less than @option{gcse-unrestricted-cost}.  Specifying 0 disables
-hoisting of simple expressions.  The default value is 10.
+hoisting of simple expressions.
 
 @item gcse-unrestricted-cost
 Cost, roughly measured as the cost of a single typical machine
@@ -10664,29 +10682,28 @@ the distance an expression can travel.  This is currently
 supported only in the code hoisting pass.  The lesser the cost,
 the more aggressive code hoisting is.  Specifying 0 
 allows all expressions to travel unrestricted distances.
-The default value is 3.
 
 @item max-hoist-depth
 The depth of search in the dominator tree for expressions to hoist.
 This is used to avoid quadratic behavior in hoisting algorithm.
 The value of 0 does not limit on the search, but may slow down compilation
-of huge functions.  The default value is 30.
+of huge functions.
 
 @item max-tail-merge-comparisons
 The maximum amount of similar bbs to compare a bb with.  This is used to
-avoid quadratic behavior in tree tail merging.  The default value is 10.
+avoid quadratic behavior in tree tail merging.
 
 @item max-tail-merge-iterations
 The maximum amount of iterations of the pass over the function.  This is used to
-limit compilation time in tree tail merging.  The default value is 2.
+limit compilation time in tree tail merging.
 
 @item store-merging-allow-unaligned
 Allow the store merging pass to introduce unaligned stores if it is legal to
-do so.  The default value is 1.
+do so.
 
 @item max-stores-to-merge
 The maximum number of stores to attempt to merge into wider stores in the store
-merging pass.  The minimum value is 2 and the default is 64.
+merging pass.
 
 @item max-unrolled-insns
 The maximum number of instructions that a loop may have to be unrolled.
@@ -10726,10 +10743,6 @@ The maximum number of insns of an unswitched loop.
 
 @item max-unswitch-level
 The maximum number of branches unswitched in a single loop.
-
-@item max-loop-headers-insns
-The maximum number of insns in loop header duplicated by the copy loop headers
-pass.
 
 @item lim-expensive
 The minimum cost of an expensive expression in the loop invariant motion.
@@ -10808,12 +10821,10 @@ loop without bounds appears artificially cold relative to the other one.
 @item builtin-expect-probability
 Control the probability of the expression having the specified value. This
 parameter takes a percentage (i.e. 0 ... 100) as input.
-The default probability of 90 is obtained empirically.
 
 @item builtin-string-cmp-inline-length
 The maximum length of a constant string for a builtin string cmp call 
 eligible for inlining.
-The default value is 3.
 
 @item align-threshold
 
@@ -10863,27 +10874,23 @@ effective.
 
 @item stack-clash-protection-guard-size
 Specify the size of the operating system provided stack guard as
-2 raised to @var{num} bytes.  The default value is 12 (4096 bytes).
-Acceptable values are between 12 and 30.  Higher values may reduce the
+2 raised to @var{num} bytes.  Higher values may reduce the
 number of explicit probes, but a value larger than the operating system
 provided guard will leave code vulnerable to stack clash style attacks.
 
 @item stack-clash-protection-probe-interval
 Stack clash protection involves probing stack space as it is allocated.  This
 param controls the maximum distance between probes into the stack as 2 raised
-to @var{num} bytes.  Acceptable values are between 10 and 16 and defaults to
-12.  Higher values may reduce the number of explicit probes, but a value
+to @var{num} bytes.  Higher values may reduce the number of explicit probes, but a value
 larger than the operating system provided guard will leave code vulnerable to
 stack clash style attacks.
 
 @item max-cse-path-length
 
 The maximum number of basic blocks on path that CSE considers.
-The default is 10.
 
 @item max-cse-insns
 The maximum number of instructions CSE processes before flushing.
-The default is 1000.
 
 @item ggc-min-expand
 
@@ -10923,92 +10930,85 @@ to occur at every opportunity.
 The maximum number of instruction reload should look backward for equivalent
 register.  Increasing values mean more aggressive optimization, making the
 compilation time increase with probably slightly better performance.
-The default value is 100.
 
 @item max-cselib-memory-locations
 The maximum number of memory locations cselib should take into account.
 Increasing values mean more aggressive optimization, making the compilation time
-increase with probably slightly better performance.  The default value is 500.
+increase with probably slightly better performance.
 
 @item max-sched-ready-insns
 The maximum number of instructions ready to be issued the scheduler should
 consider at any given time during the first scheduling pass.  Increasing
 values mean more thorough searches, making the compilation time increase
-with probably little benefit.  The default value is 100.
+with probably little benefit.
 
 @item max-sched-region-blocks
 The maximum number of blocks in a region to be considered for
-interblock scheduling.  The default value is 10.
+interblock scheduling.
 
 @item max-pipeline-region-blocks
 The maximum number of blocks in a region to be considered for
-pipelining in the selective scheduler.  The default value is 15.
+pipelining in the selective scheduler.
 
 @item max-sched-region-insns
 The maximum number of insns in a region to be considered for
-interblock scheduling.  The default value is 100.
+interblock scheduling.
 
 @item max-pipeline-region-insns
 The maximum number of insns in a region to be considered for
-pipelining in the selective scheduler.  The default value is 200.
+pipelining in the selective scheduler.
 
 @item min-spec-prob
 The minimum probability (in percents) of reaching a source block
-for interblock speculative scheduling.  The default value is 40.
+for interblock speculative scheduling.
 
 @item max-sched-extend-regions-iters
 The maximum number of iterations through CFG to extend regions.
-A value of 0 (the default) disables region extensions.
+A value of 0 disables region extensions.
 
 @item max-sched-insn-conflict-delay
 The maximum conflict delay for an insn to be considered for speculative motion.
-The default value is 3.
 
 @item sched-spec-prob-cutoff
 The minimal probability of speculation success (in percents), so that
 speculative insns are scheduled.
-The default value is 40.
 
 @item sched-state-edge-prob-cutoff
 The minimum probability an edge must have for the scheduler to save its
 state across it.
-The default value is 10.
 
 @item sched-mem-true-dep-cost
 Minimal distance (in CPU cycles) between store and load targeting same
-memory locations.  The default value is 1.
+memory locations.
 
 @item selsched-max-lookahead
 The maximum size of the lookahead window of selective scheduling.  It is a
 depth of search for available instructions.
-The default value is 50.
 
 @item selsched-max-sched-times
 The maximum number of times that an instruction is scheduled during
 selective scheduling.  This is the limit on the number of iterations
-through which the instruction may be pipelined.  The default value is 2.
+through which the instruction may be pipelined.
 
 @item selsched-insns-to-rename
 The maximum number of best instructions in the ready list that are considered
-for renaming in the selective scheduler.  The default value is 2.
+for renaming in the selective scheduler.
 
 @item sms-min-sc
 The minimum value of stage count that swing modulo scheduler
-generates.  The default value is 2.
+generates.
 
 @item max-last-value-rtl
 The maximum size measured as number of RTLs that can be recorded in an expression
-in combiner for a pseudo register as last known value of that register.  The default
-is 10000.
+in combiner for a pseudo register as last known value of that register.
 
 @item max-combine-insns
 The maximum number of instructions the RTL combiner tries to combine.
-The default value is 2 at @option{-Og} and 4 otherwise.
 
 @item integer-share-limit
 Small integer constants can use a shared data structure, reducing the
 compiler's memory usage and increasing its speed.  This sets the maximum
-value of a shared integer constant.  The default value is 256.
+value of a shared integer constant.
 
 @item ssp-buffer-size
 The minimum size of buffers (i.e.@: arrays) that receive stack smashing
@@ -11016,7 +11016,7 @@ protection when @option{-fstack-protection} is used.
 
 @item min-size-for-stack-sharing
 The minimum size of variables taking part in stack slot sharing when not
-optimizing. The default value is 32.
+optimizing.
 
 @item max-jump-thread-duplication-stmts
 Maximum number of statements allowed in a block that needs to be
@@ -11024,9 +11024,7 @@ duplicated when threading jumps.
 
 @item max-fields-for-field-sensitive
 Maximum number of fields in a structure treated in
-a field sensitive manner during pointer analysis.  The default is zero
-for @option{-O0} and @option{-O1},
-and 100 for @option{-Os}, @option{-O2}, and @option{-O3}.
+a field sensitive manner during pointer analysis.
 
 @item prefetch-latency
 Estimate on average number of instructions that are executed before
@@ -11052,7 +11050,7 @@ for strides that are non-constant.  In some cases this may be
 beneficial, though the fact the stride is non-constant may make it
 hard to predict when there is clear benefit to issuing these hints.
 
-Set to 1, the default, if the prefetch hints should be issued for non-constant
+Set to 1 if the prefetch hints should be issued for non-constant
 strides.  Set to 0 if prefetch hints should be issued only for strides that
 are known to be constant and below @option{prefetch-minimum-stride}.
 
@@ -11066,7 +11064,7 @@ the software prefetchers.  If the hardware prefetchers have a maximum
 stride they can handle, it should be used here to improve the use of
 software prefetchers.
 
-A value of -1, the default, means we don't have a threshold and therefore
+A value of -1 means we don't have a threshold and therefore
 prefetch hints can be issued for any constant stride.
 
 This setting is only useful for strides that are known and constant.
@@ -11086,8 +11084,8 @@ The minimum ratio between the number of instructions and the
 number of memory references to enable prefetching in a loop.
 
 @item use-canonical-types
-Whether the compiler should use the ``canonical'' type system.  By
-default, this should always be 1, which uses a more efficient internal
+Whether the compiler should use the ``canonical'' type system.
+Should always be 1, which uses a more efficient internal
 mechanism for comparing types in C++ and Objective-C++.  However, if
 bugs in the canonical type system are causing compilation failures,
 set this value to 0 to disable canonical types.
@@ -11108,11 +11106,10 @@ which prevents the runaway behavior.  Setting a value of 0 for
 this parameter allows an unlimited set length.
 
 @item rpo-vn-max-loop-depth
-Maximum loop depth that is value-numbered optimistically.  The default
-maximum loop depth is three.  When the limit hits the innermost
+Maximum loop depth that is value-numbered optimistically.
+When the limit hits the innermost
 @var{rpo-vn-max-loop-depth} loops and the outermost loop in the
 loop nest are value-numbered optimistically and the remaining ones not.
-The default maximum loop depth is seven.
 
 @item sccvn-max-alias-queries-per-access
 Maximum number of alias-oracle queries we perform when looking for
@@ -11120,14 +11117,12 @@ redundancies for loads and stores.  If this limit is hit the search
 is aborted and the load or store is not considered redundant.  The
 number of queries is algorithmically limited to the number of
 stores on all paths from the load to the function entry.
-The default maximum number of queries is 1000.
 
 @item ira-max-loops-num
 IRA uses regional register allocation by default.  If a function
 contains more loops than the number given by this parameter, only at most
 the given number of the most frequently-executed loops form regions
-for regional register allocation.  The default value of the
-parameter is 100.
+for regional register allocation.
 
 @item ira-max-conflict-table-size 
 Although IRA uses a sophisticated algorithm to compress the conflict
@@ -11136,37 +11131,33 @@ huge functions.  If the conflict table for a function could be more
 than the size in MB given by this parameter, the register allocator
 instead uses a faster, simpler, and lower-quality
 algorithm that does not require building a pseudo-register conflict table.  
-The default value of the parameter is 2000.
 
 @item ira-loop-reserved-regs
 IRA can be used to evaluate more accurate register pressure in loops
 for decisions to move loop invariants (see @option{-O3}).  The number
 of available registers reserved for some other purposes is given
-by this parameter.  The default value of the parameter is 2, which is
-the minimal number of registers needed by typical instructions.
-This value is the best found from numerous experiments.
+by this parameter.  Default of the parameter
+is the best found from numerous experiments.
 
 @item lra-inheritance-ebb-probability-cutoff
 LRA tries to reuse values reloaded in registers in subsequent insns.
 This optimization is called inheritance.  EBB is used as a region to
 do this optimization.  The parameter defines a minimal fall-through
 edge probability in percentage used to add BB to inheritance EBB in
-LRA.  The default value of the parameter is 40.  The value was chosen
+LRA.  The default value was chosen
 from numerous runs of SPEC2000 on x86-64.
 
 @item loop-invariant-max-bbs-in-loop
 Loop invariant motion can be very expensive, both in compilation time and
 in amount of needed compile-time memory, with very large loops.  Loops
 with more basic blocks than this parameter won't have loop invariant
-motion optimization performed on them.  The default value of the
-parameter is 1000 for @option{-O1} and 10000 for @option{-O2} and above.
+motion optimization performed on them.
 
 @item loop-max-datarefs-for-datadeps
 Building data dependencies is expensive for very large loops.  This
 parameter limits the number of data references in loops that are
 considered for data dependence analysis.  These large loops are no
 handled by the optimizations using loop data dependencies.
-The default value is 1000.
 
 @item max-vartrack-size
 Sets a maximum number of hash table slots to use during variable
@@ -11184,14 +11175,14 @@ compilation time for more complete debug information.  If this is set too
 low, value expressions that are available and could be represented in
 debug information may end up not being used; setting this higher may
 enable the compiler to find more complex debug expressions, but compile
-time and memory use may grow.  The default is 12.
+time and memory use may grow.
 
 @item max-debug-marker-count
 Sets a threshold on the number of debug markers (e.g. begin stmt
 markers) to avoid complexity explosion at inlining or expanding to RTL.
 If a function has more such gimple stmts than the set limit, such stmts
 will be dropped from the inlined copy of a function, and from its RTL
-expansion.  The default is 100000.
+expansion.
 
 @item min-nondebug-insn-uid
 Use uids starting at this parameter for nondebug insns.  The range below
@@ -11224,8 +11215,8 @@ sequence pairs.  This option only applies when using
 
 @item graphite-max-nb-scop-params
 To avoid exponential effects in the Graphite loop transforms, the
-number of parameters in a Static Control Part (SCoP) is bounded.  The
-default value is 10 parameters, a value of zero can be used to lift
+number of parameters in a Static Control Part (SCoP) is bounded.
+A value of zero can be used to lift
 the bound.  A variable whose value is unknown at compilation time and
 defined outside a SCoP is a parameter of the SCoP.
 
@@ -11234,15 +11225,7 @@ Loop blocking or strip mining transforms, enabled with
 @option{-floop-block} or @option{-floop-strip-mine}, strip mine each
 loop in the loop nest by a given number of iterations.  The strip
 length can be changed using the @option{loop-block-tile-size}
-parameter.  The default value is 51 iterations.
-
-@item loop-unroll-jam-size
-Specify the unroll factor for the @option{-floop-unroll-and-jam} option.  The 
-default value is 4.
-
-@item loop-unroll-jam-depth
-Specify the dimension to be unrolled (counting from the most inner loop)
-for the  @option{-floop-unroll-and-jam}.  The default value is 2.
+parameter.
 
 @item ipa-cp-value-list-size
 IPA-CP attempts to track all possible values and types passed to a function's
@@ -11262,7 +11245,6 @@ are evaluated for cloning.
 @item ipa-cp-single-call-penalty
 Percentage penalty functions containing a single call to another
 function will receive when they are evaluated for cloning.
-
 
 @item ipa-max-agg-items
 IPA-CP is also capable to propagate a number of scalar values passed
@@ -11291,7 +11273,6 @@ consider all memory clobbered after examining
 @item lto-partitions
 Specify desired number of partitions produced during WHOPR compilation.
 The number of partitions should exceed the number of CPUs used for compilation.
-The default value is 32.
 
 @item lto-min-partition
 Size of minimal partition for WHOPR (in estimated instructions).
@@ -11305,29 +11286,28 @@ Meant to be used only with balanced partitioning.
 
 @item cxx-max-namespaces-for-diagnostic-help
 The maximum number of namespaces to consult for suggestions when C++
-name lookup fails for an identifier.  The default is 1000.
+name lookup fails for an identifier.
 
 @item sink-frequency-threshold
 The maximum relative execution frequency (in percents) of the target block
 relative to a statement's original block to allow statement sinking of a
 statement.  Larger numbers result in more aggressive statement sinking.
-The default value is 75.  A small positive adjustment is applied for
+A small positive adjustment is applied for
 statements with memory operands as those are even more profitable so sink.
 
 @item max-stores-to-sink
 The maximum number of conditional store pairs that can be sunk.  Set to 0
 if either vectorization (@option{-ftree-vectorize}) or if-conversion
-(@option{-ftree-loop-if-convert}) is disabled.  The default is 2.
+(@option{-ftree-loop-if-convert}) is disabled.
 
 @item allow-store-data-races
 Allow optimizers to introduce new data races on stores.
-Set to 1 to allow, otherwise to 0.  This option is enabled by default
-at optimization level @option{-Ofast}.
+Set to 1 to allow, otherwise to 0.
 
 @item case-values-threshold
 The smallest number of different values for which it is best to use a
 jump-table instead of a tree of conditional branches.  If the value is
-0, use the default for the machine.  The default is 0.
+0, use the default for the machine.
 
 @item tree-reassoc-width
 Set the maximum number of instructions executed in parallel in
@@ -11397,32 +11377,31 @@ E.g. to disable inline code use
 @item use-after-scope-direct-emission-threshold
 If the size of a local variable in bytes is smaller or equal to this
 number, directly poison (or unpoison) shadow memory instead of using
-run-time callbacks.  The default value is 256.
+run-time callbacks.
 
 @item max-fsm-thread-path-insns
 Maximum number of instructions to copy when duplicating blocks on a
-finite state automaton jump thread path.  The default is 100.
+finite state automaton jump thread path.
 
 @item max-fsm-thread-length
 Maximum number of basic blocks on a finite state automaton jump thread
-path.  The default is 10.
+path.
 
 @item max-fsm-thread-paths
 Maximum number of new jump thread paths to create for a finite state
-automaton.  The default is 50.
+automaton.
 
 @item parloops-chunk-size
-Chunk size of omp schedule for loops parallelized by parloops.  The default
-is 0.
+Chunk size of omp schedule for loops parallelized by parloops.
 
 @item parloops-schedule
 Schedule type of omp schedule for loops parallelized by parloops (static,
-dynamic, guided, auto, runtime).  The default is static.
+dynamic, guided, auto, runtime).
 
 @item parloops-min-per-thread
 The minimum number of iterations per thread of an innermost parallelized
-loop for which the parallelized variant is prefered over the single threaded
-one.  The default is 100.  Note that for a parallelized loop nest the
+loop for which the parallelized variant is preferred over the single threaded
+one.  Note that for a parallelized loop nest the
 minimum number of iterations of the outermost loop per thread is two.
 
 @item max-ssa-name-query-depth
@@ -11443,7 +11422,7 @@ we may be able to devirtualize speculatively.
 
 @item max-vrp-switch-assertions
 The maximum number of assertions to add along the default edge of a switch
-statement during VRP.  The default is 10.
+statement during VRP.
 
 @item unroll-jam-min-percent
 The minimum percentage of memory references that must be optimized
@@ -11452,6 +11431,143 @@ away for the unroll-and-jam transformation to be considered profitable.
 @item unroll-jam-max-unroll
 The maximum number of times the outer loop should be unrolled by
 the unroll-and-jam transformation.
+
+@item max-rtl-if-conversion-unpredictable-cost
+Maximum permissible cost for the sequence that would be generated
+by the RTL if-conversion pass for a branch that is considered unpredictable.
+
+@item max-variable-expansions-in-unroller
+If @option{-fvariable-expansion-in-unroller} is used, the maximum number
+of times that an individual variable will be expanded during loop unrolling.
+
+@item tracer-min-branch-probability-feedback
+Stop forward growth if the probability of best edge is less than
+this threshold (in percent). Used when profile feedback is available.
+
+@item partial-inlining-entry-probability
+Maximum probability of the entry BB of split region
+(in percent relative to entry BB of the function)
+to make partial inlining happen.
+
+@item max-tracked-strlens
+Maximum number of strings for which strlen optimization pass will
+track string lengths.
+
+@item gcse-after-reload-partial-fraction
+The threshold ratio for performing partial redundancy
+elimination after reload.
+
+@item gcse-after-reload-critical-fraction
+The threshold ratio of critical edges execution count that
+permit performing redundancy elimination after reload.
+
+@item max-loop-header-insns
+The maximum number of insns in loop header duplicated
+by the copy loop headers pass.
+
+@item vect-epilogues-nomask
+Enable loop epilogue vectorization using smaller vector size.
+
+@item slp-max-insns-in-bb
+Maximum number of instructions in basic block to be
+considered for SLP vectorization.
+
+@item avoid-fma-max-bits
+Maximum number of bits for which we avoid creating FMAs.
+
+@item sms-loop-average-count-threshold
+A threshold on the average loop count considered by the swing modulo scheduler.
+
+@item sms-dfa-history
+The number of cycles the swing modulo scheduler considers when checking
+conflicts using DFA.
+
+@item hot-bb-count-fraction
+Select fraction of the maximal count of repetitions of basic block
+in program given basic block needs
+to have to be considered hot (used in non-LTO mode)
+
+@item max-inline-insns-recursive-auto
+The maximum number of instructions non-inline function
+can grow to via recursive inlining.
+
+@item graphite-allow-codegen-errors
+Whether codegen errors should be ICEs when @option{-fchecking}.
+
+@item sms-max-ii-factor
+A factor for tuning the upper bound that swing modulo scheduler
+uses for scheduling a loop.
+
+@item lra-max-considered-reload-pseudos
+The max number of reload pseudos which are considered during
+spilling a non-reload pseudo.
+
+@item max-pow-sqrt-depth
+Maximum depth of sqrt chains to use when synthesizing exponentiation
+by a real constant.
+
+@item max-dse-active-local-stores
+Maximum number of active local stores in RTL dead store elimination.
+
+@item asan-instrument-allocas
+Enable asan allocas/VLAs protection.
+
+@item max-iterations-computation-cost
+Bound on the cost of an expression to compute the number of iterations.
+
+@item max-isl-operations
+Maximum number of isl operations, 0 means unlimited.
+
+@item graphite-max-arrays-per-scop
+Maximum number of arrays per scop.
+
+@item max-vartrack-reverse-op-size
+Max. size of loc list for which reverse ops should be added.
+
+@item unlikely-bb-count-fraction
+The minimum fraction of profile runs a given basic block execution count
+must be not to be considered unlikely.
+
+@item tracer-dynamic-coverage-feedback
+The percentage of function, weighted by execution frequency,
+that must be covered by trace formation.
+Used when profile feedback is available.
+
+@item max-inline-recursive-depth-auto
+The maximum depth of recursive inlining for non-inline functions.
+
+@item fsm-scale-path-stmts
+Scale factor to apply to the number of statements in a threading path
+when comparing to the number of (scaled) blocks.
+
+@item fsm-maximum-phi-arguments
+Maximum number of arguments a PHI may have before the FSM threader
+will not try to thread through its block.
+
+@item uninit-control-dep-attempts
+Maximum number of nested calls to search for control dependencies
+during uninitialized variable analysis.
+
+@item indir-call-topn-profile
+Track top N target addresses in indirect-call profile.
+
+@item max-once-peeled-insns
+The maximum number of insns of a peeled loop that rolls only once.
+
+@item sra-max-scalarization-size-Osize
+Maximum size, in storage units, of an aggregate
+which should be considered for scalarization when compiling for size.
+
+@item fsm-scale-path-blocks
+Scale factor to apply to the number of blocks in a threading path
+when comparing to the number of (scaled) statements.
+
+@item sched-autopref-queue-depth
+Hardware autoprefetcher scheduler model control flag.
+Number of lookahead cycles the model looks into; at '
+' only enable instruction sorting heuristic.
+
+
 @end table
 @end table
 
@@ -14101,14 +14217,21 @@ Controls optimization dumps from various optimization passes. If the
 @samp{-} separated option keywords to select the dump details and
 optimizations.  
 
-The @var{options} can be divided into two groups: options describing the
-verbosity of the dump, and options describing which optimizations
-should be included. The options from both the groups can be freely
-mixed as they are non-overlapping. However, in case of any conflicts,
+The @var{options} can be divided into three groups:
+@enumerate
+@item
+options describing what kinds of messages should be emitted,
+@item
+options describing the verbosity of the dump, and
+@item
+options describing which optimizations should be included.
+@end enumerate
+The options from each group can be freely mixed as they are
+non-overlapping. However, in case of any conflicts,
 the later options override the earlier options on the command
 line. 
 
-The following options control the dump verbosity:
+The following options control which kinds of messages should be emitted:
 
 @table @samp
 @item optimized
@@ -14125,6 +14248,15 @@ transformations, more detailed messages about decisions etc.
 @item all
 Print detailed optimization information. This includes
 @samp{optimized}, @samp{missed}, and @samp{note}.
+@end table
+
+The following option controls the dump verbosity:
+
+@table @samp
+@item internals
+By default, only ``high-level'' messages are emitted. This option enables
+additional, more detailed, messages, which are likely to only be of interest
+to GCC developers.
 @end table
 
 One or more of the following option keywords can be used to describe a
@@ -14147,8 +14279,9 @@ the optimization groups listed above.
 @end table
 
 If @var{options} is
-omitted, it defaults to @samp{optimized-optall}, which means to dump all
-info about successful optimizations from all the passes.  
+omitted, it defaults to @samp{optimized-optall}, which means to dump messages
+about successful optimizations from all the passes, omitting messages
+that are treated as ``internals''.
 
 If the @var{filename} is provided, then the dumps from all the
 applicable optimizations are concatenated into the @var{filename}.
@@ -22588,18 +22721,6 @@ Use 16-bit @code{int}.  This is the default.
 @opindex mno-int16
 Use 32-bit @code{int}.
 
-@item -mfloat64
-@itemx -mno-float32
-@opindex mfloat64
-@opindex mno-float32
-Use 64-bit @code{float}.  This is the default.
-
-@item -mfloat32
-@itemx -mno-float64
-@opindex mfloat32
-@opindex mno-float64
-Use 32-bit @code{float}.
-
 @item -msplit
 @opindex msplit
 Target has split instruction and data space.  Implies -m45.
@@ -22615,6 +22736,11 @@ Use DEC assembler syntax.
 @item -mgnu-asm
 @opindex mgnu-asm
 Use GNU assembler syntax.  This is the default.
+
+@item -mlra
+@opindex mlra
+Use the new LRA register allocator.  By default, the old ``reload''
+allocator is used.
 @end table
 
 @node picoChip Options

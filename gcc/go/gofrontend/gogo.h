@@ -680,7 +680,7 @@ class Gogo
   // Add notes about the escape level of a function's input and output
   // parameters for exporting and importing top level functions. 
   void
-  tag_function(Escape_context*, Named_object*);
+  tag_function(Named_object*);
 
   // Reclaim memory of escape analysis Nodes.
   void

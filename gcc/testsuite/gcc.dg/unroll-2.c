@@ -15,7 +15,7 @@ int foo(void)
 {
   int i;
   bar();
-  for (i = 0; i < 2; i++) /* { dg-message "note: loop with 2 iterations completely unrolled" } */
+  for (i = 0; i < 2; i++) /* { dg-optimized "loop with 2 iterations completely unrolled" } */
   {
      a[i]= b[i] + 1;
   }
@@ -25,7 +25,7 @@ int foo(void)
 int foo2(void)
 {
   int i;
-  for (i = 0; i < 2; i++) /* { dg-message "note: loop with 2 iterations completely unrolled" } */
+  for (i = 0; i < 2; i++) /* { dg-optimized "loop with 2 iterations completely unrolled" } */
   {
      a[i]= b[i] + 1;
   }

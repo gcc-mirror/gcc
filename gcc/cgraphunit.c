@@ -623,20 +623,18 @@ cgraph_node::analyze (void)
       callees->can_throw_external = !TREE_NOTHROW (t->decl);
       /* Target code in expand_thunk may need the thunk's target
 	 to be analyzed, so recurse here.  */
-      if (!t->analyzed)
+      if (!t->analyzed && t->definition)
 	t->analyze ();
       if (t->alias)
 	{
 	  t = t->get_alias_target ();
-	  if (!t->analyzed)
+	  if (!t->analyzed && t->definition)
 	    t->analyze ();
 	}
-      if (!expand_thunk (false, false))
-	{
-	  thunk.alias = NULL;
-	  return;
-	}
+      bool ret = expand_thunk (false, false);
       thunk.alias = NULL;
+      if (!ret)
+	return;
     }
   if (alias)
     resolve_alias (cgraph_node::get (alias_target), transparent_alias);
@@ -786,6 +784,12 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
 	}
+      else if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl))
+	  && node->definition
+	  && !node->alias)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		    "%<alias%> attribute ignored"
+		    " because function is defined");
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl))
 	  && !DECL_DECLARED_INLINE_P (decl)
@@ -1609,15 +1613,16 @@ init_lowered_empty_function (tree decl, bool in_ssa, profile_count count)
   return bb;
 }
 
-/* Adjust PTR by the constant FIXED_OFFSET, and by the vtable
-   offset indicated by VIRTUAL_OFFSET, if that is
-   non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and
-   zero for a result adjusting thunk.  */
+/* Adjust PTR by the constant FIXED_OFFSET, by the vtable offset indicated by
+   VIRTUAL_OFFSET, and by the indirect offset indicated by INDIRECT_OFFSET, if
+   it is non-null. THIS_ADJUSTING is nonzero for a this adjusting thunk and zero
+   for a result adjusting thunk.  */
 
 tree
 thunk_adjust (gimple_stmt_iterator * bsi,
 	      tree ptr, bool this_adjusting,
-	      HOST_WIDE_INT fixed_offset, tree virtual_offset)
+	      HOST_WIDE_INT fixed_offset, tree virtual_offset,
+	      HOST_WIDE_INT indirect_offset)
 {
   gassign *stmt;
   tree ret;
@@ -1632,6 +1637,16 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
     }
 
+  if (!vtable_entry_type && (virtual_offset || indirect_offset != 0))
+    {
+      tree vfunc_type = make_node (FUNCTION_TYPE);
+      TREE_TYPE (vfunc_type) = integer_type_node;
+      TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
+      layout_type (vfunc_type);
+
+      vtable_entry_type = build_pointer_type (vfunc_type);
+    }
+
   /* If there's a virtual offset, look up that value in the vtable and
      adjust the pointer again.  */
   if (virtual_offset)
@@ -1639,16 +1654,6 @@ thunk_adjust (gimple_stmt_iterator * bsi,
       tree vtabletmp;
       tree vtabletmp2;
       tree vtabletmp3;
-
-      if (!vtable_entry_type)
-	{
-	  tree vfunc_type = make_node (FUNCTION_TYPE);
-	  TREE_TYPE (vfunc_type) = integer_type_node;
-	  TYPE_ARG_TYPES (vfunc_type) = NULL_TREE;
-	  layout_type (vfunc_type);
-
-	  vtable_entry_type = build_pointer_type (vfunc_type);
-	}
 
       vtabletmp =
 	create_tmp_reg (build_pointer_type
@@ -1683,6 +1688,41 @@ thunk_adjust (gimple_stmt_iterator * bsi,
 
       /* Adjust the `this' pointer.  */
       ptr = fold_build_pointer_plus_loc (input_location, ptr, vtabletmp3);
+      ptr = force_gimple_operand_gsi (bsi, ptr, true, NULL_TREE, false,
+				      GSI_CONTINUE_LINKING);
+    }
+
+  /* Likewise for an offset that is stored in the object that contains the
+     vtable.  */
+  if (indirect_offset != 0)
+    {
+      tree offset_ptr, offset_tree;
+
+      /* Get the address of the offset.  */
+      offset_ptr
+        = create_tmp_reg (build_pointer_type
+			  (build_pointer_type (vtable_entry_type)),
+			  "offset_ptr");
+      stmt = gimple_build_assign (offset_ptr,
+				  build1 (NOP_EXPR, TREE_TYPE (offset_ptr),
+					  ptr));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+
+      stmt = gimple_build_assign
+	     (offset_ptr,
+	      fold_build_pointer_plus_hwi_loc (input_location, offset_ptr,
+					       indirect_offset));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+
+      /* Get the offset itself.  */
+      offset_tree = create_tmp_reg (TREE_TYPE (TREE_TYPE (offset_ptr)),
+				    "offset");
+      stmt = gimple_build_assign (offset_tree,
+				  build_simple_mem_ref (offset_ptr));
+      gsi_insert_after (bsi, stmt, GSI_NEW_STMT);
+
+      /* Adjust the `this' pointer.  */
+      ptr = fold_build_pointer_plus_loc (input_location, ptr, offset_tree);
       ptr = force_gimple_operand_gsi (bsi, ptr, true, NULL_TREE, false,
 				      GSI_CONTINUE_LINKING);
     }
@@ -1725,6 +1765,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
   bool this_adjusting = thunk.this_adjusting;
   HOST_WIDE_INT fixed_offset = thunk.fixed_offset;
   HOST_WIDE_INT virtual_value = thunk.virtual_value;
+  HOST_WIDE_INT indirect_offset = thunk.indirect_offset;
   tree virtual_offset = NULL;
   tree alias = callees->callee->decl;
   tree thunk_fndecl = decl;
@@ -1735,7 +1776,11 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
   if (thunk.add_pointer_bounds_args)
     return false;
 
-  if (!force_gimple_thunk && this_adjusting
+  if (!force_gimple_thunk
+      && this_adjusting
+      && indirect_offset == 0
+      && !DECL_EXTERNAL (alias)
+      && !DECL_STATIC_CHAIN (alias)
       && targetm.asm_out.can_output_mi_thunk (thunk_fndecl, fixed_offset,
 					      virtual_value, alias))
     {
@@ -1838,8 +1883,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	  resdecl = build_decl (input_location, RESULT_DECL, 0, restype);
 	  DECL_ARTIFICIAL (resdecl) = 1;
 	  DECL_IGNORED_P (resdecl) = 1;
+	  DECL_CONTEXT (resdecl) = thunk_fndecl;
 	  DECL_RESULT (thunk_fndecl) = resdecl;
-          DECL_CONTEXT (DECL_RESULT (thunk_fndecl)) = thunk_fndecl;
 	}
       else
 	resdecl = DECL_RESULT (thunk_fndecl);
@@ -1876,8 +1921,11 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		  restmp = resdecl;
 
 		  if (VAR_P (restmp))
-		    add_local_decl (cfun, restmp);
-		  BLOCK_VARS (DECL_INITIAL (current_function_decl)) = restmp;
+		    {
+		      add_local_decl (cfun, restmp);
+		      BLOCK_VARS (DECL_INITIAL (current_function_decl))
+			= restmp;
+		    }
 		}
 	      else
 		restmp = create_tmp_var (restype, "retval");
@@ -1894,7 +1942,7 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       if (this_adjusting)
 	{
 	  vargs.quick_push (thunk_adjust (&bsi, a, 1, fixed_offset,
-					  virtual_offset));
+					  virtual_offset, indirect_offset));
 	  arg = DECL_CHAIN (a);
 	  i = 1;
 	}
@@ -1919,6 +1967,25 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       call = gimple_build_call_vec (build_fold_addr_expr_loc (0, alias), vargs);
       callees->call_stmt = call;
       gimple_call_set_from_thunk (call, true);
+      if (DECL_STATIC_CHAIN (alias))
+	{
+	  tree p = DECL_STRUCT_FUNCTION (alias)->static_chain_decl;
+	  tree type = TREE_TYPE (p);
+	  tree decl = build_decl (DECL_SOURCE_LOCATION (thunk_fndecl),
+				  PARM_DECL, create_tmp_var_name ("CHAIN"),
+				  type);
+	  DECL_ARTIFICIAL (decl) = 1;
+	  DECL_IGNORED_P (decl) = 1;
+	  TREE_USED (decl) = 1;
+	  DECL_CONTEXT (decl) = thunk_fndecl;
+	  DECL_ARG_TYPE (decl) = type;
+	  TREE_READONLY (decl) = 1;
+
+	  struct function *sf = DECL_STRUCT_FUNCTION (thunk_fndecl);
+	  sf->static_chain_decl = decl;
+
+	  gimple_call_set_chain (call, decl);
+	}
 
       /* Return slot optimization is always possible and in fact requred to
          return values with DECL_BY_REFERENCE.  */
@@ -1979,7 +2046,8 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 		}
 
 	      restmp = thunk_adjust (&bsi, restmp, /*this_adjusting=*/0,
-				     fixed_offset, virtual_offset);
+				     fixed_offset, virtual_offset,
+				     indirect_offset);
 	      if (true_label)
 		{
 		  gimple *stmt;

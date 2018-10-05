@@ -1,5 +1,4 @@
-/* { dg-do compile { target float128 } } */
-/* { dg-skip-if "incomplete long double support" { { newlib } && large_long_double } }  */
+/* { dg-do compile } */
 /* { dg-options "-Wabsolute-value" } */
 
 #include <stdlib.h>
@@ -41,12 +40,11 @@ tst_notfloat (int *pi, long *pl, complex double *pc)
 }
 
 void
-tst_float_size (double *pd, long double *pld, _Float128 *pf128)
+tst_float_size (double *pd, long double *pld)
 {
   *pd = fabsf (*pd);   /* { dg-warning "may cause truncation of value" } */
   *pld = fabs (*pld);  /* { dg-warning "may cause truncation of value" } */
   *pld = fabs ((double) *pld);
-  *pf128 = fabsl (*pf128); /* { dg-warning "may cause truncation of value" } */
 }
 
 void tst_notcomplex (int *pi, long *pl, long double *pld)

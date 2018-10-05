@@ -4,8 +4,6 @@
 
 package cpu
 
-const CacheLineSize = 256
-
 // bitIsSet reports whether the bit at index is set. The bit index
 // is in big endian order, so bit index 0 is the leftmost bit.
 func bitIsSet(bits []uint64, index uint) bool {

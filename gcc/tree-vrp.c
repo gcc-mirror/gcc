@@ -844,27 +844,6 @@ value_inside_range (tree val, tree min, tree max)
 }
 
 
-/* Return true if value ranges VR0 and VR1 have a non-empty
-   intersection.
-
-   Benchmark compile/20001226-1.c compilation time after changing this
-   function.
-   */
-
-static inline bool
-value_ranges_intersect_p (const value_range *vr0, const value_range *vr1)
-{
-  /* The value ranges do not intersect if the maximum of the first range is
-     less than the minimum of the second range or vice versa.
-     When those relations are unknown, we can't do any better.  */
-  if (operand_less_p (vr0->max, vr1->min) != 0)
-    return false;
-  if (operand_less_p (vr1->max, vr0->min) != 0)
-    return false;
-  return true;
-}
-
-
 /* Return TRUE if *VR includes the value zero.  */
 
 bool
@@ -884,23 +863,6 @@ range_includes_zero_p (const value_range *vr)
       return res == 0 || res == -2;
     }
   return value_inside_range (zero, vr->min, vr->max) != 0;
-}
-
-/* Return true if *VR is know to only contain nonnegative values.  */
-
-static inline bool
-value_range_nonnegative_p (const value_range *vr)
-{
-  /* Testing for VR_ANTI_RANGE is not useful here as any anti-range
-     which would return a useful value should be encoded as a 
-     VR_RANGE.  */
-  if (vr->type == VR_RANGE)
-    {
-      int result = compare_values (vr->min, integer_zero_node);
-      return (result == 0 || result == 1);
-    }
-
-  return false;
 }
 
 /* If *VR has a value rante that is a single constant value return that,
@@ -1154,6 +1116,15 @@ set_value_range_with_overflow (value_range &vr,
   const unsigned int prec = TYPE_PRECISION (type);
   vr.type = VR_RANGE;
   vr.equiv = NULL;
+
+  /* For one bit precision if max < min, then the swapped
+     range covers all values.  */
+  if (prec == 1 && wi::lt_p (wmax, wmin, sgn))
+    {
+      set_value_range_to_varying (&vr);
+      return;
+    }
+
   if (TYPE_OVERFLOW_WRAPS (type))
     {
       /* If overflow wraps, truncate the values and adjust the
@@ -1838,9 +1809,14 @@ extract_range_from_unary_expr (value_range *vr,
       tree inner_type = op0_type;
       tree outer_type = type;
 
-      /* If the expression evaluates to a pointer, we are only interested in
-	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).  */
-      if (POINTER_TYPE_P (type))
+      /* If the expression involves a pointer, we are only interested in
+	 determining if it evaluates to NULL [0, 0] or non-NULL (~[0, 0]).
+
+	 This may lose precision when converting (char *)~[0,2] to
+	 int, because we'll forget that the pointer can also not be 1
+	 or 2.  In practice we don't care, as this is some idiot
+	 storing a magic constant to a pointer.  */
+      if (POINTER_TYPE_P (type) || POINTER_TYPE_P (op0_type))
 	{
 	  if (!range_includes_zero_p (&vr0))
 	    set_value_range_to_nonnull (vr, type);
@@ -1851,15 +1827,12 @@ extract_range_from_unary_expr (value_range *vr,
 	  return;
 	}
 
-      /* We normalize everything to a VR_RANGE, but for constant
-	 anti-ranges we must handle them by leaving the final result
-	 as an anti range.  This allows us to convert things like
-	 ~[0,5] seamlessly.  */
-      value_range_type vr_type = VR_RANGE;
-      if (vr0.type == VR_ANTI_RANGE
-	  && TREE_CODE (vr0.min) == INTEGER_CST
-	  && TREE_CODE (vr0.max) == INTEGER_CST)
-	vr_type = VR_ANTI_RANGE;
+      /* The POINTER_TYPE_P code above will have dealt with all
+	 pointer anti-ranges.  Any remaining anti-ranges at this point
+	 will be integer conversions from SSA names that will be
+	 normalized into VARYING.  For instance: ~[x_55, x_55].  */
+      gcc_assert (vr0.type != VR_ANTI_RANGE
+		  || TREE_CODE (vr0.min) != INTEGER_CST);
 
       /* NOTES: Previously we were returning VARYING for all symbolics, but
 	 we can do better by treating them as [-MIN, +MAX].  For
@@ -1882,7 +1855,7 @@ extract_range_from_unary_expr (value_range *vr,
 	{
 	  tree min = wide_int_to_tree (outer_type, wmin);
 	  tree max = wide_int_to_tree (outer_type, wmax);
-	  set_and_canonicalize_value_range (vr, vr_type, min, max, NULL);
+	  set_and_canonicalize_value_range (vr, VR_RANGE, min, max, NULL);
 	}
       else
 	set_value_range_to_varying (vr);

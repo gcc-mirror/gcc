@@ -922,14 +922,6 @@ cp_lexer_nth_token_is_keyword (cp_lexer* lexer, size_t n, enum rid keyword)
   return cp_lexer_peek_nth_token (lexer, n)->keyword == keyword;
 }
 
-/* Return true if the next token is not the indicated KEYWORD.  */
-
-static inline bool
-cp_lexer_next_token_is_not_keyword (cp_lexer* lexer, enum rid keyword)
-{
-  return cp_lexer_peek_token (lexer)->keyword != keyword;
-}
-
 /* Return true if KEYWORD can start a decl-specifier.  */
 
 bool
@@ -4042,6 +4034,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
   tree value;
   size_t count;
   struct obstack str_ob;
+  struct obstack loc_ob;
   cpp_string str, istr, *strs;
   cp_token *tok;
   enum cpp_ttype type, curr_type;
@@ -4098,6 +4091,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
     {
       location_t last_tok_loc = tok->location;
       gcc_obstack_init (&str_ob);
+      gcc_obstack_init (&loc_ob);
       count = 0;
 
       do
@@ -4143,6 +4137,7 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 	    }
 
 	  obstack_grow (&str_ob, &str, sizeof (cpp_string));
+	  obstack_grow (&loc_ob, &tok->location, sizeof (location_t));
 
 	  last_tok_loc = tok->location;
 
@@ -4181,6 +4176,12 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
     {
       value = build_string (istr.len, (const char *)istr.text);
       free (CONST_CAST (unsigned char *, istr.text));
+      if (count > 1)
+	{
+	  location_t *locs = (location_t *)obstack_finish (&loc_ob);
+	  gcc_assert (g_string_concat_db);
+	  g_string_concat_db->record_string_concatenation (count, locs);
+	}
 
       switch (type)
 	{
@@ -4217,7 +4218,10 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
     value = error_mark_node;
 
   if (count > 1)
-    obstack_free (&str_ob, 0);
+    {
+      obstack_free (&str_ob, 0);
+      obstack_free (&loc_ob, 0);
+    }
 
   return cp_expr (value, loc);
 }
@@ -10649,6 +10653,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = closure_identifier;
+	DECL_LAMBDA_FUNCTION (fco) = 1;
       }
     if (template_param_list)
       {

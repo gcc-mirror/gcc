@@ -19,25 +19,6 @@ var armArch uint8 = 6 // we default to ARMv6
 var hwcap uint32      // set by archauxv
 var hardDiv bool      // set if a hardware divider is available
 
-func checkgoarm() {
-	// On Android, /proc/self/auxv might be unreadable and hwcap won't
-	// reflect the CPU capabilities. Assume that every Android arm device
-	// has the necessary floating point hardware available.
-	if GOOS == "android" {
-		return
-	}
-	if goarm > 5 && hwcap&_HWCAP_VFP == 0 {
-		print("runtime: this CPU has no floating point hardware, so it cannot run\n")
-		print("this GOARM=", goarm, " binary. Recompile using GOARM=5.\n")
-		exit(1)
-	}
-	if goarm > 6 && hwcap&_HWCAP_VFPv3 == 0 {
-		print("runtime: this CPU has no VFPv3 floating point hardware, so it cannot run\n")
-		print("this GOARM=", goarm, " binary. Recompile using GOARM=5 or GOARM=6.\n")
-		exit(1)
-	}
-}
-
 func archauxv(tag, val uintptr) {
 	switch tag {
 	case _AT_RANDOM:

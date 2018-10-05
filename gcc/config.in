@@ -55,6 +55,13 @@
 #endif
 
 
+/* Define to larger than zero set to the default stack clash protector size as
+   a power of two in bytes. */
+#ifndef USED_FOR_TARGET
+#undef DEFAULT_STK_CLASH_GUARD_SIZE
+#endif
+
+
 /* Define if you want to use __cxa_atexit, rather than atexit, to register C++
    destructors for local statics and global objects. This is essential for
    fully standards-compliant handling of destructors, but requires
@@ -302,12 +309,6 @@
 #endif
 
 
-/* Define if your assembler supports cmpb. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_CMPB
-#endif
-
-
 /* Define to the level of your assembler's compressed debug section support.
    */
 #ifndef USED_FOR_TARGET
@@ -315,21 +316,9 @@
 #endif
 
 
-/* Define if your assembler supports the DCI/ICI instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_DCI
-#endif
-
-
 /* Define if your assembler supports the --debug-prefix-map option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_DEBUG_PREFIX_MAP
-#endif
-
-
-/* Define if your assembler supports DFP instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_DFP
 #endif
 
 
@@ -379,12 +368,6 @@
 /* Define if your assembler supports FMAF, HPC, and VIS 3.0 instructions. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_FMAF_HPC_VIS3
-#endif
-
-
-/* Define if your assembler supports fprnd. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_FPRND
 #endif
 
 
@@ -546,12 +529,6 @@
 #endif
 
 
-/* Define if your assembler supports LWSYNC instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_LWSYNC
-#endif
-
-
 /* Define if your assembler supports the -mabi option. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MABI_OPTION
@@ -567,12 +544,6 @@
 /* Define if your assembler supports mfcr field. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_MFCRF
-#endif
-
-
-/* Define if your assembler supports mffgpr and mftgpr. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_MFPGPR
 #endif
 
 
@@ -604,30 +575,6 @@
 /* Define if your assembler supports offsetable %lo(). */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_OFFSETABLE_LO10
-#endif
-
-
-/* Define if your assembler supports popcntb field. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_POPCNTB
-#endif
-
-
-/* Define if your assembler supports POPCNTD instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_POPCNTD
-#endif
-
-
-/* Define if your assembler supports POWER8 instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_POWER8
-#endif
-
-
-/* Define if your assembler supports POWER9 instructions. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_AS_POWER9
 #endif
 
 

@@ -1339,8 +1339,36 @@ package body Exp_Disp is
             Opnd := Designated_Type (Opnd);
          end if;
 
+         Opnd := Underlying_Record_Type (Opnd);
+
          if not Is_Interface (Opnd)
            and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
+         then
+            return;
+         end if;
+
+         --  When the type of the operand and the target interface type match,
+         --  it is generally safe to skip generating code to displace the
+         --  pointer to the object to reference the secondary dispatch table
+         --  associated with the target interface type. The exception to this
+         --  general rule is when the underlying object of the type conversion
+         --  is an object built by means of a dispatching constructor (since in
+         --  such case the expansion of the constructor call is a direct call
+         --  to an object primitive, i.e. without thunks, and the expansion of
+         --  the constructor call adds an explicit conversion to the target
+         --  interface type to force the displacement of the pointer to the
+         --  object to reference the corresponding secondary dispatch table
+         --  (cf. Make_DT and Expand_Dispatching_Constructor_Call)).
+
+         --  At this stage we cannot identify whether the underlying object is
+         --  a BIP object and hence we cannot skip generating the code to try
+         --  displacing the pointer to the object. However, under configurable
+         --  runtime it is safe to skip generating code to displace the pointer
+         --  to the object, because generic dispatching constructors are not
+         --  supported.
+
+         if Opnd = Iface_Typ
+           and then not RTE_Available (RE_Displace)
          then
             return;
          end if;
@@ -1454,7 +1482,7 @@ package body Exp_Disp is
       end if;
 
       Iface_Tag := Find_Interface_Tag (Operand_Typ, Iface_Typ);
-      pragma Assert (Iface_Tag /= Empty);
+      pragma Assert (Present (Iface_Tag));
 
       --  Keep separate access types to interfaces because one internal
       --  function is used to handle the null value (see following comments)
@@ -2046,6 +2074,7 @@ package body Exp_Disp is
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
+      Set_Needs_Debug_Info (Thunk_Id, Needs_Debug_Info (Target));
       Set_Thunk_Entity (Thunk_Id, Target);
 
       --  Procedure case

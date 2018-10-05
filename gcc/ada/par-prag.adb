@@ -1295,11 +1295,15 @@ begin
       -- All Other Pragmas --
       -----------------------
 
-      --  For all other pragmas, checking and processing is handled
-      --  entirely in Sem_Prag, and no further checking is done by Par.
+      --  For all other pragmas, checking and processing is handled entirely in
+      --  Sem_Prag, and no further checking is done by Par.
 
       when Pragma_Abort_Defer
          | Pragma_Abstract_State
+         | Pragma_Acc_Data
+         | Pragma_Acc_Kernels
+         | Pragma_Acc_Loop
+         | Pragma_Acc_Parallel
          | Pragma_Async_Readers
          | Pragma_Async_Writers
          | Pragma_Assertion_Policy

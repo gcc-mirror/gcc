@@ -1125,6 +1125,8 @@ Type::get_backend_placeholder(Gogo* gogo)
     case TYPE_FORWARD:
       // Named types keep track of their own dependencies and manage
       // their own placeholders.
+      if (this->named_type() != NULL && this->named_type()->is_alias())
+        return this->unalias()->get_backend_placeholder(gogo);
       return this->get_backend(gogo);
 
     case TYPE_INTERFACE:
@@ -5466,9 +5468,8 @@ Type::make_nil_type()
 class Call_multiple_result_type : public Type
 {
  public:
-  Call_multiple_result_type(Call_expression* call)
-    : Type(TYPE_CALL_MULTIPLE_RESULT),
-      call_(call)
+  Call_multiple_result_type()
+    : Type(TYPE_CALL_MULTIPLE_RESULT)
   { }
 
  protected:
@@ -5501,18 +5502,14 @@ class Call_multiple_result_type : public Type
   void
   do_mangled_name(Gogo*, std::string*) const
   { go_assert(saw_errors()); }
-
- private:
-  // The expression being called.
-  Call_expression* call_;
 };
 
 // Make a call result type.
 
 Type*
-Type::make_call_multiple_result_type(Call_expression* call)
+Type::make_call_multiple_result_type()
 {
-  return new Call_multiple_result_type(call);
+  return new Call_multiple_result_type();
 }
 
 // Class Struct_field.

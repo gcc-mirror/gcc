@@ -92,7 +92,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   IFN_FMA IFN_FMS IFN_FNMA IFN_FNMS)
 (define_operator_list COND_TERNARY
   IFN_COND_FMA IFN_COND_FMS IFN_COND_FNMA IFN_COND_FNMS)
-    
+
 /* As opposed to convert?, this still creates a single pattern, so
    it is not a suitable replacement for convert? in all cases.  */
 (match (nop_convert @0)
@@ -106,7 +106,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && tree_nop_conversion_p (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@0))))))
 /* This one has to be last, or it shadows the others.  */
 (match (nop_convert @0)
- @0) 
+ @0)
 
 /* Transform likes of (char) ABS_EXPR <(int) x> into (char) ABSU_EXPR <x>
    ABSU_EXPR returns unsigned absolute value of the operand and the operand
@@ -285,7 +285,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      And not for _Fract types where we can't build 1.  */
   (if (!integer_zerop (@0) && !ALL_FRACT_MODE_P (TYPE_MODE (type)))
    { build_one_cst (type); }))
- /* X / abs (X) is X < 0 ? -1 : 1.  */ 
+ /* X / abs (X) is X < 0 ? -1 : 1.  */
  (simplify
    (div:C @0 (abs @0))
    (if (INTEGRAL_TYPE_P (type)
@@ -929,6 +929,31 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bitop:c @0 (bit_not (bitop:cs @0 @1)))
   (bitop @0 (bit_not @1))))
 
+/* (~x & y) | ~(x | y) -> ~x */
+(simplify
+ (bit_ior:c (bit_and:c (bit_not@2 @0) @1) (bit_not (bit_ior:c @0 @1)))
+ @2)
+
+/* (x | y) ^ (x | ~y) -> ~x */
+(simplify
+ (bit_xor:c (bit_ior:c @0 @1) (bit_ior:c @0 (bit_not @1)))
+ (bit_not @0))
+
+/* (x & y) | ~(x | y) -> ~(x ^ y) */
+(simplify
+ (bit_ior:c (bit_and:s @0 @1) (bit_not:s (bit_ior:s @0 @1)))
+ (bit_not (bit_xor @0 @1)))
+
+/* (~x | y) ^ (x ^ y) -> x | ~y */
+(simplify
+ (bit_xor:c (bit_ior:cs (bit_not @0) @1) (bit_xor:s @0 @1))
+ (bit_ior @0 (bit_not @1)))
+
+/* (x ^ y) | ~(x | y) -> ~(x & y) */
+(simplify
+ (bit_ior:c (bit_xor:s @0 @1) (bit_not:s (bit_ior:s @0 @1)))
+ (bit_not (bit_and @0 @1)))
+
 /* (x | y) & ~x -> y & ~x */
 /* (x & y) | ~x -> y | ~x */
 (for bitop (bit_and bit_ior)
@@ -1139,7 +1164,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (tree_nop_conversion_p (type, TREE_TYPE (@0))
        && tree_nop_conversion_p (type, TREE_TYPE (@1)))
    (mult (convert @0) (convert (negate @1)))))
- 
+
 /* -(A + B) -> (-B) - A.  */
 (simplify
  (negate (plus:c @0 negate_expr_p@1))
@@ -2644,6 +2669,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (mult (convert1? (exact_div @0 @@1)) (convert2? @1))
   (convert @0))
 
+/* ((X /[ex] A) +- B) * A  -->  X +- A * B.  */
+(for op (plus minus)
+ (simplify
+  (mult (convert1? (op (convert2? (exact_div @0 INTEGER_CST@@1)) INTEGER_CST@2)) @1)
+  (if (tree_nop_conversion_p (type, TREE_TYPE (@2))
+       && tree_nop_conversion_p (TREE_TYPE (@0), TREE_TYPE (@2)))
+   (with
+     {
+       wi::overflow_type overflow;
+       wide_int mul = wi::mul (wi::to_wide (@1), wi::to_wide (@2),
+			       TYPE_SIGN (type), &overflow);
+     }
+     (if (types_match (type, TREE_TYPE (@2))
+ 	 && types_match (TREE_TYPE (@0), TREE_TYPE (@2)) && !overflow)
+      (op @0 { wide_int_to_tree (type, mul); })
+      (with { tree utype = unsigned_type_for (type); }
+       (convert (op (convert:utype @0)
+		    (mult (convert:utype @1) (convert:utype @2))))))))))
+
 /* Canonicalization of binary operations.  */
 
 /* Convert X + -C into X - C.  */
@@ -3099,7 +3143,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (tree_int_cst_sgn (@1) < 0)
      (scmp @0 @2)
      (cmp @0 @2))))))
- 
+
 /* Simplify comparison of something with itself.  For IEEE
    floating-point, we can only do some of these simplifications.  */
 (for cmp (eq ge le)
@@ -3170,11 +3214,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         }
       tree newtype
         = (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type1)
-	   ? TREE_TYPE (@0) : type1); 
+	   ? TREE_TYPE (@0) : type1);
     }
     (if (TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (newtype))
      (cmp (convert:newtype @0) (convert:newtype @1))))))
- 
+
  (simplify
   (cmp @0 REAL_CST@1)
   /* IEEE doesn't distinguish +0 and -0 in comparisons.  */
@@ -3422,7 +3466,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	    (FTYPE) N == CST -> 0
 	    (FTYPE) N != CST -> 1.  */
 	(if (cmp == EQ_EXPR || cmp == NE_EXPR)
-	 { constant_boolean_node (cmp == NE_EXPR, type); }) 
+	 { constant_boolean_node (cmp == NE_EXPR, type); })
 	/* Otherwise replace with sensible integer constant.  */
 	(with
 	 {
@@ -3558,8 +3602,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* Disable this optimization if we're casting a function pointer
 	  type on targets that require function pointer canonicalization.  */
        && !(targetm.have_canonicalize_funcptr_for_compare ()
-	    && POINTER_TYPE_P (TREE_TYPE (@00))
-	    && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@00))))
+	    && ((POINTER_TYPE_P (TREE_TYPE (@00))
+		 && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@00))))
+		|| (POINTER_TYPE_P (TREE_TYPE (@10))
+		    && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (@10))))))
        && single_use (@0))
    (if (TYPE_PRECISION (TREE_TYPE (@00)) == TYPE_PRECISION (TREE_TYPE (@0))
 	&& (TREE_CODE (@10) == INTEGER_CST
@@ -3664,7 +3710,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (bit_and@2 @0 integer_pow2p@1) @1)
   (icmp @2 { build_zero_cst (TREE_TYPE (@0)); })))
- 
+
 /* If we have (A & C) != 0 ? D : 0 where C and D are powers of 2,
    convert this into a shift followed by ANDing with D.  */
 (simplify
@@ -3884,7 +3930,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
         (if (cmp == LE_EXPR)
 	 (ge (convert:st @0) { build_zero_cst (st); })
 	 (lt (convert:st @0) { build_zero_cst (st); }))))))))))
- 
+
 (for cmp (unordered ordered unlt unle ungt unge uneq ltgt)
  /* If the second operand is NaN, the result is constant.  */
  (simplify
@@ -4538,7 +4584,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (wi::to_wide (@1) == -1)
    (rdiv { build_real (type, dconst1); } @0))))
 
-/* Narrowing of arithmetic and logical operations. 
+/* Narrowing of arithmetic and logical operations.
 
    These are conceptually similar to the transformations performed for
    the C/C++ front-ends by shorten_binary_op and shorten_compare.  Long
@@ -4610,7 +4656,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (convert (bit_and (op (convert:utype @0) (convert:utype @1))
 	       (convert:utype @4))))))))
 
-/* Transform (@0 < @1 and @0 < @2) to use min, 
+/* Transform (@0 < @1 and @0 < @2) to use min,
    (@0 > @1 and @0 > @2) to use max */
 (for logic (bit_and bit_and bit_and bit_and bit_ior bit_ior bit_ior bit_ior)
      op    (lt      le      gt      ge      lt      le      gt      ge     )

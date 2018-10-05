@@ -1,3 +1,23 @@
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-attribs.c (get_priority): Add a warning flag warn_prio_ctor_dtor
+	to generate constructor destructor priority warning.
+	* c.opt (-Wprio-ctor-dtor): New option.
+
+2018-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Add no_unique_address.
+
+2018-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Get to the main type variant.
+	(dump_ada_node): Add const keyword.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (c_common_truthvalue_conversion):
+	Remove Pascal from documentation.
+
 2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c: Include diagnostic.h.

@@ -141,7 +141,7 @@ static const kv_pair<dump_flags_t> dump_options[] =
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
-  {"optall", MSG_ALL},
+  {"optall", MSG_ALL_KINDS},
   {"all", dump_flags_t (TDF_ALL_VALUES
 			& ~(TDF_RAW | TDF_SLIM | TDF_LINENO | TDF_GRAPH
 			    | TDF_STMTADDR | TDF_RHS_ONLY | TDF_NOUID
@@ -157,7 +157,8 @@ static const kv_pair<dump_flags_t> optinfo_verbosity_options[] =
   {"optimized", MSG_OPTIMIZED_LOCATIONS},
   {"missed", MSG_MISSED_OPTIMIZATION},
   {"note", MSG_NOTE},
-  {"all", MSG_ALL},
+  {"all", MSG_ALL_KINDS},
+  {"internals", MSG_PRIORITY_INTERNALS},
   {NULL, TDF_NONE}
 };
 
@@ -177,12 +178,16 @@ gcc::dump_manager::dump_manager ():
   m_next_dump (FIRST_AUTO_NUMBERED_DUMP),
   m_extra_dump_files (NULL),
   m_extra_dump_files_in_use (0),
-  m_extra_dump_files_alloced (0)
+  m_extra_dump_files_alloced (0),
+  m_optgroup_flags (OPTGROUP_NONE),
+  m_optinfo_flags (TDF_NONE),
+  m_optinfo_filename (NULL)
 {
 }
 
 gcc::dump_manager::~dump_manager ()
 {
+  free (m_optinfo_filename);
   for (size_t i = 0; i < m_extra_dump_files_in_use; i++)
     {
       dump_file_info *dfi = &m_extra_dump_files[i];
@@ -437,6 +442,27 @@ dump_user_location_t::from_function_decl (tree fndecl)
 			       DECL_SOURCE_LOCATION (fndecl));
 }
 
+/* Extract the MSG_* component from DUMP_KIND and return a string for use
+   as a prefix to dump messages.
+   These match the strings in optinfo_verbosity_options and thus the
+   "OPTIONS" within "-fopt-info-OPTIONS".  */
+
+static const char *
+kind_as_string (dump_flags_t dump_kind)
+{
+  switch (dump_kind & MSG_ALL_KINDS)
+    {
+    default:
+      gcc_unreachable ();
+    case MSG_OPTIMIZED_LOCATIONS:
+      return "optimized";
+    case MSG_MISSED_OPTIMIZATION:
+      return "missed";
+    case MSG_NOTE:
+      return "note";
+    }
+}
+
 /* Print source location on DFILE if enabled.  */
 
 static void
@@ -445,13 +471,14 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-        fprintf (dfile, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+        fprintf (dfile, "%s:%d:%d: ", LOCATION_FILE (loc),
                  LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-        fprintf (dfile, "%s:%d:%d: note: ",
+        fprintf (dfile, "%s:%d:%d: ",
                  DECL_SOURCE_FILE (current_function_decl),
                  DECL_SOURCE_LINE (current_function_decl),
                  DECL_SOURCE_COLUMN (current_function_decl));
+      fprintf (dfile, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       fprintf (dfile, "%*s", get_dump_scope_depth (), "");
     }
@@ -465,13 +492,14 @@ dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
   if (dump_kind)
     {
       if (LOCATION_LOCUS (loc) > BUILTINS_LOCATION)
-	pp_printf (pp, "%s:%d:%d: note: ", LOCATION_FILE (loc),
+	pp_printf (pp, "%s:%d:%d: ", LOCATION_FILE (loc),
 		   LOCATION_LINE (loc), LOCATION_COLUMN (loc));
       else if (current_function_decl)
-	pp_printf (pp, "%s:%d:%d: note: ",
+	pp_printf (pp, "%s:%d:%d: ",
 		   DECL_SOURCE_FILE (current_function_decl),
 		   DECL_SOURCE_LINE (current_function_decl),
 		   DECL_SOURCE_COLUMN (current_function_decl));
+      pp_printf (pp, "%s: ", kind_as_string (dump_kind));
       /* Indentation based on scope depth.  */
       for (unsigned i = 0; i < get_dump_scope_depth (); i++)
 	pp_character (pp, ' ');
@@ -497,6 +525,35 @@ dump_context::refresh_dumps_are_enabled ()
 		       || m_test_pp);
 }
 
+/* Determine if a message of kind DUMP_KIND and at the current scope depth
+   should be printed.
+
+   Only show messages that match FILTER both on their kind *and*
+   their priority.  */
+
+bool
+dump_context::apply_dump_filter_p (dump_flags_t dump_kind,
+				   dump_flags_t filter) const
+{
+  /* Few messages, if any, have an explicit MSG_PRIORITY.
+     If DUMP_KIND does, we'll use it.
+     Otherwise, generate an implicit priority value for the message based
+     on the current scope depth.
+     Messages at the top-level scope are MSG_PRIORITY_USER_FACING,
+     whereas those in nested scopes are MSG_PRIORITY_INTERNALS.  */
+  if (!(dump_kind & MSG_ALL_PRIORITIES))
+    {
+      dump_flags_t implicit_priority
+	=  (m_scope_depth > 0
+	    ? MSG_PRIORITY_INTERNALS
+	    : MSG_PRIORITY_USER_FACING);
+      dump_kind |= implicit_priority;
+    }
+
+  return (dump_kind & (filter & MSG_ALL_KINDS)
+	  && dump_kind & (filter & MSG_ALL_PRIORITIES));
+}
+
 /* Print LOC to the appropriate dump destinations, given DUMP_KIND.
    If optinfos are enabled, begin a new optinfo.  */
 
@@ -505,23 +562,32 @@ dump_context::dump_loc (dump_flags_t dump_kind, const dump_location_t &loc)
 {
   end_any_optinfo ();
 
-  location_t srcloc = loc.get_location_t ();
-
-  if (dump_file && (dump_kind & pflags))
-    ::dump_loc (dump_kind, dump_file, srcloc);
-
-  if (alt_dump_file && (dump_kind & alt_flags))
-    ::dump_loc (dump_kind, alt_dump_file, srcloc);
-
-  /* Support for temp_dump_context in selftests.  */
-  if (m_test_pp && (dump_kind & m_test_pp_flags))
-    ::dump_loc (dump_kind, m_test_pp, srcloc);
+  dump_loc_immediate (dump_kind, loc);
 
   if (optinfo_enabled_p ())
     {
       optinfo &info = begin_next_optinfo (loc);
       info.handle_dump_file_kind (dump_kind);
     }
+}
+
+/* As dump_loc above, but without starting a new optinfo. */
+
+void
+dump_context::dump_loc_immediate (dump_flags_t dump_kind,
+				  const dump_location_t &loc)
+{
+  location_t srcloc = loc.get_location_t ();
+
+  if (dump_file && apply_dump_filter_p (dump_kind, pflags))
+    ::dump_loc (dump_kind, dump_file, srcloc);
+
+  if (alt_dump_file && apply_dump_filter_p (dump_kind, alt_flags))
+    ::dump_loc (dump_kind, alt_dump_file, srcloc);
+
+  /* Support for temp_dump_context in selftests.  */
+  if (m_test_pp && apply_dump_filter_p (dump_kind, m_test_pp_flags))
+    ::dump_loc (dump_kind, m_test_pp, srcloc);
 }
 
 /* Make an item for the given dump call, equivalent to print_gimple_stmt.  */
@@ -681,49 +747,6 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
   dump_loc (dump_kind, loc);
   dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
-
-/* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
-   In particular, the formatted chunks are captured as optinfo_item instances,
-   thus retaining metadata about the entities being dumped (e.g. source
-   locations), rather than just as plain text.  */
-
-class dump_pretty_printer : public pretty_printer
-{
-public:
-  dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
-
-  void emit_items (optinfo *dest);
-
-private:
-  /* Information on an optinfo_item that was generated during phase 2 of
-     formatting.  */
-  struct stashed_item
-  {
-    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
-      : buffer_ptr (buffer_ptr_), item (item_) {}
-    const char **buffer_ptr;
-    optinfo_item *item;
-  };
-
-  static bool format_decoder_cb (pretty_printer *pp, text_info *text,
-				 const char *spec, int /*precision*/,
-				 bool /*wide*/, bool /*set_locus*/,
-				 bool /*verbose*/, bool */*quoted*/,
-				 const char **buffer_ptr);
-
-  bool decode_format (text_info *text, const char *spec,
-		      const char **buffer_ptr);
-
-  void stash_item (const char **buffer_ptr, optinfo_item *item);
-
-  void emit_any_pending_textual_chunks (optinfo *dest);
-
-  void emit_item (optinfo_item *item, optinfo *dest);
-
-  dump_context *m_context;
-  dump_flags_t m_dump_kind;
-  auto_vec<stashed_item> m_stashed_items;
-};
 
 /* dump_pretty_printer's ctor.  */
 
@@ -1040,22 +1063,24 @@ dump_context::get_scope_depth () const
 }
 
 /* Push a nested dump scope.
+   Increment the scope depth.
    Print "=== NAME ===\n" to the dumpfile, if any, and to the -fopt-info
    destination, if any.
-   Emit a "scope" optinfo if optinfos are enabled.
-   Increment the scope depth.  */
+   Emit a "scope" optinfo if optinfos are enabled.  */
 
 void
 dump_context::begin_scope (const char *name, const dump_location_t &loc)
 {
-  if (dump_file && (MSG_NOTE & pflags))
+  m_scope_depth++;
+
+  if (dump_file && apply_dump_filter_p (MSG_NOTE, pflags))
     ::dump_loc (MSG_NOTE, dump_file, loc.get_location_t ());
 
-  if (alt_dump_file && (MSG_NOTE & alt_flags))
+  if (alt_dump_file && apply_dump_filter_p (MSG_NOTE, alt_flags))
     ::dump_loc (MSG_NOTE, alt_dump_file, loc.get_location_t ());
 
   /* Support for temp_dump_context in selftests.  */
-  if (m_test_pp && (MSG_NOTE & m_test_pp_flags))
+  if (m_test_pp && apply_dump_filter_p (MSG_NOTE, m_test_pp_flags))
     ::dump_loc (MSG_NOTE, m_test_pp, loc.get_location_t ());
 
   pretty_printer pp;
@@ -1073,8 +1098,6 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
     }
   else
     delete item;
-
-  m_scope_depth++;
 }
 
 /* Pop a nested dump scope.  */
@@ -1128,14 +1151,14 @@ dump_context::end_any_optinfo ()
 void
 dump_context::emit_item (optinfo_item *item, dump_flags_t dump_kind)
 {
-  if (dump_file && (dump_kind & pflags))
+  if (dump_file && apply_dump_filter_p (dump_kind, pflags))
     fprintf (dump_file, "%s", item->get_text ());
 
-  if (alt_dump_file && (dump_kind & alt_flags))
+  if (alt_dump_file && apply_dump_filter_p (dump_kind, alt_flags))
     fprintf (alt_dump_file, "%s", item->get_text ());
 
   /* Support for temp_dump_context in selftests.  */
-  if (m_test_pp && (dump_kind & m_test_pp_flags))
+  if (m_test_pp && apply_dump_filter_p (dump_kind, m_test_pp_flags))
     pp_string (m_test_pp, item->get_text ());
 }
 
@@ -1251,10 +1274,12 @@ template void dump_dec (dump_flags_t, const poly_widest_int &);
 void
 dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 {
-  if (dump_file && (dump_kind & pflags))
+  if (dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_dec (value, dump_file, sgn);
 
-  if (alt_dump_file && (dump_kind & alt_flags))
+  if (alt_dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, alt_flags))
     print_dec (value, alt_dump_file, sgn);
 }
 
@@ -1263,10 +1288,12 @@ dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 void
 dump_hex (dump_flags_t dump_kind, const poly_wide_int &value)
 {
-  if (dump_file && (dump_kind & pflags))
+  if (dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_hex (value, dump_file);
 
-  if (alt_dump_file && (dump_kind & alt_flags))
+  if (alt_dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, alt_flags))
     print_hex (value, alt_dump_file);
 }
 
@@ -1489,6 +1516,50 @@ dump_flag_name (int phase) const
   return dfi->swtch;
 }
 
+/* Handle -fdump-* and -fopt-info for a pass added after
+   command-line options are parsed (those from plugins and
+   those from backends).
+
+   Because the registration of plugin/backend passes happens after the
+   command-line options are parsed, the options that specify single
+   pass dumping (e.g. -fdump-tree-PASSNAME) cannot be used for new
+   passes. Therefore we currently can only enable dumping of
+   new passes when the 'dump-all' flags (e.g. -fdump-tree-all)
+   are specified.  This is done here.
+
+   Similarly, the saved -fopt-info options are wired up to the new pass.  */
+
+void
+gcc::dump_manager::register_pass (opt_pass *pass)
+{
+  gcc_assert (pass);
+
+  register_one_dump_file (pass);
+
+  dump_file_info *pass_dfi = get_dump_file_info (pass->static_pass_number);
+  gcc_assert (pass_dfi);
+
+  enum tree_dump_index tdi;
+  if (pass->type == SIMPLE_IPA_PASS
+      || pass->type == IPA_PASS)
+    tdi = TDI_ipa_all;
+  else if (pass->type == GIMPLE_PASS)
+    tdi = TDI_tree_all;
+  else
+    tdi = TDI_rtl_all;
+  const dump_file_info *tdi_dfi = get_dump_file_info (tdi);
+  gcc_assert (tdi_dfi);
+
+  /* Check if dump-all flag is specified.  */
+  if (tdi_dfi->pstate)
+    {
+      pass_dfi->pstate = tdi_dfi->pstate;
+      pass_dfi->pflags = tdi_dfi->pflags;
+    }
+
+  update_dfi_for_opt_info (pass_dfi);
+}
+
 /* Finish a tree dump for PHASE. STREAM is the stream created by
    dump_begin.  */
 
@@ -1511,7 +1582,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
     {
-      if ((dump_files[i].dkind == dkind))
+      if (dump_files[i].dkind == dkind)
         {
           const char *old_filename = dump_files[i].pfilename;
           dump_files[i].pstate = -1;
@@ -1532,7 +1603,7 @@ dump_enable_all (dump_kind dkind, dump_flags_t flags, const char *filename)
 
   for (i = 0; i < m_extra_dump_files_in_use; i++)
     {
-      if ((m_extra_dump_files[i].dkind == dkind))
+      if (m_extra_dump_files[i].dkind == dkind)
         {
           const char *old_filename = m_extra_dump_files[i].pfilename;
           m_extra_dump_files[i].pstate = -1;
@@ -1564,45 +1635,45 @@ opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
 			const char *filename)
 {
   int n = 0;
-  size_t i;
 
-  for (i = TDI_none + 1; i < (size_t) TDI_end; i++)
-    {
-      if ((dump_files[i].optgroup_flags & optgroup_flags))
-        {
-          const char *old_filename = dump_files[i].alt_filename;
-          /* Since this file is shared among different passes, it
-             should be opened in append mode.  */
-          dump_files[i].alt_state = 1;
-          dump_files[i].alt_flags |= flags;
-          n++;
-          /* Override the existing filename.  */
-          if (filename)
-            dump_files[i].alt_filename = xstrdup (filename);
-          if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
-        }
-    }
+  m_optgroup_flags = optgroup_flags;
+  m_optinfo_flags = flags;
+  m_optinfo_filename = xstrdup (filename);
 
-  for (i = 0; i < m_extra_dump_files_in_use; i++)
-    {
-      if ((m_extra_dump_files[i].optgroup_flags & optgroup_flags))
-        {
-          const char *old_filename = m_extra_dump_files[i].alt_filename;
-          /* Since this file is shared among different passes, it
-             should be opened in append mode.  */
-          m_extra_dump_files[i].alt_state = 1;
-          m_extra_dump_files[i].alt_flags |= flags;
-          n++;
-          /* Override the existing filename.  */
-          if (filename)
-            m_extra_dump_files[i].alt_filename = xstrdup (filename);
-          if (old_filename && filename != old_filename)
-            free (CONST_CAST (char *, old_filename));
-        }
-    }
+  for (size_t i = TDI_none + 1; i < (size_t) TDI_end; i++)
+    if (update_dfi_for_opt_info (&dump_files[i]))
+      n++;
+
+  for (size_t i = 0; i < m_extra_dump_files_in_use; i++)
+    if (update_dfi_for_opt_info (&m_extra_dump_files[i]))
+      n++;
 
   return n;
+}
+
+/* Use the saved -fopt-info options to update DFI.
+   Return true if the dump is enabled.  */
+
+bool
+gcc::dump_manager::update_dfi_for_opt_info (dump_file_info *dfi) const
+{
+  gcc_assert (dfi);
+
+  if (!(dfi->optgroup_flags & m_optgroup_flags))
+    return false;
+
+  const char *old_filename = dfi->alt_filename;
+  /* Since this file is shared among different passes, it
+     should be opened in append mode.  */
+  dfi->alt_state = 1;
+  dfi->alt_flags |= m_optinfo_flags;
+  /* Override the existing filename.  */
+  if (m_optinfo_filename)
+    dfi->alt_filename = xstrdup (m_optinfo_filename);
+  if (old_filename && m_optinfo_filename != old_filename)
+    free (CONST_CAST (char *, old_filename));
+
+  return true;
 }
 
 /* Parse ARG as a dump switch. Return nonzero if it is, and store the
@@ -1627,7 +1698,12 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
     return 0;
 
   ptr = option_value;
-  flags = TDF_NONE;
+
+  /* Retain "user-facing" and "internals" messages, but filter out
+     those from an opt_problem being re-emitted at the top level
+     (MSG_PRIORITY_REEMITTED), so as to avoid duplicate messages
+     messing up scan-tree-dump-times" in DejaGnu tests.  */
+  flags = MSG_PRIORITY_USER_FACING | MSG_PRIORITY_INTERNALS;
 
   while (*ptr)
     {
@@ -1723,7 +1799,12 @@ opt_info_switch_p_1 (const char *arg, dump_flags_t *flags,
   ptr = option_value;
 
   *filename = NULL;
-  *flags = TDF_NONE;
+
+  /* Default to filtering out "internals" messages, and retaining
+     "user-facing" messages, and those from an opt_problem being
+     re-emitted at the top level.  */
+  *flags = MSG_PRIORITY_USER_FACING | MSG_PRIORITY_REEMITTED;
+
   *optgroup_flags = OPTGROUP_NONE;
 
   if (!ptr)
@@ -1812,8 +1893,8 @@ opt_info_switch_p (const char *arg)
     }
 
   file_seen = xstrdup (filename);
-  if (!flags)
-    flags = MSG_OPTIMIZED_LOCATIONS;
+  if (!(flags & MSG_ALL_KINDS))
+    flags |= MSG_OPTIMIZED_LOCATIONS;
   if (!optgroup_flags)
     optgroup_flags = OPTGROUP_ALL;
 
@@ -1825,9 +1906,11 @@ opt_info_switch_p (const char *arg)
 void
 dump_basic_block (dump_flags_t dump_kind, basic_block bb, int indent)
 {
-  if (dump_file && (dump_kind & pflags))
+  if (dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     dump_bb (dump_file, bb, indent, TDF_DETAILS);
-  if (alt_dump_file && (dump_kind & alt_flags))
+  if (alt_dump_file
+      && dump_context::get ().apply_dump_filter_p (dump_kind, alt_flags))
     dump_bb (alt_dump_file, bb, indent, TDF_DETAILS);
 }
 
@@ -1870,19 +1953,26 @@ enable_rtl_dump_file (void)
 
 #if CHECKING_P
 
+namespace selftest {
+
 /* temp_dump_context's ctor.  Temporarily override the dump_context
    (to forcibly enable optinfo-generation).  */
 
 temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
+				      bool forcibly_enable_dumping,
 				      dump_flags_t test_pp_flags)
-
 : m_context (),
   m_saved (&dump_context ().get ())
 {
   dump_context::s_current = &m_context;
   m_context.m_forcibly_enable_optinfo = forcibly_enable_optinfo;
-  m_context.m_test_pp = &m_pp;
-  m_context.m_test_pp_flags = test_pp_flags;
+  /* Conditionally enable the test dump, so that we can verify both the
+     dump_enabled_p and the !dump_enabled_p cases in selftests.  */
+  if (forcibly_enable_dumping)
+    {
+      m_context.m_test_pp = &m_pp;
+      m_context.m_test_pp_flags = test_pp_flags;
+    }
 
   dump_context::get ().refresh_dumps_are_enabled ();
 }
@@ -1903,8 +1993,6 @@ temp_dump_context::get_dumped_text ()
 {
   return pp_formatted_text (&m_pp);
 }
-
-namespace selftest {
 
 /* Verify that the dump_location_t constructors capture the source location
    at which they were called (provided that the build compiler is sufficiently
@@ -1944,7 +2032,7 @@ test_impl_location ()
    EXPECTED_TEXT, using LOC for the location of any failure.
    As a side-effect, the internal buffer is 0-terminated.  */
 
-static void
+void
 verify_dumped_text (const location &loc,
 		    temp_dump_context *context,
 		    const char *expected_text)
@@ -1954,18 +2042,9 @@ verify_dumped_text (const location &loc,
 		   expected_text);
 }
 
-/* Verify that the text dumped so far in CONTEXT equals
-   EXPECTED_TEXT.
-   As a side-effect, the internal buffer is 0-terminated.  */
-
-#define ASSERT_DUMPED_TEXT_EQ(CONTEXT, EXPECTED_TEXT)			\
-  SELFTEST_BEGIN_STMT							\
-    verify_dumped_text (SELFTEST_LOCATION, &(CONTEXT), (EXPECTED_TEXT)); \
-  SELFTEST_END_STMT
-
 /* Verify that ITEM has the expected values.  */
 
-static void
+void
 verify_item (const location &loc,
 	     const optinfo_item *item,
 	     enum optinfo_item_kind expected_kind,
@@ -1976,30 +2055,6 @@ verify_item (const location &loc,
   ASSERT_EQ_AT (loc, item->get_location (), expected_location);
   ASSERT_STREQ_AT (loc, item->get_text (), expected_text);
 }
-
-/* Verify that ITEM is a text item, with EXPECTED_TEXT.  */
-
-#define ASSERT_IS_TEXT(ITEM, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TEXT, \
-		 UNKNOWN_LOCATION, (EXPECTED_TEXT));		    \
-  SELFTEST_END_STMT
-
-/* Verify that ITEM is a tree item, with the expected values.  */
-
-#define ASSERT_IS_TREE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TREE, \
-		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
-  SELFTEST_END_STMT
-
-/* Verify that ITEM is a gimple item, with the expected values.  */
-
-#define ASSERT_IS_GIMPLE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
-  SELFTEST_BEGIN_STMT						    \
-    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_GIMPLE, \
-		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
-  SELFTEST_END_STMT
 
 /* Verify that calls to the dump_* API are captured and consolidated into
    optimization records. */
@@ -2033,7 +2088,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "int: %i str: %s", 42, "foo");
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "int: 42 str: foo");
@@ -2049,7 +2105,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %T.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "tree: %T", integer_zero_node);
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "tree: 0");
@@ -2066,7 +2123,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %E.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %E", stmt);
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;");
@@ -2083,7 +2141,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Test of dump_printf with %G.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf (MSG_NOTE, "gimple: %G", stmt);
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "gimple: return;\n");
@@ -2105,7 +2164,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	 - multiple dump-specific format codes: some consecutive, others
 	 separated by text, trailing text after the final one.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf_loc (MSG_NOTE, loc, "before %T and %T"
 			 " %i consecutive %E%E after\n",
 			 integer_zero_node, test_decl, 42, stmt, stmt);
@@ -2132,7 +2192,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Tree, via dump_generic_expr.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
 	dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);
 
@@ -2151,7 +2212,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* Tree, via dump_generic_expr_loc.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_generic_expr_loc (MSG_NOTE, loc, TDF_SLIM, integer_one_node);
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: 1");
@@ -2170,7 +2232,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
       {
 	/* dump_gimple_stmt_loc.  */
 	{
-	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  temp_dump_context tmp (with_optinfo, true,
+				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;\n");
@@ -2185,7 +2248,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_stmt.  */
 	{
-	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  temp_dump_context tmp (with_optinfo, true,
+				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 2);
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;\n");
@@ -2200,7 +2264,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_expr_loc.  */
 	{
-	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  temp_dump_context tmp (with_optinfo, true,
+				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr_loc (MSG_NOTE, loc, TDF_SLIM, stmt, 2);
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note: return;");
@@ -2215,7 +2280,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
 	/* dump_gimple_expr.  */
 	{
-	  temp_dump_context tmp (with_optinfo, MSG_ALL);
+	  temp_dump_context tmp (with_optinfo, true,
+				 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	  dump_gimple_expr (MSG_NOTE, TDF_SLIM, stmt, 2);
 
 	  ASSERT_DUMPED_TEXT_EQ (tmp, "return;");
@@ -2231,7 +2297,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
       /* poly_int.  */
       {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
 	dump_dec (MSG_NOTE, poly_int64 (42));
 
 	ASSERT_DUMPED_TEXT_EQ (tmp, "42");
@@ -2244,45 +2311,92 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  }
       }
 
-      /* scopes.  */
-      {
-	temp_dump_context tmp (with_optinfo, MSG_ALL);
-	dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
+      /* Scopes.  Test with all 4 combinations of
+	 filtering by MSG_PRIORITY_USER_FACING
+	 and/or filtering by MSG_PRIORITY_INTERNALS.  */
+      for (int j = 0; j < 3; j++)
 	{
-	  AUTO_DUMP_SCOPE ("outer scope", stmt);
-	  dump_printf_loc (MSG_NOTE, stmt, "msg 2\n");
-	  {
-	    AUTO_DUMP_SCOPE ("middle scope", stmt);
-	    dump_printf_loc (MSG_NOTE, stmt, "msg 3\n");
-	    {
-	      AUTO_DUMP_SCOPE ("inner scope", stmt);
-	      dump_printf_loc (MSG_NOTE, stmt, "msg 4\n");
-	    }
-	    dump_printf_loc (MSG_NOTE, stmt, "msg 5\n");
-	  }
-	  dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
-	}
-	dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+	  dump_flags_t dump_filter = MSG_ALL_KINDS;
+	  if (j % 2)
+	    dump_filter |= MSG_PRIORITY_USER_FACING;
+	  if (j / 2)
+	    dump_filter |= MSG_PRIORITY_INTERNALS;
 
-	ASSERT_DUMPED_TEXT_EQ (tmp,
-			       "test.txt:5:10: note: msg 1\n"
-			       "test.txt:5:10: note: === outer scope ===\n"
-			       "test.txt:5:10: note:  msg 2\n"
-			       "test.txt:5:10: note:  === middle scope ===\n"
-			       "test.txt:5:10: note:   msg 3\n"
-			       "test.txt:5:10: note:   === inner scope ===\n"
-			       "test.txt:5:10: note:    msg 4\n"
-			       "test.txt:5:10: note:   msg 5\n"
-			       "test.txt:5:10: note:  msg 6\n"
-			       "test.txt:5:10: note: msg 7\n");
-	if (with_optinfo)
+	  temp_dump_context tmp (with_optinfo, true, dump_filter);
+	  /* Emit various messages, mostly with implicit priority.  */
+	  dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
+	  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS, stmt,
+			   "explicitly internal msg\n");
 	  {
-	    optinfo *info = tmp.get_pending_optinfo ();
-	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->num_items (), 1);
-	    ASSERT_IS_TEXT (info->get_item (0), "msg 7\n");
+	    AUTO_DUMP_SCOPE ("outer scope", stmt);
+	    dump_printf_loc (MSG_NOTE, stmt, "msg 2\n");
+	    {
+	      AUTO_DUMP_SCOPE ("middle scope", stmt);
+	      dump_printf_loc (MSG_NOTE, stmt, "msg 3\n");
+	      {
+		AUTO_DUMP_SCOPE ("inner scope", stmt);
+		dump_printf_loc (MSG_NOTE, stmt, "msg 4\n");
+		dump_printf_loc (MSG_NOTE | MSG_PRIORITY_USER_FACING, stmt,
+				 "explicitly user-facing msg\n");
+	      }
+	      dump_printf_loc (MSG_NOTE, stmt, "msg 5\n");
+	    }
+	    dump_printf_loc (MSG_NOTE, stmt, "msg 6\n");
 	  }
-      }
+	  dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
+
+	  switch (dump_filter & MSG_ALL_PRIORITIES)
+	    {
+	    default:
+	      gcc_unreachable ();
+	    case 0:
+	      ASSERT_DUMPED_TEXT_EQ (tmp, "");
+	      break;
+	    case MSG_PRIORITY_USER_FACING:
+	      ASSERT_DUMPED_TEXT_EQ
+		(tmp,
+		 "test.txt:5:10: note: msg 1\n"
+		 "test.txt:5:10: note:    explicitly user-facing msg\n"
+		 "test.txt:5:10: note: msg 7\n");
+	      break;
+	    case MSG_PRIORITY_INTERNALS:
+	      ASSERT_DUMPED_TEXT_EQ
+		(tmp,
+		 "test.txt:5:10: note: explicitly internal msg\n"
+		 "test.txt:5:10: note:  === outer scope ===\n"
+		 "test.txt:5:10: note:  msg 2\n"
+		 "test.txt:5:10: note:   === middle scope ===\n"
+		 "test.txt:5:10: note:   msg 3\n"
+		 "test.txt:5:10: note:    === inner scope ===\n"
+		 "test.txt:5:10: note:    msg 4\n"
+		 "test.txt:5:10: note:   msg 5\n"
+		 "test.txt:5:10: note:  msg 6\n");
+	      break;
+	    case MSG_ALL_PRIORITIES:
+	      ASSERT_DUMPED_TEXT_EQ
+		(tmp,
+		 "test.txt:5:10: note: msg 1\n"
+		 "test.txt:5:10: note: explicitly internal msg\n"
+		 "test.txt:5:10: note: === outer scope ===\n"
+		 "test.txt:5:10: note:  msg 2\n"
+		 "test.txt:5:10: note:  === middle scope ===\n"
+		 "test.txt:5:10: note:   msg 3\n"
+		 "test.txt:5:10: note:   === inner scope ===\n"
+		 "test.txt:5:10: note:    msg 4\n"
+		 "test.txt:5:10: note:    explicitly user-facing msg\n"
+		 "test.txt:5:10: note:   msg 5\n"
+		 "test.txt:5:10: note:  msg 6\n"
+		 "test.txt:5:10: note: msg 7\n");
+	      break;
+	    }
+	  if (with_optinfo)
+	    {
+	      optinfo *info = tmp.get_pending_optinfo ();
+	      ASSERT_TRUE (info != NULL);
+	      ASSERT_EQ (info->num_items (), 1);
+	      ASSERT_IS_TEXT (info->get_item (0), "msg 7\n");
+	    }
+	}
     }
 
   /* Verify that MSG_* affects optinfo->get_kind (); we tested MSG_NOTE
@@ -2290,7 +2404,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
   {
     /* MSG_OPTIMIZED_LOCATIONS.  */
     {
-      temp_dump_context tmp (true, MSG_ALL);
+      temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_SUCCESS);
@@ -2298,7 +2412,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
     /* MSG_MISSED_OPTIMIZATION.  */
     {
-      temp_dump_context tmp (true, MSG_ALL);
+      temp_dump_context tmp (true, true, MSG_ALL_KINDS);
       dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc, "test");
       ASSERT_EQ (tmp.get_pending_optinfo ()->get_kind (),
 		 OPTINFO_KIND_FAILURE);
@@ -2307,7 +2421,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 
   /* Verify that MSG_* affect AUTO_DUMP_SCOPE and the dump calls.  */
   {
-    temp_dump_context tmp (false, MSG_OPTIMIZED_LOCATIONS);
+    temp_dump_context tmp (false, true,
+			   MSG_OPTIMIZED_LOCATIONS | MSG_ALL_PRIORITIES);
     dump_printf_loc (MSG_NOTE, stmt, "msg 1\n");
     {
       AUTO_DUMP_SCOPE ("outer scope", stmt);
@@ -2325,7 +2440,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
     }
     dump_printf_loc (MSG_NOTE, stmt, "msg 7\n");
 
-    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: note:    msg 4\n");
+    ASSERT_DUMPED_TEXT_EQ (tmp, "test.txt:5:10: optimized:    msg 4\n");
   }
 }
 

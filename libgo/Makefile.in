@@ -1002,6 +1002,7 @@ runtime_internal_sys_lo_check_GOCFLAGS = -fgo-compiling-runtime
 # Also use -fno-inline to get better results from the memory profiler.
 runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 extra_go_files_runtime_internal_sys = version.go
+extra_go_files_internal_cpu = cpugen.go
 extra_go_files_internal_goroot = zstdpkglist.go
 extra_go_files_go_types = gccgosizes.go
 extra_go_files_cmd_internal_objabi = objabi.go
@@ -2759,6 +2760,14 @@ s-version: Makefile
 	$(SHELL) $(srcdir)/mvifdiff.sh version.go.tmp version.go
 	$(STAMP) $@
 
+cpugen.go: s-cpu; @true
+s-cpu: Makefile
+	rm -f cpugen.go.tmp
+	echo "package cpu" > cpugen.go.tmp
+	echo "const CacheLineSize = `$(SHELL) $(srcdir)/goarch.sh $(GOARCH) cachelinesize`" >> cpugen.go.tmp
+	$(SHELL) $(srcdir)/mvifdiff.sh cpugen.go.tmp cpugen.go
+	$(STAMP) $@
+
 objabi.go: s-objabi; @true
 s-objabi: Makefile
 	rm -f objabi.go.tmp
@@ -2957,6 +2966,7 @@ $(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package)))
 runtime.lo.dep: $(extra_go_files_runtime)
 syscall.lo.dep: $(extra_go_files_syscall)
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
+internal/cpu.lo.dep: $(extra_go_files_internal_cpu)
 internal/goroot.lo.dep: $(extra_go_files_internal_goroot)
 go/types.lo.dep: $(extra_go_files_go_types)
 cmd/internal/objabi.lo.dep: $(extra_go_files_cmd_internal_objabi)

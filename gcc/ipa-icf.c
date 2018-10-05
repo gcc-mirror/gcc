@@ -593,6 +593,8 @@ sem_function::equals_wpa (sem_item *item,
         return return_false_with_msg ("thunk fixed_offset mismatch");
       if (cnode->thunk.virtual_value != cnode2->thunk.virtual_value)
         return return_false_with_msg ("thunk virtual_value mismatch");
+      if (cnode->thunk.indirect_offset != cnode2->thunk.indirect_offset)
+        return return_false_with_msg ("thunk indirect_offset mismatch");
       if (cnode->thunk.this_adjusting != cnode2->thunk.this_adjusting)
         return return_false_with_msg ("thunk this_adjusting mismatch");
       if (cnode->thunk.virtual_offset_p != cnode2->thunk.virtual_offset_p)

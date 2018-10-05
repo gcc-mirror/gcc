@@ -37,6 +37,7 @@
 # and "// Go" for Go
 # If the tool is ObjC/ObjC++ then we overide the extension to .m/.mm to 
 # allow for ObjC/ObjC++ specific flags.
+
 proc check_compile {basename type contents args} {
     global tool
     verbose "check_compile tool: $tool for $basename" 
@@ -117,23 +118,33 @@ proc current_target_name { } {
 
 proc check_cached_effective_target { prop args } {
     global et_cache
-    global et_prop_list
 
     set target [current_target_name]
-    if {![info exists et_cache($prop,target)]
-	|| $et_cache($prop,target) != $target} {
+    if {![info exists et_cache($prop,$target)]} {
 	verbose "check_cached_effective_target $prop: checking $target" 2
-	set et_cache($prop,target) $target
-	set et_cache($prop,value) [uplevel eval $args]
-	if {![info exists et_prop_list]
-	    || [lsearch $et_prop_list $prop] < 0} {
-	    lappend et_prop_list $prop
+	if {[string is true -strict $args] || [string is false -strict $args]} {
+	    error {check_cached_effective_target condition already evaluated; did you pass [...] instead of the expected {...}?}
+	} else {
+	    set code [catch {uplevel eval $args} result]
+	    if {$code != 0 && $code != 2} {
+		return -code $code $result
+	    }
+	    set et_cache($prop,$target) $result
 	}
-	verbose "check_cached_effective_target cached list is now: $et_prop_list" 2
     }
-    set value $et_cache($prop,value)
+    set value $et_cache($prop,$target)
     verbose "check_cached_effective_target $prop: returning $value for $target" 2
     return $value
+}
+
+# Implements a version of check_cached_effective_target that also takes et_index
+# into account when creating the key for the cache.
+proc check_cached_effective_target_indexed { prop args } {
+    global et_index
+    set key "$et_index $prop"
+    verbose "check_cached_effective_target_index $prop: returning $key" 2
+
+    return [check_cached_effective_target $key [list uplevel eval $args]]
 }
 
 # Clear effective-target cache. This is useful after testing
@@ -147,16 +158,7 @@ proc check_cached_effective_target { prop args } {
 
 proc clear_effective_target_cache { } {
     global et_cache
-    global et_prop_list
-
-    if {[info exists et_prop_list]} {
-	verbose "clear_effective_target_cache: $et_prop_list" 2
-	foreach prop $et_prop_list {
-	    unset et_cache($prop,value)
-	    unset et_cache($prop,target)
-	}
-	unset et_prop_list
-    }
+    array unset et_cache
 }
 
 # Like check_compile, but delete the output file and return true if the
@@ -380,12 +382,9 @@ proc check_visibility_available { what_kind } {
 # be determined.
 
 proc check_alias_available { } {
-    global alias_available_saved
     global tool
 
-    if [info exists alias_available_saved] {
-        verbose "check_alias_available  returning saved $alias_available_saved" 2
-    } else {
+    return [check_cached_effective_target alias_available {
 	set src alias[pid].c
 	set obj alias[pid].o
         verbose "check_alias_available  compiling testfile $src" 2
@@ -402,7 +401,7 @@ proc check_alias_available { } {
 
 	if [string match "" $lines] then {
 	    # No error messages, everything is OK.
-	    set alias_available_saved 2
+	    return 2
 	} else {
 	    if [regexp "alias definitions not supported" $lines] {
 		verbose "check_alias_available  target does not support aliases" 2
@@ -411,24 +410,20 @@ proc check_alias_available { } {
 
 		if { $objformat == "elf" } {
 		    verbose "check_alias_available  but target uses ELF format, so it ought to" 2
-		    set alias_available_saved -1
+		    return -1
 		} else {
-		    set alias_available_saved 0
+		    return 0
 		}
 	    } else {
 		if [regexp "only weak aliases are supported" $lines] {
 		verbose "check_alias_available  target supports only weak aliases" 2
-		set alias_available_saved 1
+		    return 1
 		} else {
-		    set alias_available_saved -1
+		    return -1
 		}
 	    }
 	}
-
-	verbose "check_alias_available  returning $alias_available_saved" 2
-    }
-
-    return $alias_available_saved
+    }]
 }
 
 # Returns 1 if the target toolchain supports strong aliases, 0 otherwise.
@@ -461,15 +456,13 @@ proc check_ifunc_available { } {
 # Returns true if --gc-sections is supported on the target.
 
 proc check_gc_sections_available { } {
-    global gc_sections_available_saved
     global tool
 
-    if {![info exists gc_sections_available_saved]} {
+    return [check_cached_effective_target gc_sections_available {
 	# Some targets don't support gc-sections despite whatever's
 	# advertised by ld's options.
 	if { [istarget alpha*-*-*]
 	     || [istarget ia64-*-*] } {
-	    set gc_sections_available_saved 0
 	    return 0
 	}
 
@@ -477,7 +470,6 @@ proc check_gc_sections_available { } {
 	# --gc-sections.
 	if { [board_info target exists ldflags]
 	     && [regexp " -elf2flt\[ =\]" " [board_info target ldflags] "] } {
-	    set gc_sections_available_saved 0
 	    return 0
 	}
 
@@ -485,7 +477,6 @@ proc check_gc_sections_available { } {
 	# while RTP executables are linked with -q (--emit-relocs).
 	# Both of these options are incompatible with --gc-sections.
 	if { [istarget *-*-vxworks*] } {
-	    set gc_sections_available_saved 0
 	    return 0
 	}
 
@@ -493,12 +484,11 @@ proc check_gc_sections_available { } {
 	set gcc_ld [lindex [${tool}_target_compile "-print-prog-name=ld" "" "none" ""] 0]
 	set ld_output [remote_exec host "$gcc_ld" "--help"]
 	if { [ string first "--gc-sections" $ld_output ] >= 0 } {
-	    set gc_sections_available_saved 1
+	    return 1
 	} else {
-	    set gc_sections_available_saved 0
+	    return 0
 	}
-    }
-    return $gc_sections_available_saved
+    }]
 }
 
 # Return 1 if according to target_info struct and explicit target list
@@ -581,8 +571,6 @@ proc profopt-perf-wrapper { } {
 # Return true if profiling is supported on the target.
 
 proc check_profiling_available { test_what } {
-    global profiling_available_saved
-
     verbose "Profiling argument is <$test_what>" 1
 
     # These conditions depend on the argument so examine them before
@@ -657,7 +645,8 @@ proc check_profiling_available { test_what } {
     }
 
     # Now examine the cache variable.
-    if {![info exists profiling_available_saved]} {
+    set profiling_working \
+       [check_cached_effective_target profiling_available {
 	# Some targets don't have any implementation of __bb_init_func or are
 	# missing other needed machinery.
 	if {[istarget aarch64*-*-elf]
@@ -693,16 +682,15 @@ proc check_profiling_available { test_what } {
 	     || [istarget xtensa*-*-elf]
 	     || [istarget *-*-rtems*]
 	     || [istarget *-*-vxworks*] } {
-	    set profiling_available_saved 0
+	    return 0
 	} else {
-	    set profiling_available_saved 1
+	    return 1
 	}
-    }
+    }]
 
     # -pg link test result can't be cached since it may change between
     # runs.
-    set profiling_working $profiling_available_saved
-    if { $profiling_available_saved == 1
+    if { $profiling_working == 1
          && ![check_no_compiler_messages_nocache profiling executable {
 	      int main() { return 0; } } "-pg"] } {
 	set profiling_working 0
@@ -3045,7 +3033,6 @@ proc check_effective_target_ucn { } {
 # instruction set.
 
 proc check_effective_target_vect_cmdline_needed { } {
-    global et_vect_cmdline_needed_saved
     global et_vect_cmdline_needed_target_name
 
     if { ![info exists et_vect_cmdline_needed_target_name] } {
@@ -3063,10 +3050,7 @@ proc check_effective_target_vect_cmdline_needed { } {
 	}
     }
 
-    if [info exists et_vect_cmdline_needed_saved] {
-	verbose "check_effective_target_vect_cmdline_needed: using cached result" 2
-    } else {
-	set et_vect_cmdline_needed_saved 1
+    return [check_cached_effective_target vect_cmdline_needed {
 	if { [istarget alpha*-*-*]
 	     || [istarget ia64-*-*]
 	     || (([istarget i?86-*-*] || [istarget x86_64-*-*])
@@ -3078,12 +3062,10 @@ proc check_effective_target_vect_cmdline_needed { } {
              || [istarget spu-*-*]
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
 	     || [istarget aarch64*-*-*] } {
-	   set et_vect_cmdline_needed_saved 0
-	}
-    }
-
-    verbose "check_effective_target_vect_cmdline_needed: returning $et_vect_cmdline_needed_saved" 2
-    return $et_vect_cmdline_needed_saved
+	    return 0
+	} else {
+	    return 1
+	}}]
 }
 
 # Return 1 if the target supports hardware vectors of int, 0 otherwise.
@@ -3091,106 +3073,62 @@ proc check_effective_target_vect_cmdline_needed { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_int { } {
-    global et_vect_int_saved
-    global et_index
-
-    if [info exists et_vect_int_saved($et_index)] {
-	verbose "check_effective_target_vect_int: using cached result" 2
-    } else {
-	set et_vect_int_saved($et_index) 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
-             || ([istarget powerpc*-*-*]
-		 && ![istarget powerpc-*-linux*paired*])
-	     || [istarget spu-*-*]
-	     || [istarget sparc*-*-*]
-	     || [istarget alpha*-*-*]
-	     || [istarget ia64-*-*] 
-	     || [istarget aarch64*-*-*]
-	     || [is-effective-target arm_neon]
-	     || ([istarget mips*-*-*]
-		 && ([et-is-effective-target mips_loongson]
-		     || [et-is-effective-target mips_msa]))
-	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_int_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_int:\
-	     returning $et_vect_int_saved($et_index)" 2
-    return $et_vect_int_saved($et_index)
+    return [check_cached_effective_target_indexed vect_int {
+      expr {
+         [istarget i?86-*-*] || [istarget x86_64-*-*]
+         || ([istarget powerpc*-*-*]
+	     && ![istarget powerpc-*-linux*paired*])
+	 || [istarget spu-*-*]
+	 || [istarget sparc*-*-*]
+	 || [istarget alpha*-*-*]
+	 || [istarget ia64-*-*]
+	 || [istarget aarch64*-*-*]
+	 || [is-effective-target arm_neon]
+	 || ([istarget mips*-*-*]
+	     && ([et-is-effective-target mips_loongson]
+	     || [et-is-effective-target mips_msa]))
+	 || ([istarget s390*-*-*]
+	     && [check_effective_target_s390_vx])
+	}}]
 }
 
 # Return 1 if the target supports signed int->float conversion 
 #
 
 proc check_effective_target_vect_intfloat_cvt { } {
-    global et_vect_intfloat_cvt_saved
-    global et_index
-
-    if [info exists et_vect_intfloat_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_intfloat_cvt:\
-		 using cached result" 2
-    } else {
-	set et_vect_intfloat_cvt_saved($et_index) 0
-        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_intfloat_cvt {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*])
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_intfloat_cvt_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_intfloat_cvt:\
-	     returning $et_vect_intfloat_cvt_saved($et_index)" 2
-    return $et_vect_intfloat_cvt_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target supports signed double->int conversion
 #
 
 proc check_effective_target_vect_doubleint_cvt { } {
-    global et_vect_doubleint_cvt_saved
-    global et_index
-
-    if [info exists et_vect_doubleint_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_doubleint_cvt: using cached result" 2
-    } else {
-	set et_vect_doubleint_cvt_saved($et_index) 0
-	if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	      && [check_no_compiler_messages vect_doubleint_cvt assembly {
-		  #ifdef __tune_atom__
-		  # error No double vectorizer support.
-		  #endif
+    return [check_cached_effective_target_indexed vect_doubleint_cvt {
+      expr { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	       && [check_no_compiler_messages vect_doubleint_cvt assembly {
+		   #ifdef __tune_atom__
+		   # error No double vectorizer support.
+		   #endif
 	      }])
-	     || [istarget aarch64*-*-*]
-	     || [istarget spu-*-*]
-	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
-	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_doubleint_cvt_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_doubleint_cvt:\
-	     returning $et_vect_doubleint_cvt_saved($et_index)" 2
-    return $et_vect_doubleint_cvt_saved($et_index)
+	    || [istarget aarch64*-*-*]
+	    || [istarget spu-*-*]
+	    || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
+	    || ([istarget mips*-*-*]
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target supports signed int->double conversion
 #
 
 proc check_effective_target_vect_intdouble_cvt { } {
-    global et_vect_intdouble_cvt_saved
-    global et_index
-
-    if [info exists et_vect_intdouble_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_intdouble_cvt: using cached result" 2
-    } else {
-	set et_vect_intdouble_cvt_saved($et_index) 0
-	if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+    return [check_cached_effective_target_indexed vect_intdouble_cvt {
+      expr { (([istarget i?86-*-*] || [istarget x86_64-*-*])
 	      && [check_no_compiler_messages vect_intdouble_cvt assembly {
 		  #ifdef __tune_atom__
 		  # error No double vectorizer support.
@@ -3200,14 +3138,7 @@ proc check_effective_target_vect_intdouble_cvt { } {
 	     || [istarget spu-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_intdouble_cvt_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_intdouble_cvt:\
-	     returning $et_vect_intdouble_cvt_saved($et_index)" 2
-    return $et_vect_intdouble_cvt_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 #Return 1 if we're supporting __int128 for target, 0 otherwise.
@@ -3228,28 +3159,14 @@ proc check_effective_target_int128 { } {
 #
 
 proc check_effective_target_vect_uintfloat_cvt { } {
-    global et_vect_uintfloat_cvt_saved
-    global et_index
-
-    if [info exists et_vect_uintfloat_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_uintfloat_cvt:\
-		 using cached result" 2
-    } else {
-	set et_vect_uintfloat_cvt_saved($et_index) 0
-        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_uintfloat_cvt {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*])
 	     || [istarget aarch64*-*-*]
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_uintfloat_cvt_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_uintfloat_cvt:\
-	     returning $et_vect_uintfloat_cvt_saved($et_index)" 2
-    return $et_vect_uintfloat_cvt_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 
@@ -3257,76 +3174,35 @@ proc check_effective_target_vect_uintfloat_cvt { } {
 #
 
 proc check_effective_target_vect_floatint_cvt { } {
-    global et_vect_floatint_cvt_saved
-    global et_index
-
-    if [info exists et_vect_floatint_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_floatint_cvt:\
-		 using cached result" 2
-    } else {
-	set et_vect_floatint_cvt_saved($et_index) 0
-        if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_floatint_cvt {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*]
 		 && ![istarget powerpc-*-linux*paired*])
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_floatint_cvt_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_floatint_cvt:\
-	     returning $et_vect_floatint_cvt_saved($et_index)" 2
-    return $et_vect_floatint_cvt_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target supports unsigned float->int conversion
 #
 
 proc check_effective_target_vect_floatuint_cvt { } {
-    global et_vect_floatuint_cvt_saved
-    global et_index
-
-    if [info exists et_vect_floatuint_cvt_saved($et_index)] {
-	verbose "check_effective_target_vect_floatuint_cvt:\
-		 using cached result" 2
-    } else {
-	set et_vect_floatuint_cvt_saved($et_index) 0
-        if { ([istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_floatuint_cvt {
+      expr { ([istarget powerpc*-*-*]
 	      && ![istarget powerpc-*-linux*paired*])
 	    || [is-effective-target arm_neon]
 	    || ([istarget mips*-*-*]
-		&& [et-is-effective-target mips_msa]) } {
-	   set et_vect_floatuint_cvt_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_floatuint_cvt:\
-	     returning $et_vect_floatuint_cvt_saved($et_index)" 2
-    return $et_vect_floatuint_cvt_saved($et_index)
+		&& [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if peeling for alignment might be profitable on the target
 #
 
 proc check_effective_target_vect_peeling_profitable { } {
-    global et_vect_peeling_profitable_saved
-    global et_index
-
-    if [info exists et_vect_peeling_profitable_saved($et_index)] {
-	verbose "check_effective_target_vect_peeling_profitable: using cached result" 2
-    } else {
-	set et_vect_peeling_profitable_saved($et_index) 1
-        if { ([istarget s390*-*-*]
+    return [check_cached_effective_target_indexed vect_peeling_profitable {
+      expr { ([istarget s390*-*-*]
 	      && [check_effective_target_s390_vx])
-	     || [check_effective_target_vect_element_align_preferred] } {
-	    set et_vect_peeling_profitable_saved($et_index) 0
-        }
-    }
-
-    verbose "check_effective_target_vect_peeling_profitable:\
-	     returning $et_vect_peeling_profitable_saved($et_index)" 2
-    return $et_vect_peeling_profitable_saved($et_index)
+	    || [check_effective_target_vect_element_align_preferred] }}]
 }
 
 # Return 1 if the target supports #pragma omp declare simd, 0 otherwise.
@@ -3334,26 +3210,13 @@ proc check_effective_target_vect_peeling_profitable { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_simd_clones { } {
-    global et_vect_simd_clones_saved
-    global et_index
-
-    if [info exists et_vect_simd_clones_saved($et_index)] {
-	verbose "check_effective_target_vect_simd_clones: using cached result" 2
-    } else {
-	set et_vect_simd_clones_saved($et_index) 0
-	# On i?86/x86_64 #pragma omp declare simd builds a sse2, avx,
-	# avx2 and avx512f clone.  Only the right clone for the
-	# specified arch will be chosen, but still we need to at least
-	# be able to assemble avx512f.
-	if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	      && [check_effective_target_avx512f]) } {
-	    set et_vect_simd_clones_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_simd_clones:\
-	     returning $et_vect_simd_clones_saved($et_index)" 2
-    return $et_vect_simd_clones_saved($et_index)
+    # On i?86/x86_64 #pragma omp declare simd builds a sse2, avx,
+    # avx2 and avx512f clone.  Only the right clone for the
+    # specified arch will be chosen, but still we need to at least
+    # be able to assemble avx512f.
+    return [check_cached_effective_target_indexed vect_simd_clones {
+      expr { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	      && [check_effective_target_avx512f]) }}]
 }
 
 # Return 1 if this is a AArch64 target supporting big endian
@@ -5439,14 +5302,8 @@ proc check_effective_target_sparc_vis { } {
 # Return 1 if the target supports hardware vector shift operation.
 
 proc check_effective_target_vect_shift { } {
-    global et_vect_shift_saved
-    global et_index
-
-    if [info exists et_vect_shift_saved($et_index)] {
-	verbose "check_effective_target_vect_shift: using cached result" 2
-    } else {
-	set et_vect_shift_saved($et_index) 0
-	if { ([istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_shift {
+      expr {([istarget powerpc*-*-*]
 	      && ![istarget powerpc-*-linux*paired*])
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -5456,14 +5313,7 @@ proc check_effective_target_vect_shift { } {
 		 && ([et-is-effective-target mips_msa]
 		     || [et-is-effective-target mips_loongson]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_shift_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_shift:\
-	     returning $et_vect_shift_saved($et_index)" 2
-    return $et_vect_shift_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 proc check_effective_target_whole_vector_shift { } {
@@ -5489,49 +5339,21 @@ proc check_effective_target_whole_vector_shift { } {
 # Return 1 if the target supports vector bswap operations.
 
 proc check_effective_target_vect_bswap { } {
-    global et_vect_bswap_saved
-    global et_index
-
-    if [info exists et_vect_bswap_saved($et_index)] {
-	verbose "check_effective_target_vect_bswap: using cached result" 2
-    } else {
-	set et_vect_bswap_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
-             || [is-effective-target arm_neon]
-	   } {
-	   set et_vect_bswap_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_bswap:\
-	     returning $et_vect_bswap_saved($et_index)" 2
-    return $et_vect_bswap_saved($et_index)
+    return [check_cached_effective_target_indexed vect_bswap {
+      expr { [istarget aarch64*-*-*] || [is-effective-target arm_neon] }}]
 }
 
 # Return 1 if the target supports hardware vector shift operation for char.
 
 proc check_effective_target_vect_shift_char { } {
-    global et_vect_shift_char_saved
-    global et_index
-
-    if [info exists et_vect_shift_char_saved($et_index)] {
-	verbose "check_effective_target_vect_shift_char: using cached result" 2
-    } else {
-	set et_vect_shift_char_saved($et_index) 0
-	if { ([istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_shift_char {
+      expr { ([istarget powerpc*-*-*]
              && ![istarget powerpc-*-linux*paired*])
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_shift_char_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_shift_char:\
-	     returning $et_vect_shift_char_saved($et_index)" 2
-    return $et_vect_shift_char_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports hardware vectors of long, 0 otherwise.
@@ -5565,14 +5387,8 @@ proc check_effective_target_vect_long { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_float { } {
-    global et_vect_float_saved
-    global et_index
-
-    if [info exists et_vect_float_saved($et_index)] {
-	verbose "check_effective_target_vect_float: using cached result" 2
-    } else {
-	set et_vect_float_saved($et_index) 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_float {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget mips-sde-elf]
@@ -5583,14 +5399,7 @@ proc check_effective_target_vect_float { } {
 		 && [et-is-effective-target mips_msa])
 	     || [is-effective-target arm_neon]
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vxe]) } {
-	    set et_vect_float_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_float:\
-	     returning $et_vect_float_saved($et_index)" 2
-    return $et_vect_float_saved($et_index)
+		 && [check_effective_target_s390_vxe]) }}]
 }
 
 # Return 1 if the target supports hardware vectors of float without
@@ -5606,33 +5415,20 @@ proc check_effective_target_vect_float_strict { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_double { } {
-    global et_vect_double_saved
-    global et_index
-
-    if [info exists et_vect_double_saved($et_index)] {
-	verbose "check_effective_target_vect_double: using cached result" 2
-    } else {
-	set et_vect_double_saved($et_index) 0
-	if { (([istarget i?86-*-*] || [istarget x86_64-*-*])
-	      && [check_no_compiler_messages vect_double assembly {
+    return [check_cached_effective_target_indexed vect_double {
+        expr { (([istarget i?86-*-*] || [istarget x86_64-*-*])
+	         && [check_no_compiler_messages vect_double assembly {
 		  #ifdef __tune_atom__
 		  # error No double vectorizer support.
 		  #endif
-	      }])
+		}])
 	     || [istarget aarch64*-*-*]
 	     || [istarget spu-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_double_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_double:\
-	     returning $et_vect_double_saved($et_index)" 2
-    return $et_vect_double_saved($et_index)
+		 && [check_effective_target_s390_vx])} }]
 }
 
 # Return 1 if the target supports conditional addition, subtraction,
@@ -5648,25 +5444,12 @@ proc check_effective_target_vect_double_cond_arith { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_long_long { } {
-    global et_vect_long_long_saved
-    global et_index
-
-    if [info exists et_vect_long_long_saved($et_index)] {
-        verbose "check_effective_target_vect_long_long: using cached result" 2
-    } else {
-	set et_vect_long_long_saved($et_index) 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_long_long {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_long_long_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_long_long:\
-	     returning $et_vect_long_long_saved($et_index)" 2
-    return $et_vect_long_long_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 
@@ -5676,25 +5459,12 @@ proc check_effective_target_vect_long_long { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_no_int_min_max { } {
-    global et_vect_no_int_min_max_saved
-    global et_index
-
-    if [info exists et_vect_no_int_min_max_saved($et_index)] {
-	verbose "check_effective_target_vect_no_int_min_max:\
-		 using cached result" 2
-    } else {
-	set et_vect_no_int_min_max_saved($et_index) 0
-	if { [istarget sparc*-*-*]
+    return [check_cached_effective_target_indexed vect_no_int_min_max {
+      expr { [istarget sparc*-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget alpha*-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_loongson]) } {
-	    set et_vect_no_int_min_max_saved($et_index) 1
-	}
-    }
-    verbose "check_effective_target_vect_no_int_min_max:\
-	     returning $et_vect_no_int_min_max_saved($et_index)" 2
-    return $et_vect_no_int_min_max_saved($et_index)
+		 && [et-is-effective-target mips_loongson]) }}]
 }
 
 # Return 1 if the target plus current options does not support a vector
@@ -5703,21 +5473,9 @@ proc check_effective_target_vect_no_int_min_max { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_no_int_add { } {
-    global et_vect_no_int_add_saved
-    global et_index
-
-    if [info exists et_vect_no_int_add_saved($et_index)] {
-	verbose "check_effective_target_vect_no_int_add: using cached result" 2
-    } else {
-	set et_vect_no_int_add_saved($et_index) 0
-	# Alpha only supports vector add on V8QI and V4HI.
-	if { [istarget alpha*-*-*] } {
-	    set et_vect_no_int_add_saved($et_index) 1
-	}
-    }
-    verbose "check_effective_target_vect_no_int_add:\
-	     returning $et_vect_no_int_add_saved($et_index)" 2
-    return $et_vect_no_int_add_saved($et_index)
+    # Alpha only supports vector add on V8QI and V4HI.
+    return [check_cached_effective_target_indexed vect_no_int_add {
+      expr { [istarget alpha*-*-*] }}]
 }
 
 # Return 1 if the target plus current options does not support vector
@@ -5726,17 +5484,7 @@ proc check_effective_target_vect_no_int_add { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_no_bitwise { } {
-    global et_vect_no_bitwise_saved
-    global et_index
-
-    if [info exists et_vect_no_bitwise_saved($et_index)] {
-	verbose "check_effective_target_vect_no_bitwise: using cached result" 2
-    } else {
-	set et_vect_no_bitwise_saved($et_index) 0
-    }
-    verbose "check_effective_target_vect_no_bitwise:\
-	     returning $et_vect_no_bitwise_saved($et_index)" 2
-    return $et_vect_no_bitwise_saved($et_index)
+    return [check_cached_effective_target_indexed vect_no_bitwise { return 0 }]
 }
 
 # Return 1 if the target plus current options supports vector permutation,
@@ -5745,14 +5493,8 @@ proc check_effective_target_vect_no_bitwise { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_perm { } {
-    global et_vect_perm_saved
-    global et_index
-
-    if [info exists et_vect_perm_saved($et_index)] {
-        verbose "check_effective_target_vect_perm: using cached result" 2
-    } else {
-	set et_vect_perm_saved($et_index) 0
-        if { [is-effective-target arm_neon]
+    return [check_cached_effective_target_indexed vect_perm {
+      expr { [is-effective-target arm_neon]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
              || [istarget spu-*-*]
@@ -5761,13 +5503,7 @@ proc check_effective_target_vect_perm { } {
 		 && ([et-is-effective-target mpaired_single]
 		     || [et-is-effective-target mips_msa]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_perm_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_perm:\
-	     returning $et_vect_perm_saved($et_index)" 2
-    return $et_vect_perm_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if, for some VF:
@@ -5850,14 +5586,8 @@ proc check_effective_target_vect_perm3_int { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_perm_byte { } {
-    global et_vect_perm_byte_saved
-    global et_index
-
-    if [info exists et_vect_perm_byte_saved($et_index)] {
-        verbose "check_effective_target_vect_perm_byte: using cached result" 2
-    } else {
-	set et_vect_perm_byte_saved($et_index) 0
-        if { ([is-effective-target arm_neon]
+    return [check_cached_effective_target_indexed vect_perm_byte {
+      expr { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
 		 && [is-effective-target aarch64_little_endian])
@@ -5866,13 +5596,7 @@ proc check_effective_target_vect_perm_byte { } {
 	     || ([istarget mips-*.*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_perm_byte_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_perm_byte:\
-	     returning $et_vect_perm_byte_saved($et_index)" 2
-    return $et_vect_perm_byte_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports SLP permutation of 3 vectors when each
@@ -5889,14 +5613,8 @@ proc check_effective_target_vect_perm3_byte { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_perm_short { } {
-    global et_vect_perm_short_saved
-    global et_index
-
-    if [info exists et_vect_perm_short_saved($et_index)] {
-        verbose "check_effective_target_vect_perm_short: using cached result" 2
-    } else {
-	set et_vect_perm_short_saved($et_index) 0
-        if { ([is-effective-target arm_neon]
+    return [check_cached_effective_target_indexed vect_perm_short {
+      expr { ([is-effective-target arm_neon]
 	      && [is-effective-target arm_little_endian])
 	     || ([istarget aarch64*-*-*]
 		 && [is-effective-target aarch64_little_endian])
@@ -5907,13 +5625,7 @@ proc check_effective_target_vect_perm_short { } {
 	     || ([istarget mips*-*-*]
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_perm_short_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_perm_short:\
-	     returning $et_vect_perm_short_saved($et_index)" 2
-    return $et_vect_perm_short_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports SLP permutation of 3 vectors when each
@@ -5930,20 +5642,8 @@ proc check_effective_target_vect_perm3_short { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_xorsign { } {
-    global et_xorsign_saved
-    global et_index
-
-    if [info exists et_xorsign_saved($et_index)] {
-        verbose "check_effective_target_xorsign: using cached result" 2
-    } else {
-	set et_xorsign_saved($et_index) 0
-        if { [istarget aarch64*-*-*] || [istarget arm*-*-*] } {
-	    set et_xorsign_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_xorsign:\
-	     returning $et_xorsign_saved($et_index)" 2
-    return $et_xorsign_saved($et_index)
+    return [check_cached_effective_target_indexed xorsign {
+      expr { [istarget aarch64*-*-*] || [istarget arm*-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -5952,25 +5652,12 @@ proc check_effective_target_xorsign { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
-    global et_vect_widen_sum_hi_to_si_pattern_saved
-    global et_index
-
-    if [info exists et_vect_widen_sum_hi_to_si_pattern_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_sum_hi_to_si_pattern:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_sum_hi_to_si_pattern_saved($et_index) 0
-        if { [istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_widen_sum_hi_to_si_pattern {
+      expr { [istarget powerpc*-*-*]
              || ([istarget aarch64*-*-*]
 		 && ![check_effective_target_aarch64_sve])
 	     || [is-effective-target arm_neon]
-             || [istarget ia64-*-*] } {
-	    set et_vect_widen_sum_hi_to_si_pattern_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_sum_hi_to_si_pattern:\
-	     returning $et_vect_widen_sum_hi_to_si_pattern_saved($et_index)" 2
-    return $et_vect_widen_sum_hi_to_si_pattern_saved($et_index)
+             || [istarget ia64-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -5979,25 +5666,12 @@ proc check_effective_target_vect_widen_sum_hi_to_si_pattern { } {
 # promotion (unpacking) from shorts to ints.
 #
 # This won't change for different subtargets so cache the result.
-                                                                                                
-proc check_effective_target_vect_widen_sum_hi_to_si { } {
-    global et_vect_widen_sum_hi_to_si_saved
-    global et_index
 
-    if [info exists et_vect_widen_sum_hi_to_si_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_sum_hi_to_si:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_sum_hi_to_si_saved($et_index) \
-	    [check_effective_target_vect_unpack]
-        if { [istarget powerpc*-*-*] 
-	     || [istarget ia64-*-*] } {
-	    set et_vect_widen_sum_hi_to_si_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_sum_hi_to_si:\
-	     returning $et_vect_widen_sum_hi_to_si_saved($et_index)" 2
-    return $et_vect_widen_sum_hi_to_si_saved($et_index)
+proc check_effective_target_vect_widen_sum_hi_to_si { } {
+    return [check_cached_effective_target_indexed vect_widen_sum_hi_to_si {
+      expr { [check_effective_target_vect_unpack]
+             || [istarget powerpc*-*-*]
+	     || [istarget ia64-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6008,23 +5682,10 @@ proc check_effective_target_vect_widen_sum_hi_to_si { } {
 # This won't change for different subtargets so cache the result.
                                                                                                 
 proc check_effective_target_vect_widen_sum_qi_to_hi { } {
-    global et_vect_widen_sum_qi_to_hi_saved
-    global et_index
-
-    if [info exists et_vect_widen_sum_qi_to_hi_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_sum_qi_to_hi:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_sum_qi_to_hi_saved($et_index) 0
-	if { [check_effective_target_vect_unpack] 
+    return [check_cached_effective_target_indexed vect_widen_sum_qi_to_hi {
+      expr { [check_effective_target_vect_unpack]
 	     || [is-effective-target arm_neon]
-	     || [istarget ia64-*-*] } {
-	    set et_vect_widen_sum_qi_to_hi_saved($et_index) 1
-	}
-    }
-    verbose "check_effective_target_vect_widen_sum_qi_to_hi:\
-	     returning $et_vect_widen_sum_qi_to_hi_saved($et_index)" 2
-    return $et_vect_widen_sum_qi_to_hi_saved($et_index)
+	     || [istarget ia64-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6033,21 +5694,8 @@ proc check_effective_target_vect_widen_sum_qi_to_hi { } {
 # This won't change for different subtargets so cache the result.
                                                                                                 
 proc check_effective_target_vect_widen_sum_qi_to_si { } {
-    global et_vect_widen_sum_qi_to_si_saved
-    global et_index
-
-    if [info exists et_vect_widen_sum_qi_to_si_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_sum_qi_to_si:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_sum_qi_to_si_saved($et_index) 0
-        if { [istarget powerpc*-*-*] } {
-	    set et_vect_widen_sum_qi_to_si_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_sum_qi_to_si:\
-	     returning $et_vect_widen_sum_qi_to_si_saved($et_index)" 2
-    return $et_vect_widen_sum_qi_to_si_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_sum_qi_to_si {
+      expr { [istarget powerpc*-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6060,31 +5708,15 @@ proc check_effective_target_vect_widen_sum_qi_to_si { } {
 
 
 proc check_effective_target_vect_widen_mult_qi_to_hi { } {
-    global et_vect_widen_mult_qi_to_hi_saved
-    global et_index
-
-    if [info exists et_vect_widen_mult_qi_to_hi_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_mult_qi_to_hi:\
-		 using cached result" 2
-    } else {
-	if { [check_effective_target_vect_unpack]
-	     && [check_effective_target_vect_short_mult] } {
-	    set et_vect_widen_mult_qi_to_hi_saved($et_index) 1
-	} else {
-	    set et_vect_widen_mult_qi_to_hi_saved($et_index) 0
-	}
-        if { [istarget powerpc*-*-*]
-              || ([istarget aarch64*-*-*]
-		  && ![check_effective_target_aarch64_sve])
-              || [is-effective-target arm_neon]
-	      || ([istarget s390*-*-*]
-		  && [check_effective_target_s390_vx]) } {
-	    set et_vect_widen_mult_qi_to_hi_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_mult_qi_to_hi:\
-	     returning $et_vect_widen_mult_qi_to_hi_saved($et_index)" 2
-    return $et_vect_widen_mult_qi_to_hi_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_mult_qi_to_hi {
+      expr { ([check_effective_target_vect_unpack]
+	       && [check_effective_target_vect_short_mult])
+	      || ([istarget powerpc*-*-*]
+		  || ([istarget aarch64*-*-*]
+		      && ![check_effective_target_aarch64_sve])
+		  || [is-effective-target arm_neon]
+		  || ([istarget s390*-*-*]
+		      && [check_effective_target_s390_vx])) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6097,34 +5729,18 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 
 
 proc check_effective_target_vect_widen_mult_hi_to_si { } {
-    global et_vect_widen_mult_hi_to_si_saved
-    global et_index
-
-    if [info exists et_vect_widen_mult_hi_to_si_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_mult_hi_to_si:\
-		 using cached result" 2
-    } else {
-        if { [check_effective_target_vect_unpack]
-             && [check_effective_target_vect_int_mult] } {
-	  set et_vect_widen_mult_hi_to_si_saved($et_index) 1
-        } else {
-	  set et_vect_widen_mult_hi_to_si_saved($et_index) 0
-        }
-        if { [istarget powerpc*-*-*]
-	     || [istarget spu-*-*]
-	     || [istarget ia64-*-*]
-	     || ([istarget aarch64*-*-*]
-		 && ![check_effective_target_aarch64_sve])
-	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
-	     || [is-effective-target arm_neon]
-	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_widen_mult_hi_to_si_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_mult_hi_to_si:\
-	     returning $et_vect_widen_mult_hi_to_si_saved($et_index)" 2
-    return $et_vect_widen_mult_hi_to_si_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_mult_hi_to_si {
+      expr { ([check_effective_target_vect_unpack]
+              && [check_effective_target_vect_int_mult])
+	     || ([istarget powerpc*-*-*]
+		 || [istarget spu-*-*]
+		 || [istarget ia64-*-*]
+		 || ([istarget aarch64*-*-*]
+		     && ![check_effective_target_aarch64_sve])
+		 || [istarget i?86-*-*] || [istarget x86_64-*-*]
+		 || [is-effective-target arm_neon]
+		 || ([istarget s390*-*-*]
+		     && [check_effective_target_s390_vx])) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6133,25 +5749,12 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_widen_mult_qi_to_hi_pattern { } {
-    global et_vect_widen_mult_qi_to_hi_pattern_saved
-    global et_index
-
-    if [info exists et_vect_widen_mult_qi_to_hi_pattern_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_mult_qi_to_hi_pattern:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_mult_qi_to_hi_pattern_saved($et_index) 0
-        if { [istarget powerpc*-*-*]
-              || ([is-effective-target arm_neon]
-		  && [check_effective_target_arm_little_endian])
-	      || ([istarget s390*-*-*]
-		  && [check_effective_target_s390_vx]) } {
-	    set et_vect_widen_mult_qi_to_hi_pattern_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_mult_qi_to_hi_pattern:\
-	     returning $et_vect_widen_mult_qi_to_hi_pattern_saved($et_index)" 2
-    return $et_vect_widen_mult_qi_to_hi_pattern_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_mult_qi_to_hi_pattern {
+      expr { [istarget powerpc*-*-*]
+             || ([is-effective-target arm_neon]
+		 && [check_effective_target_arm_little_endian])
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6160,28 +5763,15 @@ proc check_effective_target_vect_widen_mult_qi_to_hi_pattern { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
-    global et_vect_widen_mult_hi_to_si_pattern_saved
-    global et_index
-
-    if [info exists et_vect_widen_mult_hi_to_si_pattern_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_mult_hi_to_si_pattern:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_mult_hi_to_si_pattern_saved($et_index) 0
-        if { [istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_widen_mult_hi_to_si_pattern {
+      expr { [istarget powerpc*-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([is-effective-target arm_neon]
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_widen_mult_hi_to_si_pattern_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_mult_hi_to_si_pattern:\
-	     returning $et_vect_widen_mult_hi_to_si_pattern_saved($et_index)" 2
-    return $et_vect_widen_mult_hi_to_si_pattern_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6190,24 +5780,11 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_widen_mult_si_to_di_pattern { } {
-    global et_vect_widen_mult_si_to_di_pattern_saved
-    global et_index
-
-    if [info exists et_vect_widen_mult_si_to_di_pattern_saved($et_index)] {
-	verbose "check_effective_target_vect_widen_mult_si_to_di_pattern:\
-		 using cached result" 2
-    } else {
-	set et_vect_widen_mult_si_to_di_pattern_saved($et_index) 0
-        if {[istarget ia64-*-*]
-	    || [istarget i?86-*-*] || [istarget x86_64-*-*]
-	    || ([istarget s390*-*-*]
-		&& [check_effective_target_s390_vx]) } {
-	    set et_vect_widen_mult_si_to_di_pattern_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_mult_si_to_di_pattern:\
-	     returning $et_vect_widen_mult_si_to_di_pattern_saved($et_index)" 2
-    return $et_vect_widen_mult_si_to_di_pattern_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_mult_si_to_di_pattern {
+      expr { [istarget ia64-*-*]
+	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
+	     || ([istarget s390*-*-*]
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6216,20 +5793,8 @@ proc check_effective_target_vect_widen_mult_si_to_di_pattern { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_widen_shift { } {
-    global et_vect_widen_shift_saved
-    global et_index
-
-    if [info exists et_vect_shift_saved($et_index)] {
-        verbose "check_effective_target_vect_widen_shift: using cached result" 2
-    } else {
-	set et_vect_widen_shift_saved($et_index) 0
-        if { [is-effective-target arm_neon] } {
-	    set et_vect_widen_shift_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_widen_shift:\
-	     returning $et_vect_widen_shift_saved($et_index)" 2
-    return $et_vect_widen_shift_saved($et_index)
+    return [check_cached_effective_target_indexed vect_widen_shift {
+      expr { [is-effective-target arm_neon] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6238,24 +5803,12 @@ proc check_effective_target_vect_widen_shift { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_sdot_qi { } {
-    global et_vect_sdot_qi_saved
-    global et_index
-
-    if [info exists et_vect_sdot_qi_saved($et_index)] {
-        verbose "check_effective_target_vect_sdot_qi: using cached result" 2
-    } else {
-	set et_vect_sdot_qi_saved($et_index) 0
-	if { [istarget ia64-*-*]
+    return [check_cached_effective_target_indexed vect_sdot_qi {
+      expr { [istarget ia64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget arm*-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-            set et_vect_udot_qi_saved 1
-        }
-    }
-    verbose "check_effective_target_vect_sdot_qi:\
-	     returning $et_vect_sdot_qi_saved($et_index)" 2
-    return $et_vect_sdot_qi_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6264,25 +5817,13 @@ proc check_effective_target_vect_sdot_qi { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_udot_qi { } {
-    global et_vect_udot_qi_saved
-    global et_index
-
-    if [info exists et_vect_udot_qi_saved($et_index)] {
-        verbose "check_effective_target_vect_udot_qi: using cached result" 2
-    } else {
-	set et_vect_udot_qi_saved($et_index) 0
-        if { [istarget powerpc*-*-*]
+    return [check_cached_effective_target_indexed vect_udot_qi {
+      expr { [istarget powerpc*-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget arm*-*-*]
 	     || [istarget ia64-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_udot_qi_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_udot_qi:\
-	     returning $et_vect_udot_qi_saved($et_index)" 2
-    return $et_vect_udot_qi_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6291,24 +5832,12 @@ proc check_effective_target_vect_udot_qi { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_sdot_hi { } {
-    global et_vect_sdot_hi_saved
-    global et_index
-
-    if [info exists et_vect_sdot_hi_saved($et_index)] {
-        verbose "check_effective_target_vect_sdot_hi: using cached result" 2
-    } else {
-	set et_vect_sdot_hi_saved($et_index) 0
-        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
+    return [check_cached_effective_target_indexed vect_sdot_hi {
+      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_sdot_hi_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_sdot_hi:\
-	     returning $et_vect_sdot_hi_saved($et_index)" 2
-    return $et_vect_sdot_hi_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6317,22 +5846,10 @@ proc check_effective_target_vect_sdot_hi { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_udot_hi { } {
-    global et_vect_udot_hi_saved
-    global et_index
-
-    if [info exists et_vect_udot_hi_saved($et_index)] {
-        verbose "check_effective_target_vect_udot_hi: using cached result" 2
-    } else {
-	set et_vect_udot_hi_saved($et_index) 0
-	if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
+    return [check_cached_effective_target_indexed vect_udot_hi {
+      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_msa]) } {
-	    set et_vect_udot_hi_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_udot_hi:\
-	     returning $et_vect_udot_hi_saved($et_index)" 2
-    return $et_vect_udot_hi_saved($et_index)
+		 && [et-is-effective-target mips_msa]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6341,20 +5858,8 @@ proc check_effective_target_vect_udot_hi { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_usad_char { } {
-    global et_vect_usad_char_saved
-    global et_index
-
-    if [info exists et_vect_usad_char_saved($et_index)] {
-        verbose "check_effective_target_vect_usad_char: using cached result" 2
-    } else {
-	set et_vect_usad_char_saved($et_index) 0
-        if { [istarget i?86-*-*] || [istarget x86_64-*-*] } {
-	    set et_vect_usad_char_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_usad_char:\
-	     returning $et_vect_usad_char_saved($et_index)" 2
-    return $et_vect_usad_char_saved($et_index)
+    return [check_cached_effective_target_indexed vect_usad_char {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*] }}]
 }
 
 # Return 1 if the target plus current options supports both signed
@@ -6372,14 +5877,8 @@ proc check_effective_target_vect_avg_qi {} {
 # This won't change for different subtargets so cache the result.
                                                                                 
 proc check_effective_target_vect_pack_trunc { } {
-    global et_vect_pack_trunc_saved
-    global et_index
-                                                                                
-    if [info exists et_vect_pack_trunc_saved($et_index)] {
-        verbose "check_effective_target_vect_pack_trunc: using cached result" 2
-    } else {
-	set et_vect_pack_trunc_saved($et_index) 0
-        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
+    return [check_cached_effective_target_indexed vect_pack_trunc {
+      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
              || [istarget i?86-*-*] || [istarget x86_64-*-*]
              || [istarget aarch64*-*-*]
              || [istarget spu-*-*]
@@ -6388,13 +5887,7 @@ proc check_effective_target_vect_pack_trunc { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_pack_trunc_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_pack_trunc:\
-	     returning $et_vect_pack_trunc_saved($et_index)" 2
-    return $et_vect_pack_trunc_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -6403,15 +5896,9 @@ proc check_effective_target_vect_pack_trunc { } {
 # This won't change for different subtargets so cache the result.
                                    
 proc check_effective_target_vect_unpack { } {
-    global et_vect_unpack_saved
-    global et_index
-                                        
-    if [info exists et_vect_unpack_saved($et_index)] {
-        verbose "check_effective_target_vect_unpack: using cached result" 2
-    } else {
-	set et_vect_unpack_saved($et_index) 0
-        if { ([istarget powerpc*-*-*] && ![istarget powerpc-*paired*])
-             || [istarget i?86-*-*] || [istarget x86_64-*-*] 
+    return [check_cached_effective_target_indexed vect_unpack {
+      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*paired*])
+             || [istarget i?86-*-*] || [istarget x86_64-*-*]
              || [istarget spu-*-*]
              || [istarget ia64-*-*]
              || [istarget aarch64*-*-*]
@@ -6420,13 +5907,7 @@ proc check_effective_target_vect_unpack { } {
              || ([istarget arm*-*-*] && [check_effective_target_arm_neon_ok]
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_unpack_saved($et_index) 1
-        }
-    }
-    verbose "check_effective_target_vect_unpack:\
-	     returning $et_vect_unpack_saved($et_index)" 2
-    return $et_vect_unpack_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target plus current options does not guarantee
@@ -6435,15 +5916,7 @@ proc check_effective_target_vect_unpack { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_unaligned_stack { } {
-    global et_unaligned_stack_saved
-
-    if [info exists et_unaligned_stack_saved] {
-        verbose "check_effective_target_unaligned_stack: using cached result" 2
-    } else {
-        set et_unaligned_stack_saved 0
-    }
-    verbose "check_effective_target_unaligned_stack: returning $et_unaligned_stack_saved" 2
-    return $et_unaligned_stack_saved
+    return [check_cached_effective_target_indexed unaligned_stack { expr 0 }]
 }
 
 # Return 1 if the target plus current options does not support a vector
@@ -6452,27 +5925,15 @@ proc check_effective_target_unaligned_stack { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_no_align { } {
-    global et_vect_no_align_saved
-    global et_index
-
-    if [info exists et_vect_no_align_saved($et_index)] {
-	verbose "check_effective_target_vect_no_align: using cached result" 2
-    } else {
-	set et_vect_no_align_saved($et_index) 0
-	if { [istarget mipsisa64*-*-*]
+    return [check_cached_effective_target_indexed vect_no_align {
+      expr { [istarget mipsisa64*-*-*]
 	     || [istarget mips-sde-elf]
 	     || [istarget sparc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [check_effective_target_arm_vect_no_misalign]
 	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_loongson]) } {
-	    set et_vect_no_align_saved($et_index) 1
-	}
-    }
-    verbose "check_effective_target_vect_no_align:\
-	     returning $et_vect_no_align_saved($et_index)" 2
-    return $et_vect_no_align_saved($et_index)
+		 && [et-is-effective-target mips_loongson]) }}]
 }
 
 # Return 1 if the target supports a vector misalign access, 0 otherwise.
@@ -6480,28 +5941,21 @@ proc check_effective_target_vect_no_align { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_vect_hw_misalign { } {
-    global et_vect_hw_misalign_saved
-    global et_index
-
-    if [info exists et_vect_hw_misalign_saved($et_index)] {
-        verbose "check_effective_target_vect_hw_misalign: using cached result" 2
-    } else {
-	set et_vect_hw_misalign_saved($et_index) 0
+    return [check_cached_effective_target_indexed vect_hw_misalign {
 	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || [istarget aarch64*-*-*]
 	     || ([istarget mips*-*-*] && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx]) } {
-	  set et_vect_hw_misalign_saved($et_index) 1
+	  return 1
 	}
-	if { [istarget arm*-*-*] } {
-	    set et_vect_hw_misalign_saved($et_index) [expr ![check_effective_target_arm_vect_no_misalign]]
+	if { [istarget arm*-*-*]
+	     && ![check_effective_target_arm_vect_no_misalign] } {
+	  return 1
 	}
-    }
-    verbose "check_effective_target_vect_hw_misalign:\
-	     returning $et_vect_hw_misalign_saved($et_index)" 2
-    return $et_vect_hw_misalign_saved($et_index)
+        return 0
+    }]
 }
 
 
@@ -6528,20 +5982,15 @@ proc check_effective_target_vect_aligned_arrays { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_natural_alignment_32 { } {
-    global et_natural_alignment_32
-
-    if [info exists et_natural_alignment_32_saved] {
-        verbose "check_effective_target_natural_alignment_32: using cached result" 2
-    } else {
-        # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
-        set et_natural_alignment_32_saved 1
-        if { ([istarget *-*-darwin*] && [is-effective-target lp64])
-             || [istarget avr-*-*] } {
-            set et_natural_alignment_32_saved 0
-        }
-    }
-    verbose "check_effective_target_natural_alignment_32: returning $et_natural_alignment_32_saved" 2
-    return $et_natural_alignment_32_saved
+    # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
+    return [check_cached_effective_target_indexed natural_alignment_32 {
+      if { ([istarget *-*-darwin*] && [is-effective-target lp64])
+	    || [istarget avr-*-*] } {
+	   return 0
+	 } else {
+	   return 1
+	 }
+      }]
 }
 
 # Return 1 if types of size 64 bit or less are naturally aligned (aligned to their
@@ -6550,19 +5999,10 @@ proc check_effective_target_natural_alignment_32 { } {
 # This won't change for different subtargets so cache the result.
 
 proc check_effective_target_natural_alignment_64 { } {
-    global et_natural_alignment_64
-
-    if [info exists et_natural_alignment_64_saved] {
-        verbose "check_effective_target_natural_alignment_64: using cached result" 2
-    } else {
-        set et_natural_alignment_64_saved 0
-        if { ([is-effective-target lp64] && ![istarget *-*-darwin*])
-             || [istarget spu-*-*] } {
-            set et_natural_alignment_64_saved 1
-        }
-    }
-    verbose "check_effective_target_natural_alignment_64: returning $et_natural_alignment_64_saved" 2
-    return $et_natural_alignment_64_saved
+    return [check_cached_effective_target_indexed natural_alignment_64 {
+      expr { ([is-effective-target lp64] && ![istarget *-*-darwin*])
+	      || [istarget spu-*-*] }
+    }]
 }
 
 # Return 1 if all vector types are naturally aligned (aligned to their
@@ -6632,24 +6072,10 @@ proc check_effective_target_vector_alignment_reachable_for_64bit { } {
 # Return 1 if the target only requires element alignment for vector accesses
 
 proc check_effective_target_vect_element_align { } {
-    global et_vect_element_align
-    global et_index
-
-    if [info exists et_vect_element_align($et_index)] {
-	verbose "check_effective_target_vect_element_align:\
-		 using cached result" 2
-    } else {
-	set et_vect_element_align($et_index) 0
-	if { ([istarget arm*-*-*]
+    return [check_cached_effective_target_indexed vect_element_align {
+      expr { ([istarget arm*-*-*]
 	      && ![check_effective_target_arm_vect_no_misalign])
-	     || [check_effective_target_vect_hw_misalign] } {
-	   set et_vect_element_align($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_element_align:\
-	     returning $et_vect_element_align($et_index)" 2
-    return $et_vect_element_align($et_index)
+	     || [check_effective_target_vect_hw_misalign] }}]
 }
 
 # Return 1 if we expect to see unaligned accesses in at least some
@@ -6664,21 +6090,11 @@ proc check_effective_target_vect_unaligned_possible { } {
 # Return 1 if the target supports vector LOAD_LANES operations, 0 otherwise.
 
 proc check_effective_target_vect_load_lanes { } {
-    global et_vect_load_lanes
-
-    if [info exists et_vect_load_lanes] {
-	verbose "check_effective_target_vect_load_lanes: using cached result" 2
-    } else {
-	set et_vect_load_lanes 0
-	# We don't support load_lanes correctly on big-endian arm.
-	if { ([check_effective_target_arm_little_endian] && [check_effective_target_arm_neon_ok])
-	     || [istarget aarch64*-*-*] } {
-	    set et_vect_load_lanes 1
-	}
-    }
-
-    verbose "check_effective_target_vect_load_lanes: returning $et_vect_load_lanes" 2
-    return $et_vect_load_lanes
+    # We don't support load_lanes correctly on big-endian arm.
+    return [check_cached_effective_target vect_load_lanes {
+      expr { ([check_effective_target_arm_little_endian]
+	      && [check_effective_target_arm_neon_ok])
+	     || [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector masked stores.
@@ -6696,14 +6112,8 @@ proc check_effective_target_vect_scatter_store { } {
 # Return 1 if the target supports vector conditional operations, 0 otherwise.
 
 proc check_effective_target_vect_condition { } {
-    global et_vect_cond_saved
-    global et_index
-
-    if [info exists et_vect_cond_saved($et_index)] {
-	verbose "check_effective_target_vect_cond: using cached result" 2
-    } else {
-	set et_vect_cond_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target_indexed vect_condition {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -6713,54 +6123,28 @@ proc check_effective_target_vect_condition { } {
 	     || ([istarget arm*-*-*]
 		 && [check_effective_target_arm_neon_ok])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_cond_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_cond:\
-	     returning $et_vect_cond_saved($et_index)" 2
-    return $et_vect_cond_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector conditional operations where
 # the comparison has different type from the lhs, 0 otherwise.
 
 proc check_effective_target_vect_cond_mixed { } {
-    global et_vect_cond_mixed_saved
-    global et_index
-
-    if [info exists et_vect_cond_mixed_saved($et_index)] {
-	verbose "check_effective_target_vect_cond_mixed: using cached result" 2
-    } else {
-	set et_vect_cond_mixed_saved($et_index) 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_cond_mixed {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*] 
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_cond_mixed_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_cond_mixed:\
-	     returning $et_vect_cond_mixed_saved($et_index)" 2
-    return $et_vect_cond_mixed_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector char multiplication, 0 otherwise.
 
 proc check_effective_target_vect_char_mult { } {
-    global et_vect_char_mult_saved
-    global et_index
-
-    if [info exists et_vect_char_mult_saved($et_index)] {
-	verbose "check_effective_target_vect_char_mult: using cached result" 2
-    } else {
-	set et_vect_char_mult_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target_indexed vect_char_mult {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [check_effective_target_arm32]
@@ -6768,27 +6152,14 @@ proc check_effective_target_vect_char_mult { } {
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_char_mult_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_char_mult:\
-	     returning $et_vect_char_mult_saved($et_index)" 2
-    return $et_vect_char_mult_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector short multiplication, 0 otherwise.
 
 proc check_effective_target_vect_short_mult { } {
-    global et_vect_short_mult_saved
-    global et_index
-
-    if [info exists et_vect_short_mult_saved($et_index)] {
-	verbose "check_effective_target_vect_short_mult: using cached result" 2
-    } else {
-	set et_vect_short_mult_saved($et_index) 0
-	if { [istarget ia64-*-*]
+    return [check_cached_effective_target_indexed vect_short_mult {
+      expr { [istarget ia64-*-*]
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
@@ -6798,27 +6169,14 @@ proc check_effective_target_vect_short_mult { } {
 		 && ([et-is-effective-target mips_msa]
 		     || [et-is-effective-target mips_loongson]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_short_mult_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_short_mult:\
-	     returning $et_vect_short_mult_saved($et_index)" 2
-    return $et_vect_short_mult_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector int multiplication, 0 otherwise.
 
 proc check_effective_target_vect_int_mult { } {
-    global et_vect_int_mult_saved
-    global et_index
-
-    if [info exists et_vect_int_mult_saved($et_index)] {
-	verbose "check_effective_target_vect_int_mult: using cached result" 2
-    } else {
-	set et_vect_int_mult_saved($et_index) 0
-	if { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
+    return [check_cached_effective_target_indexed vect_int_mult {
+      expr { ([istarget powerpc*-*-*] && ![istarget powerpc-*-linux*paired*])
 	     || [istarget spu-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget ia64-*-*]
@@ -6827,14 +6185,7 @@ proc check_effective_target_vect_int_mult { } {
 		 && [et-is-effective-target mips_msa])
 	     || [check_effective_target_arm32]
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_vect_int_mult_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_int_mult:\
-	     returning $et_vect_int_mult_saved($et_index)" 2
-    return $et_vect_int_mult_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports 64 bit hardware vector
@@ -6864,15 +6215,8 @@ proc check_effective_target_vect_long_mult { } {
 # Return 1 if the target supports vector even/odd elements extraction, 0 otherwise.
 
 proc check_effective_target_vect_extract_even_odd { } {
-    global et_vect_extract_even_odd_saved
-    global et_index
-    
-    if [info exists et_vect_extract_even_odd_saved($et_index)] {
-	verbose "check_effective_target_vect_extract_even_odd:\
-		 using cached result" 2
-    } else {
-	set et_vect_extract_even_odd_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target_indexed extract_even_odd {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [is-effective-target arm_neon]
              || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -6882,27 +6226,14 @@ proc check_effective_target_vect_extract_even_odd { } {
 		 && ([et-is-effective-target mips_msa]
 		     || [et-is-effective-target mpaired_single]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_extract_even_odd_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_extract_even_odd:\
-	     returning $et_vect_extract_even_odd_saved($et_index)" 2
-    return $et_vect_extract_even_odd_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector interleaving, 0 otherwise.
 
 proc check_effective_target_vect_interleave { } {
-    global et_vect_interleave_saved
-    global et_index
-    
-    if [info exists et_vect_interleave_saved($et_index)] {
-        verbose "check_effective_target_vect_interleave: using cached result" 2
-    } else {
-	set et_vect_interleave_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target_indexed vect_interleave {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [is-effective-target arm_neon]
              || [istarget i?86-*-*] || [istarget x86_64-*-*]
@@ -6912,42 +6243,25 @@ proc check_effective_target_vect_interleave { } {
 		 && ([et-is-effective-target mpaired_single]
 		     || [et-is-effective-target mips_msa]))
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_interleave_saved($et_index) 1
-        }
-    }
-
-    verbose "check_effective_target_vect_interleave:\
-	     returning $et_vect_interleave_saved($et_index)" 2
-    return $et_vect_interleave_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 foreach N {2 3 4 8} {
     eval [string map [list N $N] {
 	# Return 1 if the target supports 2-vector interleaving
 	proc check_effective_target_vect_stridedN { } {
-	    global et_vect_stridedN_saved
-	    global et_index
-
-	    if [info exists et_vect_stridedN_saved($et_index)] {
-		verbose "check_effective_target_vect_stridedN:\
-			 using cached result" 2
-	    } else {
-		set et_vect_stridedN_saved($et_index) 0
+	    return [check_cached_effective_target_indexed vect_stridedN {
 		if { (N & -N) == N
 		     && [check_effective_target_vect_interleave]
 		     && [check_effective_target_vect_extract_even_odd] } {
-		    set et_vect_stridedN_saved($et_index) 1
+		    return 1
 		}
 		if { ([istarget arm*-*-*]
 		      || [istarget aarch64*-*-*]) && N >= 2 && N <= 4 } {
-		    set et_vect_stridedN_saved($et_index) 1
+		    return 1
 		}
-	    }
-
-	    verbose "check_effective_target_vect_stridedN:\
-		     returning $et_vect_stridedN_saved($et_index)" 2
-	    return $et_vect_stridedN_saved($et_index)
+		return 0
+	    }]
 	}
     }]
 }
@@ -6998,71 +6312,33 @@ proc check_effective_target_vect64 { } {
 # Return 1 if the target supports vector copysignf calls.
 
 proc check_effective_target_vect_call_copysignf { } {
-    global et_vect_call_copysignf_saved
-    global et_index
-
-    if [info exists et_vect_call_copysignf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_copysignf:\
-		 using cached result" 2
-    } else {
-	set et_vect_call_copysignf_saved($et_index) 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target_indexed vect_call_copysignf {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
-	     || [istarget aarch64*-*-*] } {
-	   set et_vect_call_copysignf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_copysignf:\
-	     returning $et_vect_call_copysignf_saved($et_index)" 2
-    return $et_vect_call_copysignf_saved($et_index)
+	     || [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports hardware square root instructions.
 
 proc check_effective_target_sqrt_insn { } {
-    global et_sqrt_insn_saved
-
-    if [info exists et_sqrt_insn_saved] {
-	verbose "check_effective_target_hw_sqrt: using cached result" 2
-    } else {
-	set et_sqrt_insn_saved 0
-	if { [istarget i?86-*-*] || [istarget x86_64-*-*]
+    return [check_cached_effective_target sqrt_insn {
+      expr { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget powerpc*-*-*]
 	     || [istarget aarch64*-*-*]
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_vfp_ok])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	   set et_sqrt_insn_saved 1
-	}
-    }
-
-    verbose "check_effective_target_hw_sqrt: returning et_sqrt_insn_saved" 2
-    return $et_sqrt_insn_saved
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector sqrtf calls.
 
 proc check_effective_target_vect_call_sqrtf { } {
-    global et_vect_call_sqrtf_saved
-    global et_index
-
-    if [info exists et_vect_call_sqrtf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_sqrtf: using cached result" 2
-    } else {
-	set et_vect_call_sqrtf_saved($et_index) 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target_indexed vect_call_sqrtf {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget s390*-*-*]
-		 && [check_effective_target_s390_vx]) } {
-	    set et_vect_call_sqrtf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_sqrtf:\
-	     returning $et_vect_call_sqrtf_saved($et_index)" 2
-    return $et_vect_call_sqrtf_saved($et_index)
+		 && [check_effective_target_s390_vx]) }}]
 }
 
 # Return 1 if the target supports vector lrint calls.
@@ -7081,244 +6357,85 @@ proc check_effective_target_vect_call_lrint { } {
 # Return 1 if the target supports vector btrunc calls.
 
 proc check_effective_target_vect_call_btrunc { } {
-    global et_vect_call_btrunc_saved
-    global et_index
-
-    if [info exists et_vect_call_btrunc_saved($et_index)] {
-	verbose "check_effective_target_vect_call_btrunc:\
-		 using cached result" 2
-    } else {
-	set et_vect_call_btrunc_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_btrunc_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_btrunc:\
-	     returning $et_vect_call_btrunc_saved($et_index)" 2
-    return $et_vect_call_btrunc_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_btrunc {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector btruncf calls.
 
 proc check_effective_target_vect_call_btruncf { } {
-    global et_vect_call_btruncf_saved
-    global et_index
-
-    if [info exists et_vect_call_btruncf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_btruncf:\
-		 using cached result" 2
-    } else {
-	set et_vect_call_btruncf_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_btruncf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_btruncf:\
-	     returning $et_vect_call_btruncf_saved($et_index)" 2
-    return $et_vect_call_btruncf_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_btruncf {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector ceil calls.
 
 proc check_effective_target_vect_call_ceil { } {
-    global et_vect_call_ceil_saved
-    global et_index
-
-    if [info exists et_vect_call_ceil_saved($et_index)] {
-	verbose "check_effective_target_vect_call_ceil: using cached result" 2
-    } else {
-	set et_vect_call_ceil_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_ceil_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_ceil:\
-	     returning $et_vect_call_ceil_saved($et_index)" 2
-    return $et_vect_call_ceil_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_ceil {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector ceilf calls.
 
 proc check_effective_target_vect_call_ceilf { } {
-    global et_vect_call_ceilf_saved
-    global et_index
-
-    if [info exists et_vect_call_ceilf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_ceilf: using cached result" 2
-    } else {
-	set et_vect_call_ceilf_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_ceilf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_ceilf:\
-	     returning $et_vect_call_ceilf_saved($et_index)" 2
-    return $et_vect_call_ceilf_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_ceilf {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector floor calls.
 
 proc check_effective_target_vect_call_floor { } {
-    global et_vect_call_floor_saved
-    global et_index
-
-    if [info exists et_vect_call_floor_saved($et_index)] {
-	verbose "check_effective_target_vect_call_floor: using cached result" 2
-    } else {
-	set et_vect_call_floor_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_floor_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_floor:\
-	     returning $et_vect_call_floor_saved($et_index)" 2
-    return $et_vect_call_floor_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_floor {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector floorf calls.
 
 proc check_effective_target_vect_call_floorf { } {
-    global et_vect_call_floorf_saved
-    global et_index
-
-    if [info exists et_vect_call_floorf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_floorf: using cached result" 2
-    } else {
-	set et_vect_call_floorf_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_floorf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_floorf:\
-	     returning $et_vect_call_floorf_saved($et_index)" 2
-    return $et_vect_call_floorf_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_floorf {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector lceil calls.
 
 proc check_effective_target_vect_call_lceil { } {
-    global et_vect_call_lceil_saved
-    global et_index
-
-    if [info exists et_vect_call_lceil_saved($et_index)] {
-	verbose "check_effective_target_vect_call_lceil: using cached result" 2
-    } else {
-	set et_vect_call_lceil_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_lceil_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_lceil:\
-	     returning $et_vect_call_lceil_saved($et_index)" 2
-    return $et_vect_call_lceil_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_lceil {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector lfloor calls.
 
 proc check_effective_target_vect_call_lfloor { } {
-    global et_vect_call_lfloor_saved
-    global et_index
-
-    if [info exists et_vect_call_lfloor_saved($et_index)] {
-	verbose "check_effective_target_vect_call_lfloor: using cached result" 2
-    } else {
-	set et_vect_call_lfloor_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_lfloor_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_lfloor:\
-	     returning $et_vect_call_lfloor_saved($et_index)" 2
-    return $et_vect_call_lfloor_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_lfloor {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector nearbyint calls.
 
 proc check_effective_target_vect_call_nearbyint { } {
-    global et_vect_call_nearbyint_saved
-    global et_index
-
-    if [info exists et_vect_call_nearbyint_saved($et_index)] {
-	verbose "check_effective_target_vect_call_nearbyint: using cached result" 2
-    } else {
-	set et_vect_call_nearbyint_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_nearbyint_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_nearbyint:\
-	     returning $et_vect_call_nearbyint_saved($et_index)" 2
-    return $et_vect_call_nearbyint_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_nearbyint {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector nearbyintf calls.
 
 proc check_effective_target_vect_call_nearbyintf { } {
-    global et_vect_call_nearbyintf_saved
-    global et_index
-
-    if [info exists et_vect_call_nearbyintf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_nearbyintf:\
-		 using cached result" 2
-    } else {
-	set et_vect_call_nearbyintf_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_nearbyintf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_nearbyintf:\
-	     returning $et_vect_call_nearbyintf_saved($et_index)" 2
-    return $et_vect_call_nearbyintf_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_nearbyintf {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector round calls.
 
 proc check_effective_target_vect_call_round { } {
-    global et_vect_call_round_saved
-    global et_index
-
-    if [info exists et_vect_call_round_saved($et_index)] {
-	verbose "check_effective_target_vect_call_round: using cached result" 2
-    } else {
-	set et_vect_call_round_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_round_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_round:\
-	     returning $et_vect_call_round_saved($et_index)" 2
-    return $et_vect_call_round_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_round {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports vector roundf calls.
 
 proc check_effective_target_vect_call_roundf { } {
-    global et_vect_call_roundf_saved
-    global et_index
-
-    if [info exists et_vect_call_roundf_saved($et_index)] {
-	verbose "check_effective_target_vect_call_roundf: using cached result" 2
-    } else {
-	set et_vect_call_roundf_saved($et_index) 0
-	if { [istarget aarch64*-*-*] } {
-	  set et_vect_call_roundf_saved($et_index) 1
-	}
-    }
-
-    verbose "check_effective_target_vect_call_roundf:\
-	     returning $et_vect_call_roundf_saved($et_index)" 2
-    return $et_vect_call_roundf_saved($et_index)
+    return [check_cached_effective_target_indexed vect_call_roundf {
+      expr { [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports AND, OR and XOR reduction.
@@ -7336,21 +6453,10 @@ proc check_effective_target_vect_fold_extract_last { } {
 # Return 1 if the target supports section-anchors
 
 proc check_effective_target_section_anchors { } {
-    global et_section_anchors_saved
-
-    if [info exists et_section_anchors_saved] {
-        verbose "check_effective_target_section_anchors: using cached result" 2
-    } else {
-        set et_section_anchors_saved 0
-        if { [istarget powerpc*-*-*]
-	      || [istarget arm*-*-*] 
-	      || [istarget aarch64*-*-*] } {
-           set et_section_anchors_saved 1
-        }
-    }
-
-    verbose "check_effective_target_section_anchors: returning $et_section_anchors_saved" 2
-    return $et_section_anchors_saved
+    return [check_cached_effective_target section_anchors {
+      expr { [istarget powerpc*-*-*]
+	     || [istarget arm*-*-*]
+	     || [istarget aarch64*-*-*] }}]
 }
 
 # Return 1 if the target supports atomic operations on "int_128" values.
@@ -7446,13 +6552,8 @@ proc check_effective_target_sync_long_long_runtime { } {
 # Return 1 if the target supports byte swap instructions.
 
 proc check_effective_target_bswap { } {
-    global et_bswap_saved
-
-    if [info exists et_bswap_saved] {
-        verbose "check_effective_target_bswap: using cached result" 2
-    } else {
-	set et_bswap_saved 0
-	if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target bswap {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget alpha*-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget m68k-*-*]
@@ -7465,27 +6566,16 @@ proc check_effective_target_bswap { } {
 		     #error not armv6 or later
 		     #endif
 		     int i;
-		 } ""]) } {
-		set et_bswap_saved 1
-	}
-    }
-
-    verbose "check_effective_target_bswap: returning $et_bswap_saved" 2
-    return $et_bswap_saved
+		 } ""]) }}]
 }
 
 # Return 1 if the target supports atomic operations on "int" and "long".
 
 proc check_effective_target_sync_int_long { } {
-    global et_sync_int_long_saved
-
-    if [info exists et_sync_int_long_saved] {
-        verbose "check_effective_target_sync_int_long: using cached result" 2
-    } else {
-        set et_sync_int_long_saved 0
 # This is intentionally powerpc but not rs6000, rs6000 doesn't have the
 # load-reserved/store-conditional instructions.
-        if { [istarget ia64-*-*]
+    return [check_cached_effective_target sync_int_long {
+      expr { [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget aarch64*-*-*]
 	     || [istarget alpha*-*-*] 
@@ -7500,27 +6590,16 @@ proc check_effective_target_sync_int_long { } {
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [istarget spu-*-*]
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
-	     || [check_effective_target_mips_llsc] } {
-           set et_sync_int_long_saved 1
-        }
-    }
-
-    verbose "check_effective_target_sync_int_long: returning $et_sync_int_long_saved" 2
-    return $et_sync_int_long_saved
+	     || [check_effective_target_mips_llsc] }}]
 }
 
 # Return 1 if the target supports atomic operations on "char" and "short".
 
 proc check_effective_target_sync_char_short { } {
-    global et_sync_char_short_saved
-
-    if [info exists et_sync_char_short_saved] {
-        verbose "check_effective_target_sync_char_short: using cached result" 2
-    } else {
-        set et_sync_char_short_saved 0
 # This is intentionally powerpc but not rs6000, rs6000 doesn't have the
 # load-reserved/store-conditional instructions.
-        if { [istarget aarch64*-*-*]
+    return [check_cached_effective_target sync_char_short {
+      expr { [istarget aarch64*-*-*]
 	     || [istarget ia64-*-*]
 	     || [istarget i?86-*-*] || [istarget x86_64-*-*]
 	     || [istarget alpha*-*-*] 
@@ -7534,13 +6613,7 @@ proc check_effective_target_sync_char_short { } {
 	     || ([istarget sparc*-*-*] && [check_effective_target_sparc_v9])
 	     || [istarget spu-*-*]
 	     || ([istarget arc*-*-*] && [check_effective_target_arc_atomic])
-	     || [check_effective_target_mips_llsc] } {
-           set et_sync_char_short_saved 1
-        }
-    }
-
-    verbose "check_effective_target_sync_char_short: returning $et_sync_char_short_saved" 2
-    return $et_sync_char_short_saved
+	     || [check_effective_target_mips_llsc] }}]
 }
 
 # Return 1 if the target uses a ColdFire FPU.
@@ -7692,6 +6765,7 @@ proc is-effective-target { arg } {
 	  default          { error "unknown effective target keyword `$arg'" }
 	}
     }
+
     verbose "is-effective-target: $arg $selected" 2
     return $selected
 }
@@ -8822,23 +7896,17 @@ proc check_effective_target_fenv_exceptions {} {
 }
 
 proc check_effective_target_tiny {} {
-    global et_target_tiny_saved
-
-    if [info exists et_target_tiny_saved] {
-      verbose "check_effective_target_tiny: using cached result" 2
-    } else {
-       set et_target_tiny_saved 0
-       if { [istarget aarch64*-*-*]
-             && [check_effective_target_aarch64_tiny] } {
-         set et_target_tiny_saved 1
-       }
-       if { [istarget avr-*-*]
-             && [check_effective_target_avr_tiny] } {
-         set et_target_tiny_saved 1
-       }
-    }
-
-    return $et_target_tiny_saved
+    return [check_cached_effective_target tiny {
+      if { [istarget aarch64*-*-*]
+		 && [check_effective_target_aarch64_tiny] } {
+	   return 1
+      }
+      if { [istarget avr-*-*]
+	    && [check_effective_target_avr_tiny] } {
+	   return 1
+      }
+      return 0
+    }]
 }
 
 # Return 1 if LOGICAL_OP_NON_SHORT_CIRCUIT is set to 0 for the current target.
@@ -8924,7 +7992,6 @@ proc scan-ltrans-tree-dump-dem-not_required_options {} {
 # otherwise.  Cache the result.
 
 proc check_effective_target_pie_copyreloc { } {
-    global pie_copyreloc_available_saved
     global tool
     global GCC_UNDER_TEST
 
@@ -8937,9 +8004,7 @@ proc check_effective_target_pie_copyreloc { } {
 	return 0
     }
 
-    if [info exists pie_copyreloc_available_saved] {
-	verbose "check_effective_target_pie_copyreloc returning saved $pie_copyreloc_available_saved" 2
-    } else {
+    return [check_cached_effective_target pie_copyreloc {
 	# Set up and compile to see if linker supports PIE with copy
 	# reloc.  Include the current process ID in the file names to
 	# prevent conflicts with invocations for multiple testsuites.
@@ -8962,21 +8027,18 @@ proc check_effective_target_pie_copyreloc { } {
 
 	if [string match "" $lines] then {
 	    verbose "check_effective_target_pie_copyreloc testfile compilation passed" 2
-	    set pie_copyreloc_available_saved 1
+	    return 1
 	} else {
 	    verbose "check_effective_target_pie_copyreloc testfile compilation failed" 2
-	    set pie_copyreloc_available_saved 0
+	    return 0
 	}
-    }
-
-    return $pie_copyreloc_available_saved
+    }]
 }
 
 # Return 1 if the x86 target supports R_386_GOT32X relocation, 0
 # otherwise.  Cache the result.
 
 proc check_effective_target_got32x_reloc { } {
-    global got32x_reloc_available_saved
     global tool
     global GCC_UNDER_TEST
 
@@ -8989,9 +8051,7 @@ proc check_effective_target_got32x_reloc { } {
 	return 0
     }
 
-    if [info exists got32x_reloc_available_saved] {
-	verbose "check_effective_target_got32x_reloc returning saved $got32x_reloc_available_saved" 2
-    } else {
+    return [check_cached_effective_target got32x_reloc {
 	# Include the current process ID in the file names to prevent
 	# conflicts with invocations for multiple testsuites.
 
@@ -9013,12 +8073,12 @@ proc check_effective_target_got32x_reloc { } {
 
 	if [string match "" $lines] then {
 	    verbose "check_effective_target_got32x_reloc testfile compilation passed" 2
-	    set got32x_reloc_available_saved 1
+	    return 1
 	} else {
 	    verbose "check_effective_target_got32x_reloc testfile compilation failed" 2
-	    set got32x_reloc_available_saved 0
+	    return 0
 	}
-    }
+    }]
 
     return $got32x_reloc_available_saved
 }
@@ -9027,7 +8087,6 @@ proc check_effective_target_got32x_reloc { } {
 # 0 otherwise.  Cache the result.
 
 proc check_effective_target_tls_get_addr_via_got { } {
-    global tls_get_addr_via_got_available_saved
     global tool
     global GCC_UNDER_TEST
 
@@ -9040,9 +8099,7 @@ proc check_effective_target_tls_get_addr_via_got { } {
 	return 0
     }
 
-    if [info exists tls_get_addr_via_got_available_saved] {
-	verbose "check_effective_target_tls_get_addr_via_got returning saved $tls_get_addr_via_got_available_saved" 2
-    } else {
+    return [check_cached_effective_target tls_get_addr_via_got {
 	# Include the current process ID in the file names to prevent
 	# conflicts with invocations for multiple testsuites.
 
@@ -9064,14 +8121,12 @@ proc check_effective_target_tls_get_addr_via_got { } {
 
 	if [string match "" $lines] then {
 	    verbose "check_effective_target_tls_get_addr_via_got testfile compilation passed" 2
-	    set tls_get_addr_via_got_available_saved 1
+	    return 1
 	} else {
 	    verbose "check_effective_target_tls_get_addr_via_got testfile compilation failed" 2
-	    set tls_get_addr_via_got_available_saved 0
+	    return 0
 	}
-    }
-
-    return $tls_get_addr_via_got_available_saved
+    }]
 }
 
 # Return 1 if the target uses comdat groups.
@@ -9330,14 +8385,9 @@ proc check_effective_target_autoincdec { } {
 # 
 proc check_effective_target_supports_stack_clash_protection { } {
 
-   # Temporary until the target bits are fully ACK'd.
-#  if { [istarget aarch*-*-*] } {
-#	return 1
-#  }
-
     if { [istarget x86_64-*-*] || [istarget i?86-*-*] 
 	  || [istarget powerpc*-*-*] || [istarget rs6000*-*-*]
-	  || [istarget s390*-*-*] } {
+	  || [istarget aarch64*-**] || [istarget s390*-*-*] } {
 	return 1
     }
   return 0
@@ -9346,10 +8396,6 @@ proc check_effective_target_supports_stack_clash_protection { } {
 # Return 1 if the target creates a frame pointer for non-leaf functions
 # Note we ignore cases where we apply tail call optimization here.
 proc check_effective_target_frame_pointer_for_non_leaf { } {
-  if { [istarget aarch*-*-*] } {
-	return 1
-  }
-
   # Solaris/x86 defaults to -fno-omit-frame-pointer.
   if { [istarget i?86-*-solaris*] || [istarget x86_64-*-solaris*] } {
     return 1

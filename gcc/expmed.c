@@ -5464,11 +5464,14 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
      If STORE_FLAG_VALUE does not have the sign bit set when
      interpreted in MODE, we can do this conversion as unsigned, which
      is usually more efficient.  */
-  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (result_mode))
+  if (GET_MODE_PRECISION (int_target_mode) > GET_MODE_PRECISION (result_mode))
     {
-      convert_move (target, subtarget,
-		    val_signbit_known_clear_p (result_mode,
-					       STORE_FLAG_VALUE));
+      gcc_assert (GET_MODE_PRECISION (result_mode) != 1
+		  || STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1);
+
+      bool unsignedp = (STORE_FLAG_VALUE >= 0);
+      convert_move (target, subtarget, unsignedp);
+
       op0 = target;
       result_mode = int_target_mode;
     }

@@ -3610,9 +3610,8 @@ expand_call (tree exp, rtx target, int ignore)
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Don't try if
      there's cleanups, as we know there's code to follow the call.  */
-
   if (currently_expanding_call++ != 0
-      || !flag_optimize_sibling_calls
+      || (!flag_optimize_sibling_calls && !CALL_FROM_THUNK_P (exp))
       || args_size.var
       || dbg_cnt (tail_call) == false)
     try_tail_call = 0;

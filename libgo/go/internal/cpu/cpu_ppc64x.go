@@ -6,8 +6,6 @@
 
 package cpu
 
-const CacheLineSize = 128
-
 // ppc64x doesn't have a 'cpuid' equivalent, so we rely on HWCAP/HWCAP2.
 // These are initialized by archauxv in runtime/os_linux_ppc64x.go.
 // These should not be changed after they are initialized.

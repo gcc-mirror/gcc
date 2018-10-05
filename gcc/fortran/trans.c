@@ -61,26 +61,6 @@ gfc_advance_chain (tree t, int n)
   return t;
 }
 
-
-/* Strip off a legitimate source ending from the input
-   string NAME of length LEN.  */
-
-static inline void
-remove_suffix (char *name, int len)
-{
-  int i;
-
-  for (i = 2; i < 8 && len > i; i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
-}
-
-
 /* Creates a variable declaration with a given TYPE.  */
 
 tree
@@ -326,6 +306,15 @@ get_array_span (tree type, tree decl)
 			  fold_convert (gfc_array_index_type,
 					TYPE_SIZE_UNIT (TREE_TYPE (type))),
 			  span);
+    }
+  else if (type && TREE_CODE (type) == ARRAY_TYPE
+	   && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+	   && integer_zerop (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+    {
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+	span = gfc_conv_descriptor_span_get (decl);
+      else
+	span = NULL_TREE;
     }
   /* Likewise for class array or pointer array references.  */
   else if (TREE_CODE (decl) == FIELD_DECL

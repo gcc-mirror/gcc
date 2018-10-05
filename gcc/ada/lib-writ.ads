@@ -624,18 +624,19 @@ package Lib.Writ is
    --    Z unit-name [source-name lib-name] [E] [EA] [ED] [AD]
 
    --      One W line is present for each unit that is mentioned in an explicit
-   --      non-limited with clause by the current unit. One Y line is present
+   --      nonlimited with clause by the current unit. One Y line is present
    --      for each unit that is mentioned in an explicit limited with clause
    --      by the current unit. One Z line is present for each unit that is
    --      only implicitly withed by the current unit. The first parameter is
    --      the unit name in internal format. The second parameter is the file
-   --      name of the body unit on which the current compliation depends -
-   --      except when in GNATprove mode. In GNATprove mode, when packages
-   --      which require a body have no associated source file, the file name
-   --      of the spec is used instead to allow partial analysis of incomplete
-   --      sources. The third parameter is the file name of the library
-   --      information file that contains the results of compiling this unit.
-   --      The optional modifiers are used as follows:
+   --      name of the body unit on which the current compilation unit depends,
+   --      except when in GNATprove mode or when the unit is a remote call
+   --      interface. In these cases, when packages that require a body have
+   --      no associated source file, the file name of the spec is used instead
+   --      to allow partial analysis of incomplete sources. The third parameter
+   --      is the file name of the library information file that contains the
+   --      results of compiling this unit. The optional modifiers are used as
+   --      follows:
 
    --        E   pragma Elaborate applies to this unit
 

@@ -398,7 +398,6 @@ static void
 unpack_ts_block_value_fields (struct data_in *data_in,
 			      struct bitpack_d *bp, tree expr)
 {
-  BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* BLOCK_NUMBER is recomputed.  */
   stream_input_location (&BLOCK_SOURCE_LOCATION (expr), bp, data_in);
 }

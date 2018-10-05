@@ -7629,7 +7629,7 @@ grid_expand_target_grid_body (struct omp_region *target)
   SET_DECL_ASSEMBLER_NAME (kern_fndecl, DECL_NAME (kern_fndecl));
   tree tgtblock = gimple_block (tgt_stmt);
   tree fniniblock = make_node (BLOCK);
-  BLOCK_ABSTRACT_ORIGIN (fniniblock) = tgtblock;
+  BLOCK_ABSTRACT_ORIGIN (fniniblock) = BLOCK_ORIGIN (tgtblock);
   BLOCK_SOURCE_LOCATION (fniniblock) = BLOCK_SOURCE_LOCATION (tgtblock);
   BLOCK_SOURCE_END_LOCATION (fniniblock) = BLOCK_SOURCE_END_LOCATION (tgtblock);
   BLOCK_SUPERCONTEXT (fniniblock) = kern_fndecl;

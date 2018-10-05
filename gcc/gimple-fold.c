@@ -1337,7 +1337,21 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 	    return false;
 	}
       else
-	val = c_strlen (arg, 1, nonstr, eltsize);
+	{
+	  c_strlen_data data;
+	  memset (&data, 0, sizeof (c_strlen_data));
+	  val = c_strlen (arg, 1, &data, eltsize);
+
+	  /* If we potentially had a non-terminated string, then
+	     bubble that information up to the caller.  */
+	  if (!val && data.decl)
+	    {
+	      *nonstr = data.decl;
+	      *minlen = data.len;
+	      *maxlen = data.len;
+	      return type == 0 ? false : true;
+	    }
+	}
 
       if (!val && fuzzy)
 	{
@@ -2812,21 +2826,22 @@ gimple_fold_builtin_stpcpy (gimple_stmt_iterator *gsi)
     }
 
   /* Set to non-null if ARG refers to an unterminated array.  */
-  tree nonstr = NULL;
-  tree len = c_strlen (src, 1, &nonstr, 1);
+  c_strlen_data data;
+  memset (&data, 0, sizeof (c_strlen_data));
+  tree len = c_strlen (src, 1, &data, 1);
   if (!len
       || TREE_CODE (len) != INTEGER_CST)
     {
-      nonstr = unterminated_array (src);
-      if (!nonstr)
+      data.decl = unterminated_array (src);
+      if (!data.decl)
 	return false;
     }
 
-  if (nonstr)
+  if (data.decl)
     {
       /* Avoid folding calls with unterminated arrays.  */
       if (!gimple_no_warning_p (stmt))
-	warn_string_no_nul (loc, "stpcpy", src, nonstr);
+	warn_string_no_nul (loc, "stpcpy", src, data.decl);
       gimple_set_no_warning (stmt, true);
       return false;
     }
@@ -3586,6 +3601,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   tree nonstr;
   tree lenrange[2];
   if (!get_range_strlen (arg, lenrange, 1, true, &nonstr)
+      && !nonstr
       && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
       && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
     {

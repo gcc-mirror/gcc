@@ -1421,7 +1421,7 @@ _mm_max_pi16 (__m64 __A, __m64 __B)
   b = (__vector signed short)vec_splats (__B);
   c = (__vector __bool short)vec_cmpgt (a, b);
   r = vec_sel (b, a, c);
-  return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
+  return (__builtin_unpack_vector_int128 ((__vector __int128)r, 0));
 #else
   __m64_union m1, m2, res;
 
@@ -1459,7 +1459,7 @@ _mm_max_pu8 (__m64 __A, __m64 __B)
   b = (__vector unsigned char)vec_splats (__B);
   c = (__vector __bool char)vec_cmpgt (a, b);
   r = vec_sel (b, a, c);
-  return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
+  return (__builtin_unpack_vector_int128 ((__vector __int128)r, 0));
 #else
   __m64_union m1, m2, res;
   long i;
@@ -1495,7 +1495,7 @@ _mm_min_pi16 (__m64 __A, __m64 __B)
   b = (__vector signed short)vec_splats (__B);
   c = (__vector __bool short)vec_cmplt (a, b);
   r = vec_sel (b, a, c);
-  return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
+  return (__builtin_unpack_vector_int128 ((__vector __int128)r, 0));
 #else
   __m64_union m1, m2, res;
 
@@ -1533,7 +1533,7 @@ _mm_min_pu8 (__m64 __A, __m64 __B)
   b = (__vector unsigned char)vec_splats (__B);
   c = (__vector __bool char)vec_cmplt (a, b);
   r = vec_sel (b, a, c);
-  return (__builtin_unpack_vector_int128 ((__vector __int128_t)r, 0));
+  return (__builtin_unpack_vector_int128 ((__vector __int128)r, 0));
 #else
   __m64_union m1, m2, res;
   long i;

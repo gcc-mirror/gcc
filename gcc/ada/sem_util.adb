@@ -17714,9 +17714,9 @@ package body Sem_Util is
    begin
       pragma Assert (Is_Record_Type (E));
 
-      Comp := First_Entity (E);
+      Comp := First_Component (E);
       while Present (Comp) loop
-         Comp_Typ := Etype (Comp);
+         Comp_Typ := Underlying_Type (Etype (Comp));
 
          --  Recursive call if the record type has discriminants
 
@@ -17732,7 +17732,7 @@ package body Sem_Util is
             return True;
          end if;
 
-         Next_Entity (Comp);
+         Next_Component (Comp);
       end loop;
 
       return False;

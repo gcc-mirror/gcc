@@ -438,7 +438,7 @@ static const struct option overlap_options[] =
 
 /* Print overlap usage and exit.  */
 
-static void
+static void ATTRIBUTE_NORETURN
 overlap_usage (void)
 {
   fnotice (stderr, "Overlap subcomand usage:");

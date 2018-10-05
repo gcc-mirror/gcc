@@ -612,6 +612,12 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_ORIG_MAX_VECT_FACTOR(L) \
   (LOOP_VINFO_MAX_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
 
+/* Wrapper for loop_vec_info, for tracking success/failure, where a non-NULL
+   value signifies success, and a NULL value signifies failure, supporting
+   propagating an opt_problem * describing the failure back up the call
+   stack.  */
+typedef opt_pointer_wrapper <loop_vec_info> opt_loop_vec_info;
+
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)
 {
@@ -1420,7 +1426,11 @@ extern dump_user_location_t vect_location;
    and then calling
      dump_end_scope ();
    once the object goes out of scope, thus capturing the nesting of
-   the scopes.  */
+   the scopes.
+
+   These scopes affect dump messages within them: dump messages at the
+   top level implicitly default to MSG_PRIORITY_USER_FACING, whereas those
+   in a nested scope implicitly default to MSG_PRIORITY_INTERNALS.  */
 
 #define DUMP_VECT_SCOPE(MSG) \
   AUTO_DUMP_SCOPE (MSG, vect_location)
@@ -1469,7 +1479,7 @@ extern unsigned record_stmt_cost (stmt_vector_for_cost *, int,
 extern stmt_vec_info vect_finish_replace_stmt (stmt_vec_info, gimple *);
 extern stmt_vec_info vect_finish_stmt_generation (stmt_vec_info, gimple *,
 						  gimple_stmt_iterator *);
-extern bool vect_mark_stmts_to_be_vectorized (loop_vec_info);
+extern opt_result vect_mark_stmts_to_be_vectorized (loop_vec_info);
 extern tree vect_get_store_rhs (stmt_vec_info);
 extern tree vect_get_vec_def_for_operand_1 (stmt_vec_info, enum vect_def_type);
 extern tree vect_get_vec_def_for_operand (tree, stmt_vec_info, tree = NULL);
@@ -1483,8 +1493,8 @@ extern tree vect_get_vec_def_for_stmt_copy (vec_info *, tree);
 extern bool vect_transform_stmt (stmt_vec_info, gimple_stmt_iterator *,
 				 slp_tree, slp_instance);
 extern void vect_remove_stores (stmt_vec_info);
-extern bool vect_analyze_stmt (stmt_vec_info, bool *, slp_tree, slp_instance,
-			       stmt_vector_for_cost *);
+extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
+				     slp_instance, stmt_vector_for_cost *);
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, tree, int, slp_tree,
 				    stmt_vector_for_cost *);
@@ -1500,8 +1510,9 @@ extern tree vect_gen_perm_mask_checked (tree, const vec_perm_indices &);
 extern void optimize_mask_stores (struct loop*);
 extern gcall *vect_gen_while (tree, tree, tree);
 extern tree vect_gen_while_not (gimple_seq *, tree, tree, tree);
-extern bool vect_get_vector_types_for_stmt (stmt_vec_info, tree *, tree *);
-extern tree vect_get_mask_type_for_stmt (stmt_vec_info);
+extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
+						  tree *);
+extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
 
 /* In tree-vect-data-refs.c.  */
 extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
@@ -1509,21 +1520,21 @@ extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (dr_vec_info *, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, HOST_WIDE_INT *,
                                            HOST_WIDE_INT *);
-extern bool vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
+extern opt_result vect_analyze_data_ref_dependences (loop_vec_info, unsigned int *);
 extern bool vect_slp_analyze_instance_dependence (slp_instance);
-extern bool vect_enhance_data_refs_alignment (loop_vec_info);
-extern bool vect_analyze_data_refs_alignment (loop_vec_info);
-extern bool vect_verify_datarefs_alignment (loop_vec_info);
+extern opt_result vect_enhance_data_refs_alignment (loop_vec_info);
+extern opt_result vect_analyze_data_refs_alignment (loop_vec_info);
+extern opt_result vect_verify_datarefs_alignment (loop_vec_info);
 extern bool vect_slp_analyze_and_verify_instance_alignment (slp_instance);
-extern bool vect_analyze_data_ref_accesses (vec_info *);
-extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
+extern opt_result vect_analyze_data_ref_accesses (vec_info *);
+extern opt_result vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_gather_scatter_fn_p (bool, bool, tree, tree, unsigned int,
 				      signop, int, internal_fn *, tree *);
 extern bool vect_check_gather_scatter (stmt_vec_info, loop_vec_info,
 				       gather_scatter_info *);
-extern bool vect_find_stmt_data_reference (loop_p, gimple *,
-					   vec<data_reference_p> *);
-extern bool vect_analyze_data_refs (vec_info *, poly_uint64 *);
+extern opt_result vect_find_stmt_data_reference (loop_p, gimple *,
+						 vec<data_reference_p> *);
+extern opt_result vect_analyze_data_refs (vec_info *, poly_uint64 *);
 extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (stmt_vec_info, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
@@ -1559,8 +1570,9 @@ extern stmt_vec_info vect_force_simple_reduction (loop_vec_info, stmt_vec_info,
 extern bool check_reduction_path (dump_user_location_t, loop_p, gphi *, tree,
 				  enum tree_code);
 /* Drive for loop analysis stage.  */
-extern loop_vec_info vect_analyze_loop (struct loop *, loop_vec_info,
-					vec_info_shared *);
+extern opt_loop_vec_info vect_analyze_loop (struct loop *,
+					    loop_vec_info,
+					    vec_info_shared *);
 extern tree vect_build_loop_niters (loop_vec_info, bool * = NULL);
 extern void vect_gen_vector_loop_niters (loop_vec_info, tree, tree *,
 					 tree *, bool);
@@ -1573,7 +1585,8 @@ extern tree vect_get_loop_mask (gimple_stmt_iterator *, vec_loop_masks *,
 
 /* Drive for loop transformation stage.  */
 extern struct loop *vect_transform_loop (loop_vec_info);
-extern loop_vec_info vect_analyze_loop_form (struct loop *, vec_info_shared *);
+extern opt_loop_vec_info vect_analyze_loop_form (struct loop *,
+						 vec_info_shared *);
 extern bool vectorizable_live_operation (stmt_vec_info, gimple_stmt_iterator *,
 					 slp_tree, int, stmt_vec_info *,
 					 stmt_vector_for_cost *);
@@ -1598,7 +1611,7 @@ extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
 					  slp_instance, bool, unsigned *);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *);
-extern bool vect_analyze_slp (vec_info *, unsigned);
+extern opt_result vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
 extern void vect_detect_hybrid_slp (loop_vec_info);
 extern void vect_get_slp_defs (vec<tree> , slp_tree, vec<vec<tree> > *);

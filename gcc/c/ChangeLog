@@ -1,3 +1,19 @@
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.c (warn_if_shadowing): Do not test DECL_FROM_INLINE.
+
+2018-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* c-typeck.c (build_binary_op): Use excess precision for
+	comparisons of integers and floating-point for C11 and later.
+
+2018-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/87347
+	* c-parser.c (warn_for_abs): Bail out if TYPE_ARG_TYPES is NULL.  Fix
+        comment.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-objc-common.c (range_label_for_type_mismatch::get_text):

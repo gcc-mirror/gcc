@@ -1,3 +1,70 @@
+2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87487
+	* trans-decl.c (gfc_get_symbol_decl): Make sure that deferred
+	character length pointer initializer has the right type to fix
+	problem with deferred_character_24.f90 on big endian.
+
+2018-10-03  Jeff Law  <law@redhat.comg>
+
+	* trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
+
+2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* trans-expr.c (gfc_trans_assignment_1): Set the 'identical'
+	flag in the call to gfc_check_dependency.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-array.c (gfc_is_reallocatable_lhs): Correct the problem
+	introduced by r264358, which prevented components of associate
+	names from being reallocated on assignment.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70752
+	PR fortran/72709
+	* trans-array.c (gfc_conv_scalarized_array_ref): If this is a
+	deferred type and the info->descriptor is present, use the
+	info->descriptor
+	(gfc_conv_array_ref): Is the se expr is a descriptor type, pass
+	it as 'decl' rather than the symbol backend_decl.
+	(gfc_array_allocate): If the se string_length is a component
+	reference, fix it and use it for the expression string length
+	if the latter is not a variable type. If it is a variable do
+	an assignment. Make use of component ref string lengths to set
+	the descriptor 'span'.
+	(gfc_conv_expr_descriptor): For pointer assignment, do not set
+	the span field if gfc_get_array_span returns zero.
+	* trans.c (get_array_span): If the upper bound a character type
+	is zero, use the descriptor span if available.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* trans-decl.c (gfc_get_symbol_decl): A deferred character
+	length pointer that is initialized needs the string length to
+	be initialized as well.
+
+2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* trans-expr.c (gfc_trans_assignment_1): If there is dependency
+	fix the rse stringlength.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/87394
+	* decl.c (add_hidden_procptr_result): Simplify condition
+	as we are in branch witch 'case1 || case2'.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* trans.c (remove_suffix): Remove
+	unused function.
+
 2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/87397

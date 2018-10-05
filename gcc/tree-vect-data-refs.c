@@ -156,20 +156,25 @@ vect_get_smallest_scalar_type (stmt_vec_info stmt_info,
    tested at run-time.  Return TRUE if DDR was successfully inserted.
    Return false if versioning is not supported.  */
 
-static bool
+static opt_result
 vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
   if ((unsigned) PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS) == 0)
-    return false;
+    return opt_result::failure_at (vect_location,
+				   "will not create alias checks, as"
+				   " --param vect-max-version-for-alias-checks"
+				   " == 0\n");
 
-  if (!runtime_alias_check_p (ddr, loop,
-			      optimize_loop_nest_for_speed_p (loop)))
-    return false;
+  opt_result res
+    = runtime_alias_check_p (ddr, loop,
+			     optimize_loop_nest_for_speed_p (loop));
+  if (!res)
+    return res;
 
   LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).safe_push (ddr);
-  return true;
+  return opt_result::success ();
 }
 
 /* Record that loop LOOP_VINFO needs to check that VALUE is nonzero.  */
@@ -277,12 +282,14 @@ vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
 
 /* Function vect_analyze_data_ref_dependence.
 
-   Return TRUE if there (might) exist a dependence between a memory-reference
+   FIXME: I needed to change the sense of the returned flag.
+
+   Return FALSE if there (might) exist a dependence between a memory-reference
    DRA and a memory-reference DRB.  When versioning for alias may check a
-   dependence at run-time, return FALSE.  Adjust *MAX_VF according to
+   dependence at run-time, return TRUE.  Adjust *MAX_VF according to
    the data dependence.  */
 
-static bool
+static opt_result
 vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 				  loop_vec_info loop_vinfo,
 				  unsigned int *max_vf)
@@ -305,11 +312,11 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 
   /* Independent data accesses.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_known)
-    return false;
+    return opt_result::success ();
 
   if (dra == drb
       || (DR_IS_READ (dra) && DR_IS_READ (drb)))
-    return false;
+    return opt_result::success ();
 
   /* We do not have to consider dependences between accesses that belong
      to the same group, unless the stride could be smaller than the
@@ -318,7 +325,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
       && (DR_GROUP_FIRST_ELEMENT (stmtinfo_a)
 	  == DR_GROUP_FIRST_ELEMENT (stmtinfo_b))
       && !STMT_VINFO_STRIDED_P (stmtinfo_a))
-    return false;
+    return opt_result::success ();
 
   /* Even if we have an anti-dependence then, as the vectorized loop covers at
      least two scalar iterations, there is always also a true dependence.
@@ -330,7 +337,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
        || (DR_IS_WRITE (dra) && DR_IS_READ (drb)))
       && !alias_sets_conflict_p (get_alias_set (DR_REF (dra)),
 				 get_alias_set (DR_REF (drb))))
-    return false;
+    return opt_result::success ();
 
   /* Unknown data dependence.  */
   if (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know)
@@ -342,28 +349,25 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  if ((unsigned int) loop->safelen < *max_vf)
 	    *max_vf = loop->safelen;
 	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
-	  return false;
+	  return opt_result::success ();
 	}
 
       if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "versioning for alias not supported for: "
-			     "can't determine dependence between %T and %T\n",
-			     DR_REF (dra), DR_REF (drb));
-	  return true;
-	}
+	return opt_result::failure_at
+	  (stmtinfo_a->stmt,
+	   "versioning for alias not supported for: "
+	   "can't determine dependence between %T and %T\n",
+	   DR_REF (dra), DR_REF (drb));
 
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmtinfo_a->stmt,
 			 "versioning for alias required: "
 			 "can't determine dependence between %T and %T\n",
 			 DR_REF (dra), DR_REF (drb));
 
       /* Add to list of ddrs that need to be tested at run-time.  */
-      return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
+      return vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
     }
 
   /* Known data dependence.  */
@@ -376,27 +380,24 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  if ((unsigned int) loop->safelen < *max_vf)
 	    *max_vf = loop->safelen;
 	  LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
-	  return false;
+	  return opt_result::success ();
 	}
 
       if (STMT_VINFO_GATHER_SCATTER_P (stmtinfo_a)
 	  || STMT_VINFO_GATHER_SCATTER_P (stmtinfo_b))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "versioning for alias not supported for: "
-			     "bad dist vector for %T and %T\n",
-			     DR_REF (dra), DR_REF (drb));
-	  return true;
-	}
+	return opt_result::failure_at
+	  (stmtinfo_a->stmt,
+	   "versioning for alias not supported for: "
+	   "bad dist vector for %T and %T\n",
+	   DR_REF (dra), DR_REF (drb));
 
       if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmtinfo_a->stmt,
 			 "versioning for alias required: "
 			 "bad dist vector for %T and %T\n",
 			 DR_REF (dra), DR_REF (drb));
       /* Add to list of ddrs that need to be tested at run-time.  */
-      return !vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
+      return vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
     }
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
@@ -404,7 +405,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
   if (DDR_COULD_BE_INDEPENDENT_P (ddr)
       && vect_analyze_possibly_independent_ddr (ddr, loop_vinfo,
 						loop_depth, max_vf))
-    return false;
+    return opt_result::success ();
 
   FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
     {
@@ -440,23 +441,16 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 		a[i+1] = ...;
 	     where loads from the group interleave with the store.  */
 	  if (!vect_preserves_scalar_order_p (dr_info_a, dr_info_b))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "READ_WRITE dependence in interleaving.\n");
-	      return true;
-	    }
+	    return opt_result::failure_at (stmtinfo_a->stmt,
+					   "READ_WRITE dependence"
+					   " in interleaving.\n");
 
 	  if (loop->safelen < 2)
 	    {
 	      tree indicator = dr_zero_step_indicator (dra);
 	      if (!indicator || integer_zerop (indicator))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "access also has a zero step\n");
-		  return true;
-		}
+		return opt_result::failure_at (stmtinfo_a->stmt,
+					       "access also has a zero step\n");
 	      else if (TREE_CODE (indicator) != INTEGER_CST)
 		vect_check_nonzero_value (loop_vinfo, indicator);
 	    }
@@ -503,16 +497,13 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 	  continue;
 	}
 
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized, possible dependence "
-			 "between data-refs %T and %T\n",
-			 DR_REF (dra), DR_REF (drb));
-
-      return true;
+      return opt_result::failure_at (stmtinfo_a->stmt,
+				     "not vectorized, possible dependence "
+				     "between data-refs %T and %T\n",
+				     DR_REF (dra), DR_REF (drb));
     }
 
-  return false;
+  return opt_result::success ();
 }
 
 /* Function vect_analyze_data_ref_dependences.
@@ -521,7 +512,7 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
    exist any data dependences between them.  Set *MAX_VF according to
    the maximum vectorization factor the data dependences allow.  */
 
-bool
+opt_result
 vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
 				   unsigned int *max_vf)
 {
@@ -553,10 +544,14 @@ vect_analyze_data_ref_dependences (loop_vec_info loop_vinfo,
     *max_vf = LOOP_VINFO_ORIG_MAX_VECT_FACTOR (loop_vinfo);
   else
     FOR_EACH_VEC_ELT (LOOP_VINFO_DDRS (loop_vinfo), i, ddr)
-      if (vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf))
-	return false;
+      {
+	opt_result res
+	  = vect_analyze_data_ref_dependence (ddr, loop_vinfo, max_vf);
+	if (!res)
+	  return res;
+      }
 
-  return true;
+  return opt_result::success ();
 }
 
 
@@ -1055,33 +1050,24 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
 
    Return TRUE if DR_INFO can be handled with respect to alignment.  */
 
-static bool
+static opt_result
 verify_data_ref_alignment (dr_vec_info *dr_info)
 {
   enum dr_alignment_support supportable_dr_alignment
     = vect_supportable_dr_alignment (dr_info, false);
   if (!supportable_dr_alignment)
-    {
-      if (dump_enabled_p ())
-	{
-	  if (DR_IS_READ (dr_info->dr))
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: unsupported unaligned load.");
-	  else
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: unsupported unaligned "
-			     "store.");
-
-	  dump_printf (MSG_MISSED_OPTIMIZATION, "%T\n", DR_REF (dr_info->dr));
-	}
-      return false;
-    }
+    return opt_result::failure_at
+      (dr_info->stmt->stmt,
+       DR_IS_READ (dr_info->dr)
+	? "not vectorized: unsupported unaligned load: %T\n"
+	: "not vectorized: unsupported unaligned store: %T\n",
+       DR_REF (dr_info->dr));
 
   if (supportable_dr_alignment != dr_aligned && dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Vectorizing an unaligned access.\n");
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Function vect_verify_datarefs_alignment
@@ -1089,7 +1075,7 @@ verify_data_ref_alignment (dr_vec_info *dr_info)
    Return TRUE if all data references in the loop can be
    handled with respect to alignment.  */
 
-bool
+opt_result
 vect_verify_datarefs_alignment (loop_vec_info vinfo)
 {
   vec<data_reference_p> datarefs = vinfo->shared->datarefs;
@@ -1115,11 +1101,12 @@ vect_verify_datarefs_alignment (loop_vec_info vinfo)
 	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
 	continue;
 
-      if (! verify_data_ref_alignment (dr_info))
-	return false;
+      opt_result res = verify_data_ref_alignment (dr_info);
+      if (!res)
+	return res;
     }
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Given an memory reference EXP return whether its alignment is less
@@ -1593,7 +1580,7 @@ vect_peeling_supportable (loop_vec_info loop_vinfo, dr_vec_info *dr0_info,
      (whether to generate regular loads/stores, or with special handling for
      misalignment).  */
 
-bool
+opt_result
 vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 {
   vec<data_reference_p> datarefs = LOOP_VINFO_DATAREFS (loop_vinfo);
@@ -1605,7 +1592,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   unsigned int i, j;
   bool do_peeling = false;
   bool do_versioning = false;
-  bool stat;
   unsigned int npeel = 0;
   bool one_misalignment_known = false;
   bool one_misalignment_unknown = false;
@@ -1992,7 +1978,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       /* Check if all datarefs are supportable and log.  */
       if (do_peeling && known_alignment_for_access_p (dr0_info) && npeel == 0)
         {
-          stat = vect_verify_datarefs_alignment (loop_vinfo);
+          opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
           if (!stat)
             do_peeling = false;
           else
@@ -2078,7 +2064,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 	  /* The inside-loop cost will be accounted for in vectorizable_load
 	     and vectorizable_store correctly with adjusted alignments.
 	     Drop the body_cst_vec on the floor here.  */
-	  stat = vect_verify_datarefs_alignment (loop_vinfo);
+	  opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
 	  gcc_assert (stat);
           return stat;
         }
@@ -2201,7 +2187,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       /* Peeling and versioning can't be done together at this time.  */
       gcc_assert (! (do_peeling && do_versioning));
 
-      stat = vect_verify_datarefs_alignment (loop_vinfo);
+      opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
       gcc_assert (stat);
       return stat;
     }
@@ -2209,7 +2195,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
   /* This point is reached if neither peeling nor versioning is being done.  */
   gcc_assert (! (do_peeling || do_versioning));
 
-  stat = vect_verify_datarefs_alignment (loop_vinfo);
+  opt_result stat = vect_verify_datarefs_alignment (loop_vinfo);
   return stat;
 }
 
@@ -2275,7 +2261,7 @@ vect_find_same_alignment_drs (vec_info *vinfo, data_dependence_relation *ddr)
    Analyze the alignment of the data-references in the loop.
    Return FALSE if a data reference is found that cannot be vectorized.  */
 
-bool
+opt_result
 vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 {
   DUMP_VECT_SCOPE ("vect_analyze_data_refs_alignment");
@@ -2300,7 +2286,7 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
 	vect_compute_data_ref_alignment (dr_info);
     }
 
-  return true;
+  return opt_result::success ();
 }
 
 
@@ -2825,7 +2811,7 @@ can_group_stmts_p (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
 
    FORNOW: handle only arrays and pointer accesses.  */
 
-bool
+opt_result
 vect_analyze_data_ref_accesses (vec_info *vinfo)
 {
   unsigned int i;
@@ -2835,7 +2821,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
   DUMP_VECT_SCOPE ("vect_analyze_data_ref_accesses");
 
   if (datarefs.is_empty ())
-    return true;
+    return opt_result::success ();
 
   /* Sort the array of datarefs to make building the interleaving chains
      linear.  Don't modify the original vector's order, it is needed for
@@ -2994,13 +2980,15 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  else
 	    {
 	      datarefs_copy.release ();
-	      return false;
+	      return opt_result::failure_at (dr_info->stmt->stmt,
+					     "not vectorized:"
+					     " complicated access pattern.\n");
 	    }
 	}
     }
 
   datarefs_copy.release ();
-  return true;
+  return opt_result::success ();
 }
 
 /* Function vect_vfa_segment_size.
@@ -3258,7 +3246,7 @@ vectorizable_with_step_bound_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b,
    Return FALSE if resulting list of ddrs is longer then allowed by
    PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS, otherwise return TRUE.  */
 
-bool
+opt_result
 vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 {
   typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
@@ -3292,7 +3280,7 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
     }
 
   if (may_alias_ddrs.is_empty ())
-    return true;
+    return opt_result::success ();
 
   comp_alias_ddrs.create (may_alias_ddrs.length ());
 
@@ -3452,12 +3440,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	    continue;
 
 	  if (res == 1)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "not vectorized: compilation time alias.\n");
-	      return false;
-	    }
+	    return opt_result::failure_at (stmt_info_b->stmt,
+					   "not vectorized:"
+					   " compilation time alias: %G%G",
+					   stmt_info_a->stmt,
+					   stmt_info_b->stmt);
 	}
 
       dr_with_seg_len_pair_t dr_with_seg_len_pair
@@ -3482,17 +3469,14 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 		   "improved number of alias checks from %d to %d\n",
 		   may_alias_ddrs.length (), count);
   if ((int) count > PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "number of versioning for alias "
-			 "run-time tests exceeds %d "
-			 "(--param vect-max-version-for-alias-checks)\n",
-			 PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
-      return false;
-    }
+    return opt_result::failure_at
+      (vect_location,
+       "number of versioning for alias "
+       "run-time tests exceeds %d "
+       "(--param vect-max-version-for-alias-checks)\n",
+       PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Check whether we can use an internal function for a gather load
@@ -3846,7 +3830,7 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
    append them to DATAREFS.  Return false if datarefs in this stmt cannot
    be handled.  */
 
-bool
+opt_result
 vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 			       vec<data_reference_p> *datarefs)
 {
@@ -3854,72 +3838,50 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
      loop vectorization and BB vectorization checks dependences with a
      stmt walk.  */
   if (gimple_clobber_p (stmt))
-    return true;
+    return opt_result::success ();
 
   if (gimple_has_volatile_ops (stmt))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: volatile type %G", stmt);
-      return false;
-    }
+    return opt_result::failure_at (stmt, "not vectorized: volatile type: %G",
+				   stmt);
 
   if (stmt_can_throw_internal (stmt))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: statement can throw an exception %G",
-			 stmt);
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized:"
+				   " statement can throw an exception: %G",
+				   stmt);
 
   auto_vec<data_reference_p, 2> refs;
-  if (!find_data_references_in_stmt (loop, stmt, &refs))
-    return false;
+  opt_result res = find_data_references_in_stmt (loop, stmt, &refs);
+  if (!res)
+    return res;
 
   if (refs.is_empty ())
-    return true;
+    return opt_result::success ();
 
   if (refs.length () > 1)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: more than one data ref "
-			 "in stmt: %G", stmt);
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized:"
+				   " more than one data ref in stmt: %G", stmt);
 
   if (gcall *call = dyn_cast <gcall *> (stmt))
     if (!gimple_call_internal_p (call)
 	|| (gimple_call_internal_fn (call) != IFN_MASK_LOAD
 	    && gimple_call_internal_fn (call) != IFN_MASK_STORE))
-      {
-	if (dump_enabled_p ())
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION,  vect_location,
-			   "not vectorized: dr in a call %G", stmt);
-	return false;
-      }
+      return opt_result::failure_at (stmt,
+				     "not vectorized: dr in a call %G", stmt);
 
   data_reference_p dr = refs.pop ();
   if (TREE_CODE (DR_REF (dr)) == COMPONENT_REF
       && DECL_BIT_FIELD (TREE_OPERAND (DR_REF (dr), 1)))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: statement is bitfield "
-			 "access %G", stmt);
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized:"
+				   " statement is bitfield access %G", stmt);
 
   if (DR_BASE_ADDRESS (dr)
       && TREE_CODE (DR_BASE_ADDRESS (dr)) == INTEGER_CST)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "not vectorized: base addr of dr is a "
-			 "constant\n");
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized:"
+				   " base addr of dr is a constant\n");
 
   /* Check whether this may be a SIMD lane access and adjust the
      DR to make it easier for us to handle it.  */
@@ -3976,7 +3938,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 			  newdr->aux = (void *)-1;
 			  free_data_ref (dr);
 			  datarefs->safe_push (newdr);
-			  return true;
+			  return opt_result::success ();
 			}
 		    }
 		}
@@ -3986,7 +3948,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     }
 
   datarefs->safe_push (dr);
-  return true;
+  return opt_result::success ();
 }
 
 /* Function vect_analyze_data_refs.
@@ -4004,7 +3966,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 
 */
 
-bool
+opt_result
 vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 {
   struct loop *loop = NULL;
@@ -4074,7 +4036,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 		  STMT_VINFO_VECTORIZABLE (stmt_info) = false;
 		  continue;
 		}
-	      return false;
+	      return opt_result::failure_at (stmt_info->stmt,
+					     "not vectorized:"
+					     " data ref analysis failed: %G",
+					     stmt_info->stmt);
 	    }
         }
 
@@ -4082,13 +4047,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
       if (dr->aux == (void *)-1)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "not vectorized: data ref analysis "
-				 "failed %G", stmt_info->stmt);
-	      return false;
-	    }
+	    return opt_result::failure_at (stmt_info->stmt,
+					   "not vectorized:"
+					   " data ref analysis failed: %G",
+					   stmt_info->stmt);
 	  STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) = true;
 	}
 
@@ -4106,7 +4068,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
 	      continue;
 	    }
-	  return false;
+	  return opt_result::failure_at (stmt_info->stmt,
+					 "not vectorized: base object not"
+					 " addressable for stmt: %G",
+					 stmt_info->stmt);
 	}
 
       if (is_a <loop_vec_info> (vinfo)
@@ -4114,13 +4079,10 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	  && TREE_CODE (DR_STEP (dr)) != INTEGER_CST)
 	{
 	  if (nested_in_vect_loop_p (loop, stmt_info))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "not vectorized: not suitable for strided "
-				 "load %G", stmt_info->stmt);
-	      return false;
-	    }
+	    return opt_result::failure_at (stmt_info->stmt,
+					   "not vectorized:"
+					   "not suitable for strided load %G",
+					   stmt_info->stmt);
 	  STMT_VINFO_STRIDED_P (stmt_info) = true;
 	}
 
@@ -4150,10 +4112,12 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "analyze in outer loop: %T\n", init_ref);
 
-	  if (!dr_analyze_innermost (&STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info),
-				     init_ref, loop))
+	  opt_result res
+	    = dr_analyze_innermost (&STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info),
+				    init_ref, loop, stmt_info->stmt);
+	  if (!res)
 	    /* dr_analyze_innermost already explained the failure.  */
-	    return false;
+	    return res;
 
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
@@ -4199,7 +4163,11 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 	      STMT_VINFO_VECTORIZABLE (stmt_info) = false;
 	      continue;
 	    }
-	  return false;
+	  return opt_result::failure_at (stmt_info->stmt,
+					 "not vectorized:"
+					 " no vectype for stmt: %G"
+					 " scalar_type: %T\n",
+					 stmt_info->stmt, scalar_type);
         }
       else
 	{
@@ -4221,17 +4189,12 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
 					  as_a <loop_vec_info> (vinfo),
 					  &gs_info)
 	      || !get_vectype_for_scalar_type (TREE_TYPE (gs_info.offset)))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 (gatherscatter == GATHER) ?
-				 "not vectorized: not suitable for gather "
-				 "load %G" :
-				 "not vectorized: not suitable for scatter "
-				 "store %G",
-				 stmt_info->stmt);
-	      return false;
-	    }
+	    return opt_result::failure_at
+	      (stmt_info->stmt,
+	       (gatherscatter == GATHER) ?
+	       "not vectorized: not suitable for gather load %G" :
+	       "not vectorized: not suitable for scatter store %G",
+	       stmt_info->stmt);
 	  STMT_VINFO_GATHER_SCATTER_P (stmt_info) = gatherscatter;
 	}
     }
@@ -4240,7 +4203,7 @@ vect_analyze_data_refs (vec_info *vinfo, poly_uint64 *min_vf)
      longer need to.  */
   gcc_assert (i == datarefs.length ());
 
-  return true;
+  return opt_result::success ();
 }
 
 
