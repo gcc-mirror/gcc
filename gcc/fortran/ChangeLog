@@ -1,3 +1,12 @@
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+        PR fortran/86111
+	Backport from trunk
+        * gfortran.h (enum arith): Add ARITH_WRONGCONCAT.
+        * arith.h (gfc_arith_error): Issue error for ARITH_WRONGCONCAT.
+        (gfc_arith_concat):  If the types of op1 and op2 are not
+        character of if their kinds do not match, issue ARITH_WRONGCONCAT.
+
 2018-09-18  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
