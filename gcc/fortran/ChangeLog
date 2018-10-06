@@ -1,4 +1,10 @@
- 2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	* resolve.c (resolve_fl_procedure): Include class functions in
+	the test that elemental function results be scalar.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/84640
 	* simplify.c (gfc_simplify_cshift): Extend size of hs_ex and ss_ex
