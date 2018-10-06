@@ -1,3 +1,11 @@
+ 2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84640
+	* simplify.c (gfc_simplify_cshift): Extend size of hs_ex and ss_ex
+	by one. Set extents one past the array boundaries to zero to avoid
+	warning with instrumented compiler.
+	(gfc_simplify_eoshift): Likewise, only for ss_ex.
+
 2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87487
