@@ -1,6 +1,14 @@
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.h (enum arith): Add ARITH_WRONGCONCAT.
+	* arith.h (gfc_arith_error): Issue error for ARITH_WRONGCONCAT.
+	(gfc_arith_concat):  If the types of op1 and op2 are not
+	character of if their kinds do not match, issue ARITH_WRONGCONCAT.
+
 2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
 
-	Backport from trunk
+	PR fortran/83999
 	* resolve.c (resolve_fl_procedure): Include class functions in
 	the test that elemental function results be scalar.
 
