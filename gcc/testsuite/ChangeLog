@@ -1,3 +1,67 @@
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/i386.exp: Move procedures to
+	target-supports.exp.
+	* g++.target/i386/i386.exp: New file.
+	* gcc.target/i386/mv*.C: Move here tests and remove
+	target filter in these tests.
+
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/contiguous_4.f90: Adjust.
+	* gfortran.dg/contiguous_4.f90: New test.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* gfortran.dg/associate_41.f90: New test.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/merge-all-constants-2.c: Require string_merging support.
+	* gnat.dg/string_merge1.adb: Likewise.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/Wprio-ctor-dtor.c: Require init_priority support.
+
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/pr82625.C: Add dg-compile filter.
+
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* g++.dg/concepts/pr71128.C: New.
+
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* gcc.dg/pr87286.c: New test.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.dg/array_constructor_type_23.f90: New test.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* gfortran.dg/elemental_function_4.f90 : New test.
+
+2018-10-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	PR rtl-optimization/87479
+	* gcc.target/powerpc/pr86939.c: New test.
+	* gcc/testsuite/gcc.target/i386/pr49095.c: Fix expected results.
+
+2018-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: Fix test expectations.
+	* gnat.dg/string_merge2.adb: Likewise.
+
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/56856

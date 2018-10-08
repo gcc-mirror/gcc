@@ -426,7 +426,7 @@ rclose:
 		typedmemclr(c.elemtype, cas.elem)
 	}
 	if raceenabled {
-		raceacquire(unsafe.Pointer(c))
+		raceacquire(c.raceaddr())
 	}
 	goto retc
 

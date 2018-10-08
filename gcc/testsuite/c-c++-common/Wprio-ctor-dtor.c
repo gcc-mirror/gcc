@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target init_priority } */
 /* { dg-options "-Wno-prio-ctor-dtor" } */
 
 void construct1 () __attribute__ ((constructor (10)));

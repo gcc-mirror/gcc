@@ -1,4 +1,5 @@
 -- { dg-do compile }
+-- { dg-require-effective-target string_merging }
 -- { dg-options "-O1 -fmerge-all-constants" }
 
 procedure String_Merge1 is
@@ -15,5 +16,3 @@ end;
 --     .string "ABCD"
 
 -- { dg-final { scan-assembler-times "\\.rodata\\.str" 1 } }
--- { dg-final { scan-assembler-times "\\.string" 1 } }
--- { dg-final { scan-assembler-times "\"ABCD\"" 1 } }

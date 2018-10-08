@@ -135,7 +135,7 @@ internal_proto(output_stream);
 extern stream *error_stream (void);
 internal_proto(error_stream);
 
-extern int compare_file_filename (gfc_unit *, const char *, int);
+extern int compare_file_filename (gfc_unit *, const char *, gfc_charlen_type);
 internal_proto(compare_file_filename);
 
 extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
@@ -150,25 +150,25 @@ internal_proto(file_exists);
 extern GFC_IO_INT file_size (const char *file, gfc_charlen_type file_len);
 internal_proto(file_size);
 
-extern const char *inquire_sequential (const char *, int);
+extern const char *inquire_sequential (const char *, gfc_charlen_type);
 internal_proto(inquire_sequential);
 
-extern const char *inquire_direct (const char *, int);
+extern const char *inquire_direct (const char *, gfc_charlen_type);
 internal_proto(inquire_direct);
 
-extern const char *inquire_formatted (const char *, int);
+extern const char *inquire_formatted (const char *, gfc_charlen_type);
 internal_proto(inquire_formatted);
 
-extern const char *inquire_unformatted (const char *, int);
+extern const char *inquire_unformatted (const char *, gfc_charlen_type);
 internal_proto(inquire_unformatted);
 
-extern const char *inquire_read (const char *, int);
+extern const char *inquire_read (const char *, gfc_charlen_type);
 internal_proto(inquire_read);
 
-extern const char *inquire_write (const char *, int);
+extern const char *inquire_write (const char *, gfc_charlen_type);
 internal_proto(inquire_write);
 
-extern const char *inquire_readwrite (const char *, int);
+extern const char *inquire_readwrite (const char *, gfc_charlen_type);
 internal_proto(inquire_readwrite);
 
 extern void flush_if_preconnected (stream *);

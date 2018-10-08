@@ -1885,7 +1885,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
 
       if (sym->ts.type == BT_CHARACTER
-	  && sym->ts.deferred
 	  && !sym->attr.select_type_temporary
 	  && VAR_P (sym->ts.u.cl->backend_decl)
 	  && se.string_length != sym->ts.u.cl->backend_decl)

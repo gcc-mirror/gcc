@@ -244,11 +244,11 @@ namespace __debug
 #if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
-      { return const_iterator(_Base::begin(), this); }
+      { return { _Base::begin(), this }; }
 
       const_iterator
       cend() const noexcept
-      { return const_iterator(_Base::end(), this); }
+      { return { _Base::end(), this }; }
 
       const_reverse_iterator
       crbegin() const noexcept
@@ -405,8 +405,8 @@ namespace __debug
 	emplace(const_iterator __position, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__position);
-	  return iterator(_Base::emplace(__position.base(),
-					std::forward<_Args>(__args)...), this);
+	  return  { _Base::emplace(__position.base(),
+				   std::forward<_Args>(__args)...), this };
 	}
 #endif
 
@@ -430,7 +430,7 @@ namespace __debug
       insert(const_iterator __p, initializer_list<value_type> __l)
       {
 	__glibcxx_check_insert(__p);
-	return iterator(_Base::insert(__p.base(), __l), this);
+	return { _Base::insert(__p.base(), __l), this };
       }
 #endif
 
@@ -439,7 +439,7 @@ namespace __debug
       insert(const_iterator __position, size_type __n, const _Tp& __x)
       {
 	__glibcxx_check_insert(__position);
-	return iterator(_Base::insert(__position.base(), __n, __x), this);
+	return { _Base::insert(__position.base(), __n, __x), this };
       }
 #else
       void
@@ -465,7 +465,7 @@ namespace __debug
 		_Base::insert(__position.base(),
 			      __gnu_debug::__unsafe(__first),
 			      __gnu_debug::__unsafe(__last)),
-		  this
+		this
 	      };
 	  else
 	    return { _Base::insert(__position.base(), __first, __last), this };
@@ -521,15 +521,17 @@ namespace __debug
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 151. can't currently clear() empty container
 	__glibcxx_check_erase_range(__first, __last);
-	for (_Base_const_iterator __victim = __first.base();
+	for (__decltype(__first.base()) __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "position")
-				  ._M_iterator(__last, "last"));
+	    _GLIBCXX_DEBUG_VERIFY(
+		__victim != __first._M_get_sequence()->_M_base().end(),
+		_M_message(__gnu_debug::__msg_valid_range)
+		._M_iterator(__first, "position")
+		._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
 	  }
+
 	return iterator(_Base::erase(__first.base(), __last.base()), this);
       }
 
@@ -586,7 +588,7 @@ namespace __debug
 			      ._M_iterator(__i, "__i"));
 	_GLIBCXX_DEBUG_VERIFY(__i._M_attached_to(std::__addressof(__x)),
 			      _M_message(__gnu_debug::__msg_splice_other)
-			     ._M_iterator(__i, "__i")._M_sequence(__x, "__x"));
+			      ._M_iterator(__i, "__i")._M_sequence(__x, "__x"));
 
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 250. splicing invalidates iterators
@@ -620,19 +622,21 @@ namespace __debug
 	// We used to perform the splice_alloc check:  not anymore, redundant
 	// after implementing the relevant bits of N1599.
 
-	for (_Base_const_iterator __tmp = __first.base();
+	for (__decltype(__first.base()) __tmp = __first.base();
 	     __tmp != __last.base(); ++__tmp)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__tmp != _Base::end(),
-				  _M_message(__gnu_debug::__msg_valid_range)
-				  ._M_iterator(__first, "first")
-				  ._M_iterator(__last, "last"));
+	    _GLIBCXX_DEBUG_VERIFY(
+		__tmp != __first._M_get_sequence()->_M_base().end(),
+		_M_message(__gnu_debug::__msg_valid_range)
+		._M_iterator(__first, "first")
+		._M_iterator(__last, "last"));
 	    _GLIBCXX_DEBUG_VERIFY(std::__addressof(__x) != this
 				  || __tmp != __position.base(),
 				_M_message(__gnu_debug::__msg_splice_overlap)
 				  ._M_iterator(__tmp, "position")
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
+
 	    // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	    // 250. splicing invalidates iterators
 	    this->_M_transfer_from_if(__x, _Equal(__tmp));

@@ -1,3 +1,67 @@
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.c (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.h (MOVE_RATIO): New definition.
+	* config/pdp11/pdp11.md (movmemhi): Use expand_block_move.
+	(*movmemhi1): Remove.
+
+2018-10-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/2827.md: Increase latencies for some FP instructions.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Open a dump scope.
+	* tree-vectorizer.c (dump_stmt_cost): Add cost param and dump it.
+	* tree-vectorizer.h (dump_stmt_cost): Adjust.
+	(add_stmt_cost): Dump return value of the hook.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (add_ssa_edge): Do cheap check first.
+	(ssa_propagation_engine::ssa_propagate): Remove redundant
+	bitmap bit clearing.
+
+2018-10-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	PR rtl-optimization/87479
+	* ira.h (non_conflicting_reg_copy_p): New prototype.
+	* ira-lives.c (ignore_reg_for_conflicts): New static variable.
+	(make_hard_regno_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.
+	(make_object_dead): Likewise.
+	(non_conflicting_reg_copy_p): New function.
+	(process_bb_node_lives): Set ignore_reg_for_conflicts for copies.
+	Remove special conflict handling of REAL_PIC_OFFSET_TABLE_REGNUM.
+	* lra-lives.c (ignore_reg_for_conflicts): New static variable.
+	(make_hard_regno_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.  Remove special conflict handling of
+	REAL_PIC_OFFSET_TABLE_REGNUM.  Remove now unused argument
+	check_pic_pseudo_p and update callers.
+	(mark_pseudo_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.
+	(process_bb_lives): Set ignore_reg_for_conflicts for copies.
+
+2018-10-05  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (f<quiet_pattern>_quiet<ANYF:mode><X:mode>4):
+	Add define_expand.  Add ! HONOR_SNANS check to current pattern.  Add
+	new pattern using HONOR_SNANS that emits one extra instruction.
+
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (unnamed mfcr scc_comparison_operator
+	patterns): Merge SI and DI patterns to a GPR pattern.
+	(unnamed define_insn and define_split for record form of that): Merge
+	to a single define_insn_and_split pattern.
+
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/56856

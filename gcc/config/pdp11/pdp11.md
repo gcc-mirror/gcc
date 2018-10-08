@@ -570,47 +570,19 @@
   clrf\t%0"
   [(set_attr "length" "2,2,4,4,2")])
 
-;; maybe fiddle a bit with move_ratio, then 
-;; let constraints only accept a register ...
-
+;; Expand a block move.  We turn this into a move loop.
 (define_expand "movmemhi"
-  [(parallel [(set (match_operand:BLK 0 "general_operand" "=g,g")
-		   (match_operand:BLK 1 "general_operand" "g,g"))
-	      (use (match_operand:HI 2 "general_operand" "n,mr"))
-	      (use (match_operand:HI 3 "immediate_operand" "i,i"))
-	      (clobber (match_scratch:HI 6 "=&r,X"))
-	      (clobber (match_dup 4))
-	      (clobber (match_dup 5))
-	      (clobber (match_dup 2))])]
+  [(match_operand:BLK 0 "general_operand" "=g")
+   (match_operand:BLK 1 "general_operand" "g")
+   (match_operand:HI 2 "immediate_operand" "i")
+   (match_operand:HI 3 "immediate_operand" "i")]
   ""
   "
 {
-  operands[0]
-    = replace_equiv_address (operands[0],
-			     copy_to_mode_reg (Pmode, XEXP (operands[0], 0)));
-  operands[1]
-    = replace_equiv_address (operands[1],
-			     copy_to_mode_reg (Pmode, XEXP (operands[1], 0)));
-
-  operands[4] = XEXP (operands[0], 0);
-  operands[5] = XEXP (operands[1], 0);
+  if (INTVAL (operands[2]) != 0)
+    expand_block_move (operands);
+  DONE;
 }")
-
-
-(define_insn "*movmemhi1"
-  [(set (mem:BLK (match_operand:HI 0 "register_operand" "r,r"))
-	(mem:BLK (match_operand:HI 1 "register_operand" "r,r")))
-   (use (match_operand:HI 2 "general_operand" "n,r"))
-   (use (match_operand:HI 3 "immediate_operand" "i,i"))
-   (clobber (match_scratch:HI 4 "=&r,X"))
-   (clobber (match_dup 0))
-   (clobber (match_dup 1))
-   (clobber (match_dup 2))]
-  ""
-  "* return output_block_move (operands);"
-;;; just a guess
-  [(set_attr "length" "80")])
-   
 
 
 ;;- truncation instructions

@@ -1,3 +1,37 @@
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* expr.c (gfc_check_pointer_assign): Demote "Assignment to
+	contiguous pointer from non-contiguous target" to a warning.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* trans-stmt.c (trans_associate_var): Character associate names
+	with variable string length do not have to be deferred length
+	for the string length to be set, if variable.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.h (enum arith): Add ARITH_WRONGCONCAT.
+	* arith.h (gfc_arith_error): Issue error for ARITH_WRONGCONCAT.
+	(gfc_arith_concat):  If the types of op1 and op2 are not
+	character of if their kinds do not match, issue ARITH_WRONGCONCAT.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* resolve.c (resolve_fl_procedure): Include class functions in
+	the test that elemental function results be scalar.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84640
+	* simplify.c (gfc_simplify_cshift): Extend size of hs_ex and ss_ex
+	by one. Set extents one past the array boundaries to zero to avoid
+	warning with instrumented compiler.
+	(gfc_simplify_eoshift): Likewise, only for ss_ex.
+
 2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87487
