@@ -143,10 +143,12 @@ add_ssa_edge (tree var)
   FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
       gimple *use_stmt = USE_STMT (use_p);
-      basic_block use_bb = gimple_bb (use_stmt);
+      if (!prop_simulate_again_p (use_stmt))
+	continue;
 
       /* If we did not yet simulate the block wait for this to happen
          and do not add the stmt to the SSA edge worklist.  */
+      basic_block use_bb = gimple_bb (use_stmt);
       if (! (use_bb->flags & BB_VISITED))
 	continue;
 
@@ -155,9 +157,6 @@ add_ssa_edge (tree var)
       if (gimple_code (use_stmt) == GIMPLE_PHI
 	  && !(EDGE_PRED (use_bb, PHI_ARG_INDEX_FROM_USE (use_p))->flags
 	       & EDGE_EXECUTABLE))
-	continue;
-
-      if (!prop_simulate_again_p (use_stmt))
 	continue;
 
       bitmap worklist;
@@ -804,7 +803,6 @@ ssa_propagation_engine::ssa_propagate (void)
       else
 	{
 	  curr_order = next_stmt_bb_order;
-	  bitmap_clear_bit (ssa_edge_worklist, next_stmt_uid);
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "\nSimulating statement: ");
