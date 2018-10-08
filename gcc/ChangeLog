@@ -1,5 +1,10 @@
 2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_i): Print column
+	information.
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* cgraphunit.c (cgraph_node::expand_thunk): Do not force DECL_IGNORED_P
 	on the thunk.
 

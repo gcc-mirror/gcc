@@ -1,3 +1,7 @@
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/vararg-loc.c: Accept a column number.
+
 2018-10-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/i386.exp: Move procedures to

@@ -398,7 +398,8 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       if (INSN_HAS_LOCATION (in_insn))
 	{
 	  expanded_location xloc = insn_location (in_insn);
-	  fprintf (m_outfile, " \"%s\":%i", xloc.file, xloc.line);
+	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,
+		   xloc.column);
 	}
 #endif
     }
