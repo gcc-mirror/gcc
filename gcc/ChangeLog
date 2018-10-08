@@ -1,5 +1,13 @@
 2018-10-08  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Open a dump scope.
+	* tree-vectorizer.c (dump_stmt_cost): Add cost param and dump it.
+	* tree-vectorizer.h (dump_stmt_cost): Adjust.
+	(add_stmt_cost): Dump return value of the hook.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/63155
 	* tree-ssa-propagate.c (add_ssa_edge): Do cheap check first.
 	(ssa_propagation_engine::ssa_propagate): Remove redundant

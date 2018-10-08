@@ -1199,7 +1199,8 @@ init_cost (struct loop *loop_info)
 }
 
 extern void dump_stmt_cost (FILE *, void *, int, enum vect_cost_for_stmt,
-			    stmt_vec_info, int, enum vect_cost_model_location);
+			    stmt_vec_info, int, unsigned,
+			    enum vect_cost_model_location);
 
 /* Alias targetm.vectorize.add_stmt_cost.  */
 
@@ -1208,10 +1209,12 @@ add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	       stmt_vec_info stmt_info, int misalign,
 	       enum vect_cost_model_location where)
 {
+  unsigned cost = targetm.vectorize.add_stmt_cost (data, count, kind,
+						   stmt_info, misalign, where);
   if (dump_file && (dump_flags & TDF_DETAILS))
-    dump_stmt_cost (dump_file, data, count, kind, stmt_info, misalign, where);
-  return targetm.vectorize.add_stmt_cost (data, count, kind,
-					  stmt_info, misalign, where);
+    dump_stmt_cost (dump_file, data, count, kind, stmt_info, misalign,
+		    cost, where);
+  return cost;
 }
 
 /* Alias targetm.vectorize.finish_cost.  */

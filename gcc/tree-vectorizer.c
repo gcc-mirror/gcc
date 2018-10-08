@@ -89,7 +89,7 @@ dump_user_location_t vect_location;
 
 void
 dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, int misalign,
+		stmt_vec_info stmt_info, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   fprintf (f, "%p ", data);
@@ -159,6 +159,7 @@ dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
   fprintf (f, "%s ", ks);
   if (kind == unaligned_load || kind == unaligned_store)
     fprintf (f, "(misalign %d) ", misalign);
+  fprintf (f, "costs %u ", cost);
   const char *ws = "unknown";
   switch (where)
     {

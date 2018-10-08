@@ -1072,6 +1072,8 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
   int nbbs = loop->num_nodes, factor;
   int innerloop_iters, i;
 
+  DUMP_VECT_SCOPE ("vect_compute_single_scalar_iteration_cost");
+
   /* Gather costs for statements in the scalar loop.  */
 
   /* FORNOW.  */
