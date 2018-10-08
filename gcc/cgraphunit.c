@@ -1870,7 +1870,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       resolve_unique_section (thunk_fndecl, 0,
 			      flag_function_sections);
 
-      DECL_IGNORED_P (thunk_fndecl) = 1;
       bitmap_obstack_initialize (NULL);
 
       if (thunk.virtual_offset_p)

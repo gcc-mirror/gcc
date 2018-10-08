@@ -1,4 +1,9 @@
-2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Do not force DECL_IGNORED_P
+	on the thunk.
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/86659
 	* gimple-match.h (struct gimple_match_op): Add reverse field.
