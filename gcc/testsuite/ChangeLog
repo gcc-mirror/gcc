@@ -1,3 +1,11 @@
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/i386.exp: Move procedures to
+	target-supports.exp.
+	* g++.target/i386/i386.exp: New file.
+	* gcc.target/i386/mv*.C: Move here tests and remove
+	target filter in these tests.
+
 2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* gfortran.dg/contiguous_4.f90: Adjust.
