@@ -1,3 +1,7 @@
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/pr82625.C: Add dg-compile filter.
+
 2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71128
