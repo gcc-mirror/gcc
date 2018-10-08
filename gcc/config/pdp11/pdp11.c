@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "builtins.h"
 #include "dbxout.h"
+#include "explow.h"
 #include "expmed.h"
 
 /* This file should be included last.  */
@@ -1513,173 +1514,48 @@ no_side_effect_operand(rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 
 
 /*
- * output a block move:
+ * expand a block move:
  *
  * operands[0]	... to
  * operands[1]  ... from
  * operands[2]  ... length
  * operands[3]  ... alignment
- * operands[4]  ... scratch register
  */
 
- 
-const char *
-output_block_move(rtx *operands)
+void
+expand_block_move(rtx *operands)
 {
-    static int count = 0;
-    char buf[200];
-    int unroll;
-    int lastbyte = 0;
-    
-    /* Move of zero bytes is a NOP.  */
-    if (operands[2] == const0_rtx)
-      return "";
-    
-    /* Look for moves by small constant byte counts, those we'll
-       expand to straight line code.  */
-    if (CONSTANT_P (operands[2]))
-    {
-	if (INTVAL (operands[2]) < 16
-	    && (!optimize_size || INTVAL (operands[2]) < 5)
-	    && INTVAL (operands[3]) == 1)
-	{
-	    register int i;
-	    
-	    for (i = 1; i <= INTVAL (operands[2]); i++)
-		output_asm_insn("movb\t(%1)+,(%0)+", operands);
+    rtx lb, test;
+    rtx fromop, toop, counter;
+    int count;
 
-	    return "";
-	}
-	else if (INTVAL(operands[2]) < 32
-		 && (!optimize_size || INTVAL (operands[2]) < 9)
-		 && INTVAL (operands[3]) >= 2)
-	{
-	    register int i;
-	    
-	    for (i = 1; i <= INTVAL (operands[2]) / 2; i++)
-		output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	    if (INTVAL (operands[2]) & 1)
-	      output_asm_insn ("movb\t(%1),(%0)", operands);
-	    
-	    return "";
-	}
-    }
+    /* Transform BLKmode MEM reference into a (reg)+ operand.  */
+    toop = copy_to_mode_reg (Pmode, XEXP (operands[0], 0));
+    toop = gen_rtx_POST_INC (Pmode, toop);
+    fromop = copy_to_mode_reg (Pmode, XEXP (operands[1], 0));
+    fromop = gen_rtx_POST_INC (Pmode, fromop);
 
-    /* Ideally we'd look for moves that are multiples of 4 or 8
-       bytes and handle those by unrolling the move loop.  That
-       makes for a lot of code if done at run time, but it's ok
-       for constant counts.  Also, for variable counts we have
-       to worry about odd byte count with even aligned pointers.
-       On 11/40 and up we handle that case; on older machines
-       we don't and just use byte-wise moves all the time.  */
-
-    if (CONSTANT_P (operands[2]) )
-    {
-      if (INTVAL (operands[3]) < 2)
-	unroll = 0;
-      else
-	{
-	  lastbyte = INTVAL (operands[2]) & 1;
-
-	  if (optimize_size || INTVAL (operands[2]) & 2)
-	    unroll = 1;
-	  else if (INTVAL (operands[2]) & 4)
-	    unroll = 2;
-	  else
-	    unroll = 3;
-	}
-      
-      /* Loop count is byte count scaled by unroll.  */
-      operands[2] = GEN_INT (INTVAL (operands[2]) >> unroll);
-      output_asm_insn ("mov\t%2,%4", operands);
-    }
-    else
-    {
-	/* Variable byte count; use the input register
-	   as the scratch.  */
-	operands[4] = operands[2];
-
-	/* Decide whether to move by words, and check
-	   the byte count for zero.  */
-	if (TARGET_40_PLUS && INTVAL (operands[3]) > 1)
-	  {
-	    unroll = 1;
-	    output_asm_insn ("asr\t%4", operands);
-	  }
-	else
-	  {
-	    unroll = 0;
-	    output_asm_insn ("tst\t%4", operands);
-	  }
-	sprintf (buf, "beq movestrhi%d", count + 1);
-	output_asm_insn (buf, NULL);
-    }
-
-    /* Output the loop label.  */
-    sprintf (buf, "\nmovestrhi%d:", count);
-    output_asm_insn (buf, NULL);
-
-    /* Output the appropriate move instructions.  */
-    switch (unroll)
-    {
-      case 0:
-	output_asm_insn ("movb\t(%1)+,(%0)+", operands);
-	break;
-	
-      case 1:
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	break;
-	
-      case 2:
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	break;
-	
-      default:
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	output_asm_insn ("mov\t(%1)+,(%0)+", operands);
-	break;
-    }
-
-    /* Output the decrement and test.  */
-    if (TARGET_40_PLUS)
+    count = INTVAL (operands[2]);
+    if (INTVAL (operands [3]) >= 2 && (count & 1) == 0)
       {
-	sprintf (buf, "sob\t%%4, movestrhi%d", count);
-	output_asm_insn (buf, operands);
+	count >>= 1;
+	toop = gen_rtx_MEM (HImode, toop);
+	fromop = gen_rtx_MEM (HImode, fromop);
       }
     else
       {
-	output_asm_insn ("dec\t%4", operands);
-	sprintf (buf, "bgt movestrhi%d", count);
-	output_asm_insn (buf, NULL);
+	toop = gen_rtx_MEM (QImode, toop);
+	fromop = gen_rtx_MEM (QImode, fromop);
       }
-    count ++;
+    counter = copy_to_mode_reg (HImode, gen_rtx_CONST_INT (HImode, count));
 
-    /* If constant odd byte count, move the last byte.  */
-    if (lastbyte)
-      output_asm_insn ("movb\t(%1),(%0)", operands);
-    else if (!CONSTANT_P (operands[2]))
-      {
-	/* Output the destination label for the zero byte count check.  */
-	sprintf (buf, "\nmovestrhi%d:", count);
-	output_asm_insn (buf, NULL);
-	count++;
-    
-	/* If we did word moves, check for trailing last byte. */
-	if (unroll)
-	  {
-	    sprintf (buf, "bcc movestrhi%d", count);
-	    output_asm_insn (buf, NULL);
-	    output_asm_insn ("movb\t(%1),(%0)", operands);
-	    sprintf (buf, "\nmovestrhi%d:", count);
-	    output_asm_insn (buf, NULL);
-	    count++;
-	  }
-      }
-	     
-    return "";
+    /* Label at top of loop */
+    lb = gen_label_rtx ();
+    emit_label (lb);
+    emit_move_insn (toop, fromop);
+    emit_insn (gen_subhi3 (counter, counter, const1_rtx));
+    test = gen_rtx_NE (HImode, counter, const0_rtx);
+    emit_jump_insn (gen_cbranchhi4 (test, counter, const0_rtx, lb));
 }
 
 /* This function checks whether a real value can be encoded as

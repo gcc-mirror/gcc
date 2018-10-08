@@ -439,8 +439,11 @@ extern int may_call_alloca;
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  
 */
-
 #define MOVE_MAX 2
+
+/* Max number of insns to use for inline move rather than library
+   call.  */
+#define MOVE_RATIO(speed) 6
 
 /* Nonzero if access to memory by byte is no faster than by word.  */
 #define SLOW_BYTE_ACCESS 1
