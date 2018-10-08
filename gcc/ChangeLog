@@ -1,3 +1,9 @@
+2018-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87517
+	* config/i386/avx512fintrin.h (_mm512_mask_fmaddsub_round_pd):
+	Defined with __builtin_ia32_vfmaddsubpd512_mask.
+
 2018-10-08  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/x86-tune-costs.h (znver1_cost): Make AVX256 vector loads
