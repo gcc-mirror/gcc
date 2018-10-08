@@ -1,5 +1,12 @@
 2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
 
+	PR fortran/83999
+	Backport from trunk
+	* resolve.c (resolve_fl_procedure): Include class functions in
+	the test that elemental function results be scalar.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
 	Backport from trunk
 	PR fortran/86372
 	* trans-stmt.c (trans_associate_var): Character associate names
