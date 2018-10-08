@@ -1,5 +1,7 @@
 2018-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c-c++-common/task-reduction-5.c: New test.
+
 	* env.c (gomp_affinity_format_var): Use %i instead of %T and
 	%A instead of %a.
 	* affinity-fmt.c (affinity_types): Change short forms h to H,

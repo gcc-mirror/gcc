@@ -1,3 +1,9 @@
+2018-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_task_reductions): For array section reductions,
+	read address from avar array instead of computing it again at the end
+	of taskgroup, as the base might have changed during the taskgroup.
+
 2018-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_rec_input_clauses): Fix handling of

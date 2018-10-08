@@ -6787,7 +6787,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	   omp_task_reduction_iterate (pass, code, ccode,
 				       &c, &decl, &type, &next); c = next)
 	{
-	  tree var = decl, ref, orig_var = decl;
+	  tree var = decl, ref;
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
 	      var = TREE_OPERAND (var, 0);
@@ -6798,7 +6798,6 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 		var = TREE_OPERAND (var, 0);
 	      else if (TREE_CODE (var) == INDIRECT_REF)
 		var = TREE_OPERAND (var, 0);
-	      orig_var = var;
 	      if (is_variable_sized (var))
 		{
 		  gcc_assert (DECL_HAS_VALUE_EXPR_P (var));
@@ -6895,48 +6894,17 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	    rcode = PLUS_EXPR;
 	  if (TREE_CODE (decl) == MEM_REF)
 	    {
-	      tree d = decl;
 	      tree type = TREE_TYPE (new_var);
 	      tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
 	      tree i = create_tmp_var (TREE_TYPE (v), NULL);
 	      tree ptype = build_pointer_type (TREE_TYPE (type));
-	      tree bias = TREE_OPERAND (d, 1);
-	      d = TREE_OPERAND (d, 0);
-	      if (TREE_CODE (d) == POINTER_PLUS_EXPR)
-		{
-		  tree b = TREE_OPERAND (d, 1);
-		  b = maybe_lookup_decl_in_outer_ctx (b, ctx);
-		  if (integer_zerop (bias))
-		    bias = b;
-		  else
-		    {
-		      bias = fold_convert (TREE_TYPE (b), bias);
-		      bias = fold_build2 (PLUS_EXPR, TREE_TYPE (b), b, bias);
-		    }
-		  d = TREE_OPERAND (d, 0);
-		}
-	      /* For ref build_outer_var_ref already performs this, so
-		 only new_var needs a dereference.  */
-	      if (TREE_CODE (d) == INDIRECT_REF)
-		ref = build_fold_indirect_ref (ref);
-	      else if (TREE_CODE (d) == ADDR_EXPR)
-		{
-		  if (orig_var == var)
-		    ref = build_fold_addr_expr (ref);
-		}
-	      else
-		gcc_assert (orig_var == var);
 	      if (DECL_P (v))
 		{
 		  v = maybe_lookup_decl_in_outer_ctx (v, ctx);
 		  gimplify_expr (&v, end, NULL, is_gimple_val, fb_rvalue);
 		}
-	      if (!integer_zerop (bias))
-		{
-		  bias = fold_convert (sizetype, bias);
-		  ref = fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (ref),
-				     ref, bias);
-		}
+	      ref = build4 (ARRAY_REF, pointer_sized_int_node, avar,
+			    size_int (7 + cnt * 3), NULL_TREE, NULL_TREE);
 	      new_var = build_fold_addr_expr (new_var);
 	      new_var = fold_convert (ptype, new_var);
 	      ref = fold_convert (ptype, ref);
