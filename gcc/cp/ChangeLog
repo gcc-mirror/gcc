@@ -1,3 +1,9 @@
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* pt.c (do_decl_instantiation): Per 12.6.8/5, a concept cannot be
+	explicitly instantiated.
+
 2018-10-05  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/56856
