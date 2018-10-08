@@ -1,3 +1,13 @@
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86659
+	* gimple-match.h (struct gimple_match_op): Add reverse field.
+	(gimple_match_op::set_op): New overloaded method.
+	* gimple-match-head.c (maybe_build_generic_op) <BIT_FIELD_REF>: Set
+	the REF_REVERSE_STORAGE_ORDER flag on the value.
+	(gimple_simplify) <GIMPLE_ASSIGN>: For BIT_FIELD_REF, propagate the
+	REF_REVERSE_STORAGE_ORDER flag and avoid simplifying if it is set.
+        
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63155
