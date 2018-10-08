@@ -1518,9 +1518,9 @@ struct processor_costs znver1_cost = {
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
   2, 3, 6,				/* cost of moving XMM,YMM,ZMM register.  */
-  {6, 6, 6, 10, 20},			/* cost of loading SSE registers
+  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  {6, 6, 6, 10, 20},			/* cost of unaligned loads.  */
+  {6, 6, 6, 6, 12},			/* cost of unaligned loads.  */
   {8, 8, 8, 8, 16},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit.  */
   {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
