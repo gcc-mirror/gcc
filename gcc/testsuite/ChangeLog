@@ -1,3 +1,8 @@
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* g++.dg/concepts/pr71128.C: New.
+
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/87286

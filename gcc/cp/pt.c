@@ -23127,6 +23127,14 @@ do_decl_instantiation (tree decl, tree storage)
       error ("explicit instantiation of non-template %q#D", decl);
       return;
     }
+  else if (DECL_DECLARED_CONCEPT_P (decl))
+    {
+      if (VAR_P (decl))
+	error ("explicit instantiation of variable concept %q#D", decl);
+      else
+	error ("explicit instantiation of function concept %q#D", decl);
+      return;
+    }
 
   bool var_templ = (DECL_TEMPLATE_INFO (decl)
                     && variable_template_p (DECL_TI_TEMPLATE (decl)));
