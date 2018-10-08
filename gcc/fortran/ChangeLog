@@ -1,3 +1,10 @@
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* trans-stmt.c (trans_associate_var): Character associate names
+	with variable string length do not have to be deferred length
+	for the string length to be set, if variable.
+
 2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/86111
