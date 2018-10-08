@@ -1,3 +1,13 @@
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.c (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.h (MOVE_RATIO): New definition.
+	* config/pdp11/pdp11.md (movmemhi): Use expand_block_move.
+	(*movmemhi1): Remove.
+
 2018-10-08  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/2827.md: Increase latencies for some FP instructions.
