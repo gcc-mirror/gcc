@@ -1968,11 +1968,45 @@ GOMP_taskgroup_reduction_register (uintptr_t *data)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
-  struct gomp_task *task = thr->task;
-  unsigned nthreads = team ? team->nthreads : 1;
+  struct gomp_task *task;
+  if (__builtin_expect (team == NULL, 0))
+    {
+      /* The task reduction code needs a team and task, so for
+	 orphaned taskgroups just create the implicit team.  */
+      struct gomp_task_icv *icv;
+      team = gomp_new_team (1);
+      task = thr->task;
+      icv = task ? &task->icv : &gomp_global_icv;
+      team->prev_ts = thr->ts;
+      thr->ts.team = team;
+      thr->ts.team_id = 0;
+      thr->ts.work_share = &team->work_shares[0];
+      thr->ts.last_work_share = NULL;
+#ifdef HAVE_SYNC_BUILTINS
+      thr->ts.single_count = 0;
+#endif
+      thr->ts.static_trip = 0;
+      thr->task = &team->implicit_task[0];
+      gomp_init_task (thr->task, NULL, icv);
+      if (task)
+	{
+	  thr->task = task;
+	  gomp_end_task ();
+	  free (task);
+	  thr->task = &team->implicit_task[0];
+	}
+#ifdef LIBGOMP_USE_PTHREADS
+      else
+	pthread_setspecific (gomp_thread_destructor, thr);
+#endif
+      GOMP_taskgroup_start ();
+    }
+  unsigned nthreads = team->nthreads;
   size_t total_cnt = 0;
-  uintptr_t *d = data;
-  uintptr_t *old = task->taskgroup->reductions;
+  uintptr_t *d = data, *old;
+  struct htab *old_htab = NULL, *new_htab;
+  task = thr->task;
+  old = task->taskgroup->reductions;
   do
     {
       size_t sz = d[1] * nthreads;
@@ -1992,13 +2026,12 @@ GOMP_taskgroup_reduction_register (uintptr_t *data)
 	d = (uintptr_t *) d[4];
     }
   while (1);
-  struct htab *old_htab = NULL;
   if (old && old[5])
     {
       old_htab = (struct htab *) old[5];
       total_cnt += htab_elements (old_htab);
     }
-  struct htab *new_htab = htab_create (total_cnt);
+  new_htab = htab_create (total_cnt);
   if (old_htab)
     {
       /* Copy old hash table, like in htab_expand.  */

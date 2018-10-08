@@ -945,7 +945,7 @@ gomp_team_end (void)
   gomp_end_task ();
   thr->ts = team->prev_ts;
 
-  if (__builtin_expect (thr->ts.team != NULL, 0))
+  if (__builtin_expect (thr->ts.level != 0, 0))
     {
 #ifdef HAVE_SYNC_BUILTINS
       __sync_fetch_and_add (&gomp_managed_threads, 1L - team->nthreads);

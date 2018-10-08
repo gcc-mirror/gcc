@@ -1,5 +1,12 @@
 2018-10-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* task.c (GOMP_taskgroup_reduction_register): If team is NULL, create
+	implicit team with 1 thread and call GOMP_taskgroup_start again.  Don't
+	mix declarations with statements.
+	* team.c (gomp_team_end): Determine nesting by thr->ts.level != 0
+	rather than thr->ts.team != NULL.
+	* testsuite/libgomp.c-c++-common/task-reduction-4.c: New test.
+
 	* testsuite/libgomp.c-c++-common/task-reduction-5.c: New test.
 
 	* env.c (gomp_affinity_format_var): Use %i instead of %T and
