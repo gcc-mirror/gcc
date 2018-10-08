@@ -1,3 +1,9 @@
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* c-common.c (vector_types_compatible_elements_p): Use
+	INTEGRAL_TYPE_P instead of checking only for INTEGER_TYPE.
+
 2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
 
 	* c-attribs.c (get_priority): Add a warning flag warn_prio_ctor_dtor
