@@ -1,5 +1,11 @@
 2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
+	* gcc.dg/merge-all-constants-2.c: Require string_merging support.
+	* gnat.dg/string_merge1.adb: Likewise.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
 	* c-c++-common/Wprio-ctor-dtor.c: Require init_priority support.
 
 2018-10-08  Martin Liska  <mliska@suse.cz>
