@@ -1,3 +1,8 @@
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* gcc.dg/pr87286.c: New test.
+
 2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/86111
