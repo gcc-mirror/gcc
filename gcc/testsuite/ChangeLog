@@ -1,8 +1,14 @@
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/86372
+	* gfortran.dg/associate_41.f90: New test.
+
 2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
-        PR fortran/86111
+	PR fortran/86111
 	Backport from trunk
-        * gfortran.dg/array_constructor_type_23.f90: New test.
+	* gfortran.dg/array_constructor_type_23.f90: New test.
 
 2018-10-03  Martin Liska  <mliska@suse.cz>
 
