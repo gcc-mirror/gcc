@@ -1,3 +1,10 @@
+2018-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87538
+	* include/std/functional (_Not_fn::operator()): Check value of
+	__is_nothrow_invocable as well.
+	* testsuite/20_util/function_objects/not_fn/87538.cc: New test.
+
 2018-10-08  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/list (list<>::cbegin()): Use C++11 direct
