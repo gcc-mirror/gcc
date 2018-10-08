@@ -237,14 +237,16 @@ static struct affinity_types_struct affinity_types[] =
 {
 #define AFFINITY_TYPE(l, s) \
   { #l, sizeof (#l) - 1, s }
-  AFFINITY_TYPE (thread_level, 'L'),
+  AFFINITY_TYPE (team_num, 't'),
+  AFFINITY_TYPE (num_teams, 'T'),
+  AFFINITY_TYPE (nesting_level, 'L'),
   AFFINITY_TYPE (thread_num, 'n'),
-  AFFINITY_TYPE (host, 'h'),
-  AFFINITY_TYPE (process_id, 'P'),
-  AFFINITY_TYPE (thread_identifier, 'T'),
   AFFINITY_TYPE (num_threads, 'N'),
-  AFFINITY_TYPE (ancestor_tnum, 'A'),
-  AFFINITY_TYPE (thread_affinity, 'a')
+  AFFINITY_TYPE (ancestor_tnum, 'a'),
+  AFFINITY_TYPE (host, 'H'),
+  AFFINITY_TYPE (process_id, 'P'),
+  AFFINITY_TYPE (native_thread_id, 'i'),
+  AFFINITY_TYPE (thread_affinity, 'A')
 #undef AFFINITY_TYPE
 };
 
@@ -324,13 +326,25 @@ gomp_display_affinity (char *buffer, size_t size,
 	}
       switch (c)
 	{
+	case 't':
+	  val = omp_get_team_num ();
+	  goto do_int;
+	case 'T':
+	  val = omp_get_num_teams ();
+	  goto do_int;
 	case 'L':
 	  val = ts->level;
 	  goto do_int;
 	case 'n':
 	  val = ts->team_id;
 	  goto do_int;
-	case 'h':
+	case 'N':
+	  val = ts->team ? ts->team->nthreads : 1;
+	  goto do_int;
+	case 'a':
+	  val = ts->team ? ts->team->prev_ts.team_id : -1;
+	  goto do_int;
+	case 'H':
 	  gomp_display_hostname (buffer, size, &ret, right, sz);
 	  break;
 	case 'P':
@@ -340,7 +354,7 @@ gomp_display_affinity (char *buffer, size_t size,
 	  val = 0;
 #endif
 	  goto do_int;
-	case 'T':
+	case 'i':
 #if defined(LIBGOMP_USE_PTHREADS) && defined(__GNUC__)
 	  /* Handle integral pthread_t.  */
 	  if (__builtin_classify_type (handle) == 1)
@@ -373,13 +387,7 @@ gomp_display_affinity (char *buffer, size_t size,
 #endif
 	  val = 0;
 	  goto do_int;
-	case 'N':
-	  val = ts->team ? ts->team->nthreads : 1;
-	  goto do_int;
 	case 'A':
-	  val = ts->team ? ts->team->prev_ts.team_id : -1;
-	  goto do_int;
-	case 'a':
 	  if (sz == (size_t) -1)
 	    gomp_display_affinity_place (buffer, size, &ret,
 					 place - 1);

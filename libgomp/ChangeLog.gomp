@@ -1,3 +1,16 @@
+2018-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* env.c (gomp_affinity_format_var): Use %i instead of %T and
+	%A instead of %a.
+	* affinity-fmt.c (affinity_types): Change short forms h to H,
+	a to A, A to a and T to i.  Change long forms thread_level to
+	nesting_level and thread_identifier to native_thread_id.  Add
+	team_num/t and num_teams/T entries.
+	(gomp_display_affinity): Adjust for the above changes.
+	* testsuite/libgomp.c-c++-common/display-affinity-1.c: Likewise.
+	Add test also for %{team_num}, %{num_teams}, %t and %T.
+	* testsuite/libgomp.fortran/display-affinity-1.f90: Likewise.
+
 2018-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/task-reduction-5.C (main): Add forgotten

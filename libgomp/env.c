@@ -89,7 +89,7 @@ unsigned long gomp_places_list_len;
 int gomp_debug_var;
 unsigned int gomp_num_teams_var;
 bool gomp_display_affinity_var;
-char *gomp_affinity_format_var = "level %L thread %T affinity %a";
+char *gomp_affinity_format_var = "level %L thread %i affinity %A";
 size_t gomp_affinity_format_len;
 char *goacc_device_type;
 int goacc_device_num;

@@ -10,7 +10,7 @@
 int
 main ()
 {
-#define FMT "L:%0.5L%%%n>%32h<!%.33{host}!%.6P_%T_%0.18T_%0.7{ancestor_tnum} %18a"
+#define FMT "L:%0.5L%%%n>%32H<!%.33{host}!%.6P_%i_%0.18i_%0.7{ancestor_tnum} %18A"
   char buf[] = FMT, hostname[256], buf2[512 + 32], *q;
   size_t l, l2, l3;
   char *r = getenv ("OMP_AFFINITY_FORMAT");
@@ -52,12 +52,12 @@ main ()
       if (strlen (hostname) != l)
 	abort ();
       l2 = omp_capture_affinity (NULL, 0,
-				 "%0.5{thread_level}%%%32{host}|||%.33h"
-				 "%0.7A%3N!%N!");
+				 "%0.5{nesting_level}%%%32{host}|||%.33H"
+				 "%0.7a%3N!%N!");
       if (l2 != (5 + 1 + (l > 32 ? l : 32) + 3 + (l > 33 ? l : 33)
 		 + 7 + 3 + 1 + 1 + 1))
 	abort ();
-      omp_set_affinity_format ("%.5L%%%32h|||%.33{host}%0.7{ancestor_tnum}"
+      omp_set_affinity_format ("%.5L%%%32H|||%.33{host}%0.7{ancestor_tnum}"
 			       "%3{num_threads}!%{num_threads}!");
       l3 = omp_capture_affinity (buf2, sizeof buf2, "");
       if (l3 != l2)
@@ -86,6 +86,6 @@ main ()
 	abort ();
     }
   #pragma omp parallel num_threads (4) proc_bind(spread)
-  omp_display_affinity ("%0.2A!%n!%.4L!%N;%a");
+  omp_display_affinity ("%0.2a!%n!%.4L!%N;%.2t;%0.2T;%{team_num};%{num_teams};%A");
   return 0;
 }
