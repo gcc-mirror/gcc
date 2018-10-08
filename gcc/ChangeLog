@@ -1,3 +1,8 @@
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (znver1_cost): Make AVX256 vector loads
+	cost the same as AVX128 ones.
+
 2018-10-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11-protos.h (output_block_move): Remove.
