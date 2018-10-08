@@ -1,3 +1,8 @@
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* expr.c (gfc_check_pointer_assign): Demote "Assignment to
+	contiguous pointer from non-contiguous target" to a warning.
+
 2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/86372
