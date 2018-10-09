@@ -1321,8 +1321,14 @@ package body Exp_Ch6 is
          --  bounds of the actual and build an uninitialized temporary of the
          --  right size.
 
+         --  If the formal is an out parameter with discriminants, the
+         --  discriminants must be captured even if the rest of the object
+         --  is in principle uninitialized, because the discriminants may
+         --  be read by the called subprogram.
+
          if Ekind (Formal) = E_In_Out_Parameter
            or else (Is_Array_Type (F_Typ) and then not Is_Constrained (F_Typ))
+           or else Has_Discriminants (F_Typ)
          then
             if Nkind (Actual) = N_Type_Conversion then
                if Conversion_OK (Actual) then
