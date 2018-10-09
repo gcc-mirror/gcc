@@ -1,3 +1,10 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (type_requires_init_of_formal): New
+	predicate.
+	(gnat_to_gnu_param): Use it to determine whether a PARM_DECL
+	must be created for an Out parameter passed by copy.
+
 2018-10-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnat/a-coboho.ads (Storage_Element): Fix a typo.
