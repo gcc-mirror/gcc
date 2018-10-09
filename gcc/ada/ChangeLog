@@ -1,3 +1,10 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Add comment for the
+	N_Freeze_Entity case.  Do not rely on
+	Has_Referencer_Of_Non_Subprograms to clear the Is_Public flag on
+	subprogram entities.
+
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_unst.adb (In_Synchronized_Call): Handle properly private
