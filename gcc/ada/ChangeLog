@@ -1,5 +1,13 @@
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (In_Synchronized_Call): Handle properly private
+	types whose full views are synchronized types, in order to
+	recognize generated subprograms whose bodies must be considered
+	reachable even if no direct calls to them are visible in the
+	source.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_ch4.adb (Expand_Modular_Op): When expanding an operation
 	on nonbinary modular types, convert the opersnds to an integer
 	type that is large enough to hold the modulus of the type, which
