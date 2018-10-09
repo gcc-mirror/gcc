@@ -549,6 +549,59 @@ struct cpp_options
   bool canonical_system_headers;
 };
 
+/* Diagnostic levels.  To get a diagnostic without associating a
+   position in the translation unit with it, use cpp_error_with_line
+   with a line number of zero.  */
+
+enum cpp_diagnostic_level {
+  /* Warning, an error with -Werror.  */
+  CPP_DL_WARNING = 0,
+  /* Same as CPP_DL_WARNING, except it is not suppressed in system headers.  */
+  CPP_DL_WARNING_SYSHDR,
+  /* Warning, an error with -pedantic-errors or -Werror.  */
+  CPP_DL_PEDWARN,
+  /* An error.  */
+  CPP_DL_ERROR,
+  /* An internal consistency check failed.  Prints "internal error: ",
+     otherwise the same as CPP_DL_ERROR.  */
+  CPP_DL_ICE,
+  /* An informative note following a warning.  */
+  CPP_DL_NOTE,
+  /* A fatal error.  */
+  CPP_DL_FATAL
+};
+
+/* Warning reason codes. Use a reason code of CPP_W_NONE for unclassified
+   warnings and diagnostics that are not warnings.  */
+
+enum cpp_warning_reason {
+  CPP_W_NONE = 0,
+  CPP_W_DEPRECATED,
+  CPP_W_COMMENTS,
+  CPP_W_MISSING_INCLUDE_DIRS,
+  CPP_W_TRIGRAPHS,
+  CPP_W_MULTICHAR,
+  CPP_W_TRADITIONAL,
+  CPP_W_LONG_LONG,
+  CPP_W_ENDIF_LABELS,
+  CPP_W_NUM_SIGN_CHANGE,
+  CPP_W_VARIADIC_MACROS,
+  CPP_W_BUILTIN_MACRO_REDEFINED,
+  CPP_W_DOLLARS,
+  CPP_W_UNDEF,
+  CPP_W_UNUSED_MACROS,
+  CPP_W_CXX_OPERATOR_NAMES,
+  CPP_W_NORMALIZE,
+  CPP_W_INVALID_PCH,
+  CPP_W_WARNING_DIRECTIVE,
+  CPP_W_LITERAL_SUFFIX,
+  CPP_W_DATE_TIME,
+  CPP_W_PEDANTIC,
+  CPP_W_C90_C99_COMPAT,
+  CPP_W_CXX11_COMPAT,
+  CPP_W_EXPANSION_TO_DEFINED
+};
+
 /* Callback for header lookup for HEADER, which is the name of a
    source file.  It is used as a method of last resort to find headers
    that are not otherwise found during the normal include processing.
@@ -586,8 +639,11 @@ struct cpp_callbacks
 
   /* Called to emit a diagnostic.  This callback receives the
      translated message.  */
-  bool (*error) (cpp_reader *, int, int, rich_location *,
-		 const char *, va_list *)
+  bool (*diagnostic) (cpp_reader *,
+		      enum cpp_diagnostic_level,
+		      enum cpp_warning_reason,
+		      rich_location *,
+		      const char *, va_list *)
        ATTRIBUTE_FPTR_PRINTF(5,0);
 
   /* Callbacks for when a macro is expanded, or tested (whether
@@ -1084,99 +1140,55 @@ extern cpp_num cpp_interpret_integer (cpp_reader *, const cpp_token *,
    others assumed clear, to fill out a cpp_num structure.  */
 cpp_num cpp_num_sign_extend (cpp_num, size_t);
 
-/* Diagnostic levels.  To get a diagnostic without associating a
-   position in the translation unit with it, use cpp_error_with_line
-   with a line number of zero.  */
-
-enum {
-  /* Warning, an error with -Werror.  */
-  CPP_DL_WARNING = 0,
-  /* Same as CPP_DL_WARNING, except it is not suppressed in system headers.  */
-  CPP_DL_WARNING_SYSHDR,
-  /* Warning, an error with -pedantic-errors or -Werror.  */
-  CPP_DL_PEDWARN,
-  /* An error.  */
-  CPP_DL_ERROR,
-  /* An internal consistency check failed.  Prints "internal error: ",
-     otherwise the same as CPP_DL_ERROR.  */
-  CPP_DL_ICE,
-  /* An informative note following a warning.  */
-  CPP_DL_NOTE,
-  /* A fatal error.  */
-  CPP_DL_FATAL
-};
-
-/* Warning reason codes. Use a reason code of zero for unclassified warnings
-   and errors that are not warnings.  */
-enum {
-  CPP_W_NONE = 0,
-  CPP_W_DEPRECATED,
-  CPP_W_COMMENTS,
-  CPP_W_MISSING_INCLUDE_DIRS,
-  CPP_W_TRIGRAPHS,
-  CPP_W_MULTICHAR,
-  CPP_W_TRADITIONAL,
-  CPP_W_LONG_LONG,
-  CPP_W_ENDIF_LABELS,
-  CPP_W_NUM_SIGN_CHANGE,
-  CPP_W_VARIADIC_MACROS,
-  CPP_W_BUILTIN_MACRO_REDEFINED,
-  CPP_W_DOLLARS,
-  CPP_W_UNDEF,
-  CPP_W_UNUSED_MACROS,
-  CPP_W_CXX_OPERATOR_NAMES,
-  CPP_W_NORMALIZE,
-  CPP_W_INVALID_PCH,
-  CPP_W_WARNING_DIRECTIVE,
-  CPP_W_LITERAL_SUFFIX,
-  CPP_W_DATE_TIME,
-  CPP_W_PEDANTIC,
-  CPP_W_C90_C99_COMPAT,
-  CPP_W_CXX11_COMPAT,
-  CPP_W_EXPANSION_TO_DEFINED
-};
-
 /* Output a diagnostic of some kind.  */
-extern bool cpp_error (cpp_reader *, int, const char *msgid, ...)
+extern bool cpp_error (cpp_reader *, enum cpp_diagnostic_level,
+		       const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
-extern bool cpp_warning (cpp_reader *, int, const char *msgid, ...)
+extern bool cpp_warning (cpp_reader *, enum cpp_warning_reason,
+			 const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
-extern bool cpp_pedwarning (cpp_reader *, int, const char *msgid, ...)
+extern bool cpp_pedwarning (cpp_reader *, enum cpp_warning_reason,
+			    const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
-extern bool cpp_warning_syshdr (cpp_reader *, int, const char *msgid, ...)
+extern bool cpp_warning_syshdr (cpp_reader *, enum cpp_warning_reason reason,
+				const char *msgid, ...)
   ATTRIBUTE_PRINTF_3;
 
 /* Output a diagnostic with "MSGID: " preceding the
    error string of errno.  No location is printed.  */
-extern bool cpp_errno (cpp_reader *, int, const char *msgid);
+extern bool cpp_errno (cpp_reader *, enum cpp_diagnostic_level,
+		       const char *msgid);
 /* Similarly, but with "FILENAME: " instead of "MSGID: ", where
    the filename is not localized.  */
-extern bool cpp_errno_filename (cpp_reader *, int, const char *filename,
-				source_location loc);
+extern bool cpp_errno_filename (cpp_reader *, enum cpp_diagnostic_level,
+				const char *filename, source_location loc);
 
 /* Same as cpp_error, except additionally specifies a position as a
    (translation unit) physical line and physical column.  If the line is
    zero, then no location is printed.  */
-extern bool cpp_error_with_line (cpp_reader *, int, source_location,
-                                 unsigned, const char *msgid, ...)
+extern bool cpp_error_with_line (cpp_reader *, enum cpp_diagnostic_level,
+				 source_location, unsigned,
+				 const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
-extern bool cpp_warning_with_line (cpp_reader *, int, source_location,
-                                   unsigned, const char *msgid, ...)
+extern bool cpp_warning_with_line (cpp_reader *, enum cpp_warning_reason,
+				   source_location, unsigned,
+				   const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
-extern bool cpp_pedwarning_with_line (cpp_reader *, int, source_location,
-                                      unsigned, const char *msgid, ...)
+extern bool cpp_pedwarning_with_line (cpp_reader *, enum cpp_warning_reason,
+				      source_location, unsigned,
+				      const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
-extern bool cpp_warning_with_line_syshdr (cpp_reader *, int, source_location,
-                                          unsigned, const char *msgid, ...)
+extern bool cpp_warning_with_line_syshdr (cpp_reader *, enum cpp_warning_reason,
+					  source_location, unsigned,
+					  const char *msgid, ...)
   ATTRIBUTE_PRINTF_5;
 
-extern bool cpp_error_at (cpp_reader * pfile, int level,
+extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
 			  source_location src_loc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
-extern bool cpp_error_at (cpp_reader * pfile, int level,
-			  rich_location *richloc, const char *msgid,
-			  ...)
+extern bool cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level,
+			  rich_location *richloc, const char *msgid, ...)
   ATTRIBUTE_PRINTF_4;
 
 /* In lex.c */

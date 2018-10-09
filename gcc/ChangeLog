@@ -1,3 +1,28 @@
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* genmatch.c (error_cb): Rename to...
+	(diagnostic_cb): ...this, converting int params to enums.
+	(fatal_at): Update for renaming.
+	(warning_at): Likewise.
+	(main): Likewise.
+	* input.c (selftest::ebcdic_execution_charset::apply):
+	Update for renaming of...
+	(selftest::ebcdic_execution_charset::on_error): ...this, renaming
+	to...
+	(selftest::ebcdic_execution_charset::on_diagnostic): ...this,
+	converting level and reason to enums.
+	(class selftest::lexer_error_sink): Rename to...
+	(class selftest::lexer_test_options): ...this, renaming field
+	"m_errors" to "m_diagnostics".
+	(selftest::lexer_test_options::apply): Update for renaming of...
+	(selftest::lexer_test_options::on_error): ...this, renaming to...
+	(selftest::lexer_test_options::on_diagnostic): ...this
+	converting level and reason to enums.
+	(selftest::test_lexer_string_locations_raw_string_unterminated):
+	Update for renamings.
+	* opth-gen.awk (struct cpp_reason_option_codes_t): Use enum for
+	"reason".
+
 2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
 
 	* config.gcc (powerpc*-*-*): Add pmmintrin.h to extra_headers.
