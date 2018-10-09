@@ -1,3 +1,26 @@
+2018-10-09  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/pr64820.c: Add line number to scanned
+	pattern.
+	* c-c++-common/asan/use-after-return-1.c: Likewise.
+	* g++.dg/asan/function-argument-1.C (main): Likewise.
+	* g++.dg/asan/function-argument-2.C (main): Likewise.
+	* g++.dg/asan/function-argument-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-4.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-5.C (main): Likewise.
+	* gcc.dg/asan/pr78541.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-1.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-10.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-2.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-3.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-5.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-9.c (main): Likewise.
+
 2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87151

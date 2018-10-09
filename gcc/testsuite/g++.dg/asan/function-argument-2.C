@@ -21,4 +21,4 @@ main ()
 
 // { dg-output "ERROR: AddressSanitizer: stack-buffer-overflow on address.*(\n|\r\n|\r)" }
 // { dg-output "READ of size . at.*" }
-// { dg-output ".*'arg' <== Memory access at offset \[0-9\]* partially overflows this variable.*" }
+// { dg-output ".*'arg' \\(line 11\\) <== Memory access at offset \[0-9\]* partially overflows this variable.*" }

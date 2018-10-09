@@ -50,4 +50,4 @@ int main(int argc, char **argv) {
 /* { dg-output "WRITE of size 1 at .* thread T0.*" } */
 /* { dg-output "    #0.*(Func2)?.*use-after-return-1.(c:31)?.*" } */
 /* { dg-output "is located in stack of thread T0 at offset.*" } */
-/* { dg-output "\'local\' <== Memory access at offset 32 is inside this variable" } */
+/* { dg-output "\'local\' \\(line 24\\) <== Memory access at offset 32 is inside this variable" } */
