@@ -1,3 +1,10 @@
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Fully_Conformant_Expressions): Handle properly
+	the conformance check on an aspect expression that includes a
+	call to an instance of Unchecked_Conversion, or more generally a
+	call to an intrinsic operation.
+
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb: Remove with/use clause for Stand.
