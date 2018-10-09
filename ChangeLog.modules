@@ -1,3 +1,29 @@
+2018-10-09  Nathan Sidwell  <nathan@acm.org>
+
+	Controlling macros & alias detection
+	gcc/cp/
+	* module.cc (cpp_node, identifier): Conversions between
+	cpp_hashnode and IDENTIFIER. Use them.
+	(data_in::no_more): Seek end.
+	(module_state::{resolve,is}_alias): New.
+	(module_state::read): Return alias.
+	(module_state::read_config): Initialize controlling macro,
+	determine alias.
+	(module_state::{read,write}_define): Allow unlocated macros.
+	(module_controlling_macro): New switch.
+	(module_state::{read_imports,do_import}): Deal with aliases.
+	(module_state::write_config): Write controlling macro.
+	(module_state::write_defines): Deal with controlling macro.
+	(module_state::preamble_load): Deal with aliases.
+	(finish_module_parse): Process explicit controlling macro.
+	gcc/testsuite/
+	* g++.dg/modules/alias-1*: New.
+	* g++.dg/modules/macro-[234]*: Adjust.
+	* g++.dg/modules/only-[23].C: Adjust.
+	libcpp/
+	* include/cpplib.h (HT_NODE,NODE_LEN,NODE_NAME): Adjust.
+	(cpp_set_deferred_macro): Add defaulted forced arg.
+
 2018-10-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -2,4 +2,4 @@
 
 
 int i;
-// { dg-warning "module interface" "" { target *-*-* } 0 }
+// { dg-warning "for non-interface" "" { target *-*-* } 0 }

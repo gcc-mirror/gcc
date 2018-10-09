@@ -1557,12 +1557,16 @@ C++ ObjC RejectNegative Var(flag_module_only) Integer
 Only emit Binary Module Interface.
 
 fmodule-legacy
-C++ ObjC RejectNegative Var(flag_modules,-2) Undocumented RejectNegative
+C++ ObjC Undocumented RejectNegative Var(flag_modules,-2)
 Enable C++ legacy module (experimental).
 
 fmodule-legacy=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing header name)
 Specify C++ legacy module (experimental).
+
+fmodule-macro=
+C++ ObjC++ Joined RejectNegative MissingArgError(missing macro name)
+Override legacy header controlling macro.
 
 fmodule-mapper=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)

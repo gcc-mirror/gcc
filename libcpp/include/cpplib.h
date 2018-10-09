@@ -803,9 +803,9 @@ enum cpp_builtin_type
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
-#define HT_NODE(NODE)		((ht_identifier *) (NODE))
-#define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
-#define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
+#define HT_NODE(NODE)		(&(NODE)->ident)
+#define NODE_LEN(NODE)		HT_LEN (HT_NODE (NODE))
+#define NODE_NAME(NODE)		HT_STR (HT_NODE (NODE))
 
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
@@ -972,11 +972,12 @@ inline bool cpp_macro_p (const cpp_hashnode *node)
 {
   return node->type & NT_MACRO_MASK;
 }
-inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node)
+inline cpp_macro *cpp_set_deferred_macro (cpp_hashnode *node,
+					  cpp_macro *forced = NULL)
 {
   cpp_macro *old = node->value.macro;
 
-  node->value.macro = NULL;
+  node->value.macro = forced;
   node->type = NT_USER_MACRO;
   node->flags &= ~NODE_USED;
 

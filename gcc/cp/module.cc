@@ -219,6 +219,15 @@ memrchr (void *s_, int c, size_t n)
 typedef void (*sighandler_t) (int);
 #endif
 
+static inline cpp_hashnode *cpp_node (tree id)
+{
+  return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT (id));
+}
+static inline tree identifier (cpp_hashnode *node)
+{
+  return HT_IDENT_TO_GCC_IDENT (HT_NODE (node));
+}
+
 /* Id for dumping module information.  */
 int module_dump_id;
 
@@ -483,6 +492,11 @@ public:
   bool more_p () const
   {
     return pos != size;
+  }
+  /* Seek to end.  */
+  void no_more ()
+  {
+    pos = size;
   }
 
 public:
@@ -1043,8 +1057,7 @@ bytes_in::cpp_node ()
   const char *s = str (&len);
   if (!len)
     return NULL;
-  return CPP_HASHNODE (GCC_IDENT_TO_HT_IDENT
-		       (get_identifier_with_length (s, len)));
+  return ::cpp_node (get_identifier_with_length (s, len));
 }
 
 /* Format a string directly to the buffer, including a terminating
@@ -2929,10 +2942,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   {
     return legacy_p;
   }
-  module_state *get_alias () const
+  bool is_alias () const
   {
-    return alias_p ? u1.alias : NULL;
+    return alias_p;
   }
+  module_state *resolve_alias ();
   bool check_not_purview (location_t loc);
 
  public:
@@ -2945,7 +2959,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   /* Read and write module.  */
   void write (elf_out *to, cpp_reader *);
-  void read (int fd, int e, cpp_reader *);
+  module_state *read (int fd, int e, cpp_reader *);
 
   /* Read a section.  */
   void load_section (unsigned snum);
@@ -2975,7 +2989,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
 		     unsigned unnamed, unsigned macros, unsigned crc);
-  bool read_config (range_t &sec_range, unsigned &unnamed, unsigned &macros);
+  bool read_config (cpp_reader *, module_state *&alias, range_t &sec_range,
+		    unsigned &unnamed, unsigned &macros);
 
  private:
   /* Serialize various definitions. */
@@ -3034,8 +3049,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool read_locations ();
 
  private:
-  cpp_macro *read_define (bytes_in &, cpp_reader *) const;
-  void write_define (bytes_out &, const cpp_macro *);
+  void write_define (bytes_out &, const cpp_macro *, bool located = true);
+  cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
   unsigned write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
   bool read_defines (cpp_reader *, unsigned count);
 
@@ -3133,6 +3148,9 @@ static const char *module_mapper_name;
 
 /* Legacy header mode.  */
 static const char *module_legacy_name;
+
+/* A controlling macro.  */
+static const char *module_controlling_macro;
 
 /* End of the prefix line maps.  */
 location_t module_preamble_end_loc;
@@ -6947,6 +6965,23 @@ depset::tarjan::connect (depset *v)
     }
 }
 
+/* If this is an alias, return the aliased module after transferring
+   the exported flag.  Return the actual import in either case.  */
+
+module_state *
+module_state::resolve_alias ()
+{
+  module_state *result = this;
+  if (is_alias ())
+    {
+      result = u1.alias;
+      dump () && dump ("%M is an alias of %M", this, result);
+      if (exported_p)
+	result->exported_p = true;
+    }
+  return result;
+}
+
 /* If THIS is the current purview, issue an import error and return false.  */
 
 bool
@@ -7960,6 +7995,7 @@ get_option_string  ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
+	  || opt->opt_index == OPT_fmodule_macro_
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
@@ -8177,13 +8213,19 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
       if (tup.first)
 	{
-	  (*slurp ()->remap)[tup.second.first] = tup.first->mod;
+	  module_state *imp = tup.first;
+	  if (imp->is_alias ())
+	    {
+	      imp = imp->u1.alias;
+	      dump () && dump ("Module %M is alias of %M", tup.first, imp);
+	    }
+	  (*slurp ()->remap)[tup.second.first] = imp->mod;
 	  if (lmaps)
-	    set_import (tup.first, tup.second.second);
+	    set_import (imp, tup.second.second);
 	  dump () && dump ("Found %simport:%u %M->%u",
-			   !lmaps ? "indirect " : tup.first->exported_p
-			   ? "exported " : "", tup.second.first, tup.first,
-			   tup.first->mod);
+			   !lmaps ? "indirect " : imp->exported_p
+			   ? "exported " : "", tup.second.first, imp,
+			   imp->mod);
 	  loaded++;
 	}
     }
@@ -8236,221 +8278,6 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
   if (!sec.end (from ()))
     return false;
   return true;
-}
-
-/* Tool configuration:  MOD_SNAME_PFX .config
-
-   This is data that confirms current state (or fails).
-
-   u32:version
-   u32:crc
-   u:atom_p
-   u:module-name
-   u:<target-triplet>
-   u:<host-triplet>
-   s:options
-
-   u:fixed_trees->length()
-   u32:global_crc
-
-   u:modules->length ()
-   direct-imports
-   indirect-imports
-
-   u:decl-section-lwm
-   u:decl-section-hwm
-   u:unnamed
-*/
-
-// FIXME serialize legacy header controlling macro and perform deduping
-void
-module_state::write_config (elf_out *to, const char *opt_str,
-			    const range_t &sec_range,
-			    unsigned unnamed, unsigned macros,
-			    unsigned inner_crc)
-{
-  bytes_out cfg (to);
-
-  cfg.begin ();
-
-  /* Write version and inner crc as u32 values, for easier
-     debug inspection.  */
-  dump () && dump ("Writing version=%V, inner_crc=%x",
-		   get_version (), inner_crc);
-  cfg.u32 (unsigned (get_version ()));
-  cfg.u32 (inner_crc);
-
-  cfg.u (modules_atom_p ());
-  cfg.u (to->name (fullname));
-
-  /* Configuration. */
-  dump () && dump ("Writing target='%s', host='%s'",
-		   TARGET_MACHINE, HOST_MACHINE);
-  unsigned target = to->name (TARGET_MACHINE);
-  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
-		   ? target : to->name (HOST_MACHINE));
-  cfg.u (target);
-  cfg.u (host);
-
-  cfg.str (opt_str);
-
-  /* Global tree information.  We write the globals crc separately,
-     rather than mix it directly into the overall crc, as it is used
-     to ensure data match between instances of the compiler, not
-     integrity of the file.  */
-  dump () && dump ("Writing globals=%u, crc=%x",
-		   fixed_trees->length (), global_crc);
-  cfg.u (fixed_trees->length ());
-  cfg.u32 (global_crc);
-
-  cfg.u (modules->length ());
-
-  dump () && dump ("Declaration sections are [%u,%u)",
-		   sec_range.first, sec_range.second);
-  cfg.u (sec_range.first);
-  cfg.u (sec_range.second);
-
-  dump () && dump ("Unnamed %u decls", unnamed);
-  cfg.u (unnamed);
-
-  dump () && dump ("Macros %u", macros);
-  cfg.u (macros);
-
-  /* Now generate CRC, we'll have incorporated the inner CRC because
-     of its serialization above.  */
-  cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
-  dump () && dump ("Writing CRC=%x", crc);
-}
-
-bool
-module_state::read_config (range_t &sec_range, unsigned &unnamed, unsigned &macros)
-{
-  bytes_in cfg;
-
-  if (!cfg.begin (loc, from (), MOD_SNAME_PFX ".cfg"))
-    return false;
-
-  /* Check version.  */
-  int my_ver = get_version ();
-  int their_ver = int (cfg.u32 ());
-  dump () && dump  (my_ver == their_ver ? "Version %V"
-		    : "Expecting %V found %V", my_ver, their_ver);
-  if (their_ver != my_ver)
-    {
-      int my_date = version2date (my_ver);
-      int their_date = version2date (their_ver);
-      int my_time = version2time (my_ver);
-      int their_time = version2time (their_ver);
-      verstr_t my_string, their_string;
-
-      version2string (my_ver, my_string);
-      version2string (their_ver, their_string);
-
-      if (my_date != their_date)
-	{
-	  /* Dates differ, decline.  */
-	  error_at (loc, "file is version %s, this is version %s",
-		    their_string, my_string);
-	  goto fail;
-	}
-      else if (my_time != their_time)
-	/* Times differ, give it a go.  */
-	warning_at (loc, 0, "file is version %s, compiler is version %s,"
-		    " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
-		    their_string, my_string);
-    }
-
-  /*  We wrote the inner crc merely to merge it, so simply read it
-      back and forget it.  */
-  cfg.u32 ();
-
-  if (modules_atom_p () != cfg.u ())
-    {
-      error_at (loc, "TS/ATOM mismatch");
-    fail:
-      cfg.set_overrun ();
-      return cfg.end (from ());
-    }
-
-  /* Check the CRC after the above sanity checks, so that the user is
-     clued in.  */
-  unsigned e_crc = crc;
-  crc = cfg.get_crc ();
-  dump () && dump ("Reading CRC=%x", crc);
-  if (!is_direct () && crc != e_crc)
-    {
-      error_at (loc, "module %qs CRC mismatch", fullname);
-      goto fail;
-    }
-
-  /* Check module name.  */
-  const char *their_name = from ()->name (cfg.u ());
-  if (strcmp (their_name, fullname))
-    {
-      error_at (loc, "module %qs found, expected module %qs",
-		their_name, fullname);
-      goto fail;
-    }
-
-  /* Check target & host.  */
-  const char *their_target = from ()->name (cfg.u ());
-  const char *their_host = from ()->name (cfg.u ());
-  dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
-  if (strcmp (their_target, TARGET_MACHINE)
-      || strcmp (their_host, HOST_MACHINE))
-    {
-      error_at (loc, "target & host is %qs:%qs, expected %qs:%qs",
-		their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
-      goto fail;
-    }
-
-  /* Check compilation options.  For the moment we requre exact
-     match.  */
-  const char *their_opts = cfg.str ();
-  if (!our_opts)
-    our_opts = get_option_string ();
-  if (strcmp (their_opts, our_opts))
-    {
-      error_at (loc, "compilation options differ %qs, expected %qs",
-		their_opts, our_opts);
-      goto fail;
-    }
-  
-  /* Check global trees.  */
-  unsigned their_fixed_length = cfg.u ();
-  unsigned their_fixed_crc = cfg.u32 ();
-  dump () && dump ("Read globals=%u, crc=%x",
-		   their_fixed_length, their_fixed_crc);
-  if (their_fixed_length != fixed_trees->length ()
-      || their_fixed_crc != global_crc)
-    {
-      error_at (loc, "fixed tree mismatch");
-      goto fail;
-    }
-
-  /* Allocate the REMAP vector.  */
-  unsigned imports = cfg.u ();
-  slurp ()->alloc_remap (imports);
-
-  sec_range.first = cfg.u ();
-  sec_range.second = cfg.u ();
-  dump () && dump ("Declaration sections are [%u,%u)",
-		   sec_range.first, sec_range.second);
-
-  unnamed = cfg.u ();
-  dump () && dump ("%u unnamed decls", unnamed);
-
-  macros = cfg.u ();
-  dump () && dump ("Macros %u", macros);
-
-  if (sec_range.first > sec_range.second
-      || sec_range.second > from ()->get_section_limit ())
-    {
-      error_at (loc, "paradoxical declaration section range");
-      goto fail;
-    }
-
-  return cfg.end (from ());
 }
 
 /* The following writer functions rely on the current behaviour of
@@ -10003,7 +9830,7 @@ module_state::read_locations ()
 /* Serialize the definition of MACRO.  */
 
 void
-module_state::write_define (bytes_out &sec, const cpp_macro *macro)
+module_state::write_define (bytes_out &sec, const cpp_macro *macro, bool located)
 {
   sec.u (macro->count);
 
@@ -10012,7 +9839,8 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro)
   sec.b (macro->syshdr);
   sec.bflush ();
 
-  write_location (sec, macro->line);
+  if (located)
+    write_location (sec, macro->line);
   if (macro->fun_like)
     {
       sec.u (macro->paramc);
@@ -10020,11 +9848,13 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro)
       for (unsigned ix = 0; ix != macro->paramc; ix++)
 	sec.cpp_node (parms[ix]);
     }
+
   unsigned len = 0;
   for (unsigned ix = 0; ix != macro->count; ix++)
     {
       const cpp_token *token = &macro->exp.tokens[ix];
-      write_location (sec, token->src_loc);
+      if (located)
+	write_location (sec, token->src_loc);
       sec.u (token->type);
       sec.u (token->flags);
       switch (cpp_token_val_index (token))
@@ -10065,6 +9895,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro)
 	  gcc_unreachable ();
 	}
     }
+
   if (len)
     {
       char *ptr = sec.buf (len);
@@ -10086,7 +9917,7 @@ module_state::write_define (bytes_out &sec, const cpp_macro *macro)
 /* Read a macro definition.  */
 
 cpp_macro *
-module_state::read_define (bytes_in &sec, cpp_reader *reader) const
+module_state::read_define (bytes_in &sec, cpp_reader *reader, bool located) const
 {
   unsigned count = sec.u ();
   /* We rely on knowing cpp_reader's hash table is ident_hash, and
@@ -10106,7 +9937,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader) const
   macro->syshdr = sec.b ();
   sec.bflush ();
 
-  macro->line = read_location (sec);
+  macro->line = located ? read_location (sec) : loc;
 
   if (macro->fun_like)
     {
@@ -10123,7 +9954,7 @@ module_state::read_define (bytes_in &sec, cpp_reader *reader) const
   for (unsigned ix = 0; ix != count && !sec.get_overrun (); ix++)
     {
       cpp_token *token = &macro->exp.tokens[ix];
-      token->src_loc = read_location (sec);
+      token->src_loc = located ? read_location (sec) : loc;
       token->type = cpp_ttype (sec.u ());
       token->flags = sec.u ();
       switch (cpp_token_val_index (token))
@@ -10462,7 +10293,6 @@ macro_loc_cmp (const void *a_, const void *b_)
 
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
-// FIXME: Write command line defines
 
 unsigned
 module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
@@ -10495,11 +10325,30 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	  gcc_assert (slot.get_undef () == (mac.undef_loc != UNKNOWN_LOCATION)
 		      && slot.get_def () == (mac.def != NULL));
 
-	  if (IDENTIFIER_KEYWORD_P (HT_IDENT_TO_GCC_IDENT (node)))
+	  if (IDENTIFIER_KEYWORD_P (identifier (node)))
 	    {
 	      warning_at (mac.def->line, 0,
 			  "not exporting %<#define %E%> as it is a keyword",
-			  HT_IDENT_TO_GCC_IDENT (node));
+			  identifier (node));
+	      slot.offset = 0;
+	      continue;
+	    }
+
+	  if (mac.def && !controlling_macro
+	      && mac.def->line >= spans.main_start ())
+	    {
+	      /* The user did not specify a controlling macro.  Pick
+		 the first define.  We rashly presume the #ifndef idiom.  */
+	      controlling_macro = identifier (node);
+	      dump () && dump ("Selecting %I as controlling macro",
+			       controlling_macro);
+	    }
+
+	  if (node == cpp_node (controlling_macro))
+	    {
+	      /* The controlling macro is written in the config, not
+		 here.  */
+	      dump () && dump ("Controlling macro %I", controlling_macro);
 	      slot.offset = 0;
 	      continue;
 	    }
@@ -10510,7 +10359,7 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 			   slot.get_undef () ? "#undef" : "",
 			   slot.get_undef () && slot.get_def () ? " & " : "",
 			   slot.get_def () ? "#define" : "",
-			   HT_IDENT_TO_GCC_IDENT (node), slot.offset);
+			   identifier (node), slot.offset);
 	  if (mac.undef_loc != UNKNOWN_LOCATION)
 	    write_location (sec, mac.undef_loc);
 	  if (mac.def)
@@ -10578,8 +10427,7 @@ module_state::read_defines (cpp_reader *, unsigned count)
 			 slot.get_undef () ? "#undef" : "",
 			 slot.get_undef () && slot.get_def () ? " & " : "",
 			 slot.get_def () ? "#define" : "",
-			 HT_IDENT_TO_GCC_IDENT (node),
-			 slot.offset);
+			 identifier (node), slot.offset);
 
 	/* We'll leak an imported definition's TOKEN_FLD_STR's data
 	   here.  But that only happens when we've had to resolve the
@@ -10592,8 +10440,7 @@ module_state::read_defines (cpp_reader *, unsigned count)
 	      macro_export &exp = get_macro_export (slot);
 	      exp.def = cur;
 	      slot.set_def ();
-	      dump () && dump ("Saving current #define %I",
-			       HT_IDENT_TO_GCC_IDENT (node));
+	      dump () && dump ("Saving current #define %I", identifier (node));
 	    }
       }
     dump.outdent ();
@@ -10628,7 +10475,7 @@ module_state::undef_macro (cpp_reader *, location_t loc, cpp_hashnode *node)
   exp.def = NULL;
   slot.clear_def ();
 
-  dump () && dump ("Recording macro #undef %I", HT_IDENT_TO_GCC_IDENT (node));
+  dump () && dump ("Recording macro #undef %I", identifier (node));
 
   dump.pop (n);
 }
@@ -10651,7 +10498,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   macro_import &imports = (*macro_imports)[node->deferred - 1];
 
   unsigned n = dump.push (NULL);
-  dump () && dump ("Deferred macro %I", HT_IDENT_TO_GCC_IDENT (node));
+  dump () && dump ("Deferred macro %I", identifier (node));
   dump.indent ();
 
   bitmap visible (BITMAP_GGC_ALLOC ());
@@ -10696,8 +10543,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 				   slot.get_undef () && slot.get_def ()
 				   ? " & " : "",
 				   slot.get_def () ? "#define" : "",
-				   HT_IDENT_TO_GCC_IDENT (node), imp,
-				   slot.offset);
+				   identifier (node), imp, slot.offset);
 		  sec.random_access (slot.offset);
 
 		  macro_export exp;
@@ -10727,12 +10573,12 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
   if (failed)
     {
       error_at (loc, "inconsistent imported macro definition %qE",
-		HT_IDENT_TO_GCC_IDENT (node));
+		identifier (node));
       for (unsigned ix = defs.length (); ix--;)
 	{
 	  macro_export &exp = defs[ix];
 	  if (exp.undef_loc)
-	    inform (exp.undef_loc, "#undef %E", HT_IDENT_TO_GCC_IDENT (node));
+	    inform (exp.undef_loc, "#undef %E", identifier (node));
 	  if (exp.def)
 	    inform (exp.def->line, "#define %s",
 		    cpp_macro_definition (reader, node, exp.def));
@@ -10842,16 +10688,314 @@ space_cmp (const void *a_, const void *b_)
   return DECL_UID (ns_a) < DECL_UID (ns_b) ? -1 : +1;
 }
 
+/* Tool configuration:  MOD_SNAME_PFX .config
+
+   This is data that confirms current state (or fails).
+
+   u32:version
+   u32:crc
+   u:atom_p
+   u:module-name
+
+   controlling_macro
+
+   u:<target-triplet>
+   u:<host-triplet>
+   s:options
+
+   u:fixed_trees->length()
+   u32:global_crc
+
+   u:modules->length ()
+   direct-imports
+   indirect-imports
+
+   u:decl-section-lwm
+   u:decl-section-hwm
+   u:unnamed
+*/
+
+// FIXME serialize legacy header controlling macro and perform deduping
+void
+module_state::write_config (elf_out *to, const char *opt_str,
+			    const range_t &sec_range,
+			    unsigned unnamed, unsigned macros,
+			    unsigned inner_crc)
+{
+  bytes_out cfg (to);
+
+  cfg.begin ();
+
+  /* Write version and inner crc as u32 values, for easier
+     debug inspection.  */
+  dump () && dump ("Writing version=%V, inner_crc=%x",
+		   get_version (), inner_crc);
+  cfg.u32 (unsigned (get_version ()));
+  cfg.u32 (inner_crc);
+
+  if (controlling_macro)
+    {
+      cpp_hashnode *node = cpp_node (controlling_macro);
+      if (cpp_user_macro_p (node))
+	{
+	  dump () && dump ("Controlling macro=%I", controlling_macro);
+	  cfg.cpp_node (node);
+	  write_define (cfg, node->value.macro, false);
+	}
+      else
+	controlling_macro = NULL;
+    }
+
+  if (!controlling_macro)
+    cfg.u (0);
+
+  cfg.u (modules_atom_p ());
+  cfg.u (to->name (fullname));
+
+  /* Configuration. */
+  dump () && dump ("Writing target='%s', host='%s'",
+		   TARGET_MACHINE, HOST_MACHINE);
+  unsigned target = to->name (TARGET_MACHINE);
+  unsigned host = (!strcmp (TARGET_MACHINE, HOST_MACHINE)
+		   ? target : to->name (HOST_MACHINE));
+  cfg.u (target);
+  cfg.u (host);
+
+  cfg.str (opt_str);
+
+  /* Global tree information.  We write the globals crc separately,
+     rather than mix it directly into the overall crc, as it is used
+     to ensure data match between instances of the compiler, not
+     integrity of the file.  */
+  dump () && dump ("Writing globals=%u, crc=%x",
+		   fixed_trees->length (), global_crc);
+  cfg.u (fixed_trees->length ());
+  cfg.u32 (global_crc);
+
+  cfg.u (modules->length ());
+
+  dump () && dump ("Declaration sections are [%u,%u)",
+		   sec_range.first, sec_range.second);
+  cfg.u (sec_range.first);
+  cfg.u (sec_range.second);
+
+  dump () && dump ("Unnamed %u decls", unnamed);
+  cfg.u (unnamed);
+
+  dump () && dump ("Macros %u", macros);
+  cfg.u (macros);
+
+  /* Now generate CRC, we'll have incorporated the inner CRC because
+     of its serialization above.  */
+  cfg.end (to, to->name (MOD_SNAME_PFX ".cfg"), &crc);
+  dump () && dump ("Writing CRC=%x", crc);
+}
+
+bool
+module_state::read_config (cpp_reader *reader, module_state *&alias,
+			   range_t &sec_range,
+			   unsigned &unnamed, unsigned &macros)
+{
+  bytes_in cfg;
+
+  if (!cfg.begin (loc, from (), MOD_SNAME_PFX ".cfg"))
+    return false;
+
+  /* Check version.  */
+  int my_ver = get_version ();
+  int their_ver = int (cfg.u32 ());
+  dump () && dump  (my_ver == their_ver ? "Version %V"
+		    : "Expecting %V found %V", my_ver, their_ver);
+  if (their_ver != my_ver)
+    {
+      int my_date = version2date (my_ver);
+      int their_date = version2date (their_ver);
+      int my_time = version2time (my_ver);
+      int their_time = version2time (their_ver);
+      verstr_t my_string, their_string;
+
+      version2string (my_ver, my_string);
+      version2string (their_ver, their_string);
+
+      if (my_date != their_date)
+	{
+	  /* Dates differ, decline.  */
+	  error_at (loc, "file is version %s, this is version %s",
+		    their_string, my_string);
+	  goto fail;
+	}
+      else if (my_time != their_time)
+	/* Times differ, give it a go.  */
+	warning_at (loc, 0, "file is version %s, compiler is version %s,"
+		    " perhaps close enough? \xc2\xaf\\_(\xe3\x83\x84)_/\xc2\xaf",
+		    their_string, my_string);
+    }
+
+  /*  We wrote the inner crc merely to merge it, so simply read it
+      back and forget it.  */
+  cfg.u32 ();
+
+  /* Read controlling macro.  */
+  if (cpp_hashnode *node = cfg.cpp_node ())
+    {
+      cpp_macro *macro = read_define (cfg, reader, false);
+      if (cfg.get_overrun ())
+	goto done;
+
+      controlling_macro = identifier (node);
+      dump () && dump ("Controlling macro is %I", controlling_macro);
+      if (cpp_user_macro_p (node))
+	{
+	  /* Already defined, find alias. Expect pseudo-import  */
+	  cpp_macro *existing = node->value.macro;
+	  if (!existing)
+	    existing = cpp_get_deferred_macro (reader, node, loc);
+
+	  if (!existing)
+	    ;
+	  else if (!existing->imported)
+	    {
+	      error_at (loc, "controlling macro %E was not set by an import",
+			controlling_macro);
+	      inform (existing->line, "controlling macro defined here");
+	    }
+	  else if (!node->deferred)
+	    {
+	      error_at (loc, "circular alias of controlling macro %E",
+			controlling_macro);
+	      inform (existing->line, "aliased here");
+	    }
+	  else
+	    {
+	      /* It's an alias.  Go find it.  */
+	      macro_import &imp = (*macro_imports)[node->deferred - 1];
+	      macro_import::slot &slot = imp[0];
+
+	      alias = (*modules)[slot.get_mod ()];
+	      cfg.no_more ();
+	      goto done;
+	    }
+	}
+
+      /* Install as pseudo-import.  We'll complete this installation
+	 once the module number's assigned.  */
+      cpp_set_deferred_macro (node, macro);
+    }
+
+  if (modules_atom_p () != cfg.u ())
+    {
+      error_at (loc, "TS/ATOM mismatch");
+    fail:
+      cfg.set_overrun ();
+      goto done;
+    }
+
+  /* Check the CRC after the above sanity checks, so that the user is
+     clued in.  */
+  {
+    unsigned e_crc = crc;
+    crc = cfg.get_crc ();
+    dump () && dump ("Reading CRC=%x", crc);
+    if (!is_direct () && crc != e_crc)
+      {
+	error_at (loc, "module %qs CRC mismatch", fullname);
+	goto fail;
+      }
+  }
+
+  /* Check module name.  */
+  {
+    const char *their_name = from ()->name (cfg.u ());
+    if (strcmp (their_name, fullname))
+      {
+	error_at (loc, "module %qs found, expected module %qs",
+		  their_name, fullname);
+	goto fail;
+      }
+  }
+
+  /* Check target & host.  */
+  {
+    const char *their_target = from ()->name (cfg.u ());
+    const char *their_host = from ()->name (cfg.u ());
+    dump () && dump ("Read target='%s', host='%s'", their_target, their_host);
+    if (strcmp (their_target, TARGET_MACHINE)
+	|| strcmp (their_host, HOST_MACHINE))
+      {
+	error_at (loc, "target & host is %qs:%qs, expected %qs:%qs",
+		  their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
+	goto fail;
+      }
+  }
+
+  /* Check compilation options.  For the moment we requre exact
+     match.  */
+  {
+    const char *their_opts = cfg.str ();
+    if (!our_opts)
+      our_opts = get_option_string ();
+    if (strcmp (their_opts, our_opts))
+      {
+	error_at (loc, "compilation options differ %qs, expected %qs",
+		  their_opts, our_opts);
+	goto fail;
+      }
+  }
+  
+  /* Check global trees.  */
+  {
+    unsigned their_fixed_length = cfg.u ();
+    unsigned their_fixed_crc = cfg.u32 ();
+    dump () && dump ("Read globals=%u, crc=%x",
+		     their_fixed_length, their_fixed_crc);
+    if (their_fixed_length != fixed_trees->length ()
+	|| their_fixed_crc != global_crc)
+      {
+	error_at (loc, "fixed tree mismatch");
+	goto fail;
+      }
+  }
+
+  /* Allocate the REMAP vector.  */
+  {
+    unsigned imports = cfg.u ();
+    slurp ()->alloc_remap (imports);
+  }
+
+  /* Random config data.  */
+  sec_range.first = cfg.u ();
+  sec_range.second = cfg.u ();
+  dump () && dump ("Declaration sections are [%u,%u)",
+		   sec_range.first, sec_range.second);
+
+  unnamed = cfg.u ();
+  dump () && dump ("%u unnamed decls", unnamed);
+
+  macros = cfg.u ();
+  dump () && dump ("Macros %u", macros);
+
+  if (sec_range.first > sec_range.second
+      || sec_range.second > from ()->get_section_limit ())
+    {
+      error_at (loc, "paradoxical declaration section range");
+      goto fail;
+    }
+
+ done:
+  return cfg.end (from ());
+}
+
 /* Use ELROND format to record the following sections:
-     1     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
-     [2-N) qualified-names	  : binding value(s)
-     N     MOD_SNAME_PFX.nms 	  : namespace hierarchy
-     N+1   MOD_SNAME_PFX.bnd      : binding table
-     N+2   MOD_SNAME_PFX.vld      : unnamed table
-     N+3   MOD_SNAME_PFX.imp      : import table
-     N+4   MOD_SNAME_PFX.elo      : early locations
-     N+5   MOD_SNAME_PFX.llo      : late locations
-     N+6   MOD_SNAME_PFX.cfg      : config data
+     qualified-names	    : binding value(s)
+     MOD_SNAME_PFX.README   : human readable, stunningly STRTAB-like
+     MOD_SNAME_PFX.nms 	    : namespace hierarchy
+     MOD_SNAME_PFX.bnd      : binding table
+     MOD_SNAME_PFX.vld      : unnamed table
+     MOD_SNAME_PFX.imp      : import table
+     MOD_SNAME_PFX.loc      : locations
+     MOD_SNAME_PFX.def      : macro definitions
+     MOD_SNAME_PFX.mac      : macro index
+     MOD_SNAME_PFX.cfg      : config data
 */
 
 void
@@ -11005,31 +11149,35 @@ module_state::write (elf_out *to, cpp_reader *reader)
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
 }
 
-/* Read a BMI from STREAM.  E is errno from its fopen.  Reading will
+/* Read a BMI from FD.  E is errno from its fopen.  Reading will
    be lazy, if this is an import and flag_module_lazy is in effect.  */
 
-void
+module_state *
 module_state::read (int fd, int e, cpp_reader *reader)
 {
   gcc_checking_assert (!u1.slurp);
   u1.slurp = new slurping (new elf_in (fd, e));
   if (!from ()->begin (loc))
-    return;
+    return NULL;
 
+  module_state *alias = NULL;
   range_t range;
   unsigned unnamed;
   unsigned macros;
 
-  if (!read_config (range, unnamed, macros))
-    return;
+  if (!read_config (reader, alias, range, unnamed, macros))
+    return NULL;
+
+  if (alias)
+    return alias;
 
   if (modules_atom_p ())
     if (!read_locations ())
-      return;
+      return NULL;
 
   /* Read the import table.  */
   if (!read_imports (reader, line_table))
-    return;
+    return NULL;
 
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
@@ -11042,7 +11190,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	{
 	  sorry ("too many modules loaded (limit is %u)", ix);
 	  from ()->set_error (elf::E_BAD_IMPORT);
-	  return;
+	  return NULL;
 	}
       else
 	{
@@ -11059,6 +11207,18 @@ module_state::read (int fd, int e, cpp_reader *reader)
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
 
+  if (controlling_macro)
+    {
+      /* Finish registering the controlling macro.  */
+      cpp_hashnode *node = cpp_node (controlling_macro);
+      if (!node->deferred && node->value.macro)
+	{
+	  get_macro_imports (node).append (mod);
+	  dump () && dump ("Registering controlling macro %I",
+			   controlling_macro);
+	}
+    }
+
   /* We should not have been frozen during the importing done by
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
@@ -11069,20 +11229,20 @@ module_state::read (int fd, int e, cpp_reader *reader)
   // reachable legacies to know what to load.
   if (macros && is_legacy ())
     if (!read_defines (reader, macros))
-      return;
+      return NULL;
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
   if (!read_namespaces (spaces))
-    return;
+    return NULL;
 
   /* And the bindings.  */
   if (!read_bindings (spaces, range))
-    return;
+    return NULL;
 
   /* And unnamed.  */
   if (!read_unnamed (unnamed, range))
-    return;
+    return NULL;
 
   /* We're done with the string and non-decl sections now.  */
   from ()->release ();
@@ -11101,6 +11261,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
 	    break;
 	}
     }
+
+  return NULL;
 }
 
 void
@@ -11495,9 +11657,14 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   announce ("importing");
   imported_p = true;
   lazy_open--;
-  
-  read (fd, e, reader);
+  module_state *alias = read (fd, e, reader);
   bool failed = check_read (is_direct () && !modules_atom_p ());
+  if (alias)
+    {
+      slurped ();
+      alias_p = true;
+      u1.alias = alias;
+    }
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
   return !failed;
@@ -11599,6 +11766,9 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	  imp->do_import (fname, reader);
 	  dump.pop (n);
 	}
+
+      imp = imp->resolve_alias ();
+
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
 	bitmap_ior_into (legacies, imp->slurp ()->legacies);
@@ -11807,6 +11977,7 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 	  {
 	    if (imp->mod != MODULE_PURVIEW)
 	      {
+		imp = imp->resolve_alias ();
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
 		if (imp->is_legacy ())
 		  bitmap_ior_into (legacies, imp->slurp ()->legacies);
@@ -12136,14 +12307,11 @@ load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
     = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
 
   if (cpp_user_macro_p (node)
-      && !(node->flags & NODE_USED)
       && !node->value.macro)
     {
-      /* It would be nice to have a location for input file.  */
       cpp_macro *macro = cpp_get_deferred_macro (reader, node, main_loc);
       dump () && dump ("Loaded macro #%s %I",
-		       macro ? "define" : "undef",
-		       HT_IDENT_TO_GCC_IDENT (node));
+		       macro ? "define" : "undef", identifier (node));
     }
 
   return 1;
@@ -12173,8 +12341,10 @@ finish_module_parse (cpp_reader *reader)
   if (!state || !state->exported_p)
     {
       if (flag_module_only)
-	warning (0,
-		 "not compiling a module interface but %<-fmodule-only%> used");
+	warning (0, "%<-fmodule-only%> used for non-interface");
+      if (module_controlling_macro)
+	warning (0, "%<-fmodule-macro=%s%> used for non-interface",
+		 module_controlling_macro);
     }
   else if (errorcount)
     warning_at (state->loc, 0, "not exporting module due to errors");
@@ -12182,6 +12352,38 @@ finish_module_parse (cpp_reader *reader)
     {
       int fd = -1;
       int e = ENOENT;
+
+      if (module_controlling_macro)
+	{
+	  /* There's a specified controlling macro.  Find it.  */
+	  const char *name = module_controlling_macro;
+	  if (const char *eq = strchr (name, '='))
+	    {
+	      char *tmp = XNEWVEC (char, eq - name + 1);
+	      memcpy (tmp, name, eq - name);
+	      tmp[eq - name] = 0;
+	      name = tmp;
+	    }
+	  state->controlling_macro = get_identifier (name);
+	  cpp_hashnode *node = cpp_node (state->controlling_macro);
+	  if (name != module_controlling_macro)
+	    XDELETEVEC (const_cast <char *> (name));
+
+	  if (cpp_user_macro_p ((node)))
+	    {
+	      if (cpp_macro *macro
+		  = cpp_get_deferred_macro (reader, node, state->loc))
+		if (macro->imported)
+		  error_at (state->loc, "controlling macro %qE is imported",
+			    state->controlling_macro);
+	    }
+	  else if (!cpp_user_macro_p ((node)))
+	    {
+	      cpp_force_token_locations (reader, state->loc);
+	      cpp_define (reader, module_controlling_macro);
+	      cpp_stop_forcing_token_locations (reader);
+	    }
+	}
 
       /* Force the current linemap to close.  */
       linemap_add (line_table, LC_ENTER, false, "", 0);
@@ -12315,6 +12517,10 @@ handle_module_option (unsigned code, const char *str, int num)
 
     case OPT_fmodule_mapper_:
       module_mapper_name = str;
+      return true;
+
+    case OPT_fmodule_macro_:
+      module_controlling_macro = str;
       return true;
 
     case OPT_fmodule_legacy_:
