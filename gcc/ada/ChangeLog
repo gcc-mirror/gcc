@@ -1,5 +1,13 @@
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: If
+	this is not a definition, retrieve the expression in all cases
+	even if we are just annotating types.
+	* gcc-interface/trans.c (gnat_to_gnu): Also translate Size
+	attribute for constrained types in this mode.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* adaint.c (__gnat_get_executable_suffix_ptr): Add new line.
 	(__gnat_locate_exec): Check that HOST_EXECUTABLE_SUFFIX is not
 	empty before doing a string search for it.

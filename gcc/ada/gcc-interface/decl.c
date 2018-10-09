@@ -612,8 +612,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && !No_Initialization (gnat_decl)
 	  && !Is_Dispatch_Table_Entity (gnat_entity)
 	  && Present (gnat_temp = Expression (gnat_decl))
-	  && Nkind (gnat_temp) != N_Allocator
-	  && (!type_annotate_only || Compile_Time_Known_Value (gnat_temp)))
+	  && Nkind (gnat_temp) != N_Allocator)
 	gnu_expr = gnat_to_gnu_external (gnat_temp);
 
       /* ... fall through ... */
