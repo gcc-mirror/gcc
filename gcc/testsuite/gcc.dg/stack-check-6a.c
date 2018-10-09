@@ -5,6 +5,7 @@
 /* { dg-options "-O2 -fstack-clash-protection -fdump-rtl-pro_and_epilogue -fno-optimize-sibling-calls --param stack-clash-protection-probe-interval=12 --param stack-clash-protection-guard-size=16" } */
 /* { dg-require-effective-target supports_stack_clash_protection  } */
 /* { dg-skip-if "" { *-*-* } { "-fstack-protector*" } { "" } } */
+/* { dg-skip-if "" { aarch64*-*-* } } */
 
 
 #include "stack-check-6.c"

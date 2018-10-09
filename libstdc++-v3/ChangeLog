@@ -1,10 +1,142 @@
+2018-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87538
+	* testsuite/experimental/functional/87538.cc: New test.
+
+	PR libstdc++/87538
+	* include/std/functional (_Not_fn::operator()): Check value of
+	__is_nothrow_invocable as well.
+	* testsuite/20_util/function_objects/not_fn/87538.cc: New test.
+
+2018-10-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/list (list<>::cbegin()): Use C++11 direct
+	initialization.
+	(list<>::cend()): Likewise.
+	(list<>::emplace<>(const_iterator, _Args&&...)): Likewise.
+	(list<>::insert(const_iterator, initializer_list<>)): Likewise.
+	(list<>::insert(const_iterator, size_type, const _Tp&)): Likewise.
+	(list<>::erase(const_iterator, const_iterator)): Ensure consistent
+	iterator comparisons.
+	(list<>::splice(const_iterator, list&&, const_iterator,
+	const_iterator)): Likewise.
+
+2018-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(_Rb_tree_iterator<>::operator==): Make inline friend.
+	(_Rb_tree_iterator<>::operator!=): Likewise.
+	(_Rb_tree_const_iterator<>::operator==): Likewise.
+	(_Rb_tree_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator!=(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator==(const _Rb_tree<>&, const _Rb_tree<>&)): Make inline friend.
+	(operator<(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator!=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise and
+	deprecate.
+	(operator>(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator<=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator>=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	* include/debug/map.h (map<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multimap.h
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h (set<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multiset.h
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59439
+	* src/c++98/locale.cc (locale::locale(const locale&)): Bypass
+	reference count updates for the classic locale.
+	(locale::~locale()): Likewise.
+	(locale::operator=(const locale&)): Likewise.
+	* src/c++98/locale_init.cc (locale::locale()): Likewise.
+	(locale::global(const locale&)): Likewise.
+
+2018-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/map.h
+	(map<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(map<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(map<>::insert(value_type&&)): Likewise.
+	(map<>::insert<>(_Pair&&)): Likewise.
+	(map<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(map<>::try_emplace): Likewise.
+	(map<>::insert_or_assign): Likewise.
+	(map<>::insert(node_type&&)): Likewise.
+	(map<>::insert(const_iterator, node_type&&)): Likewise.
+	(map<>::erase(const_iterator)): Likewise.
+	(map<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multimap.h
+	(multimap<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multimap<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multimap<>::insert<>(_Pair&&)): Likewise.
+	(multimap<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(multimap<>::insert(node_type&&)): Likewise.
+	(multimap<>::insert(const_iterator, node_type&&)): Likewise.
+	(multimap<>::erase(const_iterator)): Likewise.
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h
+	(set<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(set<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(set<>::insert(value_type&&)): Likewise.
+	(set<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(set<>::insert(const_iterator, node_type&&)): Likewise.
+	(set<>::erase(const_iterator)): Likewise.
+	(set<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multiset.h
+	(multiset<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multiset<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multiset<>::insert<>(value_type&&)): Likewise.
+	(multiset<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(multiset<>::insert(node_type&&)): Likewise.
+	(multiset<>::insert(const_iterator, node_type&&)): Likewise.
+	(multiset<>::erase(const_iterator)): Likewise.
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87258
+	* include/bits/stl_bvector.h (vector::begin(), vector::cbegin()):
+	Rebuild _M_start with an explicit 0 offset.
+
+2018-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Call __get
+	directly instead of get, as caller ensures correct index is used.
+	(holds_alternative, get, get_if): Remove redundant inline specifiers.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Likewise.
+
+2018-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Use
+	-fno-show-column in default cxxflags.
+
+2018-10-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/os/uclibc/os_defines.h (__NO_STRING_INLINES): Delete.
+
+2018-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link to "Reconsidering
+	Custom Memory Allocation".
+
+2018-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+
 2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/messages.xml: Switch link to www.oracle.com
 	to https.
 
 2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
-	
+
 	* doc/xml/manual/policy_data_structures_biblio.xml: Update
 	link to Microsoft Component Model Object Technologies.
 

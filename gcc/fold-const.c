@@ -7143,7 +7143,7 @@ fold_plusminus_mult_expr (location_t loc, enum tree_code code, tree type,
   if (!same)
     return NULL_TREE;
 
-  if (! INTEGRAL_TYPE_P (type)
+  if (! ANY_INTEGRAL_TYPE_P (type)
       || TYPE_OVERFLOW_WRAPS (type)
       /* We are neither factoring zero nor minus one.  */
       || TREE_CODE (same) == INTEGER_CST)

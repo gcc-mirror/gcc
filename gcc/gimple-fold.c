@@ -1344,14 +1344,12 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 
 	  /* If we potentially had a non-terminated string, then
 	     bubble that information up to the caller.  */
-	  if (!val)
+	  if (!val && data.decl)
 	    {
 	      *nonstr = data.decl;
-	      /* If TYPE is asking for a maximum, then use any
-		 length (including the length of an unterminated
-		 string) for VAL.  */
-	      if (type == 2)
-		val = data.len;
+	      *minlen = data.len;
+	      *maxlen = data.len;
+	      return type == 0 ? false : true;
 	    }
 	}
 
@@ -3603,6 +3601,7 @@ gimple_fold_builtin_strlen (gimple_stmt_iterator *gsi)
   tree nonstr;
   tree lenrange[2];
   if (!get_range_strlen (arg, lenrange, 1, true, &nonstr)
+      && !nonstr
       && lenrange[0] && TREE_CODE (lenrange[0]) == INTEGER_CST
       && lenrange[1] && TREE_CODE (lenrange[1]) == INTEGER_CST)
     {

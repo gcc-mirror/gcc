@@ -324,7 +324,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wparentheses  -Wno-pedantic-ms-format @gol
 -Wplacement-new  -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
--Wno-pragmas  -Wredundant-decls  -Wrestrict  -Wno-return-local-addr @gol
+-Wno-pragmas  -Wno-prio-ctor-dtor -Wredundant-decls @gol
+-Wrestrict  -Wno-return-local-addr @gol
 -Wreturn-type  -Wsequence-point  -Wshadow  -Wno-shadow-ivar @gol
 -Wshadow=global,  -Wshadow=local,  -Wshadow=compatible-local @gol
 -Wshift-overflow  -Wshift-overflow=@var{n} @gol
@@ -1006,8 +1007,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mint32  -mno-int16 -mint16  -mno-int32 @gol
--mfloat32  -mno-float64 -mfloat64  -mno-float32 @gol
--msplit -munix-asm  -mdec-asm -mgnu-asm}
+-msplit -munix-asm  -mdec-asm -mgnu-asm -mlra}
 
 @emph{picoChip Options}
 @gccoptlist{-mae=@var{ae_type}  -mvliw-lookahead=@var{N} @gol
@@ -5332,6 +5332,16 @@ the warnings are only enabled by the @option{-Wall} command-line option.
 Do not warn about misuses of pragmas, such as incorrect parameters,
 invalid syntax, or conflicts between pragmas.  See also
 @option{-Wunknown-pragmas}.
+
+@item -Wno-prio-ctor-dtor
+@opindex Wno-prio-ctor-dtor
+@opindex Wprio-ctor-dtor
+Do not warn if a priority from 0 to 100 is used for constructor or destructor.
+The use of constructor and destructor attributes allow you to assign a
+priority to the constructor/destructor to control its order of execution
+before @code{main} is called or after it returns.  The priority values must be
+greater than 100 as the compiler reserves priority values between 0--100 for
+the implementation.
 
 @item -Wstrict-aliasing
 @opindex Wstrict-aliasing
@@ -14211,14 +14221,21 @@ Controls optimization dumps from various optimization passes. If the
 @samp{-} separated option keywords to select the dump details and
 optimizations.  
 
-The @var{options} can be divided into two groups: options describing the
-verbosity of the dump, and options describing which optimizations
-should be included. The options from both the groups can be freely
-mixed as they are non-overlapping. However, in case of any conflicts,
+The @var{options} can be divided into three groups:
+@enumerate
+@item
+options describing what kinds of messages should be emitted,
+@item
+options describing the verbosity of the dump, and
+@item
+options describing which optimizations should be included.
+@end enumerate
+The options from each group can be freely mixed as they are
+non-overlapping. However, in case of any conflicts,
 the later options override the earlier options on the command
 line. 
 
-The following options control the dump verbosity:
+The following options control which kinds of messages should be emitted:
 
 @table @samp
 @item optimized
@@ -14235,6 +14252,15 @@ transformations, more detailed messages about decisions etc.
 @item all
 Print detailed optimization information. This includes
 @samp{optimized}, @samp{missed}, and @samp{note}.
+@end table
+
+The following option controls the dump verbosity:
+
+@table @samp
+@item internals
+By default, only ``high-level'' messages are emitted. This option enables
+additional, more detailed, messages, which are likely to only be of interest
+to GCC developers.
 @end table
 
 One or more of the following option keywords can be used to describe a
@@ -14257,8 +14283,9 @@ the optimization groups listed above.
 @end table
 
 If @var{options} is
-omitted, it defaults to @samp{optimized-optall}, which means to dump all
-info about successful optimizations from all the passes.  
+omitted, it defaults to @samp{optimized-optall}, which means to dump messages
+about successful optimizations from all the passes, omitting messages
+that are treated as ``internals''.
 
 If the @var{filename} is provided, then the dumps from all the
 applicable optimizations are concatenated into the @var{filename}.
@@ -22698,18 +22725,6 @@ Use 16-bit @code{int}.  This is the default.
 @opindex mno-int16
 Use 32-bit @code{int}.
 
-@item -mfloat64
-@itemx -mno-float32
-@opindex mfloat64
-@opindex mno-float32
-Use 64-bit @code{float}.  This is the default.
-
-@item -mfloat32
-@itemx -mno-float64
-@opindex mfloat32
-@opindex mno-float64
-Use 32-bit @code{float}.
-
 @item -msplit
 @opindex msplit
 Target has split instruction and data space.  Implies -m45.
@@ -22725,6 +22740,11 @@ Use DEC assembler syntax.
 @item -mgnu-asm
 @opindex mgnu-asm
 Use GNU assembler syntax.  This is the default.
+
+@item -mlra
+@opindex mlra
+Use the new LRA register allocator.  By default, the old ``reload''
+allocator is used.
 @end table
 
 @node picoChip Options

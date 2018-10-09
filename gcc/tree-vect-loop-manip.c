@@ -3068,11 +3068,13 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       && dump_enabled_p ())
     {
       if (version_alias)
-        dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+        dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_USER_FACING,
+			 vect_location,
                          "loop versioned for vectorization because of "
 			 "possible aliasing\n");
       if (version_align)
-        dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+        dump_printf_loc (MSG_OPTIMIZED_LOCATIONS | MSG_PRIORITY_USER_FACING,
+			 vect_location,
                          "loop versioned for vectorization to enhance "
 			 "alignment\n");
 

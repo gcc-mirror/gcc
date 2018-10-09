@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "params-enum.h"
 #include "diagnostic-core.h"
+#include "diagnostic.h"
 #include "spellcheck.h"
 
 /* An array containing the compiler parameters and their current
@@ -58,6 +59,10 @@ static const param_info lang_independent_params[] = {
   { NULL, 0, 0, 0, NULL, NULL }
 };
 
+static bool
+validate_param (const int value, const param_info param, const int index);
+
+
 /* Add the N PARAMS to the current list of compiler parameters.  */
 
 void
@@ -68,12 +73,24 @@ add_params (const param_info params[], size_t n)
   /* Allocate enough space for the new parameters.  */
   compiler_params = XRESIZEVEC (param_info, compiler_params,
 				num_compiler_params + n);
+  param_info *dst_params = compiler_params + num_compiler_params;
+
   /* Copy them into the table.  */
-  memcpy (compiler_params + num_compiler_params,
-	  params,
-	  n * sizeof (param_info));
+  memcpy (dst_params, params, n * sizeof (param_info));
+
   /* Keep track of how many parameters we have.  */
   num_compiler_params += n;
+
+  /* Initialize the pretty printing machinery in case we need to print an error,
+     but be sure not to initialize it if something else already has, e.g. a
+     language front-end like cc1.  */
+  if (!diagnostic_ready_p ())
+    diagnostic_initialize (global_dc, 0);
+
+  /* Now perform some validation and validation failures trigger an error so
+     initialization will stop.  */
+  for (size_t i = num_compiler_params - n; i < n; i++)
+    validate_param (params[i].default_value, params[i], (int)i);
 }
 
 /* Add all parameters and default values that can be set in both the
@@ -125,6 +142,31 @@ set_param_value_internal (compiler_param num, int value,
   params[i] = value;
   if (explicit_p)
     params_set[i] = true;
+}
+
+/* Validate PARAM and write an error if invalid.  */
+
+static bool
+validate_param (const int value, const param_info param, const int index)
+{
+  /* These paremeters interpret bounds of 0 to be unbounded, as such don't
+     perform any range validation on 0 parameters.  */
+  if (value < param.min_value && param.min_value != 0)
+    {
+      error ("minimum value of parameter %qs is %u",
+	     param.option, param.min_value);
+      return false;
+    }
+  else if (param.max_value > param.min_value && value > param.max_value)
+    {
+      error ("maximum value of parameter %qs is %u",
+	     param.option, param.max_value);
+      return false;
+    }
+  else if (targetm_common.option_validate_param (value, index))
+    return true;
+
+  return false;
 }
 
 /* Return true if it can find the matching entry for NAME in the parameter
@@ -200,23 +242,14 @@ set_param_value (const char *name, int value,
     }
   i = (size_t)index;
 
-  if (value < compiler_params[i].min_value)
-    error ("minimum value of parameter %qs is %u",
-	   compiler_params[i].option,
-	   compiler_params[i].min_value);
-  else if (compiler_params[i].max_value > compiler_params[i].min_value
-	   && value > compiler_params[i].max_value)
-    error ("maximum value of parameter %qs is %u",
-	   compiler_params[i].option,
-	   compiler_params[i].max_value);
-  else
+  if (validate_param (value, compiler_params[i], i))
     set_param_value_internal ((compiler_param) i, value,
 			      params, params_set, true);
 }
 
 /* Set the value of the parameter given by NUM to VALUE in PARAMS and
    PARAMS_SET, implicitly, if it has not been set explicitly by the
-   user.  */
+   user either via the commandline or configure.  */
 
 void
 maybe_set_param_value (compiler_param num, int value,

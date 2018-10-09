@@ -1,3 +1,429 @@
+2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87151
+	* gfortran.dg/deferred_type_component_3.f90: New test.
+
+	PR fortran/80931
+	* gfortran.dg/deferred_character_28.f90: New test.
+	* gfortran.dg/deferred_character_29.f90: New test (note that
+	this test appears in PR83196 comment #4 by mistake).
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/vararg-loc.c: Accept a column number.
+
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/i386.exp: Move procedures to
+	target-supports.exp.
+	* g++.target/i386/i386.exp: New file.
+	* gcc.target/i386/mv*.C: Move here tests and remove
+	target filter in these tests.
+
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/contiguous_4.f90: Adjust.
+	* gfortran.dg/contiguous_4.f90: New test.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* gfortran.dg/associate_41.f90: New test.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/merge-all-constants-2.c: Require string_merging support.
+	* gnat.dg/string_merge1.adb: Likewise.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/Wprio-ctor-dtor.c: Require init_priority support.
+
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/pr82625.C: Add dg-compile filter.
+
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* g++.dg/concepts/pr71128.C: New.
+
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* gcc.dg/pr87286.c: New test.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.dg/array_constructor_type_23.f90: New test.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* gfortran.dg/elemental_function_4.f90 : New test.
+
+2018-10-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	PR rtl-optimization/87479
+	* gcc.target/powerpc/pr86939.c: New test.
+	* gcc/testsuite/gcc.target/i386/pr49095.c: Fix expected results.
+
+2018-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: Fix test expectations.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* g++.dg/ext/builtin4.C: Set expected location for warning to the
+	correct location within the format string.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add the plugin and
+	files for testing locations within string literal locations from
+	the C frontend.
+	* g++.dg/warn/Wformat-method.C: New test.
+	* g++.dg/warn/Wformat-pr71863.C: New test.
+	* g++.dg/warn/Wformat-ranges-c++11.C: New test.
+	* g++.dg/warn/Wformat-ranges.C: New test, based on
+	gcc.dg/format/diagnostic-ranges.c.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): Generalize expected output to work with
+	both C and C++.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c
+	(test_stringified_token_1): Likewise.
+	(test_stringified_token_3): Likewise.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (proc dg-end-multiline-output): Check argument
+	count.  If there's a 3rd argument, use dg-process-target on it,
+	bailing out, or recording expected failures as "maybe_x".
+	(proc handle-multiline-outputs): Extract "maybe_x", and use it
+	to convert pass/fail into xpass/xfail.
+
+2018-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87490
+	* gcc.dg/pr87490.c: New test.
+	* gcc.dg/warn-strnlen-no-nul-2.c: Same.
+
+2018-10-05  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/71625
+	* /gcc.target/aarch64/vclz.c (test_vclz_s8): Add noinline attribute.
+	(test_vclz_s16): Ditto.
+	(test_vclz_s32): Ditto.
+	(test_vclzq_s8): Ditto.
+	(test_vclzq_s16): Ditto.
+	(test_vclzq_s32): Ditto.
+	(test_vclz_u8): Ditto.
+	(test_vclz_u16): Ditto.
+	(test_vclz_u32): Ditto.
+	(test_vclzq_u8): Ditto.
+	(test_vclzq_u16): Ditto.
+	(test_vclzq_u32): Ditto.
+	* gcc.target/aarch64/vneg_s.c (test_vneg_s8): Ditto.
+	(test_vneg_s16): Ditto.
+	(test_vneg_s32): Ditto.
+	(test_vneg_s64): Ditto.
+	(test_vnegd_s64): Ditto.
+	(test_vnegq_s8): Ditto.
+	(test_vnegq_s16): Ditto.
+	(test_vnegq_s32): Ditto.
+	(test_vnegq_s64): Ditto.
+
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87509
+	* gcc.target/powerpc/test_fpscr_drn_builtin.c: Use hard_dfp instead
+	of dfp_hw.  Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: Ditto.  Require
+	lp64.
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: Ditto.
+	* gcc.target/powerpc/test_mffsl.c: Ditto.
+
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-c++-common/Wprio-ctor-dtor.c: New test.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/vect/nodump-vect-opt-info-2.c: New test.
+	* gcc.dg/vect/vect-alias-check-4.c: Add "-fopt-info-vec-all" to
+	dg-additional-options.  Add dg-message and dg-missed directives
+	to verify that -fopt-info messages are written at the correct
+	locations.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump-1.c: Update expected output for test_scopes
+	due to "-internals" not being selected.
+	* gcc.dg/plugin/dump-2.c: New test, based on dump-1.c, with
+	"-internals" added to re-enable the output from test_scopes.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add dump-2.c.
+
+2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: New test.
+	* gnat.dg/string_merge2.adb: New test.
+	* gcc.dg/merge-all-constants-1.c: Adjust test.
+	* gcc.dg/merge-all-constants-2.c: New test.
+
+2018-10-04  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR target/87486
+	* gcc.target/powerpc/undef-bool-2.c: Fix expected error output.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR c/87483
+	* gcc.dg/pr87483.c: New test.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82625
+	* g++.dg/ext/pr82625.C: New test.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump-1.c: New test.
+	* gcc.dg/plugin/dump_plugin.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+
+2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87466
+	* gcc.target/powerpc/pr87466.c: New test.
+
+2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/85787
+	* gcc.dg/ipa/propmalloc-4.c: New test.
+
+2018-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/cunroll-15.c: Add XFAILs for arm and powerpc.
+
+2018-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-set-goarch): Use amd64p32 on x32.
+
+2018-10-03  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/warn-sprintf-no-nul.c: New test.
+
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* g++.dg/gcov/pr86109.C: New test.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/muldiv-1.c: New file.
+	* gcc.dg/tree-ssa/muldiv-2.c: Likewise.
+
+2018-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87081
+	* gcc.target/powerpc/vec-init-6.c: Fix expected asm.
+
+2018-10-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/warn-strnlen-no-nul.c: New.
+
+2018-10-01  Carl Love  <cel@us.ibm.com>
+
+	PR 69431
+	* gcc.target/powerpc/test_mffsl-p9.c: New file.
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: New file.
+	* gcc.target/powerpc/test_fpscr_drn_builtin.c: New file.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: New file.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: New file.
+
+2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* gfortran.dg/dependency_52.f90 : Expand the test to check both
+	the call to adjustl and direct assignment of the substring.
+
+2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87465
+	* gcc.dg/tree-ssa/cunroll-15.c: New testcase.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.dg/pr82788.c: Skip for AArch64.
+	* gcc.dg/guality/vla-1.c: Turn off stack-clash.
+	* gcc.target/aarch64/subsp.c: Likewise.
+	* gcc.dg/params/blocksort-part.c: Skip stack-clash checks
+	on AArch64.
+	* gcc.dg/stack-check-10.c: Add AArch64 specific checks.
+	* gcc.dg/stack-check-12.c: ILP32 fixup.
+	* gcc.dg/stack-check-5.c: Add AArch64 specific checks.
+	* gcc.dg/stack-check-6a.c: Skip on AArch64, we don't support this.
+	* testsuite/lib/target-supports.exp
+	(check_effective_target_frame_pointer_for_non_leaf): AArch64 does not
+	require frame pointer for non-leaf functions.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.target/aarch64/stack-check-alloca-1.c: New.
+	* gcc.target/aarch64/stack-check-alloca-10.c: New.
+	* gcc.target/aarch64/stack-check-alloca-2.c: New.
+	* gcc.target/aarch64/stack-check-alloca-3.c: New.
+	* gcc.target/aarch64/stack-check-alloca-4.c: New.
+	* gcc.target/aarch64/stack-check-alloca-5.c: New.
+	* gcc.target/aarch64/stack-check-alloca-6.c: New.
+	* gcc.target/aarch64/stack-check-alloca-7.c: New.
+	* gcc.target/aarch64/stack-check-alloca-8.c: New.
+	* gcc.target/aarch64/stack-check-alloca-9.c: New.
+	* gcc.target/aarch64/stack-check-alloca.h: New.
+	* gcc.target/aarch64/stack-check-14.c: New.
+	* gcc.target/aarch64/stack-check-15.c: New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.target/aarch64/stack-check-prologue-16.c: New test
+	* gcc.target/aarch64/stack-check-cfa-3.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_24.c: New test.
+	* gcc.target/aarch64/sve/struct_vect_24_run.c: New test.
+
+2018-10-01  Jeff Law  <law@redhat.com>
+	    Richard Sandiford <richard.sandiford@linaro.org>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* gcc.target/aarch64/stack-check-12.c: New.
+	* gcc.target/aarch64/stack-check-13.c: New.
+	* gcc.target/aarch64/stack-check-cfa-1.c: New.
+	* gcc.target/aarch64/stack-check-cfa-2.c: New.
+	* gcc.target/aarch64/stack-check-prologue-1.c: New.
+	* gcc.target/aarch64/stack-check-prologue-10.c: New.
+	* gcc.target/aarch64/stack-check-prologue-11.c: New.
+	* gcc.target/aarch64/stack-check-prologue-12.c: New.
+	* gcc.target/aarch64/stack-check-prologue-13.c: New.
+	* gcc.target/aarch64/stack-check-prologue-14.c: New.
+	* gcc.target/aarch64/stack-check-prologue-15.c: New.
+	* gcc.target/aarch64/stack-check-prologue-2.c: New.
+	* gcc.target/aarch64/stack-check-prologue-3.c: New.
+	* gcc.target/aarch64/stack-check-prologue-4.c: New.
+	* gcc.target/aarch64/stack-check-prologue-5.c: New.
+	* gcc.target/aarch64/stack-check-prologue-6.c: New.
+	* gcc.target/aarch64/stack-check-prologue-7.c: New.
+	* gcc.target/aarch64/stack-check-prologue-8.c: New.
+	* gcc.target/aarch64/stack-check-prologue-9.c: New.
+	* gcc.target/aarch64/stack-check-prologue.h: New.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Add AArch64.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp (check_cached_effective_target_indexed): New.
+	(check_cached_effective_target, clear_effective_target_cache): Cleanup.
+	(check_compile): Support values already Boolean.
+	(check_alias_available, check_gc_sections_available,
+	check_profiling_available, check_effective_target_vect_cmdline_needed,
+	check_effective_target_vect_int,
+	check_effective_target_vect_intfloat_cvt,
+	check_effective_target_vect_doubleint_cvt,
+	check_effective_target_vect_intdouble_cvt,
+	check_effective_target_vect_uintfloat_cvt,
+	check_effective_target_vect_floatint_cvt,
+	check_effective_target_vect_floatuint_cvt,
+	check_effective_target_vect_peeling_profitable,
+	check_effective_target_vect_simd_clones,
+	check_effective_target_vect_peeling_profitable,
+	check_effective_target_vect_simd_clones,
+	check_effective_target_vect_shift,
+	check_effective_target_vect_bswap,
+	check_effective_target_vect_shift_char,
+	check_effective_target_vect_float,
+	check_effective_target_vect_double,
+	check_effective_target_vect_long_long,
+	check_effective_target_vect_no_int_min_max,
+	check_effective_target_vect_no_int_add,
+	check_effective_target_vect_no_bitwise,
+	check_effective_target_vect_perm,
+	check_effective_target_vect_perm_byte,
+	check_effective_target_vect_perm_short,
+	check_effective_target_xorsign,
+	check_effective_target_vect_widen_sum_hi_to_si_pattern,
+	check_effective_target_vect_widen_sum_hi_to_si,
+	check_effective_target_vect_widen_sum_qi_to_hi,
+	check_effective_target_vect_widen_sum_qi_to_si,
+	check_effective_target_vect_widen_mult_qi_to_hi,
+	check_effective_target_vect_widen_mult_hi_to_si,
+	check_effective_target_vect_widen_mult_qi_to_hi_pattern,
+	check_effective_target_vect_widen_mult_hi_to_si_pattern,
+	check_effective_target_vect_widen_mult_si_to_di_pattern,
+	check_effective_target_vect_widen_shift,
+	check_effective_target_vect_sdot_qi,
+	check_effective_target_vect_udot_qi,
+	check_effective_target_vect_sdot_hi,
+	check_effective_target_vect_udot_hi,
+	check_effective_target_vect_usad_char,
+	check_effective_target_vect_pack_trunc,
+	check_effective_target_vect_unpack,
+	check_effective_target_unaligned_stack,
+	check_effective_target_vect_no_align,
+	check_effective_target_vect_hw_misalign,
+	check_effective_target_natural_alignment_32,
+	check_effective_target_natural_alignment_64,
+	check_effective_target_vect_element_align,
+	check_effective_target_vect_load_lanes **,
+	check_effective_target_vect_condition,
+	check_effective_target_vect_cond_mixed,
+	check_effective_target_vect_char_mult,
+	check_effective_target_vect_short_mult,
+	check_effective_target_vect_int_mult,
+	check_effective_target_vect_extract_even_odd,
+	check_effective_target_vect_interleave,
+	check_effective_target_vect_stridedN,
+	check_effective_target_vect_call_copysignf,
+	check_effective_target_sqrt_insn,
+	check_effective_target_vect_call_sqrtf,
+	check_effective_target_vect_call_btrunc,
+	check_effective_target_vect_call_btruncf,
+	check_effective_target_vect_call_ceil,
+	check_effective_target_vect_call_ceilf,
+	check_effective_target_vect_call_floor,
+	check_effective_target_vect_call_floorf,
+	check_effective_target_vect_call_lceil,
+	check_effective_target_vect_call_lfloor,
+	check_effective_target_vect_call_nearbyint,
+	check_effective_target_vect_call_nearbyintf,
+	check_effective_target_vect_call_round,
+	check_effective_target_vect_call_roundf,
+	check_effective_target_section_anchors,
+	check_effective_target_bswap,
+	check_effective_target_sync_int_long,
+	check_effective_target_sync_char_short,
+	check_effective_target_tiny,
+	check_effective_target_pie_copyreloc,
+	check_effective_target_got32x_reloc,
+	check_effective_target_tls_get_addr_via_got): Use new caching.
+
+2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87261
+	* gcc.dg/pr87261.c: New test.
+
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tph_addx.c: New test.
+
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tmac-3.c: New file.
+
 2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87359

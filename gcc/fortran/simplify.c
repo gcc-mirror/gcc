@@ -2011,11 +2011,11 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
   ssize_t *shiftvec, *hptr;
   ssize_t shift_val, len;
   ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
-    hs_ex[GFC_MAX_DIMENSIONS],
+    hs_ex[GFC_MAX_DIMENSIONS + 1],
     hstride[GFC_MAX_DIMENSIONS], sstride[GFC_MAX_DIMENSIONS],
     a_extent[GFC_MAX_DIMENSIONS], a_stride[GFC_MAX_DIMENSIONS],
     h_extent[GFC_MAX_DIMENSIONS],
-    ss_ex[GFC_MAX_DIMENSIONS];
+    ss_ex[GFC_MAX_DIMENSIONS + 1];
   ssize_t rsoffset;
   int d, n;
   bool continue_loop;
@@ -2110,6 +2110,8 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 	  n++;
 	}
     }
+  ss_ex[n] = 0;
+  hs_ex[n] = 0;
 
   if (shiftvec)
     {
@@ -2403,7 +2405,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   ssize_t shift_val, len;
   ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
     sstride[GFC_MAX_DIMENSIONS], a_extent[GFC_MAX_DIMENSIONS],
-    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS];
+    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS + 1];
   ssize_t rsoffset;
   int d, n;
   bool continue_loop;
@@ -2546,6 +2548,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	  n++;
 	}
     }
+  ss_ex[n] = 0;
 
   continue_loop = true;
   d = array->rank;

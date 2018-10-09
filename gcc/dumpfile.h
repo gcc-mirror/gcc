@@ -145,6 +145,9 @@ enum dump_flag
   /* Dump folding details.  */
   TDF_FOLDING = (1 << 21),
 
+  /* MSG_* flags for expressing the kinds of message to
+     be emitted by -fopt-info.  */
+
   /* -fopt-info optimized sources.  */
   MSG_OPTIMIZED_LOCATIONS = (1 << 22),
 
@@ -154,15 +157,44 @@ enum dump_flag
   /* General optimization info.  */
   MSG_NOTE = (1 << 24),
 
-  MSG_ALL = (MSG_OPTIMIZED_LOCATIONS
-	     | MSG_MISSED_OPTIMIZATION
-	     | MSG_NOTE),
+  /* Mask for selecting MSG_-kind flags.  */
+  MSG_ALL_KINDS = (MSG_OPTIMIZED_LOCATIONS
+		   | MSG_MISSED_OPTIMIZATION
+		   | MSG_NOTE),
+
+  /* MSG_PRIORITY_* flags for expressing the priority levels of message
+     to be emitted by -fopt-info, and filtering on them.
+     By default, messages at the top-level dump scope are "user-facing",
+     whereas those that are in nested scopes are implicitly "internals".
+     This behavior can be overridden for a given dump message by explicitly
+     specifying one of the MSG_PRIORITY_* flags.
+
+     By default, dump files show both kinds of message, whereas -fopt-info
+     only shows "user-facing" messages, and requires the "-internals"
+     sub-option of -fopt-info to show the internal messages.  */
+
+  /* Implicitly supplied for messages at the top-level dump scope.  */
+  MSG_PRIORITY_USER_FACING = (1 << 25),
+
+  /* Implicitly supplied for messages within nested dump scopes.  */
+  MSG_PRIORITY_INTERNALS = (1 << 26),
+
+  /* Supplied when an opt_problem generated in a nested scope is re-emitted
+     at the top-level.   We want to default to showing these in -fopt-info
+     output, but to *not* show them in dump files, as the message would be
+     shown twice, messing up "scan-tree-dump-times" in DejaGnu tests.  */
+  MSG_PRIORITY_REEMITTED = (1 << 27),
+
+  /* Mask for selecting MSG_PRIORITY_* flags.  */
+  MSG_ALL_PRIORITIES = (MSG_PRIORITY_USER_FACING
+			| MSG_PRIORITY_INTERNALS
+			| MSG_PRIORITY_REEMITTED),
 
   /* Dumping for -fcompare-debug.  */
-  TDF_COMPARE_DEBUG = (1 << 25),
+  TDF_COMPARE_DEBUG = (1 << 28),
 
   /* All values.  */
-  TDF_ALL_VALUES = (1 << 26) - 1
+  TDF_ALL_VALUES = (1 << 29) - 1
 };
 
 /* Dump flags type.  */
@@ -549,7 +581,11 @@ class auto_dump_scope
    and then calling
      dump_end_scope ();
    once the object goes out of scope, thus capturing the nesting of
-   the scopes.  */
+   the scopes.
+
+   These scopes affect dump messages within them: dump messages at the
+   top level implicitly default to MSG_PRIORITY_USER_FACING, whereas those
+   in a nested scope implicitly default to MSG_PRIORITY_INTERNALS.  */
 
 #define AUTO_DUMP_SCOPE(NAME, LOC) \
   auto_dump_scope scope (NAME, LOC)
@@ -565,6 +601,8 @@ extern void dump_node (const_tree, dump_flags_t, FILE *);
 extern void dump_combine_total_stats (FILE *);
 /* In cfghooks.c  */
 extern void dump_bb (FILE *, basic_block, int, dump_flags_t);
+
+struct opt_pass;
 
 namespace gcc {
 
@@ -634,6 +672,8 @@ public:
   const char *
   dump_flag_name (int phase) const;
 
+  void register_pass (opt_pass *pass);
+
 private:
 
   int
@@ -649,6 +689,8 @@ private:
   opt_info_enable_passes (optgroup_flags_t optgroup_flags, dump_flags_t flags,
 			  const char *filename);
 
+  bool update_dfi_for_opt_info (dump_file_info *dfi) const;
+
 private:
 
   /* Dynamically registered dump files and switches.  */
@@ -656,6 +698,12 @@ private:
   struct dump_file_info *m_extra_dump_files;
   size_t m_extra_dump_files_in_use;
   size_t m_extra_dump_files_alloced;
+
+  /* Stored values from -fopt-info, for handling passes created after
+     option-parsing (by backends and by plugins).  */
+  optgroup_flags_t m_optgroup_flags;
+  dump_flags_t m_optinfo_flags;
+  char *m_optinfo_filename;
 
   /* Grant access to dump_enable_all.  */
   friend bool ::enable_rtl_dump_file (void);

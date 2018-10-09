@@ -38,7 +38,7 @@ enum processor_flags
   PF_TX = 256,
   PF_Z13 = 512,
   PF_VX = 1024,
-  PF_ARCH12 = 2048,
+  PF_Z14 = 2048,
   PF_VXE = 4096
 };
 
@@ -90,10 +90,10 @@ enum processor_flags
 	(s390_arch_flags & PF_VX)
 #define TARGET_CPU_VX_P(opts) \
 	(opts->x_s390_arch_flags & PF_VX)
-#define TARGET_CPU_ARCH12 \
-	(s390_arch_flags & PF_ARCH12)
-#define TARGET_CPU_ARCH12_P(opts) \
-	(opts->x_s390_arch_flags & PF_ARCH12)
+#define TARGET_CPU_Z14 \
+	(s390_arch_flags & PF_Z14)
+#define TARGET_CPU_Z14_P(opts) \
+	(opts->x_s390_arch_flags & PF_Z14)
 #define TARGET_CPU_VXE \
 	(s390_arch_flags & PF_VXE)
 #define TARGET_CPU_VXE_P(opts) \
@@ -143,9 +143,9 @@ enum processor_flags
 	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_VX_P (opts) \
 	 && TARGET_OPT_VX_P (opts->x_target_flags) \
 	 && TARGET_HARD_FLOAT_P (opts->x_target_flags))
-#define TARGET_ARCH12 (TARGET_ZARCH && TARGET_CPU_ARCH12)
-#define TARGET_ARCH12_P(opts)						\
-	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_ARCH12_P (opts))
+#define TARGET_Z14 (TARGET_ZARCH && TARGET_CPU_Z14)
+#define TARGET_Z14_P(opts)						\
+	(TARGET_ZARCH_P (opts->x_target_flags) && TARGET_CPU_Z14_P (opts))
 #define TARGET_VXE				\
 	(TARGET_VX && TARGET_CPU_VXE)
 #define TARGET_VXE_P(opts)						\

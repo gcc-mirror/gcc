@@ -1,3 +1,867 @@
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* print-rtl.c (rtx_writer::print_rtx_operand_code_i): Print column
+	information.
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cgraphunit.c (cgraph_node::expand_thunk): Do not force DECL_IGNORED_P
+	on the thunk.
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86659
+	* gimple-match.h (struct gimple_match_op): Add reverse field.
+	(gimple_match_op::set_op): New overloaded method.
+	* gimple-match-head.c (maybe_build_generic_op) <BIT_FIELD_REF>: Set
+	the REF_REVERSE_STORAGE_ORDER flag on the value.
+	(gimple_simplify) <GIMPLE_ASSIGN>: For BIT_FIELD_REF, propagate the
+	REF_REVERSE_STORAGE_ORDER flag and avoid simplifying if it is set.
+        
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR middle-end/63155
+	* gimple-ssa-backprop.c (backprop::intersect_uses): Use
+	FOR_EACH_IMM_USE_FAST instead of FOR_EACH_IMM_USE_STMT.
+
+2018-10-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87517
+	* config/i386/avx512fintrin.h (_mm512_mask_fmaddsub_round_pd):
+	Defined with __builtin_ia32_vfmaddsubpd512_mask.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (znver1_cost): Make AVX256 vector loads
+	cost the same as AVX128 ones.
+
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11-protos.h (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.c (output_block_move): Remove.
+	(expand_block_move): New function.
+	* config/pdp11/pdp11.h (MOVE_RATIO): New definition.
+	* config/pdp11/pdp11.md (movmemhi): Use expand_block_move.
+	(*movmemhi1): Remove.
+
+2018-10-08  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/2827.md: Increase latencies for some FP instructions.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.c (vect_compute_single_scalar_iteration_cost):
+	Open a dump scope.
+	* tree-vectorizer.c (dump_stmt_cost): Add cost param and dump it.
+	* tree-vectorizer.h (dump_stmt_cost): Adjust.
+	(add_stmt_cost): Dump return value of the hook.
+
+2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (add_ssa_edge): Do cheap check first.
+	(ssa_propagation_engine::ssa_propagate): Remove redundant
+	bitmap bit clearing.
+
+2018-10-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	PR rtl-optimization/87479
+	* ira.h (non_conflicting_reg_copy_p): New prototype.
+	* ira-lives.c (ignore_reg_for_conflicts): New static variable.
+	(make_hard_regno_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.
+	(make_object_dead): Likewise.
+	(non_conflicting_reg_copy_p): New function.
+	(process_bb_node_lives): Set ignore_reg_for_conflicts for copies.
+	Remove special conflict handling of REAL_PIC_OFFSET_TABLE_REGNUM.
+	* lra-lives.c (ignore_reg_for_conflicts): New static variable.
+	(make_hard_regno_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.  Remove special conflict handling of
+	REAL_PIC_OFFSET_TABLE_REGNUM.  Remove now unused argument
+	check_pic_pseudo_p and update callers.
+	(mark_pseudo_dead): Don't add conflicts for register
+	ignore_reg_for_conflicts.
+	(process_bb_lives): Set ignore_reg_for_conflicts for copies.
+
+2018-10-05  Andrew Waterman  <andrew@sifive.com>
+	    Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.md (f<quiet_pattern>_quiet<ANYF:mode><X:mode>4):
+	Add define_expand.  Add ! HONOR_SNANS check to current pattern.  Add
+	new pattern using HONOR_SNANS that emits one extra instruction.
+
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (unnamed mfcr scc_comparison_operator
+	patterns): Merge SI and DI patterns to a GPR pattern.
+	(unnamed define_insn and define_split for record form of that): Merge
+	to a single define_insn_and_split pattern.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* input.c (expand_location_to_spelling_point): Add param "aspect"
+	and use rather than hardcoding LOCATION_ASPECT_CARET.
+	(get_substring_ranges_for_loc): Handle the case of a single token
+	within a macro expansion.
+	* input.h (expand_location_to_spelling_point): Add "aspect" param,
+	defaulting to LOCATION_ASPECT_CARET.
+
+2018-10-05  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.c (TARGET_CXX_GUARD_TYPE): Define.
+	(TARGET_CXX_CLASS_DATA_ALWAYS_COMDAT): Define.
+	(TARGET_CXX_LIBRARY_RTTI_COMDAT): Define.
+	(pdp11_guard_type): New function.
+
+2018-10-05  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.h (FLOAT_TYPE_SIZE): Always 32.
+	* config/pdp11/pdp11.opt (mfloat32): Remove.
+	(mfloat64): Remove.
+	* doc/invoke.texi (pdp11 -mfloat32): Remove:
+	(pdp11 -mfloat64): Remove.
+
+2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpxf_cc_i387): Remove pattern.
+	(*cmp<mode>_cc_i387): Ditto.
+	(*cmpu<mode>_cc_i387): Ditto.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Ditto.
+	* config/i386/i386.c (ix86_expand_fp_compare): Remove
+	"scratch" argument.
+	<case IX86_FPCMP_SAHF>: Do not generate pattern with HImode clobber.
+	Emit x86_sahf_1 pattern.
+	(ix86_expand_compare): Update call to ix86_expand_fp_compare.
+	(ix86_expand_carry_flag_compare): Ditto.
+
+2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmpxf_i387): Change operand 2 predicate
+	to reg_or_0_operand.  Add "C" constraint.
+	(*cmpxf_cc_i387): Ditto.
+	(*cmp<mode>_i387): Change operand 2 predicate
+	to nonimm_or_0_operand.  Add "C" constraint.
+	(*cmp<mode>_cc_i387): Ditto.
+	(*cmp<mode>_0_i387): Remove insn pattern.
+	(*cmp<mode>_0_cc_i387): Ditto.
+
+2018-10-05  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/constraints.md ("C"): Do not depend on TARGET_SSE.
+	* config/i386/predicates.md (nonimm_or_0_operand): Rename
+	from vector_move_operand.  Update all uses.
+
+2018-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87490
+	* builtins.c (expand_builtin_strnlen): Handle a null data.decl
+	consistently.
+
+2018-10-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-ccp.c (ccp_propagate::visit_phi): Avoid excess
+	vertical space in dumpfiles.
+	* tree-ssa-propagate.h
+	(ssa_propagation_engine::process_ssa_edge_worklist): Remove.
+	* tree-ssa-propagate.c (cfg_blocks_back): New global.
+	(ssa_edge_worklist_back): Likewise.
+	(curr_order): Likewise.
+	(cfg_blocks_get): Remove abstraction.
+	(cfg_blocks_add): Likewise.
+	(cfg_blocks_empty_p): Likewise.
+	(add_ssa_edge): Add to current or next worklist based on
+	RPO index.
+	(add_control_edge): Likewise.
+	(ssa_propagation_engine::process_ssa_edge_worklist): Fold
+	into ...
+	(ssa_propagation_engine::ssa_propagate): ... here.  Unify
+	iteration from CFG and SSA edge worklist so we process
+	everything in RPO order, prioritizing forward progress
+	over iteration.
+	(ssa_prop_init): Allocate new worklists, do not dump
+	immediate uses.
+	(ssa_prop_fini): Free new worklists.
+
+2018-10-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (tree_block::abstract_flag): Remove.
+	(tree_block::block_num): Make full 32bits.
+	* tree.def (BLOCK): Remove docs about BLOCK_ABSTRACT.
+	* tree.h (BLOCK_ABSTRACT): Remove.
+	* dwarf2out.c (gen_lexical_block_die): Remove dead code
+	resulting from BLOCK_ABSTRACT being always false.
+	(gen_inlined_subroutine_die): Likewise.
+	(gen_block_die): Likewise.
+	* tree.c (block_ultimate_origin): Likewise.
+	* tree-pretty-print.c (dump_block_node): Remove code dealing
+	with BLOCK_ABSTRACT.
+	* tree-ssa-live.c (dump_scope_block): Likewise.
+	* tree-streamer-in.c (unpack_ts_block_value_fields): Likewise.
+	* tree-streamer-out.c (pack_ts_block_value_fields): Likewise.
+
+2018-10-05   Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_add_stmt_cost): When scalar cost
+	is asked for initialize mode to the component mode of the
+	vector type.
+
+2018-10-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87522
+	* config/i386/gnu-user.h (ASM_SPEC): Don't pass -msse2avx to
+	assembler for -mavx.
+	* config/i386/gnu-user64.h (ASM_SPEC): Likewise.
+
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87509
+	* config/rs6000/rs6000-builtin.def (RS6000_BUILTIN_SET_FPSCR_DRN): Use
+	RS6000_BTM_DFP.
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_rn): Require the operand
+	to be DImode.  When using mffscrn, force the operand to a register.
+
+2018-10-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*fop_<X87MODEF:mode>_2_i387): Macroize insn
+	from *fop_<MODEF:mode>_2_i387 and *fop_xf_2_i387 using
+	X87MODEF mode iterator.
+	(*fop_<X87MODEF:mode>_3_i387): Macroize insn from
+	*fop_<MODEF:mode>_3_i387 and *fop_xf_3_i387 using
+	X87MODEF mode iterator.
+
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* doc/invoke.texi (-Wno-prio-ctor-dtor): Document new warning
+	-Wno-prio-ctor-dtor.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS): Add opt-problem.o.
+	* dump-context.h: Include "selftest.h.
+	(selftest::temp_dump_context): New forward decl.
+	(class dump_context): Make friend of class
+	selftest::temp_dump_context.
+	(dump_context::dump_loc_immediate): New decl.
+	(class dump_pretty_printer): Move here from dumpfile.c.
+	(class temp_dump_context): Move to namespace selftest.
+	(temp_dump_context::temp_dump_context): Add param
+	"forcibly_enable_dumping".
+	(selftest::verify_dumped_text):
+	(ASSERT_DUMPED_TEXT_EQ): Move here from dumpfile.c.
+	(selftest::verify_item):
+	(ASSERT_IS_TEXT): Move here from dumpfile.c.
+	(ASSERT_IS_TREE): Likewise.
+	(ASSERT_IS_GIMPLE): Likewise.
+	* dumpfile.c (dump_context::dump_loc): Move immediate dumping
+	to...
+	(dump_context::dump_loc_immediate): ...this new function.
+	(class dump_pretty_printer): Move to dump-context.h.
+	(dump_switch_p_1): Don't enable MSG_PRIORITY_REEMITTED.
+	(opt_info_switch_p_1): Enable MSG_PRIORITY_REEMITTED.
+	(temp_dump_context::temp_dump_context): Move to "selftest"
+	namespace.  Add param "forcibly_enable_dumping", and use it to
+	conditionalize the use of m_pp;
+	(selftest::verify_dumped_text): Make non-static.
+	(ASSERT_DUMPED_TEXT_EQ): Move to dump-context.h.
+	(selftest::verify_item): Make non-static.
+	(ASSERT_IS_TEXT): Move to dump-context.h.
+	(ASSERT_IS_TREE): Likewise.
+	(ASSERT_IS_GIMPLE): Likewise.
+	(selftest::test_capture_of_dump_calls): Pass "true" for new
+	param of temp_dump_context.
+	* dumpfile.h (enum dump_flag): Add MSG_PRIORITY_REEMITTED, adding
+	it to MSG_ALL_PRIORITIES.  Update values of TDF_COMPARE_DEBUG and
+	TDF_COMPARE_DEBUG.
+	* opt-problem.cc: New file.
+	* opt-problem.h: New file.
+	* optinfo-emit-json.cc
+	(selftest::test_building_json_from_dump_calls): Pass "true" for
+	new param of temp_dump_context.
+	* optinfo.cc (optinfo_kind_to_dump_flag): New function.
+	(optinfo::emit_for_opt_problem): New function.
+	(optinfo::emit): Clarity which emit_item is used.
+	* optinfo.h (optinfo::get_dump_location): New accessor.
+	(optinfo::emit_for_opt_problem): New decl.
+	(optinfo::emit): Make const.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::opt_problem_cc_tests.
+	* selftest.h (selftest::opt_problem_cc_tests): New decl.
+	* tree-data-ref.c (dr_analyze_innermost): Convert return type from
+	bool to opt_result, converting fprintf messages to
+	opt_result::failure_at calls.  Add "stmt" param for use by the
+	failure_at calls.
+	(create_data_ref): Pass "stmt" to the dr_analyze_innermost call.
+	(runtime_alias_check_p): Convert return type from bool to
+	opt_result, converting dump_printf calls to
+	opt_result::failure_at, using the statement DDR_A for their
+	location.
+	(find_data_references_in_stmt): Convert return type from bool to
+	opt_result, converting "return false" to opt_result::failure_at
+	with a new message.
+	* tree-data-ref.h: Include "opt-problem.h".
+	(dr_analyze_innermost): Convert return type from bool to opt_result,
+	and add a const gimple * param.
+	(find_data_references_in_stmt): Convert return type from bool to
+	opt_result.
+	(runtime_alias_check_p): Likewise.
+	* tree-predcom.c (find_looparound_phi): Pass "init_stmt" to
+	dr_analyze_innermost.
+	* tree-vect-data-refs.c (vect_mark_for_runtime_alias_test):
+	Convert return type from bool to opt_result, adding a message for
+	the PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS zero case.
+	(vect_analyze_data_ref_dependence): Convert return type from bool
+	to opt_result.  Change sense of return type from "false"
+	effectively meaning "no problems" to "false" meaning a problem,
+	so that "return false" becomes "return opt_result::success".
+	Convert "return true" calls to opt_result::failure_at, using
+	the location of statement A rather than vect_location.
+	(vect_analyze_data_ref_dependences): Convert return type from bool
+	to opt_result.
+	(verify_data_ref_alignment): Likewise, converting dump_printf_loc
+	calls to opt_result::failure_at, using the stmt location rather
+	than vect_location.
+	(vect_verify_datarefs_alignment): Convert return type from bool
+	to opt_result.
+	(vect_enhance_data_refs_alignment): Likewise.  Split local "stat"
+	into multiple more-tightly-scoped copies.
+	(vect_analyze_data_refs_alignment): Convert return type from bool
+	to opt_result.
+	(vect_analyze_data_ref_accesses): Likewise, converting a
+	"return false" to a "return opt_result::failure_at", adding a
+	new message.
+	(vect_prune_runtime_alias_test_list): Convert return type from
+	bool to opt_result, converting dump_printf_loc to
+	opt_result::failure_at.  Add a %G to show the pertinent statement,
+	and use the stmt's location rather than vect_location.
+	(vect_find_stmt_data_reference): Convert return type from
+	bool to opt_result, converting dump_printf_loc to
+	opt_result::failure_at, using stmt's location.
+	(vect_analyze_data_refs):  Convert return type from bool to
+	opt_result.  Convert "return false" to "return
+	opt_result::failure_at", adding messages as needed.
+	* tree-vect-loop.c (vect_determine_vf_for_stmt_1): Convert return
+	type from bool to opt_result.
+	(vect_determine_vf_for_stmt): Likewise.
+	(vect_determine_vectorization_factor): Likewise, converting
+	dump_printf_loc to opt_result::failure_at, using location of phi
+	rather than vect_location.
+	(vect_analyze_loop_form_1): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls, retaining the use of
+	vect_location.
+	(vect_analyze_loop_form): Convert return type from loop_vec_info
+	to opt_loop_vec_info.
+	(vect_analyze_loop_operations): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls, using the location
+	of phi/stmt rather than vect_location where available.  Convert
+	various "return false" to "return opt_result::failure_at" with
+	"unsupported phi" messages.
+	(vect_get_datarefs_in_loop): Convert return type from bool to
+	opt_result.  Add a message for the
+	PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS failure.
+	(vect_analyze_loop_2): Convert return type from bool to
+	opt_result.  Ensure "ok" is set to a opt_result::failure_at before
+	each "goto again;", adding new messages where needed.
+	Add "unsupported grouped {store|load}" messages.
+	(vect_analyze_loop): Convert return type from loop_vec_info to
+	opt_loop_vec_info.
+	* tree-vect-slp.c (vect_analyze_slp): Convert return type from
+	bool to opt_result.
+	* tree-vect-stmts.c (process_use): Likewise, converting
+	dump_printf_loc call and using stmt location, rather than
+	vect_location.
+	(vect_mark_stmts_to_be_vectorized): Likeise.
+	(vect_analyze_stmt): Likewise, adding a %G.
+	(vect_get_vector_types_for_stmt): Convert return type from bool to
+	opt_result, converting dump_printf_loc calls and using stmt
+	location, rather than vect_location.
+	(vect_get_mask_type_for_stmt): Convert return type from tree to
+	opt_tree, converting dump_printf_loc calls and using stmt location.
+	* tree-vectorizer.c: Include "opt-problem.h.
+	(try_vectorize_loop_1): Flag "Analyzing loop at" dump message as
+	MSG_PRIORITY_INTERNALS.  Convert local "loop_vinfo" from
+	loop_vec_info to opt_loop_vec_info.  If if fails, and dumping is
+	enabled, use it to report at the top level "couldn't vectorize
+	loop" followed by the problem.
+	* tree-vectorizer.h (opt_loop_vec_info): New typedef.
+	(vect_mark_stmts_to_be_vectorized): Convert return type from bool
+	to opt_result.
+	(vect_analyze_stmt): Likewise.
+	(vect_get_vector_types_for_stmt): Likewise.
+	(tree vect_get_mask_type_for_stmt): Likewise.
+	(vect_analyze_data_ref_dependences): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_analyze_data_refs_alignment): Likewise.
+	(vect_verify_datarefs_alignment): Likewise.
+	(vect_analyze_data_ref_accesses): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	(vect_find_stmt_data_reference): Likewise.
+	(vect_analyze_data_refs): Likewise.
+	(vect_analyze_loop): Convert return type from loop_vec_info to
+	opt_loop_vec_info.
+	(vect_analyze_loop_form): Likewise.
+	(vect_analyze_slp): Convert return type from bool to opt_result.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fopt-info): Document new "internals"
+	sub-option.
+	* dump-context.h (dump_context::apply_dump_filter_p): New decl.
+	* dumpfile.c (dump_options): Update for renaming of MSG_ALL to
+	MSG_ALL_KINDS.
+	(optinfo_verbosity_options): Add "internals".
+	(kind_as_string): Update for renaming of MSG_ALL to MSG_ALL_KINDS.
+	(dump_context::apply_dump_filter_p): New member function.
+	(dump_context::dump_loc): Use apply_dump_filter_p rather than
+	explicitly masking the dump_kind.
+	(dump_context::begin_scope): Increment the scope depth first.  Use
+	apply_dump_filter_p rather than explicitly masking the dump_kind.
+	(dump_context::emit_item): Use apply_dump_filter_p rather than
+	explicitly masking the dump_kind.
+	(dump_dec): Likewise.
+	(dump_hex): Likewise.
+	(dump_switch_p_1): Default to MSG_ALL_PRIORITIES.
+	(opt_info_switch_p_1): Default to MSG_PRIORITY_USER_FACING.
+	(opt_info_switch_p): Update handling of default
+	MSG_OPTIMIZED_LOCATIONS to cope with default of
+	MSG_PRIORITY_USER_FACING.
+	(dump_basic_block): Use apply_dump_filter_p rather than explicitly
+	masking the dump_kind.
+	(selftest::test_capture_of_dump_calls): Update test_dump_context
+	instances to use MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING rather
+	than MSG_ALL.  Generalize scope test to be run at all four
+	combinations of with/without MSG_PRIORITY_USER_FACING and
+	MSG_PRIORITY_INTERNALS, adding examples of explicit priority
+	for each of the two values.
+	* dumpfile.h (enum dump_flag): Add comment about the MSG_* flags.
+	Rename MSG_ALL to MSG_ALL_KINDS.  Add MSG_PRIORITY_USER_FACING,
+	MSG_PRIORITY_INTERNALS, and MSG_ALL_PRIORITIES, updating the
+	values for TDF_COMPARE_DEBUG and TDF_ALL_VALUES.
+	(AUTO_DUMP_SCOPE): Add a note to the comment about the interaction
+	with MSG_PRIORITY_*.
+	* tree-vect-loop-manip.c (vect_loop_versioning): Mark versioning
+	dump messages as MSG_PRIORITY_USER_FACING.
+	* tree-vectorizer.h (DUMP_VECT_SCOPE): Add a note to the comment
+	about the interaction with MSG_PRIORITY_*.
+
+2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* varasm.c (output_constant): Add new parameter merge_strings.
+	Make strings properly zero terminated in merge string sections.
+	(mergeable_string_section): Don't fail if the last char is non-zero.
+	(assemble_variable_contents): Handle merge string sections.
+	(assemble_variable): Likewise.
+	(assemble_constant_contents): Likewise.
+	(output_constant_def_contents): Likewise.
+	(output_constructor_array_range,
+	output_constructor_regular_field): Adjust call to output_constant.
+	(output_object_block): Adjust call to assemble_constant_contents
+	and assemble_variable_contents.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR c/87483
+	* cgraphunit.c (process_function_and_variable_attributes):
+	Warn about a function with alias attribute and a body.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82625
+	* multiple_target.c (redirect_to_specific_clone): New function.
+	(ipa_target_clone): Use it.
+	* tree-inline.c: Fix comment.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* dumpfile.c (gcc::dump_manager::dump_manager): Initialize new
+	fields.
+	(gcc::dump_manager::~dump_manager): Free m_optinfo_filename.
+	(gcc::dump_manager::register_pass): New member function, adapted
+	from loop body in gcc::pass_manager::register_pass, adding a
+	call to update_dfi_for_opt_info.
+	(gcc::dump_manager::opt_info_enable_passes): Store the
+	-fopt-info options into the new fields.  Move the loop
+	bodies into...
+	(gcc::dump_manager::update_dfi_for_opt_info): ...this new member
+	function.
+	* dumpfile.h (struct opt_pass): New forward decl.
+	(gcc::dump_manager::register_pass): New decl.
+	(gcc::dump_manager::update_dfi_for_opt_info): New decl.
+	(class gcc::dump_manager): Add fields "m_optgroup_flags",
+	"m_optinfo_flags", and "m_optinfo_filename".
+	* passes.c (gcc::pass_manager::register_pass): Move all of the
+	dump-handling code to gcc::dump_manager::register_pass.
+
+2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87466
+	* target.def (setjmp_preserves_nonvolatile_regs_p): New target hook.
+	* doc/tm.texi.in (TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P): New hook.
+	* doc/tm.texi: Regenerate.
+	* ira-lives.c (process_bb_node_lives): Use the new target hook.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* config/rs6000/rs6000.c (TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P):
+	Define.
+
+2018-10-04  Tamar Christina  <tamar.christina@arm.com>
+
+	* params.c (add_params): Fix initialization.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84107
+	* tree-profile.c (init_ic_make_global_vars):
+	Remove ic_void_ptr_var and ic_gcov_type_ptr_var.
+	Come up with new ic_tuple* variables.  Emit
+	__gcov_indirect_call{,_topn} variables.
+	(gimple_gen_ic_profiler): Access the variable
+	and emit gimple.
+	(gimple_gen_ic_func_profiler): Access
+	__gcov_indirect_call.callee field.
+	(gimple_init_gcov_profiler): Use ptr_type_node.
+	* value-prof.c (gimple_ic): Use ptr_type_node.
+
+2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/85787
+	* ipa-pure-const.c (malloc_candidate_p_1): Move most of malloc_candidate_p
+	into this function and add support for detecting multiple phis.
+	(DUMP_AND_RETURN): Move from malloc_candidate_p into top-level macro.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/87491
+	* ipa-inline.c (inline_to_all_callers_1):
+	Call ultimate_alias_target for node being inlined.
+
+2018-10-03  Jeff Law  <law@redhat.com>
+
+        * gimple-ssa-sprintf.c (format_string): Do not hardcode size of
+        target's wchar_t.
+        * tree.c (get_typenode_from_name): Moved from fortran/trans-types.c.
+        * tree.h (get_typenode_from_name): Prototype.
+
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*cmp<X87MODEF:mode>_<SWI24:mode>_i387):
+	Change operand 2 predicate to nonimmediate_operand.
+	(*cmp<X87MODEF:mode>_<SWI24:mode>_cc_i387): Ditto.
+
+2018-10-03  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gimple-ssa-sprintf.c (struct fmtresult): Add new member and
+	initialize it.
+	(get_string_length): Detect unterminated arrays.
+	(format_string): Same.
+	(format_directive): Warn about unterminated arrays.
+	(handle_gimple_call): Mark statements with no_warning as needed.
+
+2018-10-03  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv-c.c (riscv_cpu_cpp_builtins): For ABI_ILP32E,
+	also define __riscv_abi_rve.  Delete trailing white space.
+
+2018-10-03  Paul Koning  <ni1d@arrl.net>
+
+	Enable LRA register allocator for PDP11.
+	* config/pdp11/constraints.md (Q): Use define_memory_constraint.
+	(R): Likewise.
+	(D): Likewise.
+	* config/pdp11/pdp11.c (pdp11_lra_p): New function.
+	* config/pdp11/pdp11.opt (-mlra): New option.
+	* doc/invoke.texi (PDP-11 Options): Document -mlra.
+
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*<absneg:code>extendsfdf2): Remove.
+	(*<absneg:code>extend<mode>xf2): Ditto.
+
+2018-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR tree-optimization/87415
+	* tree-vrp.c (set_value_range_with_overflow): Special case one bit
+	precision fields.
+
+2018-10-02  Jeff Law  <law@redhat.com>
+
+	* gimple-fold.c (get_range_strlen): Only set *nonstr when
+	an unterminated string is discovered.  Bubble up range
+	even for unterminated strings.
+	(gimple_fold_builtin_strlen): Do not fold if get_range_strlen
+	indicates the string was not terminated via NONSTR.
+
+2018-10-03  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (extract_range_from_unary_expr): Special case all
+	pointer conversions.
+	Do not do anything special for anti-ranges.
+
+2018-10-03  Jérôme Lambourg  <lambourg@adacore.com>
+
+	* config/arm/vxworks.h (ARM_TARGET2_DWARF_FORMAT): Adjust to
+	DW_EH_PE_pcrel | DW_EH_PE_indirect for RTPs.
+
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* coverage.c (coverage_begin_function): Do not
+	mark lambdas as artificial.
+	* tree-core.h (struct GTY): Remove tm_clone_flag
+	and introduce new lambda_function.
+	* tree.h (DECL_LAMBDA_FUNCTION): New macro.
+
+2018-10-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	PR target/87474
+	* config/rs6000/rs6000-string.c (expand_strn_compare): Check that both
+	P8_VECTOR and VSX are enabled.
+
+2018-10-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Add
+	0x3907 as CPU model number.
+
+2018-10-02  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* common/config/s390/s390-common.c: Rename PF_ARCH12 to PF_Z14.
+	* config/s390/s390.h (enum processor_flags): Rename PF_ARCH12 to
+	PF_Z14.  Rename TARGET_CPU_ARCH12 to TARGET_CPU_Z14,
+	TARGET_CPU_ARCH12_P to TARGET_CPU_Z14_P, TARGET_ARCH12 to
+	TARGET_Z14, and TARGET_ARCH12_P to TARGET_Z14_P.
+	* config/s390/s390.md: Likewise. Rename also the cpu attribute
+	value from arch12 to z14.
+
+2018-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (fxam<mode>2_i387_with_temp): Remove.
+	(isinfxf2): Ditto.
+	(isinf<mode>2): Ditto.
+
+2018-10-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_i387_round): Extend op1 to XFmode
+	before emitting fxam.  Perform calculations in XFmode.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	* match.pd (((X /[ex] A) +- B) * A): New transformation.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR middle-end/87319
+	* fold-const.c (fold_plusminus_mult_expr): Handle complex and vectors.
+	* tree.c (signed_or_unsigned_type_for): Handle complex.
+
+2018-10-02  Jeff Law  <law@redhat.com>
+
+	* gimple-fold.c (get_range_strlen): Remove dead code.
+
+2018-10-02  Martin Sebor  <msebor@redhat.com>
+	    Jeff Law  <law@redhat.com>
+
+	* builtins.c (unterminated_array): Add new arguments.
+	If argument is not terminated, bubble up size and exact
+	state to callers.
+	(expand_builtin_strnlen): Detect, avoid expanding
+	and diagnose unterminated arrays.
+	(c_strlen): Fill in offset of start of unterminated strings.
+	* builtins.h (unterminated_array): Update prototype.
+
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/sse.md (reduc_plus_scal_v4df): Avoid the use
+	of haddv4df, first reduce to SSE width and exploit the fact
+	that we only need element zero with the reduction result.
+	(reduc_plus_scal_v2df): Likewise.
+
+2018-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dojump.h (do_jump): Delete.
+	(do_jump_1): Likewise.
+	(split_comparison): Move around.
+	* dojump.c (do_jump): Make static.
+	(do_jump_1): Likewise.
+	(jumpifnot): Move around.
+	(jumpifnot_1): Likewise.
+	(jumpif): Likewise.
+	(jumpif_1): Likewise.
+	* expr.c (expand_expr_real_1): Call jumpif[not] instead of do_jump.
+
+2018-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* reorg.c (make_return_insns): Use emit_copy_of_insn_after for the
+	insns in the delay slot and add_insn_after for the jump insn.
+
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Use the location of
+	the callee declaration for the inline-entry marker.
+	* final.c (notice_source_line): Remove special-casing of
+	NOTE_INSN_INLINE_ENTRY.
+
+2018-10-01  Carl Love  <cel@us.ibm.com>
+
+	PR 69431
+	* config/rs6000/rs6000-builtin.def (__builtin_mffsl): New.
+	(__builtin_mtfsb0): New.
+	(__builtin_mtfsb1): New.
+	( __builtin_set_fpscr_rn): New.
+	(__builtin_set_fpscr_drn): New.
+	* config/rs6000/rs6000.c (rs6000_expand_mtfsb_builtin): Add.
+	(rs6000_expand_set_fpscr_rn_builtin): Add.
+	(rs6000_expand_set_fpscr_drn_builtin): Add.
+	(rs6000_expand_builtin): Add case statement entries for
+	RS6000_BUILTIN_MTFSB0, RS6000_BUILTIN_MTFSB1,
+	RS6000_BUILTIN_SET_FPSCR_RN, RS6000_BUILTIN_SET_FPSCR_DRN,
+	RS6000_BUILTIN_MFFSL.
+	(rs6000_init_builtins): Add ftype initialization and def_builtin
+	calls for __builtin_mffsl, __builtin_mtfsb0, __builtin_mtfsb1,
+	__builtin_set_fpscr_rn, __builtin_set_fpscr_drn.
+	* config/rs6000.md (rs6000_mtfsb0, rs6000_mtfsb1, rs6000_mffscrn,
+	rs6000_mffscdrn): Add define_insn.
+	(rs6000_set_fpscr_rn, rs6000_set_fpscr_drn): Add define_expand.
+	* doc/extend.texi: Add documentation for the builtins.
+
+2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87465
+	* tree-ssa-loop-ivcanon.c (tree_estimate_loop_size): Fix typo
+	causing branch miscounts.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* common/config/aarch64/aarch64-common.c (TARGET_OPTION_DEFAULT_PARAM,
+	aarch64_option_default_param):	New.
+	(params.h): Include.
+	(TARGET_OPTION_VALIDATE_PARAM, aarch64_option_validate_param): New.
+	* config/aarch64/aarch64.c (aarch64_override_options_internal): Simplify
+	stack-clash protection validation code.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* params.c (validate_param): New.
+	(add_params): Use it.
+	(set_param_value): Refactor param validation into validate_param.
+	(diagnostic.h): Include.
+	* diagnostic.h (diagnostic_ready_p): New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* params.c (set_param_value):
+	Add index of parameter being validated.
+	* common/common-target.def (option_validate_param): New.
+	* common/common-targhooks.h (default_option_validate_param): New.
+	* common/common-targhooks.c (default_option_validate_param): New.
+	* doc/tm.texi.in (TARGET_OPTION_VALIDATE_PARAM): New.
+	* doc/tm.texi: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.c (aarch64_override_options_internal):
+	Add validation for stack-clash parameters and set defaults.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* configure.ac: Add stack-clash-protection-guard-size.
+	* doc/install.texi: Document it.
+	* config.in (DEFAULT_STK_CLASH_GUARD_SIZE): New.
+	* params.def: Update comment for guard-size.
+	(PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+	PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL): Update description.
+	* configure: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.h (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,
+	STACK_DYNAMIC_OFFSET): New.
+	* config/aarch64/aarch64.c (aarch64_layout_frame):
+	Update outgoing args size.
+	(aarch64_stack_clash_protection_alloca_probe_range,
+	TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE): New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* explow.c (anti_adjust_stack_and_probe_stack_clash): Support custom
+	probe ranges.
+	* target.def (stack_clash_protection_alloca_probe_range): New.
+	(stack_clash_protection_final_dynamic_probe): Remove.
+	* targhooks.h (default_stack_clash_protection_alloca_probe_range) New.
+	(default_stack_clash_protection_final_dynamic_probe): Remove.
+	* targhooks.c: Likewise.
+	* doc/tm.texi.in (TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE): New.
+	(TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE): Remove.
+	* doc/tm.texi: Regenerate.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64-protos.h (aarch64_output_probe_sve_stack_clash): New.
+	* config/aarch64/aarch64.c (aarch64_output_probe_sve_stack_clash,
+	aarch64_clamp_to_uimm12_shift): New.
+	(aarch64_allocate_and_probe_stack_space): Add SVE specific section.
+	* config/aarch64/aarch64.md (probe_sve_stack_clash): New.
+
+2018-10-01  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.c (aarch64_layout_frame): Add assert.
+
+2018-10-01  Jeff Law  <law@redhat.com>
+	    Richard Sandiford <richard.sandiford@linaro.org>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/86486
+	* config/aarch64/aarch64.md
+	(probe_stack_range): Add k (SP) constraint.
+	* config/aarch64/aarch64.h (STACK_CLASH_CALLER_GUARD,
+	STACK_CLASH_MAX_UNROLL_PAGES): New.
+	* config/aarch64/aarch64.c (aarch64_output_probe_stack_range): Emit
+	stack probes for stack clash.
+	(aarch64_allocate_and_probe_stack_space): New.
+	(aarch64_expand_prologue): Use it.
+	(aarch64_expand_epilogue): Likewise and update IP regs re-use criteria.
+	(aarch64_sub_sp): Add emit_move_imm optional param.
+
+2018-10-01  MCC CS <deswurstes@users.noreply.github.com>
+
+	PR tree-optimization/87261
+	* match.pd: Remove trailing whitespace.
+	Add (x & y) | ~(x | y) -> ~(x ^ y),
+	(~x | y) ^ (x ^ y) -> x | ~y and (x ^ y) | ~(x | y) -> ~(x & y)
+
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (*add_n): Clean up pattern, update instruction
+	constraints.
+	(ashlsi3_insn): Update instruction constraints.
+	(ashrsi3_insn): Likewise.
+	(rotrsi3): Likewise.
+	(add_shift): Likewise.
+	* config/arc/constraints.md (Csz): New 32 bit constraint. It
+	avoids placing in the limm field small constants which, otherwise,
+	could end into a small instruction.
+
+2018-10-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (maddsidi4_split): Don't use dmac if the
+	destination register is not odd-even.
+	(umaddsidi4_split): Likewise.
+
+2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (expand_call_inline): Store origin of fn
+	in BLOCK_ABSTRACT_ORIGIN for the inline BLOCK.
+	* tree.c (block_ultimate_origin): Simplify and do some
+	checking.
+
 2018-09-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/mmx.md (EMMS): New int iterator.

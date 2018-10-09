@@ -906,6 +906,7 @@ enable_valgrind_annotations
 with_stabs
 enable_multilib
 enable_multiarch
+with_stack_clash_protection_guard_size
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -1727,6 +1728,9 @@ Optional Packages:
   --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
+  --with-stack-clash-protection-guard-size=size
+                          Set the default stack clash protection guard size
+                          for specific targets as a power of two in bytes.
   --with-dwarf2           force the default debug format to be DWARF 2
   --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
@@ -7437,6 +7441,34 @@ $as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
 
 # needed for setting the multiarch name for soft-float/hard-float ABIs
 
+
+
+# default stack clash protection guard size as power of twos in bytes.
+# Please keep these in sync with params.def.
+stk_clash_min=12
+stk_clash_max=30
+
+# Keep the default value when the option is not used to 0, this allows us to
+# distinguish between the cases where the user specifially set a value via
+# configure and when the normal default value is used.
+
+# Check whether --with-stack-clash-protection-guard-size was given.
+if test "${with_stack_clash_protection_guard_size+set}" = set; then :
+  withval=$with_stack_clash_protection_guard_size; DEFAULT_STK_CLASH_GUARD_SIZE="$with_stack_clash_protection_guard_size"
+else
+  DEFAULT_STK_CLASH_GUARD_SIZE=0
+fi
+
+if test $DEFAULT_STK_CLASH_GUARD_SIZE -ne 0 \
+     && (test $DEFAULT_STK_CLASH_GUARD_SIZE -lt $stk_clash_min \
+	 || test $DEFAULT_STK_CLASH_GUARD_SIZE -gt $stk_clash_max); then
+  as_fn_error "Invalid value $DEFAULT_STK_CLASH_GUARD_SIZE for --with-stack-clash-protection-guard-size. Must be between $stk_clash_min and $stk_clash_max." "$LINENO" 5
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_STK_CLASH_GUARD_SIZE $DEFAULT_STK_CLASH_GUARD_SIZE
+_ACEOF
 
 
 # Enable __cxa_atexit for C++.
@@ -18465,7 +18497,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18468 "configure"
+#line 18500 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18571,7 +18603,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18574 "configure"
+#line 18606 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -1020,13 +1020,18 @@ get_underlying_decl (tree type)
   if (DECL_P (type))
     return type;
 
-  /* type is a typedef.  */
-  if (TYPE_P (type) && TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
-    return TYPE_NAME (type);
+  if (TYPE_P (type))
+    {
+      type = TYPE_MAIN_VARIANT (type);
 
-  /* TYPE_STUB_DECL has been set for type.  */
-  if (TYPE_P (type) && TYPE_STUB_DECL (type))
-    return TYPE_STUB_DECL (type);
+      /* type is a typedef.  */
+      if (TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
+	return TYPE_NAME (type);
+
+      /* TYPE_STUB_DECL has been set for type.  */
+      if (TYPE_STUB_DECL (type))
+	return TYPE_STUB_DECL (type);
+    }
 
   return NULL_TREE;
 }
@@ -2143,8 +2148,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	}
       else
 	{
+	  const unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
 	  bool is_access = false;
-	  unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
 
 	  if (VOID_TYPE_P (TREE_TYPE (node)))
 	    {

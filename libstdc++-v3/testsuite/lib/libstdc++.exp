@@ -239,7 +239,7 @@ proc libstdc++_init { testfile } {
 
     # Default settings.
     set cxx [transform "g++"]
-    set cxxflags "-fmessage-length=0"
+    set cxxflags "-fmessage-length=0 -fno-show-column"
     set cxxpchflags ""
     set cxxvtvflags ""
     set cxxldflags ""

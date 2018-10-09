@@ -1423,6 +1423,7 @@ OBJS = \
 	omp-grid.o \
 	omp-low.o \
 	omp-simd-clone.o \
+	opt-problem.o \
 	optabs.o \
 	optabs-libfuncs.o \
 	optabs-query.o \

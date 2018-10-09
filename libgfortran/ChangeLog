@@ -1,3 +1,28 @@
+2018-10-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (compare_file_filename): Use gfc_charlen_type instead
+	of int for string length.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_access): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+	* io/unix.h (compare_file_filename): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+
+2018-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* io/close.c [!HAVE_UNLINK_OPEN_FILE]: Include <string.h>.
+
 2018-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* config.h.in: Regenerated.

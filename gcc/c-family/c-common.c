@@ -7470,8 +7470,11 @@ vector_types_compatible_elements_p (tree t1, tree t2)
 
   enum tree_code c1 = TREE_CODE (t1), c2 = TREE_CODE (t2);
 
-  gcc_assert ((c1 == INTEGER_TYPE || c1 == REAL_TYPE || c1 == FIXED_POINT_TYPE)
-	      && (c2 == INTEGER_TYPE || c2 == REAL_TYPE
+  gcc_assert ((INTEGRAL_TYPE_P (t1)
+	       || c1 == REAL_TYPE
+	       || c1 == FIXED_POINT_TYPE)
+	      && (INTEGRAL_TYPE_P (t2)
+		  || c2 == REAL_TYPE
 		  || c2 == FIXED_POINT_TYPE));
 
   t1 = c_common_signed_type (t1);
@@ -7481,7 +7484,7 @@ vector_types_compatible_elements_p (tree t1, tree t2)
   if (t1 == t2)
     return true;
   if (opaque && c1 == c2
-      && (c1 == INTEGER_TYPE || c1 == REAL_TYPE)
+      && (INTEGRAL_TYPE_P (t1) || c1 == REAL_TYPE)
       && TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
     return true;
   return false;

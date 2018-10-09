@@ -251,7 +251,11 @@ test_multitoken_macro (void)
 /* { dg-begin-multiline-output "" }
  #define RANGE ("0123456789")
                ^~~~~~~~~~~~~~
-   { dg-end-multiline-output "" } */
+   { dg-end-multiline-output "" { target c } } */
+/* { dg-begin-multiline-output "" }
+ #define RANGE ("0123456789")
+               ~^~~~~~~~~~~~~
+   { dg-end-multiline-output "" { target c++ } } */
 /* { dg-begin-multiline-output "" }
    __emit_string_literal_range (RANGE, 4, 3, 6);
                                 ^~~~~

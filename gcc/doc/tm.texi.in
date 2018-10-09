@@ -729,6 +729,8 @@ options are changed via @code{#pragma GCC optimize} or by using the
 
 @hook TARGET_OPTION_DEFAULT_PARAMS
 
+@hook TARGET_OPTION_VALIDATE_PARAM
+
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -2841,7 +2843,7 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
-@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
+@hook TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE
 
 @need 2000
 @node Frame Registers
@@ -7506,6 +7508,8 @@ You need not define this macro if it would always have the value of zero.
 @hook TARGET_TRULY_NOOP_TRUNCATION
 
 @hook TARGET_MODE_REP_EXTENDED
+
+@hook TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
 
 @defmac STORE_FLAG_VALUE
 A C expression describing the value returned by a comparison operator

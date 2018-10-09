@@ -869,14 +869,6 @@ check_retval_uses (tree retval, gimple *stmt)
       and return_stmt (and likewise a phi arg has immediate use only within comparison
       or the phi stmt).  */
 
-static bool
-malloc_candidate_p (function *fun, bool ipa)
-{
-  basic_block exit_block = EXIT_BLOCK_PTR_FOR_FN (fun);
-  edge e;
-  edge_iterator ei;
-  cgraph_node *node = cgraph_node::get_create (fun->decl);
-
 #define DUMP_AND_RETURN(reason)  \
 {  \
   if (dump_file && (dump_flags & TDF_DETAILS))  \
@@ -884,6 +876,96 @@ malloc_candidate_p (function *fun, bool ipa)
 	     (node->name()), (reason));  \
   return false;  \
 }
+
+static bool
+malloc_candidate_p_1 (function *fun, tree retval, gimple *ret_stmt, bool ipa)
+{
+  cgraph_node *node = cgraph_node::get_create (fun->decl);
+
+  if (!check_retval_uses (retval, ret_stmt))
+    DUMP_AND_RETURN("Return value has uses outside return stmt"
+		    " and comparisons against 0.")
+
+  gimple *def = SSA_NAME_DEF_STMT (retval);
+
+  if (gcall *call_stmt = dyn_cast<gcall *> (def))
+    {
+      tree callee_decl = gimple_call_fndecl (call_stmt);
+      if (!callee_decl)
+	return false;
+
+      if (!ipa && !DECL_IS_MALLOC (callee_decl))
+	DUMP_AND_RETURN("callee_decl does not have malloc attribute for"
+			" non-ipa mode.")
+
+      cgraph_edge *cs = node->get_edge (call_stmt);
+      if (cs)
+	{
+	  ipa_call_summary *es = ipa_call_summaries->get_create (cs);
+	  es->is_return_callee_uncaptured = true;
+	}
+    }
+
+    else if (gphi *phi = dyn_cast<gphi *> (def))
+      {
+	bool all_args_zero = true;
+	for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	  {
+	    tree arg = gimple_phi_arg_def (phi, i);
+	    if (integer_zerop (arg))
+	      continue;
+
+	    all_args_zero = false;
+	    if (TREE_CODE (arg) != SSA_NAME)
+	      DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
+	    if (!check_retval_uses (arg, phi))
+	      DUMP_AND_RETURN ("phi arg has uses outside phi"
+				 " and comparisons against 0.")
+
+	    gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	    if (is_a<gphi *> (arg_def))
+	      {
+		if (!malloc_candidate_p_1 (fun, arg, phi, ipa))
+		    DUMP_AND_RETURN ("nested phi fail")
+		continue;
+	      }
+
+	    gcall *call_stmt = dyn_cast<gcall *> (arg_def);
+	    if (!call_stmt)
+	      DUMP_AND_RETURN ("phi arg is a not a call_stmt.")
+
+	    tree callee_decl = gimple_call_fndecl (call_stmt);
+	    if (!callee_decl)
+	      return false;
+	    if (!ipa && !DECL_IS_MALLOC (callee_decl))
+	      DUMP_AND_RETURN("callee_decl does not have malloc attribute"
+			      " for non-ipa mode.")
+
+	    cgraph_edge *cs = node->get_edge (call_stmt);
+	    if (cs)
+	      {
+		ipa_call_summary *es = ipa_call_summaries->get_create (cs);
+		es->is_return_callee_uncaptured = true;
+	      }
+	  }
+
+	if (all_args_zero)
+	  DUMP_AND_RETURN ("Return value is a phi with all args equal to 0.")
+      }
+
+    else
+      DUMP_AND_RETURN("def_stmt of return value is not a call or phi-stmt.")
+
+  return true;
+}
+
+static bool
+malloc_candidate_p (function *fun, bool ipa)
+{
+  basic_block exit_block = EXIT_BLOCK_PTR_FOR_FN (fun);
+  edge e;
+  edge_iterator ei;
+  cgraph_node *node = cgraph_node::get_create (fun->decl);
 
   if (EDGE_COUNT (exit_block->preds) == 0
       || !flag_delete_null_pointer_checks)
@@ -905,80 +987,17 @@ malloc_candidate_p (function *fun, bool ipa)
 	  || TREE_CODE (TREE_TYPE (retval)) != POINTER_TYPE)
 	DUMP_AND_RETURN("Return value is not SSA_NAME or not a pointer type.")
 
-      if (!check_retval_uses (retval, ret_stmt))
-	DUMP_AND_RETURN("Return value has uses outside return stmt"
-			" and comparisons against 0.")
-
-      gimple *def = SSA_NAME_DEF_STMT (retval);
-      if (gcall *call_stmt = dyn_cast<gcall *> (def))
-	{
-	  tree callee_decl = gimple_call_fndecl (call_stmt);
-	  if (!callee_decl)
-	    return false;
-
-	  if (!ipa && !DECL_IS_MALLOC (callee_decl))
-	    DUMP_AND_RETURN("callee_decl does not have malloc attribute for"
-			    " non-ipa mode.")
-
-	  cgraph_edge *cs = node->get_edge (call_stmt);
-	  if (cs)
-	    {
-	      ipa_call_summary *es = ipa_call_summaries->get_create (cs);
-	      es->is_return_callee_uncaptured = true;
-	    }
-	}
-
-      else if (gphi *phi = dyn_cast<gphi *> (def))
-	{
-	  bool all_args_zero = true;
-	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
-	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      if (integer_zerop (arg))
-		continue;
-
-	      all_args_zero = false;
-	      if (TREE_CODE (arg) != SSA_NAME)
-		DUMP_AND_RETURN ("phi arg is not SSA_NAME.");
-	      if (!check_retval_uses (arg, phi))
-		DUMP_AND_RETURN ("phi arg has uses outside phi"
-				 " and comparisons against 0.")
-
-	      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
-	      gcall *call_stmt = dyn_cast<gcall *> (arg_def);
-	      if (!call_stmt)
-		return false;
-	      tree callee_decl = gimple_call_fndecl (call_stmt);
-	      if (!callee_decl)
-		return false;
-	      if (!ipa && !DECL_IS_MALLOC (callee_decl))
-		DUMP_AND_RETURN("callee_decl does not have malloc attribute"
-				" for non-ipa mode.")
-
-	      cgraph_edge *cs = node->get_edge (call_stmt);
-	      if (cs)
-		{
-		  ipa_call_summary *es = ipa_call_summaries->get_create (cs);
-		  es->is_return_callee_uncaptured = true;
-		}
-	    }
-
-	  if (all_args_zero)
-	    DUMP_AND_RETURN ("Return value is a phi with all args equal to 0.");
-	}
-
-      else
-	DUMP_AND_RETURN("def_stmt of return value is not a call or phi-stmt.")
+      if (!malloc_candidate_p_1 (fun, retval, ret_stmt, ipa))
+	return false;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "\nFound %s to be candidate for malloc attribute\n",
 	     IDENTIFIER_POINTER (DECL_NAME (fun->decl)));
   return true;
-
-#undef DUMP_AND_RETURN
 }
 
+#undef DUMP_AND_RETURN
 
 /* This is the main routine for finding the reference patterns for
    global variables within a function FN.  */

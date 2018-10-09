@@ -496,10 +496,11 @@ bool
 backprop::intersect_uses (tree var, usage_info *info)
 {
   imm_use_iterator iter;
-  gimple *stmt;
+  use_operand_p use_p;
   *info = usage_info::intersection_identity ();
-  FOR_EACH_IMM_USE_STMT (stmt, iter, var)
+  FOR_EACH_IMM_USE_FAST (use_p, iter, var)
     {
+      gimple *stmt = USE_STMT (use_p);
       if (is_gimple_debug (stmt))
 	continue;
       gphi *phi = dyn_cast <gphi *> (stmt);
@@ -523,10 +524,7 @@ backprop::intersect_uses (tree var, usage_info *info)
 	  process_use (stmt, var, &subinfo);
 	  *info &= subinfo;
 	  if (!info->is_useful ())
-	    {
-	      BREAK_FROM_IMM_USE_STMT (iter);
-	      return false;
-	    }
+	    return false;
 	}
     }
   return true;

@@ -55,6 +55,13 @@
 #endif
 
 
+/* Define to larger than zero set to the default stack clash protector size as
+   a power of two in bytes. */
+#ifndef USED_FOR_TARGET
+#undef DEFAULT_STK_CLASH_GUARD_SIZE
+#endif
+
+
 /* Define if you want to use __cxa_atexit, rather than atexit, to register C++
    destructors for local statics and global objects. This is essential for
    fully standards-compliant handling of destructors, but requires

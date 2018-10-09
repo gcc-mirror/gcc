@@ -1,3 +1,46 @@
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* pt.c (do_decl_instantiation): Per 12.6.8/5, a concept cannot be
+	explicitly instantiated.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* call.c (build_over_call): Build a vec of locations of the
+	arguments before the call to maybe_constant_value, and pass to
+	check_function_arguments.
+	* cp-lang.c (LANG_HOOKS_GET_SUBSTRING_LOCATION): Define as
+	c_get_substring_location.
+	* parser.c (cp_parser_string_literal): Capture string
+	concatenation locations.
+
+2018-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* lang-specs.h: Use string contatenation, not line splicing.
+
+2018-10-03  Jason Merrill  <jason@redhat.com>
+
+	Implement P0840, language support for empty objects.
+	* tree.c (handle_no_unique_addr_attribute): New.
+	(cxx_attribute_table): Add [[no_unique_address]].
+	* class.c (field_poverlapping_p): New.
+	(layout_class_type): Check it.  Adjust DECL_SIZE of potentially
+	overlapping fields.
+	(layout_empty_base_or_field): Rename from layout_empty_base, handle
+	FIELD_DECL as well.
+	(build_base_field, record_subobject_offsets): Adjust.
+
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* parser.c (cp_parser_lambda_declarator_opt):
+	Set DECL_LAMBDA_FUNCTION for lambdas.
+
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* name-lookup.c (check_local_shadow): Do not test DECL_FROM_INLINE.
+
 2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
             Pierre-Marie de Rodat  <derodat@adacore.com>
 

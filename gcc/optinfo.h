@@ -108,6 +108,9 @@ class optinfo
   {}
   ~optinfo ();
 
+  const dump_location_t &
+  get_dump_location () const { return m_loc; }
+
   const dump_user_location_t &
   get_user_location () const { return m_loc.get_user_location (); }
 
@@ -124,8 +127,10 @@ class optinfo
 
   void add_item (optinfo_item *item);
 
+  void emit_for_opt_problem () const;
+
  private:
-  void emit ();
+  void emit () const;
 
   /* Pre-canned ways of manipulating the optinfo, for use by friend class
      dump_context.  */

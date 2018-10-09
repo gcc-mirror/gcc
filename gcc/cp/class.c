@@ -180,8 +180,6 @@ static tree build_vtable (tree, tree, tree);
 static void initialize_vtable (tree, vec<constructor_elt, va_gc> *);
 static void layout_nonempty_base_or_field (record_layout_info,
 					   tree, tree, splay_tree);
-static tree end_of_class (tree, int);
-static bool layout_empty_base (record_layout_info, tree, tree, splay_tree);
 static void accumulate_vtbl_inits (tree, tree, tree, tree, tree,
 				   vec<constructor_elt, va_gc> **);
 static void dfs_accumulate_vtbl_inits (tree, tree, tree, tree, tree,
@@ -202,7 +200,6 @@ static int record_subobject_offset (tree, tree, splay_tree);
 static int check_subobject_offset (tree, tree, splay_tree);
 static int walk_subobject_offsets (tree, subobject_offset_fn,
 				   tree, splay_tree, tree, int);
-static void record_subobject_offsets (tree, tree, splay_tree, bool);
 static int layout_conflict_p (tree, tree, splay_tree, int);
 static int splay_tree_compare_integer_csts (splay_tree_key k1,
 					    splay_tree_key k2);
@@ -3960,20 +3957,52 @@ walk_subobject_offsets (tree type,
   return 0;
 }
 
-/* Record all of the empty subobjects of TYPE (either a type or a
-   binfo).  If IS_DATA_MEMBER is true, then a non-static data member
-   is being placed at OFFSET; otherwise, it is a base class that is
-   being placed at OFFSET.  */
+/* Return true iff FIELD_DECL DECL is potentially overlapping.  */
+
+static bool
+field_poverlapping_p (tree decl)
+{
+  /* Base fields are actually potentially overlapping, but C++ bases go through
+     a different code path based on binfos, and ObjC++ base fields are laid out
+     in objc-act, so we don't want layout_class_type to mess with them.  */
+  if (DECL_FIELD_IS_BASE (decl))
+    {
+      gcc_checking_assert (c_dialect_objc ());
+      return false;
+    }
+
+  return lookup_attribute ("no_unique_address",
+			   DECL_ATTRIBUTES (decl));
+}
+
+/* Record all of the empty subobjects of DECL_OR_BINFO.  */
 
 static void
-record_subobject_offsets (tree type,
-			  tree offset,
-			  splay_tree offsets,
-			  bool is_data_member)
+record_subobject_offsets (tree decl_or_binfo,
+			  splay_tree offsets)
 {
+  tree type, offset;
+  bool overlapping, vbases_p;
+
+  if (DECL_P (decl_or_binfo))
+    {
+      tree decl = decl_or_binfo;
+      type = TREE_TYPE (decl);
+      offset = byte_position (decl);
+      overlapping = field_poverlapping_p (decl);
+      vbases_p = true;
+    }
+  else
+    {
+      type = BINFO_TYPE (decl_or_binfo);
+      offset = BINFO_OFFSET (decl_or_binfo);
+      overlapping = true;
+      vbases_p = false;
+    }
+
   tree max_offset;
   /* If recording subobjects for a non-static data member or a
-     non-empty base class , we do not need to record offsets beyond
+     non-empty base class, we do not need to record offsets beyond
      the size of the biggest empty class.  Additional data members
      will go at the end of the class.  Additional base classes will go
      either at offset zero (if empty, in which case they cannot
@@ -3985,13 +4014,13 @@ record_subobject_offsets (tree type,
      other empty classes might later be placed) or at the end of the
      class (where other objects might then be placed, so other empty
      subobjects might later overlap).  */
-  if (is_data_member
-      || !is_empty_class (BINFO_TYPE (type)))
+  if (!overlapping
+      || !is_empty_class (type))
     max_offset = sizeof_biggest_empty_class;
   else
     max_offset = NULL_TREE;
   walk_subobject_offsets (type, record_subobject_offset, offset,
-			  offsets, max_offset, is_data_member);
+			  offsets, max_offset, vbases_p);
 }
 
 /* Returns nonzero if any of the empty subobjects of TYPE (located at
@@ -4151,53 +4180,78 @@ empty_base_at_nonzero_offset_p (tree type,
    type.  Return nonzero iff we added it at the end.  */
 
 static bool
-layout_empty_base (record_layout_info rli, tree binfo,
-		   tree eoc, splay_tree offsets)
+layout_empty_base_or_field (record_layout_info rli, tree binfo_or_decl,
+			    splay_tree offsets)
 {
   tree alignment;
-  tree basetype = BINFO_TYPE (binfo);
   bool atend = false;
+  tree binfo = NULL_TREE;
+  tree decl = NULL_TREE;
+  tree type;
+  if (TREE_CODE (binfo_or_decl) == TREE_BINFO)
+    {
+      binfo = binfo_or_decl;
+      type = BINFO_TYPE (binfo);
+    }
+  else
+    {
+      decl = binfo_or_decl;
+      type = TREE_TYPE (decl);
+    }
+
+  /* On some platforms (ARM), even empty classes will not be
+     byte-aligned.  */
+  tree eoc = round_up_loc (input_location,
+			   rli_size_unit_so_far (rli),
+			   CLASSTYPE_ALIGN_UNIT (type));
 
   /* This routine should only be used for empty classes.  */
-  gcc_assert (is_empty_class (basetype));
-  alignment = ssize_int (CLASSTYPE_ALIGN_UNIT (basetype));
-
-  if (!integer_zerop (BINFO_OFFSET (binfo)))
-    propagate_binfo_offsets
-      (binfo, size_diffop_loc (input_location,
-			       size_zero_node, BINFO_OFFSET (binfo)));
+  gcc_assert (is_empty_class (type));
+  alignment = size_int (CLASSTYPE_ALIGN_UNIT (type));
 
   /* This is an empty base class.  We first try to put it at offset
      zero.  */
-  if (layout_conflict_p (binfo,
-			 BINFO_OFFSET (binfo),
+  tree offset = size_zero_node;
+  if (layout_conflict_p (type,
+			 offset,
 			 offsets,
 			 /*vbases_p=*/0))
     {
       /* That didn't work.  Now, we move forward from the next
 	 available spot in the class.  */
       atend = true;
-      propagate_binfo_offsets (binfo, fold_convert (ssizetype, eoc));
+      offset = eoc;
       while (1)
 	{
-	  if (!layout_conflict_p (binfo,
-				  BINFO_OFFSET (binfo),
+	  if (!layout_conflict_p (type,
+				  offset,
 				  offsets,
 				  /*vbases_p=*/0))
 	    /* We finally found a spot where there's no overlap.  */
 	    break;
 
 	  /* There's overlap here, too.  Bump along to the next spot.  */
-	  propagate_binfo_offsets (binfo, alignment);
+	  offset = size_binop (PLUS_EXPR, offset, alignment);
 	}
     }
 
-  if (CLASSTYPE_USER_ALIGN (basetype))
+  if (CLASSTYPE_USER_ALIGN (type))
     {
-      rli->record_align = MAX (rli->record_align, CLASSTYPE_ALIGN (basetype));
+      rli->record_align = MAX (rli->record_align, CLASSTYPE_ALIGN (type));
       if (warn_packed)
-	rli->unpacked_align = MAX (rli->unpacked_align, CLASSTYPE_ALIGN (basetype));
+	rli->unpacked_align = MAX (rli->unpacked_align, CLASSTYPE_ALIGN (type));
       TYPE_USER_ALIGN (rli->t) = 1;
+    }
+
+  if (binfo)
+    /* Adjust BINFO_OFFSET (binfo) to be exactly OFFSET.  */
+    propagate_binfo_offsets (binfo,
+			     size_diffop (offset, BINFO_OFFSET (binfo)));
+  else
+    {
+      DECL_FIELD_OFFSET (decl) = offset;
+      DECL_FIELD_BIT_OFFSET (decl) = bitsize_zero_node;
+      SET_DECL_OFFSET_ALIGN (decl, BITS_PER_UNIT);
     }
 
   return atend;
@@ -4277,15 +4331,7 @@ build_base_field (record_layout_info rli, tree binfo,
     }
   else
     {
-      tree eoc;
-      bool atend;
-
-      /* On some platforms (ARM), even empty classes will not be
-	 byte-aligned.  */
-      eoc = round_up_loc (input_location,
-		      rli_size_unit_so_far (rli),
-		      CLASSTYPE_ALIGN_UNIT (basetype));
-      atend = layout_empty_base (rli, binfo, eoc, offsets);
+      bool atend = layout_empty_base_or_field (rli, binfo, offsets);
       /* A nearly-empty class "has no proper base class that is empty,
 	 not morally virtual, and at an offset other than zero."  */
       if (!BINFO_VIRTUAL_P (binfo) && CLASSTYPE_NEARLY_EMPTY_P (t))
@@ -4323,10 +4369,7 @@ build_base_field (record_layout_info rli, tree binfo,
     }
 
   /* Record the offsets of BINFO and its base subobjects.  */
-  record_subobject_offsets (binfo,
-			    BINFO_OFFSET (binfo),
-			    offsets,
-			    /*is_data_member=*/false);
+  record_subobject_offsets (binfo, offsets);
 
   return next_field;
 }
@@ -5886,10 +5929,11 @@ end_of_base (tree binfo)
 
 /* Returns the offset of the byte just past the end of the base class
    with the highest offset in T.  If INCLUDE_VIRTUALS_P is zero, then
-   only non-virtual bases are included.  */
+   only non-virtual bases are included.  If INCLUDE_FIELDS_P is true,
+   then also consider non-static data members.  */
 
 static tree
-end_of_class (tree t, int include_virtuals_p)
+end_of_class (tree t, bool include_virtuals_p, bool include_fields_p = false)
 {
   tree result = size_zero_node;
   vec<tree, va_gc> *vbases;
@@ -5911,6 +5955,16 @@ end_of_class (tree t, int include_virtuals_p)
       if (tree_int_cst_lt (result, offset))
 	result = offset;
     }
+
+  if (include_fields_p)
+    for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
+      if (TREE_CODE (field) == FIELD_DECL)
+	{
+	  offset = size_binop (PLUS_EXPR, DECL_FIELD_OFFSET (field),
+			       DECL_SIZE_UNIT (field));
+	  if (tree_int_cst_lt (result, offset))
+	    result = offset;
+	}
 
   if (include_virtuals_p)
     for (vbases = CLASSTYPE_VBASECLASSES (t), i = 0;
@@ -6098,6 +6152,27 @@ layout_class_type (tree t, tree *virtuals_p)
 
       padding = NULL_TREE;
 
+      bool might_overlap = field_poverlapping_p (field);
+
+      if (might_overlap && CLASS_TYPE_P (type)
+	  && CLASSTYPE_NON_LAYOUT_POD_P (type))
+	{
+	  /* if D is a potentially-overlapping data member, update sizeof(C) to
+	     max (sizeof(C), offset(D)+max (nvsize(D), dsize(D))).  */
+	  tree nvsize = CLASSTYPE_SIZE_UNIT (type);
+	  tree dsize = end_of_class (type, /*vbases*/true, /*fields*/true);
+	  if (tree_int_cst_le (dsize, nvsize))
+	    {
+	      DECL_SIZE_UNIT (field) = nvsize;
+	      DECL_SIZE (field) = CLASSTYPE_SIZE (type);
+	    }
+	  else
+	    {
+	      DECL_SIZE_UNIT (field) = dsize;
+	      DECL_SIZE (field) = bit_from_pos (dsize, bitsize_zero_node);
+	    }
+	}
+
       /* If this field is a bit-field whose width is greater than its
 	 type, then there are some special rules for allocating
 	 it.  */
@@ -6164,15 +6239,14 @@ layout_class_type (tree t, tree *virtuals_p)
 	  /* We must also reset the DECL_MODE of the field.  */
 	  SET_DECL_MODE (field, TYPE_MODE (type));
 	}
+      else if (might_overlap && is_empty_class (type))
+	layout_empty_base_or_field (rli, field, empty_base_offsets);
       else
 	layout_nonempty_base_or_field (rli, field, NULL_TREE,
 				       empty_base_offsets);
 
       /* Remember the location of any empty classes in FIELD.  */
-      record_subobject_offsets (TREE_TYPE (field),
-				byte_position(field),
-				empty_base_offsets,
-				/*is_data_member=*/true);
+      record_subobject_offsets (field, empty_base_offsets);
 
       /* If a bit-field does not immediately follow another bit-field,
 	 and yet it starts in the middle of a byte, we have failed to

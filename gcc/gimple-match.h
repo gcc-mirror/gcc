@@ -98,6 +98,7 @@ struct gimple_match_op
   void set_op (code_helper, tree, tree);
   void set_op (code_helper, tree, tree, tree);
   void set_op (code_helper, tree, tree, tree, tree);
+  void set_op (code_helper, tree, tree, tree, tree, bool);
   void set_op (code_helper, tree, tree, tree, tree, tree);
   void set_op (code_helper, tree, tree, tree, tree, tree, tree);
   void set_value (tree);
@@ -116,6 +117,10 @@ struct gimple_match_op
 
   /* The type of the result.  */
   tree type;
+
+  /* For a BIT_FIELD_REF, whether the group of bits is stored in reverse order
+     from the target order.  */
+  bool reverse;
 
   /* The number of operands to CODE.  */
   unsigned int num_ops;
@@ -240,6 +245,19 @@ gimple_match_op::set_op (code_helper code_in, tree type_in,
 {
   code = code_in;
   type = type_in;
+  num_ops = 3;
+  ops[0] = op0;
+  ops[1] = op1;
+  ops[2] = op2;
+}
+
+inline void
+gimple_match_op::set_op (code_helper code_in, tree type_in,
+			 tree op0, tree op1, tree op2, bool reverse_in)
+{
+  code = code_in;
+  type = type_in;
+  reverse = reverse_in;
   num_ops = 3;
   ops[0] = op0;
   ops[1] = op1;

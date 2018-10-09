@@ -565,15 +565,50 @@ warn_string_no_nul (location_t loc, const char *fn, tree arg, tree decl)
 
 /* If EXP refers to an unterminated constant character array return
    the declaration of the object of which the array is a member or
-   element.  Otherwise return null.  */
+   element and if SIZE is not null, set *SIZE to the size of
+   the unterminated array and set *EXACT if the size is exact or
+   clear it otherwise.  Otherwise return null.  */
 
 tree
-unterminated_array (tree exp)
+unterminated_array (tree exp, tree *size /* = NULL */, bool *exact /* = NULL */)
 {
+  /* C_STRLEN will return NULL and set DECL in the info
+     structure if EXP references a unterminated array.  */
   c_strlen_data data;
   memset (&data, 0, sizeof (c_strlen_data));
-  c_strlen (exp, 1, &data);
-  return data.decl;
+  tree len = c_strlen (exp, 1, &data);
+  if (len == NULL_TREE && data.len && data.decl)
+     {
+       if (size)
+	{
+	  len = data.len;
+	  if (data.off)
+	    {
+	      /* Constant offsets are already accounted for in data.len, but
+		 not in a SSA_NAME + CST expression.  */
+	      if (TREE_CODE (data.off) == INTEGER_CST)
+		*exact = true;
+	      else if (TREE_CODE (data.off) == PLUS_EXPR
+		       && TREE_CODE (TREE_OPERAND (data.off, 1)) == INTEGER_CST)
+		{
+		  /* Subtract the offset from the size of the array.  */
+		  *exact = false;
+		  tree temp = TREE_OPERAND (data.off, 1);
+		  temp = fold_convert (ssizetype, temp);
+		  len = fold_build2 (MINUS_EXPR, ssizetype, len, temp);
+		}
+	      else
+		*exact = false;
+	    }
+	  else
+	    *exact = true;
+
+	  *size = len;
+	}
+       return data.decl;
+     }
+
+  return NULL_TREE;
 }
 
 /* Compute the length of a null-terminated character string or wide
@@ -685,6 +720,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
       else if (len >= maxelts)
 	{
 	  data->decl = decl;
+	  data->off = byteoff;
 	  data->len = ssize_int (len);
 	  return NULL_TREE;
 	}
@@ -755,6 +791,7 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
   if (len >= maxelts - eltoff)
     {
       data->decl = decl;
+      data->off = byteoff;
       data->len = ssize_int (len);
       return NULL_TREE;
     }
@@ -3037,9 +3074,11 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
   tree maxobjsize = max_object_size ();
   tree func = get_callee_fndecl (exp);
 
-  tree len = c_strlen (src, 0);
   /* FIXME: Change c_strlen() to return sizetype instead of ssizetype
      so these conversions aren't necessary.  */
+  c_strlen_data data;
+  memset (&data, 0, sizeof (c_strlen_data));
+  tree len = c_strlen (src, 0, &data, 1);
   if (len)
     len = fold_convert_loc (loc, TREE_TYPE (bound), len);
 
@@ -3053,7 +3092,43 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 			 exp, func, bound, maxobjsize))
 	  TREE_NO_WARNING (exp) = true;
 
+      bool exact = true;
       if (!len || TREE_CODE (len) != INTEGER_CST)
+	{
+	  /* Clear EXACT if LEN may be less than SRC suggests,
+	     such as in
+	       strnlen (&a[i], sizeof a)
+	     where the value of i is unknown.  Unless i's value is
+	     zero, the call is unsafe because the bound is greater. */
+	  data.decl = unterminated_array (src, &len, &exact);
+	  if (!data.decl)
+	    return NULL_RTX;
+	}
+
+      if (data.decl
+	  && !TREE_NO_WARNING (exp)
+	  && ((tree_int_cst_lt (len, bound))
+	      || !exact))
+	{
+	  location_t warnloc
+	    = expansion_point_location_if_in_system_header (loc);
+
+	  if (warning_at (warnloc, OPT_Wstringop_overflow_,
+			  exact
+			  ? G_("%K%qD specified bound %E exceeds the size %E "
+			       "of unterminated array")
+			  : G_("%K%qD specified bound %E may exceed the size "
+			       "of at most %E of unterminated array"),
+			  exp, func, bound, len))
+	    {
+	      inform (DECL_SOURCE_LOCATION (data.decl),
+		      "referenced argument declared here");
+	      TREE_NO_WARNING (exp) = true;
+	      return NULL_RTX;
+	    }
+	}
+
+      if (!len)
 	return NULL_RTX;
 
       len = fold_build2_loc (loc, MIN_EXPR, size_type_node, len, bound);
@@ -3076,7 +3151,37 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
 		     exp, func, min.to_uhwi (), max.to_uhwi (), maxobjsize))
       TREE_NO_WARNING (exp) = true;
 
+  bool exact = true;
   if (!len || TREE_CODE (len) != INTEGER_CST)
+    {
+      data.decl = unterminated_array (src, &len, &exact);
+      if (!data.decl)
+	return NULL_RTX;
+    }
+
+  if (data.decl
+      && !TREE_NO_WARNING (exp)
+      && (wi::ltu_p (wi::to_wide (len), min)
+	  || !exact))
+    {
+      location_t warnloc
+	= expansion_point_location_if_in_system_header (loc);
+
+      if (warning_at (warnloc, OPT_Wstringop_overflow_,
+		      exact
+		      ? G_("%K%qD specified bound [%wu, %wu] exceeds "
+			   "the size %E of unterminated array")
+		      : G_("%K%qD specified bound [%wu, %wu] may exceed "
+			   "the size of at most %E of unterminated array"),
+		      exp, func, min.to_uhwi (), max.to_uhwi (), len))
+	{
+	  inform (DECL_SOURCE_LOCATION (data.decl),
+		  "referenced argument declared here");
+	  TREE_NO_WARNING (exp) = true;
+	}
+    }
+
+  if (data.decl)
     return NULL_RTX;
 
   if (wi::gtu_p (min, wi::to_wide (len)))

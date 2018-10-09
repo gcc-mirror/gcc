@@ -74,6 +74,7 @@ selftest::run_tests ()
   opt_proposer_c_tests ();
   json_cc_tests ();
   optinfo_emit_json_cc_tests ();
+  opt_problem_cc_tests ();
 
   /* Mid-level data structures.  */
   input_c_tests ();

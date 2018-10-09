@@ -86,6 +86,15 @@ default_get_valid_option_values (int, const char *)
   return vec<const char *> ();
 }
 
+/* Default version of TARGET_OPTION_VALIDATE_PARAM.  */
+
+bool
+default_option_validate_param (const int value ATTRIBUTE_UNUSED,
+			       const int param ATTRIBUTE_UNUSED)
+{
+  return true;
+}
+
 const struct default_options empty_optimization_table[] =
   {
     { OPT_LEVELS_NONE, 0, NULL, 0 }

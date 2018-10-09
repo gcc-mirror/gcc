@@ -89,11 +89,51 @@ optinfo::add_item (optinfo_item *item)
   m_items.safe_push (item);
 }
 
-/* Emit the optinfo to all of the "non-immediate" destinations
-   (emission to "immediate" destinations is done by emit_item).  */
+/* Get MSG_* flags corresponding to KIND.  */
+
+static dump_flags_t
+optinfo_kind_to_dump_flag (enum optinfo_kind kind)
+{
+  switch (kind)
+    {
+    default:
+      gcc_unreachable ();
+    case OPTINFO_KIND_SUCCESS:
+      return MSG_OPTIMIZED_LOCATIONS;
+    case OPTINFO_KIND_FAILURE:
+      return MSG_MISSED_OPTIMIZATION;
+    case OPTINFO_KIND_NOTE:
+    case OPTINFO_KIND_SCOPE:
+      return MSG_NOTE;
+    }
+}
+
+/* Re-emit this optinfo, both to the "non-immediate" destinations,
+   *and* to the "immediate" destinations.  */
 
 void
-optinfo::emit ()
+optinfo::emit_for_opt_problem () const
+{
+  dump_flags_t dump_kind = optinfo_kind_to_dump_flag (get_kind ());
+  dump_kind |= MSG_PRIORITY_REEMITTED;
+
+  /* Re-emit to "immediate" destinations, without creating a new optinfo.  */
+  dump_context::get ().dump_loc_immediate (dump_kind, get_dump_location ());
+  unsigned i;
+  optinfo_item *item;
+  FOR_EACH_VEC_ELT (m_items, i, item)
+    dump_context::get ().emit_item (item, dump_kind);
+
+  /* Re-emit to "non-immediate" destinations.  */
+  emit ();
+}
+
+/* Emit the optinfo to all of the "non-immediate" destinations
+   (emission to "immediate" destinations is done by
+   dump_context::emit_item).  */
+
+void
+optinfo::emit () const
 {
   /* -fsave-optimization-record.  */
   optimization_records_maybe_record_optinfo (this);

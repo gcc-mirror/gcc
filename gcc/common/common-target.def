@@ -56,6 +56,13 @@ DEFHOOK
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(option_validate_param,
+"Validate target-dependent value for @option{--param} settings, using\
+ calls to @code{set_param_value}.",
+ bool, (int, int),
+ default_option_validate_param)
+
 /* The initial value of target_flags.  */
 DEFHOOKPOD
 (default_target_flags,

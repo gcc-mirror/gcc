@@ -26,6 +26,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "unix.h"
 #include "async.h"
 #include <limits.h>
+#if !HAVE_UNLINK_OPEN_FILE
+#include <string.h>
+#endif
 
 typedef enum
 { CLOSE_DELETE, CLOSE_KEEP, CLOSE_UNSPECIFIED }

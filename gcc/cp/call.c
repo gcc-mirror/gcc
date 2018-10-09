@@ -8188,6 +8188,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
+      auto_vec<location_t> arglocs (nargs);
       for (j = 0; j < nargs; j++)
 	{
 	  /* For -Wformat undo the implicit passing by hidden reference
@@ -8197,10 +8198,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    fargs[j] = TREE_OPERAND (argarray[j], 0);
 	  else
 	    fargs[j] = maybe_constant_value (argarray[j]);
+	  arglocs.quick_push (EXPR_LOC_OR_LOC (argarray[j], input_location));
 	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs, NULL);
+					   nargs, fargs, &arglocs);
     }
 
   if (DECL_INHERITED_CTOR (fn))

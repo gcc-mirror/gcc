@@ -271,12 +271,7 @@ __gcov_topn_value_profiler_body (gcov_type *counters, gcov_type value)
 #if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS)
 __thread
 #endif
-gcov_type *__gcov_indirect_call_topn_counters ATTRIBUTE_HIDDEN;
-
-#if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS)
-__thread
-#endif
-void *__gcov_indirect_call_topn_callee ATTRIBUTE_HIDDEN;
+struct indirect_call_tuple __gcov_indirect_call_topn;
 
 #ifdef TARGET_VTABLE_USES_DESCRIPTORS
 #define VTABLE_USES_DESCRIPTORS 1
@@ -290,14 +285,14 @@ void *__gcov_indirect_call_topn_callee ATTRIBUTE_HIDDEN;
 void
 __gcov_indirect_call_topn_profiler (gcov_type value, void* cur_func)
 {
-  void *callee_func = __gcov_indirect_call_topn_callee;
+  void *callee_func = __gcov_indirect_call_topn.callee;
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
      the descriptors to see if they point to the same function.  */
   if (cur_func == callee_func
       || (VTABLE_USES_DESCRIPTORS && callee_func
 	  && *(void **) cur_func == *(void **) callee_func))
-    __gcov_topn_value_profiler_body (__gcov_indirect_call_topn_counters, value);
+    __gcov_topn_value_profiler_body (__gcov_indirect_call_topn.counters, value);
 }
 #endif
 
@@ -311,11 +306,7 @@ __gcov_indirect_call_topn_profiler (gcov_type value, void* cur_func)
 #if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS)
 __thread
 #endif
-void * __gcov_indirect_call_callee;
-#if defined(HAVE_CC_TLS) && !defined (USE_EMUTLS)
-__thread
-#endif
-gcov_type * __gcov_indirect_call_counters;
+struct indirect_call_tuple __gcov_indirect_call;
 
 /* By default, the C++ compiler will use function addresses in the
    vtable entries.  Setting TARGET_VTABLE_USES_DESCRIPTORS to nonzero
@@ -332,12 +323,12 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
   /* If the C++ virtual tables contain function descriptors then one
      function may have multiple descriptors and we need to dereference
      the descriptors to see if they point to the same function.  */
-  if (cur_func == __gcov_indirect_call_callee
+  if (cur_func == __gcov_indirect_call.callee
       || (__LIBGCC_VTABLE_USES_DESCRIPTORS__
-          && *(void **) cur_func == *(void **) __gcov_indirect_call_callee))
-    __gcov_one_value_profiler_body (__gcov_indirect_call_counters, value, 0);
+	  && *(void **) cur_func == *(void **) __gcov_indirect_call.callee))
+    __gcov_one_value_profiler_body (__gcov_indirect_call.counters, value, 0);
 
-  __gcov_indirect_call_callee = NULL;
+  __gcov_indirect_call.callee = NULL;
 }
 #endif
 

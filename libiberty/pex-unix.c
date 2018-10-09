@@ -569,6 +569,38 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 		     int toclose, const char **errmsg, int *err)
 {
   pid_t pid = -1;
+  /* Tuple to communicate error from child to parent.  We can safely
+     transfer string literal pointers as both run with identical
+     address mappings.  */
+  struct fn_err 
+  {
+    const char *fn;
+    int err;
+  };
+  volatile int do_pipe = 0;
+  volatile int pipes[2]; /* [0]:reader,[1]:writer.  */
+#ifdef O_CLOEXEC
+  do_pipe = 1;
+#endif
+  if (do_pipe)
+    {
+#ifdef HAVE_PIPE2
+      if (pipe2 ((int *)pipes, O_CLOEXEC))
+	do_pipe = 0;
+#else
+      if (pipe ((int *)pipes))
+	do_pipe = 0;
+      else
+	{
+	  if (fcntl (pipes[1], F_SETFD, FD_CLOEXEC) == -1)
+	    {
+	      close (pipes[0]);
+	      close (pipes[1]);
+	      do_pipe = 0;
+	    }
+	}
+#endif
+    }
 
   /* We declare these to be volatile to avoid warnings from gcc about
      them being clobbered by vfork.  */
@@ -579,8 +611,9 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
      This clobbers the parent's environ so we need to restore it.
      It would be nice to use one of the exec* functions that takes an
      environment as a parameter, but that may have portability
-     issues.   */
-  char **save_environ = environ;
+     issues.  It is marked volatile so the child doesn't consider it a
+     dead variable and therefore clobber where ever it is stored.  */
+  char **volatile save_environ = environ;
 
   for (retries = 0; retries < 4; ++retries)
     {
@@ -594,6 +627,11 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
   switch (pid)
     {
     case -1:
+      if (do_pipe)
+	{
+	  close (pipes[0]);
+	  close (pipes[1]);
+	}
       *err = errno;
       *errmsg = VFORK_STRING;
       return (pid_t) -1;
@@ -601,40 +639,43 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
     case 0:
       /* Child process.  */
       {
-	const char *bad_fn = NULL;
+	struct fn_err failed;
+	failed.fn = NULL;
 
-	if (!bad_fn && in != STDIN_FILE_NO)
+	if (do_pipe)
+	  close (pipes[0]);
+	if (!failed.fn && in != STDIN_FILE_NO)
 	  {
 	    if (dup2 (in, STDIN_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (in) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && out != STDOUT_FILE_NO)
+	if (!failed.fn && out != STDOUT_FILE_NO)
 	  {
 	    if (dup2 (out, STDOUT_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (out) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && errdes != STDERR_FILE_NO)
+	if (!failed.fn && errdes != STDERR_FILE_NO)
 	  {
 	    if (dup2 (errdes, STDERR_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	    else if (close (errdes) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && toclose >= 0)
+	if (!failed.fn && toclose >= 0)
 	  {
 	    if (close (toclose) < 0)
-	      bad_fn = "close";
+	      failed.fn = "close", failed.err = errno;
 	  }
-	if (!bad_fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
+	if (!failed.fn && (flags & PEX_STDERR_TO_STDOUT) != 0)
 	  {
 	    if (dup2 (STDOUT_FILE_NO, STDERR_FILE_NO) < 0)
-	      bad_fn = "dup2";
+	      failed.fn = "dup2", failed.err = errno;
 	  }
-	if (!bad_fn)
+	if (!failed.fn)
 	  {
 	    if (env)
 	      /* NOTE: In a standard vfork implementation this clobbers
@@ -644,30 +685,35 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	    if ((flags & PEX_SEARCH) != 0)
 	      {
 		execvp (executable, to_ptr32 (argv));
-		bad_fn = "execvp";
+		failed.fn = "execvp", failed.err = errno;
 	      }
 	    else
 	      {
 		execv (executable, to_ptr32 (argv));
-		bad_fn = "execv";
+		failed.fn = "execv", failed.err = errno;
 	      }
 	  }
 
 	/* Something failed, report an error.  We don't use stdio
 	   routines, because we might be here due to a vfork call.  */
 	ssize_t retval = 0;
-	int eno = errno;
-	
+
+	if (!do_pipe
+	    || write (pipes[1], &failed, sizeof (failed)) != sizeof (failed))
+	  {
+	    /* The parent will not see our scream above, so write to
+	       stdout.  */
 #define writeerr(s) (retval |= write (STDERR_FILE_NO, s, strlen (s)))
-	writeerr (obj->pname);
-	writeerr (": error trying to exec '");
-	writeerr (executable);
-	writeerr ("': ");
-	writeerr (bad_fn);
-	writeerr (": ");
-	writeerr (xstrerror (eno));
-	writeerr ("\n");
+	    writeerr (obj->pname);
+	    writeerr (": error trying to exec '");
+	    writeerr (executable);
+	    writeerr ("': ");
+	    writeerr (failed.fn);
+	    writeerr (": ");
+	    writeerr (xstrerror (failed.err));
+	    writeerr ("\n");
 #undef writeerr
+	  }
 
 	/* Exit with -2 if the error output failed, too.  */
 	_exit (retval < 0 ? -2 : -1);
@@ -678,8 +724,6 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
     default:
       /* Parent process.  */
       {
-	const char *bad_fn = NULL;
-	
 	/* Restore environ.  Note that the parent either doesn't run
 	   until the child execs/exits (standard vfork behaviour), or
 	   if it does run then vfork is behaving more like fork.  In
@@ -687,24 +731,34 @@ pex_unix_exec_child (struct pex_obj *obj, int flags, const char *executable,
 	   copy of environ.  */
 	environ = save_environ;
 
-	if (!bad_fn && in != STDIN_FILE_NO)
-	  if (close (in) < 0)
-	    bad_fn = "close";
-	if (!bad_fn && out != STDOUT_FILE_NO)
-	  if (close (out) < 0)
-	    bad_fn = "close";
-	if (!bad_fn && errdes != STDERR_FILE_NO)
-	  if (close (errdes) < 0)
-	    bad_fn = "close";
-
-	if (bad_fn)
+	struct fn_err failed;
+	failed.fn = NULL;
+	if (do_pipe)
 	  {
-	    *err = errno;
-	    *errmsg = bad_fn;
+	    close (pipes[1]);
+	    ssize_t len = read (pipes[0], &failed, sizeof (failed));
+	    if (len < 0)
+	      failed.fn = NULL;
+	    close (pipes[0]);
+	  }
+
+	if (!failed.fn && in != STDIN_FILE_NO)
+	  if (close (in) < 0)
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && out != STDOUT_FILE_NO)
+	  if (close (out) < 0)
+	    failed.fn = "close", failed.err = errno;
+	if (!failed.fn && errdes != STDERR_FILE_NO)
+	  if (close (errdes) < 0)
+	    failed.fn = "close", failed.err = errno;
+
+	if (failed.fn)
+	  {
+	    *err = failed.err;
+	    *errmsg = failed.fn;
 	    return (pid_t) -1;
 	  }
       }
-
       return pid;
     }
 }
