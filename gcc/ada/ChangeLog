@@ -1,5 +1,12 @@
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch4.adb (Expand_Modular_Op): When expanding an operation
+	on nonbinary modular types, convert the opersnds to an integer
+	type that is large enough to hold the modulus of the type, which
+	may be larger than Integer'Last.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Unnest_Subprogram):  When an uplevel reference
 	is to an unconstrained formal, the 'Access reference that is
 	created to initialize the corresponding component of the

@@ -4067,6 +4067,8 @@ package body Exp_Ch4 is
          Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
          Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
 
+         Target_Type   : Entity_Id;
+
       begin
          --  Convert nonbinary modular type operands into integer values. Thus
          --  we avoid never-ending loops expanding them, and we also ensure
@@ -4083,11 +4085,21 @@ package body Exp_Ch4 is
               Unchecked_Convert_To (Standard_Integer, Op_Expr));
 
          else
+            --  If the modulus of the type is larger than Integer'Last
+            --  use a larger type for the operands, to prevent spurious
+            --  constraint errors on large legal literals of the type.
+
+            if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
+               Target_Type := Standard_Long_Integer;
+            else
+               Target_Type := Standard_Integer;
+            end if;
+
             Set_Left_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Integer,
+              Unchecked_Convert_To (Target_Type,
                 New_Copy_Tree (Left_Opnd (N))));
             Set_Right_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Integer,
+              Unchecked_Convert_To (Target_Type,
                 New_Copy_Tree (Right_Opnd (N))));
 
             --  Link this node to the tree to analyze it
