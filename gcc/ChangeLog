@@ -1,3 +1,8 @@
+2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add pmmintrin.h to extra_headers.
+	* config/rs6000/pmmintrin.h: New file.
+
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/86659
