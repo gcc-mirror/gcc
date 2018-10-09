@@ -1,5 +1,10 @@
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/derived_type5.adb, gnat.dg/derived_type5_pkg.ads: New
+	testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/warn17.adb: New testcase.
 
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
