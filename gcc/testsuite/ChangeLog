@@ -1,3 +1,11 @@
+2018-10-09  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-09-29  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87370
+	* gcc.target/i386/pr87370.c: New test.
+
 2018-10-01  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	Backport from mainline
