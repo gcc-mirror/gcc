@@ -1,3 +1,8 @@
+2018-10-09  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* libgnat/s-os_lib.ads (Normalize_Pathname): Fix incorrect
+	comment.
+
 2018-10-09  Arnaud Charlet  <charlet@adacore.com>
 
 	* vxlink.adb: Remove pragma Annotate, no longer needed.
