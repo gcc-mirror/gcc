@@ -1544,6 +1544,18 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
+fmodules-ts
+C++ ObjC++ Undocumented RejectNegative Var(flag_modules,+1) Integer
+
+fmodules-atom
+C++ ObjC++ Undocumented RejectNegative
+
+fmodule-legacy
+C++ ObjC Undocumented RejectNegative Var(flag_modules,-2)
+
+fmodule-legacy=
+C++ ObjC++ Undocumented RejectNegative Joined
+
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.
