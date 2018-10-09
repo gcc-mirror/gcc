@@ -1,5 +1,12 @@
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch6.adb (Add_Call_By_Copy_Node,
+	Add_Simple_Call_By_Copy_Node, Expand_Call_Helper): Reset
+	Is_True_Constant on entities used as Out or In_Out parameters in
+	calls.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_unst.adb (Unnest_Subprogram): Do not load System to obtain
 	the Address entity unless an activation record is being built.
 	Removes useless with_clauses for System when nested subprograms
