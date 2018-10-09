@@ -129,31 +129,31 @@ dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
       ks = "unaligned_store";
       break;
     case vector_store:
-      ks = "unaligned_store";
+      ks = "vector_store";
       break;
     case vector_scatter_store:
-      ks = "unaligned_store";
+      ks = "vector_scatter_store";
       break;
     case vec_to_scalar:
-      ks = "unaligned_store";
+      ks = "vec_to_scalar";
       break;
     case scalar_to_vec:
-      ks = "unaligned_store";
+      ks = "scalar_to_vec";
       break;
     case cond_branch_not_taken:
-      ks = "unaligned_store";
+      ks = "cond_branch_not_taken";
       break;
     case cond_branch_taken:
-      ks = "unaligned_store";
+      ks = "cond_branch_taken";
       break;
     case vec_perm:
-      ks = "unaligned_store";
+      ks = "vec_perm";
       break;
     case vec_promote_demote:
-      ks = "unaligned_store";
+      ks = "vec_promote_demote";
       break;
     case vec_construct:
-      ks = "unaligned_store";
+      ks = "vec_construct";
       break;
     }
   fprintf (f, "%s ", ks);
