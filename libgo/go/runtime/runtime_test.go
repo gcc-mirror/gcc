@@ -166,6 +166,9 @@ func TestSetPanicOnFault(t *testing.T) {
 }
 
 func testSetPanicOnFault(t *testing.T, addr uintptr, nfault *int) {
+	if strings.Contains(Version(), "llvm") {
+		t.Skip("LLVM doesn't support non-call exception")
+	}
 	if GOOS == "nacl" {
 		t.Skip("nacl doesn't seem to fault on high addresses")
 	}
