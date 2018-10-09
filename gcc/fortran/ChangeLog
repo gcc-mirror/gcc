@@ -1,3 +1,9 @@
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
 2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87151
