@@ -227,6 +227,12 @@ package body Exp_Unst is
       while Present (S) and then S /= Standard_Standard loop
          if Is_Concurrent_Type (S) then
             return True;
+
+         elsif Is_Private_Type (S)
+           and then Present (Full_View (S))
+           and then Is_Concurrent_Type (Full_View (S))
+         then
+            return True;
          end if;
 
          S := Scope (S);
