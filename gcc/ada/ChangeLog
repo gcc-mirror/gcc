@@ -1,5 +1,11 @@
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* checks.adb (Apply_Type_Conversion_Checks): Use GNATprove_Mode
+	rather than SPARK_mode in order to preserve the Do_Range_Check
+	flag for verification purposes.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* exp_aggr.adb (Expand_Array_Aggregate): If it is not possible
 	to build in place an aggregate with component associations, set
 	the Warnings_Off flag on the generated temporary, to prevent

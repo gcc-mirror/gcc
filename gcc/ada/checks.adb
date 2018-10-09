@@ -3555,9 +3555,8 @@ package body Checks is
                   --  in SPARK_Mode, where the explicit constraint check will
                   --  not be generated.
 
-                  if SPARK_Mode = On
-                    or else (not Is_Fixed_Point_Type (Expr_Type)
-                              and then not Is_Fixed_Point_Type (Target_Type))
+                  if GNATprove_Mode
+                    or else not Is_Fixed_Point_Type (Expr_Type)
                   then
                      Apply_Scalar_Range_Check
                        (Expr, Target_Type, Fixed_Int => Conv_OK);
