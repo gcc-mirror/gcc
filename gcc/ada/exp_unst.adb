@@ -1966,7 +1966,9 @@ package body Exp_Unst is
 
                                  Asn  : Node_Id;
                                  Attr : Name_Id;
+                                 Comp : Entity_Id;
                                  Ins  : Node_Id;
+                                 Rhs  : Node_Id;
 
                               begin
                                  --  For parameters, we insert the assignment
@@ -2001,6 +2003,32 @@ package body Exp_Unst is
                                     Attr := Name_Address;
                                  end if;
 
+                                 Rhs :=  Make_Attribute_Reference (Loc,
+                                         Prefix         =>
+                                           New_Occurrence_Of (Ent, Loc),
+                                         Attribute_Name => Attr);
+
+                                 --  If the entity is an unconstrained formal
+                                 --  we wrap the attribute reference in an
+                                 --  unchecked conversion to the type of the
+                                 --  activation record component, to prevent
+                                 --  spurious subtype conformance errors within
+                                 --  instances.
+
+                                 if Is_Formal (Ent)
+                                   and then not Is_Constrained (Etype (Ent))
+                                 then
+                                    --  Find target component and its type.
+
+                                    Comp := First_Component (STJ.ARECnT);
+                                    while Chars (Comp) /= Chars (Ent) loop
+                                       Comp := Next_Component (Comp);
+                                    end loop;
+
+                                    Rhs := Unchecked_Convert_To (
+                                              Etype (Comp), Rhs);
+                                 end if;
+
                                  Asn :=
                                    Make_Assignment_Statement (Loc,
                                      Name       =>
@@ -2012,12 +2040,7 @@ package body Exp_Unst is
                                              (Activation_Record_Component
                                                 (Ent),
                                               Loc)),
-
-                                     Expression =>
-                                       Make_Attribute_Reference (Loc,
-                                         Prefix         =>
-                                           New_Occurrence_Of (Ent, Loc),
-                                         Attribute_Name => Attr));
+                                     Expression => Rhs);
 
                                  --  If we have a loop parameter, we have
                                  --  to insert before the first statement
