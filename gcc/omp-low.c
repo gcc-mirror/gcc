@@ -4091,7 +4091,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  gimple_seq_add_stmt (ilist, g);
 		}
 
-	      tree y1 = create_tmp_var (ptype, NULL);
+	      tree y1 = create_tmp_var (ptype);
 	      gimplify_assign (y1, y, ilist);
 	      tree i2 = NULL_TREE, y2 = NULL_TREE;
 	      tree body2 = NULL_TREE, end2 = NULL_TREE;
@@ -4102,14 +4102,14 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 				     size_int (task_reduction_cnt_full
 					       + task_reduction_cntorig - 1),
 				     NULL_TREE, NULL_TREE);
-		  y3 = create_tmp_var (ptype, NULL);
+		  y3 = create_tmp_var (ptype);
 		  gimplify_assign (y3, ref, ilist);
 		}
 	      else if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) || is_simd)
 		{
 		  if (pass != 3)
 		    {
-		      y2 = create_tmp_var (ptype, NULL);
+		      y2 = create_tmp_var (ptype);
 		      gimplify_assign (y2, y, ilist);
 		    }
 		  if (is_simd || OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c))
@@ -4126,23 +4126,23 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
 			  && OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c))
 			{
-			  y3 = create_tmp_var (ptype, NULL);
+			  y3 = create_tmp_var (ptype);
 			  gimplify_assign (y3, unshare_expr (ref), ilist);
 			}
 		      if (is_simd)
 			{
-			  y4 = create_tmp_var (ptype, NULL);
+			  y4 = create_tmp_var (ptype);
 			  gimplify_assign (y4, ref, dlist);
 			}
 		    }
 		}
-	      tree i = create_tmp_var (TREE_TYPE (v), NULL);
+	      tree i = create_tmp_var (TREE_TYPE (v));
 	      gimplify_assign (i, build_int_cst (TREE_TYPE (v), 0), ilist);
 	      tree body = create_artificial_label (UNKNOWN_LOCATION);
 	      gimple_seq_add_stmt (ilist, gimple_build_label (body));
 	      if (y2)
 		{
-		  i2 = create_tmp_var (TREE_TYPE (v), NULL);
+		  i2 = create_tmp_var (TREE_TYPE (v));
 		  gimplify_assign (i2, build_int_cst (TREE_TYPE (v), 0), dlist);
 		  body2 = create_artificial_label (UNKNOWN_LOCATION);
 		  end2 = create_artificial_label (UNKNOWN_LOCATION);
@@ -5603,7 +5603,7 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 	  tree d = OMP_CLAUSE_DECL (c);
 	  tree type = TREE_TYPE (d);
 	  tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-	  tree i = create_tmp_var (TREE_TYPE (v), NULL);
+	  tree i = create_tmp_var (TREE_TYPE (v));
 	  tree ptype = build_pointer_type (TREE_TYPE (type));
 	  tree bias = TREE_OPERAND (d, 1);
 	  d = TREE_OPERAND (d, 0);
@@ -5667,10 +5667,10 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp, omp_context *ctx)
 	    }
 	  new_var = fold_convert_loc (clause_loc, ptype, new_var);
 	  ref = fold_convert_loc (clause_loc, ptype, ref);
-	  tree m = create_tmp_var (ptype, NULL);
+	  tree m = create_tmp_var (ptype);
 	  gimplify_assign (m, new_var, stmt_seqp);
 	  new_var = m;
-	  m = create_tmp_var (ptype, NULL);
+	  m = create_tmp_var (ptype);
 	  gimplify_assign (m, ref, stmt_seqp);
 	  ref = m;
 	  gimplify_assign (i, build_int_cst (TREE_TYPE (v), 0), stmt_seqp);
@@ -6896,22 +6896,24 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 	    {
 	      tree type = TREE_TYPE (new_var);
 	      tree v = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-	      tree i = create_tmp_var (TREE_TYPE (v), NULL);
+	      tree i = create_tmp_var (TREE_TYPE (v));
 	      tree ptype = build_pointer_type (TREE_TYPE (type));
 	      if (DECL_P (v))
 		{
 		  v = maybe_lookup_decl_in_outer_ctx (v, ctx);
-		  gimplify_expr (&v, end, NULL, is_gimple_val, fb_rvalue);
+		  tree vv = create_tmp_var (TREE_TYPE (v));
+		  gimplify_assign (vv, v, start);
+		  v = vv;
 		}
 	      ref = build4 (ARRAY_REF, pointer_sized_int_node, avar,
 			    size_int (7 + cnt * 3), NULL_TREE, NULL_TREE);
 	      new_var = build_fold_addr_expr (new_var);
 	      new_var = fold_convert (ptype, new_var);
 	      ref = fold_convert (ptype, ref);
-	      tree m = create_tmp_var (ptype, NULL);
+	      tree m = create_tmp_var (ptype);
 	      gimplify_assign (m, new_var, end);
 	      new_var = m;
-	      m = create_tmp_var (ptype, NULL);
+	      m = create_tmp_var (ptype);
 	      gimplify_assign (m, ref, end);
 	      ref = m;
 	      gimplify_assign (i, build_int_cst (TREE_TYPE (v), 0), end);

@@ -7736,7 +7736,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  cnts[i] = cnts[i - 1];
 	  continue;
 	}
-      cnts[i] = create_tmp_var (sizetype, NULL);
+      cnts[i] = create_tmp_var (sizetype);
       if (i == 0)
 	g = gimple_build_assign (cnts[i], size_int (is_old ? 2 : 5));
       else

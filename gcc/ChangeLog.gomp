@@ -1,3 +1,13 @@
+2018-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_omp_task_reductions): Force TYPE_MAX_VALUE into
+	a temporary in the start sequence and even when it is a decl already.
+
+	* omp-low.c (lower_rec_input_clauses, lower_reduction_clauses,
+	lower_omp_task_reductions): Remove second argument create_tmp_var
+	if it is NULL.
+	* gimplify.c (gimplify_omp_depend): Likewise.
+
 2018-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_task_reductions): For array section reductions,

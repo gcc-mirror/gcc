@@ -1,3 +1,8 @@
+2018-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/task-reduction-5.c: Add further test
+	to verify the array bound var can be changed in taskgroup.
+
 2018-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* task.c (GOMP_taskgroup_reduction_register): If team is NULL, create
