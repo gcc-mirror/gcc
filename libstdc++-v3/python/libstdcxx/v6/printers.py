@@ -1556,6 +1556,8 @@ def register_type_printers(obj):
     # Add type printers for typedefs std::string, std::wstring etc.
     for ch in ('', 'w', 'u16', 'u32'):
         add_one_type_printer(obj, 'basic_string', ch + 'string')
+        add_one_type_printer(obj, '__cxx11::basic_string', ch + 'string')
+        # Typedefs for __cxx11::basic_string used to be in namespace __cxx11:
         add_one_type_printer(obj, '__cxx11::basic_string',
                              '__cxx11::' + ch + 'string')
         add_one_type_printer(obj, 'basic_string_view', ch + 'string_view')
@@ -1568,7 +1570,7 @@ def register_type_printers(obj):
         for x in ('stringbuf', 'istringstream', 'ostringstream',
                   'stringstream'):
             add_one_type_printer(obj, 'basic_' + x, ch + x)
-            # <sstream> types are in __cxx11 namespace, but typedefs aren'x:
+            # <sstream> types are in __cxx11 namespace, but typedefs aren't:
             add_one_type_printer(obj, '__cxx11::basic_' + x, ch + x)
 
     # Add type printers for typedefs regex, wregex, cmatch, wcmatch etc.
