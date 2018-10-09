@@ -1,3 +1,16 @@
+2018-10-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	(_List_operator<>::operator==): Replace member function with inline
+	friend.
+	(_List_operator<>::operator!=): Likewise.
+	(_List_const_operator<>::operator==): Likewise.
+	(_List_const_operator<>::operator!=): Likewise.
+	(operator==(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+	(operator!=(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+
 2018-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stringfwd.h (string, wstring, u16string, u32string):
