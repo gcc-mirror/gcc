@@ -1,3 +1,8 @@
+2018-10-09  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfinve.ads: Remove default value for
+	Max_Size_In_Storage_Elements as it was not supported in SPARK.
+
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch6.adb (Add_Call_By_Copy_Node,
