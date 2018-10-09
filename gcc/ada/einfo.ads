@@ -3269,7 +3269,7 @@ package Einfo is
 --       a task interface, or if it is derived from task interfaces.
 
 --    Is_Task_Record_Type (synthesized)
---       Applies to all entities. True if Is_Concurrent_Record_Type
+--       Applies to all entities, true if Is_Concurrent_Record_Type is true and
 --       Corresponding_Concurrent_Type is a task type.
 
 --    Is_Task_Type (synthesized)
