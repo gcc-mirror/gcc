@@ -1,3 +1,10 @@
+2018-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stringfwd.h (string, wstring, u16string, u32string):
+	Define typedefs outside of __cxx11 inline namespace.
+	* python/libstdcxx/v6/printers.py (register_type_printers): Also
+	register printers for typedefs in new location.
+
 2018-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87538
