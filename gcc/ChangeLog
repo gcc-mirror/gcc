@@ -1,3 +1,8 @@
+2018-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.c (dump_stmt_cost): Fix cut&paste missing
+	replacements.
+
 2018-10-09  Martin Liska  <mliska@suse.cz>
 
 	* asan.c (asan_emit_stack_protection): If a stack variable
