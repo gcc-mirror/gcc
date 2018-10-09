@@ -5153,7 +5153,7 @@ type_requires_init_of_formal (Entity_Id type)
 	 Present (field);
 	 field = Next_Entity (field))
       {
-	if (Ekind (field) == E_Discriminant)
+	if (Ekind (field) == E_Discriminant && !Is_Unchecked_Union (type))
 	  return true;
 
 	if (Ekind (field) == E_Component
@@ -5334,11 +5334,14 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
      type doesn't require the initialization of formals, we don't make a
      PARM_DECL for it.  Instead, it will be a VAR_DECL created when we
      process the procedure, so just return its type here.  Likewise for
-     the special parameter of a valued procedure, never pass it in.  */
+     the _Init parameter of an initialization procedure or the special
+     parameter of a valued procedure, never pass them in.  */
   if (Ekind (gnat_param) == E_Out_Parameter
       && !by_ref
       && !by_component_ptr
-      && (!type_requires_init_of_formal (Etype (gnat_param)) || by_return))
+      && (!type_requires_init_of_formal (Etype (gnat_param))
+	  || Is_Init_Proc (gnat_subprog)
+	  || by_return))
     return gnu_param_type;
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);
