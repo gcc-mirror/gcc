@@ -6404,7 +6404,6 @@ gfc_conv_intrinsic_len (gfc_se * se, gfc_expr * expr)
       /* Fall through.  */
 
     default:
-      /* Anybody stupid enough to do this deserves inefficient code.  */
       gfc_init_se (&argse, se);
       if (arg->rank == 0)
 	gfc_conv_expr (&argse, arg);

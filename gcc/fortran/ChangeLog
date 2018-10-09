@@ -1,3 +1,24 @@
+2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87151
+	* trans-array.c (gfc_get_array_span): Deal with deferred char
+	array components having a TYPE_MAX_VALUE of zero.
+	(gfc_array_init_size): Use the hidden string length component
+	to build the descriptor dtype.
+	(gfc_array_allocate): Remove the erroneous replacement of the
+	charlen backend decl with a temporary.
+	(gfc_conv_expr_descriptor): Use the ss_info string length in
+	the case of deferred character components.
+	(gfc_alloc_allocatable_for_assignment): Actually compare the
+	string lengths for deferred characters. Make sure that kind > 1
+	is handled correctly. Set the span field of the descriptor.
+	* trans-intrinsic.c (gfc_conv_intrinsic_len): Remove the stupid
+	comment.
+
+	PR fortran/80931
+	* trans-array.c (gfc_array_allocate): Set the span field for
+	variable length character arrays.
+
 2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* expr.c (gfc_check_pointer_assign): Demote "Assignment to
