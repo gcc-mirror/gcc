@@ -1,3 +1,16 @@
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram):  When an uplevel reference
+	is to an unconstrained formal, the 'Access reference that is
+	created to initialize the corresponding component of the
+	activation record must be wrapped in an unchecked conversion to
+	the generated type of the component. Otherwise, spurious suvtype
+	conformance errors will be generated when the code is within an
+	instantiation and the type of the formal is a formal type of the
+	enclosing generic. Note that during unnesting there is no simple
+	way to determine that the code appears within an instance
+	because ther is no scope stack.
+
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (type_requires_init_of_formal): New
