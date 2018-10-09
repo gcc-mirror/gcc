@@ -1,3 +1,18 @@
+2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse3-check.h: New file.
+	* gcc.target/powerpc/sse3-addsubps.c: New file.
+	* gcc.target/powerpc/sse3-addsubpd.c: New file.
+	* gcc.target/powerpc/sse3-haddps.c: New file.
+	* gcc.target/powerpc/sse3-hsubps.c: New file.
+	* gcc.target/powerpc/sse3-haddpd.c: New file.
+	* gcc.target/powerpc/sse3-hsubpd.c: New file.
+	* gcc.target/powerpc/sse3-lddqu.c: New file.
+	* gcc.target/powerpc/sse3-movsldup.c: New file.
+	* gcc.target/powerpc/sse3-movshdup.c: New file.
+	* gcc.target/powerpc/sse3-movddup.c: New file.
+	* gcc.target/powerpc/pr37191.c: New file.
+
 2018-10-09  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/83522
