@@ -224,7 +224,7 @@ c_common_init_options (unsigned int decoded_options_count,
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
   cb = cpp_get_callbacks (parse_in);
-  cb->error = c_cpp_error;
+  cb->diagnostic = c_cpp_diagnostic;
 
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;

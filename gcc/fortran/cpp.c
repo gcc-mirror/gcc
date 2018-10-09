@@ -142,8 +142,9 @@ static void cb_include (cpp_reader *, source_location, const unsigned char *,
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
 static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
-static bool cb_cpp_error (cpp_reader *, int, int, rich_location *,
-			  const char *, va_list *)
+static bool cb_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			       enum cpp_warning_reason, rich_location *,
+			       const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 void pp_dir_change (cpp_reader *, const char *);
 
@@ -504,7 +505,7 @@ gfc_cpp_init_0 (void)
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;
-  cb->error = cb_cpp_error;
+  cb->diagnostic = cb_cpp_diagnostic;
 
   if (gfc_cpp_option.dump_includes)
     cb->include = cb_include;
@@ -1020,9 +1021,11 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
    Returns true if a diagnostic was emitted, false otherwise.  */
 
 static bool
-cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	      rich_location *richloc,
-	      const char *msg, va_list *ap)
+cb_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		   enum cpp_diagnostic_level level,
+		   enum cpp_warning_reason reason,
+		   rich_location *richloc,
+		   const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
