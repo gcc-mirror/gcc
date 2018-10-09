@@ -11879,6 +11879,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
   if (typedef_p && decl_context != TYPENAME)
     {
+      bool alias_p = decl_spec_seq_has_spec_p (declspecs, ds_alias);
       tree decl;
 
       /* This declaration:
@@ -11901,7 +11902,12 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_uses_auto (type))
 	{
-	  error ("typedef declared %<auto%>");
+	  if (alias_p)
+	    error_at (declspecs->locations[ds_type_spec],
+		      "%<auto%> not allowed in alias declaration");
+	  else
+	    error_at (declspecs->locations[ds_type_spec],
+		      "typedef declared %<auto%>");
 	  type = error_mark_node;
 	}
 
@@ -11961,7 +11967,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      inlinep, friendp, raises != NULL_TREE,
 		      declspecs->locations);
 
-      if (decl_spec_seq_has_spec_p (declspecs, ds_alias))
+      if (alias_p)
 	/* Acknowledge that this was written:
 	     `using analias = atype;'.  */
 	TYPE_DECL_ALIAS_P (decl) = 1;

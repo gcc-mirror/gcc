@@ -1,3 +1,17 @@
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* pt.c (convert_template_argument): Immediately return error_mark_node
+	if the second argument is erroneous.
+	* parser.c (cp_parser_type_id): Add location_t * parameter.
+	(cp_parser_type_id_1): Likewise.
+	(cp_parser_alias_declaration): Adjust cp_parser_type_id call,
+	obtain the location of the type and save it.
+	(cp_parser_template_type_arg): Adjust.
+	(cp_parser_trailing_type_id): Likewise.
+	* decl.c (grokdeclarator): Improve error message for 'auto' in
+	alias declaration.
+
 2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71128
