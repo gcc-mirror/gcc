@@ -1,5 +1,9 @@
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/warn17.adb: New testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/inline14.adb, gnat.dg/inline14_pkg.adb,
 	gnat.dg/inline14_pkg.ads: New testcase.
 

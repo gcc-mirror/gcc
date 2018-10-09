@@ -1,5 +1,10 @@
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Spec): Set
+	Warnings_Off on the B out parameter.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* einfo.ads: Small comment fix.
 
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
