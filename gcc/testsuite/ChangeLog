@@ -1,3 +1,7 @@
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn18.adb: New testcase.
+
 2018-10-09  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/asan/pr64820.c: Add line number to scanned
