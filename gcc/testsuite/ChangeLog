@@ -1,3 +1,8 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline14.adb, gnat.dg/inline14_pkg.adb,
+	gnat.dg/inline14_pkg.ads: New testcase.
+
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/warn18.adb: New testcase.

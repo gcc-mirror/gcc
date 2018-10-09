@@ -441,7 +441,13 @@ package body Sem_Ch7 is
                      Discard : Boolean;
                      pragma Unreferenced (Discard);
                   begin
-                     --  Inspect the actions to find references to subprograms
+                     --  Inspect the actions to find references to subprograms.
+                     --  We assume that the actions do not contain other kinds
+                     --  of references and, therefore, we do not stop the scan
+                     --  or set Has_Referencer_Of_Non_Subprograms here. Doing
+                     --  it would pessimize common cases for which the actions
+                     --  contain the declaration of an init procedure, since
+                     --  such a procedure is automatically marked inline.
 
                      Discard :=
                        Has_Referencer (Actions (Decl),
@@ -470,7 +476,8 @@ package body Sem_Ch7 is
                     and then not Is_Exported (Decl_Id)
                     and then No (Interface_Name (Decl_Id))
                     and then
-                      (not Has_Referencer_Of_Non_Subprograms
+                      ((Nkind (Decl) /= N_Subprogram_Declaration
+                         and then not Has_Referencer_Of_Non_Subprograms)
                         or else (Nkind (Decl) = N_Subprogram_Declaration
                                   and then not Subprogram_Table.Get (Decl_Id)))
                   then
