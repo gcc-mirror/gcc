@@ -1,5 +1,12 @@
 2018-10-09  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/63155
+	* tree-ssa-structalias.c: Include tree-ssa.h.
+	(get_constraint_for_ssa_var): For undefs return nothing_id.
+	(find_func_aliases): Cleanup PHI handling.
+
+2018-10-09  Richard Biener  <rguenther@suse.de>
+
 	* tree-vectorizer.c (dump_stmt_cost): Fix cut&paste missing
 	replacements.
 
