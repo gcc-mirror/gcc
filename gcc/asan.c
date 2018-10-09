@@ -1269,6 +1269,9 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
   if (shadow_ptr_types[0] == NULL_TREE)
     asan_init_shadow_ptr_types ();
 
+  expanded_location cfun_xloc
+    = expand_location (DECL_SOURCE_LOCATION (current_function_decl));
+
   /* First of all, prepare the description string.  */
   pretty_printer asan_pp;
 
@@ -1281,15 +1284,30 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       pp_space (&asan_pp);
       pp_wide_integer (&asan_pp, offsets[l - 1] - offsets[l]);
       pp_space (&asan_pp);
+
+      expanded_location xloc
+	= expand_location (DECL_SOURCE_LOCATION (decl));
+      char location[32];
+
+      if (xloc.file == cfun_xloc.file)
+	sprintf (location, ":%d", xloc.line);
+      else
+	location[0] = '\0';
+
       if (DECL_P (decl) && DECL_NAME (decl))
 	{
-	  pp_decimal_int (&asan_pp, IDENTIFIER_LENGTH (DECL_NAME (decl)));
+	  unsigned idlen
+	    = IDENTIFIER_LENGTH (DECL_NAME (decl)) + strlen (location);
+	  pp_decimal_int (&asan_pp, idlen);
 	  pp_space (&asan_pp);
 	  pp_tree_identifier (&asan_pp, DECL_NAME (decl));
+	  pp_string (&asan_pp, location);
 	}
       else
 	pp_string (&asan_pp, "9 <unknown>");
-      pp_space (&asan_pp);
+
+      if (l > 2)
+	pp_space (&asan_pp);
     }
   str_cst = asan_pp_string (&asan_pp);
 
