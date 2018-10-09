@@ -131,7 +131,8 @@ struct gimple_match_op
 
 inline
 gimple_match_op::gimple_match_op ()
-  : cond (gimple_match_cond::UNCOND), type (NULL_TREE), num_ops (0)
+  : cond (gimple_match_cond::UNCOND), type (NULL_TREE), reverse (false),
+    num_ops (0)
 {
 }
 
@@ -142,7 +143,8 @@ inline
 gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  unsigned int num_ops_in)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (num_ops_in)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (num_ops_in)
 {
 }
 
@@ -152,7 +154,8 @@ inline
 gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  tree op0)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (1)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (1)
 {
   ops[0] = op0;
 }
@@ -161,7 +164,8 @@ inline
 gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  tree op0, tree op1)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (2)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false), 
+    num_ops (2)
 {
   ops[0] = op0;
   ops[1] = op1;
@@ -171,7 +175,8 @@ inline
 gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  tree op0, tree op1, tree op2)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (3)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (3)
 {
   ops[0] = op0;
   ops[1] = op1;
@@ -182,7 +187,8 @@ inline
 gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  tree op0, tree op1, tree op2, tree op3)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (4)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (4)
 {
   ops[0] = op0;
   ops[1] = op1;
@@ -195,7 +201,8 @@ gimple_match_op::gimple_match_op (const gimple_match_cond &cond_in,
 				  code_helper code_in, tree type_in,
 				  tree op0, tree op1, tree op2, tree op3,
 				  tree op4)
-  : cond (cond_in), code (code_in), type (type_in), num_ops (5)
+  : cond (cond_in), code (code_in), type (type_in), reverse (false),
+    num_ops (5)
 {
   ops[0] = op0;
   ops[1] = op1;

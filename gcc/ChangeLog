@@ -1,3 +1,8 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86659
+	* gimple-match.h (gimple_match_op constructors): Initialize reverse.
+
 2018-10-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/63155
