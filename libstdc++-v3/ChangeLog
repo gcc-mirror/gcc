@@ -1,3 +1,11 @@
+2018-10-08  Joseph Myers  <joseph@codesourcery.com>
+
+	Backport from mainline
+	2018-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Use
+	-fno-show-column in default cxxflags.
+
 2018-08-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
