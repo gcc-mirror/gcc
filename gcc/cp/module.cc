@@ -2782,10 +2782,11 @@ struct GTY(()) slurping {
      legacies bitmap hold it for the current TU.  */
   bitmap legacies;	/* Transitive direct legacy import graph. */
 
-  /* This object points into the mmapped area, unless we're not doing
-     that, or we got frozen or closed.  In those cases it points to a
-     buffer it owns.  */
-  bytes_in macros;      /* Macro definitions.  */
+  /* These objects point into the mmapped area, unless we're not doing
+     that, or we got frozen or closed.  In those cases the points to
+     buffers we own.  */
+  bytes_in macro_defs;	/* Macro definitions.  */
+  bytes_in macro_tbl;	/* Macro table.  */
 
   /* Location remapping.  */
   loc_range_t GTY((skip)) ordinary_locs;
@@ -2842,7 +2843,7 @@ struct GTY(()) slurping {
 
 slurping::slurping (elf_in *from)
   : unnamed (NULL), remap (NULL), from (from),
-    legacies (BITMAP_GGC_ALLOC ()), macros (),
+    legacies (BITMAP_GGC_ALLOC ()), macro_defs (), macro_tbl (),
     ordinary_locs (0, 0), macro_locs (0, 0), loc_deltas (0, 0),
     current (~0u), remaining (0), lru (0), pre_early_ok (false)
 {
@@ -2854,8 +2855,10 @@ slurping::~slurping ()
   remap = NULL;
   vec_free (unnamed);
   unnamed = NULL;
-  if (macros.size)
-    elf_in::release (from, macros);
+  if (macro_defs.size)
+    elf_in::release (from, macro_defs);
+  if (macro_tbl.size)
+    elf_in::release (from, macro_tbl);
   close ();
 }
 
@@ -2988,9 +2991,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
   /* The configuration.  */
   void write_config (elf_out *to, const char *opts, const range_t &sec_range,
-		     unsigned unnamed, unsigned macros, unsigned crc);
+		     unsigned unnamed, bool any_macros, unsigned crc);
   bool read_config (cpp_reader *, module_state *&alias, range_t &sec_range,
-		    unsigned &unnamed, unsigned &macros);
+		    unsigned &unnamed, bool &any_macros);
 
  private:
   /* Serialize various definitions. */
@@ -3051,8 +3054,11 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_define (bytes_out &, const cpp_macro *, bool located = true);
   cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
-  unsigned write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
-  bool read_defines (cpp_reader *, unsigned count);
+  bool write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  bool read_defines ();
+  void import_defines ();
+ public:
+  void install_defines ();
 
  public:
   static void undef_macro (cpp_reader *, location_t, cpp_hashnode *);
@@ -10294,7 +10300,7 @@ macro_loc_cmp (const void *a_, const void *b_)
 /* Write out the exported defines.  This is two sections, one
    containing the definitions, the other a table of node names.  */
 
-unsigned
+bool
 module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 {
   dump () && dump ("Writing macros");
@@ -10372,6 +10378,7 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	  /* Write the table.  */
 	  bytes_out sec (to);
 	  sec.begin ();
+	  sec.u (count);
 
 	  for (unsigned ix = macros.length (); ix--;)
 	    {
@@ -10391,68 +10398,89 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
     }
 
   dump.outdent ();
-  return count;
+  return count != 0;
 }
-
-/* Read in the macro name table.  The definitions are unpacked lazily
-   on use.  */
-
+ 
 bool
-module_state::read_defines (cpp_reader *, unsigned count)
+module_state::read_defines ()
 {
-  /* Read the table.  */
-  {
-    bytes_in sec;
-
-    if (!sec.begin (loc, from (), MOD_SNAME_PFX ".mac"))
-      return false;
-    dump () && dump ("Reading macro table");
-    dump.indent ();
-
-    dump () && dump ("%u macros", count);
-    while (count--)
-      {
-	cpp_hashnode *node = sec.cpp_node ();
-	macro_import &imp = get_macro_imports (node);
-	macro_import::slot &slot = imp.append (mod);
-	unsigned flags = sec.u ();
-	if ((flags >> 0) & 1)
-	  slot.set_undef ();
-	if ((flags >> 1) & 1)
-	  slot.set_def ();
-	slot.offset = sec.u ();
-
-	dump () && dump ("Read %s macro %s%s%s %I at %u",
-			 imp.length () > 1 ? "add" : "new",
-			 slot.get_undef () ? "#undef" : "",
-			 slot.get_undef () && slot.get_def () ? " & " : "",
-			 slot.get_def () ? "#define" : "",
-			 identifier (node), slot.offset);
-
-	/* We'll leak an imported definition's TOKEN_FLD_STR's data
-	   here.  But that only happens when we've had to resolve the
-	   deferred macro before this import -- why are you doing
-	   that?  */
-	if (cpp_macro *cur = cpp_set_deferred_macro (node))
-	  if (!cur->imported)
-	    {
-	      macro_import::slot &slot = imp.exported ();
-	      macro_export &exp = get_macro_export (slot);
-	      exp.def = cur;
-	      slot.set_def ();
-	      dump () && dump ("Saving current #define %I", identifier (node));
-	    }
-      }
-    dump.outdent ();
-    if (!sec.end (from ()))
-      return false;
-  }
+  
+  /* Get the tbl section.  */
+  if (!slurp ()->macro_tbl.begin (loc, from (), MOD_SNAME_PFX ".mac"))
+    return false;
 
   /* Get the def section.  */
-  if (!slurp ()->macros.begin (loc, from (), MOD_SNAME_PFX ".def"))
+  if (!slurp ()->macro_defs.begin (loc, from (), MOD_SNAME_PFX ".def"))
     return false;
 
   return true;
+}
+
+/* Load the macro name table.  */
+
+void
+module_state::import_defines ()
+{
+  bytes_in &sec = slurp ()->macro_tbl;
+  if (!sec.size)
+    return;
+
+  dump () && dump ("Reading macro table %M", this);
+  dump.indent ();
+
+  unsigned count = sec.u ();
+  dump () && dump ("%u macros", count);
+  while (count--)
+    {
+      cpp_hashnode *node = sec.cpp_node ();
+      macro_import &imp = get_macro_imports (node);
+      macro_import::slot &slot = imp.append (mod);
+      unsigned flags = sec.u ();
+      if ((flags >> 0) & 1)
+	slot.set_undef ();
+      if ((flags >> 1) & 1)
+	slot.set_def ();
+      slot.offset = sec.u ();
+
+      dump () && dump ("Read %s macro %s%s%s %I at %u",
+		       imp.length () > 1 ? "add" : "new",
+		       slot.get_undef () ? "#undef" : "",
+		       slot.get_undef () && slot.get_def () ? " & " : "",
+		       slot.get_def () ? "#define" : "",
+		       identifier (node), slot.offset);
+
+      /* We'll leak an imported definition's TOKEN_FLD_STR's data
+	 here.  But that only happens when we've had to resolve the
+	 deferred macro before this import -- why are you doing
+	 that?  */
+      if (cpp_macro *cur = cpp_set_deferred_macro (node))
+	if (!cur->imported)
+	  {
+	    macro_import::slot &slot = imp.exported ();
+	    macro_export &exp = get_macro_export (slot);
+	    exp.def = cur;
+	    slot.set_def ();
+	    dump () && dump ("Saving current #define %I", identifier (node));
+	  }
+    }
+
+  /* We're now done with the table.  */
+  elf_in::release (slurp ()->from, sec);
+
+  dump.outdent ();
+}
+
+/* Install all the transitive defines.  */
+
+void
+module_state::install_defines ()
+{
+  bitmap_ior_into (legacies, slurp ()->legacies);
+
+  bitmap_iterator bititer;
+  unsigned bitnum;
+  EXECUTE_IF_SET_IN_BITMAP (slurp ()->legacies, 0, bitnum, bititer)
+    (*modules)[bitnum]->import_defines ();
 }
 
 /* NODE is being undefined at LOC.  Record it in the export table, if
@@ -10535,7 +10563,7 @@ module_state::deferred_macro (cpp_reader *reader, location_t loc,
 	  if (mod)
 	    {
 	      const module_state *imp = (*modules)[mod];
-	      bytes_in &sec = imp->slurp ()->macros;
+	      bytes_in &sec = imp->slurp ()->macro_defs;
 	      if (!sec.get_overrun ())
 		{
 		  dump () && dump ("Reading macro %s%s%s %I module %M at %u",
@@ -10719,7 +10747,7 @@ space_cmp (const void *a_, const void *b_)
 void
 module_state::write_config (elf_out *to, const char *opt_str,
 			    const range_t &sec_range,
-			    unsigned unnamed, unsigned macros,
+			    unsigned unnamed, bool any_macros,
 			    unsigned inner_crc)
 {
   bytes_out cfg (to);
@@ -10782,8 +10810,8 @@ module_state::write_config (elf_out *to, const char *opt_str,
   dump () && dump ("Unnamed %u decls", unnamed);
   cfg.u (unnamed);
 
-  dump () && dump ("Macros %u", macros);
-  cfg.u (macros);
+  dump () && dump ("Macros %s", any_macros ? "yes" : "no");
+  cfg.u (any_macros);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -10794,7 +10822,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
 bool
 module_state::read_config (cpp_reader *reader, module_state *&alias,
 			   range_t &sec_range,
-			   unsigned &unnamed, unsigned &macros)
+			   unsigned &unnamed, bool &any_macros)
 {
   bytes_in cfg;
 
@@ -10971,8 +10999,8 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
   unnamed = cfg.u ();
   dump () && dump ("%u unnamed decls", unnamed);
 
-  macros = cfg.u ();
-  dump () && dump ("Macros %u", macros);
+  any_macros = cfg.u ();
+  dump () && dump ("Macros %s", any_macros ? "yes" : "no");
 
   if (sec_range.first > sec_range.second
       || sec_range.second > from ()->get_section_limit ())
@@ -11138,12 +11166,12 @@ module_state::write (elf_out *to, cpp_reader *reader)
       write_locations (to, range_bits, &crc);
     }
 
-  unsigned macros = 0;
+  bool any_macros = false;
   if (modules_legacy_p ())
-    macros = write_defines (to, reader, &crc);
+    any_macros = write_defines (to, reader, &crc);
 
   /* And finish up.  */
-  write_config (to, our_opts, range, unnamed, macros, crc);
+  write_config (to, our_opts, range, unnamed, any_macros, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
@@ -11163,9 +11191,9 @@ module_state::read (int fd, int e, cpp_reader *reader)
   module_state *alias = NULL;
   range_t range;
   unsigned unnamed;
-  unsigned macros;
+  bool any_macros;
 
-  if (!read_config (reader, alias, range, unnamed, macros))
+  if (!read_config (reader, alias, range, unnamed, any_macros))
     return NULL;
 
   if (alias)
@@ -11223,13 +11251,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
 
-  // FIXME: It would be better if we could lazily load the macros when
-  // we know this is reachable from top level.  Store the section
-  // now.  Map them on need (or freeze).  Use this module's bitmap of
-  // reachable legacies to know what to load.
-  if (macros && is_legacy ())
-    if (!read_defines (reader, macros))
-      return NULL;
+  if (any_macros && !read_defines ())
+    return NULL;
 
   /* Read the namespace hierarchy. */
   auto_vec<tree> spaces;
@@ -11308,8 +11331,10 @@ module_state::check_read (bool outermost, tree ns, tree id)
   if (done)
     {
       lazy_open++;
-      if (slurp ()->macros.size)
-	from ()->preserve (slurp ()->macros);
+      if (slurp ()->macro_defs.size)
+	from ()->preserve (slurp ()->macro_defs);
+      if (slurp ()->macro_tbl.size)
+	from ()->preserve (slurp ()->macro_tbl);
       from ()->end ();
     }
 
@@ -11688,9 +11713,12 @@ module_state::freeze_an_elf ()
   if (victim)
     {
       dump () && dump ("Freezing %s", victim->filename);
-      if (victim->slurp ()->macros.size)
+      if (victim->slurp ()->macro_defs.size)
 	/* Save the macro definitions to a buffer.  */
-	victim->from ()->preserve (victim->slurp ()->macros);
+	victim->from ()->preserve (victim->slurp ()->macro_defs);
+      if (victim->slurp ()->macro_tbl.size)
+	/* Save the macro definitions to a buffer.  */
+	victim->from ()->preserve (victim->slurp ()->macro_tbl);
       victim->from ()->freeze ();
       lazy_open++;
     }
@@ -11771,7 +11799,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
-	bitmap_ior_into (legacies, imp->slurp ()->legacies);
+	imp->install_defines ();
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -11980,7 +12008,7 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 		imp = imp->resolve_alias ();
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
 		if (imp->is_legacy ())
-		  bitmap_ior_into (legacies, imp->slurp ()->legacies);
+		  imp->install_defines ();
 	      }
 	  }
 	else

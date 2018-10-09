@@ -1,5 +1,19 @@
 2018-10-09  Nathan Sidwell  <nathan@acm.org>
 
+	Lazy macro table loading
+	gcc/cp/
+	* module.cc (struct slurping): Add macro_tbl, rename macros to
+	macros_def.
+	(slurping::~slurping): Release macro_tbl.
+	(module_state::{read,write}_config): Replace macro count with
+	boolean.
+	(module_state::{import,install}_defines): New.
+	(module_state::read_defines): Map in the table, don't read it.
+	(module_state::{check_read,freeze_an_elf}): Adjust.
+	(import_module, module_state::preamble_load): Use install_defines.
+	gcc/testsuite/
+	* g++.dg/modules/macro-6_[abc].*: New.
+
 	Controlling macros & alias detection
 	gcc/cp/
 	* module.cc (cpp_node, identifier): Conversions between
