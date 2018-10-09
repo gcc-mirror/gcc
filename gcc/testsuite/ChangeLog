@@ -1,3 +1,12 @@
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* g++.dg/concepts/pr84423-1.C: New.
+	* g++.dg/concepts/pr84423-2.C: Likewise.
+	* g++.dg/cpp0x/auto39.C: Test location too.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp1y/pr60384.C: Likewise.
+
 2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/sse3-check.h: New file.

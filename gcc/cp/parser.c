@@ -2216,12 +2216,12 @@ static tree cp_parser_late_return_type_opt
 static tree cp_parser_declarator_id
   (cp_parser *, bool);
 static tree cp_parser_type_id
-  (cp_parser *);
+  (cp_parser *, location_t * = NULL);
 static tree cp_parser_template_type_arg
   (cp_parser *);
 static tree cp_parser_trailing_type_id (cp_parser *);
 static tree cp_parser_type_id_1
-  (cp_parser *, bool, bool);
+  (cp_parser *, bool, bool, location_t *);
 static void cp_parser_type_specifier_seq
   (cp_parser *, bool, bool, cp_decl_specifier_seq *);
 static tree cp_parser_parameter_declaration_clause
@@ -19034,7 +19034,7 @@ static tree
 cp_parser_alias_declaration (cp_parser* parser)
 {
   tree id, type, decl, pushed_scope = NULL_TREE, attributes;
-  location_t id_location;
+  location_t id_location, type_location;
   cp_declarator *declarator;
   cp_decl_specifier_seq decl_specs;
   bool member_p;
@@ -19086,7 +19086,7 @@ cp_parser_alias_declaration (cp_parser* parser)
 	G_("types may not be defined in alias template declarations");
     }
 
-  type = cp_parser_type_id (parser);
+  type = cp_parser_type_id (parser, &type_location);
 
   /* Restore the error message if need be.  */
   if (parser->num_template_parameter_lists)
@@ -19120,6 +19120,7 @@ cp_parser_alias_declaration (cp_parser* parser)
   set_and_check_decl_spec_loc (&decl_specs,
 			       ds_alias,
 			       using_token);
+  decl_specs.locations[ds_type_spec] = type_location;
 
   if (parser->num_template_parameter_lists
       && !cp_parser_check_template_parameters (parser,
@@ -21110,7 +21111,7 @@ cp_parser_declarator_id (cp_parser* parser, bool optional_p)
 
 static tree
 cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
-		     bool is_trailing_return)
+		     bool is_trailing_return, location_t * type_location)
 {
   cp_decl_specifier_seq type_specifier_seq;
   cp_declarator *abstract_declarator;
@@ -21119,6 +21120,9 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
   cp_parser_type_specifier_seq (parser, /*is_declaration=*/false,
 				is_trailing_return,
 				&type_specifier_seq);
+  if (type_location)
+    *type_location = type_specifier_seq.locations[ds_type_spec];
+
   if (is_template_arg && type_specifier_seq.type
       && TREE_CODE (type_specifier_seq.type) == TEMPLATE_TYPE_PARM
       && CLASS_PLACEHOLDER_TEMPLATE (type_specifier_seq.type))
@@ -21184,9 +21188,9 @@ cp_parser_type_id_1 (cp_parser* parser, bool is_template_arg,
 }
 
 static tree
-cp_parser_type_id (cp_parser *parser)
+cp_parser_type_id (cp_parser *parser, location_t * type_location)
 {
-  return cp_parser_type_id_1 (parser, false, false);
+  return cp_parser_type_id_1 (parser, false, false, type_location);
 }
 
 static tree
@@ -21196,7 +21200,7 @@ cp_parser_template_type_arg (cp_parser *parser)
   const char *saved_message = parser->type_definition_forbidden_message;
   parser->type_definition_forbidden_message
     = G_("types may not be defined in template arguments");
-  r = cp_parser_type_id_1 (parser, true, false);
+  r = cp_parser_type_id_1 (parser, true, false, NULL);
   parser->type_definition_forbidden_message = saved_message;
   if (cxx_dialect >= cxx14 && !flag_concepts && type_uses_auto (r))
     {
@@ -21209,7 +21213,7 @@ cp_parser_template_type_arg (cp_parser *parser)
 static tree
 cp_parser_trailing_type_id (cp_parser *parser)
 {
-  return cp_parser_type_id_1 (parser, false, true);
+  return cp_parser_type_id_1 (parser, false, true, NULL);
 }
 
 /* Parse a type-specifier-seq.
