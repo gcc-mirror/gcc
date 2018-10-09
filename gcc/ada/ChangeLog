@@ -1,3 +1,8 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb: Remove with/use clause for Stand.
+	(List_Mechanisms): List the mechanism of functions only.
+
 2018-10-09  Bob Duff  <duff@adacore.com>
 
 	* doc/gnat_ugn/gnat_utility_programs.rst: Correct spelling of
