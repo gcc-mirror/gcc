@@ -156,6 +156,12 @@ extern void Setup_Asm_Outputs		(Node_Id);
 extern void Get_Encoded_Name	(Entity_Id);
 extern void Get_External_Name	(Entity_Id, Boolean, String_Pointer);
 
+/* exp_tss: */
+
+#define Is_Init_Proc exp_tss__is_init_proc
+
+extern Boolean Is_Init_Proc		(Entity_Id);
+
 /* exp_util: */
 
 #define Is_Fully_Repped_Tagged_Type exp_util__is_fully_repped_tagged_type
