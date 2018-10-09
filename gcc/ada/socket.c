@@ -31,6 +31,8 @@
 
 /*  This file provides a portable binding to the sockets API                */
 
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+
 /* Ensure access to errno is thread safe.  */
 #define _REENTRANT
 #define _THREAD_SAFE
@@ -95,7 +97,7 @@ extern int  __gnat_inet_pton (int, const char *, void *);
 /* Disable the sending of SIGPIPE for writes on a broken stream */
 
 void
-__gnat_disable_sigpipe (int fd)
+__gnat_disable_sigpipe (int fd ATTRIBUTE_UNUSED)
 {
 #ifdef SO_NOSIGPIPE
   int val = 1;

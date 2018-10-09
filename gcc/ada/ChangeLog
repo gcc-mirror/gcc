@@ -1,3 +1,15 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c (__gnat_get_executable_suffix_ptr): Add new line.
+	(__gnat_locate_exec): Check that HOST_EXECUTABLE_SUFFIX is not
+	empty before doing a string search for it.
+	* socket.c (ATTRIBUTE_UNUSED): Define.
+	(__gnat_disable_sigpipe): Add ATTRIBUTE_UNUSED on parameter.
+	* terminals.c (ATTRIBUTE_UNUSED): Move around.
+	(__gnat_setup_child_communication): Add ATTRIBUTE_UNUSED on
+	parameter.
+	(__gnat_send_header): Add ATTRIBUTE_UNUSED on parameters.
+
 2018-10-09  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Rewrite

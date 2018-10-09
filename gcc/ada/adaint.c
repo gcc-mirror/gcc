@@ -662,6 +662,7 @@ void
 __gnat_get_executable_suffix_ptr (int *len, const char **value)
 {
   *value = HOST_EXECUTABLE_SUFFIX;
+
   if (!*value)
     *len = 0;
   else
@@ -2893,12 +2894,12 @@ __gnat_locate_regular_file (char *file_name, char *path_val)
 char *
 __gnat_locate_exec (char *exec_name, char *path_val)
 {
+  const unsigned int len = strlen (HOST_EXECUTABLE_SUFFIX);
   char *ptr;
-  if (!strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
+
+  if (len > 0 && !strstr (exec_name, HOST_EXECUTABLE_SUFFIX))
     {
-      char *full_exec_name =
-        (char *) alloca
-	  (strlen (exec_name) + strlen (HOST_EXECUTABLE_SUFFIX) + 1);
+      char *full_exec_name = (char *) alloca (strlen (exec_name) + len + 1);
 
       strcpy (full_exec_name, exec_name);
       strcat (full_exec_name, HOST_EXECUTABLE_SUFFIX);
