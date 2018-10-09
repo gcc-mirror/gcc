@@ -746,6 +746,10 @@ package body Exp_Unst is
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
 
+            --  Subprograms declared in tasks and protected types cannot
+            --  be eliminated because calls to them may be in other units,
+            --  so they must be treated as reachable.
+
             begin
                --  Subprograms declared in tasks and protected types cannot
                --  be eliminated because calls to them may be in other units,
@@ -756,10 +760,6 @@ package body Exp_Unst is
                    Bod           => Bod,
                    Lev           => L,
                    Reachable     => In_Synchronized_Unit (E),
-
-                   --  Subprograms declared in tasks and protected types are
-                   --  reachable and cannot be eliminated.
-
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -1148,7 +1148,7 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations can be ignored
+               --  Pragmas and component declarations can be ignored.
                --  Quantified expressions are expanded into explicit loops
                --  and the original epression must be ignored.
 
@@ -1383,10 +1383,10 @@ package body Exp_Unst is
 
                         --  If this entity was marked reachable because it is
                         --  in a task or protected type, there may not appear
-                        --  to be any calls to it, which would normally adjust
-                        --  the levels of the parent subprograms. So we need to
-                        --  be sure that the uplevel reference of that entity
-                        --  takes into account possible calls.
+                        --  to be any calls to it, which would normally
+                        --  adjust the levels of the parent subprograms.
+                        --  So we need to be sure that the uplevel reference
+                        --  of that entity takes into account possible calls.
 
                         if In_Synchronized_Unit (SUBF.Ent)
                           and then SUBT.Lev < SUBI.Uplevel_Ref
@@ -1627,7 +1627,7 @@ package body Exp_Unst is
       --  Loop through subprograms
 
       Subp_Loop : declare
-         Addr : constant Entity_Id := RTE (RE_Address);
+         Addr : Entity_Id := Empty;
 
       begin
          for J in Subps_First .. Subps.Last loop
@@ -1745,8 +1745,13 @@ package body Exp_Unst is
 
                   begin
                      --  Build list of component declarations for ARECnT
+                     --  and load System.Address.
 
                      Clist := Empty_List;
+
+                     if No (Addr) then
+                        Addr := RTE (RE_Address);
+                     end if;
 
                      --  If we are in a subprogram that has a static link that
                      --  is passed in (as indicated by ARECnF being defined),
