@@ -1,5 +1,13 @@
 2018-10-09  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_unst.adb (Unnest_Subprogram): Do not load System to obtain
+	the Address entity unless an activation record is being built.
+	Removes useless with_clauses for System when nested subprograms
+	do not have uplevel references, and therefore do not need
+	activation records.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_ch6.adb (Fully_Conformant_Expressions): Handle properly
 	the conformance check on an aspect expression that includes a
 	call to an instance of Unchecked_Conversion, or more generally a
