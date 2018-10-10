@@ -1,6 +1,14 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* Makefile.in (OBJS): Add coroutine-passes.o.
+	* tree-pass.h (make_pass_coroutine_expand_ifns): New.
+	* passes.def: Add pass_coroutine_expand_ifns to lowering passes.
+	* coroutine-passes.c: New.
+
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* internal-fn.def (CO_FRAME, CO_YIELD, CO_ACTOR): New.
 	* internal-fn.c (expand_CO_FRAME, expand_CO_YIELD,
 	expand_CO_ACTOR): New.

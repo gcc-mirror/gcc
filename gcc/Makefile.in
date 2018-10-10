@@ -1256,6 +1256,7 @@ OBJS = \
 	compare-elim.o \
 	context.o \
 	convert.o \
+	coroutine-passes.o \
 	coverage.o \
 	cppbuiltin.o \
 	cppdefault.o \

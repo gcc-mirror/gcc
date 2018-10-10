@@ -478,6 +478,7 @@ extern gimple_opt_pass *make_pass_gen_hsail (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_warn_nonnull_compare (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_sprintf_length (gcc::context *ctxt);
 extern gimple_opt_pass *make_pass_walloca (gcc::context *ctxt);
+extern gimple_opt_pass *make_pass_coroutine_expand_ifns (gcc::context *ctxt);
 
 /* IPA Passes */
 extern simple_ipa_opt_pass *make_pass_ipa_lower_emutls (gcc::context *ctxt);
