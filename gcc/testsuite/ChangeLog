@@ -1,3 +1,18 @@
+2018-10-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/87579
+	* gcc.target/powerpc/sse3-check.h: Remove duplicated code.
+	* gcc.target/powerpc/sse3-addsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-addsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-haddps.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-haddpd.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-lddqu.c: Likewise.
+	* gcc.target/powerpc/sse3-movsldup.c: Likewise.
+	* gcc.target/powerpc/sse3-movshdup.c: Likewise.
+	* gcc.target/powerpc/sse3-movddup.c: Likewise.
+	* gcc.target/powerpc/pr37191.c: Likewise.
 2018-10-10  Martin Sebor  <msebor@redhat.com>
 
 	PR c/54391
