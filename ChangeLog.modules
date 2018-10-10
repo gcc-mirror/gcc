@@ -1,5 +1,22 @@
 2018-10-10  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* doc/invoke.texi (fmodule-legacy): Augment syntax.
+	gcc/cp/
+	* module.cc (module_controlling_macro): Replace with ...
+	(module_legacy_macro): ... this.
+	(module_state::{read,write}_config): Controlling macros only for
+	legacy mode.
+	(set_module_legacy_name): New.
+	(maybe_begin_legacy_module, handle_module_option): Use it.
+	(init_module_processing, finish_module_parse): Adjust.
+	gcc/c-family/
+	* c.opt (fmodule-macro): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/alias-1_a.H: Fix.
+	* g++.dg/modules/legacy=0[ab].H: Adjust.
+	* g++.dg/modules/alias-2_*: New.
+
 	gcc/cp/
 	* module.cc (module_state::controlling_macro): Delete.
 	(module_state_config): New struct.

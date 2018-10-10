@@ -1,2 +1,2 @@
 // { dg-additional-options "-fmodule-legacy=<sys" }
-// { dg-error "is ill-formed" "" { target *-*-* } 0 }
+// { dg-error "badly quoted" "" { target *-*-* } 0 }

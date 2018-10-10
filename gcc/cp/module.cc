@@ -3151,10 +3151,9 @@ static const char *module_mapper_name;
 
 /* Legacy header mode.  */
 static const char *module_legacy_name;
+static const char *module_legacy_macro;
 
-/* A controlling macro.  */
-// FIXME:Consider being a ?name trail on the module_legacy_name
-static const char *module_controlling_macro;
+/* Our controlling macro.  */
 static cpp_hashnode *controlling_node;
 
 /* End of the prefix line maps.  */
@@ -10719,7 +10718,6 @@ module_state_config::get_opts ()
       if (opt->opt_index == OPT_fmodule_lazy
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
-	  || opt->opt_index == OPT_fmodule_macro_
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
@@ -10789,7 +10787,12 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
-  if (config.controlling_node)
+  cfg.u (modules_atom_p ());
+  cfg.u (to->name (is_legacy () ? "" : fullname));
+
+  if (!is_legacy ())
+    ;
+  else if (config.controlling_node)
     {
       gcc_assert (cpp_user_macro_p (config.controlling_node));
       dump () && dump ("Controlling macro=%I",
@@ -10799,9 +10802,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
     }
   else
     cfg.u (0);
-
-  cfg.u (modules_atom_p ());
-  cfg.u (to->name (is_legacy () ? "" : fullname));
 
   /* Configuration. */
   dump () && dump ("Writing target='%s', host='%s'",
@@ -10884,9 +10884,38 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       back and forget it.  */
   cfg.u32 ();
 
+  if (modules_atom_p () != cfg.u ())
+    {
+      error_at (loc, "TS/ATOM mismatch");
+    fail:
+      cfg.set_overrun ();
+      goto done;
+    }
+
+  /* Check module name.  */
+  {
+    const char *their_name = from ()->name (cfg.u ());
+    const char *our_name = is_legacy () ? "" : fullname;
+
+    /* Legacy modules can be aliased, so name checking is
+       inappropriate.  */
+    if (strcmp (their_name, our_name))
+      {
+	error_at (loc,
+		  their_name[0] && our_name[0] ? G_("module %qs found")
+		  : their_name[0]
+		  ? G_("legacy module expected, module %qs found")
+		  : G_("module %qs expected, legacy module found"),
+		  their_name[0] ? their_name : our_name);
+	goto fail;
+      }
+  }
+
   /* Read controlling macro.  We do this before validating the CRC,
      as the latter is computed from names we originally used.  */
-  if (cpp_hashnode *node = cfg.cpp_node ())
+  if (!is_legacy ())
+    ;
+  else if (cpp_hashnode *node = cfg.cpp_node ())
     {
       cpp_macro *macro = read_define (cfg, reader, false);
       if (cfg.get_overrun ())
@@ -10932,14 +10961,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       config.controlling_node = node;
     }
 
-  if (modules_atom_p () != cfg.u ())
-    {
-      error_at (loc, "TS/ATOM mismatch");
-    fail:
-      cfg.set_overrun ();
-      goto done;
-    }
-
   /* Check the CRC after the above sanity checks, so that the user is
      clued in.  */
   {
@@ -10949,25 +10970,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     if (!is_direct () && crc != e_crc)
       {
 	error_at (loc, "module %qs CRC mismatch", fullname);
-	goto fail;
-      }
-  }
-
-  /* Check module name.  */
-  {
-    const char *their_name = from ()->name (cfg.u ());
-    const char *our_name = is_legacy () ? "" : fullname;
-
-    /* Legacy modules can be aliased, so name checking is
-       inappropriate.  */
-    if (strcmp (their_name, our_name))
-      {
-	error_at (loc,
-		  their_name[0] && our_name[0] ? G_("module %qs found")
-		  : their_name[0]
-		  ? G_("legacy module expected, module %qs found")
-		  : G_("module %qs expected, legacy module found"),
-		  their_name[0] ? their_name : our_name);
 	goto fail;
       }
   }
@@ -12156,43 +12158,43 @@ module_note_main_file (line_maps *lmaps, const line_map_ordinary *map)
     spans.init (map);
 }
 
+static void
+set_module_legacy_name (const char *src, unsigned len, bool quote = true)
+{
+  char *name = XNEWVEC (char, len + 3);
+  module_legacy_name = name;
+  if (quote)
+    *name++ = '"';
+  memcpy (name, src, len);
+  name += len;
+  if (quote)
+    *name++ = '"';
+  *name = 0;
+}
+
 bool
 maybe_begin_legacy_module (cpp_reader *reader)
 {
   if (!modules_legacy_p ())
     return false;
 
-  if (!module_legacy_name
-      || (module_legacy_name[0] != '"'
-	  && module_legacy_name[0] != '<'))
+  if (!module_legacy_name)
     {
       /* Set the module header name from the main_input_filename.  */
-      const char *main = module_legacy_name;
-      size_t len, pos;
-      if (!main)
-	{
-	  main = main_input_filename;
-	  len = strlen (main);
-	  for (pos = len; --pos; )
-	    if (main[pos] == '.'
-		&& IS_DIR_SEPARATOR (main[pos-1])
-		&& IS_DIR_SEPARATOR (main[pos+1]))
-	      {
-		pos += 2;
-		break;
-	      }
-	  len -= pos;
-	}
-      else
-	len = strlen (module_legacy_name), pos = 0;
+      const char *main = main_input_filename;
+      size_t len = strlen (main);
+      size_t pos;
 
-      /* Create a user legacy module.  */
-      char *name = XNEWVEC (char, len + 3);
-      module_legacy_name = name;
-      name[0] = '"';
-      name[len + 1] = '"';
-      name[len + 2] = 0;
-      memcpy (name + 1, main + pos, len);
+      for (pos = len; --pos; )
+	if (main[pos] == '.'
+	    && IS_DIR_SEPARATOR (main[pos-1])
+	    && IS_DIR_SEPARATOR (main[pos+1]))
+	  {
+	    pos += 2;
+	    break;
+	  }
+
+      set_module_legacy_name (main + pos, len - pos);
     }
 
   tree name = get_identifier (module_legacy_name);
@@ -12260,7 +12262,8 @@ init_module_processing ()
 
   /* Check for ill-formed combinations.  */
   if (!modules_atom_p ()
-      && (module_legacy_name || flag_module_preamble >= 0))
+      && (module_legacy_name || module_legacy_macro
+	  || flag_module_preamble >= 0))
     {
       flag_modules = module_legacy_name ? -2 : -1;
       error ("%s not suppported with %<-fmodules-ts%>",
@@ -12390,9 +12393,6 @@ finish_module_parse (cpp_reader *reader)
     {
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
-      if (module_controlling_macro)
-	warning (0, "%<-fmodule-macro=%s%> used for non-interface",
-		 module_controlling_macro);
     }
   else if (errorcount)
     warning_at (state->loc, 0, "not exporting module due to errors");
@@ -12401,10 +12401,10 @@ finish_module_parse (cpp_reader *reader)
       int fd = -1;
       int e = ENOENT;
 
-      if (module_controlling_macro)
+      if (module_legacy_macro)
 	{
 	  /* There's a specified controlling macro.  Find it.  */
-	  const char *name = module_controlling_macro;
+	  const char *name = module_legacy_macro;
 	  if (const char *eq = strchr (name, '='))
 	    {
 	      char *tmp = XNEWVEC (char, eq - name + 1);
@@ -12413,7 +12413,7 @@ finish_module_parse (cpp_reader *reader)
 	      name = tmp;
 	    }
 	  controlling_node = cpp_node (get_identifier (name));
-	  if (name != module_controlling_macro)
+	  if (name != module_legacy_macro)
 	    XDELETEVEC (const_cast <char *> (name));
 
 	  if (cpp_user_macro_p (controlling_node))
@@ -12426,10 +12426,10 @@ finish_module_parse (cpp_reader *reader)
 	    }
 
 	  if (!cpp_user_macro_p (controlling_node)
-	      || name != module_controlling_macro)
+	      || name != module_legacy_macro)
 	    {
 	      cpp_force_token_locations (reader, state->loc);
-	      cpp_define (reader, module_controlling_macro);
+	      cpp_define (reader, module_legacy_macro);
 	      cpp_stop_forcing_token_locations (reader);
 	    }
 	}
@@ -12567,22 +12567,31 @@ handle_module_option (unsigned code, const char *str, int num)
       module_mapper_name = str;
       return true;
 
-    case OPT_fmodule_macro_:
-      module_controlling_macro = str;
-      return true;
-
     case OPT_fmodule_legacy_:
       {
 	/* Default ATOM legacy.  */
 	size_t len = strlen (str);
-	if (str[0] == '<' ? str[len-1] != '>'
-	    : str[0] == '"' ? str[len-1] != '"'
-	    : false)
-	  error ("legacy name %qs is ill-formed", str);
-	else if (str[0] == '"' && (str[1] == '"' || str[1] == '<'))
-	  error ("legacy name %qs appears to be double quoted", str);
-	else
-	  module_legacy_name = str;
+	const char *cookie = (const char *)memchr (str, '?', len);
+
+	if (cookie && cookie[1])
+	  {
+	    module_legacy_macro = cookie + 1;
+	    len = cookie - str;
+	  }
+
+	if (len)
+	  {
+	    char other = str[0] == '"' ? '"' : str[0] == '<' ? '>' : 0;
+
+	    if (other && (len < 3 || str[len-1] != other
+			  || str[1] == '"' || str[1] == '<'))
+	      error ("legacy name %qs is badly quoted", str);
+
+	    if (cookie || !other)
+	      set_module_legacy_name (str, len, !other);
+	    else
+	      module_legacy_name = str;
+	  }
 
 	if (flag_modules <= 0)
 	  flag_modules = -2;

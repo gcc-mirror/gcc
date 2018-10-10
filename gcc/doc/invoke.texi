@@ -2569,12 +2569,19 @@ Disable lazy module importing and module mapper creation.
 
 @item -fmodule-legacy
 @itemx -fmodule-legacy[=@var{name}]
+@itemx -fmodule-legacy[=@var{name}?@var{macro}]
+@itemx -fmodule-legacy[=?@var{macro}]
 @opindex fmodule-legacy
 Compile as a legacy header module.  The @var{name} may use
 @samp{"..."} or @samp{<...>} to indicate a user or system header, and
 defaults user.  If a name is omitted, the source filename is used.
 The source filename may be partitioned by a @samp{/./} component, in
-which case the fragment following is used as the name.
+which case the fragment following is used as the name.  A @samp{?}
+character separates the legacy name from a controlling macro.  If this
+is not specified, the first macro defined in the legacy header is used
+to determine uniqueness.  The format of the macro is the same as the
+@option{-D} option, except that an exiting definition will be chosen
+if one is available.
 
 @item -fmodule-only
 @opindex fmodule-only
