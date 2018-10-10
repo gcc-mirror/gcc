@@ -1,3 +1,17 @@
+2018-10-10  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/sse.md (reduc_plus_scal_v8df, reduc_plus_scal_v4df,
+	reduc_plus_scal_v2df, reduc_plus_scal_v16sf, reduc_plus_scal_v8sf,
+	reduc_plus_scal_v4sf): Merge into pattern reducing to half width
+	and recursing and pattern terminating the recursion on SSE
+	vector width using ix86_expand_reduc.
+	(reduc_sminmax_scal_<mode>): Split into part reducing to half
+	width and recursing and SSE2 vector variant doing the final
+	reduction with ix86_expand_reduc.
+	(reduc_uminmax_scal_<mode>): Likewise for the AVX512 variants
+	with terminating the recursion at AVX level, splitting that
+	to SSE there.
+
 2018-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* genmatch.c (error_cb): Rename to...
