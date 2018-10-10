@@ -1,3 +1,16 @@
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-low.c (lower_rec_input_clauses): Handle VLAs properly.
+	(lower_omp_task_reductions): Likewise.
+	* gimplify.c (enum omp_region_type): Add ORT_TASKGROUP.
+	(gimple_add_tmp_var, omp_firstprivatize_variable, omp_notice_variable,
+	omp_is_private, omp_check_private, gimplify_omp_depend): Handle
+	ORT_TASKGROUP like ORT_WORKSHARE.
+	(omp_add_variable): Don't add private/firstprivate for VLAs in
+	ORT_TASKGROUP.
+	(gimplify_expr) <case OMP_TASKGROUP>: Move handling into a separate
+	case, make sure to scan omp clauses before gimplifying body.
+
 2018-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_omp_task_reductions): Force TYPE_MAX_VALUE into

@@ -3909,7 +3909,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		  if (TREE_CODE (orig_var) == INDIRECT_REF)
 		    x = build_simple_mem_ref (x);
 		  else if (TREE_CODE (orig_var) == ADDR_EXPR)
-		    x = build_fold_addr_expr (x);
+		    {
+		      if (var == TREE_OPERAND (orig_var, 0))
+			x = build_fold_addr_expr (x);
+		    }
 		  bias = fold_convert (sizetype, bias);
 		  x = fold_convert (ptr_type_node, x);
 		  x = fold_build2_loc (clause_loc, POINTER_PLUS_EXPR,
@@ -6798,6 +6801,7 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 		var = TREE_OPERAND (var, 0);
 	      else if (TREE_CODE (var) == INDIRECT_REF)
 		var = TREE_OPERAND (var, 0);
+	      tree orig_var = var;
 	      if (is_variable_sized (var))
 		{
 		  gcc_assert (DECL_HAS_VALUE_EXPR_P (var));
@@ -6807,7 +6811,9 @@ lower_omp_task_reductions (omp_context *ctx, enum tree_code code, tree clauses,
 		  gcc_assert (DECL_P (var));
 		}
 	      t = ref = maybe_lookup_decl_in_outer_ctx (var, ctx);
-	      if (TREE_CODE (v) == ADDR_EXPR)
+	      if (orig_var != var)
+		gcc_assert (TREE_CODE (v) == ADDR_EXPR);
+	      else if (TREE_CODE (v) == ADDR_EXPR)
 		t = build_fold_addr_expr (t);
 	      else if (TREE_CODE (v) == INDIRECT_REF)
 		t = build_fold_indirect_ref (t);

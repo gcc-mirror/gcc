@@ -1,3 +1,4 @@
+typedef __SIZE_TYPE__ size_t;
 extern
 #ifdef __cplusplus
 "C"
@@ -7,7 +8,7 @@ void abort (void);
 int *q;
 
 void
-bar (int *p, int *r, int *t, int s, __SIZE_TYPE__ u)
+bar (int *p, int *r, int *t, int s, size_t u)
 {
   #pragma omp task in_reduction (*: p[0], q[0], r[s - 1], t[0:u + 1])
   {
@@ -20,7 +21,7 @@ bar (int *p, int *r, int *t, int s, __SIZE_TYPE__ u)
 }
 
 void
-foo (int *p, int *r, int *t, int s, __SIZE_TYPE__ u)
+foo (int *p, int *r, int *t, int s, size_t u)
 {
   int *p2 = p;
   #pragma omp taskgroup task_reduction (*: p[0], q[0], r[s], t[0:u + 1])
@@ -38,7 +39,7 @@ foo (int *p, int *r, int *t, int s, __SIZE_TYPE__ u)
       t[0] *= 10;
       t[1] *= 11;
     }
-    u = __SIZE_MAX__ / 4;
+    u = (~(size_t) 0) / 4;
     s++;
     p2 = (int *) 0;
     q = (int *) 0;

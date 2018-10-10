@@ -122,6 +122,7 @@ enum gimplify_omp_var_data
 enum omp_region_type
 {
   ORT_WORKSHARE = 0x00,
+  ORT_TASKGROUP = 0x01,
   ORT_SIMD 	= 0x04,
 
   ORT_PARALLEL	= 0x08,
@@ -759,6 +760,7 @@ gimple_add_tmp_var (tree tmp)
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 	  while (ctx
 		 && (ctx->region_type == ORT_WORKSHARE
+		     || ctx->region_type == ORT_TASKGROUP
 		     || ctx->region_type == ORT_SIMD
 		     || ctx->region_type == ORT_ACC))
 	    ctx = ctx->outer_context;
@@ -6674,6 +6676,7 @@ omp_firstprivatize_variable (struct gimplify_omp_ctx *ctx, tree decl)
 	    omp_add_variable (ctx, decl, GOVD_MAP | GOVD_MAP_TO_ONLY);
 	}
       else if (ctx->region_type != ORT_WORKSHARE
+	       && ctx->region_type != ORT_TASKGROUP
 	       && ctx->region_type != ORT_SIMD
 	       && ctx->region_type != ORT_ACC
 	       && !(ctx->region_type & ORT_TARGET_DATA))
@@ -6787,7 +6790,7 @@ omp_add_variable (struct gimplify_omp_ctx *ctx, tree decl, unsigned int flags)
 	 replacement is private, else FIRSTPRIVATE since we'll need the
 	 address of the original variable either for SHARED, or for the
 	 copy into or out of the context.  */
-      if (!(flags & GOVD_LOCAL))
+      if (!(flags & GOVD_LOCAL) && ctx->region_type != ORT_TASKGROUP)
 	{
 	  if (flags & GOVD_MAP)
 	    nflags = GOVD_MAP | GOVD_MAP_TO_ONLY | GOVD_EXPLICIT;
@@ -7316,6 +7319,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
   if (n == NULL)
     {
       if (ctx->region_type == ORT_WORKSHARE
+	  || ctx->region_type == ORT_TASKGROUP
 	  || ctx->region_type == ORT_SIMD
 	  || ctx->region_type == ORT_ACC
 	  || (ctx->region_type & ORT_TARGET_DATA) != 0)
@@ -7437,6 +7441,7 @@ omp_is_private (struct gimplify_omp_ctx *ctx, tree decl, int simd)
     }
 
   if (ctx->region_type != ORT_WORKSHARE
+      && ctx->region_type != ORT_TASKGROUP
       && ctx->region_type != ORT_SIMD
       && ctx->region_type != ORT_ACC)
     return false;
@@ -7494,6 +7499,7 @@ omp_check_private (struct gimplify_omp_ctx *ctx, tree decl, bool copyprivate)
 	}
     }
   while (ctx->region_type == ORT_WORKSHARE
+	 || ctx->region_type == ORT_TASKGROUP
 	 || ctx->region_type == ORT_SIMD
 	 || ctx->region_type == ORT_ACC);
   return false;
@@ -7693,6 +7699,7 @@ gimplify_omp_depend (tree *list_p, gimple_seq *pre_p)
 	  struct gimplify_omp_ctx *ctx = gimplify_omp_ctxp;
 	  while (ctx
 		 && (ctx->region_type == ORT_WORKSHARE
+		     || ctx->region_type == ORT_TASKGROUP
 		     || ctx->region_type == ORT_SIMD
 		     || ctx->region_type == ORT_ACC))
 	    ctx = ctx->outer_context;
@@ -12831,7 +12838,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 
 	case OMP_SECTION:
 	case OMP_MASTER:
-	case OMP_TASKGROUP:
 	case OMP_ORDERED:
 	case OMP_CRITICAL:
 	  {
@@ -12846,24 +12852,6 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	        break;
 	      case OMP_MASTER:
 	        g = gimple_build_omp_master (body);
-		break;
-	      case OMP_TASKGROUP:
-		{
-		  gimple_seq cleanup = NULL;
-		  tree fn
-		    = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_END);
-		  g = gimple_build_call (fn, 0);
-		  gimple_seq_add_stmt (&cleanup, g);
-		  g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
-		  body = NULL;
-		  gimple_seq_add_stmt (&body, g);
-		  tree *pclauses = &OMP_TASKGROUP_CLAUSES (*expr_p);
-		  gimplify_scan_omp_clauses (pclauses, pre_p, ORT_WORKSHARE,
-					     OMP_TASKGROUP);
-		  gimplify_adjust_omp_clauses (pre_p, body, pclauses,
-					       OMP_TASKGROUP);
-		  g = gimple_build_omp_taskgroup (body, *pclauses);
-		}
 		break;
 	      case OMP_ORDERED:
 		g = gimplify_omp_ordered (*expr_p, body);
@@ -12881,6 +12869,28 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	      default:
 		gcc_unreachable ();
 	      }
+	    gimplify_seq_add_stmt (pre_p, g);
+	    ret = GS_ALL_DONE;
+	    break;
+	  }
+
+	case OMP_TASKGROUP:
+	  {
+	    gimple_seq body = NULL;
+
+	    tree *pclauses = &OMP_TASKGROUP_CLAUSES (*expr_p);
+	    gimplify_scan_omp_clauses (pclauses, pre_p, ORT_TASKGROUP,
+				       OMP_TASKGROUP);
+	    gimplify_adjust_omp_clauses (pre_p, NULL, pclauses, OMP_TASKGROUP);
+	    gimplify_and_add (OMP_BODY (*expr_p), &body);
+	    gimple_seq cleanup = NULL;
+	    tree fn = builtin_decl_explicit (BUILT_IN_GOMP_TASKGROUP_END);
+	    gimple *g = gimple_build_call (fn, 0);
+	    gimple_seq_add_stmt (&cleanup, g);
+	    g = gimple_build_try (body, cleanup, GIMPLE_TRY_FINALLY);
+	    body = NULL;
+	    gimple_seq_add_stmt (&body, g);
+	    g = gimple_build_omp_taskgroup (body, *pclauses);
 	    gimplify_seq_add_stmt (pre_p, g);
 	    ret = GS_ALL_DONE;
 	    break;
