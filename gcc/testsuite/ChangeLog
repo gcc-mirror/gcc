@@ -1,3 +1,8 @@
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/87286
+	* gcc.dg/pr87286.c: Add -Wno-psabi to dg-options.
+
 2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84423
