@@ -1,9 +1,18 @@
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/testsuite/
+	* coroutines/coroutines.exp: Update to add attribution.
+
 2018-10-09  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/c-family/
 	* c.opt: Add some modules options.
 	gcc/cp/
 	* lang-specs.h: Provide diagnostic when modules options are used.
+
+2018-10-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Merge trunk r264949.
 
 2018-10-01  Iain Sandoe  <iain@sandoe.co.uk>
 
