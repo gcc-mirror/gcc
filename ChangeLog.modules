@@ -1,6 +1,12 @@
 2018-10-10  Nathan Sidwell  <nathan@acm.org>
 
-	gcc/
+	gcc/cp/
+	* module.cc (loc_spans::close): Close the current last map.
+	(module_state::prepare_locations): Adjust.
+	(module_state::preamble_load): Adjust span closing.
+	(finish_module_parse): Likewise.
+
+	gcc/cp/
 	* module.cc (pending_imports): New.
 	({import,declare}_module): Use it.
 	(module_from_cmp): Delete.

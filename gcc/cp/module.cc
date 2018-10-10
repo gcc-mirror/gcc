@@ -2708,18 +2708,21 @@ loc_spans::open ()
   spans.safe_push (interval);
 }
 
-/* Close out the current linemap interval.  The just created ordinary
-   map is the first map beyond the interval.  */
+/* Close out the current linemap interval.  The last maps are within
+   the interval.  */
 
 void
 loc_spans::close ()
 {
   span &interval = spans.last ();
+
   if (unsigned used = LINEMAPS_MACRO_USED (line_table))
     interval.macro.first
       = MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (line_table, used - 1));
+
   interval.ordinary.second
-    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
+    = ((line_table->highest_location + (1 << line_table->default_range_bits))
+       & ~((1u << line_table->default_range_bits) - 1));
 }
 
 /* Given an ordinary location LOC, return the lmap_interval it resides
@@ -9457,9 +9460,6 @@ module_state::prepare_locations ()
 	  if (max_rager < omap->m_range_bits)
 	    max_rager = omap->m_range_bits;
 	}
-
-      /* Again, we should finish exactly matched up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.second);
     }
 
   {
@@ -9497,7 +9497,7 @@ module_state::prepare_locations ()
 	    gcc_checking_assert (((start_loc ^ to) & range_mask) == 0);
 	  }
 	/* The ending serialized value.  */
-	offset = MAP_START_LOCATION (omap) + span.ordinary_delta;
+	offset = span.ordinary.second + span.ordinary_delta;
       }
     dump () && dump ("Location hwm:%u", offset);
   }
@@ -9555,8 +9555,6 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
 	    filenames.safe_push (fname);
 	}
 
-      /* Again, we should finish exactly matched up.  */
-      gcc_checking_assert (MAP_START_LOCATION (omap) == span.ordinary.second);
       unsigned count = omap - fmap;
       gcc_checking_assert (count);
       num_maps.first += count;
@@ -11938,6 +11936,8 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+  if (is_interface)
+    spans.close ();
 
   if (!mapper->is_file ())
     {
@@ -11968,8 +11968,6 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
 	}
       imp->maybe_create_loc ();
-      if (is_interface && !ix)
-	spans.close ();
     }
 
   if (!mapper->is_file ())
@@ -12399,9 +12397,10 @@ finish_module_parse (cpp_reader *reader)
 	    }
 	}
 
-      /* Force the current linemap to close.  */
-      linemap_add (line_table, LC_ENTER, false, "", 0);
       spans.close ();
+      /* Force a valid but empty line map at the end.  This simplifies
+	 the line table preparation and writing logic.  */
+      linemap_add (line_table, LC_ENTER, false, "", 0);
 
       if (state->filename)
 	{
