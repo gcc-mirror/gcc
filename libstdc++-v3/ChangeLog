@@ -1,3 +1,15 @@
+2018-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87544
+	* include/bits/stl_vector.h (vector::_S_max_size): Limit size to
+	PTRDIFF_MAX / sizeof(value_type).
+	* include/ext/malloc_allocator.h (malloc_allocator::max_size):
+	Likewise.
+	* include/ext/new_allocator.h (new_allocator::max_size): Likewise.
+	* testsuite/23_containers/vector/allocator/minimal.cc: Adjust
+	expected value for max_size().
+	* testsuite/23_containers/vector/capacity/87544.cc: New test.
+
 2018-10-09  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_list.h
