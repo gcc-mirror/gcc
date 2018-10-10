@@ -1,3 +1,9 @@
+2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87574
+	* cgraphunit.c (cgraph_node::expand_thunk): Force DECL_IGNORED_P on
+	the thunk when expanding to GIMPLE.
+
 2018-10-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* varasm.c (mergeable_string_section): Don't try to move zero-length
