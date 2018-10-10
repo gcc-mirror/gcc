@@ -1,6 +1,13 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/
+	* internal-fn.def (CO_FRAME, CO_YIELD, CO_ACTOR): New.
+	* internal-fn.c (expand_CO_FRAME, expand_CO_YIELD,
+	expand_CO_ACTOR): New.
+
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/
 	* builtin-types.def (BT_FN_BOOL_PTR, BT_FN_PTR_PTR_SIZE_BOOL): New.
 	* builtins.def (DEF_COROUTINE_BUILTIN): New.
 	Include coroutine-builtins.def.
