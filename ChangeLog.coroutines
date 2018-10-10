@@ -1,5 +1,11 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp/
+	* cp-tree.h: Use a bit in lang_decl_fn instead of DECL_LANG_FLAG_3
+	to signal that a function is a coroutine.
+ 
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/
 	* Makefile.in (OBJS): Add coroutine-passes.o.
 	* tree-pass.h (make_pass_coroutine_expand_ifns): New.

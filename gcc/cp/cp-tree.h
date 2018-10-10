@@ -501,7 +501,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
       LABEL_DECL_CDTOR (in LABEL_DECL)
    3: DECL_IN_AGGR_P.
-      DECL_COROUTINE_FUNCTION_P (in a FUNCTION_DECL)
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
       DECL_SELF_REFERENCE_P (in a TYPE_DECL)
@@ -2589,7 +2588,8 @@ struct GTY(()) lang_decl_fn {
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  unsigned spare : 13;
+  unsigned coroutine_p : 1;
+  unsigned spare : 12;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -4856,7 +4856,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 
 /* True if NODE is a co-routine FUNCTION_DECL.  */
 #define DECL_COROUTINE_FUNCTION_P(NODE) \
-  DECL_LANG_FLAG_3 (FUNCTION_DECL_CHECK (NODE))
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
 
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
