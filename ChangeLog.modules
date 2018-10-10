@@ -1,3 +1,13 @@
+2018-10-10  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::{read,write}_defines): Rename to ...
+	(module_state::{read,write}_macros): ... here.
+	(module_state::{read,write}): Cope with legacy aliases.
+	(finish_module_parse): Install initialized controlling macro.
+	gcc/testsuite/
+	* g++.dg/modules/alias-1_[cdef].C: New.
+
 2018-10-09  Nathan Sidwell  <nathan@acm.org>
 
 	Lazy macro table loading

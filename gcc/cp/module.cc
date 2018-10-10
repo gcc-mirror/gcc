@@ -2873,6 +2873,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   module_state *parent;
 
   tree name;		/* Name of the module.  */
+  // FIXME:Consider being a legacy-header only item on the slurping object
   tree controlling_macro;  /* Controlling macro, if non-NULL.  */
 
   /* Sadly this cannot be anonymous, because GTY.  */
@@ -3054,11 +3055,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  private:
   void write_define (bytes_out &, const cpp_macro *, bool located = true);
   cpp_macro *read_define (bytes_in &, cpp_reader *, bool located = true) const;
-  bool write_defines (elf_out *to, cpp_reader *, unsigned *crc_ptr);
-  bool read_defines ();
-  void import_defines ();
+  bool write_macros (elf_out *to, cpp_reader *, unsigned *crc_ptr);
+  bool read_macros ();
+  void install_macros ();
+
  public:
-  void install_defines ();
+  void import_macros ();
 
  public:
   static void undef_macro (cpp_reader *, location_t, cpp_hashnode *);
@@ -3156,6 +3158,7 @@ static const char *module_mapper_name;
 static const char *module_legacy_name;
 
 /* A controlling macro.  */
+// FIXME:Consider being a ?name trail on the module_legacy_name
 static const char *module_controlling_macro;
 
 /* End of the prefix line maps.  */
@@ -10301,7 +10304,7 @@ macro_loc_cmp (const void *a_, const void *b_)
    containing the definitions, the other a table of node names.  */
 
 bool
-module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
+module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 {
   dump () && dump ("Writing macros");
   dump.indent ();
@@ -10402,7 +10405,7 @@ module_state::write_defines (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 }
  
 bool
-module_state::read_defines ()
+module_state::read_macros ()
 {
   
   /* Get the tbl section.  */
@@ -10416,10 +10419,11 @@ module_state::read_defines ()
   return true;
 }
 
-/* Load the macro name table.  */
+/* Install the macro name table.  */
+// FIXME Deal with clobbering controling macros
 
 void
-module_state::import_defines ()
+module_state::install_macros ()
 {
   bytes_in &sec = slurp ()->macro_tbl;
   if (!sec.size)
@@ -10470,17 +10474,17 @@ module_state::import_defines ()
   dump.outdent ();
 }
 
-/* Install all the transitive defines.  */
+/* Import the transitive macros.  */
 
 void
-module_state::install_defines ()
+module_state::import_macros ()
 {
   bitmap_ior_into (legacies, slurp ()->legacies);
 
   bitmap_iterator bititer;
   unsigned bitnum;
   EXECUTE_IF_SET_IN_BITMAP (slurp ()->legacies, 0, bitnum, bititer)
-    (*modules)[bitnum]->import_defines ();
+    (*modules)[bitnum]->install_macros ();
 }
 
 /* NODE is being undefined at LOC.  Record it in the export table, if
@@ -10778,7 +10782,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
     cfg.u (0);
 
   cfg.u (modules_atom_p ());
-  cfg.u (to->name (fullname));
+  cfg.u (to->name (is_legacy () ? "" : fullname));
 
   /* Configuration. */
   dump () && dump ("Writing target='%s', host='%s'",
@@ -10863,7 +10867,8 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
       back and forget it.  */
   cfg.u32 ();
 
-  /* Read controlling macro.  */
+  /* Read controlling macro.  We do this before validating the CRC,
+     as the latter is computed from names we originally used.  */
   if (cpp_hashnode *node = cfg.cpp_node ())
     {
       cpp_macro *macro = read_define (cfg, reader, false);
@@ -10934,10 +10939,18 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
   /* Check module name.  */
   {
     const char *their_name = from ()->name (cfg.u ());
-    if (strcmp (their_name, fullname))
+    const char *our_name = is_legacy () ? "" : fullname;
+
+    /* Legacy modules can be aliased, so name checking is
+       inappropriate.  */
+    if (strcmp (their_name, our_name))
       {
-	error_at (loc, "module %qs found, expected module %qs",
-		  their_name, fullname);
+	error_at (loc,
+		  their_name[0] && our_name[0] ? G_("module %qs found")
+		  : their_name[0]
+		  ? G_("legacy module expected, module %qs found")
+		  : G_("module %qs expected, legacy module found"),
+		  their_name[0] ? their_name : our_name);
 	goto fail;
       }
   }
@@ -11162,13 +11175,9 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   /* Write the line maps.  */
   if (modules_atom_p ())
-    {
-      write_locations (to, range_bits, &crc);
-    }
+    write_locations (to, range_bits, &crc);
 
-  bool any_macros = false;
-  if (modules_legacy_p ())
-    any_macros = write_defines (to, reader, &crc);
+  bool any_macros = modules_legacy_p () && write_macros (to, reader, &crc);
 
   /* And finish up.  */
   write_config (to, our_opts, range, unnamed, any_macros, crc);
@@ -11251,7 +11260,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
 
-  if (any_macros && !read_defines ())
+  if (any_macros && !read_macros ())
     return NULL;
 
   /* Read the namespace hierarchy. */
@@ -11799,7 +11808,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
-	imp->install_defines ();
+	imp->import_macros ();
     }
 
   gcc_assert (global_namespace == current_scope ());
@@ -12008,7 +12017,7 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 		imp = imp->resolve_alias ();
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
 		if (imp->is_legacy ())
-		  imp->install_defines ();
+		  imp->import_macros ();
 	      }
 	  }
 	else
@@ -12405,7 +12414,9 @@ finish_module_parse (cpp_reader *reader)
 		  error_at (state->loc, "controlling macro %qE is imported",
 			    state->controlling_macro);
 	    }
-	  else if (!cpp_user_macro_p ((node)))
+
+	  if (!cpp_user_macro_p ((node))
+	      || name != module_controlling_macro)
 	    {
 	      cpp_force_token_locations (reader, state->loc);
 	      cpp_define (reader, module_controlling_macro);
