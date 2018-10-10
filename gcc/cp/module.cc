@@ -1114,12 +1114,12 @@ protected:
       SHN_XINDEX = 0xffff,
 
       /* Section types.  */
-      SHT_NONE = 0,  /* No contents.  */
+      SHT_NONE = 0,	/* No contents.  */
       SHT_PROGBITS = 1, /* Random bytes.  */
-      SHT_STRTAB = 3,  /* A string table.  */
+      SHT_STRTAB = 3,	/* A string table.  */
 
       /* Section flags.  */
-      SHF_NONE = 0x00, /* Nothing.  */
+      SHF_NONE = 0x00,	/* Nothing.  */
       SHF_STRINGS = 0x20,  /* NUL-Terminated strings.  */
 
       /* I really hope we do not get BMI files larger than 4GB.  */
@@ -1144,51 +1144,51 @@ public:
 protected:
   /* File identification.  On-disk representation.  */
   struct ident {
-    uint8_t magic[4];
-    uint8_t klass; /* 4:CLASS32 */
-    uint8_t data; /* 5:DATA2[LM]SB */
-    uint8_t version; /* 6:EV_CURRENT  */
-    uint8_t osabi; /* 7:OSABI_NONE */
-    uint8_t abiver; /* 8: 0 */
-    uint8_t pad[7]; /* 9-15 */
+    uint8_t magic[4];	/* 0x7f, 'E', 'L', 'F' */
+    uint8_t klass;	/* 4:CLASS32 */
+    uint8_t data;	/* 5:DATA2[LM]SB */
+    uint8_t version;	/* 6:EV_CURRENT  */
+    uint8_t osabi;	/* 7:OSABI_NONE */
+    uint8_t abiver;	/* 8: 0 */
+    uint8_t pad[7];	/* 9-15 */
   };
   /* File header.  On-disk representation.  */
   struct header {
     struct ident ident;
-    uint16_t type; /* ET_NONE */
-    uint16_t machine; /* EM_NONE */
-    uint32_t version; /* EV_CURRENT */
-    uint32_t entry; /* 0 */
-    uint32_t phoff; /* 0 */
-    uint32_t shoff; /* Section Header Offset in file */
+    uint16_t type;	/* ET_NONE */
+    uint16_t machine;	/* EM_NONE */
+    uint32_t version;	/* EV_CURRENT */
+    uint32_t entry;	/* 0 */
+    uint32_t phoff;	/* 0 */
+    uint32_t shoff;	/* Section Header Offset in file */
     uint32_t flags; 
-    uint16_t ehsize; /* ELROND Header SIZE -- sizeof (header) */
+    uint16_t ehsize;	/* ELROND Header SIZE -- sizeof (header) */
     uint16_t phentsize; /* 0 */
-    uint16_t phnum;    /* 0 */
+    uint16_t phnum;	/* 0 */
     uint16_t shentsize; /* Section Header SIZE -- sizeof (section) */
-    uint16_t shnum;  /* Section Header NUM */
-    uint16_t shstrndx; /* Section Header STRing iNDeX */
+    uint16_t shnum;	/* Section Header NUM */
+    uint16_t shstrndx;	/* Section Header STRing iNDeX */
   };
   /* File section.  On-disk representation.  */
   struct section {
-    uint32_t name; /* String table offset.  */
-    uint32_t type; /* SHT_* */
-    uint32_t flags; /* SHF_* */
-    uint32_t addr; /* 0 */
-    uint32_t offset;  /* OFFSET in file */
-    uint32_t size; /* SIZE of section */
-    uint32_t link; /* 0 */
-    uint32_t info; /* 0 */
+    uint32_t name;	/* String table offset.  */
+    uint32_t type;	/* SHT_* */
+    uint32_t flags;	/* SHF_* */
+    uint32_t addr;	/* 0 */
+    uint32_t offset;	/* OFFSET in file */
+    uint32_t size;	/* SIZE of section */
+    uint32_t link;	/* 0 */
+    uint32_t info;	/* 0 */
     uint32_t addralign; /* 0 */
-    uint32_t entsize; /* ENTry SIZE, usually 0 */
+    uint32_t entsize;	/* ENTry SIZE, usually 0 */
   };
 
 protected:
-  data hdr;	  /* The header.  */
+  data hdr;	/* The header.  */
   data sectab; 	/* The section table.  */
   data strtab;  /* String table.  */
-  int fd;   /* File descriptor we're reading or writing.  */
-  int err; 	  /* Sticky error code.  */
+  int fd;   	/* File descriptor we're reading or writing.  */
+  int err; 	/* Sticky error code.  */
 
 public:
   /* Construct from STREAM.  E is errno if STREAM NULL.  */
@@ -3155,6 +3155,9 @@ static const char *module_legacy_macro;
 
 /* Our controlling macro.  */
 static cpp_hashnode *controlling_node;
+
+/* Deferred imports.  */
+static vec<module_state *, va_heap, vl_embed> *pending_imports;
 
 /* End of the prefix line maps.  */
 location_t module_preamble_end_loc;
@@ -11802,12 +11805,12 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   if (imp->is_detached ())
     imp->attach (from_loc);
 
-  imp->direct_p = true;
   if (exporting)
     imp->exported_p = true;
 
   if (!modules_atom_p ())
     {
+      imp->direct_p = true;
       if (!imp->is_imported ())
 	{
 	  unsigned n = dump.push (imp);
@@ -11818,11 +11821,14 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
 	}
 
       imp = imp->resolve_alias ();
+      imp->direct_p = true;
 
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
 	imp->import_macros ();
     }
+  else
+    vec_safe_push (pending_imports, imp);
 
   gcc_assert (global_namespace == current_scope ());
 }
@@ -11854,11 +11860,11 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     }
 
   if (state->is_legacy () != modules_legacy_p ())
+    // FIXME:We should prevent this by construction
     error_at (from_loc,
 	      state->is_legacy ()
 	      ? G_("legacy module only permitted with %<-fmodules-header%>")
 	      : G_("legacy module expected with %<-fmodules-header%>"));
-
 
   state->attach (from_loc);
 
@@ -11890,10 +11896,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       state->mod = MODULE_PURVIEW;
     }
   else
-    {
-      state->direct_p = true;
-      state->mod = MODULE_UNKNOWN;
-    }
+    state->mod = MODULE_UNKNOWN;
 
   if (!modules_atom_p ())
     {
@@ -11901,22 +11904,16 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       char *fname = module_mapper::import_export (state, exporting_p);
       state->maybe_create_loc ();
       if (!exporting_p)
-	state->do_import (fname, reader);
+	{
+	  state->direct_p = true;
+	  state->do_import (fname, reader);
+	}
       else if (fname)
 	state->filename = xstrdup (fname); 
       dump.pop (n);
     }
-}
-
-/* Reverse source import location order.  */
-
-static int
-module_from_cmp (const void *a_, const void *b_)
-{
-  module_state *a = *(module_state *const *)a_;
-  module_state *b = *(module_state *const *)b_;
-
-  return a->from_loc > b->from_loc ? -1 : +1;
+  else
+    vec_safe_push (pending_imports, state);
 }
 
 /* The module preamble has been parsed.  Now load all the imports.
@@ -11926,108 +11923,75 @@ module_from_cmp (const void *a_, const void *b_)
 int
 module_state::preamble_load (location_t loc, cpp_reader *reader)
 {
-  /* Iterate over the module hash, informing the mapper of every not
-     loaded (direct) import.  */
-  unsigned limit = modules_hash->elements ();
-  if (!limit)
-    /* The hash table could be empty due to parse errors.  */
+  if (!vec_safe_length (pending_imports))
     return 0;
 
   dump.push (NULL);
   dump () && dump ("Processing preamble");
 
-  /* For a consistent order, and avoiding hash table iteration during
-     actual import, we create a vector of imports.  */
-  auto_vec<module_state *> directs (limit);
-
-  module_state *interface = NULL;
-  if (module_state *mod = (*modules)[MODULE_PURVIEW])
-    if (mod->exported_p)
-      interface = mod;
+  bool is_interface = ((*pending_imports)[0] == (*modules)[MODULE_PURVIEW]
+		       && (*pending_imports)[0]->exported_p);
 
   module_mapper *mapper = module_mapper::get (loc);
   if (!mapper->is_live ())
     return false;
 
-  hash_table<module_state_hash>::iterator end (modules_hash->end ());
-  for (hash_table<module_state_hash>::iterator iter (modules_hash->begin ());
-       iter != end; ++iter)
-    {
-      module_state *imp = *iter;
-      gcc_checking_assert (mapper->is_file () || !imp->filename);
-      if (imp->is_direct ())
-	{
-	  directs.quick_push (imp);
-	  imp->direct_p = false;
-	}
-      else
-	gcc_checking_assert (imp == interface || imp->is_detached ());
-    }
+  /* Preserve the state of the line-map.  */
+  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
 
   if (!mapper->is_file ())
     {
       /* Send batched request to mapper.  */
       mapper->cork ();
-      if (interface)
-	mapper->imex_query (interface, true);
-
-      /* Put in reverse source order, for consistency.  */
-      (directs.qsort) (module_from_cmp);
-      for (unsigned ix = directs.length (); ix--;)
-	mapper->imex_query (directs[ix], false);
+      for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+	{
+	  module_state *imp = (*pending_imports)[ix];
+	  mapper->imex_query (imp, !ix && is_interface);
+	}
       mapper->uncork (loc);
+    }
+
+  bool ok = true;
+  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+    {
+      module_state *imp = (*pending_imports)[ix];
 
       /* Read the mapper's responses.  */
-      if (interface)
-	if (char *fname = mapper->imex_response (interface))
-	  interface->filename = xstrdup (fname);
-      for (unsigned ix = directs.length (); ix--;)
-	{
-	  module_state *imp = directs[ix];
-	  if (char *fname = mapper->imex_response (imp))
-	    imp->filename = xstrdup (fname);
-	}
-      mapper->maybe_uncork (loc);
-    }
+      if (!mapper->is_file ())
+	if (char *fname = mapper->imex_response (imp))
+	  imp->filename = xstrdup (fname);
 
-  /* Preserve the state of the line-map.  */
-  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-
-  if (interface)
-    {
-      gcc_assert (interface->loc == UNKNOWN_LOCATION);
-      interface->maybe_create_loc ();
-      spans.close ();
-    }
-
-  /* Check we know all the BMIs.  There's no point trying to load any
-     if some are missing.  */
-  bool ok = true;
-  for (unsigned ix = directs.length (); ix--;)
-    {
-      module_state *imp = directs[ix];
+      gcc_assert (!imp->direct_p);
       if (!imp->filename)
 	{
 	  ok = false;
 	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
 	}
       imp->maybe_create_loc ();
+      if (is_interface && !ix)
+	spans.close ();
     }
+
+  if (!mapper->is_file ())
+    mapper->maybe_uncork (loc);
 
   if (ok)
     /* Now do the importing, which might cause additional requests
        (although nested import filenames are usually in their
        importer's import table).  */
-    while (directs.length ())
+    for (unsigned ix = is_interface ? 1 : 0;
+	 ix != pending_imports->length (); ix++)
       {
-	module_state *imp = directs.pop ();
+	module_state *imp = (*pending_imports)[ix];
 	unsigned n = dump.push (imp);
+
 	imp->direct_p = true;
 	if (imp->is_imported () || imp->do_import (NULL, reader))
 	  {
 	    if (imp->mod != MODULE_PURVIEW)
 	      {
 		imp = imp->resolve_alias ();
+		imp->direct_p = true;
 		(*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
 		if (imp->is_legacy ())
 		  imp->import_macros ();
@@ -12040,9 +12004,10 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 
   dump.pop (0);
 
-  unsigned adj = linemap_module_restore (line_table, pre_hwm);
+  vec_free (pending_imports);
 
-  if (interface)
+  unsigned adj = linemap_module_restore (line_table, pre_hwm);
+  if (is_interface)
     spans.open ();
 
   return ok ? int (adj) : -1;
@@ -12127,7 +12092,7 @@ maybe_import_include ()
   if (warn_legacy_header < 0)
     warn_legacy_header = !flag_preprocess_only;
 
-  /* We enable include diversion in atom mode -- not just legacy
+  /* We enable include translation in atom mode -- not just legacy
      header mode.  */
   return modules_atom_p () ? do_translate_include : NULL;
 }
@@ -12139,7 +12104,7 @@ atom_preamble_end (cpp_reader *reader, location_t loc)
 
   if (!warn_legacy_header)
     {
-      /* Turn off incude diversion.  */
+      /* Turn off include translation.  */
       cpp_callbacks *cb = cpp_get_callbacks (reader);
       cb->translate_include = NULL;
     }

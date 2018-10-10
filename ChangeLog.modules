@@ -1,6 +1,12 @@
 2018-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/
+	* module.cc (pending_imports): New.
+	({import,declare}_module): Use it.
+	(module_from_cmp): Delete.
+	(module_state::preamble_load): Use pending_imports array.
+
+	gcc/
 	* doc/invoke.texi (fmodule-legacy): Augment syntax.
 	gcc/cp/
 	* module.cc (module_controlling_macro): Replace with ...
