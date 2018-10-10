@@ -1,5 +1,10 @@
 2018-10-10  Martin Sebor  <msebor@redhat.com>
 
+	PR c/54391
+	* gcc.dg/transparent-union-6.c: New.
+
+2018-10-10  Martin Sebor  <msebor@redhat.com>
+
 	* gcc.c-torture/execute/memchr-1.c: Avoid assuming 4-byte wchar_t.
 	Add a test for 2-byte wchar_t.
 	* gcc.dg/builtin-memchr.c: New test.
