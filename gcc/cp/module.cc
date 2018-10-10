@@ -2873,8 +2873,6 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   module_state *parent;
 
   tree name;		/* Name of the module.  */
-  // FIXME:Consider being a legacy-header only item on the slurping object
-  tree controlling_macro;  /* Controlling macro, if non-NULL.  */
 
   /* Sadly this cannot be anonymous, because GTY.  */
   union {
@@ -2990,11 +2988,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_imports (elf_out *to, unsigned *crc_ptr);
   bool read_imports (cpp_reader *, line_maps *);
 
-  /* The configuration.  */
-  void write_config (elf_out *to, const char *opts, const range_t &sec_range,
-		     unsigned unnamed, bool any_macros, unsigned crc);
-  bool read_config (cpp_reader *, module_state *&alias, range_t &sec_range,
-		    unsigned &unnamed, bool &any_macros);
+ private:
+  void write_config (elf_out *to, struct module_state_config &, unsigned crc);
+  bool read_config (cpp_reader *, struct module_state_config &);
 
  private:
   /* Serialize various definitions. */
@@ -3102,8 +3098,7 @@ struct module_state_hash : ggc_ptr_hash<module_state> {
 
 module_state::module_state (tree name, module_state *parent)
   : imports (BITMAP_GGC_ALLOC ()), exports (BITMAP_GGC_ALLOC ()),
-    parent (parent), name (name), controlling_macro (NULL),
-    fullname (NULL), filename (NULL),
+    parent (parent), name (name), fullname (NULL), filename (NULL),
     loc (UNKNOWN_LOCATION), from_loc (UNKNOWN_LOCATION),
     mod (MODULE_UNKNOWN), subst (0), crc (0)
 {
@@ -3160,6 +3155,7 @@ static const char *module_legacy_name;
 /* A controlling macro.  */
 // FIXME:Consider being a ?name trail on the module_legacy_name
 static const char *module_controlling_macro;
+static cpp_hashnode *controlling_node;
 
 /* End of the prefix line maps.  */
 location_t module_preamble_end_loc;
@@ -3181,9 +3177,6 @@ static const std::pair<tree *, unsigned> global_tree_arys[] =
   };
 static GTY(()) vec<tree, va_gc> *fixed_trees;
 static unsigned global_crc;
-
-/* Significant options for this compilation.   */
-static char *our_opts;
 
 static unsigned lazy_lru;  /* LRU counter.  */
 static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
@@ -7969,94 +7962,6 @@ int module_mapper::translate_include (cpp_reader *reader, line_maps *lmaps,
   return +1;  /* cpplib will delete the buffer.  */
 }
 
-/* Generate a string of the compilation options.  */
-
-static char *
-get_option_string  ()
-{
-  /* Concatenate important options.  */
-  size_t opt_alloc = MODULE_STAMP ? 2 : 200;
-  size_t opt_len = 0;
-  char *opt_str = XNEWVEC (char, opt_alloc);
-
-  for (unsigned ix = 0; ix != save_decoded_options_count; ix++)
-    {
-      const cl_decoded_option *opt = &save_decoded_options[ix];
-      if (opt->opt_index >= N_OPTS)
-	continue;
-      // FIXME:There's probably a better way to get options we care
-      // about?  What does LTO do?
-      const char *text = opt->orig_option_with_args_text;
-
-      if (opt->opt_index >= N_OPTS)
-	continue;
-
-      /* Not an option (a filename or somesuch).  */
-      if (text[0] != '-')
-	continue;
-
-      /* Not -f* -g* -m* -O* -std=* */
-      if (!strchr ("fgmO", text[1])
-	  && 0 != strncmp (&text[1], "std=", 4))
-	continue;
-
-      /* Drop module-related options we don't need to preserve.  */
-      if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_legacy_
-	  || opt->opt_index == OPT_fmodule_legacy
-	  || opt->opt_index == OPT_fmodule_macro_
-	  || opt->opt_index == OPT_fforce_module_macros
-	  || opt->opt_index == OPT_fmodule_mapper_
-	  || opt->opt_index == OPT_fmodule_only
-	  || opt->opt_index == OPT_fmodule_preamble_
-	  || opt->opt_index == OPT_fmodules_atom
-	  || opt->opt_index == OPT_fmodules_ts)
-	continue;
-
-      /* Drop random options.  */
-      if (opt->opt_index == OPT_frandom_seed
-	  || opt->opt_index == OPT_frandom_seed_)
-	continue;
-
-      /* Drop -fpic.  */
-      if (opt->opt_index == OPT_fpic
-	  || opt->opt_index == OPT_fPIC
-	  || opt->opt_index == OPT_fPIE)
-	continue;
-
-      /* Drop profiling.  */
-      if (opt->opt_index >= OPT_fprofile
-	   && opt->opt_index <= OPT_fprofile_values)
-	continue;
-
-      /* Drop diagnostic formatting options.  */
-      if (opt->opt_index == OPT_fmessage_length_
-	  || (opt->opt_index >= OPT_fdiagnostics_color_
-	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree))
-	continue;
-
-      /* Drop any dump control options.  */
-      if (opt->opt_index >= OPT_fdump_
-	  && opt->opt_index <= OPT_fdump_unnumbered_links)
-	continue;
-
-      size_t l = strlen (text);
-      if (opt_alloc < opt_len + l + 2)
-	{
-	  opt_alloc = (opt_len + l + 2) * 2;
-	  opt_str = XRESIZEVEC (char, opt_str, opt_alloc);
-	}
-      if (opt_len)
-	opt_str[opt_len++] = ' ';
-      memcpy (&opt_str[opt_len], text, l);
-      opt_len += l;
-    }
-
-  opt_str[opt_len] = 0;
-
-  return opt_str;
-}
-
 /* A human-readable README section.  It is a STRTAB that may be
    extracted with:
      readelf -p.gnu.c++.README $(module).nms */
@@ -10343,21 +10248,22 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
 	      continue;
 	    }
 
-	  if (mac.def && !controlling_macro
+	  if (mac.def && !controlling_node
 	      && mac.def->line >= spans.main_start ())
 	    {
 	      /* The user did not specify a controlling macro.  Pick
 		 the first define.  We rashly presume the #ifndef idiom.  */
-	      controlling_macro = identifier (node);
+	      controlling_node = node;
 	      dump () && dump ("Selecting %I as controlling macro",
-			       controlling_macro);
+			       identifier (node));
 	    }
 
-	  if (node == cpp_node (controlling_macro))
+	  if (node == controlling_node)
 	    {
 	      /* The controlling macro is written in the config, not
 		 here.  */
-	      dump () && dump ("Controlling macro %I", controlling_macro);
+	      dump () && dump ("Controlling macro %I",
+			       identifier (controlling_node));
 	      slot.offset = 0;
 	      continue;
 	    }
@@ -10747,11 +10653,129 @@ space_cmp (const void *a_, const void *b_)
    u:unnamed
 */
 
-// FIXME serialize legacy header controlling macro and perform deduping
+/* Data for config reading and writing.  */
+struct module_state_config {
+  const char *opt_str;
+  range_t sec_range;
+  unsigned num_unnamed;
+  bool any_macros;
+  cpp_hashnode *controlling_node;
+  module_state *alias;
+
+public:
+  module_state_config ()
+    :opt_str (get_opts ()), sec_range (0,0), num_unnamed (0), any_macros (false),
+     controlling_node (NULL), alias (NULL)
+  {
+  }
+  static void release ()
+  {
+    XDELETEVEC (opts);
+    opts = NULL;
+  }
+
+private:
+  static const char *get_opts ();
+  static char *opts;
+};
+
+char *module_state_config::opts;
+
+/* Generate a string of the compilation options.  */
+
+const char *
+module_state_config::get_opts ()
+{
+  if (opts)
+    return opts;
+
+  /* Concatenate important options.  */
+  size_t opt_alloc = MODULE_STAMP ? 2 : 200;
+  size_t opt_len = 0;
+  char *opt_str = XNEWVEC (char, opt_alloc);
+
+  for (unsigned ix = 0; ix != save_decoded_options_count; ix++)
+    {
+      const cl_decoded_option *opt = &save_decoded_options[ix];
+      if (opt->opt_index >= N_OPTS)
+	continue;
+      // FIXME:There's probably a better way to get options we care
+      // about?  What does LTO do?
+      const char *text = opt->orig_option_with_args_text;
+
+      if (opt->opt_index >= N_OPTS)
+	continue;
+
+      /* Not an option (a filename or somesuch).  */
+      if (text[0] != '-')
+	continue;
+
+      /* Not -f* -g* -m* -O* -std=* */
+      if (!strchr ("fgmO", text[1])
+	  && 0 != strncmp (&text[1], "std=", 4))
+	continue;
+
+      /* Drop module-related options we don't need to preserve.  */
+      if (opt->opt_index == OPT_fmodule_lazy
+	  || opt->opt_index == OPT_fmodule_legacy_
+	  || opt->opt_index == OPT_fmodule_legacy
+	  || opt->opt_index == OPT_fmodule_macro_
+	  || opt->opt_index == OPT_fforce_module_macros
+	  || opt->opt_index == OPT_fmodule_mapper_
+	  || opt->opt_index == OPT_fmodule_only
+	  || opt->opt_index == OPT_fmodule_preamble_
+	  || opt->opt_index == OPT_fmodules_atom
+	  || opt->opt_index == OPT_fmodules_ts)
+	continue;
+
+      /* Drop random options.  */
+      if (opt->opt_index == OPT_frandom_seed
+	  || opt->opt_index == OPT_frandom_seed_)
+	continue;
+
+      /* Drop -fpic.  */
+      if (opt->opt_index == OPT_fpic
+	  || opt->opt_index == OPT_fPIC
+	  || opt->opt_index == OPT_fPIE)
+	continue;
+
+      /* Drop profiling.  */
+      if (opt->opt_index >= OPT_fprofile
+	   && opt->opt_index <= OPT_fprofile_values)
+	continue;
+
+      /* Drop diagnostic formatting options.  */
+      if (opt->opt_index == OPT_fmessage_length_
+	  || (opt->opt_index >= OPT_fdiagnostics_color_
+	      && opt->opt_index <= OPT_fdiagnostics_show_template_tree))
+	continue;
+
+      /* Drop any dump control options.  */
+      if (opt->opt_index >= OPT_fdump_
+	  && opt->opt_index <= OPT_fdump_unnumbered_links)
+	continue;
+
+      size_t l = strlen (text);
+      if (opt_alloc < opt_len + l + 2)
+	{
+	  opt_alloc = (opt_len + l + 2) * 2;
+	  opt_str = XRESIZEVEC (char, opt_str, opt_alloc);
+	}
+      if (opt_len)
+	opt_str[opt_len++] = ' ';
+      memcpy (&opt_str[opt_len], text, l);
+      opt_len += l;
+    }
+
+  opt_str[opt_len] = 0;
+
+  opts = opt_str;
+
+  return opts;
+}
+
 void
-module_state::write_config (elf_out *to, const char *opt_str,
-			    const range_t &sec_range,
-			    unsigned unnamed, bool any_macros,
+module_state::write_config (elf_out *to, module_state_config &config,
 			    unsigned inner_crc)
 {
   bytes_out cfg (to);
@@ -10765,20 +10789,15 @@ module_state::write_config (elf_out *to, const char *opt_str,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
-  if (controlling_macro)
+  if (config.controlling_node)
     {
-      cpp_hashnode *node = cpp_node (controlling_macro);
-      if (cpp_user_macro_p (node))
-	{
-	  dump () && dump ("Controlling macro=%I", controlling_macro);
-	  cfg.cpp_node (node);
-	  write_define (cfg, node->value.macro, false);
-	}
-      else
-	controlling_macro = NULL;
+      gcc_assert (cpp_user_macro_p (config.controlling_node));
+      dump () && dump ("Controlling macro=%I",
+		       identifier (config.controlling_node));
+      cfg.cpp_node (config.controlling_node);
+      write_define (cfg, config.controlling_node->value.macro, false);
     }
-
-  if (!controlling_macro)
+  else
     cfg.u (0);
 
   cfg.u (modules_atom_p ());
@@ -10793,7 +10812,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
   cfg.u (target);
   cfg.u (host);
 
-  cfg.str (opt_str);
+  cfg.str (config.opt_str);
 
   /* Global tree information.  We write the globals crc separately,
      rather than mix it directly into the overall crc, as it is used
@@ -10807,15 +10826,15 @@ module_state::write_config (elf_out *to, const char *opt_str,
   cfg.u (modules->length ());
 
   dump () && dump ("Declaration sections are [%u,%u)",
-		   sec_range.first, sec_range.second);
-  cfg.u (sec_range.first);
-  cfg.u (sec_range.second);
+		   config.sec_range.first, config.sec_range.second);
+  cfg.u (config.sec_range.first);
+  cfg.u (config.sec_range.second);
 
-  dump () && dump ("Unnamed %u decls", unnamed);
-  cfg.u (unnamed);
+  dump () && dump ("Unnamed %u decls", config.num_unnamed);
+  cfg.u (config.num_unnamed);
 
-  dump () && dump ("Macros %s", any_macros ? "yes" : "no");
-  cfg.u (any_macros);
+  dump () && dump ("Macros %s", config.any_macros ? "yes" : "no");
+  cfg.u (config.any_macros);
 
   /* Now generate CRC, we'll have incorporated the inner CRC because
      of its serialization above.  */
@@ -10824,9 +10843,7 @@ module_state::write_config (elf_out *to, const char *opt_str,
 }
 
 bool
-module_state::read_config (cpp_reader *reader, module_state *&alias,
-			   range_t &sec_range,
-			   unsigned &unnamed, bool &any_macros)
+module_state::read_config (cpp_reader *reader, module_state_config &config)
 {
   bytes_in cfg;
 
@@ -10875,8 +10892,7 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
       if (cfg.get_overrun ())
 	goto done;
 
-      controlling_macro = identifier (node);
-      dump () && dump ("Controlling macro is %I", controlling_macro);
+      dump () && dump ("Controlling macro is %I", identifier (node));
       if (cpp_user_macro_p (node))
 	{
 	  /* Already defined, find alias. Expect pseudo-import  */
@@ -10889,13 +10905,13 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
 	  else if (!existing->imported)
 	    {
 	      error_at (loc, "controlling macro %E was not set by an import",
-			controlling_macro);
+			identifier (node));
 	      inform (existing->line, "controlling macro defined here");
 	    }
 	  else if (!node->deferred)
 	    {
 	      error_at (loc, "circular alias of controlling macro %E",
-			controlling_macro);
+			identifier (node));
 	      inform (existing->line, "aliased here");
 	    }
 	  else
@@ -10904,7 +10920,7 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
 	      macro_import &imp = (*macro_imports)[node->deferred - 1];
 	      macro_import::slot &slot = imp[0];
 
-	      alias = (*modules)[slot.get_mod ()];
+	      config.alias = (*modules)[slot.get_mod ()];
 	      cfg.no_more ();
 	      goto done;
 	    }
@@ -10913,6 +10929,7 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
       /* Install as pseudo-import.  We'll complete this installation
 	 once the module number's assigned.  */
       cpp_set_deferred_macro (node, macro);
+      config.controlling_node = node;
     }
 
   if (modules_atom_p () != cfg.u ())
@@ -10973,12 +10990,10 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
      match.  */
   {
     const char *their_opts = cfg.str ();
-    if (!our_opts)
-      our_opts = get_option_string ();
-    if (strcmp (their_opts, our_opts))
+    if (strcmp (their_opts, config.opt_str))
       {
 	error_at (loc, "compilation options differ %qs, expected %qs",
-		  their_opts, our_opts);
+		  their_opts, config.opt_str);
 	goto fail;
       }
   }
@@ -11004,19 +11019,19 @@ module_state::read_config (cpp_reader *reader, module_state *&alias,
   }
 
   /* Random config data.  */
-  sec_range.first = cfg.u ();
-  sec_range.second = cfg.u ();
+  config.sec_range.first = cfg.u ();
+  config.sec_range.second = cfg.u ();
   dump () && dump ("Declaration sections are [%u,%u)",
-		   sec_range.first, sec_range.second);
+		   config.sec_range.first, config.sec_range.second);
 
-  unnamed = cfg.u ();
-  dump () && dump ("%u unnamed decls", unnamed);
+  config.num_unnamed = cfg.u ();
+  dump () && dump ("%u unnamed decls", config.num_unnamed);
 
-  any_macros = cfg.u ();
-  dump () && dump ("Macros %s", any_macros ? "yes" : "no");
+  config.any_macros = cfg.u ();
+  dump () && dump ("Macros %s", config.any_macros ? "yes" : "no");
 
-  if (sec_range.first > sec_range.second
-      || sec_range.second > from ()->get_section_limit ())
+  if (config.sec_range.first > config.sec_range.second
+      || config.sec_range.second > from ()->get_section_limit ())
     {
       error_at (loc, "paradoxical declaration section range");
       goto fail;
@@ -11070,6 +11085,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	connector.connect (v);
     }
 
+  module_state_config config;
+
   /* depset::cluster is the cluster number,
      depset::section is unspecified scratch value.
 
@@ -11084,8 +11101,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
      depset::section -> section number of cluster (if !namespace). */
 
   unsigned n_spaces = 0;
-  range_t range;
-  range.first = range.second = to->get_section_limit ();
+  config.sec_range.first = config.sec_range.second = to->get_section_limit ();
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -11119,8 +11135,8 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  base[0]->cluster = size;
 	  /* Set the section number.  */
 	  for (unsigned jx = size; jx--;)
-	    base[jx]->section = range.second;
-	  range.second++;
+	    base[jx]->section = config.sec_range.second;
+	  config.sec_range.second++;
 	}
     }
 
@@ -11129,7 +11145,6 @@ module_state::write (elf_out *to, cpp_reader *reader)
      unnamed-decl count of the depset's decl (and remains zero for
      non-decls and non-unnamed).  */
   auto_vec<depset *> spaces (n_spaces);
-  unsigned unnamed = 0;
   for (unsigned size, ix = 0; ix < sccs.length (); ix += size)
     {
       depset **base = &sccs[ix];
@@ -11146,19 +11161,17 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	  /* Cluster is now used to number unnamed decls.  */
 	  base[0]->cluster = 0;
 
-	  write_cluster (to, base, size, unnamed, &crc);
+	  write_cluster (to, base, size, config.num_unnamed, &crc);
 	}
     }
 
   /* We'd better have written as many sections and found as many
      namespaces as we predicted.  */
-  gcc_assert (range.second == to->get_section_limit ()
+  gcc_assert (config.sec_range.second == to->get_section_limit ()
 	      && spaces.length () == n_spaces);
 
-  if (!our_opts)
-    our_opts = get_option_string ();
   /* Human-readable info.  */
-  write_readme (to, our_opts);
+  write_readme (to, config.opt_str);
 
   /* Write the namespaces.  */
   (spaces.qsort) (space_cmp);
@@ -11168,7 +11181,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_bindings (to, table, &crc);
 
   /* Write the unnamed.  */
-  write_unnamed (to, sccs, unnamed, &crc);
+  write_unnamed (to, sccs, config.num_unnamed, &crc);
 
   /* Write the import table.  */
   write_imports (to, &crc);
@@ -11177,10 +11190,11 @@ module_state::write (elf_out *to, cpp_reader *reader)
   if (modules_atom_p ())
     write_locations (to, range_bits, &crc);
 
-  bool any_macros = modules_legacy_p () && write_macros (to, reader, &crc);
+  config.any_macros = modules_legacy_p () && write_macros (to, reader, &crc);
+  config.controlling_node = controlling_node;
 
   /* And finish up.  */
-  write_config (to, our_opts, range, unnamed, any_macros, crc);
+  write_config (to, config, crc);
 
   trees_out::instrument ();
   dump () && dump ("Wrote %u sections", to->get_section_limit ());
@@ -11197,16 +11211,13 @@ module_state::read (int fd, int e, cpp_reader *reader)
   if (!from ()->begin (loc))
     return NULL;
 
-  module_state *alias = NULL;
-  range_t range;
-  unsigned unnamed;
-  bool any_macros;
+  module_state_config config;
 
-  if (!read_config (reader, alias, range, unnamed, any_macros))
+  if (!read_config (reader, config))
     return NULL;
 
-  if (alias)
-    return alias;
+  if (config.alias)
+    return config.alias;
 
   if (modules_atom_p ())
     if (!read_locations ())
@@ -11244,15 +11255,15 @@ module_state::read (int fd, int e, cpp_reader *reader)
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
 
-  if (controlling_macro)
+  if (config.controlling_node)
     {
       /* Finish registering the controlling macro.  */
-      cpp_hashnode *node = cpp_node (controlling_macro);
-      if (!node->deferred && node->value.macro)
+      if (!config.controlling_node->deferred
+	  && config.controlling_node->value.macro)
 	{
-	  get_macro_imports (node).append (mod);
+	  get_macro_imports (config.controlling_node).append (mod);
 	  dump () && dump ("Registering controlling macro %I",
-			   controlling_macro);
+			   identifier (config.controlling_node));
 	}
     }
 
@@ -11260,7 +11271,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
 
-  if (any_macros && !read_macros ())
+  if (config.any_macros && !read_macros ())
     return NULL;
 
   /* Read the namespace hierarchy. */
@@ -11269,24 +11280,24 @@ module_state::read (int fd, int e, cpp_reader *reader)
     return NULL;
 
   /* And the bindings.  */
-  if (!read_bindings (spaces, range))
+  if (!read_bindings (spaces, config.sec_range))
     return NULL;
 
   /* And unnamed.  */
-  if (!read_unnamed (unnamed, range))
+  if (!read_unnamed (config.num_unnamed, config.sec_range))
     return NULL;
 
   /* We're done with the string and non-decl sections now.  */
   from ()->release ();
-  slurp ()->remaining = range.second - range.first;
+  slurp ()->remaining = config.sec_range.second - config.sec_range.first;
   slurp ()->lru = ++lazy_lru;
 
   if (mod == MODULE_PURVIEW || !flag_module_lazy)
     {
       /* Read the sections in forward order, so that dependencies are read
 	 first.  See note about tarjan_connect.  */
-      unsigned hwm = range.second;
-      for (unsigned ix = range.first; ix != hwm; ix++)
+      unsigned hwm = config.sec_range.second;
+      for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
 	{
 	  load_section (ix);
 	  if (from ()->has_error ())
@@ -12401,21 +12412,20 @@ finish_module_parse (cpp_reader *reader)
 	      tmp[eq - name] = 0;
 	      name = tmp;
 	    }
-	  state->controlling_macro = get_identifier (name);
-	  cpp_hashnode *node = cpp_node (state->controlling_macro);
+	  controlling_node = cpp_node (get_identifier (name));
 	  if (name != module_controlling_macro)
 	    XDELETEVEC (const_cast <char *> (name));
 
-	  if (cpp_user_macro_p ((node)))
+	  if (cpp_user_macro_p (controlling_node))
 	    {
-	      if (cpp_macro *macro
-		  = cpp_get_deferred_macro (reader, node, state->loc))
+	      if (cpp_macro *macro = cpp_get_deferred_macro
+		  (reader, controlling_node, state->loc))
 		if (macro->imported)
 		  error_at (state->loc, "controlling macro %qE is imported",
-			    state->controlling_macro);
+			    identifier (controlling_node));
 	    }
 
-	  if (!cpp_user_macro_p ((node))
+	  if (!cpp_user_macro_p (controlling_node)
 	      || name != module_controlling_macro)
 	    {
 	      cpp_force_token_locations (reader, state->loc);
@@ -12470,8 +12480,7 @@ finish_module_parse (cpp_reader *reader)
 void
 finish_module_processing ()
 {
-  XDELETEVEC (our_opts);
-  our_opts = NULL;
+  module_state_config::release ();
 
   set_bmi_repo (NULL);
   module_mapper::fini (input_location);

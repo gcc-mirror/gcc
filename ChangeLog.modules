@@ -1,6 +1,14 @@
 2018-10-10  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::controlling_macro): Delete.
+	(module_state_config): New struct.
+	(module_state::{read,write}_config): Wrap args in a struct.
+	(get_option_string): Move into module_state_config.
+	(module_state::write_macros): Adjust.
+	(module_state::{read,write}): Adjust.
+
+	gcc/cp/
 	* module.cc (module_state::{read,write}_defines): Rename to ...
 	(module_state::{read,write}_macros): ... here.
 	(module_state::{read,write}): Cope with legacy aliases.
