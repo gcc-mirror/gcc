@@ -1,5 +1,15 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/
+	* builtin-types.def (BT_FN_BOOL_PTR, BT_FN_PTR_PTR_SIZE_BOOL): New.
+	* builtins.def (DEF_COROUTINE_BUILTIN): New.
+	Include coroutine-builtins.def.
+	* coroutine-builtins.def: New.
+	gcc/testsuite/
+	* coro-builtins.C: New.
+
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite/
 	* coroutines/coroutines.exp: Update to add attribution.
 
