@@ -217,7 +217,14 @@
 
 (define_split
   [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
-        (match_operand:MMXMODE 1 "general_gr_operand"))]
+        (match_operand:MMXMODE 1 "nonimmediate_gr_operand"))]
+  "!TARGET_64BIT && reload_completed"
+  [(const_int 0)]
+  "ix86_split_long_move (operands); DONE;")
+
+(define_split
+  [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
+        (match_operand:MMXMODE 1 "const0_operand"))]
   "!TARGET_64BIT && reload_completed"
   [(const_int 0)]
   "ix86_split_long_move (operands); DONE;")
