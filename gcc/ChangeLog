@@ -1,3 +1,8 @@
+2018-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/87573
+	* config/i386/mmx.md (const_vector 0 -> mem splitter): New splitter.
+
 2018-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87550
