@@ -1,6 +1,18 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* coroutines.cc (find_promise_type): New.
+	(co_return_context_valid_p): Diagnose missing promise members.
+	* cp-tree.h (lang_decl_fn): Add promise_type.
+	(DECL_COROUTINE_PROMISE_TYPE): New.
+
+	gcc/testsuite/
+	* g++.dg/coroutines/coro.h (MissingRetVoid): New class.
+	* g++.dg/coroutines/coro-missing-ret-void.C: New.
+
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add cp/coroutines.o.
 	* semantics.c: Move co_return_context_valid_p to new file.
 	* coroutines.cc: New.
