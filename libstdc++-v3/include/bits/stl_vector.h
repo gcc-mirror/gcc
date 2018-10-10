@@ -1726,7 +1726,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       static size_type
       _S_max_size(const _Tp_alloc_type& __a) _GLIBCXX_NOEXCEPT
       {
-	const size_t __diffmax = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max;
+	// std::distance(begin(), end()) cannot be greater than PTRDIFF_MAX,
+	// and realistically we can't store more than PTRDIFF_MAX/sizeof(T)
+	// (even if std::allocator_traits::max_size says we can).
+	const size_t __diffmax
+	  = __gnu_cxx::__numeric_traits<ptrdiff_t>::__max / sizeof(_Tp);
 	const size_t __allocmax = _Alloc_traits::max_size(__a);
 	return (std::min)(__diffmax, __allocmax);
       }

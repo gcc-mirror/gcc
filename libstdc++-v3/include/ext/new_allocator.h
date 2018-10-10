@@ -130,7 +130,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT
-      { return size_t(-1) / sizeof(_Tp); }
+      {
+#if __PTRDIFF_MAX__ < __SIZE_MAX__
+	return size_t(__PTRDIFF_MAX__) / sizeof(_Tp);
+#else
+	return size_t(-1) / sizeof(_Tp);
+#endif
+      }
 
 #if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
