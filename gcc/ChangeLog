@@ -1,3 +1,9 @@
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* config/i386/i386-builtin.def (IX86_BUILTIN_RDPMC): Move from args set
+	to special_args set.
+
 2018-10-10  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/sse.md (reduc_plus_scal_v8df, reduc_plus_scal_v4df,

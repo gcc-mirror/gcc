@@ -1,5 +1,8 @@
 2018-10-10  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/87550
+	* gcc.target/i386/pr87550.c: New test.
+
 	PR c/87286
 	* gcc.dg/pr87286.c: Add -Wno-psabi to dg-options.
 
