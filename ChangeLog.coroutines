@@ -1,6 +1,13 @@
 2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp/
+	* Make-lang.in (CXX_AND_OBJCXX_OBJS): Add cp/coroutines.o.
+	* semantics.c: Move co_return_context_valid_p to new file.
+	* coroutines.cc: New.
+
+2018-10-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp/
 	* cp-tree.h: Use a bit in lang_decl_fn instead of DECL_LANG_FLAG_3
 	to signal that a function is a coroutine.
  
