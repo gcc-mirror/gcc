@@ -5818,8 +5818,16 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case FOR_STMT:
       if (!RECUR (FOR_INIT_STMT (t), any))
 	return false;
-      if (!RECUR (FOR_COND (t), rval))
+      tmp = FOR_COND (t);
+      if (!RECUR (tmp, rval))
 	return false;
+      if (tmp)
+	{
+	  if (!processing_template_decl)
+	    tmp = cxx_eval_outermost_constant_expr (tmp, true);
+	  if (integer_zerop (tmp))
+	    return true;
+	}
       if (!RECUR (FOR_EXPR (t), any))
 	return false;
       if (!RECUR (FOR_BODY (t), any))
@@ -5840,8 +5848,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case WHILE_STMT:
-      if (!RECUR (WHILE_COND (t), rval))
+      tmp = WHILE_COND (t);
+      if (!RECUR (tmp, rval))
 	return false;
+      if (!processing_template_decl)
+	tmp = cxx_eval_outermost_constant_expr (tmp, true);
+      if (integer_zerop (tmp))
+	return true;
       if (!RECUR (WHILE_BODY (t), any))
 	return false;
       if (breaks (jump_target) || continues (jump_target))

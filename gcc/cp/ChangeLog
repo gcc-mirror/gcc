@@ -1,3 +1,10 @@
+2018-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87567 - constexpr rejects call to non-constexpr function.
+	* constexpr.c (potential_constant_expression_1) <case FOR_STMT>: Return
+	true if the condition is always false.
+	<case WHILE_STMT>: Likewise.
+
 2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84423
