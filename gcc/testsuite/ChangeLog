@@ -1,3 +1,16 @@
+2018-10-11  Tobias Burnus <burnus@net-b.de>
+
+	Revert:
+	2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
+	change to dg-do compile.
+	* gfortran.dg/actual_array_substr_2.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Use array
+	element not size-one section.
+	* gfortran.dg/array_substring.f90: New.
+
 2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/87511

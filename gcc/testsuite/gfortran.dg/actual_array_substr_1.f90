@@ -1,8 +1,6 @@
-! { dg-do compile }
+! { dg-do run }
 ! Test fix of PR28118, in which a substring reference to an
 ! actual argument with an array reference would cause a segfault.
-!
-! Revised for PR fortran/83522
 !
 ! Contributed by Paul Thomas  <pault@gcc.gnu.org>
 !
@@ -10,8 +8,8 @@ program gfcbug33
   character(12) :: a(2)
   a(1) = "abcdefghijkl"
   a(2) = "mnopqrstuvwx"
-  call foo ((a(2:1:-1)(6:))) ! { dg-error "Substring reference of nonscalar not permitted" }
-  call bar ((a(:)(7:11))) ! { dg-error "Substring reference of nonscalar not permitted" }
+  call foo ((a(2:1:-1)(6:)))
+  call bar ((a(:)(7:11)))
 contains
   subroutine foo (chr)
     character(7) :: chr(:)

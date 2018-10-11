@@ -5129,13 +5129,6 @@ resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
-	  /* F2008, R610 alias F2018, R908.  */
-	  if (current_part_dimension || seen_part_dimension)
-	    {
-	      gfc_error ("Substring reference of nonscalar not permitted at %L",
-			 &expr->where);
-	      return false;
-	    }
 	  break;
 	}
 
