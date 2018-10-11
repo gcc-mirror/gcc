@@ -1,3 +1,9 @@
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-mergeeo-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-int.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-longlong.c: New.
+
 2018-10-11  Tobias Burnus <burnus@net-b.de>
 
 	Revert:
