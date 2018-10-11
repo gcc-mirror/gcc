@@ -1,3 +1,8 @@
+2018-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/warn-abs-1.c: Guard tests assuming size of long double is
+	greater that the size of double by target large_long double.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/feat-cxx2a.C: New test.

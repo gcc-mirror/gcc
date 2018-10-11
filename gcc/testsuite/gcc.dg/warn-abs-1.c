@@ -43,7 +43,7 @@ void
 tst_float_size (double *pd, long double *pld)
 {
   *pd = fabsf (*pd);   /* { dg-warning "may cause truncation of value" } */
-  *pld = fabs (*pld);  /* { dg-warning "may cause truncation of value" } */
+  *pld = fabs (*pld);  /* { dg-warning "may cause truncation of value" "fabs trunc" { target { large_long_double } } } */
   *pld = fabs ((double) *pld);
 }
 
@@ -57,7 +57,7 @@ void tst_notcomplex (int *pi, long *pl, long double *pld)
 void tst_cplx_size (complex double *pcd, complex long double *pcld)
 {
   *pcd = cabsf (*pcd);   /* { dg-warning "may cause truncation of value" } */
-  *pcld = cabs (*pcld);  /* { dg-warning "may cause truncation of value" } */
+  *pcld = cabs (*pcld);  /* { dg-warning "may cause truncation of value" "cabs trunc" { target { large_long_double } } } */
   *pcld = cabs ((complex double) *pcld);
 }
 
