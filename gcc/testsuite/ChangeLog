@@ -1,5 +1,9 @@
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/85070
+	* g++.dg/cpp0x/pr85070.C: Change effective target for diagnostics from
+	c++14_only to c++14.
+
 	PR c++/87582
 	* g++.dg/cpp1z/decomp48.C: New test.
 
