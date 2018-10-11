@@ -1,3 +1,7 @@
+2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* selftests/repeat.rtl: New file.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87582

@@ -1690,6 +1690,7 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	struct obstack vector_stack;
 	int list_counter = 0;
 	rtvec return_vec = NULL_RTVEC;
+	rtx saved_rtx = NULL_RTX;
 
 	require_char_ws ('[');
 
@@ -1700,8 +1701,34 @@ rtx_reader::read_rtx_operand (rtx return_rtx, int idx)
 	    if (c == EOF)
 	      fatal_expected_char (']', c);
 	    unread_char (c);
-	    list_counter++;
-	    obstack_ptr_grow (&vector_stack, read_nested_rtx ());
+
+	    rtx value;
+	    int repeat_count = 1;
+	    if (c == 'r')
+	      {
+		/* Process "repeated xN" directive.  */
+		read_name (&name);
+		if (strcmp (name.string, "repeated"))
+		  fatal_with_file_and_line ("invalid directive \"%s\"\n",
+					    name.string);
+		read_name (&name);
+		if (!sscanf (name.string, "x%d", &repeat_count))
+		  fatal_with_file_and_line ("invalid repeat count \"%s\"\n",
+					    name.string);
+
+		/* We already saw one of the instances.  */
+		repeat_count--;
+		value = saved_rtx;
+	      }
+	    else
+	      value = read_nested_rtx ();
+
+	    for (; repeat_count > 0; repeat_count--)
+	      {
+		list_counter++;
+		obstack_ptr_grow (&vector_stack, value);
+	      }
+	    saved_rtx = value;
 	  }
 	if (list_counter > 0)
 	  {
