@@ -1,3 +1,19 @@
+2018-10-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/forward_list.h
+	(_Fwd_list_iterator<>::operator==): Replace member function with inline
+	friend.
+	(_Fwd_list_iterator<>::operator!=): Likewise.
+	(_Fwd_list_const_iterator<>::operator==): Likewise.
+	(_Fwd_list_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(operator!=(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(forward_list<>::_Node): Take typedef from base type.
+	(forward_list<>::iterator): Likewise.
+	(forward_list<>::const_iterator): Likewise.
+
 2018-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/80538
