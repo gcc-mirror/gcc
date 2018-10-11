@@ -6724,7 +6724,7 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
-extern int push_module_export (bool, module_state * = NULL);
+extern int push_module_export (bool);
 extern void pop_module_export (int);
 extern void import_module (module_state *, location_t, bool, tree, cpp_reader *);
 extern void declare_module (module_state *, location_t, bool, tree,

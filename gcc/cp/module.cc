@@ -11588,26 +11588,21 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (slurp ()->legacies, other->slurp ()->legacies);
 }
 
-static GTY(()) module_state *proclaimer;
 static int export_depth; /* -1 for singleton export.  */
 
 /* Nest a module export level.  Return true if we were already in a
    level.  */
 
 int
-push_module_export (bool singleton, module_state *proclaiming)
+push_module_export (bool singleton)
 {
-  int previous = export_depth;
+  int previous = export_depth != 0;
 
-  if (proclaiming)
-    {
-      proclaimer = proclaiming;
-      export_depth = -2;
-    }
-  else if (singleton)
+  if (singleton)
     export_depth = -1;
   else
     export_depth = +1;
+
   return previous;
 }
 
@@ -11616,7 +11611,6 @@ push_module_export (bool singleton, module_state *proclaiming)
 void
 pop_module_export (int previous)
 {
-  proclaimer = NULL;
   export_depth = previous;
 }
 
@@ -12315,7 +12309,7 @@ maybe_begin_legacy_module (cpp_reader *reader)
 		  spans.main_start (), true, NULL, reader);
 
   /* Everything is exported.  */
-  push_module_export (false, NULL);
+  push_module_export (false);
   return true;
 }
 
@@ -12331,7 +12325,7 @@ module_preamble_load (location_t loc, cpp_reader *reader)
 
   if (modules_legacy_p ())
     /* Everything is exported.  */
-    push_module_export (false, NULL);
+    push_module_export (false);
 
   return unsigned (adj);
 }

@@ -12852,9 +12852,7 @@ cp_parser_module_export (cp_parser *parser)
 
   if (prev)
     error_at (token->location,
-	      prev < -1
-	      ? "%qE may not occur in a proclaimed-ownership declaration"
-	      : "%qE may only occur once in an export declaration",
+	      "%qE may only occur once in an export declaration",
 	      token->u.value);
 
   if (braced)
@@ -12869,26 +12867,6 @@ cp_parser_module_export (cp_parser *parser)
   else
     cp_parser_declaration (parser);
 
-  pop_module_export (prev);
-}
-
-/* Proclaimed ownership declaration:
-     extern module module-name : declaration  */
-
-static void
-cp_parser_module_proclamation (cp_parser *parser)
-{
-  cp_token *token = cp_lexer_consume_token (parser->lexer);
-  cp_lexer_consume_token (parser->lexer);
-
-  module_state *mod = cp_parser_module_name (parser);
-
-  if (!cp_parser_require (parser, CPP_COLON, RT_COLON)
-      || !check_module_outermost (token, "proclaimed-ownership"))
-    mod = NULL;
-
-  int prev = push_module_export (true, mod);
-  cp_parser_declaration (parser);
   pop_module_export (prev);
 }
 
@@ -13151,9 +13129,6 @@ cp_parser_declaration (cp_parser* parser)
   if (token1.keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal (&token2))
     cp_parser_linkage_specification (parser);
-  else if (token1.keyword == RID_EXTERN
-	   && token2.keyword == RID_MODULE)
-    cp_parser_module_proclamation (parser);
   /* If the next token is `template', then we have either a template
      declaration, an explicit instantiation, or an explicit
      specialization.  */

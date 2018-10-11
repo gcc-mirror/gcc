@@ -1,5 +1,17 @@
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	Kill proclaiming decls
+	gcc/cp/
+	* cp-tree.h (push_module_export): Drop proclaiming arg.
+	* module.c (proclaimer): Delete.
+	({push,pop}_module_export): Adjust.
+	(maybe_begin_legacy_module, module_preamble_load): Adjust.
+	* parser.c (cp_parser_module_export): Adjust error.
+	(cp_parser_module_proclamation): Delete.
+	(cp_parser_declaration): Don't call it.
+	gcc/testsuite/
+	* g++.dg/modules/proclaim-1.C: Delete.
+
 	Macro locations! (ATOM only)
 	libcpp/
 	* internal.h (linemap_enter_macro): Move declaration to ...
