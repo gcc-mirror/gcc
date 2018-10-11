@@ -1,3 +1,12 @@
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource (__resource_adaptor_imp): Do
+	not allocate sizes smaller than alignment when relying on guaranteed
+	alignment.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Adjust expected number of bytes allocated for alignof(max_align_t).
+
 2018-10-11  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/forward_list
