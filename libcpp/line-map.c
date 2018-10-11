@@ -1064,32 +1064,40 @@ linemap_ordinary_map_lookup (struct line_maps *set, source_location line)
 static const line_map_macro *
 linemap_macro_map_lookup (struct line_maps *set, source_location line)
 {
-  unsigned int md, mn, mx;
-  const struct line_map_macro *cached, *result;
-
   if (IS_ADHOC_LOC (line))
     line = set->location_adhoc_data_map.data[line & MAX_SOURCE_LOCATION].locus;
 
   linemap_assert (line >= LINEMAPS_MACRO_LOWEST_LOCATION (set));
 
-  if (set ==  NULL)
+  if (set == NULL)
     return NULL;
 
-  mn = LINEMAPS_MACRO_CACHE (set);
-  mx = LINEMAPS_MACRO_USED (set);
-  cached = LINEMAPS_MACRO_MAP_AT (set, mn);
-  
+  unsigned ix = linemap_lookup_macro_index (set, line);
+  const struct line_map_macro *result = LINEMAPS_MACRO_MAP_AT (set, ix);
+  linemap_assert (MAP_START_LOCATION (result) <= line);
+
+  return result;
+}
+
+unsigned
+linemap_lookup_macro_index (line_maps *set, source_location line)
+{
+  unsigned mn = LINEMAPS_MACRO_CACHE (set);
+  unsigned mx = LINEMAPS_MACRO_USED (set);
+  const struct line_map_macro *cached = LINEMAPS_MACRO_MAP_AT (set, mn);
+
   if (line >= MAP_START_LOCATION (cached))
     {
-      if (mn == 0 || line < MAP_START_LOCATION (&cached[-1]))
-	return cached;
+      if (line < (MAP_START_LOCATION (cached)
+		  + MACRO_MAP_NUM_MACRO_TOKENS (cached)))
+	return mn;
       mx = mn - 1;
       mn = 0;
     }
 
   while (mn < mx)
     {
-      md = (mx + mn) / 2;
+      unsigned md = (mx + mn) / 2;
       if (MAP_START_LOCATION (LINEMAPS_MACRO_MAP_AT (set, md)) > line)
 	mn = md + 1;
       else
@@ -1097,10 +1105,7 @@ linemap_macro_map_lookup (struct line_maps *set, source_location line)
     }
 
   LINEMAPS_MACRO_CACHE (set) = mx;
-  result = LINEMAPS_MACRO_MAP_AT (set, LINEMAPS_MACRO_CACHE (set));
-  linemap_assert (MAP_START_LOCATION (result) <= line);
-
-  return result;
+  return mx;
 }
 
 /* Return TRUE if MAP encodes locations coming from a macro

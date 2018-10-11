@@ -855,28 +855,6 @@ ufputs (const unsigned char *s, FILE *f)
 
   /* In line-map.c.  */
 
-/* Create a macro map.  A macro map encodes source locations of tokens
-   that are part of a macro replacement-list, at a macro expansion
-   point. See the extensive comments of struct line_map and struct
-   line_map_macro, in line-map.h.
-
-   This map shall be created when the macro is expanded. The map
-   encodes the source location of the expansion point of the macro as
-   well as the "original" source location of each token that is part
-   of the macro replacement-list. If a macro is defined but never
-   expanded, it has no macro map.  SET is the set of maps the macro
-   map should be part of.  MACRO_NODE is the macro which the new macro
-   map should encode source locations for.  EXPANSION is the location
-   of the expansion point of MACRO. For function-like macros
-   invocations, it's best to make it point to the closing parenthesis
-   of the macro, rather than the the location of the first character
-   of the macro.  NUM_TOKENS is the number of tokens that are part of
-   the replacement-list of MACRO.  */
-const line_map_macro *linemap_enter_macro (struct line_maps *,
-					   struct cpp_hashnode*,
-					   source_location,
-					   unsigned int);
-
 /* Create and return a virtual location for a token that is part of a
    macro expansion-list at a macro expansion point.  See the comment
    inside struct line_map_macro to see what an expansion-list exactly

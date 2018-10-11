@@ -1,5 +1,20 @@
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	Macro locations! (ATOM only)
+	libcpp/
+	* internal.h (linemap_enter_macro): Move declaration to ...
+	* include/cpplib.h (linemap_enter_macro): ... here.
+	(linemap_lookup_macro_index): Declare.
+	* line-map.c (linemap_lookup_macro_index): Break out of ...
+	(linemap_macro_map_lookup): ... this.  Use it.
+	gcc/cp/
+	* module.cc (loc_spans): Record macro spans.
+	(module_state::write_readme): Record controlling macro.
+	(module_state::{read,write}_location{s,}): Stream macro locations.
+	(module_state::write_readme): Move later.
+	gcc/testsuite/
+	* g++.dg/modules/macloc-1_[abcd].C: New.
+
 	Merge trunk r265037.
 
 2018-10-10  Nathan Sidwell  <nathan@acm.org>
