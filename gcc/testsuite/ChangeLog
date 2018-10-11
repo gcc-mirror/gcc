@@ -1,3 +1,14 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+		    Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR tree-optimization/86844
+	* gcc.c-torture/execute/pr86844.c: New test.
+	* gcc.dg/store_merging_22.c: New test.
+	* gcc.dg/store_merging_23.c: New test.
+
 2018-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84940
