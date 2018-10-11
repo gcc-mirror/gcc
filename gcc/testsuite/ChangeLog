@@ -1,3 +1,8 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87547
+	* g++.dg/rtti/typeid12.C: New test.
+
 2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/pr87574.C: New test.

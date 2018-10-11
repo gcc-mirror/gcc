@@ -1,3 +1,9 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87547
+	* rtti.c (get_tinfo_decl_dynamic): Use unlowered_expr_type instead
+	of TREE_TYPE.
+
 2018-10-10  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87567 - constexpr rejects call to non-constexpr function.
