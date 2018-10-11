@@ -1,3 +1,18 @@
+2018-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocator.h
+	(operator==(const allocator<_Tp>&, const allocator<_Tp>))
+	(operator!=(const allocator<_Tp>&, const allocator<_Tp>)): Replace
+	with inline friends.
+	* include/ext/debug_allocator.h (operator==, operator!=): Replace
+	with inline friend functions that compare to rebound allocators.
+	* include/ext/malloc_allocator.h (operator==, operator!=): Likewise.
+	* include/ext/new_allocator.h (operator==, operator!=): Likewise.
+	* testsuite/ext/debug_allocator/eq.cc: New test.
+	* testsuite/ext/ext_pointer/alloc_eq.cc: New test.
+	* testsuite/ext/malloc_allocator/eq.cc: New test.
+	* testsuite/ext/new_allocator/eq.cc: New test.
+
 2018-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87544
