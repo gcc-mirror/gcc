@@ -1,5 +1,26 @@
 2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-select-char.c: New.
 	* gcc.target/powerpc/fold-vec-select-double.c: New.
 	* gcc.target/powerpc/fold-vec-select-float.c: New.
