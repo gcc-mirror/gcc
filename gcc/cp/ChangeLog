@@ -1,3 +1,9 @@
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_translation_unit): Return void.  Don't fail
+	at first extra }, simplify logic.
+	(c_parse_file): Call finish_translation_unit here.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87582
