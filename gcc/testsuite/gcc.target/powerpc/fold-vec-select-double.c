@@ -1,0 +1,23 @@
+/* Verify that overloaded built-ins for vec_sel with 
+   double inputs for VSX produce the right code.  */
+
+/* { dg-do compile { target { powerpc*-*-linux* } } } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
+/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
+/* { dg-options "-mcpu=power8 -O2" } */
+
+#include <altivec.h>
+
+vector double
+test2_0 (vector double x, vector double y, vector bool long long z)
+{
+  return vec_sel (x, y, z);
+}
+
+vector double
+test2_1 (vector double x, vector double y, vector unsigned long long z)
+{
+  return vec_sel (x, y, z);
+}
+
+/* { dg-final { scan-assembler-times "xxsel" 2 } } */
