@@ -1,3 +1,11 @@
+2018-10-11  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	PR tree-optimization/86829
+	* match.pd (sin (atan (x))): New simplification rules.
+	(cos (atan (x))): Likewise.
+	* real.c (build_sinatan_real): New function.
+	* real.h (build_sinatan_real): Prototype.
+
 2018-10-11  Will Schmidt <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (map_to_integral_tree_type): New helper
