@@ -1,3 +1,8 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Return 201803 instead of 20180312
+	for no_unique_address.
+
 2018-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_option_controlling_cpp_error): Rename to...
