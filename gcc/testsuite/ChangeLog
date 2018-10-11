@@ -1,3 +1,8 @@
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84993
+	* g++.dg/torture/accessor-fixits-9.C: New test.
+
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/parse/close-brace.C: New.
