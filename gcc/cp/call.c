@@ -6514,6 +6514,38 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   return error_mark_node;
 }
 
+/* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL
+   in the diagnostics.
+
+   If ISSUE_ERROR is true, then issue an error about the
+   access, followed by a note showing the declaration.
+   Otherwise, just show the note.  */
+
+void
+complain_about_access (tree decl, tree diag_decl, bool issue_error)
+{
+  if (TREE_PRIVATE (decl))
+    {
+      if (issue_error)
+	error ("%q#D is private within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl),
+	      "declared private here");
+    }
+  else if (TREE_PROTECTED (decl))
+    {
+      if (issue_error)
+	error ("%q#D is protected within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl),
+	      "declared protected here");
+    }
+  else
+    {
+      if (issue_error)
+	error ("%q#D is inaccessible within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
+    }
+}
+
 /* If the current scope isn't allowed to access DECL along
    BASETYPE_PATH, give an error.  The most derived class in
    BASETYPE_PATH is the one used to qualify DECL. DIAG_DECL is
@@ -6538,34 +6570,12 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 
   if (!accessible_p (basetype_path, decl, true))
     {
+      if (flag_new_inheriting_ctors)
+	diag_decl = strip_inheriting_ctors (diag_decl);
       if (complain & tf_error)
-	{
-	  if (flag_new_inheriting_ctors)
-	    diag_decl = strip_inheriting_ctors (diag_decl);
-	  if (TREE_PRIVATE (decl))
-	    {
-	      error ("%q#D is private within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl),
-		      "declared private here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	  else if (TREE_PROTECTED (decl))
-	    {
-	      error ("%q#D is protected within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl),
-		      "declared protected here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	  else
-	    {
-	      error ("%q#D is inaccessible within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	}
+	complain_about_access (decl, diag_decl, true);
+      if (afi)
+	afi->record_access_failure (basetype_path, decl, diag_decl);
       return false;
     }
 
