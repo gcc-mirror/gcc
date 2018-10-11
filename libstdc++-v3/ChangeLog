@@ -1,5 +1,23 @@
 2018-10-11  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/forward_list
+	(forward_list<>::before_begin()): Use C++11 direct initialization.
+	(forward_list<>::begin()): Likewise.
+	(forward_list<>::end()): Likewise.
+	(forward_list<>::cbefore_begin()): Likewise.
+	(forward_list<>::cbegin()): Likewise.
+	(forward_list<>::cend()): Likewise.
+	(forward_list<>::emplace_after<>(const_iterator, _Args&&...)): Likewise.
+	(forward_list<>::insert_after(const_iterator, const _Tp&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, _Tp&&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, size_type, const _Tp&)):
+	Likewise.
+	(forward_list<>::insert_after(const_iterator, initializer_list<>)):
+	Likewise.
+	(forward_list<>::erase_after(const_iterator)): Likewise.
+	(forward_list<>::erase_after(const_iterator, const_iterator)): Likewise
+	and ensure consistent iterator comparison.
+
 	* include/bits/forward_list.h
 	(_Fwd_list_iterator<>::operator==): Replace member function with inline
 	friend.
