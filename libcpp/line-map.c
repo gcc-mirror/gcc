@@ -612,30 +612,24 @@ const line_map_macro *
 linemap_enter_macro (struct line_maps *set, struct cpp_hashnode *macro_node,
 		     source_location expansion, unsigned int num_tokens)
 {
-  line_map_macro *map;
-  source_location start_location;
-  /* Cast away extern "C" from the type of xrealloc.  */
-  line_map_realloc reallocator = (set->reallocator
-				  ? set->reallocator
-				  : (line_map_realloc) xrealloc);
-
-  start_location = LINEMAPS_MACRO_LOWEST_LOCATION (set) - num_tokens;
+  source_location start_location
+    = LINEMAPS_MACRO_LOWEST_LOCATION (set) - num_tokens;
 
   if (start_location < LINE_MAP_MAX_LOCATION)
     /* We ran out of macro map space.   */
     return NULL;
 
-  map = linemap_check_macro (new_linemap (set, start_location));
+  line_map_macro *map = linemap_check_macro (new_linemap (set, start_location));
 
   map->macro = macro_node;
   map->n_tokens = num_tokens;
   map->macro_locations
-    = (source_location*) reallocator (NULL,
-				      2 * num_tokens
-				      * sizeof (source_location));
+    = (source_location*) set->reallocator (NULL,
+					   2 * num_tokens
+					   * sizeof (source_location));
   map->expansion = expansion;
   memset (MACRO_MAP_LOCATIONS (map), 0,
-	  num_tokens * sizeof (source_location));
+	  2 * num_tokens * sizeof (source_location));
 
   LINEMAPS_MACRO_CACHE (set) = LINEMAPS_MACRO_USED (set) - 1;
 

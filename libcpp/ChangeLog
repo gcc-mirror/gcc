@@ -1,3 +1,10 @@
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (LINEMAPS_MACRO_LOWEST_LOCATION): Fix
+	off-by-one error.
+	* line-map.c (linemap_enter_macro): Use RAII.  Clear all of the
+	macro_locations.
+
 2018-10-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* charset.c (noop_error_cb): Rename to...
