@@ -1,3 +1,10 @@
+2018-10-11  Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (VXWORKS_RELAX_LINK_SPEC): New macro.
+	Pass --relax to the linker for RTPs.
+	(LINK_SPEC): Append VXWORKS_RELAX_LINK_SPEC.
+
 2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
 	    Jan Hubicka  <jh@suse.cz>
 	    Martin Jambor  <mjambor@suse.cz>
