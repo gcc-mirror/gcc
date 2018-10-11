@@ -1,5 +1,7 @@
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/cpp2a/feat-cxx2a.C: New test.
+
 	PR c++/87547
 	* g++.dg/rtti/typeid12.C: New test.
 
