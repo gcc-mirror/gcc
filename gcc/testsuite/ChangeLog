@@ -1,3 +1,12 @@
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (dg-begin-multiline-output): Issue an error if
+	there hasn't been a dg-end-multiline-output since the last
+	dg-begin-multiline-output.
+	(dg-end-multiline-output): Issue an error if there hasn't been a
+	dg-begin-multiline-output.  Reset _multiline_last_beginning_line
+	as soon possible.  Rename "line" to "last_line".
+
 2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
 
 	* selftests/repeat.rtl: New file.
