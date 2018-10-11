@@ -173,13 +173,20 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const noexcept
-      { return _M_node == __x._M_node; }
+      /**
+       *  @brief  Forward list iterator equality comparison.
+       */
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) noexcept
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const noexcept
-      { return _M_node != __x._M_node; }
+
+      /**
+       *  @brief  Forward list iterator inequality comparison.
+       */
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) noexcept
+      { return __x._M_node != __y._M_node; }
 
       _Self
       _M_next() const noexcept
@@ -244,13 +251,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	return __tmp;
       }
 
-      bool
-      operator==(const _Self& __x) const noexcept
-      { return _M_node == __x._M_node; }
+      /**
+       *  @brief  Forward list const_iterator equality comparison.
+       */
+      friend bool
+      operator==(const _Self& __x, const _Self& __y) noexcept
+      { return __x._M_node == __y._M_node; }
 
-      bool
-      operator!=(const _Self& __x) const noexcept
-      { return _M_node != __x._M_node; }
+      /**
+       *  @brief  Forward list const_iterator inequality comparison.
+       */
+      friend bool
+      operator!=(const _Self& __x, const _Self& __y) noexcept
+      { return __x._M_node != __y._M_node; }
 
       _Self
       _M_next() const noexcept
@@ -263,24 +276,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       const _Fwd_list_node_base* _M_node;
     };
-
-  /**
-   *  @brief  Forward list iterator equality comparison.
-   */
-  template<typename _Tp>
-    inline bool
-    operator==(const _Fwd_list_iterator<_Tp>& __x,
-	       const _Fwd_list_const_iterator<_Tp>& __y) noexcept
-    { return __x._M_node == __y._M_node; }
-
-  /**
-   *  @brief  Forward list iterator inequality comparison.
-   */
-  template<typename _Tp>
-    inline bool
-    operator!=(const _Fwd_list_iterator<_Tp>& __x,
-	       const _Fwd_list_const_iterator<_Tp>& __y) noexcept
-    { return __x._M_node != __y._M_node; }
 
   /**
    *  @brief  Base class for %forward_list.
@@ -433,8 +428,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
     private:
       typedef _Fwd_list_base<_Tp, _Alloc>		_Base;
-      typedef _Fwd_list_node<_Tp>			_Node;
       typedef _Fwd_list_node_base			_Node_base;
+      typedef typename _Base::_Node			_Node;
       typedef typename _Base::_Node_alloc_type		_Node_alloc_type;
       typedef typename _Base::_Node_alloc_traits	_Node_alloc_traits;
       typedef allocator_traits<__alloc_rebind<_Alloc, _Tp>>	_Alloc_traits;
@@ -447,8 +442,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef value_type&				reference;
       typedef const value_type&				const_reference;
 
-      typedef _Fwd_list_iterator<_Tp>			iterator;
-      typedef _Fwd_list_const_iterator<_Tp>		const_iterator;
+      typedef typename _Base::iterator			iterator;
+      typedef typename _Base::const_iterator		const_iterator;
       typedef std::size_t				size_type;
       typedef std::ptrdiff_t				difference_type;
       typedef _Alloc					allocator_type;
