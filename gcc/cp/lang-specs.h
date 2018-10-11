@@ -42,32 +42,32 @@ along with GCC; see the file COPYING3.  If not see
   {"@c++-header",
       "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
       "%{!E:%{!M:%{!MM:"
-      "   %{save-temps*|no-integrated-cpp:cc1plus -E"
-      "    %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
-      "   cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
-      "             %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
-      "   %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
-      "   %(cc1_options) %2"
-      "   %{!fsyntax-only:%{!S:-o %g.s}"
-      "     %{!fdump-ada-spec*:%{!fmodule-only:%{!fmodule-legacy*:"
-      "          %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}%V}}}}}",
+      "  %{save-temps*|no-integrated-cpp:cc1plus -E"
+      "	   %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
+      "  cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
+      " 	   %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
+      "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
+      "  %(cc1_options) %2"
+      "  %{!fsyntax-only:%{!S:-o %g.s}"
+      "    %{!fdump-ada-spec*:%{!fmodule-only:%{!fmodule-legacy*:"
+      "	       %{!o*:--output-pch=%i.gch}%W{o*:--output-pch=%*}}}%V}}}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
       "%{fcoroutines:"
       "  %ethis is the modules compiler, not the coroutines compiler}"
       "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
       "%{!E:%{!M:%{!MM:"
-      "   %{save-temps*|no-integrated-cpp:cc1plus -E"
+      "  %{save-temps*|no-integrated-cpp:cc1plus -E"
       "	   %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
-      "   cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
-      "             %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
-      "   %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
-      "   %(cc1_options) %2"
-      "   %{fmodule-only:%{!S:-o %g.s%V}}"
-      "   %{!fsyntax-only:%{!fmodule-only:%(invoke_as)}}}}}",
+      "  cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
+      " 	   %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
+      "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)}}"
+      "  %(cc1_options) %2"
+      "  %{fmodule-only:%{!S:-o %g.s%V}}"
+      "  %{!fsyntax-only:%{!fmodule-only:%(invoke_as)}}}}}",
       CPLUSPLUS_CPP_SPEC, 0, 0},
   {".ii", "@c++-cpp-output", 0, 0, 0},
   {"@c++-cpp-output",
       "%{!E:%{!M:%{!MM:"
-      "   cc1plus -fpreprocessed %i %(cc1_options) %2"
-      "   %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},
+      "  cc1plus -fpreprocessed %i %(cc1_options) %2"
+      "  %{!fsyntax-only:%(invoke_as)}}}}", 0, 0, 0},

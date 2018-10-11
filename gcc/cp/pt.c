@@ -7775,7 +7775,7 @@ convert_template_argument (tree parm,
   tree val;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
 
-  if (parm == error_mark_node)
+  if (parm == error_mark_node || error_operand_p (arg))
     return error_mark_node;
 
   /* Trivially convert placeholders. */
@@ -23125,6 +23125,14 @@ do_decl_instantiation (tree decl, tree storage)
   else if (! DECL_LANG_SPECIFIC (decl))
     {
       error ("explicit instantiation of non-template %q#D", decl);
+      return;
+    }
+  else if (DECL_DECLARED_CONCEPT_P (decl))
+    {
+      if (VAR_P (decl))
+	error ("explicit instantiation of variable concept %q#D", decl);
+      else
+	error ("explicit instantiation of function concept %q#D", decl);
       return;
     }
 

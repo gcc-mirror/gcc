@@ -1,3 +1,82 @@
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (gfc_cpp_init_0): Update for renamings.
+	(cb_cpp_error): Rename to...
+	(cb_cpp_diagnostic): ...this, converting level and reason to
+	enums.
+
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
+2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87151
+	* trans-array.c (gfc_get_array_span): Deal with deferred char
+	array components having a TYPE_MAX_VALUE of zero.
+	(gfc_array_init_size): Use the hidden string length component
+	to build the descriptor dtype.
+	(gfc_array_allocate): Remove the erroneous replacement of the
+	charlen backend decl with a temporary.
+	(gfc_conv_expr_descriptor): Use the ss_info string length in
+	the case of deferred character components.
+	(gfc_alloc_allocatable_for_assignment): Actually compare the
+	string lengths for deferred characters. Make sure that kind > 1
+	is handled correctly. Set the span field of the descriptor.
+	* trans-intrinsic.c (gfc_conv_intrinsic_len): Remove the stupid
+	comment.
+
+	PR fortran/80931
+	* trans-array.c (gfc_array_allocate): Set the span field for
+	variable length character arrays.
+
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* expr.c (gfc_check_pointer_assign): Demote "Assignment to
+	contiguous pointer from non-contiguous target" to a warning.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* trans-stmt.c (trans_associate_var): Character associate names
+	with variable string length do not have to be deferred length
+	for the string length to be set, if variable.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.h (enum arith): Add ARITH_WRONGCONCAT.
+	* arith.h (gfc_arith_error): Issue error for ARITH_WRONGCONCAT.
+	(gfc_arith_concat):  If the types of op1 and op2 are not
+	character of if their kinds do not match, issue ARITH_WRONGCONCAT.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* resolve.c (resolve_fl_procedure): Include class functions in
+	the test that elemental function results be scalar.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84640
+	* simplify.c (gfc_simplify_cshift): Extend size of hs_ex and ss_ex
+	by one. Set extents one past the array boundaries to zero to avoid
+	warning with instrumented compiler.
+	(gfc_simplify_eoshift): Likewise, only for ss_ex.
+
+2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87487
+	* trans-decl.c (gfc_get_symbol_decl): Make sure that deferred
+	character length pointer initializer has the right type to fix
+	problem with deferred_character_24.f90 on big endian.
+
+2018-10-03  Jeff Law  <law@redhat.comg>
+
+	* trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
+
 2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/65677

@@ -4264,10 +4264,6 @@ trees_out::core_bools (tree t)
       /* These use different base.u fields.  */
       break;
 
-    case BLOCK:
-      WB (t->block.abstract_flag);
-      /* FALLTHROUGH  */
-
     default:
       WB (t->base.u.bits.lang_flag_0);
       WB (t->base.u.bits.lang_flag_1);
@@ -4372,7 +4368,7 @@ trees_out::core_bools (tree t)
       WB (t->function_decl.pure_flag);
       WB (t->function_decl.looping_const_or_pure_flag);
       WB (t->function_decl.has_debug_args_flag);
-      WB (t->function_decl.tm_clone_flag);
+      WB (t->function_decl.lambda_function);
       WB (t->function_decl.versioned_function);
     }
 #undef WB
@@ -4411,10 +4407,6 @@ trees_in::core_bools (tree t)
     case TARGET_MEM_REF:
       /* These use different base.u fields.  */
       break;
-
-    case BLOCK:
-      RB (t->block.abstract_flag);
-      /* FALLTHROUGH.  */
 
     default:
       RB (t->base.u.bits.lang_flag_0);
@@ -4517,7 +4509,7 @@ trees_in::core_bools (tree t)
       RB (t->function_decl.pure_flag);
       RB (t->function_decl.looping_const_or_pure_flag);
       RB (t->function_decl.has_debug_args_flag);
-      RB (t->function_decl.tm_clone_flag);
+      RB (t->function_decl.lambda_function);
       RB (t->function_decl.versioned_function);
     }
 #undef RB

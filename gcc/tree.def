@@ -70,9 +70,6 @@ DEFTREECODE (TREE_VEC, "tree_vec", tcc_exceptional, 0)
    could either point to another BLOCK node or it could point to a
    FUNCTION_DECL node (e.g. in the case of a block representing the
    outermost scope of a particular inlining of a function).
-   BLOCK_ABSTRACT is nonzero if the block represents an abstract
-   instance of a block (i.e. one which is nested within an abstract
-   instance of an inline function).
    TREE_ASM_WRITTEN is nonzero if the block was actually referenced
    in the generated assembly.  */
 DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)

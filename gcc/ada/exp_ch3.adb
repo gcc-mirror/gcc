@@ -202,6 +202,11 @@ package body Exp_Ch3 is
    --  Check if E is defined in the RTL (in a child of Ada or System). Used
    --  to avoid to bring in the overhead of _Input, _Output for tagged types.
 
+   function Is_Null_Statement_List (Stmts : List_Id) return Boolean;
+   --  Returns true if Stmts is made of null statements only, possibly wrapped
+   --  in a case statement, recursively. This latter pattern may occur for the
+   --  initialization procedure of an unchecked union.
+
    function Is_User_Defined_Equality (Prim : Node_Id) return Boolean;
    --  Returns true if Prim is a user defined equality function
 
@@ -529,6 +534,7 @@ package body Exp_Ch3 is
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
       Loc              : Source_Ptr;
+      Parameters       : List_Id;
       Proc_Id          : Entity_Id;
 
       function Init_Component return List_Id;
@@ -722,13 +728,14 @@ package body Exp_Ch3 is
          end if;
 
          Body_Stmts := Init_One_Dimension (1);
+         Parameters := Init_Formals (A_Type);
 
          Discard_Node (
            Make_Subprogram_Body (Loc,
              Specification =>
                Make_Procedure_Specification (Loc,
                  Defining_Unit_Name => Proc_Id,
-                 Parameter_Specifications => Init_Formals (A_Type)),
+                 Parameter_Specifications => Parameters),
              Declarations => New_List,
              Handled_Statement_Sequence =>
                Make_Handled_Sequence_Of_Statements (Loc,
@@ -753,18 +760,14 @@ package body Exp_Ch3 is
          --  where we have to generate a null procedure in case it is called
          --  by a client with Initialize_Scalars set). Such procedures have
          --  to be generated, but do not have to be called, so we mark them
-         --  as null to suppress the call.
+         --  as null to suppress the call. Kill also warnings for the _Init
+         --  out parameter, which is left entirely uninitialized.
 
          Set_Init_Proc (A_Type, Proc_Id);
 
-         if List_Length (Body_Stmts) = 1
-
-           --  We must skip SCIL nodes because they may have been added to this
-           --  list by Insert_Actions.
-
-           and then Nkind (First_Non_SCIL_Node (Body_Stmts)) = N_Null_Statement
-         then
+         if Is_Null_Statement_List (Body_Stmts) then
             Set_Is_Null_Init_Proc (Proc_Id);
+            Set_Warnings_Off (Defining_Identifier (First (Parameters)));
 
          else
             --  Try to build a static aggregate to statically initialize
@@ -2803,18 +2806,14 @@ package body Exp_Ch3 is
          --  where we have to generate a null procedure in case it is called
          --  by a client with Initialize_Scalars set). Such procedures have
          --  to be generated, but do not have to be called, so we mark them
-         --  as null to suppress the call.
+         --  as null to suppress the call. Kill also warnings for the _Init
+         --  out parameter, which is left entirely uninitialized.
 
          Set_Init_Proc (Rec_Type, Proc_Id);
 
-         if List_Length (Body_Stmts) = 1
-
-           --  We must skip SCIL nodes because they may have been added to this
-           --  list by Insert_Actions.
-
-           and then Nkind (First_Non_SCIL_Node (Body_Stmts)) = N_Null_Statement
-         then
+         if Is_Null_Statement_List (Body_Stmts) then
             Set_Is_Null_Init_Proc (Proc_Id);
+            Set_Warnings_Off (Defining_Identifier (First (Parameters)));
          end if;
       end Build_Init_Procedure;
 
@@ -8612,19 +8611,30 @@ package body Exp_Ch3 is
    ------------------
 
    function Init_Formals (Typ : Entity_Id) return List_Id is
+      Unc_Arr : constant Boolean :=
+        Is_Array_Type (Typ) and then not Is_Constrained (Typ);
+      With_Prot  : constant Boolean :=
+        Has_Protected (Typ)
+          or else (Is_Record_Type (Typ)
+                     and then Is_Protected_Record_Type (Typ));
+      With_Task  : constant Boolean :=
+        Has_Task (Typ)
+          or else (Is_Record_Type (Typ)
+                     and then Is_Task_Record_Type (Typ));
       Loc     : constant Source_Ptr := Sloc (Typ);
       Formals : List_Id;
 
    begin
-      --  First parameter is always _Init : in out typ. Note that we need this
-      --  to be in/out because in the case of the task record value, there
-      --  are default record fields (_Priority, _Size, -Task_Info) that may
-      --  be referenced in the generated initialization routine.
+      --  The first parameter is always _Init : [in] out Typ. Note that we need
+      --  it to be in/out in the case of an unconstrained array, because of the
+      --  need to have the bounds, and in the case of protected or task record
+      --  value, because there are default record fields that may be referenced
+      --  in the generated initialization routine.
 
       Formals := New_List (
         Make_Parameter_Specification (Loc,
           Defining_Identifier => Make_Defining_Identifier (Loc, Name_uInit),
-          In_Present          => True,
+          In_Present          => Unc_Arr or else With_Prot or else With_Task,
           Out_Present         => True,
           Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
 
@@ -8632,9 +8642,7 @@ package body Exp_Ch3 is
       --  formals, _Master : Master_Id and _Chain : in out Activation_Chain
       --  We also add these parameters for the task record type case.
 
-      if Has_Task (Typ)
-        or else (Is_Record_Type (Typ) and then Is_Task_Record_Type (Typ))
-      then
+      if With_Task then
          Append_To (Formals,
            Make_Parameter_Specification (Loc,
              Defining_Identifier =>
@@ -9021,6 +9029,43 @@ package body Exp_Ch3 is
          Next_Elmt (Iface_Tag_Elmt);
       end loop;
    end Init_Secondary_Tags;
+
+   ----------------------------
+   -- Is_Null_Statement_List --
+   ----------------------------
+
+   function Is_Null_Statement_List (Stmts : List_Id) return Boolean is
+      Stmt : Node_Id;
+
+   begin
+      --  We must skip SCIL nodes because they may have been added to the
+      --  list by Insert_Actions.
+
+      Stmt := First_Non_SCIL_Node (Stmts);
+      while Present (Stmt) loop
+         if Nkind (Stmt) = N_Case_Statement then
+            declare
+               Alt : Node_Id;
+            begin
+               Alt := First (Alternatives (Stmt));
+               while Present (Alt) loop
+                  if not Is_Null_Statement_List (Statements (Alt)) then
+                     return False;
+                  end if;
+
+                  Next (Alt);
+               end loop;
+            end;
+
+         elsif Nkind (Stmt) /= N_Null_Statement then
+            return False;
+         end if;
+
+         Stmt := Next_Non_SCIL_Node (Stmt);
+      end loop;
+
+      return True;
+   end Is_Null_Statement_List;
 
    ------------------------------
    -- Is_User_Defined_Equality --

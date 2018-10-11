@@ -1,3 +1,11 @@
+2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* unused_functions.py: Handle archive files.
+
+2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* unused_functions.py: New file.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	* filter-rtags-warnings.py: New file.

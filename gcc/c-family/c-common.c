@@ -6077,7 +6077,7 @@ c_parse_error (const char *gmsgid, enum cpp_ttype token_type,
    message, or 0 if none.  */
 
 static int
-c_option_controlling_cpp_error (int reason)
+c_option_controlling_cpp_diagnostic (enum cpp_warning_reason reason)
 {
   const struct cpp_reason_option_codes_t *entry;
 
@@ -6089,7 +6089,7 @@ c_option_controlling_cpp_error (int reason)
   return 0;
 }
 
-/* Callback from cpp_error for PFILE to print diagnostics from the
+/* Callback from cpp_diagnostic for PFILE to print diagnostics from the
    preprocessor.  The diagnostic is of type LEVEL, with REASON set
    to the reason code if LEVEL is represents a warning, at location
    RICHLOC unless this is after lexing and the compiler's location
@@ -6098,9 +6098,11 @@ c_option_controlling_cpp_error (int reason)
    otherwise.  */
 
 bool
-c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	     rich_location *richloc,
-	     const char *msg, va_list *ap)
+c_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		  enum cpp_diagnostic_level level,
+		  enum cpp_warning_reason reason,
+		  rich_location *richloc,
+		  const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;
@@ -6143,8 +6145,9 @@ c_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
     richloc->set_range (0, input_location, SHOW_RANGE_WITH_CARET);
   diagnostic_set_info_translated (&diagnostic, msg, ap,
 				  richloc, dlevel);
-  diagnostic_override_option_index (&diagnostic,
-                                    c_option_controlling_cpp_error (reason));
+  diagnostic_override_option_index
+    (&diagnostic,
+     c_option_controlling_cpp_diagnostic (reason));
   ret = diagnostic_report_diagnostic (global_dc, &diagnostic);
   if (level == CPP_DL_WARNING_SYSHDR)
     global_dc->dc_warn_system_headers = save_warn_system_headers;
@@ -7474,8 +7477,11 @@ vector_types_compatible_elements_p (tree t1, tree t2)
 
   enum tree_code c1 = TREE_CODE (t1), c2 = TREE_CODE (t2);
 
-  gcc_assert ((c1 == INTEGER_TYPE || c1 == REAL_TYPE || c1 == FIXED_POINT_TYPE)
-	      && (c2 == INTEGER_TYPE || c2 == REAL_TYPE
+  gcc_assert ((INTEGRAL_TYPE_P (t1)
+	       || c1 == REAL_TYPE
+	       || c1 == FIXED_POINT_TYPE)
+	      && (INTEGRAL_TYPE_P (t2)
+		  || c2 == REAL_TYPE
 		  || c2 == FIXED_POINT_TYPE));
 
   t1 = c_common_signed_type (t1);
@@ -7485,7 +7491,7 @@ vector_types_compatible_elements_p (tree t1, tree t2)
   if (t1 == t2)
     return true;
   if (opaque && c1 == c2
-      && (c1 == INTEGER_TYPE || c1 == REAL_TYPE)
+      && (INTEGRAL_TYPE_P (t1) || c1 == REAL_TYPE)
       && TYPE_PRECISION (t1) == TYPE_PRECISION (t2))
     return true;
   return false;

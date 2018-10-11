@@ -3306,7 +3306,7 @@ create_iso_definition (cpp_reader *pfile)
 		   : N_("ISO C99 requires whitespace after the macro name"));
       else
 	{
-	  int warntype = CPP_DL_WARNING;
+	  enum cpp_diagnostic_level warntype = CPP_DL_WARNING;
 	  switch (token->type)
 	    {
 	    case CPP_ATSIGN:
@@ -3521,7 +3521,7 @@ _cpp_create_definition (cpp_reader *pfile, cpp_hashnode *node)
 
       if (warn_of_redefinition (pfile, node, macro))
 	{
-          const int reason
+          const enum cpp_warning_reason reason
 	    = (cpp_builtin_macro_p (node) && !(node->flags & NODE_WARN))
 	    ? CPP_W_BUILTIN_MACRO_REDEFINED : CPP_W_NONE;
 

@@ -1957,18 +1957,40 @@
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")])
 
-(define_insn "f<quiet_pattern>_quiet<ANYF:mode><X:mode>4"
-   [(set (match_operand:X         0 "register_operand" "=r")
+(define_expand "f<quiet_pattern>_quiet<ANYF:mode><X:mode>4"
+   [(parallel [(set (match_operand:X      0 "register_operand")
+		    (unspec:X
+		     [(match_operand:ANYF 1 "register_operand")
+		      (match_operand:ANYF 2 "register_operand")]
+		     QUIET_COMPARISON))
+	       (clobber (match_scratch:X 3))])]
+  "TARGET_HARD_FLOAT")
+
+(define_insn "*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_default"
+   [(set (match_operand:X      0 "register_operand" "=r")
 	 (unspec:X
-	     [(match_operand:ANYF 1 "register_operand" " f")
-	      (match_operand:ANYF 2 "register_operand" " f")]
-	     QUIET_COMPARISON))
+	  [(match_operand:ANYF 1 "register_operand" " f")
+	   (match_operand:ANYF 2 "register_operand" " f")]
+	  QUIET_COMPARISON))
     (clobber (match_scratch:X 3 "=&r"))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && ! HONOR_SNANS (<ANYF:MODE>mode)"
   "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags %3"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")
    (set (attr "length") (const_int 12))])
+
+(define_insn "*f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_snan"
+   [(set (match_operand:X      0 "register_operand" "=r")
+	 (unspec:X
+	  [(match_operand:ANYF 1 "register_operand" " f")
+	   (match_operand:ANYF 2 "register_operand" " f")]
+	  QUIET_COMPARISON))
+    (clobber (match_scratch:X 3 "=&r"))]
+  "TARGET_HARD_FLOAT && HONOR_SNANS (<ANYF:MODE>mode)"
+  "frflags\t%3\n\tf<quiet_pattern>.<fmt>\t%0,%1,%2\n\tfsflags %3\n\tfeq.<fmt>\tzero,%1,%2"
+  [(set_attr "type" "fcmp")
+   (set_attr "mode" "<UNITMODE>")
+   (set (attr "length") (const_int 16))])
 
 (define_insn "*seq_zero_<X:mode><GPR:mode>"
   [(set (match_operand:GPR       0 "register_operand" "=r")

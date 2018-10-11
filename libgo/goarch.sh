@@ -57,9 +57,14 @@ case $goarch in
 	defaultphyspagesize=8192
 	pcquantum=4
 	;;
-    amd64 | amd64p32)
+    amd64)
 	family=AMD64
 	hugepagesize="1 << 21"
+	;;
+    amd64p32)
+	family=AMD64
+	hugepagesize="1 << 21"
+	ptrsize=4
 	;;
     arm | armbe)
 	family=ARM

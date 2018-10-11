@@ -79,7 +79,7 @@
 (define_insn "*mov<mode>_internal"
   [(set (match_operand:MMXMODE 0 "nonimmediate_operand"
     "=r ,o ,r,r ,m ,?!y,!y,?!y,m  ,r  ,?!y,v,v,v,m,r,v,!y,*x")
-	(match_operand:MMXMODE 1 "vector_move_operand"
+	(match_operand:MMXMODE 1 "nonimm_or_0_operand"
     "rCo,rC,C,rm,rC,C  ,!y,m  ,?!y,?!y,r  ,C,v,m,v,v,r,*x,!y"))]
   "TARGET_MMX
    && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -217,7 +217,14 @@
 
 (define_split
   [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
-        (match_operand:MMXMODE 1 "general_gr_operand"))]
+        (match_operand:MMXMODE 1 "nonimmediate_gr_operand"))]
+  "!TARGET_64BIT && reload_completed"
+  [(const_int 0)]
+  "ix86_split_long_move (operands); DONE;")
+
+(define_split
+  [(set (match_operand:MMXMODE 0 "nonimmediate_gr_operand")
+        (match_operand:MMXMODE 1 "const0_operand"))]
   "!TARGET_64BIT && reload_completed"
   [(const_int 0)]
   "ix86_split_long_move (operands); DONE;")
@@ -582,7 +589,7 @@
   [(set (match_operand:V2SF 0 "register_operand"     "=y,y")
 	(vec_concat:V2SF
 	  (match_operand:SF 1 "nonimmediate_operand" " 0,rm")
-	  (match_operand:SF 2 "vector_move_operand"  "ym,C")))]
+	  (match_operand:SF 2 "nonimm_or_0_operand"  "ym,C")))]
   "TARGET_MMX && !TARGET_SSE"
   "@
    punpckldq\t{%2, %0|%0, %2}
@@ -1276,7 +1283,7 @@
   [(set (match_operand:V2SI 0 "register_operand"     "=y,y")
 	(vec_concat:V2SI
 	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm")
-	  (match_operand:SI 2 "vector_move_operand"  "ym,C")))]
+	  (match_operand:SI 2 "nonimm_or_0_operand"  "ym,C")))]
   "TARGET_MMX && !TARGET_SSE"
   "@
    punpckldq\t{%2, %0|%0, %2}

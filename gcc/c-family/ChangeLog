@@ -1,3 +1,35 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Return 201803 instead of 20180312
+	for no_unique_address.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_option_controlling_cpp_error): Rename to...
+	(c_option_controlling_cpp_diagnostic): ...this, and convert
+	"reason" from int to enum.
+	(c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-common.h (c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-opts.c (c_common_init_options): Update for renaming.
+
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* c-common.c (vector_types_compatible_elements_p): Use
+	INTEGRAL_TYPE_P instead of checking only for INTEGER_TYPE.
+
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-attribs.c (get_priority): Add a warning flag warn_prio_ctor_dtor
+	to generate constructor destructor priority warning.
+	* c.opt (-Wprio-ctor-dtor): New option.
+
+2018-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Add no_unique_address.
+
 2018-10-01  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (get_underlying_decl): Get to the main type variant.

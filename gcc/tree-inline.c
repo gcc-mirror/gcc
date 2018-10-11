@@ -2631,7 +2631,7 @@ copy_loops (copy_body_data *id,
     }
 }
 
-/* Call cgraph_redirect_edge_call_stmt_to_callee on all calls in BB */
+/* Call redirect_call_stmt_to_callee on all calls in BB.  */
 
 void
 redirect_all_calls (copy_body_data * id, basic_block bb)
@@ -4592,7 +4592,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     {
       gimple_stmt_iterator si = gsi_last_bb (bb);
       gsi_insert_after (&si, gimple_build_debug_inline_entry
-			(id->block, input_location), GSI_NEW_STMT);
+			(id->block, DECL_SOURCE_LOCATION (id->src_fn)),
+			GSI_NEW_STMT);
     }
 
   if (DECL_INITIAL (fn))

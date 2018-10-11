@@ -445,16 +445,20 @@ void
 maybe_build_generic_op (gimple_match_op *res_op)
 {
   tree_code code = (tree_code) res_op->code;
+  tree val;
   switch (code)
     {
     case REALPART_EXPR:
     case IMAGPART_EXPR:
     case VIEW_CONVERT_EXPR:
-      res_op->set_value (build1 (code, res_op->type, res_op->ops[0]));
+      val = build1 (code, res_op->type, res_op->ops[0]);
+      res_op->set_value (val);
       break;
     case BIT_FIELD_REF:
-      res_op->set_value (build3 (code, res_op->type, res_op->ops[0],
-				 res_op->ops[1], res_op->ops[2]));
+      val = build3 (code, res_op->type, res_op->ops[0], res_op->ops[1],
+		    res_op->ops[2]);
+      REF_REVERSE_STORAGE_ORDER (val) = res_op->reverse;
+      res_op->set_value (val);
       break;
     default:;
     }
@@ -853,7 +857,10 @@ gimple_simplify (gimple *stmt, gimple_match_op *res_op, gimple_seq *seq,
 		op0 = do_valueize (op0, top_valueize, valueized);
 		res_op->set_op (code, type, op0,
 				TREE_OPERAND (rhs1, 1),
-				TREE_OPERAND (rhs1, 2));
+				TREE_OPERAND (rhs1, 2),
+				REF_REVERSE_STORAGE_ORDER (rhs1));
+		if (res_op->reverse)
+		  return valueized;
 		return (gimple_resimplify3 (seq, res_op, valueize)
 			|| valueized);
 	      }

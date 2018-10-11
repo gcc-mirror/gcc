@@ -218,43 +218,6 @@ get_int_kind_from_node (tree type)
   return -1;
 }
 
-/* Return a typenode for the "standard" C type with a given name.  */
-static tree
-get_typenode_from_name (const char *name)
-{
-  if (name == NULL || *name == '\0')
-    return NULL_TREE;
-
-  if (strcmp (name, "char") == 0)
-    return char_type_node;
-  if (strcmp (name, "unsigned char") == 0)
-    return unsigned_char_type_node;
-  if (strcmp (name, "signed char") == 0)
-    return signed_char_type_node;
-
-  if (strcmp (name, "short int") == 0)
-    return short_integer_type_node;
-  if (strcmp (name, "short unsigned int") == 0)
-    return short_unsigned_type_node;
-
-  if (strcmp (name, "int") == 0)
-    return integer_type_node;
-  if (strcmp (name, "unsigned int") == 0)
-    return unsigned_type_node;
-
-  if (strcmp (name, "long int") == 0)
-    return long_integer_type_node;
-  if (strcmp (name, "long unsigned int") == 0)
-    return long_unsigned_type_node;
-
-  if (strcmp (name, "long long int") == 0)
-    return long_long_integer_type_node;
-  if (strcmp (name, "long long unsigned int") == 0)
-    return long_long_unsigned_type_node;
-
-  gcc_unreachable ();
-}
-
 static int
 get_int_kind_from_name (const char *name)
 {

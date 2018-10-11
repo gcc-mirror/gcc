@@ -165,6 +165,7 @@ libdecnumber		Ben Elliston		<bje@gnu.org>
 libgcc			Ian Lance Taylor	<ian@airs.com>
 libgo			Ian Lance Taylor	<ian@airs.com>
 libgomp			Jakub Jelinek		<jakub@redhat.com>
+libgomp (OpenACC)	Thomas Schwinge		<thomas@codesourcery.com>
 libiberty		Ian Lance Taylor	<ian@airs.com>
 libitm			Torvald Riegel		<triegel@redhat.com>
 libobjc			Nicola Pero		<nicola.pero@meta-innovation.com>
@@ -236,6 +237,7 @@ auto-vectorizer		Zdenek Dvorak		<ook@ucw.cz>
 loop infrastructure	Zdenek Dvorak		<ook@ucw.cz>
 loop ivopts		Bin Cheng		<amker@gcc.gnu.org>
 loop optimizer		Bin Cheng		<amker@gcc.gnu.org>
+OpenACC			Thomas Schwinge		<thomas@codesourcery.com>
 OpenMP			Jakub Jelinek		<jakub@redhat.com>
 testsuite		Rainer Orth		<ro@CeBiTec.Uni-Bielefeld.DE>
 testsuite		Mike Stump		<mikestump@comcast.net>

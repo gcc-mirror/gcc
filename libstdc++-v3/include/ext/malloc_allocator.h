@@ -139,7 +139,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       size_type
       max_size() const _GLIBCXX_USE_NOEXCEPT 
-      { return size_t(-1) / sizeof(_Tp); }
+      {
+#if __PTRDIFF_MAX__ < __SIZE_MAX__
+	return size_t(__PTRDIFF_MAX__) / sizeof(_Tp);
+#else
+	return size_t(-1) / sizeof(_Tp);
+#endif
+      }
 
 #if __cplusplus >= 201103L
       template<typename _Up, typename... _Args>
@@ -160,17 +166,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void 
       destroy(pointer __p) { __p->~_Tp(); }
 #endif
-    };
 
-  template<typename _Tp>
-    inline bool
-    operator==(const malloc_allocator<_Tp>&, const malloc_allocator<_Tp>&)
-    { return true; }
-  
-  template<typename _Tp>
-    inline bool
-    operator!=(const malloc_allocator<_Tp>&, const malloc_allocator<_Tp>&)
-    { return false; }
+      template<typename _Up>
+	friend bool
+	operator==(const malloc_allocator&, const malloc_allocator<_Up>&)
+	_GLIBCXX_NOTHROW
+	{ return true; }
+
+      template<typename _Up>
+	friend bool
+	operator!=(const malloc_allocator&, const malloc_allocator<_Up>&)
+	_GLIBCXX_NOTHROW
+	{ return false; }
+    };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

@@ -79,6 +79,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "gimple-pretty-print.h"
+#include "opt-problem.h"
 
 
 /* Loop or bb location, with hotness information.  */
@@ -88,7 +89,7 @@ dump_user_location_t vect_location;
 
 void
 dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
-		stmt_vec_info stmt_info, int misalign,
+		stmt_vec_info stmt_info, int misalign, unsigned cost,
 		enum vect_cost_model_location where)
 {
   fprintf (f, "%p ", data);
@@ -128,36 +129,37 @@ dump_stmt_cost (FILE *f, void *data, int count, enum vect_cost_for_stmt kind,
       ks = "unaligned_store";
       break;
     case vector_store:
-      ks = "unaligned_store";
+      ks = "vector_store";
       break;
     case vector_scatter_store:
-      ks = "unaligned_store";
+      ks = "vector_scatter_store";
       break;
     case vec_to_scalar:
-      ks = "unaligned_store";
+      ks = "vec_to_scalar";
       break;
     case scalar_to_vec:
-      ks = "unaligned_store";
+      ks = "scalar_to_vec";
       break;
     case cond_branch_not_taken:
-      ks = "unaligned_store";
+      ks = "cond_branch_not_taken";
       break;
     case cond_branch_taken:
-      ks = "unaligned_store";
+      ks = "cond_branch_taken";
       break;
     case vec_perm:
-      ks = "unaligned_store";
+      ks = "vec_perm";
       break;
     case vec_promote_demote:
-      ks = "unaligned_store";
+      ks = "vec_promote_demote";
       break;
     case vec_construct:
-      ks = "unaligned_store";
+      ks = "vec_construct";
       break;
     }
   fprintf (f, "%s ", ks);
   if (kind == unaligned_load || kind == unaligned_store)
     fprintf (f, "(misalign %d) ", misalign);
+  fprintf (f, "costs %u ", cost);
   const char *ws = "unknown";
   switch (where)
     {
@@ -860,12 +862,24 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
   vect_location = find_loop_location (loop);
   if (LOCATION_LOCUS (vect_location.get_location_t ()) != UNKNOWN_LOCATION
       && dump_enabled_p ())
-    dump_printf (MSG_NOTE, "\nAnalyzing loop at %s:%d\n",
+    dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+		 "\nAnalyzing loop at %s:%d\n",
 		 LOCATION_FILE (vect_location.get_location_t ()),
 		 LOCATION_LINE (vect_location.get_location_t ()));
 
-  loop_vec_info loop_vinfo = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
+  /* Try to analyze the loop, retaining an opt_problem if dump_enabled_p.  */
+  opt_loop_vec_info loop_vinfo
+    = vect_analyze_loop (loop, orig_loop_vinfo, &shared);
   loop->aux = loop_vinfo;
+
+  if (!loop_vinfo)
+    if (dump_enabled_p ())
+      if (opt_problem *problem = loop_vinfo.get_problem ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "couldn't vectorize loop\n");
+	  problem->emit_and_clear ();
+	}
 
   if (!loop_vinfo || !LOOP_VINFO_VECTORIZABLE_P (loop_vinfo))
     {

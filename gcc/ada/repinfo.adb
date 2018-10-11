@@ -43,7 +43,6 @@ with Sem_Aux; use Sem_Aux;
 with Sinfo;   use Sinfo;
 with Sinput;  use Sinput;
 with Snames;  use Snames;
-with Stand;   use Stand;
 with Stringt; use Stringt;
 with Table;
 with Uname;   use Uname;
@@ -956,7 +955,7 @@ package body Repinfo is
          Write_Str ("  ]");
       end if;
 
-      if Etype (Ent) /= Standard_Void_Type then
+      if Ekind (Ent) = E_Function then
          if List_Representation_Info_To_JSON then
             Write_Line (",");
             Write_Str ("  ""mechanism"": """);

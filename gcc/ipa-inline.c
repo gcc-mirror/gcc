@@ -2219,10 +2219,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 
       if (dump_file)
 	{
+	  cgraph_node *ultimate = node->ultimate_alias_target ();
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
-		   node->name (),
-		   ipa_fn_summaries->get (node)->size);
+		   ultimate->name (),
+		   ipa_fn_summaries->get (ultimate)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
 		   node->callers->caller->name (),

@@ -1,8 +1,6 @@
 /* { dg-do compile { target powerpc*-*-* } } */
 /* { dg-options "-O2 -std=c99" } */
 
-#include <altivec.h>
-
 int main ()
 {
 

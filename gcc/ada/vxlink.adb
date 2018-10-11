@@ -240,10 +240,6 @@ package body VxLink is
          GNAT.OS_Lib.Free (Args);
 
          if Status /= 0 then
-            pragma Annotate (Codepeer, False_Positive,
-                             "test always false",
-                             "Status modified by Get_Command_Output");
-
             Ada.Text_IO.Put_Line (Ret);
             Set_Error_State
               (Base_Name (Arguments.First_Element) &

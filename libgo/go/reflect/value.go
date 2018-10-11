@@ -323,7 +323,7 @@ var callGC bool // for testing; see TestCallMethodJump
 
 func (v Value) call(op string, in []Value) []Value {
 	// Get function pointer, type.
-	t := v.typ
+	t := (*funcType)(unsafe.Pointer(v.typ))
 	var (
 		fn   unsafe.Pointer
 		rcvr Value
@@ -472,7 +472,7 @@ func (v Value) call(op string, in []Value) []Value {
 // The return value rcvrtype gives the method's actual receiver type.
 // The return value t gives the method type signature (without the receiver).
 // The return value fn is a pointer to the method code.
-func methodReceiver(op string, v Value, methodIndex int) (rcvrtype, t *rtype, fn unsafe.Pointer) {
+func methodReceiver(op string, v Value, methodIndex int) (rcvrtype *rtype, t *funcType, fn unsafe.Pointer) {
 	i := methodIndex
 	if v.typ.Kind() == Interface {
 		tt := (*interfaceType)(unsafe.Pointer(v.typ))
@@ -489,7 +489,7 @@ func methodReceiver(op string, v Value, methodIndex int) (rcvrtype, t *rtype, fn
 		}
 		rcvrtype = iface.itab.typ
 		fn = unsafe.Pointer(&iface.itab.fun[i])
-		t = m.typ
+		t = (*funcType)(unsafe.Pointer(m.typ))
 	} else {
 		rcvrtype = v.typ
 		ms := v.typ.exportedMethods()
@@ -501,7 +501,7 @@ func methodReceiver(op string, v Value, methodIndex int) (rcvrtype, t *rtype, fn
 			panic("reflect: " + op + " of unexported method")
 		}
 		fn = unsafe.Pointer(&m.tfn)
-		t = m.mtyp
+		t = (*funcType)(unsafe.Pointer(m.mtyp))
 	}
 	return
 }
@@ -2399,9 +2399,13 @@ func mapiternext(it unsafe.Pointer)
 
 //go:noescape
 func maplen(m unsafe.Pointer) int
-func call(typ *rtype, fnaddr unsafe.Pointer, isInterface bool, isMethod bool, params *unsafe.Pointer, results *unsafe.Pointer)
+func call(typ *funcType, fnaddr unsafe.Pointer, isInterface bool, isMethod bool, params *unsafe.Pointer, results *unsafe.Pointer)
 
 func ifaceE2I(t *rtype, src interface{}, dst unsafe.Pointer)
+
+// memmove copies size bytes to dst from src. No write barriers are used.
+//go:noescape
+func memmove(dst, src unsafe.Pointer, size uintptr)
 
 // typedmemmove copies a value of type t to dst from src.
 //go:noescape
@@ -2411,10 +2415,6 @@ func typedmemmove(t *rtype, dst, src unsafe.Pointer)
 // returning the number of elements copied.
 //go:noescape
 func typedslicecopy(elemType *rtype, dst, src sliceHeader) int
-
-//go:noescape
-//extern memmove
-func memmove(adst, asrc unsafe.Pointer, n uintptr)
 
 // Dummy annotation marking that the value x escapes,
 // for use in cases where the reflect code is so clever that

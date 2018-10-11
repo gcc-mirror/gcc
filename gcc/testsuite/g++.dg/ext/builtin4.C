@@ -6,5 +6,5 @@
 extern "C" int printf(const char*,...);
 
 void foo() {
-  printf("%d"); 		// { dg-warning "expects a matching" }
+  printf("%d"); 		// { dg-warning "12: expects a matching" }
 }

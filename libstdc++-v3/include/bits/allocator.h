@@ -148,6 +148,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       ~allocator() _GLIBCXX_NOTHROW { }
 
+      friend bool
+      operator==(const allocator&, const allocator&) _GLIBCXX_NOTHROW
+      { return true; }
+
+      friend bool
+      operator!=(const allocator&, const allocator&) _GLIBCXX_NOTHROW
+      { return false; }
+
       // Inherit everything else.
     };
 
@@ -157,21 +165,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _GLIBCXX_NOTHROW
     { return true; }
 
-  template<typename _Tp>
-    inline bool
-    operator==(const allocator<_Tp>&, const allocator<_Tp>&)
-    _GLIBCXX_NOTHROW
-    { return true; }
-
   template<typename _T1, typename _T2>
     inline bool
     operator!=(const allocator<_T1>&, const allocator<_T2>&)
-    _GLIBCXX_NOTHROW
-    { return false; }
-
-  template<typename _Tp>
-    inline bool
-    operator!=(const allocator<_Tp>&, const allocator<_Tp>&)
     _GLIBCXX_NOTHROW
     { return false; }
 

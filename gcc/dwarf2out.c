@@ -24009,7 +24009,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	}
       if (attr != NULL
 	  && ((*ranges_table)[attr->dw_attr_val.v.val_offset].num
-	      == BLOCK_NUMBER (superblock))
+	      == (int)BLOCK_NUMBER (superblock))
 	  && BLOCK_FRAGMENT_CHAIN (superblock))
 	{
 	  unsigned long off = attr->dw_attr_val.v.val_offset;
@@ -24019,7 +24019,7 @@ add_high_low_attributes (tree stmt, dw_die_ref die)
 	    {
 	      ++supercnt;
 	      gcc_checking_assert ((*ranges_table)[off + supercnt].num
-				   == BLOCK_NUMBER (chain));
+				   == (int)BLOCK_NUMBER (chain));
 	    }
 	  gcc_checking_assert ((*ranges_table)[off + supercnt + 1].num == 0);
 	  for (chain = BLOCK_FRAGMENT_CHAIN (stmt);
@@ -24071,25 +24071,7 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
       equate_block_to_die (stmt, stmt_die);
     }
 
-  if (BLOCK_ABSTRACT (stmt))
-    {
-      if (old_die)
-	{
-	  /* This must have been generated early and it won't even
-	     need location information since it's a DW_AT_inline
-	     function.  */
-	  if (flag_checking)
-	    for (dw_die_ref c = context_die; c; c = c->die_parent)
-	      if (c->die_tag == DW_TAG_inlined_subroutine
-		  || c->die_tag == DW_TAG_subprogram)
-		{
-		  gcc_assert (get_AT (c, DW_AT_inline));
-		  break;
-		}
-	  return;
-	}
-    }
-  else if (BLOCK_ABSTRACT_ORIGIN (stmt))
+  if (BLOCK_ABSTRACT_ORIGIN (stmt))
     {
       /* If this is an inlined or conrecte instance, create a new lexical
 	 die for anything below to attach DW_AT_abstract_origin to.  */
@@ -24109,7 +24091,7 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
   /* A non abstract block whose blocks have already been reordered
      should have the instruction range for this block.  If so, set the
      high/low attributes.  */
-  if (!early_dwarf && !BLOCK_ABSTRACT (stmt) && TREE_ASM_WRITTEN (stmt))
+  if (!early_dwarf && TREE_ASM_WRITTEN (stmt))
     {
       gcc_assert (stmt_die);
       add_high_low_attributes (stmt, stmt_die);
@@ -24123,48 +24105,38 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 static void
 gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
 {
-  tree decl;
-
-  /* The instance of function that is effectively being inlined shall not
-     be abstract.  */
-  gcc_assert (! BLOCK_ABSTRACT (stmt));
-
-  decl = block_ultimate_origin (stmt);
+  tree decl = block_ultimate_origin (stmt);
 
   /* Make sure any inlined functions are known to be inlineable.  */
   gcc_checking_assert (DECL_ABSTRACT_P (decl)
 		       || cgraph_function_possibly_inlined_p (decl));
 
-  if (! BLOCK_ABSTRACT (stmt))
+  dw_die_ref subr_die = new_die (DW_TAG_inlined_subroutine, context_die, stmt);
+
+  if (call_arg_locations || debug_inline_points)
+    equate_block_to_die (stmt, subr_die);
+  add_abstract_origin_attribute (subr_die, decl);
+  if (TREE_ASM_WRITTEN (stmt))
+    add_high_low_attributes (stmt, subr_die);
+  add_call_src_coords_attributes (stmt, subr_die);
+
+  /* The inliner creates an extra BLOCK for the parameter setup,
+     we want to merge that with the actual outermost BLOCK of the
+     inlined function to avoid duplicate locals in consumers.
+     Do that by doing the recursion to subblocks on the single subblock
+     of STMT.  */
+  bool unwrap_one = false;
+  if (BLOCK_SUBBLOCKS (stmt) && !BLOCK_CHAIN (BLOCK_SUBBLOCKS (stmt)))
     {
-      dw_die_ref subr_die
-	= new_die (DW_TAG_inlined_subroutine, context_die, stmt);
-
-      if (call_arg_locations || debug_inline_points)
-	equate_block_to_die (stmt, subr_die);
-      add_abstract_origin_attribute (subr_die, decl);
-      if (TREE_ASM_WRITTEN (stmt))
-        add_high_low_attributes (stmt, subr_die);
-      add_call_src_coords_attributes (stmt, subr_die);
-
-      /* The inliner creates an extra BLOCK for the parameter setup,
-         we want to merge that with the actual outermost BLOCK of the
-	 inlined function to avoid duplicate locals in consumers.
-	 Do that by doing the recursion to subblocks on the single subblock
-	 of STMT.  */
-      bool unwrap_one = false;
-      if (BLOCK_SUBBLOCKS (stmt) && !BLOCK_CHAIN (BLOCK_SUBBLOCKS (stmt)))
-	{
-	  tree origin = block_ultimate_origin (BLOCK_SUBBLOCKS (stmt));
-	  if (origin
-	      && TREE_CODE (origin) == BLOCK
-	      && BLOCK_SUPERCONTEXT (origin) == decl)
-	    unwrap_one = true;
-	}
-      decls_for_scope (stmt, subr_die, !unwrap_one);
-      if (unwrap_one)
-	decls_for_scope (BLOCK_SUBBLOCKS (stmt), subr_die);
+      tree origin = block_ultimate_origin (BLOCK_SUBBLOCKS (stmt));
+      if (origin
+	  && TREE_CODE (origin) == BLOCK
+	  && BLOCK_SUPERCONTEXT (origin) == decl)
+	unwrap_one = true;
     }
+  decls_for_scope (stmt, subr_die, !unwrap_one);
+  if (unwrap_one)
+    decls_for_scope (BLOCK_SUBBLOCKS (stmt), subr_die);
 }
 
 /* Generate a DIE for a field in a record, or structure.  CTX is required: see
@@ -25663,8 +25635,7 @@ gen_block_die (tree stmt, dw_die_ref context_die)
        still want to generate high/low PC attributes so output it.  */
     must_output_die = 1;
   else if (TREE_USED (stmt)
-	   || TREE_ASM_WRITTEN (stmt)
-	   || BLOCK_ABSTRACT (stmt))
+	   || TREE_ASM_WRITTEN (stmt))
     {
       /* Determine if this block directly contains any "significant"
 	 local declarations which we will need to output DIEs for.  */
@@ -25697,23 +25668,7 @@ gen_block_die (tree stmt, dw_die_ref context_die)
   if (must_output_die)
     {
       if (inlined_func)
-	{
-	  /* If STMT block is abstract, that means we have been called
-	     indirectly from dwarf2out_abstract_function.
-	     That function rightfully marks the descendent blocks (of
-	     the abstract function it is dealing with) as being abstract,
-	     precisely to prevent us from emitting any
-	     DW_TAG_inlined_subroutine DIE as a descendent
-	     of an abstract function instance. So in that case, we should
-	     not call gen_inlined_subroutine_die.
-
-	     Later though, when cgraph asks dwarf2out to emit info
-	     for the concrete instance of the function decl into which
-	     the concrete instance of STMT got inlined, the later will lead
-	     to the generation of a DW_TAG_inlined_subroutine DIE.  */
-	  if (! BLOCK_ABSTRACT (stmt))
-	    gen_inlined_subroutine_die (stmt, context_die);
-	}
+	gen_inlined_subroutine_die (stmt, context_die);
       else
 	gen_lexical_block_die (stmt, context_die);
     }

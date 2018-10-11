@@ -42,6 +42,7 @@
 #include "varasm.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-ssa.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -2928,15 +2929,26 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   /* We allow FUNCTION_DECLs here even though it doesn't make much sense.  */
   gcc_assert (TREE_CODE (t) == SSA_NAME || DECL_P (t));
 
-  /* For parameters, get at the points-to set for the actual parm
-     decl.  */
   if (TREE_CODE (t) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (t)
-      && (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
-	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL))
+      && SSA_NAME_IS_DEFAULT_DEF (t))
     {
-      get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
-      return;
+      /* For parameters, get at the points-to set for the actual parm
+	 decl.  */
+      if (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
+	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL)
+	{
+	  get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
+	  return;
+	}
+      /* For undefined SSA names return nothing.  */
+      else if (!ssa_defined_default_def_p (t))
+	{
+	  cexpr.var = nothing_id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	  return;
+	}
     }
 
   /* For global variables resort to the alias target.  */
@@ -4833,35 +4845,19 @@ find_func_aliases (struct function *fn, gimple *origt)
   gimple *t = origt;
   auto_vec<ce_s, 16> lhsc;
   auto_vec<ce_s, 16> rhsc;
-  struct constraint_expr *c;
   varinfo_t fi;
 
   /* Now build constraints expressions.  */
   if (gimple_code (t) == GIMPLE_PHI)
     {
-      size_t i;
-      unsigned int j;
-
       /* For a phi node, assign all the arguments to
 	 the result.  */
       get_constraint_for (gimple_phi_result (t), &lhsc);
-      for (i = 0; i < gimple_phi_num_args (t); i++)
+      for (unsigned i = 0; i < gimple_phi_num_args (t); i++)
 	{
-	  tree strippedrhs = PHI_ARG_DEF (t, i);
-
-	  STRIP_NOPS (strippedrhs);
 	  get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
-
-	  FOR_EACH_VEC_ELT (lhsc, j, c)
-	    {
-	      struct constraint_expr *c2;
-	      while (rhsc.length () > 0)
-		{
-		  c2 = &rhsc.last ();
-		  process_constraint (new_constraint (*c, *c2));
-		  rhsc.pop ();
-		}
-	    }
+	  process_all_all_constraints (lhsc, rhsc);
+	  rhsc.truncate (0);
 	}
     }
   /* In IPA mode, we need to generate constraints to pass call

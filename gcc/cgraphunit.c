@@ -784,6 +784,12 @@ process_function_and_variable_attributes (cgraph_node *first,
 	  DECL_ATTRIBUTES (decl) = remove_attribute ("weakref",
 						     DECL_ATTRIBUTES (decl));
 	}
+      else if (lookup_attribute ("alias", DECL_ATTRIBUTES (decl))
+	  && node->definition
+	  && !node->alias)
+	warning_at (DECL_SOURCE_LOCATION (node->decl), OPT_Wattributes,
+		    "%<alias%> attribute ignored"
+		    " because function is defined");
 
       if (lookup_attribute ("always_inline", DECL_ATTRIBUTES (decl))
 	  && !DECL_DECLARED_INLINE_P (decl)
@@ -1856,6 +1862,12 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	 DECL_ARGUMENTS.  In this case force_gimple_thunk is true.  */
       if (in_lto_p && !force_gimple_thunk)
 	get_untransformed_body ();
+
+      /* We need to force DECL_IGNORED_P when the thunk is created
+	 after early debug was run.  */
+      if (force_gimple_thunk)
+	DECL_IGNORED_P (thunk_fndecl) = 1;
+
       a = DECL_ARGUMENTS (thunk_fndecl);
 
       current_function_decl = thunk_fndecl;
@@ -1864,7 +1876,6 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
       resolve_unique_section (thunk_fndecl, 0,
 			      flag_function_sections);
 
-      DECL_IGNORED_P (thunk_fndecl) = 1;
       bitmap_obstack_initialize (NULL);
 
       if (thunk.virtual_offset_p)

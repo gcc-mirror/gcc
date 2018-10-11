@@ -203,6 +203,8 @@ proc go-set-goarch { } {
 	"x86_64-*-*" {
 	    if [check_effective_target_ia32] {
 		set goarch "386"
+	    } elseif [check_effective_target_x32] {
+		set goarch "amd64p32"
 	    } else {
 		set goarch "amd64"
 	    }

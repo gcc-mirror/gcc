@@ -643,9 +643,8 @@ dump_scope_block (FILE *file, int indent, tree scope, dump_flags_t flags)
   tree var, t;
   unsigned int i;
 
-  fprintf (file, "\n%*s{ Scope block #%i%s%s",indent, "" , BLOCK_NUMBER (scope),
-  	   TREE_USED (scope) ? "" : " (unused)",
-	   BLOCK_ABSTRACT (scope) ? " (abstract)": "");
+  fprintf (file, "\n%*s{ Scope block #%i%s",indent, "" , BLOCK_NUMBER (scope),
+  	   TREE_USED (scope) ? "" : " (unused)");
   if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (scope)) != UNKNOWN_LOCATION)
     {
       expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));

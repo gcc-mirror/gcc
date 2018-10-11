@@ -973,6 +973,10 @@ Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas.
 
+Wprio-ctor-dtor
+C ObjC C++ ObjC++ Var(warn_prio_ctor_dtor) Init(1) Warning
+Warn if constructor or destructors with priorities from 0 to 100 are used.
+
 Wproperty-assign-default
 ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
 Warn if a property for an Objective-C object has no assign semantics specified.

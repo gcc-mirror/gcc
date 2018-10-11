@@ -5930,8 +5930,9 @@ gnat_to_gnu (Node_Id gnat_node)
 	    || kind == N_Type_Conversion)
 	   && Is_Integer_Type (Etype (gnat_node)))
       && !(kind == N_Attribute_Reference
-	   && Get_Attribute_Id (Attribute_Name (gnat_node)) == Attr_Length
-	   && Ekind (Etype (Prefix (gnat_node))) == E_Array_Subtype
+	   && (Get_Attribute_Id (Attribute_Name (gnat_node)) == Attr_Length
+	       || Get_Attribute_Id (Attribute_Name (gnat_node)) == Attr_Size)
+	   && Is_Constrained (Etype (Prefix (gnat_node)))
 	   && !Is_Constr_Subt_For_U_Nominal (Etype (Prefix (gnat_node))))
       && kind != N_Expanded_Name
       && kind != N_Identifier

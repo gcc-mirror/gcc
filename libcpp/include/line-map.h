@@ -1047,7 +1047,7 @@ LINEMAPS_MACRO_LOWEST_LOCATION (const line_maps *set)
 {
   return LINEMAPS_MACRO_USED (set)
          ? MAP_START_LOCATION (LINEMAPS_LAST_MACRO_MAP (set))
-         : MAX_SOURCE_LOCATION;
+         : MAX_SOURCE_LOCATION + 1;
 }
 
 /* Returns the last macro map allocated in the line table SET.  */

@@ -5129,6 +5129,13 @@ resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	  /* F2008, R610 alias F2018, R908.  */
+	  if (current_part_dimension || seen_part_dimension)
+	    {
+	      gfc_error ("Substring reference of nonscalar not permitted at %L",
+			 &expr->where);
+	      return false;
+	    }
 	  break;
 	}
 
@@ -12503,7 +12510,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     }
 
   /* An elemental function is required to return a scalar 12.7.1  */
-  if (sym->attr.elemental && sym->attr.function && sym->as)
+  if (sym->attr.elemental && sym->attr.function
+      && (sym->as || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)))
     {
       gfc_error ("ELEMENTAL function %qs at %L must have a scalar "
 		 "result", sym->name, &sym->declared_at);

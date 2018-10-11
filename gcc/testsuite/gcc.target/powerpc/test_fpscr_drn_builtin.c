@@ -1,8 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* &&  lp64 } } } */
-/* { dg-require-effective-target dfp_hw } */
+/* { dg-require-effective-target hard_dfp } */
 /* { dg-options "-O2 -std=c99" } */
-
-#include <altivec.h>
 
 #ifdef DEBUG
 #include <stdio.h>

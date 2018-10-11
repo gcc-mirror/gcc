@@ -1,3 +1,375 @@
+2018-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/warn-abs-1.c: Guard tests assuming size of long double is
+	greater that the size of double by target large_long double.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/feat-cxx2a.C: New test.
+
+	PR c++/87547
+	* g++.dg/rtti/typeid12.C: New test.
+
+2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/pr87574.C: New test.
+
+2018-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87567 - constexpr rejects call to non-constexpr function.
+	* g++.dg/cpp1y/constexpr-loop7.C: New test.
+
+2018-10-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/87579
+	* gcc.target/powerpc/sse3-check.h: Remove duplicated code.
+	* gcc.target/powerpc/sse3-addsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-addsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-haddps.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-haddpd.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-lddqu.c: Likewise.
+	* gcc.target/powerpc/sse3-movsldup.c: Likewise.
+	* gcc.target/powerpc/sse3-movshdup.c: Likewise.
+	* gcc.target/powerpc/sse3-movddup.c: Likewise.
+	* gcc.target/powerpc/pr37191.c: Likewise.
+2018-10-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/54391
+	* gcc.dg/transparent-union-6.c: New.
+
+2018-10-10  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.c-torture/execute/memchr-1.c: Avoid assuming 4-byte wchar_t.
+	Add a test for 2-byte wchar_t.
+	* gcc.dg/builtin-memchr.c: New test.
+
+2018-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/87573
+	* gcc.target/i386/pr87573.c: New test.
+
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* gcc.target/i386/pr87550.c: New test.
+
+	PR c/87286
+	* gcc.dg/pr87286.c: Add -Wno-psabi to dg-options.
+
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* g++.dg/concepts/pr84423-1.C: New.
+	* g++.dg/concepts/pr84423-2.C: Likewise.
+	* g++.dg/cpp0x/auto39.C: Test location too.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp1y/pr60384.C: Likewise.
+
+2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse3-check.h: New file.
+	* gcc.target/powerpc/sse3-addsubps.c: New file.
+	* gcc.target/powerpc/sse3-addsubpd.c: New file.
+	* gcc.target/powerpc/sse3-haddps.c: New file.
+	* gcc.target/powerpc/sse3-hsubps.c: New file.
+	* gcc.target/powerpc/sse3-haddpd.c: New file.
+	* gcc.target/powerpc/sse3-hsubpd.c: New file.
+	* gcc.target/powerpc/sse3-lddqu.c: New file.
+	* gcc.target/powerpc/sse3-movsldup.c: New file.
+	* gcc.target/powerpc/sse3-movshdup.c: New file.
+	* gcc.target/powerpc/sse3-movddup.c: New file.
+	* gcc.target/powerpc/pr37191.c: New file.
+
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
+	change to dg-do compile.
+	* gfortran.dg/actual_array_substr_2.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Use array
+	element not size-one section.
+	* gfortran.dg/array_substring.f90: New.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type5.adb, gnat.dg/derived_type5_pkg.ads: New
+	testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn17.adb: New testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline14.adb, gnat.dg/inline14_pkg.adb,
+	gnat.dg/inline14_pkg.ads: New testcase.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn18.adb: New testcase.
+
+2018-10-09  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/pr64820.c: Add line number to scanned
+	pattern.
+	* c-c++-common/asan/use-after-return-1.c: Likewise.
+	* g++.dg/asan/function-argument-1.C (main): Likewise.
+	* g++.dg/asan/function-argument-2.C (main): Likewise.
+	* g++.dg/asan/function-argument-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-4.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-5.C (main): Likewise.
+	* gcc.dg/asan/pr78541.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-1.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-10.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-2.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-3.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-5.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-9.c (main): Likewise.
+
+2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87151
+	* gfortran.dg/deferred_type_component_3.f90: New test.
+
+	PR fortran/80931
+	* gfortran.dg/deferred_character_28.f90: New test.
+	* gfortran.dg/deferred_character_29.f90: New test (note that
+	this test appears in PR83196 comment #4 by mistake).
+
+2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/i386/vararg-loc.c: Accept a column number.
+
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/i386.exp: Move procedures to
+	target-supports.exp.
+	* g++.target/i386/i386.exp: New file.
+	* gcc.target/i386/mv*.C: Move here tests and remove
+	target filter in these tests.
+
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/contiguous_4.f90: Adjust.
+	* gfortran.dg/contiguous_4.f90: New test.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* gfortran.dg/associate_41.f90: New test.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/merge-all-constants-2.c: Require string_merging support.
+	* gnat.dg/string_merge1.adb: Likewise.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/Wprio-ctor-dtor.c: Require init_priority support.
+
+2018-10-08  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/ext/pr82625.C: Add dg-compile filter.
+
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* g++.dg/concepts/pr71128.C: New.
+
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* gcc.dg/pr87286.c: New test.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.dg/array_constructor_type_23.f90: New test.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* gfortran.dg/elemental_function_4.f90 : New test.
+
+2018-10-05  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/86939
+	PR rtl-optimization/87479
+	* gcc.target/powerpc/pr86939.c: New test.
+	* gcc/testsuite/gcc.target/i386/pr49095.c: Fix expected results.
+
+2018-10-05  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: Fix test expectations.
+	* gnat.dg/string_merge2.adb: Likewise.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* g++.dg/ext/builtin4.C: Set expected location for warning to the
+	correct location within the format string.
+	* g++.dg/plugin/plugin.exp (plugin_test_list): Add the plugin and
+	files for testing locations within string literal locations from
+	the C frontend.
+	* g++.dg/warn/Wformat-method.C: New test.
+	* g++.dg/warn/Wformat-pr71863.C: New test.
+	* g++.dg/warn/Wformat-ranges-c++11.C: New test.
+	* g++.dg/warn/Wformat-ranges.C: New test, based on
+	gcc.dg/format/diagnostic-ranges.c.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): Generalize expected output to work with
+	both C and C++.
+	* gcc.dg/plugin/diagnostic-test-string-literals-2.c
+	(test_stringified_token_1): Likewise.
+	(test_stringified_token_3): Likewise.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (proc dg-end-multiline-output): Check argument
+	count.  If there's a 3rd argument, use dg-process-target on it,
+	bailing out, or recording expected failures as "maybe_x".
+	(proc handle-multiline-outputs): Extract "maybe_x", and use it
+	to convert pass/fail into xpass/xfail.
+
+2018-10-05  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87490
+	* gcc.dg/pr87490.c: New test.
+	* gcc.dg/warn-strnlen-no-nul-2.c: Same.
+
+2018-10-05  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/71625
+	* /gcc.target/aarch64/vclz.c (test_vclz_s8): Add noinline attribute.
+	(test_vclz_s16): Ditto.
+	(test_vclz_s32): Ditto.
+	(test_vclzq_s8): Ditto.
+	(test_vclzq_s16): Ditto.
+	(test_vclzq_s32): Ditto.
+	(test_vclz_u8): Ditto.
+	(test_vclz_u16): Ditto.
+	(test_vclz_u32): Ditto.
+	(test_vclzq_u8): Ditto.
+	(test_vclzq_u16): Ditto.
+	(test_vclzq_u32): Ditto.
+	* gcc.target/aarch64/vneg_s.c (test_vneg_s8): Ditto.
+	(test_vneg_s16): Ditto.
+	(test_vneg_s32): Ditto.
+	(test_vneg_s64): Ditto.
+	(test_vnegd_s64): Ditto.
+	(test_vnegq_s8): Ditto.
+	(test_vnegq_s16): Ditto.
+	(test_vnegq_s32): Ditto.
+	(test_vnegq_s64): Ditto.
+
+2018-10-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87509
+	* gcc.target/powerpc/test_fpscr_drn_builtin.c: Use hard_dfp instead
+	of dfp_hw.  Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_drn_builtin_error.c: Ditto.  Require
+	lp64.
+	* gcc.target/powerpc/test_fpscr_rn_builtin.c: Don't include <altivec.h>.
+	* gcc.target/powerpc/test_fpscr_rn_builtin_error.c: Ditto.
+	* gcc.target/powerpc/test_mffsl.c: Ditto.
+
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-c++-common/Wprio-ctor-dtor.c: New test.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/vect/nodump-vect-opt-info-2.c: New test.
+	* gcc.dg/vect/vect-alias-check-4.c: Add "-fopt-info-vec-all" to
+	dg-additional-options.  Add dg-message and dg-missed directives
+	to verify that -fopt-info messages are written at the correct
+	locations.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump-1.c: Update expected output for test_scopes
+	due to "-internals" not being selected.
+	* gcc.dg/plugin/dump-2.c: New test, based on dump-1.c, with
+	"-internals" added to re-enable the output from test_scopes.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add dump-2.c.
+
+2018-10-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* gnat.dg/string_merge1.adb: New test.
+	* gnat.dg/string_merge2.adb: New test.
+	* gcc.dg/merge-all-constants-1.c: Adjust test.
+	* gcc.dg/merge-all-constants-2.c: New test.
+
+2018-10-04  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	PR target/87486
+	* gcc.target/powerpc/undef-bool-2.c: Fix expected error output.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR c/87483
+	* gcc.dg/pr87483.c: New test.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/82625
+	* g++.dg/ext/pr82625.C: New test.
+
+2018-10-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/dump-1.c: New test.
+	* gcc.dg/plugin/dump_plugin.c: New test plugin.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add the above.
+
+2018-10-04  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87466
+	* gcc.target/powerpc/pr87466.c: New test.
+
+2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	PR tree-optimization/85787
+	* gcc.dg/ipa/propmalloc-4.c: New test.
+
+2018-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/cunroll-15.c: Add XFAILs for arm and powerpc.
+
+2018-10-03  Ian Lance Taylor  <iant@google.com>
+
+	* go.test/go-test.exp (go-set-goarch): Use amd64p32 on x32.
+
+2018-10-03  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/warn-sprintf-no-nul.c: New test.
+
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* g++.dg/gcov/pr86109.C: New test.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	* gcc.dg/tree-ssa/muldiv-1.c: New file.
+	* gcc.dg/tree-ssa/muldiv-2.c: Likewise.
+
+2018-10-02  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/87081
+	* gcc.target/powerpc/vec-init-6.c: Fix expected asm.
+
+2018-10-01  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.dg/warn-strnlen-no-nul.c: New.
+
 2018-10-01  Carl Love  <cel@us.ibm.com>
 
 	PR 69431

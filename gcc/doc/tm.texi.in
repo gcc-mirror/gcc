@@ -7509,6 +7509,8 @@ You need not define this macro if it would always have the value of zero.
 
 @hook TARGET_MODE_REP_EXTENDED
 
+@hook TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
+
 @defmac STORE_FLAG_VALUE
 A C expression describing the value returned by a comparison operator
 with an integral mode and stored by a store-flag instruction

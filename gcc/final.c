@@ -3224,17 +3224,6 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
   if (NOTE_MARKER_P (insn))
     {
       location_t loc = NOTE_MARKER_LOCATION (insn);
-      /* The inline entry markers (gimple, insn, note) carry the
-	 location of the call, because that's what we want to carry
-	 during compilation, but the location we want to output in
-	 debug information for the inline entry point is the location
-	 of the function itself.  */
-      if (NOTE_KIND (insn) == NOTE_INSN_INLINE_ENTRY)
-	{
-	  tree block = LOCATION_BLOCK (loc);
-	  tree fn = block_ultimate_origin (block);
-	  loc = DECL_SOURCE_LOCATION (fn);
-	}
       expanded_location xloc = expand_location (loc);
       if (xloc.line == 0)
 	{

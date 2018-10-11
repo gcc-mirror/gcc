@@ -1693,13 +1693,14 @@ cpp_interpret_string (cpp_reader *pfile, const cpp_string *from, size_t count,
   return cpp_interpret_string_1 (pfile, from, count, to, type, NULL, NULL);
 }
 
-/* A "do nothing" error-handling callback for use by
+/* A "do nothing" diagnostic-handling callback for use by
    cpp_interpret_string_ranges, so that it can temporarily suppress
-   error-handling.  */
+   diagnostic-handling.  */
 
 static bool
-noop_error_cb (cpp_reader *, int, int, rich_location *,
-	       const char *, va_list *)
+noop_diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level,
+		    enum cpp_warning_reason, rich_location *,
+		    const char *, va_list *)
 {
   /* no-op.  */
   return true;
@@ -1737,25 +1738,26 @@ cpp_interpret_string_ranges (cpp_reader *pfile, const cpp_string *from,
     return "execution character set != source character set";
 
   /* For on-demand strings we have already lexed the strings, so there
-     should be no errors.  However, if we have bogus source location
+     should be no diagnostics.  However, if we have bogus source location
      data (or stringified macro arguments), the attempt to lex the
-     strings could fail with an error.  Temporarily install an
-     error-handler to catch the error, so that it can lead to this call
+     strings could fail with an diagnostic.  Temporarily install an
+     diagnostic-handler to catch the diagnostic, so that it can lead to this call
      failing, rather than being emitted as a user-visible diagnostic.
-     If an error does occur, we should see it via the return value of
+     If an diagnostic does occur, we should see it via the return value of
      cpp_interpret_string_1.  */
-  bool (*saved_error_handler) (cpp_reader *, int, int, rich_location *,
-			       const char *, va_list *)
+  bool (*saved_diagnostic_handler) (cpp_reader *, enum cpp_diagnostic_level,
+				    enum cpp_warning_reason, rich_location *,
+				    const char *, va_list *)
     ATTRIBUTE_FPTR_PRINTF(5,0);
 
-  saved_error_handler = pfile->cb.error;
-  pfile->cb.error = noop_error_cb;
+  saved_diagnostic_handler = pfile->cb.diagnostic;
+  pfile->cb.diagnostic = noop_diagnostic_cb;
 
   bool result = cpp_interpret_string_1 (pfile, from, count, NULL, type,
 					loc_readers, out);
 
-  /* Restore the saved error-handler.  */
-  pfile->cb.error = saved_error_handler;
+  /* Restore the saved diagnostic-handler.  */
+  pfile->cb.diagnostic = saved_diagnostic_handler;
 
   if (!result)
     return "cpp_interpret_string_1 failed";

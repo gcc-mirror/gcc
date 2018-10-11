@@ -273,7 +273,7 @@ get_tinfo_decl_dynamic (tree exp, tsubst_flags_t complain)
   exp = resolve_nondeduced_context (exp, complain);
 
   /* peel back references, so they match.  */
-  type = non_reference (TREE_TYPE (exp));
+  type = non_reference (unlowered_expr_type (exp));
 
   /* Peel off cv qualifiers.  */
   type = TYPE_MAIN_VARIANT (type);

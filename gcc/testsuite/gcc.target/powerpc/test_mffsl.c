@@ -1,8 +1,6 @@
 /* { dg-do run { target { powerpc*-*-* } } } */
 /* { dg-options "-O2 -std=c99" } */
 
-#include <altivec.h>
-
 #ifdef DEBUG
 #include <stdio.h>
 #endif

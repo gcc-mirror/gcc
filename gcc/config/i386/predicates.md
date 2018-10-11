@@ -1042,11 +1042,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
 
-; Return true when OP is operand acceptable for standard SSE move.
-(define_predicate "vector_move_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (match_operand 0 "const0_operand")))
-
 ;; Return true when OP is either nonimmediate operand, or any
 ;; CONST_VECTOR.
 (define_predicate "nonimmediate_or_const_vector_operand"
@@ -1061,6 +1056,11 @@
 ;; Return true if OP is a register or a zero.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
+; Return true when OP is a nonimmediate or zero.
+(define_predicate "nonimm_or_0_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
 
 (define_predicate "norex_memory_operand"

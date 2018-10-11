@@ -516,7 +516,7 @@ struct fmtresult
   /* Construct a FMTRESULT object with all counters initialized
      to MIN.  KNOWNRANGE is set when MIN is valid.  */
   fmtresult (unsigned HOST_WIDE_INT min = HOST_WIDE_INT_MAX)
-  : argmin (), argmax (),
+  : argmin (), argmax (), nonstr (),
     knownrange (min < HOST_WIDE_INT_MAX),
     mayfail (), nullp ()
   {
@@ -530,7 +530,7 @@ struct fmtresult
      KNOWNRANGE is set when both MIN and MAX are valid.   */
   fmtresult (unsigned HOST_WIDE_INT min, unsigned HOST_WIDE_INT max,
 	     unsigned HOST_WIDE_INT likely = HOST_WIDE_INT_MAX)
-  : argmin (), argmax (),
+  : argmin (), argmax (), nonstr (),
     knownrange (min < HOST_WIDE_INT_MAX && max < HOST_WIDE_INT_MAX),
     mayfail (), nullp ()
   {
@@ -556,6 +556,10 @@ struct fmtresult
   /* The minimum and maximum number of bytes that a directive
      results in on output for an argument in the range above.  */
   result_range range;
+
+  /* Non-nul when the argument of a string directive is not a nul
+     terminated string.  */
+  tree nonstr;
 
   /* True when the range above is obtained from a known value of
      a directive's argument or its bounds and not the result of
@@ -2001,13 +2005,38 @@ get_string_length (tree str, unsigned eltsize)
   if (!str)
     return fmtresult ();
 
+  c_strlen_data data;
+  memset (&data, 0, sizeof (c_strlen_data));
+  tree slen = c_strlen (str, 1, &data, eltsize);
+  if (slen && TREE_CODE (slen) == INTEGER_CST)
+    {
+      /* The string is properly terminated and
+	 we know its length.  */
+      fmtresult res (tree_to_shwi (slen));
+      res.nonstr = NULL_TREE;
+      return res;
+    }
+  else if (!slen
+	   && data.decl
+	   && data.len
+	   && TREE_CODE (data.len) == INTEGER_CST)
+    {
+      /* STR was not properly NUL terminated, but we have
+	 length information about the unterminated string.  */
+      fmtresult res (tree_to_shwi (data.len));
+      res.nonstr = data.decl;
+      return res;
+    }
+
   /* Determine the length of the shortest and longest string referenced
      by STR.  Strings of unknown lengths are bounded by the sizes of
      arrays that subexpressions of STR may refer to.  Pointers that
      aren't known to point any such arrays result in LENRANGE[1] set
-     to SIZE_MAX.  */
+     to SIZE_MAX.  NONSTR is set to the declaration of the constant
+     array that is known not to be nul-terminated.  */
   tree lenrange[2];
-  bool flexarray = get_range_strlen (str, lenrange, eltsize);
+  tree nonstr;
+  bool flexarray = get_range_strlen (str, lenrange, eltsize, false, &nonstr);
 
   if (lenrange [0] || lenrange [1])
     {
@@ -2030,6 +2059,7 @@ get_string_length (tree str, unsigned eltsize)
 	max = HOST_WIDE_INT_M1U;
 
       fmtresult res (min, max);
+      res.nonstr = nonstr;
 
       /* Set RES.KNOWNRANGE to true if and only if all strings referenced
 	 by STR are known to be bounded (though not necessarily by their
@@ -2149,7 +2179,19 @@ format_string (const directive &dir, tree arg, vr_values *)
   fmtresult res;
 
   /* Compute the range the argument's length can be in.  */
-  int count_by = dir.specifier == 'S' || dir.modifier == FMT_LEN_l ? 4 : 1;
+  int count_by = 1;
+  if (dir.specifier == 'S' || dir.modifier == FMT_LEN_l)
+    {
+      /* Get a node for a C type that will be the same size
+	 as a wchar_t on the target.  */
+      tree node = get_typenode_from_name (MODIFIED_WCHAR_TYPE);
+
+      /* Now that we have a suitable node, get the number of
+	 bytes it occupies.  */
+      count_by = int_size_in_bytes (node); 
+      gcc_checking_assert (count_by == 2 || count_by == 4);
+    }
+
   fmtresult slen = get_string_length (arg, count_by);
   if (slen.range.min == slen.range.max
       && slen.range.min < HOST_WIDE_INT_MAX)
@@ -2308,6 +2350,11 @@ format_string (const directive &dir, tree arg, vr_values *)
 
       res.range.unlikely = res.range.max;
     }
+
+  /* If the argument isn't a nul-terminated string and the number
+     of bytes on output isn't bounded by precision, set NONSTR.  */
+  if (slen.nonstr && slen.range.min < (unsigned HOST_WIDE_INT)dir.prec[0])
+    res.nonstr = slen.nonstr;
 
   /* Bump up the byte counters if WIDTH is greater.  */
   return res.adjust_for_width_or_precision (dir.width);
@@ -2876,6 +2923,19 @@ format_directive (const sprintf_dom_walker::call_info &info,
 			       "%<INT_MAX%>"), dirlen,
 			  target_to_host (hostdir, sizeof hostdir, dir.beg),
 			  fmtres.range.min, fmtres.range.max);
+    }
+
+  if (!warned && fmtres.nonstr)
+    {
+      warned = fmtwarn (dirloc, argloc, NULL, info.warnopt (),
+			"%<%.*s%> directive argument is not a nul-terminated "
+			"string",
+			dirlen,
+			target_to_host (hostdir, sizeof hostdir, dir.beg));
+      if (warned && DECL_P (fmtres.nonstr))
+	inform (DECL_SOURCE_LOCATION (fmtres.nonstr),
+		"referenced argument declared here");
+      return false;
     }
 
   if (warned && fmtres.range.min < fmtres.range.likely
@@ -3926,6 +3986,8 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   format_result res = format_result ();
 
   bool success = compute_format_length (info, &res);
+  if (res.warned)
+    gimple_set_no_warning (info.callstmt, true);
 
   /* When optimizing and the printf return value optimization is enabled,
      attempt to substitute the computed result for the return value of

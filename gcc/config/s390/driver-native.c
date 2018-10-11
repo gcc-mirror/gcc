@@ -116,6 +116,7 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	      cpu = "z13";
 	      break;
 	    case 0x3906:
+	    case 0x3907:
 	      cpu = "z14";
 	      break;
 	    default:

@@ -2934,10 +2934,6 @@ check_local_shadow (tree decl)
   if (TREE_CODE (decl) == PARM_DECL && !DECL_CONTEXT (decl))
     return;
 
-  /* Inline decls shadow nothing.  */
-  if (DECL_FROM_INLINE (decl))
-    return;
-
   /* External decls are something else.  */
   if (DECL_EXTERNAL (decl))
     return;

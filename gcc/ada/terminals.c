@@ -29,12 +29,12 @@
  *                                                                          *
  ****************************************************************************/
 
+#define ATTRIBUTE_UNUSED __attribute__((unused))
+
 /* First all usupported platforms. Add stubs for exported routines. */
 
 #if defined (VMS) || defined (__vxworks) || defined (__Lynx__) \
   || defined (__ANDROID__) || defined (__PikeOS__) || defined(__DJGPP__)
-
-#define ATTRIBUTE_UNUSED __attribute__((unused))
 
 void *
 __gnat_new_tty (void)
@@ -1412,7 +1412,7 @@ int
 __gnat_setup_child_communication
    (pty_desc *desc,
     char **new_argv,
-    int Use_Pipes)
+    int Use_Pipes ATTRIBUTE_UNUSED)
 {
   int status;
   int pid = getpid ();
@@ -1588,7 +1588,10 @@ __gnat_free_process (pty_desc** desc)
 
 /* __gnat_send_header - dummy function. this interface is only used on Windows */
 void
-__gnat_send_header (pty_desc* desc, char header[5], int size, int *ret)
+__gnat_send_header (pty_desc* desc ATTRIBUTE_UNUSED,
+		    char header[5] ATTRIBUTE_UNUSED,
+		    int size ATTRIBUTE_UNUSED,
+		    int *ret ATTRIBUTE_UNUSED)
 {
   *ret = 0;
 }
