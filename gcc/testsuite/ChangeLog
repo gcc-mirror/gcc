@@ -1,3 +1,42 @@
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/close-brace.C: New.
+	* g++.dg/cpp0x/noexcept16.C: Avoid warning.
+	* g++.old-deja/g++.other/crash32.C: Add another error
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85070
+	* g++.dg/cpp0x/pr85070.C: Change effective target for diagnostics from
+	c++14_only to c++14.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (dg-begin-multiline-output): Issue an error if
+	there hasn't been a dg-end-multiline-output since the last
+	dg-begin-multiline-output.
+	(dg-end-multiline-output): Issue an error if there hasn't been a
+	dg-begin-multiline-output.  Reset _multiline_last_beginning_line
+	as soon possible.  Rename "line" to "last_line".
+
+2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* selftests/repeat.rtl: New file.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* g++.dg/cpp1z/decomp48.C: New test.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/macro-arg-count.C: Move to...
+	* c-c++-common/cpp/macro-arg-count-1.c: ...here, generalizing
+	output for C vs C++.  Expect notes showing the definitions of the
+	macros.
+	* c-c++-common/cpp/macro-arg-count-2.c: New test, adapted from the
+	above.
+
 2018-10-11  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/warn-abs-1.c: Guard tests assuming size of long double is

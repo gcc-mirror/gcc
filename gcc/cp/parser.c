@@ -1973,8 +1973,7 @@ static cp_expr cp_parser_userdef_numeric_literal
 
 /* Basic concepts [gram.basic]  */
 
-static bool cp_parser_translation_unit
-  (cp_parser *);
+static void cp_parser_translation_unit (cp_parser *);
 
 /* Expressions [gram.expr]  */
 
@@ -4541,66 +4540,52 @@ cp_parser_userdef_string_literal (tree literal)
 /* Parse a translation-unit.
 
    translation-unit:
-     declaration-seq [opt]
+     declaration-seq [opt]  */
 
-   Returns TRUE if all went well.  */
-
-static bool
+static void
 cp_parser_translation_unit (cp_parser* parser)
 {
-  /* The address of the first non-permanent object on the declarator
-     obstack.  */
-  static void *declarator_obstack_base;
+  gcc_checking_assert (!cp_error_declarator);
+  
+  /* Create the declarator obstack.  */
+  gcc_obstack_init (&declarator_obstack);
+  /* Create the error declarator.  */
+  cp_error_declarator = make_declarator (cdk_error);
+  /* Create the empty parameter list.  */
+  no_parameters = make_parameter_declarator (NULL, NULL, NULL_TREE,
+					     UNKNOWN_LOCATION);
+  /* Remember where the base of the declarator obstack lies.  */
+  void *declarator_obstack_base = obstack_next_free (&declarator_obstack);
 
-  bool success;
-
-  /* Create the declarator obstack, if necessary.  */
-  if (!cp_error_declarator)
+  for (;;)
     {
-      gcc_obstack_init (&declarator_obstack);
-      /* Create the error declarator.  */
-      cp_error_declarator = make_declarator (cdk_error);
-      /* Create the empty parameter list.  */
-      no_parameters = make_parameter_declarator (NULL, NULL, NULL_TREE,
-						 UNKNOWN_LOCATION);
-      /* Remember where the base of the declarator obstack lies.  */
-      declarator_obstack_base = obstack_next_free (&declarator_obstack);
-    }
-
-  cp_parser_declaration_seq_opt (parser, true);
-
-  /* If there are no tokens left then all went well.  */
-  if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
-    {
-      /* Get rid of the token array; we don't need it any more.  */
-      cp_lexer_destroy (parser->lexer);
-      parser->lexer = NULL;
-
-      /* This file might have been a context that's implicitly extern
-	 "C".  If so, pop the lang context.  (Only relevant for PCH.) */
-      if (parser->implicit_extern_c)
-	{
-	  pop_lang_context ();
-	  parser->implicit_extern_c = false;
-	}
-
-      /* Finish up.  */
-      finish_translation_unit ();
-
-      success = true;
-    }
-  else
-    {
+      cp_parser_declaration_seq_opt (parser, true);
+      gcc_assert (!cp_parser_parsing_tentatively (parser));
+      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+	break;
+      /* Must have been an extra close-brace.  */
       cp_parser_error (parser, "expected declaration");
-      success = false;
+      cp_lexer_consume_token (parser->lexer);
+      /* If the next token is now a `;', consume it.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+    }
+
+  /* Get rid of the token array; we don't need it any more.  */
+  cp_lexer_destroy (parser->lexer);
+  parser->lexer = NULL;
+  
+  /* This file might have been a context that's implicitly extern
+     "C".  If so, pop the lang context.  (Only relevant for PCH.) */
+  if (parser->implicit_extern_c)
+    {
+      pop_lang_context ();
+      parser->implicit_extern_c = false;
     }
 
   /* Make sure the declarator obstack was fully cleaned up.  */
   gcc_assert (obstack_next_free (&declarator_obstack)
 	      == declarator_obstack_base);
-
-  /* All went well.  */
-  return success;
 }
 
 /* Return the appropriate tsubst flags for parsing, possibly in N3276
@@ -39467,6 +39452,8 @@ c_parse_file (void)
   cp_parser_fill_main (the_parser, &first);
   cp_parser_translation_unit (the_parser);
   the_parser = NULL;
+
+  finish_translation_unit ();
 }
 
 /* Create an identifier for a generic parameter type (a synthesized

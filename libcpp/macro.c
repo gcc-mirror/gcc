@@ -962,6 +962,10 @@ _cpp_arguments_ok (cpp_reader *pfile, cpp_macro *macro, const cpp_hashnode *node
 	       "macro \"%s\" passed %u arguments, but takes just %u",
 	       NODE_NAME (node), argc, macro->paramc);
 
+  if (macro->line > RESERVED_LOCATION_COUNT)
+    cpp_error_at (pfile, CPP_DL_NOTE, macro->line, "macro \"%s\" defined here",
+		  NODE_NAME (node));
+
   return false;
 }
 

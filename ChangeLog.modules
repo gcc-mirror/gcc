@@ -1,5 +1,7 @@
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r265055.
+
 	Kill proclaiming decls
 	gcc/cp/
 	* cp-tree.h (push_module_export): Drop proclaiming arg.

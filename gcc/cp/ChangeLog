@@ -1,4 +1,15 @@
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_translation_unit): Return void.  Don't fail
+	at first extra }, simplify logic.
+	(c_parse_file): Call finish_translation_unit here.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* typeck.c (maybe_warn_about_returning_address_of_local): If
+	whats_returned is a structured binding identifier and the structured
+	binding is a reference, recurse on its initializer.
 
 	PR c++/87547
 	* rtti.c (get_tinfo_decl_dynamic): Use unlowered_expr_type instead

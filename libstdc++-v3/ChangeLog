@@ -1,5 +1,15 @@
 2018-10-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/80538
+	* src/c++11/thread.cc (this_thread::__sleep_for)
+	[_GLIBCXX_HAVE_SLEEP]: Only call sleep for non-zero values.
+	Loop while sleep call is interrupted and until steady_clock
+	shows requested duration has elapsed.
+	(!_GLIBCXX_HAVE_USLEEP]: Use the _GLIBCXX_HAVE_SLEEP code path, but
+	avoiding the usleep call.
+	* testsuite/30_threads/this_thread/60421.cc: Test repeated
+	signal interruptions.
+
 	* include/bits/allocator.h
 	(operator==(const allocator<_Tp>&, const allocator<_Tp>))
 	(operator!=(const allocator<_Tp>&, const allocator<_Tp>)): Replace

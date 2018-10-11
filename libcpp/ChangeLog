@@ -1,3 +1,8 @@
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* macro.c (_cpp_arguments_ok): If the argument count is wrong, add
+	a note showing the definition of the macro.
+
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* include/line-map.h (LINEMAPS_MACRO_LOWEST_LOCATION): Fix

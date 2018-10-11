@@ -9096,6 +9096,22 @@ maybe_warn_about_returning_address_of_local (tree retval)
       && !(TREE_STATIC (whats_returned)
 	   || TREE_PUBLIC (whats_returned)))
     {
+      if (VAR_P (whats_returned)
+	  && DECL_DECOMPOSITION_P (whats_returned)
+	  && DECL_DECOMP_BASE (whats_returned)
+	  && DECL_HAS_VALUE_EXPR_P (whats_returned))
+	{
+	  /* When returning address of a structured binding, if the structured
+	     binding is not a reference, continue normally, if it is a
+	     reference, recurse on the initializer of the structured
+	     binding.  */
+	  tree base = DECL_DECOMP_BASE (whats_returned);
+	  if (TYPE_REF_P (TREE_TYPE (base)))
+	    {
+	      tree init = DECL_INITIAL (base);
+	      return maybe_warn_about_returning_address_of_local (init);
+	    }
+	}
       bool w = false;
       auto_diagnostic_group d;
       if (TYPE_REF_P (valtype))

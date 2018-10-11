@@ -53,10 +53,19 @@ test02()
     sleeping = true;
     std::this_thread::sleep_for(time);
     result = std::chrono::system_clock::now() >= (start + time);
+    sleeping = false;
   });
-  while (!sleeping) { }
-  std::this_thread::sleep_for(std::chrono::milliseconds(500));
-  pthread_kill(t.native_handle(), SIGUSR1);
+  while (!sleeping)
+  {
+    // Wait for the thread to start sleeping.
+  }
+  while (sleeping)
+  {
+    // The sleeping thread should finish eventually,
+    // even if continually interrupted after less than a second:
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    pthread_kill(t.native_handle(), SIGUSR1);
+  }
   t.join();
   VERIFY( result );
 }

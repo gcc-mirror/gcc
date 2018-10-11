@@ -1,3 +1,30 @@
+2018-10-11  Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (VXWORKS_RELAX_LINK_SPEC): New macro.
+	Pass --relax to the linker for RTPs.
+	(LINK_SPEC): Append VXWORKS_RELAX_LINK_SPEC.
+
+2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* print-rtl.c (print_rtx_operand_codes_E_and_V): Print how many times
+	the same elements are repeated rather than printing all of them.
+	* read-rtl.c (rtx_reader::read_rtx_operand): Recognize and expand
+	"repeated" elements.
+	* read-rtl-function.c (test_loading_repeat): New function.
+	(read_rtl_function_c_tests): Call test_loading_repeat.
+	* rtl-tests.c (test_dumping_repeat): New function.
+	(rtl_tests_c_tests): Call test_dumping_repeat.
+
+2018-10-11  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (bdver?_memcpy, bdver?_memset,
+	bdver?_cost): Unify to ...
+	(bdver_memcpy, bdver_memset, bdver_cost): ... this.
+	* config/i386/i386.c (processor_cost_table): Adjust.
+
 2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/87574
