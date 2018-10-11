@@ -5279,3 +5279,29 @@ HONOR_SIGN_DEPENDENT_ROUNDING (const_rtx x)
 {
   return HONOR_SIGN_DEPENDENT_ROUNDING (GET_MODE (x));
 }
+
+/* Fills r with the largest value such that 1 + r*r won't overflow.
+   This is used in both sin (atan (x)) and cos (atan(x)) optimizations. */
+
+void
+build_sinatan_real (REAL_VALUE_TYPE * r, tree type)
+{
+  REAL_VALUE_TYPE maxval;
+  mpfr_t mpfr_const1, mpfr_c, mpfr_maxval;
+  machine_mode mode = TYPE_MODE (type);
+  const struct real_format * fmt = REAL_MODE_FORMAT (mode);
+
+  real_maxval (&maxval, 0, mode);
+
+  mpfr_inits (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
+
+  mpfr_from_real (mpfr_const1, &dconst1, GMP_RNDN);
+  mpfr_from_real (mpfr_maxval, &maxval,  GMP_RNDN);
+
+  mpfr_sub (mpfr_c, mpfr_maxval, mpfr_const1, GMP_RNDN);
+  mpfr_sqrt (mpfr_c, mpfr_c, GMP_RNDZ);
+
+  real_from_mpfr (r, mpfr_c, fmt, GMP_RNDZ);
+  
+  mpfr_clears (mpfr_const1, mpfr_c, mpfr_maxval, NULL);
+}
