@@ -1,3 +1,10 @@
+2018-10-11  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (bdver?_memcpy, bdver?_memset,
+	bdver?_cost): Unify to ...
+	(bdver_memcpy, bdver_memset, bdver_cost): ... this.
+	* config/i386/i386.c (processor_cost_table): Adjust.
+
 2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/87574
