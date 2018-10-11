@@ -1,5 +1,18 @@
 2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-double.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-extract-char.p7.c: New.
 	* gcc.target/powerpc/fold-vec-extract-char.p8.c: New.
 	* gcc.target/powerpc/fold-vec-extract-char.p9.c: New.
@@ -34,15 +47,6 @@
 	* gcc.dg/sinatan-1.c: New test.
 	* gcc.dg/sinatan-2.c: New test.
 	* gcc.dg/sinatan-3.c: New test.
-
-2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
-
-	* gcc.target/powerpc/fold-vec-select-char.c: New.
-	* gcc.target/powerpc/fold-vec-select-double.c: New.
-	* gcc.target/powerpc/fold-vec-select-float.c: New.
-	* gcc.target/powerpc/fold-vec-select-int.c: New.
-	* gcc.target/powerpc/fold-vec-select-longlong.c: New.
-	* gcc.target/powerpc/fold-vec-select-short.c: New.
 
 2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
