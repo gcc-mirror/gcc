@@ -421,7 +421,12 @@ namespace pmr {
       do_allocate(size_t __bytes, size_t __alignment) override
       {
 	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
-	  return _M_alloc.allocate(__bytes);
+	  {
+	    if (__bytes < __alignment)
+	      __bytes = __alignment;
+	    return _M_alloc.allocate(__bytes);
+	  }
+
 
 	const _AlignMgr __mgr(__bytes, __alignment);
 	// Assume _M_alloc returns 1-byte aligned memory, so allocate enough
@@ -437,6 +442,8 @@ namespace pmr {
 	auto __ptr = static_cast<char*>(__p);
 	if (__alignment <= __guaranteed_alignment<_Alloc>::value)
 	  {
+	    if (__bytes < __alignment)
+	      __bytes = __alignment;
 	    _M_alloc.deallocate(__ptr, __bytes);
 	    return;
 	  }
