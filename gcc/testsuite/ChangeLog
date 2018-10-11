@@ -1,3 +1,8 @@
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* gcc.target/aarch64/pr87511.c: Add new test.
+
 2018-10-11  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/84993

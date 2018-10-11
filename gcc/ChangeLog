@@ -1,3 +1,9 @@
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	Use HOST_WIDE_INT_1U for shift.
+
 2018-10-11  Doug Rupp  <rupp@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
