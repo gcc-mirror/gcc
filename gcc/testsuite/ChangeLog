@@ -1,3 +1,12 @@
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/macro-arg-count.C: Move to...
+	* c-c++-common/cpp/macro-arg-count-1.c: ...here, generalizing
+	output for C vs C++.  Expect notes showing the definitions of the
+	macros.
+	* c-c++-common/cpp/macro-arg-count-2.c: New test, adapted from the
+	above.
+
 2018-10-11  Martin Jambor  <mjambor@suse.cz>
 
 	* gcc.dg/warn-abs-1.c: Guard tests assuming size of long double is
