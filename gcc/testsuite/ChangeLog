@@ -1,5 +1,8 @@
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/87582
+	* g++.dg/cpp1z/decomp48.C: New test.
+
 	Backported from mainline
 	2018-10-10  Jakub Jelinek  <jakub@redhat.com>
 

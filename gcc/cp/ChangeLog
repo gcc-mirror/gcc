@@ -1,3 +1,10 @@
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* typeck.c (maybe_warn_about_returning_address_of_local): If
+	whats_returned is a structured binding identifier and the structured
+	binding is a reference, recurse on its initializer.
+
 2018-10-10  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/84940
