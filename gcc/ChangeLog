@@ -1,6 +1,12 @@
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* config/i386/i386-builtin.def (IX86_BUILTIN_RDPMC): Move from args set
+	to special_args set.
+
 	2018-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87414
