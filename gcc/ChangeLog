@@ -1,3 +1,11 @@
+2018-10-11  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (map_to_integral_tree_type): New helper
+	function.
+	(fold_mergeeo_helper): New helper function.
+	(rs6000_gimple_fold_builtin): Add hooks for vec_mergee and vec_mergeo
+	intrinsics.  Correct some whitespace indentation issues.
+
 2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/87511
