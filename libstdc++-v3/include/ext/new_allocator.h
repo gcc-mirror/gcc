@@ -157,17 +157,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       destroy(pointer __p) { __p->~_Tp(); }
 #endif
+
+      template<typename _Up>
+	friend bool
+	operator==(const new_allocator&, const new_allocator<_Up>&)
+	_GLIBCXX_NOTHROW
+	{ return true; }
+
+      template<typename _Up>
+	friend bool
+	operator!=(const new_allocator&, const new_allocator<_Up>&)
+	_GLIBCXX_NOTHROW
+	{ return false; }
     };
-
-  template<typename _Tp>
-    inline bool
-    operator==(const new_allocator<_Tp>&, const new_allocator<_Tp>&)
-    { return true; }
-
-  template<typename _Tp>
-    inline bool
-    operator!=(const new_allocator<_Tp>&, const new_allocator<_Tp>&)
-    { return false; }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
