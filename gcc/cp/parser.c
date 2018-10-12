@@ -249,6 +249,7 @@ static void cp_parser_initial_pragma
   (cp_token *);
 static void cp_parser_fill_main
   (cp_parser *parser, cp_token *first);
+static bool cp_parser_tokenize (cp_parser *, bool);
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -555,8 +556,6 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->in_statement & IN_IF_STMT);
   cp_debug_print_flag (file, "Parsing a type-id in an expression "
 			      "context", parser->in_type_id_in_expr_p);
-  cp_debug_print_flag (file, "Declarations are implicitly extern \"C\"",
-			      parser->implicit_extern_c);
   cp_debug_print_flag (file, "String expressions should be translated "
 			      "to execution character set",
 			      parser->translate_strings_p);
@@ -2087,12 +2086,17 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
+static location_t cp_parser_module_declaration
+  (cp_parser *parser, bool first_decl, bool exporting);
+static location_t cp_parser_import_declaration
+  (cp_parser *parser, bool);
+
 /* Declarations [gram.dcl.dcl] */
 
-static void cp_parser_declaration_seq_opt
-(cp_parser *, bool top_level = false);
+static void cp_parser_declaration_seq_opt (cp_parser *);
 static void cp_parser_declaration
   (cp_parser *);
+static void cp_parser_toplevel_declaration (cp_parser *);
 static void cp_parser_block_declaration
   (cp_parser *, bool);
 static void cp_parser_simple_declaration
@@ -3879,9 +3883,6 @@ cp_parser_new (void)
   /* We are not parsing a type-id inside an expression.  */
   parser->in_type_id_in_expr_p = false;
 
-  /* Declarations aren't implicitly extern "C".  */
-  parser->implicit_extern_c = false;
-
   /* String literals should be translated to the execution character set.  */
   parser->translate_strings_p = true;
 
@@ -4557,31 +4558,68 @@ cp_parser_translation_unit (cp_parser* parser)
   /* Remember where the base of the declarator obstack lies.  */
   void *declarator_obstack_base = obstack_next_free (&declarator_obstack);
 
+  bool implicit_extern_c = false;
+  bool first = modules_p () && !modules_atom_p ();
+
   for (;;)
     {
-      cp_parser_declaration_seq_opt (parser, true);
-      gcc_assert (!cp_parser_parsing_tentatively (parser));
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      
+      /* If we're entering or exiting a region that's implicitly
+	 extern "C", modify the lang context appropriately.  */
+      if (implicit_extern_c
+	  != cp_lexer_peek_token (parser->lexer)->implicit_extern_c)
+	{
+	  implicit_extern_c = !implicit_extern_c;
+	  if (implicit_extern_c)
+	    push_lang_context (lang_name_c);
+	  else
+	    pop_lang_context ();
+	}
+
+      if (token->type == CPP_EOF)
 	break;
-      /* Must have been an extra close-brace.  */
-      cp_parser_error (parser, "expected declaration");
-      cp_lexer_consume_token (parser->lexer);
-      /* If the next token is now a `;', consume it.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	cp_lexer_consume_token (parser->lexer);
+      else if (token->type == CPP_PRAGMA)
+	/* A pragma does not count as a declaration from a module
+	   POV.  */
+	cp_parser_pragma (parser, pragma_external, NULL);
+
+      if (first)
+	{
+	  first = false;
+
+	  bool exporting = token->keyword == RID_EXPORT;
+	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
+					     RID_MODULE))
+	    {
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+
+	      cp_parser_module_declaration (parser, true, exporting);
+	      continue;
+	    }
+	}
+
+      first = false;
+
+      if (token->type == CPP_CLOSE_BRACE)
+	{
+	  cp_parser_error (parser, "expected declaration");
+	  cp_lexer_consume_token (parser->lexer);
+	  /* If the next token is now a `;', consume it.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	    cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	cp_parser_toplevel_declaration (parser);
     }
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
   parser->lexer = NULL;
   
-  /* This file might have been a context that's implicitly extern
-     "C".  If so, pop the lang context.  (Only relevant for PCH.) */
-  if (parser->implicit_extern_c)
-    {
-      pop_lang_context ();
-      parser->implicit_extern_c = false;
-    }
+  /* The EOF should have reset this. */
+  gcc_checking_assert (!implicit_extern_c);
 
   /* Make sure the declarator obstack was fully cleaned up.  */
   gcc_assert (obstack_next_free (&declarator_obstack)
@@ -12677,10 +12715,6 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 
 /* Modules */
 
-/* In ATOM mode, record the location of the end of the preamble.
-   In TS mode, record the location of the beginning of global module.  */
-extern location_t module_preamble_end_loc;
-
 /* Parse a module-name,
    identifier
    module-name . identifier
@@ -12738,32 +12772,27 @@ check_module_outermost (const cp_token *token, const char *msg)
 static location_t
 cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting)
 {
+  static bool glob; // FIXME: Temp hack
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   bool atom_p = modules_atom_p ();
 
   if (!exporting && first_decl && !atom_p
-      && module_preamble_end_loc == UNKNOWN_LOCATION
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
-      /* In TS mode we record the existence of the initial module;
-	 in preamble_marker_loc.  */
-      module_preamble_end_loc = token->location;
-
       cp_lexer_consume_token (parser->lexer);
-      return token->location;
+      glob = true;
+      return UNKNOWN_LOCATION;
     }
 
   /* module declaration proper.  */
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  if (!first_decl && (atom_p || !module_preamble_end_loc))
+  if (!first_decl && (atom_p || !glob))
     {
       error_at (token->location, modules_atom_p ()
 		? "module declaration must be first declaration of preamble"
 		: "module declaration does not follow global module");
-      if (atom_p)
-	inform (module_preamble_end_loc, "module preamble ended here");
       mod = NULL;
     }
 
@@ -12777,6 +12806,8 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   declare_module (mod, token->location, exporting, attrs, parse_in);
   return token->location;
 }
+
+static bool in_preamble; // FIXME:temp hack
 
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
@@ -12794,12 +12825,9 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 
   if (!mod)
     ;
-  else if (modules_atom_p () && module_preamble_end_loc)
-    {
-      error_at (token->location,
-		"import declaration must be within module preamble");
-      inform (module_preamble_end_loc, "module preamble ended here");
-    }
+  else if (modules_atom_p () && !in_preamble)
+    error_at (token->location,
+	      "import declaration must be within module preamble");
   else if (!check_module_outermost (token, "module-import"))
     gcc_assert (!modules_atom_p ());
   else
@@ -12911,6 +12939,8 @@ cp_parser_parse_module_preamble (cp_parser *parser)
   lexer->last_token = &lexer->buffer->last ();
   location_t first_loc = UNKNOWN_LOCATION;
 
+  in_preamble = true;
+  
   for (bool first = true, export_p = false;;)
     {
       cp_token *tok = cp_lexer_peek_token (lexer);
@@ -12919,6 +12949,7 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 	case CPP_EOF:
 	  /* Lose the EOF.  */
 	  lexer->buffer->pop ();
+	  in_preamble = false;
 	  return first_loc;
 
 	case CPP_PRAGMA:
@@ -12967,6 +12998,8 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 		       " import-declaration or pragma in module-preamble");
       cp_parser_skip_to_end_of_statement (parser);
     }
+
+  gcc_unreachable ();
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -12980,71 +13013,23 @@ cp_parser_parse_module_preamble (cp_parser *parser)
      declaration-seq declaration  */
 
 static void
-cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
+cp_parser_declaration_seq_opt (cp_parser* parser)
 {
-  bool first = top_level && modules_p () && !modules_atom_p ();
-
   while (true)
     {
-      cp_token *token;
-
-      token = cp_lexer_peek_token (parser->lexer);
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
       if (token->type == CPP_CLOSE_BRACE
-	  || token->type == CPP_EOF
-	  || token->type == CPP_PRAGMA_EOL)
-	break;
-
-      /* If we're entering or exiting a region that's implicitly
-	 extern "C", modify the lang context appropriately.  */
-      if (parser->implicit_extern_c != token->implicit_extern_c)
-	{
-	  if (token->implicit_extern_c)
-	    push_lang_context (lang_name_c);
-	  else
-	    pop_lang_context ();
-	  parser->implicit_extern_c = token->implicit_extern_c;
-	}
-
-      if (token->type == CPP_PRAGMA)
-	{
-	  /* A top-level declaration can consist solely of a #pragma.
-	     A nested declaration cannot, so this is done here and not
-	     in cp_parser_declaration.  (A #pragma at block scope is
-	     handled in cp_parser_statement.)  */
-	  cp_parser_pragma (parser, pragma_external, NULL);
-	  continue;
-	}
-
-      if (first)
-	{
-	  first = false;
-
-	  bool exporting = token->keyword == RID_EXPORT;
-	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
-					     RID_MODULE))
-	    {
-	      if (exporting)
-		cp_lexer_consume_token (parser->lexer);
-
-	      cp_parser_module_declaration (parser, true, exporting);
-	      continue;
-	    }
-	}
-
-      first = false;
-      if (token->type == CPP_SEMICOLON)
-	{
-	  /* A declaration consisting of a single semicolon is
-	     permitted.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  if (!in_system_header_at (input_location))
-	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
-	  continue;
-	}
-
-      /* Parse the declaration itself.  */
-      cp_parser_declaration (parser);
+	  || token->type == CPP_EOF)
+ 	break;
+      else if (token->type == CPP_PRAGMA)
+	/* A top-level declaration can consist solely of a #pragma.
+	   A nested declaration cannot, so this is done here and not
+	   in cp_parser_declaration.  (A #pragma at block scope is
+	   handled in cp_parser_statement.)  */
+	cp_parser_pragma (parser, pragma_external, NULL);
+      else
+	cp_parser_toplevel_declaration (parser);
     }
 }
 
@@ -13190,6 +13175,26 @@ cp_parser_declaration (cp_parser* parser)
 
   /* Free any declarators allocated.  */
   obstack_free (&declarator_obstack, p);
+}
+
+/* Parse a namespace-scope declaration.  */
+
+static void
+cp_parser_toplevel_declaration (cp_parser* parser)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+  if (token->type == CPP_SEMICOLON)
+    {
+      /* A declaration consisting of a single semicolon is
+	 invalid.  Allow it unless we're being pedantic.  */
+      cp_lexer_consume_token (parser->lexer);
+      if (!in_system_header_at (input_location))
+	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+    }
+  else
+    /* Parse the declaration itself.  */
+    cp_parser_declaration (parser);
 }
 
 /* Parse a block-declaration.
@@ -39402,7 +39407,87 @@ cp_parser_fill_main (cp_parser *parser, cp_token *tok)
   gcc_assert (!lexer->next_token->purged_p);
 }
 
-
+/* Tokenize until we've got to EOF (return true), or we've just gone
+   past an unnested module or import declaration.  PROCESS_IMPORTS is
+   true if there might be pending imports to process.  */
+
+static bool
+cp_parser_tokenize (cp_parser *parser, bool process_imports)
+{
+  // FIXME:Zap buffer
+  size_t lwm = parser->lexer->buffer->length ();
+  unsigned depth = 0;
+  bool eof = false;
+
+ try_again:
+  module_preamble_state state
+    = module_preamble_prefix_peek (true, false, parse_in);
+
+  if (state != MPS_NONE)
+    {
+      /* An interesting declaration.  Tokenize it.  */
+      state = module_preamble_state (state & (MPS_PRAGMA | MPS_COUNT));
+
+      for (;;)
+	{
+	  cp_token tok;
+
+	  /* This will swallow comments for us.  */
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+					   | ((state == MPS_NAME)
+					      ? C_LEX_STRING_IS_HEADER : 0),
+					   &tok);
+	  state = module_preamble_prefix_next (state, parse_in, tok.type,
+					       tok.location);
+	  vec_safe_push (parser->lexer->buffer, tok);
+	  if (state == MPS_NONE)
+	    {
+	      if (tok.type == CPP_EOF)
+		eof = true;
+	      break;
+	    }
+	}
+      if (depth)
+	goto try_again;
+    }
+  else
+    {
+      if (process_imports)
+	; // do deferred imports here
+      process_imports = false;
+      for (;;)
+	{
+	  cp_token tok;
+
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
+	  vec_safe_push (parser->lexer->buffer, tok);
+	  if (tok.type == CPP_OPEN_BRACE)
+	    depth++;
+	  else if (tok.type == CPP_CLOSE_BRACE)
+	    {
+	      depth -= depth != 0;
+	      if (!depth)
+		goto try_again;
+	    }
+	  else if (!depth && tok.type == CPP_SEMICOLON)
+	    goto try_again;
+	  if (tok.type == CPP_EOF)
+	    {
+	      eof = true;
+	      break;
+	    }
+	}
+    }
+
+  parser->lexer->next_token = &(*parser->lexer->buffer)[lwm];
+  parser->lexer->last_token = &parser->lexer->buffer->last ();
+
+  if (eof)
+    done_lexing = true;
+
+  return eof;
+}
+
 /* External interface.  */
 
 /* Parse one entire translation unit.  */
@@ -39418,7 +39503,7 @@ c_parse_file (void)
   already_called = true;
 
   cp_token first;
-  if (!modules_p ())
+  if (!modules_atom_p ())
     /* It's possible that parsing the first pragma will load a PCH file,
        which is a GC collection point.  So we have to do that before
        allocating any memory.  Modules is incompatible with PCH.  */
@@ -39427,26 +39512,21 @@ c_parse_file (void)
   the_parser = cp_parser_new ();
   push_deferring_access_checks (flag_access_control
 				? dk_no_deferred : dk_no_check);
-  if (modules_p ())
+  if (modules_atom_p ())
     {
-      if (modules_atom_p ())
+      module_preamble_state preamble
+	= cp_parser_get_module_preamble_tokens (the_parser);
+      if (preamble & MPS_MODULE
+	  || maybe_begin_legacy_module (parse_in)
+	  || preamble & MPS_IMPORT)
 	{
-	  module_preamble_state preamble
-	    = cp_parser_get_module_preamble_tokens (the_parser);
-	  if (preamble & MPS_MODULE
-	      || maybe_begin_legacy_module (parse_in)
-	      || preamble & MPS_IMPORT)
-	    {
-	      /* There is a non-empty preamble.  */
-	      location_t loc = cp_parser_parse_module_preamble (the_parser);
-	      gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	      if (unsigned adjust = module_preamble_load (loc, parse_in))
-		cpp_relocate_peeked_tokens (parse_in, adjust);
-	    }
+	  /* There is a non-empty preamble.  */
+	  location_t loc = cp_parser_parse_module_preamble (the_parser);
+	  gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
+	  if (unsigned adjust = module_preamble_load (loc, parse_in))
+	    cpp_relocate_peeked_tokens (parse_in, adjust);
 	}
-      cp_lexer_get_preprocessor_token (0, &first);
-      if (modules_atom_p ())
-	atom_preamble_end (parse_in, first.location);
+      cp_parser_initial_pragma (&first);
     }
 
   cp_parser_fill_main (the_parser, &first);

@@ -420,7 +420,7 @@ module_preamble_prefix_peek (bool for_parser, bool only_import,
 	  /* Don't be inhibited by the next warning -- that'd be
 	     dumb.  */
 	  bool msgs = errorcount || warningcount || werrorcount;
-	  warning_at (peeked_loc, modules_legacy_p () ? OPT_Wlegacy_header : 0,
+	  warning_at (peeked_loc, 0,
 		      "module preamble ended immediately before"
 		      " preprocessor directive");
 	  if (for_parser)

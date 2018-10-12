@@ -1,4 +1,4 @@
 // { dg-additional-options -fmodules-atom }
 
-#define EXPORT export // { dg-message "ended here" }
+#define EXPORT export
 EXPORT module bob; // { dg-error "must be first declaration of" }

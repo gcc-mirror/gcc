@@ -313,7 +313,6 @@ Objective-C and Objective-C++ Dialects}.
 -Winit-self  -Winline  -Wno-int-conversion  -Wint-in-bool-context @gol
 -Wno-int-to-pointer-cast  -Winvalid-memory-model  -Wno-invalid-offsetof @gol
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
--Wlegacy-header @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
@@ -7224,13 +7223,6 @@ different size.
 @opindex Wno-invalid-pch
 Warn if a precompiled header (@pxref{Precompiled Headers}) is found in
 the search path but cannot be used.
-
-@item -Wlegacy-header
-@opindex Wlegacy-header
-@opindex Wno-legacy-header
-Warn if an include file cannot be transformed into a legacy header
-module because it is included after the end of the module preamble.
-Also warns if a legacy header preamble has an ambiguous end location.
 
 @item -Wlong-long
 @opindex Wlong-long

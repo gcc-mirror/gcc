@@ -1587,10 +1587,6 @@ fforce-module-macros
 C++ ObjC++ RejectNegative Var(flag_module_macros) Init(0)
 Ensure all imported macros are loaded.
 
-Wlegacy-header
-C++ ObjC++ Var(warn_legacy_header) Init(-1) Warning
-Warn about post-preamble legacy headers.
-
 fms-extensions
 C ObjC C++ ObjC++ Var(flag_ms_extensions)
 Don't warn about uses of Microsoft extensions.

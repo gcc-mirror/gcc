@@ -261,9 +261,6 @@ module_preamble_fsm (int state, cpp_reader *pfile,
     /* More preamble.  */
     return res;
 
-  /* No more preamble.  */
-  atom_preamble_end (pfile, ploc);
-  
   if (flag_module_preamble < 0)
     return -1;
   else

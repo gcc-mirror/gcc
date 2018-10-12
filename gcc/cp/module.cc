@@ -3156,9 +3156,6 @@ static cpp_hashnode *controlling_node;
 /* Deferred imports.  */
 static vec<module_state *, va_heap, vl_embed> *pending_imports;
 
-/* End of the prefix line maps.  */
-location_t module_preamble_end_loc;
-
 /* BMI repository path and workspace.  */
 static char *bmi_repo;
 static size_t bmi_repo_length;
@@ -12189,9 +12186,6 @@ do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     /* Before the main file, don't divert.  */
     return 0;
 
-  if (module_preamble_end_loc)
-    reader = NULL;
-
   dump.push (NULL);
 
   dump () && dump ("Checking %sinclude translation %c%s%c",
@@ -12202,25 +12196,8 @@ do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   if (mapper->is_live ())
     res = mapper->translate_include (reader, lmaps, loc, header, angle);
 
-  if (reader)
-    dump () && dump (res ? "Diverting include to import"
-		     : "Keeping include as include");
-  else if (res)
-    {
-      bool warned = warning_at (loc, OPT_Wlegacy_header,
-				"header %c%s%c cannot be a legacy module"
-				" because it is after the preamble",
-				angle ? '<' : '"', header, angle ? '>' : '"');
-      /* We should have issued a warning, because that was the only
-	 point of checking.  */
-      gcc_checking_assert (warned);
-      if (warned)
-	inform (module_preamble_end_loc, "preamble ended here");
-
-      /* Don't actually divert! */
-      res = 0;
-    }
-
+  dump () && dump (res ? "Translating include to import"
+		   : "Keeping include as include");
   dump.pop (0);
 
   return res;
@@ -12229,27 +12206,9 @@ do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 cpp_translate_include_t *
 maybe_import_include ()
 {
-  /* Wlegacy-header should default differently in preprocessing mode
-     than in compilation mode.  */
-  if (warn_legacy_header < 0)
-    warn_legacy_header = !flag_preprocess_only;
-
   /* We enable include translation in atom mode -- not just legacy
      header mode.  */
   return modules_atom_p () ? do_translate_include : NULL;
-}
-
-void
-atom_preamble_end (cpp_reader *reader, location_t loc)
-{
-  module_preamble_end_loc = loc;
-
-  if (!warn_legacy_header)
-    {
-      /* Turn off include translation.  */
-      cpp_callbacks *cb = cpp_get_callbacks (reader);
-      cb->translate_include = NULL;
-    }
 }
 
 /* We've just properly entered the main source file.  I.e. after the

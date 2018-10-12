@@ -1,3 +1,35 @@
+2018-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	Start breaking out toplevel parsing.
+	gcc/c-family/
+	* c.opt (Wlegacy-header): Delete.
+	gcc/
+	* doc/invoke.texi (Wlegacy-header): Delete.
+	gcc/cp/
+	* cp-lang.c (module_preamble_fsm): Don't call atom_preamble_end.
+	* cp-tree.h (atom_preamble_end): Delete.
+	* lex.c (module_preamble_prefix_peek): Drop Wlegacy_header check.
+	* module.cc (module_preamble_end_loc): Delete.
+	(do_translate_include): Always translate.
+	(maybe_import_include): Drop Wlegacy_header check.
+	(atom_preamble_end): Delete.
+	* parser.h (cp_parser): Drop implicit_extern_c.
+	* parser.c (cp_parser_tokenize): New.
+	(cp_debug_parser): Drop implicit_extern_c.
+	(cp_parser_new): Likewise.
+	(cp_parser_translation_unit): Move global module detectin here.
+	(module_preamble_end_loc): Delete declaration.
+	(in_preamble): Temp hack.
+	(cp_parser_{import,module}_declaration): A couple of temp hacks.
+	(cp_parser_parse_module_preamble): Manipulate in_preamble.
+	(cp_parser_toplevel_declaration): New, broken out of ...
+	(cp_parser_declaration_seq_opt): ... here, call it. Drop top_level arg.
+	(c_parse_file): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-[23].C: Adjust diags.
+	* g++.dg/modules/atom-preamble-[13].C: Likewise.
+	* g++.dg/modules/legacy-6_[df].C: Likewise.
+
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r265055.

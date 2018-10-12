@@ -6741,7 +6741,6 @@ extern void module_note_main_file (line_maps *, const line_map_ordinary *);
 extern cpp_translate_include_t *maybe_import_include ();
 extern bool maybe_begin_legacy_module (cpp_reader *);
 extern unsigned module_preamble_load (location_t, cpp_reader *);
-extern void atom_preamble_end (cpp_reader *, location_t);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
