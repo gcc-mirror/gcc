@@ -1,3 +1,22 @@
+2018-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR c++/54278
+	Backport from mainline
+	2017-03-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80032
+	* gimplify.c (gimple_push_cleanup): Forced unconditional
+	cleanups still have to go to the conditional_cleanups
+	sequence.
+
+	2017-03-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80032
+	* gimplify.c (gimple_push_cleanup): Add force_uncond parameter,
+	if set force the cleanup to happen unconditionally.
+	(gimplify_target_expr): Push inserted clobbers with force_uncond
+	to avoid them being removed by control-dependent DCE.
+
 2018-10-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
