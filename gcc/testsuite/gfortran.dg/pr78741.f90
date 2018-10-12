@@ -11,6 +11,6 @@ entry g(n, x)           ! { dg-error "is already defined" }
    x = 'b'
 contains
    subroutine g         ! { dg-error "(1)" }
-      z(1) = x(1:1)
+      z(1) = x(1:1) ! { dg-error "Unclassifiable statement" }
    end
 end

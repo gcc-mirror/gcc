@@ -1,3 +1,9 @@
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* decl.c (get_proc_name): Return with error before
+	creating sym_tree.
+
 2018-10-11  Tobias Burnus <burnus@net-b.de>
 
 	Revert:

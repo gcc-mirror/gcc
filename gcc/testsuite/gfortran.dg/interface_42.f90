@@ -13,7 +13,7 @@ module copy
 
    contains
 
-      subroutine foo_da(da, copy) ! { dg-error "defined in interface body" }
+      subroutine foo_da(da, copy) ! { dg-error "defined in interface body|PROCEDURE attribute conflicts with PROCEDURE attribute" }
          integer, intent(in) :: da(:)
          integer, allocatable, intent(out) :: copy(:)
          allocate( copy( size(da) ) )
@@ -21,4 +21,4 @@ module copy
       end subroutine foo_da
 
 end module copy
-{ dg-prune-output "compilation terminated" }
+! { dg-prune-output "compilation terminated" }
