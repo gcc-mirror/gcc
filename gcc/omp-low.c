@@ -1197,13 +1197,16 @@ scan_sharing_clauses (tree clauses, omp_context *ctx,
 	  /* Global variables with "omp declare target" attribute
 	     don't need to be copied, the receiver side will use them
 	     directly.  However, global variables with "omp declare target link"
-	     attribute need to be copied.  */
+	     attribute need to be copied.  Or when ALWAYS modifier is used.  */
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && DECL_P (decl)
 	      && ((OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_FIRSTPRIVATE_POINTER
 		   && (OMP_CLAUSE_MAP_KIND (c)
 		       != GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 		  || TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE)
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TO
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_FROM
+	      && OMP_CLAUSE_MAP_KIND (c) != GOMP_MAP_ALWAYS_TOFROM
 	      && is_global_var (maybe_lookup_decl_in_outer_ctx (decl, ctx))
 	      && varpool_node::get_create (decl)->offloadable
 	      && !lookup_attribute ("omp declare target link",
