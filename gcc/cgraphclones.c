@@ -968,6 +968,8 @@ cgraph_node::create_version_clone_with_body
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
   SET_DECL_RTL (new_decl, NULL);
 
+  DECL_VIRTUAL_P (new_decl) = 0;
+
   /* When the old decl was a con-/destructor make sure the clone isn't.  */
   DECL_STATIC_CONSTRUCTOR (new_decl) = 0;
   DECL_STATIC_DESTRUCTOR (new_decl) = 0;
