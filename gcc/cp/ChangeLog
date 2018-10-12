@@ -1,3 +1,13 @@
+2018-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3698
+	PR c++/86208
+	* cp-gimplify.c (cp_genericize_r): When using extern_decl_map, or
+	in TREE_USED flag from stmt to h->to.
+
 2018-06-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86291
