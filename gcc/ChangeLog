@@ -1,3 +1,9 @@
+2018-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/87156
+	* cgraphclones.c (cgraph_node::create_version_clone_with_body):
+	Set new_decl virtual flag to zero.
+
 2018-10-11  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/87593
