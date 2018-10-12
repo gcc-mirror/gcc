@@ -3,6 +3,9 @@
 	Backported from mainline
 	2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/86542
+	* testsuite/libgomp.c++/pr86542.C: New test.
+
 	PR middle-end/86539
 	* testsuite/libgomp.c++/pr86539.C: New test.
 
