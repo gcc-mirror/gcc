@@ -4580,24 +4580,32 @@ cp_parser_translation_unit (cp_parser* parser)
       if (token->type == CPP_EOF)
 	break;
       else if (token->type == CPP_PRAGMA)
-	/* A pragma does not count as a declaration from a module
-	   POV.  */
-	cp_parser_pragma (parser, pragma_external, NULL);
-
-      if (first)
 	{
+	  /* A pragma does not count as a declaration from a module
+	     POV.  */
+	  cp_parser_pragma (parser, pragma_external, NULL);
+	  continue;
+	}
+
+      bool exporting = token->keyword == RID_EXPORT;
+      cp_token *next
+	= exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
+
+      if (next->keyword == RID_MODULE)
+	{
+	  if (exporting)
+	    cp_lexer_consume_token (parser->lexer);
+	  cp_parser_module_declaration (parser, first, exporting);
 	  first = false;
-
-	  bool exporting = token->keyword == RID_EXPORT;
-	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
-					     RID_MODULE))
-	    {
-	      if (exporting)
-		cp_lexer_consume_token (parser->lexer);
-
-	      cp_parser_module_declaration (parser, true, exporting);
-	      continue;
-	    }
+	  continue;
+	}
+      else if (next->keyword == RID_IMPORT)
+	{
+	  if (exporting)
+	    cp_lexer_consume_token (parser->lexer);
+	  cp_parser_import_declaration (parser, exporting);
+	  first = false;
+	  continue;
 	}
 
       first = false;

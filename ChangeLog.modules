@@ -1,5 +1,9 @@
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Detect module and import
+	declarations here.
+
 	Start breaking out toplevel parsing.
 	gcc/c-family/
 	* c.opt (Wlegacy-header): Delete.
