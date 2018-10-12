@@ -1,3 +1,8 @@
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* doc/md.texi (doloop_end): Document that the pattern code may
+	need to check operand mode.
+
 2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Add alternatives
