@@ -1,6 +1,13 @@
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-07-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86627
+	* expmed.c (expand_divmod): Punt if d == HOST_WIDE_INT_MIN
+	and size > HOST_BITS_PER_WIDE_INT.  For size > HOST_BITS_PER_WIDE_INT
+	and abs_d == d, do the power of two handling if profitable.
+
 	2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86542
