@@ -1,3 +1,13 @@
+2018-10-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	Backport from mainline
+	2018-10-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87522
+	* config/i386/gnu-user.h (ASM_SPEC): Don't pass -msse2avx to
+	assembler for -mavx.
+	* config/i386/gnu-user64.h (ASM_SPEC): Likewise.
+
 2018-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.md (atomic_storeqi): Restore deleted expander.
