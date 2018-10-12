@@ -15238,6 +15238,25 @@ fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
   gsi_replace (gsi, g, true);
 }
 
+/* Helper function to map V2DF and V4SF types to their
+ integral equivalents (V2DI and V4SI).  */
+tree map_to_integral_tree_type (tree input_tree_type)
+{
+  if (INTEGRAL_TYPE_P (TREE_TYPE (input_tree_type)))
+    return input_tree_type;
+  else
+    {
+      if (types_compatible_p (TREE_TYPE (input_tree_type),
+			      TREE_TYPE (V2DF_type_node)))
+	return V2DI_type_node;
+      else if (types_compatible_p (TREE_TYPE (input_tree_type),
+				   TREE_TYPE (V4SF_type_node)))
+	return V4SI_type_node;
+      else
+	gcc_unreachable ();
+    }
+}
+
 /* Helper function to handle the vector merge[hl] built-ins.  The
    implementation difference between h and l versions for this code are in
    the values used when building of the permute vector for high word versus
@@ -15260,19 +15279,7 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
      float types, the permute type needs to map to the V2 or V4 type that
      matches size.  */
   tree permute_type;
-  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs_type)))
-    permute_type = lhs_type;
-  else
-    {
-      if (types_compatible_p (TREE_TYPE (lhs_type),
-			      TREE_TYPE (V2DF_type_node)))
-	permute_type = V2DI_type_node;
-      else if (types_compatible_p (TREE_TYPE (lhs_type),
-				   TREE_TYPE (V4SF_type_node)))
-	permute_type = V4SI_type_node;
-      else
-	gcc_unreachable ();
-    }
+  permute_type = map_to_integral_tree_type (lhs_type);
   tree_vector_builder elts (permute_type, VECTOR_CST_NELTS (arg0), 1);
 
   for (int i = 0; i < midpoint; i++)
@@ -15281,6 +15288,40 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
 				     offset + i));
       elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
 				     offset + n_elts + i));
+    }
+
+  tree permute = elts.build ();
+
+  gimple *g = gimple_build_assign (lhs, VEC_PERM_EXPR, arg0, arg1, permute);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_replace (gsi, g, true);
+}
+
+/* Helper function to handle the vector merge[eo] built-ins.  */
+static void
+fold_mergeeo_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_odd)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  int n_elts = TYPE_VECTOR_SUBPARTS (lhs_type);
+
+  /* The permute_type will match the lhs for integral types.  For double and
+     float types, the permute type needs to map to the V2 or V4 type that
+     matches size.  */
+  tree permute_type;
+  permute_type = map_to_integral_tree_type (lhs_type);
+
+  tree_vector_builder elts (permute_type, VECTOR_CST_NELTS (arg0), 1);
+
+ /* Build the permute vector.  */
+  for (int i = 0; i < n_elts / 2; i++)
+    {
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     2*i + use_odd));
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     2*i + use_odd + n_elts));
     }
 
   tree permute = elts.build ();
@@ -15765,34 +15806,34 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_LXVD2X_V2DF:
     case VSX_BUILTIN_LXVD2X_V2DI:
       {
-	 arg0 = gimple_call_arg (stmt, 0);  // offset
-	 arg1 = gimple_call_arg (stmt, 1);  // address
-	 lhs = gimple_call_lhs (stmt);
-	 location_t loc = gimple_location (stmt);
-	 /* Since arg1 may be cast to a different type, just use ptr_type_node
-	    here instead of trying to enforce TBAA on pointer types.  */
-	 tree arg1_type = ptr_type_node;
-	 tree lhs_type = TREE_TYPE (lhs);
-	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
-	   required alignment (power) is 4 bytes regardless of data type.  */
-	 tree align_ltype = build_aligned_type (lhs_type, 4);
-	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
-	    the tree using the value from arg0.  The resulting type will match
-	    the type of arg1.  */
-	 gimple_seq stmts = NULL;
-	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
-	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+	arg0 = gimple_call_arg (stmt, 0);  // offset
+	arg1 = gimple_call_arg (stmt, 1);  // address
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	/* Since arg1 may be cast to a different type, just use ptr_type_node
+	   here instead of trying to enforce TBAA on pointer types.  */
+	tree arg1_type = ptr_type_node;
+	tree lhs_type = TREE_TYPE (lhs);
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	  required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_ltype = build_aligned_type (lhs_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg0.  The resulting type will match
+	   the type of arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg1_type, arg1, temp_offset);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 /* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
-	    take an offset, but since we've already incorporated the offset
-	    above, here we just pass in a zero.  */
-	 gimple *g;
-	 g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
-						build_int_cst (arg1_type, 0)));
-	 gimple_set_location (g, loc);
-	 gsi_replace (gsi, g, true);
-	 return true;
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	   take an offset, but since we've already incorporated the offset
+	   above, here we just pass in a zero.  */
+	gimple *g;
+	g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
+					      build_int_cst (arg1_type, 0)));
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* unaligned Vector stores.  */
@@ -15803,29 +15844,29 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_STXVD2X_V2DF:
     case VSX_BUILTIN_STXVD2X_V2DI:
       {
-	 arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
-	 arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
-	 tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
-	 location_t loc = gimple_location (stmt);
-	 tree arg0_type = TREE_TYPE (arg0);
-	 /* Use ptr_type_node (no TBAA) for the arg2_type.  */
-	 tree arg2_type = ptr_type_node;
-	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
-	    required alignment (power) is 4 bytes regardless of data type.  */
-	 tree align_stype = build_aligned_type (arg0_type, 4);
-	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
-	    the tree using the value from arg1.  */
-	 gimple_seq stmts = NULL;
-	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
-	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+	arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	location_t loc = gimple_location (stmt);
+	tree arg0_type = TREE_TYPE (arg0);
+	/* Use ptr_type_node (no TBAA) for the arg2_type.  */
+	tree arg2_type = ptr_type_node;
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	   required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_stype = build_aligned_type (arg0_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg2_type, arg2, temp_offset);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 gimple *g;
-	 g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
-					   build_int_cst (arg2_type, 0)), arg0);
-	 gimple_set_location (g, loc);
-	 gsi_replace (gsi, g, true);
-	 return true;
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	gimple *g;
+	g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
+					 build_int_cst (arg2_type, 0)), arg0);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* Vector Fused multiply-add (fma).  */
@@ -15897,35 +15938,34 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSPLTISH:
     case ALTIVEC_BUILTIN_VSPLTISW:
       {
-	 int size;
+	int size;
+	if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
+	  size = 8;
+	else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
+	  size = 16;
+	else
+	  size = 32;
 
-         if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
-           size = 8;
-         else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
-           size = 16;
-         else
-           size = 32;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
 
-	 arg0 = gimple_call_arg (stmt, 0);
-	 lhs = gimple_call_lhs (stmt);
-
-	 /* Only fold the vec_splat_*() if the lower bits of arg 0 is a
-	    5-bit signed constant in range -16 to +15.  */
-	 if (TREE_CODE (arg0) != INTEGER_CST
-	     || !IN_RANGE (sext_hwi(TREE_INT_CST_LOW (arg0), size),
-			   -16, 15))
-	   return false;
-	 gimple_seq stmts = NULL;
-	 location_t loc = gimple_location (stmt);
-	 tree splat_value = gimple_convert (&stmts, loc,
-					    TREE_TYPE (TREE_TYPE (lhs)), arg0);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
-	 g = gimple_build_assign (lhs, splat_tree);
-	 gimple_set_location (g, gimple_location (stmt));
-	 gsi_replace (gsi, g, true);
-	 return true;
-	}
+	/* Only fold the vec_splat_*() if the lower bits of arg 0 is a
+	   5-bit signed constant in range -16 to +15.  */
+	if (TREE_CODE (arg0) != INTEGER_CST
+	    || !IN_RANGE (sext_hwi (TREE_INT_CST_LOW (arg0), size),
+			  -16, 15))
+	  return false;
+	gimple_seq stmts = NULL;
+	location_t loc = gimple_location (stmt);
+	tree splat_value = gimple_convert (&stmts, loc,
+					   TREE_TYPE (TREE_TYPE (lhs)), arg0);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
 
     /* Flavors of vec_splat.  */
     /* a = vec_splat (b, 0x3) becomes a = { b[3],b[3],b[3],...};  */
@@ -15977,8 +16017,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_VEC_MERGEL_V2DI:
     case VSX_BUILTIN_XXMRGLW_4SF:
     case VSX_BUILTIN_VEC_MERGEL_V2DF:
-	fold_mergehl_helper (gsi, stmt, 1);
-	return true;
+      fold_mergehl_helper (gsi, stmt, 1);
+      return true;
     /* vec_mergeh (integrals).  */
     case ALTIVEC_BUILTIN_VMRGHH:
     case ALTIVEC_BUILTIN_VMRGHW:
@@ -15987,55 +16027,70 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_VEC_MERGEH_V2DI:
     case VSX_BUILTIN_XXMRGHW_4SF:
     case VSX_BUILTIN_VEC_MERGEH_V2DF:
-	fold_mergehl_helper (gsi, stmt, 0);
-	return true;
+      fold_mergehl_helper (gsi, stmt, 0);
+      return true;
+
+    /* Flavors of vec_mergee.  */
+    case P8V_BUILTIN_VMRGEW_V4SI:
+    case P8V_BUILTIN_VMRGEW_V2DI:
+    case P8V_BUILTIN_VMRGEW_V4SF:
+    case P8V_BUILTIN_VMRGEW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 0);
+      return true;
+    /* Flavors of vec_mergeo.  */
+    case P8V_BUILTIN_VMRGOW_V4SI:
+    case P8V_BUILTIN_VMRGOW_V2DI:
+    case P8V_BUILTIN_VMRGOW_V4SF:
+    case P8V_BUILTIN_VMRGOW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 1);
+      return true;
 
     /* d = vec_pack (a, b) */
     case P8V_BUILTIN_VPKUDUM:
     case ALTIVEC_BUILTIN_VPKUHUM:
     case ALTIVEC_BUILTIN_VPKUWUM:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       arg1 = gimple_call_arg (stmt, 1);
-       lhs = gimple_call_lhs (stmt);
-       gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
-   /* d = vec_unpackh (a) */
-   /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
-      in this code is sensitive to endian-ness, and needs to be inverted to
-      handle both LE and BE targets.  */
+    /* d = vec_unpackh (a) */
+    /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
+       in this code is sensitive to endian-ness, and needs to be inverted to
+       handle both LE and BE targets.  */
     case ALTIVEC_BUILTIN_VUPKHSB:
     case ALTIVEC_BUILTIN_VUPKHSH:
     case P8V_BUILTIN_VUPKHSW:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       lhs = gimple_call_lhs (stmt);
-       if (BYTES_BIG_ENDIAN)
-	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
-       else
-	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
-   /* d = vec_unpackl (a) */
+    /* d = vec_unpackl (a) */
     case ALTIVEC_BUILTIN_VUPKLSB:
     case ALTIVEC_BUILTIN_VUPKLSH:
     case P8V_BUILTIN_VUPKLSW:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       lhs = gimple_call_lhs (stmt);
-       if (BYTES_BIG_ENDIAN)
-	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
-       else
-	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
     /* There is no gimple type corresponding with pixel, so just return.  */
     case ALTIVEC_BUILTIN_VUPKHPX:

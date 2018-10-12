@@ -4223,6 +4223,45 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (tans (atans @0))
    @0)))
 
+ /* Simplify sin(atan(x)) -> x / sqrt(x*x + 1). */
+ (for sins (SIN)
+      atans (ATAN)
+      sqrts (SQRT)
+      copysigns (COPYSIGN)
+  (simplify
+   (sins (atans:s @0))
+   (with
+     {
+      REAL_VALUE_TYPE r_cst;
+      build_sinatan_real (&r_cst, type);
+      tree t_cst = build_real (type, r_cst);
+      tree t_one = build_one_cst (type);
+     }
+    (if (SCALAR_FLOAT_TYPE_P (type))
+     (cond (le (abs @0) { t_cst; })
+      (rdiv @0 (sqrts (plus (mult @0 @0) { t_one; })))
+      (copysigns { t_one; } @0))))))
+
+/* Simplify cos(atan(x)) -> 1 / sqrt(x*x + 1). */
+ (for coss (COS)
+      atans (ATAN)
+      sqrts (SQRT)
+      copysigns (COPYSIGN)
+  (simplify
+   (coss (atans:s @0))
+   (with
+     {
+      REAL_VALUE_TYPE r_cst;
+      build_sinatan_real (&r_cst, type);
+      tree t_cst = build_real (type, r_cst);
+      tree t_one = build_one_cst (type);
+      tree t_zero = build_zero_cst (type);
+     }
+    (if (SCALAR_FLOAT_TYPE_P (type))
+     (cond (le (abs @0) { t_cst; })
+      (rdiv { t_one; } (sqrts (plus (mult @0 @0) { t_one; })))
+      (copysigns { t_zero; } @0))))))
+
 /* cabs(x+0i) or cabs(0+xi) -> abs(x).  */
 (simplify
  (CABS (complex:C @0 real_zerop@1))

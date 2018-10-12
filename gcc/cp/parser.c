@@ -2096,7 +2096,8 @@ static location_t cp_parser_import_declaration
 static void cp_parser_declaration_seq_opt (cp_parser *);
 static void cp_parser_declaration
   (cp_parser *);
-static void cp_parser_toplevel_declaration (cp_parser *);
+static void cp_parser_toplevel_declaration
+  (cp_parser *);
 static void cp_parser_block_declaration
   (cp_parser *, bool);
 static void cp_parser_simple_declaration
@@ -4646,7 +4647,7 @@ cp_parser_translation_unit (cp_parser* parser)
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
   parser->lexer = NULL;
-  
+
   /* The EOF should have reset this. */
   gcc_checking_assert (!implicit_extern_c);
 

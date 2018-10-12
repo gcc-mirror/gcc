@@ -1064,6 +1064,11 @@ find_call_crossed_cheap_reg (rtx_insn *insn)
 rtx
 non_conflicting_reg_copy_p (rtx_insn *insn)
 {
+  /* Reload has issues with overlapping pseudos being assigned to the
+     same hard register, so don't allow it.  See PR87600 for details.  */
+  if (!targetm.lra_p ())
+    return NULL_RTX;
+
   rtx set = single_set (insn);
 
   /* Disallow anything other than a simple register to register copy

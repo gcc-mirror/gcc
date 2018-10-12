@@ -316,39 +316,39 @@ namespace __debug
 
       iterator
       before_begin() noexcept
-      { return iterator(_Base::before_begin(), this); }
+      { return { _Base::before_begin(), this }; }
 
       const_iterator
       before_begin() const noexcept
-      { return const_iterator(_Base::before_begin(), this); }
+      { return { _Base::before_begin(), this }; }
 
       iterator
       begin() noexcept
-      { return iterator(_Base::begin(), this); }
+      { return { _Base::begin(), this }; }
 
       const_iterator
       begin() const noexcept
-      { return const_iterator(_Base::begin(), this); }
+      { return { _Base::begin(), this }; }
 
       iterator
       end() noexcept
-      { return iterator(_Base::end(), this); }
+      { return { _Base::end(), this }; }
 
       const_iterator
       end() const noexcept
-      { return const_iterator(_Base::end(), this); }
+      { return { _Base::end(), this }; }
 
       const_iterator
       cbegin() const noexcept
-      { return const_iterator(_Base::cbegin(), this); }
+      { return { _Base::cbegin(), this }; }
 
       const_iterator
       cbefore_begin() const noexcept
-      { return const_iterator(_Base::cbefore_begin(), this); }
+      { return { _Base::cbefore_begin(), this }; }
 
       const_iterator
       cend() const noexcept
-      { return const_iterator(_Base::cend(), this); }
+      { return { _Base::cend(), this }; }
 
       using _Base::empty;
       using _Base::max_size;
@@ -388,32 +388,30 @@ namespace __debug
 	emplace_after(const_iterator __pos, _Args&&... __args)
 	{
 	  __glibcxx_check_insert_after(__pos);
-	  return iterator(_Base::emplace_after(__pos.base(),
+	  return { _Base::emplace_after(__pos.base(),
 					std::forward<_Args>(__args)...),
-			  this);
+		   this };
        	}
 
       iterator
       insert_after(const_iterator __pos, const _Tp& __val)
       {
 	__glibcxx_check_insert_after(__pos);
-	return iterator(_Base::insert_after(__pos.base(), __val), this);
+	return { _Base::insert_after(__pos.base(), __val), this };
       }
 
       iterator
       insert_after(const_iterator __pos, _Tp&& __val)
       {
 	__glibcxx_check_insert_after(__pos);
-	return iterator(_Base::insert_after(__pos.base(), std::move(__val)),
-		       	this);
+	return { _Base::insert_after(__pos.base(), std::move(__val)), this };
       }
 
       iterator
       insert_after(const_iterator __pos, size_type __n, const _Tp& __val)
       {
 	__glibcxx_check_insert_after(__pos);
-	return iterator(_Base::insert_after(__pos.base(), __n, __val),
-		       	this);
+	return { _Base::insert_after(__pos.base(), __n, __val), this };
       }
 
       template<typename _InputIterator,
@@ -441,7 +439,7 @@ namespace __debug
       insert_after(const_iterator __pos, std::initializer_list<_Tp> __il)
       {
 	__glibcxx_check_insert_after(__pos);
-	return iterator(_Base::insert_after(__pos.base(), __il), this);
+	return { _Base::insert_after(__pos.base(), __il), this };
       }
 
     private:
@@ -458,7 +456,7 @@ namespace __debug
       erase_after(const_iterator __pos)
       {
 	__glibcxx_check_erase_after(__pos);
-	return iterator(_M_erase_after(__pos.base()), this);
+	return { _M_erase_after(__pos.base()), this };
       }
 
       iterator
@@ -468,7 +466,7 @@ namespace __debug
 	for (_Base_const_iterator __victim = std::next(__pos.base());
 	    __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::cend(),
 				  _M_message(__gnu_debug::__msg_valid_range2)
 				  ._M_sequence(*this, "this")
 				  ._M_iterator(__pos, "pos")
@@ -476,7 +474,8 @@ namespace __debug
 	    this->_M_invalidate_if([__victim](_Base_const_iterator __it)
 	      { return __it == __victim; });
 	  }
-	return iterator(_Base::erase_after(__pos.base(), __last.base()), this);
+
+	return { _Base::erase_after(__pos.base(), __last.base()), this };
       }
 
       void

@@ -1,11 +1,9 @@
-! { dg-do compile }
+! { dg-do run }
 ! Tests the fix for pr28174, in which the fix for pr28118 was
 ! corrupting the character lengths of arrays that shared a
 ! character length structure.  In addition, in developing the
 ! fix, it was noted that intent(out/inout) arguments were not
 ! getting written back to the calling scope.
-!
-! Revised for PR fortran/83522
 !
 ! Based on the testscase by Harald Anlauf  <anlauf@gmx.de>
 !
@@ -22,7 +20,7 @@ program pr28174
   n = m - 4
 
 ! Make sure that variable substring references work.
-  call foo (a(:)(m:m+5), c(:)(n:m+2), d(:)(5:9)) ! { dg-error "Substring reference of nonscalar not permitted" }
+  call foo (a(:)(m:m+5), c(:)(n:m+2), d(:)(5:9))
   if (any (a .ne. teststring)) STOP 1
   if (any (b .ne. teststring)) STOP 2
   if (any (c .ne. (/"ab456789#hij", &
@@ -39,7 +37,8 @@ contains
 ! This next is not required by the standard but tests the
 ! functioning of the gfortran implementation.
 !   if (all (x(:)(3:7) .eq. y)) STOP 5
-    x = foostring (:)(5 : 4 + len (x)) ! { dg-error "Substring reference of nonscalar not permitted" }
-    y = foostring (:)(3 : 2 + len (y)) ! { dg-error "Substring reference of nonscalar not permitted" }
+    x = foostring (:)(5 : 4 + len (x))
+    y = foostring (:)(3 : 2 + len (y))
   end subroutine foo
 end program pr28174
+

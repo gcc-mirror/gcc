@@ -1,3 +1,104 @@
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: New.
+
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* gfortran.dg/goacc/pr77765.f90: Modify dg-error.
+	* gfortran.dg/interface_42.f90: Ditto.
+	* gfortran.dg/internal_references_1.f90: Ditto.
+	* gfortran.dg/invalid_procedure_name.f90: Ditto.
+	* gfortran.dg/pr65453.f90: Ditto.
+	* gfortran.dg/pr77414.f90: Ditto.
+	* gfortran.dg/pr78741.f90: Ditto.
+	* gfortran.dg/same_name_2.f90: Ditto.
+
+2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt.c: Test zero-extended popcount.
+	* gcc.target/aarch64/vec_zeroextend.c: Test zero-extended vectors.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-double.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-select-char.c: New.
+	* gcc.target/powerpc/fold-vec-select-double.c: New.
+	* gcc.target/powerpc/fold-vec-select-float.c: New.
+	* gcc.target/powerpc/fold-vec-select-int.c: New.
+	* gcc.target/powerpc/fold-vec-select-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-select-short.c: New.
+
+2018-10-09  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	PR tree-optimization/86829
+	* gcc.dg/sinatan-1.c: New test.
+	* gcc.dg/sinatan-2.c: New test.
+	* gcc.dg/sinatan-3.c: New test.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-mergeeo-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-int.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-longlong.c: New.
+
+2018-10-11  Tobias Burnus <burnus@net-b.de>
+
+	Revert:
+	2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
+	change to dg-do compile.
+	* gfortran.dg/actual_array_substr_2.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Use array
+	element not size-one section.
+	* gfortran.dg/array_substring.f90: New.
+
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* gcc.target/aarch64/pr87511.c: Add new test.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84993
+	* g++.dg/torture/accessor-fixits-9.C: New test.
+
 2018-10-11  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/parse/close-brace.C: New.

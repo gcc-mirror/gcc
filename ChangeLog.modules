@@ -1,5 +1,7 @@
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r265127.
+
 	gcc/cp/
 	* parser.c (cp_parser_{module,import}_declaration): Remove temp hacks.
 	(cp_parser_translation_unit, cp_parser_parse_module_preamble): Adjust.

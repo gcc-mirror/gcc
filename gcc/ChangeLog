@@ -1,3 +1,65 @@
+2018-10-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87600
+	* ira-lives (non_conflicting_reg_copy_p): Disable for non LRA targets.
+
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* doc/md.texi (doloop_end): Document that the pattern code may
+	need to check operand mode.
+
+2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Add alternatives
+	to zero-extend between int and floating-point registers.
+	(load_pair_zero_extendsidi2_aarch64): Add alternative for zero-extended
+	ldp into floating-point registers.  Add type and arch attributes.
+	(zero_extend<SHORT:mode><GPI:mode>2_aarch64): Add arch attribute.
+	Use f_loads for type attribute.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute packed): Correct typos.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute flatten): Mention interaction with
+	noinline.
+
+2018-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/87156
+	* cgraphclones.c (cgraph_node::create_version_clone_with_body):
+	Set new_decl virtual flag to zero.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87593
+	* doc/extend.texi (attribute format_arg): Discuss using multiple
+	attributes on a single function.
+
+2018-10-11  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	PR tree-optimization/86829
+	* match.pd (sin (atan (x))): New simplification rules.
+	(cos (atan (x))): Likewise.
+	* real.c (build_sinatan_real): New function.
+	* real.h (build_sinatan_real): Prototype.
+
+2018-10-11  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (map_to_integral_tree_type): New helper
+	function.
+	(fold_mergeeo_helper): New helper function.
+	(rs6000_gimple_fold_builtin): Add hooks for vec_mergee and vec_mergeo
+	intrinsics.  Correct some whitespace indentation issues.
+
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	Use HOST_WIDE_INT_1U for shift.
+
 2018-10-11  Doug Rupp  <rupp@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
 
