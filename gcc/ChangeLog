@@ -1,3 +1,18 @@
+2018-10-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* tree-inline.c (copy_bb): Drop unused __builtin_va_arg_pack_len
+	calls.
+
+	2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* tree-inline.c (copy_bb): When inlining __builtin_va_arg_pack_len ()
+	across a va-arg-pack using call adjust its return value accordingly.
+
 2018-10-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
