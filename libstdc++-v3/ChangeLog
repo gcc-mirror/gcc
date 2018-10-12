@@ -1,5 +1,26 @@
 2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70966
+	* include/experimental/memory_resource (__get_default_resource): Use
+	placement new to create an object with dynamic storage duration.
+
+	Backport from mainline
+	2018-06-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70966
+	* include/experimental/memory_resource (__resource_adaptor_imp): Add
+	static assertions to enforce requirements on pointer types.
+	(__resource_adaptor_imp::get_allocator()): Add noexcept.
+	(new_delete_resource, null_memory_resource): Return address of an
+	object with dynamic storage duration.
+	(__null_memory_resource): Remove.
+	* testsuite/experimental/memory_resource/70966.cc: New.
+
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
 	PR libstdc++/77854
 	* doc/xml/manual/status_cxx1998.xml: Document size_type and
 	difference_type for containers.

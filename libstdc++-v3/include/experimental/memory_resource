@@ -33,7 +33,6 @@
 #include <new>
 #include <atomic>
 #include <cstddef>
-#include <bits/alloc_traits.h>
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
@@ -256,6 +255,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template <typename _Alloc>
     class __resource_adaptor_imp : public memory_resource
     {
+      static_assert(is_same<char,
+	  typename allocator_traits<_Alloc>::value_type>::value,
+	  "Allocator's value_type is char");
+      static_assert(is_same<char*,
+	  typename allocator_traits<_Alloc>::pointer>::value,
+	  "Allocator's pointer type is value_type*");
+      static_assert(is_same<const char*,
+	  typename allocator_traits<_Alloc>::const_pointer>::value,
+	  "Allocator's const_pointer type is value_type const*");
+      static_assert(is_same<void*,
+	  typename allocator_traits<_Alloc>::void_pointer>::value,
+	  "Allocator's void_pointer type is void*");
+      static_assert(is_same<const void*,
+	  typename allocator_traits<_Alloc>::const_void_pointer>::value,
+	  "Allocator's const_void_pointer type is void const*");
+
     public:
       using allocator_type = _Alloc;
 
@@ -274,7 +289,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __resource_adaptor_imp&
       operator=(const __resource_adaptor_imp&) = default;
 
-      allocator_type get_allocator() const { return _M_alloc; }
+      allocator_type get_allocator() const noexcept { return _M_alloc; }
 
     protected:
       virtual void*
@@ -309,13 +324,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       // Calculate Aligned Size
       // Returns a size that is larger than or equal to __size and divisible
-      // by __alignment, where __alignment is required to be the power of 2.
+      // by __alignment, where __alignment is required to be a power of 2.
       static size_t
       _S_aligned_size(size_t __size, size_t __alignment)
       { return ((__size - 1)|(__alignment - 1)) + 1; }
 
       // Determine whether alignment meets one of those preconditions:
-      // 1. Equals to Zero
+      // 1. Equal to Zero
       // 2. Is power of two
       static bool
       _S_supported (size_t __x)
@@ -325,47 +340,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
   // Global memory resources
-  inline std::atomic<memory_resource*>&
-  __get_default_resource()
-  {
-    static atomic<memory_resource*> _S_default_resource(new_delete_resource());
-    return _S_default_resource;
-  }
 
   inline memory_resource*
   new_delete_resource() noexcept
   {
-    static resource_adaptor<std::allocator<char>> __r;
-    return static_cast<memory_resource*>(&__r);
+    using type = resource_adaptor<std::allocator<char>>;
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type;
+    return __r;
   }
-
-  template <typename _Alloc>
-    class __null_memory_resource : private memory_resource
-    {
-    protected:
-      void*
-      do_allocate(size_t, size_t)
-      { std::__throw_bad_alloc(); }
-
-      void
-      do_deallocate(void*, size_t, size_t) noexcept
-      { }
-
-      bool
-      do_is_equal(const memory_resource& __other) const noexcept
-      { return this == &__other; }
-
-      friend memory_resource* null_memory_resource() noexcept;
-    };
 
   inline memory_resource*
   null_memory_resource() noexcept
   {
-    static __null_memory_resource<void> __r;
-    return static_cast<memory_resource*>(&__r);
+    class type final : public memory_resource
+    {
+      void*
+      do_allocate(size_t, size_t) override
+      { std::__throw_bad_alloc(); }
+
+      void
+      do_deallocate(void*, size_t, size_t) noexcept override
+      { }
+
+      bool
+      do_is_equal(const memory_resource& __other) const noexcept override
+      { return this == &__other; }
+    };
+
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type;
+    return __r;
   }
 
   // The default memory resource
+
+  inline std::atomic<memory_resource*>&
+  __get_default_resource()
+  {
+    using type = atomic<memory_resource*>;
+    alignas(type) static unsigned char __buf[sizeof(type)];
+    static type* __r = new(__buf) type(new_delete_resource());
+    return *__r;
+  }
+
   inline memory_resource*
   get_default_resource() noexcept
   { return __get_default_resource().load(); }
