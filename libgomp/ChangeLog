@@ -1,6 +1,11 @@
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-07-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86539
+	* testsuite/libgomp.c++/pr86539.C: New test.
+
 	2018-07-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86660
