@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_SSA_RANGE_BB_H
 #define GCC_SSA_RANGE_BB_H
 
-#include "ssa-range-stmt.h"
+#include "gimple-range.h"
 
 /* This is the primary interface class for the range generator at the basic
    block level. It allows the client to query a range for an ssa-name within
@@ -45,23 +45,18 @@ public:
   bool range_p (basic_block bb, tree name);
   /* What is the static calculated range of NAME on outgoing edge E.  */
   bool range_on_edge (irange& r, tree name, edge e);
-  /* Evaluate statement G.  */
-  bool range_of_stmt (irange& r, gimple *g);
   /* Evaluate statement G assuming entry only via edge E */
   bool range_of_stmt (irange& r, gimple *g, edge e);
-  /* Evaluate statement G if NAME has RANGE_FOR_NAME.  */
-  bool range_of_stmt (irange& r, gimple *g, tree name,
-		     const irange& range_for_name);
   tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);
 protected:
-  virtual bool get_operand_range (irange& r, tree op, gimple *s = NULL);
+  virtual bool get_operand_range (irange& r, tree op, gimple *s);
 private:
   class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
   irange m_bool_zero;		/* Bolean zero cached.  */
   irange m_bool_one;		/* Bolean true cached.  */
-  bool process_logical (range_stmt& stmt, irange& r, tree name,
+  bool process_logical (glogical *s, irange& r, tree name,
 			const irange& lhs);
   bool get_range_from_stmt (gimple *s, irange& r, tree name,
 			    const irange& lhs);

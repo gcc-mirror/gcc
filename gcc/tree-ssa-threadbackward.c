@@ -106,7 +106,7 @@ class bb_paths
   bool range_of_folded_stmt (irange &r, gimple *stmt, tree var,
 			     const irange var_range)
   {
-    return ranger.range_of_stmt (r, stmt, var, var_range);
+    return gimple_range_of_stmt (r, stmt, var, var_range);
   }
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)

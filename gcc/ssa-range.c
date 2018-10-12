@@ -605,9 +605,8 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 
 // Return a range for the phi node PHI in R.
 bool
-path_ranger::process_phi (irange &r, gimple *g)
+path_ranger::process_phi (irange &r, gphi *phi)
 {
-  gphi *phi = as_a <gphi *> (g);
   tree phi_def = gimple_phi_result (phi);
   irange phi_range;
   unsigned x;
@@ -626,7 +625,7 @@ path_ranger::process_phi (irange &r, gimple *g)
       // Try to find a calulated range, if that fails, just get the operands
       // range. if that fails, return false.
       if (!path_range_edge (arg_range, arg, e))
-	if (!get_operand_range (arg_range, arg))
+	if (!gimple_range_of_expr (arg_range, arg))
 	  {
 	    clear_global_ssa_range (phi_def);
 	    return false;
@@ -646,16 +645,15 @@ path_ranger::process_phi (irange &r, gimple *g)
 }
 
 bool
-path_ranger::process_call (irange& r, gimple *call)
+path_ranger::process_call (irange& r, gcall *call)
 {
-  gcall *call_stmt = as_a<gcall *> (call);
-  if (gimple_call_nonnull_result_p (call_stmt))
+  if (gimple_call_nonnull_result_p (call))
     {
-      range_non_zero (&r, gimple_call_return_type (call_stmt));
+      range_non_zero (&r, gimple_call_return_type (call));
       return true;
     }
   return false;
-}
+} 
 
 
 // External API. Evaluate statement G, and return the result in R.
@@ -664,14 +662,10 @@ bool
 path_ranger::path_range_stmt (irange& r, gimple *g)
 {
   tree name;
-  irange range_op1, range_op2;
-  range_stmt rn (g);
   bool res;
 
-  if (!rn.gimple_stmt ())
-    return false;
-  
-  name = rn.lhs ();
+  name = is_a<gphi *> (g) ? gimple_phi_result (g) : gimple_get_lhs (g);
+
   // Not all statements have a LHS.  */
   if (name)
     {
@@ -687,34 +681,28 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
       set_global_ssa_range (name, r);
     }
 
-  // Look for nonnull results and other such things here.
-  if (rn.call_p ())
-    return process_call (r, g);
- 
-  // Handle PHI here since class range_stmt does not.
-  if (rn.phi_p ())
-    {
-      return process_phi (r, g);
-    }
-
-  if (!rn.range_op_p ())
+  if (is_a<gcall *> (g))
+    return process_call (r, as_a<gcall *>(g));
+  if (is_a<gphi *> (g))
+    return process_phi (r, as_a<gphi *>(g));
+  
+  gimple_range_with_operator *rn = dyn_cast<gimple_range_with_operator *>(g);
+  if (!rn)
     return false;
+  gimple_range_op oper (rn);
 
   // Evaluate operand 1.
-  if (!get_operand_range (range_op1, rn.operand1 (), g))
+  if (!get_operand_range (oper.op1 (), rn->operand1 (), g))
     return false;
     
   // If this is a unary operation, call fold now.  
-  if (!rn.operand2 ())
-    res = rn.fold (r, range_op1);
-  else
+  if (rn->operand2 ())
     {
       // Evaluate the second operand.
-      if (!get_operand_range (range_op2, rn.operand2 (), g))
+      if (!get_operand_range (oper.op2 (), rn->operand2 (), g))
 	return false;
-      // And attempt to evaluate the expression.
-      res = rn.fold (r, range_op1, range_op2);
     }
+  res = oper.fold (&r);
 
   if (name)
     {
@@ -748,8 +736,11 @@ path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
 bool
 path_ranger::get_operand_range (irange&r, tree op, gimple *s)
 {
+  if (!gimple_range_supports (op))
+     return false;
+
   // If there is a statement, and a valid ssa_name, try to find a range.
-  if (s && valid_irange_ssa (op))
+  if (s && TREE_CODE (op) == SSA_NAME)
     {
       basic_block bb = gimple_bb (s);
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
@@ -777,8 +768,7 @@ path_ranger::get_operand_range (irange&r, tree op, gimple *s)
     }
 
   // Fall back to the default.
-  return block_ranger::get_operand_range (r, op);
- 
+  return gimple_range_of_expr (r, op);
 }
 
 // Calculate the known range for NAME on a path of basic blocks in
