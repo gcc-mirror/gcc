@@ -1,3 +1,8 @@
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: New.
+
 2018-10-12  Tobias Burnus <burnus@net-b.de>
 
 	PR fortran/58787
