@@ -1,3 +1,11 @@
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (doloop_end): New expander.
+	(doloop_end_insn): renamed from "doloop_end".
+	(addqi3): New pattern.
+	(subqi3): New pattern.
+	* config/pdp11/predicates.md (incdec_operand): New predicate.
+
 2018-10-12  Yury Gribov  <tetra2005@gmail.com>
 
 	PR middle-end/81376
