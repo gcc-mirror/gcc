@@ -1,3 +1,13 @@
+2018-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/86660
+	* omp-low.c (scan_sharing_clauses): Don't ignore map clauses for
+	declare target to variables if they have always,{to,from,tofrom} map
+	kinds.
+
 2018-10-12  Richard Biener  <rguenther@suse.de>
 
 	PR c++/54278
