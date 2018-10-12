@@ -1,6 +1,12 @@
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87248
+	* fold-const.c (fold_ternary_loc) <case COND_EXPR>: Verify also that
+	BIT_AND_EXPR's second operand is a power of two.  Formatting fix.
+
 	2018-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87065
