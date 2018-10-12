@@ -1,3 +1,9 @@
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87593
+	* doc/extend.texi (attribute format_arg): Discuss using multiple
+	attributes on a single function.
+
 2018-10-11  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	PR tree-optimization/86829

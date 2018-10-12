@@ -2698,13 +2698,15 @@ Target Machines}.
 @item format_arg (@var{string-index})
 @cindex @code{format_arg} function attribute
 @opindex Wformat-nonliteral
-The @code{format_arg} attribute specifies that a function takes a format
-string for a @code{printf}, @code{scanf}, @code{strftime} or
+The @code{format_arg} attribute specifies that a function takes one or
+more format strings for a @code{printf}, @code{scanf}, @code{strftime} or
 @code{strfmon} style function and modifies it (for example, to translate
 it into another language), so the result can be passed to a
 @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style
 function (with the remaining arguments to the format function the same
-as they would have been for the unmodified string).  For example, the
+as they would have been for the unmodified string).  Multiple
+@code{format_arg} attributes may be applied to the same function, each
+designating a distinct parameter as a format string.  For example, the
 declaration:
 
 @smallexample
@@ -2723,6 +2725,12 @@ could tell in such calls to format functions would be that the format
 string argument is not constant; this would generate a warning when
 @option{-Wformat-nonliteral} is used, but the calls could not be checked
 without the attribute.
+
+In calls to a function declared with more than one @code{format_arg}
+attribute, each with a distinct argument value, the corresponding
+actual function arguments are checked against all format strings
+designated by the attributes.  This capability is designed to support
+the GNU @code{ngettext} family of functions.
 
 The parameter @var{string-index} specifies which argument is the format
 string argument (starting from one).  Since non-static C++ methods have
