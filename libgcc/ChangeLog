@@ -1,3 +1,8 @@
+2018-10-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
+	defined (__FLOAT128_TYPE__) || defined (__LONG_DOUBLE_128__).
+
 2018-10-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/t-pdp11: Remove -mfloat32 switch.
