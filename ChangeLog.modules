@@ -1,5 +1,10 @@
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
+	libcpp/
+	* lex.c (cpp_peek_token_with_location): Fix pragma rewinding.
+	gcc/cp/
+	* parser.c (cp_parser_initial_pragma): Peek at first token.
+
 	Merge trunk r265127.
 
 	gcc/cp/

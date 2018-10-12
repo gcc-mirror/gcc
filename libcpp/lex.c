@@ -2560,8 +2560,13 @@ cpp_peek_token_with_location (cpp_reader *pfile, int index,
 	if (peektok->type == CPP_EOF)
 	  break;
 	if (peektok->type == CPP_PRAGMA)
-	  /* We'll also have '#' 'pragma' in the buffer.  */
-	  count += 2;
+	  {
+	    /* Don't peek past a pragma.  */
+	    if (peektok == &pfile->directive_result)
+	      /* Save the pragma in the buffer (there must be room).  */
+	      *pfile->cur_token++ = *peektok;
+	    break;
+	  }
       }
     while (count <= index);
 

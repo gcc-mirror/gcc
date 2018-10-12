@@ -38968,10 +38968,16 @@ static GTY (()) cp_parser *the_parser;
 static void
 cp_parser_initial_pragma (cp_token *first_token)
 {
-  cp_lexer_get_preprocessor_token (0, first_token);
-  if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
-    return;
+  const cpp_token *peeked_tok = cpp_peek_token (parse_in, 0);
+  if (peeked_tok->type != CPP_PRAGMA
+      || peeked_tok->val.pragma != PRAGMA_GCC_PCH_PREPROCESS)
+    {
+      cp_lexer_get_preprocessor_token (NULL, first_token);
+      return;
+    }
 
+  /* Swallow the pragma.  */
+  cp_lexer_get_preprocessor_token (NULL, first_token);
   cp_lexer_get_preprocessor_token (0, first_token);
   tree name = NULL;
   if (first_token->type == CPP_STRING)
