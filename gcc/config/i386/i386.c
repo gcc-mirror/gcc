@@ -33509,6 +33509,7 @@ static const struct builtin_description bdesc_special_args[] =
 {
   { 0, CODE_FOR_nothing, "__builtin_ia32_rdtsc", IX86_BUILTIN_RDTSC, UNKNOWN, (int) UINT64_FTYPE_VOID },
   { 0, CODE_FOR_nothing, "__builtin_ia32_rdtscp", IX86_BUILTIN_RDTSCP, UNKNOWN, (int) UINT64_FTYPE_PUNSIGNED },
+  { 0, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
   { 0, CODE_FOR_pause, "__builtin_ia32_pause", IX86_BUILTIN_PAUSE, UNKNOWN, (int) VOID_FTYPE_VOID },
 
   /* 80387 (for use internally for atomic compound assignment).  */
@@ -33806,7 +33807,6 @@ static const struct builtin_description bdesc_args[] =
 {
   { 0, CODE_FOR_bsr, "__builtin_ia32_bsrsi", IX86_BUILTIN_BSRSI, UNKNOWN, (int) INT_FTYPE_INT },
   { OPTION_MASK_ISA_64BIT, CODE_FOR_bsr_rex64, "__builtin_ia32_bsrdi", IX86_BUILTIN_BSRDI, UNKNOWN, (int) INT64_FTYPE_INT64 },
-  { 0, CODE_FOR_nothing, "__builtin_ia32_rdpmc", IX86_BUILTIN_RDPMC, UNKNOWN, (int) UINT64_FTYPE_INT },
   { 0, CODE_FOR_rotlqi3, "__builtin_ia32_rolqi", IX86_BUILTIN_ROLQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },
   { 0, CODE_FOR_rotlhi3, "__builtin_ia32_rolhi", IX86_BUILTIN_ROLHI, UNKNOWN, (int) UINT16_FTYPE_UINT16_INT },
   { 0, CODE_FOR_rotrqi3, "__builtin_ia32_rorqi", IX86_BUILTIN_RORQI, UNKNOWN, (int) UINT8_FTYPE_UINT8_INT },

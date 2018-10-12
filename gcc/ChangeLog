@@ -1,6 +1,13 @@
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* config/i386/i386.c (bdesc_args): Move IX86_BUILTIN_RDPMC
+	from here to ...
+	(bdesc_special_args): ... here.
+
 	2018-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87248
