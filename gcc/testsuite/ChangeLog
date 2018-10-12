@@ -1,6 +1,11 @@
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2018-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87065
+	* gcc.target/i386/pr87065.c: New test.
+
 	2018-07-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86627
