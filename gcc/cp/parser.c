@@ -556,8 +556,6 @@ cp_debug_parser (FILE *file, cp_parser *parser)
 			      parser->in_statement & IN_IF_STMT);
   cp_debug_print_flag (file, "Parsing a type-id in an expression "
 			      "context", parser->in_type_id_in_expr_p);
-  cp_debug_print_flag (file, "Declarations are implicitly extern \"C\"",
-			      parser->implicit_extern_c);
   cp_debug_print_flag (file, "String expressions should be translated "
 			      "to execution character set",
 			      parser->translate_strings_p);
@@ -2134,6 +2132,8 @@ static void cp_parser_already_scoped_statement
 static void cp_parser_declaration_seq_opt
   (cp_parser *);
 static void cp_parser_declaration
+  (cp_parser *);
+static void cp_parser_toplevel_declaration
   (cp_parser *);
 static void cp_parser_block_declaration
   (cp_parser *, bool);
@@ -3923,9 +3923,6 @@ cp_parser_new (void)
   /* We are not parsing a type-id inside an expression.  */
   parser->in_type_id_in_expr_p = false;
 
-  /* Declarations aren't implicitly extern "C".  */
-  parser->implicit_extern_c = false;
-
   /* String literals should be translated to the execution character set.  */
   parser->translate_strings_p = true;
 
@@ -4601,31 +4598,45 @@ cp_parser_translation_unit (cp_parser* parser)
   /* Remember where the base of the declarator obstack lies.  */
   void *declarator_obstack_base = obstack_next_free (&declarator_obstack);
 
+  bool implicit_extern_c = false;
+
   for (;;)
     {
-      cp_parser_declaration_seq_opt (parser);
-      gcc_assert (!cp_parser_parsing_tentatively (parser));
-      if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
+      
+      /* If we're entering or exiting a region that's implicitly
+	 extern "C", modify the lang context appropriately.  */
+      if (implicit_extern_c
+	  != cp_lexer_peek_token (parser->lexer)->implicit_extern_c)
+	{
+	  implicit_extern_c = !implicit_extern_c;
+	  if (implicit_extern_c)
+	    push_lang_context (lang_name_c);
+	  else
+	    pop_lang_context ();
+	}
+
+      if (token->type == CPP_EOF)
 	break;
-      /* Must have been an extra close-brace.  */
-      cp_parser_error (parser, "expected declaration");
-      cp_lexer_consume_token (parser->lexer);
-      /* If the next token is now a `;', consume it.  */
-      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-	cp_lexer_consume_token (parser->lexer);
+
+      if (token->type == CPP_CLOSE_BRACE)
+	{
+	  cp_parser_error (parser, "expected declaration");
+	  cp_lexer_consume_token (parser->lexer);
+	  /* If the next token is now a `;', consume it.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	    cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	cp_parser_toplevel_declaration (parser);
     }
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
   parser->lexer = NULL;
-  
-  /* This file might have been a context that's implicitly extern
-     "C".  If so, pop the lang context.  (Only relevant for PCH.) */
-  if (parser->implicit_extern_c)
-    {
-      pop_lang_context ();
-      parser->implicit_extern_c = false;
-    }
+
+  /* The EOF should have reset this. */
+  gcc_checking_assert (!implicit_extern_c);
 
   /* Make sure the declarator obstack was fully cleaned up.  */
   gcc_assert (obstack_next_free (&declarator_obstack)
@@ -12732,50 +12743,13 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 {
   while (true)
     {
-      cp_token *token;
-
-      token = cp_lexer_peek_token (parser->lexer);
+      cp_token *token = cp_lexer_peek_token (parser->lexer);
 
       if (token->type == CPP_CLOSE_BRACE
-	  || token->type == CPP_EOF
-	  || token->type == CPP_PRAGMA_EOL)
+	  || token->type == CPP_EOF)
 	break;
-
-      if (token->type == CPP_SEMICOLON)
-	{
-	  /* A declaration consisting of a single semicolon is
-	     invalid.  Allow it unless we're being pedantic.  */
-	  cp_lexer_consume_token (parser->lexer);
-	  if (!in_system_header_at (input_location))
-	    pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
-	  continue;
-	}
-
-      /* If we're entering or exiting a region that's implicitly
-	 extern "C", modify the lang context appropriately.  */
-      if (!parser->implicit_extern_c && token->implicit_extern_c)
-	{
-	  push_lang_context (lang_name_c);
-	  parser->implicit_extern_c = true;
-	}
-      else if (parser->implicit_extern_c && !token->implicit_extern_c)
-	{
-	  pop_lang_context ();
-	  parser->implicit_extern_c = false;
-	}
-
-      if (token->type == CPP_PRAGMA)
-	{
-	  /* A top-level declaration can consist solely of a #pragma.
-	     A nested declaration cannot, so this is done here and not
-	     in cp_parser_declaration.  (A #pragma at block scope is
-	     handled in cp_parser_statement.)  */
-	  cp_parser_pragma (parser, pragma_external, NULL);
-	  continue;
-	}
-
-      /* Parse the declaration itself.  */
-      cp_parser_declaration (parser);
+      else
+	cp_parser_toplevel_declaration (parser);
     }
 }
 
@@ -12903,6 +12877,32 @@ cp_parser_declaration (cp_parser* parser)
 
   /* Free any declarators allocated.  */
   obstack_free (&declarator_obstack, p);
+}
+
+/* Parse a namespace-scope declaration.  */
+
+static void
+cp_parser_toplevel_declaration (cp_parser* parser)
+{
+  cp_token *token = cp_lexer_peek_token (parser->lexer);
+
+  if (token->type == CPP_PRAGMA)
+    /* A top-level declaration can consist solely of a #pragma.  A
+       nested declaration cannot, so this is done here and not in
+       cp_parser_declaration.  (A #pragma at block scope is
+       handled in cp_parser_statement.)  */
+    cp_parser_pragma (parser, pragma_external, NULL);
+  else if (token->type == CPP_SEMICOLON)
+    {
+      /* A declaration consisting of a single semicolon is
+	 invalid.  Allow it unless we're being pedantic.  */
+      cp_lexer_consume_token (parser->lexer);
+      if (!in_system_header_at (input_location))
+	pedwarn (input_location, OPT_Wpedantic, "extra %<;%>");
+    }
+  else
+    /* Parse the declaration itself.  */
+    cp_parser_declaration (parser);
 }
 
 /* Parse a block-declaration.
