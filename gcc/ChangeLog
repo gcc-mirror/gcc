@@ -1,5 +1,9 @@
 2018-10-11  Martin Sebor  <msebor@redhat.com>
 
+	* doc/extend.texi (attribute packed): Correct typos.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
 	* doc/extend.texi (attribute flatten): Mention interaction with
 	noinline.
 
