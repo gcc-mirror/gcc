@@ -1,3 +1,8 @@
+2018-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c++/87364
+	* c-pretty-print.c (c_pretty_printer::constant): Fix typo.
+
 2018-10-11  Will Wray  <wjwray@gmail.com>
 
 	PR c++/87364

@@ -1138,7 +1138,7 @@ c_pretty_printer::constant (tree e)
 	else if (type == char_type_node)
 	  pp_c_character_constant (this, e);
 	else if (TREE_CODE (type) == ENUMERAL_TYPE)
-	  pp_c_enumeration_constant (this, e))
+	  pp_c_enumeration_constant (this, e);
 	else
 	  pp_c_integer_constant (this, e);
       }
