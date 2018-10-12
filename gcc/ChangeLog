@@ -1,3 +1,8 @@
+2018-10-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87600
+	* ira-lives (non_conflicting_reg_copy_p): Disable for non LRA targets.
+
 2018-10-12  Paul Koning  <ni1d@arrl.net>
 
 	* doc/md.texi (doloop_end): Document that the pattern code may
