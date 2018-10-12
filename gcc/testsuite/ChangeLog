@@ -1,3 +1,10 @@
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* c-c++-common/pr81376.c: New test.
+	* gcc.target/i386/387-ficom-2.c: Update test.
+	* gcc.target/i386/387-ficom-2.c: Ditto.
+
 2018-10-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87597

@@ -1,3 +1,10 @@
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* real.c (format_helper::can_represent_integral_type_p): New function
+	* real.h (format_helper::can_represent_integral_type_p): Ditto.
+	* match.pd: New pattern.
+
 2018-10-12  Alexandre Oliva <oliva@adacore.com>
 
 	* configure.ac: Introduce --enable-large-address-aware
