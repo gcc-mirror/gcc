@@ -1,3 +1,16 @@
+2018-10-12  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87024
+	* gcc.dg/pr87024.c: New testcase.
+
+	2018-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86505
+	* gcc.dg/torture/pr86505.c: New testcase.
+
 2018-10-09  H.J. Lu  <hongjiu.lu@intel.com>
 
 	Backport from mainline
