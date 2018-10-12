@@ -1,3 +1,12 @@
+2018-10-12  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-07-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/3698
+	PR c++/86208
+	* g++.dg/opt/pr3698.C: New test.
+
 2018-10-12  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
