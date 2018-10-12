@@ -1,5 +1,43 @@
 2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	Initial commit of Networking TS implementation.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/bits/net.h: New header for common
+	implementation details of Networking TS.
+	* include/experimental/buffer: New header.
+	* include/experimental/executor: New header.
+	* include/experimental/internet: New header.
+	* include/experimental/io_context: New header.
+	* include/experimental/net: New header.
+	* include/experimental/netfwd: New header.
+	* include/experimental/socket: New header.
+	* include/experimental/timer: New header.
+	* testsuite/experimental/net/buffer/arithmetic.cc: New test.
+	* testsuite/experimental/net/buffer/const.cc: New test.
+	* testsuite/experimental/net/buffer/creation.cc: New test.
+	* testsuite/experimental/net/buffer/mutable.cc: New test.
+	* testsuite/experimental/net/buffer/size.cc: New test.
+	* testsuite/experimental/net/buffer/traits.cc: New test.
+	* testsuite/experimental/net/execution_context/use_service.cc: New
+	test.
+	* testsuite/experimental/net/headers.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/creation.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/members.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/base.cc: New test.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc: New
+	test.
+	* testsuite/experimental/net/timer/waitable/cons.cc: New test.
+	* testsuite/experimental/net/timer/waitable/dest.cc: New test.
+	* testsuite/experimental/net/timer/waitable/ops.cc: New test.
+
 	PR libstdc++/77691
 	* include/experimental/memory_resource (__resource_adaptor_imp): Do
 	not allocate sizes smaller than alignment when relying on guaranteed
