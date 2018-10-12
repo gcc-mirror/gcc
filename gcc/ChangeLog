@@ -1,3 +1,7 @@
+2018-10-12  Alexandre Oliva <oliva@adacore.com>
+
+	* cygming.h (HAVE_GAS_ALIGNED_COMM): Fallback-define.
+
 2018-10-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87600
