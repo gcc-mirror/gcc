@@ -1,5 +1,12 @@
 2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/77854
+	* doc/xml/manual/status_cxx1998.xml: Document size_type and
+	difference_type for containers.
+	* doc/html/*: Regenerate.
+
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
 	Backport from mainline
 	2018-05-18  Jonathan Wakely  <jwakely@redhat.com>
 
