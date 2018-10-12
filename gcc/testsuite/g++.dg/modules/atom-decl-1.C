@@ -2,4 +2,4 @@
 
 int i;
 
-module thing; // { dg-error "must be first" }
+module thing; // { dg-error "expected" }

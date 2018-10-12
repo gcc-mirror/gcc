@@ -4,7 +4,7 @@ module;
 export module frist;
 // { dg-module-bmi "!frist" }
 
-module foo.second; // { dg-error "in purview of" }
+module foo.second; // { dg-error "expected" }
 
 namespace Foo 
 {
@@ -22,7 +22,6 @@ void Bink ()
 }
 
 module a.; // { dg-error "expected" }
-// { dg-error "cannot declare" "" { target *-*-* } .-1 }
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 

@@ -1,6 +1,15 @@
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_parser_{module,import}_declaration): Remove temp hacks.
+	(cp_parser_translation_unit, cp_parser_parse_module_preamble): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-1.C: Adjust errors.
+	* g++.dg/modules/atom-preamble-1.C: Likewise. XFAIL.
+	* g++.dg/modules/mod-decl-1.C: Likewise,
+	* g++.dg/modules/p0713-[23].C: Likewise.
+
+	gcc/cp/
 	* parser.c (cp_parser_translation_unit): Deal with one level of
 	export block here.
 	(check_module_outermost): Delete.

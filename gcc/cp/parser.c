@@ -2087,9 +2087,9 @@ static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
 static location_t cp_parser_module_declaration
-  (cp_parser *parser, bool first_decl, bool exporting);
+  (cp_parser *parser, bool exporting, bool first_p);
 static location_t cp_parser_import_declaration
-  (cp_parser *parser, bool);
+  (cp_parser *parser, bool exporting, bool preamble_p);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -4560,6 +4560,7 @@ cp_parser_translation_unit (cp_parser* parser)
 
   bool implicit_extern_c = false;
   bool first = modules_p () && !modules_atom_p ();
+  bool gmf = false;
   location_t export_loc = UNKNOWN_LOCATION;
 
   for (;;)
@@ -4592,17 +4593,18 @@ cp_parser_translation_unit (cp_parser* parser)
       cp_token *next
 	= exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
 
-      if (next->keyword == RID_MODULE)
+      if (next->keyword == RID_MODULE && (first || gmf))
 	{
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_module_declaration (parser, first, exporting);
+	  gmf = (cp_parser_module_declaration (parser, exporting, first)
+		 == UNKNOWN_LOCATION);
 	}
       else if (next->keyword == RID_IMPORT)
 	{
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_import_declaration (parser, exporting);
+	  cp_parser_import_declaration (parser, exporting, false);
 	}
       else if (exporting && export_loc == UNKNOWN_LOCATION
 	       && next->type == CPP_OPEN_BRACE)
@@ -12780,17 +12782,15 @@ cp_parser_module_name (cp_parser *parser)
 */
 
 static location_t
-cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting)
+cp_parser_module_declaration (cp_parser *parser, bool exporting, bool first_p)
 {
-  static bool glob; // FIXME: Temp hack
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   bool atom_p = modules_atom_p ();
 
-  if (!exporting && first_decl && !atom_p
+  if (!exporting && first_p && !atom_p
       && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
     {
       cp_lexer_consume_token (parser->lexer);
-      glob = true;
       return UNKNOWN_LOCATION;
     }
 
@@ -12798,11 +12798,10 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  if (!first_decl && (atom_p || !glob))
+  if (!first_p && atom_p)
     {
-      error_at (token->location, modules_atom_p ()
-		? "module declaration must be first declaration of preamble"
-		: "module declaration does not follow global module");
+      error_at (token->location,
+		"module declaration must be first declaration of preamble");
       mod = NULL;
     }
 
@@ -12815,13 +12814,11 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
   return token->location;
 }
 
-static bool in_preamble; // FIXME:temp hack
-
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
 
 static location_t
-cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
+cp_parser_import_declaration (cp_parser *parser, bool exporting, bool preamble_p)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
 
@@ -12833,7 +12830,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
 
   if (!mod)
     ;
-  else if (modules_atom_p () && !in_preamble)
+  else if (modules_atom_p () && !preamble_p)
     error_at (token->location,
 	      "import declaration must be within module preamble");
   else
@@ -12945,8 +12942,6 @@ cp_parser_parse_module_preamble (cp_parser *parser)
   lexer->last_token = &lexer->buffer->last ();
   location_t first_loc = UNKNOWN_LOCATION;
 
-  in_preamble = true;
-  
   for (bool first = true, export_p = false;;)
     {
       cp_token *tok = cp_lexer_peek_token (lexer);
@@ -12955,7 +12950,6 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 	case CPP_EOF:
 	  /* Lose the EOF.  */
 	  lexer->buffer->pop ();
-	  in_preamble = false;
 	  return first_loc;
 
 	case CPP_PRAGMA:
@@ -12968,7 +12962,7 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 	      location_t loc;
 
 	    case RID_MODULE:
-	      loc = cp_parser_module_declaration (parser, first, export_p);
+	      loc = cp_parser_module_declaration (parser, export_p, first);
 	      if (first_loc == UNKNOWN_LOCATION)
 		first_loc = loc;
 	      first = false;
@@ -12976,7 +12970,7 @@ cp_parser_parse_module_preamble (cp_parser *parser)
 	      continue;
 
 	    case RID_IMPORT:
-	      loc = cp_parser_import_declaration (parser, export_p);
+	      loc = cp_parser_import_declaration (parser, export_p, true);
 	      if (first_loc == UNKNOWN_LOCATION)
 		first_loc = loc;
 	      first = false;
