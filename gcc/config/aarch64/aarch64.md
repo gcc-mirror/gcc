@@ -1520,26 +1520,34 @@
 )
 
 (define_insn "*zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,w,w,r,w")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,r,m,w,w")))]
   ""
   "@
    uxtw\t%0, %w1
-   ldr\t%w0, %1"
-  [(set_attr "type" "extend,load_4")]
+   ldr\t%w0, %1
+   fmov\t%s0, %w1
+   ldr\t%s0, %1
+   fmov\t%w0, %s1
+   fmov\t%s0, %s1"
+  [(set_attr "type" "extend,load_4,f_mcr,f_loads,f_mrc,fmov")
+   (set_attr "arch" "*,*,fp,fp,fp,fp")]
 )
 
 (define_insn "*load_pair_zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump")))
-   (set (match_operand:DI 2 "register_operand" "=r")
-	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,w")
+	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump,Ump")))
+   (set (match_operand:DI 2 "register_operand" "=r,w")
+	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m,m")))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
-  "ldp\\t%w0, %w2, %1"
-  [(set_attr "type" "load_8")]
+  "@
+   ldp\t%w0, %w2, %1
+   ldp\t%s0, %s2, %1"
+  [(set_attr "type" "load_8,neon_load1_2reg")
+   (set_attr "arch" "*,fp")]
 )
 
 (define_expand "<ANY_EXTEND:optab><SHORT:mode><GPI:mode>2"
@@ -1566,7 +1574,8 @@
    and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
    ldr<SHORT:size>\t%w0, %1
    ldr\t%<SHORT:size>0, %1"
-  [(set_attr "type" "logic_imm,load_4,load_4")]
+  [(set_attr "type" "logic_imm,load_4,f_loads")
+   (set_attr "arch" "*,*,fp")]
 )
 
 (define_expand "<optab>qihi2"

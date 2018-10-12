@@ -1,3 +1,12 @@
+2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Add alternatives
+	to zero-extend between int and floating-point registers.
+	(load_pair_zero_extendsidi2_aarch64): Add alternative for zero-extended
+	ldp into floating-point registers.  Add type and arch attributes.
+	(zero_extend<SHORT:mode><GPI:mode>2_aarch64): Add arch attribute.
+	Use f_loads for type attribute.
+
 2018-10-11  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (attribute packed): Correct typos.
