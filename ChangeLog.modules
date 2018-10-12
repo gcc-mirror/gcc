@@ -1,6 +1,15 @@
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Deal with one level of
+	export block here.
+	(check_module_outermost): Delete.
+	(cp_parser_{module,import}_declaration): Don't call it.
+	(cp_parser_declaration): Don't deal with module or import decls.
+	gcc/testsuite/
+	* g++.dg/modules/mod-decl-[13].C: Adjust errors.
+
+	gcc/cp/
 	* parser.c (cp_parser_translation_unit): Detect module and import
 	declarations here.
 

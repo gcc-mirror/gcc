@@ -8,7 +8,7 @@ module foo.second; // { dg-error "in purview of" }
 
 namespace Foo 
 {
-  module third; // { dg-error "at outermost" }
+  module third; // { dg-error "expected" }
 }
 
 struct Baz

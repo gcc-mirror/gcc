@@ -4560,6 +4560,7 @@ cp_parser_translation_unit (cp_parser* parser)
 
   bool implicit_extern_c = false;
   bool first = modules_p () && !modules_atom_p ();
+  location_t export_loc = UNKNOWN_LOCATION;
 
   for (;;)
     {
@@ -4596,30 +4597,48 @@ cp_parser_translation_unit (cp_parser* parser)
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
 	  cp_parser_module_declaration (parser, first, exporting);
-	  first = false;
-	  continue;
 	}
       else if (next->keyword == RID_IMPORT)
 	{
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
 	  cp_parser_import_declaration (parser, exporting);
-	  first = false;
-	  continue;
 	}
-
-      first = false;
-
-      if (token->type == CPP_CLOSE_BRACE)
+      else if (exporting && export_loc == UNKNOWN_LOCATION
+	       && next->type == CPP_OPEN_BRACE)
 	{
-	  cp_parser_error (parser, "expected declaration");
+	  export_loc = token->location;
+	  push_module_export (false);
 	  cp_lexer_consume_token (parser->lexer);
-	  /* If the next token is now a `;', consume it.  */
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (token->type == CPP_CLOSE_BRACE)
+	{
+	  bool consume = export_loc != UNKNOWN_LOCATION;
+	  if (consume)
+	    {
+	      export_loc = UNKNOWN_LOCATION;
+	      pop_module_export (0);
+	    }
+	  else
+	    {
+	      cp_parser_error (parser, "expected declaration");
+	      cp_lexer_consume_token (parser->lexer);
+	      /* If the next token is now a `;', consume it.  */
+	      consume = cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON);
+	    }
+	  if (consume)
 	    cp_lexer_consume_token (parser->lexer);
 	}
       else
 	cp_parser_toplevel_declaration (parser);
+      first = false;
+    }
+
+  if (export_loc)
+    {
+      error_at (export_loc, "unterminated export declaration");
+      pop_module_export (0);
     }
 
   /* Get rid of the token array; we don't need it any more.  */
@@ -12755,23 +12774,6 @@ cp_parser_module_name (cp_parser *parser)
     }
 }
 
-/* Emit an error if we're not at the outermost level.  */
-
-static bool
-check_module_outermost (const cp_token *token, const char *msg)
-{
-  bool result = true;
-
-  if (current_scope () != global_namespace || current_lang_depth ())
-    {
-      error_at (token->location,
-		"%qs may only occur at outermost scope", msg);
-      result = false;
-    }
-
-  return result;
-}
-
 /* Module-declaration
      module ;
      module module-name attr-spec-seq-opt ;
@@ -12808,8 +12810,6 @@ cp_parser_module_declaration (cp_parser *parser, bool first_decl, bool exporting
     return UNKNOWN_LOCATION;
   if (!mod)
     return UNKNOWN_LOCATION;
-  if (!check_module_outermost (token, "module declaration"))
-    return UNKNOWN_LOCATION;
 
   declare_module (mod, token->location, exporting, attrs, parse_in);
   return token->location;
@@ -12836,8 +12836,6 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting = false)
   else if (modules_atom_p () && !in_preamble)
     error_at (token->location,
 	      "import declaration must be within module preamble");
-  else if (!check_module_outermost (token, "module-import"))
-    gcc_assert (!modules_atom_p ());
   else
     {
       import_module (mod, token->location, exporting, attrs, parse_in);
@@ -13123,8 +13121,6 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_explicit_instantiation (parser);
     }
-  else if (token1.keyword == RID_IMPORT)
-    cp_parser_import_declaration (parser);
   /* If the next token is `export', it's new-style modules or
      old-style template.  */
   else if (token1.keyword == RID_EXPORT)
@@ -13134,9 +13130,6 @@ cp_parser_declaration (cp_parser* parser)
       else
 	cp_parser_module_export (parser);
     }
-  else if (token1.keyword == RID_MODULE)
-    cp_parser_module_declaration (parser, false, false);
-
   /* If the next token is `extern', 'static' or 'inline' and the one
      after that is `template', we have a GNU extended explicit
      instantiation directive.  */
