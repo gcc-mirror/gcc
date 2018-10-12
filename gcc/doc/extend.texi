@@ -6221,13 +6221,13 @@ int f (struct Data *pd, const char *s)
 
 @item packed
 @cindex @code{packed} variable attribute
-The @code{packed} attribute specifies that a variable or structure field
-should have the smallest possible alignment---one byte for a variable,
-and one bit for a field, unless you specify a larger value with the
-@code{aligned} attribute.
+The @code{packed} attribute specifies that a structure member should have
+the smallest possible alignment---one bit for a bit-field and one byte
+otherwise, unless a larger value is specified with the @code{aligned}
+attribute.  The attribute does not apply to non-member objects.
 
-Here is a structure in which the field @code{x} is packed, so that it
-immediately follows @code{a}:
+For example in the structure below, the member array @code{x} is packed
+so that it immediately follows @code{a} with no intervening padding:
 
 @smallexample
 struct foo
