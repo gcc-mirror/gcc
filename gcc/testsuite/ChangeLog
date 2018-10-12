@@ -1,3 +1,15 @@
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* gfortran.dg/goacc/pr77765.f90: Modify dg-error.
+	* gfortran.dg/interface_42.f90: Ditto.
+	* gfortran.dg/internal_references_1.f90: Ditto.
+	* gfortran.dg/invalid_procedure_name.f90: Ditto.
+	* gfortran.dg/pr65453.f90: Ditto.
+	* gfortran.dg/pr77414.f90: Ditto.
+	* gfortran.dg/pr78741.f90: Ditto.
+	* gfortran.dg/same_name_2.f90: Ditto.
+
 2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/popcnt.c: Test zero-extended popcount.

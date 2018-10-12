@@ -1231,28 +1231,39 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  && sym->attr.proc != 0
 	  && (sym->attr.subroutine || sym->attr.function || sym->attr.entry)
 	  && sym->attr.if_source != IFSRC_UNKNOWN)
-	gfc_error_now ("Procedure %qs at %C is already defined at %L",
-		       name, &sym->declared_at);
-
+	{
+	  gfc_error_now ("Procedure %qs at %C is already defined at %L",
+			 name, &sym->declared_at);
+	  return true;
+	}
       if (sym->attr.flavor != 0
 	  && sym->attr.entry && sym->attr.if_source != IFSRC_UNKNOWN)
-	gfc_error_now ("Procedure %qs at %C is already defined at %L",
-		       name, &sym->declared_at);
+	{
+	  gfc_error_now ("Procedure %qs at %C is already defined at %L",
+			 name, &sym->declared_at);
+	  return true;
+	}
 
       if (sym->attr.external && sym->attr.procedure
 	  && gfc_current_state () == COMP_CONTAINS)
-	gfc_error_now ("Contained procedure %qs at %C clashes with "
-			"procedure defined at %L",
-		       name, &sym->declared_at);
+	{
+	  gfc_error_now ("Contained procedure %qs at %C clashes with "
+			 "procedure defined at %L",
+			 name, &sym->declared_at);
+	  return true;
+	}
 
       /* Trap a procedure with a name the same as interface in the
 	 encompassing scope.  */
       if (sym->attr.generic != 0
 	  && (sym->attr.subroutine || sym->attr.function)
 	  && !sym->attr.mod_proc)
-	gfc_error_now ("Name %qs at %C is already defined"
-		       " as a generic interface at %L",
-		       name, &sym->declared_at);
+	{
+	  gfc_error_now ("Name %qs at %C is already defined"
+			 " as a generic interface at %L",
+			 name, &sym->declared_at);
+	  return true;
+	}
 
       /* Trap declarations of attributes in encompassing scope.  The
 	 signature for this is that ts.kind is set.  Legitimate
@@ -1263,8 +1274,11 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 	  && gfc_current_ns->parent != NULL
 	  && sym->attr.access == 0
 	  && !module_fcn_entry)
-	gfc_error_now ("Procedure %qs at %C has an explicit interface "
+	{
+	  gfc_error_now ("Procedure %qs at %C has an explicit interface "
 		       "from a previous declaration",  name);
+	  return true;
+	}
     }
 
   /* C1246 (R1225) MODULE shall appear only in the function-stmt or
@@ -1276,17 +1290,23 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       && !current_attr.module_procedure
       && sym->attr.proc == PROC_MODULE
       && gfc_state_stack->state == COMP_CONTAINS)
-    gfc_error_now ("Procedure %qs defined in interface body at %L "
-		   "clashes with internal procedure defined at %C",
-		    name, &sym->declared_at);
+    {
+      gfc_error_now ("Procedure %qs defined in interface body at %L "
+		     "clashes with internal procedure defined at %C",
+		     name, &sym->declared_at);
+      return true;
+    }
 
   if (sym && !sym->gfc_new
       && sym->attr.flavor != FL_UNKNOWN
       && sym->attr.referenced == 0 && sym->attr.subroutine == 1
       && gfc_state_stack->state == COMP_CONTAINS
       && gfc_state_stack->previous->state == COMP_SUBROUTINE)
-    gfc_error_now ("Procedure %qs at %C is already defined at %L",
-		    name, &sym->declared_at);
+    {
+      gfc_error_now ("Procedure %qs at %C is already defined at %L",
+		     name, &sym->declared_at);
+      return true;
+    }
 
   if (gfc_current_ns->parent == NULL || *result == NULL)
     return rc;
