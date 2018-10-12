@@ -332,7 +332,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    "Number of NFA states exceeds limit. Please use shorter regex "
 	    "string, or use smaller brace expression, or make "
 	    "_GLIBCXX_REGEX_STATE_LIMIT larger.");
-	return this->size()-1;
+	return this->size() - 1;
       }
 
       // Eliminate dummy node in this NFA to make it compact.
