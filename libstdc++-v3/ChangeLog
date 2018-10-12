@@ -1,6 +1,66 @@
 2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2018-08-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/init-list.cc:
+	Require cxx11-abi.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:
+	Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	Likewise.
+
+	Backport from mainline
+	2018-08-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87061
+	* include/experimental/regex [!_GLIBCXX_USE_CXX11_ABI]
+	(experimental::pmr::match_results, experimental::pmr::cmatch)
+	(experimental::pmr::smatch, experimental::pmr::wcmatch)
+	(experimental::pmr::wsmatch): Do not declare for gcc4-compatible ABI,
+	because COW strings don't support C++11 allocator model.
+	* include/experimental/string [!_GLIBCXX_USE_CXX11_ABI]
+	(experimental::pmr::basic_string, experimental::pmr::string)
+	(experimental::pmr::u16string, experimental::pmr::u32string)
+	(experimental::pmr::wstring): Likewise.
+
+	Backport from mainline
+	2018-08-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/experimental/regex: Remove begin/end macros for namespace.
+	* include/experimental/string: Likewise.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_deque.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_forward_list.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_list.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_map.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_match.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_multimap.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_multiset.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_set.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_string.cc:
+	New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_map.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_multimap.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_multiset.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/
+	pmr_typedefs_unordered_set.cc: New test.
+	* testsuite/experimental/polymorphic_allocator/pmr_typedefs_vector.cc:
+	New test.
+
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
 	2018-07-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/70966
