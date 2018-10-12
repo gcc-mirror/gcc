@@ -321,10 +321,6 @@ struct GTY(()) cp_parser {
      alternatives.  */
   bool in_type_id_in_expr_p;
 
-  /* TRUE if we are currently in a header file where declarations are
-     implicitly extern "C".  */
-  bool implicit_extern_c;
-
   /* TRUE if strings in expressions should be translated to the execution
      character set.  */
   bool translate_strings_p;
