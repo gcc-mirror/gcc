@@ -1,3 +1,9 @@
+2018-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* opt-problem.h (opt_wrapper): Use template-argument-list when naming
+	the base class, because using the injected-class-name was not clearly
+	specified until DR 176.
+
 2018-10-12  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.md (doloop_end): New expander.
