@@ -1,3 +1,13 @@
+2018-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2cfi.c (struct dw_trace_info): Add args_size_defined_for_eh.
+	(notice_args_size): Set it in the current trace if no insn that can
+	throw internally has been seen yet.
+	(connect_traces): When connecting args_size between traces, allow the
+	incoming values not to match if there is an insn setting it before the
+	first insn that can throw internally; in that case, force the creation
+	of a CFI note on this latter insn.
+
 2018-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* opt-problem.h (opt_wrapper): Use template-argument-list when naming
