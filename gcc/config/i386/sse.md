@@ -17864,7 +17864,7 @@
 (define_insn "*vec_dupv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=x,v,v,x")
 	(vec_duplicate:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " 0,Yv,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " 0,Yv,vm,0")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t%0, %0
