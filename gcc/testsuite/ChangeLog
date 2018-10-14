@@ -1,3 +1,8 @@
+2018-10-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83146
+	* gfortran.dg/associate_43.f90: New test.
+
 2018-10-14  Anthony Green  <green@moxielogic.com>
 
 	* gcc.c-torture/execute/20101011-1.c: Adjust for moxie.
