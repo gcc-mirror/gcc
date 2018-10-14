@@ -1,3 +1,11 @@
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87572
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_UNSET):
+	Add OPTION_MASK_ISA_AVX512IFMA_UNSET,
+	OPTION_MASK_ISA_AVX5124FMAPS_UNSET and
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET.
+
 2018-10-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2cfi.c (struct dw_trace_info): Add args_size_defined_for_eh.
