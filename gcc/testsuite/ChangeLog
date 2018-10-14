@@ -1,3 +1,7 @@
+2018-10-14  Anthony Green  <green@moxielogic.com>
+
+	* gcc.c-torture/execute/20101011-1.c: Adjust for moxie.
+
 2018-10-12  Yury Gribov  <tetra2005@gmail.com>
 
 	PR middle-end/81376
