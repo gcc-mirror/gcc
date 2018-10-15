@@ -1,3 +1,59 @@
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* macro.c (_cpp_arguments_ok): If the argument count is wrong, add
+	a note showing the definition of the macro.
+
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* include/line-map.h (LINEMAPS_MACRO_LOWEST_LOCATION): Fix
+	off-by-one error.
+	* line-map.c (linemap_enter_macro): Use RAII.  Clear all of the
+	macro_locations.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c (noop_error_cb): Rename to...
+	(noop_diagnostic_cb): ...this, converting params to enums.
+	(cpp_interpret_string_ranges): Update for renaming and enums.
+	* directives.c (check_eol_1): Convert reason to enum.
+	(do_diagnostic): Convert code and reason to enum.
+	(do_error): Use CPP_W_NONE rather than 0.
+	(do_pragma_dependency): Likewise.
+	* errors.c (cpp_diagnostic_at): Convert level and reason to enums.
+	Update for renaming.
+	(cpp_diagnostic): Convert level and reason to enums.
+	(cpp_error): Convert level to enum.
+	(cpp_warning): Convert reason to enums.
+	(cpp_pedwarning): Likewise.
+	(cpp_warning_syshdr): Likewise.
+	(cpp_diagnostic_with_line): Convert level and reason to enums.
+	Update for renaming.
+	(cpp_error_with_line): Convert level to enum.
+	(cpp_warning_with_line): Convert reason to enums.
+	(cpp_pedwarning_with_line): Likewise.
+	(cpp_warning_with_line_syshdr): Likewise.
+	(cpp_error_at): Convert level to enum.
+	(cpp_errno): Likewise.
+	(cpp_errno_filename): Likewise.
+	* include/cpplib.h (enum cpp_diagnostic_level): Name this enum,
+	and move to before struct cpp_callbacks.
+	(enum cpp_warning_reason): Likewise.
+	(cpp_callbacks::diagnostic): Convert params from int to enums.
+	(cpp_error): Convert int param to enum cpp_diagnostic_level.
+	(cpp_warning): Convert int param to enum cpp_warning_reason.
+	(cpp_pedwarning): Likewise.
+	(cpp_warning_syshdr): Likewise.
+	(cpp_errno): Convert int param to enum cpp_diagnostic_level.
+	(cpp_errno_filename): Likewise.
+	(cpp_error_with_line): Likewise.
+	(cpp_warning_with_line): Convert int param to enum
+	cpp_warning_reason.
+	(cpp_pedwarning_with_line): Likewise.
+	(cpp_warning_with_line_syshdr): Likewise.
+	(cpp_error_at): Convert int param to enum cpp_diagnostic_level.
+	* macro.c (create_iso_definition): Convert int to enum.
+	(_cpp_create_definition): Likewise.
+
 2018-09-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* include/line-map.h (range_label::get_text): Add param

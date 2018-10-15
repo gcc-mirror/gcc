@@ -2457,98 +2457,65 @@
    (set_attr "prefix_rep" "1,*")
    (set_attr "mode" "V4SF")])
 
-(define_expand "reduc_plus_scal_v8df"
-  [(match_operand:DF 0 "register_operand")
-   (match_operand:V8DF 1 "register_operand")]
-  "TARGET_AVX512F"
+(define_mode_iterator REDUC_SSE_PLUS_MODE
+ [(V2DF "TARGET_SSE") (V4SF "TARGET_SSE")])
+
+(define_expand "reduc_plus_scal_<mode>"
+ [(plus:REDUC_SSE_PLUS_MODE
+   (match_operand:<ssescalarmode> 0 "register_operand")
+   (match_operand:REDUC_SSE_PLUS_MODE 1 "register_operand"))]
+ ""
 {
-  rtx tmp = gen_reg_rtx (V8DFmode);
-  ix86_expand_reduc (gen_addv8df3, tmp, operands[1]);
-  emit_insn (gen_vec_extractv8dfdf (operands[0], tmp, const0_rtx));
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_add<mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
+                                                        const0_rtx));
   DONE;
 })
 
-(define_expand "reduc_plus_scal_v4df"
-  [(match_operand:DF 0 "register_operand")
-   (match_operand:V4DF 1 "register_operand")]
-  "TARGET_AVX"
-{
-  rtx tmp = gen_reg_rtx (V2DFmode);
-  emit_insn (gen_vec_extract_hi_v4df (tmp, operands[1]));
-  rtx tmp2 = gen_reg_rtx (V2DFmode);
-  emit_insn (gen_addv2df3 (tmp2, tmp, gen_lowpart (V2DFmode, operands[1])));
-  rtx tmp3 = gen_reg_rtx (V2DFmode);
-  emit_insn (gen_vec_interleave_highv2df (tmp3, tmp2, tmp2));
-  emit_insn (gen_adddf3 (operands[0],
-			 gen_lowpart (DFmode, tmp2),
-			 gen_lowpart (DFmode, tmp3)));
-  DONE;
-})
+(define_mode_iterator REDUC_PLUS_MODE
+ [(V4DF "TARGET_AVX") (V8SF "TARGET_AVX")
+  (V8DF "TARGET_AVX512F") (V16SF "TARGET_AVX512F")])
 
-(define_expand "reduc_plus_scal_v2df"
-  [(match_operand:DF 0 "register_operand")
-   (match_operand:V2DF 1 "register_operand")]
-  "TARGET_SSE2"
+(define_expand "reduc_plus_scal_<mode>"
+ [(plus:REDUC_PLUS_MODE
+   (match_operand:<ssescalarmode> 0 "register_operand")
+   (match_operand:REDUC_PLUS_MODE 1 "register_operand"))]
+ ""
 {
-  rtx tmp = gen_reg_rtx (V2DFmode);
-  emit_insn (gen_vec_interleave_highv2df (tmp, operands[1], operands[1]));
-  emit_insn (gen_adddf3 (operands[0],
-			 gen_lowpart (DFmode, tmp),
-			 gen_lowpart (DFmode, operands[1])));
-  DONE;
-})
-
-(define_expand "reduc_plus_scal_v16sf"
-  [(match_operand:SF 0 "register_operand")
-   (match_operand:V16SF 1 "register_operand")]
-  "TARGET_AVX512F"
-{
-  rtx tmp = gen_reg_rtx (V16SFmode);
-  ix86_expand_reduc (gen_addv16sf3, tmp, operands[1]);
-  emit_insn (gen_vec_extractv16sfsf (operands[0], tmp, const0_rtx));
-  DONE;
-})
-
-(define_expand "reduc_plus_scal_v8sf"
-  [(match_operand:SF 0 "register_operand")
-   (match_operand:V8SF 1 "register_operand")]
-  "TARGET_AVX"
-{
-  rtx tmp = gen_reg_rtx (V8SFmode);
-  rtx tmp2 = gen_reg_rtx (V8SFmode);
-  rtx vec_res = gen_reg_rtx (V8SFmode);
-  emit_insn (gen_avx_haddv8sf3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_avx_haddv8sf3 (tmp2, tmp, tmp));
-  emit_insn (gen_avx_vperm2f128v8sf3 (tmp, tmp2, tmp2, GEN_INT (1)));
-  emit_insn (gen_addv8sf3 (vec_res, tmp, tmp2));
-  emit_insn (gen_vec_extractv8sfsf (operands[0], vec_res, const0_rtx));
-  DONE;
-})
-
-(define_expand "reduc_plus_scal_v4sf"
-  [(match_operand:SF 0 "register_operand")
-   (match_operand:V4SF 1 "register_operand")]
-  "TARGET_SSE"
-{
-  rtx vec_res = gen_reg_rtx (V4SFmode);
-  if (TARGET_SSE3)
-    {
-      rtx tmp = gen_reg_rtx (V4SFmode);
-      emit_insn (gen_sse3_haddv4sf3 (tmp, operands[1], operands[1]));
-      emit_insn (gen_sse3_haddv4sf3 (vec_res, tmp, tmp));
-    }
-  else
-    ix86_expand_reduc (gen_addv4sf3, vec_res, operands[1]);
-  emit_insn (gen_vec_extractv4sfsf (operands[0], vec_res, const0_rtx));
+  rtx tmp = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_vec_extract_hi_<mode> (tmp, operands[1]));
+  rtx tmp2 = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_add<ssehalfvecmodelower>3
+    (tmp2, tmp, gen_lowpart (<ssehalfvecmode>mode, operands[1])));
+  emit_insn (gen_reduc_plus_scal_<ssehalfvecmodelower> (operands[0], tmp2));
   DONE;
 })
 
 ;; Modes handled by reduc_sm{in,ax}* patterns.
+(define_mode_iterator REDUC_SSE_SMINMAX_MODE
+  [(V4SF "TARGET_SSE") (V2DF "TARGET_SSE")
+   (V2DI "TARGET_SSE") (V4SI "TARGET_SSE") (V8HI "TARGET_SSE")
+   (V16QI "TARGET_SSE")])
+
+(define_expand "reduc_<code>_scal_<mode>"
+  [(smaxmin:REDUC_SSE_SMINMAX_MODE
+     (match_operand:<ssescalarmode> 0 "register_operand")
+     (match_operand:REDUC_SSE_SMINMAX_MODE 1 "register_operand"))]
+  ""
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
+							const0_rtx));
+  DONE;
+})
+
 (define_mode_iterator REDUC_SMINMAX_MODE
   [(V32QI "TARGET_AVX2") (V16HI "TARGET_AVX2")
    (V8SI "TARGET_AVX2") (V4DI "TARGET_AVX2")
    (V8SF "TARGET_AVX") (V4DF "TARGET_AVX")
-   (V4SF "TARGET_SSE") (V64QI "TARGET_AVX512BW")
+   (V64QI "TARGET_AVX512BW")
    (V32HI "TARGET_AVX512BW") (V16SI "TARGET_AVX512F")
    (V8DI "TARGET_AVX512F") (V16SF "TARGET_AVX512F")
    (V8DF "TARGET_AVX512F")])
@@ -2559,10 +2526,12 @@
      (match_operand:REDUC_SMINMAX_MODE 1 "register_operand"))]
   ""
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
-							const0_rtx));
+  rtx tmp = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_vec_extract_hi_<mode> (tmp, operands[1]));
+  rtx tmp2 = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_<code><ssehalfvecmodelower>3
+    (tmp2, tmp, gen_lowpart (<ssehalfvecmode>mode, operands[1])));
+  emit_insn (gen_reduc_<code>_scal_<ssehalfvecmodelower> (operands[0], tmp2));
   DONE;
 })
 
@@ -2572,10 +2541,12 @@
      (match_operand:VI_AVX512BW 1 "register_operand"))]
   "TARGET_AVX512F"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
-  							const0_rtx));
+  rtx tmp = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_vec_extract_hi_<mode> (tmp, operands[1]));
+  rtx tmp2 = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_<code><ssehalfvecmodelower>3
+    (tmp2, tmp, gen_lowpart (<ssehalfvecmode>mode, operands[1])));
+  emit_insn (gen_reduc_<code>_scal_<ssehalfvecmodelower> (operands[0], tmp2));
   DONE;
 })
 
@@ -2585,10 +2556,15 @@
      (match_operand:VI_256 1 "register_operand"))]
   "TARGET_AVX2"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
-							const0_rtx));
+  rtx tmp = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_vec_extract_hi_<mode> (tmp, operands[1]));
+  rtx tmp2 = gen_reg_rtx (<ssehalfvecmode>mode);
+  emit_insn (gen_<code><ssehalfvecmodelower>3
+    (tmp2, tmp, gen_lowpart (<ssehalfvecmode>mode, operands[1])));
+  rtx tmp3 = gen_reg_rtx (<ssehalfvecmode>mode);
+  ix86_expand_reduc (gen_<code><ssehalfvecmodelower>3, tmp3, tmp2);
+  emit_insn (gen_vec_extract<ssehalfvecmodelower><ssescalarmodelower>
+		(operands[0], tmp3, const0_rtx));
   DONE;
 })
 
@@ -17888,7 +17864,7 @@
 (define_insn "*vec_dupv2di"
   [(set (match_operand:V2DI 0 "register_operand"     "=x,v,v,x")
 	(vec_duplicate:V2DI
-	  (match_operand:DI 1 "nonimmediate_operand" " 0,Yv,m,0")))]
+	  (match_operand:DI 1 "nonimmediate_operand" " 0,Yv,vm,0")))]
   "TARGET_SSE"
   "@
    punpcklqdq\t%0, %0

@@ -8932,7 +8932,17 @@ package body Sem_Ch6 is
               or else
                 (Chars (Entity (E1)) = Chars (Entity (E2))
                   and then Ekind (Entity (E1)) = E_Loop_Parameter
-                  and then Ekind (Entity (E2)) = E_Loop_Parameter);
+                  and then Ekind (Entity (E2)) = E_Loop_Parameter)
+
+              --  A call to an instantiation of Unchecked_Conversion is
+              --  rewritten with the name of the generated function
+              --  created for the instance, and this must be special-cased.
+
+              or else
+                 (Ekind (Entity (E1)) = E_Function
+                   and then Is_Intrinsic_Subprogram (Entity (E1))
+                   and then Is_Generic_Instance (Entity (E1))
+                   and then Entity (E2) = Alias (Entity (E1)));
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name

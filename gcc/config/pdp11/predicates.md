@@ -30,6 +30,14 @@
   (and (match_code "const_int")
        (match_test "(unsigned) INTVAL (op) < 4")))
 
+;; Accept integer arguments +1 and -1, for which add and sub can be
+;; done as inc or dec instructions.  This matches the rule for the
+;; L and M constraints.
+(define_predicate "incdec_operand"
+  (and (match_code "const_int")
+       (ior (match_test "INTVAL (op) == -1")
+	    (match_test "INTVAL (op) == 1"))))
+
 ;; Accept anything general_operand accepts, except that registers must
 ;; be FPU registers.
 (define_predicate "float_operand"

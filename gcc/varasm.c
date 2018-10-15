@@ -804,7 +804,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       && TREE_CODE (decl) == STRING_CST
       && TREE_CODE (TREE_TYPE (decl)) == ARRAY_TYPE
       && align <= 256
-      && (len = int_size_in_bytes (TREE_TYPE (decl))) >= 0
+      && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && TREE_STRING_LENGTH (decl) == len)
     {
       scalar_int_mode mode;

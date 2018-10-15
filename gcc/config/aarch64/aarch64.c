@@ -8842,7 +8842,8 @@ aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode mode, rtx mask,
   return CONST_INT_P (mask) && CONST_INT_P (shft_amnt)
 	 && INTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
 	 && exact_log2 ((INTVAL (mask) >> INTVAL (shft_amnt)) + 1) >= 0
-	 && (INTVAL (mask) & ((1 << INTVAL (shft_amnt)) - 1)) == 0;
+	 && (INTVAL (mask)
+	     & ((HOST_WIDE_INT_1U << INTVAL (shft_amnt)) - 1)) == 0;
 }
 
 /* Calculate the cost of calculating X, storing it in *COST.  Result

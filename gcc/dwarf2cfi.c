@@ -147,6 +147,9 @@ struct dw_trace_info
 
   /* True if we've seen different values incoming to beg_true_args_size.  */
   bool args_size_undefined;
+
+  /* True if we've seen an insn with a REG_ARGS_SIZE note before EH_HEAD.  */
+  bool args_size_defined_for_eh;
 };
 
 
@@ -941,6 +944,9 @@ notice_args_size (rtx_insn *insn)
   note = find_reg_note (insn, REG_ARGS_SIZE, NULL);
   if (note == NULL)
     return;
+
+  if (!cur_trace->eh_head)
+    cur_trace->args_size_defined_for_eh = true;
 
   args_size = get_args_size (note);
   delta = args_size - cur_trace->end_true_args_size;
@@ -2820,11 +2826,17 @@ connect_traces (void)
 
 	  if (ti->switch_sections)
 	    prev_args_size = 0;
+
 	  if (ti->eh_head == NULL)
 	    continue;
-	  gcc_assert (!ti->args_size_undefined);
 
-	  if (maybe_ne (ti->beg_delay_args_size, prev_args_size))
+	  /* We require either the incoming args_size values to match or the
+	     presence of an insn setting it before the first EH insn.  */
+	  gcc_assert (!ti->args_size_undefined || ti->args_size_defined_for_eh);
+
+	  /* In the latter case, we force the creation of a CFI note.  */
+	  if (ti->args_size_undefined
+	      || maybe_ne (ti->beg_delay_args_size, prev_args_size))
 	    {
 	      /* ??? Search back to previous CFI note.  */
 	      add_cfi_insn = PREV_INSN (ti->eh_head);

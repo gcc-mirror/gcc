@@ -1,3 +1,154 @@
+2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
+	initialization.
+	(vector<>::cend()): Likewise.
+	(vector<>::emplace(const_iterator, _Args&&...)): Likewise and use
+	consistent iterator comparison.
+	(vector<>::insert(const_iterator, size_type, const _Tp&)): Likewise.
+	(vector<>::insert(const_iterator, _InputIterator, _InputIterator)):
+	Likewise.
+	(vector<>::erase(const_iterator)): Likewise.
+	(vector<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Initial commit of Networking TS implementation.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/bits/net.h: New header for common
+	implementation details of Networking TS.
+	* include/experimental/buffer: New header.
+	* include/experimental/executor: New header.
+	* include/experimental/internet: New header.
+	* include/experimental/io_context: New header.
+	* include/experimental/net: New header.
+	* include/experimental/netfwd: New header.
+	* include/experimental/socket: New header.
+	* include/experimental/timer: New header.
+	* testsuite/experimental/net/buffer/arithmetic.cc: New test.
+	* testsuite/experimental/net/buffer/const.cc: New test.
+	* testsuite/experimental/net/buffer/creation.cc: New test.
+	* testsuite/experimental/net/buffer/mutable.cc: New test.
+	* testsuite/experimental/net/buffer/size.cc: New test.
+	* testsuite/experimental/net/buffer/traits.cc: New test.
+	* testsuite/experimental/net/execution_context/use_service.cc: New
+	test.
+	* testsuite/experimental/net/headers.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/creation.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/members.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/base.cc: New test.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc: New
+	test.
+	* testsuite/experimental/net/timer/waitable/cons.cc: New test.
+	* testsuite/experimental/net/timer/waitable/dest.cc: New test.
+	* testsuite/experimental/net/timer/waitable/ops.cc: New test.
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource (__resource_adaptor_imp): Do
+	not allocate sizes smaller than alignment when relying on guaranteed
+	alignment.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Adjust expected number of bytes allocated for alignof(max_align_t).
+
+2018-10-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/forward_list
+	(forward_list<>::before_begin()): Use C++11 direct initialization.
+	(forward_list<>::begin()): Likewise.
+	(forward_list<>::end()): Likewise.
+	(forward_list<>::cbefore_begin()): Likewise.
+	(forward_list<>::cbegin()): Likewise.
+	(forward_list<>::cend()): Likewise.
+	(forward_list<>::emplace_after<>(const_iterator, _Args&&...)): Likewise.
+	(forward_list<>::insert_after(const_iterator, const _Tp&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, _Tp&&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, size_type, const _Tp&)):
+	Likewise.
+	(forward_list<>::insert_after(const_iterator, initializer_list<>)):
+	Likewise.
+	(forward_list<>::erase_after(const_iterator)): Likewise.
+	(forward_list<>::erase_after(const_iterator, const_iterator)): Likewise
+	and ensure consistent iterator comparison.
+
+	* include/bits/forward_list.h
+	(_Fwd_list_iterator<>::operator==): Replace member function with inline
+	friend.
+	(_Fwd_list_iterator<>::operator!=): Likewise.
+	(_Fwd_list_const_iterator<>::operator==): Likewise.
+	(_Fwd_list_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(operator!=(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(forward_list<>::_Node): Take typedef from base type.
+	(forward_list<>::iterator): Likewise.
+	(forward_list<>::const_iterator): Likewise.
+
+2018-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80538
+	* src/c++11/thread.cc (this_thread::__sleep_for)
+	[_GLIBCXX_HAVE_SLEEP]: Only call sleep for non-zero values.
+	Loop while sleep call is interrupted and until steady_clock
+	shows requested duration has elapsed.
+	(!_GLIBCXX_HAVE_USLEEP]: Use the _GLIBCXX_HAVE_SLEEP code path, but
+	avoiding the usleep call.
+	* testsuite/30_threads/this_thread/60421.cc: Test repeated
+	signal interruptions.
+
+	* include/bits/allocator.h
+	(operator==(const allocator<_Tp>&, const allocator<_Tp>))
+	(operator!=(const allocator<_Tp>&, const allocator<_Tp>)): Replace
+	with inline friends.
+	* include/ext/debug_allocator.h (operator==, operator!=): Replace
+	with inline friend functions that compare to rebound allocators.
+	* include/ext/malloc_allocator.h (operator==, operator!=): Likewise.
+	* include/ext/new_allocator.h (operator==, operator!=): Likewise.
+	* testsuite/ext/debug_allocator/eq.cc: New test.
+	* testsuite/ext/ext_pointer/alloc_eq.cc: New test.
+	* testsuite/ext/malloc_allocator/eq.cc: New test.
+	* testsuite/ext/new_allocator/eq.cc: New test.
+
+2018-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87544
+	* include/bits/stl_vector.h (vector::_S_max_size): Limit size to
+	PTRDIFF_MAX / sizeof(value_type).
+	* include/ext/malloc_allocator.h (malloc_allocator::max_size):
+	Likewise.
+	* include/ext/new_allocator.h (new_allocator::max_size): Likewise.
+	* testsuite/23_containers/vector/allocator/minimal.cc: Adjust
+	expected value for max_size().
+	* testsuite/23_containers/vector/capacity/87544.cc: New test.
+
+2018-10-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	(_List_operator<>::operator==): Replace member function with inline
+	friend.
+	(_List_operator<>::operator!=): Likewise.
+	(_List_const_operator<>::operator==): Likewise.
+	(_List_const_operator<>::operator!=): Likewise.
+	(operator==(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+	(operator!=(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+
+2018-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stringfwd.h (string, wstring, u16string, u32string):
+	Define typedefs outside of __cxx11 inline namespace.
+	* python/libstdcxx/v6/printers.py (register_type_printers): Also
+	register printers for typedefs in new location.
+
 2018-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87538

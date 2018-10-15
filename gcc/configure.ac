@@ -1854,6 +1854,13 @@ AS_IF([test x"$enable_mingw_wildcard" != xplatform ],
 		 $(test x"$enable_mingw_wildcard" = xno; echo $?),
 		 [Value to set mingw's _dowildcard to.])])
 
+AC_ARG_ENABLE(large-address-aware,
+[AS_HELP_STRING([--enable-large-address-aware],
+		[Link mingw executables with --large-address-aware])])
+AS_IF([test x"$enable_large_address_aware" = xyes],
+  [AC_DEFINE([MINGW_DEFAULT_LARGE_ADDR_AWARE], 1,
+    [Define if we should link mingw executables with --large-address-aware])])
+
 AC_ARG_ENABLE(leading-mingw64-underscores,
   AS_HELP_STRING([--enable-leading-mingw64-underscores],
                  [enable leading underscores on 64 bit mingw targets]),

@@ -1,3 +1,304 @@
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87599
+	* gcc.target/i386/pr87599.c: New test.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87572
+	* gcc.target/i386/pr87572.c: New test.
+
+2018-10-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83146
+	* gfortran.dg/associate_43.f90: New test.
+
+2018-10-14  Anthony Green  <green@moxielogic.com>
+
+	* gcc.c-torture/execute/20101011-1.c: Adjust for moxie.
+
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* c-c++-common/pr81376.c: New test.
+	* gcc.target/i386/387-ficom-2.c: Update test.
+	* gcc.target/i386/387-ficom-2.c: Ditto.
+
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: New.
+
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* gfortran.dg/goacc/pr77765.f90: Modify dg-error.
+	* gfortran.dg/interface_42.f90: Ditto.
+	* gfortran.dg/internal_references_1.f90: Ditto.
+	* gfortran.dg/invalid_procedure_name.f90: Ditto.
+	* gfortran.dg/pr65453.f90: Ditto.
+	* gfortran.dg/pr77414.f90: Ditto.
+	* gfortran.dg/pr78741.f90: Ditto.
+	* gfortran.dg/same_name_2.f90: Ditto.
+
+2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/popcnt.c: Test zero-extended popcount.
+	* gcc.target/aarch64/vec_zeroextend.c: Test zero-extended vectors.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-insert-char-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-char-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-double.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-float-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-int-p9.c: New.
+	* gcc.target/powerpc/fold-vec-insert-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p8.c: New.
+	* gcc.target/powerpc/fold-vec-insert-short-p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-extract-char.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-char.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-double.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-float.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-int.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-longlong.p9.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p7.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p8.c: New.
+	* gcc.target/powerpc/fold-vec-extract-short.p9.c: New.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-select-char.c: New.
+	* gcc.target/powerpc/fold-vec-select-double.c: New.
+	* gcc.target/powerpc/fold-vec-select-float.c: New.
+	* gcc.target/powerpc/fold-vec-select-int.c: New.
+	* gcc.target/powerpc/fold-vec-select-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-select-short.c: New.
+
+2018-10-09  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	PR tree-optimization/86829
+	* gcc.dg/sinatan-1.c: New test.
+	* gcc.dg/sinatan-2.c: New test.
+	* gcc.dg/sinatan-3.c: New test.
+
+2018-10-11  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-mergeeo-floatdouble.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-int.c: New.
+	* gcc.target/powerpc/fold-vec-mergeeo-longlong.c: New.
+
+2018-10-11  Tobias Burnus <burnus@net-b.de>
+
+	Revert:
+	2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
+	change to dg-do compile.
+	* gfortran.dg/actual_array_substr_2.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Use array
+	element not size-one section.
+	* gfortran.dg/array_substring.f90: New.
+
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* gcc.target/aarch64/pr87511.c: Add new test.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84993
+	* g++.dg/torture/accessor-fixits-9.C: New test.
+
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/parse/close-brace.C: New.
+	* g++.dg/cpp0x/noexcept16.C: Avoid warning.
+	* g++.old-deja/g++.other/crash32.C: Add another error
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/85070
+	* g++.dg/cpp0x/pr85070.C: Change effective target for diagnostics from
+	c++14_only to c++14.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/multiline.exp (dg-begin-multiline-output): Issue an error if
+	there hasn't been a dg-end-multiline-output since the last
+	dg-begin-multiline-output.
+	(dg-end-multiline-output): Issue an error if there hasn't been a
+	dg-begin-multiline-output.  Reset _multiline_last_beginning_line
+	as soon possible.  Rename "line" to "last_line".
+
+2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
+
+	* selftests/repeat.rtl: New file.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* g++.dg/cpp1z/decomp48.C: New test.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/macro-arg-count.C: Move to...
+	* c-c++-common/cpp/macro-arg-count-1.c: ...here, generalizing
+	output for C vs C++.  Expect notes showing the definitions of the
+	macros.
+	* c-c++-common/cpp/macro-arg-count-2.c: New test, adapted from the
+	above.
+
+2018-10-11  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/warn-abs-1.c: Guard tests assuming size of long double is
+	greater that the size of double by target large_long double.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/feat-cxx2a.C: New test.
+
+	PR c++/87547
+	* g++.dg/rtti/typeid12.C: New test.
+
+2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/pr87574.C: New test.
+
+2018-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87567 - constexpr rejects call to non-constexpr function.
+	* g++.dg/cpp1y/constexpr-loop7.C: New test.
+
+2018-10-10  Paul A. Clarke  <pc@us.ibm.com>
+
+	PR target/87579
+	* gcc.target/powerpc/sse3-check.h: Remove duplicated code.
+	* gcc.target/powerpc/sse3-addsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-addsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-haddps.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubps.c: Likewise.
+	* gcc.target/powerpc/sse3-haddpd.c: Likewise.
+	* gcc.target/powerpc/sse3-hsubpd.c: Likewise.
+	* gcc.target/powerpc/sse3-lddqu.c: Likewise.
+	* gcc.target/powerpc/sse3-movsldup.c: Likewise.
+	* gcc.target/powerpc/sse3-movshdup.c: Likewise.
+	* gcc.target/powerpc/sse3-movddup.c: Likewise.
+	* gcc.target/powerpc/pr37191.c: Likewise.
+2018-10-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c/54391
+	* gcc.dg/transparent-union-6.c: New.
+
+2018-10-10  Martin Sebor  <msebor@redhat.com>
+
+	* gcc.c-torture/execute/memchr-1.c: Avoid assuming 4-byte wchar_t.
+	Add a test for 2-byte wchar_t.
+	* gcc.dg/builtin-memchr.c: New test.
+
+2018-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/87573
+	* gcc.target/i386/pr87573.c: New test.
+
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* gcc.target/i386/pr87550.c: New test.
+
+	PR c/87286
+	* gcc.dg/pr87286.c: Add -Wno-psabi to dg-options.
+
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* g++.dg/concepts/pr84423-1.C: New.
+	* g++.dg/concepts/pr84423-2.C: Likewise.
+	* g++.dg/cpp0x/auto39.C: Test location too.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp1y/pr60384.C: Likewise.
+
+2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/sse3-check.h: New file.
+	* gcc.target/powerpc/sse3-addsubps.c: New file.
+	* gcc.target/powerpc/sse3-addsubpd.c: New file.
+	* gcc.target/powerpc/sse3-haddps.c: New file.
+	* gcc.target/powerpc/sse3-hsubps.c: New file.
+	* gcc.target/powerpc/sse3-haddpd.c: New file.
+	* gcc.target/powerpc/sse3-hsubpd.c: New file.
+	* gcc.target/powerpc/sse3-lddqu.c: New file.
+	* gcc.target/powerpc/sse3-movsldup.c: New file.
+	* gcc.target/powerpc/sse3-movshdup.c: New file.
+	* gcc.target/powerpc/sse3-movddup.c: New file.
+	* gcc.target/powerpc/pr37191.c: New file.
+
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* gfortran.dg/actual_array_substr_1.f90: Add dg-error,
+	change to dg-do compile.
+	* gfortran.dg/actual_array_substr_2.f90: Ditto.
+	* gfortran.dg/array_initializer_1.f90: Use array
+	element not size-one section.
+	* gfortran.dg/array_substring.f90: New.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/derived_type5.adb, gnat.dg/derived_type5_pkg.ads: New
+	testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn17.adb: New testcase.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/inline14.adb, gnat.dg/inline14_pkg.adb,
+	gnat.dg/inline14_pkg.ads: New testcase.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/warn18.adb: New testcase.
+
+2018-10-09  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/asan/pr64820.c: Add line number to scanned
+	pattern.
+	* c-c++-common/asan/use-after-return-1.c: Likewise.
+	* g++.dg/asan/function-argument-1.C (main): Likewise.
+	* g++.dg/asan/function-argument-2.C (main): Likewise.
+	* g++.dg/asan/function-argument-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-1.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-2.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-3.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-4.C (main): Likewise.
+	* g++.dg/asan/use-after-scope-types-5.C (main): Likewise.
+	* gcc.dg/asan/pr78541.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-1.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-10.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-2.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-3.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-5.c (main): Likewise.
+	* gcc.dg/asan/use-after-scope-9.c (main): Likewise.
+
 2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87151

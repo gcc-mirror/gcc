@@ -216,6 +216,7 @@ public:
   operator const real_format *() const { return m_format; }
 
   bool decimal_p () const { return m_format && m_format->b == 10; }
+  bool can_represent_integral_type_p (tree type) const;
 
 private:
   const real_format *m_format;
@@ -522,5 +523,9 @@ extern wide_int real_to_integer (const REAL_VALUE_TYPE *, bool *, int);
 extern void real_from_integer (REAL_VALUE_TYPE *, format_helper,
 			       const wide_int_ref &, signop);
 #endif
+
+/* Fills r with the largest value such that 1 + r*r won't overflow.
+   This is used in both sin (atan (x)) and cos (atan(x)) optimizations. */
+extern void build_sinatan_real (REAL_VALUE_TYPE *, tree); 
 
 #endif /* ! GCC_REAL_H */

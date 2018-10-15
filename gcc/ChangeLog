@@ -1,3 +1,239 @@
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87599
+	* config/i386/sse.md (*vec_dupv2di): Add register source to
+	movddup.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87572
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_UNSET):
+	Add OPTION_MASK_ISA_AVX512IFMA_UNSET,
+	OPTION_MASK_ISA_AVX5124FMAPS_UNSET and
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET.
+
+2018-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2cfi.c (struct dw_trace_info): Add args_size_defined_for_eh.
+	(notice_args_size): Set it in the current trace if no insn that can
+	throw internally has been seen yet.
+	(connect_traces): When connecting args_size between traces, allow the
+	incoming values not to match if there is an insn setting it before the
+	first insn that can throw internally; in that case, force the creation
+	of a CFI note on this latter insn.
+
+2018-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* opt-problem.h (opt_wrapper): Use template-argument-list when naming
+	the base class, because using the injected-class-name was not clearly
+	specified until DR 176.
+
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (doloop_end): New expander.
+	(doloop_end_insn): renamed from "doloop_end".
+	(addqi3): New pattern.
+	(subqi3): New pattern.
+	* config/pdp11/predicates.md (incdec_operand): New predicate.
+
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* real.c (format_helper::can_represent_integral_type_p): New function
+	* real.h (format_helper::can_represent_integral_type_p): Ditto.
+	* match.pd: New pattern.
+
+2018-10-12  Alexandre Oliva <oliva@adacore.com>
+
+	* configure.ac: Introduce --enable-large-address-aware
+	to define MINGW_DEFAULT_LARGE_ADDR_AWARE.
+	* doc/install.texi: Document it.
+	* configure, config.in: Rebuilt.
+	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Define,
+	based on MINGW_DEFAULT_LARGE_ADDR_AWARE.
+	(LINK_SPEC): Insert it.
+	* config/i386/mingw-264.h: Likewise.
+
+	* cygming.h (HAVE_GAS_ALIGNED_COMM): Fallback-define.
+
+2018-10-12  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87600
+	* ira-lives (non_conflicting_reg_copy_p): Disable for non LRA targets.
+
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* doc/md.texi (doloop_end): Document that the pattern code may
+	need to check operand mode.
+
+2018-10-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (zero_extendsidi2_aarch64): Add alternatives
+	to zero-extend between int and floating-point registers.
+	(load_pair_zero_extendsidi2_aarch64): Add alternative for zero-extended
+	ldp into floating-point registers.  Add type and arch attributes.
+	(zero_extend<SHORT:mode><GPI:mode>2_aarch64): Add arch attribute.
+	Use f_loads for type attribute.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute packed): Correct typos.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (attribute flatten): Mention interaction with
+	noinline.
+
+2018-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR target/87156
+	* cgraphclones.c (cgraph_node::create_version_clone_with_body):
+	Set new_decl virtual flag to zero.
+
+2018-10-11  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87593
+	* doc/extend.texi (attribute format_arg): Discuss using multiple
+	attributes on a single function.
+
+2018-10-11  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	PR tree-optimization/86829
+	* match.pd (sin (atan (x))): New simplification rules.
+	(cos (atan (x))): Likewise.
+	* real.c (build_sinatan_real): New function.
+	* real.h (build_sinatan_real): Prototype.
+
+2018-10-11  Will Schmidt <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (map_to_integral_tree_type): New helper
+	function.
+	(fold_mergeeo_helper): New helper function.
+	(rs6000_gimple_fold_builtin): Add hooks for vec_mergee and vec_mergeo
+	intrinsics.  Correct some whitespace indentation issues.
+
+2018-10-11  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/87511
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	Use HOST_WIDE_INT_1U for shift.
+
+2018-10-11  Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (VXWORKS_RELAX_LINK_SPEC): New macro.
+	Pass --relax to the linker for RTPs.
+	(LINK_SPEC): Append VXWORKS_RELAX_LINK_SPEC.
+
+2018-10-11  Andrew Stubbs  <ams@codesourcery.com>
+	    Jan Hubicka  <jh@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
+
+	* print-rtl.c (print_rtx_operand_codes_E_and_V): Print how many times
+	the same elements are repeated rather than printing all of them.
+	* read-rtl.c (rtx_reader::read_rtx_operand): Recognize and expand
+	"repeated" elements.
+	* read-rtl-function.c (test_loading_repeat): New function.
+	(read_rtl_function_c_tests): Call test_loading_repeat.
+	* rtl-tests.c (test_dumping_repeat): New function.
+	(rtl_tests_c_tests): Call test_dumping_repeat.
+
+2018-10-11  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/x86-tune-costs.h (bdver?_memcpy, bdver?_memset,
+	bdver?_cost): Unify to ...
+	(bdver_memcpy, bdver_memset, bdver_cost): ... this.
+	* config/i386/i386.c (processor_cost_table): Adjust.
+
+2018-10-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87574
+	* cgraphunit.c (cgraph_node::expand_thunk): Force DECL_IGNORED_P on
+	the thunk when expanding to GIMPLE.
+
+2018-10-10  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* varasm.c (mergeable_string_section): Don't try to move zero-length
+	strings to the merge section.
+
+2018-10-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/87573
+	* config/i386/mmx.md (const_vector 0 -> mem splitter): New splitter.
+
+2018-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87550
+	* config/i386/i386-builtin.def (IX86_BUILTIN_RDPMC): Move from args set
+	to special_args set.
+
+2018-10-10  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/sse.md (reduc_plus_scal_v8df, reduc_plus_scal_v4df,
+	reduc_plus_scal_v2df, reduc_plus_scal_v16sf, reduc_plus_scal_v8sf,
+	reduc_plus_scal_v4sf): Merge into pattern reducing to half width
+	and recursing and pattern terminating the recursion on SSE
+	vector width using ix86_expand_reduc.
+	(reduc_sminmax_scal_<mode>): Split into part reducing to half
+	width and recursing and SSE2 vector variant doing the final
+	reduction with ix86_expand_reduc.
+	(reduc_uminmax_scal_<mode>): Likewise for the AVX512 variants
+	with terminating the recursion at AVX level, splitting that
+	to SSE there.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* genmatch.c (error_cb): Rename to...
+	(diagnostic_cb): ...this, converting int params to enums.
+	(fatal_at): Update for renaming.
+	(warning_at): Likewise.
+	(main): Likewise.
+	* input.c (selftest::ebcdic_execution_charset::apply):
+	Update for renaming of...
+	(selftest::ebcdic_execution_charset::on_error): ...this, renaming
+	to...
+	(selftest::ebcdic_execution_charset::on_diagnostic): ...this,
+	converting level and reason to enums.
+	(class selftest::lexer_error_sink): Rename to...
+	(class selftest::lexer_test_options): ...this, renaming field
+	"m_errors" to "m_diagnostics".
+	(selftest::lexer_test_options::apply): Update for renaming of...
+	(selftest::lexer_test_options::on_error): ...this, renaming to...
+	(selftest::lexer_test_options::on_diagnostic): ...this
+	converting level and reason to enums.
+	(selftest::test_lexer_string_locations_raw_string_unterminated):
+	Update for renamings.
+	* opth-gen.awk (struct cpp_reason_option_codes_t): Use enum for
+	"reason".
+
+2018-10-09  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config.gcc (powerpc*-*-*): Add pmmintrin.h to extra_headers.
+	* config/rs6000/pmmintrin.h: New file.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/86659
+	* gimple-match.h (gimple_match_op constructors): Initialize reverse.
+
+2018-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-structalias.c: Include tree-ssa.h.
+	(get_constraint_for_ssa_var): For undefs return nothing_id.
+	(find_func_aliases): Cleanup PHI handling.
+
+2018-10-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.c (dump_stmt_cost): Fix cut&paste missing
+	replacements.
+
+2018-10-09  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (asan_emit_stack_protection): If a stack variable
+	is located in a same file as current function, then emit
+	line info into variable definition string.
+
 2018-10-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* print-rtl.c (rtx_writer::print_rtx_operand_code_i): Print column

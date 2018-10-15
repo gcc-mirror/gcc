@@ -1,3 +1,38 @@
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* expr.c (gfc_simplify_expr): Avoid simplifying
+	the 'array' argument to lbound/ubound/lcobound/
+	ucobound.
+
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* decl.c (get_proc_name): Return with error before
+	creating sym_tree.
+
+2018-10-11  Tobias Burnus <burnus@net-b.de>
+
+	Revert:
+	2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (gfc_cpp_init_0): Update for renamings.
+	(cb_cpp_error): Rename to...
+	(cb_cpp_diagnostic): ...this, converting level and reason to
+	enums.
+
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
 2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87151

@@ -73,8 +73,9 @@ static bool
 #if GCC_VERSION >= 4001
 __attribute__((format (printf, 5, 0)))
 #endif
-error_cb (cpp_reader *, int errtype, int, rich_location *richloc,
-	  const char *msg, va_list *ap)
+diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
+	       enum cpp_warning_reason, rich_location *richloc,
+	       const char *msg, va_list *ap)
 {
   const line_map_ordinary *map;
   source_location location = richloc->get_loc ();
@@ -122,7 +123,7 @@ fatal_at (const cpp_token *tk, const char *msg, ...)
   rich_location richloc (line_table, tk->src_loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
+  diagnostic_cb (NULL, CPP_DL_FATAL, CPP_W_NONE, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -135,7 +136,7 @@ fatal_at (source_location loc, const char *msg, ...)
   rich_location richloc (line_table, loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_FATAL, 0, &richloc, msg, &ap);
+  diagnostic_cb (NULL, CPP_DL_FATAL, CPP_W_NONE, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -148,7 +149,7 @@ warning_at (const cpp_token *tk, const char *msg, ...)
   rich_location richloc (line_table, tk->src_loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);
+  diagnostic_cb (NULL, CPP_DL_WARNING, CPP_W_NONE, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -161,7 +162,7 @@ warning_at (source_location loc, const char *msg, ...)
   rich_location richloc (line_table, loc);
   va_list ap;
   va_start (ap, msg);
-  error_cb (NULL, CPP_DL_WARNING, 0, &richloc, msg, &ap);
+  diagnostic_cb (NULL, CPP_DL_WARNING, CPP_W_NONE, &richloc, msg, &ap);
   va_end (ap);
 }
 
@@ -5071,7 +5072,7 @@ main (int argc, char **argv)
 
   r = cpp_create_reader (CLK_GNUC99, NULL, line_table);
   cpp_callbacks *cb = cpp_get_callbacks (r);
-  cb->error = error_cb;
+  cb->diagnostic = diagnostic_cb;
 
   /* Add the build directory to the #include "" search path.  */
   cpp_dir *dir = XCNEW (cpp_dir);

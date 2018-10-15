@@ -1734,6 +1734,14 @@ Using the GNU Compiler Collection (GCC)},
 See ``i386 and x86-64 Options'' in the main manual
 @end ifhtml
 
+@item --enable-large-address-aware
+The @option{--enable-large-address-aware} option arranges for MinGW
+executables to be linked using the @option{--large-address-aware}
+option, that enables the use of more than 2GB of memory.  If GCC is
+configured with this option, its effects can be reversed by passing the
+@option{-Wl,--disable-large-address-aware} option to the so-configured
+compiler driver.
+
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry

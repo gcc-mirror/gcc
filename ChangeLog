@@ -1,3 +1,7 @@
+2018-10-14  Bin Cheng <bin.cheng@linux.alibaba.com>
+
+	* MAINTAINERS: Update my email address.
+
 2018-10-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* MAINTAINERS: List myself as "libgomp (OpenACC)" and "OpenACC"

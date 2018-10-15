@@ -2,7 +2,7 @@
 --                                                                          --
 --                         GNAT RUN-TIME COMPONENTS                         --
 --                                                                          --
---            ADA.NUMERICS.GENERIC_COMPLEX.ELEMENTARY_FUNCTIONS             --
+--                 ADA.NUMERICS.COMPLEX.ELEMENTARY_FUNCTIONS                --
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --

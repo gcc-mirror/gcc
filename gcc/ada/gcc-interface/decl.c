@@ -612,8 +612,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	  && !No_Initialization (gnat_decl)
 	  && !Is_Dispatch_Table_Entity (gnat_entity)
 	  && Present (gnat_temp = Expression (gnat_decl))
-	  && Nkind (gnat_temp) != N_Allocator
-	  && (!type_annotate_only || Compile_Time_Known_Value (gnat_temp)))
+	  && Nkind (gnat_temp) != N_Allocator)
 	gnu_expr = gnat_to_gnu_external (gnat_temp);
 
       /* ... fall through ... */
@@ -5129,6 +5128,43 @@ gnat_to_gnu_component_type (Entity_Id gnat_array, bool definition,
   return gnu_type;
 }
 
+/* Return whether TYPE requires that formal parameters of TYPE be initialized
+   when they are Out parameters passed by copy.
+
+   This just implements the set of conditions listed in RM 6.4.1(12).  */
+
+static bool
+type_requires_init_of_formal (Entity_Id type)
+{
+  type = Underlying_Type (type);
+
+  if (Is_Access_Type (type))
+    return true;
+
+  if (Is_Scalar_Type (type))
+    return Has_Default_Aspect (type);
+
+  if (Is_Array_Type (type))
+    return Has_Default_Aspect (type)
+	   || type_requires_init_of_formal (Component_Type (type));
+
+  if (Is_Record_Type (type))
+    for (Entity_Id field = First_Entity (type);
+	 Present (field);
+	 field = Next_Entity (field))
+      {
+	if (Ekind (field) == E_Discriminant && !Is_Unchecked_Union (type))
+	  return true;
+
+	if (Ekind (field) == E_Component
+	    && (Present (Expression (Parent (field)))
+		|| type_requires_init_of_formal (Etype (field))))
+	  return true;
+      }
+
+  return false;
+}
+
 /* Return a GCC tree for a parameter corresponding to GNAT_PARAM, to be placed
    in the parameter list of GNAT_SUBPROG.  GNU_PARAM_TYPE is the GCC tree for
    the type of the parameter.  FIRST is true if this is the first parameter in
@@ -5143,7 +5179,6 @@ static tree
 gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
 		   Entity_Id gnat_subprog, bool *cico)
 {
-  Entity_Id gnat_param_type = Etype (gnat_param);
   Mechanism_Type mech = Mechanism (gnat_param);
   tree gnu_param_name = get_entity_name (gnat_param);
   bool foreign = Has_Foreign_Convention (gnat_subprog);
@@ -5295,34 +5330,18 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
   if (mech == By_Copy && (by_ref || by_component_ptr))
     post_error ("?cannot pass & by copy", gnat_param);
 
-  /* If this is an Out parameter that isn't passed by reference and isn't
-     a pointer or aggregate, we don't make a PARM_DECL for it.  Instead,
-     it will be a VAR_DECL created when we process the procedure, so just
-     return its type.  For the special parameter of a valued procedure,
-     never pass it in.
-
-     An exception is made to cover the RM-6.4.1 rule requiring "by copy"
-     Out parameters with discriminants or implicit initial values to be
-     handled like In Out parameters.  These type are normally built as
-     aggregates, hence passed by reference, except for some packed arrays
-     which end up encoded in special integer types.  Note that scalars can
-     be given implicit initial values using the Default_Value aspect.
-
-     The exception we need to make is then for packed arrays of records
-     with discriminants or implicit initial values.  We have no light/easy
-     way to check for the latter case, so we merely check for packed arrays
-     of records.  This may lead to useless copy-in operations, but in very
-     rare cases only, as these would be exceptions in a set of already
-     exceptional situations.  */
+  /* If this is an Out parameter that isn't passed by reference and whose
+     type doesn't require the initialization of formals, we don't make a
+     PARM_DECL for it.  Instead, it will be a VAR_DECL created when we
+     process the procedure, so just return its type here.  Likewise for
+     the _Init parameter of an initialization procedure or the special
+     parameter of a valued procedure, never pass them in.  */
   if (Ekind (gnat_param) == E_Out_Parameter
       && !by_ref
-      && (by_return
-	  || (!POINTER_TYPE_P (gnu_param_type)
-	      && !AGGREGATE_TYPE_P (gnu_param_type)
-	      && !Has_Default_Aspect (gnat_param_type)))
-      && !(Is_Array_Type (gnat_param_type)
-	   && Is_Packed (gnat_param_type)
-	   && Is_Composite_Type (Component_Type (gnat_param_type))))
+      && !by_component_ptr
+      && (!type_requires_init_of_formal (Etype (gnat_param))
+	  || Is_Init_Proc (gnat_subprog)
+	  || by_return))
     return gnu_param_type;
 
   gnu_param = create_param_decl (gnu_param_name, gnu_param_type);

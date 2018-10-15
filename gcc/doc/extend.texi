@@ -2615,8 +2615,9 @@ explicit @code{externally_visible} attributes are still necessary.
 @cindex @code{flatten} function attribute
 Generally, inlining into a function is limited.  For a function marked with
 this attribute, every call inside this function is inlined, if possible.
-Whether the function itself is considered for inlining depends on its size and
-the current inlining parameters.
+Functions declared with attribute @code{noinline} and similar are not
+inlined.  Whether the function itself is considered for inlining depends
+on its size and the current inlining parameters.
 
 @item format (@var{archetype}, @var{string-index}, @var{first-to-check})
 @cindex @code{format} function attribute
@@ -2698,13 +2699,15 @@ Target Machines}.
 @item format_arg (@var{string-index})
 @cindex @code{format_arg} function attribute
 @opindex Wformat-nonliteral
-The @code{format_arg} attribute specifies that a function takes a format
-string for a @code{printf}, @code{scanf}, @code{strftime} or
+The @code{format_arg} attribute specifies that a function takes one or
+more format strings for a @code{printf}, @code{scanf}, @code{strftime} or
 @code{strfmon} style function and modifies it (for example, to translate
 it into another language), so the result can be passed to a
 @code{printf}, @code{scanf}, @code{strftime} or @code{strfmon} style
 function (with the remaining arguments to the format function the same
-as they would have been for the unmodified string).  For example, the
+as they would have been for the unmodified string).  Multiple
+@code{format_arg} attributes may be applied to the same function, each
+designating a distinct parameter as a format string.  For example, the
 declaration:
 
 @smallexample
@@ -2723,6 +2726,12 @@ could tell in such calls to format functions would be that the format
 string argument is not constant; this would generate a warning when
 @option{-Wformat-nonliteral} is used, but the calls could not be checked
 without the attribute.
+
+In calls to a function declared with more than one @code{format_arg}
+attribute, each with a distinct argument value, the corresponding
+actual function arguments are checked against all format strings
+designated by the attributes.  This capability is designed to support
+the GNU @code{ngettext} family of functions.
 
 The parameter @var{string-index} specifies which argument is the format
 string argument (starting from one).  Since non-static C++ methods have
@@ -6212,13 +6221,13 @@ int f (struct Data *pd, const char *s)
 
 @item packed
 @cindex @code{packed} variable attribute
-The @code{packed} attribute specifies that a variable or structure field
-should have the smallest possible alignment---one byte for a variable,
-and one bit for a field, unless you specify a larger value with the
-@code{aligned} attribute.
+The @code{packed} attribute specifies that a structure member should have
+the smallest possible alignment---one bit for a bit-field and one byte
+otherwise, unless a larger value is specified with the @code{aligned}
+attribute.  The attribute does not apply to non-member objects.
 
-Here is a structure in which the field @code{x} is packed, so that it
-immediately follows @code{a}:
+For example in the structure below, the member array @code{x} is packed
+so that it immediately follows @code{a} with no intervening padding:
 
 @smallexample
 struct foo

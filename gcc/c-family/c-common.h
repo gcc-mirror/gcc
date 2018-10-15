@@ -1005,8 +1005,9 @@ extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
-extern bool c_cpp_error (cpp_reader *, int, int, rich_location *,
-			 const char *, va_list *)
+extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			      enum cpp_warning_reason, rich_location *,
+			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *);
 

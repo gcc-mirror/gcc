@@ -7570,6 +7570,17 @@ package body Sem_Prag is
       --  Start of processing for Process_Compile_Time_Warning_Or_Error
 
       begin
+         --  In GNATprove mode, pragmas Compile_Time_Error and
+         --  Compile_Time_Warning are ignored, as the analyzer may not have the
+         --  same information as the compiler (in particular regarding size of
+         --  objects decided in gigi) so it makes no sense to issue an error or
+         --  warning in GNATprove.
+
+         if GNATprove_Mode then
+            Rewrite (N, Make_Null_Statement (Loc));
+            return;
+         end if;
+
          Check_Arg_Count (2);
          Check_No_Identifiers;
          Check_Arg_Is_OK_Static_Expression (Arg2, Standard_String);

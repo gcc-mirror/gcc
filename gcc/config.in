@@ -1993,6 +1993,18 @@
 #endif
 
 
+/* Define if we should link with --large-address-aware by default */
+#ifndef USED_FOR_TARGET
+#undef MINGW_DEFAULT_LARGE_ADDR_AWARE
+#endif
+
+
+/* Define if we should link with --large-address-aware by default */
+#ifndef USED_FOR_TARGET
+#undef MINGW_DEFAULT_LARGE_ADDR_AWARE
+#endif
+
+
 /* Value to set mingw's _dowildcard to. */
 #ifndef USED_FOR_TARGET
 #undef MINGW_DOWILDCARD

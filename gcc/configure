@@ -928,6 +928,7 @@ enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
 enable_mingw_wildcard
+enable_large_address_aware
 enable_leading_mingw64_underscores
 enable_cld
 enable_frame_pointer
@@ -1645,6 +1646,8 @@ Optional Features:
   --enable-secureplt      enable -msecure-plt by default for PowerPC
   --enable-mingw-wildcard Set whether to expand wildcard on command-line.
                           Default to platform configuration
+  --enable-large-address-aware
+                          Link mingw executables with --large-address-aware
   --enable-leading-mingw64-underscores
                           enable leading underscores on 64 bit mingw targets
   --enable-cld            enable -mcld by default for 32bit x86
@@ -12039,6 +12042,17 @@ _ACEOF
 
 fi
 
+# Check whether --enable-large-address-aware was given.
+if test "${enable_large_address_aware+set}" = set; then :
+  enableval=$enable_large_address_aware;
+fi
+
+if test x"$enable_large_address_aware" = xyes; then :
+
+$as_echo "#define MINGW_DEFAULT_LARGE_ADDR_AWARE 1" >>confdefs.h
+
+fi
+
 # Check whether --enable-leading-mingw64-underscores was given.
 if test "${enable_leading_mingw64_underscores+set}" = set; then :
   enableval=$enable_leading_mingw64_underscores;
@@ -18497,7 +18511,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18500 "configure"
+#line 18514 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18603,7 +18617,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18606 "configure"
+#line 18620 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

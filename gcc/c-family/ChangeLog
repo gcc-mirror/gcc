@@ -1,3 +1,37 @@
+2018-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c++/87364
+	* c-pretty-print.c (c_pretty_printer::constant): Fix typo.
+
+2018-10-11  Will Wray  <wjwray@gmail.com>
+
+	PR c++/87364
+	* c-pretty-print.h (pp_c_type_cast): Prototype.
+	(pp_c_integer_constant): Likewise.
+	* c-pretty-print.c (pp_c_type_cast): No longer static.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_enumeration_constant): Fix loop termination when finding
+	name of constant.  No longer returns a value.  Call
+	pp_c_integer_constant.
+	(c_pretty_printer::constant): Update for changes to
+	pp_c_enumeration_constant.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Return 201803 instead of 20180312
+	for no_unique_address.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_option_controlling_cpp_error): Rename to...
+	(c_option_controlling_cpp_diagnostic): ...this, and convert
+	"reason" from int to enum.
+	(c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-common.h (c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-opts.c (c_common_init_options): Update for renaming.
+
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR c/87286

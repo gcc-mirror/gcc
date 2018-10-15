@@ -7776,7 +7776,7 @@ convert_template_argument (tree parm,
   tree val;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
 
-  if (parm == error_mark_node)
+  if (parm == error_mark_node || error_operand_p (arg))
     return error_mark_node;
 
   /* Trivially convert placeholders. */

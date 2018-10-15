@@ -1937,7 +1937,20 @@ gfc_simplify_expr (gfc_expr *p, int type)
       break;
 
     case EXPR_FUNCTION:
-      for (ap = p->value.function.actual; ap; ap = ap->next)
+      // For array-bound functions, we don't need to optimize
+      // the 'array' argument. In particular, if the argument
+      // is a PARAMETER, simplifying might convert an EXPR_VARIABLE
+      // into an EXPR_ARRAY; the latter has lbound = 1, the former
+      // can have any lbound.
+      ap = p->value.function.actual;
+      if (p->value.function.isym &&
+	  (p->value.function.isym->id == GFC_ISYM_LBOUND
+	   || p->value.function.isym->id == GFC_ISYM_UBOUND
+	   || p->value.function.isym->id == GFC_ISYM_LCOBOUND
+	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND))
+	ap = ap->next;
+
+      for ( ; ap; ap = ap->next)
 	if (!gfc_simplify_expr (ap->expr, type))
 	  return false;
 

@@ -1,3 +1,175 @@
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Is_Null_Statement_List): New predicate.
+	(Build_Array_Init_Proc): Use it to find out whether the
+	initialization procedure Is_Null_Init_Proc; if so, set
+	Warnings_Off on the parameter.
+	(Build_Init_Procedure): Likewise.
+	(Init_Formals): Use an in/out first parameter only for
+	unconstrained arrays and for records either containing or built
+	for proteced types or task types; use an out parameter in all
+	the other cases.
+	* fe.h (Is_Init_Proc): Declare.
+	* gcc-interface/decl.c (type_requires_init_of_formal): Do not
+	return true for a discriminant in an unchecked union.
+	(gnat_to_gnu_param): Do not create a PARM_DECL for the Out
+	parameter of an initialization procedure.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Constant>: If
+	this is not a definition, retrieve the expression in all cases
+	even if we are just annotating types.
+	* gcc-interface/trans.c (gnat_to_gnu): Also translate Size
+	attribute for constrained types in this mode.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* adaint.c (__gnat_get_executable_suffix_ptr): Add new line.
+	(__gnat_locate_exec): Check that HOST_EXECUTABLE_SUFFIX is not
+	empty before doing a string search for it.
+	* socket.c (ATTRIBUTE_UNUSED): Define.
+	(__gnat_disable_sigpipe): Add ATTRIBUTE_UNUSED on parameter.
+	* terminals.c (ATTRIBUTE_UNUSED): Move around.
+	(__gnat_setup_child_communication): Add ATTRIBUTE_UNUSED on
+	parameter.
+	(__gnat_send_header): Add ATTRIBUTE_UNUSED on parameters.
+
+2018-10-09  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Rewrite
+	pragmas as null statements in GNATprove mode.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Code): Initialize the temporary
+	made for an Out parameter if the formal type has discriminants.
+
+2018-10-09  Maroua Maalej  <maalej@adacore.com>
+
+	* sem_spark.adb (Check_Declaration): fix bug related to non
+	access object permissions.
+
+2018-10-09  Doug Rupp  <rupp@adacore.com>
+
+	* libgnat/a-ncelfu.ads: Fix name in header to match package.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_disp.adb (Make_Disp_Asynchronous_Select_Spec): Set
+	Warnings_Off on the B out parameter.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads: Small comment fix.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Add comment for the
+	N_Freeze_Entity case.  Do not rely on
+	Has_Referencer_Of_Non_Subprograms to clear the Is_Public flag on
+	subprogram entities.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (In_Synchronized_Call): Handle properly private
+	types whose full views are synchronized types, in order to
+	recognize generated subprograms whose bodies must be considered
+	reachable even if no direct calls to them are visible in the
+	source.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_Modular_Op): When expanding an operation
+	on nonbinary modular types, convert the opersnds to an integer
+	type that is large enough to hold the modulus of the type, which
+	may be larger than Integer'Last.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram):  When an uplevel reference
+	is to an unconstrained formal, the 'Access reference that is
+	created to initialize the corresponding component of the
+	activation record must be wrapped in an unchecked conversion to
+	the generated type of the component. Otherwise, spurious suvtype
+	conformance errors will be generated when the code is within an
+	instantiation and the type of the formal is a formal type of the
+	enclosing generic. Note that during unnesting there is no simple
+	way to determine that the code appears within an instance
+	because ther is no scope stack.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (type_requires_init_of_formal): New
+	predicate.
+	(gnat_to_gnu_param): Use it to determine whether a PARM_DECL
+	must be created for an Out parameter passed by copy.
+
+2018-10-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/a-coboho.ads (Storage_Element): Fix a typo.
+
+2018-10-09  Claire Dross  <dross@adacore.com>
+
+	* libgnat/a-cfinve.ads: Remove default value for
+	Max_Size_In_Storage_Elements as it was not supported in SPARK.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Add_Call_By_Copy_Node,
+	Add_Simple_Call_By_Copy_Node, Expand_Call_Helper): Reset
+	Is_True_Constant on entities used as Out or In_Out parameters in
+	calls.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_unst.adb (Unnest_Subprogram): Do not load System to obtain
+	the Address entity unless an activation record is being built.
+	Removes useless with_clauses for System when nested subprograms
+	do not have uplevel references, and therefore do not need
+	activation records.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Fully_Conformant_Expressions): Handle properly
+	the conformance check on an aspect expression that includes a
+	call to an instance of Unchecked_Conversion, or more generally a
+	call to an intrinsic operation.
+
+2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb: Remove with/use clause for Stand.
+	(List_Mechanisms): List the mechanism of functions only.
+
+2018-10-09  Bob Duff  <duff@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Correct spelling of
+	--eol switch.  Document the language-version switches.  Update
+	description for --no-exception.
+
+2018-10-09  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* libgnat/s-os_lib.ads (Normalize_Pathname): Fix incorrect
+	comment.
+
+2018-10-09  Arnaud Charlet  <charlet@adacore.com>
+
+	* vxlink.adb: Remove pragma Annotate, no longer needed.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* checks.adb (Apply_Type_Conversion_Checks): Use GNATprove_Mode
+	rather than SPARK_mode in order to preserve the Do_Range_Check
+	flag for verification purposes.
+
+2018-10-09  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): If it is not possible
+	to build in place an aggregate with component associations, set
+	the Warnings_Off flag on the generated temporary, to prevent
+	spurious warnings from the backend when compiling with the
+	-Wuninitialized gcc flag.
+
 2018-09-30  Alexandre Oliva <oliva@adacore.com>
 
 	* gcc-interface/lang-specs.h (default_compilers): When given

@@ -109,11 +109,13 @@ test03()
   using std::size_t;
   void* p = nullptr;
 
+  auto max = [](int n, int a) { return n > a ? n : a; };
+
   bytes_allocated = 0;
 
   memory_resource* r1 = new_delete_resource();
-  p = r1->allocate(1);
-  VERIFY( bytes_allocated == 1 );
+  p = r1->allocate(1); // uses alignment = alignof(max_align_t)
+  VERIFY( bytes_allocated <= alignof(max_align_t) );
   VERIFY( aligned<max_align_t>(p) );
   r1->deallocate(p, 1);
   VERIFY( bytes_allocated == 0 );
@@ -125,13 +127,13 @@ test03()
   VERIFY( bytes_allocated == 0 );
 
   p = r1->allocate(3, alignof(short));
-  VERIFY( bytes_allocated == 3 );
+  VERIFY( bytes_allocated == max(3, alignof(short)) );
   VERIFY( aligned<short>(p) );
   r1->deallocate(p, 3, alignof(short));
   VERIFY( bytes_allocated == 0 );
 
   p = r1->allocate(4, alignof(long));
-  VERIFY( bytes_allocated == 4 );
+  VERIFY( bytes_allocated == max(4, alignof(long)) );
   VERIFY( aligned<long>(p) );
   r1->deallocate(p, 4, alignof(long));
   VERIFY( bytes_allocated == 0 );

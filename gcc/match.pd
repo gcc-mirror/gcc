@@ -3400,6 +3400,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (! HONOR_NANS (@0))
 	(cmp @0 @1))))))
 
+/* Optimize various special cases of (FTYPE) N CMP (FTYPE) M.  */
+(for cmp (tcc_comparison)
+ (simplify
+  (cmp (float@0 @1) (float @2))
+   (if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@0))
+	&& ! DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@0)))
+    (with
+     {
+       format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@0))));
+       tree type1 = TREE_TYPE (@1);
+       bool type1_signed_p = TYPE_SIGN (type1) == SIGNED;
+       tree type2 = TREE_TYPE (@2);
+       bool type2_signed_p = TYPE_SIGN (type2) == SIGNED;
+     }
+     (if (fmt.can_represent_integral_type_p (type1)
+	  && fmt.can_represent_integral_type_p (type2))
+      (if (TYPE_PRECISION (type1) > TYPE_PRECISION (type2)
+           && type1_signed_p >= type2_signed_p)
+       (cmp @1 (convert @2))
+       (if (TYPE_PRECISION (type1) < TYPE_PRECISION (type2)
+            && type1_signed_p <= type2_signed_p)
+        (cmp (convert:type2 @1) @2)
+        (if (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+             && type1_signed_p == type2_signed_p)
+	 (cmp @1 @2)))))))))
+
 /* Optimize various special cases of (FTYPE) N CMP CST.  */
 (for cmp  (lt le eq ne ge gt)
      icmp (le le eq ne ge ge)
@@ -3410,7 +3436,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (with
      {
        tree itype = TREE_TYPE (@0);
-       signop isign = TYPE_SIGN (itype);
        format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@1))));
        const REAL_VALUE_TYPE *cst = TREE_REAL_CST_PTR (@1);
        /* Be careful to preserve any potential exceptions due to
@@ -3420,17 +3445,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        bool exception_p
          = real_isnan (cst) && (cst->signalling
 				|| (cmp != EQ_EXPR && cmp != NE_EXPR));
-       /* INT?_MIN is power-of-two so it takes
-	  only one mantissa bit.  */
-       bool signed_p = isign == SIGNED;
-       bool itype_fits_ftype_p
-	 = TYPE_PRECISION (itype) - signed_p <= significand_size (fmt);
      }
      /* TODO: allow non-fitting itype and SNaNs when
 	-fno-trapping-math.  */
-     (if (itype_fits_ftype_p && ! exception_p)
+     (if (fmt.can_represent_integral_type_p (itype) && ! exception_p)
       (with
        {
+	 signop isign = TYPE_SIGN (itype);
 	 REAL_VALUE_TYPE imin, imax;
 	 real_from_integer (&imin, fmt, wi::min_value (itype), isign);
 	 real_from_integer (&imax, fmt, wi::max_value (itype), isign);
@@ -4222,6 +4243,45 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (tans (atans @0))
    @0)))
+
+ /* Simplify sin(atan(x)) -> x / sqrt(x*x + 1). */
+ (for sins (SIN)
+      atans (ATAN)
+      sqrts (SQRT)
+      copysigns (COPYSIGN)
+  (simplify
+   (sins (atans:s @0))
+   (with
+     {
+      REAL_VALUE_TYPE r_cst;
+      build_sinatan_real (&r_cst, type);
+      tree t_cst = build_real (type, r_cst);
+      tree t_one = build_one_cst (type);
+     }
+    (if (SCALAR_FLOAT_TYPE_P (type))
+     (cond (le (abs @0) { t_cst; })
+      (rdiv @0 (sqrts (plus (mult @0 @0) { t_one; })))
+      (copysigns { t_one; } @0))))))
+
+/* Simplify cos(atan(x)) -> 1 / sqrt(x*x + 1). */
+ (for coss (COS)
+      atans (ATAN)
+      sqrts (SQRT)
+      copysigns (COPYSIGN)
+  (simplify
+   (coss (atans:s @0))
+   (with
+     {
+      REAL_VALUE_TYPE r_cst;
+      build_sinatan_real (&r_cst, type);
+      tree t_cst = build_real (type, r_cst);
+      tree t_one = build_one_cst (type);
+      tree t_zero = build_zero_cst (type);
+     }
+    (if (SCALAR_FLOAT_TYPE_P (type))
+     (cond (le (abs @0) { t_cst; })
+      (rdiv { t_one; } (sqrts (plus (mult @0 @0) { t_one; })))
+      (copysigns { t_zero; } @0))))))
 
 /* cabs(x+0i) or cabs(0+xi) -> abs(x).  */
 (simplify

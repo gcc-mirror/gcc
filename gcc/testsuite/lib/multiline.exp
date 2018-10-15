@@ -72,6 +72,14 @@ proc dg-begin-multiline-output { args } {
     global _multiline_last_beginning_line
     verbose "dg-begin-multiline-output: args: $args" 3
     set line [expr [lindex $args 0] + 1]
+
+    # Complain if there hasn't been a dg-end-multiline-output
+    # since the last dg-begin-multiline-output
+    if { $_multiline_last_beginning_line != -1 } {
+	set last_directive_line [expr $_multiline_last_beginning_line - 1]
+	error "$last_directive_line: unterminated dg-begin-multiline-output"
+    }
+    
     set _multiline_last_beginning_line $line
 }
 
@@ -84,8 +92,17 @@ proc dg-begin-multiline-output { args } {
 proc dg-end-multiline-output { args } {
     global _multiline_last_beginning_line
     verbose "dg-end-multiline-output: args: $args" 3
-    set line [expr [lindex $args 0] - 1]
-    verbose "multiline output lines: $_multiline_last_beginning_line-$line" 3
+    set first_line $_multiline_last_beginning_line
+
+    # Complain if there hasn't been a dg-begin-multiline-output
+    if { $first_line == -1 } {
+	error "[lindex $args 0]: dg-end-multiline-output without dg-begin-multiline-output"
+	return
+    }
+    set _multiline_last_beginning_line -1
+
+    set last_line [expr [lindex $args 0] - 1]
+    verbose "multiline output lines: $first_line-$last_line" 3
 
     if { [llength $args] > 3 } {
 	error "[lindex $args 0]: too many arguments"
@@ -109,16 +126,14 @@ proc dg-end-multiline-output { args } {
     # "prog" now contains the filename
     # Load it and split it into lines
 
-    set lines [_get_lines $prog $_multiline_last_beginning_line $line]
+    set lines [_get_lines $prog $first_line $last_line]
 
     verbose "lines: $lines" 3
     # Create an entry of the form:  first-line, last-line, lines, maybe_x
-    set entry [list $_multiline_last_beginning_line $line $lines $maybe_x]
+    set entry [list $first_line $last_line $lines $maybe_x]
     global multiline_expected_outputs
     lappend multiline_expected_outputs $entry
     verbose "within dg-end-multiline-output: multiline_expected_outputs: $multiline_expected_outputs" 3
-
-    set _multiline_last_beginning_line -1
 }
 
 # Hook to be called by prune.exp's prune_gcc_output to

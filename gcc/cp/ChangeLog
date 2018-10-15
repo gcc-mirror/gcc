@@ -1,3 +1,84 @@
+2018-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.h (struct cp_parser): Drop implicit_extern_c.
+	* parser.c (cp_debug_parser): Drop implicit_extern_c.
+	(cp_parser_new): Likewise.
+	(cp_parser_translation_unit): Handle implicit extern c here.  Call
+	cp_parser_toplevel_declaration.
+	(cp_parser_toplevel_declaration): New, broken out of ...
+	(cp_parser_declaration_seq_opt): ... here.  Call it.  Drop
+	implicit extern C handling.
+
+2018-10-11  Will Wray  <wjwray@gmail.com>
+
+	PR c++/87364
+	* cxx-pretty-print.c (pp_cxx_enumeration_constant): New function.
+	(cxx_pretty_printer::constant): Use it.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84993
+	* call.c (enforce_access): Move diagnostics to...
+	(complain_about_access): ...this new function.
+	* cp-tree.h (class access_failure_info): Rename split out field
+	"m_field_decl" into "m_decl" and "m_diag_decl".
+	(access_failure_info::record_access_failure): Add tree param.
+	(access_failure_info::was_inaccessible_p): New accessor.
+	(access_failure_info::get_decl): New accessor.
+	(access_failure_info::get_diag_decl): New accessor.
+	(access_failure_info::get_any_accessor): New member function.
+	(access_failure_info::add_fixit_hint): New static member function.
+	(complain_about_access): New decl.
+	* typeck.c (access_failure_info::record_access_failure): Update
+	for change to fields.
+	(access_failure_info::maybe_suggest_accessor): Split out into...
+	(access_failure_info::get_any_accessor): ...this new function...
+	(access_failure_info::add_fixit_hint): ...and this new function.
+	(finish_class_member_access_expr): Split out "has no member named"
+	error-handling into...
+	(complain_about_unrecognized_member): ...this new function, and
+	check that the guessed name is accessible along the access path.
+	Only provide a spell-correction fix-it hint if it is; otherwise,
+	attempt to issue an accessor fix-it hint.
+
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_translation_unit): Return void.  Don't fail
+	at first extra }, simplify logic.
+	(c_parse_file): Call finish_translation_unit here.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* typeck.c (maybe_warn_about_returning_address_of_local): If
+	whats_returned is a structured binding identifier and the structured
+	binding is a reference, recurse on its initializer.
+
+	PR c++/87547
+	* rtti.c (get_tinfo_decl_dynamic): Use unlowered_expr_type instead
+	of TREE_TYPE.
+
+2018-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87567 - constexpr rejects call to non-constexpr function.
+	* constexpr.c (potential_constant_expression_1) <case FOR_STMT>: Return
+	true if the condition is always false.
+	<case WHILE_STMT>: Likewise.
+
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* pt.c (convert_template_argument): Immediately return error_mark_node
+	if the second argument is erroneous.
+	* parser.c (cp_parser_type_id): Add location_t * parameter.
+	(cp_parser_type_id_1): Likewise.
+	(cp_parser_alias_declaration): Adjust cp_parser_type_id call,
+	obtain the location of the type and save it.
+	(cp_parser_template_type_arg): Adjust.
+	(cp_parser_trailing_type_id): Likewise.
+	* decl.c (grokdeclarator): Improve error message for 'auto' in
+	alias declaration.
+
 2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71128

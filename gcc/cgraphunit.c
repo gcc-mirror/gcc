@@ -1862,6 +1862,12 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 	 DECL_ARGUMENTS.  In this case force_gimple_thunk is true.  */
       if (in_lto_p && !force_gimple_thunk)
 	get_untransformed_body ();
+
+      /* We need to force DECL_IGNORED_P when the thunk is created
+	 after early debug was run.  */
+      if (force_gimple_thunk)
+	DECL_IGNORED_P (thunk_fndecl) = 1;
+
       a = DECL_ARGUMENTS (thunk_fndecl);
 
       current_function_decl = thunk_fndecl;
