@@ -1,5 +1,8 @@
 2018-10-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/22_locale/numpunct/members/char/3.cc: Adjust test to
+	account for change to glibc it_IT localedata (glibc bz#10797).
+
 	PR libstdc++/87587
 	* src/c++11/cxx11-shim_facets.cc: Suppress -Wabi warnings.
 
