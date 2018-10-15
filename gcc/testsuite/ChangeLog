@@ -1,3 +1,8 @@
+2018-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: Tweak scan-tree.
+
 2018-10-15  Renlin Li  <renlin.li@arm.com>
 
 	PR target/87563
