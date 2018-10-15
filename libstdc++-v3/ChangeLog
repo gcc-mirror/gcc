@@ -1,3 +1,8 @@
+2018-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87587
+	* src/c++11/cxx11-shim_facets.cc: Suppress -Wabi warnings.
+
 2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
