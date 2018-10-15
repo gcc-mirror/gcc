@@ -1,3 +1,8 @@
+2018-10-12  Jeff Law  <law@redhat.com>
+
+	* config/ft32/ft32.md (ft32_general_movsrc_operand): Disable
+	reg + sym +- const_int addressing modes.
+
 2018-10-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.opt (fdiagnostics-minimum-margin-width=): New option.
