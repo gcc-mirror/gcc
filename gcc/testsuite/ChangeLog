@@ -1,3 +1,16 @@
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/missing-header-fixit-3.c: Update expected indentation
+	to reflect minimum margin width.
+	* gcc.dg/missing-header-fixit-4.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers-2.c:
+	New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add it.
+
 2018-10-15  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87597

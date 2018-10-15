@@ -270,6 +270,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels -fno-diagnostics-show-line-numbers @gol
+-fdiagnostics-minimum-margin-width=@var{width} @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
@@ -3818,6 +3819,11 @@ the vertical bars and the ``char *'' and ``long int'' text).
 By default, when printing source code (via @option{-fdiagnostics-show-caret}),
 a left margin is printed, showing line numbers.  This option suppresses this
 left margin.
+
+@item -fdiagnostics-minimum-margin-width=@var{width}
+@opindex -fdiagnostics-minimum-margin-width
+This option controls the minimum width of the left margin printed by
+@option{-fdiagnostics-show-line-numbers}.  It defaults to 6.
 
 @item -fdiagnostics-parseable-fixits
 @opindex fdiagnostics-parseable-fixits

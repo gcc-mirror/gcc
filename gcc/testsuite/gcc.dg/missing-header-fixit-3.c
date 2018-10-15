@@ -10,12 +10,12 @@ void test (int i, int j)
   /* { dg-message "include '<stdio.h>' or provide a declaration of 'printf'" "" { target *-*-* } 1 } */
 #if 0
 /* { dg-begin-multiline-output "" }
-9 |   printf ("%i of %i\n", i, j);
-  |   ^~~~~~
+    9 |   printf ("%i of %i\n", i, j);
+      |   ^~~~~~
    { dg-end-multiline-output "" } */
 /* { dg-begin-multiline-output "" }
-+ |+#include <stdio.h>
-1 | /* Example of a fix-it hint that adds a #include directive,
+  +++ |+#include <stdio.h>
+    1 | /* Example of a fix-it hint that adds a #include directive,
    { dg-end-multiline-output "" } */
 #endif
 }

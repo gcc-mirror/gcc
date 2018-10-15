@@ -1281,6 +1281,10 @@ fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
 
+fdiagnostics-minimum-margin-width=
+Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
+Set minimum width of left margin of source code when showing source
+
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fdisable-[tree|rtl|ipa]-<pass>=range1+range2 disables an optimization pass.

@@ -2228,6 +2228,10 @@ common_handle_option (struct gcc_options *opts,
       dc->show_option_requested = value;
       break;
 
+    case OPT_fdiagnostics_minimum_margin_width_:
+      dc->min_margin_width = value;
+      break;
+
     case OPT_fdump_:
       /* Deferred.  */
       break;

@@ -177,6 +177,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->colorize_source_p = false;
   context->show_labels_p = false;
   context->show_line_numbers_p = false;
+  context->min_margin_width = 0;
   context->show_ruler_p = false;
   context->parseable_fixits_p = false;
   context->edit_context_ptr = NULL;
