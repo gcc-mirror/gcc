@@ -1,3 +1,8 @@
+2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* gcc.dg/torture/restrict-6.c: New testcase.
+
 2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* g++.dg/vec-init-1.C: New test.
