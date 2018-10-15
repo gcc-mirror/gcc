@@ -1,3 +1,10 @@
+2018-10-15  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::direct_import): New.
+	({import,declare}_module): Call it.
+	(module_state::preamble_load): Likewise.
+
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	libcpp/

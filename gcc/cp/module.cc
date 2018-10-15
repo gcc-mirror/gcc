@@ -3074,6 +3074,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   void attach (location_t);
   bool do_import (const char *filename, cpp_reader *);
+  bool direct_import (bool deferred_p, cpp_reader *);
 
  public:
   static int preamble_load (location_t loc, cpp_reader *);
@@ -11859,6 +11860,45 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   return !failed;
 }
 
+bool
+module_state::direct_import (bool deferred_p, cpp_reader *reader)
+{
+  unsigned n = dump.push (this);
+  bool ok = true;
+
+  direct_p = true;
+  if (!is_imported ())
+    {
+      bool is_interface = mod == MODULE_PURVIEW;
+      char *fname = NULL;
+      if (!deferred_p)
+	{
+	  maybe_create_loc ();
+	  fname = module_mapper::import_export (this, is_interface);
+	}
+
+      if (!is_interface)
+	ok = do_import (fname, reader);
+      else if (fname)
+	filename = xstrdup (fname);
+    }
+
+  if (ok && mod != MODULE_PURVIEW)
+    {
+      module_state *imp = resolve_alias ();
+      imp->direct_p = true;
+      if (exported_p)
+	imp->exported_p = true;
+      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
+      if (imp->is_legacy ())
+	imp->import_macros ();
+    }
+
+  dump.pop (n);
+
+  return ok;
+}
+
 /* Pick a victim module to freeze its reader.  */
 
 void
@@ -11948,24 +11988,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
     imp->exported_p = true;
 
   if (!modules_atom_p ())
-    {
-      imp->direct_p = true;
-      if (!imp->is_imported ())
-	{
-	  unsigned n = dump.push (imp);
-	  char *fname = module_mapper::import_export (imp, false);
-	  imp->maybe_create_loc ();
-	  imp->do_import (fname, reader);
-	  dump.pop (n);
-	}
-
-      imp = imp->resolve_alias ();
-      imp->direct_p = true;
-
-      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-      if (imp->is_legacy ())
-	imp->import_macros ();
-    }
+    imp->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, imp);
 
@@ -12038,19 +12061,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     state->mod = MODULE_UNKNOWN;
 
   if (!modules_atom_p ())
-    {
-      unsigned n = dump.push (state);
-      char *fname = module_mapper::import_export (state, exporting_p);
-      state->maybe_create_loc ();
-      if (!exporting_p)
-	{
-	  state->direct_p = true;
-	  state->do_import (fname, reader);
-	}
-      else if (fname)
-	state->filename = xstrdup (fname); 
-      dump.pop (n);
-    }
+    state->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, state);
 }
@@ -12122,23 +12133,8 @@ module_state::preamble_load (location_t loc, cpp_reader *reader)
 	 ix != pending_imports->length (); ix++)
       {
 	module_state *imp = (*pending_imports)[ix];
-	unsigned n = dump.push (imp);
-
-	imp->direct_p = true;
-	if (imp->is_imported () || imp->do_import (NULL, reader))
-	  {
-	    if (imp->mod != MODULE_PURVIEW)
-	      {
-		imp = imp->resolve_alias ();
-		imp->direct_p = true;
-		(*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-		if (imp->is_legacy ())
-		  imp->import_macros ();
-	      }
-	  }
-	else
+	if (!imp->direct_import (true, reader))
 	  ok = false;
-	dump.pop (n);
       }
 
   dump.pop (0);
