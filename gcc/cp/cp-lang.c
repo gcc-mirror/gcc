@@ -79,7 +79,7 @@ static int module_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #undef LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE
 #define LANG_HOOKS_ENUM_UNDERLYING_BASE_TYPE cxx_enum_underlying_base_type
 #undef LANG_HOOKS_PREPROCESS_MAIN_FILE
-#define LANG_HOOKS_PREPROCESS_MAIN_FILE module_note_main_file
+#define LANG_HOOKS_PREPROCESS_MAIN_FILE module_begin_main_file
 #undef LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE
 #define LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE maybe_import_include
 #undef LANG_HOOKS_PREPROCESS_UNDEF

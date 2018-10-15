@@ -38972,12 +38972,12 @@ cp_parser_initial_pragma (cp_token *first_token)
   if (peeked_tok->type != CPP_PRAGMA
       || peeked_tok->val.pragma != PRAGMA_GCC_PCH_PREPROCESS)
     {
-      cp_lexer_get_preprocessor_token (NULL, first_token);
+      cp_lexer_get_preprocessor_token (0, first_token);
       return;
     }
 
   /* Swallow the pragma.  */
-  cp_lexer_get_preprocessor_token (NULL, first_token);
+  cp_lexer_get_preprocessor_token (0, first_token);
   cp_lexer_get_preprocessor_token (0, first_token);
   tree name = NULL;
   if (first_token->type == CPP_STRING)
@@ -39519,8 +39519,8 @@ c_parse_file (void)
       module_preamble_state preamble
 	= cp_parser_get_module_preamble_tokens (the_parser);
       if (preamble & MPS_MODULE
-	  || maybe_begin_legacy_module (parse_in)
-	  || preamble & MPS_IMPORT)
+	  || preamble & MPS_IMPORT
+	  || modules_legacy_p ())
 	{
 	  /* There is a non-empty preamble.  */
 	  location_t loc = cp_parser_parse_module_preamble (the_parser);

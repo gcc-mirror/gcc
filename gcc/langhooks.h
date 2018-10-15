@@ -331,12 +331,12 @@ struct lang_hooks
   void (*initialize_diagnostics) (diagnostic_context *);
 
   /* Beginning the main source file.  */
-  void (*preprocess_main_file) (line_maps *, const line_map_ordinary *);
+  void (*preprocess_main_file) (cpp_reader *, line_maps *,
+				const line_map_ordinary *);
 
   /* Translate include hook hook.  Ptr to fn returning ptr to fn.  */
-  int (*(*preprocess_translate_include) ()) (cpp_reader *, line_maps *,
-					     source_location,
-					     const char *fname, bool);
+  int (*(*preprocess_translate_include) ())
+    (cpp_reader *, line_maps *, source_location, const char *fname, bool);
 
   /* Undefining a macro.  */
   void (*preprocess_undef) (cpp_reader *, source_location, cpp_hashnode *);

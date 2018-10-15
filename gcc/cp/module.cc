@@ -12032,16 +12032,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
   state->attach (from_loc);
 
-  if (state->is_legacy ())
-    {
-      module_legacy_name = state->fullname;
-
-      /* The user may have named the module before the main file.  */
-      const line_map_ordinary *map
-	= linemap_check_ordinary (linemap_lookup (line_table, from_loc));
-      module_note_main_file (line_table, map);
-    }
-
   /* Copy any importing information we may have already done.  */
   if (!modules_atom_p ())
     {
@@ -12127,19 +12117,6 @@ maybe_import_include ()
   return modules_atom_p () ? do_translate_include : NULL;
 }
 
-/* We've just properly entered the main source file.  I.e. after the
-   command line, builtins and forced headers.  Record the line map and
-   location of this map.  Note we may be called more than once.  The
-   first call sticks.  */
-
-void
-module_note_main_file (line_maps *lmaps, const line_map_ordinary *map)
-{
-  gcc_checking_assert (lmaps == line_table);
-  if (modules_p () && !spans.init_p ())
-    spans.init (map);
-}
-
 static void
 set_module_legacy_name (const char *src, unsigned len, bool quote = true)
 {
@@ -12154,38 +12131,47 @@ set_module_legacy_name (const char *src, unsigned len, bool quote = true)
   *name = 0;
 }
 
-bool
-maybe_begin_legacy_module (cpp_reader *reader)
+/* We've just properly entered the main source file.  I.e. after the
+   command line, builtins and forced headers.  Record the line map and
+   location of this map.  Note we may be called more than once.  The
+   first call sticks.  */
+
+void
+module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
+		       const line_map_ordinary *map)
 {
-  if (!modules_legacy_p ())
-    return false;
-
-  if (!module_legacy_name)
+  gcc_checking_assert (lmaps == line_table);
+  if (modules_p () && !spans.init_p ())
     {
-      /* Set the module header name from the main_input_filename.  */
-      const char *main = main_input_filename;
-      size_t len = strlen (main);
-      size_t pos;
+      spans.init (map);
+      if (modules_legacy_p ())
+	{
+	  if (!module_legacy_name)
+	    {
+	      /* Set the module header name from the main_input_filename.  */
+	      const char *main = main_input_filename;
+	      size_t len = strlen (main);
+	      size_t pos;
 
-      for (pos = len; --pos; )
-	if (main[pos] == '.'
-	    && IS_DIR_SEPARATOR (main[pos-1])
-	    && IS_DIR_SEPARATOR (main[pos+1]))
-	  {
-	    pos += 2;
-	    break;
-	  }
+	      for (pos = len; --pos; )
+		if (main[pos] == '.'
+		    && IS_DIR_SEPARATOR (main[pos-1])
+		    && IS_DIR_SEPARATOR (main[pos+1]))
+		  {
+		    pos += 2;
+		    break;
+		  }
 
-      set_module_legacy_name (main + pos, len - pos);
-    }
+	      set_module_legacy_name (main + pos, len - pos);
+	    }
 
-  tree name = get_identifier (module_legacy_name);
-  declare_module (get_module (name, NULL),
-		  spans.main_start (), true, NULL, reader);
+	  tree name = get_identifier (module_legacy_name);
+	  declare_module (get_module (name, NULL),
+			  spans.main_start (), true, NULL, reader);
 
-  /* Everything is exported.  */
-  push_module_export (false);
-  return true;
+	  /* Everything is exported.  */
+	  push_module_export (false);
+	}
 }
 
 /* Process any deferred imports.   If this is the preamble block,
@@ -12251,10 +12237,6 @@ process_deferred_imports (location_t loc, cpp_reader *reader)
   dump.pop (0);
 
   vec_free (pending_imports);
-
-  if (is_interface && modules_legacy_p ())
-    /* Everything is exported.  */
-    push_module_export (false);
 
   unsigned adj = linemap_module_restore (line_table, pre_hwm);
   if (is_interface)

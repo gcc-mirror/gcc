@@ -1497,7 +1497,7 @@ push_command_line_include (void)
 	  if (lang_hooks.preprocess_main_file)
 	    /* We're starting the main file.  Inform the FE of that.  */
 	    lang_hooks.preprocess_main_file
-	      (line_table, LINEMAPS_LAST_ORDINARY_MAP (line_table));
+	      (parse_in, line_table, LINEMAPS_LAST_ORDINARY_MAP (line_table));
 	}
 
       /* Set this here so the client can change the option if it wishes,
@@ -1508,7 +1508,7 @@ push_command_line_include (void)
 
 /* File change callback.  Has to handle -include files.  */
 static void
-cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
+cb_file_change (cpp_reader *reader, const line_map_ordinary *new_map)
 {
   if (flag_preprocess_only)
     pp_file_change (new_map);
@@ -1519,7 +1519,7 @@ cb_file_change (cpp_reader *, const line_map_ordinary *new_map)
       && lang_hooks.preprocess_main_file && MAIN_FILE_P (new_map)
       && new_map - LINEMAPS_ORDINARY_MAPS (line_table) > 2)
     /* We're starting the main file.  Inform the FE of that.  */
-    lang_hooks.preprocess_main_file (line_table, new_map);
+    lang_hooks.preprocess_main_file (reader, line_table, new_map);
 
   if (new_map 
       && (new_map->reason == LC_ENTER || new_map->reason == LC_RENAME))

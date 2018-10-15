@@ -6747,9 +6747,9 @@ extern void finish_module_processing ();
 extern void finish_module_parse (cpp_reader *);
 extern char const *module_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
-extern void module_note_main_file (line_maps *, const line_map_ordinary *);
+extern void module_begin_main_file (cpp_reader *, line_maps *,
+				    const line_map_ordinary *);
 extern cpp_translate_include_t *maybe_import_include ();
-extern bool maybe_begin_legacy_module (cpp_reader *);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 

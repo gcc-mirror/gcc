@@ -1,5 +1,25 @@
 2018-10-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* langhooks.h (struct lang_hooks): Adjust preprocess_main_file
+	signature.
+	gcc/c-family/
+	* c-opts.c (push_command_line_include): Adjust
+	preprocess_main_file hook call.
+	(cb_file_change): Likewise.
+	gcc/cp/
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_MAIN_FILE): Adjust.
+	* cp-tree.h (module_note_main_file): Rename to ...
+	(module_begin_main_file): ... here.
+	(maybe_begin_legacy_module): Delete.
+	* module.cc (declare_module): Remove legacy handling here.
+	(module_note_main_file): Rename to ...
+	(module_begin_main_file): ... here.  Swallow ...
+	(maybe_begin_legacy_module): ... this.
+	(process_deferred_imports): We're already exporting for legacy
+	headers.
+	* parser.c (c_parse_file): Don't call maybe_begin_legacy_module.
+
 	gcc/cp/
 	* cp-tree.h (process_deferred_imports): New.
 	(module_preamble_load): Delete.
