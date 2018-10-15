@@ -1,3 +1,10 @@
+2018-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87572
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_UNSET):
+	Remove OPTION_MASK_ISA_AVX5124FMAPS_UNSET and
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET.
+
 2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/87022
