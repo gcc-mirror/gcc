@@ -1,3 +1,8 @@
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Fix usage of "error_at_rich_loc" in the comment.
+
 2018-10-15  Renlin Li  <renlin.li@arm.com>
 
 	PR target/87563
