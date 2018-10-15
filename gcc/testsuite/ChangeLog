@@ -1,3 +1,8 @@
+2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/87022
+	* gcc.dg/tree-ssa/pr87022.c: New test.
+
 2018-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87610

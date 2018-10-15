@@ -1921,7 +1921,8 @@ pg_add_dependence_edges (struct graph *rdg, int dir,
 	      if (DDR_NUM_DIST_VECTS (ddr) != 1)
 		this_dir = 2;
 	      /* If the overlap is exact preserve stmt order.  */
-	      else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0), 1))
+	      else if (lambda_vector_zerop (DDR_DIST_VECT (ddr, 0),
+					    DDR_NB_LOOPS (ddr)))
 		;
 	      /* Else as the distance vector is lexicographic positive swap
 		 the dependence direction.  */
