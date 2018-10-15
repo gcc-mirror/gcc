@@ -7,10 +7,7 @@
 
 import bill;
 // { dg-error "failed to read module 'bill.nms'" "" { target *-*-* } 0 }
-import bob;
-// { dg-error "failed to read module 'bob.nms'" "" { target *-*-* } 0 }
 
-// { dg-prune-output "mapper cannot provide" }
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "compilation terminated" }
 

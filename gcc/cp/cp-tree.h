@@ -6738,6 +6738,7 @@ extern void pop_module_export (int);
 extern void import_module (module_state *, location_t, bool, tree, cpp_reader *);
 extern void declare_module (module_state *, location_t, bool, tree,
 			    cpp_reader *);
+extern unsigned process_deferred_imports (location_t, cpp_reader *);
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);
@@ -6749,7 +6750,6 @@ extern bitmap module_import_bitmap (unsigned module);
 extern void module_note_main_file (line_maps *, const line_map_ordinary *);
 extern cpp_translate_include_t *maybe_import_include ();
 extern bool maybe_begin_legacy_module (cpp_reader *);
-extern unsigned module_preamble_load (location_t, cpp_reader *);
 extern void maybe_repeat_preamble (location_t, int count, cpp_reader *);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 

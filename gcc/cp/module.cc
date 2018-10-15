@@ -3074,10 +3074,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   void attach (location_t);
   bool do_import (const char *filename, cpp_reader *);
-  bool direct_import (bool deferred_p, cpp_reader *);
-
- public:
-  static int preamble_load (location_t loc, cpp_reader *);
+  void direct_import (bool deferred_p, cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -11860,7 +11857,12 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   return !failed;
 }
 
-bool
+/* Import this module now.  Fatal error on failure.  DEFERRED_P is
+   true if this was a deferred import.  We include the case of an
+   interface unit's module declaration, setting up for an export in
+   that case.  */
+
+void
 module_state::direct_import (bool deferred_p, cpp_reader *reader)
 {
   unsigned n = dump.push (this);
@@ -11883,7 +11885,9 @@ module_state::direct_import (bool deferred_p, cpp_reader *reader)
 	filename = xstrdup (fname);
     }
 
-  if (ok && mod != MODULE_PURVIEW)
+  if (!ok)
+    fatal_error (loc, "returning to gate for a mechanical issue");
+  else if (mod != MODULE_PURVIEW)
     {
       module_state *imp = resolve_alias ();
       imp->direct_p = true;
@@ -11895,8 +11899,6 @@ module_state::direct_import (bool deferred_p, cpp_reader *reader)
     }
 
   dump.pop (n);
-
-  return ok;
 }
 
 /* Pick a victim module to freeze its reader.  */
@@ -12066,88 +12068,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     vec_safe_push (pending_imports, state);
 }
 
-/* The module preamble has been parsed.  Now load all the imports.
-   LOC is the location of the first declaration (the module decl, if
-   this is a module).  */
-
-int
-module_state::preamble_load (location_t loc, cpp_reader *reader)
-{
-  if (!vec_safe_length (pending_imports))
-    return 0;
-
-  dump.push (NULL);
-  dump () && dump ("Processing preamble");
-
-  bool is_interface = ((*pending_imports)[0] == (*modules)[MODULE_PURVIEW]
-		       && (*pending_imports)[0]->exported_p);
-
-  module_mapper *mapper = module_mapper::get (loc);
-  if (!mapper->is_live ())
-    return false;
-
-  /* Preserve the state of the line-map.  */
-  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (is_interface)
-    spans.close ();
-
-  if (!mapper->is_file ())
-    {
-      /* Send batched request to mapper.  */
-      mapper->cork ();
-      for (unsigned ix = 0; ix != pending_imports->length (); ix++)
-	{
-	  module_state *imp = (*pending_imports)[ix];
-	  mapper->imex_query (imp, !ix && is_interface);
-	}
-      mapper->uncork (loc);
-    }
-
-  bool ok = true;
-  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
-    {
-      module_state *imp = (*pending_imports)[ix];
-
-      /* Read the mapper's responses.  */
-      if (!mapper->is_file ())
-	if (char *fname = mapper->imex_response (imp))
-	  imp->filename = xstrdup (fname);
-
-      gcc_assert (!imp->direct_p);
-      if (!imp->filename)
-	{
-	  ok = false;
-	  error_at (imp->from_loc, "module %qs is unknown", imp->fullname);
-	}
-      imp->maybe_create_loc ();
-    }
-
-  if (!mapper->is_file ())
-    mapper->maybe_uncork (loc);
-
-  if (ok)
-    /* Now do the importing, which might cause additional requests
-       (although nested import filenames are usually in their
-       importer's import table).  */
-    for (unsigned ix = is_interface ? 1 : 0;
-	 ix != pending_imports->length (); ix++)
-      {
-	module_state *imp = (*pending_imports)[ix];
-	if (!imp->direct_import (true, reader))
-	  ok = false;
-      }
-
-  dump.pop (0);
-
-  vec_free (pending_imports);
-
-  unsigned adj = linemap_module_restore (line_table, pre_hwm);
-  if (is_interface)
-    spans.open ();
-
-  return ok ? int (adj) : -1;
-}
-
 /* Track if NODE undefs an imported macro.  */
 
 void
@@ -12268,21 +12188,79 @@ maybe_begin_legacy_module (cpp_reader *reader)
   return true;
 }
 
-/* Do processing after a (non-empty) atom preamble has been parsed.  LOC is the
-   final location of the preamble.  */
+/* Process any deferred imports.   If this is the preamble block,
+   setup appropriately for the export declaration.   Return token
+   location adjustment.  */
 
 unsigned
-module_preamble_load (location_t loc, cpp_reader *reader)
+process_deferred_imports (location_t loc, cpp_reader *reader)
 {
-  int adj = module_state::preamble_load (loc, reader);
-  if (adj < 0)
-    fatal_error (loc, "returning to gate for a mechanical issue");
+  if (!vec_safe_length (pending_imports))
+    return 0;
 
-  if (modules_legacy_p ())
+  dump.push (NULL);
+  dump () && dump ("Processing preamble");
+
+  bool is_interface = ((*pending_imports)[0] == (*modules)[MODULE_PURVIEW]
+		       && (*pending_imports)[0]->exported_p);
+
+  /* Preserve the state of the line-map.  */
+  unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+  if (is_interface)
+    spans.close ();
+
+  module_mapper *mapper = module_mapper::get (loc);
+
+  if (mapper->is_server ())
+    {
+      /* Send batched request to mapper.  */
+      mapper->cork ();
+      for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+	{
+	  module_state *imp = (*pending_imports)[ix];
+	  mapper->imex_query (imp, !ix && is_interface);
+	}
+      mapper->uncork (loc);
+    }
+
+  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
+    {
+      module_state *imp = (*pending_imports)[ix];
+
+      /* Read the mapper's responses.  */
+      if (mapper->is_server ())
+	if (char *fname = mapper->imex_response (imp))
+	  imp->filename = xstrdup (fname);
+
+      imp->maybe_create_loc ();
+    }
+
+  if (mapper->is_server ())
+    mapper->maybe_uncork (loc);
+
+  /* Now do the importing, which might cause additional requests
+     (although nested import filenames are usually in their
+     importer's import table).  */
+  for (unsigned ix = is_interface ? 1 : 0;
+	 ix != pending_imports->length (); ix++)
+      {
+	module_state *imp = (*pending_imports)[ix];
+	imp->direct_import (true, reader);
+      }
+
+  dump.pop (0);
+
+  vec_free (pending_imports);
+
+  if (is_interface && modules_legacy_p ())
     /* Everything is exported.  */
     push_module_export (false);
 
-  return unsigned (adj);
+  unsigned adj = linemap_module_restore (line_table, pre_hwm);
+  if (is_interface)
+    spans.open ();
+
+  return adj;
 }
 
 /* VAL is a global tree, add it to the global vec if it is

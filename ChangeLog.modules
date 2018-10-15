@@ -1,6 +1,19 @@
 2018-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (process_deferred_imports): New.
+	(module_preamble_load): Delete.
+	* module.cc (module_state::direct_import): Fatal error here.
+	(module_state::preamble_load): Delete, move into ...
+	(process_deferred_imports): ... here.  Subsume ...
+	(module_preamble_load): ... this.
+	* parser.c (c_parse_file): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/atom-inc-1.C: Delete.
+	* g++.dg/modules/atom-inc-1_[abc].*: New.
+	* g++.dg/modules/import-2.C: Adjust.
+
+	gcc/cp/
 	* module.cc (module_state::direct_import): New.
 	({import,declare}_module): Call it.
 	(module_state::preamble_load): Likewise.

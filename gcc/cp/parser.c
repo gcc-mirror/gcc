@@ -39525,7 +39525,7 @@ c_parse_file (void)
 	  /* There is a non-empty preamble.  */
 	  location_t loc = cp_parser_parse_module_preamble (the_parser);
 	  gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	  if (unsigned adjust = module_preamble_load (loc, parse_in))
+	  if (unsigned adjust = process_deferred_imports (loc, parse_in))
 	    cpp_relocate_peeked_tokens (parse_in, adjust);
 	}
       cp_parser_initial_pragma (&first);
