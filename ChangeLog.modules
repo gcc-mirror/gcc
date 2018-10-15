@@ -1,5 +1,8 @@
 2018-10-15  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* lang-specs.h: Fix .s elision with legacy modules.
+
 	gcc/
 	* langhooks.h (struct lang_hooks): Adjust preprocess_main_file
 	signature.

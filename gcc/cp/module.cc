@@ -12172,6 +12172,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 	  /* Everything is exported.  */
 	  push_module_export (false);
 	}
+    }
 }
 
 /* Process any deferred imports.   If this is the preamble block,
