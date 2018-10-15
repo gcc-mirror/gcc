@@ -1,5 +1,30 @@
 2018-10-15  David Malcolm  <dmalcolm@redhat.com>
 
+	* common.opt (fdiagnostics-minimum-margin-width=): New option.
+	* diagnostic-show-locus.c (layout::layout): Apply the minimum
+	margin width.
+	(layout::start_annotation_line): Only print up to 3 of the
+	margin character, to avoid touching the left-hand side.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Update for
+	minimum margin width, as set by test_diagnostic_context's ctor.
+	(selftest::test_fixit_insert_containing_newline): Likewise.
+	(selftest::test_fixit_insert_containing_newline_2): Likewise.
+	(selftest::test_line_numbers_multiline_range): Clear
+	dc.min_margin_width.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	min_margin_width.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"min_margin_width".
+	* doc/invoke.texi: Add -fdiagnostics-minimum-margin-width=.
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_minimum_margin_width_.
+	* selftest-diagnostic.c
+	(selftest::test_diagnostic_context::test_diagnostic_context):
+	Initialize min_margin_width to 6.
+	* toplev.c (general_init): Initialize global_dc->min_margin_width.
+
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
 	Fix usage of "error_at_rich_loc" in the comment.
 
