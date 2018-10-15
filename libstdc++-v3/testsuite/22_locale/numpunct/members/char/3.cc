@@ -1,4 +1,4 @@
-// { dg-require-namedlocale "it_IT.ISO8859-15" }
+// { dg-require-namedlocale "nl_NL.ISO8859-15" }
 
 // 2001-01-24 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -30,12 +30,14 @@ void test02()
   
   bool test __attribute__((unused)) = true;
 
-  locale loc_it = locale(ISO_8859(15,it_IT));
+  // nl_NL chosen because it has no thousands separator (at this time).
+  locale loc_it = locale(ISO_8859(15,nl_NL));
 
   const numpunct<char>& nump_it = use_facet<numpunct<char> >(loc_it); 
 
   string g = nump_it.grouping();
 
+  // Ensure that grouping is empty for locales with empty thousands separator.
   VERIFY( g == "" );
 }
 
