@@ -1,3 +1,16 @@
+2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
+	initialization.
+	(vector<>::cend()): Likewise.
+	(vector<>::emplace(const_iterator, _Args&&...)): Likewise and use
+	consistent iterator comparison.
+	(vector<>::insert(const_iterator, size_type, const _Tp&)): Likewise.
+	(vector<>::insert(const_iterator, _InputIterator, _InputIterator)):
+	Likewise.
+	(vector<>::erase(const_iterator)): Likewise.
+	(vector<>::erase(const_iterator, const_iterator)): Likewise.
+
 2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	Initial commit of Networking TS implementation.
