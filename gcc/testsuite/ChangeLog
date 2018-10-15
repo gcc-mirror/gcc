@@ -1,3 +1,7 @@
+2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/vec-init-1.C: New test.
+
 2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87599
