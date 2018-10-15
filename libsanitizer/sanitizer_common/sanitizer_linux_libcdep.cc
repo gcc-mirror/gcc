@@ -154,14 +154,12 @@ bool SanitizerGetThreadName(char *name, int max_len) {
 #endif
 }
 
-#if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO
-static uptr g_tls_size;
+#ifndef __GLIBC_PREREQ
+#define __GLIBC_PREREQ(x, y) 0
 #endif
 
-#ifdef __i386__
-# define DL_INTERNAL_FUNCTION __attribute__((regparm(3), stdcall))
-#else
-# define DL_INTERNAL_FUNCTION
+#if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO
+static uptr g_tls_size;
 #endif
 
 #if defined(__mips__) || defined(__powerpc64__)
@@ -186,16 +184,33 @@ void InitTlsSize() {
 #if !SANITIZER_FREEBSD && !SANITIZER_ANDROID && !SANITIZER_GO
 // all current supported platforms have 16 bytes stack alignment
   const size_t kStackAlign = 16;
-  typedef void (*get_tls_func)(size_t*, size_t*) DL_INTERNAL_FUNCTION;
-  get_tls_func get_tls;
-  void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
-  CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
-  internal_memcpy(&get_tls, &get_tls_static_info_ptr,
-                  sizeof(get_tls_static_info_ptr));
-  CHECK_NE(get_tls, 0);
   size_t tls_size = 0;
   size_t tls_align = 0;
-  get_tls(&tls_size, &tls_align);
+  void *get_tls_static_info_ptr = dlsym(RTLD_NEXT, "_dl_get_tls_static_info");
+#if defined(__i386__) && !__GLIBC_PREREQ(2, 27)
+  /* On i?86, _dl_get_tls_static_info used to be internal_function, i.e.
+     __attribute__((regparm(3), stdcall)) before glibc 2.27 and is normal
+     function in 2.27 and later.  */
+  if (!dlvsym(RTLD_NEXT, "glob", "GLIBC_2.27")) {
+    typedef void (*get_tls_func)(size_t*, size_t*)
+      __attribute__((regparm(3), stdcall));
+    get_tls_func get_tls;
+    CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
+    internal_memcpy(&get_tls, &get_tls_static_info_ptr,
+                    sizeof(get_tls_static_info_ptr));
+    CHECK_NE(get_tls, 0);
+    get_tls(&tls_size, &tls_align);
+  } else
+#endif
+  {
+    typedef void (*get_tls_func)(size_t*, size_t*);
+    get_tls_func get_tls;
+    CHECK_EQ(sizeof(get_tls), sizeof(get_tls_static_info_ptr));
+    internal_memcpy(&get_tls, &get_tls_static_info_ptr,
+                    sizeof(get_tls_static_info_ptr));
+    CHECK_NE(get_tls, 0);
+    get_tls(&tls_size, &tls_align);
+  }
   if (tls_align < kStackAlign)
     tls_align = kStackAlign;
   g_tls_size = RoundUpTo(tls_size, tls_align);
