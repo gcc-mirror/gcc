@@ -1,3 +1,8 @@
+2018-10-15  Renlin Li  <renlin.li@arm.com>
+
+	PR target/87563
+	* gcc.target/aarch64/sve/pr87563.c: New.
+
 2018-10-15  Paul Thomas  <pault@gcc.gnu.org>
 	Tobias Burnus  <burnus@gcc.gnu.org>
 

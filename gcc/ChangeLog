@@ -1,3 +1,13 @@
+2018-10-15  Renlin Li  <renlin.li@arm.com>
+
+	PR target/87563
+	* tree-vectorizer.c (try_vectorize_loop_1): Don't use
+	if-conversioned loop when it contains ifn with types not
+	supported by backend.
+	* internal-fn.c (expand_direct_optab_fn): Add an assert.
+	(direct_internal_fn_supported_p): New helper function.
+	* internal-fn.h (direct_internal_fn_supported_p): Declare.
+
 2018-10-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87572
