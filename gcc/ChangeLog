@@ -1,3 +1,9 @@
+2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/87022
+	* tree-loop-distribution.c (pg_add_dependence_edges): Check all
+	bits in dist vector rather than the first one.
+
 2018-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87610
