@@ -1,3 +1,8 @@
+2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_vec_init): Force vector element
+	into reg if it isn't a general operand.
+
 2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87599
