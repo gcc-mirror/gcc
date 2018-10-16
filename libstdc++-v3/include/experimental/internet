@@ -59,6 +59,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace experimental
 {
 namespace net
@@ -67,7 +68,6 @@ inline namespace v1
 {
 namespace ip
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @ingroup networking
@@ -2145,11 +2145,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const int _S_name = IPV6_V6ONLY;
   };
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
-  namespace unicast {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
+  namespace unicast
+  {
     /// Set the default number of hops (TTL) for outbound datagrams.
     struct hops : __sockopt_crtp<hops>
     {
@@ -2165,13 +2162,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	name(const _Protocol& __p) const noexcept
 	{ return __p.family() == AF_INET6 ? IPV6_UNICAST_HOPS : IP_TTL; }
     };
-
-_GLIBCXX_END_NAMESPACE_VERSION
   } // namespace unicast
 
-  namespace multicast {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
+  namespace multicast
+  {
     /// Request that a socket joins a multicast group.
     struct join_group
     {
@@ -2368,7 +2362,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
-_GLIBCXX_END_NAMESPACE_VERSION
   } // namespace multicast
 
   // @}
@@ -2415,6 +2408,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       { return _Hash_impl::hash(__a.to_bytes()); }
     };
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

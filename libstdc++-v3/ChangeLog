@@ -1,5 +1,15 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/experimental/bits/net.h: Move versioned namespace macros
+	to correct location.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
 	* config.h.in: Regenerate.
 	* configure: Regenerate.
 	* configure.ac: Check for headers used by Networking TS.
