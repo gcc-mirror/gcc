@@ -1,3 +1,16 @@
+2018-10-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* gcc.dg/torture/restrict-6.c: New testcase.
+
+	2018-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87465
+	* gcc.dg/tree-ssa/cunroll-15.c: New testcase.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/85070
