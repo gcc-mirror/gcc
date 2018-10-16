@@ -2085,9 +2085,9 @@ static tree cp_parser_implicitly_scoped_statement
 static void cp_parser_already_scoped_statement
   (cp_parser *, bool *, const token_indent_info &);
 
-static location_t cp_parser_module_declaration
-  (cp_parser *parser, bool exporting, bool first_p);
-static location_t cp_parser_import_declaration
+static void cp_parser_module_declaration
+  (cp_parser *parser, bool exporting);
+static void cp_parser_import_declaration
   (cp_parser *parser, bool exporting, bool preamble_p);
 
 /* Declarations [gram.dcl.dcl] */
@@ -4623,7 +4623,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 		}
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_module_declaration (parser, exporting, first);
+	      cp_parser_module_declaration (parser, exporting);
 	      preamble = true;
 	    }
 	}
@@ -12823,36 +12823,24 @@ cp_parser_module_name (cp_parser *parser)
      module module-name attr-spec-seq-opt ;
 */
 
-static location_t
-cp_parser_module_declaration (cp_parser *parser, bool exporting, bool first_p)
+static void
+cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  bool atom_p = modules_atom_p ();
 
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-#if 0
-  if (!first_p && atom_p)
-    {
-      error_at (token->location,
-		"module declaration must be first declaration of preamble");
-      mod = NULL;
-    }
-#endif
-  if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
-    return UNKNOWN_LOCATION;
-  if (!mod)
-    return UNKNOWN_LOCATION;
-
-  declare_module (mod, token->location, exporting, attrs, parse_in);
-  return token->location;
+  cp_parser_consume_semicolon_at_end_of_statement (parser);
+  
+  if (mod)
+    declare_module (mod, token->location, exporting, attrs, parse_in);
 }
 
 /* Import-declaration
    import module-name attr-spec-seq-opt ; */
 
-static location_t
+static void
 cp_parser_import_declaration (cp_parser *parser, bool exporting, bool preamble_p)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
@@ -12869,11 +12857,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting, bool preamble_p
     error_at (token->location,
 	      "import declaration must be within module preamble");
   else
-    {
-      import_module (mod, token->location, exporting, attrs, parse_in);
-      return token->location;
-    }
-  return UNKNOWN_LOCATION;
+    import_module (mod, token->location, exporting, attrs, parse_in);
 }
 
 /*  export-declaration.
@@ -12886,12 +12870,6 @@ cp_parser_module_export (cp_parser *parser)
 {
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
-    {
-      cp_parser_module_declaration (parser, false, true);
-      return;
-    }
 
   if (!module_interface_p ())
     error_at (token->location,
@@ -12919,122 +12897,6 @@ cp_parser_module_export (cp_parser *parser)
     cp_parser_declaration (parser);
 
   pop_module_export (prev);
-}
-
-/* Tokenize an atom preamble.  Return MPS_IMPORT & MPS_MODULE
-   mask of preamble decls.  Otherwise zero.  */
-
-static module_preamble_state
-cp_parser_get_module_preamble_tokens (cp_parser *parser)
-{
-  cp_lexer *lexer = parser->lexer;
-  module_preamble_state res = MPS_NONE;
-
-  for (bool eof = false; !eof;)
-    {
-      module_preamble_state state
-	= module_preamble_prefix_peek (true, res != 0, parse_in);
-
-      if (state == MPS_NONE)
-	break;
-
-      res = module_preamble_state (res | (state & (MPS_IMPORT | MPS_MODULE)));
-      state = module_preamble_state (state & (MPS_PRAGMA | MPS_COUNT));
-
-      for (;;)
-	{
-	  cp_token tok;
-
-	  /* This will swallow comments for us.  */
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | ((state == MPS_NAME)
-					      ? C_LEX_STRING_IS_HEADER : 0),
-					   &tok);
-	  state = module_preamble_prefix_next (state, parse_in, tok.type,
-					       tok.location);
-	  vec_safe_push (lexer->buffer, tok);
-	  if (!state)
-	    {
-	      eof = tok.type == CPP_EOF;
-	      break;
-	    }
-	}
-    }
-
-  return res;
-}
-
-/* Parse an atom preamble.  This is done before tokenizing the rest
-   of the source, as it can affect preprocessor state.  Returns the
-   location of the first declaration.  */
-
-location_t
-cp_parser_parse_module_preamble (cp_parser *parser)
-{
-  cp_lexer *lexer = parser->lexer;
-  vec_safe_push (lexer->buffer, eof_token);
-  lexer->next_token = &(*lexer->buffer)[0];
-  lexer->last_token = &lexer->buffer->last ();
-  location_t first_loc = UNKNOWN_LOCATION;
-
-  for (bool first = true, export_p = false;;)
-    {
-      cp_token *tok = cp_lexer_peek_token (lexer);
-      switch (tok->type)
-	{
-	case CPP_EOF:
-	  /* Lose the EOF.  */
-	  lexer->buffer->pop ();
-	  return first_loc;
-
-	case CPP_PRAGMA:
-	  cp_parser_pragma (parser, pragma_external, NULL);
-	  continue;
-
-	case CPP_KEYWORD:
-	  switch (tok->keyword)
-	    {
-	      location_t loc;
-
-	    case RID_MODULE:
-	      loc = cp_parser_module_declaration (parser, export_p, first);
-	      if (first_loc == UNKNOWN_LOCATION)
-		first_loc = loc;
-	      first = false;
-	      export_p = false;
-	      continue;
-
-	    case RID_IMPORT:
-	      loc = cp_parser_import_declaration (parser, export_p, true);
-	      if (first_loc == UNKNOWN_LOCATION)
-		first_loc = loc;
-	      first = false;
-	      export_p = false;
-	      continue;
-
-	    case RID_EXPORT:
-	      if (!export_p)
-		{
-		  export_p = true;
-		  cp_lexer_consume_token (lexer);
-		  continue;
-		}
-	      break;
-
-	    default:
-	      break;
-	    }
-	  break;
-
-	  default:
-	    break;
-	}
-      cp_parser_error (parser, "expected module-declaration,"
-		       " import-declaration or pragma in module-preamble");
-      cp_parser_skip_to_end_of_statement (parser);
-    }
-
-  gcc_unreachable ();
 }
 
 /* Declarations [gram.dcl.dcl] */
@@ -39496,21 +39358,8 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
       else
 	{
 	  if (pending_imports)
-	    {
-	      unsigned adjust = process_deferred_imports (parse_in);
-	      pending_imports = false;
-#if 0
-	      /* We must adjust the locations of the tokens we already
-		 gathered.  There will be 1 or 2 tokens, depending on
-		 whether we saw 'export' or not.  */
-	      gcc_assert (parser->lexer->buffer->length ()
-			  == (was_export ? 2 : 1));
-	      cp_token *tokens = &(*parser->lexer->buffer)[0];
-	      linemap_adjust_locations (line_table, adjust,
-					&tokens[0].location,
-					was_export ? &tokens[1].location :  NULL);
-#endif
-	    }
+	    process_deferred_imports (parse_in);
+	  pending_imports = false;
 	  was_export = false;
 	}
 
@@ -39539,31 +39388,13 @@ c_parse_file (void)
   already_called = true;
 
   cp_token first;
-  if (true || !modules_atom_p ())
-    /* It's possible that parsing the first pragma will load a PCH file,
-       which is a GC collection point.  So we have to do that before
-       allocating any memory.  Modules is incompatible with PCH.  */
-    cp_parser_initial_pragma (&first);
+
+  /* It's possible that parsing the first pragma will load a PCH file,
+     which is a GC collection point.  So we have to do that before
+     allocating any memory.  Modules is incompatible with PCH.  */
+  cp_parser_initial_pragma (&first);
 
   the_parser = cp_parser_new ();
-  if (false && modules_atom_p ())
-    {
-#if 1
-      module_preamble_state preamble
-	= cp_parser_get_module_preamble_tokens (the_parser);
-      if (preamble & MPS_MODULE
-	  || preamble & MPS_IMPORT
-	  || modules_legacy_p ())
-	{
-	  /* There is a non-empty preamble.  */
-	  location_t loc = cp_parser_parse_module_preamble (the_parser);
-	  gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	  if (unsigned adjust = process_deferred_imports (parse_in))
-	    cpp_relocate_peeked_tokens (parse_in, adjust);
-	}
-#endif
-      cp_parser_initial_pragma (&first);
-    }
 
   cp_parser_translation_unit (the_parser, &first);
   the_parser = NULL;

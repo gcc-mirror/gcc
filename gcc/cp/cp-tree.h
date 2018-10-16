@@ -6735,11 +6735,11 @@ extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
 extern int push_module_export (bool);
 extern void pop_module_export (int);
-extern unsigned import_module (module_state *, location_t, bool, tree,
-			       cpp_reader *);
-extern unsigned declare_module (module_state *, location_t, bool, tree,
-				cpp_reader *);
-extern unsigned process_deferred_imports (cpp_reader *);
+extern void import_module (module_state *, location_t, bool, tree,
+			   cpp_reader *);
+extern void declare_module (module_state *, location_t, bool, tree,
+			    cpp_reader *);
+extern void process_deferred_imports (cpp_reader *);
 extern void module_cpp_undef (cpp_reader *, location_t, cpp_hashnode *);
 extern cpp_macro *module_cpp_deferred_macro (cpp_reader *,
 					     location_t, cpp_hashnode *);

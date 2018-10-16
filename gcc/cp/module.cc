@@ -3074,7 +3074,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   void attach (location_t);
   bool do_import (const char *filename, cpp_reader *);
-  unsigned direct_import (bool deferred_p, cpp_reader *);
+  void direct_import (int deferrable, cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -11862,12 +11862,19 @@ module_state::do_import (char const *fname, cpp_reader *reader)
    interface unit's module declaration, setting up for an export in
    that case.  */
 
-unsigned
-module_state::direct_import (bool deferred_p, cpp_reader *reader)
+void
+module_state::direct_import (int deferrable, cpp_reader *reader)
 {
   unsigned n = dump.push (this);
   bool ok = true;
-  unsigned adj = 0;
+
+  if (is_legacy ())
+    deferrable = 0;
+  if (deferrable > 0)
+    {
+      vec_safe_push (pending_imports, this);
+      return;
+    }
 
   direct_p = true;
   if (!is_imported ())
@@ -11877,7 +11884,7 @@ module_state::direct_import (bool deferred_p, cpp_reader *reader)
       char *fname = NULL;
       unsigned pre_hwm = 0;
 
-      if (!deferred_p)
+      if (!deferrable)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
@@ -11894,9 +11901,9 @@ module_state::direct_import (bool deferred_p, cpp_reader *reader)
 	filename = xstrdup (fname);
 
       /* Restore the line-map state.  */
-      if (!deferred_p)
+      if (!deferrable)
 	{
-	  adj = linemap_module_restore (line_table, pre_hwm);
+	  linemap_module_restore (line_table, pre_hwm);
 	  if (interface_unit)
 	    spans.open ();
 	}
@@ -11916,8 +11923,6 @@ module_state::direct_import (bool deferred_p, cpp_reader *reader)
     }
 
   dump.pop (n);
-
-  return adj;
 }
 
 /* Pick a victim module to freeze its reader.  */
@@ -11989,7 +11994,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
 
-unsigned
+void
 import_module (module_state *imp, location_t from_loc, bool exporting,
 	       tree, cpp_reader *reader)
 {
@@ -12000,7 +12005,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   from_loc = ordinary_loc_of (line_table, from_loc);
 
   if (!imp->check_not_purview (from_loc))
-    return 0;
+    return;
 
   if (imp->is_detached ())
     imp->attach (from_loc);
@@ -12008,20 +12013,15 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   if (exporting)
     imp->exported_p = true;
 
-  unsigned adj = 0;
-  if (imp->is_legacy ())
-    adj = imp->direct_import (false, reader);
-  else
-    vec_safe_push (pending_imports, imp);
+  imp->direct_import (true, reader);
 
   gcc_assert (global_namespace == current_scope ());
-  return adj;
 }
 
 /* Declare the name of the current module to be NAME.  EXPORTING_p is
    true if this TU is the exporting module unit.  */
 
-unsigned
+void
 declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
@@ -12033,7 +12033,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       /* Already declared the module.  */
       error_at (from_loc, "cannot declare module in purview of module %qs",
 		purview->fullname);
-      return 0;
+      return;
     }
 
   if (!state->is_detached ())
@@ -12041,7 +12041,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       /* Cannot be module unit of an imported module.  */
       error_at (from_loc, "cannot declare module after import");
       inform (state->from_loc, "module %qs imported here", state->fullname);
-      return 0;
+      return;
     }
 
   if (state->is_legacy () != modules_legacy_p ())
@@ -12073,12 +12073,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   else
     state->mod = MODULE_UNKNOWN;
 
-  unsigned adj = 0;
-  if (state->is_legacy ())
-    adj = state->direct_import (false, reader);
-  else
-    vec_safe_push (pending_imports, state);
-  return adj;
+  state->direct_import (true, reader);
 }
 
 /* Track if NODE undefs an imported macro.  */
@@ -12198,15 +12193,13 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
     }
 }
 
-/* Process any deferred imports.   If this is the preamble block,
-   setup appropriately for the export declaration.   Return token
-   location adjustment.  */
+/* Process any deferred imports.   */
 
-unsigned
+void
 process_deferred_imports (cpp_reader *reader)
 {
   if (!vec_safe_length (pending_imports))
-    return 0;
+    return;
 
   dump.push (NULL);
   dump () && dump ("Processing %u deferred imports",
@@ -12256,18 +12249,16 @@ process_deferred_imports (cpp_reader *reader)
 	 ix != pending_imports->length (); ix++)
       {
 	module_state *imp = (*pending_imports)[ix];
-	imp->direct_import (true, reader);
+	imp->direct_import (-1, reader);
       }
 
   dump.pop (0);
 
   vec_free (pending_imports);
 
-  unsigned adj = linemap_module_restore (line_table, pre_hwm);
+  linemap_module_restore (line_table, pre_hwm);
   if (is_interface)
     spans.open ();
-
-  return adj;
 }
 
 /* VAL is a global tree, add it to the global vec if it is

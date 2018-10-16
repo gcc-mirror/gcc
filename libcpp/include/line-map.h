@@ -1162,7 +1162,7 @@ extern source_location linemap_module_loc
   (line_maps *, source_location from, const char *name);
 
 /* Restore the linemap state such that the map at LWM-1 continues.  */
-extern unsigned linemap_module_restore
+extern void linemap_module_restore
   (line_maps *, unsigned lwm);
 
 /* Given a logical source location, returns the map which the

@@ -1,5 +1,27 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Remove preamble peeking
+	gcc/cp/
+	* cp-tree.h ({import,declare}_module): return void.
+	(process_deferred_imports): Return void.
+	(module_state::direct_import): Return void, deferrable is
+	tristate.  Push onto pending_import vector if permitted.
+	({import,declare}_module): Don't return adjustment, use
+	direct_import always.
+	(process_deferred_imports): Don't return adjustment.
+	* parser.c (cp_parser_module_declaration): Return void, drop first
+	arg.
+	(cp_parser_import_declaration): Return void.
+	(cp_parser_module_export): Don't deal with module declaration
+	here.
+	(cp_parser_get_module_preamble_tokens)
+	(cp_parser_parse_module_preamble): Delete.
+	(cp_parser_tokenize): Delete #ifdef'd adjustment code.
+	(c_parse_file): Don't peek preamble.
+	libcpp/
+	* line-map.c (linemap_module_restore): Don't calculate adjustment.
+	* include/line-map.h (linemap_module_restore): Return void.
+
 	Common tokenizer for atom & ts
 	gcc/cp/
 	* module.cc ({import,declare}_module): Don't defer legacy modules.
