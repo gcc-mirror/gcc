@@ -1,6 +1,17 @@
 2018-10-16  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/63155
+	* tree-ssa-coalesce.c (tree_int_map_hasher): Remove.
+	(compute_samebase_partition_bases): Likewise.
+	(coalesce_ssa_name): Always use compute_optimized_partition_bases.
+	(gimple_can_coalesce_p): Simplify.
+
+2018-10-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-10-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87610
