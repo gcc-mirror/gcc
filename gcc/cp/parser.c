@@ -4563,7 +4563,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
   bool implicit_extern_c = false;
   bool first = modules_p () && !modules_atom_p ();
-  bool gmf = false;
+  bool gmf = false; /* Global Module Fragment.  */
   location_t export_loc = UNKNOWN_LOCATION;
   bool real_eof = tok->type == CPP_EOF;
 
@@ -4604,10 +4604,20 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
       if (next->keyword == RID_MODULE && (first || gmf))
 	{
-	  if (exporting)
-	    cp_lexer_consume_token (parser->lexer);
-	  gmf = (cp_parser_module_declaration (parser, exporting, first)
-		 == UNKNOWN_LOCATION);
+	  if (!exporting && !gmf && !modules_atom_p ()
+	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
+	    {
+	      cp_lexer_consume_token (parser->lexer); /* module */
+	      cp_lexer_consume_token (parser->lexer); /* ; */
+	      gmf = true;
+	    }
+	  else
+	    {
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_module_declaration (parser, exporting, first);
+	      gmf = false;
+	    }
 	}
       else if (next->keyword == RID_IMPORT)
 	{
@@ -12792,8 +12802,7 @@ cp_parser_module_name (cp_parser *parser)
     }
 }
 
-/* Module-declaration
-     module ;
+/* Named module-declaration
      module module-name attr-spec-seq-opt ;
 */
 
@@ -12803,14 +12812,6 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting, bool first_p)
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   bool atom_p = modules_atom_p ();
 
-  if (!exporting && first_p && !atom_p
-      && cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
-    {
-      cp_lexer_consume_token (parser->lexer);
-      return UNKNOWN_LOCATION;
-    }
-
-  /* module declaration proper.  */
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 

@@ -1,3 +1,9 @@
+2018-10-16  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Detect GMF here ...
+	(cp_parser_module_declaration): ... not here.
+
 2018-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
