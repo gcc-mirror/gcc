@@ -1,6 +1,16 @@
 2018-10-15  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h ({import,declare}_module): Return adjustment.
+	* module.c (module_state::direct_import): Preserve line table,
+	return adjustment.
+	* parser.c (cp_parser_fill_main): Delete.
+	(cp_parser_tokenize): Take cp_token pointer, reorder check & push.
+	(cp_parser_translation_unit): Take cp_token pointer, call
+	cp_parser_tokenize.
+	(c_parse_file): Don't tokenize here.
+
+	gcc/cp/
 	* lang-specs.h: Fix .s elision with legacy modules.
 
 	gcc/

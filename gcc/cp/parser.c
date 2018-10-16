@@ -247,9 +247,8 @@ static cp_token_cache *cp_token_cache_new
 
 static void cp_parser_initial_pragma
   (cp_token *);
-static void cp_parser_fill_main
-  (cp_parser *parser, cp_token *first);
-static bool cp_parser_tokenize (cp_parser *, bool);
+static bool cp_parser_tokenize
+  (cp_parser *, bool, cp_token *next);
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -1972,7 +1971,7 @@ static cp_expr cp_parser_userdef_numeric_literal
 
 /* Basic concepts [gram.basic]  */
 
-static void cp_parser_translation_unit (cp_parser *);
+static void cp_parser_translation_unit (cp_parser *, cp_token *);
 
 /* Expressions [gram.expr]  */
 
@@ -4545,10 +4544,10 @@ cp_parser_userdef_string_literal (tree literal)
      declaration-seq [opt]  */
 
 static void
-cp_parser_translation_unit (cp_parser* parser)
+cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 {
   gcc_checking_assert (!cp_error_declarator);
-  
+
   /* Create the declarator obstack.  */
   gcc_obstack_init (&declarator_obstack);
   /* Create the error declarator.  */
@@ -4559,11 +4558,20 @@ cp_parser_translation_unit (cp_parser* parser)
   /* Remember where the base of the declarator obstack lies.  */
   void *declarator_obstack_base = obstack_next_free (&declarator_obstack);
 
+  push_deferring_access_checks (flag_access_control
+				? dk_no_deferred : dk_no_check);
+
   bool implicit_extern_c = false;
   bool first = modules_p () && !modules_atom_p ();
   bool gmf = false;
   location_t export_loc = UNKNOWN_LOCATION;
+  bool real_eof = tok->type == CPP_EOF;
 
+ more:
+  /* Tokenize until EOF or end-of-{module,import}-decl.  */
+  real_eof = cp_parser_tokenize (parser, export_loc != UNKNOWN_LOCATION, tok);
+
+  /* Parse until EOF.  */
   for (;;)
     {
       cp_token *token = cp_lexer_peek_token (parser->lexer);
@@ -4636,6 +4644,13 @@ cp_parser_translation_unit (cp_parser* parser)
       else
 	cp_parser_toplevel_declaration (parser);
       first = false;
+    }
+
+  if (!real_eof)
+    {
+      if (tok->type == CPP_EOF)
+	cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+      goto more;
     }
 
   if (export_loc)
@@ -39383,109 +39398,102 @@ pragma_lex (tree *value, location_t *loc)
   return ret;
 }
 
-/* Fill the lexer with tokens from the preprocessor.  *FIRST is the
-   intial token found by cp_parser_initial_pragma.  */
-
-static void
-cp_parser_fill_main (cp_parser *parser, cp_token *tok)
-{
-  cp_lexer *lexer = parser->lexer;
-  size_t lwm = lexer->buffer->length ();
-
-  while (tok->type != CPP_EOF)
-    {
-      vec_safe_push (lexer->buffer, *tok);
-      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
-    }
-  vec_safe_push (lexer->buffer, *tok);
-
-  lexer->next_token = &(*lexer->buffer)[lwm];
-  lexer->last_token = &lexer->buffer->last ();
-
-  /* Subsequent preprocessor diagnostics should use compiler
-     diagnostic functions to get the compiler source location.  */
-  done_lexing = true;
-
-  gcc_assert (!lexer->next_token->purged_p);
-}
-
 /* Tokenize until we've got to EOF (return true), or we've just gone
    past an unnested module or import declaration.  PROCESS_IMPORTS is
    true if there might be pending imports to process.  */
 
 static bool
-cp_parser_tokenize (cp_parser *parser, bool process_imports)
+cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 {
-  // FIXME:Zap buffer
-  size_t lwm = parser->lexer->buffer->length ();
-  unsigned depth = 0;
+  unsigned depth = nested_p;
   bool eof = false;
+  bool maybe_decl = false;
+  bool pending_imports = true;
+  bool was_export = false;
 
- try_again:
-  module_preamble_state state
-    = module_preamble_prefix_peek (true, false, parse_in);
-
-  if (state != MPS_NONE)
+  parser->lexer->buffer->truncate (0);
+  for (;;)
     {
-      /* An interesting declaration.  Tokenize it.  */
-      state = module_preamble_state (state & (MPS_PRAGMA | MPS_COUNT));
-
-      for (;;)
+      vec_safe_push (parser->lexer->buffer, *tok);
+      unsigned lex_flags = C_LEX_STRING_NO_JOIN;
+      if (tok->type == CPP_EOF)
 	{
-	  cp_token tok;
-
-	  /* This will swallow comments for us.  */
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | ((state == MPS_NAME)
-					      ? C_LEX_STRING_IS_HEADER : 0),
-					   &tok);
-	  state = module_preamble_prefix_next (state, parse_in, tok.type,
-					       tok.location);
-	  vec_safe_push (parser->lexer->buffer, tok);
-	  if (state == MPS_NONE)
+	  done_lexing = true;
+	  eof = true;
+	  break;
+	}
+      else if (tok->type == CPP_OPEN_BRACE
+	       || tok->type == CPP_CLOSE_BRACE)
+	{
+	  if (maybe_decl)
 	    {
-	      if (tok.type == CPP_EOF)
-		eof = true;
+	      /* A module/import decl appears to terminate early with
+	         a syntax error.  Turn the brace into an EOF.  We'll
+	         see the brace next time. */
+	      parser->lexer->buffer->last ().type = CPP_EOF;
 	      break;
 	    }
-	}
-      if (depth)
-	goto try_again;
-    }
-  else
-    {
-      if (process_imports)
-	; // do deferred imports here
-      process_imports = false;
-      for (;;)
-	{
-	  cp_token tok;
 
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, &tok);
-	  vec_safe_push (parser->lexer->buffer, tok);
-	  if (tok.type == CPP_OPEN_BRACE)
-	    depth++;
-	  else if (tok.type == CPP_CLOSE_BRACE)
+	  if (tok->type == CPP_OPEN_BRACE)
 	    {
-	      depth -= depth != 0;
+	      depth++;
+	      if (was_export)
+		nested_p = true;
+	    }
+	  else
+	    {
+	      depth -= !depth;
 	      if (!depth)
-		goto try_again;
+		nested_p = false;
 	    }
-	  else if (!depth && tok.type == CPP_SEMICOLON)
-	    goto try_again;
-	  if (tok.type == CPP_EOF)
+	  was_export = false;
+	}
+      else if (tok->type == CPP_SEMICOLON)
+	{
+	  if (maybe_decl)
 	    {
-	      eof = true;
+	      tok->type = CPP_EOF;
+	      /* Push an EOF.  */
+	      vec_safe_push (parser->lexer->buffer, eof_token);
 	      break;
 	    }
+	  was_export = false;
 	}
+      else if (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT)
+	{
+	  if (depth <= int (nested_p))
+	    {
+	      maybe_decl = true;
+	      pending_imports = false;
+	    }
+	  lex_flags |= C_LEX_STRING_IS_HEADER;
+	  was_export = false;
+	}
+      else if (tok->keyword == RID_EXPORT)
+	was_export = true;
+      else
+	{
+	  if (pending_imports)
+	    {
+	      pending_imports = false;
+	      vec<cp_token, va_gc> *buffer = parser->lexer->buffer;
+	      location_t loc = (*buffer)[0].location;
+	      unsigned adjust = process_deferred_imports (loc, parse_in);
+	      for (unsigned ix = buffer->length (); ix--;)
+		{
+		  cp_token &t = (*buffer)[ix];
+		  // FIXME	  t.location = cpp_relocate_location (parse_in, adjust, t.location);
+		}
+	    }
+	  was_export = false;
+	}
+
+      /* Get the next token.  */
+      cp_lexer_get_preprocessor_token (lex_flags, tok);
     }
 
-  parser->lexer->next_token = &(*parser->lexer->buffer)[lwm];
+  parser->lexer->next_token = &(*parser->lexer->buffer)[0];
   parser->lexer->last_token = &parser->lexer->buffer->last ();
-
-  if (eof)
-    done_lexing = true;
 
   return eof;
 }
@@ -39512,10 +39520,9 @@ c_parse_file (void)
     cp_parser_initial_pragma (&first);
 
   the_parser = cp_parser_new ();
-  push_deferring_access_checks (flag_access_control
-				? dk_no_deferred : dk_no_check);
   if (modules_atom_p ())
     {
+#if 1
       module_preamble_state preamble
 	= cp_parser_get_module_preamble_tokens (the_parser);
       if (preamble & MPS_MODULE
@@ -39528,11 +39535,11 @@ c_parse_file (void)
 	  if (unsigned adjust = process_deferred_imports (loc, parse_in))
 	    cpp_relocate_peeked_tokens (parse_in, adjust);
 	}
+#endif
       cp_parser_initial_pragma (&first);
     }
 
-  cp_parser_fill_main (the_parser, &first);
-  cp_parser_translation_unit (the_parser);
+  cp_parser_translation_unit (the_parser, &first);
   the_parser = NULL;
 
   finish_translation_unit ();
