@@ -1,3 +1,46 @@
+2018-10-16  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (add_ssa_edge): Do cheap check first.
+	(ssa_propagation_engine::ssa_propagate): Remove redundant
+	bitmap bit clearing.
+
+	2018-10-05  Richard Biener  <rguenther@suse.de>
+ 
+	PR tree-optimization/63155
+	* tree-ssa-ccp.c (ccp_propagate::visit_phi): Avoid excess
+	vertical space in dumpfiles.
+	* tree-ssa-propagate.h
+	(ssa_propagation_engine::process_ssa_edge_worklist): Remove.
+	* tree-ssa-propagate.c (cfg_blocks_back): New global.
+	(ssa_edge_worklist_back): Likewise.
+	(curr_order): Likewise.
+	(cfg_blocks_get): Remove abstraction.
+	(cfg_blocks_add): Likewise.
+	(cfg_blocks_empty_p): Likewise.
+	(add_ssa_edge): Add to current or next worklist based on
+	RPO index.
+	(add_control_edge): Likewise.
+	(ssa_propagation_engine::process_ssa_edge_worklist): Fold
+	into ...
+	(ssa_propagation_engine::ssa_propagate): ... here.  Unify
+	iteration from CFG and SSA edge worklist so we process
+	everything in RPO order, prioritizing forward progress
+	over iteration.
+	(ssa_prop_init): Allocate new worklists, do not dump
+	immediate uses.
+	(ssa_prop_fini): Free new worklists.
+
+	2018-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (add_ssa_edge): Avoid adding PHIs to
+	the worklist when the edge of the respective argument isn't
+	executable.
+
 2018-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backported from mainline
