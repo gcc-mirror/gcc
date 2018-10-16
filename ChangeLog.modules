@@ -1,5 +1,9 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/
+	* dumpfile.c (dump_switch_p_1): Don't let a '-' filename fool the
+	option machinery.
+
 	Legacy importing during -E
 	gcc/c-family/
 	* c-lex.c (init_c_lex): Don't use lang_hooks here.

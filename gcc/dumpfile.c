@@ -1717,7 +1717,7 @@ dump_switch_p_1 (const char *arg, struct dump_file_info *dfi, bool doglob)
       end_ptr = strchr (ptr, '-');
       eq_ptr = strchr (ptr, '=');
 
-      if (eq_ptr && !end_ptr)
+      if (eq_ptr && (!end_ptr || end_ptr > eq_ptr))
         end_ptr = eq_ptr;
 
       if (!end_ptr)
