@@ -41,9 +41,15 @@
 #include <thread>
 #include <experimental/netfwd>
 #include <experimental/executor>
-#include <unistd.h>
-#include <poll.h>
-#include <fcntl.h>
+#if _GLIBCXX_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef _GLIBCXX_HAVE_POLL_H
+# include <poll.h>
+#endif
+#ifdef _GLIBCXX_HAVE_FCNTL_H
+# include <fcntl.h>
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -775,6 +781,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_notify();
       }
 
+# ifdef _GLIBCXX_HAVE_POLL_H
       using __fdvec = vector<::pollfd>;
 
       // Find first element p such that !(p.fd < __fd)
@@ -823,6 +830,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       __fdvec _M_fds;	// _M_fds.back() is the read end of the self-pipe
+#endif
       int _M_notify_wr;	// write end of the self-pipe
     };
 
