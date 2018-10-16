@@ -1,5 +1,9 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/net/internet/address/v4/creation.cc: Do not
+	declare ip in global namespace, to avoid collision with struct ip
+	defined in <netinet/ip.h>.
+
 	* include/experimental/bits/net.h: Move versioned namespace macros
 	to correct location.
 	* include/experimental/buffer: Likewise.
