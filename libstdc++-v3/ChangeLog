@@ -1,5 +1,8 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/random.h (random_device) [!_GLIBCXX_USE_DEV_RANDOM]:
+	Fix default constructor to call correct function.
+
 	* testsuite/experimental/net/internet/address/v4/creation.cc: Do not
 	declare ip in global namespace, to avoid collision with struct ip
 	defined in <netinet/ip.h>.
