@@ -1,3 +1,9 @@
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87556
+	* trans-stmt.c (form_team, change_team, sync_team):
+	Don't ignore argse.pre/argse.post.
+
 2018-10-15  Paul Thomas  <pault@gcc.gnu.org>
 	Tobias Burnus  <burnus@gcc.gnu.org>
 
