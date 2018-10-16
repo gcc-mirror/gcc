@@ -1,3 +1,9 @@
+2018-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backported from mainline
+	PR target/87511
+	* gcc.target/aarch64/pr87511.c: Add new test.
+
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
