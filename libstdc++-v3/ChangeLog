@@ -1,5 +1,30 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/experimental/net/headers.cc: Remove dg-options.
+	* testsuite/experimental/net/buffer/arithmetic.cc: Replace dg-options
+	with dg-do using effective target.
+	* testsuite/experimental/net/buffer/const.cc: Likewise.
+	* testsuite/experimental/net/buffer/creation.cc: Likewise.
+	* testsuite/experimental/net/buffer/mutable.cc: Likewise.
+	* testsuite/experimental/net/buffer/size.cc: Likewise.
+	* testsuite/experimental/net/buffer/traits.cc: Likewise.
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
 	* include/experimental/socket (basic_socket::at_mark): Add missing
 	return.
 
