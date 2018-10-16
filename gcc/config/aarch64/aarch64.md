@@ -6716,7 +6716,7 @@
 ;; Support for __builtin_speculation_safe_value when we have speculation
 ;; tracking enabled.  Use the speculation tracker to decide whether to
 ;; copy operand 1 to the target, or to copy the fail value (operand 2).
-(define_expand "despeculate_copy<ALLI_TI:mode>"
+(define_expand "@despeculate_copy<ALLI_TI:mode>"
   [(set (match_operand:ALLI_TI 0 "register_operand" "=r")
 	(unspec_volatile:ALLI_TI
 	 [(match_operand:ALLI_TI 1 "register_operand" "r")

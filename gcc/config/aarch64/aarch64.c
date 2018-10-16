@@ -17969,26 +17969,7 @@ aarch64_speculation_safe_value (machine_mode mode,
   if (!aarch64_reg_or_zero (failval, mode))
     failval = copy_to_mode_reg (mode, failval);
 
-  switch (mode)
-    {
-    case E_QImode:
-      emit_insn (gen_despeculate_copyqi (result, val, failval));
-      break;
-    case E_HImode:
-      emit_insn (gen_despeculate_copyhi (result, val, failval));
-      break;
-    case E_SImode:
-      emit_insn (gen_despeculate_copysi (result, val, failval));
-      break;
-    case E_DImode:
-      emit_insn (gen_despeculate_copydi (result, val, failval));
-      break;
-    case E_TImode:
-      emit_insn (gen_despeculate_copyti (result, val, failval));
-      break;
-    default:
-      gcc_unreachable ();
-    }
+  emit_insn (gen_despeculate_copy (mode, result, val, failval));
   return result;
 }
 
