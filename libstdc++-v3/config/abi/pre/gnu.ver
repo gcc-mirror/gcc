@@ -2032,10 +2032,10 @@ GLIBCXX_3.4.26 {
     _ZNSt13runtime_erroraSEOS_;
 
     # Default constructors for stringstreams
-    _ZNSt15basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt15basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt18basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt19basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
-    _ZNSt7__cxx1115basic_stringbuf[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
+    _ZNSt7__cxx1115basic_stringbufI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
 
