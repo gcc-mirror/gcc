@@ -10867,7 +10867,6 @@ module_state_config::get_opts ()
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
-	  || opt->opt_index == OPT_fmodule_preamble_
 	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
@@ -12300,8 +12299,7 @@ init_module_processing ()
 
   /* Check for ill-formed combinations.  */
   if (!modules_atom_p ()
-      && (module_legacy_name || module_legacy_macro
-	  || flag_module_preamble >= 0))
+      && (module_legacy_name || module_legacy_macro))
     {
       flag_modules = module_legacy_name ? -2 : -1;
       error ("%s not suppported with %<-fmodules-ts%>",
@@ -12342,10 +12340,6 @@ init_module_processing ()
       lazy_open = lazy_open * 3 / 4;
     }
   dump () && dump ("Lazy limit is %u", lazy_open);
-
-  if (modules_atom_p () && flag_module_preamble >= 0
-      && flag_module_preamble < 65536)
-    dump () && dump ("Preamble ends after %d", flag_module_preamble);
 
   /* Construct the global tree array.  This is an array of unique
      global trees (& types).  Do this now, rather than lazily, as
@@ -12537,17 +12531,10 @@ finish_module_processing ()
    make a string type option variable.  */
 
 bool
-handle_module_option (unsigned code, const char *str, int num)
+handle_module_option (unsigned code, const char *str, int)
 {
   switch (opt_code (code))
     {
-    case OPT_fmodule_preamble_:
-      flag_module_preamble = num;
-      /* Default ATOM.  */
-      if (!flag_modules)
-	flag_modules = -1;
-      return true;
-
     case OPT_fmodules_atom:
       /* Don't drop out of legacy mode.  */
       if (flag_modules >= 0)

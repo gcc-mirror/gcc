@@ -1572,13 +1572,6 @@ fmodule-mapper=
 C++ ObjC++ Joined RejectNegative MissingArgError(missing mapper)
 Mapper for module to BMI files.
 
-fmodule-preamble
-C++ ObjC++ RejectNegative Alias(fmodule-preamble=,65536)
-Stop after preprocessing atom module preamble.
-
-fmodule-preamble=
-C++ ObjC++ Joined Var(flag_module_preamble) Init(-1) UInteger Undocumented RejectNegative MissingArgError(missing preamble length)
-
 fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing.

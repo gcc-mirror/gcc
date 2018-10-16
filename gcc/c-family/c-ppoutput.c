@@ -176,17 +176,17 @@ scan_translation_unit (cpp_reader *pfile)
       && !flag_no_line_commands;
   bool in_pragma = false;
   bool line_marker_emitted = false;
-  int prefix = lang_hooks.preprocess_preamble ? 0 : -1;
+  int filter = lang_hooks.preprocess_token ? 0 : -1;
 
   print.source = NULL;
-  source_location loc = UNKNOWN_LOCATION;
-  cpp_ttype tok_type = N_TTYPES;
   for (;;)
     {
-      if (prefix >= 0)
+      source_location loc = UNKNOWN_LOCATION;
+      const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
+      if (filter >= 0)
 	{
-	  prefix = lang_hooks.preprocess_preamble (prefix, pfile, tok_type, loc);
-	  if (!prefix)
+	  filter = lang_hooks.preprocess_token (pfile, token, filter);
+	  if (!filter)
 	    {
 	      /* We're bailing out, possibly in the middle of a #if
 		 nest.  We don't want that to cause problems.  */
@@ -194,8 +194,8 @@ scan_translation_unit (cpp_reader *pfile)
 	      break;
 	    }
 	}
-      const cpp_token *token = cpp_get_token_with_location (pfile, &loc);
-      tok_type = token->type;
+
+      cpp_ttype tok_type = token->type;
 
       if (token->type == CPP_PADDING)
 	{

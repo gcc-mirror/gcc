@@ -6669,22 +6669,7 @@ extern void set_identifier_kind			(tree, cp_identifier_kind);
 extern bool cxx_init				(void);
 extern void cxx_finish				(void);
 extern bool in_main_input_context		(void);
-/* Peeking at an atom preamble construct. */
-enum module_preamble_state
-{
- MPS_NONE = 0,
- MPS_NAME = 2,   /* Next token is module name.  */
- MPS_COUNT = 7,  /* A mask.  */
- MPS_PRAGMA = 0x8,  /* Found a pragma.  */
- MPS_IMPORT = 0x10,  /* Found an import.  */
- MPS_MODULE = 0x20   /* Found a module.  */
-};
-extern module_preamble_state module_preamble_prefix_peek
-						(bool, bool, cpp_reader *);
-extern module_preamble_state module_preamble_prefix_next
-						(module_preamble_state,
-						 cpp_reader *, unsigned,
-						 source_location);
+extern int module_preprocess_token (cpp_reader *, const cpp_token *, int);
 
 /* in method.c */
 extern void init_method				(void);

@@ -34,7 +34,6 @@ static tree cp_eh_personality (void);
 static tree get_template_innermost_arguments_folded (const_tree);
 static tree get_template_argument_pack_elems_folded (const_tree);
 static tree cxx_enum_underlying_base_type (const_tree);
-static int module_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 
 /* Lang hooks common to C++ and ObjC++ are declared in cp/cp-objcp-common.h;
    consequently, there should be very few hooks below.  */
@@ -86,8 +85,8 @@ static int module_preamble_fsm (int, cpp_reader *, unsigned, source_location);
 #define LANG_HOOKS_PREPROCESS_UNDEF module_cpp_undef
 #undef LANG_HOOKS_PREPROCESS_DEFERRED_MACRO
 #define LANG_HOOKS_PREPROCESS_DEFERRED_MACRO module_cpp_deferred_macro
-#undef LANG_HOOKS_PREPROCESS_PREAMBLE
-#define LANG_HOOKS_PREPROCESS_PREAMBLE module_preamble_fsm
+#undef LANG_HOOKS_PREPROCESS_TOKEN
+#define LANG_HOOKS_PREPROCESS_TOKEN module_preprocess_token
 
 #if CHECKING_P
 #undef LANG_HOOKS_RUN_LANG_SELFTESTS
@@ -237,34 +236,6 @@ tree cxx_enum_underlying_base_type (const_tree type)
                                 TYPE_UNSIGNED (underlying_type));
 
   return underlying_type;
-}
-
-/*  ATOM preamble finite state machine.  */
-
-static int
-module_preamble_fsm (int state, cpp_reader *pfile,
-		     unsigned ptype, source_location ploc)
-{
-  if (state)
-    {
-      unsigned new_state
-	= (module_preamble_prefix_next
-	   (module_preamble_state (state & (MPS_COUNT | MPS_PRAGMA)),
-	    pfile, ptype, ploc));
-      if (new_state)
-	return (state & (MPS_IMPORT | MPS_MODULE)) | new_state;
-    }
-
-  if (int res = module_preamble_prefix_peek (false,
-					     state & (MPS_IMPORT | MPS_MODULE),
-					     pfile))
-    /* More preamble.  */
-    return res;
-
-  if (flag_module_preamble < 0)
-    return -1;
-  else
-    return 0;
 }
 
 #if CHECKING_P

@@ -212,9 +212,6 @@ proc mode_list { test } {
     if [search_for $test "-fmodule-legacy"] {
 	return { "" }
     }
-    if [search_for $test "-fmodule-preamble"] {
-	return { "" }
-    }
     return { "-fmodules-ts" "-fmodules-atom" }
 }
 

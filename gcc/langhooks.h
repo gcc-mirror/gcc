@@ -345,8 +345,8 @@ struct lang_hooks
   struct cpp_macro *(*preprocess_deferred_macro) (cpp_reader *, source_location,
 						  cpp_hashnode *);
 
-  /* State machine for determining the early end of a preprocess.  */
-  int (*preprocess_preamble) (int, cpp_reader *, unsigned, source_location);
+  /* Observer for preprocessing stream.  */
+  int (*preprocess_token) (cpp_reader *, const cpp_token *, int);
 
   /* Register language-specific dumps.  */
   void (*register_dumps) (gcc::dump_manager *);

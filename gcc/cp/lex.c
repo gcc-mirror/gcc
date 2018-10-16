@@ -369,109 +369,63 @@ interface_strcmp (const char* s)
   return 1;
 }
 
-/* If the preprocessor is peeking at a possible atom module preamble
-   return a non-zero state cookie for atom_preamble_prefix_next.
-   Otherwise zero.  */
+/* We've just read a cpp-token, figure out our next state.  */
 
-module_preamble_state
-module_preamble_prefix_peek (bool, bool only_import,
-			     cpp_reader *pfile)
+int
+module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 {
-  static int count;
-  static source_location peeked_loc;
+  if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
+    return state;
 
-  bool exporting_p = false;
-  unsigned lookahead = 0;
-
-  if (count == flag_module_preamble)
-    /* We're forcibly done.  */
-    return MPS_NONE;
-
- another:
-  /* Peeking does not do macro expansion, but does do #if & #include
-     expansion.  */
-  const cpp_token *cpp_tok
-    = cpp_peek_token_with_location (pfile, lookahead, &peeked_loc);
-  lookahead++;
-  if (cpp_tok->type == CPP_COMMENT)
-    /* Comments come through in -C mode.  */
-    goto another;
-
-  if (cpp_tok->type == CPP_PADDING)
-    /* Comments come through in -C mode.  */
-    goto another;
-
-  if (!exporting_p && cpp_tok->type == CPP_PRAGMA)
-    return MPS_PRAGMA;
-
-  if (cpp_tok->type != CPP_NAME)
+  switch (state)
     {
-    not_preamble:
-      return MPS_NONE;
-    }  
+    case 0: /* Just started.  */
+      if (!modules_p ())
+	return -1; /* Do not use  */
+      /* FALLTHROUGH */
 
-  if (cpp_macro_p (cpp_tok->val.node.node))
-    goto not_preamble;
+    case 1:  /* Start of decl.  */
+      if (tok->type == CPP_NAME)
+	{
+	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
+	  int keyword = C_RID_CODE (ident);
+	  if (keyword == RID_EXPORT)
+	    return 1;  /* Remain at start.  */
+	  else if (keyword == RID_IMPORT)
+	    {
+	      cpp_enable_filename_token (pfile, true);
+	      return 3; /* Just started import.  */
+	    }
+	}
+      /* FALLTHROUGH */
 
-  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (cpp_tok->val.node.node));
-  if (!IDENTIFIER_KEYWORD_P (ident))
-    goto not_preamble;
+    maybe_end:
+    case 2:
+      if (tok->type == CPP_SEMICOLON
+	  || tok->type == CPP_PRAGMA_EOL
+	  || tok->type == CPP_OPEN_BRACE
+	  || tok->type == CPP_CLOSE_BRACE)
+	return 1; /* Start of decl.  */
+      return 2; /* In a decl.  */
 
-  int keyword = C_RID_CODE (ident);
-  if (!exporting_p && keyword == RID_EXPORT)
-    {
-      /* Leading 'export' */
-      exporting_p = true;
-      goto another;
+    case 3: /* Saw import.  */
+
+      cpp_enable_filename_token (pfile, false);
+#if 0
+      if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
+	{
+	  /* Load the legacy import.  */
+	  tree name = get_identifier_with_length
+	    ((const char *) tok->val.str.text, tok->val.str.len);
+	  if (module_state *mod = get_module (name, NULL))
+	    import_module (mod, tok->src_loc, false, NULL, pfile);
+	}
+#endif
+      goto maybe_end;
+
+    default:
+      gcc_unreachable ();
     }
-
-  if (!(keyword == RID_IMPORT
-	|| (!only_import && keyword == RID_MODULE)))
-    goto not_preamble;
-
-  peeked_loc = 0;
-  count++;
-
-  return module_preamble_state ((keyword == RID_IMPORT ? MPS_IMPORT : MPS_MODULE)
-				| (3 + exporting_p));
-}
-
-/* We've just eaten a token TOK_TYPE.  Figure out the next state and
-   return it.  State 0 means peek again.  */
-
-module_preamble_state
-module_preamble_prefix_next (module_preamble_state state, cpp_reader *pfile,
-			     unsigned ptype, source_location ploc)
-{
-  /* The caller should have stripped off the IMPORT & MODULE flags.  */
-  gcc_checking_assert (state <= MPS_COUNT || state == MPS_PRAGMA);
-
-  if (state == MPS_NAME)
-    /* Potentially ate a module name, stop filename tokenizing.  */
-    cpp_enable_filename_token (pfile, false);
-
-  if (ptype == CPP_EOF)
-    return MPS_NONE;
-  else if (state == MPS_PRAGMA)
-    {
-      if (ptype != CPP_PRAGMA_EOL)
-	return state;
-    }
-  else if (ptype != CPP_SEMICOLON)
-    {
-      /* Eat the next token.  */
-      if (state != 1 && ptype != CPP_COMMENT && ptype != CPP_PADDING)
-	state = module_preamble_state (state - 1);
-
-      if (state == MPS_NAME)
-	/* Next is module name, permit filename token.  */
-	cpp_enable_filename_token (pfile, true);
-      return state;
-    }
-  else if (cpp_in_macro_expansion_p (pfile))
-    warning_at (ploc, 0, "module preamble declaration ends inside macro");
-
-  return MPS_NONE;
 }
 
 /* Parse a #pragma whose sole argument is a string constant.
