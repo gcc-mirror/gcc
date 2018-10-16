@@ -4613,10 +4613,16 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  else
 	    {
+	      if (gmf)
+		{
+		  /* The GMF may have deferred imports.  Do them before
+		     we become a module.  */
+		  process_deferred_imports (parse_in);
+		  gmf = false;
+		}
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 	      cp_parser_module_declaration (parser, exporting, first);
-	      gmf = false;
 	    }
 	}
       else if (next->keyword == RID_IMPORT)
@@ -4663,6 +4669,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       goto more;
     }
 
+  /* We may have ended on a deferred import.  */
+  process_deferred_imports (parse_in);
   if (export_loc)
     {
       error_at (export_loc, "unterminated export declaration");
@@ -39429,8 +39437,8 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	  if (maybe_decl)
 	    {
 	      /* A module/import decl appears to terminate early with
-	         a syntax error.  Turn the brace into an EOF.  We'll
-	         see the brace next time. */
+	         a syntax error.  Turn the pushed brace into an EOF.
+	         We'll see the brace next time. */
 	      parser->lexer->buffer->last ().type = CPP_EOF;
 	      break;
 	    }
@@ -39441,9 +39449,9 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	      if (was_export)
 		nested_p = true;
 	    }
-	  else
+	  else if (depth)
 	    {
-	      depth -= !depth;
+	      depth--;
 	      if (!depth)
 		nested_p = false;
 	    }
@@ -39476,15 +39484,19 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	{
 	  if (pending_imports)
 	    {
+	      unsigned adjust = process_deferred_imports (parse_in);
 	      pending_imports = false;
-	      vec<cp_token, va_gc> *buffer = parser->lexer->buffer;
-	      location_t loc = (*buffer)[0].location;
-	      unsigned adjust = process_deferred_imports (loc, parse_in);
-	      for (unsigned ix = buffer->length (); ix--;)
-		{
-		  cp_token &t = (*buffer)[ix];
-		  // FIXME	  t.location = cpp_relocate_location (parse_in, adjust, t.location);
-		}
+#if 0
+	      /* We must adjust the locations of the tokens we already
+		 gathered.  There will be 1 or 2 tokens, depending on
+		 whether we saw 'export' or not.  */
+	      gcc_assert (parser->lexer->buffer->length ()
+			  == (was_export ? 2 : 1));
+	      cp_token *tokens = &(*parser->lexer->buffer)[0];
+	      linemap_adjust_locations (line_table, adjust,
+					&tokens[0].location,
+					was_export ? &tokens[1].location :  NULL);
+#endif
 	    }
 	  was_export = false;
 	}
@@ -39533,7 +39545,7 @@ c_parse_file (void)
 	  /* There is a non-empty preamble.  */
 	  location_t loc = cp_parser_parse_module_preamble (the_parser);
 	  gcc_assert ((loc == UNKNOWN_LOCATION) == !preamble);
-	  if (unsigned adjust = process_deferred_imports (loc, parse_in))
+	  if (unsigned adjust = process_deferred_imports (parse_in))
 	    cpp_relocate_peeked_tokens (parse_in, adjust);
 	}
 #endif

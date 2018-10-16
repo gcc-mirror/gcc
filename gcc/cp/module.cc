@@ -12009,7 +12009,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
     imp->exported_p = true;
 
   unsigned adj = 0;
-  if (!modules_atom_p ())
+  if (false && !modules_atom_p ())
     adj = imp->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, imp);
@@ -12074,7 +12074,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     state->mod = MODULE_UNKNOWN;
 
   unsigned adj = 0;
-  if (!modules_atom_p ())
+  if (false && !modules_atom_p ())
     adj = state->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, state);
@@ -12203,23 +12203,24 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
    location adjustment.  */
 
 unsigned
-process_deferred_imports (location_t loc, cpp_reader *reader)
+process_deferred_imports (cpp_reader *reader)
 {
   if (!vec_safe_length (pending_imports))
     return 0;
 
   dump.push (NULL);
-  dump () && dump ("Processing preamble");
+  dump () && dump ("Processing %u deferred imports",
+		   vec_safe_length (pending_imports));
 
-  bool is_interface = ((*pending_imports)[0] == (*modules)[MODULE_PURVIEW]
-		       && (*pending_imports)[0]->exported_p);
+  module_state *imp = (*pending_imports)[0];
+  bool is_interface = imp->exported_p && imp == (*modules)[MODULE_PURVIEW];
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
   if (is_interface)
     spans.close ();
 
-  module_mapper *mapper = module_mapper::get (loc);
+  module_mapper *mapper = module_mapper::get (imp->from_loc);
 
   if (mapper->is_server ())
     {
@@ -12227,15 +12228,15 @@ process_deferred_imports (location_t loc, cpp_reader *reader)
       mapper->cork ();
       for (unsigned ix = 0; ix != pending_imports->length (); ix++)
 	{
-	  module_state *imp = (*pending_imports)[ix];
+	  imp = (*pending_imports)[ix];
 	  mapper->imex_query (imp, !ix && is_interface);
 	}
-      mapper->uncork (loc);
+      mapper->uncork (imp->from_loc);
     }
 
   for (unsigned ix = 0; ix != pending_imports->length (); ix++)
     {
-      module_state *imp = (*pending_imports)[ix];
+      imp = (*pending_imports)[ix];
 
       /* Read the mapper's responses.  */
       if (mapper->is_server ())
@@ -12246,7 +12247,7 @@ process_deferred_imports (location_t loc, cpp_reader *reader)
     }
 
   if (mapper->is_server ())
-    mapper->maybe_uncork (loc);
+    mapper->maybe_uncork (imp->loc);
 
   /* Now do the importing, which might cause additional requests
      (although nested import filenames are usually in their

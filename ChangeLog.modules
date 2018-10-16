@@ -1,6 +1,18 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (process_deferred_imports): Drop location arg.
+	* modules.cc ({import,declare}_module): Disable eager imports.
+	(process_deferred_imports): Drop location arg, take it from the
+	deferred imports.
+	* parser.c (cp_parser_translation_unit): Process deferred imports.
+	(cp_parser_tokenize): Correct close-brace handling.  Process
+	deferred imports.
+	(c_parse_file): Adjust prcess_deferred_imports call.
+	gcc/testsuite/
+	* g++.dg/modules/atom-preamble-1.C: More workarounds
+
+	gcc/cp/
 	* parser.c (cp_parser_translation_unit): Detect GMF here ...
 	(cp_parser_module_declaration): ... not here.
 
