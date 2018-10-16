@@ -21,8 +21,8 @@
 #include <experimental/internet>
 #include <testsuite_hooks.h>
 
-namespace ip = std::experimental::net::ip;
-using ip::address_v4;
+namespace net = std::experimental::net;
+using net::ip::address_v4;
 
 void
 test01()
@@ -44,12 +44,12 @@ test02()
 {
   bool test __attribute__((unused)) = false;
 
-  auto a0 = ip::make_address_v4(0u);
+  auto a0 = net::ip::make_address_v4(0u);
   VERIFY( a0.to_uint() == 0 );
   VERIFY( a0.to_bytes() == address_v4::bytes_type{} );
 
   address_v4::uint_type u1 = ntohl((5 << 24) | (6 << 16) | (7 << 8) | 8);
-  auto a1 = ip::make_address_v4( u1 );
+  auto a1 = net::ip::make_address_v4( u1 );
   VERIFY( a1.to_uint() == u1 );
   VERIFY( a1.to_bytes() == address_v4::bytes_type( 5, 6, 7, 8 ) );
 }
@@ -59,27 +59,27 @@ test03()
 {
   bool test __attribute__((unused)) = false;
 
-  auto a1 = ip::make_address_v4("127.0.0.1");
+  auto a1 = net::ip::make_address_v4("127.0.0.1");
   VERIFY( a1.is_loopback() );
-  auto a2 = ip::make_address_v4(std::string{"127.0.0.2"});
+  auto a2 = net::ip::make_address_v4(std::string{"127.0.0.2"});
   VERIFY( a2.is_loopback() );
-  auto a3 = ip::make_address_v4(std::experimental::string_view{"127.0.0.3"});
+  auto a3 = net::ip::make_address_v4(std::experimental::string_view{"127.0.0.3"});
   VERIFY( a3.is_loopback() );
 
   std::error_code ec;
-  auto a4 = ip::make_address_v4("127...1", ec);
+  auto a4 = net::ip::make_address_v4("127...1", ec);
   VERIFY( ec == std::errc::invalid_argument );
 
-  ip::make_address_v4("127.0.0.1", ec);
+  net::ip::make_address_v4("127.0.0.1", ec);
   VERIFY( !ec );
 
-  a4 = ip::make_address_v4(std::string{"256.0.0.1"}, ec);
+  a4 = net::ip::make_address_v4(std::string{"256.0.0.1"}, ec);
   VERIFY( ec == std::errc::invalid_argument );
 
-  ip::make_address_v4(std::string{"127.0.0.1"}, ec);
+  net::ip::make_address_v4(std::string{"127.0.0.1"}, ec);
   VERIFY( !ec );
 
-  a4 = ip::make_address_v4(std::experimental::string_view{""}, ec);
+  a4 = net::ip::make_address_v4(std::experimental::string_view{""}, ec);
   VERIFY( ec == std::errc::invalid_argument );
 }
 
