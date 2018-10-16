@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++14" }
+// { dg-add-options net_ts }
 
 #include <experimental/internet>
 #include <testsuite_hooks.h>
