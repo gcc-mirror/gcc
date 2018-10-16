@@ -12009,7 +12009,7 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
     imp->exported_p = true;
 
   unsigned adj = 0;
-  if (false && !modules_atom_p ())
+  if (imp->is_legacy ())
     adj = imp->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, imp);
@@ -12074,7 +12074,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
     state->mod = MODULE_UNKNOWN;
 
   unsigned adj = 0;
-  if (false && !modules_atom_p ())
+  if (state->is_legacy ())
     adj = state->direct_import (false, reader);
   else
     vec_safe_push (pending_imports, state);

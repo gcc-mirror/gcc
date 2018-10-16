@@ -4562,10 +4562,11 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 				? dk_no_deferred : dk_no_check);
 
   bool implicit_extern_c = false;
-  bool first = modules_p () && !modules_atom_p ();
+  bool first = modules_p ();
   bool gmf = false; /* Global Module Fragment.  */
   location_t export_loc = UNKNOWN_LOCATION;
   bool real_eof = tok->type == CPP_EOF;
+  bool preamble = false;
 
  more:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
@@ -4623,13 +4624,16 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 	      cp_parser_module_declaration (parser, exporting, first);
+	      preamble = true;
 	    }
 	}
       else if (next->keyword == RID_IMPORT)
 	{
+	  if (first)
+	    preamble = true;
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_import_declaration (parser, exporting, false);
+	  cp_parser_import_declaration (parser, exporting, preamble);
 	}
       else if (exporting && export_loc == UNKNOWN_LOCATION
 	       && next->type == CPP_OPEN_BRACE)
@@ -4638,6 +4642,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  push_module_export (false);
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
+	  preamble = false;
 	}
       else if (token->type == CPP_CLOSE_BRACE)
 	{
@@ -4656,9 +4661,13 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  if (consume)
 	    cp_lexer_consume_token (parser->lexer);
+	  preamble = false;
 	}
       else
-	cp_parser_toplevel_declaration (parser);
+	{
+	  cp_parser_toplevel_declaration (parser);
+	  preamble = false;
+	}
       first = false;
     }
 
@@ -12823,13 +12832,14 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting, bool first_p)
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
+#if 0
   if (!first_p && atom_p)
     {
       error_at (token->location,
 		"module declaration must be first declaration of preamble");
       mod = NULL;
     }
-
+#endif
   if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
     return UNKNOWN_LOCATION;
   if (!mod)
@@ -39424,7 +39434,6 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
   for (;;)
     {
       vec_safe_push (parser->lexer->buffer, *tok);
-      unsigned lex_flags = C_LEX_STRING_NO_JOIN;
       if (tok->type == CPP_EOF)
 	{
 	  done_lexing = true;
@@ -39475,8 +39484,12 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	      maybe_decl = true;
 	      pending_imports = false;
 	    }
-	  lex_flags |= C_LEX_STRING_IS_HEADER;
+	  cpp_enable_filename_token (parse_in, true);
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+					   | C_LEX_STRING_IS_HEADER, tok);
+	  cpp_enable_filename_token (parse_in, false);
 	  was_export = false;
+	  continue;
 	}
       else if (tok->keyword == RID_EXPORT)
 	was_export = true;
@@ -39502,7 +39515,7 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	}
 
       /* Get the next token.  */
-      cp_lexer_get_preprocessor_token (lex_flags, tok);
+      cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
 
   parser->lexer->next_token = &(*parser->lexer->buffer)[0];
@@ -39526,14 +39539,14 @@ c_parse_file (void)
   already_called = true;
 
   cp_token first;
-  if (!modules_atom_p ())
+  if (true || !modules_atom_p ())
     /* It's possible that parsing the first pragma will load a PCH file,
        which is a GC collection point.  So we have to do that before
        allocating any memory.  Modules is incompatible with PCH.  */
     cp_parser_initial_pragma (&first);
 
   the_parser = cp_parser_new ();
-  if (modules_atom_p ())
+  if (false && modules_atom_p ())
     {
 #if 1
       module_preamble_state preamble
