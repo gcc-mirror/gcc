@@ -1364,6 +1364,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  /* The following clauses are only added during OMP lowering; nested
 	     function decomposition happens before that.  */
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
 	  /* Anything else.  */
@@ -2057,6 +2058,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  /* The following clauses are only added during OMP lowering; nested
 	     function decomposition happens before that.  */
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
 	  /* Anything else.  */

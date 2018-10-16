@@ -1,3 +1,41 @@
+2018-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE__REDUCTEMP_.
+	* tree.h (OMP_CLAUSE_DECL): Use OMP_CLAUSE__REDUCTEMP_ instead of
+	OMP_CLAUSE__LOOPTEMP_.
+	* tree.c (omp_clause_num_ops, omp_clause_code_name): Add _reductemp_
+	clause.
+	(walk_tree_1): Handle OMP_CLAUSE__REDUCTEMP_.
+	* tree-nested.c (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Likewise.
+	* tree-pretty-print.c (dump_omp_clause): Likewise.
+	* omp-low.c (struct omp_context): Add task_reductions and
+	task_reduction_map fields.
+	(delete_omp_context): Release task_reductions and task_reduction_map.
+	(scan_sharing_clauses): Don't add any fields for reduction clause on
+	taskloop.  Handle OMP_CLAUSE__REDUCTEMP_.
+	(add_taskreg_looptemp_clauses): Add OMP_CLAUSE__REDUCTEMP_ clause if
+	needed.
+	(finish_taskreg_scan): Move also OMP_CLAUSE__REDUCTEMP_ clause in
+	front if present.
+	(task_reduction_read): New function.
+	(lower_rec_input_clauses): Handle OMP_CLAUSE_REDUCTION on taskloop
+	construct.  Pass NULL_TREE instead of build_outer_var_ref to
+	omp_clause_default_ctor langhook for task reductions for now.  Handle
+	OMP_CLAUSE__REDUCTEMP_.
+	(lower_send_clauses): Handle OMP_CLAUSE__REDUCTEMP_.  Don't send
+	anything for OMP_CLAUSE_REDUCTION on taskloop.
+	(lower_omp_task_reductions): Unshare byte positions before gimplifying
+	them.  Remember mapping of clauses to indexes in the registered array
+	and if offsets or whole sizes are constant, those constants.  Don't
+	clear OMP_CLAUSE_REDUCTION_PLACEHOLDER or
+	OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER for OMP_CLAUSE_REDUCTION.
+	Handle code OMP_TASKLOOP.
+	(create_task_copyfn): Copy over OMP_CLAUSE__REDUCTEMP_ pointer.
+	(lower_omp_taskreg): Handle reduction clause on taskloop construct.
+	* omp-expand.c (expand_task_call): Add GOMP_TASK_FLAG_REDUCTION flag
+	to flags if there are any reduction clauses.
+
 2018-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-low.c (lower_rec_input_clauses): Handle VLAs properly.

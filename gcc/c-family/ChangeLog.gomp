@@ -1,3 +1,9 @@
+2018-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-omp.c (c_omp_split_clauses) <case OMP_CLAUSE_IN_REDUCTION>: For
+	taskloop simd, copy the clause to simd construct transformed into
+	OMP_CLAUSE_REDUCTION clause.
+
 2018-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-omp.c (c_finish_omp_depobj): Test for OMP_CLAUSE_DEPEND_DEPOBJ

@@ -792,6 +792,8 @@ expand_task_call (struct omp_region *region, basic_block bb,
       if (omp_find_clause (tclauses, OMP_CLAUSE_NOGROUP))
 	iflags |= GOMP_TASK_FLAG_NOGROUP;
       ull = fd.iter_type == long_long_unsigned_type_node;
+      if (omp_find_clause (clauses, OMP_CLAUSE_REDUCTION))
+	iflags |= GOMP_TASK_FLAG_REDUCTION;
     }
   else if (priority)
     iflags |= GOMP_TASK_FLAG_PRIORITY;

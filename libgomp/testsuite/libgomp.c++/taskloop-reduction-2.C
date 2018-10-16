@@ -18,17 +18,31 @@ long long *ss;
 long long *&s = ss;
 long long (*ts)[2];
 long long (*&t)[2] = ts;
+struct U { U (); ~U () {}; U (const U &); int u[4]; };
 
-template <typename T>
-void
-foo (T &n, T *&c, long long int *&d, T (&m)[3], T *&r, T (&o)[4], T *&p, T (&q)[4][2])
+U::U
+() 
 {
-  T i;
+  u[0] = 0; u[1] = 1; u[2] = 2; u[3] = 3;
+}
+
+U::U
+(const U &r)
+{
+  u[0] = r.u[0]; u[1] = r.u[1]; u[2] = r.u[2]; u[3] = r.u[3];
+}
+
+void
+foo (int &n, int *&c, long long int *&d, int (&m)[3], int *&r, int (&o)[4], int *&p, int (&q)[4][2])
+{
+  int i;
+  U u;
+  u.u[2] = 8;
+  #pragma omp taskloop in_reduction (+: a, c[:2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
+		       in_reduction (+: o[n:n*2], m[1], k[1:2][:], p[0], f[2:2]) \
+		       in_reduction (+: q[1:2][:], g[n:n*2], e[1], h[0], r[2:2]) \
+		       in_reduction (*: s[1:2], t[2:2][:]) firstprivate (u) nogroup
   for (i = 0; i < 2; i++)
-    #pragma omp task in_reduction (+: a, c[:2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
-		     in_reduction (+: o[n:n*2], m[1], k[1:2][:], p[0], f[2:2]) \
-		     in_reduction (+: q[1:2][:], g[n:n*2], e[1], h[0], r[2:2]) \
-		     in_reduction (*: s[1:2], t[2:2][:])
     {
       a[0] += 7;
       a[1] += 17;
@@ -55,114 +69,115 @@ foo (T &n, T *&c, long long int *&d, T (&m)[3], T *&r, T (&o)[4], T *&p, T (&q)[
       s[1] *= 2;
       t[2][0] *= 2;
       t[3][1] *= 2;
+      if (u.u[2] != 8)
+	abort ();
     }
 }
 
-template <typename T>
 void
-test (T &n)
+test (int &n)
 {
-  T cs[2] = { 0, 0 };
-  T (&c)[2] = cs;
-  T ps[3] = { 0, 1, 4 };
-  T (&p)[3] = ps;
-  T qs[4][2] = { { 5, 6 }, { 0, 0 }, { 0, 0 }, { 7, 8 } };
-  T (&q)[4][2] = qs;
+  int cs[2] = { 0, 0 };
+  int (&c)[2] = cs;
+  int ps[3] = { 0, 1, 4 };
+  int (&p)[3] = ps;
+  int qs[4][2] = { { 5, 6 }, { 0, 0 }, { 0, 0 }, { 7, 8 } };
+  int (&q)[4][2] = qs;
   long long sb[4] = { 5, 1, 1, 6 };
   long long tb[5][2] = { { 9, 10 }, { 11, 12 }, { 1, 1 }, { 1, 1 }, { 13, 14 } };
-  T ms[3] = { 5, 0, 5 };
-  T os[4] = { 1, 0, 0, 2 };
+  int ms[3] = { 5, 0, 5 };
+  int os[4] = { 1, 0, 0, 2 };
   s = sb;
   t = tb;
+  U u;
+  u.u[2] = 10;
   #pragma omp parallel
   #pragma omp single
   {
     long long int ds[] = { 1, 1 };
     long long int (&d)[2] = ds;
-    T (&m)[3] = ms;
-    T rs[5] = { 6, 7, 0, 0, 9 };
-    T (&r)[5] = rs;
-    T (&o)[4] = os;
-    #pragma omp taskgroup task_reduction (+: a, c) task_reduction (*: b[2 * n:3 * n], d) \
-			  task_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][0:2]) \
-			  task_reduction (+: o[n:n*2], m[1], q[1:2][:], p[0], r[2:2]) \
-			  task_reduction (*: t[2:2][:], s[1:n + 1])
-    {
-      T i;
-      for (i = 0; i < 4; i++)
-	#pragma omp task in_reduction (+: a, c) in_reduction (*: b[2 * n:3 * n], d) \
-			 in_reduction (+: o[n:n*2], q[1:2][:], p[0], m[1], r[2:2]) \
-			 in_reduction (+: g[n:n * 2], e[1], k[1:2][:], h[0], f[2:2]) \
-			 in_reduction (*: s[1:2], t[2:2][:])
-	{
-	  T j;
-	  a[0] += 2;
-	  a[1] += 3;
-	  b[2] *= 2;
-	  f[3] += 8;
-	  g[1] += 9;
-	  g[2] += 10;
-	  h[0] += 11;
-	  k[1][1] += 13;
-	  k[2][1] += 15;
-	  m[1] += 16;
-	  r[2] += 8;
-	  s[1] *= 2;
-	  t[2][1] *= 2;
-	  t[3][1] *= 2;
-	  for (j = 0; j < 2; j++)
-	    #pragma omp task in_reduction (+: a, c[:2]) \
-			     in_reduction (*: b[2 * n:3 * n], d[n - 1:n + 1]) \
-			     in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][:2]) \
-			     in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][:2]) \
-			     in_reduction (*: s[n:2], t[2:2][:])
-	    {
-	      m[1] += 6;
-	      r[2] += 7;
-	      q[1][0] += 17;
-	      q[2][0] += 19;
-	      a[0] += 4;
-	      a[1] += 5;
-	      b[3] *= 2;
-	      b[4] *= 2;
-	      f[3] += 18;
-	      g[1] += 29;
-	      g[2] += 18;
-	      h[0] += 19;
-	      s[2] *= 2;
-	      t[2][0] *= 2;
-	      t[3][0] *= 2;
-	      T *cp = c;
-	      long long int *dp = d;
-	      T *rp = r;
-	      T *pp = p;
-	      foo (n, cp, dp, m, rp, o, pp, q);
-	      r[3] += 18;
-	      o[1] += 29;
-	      o[2] += 18;
-	      p[0] += 19;
-	      c[0] += 4;
-	      c[1] += 5;
-	      d[0] *= 2;
-	      e[1] += 6;
-	      f[2] += 7;
-	      k[1][0] += 17;
-	      k[2][0] += 19;
-	    }
-	  r[3] += 8;
-	  o[1] += 9;
-	  o[2] += 10;
-	  p[0] += 11;
-	  q[1][1] += 13;
-	  q[2][1] += 15;
-	  b[3] *= 2;
-	  c[0] += 4;
-	  c[1] += 9;
-	  d[0] *= 2;
-	  e[1] += 16;
-	  f[2] += 8;
-	}
-    }
+    int (&m)[3] = ms;
+    int rs[5] = { 6, 7, 0, 0, 9 };
+    int (&r)[5] = rs;
+    int (&o)[4] = os;
+    int i;
+    #pragma omp taskloop reduction (+: a, c) reduction (*: b[2 * n:3 * n], d) \
+			 reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][0:2]) \
+			 reduction (+: o[n:n*2], m[1], q[1:2][:], p[0], r[2:2]) \
+			 reduction (*: t[2:2][:], s[1:n + 1]) firstprivate (u)
+    for (i = 0; i < 4; i++)
+      {
+	int j;
+	a[0] += 2;
+	a[1] += 3;
+	b[2] *= 2;
+	f[3] += 8;
+	g[1] += 9;
+	g[2] += 10;
+	h[0] += 11;
+	k[1][1] += 13;
+	k[2][1] += 15;
+	m[1] += 16;
+	r[2] += 8;
+	s[1] *= 2;
+	t[2][1] *= 2;
+	t[3][1] *= 2;
+	if (u.u[2] != 10)
+	  abort ();
+	for (j = 0; j < 2; j++)
+	  #pragma omp task in_reduction (+: a, c[:2]) \
+			   in_reduction (*: b[2 * n:3 * n], d[n - 1:n + 1]) \
+			   in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][:2]) \
+			   in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][:2]) \
+			   in_reduction (*: s[n:2], t[2:2][:]) firstprivate (u)
+	  {
+	    m[1] += 6;
+	    r[2] += 7;
+	    q[1][0] += 17;
+	    q[2][0] += 19;
+	    a[0] += 4;
+	    a[1] += 5;
+	    b[3] *= 2;
+	    b[4] *= 2;
+	    f[3] += 18;
+	    g[1] += 29;
+	    g[2] += 18;
+	    h[0] += 19;
+	    s[2] *= 2;
+	    t[2][0] *= 2;
+	    t[3][0] *= 2;
+	    int *cp = c;
+	    long long int *dp = d;
+	    int *rp = r;
+	    int *pp = p;
+	    foo (n, cp, dp, m, rp, o, pp, q);
+	    if (u.u[2] != 10)
+	      abort ();
+	    r[3] += 18;
+	    o[1] += 29;
+	    o[2] += 18;
+	    p[0] += 19;
+	    c[0] += 4;
+	    c[1] += 5;
+	    d[0] *= 2;
+	    e[1] += 6;
+	    f[2] += 7;
+	    k[1][0] += 17;
+	    k[2][0] += 19;
+	  }
+	r[3] += 8;
+	o[1] += 9;
+	o[2] += 10;
+	p[0] += 11;
+	q[1][1] += 13;
+	q[2][1] += 15;
+	b[3] *= 2;
+	c[0] += 4;
+	c[1] += 9;
+	d[0] *= 2;
+	e[1] += 16;
+	f[2] += 8;
+      }
     if (d[0] != 1LL << (8 + 4)
         || d[1] != 1LL << 16
 	|| m[0] != 5

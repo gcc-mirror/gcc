@@ -12930,6 +12930,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	{
 	  size = size_binop (MINUS_EXPR, size, size_one_node);
 	  size = c_fully_fold (size, false, NULL);
+	  size = save_expr (size);
 	  tree index_type = build_index_type (size);
 	  tree eltype = TREE_TYPE (first);
 	  while (TREE_CODE (eltype) == ARRAY_TYPE)
@@ -13250,6 +13251,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool oacc_async = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
+  tree *nogroup_seen = NULL;
+  bool reduction_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -13288,6 +13291,8 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  goto check_dup_generic;
 
 	case OMP_CLAUSE_REDUCTION:
+	  reduction_seen = true;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  need_implicitly_determined = true;
@@ -14186,7 +14191,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_PRIORITY:
 	case OMP_CLAUSE_GRAINSIZE:
 	case OMP_CLAUSE_NUM_TASKS:
-	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_THREADS:
 	case OMP_CLAUSE_SIMD:
 	case OMP_CLAUSE_HINT:
@@ -14205,6 +14209,11 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_TILE:
 	case OMP_CLAUSE_IF_PRESENT:
 	case OMP_CLAUSE_FINALIZE:
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+
+	case OMP_CLAUSE_NOGROUP:
+	  nogroup_seen = pc;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;
 
@@ -14371,6 +14380,14 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	else
 	  pc = &OMP_CLAUSE_CHAIN (c);
       }
+
+  if (nogroup_seen && reduction_seen)
+    {
+      error_at (OMP_CLAUSE_LOCATION (*nogroup_seen),
+		"%<nogroup%> clause must not be used together with "
+		"%<reduction%> clause");
+      *nogroup_seen = OMP_CLAUSE_CHAIN (*nogroup_seen);
+    }
 
   bitmap_obstack_release (NULL);
   return clauses;

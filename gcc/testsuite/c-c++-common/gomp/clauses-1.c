@@ -5,7 +5,7 @@ int t;
 #pragma omp threadprivate (t)
 
 #pragma omp declare target
-int f, l, ll, r;
+int f, l, ll, r, r2;
 
 void
 foo (int d, int m, int i1, int i2, int p, int *idp, int s,
@@ -119,9 +119,16 @@ bar (int d, int m, int i1, int i2, int p, int *idp, int s,
      nowait depend(inout: dd[0])
   for (int i = 0; i < 64; i++)
     ll++;
+  #pragma omp taskgroup task_reduction(+:r2)
+  #pragma omp taskloop simd \
+    private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable priority (pp) \
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(default, +:r) in_reduction(+:r2)
+  for (int i = 0; i < 64; i++)
+    ll++;
+  #pragma omp taskgroup task_reduction(+:r)
   #pragma omp taskloop simd \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) grainsize (g) collapse(1) untied if(taskloop: i1) final(fi) mergeable nogroup priority (pp) \
-    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) reduction(+:r)
+    safelen(8) simdlen(4) linear(ll: 1) aligned(q: 32) in_reduction(+:r)
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp taskwait

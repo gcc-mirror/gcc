@@ -1,3 +1,7 @@
+2018-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_REDUCTION): Define.
+
 2018-06-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* gomp-constants.h (GOMP_DEPEND_IN, GOMP_DEPEND_OUT,

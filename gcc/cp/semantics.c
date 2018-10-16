@@ -5023,6 +5023,7 @@ handle_omp_array_sections (tree c, enum c_omp_region_type ort)
 	      || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_TASK_REDUCTION)
 	    {
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
+	      size = save_expr (size);
 	      tree index_type = build_index_type (size);
 	      tree eltype = TREE_TYPE (first);
 	      while (TREE_CODE (eltype) == ARRAY_TYPE)
@@ -6023,6 +6024,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
   bool oacc_async = false;
   tree last_iterators = NULL_TREE;
   bool last_iterators_remove = false;
+  bool reduction_seen = false;
 
   bitmap_obstack_initialize (NULL);
   bitmap_initialize (&generic_head, &bitmap_default_obstack);
@@ -6057,6 +6059,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
 	  goto check_dup_generic;
 	case OMP_CLAUSE_REDUCTION:
+	  reduction_seen = true;
+	  /* FALLTHRU */
 	case OMP_CLAUSE_IN_REDUCTION:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	  field_ok = ((ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP);
@@ -7594,6 +7598,17 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		= (enum omp_clause_schedule_kind)
 		  (OMP_CLAUSE_SCHEDULE_KIND (c)
 		   & ~OMP_CLAUSE_SCHEDULE_NONMONOTONIC);
+	    }
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
+	case OMP_CLAUSE_NOGROUP:
+	  if (reduction_seen)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%<nogroup%> clause must not be used together with "
+			"%<reduction%> clause");
+	      *pc = OMP_CLAUSE_CHAIN (c);
+	      continue;
 	    }
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;

@@ -523,6 +523,7 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 
 ialias (GOMP_taskgroup_start)
 ialias (GOMP_taskgroup_end)
+ialias (GOMP_taskgroup_reduction_register)
 
 #define TYPE long
 #define UTYPE unsigned long

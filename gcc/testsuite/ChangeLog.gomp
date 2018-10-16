@@ -1,3 +1,12 @@
+2018-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-1.c (r2): New variable.
+	(bar): Put taskloop simd inside of taskgroup with task_reduction,
+	use in_reduction clause instead of reduction.  Add another
+	taskloop simd without nogroup clause, but with reduction clause and
+	a new in_reduction.
+	* c-c++-common/gomp/taskloop-reduction-1.c: New test.
+
 2018-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/depend-iterator-2.c (f1): Adjust expected

@@ -153,7 +153,15 @@ GOMP_taskloop (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 	return;
     }
   else
-    ialias_call (GOMP_taskgroup_start) ();
+    {
+      ialias_call (GOMP_taskgroup_start) ();
+      if (flags & GOMP_TASK_FLAG_REDUCTION)
+	{
+	  struct gomp_data_head { TYPE t1, t2; uintptr_t *ptr; };
+	  uintptr_t *ptr = ((struct gomp_data_head *) data)->ptr;
+	  ialias_call (GOMP_taskgroup_reduction_register) (ptr);
+	}
+    }
 
   if (priority > gomp_max_task_priority_var)
     priority = gomp_max_task_priority_var;

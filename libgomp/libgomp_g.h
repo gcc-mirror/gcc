@@ -31,6 +31,7 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include "gstdint.h"
 
 /* barrier.c */
 
@@ -255,6 +256,9 @@ extern void GOMP_taskwait_depend (void **);
 extern void GOMP_taskyield (void);
 extern void GOMP_taskgroup_start (void);
 extern void GOMP_taskgroup_end (void);
+extern void GOMP_taskgroup_reduction_register (uintptr_t *);
+extern void GOMP_taskgroup_reduction_unregister (uintptr_t *);
+extern void GOMP_task_reduction_remap (size_t, size_t, void **);
 
 /* sections.c */
 

@@ -1,3 +1,10 @@
+2018-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (handle_omp_array_sections): Call save_expr on array
+	reductions before calling build_index_type.
+	(c_finish_omp_clauses): Diagnose nogroup clause used with reduction
+	clause(s).
+
 2018-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_iterators): Build vector with 6 elts

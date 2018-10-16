@@ -1363,7 +1363,6 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	case OMP_CLAUSE_MERGEABLE:
 	case OMP_CLAUSE_NOGROUP:
 	case OMP_CLAUSE_PRIORITY:
-	case OMP_CLAUSE_IN_REDUCTION:
 	  s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	  break;
 	/* Duplicate this to all of taskloop, distribute, for and simd.  */
@@ -1673,6 +1672,25 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	    }
 	  else
 	    s = C_OMP_CLAUSE_SPLIT_TEAMS;
+	  break;
+	case OMP_CLAUSE_IN_REDUCTION:
+	  /* in_reduction on taskloop simd becomes reduction on the simd
+	     and keeps being in_reduction on taskloop.  */
+	  if (code == OMP_SIMD)
+	    {
+	      c = build_omp_clause (OMP_CLAUSE_LOCATION (clauses),
+				    OMP_CLAUSE_REDUCTION);
+	      OMP_CLAUSE_DECL (c) = OMP_CLAUSE_DECL (clauses);
+	      OMP_CLAUSE_REDUCTION_CODE (c)
+		= OMP_CLAUSE_REDUCTION_CODE (clauses);
+	      OMP_CLAUSE_REDUCTION_PLACEHOLDER (c)
+		= OMP_CLAUSE_REDUCTION_PLACEHOLDER (clauses);
+	      OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (c)
+		= OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER (clauses);
+	      OMP_CLAUSE_CHAIN (c) = cclauses[C_OMP_CLAUSE_SPLIT_SIMD];
+	      cclauses[C_OMP_CLAUSE_SPLIT_SIMD] = c;
+	    }
+	  s = C_OMP_CLAUSE_SPLIT_TASKLOOP;
 	  break;
 	case OMP_CLAUSE_IF:
 	  if (OMP_CLAUSE_IF_MODIFIER (clauses) != ERROR_MARK)

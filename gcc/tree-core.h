@@ -340,6 +340,9 @@ enum omp_clause_code {
   /* Internal clause: temporary for combined loops expansion.  */
   OMP_CLAUSE__LOOPTEMP_,
 
+  /* Internal clause: temporary for task reductions.  */
+  OMP_CLAUSE__REDUCTEMP_,
+
   /* OpenACC/OpenMP clause: if (scalar-expression).  */
   OMP_CLAUSE_IF,
 
