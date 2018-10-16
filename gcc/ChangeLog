@@ -1,3 +1,11 @@
+2018-10-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (despeculate_copy<ALLI_TI:mode>):
+	Rename to...
+	(@despeculate_copy<ALLI_TI:mode>): ... This.
+	* config/aarch64/aarch64.c (aarch64_speculation_safe_value): Remove
+	switch statement.
+
 2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config.gcc: Obsolete *-*-solaris2.10*.
