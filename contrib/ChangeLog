@@ -1,3 +1,8 @@
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Switch to i686-solaris2.11,
+	sparc64-sun-solaris2.11.
+
 2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
 
 	* unused_functions.py: Handle archive files.
