@@ -2073,27 +2073,31 @@ AC_DEFUN([GLIBCXX_CHECK_UCHAR_H], [
 
 
 dnl
-dnl Check whether "/dev/random" and "/dev/urandom" are available for the
+dnl Check whether "/dev/random" and "/dev/urandom" are available for
+dnl class std::random_device from C++ 2011 [rand.device], and
 dnl random_device of "TR1" (Chapter 5.1, "Random number generation").
 dnl
-AC_DEFUN([GLIBCXX_CHECK_RANDOM_TR1], [
+AC_DEFUN([GLIBCXX_CHECK_DEV_RANDOM], [
 
-  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for TR1 random_device])
-  AC_CACHE_VAL(glibcxx_cv_random_tr1, [
+  AC_MSG_CHECKING([for "/dev/random" and "/dev/urandom" for std::random_device])
+  AC_CACHE_VAL(glibcxx_cv_dev_random, [
     if test -r /dev/random && test -r /dev/urandom; then
-  ## For MSys environment the test above is detect as false-positive
-  ## on mingw-targets.  So disable it explicit for them.
+  ## For MSys environment the test above is detected as false-positive
+  ## on mingw-targets.  So disable it explicitly for them.
       case ${target_os} in
-	*mingw*) glibcxx_cv_random_tr1=no ;;
-	*) glibcxx_cv_random_tr1=yes ;;
+	*mingw*) glibcxx_cv_dev_random=no ;;
+	*) glibcxx_cv_dev_random=yes ;;
       esac
     else
-      glibcxx_cv_random_tr1=no;
+      glibcxx_cv_dev_random=no;
     fi
   ])
-  AC_MSG_RESULT($glibcxx_cv_random_tr1)
+  AC_MSG_RESULT($glibcxx_cv_dev_random)
 
-  if test x"$glibcxx_cv_random_tr1" = x"yes"; then
+  if test x"$glibcxx_cv_dev_random" = x"yes"; then
+    AC_DEFINE(_GLIBCXX_USE_DEV_RANDOM, 1,
+	      [Define if /dev/random and /dev/urandom are available for
+	       std::random_device.])
     AC_DEFINE(_GLIBCXX_USE_RANDOM_TR1, 1,
 	      [Define if /dev/random and /dev/urandom are available for
 	       the random_device of TR1 (Chapter 5.1).])

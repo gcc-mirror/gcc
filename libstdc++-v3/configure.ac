@@ -255,8 +255,8 @@ if $GLIBCXX_IS_NATIVE; then
   GLIBCXX_CHECK_MATH_SUPPORT
   GLIBCXX_CHECK_STDLIB_SUPPORT
 
-  # For /dev/random and /dev/urandom for TR1.
-  GLIBCXX_CHECK_RANDOM_TR1
+  # For /dev/random and /dev/urandom for std::random_device.
+  GLIBCXX_CHECK_DEV_RANDOM
 
   # For TLS support.
   GCC_CHECK_TLS

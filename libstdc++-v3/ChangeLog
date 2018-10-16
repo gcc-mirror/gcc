@@ -1,3 +1,17 @@
+2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (GLIBCXX_CHECK_RANDOM_TR1): Replace with ...
+	(GLIBCXX_CHECK_DEV_RANDOM): New macro with more descriptive name.
+	Define _GLIBCXX_USE_DEV_RANDOM as well as _GLIBCXX_USE_RANDOM_TR1.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_DEV_RANDOM instead of
+	GLIBCXX_CHECK_RANDOM_TR1.
+	crossconfig.m4: Likewise.
+	* include/bits/random.h (random_device): Use _GLIBCXX_USE_DEV_RANDOM
+	instead of _GLIBCXX_USE_RANDOM_TR1.
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Likewise.
+
 2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/lib/dg-options.exp (add_options_for_net_ts): New proc.

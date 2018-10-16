@@ -924,6 +924,10 @@
    this host. */
 #undef _GLIBCXX_USE_DECIMAL_FLOAT
 
+/* Define if /dev/random and /dev/urandom are available for
+   std::random_device. */
+#undef _GLIBCXX_USE_DEV_RANDOM
+
 /* Define if fchmod is available in <sys/stat.h>. */
 #undef _GLIBCXX_USE_FCHMOD
 

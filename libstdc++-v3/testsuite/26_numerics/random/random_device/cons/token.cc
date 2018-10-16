@@ -29,7 +29,7 @@
 void
 test01()
 {
-#ifdef _GLIBCXX_USE_RANDOM_TR1
+#ifdef _GLIBCXX_USE_DEV_RANDOM
   std::random_device x("/dev/random");
 #else
   std::random_device x("0");

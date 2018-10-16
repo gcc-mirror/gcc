@@ -27852,32 +27852,35 @@ done
   CXXFLAGS="$ac_save_CXXFLAGS"
 
 
-  # For /dev/random and /dev/urandom for TR1.
+  # For /dev/random and /dev/urandom for std::random_device.
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for \"/dev/random\" and \"/dev/urandom\" for TR1 random_device" >&5
-$as_echo_n "checking for \"/dev/random\" and \"/dev/urandom\" for TR1 random_device... " >&6; }
-  if test "${glibcxx_cv_random_tr1+set}" = set; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for \"/dev/random\" and \"/dev/urandom\" for std::random_device" >&5
+$as_echo_n "checking for \"/dev/random\" and \"/dev/urandom\" for std::random_device... " >&6; }
+  if test "${glibcxx_cv_dev_random+set}" = set; then :
   $as_echo_n "(cached) " >&6
 else
 
     if test -r /dev/random && test -r /dev/urandom; then
-  ## For MSys environment the test above is detect as false-positive
-  ## on mingw-targets.  So disable it explicit for them.
+  ## For MSys environment the test above is detected as false-positive
+  ## on mingw-targets.  So disable it explicitly for them.
       case ${target_os} in
-	*mingw*) glibcxx_cv_random_tr1=no ;;
-	*) glibcxx_cv_random_tr1=yes ;;
+	*mingw*) glibcxx_cv_dev_random=no ;;
+	*) glibcxx_cv_dev_random=yes ;;
       esac
     else
-      glibcxx_cv_random_tr1=no;
+      glibcxx_cv_dev_random=no;
     fi
 
 fi
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_random_tr1" >&5
-$as_echo "$glibcxx_cv_random_tr1" >&6; }
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glibcxx_cv_dev_random" >&5
+$as_echo "$glibcxx_cv_dev_random" >&6; }
 
-  if test x"$glibcxx_cv_random_tr1" = x"yes"; then
+  if test x"$glibcxx_cv_dev_random" = x"yes"; then
+
+$as_echo "#define _GLIBCXX_USE_DEV_RANDOM 1" >>confdefs.h
+
 
 $as_echo "#define _GLIBCXX_USE_RANDOM_TR1 1" >>confdefs.h
 
@@ -47105,6 +47108,8 @@ done
 
   CXXFLAGS="$ac_save_CXXFLAGS"
 
+    $as_echo "#define _GLIBCXX_USE_DEV_RANDOM 1" >>confdefs.h
+
     $as_echo "#define _GLIBCXX_USE_RANDOM_TR1 1" >>confdefs.h
 
     # We don't yet support AIX's TLS ABI.
@@ -59736,6 +59741,8 @@ done
 
 
   CXXFLAGS="$ac_save_CXXFLAGS"
+
+    $as_echo "#define _GLIBCXX_USE_DEV_RANDOM 1" >>confdefs.h
 
     $as_echo "#define _GLIBCXX_USE_RANDOM_TR1 1" >>confdefs.h
 
