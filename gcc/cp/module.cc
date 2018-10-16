@@ -12531,54 +12531,6 @@ finish_module_processing ()
   modules_hash = NULL;
 }
 
-/* Try and exec ourselves to repeat the preamble scan with
-   foreknowledge of where it ends.  Sure, this way of doing it sucks,
-   performance wise,  but that's one of the ways of encouraging users
-   to explicitly disambiguate the difficult case.  */
-
-void
-maybe_repeat_preamble (location_t loc, int count ATTRIBUTE_UNUSED, cpp_reader *)
-{
-  if (flag_module_preamble >= 0)
-    /* Something went wrong.  Don't try again.  */
-    return;
-
-  if (strcmp (main_input_filename, "-") == 0)
-    /* We cannot rescan stdin.  */
-    return;
-
-#ifdef HAVE_EXECV
-  /* Exec ourselves.  */
-  dump.push (NULL);
-  dump () && dump ("About to reexec with prefix length %u", count);
-  finish_module_processing ();
-
-  /* The preprocessor does not leave files open, so we can ignore the
-     pfile arg.  */
-
-  int argc = original_argc;
-  char **argv = XNEWVEC (char *, argc + 2 + 10);
-  memcpy (argv, original_argv, argc * sizeof (char *));
-
-  /* Use the extra space for the new option.  */
-  char *fpreamble = reinterpret_cast <char *> (&argv[argc + 2]);
-  argv[argc++] = fpreamble;
-  argv[argc] = NULL;
-
-  /* It's dangerous to go alone!  Take this.  */
-  sprintf (fpreamble, "-fmodule-preamble=%d", count);
-
-  dump.pop (0);
-  if (noisy_p ())
-    fprintf (stderr, "Reinvoking %s with %s due to ambiguous preamble\n",
-	     argv[0], fpreamble);
-
-  /* You have to wake up.  */
-  execv (argv[0], argv);
-  fatal_error (loc, "I was stung by a Space Bee");
-#endif
-}
-
 /* If CODE is a module option, handle it & return true.  Otherwise
    return false.  For unknown reasons I cannot get the option
    generation machinery to set fmodule-mapper or -fmodule-header to

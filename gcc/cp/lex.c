@@ -374,7 +374,7 @@ interface_strcmp (const char* s)
    Otherwise zero.  */
 
 module_preamble_state
-module_preamble_prefix_peek (bool for_parser, bool only_import,
+module_preamble_prefix_peek (bool, bool only_import,
 			     cpp_reader *pfile)
 {
   static int count;
@@ -407,37 +407,6 @@ module_preamble_prefix_peek (bool for_parser, bool only_import,
   if (cpp_tok->type != CPP_NAME)
     {
     not_preamble:
-      /* If we opened (and maybe closed) any #if or #includes in order
-	 to peek cpp_tok, the end was ambiguous and we went too far.
-	 We're required to back track and restart preprocessing from
-	 just after the previous import.  (Because imported #defines
-	 may affect that.)  However (a) performance is allowed to
-	 totally suck doing that, and (b) we're allowed to encourage
-	 the user to place a bare semicolon marking the end of the
-	 preamble.  */
-      if (peeked_loc && only_import)
-	{
-	  /* Don't be inhibited by the next warning -- that'd be
-	     dumb.  */
-	  bool msgs = errorcount || warningcount || werrorcount;
-	  warning_at (peeked_loc, 0,
-		      "module preamble ended immediately before"
-		      " preprocessor directive");
-	  if (for_parser)
-	    {
-	      inform (peeked_loc,
-		      "explicitly mark the end with an earlier %<;%>");
-	      /* Don't attempt rescanning if we emitted any diagnostics.
-		 We'll just be repeating ourselves.  */
-	      if (!msgs)
-		/* This never returns, if successful.  */
-		maybe_repeat_preamble (cpp_tok->src_loc, count, pfile);
-	      if (!modules_legacy_p ())
-		/* In some cases we cannot rescan.  */
-		inform (cpp_tok->src_loc, "cannot rescan preamble");
-	    }
-	}
-
       return MPS_NONE;
     }  
 

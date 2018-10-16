@@ -8,7 +8,7 @@ export import stuart;
 import kevin;
 #endif
 import gru;
-#define EXPORT // { dg-warning "preamble ended immediately before" }
+#define EXPORT
 EXPORT import mabel;
 int i;
 

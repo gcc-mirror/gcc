@@ -1,5 +1,15 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Remove preamble repeating.
+	gcc/cp/
+	* cp-tree.h (maybe_repeat_preamble): Delete.
+	* module.c (maybe_repeat_preamble): Delete.
+	* parser.c (cp_parser_initial_pragma): Revert to trunk.
+	* lex.c (modle_preamble_prefix_peek): Don't repeat preamble.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-preamble-1.C: Adjust.
+	* g++.dg/modules/atom-preamble-1.C: Is now well formed.
+
 	Remove preamble peeking
 	gcc/cp/
 	* cp-tree.h ({import,declare}_module): return void.
