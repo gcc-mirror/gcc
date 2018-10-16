@@ -8,5 +8,5 @@ int main ()
   frob ();
 }
 
-// { dg-final { scan-lang-dump {>Controlling macro is ALIAS_1_A} module } }
-// { dg-final { scan-lang-dump {><alias-1_a.H> is an alias of "alias-1_a.H"} module } }
+// { dg-final { scan-lang-dump {Controlling macro is ALIAS_1_A} module } }
+// { dg-final { scan-lang-dump {<alias-1_a.H> is an alias of "alias-1_a.H"} module } }

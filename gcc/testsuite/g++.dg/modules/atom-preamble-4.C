@@ -1,6 +1,6 @@
 // { dg-additional-options -fmodules-atom }
 
-#define NAME(X) X; // { dg-message "ends inside macro" }
+#define NAME(X) X;
 
 export module NAME(bob)
 

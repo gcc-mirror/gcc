@@ -1,9 +1,7 @@
-// { dg-additional-options "-fmodules-atom -Wno-pedantic -fdump-lang-module" }
+// { dg-additional-options "-fmodules-atom -fdump-lang-module" }
 
 import "macro-3_b.H";
 import "macro-3_a.H";
-
-;
 
 int main ()
 {
@@ -23,6 +21,6 @@ int main ()
 // { dg-final { scan-lang-dump {Read new macro #define bar at} module } }
 
 // { dg-final { scan-lang-dump {Read add macro #undef foo} module } }
-// { dg-final { scan-lang-dump {>Controlling macro is MACRO_3b_H} module } }
+// { dg-final { scan-lang-dump {Controlling macro is MACRO_3b_H} module } }
 // { dg-final { scan-lang-dump {Read new macro #define bob} module } }
 // { dg-final { scan-lang-dump {Read add macro #undef & #define bar} module } }

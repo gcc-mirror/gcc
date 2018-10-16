@@ -1,5 +1,26 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Common tokenizer for atom & ts
+	gcc/cp/
+	* module.cc ({import,declare}_module): Don't defer legacy modules.
+	* parser.c (cp_parser_translation_unit): Deal with atom preamble.
+	(cp_parser_module_declaration): No need to check if first.
+	(cp_parser_tokenize): Enable filename token as needed.
+	(c_parse_file): Disable preamble scan.
+	gcc/testsuite/
+	* g++.dg/modules/alias-1_b.C: Adjust.
+	* g++.dg/modules/atom-pragma-1.C: Adjust
+	* g++.dg/modules/atom-pragma-2.C: Delete.
+	* g++.dg/modules/atom-preamble-2_e.C: Copy from 2_f.C
+	* g++.dg/modules/atom-preamble-2_f.C: Delete.
+	* g++.dg/modules/atom-preamble-[34].C: Adjust.
+	* g++.dg/modules/atom-rescan-1.C: Delete.
+	* g++.dg/modules/ice-1.C: Adjust
+	* g++.dg/modules/macro-2_c.H: Adjust
+	* g++.dg/modules/macro-3_b.H: Adjust
+	* g++.dg/modules/macro-3_c.C: Adjust
+	* g++.dg/modules/macro-6_b.C: Adjust
+
 	gcc/cp/
 	* cp-tree.h (process_deferred_imports): Drop location arg.
 	* modules.cc ({import,declare}_module): Disable eager imports.

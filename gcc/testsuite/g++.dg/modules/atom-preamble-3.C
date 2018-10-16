@@ -1,5 +1,8 @@
 // { dg-additional-options -fmodules-atom }
 
 #define import import
-// { dg-error "must be within module preamble" "" { target *-*-* } .-1 }
-import malcolm; 
+import malcolm;
+// { dg-error "failed to read" "" { target *-*-* } 0 }
+
+// { dg-prune-output "compilation terminated" }
+// { dg-prune-output "fatal error:" }

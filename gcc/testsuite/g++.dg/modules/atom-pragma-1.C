@@ -3,5 +3,5 @@
 export module foo;
 // { dg-module-bmi foo }
 
-#pragma bob // { dg-message "ended immediately before" }
+#pragma bob
 int i;
