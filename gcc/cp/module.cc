@@ -8041,6 +8041,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 
   /* First read the table, and initialize locations.
      We do this in two passes to cluster line maps.  */
+  // FIXME:we don't need to be so clever
   while (count--)
     {
       unsigned ix = sec.u ();
@@ -11151,8 +11152,9 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     unsigned their_fixed_crc = cfg.u32 ();
     dump () && dump ("Read globals=%u, crc=%x",
 		     their_fixed_length, their_fixed_crc);
-    if (their_fixed_length != fixed_trees->length ()
-	|| their_fixed_crc != global_crc)
+    if (!flag_preprocess_only
+	&& (their_fixed_length != fixed_trees->length ()
+	    || their_fixed_crc != global_crc))
       {
 	error_at (loc, "fixed tree mismatch");
 	goto fail;
@@ -11421,25 +11423,28 @@ module_state::read (int fd, int e, cpp_reader *reader)
   if (config.any_macros && !read_macros ())
     return NULL;
 
-  /* Read the namespace hierarchy. */
-  auto_vec<tree> spaces;
-  if (!read_namespaces (spaces))
-    return NULL;
+  if (!flag_preprocess_only)
+    {
+      /* Read the namespace hierarchy. */
+      auto_vec<tree> spaces;
+      if (!read_namespaces (spaces))
+	return NULL;
 
-  /* And the bindings.  */
-  if (!read_bindings (spaces, config.sec_range))
-    return NULL;
+      /* And the bindings.  */
+      if (!read_bindings (spaces, config.sec_range))
+	return NULL;
 
-  /* And unnamed.  */
-  if (!read_unnamed (config.num_unnamed, config.sec_range))
-    return NULL;
+      /* And unnamed.  */
+      if (!read_unnamed (config.num_unnamed, config.sec_range))
+	return NULL;
+    }
 
   /* We're done with the string and non-decl sections now.  */
   from ()->release ();
   slurp ()->remaining = config.sec_range.second - config.sec_range.first;
   slurp ()->lru = ++lazy_lru;
 
-  if (mod == MODULE_PURVIEW || !flag_module_lazy)
+  if (mod == MODULE_PURVIEW || (!flag_preprocess_only && !flag_module_lazy))
     {
       /* Read the sections in forward order, so that dependencies are read
 	 first.  See note about tarjan_connect.  */
@@ -12083,10 +12088,10 @@ module_cpp_undef (cpp_reader *reader, location_t loc, cpp_hashnode *node)
   if (!modules_legacy_p ())
     {
       /* Turn us off.  */
-      if (lang_hooks.preprocess_undef)
-	lang_hooks.preprocess_undef = NULL;
-      else
-	cpp_get_callbacks (reader)->undef = NULL;
+      struct cpp_callbacks *cb = cpp_get_callbacks (reader);
+      if (cb->undef == lang_hooks.preprocess_undef)
+	cb->undef = NULL;
+      lang_hooks.preprocess_undef = NULL;
     }
   else
     module_state::undef_macro (reader, loc, node);

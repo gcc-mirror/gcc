@@ -1112,6 +1112,10 @@ c_common_init (void)
   /* Has to wait until now so that cpplib has its hash table.  */
   init_pragma ();
 
+  struct cpp_callbacks *cb = cpp_get_callbacks (parse_in);
+  cb->user_deferred_macro = lang_hooks.preprocess_deferred_macro;
+  cb->undef = lang_hooks.preprocess_undef;
+
   if (flag_preprocess_only)
     {
       c_finish_options ();

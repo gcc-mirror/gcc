@@ -409,9 +409,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
       return 2; /* In a decl.  */
 
     case 3: /* Saw import.  */
-
       cpp_enable_filename_token (pfile, false);
-#if 0
       if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	{
 	  /* Load the legacy import.  */
@@ -420,7 +418,6 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	  if (module_state *mod = get_module (name, NULL))
 	    import_module (mod, tok->src_loc, false, NULL, pfile);
 	}
-#endif
       goto maybe_end;
 
     default:

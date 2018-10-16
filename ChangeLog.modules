@@ -1,5 +1,17 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Legacy importing during -E
+	gcc/c-family/
+	* c-lex.c (init_c_lex): Don't use lang_hooks here.
+	* c-opts.c (c_common_init): Set them here.
+	gcc/cp/
+	* lex.c (module_preprocess_token): Enable legacy importing.
+	* module.cc (module_state::read): Skip items when preprocessing
+	only.
+	(module_cpp_undef): Adjust unsetting.
+	gcc/testsuite/
+	* g++.dg/modules/cpp-2_c.C: Adjust.
+
 	Remove token peeking & preamble related infrastructure.
 	libcpp/
 	* include/cpplib.h (cpp_relocate_peeked_tokens): Delete.
