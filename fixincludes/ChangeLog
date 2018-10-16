@@ -1,3 +1,10 @@
+2018-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* inclhack.def (AAB_vxworks_regs_vxtypes): Add unconditional
+	include of vxCpu.h, guard include of vxTypesOld.h by
+	!_ASMLANGUAGE.
+	* fixincl.x: Regenerate.
+
 2018-09-03  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* inclhack.def (vxworks_ioctl_macro): Remove parentheses from
