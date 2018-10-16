@@ -1057,11 +1057,7 @@ inline source_location cpp_macro_definition_location (cpp_hashnode *node)
   return macro ? macro->line : 0;
 }
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
-extern void cpp_relocate_peeked_tokens (cpp_reader *, unsigned);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
-extern const cpp_token *cpp_peek_token_with_location (cpp_reader *, int,
-						      source_location *);
-extern bool cpp_in_macro_expansion_p (cpp_reader *);
 
 /* Evaluate a CPP_*CHAR* token.  */
 extern cppchar_t cpp_interpret_charconst (cpp_reader *, const cpp_token *,

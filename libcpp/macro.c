@@ -2513,8 +2513,8 @@ macro_of_context (cpp_context *context)
    expanding one.  If we are effectively expanding a macro, the
    function macro_of_context returns a pointer to the macro being
    expanded.  */
-bool
-cpp_in_macro_expansion_p (cpp_reader *pfile)
+static bool
+in_macro_expansion_p (cpp_reader *pfile)
 {
   if (pfile == NULL)
     return false;
@@ -2748,7 +2748,7 @@ cpp_get_token_1 (cpp_reader *pfile, source_location *location)
 	  /* If not in a macro context, and we're going to start an
 	     expansion, record the location and the top level macro
 	     about to be expanded.  */
-	  if (!cpp_in_macro_expansion_p (pfile))
+	  if (!in_macro_expansion_p (pfile))
 	    {
 	      pfile->invocation_location = result->src_loc;
 	      pfile->top_most_macro_node = node;

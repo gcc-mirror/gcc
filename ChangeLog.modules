@@ -1,5 +1,30 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Remove token peeking & preamble related infrastructure.
+	libcpp/
+	* include/cpplib.h (cpp_relocate_peeked_tokens): Delete.
+	(cpp_peek_token_with_location): Delete.
+	(cpp_in_macro_expansion_p): Delete.
+	* directives-only.c (_cpp_preprocess_dir_only): Adjust
+	_cpp_handle_directive call.
+	* directives.c (struct if_stack): Drop hash_loc.
+	(PEEK_INVISIBLE): Delete.
+	(linemarker_dir): Adjust.
+	(_cpp_handle_directive): Drop hash_loc arg.  dont set it.
+	(push_conditional): Drop hash_loc.
+	* init.c (read_original_filename): Adjust _cpp_handle_directive
+	call.
+	* internal.h (struct cpp_reader): Delete peeked_directive field.
+	(_cpp_handl_directive): Drop hash_loc arg.
+	* lex.c (cpp_relocate_peeked_tokens): Delete.
+	(cpp_peek_token): Swallow ...
+	(cpp_peek_token_with_location): ... this.  Delete.
+	(_cpp_lex_token): Adjust _cpp_handle_directive call.
+	* macro.c (cpp_in_macro_expansion_p): Rename to ...
+	(cpp_in_macro_expansion): ... this.  Make static.
+	* traditional.c (_cpp_scan_out_logical_line): Adjust
+	_cpp_handle_directive call.
+
 	gcc/testsuite/
 	* g++.dg/modules/*.H: Drop unnecessary -fmodules-atom option.
 

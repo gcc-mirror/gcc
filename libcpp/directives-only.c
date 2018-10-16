@@ -101,7 +101,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
 	    /* Ensure proper column numbering for generated error messages. */
 	    buffer->line_base -= col - 1;
 
-	    _cpp_handle_directive (pfile, false /* ignore indented */, 0);
+	    _cpp_handle_directive (pfile, false /* ignore indented */);
 
 	    /* Sanitize the line settings.  Duplicate #include's can mess
 	       things up. */

@@ -777,7 +777,7 @@ _cpp_scan_out_logical_line (cpp_reader *pfile, cpp_macro *macro,
 		      /* This is a kludge.  We want to have the ISO
 			 preprocessor lex the next token.  */
 		      pfile->buffer->cur = cur;
-		      _cpp_handle_directive (pfile, false, 0);
+		      _cpp_handle_directive (pfile, false);
 		      result = false;
 		      goto done;
 		    }

@@ -35,7 +35,6 @@ struct if_stack
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
   int type;			/* Most recent conditional for diagnostics.  */
-  source_location hash_loc;     /* Location of '#' of first conditional.  */
 };
 
 /* Contains a registered pragma or pragma namespace.  */
@@ -75,7 +74,6 @@ struct pragma_entry
 #define IN_I		(1 << 3)
 #define EXPAND		(1 << 4)
 #define DEPRECATED	(1 << 5)
-#define PEEK_INVISIBLE  (1 << 6)
 
 /* Defines one #-directive, including how to handle it.  */
 typedef void (*directive_handler) (cpp_reader *);
@@ -148,7 +146,7 @@ static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
   D(else,	T_ELSE,		KANDR,     COND)	   		\
   D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND)		\
   D(undef,	T_UNDEF,	KANDR,     IN_I)			\
-  D(line,	T_LINE,		KANDR,     EXPAND | PEEK_INVISIBLE)	\
+  D(line,	T_LINE,		KANDR,     EXPAND)			\
   D(elif,	T_ELIF,		STDC89,    COND | EXPAND)		\
   D(error,	T_ERROR,	STDC89,    0)				\
   D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
@@ -203,7 +201,7 @@ DIRECTIVE_TABLE
    did use this notation in its preprocessed output.  */
 static const directive linemarker_dir =
 {
-  do_linemarker, UC"#", 1, KANDR, IN_I | PEEK_INVISIBLE
+  do_linemarker, UC"#", 1, KANDR, IN_I
 };
 
 #define SEEN_EOL() (pfile->cur_token[-1].type == CPP_EOF)
@@ -414,11 +412,9 @@ directive_diagnostics (cpp_reader *pfile, const directive *dir, int indented)
    '#' of the directive was indented.  This function is in this file
    to save unnecessarily exporting dtable etc. to lex.c.  Returns
    nonzero if the line of tokens has been handled, zero if we should
-   continue processing the line.  HASH_LOC is the location of the
-   directive's '#', and is used for peeked_directive processing.  */
+   continue processing the line.  */
 int
-_cpp_handle_directive (cpp_reader *pfile, int indented,
-		       source_location hash_loc)
+_cpp_handle_directive (cpp_reader *pfile, int indented)
 {
   const directive *dir = 0;
   const cpp_token *dname;
@@ -544,28 +540,7 @@ _cpp_handle_directive (cpp_reader *pfile, int indented,
     prepare_directive_trad (pfile);
 
   if (dir)
-    {
-      struct if_stack *next  = pfile->buffer->if_stack;
-      if (!pfile->peeked_directive && !(dir->flags & (PEEK_INVISIBLE | COND)))
-	pfile->peeked_directive = hash_loc;
-
-      pfile->directive->handler (pfile);
-
-      if (dir->flags & COND)
-	{
-	  struct if_stack *ifs = pfile->buffer->if_stack;
-
-	  if (ifs && ifs->next == next)
-	    {
-	      /* Nested.  */
-	      ifs->hash_loc = hash_loc;
-	      next = ifs;
-	    }
-
-	  if (ifs == next && !pfile->peeked_directive && !pfile->state.skipping)
-	    pfile->peeked_directive = ifs->hash_loc;
-	}
-    }
+    pfile->directive->handler (pfile);
   else if (skip == 0)
     _cpp_backup_tokens (pfile, 1);
 
@@ -2182,8 +2157,6 @@ push_conditional (cpp_reader *pfile, int skip, int type,
   ifs->skip_elses = pfile->state.skipping || !skip;
   ifs->was_skipping = pfile->state.skipping;
   ifs->type = type;
-  ifs->hash_loc = 0;
-
   /* This condition is effectively a test for top-of-file.  */
   if (pfile->mi_valid && pfile->mi_cmacro == 0)
     ifs->mi_cmacro = cmacro;
