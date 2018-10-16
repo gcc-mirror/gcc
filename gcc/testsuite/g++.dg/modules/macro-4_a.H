@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=macro-4_a.H -fmodules-atom -fforce-module-macros" }
+// { dg-additional-options "-fmodule-legacy=macro-4_a.H -fforce-module-macros" }
 // { dg-module-bmi {"macro-4_a.H"} }
 
 #ifndef MACRO_4_a

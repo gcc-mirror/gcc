@@ -1,5 +1,33 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/*.H: Drop unnecessary -fmodules-atom option.
+
+	Reimplement preamble peeking
+	gcc/
+	* doc/invoke.texi (fmodule-preamble): Delete.
+	* langhooks-def.h (LANG_HOOKS_PREPROCESS_PREAMBLE): Replace with ...
+	(LANG_HOOKS_PREPROCESS_TOKEN): ... this.
+	* langhooks.h (struct lang_hooks): Replace preprocess_preamble
+	with preprocess_token.
+	c-family/
+	* c-ppoutput.c (scan_translation_unit): Adjust preprocess lang
+	hook.
+	* c.opt (fmodule-preamble, fmodule-preamble=): Delete.
+	gcc/cp/
+	* cp-lang.c (module_preamble_fsm): Delete.
+	(LANG_HOOKS_PREPROCESS_PREAMBLE): Delete.
+	(LANG_HOOKS_PREPROCESS_TOKEN): Override.
+	* cp-tree.h (enum module_preamble_state): Delete.
+	(module_preamble_prefix_{peek,next}): Delete.
+	(module_preprocess_token): Declare.
+	* lex.c (module_preamble_prefix_{peek,next}): Delete.
+	(module_preprocess_token): New.
+	* module.c (init_module_processing, handle_module_option): Drop
+	preamble option handling.
+	gcc/testsuite/
+	* g++.dg/modules/*: Many changes.
+
 	Remove preamble repeating.
 	gcc/cp/
 	* cp-tree.h (maybe_repeat_preamble): Delete.

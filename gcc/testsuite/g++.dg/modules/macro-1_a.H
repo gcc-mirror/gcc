@@ -1,5 +1,5 @@
 // { dg-module-do run }
-// { dg-additional-options "-fmodule-legacy=macro-1_a.H -fmodules-atom" }
+// { dg-additional-options "-fmodule-legacy=macro-1_a.H" }
 // { dg-module-bmi {"macro-1_a.H"} }
 
 #ifndef MACRO_1_H

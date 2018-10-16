@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=macro-6_a.H -fmodules-atom" }
+// { dg-additional-options "-fmodule-legacy=macro-6_a.H" }
 // { dg-module-bmi {"macro-6_a.H"} }
 
 #ifndef MACRO_6_H
