@@ -1,3 +1,8 @@
+2018-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87465
+	* gcc.dg/tree-ssa/cunroll-15.c: Fix pattern.
+
 2018-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Backported from mainline
