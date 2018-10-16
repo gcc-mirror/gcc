@@ -34,19 +34,28 @@
 #if __cplusplus >= 201402L
 
 #include <experimental/netfwd>
+#include <experimental/io_context>
+#include <experimental/bits/net.h>
 #include <array>
 #include <forward_list>
 #include <sstream>
-#include <typeinfo>
-#include <cstring>
 #include <cstdint>
-#include <experimental/io_context>
-#include <experimental/bits/net.h>
 #include <experimental/string_view>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <netinet/tcp.h>
-#include <netdb.h>
+#ifdef _GLIBCXX_HAVE_UNISTD_H
+# include <unistd.h>
+#endif
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
+# include <sys/socket.h>	// AF_INET, AF_INET6, SOCK_DGRAM, SOCK_STREAM
+#endif
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
+# include <arpa/inet.h>		// inet_ntop
+#endif
+#ifdef _GLIBCXX_HAVE_NETINET_TCP_H
+# include <netinet/tcp.h>	// TCP_NODELAY
+#endif
+#ifdef _GLIBCXX_HAVE_NETDB_H
+# include <netdb.h>		// getaddrinfo etc.
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -65,6 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
+#ifdef _GLIBCXX_HAVE_NETDB_H
   /** Error codes for resolver errors.
    * @{
    */
@@ -95,6 +105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return error_condition(static_cast<int>(__e), resolver_category()); }
 
   /// @}
+#endif
 
   typedef uint_least16_t port_type;	///< Type used for port numbers.
   typedef uint_least32_t scope_id_type;	///< Type used for IPv6 scope IDs.
@@ -182,6 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     constexpr uint_type to_uint() const noexcept { return _S_ntoh(_M_addr); }
 
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
@@ -194,6 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __str.resize(0);
 	return __str;
       }
+#endif
 
     // static members:
     static constexpr address_v4 any() noexcept { return address_v4{}; }
@@ -321,6 +334,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     constexpr bytes_type to_bytes() const noexcept { return _M_bytes; }
 
+#ifdef _GLIBCXX_HAVE_ARPA_INET_H
     template<typename _Allocator = allocator<char>>
       __string_with<_Allocator>
       to_string(const _Allocator& __a = _Allocator()) const
@@ -333,13 +347,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __str.resize(0);
 	return __str;
       }
+#endif
 
     // static members:
     static constexpr address_v6
     any() noexcept
     {
       address_v6 __addr;
-      std::memcpy(&__addr._M_bytes, in6addr_any.s6_addr, 16);
+      __builtin_memcpy(&__addr._M_bytes, in6addr_any.s6_addr, 16);
       return __addr;
     }
 
@@ -347,7 +362,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     loopback() noexcept
     {
       address_v6 __addr;
-      std::memcpy(&__addr._M_bytes, in6addr_loopback.s6_addr, 16);
+      __builtin_memcpy(&__addr._M_bytes, in6addr_loopback.s6_addr, 16);
       return __addr;
     }
 
@@ -717,7 +732,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline address_v6
   make_address_v6(const char* __str, error_code& __ec) noexcept
   {
-    auto __p = std::strchr(__str, '%');
+    auto __p = __builtin_strchr(__str, '%');
     if (__p == nullptr)
       return __make_address_v6(__str, nullptr, __ec);
     char __buf[64];
@@ -1400,8 +1415,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_data._M_v6 = {};
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
 	    _M_data._M_v6.sin6_port = address_v4::_S_hton(__port_num);
-	    std::memcpy(_M_data._M_v6.sin6_addr.s6_addr,
-			__addr._M_v6._M_bytes.data(), 16);
+	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
+			     __addr._M_v6._M_bytes.data(), 16);
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
 	  }
       }
@@ -1419,14 +1434,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	ip::address __addr;
 	if (protocol().family() == AF_INET6)
 	  {
-	    std::memcpy(&__addr._M_v6._M_bytes,
-			_M_data._M_v6.sin6_addr.s6_addr, 16);
+	    __builtin_memcpy(&__addr._M_v6._M_bytes,
+			     _M_data._M_v6.sin6_addr.s6_addr, 16);
 	    __addr._M_is_v4 = false;
 	  }
 	else
 	  {
-	    std::memcpy(&__addr._M_v4._M_addr,
-			&_M_data._M_v4.sin_addr.s_addr, 4);
+	    __builtin_memcpy(&__addr._M_v4._M_addr,
+			     &_M_data._M_v4.sin_addr.s_addr, 4);
 	  }
 	return __addr;
       }
@@ -1438,8 +1453,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    _M_data._M_v6 = {};
 	    _M_data._M_v6.sin6_family = protocol_type::v6().family();
-	    std::memcpy(_M_data._M_v6.sin6_addr.s6_addr,
-			__addr._M_v6._M_bytes.data(), 16);
+	    __builtin_memcpy(_M_data._M_v6.sin6_addr.s6_addr,
+			     __addr._M_v6._M_bytes.data(), 16);
 	    _M_data._M_v6.sin6_scope_id = __addr._M_v6._M_scope_id;
 	  }
 	else
@@ -1660,7 +1675,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   operator^=(resolver_base::flags& __f1, resolver_base::flags __f2)
   { return __f1 = (__f1 ^ __f2); }
 
-  // TODO define resolver_base::flags static constants
+  // TODO define resolver_base::flags static constants for C++14 mode
 
   // @}
 
@@ -1898,6 +1913,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			   resolver_base::flags __f, error_code& __ec,
 			   protocol_type* __protocol)
     {
+#ifdef _GLIBCXX_HAVE_NETDB_H
       string __host;
       const char* __h = __host_name.data()
 	? (__host = __host_name.to_string()).c_str()
@@ -1943,12 +1959,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__ai->ai_family == AF_INET || __ai->ai_family == AF_INET6)
 	    {
 	      if (__ai->ai_addrlen <= __ep.capacity())
-		std::memcpy(__ep.data(), __ai->ai_addr, __ai->ai_addrlen);
+		__builtin_memcpy(__ep.data(), __ai->ai_addr, __ai->ai_addrlen);
 	      __ep.resize(__ai->ai_addrlen);
 	      __tail = _M_results.emplace_after(__tail, __ep, __host, __svc);
 	      _M_size++;
 	    }
 	}
+#else
+      __ec = std::make_error_code(errc::operation_not_supported);
+#endif
     }
 
   /// Private constructor to synchronously resolve an endpoint.
@@ -1956,6 +1975,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_resolver_results<_InternetProtocol>::
     basic_resolver_results(const endpoint_type& __ep, error_code& __ec)
     {
+#ifdef _GLIBCXX_HAVE_NETDB_H
       char __host_name[256];
       char __service_name[128];
       int __flags = 0;
@@ -1982,6 +2002,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_results.emplace_front(__ep, __host_name, __service_name);
 	  _M_size = 1;
 	}
+#else
+      __ec = std::make_error_code(errc::operation_not_supported);
+#endif
     }
 
   /** The name of the local host.
@@ -2030,6 +2053,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     typedef basic_socket_acceptor<tcp> acceptor; ///< A TCP acceptor.
     typedef basic_socket_iostream<tcp> iostream; /// A TCP iostream.
 
+#ifdef _GLIBCXX_HAVE_NETINET_TCP_H
     /// Disable coalescing of small segments (i.e. the Nagle algorithm).
     struct no_delay : __sockopt_crtp<no_delay, bool>
     {
@@ -2038,6 +2062,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static const int _S_level = IPPROTO_TCP;
       static const int _S_name = TCP_NODELAY;
     };
+#endif
 
     // static members:
 

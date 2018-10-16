@@ -9,6 +9,9 @@
 /* Define to 1 if you have the `aligned_alloc' function. */
 #undef HAVE_ALIGNED_ALLOC
 
+/* Define to 1 if you have the <arpa/inet.h> header file. */
+#undef HAVE_ARPA_INET_H
+
 /* Define to 1 if you have the `asinf' function. */
 #undef HAVE_ASINF
 
@@ -318,6 +321,15 @@
 /* Define to 1 if you have the <nan.h> header file. */
 #undef HAVE_NAN_H
 
+/* Define to 1 if you have the <netdb.h> header file. */
+#undef HAVE_NETDB_H
+
+/* Define to 1 if you have the <netinet/in.h> header file. */
+#undef HAVE_NETINET_IN_H
+
+/* Define to 1 if you have the <netinet/tcp.h> header file. */
+#undef HAVE_NETINET_TCP_H
+
 /* Define if <math.h> defines obsolete isinf function. */
 #undef HAVE_OBSOLETE_ISINF
 
@@ -326,6 +338,9 @@
 
 /* Define if poll is available in <poll.h>. */
 #undef HAVE_POLL
+
+/* Define to 1 if you have the <poll.h> header file. */
+#undef HAVE_POLL_H
 
 /* Define to 1 if you have the `posix_memalign' function. */
 #undef HAVE_POSIX_MEMALIGN
@@ -447,6 +462,9 @@
 
 /* Define to 1 if you have the <sys/sem.h> header file. */
 #undef HAVE_SYS_SEM_H
+
+/* Define to 1 if you have the <sys/socket.h> header file. */
+#undef HAVE_SYS_SOCKET_H
 
 /* Define to 1 if you have the <sys/statvfs.h> header file. */
 #undef HAVE_SYS_STATVFS_H

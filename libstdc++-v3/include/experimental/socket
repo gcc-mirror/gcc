@@ -42,11 +42,21 @@
 #include <bits/unique_ptr.h>
 #if _GLIBCXX_HAVE_UNISTD_H
 # include <unistd.h>
-# include <sys/socket.h>
-# include <sys/ioctl.h>
-# include <sys/fcntl.h>
-# include <sys/uio.h>
-# include <poll.h>
+# ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
+#  include <sys/socket.h>	// socket etc
+# endif
+# ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
+#  include <sys/ioctl.h>	// ioctl
+# endif
+# ifdef _GLIBCXX_HAVE_SYS_UIO_H
+#  include <sys/uio.h>		// iovec
+# endif
+# ifdef _GLIBCXX_HAVE_POLL_H
+#  include <poll.h>		// poll, pollfd, POLLIN, POLLOUT, POLLERR
+# endif
+# ifdef _GLIBCXX_HAVE_FCNTL_H
+#  include <fcntl.h>		// fcntl, F_GETFL, F_SETFL
+# endif
 #endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -139,6 +149,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class socket_base
   {
   public:
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
     struct broadcast : __sockopt_crtp<broadcast, bool>
     {
       using __sockopt_crtp::__sockopt_crtp;
@@ -261,6 +272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr shutdown_type shutdown_send	= __shutdown_send;
     static constexpr shutdown_type shutdown_both	= __shutdown_both;
 
+#ifdef _GLIBCXX_HAVE_POLL_H
     enum wait_type : int
     {
       __wait_read		= POLLIN,
@@ -270,6 +282,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr wait_type wait_read		= __wait_read;
     static constexpr wait_type wait_write		= __wait_write;
     static constexpr wait_type wait_error		= __wait_error;
+#endif
 
     enum message_flags : int
     {
@@ -282,11 +295,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr message_flags message_do_not_route	= __message_dontroute;
 
     static const int max_listen_connections = SOMAXCONN;
+#endif
 
   protected:
     socket_base() = default;
     ~socket_base() = default;
 
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
     struct __msg_hdr : ::msghdr
     {
 #ifdef IOV_MAX
@@ -342,6 +357,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  this->msg_namelen = __ep.size();
 	}
     };
+#endif
   };
 
   constexpr socket_base::message_flags
@@ -440,6 +456,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     native_non_blocking(bool __mode, error_code& __ec)
     {
+#ifdef _GLIBCXX_HAVE_FCNTL_H
       int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
       if (__flags >= 0)
 	{
@@ -456,11 +473,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ec.clear();
 	  _M_bits.native_non_blocking = __mode;
 	}
+#else
+      __ec = std::make_error_code(std::errc::not_supported);
+#endif
     }
 
     bool
     native_non_blocking() const
     {
+#ifdef _GLIBCXX_HAVE_FCNTL_H
       if (_M_bits.native_non_blocking == -1)
 	{
 	  const int __flags = ::fcntl(_M_sockfd, F_GETFL, 0);
@@ -469,6 +490,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_bits.native_non_blocking = __flags & O_NONBLOCK;
 	}
       return _M_bits.native_non_blocking;
+#else
+      return false;
+#endif
     }
 
     io_context*	_M_ctx;
@@ -517,6 +541,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       open(const protocol_type& __protocol, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (is_open())
 	  __ec = socket_errc::already_open;
 	else
@@ -532,6 +557,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    else
 	      __ec.assign(errno, std::generic_category());
 	  }
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       void
@@ -588,18 +616,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	void
 	io_control(_IoControlCommand& __command, error_code& __ec)
 	{
-	  int __result = ::ioctl(_M_sockfd, __command.name(_M_protocol),
-				 __command.data(_M_protocol));
+#ifdef _GLIBCXX_HAVE_SYS_IOCTL_H
+	  int __result = ::ioctl(_M_sockfd, __command.name(),
+				 __command.data());
 	  if (__result == -1)
 	    __ec.assign(errno, generic_category());
 	  else
 	    __ec.clear();
+#else
+	  __ec = std::make_error_code(std::errc::not_supported);
+#endif
 	}
 
       endpoint_type
       local_endpoint(error_code& __ec) const
       {
 	endpoint_type __endpoint;
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getsockname(_M_sockfd, (sockaddr*)__endpoint.data(),
                           &__endpoint_len) == -1)
@@ -609,17 +642,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__ec.clear();
 	__endpoint.resize(__endpoint_len);
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	return __endpoint;
       }
 
       void
       bind(const endpoint_type& __endpoint, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::bind(_M_sockfd, (sockaddr*)__endpoint.data(), __endpoint.size())
 	    == -1)
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       _Protocol	_M_protocol{ endpoint_type{}.protocol() };
@@ -754,6 +794,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       bool
       at_mark(error_code& __ec) const
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	const int __result = ::sockatmark(native_handle());
 	if (__result == -1)
 	  {
@@ -762,6 +803,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__ec.clear();
 	return (bool)__result;
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+	return false;
+#endif
       }
 
       size_t
@@ -776,7 +821,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __ec = std::make_error_code(errc::bad_file_descriptor);
 	    return 0;
 	  }
-#ifdef FIONREAD
+#if defined _GLIBCXX_HAVE_SYS_IOCTL_H && defined FIONREAD
 	int __avail = 0;
 	if (::ioctl(this->_M_sockfd, FIONREAD, &__avail) == -1)
 	  {
@@ -804,10 +849,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       shutdown(shutdown_type __what, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::shutdown(native_handle(), static_cast<int>(__what)) == -1)
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       endpoint_type
@@ -832,6 +881,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       remote_endpoint(error_code& __ec) const
       {
 	endpoint_type __endpoint;
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	socklen_t __endpoint_len = __endpoint.capacity();
 	if (::getpeername(this->_M_sockfd, (sockaddr*)__endpoint.data(),
                           &__endpoint_len)
@@ -842,6 +892,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
 	__ec.clear();
 	__endpoint.resize(__endpoint_len);
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	return __endpoint;
       }
 
@@ -860,11 +913,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    if (__ec)
 	      return;
 	  }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::connect(native_handle(), (const sockaddr*)__endpoint.data(),
 		      __endpoint.size()) == -1)
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       template<typename _CompletionToken>
@@ -898,9 +955,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                __ep = std::move(__endpoint),
                __fd = native_handle()]
                (error_code __ec) mutable {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   if (!__ec && ::connect(__fd, (const sockaddr*)__ep.data(),
 					 __ep.size()) == -1)
                     __ec.assign(errno, generic_category());
+#else
+		  __ec = std::make_error_code(errc::operation_not_supported);
+#endif
 		  __h(__ec);
 	      });
 	  return __init.result.get();
@@ -913,6 +974,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait(wait_type __w, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_POLL_H
 	::pollfd __fd;
 	__fd.fd = native_handle();
 	__fd.events = static_cast<int>(__w);
@@ -921,6 +983,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       template<typename _CompletionToken>
@@ -1060,6 +1125,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	receive(const _MutableBufferSequence& __buffers,
 		socket_base::message_flags __flags, error_code& __ec)
 	{
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers);
 	  ssize_t __result = ::recvmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1070,6 +1136,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             }
           __ec.clear();
           return __result;
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+	  return 0;
+#endif
 	}
 
       template<typename _MutableBufferSequence, typename _CompletionToken>
@@ -1101,6 +1171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers);
                   ssize_t __result = ::recvmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1111,6 +1182,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   else
                     __ec.clear();
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1153,6 +1227,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		     socket_base::message_flags __flags,
 		     error_code& __ec)
 	{
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers, __sender);
 	  ssize_t __result = ::recvmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1164,6 +1239,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __ec.clear();
           __sender.resize(__msg.msg_namelen);
           return __result;
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+	  return 0;
+#endif
 	}
 
       template<typename _MutableBufferSequence, typename _CompletionToken>
@@ -1199,6 +1278,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers, __sender);
                   ssize_t __result = ::recvmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1212,6 +1292,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __sender.resize(__msg.msg_namelen);
                     }
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1243,6 +1326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	send(const _ConstBufferSequence& __buffers,
 	     socket_base::message_flags __flags, error_code& __ec)
 	{
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers);
 	  ssize_t __result = ::sendmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1253,6 +1337,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             }
           __ec.clear();
           return __result;
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+	  return 0;
+#endif
 	}
 
       template<typename _ConstBufferSequence, typename _CompletionToken>
@@ -1284,6 +1372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers);
                   ssize_t __result = ::sendmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1294,6 +1383,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   else
                     __ec.clear();
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1333,6 +1425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	        const endpoint_type& __recipient,
 		socket_base::message_flags __flags, error_code& __ec)
 	{
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers, __recipient);
 	  ssize_t __result = ::sendmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1344,6 +1437,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
           __ec.clear();
           __recipient.resize(__msg.msg_namelen);
           return __result;
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+	  return 0;
+#endif
 	}
 
       template<typename _ConstBufferSequence, typename _CompletionToken>
@@ -1379,6 +1476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers, __recipient);
                   ssize_t __result = ::sendmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1392,6 +1490,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __recipient.resize(__msg.msg_namelen);
                     }
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1482,7 +1583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __ec.clear();
 	      return 0;
 	    }
-
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers);
 	  ssize_t __result = ::recvmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1492,6 +1593,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return __result;
 	    }
 	  __ec.assign(errno, generic_category());
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	  return 0;
 	}
 
@@ -1536,6 +1640,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers);
                   ssize_t __result = ::recvmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1546,6 +1651,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   else
                     __ec.clear();
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1582,7 +1690,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      __ec.clear();
 	      return 0;
 	    }
-
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	  socket_base::__msg_hdr __msg(__buffers);
 	  ssize_t __result = ::sendmsg(this->native_handle(), &__msg,
 				       static_cast<int>(__flags));
@@ -1592,6 +1700,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      return __result;
 	    }
 	  __ec.assign(errno, generic_category());
+#else
+	  __ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	  return 0;
 	}
 
@@ -1636,6 +1747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec);
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   socket_base::__msg_hdr __msg(__buffers);
                   ssize_t __result = ::sendmsg(__fd, &__msg, __flags);
                   if (__result == -1)
@@ -1646,6 +1758,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                   else
                     __ec.clear();
 		  __h(__ec, __result);
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -1889,12 +2004,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      __throw_on_error{"basic_socket_acceptor::listen"});
       }
 
-      void listen(int __backlog, error_code& __ec)
+      void
+      listen(int __backlog, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	if (::listen(native_handle(), __backlog) == -1)
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       endpoint_type
@@ -1933,6 +2053,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       socket_type
       accept(io_context& __ctx, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	do
 	  {
 	    int __h = ::accept(native_handle(), nullptr, 0);
@@ -1943,6 +2064,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	  } while (errno == ECONNABORTED && enable_connection_aborted());
 	__ec.assign(errno, generic_category());
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	return socket_type{__ctx};
       }
 
@@ -1975,6 +2099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec, socket_type(__ctx));
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   do
                     {
                       int __newfd = ::accept(__fd, nullptr, 0);
@@ -1987,6 +2112,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                     } while (errno == ECONNABORTED && __connabort);
                   __ec.assign(errno, generic_category());
                   __h(__ec, socket_type(__ctx));
+#else
+		  __h(std::make_error_code(errc::operation_not_supported), 0);
+#endif
 	      });
 	  return __init.result.get();
 	}
@@ -2012,6 +2140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       socket_type
       accept(io_context& __ctx, endpoint_type& __endpoint, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
 	do
 	  {
 	    socklen_t __len = __endpoint.capacity();
@@ -2024,6 +2153,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      }
 	  } while (errno == ECONNABORTED && enable_connection_aborted());
 	__ec.assign(errno, generic_category());
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
 	return socket_type{__ctx};
       }
 
@@ -2058,6 +2190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                       __h(__ec, socket_type(__ctx));
                       return;
                     }
+#ifdef _GLIBCXX_HAVE_SYS_SOCKET_H
                   do
                     {
                       socklen_t __len = __ep.capacity();
@@ -2072,6 +2205,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                         }
                     } while (errno == ECONNABORTED && __connabort);
                   __ec.assign(errno, generic_category());
+#else
+		  __ec = std::make_error_code(errc::operation_not_supported);
+#endif
                   __h(__ec, socket_type(__ctx));
 	      });
 	  return __init.result.get();
@@ -2084,6 +2220,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void
       wait(wait_type __w, error_code& __ec)
       {
+#ifdef _GLIBCXX_HAVE_POLL_H
 	::pollfd __fds;
 	__fds.fd = native_handle();
 	__fds.events = __w; // __w | POLLIN;
@@ -2091,6 +2228,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __ec.assign(errno, generic_category());
 	else
 	  __ec.clear();
+#else
+	__ec = std::make_error_code(errc::operation_not_supported);
+#endif
       }
 
       template<class _CompletionToken>

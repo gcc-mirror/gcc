@@ -1,5 +1,49 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for headers used by Networking TS.
+	* include/experimental/executor: Include <condition_variable>
+	instead of <mutex>.
+	* include/experimental/internet: Use autoconf macros for available
+	headers.  Include <sys/socket.h> for.  Remove <cstring> and use
+	__builtin_memcpy and __builtin_strchr.
+	(resolver_errc) [!_GLIBCXX_HAVE_NETDB_H]: Do not define.
+	(address_v4::to_string, address_v6::to_string)
+	[!_GLIBCXX_HAVE_ARPA_INET_H]: Likewise.
+	(basic_resolver_results) [!_GLIBCXX_HAVE_NETDB_H]: Make private
+	constructors report errors.
+	[!_GLIBCXX_HAVE_NETINET_TCP_H] (tcp::no_delay): Do not define.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/socket: Likewise.
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H, !_GLIBCXX_HAVE_POLL_H] (socket_base): Do
+	not define nested types when relevant header not available.
+	(__socket_impl::native_non_blocking) [!_GLIBCXX_HAVE_FCNTL_H]: Report
+	an error.
+	(__basic_socket_impl::open, __basic_socket_impl::local_endpoint)
+	(__basic_socket_impl::bind) [!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(__basic_socket_impl::io_control) [!_GLIBCXX_HAVE_SYS_IOCTL_H]:
+	Likewise.
+	(basic_socket::at_mark, basic_socket::shutdown)
+	(basic_socket::remote_endpoint, basic_socket::connect)
+	(basic_socket::async_connect) [!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_socket::available) [_GLIBCXX_HAVE_SYS_IOCTL_H]: Check macro
+	for <sys/ioctl.h> availability.
+	(basic_socket::wait) [!_GLIBCXX_HAVE_POLL_H]: Likewise.
+	(basic_datagram_socket::receive, basic_datagram_socket::async_receive)
+	(basic_datagram_socket::receive_from)
+	(basic_datagram_socket::async_receive_from)
+	(basic_datagram_socket::send, basic_datagram_socket::async_send)
+	(basic_datagram_socket::send_to, basic_datagram_socket::async_send_to)
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_stream_socket::receive, basic_stream_socket::async_receive)
+	(basic_stream_socket::send, basic_stream_socket::async_send)
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_socket_acceptor::listen, basic_socket_acceptor::accept)
+	(basic_socket_acceptor::async_accept) [!_GLIBCXX_HAVE_SYS_SOCKET_H]:
+	Likewise.
+	(basic_socket_acceptor::wait) [!_GLIBCXX_HAVE_POLL_H]: Likewise.
+
 	* testsuite/experimental/net/headers.cc: Remove dg-options.
 	* testsuite/experimental/net/buffer/arithmetic.cc: Replace dg-options
 	with dg-do using effective target.
