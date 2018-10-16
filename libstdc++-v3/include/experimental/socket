@@ -756,12 +756,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	const int __result = ::sockatmark(native_handle());
 	if (__result == -1)
-	  __ec.assign(errno, generic_category());
-	else
 	  {
-	    __ec.clear();
-	    return __result;
+	    __ec.assign(errno, generic_category());
+	    return false;
 	  }
+	__ec.clear();
+	return (bool)__result;
       }
 
       size_t
