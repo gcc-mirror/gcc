@@ -5801,6 +5801,7 @@ gfc_trans_allocate (gfc_code * code)
   tree nelems;
   bool upoly_expr, tmp_expr3_len_flag = false, al_len_needs_set, is_coarray;
   bool needs_caf_sync, caf_refs_comp;
+  bool e3_has_nodescriptor = false;
   gfc_symtree *newsym = NULL;
   symbol_attribute caf_attr;
   gfc_actual_arglist *param_list;
@@ -6236,6 +6237,17 @@ gfc_trans_allocate (gfc_code * code)
 	}
       else
 	e3rhs = gfc_copy_expr (code->expr3);
+
+      // We need to propagate the bounds of the expr3 for source=/mold=;
+      // however, for nondescriptor arrays, we use internally a lower bound
+      // of zero instead of one, which needs to be corrected for the allocate obj
+      if (e3_is == E3_DESC)
+	{
+	  symbol_attribute attr = gfc_expr_attr (code->expr3);
+	  if (code->expr3->expr_type == EXPR_ARRAY ||
+	      (!attr.allocatable && !attr.pointer))
+	    e3_has_nodescriptor = true;
+	}
     }
 
   /* Loop over all objects to allocate.  */
@@ -6319,12 +6331,12 @@ gfc_trans_allocate (gfc_code * code)
 	}
       else
 	tmp = expr3_esize;
+
       if (!gfc_array_allocate (&se, expr, stat, errmsg, errlen,
 			       label_finish, tmp, &nelems,
 			       e3rhs ? e3rhs : code->expr3,
 			       e3_is == E3_DESC ? expr3 : NULL_TREE,
-			       code->expr3 != NULL && e3_is == E3_DESC
-			       && code->expr3->expr_type == EXPR_ARRAY))
+			       e3_has_nodescriptor))
 	{
 	  /* A scalar or derived type.  First compute the size to
 	     allocate.

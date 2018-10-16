@@ -1,5 +1,15 @@
 2018-10-16  Tobias Burnus  <burnus@net-b.de>
 
+	PR fortran/67125
+	* trans-array.c (gfc_array_init_size, gfc_array_allocate):
+	Rename argument e3_is_array_constr to e3_has_nodescriptor
+	and update comments.
+	* trans-stmt.c (gfc_trans_allocate): Also fix lower bound
+	to 1 for nonalloc/nonpointer func results/vars besides
+	array constructors.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
 	PR fortran/87556
 	* trans-stmt.c (form_team, change_team, sync_team):
 	Don't ignore argse.pre/argse.post.
