@@ -1,3 +1,10 @@
+2018-10-16  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	Backported from mainline
+	PR target/87511
+	* config/aarch64/aarch64.c (aarch64_mask_and_shift_for_ubfiz_p):
+	Use HOST_WIDE_INT_1U for shift.
+
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
