@@ -1,3 +1,11 @@
+2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87618
+	* config/abi/pre/gnu.ver: Fix typos in patterns for basic_stringbuf.
+	* testsuite/27_io/basic_stringbuf/cons/char/default.cc: Disable
+	optimisation to check constructor definition can be linked to.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/default.cc: Likewise.
+
 2018-10-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/22_locale/numpunct/members/char/3.cc: Adjust test to
