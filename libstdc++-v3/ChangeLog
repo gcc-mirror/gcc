@@ -1,5 +1,11 @@
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/duration/literals/range_neg.cc: Adjust pruned
+	diagnostic to account for quotes around 'constexpr'.
+	* testsuite/23_containers/deque/capacity/max_size.cc: Define static
+	variable.
+	* testsuite/23_containers/vector/capacity/max_size.cc: Likewise.
+
 	PR libstdc++/87618
 	* config/abi/pre/gnu.ver: Fix typos in patterns for basic_stringbuf.
 	* testsuite/27_io/basic_stringbuf/cons/char/default.cc: Disable
