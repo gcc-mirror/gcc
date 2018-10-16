@@ -1,6 +1,12 @@
 2018-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/67125
+	* gfortran.dg/allocate_with_source_26.f90: Extend
+	testcase with polymorphic variables.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/67125
 	* gfortran.dg/allocate_with_source_26.f90: New.
 
 2018-10-15  David Malcolm  <dmalcolm@redhat.com>
