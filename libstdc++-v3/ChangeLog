@@ -1,3 +1,15 @@
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/dg-options.exp (add_options_for_net_ts): New proc.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Add dg-add-options net_ts.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc: Likewise.
+
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/duration/literals/range_neg.cc: Adjust pruned
