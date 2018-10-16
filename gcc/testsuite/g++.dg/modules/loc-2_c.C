@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-atom }
+
 export module kevin;
 // { dg-module-bmi kevin }
 

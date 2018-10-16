@@ -1,5 +1,16 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Locations for everyone!
+	gcc/cp/
+	* module.cc (loc_spans::{init,open,close}): Dump info.
+	(module_state::{read,write}_location): No longer atom-specific.
+	(module_state::{read,write}): Locations for everyone.
+	(process_deferred_imports): Open and close spans correctly.
+	gcc/testsuite/
+	* g++.dg/modules/adhoc-1_[ab].C: No longer atom-specific.
+	* g++.dg/modules/loc-1_[abc].C: Likewise.
+	* g++.dg/modules/loc-2_[abcdef].C: Likewise.
+
 	gcc/
 	* dumpfile.c (dump_switch_p_1): Don't let a '-' filename fool the
 	option machinery.

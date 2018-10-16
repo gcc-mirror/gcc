@@ -2628,38 +2628,7 @@ public:
     return spans.length () != 0;
   }
   /* Initializer.  */
-  void init (const line_map_ordinary *map)
-  {
-    gcc_checking_assert (!init_p ());
-    spans.reserve (20);
-
-    span interval;
-    interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
-    interval.ordinary_delta = interval.macro_delta = 0;
-
-    /* A span for fixed locs.  */
-    interval.ordinary.second
-      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
-    spans.quick_push (interval);
-
-    /* A span for the command line.  */
-    interval.ordinary.first
-      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 2));
-    interval.ordinary.second
-      = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 3));
-    spans.quick_push (interval);
-
-    /* Create a span for the forced headers.  */
-    interval.ordinary.first = interval.ordinary.second;
-    interval.ordinary.second = MAP_START_LOCATION (map);
-    interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-    spans.quick_push (interval);
-
-    /* Start an interval for the main file.  */
-    interval.ordinary.first = interval.ordinary.second;
-    interval.macro.first = interval.macro.second;
-    spans.quick_push (interval);
-  }
+  void init (const line_map_ordinary *map);
 
 public:
   enum {
@@ -2688,86 +2657,6 @@ public:
 };
 
 static loc_spans spans;
-
-/* Open a new linemap interval.  The just-created ordinary map is the
-   first map of the interval.  */
-
-void
-loc_spans::open ()
-{
-  span interval;
-  interval.ordinary.first = interval.ordinary.second
-    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
-  interval.macro.first = interval.macro.second
-    = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-  interval.ordinary_delta = interval.macro_delta = 0;
-  spans.safe_push (interval);
-}
-
-/* Close out the current linemap interval.  The last maps are within
-   the interval.  */
-
-void
-loc_spans::close ()
-{
-  span &interval = spans.last ();
-
-  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
-
-  interval.ordinary.second
-    = ((line_table->highest_location + (1 << line_table->default_range_bits))
-       & ~((1u << line_table->default_range_bits) - 1));
-}
-
-/* Given an ordinary location LOC, return the lmap_interval it resides
-   in.  NULL if it is not in an interval.  */
-
-const loc_spans::span *
-loc_spans::ordinary (source_location loc)
-{
-  unsigned len = spans.length ();
-  unsigned pos = 0;
-  while (len)
-    {
-      unsigned half = len / 2;
-      const span &probe = spans[pos + half];
-      if (loc < probe.ordinary.first)
-	len = half;
-      else if (loc < probe.ordinary.second)
-	return &probe;
-      else
-	{
-	  pos += half + 1;
-	  len = len - (half + 1);
-	}
-    }
-  return NULL;
-}
-
-/* Likewise, given a macro location LOC, return the lmap interval it
-   resides in.   */
-
-const loc_spans::span *
-loc_spans::macro (source_location loc)
-{
-  unsigned len = spans.length ();
-  unsigned pos = 0;
-  while (len)
-    {
-      unsigned half = len / 2;
-      const span &probe = spans[pos + half];
-      if (loc >= probe.macro.second)
-	len = half;
-      else if (loc < probe.macro.first)
-	return &probe;
-      else
-	{
-	  pos += half + 1;
-	  len = len - (half + 1);
-	}
-    }
-  return NULL;
-}
 
 /* Data needed by a module during the process of loading.  */
 struct GTY(()) slurping {
@@ -7076,6 +6965,146 @@ module_state::announce (const char *what) const
     }
 }
 
+/* Initialize location spans.  */
+
+void
+loc_spans::init (const line_map_ordinary *map)
+{
+  gcc_checking_assert (!init_p ());
+  spans.reserve (20);
+
+  span interval;
+  interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+  interval.ordinary_delta = interval.macro_delta = 0;
+
+  /* A span for fixed locs.  */
+  interval.ordinary.second
+    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
+  dump (dumper::LOCATIONS)
+    && dump ("Fixed span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+	     interval.ordinary.first, interval.ordinary.second,
+	     interval.macro.first, interval.macro.second);
+  spans.quick_push (interval);
+
+  /* A span for the command line.  */
+  interval.ordinary.first
+    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 2));
+  interval.ordinary.second
+    = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 3));
+  dump (dumper::LOCATIONS)
+    && dump ("Command span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+	     interval.ordinary.first, interval.ordinary.second,
+	     interval.macro.first, interval.macro.second);
+  spans.quick_push (interval);
+
+  /* Create a span for the forced headers.  */
+  interval.ordinary.first = interval.ordinary.second;
+  interval.ordinary.second = MAP_START_LOCATION (map);
+  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
+  dump (dumper::LOCATIONS)
+    && dump ("Header span %u ordinary:[%u,%u) macro:[%u,%u)", spans.length (),
+	     interval.ordinary.first, interval.ordinary.second,
+	     interval.macro.first, interval.macro.second);
+  spans.quick_push (interval);
+
+  /* Start an interval for the main file.  */
+  interval.ordinary.first = interval.ordinary.second;
+  interval.macro.first = interval.macro.second;
+  dump (dumper::LOCATIONS)
+    && dump ("Main span %u ordinary:[%u macro:%u)", spans.length (),
+	     interval.ordinary.first, interval.macro.second);
+  spans.quick_push (interval);
+}
+
+/* Open a new linemap interval.  The just-created ordinary map is the
+   first map of the interval.  */
+
+void
+loc_spans::open ()
+{
+  span interval;
+  interval.ordinary.first = interval.ordinary.second
+    = MAP_START_LOCATION (LINEMAPS_LAST_ORDINARY_MAP (line_table));
+  interval.macro.first = interval.macro.second
+    = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
+  interval.ordinary_delta = interval.macro_delta = 0;
+  dump (dumper::LOCATIONS)
+    && dump ("Opening span %u ordinary:[%u,... macro:...,%u)",
+	     spans.length (), interval.ordinary.first,
+	     interval.macro.second);
+  spans.safe_push (interval);
+}
+
+/* Close out the current linemap interval.  The last maps are within
+   the interval.  */
+
+void
+loc_spans::close ()
+{
+  span &interval = spans.last ();
+
+  interval.macro.first = LINEMAPS_MACRO_LOWEST_LOCATION (line_table);
+
+  interval.ordinary.second
+    = ((line_table->highest_location + (1 << line_table->default_range_bits))
+       & ~((1u << line_table->default_range_bits) - 1));
+  dump (dumper::LOCATIONS)
+    && dump ("Closing span %u ordinary:[%u,%u) macro:[%u,%u)",
+	     spans.length () - 1,
+	     interval.ordinary.first,interval.ordinary.second,
+	     interval.macro.first, interval.macro.second);
+}
+
+/* Given an ordinary location LOC, return the lmap_interval it resides
+   in.  NULL if it is not in an interval.  */
+
+const loc_spans::span *
+loc_spans::ordinary (source_location loc)
+{
+  unsigned len = spans.length ();
+  unsigned pos = 0;
+  while (len)
+    {
+      unsigned half = len / 2;
+      const span &probe = spans[pos + half];
+      if (loc < probe.ordinary.first)
+	len = half;
+      else if (loc < probe.ordinary.second)
+	return &probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  return NULL;
+}
+
+/* Likewise, given a macro location LOC, return the lmap interval it
+   resides in.   */
+
+const loc_spans::span *
+loc_spans::macro (source_location loc)
+{
+  unsigned len = spans.length ();
+  unsigned pos = 0;
+  while (len)
+    {
+      unsigned half = len / 2;
+      const span &probe = spans[pos + half];
+      if (loc >= probe.macro.second)
+	len = half;
+      else if (loc < probe.macro.first)
+	return &probe;
+      else
+	{
+	  pos += half + 1;
+	  len = len - (half + 1);
+	}
+    }
+  return NULL;
+}
+
 /* Return the ordinary location closest to FROM.  */
 
 static location_t
@@ -9335,9 +9364,6 @@ module_state::read_unnamed (unsigned count, const range_t &range)
 void
 module_state::write_location (bytes_out &sec, location_t loc)
 {
-  if (!modules_atom_p ())
-    return;
-
   if (IS_ADHOC_LOC (loc))
     {
       dump (dumper::LOCATIONS) && dump ("Adhoc location");
@@ -9377,9 +9403,6 @@ module_state::write_location (bytes_out &sec, location_t loc)
 location_t
 module_state::read_location (bytes_in &sec) const
 {
-  if (!modules_atom_p ())
-    return loc;
-
   location_t locus = UNKNOWN_LOCATION;
   unsigned off = sec.u ();
   if (IS_ADHOC_LOC (off))
@@ -11214,9 +11237,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 
   find_dependencies (table);
 
-  unsigned range_bits = 0;
-  if (modules_atom_p ())
-    range_bits = prepare_locations ();
+  unsigned range_bits = prepare_locations ();
 
   /* Find the SCCs. */
   auto_vec<depset *> sccs (table.size ());
@@ -11333,8 +11354,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
   write_imports (to, &crc);
 
   /* Write the line maps.  */
-  if (modules_atom_p ())
-    write_locations (to, range_bits, &crc);
+  write_locations (to, range_bits, &crc);
 
   config.any_macros = modules_legacy_p () && write_macros (to, reader, &crc);
   config.controlling_node = controlling_node;
@@ -11368,9 +11388,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
   if (config.alias)
     return config.alias;
 
-  if (modules_atom_p ())
-    if (!read_locations ())
-      return NULL;
+  if (!read_locations ())
+    return NULL;
 
   /* Read the import table.  */
   if (!read_imports (reader, line_table))
@@ -12165,7 +12184,9 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
   gcc_checking_assert (lmaps == line_table);
   if (modules_p () && !spans.init_p ())
     {
+      unsigned n = dump.push (NULL);
       spans.init (map);
+      dump.pop (n);
       if (modules_legacy_p ())
 	{
 	  if (!module_legacy_name)
@@ -12210,11 +12231,12 @@ process_deferred_imports (cpp_reader *reader)
 		   vec_safe_length (pending_imports));
 
   module_state *imp = (*pending_imports)[0];
-  bool is_interface = imp->exported_p && imp == (*modules)[MODULE_PURVIEW];
+  bool is_interface = imp->mod == MODULE_PURVIEW;
+  bool interface_unit = module_interface_p ();
 
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (is_interface)
+  if (interface_unit)
     spans.close ();
 
   module_mapper *mapper = module_mapper::get (imp->from_loc);
@@ -12261,7 +12283,7 @@ process_deferred_imports (cpp_reader *reader)
   vec_free (pending_imports);
 
   linemap_module_restore (line_table, pre_hwm);
-  if (is_interface)
+  if (interface_unit)
     spans.open ();
 }
 

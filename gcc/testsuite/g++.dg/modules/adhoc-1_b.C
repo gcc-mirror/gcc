@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-atom -fdiagnostics-show-caret" }
+// { dg-additional-options "-fdiagnostics-show-caret" }
 
 import bob;
 void foo ()
