@@ -1,3 +1,8 @@
+2018-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84705
+	* g++.dg/cpp0x/pr84705.C: New.
+
 2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/56386
