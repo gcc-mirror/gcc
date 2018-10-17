@@ -1,4 +1,3 @@
-// { dg-additional-options "-fmodules-ts" }
 module;
 inline void Foo () {}
 

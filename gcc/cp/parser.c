@@ -4605,7 +4605,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
       if (next->keyword == RID_MODULE && (first || gmf))
 	{
-	  if (!exporting && !gmf && !modules_atom_p ()
+	  if (!exporting && !gmf
 	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
 	    {
 	      cp_lexer_consume_token (parser->lexer); /* module */
@@ -12798,8 +12798,7 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
 static module_state *
 cp_parser_module_name (cp_parser *parser)
 {
-  if (modules_atom_p ()
-      && cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
+  if (cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
     {
       tree name = cp_lexer_consume_token (parser->lexer)->u.value;
       return get_module (name, NULL);
@@ -38865,34 +38864,30 @@ static GTY (()) cp_parser *the_parser;
 static void
 cp_parser_initial_pragma (cp_token *first_token)
 {
+  cp_lexer_get_preprocessor_token (0, first_token);
+  if (cp_parser_pragma_kind (first_token) != PRAGMA_GCC_PCH_PREPROCESS)
+    return;
+
+  cp_lexer_get_preprocessor_token (0, first_token);
+
   tree name = NULL;
-
-  const cpp_token *peeked_tok = cpp_peek_token (parse_in, 0);
-  if (peeked_tok->type != CPP_PRAGMA
-      || peeked_tok->val.pragma != PRAGMA_GCC_PCH_PREPROCESS)
-    {
-      cp_lexer_get_preprocessor_token (NULL, first_token);
-      return;
-    }
-
-  /* Swallow the pragma.  */
-  cp_lexer_get_preprocessor_token (NULL, first_token);
-  cp_lexer_get_preprocessor_token (NULL, first_token);
   if (first_token->type == CPP_STRING)
     {
       name = first_token->u.value;
 
       cp_lexer_get_preprocessor_token (0, first_token);
-      if (first_token->type != CPP_PRAGMA_EOL)
-	error_at (first_token->location,
-		  "junk at end of %<#pragma GCC pch_preprocess%>");
     }
-  else
-    error_at (first_token->location, "expected string literal");
 
   /* Skip to the end of the pragma.  */
-  while (first_token->type != CPP_PRAGMA_EOL && first_token->type != CPP_EOF)
-    cp_lexer_get_preprocessor_token (0, first_token);
+  if (first_token->type != CPP_PRAGMA_EOL)
+    {
+      error_at (first_token->location,
+		"malformed %<#pragma GCC pch_preprocess%>");
+      do
+	cp_lexer_get_preprocessor_token (0, first_token);
+      while (first_token->type != CPP_PRAGMA_EOL
+	     && first_token->type != CPP_EOF);
+    }
 
   /* Now actually load the PCH file.  */
   if (name)

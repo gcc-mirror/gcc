@@ -1,5 +1,14 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	Remove some atom/ts differences.
+	gcc/cp/
+	* module.cc (declare_module): Copy always.
+	* parser.c (cp_parser_translation_unit): Allo GMF under atom.
+	(cp_parser_module_name): Allow legacy name under ts
+	(cp_parser_initial_pragma): Fix from trunk.
+	gcc/testsuite/
+	* g++.dg/modules: Many changes.
+
 	gcc/cp/
 	* module.cc (module_purview): New.
 	(module_purview_p, module_interface_p): Use it.

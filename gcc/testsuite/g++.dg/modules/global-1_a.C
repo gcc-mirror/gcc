@@ -1,4 +1,3 @@
-// { dg-additional-options "-fmodules-ts" }
 // { dg-module-bmi "thing" }
 
 module;

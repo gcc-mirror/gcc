@@ -12079,14 +12079,8 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
   state->attach (from_loc);
 
-  /* Copy any importing information we may have already done.  */
-  if (!modules_atom_p ())
-    {
-      module_state *global = (*modules)[MODULE_NONE];
-      state->imports = global->imports;
-    }
-  else
-    gcc_checking_assert (modules->length () == MODULE_IMPORT_BASE);
+  /* Copy the importing information we may have already done.  */
+  state->imports = (*modules)[MODULE_NONE]->imports;
 
   (*modules)[MODULE_NONE] = state;
   (*modules)[MODULE_PURVIEW] = state;

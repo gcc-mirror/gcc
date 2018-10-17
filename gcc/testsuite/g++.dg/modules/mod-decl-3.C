@@ -1,4 +1,3 @@
-// { dg-additional-options "-fmodules-ts" }
 module;
 export void Foo (); // { dg-error "after a module interface" }
 
