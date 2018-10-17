@@ -930,6 +930,9 @@ check_gnat_parallelize = 1000
 check-ada: check-acats check-gnat
 check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
 
+# No ada-specific selftests
+selftest-ada:
+
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 ACATSCMD = run_acats.sh
 

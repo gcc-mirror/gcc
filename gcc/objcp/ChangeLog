@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-obj-c++): New.
+
 2018-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	* objcp-lang.c (objcxx_init_ts): Don't call init_shadowed_var_for_decl.

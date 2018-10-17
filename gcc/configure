@@ -656,6 +656,7 @@ TM_ENDIAN_CONFIG
 tmake_file
 xmake_file
 cpp_install_dir
+selftest_languages
 check_languages
 build_file_translate
 build_xm_defines
@@ -18509,7 +18510,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18512 "configure"
+#line 18513 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18615,7 +18616,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18618 "configure"
+#line 18619 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -29344,6 +29345,12 @@ do
 	check_languages="$check_languages check-$language"
 done
 
+selftest_languages=
+for language in $all_selected_languages
+do
+	selftest_languages="$selftest_languages selftest-$language"
+done
+
 # We link each language in with a set of hooks, reached indirectly via
 # lang.${target}.  Only do so for selected languages.
 
@@ -29414,6 +29421,7 @@ fi
 
 
 # Substitute configuration variables
+
 
 
 

@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-go): New.
+
 2018-09-25  Martin Liska  <mliska@suse.cz>
 
 	* gofrontend/escape.cc (Gogo::analyze_escape): Remove

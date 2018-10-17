@@ -126,6 +126,9 @@ obj-c++.tags: force
 
 lang_checks += check-obj-c++
 
+# No objc-c++-specific selftests
+selftest-obj-c++:
+
 #
 # Install hooks:
 # cc1objplus is installed elsewhere as part of $(COMPILERS).
