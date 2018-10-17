@@ -243,6 +243,7 @@ struct GTY(()) bitmap_head {
   bitmap_element * GTY((skip(""))) current; /* Last element looked at.  */
   bitmap_obstack *obstack;		/* Obstack to allocate elements from.
 					   If NULL, then use GGC allocation.  */
+  void dump ();
 };
 
 /* Global data */

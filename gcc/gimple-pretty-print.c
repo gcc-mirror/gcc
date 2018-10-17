@@ -2123,7 +2123,7 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
       && SSA_NAME_RANGE_INFO (node))
     {
       wide_int min, max, nonzero_bits;
-      value_range_type range_type = get_range_info (node, &min, &max);
+      value_range_kind range_type = get_range_info (node, &min, &max);
 
       if (range_type == VR_VARYING)
 	pp_printf (buffer, "# RANGE VR_VARYING");

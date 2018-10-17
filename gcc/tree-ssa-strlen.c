@@ -1200,7 +1200,7 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
       else if (TREE_CODE (bound) == SSA_NAME)
 	{
 	  wide_int minbound, maxbound;
-	  value_range_type rng = get_range_info (bound, &minbound, &maxbound);
+	  value_range_kind rng = get_range_info (bound, &minbound, &maxbound);
 	  if (rng == VR_RANGE)
 	    {
 	      /* For a bound in a known range, adjust the range determined
@@ -1856,7 +1856,7 @@ maybe_diag_stxncpy_trunc (gimple_stmt_iterator gsi, tree src, tree cnt)
     cntrange[0] = cntrange[1] = wi::to_wide (cnt);
   else if (TREE_CODE (cnt) == SSA_NAME)
     {
-      enum value_range_type rng = get_range_info (cnt, cntrange, cntrange + 1);
+      enum value_range_kind rng = get_range_info (cnt, cntrange, cntrange + 1);
       if (rng == VR_RANGE)
 	;
       else if (rng == VR_ANTI_RANGE)
@@ -3682,7 +3682,7 @@ strlen_check_and_optimize_stmt (gimple_stmt_iterator *gsi, bool *cleanup_eh)
 			   if we don't have anything better.  */
 			wide_int min, max;
 			tree type = TREE_TYPE (lhs);
-			enum value_range_type vr
+			enum value_range_kind vr
 			  = get_range_info (lhs, &min, &max);
 			if (vr == VR_VARYING
 			    || (vr == VR_RANGE

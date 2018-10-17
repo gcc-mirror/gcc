@@ -3139,7 +3139,7 @@ expand_builtin_strnlen (tree exp, rtx target, machine_mode target_mode)
     return NULL_RTX;
 
   wide_int min, max;
-  enum value_range_type rng = get_range_info (bound, &min, &max);
+  enum value_range_kind rng = get_range_info (bound, &min, &max);
   if (rng != VR_RANGE)
     return NULL_RTX;
 
@@ -3227,7 +3227,7 @@ determine_block_size (tree len, rtx len_rtx,
   else
     {
       wide_int min, max;
-      enum value_range_type range_type = VR_UNDEFINED;
+      enum value_range_kind range_type = VR_UNDEFINED;
 
       /* Determine bounds from the type.  */
       if (tree_fits_uhwi_p (TYPE_MIN_VALUE (TREE_TYPE (len))))
@@ -3629,7 +3629,7 @@ compute_objsize (tree dest, int ostype)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (off)))
 	    {
 	      wide_int min, max;
-	      enum value_range_type rng = get_range_info (off, &min, &max);
+	      enum value_range_kind rng = get_range_info (off, &min, &max);
 
 	      if (rng == VR_RANGE)
 		{

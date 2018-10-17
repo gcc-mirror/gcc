@@ -2164,6 +2164,12 @@ debug (const bitmap_head *ptr)
     fprintf (stderr, "<nil>\n");
 }
 
+void
+bitmap_head::dump ()
+{
+  debug (this);
+}
+
 #if CHECKING_P
 
 namespace selftest {

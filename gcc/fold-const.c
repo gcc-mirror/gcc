@@ -9255,7 +9255,7 @@ bool
 expr_not_equal_to (tree t, const wide_int &w)
 {
   wide_int min, max, nz;
-  value_range_type rtype;
+  value_range_kind rtype;
   switch (TREE_CODE (t))
     {
     case INTEGER_CST:
