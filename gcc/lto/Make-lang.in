@@ -86,3 +86,6 @@ lto1.fda: ../prev-gcc/lto1$(exeext) ../prev-gcc/$(PERF_DATA)
 
 # LTO testing is done as part of C/C++/Fortran etc. testing.
 check-lto:
+
+# No LTO-specific selftests
+selftest-lto:

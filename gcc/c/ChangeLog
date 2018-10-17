@@ -1,3 +1,10 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-c): New.
+	(C_SELFTEST_FLAGS, C_SELFTEST_DEPS, s-selftest-c, selftest-c-gdb)
+	(selftest-gdb, selftest-c-valgrind, selftest-valgrind): Move here
+	from gcc/Makefile.in.
+
 2018-10-02  Richard Biener  <rguenther@suse.de>
 
 	* c-decl.c (warn_if_shadowing): Do not test DECL_FROM_INLINE.

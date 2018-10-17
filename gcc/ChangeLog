@@ -1,3 +1,16 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (SELFTEST_TARGETS): New.
+	(selftest) Change from s-selftest-c to $(SELFTEST_TARGETS).
+	(C_SELFTEST_FLAGS, C_SELFTEST_DEPS, s-selftest-c, selftest-c-gdb)
+	(selftest-gdb, selftest-c-valgrind, selftest-valgrind): Move to
+	c/Make-lang.in.
+	(CPP_SELFTEST_FLAGS, CPP_SELFTEST_DEPS, s-selftest-c++)
+	(selftest-c++-gdb, selftest-c++-valgrind): Move to
+	cp/Make-lang.in.
+	* configure: Regenerate.
+	* configure.ac (selftest_languages): New.
+
 2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
         * tree-vrp.c (extract_range_from_multiplicative_op): Remove
