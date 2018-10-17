@@ -1521,7 +1521,8 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	   || code == LSHIFT_EXPR)
     {
       if (range_int_cst_p (&vr1)
-	  && !wide_int_range_shift_undefined_p (prec,
+	  && !wide_int_range_shift_undefined_p (TYPE_SIGN (TREE_TYPE (vr1.min)),
+						prec,
 						wi::to_wide (vr1.min),
 						wi::to_wide (vr1.max)))
 	{
