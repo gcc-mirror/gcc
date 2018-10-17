@@ -1052,9 +1052,7 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	{
 	  /* Try to determine the range of values of the integer argument.  */
 	  value_range *vr = vr_values->get_value_range (arg);
-	  if (vr->type == VR_RANGE
-	      && TREE_CODE (vr->min) == INTEGER_CST
-	      && TREE_CODE (vr->max) == INTEGER_CST)
+	  if (range_int_cst_p (vr))
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1063,8 +1061,8 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 
 	      HOST_WIDE_INT type_max = tree_to_uhwi (TYPE_MAX_VALUE (argtype));
 
-	      *pmin = TREE_INT_CST_LOW (vr->min);
-	      *pmax = TREE_INT_CST_LOW (vr->max);
+	      *pmin = TREE_INT_CST_LOW (vr->min ());
+	      *pmax = TREE_INT_CST_LOW (vr->max ());
 
 	      if (*pmin < *pmax)
 		{
@@ -1354,12 +1352,10 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
       value_range *vr = vr_values->get_value_range (arg);
-      if (vr->type == VR_RANGE
-	  && TREE_CODE (vr->min) == INTEGER_CST
-	  && TREE_CODE (vr->max) == INTEGER_CST)
+      if (range_int_cst_p (vr))
 	{
-	  argmin = vr->min;
-	  argmax = vr->max;
+	  argmin = vr->min ();
+	  argmax = vr->max ();
 
 	  /* Set KNOWNRANGE if the argument is in a known subrange
 	     of the directive's type and neither width nor precision
@@ -1372,12 +1368,11 @@ format_integer (const directive &dir, tree arg, vr_values *vr_values)
 	  res.argmin = argmin;
 	  res.argmax = argmax;
 	}
-      else if (vr->type == VR_ANTI_RANGE)
+      else if (vr->kind () == VR_ANTI_RANGE)
 	{
 	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
 	}
-      else if (vr->type == VR_VARYING
-	       || vr->type == VR_UNDEFINED)
+      else if (vr->varying_p () || vr->undefined_p ())
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
@@ -3903,12 +3898,10 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
 	  value_range *vr = evrp_range_analyzer.get_value_range (size);
-	  if (vr->type == VR_RANGE
-	      && TREE_CODE (vr->min) == INTEGER_CST
-	      && TREE_CODE (vr->max) == INTEGER_CST)
+	  if (range_int_cst_p (vr))
 	    dstsize = (warn_level < 2
-		       ? TREE_INT_CST_LOW (vr->max)
-		       : TREE_INT_CST_LOW (vr->min));
+		       ? TREE_INT_CST_LOW (vr->max ())
+		       : TREE_INT_CST_LOW (vr->min ()));
 
 	  /* The destination size is not constant.  If the function is
 	     bounded (e.g., snprintf) a lower bound of zero doesn't

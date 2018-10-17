@@ -72,7 +72,6 @@ class vr_values
   void cleanup_edges_and_switches (void);
 
  private:
-  void add_equivalence (bitmap *, const_tree);
   bool vrp_stmt_computes_nonzero (gimple *);
   bool op_with_boolean_value_range_p (tree);
   bool check_for_binary_op_overflow (enum tree_code, tree, tree, tree, bool *);
@@ -141,8 +140,6 @@ class vr_values
   vec<edge> to_remove_edges;
   vec<switch_update> to_update_switch_stmts;
 };
-
-#define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
 extern tree get_output_for_vrp (gimple *);
 #endif /* GCC_VR_VALUES_H */

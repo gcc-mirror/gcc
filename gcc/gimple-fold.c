@@ -649,7 +649,7 @@ size_must_be_zero_p (tree size)
     return false;
 
   wide_int min, max;
-  enum value_range_type rtype = get_range_info (size, &min, &max);
+  enum value_range_kind rtype = get_range_info (size, &min, &max);
   if (rtype != VR_ANTI_RANGE)
     return false;
 

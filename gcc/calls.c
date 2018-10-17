@@ -1255,7 +1255,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   bool integral = INTEGRAL_TYPE_P (exptype);
 
   wide_int min, max;
-  enum value_range_type range_type;
+  enum value_range_kind range_type;
 
   if (integral)
     range_type = determine_value_range (exp, &min, &max);
