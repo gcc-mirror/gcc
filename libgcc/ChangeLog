@@ -1,3 +1,7 @@
+2018-10-17  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (LIB2FUNCS_ST): Filter out LIB2FUNCS_EXCLUDE.
+
 2018-10-12  Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
