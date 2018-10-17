@@ -1,3 +1,16 @@
+2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	* gfortran.dg/associate_44.f90 : New test.
+
+	PR fortran/80260
+	* gfortran.dg/select_type_45.f90 : New test.
+
+	PR fortran/82077
+	* gfortran.dg/select_type_46.f90 : New test.
+
 2018-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/67125
