@@ -472,6 +472,8 @@ lib2funcs := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS),$(lib2funcs))
 LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 		       $(LIB2_DIVMOD_FUNCS))
 
+LIB2FUNCS_ST := $(filter-out $(LIB2FUNCS_EXCLUDE),$(LIB2FUNCS_ST))
+
 # Build "libgcc1" (assembly) components.
 
 lib1asmfuncs-o = $(patsubst %,%$(objext),$(LIB1ASMFUNCS))
