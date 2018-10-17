@@ -1,3 +1,10 @@
+2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int-range.h (wide_int_range_shift_undefined_p): Adjust to
+	use sign as argument.
+	* tree-vrp.c (extract_range_from_binary_expr_1): Pass sign to
+	wide_int_range_shift_undefined_p.
+
 2018-10-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.md (despeculate_copy<ALLI_TI:mode>):
