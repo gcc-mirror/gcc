@@ -8914,7 +8914,7 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
       if (ref2)
 	{
 	  if (code->expr1->symtree->n.sym->attr.untyped)
-	    code->expr1->symtree->n.sym->ts = ref->u.c.component->ts;
+	    code->expr1->symtree->n.sym->ts = ref2->u.c.component->ts;
 	  selector_type = CLASS_DATA (ref2->u.c.component)->ts.u.derived;
 	}
       else

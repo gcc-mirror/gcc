@@ -1,3 +1,8 @@
+2018-10-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87632
+	* gfortran.dg/select_type_47.f90: New.
+
 2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/pr87623.c: New test.
