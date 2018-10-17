@@ -5567,6 +5567,7 @@ finish_omp_reduction_clause (tree c, bool *need_default_ctor, bool *need_dtor)
 	      return true;
 	    }
 	  size = size_binop (MINUS_EXPR, size, size_one_node);
+	  size = save_expr (size);
 	  tree index_type = build_index_type (size);
 	  tree atype = build_array_type (type, index_type);
 	  tree ptype = build_pointer_type (type);

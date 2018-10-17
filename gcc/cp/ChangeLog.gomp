@@ -1,3 +1,8 @@
+2018-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* semantics.c (finish_omp_reduction_clause): Call save_expr for
+	whole array reduction sizes.
+
 2018-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* pt.c (tsubst_omp_clauses): Handle OMP_CLAUSE_IN_REDUCTION and

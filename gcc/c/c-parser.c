@@ -18823,6 +18823,41 @@ c_parser_omp_requires (c_parser *parser)
     error_at (loc, "%<pragma omp requires%> requires at least one clause");
 }
 
+/* Helper function for c_parser_omp_taskloop.
+   Disallow zero sized or potentially zero sized task reductions.  */
+
+static tree
+c_finish_taskloop_clauses (tree clauses)
+{
+  tree *pc = &clauses;
+  for (tree c = clauses; c; c = *pc)
+    {
+      bool remove = false;
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION)
+	{
+	  tree type = strip_array_types (TREE_TYPE (OMP_CLAUSE_DECL (c)));
+	  if (integer_zerop (TYPE_SIZE_UNIT (type)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"zero sized type %qT in %<reduction%> clause", type);
+	      remove = true;
+	    }
+	  else if (TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"variable sized type %qT in %<reduction%> clause",
+			type);
+	      remove = true;
+	    }
+	}
+      if (remove)
+	*pc = OMP_CLAUSE_CHAIN (c);
+      else
+	pc = &OMP_CLAUSE_CHAIN (c);
+    }
+  return clauses;
+}
+
 /* OpenMP 4.5:
    #pragma omp taskloop taskloop-clause[optseq] new-line
      for-loop
@@ -18880,6 +18915,8 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
 	  TREE_TYPE (ret) = void_type_node;
 	  OMP_FOR_BODY (ret) = block;
 	  OMP_FOR_CLAUSES (ret) = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
+	  OMP_FOR_CLAUSES (ret)
+	    = c_finish_taskloop_clauses (OMP_FOR_CLAUSES (ret));
 	  SET_EXPR_LOCATION (ret, loc);
 	  add_stmt (ret);
 	  return ret;
@@ -18898,6 +18935,7 @@ c_parser_omp_taskloop (location_t loc, c_parser *parser,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
     }
 
+  clauses = c_finish_taskloop_clauses (clauses);
   block = c_begin_compound_stmt (true);
   ret = c_parser_omp_for_loop (loc, parser, OMP_TASKLOOP, clauses, NULL, if_p);
   block = c_end_compound_stmt (loc, block, true);

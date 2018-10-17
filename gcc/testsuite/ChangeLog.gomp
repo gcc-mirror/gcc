@@ -1,3 +1,7 @@
+2018-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/reduction-2.c: New test.
+
 2018-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-1.c (r2): New variable.

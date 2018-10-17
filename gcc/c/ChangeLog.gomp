@@ -1,3 +1,11 @@
+2018-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_finish_taskloop_clauses): New function.
+	(c_parser_omp_taskloop): Use it.
+	* c-typeck.c (c_finish_omp_clauses): Call save_expr for whole array
+	reduction sizes.  Diagnose reductions with zero sized elements or
+	variable length structures.
+
 2018-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-typeck.c (handle_omp_array_sections): Call save_expr on array

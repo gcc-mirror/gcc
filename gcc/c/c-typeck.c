@@ -13343,6 +13343,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		  break;
 		}
 	      size = size_binop (MINUS_EXPR, size, size_one_node);
+	      size = save_expr (size);
 	      tree index_type = build_index_type (size);
 	      tree atype = build_array_type (type, index_type);
 	      tree ptype = build_pointer_type (type);
@@ -13357,6 +13358,28 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 			"%<_Atomic%> %qE in %<reduction%> clause", t);
 	      remove = true;
 	      break;
+	    }
+	  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_REDUCTION
+	      || OMP_CLAUSE_REDUCTION_TASK (c))
+	    {
+	      /* Disallow zero sized or potentially zero sized task
+		 reductions.  */
+	      if (integer_zerop (TYPE_SIZE_UNIT (type)))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "zero sized type %qT in %qs clause", type,
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		  break;
+		}
+	      else if (TREE_CODE (TYPE_SIZE_UNIT (type)) != INTEGER_CST)
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "variable sized type %qT in %qs clause", type,
+			    omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		  remove = true;
+		  break;
+		}
 	    }
 	  if (OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) == NULL_TREE
 	      && (FLOAT_TYPE_P (type)
