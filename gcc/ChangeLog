@@ -1,3 +1,9 @@
+2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87623
+	* fold-const.c (fold_truth_andor_1): If the right side is not constant,
+	bail out if both sides do not have the same storage order.
+
 2018-10-17  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
