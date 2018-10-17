@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-atom }
+
 // { dg-module-bmi agnes }
 
 export module agnes;

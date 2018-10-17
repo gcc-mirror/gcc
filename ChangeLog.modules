@@ -1,5 +1,8 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/macloc-1_[abcd].C: No longer atom-specific.
+
 	Locations for everyone!
 	gcc/cp/
 	* module.cc (loc_spans::{init,open,close}): Dump info.

@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-atom }
+
 
 import edith;
 import agnes;
