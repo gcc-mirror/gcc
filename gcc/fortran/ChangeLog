@@ -1,3 +1,14 @@
+2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	PR fortran/80260
+	PR fortran/82077
+	* resolve.c (resolve_variable): Fix up expressions with array
+	associate names, where the parser did not detect that this is
+	array and there was no array part_ref in the expression.
+
 2018-10-16  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/67125
