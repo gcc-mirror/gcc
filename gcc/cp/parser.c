@@ -4610,6 +4610,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    {
 	      cp_lexer_consume_token (parser->lexer); /* module */
 	      cp_lexer_consume_token (parser->lexer); /* ; */
+	      declare_module (NULL, next->location, false, NULL, parse_in);
 	      gmf = true;
 	    }
 	  else

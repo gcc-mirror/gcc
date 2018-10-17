@@ -3067,6 +3067,9 @@ static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
 /* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
+/* < 0, in GMF  > 0 is module, > 1 is interface.  */
+static int module_purview;
+
 /* Hash of module state, findable by {name, parent}. */
 static GTY(()) hash_table<module_state_hash> *modules_hash;
 
@@ -11788,7 +11791,7 @@ bool
 module_purview_p ()
 {
   /* We get called very early on, so need to check there's a vector.  */
-  return modules && (*modules)[MODULE_PURVIEW];
+  return module_purview > 0;
 }
 
 /* Return true iff we're the interface TU (this also means we're in a
@@ -11797,8 +11800,13 @@ module_purview_p ()
 bool
 module_interface_p ()
 {
-  return ((*modules)[MODULE_PURVIEW]
-	  && (*modules)[MODULE_PURVIEW]->exported_p);
+  return module_purview > 1;
+}
+
+inline static bool
+module_maybe_interface_p ()
+{
+  return module_purview & 2;
 }
 
 /* THIS module is being imported (or defined) at FROM.  Create its
@@ -11903,7 +11911,6 @@ module_state::direct_import (int deferrable, cpp_reader *reader)
   if (!is_imported ())
     {
       bool is_interface = mod == MODULE_PURVIEW;
-      bool interface_unit = module_interface_p ();
       char *fname = NULL;
       unsigned pre_hwm = 0;
 
@@ -11911,7 +11918,7 @@ module_state::direct_import (int deferrable, cpp_reader *reader)
 	{
 	  /* Preserve the state of the line-map.  */
 	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (interface_unit)
+	  if (module_maybe_interface_p ())
 	    spans.close ();
 
 	  maybe_create_loc ();
@@ -11927,7 +11934,7 @@ module_state::direct_import (int deferrable, cpp_reader *reader)
       if (!deferrable)
 	{
 	  linemap_module_restore (line_table, pre_hwm);
-	  if (interface_unit)
+	  if (module_maybe_interface_p ())
 	    spans.open ();
 	}
     }
@@ -12049,15 +12056,18 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
-
-  from_loc = ordinary_loc_of (line_table, from_loc);
-  if (module_state *purview = (*modules)[MODULE_PURVIEW])
+  if (!state)
     {
-      /* Already declared the module.  */
-      error_at (from_loc, "cannot declare module in purview of module %qs",
-		purview->fullname);
+      /* Starting Global Module Fragment.  */
+      module_purview = -1;
       return;
     }
+
+  module_purview = exporting_p ? 2 : 1;
+
+  from_loc = ordinary_loc_of (line_table, from_loc);
+  gcc_assert (!(*modules)[MODULE_PURVIEW]);
+  gcc_assert (state->is_legacy () == modules_legacy_p ());
 
   if (!state->is_detached ())
     {
@@ -12066,13 +12076,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       inform (state->from_loc, "module %qs imported here", state->fullname);
       return;
     }
-
-  if (state->is_legacy () != modules_legacy_p ())
-    // FIXME:We should prevent this by construction
-    error_at (from_loc,
-	      state->is_legacy ()
-	      ? G_("legacy module only permitted with %<-fmodules-header%>")
-	      : G_("legacy module expected with %<-fmodules-header%>"));
 
   state->attach (from_loc);
 
@@ -12230,16 +12233,14 @@ process_deferred_imports (cpp_reader *reader)
   dump () && dump ("Processing %u deferred imports",
 		   vec_safe_length (pending_imports));
 
-  module_state *imp = (*pending_imports)[0];
-  bool is_interface = imp->mod == MODULE_PURVIEW;
-  bool interface_unit = module_interface_p ();
-
   /* Preserve the state of the line-map.  */
   unsigned pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-  if (interface_unit)
+  if (module_maybe_interface_p ())
     spans.close ();
 
+  module_state *imp = (*pending_imports)[0];
   module_mapper *mapper = module_mapper::get (imp->from_loc);
+  bool is_interface = imp->mod == MODULE_PURVIEW;
 
   if (mapper->is_server ())
     {
@@ -12272,7 +12273,7 @@ process_deferred_imports (cpp_reader *reader)
      (although nested import filenames are usually in their
      importer's import table).  */
   for (unsigned ix = is_interface ? 1 : 0;
-	 ix != pending_imports->length (); ix++)
+       ix != pending_imports->length (); ix++)
       {
 	module_state *imp = (*pending_imports)[ix];
 	imp->direct_import (-1, reader);
@@ -12283,7 +12284,7 @@ process_deferred_imports (cpp_reader *reader)
   vec_free (pending_imports);
 
   linemap_module_restore (line_table, pre_hwm);
-  if (interface_unit)
+  if (module_maybe_interface_p ())
     spans.open ();
 }
 

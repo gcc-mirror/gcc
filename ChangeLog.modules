@@ -1,5 +1,14 @@
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_purview): New.
+	(module_purview_p, module_interface_p): Use it.
+	(module_maybe_interface_p): New.
+	(module_state::direct_import): Use it.
+	(process_deferred_imports): Likewise.
+	(declare_module): Set it.
+	* parser.c (cp_parser_translation_unit): Inform modules of GMF.
+
 	gcc/testsuite/
 	* g++.dg/modules/macloc-1_[abcd].C: No longer atom-specific.
 
