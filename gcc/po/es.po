@@ -39,10 +39,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 8.1.0\n"
+"Project-Id-Version: gcc 8.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2018-07-25 14:25+0000\n"
-"PO-Revision-Date: 2018-07-07 15:54+0200\n"
+"PO-Revision-Date: 2018-10-17 01:00+0200\n"
 "Last-Translator: Antonio Ceballos Roa <aceballos@gmail.com>\n"
 "Language-Team: Spanish <es@tp.org.es>\n"
 "Language: es\n"
@@ -2582,10 +2582,9 @@ msgid "Schedule type of omp schedule for loops parallelized by parloops (static,
 msgstr "Tipo de planificación de planificación omp para bucles paralelizados por parloops (estático, dinámico, guiado, auto, en tiempo de ejecución)."
 
 #: params.def:1268
-#, fuzzy, no-c-format
-#| msgid "The maximum number of instructions to consider to unroll in a loop."
+#, no-c-format
 msgid "Minimum number of iterations per thread of an innermost parallelized loop."
-msgstr "El número máximo de instrucciones para considerar el desenrollo en un bucle."
+msgstr "Número mínimo de iteraciones por thread de un bucle paralelizado interior."
 
 #: params.def:1274
 #, no-c-format
@@ -30775,10 +30774,9 @@ msgid "option %s is not supported together with -fopenacc"
 msgstr "la función %s no se admite conjuntamente con -fopenacc"
 
 #: config/nvptx/nvptx.c:191
-#, fuzzy, gcc-internal-format
-#| msgid "writing to address space %qs not supported"
+#, gcc-internal-format
 msgid "not generating patch area, nops not supported"
-msgstr "no se admite escribir al espacio de direcciones %qs"
+msgstr "no se genera zona de parche; no se admite nops"
 
 #: config/nvptx/nvptx.c:278
 #, gcc-internal-format
