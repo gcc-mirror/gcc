@@ -42,14 +42,12 @@ extern bool wide_int_range_multiplicative_op (wide_int &res_lb,
 					      const wide_int &vr0_ub,
 					      const wide_int &vr1_lb,
 					      const wide_int &vr1_ub,
-					      bool overflow_undefined,
-					      bool overflow_wraps);
+					      bool overflow_undefined);
 extern bool wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 				   signop sign, unsigned prec,
 				   const wide_int &, const wide_int &,
 				   const wide_int &, const wide_int &,
-				   bool overflow_undefined,
-				   bool overflow_wraps);
+				   bool overflow_undefined);
 extern void wide_int_range_set_zero_nonzero_bits (signop,
 						  const wide_int &lb,
 						  const wide_int &ub,
@@ -124,7 +122,6 @@ extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
 				const wide_int &divisor_min,
 				const wide_int &divisor_max,
 				bool overflow_undefined,
-				bool overflow_wraps,
 				bool &extra_range_p,
 				wide_int &extra_min, wide_int &extra_max);
 

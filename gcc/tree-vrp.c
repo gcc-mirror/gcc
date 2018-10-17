@@ -1003,13 +1003,12 @@ extract_range_from_multiplicative_op (value_range *vr,
   wide_int vr1_lb = wi::to_wide (vr1->min);
   wide_int vr1_ub = wi::to_wide (vr1->max);
   bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (type);
-  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (type);
   unsigned prec = TYPE_PRECISION (type);
 
   if (wide_int_range_multiplicative_op (res_lb, res_ub,
-					 code, TYPE_SIGN (type), prec,
-					 vr0_lb, vr0_ub, vr1_lb, vr1_ub,
-					 overflow_undefined, overflow_wraps))
+					code, TYPE_SIGN (type), prec,
+					vr0_lb, vr0_ub, vr1_lb, vr1_ub,
+					overflow_undefined))
     set_and_canonicalize_value_range (vr, VR_RANGE,
 				      wide_int_to_tree (type, res_lb),
 				      wide_int_to_tree (type, res_ub), NULL);
@@ -1549,8 +1548,7 @@ extract_range_from_binary_expr_1 (value_range *vr,
 					 wi::to_wide (vr0.max),
 					 wi::to_wide (vr1.min),
 					 wi::to_wide (vr1.max),
-					 TYPE_OVERFLOW_UNDEFINED (expr_type),
-					 TYPE_OVERFLOW_WRAPS (expr_type)))
+					 TYPE_OVERFLOW_UNDEFINED (expr_type)))
 		{
 		  min = wide_int_to_tree (expr_type, res_lb);
 		  max = wide_int_to_tree (expr_type, res_ub);
@@ -1595,7 +1593,6 @@ extract_range_from_binary_expr_1 (value_range *vr,
 			       dividend_min, dividend_max,
 			       divisor_min, divisor_max,
 			       TYPE_OVERFLOW_UNDEFINED (expr_type),
-			       TYPE_OVERFLOW_WRAPS (expr_type),
 			       extra_range_p, extra_min, extra_max))
 	{
 	  set_value_range_to_varying (vr);

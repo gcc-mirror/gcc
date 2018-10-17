@@ -1,5 +1,20 @@
 2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
+        * tree-vrp.c (extract_range_from_multiplicative_op): Remove
+	overflow wraps argument.
+        (extract_range_from_binary_expr_1): Do not pass overflow wraps to
+	wide_int_range_multiplicative_op.
+        * wide-int-range.cc (wide_int_range_mult_wrapping): Remove
+	overflow wraps argument.
+        (wide_int_range_multiplicative_op): Same.
+        (wide_int_range_lshift): Same.
+        (wide_int_range_div): Same.
+        * wide-int-range.h (wide_int_range_multiplicative_op): Same.
+        (wide_int_range_lshift): Same.
+        (wide_int_range_div): Same.
+
+2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
 	* wide-int-range.h (wide_int_range_shift_undefined_p): Adjust to
 	use sign as argument.
 	* tree-vrp.c (extract_range_from_binary_expr_1): Pass sign to
