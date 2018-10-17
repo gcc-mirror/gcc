@@ -1933,6 +1933,10 @@ same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
 
+@item c2x
+The next version of the ISO C standard, still under development.  The
+support for this version is experimental and incomplete.
+
 @item gnu90
 @itemx gnu89
 GNU dialect of ISO C90 (including some C99 features).
@@ -1949,6 +1953,11 @@ The name @samp{gnu1x} is deprecated.
 @item gnu17
 @itemx gnu18
 GNU dialect of ISO C17.  This is the default for C code.
+
+@item gnu2x
+The next version of the ISO C standard, still under development, plus
+GNU extensions.  The support for this version is experimental and
+incomplete.
 
 @item c++98
 @itemx c++03

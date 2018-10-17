@@ -1327,6 +1327,9 @@ disable_extension_diagnostics (void)
 	     /* Similarly for warn_c99_c11_compat.  */
 	     | ((warn_c99_c11_compat == 1) << 9)
 	     | ((warn_c99_c11_compat == -1) << 10)
+	     /* Similarly for warn_c11_c2x_compat.  */
+	     | ((warn_c11_c2x_compat == 1) << 11)
+	     | ((warn_c11_c2x_compat == -1) << 12)
 	     );
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
@@ -1337,6 +1340,7 @@ disable_extension_diagnostics (void)
   warn_overlength_strings = 0;
   warn_c90_c99_compat = 0;
   warn_c99_c11_compat = 0;
+  warn_c11_c2x_compat = 0;
   return ret;
 }
 
@@ -1356,6 +1360,7 @@ restore_extension_diagnostics (int flags)
   /* See above for why is this needed.  */
   warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
   warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
+  warn_c11_c2x_compat = (flags >> 11) & 1 ? 1 : ((flags >> 12) & 1 ? -1 : 0);
 }
 
 /* Helper data structure for parsing #pragma acc routine.  */
@@ -2404,6 +2409,10 @@ c_parser_static_assert_declaration (c_parser *parser)
 
    static_assert-declaration-no-semi:
      _Static_assert ( constant-expression , string-literal )
+
+   C2X:
+   static_assert-declaration-no-semi:
+     _Static_assert ( constant-expression )
 */
 
 static void
@@ -2411,7 +2420,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 {
   location_t assert_loc, value_loc;
   tree value;
-  tree string;
+  tree string = NULL_TREE;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT));
   assert_loc = c_parser_peek_token (parser)->location;
@@ -2429,27 +2438,33 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   value = c_parser_expr_no_commas (parser, NULL).value;
   value_loc = EXPR_LOC_OR_LOC (value, value_tok_loc);
   parser->lex_untranslated_string = true;
-  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+  if (c_parser_next_token_is (parser, CPP_COMMA))
     {
-      parser->lex_untranslated_string = false;
-      return;
-    }
-  switch (c_parser_peek_token (parser)->type)
-    {
-    case CPP_STRING:
-    case CPP_STRING16:
-    case CPP_STRING32:
-    case CPP_WSTRING:
-    case CPP_UTF8STRING:
-      string = c_parser_peek_token (parser)->value;
       c_parser_consume_token (parser);
-      parser->lex_untranslated_string = false;
-      break;
-    default:
-      c_parser_error (parser, "expected string literal");
-      parser->lex_untranslated_string = false;
-      return;
+      switch (c_parser_peek_token (parser)->type)
+	{
+	case CPP_STRING:
+	case CPP_STRING16:
+	case CPP_STRING32:
+	case CPP_WSTRING:
+	case CPP_UTF8STRING:
+	  string = c_parser_peek_token (parser)->value;
+	  c_parser_consume_token (parser);
+	  parser->lex_untranslated_string = false;
+	  break;
+	default:
+	  c_parser_error (parser, "expected string literal");
+	  parser->lex_untranslated_string = false;
+	  return;
+	}
     }
+  else if (flag_isoc11)
+    /* If pedantic for pre-C11, the use of _Static_assert itself will
+       have been diagnosed, so do not also diagnose the use of this
+       new C2X feature of _Static_assert.  */
+    pedwarn_c11 (assert_loc, OPT_Wpedantic,
+		 "ISO C11 does not support omitting the string in "
+		 "%<_Static_assert%>");
   parens.require_close (parser);
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (value)))
@@ -2473,7 +2488,12 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
     }
   constant_expression_warning (value);
   if (integer_zerop (value))
-    error_at (assert_loc, "static assertion failed: %E", string);
+    {
+      if (string)
+	error_at (assert_loc, "static assertion failed: %E", string);
+      else
+	error_at (assert_loc, "static assertion failed");
+    }
 }
 
 /* Parse some declaration specifiers (possibly none) (C90 6.5, C99

@@ -1,5 +1,13 @@
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
+	* doc/cpp.texi (__STDC_VERSION__): Document C2X handling.
+	* doc/invoke.texi (-std=c2x, -std=gnu2x): Document new options.
+	* doc/standards.texi (C Language): Document C2X.
+	* dwarf2out.c (highest_c_language), config/rl78/rl78.c
+	(rl78_option_override): Handle "GNU C2X" language name.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
 	* doc/invoke.texi (-std=c17), doc/standards.texi (C Language):
 	Document C17 as published in 2018.
 
