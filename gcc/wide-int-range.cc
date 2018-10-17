@@ -268,7 +268,7 @@ wide_int_range_mult_wrapping (wide_int &res_lb,
 
    Return TRUE if we were able to perform the operation.
 
-   NOTE: If code is MULT_EXPR and TYPE_OVERFLOW_WRAPS, the resulting
+   NOTE: If code is MULT_EXPR and !TYPE_OVERFLOW_UNDEFINED, the resulting
    range must be canonicalized by the caller because its components
    may be swapped.  */
 
@@ -281,8 +281,7 @@ wide_int_range_multiplicative_op (wide_int &res_lb, wide_int &res_ub,
 				  const wide_int &vr0_ub,
 				  const wide_int &vr1_lb,
 				  const wide_int &vr1_ub,
-				  bool overflow_undefined,
-				  bool overflow_wraps)
+				  bool overflow_undefined)
 {
   /* Multiplications, divisions and shifts are a bit tricky to handle,
      depending on the mix of signs we have in the two ranges, we
@@ -296,7 +295,7 @@ wide_int_range_multiplicative_op (wide_int &res_lb, wide_int &res_ub,
      (MIN0 OP MIN1, MIN0 OP MAX1, MAX0 OP MIN1 and MAX0 OP MAX0 OP
      MAX1) and then figure the smallest and largest values to form
      the new range.  */
-  if (code == MULT_EXPR && overflow_wraps)
+  if (code == MULT_EXPR && !overflow_undefined)
     return wide_int_range_mult_wrapping (res_lb, res_ub,
 					 sign, prec,
 					 vr0_lb, vr0_ub, vr1_lb, vr1_ub);
@@ -320,7 +319,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 		       signop sign, unsigned prec,
 		       const wide_int &vr0_lb, const wide_int &vr0_ub,
 		       const wide_int &vr1_lb, const wide_int &vr1_ub,
-		       bool overflow_undefined, bool overflow_wraps)
+		       bool overflow_undefined)
 {
   /* Transform left shifts by constants into multiplies.  */
   if (wi::eq_p (vr1_lb, vr1_ub))
@@ -330,8 +329,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
       return wide_int_range_multiplicative_op (res_lb, res_ub,
 					       MULT_EXPR, sign, prec,
 					       vr0_lb, vr0_ub, tmp, tmp,
-					       overflow_undefined,
-					       /*overflow_wraps=*/true);
+					       /*overflow_undefined=*/false);
     }
 
   int overflow_pos = prec;
@@ -387,8 +385,7 @@ wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 					     LSHIFT_EXPR, sign, prec,
 					     vr0_lb, vr0_ub,
 					     vr1_lb, vr1_ub,
-					     overflow_undefined,
-					     overflow_wraps);
+					     overflow_undefined);
   return false;
 }
 
@@ -785,7 +782,6 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
 		    const wide_int &dividend_min, const wide_int &dividend_max,
 		    const wide_int &divisor_min, const wide_int &divisor_max,
 		    bool overflow_undefined,
-		    bool overflow_wraps,
 		    bool &extra_range_p,
 		    wide_int &extra_min, wide_int &extra_max)
 {
@@ -796,8 +792,7 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
     return wide_int_range_multiplicative_op (wmin, wmax, code, sign, prec,
 					     dividend_min, dividend_max,
 					     divisor_min, divisor_max,
-					     overflow_undefined,
-					     overflow_wraps);
+					     overflow_undefined);
 
   /* If flag_non_call_exceptions, we must not eliminate a division
      by zero.  */
@@ -818,8 +813,7 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
 					     code, sign, prec,
 					     dividend_min, dividend_max,
 					     divisor_min, wi::minus_one (prec),
-					     overflow_undefined,
-					     overflow_wraps))
+					     overflow_undefined))
 	return false;
       extra_range_p = true;
     }
@@ -831,8 +825,7 @@ wide_int_range_div (wide_int &wmin, wide_int &wmax,
 					     code, sign, prec,
 					     dividend_min, dividend_max,
 					     wi::one (prec), divisor_max,
-					     overflow_undefined,
-					     overflow_wraps))
+					     overflow_undefined))
 	return false;
     }
   else
