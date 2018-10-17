@@ -108,7 +108,7 @@ gimple_range_logical_fold (irange& r, const gimple *gs, const irange& lhs,
 
 
 class GTY((tag("GCC_GIMPLE_RANGE_OPERATOR")))
-  gimple_range_with_operator: public gimple
+  grange_op: public gimple
 {
 public:
   tree lhs () const;
@@ -118,12 +118,12 @@ public:
   tree ssa_operand2 () const;
 
   bool fold (irange& res, const irange& r1) const;
-  bool op1_irange (irange& r, const irange& lhs_range) const;
+  bool calc_op1_irange (irange& r, const irange& lhs_range) const;
 
   bool fold (irange& res, const irange& r1, const irange& r2) const;
-  bool op1_irange (irange& r, const irange& lhs_range,
+  bool calc_op1_irange (irange& r, const irange& lhs_range,
 		   const irange& op2_range) const;
-  bool op2_irange (irange& r, const irange& lhs_range,
+  bool calc_op2_irange (irange& r, const irange& lhs_range,
 		   const irange& op1_range) const;
 private:
   class range_operator *handler() const;
@@ -132,7 +132,7 @@ private:
 
 // Return the LHS, of this node. If there isn't a LHS return NULL_TREE.
 inline tree
-gimple_range_with_operator::lhs () const
+grange_op::lhs () const
 {
   if (gimple_code (this) == GIMPLE_ASSIGN)
     return gimple_assign_lhs (this);
@@ -142,7 +142,7 @@ gimple_range_with_operator::lhs () const
 /* Return the second operand of the statement, if there is one.  Otherwise
    return NULL_TREE*/
 inline tree
-gimple_range_with_operator::operand2 () const
+grange_op::operand2 () const
 {
   if (gimple_code (this) == GIMPLE_COND)
     return gimple_cond_rhs (this);
@@ -158,7 +158,7 @@ gimple_range_with_operator::operand2 () const
 /* Return the first operand of the statement, if it is a valid SSA_NAME which
    is supported rimple. Otherwise return NULL_TREE.  */
 inline tree
-gimple_range_with_operator::ssa_operand1() const
+grange_op::ssa_operand1() const
 {
   tree op1 = operand1 ();
   if (op1 && TREE_CODE (op1) == SSA_NAME)
@@ -169,7 +169,7 @@ gimple_range_with_operator::ssa_operand1() const
 /* Return the second operand of the statement, if it is a valid SSA_NAME which
    is supported by rimple. Otherwise return NULL_TREE.  */
 inline tree
-gimple_range_with_operator::ssa_operand2 () const
+grange_op::ssa_operand2 () const
 {
   tree op2 = operand2 ();
   if (op2 && TREE_CODE (op2) == SSA_NAME)
@@ -178,59 +178,9 @@ gimple_range_with_operator::ssa_operand2 () const
 }
 
 inline range_operator *
-gimple_range_with_operator::handler () const
+grange_op::handler () const
 {
   return range_op_handler (gimple_expr_code (this));
-}
-
-// This is a range_op helper class which provides ranges for each operand
-// of an appropriate type for STMT's operands.  THe ranges can be set, and
-// then fold, op1_range or op2_range called to perform the required calculation.
-// The result can be picked up from the expected operand position.
-class gimple_range_op
-{
-public:
-  inline gimple_range_op (gimple_range_with_operator *stmt) { m_g = stmt; }
-  inline irange& lhs () { return m_lhs; }
-  inline irange& op1 () { return m_op1; }
-  inline irange& op2 () { return m_op2; }
-  bool fold (irange *p = NULL);		// result in p or lhs ()
-  bool op1_range (irange *p = NULL);	// result in p or op1 ()
-  bool op2_range (irange *p = NULL);	// result in p or op2 ()
-private:
-  gimple_range_with_operator *m_g;
-  irange m_lhs;
-  irange m_op1;
-  irange m_op2;
-};
-
-inline bool 
-gimple_range_op::fold (irange *p)
-{
-  if (!p)
-    p = &m_lhs;
-  if (gimple_num_ops (m_g) < 3)
-    return m_g->fold (*p, m_op1);
-  return m_g->fold (*p, m_op1, m_op2);
-}
-
-inline bool 
-gimple_range_op::op1_range (irange *p)
-{
-  if (!p)
-    p = &m_op1;
-  if (gimple_num_ops (m_g) < 3)
-    return m_g->fold (*p, m_lhs);
-  return m_g->fold (*p, m_lhs, m_op2);
-}
-
-inline bool 
-gimple_range_op::op2_range (irange *p)
-{
-  gcc_checking_assert (gimple_num_ops (m_g) >= 3);
-  if (!p)
-    return m_g->fold (m_op2, m_lhs, m_op1);
-  return m_g->fold (*p, m_lhs, m_op1);
 }
 
 // Static ranges from an edge that arent related to ssa_names. conditional
@@ -240,23 +190,31 @@ extern void gimple_range_outgoing_edge (irange &r, edge e);
 extern bool gimple_range_of_expr (irange &r, tree expr);
 // Return a basic range for a gimple statement
 extern bool gimple_range_of_stmt (irange &r, gimple *s);
-extern bool gimple_range_of_stmt (irange &r, gimple_range_with_operator *s);
+extern bool gimple_range_of_stmt (irange &r, grange_op *s);
 // Return a basic range for a statement if NAME has a range
 extern bool gimple_range_of_stmt (irange &r, gimple *s, tree name,
 				  const irange &nr);
-extern bool gimple_range_of_stmt (irange &r, gimple_range_with_operator *s,
+extern bool gimple_range_of_stmt (irange &r, grange_op *s,
 				  tree name, const irange &nr);
 
 
 template <>
 template <>
 inline bool
-is_a_helper <gimple_range_with_operator *>::test (gimple *gs)
+is_a_helper <grange_op *>::test (gimple *gs)
 { 
   if (dyn_cast<gassign *> (gs) || dyn_cast<gcond *>(gs))
-     if (range_op_handler (gimple_expr_code (gs)))
-       return true;
+    if (range_op_handler (gimple_expr_code (gs)))
+      return true;
   return false;
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <grange_op *>::test (glogical *gs ATTRIBUTE_UNUSED)
+{ 
+  return true;
 }
 
 inline bool

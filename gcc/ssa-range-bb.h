@@ -60,6 +60,14 @@ private:
 			const irange& lhs);
   bool get_range_from_stmt (gimple *s, irange& r, tree name,
 			    const irange& lhs);
+  bool get_range_if_name_on_stmt (grange_op *s, irange& r,
+				  tree name, const irange& lhs);
+  bool get_range_thru_op1 (grange_op *s, irange& r, tree name,
+			   const irange& lhs);
+  bool get_range_thru_op2 (grange_op *s, irange& r, tree name,
+			   const irange& lhs);
+  bool get_range_thru_op1_and_op2 (grange_op *s, irange& r, tree name,
+				   const irange& lhs);
 };
 
 #endif /* GCC_SSA_RANGE_BB_H */

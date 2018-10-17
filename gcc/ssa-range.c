@@ -686,23 +686,25 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   if (is_a<gphi *> (g))
     return process_phi (r, as_a<gphi *>(g));
   
-  gimple_range_with_operator *rn = dyn_cast<gimple_range_with_operator *>(g);
+  grange_op *rn = dyn_cast<grange_op *>(g);
   if (!rn)
     return false;
-  gimple_range_op oper (rn);
+  irange range1, range2;
 
   // Evaluate operand 1.
-  if (!get_operand_range (oper.op1 (), rn->operand1 (), g))
+  if (!get_operand_range (range1, rn->operand1 (), g))
     return false;
     
   // If this is a unary operation, call fold now.  
-  if (rn->operand2 ())
+  if (!rn->operand2 ())
+    res = rn->fold (r, range1);
+  else
     {
       // Evaluate the second operand.
-      if (!get_operand_range (oper.op2 (), rn->operand2 (), g))
+      if (!get_operand_range (range2, rn->operand2 (), g))
 	return false;
+      res = rn->fold (r, range1, range2);
     }
-  res = oper.fold (&r);
 
   if (name)
     {

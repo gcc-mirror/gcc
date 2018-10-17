@@ -101,25 +101,27 @@ gimple_range_of_expr (irange &r, tree expr)
 }
 
 bool
-gimple_range_of_stmt (irange &r, gimple_range_with_operator *s)
+gimple_range_of_stmt (irange &r, grange_op *s)
 {
-  gimple_range_op oper(s);
+  irange range1, range2;
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
-  if (!gimple_range_of_expr (oper.op1 (), op1))
+  if (!gimple_range_of_expr (range1, op1))
     return false;
-  if (op2 && !gimple_range_of_expr (oper.op2 (), op2))
-    return false;
+  if (!op2)
+    return s->fold (r, range1);
 
-  return oper.fold (&r);
+  if (!gimple_range_of_expr (range2, op2))
+    return false;
+  return s->fold (r, range1, range2);
 }
 
 bool
 gimple_range_of_stmt (irange &r, gimple *s)
 {
-  gimple_range_with_operator *rn = dyn_cast<gimple_range_with_operator *>(s);
+  grange_op *rn = dyn_cast<grange_op *>(s);
   if (rn)
     return gimple_range_of_stmt (r, rn);
   return false;
@@ -129,36 +131,36 @@ gimple_range_of_stmt (irange &r, gimple *s)
 // occurrence of ssa_name NAME with the RANGE_OF_NAME. If it can be
 // evaluated, TRUE is returned and the resulting range returned in R. 
 bool
-gimple_range_of_stmt (irange& r, gimple_range_with_operator *s, tree name,
+gimple_range_of_stmt (irange& r, grange_op *s, tree name,
 		      const irange& range_of_name)
 {
-  gimple_range_op oper(s);
+  irange range1, range2;
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
   if (op1 == name)
-    oper.op1() = range_of_name;
+    range1 = range_of_name;
   else
-    if (!gimple_range_of_expr (oper.op1 (), op1))
+    if (!gimple_range_of_expr (range1, op1))
       return false;
 
-  if (op2)
-    {
-      if (op2 == name)
-	oper.op2 () = range_of_name;
-      else
-	if (!gimple_range_of_expr (oper.op2 (), op2))
-	  return false;
-    }
+  if (!op2)
+    return s->fold (r, range1);
 
-  return oper.fold (&r);
+  if (op2 == name)
+    range2 = range_of_name;
+  else
+    if (!gimple_range_of_expr (range2, op2))
+      return false;
+
+  return s->fold (r, range1, range2);
 }
 
 bool
 gimple_range_of_stmt (irange& r, gimple *g, tree name,
 		      const irange& range_of_name)
 {
-  gimple_range_with_operator *rn = dyn_cast<gimple_range_with_operator *> (g);
+  grange_op *rn = dyn_cast<grange_op *> (g);
   if (rn)
     return gimple_range_of_stmt (r, rn, name, range_of_name);
   return false;
@@ -273,7 +275,7 @@ gimple_range_outgoing_edge (irange &r, edge e)
 /* Return the First operand of the statement if it is a valid operand which
    is supported by rimple. Otherwise return NULL_TREE.  */
 tree
-gimple_range_with_operator::operand1 () const
+grange_op::operand1 () const
 {
   switch (gimple_code (this))
     {
@@ -315,7 +317,7 @@ gimple_range_with_operator::operand1 () const
    a range.  If the expression can be resolved, true is returned, and the
    range is returned in RES.  */
 bool
-gimple_range_with_operator::fold (irange &res, const irange& r1) const
+grange_op::fold (irange &res, const irange& r1) const
 {
   irange r2;
   /* Single ssa operations require the LHS type as the second range.  */
@@ -332,10 +334,9 @@ gimple_range_with_operator::fold (irange &res, const irange& r1) const
    values R1 tnd R2 to a range.  If the expression can be resolved, true is
    returned, and the range is returned in RES.  */
 bool
-gimple_range_with_operator::fold (irange &res, const irange& r1, const irange& r2) const
+grange_op::fold (irange &res, const irange& r1, const irange& r2) const
 {
   // Make sure this isnt a unary operation being passed a second range.
-  gcc_assert (operand2 ());
   return handler()->fold_range (res, r1, r2);
 }
 
@@ -343,7 +344,7 @@ gimple_range_with_operator::fold (irange &res, const irange& r1, const irange& r
    given a range for the LHS of the expression in LHS_RANGE. If it can be
    evaluated, TRUE is returned and the resulting range returned in RES.  */
 bool
-gimple_range_with_operator::op1_irange (irange& r, const irange& lhs_range) const
+grange_op::calc_op1_irange (irange& r, const irange& lhs_range) const
 {  
   irange type_range;
   // An empty range is viral, so return an empty range.
@@ -361,8 +362,8 @@ gimple_range_with_operator::op1_irange (irange& r, const irange& lhs_range) cons
    OP2_RANGE. If it can be evaluated, TRUE is returned and the resulting
    range returned in RES.  */
 bool
-gimple_range_with_operator::op1_irange (irange& r, const irange& lhs_range,
-			     const irange& op2_range) const
+grange_op::calc_op1_irange (irange& r, const irange& lhs_range,
+			    const irange& op2_range) const
 {  
   // Changing the API to say unary ops can be called with the range of the
   // RHS instead of the type if the caller wants.
@@ -386,7 +387,7 @@ gimple_range_with_operator::op1_irange (irange& r, const irange& lhs_range,
    OP1_RANGE. If it can be evaluated, TRUE is returned and the resulting
    range returned in RES.  */
 bool
-gimple_range_with_operator::op2_irange (irange& r, const irange& lhs_range,
+grange_op::calc_op2_irange (irange& r, const irange& lhs_range,
 			     const irange& op1_range) const
 {  
   // An empty range is viral, so return an empty range.
