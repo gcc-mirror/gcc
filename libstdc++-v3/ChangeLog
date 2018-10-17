@@ -1,3 +1,9 @@
+2018-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/87619
+	* include/std/variant (__select_index): Fix an off-by-one.
+	* testsuite/20_util/variant/87619.cc: New.
+
 2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/random.h (random_device) [!_GLIBCXX_USE_DEV_RANDOM]:
