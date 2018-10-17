@@ -1,3 +1,8 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (std=c17, std=c18, std=gnu17, std=gnu18, std=iso9899:2017)
+	(std=iso9899:2018): Document C17 as published in 2018.
+
 2018-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR c++/87364
