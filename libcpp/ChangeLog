@@ -1,3 +1,9 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* include/cpplib.h (enum c_lang): Add CLK_GNUC2X and CLK_STDC2X.
+	* init.c (lang_defaults): Add GNUC2X and STDC2X entries.
+	(cpp_init_builtins): Define __STDC_VERSION__ to 202000L for C2X.
+
 2018-10-11  David Malcolm  <dmalcolm@redhat.com>
 
 	* macro.c (_cpp_arguments_ok): If the argument count is wrong, add

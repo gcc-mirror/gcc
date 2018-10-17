@@ -1,3 +1,11 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-static-assert-7.c, gcc.dg/c11-static-assert-8.c,
+	gcc.dg/c11-static-assert-9.c, gcc.dg/c2x-static-assert-1.c,
+	gcc.dg/c2x-static-assert-2.c, gcc.dg/c99-static-assert-2.c,
+	gcc.dg/gnu2x-static-assert-1.c: New tests.
+	* gcc.dg/missing-symbol-3.c: Update expected fix-it text.
+
 2018-10-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87632
