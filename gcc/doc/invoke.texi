@@ -1927,8 +1927,8 @@ interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 @itemx c18
 @itemx iso9899:2017
 @itemx iso9899:2018
-ISO C17, the 2017 revision of the ISO C standard (expected to be
-published in 2018).  This standard is
+ISO C17, the 2017 revision of the ISO C standard
+(published in 2018).  This standard is
 same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
