@@ -1,3 +1,16 @@
+2018-10-17  Nathan Sidwell  <nathan@acm.org>
+
+	Robustify parse errors on module/import decls.
+	gcc/cp/
+	* parser.c (cp_parser_consume_semicolon_at_end_of_statement):
+	Return void.
+	(cp_parser_translation_unit): Adjust.
+	(cp_parser_{module,import}_declaration): Don't try and resync
+	here.
+	(cp_parser_tokenize): Deal with unprocessed incoming tokens.
+	gcc/testsuite/
+	* g++.dg/modules/err-2_[ab].*: New.
+
 2018-10-16  Nathan Sidwell  <nathan@acm.org>
 
 	Remove some atom/ts differences.

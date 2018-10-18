@@ -2567,7 +2567,7 @@ static int cp_parser_skip_to_closing_parenthesis
   (cp_parser *, bool, bool, bool);
 static void cp_parser_skip_to_end_of_statement
   (cp_parser *);
-static bool cp_parser_consume_semicolon_at_end_of_statement
+static void cp_parser_consume_semicolon_at_end_of_statement
   (cp_parser *);
 static void cp_parser_skip_to_end_of_block_or_statement
   (cp_parser *);
@@ -3641,12 +3641,11 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
    If the next token is a semicolon, it is consumed; otherwise, error
    recovery is attempted.  */
 
-static bool
+static void
 cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
 {
   /* Look for the trailing `;'.  */
-  bool ok = cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-  if (!ok)
+  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
     {
       /* If there is additional (erroneous) input, skip to the end of
 	 the statement.  */
@@ -3655,7 +3654,6 @@ cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
     }
-  return ok;
 }
 
 /* Skip tokens until we have consumed an entire block, or until we
@@ -4568,6 +4566,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool real_eof = tok->type == CPP_EOF;
   bool preamble = false;
 
+  parser->lexer->last_token = NULL;
+
  more:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
   real_eof = cp_parser_tokenize (parser, export_loc != UNKNOWN_LOCATION, tok);
@@ -4627,6 +4627,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      cp_parser_module_declaration (parser, exporting);
 	      preamble = true;
 	    }
+	  first = false;
+	  break;
 	}
       else if (next->keyword == RID_IMPORT)
 	{
@@ -4635,6 +4637,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
 	  cp_parser_import_declaration (parser, exporting, preamble);
+	  first = false;
+	  break;
 	}
       else if (exporting && export_loc == UNKNOWN_LOCATION
 	       && next->type == CPP_OPEN_BRACE)
@@ -4674,8 +4678,16 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
   if (!real_eof)
     {
-      if (tok->type == CPP_EOF)
-	cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+      if (parser->lexer->next_token->type == CPP_EOF)
+	{
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
+	  parser->lexer->last_token = NULL;
+	}
+      else
+	/* We didn't eat all the tokens, reuse the last token.
+	   cp_parser_tokenize will deal with copying any earlier
+	   ones.  */
+	*tok = *--parser->lexer->last_token;
       goto more;
     }
 
@@ -12827,11 +12839,12 @@ static void
 cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-
   module_state *mod = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  cp_parser_consume_semicolon_at_end_of_statement (parser);
+  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+  /* Don't try and resync after error, because we're probably due
+     another tokenize call.  */
   
   if (mod)
     declare_module (mod, token->location, exporting, attrs, parse_in);
@@ -12843,14 +12856,14 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting)
 static void
 cp_parser_import_declaration (cp_parser *parser, bool exporting, bool preamble_p)
 {
-  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_IMPORT));
-
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   module_state *mod = cp_parser_module_name (parser);
-
   tree attrs = cp_parser_attributes_opt (parser);
-  cp_parser_consume_semicolon_at_end_of_statement (parser);
 
+  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+  /* Don't try and resync after error, because we're probably due
+     another tokenize call.  */
+  
   if (!mod)
     ;
   else if (modules_atom_p () && !preamble_p)
@@ -39289,7 +39302,13 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
   bool pending_imports = true;
   bool was_export = false;
 
-  parser->lexer->buffer->truncate (0);
+  unsigned ix = 0;
+  if (cp_token *last = parser->lexer->last_token)
+    for (cp_token *src = parser->lexer->next_token;
+	 src != last; src++)
+      (*parser->lexer->buffer)[ix++] = *src;
+  parser->lexer->buffer->truncate (ix);
+
   for (;;)
     {
       vec_safe_push (parser->lexer->buffer, *tok);
@@ -39299,25 +39318,21 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	  eof = true;
 	  break;
 	}
-      else if (tok->type == CPP_OPEN_BRACE
-	       || tok->type == CPP_CLOSE_BRACE)
+      else if (tok->type == CPP_OPEN_BRACE)
 	{
 	  if (maybe_decl)
-	    {
-	      /* A module/import decl appears to terminate early with
-	         a syntax error.  Turn the pushed brace into an EOF.
-	         We'll see the brace next time. */
-	      parser->lexer->buffer->last ().type = CPP_EOF;
-	      break;
-	    }
+	    break;
 
-	  if (tok->type == CPP_OPEN_BRACE)
-	    {
-	      depth++;
-	      if (was_export)
-		nested_p = true;
-	    }
-	  else if (depth)
+	  depth++;
+	  if (was_export)
+	    nested_p = true;
+	}
+      else if (tok->type == CPP_CLOSE_BRACE)
+	{
+	  if (maybe_decl)
+	    break;
+
+	  if (depth)
 	    {
 	      depth--;
 	      if (!depth)
@@ -39328,16 +39343,13 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
       else if (tok->type == CPP_SEMICOLON)
 	{
 	  if (maybe_decl)
-	    {
-	      tok->type = CPP_EOF;
-	      /* Push an EOF.  */
-	      vec_safe_push (parser->lexer->buffer, eof_token);
-	      break;
-	    }
+	    break;
 	  was_export = false;
 	}
       else if (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT)
 	{
+	  if (maybe_decl)
+	    break;
 	  if (depth <= int (nested_p))
 	    {
 	      maybe_decl = true;
@@ -39351,7 +39363,11 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	  continue;
 	}
       else if (tok->keyword == RID_EXPORT)
-	was_export = true;
+	{
+	  if (maybe_decl)
+	    break;
+	  was_export = true;
+	}
       else
 	{
 	  if (pending_imports)
@@ -39364,6 +39380,13 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);
     }
 
+  if (!eof)
+    {
+      tok->type = CPP_EOF;
+      /* Push an EOF.  */
+      vec_safe_push (parser->lexer->buffer, eof_token);
+    }
+  
   parser->lexer->next_token = &(*parser->lexer->buffer)[0];
   parser->lexer->last_token = &parser->lexer->buffer->last ();
 
