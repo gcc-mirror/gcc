@@ -130,6 +130,8 @@ enum omp_region_type
 
   ORT_TASK	= 0x10,
   ORT_UNTIED_TASK = ORT_TASK | 1,
+  ORT_TASKLOOP  = ORT_TASK | 2,
+  ORT_UNTIED_TASKLOOP = ORT_UNTIED_TASK | 2,
 
   ORT_TEAMS	= 0x20,
   ORT_COMBINED_TEAMS = ORT_TEAMS | 1,
@@ -6992,6 +6994,8 @@ omp_default_clause (struct gimplify_omp_ctx *ctx, tree decl,
 
 	if (ctx->region_type & ORT_PARALLEL)
 	  rtype = "parallel";
+	else if ((ctx->region_type & ORT_TASKLOOP) == ORT_TASKLOOP)
+	  rtype = "taskloop";
 	else if (ctx->region_type & ORT_TASK)
 	  rtype = "task";
 	else if (ctx->region_type & ORT_TEAMS)
@@ -8976,6 +8980,31 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			  " or private in outer context", DECL_NAME (decl));
 	    }
 	do_notice:
+	  if ((region_type & ORT_TASKLOOP) == ORT_TASKLOOP
+	      && outer_ctx
+	      && outer_ctx->region_type == ORT_COMBINED_PARALLEL
+	      && (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_FIRSTPRIVATE
+		  || OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LASTPRIVATE))
+	    {
+	      splay_tree_node on
+		= splay_tree_lookup (outer_ctx->variables,
+				     (splay_tree_key)decl);
+	      if (on == NULL || (on->value & GOVD_DATA_SHARE_CLASS) == 0)
+		{
+		  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+		      && TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF
+		      && (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
+			  || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
+			      && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
+				  == POINTER_TYPE))))
+		    omp_firstprivatize_variable (outer_ctx, decl);
+		  else
+		    omp_add_variable (outer_ctx, decl,
+				      GOVD_SEEN | GOVD_SHARED);
+		  omp_notice_variable (outer_ctx, decl, true);
+		}
+	    }
 	  if (outer_ctx)
 	    omp_notice_variable (outer_ctx, decl, true);
 	  if (check_non_private
@@ -10421,9 +10450,9 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
       break;
     case OMP_TASKLOOP:
       if (omp_find_clause (OMP_FOR_CLAUSES (for_stmt), OMP_CLAUSE_UNTIED))
-	ort = ORT_UNTIED_TASK;
+	ort = ORT_UNTIED_TASKLOOP;
       else
-	ort = ORT_TASK;
+	ort = ORT_TASKLOOP;
       break;
     case OMP_SIMD:
       ort = ORT_SIMD;
@@ -10731,7 +10760,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		      else if (omp_check_private (outer, decl, false))
 			outer = NULL;
 		    }
-		  else if (((outer->region_type & ORT_TASK) != 0)
+		  else if (((outer->region_type & ORT_TASKLOOP)
+			    == ORT_TASKLOOP)
 			   && outer->combined_loop
 			   && !omp_check_private (gimplify_omp_ctxp,
 						  decl, false))
@@ -10770,8 +10800,12 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 				outer = NULL;
 			    }
 			  if (outer && outer->outer_context
-			      && (outer->outer_context->region_type
-				  & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS)
+			      && ((outer->outer_context->region_type
+				   & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS
+				  || (((outer->region_type & ORT_TASKLOOP)
+				       == ORT_TASKLOOP)
+				      && (outer->outer_context->region_type
+					  == ORT_COMBINED_PARALLEL))))
 			    {
 			      outer = outer->outer_context;
 			      n = splay_tree_lookup (outer->variables,
@@ -10818,7 +10852,8 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 		      else if (omp_check_private (outer, decl, false))
 			outer = NULL;
 		    }
-		  else if (((outer->region_type & ORT_TASK) != 0)
+		  else if (((outer->region_type & ORT_TASKLOOP)
+			    == ORT_TASKLOOP)
 			   && outer->combined_loop
 			   && !omp_check_private (gimplify_omp_ctxp,
 						  decl, false))
@@ -10857,8 +10892,12 @@ gimplify_omp_for (tree *expr_p, gimple_seq *pre_p)
 				outer = NULL;
 			    }
 			  if (outer && outer->outer_context
-			      && (outer->outer_context->region_type
-				  & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS)
+			      && ((outer->outer_context->region_type
+				   & ORT_COMBINED_TEAMS) == ORT_COMBINED_TEAMS
+				  || (((outer->region_type & ORT_TASKLOOP)
+				       == ORT_TASKLOOP)
+				      && (outer->outer_context->region_type
+					  == ORT_COMBINED_PARALLEL))))
 			    {
 			      outer = outer->outer_context;
 			      n = splay_tree_lookup (outer->variables,

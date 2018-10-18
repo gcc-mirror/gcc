@@ -1,3 +1,15 @@
+2018-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_taskloop): Add forward declaration.
+	Disallow in_reduction clause when combined with parallel master.
+	(c_parser_omp_master): Add p_name, mask and cclauses arguments.
+	Allow to be called while parsing combined parallel master.
+	Parse combined master taskloop{, simd}.
+	(c_parser_omp_parallel): Parse combined
+	parallel master{, taskloop{, simd}} constructs.
+	(c_parser_omp_construct) <case PRAGMA_OMP_MASTER>: Adjust
+	c_parser_omp_master caller.
+
 2018-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_finish_taskloop_clauses): New function.

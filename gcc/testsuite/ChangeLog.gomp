@@ -1,3 +1,17 @@
+2018-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/clauses-1.c (foo): Add ntm argument and
+	test if and nontemporal clauses on constructs with simd.
+	(bar): Add ntm and i3 arguments.  Test if and nontemporal clauses
+	on constructs with simd.  Change if clauses on some constructs from
+	specific to the particular constituents to one without a modifier.
+	Add new tests for combined host teams and for new parallel master
+	and {,parallel }master taskloop{, simd} combined constructs.
+	(baz): New function with host teams tests.
+	* c-c++-common/gomp/default-1.c: New test.
+	* c-c++-common/gomp/master-combined-1.c: New test.
+	* c-c++-common/gomp/master-combined-2.c: New test.
+
 2018-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/reduction-2.c: New test.

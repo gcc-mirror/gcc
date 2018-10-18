@@ -1,3 +1,15 @@
+2018-10-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (enum omp_region_type): Add ORT_TASKLOOP and
+	ORT_UNTIED_TASKLOOP.
+	(omp_default_clause): Print "taskloop" rather than "task" if
+	ORT_*TASKLOOP.
+	(gimplify_scan_omp_clauses): Add shared clause on parallel for
+	combined parallel master taskloop{, simd} if taskloop has
+	firstprivate, lastprivate or reduction clause.
+	(gimplify_omp_for): Likewise.  Use ORT_TASKLOOP or
+	ORT_UNTIED_TASKLOOP instead of ORT_TASK or ORT_UNTIED_TASK.
+
 2018-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE__REDUCTEMP_.
