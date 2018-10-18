@@ -1,6 +1,13 @@
 2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58618
+	* trans-stmt.c (trans_associate_var): All strings that return
+	as pointer types can be assigned directly to the associate
+	name so remove 'attr' and the condition that uses it.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
 	* trans-decl.c (gfc_get_symbol_decl): Deal correctly with the
 	initialization with NULL() of a deferred length pointer.
 
