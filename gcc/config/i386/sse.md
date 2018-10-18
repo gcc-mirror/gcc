@@ -650,6 +650,16 @@
    (V2DI "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")])
 (define_mode_iterator VI48F_256 [V8SI V8SF V4DI V4DF])
 
+(define_mode_iterator VF_AVX512
+  [(V4SF "TARGET_AVX512VL") (V2DF "TARGET_AVX512VL")
+   (V8SF "TARGET_AVX512VL") (V4DF "TARGET_AVX512VL")
+   V16SF V8DF])
+
+(define_mode_attr avx512bcst
+  [(V4SF "%{1to4%}") (V2DF "%{1to2%}")
+   (V8SF "%{1to8%}") (V4DF "%{1to4%}")
+   (V16SF "%{1to16%}") (V8DF "%{1to8%}")])
+
 ;; Mapping from float mode to required SSE level
 (define_mode_attr sse
   [(SF "sse") (DF "sse2")
@@ -3733,6 +3743,46 @@
    vfmadd132<ssemodesuffix>\t{<round_sd_mask_op4>%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2<round_sd_mask_op4>}
    vfmadd213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmadd231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (match_operand:VF_AVX512 1 "nonimmediate_operand" "0,v")
+	  (match_operand:VF_AVX512 2 "nonimmediate_operand" "v,0")
+	  (vec_duplicate:VF_AVX512
+	    (match_operand:<ssescalarmode> 3 "memory_operand" "m,m"))))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "vfmadd213<ssemodesuffix>\t{%3<avx512bcst>, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<avx512bcst>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (vec_duplicate:VF_AVX512
+	    (match_operand:<ssescalarmode> 1 "memory_operand" "m,m"))
+	  (match_operand:VF_AVX512 2 "nonimmediate_operand" "0,v")
+	  (match_operand:VF_AVX512 3 "nonimmediate_operand" "v,0")))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "@
+   vfmadd132<ssemodesuffix>\t{%1<avx512bcst>, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %1<avx512bcst>}
+   vfmadd231<ssemodesuffix>\t{%1<avx512bcst>, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %1<avx512bcst>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (match_operand:VF_AVX512 1 "nonimmediate_operand" "0,v")
+	  (vec_duplicate:VF_AVX512
+	    (match_operand:<ssescalarmode> 2 "memory_operand" "m,m"))
+	  (match_operand:VF_AVX512 3 "nonimmediate_operand" "v,0")))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "@
+   vfmadd132<ssemodesuffix>\t{%2<avx512bcst>, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2<avx512bcst>}
+   vfmadd231<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<avx512bcst>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
