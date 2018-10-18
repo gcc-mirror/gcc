@@ -795,12 +795,12 @@ struct processor_costs athlon_cost = {
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
-  {4, 4, 6, 12, 24},			/* cost of loading SSE registers
+  {4, 4, 12, 12, 24},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {4, 4, 6, 12, 24},			/* cost of unaligned loads.  */
-  {4, 4, 5, 10, 20},			/* cost of storing SSE registers
+  {4, 4, 12, 12, 24},			/* cost of unaligned loads.  */
+  {4, 4, 10, 10, 20},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
+  {4, 4, 10, 10, 20},			/* cost of unaligned stores.  */
   5, 5,					/* SSE->integer and integer->SSE moves */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
@@ -891,12 +891,12 @@ struct processor_costs k8_cost = {
   {4, 4},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
-  {4, 3, 6, 12, 24},			/* cost of loading SSE registers
+  {4, 3, 12, 12, 24},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {4, 3, 6, 12, 24},			/* cost of unaligned loads.  */
-  {4, 4, 5, 10, 20},			/* cost of storing SSE registers
+  {4, 3, 12, 12, 24},			/* cost of unaligned loads.  */
+  {4, 4, 10, 10, 20},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {4, 4, 5, 10, 20},			/* cost of unaligned stores.  */
+  {4, 4, 10, 10, 20},			/* cost of unaligned stores.  */
   5, 5,					/* SSE->integer and integer->SSE moves */
   4, 4,					/* Gather load static, per_elt.  */
   4, 4,					/* Gather store static, per_elt.  */
@@ -1100,12 +1100,12 @@ const struct processor_costs bdver_cost = {
   {10, 10},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
-  {12, 12, 10, 20, 30},			/* cost of loading SSE registers
+  {12, 12, 10, 40, 60},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {12, 12, 10, 20, 30},			/* cost of unaligned loads.  */
-  {10, 10, 10, 20, 30},			/* cost of storing SSE registers
+  {12, 12, 10, 40, 60},			/* cost of unaligned loads.  */
+  {10, 10, 10, 40, 60},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 10, 20, 30},			/* cost of unaligned stores.  */
+  {10, 10, 10, 40, 60},			/* cost of unaligned stores.  */
   16, 20,				/* SSE->integer and integer->SSE moves */
   12, 12,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */
@@ -1212,12 +1212,12 @@ struct processor_costs znver1_cost = {
   {8, 8},				/* cost of storing MMX registers
 					   in SImode and DImode.  */
   2, 3, 6,				/* cost of moving XMM,YMM,ZMM register.  */
-  {6, 6, 6, 6, 12},			/* cost of loading SSE registers
+  {6, 6, 6, 12, 24},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  {6, 6, 6, 6, 12},			/* cost of unaligned loads.  */
-  {8, 8, 8, 8, 16},			/* cost of storing SSE registers
+  {6, 6, 6, 12, 24},			/* cost of unaligned loads.  */
+  {8, 8, 8, 16, 32},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit.  */
-  {8, 8, 8, 8, 16},			/* cost of unaligned stores.  */
+  {8, 8, 8, 16, 32},			/* cost of unaligned stores.  */
   6, 6,					/* SSE->integer and integer->SSE moves.  */
   /* VGATHERDPD is 23 uops and throughput is 9, VGATHERDPD is 35 uops,
      throughput 12.  Approx 9 uops do not depend on vector size and every load
@@ -1420,12 +1420,12 @@ const struct processor_costs btver1_cost = {
   {12, 12},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
-  {10, 10, 12, 24, 48},			/* cost of loading SSE registers
+  {10, 10, 12, 48, 96},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 12, 24, 48},			/* cost of unaligned loads.  */
-  {10, 10, 12, 24, 48},			/* cost of storing SSE registers
+  {10, 10, 12, 48, 96},			/* cost of unaligned loads.  */
+  {10, 10, 12, 48, 96},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
+  {10, 10, 12, 48, 96},			/* cost of unaligned stores.  */
   14, 14,				/* SSE->integer and integer->SSE moves */
   10, 10,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */
@@ -1511,12 +1511,12 @@ const struct processor_costs btver2_cost = {
   {12, 12},				/* cost of storing MMX registers
 					   in SImode and DImode */
   2, 4, 8,				/* cost of moving XMM,YMM,ZMM register */
-  {10, 10, 12, 24, 48},			/* cost of loading SSE registers
+  {10, 10, 12, 48, 96},			/* cost of loading SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 12, 24, 48},			/* cost of unaligned loads.  */
-  {10, 10, 12, 24, 48},			/* cost of storing SSE registers
+  {10, 10, 12, 48, 96},			/* cost of unaligned loads.  */
+  {10, 10, 12, 48, 96},			/* cost of storing SSE registers
 					   in 32,64,128,256 and 512-bit */
-  {10, 10, 12, 24, 48},			/* cost of unaligned stores.  */
+  {10, 10, 12, 48, 96},			/* cost of unaligned stores.  */
   14, 14,				/* SSE->integer and integer->SSE moves */
   10, 10,				/* Gather load static, per_elt.  */
   10, 10,				/* Gather store static, per_elt.  */

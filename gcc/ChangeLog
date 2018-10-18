@@ -1,3 +1,14 @@
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Do not
+	feed width-specific load/store costs through ix86_vec_cost.
+	* config/i386/x86-tune-costs.h (athlon_cost): Adjust.
+	(k8_cost): Likewise.
+	(bdver_cost): Likewise.
+	(znver1_cost): Likewise.
+	(btver1_cost): Likewise.
+	(btver2_cost): Likewise.
+
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* simplify-rtx.c (simplify_subreg): Call simplify_gen_subreg
