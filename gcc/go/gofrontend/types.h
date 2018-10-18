@@ -574,6 +574,9 @@ class Type
   // struct field tags for purposes of type conversion.
   static const int COMPARE_TAGS = 2;
 
+  // Compare aliases: treat an alias to T as distinct from T.
+  static const int COMPARE_ALIASES = 4;
+
   // Return true if two types are identical.  If this returns false,
   // and REASON is not NULL, it may set *REASON.
   static bool
