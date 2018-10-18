@@ -1,3 +1,9 @@
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* trans-decl.c (gfc_get_symbol_decl): Deal correctly with the
+	initialization with NULL() of a deferred length pointer.
+
 2018-10-17  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87632
