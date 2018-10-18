@@ -1,5 +1,10 @@
 2018-10-17  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testsuite/
+	* g++.dg/modules/err-2_[ab].*: Move to ...
+	* g++.dg/modules/cpp-5_[ab].*: ... here.
+	* g++.dg/modules/cpp5_c.C: New.
+
 	Robustify parse errors on module/import decls.
 	gcc/cp/
 	* parser.c (cp_parser_consume_semicolon_at_end_of_statement):

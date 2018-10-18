@@ -1,6 +1,7 @@
 // { dg-additional-options -fmodules-atom }
 
-import "err-2_a.H" // { dg-error "expected" }
+// missing semicolon
+import "cpp-5_a.H" // { dg-error "expected" }
 
 int main ()
 {
