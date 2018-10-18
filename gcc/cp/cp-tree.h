@@ -6735,7 +6735,8 @@ extern char const *module_name (unsigned);
 extern bitmap module_import_bitmap (unsigned module);
 extern void module_begin_main_file (cpp_reader *, line_maps *,
 				    const line_map_ordinary *);
-extern cpp_translate_include_t *maybe_import_include ();
+extern int module_translate_include (cpp_reader *, line_maps *,
+				     source_location, const char *, bool);
 extern bool handle_module_option (unsigned opt, const char *arg, int value);
 
 /* In optimize.c */

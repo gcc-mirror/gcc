@@ -334,8 +334,8 @@ struct lang_hooks
   void (*preprocess_main_file) (cpp_reader *, line_maps *,
 				const line_map_ordinary *);
 
-  /* Translate include hook hook.  Ptr to fn returning ptr to fn.  */
-  int (*(*preprocess_translate_include) ())
+  /* Translate include hook hook.  */
+  int (*preprocess_translate_include)
     (cpp_reader *, line_maps *, source_location, const char *fname, bool);
 
   /* Undefining a macro.  */

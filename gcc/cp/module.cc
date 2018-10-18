@@ -11876,7 +11876,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   imported_p = true;
   lazy_open--;
   module_state *alias = read (fd, e, reader);
-  bool failed = check_read (is_direct () && !modules_atom_p ());
+  bool failed = check_read (is_direct ());
   if (alias)
     {
       slurped ();
@@ -12122,10 +12122,17 @@ module_cpp_deferred_macro (cpp_reader *reader, location_t loc,
 
 /* Figure out whether to treat HEADER as an include or an import.  */
 
-static int
-do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
-		      const char *header, bool angle)
+int
+module_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
+			  const char *header, bool angle)
 {
+  if (!modules_p ())
+    {
+      /* Turn off.  */
+      cpp_get_callbacks (reader)->translate_include = NULL;
+      return 0;
+    }
+
   if (!spans.init_p ())
     /* Before the main file, don't divert.  */
     return 0;
@@ -12145,14 +12152,6 @@ do_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   dump.pop (0);
 
   return res;
-}
-
-cpp_translate_include_t *
-maybe_import_include ()
-{
-  /* We enable include translation in atom mode -- not just legacy
-     header mode.  */
-  return modules_atom_p () ? do_translate_include : NULL;
 }
 
 static void

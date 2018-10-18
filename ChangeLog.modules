@@ -1,5 +1,23 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	Simplify translate-include hook.
+	libcpp/
+	include/cpplib.h (cpp_translate_include_t): Delete.
+	(struct cpp_calbacks): Adjust translate_include decl.
+	gcc/
+	* langhooks.h (struct lang_hooks): Adjust preprocess_translate_include.
+	gcc/c-family
+	* c-opts.c (c_common_post_options): Adjust.
+	gcc/cp/
+	* cp-tree.h (maybe_import_include): Replace by ...
+	(module_translate_include): ... this.
+	* cp-lang.c (LANG_HOOKS_PREPROCESS_TRANSLATE_INCLUDE): Adjust.
+	* module.c (module_state::do_import): Check read on all top level
+	imports.
+	(do_translate_include): Rename to ...
+	(module_translate_include): ... this.  Explicitly turn off.
+	(maybe_import_include): Delete.
+
 	Preamble on module
 	gcc/cp/
 	* parser.c (cp_parser_import_declaration): Always check past_preamble.

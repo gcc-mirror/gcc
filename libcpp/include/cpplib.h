@@ -610,9 +610,6 @@ enum cpp_warning_reason {
    header is otherwise unfound.  */
 typedef const char *(*missing_header_cb)(cpp_reader *, const char *header, cpp_dir **);
 
-typedef int cpp_translate_include_t (cpp_reader *, line_maps *,
-				     source_location, const char *, bool);
-
 /* Call backs to cpplib client.  */
 struct cpp_callbacks
 {
@@ -693,7 +690,8 @@ struct cpp_callbacks
      cpp_buffer containing the translation and return non-zero if
      translating.  +ve buffer will be freed, -ve, caller owns
      buffer.  */
-  cpp_translate_include_t *translate_include;
+  int (*translate_include) (cpp_reader *, line_maps *,
+			    source_location, const char *, bool);
 };
 
 #ifdef VMS
