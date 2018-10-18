@@ -57,7 +57,8 @@ enum Export_data_version {
   EXPORT_FORMAT_UNKNOWN = 0,
   EXPORT_FORMAT_V1 = 1,
   EXPORT_FORMAT_V2 = 2,
-  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V2
+  EXPORT_FORMAT_V3 = 3,
+  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V3
 };
 
 // This class manages exporting Go declarations.  It handles the main
@@ -119,9 +120,10 @@ class Export : public String_dump
   // Size of export data magic string (which includes version number).
   static const int magic_len = 4;
 
-  // Magic strings (current version and older v1 version).
+  // Magic strings (current version and older versions).
   static const char cur_magic[magic_len];
   static const char v1_magic[magic_len];
+  static const char v2_magic[magic_len];
 
   // The length of the checksum string.
   static const int checksum_len = 20;

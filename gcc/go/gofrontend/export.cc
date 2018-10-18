@@ -26,13 +26,17 @@ const int Export::magic_len;
 // Current version magic string.
 const char Export::cur_magic[Export::magic_len] =
   {
-    'v', '2', ';', '\n'
+    'v', '3', ';', '\n'
   };
 
-// Magic string for previous version (still supported)
+// Magic strings for previous versions (still supported).
 const char Export::v1_magic[Export::magic_len] =
   {
     'v', '1', ';', '\n'
+  };
+const char Export::v2_magic[Export::magic_len] =
+  {
+    'v', '2', ';', '\n'
   };
 
 const int Export::checksum_len;
@@ -147,7 +151,7 @@ Export::export_globals(const std::string& package_name,
   // The package name.
   this->write_c_string("package ");
   this->write_string(package_name);
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   // The prefix or package path, used for all global symbols.
   if (prefix.empty())
@@ -161,7 +165,7 @@ Export::export_globals(const std::string& package_name,
       this->write_c_string("prefix ");
       this->write_string(prefix);
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   this->write_packages(packages);
 
@@ -191,7 +195,7 @@ Export::export_globals(const std::string& package_name,
       dig = c & 0xf;
       s += dig < 10 ? '0' + dig : 'A' + dig - 10;
     }
-  s += ";\n";
+  s += "\n";
   this->stream_->write_checksum(s);
 }
 
@@ -233,7 +237,7 @@ Export::write_packages(const std::map<std::string, Package*>& packages)
       this->write_string((*p)->pkgpath());
       this->write_c_string(" ");
       this->write_string((*p)->pkgpath_symbol());
-      this->write_c_string(";\n");
+      this->write_c_string("\n");
     }
 }
 
@@ -271,7 +275,7 @@ Export::write_imports(const std::map<std::string, Package*>& imports)
       this->write_string(p->second->pkgpath());
       this->write_c_string(" \"");
       this->write_string(p->first);
-      this->write_c_string("\";\n");
+      this->write_c_string("\"\n");
 
       this->packages_.insert(p->second);
     }
@@ -347,7 +351,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 
   if (imported_init_fns.empty())
     {
-      this->write_c_string(";\n");
+      this->write_c_string("\n");
       return;
     }
 
@@ -394,7 +398,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 	    it->second.push_back(ii->init_name());
 	}
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   // Create the init graph. Start by populating the graph with
   // all the edges we inherited from imported packages.
@@ -494,7 +498,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 	  this->write_unsigned(sink);
 	}
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 }
 
 // Write a name to the export stream.
