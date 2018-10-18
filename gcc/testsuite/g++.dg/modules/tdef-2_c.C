@@ -1,3 +1,5 @@
+// { dg-additional-options "-fmodules-ts" }
+
 import tdef;
 
 I main ()

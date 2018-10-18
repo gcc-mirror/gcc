@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 
 #define BINKY(X) X
 

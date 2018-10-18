@@ -1,5 +1,5 @@
 // { dg-module-do run }
-
+// { dg-additional-options "-fmodules-ts" }
 export module tom.riddle;
 // { dg-module-bmi tom.riddle }
 

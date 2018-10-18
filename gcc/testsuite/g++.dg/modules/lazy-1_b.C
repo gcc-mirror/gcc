@@ -1,6 +1,6 @@
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 // Check some lazy loading
-// { dg-additional-options -fdump-lang-module }
 
 import foo;
 

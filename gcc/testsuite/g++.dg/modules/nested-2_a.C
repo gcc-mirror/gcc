@@ -1,4 +1,5 @@
 // { dg-module-do run }
+// { dg-additional-options "-fmodules-ts" }
 
 export module bob;
 // { dg-module-bmi bob }

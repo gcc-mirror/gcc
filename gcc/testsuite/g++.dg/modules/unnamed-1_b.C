@@ -1,4 +1,5 @@
-// { dg-additional-options "-fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
+
 import PiL;
 
 // Until the linkage is promoted, this won't link.

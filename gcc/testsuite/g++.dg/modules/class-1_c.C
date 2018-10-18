@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 import One;
 
 int y = sizeof (Bob::Y);

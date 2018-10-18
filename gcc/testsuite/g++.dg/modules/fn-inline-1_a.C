@@ -1,5 +1,5 @@
 // { dg-require-weak "" } 
-
+// { dg-additional-options "-fmodules-ts" }
 export module bob;
 // { dg-module-bmi "bob" }
 

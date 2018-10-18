@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 int i;
 import baz;
 // { dg-error "failed to read" "" { target *-*-* } 0 }

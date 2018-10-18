@@ -1,4 +1,4 @@
-// { dg-additional-options -O2 }
+// { dg-additional-options "-fmodules-ts -O2" }
 
 // { dg-error "compilation options differ" "" { target *-*-* } 0 }
 

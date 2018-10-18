@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 export module sqrt;
 // { dg-module-bmi "sqrt" }
 

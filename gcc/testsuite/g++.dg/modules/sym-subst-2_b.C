@@ -1,3 +1,5 @@
+// { dg-additional-options "-fmodules-ts" }
+
 export module bob.kevin;
 // { dg-module-bmi bob.kevin }
 

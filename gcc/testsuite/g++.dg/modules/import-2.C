@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 // Don't segfault on missing module BMI
 
 // { dg-module-bmi "!bob" }

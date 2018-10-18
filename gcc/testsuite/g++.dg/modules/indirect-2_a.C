@@ -1,4 +1,5 @@
 // { dg-module-do run }
+// { dg-additional-options "-fmodules-ts" }
 
 // indirect references to import, simple templates
 

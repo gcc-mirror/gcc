@@ -1,7 +1,7 @@
-
-// { dg-module-bmi edith }
+// { dg-additional-options "-fmodules-ts" }
 
 export module edith;
+// { dg-module-bmi edith }
 
 #define STUART(X) X
 

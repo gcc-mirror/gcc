@@ -1,4 +1,4 @@
-// { dg-additional-options "--param lazy-modules=1 -fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts --param lazy-modules=1 -fdump-lang-module" }
 
 import bob;
 import stuart;

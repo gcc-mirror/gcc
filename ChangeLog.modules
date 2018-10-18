@@ -1,5 +1,10 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/testuite/
+	* g++.dg/modules/modules.exp (mode-list): Delete.
+	(main): Don't use mode-list.
+	* g++.dg/modules/: Add -fmodules-ts to many tests.
+
 	Remove ATOM as a distinction.
 	gcc/c-family/
 	* c-cppbuiltin.c (c_cpp_builtins): Remove __cpp_modules_{atom,ts}.

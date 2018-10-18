@@ -1,4 +1,5 @@
 // { dg-module-do "run" }
+// { dg-additional-options "-fmodules-ts" }
 
 export module baz;
 // { dg-module-bmi "baz" }

@@ -1,4 +1,5 @@
 // { dg-module-do run }
+// { dg-additional-options "-fmodules-ts" }
 
 export module the.shop;
 // { dg-module-bmi the.shop }

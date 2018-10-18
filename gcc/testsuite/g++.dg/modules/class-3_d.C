@@ -1,10 +1,4 @@
-// { dg-additional-options "-fdump-lang-module" }
-// { dg-final { scan-lang-dump "Imported:-\[0-9\]* type_decl:'::X'@One" module } }
-// { dg-final { scan-lang-dump "Read imported type:-\[0-9\]* record_type:'::X'" module } }
-// { dg-final { scan-lang-dump "Read named type type_decl:'::X'" module } }
-// { dg-final { scan-lang-dump "Imported:-\[0-9\]* field_decl:'::X::a'@One" module } }
-// { dg-final { scan-lang-dump "Imported:-\[0-9\]* field_decl:'::X::b'@One" module } }
-
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 import Two;
 
 int main ()
@@ -24,3 +18,9 @@ int main ()
 
   return 0;
 }
+
+// { dg-final { scan-lang-dump "Imported:-\[0-9\]* type_decl:'::X'@One" module } }
+// { dg-final { scan-lang-dump "Read imported type:-\[0-9\]* record_type:'::X'" module } }
+// { dg-final { scan-lang-dump "Read named type type_decl:'::X'" module } }
+// { dg-final { scan-lang-dump "Imported:-\[0-9\]* field_decl:'::X::a'@One" module } }
+// { dg-final { scan-lang-dump "Imported:-\[0-9\]* field_decl:'::X::b'@One" module } }

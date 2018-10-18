@@ -1,4 +1,4 @@
-// { dg-additional-options -Wno-pedantic }
+// { dg-additional-options "-fmodules-ts -Wno-pedantic" }
 
 export module foo;
 // { dg-module-bmi !foo }

@@ -1,5 +1,5 @@
 // check internals by name unless SCC
-// { dg-additional-options "-fdump-lang-module" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 export module frob;
 // { dg-module-bmi frob }

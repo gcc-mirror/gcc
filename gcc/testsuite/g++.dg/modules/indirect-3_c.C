@@ -1,4 +1,4 @@
-// { dg-additional-options -fdump-lang-module }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 import bar;
 
 int main ()

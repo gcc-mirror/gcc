@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 import kevin;
 
 #if 1

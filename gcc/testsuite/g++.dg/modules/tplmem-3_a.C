@@ -1,4 +1,5 @@
 // { dg-module-do run }
+// { dg-additional-options "-fmodules-ts" }
 
 export module billy.bob.thornton;
 // { dg-module-bmi "billy.bob.thornton" }

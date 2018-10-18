@@ -1,4 +1,4 @@
-// { dg-additional-options "-fforce-module-macros" }
+// { dg-additional-options "-fmodules-ts -fforce-module-macros" }
 
 import "macro-5_a.H";
 import "macro-5_b.H";

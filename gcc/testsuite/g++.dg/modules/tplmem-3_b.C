@@ -1,3 +1,5 @@
+// { dg-additional-options "-fmodules-ts" }
+
 import billy.bob.thornton;
 
 int main ()

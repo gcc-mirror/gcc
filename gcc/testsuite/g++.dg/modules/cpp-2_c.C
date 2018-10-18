@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-
+// { dg-additional-options "-fmodules-ts" }
 
 module bob;
 #pragma GCC unused

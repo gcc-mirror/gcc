@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 import "macro-1_a.H";
 
 #define baz = + 1

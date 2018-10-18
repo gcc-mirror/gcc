@@ -1,4 +1,4 @@
-// { dg-additional-options "-std=c++2a" }
+// { dg-additional-options "-fmodules-ts -std=c++2a" }
 
 import "legacy-7_a.H";
 

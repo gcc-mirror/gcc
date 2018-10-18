@@ -1,7 +1,7 @@
-// { dg-additional-options "-fdump-lang-module" }
-// { dg-module-bmi {macro} }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 export module macro;
+// { dg-module-bmi {macro} }
 import "macro-6_a.H";
 
 #ifndef foo

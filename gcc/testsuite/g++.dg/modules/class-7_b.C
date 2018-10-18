@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 export module Two;
 // { dg-module-bmi "Two" }
 import One;

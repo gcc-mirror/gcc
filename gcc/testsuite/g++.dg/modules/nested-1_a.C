@@ -1,4 +1,6 @@
 // { dg-module-do run }
+// { dg-additional-options "-fmodules-ts" }
+
 export module blinky;
 // { dg-module-bmi blinky }
 

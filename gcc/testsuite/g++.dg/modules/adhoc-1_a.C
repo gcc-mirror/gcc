@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 // { dg-module-bmi bob }
 
 export module bob;

@@ -1,3 +1,5 @@
+// { dg-additional-options "-fmodules-ts" }
+
 module Foo;
 
 void Frob ()

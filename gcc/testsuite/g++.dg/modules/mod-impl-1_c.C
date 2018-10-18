@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 module baz;
 
 int Prod (int a, int b)

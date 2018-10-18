@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 export module Const;
 // { dg-module-bmi "Const" }
 

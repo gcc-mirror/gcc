@@ -1,3 +1,4 @@
+// { dg-additional-options "-fmodules-ts" }
 module bob;
 
 int Frob (int n, int a)

@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 import "alias-2_a.H";
 import "alias-2_b.H";
 

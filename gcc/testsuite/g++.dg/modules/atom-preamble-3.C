@@ -1,4 +1,4 @@
-
+// { dg-additional-options "-fmodules-ts" }
 #define import import
 import malcolm;
 // { dg-error "failed to read" "" { target *-*-* } 0 }
