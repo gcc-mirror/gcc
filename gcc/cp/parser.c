@@ -4562,7 +4562,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   bool gmf = false; /* Global Module Fragment.  */
-  bool real_eof = tok->type == CPP_EOF;
   int preamble = 0; /* Not seen a preamble.  */
   bool deferred_imports = false;
 
@@ -4570,7 +4569,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
  more:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
-  real_eof = cp_parser_tokenize (parser, tok);
+  bool real_eof = cp_parser_tokenize (parser, tok);
 
   /* Parse until EOF.  */
   for (;;)
@@ -4615,17 +4614,15 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  else
 	    {
-	      if (gmf)
-		{
-		  /* The GMF may have deferred imports.  Do them before
-		     we become a module.  */
-		  process_deferred_imports (parse_in);
-		  gmf = false;
-		}
+	      if (deferred_imports)
+		/* The GMF may have deferred imports.  Do them before
+		   we become a module.  */
+		process_deferred_imports (parse_in);
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 	      cp_parser_module_declaration (parser, exporting);
 	      preamble = +1; /* In preamble.  */
+	      gmf = false;
 	    }
 	  deferred_imports = true;
 	  first = false;
@@ -39288,7 +39285,7 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 {
   unsigned depth = 0;
   bool eof = false;
-  bool maybe_decl = false;
+  int is_decl = 0;
 
   unsigned ix = 0;
   if (cp_token *last = parser->lexer->last_token)
@@ -39308,30 +39305,36 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->type == CPP_OPEN_BRACE)
 	{
-	  if (maybe_decl)
+	  if (is_decl > 0)
 	    break;
 
 	  depth++;
+	  is_decl = 0;
 	}
       else if (tok->type == CPP_CLOSE_BRACE)
 	{
-	  if (maybe_decl)
+	  if (is_decl > 0)
 	    break;
 
 	  if (depth)
 	    depth--;
+	  is_decl = 0;
 	}
       else if (tok->type == CPP_SEMICOLON)
 	{
-	  if (maybe_decl)
+	  if (is_decl > 0)
 	    break;
+	  is_decl = 0;
 	}
-      else if (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT)
+      else if (is_decl >= 0
+	       && (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT))
 	{
-	  if (maybe_decl)
+	  if (is_decl > 0)
 	    break;
+
 	  if (!depth)
-	    maybe_decl = true;
+	    is_decl = +1;
+
 	  /* Always lex a "" or <> next, even though the user cannot
 	     declare a legacy module explicitly.  Give a better error
   	     parssing the module decl.  */
@@ -39343,9 +39346,11 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->keyword == RID_EXPORT)
 	{
-	  if (maybe_decl)
+	  if (is_decl > 0)
 	    break;
 	}
+      else if (!is_decl)
+	is_decl = -1;
 
       /* Get the next token.  */
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);

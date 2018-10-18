@@ -1,6 +1,12 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Adjust GMF deferred
+	imports.
+	(cp_parser_tokenize): Only pay attention to module/export at start
+	of decl.
+
+	gcc/cp/
 	* parser.c (cp_parser_translation_unit): Process deferred imports
 	here ...
 	(cp_parser_tokenize): ... not here.
