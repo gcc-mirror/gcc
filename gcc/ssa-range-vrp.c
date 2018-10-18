@@ -80,7 +80,6 @@ execute_ranger_vrp ()
   path_ranger ranger;
   basic_block bb;
   irange r;
-  wide_int i;
   bitmap touched = BITMAP_ALLOC (NULL);
 
   FOR_EACH_BB_FN (bb, cfun)
@@ -102,7 +101,7 @@ execute_ranger_vrp ()
 		  r.dump (dump_file);
 		}
 
-	      if (r.singleton_p (i))
+	      if (r.singleton_p ())
 	        {
 		  if (!argument_ok_to_propagate (gimple_cond_lhs (cond)) ||
 		      !argument_ok_to_propagate (gimple_cond_rhs (cond)))
@@ -114,15 +113,16 @@ execute_ranger_vrp ()
 
 		  /* If either operand is an ssa_name, set the touched bit for
 		     potential removal later if no uses are left.  */
-		  tree t = valid_irange_ssa (gimple_cond_lhs (cond));
+		  tree t = gimple_range_valid_ssa (gimple_cond_lhs (cond));
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
-		  t = valid_irange_ssa (gimple_cond_rhs (cond));
+
+		  t = gimple_range_valid_ssa (gimple_cond_rhs (cond));
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
 
 		  /* Rewrite the condition to either true or false.  */
-		  if (wi::eq_p (i, 0))
+		  if (r.zero_p ())
 		    gimple_cond_make_false (cond);
 		  else
 		    gimple_cond_make_true (cond);

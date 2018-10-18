@@ -377,7 +377,8 @@ path_ranger::dump_global_ssa_range (FILE *f)
 bool
 path_ranger::has_global_ssa_range (irange& r, tree name)
 {
-  if (!valid_irange_ssa (name))
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+  if (!gimple_range_supports_ssa (name))
     return false;
 
   if (m_globals->get_global_range (r, name))
@@ -393,8 +394,7 @@ bool
 path_ranger::get_global_ssa_range (irange& r, tree name)
 {
   gimple *s;
-  if (!valid_irange_ssa (name))
-    return false;
+  gcc_checking_assert (gimple_range_valid_ssa (name));
 
   if (m_globals->get_global_range (r, name))
     return true;
@@ -540,7 +540,8 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
   gimple *def_stmt;
   basic_block def_bb = NULL;
 
-  if (!valid_irange_ssa (name))
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+  if (!gimple_range_supports_ssa (name))
     return false;
 
   // Determine an origination block for the defining statement.
@@ -574,7 +575,8 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 {
   basic_block bb = e->src;
 
-  if (!valid_irange_ssa (name))
+  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+  if (!gimple_range_supports_ssa (name))
     return false;
 
   // Get an initial range for NAME. 
@@ -624,7 +626,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
       edge e = gimple_phi_arg_edge (phi, x);
       // Try to find a calulated range, if that fails, just get the operands
       // range. if that fails, return false.
-      if (!path_range_edge (arg_range, arg, e))
+      if ((TREE_CODE (arg) != SSA_NAME) || !path_range_edge (arg_range, arg, e))
 	if (!gimple_range_of_expr (arg_range, arg))
 	  {
 	    clear_global_ssa_range (phi_def);
@@ -669,7 +671,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   // Not all statements have a LHS.  */
   if (name)
     {
-      if (!valid_irange_ssa (name))
+      if (!gimple_range_supports_ssa (name))
         return false;
 
       // If this STMT has already been processed, return that value. 
@@ -725,7 +727,8 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
 bool
 path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
 {
-  if (!g || !valid_irange_ssa (name))
+  gcc_checking_assert (g && TREE_CODE (name) == SSA_NAME);
+  if (!gimple_range_supports_ssa (name))
     return false;
 
   if (get_operand_range (r, name, g))

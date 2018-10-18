@@ -60,6 +60,7 @@ class irange
   irange (tree type, tree, tree, kind = PLAIN);
   irange (tree type, const irange_storage *);
 
+  static bool supports_type_p (tree type);
   void set_varying (tree);
   void set_undefined (tree = NULL);
 
@@ -76,6 +77,7 @@ class irange
   bool undefined_p () const;
   bool zero_p () const;
   bool non_zero_p () const;
+  bool singleton_p () const;
   bool singleton_p (wide_int &) const;
   bool contains_p (const wide_int &element) const;
   bool contains_p (tree) const;
@@ -177,23 +179,11 @@ irange::undefined_p () const
 // Return TYPE if it is a valid type for irange to operator on.
 // Otherwise return NULL.
 
-static inline tree
-valid_irange_type (tree type)
+inline bool
+irange::supports_type_p (tree type)
 {
   if (type && (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)))
     return type;
-  return NULL;
-}
-
-// Return SSA if it is an SSA_NAME with a valid type for irange to
-// operator on.  Otherwise return NULL.
-
-static inline tree
-valid_irange_ssa (tree ssa)
-{
-  if (ssa && TREE_CODE (ssa) == SSA_NAME && !SSA_NAME_IS_VIRTUAL_OPERAND (ssa)
-      && valid_irange_type (TREE_TYPE (ssa)))
-    return ssa;
   return NULL;
 }
 

@@ -270,8 +270,8 @@ gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
   if (!stmt)
     return;
 
-  tree ssa1 = stmt->ssa_operand1 ();
-  tree ssa2 = stmt->ssa_operand2 ();
+  tree ssa1 = gimple_range_valid_ssa (stmt->operand1 ());
+  tree ssa2 = gimple_range_valid_ssa (stmt->operand2 ());
 
   if (ssa1)
     {
@@ -414,9 +414,9 @@ gori_map::dump(FILE *f)
 
 block_ranger::block_ranger ()
 {
-  unsigned prec = TYPE_PRECISION (boolean_type_node);
-  m_bool_zero = irange (boolean_type_node, wi::zero (prec), wi::zero (prec));
-  m_bool_one = irange (boolean_type_node, wi::one (prec), wi::one (prec));
+  m_bool_zero = irange (boolean_type_node, boolean_false_node,
+			boolean_false_node);
+  m_bool_one = irange (boolean_type_node, boolean_true_node, boolean_true_node);
   m_gori = new gori_map ();
 }
 
@@ -451,16 +451,13 @@ block_ranger::process_logical (glogical *s, irange& r, tree name,
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
   bool ret;
-  grange_op *stmt = dyn_cast<grange_op *> (s);
-
-  gcc_assert (stmt);
 
   irange op1_true, op1_false, op2_true, op2_false;
 
   /* Reaching this point means NAME is not in this stmt, but one of the
      names in it ought to be derived from it.  */
-  op1 = stmt->operand1 ();
-  op2 = stmt->operand2 ();
+  op1 = s->operand1 ();
+  op2 = s->operand2 ();
 
   op1_in_chain = m_gori->in_chain_p (name, op1);
   op2_in_chain = m_gori->in_chain_p (name, op2);
@@ -481,8 +478,8 @@ block_ranger::process_logical (glogical *s, irange& r, tree name,
   else
     {
       // Otherwise just get values for name in operand 1 position
-      ret = get_operand_range (op1_true, name, stmt);
-      ret &= get_operand_range (op1_false, name, stmt);
+      ret = get_operand_range (op1_true, name, s);
+      ret &= get_operand_range (op1_false, name, s);
     }
 
   /* If operand1 evaluated OK, move on to operand 2.  */
@@ -498,12 +495,11 @@ block_ranger::process_logical (glogical *s, irange& r, tree name,
       else
 	{
 	  // Otherwise just get values for name in operand 1 position
-	  ret &= get_operand_range (op2_true, name, stmt);
-	  ret &= get_operand_range (op2_false, name, stmt);
+	  ret &= get_operand_range (op2_true, name, s);
+	  ret &= get_operand_range (op2_false, name, s);
 	}
     }
-  if (!ret || !gimple_range_logical_fold (r, s, lhs, op1_true, op1_false,
-					  op2_true, op2_false))
+  if (!ret || !s->combine (r, lhs, op1_true, op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
   return true;
 }
@@ -650,7 +646,7 @@ block_ranger::get_range_from_stmt (gimple *s, irange& r, tree name,
   if (op1 == name || op2 == name)
     return get_range_if_name_on_stmt (stmt, r, name, lhs);
 
-  // Check for boolean combination cases which require developing ranges 
+  // Check for logical combination cases which require developing ranges 
   // and combining the results based on the operation. 
   glogical *logic = dyn_cast<glogical *> (s);
   if (logic)
@@ -711,7 +707,8 @@ block_ranger::range_on_edge (irange& r, tree name, edge e)
   irange lhs_range;
   basic_block bb = e->src;
 
-  if (!valid_irange_ssa (name))
+  gcc_checking_assert (gimple_range_valid_ssa (name));
+  if (!gimple_range_valid_ssa (name))
     return false;
 
   // If this block doesnt produce ranges for NAME, bail now.
@@ -798,7 +795,7 @@ block_ranger::range_of_stmt (irange &r, gimple *g, edge e)
       gcc_assert (e->dest == bb);
       arg = gimple_phi_arg_def (phi, e->dest_idx);
       // Pick up anything simple we might know about the incoming edge. 
-      if (!range_on_edge (r, arg, e))
+      if (TREE_CODE (arg) != SSA_NAME || !range_on_edge (r, arg, e))
 	return gimple_range_of_expr (r, arg);
       return true;
     }
@@ -808,19 +805,19 @@ block_ranger::range_of_stmt (irange &r, gimple *g, edge e)
     return false; 
   irange range1, range2;
 
-  if (!stmt->ssa_operand1 () ||
-      !ssa_name_same_bb_p (stmt->ssa_operand1 (), bb) ||
-      !range_of_stmt (range1, SSA_NAME_DEF_STMT (stmt->ssa_operand1 ()), e))
-    if (!gimple_range_of_expr (range1, stmt->operand1 ()))
+  tree op = stmt->operand1 ();
+  if (!gimple_range_valid_ssa (op) || !ssa_name_same_bb_p (op, bb) ||
+      !range_of_stmt (range1, SSA_NAME_DEF_STMT (op), e))
+    if (!gimple_range_of_expr (range1, op))
       return false;
 
-  if (!stmt->operand2 ())
+  op = stmt->operand2 ();
+  if (!op)
     return stmt->fold (r, range1);
 
-  if (!stmt->ssa_operand2 () ||
-      !ssa_name_same_bb_p (stmt->ssa_operand2 (), bb) ||
-      !range_of_stmt (range2, SSA_NAME_DEF_STMT (stmt->ssa_operand2 ()), e))
-    if (!gimple_range_of_expr (range2, stmt->operand2 ()))
+  if (!gimple_range_valid_ssa (op) || !ssa_name_same_bb_p (op, bb) ||
+      !range_of_stmt (range2, SSA_NAME_DEF_STMT (op), e))
+    if (!gimple_range_of_expr (range2, op))
       return false;
   return stmt->fold (r, range1, range2);
 }

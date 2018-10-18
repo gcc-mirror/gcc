@@ -67,7 +67,7 @@ void
 irange::init (tree type, const wide_int &lbound, const wide_int &ubound,
 	      kind rt)
 {
-  gcc_assert (valid_irange_type (type));
+  gcc_assert (irange::supports_type_p (type));
   gcc_assert (TYPE_PRECISION (type) == lbound.get_precision ());
   gcc_assert (lbound.get_precision () == ubound.get_precision ());
   m_type = type;
@@ -118,7 +118,7 @@ irange
 range_from_ssa (tree ssa)
 {
   tree type = TREE_TYPE (ssa);
-  gcc_assert (valid_irange_type (type));
+  gcc_assert (irange::supports_type_p (type));
   if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
     return irange (type);
   wide_int min, max;
@@ -840,12 +840,21 @@ range_negatives (irange *r, tree type)
     *r = irange (type, wi::min_value (prec, sign), wi::minus_one (prec));
 }
 
+// Return TRUE if range contains exactly one element.
+
+bool
+irange::singleton_p () const
+{
+  if (num_pairs () == 1 && lower_bound (0) == upper_bound (0))
+    return true;
+  return false;
+}
 // Return TRUE if range contains exactly one element and set ELEM to it.
 
 bool
 irange::singleton_p (wide_int &elem) const
 {
-  if (num_pairs () == 1 && lower_bound (0) == upper_bound (0))
+  if (singleton_p ())
     {
       elem = lower_bound (0);
       return true;
