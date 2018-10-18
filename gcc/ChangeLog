@@ -1,3 +1,12 @@
+2018-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87562
+	* input.c (get_substring_ranges_for_loc): Use
+	LRK_SPELLING_LOCATION rather than LRK_MACRO_EXPANSION_POINT when
+	getting the linemap for the endpoint.  Verify that it's either
+	in the same linemap as the start point's spelling location, or
+	at least in the same file.
+
 2018-10-18  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386.c (ix86_builtin_vectorization_cost): Do not

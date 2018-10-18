@@ -1,3 +1,14 @@
+2018-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87562
+	* c-c++-common/substring-location-PR-87562-1-a.h: New file.
+	* c-c++-common/substring-location-PR-87562-1-b.h: New file.
+	* c-c++-common/substring-location-PR-87562-1.c: New test.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Add test for
+	PR 87562.
+	* gcc.dg/plugin/pr87562-a.h: New file.
+	* gcc.dg/plugin/pr87562-b.h: New file.
+
 2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58618

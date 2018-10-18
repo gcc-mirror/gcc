@@ -1457,9 +1457,17 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 	 halfway through the token.
 	 Ensure that the loc_reader uses the linemap of the
 	 *end* of the token for its start location.  */
+      const line_map_ordinary *start_ord_map;
+      linemap_resolve_location (line_table, src_range.m_start,
+				LRK_SPELLING_LOCATION, &start_ord_map);
       const line_map_ordinary *final_ord_map;
       linemap_resolve_location (line_table, src_range.m_finish,
-				LRK_MACRO_EXPANSION_POINT, &final_ord_map);
+				LRK_SPELLING_LOCATION, &final_ord_map);
+      /* Bulletproofing.  We ought to only have different ordinary maps
+	 for start vs finish due to line-length jumps.  */
+      if (start_ord_map != final_ord_map
+	  && start_ord_map->to_file != final_ord_map->to_file)
+	  return "start and finish are spelled in different ordinary maps";
       location_t start_loc
 	= linemap_position_for_line_and_column (line_table, final_ord_map,
 						start.line, start.column);

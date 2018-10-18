@@ -296,3 +296,26 @@ test_backslash_continued_logical_lines (void)
  ~~~~~~                          
    { dg-end-multiline-output "" } */
 }
+
+/* Reproducer for PR 87652; this is whitespace-sensitive.  */
+
+#include "pr87562-a.h"
+
+
+
+
+#include "pr87562-b.h"
+
+void
+pr87652 (const char *stem, int counter)
+{
+  char label[100];
+  ASM_GENERATE_INTERNAL_LABEL (label, stem, counter);
+
+  /* This warning is actually in "pr87562-a.h".  */
+  /* { dg-warning "39: range" "" { target *-*-* } 5 } */
+  /* { dg-begin-multiline-output "" }
+       __emit_string_literal_range ("*.%s%u", 2, 2, 3); \
+                                       ^~
+     { dg-end-multiline-output "" } */
+}
