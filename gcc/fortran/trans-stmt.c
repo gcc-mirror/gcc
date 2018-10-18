@@ -1656,7 +1656,6 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   bool need_len_assign;
   bool whole_array = true;
   gfc_ref *ref;
-  symbol_attribute attr;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1916,9 +1915,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	    }
 	}
 
-      attr = gfc_expr_attr (e);
       if (sym->ts.type == BT_CHARACTER && e->ts.type == BT_CHARACTER
-	  && (attr.allocatable || attr.pointer || attr.dummy)
 	  && POINTER_TYPE_P (TREE_TYPE (se.expr)))
 	{
 	  /* These are pointer types already.  */
@@ -1926,8 +1923,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	}
       else
 	{
-          tmp = TREE_TYPE (sym->backend_decl);
-          tmp = gfc_build_addr_expr (tmp, se.expr);
+	  tmp = TREE_TYPE (sym->backend_decl);
+	  tmp = gfc_build_addr_expr (tmp, se.expr);
 	}
 
       gfc_add_modify (&se.pre, sym->backend_decl, tmp);
