@@ -1,3 +1,10 @@
+2018-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_fp_unordered_jump):
+	Set JUMP_LABEL to the jump insn.
+	(ix86_emit_i387_log1p): Use ix86_expand_branch to expand branch.
+	Predict emitted jump and add label to jump insn.
+
 2018-10-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/87562
