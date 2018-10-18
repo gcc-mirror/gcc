@@ -1,5 +1,11 @@
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* simplify-rtx.c (simplify_subreg): Limit mask of vec_merge to
+	HOST_BITS_PER_WIDE_INT.
+	(test_vector_ops_duplicate): Likewise.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/72782
 	* config/i386/sse.md (VF_AVX512): New.
 	(avx512bcst): Likewise.

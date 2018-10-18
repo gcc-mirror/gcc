@@ -6611,6 +6611,7 @@ simplify_subreg (machine_mode outermode, rtx op,
    */
   unsigned int idx;
   if (constant_multiple_p (byte, GET_MODE_SIZE (outermode), &idx)
+      && idx < HOST_BITS_PER_WIDE_INT
       && GET_CODE (op) == VEC_MERGE
       && GET_MODE_INNER (innermode) == outermode
       && CONST_INT_P (XEXP (op, 2))
@@ -6861,6 +6862,8 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
       rtx vector_reg = make_test_reg (mode);
       for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
 	{
+	  if (i >= HOST_BITS_PER_WIDE_INT)
+	    break;
 	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
 	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
 	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
