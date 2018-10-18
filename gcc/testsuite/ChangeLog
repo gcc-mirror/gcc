@@ -1,3 +1,8 @@
+2018-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87625
+	* gfortran.dg/realloc_on_assign_31.f90: New file.
+
 2018-10-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/87562
