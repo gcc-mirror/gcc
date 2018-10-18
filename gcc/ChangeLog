@@ -1,3 +1,15 @@
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/sse.md (VF_AVX512): New.
+	(avx512bcst): Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/invoke.texi (-dumpversion): Improve grammar.

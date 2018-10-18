@@ -1,3 +1,26 @@
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512-fma-1.h: New file.
+	* gcc.target/i386/avx512-fma-2.h: Likewise.
+	* gcc.target/i386/avx512-fma-3.h: Likewise.
+	* gcc.target/i386/avx512-fma-4.h: Likewise.
+	* gcc.target/i386/avx512-fma-5.h: Likewise.
+	* gcc.target/i386/avx512-fma-6.h: Likewise.
+	* gcc.target/i386/avx512-fma-7.h: Likewise.
+	* gcc.target/i386/avx512-fma-8.h: Likewise.
+	* gcc.target/i386/avx512f-fmadd-df-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fmadd-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fmadd-sf-ymm-1.c: Likewise.
+
 2018-10-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87625
