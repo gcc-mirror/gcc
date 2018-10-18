@@ -19,9 +19,8 @@ foo (void)
 __attribute__((noipa)) void
 bar (int x)
 {
-  int i;
   #pragma omp taskloop simd in_reduction (+:n) grainsize (64) nogroup
-  for (i = (x & 1) * (N / 2); i < (x & 1) * (N / 2) + (N / 2); i++)
+  for (int i = (x & 1) * (N / 2); i < (x & 1) * (N / 2) + (N / 2); i++)
     n += 2 * u[i];
 }
 

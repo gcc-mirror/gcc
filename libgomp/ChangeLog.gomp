@@ -1,5 +1,8 @@
 2018-10-18  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-3.c (bar): Define
+	iterator inside of the construct.
+
 	* testsuite/libgomp.c-c++-common/master-combined-1.c: New test.
 	* testsuite/libgomp.c-c++-common/taskloop-reduction-3.c: New test.
 	* testsuite/libgomp.c-c++-common/taskloop-reduction-4.c: New test.
