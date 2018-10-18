@@ -349,9 +349,16 @@ Type::are_identical(const Type* t1, const Type* t2, int flags,
       return (flags & COMPARE_ERRORS) == 0 ? true : t1 == t2;
     }
 
-  // Skip defined forward declarations.  Ignore aliases.
-  t1 = t1->unalias();
-  t2 = t2->unalias();
+  // Skip defined forward declarations.
+  t1 = t1->forwarded();
+  t2 = t2->forwarded();
+
+  if ((flags & COMPARE_ALIASES) == 0)
+    {
+      // Ignore aliases.
+      t1 = t1->unalias();
+      t2 = t2->unalias();
+    }
 
   if (t1 == t2)
     return true;
@@ -923,12 +930,17 @@ Type::copy_expressions()
 unsigned int
 Type::hash_for_method(Gogo* gogo, int flags) const
 {
-  if (this->named_type() != NULL && this->named_type()->is_alias())
-    return this->named_type()->real_type()->hash_for_method(gogo, flags);
-  unsigned int ret = 0;
-  if (this->classification_ != TYPE_FORWARD)
-    ret += this->classification_;
-  return ret + this->do_hash_for_method(gogo, flags);
+  const Type* t = this->forwarded();
+  if (t->named_type() != NULL && t->named_type()->is_alias())
+    {
+      unsigned int r =
+	t->named_type()->real_type()->hash_for_method(gogo, flags);
+      if ((flags & Type::COMPARE_ALIASES) != 0)
+	r += TYPE_FORWARD;
+      return r;
+    }
+  unsigned int ret = t->classification_;
+  return ret + t->do_hash_for_method(gogo, flags);
 }
 
 // Default implementation of do_hash_for_method.  This is appropriate
