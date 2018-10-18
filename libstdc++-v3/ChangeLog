@@ -1,5 +1,10 @@
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/duration/cons/2.cc: Add -ffloat-store to fix
+	failure when compiled without optimisation.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Prune additional
+	errors caused by C++17 std::pmr alias templates.
+
 	PR libstdc++/87642
 	* config/locale/gnu/monetary_members.cc
 	(moneypunct<char, true>::_M_initialize_moneypunct): Use
