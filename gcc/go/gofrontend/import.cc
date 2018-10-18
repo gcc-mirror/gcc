@@ -397,6 +397,9 @@ Import::import(Gogo* gogo, const std::string& local_name,
       while (stream->match_c_string("import"))
 	this->read_one_import();
 
+      while (stream->match_c_string("indirectimport"))
+	this->read_one_indirect_import();
+
       if (stream->match_c_string("init"))
 	this->read_import_init_fns(gogo);
 
@@ -458,7 +461,7 @@ Import::read_one_package()
   p->set_package_name(package_name, this->location());
 }
 
-// Read an import line.  We don't actually care about these.
+// Read an import line.
 
 void
 Import::read_one_import()
@@ -473,6 +476,22 @@ Import::read_one_import()
     stream->advance(1);
   this->require_c_string("\"");
   this->require_semicolon_if_old_version();
+  this->require_c_string("\n");
+
+  Package* p = this->gogo_->register_package(pkgpath, "",
+					     Linemap::unknown_location());
+  p->set_package_name(package_name, this->location());
+}
+
+// Read an indirectimport line.
+
+void
+Import::read_one_indirect_import()
+{
+  this->require_c_string("indirectimport ");
+  std::string package_name = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath = this->read_identifier();
   this->require_c_string("\n");
 
   Package* p = this->gogo_->register_package(pkgpath, "",

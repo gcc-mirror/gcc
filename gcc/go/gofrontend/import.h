@@ -241,6 +241,10 @@ class Import
   void
   read_one_import();
 
+  // Read an indirectimport line.
+  void
+  read_one_indirect_import();
+
   // Read the import control functions and init graph.
   void
   read_import_init_fns(Gogo*);

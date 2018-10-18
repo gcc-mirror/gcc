@@ -12,6 +12,7 @@
 class Go_sha1_helper;
 class Gogo;
 class Import_init;
+class Named_object;
 class Bindings;
 class Type;
 class Package;
@@ -194,6 +195,11 @@ class Export : public String_dump
   Export(const Export&);
   Export& operator=(const Export&);
 
+  // Prepare types for exporting.
+  void
+  prepare_types(const std::vector<Named_object*>* exports,
+		Unordered_set(const Package*)* imports);
+
   // Write out all known packages.
   void
   write_packages(const std::map<std::string, Package*>& packages);
@@ -210,7 +216,8 @@ class Export : public String_dump
 
   // Write out the imported packages.
   void
-  write_imports(const std::map<std::string, Package*>& imports);
+  write_imports(const std::map<std::string, Package*>& imports,
+		const Unordered_set(const Package*)& type_imports);
 
   // Write out the imported initialization functions and init graph.
   void
