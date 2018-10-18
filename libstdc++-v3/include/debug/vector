@@ -328,11 +328,11 @@ namespace __debug
 #if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
-      { return { _Base::begin(), this }; }
+      { return const_iterator(_Base::begin(), this); }
 
       const_iterator
       cend() const noexcept
-      { return { _Base::end(), this }; }
+      { return const_iterator(_Base::end(), this); }
 
       const_reverse_iterator
       crbegin() const noexcept
@@ -542,8 +542,7 @@ namespace __debug
       {
 	__glibcxx_check_insert(__position);
 	bool __realloc = this->_M_requires_reallocation(this->size() + 1);
-	difference_type __offset
-	  = __position.base() - __position._M_get_sequence()->_M_base().begin();
+	difference_type __offset = __position.base() - _Base::begin();
 	_Base_iterator __res = _Base::insert(__position.base(), __x);
 	if (__realloc)
 	  this->_M_invalidate_all();
@@ -662,8 +661,7 @@ namespace __debug
 #endif
       {
 	__glibcxx_check_erase(__position);
-	difference_type __offset
-	  = __position.base() - __position._M_get_sequence()->_M_base().begin();
+	difference_type __offset = __position.base() - _Base::begin();
 	_Base_iterator __res = _Base::erase(__position.base());
 	this->_M_invalidate_after_nth(__offset);
 	return iterator(__res, this);
@@ -682,8 +680,7 @@ namespace __debug
 
 	if (__first.base() != __last.base())
 	  {
-	    difference_type __offset =
-	      __first.base() - __first._M_get_sequence()->_M_base().begin();
+	    difference_type __offset = __first.base() - _Base::begin();
 	    _Base_iterator __res = _Base::erase(__first.base(),
 						__last.base());
 	    this->_M_invalidate_after_nth(__offset);

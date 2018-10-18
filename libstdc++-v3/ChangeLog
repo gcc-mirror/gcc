@@ -1,3 +1,27 @@
+2018-10-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	Partial revert.
+	2018-10-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/list (list<>::cbegin()): Use C++11 direct
+	initialization.
+	(list<>::cend()): Likewise.
+	(list<>::erase(const_iterator, const_iterator)): Ensure consistent
+	iterator comparisons.
+	(list<>::splice(const_iterator, list&&, const_iterator,
+	const_iterator)): Likewise.
+
+	Partial revert.
+	2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
+	initialization.
+	(vector<>::cend()): Likewise.
+	(vector<>::insert(const_iterator, const _Tp&)): Use consistent
+	iterator comparison.
+	(vector<>::erase(const_iterator)): Likewise.
+	(vector<>::erase(const_iterator, const_iterator)): Likewise.
+
 2018-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/87619
