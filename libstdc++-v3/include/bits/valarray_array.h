@@ -338,30 +338,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   //
-  // Compute the sum of elements in range [__f, __l)
+  // Compute the sum of elements in range [__f, __l) which must not be empty.
   // This is a naive algorithm.  It suffers from cancelling.
-  // In the future try to specialize
-  // for _Tp = float, double, long double using a more accurate
-  // algorithm.
+  // In the future try to specialize for _Tp = float, double, long double
+  // using a more accurate algorithm.
   //
   template<typename _Tp>
     inline _Tp
     __valarray_sum(const _Tp* __f, const _Tp* __l)
     {
-      _Tp __r = _Tp();
+      _Tp __r = *__f++;
       while (__f != __l)
 	__r += *__f++;
-      return __r;
-    }
-
-  // Compute the product of all elements in range [__f, __l)
-  template<typename _Tp>
-    inline _Tp
-    __valarray_product(const _Tp* __f, const _Tp* __l)
-    {
-      _Tp __r = _Tp(1);
-      while (__f != __l)
-	__r = __r * *__f++;
       return __r;
     }
 
