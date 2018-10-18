@@ -777,7 +777,9 @@ Gogo::assign_with_write_barrier(Function* function, Block* enclosing,
   inserter->insert(lhs_temp);
   lhs = Expression::make_temporary_reference(lhs_temp, loc);
 
-  if (!Type::are_identical(type, rhs->type(), false, NULL)
+  if (!Type::are_identical(type, rhs->type(),
+			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			   NULL)
       && rhs->type()->interface_type() != NULL
       && !rhs->is_variable())
     {
