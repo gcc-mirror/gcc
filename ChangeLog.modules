@@ -1,5 +1,12 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Process deferred imports
+	here ...
+	(cp_parser_tokenize): ... not here.
+	gcc/testsuite/
+	* g++.dg/modules/macloc-1_d.C: Correct regexp.
+
 	Expunge -fmodules-atom as a thing.
 	gcc/
 	* doc/invoke.texi (fmodules-atom): Delete.

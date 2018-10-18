@@ -4564,6 +4564,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool gmf = false; /* Global Module Fragment.  */
   bool real_eof = tok->type == CPP_EOF;
   int preamble = 0; /* Not seen a preamble.  */
+  bool deferred_imports = false;
 
   parser->lexer->last_token = NULL;
 
@@ -4626,6 +4627,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      cp_parser_module_declaration (parser, exporting);
 	      preamble = +1; /* In preamble.  */
 	    }
+	  deferred_imports = true;
 	  first = false;
 	  break;
 	}
@@ -4634,6 +4636,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
 	  cp_parser_import_declaration (parser, exporting, preamble < 0);
+	  deferred_imports = true;
 	  first = false;
 	  break;
 	}
@@ -4649,6 +4652,11 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	}
       else
 	{
+	  if (deferred_imports)
+	    {
+	      deferred_imports = false;
+	      process_deferred_imports (parse_in);
+	    }
 	  cp_parser_toplevel_declaration (parser);
 	  if (preamble > 0)
 	    preamble = -1;
@@ -4672,7 +4680,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
     }
 
   /* We may have ended on a deferred import.  */
-  process_deferred_imports (parse_in);
+  if (deferred_imports)
+    process_deferred_imports (parse_in);
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
@@ -39280,7 +39289,6 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
   unsigned depth = 0;
   bool eof = false;
   bool maybe_decl = false;
-  bool pending_imports = true;
 
   unsigned ix = 0;
   if (cp_token *last = parser->lexer->last_token)
@@ -39323,10 +39331,7 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	  if (maybe_decl)
 	    break;
 	  if (!depth)
-	    {
-	      maybe_decl = true;
-	      pending_imports = false;
-	    }
+	    maybe_decl = true;
 	  /* Always lex a "" or <> next, even though the user cannot
 	     declare a legacy module explicitly.  Give a better error
   	     parssing the module decl.  */
@@ -39340,12 +39345,6 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	{
 	  if (maybe_decl)
 	    break;
-	}
-      else
-	{
-	  if (pending_imports)
-	    process_deferred_imports (parse_in);
-	  pending_imports = false;
 	}
 
       /* Get the next token.  */
