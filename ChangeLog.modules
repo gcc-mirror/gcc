@@ -1,5 +1,18 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	Remove ATOM as a distinction.
+	gcc/c-family/
+	* c-cppbuiltin.c (c_cpp_builtins): Remove __cpp_modules_{atom,ts}.
+	* c.opt (fmodules-ts): Adjust.
+	gcc/cp/
+	* cp-tree.h (modules_atom_p): Delete.
+	* module.cc (module_state::write_readme): Drop ATOM distinction.
+	(module_state::{read,write}_config): Likewise.
+	(init_module_processing): Drop atom distinction.
+	(handle_module_option): Adjust.
+	gcc/testsuite/
+	* g++.dg/modules/: Drop -fmodules-atom from all tests.
+
 	Simplify translate-include hook.
 	libcpp/
 	include/cpplib.h (cpp_translate_include_t): Delete.

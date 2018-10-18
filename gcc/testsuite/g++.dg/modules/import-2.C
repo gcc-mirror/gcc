@@ -1,4 +1,3 @@
-// { dg-additional-options -fmodules-atom }
 
 // Don't segfault on missing module BMI
 

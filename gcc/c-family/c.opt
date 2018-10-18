@@ -1543,9 +1543,8 @@ flax-vector-conversions
 C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
-; I couldn't get Alias to work, but this approach does.
 fmodules-ts
-C++ ObjC++ RejectNegative Var(flag_modules,+1) Integer
+C++ ObjC++ RejectNegative VAR(flag_modules)
 Enable c++ modules-ts (experimental).
 
 fmodules-atom

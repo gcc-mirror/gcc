@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-atom -fdump-lang-module" }
+// { dg-additional-options "-fdump-lang-module" }
 
 // These are different modules (by default).
 import "frob";

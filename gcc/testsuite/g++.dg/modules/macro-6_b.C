@@ -1,4 +1,4 @@
-// { dg-additional-options "-fdump-lang-module -fmodules-atom" }
+// { dg-additional-options "-fdump-lang-module" }
 // { dg-module-bmi {macro} }
 
 export module macro;

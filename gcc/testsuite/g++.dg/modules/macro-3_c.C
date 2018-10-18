@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-atom -fdump-lang-module" }
+// { dg-additional-options "-fdump-lang-module" }
 
 import "macro-3_b.H";
 import "macro-3_a.H";

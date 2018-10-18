@@ -980,10 +980,8 @@ c_cpp_builtins (cpp_reader *pfile)
       if (flag_modules)
 	{
 	  /* FIXME: get clarification about such a define.  */
-	  /* 201804 - module; p0713  */
-	  cpp_define (pfile, "__cpp_modules=201804");
-	  cpp_define (pfile, flag_modules < 0 ? "__cpp_modules_atom"
-		      : "__cpp_modules_ts");
+	  /* 201810 - p1103 merging modules */
+	  cpp_define (pfile, "__cpp_modules=201810");
 	}
       if (flag_tm)
 	/* Use a value smaller than the 201505 specified in

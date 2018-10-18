@@ -1,4 +1,3 @@
-// { dg-additional-options "-fmodules-atom" }
 // { dg-module-bmi bob }
 
 export module bob;

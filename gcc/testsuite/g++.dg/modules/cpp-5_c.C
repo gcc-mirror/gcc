@@ -1,5 +1,4 @@
 // { dg-do preprocess }
-// { dg-additional-options -fmodules-atom }
 
 #define Q 0
 #undef Q

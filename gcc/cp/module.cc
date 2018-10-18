@@ -7991,8 +7991,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ Module (%s%s)", is_legacy () ? "Legacy "  : "",
-		 modules_atom_p () ? "ATOM" : "TS");
+  readme.printf ("GNU C++ Module (%s)", is_legacy () ? "Legacy "  : "");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
 
@@ -10804,7 +10803,6 @@ space_cmp (const void *a_, const void *b_)
 
    u32:version
    u32:crc
-   u:atom_p
    u:module-name
 
    controlling_macro
@@ -10959,7 +10957,6 @@ module_state::write_config (elf_out *to, module_state_config &config,
   cfg.u32 (unsigned (get_version ()));
   cfg.u32 (inner_crc);
 
-  cfg.u (modules_atom_p ());
   cfg.u (to->name (is_legacy () ? "" : fullname));
 
   if (!is_legacy ())
@@ -11043,7 +11040,9 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	  /* Dates differ, decline.  */
 	  error_at (loc, "file is version %s, this is version %s",
 		    their_string, my_string);
-	  goto fail;
+	
+	  cfg.set_overrun ();
+	  goto done;
 	}
       else if (my_time != their_time)
 	/* Times differ, give it a go.  */
@@ -11055,14 +11054,6 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
   /*  We wrote the inner crc merely to merge it, so simply read it
       back and forget it.  */
   cfg.u32 ();
-
-  if (modules_atom_p () != cfg.u ())
-    {
-      error_at (loc, "TS/ATOM mismatch");
-    fail:
-      cfg.set_overrun ();
-      goto done;
-    }
 
   /* Check module name.  */
   {
@@ -11079,7 +11070,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 		  ? G_("legacy module expected, module %qs found")
 		  : G_("module %qs expected, legacy module found"),
 		  their_name[0] ? their_name : our_name);
-	goto fail;
+	cfg.set_overrun ();
+	goto done;
       }
   }
 
@@ -11142,7 +11134,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
     if (!is_direct () && crc != e_crc)
       {
 	error_at (loc, "module %qs CRC mismatch", fullname);
-	goto fail;
+	cfg.set_overrun ();
+	goto done;
       }
   }
 
@@ -11156,7 +11149,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       {
 	error_at (loc, "target & host is %qs:%qs, expected %qs:%qs",
 		  their_target, TARGET_MACHINE, their_host, HOST_MACHINE);
-	goto fail;
+	cfg.set_overrun ();
+	goto done;
       }
   }
 
@@ -11168,7 +11162,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       {
 	error_at (loc, "compilation options differ %qs, expected %qs",
 		  their_opts, config.opt_str);
-	goto fail;
+	cfg.set_overrun ();
+	goto done;
       }
   }
   
@@ -11183,7 +11178,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
 	    || their_fixed_crc != global_crc))
       {
 	error_at (loc, "fixed tree mismatch");
-	goto fail;
+	cfg.set_overrun ();
+	goto done;
       }
   }
 
@@ -11209,7 +11205,8 @@ module_state::read_config (cpp_reader *reader, module_state_config &config)
       || config.sec_range.second > from ()->get_section_limit ())
     {
       error_at (loc, "paradoxical declaration section range");
-      goto fail;
+      cfg.set_overrun ();
+      goto done;
     }
 
  done:
@@ -12318,15 +12315,6 @@ init_module_processing ()
     fatal_error (input_location,
 		 "C++ modules incompatible with precompiled headers");
 
-  /* Check for ill-formed combinations.  */
-  if (!modules_atom_p ()
-      && (module_legacy_name || module_legacy_macro))
-    {
-      flag_modules = module_legacy_name ? -2 : -1;
-      error ("%s not suppported with %<-fmodules-ts%>",
-	     module_legacy_name ? "legacy headers" : "preamble parsing");
-    }
-
   modules_hash = hash_table<module_state_hash>::create_ggc (31);
 
   vec_safe_reserve (modules, 20);
@@ -12556,10 +12544,11 @@ handle_module_option (unsigned code, const char *str, int)
 {
   switch (opt_code (code))
     {
+    case OPT_fmodules_ts:
     case OPT_fmodules_atom:
       /* Don't drop out of legacy mode.  */
       if (flag_modules >= 0)
-	flag_modules = -1;
+	flag_modules = +1;
       return true;
 
     case OPT_fmodule_mapper_:
@@ -12592,8 +12581,7 @@ handle_module_option (unsigned code, const char *str, int)
 	      module_legacy_name = str;
 	  }
 
-	if (flag_modules <= 0)
-	  flag_modules = -2;
+	flag_modules = -2;
       }
       return true;
 

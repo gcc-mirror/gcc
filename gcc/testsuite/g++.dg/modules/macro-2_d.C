@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-atom }
+
 
 #define BINKY(X) X
 

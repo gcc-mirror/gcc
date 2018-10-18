@@ -1,6 +1,6 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodules-atom" }
- 
+
+
 module bob;
 #pragma GCC unused
 import <stdio.h>;

@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-atom -fforce-module-macros" }
+// { dg-additional-options "-fforce-module-macros" }
 
 import "macro-4_b.H";
 import "macro-4_a.H";

@@ -1,4 +1,3 @@
-// { dg-additional-options "-fmodules-atom" }
 
 import "alias-2_b.H";
 import "alias-2_a.H";

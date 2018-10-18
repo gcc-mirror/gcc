@@ -1,4 +1,4 @@
-// { dg-additional-options -fmodules-atom }
+// { dg-additional-options -fmodules-ts }
 
 import "legacy-1_a.H";
 

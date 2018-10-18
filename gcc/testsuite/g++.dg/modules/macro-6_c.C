@@ -1,4 +1,4 @@
-// { dg-additional-options "-fdump-lang-module -fmodules-atom" }
+// { dg-additional-options "-fdump-lang-module" }
 // Macro tables are only loaded when transitively reachable from top
 // level
 

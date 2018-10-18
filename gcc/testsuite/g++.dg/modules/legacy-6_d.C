@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodules-atom -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-6.map" }
+// { dg-additional-options "-fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-6.map" }
 
 #include "legacy-6_a.H"
 int i;

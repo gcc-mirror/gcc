@@ -1,4 +1,3 @@
-// { dg-options "-fmodules-atom" }
 export module pop;
 // { dg-module-bmi "pop" }
 export import thing;

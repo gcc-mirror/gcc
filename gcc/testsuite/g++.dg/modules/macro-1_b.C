@@ -1,8 +1,5 @@
-// { dg-additional-options "-Wno-pedantic -fmodules-atom" }
 
 import "macro-1_a.H";
-
-; // This is not an error
 
 #define baz = + 1
 int foo;

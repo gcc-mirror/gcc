@@ -209,9 +209,6 @@ proc mode_list { test } {
     if [search_for $test "-fmodules-"] {
 	return { "" }
     }
-    if [search_for $test "-fmodule-legacy"] {
-	return { "" }
-    }
     return { "-fmodules-ts" "-fmodules-atom" }
 }
 
