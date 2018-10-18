@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-interface/Make-lang.in (selftest-ada): New.
+
 2018-10-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch3.adb (Is_Null_Statement_List): New predicate.
