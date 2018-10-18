@@ -45108,16 +45108,14 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	/* See PR82713 - we may end up being called on non-vector type.  */
 	if (index < 0)
 	  index = 2;
-        return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2);
+        return COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2;
 
       case vector_store:
 	index = sse_store_index (mode);
 	/* See PR82713 - we may end up being called on non-vector type.  */
 	if (index < 0)
 	  index = 2;
-        return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2);
+        return COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2;
 
       case vec_to_scalar:
       case scalar_to_vec:
@@ -45130,18 +45128,14 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	/* See PR82713 - we may end up being called on non-vector type.  */
 	if (index < 0)
 	  index = 2;
-        return ix86_vec_cost (mode,
-			      COSTS_N_INSNS
-				 (ix86_cost->sse_unaligned_load[index]) / 2);
+        return COSTS_N_INSNS (ix86_cost->sse_unaligned_load[index]) / 2;
 
       case unaligned_store:
 	index = sse_store_index (mode);
 	/* See PR82713 - we may end up being called on non-vector type.  */
 	if (index < 0)
 	  index = 2;
-        return ix86_vec_cost (mode,
-			      COSTS_N_INSNS
-				 (ix86_cost->sse_unaligned_store[index]) / 2);
+        return COSTS_N_INSNS (ix86_cost->sse_unaligned_store[index]) / 2;
 
       case vector_gather_load:
         return ix86_vec_cost (mode,
