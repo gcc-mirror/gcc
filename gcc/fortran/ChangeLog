@@ -1,3 +1,9 @@
+2018-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87625
+	* trans-array.c (gfc_is_reallocatable_lhs): Detect allocatable
+	polymorphic arrays.
+
 2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/58618
