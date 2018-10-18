@@ -1,3 +1,8 @@
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* simplify-rtx.c (simplify_subreg): Call simplify_gen_subreg
+	to simplify subreg of vec_merge.
+
 2018-10-18  Richard Biener  <rguenther@suse.de>
 
 	* config/i386/i386.c: Fix costing of vector FMA.

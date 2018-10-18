@@ -6601,20 +6601,21 @@ simplify_subreg (machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
-  /* Return X for
-	(subreg (vec_merge (vec_duplicate X)
+  /* Simplify
+	(subreg (vec_merge (X)
 			   (vector)
 			   (const_int ((1 << N) | M)))
-		(N * sizeof (X)))
+		(N * sizeof (outermode)))
+     to
+	(subreg (X) (N * sizeof (outermode)))
    */
   unsigned int idx;
   if (constant_multiple_p (byte, GET_MODE_SIZE (outermode), &idx)
       && GET_CODE (op) == VEC_MERGE
-      && GET_CODE (XEXP (op, 0)) == VEC_DUPLICATE
-      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+      && GET_MODE_INNER (innermode) == outermode
       && CONST_INT_P (XEXP (op, 2))
       && (UINTVAL (XEXP (op, 2)) & (HOST_WIDE_INT_1U << idx)) != 0)
-    return XEXP (XEXP (op, 0), 0);
+    return simplify_gen_subreg (outermode, XEXP (op, 0), innermode, byte);
 
   /* A SUBREG resulting from a zero extension may fold to zero if
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
