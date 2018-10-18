@@ -39840,17 +39840,14 @@ ix86_set_reg_reg_cost (machine_mode mode)
 }
 
 /* Return cost of vector operation in MODE given that scalar version has
-   COST.  If PARALLEL is true assume that CPU has more than one unit
-   performing the operation.  */
+   COST.  */
 
 static int
-ix86_vec_cost (machine_mode mode, int cost, bool parallel)
+ix86_vec_cost (machine_mode mode, int cost)
 {
   if (!VECTOR_MODE_P (mode))
     return cost;
- 
-  if (!parallel)
-    return cost * GET_MODE_NUNITS (mode);
+
   if (GET_MODE_BITSIZE (mode) == 128
       && TARGET_SSE_SPLIT_REGS)
     return cost * 2;
@@ -39876,13 +39873,12 @@ ix86_multiplication_cost (const struct processor_costs *cost,
     return cost->fmul;
   else if (FLOAT_MODE_P (mode))
     return  ix86_vec_cost (mode,
-			   inner_mode == DFmode
-			   ? cost->mulsd : cost->mulss, true);
+			   inner_mode == DFmode ? cost->mulsd : cost->mulss);
   else if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
     {
       /* vpmullq is used in this case. No emulation is needed.  */
       if (TARGET_AVX512DQ)
-	return ix86_vec_cost (mode, cost->mulss, true);
+	return ix86_vec_cost (mode, cost->mulss);
 
       /* V*QImode is emulated with 7-13 insns.  */
       if (mode == V16QImode || mode == V32QImode)
@@ -39892,29 +39888,22 @@ ix86_multiplication_cost (const struct processor_costs *cost,
 	    extra = 5;
 	  else if (TARGET_SSSE3)
 	    extra = 6;
-	  return ix86_vec_cost (mode,
-				cost->mulss * 2 + cost->sse_op * extra,
-				true);
+	  return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * extra);
 	}
       /* V*DImode is emulated with 5-8 insns.  */
       else if (mode == V2DImode || mode == V4DImode)
 	{
 	  if (TARGET_XOP && mode == V2DImode)
-	    return ix86_vec_cost (mode,
-				  cost->mulss * 2 + cost->sse_op * 3,
-				  true);
+	    return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 3);
 	  else
-	    return ix86_vec_cost (mode,
-				  cost->mulss * 3 + cost->sse_op * 5,
-				  true);
+	    return ix86_vec_cost (mode, cost->mulss * 3 + cost->sse_op * 5);
 	}
       /* Without sse4.1, we don't have PMULLD; it's emulated with 7
 	 insns, including two PMULUDQ.  */
       else if (mode == V4SImode && !(TARGET_SSE4_1 || TARGET_AVX))
-	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5,
-				true);
+	return ix86_vec_cost (mode, cost->mulss * 2 + cost->sse_op * 5);
       else
-	return ix86_vec_cost (mode, cost->mulss, true);
+	return ix86_vec_cost (mode, cost->mulss);
     }
   else
     return (cost->mult_init[MODE_INDEX (mode)] + cost->mult_bit * 7);
@@ -39936,8 +39925,7 @@ ix86_division_cost (const struct processor_costs *cost,
     return cost->fdiv;
   else if (FLOAT_MODE_P (mode))
     return ix86_vec_cost (mode,
-			    inner_mode == DFmode ? cost->divsd : cost->divss,
-			    true);
+			  inner_mode == DFmode ? cost->divsd : cost->divss);
   else
     return cost->divide[MODE_INDEX (mode)];
 }
@@ -39977,20 +39965,20 @@ ix86_shift_rotate_cost (const struct processor_costs *cost,
 		  if (skip_op1)
 		    *skip_op1 = true;
 		  return ix86_vec_cost (mode,
-			    cost->sse_op
-			    + (speed
-			       ? 2
-			       : COSTS_N_BYTES
-				 (GET_MODE_UNIT_SIZE (mode))), true);
+					cost->sse_op
+					+ (speed
+					   ? 2
+					   : COSTS_N_BYTES
+					       (GET_MODE_UNIT_SIZE (mode))));
 		}
 	      count = 3;
 	    }
 	  else if (TARGET_SSSE3)
 	    count = 7;
-	  return ix86_vec_cost (mode, cost->sse_op * count, true);
+	  return ix86_vec_cost (mode, cost->sse_op * count);
 	}
       else
-	return ix86_vec_cost (mode, cost->sse_op, true);
+	return ix86_vec_cost (mode, cost->sse_op);
     }
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     {
@@ -40183,8 +40171,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
         gcc_assert (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F);
 
         *total = ix86_vec_cost (mode,
-				mode == SFmode ? cost->fmass : cost->fmasd,
-				true);
+				mode == SFmode ? cost->fmass : cost->fmasd);
 	*total += rtx_cost (XEXP (x, 1), mode, FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
@@ -40340,7 +40327,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  *total = ix86_vec_cost (mode, cost->addss, true);
+	  *total = ix86_vec_cost (mode, cost->addss);
 	  return false;
 	}
       /* FALLTHRU */
@@ -40373,14 +40360,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	}
       else if (FLOAT_MODE_P (mode))
 	{
-	  *total = ix86_vec_cost (mode, cost->sse_op, true);
+	  *total = ix86_vec_cost (mode, cost->sse_op);
 	  return false;
 	}
       /* FALLTHRU */
 
     case NOT:
       if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT)
-	*total = ix86_vec_cost (mode, cost->sse_op, true);
+	*total = ix86_vec_cost (mode, cost->sse_op);
       else if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
 	*total = cost->add * 2;
       else
@@ -40414,14 +40401,14 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
 	*total = 0;
       else
-        *total = ix86_vec_cost (mode, cost->addss, true);
+        *total = ix86_vec_cost (mode, cost->addss);
       return false;
 
     case FLOAT_TRUNCATE:
       if (!(SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH))
 	*total = cost->fadd;
       else
-        *total = ix86_vec_cost (mode, cost->addss, true);
+        *total = ix86_vec_cost (mode, cost->addss);
       return false;
 
     case ABS:
@@ -40433,7 +40420,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       else if (X87_FLOAT_MODE_P (mode))
 	*total = cost->fabs;
       else if (FLOAT_MODE_P (mode))
-	*total = ix86_vec_cost (mode, cost->sse_op, true);
+	*total = ix86_vec_cost (mode, cost->sse_op);
       return false;
 
     case SQRT:
@@ -40443,8 +40430,7 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
 	*total = cost->fsqrt;
       else if (FLOAT_MODE_P (mode))
 	*total = ix86_vec_cost (mode,
-				mode == SFmode ? cost->sqrtss : cost->sqrtsd,
-				true);
+				mode == SFmode ? cost->sqrtss : cost->sqrtsd);
       return false;
 
     case UNSPEC:
@@ -45114,8 +45100,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vector_stmt:
         return ix86_vec_cost (mode,
-			      fp ? ix86_cost->addss : ix86_cost->sse_op,
-			      true);
+			      fp ? ix86_cost->addss : ix86_cost->sse_op);
 
       case vector_load:
 	index = sse_store_index (mode);
@@ -45123,8 +45108,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (index < 0)
 	  index = 2;
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2,
-			      true);
+			      COSTS_N_INSNS (ix86_cost->sse_load[index]) / 2);
 
       case vector_store:
 	index = sse_store_index (mode);
@@ -45132,12 +45116,11 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (index < 0)
 	  index = 2;
         return ix86_vec_cost (mode,
-			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2,
-			      true);
+			      COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2);
 
       case vec_to_scalar:
       case scalar_to_vec:
-        return ix86_vec_cost (mode, ix86_cost->sse_op, true);
+        return ix86_vec_cost (mode, ix86_cost->sse_op);
 
       /* We should have separate costs for unaligned loads and gather/scatter.
 	 Do that incrementally.  */
@@ -45148,8 +45131,7 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
-				 (ix86_cost->sse_unaligned_load[index]) / 2,
-			      true);
+				 (ix86_cost->sse_unaligned_load[index]) / 2);
 
       case unaligned_store:
 	index = sse_store_index (mode);
@@ -45158,24 +45140,21 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	  index = 2;
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
-				 (ix86_cost->sse_unaligned_store[index]) / 2,
-			      true);
+				 (ix86_cost->sse_unaligned_store[index]) / 2);
 
       case vector_gather_load:
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->gather_static
 				  + ix86_cost->gather_per_elt
-				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
-			      true);
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2);
 
       case vector_scatter_store:
         return ix86_vec_cost (mode,
 			      COSTS_N_INSNS
 				 (ix86_cost->scatter_static
 				  + ix86_cost->scatter_per_elt
-				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2,
-			      true);
+				    * TYPE_VECTOR_SUBPARTS (vectype)) / 2);
 
       case cond_branch_taken:
         return ix86_cost->cond_taken_branch_cost;
@@ -45185,20 +45164,20 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_perm:
       case vec_promote_demote:
-        return ix86_vec_cost (mode,
-			      ix86_cost->sse_op, true);
+        return ix86_vec_cost (mode, ix86_cost->sse_op);
 
       case vec_construct:
 	{
-	  /* N element inserts.  */
-	  int cost = ix86_vec_cost (mode, ix86_cost->sse_op, false);
+	  gcc_assert (VECTOR_MODE_P (mode));
+	  /* N element inserts into SSE vectors.  */
+	  int cost = GET_MODE_NUNITS (mode) * ix86_cost->sse_op;
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
 	  if (GET_MODE_BITSIZE (mode) == 256)
-	    cost += ix86_vec_cost (mode, ix86_cost->addss, true);
+	    cost += ix86_vec_cost (mode, ix86_cost->addss);
 	  /* One vinserti64x4 and two vinserti128 for combining SSE
 	     and AVX256 vectors to AVX512.  */
 	  else if (GET_MODE_BITSIZE (mode) == 512)
-	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss, true);
+	    cost += 3 * ix86_vec_cost (mode, ix86_cost->addss);
 	  return cost;
 	}
 
@@ -49519,10 +49498,8 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	        stmt_cost = ix86_cost->add;
 	    }
 	  else
-	    stmt_cost = ix86_vec_cost (mode,
-				       fp ? ix86_cost->addss
-				       : ix86_cost->sse_op,
-				       true);
+	    stmt_cost = ix86_vec_cost (mode, fp ? ix86_cost->addss
+				       : ix86_cost->sse_op);
 	  break;
 
 	case MULT_EXPR:
@@ -49536,7 +49513,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	  else if (X87_FLOAT_MODE_P (mode))
 	    stmt_cost = ix86_cost->fchs;
 	  else if (VECTOR_MODE_P (mode))
-	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op, true);
+	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
 	  else
 	    stmt_cost = ix86_cost->add;
 	  break;
@@ -49585,7 +49562,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
 	  if (SSE_FLOAT_MODE_P (mode) && TARGET_SSE_MATH)
 	    stmt_cost = ix86_cost->sse_op;
 	  else if (VECTOR_MODE_P (mode))
-	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op, true);
+	    stmt_cost = ix86_vec_cost (mode, ix86_cost->sse_op);
 	  else
 	    stmt_cost = ix86_cost->add;
 	  break;
@@ -49604,8 +49581,7 @@ ix86_add_stmt_cost (void *data, int count, enum vect_cost_for_stmt kind,
       case CFN_FMA:
 	stmt_cost = ix86_vec_cost (mode,
 				   mode == SFmode ? ix86_cost->fmass
-				   : ix86_cost->fmasd,
-				   true);
+				   : ix86_cost->fmasd);
 	break;
       default:
 	break;
