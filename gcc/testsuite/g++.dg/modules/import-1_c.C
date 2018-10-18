@@ -6,7 +6,5 @@ export module Foo;
 // { dg-module-bmi "Foo" }
 
 export import Bar;
-export
-{
-  import Baz;
-}
+export import Baz;
+

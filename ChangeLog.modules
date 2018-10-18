@@ -1,5 +1,16 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	No export { import x; }
+	gcc/cp/
+	* parser.c (cp_parser_tokenize): Drop nested arg, adjust.
+	(cp_parser_translation_unit): Don't deal with outermost export { block.
+	gcc/testsuite/
+	* g++.dg/modules/err-1_a.C: Adjust.
+	* g++.dg/modules/err-1_c.C: Adjust.
+	* g++.dg/modules/import-1_c.C: Adjust.
+	* g++.dg/modules/mod-decl-1.C: Adjust.
+
+
 	No atom preamble in non-module
 	gcc/cp/
 	* parser.c (cp_parser_translation_unit): Preamble is tristate.

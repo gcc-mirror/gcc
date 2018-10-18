@@ -248,7 +248,7 @@ static cp_token_cache *cp_token_cache_new
 static void cp_parser_initial_pragma
   (cp_token *);
 static bool cp_parser_tokenize
-  (cp_parser *, bool, cp_token *next);
+  (cp_parser *, cp_token *next);
 static bool cp_parser_omp_declare_reduction_exprs
   (tree, cp_parser *);
 static void cp_finalize_oacc_routine
@@ -4562,7 +4562,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool implicit_extern_c = false;
   bool first = modules_p ();
   bool gmf = false; /* Global Module Fragment.  */
-  location_t export_loc = UNKNOWN_LOCATION;
   bool real_eof = tok->type == CPP_EOF;
   int preamble = 0; /* Not seen a preamble.  */
 
@@ -4570,7 +4569,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
  more:
   /* Tokenize until EOF or end-of-{module,import}-decl.  */
-  real_eof = cp_parser_tokenize (parser, export_loc != UNKNOWN_LOCATION, tok);
+  real_eof = cp_parser_tokenize (parser, tok);
 
   /* Parse until EOF.  */
   for (;;)
@@ -4638,32 +4637,12 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  first = false;
 	  break;
 	}
-      else if (exporting && export_loc == UNKNOWN_LOCATION
-	       && next->type == CPP_OPEN_BRACE)
-	{
-	  export_loc = token->location;
-	  push_module_export (false);
-	  cp_lexer_consume_token (parser->lexer);
-	  cp_lexer_consume_token (parser->lexer);
-	  if (preamble > 0)
-	    preamble = -1;
-	}
       else if (token->type == CPP_CLOSE_BRACE)
 	{
-	  bool consume = export_loc != UNKNOWN_LOCATION;
-	  if (consume)
-	    {
-	      export_loc = UNKNOWN_LOCATION;
-	      pop_module_export (0);
-	    }
-	  else
-	    {
-	      cp_parser_error (parser, "expected declaration");
-	      cp_lexer_consume_token (parser->lexer);
-	      /* If the next token is now a `;', consume it.  */
-	      consume = cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON);
-	    }
-	  if (consume)
+	  cp_parser_error (parser, "expected declaration");
+	  cp_lexer_consume_token (parser->lexer);
+	  /* If the next token is now a `;', consume it.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	    cp_lexer_consume_token (parser->lexer);
 	  if (preamble > 0)
 	    preamble = -1;
@@ -4694,11 +4673,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
   /* We may have ended on a deferred import.  */
   process_deferred_imports (parse_in);
-  if (export_loc)
-    {
-      error_at (export_loc, "unterminated export declaration");
-      pop_module_export (0);
-    }
 
   /* Get rid of the token array; we don't need it any more.  */
   cp_lexer_destroy (parser->lexer);
@@ -39298,17 +39272,15 @@ pragma_lex (tree *value, location_t *loc)
 }
 
 /* Tokenize until we've got to EOF (return true), or we've just gone
-   past an unnested module or import declaration.  PROCESS_IMPORTS is
-   true if there might be pending imports to process.  */
+   past an unnested module or import declaration.  */
 
 static bool
-cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
+cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 {
-  unsigned depth = nested_p;
+  unsigned depth = 0;
   bool eof = false;
   bool maybe_decl = false;
   bool pending_imports = true;
-  bool was_export = false;
 
   unsigned ix = 0;
   if (cp_token *last = parser->lexer->last_token)
@@ -39332,8 +39304,6 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	    break;
 
 	  depth++;
-	  if (was_export)
-	    nested_p = true;
 	}
       else if (tok->type == CPP_CLOSE_BRACE)
 	{
@@ -39341,24 +39311,18 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	    break;
 
 	  if (depth)
-	    {
-	      depth--;
-	      if (!depth)
-		nested_p = false;
-	    }
-	  was_export = false;
+	    depth--;
 	}
       else if (tok->type == CPP_SEMICOLON)
 	{
 	  if (maybe_decl)
 	    break;
-	  was_export = false;
 	}
       else if (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT)
 	{
 	  if (maybe_decl)
 	    break;
-	  if (depth <= int (nested_p))
+	  if (!depth)
 	    {
 	      maybe_decl = true;
 	      pending_imports = false;
@@ -39370,21 +39334,18 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
 					   | C_LEX_STRING_IS_HEADER, tok);
 	  cpp_enable_filename_token (parse_in, false);
-	  was_export = false;
 	  continue;
 	}
       else if (tok->keyword == RID_EXPORT)
 	{
 	  if (maybe_decl)
 	    break;
-	  was_export = true;
 	}
       else
 	{
 	  if (pending_imports)
 	    process_deferred_imports (parse_in);
 	  pending_imports = false;
-	  was_export = false;
 	}
 
       /* Get the next token.  */

@@ -4,6 +4,8 @@ module;
 export module frist;
 // { dg-module-bmi "!frist" }
 
+import frist; // { dg-error {cannot import module.* in its own purview} }
+
 module foo.second; // { dg-error "expected" }
 
 namespace Foo 
@@ -23,6 +25,5 @@ void Bink ()
 
 module a.; // { dg-error "expected" }
 
-import frist; // { dg-error {cannot import module.* in its own purview} }
 
 // { dg-warning "not exporting module" "" { target *-*-* } 0 }
