@@ -40171,7 +40171,8 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
         gcc_assert (TARGET_FMA || TARGET_FMA4 || TARGET_AVX512F);
 
         *total = ix86_vec_cost (mode,
-				mode == SFmode ? cost->fmass : cost->fmasd);
+				GET_MODE_INNER (mode) == SFmode
+				? cost->fmass : cost->fmasd);
 	*total += rtx_cost (XEXP (x, 1), mode, FMA, 1, speed);
 
         /* Negate in op0 or op2 is free: FMS, FNMA, FNMS.  */
