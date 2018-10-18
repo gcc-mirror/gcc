@@ -1,5 +1,9 @@
 2018-10-18  Richard Biener  <rguenther@suse.de>
 
+	* config/i386/i386.c: Fix costing of vector FMA.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
 	* config/i386/i386.c (ix86_vec_cost): Remove !parallel path
 	and argument.
 	(ix86_builtin_vectorization_cost): For vec_construct properly
