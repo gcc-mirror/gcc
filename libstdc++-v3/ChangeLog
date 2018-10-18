@@ -1,3 +1,15 @@
+2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87641
+	* include/bits/valarray_array.h (__valarray_sum): Use first element
+	to initialize accumulator instead of value-initializing it.
+	(__valarray_product<_Tp>): Move to ...
+	* src/c++98/valarray.cc (__valarray_product<_Tp>): Here. Use first
+	element to initialize accumulator.
+	(__valarray_product(const valarray<size_t>&)): Remove const_cast made
+	unnecessary by LWG 389.
+	* testsuite/26_numerics/valarray/87641.cc: New test.
+
 2018-10-18  François Dumont  <fdumont@gcc.gnu.org>
 
 	Partial revert.
