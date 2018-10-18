@@ -10892,7 +10892,7 @@ Named_type::export_named_type(Export* exp, const std::string&) const
   // be written by Export::write_type anyhow.
   exp->write_c_string("type ");
   exp->write_type(this);
-  exp->write_c_string(";\n");
+  exp->write_c_string("\n");
 }
 
 // Import a named type.
@@ -10904,7 +10904,8 @@ Named_type::import_named_type(Import* imp, Named_type** ptype)
   Type *type = imp->read_type();
   *ptype = type->named_type();
   go_assert(*ptype != NULL);
-  imp->require_c_string(";\n");
+  imp->require_semicolon_if_old_version();
+  imp->require_c_string("\n");
 }
 
 // Export the type when it is referenced by another type.  In this
