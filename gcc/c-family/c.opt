@@ -1544,12 +1544,12 @@ C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fmodules-ts
-C++ ObjC++ RejectNegative VAR(flag_modules)
-Enable c++ modules-ts (experimental).
+C++ ObjC++ RejectNegative
+Enable C++ modules-ts (experimental).
 
 fmodules-atom
-C++ ObjC++ RejectNegative
-Enable C++ modules-atom (experimental)
+C++ ObjC++ Undocumented Alias(fmodules-ts)
+;; deprecated
 
 fno-modules
 C++ ObjC++ Undocumented RejectNegative Var(flag_modules,0) Integer
@@ -1560,7 +1560,7 @@ C++ ObjC RejectNegative Var(flag_module_only) Integer
 Only emit Binary Module Interface.
 
 fmodule-legacy
-C++ ObjC Undocumented RejectNegative Var(flag_modules,-2)
+C++ ObjC Undocumented RejectNegative
 Enable C++ legacy module (experimental).
 
 fmodule-legacy=

@@ -2551,14 +2551,11 @@ controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
 @item -fmodules-ts
-@itemx -fmodules-atom
 @itemx -fno-modules
 @opindex fmodules-ts
-@opindex fmodules-atom
 @opindex fno-modules
 Enable experimental support for n4720:``Working Draft, Extensions to
-C++ for Modules'' or for p0947:``Another Take On Modules''.  See
-@pxref{C++ Modules} for more details.  The @option{-fno-modules} is
+C++ for Modules'' via p1103r1 ``Merging Modules'' The @option{-fno-modules} is
 usually not needed, as that is the default.  For now.
 
 @item -fno-module-lazy
@@ -29747,10 +29744,10 @@ schemes, which overlap to some extent:
 
 @end itemize
 
-Enable with either @option{-fmodules-ts} or @option{-fmodules-atom}.
-@emph{Modules support is a work in progress.  The implementation is
-not complete, and the specification is a moving target.  Syntax,
-semantics and command-line options are not stable.}
+Enable with @option{-fmodules-ts}.  @emph{Modules support is a work in
+progress.  The implementation is not complete, and the specification
+is a moving target.  Syntax, semantics and command-line options are
+not stable.}
 
 A module interface unit creates a Binary Module Interface (BMI) file,
 encoding the exported declarations of the module.  Importing a module

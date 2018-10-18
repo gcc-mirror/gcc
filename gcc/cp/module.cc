@@ -26,9 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* (Incomplete) Design Notes
 
-   There are two different modules proposal, TS and ATOM.  Supporting
-   both causes complications, but such is the price of
-   experimentation.  You may not mix compilations of the two schemes.
+   The merged modules proposal, p1103r1, allows me to drop support for
+   two different schemes.
    
    Each namespace-scope and container-like decl has a MODULE_OWNER.
    This is MODULE_NONE for the global module, MODULE_PURVIEW for the
@@ -134,8 +133,7 @@ Classes used:
    is unavailable, fileno IO is used to read and write blocks of data.
 
    The mapper object uses fileno IO to communicate with the server or
-   program.  We batch requests in ATOM mode to reduce the number of
-   round trips.
+   program.
 
    I have a confession: tri-valued bools are not the worst thing in
    this file.  */
@@ -10892,7 +10890,6 @@ module_state_config::get_opts ()
 	  || opt->opt_index == OPT_fforce_module_macros
 	  || opt->opt_index == OPT_fmodule_mapper_
 	  || opt->opt_index == OPT_fmodule_only
-	  || opt->opt_index == OPT_fmodules_atom
 	  || opt->opt_index == OPT_fmodules_ts)
 	continue;
 
@@ -12545,9 +12542,8 @@ handle_module_option (unsigned code, const char *str, int)
   switch (opt_code (code))
     {
     case OPT_fmodules_ts:
-    case OPT_fmodules_atom:
       /* Don't drop out of legacy mode.  */
-      if (flag_modules >= 0)
+      if (!flag_modules)
 	flag_modules = +1;
       return true;
 
@@ -12557,7 +12553,6 @@ handle_module_option (unsigned code, const char *str, int)
 
     case OPT_fmodule_legacy_:
       {
-	/* Default ATOM legacy.  */
 	size_t len = strlen (str);
 	const char *cookie = (const char *)memchr (str, '?', len);
 
@@ -12581,7 +12576,7 @@ handle_module_option (unsigned code, const char *str, int)
 	      module_legacy_name = str;
 	  }
 
-	flag_modules = -2;
+	flag_modules = -1;
       }
       return true;
 

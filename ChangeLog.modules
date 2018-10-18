@@ -1,5 +1,16 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	Expunge -fmodules-atom as a thing.
+	gcc/
+	* doc/invoke.texi (fmodules-atom): Delete.
+	gcc/cp/
+	* cp-tree.h (modules_legacy_p): Adjust.
+	* module.cc: Expunge OPT_fmodules-atom.
+	gcc/c-family/
+	* c.opt (fmodules-ts): Adjust.
+	(fmodules-atom): Alias fmodules-ts
+	(fmodule-legacy*): Adjust.
+
 	gcc/testuite/
 	* g++.dg/modules/modules.exp (mode-list): Delete.
 	(main): Don't use mode-list.
