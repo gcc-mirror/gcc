@@ -1,3 +1,10 @@
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87087
+	* gcc.dg/torture/pr87087.c: New testcase.
+	* gcc.dg/graphite/pr84204.c: XFAIL.
+	* gcc.dg/graphite/pr85935.c: Likewise.
+
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87537

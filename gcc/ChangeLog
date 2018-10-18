@@ -1,3 +1,13 @@
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87087
+	Revert
+	2018-02-07  Richard Biener  <rguenther@suse.de>
+
+        PR tree-optimization/84204
+        * tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
+        this place.
+
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87537
