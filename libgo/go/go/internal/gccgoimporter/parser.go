@@ -832,6 +832,7 @@ func (p *parser) parseInitDataDirective() {
 //             "pkgpath" unquotedString ";" |
 //             "prefix" unquotedString ";" |
 //             "import" unquotedString unquotedString string ";" |
+//             "indirectimport" unquotedString unquotedstring ";" |
 //             "func" Func ";" |
 //             "type" Type ";" |
 //             "var" Var ";" |
@@ -873,6 +874,13 @@ func (p *parser) parseDirective() {
 		pkgpath := p.parseUnquotedString()
 		p.getPkg(pkgpath, pkgname)
 		p.parseString()
+		p.expectEOL()
+
+	case "indirectimport":
+		p.next()
+		pkgname := p.parseUnquotedString()
+		pkgpath := p.parseUnquotedString()
+		p.getPkg(pkgpath, pkgname)
 		p.expectEOL()
 
 	case "func":
