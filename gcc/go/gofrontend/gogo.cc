@@ -6492,7 +6492,8 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
       // If an interface conversion is needed, we need a temporary
       // variable.
       if (this->type_ != NULL
-	  && !Type::are_identical(this->type_, this->init_->type(), false,
+	  && !Type::are_identical(this->type_, this->init_->type(),
+				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 				  NULL)
 	  && this->init_->type()->interface_type() != NULL
 	  && !this->init_->is_variable())
