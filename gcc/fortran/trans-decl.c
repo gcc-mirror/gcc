@@ -1762,7 +1762,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       gfc_finish_var_decl (length, sym);
       if (!sym->attr.associate_var
 	  && TREE_CODE (length) == VAR_DECL
-	  && sym->value && sym->value->ts.u.cl->length)
+	  && sym->value && sym->value->expr_type != EXPR_NULL
+	  && sym->value->ts.u.cl->length)
 	{
 	  gfc_expr *len = sym->value->ts.u.cl->length;
 	  DECL_INITIAL (length) = gfc_conv_initializer (len, &len->ts,
@@ -1772,7 +1773,7 @@ gfc_get_symbol_decl (gfc_symbol * sym)
 						DECL_INITIAL (length));
 	}
       else
-	gcc_assert (!sym->value);
+	gcc_assert (!sym->value || sym->value->expr_type == EXPR_NULL);
     }
 
   gfc_finish_var_decl (decl, sym);
