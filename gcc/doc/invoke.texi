@@ -14860,16 +14860,16 @@ Print the compiler's target machine (for example,
 @item -dumpversion
 @opindex dumpversion
 Print the compiler version (for example, @code{3.0}, @code{6.3.0} or @code{7})---and don't do
-anything else.  This is the compiler version used in filesystem paths,
-specs, can be depending on how the compiler has been configured just
-a single number (major version), two numbers separated by dot (major and
+anything else.  This is the compiler version used in filesystem paths and
+specs. Depending on how the compiler has been configured it can be just
+a single number (major version), two numbers separated by a dot (major and
 minor version) or three numbers separated by dots (major, minor and patchlevel
 version).
 
 @item -dumpfullversion
 @opindex dumpfullversion
-Print the full compiler version, always 3 numbers separated by dots,
-major, minor and patchlevel version.
+Print the full compiler version---and don't do anything else. The output is
+always three numbers separated by dots, major, minor and patchlevel version.
 
 @item -dumpspecs
 @opindex dumpspecs
