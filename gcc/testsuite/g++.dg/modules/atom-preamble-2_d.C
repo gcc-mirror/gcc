@@ -1,4 +1,3 @@
-// { dg-additional-options -fmodules-atom }
 import kevin;
 
 #if 1

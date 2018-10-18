@@ -12848,7 +12848,7 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
 
   if (!mod)
     ;
-  else if (modules_atom_p () && past_preamble)
+  else if (past_preamble)
     error_at (token->location,
 	      "module import declarations must be within preamble");
   else

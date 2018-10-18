@@ -1,4 +1,3 @@
-// { dg-additional-options -fmodules-atom }
 
 #define import import
 import malcolm;

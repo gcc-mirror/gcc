@@ -1,5 +1,22 @@
 2018-10-18  Nathan Sidwell  <nathan@acm.org>
 
+	Preamble on module
+	gcc/cp/
+	* parser.c (cp_parser_import_declaration): Always check past_preamble.
+	gcc/testsuite/
+	* g++.dg/modules/atom-norescan-1.C: Delete.
+	* g++.dg/modules/atom-pragma-1.C: Not atom-specific.
+	* g++.dg/modules/atom-pragma-3.C: Likewise.
+	* g++.dg/modules/atom-preamble-1.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_a.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_b.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_c.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_d.C: Likewise.
+	* g++.dg/modules/atom-preamble-2_e.C: Likewise.
+	* g++.dg/modules/atom-preamble-3.C: Likewise.
+	* g++.dg/modules/atom-preamble-4.C: Likewise.
+	* g++.dg/modules/mod-indirect-1_b.C: Adjust.
+
 	No export { import x; }
 	gcc/cp/
 	* parser.c (cp_parser_tokenize): Drop nested arg, adjust.

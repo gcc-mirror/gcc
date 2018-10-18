@@ -1,4 +1,3 @@
-// { dg-additional-options -fmodules-atom }
 
 #define malcolm kevin
 export module malcolm;
