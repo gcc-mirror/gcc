@@ -1,3 +1,15 @@
+2018-10-18  Nathan Sidwell  <nathan@acm.org>
+
+	No atom preamble in non-module
+	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Preamble is tristate.
+	(cp_parser_module_name): Add FOR_MODULE arg, issue error.
+	(cp_parser_module_declaration): Adjust.
+	(cp_parser_import_declaration): Adjust twice.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-[23].C: Adjust.
+	* g++.dg/modules/legacy-6_f.C: Remove XFAIL.
+
 2018-10-17  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/testsuite/

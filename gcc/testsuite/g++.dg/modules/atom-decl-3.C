@@ -1,4 +1,7 @@
 // { dg-options "-fmodules-atom" }
 
 int i;
-import baz; // { dg-error "must be within module preamble" }
+import baz;
+// { dg-error "failed to read" "" { target *-*-* } 0 }
+// { dg-prune-output "fatal error:" }
+// { dg-prune-output "compilation terminated" }

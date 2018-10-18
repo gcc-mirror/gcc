@@ -2,6 +2,6 @@
 
 export module thing;
 int i;
-import baz; // { dg-error "must be within module preamble" }
+import baz; // { dg-error "must be within preamble" }
 
 // { dg-warning "not exporting module" "" { target *-*-* } 0 }

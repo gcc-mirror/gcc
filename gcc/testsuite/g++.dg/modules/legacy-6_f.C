@@ -2,5 +2,5 @@
 
 #include "legacy-6_a.H"
 int i;
-#include "legacy-6_b.H" // { dg-bogus "" "" { xfail *-*-* } }
+#include "legacy-6_b.H"
 

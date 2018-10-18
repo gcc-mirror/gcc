@@ -2088,7 +2088,7 @@ static void cp_parser_already_scoped_statement
 static void cp_parser_module_declaration
   (cp_parser *parser, bool exporting);
 static void cp_parser_import_declaration
-  (cp_parser *parser, bool exporting, bool preamble_p);
+  (cp_parser *parser, bool exporting, bool past_preamble);
 
 /* Declarations [gram.dcl.dcl] */
 
@@ -4564,7 +4564,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
   bool gmf = false; /* Global Module Fragment.  */
   location_t export_loc = UNKNOWN_LOCATION;
   bool real_eof = tok->type == CPP_EOF;
-  bool preamble = false;
+  int preamble = 0; /* Not seen a preamble.  */
 
   parser->lexer->last_token = NULL;
 
@@ -4625,18 +4625,16 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      if (exporting)
 		cp_lexer_consume_token (parser->lexer);
 	      cp_parser_module_declaration (parser, exporting);
-	      preamble = true;
+	      preamble = +1; /* In preamble.  */
 	    }
 	  first = false;
 	  break;
 	}
       else if (next->keyword == RID_IMPORT)
 	{
-	  if (first)
-	    preamble = true;
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_import_declaration (parser, exporting, preamble);
+	  cp_parser_import_declaration (parser, exporting, preamble < 0);
 	  first = false;
 	  break;
 	}
@@ -4647,7 +4645,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  push_module_export (false);
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
-	  preamble = false;
+	  if (preamble > 0)
+	    preamble = -1;
 	}
       else if (token->type == CPP_CLOSE_BRACE)
 	{
@@ -4666,12 +4665,14 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  if (consume)
 	    cp_lexer_consume_token (parser->lexer);
-	  preamble = false;
+	  if (preamble > 0)
+	    preamble = -1;
 	}
       else
 	{
 	  cp_parser_toplevel_declaration (parser);
-	  preamble = false;
+	  if (preamble > 0)
+	    preamble = -1;
 	}
       first = false;
     }
@@ -12808,12 +12809,18 @@ cp_parser_already_scoped_statement (cp_parser* parser, bool *if_p,
    Returns a pointer to module object, NULL.   */
 
 static module_state *
-cp_parser_module_name (cp_parser *parser)
+cp_parser_module_name (cp_parser *parser, bool for_module)
 {
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
     {
-      tree name = cp_lexer_consume_token (parser->lexer)->u.value;
-      return get_module (name, NULL);
+      cp_token *token = cp_lexer_consume_token (parser->lexer);
+
+      if (!for_module)
+	return get_module (token->u.value, NULL);
+
+      error_at (token->location,
+		"legacy module cannot be explicitly declared");
+      return NULL;
     }
 
   for (module_state *parent = NULL;; cp_lexer_consume_token (parser->lexer))
@@ -12839,13 +12846,13 @@ static void
 cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  module_state *mod = cp_parser_module_name (parser);
+  module_state *mod = cp_parser_module_name (parser, true);
   tree attrs = cp_parser_attributes_opt (parser);
 
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
   /* Don't try and resync after error, because we're probably due
      another tokenize call.  */
-  
+
   if (mod)
     declare_module (mod, token->location, exporting, attrs, parse_in);
 }
@@ -12854,21 +12861,22 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting)
    import module-name attr-spec-seq-opt ; */
 
 static void
-cp_parser_import_declaration (cp_parser *parser, bool exporting, bool preamble_p)
+cp_parser_import_declaration (cp_parser *parser, bool exporting,
+			      bool past_preamble)
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
-  module_state *mod = cp_parser_module_name (parser);
+  module_state *mod = cp_parser_module_name (parser, false);
   tree attrs = cp_parser_attributes_opt (parser);
 
   cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
   /* Don't try and resync after error, because we're probably due
      another tokenize call.  */
-  
+
   if (!mod)
     ;
-  else if (modules_atom_p () && !preamble_p)
+  else if (modules_atom_p () && past_preamble)
     error_at (token->location,
-	      "import declaration must be within module preamble");
+	      "module import declarations must be within preamble");
   else
     import_module (mod, token->location, exporting, attrs, parse_in);
 }
@@ -39355,6 +39363,9 @@ cp_parser_tokenize (cp_parser *parser, bool nested_p, cp_token *tok)
 	      maybe_decl = true;
 	      pending_imports = false;
 	    }
+	  /* Always lex a "" or <> next, even though the user cannot
+	     declare a legacy module explicitly.  Give a better error
+  	     parssing the module decl.  */
 	  cpp_enable_filename_token (parse_in, true);
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
 					   | C_LEX_STRING_IS_HEADER, tok);
