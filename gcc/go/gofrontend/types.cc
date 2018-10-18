@@ -5441,8 +5441,9 @@ Type::make_nil_type()
 class Call_multiple_result_type : public Type
 {
  public:
-  Call_multiple_result_type()
-    : Type(TYPE_CALL_MULTIPLE_RESULT)
+  Call_multiple_result_type(Call_expression* call)
+    : Type(TYPE_CALL_MULTIPLE_RESULT),
+      call_(call)
   { }
 
  protected:
@@ -5475,14 +5476,18 @@ class Call_multiple_result_type : public Type
   void
   do_mangled_name(Gogo*, std::string*) const
   { go_assert(saw_errors()); }
+
+ private:
+  // The expression being called.
+  Call_expression* call_;
 };
 
 // Make a call result type.
 
 Type*
-Type::make_call_multiple_result_type()
+Type::make_call_multiple_result_type(Call_expression* call)
 {
-  return new Call_multiple_result_type();
+  return new Call_multiple_result_type(call);
 }
 
 // Class Struct_field.
