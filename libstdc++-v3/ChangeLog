@@ -1,5 +1,14 @@
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87642
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<char, true>::_M_initialize_moneypunct): Use
+	__narrow_multibyte_chars to convert multibyte thousands separators
+	to a single char.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<char>::_M_initialize_numpunct): Likewise.
+	(__narrow_multibyte_chars): New function.
+
 	PR libstdc++/87641
 	* include/bits/valarray_array.h (__valarray_sum): Use first element
 	to initialize accumulator instead of value-initializing it.
