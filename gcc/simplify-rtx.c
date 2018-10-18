@@ -6601,6 +6601,21 @@ simplify_subreg (machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
+  /* Return X for
+	(subreg (vec_merge (vec_duplicate X)
+			   (vector)
+			   (const_int ((1 << N) | M)))
+		(N * sizeof (X)))
+   */
+  unsigned int idx;
+  if (constant_multiple_p (byte, GET_MODE_SIZE (outermode), &idx)
+      && GET_CODE (op) == VEC_MERGE
+      && GET_CODE (XEXP (op, 0)) == VEC_DUPLICATE
+      && GET_MODE (XEXP (XEXP (op, 0), 0)) == outermode
+      && CONST_INT_P (XEXP (op, 2))
+      && (UINTVAL (XEXP (op, 2)) & (HOST_WIDE_INT_1U << idx)) != 0)
+    return XEXP (XEXP (op, 0), 0);
+
   /* A SUBREG resulting from a zero extension may fold to zero if
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
   if (GET_CODE (op) == ZERO_EXTEND && SCALAR_INT_MODE_P (innermode))
@@ -6831,15 +6846,27 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 		     simplify_binary_operation (VEC_SELECT, inner_mode,
 						duplicate, zero_par));
 
-  /* And again with the final element.  */
   unsigned HOST_WIDE_INT const_nunits;
   if (nunits.is_constant (&const_nunits))
     {
+      /* And again with the final element.  */
       rtx last_index = gen_int_mode (const_nunits - 1, word_mode);
       rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
       ASSERT_RTX_PTR_EQ (scalar_reg,
 			 simplify_binary_operation (VEC_SELECT, inner_mode,
 						    duplicate, last_par));
+
+      /* Test a scalar subreg of a VEC_MERGE of a VEC_DUPLICATE.  */
+      rtx vector_reg = make_test_reg (mode);
+      for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+	{
+	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
+	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
+	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
+	  ASSERT_RTX_EQ (scalar_reg,
+			 simplify_gen_subreg (inner_mode, vm,
+					      mode, offset));
+	}
     }
 
   /* Test a scalar subreg of a VEC_DUPLICATE.  */

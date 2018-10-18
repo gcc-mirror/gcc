@@ -1,3 +1,8 @@
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87537
+	* gcc.target/i386/pr87537-1.c: New test.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* gcc.dg/c11-static-assert-7.c, gcc.dg/c11-static-assert-8.c,

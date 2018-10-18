@@ -1,3 +1,11 @@
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87537
+	* simplify-rtx.c (simplify_subreg): Simplify subreg of vec_merge
+	of vec_duplicate.
+	(test_vector_ops_duplicate): Add test for a scalar subreg of a
+	VEC_MERGE of a VEC_DUPLICATE.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* doc/cpp.texi (__STDC_VERSION__): Document C2X handling.
