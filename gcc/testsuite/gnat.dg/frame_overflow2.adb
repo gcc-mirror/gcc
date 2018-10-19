@@ -2,7 +2,7 @@
 
 with System;
 
-procedure Frame_Overflow2 is -- { dg-error "too large" }
+procedure Frame_Overflow2 is -- { dg-error "total size of local objects is too large" }
 
   type Index_T is range 1 .. 2**(System.Word_Size - 1) - 1;
 
