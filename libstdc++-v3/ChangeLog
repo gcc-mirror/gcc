@@ -1,3 +1,13 @@
+2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/debug/map.h (map::erase(iterator)): Add abi-tag so that
+	C++11 version mangles differently from incompatible C++98 version.
+	* include/debug/multimap.h (multimap::erase(iterator)): Likewise.
+	* include/debug/multiset.h (multiset::erase(iterator))
+	(multiset::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h (set::erase(iterator))
+	(multiset::erase(const_iterator, const_iterator)): Likewise.
+
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/duration/cons/2.cc: Add -ffloat-store to fix
