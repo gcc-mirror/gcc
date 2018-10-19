@@ -2,6 +2,7 @@
 // { dg-require-c-std "" }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
 // { dg-add-options ieee }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //

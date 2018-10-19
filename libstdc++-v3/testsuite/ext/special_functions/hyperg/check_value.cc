@@ -1,6 +1,7 @@
 // { dg-do run { target c++11 } }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__ -ffp-contract=off" }
 // { dg-additional-options "-ffloat-store" { target { m68*-*-* || ia32 } } }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 //
 // Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //
