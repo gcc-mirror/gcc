@@ -1,5 +1,11 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/regex_executor.tcc (_Backref_matcher::_M_apply): Use
+	_GLIBCXX_STD_A to refer to normal mode algorithms.
+	* testsuite/28_regex/headers/regex/parallel_mode.cc: New test.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Remove empty
+	whitespace.
+
 	* include/debug/map.h (map::erase(iterator)): Add abi-tag so that
 	C++11 version mangles differently from incompatible C++98 version.
 	* include/debug/multimap.h (multimap::erase(iterator)): Likewise.
