@@ -1,3 +1,9 @@
+2018-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Add ux.texi.
+	* doc/gccint.texi: Include ux.texi and use it in top-level menu.
+	* doc/ux.texi: New file.
+
 2018-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.h (REG_ALLOC_ORDER): Move 68 (that is, CR0) to
