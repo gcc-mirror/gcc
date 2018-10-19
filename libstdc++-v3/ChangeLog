@@ -1,5 +1,17 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5_c++0x.cc: Remove redundant test that is functionally identical to
+	the 5.cc test.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+
 	* include/bits/regex_executor.tcc (_Backref_matcher::_M_apply): Use
 	_GLIBCXX_STD_A to refer to normal mode algorithms.
 	* testsuite/28_regex/headers/regex/parallel_mode.cc: New test.
