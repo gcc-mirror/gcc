@@ -1,3 +1,8 @@
+2018-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER): Move 68 (that is, CR0) to
+	be the first CR field allocated.
+
 2018-10-19  Richard Biener  <rguenther@suse.de>
 
 	PR target/87657
