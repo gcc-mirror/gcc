@@ -1,3 +1,7 @@
+2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/frame_overflow2.adb: New test.
+
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782

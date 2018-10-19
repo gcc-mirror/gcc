@@ -1,3 +1,9 @@
+2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_one_var): Use specific wording in error message
+	for non-local frame variables.
+	* stor-layout.c (layout_decl): Do not issue a warning for them.
+
 2018-10-19  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* haifa-sched.c (priority): Add force_recompute parameter.
