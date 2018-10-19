@@ -75,12 +75,8 @@ should_export(Named_object* no)
   if (Gogo::is_hidden_name(no->name()))
     return false;
 
-  // We don't export nested functions.
-  if (no->is_function() && no->func_value()->enclosing() != NULL)
-    return false;
-
-  // We don't export thunks.
-  if (no->is_function() && Gogo::is_thunk(no))
+  // We don't export various special functions.
+  if (Gogo::is_special_name(no->name()))
     return false;
 
   // Methods are exported with the type, not here.
