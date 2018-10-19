@@ -1,3 +1,8 @@
+2018-10-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/87596
+	* gcc.target/i386/pr87596.c: New test.
+
 2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/frame_overflow2.adb: New test.

@@ -1,3 +1,10 @@
+2018-10-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/87596
+	* lra-constraints.c (spill_hard_reg_in_range): Use INSN_P () +
+	lra_get_insn_recog_data () instead of lra_insn_recog_data[]
+	for instructions in FROM..TO range.
+
 2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* cfgexpand.c (expand_one_var): Use specific wording in error message
