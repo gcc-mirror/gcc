@@ -1,3 +1,7 @@
+2018-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/doacross-1.C: New test.
+
 2018-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-1.c (foo): Add ntm argument and

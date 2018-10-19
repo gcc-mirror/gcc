@@ -36139,6 +36139,11 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 		    pre_body = this_pre_body;
 		}
 
+	      if (ordered_cl)
+		error_at (OMP_CLAUSE_LOCATION (ordered_cl),
+			  "%<ordered%> clause with parameter on "
+			  "range-based %<for%> loop");
+
 	      goto parse_close_paren;
 	    }
 	}
