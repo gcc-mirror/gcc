@@ -1,3 +1,10 @@
+2018-10-19  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/vec-init-1.C: New test.
+
 2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/pr87623.c: New test.
