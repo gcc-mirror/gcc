@@ -39326,28 +39326,27 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	    break;
 	  is_decl = 0;
 	}
-      else if (is_decl >= 0
-	       && (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT))
-	{
-	  if (is_decl > 0)
-	    break;
-
-	  if (!depth)
-	    is_decl = +1;
-
-	  /* Always lex a "" or <> next, even though the user cannot
-	     declare a legacy module explicitly.  Give a better error
-  	     parssing the module decl.  */
-	  cpp_enable_filename_token (parse_in, true);
-	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
-					   | C_LEX_STRING_IS_HEADER, tok);
-	  cpp_enable_filename_token (parse_in, false);
-	  continue;
-	}
       else if (tok->keyword == RID_EXPORT)
 	{
 	  if (is_decl > 0)
 	    break;
+	}
+      else if (is_decl < 0)
+	;
+      else if (tok->keyword == RID_MODULE || tok->keyword == RID_IMPORT)
+	{
+	  if (is_decl > 0)
+	    break;
+
+	  /* Always lex a "" or <> next, even though the user cannot
+	     declare a legacy module explicitly.  Give a better error
+  	     parsing the module decl.  */
+	  cpp_enable_filename_token (parse_in, true);
+	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
+					   | C_LEX_STRING_IS_HEADER, tok);
+	  cpp_enable_filename_token (parse_in, false);
+	  is_decl = depth ? -1 : +1;
+	  continue;
 	}
       else if (!is_decl)
 	is_decl = -1;
