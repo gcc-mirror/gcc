@@ -1,3 +1,9 @@
+2018-10-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* haifa-sched.c (priority): Add force_recompute parameter.
+	(apply_replacement): Call priority () with force_recompute = true.
+	(restore_pattern): Likewise.
+
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* simplify-rtx.c (simplify_subreg): Limit mask of vec_merge to
