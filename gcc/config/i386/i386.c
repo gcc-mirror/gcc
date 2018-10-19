@@ -45173,9 +45173,8 @@ ix86_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 
       case vec_construct:
 	{
-	  gcc_assert (VECTOR_MODE_P (mode));
 	  /* N element inserts into SSE vectors.  */
-	  int cost = GET_MODE_NUNITS (mode) * ix86_cost->sse_op;
+	  int cost = TYPE_VECTOR_SUBPARTS (vectype) * ix86_cost->sse_op;
 	  /* One vinserti128 for combining two SSE vectors for AVX256.  */
 	  if (GET_MODE_BITSIZE (mode) == 256)
 	    cost += ix86_vec_cost (mode, ix86_cost->addss);
