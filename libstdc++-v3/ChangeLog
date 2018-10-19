@@ -1,5 +1,15 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/deque/48101_neg.cc: Prune additional errors
+	printed when __STRICT_ANSI__ is defined.
+	* testsuite/23_containers/forward_list/48101_neg.cc: Likewise.
+	* testsuite/23_containers/list/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/vector/48101_neg.cc: Likewise.
+
 	* testsuite/23_containers/forward_list/requirements/
 	explicit_instantiation/5.cc [__STRICT_ANSI__]: Don't test non-standard
 	extension.
