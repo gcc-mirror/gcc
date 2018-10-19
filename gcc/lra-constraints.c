@@ -5696,12 +5696,15 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
 	continue;
       for (insn = from; insn != NEXT_INSN (to); insn = NEXT_INSN (insn))
 	{
-	  lra_insn_recog_data_t id = lra_insn_recog_data[uid = INSN_UID (insn)];
-	  struct lra_static_insn_data *static_id = id->insn_static_data;
+	  struct lra_static_insn_data *static_id;
 	  struct lra_insn_reg *reg;
 
-	  if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap, uid))
+	  if (!INSN_P (insn))
+	      continue;
+	  if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap,
+			    INSN_UID (insn)))
 	    break;
+	  static_id = lra_get_insn_recog_data (insn)->insn_static_data;
 	  for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
 	    if (reg->regno == hard_regno)
 	      break;
