@@ -1,3 +1,13 @@
+2018-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1):
+	Replace nonimmediate_operand with register_operand.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+
 2018-10-19  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR rtl-optimization/87596
