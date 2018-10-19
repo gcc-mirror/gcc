@@ -39,7 +39,7 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  typedef propagating_allocator<T, false> alloc_type;
+  typedef propagating_allocator<std::pair<const T, T>, false> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,
@@ -51,7 +51,7 @@ void test01()
 
 void test02()
 {
-  typedef propagating_allocator<T, true> alloc_type;
+  typedef propagating_allocator<std::pair<const T, T>, true> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,
@@ -63,7 +63,7 @@ void test02()
 
 void test03()
 {
-  typedef propagating_allocator<T, true> alloc_type;
+  typedef propagating_allocator<std::pair<const T, T>, true> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   v1.emplace(std::piecewise_construct,

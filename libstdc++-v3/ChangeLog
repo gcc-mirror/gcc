@@ -1,5 +1,50 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/scoped_allocator/1.cc: Use allocator with correct
+	value type for the container.
+	* testsuite/23_containers/forward_list/cons/14.cc: Likewise.
+	* testsuite/23_containers/map/56613.cc: Likewise.
+	* testsuite/23_containers/unordered_map/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/cons/81891.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	generation_prohibited.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	generation_prohibited.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/ext/malloc_allocator/sanity.cc: Likewise.
+
 	* ext/special_functions/airy_ai/check_nan.cc: Skip test for
 	non-standard extension when a strict -std=c++NN dialect is used.
 	* ext/special_functions/airy_ai/check_value.cc: Likewise.
