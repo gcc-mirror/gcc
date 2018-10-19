@@ -6744,11 +6744,16 @@ s390_expand_vec_init (rtx target, rtx vals)
       return;
     }
 
+  /* Use vector replicate instructions.  vlrep/vrepi/vrep  */
   if (all_same)
     {
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_VEC_DUPLICATE (mode,
-						     XVECEXP (vals, 0, 0))));
+      rtx elem = XVECEXP (vals, 0, 0);
+
+      /* vec_splats accepts general_operand as source.  */
+      if (!general_operand (elem, GET_MODE (elem)))
+	elem = force_reg (inner_mode, elem);
+
+      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_DUPLICATE (mode, elem)));
       return;
     }
 

@@ -1,3 +1,11 @@
+2018-10-19  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_vec_init): Force vector element
+	into reg if it isn't a general operand.
+
 2018-10-18  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87087
