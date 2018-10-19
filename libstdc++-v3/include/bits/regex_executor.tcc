@@ -366,11 +366,11 @@ namespace __detail
 	       _BiIter __actual_end)
       {
 	if (!_M_icase)
-	  return std::__equal4(__expected_begin, __expected_end,
+	  return _GLIBCXX_STD_A::__equal4(__expected_begin, __expected_end,
 			       __actual_begin, __actual_end);
 	typedef std::ctype<_CharT> __ctype_type;
 	const auto& __fctyp = use_facet<__ctype_type>(_M_traits.getloc());
-	return std::__equal4(__expected_begin, __expected_end,
+	return _GLIBCXX_STD_A::__equal4(__expected_begin, __expected_end,
 			     __actual_begin, __actual_end,
 			     [this, &__fctyp](_CharT __lhs, _CharT __rhs)
 			     {

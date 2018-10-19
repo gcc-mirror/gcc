@@ -1,3 +1,11 @@
+2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_executor.tcc (_Backref_matcher::_M_apply): Use
+	_GLIBCXX_STD_A to refer to normal mode algorithms.
+	* testsuite/28_regex/headers/regex/parallel_mode.cc: New test.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Remove empty
+	whitespace.
+
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
