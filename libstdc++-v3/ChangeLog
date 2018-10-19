@@ -1,5 +1,34 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/23_containers/array/requirements/explicit_instantiation/
+	3.cc: Skip test when compiled with a -std=c++NN strict mode.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/
+	3.cc: Likewise.
+
 	* testsuite/23_containers/deque/48101_neg.cc: Prune additional errors
 	printed when __STRICT_ANSI__ is defined.
 	* testsuite/23_containers/forward_list/48101_neg.cc: Likewise.
