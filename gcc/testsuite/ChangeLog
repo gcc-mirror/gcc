@@ -1,3 +1,8 @@
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87645
+	* gcc.dg/torture/pr87645.c: New testcase.
+
 2018-10-19  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
