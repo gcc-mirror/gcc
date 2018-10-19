@@ -1,5 +1,10 @@
 2018-10-19  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/87645
+	* gcc.dg/torture/pr87645.c: New testcase.
+
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
 	PR target/87657
 	* gcc.target/i386/pr87657.c: New testcase.
 
