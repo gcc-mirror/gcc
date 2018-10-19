@@ -1,3 +1,9 @@
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR target/87657
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Use
+	TYPE_VECTOR_SUBPARTS and avoid relying on vector mode.
+
 2018-10-19  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
