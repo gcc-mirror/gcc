@@ -46,8 +46,6 @@ int foo (int x)
   return a;
 }
 
-/* The following assumes CR7 as the first chosen volatile.  */
-
-/* { dg-final { scan-assembler "crset 30" } } */
-/* { dg-final { scan-assembler "beqctr- 7" } } */
+/* { dg-final { scan-assembler "crset" } } */
+/* { dg-final { scan-assembler "beqctr-" } } */
 /* { dg-final { scan-assembler {b \$} } } */
