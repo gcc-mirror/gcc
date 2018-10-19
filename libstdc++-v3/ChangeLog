@@ -1,5 +1,19 @@
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
+	* ext/special_functions/airy_ai/check_nan.cc: Skip test for
+	non-standard extension when a strict -std=c++NN dialect is used.
+	* ext/special_functions/airy_ai/check_value.cc: Likewise.
+	* ext/special_functions/airy_ai/compile.cc: Likewise.
+	* ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* ext/special_functions/airy_bi/check_value.cc: Likewise.
+	* ext/special_functions/airy_bi/compile.cc: Likewise.
+	* ext/special_functions/conf_hyperg/check_nan.cc: Likewise.
+	* ext/special_functions/conf_hyperg/check_value.cc: Likewise.
+	* ext/special_functions/conf_hyperg/compile.cc: Likewise.
+	* ext/special_functions/hyperg/check_nan.cc: Likewise.
+	* ext/special_functions/hyperg/check_value.cc: Likewise.
+	* ext/special_functions/hyperg/compile.cc: Likewise.
+
 	* testsuite/23_containers/list/requirements/explicit_instantiation/
 	5_c++0x.cc: Remove redundant test that is functionally identical to
 	the 5.cc test.
