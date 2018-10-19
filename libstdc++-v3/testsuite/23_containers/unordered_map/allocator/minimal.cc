@@ -40,13 +40,12 @@ struct equal_to
 bool operator==(const T& l, const T& r) { return l.i == r.i; }
 bool operator<(const T& l, const T& r) { return l.i < r.i; }
 
-using __gnu_test::SimpleAllocator;
+typedef __gnu_test::SimpleAllocator<std::pair<const T, T>> alloc_type;
 
-template class std::unordered_map<T, T, hash, equal_to, SimpleAllocator<T>>;
+template class std::unordered_map<T, T, hash, equal_to, alloc_type>;
 
 void test01()
 {
-  typedef SimpleAllocator<T> alloc_type;
   typedef std::allocator_traits<alloc_type> traits_type;
   typedef std::unordered_map<T, T, hash, equal_to, alloc_type> test_type;
   test_type v(alloc_type{});

@@ -1,4 +1,3 @@
-
 // Copyright (C) 2011-2018 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
@@ -23,10 +22,12 @@
 
 // { dg-do compile { target c++11 } }
 
+using __gnu_test::ExplicitConsAlloc;
+
 // libstdc++/50118
+template class
+  std::unordered_multimap<int, int, std::hash<int>, std::equal_to<int>,
+			  ExplicitConsAlloc<std::pair<const int, int>>>;
 template class std::unordered_multimap<int, int, std::hash<int>,
 				       std::equal_to<int>,
-				       __gnu_test::ExplicitConsAlloc<int>>;
-template class std::unordered_multimap<int, int, std::hash<int>,
-				       std::equal_to<int>,
-				       __gnu_test::ExplicitConsAlloc<char>>;
+				       ExplicitConsAlloc<char>>;
