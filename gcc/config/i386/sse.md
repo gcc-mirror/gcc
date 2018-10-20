@@ -1812,6 +1812,18 @@
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*<avx512>_div<mode>3<mask_name>_bcst"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v")
+	(div:VF_AVX512
+	  (match_operand:VF_AVX512 1 "register_operand" "v")
+	  (vec_duplicate:VF_AVX512
+	     (match_operand:<ssescalarmode> 2 "memory_operand" "m"))))]
+  "TARGET_AVX512F && <mask_mode512bit_condition>"
+  "vdiv<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<<avx512bcst>>}"
+  [(set_attr "prefix" "evex")
+    (set_attr "type" "ssediv")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<sse>_rcp<mode>2"
   [(set (match_operand:VF1_128_256 0 "register_operand" "=x")
 	(unspec:VF1_128_256
