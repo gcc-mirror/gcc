@@ -30,10 +30,9 @@ command-line options in ways that we hope achieve the above ideal.
 
 
 @node Guidelines for Diagnostics
+@section Guidelines for Diagnostics
 @cindex guidelines for diagnostics
 @cindex diagnostics, guidelines for
-
-@section Guidelines for Diagnostics
 
 @subsection Talk in terms of the user's code
 
@@ -591,10 +590,9 @@ generated patches.
 
 
 @node Guidelines for Options
+@section Guidelines for Options
 @cindex command-line options, guidelines for
 @cindex options, guidelines for
 @cindex guidelines for options
-
-@section Guidelines for Options
 
 @c TODO
