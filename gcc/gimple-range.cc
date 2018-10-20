@@ -47,11 +47,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 
 
-// This function returns a range for a tree node.  Return false if ranges are
-// not supported.
+// This function returns a range for a tree node.  If optional statement S
+// is present, then the range would be if it were to appear as a use on S.
+// Return false if ranges are not supported.
+//
 
 bool
-gimple_range_of_expr (irange &r, tree expr)
+gimple_range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
 {
   tree type;
   switch (TREE_CODE (expr))
@@ -113,17 +115,67 @@ gimple_range_of_stmt (irange &r, grange_op *s)
   tree op2 = s->operand2 ();
 
   // Calculate a range for operand 1.
-  if (!gimple_range_of_expr (range1, op1))
+  if (!gimple_range_of_expr (range1, op1, s))
     return false;
   if (!op2)
     return s->fold (r, range1);
 
   // Calculate a range for operand 2.
-  if (!gimple_range_of_expr (range2, op2))
+  if (!gimple_range_of_expr (range2, op2, s))
     return false;
   return s->fold (r, range1, range2);
 }
 
+// Calculate a range for phi statement S and return it in R.  If a range
+// cannot be calculated, return false.  
+bool
+gimple_range_of_stmt (irange &r, gphi *phi)
+{
+  tree phi_def = gimple_phi_result (phi);
+  tree type = TREE_TYPE (phi_def);
+  irange phi_range;
+  unsigned x;
+
+  if (!gimple_range_supports_type (type))
+    return false;
+
+  // And start with an empty range, unioning in each argument's range.
+  r.set_undefined (type);
+  for (x = 0; x < gimple_phi_num_args (phi); x++)
+    {
+      irange arg_range;
+      tree arg = gimple_phi_arg_def (phi, x);
+      edge e = gimple_phi_arg_edge (phi, x);
+      // Try to find a range from the edge.  If that fails, return false.
+      if (!gimple_range_on_edge (arg_range, e, arg))
+	return false;
+
+      r.union_ (arg_range);
+      // Once the value reaches varying, stop looking.
+      if (r.varying_p ())
+	break;
+    }
+
+  return true;
+}
+
+// Calculate a range for call statement S and return it in R.  If a range
+// cannot be calculated, return false.  
+bool
+gimple_range_of_stmt (irange &r, gcall *call)
+{
+  tree type = gimple_call_return_type (call);
+  if (!gimple_range_supports_type (type))
+    return false;
+
+  if (gimple_call_nonnull_result_p (call))
+    {
+      range_non_zero (&r, type);
+      return true;
+    }
+  r.set_varying (type);
+  return true;
+}
 
 // Calculate a range for statement S and return it in R.  If a range cannot
 // be calculated, return false.
@@ -131,9 +183,13 @@ gimple_range_of_stmt (irange &r, grange_op *s)
 bool
 gimple_range_of_stmt (irange &r, gimple *s)
 {
-  grange_op *g = dyn_cast<grange_op *>(s);
-  if (g)
-    return gimple_range_of_stmt (r, g);
+  if (is_a<grange_op *> (s))
+    return gimple_range_of_stmt (r, as_a<grange_op *> (s));
+  if (is_a<gphi *>(s))
+    return gimple_range_of_stmt (r, as_a<gphi *> (s));
+  if (is_a<gcall *>(s))
+    return gimple_range_of_stmt (r, as_a<gcall *> (s));
+
   return false;
 }
 
@@ -142,15 +198,16 @@ gimple_range_of_stmt (irange &r, gimple *s)
 // returned and the resulting range returned in R. 
 
 bool
-gimple_range_of_stmt (irange& r, grange_op *s, tree name,
-		      const irange& range_of_name)
+gimple_range_of_stmt (irange &r, grange_op *s, tree name,
+		      const irange &range_of_name)
 {
   irange range1, range2;
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
-//  gcc_checking_assert (gimple_range_valid_ssa (name));
-//  gcc_checking_assert (TREE_TYPE (name) == range_of_name.type ());
+  gcc_checking_assert (gimple_range_valid_ssa (name));
+//  gcc_checking_assert (useless_type_conversion_p (TREE_TYPE (name),
+//						  range_of_name.type ()));
   if (op1 == name)
     range1 = range_of_name;
   else
@@ -174,43 +231,164 @@ gimple_range_of_stmt (irange& r, grange_op *s, tree name,
 // returned and the resulting range returned in R. 
 
 bool
-gimple_range_of_stmt (irange& r, gimple *g, tree name,
-		      const irange& range_of_name)
+gimple_range_of_stmt (irange &r, gimple *g, tree name,
+		      const irange &range_of_name)
 {
-  grange_op *rn = dyn_cast<grange_op *> (g);
-  if (rn)
-    return gimple_range_of_stmt (r, rn, name, range_of_name);
+  if (is_a<grange_op *> (g))
+    return gimple_range_of_stmt (r, as_a<grange_op *> (g), name, range_of_name);
   return false;
 }
+
+// Look for the range of NAME on edge E and return it in R.  Return false if
+// no range can be determined.
+
+bool
+gimple_range_on_edge (irange &r, edge e, tree name)
+{
+  irange lhs;
   
+  if (gimple_range_valid_ssa (name))
+    {
+      gimple *s;
+      // If the last stmt in the predecessor is control flow, see if it sets a 
+      // range for name.
+      s = gimple_range_outgoing_edge (lhs, e);
+      if (s && gimple_range_compute_operand (r, s, name, lhs))
+	return true;
+
+      // Otherwise if name is defined in the pred block, get it's range.
+      s = SSA_NAME_DEF_STMT (name);
+      if (s && e->src == gimple_bb (s) && gimple_range_of_stmt (r, s))
+	return true;
+    }
+  return gimple_range_of_expr (r, name);
+}
+
 // Return the range forced by edge E for a branch statement in R.
 // Note this applies only to edges with PRED blocks ending in statements
 // with control flow but no LHS. Such as the true or false edge of a branch
 // or the case values on a switch edge.
-//
-void
+// Return the last statement causing the control flow in e->src.
+// if there is no control flow, return NULL.
+
+gimple *
 gimple_range_outgoing_edge (irange &r, edge e)
 {
-  gcc_checking_assert (is_a<gcond *> (last_stmt (e->src)));
-  if (e->flags & EDGE_TRUE_VALUE)
-    r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
-  else if (e->flags & EDGE_FALSE_VALUE)
-    r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
-  else
-    gcc_unreachable ();
-
-  return;
+  gimple *s = last_stmt (e->src);
+  if (is_a<gcond *> (s))
+    {
+      if (e->flags & EDGE_TRUE_VALUE)
+	r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
+      else if (e->flags & EDGE_FALSE_VALUE)
+	r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
+      else
+	gcc_unreachable ();
+      return s;
+    }
+  return NULL;
 }
 
+// Return the range for NAME on entry to basic block BB in R.  
+// Return false if no range can be calculated.
+// Calculation is performed by unioning all the ranges on incoming edges.
+
+bool
+gimple_range_on_entry (irange &r, basic_block bb, tree name)
+{
+  edge_iterator ei;
+  edge e;
+  tree type = TREE_TYPE (name);
+  irange pred_range;
+
+  if (!gimple_range_supports_type (type))
+    return false;
+
+  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
+    return false;
+
+  // Start with an empty range.
+  r.set_undefined (type);
+
+  // Visit each predecessor to resolve them.
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      if (!gimple_range_on_edge (pred_range, e , name))
+        return false;
+      r.union_ (pred_range);
+      // If varying is reach, stop processing.
+      if (r.varying_p ())
+        break;
+    }
+
+  return true;
+}
+
+// Calculate the range for NAME at the end of block BB and return it in R.
+// Return false if no range can be calculated or if NAME is not defined
+// in block BB.
+
+bool
+gimple_range_on_exit (irange &r, basic_block bb, tree name)
+{
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  if (gimple_bb (s) != bb)
+    return false;
+  return gimple_range_of_stmt (r, s);
+}
+
+// Calculate the range for NAME if the lhs of statement S has the range LHS.
+// NAME must be one of the two operands on S.  Return the result in R.
+// Return false if no range can be calculated.
+
+bool
+gimple_range_compute_operand (irange &r, grange_op *s, tree name,
+			      const irange &lhs)
+{
+  irange op1_range, op2_range;
+  tree op1 = s->operand1 ();
+  tree op2 = s->operand2 ();
+
+  // Operand 1 is the name being looked for, evaluate it.
+  if (op1 == name)
+    { 
+      if (!op2)
+	{
+	  // The second parameter to a unary operation is the range for the type
+	  // of operand1, but if it can be reduced further, the results will
+	  // be better.  Start with what we know of the range of OP1.
+	  if (gimple_range_of_expr (op1_range, op1, s))
+	    return s->calc_op1_irange (r, lhs, op1_range);
+	  else
+	    return s->calc_op1_irange (r, lhs);
+	}
+      // If we need the second operand, get a value and evaluate.
+      if (gimple_range_of_expr (op2_range, op2, s))
+	return s->calc_op1_irange (r, lhs, op2_range);
+      return false;
+    }
+
+  if (op2 == name && gimple_range_of_expr (op1_range, op1, s))
+    return s->calc_op2_irange (r, lhs, op1_range);
+  return false;
+}
+
+bool
+gimple_range_compute_operand (irange &r, gimple *s, tree name,
+			      const irange &lhs)
+{
+  gcc_checking_assert (is_a<gcond *> (s));
+  return gimple_range_compute_operand (r, as_a<gcond *> (s), name, lhs);
+}
 
 // Evaluate a binary logical expression for this statement by combining the
 // true and false ranges for each of the operands based on the result value in 
 // the LHS. 
 
 bool
-glogical::combine (irange& r, const irange& lhs, const irange& op1_true,
-		   const irange& op1_false, const irange& op2_true,
-		   const irange& op2_false)
+glogical::combine (irange &r, const irange &lhs, const irange &op1_true,
+		   const irange &op1_false, const irange &op2_true,
+		   const irange &op2_false)
 {
   // This is not a simple fold of a logical expression, rather it determines
   // ranges which flow through the logical expression.
@@ -322,7 +500,10 @@ grange_op::operand1 () const
 	  tree expr = gimple_assign_rhs1 (this);
 	  if (gimple_assign_rhs_code (this) == ADDR_EXPR)
 	    {
-	      bool strict_ov;
+	      // If the base address is an SSA_NAME, we return it here.
+	      // This allows processing of the range of that name, while the
+	      // rest of the expression is simply ignored.  The code in
+	      // range_ops will see the ADDR_EXPR and do the right thing.
 	      tree base = get_base_address (TREE_OPERAND (expr, 0));
 	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
 	        {
@@ -331,11 +512,6 @@ grange_op::operand1 () const
 		  if (b)
 		    return b;
 		}
-	      // Otherwise, check to see if the RHS is always non-null
-	      // and return a constant that will equate to a non-zero range.
-	      if (tree_single_nonzero_warnv_p (expr, &strict_ov))
-		return integer_one_node;
-	      // Otherwise this is not something complex needing tweaking.
 	    }
 	  return expr;
 	}
@@ -350,7 +526,7 @@ grange_op::operand1 () const
 // result in RES.  Return false if the operation fails.
 
 bool
-grange_op::fold (irange &res, const irange& r1) const
+grange_op::fold (irange &res, const irange &r1) const
 {
   irange r2;
   // Single ssa operations require the LHS type as the second range.
@@ -367,7 +543,7 @@ grange_op::fold (irange &res, const irange& r1) const
 // returning the result in RES.  Return false if the operation fails.
 
 bool
-grange_op::fold (irange &res, const irange& r1, const irange& r2) const
+grange_op::fold (irange &res, const irange &r1, const irange &r2) const
 {
   // Make sure this isnt a unary operation being passed a second range.
   return handler()->fold_range (res, r1, r2);
@@ -378,7 +554,7 @@ grange_op::fold (irange &res, const irange& r1, const irange& r2) const
 // if nothing can be determined.
 
 bool
-grange_op::calc_op1_irange (irange& r, const irange& lhs_range) const
+grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
 {  
   irange type_range;
   gcc_checking_assert (gimple_num_ops (this) < 3);
@@ -399,8 +575,8 @@ grange_op::calc_op1_irange (irange& r, const irange& lhs_range) const
 // operand has the range OP2_RANGE.  Return false if nothing can be determined.
 
 bool
-grange_op::calc_op1_irange (irange& r, const irange& lhs_range,
-			    const irange& op2_range) const
+grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
+			    const irange &op2_range) const
 {  
   // Unary operation are allowed to pass a range in for second operand
   // as there are often additional restrictions beyond the type which can
@@ -420,8 +596,8 @@ grange_op::calc_op1_irange (irange& r, const irange& lhs_range,
 // operand has the range OP1_RANGE.  Return false if nothing can be determined.
 
 bool
-grange_op::calc_op2_irange (irange& r, const irange& lhs_range,
-			     const irange& op1_range) const
+grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
+			    const irange &op1_range) const
 {  
   // An empty range is viral, so return an empty range.
   if (op1_range.undefined_p () || lhs_range.undefined_p ())

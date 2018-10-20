@@ -646,17 +646,6 @@ path_ranger::process_phi (irange &r, gphi *phi)
   return !r.varying_p ();
 }
 
-bool
-path_ranger::process_call (irange& r, gcall *call)
-{
-  if (gimple_call_nonnull_result_p (call))
-    {
-      range_non_zero (&r, gimple_call_return_type (call));
-      return true;
-    }
-  return false;
-} 
-
 
 // External API. Evaluate statement G, and return the result in R.
 // Return false if it cannot be evaluated, or would return range_for_type.
@@ -684,7 +673,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     }
 
   if (is_a<gcall *> (g))
-    return process_call (r, as_a<gcall *>(g));
+    return gimple_range_of_stmt (r, as_a<gcall *>(g));
   if (is_a<gphi *> (g))
     return process_phi (r, as_a<gphi *>(g));
   

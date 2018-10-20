@@ -40,14 +40,14 @@ public:
   tree operand1 () const;
   tree operand2 () const;
 
-  bool fold (irange& res, const irange& r1) const;
-  bool calc_op1_irange (irange& r, const irange& lhs_range) const;
+  bool fold (irange &res, const irange &r1) const;
+  bool calc_op1_irange (irange &r, const irange &lhs_range) const;
 
-  bool fold (irange& res, const irange& r1, const irange& r2) const;
-  bool calc_op1_irange (irange& r, const irange& lhs_range,
-		   const irange& op2_range) const;
-  bool calc_op2_irange (irange& r, const irange& lhs_range,
-		   const irange& op1_range) const;
+  bool fold (irange &res, const irange &r1, const irange &r2) const;
+  bool calc_op1_irange (irange &r, const irange &lhs_range,
+		   const irange &op2_range) const;
+  bool calc_op2_irange (irange &r, const irange &lhs_range,
+		   const irange &op1_range) const;
 private:
   class range_operator *handler() const;
 };
@@ -62,9 +62,9 @@ class GTY((tag("GCC_GLOGICAL")))
   public:
   // Adds no new fields, adds invariant stmt->code == GIMPLE_ASSIGN and 
   // expr_code is an AND or OR on boolean compatiable operands.
-  bool combine (irange& r, const irange& lhs, const irange& op1_true,
-	        const irange& op1_false, const irange& op2_true,
-	        const irange& op2_false);
+  bool combine (irange &r, const irange &lhs, const irange &op1_true,
+	        const irange &op1_false, const irange &op2_true,
+	        const irange &op2_false);
 };
 
 
@@ -127,20 +127,37 @@ gimple_range_supports (tree expr)
 
 // Calculate ranges from an edge that arent related to ssa_names. Ie.
 // conditional branches and switch operations which have no LHS.
-extern void gimple_range_outgoing_edge (irange &r, edge e);
+extern gimple *gimple_range_outgoing_edge (irange &r, edge e);
 
 // Calculate a range for a tree expr.
-extern bool gimple_range_of_expr (irange &r, tree expr);
+extern bool gimple_range_of_expr (irange &r, tree expr, gimple *s = NULL);
 
 // Calculate a range for a gimple statement which support range operations.
 extern bool gimple_range_of_stmt (irange &r, gimple *s);
 extern bool gimple_range_of_stmt (irange &r, grange_op *s);
+extern bool gimple_range_of_stmt (irange &r, gphi *phi);
+extern bool gimple_range_of_stmt (irange &r, gcall *call);
 
 // Calculate a range for a statement if NAME has a specified range
 extern bool gimple_range_of_stmt (irange &r, gimple *s, tree name,
 				  const irange &nr);
 extern bool gimple_range_of_stmt (irange &r, grange_op *s,
 				  tree name, const irange &nr);
+
+// Calculate the range for NAME on edge E.
+extern bool gimple_range_on_edge (irange &r, edge e, tree name);
+
+// Calculate the range for NAME on entry to block BB.
+extern bool gimple_range_on_entry (irange &r, basic_block bb, tree name);
+
+// Calculate the range for NAME at the end of block BB
+extern bool gimple_range_on_exit (irange &r, basic_block bb, tree name);
+
+// Calculate the range for NAME if the lhs of statement S has the range LHS.
+extern bool gimple_range_compute_operand (irange &r, grange_op *s, tree name,
+					  const irange &lhs);
+extern bool gimple_range_compute_operand (irange &r, gimple *s, tree name,
+					  const irange &lhs);
 
 
 // Return the LHS, of this statement. If there isn't a LHS return NULL_TREE.
