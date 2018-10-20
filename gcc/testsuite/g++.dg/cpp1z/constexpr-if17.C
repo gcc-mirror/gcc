@@ -1,6 +1,5 @@
 // PR c++/85149
-// { dg-do run }
-// { dg-additional-options -std=c++17 }
+// { dg-do run { target c++17 } }
 
 template <typename T> struct is_void { static constexpr bool value = false; };
 template <> struct is_void<void> { static constexpr bool value = true; };

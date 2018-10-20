@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 template<typename T>
   concept auto C1() { return 0; } // { dg-error "16:concept .concept auto C1\\(\\). declared with a deduced return type" }

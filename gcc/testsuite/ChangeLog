@@ -1,3 +1,9 @@
+2018-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/*.C: Use target c++17 instead of explicit dg-options.
+	* lib/g++-dg.exp: Don't test C++11 by default.  Add C++17 to
+	the list of default stds to test.
+
 2018-10-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87647

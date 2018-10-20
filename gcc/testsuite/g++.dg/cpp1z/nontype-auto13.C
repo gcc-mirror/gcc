@@ -1,5 +1,5 @@
 // PR c++/82331
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <auto>
 class X;

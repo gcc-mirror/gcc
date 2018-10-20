@@ -1,5 +1,4 @@
-// { dg-do run }
-// { dg-options -std=c++17 }
+// { dg-do run { target c++17 } }
 // Test C++17 selection statements with initializer, side-effects.
 
 int

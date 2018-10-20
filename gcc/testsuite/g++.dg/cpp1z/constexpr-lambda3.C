@@ -1,4 +1,4 @@
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 constexpr auto add = [] (int n, int m) {
   auto L = [=] { return n; };

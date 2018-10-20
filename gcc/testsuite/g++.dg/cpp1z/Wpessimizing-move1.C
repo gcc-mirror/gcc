@@ -1,5 +1,6 @@
 // PR c++/86981
-// { dg-options "-Wpessimizing-move -std=c++17" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-Wpessimizing-move" }
 
 #include <utility>
 #include <optional>

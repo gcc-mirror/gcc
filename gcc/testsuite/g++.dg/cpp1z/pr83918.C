@@ -1,6 +1,5 @@
 // PR c++/83918
-// { dg-do compile }
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++17 } }
 
 constexpr unsigned
 foo (unsigned x, unsigned y)

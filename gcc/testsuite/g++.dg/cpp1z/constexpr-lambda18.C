@@ -1,5 +1,5 @@
 // PR c++/82570
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++17 } }
 
 template< typename Body >
 inline void iterate(Body body)
