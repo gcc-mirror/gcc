@@ -1,5 +1,5 @@
 // PR c++/83692
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct integer {
   constexpr int value() const { return m_value;	}

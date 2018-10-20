@@ -1,5 +1,5 @@
 // PR c++/80562
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct T {
   constexpr auto foo() { return false; }

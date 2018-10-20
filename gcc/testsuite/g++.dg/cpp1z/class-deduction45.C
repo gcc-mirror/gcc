@@ -1,5 +1,5 @@
 // PR c++/82308
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template<typename, unsigned>
 struct array {};

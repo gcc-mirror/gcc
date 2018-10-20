@@ -1,6 +1,6 @@
 // P0806R2
-// { dg-do compile }
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++17 } }
+// { dg-options "" }
 
 struct X {
   int x;

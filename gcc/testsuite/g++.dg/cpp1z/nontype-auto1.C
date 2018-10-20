@@ -1,5 +1,5 @@
 // Testcase from P0127R2
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <long n> struct A { };
 
