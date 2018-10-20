@@ -2054,6 +2054,7 @@ GLIBCXX_3.4.26 {
     # std::basic_filebuf::open(const wchar_t*, openmode)
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
 
+    _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.
