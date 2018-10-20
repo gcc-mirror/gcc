@@ -1,3 +1,7 @@
+2018-10-20  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/ux.texi: Move @section directly after @node.
+
 2018-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/85488
