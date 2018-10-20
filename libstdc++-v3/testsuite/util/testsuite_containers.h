@@ -176,11 +176,12 @@ namespace __gnu_test
 	   typename = typename std::iterator_traits<_Iterator>::iterator_category>
     struct iterator_concept_checks;
 
+#if __cplusplus >= 201103L
   // DR 691.
   template<typename _Tp>
     struct forward_members_unordered
     {
-      forward_members_unordered(typename _Tp::value_type& v)
+      forward_members_unordered(const typename _Tp::value_type& v)
       {
 	// Make sure that even if rel_ops is injected there is no ambiguity
 	// when comparing iterators.
@@ -196,12 +197,20 @@ namespace __gnu_test
 
 	assert( container.cbegin(0) == container.begin(0) );
 	assert( container.cend(0) == container.end(0) );
-	const typename test_type::size_type bn = container.bucket(1);
-	assert( container.cbegin(bn) != container.cend(bn) );
-	assert( container.cbegin(bn) != container.end(bn) );
+	const auto bn = container.bucket(1);
+	auto clit = container.cbegin(bn);
+	assert( clit != container.cend(bn) );
+	assert( clit != container.end(bn) );
+	assert( clit++ == container.cbegin(bn) );
+	assert( clit == container.end(bn) );
+
+	clit = container.cbegin(bn);
+	assert( ++clit == container.cend(bn) );
+
 	assert( container.begin(bn) != container.cend(bn) );
       }
     };
+#endif
 
   template<typename _Iterator>
     struct iterator_concept_checks<_Iterator, false,

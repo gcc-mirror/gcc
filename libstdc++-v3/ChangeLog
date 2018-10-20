@@ -1,3 +1,10 @@
+2018-10-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_containers.h
+	(forward_members_unordered<>::forward_members_unordered
+	(const value_type&)): Add local_iterator pre and post increment checks.
+	* config/abi/pre/gnu.ver: Add GLIBCXX_3.4.26 new symbol.
+
 2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/23_containers/array/requirements/explicit_instantiation/
