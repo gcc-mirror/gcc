@@ -1,3 +1,9 @@
+2018-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71880
+	* trans-expr.c (gfc_trans_pointer_assignment): Set the string
+	length for array valued deferred length lhs.
+
 2018-10-18  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87625
