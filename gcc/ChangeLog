@@ -1,3 +1,15 @@
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87662
+	* i386/avx512vlintrin.h (_mm256_or_epi32): New.
+	(_mm_or_epi32): Likewise.
+	(_mm256_xor_epi32): Likewise.
+	(_mm_xor_epi32): Likewise.
+	(_mm256_or_epi64): Likewise.
+	(_mm_or_epi64): Likewise.
+	(_mm256_xor_epi64): Likewise.
+	(_mm_xor_epi64): Likewise.
+
 2018-10-20  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
