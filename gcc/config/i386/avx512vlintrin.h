@@ -4855,6 +4855,12 @@ _mm256_maskz_or_epi32 (__mmask8 __U, __m256i __A, __m256i __B)
 						(__mmask8) __U);
 }
 
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_or_epi32 (__m256i __A, __m256i __B)
+{
+  return (__m256i) ((__v8su)__A | (__v8su)__B);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_or_epi32 (__m128i __W, __mmask8 __U, __m128i __A, __m128i __B)
@@ -4874,6 +4880,12 @@ _mm_maskz_or_epi32 (__mmask8 __U, __m128i __A, __m128i __B)
 						(__v4si)
 						_mm_setzero_si128 (),
 						(__mmask8) __U);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_or_epi32 (__m128i __A, __m128i __B)
+{
+  return (__m128i) ((__v4su)__A | (__v4su)__B);
 }
 
 extern __inline __m256i
@@ -4898,6 +4910,12 @@ _mm256_maskz_xor_epi32 (__mmask8 __U, __m256i __A, __m256i __B)
 						 (__mmask8) __U);
 }
 
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_xor_epi32 (__m256i __A, __m256i __B)
+{
+  return (__m256i) ((__v8su)__A ^ (__v8su)__B);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_xor_epi32 (__m128i __W, __mmask8 __U, __m128i __A,
@@ -4918,6 +4936,12 @@ _mm_maskz_xor_epi32 (__mmask8 __U, __m128i __A, __m128i __B)
 						 (__v4si)
 						 _mm_setzero_si128 (),
 						 (__mmask8) __U);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_xor_epi32 (__m128i __A, __m128i __B)
+{
+  return (__m128i) ((__v4su)__A ^ (__v4su)__B);
 }
 
 extern __inline __m128
@@ -7340,6 +7364,12 @@ _mm256_maskz_or_epi64 (__mmask8 __U, __m256i __A, __m256i __B)
 						(__mmask8) __U);
 }
 
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_or_epi64 (__m256i __A, __m256i __B)
+{
+  return (__m256i) ((__v4du)__A | (__v4du)__B);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_or_epi64 (__m128i __W, __mmask8 __U, __m128i __A, __m128i __B)
@@ -7359,6 +7389,12 @@ _mm_maskz_or_epi64 (__mmask8 __U, __m128i __A, __m128i __B)
 						(__v2di)
 						_mm_setzero_si128 (),
 						(__mmask8) __U);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_or_epi64 (__m128i __A, __m128i __B)
+{
+  return (__m128i) ((__v2du)__A | (__v2du)__B);
 }
 
 extern __inline __m256i
@@ -7383,6 +7419,12 @@ _mm256_maskz_xor_epi64 (__mmask8 __U, __m256i __A, __m256i __B)
 						 (__mmask8) __U);
 }
 
+extern __inline __m256i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm256_xor_epi64 (__m256i __A, __m256i __B)
+{
+  return (__m256i) ((__v4du)__A ^ (__v4du)__B);
+}
+
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_xor_epi64 (__m128i __W, __mmask8 __U, __m128i __A,
@@ -7403,6 +7445,12 @@ _mm_maskz_xor_epi64 (__mmask8 __U, __m128i __A, __m128i __B)
 						 (__v2di)
 						 _mm_setzero_si128 (),
 						 (__mmask8) __U);
+}
+
+extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_mm_xor_epi64 (__m128i __A, __m128i __B)
+{
+  return (__m128i) ((__v2du)__A ^ (__v2du)__B);
 }
 
 extern __inline __m256d
