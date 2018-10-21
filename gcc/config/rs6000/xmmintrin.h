@@ -985,12 +985,12 @@ _mm_cvtps_pi32 (__m128 __A)
 {
   /* Splat two lower SPFP values to both halves.  */
   __v4sf temp, rounded;
-  __vector __m64 result;
+  __vector unsigned long long result;
 
   /* Splat two lower SPFP values to both halves.  */
   temp = (__v4sf) vec_splat ((__vector long long)__A, 0);
   rounded = vec_rint(temp);
-  result = (__vector __m64) vec_cts (rounded, 0);
+  result = (__vector unsigned long long) vec_cts (rounded, 0);
 
   return ((__m64) __builtin_unpack_vector_int128 ((__vector __int128)result, 0));
 }
@@ -1043,11 +1043,11 @@ extern __inline __m64 __attribute__((__gnu_inline__, __always_inline__, __artifi
 _mm_cvttps_pi32 (__m128 __A)
 {
   __v4sf temp;
-  __vector __m64 result;
+  __vector unsigned long long result;
 
   /* Splat two lower SPFP values to both halves.  */
   temp = (__v4sf) vec_splat ((__vector long long)__A, 0);
-  result = (__vector __m64) vec_cts (temp, 0);
+  result = (__vector unsigned long long) vec_cts (temp, 0);
 
   return ((__m64) __builtin_unpack_vector_int128 ((__vector __int128)result, 0));
 }
@@ -1103,8 +1103,9 @@ _mm_cvtpi32_ps (__m128        __A, __m64        __B)
   vm1 = (__vector signed int) __builtin_pack_vector_int128 (__B, __B);
   vf1 = (__vector float) vec_ctf (vm1, 0);
 
-  return ((__m128) (__vector __m64)
-    { ((__vector __m64)vf1) [0], ((__vector __m64)__A) [1]});
+  return ((__m128) (__vector unsigned long long)
+    { ((__vector unsigned long long)vf1) [0],
+	((__vector unsigned long long)__A) [1]});
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1201,11 +1202,11 @@ _mm_cvtps_pi16(__m128 __A)
 {
   __v4sf rounded;
   __vector signed int temp;
-  __vector __m64 result;
+  __vector unsigned long long result;
 
   rounded = vec_rint(__A);
   temp = vec_cts (rounded, 0);
-  result = (__vector __m64) vec_pack (temp, temp);
+  result = (__vector unsigned long long) vec_pack (temp, temp);
 
   return ((__m64) __builtin_unpack_vector_int128 ((__vector __int128)result, 0));
 }
@@ -1282,8 +1283,8 @@ _mm_unpacklo_ps (__m128 __A, __m128 __B)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadh_pi (__m128 __A, __m64 const *__P)
 {
-  __vector __m64 __a = (__vector __m64)__A;
-  __vector __m64 __p = vec_splats(*__P);
+  __vector unsigned long long __a = (__vector unsigned long long)__A;
+  __vector unsigned long long __p = vec_splats(*__P);
   __a [1] = __p [1];
 
   return (__m128)__a;
@@ -1293,7 +1294,7 @@ _mm_loadh_pi (__m128 __A, __m64 const *__P)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_storeh_pi (__m64 *__P, __m128 __A)
 {
-  __vector __m64 __a = (__vector __m64) __A;
+  __vector unsigned long long __a = (__vector unsigned long long) __A;
 
   *__P = __a[1];
 }
@@ -1302,14 +1303,16 @@ _mm_storeh_pi (__m64 *__P, __m128 __A)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movehl_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) vec_mergel ((__vector __m64)__B, (__vector __m64)__A);
+  return (__m128) vec_mergel ((__vector unsigned long long)__B,
+			      (__vector unsigned long long)__A);
 }
 
 /* Moves the lower two values of B into the upper two values of A.  */
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movelh_ps (__m128 __A, __m128 __B)
 {
-  return (__m128) vec_mergeh ((__vector __m64)__A, (__vector __m64)__B);
+  return (__m128) vec_mergeh ((__vector unsigned long long)__A,
+			      (__vector unsigned long long)__B);
 }
 
 /* Sets the lower two SPFP values with 64-bits of data loaded from P;
@@ -1317,8 +1320,8 @@ _mm_movelh_ps (__m128 __A, __m128 __B)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_loadl_pi (__m128 __A, __m64 const *__P)
 {
-  __vector __m64 __a = (__vector __m64)__A;
-  __vector __m64 __p = vec_splats(*__P);
+  __vector unsigned long long __a = (__vector unsigned long long)__A;
+  __vector unsigned long long __p = vec_splats(*__P);
   __a [0] = __p [0];
 
   return (__m128)__a;
@@ -1328,7 +1331,7 @@ _mm_loadl_pi (__m128 __A, __m64 const *__P)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_storel_pi (__m64 *__P, __m128 __A)
 {
-  __vector __m64 __a = (__vector __m64) __A;
+  __vector unsigned long long __a = (__vector unsigned long long) __A;
 
   *__P = __a[0];
 }
@@ -1340,7 +1343,7 @@ _mm_storel_pi (__m64 *__P, __m128 __A)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_ps (__m128  __A)
 {
-  __vector __m64 result;
+  __vector unsigned long long result;
   static const __vector unsigned int perm_mask =
     {
 #ifdef __LITTLE_ENDIAN__
@@ -1350,8 +1353,9 @@ _mm_movemask_ps (__m128  __A)
 #endif
     };
 
-  result = (__vector __m64) vec_vbpermq ((__vector unsigned char) __A,
-					 (__vector unsigned char) perm_mask);
+  result = ((__vector unsigned long long)
+	    vec_vbpermq ((__vector unsigned char) __A,
+			 (__vector unsigned char) perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
   return result[1];
@@ -1619,7 +1623,7 @@ _mm_shuffle_pi16 (__m64 __A, int const __N)
 #endif
     };
   __m64_union t;
-  __vector __m64 a, p, r;
+  __vector unsigned long long a, p, r;
 
 #ifdef __LITTLE_ENDIAN__
   t.as_short[0] = permute_selectors[element_selector_10];
