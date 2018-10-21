@@ -377,7 +377,8 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
   if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
     return state;
 
-  switch (state)
+  int depth = state & ~3;
+  switch (state & 3)
     {
     case 0: /* Just started.  */
       if (!modules_p ())
@@ -394,23 +395,35 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	  else if (keyword == RID_IMPORT)
 	    {
 	      cpp_enable_filename_token (pfile, true);
-	      return 3; /* Just started import.  */
+	      return depth | 3; /* Just started import.  */
 	    }
 	}
       /* FALLTHROUGH */
 
     maybe_end:
     case 2:
-      if (tok->type == CPP_SEMICOLON
-	  || tok->type == CPP_PRAGMA_EOL
-	  || tok->type == CPP_OPEN_BRACE
-	  || tok->type == CPP_CLOSE_BRACE)
-	return 1; /* Start of decl.  */
-      return 2; /* In a decl.  */
+      switch (tok->type)
+	{
+	case CPP_OPEN_BRACE:
+	  depth += 8;
+	  /* FALLTHROUGH */
+	  
+	case CPP_CLOSE_BRACE:
+	  if (depth)
+	    depth -= 4;
+	  /* FALLTHROUGH */
+
+	case CPP_SEMICOLON:
+	case CPP_PRAGMA_EOL:
+	  return depth | 1; /* Start of decl.  */
+
+	default:
+	  return depth | 2; /* In a decl.  */
+	}
 
     case 3: /* Saw import.  */
       cpp_enable_filename_token (pfile, false);
-      if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
+      if (!depth && (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING))
 	{
 	  /* Load the legacy import.  */
 	  tree name = get_identifier_with_length

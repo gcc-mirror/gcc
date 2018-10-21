@@ -1,7 +1,14 @@
 2018-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
-	* parser.c (cp_parser_diagnose_invalid_type_name): Use C_RID_CODE more.
+	* lex.c (module_preprocessing_token): Pay attention to braces.
+	* parser.c (cp_parser_tokenize): Return ptr to stopping import.
+	Pay attention to CPP_HEADER tokenization.
+	(cp_parser_translation_unit): Adjust.
+
+	gcc/cp/
+	* parser.c (cp_parser_diagnose_invalid_type_name): Use C_RID_CODE
+	more.
 
 2018-10-19  Nathan Sidwell  <nathan@acm.org>
 
