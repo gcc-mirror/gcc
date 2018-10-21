@@ -1,6 +1,67 @@
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* config/i386/avx512fintrin.h (_mm512_fnmsub_round_pd): Use
+	__builtin_ia32_vfnmsubpd512_mask.
+	(_mm512_mask_fnmsub_round_pd): Likewise.
+	(_mm512_fnmsub_pd): Likewise.
+	(_mm512_mask_fnmsub_pd): Likewise.
+	(_mm512_maskz_fnmsub_round_pd): Use
+	__builtin_ia32_vfnmsubpd512_maskz.
+	(_mm512_maskz_fnmsub_pd): Likewise.
+	(_mm512_fnmsub_round_ps): Use __builtin_ia32_vfnmsubps512_mask.
+	(_mm512_mask_fnmsub_round_ps): Likewise.
+	(_mm512_fnmsub_ps): Likewise.
+	(_mm512_mask_fnmsub_ps): Likewise.
+	(_mm512_maskz_fnmsub_round_ps): Use
+	__builtin_ia32_vfnmsubps512_maskz.
+	(_mm512_maskz_fnmsub_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mask_fnmsub_pd): Use
+	__builtin_ia32_vfnmsubpd256_mask.
+	(_mm256_maskz_fnmsub_pd): Use __builtin_ia32_vfnmsubpd256_maskz.
+	(_mm_mask_fnmsub_pd): Use __builtin_ia32_vfmaddpd128_mask
+	(_mm_maskz_fnmsub_pd): Use __builtin_ia32_vfnmsubpd128_maskz.
+	(_mm256_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_mask.
+	(_mm256_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_mask.
+	(_mm256_maskz_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_maskz.
+	(_mm_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps128_mask.
+	(_mm_maskz_fnmsub_ps): Use __builtin_ia32_vfnmsubps128_maskz.
+	* config/i386/fmaintrin.h (_mm_fnmsub_pd): Use
+	__builtin_ia32_vfnmsubpd.
+	(_mm256_fnmsub_pd): Use __builtin_ia32_vfnmsubpd256.
+	(_mm_fnmsub_ps): Use __builtin_ia32_vfnmsubps.
+	(_mm256_fnmsub_ps): Use __builtin_ia32_vfnmsubps256.
+	(_mm_fnmsub_sd): Use __builtin_ia32_vfnmsubsd3.
+	(_mm_fnmsub_ss): Use __builtin_ia32_vfnmsubss3.
+	* config/i386/i386-builtin.def: Add
+	__builtin_ia32_vfnmsubpd256_mask,
+	__builtin_ia32_vfnmsubpd256_maskz,
+	__builtin_ia32_vfnmsubpd128_mask,
+	__builtin_ia32_vfnmsubpd128_maskz,
+	__builtin_ia32_vfnmsubps256_mask,
+	__builtin_ia32_vfnmsubps256_maskz,
+	__builtin_ia32_vfnmsubps128_mask,
+	__builtin_ia32_vfnmsubps128_maskz,
+	__builtin_ia32_vfnmsubpd512_mask,
+	__builtin_ia32_vfnmsubpd512_maskz,
+	__builtin_ia32_vfnmsubps512_mask,
+	__builtin_ia32_vfnmsubps512_maskz, __builtin_ia32_vfnmsubss3,
+	__builtin_ia32_vfnmsubsd3, __builtin_ia32_vfnmsubps,
+	__builtin_ia32_vfnmsubpd, __builtin_ia32_vfnmsubps256 and.
+	__builtin_ia32_vfnmsubpd256.
+	* config/i386/sse.md (fma4i_fnmsub_<mode>): New.
+	(<avx512>_fnmsub_<mode>_maskz<round_expand_name>): Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+	(fmai_vmfnmsub_<mode><round_name>): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* config/i386/avx512fintrin.h (_mm512_fnmadd_round_pd): Use
 	__builtin_ia32_vfnmaddpd512_mask.
 	(_mm512_mask_fnmadd_round_pd): Likewise.

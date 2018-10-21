@@ -1,6 +1,21 @@
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* gcc.target/i386/avx512f-fnmsub-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmsub-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmsub-sf-ymm-1.c: Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* gcc.target/i386/avx512f-fnmadd-df-zmm-1.c: New test.
 	* gcc.target/i386/avx512f-fnmadd-sf-zmm-1.c: Likewise.
 	* gcc.target/i386/avx512f-fnmadd-sf-zmm-2.c: Likewise.
