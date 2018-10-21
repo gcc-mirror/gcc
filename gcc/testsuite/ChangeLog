@@ -1,6 +1,42 @@
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* gcc.target/i386/avx-1.c (__builtin_ia32_vfmsubpd512_mask): New.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+	* testsuite/gcc.target/i386/sse-13.c
+	(__builtin_ia32_vfmsubpd512_mask): Likewise.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+	* testsuite/gcc.target/i386/sse-23.c
+	(__builtin_ia32_vfmsubpd512_mask): Likewise.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* gcc.target/i386/avx512f-fnmsub-df-zmm-1.c: New test.
 	* gcc.target/i386/avx512f-fnmsub-sf-zmm-1.c: Likewise.
 	* gcc.target/i386/avx512f-fnmsub-sf-zmm-2.c: Likewise.
