@@ -1,5 +1,13 @@
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/sse.md (*<plusminus_insn><mode>3<mask_name>_bcst_1):
+	Remove plus.  Renamed to ...
+	(*sub<mode>3<mask_name>_bcst): This.
+	(*add<mode>3<mask_name>_bcst_2): Renamede to ...
+	(*add<mode>3<mask_name>_bcst): This.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/72782
 	* config/i386/sse.md (*mul<mode>3<mask_name>_bcst): New.
 
