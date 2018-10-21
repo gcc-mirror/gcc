@@ -4606,42 +4606,76 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       cp_token *next
 	= exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
 
-      if (next->keyword == RID_MODULE && (first || gmf))
+      if (next->keyword == RID_MODULE)
+	goto is_module;
+
+      if (next->keyword == RID_IMPORT)
+	goto is_import;
+
+      if (next->type != CPP_NAME)
+	goto is_other;
+
+      if (flag_modules && !flag_module_keywords)
 	{
-	  if (!exporting && !gmf
-	      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
+	  /* For modules, we don't try tentative parsing.  You lose in
+	     global module fragment.  */
+	  if (C_RID_CODE (next->u.value) == RID_MODULE)
+	    goto is_module;
+
+	  if (C_RID_CODE (next->u.value) == RID_IMPORT)
 	    {
-	      cp_lexer_consume_token (parser->lexer); /* module */
-	      cp_lexer_consume_token (parser->lexer); /* ; */
-	      declare_module (NULL, next->location, false, NULL, parse_in);
-	      gmf = true;
+	      cp_parser_parse_tentatively (parser);
+	      goto is_import;
 	    }
-	  else
-	    {
-	      if (deferred_imports)
-		/* The GMF may have deferred imports.  Do them before
-		   we become a module.  */
-		process_deferred_imports (parse_in);
-	      if (exporting)
-		cp_lexer_consume_token (parser->lexer);
-	      cp_parser_module_declaration (parser, exporting);
-	      preamble = +1; /* In preamble.  */
-	      gmf = false;
-	    }
-	  deferred_imports = true;
 	}
-      else if (next->keyword == RID_IMPORT)
+      goto is_other;
+
+    is_module:
+      if (!first && !gmf)
+	goto is_other;
+
+      if (!exporting && !gmf
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
 	{
+	  cp_lexer_consume_token (parser->lexer); /* module */
+	  cp_lexer_consume_token (parser->lexer); /* ; */
+	  declare_module (NULL, next->location, false, NULL, parse_in);
+	  gmf = true;
+	}
+      else
+	{
+	  if (deferred_imports)
+	    /* The GMF may have deferred imports.  Do them before
+	       we become a module.  */
+	    process_deferred_imports (parse_in);
 	  if (exporting)
 	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_import_declaration (parser, exporting, preamble < 0);
-	  first = false;
-	  if (next == imp_tok)
-	    /* This was a macro-affecting import.  */
-	    break;
-	  deferred_imports = true;
+	  cp_parser_module_declaration (parser, exporting);
+	  preamble = +1; /* In preamble.  */
+	  gmf = false;
 	}
-      else if (token->type == CPP_CLOSE_BRACE)
+      deferred_imports = true;
+      first = false;
+      continue;
+          
+    is_import:
+      if (exporting)
+	cp_lexer_consume_token (parser->lexer);
+      cp_parser_import_declaration (parser, exporting, preamble < 0);
+      if (cp_parser_parsing_tentatively (parser)
+	  && !cp_parser_parse_definitely (parser))
+	goto is_other;
+
+      first = false;
+      if (next == imp_tok)
+	/* This was a macro-affecting import.  */
+	break;
+      deferred_imports = true;
+      first = false;
+      continue;
+
+    is_other:
+      if (token->type == CPP_CLOSE_BRACE)
 	{
 	  cp_parser_error (parser, "expected declaration");
 	  cp_lexer_consume_token (parser->lexer);
@@ -12804,6 +12838,7 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 {
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
     {
+      cp_parser_commit_to_tentative_parse (parser);
       cp_token *token = cp_lexer_consume_token (parser->lexer);
 
       if (!for_module)
@@ -12826,6 +12861,7 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
       parent = get_module (name, parent);
       if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
 	return parent;
+      cp_parser_commit_to_tentative_parse (parser);
     }
 }
 
@@ -12857,15 +12893,15 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   module_state *mod = cp_parser_module_name (parser, false);
+  if (!mod)
+    return;
+
   tree attrs = cp_parser_attributes_opt (parser);
 
-  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-  /* Don't try and resync after error, because we're probably due
-     another tokenize call.  */
+  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    return;
 
-  if (!mod)
-    ;
-  else if (past_preamble)
+  if (past_preamble)
     error_at (token->location,
 	      "module import declarations must be within preamble");
   else
@@ -39344,7 +39380,9 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (is_decl < 0)
 	;
-      else if (tok->keyword == RID_IMPORT)
+      else if (tok->keyword == RID_IMPORT
+	       || (!depth && tok->type == CPP_NAME && flag_modules
+		   && C_RID_CODE (tok->u.value) == RID_IMPORT))
 	{
 	  if (is_decl > 0)
 	    break;

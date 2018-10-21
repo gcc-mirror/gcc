@@ -1,5 +1,21 @@
 2018-10-21  Nathan Sidwell  <nathan@acm.org>
 
+	Add -fno-module-keywords.
+	gcc/
+	* doc/invoke.text (fmodule-keywords): Document.
+	gcc/cp/
+	* lex.c (init_reswords): Don't add module keywords if
+	fno-module-keywords.
+	*module_preprocess_token): Adjust.
+	* module.cc (module_State_config:get_opts): Drop fmodule-keywords.
+	* parser.c (cp_parser_import_declaration): Allow to be tentative.
+	(cp_parser_translation_unit): Allow module & import to not be
+	keywords. Tentatively parse import declaration.
+	(cp_parser_module_keyword): Commit to tentative parse.
+	(cp_parser_tokenize): Allow import to not be a keyword.
+	gcc/testsuite/
+	* g++.dg/modules/keywords-1_[ab].C: New.
+
 	gcc/cp/
 	* lex.c (module_preprocessing_token): Pay attention to braces.
 	* parser.c (cp_parser_tokenize): Return ptr to stopping import.

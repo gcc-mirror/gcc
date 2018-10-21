@@ -10885,6 +10885,7 @@ module_state_config::get_opts ()
 
       /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
+	  || opt->opt_index == OPT_fmodule_keywords
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
 	  || opt->opt_index == OPT_fforce_module_macros

@@ -2558,6 +2558,12 @@ Enable experimental support for n4720:``Working Draft, Extensions to
 C++ for Modules'' via p1103r1 ``Merging Modules'' The @option{-fno-modules} is
 usually not needed, as that is the default.  For now.
 
+@item -fno-module-keywords
+@opindex fno-module-keywords
+Disable @code{module} and @code{import} as keywords, thus allowing
+them to be used as identifiers even when @option{-fmodules-ts} is
+ineffect.  This is a non-standard extension.
+
 @item -fno-module-lazy
 @opindex fno-module-lazy
 @opindex fmodule-lazy

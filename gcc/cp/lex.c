@@ -229,7 +229,7 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_coroutines)
     mask |= D_CXX_COROUTINES;
-  if (!modules_p ())
+  if (!flag_modules || !flag_module_keywords)
     mask |= D_CXX_MODULES;
   if (!flag_tm)
     mask |= D_TRANSMEM;
@@ -381,7 +381,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
   switch (state & 3)
     {
     case 0: /* Just started.  */
-      if (!modules_p ())
+      if (!flag_modules)
 	return -1; /* Do not use  */
       /* FALLTHROUGH */
 
@@ -391,8 +391,8 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	  tree ident = HT_IDENT_TO_GCC_IDENT (HT_NODE (tok->val.node.node));
 	  int keyword = C_RID_CODE (ident);
 	  if (keyword == RID_EXPORT)
-	    return 1;  /* Remain at start.  */
-	  else if (keyword == RID_IMPORT)
+	    return depth | 1;  /* Remain at start.  */
+	  else if (!depth && keyword == RID_IMPORT)
 	    {
 	      cpp_enable_filename_token (pfile, true);
 	      return depth | 3; /* Just started import.  */
@@ -423,7 +423,7 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 
     case 3: /* Saw import.  */
       cpp_enable_filename_token (pfile, false);
-      if (!depth && (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING))
+      if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	{
 	  /* Load the legacy import.  */
 	  tree name = get_identifier_with_length
