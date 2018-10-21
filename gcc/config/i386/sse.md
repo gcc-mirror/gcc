@@ -1754,6 +1754,18 @@
    (set_attr "btver2_decode" "direct,double")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "*mul<mode>3<mask_name>_bcst"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v")
+	(mult:VF_AVX512
+	  (vec_duplicate:VF_AVX512
+	     (match_operand:<ssescalarmode> 1 "memory_operand" "m"))
+	  (match_operand:VF_AVX512 2 "register_operand" "v")))]
+  "TARGET_AVX512F && <mask_mode512bit_condition>"
+  "vmul<ssemodesuffix>\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<<avx512bcst>>}"
+  [(set_attr "prefix" "evex")
+   (set_attr "type" "ssemul")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<sse>_vm<multdiv_mnemonic><mode>3<mask_scalar_name><round_scalar_name>"
   [(set (match_operand:VF_128 0 "register_operand" "=x,v")
 	(vec_merge:VF_128
