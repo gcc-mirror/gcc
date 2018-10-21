@@ -1684,21 +1684,21 @@
    (set_attr "prefix" "<mask_prefix3>")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*<plusminus_insn><mode>3<mask_name>_bcst_1"
+(define_insn "*sub<mode>3<mask_name>_bcst"
   [(set (match_operand:VF_AVX512 0 "register_operand" "=v")
-	(plusminus:VF_AVX512
+	(minus:VF_AVX512
 	  (match_operand:VF_AVX512 1 "register_operand" "v")
 	  (vec_duplicate:VF_AVX512
 	    (match_operand:<ssescalarmode> 2 "memory_operand" "m"))))]
   "TARGET_AVX512F
-   && ix86_binary_operator_ok (<CODE>, <MODE>mode, operands)
+   && ix86_binary_operator_ok (MINUS, <MODE>mode, operands)
    && <mask_mode512bit_condition>"
-  "v<plusminus_mnemonic><ssemodesuffix>\t{%2<avx512bcst>, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<avx512bcst>}"
+  "vsub<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<avx512bcst>}"
   [(set_attr "prefix" "evex")
    (set_attr "type" "sseadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "*add<mode>3<mask_name>_bcst_2"
+(define_insn "*add<mode>3<mask_name>_bcst"
   [(set (match_operand:VF_AVX512 0 "register_operand" "=v")
 	(plus:VF_AVX512
 	  (vec_duplicate:VF_AVX512
