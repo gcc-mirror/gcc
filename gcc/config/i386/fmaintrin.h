@@ -86,48 +86,48 @@ extern __inline __m128d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fmsub_pd (__m128d __A, __m128d __B, __m128d __C)
 {
-  return (__m128d)__builtin_ia32_vfmaddpd ((__v2df)__A, (__v2df)__B,
-                                           -(__v2df)__C);
+  return (__m128d)__builtin_ia32_vfmsubpd ((__v2df)__A, (__v2df)__B,
+                                           (__v2df)__C);
 }
 
 extern __inline __m256d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_fmsub_pd (__m256d __A, __m256d __B, __m256d __C)
 {
-  return (__m256d)__builtin_ia32_vfmaddpd256 ((__v4df)__A, (__v4df)__B,
-                                              -(__v4df)__C);
+  return (__m256d)__builtin_ia32_vfmsubpd256 ((__v4df)__A, (__v4df)__B,
+                                              (__v4df)__C);
 }
 
 extern __inline __m128
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fmsub_ps (__m128 __A, __m128 __B, __m128 __C)
 {
-  return (__m128)__builtin_ia32_vfmaddps ((__v4sf)__A, (__v4sf)__B,
-                                          -(__v4sf)__C);
+  return (__m128)__builtin_ia32_vfmsubps ((__v4sf)__A, (__v4sf)__B,
+                                          (__v4sf)__C);
 }
 
 extern __inline __m256
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_fmsub_ps (__m256 __A, __m256 __B, __m256 __C)
 {
-  return (__m256)__builtin_ia32_vfmaddps256 ((__v8sf)__A, (__v8sf)__B,
-                                             -(__v8sf)__C);
+  return (__m256)__builtin_ia32_vfmsubps256 ((__v8sf)__A, (__v8sf)__B,
+                                             (__v8sf)__C);
 }
 
 extern __inline __m128d
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fmsub_sd (__m128d __A, __m128d __B, __m128d __C)
 {
-  return (__m128d)__builtin_ia32_vfmaddsd3 ((__v2df)__A, (__v2df)__B,
-                                            -(__v2df)__C);
+  return (__m128d)__builtin_ia32_vfmsubsd3 ((__v2df)__A, (__v2df)__B,
+                                            (__v2df)__C);
 }
 
 extern __inline __m128
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_fmsub_ss (__m128 __A, __m128 __B, __m128 __C)
 {
-  return (__m128)__builtin_ia32_vfmaddss3 ((__v4sf)__A, (__v4sf)__B,
-                                           -(__v4sf)__C);
+  return (__m128)__builtin_ia32_vfmsubss3 ((__v4sf)__A, (__v4sf)__B,
+                                           (__v4sf)__C);
 }
 
 extern __inline __m128d
