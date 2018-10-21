@@ -3748,6 +3748,14 @@
 	  (match_operand:FMAMODE_AVX512 2 "nonimmediate_operand")
 	  (match_operand:FMAMODE_AVX512 3 "nonimmediate_operand")))])
 
+(define_expand "fma4i_fmsub_<mode>"
+  [(set (match_operand:FMAMODE_AVX512 0 "register_operand")
+	(fma:FMAMODE_AVX512
+	  (match_operand:FMAMODE_AVX512 1 "nonimmediate_operand")
+	  (match_operand:FMAMODE_AVX512 2 "nonimmediate_operand")
+	  (neg:FMAMODE_AVX512
+	    (match_operand:FMAMODE_AVX512 3 "nonimmediate_operand"))))])
+
 (define_expand "<avx512>_fmadd_<mode>_maskz<round_expand_name>"
   [(match_operand:VF_AVX512VL 0 "register_operand")
    (match_operand:VF_AVX512VL 1 "<round_expand_nimm_predicate>")
@@ -3886,6 +3894,20 @@
    (set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "<avx512>_fmsub_<mode>_maskz<round_expand_name>"
+  [(match_operand:VF_AVX512VL 0 "register_operand")
+   (match_operand:VF_AVX512VL 1 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512VL 2 "<round_expand_nimm_predicate>")
+   (match_operand:VF_AVX512VL 3 "<round_expand_nimm_predicate>")
+   (match_operand:<avx512fmaskmode> 4 "register_operand")]
+  "TARGET_AVX512F && <round_mode512bit_condition>"
+{
+  emit_insn (gen_fma_fmsub_<mode>_maskz_1<round_expand_name> (
+    operands[0], operands[1], operands[2], operands[3],
+    CONST0_RTX (<MODE>mode), operands[4]<round_expand_operand>));
+  DONE;
+})
+
 (define_insn "<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name><round_name>"
   [(set (match_operand:VF_SF_AVX512VL 0 "register_operand" "=v,v,v")
 	(fma:VF_SF_AVX512VL
@@ -3898,6 +3920,49 @@
    vfmsub132<ssemodesuffix>\t{<round_sd_mask_op4>%2, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2<round_sd_mask_op4>}
    vfmsub213<ssemodesuffix>\t{<round_sd_mask_op4>%3, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<round_sd_mask_op4>}
    vfmsub231<ssemodesuffix>\t{<round_sd_mask_op4>%2, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<round_sd_mask_op4>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (match_operand:VF_AVX512 1 "register_operand" "0,v")
+	  (match_operand:VF_AVX512 2 "register_operand" "v,0")
+	  (neg:VF_AVX512
+	    (vec_duplicate:VF_AVX512
+	      (match_operand:<ssescalarmode> 3 "memory_operand" "m,m")))))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "vfmsub213<ssemodesuffix>\t{%3<avx512bcst>, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %3<avx512bcst>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_2"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (vec_duplicate:VF_AVX512
+	    (match_operand:<ssescalarmode> 1 "memory_operand" "m,m"))
+	  (match_operand:VF_AVX512 2 "register_operand" "0,v")
+	  (neg:VF_AVX512
+	    (match_operand:VF_AVX512 3 "register_operand" "v,0"))))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "@
+   vfmsub132<ssemodesuffix>\t{%1<avx512bcst>, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %1<avx512bcst>}
+   vfmsub231<ssemodesuffix>\t{%1<avx512bcst>, %2, %0<sd_mask_op4>|%0<sd_mask_op4>, %2, %1<avx512bcst>}"
+  [(set_attr "type" "ssemuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_3"
+  [(set (match_operand:VF_AVX512 0 "register_operand" "=v,v")
+	(fma:VF_AVX512
+	  (match_operand:VF_AVX512 1 "register_operand" "0,v")
+	  (vec_duplicate:VF_AVX512
+	    (match_operand:<ssescalarmode> 2 "memory_operand" "m,m"))
+	  (neg:VF_AVX512
+	    (match_operand:VF_AVX512 3 "nonimmediate_operand" "v,0"))))]
+  "TARGET_AVX512F && <sd_mask_mode512bit_condition>"
+  "@
+   vfmsub132<ssemodesuffix>\t{%2<avx512bcst>, %3, %0<sd_mask_op4>|%0<sd_mask_op4>, %3, %2<avx512bcst>}
+   vfmsub231<ssemodesuffix>\t{%2<avx512bcst>, %1, %0<sd_mask_op4>|%0<sd_mask_op4>, %1, %2<avx512bcst>}"
   [(set_attr "type" "ssemuladd")
    (set_attr "mode" "<MODE>")])
 
@@ -4245,6 +4310,18 @@
 	    (match_operand:VF_128 1 "<round_nimm_predicate>")
 	    (match_operand:VF_128 2 "<round_nimm_predicate>")
 	    (match_operand:VF_128 3 "<round_nimm_predicate>"))
+	  (match_dup 1)
+	  (const_int 1)))]
+  "TARGET_FMA")
+
+(define_expand "fmai_vmfmsub_<mode><round_name>"
+  [(set (match_operand:VF_128 0 "register_operand")
+	(vec_merge:VF_128
+	  (fma:VF_128
+	    (match_operand:VF_128 1 "<round_nimm_predicate>")
+	    (match_operand:VF_128 2 "<round_nimm_predicate>")
+	    (neg:VF_128
+	      (match_operand:VF_128 3 "<round_nimm_predicate>")))
 	  (match_dup 1)
 	  (const_int 1)))]
   "TARGET_FMA")
