@@ -3271,10 +3271,10 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	   template <typename T> struct B : public A<T> { X x; };
 
 	 The user should have said "typename A<T>::X".  */
-      if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_CONSTEXPR])
+      if (cxx_dialect < cxx11 && C_RID_CODE (id) == RID_CONSTEXPR)
 	inform (location, "C++11 %<constexpr%> only available with "
 		"-std=c++11 or -std=gnu++11");
-      else if (cxx_dialect < cxx11 && id == ridpointers[(int)RID_NOEXCEPT])
+      else if (cxx_dialect < cxx11 && C_RID_CODE (id) == RID_NOEXCEPT)
 	inform (location, "C++11 %<noexcept%> only available with "
 		"-std=c++11 or -std=gnu++11");
       else if (cxx_dialect < cxx11
@@ -3282,12 +3282,15 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	       && id_equal (id, "thread_local"))
 	inform (location, "C++11 %<thread_local%> only available with "
 		"-std=c++11 or -std=gnu++11");
-      else if (!flag_concepts && id == ridpointers[(int)RID_CONCEPT])
+      else if (!flag_concepts && C_RID_CODE (id) == RID_CONCEPT)
 	inform (location, "%<concept%> only available with -fconcepts");
-      else if (!modules_p () && (id == ridpointers[(int)RID_MODULE]
-				 || id == ridpointers[(int)RID_IMPORT]))
-	inform (location,
-		"%qE only available with -fmodules-ts or -fmodules-atom", id);
+      else if (C_RID_CODE (id) == RID_MODULE || C_RID_CODE (id) == RID_IMPORT)
+	{
+	  if (!flag_modules)
+	    inform (location, "%qE only available with -fmodules-ts", id);
+	  else
+	    inform (location, "%E-declaration not permitted here", id);
+	}
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
