@@ -41,9 +41,7 @@
  * between different GCC releases </STRONG> for these features.
  */
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <utility>
 #include <type_traits>

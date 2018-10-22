@@ -25,5 +25,5 @@ void test01()
   using std::experimental::any_cast;
 
   const any y(1);
-  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 359 }
+  any_cast<int&>(y); // { dg-error "qualifiers" "" { target { *-*-* } } 357 }
 }

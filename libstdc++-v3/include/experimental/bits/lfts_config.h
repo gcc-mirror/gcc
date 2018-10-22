@@ -27,9 +27,7 @@
  *  Do not attempt to use it directly.
  */
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 #include <bits/c++config.h>
 
 #if _GLIBCXX_INLINE_VERSION
