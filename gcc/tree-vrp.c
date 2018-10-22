@@ -1328,7 +1328,7 @@ combine_bound (enum tree_code code, wide_int &wi, wi::overflow_type &ovf,
    underflow.  +1 indicates overflow.  0 indicates neither.  */
 
 static void
-set_value_range_with_overflow (value_range &vr,
+set_value_range_with_overflow (value_range_kind &kind, tree &min, tree &max,
 			       tree type,
 			       const wide_int &wmin, const wide_int &wmax,
 			       wi::overflow_type min_ovf,
@@ -1341,7 +1341,7 @@ set_value_range_with_overflow (value_range &vr,
      range covers all values.  */
   if (prec == 1 && wi::lt_p (wmax, wmin, sgn))
     {
-      set_value_range_to_varying (&vr);
+      kind = VR_VARYING;
       return;
     }
 
@@ -1357,13 +1357,15 @@ set_value_range_with_overflow (value_range &vr,
 	     the entire range.  We have a similar check at the end of
 	     extract_range_from_binary_expr_1.  */
 	  if (wi::gt_p (tmin, tmax, sgn))
-	    vr.set_varying ();
+	    kind = VR_VARYING;
 	  else
-	    /* No overflow or both overflow or underflow.  The
-	       range kind stays VR_RANGE.  */
-	    vr = value_range (VR_RANGE,
-			      wide_int_to_tree (type, tmin),
-			      wide_int_to_tree (type, tmax));
+	    {
+	      kind = VR_RANGE;
+	      /* No overflow or both overflow or underflow.  The
+		 range kind stays VR_RANGE.  */
+	      min = wide_int_to_tree (type, tmin);
+	      max = wide_int_to_tree (type, tmax);
+	    }
 	  return;
 	}
       else if ((min_ovf == wi::OVF_UNDERFLOW && max_ovf == wi::OVF_NONE)
@@ -1384,18 +1386,18 @@ set_value_range_with_overflow (value_range &vr,
 	     types values.  */
 	  if (covers || wi::cmp (tmin, tmax, sgn) > 0)
 	    {
-	      set_value_range_to_varying (&vr);
+	      kind = VR_VARYING;
 	      return;
 	    }
-	  vr = value_range (VR_ANTI_RANGE,
-			    wide_int_to_tree (type, tmin),
-			    wide_int_to_tree (type, tmax));
+	  kind = VR_ANTI_RANGE;
+	  min = wide_int_to_tree (type, tmin);
+	  max = wide_int_to_tree (type, tmax);
 	  return;
 	}
       else
 	{
 	  /* Other underflow and/or overflow, drop to VR_VARYING.  */
-	  set_value_range_to_varying (&vr);
+	  kind = VR_VARYING;
 	  return;
 	}
     }
@@ -1405,7 +1407,7 @@ set_value_range_with_overflow (value_range &vr,
 	 value.  */
       wide_int type_min = wi::min_value (prec, sgn);
       wide_int type_max = wi::max_value (prec, sgn);
-      tree min, max;
+      kind = VR_RANGE;
       if (min_ovf == wi::OVF_UNDERFLOW)
 	min = wide_int_to_tree (type, type_min);
       else if (min_ovf == wi::OVF_OVERFLOW)
@@ -1419,7 +1421,6 @@ set_value_range_with_overflow (value_range &vr,
 	max = wide_int_to_tree (type, type_max);
       else
 	max = wide_int_to_tree (type, wmax);
-      vr = value_range (VR_RANGE, min, max);
     }
 }
 
@@ -1676,21 +1677,23 @@ extract_range_from_binary_expr_1 (value_range *vr,
 	    }
 
 	  /* Adjust the range for possible overflow.  */
-	  set_value_range_with_overflow (*vr, expr_type,
+	  min = NULL_TREE;
+	  max = NULL_TREE;
+	  set_value_range_with_overflow (type, min, max, expr_type,
 					 wmin, wmax, min_ovf, max_ovf);
-	  if (vr->varying_p ())
-	    return;
+	  if (type == VR_VARYING)
+	    {
+	      set_value_range_to_varying (vr);
+	      return;
+	    }
 
 	  /* Build the symbolic bounds if needed.  */
-	  min = vr->min ();
-	  max = vr->max ();
 	  adjust_symbolic_bound (min, code, expr_type,
 				 sym_min_op0, sym_min_op1,
 				 neg_min_op0, neg_min_op1);
 	  adjust_symbolic_bound (max, code, expr_type,
 				 sym_max_op0, sym_max_op1,
 				 neg_max_op0, neg_max_op1);
-	  type = vr->kind ();
 	}
       else
 	{

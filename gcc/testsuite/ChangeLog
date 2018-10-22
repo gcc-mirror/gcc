@@ -1,3 +1,8 @@
+2018-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87640
+	* gcc.dg/torture/pr87640.c: New testcase.
+
 2018-10-22  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/litpool-int.c: New test.
