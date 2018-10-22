@@ -1,5 +1,10 @@
 2018-10-22  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/87682
+	* mem-stats.h (mem_usage::operator==): Fix pasto.
+
+2018-10-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87640
 	* tree-vrp.c (set_value_range_with_overflow): Decompose
 	incomplete result.
