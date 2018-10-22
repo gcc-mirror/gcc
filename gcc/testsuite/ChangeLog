@@ -1,3 +1,8 @@
+2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn19.ad[sb]: New test.
+	* gnat.dg/warn19_pkg.ads: New helper.
+
 2018-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87640
