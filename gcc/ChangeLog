@@ -1,3 +1,14 @@
+2018-10-22  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87600
+	* combine.c: Add include of expr.h.
+	(cant_combine_insn_p): Do not combine moves from any hard non-fixed
+	register to a pseudo.
+	(make_more_copies): New function, add a copy to a new pseudo after
+	the moves from hard registers into pseudos.
+	(rest_of_handle_combine): Declare rebuild_jump_labels_after_combine
+	later.  Call make_more_copies.
+
 2018-10-22  Andrew Stubbs  <ams@codesourcery.com>
 
 	* lra-constraints.c (process_alt_operands): New local array,
