@@ -1,3 +1,18 @@
+2018-10-22  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Be
+	smarter about what ranges to use.
+	* tree-vrp.c (add_assert_info): Dump here.
+	(register_edge_assert_for_2): Instead of here at multiple but
+	not all places.
+
+	* gcc.dg/tree-ssa/evrp12.c: New testcase.
+	* gcc.dg/predict-6.c: Adjust.
+	* gcc.dg/tree-ssa/vrp33.c: Disable EVRP.
+	* gcc.dg/tree-ssa/vrp02.c: Likewise.
+	* gcc.dg/tree-ssa/cunroll-9.c: Likewise.
+
 2018-10-22  Steven Bosscher <steven@gcc.gnu.org>
 	Richard Biener  <rguenther@suse.de>
 
