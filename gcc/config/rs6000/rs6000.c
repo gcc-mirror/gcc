@@ -21273,7 +21273,7 @@ print_operand_address (FILE *file, rtx x)
 	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base_oac, 0, 1))]);
     }
   else
-    gcc_unreachable ();
+    output_addr_const (file, x);
 }
 
 /* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
