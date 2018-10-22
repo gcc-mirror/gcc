@@ -1064,7 +1064,7 @@ adjust_last_stmt (strinfo *si, gimple *stmt, bool is_strcat)
 
       if (!integer_zerop (gimple_assign_rhs1 (last.stmt)))
 	return;
-      if (stmt_could_throw_p (last.stmt))
+      if (stmt_could_throw_p (cfun, last.stmt))
 	return;
       gsi = gsi_for_stmt (last.stmt);
       unlink_stmt_vdef (last.stmt);
@@ -3253,7 +3253,7 @@ handle_char_store (gimple_stmt_iterator *gsi)
 	{
 	  /* When overwriting a '\0' with a '\0', the store can be removed
 	     if we know it has been stored in the current function.  */
-	  if (!stmt_could_throw_p (stmt) && si->writable)
+	  if (!stmt_could_throw_p (cfun, stmt) && si->writable)
 	    {
 	      unlink_stmt_vdef (stmt);
 	      release_defs (stmt);

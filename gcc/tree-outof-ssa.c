@@ -65,7 +65,7 @@ ssa_is_replaceable_p (gimple *stmt)
     return false;
 
   /* If the statement may throw an exception, it cannot be replaced.  */
-  if (stmt_could_throw_p (stmt))
+  if (stmt_could_throw_p (cfun, stmt))
     return false;
 
   /* Punt if there is more than 1 def.  */

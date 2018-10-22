@@ -1392,7 +1392,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 
   /* Build an EH edge for the direct call if necessary.  */
   lp_nr = lookup_stmt_eh_lp (icall_stmt);
-  if (lp_nr > 0 && stmt_could_throw_p (dcall_stmt))
+  if (lp_nr > 0 && stmt_could_throw_p (cfun, dcall_stmt))
     {
       add_stmt_to_eh_lp (dcall_stmt, lp_nr);
     }
@@ -1410,7 +1410,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 		     PHI_ARG_DEF_FROM_EDGE (phi, e_eh));
 	  }
        }
-  if (!stmt_could_throw_p (dcall_stmt))
+  if (!stmt_could_throw_p (cfun, dcall_stmt))
     gimple_purge_dead_eh_edges (dcall_bb);
   return dcall_stmt;
 }
@@ -1634,8 +1634,8 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, profile_probabi
     }
 
   /* Because these are all string op builtins, they're all nothrow.  */
-  gcc_assert (!stmt_could_throw_p (vcall_stmt));
-  gcc_assert (!stmt_could_throw_p (icall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, vcall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, icall_stmt));
 }
 
 /* Find values inside STMT for that we want to measure histograms for

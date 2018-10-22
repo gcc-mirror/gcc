@@ -1,3 +1,93 @@
+2018-10-22  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-eh.h (stmt_could_throw_p): Add function parameter.
+	(stmt_can_throw_external): Likewise.
+	(stmt_can_throw_internal): Likewise.
+	* tree-eh.c (lower_eh_constructs_2): Pass cfun to stmt_could_throw_p.
+	(lower_eh_constructs_2): Likewise.
+	(stmt_could_throw_p): Add fun parameter, use it instead of cfun.
+	(stmt_can_throw_external): Likewise.
+	(stmt_can_throw_internal): Likewise.
+	(maybe_clean_eh_stmt_fn): Pass cfun to stmt_could_throw_p.
+	(maybe_clean_or_replace_eh_stmt): Pass cfun to stmt_could_throw_p.
+	(maybe_duplicate_eh_stmt_fn): Pass new_fun to stmt_could_throw_p.
+	(maybe_duplicate_eh_stmt): Pass cfun to stmt_could_throw_p.
+	(pass_lower_eh_dispatch::execute): Pass cfun to
+	stmt_can_throw_external.
+	(cleanup_empty_eh): Likewise.
+	(verify_eh_edges): Pass cfun to stmt_could_throw_p.
+	* cgraph.c (cgraph_edge::set_call_stmt): Pass a function to
+	stmt_can_throw_external instead of pushing it to cfun.
+	(symbol_table::create_edge): Likewise.
+	* gimple-fold.c (fold_builtin_atomic_compare_exchange): Pass cfun to
+	stmt_can_throw_internal.
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Pass cfun
+	to stmt_could_throw_p.
+	* gimple-ssa-store-merging.c (handled_load): Pass cfun to
+	stmt_can_throw_internal.
+	(pass_store_merging::execute): Likewise.
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_dom_children): Pass cfun to
+	stmt_could_throw_p.
+	* gimplify-me.c (gimple_regimplify_operands): Pass cfun to
+	stmt_can_throw_internal.
+	* ipa-pure-const.c (check_call): Pass cfun to stmt_could_throw_p and
+	to stmt_can_throw_external.
+	(check_stmt): Pass cfun to stmt_could_throw_p.
+	(check_stmt): Pass cfun to stmt_can_throw_external.
+	(pass_nothrow::execute): Likewise.
+	* trans-mem.c (expand_call_tm): Pass cfun to stmt_can_throw_internal.
+	* tree-cfg.c (is_ctrl_altering_stmt): Pass cfun to
+	stmt_can_throw_internal.
+	(verify_gimple_in_cfg): Pass cfun to stmt_could_throw_p.
+	(stmt_can_terminate_bb_p): Pass cfun to stmt_can_throw_external.
+	(gimple_purge_dead_eh_edges): Pass cfun to stmt_can_throw_internal.
+	* tree-complex.c (expand_complex_libcall): Pass cfun to
+	stmt_could_throw_p and to stmt_can_throw_internal.
+	(expand_complex_multiplication): Pass cfun to stmt_can_throw_internal.
+	* tree-inline.c (copy_edges_for_bb): Likewise.
+	(maybe_move_debug_stmts_to_successors): Likewise.
+	* tree-outof-ssa.c (ssa_is_replaceable_p): Pass cfun to
+	stmt_could_throw_p.
+	* tree-parloops.c (oacc_entry_exit_ok_1): Likewise.
+	* tree-sra.c (scan_function): Pass cfun to stmt_can_throw_external.
+	* tree-ssa-alias.c (stmt_kills_ref_p): Pass cfun to
+	stmt_can_throw_internal.
+	* tree-ssa-ccp.c (optimize_atomic_bit_test_and): Likewise.
+	* tree-ssa-dce.c (mark_stmt_if_obviously_necessary): Pass cfun to
+	stmt_could_throw_p.
+	(mark_aliased_reaching_defs_necessary_1): Pass cfun to
+	stmt_can_throw_internal.
+	* tree-ssa-forwprop.c (pass_forwprop::execute): Likewise.
+	* tree-ssa-loop-im.c (movement_possibility): Pass cfun to
+	stmt_could_throw_p.
+	* tree-ssa-loop-ivopts.c (find_givs_in_stmt_scev): Likewise.
+	(add_autoinc_candidates): Pass cfun to stmt_can_throw_internal.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Likewise.
+	(convert_mult_to_fma_1): Likewise.
+	(convert_to_divmod): Likewise.
+	* tree-ssa-phiprop.c (propagate_with_phi): Likewise.
+	* tree-ssa-pre.c (compute_avail): Pass cfun to stmt_could_throw_p.
+	* tree-ssa-propagate.c
+	(substitute_and_fold_dom_walker::before_dom_children): Likewise.
+	* tree-ssa-reassoc.c (suitable_cond_bb): Likewise.
+	(maybe_optimize_range_tests): Likewise.
+	(linearize_expr_tree): Likewise.
+	(reassociate_bb): Likewise.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Likewise.
+	* tree-ssa-scopedtables.c (hashable_expr_equal_p): Likewise.
+	* tree-ssa-strlen.c (adjust_last_stmt): Likewise.
+	(handle_char_store): Likewise.
+	* tree-vect-data-refs.c (vect_find_stmt_data_reference): Pass cfun to
+	stmt_can_throw_internal.
+	* tree-vect-patterns.c (check_bool_pattern): Pass cfun to
+	stmt_could_throw_p.
+	* tree-vect-stmts.c (vect_finish_stmt_generation_1): Likewise.
+	(vectorizable_call): Pass cfun to stmt_can_throw_internal.
+	(vectorizable_simd_clone_call): Likewise.
+	* value-prof.c (gimple_ic): Pass cfun to stmt_could_throw_p.
+	(gimple_stringop_fixed_value): Likewise.
+
 2018-10-22  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_loadrelative_operand_p): Accept

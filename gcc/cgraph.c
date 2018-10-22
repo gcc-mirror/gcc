@@ -815,9 +815,8 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
       e = make_direct (new_callee);
     }
 
-  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-  e->can_throw_external = stmt_can_throw_external (new_stmt);
-  pop_cfun ();
+  function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
+  e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
   if (e->caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (e);
 }
@@ -870,10 +869,9 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->count = count;
 
   edge->call_stmt = call_stmt;
-  push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
   edge->can_throw_external
-    = call_stmt ? stmt_can_throw_external (call_stmt) : false;
-  pop_cfun ();
+    = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
+					   call_stmt) : false;
   if (call_stmt
       && callee && callee->decl
       && !gimple_check_call_matching_types (call_stmt, callee->decl,

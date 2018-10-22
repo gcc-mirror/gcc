@@ -302,7 +302,7 @@ movement_possibility (gimple *stmt)
   if (stmt_ends_bb_p (stmt)
       || gimple_has_volatile_ops (stmt)
       || gimple_has_side_effects (stmt)
-      || stmt_could_throw_p (stmt))
+      || stmt_could_throw_p (cfun, stmt))
     return MOVE_IMPOSSIBLE;
 
   if (is_gimple_call (stmt))
