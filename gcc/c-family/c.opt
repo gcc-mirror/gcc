@@ -366,6 +366,10 @@ Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined.
 
+Wc11-c2x-compat
+C ObjC Var(warn_c11_c2x_compat) Init(-1) Warning
+Warn about features not present in ISO C11, but present in ISO C2X.
+
 Wc90-c99-compat
 C ObjC CPP(cpp_warn_c90_c99_compat) CppReason(CPP_W_C90_C99_COMPAT) Var(warn_c90_c99_compat) Init(-1) Warning
 Warn about features not present in ISO C90, but present in ISO C99.
@@ -2038,11 +2042,15 @@ Deprecated in favor of -std=c11.
 
 std=c17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=c18
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
+
+std=c2x
+C ObjC
+Conform to the ISO 202X C standard draft (experimental and incomplete support).
 
 std=c89
 C ObjC Alias(std=c90)
@@ -2108,11 +2116,15 @@ Deprecated in favor of -std=gnu11.
 
 std=gnu17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
 std=gnu18
 C ObjC Alias(std=gnu17)
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
+
+std=gnu2x
+C ObjC
+Conform to the ISO 202X C standard draft with GNU extensions (experimental and incomplete support).
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2152,11 +2164,11 @@ Conform to the ISO 2011 C standard.
 
 std=iso9899:2017
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=iso9899:2018
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 traditional
 Driver

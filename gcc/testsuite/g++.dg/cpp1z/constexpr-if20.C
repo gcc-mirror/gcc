@@ -1,5 +1,5 @@
 // PR c++/85214
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct g {
   constexpr operator int() { return true; }

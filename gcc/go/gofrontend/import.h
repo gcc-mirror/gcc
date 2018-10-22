@@ -184,6 +184,15 @@ class Import
   advance(size_t skip)
   { this->stream_->advance(skip); }
 
+  // Skip a semicolon if using an older version.
+  void
+  require_semicolon_if_old_version()
+  {
+    if (this->version_ == EXPORT_FORMAT_V1
+	|| this->version_ == EXPORT_FORMAT_V2)
+      this->require_c_string(";");
+  }
+
   // Read an identifier.
   std::string
   read_identifier();
@@ -231,6 +240,10 @@ class Import
   // Read an import line.
   void
   read_one_import();
+
+  // Read an indirectimport line.
+  void
+  read_one_indirect_import();
 
   // Read the import control functions and init graph.
   void

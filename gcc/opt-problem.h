@@ -214,7 +214,7 @@ class opt_result : public opt_wrapper <bool>
   /* Private ctor.  Instances should be created by the success and failure
      static member functions.  */
   opt_result (wrapped_t result, opt_problem *problem)
-  : opt_wrapper (result, problem)
+  : opt_wrapper <bool> (result, problem)
   {}
 };
 

@@ -5436,6 +5436,24 @@ resolve_variable (gfc_expr *e)
 	gfc_fix_class_refs (e);
       if (!sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
 	return false;
+      else if (sym->attr.dimension && (!e->ref || e->ref->type != REF_ARRAY))
+	{
+	  /* This can happen because the parser did not detect that the
+	     associate name is an array and the expression had no array
+	     part_ref.  */
+	  gfc_ref *ref = gfc_get_ref ();
+	  ref->type = REF_ARRAY;
+	  ref->u.ar = *gfc_get_array_ref();
+	  ref->u.ar.type = AR_FULL;
+	  if (sym->as)
+	    {
+	      ref->u.ar.as = sym->as;
+	      ref->u.ar.dimen = sym->as->rank;
+	    }
+	  ref->next = e->ref;
+	  e->ref = ref;
+
+	}
     }
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.generic)
@@ -8675,6 +8693,18 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  if (as->corank != 0)
 	    sym->attr.codimension = 1;
 	}
+      else if (sym->ts.type == BT_CLASS && (!CLASS_DATA (sym)->as || sym->assoc->rankguessed))
+	{
+	  if (!CLASS_DATA (sym)->as)
+	    CLASS_DATA (sym)->as = gfc_get_array_spec ();
+	  as = CLASS_DATA (sym)->as;
+	  as->rank = target->rank;
+	  as->type = AS_DEFERRED;
+	  as->corank = gfc_get_corank (target);
+	  CLASS_DATA (sym)->attr.dimension = 1;
+	  if (as->corank != 0)
+	    CLASS_DATA (sym)->attr.codimension = 1;
+	}
     }
   else
     {
@@ -8875,9 +8905,24 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
   if (code->expr2)
     {
-      if (code->expr1->symtree->n.sym->attr.untyped)
-	code->expr1->symtree->n.sym->ts = code->expr2->ts;
-      selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+      gfc_ref *ref2 = NULL;
+      for (ref = code->expr2->ref; ref != NULL; ref = ref->next)
+	 if (ref->type == REF_COMPONENT
+	     && ref->u.c.component->ts.type == BT_CLASS)
+	   ref2 = ref;
+
+      if (ref2)
+	{
+	  if (code->expr1->symtree->n.sym->attr.untyped)
+	    code->expr1->symtree->n.sym->ts = ref2->u.c.component->ts;
+	  selector_type = CLASS_DATA (ref2->u.c.component)->ts.u.derived;
+	}
+      else
+	{
+	  if (code->expr1->symtree->n.sym->attr.untyped)
+	    code->expr1->symtree->n.sym->ts = code->expr2->ts;
+	  selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+	}
 
       if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
 	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;

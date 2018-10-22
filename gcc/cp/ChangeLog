@@ -1,3 +1,17 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-c++): New.
+	(CPP_SELFTEST_FLAGS, CPP_SELFTEST_DEPS, s-selftest-c++)
+	(selftest-c++-gdb, selftest-c++-valgrind): Move here from
+	gcc/Makefile.in.
+
+2018-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84705
+	* tree.c (build_cplus_new): Avoid duplicate diagnostic about
+	incomplete type, early return error_mark_node if the second
+	argument is error_mark_node.
+
 2018-10-12  Nathan Sidwell  <nathan@acm.org>
 
 	* parser.h (struct cp_parser): Drop implicit_extern_c.

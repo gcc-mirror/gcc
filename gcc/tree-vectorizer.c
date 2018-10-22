@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gimple-pretty-print.h"
 #include "opt-problem.h"
+#include "internal-fn.h"
 
 
 /* Loop or bb location, with hotness information.  */
@@ -899,23 +900,30 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	  && ! loop->inner)
 	{
 	  basic_block bb = loop->header;
-	  bool has_mask_load_store = false;
+	  bool require_loop_vectorize = false;
 	  for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
 	       !gsi_end_p (gsi); gsi_next (&gsi))
 	    {
 	      gimple *stmt = gsi_stmt (gsi);
-	      if (is_gimple_call (stmt)
-		  && gimple_call_internal_p (stmt)
-		  && (gimple_call_internal_fn (stmt) == IFN_MASK_LOAD
-		      || gimple_call_internal_fn (stmt) == IFN_MASK_STORE))
+	      gcall *call = dyn_cast <gcall *> (stmt);
+	      if (call && gimple_call_internal_p (call))
 		{
-		  has_mask_load_store = true;
-		  break;
+		  internal_fn ifn = gimple_call_internal_fn (call);
+		  if (ifn == IFN_MASK_LOAD || ifn == IFN_MASK_STORE
+		      /* Don't keep the if-converted parts when the ifn with
+			 specifc type is not supported by the backend.  */
+		      || (direct_internal_fn_p (ifn)
+			  && !direct_internal_fn_supported_p
+			  (call, OPTIMIZE_FOR_SPEED)))
+		    {
+		      require_loop_vectorize = true;
+		      break;
+		    }
 		}
 	      gimple_set_uid (stmt, -1);
 	      gimple_set_visited (stmt, false);
 	    }
-	  if (! has_mask_load_store && vect_slp_bb (bb))
+	  if (!require_loop_vectorize && vect_slp_bb (bb))
 	    {
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "basic block vectorized\n");

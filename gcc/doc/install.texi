@@ -1734,6 +1734,14 @@ Using the GNU Compiler Collection (GCC)},
 See ``i386 and x86-64 Options'' in the main manual
 @end ifhtml
 
+@item --enable-large-address-aware
+The @option{--enable-large-address-aware} option arranges for MinGW
+executables to be linked using the @option{--large-address-aware}
+option, that enables the use of more than 2GB of memory.  If GCC is
+configured with this option, its effects can be reversed by passing the
+@option{-Wl,--disable-large-address-aware} option to the so-configured
+compiler driver.
+
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
 @itemx --disable-win32-registry
@@ -4400,9 +4408,11 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been removed in GCC 5.  Support for Solaris
-8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
-in GCC 4.6.
+Support for Solaris 10 has been obsoleted in GCC 9, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 10.  Support for Solaris 9 has been removed in GCC 5.
+Support for Solaris 8 has been removed in GCC 4.8.  Support for Solaris
+7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and

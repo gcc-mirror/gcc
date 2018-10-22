@@ -117,6 +117,7 @@ static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
 static void set_std_c17 (int);
+static void set_std_c2x (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
@@ -677,6 +678,16 @@ c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
     case OPT_std_gnu17:
       if (!preprocessing_asm_p)
 	set_std_c17 (false /* ISO */);
+      break;
+
+    case OPT_std_c2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (true /* ISO */);
+      break;
+
+    case OPT_std_gnu2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (false /* ISO */);
       break;
 
     case OPT_trigraphs:
@@ -1562,6 +1573,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_isoc11 = 0;
+  flag_isoc2x = 0;
   lang_hooks.name = "GNU C89";
 }
 
@@ -1573,6 +1585,7 @@ set_std_c99 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 0;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1587,6 +1600,7 @@ set_std_c11 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1601,10 +1615,26 @@ set_std_c17 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
   lang_hooks.name = "GNU C17";
+}
+
+/* Set the C 2X standard (without GNU extensions if ISO).  */
+static void
+set_std_c2x (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC2X: CLK_GNUC2X);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc2x = 1;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C2X";
 }
 
 

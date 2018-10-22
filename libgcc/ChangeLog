@@ -1,3 +1,22 @@
+2018-10-18  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodsi4.c (__udivmodsi4): Rename to conform to coding
+	standard.
+	* divmod.c: Update references to __udivmodsi4.
+	* udivmod.c: Ditto.
+	* udivhi3.c: New file.
+	* udivmodhi4.c: New file.
+	* config/pdp11/t-pdp11 (LIB2ADD): Add the new files.
+
+2018-10-17  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (LIB2FUNCS_ST): Filter out LIB2FUNCS_EXCLUDE.
+
+2018-10-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
+	defined (__FLOAT128_TYPE__) || defined (__LONG_DOUBLE_128__).
+
 2018-10-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/t-pdp11: Remove -mfloat32 switch.

@@ -1,5 +1,6 @@
 // PR c++/67240
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 int foo(int x)
 {

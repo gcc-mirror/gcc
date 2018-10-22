@@ -34,7 +34,7 @@ func (p *parser) init(filename string, src io.Reader, imports map[string]*types.
 	p.scanner.Init(src)
 	p.scanner.Error = func(_ *scanner.Scanner, msg string) { p.error(msg) }
 	p.scanner.Mode = scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats | scanner.ScanStrings | scanner.ScanComments | scanner.SkipComments
-	p.scanner.Whitespace = 1<<'\t' | 1<<'\n' | 1<<' '
+	p.scanner.Whitespace = 1<<'\t' | 1<<' '
 	p.scanner.Filename = filename // for good error messages
 	p.next()
 	p.imports = imports
@@ -71,6 +71,13 @@ func (p *parser) expect(tok rune) string {
 	return lit
 }
 
+func (p *parser) expectEOL() {
+	if p.version == "v1" || p.version == "v2" {
+		p.expect(';')
+	}
+	p.expect('\n')
+}
+
 func (p *parser) expectKeyword(keyword string) {
 	lit := p.expect(scanner.Ident)
 	if lit != keyword {
@@ -96,7 +103,7 @@ func (p *parser) parseUnquotedString() string {
 	buf.WriteString(p.scanner.TokenText())
 	// This loop needs to examine each character before deciding whether to consume it. If we see a semicolon,
 	// we need to let it be consumed by p.next().
-	for ch := p.scanner.Peek(); ch != ';' && ch != scanner.EOF && p.scanner.Whitespace&(1<<uint(ch)) == 0; ch = p.scanner.Peek() {
+	for ch := p.scanner.Peek(); ch != '\n' && ch != ';' && ch != scanner.EOF && p.scanner.Whitespace&(1<<uint(ch)) == 0; ch = p.scanner.Peek() {
 		buf.WriteRune(ch)
 		p.scanner.Next()
 	}
@@ -431,19 +438,22 @@ func (p *parser) parseNamedType(n int) types.Type {
 		nt.SetUnderlying(underlying.Underlying())
 	}
 
-	// collect associated methods
-	for p.tok == scanner.Ident {
-		p.expectKeyword("func")
-		p.expect('(')
-		receiver, _ := p.parseParam(pkg)
-		p.expect(')')
-		name := p.parseName()
-		params, isVariadic := p.parseParamList(pkg)
-		results := p.parseResultList(pkg)
-		p.expect(';')
+	if p.tok == '\n' {
+		p.next()
+		// collect associated methods
+		for p.tok == scanner.Ident {
+			p.expectKeyword("func")
+			p.expect('(')
+			receiver, _ := p.parseParam(pkg)
+			p.expect(')')
+			name := p.parseName()
+			params, isVariadic := p.parseParamList(pkg)
+			results := p.parseResultList(pkg)
+			p.expectEOL()
 
-		sig := types.NewSignature(receiver, params, results, isVariadic)
-		nt.AddMethod(types.NewFunc(token.NoPos, pkg, name, sig))
+			sig := types.NewSignature(receiver, params, results, isVariadic)
+			nt.AddMethod(types.NewFunc(token.NoPos, pkg, name, sig))
+		}
 	}
 
 	return nt
@@ -740,11 +750,12 @@ func (p *parser) parsePackageInit() PackageInit {
 	return PackageInit{Name: name, InitFunc: initfunc, Priority: priority}
 }
 
-// Throw away tokens until we see a ';'. If we see a '<', attempt to parse as a type.
+// Throw away tokens until we see a newline or ';'.
+// If we see a '<', attempt to parse as a type.
 func (p *parser) discardDirectiveWhileParsingTypes(pkg *types.Package) {
 	for {
 		switch p.tok {
-		case ';':
+		case '\n', ';':
 			return
 		case '<':
 			p.parseType(pkg)
@@ -763,7 +774,7 @@ func (p *parser) maybeCreatePackage() {
 	}
 }
 
-// InitDataDirective = ( "v1" | "v2" ) ";" |
+// InitDataDirective = ( "v1" | "v2" | "v3" ) ";" |
 //                     "priority" int ";" |
 //                     "init" { PackageInit } ";" |
 //                     "checksum" unquotedString ";" .
@@ -774,31 +785,32 @@ func (p *parser) parseInitDataDirective() {
 	}
 
 	switch p.lit {
-	case "v1", "v2":
+	case "v1", "v2", "v3":
 		p.version = p.lit
 		p.next()
 		p.expect(';')
+		p.expect('\n')
 
 	case "priority":
 		p.next()
 		p.initdata.Priority = int(p.parseInt())
-		p.expect(';')
+		p.expectEOL()
 
 	case "init":
 		p.next()
-		for p.tok != ';' && p.tok != scanner.EOF {
+		for p.tok != '\n' && p.tok != ';' && p.tok != scanner.EOF {
 			p.initdata.Inits = append(p.initdata.Inits, p.parsePackageInit())
 		}
-		p.expect(';')
+		p.expectEOL()
 
 	case "init_graph":
 		p.next()
 		// The graph data is thrown away for now.
-		for p.tok != ';' && p.tok != scanner.EOF {
+		for p.tok != '\n' && p.tok != ';' && p.tok != scanner.EOF {
 			p.parseInt()
 			p.parseInt()
 		}
-		p.expect(';')
+		p.expectEOL()
 
 	case "checksum":
 		// Don't let the scanner try to parse the checksum as a number.
@@ -808,7 +820,7 @@ func (p *parser) parseInitDataDirective() {
 		p.scanner.Mode &^= scanner.ScanInts | scanner.ScanFloats
 		p.next()
 		p.parseUnquotedString()
-		p.expect(';')
+		p.expectEOL()
 
 	default:
 		p.errorf("unexpected identifier: %q", p.lit)
@@ -820,6 +832,7 @@ func (p *parser) parseInitDataDirective() {
 //             "pkgpath" unquotedString ";" |
 //             "prefix" unquotedString ";" |
 //             "import" unquotedString unquotedString string ";" |
+//             "indirectimport" unquotedString unquotedstring ";" |
 //             "func" Func ";" |
 //             "type" Type ";" |
 //             "var" Var ";" |
@@ -831,29 +844,29 @@ func (p *parser) parseDirective() {
 	}
 
 	switch p.lit {
-	case "v1", "v2", "priority", "init", "init_graph", "checksum":
+	case "v1", "v2", "v3", "priority", "init", "init_graph", "checksum":
 		p.parseInitDataDirective()
 
 	case "package":
 		p.next()
 		p.pkgname = p.parseUnquotedString()
 		p.maybeCreatePackage()
-		if p.version == "v2" && p.tok != ';' {
+		if p.version != "v1" && p.tok != '\n' && p.tok != ';' {
 			p.parseUnquotedString()
 			p.parseUnquotedString()
 		}
-		p.expect(';')
+		p.expectEOL()
 
 	case "pkgpath":
 		p.next()
 		p.pkgpath = p.parseUnquotedString()
 		p.maybeCreatePackage()
-		p.expect(';')
+		p.expectEOL()
 
 	case "prefix":
 		p.next()
 		p.pkgpath = p.parseUnquotedString()
-		p.expect(';')
+		p.expectEOL()
 
 	case "import":
 		p.next()
@@ -861,7 +874,14 @@ func (p *parser) parseDirective() {
 		pkgpath := p.parseUnquotedString()
 		p.getPkg(pkgpath, pkgname)
 		p.parseString()
-		p.expect(';')
+		p.expectEOL()
+
+	case "indirectimport":
+		p.next()
+		pkgname := p.parseUnquotedString()
+		pkgpath := p.parseUnquotedString()
+		p.getPkg(pkgpath, pkgname)
+		p.expectEOL()
 
 	case "func":
 		p.next()
@@ -869,24 +889,24 @@ func (p *parser) parseDirective() {
 		if fun != nil {
 			p.pkg.Scope().Insert(fun)
 		}
-		p.expect(';')
+		p.expectEOL()
 
 	case "type":
 		p.next()
 		p.parseType(p.pkg)
-		p.expect(';')
+		p.expectEOL()
 
 	case "var":
 		p.next()
 		v := p.parseVar(p.pkg)
 		p.pkg.Scope().Insert(v)
-		p.expect(';')
+		p.expectEOL()
 
 	case "const":
 		p.next()
 		c := p.parseConst(p.pkg)
 		p.pkg.Scope().Insert(c)
-		p.expect(';')
+		p.expectEOL()
 
 	default:
 		p.errorf("unexpected identifier: %q", p.lit)

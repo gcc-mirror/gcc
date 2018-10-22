@@ -362,7 +362,7 @@ namespace __variant
 
   template <typename... _Types>
   using __select_index =
-    typename __select_int::_Select_int_base<sizeof...(_Types) + 1,
+    typename __select_int::_Select_int_base<sizeof...(_Types),
 					    unsigned char,
 					    unsigned short>::type::value_type;
 

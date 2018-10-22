@@ -5391,7 +5391,7 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 	  exp->write_c_string(")");
 	}
     }
-  exp->write_c_string(";\n");
+  exp->write_c_string("\n");
 }
 
 // Import a function.
@@ -5498,7 +5498,8 @@ Function::import_func(Import* imp, std::string* pname,
 	  imp->require_c_string(")");
 	}
     }
-  imp->require_c_string(";\n");
+  imp->require_semicolon_if_old_version();
+  imp->require_c_string("\n");
   *presults = results;
 }
 
@@ -6491,7 +6492,8 @@ Variable::flatten_init_expression(Gogo* gogo, Named_object* function,
       // If an interface conversion is needed, we need a temporary
       // variable.
       if (this->type_ != NULL
-	  && !Type::are_identical(this->type_, this->init_->type(), false,
+	  && !Type::are_identical(this->type_, this->init_->type(),
+				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
 				  NULL)
 	  && this->init_->type()->interface_type() != NULL
 	  && !this->init_->is_variable())
@@ -6885,7 +6887,7 @@ Variable::export_var(Export* exp, const std::string& name) const
   exp->write_string(name);
   exp->write_c_string(" ");
   exp->write_type(this->type());
-  exp->write_c_string(";\n");
+  exp->write_c_string("\n");
 }
 
 // Import a variable.
@@ -6897,7 +6899,8 @@ Variable::import_var(Import* imp, std::string* pname, Type** ptype)
   *pname = imp->read_identifier();
   imp->require_c_string(" ");
   *ptype = imp->read_type();
-  imp->require_c_string(";\n");
+  imp->require_semicolon_if_old_version();
+  imp->require_c_string("\n");
 }
 
 // Convert a variable to the backend representation.
@@ -7089,7 +7092,7 @@ Named_constant::export_const(Export* exp, const std::string& name) const
     }
   exp->write_c_string("= ");
   this->expr()->export_expression(exp);
-  exp->write_c_string(";\n");
+  exp->write_c_string("\n");
 }
 
 // Import a constant.
@@ -7110,7 +7113,8 @@ Named_constant::import_const(Import* imp, std::string* pname, Type** ptype,
     }
   imp->require_c_string("= ");
   *pexpr = Expression::import_expression(imp);
-  imp->require_c_string(";\n");
+  imp->require_semicolon_if_old_version();
+  imp->require_c_string("\n");
 }
 
 // Get the backend representation.

@@ -160,7 +160,7 @@ struct GTY(()) ipa_vr
 {
   /* The data fields below are valid only if known is true.  */
   bool known;
-  enum value_range_type type;
+  enum value_range_kind type;
   wide_int min;
   wide_int max;
 };

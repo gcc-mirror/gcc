@@ -40,6 +40,7 @@ test_diagnostic_context::test_diagnostic_context ()
   show_labels_p = true;
   show_column = true;
   start_span = start_span_cb;
+  min_margin_width = 6;
 }
 
 test_diagnostic_context::~test_diagnostic_context ()

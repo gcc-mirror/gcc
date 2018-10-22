@@ -271,6 +271,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels -fno-diagnostics-show-line-numbers @gol
+-fdiagnostics-minimum-margin-width=@var{width} @gol
 -fdiagnostics-parseable-fixits  -fdiagnostics-generate-patch @gol
 -fdiagnostics-show-template-tree -fno-elide-type @gol
 -fno-show-column}
@@ -1928,11 +1929,15 @@ interfaces) and L (Analyzability).  The name @samp{c1x} is deprecated.
 @itemx c18
 @itemx iso9899:2017
 @itemx iso9899:2018
-ISO C17, the 2017 revision of the ISO C standard (expected to be
-published in 2018).  This standard is
+ISO C17, the 2017 revision of the ISO C standard
+(published in 2018).  This standard is
 same as C11 except for corrections of defects (all of which are also
 applied with @option{-std=c11}) and a new value of
 @code{__STDC_VERSION__}, and so is supported to the same extent as C11.
+
+@item c2x
+The next version of the ISO C standard, still under development.  The
+support for this version is experimental and incomplete.
 
 @item gnu90
 @itemx gnu89
@@ -1950,6 +1955,11 @@ The name @samp{gnu1x} is deprecated.
 @item gnu17
 @itemx gnu18
 GNU dialect of ISO C17.  This is the default for C code.
+
+@item gnu2x
+The next version of the ISO C standard, still under development, plus
+GNU extensions.  The support for this version is experimental and
+incomplete.
 
 @item c++98
 @itemx c++03
@@ -3873,6 +3883,11 @@ the vertical bars and the ``char *'' and ``long int'' text).
 By default, when printing source code (via @option{-fdiagnostics-show-caret}),
 a left margin is printed, showing line numbers.  This option suppresses this
 left margin.
+
+@item -fdiagnostics-minimum-margin-width=@var{width}
+@opindex -fdiagnostics-minimum-margin-width
+This option controls the minimum width of the left margin printed by
+@option{-fdiagnostics-show-line-numbers}.  It defaults to 6.
 
 @item -fdiagnostics-parseable-fixits
 @opindex fdiagnostics-parseable-fixits
@@ -14908,16 +14923,16 @@ Print the compiler's target machine (for example,
 @item -dumpversion
 @opindex dumpversion
 Print the compiler version (for example, @code{3.0}, @code{6.3.0} or @code{7})---and don't do
-anything else.  This is the compiler version used in filesystem paths,
-specs, can be depending on how the compiler has been configured just
-a single number (major version), two numbers separated by dot (major and
+anything else.  This is the compiler version used in filesystem paths and
+specs. Depending on how the compiler has been configured it can be just
+a single number (major version), two numbers separated by a dot (major and
 minor version) or three numbers separated by dots (major, minor and patchlevel
 version).
 
 @item -dumpfullversion
 @opindex dumpfullversion
-Print the full compiler version, always 3 numbers separated by dots,
-major, minor and patchlevel version.
+Print the full compiler version---and don't do anything else. The output is
+always three numbers separated by dots, major, minor and patchlevel version.
 
 @item -dumpspecs
 @opindex dumpspecs

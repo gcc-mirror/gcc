@@ -12,6 +12,7 @@
 class Go_sha1_helper;
 class Gogo;
 class Import_init;
+class Named_object;
 class Bindings;
 class Type;
 class Package;
@@ -57,7 +58,8 @@ enum Export_data_version {
   EXPORT_FORMAT_UNKNOWN = 0,
   EXPORT_FORMAT_V1 = 1,
   EXPORT_FORMAT_V2 = 2,
-  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V2
+  EXPORT_FORMAT_V3 = 3,
+  EXPORT_FORMAT_CURRENT = EXPORT_FORMAT_V3
 };
 
 // This class manages exporting Go declarations.  It handles the main
@@ -119,9 +121,10 @@ class Export : public String_dump
   // Size of export data magic string (which includes version number).
   static const int magic_len = 4;
 
-  // Magic strings (current version and older v1 version).
+  // Magic strings (current version and older versions).
   static const char cur_magic[magic_len];
   static const char v1_magic[magic_len];
+  static const char v2_magic[magic_len];
 
   // The length of the checksum string.
   static const int checksum_len = 20;
@@ -192,6 +195,11 @@ class Export : public String_dump
   Export(const Export&);
   Export& operator=(const Export&);
 
+  // Prepare types for exporting.
+  void
+  prepare_types(const std::vector<Named_object*>* exports,
+		Unordered_set(const Package*)* imports);
+
   // Write out all known packages.
   void
   write_packages(const std::map<std::string, Package*>& packages);
@@ -208,7 +216,8 @@ class Export : public String_dump
 
   // Write out the imported packages.
   void
-  write_imports(const std::map<std::string, Package*>& imports);
+  write_imports(const std::map<std::string, Package*>& imports,
+		const Unordered_set(const Package*)& type_imports);
 
   // Write out the imported initialization functions and init graph.
   void

@@ -251,9 +251,28 @@
 
 ;; sob instruction
 ;;
-;; Do a define_expand because some alternatives clobber CC.
+;; This expander has to check for mode match because the doloop pass
+;; in gcc that invokes it does not do so, i.e., it may attempt to apply
+;; this pattern even if the count operand is QI or SI mode.
+(define_expand "doloop_end"
+  [(parallel [(set (pc)
+		   (if_then_else
+		    (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+			(const_int 1))
+		    (label_ref (match_operand 1 "" ""))
+		    (pc)))
+	      (set (match_dup 0)
+		   (plus:HI (match_dup 0)
+			 (const_int -1)))])]
+  "TARGET_40_PLUS"
+  "{
+    if (GET_MODE (operands[0]) != HImode)
+      FAIL;
+  }")
+
+;; Do a define_split because some alternatives clobber CC.
 ;; Some don't, but it isn't all that interesting to cover that case.
-(define_insn_and_split "doloop_end"
+(define_insn_and_split "doloop_end_insn"
   [(set (pc)
 	(if_then_else
 	 (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
@@ -1067,6 +1086,35 @@
 }"
   [(set_attr "length" "2,4,4,6")])
 
+(define_insn_and_split "addqi3"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,Q")
+	(plus:QI (match_operand:QI 1 "general_operand" "%0,0")
+		 (match_operand:QI 2 "incdec_operand" "LM,LM")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (plus:QI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+;; Inc/dec sets V if overflow from the operation
+(define_insn "*addqi3<cc_ccnz>"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,Q")
+	(plus:QI (match_operand:QI 1 "general_operand" "%0,0")
+	         (match_operand:QI 2 "incdec_operand" "LM,LM")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "*
+{
+  if (INTVAL(operands[2]) == 1)
+    return \"incb\t%0\";
+  else
+    return \"decb\t%0\";
+}"
+  [(set_attr "length" "2,4")])
+
 
 ;;- subtract instructions
 ;; we don't have to care for constant second 
@@ -1225,6 +1273,35 @@
   return \"sub\t%2,%0\";
 }"
   [(set_attr "length" "2,4,4,6")])
+
+(define_insn_and_split "subqi3"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,Q")
+	(plus:QI (match_operand:QI 1 "general_operand" "%0,0")
+		 (match_operand:QI 2 "incdec_operand" "LM,LM")))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel [(set (match_dup 0)
+		   (plus:QI (match_dup 1) (match_dup 2)))
+	      (clobber (reg:CC CC_REGNUM))])]
+  ""
+  [(set_attr "length" "2,4")])
+
+;; Inc/dec sets V if overflow from the operation
+(define_insn "*subqi3<cc_ccnz>"
+  [(set (match_operand:QI 0 "nonimmediate_operand" "=rR,Q")
+	(plus:QI (match_operand:QI 1 "general_operand" "%0,0")
+	         (match_operand:QI 2 "incdec_operand" "LM,LM")))
+   (clobber (reg:CC CC_REGNUM))]
+  "reload_completed"
+  "*
+{
+  if (INTVAL(operands[2]) == -1)
+    return \"incb\t%0\";
+  else
+    return \"decb\t%0\";
+}"
+  [(set_attr "length" "2,4")])
 
 ;;;;- and instructions
 ;; Bit-and on the pdp (like on the VAX) is done with a clear-bits insn.

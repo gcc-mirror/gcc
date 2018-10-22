@@ -1,5 +1,7 @@
 2018-10-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r265362.
+
 	Add -fno-module-keywords.
 	gcc/
 	* doc/invoke.text (fmodule-keywords): Document.

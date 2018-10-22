@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-lto): New.
+
 2018-08-29  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/87130

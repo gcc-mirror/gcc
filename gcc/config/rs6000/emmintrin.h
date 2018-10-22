@@ -1228,7 +1228,7 @@ _mm_loadl_pd (__m128d __A, double const *__B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_pd (__m128d  __A)
 {
-  __vector __m64 result;
+  __vector unsigned long long result;
   static const __vector unsigned int perm_mask =
     {
 #ifdef __LITTLE_ENDIAN__
@@ -1238,8 +1238,9 @@ _mm_movemask_pd (__m128d  __A)
 #endif
     };
 
-  result = (__vector __m64) vec_vbpermq ((__vector unsigned char) __A,
-					 (__vector unsigned char) perm_mask);
+  result = ((__vector unsigned long long)
+	    vec_vbpermq ((__vector unsigned char) __A,
+			 (__vector unsigned char) perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
   return result[1];
@@ -2012,7 +2013,7 @@ _mm_min_epu8 (__m128i __A, __m128i __B)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_movemask_epi8 (__m128i __A)
 {
-  __vector __m64 result;
+  __vector unsigned long long result;
   static const __vector unsigned char perm_mask =
     {
 #ifdef __LITTLE_ENDIAN__
@@ -2024,8 +2025,9 @@ _mm_movemask_epi8 (__m128i __A)
 #endif
     };
 
-  result = (__vector __m64) vec_vbpermq ((__vector unsigned char) __A,
-					 (__vector unsigned char) perm_mask);
+  result = ((__vector unsigned long long)
+	    vec_vbpermq ((__vector unsigned char) __A,
+			 (__vector unsigned char) perm_mask));
 
 #ifdef __LITTLE_ENDIAN__
   return result[1];

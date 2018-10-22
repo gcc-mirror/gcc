@@ -216,6 +216,7 @@ public:
   operator const real_format *() const { return m_format; }
 
   bool decimal_p () const { return m_format && m_format->b == 10; }
+  bool can_represent_integral_type_p (tree type) const;
 
 private:
   const real_format *m_format;

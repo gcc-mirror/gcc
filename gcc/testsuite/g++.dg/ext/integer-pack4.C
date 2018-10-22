@@ -1,4 +1,4 @@
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template<int ... Ns> int f() { return (Ns + ...); }
 template<int N> int g() {

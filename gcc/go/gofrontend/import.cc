@@ -241,8 +241,9 @@ Import::find_export_data(const std::string& filename, int fd, Location location)
     return NULL;
 
   // Check for a file containing nothing but Go export data.
-  if (memcmp(buf, Export::cur_magic, Export::magic_len) == 0 ||
-      memcmp(buf, Export::v1_magic, Export::magic_len) == 0)
+  if (memcmp(buf, Export::cur_magic, Export::magic_len) == 0
+      || memcmp(buf, Export::v1_magic, Export::magic_len) == 0
+      || memcmp(buf, Export::v2_magic, Export::magic_len) == 0)
     return new Stream_from_file(fd);
 
   // See if we can read this as an archive.
@@ -325,6 +326,12 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	                        Export::magic_len);
 	  this->version_ = EXPORT_FORMAT_V1;
 	}
+      else if (stream->match_bytes(Export::v2_magic, Export::magic_len))
+	{
+	  stream->require_bytes(this->location_, Export::v2_magic,
+	                        Export::magic_len);
+	  this->version_ = EXPORT_FORMAT_V2;
+	}
       else
 	{
 	  go_error_at(this->location_,
@@ -335,7 +342,8 @@ Import::import(Gogo* gogo, const std::string& local_name,
 
       this->require_c_string("package ");
       std::string package_name = this->read_identifier();
-      this->require_c_string(";\n");
+      this->require_semicolon_if_old_version();
+      this->require_c_string("\n");
 
       std::string pkgpath;
       std::string pkgpath_symbol;
@@ -343,7 +351,8 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	{
 	  this->advance(7);
 	  std::string unique_prefix = this->read_identifier();
-	  this->require_c_string(";\n");
+	  this->require_semicolon_if_old_version();
+	  this->require_c_string("\n");
 	  pkgpath = unique_prefix + '.' + package_name;
 	  pkgpath_symbol = (Gogo::pkgpath_for_symbol(unique_prefix) + '.'
 			    + Gogo::pkgpath_for_symbol(package_name));
@@ -352,9 +361,13 @@ Import::import(Gogo* gogo, const std::string& local_name,
 	{
 	  this->require_c_string("pkgpath ");
 	  pkgpath = this->read_identifier();
-	  this->require_c_string(";\n");
+	  this->require_semicolon_if_old_version();
+	  this->require_c_string("\n");
 	  pkgpath_symbol = Gogo::pkgpath_for_symbol(pkgpath);
 	}
+
+      if (stream->saw_error())
+	return NULL;
 
       this->package_ = gogo->add_imported_package(package_name, local_name,
 						  is_local_name_exported,
@@ -383,6 +396,9 @@ Import::import(Gogo* gogo, const std::string& local_name,
 
       while (stream->match_c_string("import"))
 	this->read_one_import();
+
+      while (stream->match_c_string("indirectimport"))
+	this->read_one_indirect_import();
 
       if (stream->match_c_string("init"))
 	this->read_import_init_fns(gogo);
@@ -418,7 +434,8 @@ Import::import(Gogo* gogo, const std::string& local_name,
       // load time.
       this->require_c_string("checksum ");
       stream->advance(Export::checksum_len * 2);
-      this->require_c_string(";\n");
+      this->require_semicolon_if_old_version();
+      this->require_c_string("\n");
     }
 
   return this->package_;
@@ -436,14 +453,15 @@ Import::read_one_package()
   std::string pkgpath = this->read_identifier();
   this->require_c_string(" ");
   std::string pkgpath_symbol = this->read_identifier();
-  this->require_c_string(";\n");
+  this->require_semicolon_if_old_version();
+  this->require_c_string("\n");
 
   Package* p = this->gogo_->register_package(pkgpath, pkgpath_symbol,
 					     Linemap::unknown_location());
   p->set_package_name(package_name, this->location());
 }
 
-// Read an import line.  We don't actually care about these.
+// Read an import line.
 
 void
 Import::read_one_import()
@@ -456,7 +474,25 @@ Import::read_one_import()
   Stream* stream = this->stream_;
   while (stream->peek_char() != '"')
     stream->advance(1);
-  this->require_c_string("\";\n");
+  this->require_c_string("\"");
+  this->require_semicolon_if_old_version();
+  this->require_c_string("\n");
+
+  Package* p = this->gogo_->register_package(pkgpath, "",
+					     Linemap::unknown_location());
+  p->set_package_name(package_name, this->location());
+}
+
+// Read an indirectimport line.
+
+void
+Import::read_one_indirect_import()
+{
+  this->require_c_string("indirectimport ");
+  std::string package_name = this->read_identifier();
+  this->require_c_string(" ");
+  std::string pkgpath = this->read_identifier();
+  this->require_c_string("\n");
 
   Package* p = this->gogo_->register_package(pkgpath, "",
 					     Linemap::unknown_location());
@@ -474,7 +510,7 @@ Import::read_import_init_fns(Gogo* gogo)
   // to read the init_graph section.
   std::map<std::string, unsigned> init_idx;
 
-  while (!this->match_c_string(";"))
+  while (!this->match_c_string("\n") && !this->match_c_string(";"))
     {
       int priority = -1;
 
@@ -499,7 +535,8 @@ Import::read_import_init_fns(Gogo* gogo)
       unsigned idx = init_idx.size();
       init_idx[init_name] = idx;
     }
-  this->require_c_string(";\n");
+  this->require_semicolon_if_old_version();
+  this->require_c_string("\n");
 
   if (this->match_c_string("init_graph"))
     {
@@ -524,7 +561,7 @@ Import::read_import_init_fns(Gogo* gogo)
       //
       // where src + sink are init functions indices.
 
-      while (!this->match_c_string(";"))
+      while (!this->match_c_string("\n") && !this->match_c_string(";"))
 	{
 	  this->require_c_string(" ");
 	  std::string src_string = this->read_identifier();
@@ -543,7 +580,8 @@ Import::read_import_init_fns(Gogo* gogo)
 
 	  ii_src->record_precursor_fcn(ii_sink->init_name());
 	}
-      this->require_c_string(";\n");
+      this->require_semicolon_if_old_version();
+      this->require_c_string("\n");
     }
 }
 
@@ -967,7 +1005,7 @@ Import::read_identifier()
   while (true)
     {
       c = stream->peek_char();
-      if (c == -1 || c == ' ' || c == ';')
+      if (c == -1 || c == ' ' || c == '\n' || c == ';')
 	break;
       ret += c;
       stream->advance(1);

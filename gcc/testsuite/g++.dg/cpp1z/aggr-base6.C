@@ -1,5 +1,5 @@
-// { dg-options "-std=c++17 -w" }
-// { dg-do run }
+// { dg-options "-w" }
+// { dg-do run { target c++17 } }
 
 struct A { };
 struct B: A { int i; };

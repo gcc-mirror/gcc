@@ -375,7 +375,7 @@ int
 module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 {
   if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
-    return state;
+    return state ? state : 1;
 
   int depth = state & ~3;
   switch (state & 3)

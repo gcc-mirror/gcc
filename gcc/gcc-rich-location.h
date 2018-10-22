@@ -56,7 +56,7 @@ class gcc_rich_location : public rich_location
 
 	gcc_rich_location richloc (primary_loc);
 	bool added secondary = richloc.add_location_if_nearby (secondary_loc);
-	error_at_rich_loc (&richloc, "main message");
+	error_at (&richloc, "main message");
 	if (!added secondary)
 	  inform (secondary_loc, "message for secondary");
 

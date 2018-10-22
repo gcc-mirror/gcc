@@ -1935,13 +1935,7 @@ DEVNULL=$(if $(findstring mingw,$(build)),nul,/dev/null)
 SELFTEST_FLAGS = -nostdinc $(DEVNULL) -S -o $(DEVNULL) \
 	-fself-test=$(srcdir)/testsuite/selftests
 
-C_SELFTEST_FLAGS = -xc $(SELFTEST_FLAGS)
-CPP_SELFTEST_FLAGS = -xc++ $(SELFTEST_FLAGS)
-
 SELFTEST_DEPS = $(GCC_PASSES) stmp-int-hdrs $(srcdir)/testsuite/selftests
-
-C_SELFTEST_DEPS = cc1$(exeext) $(SELFTEST_DEPS)
-CPP_SELFTEST_DEPS = cc1plus$(exeext) $(SELFTEST_DEPS)
 
 # Run the selftests during the build once we have a driver and the frontend,
 # so that self-test failures are caught as early as possible.
@@ -1949,48 +1943,12 @@ CPP_SELFTEST_DEPS = cc1plus$(exeext) $(SELFTEST_DEPS)
 # driver, frontend, or selftest data change.
 .PHONY: selftest
 
-# By default, only run the selftests within the C frontend
-selftest: s-selftest-c
+# Potentially run all selftest-<LANG>.  The various <LANG>/Make-lang.in can
+# require the selftests to be run by defining their selftest-<LANG> as
+# s-selftest-<LANG>.  Otherwise, they should define it as empty.
 
-# C selftests
-s-selftest-c: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS)
-	$(STAMP) $@
-
-# Convenience methods for running C selftests under gdb:
-.PHONY: selftest-c-gdb
-selftest-c-gdb: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
-	  -wrapper gdb,--args
-
-.PHONY: selftest-gdb
-selftest-gdb: selftest-c-gdb
-
-# Convenience methods for running C selftests under valgrind:
-.PHONY: selftest-c-valgrind
-selftest-c-valgrind: $(C_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(C_SELFTEST_FLAGS) \
-	  -wrapper valgrind,--leak-check=full
-
-.PHONY: selftest-valgrind
-selftest-valgrind: selftest-c-valgrind
-
-# C++ selftests
-s-selftest-c++: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS)
-	$(STAMP) $@
-
-# Convenience method for running C++ selftests under gdb:
-.PHONY: selftest-c++-gdb
-selftest-c++-gdb: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
-	  -wrapper gdb,--args
-
-# Convenience method for running C++ selftests under valgrind:
-.PHONY: selftest-c++-valgrind
-selftest-c++-valgrind: $(CPP_SELFTEST_DEPS)
-	$(GCC_FOR_TARGET) $(CPP_SELFTEST_FLAGS) \
-	  -wrapper valgrind,--leak-check=full
+SELFTEST_TARGETS = @selftest_languages@
+selftest: $(SELFTEST_TARGETS)
 
 # Recompile all the language-independent object files.
 # This is used only if the user explicitly asks for it.
@@ -3176,7 +3134,7 @@ TEXI_GCCINT_FILES = gccint.texi gcc-common.texi gcc-vers.texi		\
 	 gnu.texi gpl_v3.texi fdl.texi contrib.texi languages.texi	\
 	 sourcebuild.texi gty.texi libgcc.texi cfg.texi tree-ssa.texi	\
 	 loop.texi generic.texi gimple.texi plugins.texi optinfo.texi   \
-	 match-and-simplify.texi poly-int.texi
+	 match-and-simplify.texi ux.texi poly-int.texi
 
 TEXI_GCCINSTALL_FILES = install.texi install-old.texi fdl.texi		\
 	 gcc-common.texi gcc-vers.texi

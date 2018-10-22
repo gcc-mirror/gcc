@@ -22,8 +22,12 @@
 
 // { dg-do compile }
 
+using __gnu_test::ExplicitConsAlloc;
+
 // libstdc++/50118
 template class std::map<int, int, std::less<int>,
-			__gnu_test::ExplicitConsAlloc<int> >;
+			ExplicitConsAlloc<std::pair<const int, int> > >;
+#ifndef __STRICT_ANSI__
 template class std::map<int, int, std::less<int>,
-			__gnu_test::ExplicitConsAlloc<char> >;
+			ExplicitConsAlloc<char> >;
+#endif

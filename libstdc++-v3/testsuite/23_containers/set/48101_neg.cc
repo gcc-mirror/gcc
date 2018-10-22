@@ -29,3 +29,4 @@ test01()
 // { dg-error "non-const, non-volatile value_type" "" { target *-*-* } 0 }
 // { dg-error "comparison object must be invocable" "" { target *-*-* } 0 }
 // { dg-prune-output "std::allocator<.* has no member named " }
+// { dg-prune-output "must have the same value_type as its allocator" }

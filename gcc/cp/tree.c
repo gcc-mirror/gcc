@@ -646,6 +646,9 @@ build_cplus_new (tree type, tree init, tsubst_flags_t complain)
   tree rval = build_aggr_init_expr (type, init);
   tree slot;
 
+  if (init == error_mark_node)
+    return error_mark_node;
+
   if (!complete_type_or_maybe_complain (type, init, complain))
     return error_mark_node;
 

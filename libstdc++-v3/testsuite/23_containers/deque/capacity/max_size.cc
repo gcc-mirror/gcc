@@ -121,6 +121,8 @@ private:
   static const char value = 'x';
 };
 
+const char Iter::value;
+
 Iter operator+(Iter i, Iter::difference_type n) { return i += n; }
 Iter operator+(Iter::difference_type n, Iter i) { return i += n; }
 Iter operator-(Iter::difference_type n, Iter i) { return i -= n; }

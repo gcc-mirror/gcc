@@ -26,7 +26,7 @@ struct fails_on_copy {
   fails_on_copy(const fails_on_copy&) { throw 0; };
 };
 
-using value_type = std::pair<int, fails_on_copy>;
+using value_type = std::pair<const int, fails_on_copy>;
 
 void
 test01()

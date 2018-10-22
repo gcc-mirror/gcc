@@ -26,13 +26,17 @@ const int Export::magic_len;
 // Current version magic string.
 const char Export::cur_magic[Export::magic_len] =
   {
-    'v', '2', ';', '\n'
+    'v', '3', ';', '\n'
   };
 
-// Magic string for previous version (still supported)
+// Magic strings for previous versions (still supported).
 const char Export::v1_magic[Export::magic_len] =
   {
     'v', '1', ';', '\n'
+  };
+const char Export::v2_magic[Export::magic_len] =
+  {
+    'v', '2', ';', '\n'
   };
 
 const int Export::checksum_len;
@@ -71,12 +75,8 @@ should_export(Named_object* no)
   if (Gogo::is_hidden_name(no->name()))
     return false;
 
-  // We don't export nested functions.
-  if (no->is_function() && no->func_value()->enclosing() != NULL)
-    return false;
-
-  // We don't export thunks.
-  if (no->is_function() && Gogo::is_thunk(no))
+  // We don't export various special functions.
+  if (Gogo::is_special_name(no->name()))
     return false;
 
   // Methods are exported with the type, not here.
@@ -139,6 +139,10 @@ Export::export_globals(const std::string& package_name,
 
   std::sort(exports.begin(), exports.end(), Sort_bindings());
 
+  // Find all packages not explicitly imported but mentioned by types.
+  Unordered_set(const Package*) type_imports;
+  this->prepare_types(&exports, &type_imports);
+
   // Although the export data is readable, at least this version is,
   // it is conceptually a binary format.  Start with a four byte
   // version number.
@@ -147,7 +151,7 @@ Export::export_globals(const std::string& package_name,
   // The package name.
   this->write_c_string("package ");
   this->write_string(package_name);
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   // The prefix or package path, used for all global symbols.
   if (prefix.empty())
@@ -161,11 +165,11 @@ Export::export_globals(const std::string& package_name,
       this->write_c_string("prefix ");
       this->write_string(prefix);
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   this->write_packages(packages);
 
-  this->write_imports(imports);
+  this->write_imports(imports, type_imports);
 
   this->write_imported_init_fns(package_name, import_init_fn,
 				imported_init_fns);
@@ -191,8 +195,181 @@ Export::export_globals(const std::string& package_name,
       dig = c & 0xf;
       s += dig < 10 ? '0' + dig : 'A' + dig - 10;
     }
-  s += ";\n";
+  s += "\n";
   this->stream_->write_checksum(s);
+}
+
+// Traversal class to find referenced types.
+
+class Find_types_to_prepare : public Traverse
+{
+ public:
+  Find_types_to_prepare(Unordered_set(const Package*)* imports)
+    : Traverse(traverse_types),
+      imports_(imports)
+  { }
+
+  int
+  type(Type* type);
+
+  // Traverse the components of a function type.
+  void
+  traverse_function(Function_type*);
+
+  // Traverse the methods of a named type, and register its package.
+  void
+  traverse_named_type(Named_type*);
+
+ private:
+  // List of packages we are building.
+  Unordered_set(const Package*)* imports_;
+};
+
+// Traverse a type.
+
+int
+Find_types_to_prepare::type(Type* type)
+{
+  // Skip forwarders.
+  if (type->forward_declaration_type() != NULL)
+    return TRAVERSE_CONTINUE;
+
+  // At this stage of compilation traversing interface types traverses
+  // the final list of methods, but we export the locally defined
+  // methods.  If there is an embedded interface type we need to make
+  // sure to export that.  Check classification, rather than calling
+  // the interface_type method, because we want to handle named types
+  // below.
+  if (type->classification() == Type::TYPE_INTERFACE)
+    {
+      Interface_type* it = type->interface_type();
+      const Typed_identifier_list* methods = it->local_methods();
+      if (methods != NULL)
+	{
+	  for (Typed_identifier_list::const_iterator p = methods->begin();
+	       p != methods->end();
+	       ++p)
+	    {
+	      if (p->name().empty())
+		Type::traverse(p->type(), this);
+	      else
+		this->traverse_function(p->type()->function_type());
+	    }
+	}
+      return TRAVERSE_SKIP_COMPONENTS;
+    }
+
+  Named_type* nt = type->named_type();
+  if (nt != NULL)
+    this->traverse_named_type(nt);
+
+  return TRAVERSE_CONTINUE;
+}
+
+// Traverse the types in a function type.  We don't need the function
+// type tself, just the receiver, parameter, and result types.
+
+void
+Find_types_to_prepare::traverse_function(Function_type* type)
+{
+  go_assert(type != NULL);
+  if (this->remember_type(type))
+    return;
+  const Typed_identifier* receiver = type->receiver();
+  if (receiver != NULL)
+    Type::traverse(receiver->type(), this);
+  const Typed_identifier_list* parameters = type->parameters();
+  if (parameters != NULL)
+    parameters->traverse(this);
+  const Typed_identifier_list* results = type->results();
+  if (results != NULL)
+    results->traverse(this);
+}
+
+// Traverse the methods of a named type, and record its package.
+
+void
+Find_types_to_prepare::traverse_named_type(Named_type* nt)
+{
+  const Package* package = nt->named_object()->package();
+  if (package != NULL)
+    this->imports_->insert(package);
+
+  // We have to traverse the methods of named types, because we are
+  // going to export them.  This is not done by ordinary type
+  // traversal.
+  const Bindings* methods = nt->local_methods();
+  if (methods != NULL)
+    {
+      for (Bindings::const_definitions_iterator pm =
+	     methods->begin_definitions();
+	   pm != methods->end_definitions();
+	   ++pm)
+	this->traverse_function((*pm)->func_value()->type());
+
+      for (Bindings::const_declarations_iterator pm =
+	     methods->begin_declarations();
+	   pm != methods->end_declarations();
+	   ++pm)
+	{
+	  Named_object* mno = pm->second;
+	  if (mno->is_function_declaration())
+	    this->traverse_function(mno->func_declaration_value()->type());
+	}
+    }
+}
+
+// Collect all the pacakges we see in types, so that if we refer to
+// any types from indirectly importe packages we can tell the importer
+// about the package.
+
+void
+Export::prepare_types(const std::vector<Named_object*>* exports,
+		      Unordered_set(const Package*)* imports)
+{
+  // Use a single index of the traversal class because traversal
+  // classes keep track of which types they've already seen.  That
+  // lets us avoid type reference loops.
+  Find_types_to_prepare find(imports);
+
+  // Traverse all the exported objects.
+  for (std::vector<Named_object*>::const_iterator p = exports->begin();
+       p != exports->end();
+       ++p)
+    {
+      Named_object* no = *p;
+      switch (no->classification())
+	{
+	case Named_object::NAMED_OBJECT_CONST:
+	  {
+	    Type* t = no->const_value()->type();
+	    if (t != NULL && !t->is_abstract())
+	      Type::traverse(t, &find);
+	  }
+	  break;
+
+	case Named_object::NAMED_OBJECT_TYPE:
+	  Type::traverse(no->type_value(), &find);
+	  break;
+
+	case Named_object::NAMED_OBJECT_VAR:
+	  Type::traverse(no->var_value()->type(), &find);
+	  break;
+
+	case Named_object::NAMED_OBJECT_FUNC:
+	  find.traverse_function(no->func_value()->type());
+	  break;
+
+	case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
+	  find.traverse_function(no->func_declaration_value()->type());
+	  break;
+
+	default:
+	  // We shouldn't see anything else.  If we do we'll give an
+	  // error later when we try to actually export it.
+	  break;
+	}
+    }
 }
 
 // Sort packages.
@@ -233,7 +410,7 @@ Export::write_packages(const std::map<std::string, Package*>& packages)
       this->write_string((*p)->pkgpath());
       this->write_c_string(" ");
       this->write_string((*p)->pkgpath_symbol());
-      this->write_c_string(";\n");
+      this->write_c_string("\n");
     }
 }
 
@@ -249,14 +426,19 @@ import_compare(const std::pair<std::string, Package*>& a,
 // Write out the imported packages.
 
 void
-Export::write_imports(const std::map<std::string, Package*>& imports)
+Export::write_imports(const std::map<std::string, Package*>& imports,
+		      const Unordered_set(const Package*)& type_imports)
 {
   // Sort the imports for more consistent output.
+  Unordered_set(const Package*) seen;
   std::vector<std::pair<std::string, Package*> > sorted_imports;
   for (std::map<std::string, Package*>::const_iterator p = imports.begin();
        p != imports.end();
        ++p)
-    sorted_imports.push_back(std::make_pair(p->first, p->second));
+    {
+      sorted_imports.push_back(std::make_pair(p->first, p->second));
+      seen.insert(p->second);
+    }
 
   std::sort(sorted_imports.begin(), sorted_imports.end(), import_compare);
 
@@ -271,9 +453,35 @@ Export::write_imports(const std::map<std::string, Package*>& imports)
       this->write_string(p->second->pkgpath());
       this->write_c_string(" \"");
       this->write_string(p->first);
-      this->write_c_string("\";\n");
+      this->write_c_string("\"\n");
 
       this->packages_.insert(p->second);
+    }
+
+  // Write out a separate list of indirectly imported packages.
+  std::vector<const Package*> indirect_imports;
+  for (Unordered_set(const Package*)::const_iterator p =
+	 type_imports.begin();
+       p != type_imports.end();
+       ++p)
+    {
+      if (seen.find(*p) == seen.end())
+	indirect_imports.push_back(*p);
+    }
+
+  std::sort(indirect_imports.begin(), indirect_imports.end(),
+	    packages_compare);
+
+  for (std::vector<const Package*>::const_iterator p =
+	 indirect_imports.begin();
+       p != indirect_imports.end();
+       ++p)
+    {
+      this->write_c_string("indirectimport ");
+      this->write_string((*p)->package_name());
+      this->write_c_string(" ");
+      this->write_string((*p)->pkgpath());
+      this->write_c_string("\n");
     }
 }
 
@@ -347,7 +555,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 
   if (imported_init_fns.empty())
     {
-      this->write_c_string(";\n");
+      this->write_c_string("\n");
       return;
     }
 
@@ -394,7 +602,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 	    it->second.push_back(ii->init_name());
 	}
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 
   // Create the init graph. Start by populating the graph with
   // all the edges we inherited from imported packages.
@@ -494,7 +702,7 @@ Export::write_imported_init_fns(const std::string& package_name,
 	  this->write_unsigned(sink);
 	}
     }
-  this->write_c_string(";\n");
+  this->write_c_string("\n");
 }
 
 // Write a name to the export stream.
@@ -597,19 +805,6 @@ Export::write_type(const Type* type)
       s += named_object->name();
       s += "\" ";
       this->write_string(s);
-
-      // It is possible that this type was imported indirectly, and is
-      // not in a package in the import list.  If we have not
-      // mentioned this package before, write out the package name
-      // here so that any package importing this one will know it.
-      if (package != NULL
-	  && this->packages_.find(package) == this->packages_.end())
-	{
-	  this->write_c_string("\"");
-	  this->write_string(package->package_name());
-	  this->packages_.insert(package);
-	  this->write_c_string("\" ");
-	}
 
       // We must add a named type to the table now, since the
       // definition of the type may refer to the named type via a

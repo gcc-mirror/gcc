@@ -1,3 +1,367 @@
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx-1.c (__builtin_ia32_vfmsubpd512_mask): New.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+	* testsuite/gcc.target/i386/sse-13.c
+	(__builtin_ia32_vfmsubpd512_mask): Likewise.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+	* testsuite/gcc.target/i386/sse-23.c
+	(__builtin_ia32_vfmsubpd512_mask): Likewise.
+	(__builtin_ia32_vfmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfmsubps512_mask): Likewise.
+	(__builtin_ia32_vfmsubps512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddpd512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmaddps512_mask3): Likewise.
+	(__builtin_ia32_vfnmaddps512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubpd512_maskz): Likewise.
+	(__builtin_ia32_vfnmsubps512_maskz): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-fnmsub-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fnmsub-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmsub-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmsub-sf-ymm-1.c: Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-fnmadd-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fnmadd-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmadd-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fnmadd-sf-ymm-1.c: Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-fmsub-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fmsub-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fmsub-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fmsub-sf-ymm-1.c: Likewise.
+
+2018-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71880
+	* gfortran.dg/deferred_character_31.f90 : New test.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-mul-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-mul-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-mul-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-mul-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-mul-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-mul-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-mul-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512vl-mul-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-mul-sf-ymm-1.c: Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87662
+	* gcc.target/i386/pr87662.c
+
+2018-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-div-df-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-div-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-div-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-div-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-div-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-div-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512vl-div-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-div-sf-ymm-1.c: Likewise.
+
+2018-10-20  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/*.C: Use target c++17 instead of explicit dg-options.
+	* lib/g++-dg.exp: Don't test C++11 by default.  Add C++17 to
+	the list of default stds to test.
+
+2018-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87647
+	* gcc.c-torture/compile/pr87647.c: New test.
+
+2018-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85488
+	PR middle-end/87649
+	* c-c++-common/gomp/doacross-2.c: New test.
+	* c-c++-common/gomp/sink-3.c: Expect another error during error
+	recovery.
+
+2018-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* gcc.target/powerpc/safe-indirect-jump-2.c: Do not check assigned CR
+	field number.
+	* gcc.target/powerpc/safe-indirect-jump-3.c: Ditto.
+
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87645
+	* gcc.dg/torture/pr87645.c: New testcase.
+
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR target/87657
+	* gcc.target/i386/pr87657.c: New testcase.
+
+2018-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512-binop-1.h: New file.
+	* gcc.target/i386/avx512-binop-2.h: Likewise.
+	* gcc.target/i386/avx512-binop-3.h: Likewise.
+	* gcc.target/i386/avx512-binop-4.h: Likewise.
+	* gcc.target/i386/avx512-binop-5.h: Likewise.
+	* gcc.target/i386/avx512-binop-6.h: Likewise.
+	* gcc.target/i386/avx512f-add-df-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-add-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-sub-df-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-sub-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-sub-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-sub-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-sub-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-sub-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512vl-add-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-add-sf-ymm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-sub-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-sub-sf-ymm-1.c: Likewise.
+
+2018-10-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/87596
+	* gcc.target/i386/pr87596.c: New test.
+
+2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/frame_overflow2.adb: New test.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512-fma-1.h: New file.
+	* gcc.target/i386/avx512-fma-2.h: Likewise.
+	* gcc.target/i386/avx512-fma-3.h: Likewise.
+	* gcc.target/i386/avx512-fma-4.h: Likewise.
+	* gcc.target/i386/avx512-fma-5.h: Likewise.
+	* gcc.target/i386/avx512-fma-6.h: Likewise.
+	* gcc.target/i386/avx512-fma-7.h: Likewise.
+	* gcc.target/i386/avx512-fma-8.h: Likewise.
+	* gcc.target/i386/avx512f-fmadd-df-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-7.c: Likewise.
+	* gcc.target/i386/avx512f-fmadd-sf-zmm-8.c: Likewise.
+	* gcc.target/i386/avx512vl-fmadd-sf-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-fmadd-sf-ymm-1.c: Likewise.
+
+2018-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87625
+	* gfortran.dg/realloc_on_assign_31.f90: New file.
+
+2018-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87562
+	* c-c++-common/substring-location-PR-87562-1-a.h: New file.
+	* c-c++-common/substring-location-PR-87562-1-b.h: New file.
+	* c-c++-common/substring-location-PR-87562-1.c: New test.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Add test for
+	PR 87562.
+	* gcc.dg/plugin/pr87562-a.h: New file.
+	* gcc.dg/plugin/pr87562-b.h: New file.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* gfortran.dg/associate_45.f90 : New test.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* gfortran.dg/deferred_character_30.f90 : New test.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87087
+	* gcc.dg/torture/pr87087.c: New testcase.
+	* gcc.dg/graphite/pr84204.c: XFAIL.
+	* gcc.dg/graphite/pr85935.c: Likewise.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87537
+	* gcc.target/i386/pr87537-1.c: New test.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* gcc.dg/c11-static-assert-7.c, gcc.dg/c11-static-assert-8.c,
+	gcc.dg/c11-static-assert-9.c, gcc.dg/c2x-static-assert-1.c,
+	gcc.dg/c2x-static-assert-2.c, gcc.dg/c99-static-assert-2.c,
+	gcc.dg/gnu2x-static-assert-1.c: New tests.
+	* gcc.dg/missing-symbol-3.c: Update expected fix-it text.
+
+2018-10-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87632
+	* gfortran.dg/select_type_47.f90: New.
+
+2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/pr87623.c: New test.
+
+2018-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84705
+	* g++.dg/cpp0x/pr84705.C: New.
+
+2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	* gfortran.dg/associate_44.f90 : New test.
+
+	PR fortran/80260
+	* gfortran.dg/select_type_45.f90 : New test.
+
+	PR fortran/82077
+	* gfortran.dg/select_type_46.f90 : New test.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/67125
+	* gfortran.dg/allocate_with_source_26.f90: Extend
+	testcase with polymorphic variables.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/67125
+	* gfortran.dg/allocate_with_source_26.f90: New.
+
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/missing-header-fixit-3.c: Update expected indentation
+	to reflect minimum margin width.
+	* gcc.dg/missing-header-fixit-4.c: Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-color-line-numbers.c:
+	Likewise.
+	* gcc.dg/plugin/diagnostic-test-show-locus-bw-line-numbers-2.c:
+	New test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Add it.
+
+2018-10-15  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: Tweak scan-tree.
+
+2018-10-15  Renlin Li  <renlin.li@arm.com>
+
+	PR target/87563
+	* gcc.target/aarch64/sve/pr87563.c: New.
+
+2018-10-15  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/87566
+	* gfortran.dg/select_type_44.f90: New test.
+	* gfortran.dg/associate_42.f90: New test.
+
+2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/87022
+	* gcc.dg/tree-ssa/pr87022.c: New test.
+
+2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* gcc.dg/torture/restrict-6.c: New testcase.
+
+2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* g++.dg/vec-init-1.C: New test.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87599
+	* gcc.target/i386/pr87599.c: New test.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87572
+	* gcc.target/i386/pr87572.c: New test.
+
+2018-10-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83146
+	* gfortran.dg/associate_43.f90: New test.
+
+2018-10-14  Anthony Green  <green@moxielogic.com>
+
+	* gcc.c-torture/execute/20101011-1.c: Adjust for moxie.
+
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* c-c++-common/pr81376.c: New test.
+	* gcc.target/i386/387-ficom-2.c: Update test.
+	* gcc.target/i386/387-ficom-2.c: Ditto.
+
 2018-10-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87597

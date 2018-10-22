@@ -1,3 +1,77 @@
+2018-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71880
+	* trans-expr.c (gfc_trans_pointer_assignment): Set the string
+	length for array valued deferred length lhs.
+
+2018-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87625
+	* trans-array.c (gfc_is_reallocatable_lhs): Detect allocatable
+	polymorphic arrays.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* trans-stmt.c (trans_associate_var): All strings that return
+	as pointer types can be assigned directly to the associate
+	name so remove 'attr' and the condition that uses it.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* trans-decl.c (gfc_get_symbol_decl): Deal correctly with the
+	initialization with NULL() of a deferred length pointer.
+
+2018-10-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87632
+	* resolve.c (resolve_select_type): Use correct variable.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-fortran): New.
+
+2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	PR fortran/80260
+	PR fortran/82077
+	* resolve.c (resolve_variable): Fix up expressions with array
+	associate names, where the parser did not detect that this is
+	array and there was no array part_ref in the expression.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/67125
+	* trans-array.c (gfc_array_init_size, gfc_array_allocate):
+	Rename argument e3_is_array_constr to e3_has_nodescriptor
+	and update comments.
+	* trans-stmt.c (gfc_trans_allocate): Also fix lower bound
+	to 1 for nonalloc/nonpointer func results/vars besides
+	array constructors.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87556
+	* trans-stmt.c (form_team, change_team, sync_team):
+	Don't ignore argse.pre/argse.post.
+
+2018-10-15  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/87566
+	* resolve.c (resolve_assoc_var): Add missing array spec for
+	class associate names.
+	(resolve_select_type): Handle case where last typed component
+	of the selector has a different type to the expression.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Replace
+	call to gfc_expr_to_initialize with call to gfc_copy_expr.
+	(gfc_conv_class_to_class): Guard assignment to 'len' field
+	against case where zero constant is supplied.
+
 2018-10-12  Tobias Burnus  <burnus@net-b.de>
 
 	PR fortran/87597

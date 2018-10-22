@@ -426,7 +426,17 @@ fix = {
     replace     = <<- _EndOfHeader_
 	#ifndef _REGS_H
 	#define _REGS_H
+	/* regs.h depends on CPU_FAMILY being properly defined, which
+	   is done by vxCpu.h.  */
+	#include <types/vxCpu.h>
+	/* regs.h includes a CPU_FAMILY-specific header that requires
+	   vxTypesOld.h to already have been included.  Those headers
+	   contain proper _ASMLANGUAGE guards around their typedefs,
+	   but vxTypesOld.h itself does not. So we avoid including
+	   vxTypesOld.h from assembly.  */
+	#ifndef _ASMLANGUAGE
 	#include <types/vxTypesOld.h>
+	#endif
 	#include_next <arch/../regs.h>
 	#endif
 	_EndOfHeader_;

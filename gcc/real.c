@@ -5176,6 +5176,19 @@ get_max_float (const struct real_format *fmt, char *buf, size_t len)
   gcc_assert (strlen (buf) < len);
 }
 
+/* True if all values of integral type can be represented
+   by this floating-point type exactly.  */
+
+bool format_helper::can_represent_integral_type_p (tree type) const
+{
+  gcc_assert (! decimal_p () && INTEGRAL_TYPE_P (type));
+
+  /* INT?_MIN is power-of-two so it takes
+     only one mantissa bit.  */
+  bool signed_p = TYPE_SIGN (type) == SIGNED;
+  return TYPE_PRECISION (type) - signed_p <= significand_size (*this);
+}
+
 /* True if mode M has a NaN representation and
    the treatment of NaN operands is important.  */
 

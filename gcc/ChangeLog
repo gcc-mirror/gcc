@@ -1,3 +1,707 @@
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/avx512fintrin.h (_mm512_fnmsub_round_pd): Use
+	__builtin_ia32_vfnmsubpd512_mask.
+	(_mm512_mask_fnmsub_round_pd): Likewise.
+	(_mm512_fnmsub_pd): Likewise.
+	(_mm512_mask_fnmsub_pd): Likewise.
+	(_mm512_maskz_fnmsub_round_pd): Use
+	__builtin_ia32_vfnmsubpd512_maskz.
+	(_mm512_maskz_fnmsub_pd): Likewise.
+	(_mm512_fnmsub_round_ps): Use __builtin_ia32_vfnmsubps512_mask.
+	(_mm512_mask_fnmsub_round_ps): Likewise.
+	(_mm512_fnmsub_ps): Likewise.
+	(_mm512_mask_fnmsub_ps): Likewise.
+	(_mm512_maskz_fnmsub_round_ps): Use
+	__builtin_ia32_vfnmsubps512_maskz.
+	(_mm512_maskz_fnmsub_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mask_fnmsub_pd): Use
+	__builtin_ia32_vfnmsubpd256_mask.
+	(_mm256_maskz_fnmsub_pd): Use __builtin_ia32_vfnmsubpd256_maskz.
+	(_mm_mask_fnmsub_pd): Use __builtin_ia32_vfmaddpd128_mask
+	(_mm_maskz_fnmsub_pd): Use __builtin_ia32_vfnmsubpd128_maskz.
+	(_mm256_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_mask.
+	(_mm256_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_mask.
+	(_mm256_maskz_fnmsub_ps): Use __builtin_ia32_vfnmsubps256_maskz.
+	(_mm_mask_fnmsub_ps): Use __builtin_ia32_vfnmsubps128_mask.
+	(_mm_maskz_fnmsub_ps): Use __builtin_ia32_vfnmsubps128_maskz.
+	* config/i386/fmaintrin.h (_mm_fnmsub_pd): Use
+	__builtin_ia32_vfnmsubpd.
+	(_mm256_fnmsub_pd): Use __builtin_ia32_vfnmsubpd256.
+	(_mm_fnmsub_ps): Use __builtin_ia32_vfnmsubps.
+	(_mm256_fnmsub_ps): Use __builtin_ia32_vfnmsubps256.
+	(_mm_fnmsub_sd): Use __builtin_ia32_vfnmsubsd3.
+	(_mm_fnmsub_ss): Use __builtin_ia32_vfnmsubss3.
+	* config/i386/i386-builtin.def: Add
+	__builtin_ia32_vfnmsubpd256_mask,
+	__builtin_ia32_vfnmsubpd256_maskz,
+	__builtin_ia32_vfnmsubpd128_mask,
+	__builtin_ia32_vfnmsubpd128_maskz,
+	__builtin_ia32_vfnmsubps256_mask,
+	__builtin_ia32_vfnmsubps256_maskz,
+	__builtin_ia32_vfnmsubps128_mask,
+	__builtin_ia32_vfnmsubps128_maskz,
+	__builtin_ia32_vfnmsubpd512_mask,
+	__builtin_ia32_vfnmsubpd512_maskz,
+	__builtin_ia32_vfnmsubps512_mask,
+	__builtin_ia32_vfnmsubps512_maskz, __builtin_ia32_vfnmsubss3,
+	__builtin_ia32_vfnmsubsd3, __builtin_ia32_vfnmsubps,
+	__builtin_ia32_vfnmsubpd, __builtin_ia32_vfnmsubps256 and.
+	__builtin_ia32_vfnmsubpd256.
+	* config/i386/sse.md (fma4i_fnmsub_<mode>): New.
+	(<avx512>_fnmsub_<mode>_maskz<round_expand_name>): Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmsub_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+	(fmai_vmfnmsub_<mode><round_name>): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/avx512fintrin.h (_mm512_fnmadd_round_pd): Use
+	__builtin_ia32_vfnmaddpd512_mask.
+	(_mm512_mask_fnmadd_round_pd): Likewise.
+	(_mm512_fnmadd_pd): Likewise.
+	(_mm512_mask_fnmadd_pd): Likewise.
+	(_mm512_maskz_fnmadd_round_pd): Use
+	__builtin_ia32_vfnmaddpd512_maskz.
+	(_mm512_maskz_fnmadd_pd): Likewise.
+	(_mm512_fnmadd_round_ps): Use __builtin_ia32_vfnmaddps512_mask.
+	(_mm512_mask_fnmadd_round_ps): Likewise.
+	(_mm512_fnmadd_ps): Likewise.
+	(_mm512_mask_fnmadd_ps): Likewise.
+	(_mm512_maskz_fnmadd_round_ps): Use
+	__builtin_ia32_vfnmaddps512_maskz.
+	(_mm512_maskz_fnmadd_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mask_fnmadd_pd): Use
+	__builtin_ia32_vfnmaddpd256_mask.
+	(_mm256_maskz_fnmadd_pd): Use __builtin_ia32_vfnmaddpd256_maskz.
+	(_mm_mask_fnmadd_pd): Use __builtin_ia32_vfmaddpd128_mask
+	(_mm_maskz_fnmadd_pd): Use __builtin_ia32_vfnmaddpd128_maskz.
+	(_mm256_mask_fnmadd_ps): Use __builtin_ia32_vfnmaddps256_mask.
+	(_mm256_mask_fnmadd_ps): Use __builtin_ia32_vfnmaddps256_mask.
+	(_mm256_maskz_fnmadd_ps): Use __builtin_ia32_vfnmaddps256_maskz.
+	(_mm_mask_fnmadd_ps): Use __builtin_ia32_vfnmaddps128_mask.
+	(_mm_maskz_fnmadd_ps): Use __builtin_ia32_vfnmaddps128_maskz.
+	* config/i386/fmaintrin.h (_mm_fnmadd_pd): Use
+	__builtin_ia32_vfnmaddpd.
+	(_mm256_fnmadd_pd): Use __builtin_ia32_vfnmaddpd256.
+	(_mm_fnmadd_ps): Use __builtin_ia32_vfnmaddps.
+	(_mm256_fnmadd_ps): Use __builtin_ia32_vfnmaddps256.
+	(_mm_fnmadd_sd): Use __builtin_ia32_vfnmaddsd3.
+	(_mm_fnmadd_ss): Use __builtin_ia32_vfnmaddss3.
+	* config/i386/i386-builtin.def: Add
+	__builtin_ia32_vfnmaddpd256_mask,
+	__builtin_ia32_vfnmaddpd256_maskz,
+	__builtin_ia32_vfnmaddpd128_mask,
+	__builtin_ia32_vfnmaddpd128_maskz,
+	__builtin_ia32_vfnmaddps256_mask,
+	__builtin_ia32_vfnmaddps256_maskz,
+	__builtin_ia32_vfnmaddps128_mask,
+	__builtin_ia32_vfnmaddps128_maskz,
+	__builtin_ia32_vfnmaddpd512_mask,
+	__builtin_ia32_vfnmaddpd512_maskz,
+	__builtin_ia32_vfnmaddps512_mask,
+	__builtin_ia32_vfnmaddps512_maskz, __builtin_ia32_vfnmaddss3,
+	__builtin_ia32_vfnmaddsd3, __builtin_ia32_vfnmaddps,
+	__builtin_ia32_vfnmaddpd, __builtin_ia32_vfnmaddps256 and.
+	__builtin_ia32_vfnmaddpd256.
+	* config/i386/sse.md (fma4i_fnmadd_<mode>): New.
+	(<avx512>_fnmadd_<mode>_maskz<round_expand_name>): Likewise.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fnmadd_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+	(fmai_vmfnmadd_<mode><round_name>): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/avx512fintrin.h (_mm512_fmsub_round_pd): Use
+	__builtin_ia32_vfmsubpd512_mask.
+	(_mm512_mask_fmsub_round_pd): Likewise.
+	(_mm512_fmsub_pd): Likewise.
+	(_mm512_mask_fmsub_pd): Likewise.
+	(_mm512_maskz_fmsub_round_pd): Use
+	__builtin_ia32_vfmsubpd512_maskz.
+	(_mm512_maskz_fmsub_pd): Likewise.
+	(_mm512_fmsub_round_ps): Use __builtin_ia32_vfmsubps512_mask.
+	(_mm512_mask_fmsub_round_ps): Likewise.
+	(_mm512_fmsub_ps): Likewise.
+	(_mm512_mask_fmsub_ps): Likewise.
+	(_mm512_maskz_fmsub_round_ps): Use
+	__builtin_ia32_vfmsubps512_maskz.
+	(_mm512_maskz_fmsub_ps): Likewise.
+	* config/i386/avx512vlintrin.h (_mm256_mask_fmsub_pd): Use
+	__builtin_ia32_vfmsubpd256_mask.
+	(_mm256_maskz_fmsub_pd): Use __builtin_ia32_vfmsubpd256_maskz.
+	(_mm_mask_fmsub_pd): Use __builtin_ia32_vfmaddpd128_mask
+	(_mm_maskz_fmsub_pd): Use __builtin_ia32_vfmsubpd128_maskz.
+	(_mm256_mask_fmsub_ps): Use __builtin_ia32_vfmsubps256_mask.
+	(_mm256_mask_fmsub_ps): Use __builtin_ia32_vfmsubps256_mask.
+	(_mm256_maskz_fmsub_ps): Use __builtin_ia32_vfmsubps256_maskz.
+	(_mm_mask_fmsub_ps): Use __builtin_ia32_vfmsubps128_mask.
+	(_mm_maskz_fmsub_ps): Use __builtin_ia32_vfmsubps128_maskz.
+	* config/i386/fmaintrin.h (_mm_fmsub_pd): Use
+	__builtin_ia32_vfmsubpd.
+	(_mm256_fmsub_pd): Use __builtin_ia32_vfmsubpd256.
+	(_mm_fmsub_ps): Use __builtin_ia32_vfmsubps.
+	(_mm256_fmsub_ps): Use __builtin_ia32_vfmsubps256.
+	(_mm_fmsub_sd): Use __builtin_ia32_vfmsubsd3.
+	(_mm_fmsub_ss): Use __builtin_ia32_vfmsubss3.
+	* config/i386/i386-builtin.def: Add
+	__builtin_ia32_vfmsubpd256_mask,
+	__builtin_ia32_vfmsubpd256_maskz,
+	__builtin_ia32_vfmsubpd128_mask,
+	__builtin_ia32_vfmsubpd128_maskz,
+	__builtin_ia32_vfmsubps256_mask,
+	__builtin_ia32_vfmsubps256_maskz,
+	__builtin_ia32_vfmsubps128_mask,
+	__builtin_ia32_vfmsubps128_maskz,
+	__builtin_ia32_vfmsubpd512_mask,
+	__builtin_ia32_vfmsubpd512_maskz,
+	__builtin_ia32_vfmsubps512_mask,
+	__builtin_ia32_vfmsubps512_maskz, __builtin_ia32_vfmsubss3,
+	__builtin_ia32_vfmsubsd3, __builtin_ia32_vfmsubps,
+	__builtin_ia32_vfmsubpd, __builtin_ia32_vfmsubps256 and.
+	__builtin_ia32_vfmsubpd256.
+	* config/i386/sse.md (fma4i_fmsub_<mode>): New.
+	(<avx512>_fmsub_<mode>_maskz<round_expand_name>): Likewise.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmsub_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+	(fmai_vmfmsub_<mode><round_name>): Likewise.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md (*<plusminus_insn><mode>3<mask_name>_bcst_1):
+	Remove plus.  Renamed to ...
+	(*sub<mode>3<mask_name>_bcst): This.
+	(*add<mode>3<mask_name>_bcst_2): Renamede to ...
+	(*add<mode>3<mask_name>_bcst): This.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/sse.md (*mul<mode>3<mask_name>_bcst): New.
+
+2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87662
+	* i386/avx512vlintrin.h (_mm256_or_epi32): New.
+	(_mm_or_epi32): Likewise.
+	(_mm256_xor_epi32): Likewise.
+	(_mm_xor_epi32): Likewise.
+	(_mm256_or_epi64): Likewise.
+	(_mm_or_epi64): Likewise.
+	(_mm256_xor_epi64): Likewise.
+	(_mm_xor_epi64): Likewise.
+
+2018-10-20  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/sse.md (*<avx512>_div<mode>3<mask_name>_bcst): New.
+
+2018-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/87647
+	* varasm.c (decode_addr_const): Handle COMPOUND_LITERAL_EXPR.
+
+2018-10-20  Andreas Schwab  <schwab@linux-m68k.org>
+
+	* doc/ux.texi: Move @section directly after @node.
+
+2018-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85488
+	PR middle-end/87649
+	* omp-low.c (check_omp_nesting_restrictions): Diagnose ordered without
+	depend closely nested inside of loop with ordered clause with
+	a parameter.
+
+2018-10-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (TEXI_GCCINT_FILES): Add ux.texi.
+	* doc/gccint.texi: Include ux.texi and use it in top-level menu.
+	* doc/ux.texi: New file.
+
+2018-10-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.h (REG_ALLOC_ORDER): Move 68 (that is, CR0) to
+	be the first CR field allocated.
+
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR target/87657
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Use
+	TYPE_VECTOR_SUBPARTS and avoid relying on vector mode.
+
+2018-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/sse.md
+	(*<plusminus_insn><mode>3<mask_name>_bcst_1): New.
+	(*add<mode>3<mask_name>_bcst_2): Likewise.
+
+2018-10-19  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* config/i386/sse.md
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1):
+	Replace nonimmediate_operand with register_operand.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+
+2018-10-19  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR rtl-optimization/87596
+	* lra-constraints.c (spill_hard_reg_in_range): Use INSN_P () +
+	lra_get_insn_recog_data () instead of lra_insn_recog_data[]
+	for instructions in FROM..TO range.
+
+2018-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* cfgexpand.c (expand_one_var): Use specific wording in error message
+	for non-local frame variables.
+	* stor-layout.c (layout_decl): Do not issue a warning for them.
+
+2018-10-19  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* haifa-sched.c (priority): Add force_recompute parameter.
+	(apply_replacement): Call priority () with force_recompute = true.
+	(restore_pattern): Likewise.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* simplify-rtx.c (simplify_subreg): Limit mask of vec_merge to
+	HOST_BITS_PER_WIDE_INT.
+	(test_vector_ops_duplicate): Likewise.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* config/i386/sse.md (VF_AVX512): New.
+	(avx512bcst): Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_1):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_2):
+	Likewise.
+	(*<sd_mask_codefor>fma_fmadd_<mode><sd_maskz_name>_bcst_3):
+	Likewise.
+
+2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/invoke.texi (-dumpversion): Improve grammar.
+	(-dumpfullversion): Make more consistent with -dumpversion.
+
+2018-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_emit_fp_unordered_jump):
+	Set JUMP_LABEL to the jump insn.
+	(ix86_emit_i387_log1p): Use ix86_expand_branch to expand branch.
+	Predict emitted jump and add label to jump insn.
+
+2018-10-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87562
+	* input.c (get_substring_ranges_for_loc): Use
+	LRK_SPELLING_LOCATION rather than LRK_MACRO_EXPANSION_POINT when
+	getting the linemap for the endpoint.  Verify that it's either
+	in the same linemap as the start point's spelling location, or
+	at least in the same file.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_builtin_vectorization_cost): Do not
+	feed width-specific load/store costs through ix86_vec_cost.
+	* config/i386/x86-tune-costs.h (athlon_cost): Adjust.
+	(k8_cost): Likewise.
+	(bdver_cost): Likewise.
+	(znver1_cost): Likewise.
+	(btver1_cost): Likewise.
+	(btver2_cost): Likewise.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* simplify-rtx.c (simplify_subreg): Call simplify_gen_subreg
+	to simplify subreg of vec_merge.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c: Fix costing of vector FMA.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c (ix86_vec_cost): Remove !parallel path
+	and argument.
+	(ix86_builtin_vectorization_cost): For vec_construct properly
+	cost insertion into SSE regs.
+	(...): Adjust calls to ix86_vec_cost.
+
+2018-10-18  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87087
+	Revert
+	2018-02-07  Richard Biener  <rguenther@suse.de>
+
+        PR tree-optimization/84204
+        * tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
+        this place.
+
+2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87537
+	* simplify-rtx.c (simplify_subreg): Simplify subreg of vec_merge
+	of vec_duplicate.
+	(test_vector_ops_duplicate): Add test for a scalar subreg of a
+	VEC_MERGE of a VEC_DUPLICATE.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/cpp.texi (__STDC_VERSION__): Document C2X handling.
+	* doc/invoke.texi (-std=c2x, -std=gnu2x): Document new options.
+	* doc/standards.texi (C Language): Document C2X.
+	* dwarf2out.c (highest_c_language), config/rl78/rl78.c
+	(rl78_option_override): Handle "GNU C2X" language name.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* doc/invoke.texi (-std=c17), doc/standards.texi (C Language):
+	Document C17 as published in 2018.
+
+2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87623
+	* fold-const.c (fold_truth_andor_1): If the right side is not constant,
+	bail out if both sides do not have the same storage order.
+
+2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* bitmap.c (bitmap_head::dump): New.
+	* bitmap.h (bitmap_head): Add dump().
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::try_find_new_range): Adjust for value_range API.
+	(evrp_range_analyzer::set_ssa_range_info): Same.
+	(evrp_range_analyzer::record_ranges_from_phis): Same.
+	(evrp_range_analyzer::record_ranges_from_stmt): Same.
+	* gimple-ssa-evrp.c (evrp_dom_walker::before_dom_children): Same.
+	* gimple-ssa-sprintf.c (get_int_range): Same.
+	(format_integer): Same.
+	(sprintf_dom_walker::handle_gimple_call): Same.
+	* ipa-cp.c (ipcp_vr_lattice::meet_with_1): Same.
+	(ipcp_vr_lattice::top_p): Same.
+	(ipcp_vr_lattice::bottom_p): Same.
+	(ipcp_vr_lattice::set_to_bottom): Same.
+	(ipa_vr_operation_and_type_effects): Same.
+	(propagate_vr_across_jump_function): Same.
+	(ipcp_store_vr_results): Same.
+	* ipa-prop.c (struct ipa_vr_ggc_hash_traits): Same.
+	(ipa_print_node_jump_functions_for_edge): Same.
+	(ipa_get_value_range): Same.
+	(ipa_compute_jump_functions_for_edge): Same.
+	(ipa_write_jump_function): Same.
+	* tree-ssa-dom.c (simplify_stmt_for_jump_threading): Same.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Same.
+	* vr-values.c (set_value_range_to_nonnegative): Same.
+	(set_value_range_to_truthvalue): Same.
+	(vr_values::get_value_range): Same.
+	(vr_values::set_defs_to_varying): Same.
+	(vr_values::update_value_range): Same.
+	(symbolic_range_based_on_p): Same.
+	(vr_values::op_with_boolean_value_range_p): Same.
+	(vr_values::extract_range_for_var_from_comparison_expr): Same.
+	(vr_values::extract_range_from_ssa_name): Same.
+	(vr_values::extract_range_from_binary_expr): Same.
+	(vr_values::extract_range_from_unary_expr): Same.
+	(vr_values::extract_range_from_cond_expr): Same.
+	(vr_values::extract_range_from_comparison): Same.
+	(vr_values::check_for_binary_op_overflow): Same.
+	(vr_values::extract_range_basic): Same.
+	(vr_values::extract_range_from_assignment): Same.
+	(compare_ranges): Same.
+	(compare_range_with_value): Same.
+	(vr_values::adjust_range_with_scev): Same.
+	(vrp_valueize): Same.
+	(vrp_valueize_1): Same.
+	(vr_values::get_vr_for_comparison): Same.
+	(vr_values::compare_name_with_value): Same.
+	(vr_values::compare_names): Same.
+	(vr_values::vrp_evaluate_conditional): Same.
+	(find_case_label_ranges): Same.
+	(vr_values::vrp_visit_switch_stmt): Same.
+	(vr_values::extract_range_from_phi_node): Same.
+	(vr_values::simplify_div_or_mod_using_ranges): Same.
+	(vr_values::simplify_bit_ops_using_ranges): Same.
+	(test_for_singularity): Same.
+	(range_fits_type_p): Same.
+	(vr_values::simplify_cond_using_ranges_1): Same.
+	(vr_values::simplify_switch_using_ranges): Same.
+	(vr_values::simplify_float_conversion_using_ranges): Same.
+	(vr_values::two_valued_val_range_p): Same.
+	(vr_values::add_equivalence): Move to value_range::equiv_add.
+	* vr-values.h (vr_values::add_equivalence): Remove.
+	(VR_INITIALIZER): Remove.
+	* tree-vrp.c (value_range::set): New.
+	(value_range::equiv_add): New.
+	(value_range::value_range): New.
+	(value_range::deep_copy): New.
+	(value_range::check): New.
+	(value_range::equal_p): New.
+	(value_range::ignore_equivs_equal_p): New.
+	(value_range::operator==): New.
+	(value_range::operator!=): New.
+	(value_range::symbolic_p): New.
+	(value_range::numeric_p): New.
+	(value_range::set_undefined): New.
+	(value_range::set_varying): New.
+	(value_range::may_contain_p): New.
+	(value_range::equiv_clear): New.
+	(value_range::singleton_p): New.
+	(value_range::intersect): New.
+	(value_range::dump): New.
+	(value_range::set_and_canonicalize): New.
+	(set_value_range): Adjust for value_range API.
+	(set_value_range_to_undefined): Same.
+	(set_value_range_to_varying): Same.
+	(set_and_canonicalize_value_range): Same.
+	(set_value_range_to_nonnull): Same.
+	(set_value_range_to_null): Same.
+	(range_is_null): Same.
+	(range_is_nonnull): Same.
+	(range_int_cst_p): Same.
+	(range_int_cst_singleton_p): Same.
+	(symbolic_range_p): Same.
+	(range_includes_zero_p): Same.
+	(value_range_constant_singleton): Same.
+	(vrp_set_zero_nonzero_bits): Same.
+	(ranges_from_anti_range): Same.
+	(extract_range_into_wide_ints): Same.
+	(extract_range_from_multiplicative_op): Same.
+	(set_value_range_with_overflow): Same.
+	(extract_range_from_binary_expr_1): Same.
+	(extract_range_from_unary_expr): Same.
+	(dump_value_range): Same.
+	(debug_value_range): Same.
+	(vrp_prop::check_array_ref): Same.
+	(vrp_prop::check_mem_ref): Same.
+	(vrp_prop::vrp_initialize): Same.
+	(vrp_prop::visit_stmt): Same.
+	(intersect_ranges): Same.
+	(vrp_prop::visit_phi): Same.
+	(vrp_prop::vrp_finalize): Same.
+	(determine_value_range_1): Same.
+	(determine_value_range): Same.
+	(vrp_intersect_ranges_1): Rename to...
+	(vrp_intersect_1): this.
+	(vrp_intersect_ranges): Rename to...
+	(value_range::intersect_helper): ...this.
+	(vrp_meet_1): Rename to...
+	(value_range::union_helper): ...this.
+	(vrp_meet): Rename to...
+	(value_range::union_): ...this.
+	(copy_value_range): Remove.
+	* tree-vrp.h (struct value_range): Rewrite into a proper class.
+	(value_range::vrtype): New.
+	(value_range::type): New.
+	(value_range::equiv): New.
+	(value_range::min): New.
+	(value_range::max): New.
+	(value_range::varying_p): New.
+	(value_range::undefined_p): New.
+	(value_range::null_p): New.
+	(value_range::equiv_add): New.
+	(copy_value_range): Remove.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (SELFTEST_TARGETS): New.
+	(selftest) Change from s-selftest-c to $(SELFTEST_TARGETS).
+	(C_SELFTEST_FLAGS, C_SELFTEST_DEPS, s-selftest-c, selftest-c-gdb)
+	(selftest-gdb, selftest-c-valgrind, selftest-valgrind): Move to
+	c/Make-lang.in.
+	(CPP_SELFTEST_FLAGS, CPP_SELFTEST_DEPS, s-selftest-c++)
+	(selftest-c++-gdb, selftest-c++-valgrind): Move to
+	cp/Make-lang.in.
+	* configure: Regenerate.
+	* configure.ac (selftest_languages): New.
+
+2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+        * tree-vrp.c (extract_range_from_multiplicative_op): Remove
+	overflow wraps argument.
+        (extract_range_from_binary_expr_1): Do not pass overflow wraps to
+	wide_int_range_multiplicative_op.
+        * wide-int-range.cc (wide_int_range_mult_wrapping): Remove
+	overflow wraps argument.
+        (wide_int_range_multiplicative_op): Same.
+        (wide_int_range_lshift): Same.
+        (wide_int_range_div): Same.
+        * wide-int-range.h (wide_int_range_multiplicative_op): Same.
+        (wide_int_range_lshift): Same.
+        (wide_int_range_div): Same.
+
+2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int-range.h (wide_int_range_shift_undefined_p): Adjust to
+	use sign as argument.
+	* tree-vrp.c (extract_range_from_binary_expr_1): Pass sign to
+	wide_int_range_shift_undefined_p.
+
+2018-10-16  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/aarch64/aarch64.md (despeculate_copy<ALLI_TI:mode>):
+	Rename to...
+	(@despeculate_copy<ALLI_TI:mode>): ... This.
+	* config/aarch64/aarch64.c (aarch64_speculation_safe_value): Remove
+	switch statement.
+
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config.gcc: Obsolete *-*-solaris2.10*.
+	* doc/install.texi (Specific, *-*-solaris2*): Document it.
+
+2018-10-12  Jeff Law  <law@redhat.com>
+
+	* config/ft32/ft32.md (ft32_general_movsrc_operand): Disable
+	reg + sym +- const_int addressing modes.
+
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.opt (fdiagnostics-minimum-margin-width=): New option.
+	* diagnostic-show-locus.c (layout::layout): Apply the minimum
+	margin width.
+	(layout::start_annotation_line): Only print up to 3 of the
+	margin character, to avoid touching the left-hand side.
+	(selftest::test_diagnostic_show_locus_fixit_lines): Update for
+	minimum margin width, as set by test_diagnostic_context's ctor.
+	(selftest::test_fixit_insert_containing_newline): Likewise.
+	(selftest::test_fixit_insert_containing_newline_2): Likewise.
+	(selftest::test_line_numbers_multiline_range): Clear
+	dc.min_margin_width.
+	* diagnostic.c (diagnostic_initialize): Initialize
+	min_margin_width.
+	* diagnostic.h (struct diagnostic_context): Add field
+	"min_margin_width".
+	* doc/invoke.texi: Add -fdiagnostics-minimum-margin-width=.
+	* opts.c (common_handle_option): Handle
+	OPT_fdiagnostics_minimum_margin_width_.
+	* selftest-diagnostic.c
+	(selftest::test_diagnostic_context::test_diagnostic_context):
+	Initialize min_margin_width to 6.
+	* toplev.c (general_init): Initialize global_dc->min_margin_width.
+
+2018-10-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc-rich-location.h (gcc_rich_location::add_location_if_nearby):
+	Fix usage of "error_at_rich_loc" in the comment.
+
+2018-10-15  Renlin Li  <renlin.li@arm.com>
+
+	PR target/87563
+	* tree-vectorizer.c (try_vectorize_loop_1): Don't use
+	if-conversioned loop when it contains ifn with types not
+	supported by backend.
+	* internal-fn.c (expand_direct_optab_fn): Add an assert.
+	(direct_internal_fn_supported_p): New helper function.
+	* internal-fn.h (direct_internal_fn_supported_p): Declare.
+
+2018-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87572
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_UNSET):
+	Remove OPTION_MASK_ISA_AVX5124FMAPS_UNSET and
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET.
+
+2018-10-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/87022
+	* tree-loop-distribution.c (pg_add_dependence_edges): Check all
+	bits in dist vector rather than the first one.
+
+2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* tree-ssa-structalias.c (struct vls_data): Add escaped_p member.
+	(visit_loadstore): When a used restrict tag escaped verify that
+	the points-to solution of "other" pointers do not include
+	escaped.
+	(compute_dependence_clique): If a used restrict tag escaped
+	communicated that down to visit_loadstore.
+
+2018-10-15  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.c (s390_expand_vec_init): Force vector element
+	into reg if it isn't a general operand.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87599
+	* config/i386/sse.md (*vec_dupv2di): Add register source to
+	movddup.
+
+2018-10-14  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87572
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_AVX512F_UNSET):
+	Add OPTION_MASK_ISA_AVX512IFMA_UNSET,
+	OPTION_MASK_ISA_AVX5124FMAPS_UNSET and
+	OPTION_MASK_ISA_AVX5124VNNIW_UNSET.
+
+2018-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2cfi.c (struct dw_trace_info): Add args_size_defined_for_eh.
+	(notice_args_size): Set it in the current trace if no insn that can
+	throw internally has been seen yet.
+	(connect_traces): When connecting args_size between traces, allow the
+	incoming values not to match if there is an insn setting it before the
+	first insn that can throw internally; in that case, force the creation
+	of a CFI note on this latter insn.
+
+2018-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* opt-problem.h (opt_wrapper): Use template-argument-list when naming
+	the base class, because using the injected-class-name was not clearly
+	specified until DR 176.
+
+2018-10-12  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.md (doloop_end): New expander.
+	(doloop_end_insn): renamed from "doloop_end".
+	(addqi3): New pattern.
+	(subqi3): New pattern.
+	* config/pdp11/predicates.md (incdec_operand): New predicate.
+
+2018-10-12  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/81376
+	* real.c (format_helper::can_represent_integral_type_p): New function
+	* real.h (format_helper::can_represent_integral_type_p): Ditto.
+	* match.pd: New pattern.
+
+2018-10-12  Alexandre Oliva <oliva@adacore.com>
+
+	* configure.ac: Introduce --enable-large-address-aware
+	to define MINGW_DEFAULT_LARGE_ADDR_AWARE.
+	* doc/install.texi: Document it.
+	* configure, config.in: Rebuilt.
+	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Define,
+	based on MINGW_DEFAULT_LARGE_ADDR_AWARE.
+	(LINK_SPEC): Insert it.
+	* config/i386/mingw-264.h: Likewise.
+
+	* cygming.h (HAVE_GAS_ALIGNED_COMM): Fallback-define.
+
 2018-10-12  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87600
