@@ -1,3 +1,8 @@
+2018-10-22  Martin Liska  <mliska@suse.cz>
+
+  PR tree-optimization/87686
+	* g++.dg/tree-ssa/pr87686.C: New test.
+
 2018-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.target/i386/i386.exp: Use g++-dg-runtest to iterate

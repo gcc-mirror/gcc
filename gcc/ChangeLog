@@ -1,5 +1,14 @@
 2018-10-22  Martin Liska  <mliska@suse.cz>
 
+  PR tree-optimization/87686
+	Revert
+	2018-08-29  Martin Liska  <mliska@suse.cz>
+
+	* tree-switch-conversion.c (switch_conversion::expand):
+	Strenghten assumption about gswitch statements.
+
+2018-10-22  Martin Liska  <mliska@suse.cz>
+
 	* ipa-icf.c (sem_item::compare_attributes): Remove.
 	(sem_item::compare_referenced_symbol_properties): Use
 	attribute_list_equal instead.
