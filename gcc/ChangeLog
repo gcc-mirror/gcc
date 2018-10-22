@@ -1,3 +1,9 @@
+2018-10-22  Andrew Stubbs  <ams@codesourcery.com>
+
+	* lra-constraints.c (process_alt_operands): New local array,
+	matching_early_clobber.  Check matching_early_clobber before
+	decrementing reject, and set matching_early_clobber after.
+
 2018-10-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/87598
