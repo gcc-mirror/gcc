@@ -1,3 +1,8 @@
+2018-10-22  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/87633
+	* match.pd: Do not generate unordered integer comparisons.
+
 2018-10-22  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/87600
