@@ -1,3 +1,8 @@
+2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Inspection_Point>: Use
+	a simple memory constraint in all cases.
+
 2018-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline

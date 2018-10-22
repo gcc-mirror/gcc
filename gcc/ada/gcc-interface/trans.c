@@ -1276,32 +1276,18 @@ Pragma_to_gnu (Node_Id gnat_node)
 	{
 	  Node_Id gnat_expr = Expression (gnat_temp);
 	  tree gnu_expr = gnat_to_gnu (gnat_expr);
-	  int use_address;
-	  machine_mode mode;
-	  scalar_int_mode int_mode;
 	  tree asm_constraint = NULL_TREE;
 #ifdef ASM_COMMENT_START
 	  char *comment;
 #endif
-
-	  if (TREE_CODE (gnu_expr) == UNCONSTRAINED_ARRAY_REF)
-	    gnu_expr = TREE_OPERAND (gnu_expr, 0);
-
-	  /* Use the value only if it fits into a normal register,
-	     otherwise use the address.  */
-	  mode = TYPE_MODE (TREE_TYPE (gnu_expr));
-	  use_address = (!is_a <scalar_int_mode> (mode, &int_mode)
-			 || GET_MODE_SIZE (int_mode) > UNITS_PER_WORD);
-
-	  if (use_address)
-	    gnu_expr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
+	  gnu_expr = maybe_unconstrained_array (gnu_expr);
+	  gnat_mark_addressable (gnu_expr);
 
 #ifdef ASM_COMMENT_START
 	  comment = concat (ASM_COMMENT_START,
 			    " inspection point: ",
 			    Get_Name_String (Chars (gnat_expr)),
-			    use_address ? " address" : "",
-			    " is in %0",
+			    " is at %0",
 			    NULL);
 	  asm_constraint = build_string (strlen (comment), comment);
 	  free (comment);
@@ -1311,8 +1297,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 			     NULL_TREE,
 			     tree_cons
 			     (build_tree_list (NULL_TREE,
-					       build_string (1, "g")),
-			      gnu_expr, NULL_TREE),
+					       build_string (1, "m")),
+					       gnu_expr, NULL_TREE),
 			     NULL_TREE, NULL_TREE);
 	  ASM_VOLATILE_P (gnu_expr) = 1;
 	  set_expr_location_from_node (gnu_expr, gnat_node);
