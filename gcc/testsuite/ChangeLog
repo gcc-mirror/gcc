@@ -1,3 +1,8 @@
+2018-10-22  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/87633
+	* g++.dg/pr87633.C: New test.
+
 2018-10-22  Marek Polacek  <polacek@redhat.com>
 
 	PR testsuite/87694
