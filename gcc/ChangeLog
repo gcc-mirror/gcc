@@ -1,3 +1,8 @@
+2018-10-22  Paul Koning  <ni1d@arrl.net>
+
+	* symtab.c (symtab_node::increase_alignment): Correct max
+	alignment check.
+
 2018-10-22  Yury Gribov  <tetra2005@gmail.com>
 
 	PR tree-optimization/87633

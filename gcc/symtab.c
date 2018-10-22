@@ -2205,7 +2205,7 @@ increase_alignment_1 (symtab_node *n, void *v)
 void
 symtab_node::increase_alignment (unsigned int align)
 {
-  gcc_assert (can_increase_alignment_p () && align < MAX_OFILE_ALIGNMENT);
+  gcc_assert (can_increase_alignment_p () && align <= MAX_OFILE_ALIGNMENT);
   ultimate_alias_target()->call_for_symbol_and_aliases (increase_alignment_1,
 						        (void *)(size_t) align,
 						        true);
