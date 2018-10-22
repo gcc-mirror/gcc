@@ -85,6 +85,10 @@
    vector types, and their scalar components.  */
 typedef float __m128 __attribute__ ((__vector_size__ (16), __may_alias__));
 
+/* Unaligned version of the same type.  */
+typedef float __m128_u __attribute__ ((__vector_size__ (16), __may_alias__,
+				       __aligned__ (1)));
+
 /* Internal data types for implementing the intrinsics.  */
 typedef float __v4sf __attribute__ ((__vector_size__ (16)));
 
@@ -172,7 +176,7 @@ _mm_store_ps (float *__P, __m128 __A)
 extern __inline void __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_storeu_ps (float *__P, __m128 __A)
 {
-  *(__m128 *)__P = __A;
+  *(__m128_u *)__P = __A;
 }
 
 /* Store four SPFP values in reverse order.  The address must be aligned.  */
