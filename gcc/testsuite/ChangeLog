@@ -1,3 +1,24 @@
+2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
+	* gcc.target/i386/avx512f-add-di-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-add-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-add-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-add-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-add-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-add-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-add-si-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-sub-di-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-sub-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-sub-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-sub-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-sub-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-sub-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512vl-add-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-add-si-ymm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-sub-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-sub-si-ymm-1.c: Likewise.
+
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
