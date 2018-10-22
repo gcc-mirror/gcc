@@ -1,3 +1,8 @@
+2018-10-22  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/87694
+	* g++.dg/concepts/memfun-err.C: Make it a compile test.
+
 2018-10-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/evrp12.c: New testcase.
