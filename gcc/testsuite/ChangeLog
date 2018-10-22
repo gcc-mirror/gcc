@@ -1,3 +1,8 @@
+2018-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.target/i386/i386.exp: Use g++-dg-runtest to iterate
+	properly -std= options.
+
 2018-10-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/scop-4.c: Avoid out-of-bound access.
