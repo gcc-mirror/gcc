@@ -1,6 +1,37 @@
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* gcc.target/i386/avx512f-and-di-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-and-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-and-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-and-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-and-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-and-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-and-si-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-or-di-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-or-si-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512f-xor-di-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512f-xor-si-zmm-6.c: Likewise.
+	* gcc.target/i386/avx512vl-and-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-and-si-ymm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-or-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-or-si-ymm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-xor-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-xor-si-ymm-1.c: Likewise.
+
+2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* gcc.target/i386/avx512f-add-di-zmm-1.c: New test.
 	* gcc.target/i386/avx512f-add-si-zmm-1.c: Likewise.
 	* gcc.target/i386/avx512f-add-si-zmm-2.c: Likewise.
