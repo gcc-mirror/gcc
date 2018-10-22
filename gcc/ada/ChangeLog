@@ -1,5 +1,12 @@
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (unchecked_convert): Use local variables for
+	the biased and reverse SSO attributes of both types.
+	Further extend the processing of integral types in the presence of
+	reverse SSO to all scalar types.
+
+2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Pragma_to_gnu) <Pragma_Inspection_Point>: Use
 	a simple memory constraint in all cases.
 
