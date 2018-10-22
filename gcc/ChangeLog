@@ -1,3 +1,10 @@
+2018-10-22  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_loadrelative_operand_p): Accept
+	literal pool references.
+	(s390_check_qrst_address): Adapt to the new behavior of
+	s390_loadrelative_operand_p ().
+
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
