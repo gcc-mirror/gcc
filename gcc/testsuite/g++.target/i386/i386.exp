@@ -35,8 +35,8 @@ dg-init
 clearcap-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
-        "" $DEFAULT_CXXFLAGS
+g++-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] \
+	       "" $DEFAULT_CXXFLAGS
 
 # All done.
 clearcap-finish
