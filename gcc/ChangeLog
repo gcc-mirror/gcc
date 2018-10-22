@@ -1,3 +1,11 @@
+2018-10-22  Martin Liska  <mliska@suse.cz>
+
+	* ipa-icf.c (sem_item::compare_attributes): Remove.
+	(sem_item::compare_referenced_symbol_properties): Use
+	attribute_list_equal instead.
+	(sem_function::equals_wpa): Likewise.
+	* ipa-icf.h: Remove compare_attributes.
+
 2018-10-22  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87682
