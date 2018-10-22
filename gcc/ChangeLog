@@ -1,6 +1,11 @@
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* config/i386/sse.md (*<code><mode>3_bcst): New.
+
+2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* config/i386/sse.md (avx512bcst): Updated for V4SI, V2DI, V8SI,
 	V4DI, V16SI and V8DI.
 	(*sub<mode>3<mask_name>_bcst): New.

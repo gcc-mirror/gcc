@@ -12324,6 +12324,18 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
+(define_insn "*<code><mode>3_bcst"
+  [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
+	(any_logic:VI48_AVX512VL
+	  (vec_duplicate:VI48_AVX512VL
+	    (match_operand:<ssescalarmode> 1 "memory_operand" "m"))
+	  (match_operand:VI48_AVX512VL 2 "register_operand" "v")))]
+  "TARGET_AVX512F && <mask_avx512vl_condition>"
+  "vp<logic><ssemodesuffix>\t{%1<avx512bcst>, %2, %0<mask_operand3>|%0<mask_operand3>, %2, %1<avx512bcst>}"
+  [(set_attr "type" "sseiadd")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "<avx512>_testm<mode>3<mask_scalar_merge_name>"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=Yk")
 	(unspec:<avx512fmaskmode>
