@@ -1703,9 +1703,11 @@ coalesce_ssa_name (var_map map)
   coalesce_list *cl;
   auto_bitmap used_in_copies;
 
+  bitmap_tree_view (used_in_copies);
   cl = create_coalesce_list_for_region (map, used_in_copies);
   if (map->outofssa_p)
     populate_coalesce_list_for_outofssa (cl, used_in_copies);
+  bitmap_list_view (used_in_copies);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);
