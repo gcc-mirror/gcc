@@ -1,5 +1,10 @@
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/sso14.adb: New test.
+	* gnat.dg/sso15.adb: Likewise.
+
+2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/warn19.ad[sb]: New test.
 	* gnat.dg/warn19_pkg.ads: New helper.
 
