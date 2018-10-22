@@ -1,3 +1,7 @@
+2018-10-22  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/scop-4.c: Avoid out-of-bound access.
+
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso14.adb: New test.
