@@ -1,3 +1,10 @@
+2018-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87640
+	* tree-vrp.c (set_value_range_with_overflow): Decompose
+	incomplete result.
+	(extract_range_from_binary_expr_1): Adjust.
+
 2018-10-22  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-eh.h (stmt_could_throw_p): Add function parameter.
