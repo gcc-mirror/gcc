@@ -3235,7 +3235,7 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 
 	  /* If the comparison can throw, then is_gimple_condexpr will be
 	     false and we can't make a COND_EXPR/VEC_COND_EXPR out of it.  */
-	  if (stmt_could_throw_p (def_stmt))
+	  if (stmt_could_throw_p (cfun, def_stmt))
 	    return false;
 
 	  comp_vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));

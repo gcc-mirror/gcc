@@ -3844,7 +3844,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     return opt_result::failure_at (stmt, "not vectorized: volatile type: %G",
 				   stmt);
 
-  if (stmt_can_throw_internal (stmt))
+  if (stmt_can_throw_internal (cfun, stmt))
     return opt_result::failure_at (stmt,
 				   "not vectorized:"
 				   " statement can throw an exception: %G",

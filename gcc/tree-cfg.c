@@ -2720,7 +2720,7 @@ is_ctrl_altering_stmt (gimple *t)
     }
 
   /* If a statement can throw, it alters control flow.  */
-  return stmt_can_throw_internal (t);
+  return stmt_can_throw_internal (cfun, t);
 }
 
 
@@ -5387,7 +5387,7 @@ verify_gimple_in_cfg (struct function *fn, bool verify_nothrow)
 	    visited_throwing_stmts.add (stmt);
 	  if (lp_nr > 0)
 	    {
-	      if (!stmt_could_throw_p (stmt))
+	      if (!stmt_could_throw_p (cfun, stmt))
 		{
 		  if (verify_nothrow)
 		    {
@@ -8283,7 +8283,7 @@ stmt_can_terminate_bb_p (gimple *t)
 
   /* Eh exception not handled internally terminates execution of the whole
      function.  */
-  if (stmt_can_throw_external (t))
+  if (stmt_can_throw_external (cfun, t))
     return true;
 
   /* NORETURN and LONGJMP calls already have an edge to exit.
@@ -8599,7 +8599,7 @@ gimple_purge_dead_eh_edges (basic_block bb)
   edge_iterator ei;
   gimple *stmt = last_stmt (bb);
 
-  if (stmt && stmt_can_throw_internal (stmt))
+  if (stmt && stmt_can_throw_internal (cfun, stmt))
     return false;
 
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )

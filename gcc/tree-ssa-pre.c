@@ -3827,7 +3827,7 @@ compute_avail (void)
 	    BB_LIVE_VOP_ON_EXIT (block) = gimple_vdef (stmt);
 
 	  if (gimple_has_side_effects (stmt)
-	      || stmt_could_throw_p (stmt)
+	      || stmt_could_throw_p (cfun, stmt)
 	      || is_gimple_debug (stmt))
 	    continue;
 
