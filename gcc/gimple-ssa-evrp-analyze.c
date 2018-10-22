@@ -203,6 +203,16 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	     ordering issues that can lead to worse ranges.  */
 	  for (unsigned i = 0; i < vrs.length (); ++i)
 	    {
+	      /* But make sure we do not weaken ranges like when
+	         getting first [64, +INF] and then ~[0, 0] from
+		 conditions like (s & 0x3cc0) == 0).  */
+	      value_range *old_vr = get_value_range (vrs[i].first);
+	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
+	      tem.intersect (vrs[i].second);
+	      if (tem.kind () == old_vr->kind ()
+		  && tem.min () == old_vr->min ()
+		  && tem.max () == old_vr->max ())
+		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
 		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))

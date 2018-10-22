@@ -2299,6 +2299,9 @@ add_assert_info (vec<assert_info> &asserts,
   info.val = val;
   info.expr = expr;
   asserts.safe_push (info);
+  dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+	       "Adding assert for %T from %T %s %T\n",
+	       name, expr, op_symbol_code (comp_code), val);
 }
 
 /* If NAME doesn't have an ASSERT_EXPR registered for asserting
@@ -2698,16 +2701,6 @@ register_edge_assert_for_2 (tree name, edge e,
 	  tmp = build1 (NOP_EXPR, TREE_TYPE (name), name3);
 	  if (cst2 != NULL_TREE)
 	    tmp = build2 (PLUS_EXPR, TREE_TYPE (name), tmp, cst2);
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Adding assert for ");
-	      print_generic_expr (dump_file, name3);
-	      fprintf (dump_file, " from ");
-	      print_generic_expr (dump_file, tmp);
-	      fprintf (dump_file, "\n");
-	    }
-
 	  add_assert_info (asserts, name3, tmp, comp_code, val);
 	}
 
@@ -2725,16 +2718,6 @@ register_edge_assert_for_2 (tree name, edge e,
 	    tmp = build1 (NOP_EXPR, TREE_TYPE (name), tmp);
 	  if (cst2 != NULL_TREE)
 	    tmp = build2 (PLUS_EXPR, TREE_TYPE (name), tmp, cst2);
-
-	  if (dump_file)
-	    {
-	      fprintf (dump_file, "Adding assert for ");
-	      print_generic_expr (dump_file, name2);
-	      fprintf (dump_file, " from ");
-	      print_generic_expr (dump_file, tmp);
-	      fprintf (dump_file, "\n");
-	    }
-
 	  add_assert_info (asserts, name2, tmp, comp_code, val);
 	}
     }
@@ -2857,16 +2840,6 @@ register_edge_assert_for_2 (tree name, edge e,
 		  cst = fold_build2 (MINUS_EXPR, TREE_TYPE (name2), cst,
 				     build_int_cst (TREE_TYPE (name2), 1));
 		}
-
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Adding assert for ");
-		  print_generic_expr (dump_file, name2);
-		  fprintf (dump_file, " from ");
-		  print_generic_expr (dump_file, tmp);
-		  fprintf (dump_file, "\n");
-		}
-
 	      add_assert_info (asserts, name2, tmp, new_comp_code, cst);
 	    }
 	}
@@ -2931,18 +2904,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	    }
 
 	  if (new_val)
-	    {
-	      if (dump_file)
-		{
-		  fprintf (dump_file, "Adding assert for ");
-		  print_generic_expr (dump_file, name2);
-		  fprintf (dump_file, " from ");
-		  print_generic_expr (dump_file, tmp);
-		  fprintf (dump_file, "\n");
-		}
-
-	      add_assert_info (asserts, name2, tmp, new_comp_code, new_val);
-	    }
+	    add_assert_info (asserts, name2, tmp, new_comp_code, new_val);
 	}
 
       /* Add asserts for NAME cmp CST and NAME being defined as
@@ -3170,16 +3132,6 @@ register_edge_assert_for_2 (tree name, edge e,
 			maxv2 = maxv - minv;
 		      }
 		    new_val = wide_int_to_tree (type, maxv2);
-
-		    if (dump_file)
-		      {
-			fprintf (dump_file, "Adding assert for ");
-			print_generic_expr (dump_file, names[i]);
-			fprintf (dump_file, " from ");
-			print_generic_expr (dump_file, tmp);
-			fprintf (dump_file, "\n");
-		      }
-
 		    add_assert_info (asserts, names[i], tmp, LE_EXPR, new_val);
 		  }
 	    }
