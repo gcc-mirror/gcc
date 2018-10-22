@@ -381,6 +381,8 @@ ssa_prop_init (void)
   /* Worklists of SSA edges.  */
   ssa_edge_worklist = BITMAP_ALLOC (NULL);
   ssa_edge_worklist_back = BITMAP_ALLOC (NULL);
+  bitmap_tree_view (ssa_edge_worklist);
+  bitmap_tree_view (ssa_edge_worklist_back);
 
   /* Worklist of basic-blocks.  */
   bb_to_cfg_order = XNEWVEC (int, last_basic_block_for_fn (cfun) + 1);

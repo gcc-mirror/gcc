@@ -1,6 +1,65 @@
+2018-10-22  Steven Bosscher <steven@gcc.gnu.org>
+	Richard Biener  <rguenther@suse.de>
+
+	* bitmap.h: Update data structure documentation, including a
+	description of bitmap views as either linked-lists or splay trees.
+	(struct bitmap_element_def): Update comments for splay tree bitmaps.
+	(struct bitmap_head_def): Likewise.
+	(bitmap_list_view, bitmap_tree_view): New prototypes.
+	(bitmap_initialize_stat): Initialize a bitmap_head's indx and
+	tree_form fields.
+	(bmp_iter_set_init): Assert the iterated bitmaps are in list form.
+	(bmp_iter_and_init, bmp_iter_and_compl_init): Likewise.
+	* bitmap.c (bitmap_elem_to_freelist): Unregister overhead of a
+	released bitmap element here.
+	(bitmap_element_free): Remove.
+	(bitmap_elt_clear_from): Work on splay tree bitmaps.
+	(bitmap_list_link_element): Renamed from bitmap_element_link.  Move
+	this function similar ones such that linked-list bitmap implementation
+	functions are grouped.
+	(bitmap_list_unlink_element): Renamed from bitmap_element_unlink,
+	and moved for grouping.
+	(bitmap_list_insert_element_after): Renamed from
+	bitmap_elt_insert_after, and moved for grouping.
+	(bitmap_list_find_element): New function spliced from bitmap_find_bit.
+	(bitmap_tree_link_left, bitmap_tree_link_right,
+	bitmap_tree_rotate_left, bitmap_tree_rotate_right, bitmap_tree_splay,
+	bitmap_tree_link_element, bitmap_tree_unlink_element,
+	bitmap_tree_find_element): New functions for splay-tree bitmap
+	implementation.
+	(bitmap_element_link, bitmap_element_unlink, bitmap_elt_insert_after):
+	Renamed and moved, see above entries.
+	(bitmap_tree_listify_from): New function to convert part of a splay
+	tree bitmap to a linked-list bitmap.
+	(bitmap_list_view): Convert a splay tree bitmap to linked-list form.
+	(bitmap_tree_view): Convert a linked-list bitmap to splay tree form.
+	(bitmap_find_bit): Remove.
+	(bitmap_clear, bitmap_clear_bit, bitmap_set_bit,
+	bitmap_single_bit_set_p, bitmap_first_set_bit, bitmap_last_set_bit):
+	Handle splay tree bitmaps.
+	(bitmap_copy, bitmap_count_bits, bitmap_and, bitmap_and_into,
+	bitmap_elt_copy, bitmap_and_compl, bitmap_and_compl_into,
+	bitmap_compl_and_into, bitmap_elt_ior, bitmap_ior, bitmap_ior_into,
+	bitmap_xor, bitmap_xor_into, bitmap_equal_p, bitmap_intersect_p,
+	bitmap_intersect_compl_p, bitmap_ior_and_compl,
+	bitmap_ior_and_compl_into, bitmap_set_range, bitmap_clear_range,
+	bitmap_hash): Reject trying to act on splay tree bitmaps.  Make
+	corresponding changes to use linked-list specific bitmap_element
+	manipulation functions as applicable for efficiency.
+	(bitmap_tree_to_vec): New function.
+	(debug_bitmap_elt_file): New function split out from ...
+	(debug_bitmap_file): ... here.  Handle splay tree bitmaps.
+	(bitmap_print): Likewise.
+
+	PR tree-optimization/63155
+	* tree-ssa-propagate.c (ssa_prop_init): Use tree-view for the
+	SSA edge worklists.
+	* tree-ssa-coalesce.c (coalesce_ssa_name): Populate used_in_copies
+	in tree-view.
+
 2018-10-22  Martin Liska  <mliska@suse.cz>
 
-  PR tree-optimization/87686
+	PR tree-optimization/87686
 	Revert
 	2018-08-29  Martin Liska  <mliska@suse.cz>
 
