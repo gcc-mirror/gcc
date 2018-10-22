@@ -39332,7 +39332,7 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 {
   unsigned depth = 0;
   unsigned imp_off = 0;
-  int is_decl = 0;
+  bool in_decl = false;
 
   unsigned ix = 0;
   if (cp_token *last = parser->lexer->last_token)
@@ -39352,59 +39352,51 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->type == CPP_OPEN_BRACE)
 	{
-	  if (is_decl > 0)
+	  if (imp_off)
 	    break;
 
 	  depth++;
-	  is_decl = 0;
+	  in_decl = false;
 	}
       else if (tok->type == CPP_CLOSE_BRACE)
 	{
-	  if (is_decl > 0)
+	  if (imp_off)
 	    break;
 
 	  if (depth)
 	    depth--;
-	  is_decl = 0;
+	  in_decl = false;
 	}
       else if (tok->type == CPP_SEMICOLON)
 	{
-	  if (is_decl > 0)
+	  if (imp_off)
 	    break;
-	  is_decl = 0;
+	  in_decl = false;
 	}
       else if (tok->keyword == RID_EXPORT)
 	{
-	  if (is_decl > 0)
+	  if (imp_off)
 	    break;
 	}
-      else if (is_decl < 0)
-	;
       else if (tok->keyword == RID_IMPORT
-	       || (!depth && tok->type == CPP_NAME && flag_modules
+	       || (!in_decl && !depth && tok->type == CPP_NAME && flag_modules
 		   && C_RID_CODE (tok->u.value) == RID_IMPORT))
 	{
-	  if (is_decl > 0)
+	  if (imp_off)
 	    break;
 
-	  /* Always lex a "" or <> next, even though the user cannot
-	     declare a legacy module explicitly.  Give a better error
-  	     parsing the module decl.  */
 	  cpp_enable_filename_token (parse_in, true);
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
 					   | C_LEX_STRING_IS_HEADER, tok);
 	  cpp_enable_filename_token (parse_in, false);
-	  is_decl = -1;
 	  if (!depth && tok->type == CPP_HEADER_NAME)
-	    {
-	      /* A stoppable decl.  */
-	      imp_off = parser->lexer->buffer->length ();
-	      is_decl = +1;
-	    }
+	    /* A stoppable decl.  */
+	    imp_off = parser->lexer->buffer->length ();
+	  in_decl = true;
 	  continue;
 	}
-      else if (!is_decl)
-	is_decl = -1;
+      else
+	in_decl = true;
 
       /* Get the next token.  */
       cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN, tok);

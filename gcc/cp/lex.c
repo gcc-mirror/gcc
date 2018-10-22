@@ -374,15 +374,13 @@ interface_strcmp (const char* s)
 int
 module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 {
-  if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
-    return state ? state : 1;
-
   int depth = state & ~3;
   switch (state & 3)
     {
     case 0: /* Just started.  */
       if (!flag_modules)
 	return -1; /* Do not use  */
+      state = 1;
       /* FALLTHROUGH */
 
     case 1:  /* Start of decl.  */
@@ -404,6 +402,10 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
     case 2:
       switch (tok->type)
 	{
+	case CPP_PADDING:
+	case CPP_COMMENT:
+	  return state; /* Unchanged state.  */
+
 	case CPP_OPEN_BRACE:
 	  depth += 8;
 	  /* FALLTHROUGH */
@@ -422,6 +424,9 @@ module_preprocess_token (cpp_reader *pfile, const cpp_token *tok, int state)
 	}
 
     case 3: /* Saw import.  */
+      if (tok->type == CPP_PADDING || tok->type == CPP_COMMENT)
+	return state; /* Unchanged state.  */
+
       cpp_enable_filename_token (pfile, false);
       if (tok->type == CPP_HEADER_NAME || tok->type == CPP_STRING)
 	{

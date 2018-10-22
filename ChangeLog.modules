@@ -1,3 +1,9 @@
+2018-10-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* lex.c (module_preprocess_token): Fix padding/comment states.
+	* parser.c (cp_parser_tokenize): Reduce is_decl states.
+
 2018-10-21  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r265362.
