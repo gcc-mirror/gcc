@@ -12925,9 +12925,7 @@ cp_parser_module_export (cp_parser *parser)
 	      token->u.value);
 
   bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
-  int prev = push_module_export (!braced);
-
-  if (prev)
+  if (push_module_export ())
     error_at (token->location,
 	      "%qE may only occur once in an export declaration",
 	      token->u.value);
@@ -12944,7 +12942,7 @@ cp_parser_module_export (cp_parser *parser)
   else
     cp_parser_declaration (parser);
 
-  pop_module_export (prev);
+  pop_module_export ();
 }
 
 /* Declarations [gram.dcl.dcl] */

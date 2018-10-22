@@ -11604,37 +11604,7 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (slurp ()->legacies, other->slurp ()->legacies);
 }
 
-static int export_depth; /* -1 for singleton export.  */
-
-/* Nest a module export level.  Return true if we were already in a
-   level.  */
-
-int
-push_module_export (bool singleton)
-{
-  int previous = export_depth != 0;
-
-  if (singleton)
-    export_depth = -1;
-  else
-    export_depth = +1;
-
-  return previous;
-}
-
-/* Outdent a module export level.  */
-
-void
-pop_module_export (int previous)
-{
-  export_depth = previous;
-}
-
-int
-module_exporting_level ()
-{
-  return export_depth;
-}
+int module_export_depth;
 
 /* Return the decl that determines the owning module of DECL.  That
    may be DECL itself, or it may DECL's context, or it may be some
@@ -11728,7 +11698,7 @@ set_module_owner (tree decl)
 
   if ((*modules)[MODULE_PURVIEW])
     {
-      if (export_depth)
+      if (module_exporting_p ())
 	{
 	  gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 	  DECL_MODULE_EXPORT_P (decl) = true;
@@ -12023,7 +11993,7 @@ void
 import_module (module_state *imp, location_t from_loc, bool exporting,
 	       tree, cpp_reader *reader)
 {
-  if (export_depth)
+  if (module_exporting_p ())
     exporting = true;
 
   gcc_assert (global_namespace == current_scope ());
@@ -12204,7 +12174,7 @@ module_begin_main_file (cpp_reader *reader, line_maps *lmaps,
 			  spans.main_start (), true, NULL, reader);
 
 	  /* Everything is exported.  */
-	  push_module_export (false);
+	  push_module_export ();
 	}
     }
 }
@@ -12413,7 +12383,7 @@ void
 finish_module_parse (cpp_reader *reader)
 {
   if (modules_legacy_p ())
-    pop_module_export (0);
+    pop_module_export ();
 
   if (flag_module_macros)
     {

@@ -1,6 +1,18 @@
 2018-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_exporting_level): Delete.
+	(module_export_depth): Declare.
+	(module_exporting_p): New.
+	({push,pop}_module_export): Adjust, make inline.
+	* module.cc (export_depth): Replace with ...
+	(module_exporting_level): ... this.
+	({push,pop}_module_export): Delete.
+	(set_module_owner, import_module, module_begin_main_file)
+	(finish_module_parse): Adjust.
+	* parser.cc (cp_parser_module_export): Adjust.
+
+	gcc/cp/
 	* lex.c (module_preprocess_token): Fix padding/comment states.
 	* parser.c (cp_parser_tokenize): Reduce is_decl states.
 
@@ -3701,7 +3713,7 @@
 	(module_state::tng_read_namespaces): New.
 	(module_state::write_bindings): Don't write bindings section.
 	(module_state::read_bindings): Use tng_read_bindings).
-	* name-lookup.c (make_namepace): Public namespaces are exported.
+	* name-lookup.c (make_namespace): Public namespaces are exported.
 	(push_namespace): Adjust.
 
 	gcc/cp/

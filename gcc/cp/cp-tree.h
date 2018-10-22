@@ -6702,12 +6702,15 @@ extern tree locate_ctor				(tree);
 extern tree implicitly_declare_fn               (special_function_kind, tree,
 						 bool, tree, tree);
 /* In module.c  */
+extern int module_export_depth;
 class module_state; /* Forward declare.  */
 inline bool modules_p () { return flag_modules != 0; }
 inline bool modules_legacy_p () { return flag_modules < 0; }
 extern bool module_purview_p ();
 extern bool module_interface_p ();
-extern int module_exporting_level ();
+inline bool module_exporting_p () { return module_export_depth != 0; }
+inline bool push_module_export () { return module_export_depth++; }
+inline void pop_module_export () { module_export_depth--; }
 extern module_state *get_module (tree name, module_state *parent);
 extern tree get_module_owner (tree);
 extern void set_module_owner (tree);
@@ -6717,8 +6720,6 @@ extern void lazy_load_binding (unsigned mod, tree ns, tree id,
 			       mc_slot *mslot, bool outermost);
 extern void fixup_unscoped_enum_owner (tree);
 extern void set_implicit_module_owner (tree, tree);
-extern int push_module_export (bool);
-extern void pop_module_export (int);
 extern void import_module (module_state *, location_t, bool, tree,
 			   cpp_reader *);
 extern void declare_module (module_state *, location_t, bool, tree,
