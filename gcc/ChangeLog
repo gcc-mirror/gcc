@@ -1,6 +1,11 @@
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* config/i386/sse.md (*andnot<mode>3_bcst): New.
+
+2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* config/i386/sse.md (*<code><mode>3_bcst): New.
 
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>

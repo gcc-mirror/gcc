@@ -1,6 +1,18 @@
 2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/72782
+	* gcc.target/i386/avx512f-andn-di-zmm-1.c: New test.
+	* gcc.target/i386/avx512f-andn-si-zmm-1.c: Likewise.
+	* gcc.target/i386/avx512f-andn-si-zmm-2.c: Likewise.
+	* gcc.target/i386/avx512f-andn-si-zmm-3.c: Likewise.
+	* gcc.target/i386/avx512f-andn-si-zmm-4.c: Likewise.
+	* gcc.target/i386/avx512f-andn-si-zmm-5.c: Likewise.
+	* gcc.target/i386/avx512vl-andn-si-xmm-1.c: Likewise.
+	* gcc.target/i386/avx512vl-andn-si-ymm-1.c: Likewise.
+
+2018-10-22  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/72782
 	* gcc.target/i386/avx512f-and-di-zmm-1.c: New test.
 	* gcc.target/i386/avx512f-and-si-zmm-1.c: Likewise.
 	* gcc.target/i386/avx512f-and-si-zmm-2.c: Likewise.

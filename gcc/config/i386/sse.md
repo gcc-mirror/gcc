@@ -12102,6 +12102,19 @@
 	      ]
 	      (const_string "<sseinsnmode>")))])
 
+(define_insn "*andnot<mode>3_bcst"
+  [(set (match_operand:VI 0 "register_operand" "=v")
+	(and:VI
+	  (not:VI48_AVX512VL
+	     (match_operand:VI48_AVX512VL 1 "register_operand" "v"))
+	  (vec_duplicate:VI48_AVX512VL
+	    (match_operand:<ssescalarmode> 2 "memory_operand" "m"))))]
+  "TARGET_AVX512F"
+  "vpandn<ssemodesuffix>\t{%2<avx512bcst>, %1, %0|%0, %1, %2<avx512bcst>}"
+  [(set_attr "type" "sselog")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "*andnot<mode>3_mask"
   [(set (match_operand:VI48_AVX512VL 0 "register_operand" "=v")
 	(vec_merge:VI48_AVX512VL
