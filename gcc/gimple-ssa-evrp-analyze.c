@@ -209,9 +209,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      value_range *old_vr = get_value_range (vrs[i].first);
 	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
 	      tem.intersect (vrs[i].second);
-	      if (tem.kind () == old_vr->kind ()
-		  && tem.min () == old_vr->min ()
-		  && tem.max () == old_vr->max ())
+	      if (tem.ignore_equivs_equal_p (*old_vr))
 		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru

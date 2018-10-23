@@ -1,5 +1,13 @@
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.c (add_assert_info): Guard dump_printf with
+	dump_enabled_p.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_incoming_edge):
+	Use value_range::ignore_equivs_equal_p.
+
+2018-10-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87105
 	PR tree-optimization/87608
 	* passes.def (pass_all_early_optimizations): Add early phi-opt

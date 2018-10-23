@@ -2299,9 +2299,10 @@ add_assert_info (vec<assert_info> &asserts,
   info.val = val;
   info.expr = expr;
   asserts.safe_push (info);
-  dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
-	       "Adding assert for %T from %T %s %T\n",
-	       name, expr, op_symbol_code (comp_code), val);
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+		 "Adding assert for %T from %T %s %T\n",
+		 name, expr, op_symbol_code (comp_code), val);
 }
 
 /* If NAME doesn't have an ASSERT_EXPR registered for asserting
