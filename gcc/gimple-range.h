@@ -68,32 +68,76 @@ class GTY((tag("GCC_GLOGICAL")))
 };
 
 
+class gimple_range
+{
+  public:
+  static bool supports_type_p (tree type);
+  static bool supports_ssa_p (tree ssa);
+  static bool supports_const_p (tree c);
+  static bool supports_p (tree expr);
+  static tree valid_ssa_p (tree exp);
+  // Calculate ranges from an edge that arent related to ssa_names. Ie.
+  // conditional branches and switch operations which have no LHS.
+  gimple *range_outgoing_edge_p (irange &r, edge e);
+
+  // Calculate a range for a tree expr.
+  virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+
+  // Calculate a range for a gimple statement which support range operations.
+  bool range_of_stmt (irange &r, gimple *s);
+  bool range_of_stmt (irange &r, grange_op *s);
+  bool range_of_stmt (irange &r, gphi *phi);
+  bool range_of_stmt (irange &r, gcall *call);
+
+  // Calculate a range for a statement if NAME has a specified range
+  bool range_of_stmt (irange &r, gimple *s, tree name, const irange &nr);
+  bool range_of_stmt (irange &r, grange_op *s, tree name, const irange &nr);
+
+  // Calculate the range for NAME on edge E only if it is defined by E.
+  virtual bool range_on_edge_p (irange &r, edge e, tree name);
+
+  // Calculate the range for NAME on edge E.
+  bool range_on_edge (irange &r, edge e, tree name);
+
+  // Calculate the range for NAME on entry to block BB.
+  bool range_on_entry (irange &r, basic_block bb, tree name);
+
+  // Calculate the range for NAME at the end of block BB
+  bool range_on_exit (irange &r, basic_block bb, tree name);
+
+  // Calculate the range for NAME if the result of statement S is the range LHS.
+  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
+				      const irange &lhs);
+};
+
 // This function return true if type TYPE is supported by ranges.
 
 inline bool
-gimple_range_supports_type (tree type)
+gimple_range::supports_type_p (tree type)
 {
   // Only support irange at the moment.
   return irange::supports_type_p (type);
 }
 
+
 // This function return true if SSA is a non-virtual SSA_NAME with a type
 // supported by ranges.
 
 inline bool
-gimple_range_supports_ssa (tree ssa)
+gimple_range::supports_ssa_p (tree ssa)
 {
   if (!SSA_NAME_IS_VIRTUAL_OPERAND (ssa))
-    return gimple_range_supports_type (TREE_TYPE (ssa));
+    return supports_type_p (TREE_TYPE (ssa));
  return false;
 }
 
-// This function returns true if EXP is an ssa_name and is supported by ranges.
+// This function returns EXP if EXP is an ssa_name and is supported by ranges.
+// Otherwise it returns NULL_TREE
 
 inline tree
-gimple_range_valid_ssa (tree exp)
+gimple_range::valid_ssa_p (tree exp)
 {
-  if (exp && TREE_CODE (exp) == SSA_NAME && gimple_range_supports_ssa (exp))
+  if (exp && TREE_CODE (exp) == SSA_NAME && supports_ssa_p (exp))
     return exp;
   return NULL_TREE;
 }
@@ -101,10 +145,10 @@ gimple_range_valid_ssa (tree exp)
 // This function returns TRUE if constant c is supported by ranges.
 
 inline bool
-gimple_range_supports_const (tree c)
+gimple_range::supports_const_p (tree c)
 {
   if (!TREE_OVERFLOW (c))
-    return gimple_range_supports_type (TREE_TYPE (c));
+    return supports_type_p (TREE_TYPE (c));
   return false;
 
 }
@@ -112,52 +156,18 @@ gimple_range_supports_const (tree c)
 // This function returns true if expr is supported by ranges.
 
 inline bool
-gimple_range_supports (tree expr)
+gimple_range::supports_p (tree expr)
 {
   if (TYPE_P (expr))
-    return gimple_range_supports_type (expr);
+    return supports_type_p (expr);
   else if (TREE_CODE (expr) == SSA_NAME)
-    return gimple_range_supports_ssa (expr);
+    return supports_ssa_p (expr);
   // Constant overflows are rejected.
   else if (CONSTANT_CLASS_P (expr))
-    return gimple_range_supports_const (expr);
+    return supports_const_p (expr);
 
-  return gimple_range_supports_type (TREE_TYPE (expr));
+  return supports_type_p (TREE_TYPE (expr));
 }
-
-// Calculate ranges from an edge that arent related to ssa_names. Ie.
-// conditional branches and switch operations which have no LHS.
-extern gimple *gimple_range_outgoing_edge (irange &r, edge e);
-
-// Calculate a range for a tree expr.
-extern bool gimple_range_of_expr (irange &r, tree expr, gimple *s = NULL);
-
-// Calculate a range for a gimple statement which support range operations.
-extern bool gimple_range_of_stmt (irange &r, gimple *s);
-extern bool gimple_range_of_stmt (irange &r, grange_op *s);
-extern bool gimple_range_of_stmt (irange &r, gphi *phi);
-extern bool gimple_range_of_stmt (irange &r, gcall *call);
-
-// Calculate a range for a statement if NAME has a specified range
-extern bool gimple_range_of_stmt (irange &r, gimple *s, tree name,
-				  const irange &nr);
-extern bool gimple_range_of_stmt (irange &r, grange_op *s,
-				  tree name, const irange &nr);
-
-// Calculate the range for NAME on edge E.
-extern bool gimple_range_on_edge (irange &r, edge e, tree name);
-
-// Calculate the range for NAME on entry to block BB.
-extern bool gimple_range_on_entry (irange &r, basic_block bb, tree name);
-
-// Calculate the range for NAME at the end of block BB
-extern bool gimple_range_on_exit (irange &r, basic_block bb, tree name);
-
-// Calculate the range for NAME if the lhs of statement S has the range LHS.
-extern bool gimple_range_compute_operand (irange &r, grange_op *s, tree name,
-					  const irange &lhs);
-extern bool gimple_range_compute_operand (irange &r, gimple *s, tree name,
-					  const irange &lhs);
 
 
 // Return the LHS, of this statement. If there isn't a LHS return NULL_TREE.

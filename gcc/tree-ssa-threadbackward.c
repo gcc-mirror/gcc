@@ -54,6 +54,170 @@ void graphme()
   system("~/bin/dotview");
 }
 
+
+// If NAME is defined in block BB, return the gimple statement pointer, 
+// otherwise return NULL>
+inline gimple *
+ssa_name_same_bb_p (tree name, basic_block bb)
+{
+  gimple *g = SSA_NAME_DEF_STMT (name);
+  if (!g || gimple_bb (g) != bb)
+   return NULL;
+  return g;
+}
+
+
+class thread_ranger : public path_ranger
+{
+public:
+  thread_ranger ();
+  ~thread_ranger ();
+  enum path_range_direction { FORWARD, REVERSE };
+
+  /* Evaluate statement G assuming entry only via edge E */
+  bool range_of_stmt_edge (irange& r, gimple *g, edge e);
+  bool path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
+		        enum path_range_direction, edge start_edge = NULL);
+private:
+  bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
+};
+
+
+thread_ranger::thread_ranger ()
+{
+}
+
+thread_ranger::~thread_ranger ()
+{
+}
+
+// Attempt to evaluate NAME within the basic block it is defined assuming the
+// block was entered via edge E.
+bool
+thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
+{
+  basic_block bb = gimple_bb (g);
+
+  /* The edge provided must be an incoming edge to this BB.  */
+  gcc_assert (e->dest == bb);
+
+  // Note that since we are remaining within BB, we do not attempt to further
+  // evaluate any of the arguments of a PHI at this point.
+  // For the moment, just pick up any cheap edge information.
+  gphi *phi = dyn_cast<gphi *> (g);
+  if (phi)
+    {
+      tree arg;
+      gcc_assert (e->dest == bb);
+      arg = gimple_phi_arg_def (phi, e->dest_idx);
+      // Pick up anything simple we might know about the incoming edge. 
+      if (TREE_CODE (arg) != SSA_NAME || !range_on_edge_p (r, e, arg))
+	return range_of_expr (r, arg);
+      return true;
+    }
+
+  grange_op *stmt = dyn_cast<grange_op *>(g);
+  if (!stmt)
+    return false; 
+  irange range1, range2;
+
+  tree op = stmt->operand1 ();
+  if (!valid_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
+      !range_of_stmt_edge (range1, SSA_NAME_DEF_STMT (op), e))
+    if (!range_of_expr (range1, op))
+      return false;
+
+  op = stmt->operand2 ();
+  if (!op)
+    return stmt->fold (r, range1);
+
+  if (!valid_ssa_p (op) || !ssa_name_same_bb_p (op, bb) ||
+      !range_of_stmt_edge (range2, SSA_NAME_DEF_STMT (op), e))
+    if (!range_of_expr (range2, op))
+      return false;
+  return stmt->fold (r, range1, range2);
+}
+
+
+// Calculate the known range for NAME on a path of basic blocks in
+// BBS.  If such a range exists, store it in R and return TRUE,
+// otherwise return FALSE.
+//
+// DIR is FORWARD if BBS[0] is the definition and the last block is
+// the use.  DIR is REVERSE if the blocks are in reverse order.
+//
+// If there is an edge leading into this path that we'd like to take
+// into account, such edge is START_EDGE.  Otherwise, START_EDGE is
+// set to NULL.  
+bool
+thread_ranger::path_range_list (irange &r, tree name,
+				const vec<basic_block> &bbs,
+				enum path_range_direction dir, edge start_edge)
+{
+  if (bbs.is_empty ())
+    return false;
+
+  /* If the first block defines NAME and it has meaningful range
+     information, use it, otherwise fall back to range for type.
+
+     Note: The first block may not always define NAME because we may
+     have pruned the paths such that the first block (bb1) is just the
+     first block that contains range info (bb99).  For example:
+
+     bb1:
+       x = 55;
+       ...
+       ...
+     bb99:
+       if (x > blah).
+  */
+  basic_block first_bb = dir == FORWARD ? bbs[0] : bbs[bbs.length () - 1];
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (gimple_bb (def_stmt) == first_bb && start_edge)
+    {
+      if (!range_of_stmt_edge (r, def_stmt, start_edge))
+	get_global_ssa_range (r, name);
+    }
+  else
+    get_global_ssa_range (r, name);
+
+  if (dir == REVERSE)
+    return path_range_list_reverse (r, name, bbs);
+
+  for (unsigned i = 1; i < bbs.length (); ++i)
+    {
+      edge e = find_edge (bbs[i - 1], bbs[i]);
+      gcc_assert (e);
+      irange redge;
+      if (range_on_edge_p (redge, e, name))
+	r.intersect (redge);
+    }
+
+  return !r.varying_p ();
+}
+
+/* The same as above, but handle the case where BBS are a path of
+   basic blocks in reverse order.
+
+   BBS[0] is the USE of NAME.
+   BBS[LEN-1] is the DEF of NAME.  */
+
+bool
+thread_ranger::path_range_list_reverse (irange &r, tree name,
+				        const vec<basic_block> &bbs)
+{
+  for (int i = bbs.length () - 1; i > 0; --i)
+    {
+      edge e = find_edge (bbs[i], bbs[i - 1]);
+      gcc_assert (e);
+      irange redge;
+      if (range_on_edge_p (redge, e, name))
+	r.intersect (redge);
+    }
+
+  return !r.varying_p ();
+}
+
 /* Class to generate all paths from an SSA name to a use of NAME.
    Note: we discard any paths greater than PARAM_MAX_FSM_THREAD_LENGTH.
 
@@ -79,7 +243,7 @@ class bb_paths
   /* The BB using NAME.  */
   basic_block use_bb;
   /* One ranger for everything so ranges get cached.  */
-  path_ranger ranger;
+  thread_ranger ranger;
 
   void calculate_1 (vec<basic_block> &path, basic_block bb,
 		    hash_set<basic_block> &visited);
@@ -97,7 +261,7 @@ class bb_paths
   bool range_of_path (irange &r, vec<basic_block> &path,
 		      edge start_edge = NULL)
   {
-    return ranger.path_range_list (r, name, path, path_ranger::REVERSE,
+    return ranger.path_range_list (r, name, path, thread_ranger::REVERSE,
 				   start_edge);
   }
   /* Attempt to fold STMT given VAR and its known range VAR_RANGE.
@@ -106,7 +270,7 @@ class bb_paths
   bool range_of_folded_stmt (irange &r, gimple *stmt, tree var,
 			     const irange var_range)
   {
-    return gimple_range_of_stmt (r, stmt, var, var_range);
+    return ranger.range_of_stmt (r, stmt, var, var_range);
   }
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)
@@ -242,7 +406,7 @@ bb_paths::prune_irrelevant_range_blocks (vec <basic_block> &path)
       edge e;
 
       gcc_assert (e = find_edge (path[i], path[i - 1]));
-      if (ranger.range_on_edge (r, name, e))
+      if (ranger.range_on_edge_p (r, e, name))
 	{
 	  /* Remove anything that came before here.  */
 	  path.truncate (i + 1);

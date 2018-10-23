@@ -35,39 +35,34 @@ along with GCC; see the file COPYING3.  If not see
    THis is primarily of use to the path_ranger found in ssa-range.[ch] which
    builds on top of this to find ranges across the CFG.  */
 
-class block_ranger
+class block_ranger : public gimple_range
 {
 public:
   block_ranger ();
   ~block_ranger ();
 
-  /* True if NAME Generates range info on one or more outgoing edges of BB.  */
+  // If a range for name is defined by edge E, return it.
+  virtual bool range_on_edge_p (irange &r, edge e, tree name);
+  // Evaluate the range for name on stmt S if the lhs has range LHS.
+  bool compute_operand_range (irange &r, gimple *s, tree name,
+			      const irange &lhs);
+
   bool range_p (basic_block bb, tree name);
-  /* What is the static calculated range of NAME on outgoing edge E.  */
-  bool range_on_edge (irange& r, tree name, edge e);
-  /* Evaluate statement G assuming entry only via edge E */
-  bool range_of_stmt (irange& r, gimple *g, edge e);
   tree single_import (tree name);
   void dump (FILE *f);
   void exercise (FILE *f);
-protected:
-  virtual bool get_operand_range (irange& r, tree op, gimple *s);
 private:
   class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
   irange m_bool_zero;		/* Bolean zero cached.  */
   irange m_bool_one;		/* Bolean true cached.  */
-  bool process_logical (glogical *s, irange& r, tree name,
-			const irange& lhs);
-  bool get_range_from_stmt (gimple *s, irange& r, tree name,
-			    const irange& lhs);
-  bool get_range_if_name_on_stmt (grange_op *s, irange& r,
-				  tree name, const irange& lhs);
-  bool get_range_thru_op1 (grange_op *s, irange& r, tree name,
-			   const irange& lhs);
-  bool get_range_thru_op2 (grange_op *s, irange& r, tree name,
-			   const irange& lhs);
-  bool get_range_thru_op1_and_op2 (grange_op *s, irange& r, tree name,
-				   const irange& lhs);
+  bool process_logical (glogical *s, irange &r, tree name,
+			const irange &lhs);
+  bool get_range_thru_op1 (grange_op *s, irange &r, tree name,
+			   const irange &lhs);
+  bool get_range_thru_op2 (grange_op *s, irange &r, tree name,
+			   const irange &lhs);
+  bool get_range_thru_op1_and_op2 (grange_op *s, irange &r, tree name,
+				   const irange &lhs);
 };
 
 #endif /* GCC_SSA_RANGE_BB_H */

@@ -45,17 +45,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "wide-int.h"
 #include "ssa-range-bb.h"
 
-// If NAME is defined in block BB, return the gimple statement pointer, 
-// otherwise return NULL>
-inline gimple *
-ssa_name_same_bb_p (tree name, basic_block bb)
-{
-  gimple *g = SSA_NAME_DEF_STMT (name);
-  if (!g || gimple_bb (g) != bb)
-   return NULL;
-  return g;
-}
-
   
 /* GORI_MAP is used to determine what ssa-names in a block can generate range
    information, and provides tools for the block ranger to enable it to
@@ -98,7 +87,7 @@ ssa_name_same_bb_p (tree name, basic_block bb)
     imports as the dont really reside in the block, but rather are
     accumulators of values from incoming edges.
     
-    Def chains also only include statements which are valid range_stmt's. so
+    Def chains also only include statements which are valid grange_op's so
     a def chain will only span statements for which the range engine
     implements operations.  */
 
@@ -114,9 +103,9 @@ public:
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
 private:
-  vec<bitmap> m_outgoing;	/* BB: Outgoing ranges generated.  */
-  vec<bitmap> m_incoming;	/* BB: ranges coming in.  */
-  vec<bitmap> m_def_chain;	/* SSA_NAME : def chain components. */
+  vec<bitmap> m_outgoing;	// BB: Outgoing ranges generated.
+  vec<bitmap> m_incoming;	// BB: ranges coming in.
+  vec<bitmap> m_def_chain;	// SSA_NAME : def chain components.
   void calculate_gori (basic_block bb);
   bool in_chain_p (unsigned name, unsigned def);
   bitmap imports (basic_block bb);
@@ -125,6 +114,8 @@ private:
   void process_stmt (gimple *s, bitmap result, basic_block bb);
 };
 
+
+// Initialize a gori-map structure.
 
 gori_map::gori_map ()
 {
@@ -135,6 +126,8 @@ gori_map::gori_map ()
   m_def_chain.create (0);
   m_def_chain.safe_grow_cleared (num_ssa_names);
 }
+
+// Free any memory the GORI map allocated.
 
 gori_map::~gori_map ()
 {
@@ -156,6 +149,7 @@ gori_map::~gori_map ()
 }
 
 // Return the bitmap vector of all imports to BB. Calculate if necessary
+
 bitmap
 gori_map::imports (basic_block bb)
 {
@@ -165,6 +159,7 @@ gori_map::imports (basic_block bb)
 }
 
 // Return true if NAME is an import to basic block BB
+
 bool
 gori_map::is_import_p (tree name, basic_block bb)
 {
@@ -172,6 +167,7 @@ gori_map::is_import_p (tree name, basic_block bb)
 }
 
 // Return the bitmap vector of all export from BB. Calculate if necessary
+
 bitmap
 gori_map::exports (basic_block bb)
 {
@@ -181,6 +177,7 @@ gori_map::exports (basic_block bb)
 }
 
 // Return true if NAME is can have ranges generated for it from basic block BB.
+
 bool
 gori_map::is_export_p (tree name, basic_block bb)
 {
@@ -189,6 +186,7 @@ gori_map::is_export_p (tree name, basic_block bb)
 
 // Return true if NAME is in the def chain of DEF.  If BB is provided, only
 // return true if the defining statement of DEF is in BB.
+
 bool
 gori_map::in_chain_p (tree name, tree def, basic_block bb)
 {
@@ -223,6 +221,7 @@ gori_map::in_chain_p (tree name, tree def, basic_block bb)
 // Return true if ssa_name version NAME is set in vector version DEF.
 // This assumes all vectors have been created, so NULL means there is 
 // nothing in the defintion chain.
+
 bool
 gori_map::in_chain_p (unsigned name, unsigned def)
 {
@@ -233,6 +232,7 @@ gori_map::in_chain_p (unsigned name, unsigned def)
 
 // If NAME has a definition chain, and the chain has a single import into
 // the block, return the name of that import.
+
 tree
 gori_map::single_import (tree name)
 {
@@ -262,6 +262,7 @@ gori_map::single_import (tree name)
 
 // Process STMT to build m_def_chains in BB.. Recursively create m_def_chains
 // for any operand contained in STMT, and set the def chain bits in RESULT.
+
 void
 gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
 {
@@ -270,8 +271,8 @@ gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
   if (!stmt)
     return;
 
-  tree ssa1 = gimple_range_valid_ssa (stmt->operand1 ());
-  tree ssa2 = gimple_range_valid_ssa (stmt->operand2 ());
+  tree ssa1 = gimple_range::valid_ssa_p (stmt->operand1 ());
+  tree ssa2 = gimple_range::valid_ssa_p (stmt->operand2 ());
 
   if (ssa1)
     {
@@ -283,6 +284,7 @@ gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
       // Now add this operand into the result.
       bitmap_set_bit (result, SSA_NAME_VERSION (ssa1));
     }
+
   // Now do the second operand.
   if (ssa2)
     {
@@ -298,6 +300,7 @@ gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
 
 // Calculate the def chain for NAME, but only using names in BB.  Return 
 // the bimap of all names in the m_def_chain
+
 bitmap
 gori_map::calc_def_chain (tree name, basic_block bb)
 {
@@ -311,6 +314,7 @@ gori_map::calc_def_chain (tree name, basic_block bb)
       bitmap_set_bit (m_incoming[bb->index], v);
       return NULL;
     }
+
   // If it has already been processed, just return the cached value.
   if (m_def_chain[v])
     return m_def_chain[v];
@@ -323,6 +327,7 @@ gori_map::calc_def_chain (tree name, basic_block bb)
 }
 
 // Calculate all the required information for BB.
+
 void
 gori_map::calculate_gori (basic_block bb)
 {
@@ -339,6 +344,7 @@ gori_map::calculate_gori (basic_block bb)
 }
 
 // Dump the table information for BB to file F.
+//
 void
 gori_map::dump(FILE *f, basic_block bb)
 {
@@ -412,226 +418,54 @@ gori_map::dump(FILE *f)
 
 /* -------------------------------------------------------------------------*/
 
+// Initialize a block ranger.
+
 block_ranger::block_ranger ()
 {
+  // Create a boolean_type true and false range.
   m_bool_zero = irange (boolean_type_node, boolean_false_node,
 			boolean_false_node);
   m_bool_one = irange (boolean_type_node, boolean_true_node, boolean_true_node);
   m_gori = new gori_map ();
 }
 
+// Destruct a block ranger.
+
 block_ranger::~block_ranger ()
 {
   delete m_gori;
 }
 
-// This routine will return a range for any kind of operator possible. 
-// It is virtual to allow a more globally aware version to get better results
-// by looking a the CFG.
-// Return true if there was a range generated.
-bool
-block_ranger::get_operand_range (irange& r, tree op,
-				 gimple *s ATTRIBUTE_UNUSED)
-{
-  /* This check allows unary operations to be handled without having to 
-     make an explicit check for the existence of a second operand.  */
-  if (op)
-    return gimple_range_of_expr (r, op);
-  return false;
-}
-
-
-// Given a logical STMT, calculate true and false for each potential path 
-// using NAME and resolve the outcome based on the logical operator.  
-bool
-block_ranger::process_logical (glogical *s, irange& r, tree name,
-			       const irange& lhs)
-{
-  irange op1_range, op2_range;
-  tree op1, op2;
-  bool op1_in_chain, op2_in_chain;
-  bool ret;
-
-  irange op1_true, op1_false, op2_true, op2_false;
-
-  /* Reaching this point means NAME is not in this stmt, but one of the
-     names in it ought to be derived from it.  */
-  op1 = s->operand1 ();
-  op2 = s->operand2 ();
-
-  op1_in_chain = m_gori->in_chain_p (name, op1);
-  op2_in_chain = m_gori->in_chain_p (name, op2);
-
-  /* If neither operand is derived, then this stmt tells us nothing. */
-  if (!op1_in_chain && !op2_in_chain)
-    return false;
-
-  /* The false path is not always a simple inversion of the true side.
-     Calulate ranges for true and false on both sides. */
-  if (op1_in_chain)
-    {
-      ret = get_range_from_stmt (SSA_NAME_DEF_STMT (op1), op1_true, name,
-				 m_bool_one);
-      ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op1), op1_false, name,
-				  m_bool_zero);
-    }
-  else
-    {
-      // Otherwise just get values for name in operand 1 position
-      ret = get_operand_range (op1_true, name, s);
-      ret &= get_operand_range (op1_false, name, s);
-    }
-
-  /* If operand1 evaluated OK, move on to operand 2.  */
-  if (ret)
-    {
-      if (op2_in_chain)
-	{
-	  ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op2), op2_true,
-				      name, m_bool_one);
-	  ret &= get_range_from_stmt (SSA_NAME_DEF_STMT (op2), op2_false,
-				      name, m_bool_zero);
-	}
-      else
-	{
-	  // Otherwise just get values for name in operand 1 position
-	  ret &= get_operand_range (op2_true, name, s);
-	  ret &= get_operand_range (op2_false, name, s);
-	}
-    }
-  if (!ret || !s->combine (r, lhs, op1_true, op1_false, op2_true, op2_false))
-    r.set_varying (TREE_TYPE (name));
-  return true;
-}
+// Calculate a range for NAME on edge E, returning the result in R.
 
 bool
-block_ranger::get_range_if_name_on_stmt (grange_op *s,
-					 irange& r, tree name,
-					 const irange& lhs)
+block_ranger::range_on_edge_p (irange &r, edge e, tree name)
 {
-  irange op1_range, op2_range;
-  tree op1 = s->operand1 ();
-  tree op2 = s->operand2 ();
+  irange lhs_range;
+  basic_block bb = e->src;
 
-  // Operand 1 is the name being looked for, evaluate it.
-  if (op1 == name)
-    { 
-      if (!op2)
-	{
-	  if (get_operand_range (op1_range, op1, s))
-	    return s->calc_op1_irange (r, lhs, op1_range);
-	  else
-	    return s->calc_op1_irange (r, lhs);
-	}
-      // If we need the second operand, get a value and evaluate.
-      if (get_operand_range (op2_range, op2, s))
-	return s->calc_op1_irange (r, lhs, op2_range);
-      else
-	return false;
-    }
+  gcc_checking_assert (valid_ssa_p (name));
 
-  gcc_checking_assert (op2 == name);
-
-  if (get_operand_range (op1_range, op1, s))
-    return s->calc_op2_irange (r, lhs, op1_range);
-  return false;
+  // If this block doesnt produce ranges for NAME, bail now.
+  if (!range_p (bb, name))
+    return false;
+  
+  // Calculate the range imposed by following edge E.
+  gimple *s = range_outgoing_edge_p (lhs_range, e);
+  // And use it to determine a range for NAME.
+  return compute_operand_range (r, s, name, lhs_range);
 }
 
-bool
-block_ranger::get_range_thru_op1 (grange_op *s, irange& r, tree name,
-				  const irange& lhs)
-{
-  irange op1_range, op2_range;
-  tree op1 = s->operand1 ();
-  tree op2 = s->operand2 ();
-
-  // Determine a known range for operand1 ().
-  if (!get_operand_range (op1_range, op1, s))
-    return false;
-
-  // Put the calcuated result in r.
-  if (!op2)
-    {
-      // we pass op1_range to the unary operation. Nomally it's a hidden
-      // range_for_type paraemter, but sometimes having the actual range
-      // can result in better information.
-      if (!s->calc_op1_irange (r, lhs, op1_range))
-	return false;
-    }
-  else
-    {
-      if (!get_operand_range (op2_range, op2, s))
-	return false;
-      if (!s->calc_op1_irange (r, lhs, op2_range))
-	return false;
-    }
-  // Intersect the calculated result with the known result.
-  op1_range.intersect (r);
-
-  // Then feed this range back as the LHS of the defining statement.
-  return get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name, op1_range);
-}
-
-bool
-block_ranger::get_range_thru_op2 (grange_op *s, irange& r, tree name,
-				  const irange& lhs)
-{
-  irange op1_range, op2_range;
-  tree op1 = s->operand1 ();
-  tree op2 = s->operand2 ();
-
-  // Get a range for op1.
-  if (!get_operand_range (op1_range, op1, s))
-    return false;
-
-  // calculate the range for op2 based on lhs and op1.
-  if (!s->calc_op2_irange (op2_range, lhs, op1_range))
-    return false;
-
-  // also pick up what is known about op2's range at this point
-  if (!get_operand_range (r, op2, s))
-    return false;
-
-  // And intersect it with the calculated result.
-  op2_range.intersect (r);
-
-  // Then feed this range back as the LHS of the defining statement.
-  return get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range);
-}
-
-bool
-block_ranger::get_range_thru_op1_and_op2 (grange_op *s, irange& r, tree name,
-					  const irange& lhs)
-{
-  irange op_range;
-
-  // Calculate a good a range for op2. since op1 == op2, this will have
-  // already included whatever the actual range of name is.
-  if (!get_range_thru_op2 (s, op_range, name, lhs))
-    return false;
-
-  // Now get the range thru op1... 
-  if (!get_range_thru_op1 (s, r, name, lhs))
-    return false;
-
-  // Whichever range is the most permissive is the one we need to use. (?)
-  r.union_ (op_range);
-  return true;
-}
- 
 // Given the expression in STMT, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
+
 bool
-block_ranger::get_range_from_stmt (gimple *s, irange& r, tree name,
-				     const irange& lhs)
+block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
+				     const irange &lhs)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
-
-  grange_op *stmt = dyn_cast<grange_op *>(s);
-  if (!stmt)
-    return false;
 
   // Empty ranges are viral as they are on a path which isn't executable.
   if (lhs.undefined_p ())
@@ -640,11 +474,16 @@ block_ranger::get_range_from_stmt (gimple *s, irange& r, tree name,
       return true;
     }
 
+  grange_op *stmt = dyn_cast<grange_op *> (s);
+  if (!stmt)
+    return false;
+
   op1 = stmt->operand1 ();
   op2 = stmt->operand2 ();
 
+  // THe base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
-    return get_range_if_name_on_stmt (stmt, r, name, lhs);
+    return gimple_range::compute_operand_range (r, stmt, name, lhs);
 
   // Check for logical combination cases which require developing ranges 
   // and combining the results based on the operation. 
@@ -672,13 +511,176 @@ block_ranger::get_range_from_stmt (gimple *s, irange& r, tree name,
   return false;
 }
 
+// Given a logical STMT, calculate true and false for each potential path 
+// using NAME and resolve the outcome based on the logical operator.  
+
+bool
+block_ranger::process_logical (glogical *s, irange &r, tree name,
+			       const irange &lhs)
+{
+  irange op1_range, op2_range;
+  tree op1, op2;
+  bool op1_in_chain, op2_in_chain;
+  bool ret;
+
+  irange op1_true, op1_false, op2_true, op2_false;
+
+  // Reaching this point means NAME is not in this stmt, but one of the
+  // names in it ought to be derived from it.  */
+  op1 = s->operand1 ();
+  op2 = s->operand2 ();
+  gcc_checking_assert (op1 != name && op2 != name);
+
+  op1_in_chain = m_gori->in_chain_p (name, op1);
+  op2_in_chain = m_gori->in_chain_p (name, op2);
+
+  /* If neither operand is derived, then this stmt tells us nothing. */
+  if (!op1_in_chain && !op2_in_chain)
+    return false;
+
+  /* The false path is not always a simple inversion of the true side.
+     Calulate ranges for true and false on both sides. */
+  if (op1_in_chain)
+    {
+      ret = compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1), name,
+				   m_bool_one);
+      ret &= compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1), name,
+				    m_bool_zero);
+    }
+  else
+    {
+      // Otherwise just get the value for name in operand 1 position
+      ret = range_of_expr (op1_true, name, s);
+      op1_false = op1_true;
+    }
+
+  /* If operand1 evaluated OK, move on to operand 2.  */
+  if (ret)
+    {
+      if (op2_in_chain)
+	{
+	  ret &= compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
+				      name, m_bool_one);
+	  ret &= compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
+				      name, m_bool_zero);
+	}
+      else
+	{
+	  // Otherwise just get the value for name in operand 2 position
+	  ret &= range_of_expr (op2_true, name, s);
+	  op2_false = op2_true; 
+	}
+    }
+  if (!ret || !s->combine (r, lhs, op1_true, op1_false, op2_true, op2_false))
+    r.set_varying (TREE_TYPE (name));
+  return true;
+}
 
 
-// Dump the bvlock rangers data structures.
+// Calculate a range for NAME from the operand 1 position of S assuming the 
+// result of the statement is LHS.  Return the range in R, or false if no
+// range could be calculated.
+
+bool
+block_ranger::get_range_thru_op1 (grange_op *s, irange &r, tree name,
+				  const irange &lhs)
+{
+  irange op1_range, op2_range;
+  tree op1 = s->operand1 ();
+  tree op2 = s->operand2 ();
+
+  // Determine a known range for operand1 ().
+  if (!range_of_expr (op1_range, op1, s))
+    return false;
+
+  // Now calcuated the operand and put that result in r.
+  if (!op2)
+    {
+      // we pass op1_range to the unary operation. Nomally it's a hidden
+      // range_for_type paraemter, but sometimes having the actual range
+      // can result in better information.
+      if (!s->calc_op1_irange (r, lhs, op1_range))
+	return false;
+    }
+  else
+    {
+      if (!range_of_expr (op2_range, op2, s))
+	return false;
+      if (!s->calc_op1_irange (r, lhs, op2_range))
+	return false;
+    }
+
+  // Intersect the calculated result with the known result.
+  op1_range.intersect (r);
+
+  // Then feed this range back as the LHS of the defining statement.
+  return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, op1_range);
+}
+
+
+// Calculate a range for NAME from the operand 2 position of S assuming the 
+// result of the statement is LHS.  Return the range in R, or false if no
+// range could be calculated.
+
+bool
+block_ranger::get_range_thru_op2 (grange_op *s, irange &r, tree name,
+				  const irange &lhs)
+{
+  irange op1_range, op2_range;
+  tree op1 = s->operand1 ();
+  tree op2 = s->operand2 ();
+
+  // Get a range for op1.
+  if (!range_of_expr (op1_range, op1, s))
+    return false;
+
+  // calculate the range for op2 based on lhs and op1.
+  if (!s->calc_op2_irange (op2_range, lhs, op1_range))
+    return false;
+
+  // Also pick up what is known about op2's range at this point
+  if (!range_of_expr (r, op2, s))
+    return false;
+
+  // And intersect it with the calculated result.
+  op2_range.intersect (r);
+
+  // Then feed this range back as the LHS of the defining statement.
+  return compute_operand_range (r, SSA_NAME_DEF_STMT (op2), name, op2_range);
+}
+
+// Calculate a range for NAME from both operand positions of S assuming the 
+// result of the statement is LHS.  Return the range in R, or false if no
+// range could be calculated.
+
+bool
+block_ranger::get_range_thru_op1_and_op2 (grange_op *s, irange &r, tree name,
+					  const irange &lhs)
+{
+  irange op_range;
+
+  // Calculate a good a range for op2. Since op1 == op2, this will have
+  // already included whatever the actual range of name is.
+  if (!get_range_thru_op2 (s, op_range, name, lhs))
+    return false;
+
+  // Now get the range thru op1... 
+  if (!get_range_thru_op1 (s, r, name, lhs))
+    return false;
+
+  // Whichever range is the most permissive is the one we need to use. (?)
+  // OR is that true?  Maybe this should be intersection?
+  r.union_ (op_range);
+  return true;
+}
+ 
+
+
+// Dump the block rangers data structures.
+
 void
 block_ranger::dump (FILE *f)
 {
-
   if (!f)
     return;
 
@@ -687,45 +689,27 @@ block_ranger::dump (FILE *f)
   fprintf (f, "\n");
 }
 
+// If NAME's derived chain has a single import into the block, return it.
+// Otherwise return NULL_TREE.
+
 tree
 block_ranger::single_import (tree name)
 {
   return m_gori->single_import (name);
 }
 
+// Return TRUE if the outgoing edges of block BB define a range for NAME.
 bool
 block_ranger::range_p (basic_block bb, tree name)
 {
   return m_gori->is_export_p (name, bb);
 }
 
-
-// Calculate a range for NAME on edge E, returning ther result in R.
-bool
-block_ranger::range_on_edge (irange& r, tree name, edge e)
-{
-  irange lhs_range;
-  basic_block bb = e->src;
-
-  gcc_checking_assert (gimple_range_valid_ssa (name));
-  if (!gimple_range_valid_ssa (name))
-    return false;
-
-  // If this block doesnt produce ranges for NAME, bail now.
-  if (!range_p (bb, name))
-    return false;
-  
-  gimple_range_outgoing_edge (lhs_range, e);
-
-  gimple *s = last_stmt (bb);
-  return get_range_from_stmt (s, r, name, lhs_range);
-}
-
-
 // This routine will loop through all the edges and block in the program and
 // ask for the range of each ssa-name. THis exercises the ranger to make sure
 // there are no ICEs for unexpected questions, as well as provides a
 // convenient way to show all the ranges that could be calculated.
+
 void
 block_ranger::exercise (FILE *output)
 {
@@ -744,22 +728,19 @@ block_ranger::exercise (FILE *output)
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
 	      tree name = ssa_name (x);
-	      if (name && range_p (bb, name))
+	      if (name && range_on_edge_p (range, e, name))
 		{
-		  if (range_on_edge (range, name, e))
+		  if (output)
 		    {
-		      if (output)
-			{
-			  printed = true;
-			  fprintf (output, "BB%3d: ", bb->index);
-			  if (e->flags & EDGE_TRUE_VALUE)
-			    fprintf (output, " T: ");
-			  else if (e->flags & EDGE_FALSE_VALUE)
-			    fprintf (output, " F: ");
-			  print_generic_expr (output, name, TDF_SLIM);
-			  fprintf(output, "  \t");
-			  range.dump(output);
-			}
+		      printed = true;
+		      fprintf (output, "BB%3d: ", bb->index);
+		      if (e->flags & EDGE_TRUE_VALUE)
+			fprintf (output, " T: ");
+		      else if (e->flags & EDGE_FALSE_VALUE)
+			fprintf (output, " F: ");
+		      print_generic_expr (output, name, TDF_SLIM);
+		      fprintf(output, "  \t");
+		      range.dump(output);
 		    }
 		}
 	    }
@@ -775,50 +756,4 @@ block_ranger::exercise (FILE *output)
 }
 
 
-// Attempt to evaluate NAME within the basic block it is defined assuming the
-// block was entered via edge E.
-bool
-block_ranger::range_of_stmt (irange &r, gimple *g, edge e)
-{
-  basic_block bb = gimple_bb (g);
-
-  /* The edge provided must be an incoming edge to this BB.  */
-  gcc_assert (e->dest == bb);
-
-  // Note that since we are remaining within BB, we do not attempt to further
-  // evaluate any of the arguments of a PHI at this point.
-  // For the moment, just pick up any cheap edge information.
-  gphi *phi = dyn_cast<gphi *> (g);
-  if (phi)
-    {
-      tree arg;
-      gcc_assert (e->dest == bb);
-      arg = gimple_phi_arg_def (phi, e->dest_idx);
-      // Pick up anything simple we might know about the incoming edge. 
-      if (TREE_CODE (arg) != SSA_NAME || !range_on_edge (r, arg, e))
-	return gimple_range_of_expr (r, arg);
-      return true;
-    }
-
-  grange_op *stmt = dyn_cast<grange_op *>(g);
-  if (!stmt)
-    return false; 
-  irange range1, range2;
-
-  tree op = stmt->operand1 ();
-  if (!gimple_range_valid_ssa (op) || !ssa_name_same_bb_p (op, bb) ||
-      !range_of_stmt (range1, SSA_NAME_DEF_STMT (op), e))
-    if (!gimple_range_of_expr (range1, op))
-      return false;
-
-  op = stmt->operand2 ();
-  if (!op)
-    return stmt->fold (r, range1);
-
-  if (!gimple_range_valid_ssa (op) || !ssa_name_same_bb_p (op, bb) ||
-      !range_of_stmt (range2, SSA_NAME_DEF_STMT (op), e))
-    if (!gimple_range_of_expr (range2, op))
-      return false;
-  return stmt->fold (r, range1, range2);
-}
 

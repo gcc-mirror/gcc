@@ -93,7 +93,7 @@ execute_ranger_vrp ()
 	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 	    }
-	  if (ranger.path_range_stmt (r, stmt))
+	  if (ranger.path_range_stmt (r, stmt) && !r.varying_p ())
 	    {
 	      if (dump_file)
 	        {
@@ -113,11 +113,11 @@ execute_ranger_vrp ()
 
 		  /* If either operand is an ssa_name, set the touched bit for
 		     potential removal later if no uses are left.  */
-		  tree t = gimple_range_valid_ssa (gimple_cond_lhs (cond));
+		  tree t = ranger.valid_ssa_p (gimple_cond_lhs (cond));
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
 
-		  t = gimple_range_valid_ssa (gimple_cond_rhs (cond));
+		  t = ranger.valid_ssa_p (gimple_cond_rhs (cond));
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
 

@@ -36,25 +36,26 @@ along with GCC; see the file COPYING3.  If not see
 class path_ranger : public block_ranger
 {
 public:
-  enum path_range_direction { FORWARD, REVERSE };
   path_ranger ();
   ~path_ranger ();
 
+  virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
   /* What is the known range of name from its DEF point to edge E.  */
   bool path_range_edge (irange& r, tree name, edge e);
   bool path_range_entry (irange& r, tree name, basic_block bb);
   // Get the range of the LHS of the statement.
   bool path_range_stmt (irange& r, gimple *g);
-  // get the value of NAME as it would be used on this stmt.
-  bool path_range_on_stmt (irange&r, tree name, gimple *g);
-
-  bool path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
-		        enum path_range_direction, edge start_edge = NULL);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
+
 protected:
-  virtual bool get_operand_range (irange &r, tree op, gimple *s = NULL);
+  void dump_global_ssa_range (FILE *f);
+  bool has_global_ssa_range (irange& r, tree name);
+  bool get_global_ssa_range (irange& r, tree name);
+  void set_global_ssa_range (tree name, const irange&r);
+  void clear_global_ssa_range (tree name);
+
 private:
   class block_range_cache *m_block_cache;
   class ssa_global_cache *m_globals;
@@ -62,15 +63,9 @@ private:
 
   void range_for_bb (irange &r, tree name, basic_block bb, basic_block def_bb);
   void determine_block (tree name, basic_block bb, basic_block def_bb);
-  bool path_range_list_reverse (irange &r, tree name, const vec<basic_block> &);
   bool process_phi (irange &r, gphi *g);
   bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
 
-  void dump_global_ssa_range (FILE *f);
-  bool has_global_ssa_range (irange& r, tree name);
-  bool get_global_ssa_range (irange& r, tree name);
-  void set_global_ssa_range (tree name, const irange&r);
-  void clear_global_ssa_range (tree name);
 };
 
 /* Like path_ranger::path_range_on_stmt(), but make an on-the-fly ranger.
@@ -87,7 +82,11 @@ static inline bool
 on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
 {
   path_ranger ranger;
-  return ranger.path_range_on_stmt (r, ssa, stmt);
+  bool ret;
+  ret = ranger.range_of_expr (r, ssa, stmt);
+  if (ret && r.varying_p ())
+    return false;
+  return ret;
 }
 
 #endif /* GCC_SSA_RANGE_H */

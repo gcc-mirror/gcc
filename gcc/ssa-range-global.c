@@ -115,7 +115,7 @@ ssa_global_cache::dump (FILE *f)
   unsigned x;
   irange r;
   for ( x = 1; x < num_ssa_names; x++)
-    if (gimple_range_valid_ssa (ssa_name (x)) &&
+    if (gimple_range::valid_ssa_p (ssa_name (x)) &&
 	get_global_range (r, ssa_name (x)))
       {
         print_generic_expr (f, ssa_name (x), TDF_NONE);

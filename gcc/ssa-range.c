@@ -378,7 +378,7 @@ bool
 path_ranger::has_global_ssa_range (irange& r, tree name)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  if (!gimple_range_supports_ssa (name))
+  if (!supports_ssa_p (name))
     return false;
 
   if (m_globals->get_global_range (r, name))
@@ -394,7 +394,7 @@ bool
 path_ranger::get_global_ssa_range (irange& r, tree name)
 {
   gimple *s;
-  gcc_checking_assert (gimple_range_valid_ssa (name));
+  gcc_checking_assert (valid_ssa_p (name));
 
   if (m_globals->get_global_range (r, name))
     return true;
@@ -496,7 +496,7 @@ path_ranger::determine_block (tree name, basic_block bb, basic_block def_bb)
 
       // If the predecessor block refines the range on the incoming edge,
       // apply it to the range on entry value from that block.
-      if (range_on_edge (er, name, e))
+      if (range_on_edge_p (er, e, name))
         {
 	  pred_range.intersect (er);
 	  er.intersect (pred_range);
@@ -540,8 +540,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
   gimple *def_stmt;
   basic_block def_bb = NULL;
 
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  if (!gimple_range_supports_ssa (name))
+  if (!supports_ssa_p (name))
     return false;
 
   // Determine an origination block for the defining statement.
@@ -564,7 +563,7 @@ path_ranger::path_range_entry (irange& r, tree name, basic_block bb)
       r.intersect (block_range);
     }
 
-  return !r.varying_p ();
+  return true;
 }
 
 
@@ -575,23 +574,21 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 {
   basic_block bb = e->src;
 
-  gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
-  if (!gimple_range_supports_ssa (name))
+  if (!supports_ssa_p (name))
     return false;
 
   // Get an initial range for NAME. 
   gimple *stmt = SSA_NAME_DEF_STMT (name);
+
+  // If it is in this block, evaluate it, otherwise pick it up from entry.
   if (stmt && gimple_bb (stmt) == e->src)
     {
-      // If it is in this block, evaluate it.
       if (!path_range_stmt (r, stmt))
-        r = range_from_ssa (name);
+	r.set_varying (TREE_TYPE (name));
     }
   else
-    // The name comes from outside this block, so evaluate it's value on
-    // entry to the block. 
     if (!path_range_entry (r, name, bb))
-      r = range_from_ssa (name);
+      r.set_varying (TREE_TYPE (name));
 
   // If result is range for type, see if there is a non-null reference
   // somewhere in this block. 
@@ -600,9 +597,9 @@ path_ranger::path_range_edge (irange& r, tree name, edge e)
 
   // Now intersect the initial range with what NAME evaluates to on this edge.
   irange edge_range;
-  if (range_on_edge (edge_range, name, e))
+  if (range_on_edge_p (edge_range, e, name))
     r.intersect (edge_range);
-  return !r.varying_p ();
+  return true;
 }
 
 // Return a range for the phi node PHI in R.
@@ -627,7 +624,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
       // Try to find a calulated range, if that fails, just get the operands
       // range. if that fails, return false.
       if ((TREE_CODE (arg) != SSA_NAME) || !path_range_edge (arg_range, arg, e))
-	if (!gimple_range_of_expr (arg_range, arg))
+	if (!range_of_expr (arg_range, arg))
 	  {
 	    clear_global_ssa_range (phi_def);
 	    return false;
@@ -643,7 +640,7 @@ path_ranger::process_phi (irange &r, gphi *phi)
   r.intersect (phi_range);
   // This now becomes the global range for PHI_DEF.
   set_global_ssa_range (phi_def, r);
-  return !r.varying_p ();
+  return true;
 }
 
 
@@ -660,12 +657,12 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   // Not all statements have a LHS.  */
   if (name)
     {
-      if (!gimple_range_supports_ssa (name))
+      if (!supports_ssa_p (name))
         return false;
 
       // If this STMT has already been processed, return that value. 
       if (has_global_ssa_range (r, name))
-	return !r.varying_p ();
+	return true;
      
       // avoid infinite recursion by initializing global cache
       r = range_from_ssa (name);
@@ -673,7 +670,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
     }
 
   if (is_a<gcall *> (g))
-    return gimple_range_of_stmt (r, as_a<gcall *>(g));
+    return range_of_stmt (r, as_a<gcall *>(g));
   if (is_a<gphi *> (g))
     return process_phi (r, as_a<gphi *>(g));
   
@@ -683,7 +680,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   irange range1, range2;
 
   // Evaluate operand 1.
-  if (!get_operand_range (range1, rn->operand1 (), g))
+  if (!range_of_expr (range1, rn->operand1 (), g))
     return false;
     
   // If this is a unary operation, call fold now.  
@@ -692,7 +689,7 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
   else
     {
       // Evaluate the second operand.
-      if (!get_operand_range (range2, rn->operand2 (), g))
+      if (!range_of_expr (range2, rn->operand2 (), g))
 	return false;
       res = rn->fold (r, range1, range2);
     }
@@ -706,48 +703,32 @@ path_ranger::path_range_stmt (irange& r, gimple *g)
       else
 	clear_global_ssa_range (name);
     }
-  if (res)
-    return !r.varying_p ();
-  return false;
-}
-
-// External API. Return the known range for NAME as it would be used on stmt G
-// in range R.
-bool
-path_ranger::path_range_on_stmt (irange& r, tree name, gimple *g)
-{
-  gcc_checking_assert (g && TREE_CODE (name) == SSA_NAME);
-  if (!gimple_range_supports_ssa (name))
-    return false;
-
-  if (get_operand_range (r, name, g))
-    return !r.varying_p ();
-  return false;
+  return res;
 }
 
 // Determine a range for OP on stmt S, returning the result in R.
 // If OP is not defined in BB, find the range on entry to this block.
 bool
-path_ranger::get_operand_range (irange&r, tree op, gimple *s)
+path_ranger::range_of_expr (irange&r, tree op, gimple *s)
 {
-  if (!gimple_range_supports (op))
+  if (!supports_p (op))
      return false;
 
   // If there is a statement, and a valid ssa_name, try to find a range.
-  if (s && TREE_CODE (op) == SSA_NAME)
+  if (s && valid_ssa_p (op))
     {
       basic_block bb = gimple_bb (s);
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       // if name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  if (path_range_stmt (r, def_stmt))
-	    return true;
+	  if (!path_range_stmt (r, def_stmt))
+	    r.set_varying (TREE_TYPE (op));
 	}
       else
 	// Otherwise OP comes from outside this block, try range on entry.
-	if (path_range_entry (r, op, bb))
-	  return true;
+	if (!path_range_entry (r, op, bb))
+	  r.set_varying (TREE_TYPE (op));
 
       // No range yet, see if there is a dereference in the block.
       // We don't care if it's between the def and a use within a block
@@ -757,91 +738,15 @@ path_ranger::get_operand_range (irange&r, tree op, gimple *s)
       // in which case we may need to walk from S back to the def/top of block
       // to make sure the deref happens between S and there before claiming 
       // there is a deref.   
-      if (non_null_deref_in_block (r, op, bb))
-	return true;
+      if (r.varying_p ())
+	non_null_deref_in_block (r, op, bb);
+      return true;
     }
 
   // Fall back to the default.
-  return gimple_range_of_expr (r, op);
+  return gimple_range::range_of_expr (r, op);
 }
 
-// Calculate the known range for NAME on a path of basic blocks in
-// BBS.  If such a range exists, store it in R and return TRUE,
-// otherwise return FALSE.
-//
-// DIR is FORWARD if BBS[0] is the definition and the last block is
-// the use.  DIR is REVERSE if the blocks are in reverse order.
-//
-// If there is an edge leading into this path that we'd like to take
-// into account, such edge is START_EDGE.  Otherwise, START_EDGE is
-// set to NULL.  
-bool
-path_ranger::path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
-			      enum path_range_direction dir, edge start_edge)
-{
-  if (bbs.is_empty ())
-    return false;
-
-  /* If the first block defines NAME and it has meaningful range
-     information, use it, otherwise fall back to range for type.
-
-     Note: The first block may not always define NAME because we may
-     have pruned the paths such that the first block (bb1) is just the
-     first block that contains range info (bb99).  For example:
-
-     bb1:
-       x = 55;
-       ...
-       ...
-     bb99:
-       if (x > blah).
-  */
-  basic_block first_bb = dir == FORWARD ? bbs[0] : bbs[bbs.length () - 1];
-  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-  if (gimple_bb (def_stmt) == first_bb && start_edge)
-    {
-      if (!range_of_stmt (r, def_stmt, start_edge))
-	get_global_ssa_range (r, name);
-    }
-  else
-    get_global_ssa_range (r, name);
-
-  if (dir == REVERSE)
-    return path_range_list_reverse (r, name, bbs);
-
-  for (unsigned i = 1; i < bbs.length (); ++i)
-    {
-      edge e = find_edge (bbs[i - 1], bbs[i]);
-      gcc_assert (e);
-      irange redge;
-      if (range_on_edge (redge, name, e))
-	r.intersect (redge);
-    }
-
-  return !r.varying_p ();
-}
-
-/* The same as above, but handle the case where BBS are a path of
-   basic blocks in reverse order.
-
-   BBS[0] is the USE of NAME.
-   BBS[LEN-1] is the DEF of NAME.  */
-
-bool
-path_ranger::path_range_list_reverse (irange &r, tree name,
-				      const vec<basic_block> &bbs)
-{
-  for (int i = bbs.length () - 1; i > 0; --i)
-    {
-      edge e = find_edge (bbs[i], bbs[i - 1]);
-      gcc_assert (e);
-      irange redge;
-      if (range_on_edge (redge, name, e))
-	r.intersect (redge);
-    }
-
-  return !r.varying_p ();
-}
 
 // Print the known table values ro file F.
 void
@@ -1002,4 +907,6 @@ path_ranger::exercise (FILE *output)
     dump (output);
 
 }
+
+
 

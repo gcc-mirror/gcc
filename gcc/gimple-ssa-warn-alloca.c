@@ -204,7 +204,7 @@ alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
 
   irange r;
   if (TREE_CODE (len) == SSA_NAME
-      && ranger.path_range_on_stmt (r, len, stmt)
+      && ranger.range_of_expr (r, len, stmt)
       && !r.varying_p ())
     {
       // The invalid bits are anything outside of [0, MAX_SIZE].
