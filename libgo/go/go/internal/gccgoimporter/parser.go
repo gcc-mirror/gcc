@@ -18,7 +18,7 @@ import (
 )
 
 type parser struct {
-	scanner  scanner.Scanner
+	scanner  *scanner.Scanner
 	version  string                    // format version
 	tok      rune                      // current token
 	lit      string                    // literal string; only valid for Ident, Int, String tokens
@@ -27,18 +27,24 @@ type parser struct {
 	pkg      *types.Package            // reference to imported package
 	imports  map[string]*types.Package // package path -> package object
 	typeMap  map[int]types.Type        // type number -> type
+	typeData []string                  // unparsed type data
 	initdata InitData                  // package init priority data
 }
 
 func (p *parser) init(filename string, src io.Reader, imports map[string]*types.Package) {
+	p.scanner = new(scanner.Scanner)
+	p.initScanner(filename, src)
+	p.imports = imports
+	p.typeMap = make(map[int]types.Type)
+}
+
+func (p *parser) initScanner(filename string, src io.Reader) {
 	p.scanner.Init(src)
 	p.scanner.Error = func(_ *scanner.Scanner, msg string) { p.error(msg) }
 	p.scanner.Mode = scanner.ScanIdents | scanner.ScanInts | scanner.ScanFloats | scanner.ScanStrings | scanner.ScanComments | scanner.SkipComments
 	p.scanner.Whitespace = 1<<'\t' | 1<<' '
 	p.scanner.Filename = filename // for good error messages
 	p.next()
-	p.imports = imports
-	p.typeMap = make(map[int]types.Type)
 }
 
 type importError struct {
@@ -720,6 +726,9 @@ func (p *parser) parseType(pkg *types.Package) (t types.Type) {
 		n := p.parseInt()
 
 		if p.tok == '>' {
+			if len(p.typeData) > 0 && p.typeMap[int(n)] == nil {
+				p.parseSavedType(pkg, int(n))
+			}
 			t = p.typeMap[int(n)]
 		} else {
 			t = p.parseTypeDefinition(pkg, int(n))
@@ -737,6 +746,67 @@ func (p *parser) parseType(pkg *types.Package) (t types.Type) {
 
 	p.expect('>')
 	return
+}
+
+// Types = "types" maxp1 exportedp1 (offset length)* .
+func (p *parser) parseTypes(pkg *types.Package) {
+	maxp1 := p.parseInt()
+	exportedp1 := p.parseInt()
+
+	type typeOffset struct {
+		offset int
+		length int
+	}
+	var typeOffsets []typeOffset
+
+	total := 0
+	for i := 1; i < int(maxp1); i++ {
+		len := int(p.parseInt())
+		typeOffsets = append(typeOffsets, typeOffset{total, len})
+		total += len
+	}
+
+	// We should now have p.tok pointing to the final newline.
+	// The next runes from the scanner should be the type data.
+
+	var sb strings.Builder
+	for sb.Len() < total {
+		r := p.scanner.Next()
+		if r == scanner.EOF {
+			p.error("unexpected EOF")
+		}
+		sb.WriteRune(r)
+	}
+	allTypeData := sb.String()
+
+	p.typeData = []string{""} // type 0, unused
+	for _, to := range typeOffsets {
+		p.typeData = append(p.typeData, allTypeData[to.offset:to.offset+to.length])
+	}
+
+	for i := 1; i < int(exportedp1); i++ {
+		p.parseSavedType(pkg, i)
+	}
+}
+
+// parseSavedType parses one saved type definition.
+func (p *parser) parseSavedType(pkg *types.Package, i int) {
+	defer func(s *scanner.Scanner, tok rune, lit string) {
+		p.scanner = s
+		p.tok = tok
+		p.lit = lit
+	}(p.scanner, p.tok, p.lit)
+
+	p.scanner = new(scanner.Scanner)
+	p.initScanner(p.scanner.Filename, strings.NewReader(p.typeData[i]))
+	p.expectKeyword("type")
+	id := int(p.parseInt())
+	if id != i {
+		p.errorf("type ID mismatch: got %d, want %d", id, i)
+	}
+	if p.typeMap[i] == nil {
+		p.typeMap[i] = p.parseTypeDefinition(pkg, i)
+	}
 }
 
 // PackageInit = unquotedString unquotedString int .
@@ -881,6 +951,11 @@ func (p *parser) parseDirective() {
 		pkgname := p.parseUnquotedString()
 		pkgpath := p.parseUnquotedString()
 		p.getPkg(pkgpath, pkgname)
+		p.expectEOL()
+
+	case "types":
+		p.next()
+		p.parseTypes(p.pkg)
 		p.expectEOL()
 
 	case "func":

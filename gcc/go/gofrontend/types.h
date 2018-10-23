@@ -3445,10 +3445,6 @@ class Named_type : public Type
   void
   append_mangled_type_name(Gogo*, bool use_alias, std::string*) const;
 
-  // Export the type.
-  void
-  export_named_type(Export*, const std::string& name) const;
-
   // Import a named type.
   static void
   import_named_type(Import*, Named_type**);
