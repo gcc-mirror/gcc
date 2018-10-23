@@ -1,3 +1,11 @@
+2018-10-23  Tom de Vries  <tdevries@suse.de>
+
+	backport from trunk:
+	2018-07-31  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86687
+	* optimize.c (update_cloned_parm): Copy DECL_BY_REFERENCE.
+
 2018-10-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87582
