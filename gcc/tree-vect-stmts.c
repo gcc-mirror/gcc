@@ -9533,14 +9533,18 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   if (!bb_vinfo
       && (STMT_VINFO_RELEVANT_P (stmt_info)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
-    ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node, cost_vec)
+    /* Prefer vectorizable_call over vectorizable_simd_clone_call so
+       -mveclibabi= takes preference over ibrary functions with
+       the simd attribute.  */
+    ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	  || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					   cost_vec)
 	  || vectorizable_conversion (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_operation (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				cost_vec)
-	  || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_reduction (stmt_info, NULL, NULL, node,
 				     node_instance, cost_vec)
@@ -9552,8 +9556,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   else
     {
       if (bb_vinfo)
-	ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
-					    cost_vec)
+	ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	      || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					       cost_vec)
 	      || vectorizable_conversion (stmt_info, NULL, NULL, node,
 					  cost_vec)
 	      || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
@@ -9562,7 +9567,6 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 					  cost_vec)
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
-	      || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
 					 cost_vec)
