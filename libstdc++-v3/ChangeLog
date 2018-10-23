@@ -1,3 +1,11 @@
+2018-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87704
+	* include/bits/unique_ptr.h (unique_ptr::unique_ptr(nullptr_t)): Do
+	not delegate to default constructor.
+	(unique_ptr<T[], D>::unique_ptr(nullptr_t)): Likewise.
+	* testsuite/20_util/unique_ptr/cons/incomplete.cc: New test.
+
 2018-10-20  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/util/testsuite_containers.h
