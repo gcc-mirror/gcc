@@ -1,3 +1,11 @@
+2018-10-23  Tom de Vries  <tdevries@suse.de>
+
+	backport from trunk:
+	2018-07-31  Tom de Vries  <tdevries@suse.de>
+
+	PR debug/86687
+	* g++.dg/guality/pr86687.C: New test.
+
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso14.adb: New test.
