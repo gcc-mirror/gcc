@@ -1,3 +1,14 @@
+2018-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87674
+	* config/i386/avx512vlintrin.h (_mm_mask_mullo_epi32): Change type of
+	second argument from __mmask16 to __mmask8.
+	* config/i386/avx512vlbwintrin.h (_mm_mask_packus_epi32,
+	_mm_mask_packs_epi32): Likewise.
+	* config/i386/avx512pfintrin.h (_mm512_mask_prefetch_i64scatter_ps):
+	Likewise.
+	(_mm512_mask_prefetch_i64scatter_pd): Likewise.  Formatting fix.
+
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-stmts.c (vect_analyze_stmt): Fix typo in comment.
