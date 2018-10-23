@@ -1,3 +1,30 @@
+2018-10-23  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (slurping::remap_module): New.
+	(depset::hash::add_binding): Don't deal with namespaces here.
+	(module_state::write_namespaces): No longer static.  Write
+	locations.
+	(module_state::read_namespaces): Read locations.
+	(module_state::add_writables): Deal with namespaces here.
+	(module_state::find_dependencies): Don't walk namespaces.
+	* name-lookup.h (get_lookup_ident, find_by_ident): Reorder args,
+	update callers.
+	(add_imported_namespace): Add location arg.
+	* name-lookup.c (module_binding_slot): Fix initial alloc.
+	(extract_module_decls): Return namespace.
+	(get_binding_or_decl, lookup_by_ident, get_lookup_ident): Reorder
+	args.
+	(make_namespace): Add loc & module args.
+	(push_namespace): Adjust.
+	(add_imported_namespace): Adjust.
+	* ptree.c (cxx_print_decl): Avoid final linefeed.
+	(cxx_print_xnode): Adjust MODULE_VEC
+	gcc/
+	* doc/invoke.texi: Document -fdump-lang-module options.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-2.C: Adjust.
+
 2018-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

@@ -14130,7 +14130,7 @@ Dump after function inlining.
 @item -fdump-lang
 @opindex fdump-lang
 Dump language-specific information.  The file name is made by appending
-@file{.lang} to the source file name.  Currently used for C++ modules.
+@file{.lang} to the source file name.
 
 @item -fdump-lang-all
 @itemx -fdump-lang-@var{switch}
@@ -14153,7 +14153,9 @@ Dump class hierarchy information.  Virtual table information is emitted
 unless '@option{slim}' is specified.  This option is applicable to C++ only.
 
 @item module
-Dump module information.  This option is applicable to C++ only.
+Dump module information.  Options @option{lineno}, @option{graph},
+@option{blocks} & @option{uid} may provide additional information.
+This option is applicable to C++ only.
 
 @item raw
 Dump the raw internal tree data.  This option is applicable to C++ only.

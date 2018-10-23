@@ -57,23 +57,42 @@ cxx_print_decl (FILE *file, tree node, int indent)
 	       decl_as_string (node, TFF_TEMPLATE_HEADER));
     }
 
+  bool need_indent = true;
   if (unsigned mod = MAYBE_DECL_MODULE_OWNER (node))
     {
-      indent_to (file, indent + 3);
+      if (need_indent)
+	indent_to (file, indent + 3);
       fprintf (file, " module %d:%s", mod, module_name (mod));
+      need_indent = false;
     }
 
-  indent_to (file, indent + 3);
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
-    fprintf (file, " not-really-extern");
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " not-really-extern");
+      need_indent = false;
+    }
+
   if (TREE_CODE (node) == FUNCTION_DECL
       && DECL_PENDING_INLINE_INFO (node))
-    fprintf (file, " pending-inline-info %p",
-	     (void *) DECL_PENDING_INLINE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " pending-inline-info %p",
+	       (void *) DECL_PENDING_INLINE_INFO (node));
+      need_indent = false;
+    }
+  
   if (VAR_OR_FUNCTION_DECL_P (node)
       && DECL_TEMPLATE_INFO (node))
-    fprintf (file, " template-info %p",
-	     (void *) DECL_TEMPLATE_INFO (node));
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " template-info %p",
+	       (void *) DECL_TEMPLATE_INFO (node));
+      need_indent = false;
+    }
 }
 
 void
@@ -225,8 +244,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
       print_node (file, "optype", BASELINK_OPTYPE (node), indent + 4);
       break;
     case OVERLOAD:
-      print_node (file, "function", OVL_FUNCTION (node), indent+4);
-      print_node (file, "next", OVL_CHAIN (node), indent+4);
+      print_node (file, "function", OVL_FUNCTION (node), indent + 4);
+      print_node (file, "next", OVL_CHAIN (node), indent + 4);
       break;
     case MODULE_VECTOR:
       {
@@ -240,9 +259,10 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
-		  int len = sprintf (pfx, "elt %u", cluster->indices[jx].base);
+		  int len = sprintf (pfx, "cluster:%u elt:%u", ix,
+				     cluster->indices[jx].base);
 		  if (cluster->indices[jx].span > 1)
-		    sprintf (&pfx[len], "-%u", cluster->indices[jx].span);
+		    sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
 		  print_node (file, pfx, cluster->slots[jx], indent + 4);
 		}
 	  }

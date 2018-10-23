@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/known-headers.h"
 #include "c-family/c-spellcheck.h"
 #include "bitmap.h"
+#include "intl.h"
 
 static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
@@ -111,7 +112,10 @@ find_namespace_value (tree ns, tree name)
    module-specific slot.  If CREATE is false, we return NULL on
    not-found.  If CREATE is true we're creating a slot.  By
    construction, one can only create new binding slots at the end of
-   the array.  */
+   the array.
+
+   FIXME:I don't do exponential allocation, so we have O(N^2) append.
+   Perhaps should look at that?  */
 
 static mc_slot *
 module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
@@ -154,10 +158,8 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 		    + cluster->indices[offset].span <= ix)
 		  goto not_found;
 		if (cluster->indices[offset].base <= ix)
-		  {
-		    return &cluster->slots[offset];
-		  }
-	    }
+		  return &cluster->slots[offset];
+	      }
 	}
     not_found:;
 
@@ -170,12 +172,6 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 		      || !cluster->indices[offset+1].span));
 
       offset = (offset + 1) & (MODULE_VECTOR_SLOTS_PER_CLUSTER - 1);
-      if (!offset)
-	/* Need to extend vector.  */
-	cluster = NULL;
-      else
-	/* Can use slot in last cluster.  */
-	clusters = 0;
     }
   else if (ix == MODULE_SLOT_CURRENT)
     /* The current TU can just use slot directly.  But make it look
@@ -186,8 +182,11 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 
   if (!offset)
     {
-      bool extra = MODULE_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER;
-      tree new_vec = make_module_vec (name, clusters + 1 + (!clusters && extra));
+      /* Extend the vector.  */
+      bool one_more = (!clusters
+		       && MODULE_IMPORT_BASE == MODULE_VECTOR_SLOTS_PER_CLUSTER
+		       && ix >= MODULE_IMPORT_BASE);
+      tree new_vec = make_module_vec (name, clusters + 1 + int (one_more));
       cluster = MODULE_VECTOR_CLUSTER_BASE (new_vec);
       if (clusters)
 	memcpy (cluster, MODULE_VECTOR_CLUSTER_BASE (*slot),
@@ -209,19 +208,24 @@ module_binding_slot (tree *slot, tree name, unsigned ix, bool create)
 	      && !DECL_NAMESPACE_ALIAS (*slot))
 	    cluster->slots[MODULE_SLOT_GLOBAL] = *slot;
 
-	  offset = MODULE_IMPORT_BASE;
-	  if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
+	  if (ix < MODULE_IMPORT_BASE)
+	    offset = ix;
+	  else
 	    {
-	      /* Move to the next cluster.  */
-	      clusters++;
-	      offset = 0;
+	      offset = MODULE_IMPORT_BASE;
+	      if (offset == MODULE_VECTOR_SLOTS_PER_CLUSTER)
+		{
+		  /* Move to the next cluster.  */
+		  clusters++;
+		  offset = 0;
+		}
 	    }
 	}
       *slot = new_vec;
+      cluster += clusters;
     }
 
   /* Fill the free slot of the cluster.  */
-  cluster += clusters;
   cluster->indices[offset].base = ix;
   cluster->indices[offset].span = 1;
   cluster->slots[offset] = NULL_TREE;
@@ -694,7 +698,9 @@ name_lookup::process_module_binding (bitmap imports, unsigned marker,
 	  else
 	    new_val = NULL_TREE;
 	}
-      else if (!DECL_MODULE_EXPORT_P (new_val))
+      else if (TREE_CODE (new_val) == NAMESPACE_DECL
+	       ? !TREE_PUBLIC (new_val)
+	       : !DECL_MODULE_EXPORT_P (new_val))
 	new_val = NULL_TREE;
 
       if (!new_type && !new_val)
@@ -3544,8 +3550,9 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 /* Given a namespace-level binding BINDING, initialize DECLS with the
    set of bindings that are visible to importers and implementations.
    I.e. the exported decls and module-linkage decls.  Any TYPE binding
-   is pushed first.  Return the DECL_NAME of the binding, or
-   NULL_TREE if there are none.  */
+   is pushed first.  If the binding is a namespace, return that.
+   Otherwise return the DECL_NAME of the binding, or NULL_TREE if
+   there are none.  */
 
 tree
 extract_module_decls (tree binding, auto_vec<tree> &decls)
@@ -3563,33 +3570,39 @@ extract_module_decls (tree binding, auto_vec<tree> &decls)
 
   tree ovl = MAYBE_STAT_DECL (binding);
   gcc_assert (ovl);
-  for (ovl_iterator iter (ovl); iter; ++iter)
+  if (TREE_CODE (ovl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (ovl))
     {
-      tree decl = *iter;
-
-      // FIXME using decls, hidden decls
-
-      /* Ignore not this module.  */
-      if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW)
-	continue;
-
-      /* Ignore TINFO things.  */
-      if ((TREE_CODE (decl) == VAR_DECL
-	   || TREE_CODE (decl) == TYPE_DECL)
-	  && DECL_TINFO_P (decl))
-	continue;
-
-      tree not_tpl = STRIP_TEMPLATE (decl);
-      /* Ignore internal-linkage things.  */
-      if (!TREE_PUBLIC (not_tpl)
-	  && (TREE_CODE (not_tpl) == FUNCTION_DECL
-	      || TREE_CODE (not_tpl) == VAR_DECL
-	      || TREE_CODE (not_tpl) == NAMESPACE_DECL))
-	continue;
-
-      name = DECL_NAME (*iter);
-      decls.safe_push (*iter);
+      if (TREE_PUBLIC (ovl))
+	return ovl;
     }
+  else
+    for (ovl_iterator iter (ovl); iter; ++iter)
+      {
+	tree decl = *iter;
+
+	// FIXME using decls, hidden decls
+
+	/* Ignore not this module.  */
+	if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW)
+	  continue;
+
+	/* Ignore TINFO things.  */
+	if ((TREE_CODE (decl) == VAR_DECL
+	     || TREE_CODE (decl) == TYPE_DECL)
+	    && DECL_TINFO_P (decl))
+	  continue;
+
+	tree not_tpl = STRIP_TEMPLATE (decl);
+	/* Ignore internal-linkage things.  */
+	if (!TREE_PUBLIC (not_tpl)
+	    && (TREE_CODE (not_tpl) == FUNCTION_DECL
+		|| TREE_CODE (not_tpl) == VAR_DECL
+		|| TREE_CODE (not_tpl) == NAMESPACE_DECL))
+	  continue;
+
+	name = DECL_NAME (*iter);
+	decls.safe_push (*iter);
+      }
 
   return name;
 }
@@ -3669,7 +3682,7 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
 }
 
 static tree
-get_binding_or_decl (tree ctx, unsigned mod, tree name)
+get_binding_or_decl (tree ctx, tree name, unsigned mod)
 {
   tree binding = NULL_TREE;
 
@@ -3736,9 +3749,9 @@ get_binding_or_decl (tree ctx, unsigned mod, tree name)
    error).  */
 
 tree
-lookup_by_ident (tree ctx, unsigned mod, tree name, int ident)
+lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
 {
-  tree binding = get_binding_or_decl (ctx, mod, name);
+  tree binding = get_binding_or_decl (ctx, name, mod);
 
   if (!binding)
     return binding;
@@ -3770,9 +3783,9 @@ lookup_by_ident (tree ctx, unsigned mod, tree name, int ident)
 }
 
 int
-get_lookup_ident (tree ctx, unsigned mod, tree name, tree decl)
+get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
 {
-  tree binding = get_binding_or_decl (ctx, mod, name);
+  tree binding = get_binding_or_decl (ctx, name, mod);
 
   gcc_checking_assert (binding);
   
@@ -7738,10 +7751,11 @@ reuse_namespace (tree *slot, tree ctx, tree name)
 }
 
 static tree
-make_namespace (tree ctx, tree name, bool inline_p)
+make_namespace (tree ctx, tree name, unsigned mod, location_t loc, bool inline_p)
 {
   /* Create the namespace.  */
   tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
+  DECL_SOURCE_LOCATION (ns) = loc;
   SCOPE_DEPTH (ns) = SCOPE_DEPTH (ctx) + 1;
   if (!SCOPE_DEPTH (ns))
     /* We only allow depth 255. */
@@ -7751,11 +7765,8 @@ make_namespace (tree ctx, tree name, bool inline_p)
   if (!name)
     SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
   else if (TREE_PUBLIC (ctx))
-    {
-      TREE_PUBLIC (ns) = true;
-      /* Any public namespace is visible to anything importing this.  */
-      DECL_MODULE_EXPORT_P (ns) = true;
-    }
+    TREE_PUBLIC (ns) = true;
+  DECL_MODULE_OWNER (ns) = mod;
 
   if (inline_p)
     DECL_NAMESPACE_INLINE_P (ns) = true;
@@ -7764,7 +7775,8 @@ make_namespace (tree ctx, tree name, bool inline_p)
 }
 
 static void
-make_namespace_finish (tree ns, tree *slot, bool from_import = false)
+make_namespace_finish (tree ns, tree *slot, location_t loc,
+		       bool from_import = false)
 {
   if (modules_p () && TREE_PUBLIC (ns) && (from_import || *slot != ns))
     {
@@ -7773,9 +7785,10 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
       if (*slot && *slot != ns)
 	{
 	  /* Something was already bound there.  */
-	  error ("%q#D conflicts with global module declaration", ns);
-	  inform (DECL_SOURCE_LOCATION (OVL_FIRST (*slot)),
-		  "global module declaration %qD", OVL_FIRST (*slot));
+	  tree glob = OVL_FIRST (MAYBE_STAT_DECL (*slot));
+	  error_at (loc, "%q#D conflicts with global module declaration", ns);
+	  inform (DECL_SOURCE_LOCATION (glob),
+		  "global module declaration %qD", glob);
 	}
       *slot = ns;
     }
@@ -7850,14 +7863,15 @@ push_namespace (tree name, bool make_inline)
       tree *slot = find_namespace_slot (current_namespace, name, true);
       ns = reuse_namespace (slot, current_namespace, name);
       if (!ns)
-	ns = make_namespace (current_namespace, name, make_inline);
+	ns = make_namespace (current_namespace, name, MODULE_NONE,
+			     input_location, make_inline);
 
       if (pushdecl (ns) == error_mark_node)
 	ns = NULL_TREE;
       else
 	{
 	  /* finish up making the namespace.  */
-	  make_namespace_finish (ns, slot);
+	  make_namespace_finish (ns, slot, input_location);
 
 	  /* Add the anon using-directive here, we don't do it in
 	     make_namespace_finish.  */
@@ -7870,8 +7884,9 @@ push_namespace (tree name, bool make_inline)
     {
       /* Explicitly opened public namespaces names are always
 	 exported, regardless of whether they're inside 'export'.  */
+      // FIXME: Changes in p1103
       if (TREE_PUBLIC (ns) && module_purview_p ())
-	DECL_MODULE_OWNER (ns) = MODULE_PURVIEW;
+	DECL_MODULE_EXPORT_P (ns) = true;
 
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
@@ -7903,22 +7918,23 @@ pop_namespace (void)
 }
 
 tree
-add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
+add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
+			bool inline_p)
 {
-  /* Does not deal with anonymous namespaces.  */
+  /* Does not deal with anonymous namespaces.  (yet) */
   gcc_assert (name && TREE_PUBLIC (ctx));
 
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
     {
-      decl = make_namespace (ctx, name, inline_p);
-      make_namespace_finish (decl, slot, true);
+      decl = make_namespace (ctx, name, mod, loc, inline_p);
+      make_namespace_finish (decl, slot, loc, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)
     {
-      error (inline_p ? "expected %qD to be an inline namespace"
-	     : "expected %qD to not be an inline namespace", decl);
+      error_at (loc, inline_p ? G_("expected %qD to be an inline namespace")
+		: G_("expected %qD to be a non-inline namespace"), decl);
       inform (DECL_SOURCE_LOCATION (decl), "namespace introduced here");
     }
 
@@ -7936,7 +7952,10 @@ add_imported_namespace (tree ctx, unsigned mod, tree name, bool inline_p)
 	if (last->indices[jx].span)
 	  break;
       if (last->slots[jx] == decl
-	  && last->indices[jx].base + last->indices[jx].span == mod)
+	  && last->indices[jx].base + last->indices[jx].span == mod
+	  && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
+	      || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_IMPORT_BASE
+		  && jx >= MODULE_IMPORT_BASE)))
 	{
 	  last->indices[jx].span++;
 	  return decl;

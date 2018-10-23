@@ -2712,6 +2712,10 @@ struct GTY(()) slurping {
     gcc_assert (!unnamed);
     vec_safe_reserve (unnamed, size);
   }
+  unsigned remap_module (unsigned owner)
+  {
+    return owner < remap->length () ? (*remap)[owner] : MODULE_NONE;
+  }
 
  public:
   /* GC allocation.  But we must explicitly delete it.   */
@@ -2915,8 +2919,8 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 			      unsigned *crc_ptr);
   bool read_bindings (auto_vec<tree> &spaces, const range_t &range);
 
-  static void write_namespaces (elf_out *to, depset::hash &table,
-				auto_vec<depset *> &spaces, unsigned *crc_ptr);
+  void write_namespaces (elf_out *to, depset::hash &table,
+			 auto_vec<depset *> &spaces, unsigned *crc_ptr);
   bool read_namespaces (auto_vec<tree> &spaces);
 
   void write_cluster (elf_out *to, depset *depsets[], unsigned size,
@@ -3210,7 +3214,10 @@ module_mapper *module_mapper::mapper;
 class dumper {
 public:
   enum {
-    LOCATIONS = TDF_LINENO
+	LOCATIONS = TDF_LINENO,  /* Source location streaming.  */
+	DEPENDENCIES = TDF_GRAPH, /* Dependency graph construction.  */
+	TREES = TDF_UID, 	/* Tree streaming.  */
+	ELF = TDF_BLOCKS	/* Elf data.  */
   };
 private:
   struct impl {
@@ -6017,10 +6024,10 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
     tree_node (name);
     if (streaming_p ())
       {
-	int ident = get_lookup_ident (ctx, owner, name, decl);
+	int ident = get_lookup_ident (ctx, name, owner, decl);
 	i (ident);
 	/* Make sure we can find it by name.  */
-	gcc_checking_assert (decl == lookup_by_ident (ctx, owner, name, ident));
+	gcc_checking_assert (decl == lookup_by_ident (ctx, name, owner, ident));
       }
     kind = is_import ? "import" : "named decl";
   }
@@ -6099,7 +6106,7 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
 }
 
 /* T is a node that must be written by value.  Do that.  FORCE is
-   needed for consitency checking.  */
+   needed for consistency checking.  */
 
 void
 trees_out::tree_value (tree t, bool force)
@@ -6397,11 +6404,10 @@ trees_in::tree_node ()
 	owner = u ();
 	tree ctx = tree_node ();
 	tree name = tree_node ();
-	owner = (owner < state->slurp ()->remap->length ()
-		 ? (*state->slurp ()->remap)[owner] : MODULE_NONE);
+	owner = state->slurp ()->remap_module (owner);
 	int ident = i ();
 	if (owner != MODULE_NONE && !get_overrun ())
-	  res = lookup_by_ident (ctx, owner, name, ident);
+	  res = lookup_by_ident (ctx, name, owner, ident);
 
 	if (!res)
 	  {
@@ -6771,17 +6777,11 @@ depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
       tree decl = decls[ix];
 
       gcc_checking_assert (DECL_P (decl));
+      gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL
+			   || DECL_NAMESPACE_ALIAS (decl));
       depset *dep = add_dependency (decl, -1);
-      if (TREE_CODE (decl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (decl))
-	{
-	  gcc_checking_assert (!res);
-	  res = decl;
-	}
-      else
-	{
-	  bind->deps.quick_push (dep);
-	  dep->deps.safe_push (bind);
-	}
+      bind->deps.quick_push (dep);
+      dep->deps.safe_push (bind);
     }
 
   if (bind->deps.length ())
@@ -9128,7 +9128,7 @@ module_state::read_cluster (unsigned snum)
    Each namespace is:
      u:name,
      u:context, number of containing namespace (0 == ::)
-     u:inline_p  */
+     u:inline_p/export_p/public_p  */
 
 void
 module_state::write_namespaces (elf_out *to, depset::hash &table,
@@ -9146,23 +9146,41 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       depset *b = spaces[ix];
       tree ns = b->get_decl ();
 
-      gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL
-			   && (DECL_NAME (ns) || !TREE_PUBLIC (ns))
-			   && (TREE_PUBLIC (ns) == DECL_MODULE_EXPORT_P (ns)));
+      gcc_checking_assert (TREE_CODE (ns) == NAMESPACE_DECL);
 
       b->section = ix + 1;
       unsigned ctx_num = 0;
       tree ctx = CP_DECL_CONTEXT (ns);
       if (ctx != global_namespace)
 	ctx_num = table.find (depset::decl_key (ctx))->section;
-      dump () && dump ("Writing namespace %u %N parent:%u",
-		       b->section, ns, ctx_num);
+      bool export_p = DECL_MODULE_EXPORT_P (ns);
+      bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
+      bool public_p = TREE_PUBLIC (ns);
+      unsigned owner = DECL_MODULE_OWNER (ns);
+      unsigned flags = 0;
+      if (export_p)
+	flags |= 1;
+      if (inline_p)
+	flags |= 2;
+      if (public_p)
+	flags |= 4;
+      if (owner != MODULE_NONE)
+	flags |= 8;
+      dump () && dump ("Writing namespace %u %N%s%s%s, owner=%M, parent:%u",
+		       b->section, ns, export_p ? ", export" : "",
+		       public_p ? ", public" : "",
+		       inline_p ? ", inline" : "", (*modules)[owner],
+		       ctx_num);
 
       sec.u (to->name (DECL_NAME (ns)));
       sec.u (ctx_num);
-      /* Don't use a bool, because this can be near the end of the
+      /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
-      sec.u (DECL_NAMESPACE_INLINE_P (ns));
+      sec.u (flags);
+      if (owner != MODULE_NONE)
+	sec.u (owner);
+      else
+	write_location (sec, DECL_SOURCE_LOCATION (ns));
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
@@ -9188,19 +9206,35 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
     {
       const char *name = from ()->name (sec.u ());
       unsigned parent = sec.u ();
-      /* See comment in write_namespace about why not a bit.  */
-      bool inline_p = bool (sec.u ());
-
-      if (parent >= spaces.length ())
+      /* See comment in write_namespace about why not bits.  */
+      unsigned flags = sec.u ();
+      unsigned owner = mod;
+      location_t src_loc = loc;
+      if (flags & 8)
+	{
+	  owner = sec.u ();
+	  owner = slurp ()->remap_module (owner);
+	}
+      else
+	src_loc = read_location (sec);
+      if (owner == MODULE_NONE || parent >= spaces.length ())
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
 
       tree id = name ? get_identifier (name) : NULL_TREE;
-      dump () && dump ("Read namespace %P %u",
-		       spaces[parent], id, spaces.length ());
-      tree inner = add_imported_namespace (spaces[parent],
-					   mod, id, inline_p);
+      bool public_p = flags & 4;
+      bool inline_p = flags & 2;
+      bool export_p = flags & 1;
+      
+      dump () && dump ("Read namespace %P%s%s%s, owner=%M, %u",
+		       spaces[parent], id, export_p ? ", export" : "",
+		       public_p ? ", public" : "",
+		       inline_p ? ", inline" : "",
+		       (*modules)[owner], spaces.length ());
+      gcc_assert (public_p); // not ready for anon
+      tree inner = add_imported_namespace (spaces[parent], id, owner,
+					   src_loc, inline_p);
       spaces.safe_push (inner);
     }
   dump.outdent ();
@@ -10731,13 +10765,24 @@ module_state::add_writables (depset::hash &table, tree ns)
 
       if (tree name = extract_module_decls (bind, decls))
 	{
-	  dump () && dump ("Writable bindings at %P", ns, name);
-	  if (tree inner = table.add_binding (ns, name, decls))
+	  if (TREE_CODE (name) == NAMESPACE_DECL)
 	    {
-	      gcc_checking_assert (TREE_PUBLIC (inner));
-	      add_writables (table, inner);
+	      if (DECL_MODULE_EXPORT_P (name))
+		table.add_dependency (name, -1);
+	      add_writables (table, name);
+	      name = DECL_NAME (name);
 	    }
-	  decls.truncate (0);
+
+	  if (decls.length ())
+	    {
+	      dump () && dump ("Writable bindings at %P", ns, name);
+	      if (tree inner = table.add_binding (ns, name, decls))
+		{
+		  gcc_checking_assert (TREE_PUBLIC (inner));
+		  add_writables (table, inner);
+		}
+	      decls.truncate (0);
+	    }
 	}
     }
   dump.outdent ();
@@ -10753,24 +10798,31 @@ module_state::find_dependencies (depset::hash &table)
 
   while (depset *d = table.get_work ())
     {
-      walker.begin (&table);
-
       gcc_checking_assert (!d->is_binding ());
       tree decl = d->get_decl ();
       dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
 		       decl);
       dump.indent ();
-      walker.mark_node (decl);
-      if (d->is_defn ())
-	mark_definition (walker, decl);
-      /* Turn the Sneakoscope on when depending the decl.  */
-      table.sneakoscope = true;
-      walker.tree_node (decl);
-      table.sneakoscope = false;
-      if (d->is_defn ())
-	write_definition (walker, decl);
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && !DECL_NAMESPACE_ALIAS (decl)
+	  && DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
+	dump () && dump ("Namespace %N imported from %M",
+			 decl, (*modules)[DECL_MODULE_OWNER (decl)]);
+      else
+	{
+	  walker.begin (&table);
+	  walker.mark_node (decl);
+	  if (d->is_defn ())
+	    mark_definition (walker, decl);
+	  /* Turn the Sneakoscope on when depending the decl.  */
+	  table.sneakoscope = true;
+	  walker.tree_node (decl);
+	  table.sneakoscope = false;
+	  if (d->is_defn ())
+	    write_definition (walker, decl);
+	  walker.end ();
+	}
       dump.outdent ();
-      walker.end ();
     }
 }
 
@@ -12282,6 +12334,9 @@ init_module_processing ()
   if (pch_file)
     fatal_error (input_location,
 		 "C++ modules incompatible with precompiled headers");
+
+  /* :: is always exported.  */
+  DECL_MODULE_EXPORT_P (global_namespace) = true;
 
   modules_hash = hash_table<module_state_hash>::create_ggc (31);
 

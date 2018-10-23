@@ -343,9 +343,9 @@ extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				 tree value, tree type);
-extern int get_lookup_ident (tree ctx, unsigned mod, tree name, tree decl);
-extern tree lookup_by_ident (tree ctx, unsigned mod, tree name, int ident);
+extern int get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl);
+extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
 extern tree extract_module_decls (tree binding, auto_vec<tree> &);
-extern tree add_imported_namespace (tree ctx, unsigned mod,
-				    tree name, bool inline_p);
+extern tree add_imported_namespace (tree ctx, tree name, unsigned mod,
+				    location_t, bool inline_p);
 #endif /* GCC_CP_NAME_LOOKUP_H */
