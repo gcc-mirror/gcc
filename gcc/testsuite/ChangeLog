@@ -1,5 +1,24 @@
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87105
+	PR tree-optimization/87608
+	* g++.dg/tree-ssa/phiopt-1.C: New testcase.
+	g++.dg/vect/slp-pr87105.cc: Likewise.
+	* g++.dg/tree-ssa/pr21463.C: Scan phiopt2 because this testcase
+	relies on phiprop run before.
+	* g++.dg/tree-ssa/pr30738.C: Likewise.
+	* g++.dg/tree-ssa/pr57380.C: Likewise.
+	* gcc.dg/tree-ssa/pr84859.c: Likewise.
+	* gcc.dg/tree-ssa/pr45397.c: Scan phiopt2 because phiopt1 is
+	confused by copies in the IL left by EVRP.
+	* gcc.dg/tree-ssa/phi-opt-5.c: Likewise, this time confused
+	by predictors.
+	* gcc.dg/tree-ssa/phi-opt-12.c: Scan phiopt2.
+	* gcc.dg/pr24574.c: Likewise.
+	* g++.dg/tree-ssa/pr86544.C: Scan phiopt4.
+
+2018-10-23  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87700
 	* gcc.dg/torture/pr87700.c: New testcase.
 
