@@ -9534,7 +9534,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
       && (STMT_VINFO_RELEVANT_P (stmt_info)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
     /* Prefer vectorizable_call over vectorizable_simd_clone_call so
-       -mveclibabi= takes preference over ibrary functions with
+       -mveclibabi= takes preference over library functions with
        the simd attribute.  */
     ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
