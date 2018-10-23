@@ -1,6 +1,11 @@
 2018-10-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc: Add dumper::TREES to tree streamers.
+	gcc/testsuite/
+	* g++.dg/modules/: Add -uid to several lang dumps.
+
+	gcc/cp/
 	* module.cc (slurping::remap_module): New.
 	(depset::hash::add_binding): Don't deal with namespaces here.
 	(module_state::write_namespaces): No longer static.  Write

@@ -5616,8 +5616,9 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
 	  unsigned ix;
 	  for (ix = 0; (*binfo_vec)[ix] != binfo; ix++)
 	    ;
-	  dump () && dump ("Wrote derived %sBINFO %u %N of %N",
-			   is_virt ? "virtual " : "", ix, binfo, inh);
+	  dump (dumper::TREES)
+	    && dump ("Wrote derived %sBINFO %u %N of %N",
+		     is_virt ? "virtual " : "", ix, binfo, inh);
 	  u (ix);
 	}
     }
@@ -5628,7 +5629,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
 
       if (streaming_p ())
 	{
-	  dump () && dump ("Wrote dominating BINFO %N", dom);
+	  dump (dumper::TREES) && dump ("Wrote dominating BINFO %N", dom);
 	  i (via_virt ? -depth : depth);
 	}
     }
@@ -5639,7 +5640,7 @@ tree
 trees_in::tree_binfo ()
 {
   tree dom = tree_node ();
-  dump () && dump ("Read dominating binfo %N", dom);
+  dump (dumper::TREES) && dump ("Read dominating binfo %N", dom);
   int depth = i ();
   tree binfo = TYPE_BINFO (dom);
   if (depth)
@@ -5664,7 +5665,7 @@ trees_in::tree_binfo ()
 	    }
 	  else
 	    binfo = (*binfo_vec)[ix];
-	  dump () && dump ("Read derived BINFO %N", binfo);
+	  dump (dumper::TREES) && dump ("Read derived BINFO %N", binfo);
 	}
     }
   return binfo;
@@ -5828,7 +5829,7 @@ trees_out::tree_ref (tree t)
 	      kind = "fixed";
 	    }
 
-	  dump () && dump ("Wrote %s:%d %C:%N%S", kind,
+	  dump (dumper::TREES) && dump ("Wrote %s:%d %C:%N%S", kind,
 			   val, TREE_CODE (t), t, t);
 	}
       return 0;
@@ -6035,8 +6036,9 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
  insert:
   int tag = insert (decl);
   if (streaming_p ())
-    dump () && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
-		     owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
+    dump (dumper::TREES)
+      && dump ("Wrote %s:%d %C:%N@%M", kind, tag, TREE_CODE (decl), decl,
+	       owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
 
   if (tree type = TREE_TYPE (decl))
     {
@@ -6048,8 +6050,8 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 	{
 	  u (tag != 0);
 	  if (tag)
-	    dump () && dump ("Wrote decl's type:%d %C:%N%S", tag,
-			     TREE_CODE (type), type, type);
+	    dump (dumper::TREES) && dump ("Wrote decl's type:%d %C:%N%S", tag,
+					  TREE_CODE (type), type, type);
 	}
     }
 
@@ -6069,7 +6071,8 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
       if (streaming_p ())
 	{
 	  i (tt_as_base);
-	  dump () && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
+	  dump (dumper::TREES)
+	    && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
 	}
       tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true, owner);
       return false;
@@ -6087,13 +6090,14 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
       if (streaming_p ())
 	{
 	  i (tt_named_type);
-	  dump () && dump ("Writing interstitial named type %C:%N%S",
-			   TREE_CODE (name), name, name);
+	  dump (dumper::TREES)
+	    && dump ("Writing interstitial named type %C:%N%S",
+		     TREE_CODE (name), name, name);
 	}
       tree_ctx (name, looking_inside, owner);
       if (streaming_p ())
-	dump () && dump ("Wrote named type %C:%N%S",
-			 TREE_CODE (name), name, name);
+	dump (dumper::TREES) && dump ("Wrote named type %C:%N%S",
+				      TREE_CODE (name), name, name);
 
       /* The type itself could be a variant of TREE_TYPE (name), so
 	 stream it out in its own right.  We'll find the name in the
@@ -6125,12 +6129,13 @@ trees_out::tree_value (tree t, bool force)
 
   int tag = insert (t, force);
   if (streaming_p ())
-    dump () && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
-		     TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
-		     && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
+    dump (dumper::TREES)
+      && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
+	       TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
+	       && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
   tree_node_raw (t);
   if (streaming_p ())
-    dump () && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
+    dump (dumper::TREES) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
 
 /* Stream out tree node T.  We automatically create local back
@@ -6165,9 +6170,9 @@ trees_out::tree_node (tree t)
 
       int tag = insert (t);
       if (streaming_p ())
-	dump () && dump ("Written:%d %sidentifier:%N",
-			 tag, conv_op ? "conv_op_" : "",
-			 conv_op ? TREE_TYPE (t) : t);
+	dump (dumper::TREES) && dump ("Written:%d %sidentifier:%N",
+				      tag, conv_op ? "conv_op_" : "",
+				      conv_op ? TREE_TYPE (t) : t);
       goto done;
     }
 
@@ -6189,7 +6194,7 @@ trees_out::tree_node (tree t)
 	{
 	  u (tag != 0);
 	  if (tag)
-	    dump () && dump ("Inserting binfo:%d %N", tag, t);
+	    dump (dumper::TREES) && dump ("Inserting binfo:%d %N", tag, t);
 	}
       goto done;
     }
@@ -6206,7 +6211,8 @@ trees_out::tree_node (tree t)
       tree_node (type);
       int tag = insert (t);
       if (streaming_p ())
-	dump () && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
+	dump (dumper::TREES)
+	  && dump ("Wrote typeinfo:%d %S for %N", tag, t, type);
       goto done;
     }
 
@@ -6223,7 +6229,8 @@ trees_out::tree_node (tree t)
 	}
       unsigned tag = insert (t);
       if (streaming_p ())
-	dump () && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
+	dump (dumper::TREES)
+	  && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
       goto done;
     }
 
@@ -6242,7 +6249,8 @@ trees_out::tree_node (tree t)
 		  {
 		    u (tt_vtable);
 		    u (ix);
-		    dump () && dump ("Writing vtable %N[%u]", ctx, ix);
+		    dump (dumper::TREES)
+		      && dump ("Writing vtable %N[%u]", ctx, ix);
 		  }
 		tree_node (ctx);
 		goto done;
@@ -6288,8 +6296,8 @@ trees_in::tree_node ()
       if (!res)
 	set_overrun ();
       if (res)
-	dump () && dump ("Read backref:%d found %C:%N%S", tag,
-			 TREE_CODE (res), res, res);
+	dump (dumper::TREES) && dump ("Read backref:%d found %C:%N%S", tag,
+				      TREE_CODE (res), res, res);
       break;
 
     case tt_fixed:
@@ -6299,8 +6307,8 @@ trees_in::tree_node ()
 	if (fix < (*fixed_trees).length ())
 	  {
 	    res = (*fixed_trees)[fix];
-	    dump () && dump ("Read fixed:%u %C:%N%S", fix,
-			     TREE_CODE (res), res, res);
+	    dump (dumper::TREES) && dump ("Read fixed:%u %C:%N%S", fix,
+					  TREE_CODE (res), res, res);
 	  }
 
 	if (!res)
@@ -6311,8 +6319,9 @@ trees_in::tree_node ()
     case tt_named_type:
       /* An interstitial type name.  Read the name and then the type again.  */
       res = tree_node ();
-      dump () && dump ("Read named type %C:%N%S",
-		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
+      dump (dumper::TREES)
+	&& dump ("Read named type %C:%N%S",
+		 res ? TREE_CODE (res) : ERROR_MARK, res, res);
       if (!res || TREE_CODE (res) != TYPE_DECL)
 	set_overrun ();
       res = tree_node ();
@@ -6329,8 +6338,9 @@ trees_in::tree_node ()
 	  {
 	    res = is_tinfo ? get_tinfo_decl (type) : make_conv_op_name (type);
 	    int tag = insert (res);
-	    dump () && dump ("Created %s:%d %S for %N",
-			     is_tinfo ? "tinfo_var" : "conv_op", tag, res, type);
+	    dump (dumper::TREES)
+	      && dump ("Created %s:%d %S for %N",
+		       is_tinfo ? "tinfo_var" : "conv_op", tag, res, type);
 	  }
 	else
 	  set_overrun ();
@@ -6344,7 +6354,8 @@ trees_in::tree_node ()
 
 	res = TYPE_NAME (get_pseudo_tinfo_type (ix));
 	int tag = insert (res);
-	dump () && dump ("Created tinfo_typedef:%d %u %N", tag, ix, res);
+	dump (dumper::TREES)
+	  && dump ("Created tinfo_typedef:%d %u %N", tag, ix, res);
       }
       break;
 
@@ -6355,7 +6366,8 @@ trees_in::tree_node ()
 	const char *chars = str (&l);
 	res = get_identifier_with_length (chars, l);
 	int tag = insert (res);
-	dump () && dump ("Read identifier:%d%N", tag, res);
+	dump (dumper::TREES)
+	  && dump ("Read identifier:%d%N", tag, res);
       }
       break;
 
@@ -6427,15 +6439,17 @@ trees_in::tree_node ()
 	int tag = insert (res);
 	if (res)
 	  {
-	    dump () && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
-			     res, (*modules)[owner]);
+	    dump (dumper::TREES)
+	      && dump ("%s:%d %C:%N@%M", kind, tag, TREE_CODE (res),
+		       res, (*modules)[owner]);
 	    if (TREE_TYPE (res) && u ())
 	      {
 		/* Insert the type too.  */
 		tree type = TREE_TYPE (res);
 		tag = insert (type);
-		dump () && dump ("Read imported type:%d %C:%N%S", tag,
-				 TREE_CODE (type), type, type);
+		dump (dumper::TREES)
+		  && dump ("Read imported type:%d %C:%N%S", tag,
+			   TREE_CODE (type), type, type);
 	      }
 	  }
       }
@@ -6452,7 +6466,7 @@ trees_in::tree_node ()
 	if (!u ())
 	  {
 	    tag = insert (res);
-	    dump () && dump ("Read binfo:%d %N", tag, res);
+	    dump (dumper::TREES) && dump ("Read binfo:%d %N", tag, res);
 	  }
       }
       break;
@@ -6461,7 +6475,7 @@ trees_in::tree_node ()
       {
 	/* A fake as base type. */
 	res = tree_node ();
-	dump () && dump ("Read as-base for %N", res);
+	dump (dumper::TREES) && dump ("Read as-base for %N", res);
 	if (res)
 	  res = CLASSTYPE_AS_BASE  (TREE_TYPE (res));
       }
@@ -6471,7 +6485,7 @@ trees_in::tree_node ()
       {
 	unsigned ix = u ();
 	tree ctx = tree_node ();
-	dump () && dump ("Reading vtable %N[%u]", ctx, ix);
+	dump (dumper::TREES) && dump ("Reading vtable %N[%u]", ctx, ix);
 	if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
 	  for (res = CLASSTYPE_VTABLES (ctx); res; res = DECL_CHAIN (res))
 	    if (!ix--)
@@ -6502,7 +6516,7 @@ trees_in::tree_node ()
 
 	/* Insert into map.  */
 	tag = insert (res);
-	dump () && dump ("Reading:%d %C", tag, code);
+	dump (dumper::TREES) && dump ("Reading:%d %C", tag, code);
 
 	if (!tree_node_raw (res))
 	  goto barf;
@@ -6516,7 +6530,7 @@ trees_in::tree_node ()
 	    break;
 	  }
 
-	dump () && dump ("Read:%d %C:%N", tag, code, res);
+	dump (dumper::TREES) && dump ("Read:%d %C:%N", tag, code, res);
 	tree found = finish (res);
 
 	if (found != res)
@@ -6524,8 +6538,9 @@ trees_in::tree_node ()
 	    /* Update the mapping.  */
 	    res = found;
 	    back_refs[~tag] = res;
-	    dump () && dump ("Remapping:%d to %C:%N%S", tag,
-			     res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	    dump (dumper::TREES)
+	      && dump ("Remapping:%d to %C:%N%S", tag,
+		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	  }
 	break;
       }
@@ -6577,16 +6592,17 @@ trees_in::finish_type (tree type)
 		continue;
 	    }
 	  
-	  dump () && dump ("Type %p already found as %p variant of %p",
-			   (void *)type, (void *)probe, (void *)main);
+	  dump (dumper::TREES)
+	    && dump ("Type %p already found as %p variant of %p",
+		     (void *)type, (void *)probe, (void *)main);
 	  free_node (type);
 	  type = probe;
 	  goto found_variant;
 	}
 
       /* Splice it into the variant list.  */
-      dump () && dump ("Type %p added as variant of %p",
-		       (void *)type, (void *)main);
+      dump (dumper::TREES) && dump ("Type %p added as variant of %p",
+				    (void *)type, (void *)main);
       TYPE_NEXT_VARIANT (type) = TYPE_NEXT_VARIANT (main);
       TYPE_NEXT_VARIANT (main) = type;
 
@@ -6603,8 +6619,8 @@ trees_in::finish_type (tree type)
 	type = canon;
       else
 	TYPE_CANONICAL (type) = canon;
-      dump () && dump ("Adding template type %p with canonical %p",
-		       (void *)type, (void *)canon);
+      dump (dumper::TREES) && dump ("Adding template type %p with canonical %p",
+				    (void *)type, (void *)canon);
     }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
 	   && !TYPE_NAME (type))
@@ -6615,8 +6631,8 @@ trees_in::finish_type (tree type)
       type = type_hash_canon (hash, type);
       // FIXME: This is where it'd be nice to determine if type
       // was already found.  See above.
-      dump () && dump ("Adding type %p with canonical %p",
-		       (void *)main, (void *)type);
+      dump (dumper::TREES) && dump ("Adding type %p with canonical %p",
+				    (void *)main, (void *)type);
     }
 
   if (RECORD_OR_UNION_CODE_P (TREE_CODE (type))
@@ -6739,9 +6755,9 @@ depset::hash::add_dependency (tree decl, int kind)
 	dep->is_unnamed = true;
     }
 
-  dump () && dump ("%s on %s %N added",
-		   kind < 0 ? "Binding" : "Dependency",
-		   dep->is_defn () ? "definition" : "declaration", decl);
+  dump (dumper::DEPENDENCIES)
+    && dump ("%s on %s %N added", kind < 0 ? "Binding" : "Dependency",
+	     dep->is_defn () ? "definition" : "declaration", decl);
 
   if (kind >= 0)
     {
@@ -8332,8 +8348,8 @@ module_state::write_binfos (trees_out &out, tree type)
 	{
 	  out.u (BINFO_N_BASE_BINFOS (child));
 
-	  dump () && dump ("Wrote binfo:%d child %N of %N",
-			   tag, BINFO_TYPE (child), type);
+	  dump (dumper::TREES) && dump ("Wrote binfo:%d child %N of %N",
+					tag, BINFO_TYPE (child), type);
 	}
     }
 
@@ -8346,13 +8362,15 @@ module_state::write_binfos (trees_out &out, tree type)
 	  unsigned nvbases = vec_safe_length (CLASSTYPE_VBASECLASSES (type));
 	  out.u (nvbases);
 	  if (nvbases)
-	    dump () && dump ("Type %N has %u vbases", type, nvbases);
+	    dump (dumper::TREES)
+	      && dump ("Type %N has %u vbases", type, nvbases);
 	}
 
       /* Stream out contents in DFS order.  */
       for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
 	{
-	  dump () && dump ("Writing binfo:%N of %N contents", child, type);
+	  dump (dumper::TREES)
+	    && dump ("Writing binfo:%N of %N contents", child, type);
 
 	  out.core_bools (child);
 	  out.bflush ();
@@ -8391,7 +8409,8 @@ module_state::read_binfos (trees_in &in, tree type)
       BINFO_TYPE (child) = t;
 
       int tag = in.insert (child);
-      dump () && dump ("Read binfo:%d child %N of %N", tag, child, type);
+      dump (dumper::TREES)
+	&& dump ("Read binfo:%d child %N of %N", tag, child, type);
       *binfo_p = child;
       binfo_p = &TREE_CHAIN (child);
     }
@@ -8405,14 +8424,16 @@ module_state::read_binfos (trees_in &in, tree type)
 	{
 	  vec_alloc (vbase_vec, nvbases);
 	  CLASSTYPE_VBASECLASSES (type) = vbase_vec;
-	  dump () && dump ("Type %N has %u vbases", type, nvbases);
+	  dump (dumper::TREES)
+	    && dump ("Type %N has %u vbases", type, nvbases);
 	}
     }
 
   /* Stream in the contents in DFS order.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
-      dump () && dump ("Reading binfo:%N of %N contents", child, type);
+      dump (dumper::TREES)
+	&& dump ("Reading binfo:%N of %N contents", child, type);
 
       in.core_bools (child);
       in.bflush ();
