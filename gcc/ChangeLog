@@ -1,3 +1,15 @@
+2018-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87105
+	PR tree-optimization/87608
+	* passes.def (pass_all_early_optimizations): Add early phi-opt
+	after dce.
+	* tree-ssa-phiopt.c (value_replacement): Ignore NOPs and predicts in
+	addition to debug stmts.
+	(tree_ssa_phiopt_worker): Add early_p argument, do only min/max
+	and abs replacement early.
+	* tree-cfg.c (gimple_empty_block_p): Likewise.
+
 2018-10-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86383

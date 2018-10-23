@@ -6104,11 +6104,19 @@ gimple_empty_block_p (basic_block bb)
   gimple_stmt_iterator gsi = gsi_after_labels (bb);
   if (phi_nodes (bb))
     return false;
-  if (gsi_end_p (gsi))
-    return true;
-  if (is_gimple_debug (gsi_stmt (gsi)))
-    gsi_next_nondebug (&gsi);
-  return gsi_end_p (gsi);
+  while (!gsi_end_p (gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (is_gimple_debug (stmt))
+	;
+      else if (gimple_code (stmt) == GIMPLE_NOP
+	       || gimple_code (stmt) == GIMPLE_PREDICT)
+	;
+      else
+	return false;
+      gsi_next (&gsi);
+    }
+  return true;
 }
 
 
