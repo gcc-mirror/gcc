@@ -1,3 +1,8 @@
+2018-10-12  Jeff Law  <law@redhat.com>
+
+        * config/h8300/h8300.c (h8300_expand_prologue): Fix stm generation
+        for H8/S.
+
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (add_assert_info): Guard dump_printf with
