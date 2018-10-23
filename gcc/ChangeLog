@@ -1,3 +1,10 @@
+2018-10-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86383
+	* config.gcc (arm*-*-netbsdelf*): Default to StrongARM if no CPU
+	specified to configure.
+	(arm*-*-*): Use ARM7TDMI as the target CPU if no default provided.
+
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87700
