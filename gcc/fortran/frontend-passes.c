@@ -280,7 +280,7 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	   && (expr2->expr_type != EXPR_OP
 	       || expr2->value.op.op != INTRINSIC_CONCAT))
     return 0;
-  
+
   if (!gfc_check_dependency (expr1, expr2, true))
     return 0;
 
@@ -704,6 +704,41 @@ insert_block ()
   return ns;
 }
 
+
+/* Insert a call to the intrinsic len. Use a different name for
+   the symbol tree so we don't run into trouble when the user has
+   renamed len for some reason.  */
+
+static gfc_expr*
+get_len_call (gfc_expr *str)
+{
+  gfc_expr *fcn;
+  gfc_actual_arglist *actual_arglist;
+
+  fcn = gfc_get_expr ();
+  fcn->expr_type = EXPR_FUNCTION;
+  fcn->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_LEN);
+  actual_arglist = gfc_get_actual_arglist ();
+  actual_arglist->expr = str;
+
+  fcn->value.function.actual = actual_arglist;
+  fcn->where = str->where;
+  fcn->ts.type = BT_INTEGER;
+  fcn->ts.kind = gfc_charlen_int_kind;
+
+  gfc_get_sym_tree ("__internal_len", current_ns, &fcn->symtree, false);
+  fcn->symtree->n.sym->ts = fcn->ts;
+  fcn->symtree->n.sym->attr.flavor = FL_PROCEDURE;
+  fcn->symtree->n.sym->attr.function = 1;
+  fcn->symtree->n.sym->attr.elemental = 1;
+  fcn->symtree->n.sym->attr.referenced = 1;
+  fcn->symtree->n.sym->attr.access = ACCESS_PRIVATE;
+  gfc_commit_symbol (fcn->symtree->n.sym);
+
+  return fcn;
+}
+
+
 /* Returns a new expression (a variable) to be used in place of the old one,
    with an optional assignment statement before the current statement to set
    the value of the variable. Creates a new BLOCK for the statement if that
@@ -786,6 +821,10 @@ create_var (gfc_expr * e, const char *vname)
       length = constant_string_length (e);
       if (length)
 	symbol->ts.u.cl->length = length;
+      else if (e->expr_type == EXPR_VARIABLE
+	       && e->symtree->n.sym->ts.type == BT_CHARACTER
+	       && e->ts.u.cl->length)
+	symbol->ts.u.cl->length = get_len_call (gfc_copy_expr (e));
       else
 	{
 	  symbol->attr.allocatable = 1;
@@ -1226,7 +1265,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 	    {
 	      /* Check for (a(i,i), i=1,3).  */
 	      int j;
-	      
+
 	      for (j=0; j<i; j++)
 		if (iters[j] && iters[j]->var->symtree == start->symtree)
 		  return false;
@@ -1286,7 +1325,7 @@ traverse_io_block (gfc_code *code, bool *has_reached, gfc_code *prev)
 		      || var_in_expr (var, iters[j]->end)
 		      || var_in_expr (var, iters[j]->step)))
 		  return false;
-	    }		  
+	    }
 	}
     }
 
@@ -2019,6 +2058,7 @@ get_len_trim_call (gfc_expr *str, int kind)
   return fcn;
 }
 
+
 /* Optimize expressions for equality.  */
 
 static bool
@@ -2626,7 +2666,7 @@ do_subscript (gfc_expr **e)
 
 	      /* If we do not know about the stepsize, the loop may be zero trip.
 		 Do not warn in this case.  */
-	  
+
 	      if (dl->ext.iterator->step->expr_type == EXPR_CONSTANT)
 		mpz_init_set (do_step, dl->ext.iterator->step->value.integer);
 	      else
@@ -2640,7 +2680,7 @@ do_subscript (gfc_expr **e)
 	      else
 		have_do_start = false;
 
-	  
+
 	      if (dl->ext.iterator->end->expr_type == EXPR_CONSTANT)
 		{
 		  have_do_end = true;
@@ -2806,7 +2846,7 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   gfc_expr *e, *n;
   bool *found = (bool *) data;
-  
+
   e = *ep;
 
   if (e->expr_type != EXPR_FUNCTION
@@ -2819,19 +2859,19 @@ matmul_to_var_expr (gfc_expr **ep, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   /* Check if this is already in the form c = matmul(a,b).  */
-  
+
   if ((*current_code)->expr2 == e)
     return 0;
 
   n = create_var (e, "matmul");
-  
+
   /* If create_var is unable to create a variable (for example if
      -fno-realloc-lhs is in force with a variable that does not have bounds
      known at compile-time), just return.  */
 
   if (n == NULL)
     return 0;
-  
+
   *ep = n;
   *found = true;
   return 0;
@@ -2850,7 +2890,7 @@ matmul_to_var_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
       inserted_block = NULL;
       changed_statement = NULL;
     }
-  
+
   return 0;
 }
 
@@ -2870,7 +2910,7 @@ matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   bool a_tmp, b_tmp;
   gfc_expr *matrix_a, *matrix_b;
   bool conjg_a, conjg_b, transpose_a, transpose_b;
-  
+
   co = *c;
 
   if (co->op != EXEC_ASSIGN)
@@ -2920,7 +2960,7 @@ matmul_temp_args (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 
   if (!a_tmp && !b_tmp)
     return 0;
-  
+
   current_code = c;
   inserted_block = NULL;
   changed_statement = NULL;
@@ -3648,7 +3688,7 @@ scalarized_expr (gfc_expr *e_in, gfc_expr **index, int count_index)
 		      /* For assumed size, we need to keep around the final
 			 reference in order not to get an error on resolution
 			 below, and we cannot use AR_FULL.  */
-			 
+
 		      if (ar->as->type == AS_ASSUMED_SIZE)
 			{
 			  ar->type = AR_SECTION;
@@ -4604,7 +4644,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 	default:
 	  gcc_unreachable ();
 	}
-    }    
+    }
 
   /* Handle the reallocation, if needed.  */
 
@@ -4756,7 +4796,7 @@ typedef struct {
   int n[GFC_MAX_DIMENSIONS];
 } ind_type;
 
-/* Callback function to determine if an expression is the 
+/* Callback function to determine if an expression is the
    corresponding variable.  */
 
 static int
@@ -4842,7 +4882,7 @@ index_interchange (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   gfc_forall_iterator *fa;
   ind_type *ind;
   int i, j;
-  
+
   if (co->op != EXEC_FORALL && co->op != EXEC_DO_CONCURRENT)
     return 0;
 
@@ -5358,7 +5398,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 
 	  if (co->op == EXEC_SELECT)
 	    select_level --;
-  
+
 	  in_omp_workshare = saved_in_omp_workshare;
 	  in_where = saved_in_where;
 	}
