@@ -174,6 +174,8 @@ workshare_safe_to_combine_p (basic_block ws_entry_bb)
     return true;
 
   gcc_assert (gimple_code (ws_stmt) == GIMPLE_OMP_FOR);
+  if (gimple_omp_for_kind (ws_stmt) != GF_OMP_FOR_KIND_FOR)
+    return false;
 
   omp_extract_for_data (as_a <gomp_for *> (ws_stmt), &fd, NULL);
 
@@ -309,6 +311,13 @@ determine_parallel_type (struct omp_region *region)
   par_exit_bb = region->exit;
   ws_entry_bb = region->inner->entry;
   ws_exit_bb = region->inner->exit;
+
+  /* Give up for task reductions on the parallel, while it is implementable,
+     adding another big set of APIs or slowing down the normal paths is
+     not acceptable.  */
+  tree pclauses = gimple_omp_parallel_clauses (last_stmt (par_entry_bb));
+  if (omp_find_clause (pclauses, OMP_CLAUSE__REDUCTEMP_))
+    return;
 
   if (single_succ (par_entry_bb) == ws_entry_bb
       && single_succ (ws_exit_bb) == par_exit_bb
@@ -559,7 +568,10 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
   /* Determine what flavor of GOMP_parallel we will be
      emitting.  */
   start_ix = BUILT_IN_GOMP_PARALLEL;
-  if (is_combined_parallel (region))
+  tree rtmp = omp_find_clause (clauses, OMP_CLAUSE__REDUCTEMP_);
+  if (rtmp)
+    start_ix = BUILT_IN_GOMP_PARALLEL_REDUCTIONS;
+  else if (is_combined_parallel (region))
     {
       switch (region->inner->type)
 	{
@@ -716,6 +728,13 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
   t = build_call_expr_loc_vec (UNKNOWN_LOCATION,
 			       builtin_decl_explicit (start_ix), args);
 
+  if (rtmp)
+    {
+      tree type = TREE_TYPE (OMP_CLAUSE_DECL (rtmp));
+      t = build2 (MODIFY_EXPR, type, OMP_CLAUSE_DECL (rtmp),
+		  fold_convert (type,
+				fold_convert (pointer_sized_int_node, t)));
+    }
   force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
 			    false, GSI_CONTINUE_LINKING);
 

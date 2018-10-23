@@ -1,3 +1,32 @@
+2018-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_UINT_OMPFN_PTR_UINT_UINT): New.
+	* omp-builtins.def (BUILT_IN_GOMP_PARALLEL_REDUCTIONS): New builtin.
+	* omp-low.c (scan_sharing_clauses): Handle reduction clause with task
+	modifier on parallel like reduction on taskloop.
+	(scan_omp_parallel): Add _reductemp_ clause if there are any reduction
+	clauses with task modifier.
+	(finish_taskreg_scan): Move field corresponding to _reductemp_ clause
+	first.
+	(lower_rec_input_clauses): Don't set reduction_omp_orig_ref if handling
+	reduction as task reductions.  Handle reduction clauses with task
+	modifiers like task_reduction clauses.  For is_parallel_ctx perform
+	initialization unconditionally.
+	(lower_reduction_clauses): Ignore reduction clauses with task modifier
+	on parallel constructs.
+	(lower_send_clauses): Likewise.
+	(lower_omp_task_reductions): Handle code == OMP_PARALLEL.  Use ctx
+	rather than ctx->outer in lower_omp call.
+	(lower_omp_taskreg): Handle reduction clauses with task modifier on
+	parallel construct.
+	* omp-expand.c (workshare_safe_to_combine_p): Return false for
+	non-worksharing loops.
+	(determine_parallel_type): Don't combine if there are any
+	OMP_CLAUSE__REDUCTEMP_ clauses.
+	(expand_parallel_call): Use GOMP_parallel_reductions call instead
+	of GOMP_parallel if there are any reductions, store return value into
+	the _reductemp_ temporary.
+
 2018-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (enum omp_region_type): Add ORT_TASKLOOP and

@@ -123,7 +123,8 @@ void
 GOMP_parallel_start (void (*fn) (void *), void *data, unsigned num_threads)
 {
   num_threads = gomp_resolve_num_threads (num_threads, 0);
-  gomp_team_start (fn, data, num_threads, 0, gomp_new_team (num_threads));
+  gomp_team_start (fn, data, num_threads, 0, gomp_new_team (num_threads),
+		   NULL);
 }
 
 void
@@ -161,12 +162,31 @@ GOMP_parallel_end (void)
 ialias (GOMP_parallel_end)
 
 void
-GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads, unsigned int flags)
+GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads,
+	       unsigned int flags)
 {
   num_threads = gomp_resolve_num_threads (num_threads, 0);
-  gomp_team_start (fn, data, num_threads, flags, gomp_new_team (num_threads));
+  gomp_team_start (fn, data, num_threads, flags, gomp_new_team (num_threads),
+		   NULL);
   fn (data);
   ialias_call (GOMP_parallel_end) ();
+}
+
+unsigned
+GOMP_parallel_reductions (void (*fn) (void *), void *data,
+			  unsigned num_threads, unsigned int flags)
+{
+  struct gomp_taskgroup *taskgroup;
+  num_threads = gomp_resolve_num_threads (num_threads, 0);
+  uintptr_t *rdata = *(uintptr_t **)data;
+  taskgroup = gomp_parallel_reduction_register (rdata, num_threads);
+  gomp_team_start (fn, data, num_threads, flags, gomp_new_team (num_threads),
+		   taskgroup);
+  fn (data);
+  ialias_call (GOMP_parallel_end) ();
+  gomp_sem_destroy (&taskgroup->taskgroup_sem);
+  free (taskgroup);
+  return num_threads;
 }
 
 bool

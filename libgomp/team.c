@@ -302,7 +302,8 @@ gomp_free_thread (void *arg __attribute__((unused)))
 #ifdef LIBGOMP_USE_PTHREADS
 void
 gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
-		 unsigned flags, struct gomp_team *team)
+		 unsigned flags, struct gomp_team *team,
+		 struct gomp_taskgroup *taskgroup)
 {
   struct gomp_thread_start_data *start_data;
   struct gomp_thread *thr, *nthr;
@@ -364,6 +365,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       && thr->ts.level < gomp_bind_var_list_len)
     bind_var = gomp_bind_var_list[thr->ts.level];
   gomp_init_task (thr->task, task, icv);
+  thr->task->taskgroup = taskgroup;
   team->implicit_task[0].icv.nthreads_var = nthreads_var;
   team->implicit_task[0].icv.bind_var = bind_var;
 
@@ -638,6 +640,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 	  gomp_init_task (nthr->task, task, icv);
 	  team->implicit_task[i].icv.nthreads_var = nthreads_var;
 	  team->implicit_task[i].icv.bind_var = bind_var;
+	  nthr->task->taskgroup = taskgroup;
 	  nthr->fn = fn;
 	  nthr->data = data;
 	  team->ordered_release[i] = &nthr->release;
@@ -823,6 +826,7 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
       gomp_init_task (start_data->task, task, icv);
       team->implicit_task[i].icv.nthreads_var = nthreads_var;
       team->implicit_task[i].icv.bind_var = bind_var;
+      start_data->task->taskgroup = taskgroup;
       start_data->thread_pool = pool;
       start_data->nested = nested;
 

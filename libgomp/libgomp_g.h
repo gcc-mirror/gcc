@@ -236,6 +236,8 @@ extern void GOMP_doacross_ull_wait (unsigned long long, ...);
 extern void GOMP_parallel_start (void (*) (void *), void *, unsigned);
 extern void GOMP_parallel_end (void);
 extern void GOMP_parallel (void (*) (void *), void *, unsigned, unsigned);
+extern unsigned GOMP_parallel_reductions (void (*) (void *), void *, unsigned,
+					  unsigned);
 extern bool GOMP_cancel (int, bool);
 extern bool GOMP_cancellation_point (int);
 

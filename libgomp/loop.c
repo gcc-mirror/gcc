@@ -563,7 +563,7 @@ gomp_parallel_loop_start (void (*fn) (void *), void *data,
   num_threads = gomp_resolve_num_threads (num_threads, 0);
   team = gomp_new_team (num_threads);
   gomp_loop_init (&team->work_shares[0], start, end, incr, sched, chunk_size);
-  gomp_team_start (fn, data, num_threads, flags, team);
+  gomp_team_start (fn, data, num_threads, flags, team, NULL);
 }
 
 void

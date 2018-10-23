@@ -810,6 +810,8 @@ extern bool gomp_create_target_task (struct gomp_device_descr *,
 				     size_t *, unsigned short *, unsigned int,
 				     void **, void **,
 				     enum gomp_target_task_state);
+extern struct gomp_taskgroup *gomp_parallel_reduction_register (uintptr_t *,
+								unsigned);
 
 static void inline
 gomp_finish_task (struct gomp_task *task)
@@ -822,7 +824,8 @@ gomp_finish_task (struct gomp_task *task)
 
 extern struct gomp_team *gomp_new_team (unsigned);
 extern void gomp_team_start (void (*) (void *), void *, unsigned,
-			     unsigned, struct gomp_team *);
+			     unsigned, struct gomp_team *,
+			     struct gomp_taskgroup *);
 extern void gomp_team_end (void);
 extern void gomp_free_thread (void *);
 extern int gomp_pause_host (void);

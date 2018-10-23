@@ -1,3 +1,35 @@
+2018-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (gomp_parallel_reduction_register): Declare.
+	(gomp_team_start): Add taskgroup argument.
+	* libgomp_g.h (GOMP_parallel_reductions): New protype.
+	* libgomp.map (GOMP_5.0): Add GOMP_parallel_reductions.  Sort.
+	* loop.c (gomp_parallel_loop_start): Pass NULL as taskgroup to
+	gomp_team_start.
+	* parallel.c (GOMP_parallel_start): Likewise.
+	(GOMP_parallel): Likewise.  Formatting fix.
+	(GOMP_parallel_reductions): New function.
+	* sections.c (GOMP_parallel_sections_start, GOMP_parallel_sections):
+	Pass NULL as taskgroup to gomp_team_start.
+	* task.c (gomp_taskgroup_init): New static inline function.
+	(GOMP_taskgroup_start): Use it.
+	(gomp_reduction_register): New static inline function.
+	(GOMP_taskgroup_reduction_register): Use it.
+	(GOMP_taskgroup_reduction_unregister): Add ialias.
+	(gomp_parallel_reduction_register): New function.
+	* team.c (gomp_team_start): Add taskgroup argument, initialize implicit
+	tasks' taskgroup field to that.
+	* config/nvptx/team.c (gomp_team_start): Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-6.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-7.c: New test.
+	* testsuite/libgomp.c/task-reduction-2.c: New test.
+	* testsuite/libgomp.c++/task-reduction-8.C: New test.
+	* testsuite/libgomp.c++/task-reduction-9.C: New test.
+	* testsuite/libgomp.c++/task-reduction-10.C: New test.
+	* testsuite/libgomp.c++/task-reduction-11.C: New test.
+	* testsuite/libgomp.c++/task-reduction-12.C: New test.
+	* testsuite/libgomp.c++/task-reduction-13.C: New test.
+
 2018-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c-c++-common/taskloop-reduction-3.c (bar): Define

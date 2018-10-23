@@ -1763,22 +1763,11 @@ GOMP_taskyield (void)
   /* Nothing at the moment.  */
 }
 
-void
-GOMP_taskgroup_start (void)
+static inline struct gomp_taskgroup *
+gomp_taskgroup_init (struct gomp_taskgroup *prev)
 {
-  struct gomp_thread *thr = gomp_thread ();
-  struct gomp_team *team = thr->ts.team;
-  struct gomp_task *task = thr->task;
-  struct gomp_taskgroup *taskgroup, *prev;
-
-  /* If team is NULL, all tasks are executed as
-     GOMP_TASK_UNDEFERRED tasks and thus all children tasks of
-     taskgroup and their descendant tasks will be finished
-     by the time GOMP_taskgroup_end is called.  */
-  if (team == NULL)
-    return;
-  taskgroup = gomp_malloc (sizeof (struct gomp_taskgroup));
-  prev = task->taskgroup;
+  struct gomp_taskgroup *taskgroup
+    = gomp_malloc (sizeof (struct gomp_taskgroup));
   taskgroup->prev = prev;
   priority_queue_init (&taskgroup->taskgroup_queue);
   taskgroup->in_taskgroup_wait = false;
@@ -1786,7 +1775,23 @@ GOMP_taskgroup_start (void)
   taskgroup->cancelled = false;
   taskgroup->num_children = 0;
   gomp_sem_init (&taskgroup->taskgroup_sem, 0);
-  task->taskgroup = taskgroup;
+  return taskgroup;
+}
+
+void
+GOMP_taskgroup_start (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_task *task = thr->task;
+
+  /* If team is NULL, all tasks are executed as
+     GOMP_TASK_UNDEFERRED tasks and thus all children tasks of
+     taskgroup and their descendant tasks will be finished
+     by the time GOMP_taskgroup_end is called.  */
+  if (team == NULL)
+    return;
+  task->taskgroup = gomp_taskgroup_init (task->taskgroup);
 }
 
 void
@@ -1951,63 +1956,12 @@ GOMP_taskgroup_end (void)
   free (taskgroup);
 }
 
-/* The format of data is:
-   data[0]	cnt
-   data[1]	size
-   data[2]	alignment (on output array pointer)
-   data[3]	allocator (-1 if malloc allocator)
-   data[4]	next pointer
-   data[5]	used internally (htab pointer)
-   data[6]	used internally (end of array)
-   cnt times
-   ent[0]	address
-   ent[1]	offset
-   ent[2]	used internally (pointer to data[0]).  */
-
-void
-GOMP_taskgroup_reduction_register (uintptr_t *data)
+static inline void
+gomp_reduction_register (uintptr_t *data, uintptr_t *old, unsigned nthreads)
 {
-  struct gomp_thread *thr = gomp_thread ();
-  struct gomp_team *team = thr->ts.team;
-  struct gomp_task *task;
-  if (__builtin_expect (team == NULL, 0))
-    {
-      /* The task reduction code needs a team and task, so for
-	 orphaned taskgroups just create the implicit team.  */
-      struct gomp_task_icv *icv;
-      team = gomp_new_team (1);
-      task = thr->task;
-      icv = task ? &task->icv : &gomp_global_icv;
-      team->prev_ts = thr->ts;
-      thr->ts.team = team;
-      thr->ts.team_id = 0;
-      thr->ts.work_share = &team->work_shares[0];
-      thr->ts.last_work_share = NULL;
-#ifdef HAVE_SYNC_BUILTINS
-      thr->ts.single_count = 0;
-#endif
-      thr->ts.static_trip = 0;
-      thr->task = &team->implicit_task[0];
-      gomp_init_task (thr->task, NULL, icv);
-      if (task)
-	{
-	  thr->task = task;
-	  gomp_end_task ();
-	  free (task);
-	  thr->task = &team->implicit_task[0];
-	}
-#ifdef LIBGOMP_USE_PTHREADS
-      else
-	pthread_setspecific (gomp_thread_destructor, thr);
-#endif
-      GOMP_taskgroup_start ();
-    }
-  unsigned nthreads = team->nthreads;
   size_t total_cnt = 0;
-  uintptr_t *d = data, *old;
+  uintptr_t *d = data;
   struct htab *old_htab = NULL, *new_htab;
-  task = thr->task;
-  old = task->taskgroup->reductions;
   do
     {
       size_t sz = d[1] * nthreads;
@@ -2072,6 +2026,62 @@ GOMP_taskgroup_reduction_register (uintptr_t *data)
     }
   while (1);
   d[5] = (uintptr_t) new_htab;
+}
+
+/* The format of data is:
+   data[0]	cnt
+   data[1]	size
+   data[2]	alignment (on output array pointer)
+   data[3]	allocator (-1 if malloc allocator)
+   data[4]	next pointer
+   data[5]	used internally (htab pointer)
+   data[6]	used internally (end of array)
+   cnt times
+   ent[0]	address
+   ent[1]	offset
+   ent[2]	used internally (pointer to data[0]).  */
+
+void
+GOMP_taskgroup_reduction_register (uintptr_t *data)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_task *task;
+  if (__builtin_expect (team == NULL, 0))
+    {
+      /* The task reduction code needs a team and task, so for
+	 orphaned taskgroups just create the implicit team.  */
+      struct gomp_task_icv *icv;
+      team = gomp_new_team (1);
+      task = thr->task;
+      icv = task ? &task->icv : &gomp_global_icv;
+      team->prev_ts = thr->ts;
+      thr->ts.team = team;
+      thr->ts.team_id = 0;
+      thr->ts.work_share = &team->work_shares[0];
+      thr->ts.last_work_share = NULL;
+#ifdef HAVE_SYNC_BUILTINS
+      thr->ts.single_count = 0;
+#endif
+      thr->ts.static_trip = 0;
+      thr->task = &team->implicit_task[0];
+      gomp_init_task (thr->task, NULL, icv);
+      if (task)
+	{
+	  thr->task = task;
+	  gomp_end_task ();
+	  free (task);
+	  thr->task = &team->implicit_task[0];
+	}
+#ifdef LIBGOMP_USE_PTHREADS
+      else
+	pthread_setspecific (gomp_thread_destructor, thr);
+#endif
+      GOMP_taskgroup_start ();
+    }
+  unsigned nthreads = team->nthreads;
+  task = thr->task;
+  gomp_reduction_register (data, task->taskgroup->reductions, nthreads);
   task->taskgroup->reductions = data;
 }
 
@@ -2087,6 +2097,7 @@ GOMP_taskgroup_reduction_unregister (uintptr_t *data)
     }
   while (d && !d[5]);
 }
+ialias (GOMP_taskgroup_reduction_unregister)
 
 /* For i = 0 to cnt-1, remap ptrs[i] which is either address of the
    original list item or address of previously remapped original list
@@ -2158,6 +2169,15 @@ GOMP_task_reduction_remap (size_t cnt, size_t cntorig, void **ptrs)
 			"with task modifier for %p", ptrs[i]);
 	}
     }
+}
+
+struct gomp_taskgroup *
+gomp_parallel_reduction_register (uintptr_t *data, unsigned nthreads)
+{
+  struct gomp_taskgroup *taskgroup = gomp_taskgroup_init (NULL);
+  gomp_reduction_register (data, NULL, nthreads);
+  taskgroup->reductions = data;
+  return taskgroup;
 }
 
 int
