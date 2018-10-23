@@ -981,7 +981,8 @@ thread_around_empty_blocks (edge taken_edge,
       else
 	taken_edge = find_taken_edge (bb, cond);
 
-      if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
+      if (!taken_edge
+	  || (taken_edge->flags & EDGE_DFS_BACK) != 0)
 	return false;
 
       if (bitmap_bit_p (visited, taken_edge->dest->index))
