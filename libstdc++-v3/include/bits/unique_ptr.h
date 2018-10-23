@@ -190,7 +190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		typename = _DeleterConstraint<_Up>>
 	constexpr unique_ptr() noexcept
 	: _M_t()
-        { }
+	{ }
 
       /** Takes ownership of a pointer.
        *
@@ -233,7 +233,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Creates a unique_ptr that owns nothing.
       template <typename _Up = _Dp,
 		typename = _DeleterConstraint<_Up>>
-	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+	constexpr unique_ptr(nullptr_t) noexcept : _M_t() { }
 
       // Move constructors.
 
@@ -458,7 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		typename = _DeleterConstraint<_Up>>
 	constexpr unique_ptr() noexcept
 	: _M_t()
-        { }
+	{ }
 
       /** Takes ownership of a pointer.
        *
@@ -517,7 +517,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       /// Creates a unique_ptr that owns nothing.
       template <typename _Up = _Dp,
 		typename = _DeleterConstraint<_Up>>
-	constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+	constexpr unique_ptr(nullptr_t) noexcept : _M_t() { }
 
       template<typename _Up, typename _Ep,
 	       typename = _Require<__safe_conversion_up<_Up, _Ep>>>
