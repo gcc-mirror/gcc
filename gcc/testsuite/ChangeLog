@@ -1,3 +1,8 @@
+2018-10-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/lambda-this3.C: Limit dg-bogus directives to c++17_down
+	only.  Add expected warnings and messages for c++2a.
+
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87105
