@@ -30,6 +30,11 @@ class Import
     Stream();
     virtual ~Stream();
 
+    // Set the position, for error messages.
+    void
+    set_pos(int pos)
+    { this->pos_ = pos; }
+
     // Return whether we have seen an error.
     bool
     saw_error() const
@@ -249,6 +254,10 @@ class Import
   void
   read_import_init_fns(Gogo*);
 
+  // Read the types.
+  bool
+  read_types();
+
   // Import a constant.
   void
   import_const();
@@ -264,6 +273,14 @@ class Import
   // Import a function.
   Named_object*
   import_func(Package*);
+
+  // Parse a type definition.
+  bool
+  parse_type(int index);
+
+  // Read a named type and store it at this->type_[index].
+  Type*
+  read_named_type(int index);
 
   // Register a single builtin type.
   void
@@ -299,6 +316,12 @@ class Import
   // Whether to add new objects to the global scope, rather than to a
   // package scope.
   bool add_to_globals_;
+  // All type data.
+  std::string type_data_;
+  // Position of type data in the stream.
+  int type_pos_;
+  // Mapping from type code to offset/length in type_data_.
+  std::vector<std::pair<size_t, size_t> > type_offsets_;
   // Mapping from negated builtin type codes to Type structures.
   std::vector<Named_type*> builtin_types_;
   // Mapping from exported type codes to Type structures.
@@ -397,6 +420,43 @@ class Stream_from_file : public Import::Stream
   int fd_;
   // Data read from the file.
   std::string data_;
+};
+
+// Read import data from an offset into a std::string.  This uses a
+// reference to the string, to avoid copying, so the string must be
+// kept alive through some other mechanism.
+
+class Stream_from_string_ref : public Import::Stream
+{
+ public:
+  Stream_from_string_ref(const std::string& str, size_t offset, size_t length)
+    : str_(str), pos_(offset), end_(offset + length)
+  { }
+
+  ~Stream_from_string_ref()
+  {}
+
+ protected:
+  bool
+  do_peek(size_t length, const char** bytes)
+  {
+    if (this->pos_ + length > this->end_)
+      return false;
+    *bytes = &this->str_[this->pos_];
+    return true;
+  }
+
+  void
+  do_advance(size_t length)
+  { this->pos_ += length; }
+
+ private:
+  // A reference to the string we are reading from.
+  const std::string& str_;
+  // The current offset into the string.
+  size_t pos_;
+  // The index after the last byte we can read.
+  size_t end_;
 };
 
 #endif // !defined(GO_IMPORT_H)

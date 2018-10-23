@@ -11,6 +11,7 @@
 
 class Go_sha1_helper;
 class Gogo;
+class Named_object;
 class Import_init;
 class Named_object;
 class Bindings;
@@ -154,6 +155,10 @@ class Export : public String_dump
 		 const Import_init_set& imported_init_fns,
 		 const Bindings* bindings);
 
+  // Set the index of a type.
+  bool
+  set_type_index(Type*);
+
   // Write a string to the export stream.
   void
   write_string(const std::string& s)
@@ -196,7 +201,7 @@ class Export : public String_dump
   Export& operator=(const Export&);
 
   // Prepare types for exporting.
-  void
+  int
   prepare_types(const std::vector<Named_object*>* exports,
 		Unordered_set(const Package*)* imports);
 
@@ -224,24 +229,27 @@ class Export : public String_dump
   write_imported_init_fns(const std::string& package_name,
 			  const std::string&, const Import_init_set&);
 
+  // Write out all types.
+  void
+  write_types(int unexported_type_index);
+
+  // Write out one type definition.
+  void
+  write_type_definition(const Type* type, int index);
+
   // Register one builtin type.
   void
   register_builtin_type(Gogo*, const char* name, Builtin_code);
 
-  // Mapping from Type objects to a constant index.
-  typedef Unordered_map(const Type*, int) Type_refs;
-
   // The stream to which we are writing data.
   Stream* stream_;
-  // Type mappings.
-  Type_refs type_refs_;
   // Index number of next type.
   int type_index_;
   // Packages we have written out.
   Unordered_set(const Package*) packages_;
 };
 
-// An export streamer which puts the export stream in a named section.
+// An export streamer that puts the export stream in a named section.
 
 class Stream_to_section : public Export::Stream
 {
@@ -254,6 +262,28 @@ class Stream_to_section : public Export::Stream
 
  private:
   Backend* backend_;
+};
+
+// An export streamer that puts the export stream in a string.
+
+class Stream_to_string : public Export::Stream
+{
+ public:
+  Stream_to_string()
+    : string_()
+  {}
+
+  const std::string&
+  string() const
+  { return this->string_; }
+
+ protected:
+  void
+  do_write(const char* s, size_t len)
+  { this->string_.append(s, len); }
+
+ private:
+  std::string string_;
 };
 
 #endif // !defined(GO_EXPORT_H)

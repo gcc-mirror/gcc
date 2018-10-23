@@ -12,9 +12,7 @@
 class Traverse;
 class Statement_inserter;
 class Type;
-class Type_hash_identical;
 class Type_equal;
-class Type_identical;
 class Typed_identifier;
 class Typed_identifier_list;
 class Function_type;

@@ -7511,8 +7511,8 @@ Named_object::export_named_object(Export* exp) const
       break;
 
     case NAMED_OBJECT_TYPE:
-      this->type_value()->export_named_type(exp, this->name_);
-      break;
+      // Types are handled by export::write_types.
+      go_unreachable();
 
     case NAMED_OBJECT_TYPE_DECLARATION:
       go_error_at(this->type_declaration_value()->location(),
