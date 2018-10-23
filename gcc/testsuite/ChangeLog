@@ -1,3 +1,8 @@
+2018-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87700
+	* gcc.dg/torture/pr87700.c: New testcase.
+
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/sso14.adb: New test.
