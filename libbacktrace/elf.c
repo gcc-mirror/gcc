@@ -2868,7 +2868,7 @@ elf_add (struct backtrace_state *state, const char *filename, int descriptor,
 	  if (note->type == NT_GNU_BUILD_ID
 	      && note->namesz == 4
 	      && strncmp (note->name, "GNU", 4) == 0
-	      && shdr->sh_size < 12 + ((note->namesz + 3) & ~ 3) + note->descsz)
+	      && shdr->sh_size <= 12 + ((note->namesz + 3) & ~ 3) + note->descsz)
 	    {
 	      buildid_data = &note->name[0] + ((note->namesz + 3) & ~ 3);
 	      buildid_size = note->descsz;

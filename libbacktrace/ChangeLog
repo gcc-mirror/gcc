@@ -1,3 +1,12 @@
+2018-10-23  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-06-21  Denis Khalikov <d.khalikov@partner.samsung.com>
+
+	PR other/86198
+	* elf.c (elf_add): Increase ".note.gnu.build-id" section size
+	checking up to 36 bytes.
+
 2018-07-26  Release Manager
 
 	* GCC 8.2.0 released.
