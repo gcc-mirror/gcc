@@ -1,3 +1,8 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	* gcc.dg/torture/pr87665.c: New testcase.
+
 2018-10-23  Tom de Vries  <tdevries@suse.de>
 
 	backport from trunk:

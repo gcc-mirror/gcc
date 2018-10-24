@@ -206,14 +206,26 @@ vect_preserves_scalar_order_p (gimple *stmt_a, gimple *stmt_b)
     return true;
 
   /* STMT_A and STMT_B belong to overlapping groups.  All loads in a
-     group are emitted at the position of the first scalar load and all
+     group are emitted at the position of the last scalar load and all
      stores in a group are emitted at the position of the last scalar store.
-     Thus writes will happen no earlier than their current position
-     (but could happen later) while reads will happen no later than their
-     current position (but could happen earlier).  Reordering is therefore
-     only possible if the first access is a write.  */
-  gimple *earlier_stmt = get_earlier_stmt (stmt_a, stmt_b);
-  return !DR_IS_WRITE (STMT_VINFO_DATA_REF (vinfo_for_stmt (earlier_stmt)));
+     Compute that position and check whether the resulting order matches
+     the current one.  */
+  gimple *last_a = GROUP_FIRST_ELEMENT (stmtinfo_a);
+  if (last_a)
+    for (gimple *s = GROUP_NEXT_ELEMENT (vinfo_for_stmt (last_a)); s;
+	 s = GROUP_NEXT_ELEMENT (vinfo_for_stmt (s)))
+      last_a = get_later_stmt (last_a, s);
+  else
+    last_a = stmt_a;
+  gimple *last_b = GROUP_FIRST_ELEMENT (stmtinfo_b);
+  if (last_b)
+    for (gimple *s = GROUP_NEXT_ELEMENT (vinfo_for_stmt (last_b)); s;
+	 s = GROUP_NEXT_ELEMENT (vinfo_for_stmt (s)))
+      last_b = get_later_stmt (last_b, s);
+  else
+    last_b = stmt_b;
+  return ((get_later_stmt (last_a, last_b) == last_a)
+	  == (get_later_stmt (stmt_a, stmt_b) == stmt_a));
 }
 
 /* A subroutine of vect_analyze_data_ref_dependence.  Handle
