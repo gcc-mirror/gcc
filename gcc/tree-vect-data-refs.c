@@ -210,16 +210,26 @@ vect_preserves_scalar_order_p (dr_vec_info *dr_info_a, dr_vec_info *dr_info_b)
     return true;
 
   /* STMT_A and STMT_B belong to overlapping groups.  All loads in a
-     group are emitted at the position of the first scalar load and all
+     group are emitted at the position of the last scalar load and all
      stores in a group are emitted at the position of the last scalar store.
-     Thus writes will happen no earlier than their current position
-     (but could happen later) while reads will happen no later than their
-     current position (but could happen earlier).  Reordering is therefore
-     only possible if the first access is a write.  */
-  stmtinfo_a = vect_orig_stmt (stmtinfo_a);
-  stmtinfo_b = vect_orig_stmt (stmtinfo_b);
-  stmt_vec_info earlier_stmt_info = get_earlier_stmt (stmtinfo_a, stmtinfo_b);
-  return !DR_IS_WRITE (STMT_VINFO_DATA_REF (earlier_stmt_info));
+     Compute that position and check whether the resulting order matches
+     the current one.  */
+  stmt_vec_info last_a = DR_GROUP_FIRST_ELEMENT (stmtinfo_a);
+  if (last_a)
+    for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_a); s;
+	 s = DR_GROUP_NEXT_ELEMENT (s))
+      last_a = get_later_stmt (last_a, s);
+  else
+    last_a = stmtinfo_a;
+  stmt_vec_info last_b = DR_GROUP_FIRST_ELEMENT (stmtinfo_b);
+  if (last_b)
+    for (stmt_vec_info s = DR_GROUP_NEXT_ELEMENT (last_b); s;
+	 s = DR_GROUP_NEXT_ELEMENT (s))
+      last_b = get_later_stmt (last_b, s);
+  else
+    last_b = stmtinfo_b;
+  return ((get_later_stmt (last_a, last_b) == last_a)
+	  == (get_later_stmt (stmtinfo_a, stmtinfo_b) == stmtinfo_a));
 }
 
 /* A subroutine of vect_analyze_data_ref_dependence.  Handle

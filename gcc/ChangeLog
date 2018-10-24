@@ -1,3 +1,9 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Adjust
+	to reflect reality.
+
 2018-10-12  Jeff Law  <law@redhat.com>
 
         * config/h8300/h8300.c (h8300_expand_prologue): Fix stm generation
