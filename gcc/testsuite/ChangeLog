@@ -1,3 +1,10 @@
+2018-10-24  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/float128-math.c: New test to make sure the
+	long double built-in function names use the f128 form if the user
+	switched from IBM long double to IEEE long double.
+	* gcc.target/powerpc/ppc-fortran/ieee128-math.f90: Likewise.
+
 2018-10-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/86288

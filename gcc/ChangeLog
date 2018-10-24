@@ -1,3 +1,11 @@
+2018-10-24  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.c (TARGET_MANGLE_DECL_ASSEMBLER_NAME):
+	Define as rs6000_mangle_decl_assembler_name.
+	(rs6000_mangle_decl_assembler_name): If the user switched from IBM
+	long double to IEEE long double, switch the names of the long
+	double built-in functions to be <func>f128 instead of <func>l.
+
 2018-10-24  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (nonnull): List no-argument form.  Reference
