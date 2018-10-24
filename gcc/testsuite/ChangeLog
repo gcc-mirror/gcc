@@ -1,3 +1,7 @@
+2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/20181024-1.c: New test.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87105

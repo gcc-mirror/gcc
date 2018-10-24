@@ -3162,7 +3162,9 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
   if (s390_loadrelative_operand_p (op, &symref, NULL)
-      && (!lit_pool_ok || !CONSTANT_POOL_ADDRESS_P (symref)))
+      && (!lit_pool_ok
+          || !SYMBOL_REF_P (symref)
+          || !CONSTANT_POOL_ADDRESS_P (symref)))
     return 0;
 
   /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
