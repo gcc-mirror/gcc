@@ -1,3 +1,8 @@
+2018-10-11  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-utils.h (type_with_linkage_p): No longer check for TYPE_STUB_DECL;
+	it is wrong for forward declarations.
+
 2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* config/s390/s390.c (s390_check_qrst_address): Add the missing
