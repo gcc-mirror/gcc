@@ -14958,6 +14958,8 @@ make_more_copies (void)
 	    continue;
 	  rtx src = SET_SRC (set);
 	  rtx dest = SET_DEST (set);
+	  if (dest == pc_rtx)
+	    continue;
 	  if (GET_CODE (src) == SUBREG)
 	    src = SUBREG_REG (src);
 	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
