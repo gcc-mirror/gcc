@@ -1,3 +1,8 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	* varasm.c (const_hash_1): Return hash of ADDR_EXPR
+	if its argument is CONSTANT_CLASS_P.
+
 2018-10-11  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-utils.h (type_with_linkage_p): No longer check for TYPE_STUB_DECL;

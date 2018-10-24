@@ -3051,6 +3051,10 @@ const_hash_1 (const tree exp)
       }
 
     case ADDR_EXPR:
+      if (CONSTANT_CLASS_P (TREE_OPERAND (exp, 0)))
+       return const_hash_1 (TREE_OPERAND (exp, 0));
+
+      /* Fallthru.  */
     case FDESC_EXPR:
       {
 	struct addr_const value;
