@@ -1,3 +1,8 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	* gcc.dg/torture/pr87665.c: New testcase.
+
 2018-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/cpp2a/lambda-this3.C: Limit dg-bogus directives to c++17_down
