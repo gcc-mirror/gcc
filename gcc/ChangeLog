@@ -1,3 +1,12 @@
+2018-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_aligned_shf_merge): New test.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* varasm.c (mergeable_string_section): Use readonly_data_section
+	if linker doesn't support SHF_MERGE with alignment > 8.
+	(mergeable_constant_section): Likewise.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/84013
