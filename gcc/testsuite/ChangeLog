@@ -1,5 +1,10 @@
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/84013
+	* gcc.dg/tree-ssa/restrict-9.c: New testcase.
+
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87665
 	* gcc.dg/torture/pr87665.c: New testcase.
 

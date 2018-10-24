@@ -7466,33 +7466,40 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
   return false;
 }
 
-/* If REF is a MEM_REF then assign a clique, base pair to it, updating
-   CLIQUE, *RESTRICT_VAR and LAST_RUID.  Return whether dependence info
-   was assigned to REF.  */
+struct msdi_data {
+  tree ptr;
+  unsigned short *clique;
+  unsigned short *last_ruid;
+  varinfo_t restrict_var;
+};
+
+/* If BASE is a MEM_REF then assign a clique, base pair to it, updating
+   CLIQUE, *RESTRICT_VAR and LAST_RUID as passed via DATA.
+   Return whether dependence info was assigned to BASE.  */
 
 static bool
-maybe_set_dependence_info (tree ref, tree ptr,
-			   unsigned short &clique, varinfo_t restrict_var,
-			   unsigned short &last_ruid)
+maybe_set_dependence_info (gimple *, tree base, tree, void *data)
 {
-  while (handled_component_p (ref))
-    ref = TREE_OPERAND (ref, 0);
-  if ((TREE_CODE (ref) == MEM_REF
-       || TREE_CODE (ref) == TARGET_MEM_REF)
-      && TREE_OPERAND (ref, 0) == ptr)
+  tree ptr = ((msdi_data *)data)->ptr;
+  unsigned short &clique = *((msdi_data *)data)->clique;
+  unsigned short &last_ruid = *((msdi_data *)data)->last_ruid;
+  varinfo_t restrict_var = ((msdi_data *)data)->restrict_var;
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && TREE_OPERAND (base, 0) == ptr)
     {
       /* Do not overwrite existing cliques.  This avoids overwriting dependence
 	 info inlined from a function with restrict parameters inlined
 	 into a function with restrict parameters.  This usually means we
 	 prefer to be precise in innermost loops.  */
-      if (MR_DEPENDENCE_CLIQUE (ref) == 0)
+      if (MR_DEPENDENCE_CLIQUE (base) == 0)
 	{
 	  if (clique == 0)
 	    clique = ++cfun->last_clique;
 	  if (restrict_var->ruid == 0)
 	    restrict_var->ruid = ++last_ruid;
-	  MR_DEPENDENCE_CLIQUE (ref) = clique;
-	  MR_DEPENDENCE_BASE (ref) = restrict_var->ruid;
+	  MR_DEPENDENCE_CLIQUE (base) = clique;
+	  MR_DEPENDENCE_BASE (base) = restrict_var->ruid;
 	  return true;
 	}
     }
@@ -7565,18 +7572,11 @@ compute_dependence_clique (void)
 	  imm_use_iterator ui;
 	  gimple *use_stmt;
 	  bool used = false;
+	  msdi_data data = { ptr, &clique, &last_ruid, restrict_var };
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
-	    {
-	      /* ???  Calls and asms.  */
-	      if (!gimple_assign_single_p (use_stmt))
-		continue;
-	      used |= maybe_set_dependence_info (gimple_assign_lhs (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	      used |= maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	    }
+	    used |= walk_stmt_load_store_ops (use_stmt, &data,
+					      maybe_set_dependence_info,
+					      maybe_set_dependence_info);
 	  if (used)
 	    {
 	      bitmap_set_bit (rvars, restrict_var->id);
