@@ -1314,7 +1314,6 @@ OBJS = \
 	gimple-loop-jam.o \
 	gimple-low.o \
 	gimple-pretty-print.o \
-	gimple-range.o \
 	gimple-ssa-backprop.o \
 	gimple-ssa-evrp.o \
 	gimple-ssa-evrp-analyze.o \
@@ -1483,7 +1482,6 @@ OBJS = \
 	spellcheck-tree.o \
 	sreal.o \
 	ssa-range.o \
-	ssa-range-bb.o \
 	ssa-range-vrp.o \
 	stack-ptr-mod.o \
 	statistics.o \

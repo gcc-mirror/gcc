@@ -47,23 +47,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "tree-ssa-dce.h"
 
+// Return TRUE if NAME can be propagated.,
+
 static bool
 argument_ok_to_propagate (tree name)
 {
   if (TREE_CODE (name) != SSA_NAME)
     return true;
+
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name))
     {
       // From may_propagate_copy
-      if (SSA_NAME_IS_DEFAULT_DEF (name) && (SSA_NAME_VAR (name) == NULL_TREE
-          || TREE_CODE (SSA_NAME_VAR (name)) == VAR_DECL))
-      return true;
+      if (SSA_NAME_IS_DEFAULT_DEF (name) &&
+	  (SSA_NAME_VAR (name) == NULL_TREE ||
+	   TREE_CODE (SSA_NAME_VAR (name)) == VAR_DECL))
+	return true;
+      else
+        return false;
     }
-  // probably dont need this.
+
   if (virtual_operand_p (name))
     return false;
   return true;
 }
+
+
+// This routine uses a ranger to query the arguments of branches at the bottom
+// of every block and try to fold them if appropriate.
+// A walk of the block is not performed, so no values within the block are
+// folded, just the branches.
 
 static unsigned int
 execute_ranger_vrp ()
@@ -86,6 +98,7 @@ execute_ranger_vrp ()
     {
       gcond *cond;
       gimple *stmt = last_stmt (bb);
+      // Look only at conditionals.
       if (stmt && (cond = dyn_cast <gcond *> (stmt)))
         {
 	  if (dump_file)
@@ -93,6 +106,7 @@ execute_ranger_vrp ()
 	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 	    }
+	  // CHeck to see if the expression folds.
 	  if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
 	    {
 	      if (dump_file)
@@ -100,7 +114,7 @@ execute_ranger_vrp ()
 		  fprintf (dump_file, "      Expression evaluates to range: ");
 		  r.dump (dump_file);
 		}
-
+              // If it folds to a constant and its OK to propagate the args.
 	      if (r.singleton_p ())
 	        {
 		  if (!argument_ok_to_propagate (gimple_cond_lhs (cond)) ||
@@ -111,8 +125,8 @@ execute_ranger_vrp ()
 		      continue;
 		    }
 
-		  /* If either operand is an ssa_name, set the touched bit for
-		     potential removal later if no uses are left.  */
+		  // If either operand is an ssa_name, set the touched bit for
+		  // potential removal later if no uses are left.
 		  tree t = ranger.valid_ssa_p (gimple_cond_lhs (cond));
 		  if (t)
 		    bitmap_set_bit (touched, SSA_NAME_VERSION (t));
