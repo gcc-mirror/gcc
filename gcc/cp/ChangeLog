@@ -1,3 +1,10 @@
+2018-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86288
+	* parser.c (cp_parser_std_attribute): Canonicalize attr_ns, and when
+	:: is not present and attr_ns non-NULL, canonicalize also attr_id.
+	(cp_parser_attribute_spec): Fix comment typo.
+
 2018-10-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/84851
