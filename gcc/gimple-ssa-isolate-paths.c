@@ -431,7 +431,9 @@ find_implicit_erroneous_behavior (void)
 					"declared here");
 			  }
 
-			  if (gimple_bb (use_stmt) == bb)
+			  if ((flag_isolate_erroneous_paths_dereference
+			       || flag_isolate_erroneous_paths_attribute)
+			      && gimple_bb (use_stmt) == bb)
 			    {
 			      duplicate = isolate_path (bb, duplicate, e,
 							use_stmt, lhs, true);
@@ -553,9 +555,16 @@ find_explicit_erroneous_behavior (void)
 			  inform (DECL_SOURCE_LOCATION(valbase),
 				  "declared here");
 		      }
-		      tree zero = build_zero_cst (TREE_TYPE (val));
-		      gimple_return_set_retval (return_stmt, zero);
-		      update_stmt (stmt);
+
+		      /* Do not modify code if the user only asked for
+			 warnings.  */
+		      if (flag_isolate_erroneous_paths_dereference
+			  || flag_isolate_erroneous_paths_attribute)
+			{
+			  tree zero = build_zero_cst (TREE_TYPE (val));
+			  gimple_return_set_retval (return_stmt, zero);
+			  update_stmt (stmt);
+			}
 		    }
 		}
 	    }

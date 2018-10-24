@@ -1,3 +1,10 @@
+2018-10-24  Alexandre Oliva <aoliva@redhat.com>
+
+	* gimple-ssa-isolate-paths.c
+	(find_implicit_erroneous_behavior): Do not change code if the
+	pass is running for warnings only.
+	(find_explicit_erroneous_behavior): Likewise.
+
 2018-10-24  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/rs6000.c (TARGET_MANGLE_DECL_ASSEMBLER_NAME):
