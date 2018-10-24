@@ -1,3 +1,8 @@
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c: Start from 1 in order to distinguish
+	functions which were seen and these that were not.
+
 2018-10-18  Paul Koning  <ni1d@arrl.net>
 
 	* udivmodsi4.c (__udivmodsi4): Rename to conform to coding

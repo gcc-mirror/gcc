@@ -2016,7 +2016,6 @@ cgraph_node::dump (FILE *f)
   if (profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
-  fprintf (f, "  First run: %i\n", tp_first_run);
   cgraph_function_version_info *vi = function_version ();
   if (vi != NULL)
     {
@@ -2040,11 +2039,13 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "  Function flags:");
   if (count.initialized_p ())
     {
-      fprintf (f, " count: ");
+      fprintf (f, " count:");
       count.dump (f);
     }
+  if (tp_first_run > 0)
+    fprintf (f, " first_run:%i", tp_first_run);
   if (origin)
-    fprintf (f, " nested in: %s", origin->asm_name ());
+    fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
     fprintf (f, " body");
   if (process)
@@ -2081,10 +2082,6 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " unlikely_executed");
   if (frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     fprintf (f, " executed_once");
-  if (only_called_at_startup)
-    fprintf (f, " only_called_at_startup");
-  if (only_called_at_exit)
-    fprintf (f, " only_called_at_exit");
   if (opt_for_fn (decl, optimize_size))
     fprintf (f, " optimize_size");
   if (parallelized_function)
@@ -2096,7 +2093,7 @@ cgraph_node::dump (FILE *f)
     {
       fprintf (f, "  Thunk");
       if (thunk.alias)
-        fprintf (f, "  of %s (asm: %s)",
+	fprintf (f, "  of %s (asm:%s)",
 		 lang_hooks.decl_printable_name (thunk.alias, 2),
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
       fprintf (f, " fixed offset %i virtual value %i indirect_offset %i "
@@ -2112,7 +2109,7 @@ cgraph_node::dump (FILE *f)
       fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (thunk.alias, 2));
       if (DECL_ASSEMBLER_NAME_SET_P (thunk.alias))
-        fprintf (f, " (asm: %s)",
+	fprintf (f, " (asm:%s)",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
       fprintf (f, "\n");
     }
