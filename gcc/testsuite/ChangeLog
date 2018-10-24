@@ -1,3 +1,8 @@
+2018-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84851
+	* g++.dg/Wclass-memaccess-4.C: Remove XFAIL.
+
 2018-10-24  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/84436
