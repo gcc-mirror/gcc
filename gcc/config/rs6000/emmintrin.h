@@ -888,7 +888,8 @@ _mm_cvtpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+  result = (__v4si) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -922,7 +923,8 @@ _mm_cvtpd_ps (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4sf)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+  result = (__v4sf) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -950,7 +952,8 @@ _mm_cvttpd_epi32 (__m128d __A)
 
 #ifdef _ARCH_PWR8
   temp = vec_mergeo (temp, temp);
-  result = (__v4si)vec_vpkudum ((__vector long)temp, (__vector long)vzero);
+  result = (__v4si) vec_vpkudum ((__vector long long) temp,
+				 (__vector long long) vzero);
 #else
   {
     const __v16qu pkperm = {0x00, 0x01, 0x02, 0x03, 0x08, 0x09, 0x0a, 0x0b,
@@ -986,7 +989,7 @@ _mm_cvtpi32_pd (__m64 __A)
 
   temp = (__v4si)vec_splats (__A);
   tmp2 = (__v2di)vec_unpackl (temp);
-  result = vec_ctf ((__vector signed long)tmp2, 0);
+  result = vec_ctf ((__vector signed long long) tmp2, 0);
   return (__m128d)result;
 }
 #endif
@@ -1289,7 +1292,8 @@ _mm_unpackhi_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpackhi_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i) vec_mergel ((__vector long)__A, (__vector long)__B);
+  return (__m128i) vec_mergel ((__vector long long) __A,
+			       (__vector long long) __B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1313,7 +1317,8 @@ _mm_unpacklo_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_unpacklo_epi64 (__m128i __A, __m128i __B)
 {
-  return (__m128i) vec_mergeh ((__vector long)__A, (__vector long)__B);
+  return (__m128i) vec_mergeh ((__vector long long) __A,
+			       (__vector long long) __B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
