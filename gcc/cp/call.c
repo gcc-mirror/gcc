@@ -8665,15 +8665,6 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
       bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
       tree binfo = TYPE_BINFO (ctx);
 
-      /* FIXME: The following if statement is overly permissive (see
-	 bug 84851).  Remove it in GCC 9.  */
-      if (special
-	  && !BINFO_VTABLE (binfo)
-	  && !BINFO_N_BASE_BINFOS (binfo)
-	  && (DECL_CONSTRUCTOR_P (current_function_decl)
-	      || DECL_DESTRUCTOR_P (current_function_decl)))
-	return;
-
       if (special
 	  && !BINFO_VTABLE (binfo)
 	  && !first_non_trivial_field (desttype))

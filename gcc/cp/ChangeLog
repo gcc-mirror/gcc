@@ -1,3 +1,8 @@
+2018-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84851
+	* call.c (maybe_warn_class_memaccess): Tighten up.
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-c++): New.
