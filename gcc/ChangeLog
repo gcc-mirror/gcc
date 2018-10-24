@@ -1,3 +1,12 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84013
+	* tree-ssa-structalias.c (struct msdi_data): New struct for
+	marshalling data to walk_stmt_load_store_ops.
+	(maybe_set_dependence_info): Refactor as callback for
+	walk_stmt_load_store_ops.
+	(compute_dependence_clique): Set restrict info on all stmt kinds.
+
 2018-10-24  Martin Liska  <mliska@suse.cz>
 
 	* cgraph.c (cgraph_node::dump):
