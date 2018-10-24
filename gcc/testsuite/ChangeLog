@@ -1,3 +1,8 @@
+2018-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86288
+	* g++.dg/cpp0x/gen-attrs-66.C: New test.
+
 2018-10-24  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/84851
