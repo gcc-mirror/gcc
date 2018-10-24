@@ -1,3 +1,8 @@
+2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.c (s390_check_qrst_address): Add the missing
+	SYMBOL_REF_P () check.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87105
