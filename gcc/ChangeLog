@@ -1,3 +1,8 @@
+2018-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87720
+	* combine.c (make_more_copies): Skip if the dest is pc_rtx.
+
 2018-10-24  Alexandre Oliva <aoliva@redhat.com>
 
 	* gimple-ssa-isolate-paths.c
