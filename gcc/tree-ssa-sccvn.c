@@ -6691,6 +6691,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
   XDELETEVEC (bb_to_rpo);
   XDELETEVEC (rpo);
+  XDELETEVEC (rpo_state);
 
   return todo;
 }
