@@ -2545,12 +2545,13 @@ public:
 public:
   void tree_node (tree);
   void tree_value (tree, bool force);
-  bool tree_decl (tree, bool force, bool looking_inside,
-		  unsigned owner = MODULE_UNKNOWN);
-  bool tree_type (tree, bool force, bool looking_inside,
-		  unsigned owner = MODULE_UNKNOWN);
+private:
+  bool tree_decl (tree, bool force, bool looking_inside);
+  bool tree_type (tree, bool force, bool looking_inside);
+  void tree_namespace (tree, unsigned owner);
+public:
   int tree_ref (tree);
-  void tree_ctx (tree, bool looing_inside, unsigned owner = MODULE_UNKNOWN);
+  void tree_ctx (tree, bool need_contents, tree maybe_owning_decl = NULL_TREE);
 
 public:
   static void instrument ();
@@ -3783,6 +3784,7 @@ void
 trees_out::mark_node (tree decl)
 {
   gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
+  gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl));
@@ -4680,7 +4682,7 @@ trees_out::core_vals (tree t)
     {
       /* Write this early, for better log information.  */
       WT (t->decl_minimal.name);
-      tree_ctx (t->decl_minimal.context, true, MODULE_PURVIEW);
+      tree_ctx (t->decl_minimal.context, true, t);
 
       if (streaming_p ())
 	state->write_location (*this, t->decl_minimal.locus);
@@ -4690,7 +4692,7 @@ trees_out::core_vals (tree t)
     {
       /* Likewise, stream the name first.  */
       WT (t->type_common.name);
-      tree_ctx (t->type_common.context, true, MODULE_PURVIEW);
+      tree_ctx (t->type_common.context, true, TYPE_NAME (t));
 
       /* By construction we want to make sure we have the canonical
 	 and main variants already in the type table, so emit them
@@ -5625,7 +5627,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
   else
     {
       dom = BINFO_TYPE (binfo);
-      tree_ctx (dom, false, true);
+      tree_ctx (dom, false);
 
       if (streaming_p ())
 	{
@@ -5838,21 +5840,67 @@ trees_out::tree_ref (tree t)
   return 1;
 }
 
-/* CTX is a context of some node, with owning module OWNER (if
-   known).  Write it out.  */
+/* CTX is a context of some node.  NEED_CONTENTS is true if we're
+   ultimately looking for something inside CTX.  */
 // FIXME:return indicator if we discoverd a voldemort
 void
-trees_out::tree_ctx (tree ctx, bool looking_inside, unsigned module)
+trees_out::tree_ctx (tree ctx, bool need_contents, tree maybe_owning_decl)
 {
-  int ref = tree_ref (ctx);
-  if (ref)
+  if (int ref = tree_ref (ctx))
     {
       bool force = ref < 0;
-      if (TYPE_P (ctx)
-	  ? tree_type (ctx, force, looking_inside, module)
-	  : tree_decl (ctx, force, looking_inside, module))
+      bool by_value = false;
+
+      if (TYPE_P (ctx))
+	by_value = tree_type (ctx, force, need_contents);
+      else if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	{
+	  gcc_checking_assert (!force);
+	  tree_namespace (ctx, MAYBE_DECL_MODULE_OWNER (maybe_owning_decl));
+	}
+      else
+	by_value = tree_decl (ctx, force, need_contents);
+
+      if (by_value)
 	tree_value (ctx, force);
     }
+}
+
+void
+trees_out::tree_namespace (tree ns, unsigned owner)
+{
+  bool is_import = owner >= MODULE_IMPORT_BASE;
+  tree ctx = CP_DECL_CONTEXT (ns);
+
+  if (streaming_p ())
+    {
+      i (tt_named_decl);
+      u (owner);
+      if (tree_ref (ctx))
+	tree_namespace (ctx, owner);
+    }
+  else if (!is_import)
+    {
+      /* Build out dependencies.  */
+      if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
+	dep_hash->add_dependency (ns, true);
+    }
+
+  tree name = DECL_NAME (ns);
+  tree_node (name);
+  if (streaming_p ())
+    {
+      int ident = get_lookup_ident (ctx, name, owner, ns);
+      i (ident);
+      /* Make sure we can find it by name.  */
+      gcc_checking_assert (ns == lookup_by_ident (ctx, name, owner, ident));
+      u (false);
+    }
+  int tag = insert (ns);
+  if (streaming_p ())
+    dump (dumper::TREES)
+      && dump ("Wrote namespace:%d %C:%N@%M", tag, TREE_CODE (ns), ns,
+	       owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
 }
 
 /* Reference DECL.  FORCE is true, if we know we're writing this by
@@ -5861,9 +5909,10 @@ trees_out::tree_ctx (tree ctx, bool looking_inside, unsigned module)
    should write this decl by value.  */
 
 bool
-trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner)
+trees_out::tree_decl (tree decl, bool force, bool looking_inside)
 {
-  gcc_checking_assert (DECL_P (decl));
+  gcc_checking_assert (DECL_P (decl)
+		       && TREE_CODE (decl) != NAMESPACE_DECL);
 
   if (force)
     {
@@ -5915,6 +5964,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
       use_tpl = CLASSTYPE_USE_TEMPLATE (TREE_TYPE (decl));
     }
 
+  unsigned owner = MODULE_UNKNOWN;
   if (!ti)
     ;
   else if (use_tpl & 1)
@@ -5929,7 +5979,6 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 	  tree_ctx (tpl, false);
 	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
 	  kind = "instantiation";
-	  owner = MODULE_UNKNOWN;
 	  goto insert;
 	}
     }
@@ -5942,31 +5991,23 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 
   {
     /* Find the owning module and determine what to do.  */
-    if (owner == MODULE_UNKNOWN)
+    tree owner_decl = get_module_owner (decl);
+    owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
+
+    /* We should not get cross-module references to the pseudo
+       template of a member of a template class.  */
+    gcc_assert (TREE_CODE (decl) != TEMPLATE_DECL
+		|| TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
+		|| DECL_MEMBER_TEMPLATE_P (decl)
+		|| owner < MODULE_IMPORT_BASE);
+
+    if (TREE_CODE (owner_decl) == FUNCTION_DECL
+	&& owner_decl != STRIP_TEMPLATE (decl))
       {
-	/* Find the owning module and determine what to do.  */
-	gcc_assert (TREE_CODE (decl) != NAMESPACE_DECL);
+	/* We cannot look up inside a function by name.  */
+	gcc_assert (owner < MODULE_IMPORT_BASE);
 
-	tree owner_decl = get_module_owner (decl);
-	owner = MAYBE_DECL_MODULE_OWNER (owner_decl);
-
-	/* We should not get cross-module references to the pseudo
-	   template of a member of a template class.  */
-	gcc_assert (TREE_CODE (decl) != TEMPLATE_DECL
-		    || TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL
-		    || DECL_MEMBER_TEMPLATE_P (decl)
-		    || owner < MODULE_IMPORT_BASE);
-
-	if (TREE_CODE (owner_decl) == FUNCTION_DECL
-	    && owner_decl != decl
-	    && (TREE_CODE (decl) != TEMPLATE_DECL
-		|| DECL_TEMPLATE_RESULT (decl) != owner_decl))
-	  {
-	    /* We cannot look up inside a function by name.  */
-	    gcc_assert (owner < MODULE_IMPORT_BASE);
-
-	    return true;
-	  }
+	return true;
       }
 
     bool is_import = owner >= MODULE_IMPORT_BASE;
@@ -6010,13 +6051,12 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
       {
 	i (tt_named_decl);
 	u (owner);
-	tree_ctx (ctx, true, owner);
+	tree_ctx (ctx, true, decl);
       }
     else if (!is_import)
       {
-	/* Build out dependencies.  */
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
-	  tree_ctx (ctx, true, owner);
+	  tree_ctx (ctx, true);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl, looking_inside);
       }
@@ -6059,7 +6099,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside, unsigned owner
 }
 
 bool
-trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner)
+trees_out::tree_type (tree type, bool force, bool looking_inside)
 {
   gcc_assert (TYPE_P (type));
   if (force)
@@ -6074,37 +6114,36 @@ trees_out::tree_type (tree type, bool force, bool looking_inside, unsigned owner
 	  dump (dumper::TREES)
 	    && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
 	}
-      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true, owner);
+      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true);
       return false;
     }
 
-  if (TYPE_NAME (type)
-      && TREE_TYPE (TYPE_NAME (type)) == type
-      && !tree_map.get (TYPE_NAME (type)))
-    {
-      /* A new named type -> tt_named_type.  */
-      tree name = TYPE_NAME (type);
-      /* Make sure this is not a named builtin. We should find
-	 those some other way to be canonically correct.  */
-      gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-      if (streaming_p ())
-	{
-	  i (tt_named_type);
-	  dump (dumper::TREES)
-	    && dump ("Writing interstitial named type %C:%N%S",
-		     TREE_CODE (name), name, name);
-	}
-      tree_ctx (name, looking_inside, owner);
-      if (streaming_p ())
-	dump (dumper::TREES) && dump ("Wrote named type %C:%N%S",
-				      TREE_CODE (name), name, name);
+  if (tree name = TYPE_NAME (type))
+    if (TREE_TYPE (name) == type && !tree_map.get (name))
+      {
+	/* A new named type -> tt_named_type.  */
 
-      /* The type itself could be a variant of TREE_TYPE (name), so
-	 stream it out in its own right.  We'll find the name in the
-	 map, so not end up here next time.  */
-      tree_node (type);
-      return false;
-    }
+	/* Make sure this is not a named builtin. We should find
+	   those some other way to be canonically correct.  */
+	gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+	if (streaming_p ())
+	  {
+	    i (tt_named_type);
+	    dump (dumper::TREES)
+	      && dump ("Writing interstitial named type %C:%N%S",
+		       TREE_CODE (name), name, name);
+	  }
+	tree_ctx (name, looking_inside);
+	if (streaming_p ())
+	  dump (dumper::TREES) && dump ("Wrote named type %C:%N%S",
+					TREE_CODE (name), name, name);
+
+	/* The type itself could be a variant of TREE_TYPE (name), so
+	   stream it out in its own right.  We'll find the name in the
+	   map, so not end up here next time.  */
+	tree_node (type);
+	return false;
+      }
 
   return true;
 }
@@ -6367,7 +6406,7 @@ trees_in::tree_node ()
 	res = get_identifier_with_length (chars, l);
 	int tag = insert (res);
 	dump (dumper::TREES)
-	  && dump ("Read identifier:%d%N", tag, res);
+	  && dump ("Read identifier:%d %N", tag, res);
       }
       break;
 
@@ -8991,8 +9030,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
       if (b->is_binding ())
 	{
+	  gcc_assert (TREE_CODE (decl) == NAMESPACE_DECL);
 	  sec.u (ct_bind);
-	  sec.tree_ctx (decl, false, MODULE_PURVIEW);
+	  sec.tree_ctx (decl, false, decl);
 	  sec.tree_node (b->get_name ());
 	  /* Write in forward order, so reading will see the
 	     exports first, thus building the overload chain will be
@@ -9005,7 +9045,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       else
 	{
 	  sec.u (b->is_decl () ? ct_decl : ct_defn);
-	  sec.tree_ctx (decl, false, MODULE_PURVIEW);
+	  sec.tree_ctx (decl, false);
 	  if (b->cluster)
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
@@ -9058,6 +9098,8 @@ module_state::read_cluster (unsigned snum)
 
 	    while (tree decl = sec.tree_node ())
 	      {
+		if (sec.get_overrun ())
+		  break;
 		if (TREE_CODE (decl) == TYPE_DECL)
 		  {
 		    if (type)
@@ -9128,7 +9170,7 @@ module_state::read_cluster (unsigned snum)
 		else
 		  sec.set_overrun ();
 	      }
-	    if (ct == ct_defn)
+	    if (ct == ct_defn && !sec.get_overrun ())
 	      /* A definition.  */
 	      read_definition (sec, decl);
 	  }
@@ -10825,8 +10867,7 @@ module_state::find_dependencies (depset::hash &table)
 		       decl);
       dump.indent ();
       if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (decl)
-	  && DECL_MODULE_OWNER (decl) >= MODULE_IMPORT_BASE)
+	  && !DECL_NAMESPACE_ALIAS (decl))
 	dump () && dump ("Namespace %N imported from %M",
 			 decl, (*modules)[DECL_MODULE_OWNER (decl)]);
       else
