@@ -1,3 +1,8 @@
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.c (cgraph_node::dump):
+	Remove reduntant dumps and make tp_first_run dump more compact.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665

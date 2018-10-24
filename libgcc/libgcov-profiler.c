@@ -335,7 +335,7 @@ __gcov_indirect_call_profiler_v2 (gcov_type value, void* cur_func)
 #ifdef L_gcov_time_profiler
 
 /* Counter for first visit of each function.  */
-gcov_type __gcov_time_profiler_counter ATTRIBUTE_HIDDEN;
+gcov_type __gcov_time_profiler_counter ATTRIBUTE_HIDDEN = 1;
 
 #endif
 
