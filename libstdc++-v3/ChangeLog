@@ -1,5 +1,134 @@
 2018-10-24  François Dumont  <fdumont@gcc.gnu.org>
 
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container<>::_M_invalidate_locals): Take lambda
+	parameter type from local end variable.
+	(_Safe_unordered_container<>::_M_invalidate_all): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::begin()): Use C++11 direct initialization.
+	(unordered_map<>::end()): Likewise.
+	(unordered_map<>::cbegin()): Likewise.
+	(unordered_map<>::cend()): Likewise.
+	(unordered_map<>::begin(size_type)): Likewise.
+	(unordered_map<>::end(size_type)): Likewise.
+	(unordered_map<>::cbegin(size_type)): Likewise.
+	(unordered_map<>::cend(size_type)): Likewise.
+	(unordered_map<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_map<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_map<>::insert(const value_type&)): Likewise.
+	(unordered_map<>::insert(value_type&&)): Likewise.
+	(unordered_map<>::insert<>(_Pair&&)): Likewise.
+	(unordered_map<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_map<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_map<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(unordered_map<>::try_emplace<>(const key_type&, _Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(key_type&&, _Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(const_iterator, const key_type&,
+	_Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(const_iterator, key_type&&,
+	_Args&&...)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const key_type&, _Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(key_type&&, _Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const_iterator, const key_type&,
+	_Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const_iterator, key_type&&,
+	_Obj&&)): Likewise.
+	(unordered_map<>::insert(note_type&&)): Likewise.
+	(unordered_map<>::find(const key_type&)): Likewise.
+	(unordered_map<>::equal_range(const key_type&)): Likewise.
+	(unordered_map<>::_M_extract): New.
+	(unordered_map<>::extract(const_iterator)): Use latter.
+	(unordered_map<>::extract(const key_type&)): Likewise.
+	(unordered_map<>::_M_erase): New.
+	(unordered_map<>::erase(const key_type&)): Use latter.
+	(unordered_map<>::erase(const_iterator)): Likewise.
+	(unordered_map<>::erase(iterator)): Likewise.
+	(unordered_map<>::_M_invalidate): New.
+	(unordered_map<>::erase(const_iterator, const_iterator)): Use latter.
+	(unordered_multimap<>::begin()): Use C++11 direct initialization.
+	(unordered_multimap<>::end()): Likewise.
+	(unordered_multimap<>::cbegin()): Likewise.
+	(unordered_multimap<>::cend()): Likewise.
+	(unordered_multimap<>::begin(size_type)): Likewise.
+	(unordered_multimap<>::end(size_type)): Likewise.
+	(unordered_multimap<>::cbegin(size_type)): Likewise.
+	(unordered_multimap<>::cend(size_type)): Likewise.
+	(unordered_multimap<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_multimap<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_multimap<>::insert(const value_type&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_multimap<>::insert<>(_Pair&&)): Likewise.
+	(unordered_multimap<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(unordered_multimap<>::insert(note_type&&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, note_type&&)): Likewise.
+	(unordered_multimap<>::find(const key_type&)): Likewise.
+	(unordered_multimap<>::equal_range(const key_type&)): Likewise.
+	(unordered_multimap<>::_M_extract): New.
+	(unordered_multimap<>::extract(const_iterator)): Use latter.
+	(unordered_multimap<>::extract(const key_type&)): Likewise.
+	(unordered_multimap<>::_M_erase): New.
+	(unordered_multimap<>::erase(const_iterator)): Likewise.
+	(unordered_multimap<>::erase(iterator)): Likewise.
+	(unordered_multimap<>::_M_invalidate): New.
+	(unordered_multimap<>::erase(const key_type&)): Use latter.
+	(unordered_multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::begin()): Use C++11 direct initialization.
+	(unordered_set<>::end()): Likewise.
+	(unordered_set<>::cbegin()): Likewise.
+	(unordered_set<>::cend()): Likewise.
+	(unordered_set<>::begin(size_type)): Likewise.
+	(unordered_set<>::end(size_type)): Likewise.
+	(unordered_set<>::cbegin(size_type)): Likewise.
+	(unordered_set<>::cend(size_type)): Likewise.
+	(unordered_set<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_set<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_set<>::insert(const value_type&)): Likewise.
+	(unordered_set<>::insert(value_type&&)): Likewise.
+	(unordered_set<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_set<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_set<>::insert(note_type&&)): Likewise.
+	(unordered_set<>::insert(const_iterator, note_type&&)): Likewise.
+	(unordered_set<>::find(const key_type&)): Likewise.
+	(unordered_set<>::equal_range(const key_type&)): Likewise.
+	(unordered_set<>::_M_extract): New.
+	(unordered_set<>::extract(const_iterator)): Use latter.
+	(unordered_set<>::extract(const key_type&)): Likewise.
+	(unordered_set<>::_M_erase): New.
+	(unordered_set<>::erase(const key_type&)): Use latter.
+	(unordered_set<>::erase(const_iterator)): Likewise.
+	(unordered_set<>::erase(iterator)): Likewise.
+	(unordered_set<>::_M_invalidate): New.
+	(unordered_set<>::erase(const_iterator, const_iterator)): Use latter.
+	(unordered_multiset<>::begin()): Use C++11 direct initialization.
+	(unordered_multiset<>::end()): Likewise.
+	(unordered_multiset<>::cbegin()): Likewise.
+	(unordered_multiset<>::cend()): Likewise.
+	(unordered_multiset<>::begin(size_type)): Likewise.
+	(unordered_multiset<>::end(size_type)): Likewise.
+	(unordered_multiset<>::cbegin(size_type)): Likewise.
+	(unordered_multiset<>::cend(size_type)): Likewise.
+	(unordered_multiset<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_multiset<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_multiset<>::insert(const value_type&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_multiset<>::insert(value_type&&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_multiset<>::insert(node_type&&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, node_type&&)): Likewise.
+	(unordered_multiset<>::find(const key_type&)): Likewise.
+	(unordered_multiset<>::equal_range(const key_type&)): Likewise.
+	(unordered_multiset<>::_M_extract): New.
+	(unordered_multiset<>::extract(const_iterator)): Use latter.
+	(unordered_multiset<>::extract(const key_type&)): Likewise.
+	(unordered_multiset<>::_M_erase): New.
+	(unordered_multiset<>::erase(const_iterator)): Likewise.
+	(unordered_multiset<>::erase(iterator)): Likewise.
+	(unordered_multiset<>::_M_invalidate): New.
+	(unordered_multiset<>::erase(const key_type&)): Use latter.
+	(unordered_multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
 	* include/c_global/cstddef: Add versioned namespace.
 
 2018-10-23  Jonathan Wakely  <jwakely@redhat.com>
