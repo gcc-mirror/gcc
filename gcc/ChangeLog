@@ -1,3 +1,8 @@
+2018-10-24  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (nonnull): List no-argument form.  Reference
+	-fno-delete-null-pointer-checks and -fisolate-erroneous-paths-attribute.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (do_rpo_vn): Free rpo_state.
