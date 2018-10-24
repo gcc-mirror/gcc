@@ -3075,7 +3075,8 @@ including those that do not have an attribute suitable for disabling
 them individually.  This attribute is supported mainly for the purpose
 of testing the compiler.
 
-@item nonnull (@var{arg-index}, @dots{})
+@item nonnull
+@itemx nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
 @cindex functions with non-null pointer arguments
 The @code{nonnull} attribute specifies that some function parameters should
@@ -3092,10 +3093,15 @@ causes the compiler to check that, in calls to @code{my_memcpy},
 arguments @var{dest} and @var{src} are non-null.  If the compiler
 determines that a null pointer is passed in an argument slot marked
 as non-null, and the @option{-Wnonnull} option is enabled, a warning
-is issued.  The compiler may also choose to make optimizations based
-on the knowledge that certain function arguments will never be null.
+is issued.  @xref{Warning Options}.  Unless disabled by
+the @option{-fno-delete-null-pointer-checks} option the compiler may
+also perform optimizations based on the knowledge that certain function
+arguments cannot be null. In addition,
+the @option{-fisolate-erroneous-paths-attribute} option can be specified
+to have GCC transform calls with null arguments to non-null functions
+into traps. @xref{Optimize Options}.
 
-If no argument index list is given to the @code{nonnull} attribute,
+If no @var{arg-index} is given to the @code{nonnull} attribute,
 all pointer arguments are marked as non-null.  To illustrate, the
 following declaration is equivalent to the previous example:
 
