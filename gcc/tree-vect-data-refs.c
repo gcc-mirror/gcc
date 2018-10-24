@@ -2472,7 +2472,7 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
                 }
 
 	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		dump_printf_loc (MSG_NOTE, vect_location,
 				 "Two or more load stmts share the same dr.\n");
 
 	      /* For load use the same data-ref load.  */
@@ -2838,6 +2838,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
      determining what dependencies are reversed.  */
   vec<data_reference_p> datarefs_copy = datarefs.copy ();
   datarefs_copy.qsort (dr_group_sort_cmp);
+  hash_set<stmt_vec_info> to_fixup;
 
   /* Build the interleaving chains.  */
   for (i = 0; i < datarefs_copy.length () - 1;)
@@ -2920,36 +2921,32 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	    {
 	      gcc_assert (gimple_uid (DR_STMT (datarefs_copy[i-1]))
 			  < gimple_uid (DR_STMT (drb)));
-	      /* ???  For now we simply "drop" the later reference which is
-	         otherwise the same rather than finishing off this group.
-		 In the end we'd want to re-process duplicates forming
-		 multiple groups from the refs, likely by just collecting
-		 all candidates (including duplicates and split points
-		 below) in a vector and then process them together.  */
-	      continue;
+	      /* Simply link in duplicates and fix up the chain below.  */
 	    }
-
-	  /* If init_b == init_a + the size of the type * k, we have an
-	     interleaving, and DRA is accessed before DRB.  */
-	  HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
-	  if (type_size_a == 0
-	      || (init_b - init_a) % type_size_a != 0)
-	    break;
-
-	  /* If we have a store, the accesses are adjacent.  This splits
-	     groups into chunks we support (we don't support vectorization
-	     of stores with gaps).  */
-	  if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
-	    break;
-
-	  /* If the step (if not zero or non-constant) is greater than the
-	     difference between data-refs' inits this splits groups into
-	     suitable sizes.  */
-	  if (tree_fits_shwi_p (DR_STEP (dra)))
+	  else
 	    {
-	      HOST_WIDE_INT step = tree_to_shwi (DR_STEP (dra));
-	      if (step != 0 && step <= (init_b - init_a))
+	      /* If init_b == init_a + the size of the type * k, we have an
+		 interleaving, and DRA is accessed before DRB.  */
+	      HOST_WIDE_INT type_size_a = tree_to_uhwi (sza);
+	      if (type_size_a == 0
+		  || (init_b - init_a) % type_size_a != 0)
 		break;
+
+	      /* If we have a store, the accesses are adjacent.  This splits
+		 groups into chunks we support (we don't support vectorization
+		 of stores with gaps).  */
+	      if (!DR_IS_READ (dra) && init_b - init_prev != type_size_a)
+		break;
+
+	      /* If the step (if not zero or non-constant) is greater than the
+		 difference between data-refs' inits this splits groups into
+		 suitable sizes.  */
+	      if (tree_fits_shwi_p (DR_STEP (dra)))
+		{
+		  HOST_WIDE_INT step = tree_to_shwi (DR_STEP (dra));
+		  if (step != 0 && step <= (init_b - init_a))
+		    break;
+		}
 	    }
 
 	  if (dump_enabled_p ())
@@ -2968,7 +2965,62 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
 	  DR_GROUP_FIRST_ELEMENT (stmtinfo_b) = stmtinfo_a;
 	  DR_GROUP_NEXT_ELEMENT (lastinfo) = stmtinfo_b;
 	  lastinfo = stmtinfo_b;
+
+	  if (init_b == init_prev
+	      && !to_fixup.add (DR_GROUP_FIRST_ELEMENT (stmtinfo_a))
+	      && dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Queuing group with duplicate access for fixup\n");
 	}
+    }
+
+  /* Fixup groups with duplicate entries by splitting it.  */
+  while (1)
+    {
+      hash_set<stmt_vec_info>::iterator it = to_fixup.begin ();
+      if (!(it != to_fixup.end ()))
+	break;
+      stmt_vec_info grp = *it;
+      to_fixup.remove (grp);
+
+      /* Find the earliest duplicate group member.  */
+      unsigned first_duplicate = -1u;
+      stmt_vec_info next, g = grp;
+      while ((next = DR_GROUP_NEXT_ELEMENT (g)))
+	{
+	  if ((DR_INIT (STMT_VINFO_DR_INFO (next)->dr)
+	       == DR_INIT (STMT_VINFO_DR_INFO (g)->dr))
+	      && gimple_uid (STMT_VINFO_STMT (next)) < first_duplicate)
+	    first_duplicate = gimple_uid (STMT_VINFO_STMT (next));
+	  g = next;
+	}
+      if (first_duplicate == -1U)
+	continue;
+
+      /* Then move all stmts after the first duplicate to a new group.
+         Note this is a heuristic but one with the property that *it
+	 is fixed up completely.  */
+      g = grp;
+      stmt_vec_info newgroup = NULL, ng;
+      while ((next = DR_GROUP_NEXT_ELEMENT (g)))
+	{
+	  if (gimple_uid (STMT_VINFO_STMT (next)) >= first_duplicate)
+	    {
+	      DR_GROUP_NEXT_ELEMENT (g) = DR_GROUP_NEXT_ELEMENT (next);
+	      if (!newgroup)
+		newgroup = next;
+	      else
+		DR_GROUP_NEXT_ELEMENT (ng) = next;
+	      ng = next;
+	      DR_GROUP_FIRST_ELEMENT (ng) = newgroup;
+	    }
+	  else
+	    g = DR_GROUP_NEXT_ELEMENT (g);
+	}
+      DR_GROUP_NEXT_ELEMENT (ng) = NULL;
+
+      /* Fixup the new group which still may contain duplicates.  */
+      to_fixup.add (newgroup);
     }
 
   FOR_EACH_VEC_ELT (datarefs_copy, i, dr)

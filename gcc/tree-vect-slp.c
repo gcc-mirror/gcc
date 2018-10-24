@@ -1191,6 +1191,10 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 
       if (++this_tree_size > max_tree_size)
 	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+			     vect_location,
+			     "Build SLP failed: SLP tree too large\n");
 	  FOR_EACH_VEC_ELT (children, j, child)
 	    vect_free_slp_tree (child, false);
 	  vect_free_oprnd_info (oprnds_info);
