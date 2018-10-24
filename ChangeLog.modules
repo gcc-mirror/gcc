@@ -1,6 +1,15 @@
 2018-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (enum tree_tag): Add tt_namespace.
+	(trees_out::tree_namespace): Use it.
+	(trees_in::tree_node): Grok it.
+	* name-lookup.h (get_imported_namespace): Declare.
+	* name-lookup.c (get_imported_namespace): New.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_c.C: Adjust.
+
+	gcc/cp/
 	* module.cc (trees_out::{tree_{decl,type}): Drop owner arg.
 	(trees_out::tree_namespace): New.
 	(trees_out::ctx): Take owning-decl arg, use tree_namespace.

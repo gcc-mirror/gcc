@@ -2411,6 +2411,7 @@ enum tree_tag {
   tt_tinfo_typedef,	/* Typeinfo typedef.  */
   tt_named_type,	/* TYPE_DECL for type.  */
   tt_named_decl,  	/* Named decl. */
+  tt_namespace,		/* Namespace reference.  */
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
   tt_as_base,		/* An As-Base type.  */
@@ -5874,10 +5875,11 @@ trees_out::tree_namespace (tree ns, unsigned owner)
 
   if (streaming_p ())
     {
-      i (tt_named_decl);
-      u (owner);
+      i (tt_namespace);
+      u (TREE_PUBLIC (ns) ? MODULE_NONE : owner);
       if (tree_ref (ctx))
 	tree_namespace (ctx, owner);
+      tree_node (DECL_NAME (ns));
     }
   else if (!is_import)
     {
@@ -5886,16 +5888,6 @@ trees_out::tree_namespace (tree ns, unsigned owner)
 	dep_hash->add_dependency (ns, true);
     }
 
-  tree name = DECL_NAME (ns);
-  tree_node (name);
-  if (streaming_p ())
-    {
-      int ident = get_lookup_ident (ctx, name, owner, ns);
-      i (ident);
-      /* Make sure we can find it by name.  */
-      gcc_checking_assert (ns == lookup_by_ident (ctx, name, owner, ident));
-      u (false);
-    }
   int tag = insert (ns);
   if (streaming_p ())
     dump (dumper::TREES)
@@ -6490,6 +6482,34 @@ trees_in::tree_node ()
 		  && dump ("Read imported type:%d %C:%N%S", tag,
 			   TREE_CODE (type), type, type);
 	      }
+	  }
+      }
+      break;
+
+    case tt_namespace:
+      {
+	/* Namespace reference.  */
+	unsigned owner = u ();
+	tree ctx = tree_node ();
+	tree name = tree_node ();
+	if (owner != MODULE_NONE)
+	  owner = state->slurp ()->remap_module (owner);
+
+	res = get_imported_namespace (ctx, name, owner);
+	if (!res || TREE_CODE (res) != NAMESPACE_DECL)
+	  {
+	    error_at (state->loc, "failed to find namespace %<%E%s%E%>",
+		      ctx, &"::"[2 * (ctx == global_namespace)],
+		      name);
+	    set_overrun ();
+	    res = NULL;
+	  }
+	int tag = insert (res);
+	if (res)
+	  {
+	    dump (dumper::TREES)
+	      && dump ("Namespace:%d %C:%N@%M", tag, TREE_CODE (res),
+		       res, owner == MODULE_NONE ? NULL : (*modules)[owner]);
 	  }
       }
       break;

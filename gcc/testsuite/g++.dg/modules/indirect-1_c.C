@@ -25,7 +25,7 @@ int main ()
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::frob'@'bar' section:} module } }
 // { dg-final { scan-lang-dump {>Lazily binding '::foo::frob'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Imported:-[0-9]* namespace_decl:'::foo'@foo} module } }
+// { dg-final { scan-lang-dump {Namespace:-[0-9]* namespace_decl:'::foo'@.none.} module } }
 // { dg-final { scan-lang-dump {Imported:-[0-9]* function_decl:'::foo::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::bar::quux'@'bar' section:} module } }

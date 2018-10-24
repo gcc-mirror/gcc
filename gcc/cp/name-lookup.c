@@ -3762,7 +3762,7 @@ lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
   if (ident < 0)
     return MAYBE_STAT_TYPE (binding);
 
-  bool skip_local = TREE_CODE (ctx) == NAMESPACE_DECL;
+  bool skip_local = mod != MODULE_NONE && TREE_CODE (ctx) == NAMESPACE_DECL;
   binding = MAYBE_STAT_DECL (binding);
   for (ovl_iterator iter (binding); iter; ++iter)
     {
@@ -3817,6 +3817,27 @@ get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
     }
 
   gcc_unreachable ();
+}
+
+tree
+get_imported_namespace (tree ctx, tree name, unsigned mod)
+{
+  tree binding = NULL_TREE;
+
+  gcc_assert (mod == MODULE_NONE); /* Anon later.  */
+  if (tree *slot = find_namespace_slot (ctx, name))
+    if (mc_slot *mslot = module_binding_slot
+	(slot, name, mod == MODULE_NONE ? MODULE_SLOT_GLOBAL : mod, false))
+      {
+	gcc_assert (!mslot->is_lazy ());
+	binding = *mslot;
+	binding = MAYBE_STAT_DECL (binding);
+	if (TREE_CODE (binding) != NAMESPACE_DECL
+	    || DECL_NAMESPACE_ALIAS (binding))
+	  binding = NULL_TREE;
+      }
+
+  return binding;
 }
 
 /* Enter DECL into the symbol table, if that's appropriate.  Returns
