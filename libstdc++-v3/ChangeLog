@@ -1,3 +1,7 @@
+2018-10-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/c_global/cstddef: Add versioned namespace.
+
 2018-10-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87704
