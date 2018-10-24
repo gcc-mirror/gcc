@@ -733,10 +733,12 @@ struct switch_conversion
      order of phi nodes.  */
   void build_constructors ();
 
-  /* If all values in the constructor vector are the same, return the value.
-     Otherwise return NULL_TREE.  Not supposed to be called for empty
-     vectors.  */
-  tree contains_same_values_p (vec<constructor_elt, va_gc> *vec);
+  /* If all values in the constructor vector are products of a linear function
+     a * x + b, then return true.  When true, COEFF_A and COEFF_B and
+     coefficients of the linear function.  Note that equal values are special
+     case of a linear function with a and b equal to zero.  */
+  bool contains_linear_function_p (vec<constructor_elt, va_gc> *vec,
+				   wide_int *coeff_a, wide_int *coeff_b);
 
   /* Return type which should be used for array elements, either TYPE's
      main variant or, for integral types, some smaller integral type

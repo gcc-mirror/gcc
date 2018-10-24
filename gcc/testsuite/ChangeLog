@@ -1,3 +1,12 @@
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/84436
+	* gcc.dg/tree-ssa/pr84436-1.c: New test.
+	* gcc.dg/tree-ssa/pr84436-2.c: New test.
+	* gcc.dg/tree-ssa/pr84436-3.c: New test.
+	* gcc.dg/tree-ssa/pr84436-4.c: New test.
+	* gcc.dg/tree-ssa/pr84436-5.c: New test.
+
 2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/20181024-1.c: New test.
