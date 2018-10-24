@@ -1,3 +1,13 @@
+2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87105
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Adjust
+	dump classification.
+	(vect_analyze_data_ref_accesses): Handle duplicate loads and
+	stores by splitting the affected group after the fact.
+	* tree-vect-slp.c (vect_build_slp_tree_2): Dump when we
+	fail the SLP build because of size constraints.
+
 2018-10-24  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_ld_aligned_shf_merge): New test.
