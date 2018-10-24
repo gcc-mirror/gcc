@@ -1,3 +1,14 @@
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/84436
+	* tree-switch-conversion.c (switch_conversion::contains_same_values_p):
+	Remove.
+	(switch_conversion::contains_linear_function_p): New.
+	(switch_conversion::build_one_array): Support linear
+	transformation on input.
+	* tree-switch-conversion.h (struct switch_conversion): Add
+	contains_linear_function_p declaration.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	* varasm.c (const_hash_1): Return hash of ADDR_EXPR
