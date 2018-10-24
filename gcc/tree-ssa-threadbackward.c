@@ -76,6 +76,11 @@ public:
 
   /* Evaluate statement G assuming entry only via edge E */
   bool range_of_stmt_edge (irange& r, gimple *g, edge e);
+
+  // Calculate a range for a statement if NAME has a specified range
+  bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
+				 const irange &nr);
+
   bool path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
 		        enum path_range_direction, edge start_edge = NULL);
 private:
@@ -111,7 +116,7 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
       gcc_assert (e->dest == bb);
       arg = gimple_phi_arg_def (phi, e->dest_idx);
       // Pick up anything simple we might know about the incoming edge. 
-      if (TREE_CODE (arg) != SSA_NAME || !range_on_edge_p (r, e, arg))
+      if (TREE_CODE (arg) != SSA_NAME || !outgoing_edge_range_p (r, e, arg))
 	return range_of_expr (r, arg);
       return true;
     }
@@ -138,6 +143,43 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
   return stmt->fold (r, range1, range2);
 }
 
+// Calculate a range for range_op statement S by replacing any occurrence of
+// ssa_name NAME with the RANGE_OF_NAME. If it can be evaluated, TRUE is 
+// returned and the resulting range returned in R. 
+
+bool
+thread_ranger::range_of_stmt_with_range  (irange &r, gimple *g, tree name,
+					 const irange &range_of_name)
+{
+  irange range1, range2;
+  grange_op *s = dyn_cast<grange_op *>(g);
+
+  if (!g)
+    return false;
+
+  tree op1 = s->operand1 ();
+  tree op2 = s->operand2 ();
+
+  gcc_checking_assert (valid_ssa_p (name));
+//  gcc_checking_assert (useless_type_conversion_p (TREE_TYPE (name),
+//						  range_of_name.type ()));
+  if (op1 == name)
+    range1 = range_of_name;
+  else
+    if (!range_of_expr (range1, op1))
+      return false;
+
+  if (!op2)
+    return s->fold (r, range1);
+
+  if (op2 == name)
+    range2 = range_of_name;
+  else
+    if (!range_of_expr (range2, op2))
+      return false;
+
+  return s->fold (r, range1, range2);
+}
 
 // Calculate the known range for NAME on a path of basic blocks in
 // BBS.  If such a range exists, store it in R and return TRUE,
@@ -176,10 +218,12 @@ thread_ranger::path_range_list (irange &r, tree name,
   if (gimple_bb (def_stmt) == first_bb && start_edge)
     {
       if (!range_of_stmt_edge (r, def_stmt, start_edge))
-	get_global_ssa_range (r, name);
+	if (!range_of_stmt (r, def_stmt))
+	  return false;
     }
   else
-    get_global_ssa_range (r, name);
+    if (!range_on_entry (r, first_bb, name))
+      return false;
 
   if (dir == REVERSE)
     return path_range_list_reverse (r, name, bbs);
@@ -189,7 +233,7 @@ thread_ranger::path_range_list (irange &r, tree name,
       edge e = find_edge (bbs[i - 1], bbs[i]);
       gcc_assert (e);
       irange redge;
-      if (range_on_edge_p (redge, e, name))
+      if (outgoing_edge_range_p (redge, e, name))
 	r.intersect (redge);
     }
 
@@ -211,7 +255,7 @@ thread_ranger::path_range_list_reverse (irange &r, tree name,
       edge e = find_edge (bbs[i], bbs[i - 1]);
       gcc_assert (e);
       irange redge;
-      if (range_on_edge_p (redge, e, name))
+      if (outgoing_edge_range_p (redge, e, name))
 	r.intersect (redge);
     }
 
@@ -270,7 +314,7 @@ class bb_paths
   bool range_of_folded_stmt (irange &r, gimple *stmt, tree var,
 			     const irange var_range)
   {
-    return ranger.range_of_stmt (r, stmt, var, var_range);
+    return ranger.range_of_stmt_with_range (r, stmt, var, var_range);
   }
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)
@@ -406,7 +450,7 @@ bb_paths::prune_irrelevant_range_blocks (vec <basic_block> &path)
       edge e;
 
       gcc_assert (e = find_edge (path[i], path[i - 1]));
-      if (ranger.range_on_edge_p (r, e, name))
+      if (ranger.outgoing_edge_range_p (r, e, name))
 	{
 	  /* Remove anything that came before here.  */
 	  path.truncate (i + 1);

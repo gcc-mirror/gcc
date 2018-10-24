@@ -1484,7 +1484,6 @@ OBJS = \
 	sreal.o \
 	ssa-range.o \
 	ssa-range-bb.o \
-	ssa-range-global.o \
 	ssa-range-vrp.o \
 	stack-ptr-mod.o \
 	statistics.o \

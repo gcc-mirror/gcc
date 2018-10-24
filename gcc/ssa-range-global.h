@@ -23,6 +23,19 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "range.h"
 
+// This global cache is used with the range engine as markers for what
+// has been visited during this incarnation.  Once the ranger evaluates
+// a name, it is not re-evaluated again.   
+//
+// An iterative ranger could detect that things have changed, and re-evaluate 
+// a specific range
+//
+// When retreiving a global name, a check is first made to see if the 
+// global irange cache has a range associated with it, and that is returned
+// if it does.  If it does not, then any range assocaited with the
+// existing SSA_NAME_RANGE_INFO field is extracted and that is returned,
+// albeit with a false flagindicating there is not a global cache entry.
+
 class ssa_global_cache
 {
 public:

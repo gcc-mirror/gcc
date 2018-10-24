@@ -42,10 +42,10 @@ public:
   ~block_ranger ();
 
   // If a range for name is defined by edge E, return it.
-  virtual bool range_on_edge_p (irange &r, edge e, tree name);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name = NULL);
   // Evaluate the range for name on stmt S if the lhs has range LHS.
-  bool compute_operand_range (irange &r, gimple *s, tree name,
-			      const irange &lhs);
+  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
+				      const irange &lhs);
 
   bool range_p (basic_block bb, tree name);
   tree single_import (tree name);

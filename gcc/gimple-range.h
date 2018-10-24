@@ -76,35 +76,29 @@ class gimple_range
   static bool supports_const_p (tree c);
   static bool supports_p (tree expr);
   static tree valid_ssa_p (tree exp);
-  // Calculate ranges from an edge that arent related to ssa_names. Ie.
-  // conditional branches and switch operations which have no LHS.
-  gimple *range_outgoing_edge_p (irange &r, edge e);
 
-  // Calculate a range for a tree expr.
+  // Calculate a range for a tree expr, originating on optional stmt S.
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
 
   // Calculate a range for a gimple statement which support range operations.
   bool range_of_stmt (irange &r, gimple *s);
-  bool range_of_stmt (irange &r, grange_op *s);
-  bool range_of_stmt (irange &r, gphi *phi);
-  bool range_of_stmt (irange &r, gcall *call);
-
-  // Calculate a range for a statement if NAME has a specified range
-  bool range_of_stmt (irange &r, gimple *s, tree name, const irange &nr);
-  bool range_of_stmt (irange &r, grange_op *s, tree name, const irange &nr);
-
-  // Calculate the range for NAME on edge E only if it is defined by E.
-  virtual bool range_on_edge_p (irange &r, edge e, tree name);
 
   // Calculate the range for NAME on edge E.
   bool range_on_edge (irange &r, edge e, tree name);
 
   // Calculate the range for NAME on entry to block BB.
-  bool range_on_entry (irange &r, basic_block bb, tree name);
+  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
 
   // Calculate the range for NAME at the end of block BB
   bool range_on_exit (irange &r, basic_block bb, tree name);
 
+  // Calculate a range for a kind of gimple statement .
+  virtual bool range_of_range_op  (irange &r, grange_op *s);
+  virtual bool range_of_phi (irange &r, gphi *phi);
+  virtual bool range_of_call (irange &r, gcall *call);
+
+  // Calculate a range on edge E only if it is defined by E.
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name = NULL);
   // Calculate the range for NAME if the result of statement S is the range LHS.
   virtual bool compute_operand_range (irange &r, gimple *s, tree name,
 				      const irange &lhs);

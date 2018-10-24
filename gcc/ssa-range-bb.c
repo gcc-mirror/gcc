@@ -439,21 +439,13 @@ block_ranger::~block_ranger ()
 // Calculate a range for NAME on edge E, returning the result in R.
 
 bool
-block_ranger::range_on_edge_p (irange &r, edge e, tree name)
+block_ranger::outgoing_edge_range_p (irange &r, edge e, tree name)
 {
-  irange lhs_range;
-  basic_block bb = e->src;
-
-  gcc_checking_assert (valid_ssa_p (name));
-
   // If this block doesnt produce ranges for NAME, bail now.
-  if (!range_p (bb, name))
+  if (name && !range_p (e->src, name))
     return false;
   
-  // Calculate the range imposed by following edge E.
-  gimple *s = range_outgoing_edge_p (lhs_range, e);
-  // And use it to determine a range for NAME.
-  return compute_operand_range (r, s, name, lhs_range);
+  return gimple_range::outgoing_edge_range_p (r, e, name);
 }
 
 // Given the expression in STMT, return an evaluation in R for NAME
@@ -481,7 +473,7 @@ block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
   op1 = stmt->operand1 ();
   op2 = stmt->operand2 ();
 
-  // THe base ranger handles NAME on this statement.
+  // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
     return gimple_range::compute_operand_range (r, stmt, name, lhs);
 
@@ -728,7 +720,7 @@ block_ranger::exercise (FILE *output)
 	  for (x = 1; x < num_ssa_names; x++)
 	    {
 	      tree name = ssa_name (x);
-	      if (name && range_on_edge_p (range, e, name))
+	      if (name && outgoing_edge_range_p (range, e, name))
 		{
 		  if (output)
 		    {

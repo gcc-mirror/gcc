@@ -51,21 +51,24 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "ssa-range-global.h"
 
-/* Initialize a global cache.  */
+// Initialize a global cache.
+
 ssa_global_cache::ssa_global_cache ()
 {
   m_tab.create (0);
   m_tab.safe_grow_cleared (num_ssa_names);
 }
 
-/* Deconstruct a global cache.  */
+// Deconstruct a global cache.
+
 ssa_global_cache::~ssa_global_cache ()
 {
   m_tab.release ();
 }
 
-/* Retrieve the global range of NAME from cache memory if it exists.  Return
-   the value in R.  */
+// Retrieve the global range of NAME from cache memory if it exists. 
+// Return the value in R.
+
 bool
 ssa_global_cache::get_global_range (irange &r, tree name) const
 {
@@ -79,7 +82,8 @@ ssa_global_cache::get_global_range (irange &r, tree name) const
   return false;
 }
 
-/* Set the range for NAME to R in the glonbal cache.  */
+// Set the range for NAME to R in the glonbal cache.
+
 void
 ssa_global_cache::set_global_range (tree name, const irange& r)
 {
@@ -94,21 +98,24 @@ ssa_global_cache::set_global_range (tree name, const irange& r)
     }
 }
 
-/* Set the range for NAME to R in the glonbal cache.  */
+// Set the range for NAME to R in the glonbal cache.
+
 void
 ssa_global_cache::clear_global_range (tree name)
 {
   m_tab[SSA_NAME_VERSION (name)] = NULL;
 }
 
-/* Clear the global cache.  */
+// Clear the global cache.
+
 void
 ssa_global_cache::clear ()
 {
   memset (m_tab.address(), 0, m_tab.length () * sizeof (irange_storage *));
 }
 
-/* Dump the contents of the global cache to F.  */
+// Dump the contents of the global cache to F. 
+
 void
 ssa_global_cache::dump (FILE *f)
 {

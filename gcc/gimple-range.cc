@@ -107,9 +107,10 @@ gimple_range::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
 // cannot be calculated, return false.  
 
 bool
-gimple_range::range_of_stmt (irange &r, grange_op *s)
+gimple_range::range_of_range_op (irange &r, grange_op *s)
 {
   irange range1, range2;
+  bool res;
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -118,18 +119,24 @@ gimple_range::range_of_stmt (irange &r, grange_op *s)
   if (!range_of_expr (range1, op1, s))
     return false;
   if (!op2)
-    return s->fold (r, range1);
-
-  // Calculate a range for operand 2.
-  if (!range_of_expr (range2, op2, s))
-    return false;
-  return s->fold (r, range1, range2);
+    res = s->fold (r, range1);
+  else
+    {
+      // Calculate a range for operand 2.
+      if (!range_of_expr (range2, op2, s))
+	return false;
+      res = s->fold (r, range1, range2);
+    }
+  // If fold() fails, return varying_p.
+  if (!res)
+    r.set_varying (gimple_expr_type (s));
+  return true;
 }
 
 // Calculate a range for phi statement S and return it in R.  If a range
 // cannot be calculated, return false.  
 bool
-gimple_range::range_of_stmt (irange &r, gphi *phi)
+gimple_range::range_of_phi (irange &r, gphi *phi)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = TREE_TYPE (phi_def);
@@ -146,9 +153,21 @@ gimple_range::range_of_stmt (irange &r, gphi *phi)
       irange arg_range;
       tree arg = gimple_phi_arg_def (phi, x);
       edge e = gimple_phi_arg_edge (phi, x);
-      // Try to find a range from the edge.  If that fails, return false.
-      if (!range_on_edge (arg_range, e, arg))
-	return false;
+      // Try to find a range from the edge.  If that fails, return varying.
+      if (valid_ssa_p (arg))
+        {
+	  if (!range_on_edge (arg_range, e, arg))
+	    {
+	      r.set_varying (type);
+	      return true;
+	    }
+	}
+      else
+	if (!range_of_expr (arg_range, arg))
+	  {
+	    r.set_varying (type);
+	    return true;
+	  }
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
@@ -162,7 +181,7 @@ gimple_range::range_of_stmt (irange &r, gphi *phi)
 // Calculate a range for call statement S and return it in R.  If a range
 // cannot be calculated, return false.  
 bool
-gimple_range::range_of_stmt (irange &r, gcall *call)
+gimple_range::range_of_call (irange &r, gcall *call)
 {
   tree type = gimple_call_return_type (call);
   if (!supports_type_p (type))
@@ -184,106 +203,46 @@ bool
 gimple_range::range_of_stmt (irange &r, gimple *s)
 {
   if (is_a<grange_op *> (s))
-    return range_of_stmt (r, as_a<grange_op *> (s));
+    return range_of_range_op (r, as_a<grange_op *> (s));
   if (is_a<gphi *>(s))
-    return range_of_stmt (r, as_a<gphi *> (s));
+    return range_of_phi (r, as_a<gphi *> (s));
   if (is_a<gcall *>(s))
-    return range_of_stmt (r, as_a<gcall *> (s));
+    return range_of_call (r, as_a<gcall *> (s));
 
   return false;
 }
 
-// Calculate a range for range_op statement S by replacing any occurrence of
-// ssa_name NAME with the RANGE_OF_NAME. If it can be evaluated, TRUE is 
-// returned and the resulting range returned in R. 
-
-bool
-gimple_range::range_of_stmt (irange &r, grange_op *s, tree name,
-			     const irange &range_of_name)
-{
-  irange range1, range2;
-  tree op1 = s->operand1 ();
-  tree op2 = s->operand2 ();
-
-  gcc_checking_assert (valid_ssa_p (name));
-//  gcc_checking_assert (useless_type_conversion_p (TREE_TYPE (name),
-//						  range_of_name.type ()));
-  if (op1 == name)
-    range1 = range_of_name;
-  else
-    if (!range_of_expr (range1, op1))
-      return false;
-
-  if (!op2)
-    return s->fold (r, range1);
-
-  if (op2 == name)
-    range2 = range_of_name;
-  else
-    if (!range_of_expr (range2, op2))
-      return false;
-
-  return s->fold (r, range1, range2);
-}
-
-// Calculate a range for statement S by replacing any occurrence of
-// ssa_name NAME with the RANGE_OF_NAME. If it can be evaluated, TRUE is 
-// returned and the resulting range returned in R. 
-
-bool
-gimple_range::range_of_stmt (irange &r, gimple *g, tree name,
-			     const irange &range_of_name)
-{
-  if (is_a<grange_op *> (g))
-    return range_of_stmt (r, as_a<grange_op *> (g), name, range_of_name);
-  return false;
-}
-
-// Look for the range of NAME on edge E and return it in R.  
-// Return false if NAME is not defined by edge E.
-
-bool
-gimple_range::range_on_edge_p (irange &r, edge e, tree name)
-{
-  irange lhs;
-  gimple *s;
-
-  gcc_checking_assert (valid_ssa_p (name));
-  // If the last stmt in the predecessor is control flow, see if it sets a 
-  // range for name.
-  s = range_outgoing_edge_p (lhs, e);
-  if (s && compute_operand_range (r, s, name, lhs))
-    return true;
-
-  return false;
-}
-
-// Calcualte a range for NAME on edge E and return it in R.  
+// Calculate a range for NAME on edge E and return it in R.  
 // Return false if no range can be determined.
-//
+
 bool
 gimple_range::range_on_edge (irange &r, edge e, tree name)
 {
-  irange lhs;
+  irange edge_range;
+
+  if (!supports_ssa_p (name))
+    return false;
+
+  if (!range_on_exit (r, e->src, name))
+    return false;
 
   // Check to see if NAME is defined on edge e.
-  if (range_on_edge_p (r, e, name))
-    return true;
+  if (outgoing_edge_range_p (edge_range, e, name))
+    r.intersect (edge_range);
 
-  // If not, range is whatever it is on exit from the predecessor.
-  return range_on_exit (r, e->src, name);
+  return true;
 }
 
-// Return the range forced by edge E for a branch statement in R.
-// Note this applies only to edges with PRED blocks ending in statements
-// with control flow but no LHS. Such as the true or false edge of a branch
-// or the case values on a switch edge.
-// Return the last statement causing the control flow in e->src.
-// if there is no control flow, return NULL.
+// Calculate a range on edge E and return it in R.  if NAME is not specified,
+// simply return any value forced on the edge by control flow.  If NAME
+// is specified, try to evaluate a range for NAME on this edge.
+// Return FALSE if this is either not a control edge or NAME is not defined
+// by this edge.
 
-gimple *
-gimple_range::range_outgoing_edge_p (irange &r, edge e)
+bool
+gimple_range::outgoing_edge_range_p (irange &r, edge e, tree name)
 {
+  // Determine if there is an outgoing edge.
   gimple *s = last_stmt (e->src);
   if (is_a<gcond *> (s))
     {
@@ -293,9 +252,18 @@ gimple_range::range_outgoing_edge_p (irange &r, edge e)
 	r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
       else
 	gcc_unreachable ();
-      return s;
     }
-  return NULL;
+  else
+    return false;
+
+  // If no name is specified, we're done.
+  if (!name)
+    return true;
+
+  gcc_checking_assert (valid_ssa_p (name));
+  // Otherwise use the outgoing edge as a LHS and try to calculate a range.
+  irange lhs = r;
+  return compute_operand_range (r, s, name, lhs);
 }
 
 // Return the range for NAME on entry to basic block BB in R.  

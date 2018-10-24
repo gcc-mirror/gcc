@@ -93,7 +93,7 @@ execute_ranger_vrp ()
 	      fprintf (dump_file, "RVRP: Considering BB %d:  ", bb->index);
 	      print_gimple_stmt (dump_file, cond, 0, TDF_NONE);
 	    }
-	  if (ranger.path_range_stmt (r, stmt) && !r.varying_p ())
+	  if (ranger.range_of_stmt (r, stmt) && !r.varying_p ())
 	    {
 	      if (dump_file)
 	        {
