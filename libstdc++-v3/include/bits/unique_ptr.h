@@ -201,7 +201,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      "rvalue deleter bound to reference"); }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      constexpr unique_ptr(nullptr_t) noexcept : _M_t()
+      { static_assert(!is_pointer<deleter_type>::value,
+		      "constructed with null function pointer deleter"); }
 
       // Move constructors.
 
@@ -491,7 +493,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       : _M_t(__u.release(), std::forward<deleter_type>(__u.get_deleter())) { }
 
       /// Creates a unique_ptr that owns nothing.
-      constexpr unique_ptr(nullptr_t) noexcept : unique_ptr() { }
+      constexpr unique_ptr(nullptr_t) noexcept : _M_t()
+      { static_assert(!is_pointer<deleter_type>::value,
+		      "constructed with null function pointer deleter"); }
 
       template<typename _Up, typename _Ep,
 	       typename = _Require<__safe_conversion_up<_Up, _Ep>>>

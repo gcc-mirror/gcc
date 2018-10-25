@@ -1,3 +1,17 @@
+2018-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+
+	Backport from mainline
+	2018-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87704
+	* include/bits/unique_ptr.h (unique_ptr::unique_ptr(nullptr_t)): Do
+	not delegate to default constructor.
+	(unique_ptr<T[], D>::unique_ptr(nullptr_t)): Likewise.
+	* testsuite/20_util/unique_ptr/cons/incomplete.cc: New test.
+	* testsuite/20_util/unique_ptr/assign/48635_neg.cc: Adjust dg-error.
+	* testsuite/20_util/unique_ptr/cons/cv_qual_neg.cc: Likewise.
+
 2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
