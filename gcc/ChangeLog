@@ -1,6 +1,27 @@
 2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Jinsong Ji <jji@us.ibm.com>
 
+	* config/rs6000/emmintrin.h (_mm_slli_epi16): Replace deprecated
+	function with vec_sl.
+	(_mm_slli_epi32): Likewise.
+	(_mm_slli_epi64): Likewise.
+	(_mm_srai_epi16): Replace deprecated function with vec_sra.
+	(_mm_srai_epi32): Likewise.
+	(_mm_srli_epi16): Replace deprecated function with vec_sr.
+	(_mm_srli_epi32): Likewise.
+	(_mm_srli_epi64): Likewise.
+	(_mm_sll_epi16): Replace deprecated function with vec_sl.
+	(_mm_sll_epi32): Likewise.
+	(_mm_sll_epi64): Likewise.
+	(_mm_sra_epi16): Replace deprecated function with vec_sra.
+	(_mm_sra_epi32): Likewise.
+	(_mm_srl_epi16): Replace deprecated function with vec_sr.
+	(_mm_srl_epi32): Likewise.
+	(_mm_srl_epi64): Likewise.
+
+2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Jinsong Ji <jji@us.ibm.com>
+
 	* gcc/config/rs6000/emmintrin.h (_mm_sll_epi16): Replace
 	comparison operators with vec_cmp* for compatibility due to
 	unfortunate history; clean up formatting and use types more
