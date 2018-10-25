@@ -1,6 +1,19 @@
 2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Jinsong Ji <jji@us.ibm.com>
 
+	* gcc/config/rs6000/emmintrin.h (_mm_sll_epi16): Replace
+	comparison operators with vec_cmp* for compatibility due to
+	unfortunate history; clean up formatting and use types more
+	appropriately.
+	(_mm_sll_epi32): Likewise.
+	(_mm_sll_epi64): Likewise.
+	(_mm_srl_epi16): Likewise.
+	(_mm_srl_epi32): Likewise.
+	(_mm_srl_epi64): Likewise.
+
+2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Jinsong Ji <jji@us.ibm.com>
+
 	* config/rs6000/emmintrin.h (_mm_sll_epi64): Remove wrong cast.
 	* config/rs6000/xmmintrin.h (_mm_min_ps): Change m's type to
 	__vector __bool int.  Use vec_cmpgt in preference to deprecated
