@@ -1,4 +1,10 @@
+2018-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/odr-1_0.C: New test.
+	* g++.dg/lto/odr-1_1.C: New test.
+
 2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
 
 	* gcc.dg/sibcall-9.c: Make v static.
 	* gcc.dg/sibcall-10.c: Likewise.

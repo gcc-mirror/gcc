@@ -1,3 +1,8 @@
+2018-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (odr_types_equivalent_p): Do not ICE if one of types
+	is anonymous.
+
 2018-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665
