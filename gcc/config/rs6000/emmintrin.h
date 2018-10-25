@@ -1725,18 +1725,19 @@ _mm_srli_epi64 (__m128i __A, int __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu lshift, shmask;
+  __v8hu lshift;
+  __vector __bool short shmask;
   const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
   __v8hu result;
 
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v8hu)__B, 0);
+  lshift = vec_splat ((__v8hu) __B, 0);
 #elif __BIG_ENDIAN__
-  lshift = vec_splat ((__v8hu)__B, 3);
+  lshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = lshift <= shmax;
+  shmask = vec_cmple (lshift, shmax);
   result = vec_vslh ((__v8hu) __A, lshift);
-  result = vec_sel (shmask, result, shmask);
+  result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1744,17 +1745,18 @@ _mm_sll_epi16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su lshift, shmask;
+  __v4su lshift;
+  __vector __bool int shmask;
   const __v4su shmax = { 32, 32, 32, 32 };
   __v4su result;
 #ifdef __LITTLE_ENDIAN__
-  lshift = vec_splat ((__v4su)__B, 0);
+  lshift = vec_splat ((__v4su) __B, 0);
 #elif __BIG_ENDIAN__
-  lshift = vec_splat ((__v4su)__B, 1);
+  lshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = lshift < shmax;
+  shmask = vec_cmplt (lshift, shmax);
   result = vec_vslw ((__v4su) __A, lshift);
-  result = vec_sel (shmask, result, shmask);
+  result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1763,14 +1765,15 @@ _mm_sll_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_sll_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du lshift, shmask;
+  __v2du lshift;
+  __vector __bool long long shmask;
   const __v2du shmax = { 64, 64 };
   __v2du result;
 
-  lshift = (__v2du) vec_splat ((__v2du)__B, 0);
-  shmask = lshift < shmax;
+  lshift = vec_splat ((__v2du) __B, 0);
+  shmask = vec_cmplt (lshift, shmax);
   result = vec_vsld ((__v2du) __A, lshift);
-  result = (__v2du) vec_sel ((__v2df) shmask, (__v2df) result, shmask);
+  result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1815,18 +1818,19 @@ _mm_sra_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi16 (__m128i __A, __m128i __B)
 {
-  __v8hu rshift, shmask;
+  __v8hu rshift;
+  __vector __bool short shmask;
   const __v8hu shmax = { 15, 15, 15, 15, 15, 15, 15, 15 };
   __v8hu result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v8hu)__B, 0);
+  rshift = vec_splat ((__v8hu) __B, 0);
 #elif __BIG_ENDIAN__
-  rshift = vec_splat ((__v8hu)__B, 3);
+  rshift = vec_splat ((__v8hu) __B, 3);
 #endif
-  shmask = rshift <= shmax;
+  shmask = vec_cmple (rshift, shmax);
   result = vec_vsrh ((__v8hu) __A, rshift);
-  result = vec_sel (shmask, result, shmask);
+  result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1834,18 +1838,19 @@ _mm_srl_epi16 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi32 (__m128i __A, __m128i __B)
 {
-  __v4su rshift, shmask;
+  __v4su rshift;
+  __vector __bool int shmask;
   const __v4su shmax = { 32, 32, 32, 32 };
   __v4su result;
 
 #ifdef __LITTLE_ENDIAN__
-  rshift = vec_splat ((__v4su)__B, 0);
+  rshift = vec_splat ((__v4su) __B, 0);
 #elif __BIG_ENDIAN__
-  rshift = vec_splat ((__v4su)__B, 1);
+  rshift = vec_splat ((__v4su) __B, 1);
 #endif
-  shmask = rshift < shmax;
+  shmask = vec_cmplt (rshift, shmax);
   result = vec_vsrw ((__v4su) __A, rshift);
-  result = vec_sel (shmask, result, shmask);
+  result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
 }
@@ -1854,14 +1859,15 @@ _mm_srl_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_srl_epi64 (__m128i __A, __m128i __B)
 {
-  __v2du rshift, shmask;
+  __v2du rshift;
+  __vector __bool long long shmask;
   const __v2du shmax = { 64, 64 };
   __v2du result;
 
-  rshift = (__v2du) vec_splat ((__v2du)__B, 0);
-  shmask = rshift < shmax;
+  rshift = vec_splat ((__v2du) __B, 0);
+  shmask = vec_cmplt (rshift, shmax);
   result = vec_vsrd ((__v2du) __A, rshift);
-  result = (__v2du)vec_sel ((__v2du)shmask, (__v2du)result, (__v2du)shmask);
+  result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
 }
