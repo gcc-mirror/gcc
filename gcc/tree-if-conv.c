@@ -118,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "internal-fn.h"
 #include "fold-const.h"
+#include "tree-ssa-sccvn.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -2979,6 +2980,7 @@ tree_if_conversion (struct loop *loop)
   unsigned int todo = 0;
   bool aggressive_if_conv;
   struct loop *rloop;
+  bitmap exit_bbs;
 
  again:
   rloop = NULL;
@@ -3055,6 +3057,14 @@ tree_if_conversion (struct loop *loop)
 
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop->header);
+
+  /* Perform local CSE, this esp. helps the vectorizer analysis if loads
+     and stores are involved.
+     ???  We'll still keep dead stores though.  */
+  exit_bbs = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
+  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
+  BITMAP_FREE (exit_bbs);
 
   todo |= TODO_cleanup_cfg;
 
