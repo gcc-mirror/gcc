@@ -1,3 +1,10 @@
+2018-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	PR tree-optimization/87745
+	* tree-vectorizer.h (get_earlier_stmt): Remove.
+	(get_later_stmt): Pick up UID from the original non-pattern stmt.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665

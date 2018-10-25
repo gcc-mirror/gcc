@@ -1,3 +1,9 @@
+2018-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	PR tree-optimization/87745
+	* gfortran.dg/20181025-1.f: New testcase.
+
 2018-10-24  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665
