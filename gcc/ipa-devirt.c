@@ -1265,6 +1265,13 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
     return true;
+  if ((type_with_linkage_p (t1) && type_in_anonymous_namespace_p (t1))
+      != (type_with_linkage_p (t2) && type_in_anonymous_namespace_p (t2)))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("one of types is in anonymous namespace while other is not"));
+      return false;
+    }
   gcc_assert (!type_with_linkage_p (t1) || !type_in_anonymous_namespace_p (t1));
   gcc_assert (!type_with_linkage_p (t2) || !type_in_anonymous_namespace_p (t2));
 
