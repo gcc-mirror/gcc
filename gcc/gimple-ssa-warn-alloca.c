@@ -156,7 +156,7 @@ adjusted_warn_limit (bool idx)
 // call was created by the gimplifier for a VLA.
 
 static struct alloca_type_and_limit
-alloca_call_type (path_ranger &ranger, gimple *stmt, bool is_vla)
+alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
 {
   gcc_assert (gimple_alloca_call_p (stmt));
   tree len = gimple_call_arg (stmt, 0);
@@ -252,7 +252,7 @@ unsigned int
 pass_walloca::execute (function *fun)
 {
   basic_block bb;
-  path_ranger ranger;
+  global_ranger ranger;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     ranger.exercise (dump_file);

@@ -98,11 +98,14 @@ class ssa_range
   virtual bool range_of_call (irange &r, gcall *call);
 
   // Calculate a range on edge E only if it is defined by E.
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name = NULL);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
   // Calculate the range for NAME if the result of statement S is the range LHS.
   virtual bool compute_operand_range (irange &r, gimple *s, tree name,
 				      const irange &lhs);
 };
+
+extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
+extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 
 
 /* This is the primary interface class for the range generator at the basic
@@ -160,15 +163,15 @@ private:
 // of range on entry to blocks.  ALL work is done on-demand so it is relatively
 // lightweight until used.
 // 
-// There is a global ssa-name table implemented within path_ranger via 
+// There is a global ssa-name table implemented within global_ranger via 
 // a set of private global_ssa_name routines.  These are here until such
 // time that there is a global irange table for real.  
 
-class path_ranger : public block_ranger
+class global_ranger : public block_ranger
 {
 public:
-  path_ranger ();
-  ~path_ranger ();
+  global_ranger ();
+  ~global_ranger ();
 
   virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
   virtual bool range_on_entry (irange &r, basic_block bb, tree name);
@@ -197,7 +200,7 @@ private:
 };
 
 
-// Like path_ranger::path_range_on_stmt(), but make an on-the-fly ranger.
+// Like global_ranger::path_range_on_stmt(), but make an on-the-fly ranger.
 // Return TRUE if SSA as seen from within STMT has a known range the is not
 // varying.  Set this range in R.
 //
@@ -209,7 +212,7 @@ private:
 static inline bool
 on_demand_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
 {
-  path_ranger ranger;
+  global_ranger ranger;
   bool ret;
   ret = ranger.range_of_expr (r, ssa, stmt);
   if (ret && r.varying_p ())

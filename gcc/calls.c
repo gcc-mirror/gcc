@@ -1259,7 +1259,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
 
   tree exptype = TREE_TYPE (exp);
   bool integral = INTEGRAL_TYPE_P (exptype);
-  path_ranger ranger;
+  global_ranger ranger;
   irange r;
 
   /* If we don't have a ranger, use global range info.  */

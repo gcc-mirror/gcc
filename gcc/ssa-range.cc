@@ -152,7 +152,7 @@ glogical::combine (irange &r, const irange &lhs, const irange &op1_true,
 
 // Return the First operand of this statement if it is a valid operand 
 // supported by ranges, otherwise return NULL_TREE. 
-//
+
 tree
 grange_op::operand1 () const
 {
@@ -274,11 +274,43 @@ grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
 }
 
 
+gimple *
+gimple_outgoing_range_stmt_p (basic_block bb)
+{
+  gimple *s = last_stmt (bb);
+  if (s && is_a<gcond *> (s))
+    return s;
+  return NULL;
+}
+
+// Calculate the range forced on on edge E by control flow, if any,  and
+// return it in R.  Return the statment which defines the range, otherwise
+// return NULL;
+
+gimple *
+gimple_outgoing_edge_range_p (irange &r, edge e)
+{
+  // Determine if there is an outgoing edge.
+  gimple *s = gimple_outgoing_range_stmt_p (e->src);
+  if (!s)
+    return NULL;
+  if (is_a<gcond *> (s))
+    {
+      if (e->flags & EDGE_TRUE_VALUE)
+	r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
+      else if (e->flags & EDGE_FALSE_VALUE)
+	r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
+      else
+	gcc_unreachable ();
+      return s;
+    }
+  gcc_unreachable ();
+}
+
 
 // This function returns a range for a tree node.  If optional statement S
 // is present, then the range would be if it were to appear as a use on S.
 // Return false if ranges are not supported.
-//
 
 bool
 ssa_range::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
@@ -363,6 +395,7 @@ ssa_range::range_of_range_op (irange &r, grange_op *s)
 
 // Calculate a range for phi statement S and return it in R.  If a range
 // cannot be calculated, return false.  
+
 bool
 ssa_range::range_of_phi (irange &r, gphi *phi)
 {
@@ -407,7 +440,8 @@ ssa_range::range_of_phi (irange &r, gphi *phi)
 }
 
 // Calculate a range for call statement S and return it in R.  If a range
-// cannot be calculated, return false.  
+// cannot be calculated, return false. 
+
 bool
 ssa_range::range_of_call (irange &r, gcall *call)
 {
@@ -461,34 +495,20 @@ ssa_range::range_on_edge (irange &r, edge e, tree name)
   return true;
 }
 
-// Calculate a range on edge E and return it in R.  if NAME is not specified,
-// simply return any value forced on the edge by control flow.  If NAME
-// is specified, try to evaluate a range for NAME on this edge.
-// Return FALSE if this is either not a control edge or NAME is not defined
-// by this edge.
+// Calculate a range on edge E and return it in R.  Try to evaluate a range
+// for NAME on this edge.  Return FALSE if this is either not a control edge
+// or NAME is not defined by this edge.
 
 bool
 ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
 {
+  gcc_checking_assert (valid_ssa_p (name));
+
   // Determine if there is an outgoing edge.
-  gimple *s = last_stmt (e->src);
-  if (is_a<gcond *> (s))
-    {
-      if (e->flags & EDGE_TRUE_VALUE)
-	r = irange (boolean_type_node, boolean_true_node, boolean_true_node);
-      else if (e->flags & EDGE_FALSE_VALUE)
-	r = irange (boolean_type_node, boolean_false_node, boolean_false_node);
-      else
-	gcc_unreachable ();
-    }
-  else
+  gimple *s = gimple_outgoing_edge_range_p (r, e);
+  if (!s)
     return false;
 
-  // If no name is specified, we're done.
-  if (!name)
-    return true;
-
-  gcc_checking_assert (valid_ssa_p (name));
   // Otherwise use the outgoing edge as a LHS and try to calculate a range.
   irange lhs = r;
   return compute_operand_range (r, s, name, lhs);
@@ -873,14 +893,14 @@ gori_map::calculate_gori (basic_block bb)
 
   // If this block's last statement may generate range informaiton, 
   // go calculate it.
-  gimple *s = last_stmt (bb);
-  if (!s || !is_a<gcond *>(s))
+  gimple *s = gimple_outgoing_range_stmt_p (bb);
+  if (!s)
     return;
   process_stmt (s, m_outgoing[bb->index], bb);
 }
 
 // Dump the table information for BB to file F.
-//
+
 void
 gori_map::dump(FILE *f, basic_block bb)
 {
@@ -978,7 +998,8 @@ bool
 block_ranger::outgoing_edge_range_p (irange &r, edge e, tree name)
 {
   // If this block doesnt produce ranges for NAME, bail now.
-  if (name && !range_p (e->src, name))
+  gcc_checking_assert (valid_ssa_p (name));
+  if (!range_p (e->src, name))
     return false;
   
   return ssa_range::outgoing_edge_range_p (r, e, name);
@@ -1436,7 +1457,7 @@ ssa_block_ranges::~ssa_block_ranges ()
 }
 
 // Set the range for block BB to be R.
-//
+
 void
 ssa_block_ranges::set_bb_range (const basic_block bb, const irange &r)
 {
@@ -1721,18 +1742,18 @@ ssa_global_cache::dump (FILE *f)
 
 // -------------------------------------------------------------------------
 
-// Initialize a path_ranger.
+// Initialize a global_ranger.
 
-path_ranger::path_ranger () 
+global_ranger::global_ranger () 
 {
   m_block_cache = new block_range_cache ();
   m_globals = new ssa_global_cache ();
   m_non_null = new non_null_ref ();
 }
 
-// Deallocate path_ranger members.
+// Deallocate global_ranger members.
 
-path_ranger::~path_ranger () 
+global_ranger::~global_ranger () 
 {
   delete m_block_cache;
   delete m_globals;
@@ -1742,7 +1763,7 @@ path_ranger::~path_ranger ()
 // Print everything known about the global cache to file F.
 
 inline void
-path_ranger::dump_global_ssa_range (FILE *f)
+global_ranger::dump_global_ssa_range (FILE *f)
 {
   m_globals->dump (f);
 }
@@ -1750,7 +1771,7 @@ path_ranger::dump_global_ssa_range (FILE *f)
 // Return the global range for NAME in R, if it has one. Otherwise return false.
 
 bool
-path_ranger::has_global_ssa_range (irange &r, tree name)
+global_ranger::has_global_ssa_range (irange &r, tree name)
 {
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
   if (!supports_ssa_p (name))
@@ -1767,7 +1788,7 @@ path_ranger::has_global_ssa_range (irange &r, tree name)
 // set the global range to the default range.
 
 bool
-path_ranger::get_global_ssa_range (irange &r, tree name)
+global_ranger::get_global_ssa_range (irange &r, tree name)
 {
   gimple *s;
   gcc_checking_assert (valid_ssa_p (name));
@@ -1792,7 +1813,7 @@ path_ranger::get_global_ssa_range (irange &r, tree name)
 // Set global range of NAME to R.
 
 inline void
-path_ranger::set_global_ssa_range (tree name, const irange&r)
+global_ranger::set_global_ssa_range (tree name, const irange&r)
 {
   m_globals->set_global_range (name, r);
 }
@@ -1800,7 +1821,7 @@ path_ranger::set_global_ssa_range (tree name, const irange&r)
 // clear any global range for NAME.
 
 void
-path_ranger::clear_global_ssa_range (tree name) 
+global_ranger::clear_global_ssa_range (tree name) 
 {
   m_globals->clear_global_range (name);
 }
@@ -1809,7 +1830,7 @@ path_ranger::clear_global_ssa_range (tree name)
 // return the non-null range in R.
 
 inline bool
-path_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
+global_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
 {
   tree type = TREE_TYPE (name);
   if (!POINTER_TYPE_P (type))
@@ -1827,7 +1848,7 @@ path_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
 // on the block/edges leading back to that point.
 
 void
-path_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
+global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 {
   edge_iterator ei;
   edge e;
@@ -1900,7 +1921,7 @@ path_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 // is no range other than varying.
 
 bool
-path_ranger::range_on_entry (irange &r, basic_block bb, tree name)
+global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
   gimple *def_stmt;
   basic_block def_bb = NULL;
@@ -1940,7 +1961,7 @@ path_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 // value so the ranger can try to reduce it without ever causing a cycle.
 
 inline bool
-path_ranger::check_global_value (irange &r, tree name)
+global_ranger::check_global_value (irange &r, tree name)
 {
   // Not all statements have a LHS.  */
   if (name)
@@ -1963,7 +1984,7 @@ path_ranger::check_global_value (irange &r, tree name)
 // global value.
 
 inline bool
-path_ranger::adjust_global_value (bool valid, irange &r, tree name)
+global_ranger::adjust_global_value (bool valid, irange &r, tree name)
 {
   if (name)
     {
@@ -1980,7 +2001,7 @@ path_ranger::adjust_global_value (bool valid, irange &r, tree name)
 // Either way, return the range in R
 
 bool
-path_ranger::range_of_call (irange &r, gcall *call)
+global_ranger::range_of_call (irange &r, gcall *call)
 {
   bool ret;
   tree name = gimple_get_lhs (call);
@@ -1996,7 +2017,7 @@ path_ranger::range_of_call (irange &r, gcall *call)
 // Either way, return the range in R
 
 bool
-path_ranger::range_of_phi (irange &r, gphi *phi)
+global_ranger::range_of_phi (irange &r, gphi *phi)
 {
   bool ret;
   irange phi_range;
@@ -2016,7 +2037,7 @@ path_ranger::range_of_phi (irange &r, gphi *phi)
 // Either way, return the range in R
 
 bool
-path_ranger::range_of_range_op (irange &r, grange_op *s)
+global_ranger::range_of_range_op (irange &r, grange_op *s)
 {
   bool ret;
   tree name = gimple_get_lhs (s);
@@ -2034,7 +2055,7 @@ path_ranger::range_of_range_op (irange &r, grange_op *s)
 // If OP is not defined in BB, find the range on entry to this block.
 
 bool
-path_ranger::range_of_expr (irange&r, tree op, gimple *s)
+global_ranger::range_of_expr (irange&r, tree op, gimple *s)
 {
   if (!supports_p (op))
      return false;
@@ -2076,7 +2097,7 @@ path_ranger::range_of_expr (irange&r, tree op, gimple *s)
 // Print the known table values to file F.
 
 void
-path_ranger::dump(FILE *f)
+global_ranger::dump(FILE *f)
 {
   block_ranger::dump (f);
   dump_global_ssa_range (f);
@@ -2088,7 +2109,7 @@ path_ranger::dump(FILE *f)
 // of everything than can be calculated by the ranger to file OUTPUT.
 
 void
-path_ranger::exercise (FILE *output)
+global_ranger::exercise (FILE *output)
 {
 
   basic_block bb;

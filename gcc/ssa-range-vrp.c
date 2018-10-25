@@ -85,11 +85,11 @@ execute_ranger_vrp ()
   // listing in the dump file, and to fully exercise the code.
   if (details)
   { 
-    path_ranger e;
+    global_ranger e;
     e.exercise (dump_file);
   }
 
-  path_ranger ranger;
+  global_ranger ranger;
   basic_block bb;
   irange r;
   bitmap touched = BITMAP_ALLOC (NULL);
@@ -97,7 +97,7 @@ execute_ranger_vrp ()
   FOR_EACH_BB_FN (bb, cfun)
     {
       gcond *cond;
-      gimple *stmt = last_stmt (bb);
+      gimple *stmt = gimple_outgoing_range_stmt_p (bb);
       // Look only at conditionals.
       if (stmt && (cond = dyn_cast <gcond *> (stmt)))
         {

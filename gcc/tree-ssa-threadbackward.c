@@ -67,7 +67,7 @@ ssa_name_same_bb_p (tree name, basic_block bb)
 }
 
 
-class thread_ranger : public path_ranger
+class thread_ranger : public global_ranger
 {
 public:
   thread_ranger ();
