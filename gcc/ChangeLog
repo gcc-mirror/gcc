@@ -5,6 +5,14 @@
 
 2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
 
+	* config/s390/constraints.md (ZL): New constraint.
+	* config/s390/s390.c (legitimate_pic_operand_p): Accept LARL
+	operands.
+	* config/s390/s390.md (movdi_larl): Remove.
+	(movdi_64): Add the LARL alternative.
+
+2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
+
 	PR bootstrap/87747
 	* rtl.c (RTX_CODE_HWINT_P_1): New helper macro.
 	(RTX_CODE_HWINT_P): New macro.
