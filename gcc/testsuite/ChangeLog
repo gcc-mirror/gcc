@@ -1,3 +1,8 @@
+2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* gcc.dg/sibcall-9.c: Make v static.
+	* gcc.dg/sibcall-10.c: Likewise.
+
 2018-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665
