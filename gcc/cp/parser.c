@@ -28167,20 +28167,7 @@ cp_parser_sizeof_operand (cp_parser* parser, enum rid keyword)
 
       /* If all went well, then we're done.  */
       if (cp_parser_parse_definitely (parser))
-	{
-	  cp_decl_specifier_seq decl_specs;
-
-	  /* Build a trivial decl-specifier-seq.  */
-	  clear_decl_specs (&decl_specs);
-	  decl_specs.type = type;
-
-	  /* Call grokdeclarator to figure out what type this is.  */
-	  expr = grokdeclarator (NULL,
-				 &decl_specs,
-				 TYPENAME,
-				 /*initialized=*/0,
-				 /*attrlist=*/NULL);
-	}
+	expr = type;
     }
 
   /* If the type-id production did not work out, then we must be
