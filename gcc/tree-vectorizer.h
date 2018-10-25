@@ -1085,38 +1085,6 @@ nested_in_vect_loop_p (struct loop *loop, stmt_vec_info stmt_info)
 	  && (loop->inner == (gimple_bb (stmt_info->stmt))->loop_father));
 }
 
-/* Return the earlier statement between STMT1_INFO and STMT2_INFO.  */
-
-static inline stmt_vec_info
-get_earlier_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
-{
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
-			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
-		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
-			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
-
-  if (gimple_uid (stmt1_info->stmt) < gimple_uid (stmt2_info->stmt))
-    return stmt1_info;
-  else
-    return stmt2_info;
-}
-
-/* Return the later statement between STMT1_INFO and STMT2_INFO.  */
-
-static inline stmt_vec_info
-get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
-{
-  gcc_checking_assert ((STMT_VINFO_IN_PATTERN_P (stmt1_info)
-			|| !STMT_VINFO_RELATED_STMT (stmt1_info))
-		       && (STMT_VINFO_IN_PATTERN_P (stmt2_info)
-			   || !STMT_VINFO_RELATED_STMT (stmt2_info)));
-
-  if (gimple_uid (stmt1_info->stmt) > gimple_uid (stmt2_info->stmt))
-    return stmt1_info;
-  else
-    return stmt2_info;
-}
-
 /* Return TRUE if a statement represented by STMT_INFO is a part of a
    pattern.  */
 
@@ -1135,6 +1103,18 @@ vect_orig_stmt (stmt_vec_info stmt_info)
   if (is_pattern_stmt_p (stmt_info))
     return STMT_VINFO_RELATED_STMT (stmt_info);
   return stmt_info;
+}
+
+/* Return the later statement between STMT1_INFO and STMT2_INFO.  */
+
+static inline stmt_vec_info
+get_later_stmt (stmt_vec_info stmt1_info, stmt_vec_info stmt2_info)
+{
+  if (gimple_uid (vect_orig_stmt (stmt1_info)->stmt)
+      > gimple_uid (vect_orig_stmt (stmt2_info)->stmt))
+    return stmt1_info;
+  else
+    return stmt2_info;
 }
 
 /* If STMT_INFO has been replaced by a pattern statement, return the
