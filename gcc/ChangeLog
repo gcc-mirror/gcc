@@ -1,3 +1,17 @@
+2018-10-25  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (P9V_BUILTIN_VEC_VSCEDPGT,
+	P9V_BUILTIN_VEC_VSCEDPLT, P9V_BUILTIN_VEC_VSCEDPEQ,
+	P9V_BUILTIN_VEC_VSCEDPUO): Rename base overloaded name.  Add quad
+	precicion entry for each overloaded builtin.
+	* config/rs6000/rs6000-builtin.def (VSCEDPGT, VSCEDPLT, VSCEDPEQ,
+	VSCEDPUO): Rename overloaded name.
+	(VSCEDPGT, VSCEQPGT, VSCEDPLT, VSCEQPLT, VSCEDPEQ, VSCEQPEQ,
+	VSCEDPUO, VSCEQPUO): Add defitions for overloaded builtins.
+	* config/rs6000/vsx.md (xscmpexpqp_<code>_<mode>): Add
+	define_expand for xscmpexqp instruction.
+	(*xscmpexpqp): Add define_insn for the xscmpexqp instruction.
+
 2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Jinsong Ji <jji@us.ibm.com>
 
