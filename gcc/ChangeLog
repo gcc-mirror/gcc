@@ -1,3 +1,8 @@
+2018-10-25  Richard Biener  <rguenther@suse.de>
+
+	* tree-if-conv.c: Include tree-ssa-sccvn.h.
+	(tree_if_conversion): Run CSE on the if-converted loop body.
+
 2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR bootstrap/87747
