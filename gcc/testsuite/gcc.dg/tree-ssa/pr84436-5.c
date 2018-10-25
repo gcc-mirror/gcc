@@ -2,9 +2,9 @@
 /* { dg-options "-O2 -fdump-tree-switchconv -fdump-tree-optimized" } */
 /* { dg-do run } */
 
-char
+signed char
 __attribute__ ((noipa))
-foo (char how)
+foo (signed char how)
 {
   switch (how) {
     case -4: how = 96; break;
