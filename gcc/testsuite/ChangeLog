@@ -1,3 +1,11 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/87725
+	* c-c++-common/gomp/schedule-modifiers-1.c (bar): Separate modifier
+	from kind with a colon rather than comma.
+	* gfortran.dg/gomp/schedule-modifiers-1.f90: New test.
+	* gfortran.dg/gomp/schedule-modifiers-2.f90: New test.
+
 2018-10-24  Michael Meissner  <meissner@linux.ibm.com>
 
 	* gcc.target/powerpc/float128-math.c: New test to make sure the
