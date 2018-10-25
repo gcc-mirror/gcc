@@ -52,10 +52,10 @@ func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
 // We cannot just call the runtime routines, because the race detector expects
 // to be able to intercept the sync/atomic forms but not the runtime forms.
 
-//go:linkname sync_atomic_StoreUintptr sync_atomic.StoreUintptr
+//go:linkname sync_atomic_StoreUintptr sync..z2fatomic.StoreUintptr
 func sync_atomic_StoreUintptr(ptr *uintptr, new uintptr)
 
-//go:linkname sync_atomic_StorePointer sync_atomic.StorePointer
+//go:linkname sync_atomic_StorePointer sync..z2fatomic.StorePointer
 //go:nosplit
 func sync_atomic_StorePointer(ptr *unsafe.Pointer, new unsafe.Pointer) {
 	if writeBarrier.enabled {
@@ -64,10 +64,10 @@ func sync_atomic_StorePointer(ptr *unsafe.Pointer, new unsafe.Pointer) {
 	sync_atomic_StoreUintptr((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
 }
 
-//go:linkname sync_atomic_SwapUintptr sync_atomic.SwapUintptr
+//go:linkname sync_atomic_SwapUintptr sync..z2fatomic.SwapUintptr
 func sync_atomic_SwapUintptr(ptr *uintptr, new uintptr) uintptr
 
-//go:linkname sync_atomic_SwapPointer sync_atomic.SwapPointer
+//go:linkname sync_atomic_SwapPointer sync..z2fatomic.SwapPointer
 //go:nosplit
 func sync_atomic_SwapPointer(ptr *unsafe.Pointer, new unsafe.Pointer) unsafe.Pointer {
 	if writeBarrier.enabled {
@@ -77,10 +77,10 @@ func sync_atomic_SwapPointer(ptr *unsafe.Pointer, new unsafe.Pointer) unsafe.Poi
 	return old
 }
 
-//go:linkname sync_atomic_CompareAndSwapUintptr sync_atomic.CompareAndSwapUintptr
+//go:linkname sync_atomic_CompareAndSwapUintptr sync..z2fatomic.CompareAndSwapUintptr
 func sync_atomic_CompareAndSwapUintptr(ptr *uintptr, old, new uintptr) bool
 
-//go:linkname sync_atomic_CompareAndSwapPointer sync_atomic.CompareAndSwapPointer
+//go:linkname sync_atomic_CompareAndSwapPointer sync..z2fatomic.CompareAndSwapPointer
 //go:nosplit
 func sync_atomic_CompareAndSwapPointer(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
 	if writeBarrier.enabled {

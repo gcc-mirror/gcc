@@ -21,7 +21,7 @@ struct cpuid_ret {
 };
 
 struct cpuid_ret cpuid(uint32_t, uint32_t)
-  __asm__(GOSYM_PREFIX "internal_cpu.cpuid")
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.cpuid")
   __attribute__((no_split_stack));
 
 struct cpuid_ret cpuid(uint32_t eaxArg, uint32_t ecxArg) {
@@ -45,7 +45,7 @@ struct xgetbv_ret {
 };
 
 struct xgetbv_ret xgetbv(void)
-  __asm__(GOSYM_PREFIX "internal_cpu.xgetbv")
+  __asm__(GOSYM_PREFIX "internal..z2fcpu.xgetbv")
   __attribute__((no_split_stack));
 
 #pragma GCC push_options

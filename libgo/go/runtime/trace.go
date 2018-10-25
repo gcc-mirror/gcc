@@ -1143,7 +1143,7 @@ func traceNextGC() {
 // To access runtime functions from runtime/trace.
 // See runtime/trace/annotation.go
 
-//go:linkname trace_userTaskCreate runtime_trace.userTaskCreate
+//go:linkname trace_userTaskCreate runtime..z2ftrace.userTaskCreate
 func trace_userTaskCreate(id, parentID uint64, taskType string) {
 	if !trace.enabled {
 		return
@@ -1161,12 +1161,12 @@ func trace_userTaskCreate(id, parentID uint64, taskType string) {
 	traceReleaseBuffer(pid)
 }
 
-//go:linkname trace_userTaskEnd runtime_trace.userTaskEnd
+//go:linkname trace_userTaskEnd runtime..z2ftrace.userTaskEnd
 func trace_userTaskEnd(id uint64) {
 	traceEvent(traceEvUserTaskEnd, 2, id)
 }
 
-//go:linkname trace_userRegion runtime_trace.userRegion
+//go:linkname trace_userRegion runtime..z2ftrace.userRegion
 func trace_userRegion(id, mode uint64, name string) {
 	if !trace.enabled {
 		return
@@ -1183,7 +1183,7 @@ func trace_userRegion(id, mode uint64, name string) {
 	traceReleaseBuffer(pid)
 }
 
-//go:linkname trace_userLog runtime_trace.userLog
+//go:linkname trace_userLog runtime..z2ftrace.userLog
 func trace_userLog(id uint64, category, message string) {
 	if !trace.enabled {
 		return

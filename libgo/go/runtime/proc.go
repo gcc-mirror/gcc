@@ -4670,7 +4670,7 @@ func runqsteal(_p_, p2 *p, stealRunNextG bool) *g {
 	return gp
 }
 
-//go:linkname setMaxThreads runtime_debug.setMaxThreads
+//go:linkname setMaxThreads runtime..z2fdebug.setMaxThreads
 func setMaxThreads(in int) (out int) {
 	lock(&sched.lock)
 	out = int(sched.maxmcount)
@@ -4716,13 +4716,13 @@ func sync_runtime_procUnpin() {
 	procUnpin()
 }
 
-//go:linkname sync_atomic_runtime_procPin sync_atomic.runtime_procPin
+//go:linkname sync_atomic_runtime_procPin sync..z2fatomic.runtime_procPin
 //go:nosplit
 func sync_atomic_runtime_procPin() int {
 	return procPin()
 }
 
-//go:linkname sync_atomic_runtime_procUnpin sync_atomic.runtime_procUnpin
+//go:linkname sync_atomic_runtime_procUnpin sync..z2fatomic.runtime_procUnpin
 //go:nosplit
 func sync_atomic_runtime_procUnpin() {
 	procUnpin()
