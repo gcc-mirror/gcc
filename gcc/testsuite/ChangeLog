@@ -1,3 +1,13 @@
+2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/global-array-almost-huge-element.c: New test.
+	* gcc.target/s390/global-array-almost-negative-huge-element.c: New test.
+	* gcc.target/s390/global-array-element-pic.c: New test.
+	* gcc.target/s390/global-array-even-element.c: New test.
+	* gcc.target/s390/global-array-huge-element.c: New test.
+	* gcc.target/s390/global-array-negative-huge-element.c: New test.
+	* gcc.target/s390/global-array-odd-element.c: New test.
+
 2018-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/lto/odr-1_0.C: New test.

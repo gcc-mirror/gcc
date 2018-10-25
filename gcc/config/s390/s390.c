@@ -3859,6 +3859,10 @@ legitimate_pic_operand_p (rtx op)
   if (!SYMBOLIC_CONST (op))
     return 1;
 
+  /* Accept addresses that can be expressed relative to (pc).  */
+  if (larl_operand (op, VOIDmode))
+    return 1;
+
   /* Reject everything else; must be handled
      via emit_symbolic_move.  */
   return 0;
