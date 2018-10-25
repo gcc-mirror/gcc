@@ -1,3 +1,19 @@
+2018-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87749
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::operator=(basic_string&&)): For short strings copy the
+	buffer inline. Only fall back to using assign(const basic_string&) to
+	do a deep copy when reallocation is needed.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/87749.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/
+	move_assign_optim.cc: New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/87749.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/
+	move_assign_optim.cc: New test.
+
 2018-10-25  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/87106
