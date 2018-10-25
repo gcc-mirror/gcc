@@ -1,3 +1,8 @@
+2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* dg-cmp-results.sh: Print NA-FAIL and NA->UNRESOLVED changes at
+	default verbosity.
+
 2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config-list.mk (LIST): Switch to i686-solaris2.11,
