@@ -1,3 +1,8 @@
+2018-10-25  Jeff Law  <law@redhat.com>
+
+	* config/rl78/rl78.c (insn_ok_now): Always re-recognize the insn
+	if returning false.
+
 2018-10-25  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (aligned): Expand attribute description.
