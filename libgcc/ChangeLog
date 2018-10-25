@@ -1,3 +1,8 @@
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR other/87735
+	* libgcov-profiler.c: Revert.
+
 2018-10-24  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-profiler.c: Start from 1 in order to distinguish
