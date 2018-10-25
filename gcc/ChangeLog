@@ -1,3 +1,8 @@
+2018-10-25  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (aligned): Expand attribute description.
+	(Alignment): Rename section.  Discuss function arguments.
+
 2018-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (main_odr_variant): Remove.
