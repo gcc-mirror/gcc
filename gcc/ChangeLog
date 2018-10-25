@@ -1,3 +1,13 @@
+2018-10-25  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (main_odr_variant): Remove.
+	(hash_odr_name, types_same_for_odr, types_odr_comparable,
+	odr_name_hasher::equal, odr_subtypes_equivalent_p):
+	Drop use of main_odr_variant.
+	(add_type_duplicate): Silence confused warnings on integer types.
+	(get_odr_type): Always look for main variant.
+	(register_odr_type): Simplify.
+
 2018-10-25  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-data-refs.c (vect_analyze_data_ref_accesses):
