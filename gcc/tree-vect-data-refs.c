@@ -3001,7 +3001,7 @@ vect_analyze_data_ref_accesses (vec_info *vinfo)
          Note this is a heuristic but one with the property that *it
 	 is fixed up completely.  */
       g = grp;
-      stmt_vec_info newgroup = NULL, ng;
+      stmt_vec_info newgroup = NULL, ng = grp;
       while ((next = DR_GROUP_NEXT_ELEMENT (g)))
 	{
 	  if (gimple_uid (STMT_VINFO_STMT (next)) >= first_duplicate)
