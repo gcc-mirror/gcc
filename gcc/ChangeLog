@@ -1,3 +1,10 @@
+2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR bootstrap/87747
+	* rtl.c (RTX_CODE_HWINT_P_1): New helper macro.
+	(RTX_CODE_HWINT_P): New macro.
+	(rtx_code_size): Use RTX_CODE_HWINT_P ().
+
 2018-10-25  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (odr_types_equivalent_p): Do not ICE if one of types

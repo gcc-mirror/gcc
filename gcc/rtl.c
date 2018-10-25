@@ -106,11 +106,23 @@ const enum rtx_class rtx_class[NUM_RTX_CODE] = {
 #undef DEF_RTL_EXPR
 };
 
+/* Whether rtxs with the given code code store data in the hwint field.  */
+
+#define RTX_CODE_HWINT_P_1(ENUM)					\
+    ((ENUM) == CONST_INT || (ENUM) == CONST_DOUBLE			\
+     || (ENUM) == CONST_FIXED || (ENUM) == CONST_WIDE_INT)
+#ifdef GENERATOR_FILE
+#define RTX_CODE_HWINT_P(ENUM)						\
+    (RTX_CODE_HWINT_P_1 (ENUM) || (ENUM) == EQ_ATTR_ALT)
+#else
+#define RTX_CODE_HWINT_P RTX_CODE_HWINT_P_1
+#endif
+
 /* Indexed by rtx code, gives the size of the rtx in bytes.  */
 
 const unsigned char rtx_code_size[NUM_RTX_CODE] = {
 #define DEF_RTL_EXPR(ENUM, NAME, FORMAT, CLASS)				\
-  ((FORMAT)[0] == 'w'							\
+  (RTX_CODE_HWINT_P (ENUM)						\
    ? RTX_HDR_SIZE + (sizeof FORMAT - 1) * sizeof (HOST_WIDE_INT)	\
    : (ENUM) == REG							\
    ? RTX_HDR_SIZE + sizeof (reg_info)					\
