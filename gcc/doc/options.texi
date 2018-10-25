@@ -314,6 +314,15 @@ The way that the state is stored depends on the type of option:
 The option is deprecated and every usage of such option will
 result in a warning.
 
+@item Var(@var{var}, @var{set})
+The option controls an integer variable @var{var} and is active when
+@var{var} equals @var{set}.  The option parser will set @var{var} to
+@var{set} when the positive form of the option is used and @code{!@var{set}}
+when the ``no-'' form is used.
+
+@var{var} is declared in the same way as for the single-argument form
+described above.
+
 @itemize @bullet
 @item
 If the option uses the @code{Mask} or @code{InverseMask} properties,
@@ -350,15 +359,6 @@ and wasn't given.
 
 The option-processing script will usually zero-initialize @var{var}.
 You can modify this behavior using @code{Init}.
-
-@item Var(@var{var}, @var{set})
-The option controls an integer variable @var{var} and is active when
-@var{var} equals @var{set}.  The option parser will set @var{var} to
-@var{set} when the positive form of the option is used and @code{!@var{set}}
-when the ``no-'' form is used.
-
-@var{var} is declared in the same way as for the single-argument form
-described above.
 
 @item Init(@var{value})
 The variable specified by the @code{Var} property should be statically
