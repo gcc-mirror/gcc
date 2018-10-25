@@ -1710,22 +1710,17 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      locus old_loc2 = gfc_current_locus;
 	      do
 		{
-		  if (!c->sched_simd
-		      && gfc_match ("simd") == MATCH_YES)
+		  if (gfc_match ("simd") == MATCH_YES)
 		    {
 		      c->sched_simd = true;
 		      nmodifiers++;
 		    }
-		  else if (!c->sched_monotonic
-			   && !c->sched_nonmonotonic
-			   && gfc_match ("monotonic") == MATCH_YES)
+		  else if (gfc_match ("monotonic") == MATCH_YES)
 		    {
 		      c->sched_monotonic = true;
 		      nmodifiers++;
 		    }
-		  else if (!c->sched_monotonic
-			   && !c->sched_nonmonotonic
-			   && gfc_match ("nonmonotonic") == MATCH_YES)
+		  else if (gfc_match ("nonmonotonic") == MATCH_YES)
 		    {
 		      c->sched_nonmonotonic = true;
 		      nmodifiers++;
@@ -1736,7 +1731,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 			gfc_current_locus = old_loc2;
 		      break;
 		    }
-		  if (nmodifiers == 0
+		  if (nmodifiers == 1
 		      && gfc_match (" , ") == MATCH_YES)
 		    continue;
 		  else if (gfc_match (" : ") == MATCH_YES)
@@ -4074,6 +4069,30 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	       && mpz_sgn (expr->value.integer) <= 0)
 	gfc_warning (0, "INTEGER expression of SCHEDULE clause's chunk_size "
 		     "at %L must be positive", &expr->where);
+    }
+  if (omp_clauses->sched_kind != OMP_SCHED_NONE
+      && omp_clauses->sched_nonmonotonic)
+    {
+      if (omp_clauses->sched_kind != OMP_SCHED_DYNAMIC
+	  && omp_clauses->sched_kind != OMP_SCHED_GUIDED)
+	{
+	  const char *p;
+	  switch (omp_clauses->sched_kind)
+	    {
+	    case OMP_SCHED_STATIC: p = "STATIC"; break;
+	    case OMP_SCHED_RUNTIME: p = "RUNTIME"; break;
+	    case OMP_SCHED_AUTO: p = "AUTO"; break;
+	    default: gcc_unreachable ();
+	    }
+	  gfc_error ("NONMONOTONIC modifier specified for %s schedule kind "
+		     "at %L", p, &code->loc);
+	}
+      else if (omp_clauses->sched_monotonic)
+	gfc_error ("Both MONOTONIC and NONMONOTONIC schedule modifiers "
+		   "specified at %L", &code->loc);
+      else if (omp_clauses->ordered)
+	gfc_error ("NONMONOTONIC schedule modifier specified with ORDERED "
+		   "clause at %L", &code->loc);
     }
 
   /* Check that no symbol appears on multiple clauses, except that
