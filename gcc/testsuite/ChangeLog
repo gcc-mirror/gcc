@@ -1,5 +1,10 @@
 2018-10-25  Martin Liska  <mliska@suse.cz>
 
+	PR testsuite/87739
+	* gcc.dg/tree-ssa/pr84436-5.c (foo): Use signed char.
+
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
 	PR other/87735
 	* gcc.dg/tree-prof/time-profiler-1.c: Revert.
 	* gcc.dg/tree-prof/time-profiler-2.c: Likewise.
