@@ -1,3 +1,12 @@
+2018-10-25  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Jinsong Ji <jji@us.ibm.com>
+
+	* config/rs6000/emmintrin.h (_mm_sll_epi64): Remove wrong cast.
+	* config/rs6000/xmmintrin.h (_mm_min_ps): Change m's type to
+	__vector __bool int.  Use vec_cmpgt in preference to deprecated
+	function vec_vcmpgtfp.
+	(_mm_max_ps): Likewise.
+
 2018-10-25  Jeff Law  <law@redhat.com>
 
 	* config/rl78/rl78.c (insn_ok_now): Always re-recognize the insn
@@ -58,6 +67,17 @@
 2018-10-25  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* options.texi (Deprecated): Move list to Var section.
+
+2018-10-24  Bill Schmidt  <wschmidt@linux.ibm.com>
+            Jinsong Ji <jji@us.ibm.com>
+
+        * config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Change deprecated
+        __vector long to __vector long long.
+        (_mm_cvtpd_ps): Likewise.
+        (_mm_cvttpd_epi32): Likewise.
+        (_mm_cvtpi32_pd): Likewise.
+        (_mm_unpackhi_epi64): Likewise.
+        (_mm_unpacklo_epi64): Likewise.
 
 2018-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -216,6 +236,15 @@
 	PR tree-optimization/87693
 	* tree-ssa-threadedge.c (thread_around_empty_blocks): Handle
 	the case we do not find the taken edge.
+
+2018-10-22  Bill Schmidt  <wschmidt@linux.ibm.com>
+            Jinsong Ji  <jji@us.ibm.com>
+
+        * config/rs6000/emmintrin.h (_MM_SHUFFLE2): Comment cleanup.
+        (_mm_store_pd): Use unaligned vector type for pointer cast.
+        (_mm_maskmoveu_si128): Likewise.
+        * config/rs6000/xmmintrin.h (__m128_u): New typedef.
+        (_mm_store_ps): Use unaligned vector type for pointer cast.
 
 2018-10-22  Paul Koning  <ni1d@arrl.net>
 
@@ -467,6 +496,25 @@
 	V4DI, V16SI and V8DI.
 	(*sub<mode>3<mask_name>_bcst): New.
 	(*add<mode>3<mask_name>_bcst): Likewise.
+
+2018-10-21  Bill Schmidt  <wschmidt@linux.ibm.com>
+            Jinsong Ji  <jji@us.ibm.com>
+
+        * config/rs6000/emmintrin.h (_mm_movemask_pd): Replace __vector
+        __m64 with __vector unsigned long long for compatibility.
+        (_mm_movemask_epi8): Likewise.
+        * config/rs6000/xmmintrin.h (_mm_cvtps_pi32): Likewise.
+        (_mm_cvttps_pi32): Likewise.
+        (_mm_cvtpi32_ps): Likewise.
+        (_mm_cvtps_pi16): Likewise.
+        (_mm_loadh_pi): Likewise.
+        (_mm_storeh_pi): Likewise.
+        (_mm_movehl_ps): Likewise.
+        (_mm_movelh_ps): Likewise.
+        (_mm_loadl_pi): Likewise.
+        (_mm_storel_pi): Likewise.
+        (_mm_movemask_ps): Likewise.
+        (_mm_shuffle_pi16): Likewise.
 
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
