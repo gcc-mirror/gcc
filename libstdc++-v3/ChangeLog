@@ -1,3 +1,24 @@
+2018-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/alloc_traits.h (_S_construct, _S_destroy, construct,
+	destroy): Add noexcept specification.
+	* include/bits/allocator.h (construct, destroy): Likewise.
+	* include/ext/alloc_traits.h (construct, destroy): Likewise.
+	* include/ext/malloc_allocator.h (construct, destroy): Likewise.
+	* include/ext/new_allocator.h (construct, destroy): Likewise.
+	* include/bits/stl_uninitialized.h (__relocate_object_a, __relocate_a,
+	__relocate_a_1): New functions.
+	(__is_trivially_relocatable): New class.
+	* include/bits/stl_vector.h (__use_relocate): New static member.
+	* include/bits/vector.tcc (reserve, _M_realloc_insert,
+	_M_default_append): Use __relocate_a.
+	(reserve, _M_assign_aux, _M_realloc_insert, _M_fill_insert,
+	_M_default_append, _M_range_insert): Move _GLIBCXX_ASAN_ANNOTATE_REINIT
+	after _Destroy.
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc:
+	Replace CopyConsOnlyType with DelAnyAssign.
+
 2018-10-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/debug/safe_unordered_container.h

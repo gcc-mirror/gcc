@@ -24,11 +24,11 @@
 // libstdc++/49836
 void test01()
 {
-  using __gnu_test::CopyConsOnlyType;
+  using __gnu_test::assign::DelAnyAssign;
   using __gnu_test::MoveConsOnlyType;
 
-  std::vector<CopyConsOnlyType> v1;
-  CopyConsOnlyType t1(1);
+  std::vector<DelAnyAssign> v1;
+  DelAnyAssign t1;
   v1.push_back(t1);
   v1.push_back(t1);
   v1.push_back(t1);
