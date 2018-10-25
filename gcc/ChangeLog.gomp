@@ -1,3 +1,20 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_MAYBE_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_MAYBE_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_RUNTIME,
+	BUILT_IN_GOMP_PARALLEL_LOOP_MAYBE_NONMONOTONIC_RUNTIME): New builtins.
+	* omp-expand.c (expand_parallel_call, expand_omp_for): Emit
+	the GOMP_*nonmonotonic_runtime* or GOMP_*maybe_nonmonotonic_runtime*
+	builtins instead of GOMP_*runtime* if there is nonmonotonic modifier
+	or if there is no modifier and no ordered clause.
+
 2018-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtin-types.def (BT_FN_UINT_OMPFN_PTR_UINT_UINT): New.

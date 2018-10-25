@@ -580,7 +580,14 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
 	  switch (region->inner->sched_kind)
 	    {
 	    case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	      start_ix2 = 3;
+	      if ((region->inner->sched_modifiers
+		   & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+		start_ix2 = 6;
+	      else if ((region->inner->sched_modifiers
+			& OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0)
+		start_ix2 = 7;
+	      else
+		start_ix2 = 3;
 	      break;
 	    case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	    case OMP_CLAUSE_SCHEDULE_GUIDED:
@@ -5808,28 +5815,39 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
       if (fd.chunk_size == NULL
 	  && fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC)
 	fd.chunk_size = integer_zero_node;
-      gcc_assert (fd.sched_kind != OMP_CLAUSE_SCHEDULE_AUTO);
       switch (fd.sched_kind)
 	{
 	case OMP_CLAUSE_SCHEDULE_RUNTIME:
-	  fn_index = 3;
+	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_NONMONOTONIC) != 0)
+	    {
+	      gcc_assert (!fd.have_ordered);
+	      fn_index = 6;
+	    }
+	  else if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
+		   && !fd.have_ordered)
+	    fn_index = 7;
+	  else
+	    fn_index = 3;
 	  break;
 	case OMP_CLAUSE_SCHEDULE_DYNAMIC:
 	case OMP_CLAUSE_SCHEDULE_GUIDED:
 	  if ((fd.sched_modifiers & OMP_CLAUSE_SCHEDULE_MONOTONIC) == 0
-	      && !fd.ordered
 	      && !fd.have_ordered)
 	    {
 	      fn_index = 3 + fd.sched_kind;
 	      break;
 	    }
-	  /* FALLTHRU */
-	default:
 	  fn_index = fd.sched_kind;
 	  break;
+	case OMP_CLAUSE_SCHEDULE_STATIC:
+	  gcc_assert (fd.have_ordered);
+	  fn_index = 0;
+	  break;
+	default:
+	  gcc_unreachable ();
 	}
       if (!fd.ordered)
-	fn_index += fd.have_ordered * 6;
+	fn_index += fd.have_ordered * 8;
       if (fd.ordered)
 	start_ix = ((int)BUILT_IN_GOMP_LOOP_DOACROSS_STATIC_START) + fn_index;
       else

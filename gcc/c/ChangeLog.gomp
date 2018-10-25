@@ -1,3 +1,8 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-typeck.c (c_finish_omp_clauses): Don't diagnose nonmonotonic clause
+	with static, runtime or auto schedule kinds.
+
 2018-10-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_taskloop): Add forward declaration.

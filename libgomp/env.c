@@ -104,6 +104,7 @@ parse_schedule (void)
 {
   char *env, *end;
   unsigned long value;
+  int monotonic = 0;
 
   env = getenv ("OMP_SCHEDULE");
   if (env == NULL)
@@ -111,6 +112,26 @@ parse_schedule (void)
 
   while (isspace ((unsigned char) *env))
     ++env;
+  if (strncasecmp (env, "monotonic", 9) == 0)
+    {
+      monotonic = 1;
+      env += 9;
+    }
+  else if (strncasecmp (env, "nonmonotonic", 12) == 0)
+    {
+      monotonic = -1;
+      env += 12;
+    }
+  if (monotonic)
+    {
+      while (isspace ((unsigned char) *env))
+	++env;
+      if (*env != ':')
+	goto unknown;
+      ++env;
+      while (isspace ((unsigned char) *env))
+	++env;
+    }
   if (strncasecmp (env, "static", 6) == 0)
     {
       gomp_global_icv.run_sched_var = GFS_STATIC;
@@ -134,12 +155,16 @@ parse_schedule (void)
   else
     goto unknown;
 
+  if (monotonic == 1
+      || (monotonic == 0 && gomp_global_icv.run_sched_var == GFS_STATIC))
+    gomp_global_icv.run_sched_var |= GFS_MONOTONIC;
+
   while (isspace ((unsigned char) *env))
     ++env;
   if (*env == '\0')
     {
       gomp_global_icv.run_sched_chunk_size
-	= gomp_global_icv.run_sched_var != GFS_STATIC;
+	= (gomp_global_icv.run_sched_var & ~GFS_MONOTONIC) != GFS_STATIC;
       return;
     }
   if (*env++ != ',')
@@ -162,7 +187,8 @@ parse_schedule (void)
   if ((int)value != value)
     goto invalid;
 
-  if (value == 0 && gomp_global_icv.run_sched_var != GFS_STATIC)
+  if (value == 0
+      && (gomp_global_icv.run_sched_var & ~GFS_MONOTONIC) != GFS_STATIC)
     value = 1;
   gomp_global_icv.run_sched_chunk_size = value;
   return;
@@ -1153,19 +1179,34 @@ handle_omp_display_env (unsigned long stacksize, int wait_policy)
   fputs ("'\n", stderr);
 
   fprintf (stderr, "  OMP_SCHEDULE = '");
-  switch (gomp_global_icv.run_sched_var)
+  if ((gomp_global_icv.run_sched_var & GFS_MONOTONIC))
+    {
+      if (gomp_global_icv.run_sched_var != (GFS_MONOTONIC | GFS_STATIC))
+	fputs ("MONOTONIC:", stderr);
+    }
+  else if (gomp_global_icv.run_sched_var == GFS_STATIC)
+    fputs ("NONMONOTONIC:", stderr);
+  switch (gomp_global_icv.run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_RUNTIME:
       fputs ("RUNTIME", stderr);
+      if (gomp_global_icv.run_sched_chunk_size != 1)
+	fprintf (stderr, ",%d", gomp_global_icv.run_sched_chunk_size);
       break;
     case GFS_STATIC:
       fputs ("STATIC", stderr);
+      if (gomp_global_icv.run_sched_chunk_size != 0)
+	fprintf (stderr, ",%d", gomp_global_icv.run_sched_chunk_size);
       break;
     case GFS_DYNAMIC:
       fputs ("DYNAMIC", stderr);
+      if (gomp_global_icv.run_sched_chunk_size != 1)
+	fprintf (stderr, ",%d", gomp_global_icv.run_sched_chunk_size);
       break;
     case GFS_GUIDED:
       fputs ("GUIDED", stderr);
+      if (gomp_global_icv.run_sched_chunk_size != 1)
+	fprintf (stderr, ",%d", gomp_global_icv.run_sched_chunk_size);
       break;
     case GFS_AUTO:
       fputs ("AUTO", stderr);

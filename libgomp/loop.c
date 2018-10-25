@@ -79,12 +79,12 @@ gomp_loop_init (struct gomp_work_share *ws, long start, long end, long incr,
 }
 
 /* The *_start routines are called when first encountering a loop construct
-   that is not bound directly to a parallel construct.  The first thread 
+   that is not bound directly to a parallel construct.  The first thread
    that arrives will create the work-share construct; subsequent threads
    will see the construct exists and allocate work from it.
 
    START, END, INCR are the bounds of the loop; due to the restrictions of
-   OpenMP, these values must be the same in every thread.  This is not 
+   OpenMP, these values must be the same in every thread.  This is not
    verified (nor is it entirely verifiable, since START is not necessarily
    retained intact in the work-share data structure).  CHUNK_SIZE is the
    scheduling parameter; again this must be identical in all threads.
@@ -174,7 +174,7 @@ GOMP_loop_runtime_start (long start, long end, long incr,
 			 long *istart, long *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_static_start (start, end, incr,
@@ -273,7 +273,7 @@ GOMP_loop_ordered_runtime_start (long start, long end, long incr,
 				 long *istart, long *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_ordered_static_start (start, end, incr,
@@ -378,7 +378,7 @@ GOMP_loop_doacross_runtime_start (unsigned ncounts, long *counts,
 				  long *istart, long *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_doacross_static_start (ncounts, counts,
@@ -402,8 +402,8 @@ GOMP_loop_doacross_runtime_start (unsigned ncounts, long *counts,
     }
 }
 
-/* The *_next routines are called when the thread completes processing of 
-   the iteration block currently assigned to it.  If the work-share 
+/* The *_next routines are called when the thread completes processing of
+   the iteration block currently assigned to it.  If the work-share
    construct is bound directly to a parallel construct, then the iteration
    bounds may have been set up before the parallel.  In which case, this
    may be the first iteration for the thread.
@@ -456,7 +456,7 @@ bool
 GOMP_loop_runtime_next (long *istart, long *iend)
 {
   struct gomp_thread *thr = gomp_thread ();
-  
+
   switch (thr->ts.work_share->sched)
     {
     case GFS_STATIC:
@@ -534,7 +534,7 @@ bool
 GOMP_loop_ordered_runtime_next (long *istart, long *iend)
 {
   struct gomp_thread *thr = gomp_thread ();
-  
+
   switch (thr->ts.work_share->sched)
     {
     case GFS_STATIC:
@@ -600,7 +600,8 @@ GOMP_parallel_loop_runtime_start (void (*fn) (void *), void *data,
 {
   struct gomp_task_icv *icv = gomp_icv (false);
   gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
-			    icv->run_sched_var, icv->run_sched_chunk_size, 0);
+			    icv->run_sched_var & ~GFS_MONOTONIC,
+			    icv->run_sched_chunk_size, 0);
 }
 
 ialias_redirect (GOMP_parallel_end)
@@ -638,11 +639,28 @@ GOMP_parallel_loop_guided (void (*fn) (void *), void *data,
   GOMP_parallel_end ();
 }
 
+void
+GOMP_parallel_loop_runtime (void (*fn) (void *), void *data,
+			    unsigned num_threads, long start, long end,
+			    long incr, unsigned flags)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    icv->run_sched_var & ~GFS_MONOTONIC,
+			    icv->run_sched_chunk_size, flags);
+  fn (data);
+  GOMP_parallel_end ();
+}
+
 #ifdef HAVE_ATTRIBUTE_ALIAS
 extern __typeof(GOMP_parallel_loop_dynamic) GOMP_parallel_loop_nonmonotonic_dynamic
 	__attribute__((alias ("GOMP_parallel_loop_dynamic")));
 extern __typeof(GOMP_parallel_loop_guided) GOMP_parallel_loop_nonmonotonic_guided
 	__attribute__((alias ("GOMP_parallel_loop_guided")));
+extern __typeof(GOMP_parallel_loop_runtime) GOMP_parallel_loop_nonmonotonic_runtime
+	__attribute__((alias ("GOMP_parallel_loop_runtime")));
+extern __typeof(GOMP_parallel_loop_runtime) GOMP_parallel_loop_maybe_nonmonotonic_runtime
+	__attribute__((alias ("GOMP_parallel_loop_runtime")));
 #else
 void
 GOMP_parallel_loop_nonmonotonic_dynamic (void (*fn) (void *), void *data,
@@ -667,20 +685,34 @@ GOMP_parallel_loop_nonmonotonic_guided (void (*fn) (void *), void *data,
   fn (data);
   GOMP_parallel_end ();
 }
-#endif
 
 void
-GOMP_parallel_loop_runtime (void (*fn) (void *), void *data,
-			    unsigned num_threads, long start, long end,
-			    long incr, unsigned flags)
+GOMP_parallel_loop_nonmonotonic_runtime (void (*fn) (void *), void *data,
+					 unsigned num_threads, long start,
+					 long end, long incr, unsigned flags)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
   gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
-			    icv->run_sched_var, icv->run_sched_chunk_size,
-			    flags);
+			    icv->run_sched_var & ~GFS_MONOTONIC,
+			    icv->run_sched_chunk_size, flags);
   fn (data);
   GOMP_parallel_end ();
 }
+
+void
+GOMP_parallel_loop_maybe_nonmonotonic_runtime (void (*fn) (void *), void *data,
+					       unsigned num_threads, long start,
+					       long end, long incr,
+					       unsigned flags)
+{
+  struct gomp_task_icv *icv = gomp_icv (false);
+  gomp_parallel_loop_start (fn, data, num_threads, start, end, incr,
+			    icv->run_sched_var & ~GFS_MONOTONIC,
+			    icv->run_sched_chunk_size, flags);
+  fn (data);
+  GOMP_parallel_end ();
+}
+#endif
 
 /* The GOMP_loop_end* routines are called after the thread is told that
    all loop iterations are complete.  The first two versions synchronize
@@ -721,6 +753,10 @@ extern __typeof(gomp_loop_dynamic_start) GOMP_loop_nonmonotonic_dynamic_start
 	__attribute__((alias ("gomp_loop_dynamic_start")));
 extern __typeof(gomp_loop_guided_start) GOMP_loop_nonmonotonic_guided_start
 	__attribute__((alias ("gomp_loop_guided_start")));
+extern __typeof(GOMP_loop_runtime_start) GOMP_loop_nonmonotonic_runtime_start
+	__attribute__((alias ("GOMP_loop_runtime_start")));
+extern __typeof(GOMP_loop_runtime_start) GOMP_loop_maybe_nonmonotonic_runtime_start
+	__attribute__((alias ("GOMP_loop_runtime_start")));
 
 extern __typeof(gomp_loop_ordered_static_start) GOMP_loop_ordered_static_start
 	__attribute__((alias ("gomp_loop_ordered_static_start")));
@@ -746,6 +782,10 @@ extern __typeof(gomp_loop_dynamic_next) GOMP_loop_nonmonotonic_dynamic_next
 	__attribute__((alias ("gomp_loop_dynamic_next")));
 extern __typeof(gomp_loop_guided_next) GOMP_loop_nonmonotonic_guided_next
 	__attribute__((alias ("gomp_loop_guided_next")));
+extern __typeof(GOMP_loop_runtime_next) GOMP_loop_nonmonotonic_runtime_next
+	__attribute__((alias ("GOMP_loop_runtime_next")));
+extern __typeof(GOMP_loop_runtime_next) GOMP_loop_maybe_nonmonotonic_runtime_next
+	__attribute__((alias ("GOMP_loop_runtime_next")));
 
 extern __typeof(gomp_loop_ordered_static_next) GOMP_loop_ordered_static_next
 	__attribute__((alias ("gomp_loop_ordered_static_next")));
@@ -788,6 +828,20 @@ GOMP_loop_nonmonotonic_guided_start (long start, long end, long incr,
 				     long chunk_size, long *istart, long *iend)
 {
   return gomp_loop_guided_start (start, end, incr, chunk_size, istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_runtime_start (long start, long end, long incr,
+				      long *istart, long *iend)
+{
+  return GOMP_loop_runtime_start (start, end, incr, istart, iend);
+}
+
+bool
+GOMP_loop_maybe_nonmonotonic_runtime_start (long start, long end, long incr,
+					    long *istart, long *iend)
+{
+  return GOMP_loop_runtime_start (start, end, incr, istart, iend);
 }
 
 bool
@@ -866,6 +920,18 @@ bool
 GOMP_loop_nonmonotonic_guided_next (long *istart, long *iend)
 {
   return gomp_loop_guided_next (istart, iend);
+}
+
+bool
+GOMP_loop_nonmonotonic_runtime_next (long *istart, long *iend)
+{
+  return GOMP_loop_runtime_next (istart, iend);
+}
+
+bool
+GOMP_loop_maybe_nonmonotonic_runtime_next (long *istart, long *iend)
+{
+  return GOMP_loop_runtime_next (istart, iend);
 }
 
 bool

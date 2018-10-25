@@ -171,7 +171,7 @@ GOMP_loop_ull_runtime_start (bool up, gomp_ull start, gomp_ull end,
 			     gomp_ull incr, gomp_ull *istart, gomp_ull *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_ull_static_start (up, start, end, incr,
@@ -275,7 +275,7 @@ GOMP_loop_ull_ordered_runtime_start (bool up, gomp_ull start, gomp_ull end,
 				     gomp_ull *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_ull_ordered_static_start (up, start, end, incr,
@@ -383,7 +383,7 @@ GOMP_loop_ull_doacross_runtime_start (unsigned ncounts, gomp_ull *counts,
 				      gomp_ull *istart, gomp_ull *iend)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
-  switch (icv->run_sched_var)
+  switch (icv->run_sched_var & ~GFS_MONOTONIC)
     {
     case GFS_STATIC:
       return gomp_loop_ull_doacross_static_start (ncounts, counts,
@@ -570,6 +570,10 @@ extern __typeof(gomp_loop_ull_dynamic_start) GOMP_loop_ull_nonmonotonic_dynamic_
 	__attribute__((alias ("gomp_loop_ull_dynamic_start")));
 extern __typeof(gomp_loop_ull_guided_start) GOMP_loop_ull_nonmonotonic_guided_start
 	__attribute__((alias ("gomp_loop_ull_guided_start")));
+extern __typeof(GOMP_loop_ull_runtime_start) GOMP_loop_ull_nonmonotonic_runtime_start
+	__attribute__((alias ("GOMP_loop_ull_runtime_start")));
+extern __typeof(GOMP_loop_ull_runtime_start) GOMP_loop_ull_maybe_nonmonotonic_runtime_start
+	__attribute__((alias ("GOMP_loop_ull_runtime_start")));
 
 extern __typeof(gomp_loop_ull_ordered_static_start) GOMP_loop_ull_ordered_static_start
 	__attribute__((alias ("gomp_loop_ull_ordered_static_start")));
@@ -595,6 +599,10 @@ extern __typeof(gomp_loop_ull_dynamic_next) GOMP_loop_ull_nonmonotonic_dynamic_n
 	__attribute__((alias ("gomp_loop_ull_dynamic_next")));
 extern __typeof(gomp_loop_ull_guided_next) GOMP_loop_ull_nonmonotonic_guided_next
 	__attribute__((alias ("gomp_loop_ull_guided_next")));
+extern __typeof(GOMP_loop_ull_runtime_next) GOMP_loop_ull_nonmonotonic_runtime_next
+	__attribute__((alias ("GOMP_loop_ull_runtime_next")));
+extern __typeof(GOMP_loop_ull_runtime_next) GOMP_loop_ull_maybe_nonmonotonic_runtime_next
+	__attribute__((alias ("GOMP_loop_ull_runtime_next")));
 
 extern __typeof(gomp_loop_ull_ordered_static_next) GOMP_loop_ull_ordered_static_next
 	__attribute__((alias ("gomp_loop_ull_ordered_static_next")));
@@ -647,6 +655,23 @@ GOMP_loop_ull_nonmonotonic_guided_start (bool up, gomp_ull start, gomp_ull end,
 {
   return gomp_loop_ull_guided_start (up, start, end, incr, chunk_size, istart,
 				     iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_runtime_start (bool up, gomp_ull start,
+					  gomp_ull end, gomp_ull incr,
+					  gomp_ull *istart, gomp_ull *iend)
+{
+  return GOMP_loop_ull_runtime_start (up, start, end, incr, istart, iend);
+}
+
+bool
+GOMP_loop_ull_maybe_nonmonotonic_runtime_start (bool up, gomp_ull start,
+						gomp_ull end, gomp_ull incr,
+						gomp_ull *istart,
+						gomp_ull *iend)
+{
+  return GOMP_loop_ull_runtime_start (up, start, end, incr, istart, iend);
 }
 
 bool
@@ -731,6 +756,19 @@ bool
 GOMP_loop_ull_nonmonotonic_guided_next (gomp_ull *istart, gomp_ull *iend)
 {
   return gomp_loop_ull_guided_next (istart, iend);
+}
+
+bool
+GOMP_loop_ull_nonmonotonic_runtime_next (gomp_ull *istart, gomp_ull *iend)
+{
+  return GOMP_loop_ull_runtime_next (istart, iend);
+}
+
+bool
+GOMP_loop_ull_maybe_nonmonotonic_runtime_next (gomp_ull *istart,
+					       gomp_ull *iend)
+{
+  return GOMP_loop_ull_runtime_next (istart, iend);
 }
 
 bool

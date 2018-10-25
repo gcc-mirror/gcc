@@ -141,7 +141,8 @@ enum gomp_schedule_type
   GFS_STATIC,
   GFS_DYNAMIC,
   GFS_GUIDED,
-  GFS_AUTO
+  GFS_AUTO,
+  GFS_MONOTONIC = 0x80000000U
 };
 
 struct gomp_doacross_work_share

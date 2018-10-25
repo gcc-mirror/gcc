@@ -1,3 +1,53 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in (enum omp_sched_t): Add omp_sched_monotonic.
+	* libgomp_g.h (GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_loop_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_next,
+	GOMP_parallel_loop_nonmonotonic_runtime,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_loop_ull_nonmonotonic_runtime_start,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_next): New prototypes.
+	* libgomp.h (enum gomp_schedule_type): Add GFS_MONOTONIC.
+	* libgomp.map (GOMP_5.0): Export
+	GOMP_loop_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_nonmonotonic_runtime_start,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_parallel_loop_nonmonotonic_runtime.
+	* env.c (parse_schedule): Parse monotonic and nonmonotonic modifiers
+	in OMP_SCHEDULE variable.  Set GFS_MONOTONIC for monotonic schedules.
+	(handle_omp_display_env): Display monotonic/nonmonotonic schedule
+	modifiers.  Display (non-default) chunk sizes.
+	* fortran.c (omp_get_schedule_, omp_get_schedule_8_): Mask off
+	GFS_MONOTONIC bit.
+	* icv.c (omp_set_schedule): Mask off omp_sched_monotonic bit in switch.
+	* loop.c (GOMP_loop_runtime_start, GOMP_loop_ordered_runtime_start,
+	GOMP_loop_doacross_runtime_start, GOMP_parallel_loop_runtime_start):
+	Mask off GFS_MONOTONIC bit.
+	(GOMP_loop_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_parallel_loop_nonmonotonic_runtime): New aliases or wrapper
+	functions.
+	* loop_ull.c (GOMP_loop_ull_runtime_start,
+	GOMP_loop_ull_ordered_runtime_start,
+	GOMP_loop_ull_doacross_runtime_start): Mask off GFS_MONOTONIC bit.
+	(GOMP_loop_ull_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_nonmonotonic_runtime_start): Likewise.
+
 2018-10-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (gomp_parallel_reduction_register): Declare.

@@ -1,3 +1,18 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/for-6.C: Change expected library call.
+	* gcc.dg/gomp/for-6.c: Likewise.
+	* gcc.dg/gomp/combined-1.c: Moved to ...
+	* c-c++-common/gomp/combined-1.c: ... here.  Adjust expected library
+	call.
+	* c-c++-common/gomp/combined-2.c: New test.
+	* c-c++-common/gomp/combined-3.c: New test.
+	* c-c++-common/gomp/for-6.c: New test.
+	* c-c++-common/gomp/for-7.c: New test.
+	* c-c++-common/gomp/schedule-modifiers-1.c (bar): Don't expect
+	diagnostics for nonmonotonic modifier with static, runtime or auto
+	schedule kinds.
+
 2018-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/doacross-1.C: New test.

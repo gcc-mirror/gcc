@@ -14241,29 +14241,6 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  continue;
 
 	case OMP_CLAUSE_SCHEDULE:
-	  if (OMP_CLAUSE_SCHEDULE_KIND (c) & OMP_CLAUSE_SCHEDULE_NONMONOTONIC)
-	    {
-	      const char *p = NULL;
-	      switch (OMP_CLAUSE_SCHEDULE_KIND (c) & OMP_CLAUSE_SCHEDULE_MASK)
-		{
-		case OMP_CLAUSE_SCHEDULE_STATIC: p = "static"; break;
-		case OMP_CLAUSE_SCHEDULE_DYNAMIC: break;
-		case OMP_CLAUSE_SCHEDULE_GUIDED: break;
-		case OMP_CLAUSE_SCHEDULE_AUTO: p = "auto"; break;
-		case OMP_CLAUSE_SCHEDULE_RUNTIME: p = "runtime"; break;
-		default: gcc_unreachable ();
-		}
-	      if (p)
-		{
-		  error_at (OMP_CLAUSE_LOCATION (c),
-			    "%<nonmonotonic%> modifier specified for %qs "
-			    "schedule kind", p);
-		  OMP_CLAUSE_SCHEDULE_KIND (c)
-		    = (enum omp_clause_schedule_kind)
-		      (OMP_CLAUSE_SCHEDULE_KIND (c)
-		       & ~OMP_CLAUSE_SCHEDULE_NONMONOTONIC);
-		}
-	    }
 	  schedule_clause = c;
 	  pc = &OMP_CLAUSE_CHAIN (c);
 	  continue;

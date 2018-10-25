@@ -372,7 +372,9 @@ omp_get_schedule_ (int32_t *kind, int32_t *chunk_size)
   omp_sched_t k;
   int cs;
   omp_get_schedule (&k, &cs);
-  *kind = k;
+  /* For now mask off GFS_MONOTONIC, because OpenMP 4.5 code will not
+     expect to see it.  */
+  *kind = k & ~GFS_MONOTONIC;
   *chunk_size = cs;
 }
 
@@ -382,7 +384,8 @@ omp_get_schedule_8_ (int32_t *kind, int64_t *chunk_size)
   omp_sched_t k;
   int cs;
   omp_get_schedule (&k, &cs);
-  *kind = k;
+  /* See above.  */
+  *kind = k & ~GFS_MONOTONIC;
   *chunk_size = cs;
 }
 
