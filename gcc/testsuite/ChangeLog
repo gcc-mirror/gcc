@@ -1,3 +1,10 @@
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR other/87735
+	* gcc.dg/tree-prof/time-profiler-1.c: Revert.
+	* gcc.dg/tree-prof/time-profiler-2.c: Likewise.
+	* gcc.dg/tree-prof/time-profiler-3.c: Likewise.
+
 2018-10-25  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/global-array-almost-huge-element.c: New test.
