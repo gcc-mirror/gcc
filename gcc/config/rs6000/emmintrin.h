@@ -1504,7 +1504,7 @@ _mm_slli_epi16 (__m128i __A, int __B)
       else
 	lshift = vec_splats ((unsigned short) __B);
 
-      result = vec_vslh ((__v8hi) __A, lshift);
+      result = vec_sl ((__v8hi) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1523,7 +1523,7 @@ _mm_slli_epi32 (__m128i __A, int __B)
       else
 	lshift = vec_splats ((unsigned int) __B);
 
-      result = vec_vslw ((__v4si) __A, lshift);
+      result = vec_sl ((__v4si) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1543,7 +1543,7 @@ _mm_slli_epi64 (__m128i __A, int __B)
       else
 	lshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_vsld ((__v2di) __A, lshift);
+      result = vec_sl ((__v2di) __A, lshift);
     }
 
   return (__m128i) result;
@@ -1563,7 +1563,7 @@ _mm_srai_epi16 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned short) __B);
     }
-  result = vec_vsrah ((__v8hi) __A, rshift);
+  result = vec_sra ((__v8hi) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1586,7 +1586,7 @@ _mm_srai_epi32 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned int) __B);
     }
-  result = vec_vsraw ((__v4si) __A, rshift);
+  result = vec_sra ((__v4si) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1666,7 +1666,7 @@ _mm_srli_epi16 (__m128i  __A, int __B)
       else
 	rshift = vec_splats ((unsigned short) __B);
 
-      result = vec_vsrh ((__v8hi) __A, rshift);
+      result = vec_sr ((__v8hi) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1690,7 +1690,7 @@ _mm_srli_epi32 (__m128i __A, int __B)
       else
 	rshift = vec_splats ((unsigned int) __B);
 
-      result = vec_vsrw ((__v4si) __A, rshift);
+      result = vec_sr ((__v4si) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1715,7 +1715,7 @@ _mm_srli_epi64 (__m128i __A, int __B)
       else
 	rshift = (__v2du) vec_splats ((unsigned int) __B);
 
-      result = vec_vsrd ((__v2di) __A, rshift);
+      result = vec_sr ((__v2di) __A, rshift);
     }
 
   return (__m128i) result;
@@ -1736,7 +1736,7 @@ _mm_sll_epi16 (__m128i __A, __m128i __B)
   lshift = vec_splat ((__v8hu) __B, 3);
 #endif
   shmask = vec_cmple (lshift, shmax);
-  result = vec_vslh ((__v8hu) __A, lshift);
+  result = vec_sl ((__v8hu) __A, lshift);
   result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
@@ -1755,7 +1755,7 @@ _mm_sll_epi32 (__m128i __A, __m128i __B)
   lshift = vec_splat ((__v4su) __B, 1);
 #endif
   shmask = vec_cmplt (lshift, shmax);
-  result = vec_vslw ((__v4su) __A, lshift);
+  result = vec_sl ((__v4su) __A, lshift);
   result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
@@ -1772,7 +1772,7 @@ _mm_sll_epi64 (__m128i __A, __m128i __B)
 
   lshift = vec_splat ((__v2du) __B, 0);
   shmask = vec_cmplt (lshift, shmax);
-  result = vec_vsld ((__v2du) __A, lshift);
+  result = vec_sl ((__v2du) __A, lshift);
   result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
@@ -1792,7 +1792,7 @@ _mm_sra_epi16 (__m128i __A, __m128i __B)
   rshift = vec_splat ((__v8hu)__B, 3);
 #endif
   rshift = vec_min (rshift, rshmax);
-  result = vec_vsrah ((__v8hi) __A, rshift);
+  result = vec_sra ((__v8hi) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1810,7 +1810,7 @@ _mm_sra_epi32 (__m128i __A, __m128i __B)
   rshift = vec_splat ((__v4su)__B, 1);
 #endif
   rshift = vec_min (rshift, rshmax);
-  result = vec_vsraw ((__v4si) __A, rshift);
+  result = vec_sra ((__v4si) __A, rshift);
 
   return (__m128i) result;
 }
@@ -1829,7 +1829,7 @@ _mm_srl_epi16 (__m128i __A, __m128i __B)
   rshift = vec_splat ((__v8hu) __B, 3);
 #endif
   shmask = vec_cmple (rshift, shmax);
-  result = vec_vsrh ((__v8hu) __A, rshift);
+  result = vec_sr ((__v8hu) __A, rshift);
   result = vec_sel ((__v8hu) shmask, result, shmask);
 
   return (__m128i) result;
@@ -1849,7 +1849,7 @@ _mm_srl_epi32 (__m128i __A, __m128i __B)
   rshift = vec_splat ((__v4su) __B, 1);
 #endif
   shmask = vec_cmplt (rshift, shmax);
-  result = vec_vsrw ((__v4su) __A, rshift);
+  result = vec_sr ((__v4su) __A, rshift);
   result = vec_sel ((__v4su) shmask, result, shmask);
 
   return (__m128i) result;
@@ -1866,7 +1866,7 @@ _mm_srl_epi64 (__m128i __A, __m128i __B)
 
   rshift = vec_splat ((__v2du) __B, 0);
   shmask = vec_cmplt (rshift, shmax);
-  result = vec_vsrd ((__v2du) __A, rshift);
+  result = vec_sr ((__v2du) __A, rshift);
   result = vec_sel ((__v2du) shmask, result, shmask);
 
   return (__m128i) result;
