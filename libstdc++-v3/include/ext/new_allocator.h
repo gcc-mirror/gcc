@@ -142,11 +142,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	void
 	construct(_Up* __p, _Args&&... __args)
+	noexcept(noexcept(::new((void *)__p)
+			    _Up(std::forward<_Args>(__args)...)))
 	{ ::new((void *)__p) _Up(std::forward<_Args>(__args)...); }
 
       template<typename _Up>
 	void
-	destroy(_Up* __p) { __p->~_Up(); }
+	destroy(_Up* __p)
+	noexcept(noexcept( __p->~_Up()))
+	{ __p->~_Up(); }
 #else
       // _GLIBCXX_RESOLVE_LIB_DEFECTS
       // 402. wrong new expression in [some_] allocator::construct

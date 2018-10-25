@@ -421,6 +421,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef ptrdiff_t					difference_type;
       typedef _Alloc					allocator_type;
 
+    private:
+#if __cplusplus >= 201103L
+      static constexpr bool __use_relocate =
+	noexcept(std::__relocate_object_a(
+			std::addressof(*std::declval<pointer>()),
+			std::addressof(*std::declval<pointer>()),
+			std::declval<_Tp_alloc_type&>()));
+#endif
+
     protected:
       using _Base::_M_allocate;
       using _Base::_M_deallocate;
