@@ -3697,10 +3697,7 @@ get_binding_or_decl (tree ctx, tree name, unsigned mod)
 	     false))
 	  {
 	    if (mslot->is_lazy ())
-	      {
-		lazy_load_binding (mod, ctx, name, mslot, false);
-		gcc_assert (!mslot->is_lazy ());
-	      }
+	      lazy_load_binding (mod, ctx, name, mslot, false);
 	    binding = *mslot;
 	  }
       break;

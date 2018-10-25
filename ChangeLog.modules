@@ -1,5 +1,14 @@
 2018-10-25  Nathan Sidwell  <nathan@acm.org>
 
+	Rationalize bool ok == true
+	gcc/cp/
+	* module.cc (elf::has_error): Rename to ...
+	(elf::get_error): ... this.  Update all callers.
+	(elf::end): Return true == ok.  Update (indirect) callers.
+	(module_state::check_read): Likewise.  Update callers.
+	(module_state::lazy_load): Zap slot on failure.
+	* name-lookup.c (get_binding_or_decl): No need to assert here.
+
 	gcc/cp/
 	* module.cc (module_state::write_readme): Tidy.
 	(module_state::{add_writables,find_dependencies): Dump

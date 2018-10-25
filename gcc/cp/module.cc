@@ -1201,7 +1201,7 @@ public:
 
 public:
   /* Return the error, if we have an error.  */
-  int has_error () const
+  int get_error () const
   {
     return err;
   }
@@ -1218,7 +1218,7 @@ public:
   /* Begin reading/writing file.  Return false on error.  */
   bool begin () const
   {
-    return !has_error ();
+    return !get_error ();
   }
   /* Finish reading/writing file.  Return NULL or error string.  */
   bool end ();
@@ -1257,7 +1257,7 @@ elf::end ()
     set_error (errno);
   fd = -1;
 
-  return has_error ();
+  return !get_error ();
 }
 
 /* ELROND reader.  */
@@ -2099,7 +2099,7 @@ elf_out::begin ()
   memset (h, 0, sizeof (header));
   hdr.pos = hdr.size;
   write (hdr);
-  return has_error () == 0;
+  return !get_error ();
 }
 
 /* Finish writing the file.  Write out the string & section tables.
@@ -2145,7 +2145,7 @@ elf_out::end ()
 	set_error (errno);
 #endif
       /* Write header.  */
-      if (!has_error ())
+      if (!get_error ())
 	{
 	  /* Write the correct header now.  */
 	  header *h = reinterpret_cast <header *> (hdr.buffer);
@@ -11605,7 +11605,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
       for (unsigned ix = config.sec_range.first; ix != hwm; ix++)
 	{
 	  load_section (ix);
-	  if (from ()->has_error ())
+	  if (from ()->get_error ())
 	    break;
 	}
     }
@@ -11652,7 +11652,7 @@ bool
 module_state::check_read (bool outermost, tree ns, tree id)
 {
   bool done = (slurp ()->current == ~0u
-	       && (from ()->has_error () || !slurp ()->remaining));
+	       && (from ()->get_error () || !slurp ()->remaining));
   if (done)
     {
       lazy_open++;
@@ -11663,8 +11663,8 @@ module_state::check_read (bool outermost, tree ns, tree id)
       from ()->end ();
     }
 
-  int e = from ()->has_error ();
-  if (e)
+  bool ok = true;
+  if (int e = from ()->get_error ())
     {
       const char *err = from ()->get_error (filename);
       /* Failure to read a module is going to cause big
@@ -11688,6 +11688,7 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	inform (loc, "consider using %<-fno-module-lazy%> or"
 		" reducing %<--param %s%> value",
 		compiler_params[PARAM_LAZY_MODULES].option);
+      ok = false;
     }
 
   if (done)
@@ -11697,10 +11698,10 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	slurped ();
     }
 
-  if (e && outermost)
+  if (!ok && outermost)
     fatal_error (loc, "jumping off the crazy train to crashville");
 
-  return e;
+  return ok;
 }
 
 /* Return the IDENTIFIER_NODE naming module IX.  This is the name
@@ -11977,7 +11978,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   imported_p = true;
   lazy_open--;
   module_state *alias = read (fd, e, reader);
-  bool failed = check_read (is_direct ());
+  bool ok = check_read (is_direct ());
   if (alias)
     {
       slurped ();
@@ -11986,7 +11987,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
     }
   announce (flag_module_lazy && mod != MODULE_PURVIEW ? "lazy" : "imported");
 
-  return !failed;
+  return ok;
 }
 
 /* Import this module now.  Fatal error on failure.  DEFERRED_P is
@@ -12101,14 +12102,17 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
     load_section (snum);
 
   if (mslot->is_lazy ())
-    from ()->set_error (elf::E_BAD_LAZY);
+    {
+      *mslot = NULL_TREE;
+      from ()->set_error (elf::E_BAD_LAZY);
+    }
 
-  bool failed = check_read (outermost, ns, id);
-  gcc_assert (!failed || !outermost);
+  bool ok = check_read (outermost, ns, id);
+  gcc_assert (ok || !outermost);
  
   dump.pop (n);
 
-  return !failed;
+  return ok;
 }
 
 /* Load MOD's binding for NS::ID into *MSLOT.  *MSLOT contains the
@@ -12120,6 +12124,7 @@ lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
+  gcc_assert (!mslot->is_lazy ());
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
@@ -12599,7 +12604,7 @@ finish_module_parse (cpp_reader *reader)
       elf_out to (fd, e);
       if (to.begin ())
 	state->write (&to, reader);
-      if (to.end ())
+      if (!to.end ())
 	error_at (state->loc, "failed to export module: %s",
 		  to.get_error (state->filename));
 
