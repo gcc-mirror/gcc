@@ -66,6 +66,14 @@ cxx_print_decl (FILE *file, tree node, int indent)
       need_indent = false;
     }
 
+  if (DECL_MODULE_EXPORT_P (node))
+    {
+      if (need_indent)
+	indent_to (file, indent + 3);
+      fprintf (file, " exported");
+      need_indent = false;
+    }
+
   if (DECL_EXTERNAL (node) && DECL_NOT_REALLY_EXTERN (node))
     {
       if (need_indent)

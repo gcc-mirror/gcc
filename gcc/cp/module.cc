@@ -8064,7 +8064,7 @@ module_state::write_readme (elf_out *to, const char *options, cpp_hashnode *node
 
   readme.begin (false);
 
-  readme.printf ("GNU C++ Module (%s)", is_legacy () ? "Legacy "  : "");
+  readme.printf ("GNU C++ %sModule", is_legacy () ? "legacy "  : "");
   /* Compiler's version.  */
   readme.printf ("compiler:%s", version_string);
 
@@ -10858,7 +10858,8 @@ module_state::add_writables (depset::hash &table, tree ns)
 
 	  if (decls.length ())
 	    {
-	      dump () && dump ("Writable bindings at %P", ns, name);
+	      dump (dumper::DEPENDENCIES)
+		&& dump ("Writable bindings at %P", ns, name);
 	      if (tree inner = table.add_binding (ns, name, decls))
 		{
 		  gcc_checking_assert (TREE_PUBLIC (inner));
@@ -10883,8 +10884,9 @@ module_state::find_dependencies (depset::hash &table)
     {
       gcc_checking_assert (!d->is_binding ());
       tree decl = d->get_decl ();
-      dump () && dump ("%s %N", d->is_decl () ? "Declaration" : "Definition",
-		       decl);
+      dump (dumper::DEPENDENCIES)
+	&& dump ("Dependencies of %s %N",
+		 d->is_decl () ? "declaration" : "definition", decl);
       dump.indent ();
       if (TREE_CODE (decl) == NAMESPACE_DECL
 	  && !DECL_NAMESPACE_ALIAS (decl))
@@ -12001,54 +12003,53 @@ module_state::direct_import (int deferrable, cpp_reader *reader)
   if (is_legacy ())
     deferrable = 0;
   if (deferrable > 0)
+    vec_safe_push (pending_imports, this);
+  else
     {
-      vec_safe_push (pending_imports, this);
-      return;
-    }
-
-  direct_p = true;
-  if (!is_imported ())
-    {
-      bool is_interface = mod == MODULE_PURVIEW;
-      char *fname = NULL;
-      unsigned pre_hwm = 0;
-
-      if (!deferrable)
+      direct_p = true;
+      if (!is_imported ())
 	{
-	  /* Preserve the state of the line-map.  */
-	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	  if (module_maybe_interface_p ())
-	    spans.close ();
+	  bool is_interface = mod == MODULE_PURVIEW;
+	  char *fname = NULL;
+	  unsigned pre_hwm = 0;
 
-	  maybe_create_loc ();
-	  fname = module_mapper::import_export (this, is_interface);
+	  if (!deferrable)
+	    {
+	      /* Preserve the state of the line-map.  */
+	      pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+	      if (module_maybe_interface_p ())
+		spans.close ();
+
+	      maybe_create_loc ();
+	      fname = module_mapper::import_export (this, is_interface);
+	    }
+
+	  if (!is_interface)
+	    ok = do_import (fname, reader);
+	  else if (fname)
+	    filename = xstrdup (fname);
+
+	  /* Restore the line-map state.  */
+	  if (!deferrable)
+	    {
+	      linemap_module_restore (line_table, pre_hwm);
+	      if (module_maybe_interface_p ())
+		spans.open ();
+	    }
 	}
 
-      if (!is_interface)
-	ok = do_import (fname, reader);
-      else if (fname)
-	filename = xstrdup (fname);
-
-      /* Restore the line-map state.  */
-      if (!deferrable)
+      if (!ok)
+	fatal_error (loc, "returning to gate for a mechanical issue");
+      else if (mod != MODULE_PURVIEW)
 	{
-	  linemap_module_restore (line_table, pre_hwm);
-	  if (module_maybe_interface_p ())
-	    spans.open ();
+	  module_state *imp = resolve_alias ();
+	  imp->direct_p = true;
+	  if (exported_p)
+	    imp->exported_p = true;
+	  (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
+	  if (imp->is_legacy ())
+	    imp->import_macros ();
 	}
-    }
-
-  if (!ok)
-    fatal_error (loc, "returning to gate for a mechanical issue");
-  else if (mod != MODULE_PURVIEW)
-    {
-      module_state *imp = resolve_alias ();
-      imp->direct_p = true;
-      if (exported_p)
-	imp->exported_p = true;
-      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-      if (imp->is_legacy ())
-	imp->import_macros ();
     }
 
   dump.pop (n);

@@ -195,8 +195,6 @@ scan_translation_unit (cpp_reader *pfile)
 	    }
 	}
 
-      cpp_ttype tok_type = token->type;
-
       if (token->type == CPP_PADDING)
 	{
 	  avoid_paste = true;

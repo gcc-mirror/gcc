@@ -1,3 +1,14 @@
+2018-10-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::write_readme): Tidy.
+	(module_state::{add_writables,find_dependencies): Dump
+	DEPENDENCIES.
+	(module_state::direct_import): Always pop dump.
+	* ptree.c (cxx_print_decl): Print DECL_MODULE_EXPORT_P.
+	gcc/c-family/
+	* c-ppoutput.c (scan_translation_unit): Remove unused var.
+
 2018-10-24  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
