@@ -1,3 +1,7 @@
+2018-10-25  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/float128-cmp2-runnable.c: New test file.
+
 2018-10-25  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/87739
