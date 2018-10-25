@@ -457,14 +457,14 @@ _mm_max_ss (__m128 __A, __m128 __B)
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_min_ps (__m128 __A, __m128 __B)
 {
-  __m128 m = (__m128) vec_vcmpgtfp ((__v4sf) __B, (__v4sf) __A);
+  __vector __bool int m = vec_cmpgt ((__v4sf) __B, (__v4sf) __A);
   return vec_sel (__B, __A, m);
 }
 
 extern __inline __m128 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_max_ps (__m128 __A, __m128 __B)
 {
-  __m128 m = (__m128) vec_vcmpgtfp ((__v4sf) __A, (__v4sf) __B);
+  __vector __bool int m = vec_cmpgt ((__v4sf) __A, (__v4sf) __B);
   return vec_sel (__B, __A, m);
 }
 
