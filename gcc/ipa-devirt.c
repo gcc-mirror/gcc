@@ -719,9 +719,10 @@ odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
     }
   if (visited->add (pair))
     return true;
-  if (odr_types_equivalent_p (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
-			      false, NULL, visited, loc1, loc2)
-      && !type_variants_equivalent_p (t1, t2, warn, warned))
+  if (!odr_types_equivalent_p (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
+			      false, NULL, visited, loc1, loc2))
+    return false;
+  if (!type_variants_equivalent_p (t1, t2, warn, warned))
     return false;
   return true;
 }
@@ -1138,7 +1139,7 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       if (TREE_CODE (n1) == TYPE_DECL)
 	n1 = DECL_NAME (n1);
       if (TREE_CODE (n2) == TYPE_DECL)
-	n1 = DECL_NAME (n2);
+	n2 = DECL_NAME (n2);
       /* Most of the time, the type names will match, do not be unnecesarily
          verbose.  */
       if (IDENTIFIER_POINTER (n1) != IDENTIFIER_POINTER (n2))
@@ -1292,10 +1293,6 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
     return true;
-  gcc_assert (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
-	      || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)));
-  gcc_assert (!type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
-	      || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2)));
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
