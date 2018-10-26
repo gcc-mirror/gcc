@@ -1,3 +1,8 @@
+2018-10-26  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
+
+	* doc/extend.texi (PowerPC builtins): Fix __builtin_unpack_ibm128
+	return type and other typos.
+
 2018-10-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_strncmp_gpr_sequence): Change to
