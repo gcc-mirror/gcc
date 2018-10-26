@@ -1483,7 +1483,8 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
    stmts in NODE are to be marked.  */
 
 static void
-vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
+vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j,
+		     hash_set<slp_tree> &visited)
 {
   int i;
   stmt_vec_info stmt_info;
@@ -1492,25 +1493,37 @@ vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return;
 
+  if (visited.add (node))
+    return;
+
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     if (j < 0 || i == j)
       STMT_SLP_TYPE (stmt_info) = mark;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_mark_slp_stmts (child, mark, j);
+    vect_mark_slp_stmts (child, mark, j, visited);
 }
 
+static void
+vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
+{
+  hash_set<slp_tree> visited;
+  vect_mark_slp_stmts (node, mark, j, visited);
+}
 
 /* Mark the statements of the tree rooted at NODE as relevant (vect_used).  */
 
 static void
-vect_mark_slp_stmts_relevant (slp_tree node)
+vect_mark_slp_stmts_relevant (slp_tree node, hash_set<slp_tree> &visited)
 {
   int i;
   stmt_vec_info stmt_info;
   slp_tree child;
 
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
+    return;
+
+  if (visited.add (node))
     return;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
@@ -1521,7 +1534,14 @@ vect_mark_slp_stmts_relevant (slp_tree node)
     }
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_mark_slp_stmts_relevant (child);
+    vect_mark_slp_stmts_relevant (child, visited);
+}
+
+static void
+vect_mark_slp_stmts_relevant (slp_tree node)
+{
+  hash_set<slp_tree> visited;
+  vect_mark_slp_stmts_relevant (node, visited);
 }
 
 
@@ -2200,7 +2220,8 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
    can't be SLPed) in the tree rooted at NODE.  Mark such stmts as HYBRID.  */
 
 static void
-vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
+vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype,
+			      hash_set<slp_tree> &visited)
 {
   stmt_vec_info stmt_vinfo = SLP_TREE_SCALAR_STMTS (node)[i];
   imm_use_iterator imm_iter;
@@ -2209,6 +2230,9 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
   slp_tree child;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   int j;
+
+  if (visited.add (node))
+    return;
 
   /* Propagate hybrid down the SLP tree.  */
   if (stype == hybrid)
@@ -2259,7 +2283,14 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_external_def)
-      vect_detect_hybrid_slp_stmts (child, i, stype);
+      vect_detect_hybrid_slp_stmts (child, i, stype, visited);
+}
+
+static void
+vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
+{
+  hash_set<slp_tree> visited;
+  vect_detect_hybrid_slp_stmts (node, i, stype, visited);
 }
 
 /* Helpers for vect_detect_hybrid_slp walking pattern stmt uses.  */
@@ -2571,11 +2602,15 @@ vect_slp_analyze_operations (vec_info *vinfo)
 static void 
 vect_bb_slp_scalar_cost (basic_block bb,
 			 slp_tree node, vec<bool, va_heap> *life,
-			 stmt_vector_for_cost *cost_vec)
+			 stmt_vector_for_cost *cost_vec,
+			 hash_set<slp_tree> &visited)
 {
   unsigned i;
   stmt_vec_info stmt_info;
   slp_tree child;
+
+  if (visited.add (node))
+    return; 
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
@@ -2636,10 +2671,20 @@ vect_bb_slp_scalar_cost (basic_block bb,
 	  /* Do not directly pass LIFE to the recursive call, copy it to
 	     confine changes in the callee to the current child/subtree.  */
 	  subtree_life.safe_splice (*life);
-	  vect_bb_slp_scalar_cost (bb, child, &subtree_life, cost_vec);
+	  vect_bb_slp_scalar_cost (bb, child, &subtree_life, cost_vec,
+				   visited);
 	  subtree_life.truncate (0);
 	}
     }
+}
+
+static void 
+vect_bb_slp_scalar_cost (basic_block bb,
+			 slp_tree node, vec<bool, va_heap> *life,
+			 stmt_vector_for_cost *cost_vec)
+{
+  hash_set<slp_tree> visited;
+  vect_bb_slp_scalar_cost (bb, node, life, cost_vec, visited);
 }
 
 /* Check if vectorization of the basic block is profitable.  */
@@ -3930,7 +3975,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
    SLP instances may refer to the same scalar stmt.  */
 
 static void
-vect_remove_slp_scalar_calls (slp_tree node)
+vect_remove_slp_scalar_calls (slp_tree node, hash_set<slp_tree> &visited)
 {
   gimple *new_stmt;
   gimple_stmt_iterator gsi;
@@ -3942,8 +3987,11 @@ vect_remove_slp_scalar_calls (slp_tree node)
   if (SLP_TREE_DEF_TYPE (node) != vect_internal_def)
     return;
 
+  if (visited.add (node))
+    return;
+
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_remove_slp_scalar_calls (child);
+    vect_remove_slp_scalar_calls (child, visited);
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
     {
@@ -3959,6 +4007,13 @@ vect_remove_slp_scalar_calls (slp_tree node)
       stmt_info->vinfo->replace_stmt (&gsi, stmt_info, new_stmt);
       SSA_NAME_DEF_STMT (gimple_assign_lhs (new_stmt)) = new_stmt;
     }
+}
+
+static void
+vect_remove_slp_scalar_calls (slp_tree node)
+{
+  hash_set<slp_tree> visited;
+  vect_remove_slp_scalar_calls (node, visited);
 }
 
 /* Generate vector code for all SLP instances in the loop/basic block.  */
