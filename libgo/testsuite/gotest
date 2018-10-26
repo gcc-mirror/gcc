@@ -518,10 +518,9 @@ symtogo() {
   local ndots=""
   for tp in $*
   do
-    s=$(echo $tp | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
+    s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
     # screen out methods (X.Y.Z)
-    ndots=$(echo $s | sed -e 's/\./ /g' | wc -w)
-    if [ $ndots -ne 2 ]; then
+    if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
       continue
     fi
     if [ -z "${result}" ]; then
