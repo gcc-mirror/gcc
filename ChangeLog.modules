@@ -1,5 +1,12 @@
 2018-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (module_purview): Declare.
+	(module_purview_p, module_interface_p, module_gmf_p): Inline
+	predicates.
+	* module.cc (module_purview): Extern.
+	(module_purview_p, module_interface_p): Delete.
+
 	p1103 no implicit namespace export
 	gcc/cp/
 	* module.cc (trees_out::mark_node): Allow namespace marking.

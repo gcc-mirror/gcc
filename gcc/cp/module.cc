@@ -3053,6 +3053,11 @@ static size_t bmi_repo_length;
 static char *bmi_path;
 static size_t bmi_path_alloc;
 
+/* Global variables.  */
+int module_export_depth;
+/* < 0, in GMF  > 0 is module, > 1 is interface.  */
+int module_purview;
+
 /* Global trees.  */
 static const std::pair<tree *, unsigned> global_tree_arys[] =
   {
@@ -3070,9 +3075,6 @@ static int lazy_open;	 /* Remaining limit for unfrozen loaders.   */
 
 /* Vector of module state.  Indexed by OWNER.  Has at least 2 slots.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
-
-/* < 0, in GMF  > 0 is module, > 1 is interface.  */
-static int module_purview;
 
 /* Hash of module state, findable by {name, parent}. */
 static GTY(()) hash_table<module_state_hash> *modules_hash;
@@ -11718,8 +11720,6 @@ module_state::set_import (module_state const *other, bool is_export)
     bitmap_ior_into (slurp ()->legacies, other->slurp ()->legacies);
 }
 
-int module_export_depth;
-
 /* Return the decl that determines the owning module of DECL.  That
    may be DECL itself, or it may DECL's context, or it may be some
    other DECL (for instance an unscoped enum's CONST_DECLs are owned
@@ -11862,24 +11862,6 @@ fixup_unscoped_enum_owner (tree enumtype)
 	  DECL_MODULE_OWNER (decl) = owner;
 	}
     }
-}
-
-/* Return true iff we're in the purview of a named module.  */
-
-bool
-module_purview_p ()
-{
-  /* We get called very early on, so need to check there's a vector.  */
-  return module_purview > 0;
-}
-
-/* Return true iff we're the interface TU (this also means we're in a
-   module purview.  */
-
-bool
-module_interface_p ()
-{
-  return module_purview > 1;
 }
 
 inline static bool
