@@ -1,3 +1,11 @@
+2018-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87746
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel):
+	Simplify and fix WRT strided store groups with size not
+	equal to step in element count.
+	(vect_analyze_group_access_1): Dump the whole group.
+
 2018-10-25  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (P9V_BUILTIN_VEC_VSCEDPGT,
