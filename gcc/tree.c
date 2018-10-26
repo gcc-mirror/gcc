@@ -5174,7 +5174,7 @@ free_lang_data_in_type (tree type)
 
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
      TYPE_DECL if the type doesn't have linkage.  */
-  if (! type_with_linkage_p (type))
+  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
     {
       TYPE_NAME (type) = TYPE_IDENTIFIER (type);
       TYPE_STUB_DECL (type) = NULL;
