@@ -698,9 +698,12 @@ name_lookup::process_module_binding (bitmap imports, unsigned marker,
 	  else
 	    new_val = NULL_TREE;
 	}
-      else if (TREE_CODE (new_val) == NAMESPACE_DECL
-	       ? !TREE_PUBLIC (new_val)
-	       : !DECL_MODULE_EXPORT_P (new_val))
+      else if (TREE_CODE (new_val) == NAMESPACE_DECL)
+	{
+	  if (!TREE_PUBLIC (new_val) || STAT_HACK_P (bind))
+	    new_val = NULL_TREE;
+	}
+      else if (!DECL_MODULE_EXPORT_P (new_val))
 	new_val = NULL_TREE;
 
       if (!new_type && !new_val)
@@ -3285,6 +3288,18 @@ set_local_extern_decl_linkage (tree decl, bool shadowed)
     }
 }
 
+/* NS needs to be exported, mark it and all its parents as exported.  */
+
+static void
+implicitly_export_namespace (tree ns)
+{
+  while (!DECL_MODULE_EXPORT_P (ns))
+    {
+      DECL_MODULE_EXPORT_P (ns) = true;
+      ns = CP_DECL_CONTEXT (ns);
+    }
+}
+
 /* DECL has just been bound at LEVEL.  finish up the bookkeeping.  */
 
 static void
@@ -3479,7 +3494,13 @@ do_pushdecl (tree decl, bool is_friend)
 	/* An existing decl matched, use it.  */
 	decl = old;
       else
-	newbinding_bookkeeping (name, decl, level);
+	{
+	  newbinding_bookkeeping (name, decl, level);
+
+	  if (DECL_MODULE_EXPORT_P (decl) && level->kind == sk_namespace
+	      && !DECL_MODULE_EXPORT_P (level->this_entity))
+	    implicitly_export_namespace (level->this_entity);
+	}
     }
   else
     add_decl_to_level (level, decl);
@@ -7881,7 +7902,7 @@ push_namespace (tree name, bool make_inline)
       tree *slot = find_namespace_slot (current_namespace, name, true);
       ns = reuse_namespace (slot, current_namespace, name);
       if (!ns)
-	ns = make_namespace (current_namespace, name, MODULE_NONE,
+	ns = make_namespace (current_namespace, name, MODULE_PURVIEW,
 			     input_location, make_inline);
 
       if (pushdecl (ns) == error_mark_node)
@@ -7900,15 +7921,16 @@ push_namespace (tree name, bool make_inline)
 
   if (ns)
     {
-      /* Explicitly opened public namespaces names are always
-	 exported, regardless of whether they're inside 'export'.  */
-      // FIXME: Changes in p1103
-      if (TREE_PUBLIC (ns) && module_purview_p ())
-	DECL_MODULE_EXPORT_P (ns) = true;
+      /* A public namespace is exported only if explicitly marked, or
+	 it contains exported entities.  */
+      if (!DECL_MODULE_EXPORT_P (ns) && TREE_PUBLIC (ns)
+	  && module_exporting_p ())
+	implicitly_export_namespace (ns);
 
       if (make_inline && !DECL_NAMESPACE_INLINE_P (ns))
 	{
-	  error ("inline namespace must be specified at initial definition");
+	  error_at (input_location,
+		    "inline namespace must be specified at initial definition");
 	  inform (DECL_SOURCE_LOCATION (ns), "%qD defined here", ns);
 	}
       resume_scope (NAMESPACE_LEVEL (ns));
@@ -7937,11 +7959,8 @@ pop_namespace (void)
 
 tree
 add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
-			bool inline_p)
+			bool export_p, bool inline_p)
 {
-  /* Does not deal with anonymous namespaces.  (yet) */
-  gcc_assert (name && TREE_PUBLIC (ctx));
-
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
@@ -7959,7 +7978,7 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
   /* Now insert.  */
   if (mod < MODULE_IMPORT_BASE)
     mod = MODULE_SLOT_CURRENT;
-  else if (TREE_CODE (*slot) == MODULE_VECTOR)
+  else if (TREE_PUBLIC (decl) && TREE_CODE (*slot) == MODULE_VECTOR)
     {
       /* See if we can extend the final slot.  */
       module_cluster *last = MODULE_VECTOR_CLUSTER_LAST (*slot);
@@ -7969,7 +7988,9 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
       while (--jx)
 	if (last->indices[jx].span)
 	  break;
-      if (last->slots[jx] == decl
+      tree final = last->slots[jx];
+      if (export_p == !STAT_HACK_P (final)
+	  && MAYBE_STAT_DECL (final) == decl
 	  && last->indices[jx].base + last->indices[jx].span == mod
 	  && (MODULE_VECTOR_NUM_CLUSTERS (*slot) > 1
 	      || (MODULE_VECTOR_SLOTS_PER_CLUSTER > MODULE_IMPORT_BASE
@@ -7981,8 +8002,8 @@ add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
     }
 
   mc_slot *mslot = module_binding_slot (slot, name, mod, true);
-  gcc_assert (!mslot->is_lazy () && (!*mslot || *mslot == decl));
-  *mslot = decl;
+  gcc_assert (!mslot->is_lazy () && (!*mslot || (export_p && *mslot == decl)));
+  *mslot = export_p ? decl : stat_hack (decl, NULL_TREE);
 
   return decl;
 }

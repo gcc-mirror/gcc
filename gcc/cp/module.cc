@@ -2549,10 +2549,10 @@ public:
 private:
   bool tree_decl (tree, bool force, bool looking_inside);
   bool tree_type (tree, bool force, bool looking_inside);
-  void tree_namespace (tree, unsigned owner);
+  void tree_namespace (tree, bool force, tree inner_decl);
 public:
   int tree_ref (tree);
-  void tree_ctx (tree, bool need_contents, tree maybe_owning_decl = NULL_TREE);
+  void tree_ctx (tree, bool need_contents, tree inner_decl);
 
 public:
   static void instrument ();
@@ -3785,7 +3785,6 @@ void
 trees_out::mark_node (tree decl)
 {
   gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
-  gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL);
 
   if (TREE_VISITED (decl))
     gcc_checking_assert (!*tree_map.get (decl));
@@ -5628,7 +5627,7 @@ trees_out::tree_binfo (tree binfo, int depth, bool via_virt)
   else
     {
       dom = BINFO_TYPE (binfo);
-      tree_ctx (dom, false);
+      tree_ctx (dom, false, NULL);
 
       if (streaming_p ())
 	{
@@ -5845,7 +5844,7 @@ trees_out::tree_ref (tree t)
    ultimately looking for something inside CTX.  */
 // FIXME:return indicator if we discoverd a voldemort
 void
-trees_out::tree_ctx (tree ctx, bool need_contents, tree maybe_owning_decl)
+trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 {
   if (int ref = tree_ref (ctx))
     {
@@ -5855,44 +5854,39 @@ trees_out::tree_ctx (tree ctx, bool need_contents, tree maybe_owning_decl)
       if (TYPE_P (ctx))
 	by_value = tree_type (ctx, force, need_contents);
       else if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	{
-	  gcc_checking_assert (!force);
-	  tree_namespace (ctx, MAYBE_DECL_MODULE_OWNER (maybe_owning_decl));
-	}
+	tree_namespace (ctx, force, inner_decl);
       else
 	by_value = tree_decl (ctx, force, need_contents);
-
+  
       if (by_value)
 	tree_value (ctx, force);
     }
 }
 
 void
-trees_out::tree_namespace (tree ns, unsigned owner)
+trees_out::tree_namespace (tree ns, bool force, tree inner_decl)
 {
-  bool is_import = owner >= MODULE_IMPORT_BASE;
-  tree ctx = CP_DECL_CONTEXT (ns);
+  unsigned owner = (inner_decl ? MAYBE_DECL_MODULE_OWNER (inner_decl)
+		    : MODULE_NONE);
 
   if (streaming_p ())
     {
       i (tt_namespace);
       u (TREE_PUBLIC (ns) ? MODULE_NONE : owner);
-      if (tree_ref (ctx))
-	tree_namespace (ctx, owner);
+      tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
       tree_node (DECL_NAME (ns));
     }
-  else if (!is_import)
-    {
-      /* Build out dependencies.  */
-      if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
-	dep_hash->add_dependency (ns, true);
-    }
+  else if (force)
+    tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
+  else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
+    dep_hash->add_dependency (ns, true);
 
-  int tag = insert (ns);
+  int tag = insert (ns, force);
   if (streaming_p ())
     dump (dumper::TREES)
-      && dump ("Wrote namespace:%d %C:%N@%M", tag, TREE_CODE (ns), ns,
-	       owner == MODULE_UNKNOWN ? NULL : (*modules)[owner]);
+      && dump ("Wrote%s namespace:%d %C:%N@%M",
+	       TREE_PUBLIC (ns) ? " public" : "", tag, TREE_CODE (ns), ns,
+	       owner == MODULE_NONE ? NULL : (*modules)[owner]);
 }
 
 /* Reference DECL.  FORCE is true, if we know we're writing this by
@@ -5968,7 +5962,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside)
 	{
 	  if (streaming_p ())
 	    i (tt_inst);
-	  tree_ctx (tpl, false);
+	  tree_ctx (tpl, false, NULL_TREE);
 	  tree_node (INNERMOST_TEMPLATE_ARGS (TI_ARGS (ti)));
 	  kind = "instantiation";
 	  goto insert;
@@ -6048,7 +6042,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside)
     else if (!is_import)
       {
 	if (TREE_CODE (ctx) != NAMESPACE_DECL)
-	  tree_ctx (ctx, true);
+	  tree_ctx (ctx, true, decl);
 	else if (DECL_SOURCE_LOCATION (decl) != BUILTINS_LOCATION)
 	  dep_hash->add_dependency (decl, looking_inside);
       }
@@ -6106,7 +6100,7 @@ trees_out::tree_type (tree type, bool force, bool looking_inside)
 	  dump (dumper::TREES)
 	    && dump ("Writing as_base for %N", TYPE_CONTEXT (type));
 	}
-      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true);
+      tree_ctx (TYPE_NAME (TYPE_CONTEXT (type)), true, NULL_TREE);
       return false;
     }
 
@@ -6125,7 +6119,7 @@ trees_out::tree_type (tree type, bool force, bool looking_inside)
 	      && dump ("Writing interstitial named type %C:%N%S",
 		       TREE_CODE (name), name, name);
 	  }
-	tree_ctx (name, looking_inside);
+	tree_ctx (name, looking_inside, NULL_TREE);
 	if (streaming_p ())
 	  dump (dumper::TREES) && dump ("Wrote named type %C:%N%S",
 					TREE_CODE (name), name, name);
@@ -9065,7 +9059,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
       else
 	{
 	  sec.u (b->is_decl () ? ct_decl : ct_defn);
-	  sec.tree_ctx (decl, false);
+	  sec.tree_ctx (decl, false, NULL_TREE);
 	  if (b->cluster)
 	    dump () && dump ("Voldemort:%u %N", b->cluster - 1, decl);
 	  sec.u (b->cluster);
@@ -9239,7 +9233,11 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
       bool export_p = DECL_MODULE_EXPORT_P (ns);
       bool inline_p = DECL_NAMESPACE_INLINE_P (ns);
       bool public_p = TREE_PUBLIC (ns);
-      unsigned owner = DECL_MODULE_OWNER (ns);
+
+      /* We should only be naming public namespaces, or our own
+	 private ones.  */
+      gcc_checking_assert (public_p
+			   || DECL_MODULE_OWNER (ns) == MODULE_PURVIEW);
       unsigned flags = 0;
       if (export_p)
 	flags |= 1;
@@ -9247,23 +9245,18 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 	flags |= 2;
       if (public_p)
 	flags |= 4;
-      if (owner != MODULE_NONE)
-	flags |= 8;
-      dump () && dump ("Writing namespace %u %N%s%s%s, owner=%M, parent:%u",
+      dump () && dump ("Writing namespace %u %N%s%s%s, parent:%u",
 		       b->section, ns, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "", (*modules)[owner],
-		       ctx_num);
+		       inline_p ? ", inline" : "", ctx_num);
 
       sec.u (to->name (DECL_NAME (ns)));
       sec.u (ctx_num);
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
       sec.u (flags);
-      if (owner != MODULE_NONE)
-	sec.u (owner);
-      else
-	write_location (sec, DECL_SOURCE_LOCATION (ns));
+      write_location (sec, DECL_MODULE_OWNER (ns) == MODULE_PURVIEW
+		      ? DECL_SOURCE_LOCATION (ns) : UNKNOWN_LOCATION);
     }
 
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
@@ -9291,16 +9284,9 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
       unsigned parent = sec.u ();
       /* See comment in write_namespace about why not bits.  */
       unsigned flags = sec.u ();
-      unsigned owner = mod;
-      location_t src_loc = loc;
-      if (flags & 8)
-	{
-	  owner = sec.u ();
-	  owner = slurp ()->remap_module (owner);
-	}
-      else
-	src_loc = read_location (sec);
-      if (owner == MODULE_NONE || parent >= spaces.length ())
+      location_t src_loc = read_location (sec);
+
+      if (parent >= spaces.length ())
 	sec.set_overrun ();
       if (sec.get_overrun ())
 	break;
@@ -9309,15 +9295,13 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
       bool public_p = flags & 4;
       bool inline_p = flags & 2;
       bool export_p = flags & 1;
-      
-      dump () && dump ("Read namespace %P%s%s%s, owner=%M, %u",
+
+      dump () && dump ("Read namespace %P%s%s%s, %u",
 		       spaces[parent], id, export_p ? ", export" : "",
 		       public_p ? ", public" : "",
-		       inline_p ? ", inline" : "",
-		       (*modules)[owner], spaces.length ());
-      gcc_assert (public_p); // not ready for anon
-      tree inner = add_imported_namespace (spaces[parent], id, owner,
-					   src_loc, inline_p);
+		       inline_p ? ", inline" : "", spaces.length ());
+      tree inner = add_imported_namespace (spaces[parent], id, mod,
+					   src_loc, export_p, inline_p);
       spaces.safe_push (inner);
     }
   dump.outdent ();
@@ -10888,24 +10872,17 @@ module_state::find_dependencies (depset::hash &table)
 	&& dump ("Dependencies of %s %N",
 		 d->is_decl () ? "declaration" : "definition", decl);
       dump.indent ();
-      if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && !DECL_NAMESPACE_ALIAS (decl))
-	dump () && dump ("Namespace %N imported from %M",
-			 decl, (*modules)[DECL_MODULE_OWNER (decl)]);
-      else
-	{
-	  walker.begin (&table);
-	  walker.mark_node (decl);
-	  if (d->is_defn ())
-	    mark_definition (walker, decl);
-	  /* Turn the Sneakoscope on when depending the decl.  */
-	  table.sneakoscope = true;
-	  walker.tree_node (decl);
-	  table.sneakoscope = false;
-	  if (d->is_defn ())
-	    write_definition (walker, decl);
-	  walker.end ();
-	}
+      walker.begin (&table);
+      walker.mark_node (decl);
+      if (d->is_defn ())
+	mark_definition (walker, decl);
+      /* Turn the Sneakoscope on when depending the decl.  */
+      table.sneakoscope = true;
+      walker.tree_ctx (decl, false, NULL_TREE);
+      table.sneakoscope = false;
+      if (d->is_defn ())
+	write_definition (walker, decl);
+      walker.end ();
       dump.outdent ();
     }
 }

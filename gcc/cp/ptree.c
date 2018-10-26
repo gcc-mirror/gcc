@@ -267,11 +267,18 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      if (cluster->indices[jx].span)
 		{
-		  int len = sprintf (pfx, "cluster:%u elt:%u", ix,
-				     cluster->indices[jx].base);
+		  int len = sprintf (pfx, "elt:%u", cluster->indices[jx].base);
 		  if (cluster->indices[jx].span > 1)
-		    sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
-		  print_node (file, pfx, cluster->slots[jx], indent + 4);
+		    len
+		      += sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
+		  len += sprintf (&pfx[len], "cluster:%u", ix);
+		  if (cluster->slots[jx])
+		    print_node (file, pfx, cluster->slots[jx], indent + 4);
+		  else
+		    {
+		      indent_to (file, indent + 4);
+		      fprintf (file, "%s NULL", pfx);
+		    }
 		}
 	  }
       }

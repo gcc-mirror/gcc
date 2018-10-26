@@ -34,7 +34,7 @@ namespace bar
 }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::frob'@'foo' section:} module } }
-// { dg-final { scan-lang-dump {Wrote namespace:-[0-9]* namespace_decl:'::foo'@foo} module } }
+// { dg-final { scan-lang-dump {Wrote public namespace:-[0-9]* namespace_decl:'::foo'@foo} module } }
 // { dg-final { scan-lang-dump {Wrote import:-[0-9]* function_decl:'::foo::frob'@foo} module } }
 
 // { dg-final { scan-lang-dump {Lazily binding '::foo::X'@'foo' section:} module } }

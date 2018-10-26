@@ -1,3 +1,26 @@
+2018-10-26  Nathan Sidwell  <nathan@acm.org>
+
+	p1103 no implicit namespace export
+	gcc/cp/
+	* module.cc (trees_out::mark_node): Allow namespace marking.
+	(trees_out::tree_ctx): Namespaces may be forced.
+	(trees_out::tree_namespace): Reimplement.
+	(trees_out::tree_{type,decl}): Adjust tree_ctx calls.
+	(module_state::write_cluster): Likewise.
+	(module_state::{read,write}_namespace): Adjust.
+	(module_state::find_dependencies): Also walk namespaces.
+	* name-lookup.c (name_lookup::process_binding): Fixup hidden
+	namespaces.
+	(implicitly_export_namespace): New.
+	(do_pushdecl, push_namespace): Call it.
+	(add_imported_namespace): Add export_p arg, adjust.
+	* name-lookup.h (add_imported_namespace): Add export_p arg.
+	* ptree.c (cxx_print_node): Adjust MODULE_VEC printing.
+	gcc/testsuite/
+	* g++.dg/modules/indirect-1_b.C: Adjust scans.
+	* g++.dg/modules/namespace-[23].C: Split to ...
+	* g++.dg/modules/namespace-[23]_[ab].C: ... these.
+
 2018-10-25  Nathan Sidwell  <nathan@acm.org>
 
 	Rationalize bool ok == true

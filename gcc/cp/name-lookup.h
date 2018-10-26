@@ -348,5 +348,5 @@ extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
 extern tree get_imported_namespace (tree ctx, tree name, unsigned mod);
 extern tree extract_module_decls (tree binding, auto_vec<tree> &);
 extern tree add_imported_namespace (tree ctx, tree name, unsigned mod,
-				    location_t, bool inline_p);
+				    location_t, bool export_p, bool inline_p);
 #endif /* GCC_CP_NAME_LOOKUP_H */
