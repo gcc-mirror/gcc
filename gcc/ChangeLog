@@ -1,3 +1,8 @@
+2018-10-25  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/mmintrin.h: Enable 32bit compilation.
+	* config/rs6000/xmmintrin.h: Likewise.
+
 2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
 
 	* config/rs6000/xmmintrin.h (_mm_extract_pi16): Fix for big-endian.
