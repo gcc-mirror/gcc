@@ -1,3 +1,9 @@
+2018-10-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_strncmp_gpr_sequence): Change to
+	a shorter sequence with fewer branches.
+	(emit_final_str_compare_gpr): Ditto.
+
 2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
 
 	* config/rs6000/tmmintrin.h: New file.
