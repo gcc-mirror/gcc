@@ -1010,20 +1010,10 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   unsigned int i;
   vec<dr_p> same_aligned_drs;
   struct data_reference *current_dr;
-  int dr_size = vect_get_scalar_dr_size (dr_info);
-  int dr_peel_size = vect_get_scalar_dr_size (dr_peel_info);
-  stmt_vec_info stmt_info = dr_info->stmt;
   stmt_vec_info peel_stmt_info = dr_peel_info->stmt;
 
- /* For interleaved data accesses the step in the loop must be multiplied by
-     the size of the interleaving group.  */
-  if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    dr_size *= DR_GROUP_SIZE (DR_GROUP_FIRST_ELEMENT (stmt_info));
-  if (STMT_VINFO_GROUPED_ACCESS (peel_stmt_info))
-    dr_peel_size *= DR_GROUP_SIZE (peel_stmt_info);
-
-  /* It can be assumed that the data refs with the same alignment as dr_peel
-     are aligned in the vector loop.  */
+  /* It can be assumed that if dr_info has the same alignment as dr_peel,
+     it is aligned in the vector loop.  */
   same_aligned_drs = STMT_VINFO_SAME_ALIGN_REFS (peel_stmt_info);
   FOR_EACH_VEC_ELT (same_aligned_drs, i, current_dr)
     {
@@ -1031,8 +1021,8 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
         continue;
       gcc_assert (!known_alignment_for_access_p (dr_info)
 		  || !known_alignment_for_access_p (dr_peel_info)
-		  || (DR_MISALIGNMENT (dr_info) / dr_size
-		      == DR_MISALIGNMENT (dr_peel_info) / dr_peel_size));
+		  || (DR_MISALIGNMENT (dr_info)
+		      == DR_MISALIGNMENT (dr_peel_info)));
       SET_DR_MISALIGNMENT (dr_info, 0);
       return;
     }
@@ -1040,10 +1030,8 @@ vect_update_misalignment_for_peel (dr_vec_info *dr_info,
   if (known_alignment_for_access_p (dr_info)
       && known_alignment_for_access_p (dr_peel_info))
     {
-      bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
-					    size_zero_node) < 0;
       int misal = DR_MISALIGNMENT (dr_info);
-      misal += negative ? -npeel * dr_size : npeel * dr_size;
+      misal += npeel * TREE_INT_CST_LOW (DR_STEP (dr_info->dr));
       misal &= DR_TARGET_ALIGNMENT (dr_info) - 1;
       SET_DR_MISALIGNMENT (dr_info, misal);
       return;
@@ -2559,11 +2547,22 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
 	    dump_printf (MSG_NOTE, "strided store ");
 	  else
 	    dump_printf (MSG_NOTE, "store ");
-	  dump_printf (MSG_NOTE, "of size %u starting with %G",
-		       (unsigned)groupsize, stmt_info->stmt);
+	  dump_printf (MSG_NOTE, "of size %u\n",
+		       (unsigned)groupsize);
+	  dump_printf_loc (MSG_NOTE, vect_location, "\t%G", stmt_info->stmt);
+	  next = DR_GROUP_NEXT_ELEMENT (stmt_info);
+	  while (next)
+	    {
+	      if (DR_GROUP_GAP (next) != 1)
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "\t<gap of %d elements>\n",
+				 DR_GROUP_GAP (next) - 1);
+	      dump_printf_loc (MSG_NOTE, vect_location, "\t%G", next->stmt);
+	      next = DR_GROUP_NEXT_ELEMENT (next);
+	    }
 	  if (DR_GROUP_GAP (stmt_info) != 0)
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "There is a gap of %u elements after the group\n",
+			     "\t<gap of %d elements>\n",
 			     DR_GROUP_GAP (stmt_info));
 	}
 
