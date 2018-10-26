@@ -1,5 +1,12 @@
 2018-10-26  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87105
+	* g++.dg/vect/slp-pr87105.cc: Adjust.
+	* gcc.dg/torture/20181024-1.c: New testcase.
+	* g++.dg/opt/20181025-1.C: Likewise.
+
+2018-10-26  Richard Biener  <rguenther@suse.de>
+
 	PR testsuite/87754
 	* g++.dg/lto/odr-1_0.C: Fix pattern.
 

@@ -1,3 +1,22 @@
+2018-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87105
+	* tree-vectorizer.h (_slp_tree::refcnt): New member.
+	* tree-vect-slp.c (vect_free_slp_tree): Decrement and honor
+	refcnt.
+	(vect_create_new_slp_node): Initialize refcnt to one.
+	(bst_traits): Move.
+	(scalar_stmts_set_t, bst_fail): Remove.
+	(vect_build_slp_tree_2): Add bst_map argument and adjust calls.
+	(vect_build_slp_tree): Add bst_map argument and lookup
+	already created SLP nodes.
+	(vect_print_slp_tree): Handle a SLP graph, print SLP node
+	addresses.
+	(vect_slp_rearrange_stmts): Handle a SLP graph.
+	(vect_analyze_slp_instance): Adjust and free SLP nodes from
+	the CSE map.  Fix indenting.
+	(vect_schedule_slp_instance): Add short-cut.
+
 2018-10-26  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/86158

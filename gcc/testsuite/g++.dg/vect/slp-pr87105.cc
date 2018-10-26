@@ -2,7 +2,7 @@
 // { dg-require-effective-target c++11 }
 // { dg-require-effective-target vect_double }
 // For MIN/MAX recognition
-// { dg-additional-options "-ffast-math -fvect-cost-model" }
+// { dg-additional-options "-ffast-math" }
 
 #include <algorithm>
 #include <cmath>
@@ -99,6 +99,7 @@ void quadBoundingBoxA(const Point bez[3], Box& bBox) noexcept {
 
 // We should have if-converted everything down to straight-line code
 // { dg-final { scan-tree-dump-times "<bb \[0-9\]+>" 1 "slp2" } }
-// We fail to elide an earlier store which makes us not handle a later
-// duplicate one for vectorization.
-// { dg-final { scan-tree-dump-times "basic block part vectorized" 1 "slp2" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump-times "basic block part vectorized" 1 "slp2" } }
+// It's a bit awkward to detect that all stores were vectorized but the
+// following more or less does the trick
+// { dg-final { scan-tree-dump "vect_iftmp\[^\r\m\]* = MIN" "slp2" } }
