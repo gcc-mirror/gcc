@@ -87,7 +87,6 @@ gomp_aligned_alloc (size_t al, size_t size)
 	  ((void **) ap)[-1] = p;
 	  ret = ap;
 	}
-#define NEED_SPECIAL_GOMP_ALIGNED_FREE
     }
 #endif
   if (ret == NULL)
@@ -98,10 +97,10 @@ gomp_aligned_alloc (size_t al, size_t size)
 void
 gomp_aligned_free (void *ptr)
 {
-#ifdef NEED_SPECIAL_GOMP_ALIGNED_FREE
+#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+  free (ptr);
+#else
   if (ptr)
     free (((void **) ptr)[-1]);
-#else
-  free (ptr);
 #endif
 }

@@ -86,6 +86,15 @@ enum memmodel
 
 /* alloc.c */
 
+#if defined(HAVE_ALIGNED_ALLOC) \
+    || defined(HAVE__ALIGNED_MALLOC) \
+    || defined(HAVE_POSIX_MEMALIGN) \
+    || defined(HAVE_MEMALIGN)
+/* Defined if gomp_aligned_alloc doesn't use fallback version
+   and free can be used instead of gomp_aligned_free.  */
+#define GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC 1
+#endif
+
 extern void *gomp_malloc (size_t) __attribute__((malloc));
 extern void *gomp_malloc_cleared (size_t) __attribute__((malloc));
 extern void *gomp_realloc (void *, size_t);

@@ -76,7 +76,15 @@ alloc_work_share (struct gomp_team *team)
 #endif
 
   team->work_share_chunk *= 2;
+  /* Allocating gomp_work_share structures aligned is just an
+     optimization, don't do it when using the fallback method.  */
+#ifdef GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC
+  ws = gomp_aligned_alloc (__alignof (struct gomp_work_share),
+			   team->work_share_chunk
+			   * sizeof (struct gomp_work_share));
+#else
   ws = gomp_malloc (team->work_share_chunk * sizeof (struct gomp_work_share));
+#endif
   ws->next_alloc = team->work_shares[0].next_alloc;
   team->work_shares[0].next_alloc = ws;
   team->work_share_list_alloc = &ws[1];

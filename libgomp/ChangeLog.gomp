@@ -1,3 +1,13 @@
+2018-10-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Define unless
+	gomp_aligned_alloc uses fallback implementation.
+	* alloc.c (NEED_SPECIAL_GOMP_ALIGNED_FREE): Don't define.
+	(gomp_aligned_free): Use !defined(GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC)
+	instead of defined(NEED_SPECIAL_GOMP_ALIGNED_FREE).
+	* work.c (alloc_work_share): Use gomp_aligned_alloc instead of
+	gomp_malloc if GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined.
+
 2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp.h.in (enum omp_sched_t): Add omp_sched_monotonic.
