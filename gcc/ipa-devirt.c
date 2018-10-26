@@ -175,6 +175,8 @@ struct default_hash_traits <type_pair>
 static bool odr_types_equivalent_p (tree, tree, bool, bool *,
 				    hash_set<type_pair> *,
 				    location_t, location_t);
+static void warn_odr (tree t1, tree t2, tree st1, tree st2,
+		      bool warn, bool *warned, const char *reason);
 
 static bool odr_violation_reported = false;
 
@@ -381,22 +383,15 @@ odr_vtable_hasher::hash (const odr_type_d *odr_type)
 
    Until we start streaming mangled type names, this function works
    only for polymorphic types.
-
-   When STRICT is true, we compare types by their names for purposes of
-   ODR violation warnings.  When strict is false, we consider variants
-   equivalent, because it is all that matters for devirtualization machinery.
 */
 
 bool
-types_same_for_odr (const_tree type1, const_tree type2, bool strict)
+types_same_for_odr (const_tree type1, const_tree type2)
 {
   gcc_checking_assert (TYPE_P (type1) && TYPE_P (type2));
 
-  if (!strict)
-    {
-      type1 = TYPE_MAIN_VARIANT (type1);
-      type2 = TYPE_MAIN_VARIANT (type2);
-    }
+  type1 = TYPE_MAIN_VARIANT (type1);
+  type2 = TYPE_MAIN_VARIANT (type2);
 
   if (type1 == type2)
     return true;
@@ -470,17 +465,15 @@ types_same_for_odr (const_tree type1, const_tree type2, bool strict)
 /* Return true if we can decide on ODR equivalency.
 
    In non-LTO it is always decide, in LTO however it depends in the type has
-   ODR info attached.
-
-   When STRICT is false, compare main variants.  */
+   ODR info attached. */
 
 bool
-types_odr_comparable (tree t1, tree t2, bool strict)
+types_odr_comparable (tree t1, tree t2)
 {
   return (!in_lto_p
-	  || t1 == t2
-	  || (!strict && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
-	  || (odr_type_p (t1) && odr_type_p (t2))
+	  || TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2)
+	  || (odr_type_p (TYPE_MAIN_VARIANT (t1))
+	      && odr_type_p (TYPE_MAIN_VARIANT (t2)))
 	  || (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE
 	      && TYPE_BINFO (t1) && TYPE_BINFO (t2)
 	      && polymorphic_type_binfo_p (TYPE_BINFO (t1))
@@ -525,7 +518,7 @@ odr_or_derived_type_p (const_tree t)
 {
   do
     {
-      if (odr_type_p (t))
+      if (odr_type_p (TYPE_MAIN_VARIANT (t)))
 	return true;
       /* Function type is a tricky one. Basically we can consider it
 	 ODR derived if return type or any of the parameters is.
@@ -540,7 +533,7 @@ odr_or_derived_type_p (const_tree t)
 	     if (TREE_TYPE (t) && odr_or_derived_type_p (TREE_TYPE (t)))
 	       return true;
 	     for (t = TYPE_ARG_TYPES (t); t; t = TREE_CHAIN (t))
-	       if (odr_or_derived_type_p (TREE_VALUE (t)))
+	       if (odr_or_derived_type_p (TYPE_MAIN_VARIANT (TREE_VALUE (t))))
 		 return true;
 	     return false;
 	   }
@@ -566,8 +559,7 @@ odr_name_hasher::equal (const odr_type_d *o1, const tree_node *t2)
     return true;
   if (!in_lto_p)
     return false;
-  /* Check for anonymous namespaces. Those have !TREE_PUBLIC
-     on the corresponding TYPE_STUB_DECL.  */
+  /* Check for anonymous namespaces.  */
   if ((type_with_linkage_p (t1) && type_in_anonymous_namespace_p (t1))
       || (type_with_linkage_p (t2) && type_in_anonymous_namespace_p (t2)))
     return false;
@@ -639,10 +631,45 @@ set_type_binfo (tree type, tree binfo)
       gcc_assert (!TYPE_BINFO (type));
 }
 
+/* Return true if type variants match.
+   This assumes that we already verified that T1 and T2 are variants of the
+   same type.  */
+
+static bool
+type_variants_equivalent_p (tree t1, tree t2, bool warn, bool *warned)
+{
+  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("a type with different qualifiers is defined in another "
+		   "translation unit"));
+      return false;
+    }
+
+  if (comp_type_attributes (t1, t2) != 1)
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+	        G_("a type with different attributes "
+		   "is defined in another translation unit"));
+      return false;
+    }
+
+  if (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2)
+      && TYPE_ALIGN (t1) != TYPE_ALIGN (t2))
+    {
+      warn_odr (t1, t2, NULL, NULL, warn, warned,
+		G_("a type with different alignment "
+		   "is defined in another translation unit"));
+      return false;
+    }
+
+  return true;
+}
+
 /* Compare T1 and T2 based on name or structure.  */
 
 static bool
-odr_subtypes_equivalent_p (tree t1, tree t2,
+odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 			   hash_set<type_pair> *visited,
 			   location_t loc1, location_t loc2)
 {
@@ -654,20 +681,25 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
     return true;
 
   /* Anonymous namespace types must match exactly.  */
-  if ((type_with_linkage_p (t1) && type_in_anonymous_namespace_p (t1))
-      || (type_with_linkage_p (t2) && type_in_anonymous_namespace_p (t2)))
+  if ((type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+       && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
+	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     return false;
 
   /* For ODR types be sure to compare their names.
      To support -Wno-odr-type-merging we allow one type to be non-ODR
      and other ODR even though it is a violation.  */
-  if (types_odr_comparable (t1, t2, true))
+  if (types_odr_comparable (t1, t2))
     {
-      if (!types_same_for_odr (t1, t2, true))
+      if (!types_same_for_odr (t1, t2))
         return false;
+      if (!type_variants_equivalent_p (t1, t2, warn, warned))
+	return false;
       /* Limit recursion: If subtypes are ODR types and we know
 	 that they are same, be happy.  */
-      if (!odr_type_p (t1) || !get_odr_type (t1, true)->odr_violated)
+      if (!odr_type_p (TYPE_MAIN_VARIANT (t1))
+	  || !get_odr_type (TYPE_MAIN_VARIANT (t1), true)->odr_violated)
         return true;
     }
 
@@ -679,15 +711,19 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
       && (TYPE_NAME (t1) == NULL_TREE) != (TYPE_NAME (t2) == NULL_TREE))
     return false;
 
-  type_pair pair={t1,t2};
-  if (TYPE_UID (t1) > TYPE_UID (t2))
+  type_pair pair={TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2)};
+  if (TYPE_UID (TYPE_MAIN_VARIANT (t1)) > TYPE_UID (TYPE_MAIN_VARIANT (t2)))
     {
-      pair.first = t2;
-      pair.second = t1;
+      pair.first = TYPE_MAIN_VARIANT (t2);
+      pair.second = TYPE_MAIN_VARIANT (t1);
     }
   if (visited->add (pair))
     return true;
-  return odr_types_equivalent_p (t1, t2, false, NULL, visited, loc1, loc2);
+  if (odr_types_equivalent_p (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
+			      false, NULL, visited, loc1, loc2)
+      && !type_variants_equivalent_p (t1, t2, warn, warned))
+    return false;
+  return true;
 }
 
 /* Return true if DECL1 and DECL2 are identical methods.  Consider
@@ -959,7 +995,7 @@ compare_virtual_tables (varpool_node *prevailing, varpool_node *vtable)
    If WARN is false, do nothing. Set WARNED if warning was indeed
    output.  */
 
-void
+static void
 warn_odr (tree t1, tree t2, tree st1, tree st2,
 	  bool warn, bool *warned, const char *reason)
 {
@@ -1083,10 +1119,13 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 
   /* It is a quite common bug to reference anonymous namespace type in
      non-anonymous namespace class.  */
-  if ((type_with_linkage_p (t1) && type_in_anonymous_namespace_p (t1))
-      || (type_with_linkage_p (t2) && type_in_anonymous_namespace_p (t2)))
+  if ((type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+       && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
+	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     {
-      if (type_with_linkage_p (t1) && !type_in_anonymous_namespace_p (t1))
+      if (type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+	  && !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
 	{
 	  std::swap (t1, t2);
 	  std::swap (loc_t1, loc_t2);
@@ -1094,10 +1133,15 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       gcc_assert (TYPE_NAME (t1) && TYPE_NAME (t2)
 		  && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
 		  && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL);
+      tree n1 = TYPE_NAME (t1);
+      tree n2 = TYPE_NAME (t2);
+      if (TREE_CODE (n1) == TYPE_DECL)
+	n1 = DECL_NAME (n1);
+      if (TREE_CODE (n2) == TYPE_DECL)
+	n1 = DECL_NAME (n2);
       /* Most of the time, the type names will match, do not be unnecesarily
          verbose.  */
-      if (IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t1)))
-	  != IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (t2))))
+      if (IDENTIFIER_POINTER (n1) != IDENTIFIER_POINTER (n2))
         inform (loc_t1,
 	        "type %qT defined in anonymous namespace can not match "
 	        "type %qT across the translation unit boundary",
@@ -1112,22 +1156,24 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
 	        "the incompatible type defined in another translation unit");
       return;
     }
+  tree mt1 = TYPE_MAIN_VARIANT (t1);
+  tree mt2 = TYPE_MAIN_VARIANT (t2);
   /* If types have mangled ODR names and they are different, it is most
      informative to output those.
      This also covers types defined in different namespaces.  */
-  if (TYPE_NAME (t1) && TYPE_NAME (t2)
-      && TREE_CODE (TYPE_NAME (t1)) == TYPE_DECL
-      && TREE_CODE (TYPE_NAME (t2)) == TYPE_DECL
-      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t1))
-      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t2))
-      && DECL_ASSEMBLER_NAME (TYPE_NAME (t1))
-	 != DECL_ASSEMBLER_NAME (TYPE_NAME (t2)))
+  if (TYPE_NAME (mt1) && TYPE_NAME (mt2)
+      && TREE_CODE (TYPE_NAME (mt1)) == TYPE_DECL
+      && TREE_CODE (TYPE_NAME (mt2)) == TYPE_DECL
+      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (mt1))
+      && DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (mt2))
+      && DECL_ASSEMBLER_NAME (TYPE_NAME (mt1))
+	 != DECL_ASSEMBLER_NAME (TYPE_NAME (mt2)))
     {
       char *name1 = xstrdup (cplus_demangle
-	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (t1))),
+	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (mt1))),
 	  DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES));
       char *name2 = cplus_demangle
-	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (t2))),
+	 (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (TYPE_NAME (mt2))),
 	  DMGL_PARAMS | DMGL_ANSI | DMGL_TYPES);
       if (name1 && name2 && strcmp (name1, name2))
 	{
@@ -1216,8 +1262,8 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
       return;
     }
 
-  if (types_odr_comparable (t1, t2, true)
-      && types_same_for_odr (t1, t2, true))
+  if (types_odr_comparable (t1, t2)
+      && types_same_for_odr (t1, t2))
     inform (loc_t1,
 	    "type %qT itself violates the C++ One Definition Rule", t1);
   /* Prevent pointless warnings like "struct aa" should match "struct aa".  */
@@ -1246,8 +1292,10 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   /* Check first for the obvious case of pointer identity.  */
   if (t1 == t2)
     return true;
-  gcc_assert (!type_with_linkage_p (t1) || !type_in_anonymous_namespace_p (t1));
-  gcc_assert (!type_with_linkage_p (t2) || !type_in_anonymous_namespace_p (t2));
+  gcc_assert (!type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+	      || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)));
+  gcc_assert (!type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
+	      || !type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2)));
 
   /* Can't be the same type if the types don't have the same code.  */
   if (TREE_CODE (t1) != TREE_CODE (t2))
@@ -1257,29 +1305,15 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       return false;
     }
 
-  if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-	        G_("a type with different qualifiers is defined in another "
-		   "translation unit"));
-      return false;
-    }
-
-  if ((type_with_linkage_p (t1) && type_in_anonymous_namespace_p (t1))
-      || (type_with_linkage_p (t2) && type_in_anonymous_namespace_p (t2)))
+  if ((type_with_linkage_p (TYPE_MAIN_VARIANT (t1))
+       && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t1)))
+      || (type_with_linkage_p (TYPE_MAIN_VARIANT (t2))
+	  && type_in_anonymous_namespace_p (TYPE_MAIN_VARIANT (t2))))
     {
       /* We can not trip this when comparing ODR types, only when trying to
 	 match different ODR derivations from different declarations.
 	 So WARN should be always false.  */
       gcc_assert (!warn);
-      return false;
-    }
-
-  if (comp_type_attributes (t1, t2) != 1)
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-	        G_("a type with different attributes "
-		   "is defined in another translation unit"));
       return false;
     }
 
@@ -1366,7 +1400,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	    }
 
 	  if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					  visited, loc1, loc2))
+					  warn, warned, visited, loc1, loc2))
 	    {
 	      warn_odr (t1, t2, NULL, NULL, warn, warned,
 			G_("it is defined as a pointer to different type "
@@ -1380,6 +1414,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 
       if ((TREE_CODE (t1) == VECTOR_TYPE || TREE_CODE (t1) == COMPLEX_TYPE)
 	  && !odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
+					 warn, warned,
 					 visited, loc1, loc2))
 	{
 	  /* Probably specific enough.  */
@@ -1399,7 +1434,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	/* Array types are the same if the element types are the same and
 	   the number of elements are the same.  */
 	if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					visited, loc1, loc2))
+					warn, warned, visited, loc1, loc2))
 	  {
 	    warn_odr (t1, t2, NULL, NULL, warn, warned,
 		      G_("a different type is defined in another "
@@ -1417,7 +1452,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	/* For an incomplete external array, the type domain can be
 	   NULL_TREE.  Check this condition also.  */
 	if (i1 == NULL_TREE || i2 == NULL_TREE)
-	  return true;
+          return type_variants_equivalent_p (t1, t2, warn, warned);
 
 	tree min1 = TYPE_MIN_VALUE (i1);
 	tree min2 = TYPE_MIN_VALUE (i2);
@@ -1441,7 +1476,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       /* Function types are the same if the return type and arguments types
 	 are the same.  */
       if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-				      visited, loc1, loc2))
+				      warn, warned, visited, loc1, loc2))
 	{
 	  warn_odr (t1, t2, NULL, NULL, warn, warned,
 		    G_("has different return value "
@@ -1453,7 +1488,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2)
 	  || !prototype_p (t1) || !prototype_p (t2))
-	return true;
+        return type_variants_equivalent_p (t1, t2, warn, warned);
       else
 	{
 	  tree parms1, parms2;
@@ -1463,8 +1498,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
 	    {
 	      if (!odr_subtypes_equivalent_p
-		     (TREE_VALUE (parms1), TREE_VALUE (parms2), visited,
-		      loc1, loc2))
+		     (TREE_VALUE (parms1), TREE_VALUE (parms2), warn, warned,
+		      visited, loc1, loc2))
 		{
 		  warn_odr (t1, t2, NULL, NULL, warn, warned,
 			    G_("has different parameters in another "
@@ -1484,7 +1519,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	      return false;
 	    }
 
-	  return true;
+          return type_variants_equivalent_p (t1, t2, warn, warned);
 	}
 
     case RECORD_TYPE:
@@ -1544,8 +1579,8 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    return false;
 		  }
 		if (!odr_subtypes_equivalent_p (TREE_TYPE (f1),
-						TREE_TYPE (f2), visited,
-						loc1, loc2))
+						TREE_TYPE (f2), warn, warned,
+						visited, loc1, loc2))
 		  {
 		    /* Do not warn about artificial fields and just go into
  		       generic field mismatch warning.  */
@@ -1622,18 +1657,11 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		   "is defined in another translation unit"));
       return false;
     }
-  if (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2)
-      && TYPE_ALIGN (t1) != TYPE_ALIGN (t2))
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-		G_("a type with different alignment "
-		   "is defined in another translation unit"));
-      return false;
-    }
+
   gcc_assert (!TYPE_SIZE_UNIT (t1) || !TYPE_SIZE_UNIT (t2)
 	      || operand_equal_p (TYPE_SIZE_UNIT (t1),
 				  TYPE_SIZE_UNIT (t2), 0));
-  return true;
+  return type_variants_equivalent_p (t1, t2, warn, warned);
 }
 
 /* Return true if TYPE1 and TYPE2 are equivalent for One Definition Rule.  */

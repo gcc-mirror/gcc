@@ -1,3 +1,21 @@
+2018-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (warn_odr): Make static.
+	(types_same_for_odr): Drop strict variant.
+	(types_odr_comparable): Likewise.
+	(odr_or_derived_type_p): Look for main variants.
+	(odr_name_hasher::equal): Cleanup comment.
+	(odr_subtypes_equivalent): Add warn and warned arguments; check main
+	variants.
+	(type_variants_equivalent_p): break out from ...
+	(odr_types_equivalent): ... here; go for main variants where needed.
+	(warn_odr): ... here; turn static.
+	(warn_types_mismatch): Compare mangled names of main variants.
+	* ipa-utils.h (types_odr_comparable): Drop strict parameter.
+	(type_with_linkage_p): Sanity check that we look at main variant.
+	* lto.c (lto_read_decls): Only consider main variant to be ODR type.
+	* tree.h (types_same_for_odr): Drop strict argument.
+
 2018-10-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87746
