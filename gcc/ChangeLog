@@ -1,5 +1,6 @@
 2018-10-26  Jan Hubicka  <jh@suse.cz>
 
+	* tree.c (free_lang_data_in_type): Only check main variants.
 	* ipa-devirt.c (warn_odr): Make static.
 	(types_same_for_odr): Drop strict variant.
 	(types_odr_comparable): Likewise.
