@@ -1,4 +1,9 @@
-2018-10-25  Paul A. Clarke  <pc@us.ibm.com>
+2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/tmmintrin.h: New file.
+	* config.gcc (powerpc*-*-*): Add tmmintrin.h to extra_headers.
+
+2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
 
 	* config/rs6000/mmintrin.h: Enable 32bit compilation.
 	* config/rs6000/xmmintrin.h: Likewise.
