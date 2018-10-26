@@ -1,3 +1,9 @@
+2018-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix recursion.
+	(warn_types_mismatch): Fix walk of DECL_NAME.
+	(odr_types_equivalent_p): Fix overactive assert.
+
 2018-10-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87105

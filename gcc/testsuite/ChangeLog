@@ -1,3 +1,8 @@
+2018-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/odr-1_0.C: Fix template.
+	* g++.dg/lto/odr-1_1.C: Fix template.
+
 2018-10-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87105
