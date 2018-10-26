@@ -15811,7 +15811,7 @@ processors:
 @smallexample
 uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
-__ibm128 __builtin_unpack_ibm128 (__ibm128, int);
+double __builtin_unpack_ibm128 (__ibm128, int);
 __ibm128 __builtin_pack_ibm128 (double, double);
 double __builtin_mffs (void);
 void __builtin_mtfsb0 (const int);
@@ -15927,13 +15927,13 @@ The @code{__builtin_unpack_longdouble} function takes a
 the constant is 0, the first @code{double} within the
 @code{long double} is returned, otherwise the second @code{double}
 is returned.  The @code{__builtin_unpack_longdouble} function is only
-availble if @code{long double} uses the IBM extended double
+available if @code{long double} uses the IBM extended double
 representation.
 
 The @code{__builtin_pack_longdouble} function takes two @code{double}
 arguments and returns a @code{long double} value that combines the two
 arguments.  The @code{__builtin_pack_longdouble} function is only
-availble if @code{long double} uses the IBM extended double
+available if @code{long double} uses the IBM extended double
 representation.
 
 The @code{__builtin_unpack_ibm128} function takes a @code{__ibm128}
