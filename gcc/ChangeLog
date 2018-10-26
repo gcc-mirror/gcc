@@ -1,3 +1,12 @@
+2018-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_mark_slp_stmts): Add visited hash_set
+	and wrapper.
+	(vect_mark_slp_stmts_relevant): Likewise.
+	(vect_detect_hybrid_slp_stmts): Likewise.
+	(vect_bb_slp_scalar_cost): Likewise.
+	(vect_remove_slp_scalar_calls): Likewise.
+
 2018-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (odr_subtypes_equivalent_p): Fix recursion.
