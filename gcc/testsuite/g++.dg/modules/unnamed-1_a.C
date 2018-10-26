@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fdump-lang-module-uid" }
+// { dg-additional-options "-fmodules-ts -fdump-lang-module" }
 
 export module PiL;
 // { dg-module-bmi PiL }
@@ -15,8 +15,6 @@ export inline int hwm ()
   return counter;
 }
 
-// { dg-final { scan-lang-dump {Unnamed 0 '::counter'} module } }
-// { dg-final { scan-lang-dump {Created horcrux:0 for '::counter'} module } }
-// { dg-final { scan-lang-dump {Wrote backref:-1 var_decl:'::counter'} module } }
-// { dg-final { scan-lang-dump {Unnamed 0 '::counter' section:} module } }
-// { dg-final { scan-lang-dump {Unnamed 1 decl} module } }
+// { dg-final { scan-lang-dump {Bindings '::counter' section:1} module } }
+// { dg-final { scan-lang-dump-not {horcrux} module } }
+// { dg-final { scan-lang-dump-not {Unnamed . '::counter'} module } }

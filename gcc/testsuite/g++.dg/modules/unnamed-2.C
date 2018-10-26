@@ -15,8 +15,7 @@ export int hwm ()
   return counter;
 }
 
-// { dg-final { scan-lang-dump-not {Unnamed 0 '::counter'} module } }
-// { dg-final { scan-lang-dump-not {Wrote voldemort:0 var_decl:'::counter'} module } }
-// { dg-final { scan-lang-dump-not {Unnamed 0 '::counter' section:} module } }
-// { dg-final { scan-lang-dump-not {Unnamed 1 decl} module } }
-// { dg-final { scan-lang-dump-not {Declaration '::counter'} module } }
+// Ideally we wouldn't write this binding, because it's not reachable
+// from anywhere else
+// { dg-final { scan-lang-dump {Bindings '::counter' section:} module } }
+// { dg-final { scan-lang-dump-not {Unnamed . '::counter'} module } }

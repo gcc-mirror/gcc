@@ -3568,64 +3568,25 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
-/* Given a namespace-level binding BINDING, initialize DECLS with the
-   set of bindings that are visible to importers and implementations.
-   I.e. the exported decls and module-linkage decls.  Any TYPE binding
-   is pushed first.  If the binding is a namespace, return that.
-   Otherwise return the DECL_NAME of the binding, or NULL_TREE if
-   there are none.  */
+/* Given a namespace-level binding BINDING, extract the VALUE and TYPE
+   bindings.  */
 
 tree
-extract_module_decls (tree binding, auto_vec<tree> &decls)
+extract_module_binding (tree binding, tree &type)
 {
-  tree name = NULL_TREE;
-
-  if (tree tdecl = MAYBE_STAT_TYPE (binding))
+  if (TREE_CODE (binding) == MODULE_VECTOR)
     {
-      if (MAYBE_DECL_MODULE_PURVIEW_P (tdecl) == MODULE_PURVIEW)
-	{
-	  name = DECL_NAME (tdecl);
-	  decls.safe_push (tdecl);
-	}
+      binding = MODULE_VECTOR_CLUSTER
+	(binding, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
+	.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER];
+      if (!binding)
+	return NULL_TREE;
     }
 
-  tree ovl = MAYBE_STAT_DECL (binding);
-  gcc_assert (ovl);
-  if (TREE_CODE (ovl) == NAMESPACE_DECL && !DECL_NAMESPACE_ALIAS (ovl))
-    {
-      if (TREE_PUBLIC (ovl))
-	return ovl;
-    }
-  else
-    for (ovl_iterator iter (ovl); iter; ++iter)
-      {
-	tree decl = *iter;
+  type = MAYBE_STAT_TYPE (binding);
+  tree value = ovl_skip_hidden (MAYBE_STAT_DECL (binding));
 
-	// FIXME using decls, hidden decls
-
-	/* Ignore not this module.  */
-	if (MAYBE_DECL_MODULE_PURVIEW_P (decl) != MODULE_PURVIEW)
-	  continue;
-
-	/* Ignore TINFO things.  */
-	if ((TREE_CODE (decl) == VAR_DECL
-	     || TREE_CODE (decl) == TYPE_DECL)
-	    && DECL_TINFO_P (decl))
-	  continue;
-
-	tree not_tpl = STRIP_TEMPLATE (decl);
-	/* Ignore internal-linkage things.  */
-	if (!TREE_PUBLIC (not_tpl)
-	    && (TREE_CODE (not_tpl) == FUNCTION_DECL
-		|| TREE_CODE (not_tpl) == VAR_DECL
-		|| TREE_CODE (not_tpl) == NAMESPACE_DECL))
-	  continue;
-
-	name = DECL_NAME (*iter);
-	decls.safe_push (*iter);
-      }
-
-  return name;
+  return value;
 }
 
 /* Imported module MOD has a binding to NS::NAME, stored in section
@@ -3651,11 +3612,9 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
    the value and type bindings.  */
 
 bool
-set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
+set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type,
+		    tree export_tail)
 {
-  if (!value)
-    value = type;
-
   if (!value)
     /* Bogus BMIs could give rise to nothing to bind.  */
     return false;
@@ -3668,36 +3627,25 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type)
     (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
      mod < MODULE_IMPORT_BASE);
 
-  gcc_assert ((mod >= MODULE_IMPORT_BASE) == mslot->is_lazy ());
-
-  // FIXME: with changes to global module, this is now overcomplicated
-  tree export_tail = NULL_TREE;
+  if (mod == MODULE_PURVIEW ? *mslot : !mslot->is_lazy ())
+    return false;
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
 
-      if (!iter.using_p ())
-	{
-	  gcc_assert (!DECL_CHAIN (decl));
-	  export_tail = iter.export_tail (export_tail);
-	  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
-	}
+      gcc_assert (!iter.using_p () && !iter.hidden_p ());
+      gcc_assert (!DECL_CHAIN (decl));
+      add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
       newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
     }
 
-  /* There was nothing there, just install the whole binding.  */
-  if (export_tail == value && TREE_CODE (value) != OVERLOAD)
-    /* We only use the export-tail linky when there's an actual
-       overload.  */
-    export_tail = NULL_TREE;
-  if (export_tail)
+  if (type || (export_tail && TREE_CODE (value) == OVERLOAD))
     {
-      *mslot = stat_hack (value, NULL_TREE);
-      /* Static cast needed to trigger mc_slot's conversion operator.  */
-      STAT_EXPORTS (static_cast <tree> (*mslot)) = export_tail;
+      value = stat_hack (value, type);
+      STAT_EXPORTS (value) = export_tail;
     }
-  else
-    *mslot = value;
+
+  *mslot = value;
 
   return true;
 }
@@ -3780,22 +3728,10 @@ lookup_by_ident (tree ctx, tree name, unsigned mod, int ident)
   if (ident < 0)
     return MAYBE_STAT_TYPE (binding);
 
-  bool skip_local = mod != MODULE_NONE && TREE_CODE (ctx) == NAMESPACE_DECL;
   binding = MAYBE_STAT_DECL (binding);
   for (ovl_iterator iter (binding); iter; ++iter)
-    {
-      tree d = *iter;
-
-      if (skip_local)
-	{
-	  tree not_tpl = STRIP_TEMPLATE (d);
-	  if (!TREE_PUBLIC (not_tpl) && TREE_CODE (not_tpl) != TYPE_DECL)
-	    continue;
-	}
-
-      if (!ident--)
-	return d;
-    }
+    if (!ident--)
+      return *iter;
 
   return NULL_TREE;
 }
@@ -3814,25 +3750,12 @@ get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl)
   if (decl == MAYBE_STAT_TYPE (binding))
     return -1;
 
-  bool skip_local = TREE_CODE (ctx) == NAMESPACE_DECL;
   binding = MAYBE_STAT_DECL (binding);
   int ident = 0;
 
-  for (ovl_iterator iter (binding); ; ++iter)
-    {
-      tree d = *iter;
-
-      if (skip_local)
-	{
-	  tree not_tpl = STRIP_TEMPLATE (d);
-	  if (!TREE_PUBLIC (not_tpl) && TREE_CODE (not_tpl) != TYPE_DECL)
-	    continue;
-	}
-
-      if (d == decl)
-	return ident;
-      ident++;
-    }
+  for (ovl_iterator iter (binding); ; ++iter, ++ident)
+    if (*iter == decl)
+      return ident;
 
   gcc_unreachable ();
 }

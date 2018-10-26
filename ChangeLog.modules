@@ -1,5 +1,24 @@
 2018-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	Statics on bindings
+	gcc/cp/
+	* module.cc (depset::hash::add_binding): Take overload and type
+	values, do pruning here.
+	(module_state::write_cluster): Reorder binding emission.
+	(module_state::read_cluster): Determine export_tail here.
+	(module_state::add_writables): Adjust.
+	* cp-tree.h (ovl_iterator::export_tail): Delete.
+	* name-lookup.h (extract_module_decls): Rename to ...
+	(extract_module_binding): ... here.  Return overload set.
+	* name-lookup.c ( (extract_module_decls): Rename to ...
+	(extract_module_binding): ... here.  Don't prune here.
+	(set_module_binding): Simplify.
+	(lookup_by_ident, get_lookup_ident): Simplify.
+	gcc/testsuite/
+	* g++.dg/modules/static-1_b.C: XFAIL error
+	* gcc/testsuite/g++.dg/modules/unnamed-1_[ab].C: Adjust scans.
+	* gcc/testsuite/g++.dg/modules/unnamed-2.C: Likewise.
+
 	gcc/cp/
 	* cp-tree.h (module_purview): Declare.
 	(module_purview_p, module_interface_p, module_gmf_p): Inline

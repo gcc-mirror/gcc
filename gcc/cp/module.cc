@@ -2362,7 +2362,7 @@ public:
 
   public:
     depset *add_dependency (tree decl, int kind);
-    tree add_binding (tree ns, tree name, auto_vec<tree> &decls);
+    void add_binding (tree ns, tree name, tree value, tree maybe_type);
     depset *get_work ()
     {
       current = worklist.length () ? worklist.pop () : NULL;
@@ -6831,26 +6831,44 @@ depset::hash::add_dependency (tree decl, int kind)
   return dep;
 }
 
-/* DECLS is a vector of decls that must be written out (export or
-   module-linkage).  Create the relevant depsets for the binding and
-   its conents.  If a member is a namespace, return that.   */
+/* VALUE is an overload of decls that is bound in this module.  Create
+   the relevant depsets for the binding and its conents.  MAYBE_TYPE
+   is used for struct stat hack behaviour.  */
 
-tree
-depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
+void
+depset::hash::add_binding (tree ns, tree name, tree value, tree maybe_type)
 {
-  tree res = NULL_TREE;
   depset *bind = new depset (binding_key (ns, name));
 
-  bind->deps.reserve_exact (decls.length ());
-  /* Reverse ordering, so exported things are first.  */
-  for (unsigned ix = decls.length (); ix--;)
+  unsigned count = maybe_type ? 1 : 0;
+  for (ovl_iterator iter (value); iter; ++iter)
+    count++;
+  bind->deps.reserve_exact (count);
+  for (ovl_iterator iter (value); iter; ++iter)
     {
-      tree decl = decls[ix];
+      tree decl = *iter;
 
-      gcc_checking_assert (DECL_P (decl));
       gcc_checking_assert (TREE_CODE (decl) != NAMESPACE_DECL
 			   || DECL_NAMESPACE_ALIAS (decl));
+      gcc_assert (!iter.hidden_p ());
+
+      if (MAYBE_DECL_MODULE_OWNER (decl) != MODULE_PURVIEW)
+	continue;
+
+      if ((TREE_CODE (decl) == VAR_DECL
+	   || TREE_CODE (decl) == TYPE_DECL)
+	  && DECL_TINFO_P (decl))
+	/* Ignore TINFO things.  */
+	continue;
+
       depset *dep = add_dependency (decl, -1);
+      bind->deps.quick_push (dep);
+      dep->deps.safe_push (bind);
+    }
+
+  if (maybe_type)
+    {
+      depset *dep = add_dependency (maybe_type, -1);
       bind->deps.quick_push (dep);
       dep->deps.safe_push (bind);
     }
@@ -6859,8 +6877,6 @@ depset::hash::add_binding (tree ns, tree name, auto_vec<tree> &decls)
     insert (bind);
   else
     delete bind;
-
-  return res;
 }
 
 /* Core of TARJAN's algorithm to find Strongly Connected Components
@@ -9050,10 +9066,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  sec.u (ct_bind);
 	  sec.tree_ctx (decl, false, decl);
 	  sec.tree_node (b->get_name ());
-	  /* Write in forward order, so reading will see the
+	  /* Write in reverse order, so reading will see the
 	     exports first, thus building the overload chain will be
 	     optimized.  */
-	  for (unsigned jx = 0; jx != b->deps.length (); jx++)
+	  for (unsigned jx = b->deps.length (); jx--;)
 	    sec.tree_node (b->deps[jx]->get_decl ());
 	  /* Terminate the list.  */
 	  sec.tree_node (NULL);
@@ -9111,6 +9127,7 @@ module_state::read_cluster (unsigned snum)
 	    tree name = sec.tree_node ();
 	    tree decls = NULL_TREE;
 	    tree type = NULL_TREE;
+	    tree export_tail = NULL_TREE;
 
 	    while (tree decl = sec.tree_node ())
 	      {
@@ -9118,9 +9135,10 @@ module_state::read_cluster (unsigned snum)
 		  break;
 		if (TREE_CODE (decl) == TYPE_DECL)
 		  {
-		    if (type)
+		    if (type || decls)
 		      sec.set_overrun ();
 		    type = decl;
+		    continue;
 		  }
 		else if (decls
 			 || (TREE_CODE (decl) == TEMPLATE_DECL
@@ -9138,9 +9156,17 @@ module_state::read_cluster (unsigned snum)
 		  }
 		else
 		  decls = decl;
+		if (DECL_MODULE_EXPORT_P (decl))
+		  export_tail = decls;
 	      }
 
-	    if (!set_module_binding (ns, name, mod, decls, type))
+	    if (!decls)
+	      {
+		decls = type;
+		type = NULL_TREE;
+	      }
+
+	    if (!set_module_binding (ns, name, mod, decls, type, export_tail))
 	      {
 		sec.set_overrun ();
 		dump () && dump ("Binding of %P", ns, name);
@@ -10823,35 +10849,22 @@ module_state::add_writables (depset::hash &table, tree ns)
     {
       tree bind = *iter;
 
-      if (TREE_CODE (bind) == MODULE_VECTOR)
+      tree type = NULL_TREE;
+      if (tree value = extract_module_binding (bind, type))
 	{
-	  bind = (MODULE_VECTOR_CLUSTER
-		  (bind, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
-		  .slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER]);
-	  if (!bind)
-	    continue;
-	}
-
-      if (tree name = extract_module_decls (bind, decls))
-	{
-	  if (TREE_CODE (name) == NAMESPACE_DECL)
+	  if (TREE_CODE (value) == NAMESPACE_DECL)
 	    {
-	      if (DECL_MODULE_EXPORT_P (name))
-		table.add_dependency (name, -1);
-	      add_writables (table, name);
-	      name = DECL_NAME (name);
+	      gcc_checking_assert (!type);
+	      if (DECL_MODULE_EXPORT_P (value))
+		table.add_dependency (value, -1);
+	      add_writables (table, value);
 	    }
-
-	  if (decls.length ())
+	  else
 	    {
+	      tree name = OVL_NAME (value);
 	      dump (dumper::DEPENDENCIES)
 		&& dump ("Writable bindings at %P", ns, name);
-	      if (tree inner = table.add_binding (ns, name, decls))
-		{
-		  gcc_checking_assert (TREE_PUBLIC (inner));
-		  add_writables (table, inner);
-		}
-	      decls.truncate (0);
+	      table.add_binding (ns, name, value, type);
 	    }
 	}
     }

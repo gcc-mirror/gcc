@@ -788,7 +788,6 @@ class ovl_iterator  {
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
   }
-  inline tree export_tail (tree tail) const;
 
  public:
   tree remove_node (tree head)
@@ -7775,16 +7774,6 @@ extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
 /* Inline bodies.  */
   
-inline tree
-ovl_iterator::export_tail (tree tail) const
-{
-  if (!tail && (TREE_CODE (ovl) == OVERLOAD
-		? OVL_EXPORT_P (ovl) : DECL_MODULE_EXPORT_P (ovl)))
-    return ovl;
-  else
-    return tail;
-}
-
 inline tree
 ovl_first (tree node)
 {
