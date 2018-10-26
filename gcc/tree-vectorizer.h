@@ -130,6 +130,8 @@ struct _slp_tree {
      scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
      divided by vector size.  */
   unsigned int vec_stmts_size;
+  /* Reference count in the SLP graph.  */
+  unsigned int refcnt;
   /* Whether the scalar computations use two different operators.  */
   bool two_operators;
   /* The DEF type of this node.  */
