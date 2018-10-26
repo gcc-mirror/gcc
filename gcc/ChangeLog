@@ -1,3 +1,26 @@
+2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        Backport from mainline
+        2018-10-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+
+        PR tree-optimization/87473
+        * gimple-ssa-strength-reduction.c (record_phi_increments_1): For
+        phi arguments identical to the base expression of the phi
+        candidate, record a phi-adjust increment of zero minus the index
+        expression of the hidden basis.
+        (phi_incr_cost_1): For phi arguments identical to the base
+        expression of the phi candidate, the difference to compare against
+        the increment is zero minus the index expression of the hidden
+        basis, and there is no potential savings from replacing the (phi)
+        statement.
+        (ncd_with_phi): For phi arguments identical to the base expression
+        of the phi candidate, the difference to compare against the
+        increment is zero minus the index expression of the hidden basis.
+        (all_phi_incrs_profitable_1): For phi arguments identical to the
+        base expression of the phi candidate, the increment to be checked
+        for profitability is zero minus the index expression of the hidden
+        basis.
+
 2018-10-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87665
