@@ -1,3 +1,7 @@
+2018-10-26  Release Manager
+
+	* GCC 6.5.0 released.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libquadmath/65757
