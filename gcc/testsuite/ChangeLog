@@ -1,5 +1,26 @@
 2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
 
+	* gcc.target/powerpc/ssse3-check.h: New file.
+	* gcc.target/powerpc/ssse3-vals.h: New file.
+	* gcc.target/powerpc/ssse3-pabsb.c: New file.
+	* gcc.target/powerpc/ssse3-pabsd.c: New file.
+	* gcc.target/powerpc/ssse3-pabsw.c: New file.
+	* gcc.target/powerpc/ssse3-palignr.c: New file.
+	* gcc.target/powerpc/ssse3-phaddd.c: New file.
+	* gcc.target/powerpc/ssse3-phaddsw.c: New file.
+	* gcc.target/powerpc/ssse3-phaddw.c: New file.
+	* gcc.target/powerpc/ssse3-phsubd.c: New file.
+	* gcc.target/powerpc/ssse3-phsubsw.c: New file.
+	* gcc.target/powerpc/ssse3-phsubw.c: New file.
+	* gcc.target/powerpc/ssse3-pmaddubsw.c: New file.
+	* gcc.target/powerpc/ssse3-pmulhrsw.c: New file.
+	* gcc.target/powerpc/ssse3-pshufb.c: New file.
+	* gcc.target/powerpc/ssse3-psignb.c: New file.
+	* gcc.target/powerpc/ssse3-psignd.c: New file.
+	* gcc.target/powerpc/ssse3-psignw.c: New file.
+
+2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
 	* gcc.target/powerpc/mmx-packs.c: Enable 32 bit execution.
 	* gcc.target/powerpc/mmx-packssdw-1.c: Likewise.
 	* gcc.target/powerpc/mmx-packsswb-1.c: Likewise.
