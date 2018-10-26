@@ -36,13 +36,12 @@ TEST (void)
   e = (int)(s.a[0] + 0.5);
 
   if (d != e)
+    {
 #if DEBUG
-  {
       printf ("sse2_test_cvtsd2si_1; failed\n");
       printf ("\t [%f,%f] -> [%d]\n", s.a[0], s.a[1], d);
       printf ("\t expect [%d]\n", e);
-  }
-#else
-    abort ();
 #endif
+      abort ();
+    }
 }

@@ -38,17 +38,15 @@ TEST (void)
   e[1] = (double)s.a[1]; 
 
   if (check_union128d (u, e))
+    {
 #if DEBUG
-  {
       printf ("sse2_test_cvtepi32_pd; check_union128d failed\n");
       printf ("\t [%d,%d, %d, %d] -> [%f,%f]\n",
-    		  s.a[0], s.a[1], s.a[2], s.a[3],
-			  u.a[0], u.a[1]);
-      printf ("\t expect [%f,%f]\n",
-			  e[0], e[1]);
-  }
-#else
-    abort ();
+	      s.a[0], s.a[1], s.a[2], s.a[3],
+	      u.a[0], u.a[1]);
+      printf ("\t expect [%f,%f]\n", e[0], e[1]);
 #endif
+      abort ();
+    }
 #endif
 }

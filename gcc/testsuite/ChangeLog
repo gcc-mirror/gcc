@@ -1,3 +1,52 @@
+2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
+            Jinsong Ji  <jji@us.ibm.com>
+
+        * gcc.target/powerpc/sse-addss-1.c: Call abort under DEBUG also;
+        formatting cleanup.
+        * gcc.target/powerpc/sse-pavgw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-addsd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtdq2pd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtpd2dq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtpd2ps-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtps2dq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtps2pd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtsd2si-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtsd2si-2.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtsd2ss-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvtss2sd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvttpd2dq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-cvttsd2si-1.c: Likewise.
+        * gcc.target/powerpc/sse2-divpd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-divsd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-maxsd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-minsd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-movmskpd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-movq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-movsd-3.c: Likewise.
+        * gcc.target/powerpc/sse2-mulpd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-mulsd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-packssdw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-packsswb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-packuswb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-paddsb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-paddsw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-paddusb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pmovmskb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pmulhw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pmuludq1.c: Likewise.
+        * gcc.target/powerpc/sse2-psadbw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pshufd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pshufhw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pshuflw-1.c: Likewise.
+        * gcc.target/powerpc/sse2-pslld-2.c: Likewise.
+        * gcc.target/powerpc/sse2-pslldq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-psrld-1.c: Likewise.
+        * gcc.target/powerpc/sse2-psrld-2.c: Likewise.
+        * gcc.target/powerpc/sse2-psrldq-1.c: Likewise.
+        * gcc.target/powerpc/sse2-psubusb-1.c: Likewise.
+        * gcc.target/powerpc/sse2-sqrtpd-1.c: Likewise.
+        * gcc.target/powerpc/sse2-subsd-1.c: Likewise.
+
 2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/ssse3-check.h: New file.

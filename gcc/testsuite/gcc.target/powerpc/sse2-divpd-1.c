@@ -36,14 +36,13 @@ TEST (void)
   e[1] = s1.a[1] / s2.a[1];
 
   if (check_union128d (u, e))
+    {
 #if DEBUG
-  {
-    printf ("sse2_test_divpd_1; check_union128d failed\n");
-    printf ("\t [%f,%f] * [%f,%f] -> [%f,%f]\n", s1.a[0], s1.a[1], s2.a[0],
+      printf ("sse2_test_divpd_1; check_union128d failed\n");
+      printf ("\t [%f,%f] * [%f,%f] -> [%f,%f]\n", s1.a[0], s1.a[1], s2.a[0],
 	      s2.a[1], u.a[0], u.a[1]);
-    printf ("\t expect [%f,%f]\n", e[0], e[1]);
-  }
-#else
-    abort ();
+      printf ("\t expect [%f,%f]\n", e[0], e[1]);
 #endif
+      abort ();
+    }
 }

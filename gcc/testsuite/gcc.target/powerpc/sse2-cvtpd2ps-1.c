@@ -36,14 +36,13 @@ TEST (void)
   e[1] = (float)s.a[1]; 
 
   if (check_union128 (u, e))
+    {
 #if DEBUG
-  {
-    printf ("sse2_test_cvtpd_ps; check_union128 failed\n");
+      printf ("sse2_test_cvtpd_ps; check_union128 failed\n");
       printf ("\t [%f,%f] -> [%f,%f,%f,%f]\n", s.a[0], s.a[1], u.a[0], u.a[1],
 	      u.a[2], u.a[3]);
       printf ("\t expect [%f,%f,%f,%f]\n", e[0], e[1], e[2], e[3]);
-  }
-#else
-    abort ();
 #endif
+      abort ();
+    }
 }

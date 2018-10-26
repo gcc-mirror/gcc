@@ -45,16 +45,13 @@ TEST (void)
     e |= 1 << 1;
 
   if (checkVi (&d, &e, 1))
+    {
 #if DEBUG
-  {
-    printf ("sse2_test_movmskpd_1; check_union128d failed\n");
-    printf ("\t [%f,%f] -> [%d]\n",
-    		  s1.a[0], s1.a[1], d);
-    printf ("\t expect [%d]\n",
-			  e);
-  }
-#else
-    abort ();
+      printf ("sse2_test_movmskpd_1; check_union128d failed\n");
+      printf ("\t [%f,%f] -> [%d]\n", s1.a[0], s1.a[1], d);
+      printf ("\t expect [%d]\n", e);
 #endif
+      abort ();
+    }
 #endif
 }
