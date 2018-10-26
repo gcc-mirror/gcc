@@ -1,3 +1,7 @@
+2018-10-26  Paul A. Clarke  <pc@us.ibm.com>
+
+	* config/rs6000/xmmintrin.h (_mm_extract_pi16): Fix for big-endian.
+
 2018-10-26  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_mark_slp_stmts): Add visited hash_set
