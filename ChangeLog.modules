@@ -1,5 +1,20 @@
 2018-10-26  Nathan Sidwell  <nathan@acm.org>
 
+	Anon namespaces
+	gcc/cp/
+	* module.cc (elf_out::strtab_write): Fallback to assembler name.
+	(elf_out::name): Allow 0 name.
+	(dumper::impl::nested_name): Fallback to assembler name.
+	(module_state::{read,write}_namespaces): Write assembler name for
+	anons.
+	* name-lookup.h (add_imported_namespace): add anon-name arg.
+	* name-lookup.c (get_imported_namespace): Look in current slot
+	too.
+	(make_namespace): Add anon-name arg, calculate as necessary.
+	(add_imported_namespace): add anon-name arg.
+	gcc/testsuite/
+	* gcc/testsuite/g++.dg/modules/namespace-4_[abc].C: New.
+
 	Statics on bindings
 	gcc/cp/
 	* module.cc (depset::hash::add_binding): Take overload and type

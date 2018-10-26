@@ -3765,10 +3765,10 @@ get_imported_namespace (tree ctx, tree name, unsigned mod)
 {
   tree binding = NULL_TREE;
 
-  gcc_assert (mod == MODULE_NONE); /* Anon later.  */
   if (tree *slot = find_namespace_slot (ctx, name))
     if (mc_slot *mslot = module_binding_slot
-	(slot, name, mod == MODULE_NONE ? MODULE_SLOT_GLOBAL : mod, false))
+	(slot, name, mod == MODULE_NONE ? MODULE_SLOT_GLOBAL
+	 : mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod, false))
       {
 	gcc_assert (!mslot->is_lazy ());
 	binding = *mslot;
@@ -7712,8 +7712,12 @@ reuse_namespace (tree *slot, tree ctx, tree name)
   return NULL_TREE;
 }
 
+/* The anonymous namespace name can be module-dependent.  */
+static tree GTY() anon_name;
+
 static tree
-make_namespace (tree ctx, tree name, unsigned mod, location_t loc, bool inline_p)
+make_namespace (tree ctx, tree name, unsigned mod, location_t loc,
+		bool inline_p, tree asm_name = NULL_TREE)
 {
   /* Create the namespace.  */
   tree ns = build_lang_decl (NAMESPACE_DECL, name, void_type_node);
@@ -7725,7 +7729,36 @@ make_namespace (tree ctx, tree name, unsigned mod, location_t loc, bool inline_p
   DECL_CONTEXT (ns) = FROB_CONTEXT (ctx);
 
   if (!name)
-    SET_DECL_ASSEMBLER_NAME (ns, anon_identifier);
+    {
+      if (!asm_name)
+	{
+	  /* Figure out the anonymous namespace assembler name.  */
+	  asm_name = anon_identifier;
+	  if (module_interface_p ())
+	    {
+	      const char *name = module_name (MODULE_PURVIEW);
+	      unsigned name_len = strlen (name);
+	      unsigned pos = IDENTIFIER_LENGTH (asm_name);
+	      char *buf = XALLOCAVEC (char, pos + name_len * 3 + 1);
+
+	      memcpy (buf, IDENTIFIER_POINTER (asm_name), pos);
+	      buf[pos++] = '_';
+	      for (const char *ptr = name; *ptr; ptr++)
+		if (ISALNUM (*ptr))
+		  buf[pos++] = *ptr;
+		else
+		  pos += sprintf (&buf[pos], "_%02x", *ptr);
+	      asm_name = get_identifier_with_length (buf, pos);
+	    }
+	  else if (module_gmf_p ())
+	    /* We cannot have it here, because there's nothing
+	       unique to mangle into the name.  */
+	    error ("anonymous namespaces cannot be used in"
+		   " global module fragment");
+	  anon_name = asm_name;
+	}
+      SET_DECL_ASSEMBLER_NAME (ns, asm_name);
+    }
   else if (TREE_PUBLIC (ctx))
     TREE_PUBLIC (ns) = true;
   DECL_MODULE_OWNER (ns) = mod;
@@ -7882,13 +7915,14 @@ pop_namespace (void)
 
 tree
 add_imported_namespace (tree ctx, tree name, unsigned mod, location_t loc,
-			bool export_p, bool inline_p)
+			bool export_p, bool inline_p,
+			tree anon_name)
 {
   tree *slot = find_namespace_slot (ctx, name, true);
   tree decl = reuse_namespace (slot, ctx, name);
   if (!decl)
     {
-      decl = make_namespace (ctx, name, mod, loc, inline_p);
+      decl = make_namespace (ctx, name, mod, loc, inline_p, anon_name);
       make_namespace_finish (decl, slot, loc, true);
     }
   else if (DECL_NAMESPACE_INLINE_P (decl) != inline_p)

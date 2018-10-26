@@ -1933,6 +1933,8 @@ elf_out::strtab_write (tree decl, int inner)
       strtab_write (CP_DECL_CONTEXT (decl), -1);
 
       tree name = DECL_NAME (decl);
+      if (!name)
+	name = DECL_ASSEMBLER_NAME_RAW (decl);
       strtab_write (IDENTIFIER_POINTER (name), IDENTIFIER_LENGTH (name));
     }
 
@@ -1946,13 +1948,17 @@ elf_out::strtab_write (tree decl, int inner)
 unsigned
 elf_out::name (tree ident)
 {
-  gcc_checking_assert (identifier_p (ident));
-  bool existed;
-  int *slot = &identtab.get_or_insert (ident, &existed);
-  if (!existed)
-    *slot = strtab_write (IDENTIFIER_POINTER (ident),
-			  IDENTIFIER_LENGTH (ident) + 1);
-  return *slot;
+  unsigned res = 0;
+  if (ident)
+    {
+      bool existed;
+      int *slot = &identtab.get_or_insert (ident, &existed);
+      if (!existed)
+	*slot = strtab_write (IDENTIFIER_POINTER (ident),
+			      IDENTIFIER_LENGTH (ident) + 1);
+      res = *slot;
+    }
+  return res;
 }
 
 /* Map LITERAL to strtab offset.  Does not detect duplicates and
@@ -3367,7 +3373,9 @@ dumper::impl::nested_name (tree t)
 	if (TREE_CODE (ctx) == TRANSLATION_UNIT_DECL
 	    || nested_name (ctx))
 	  fputs ("::", stream);
-      t = DECL_NAME (t);
+      t = DECL_NAME (t) ? DECL_NAME (t)
+	: HAS_DECL_ASSEMBLER_NAME_P (t) ? DECL_ASSEMBLER_NAME_RAW (t)
+	: NULL_TREE;
     }
 
   if (t)
@@ -3388,6 +3396,8 @@ dumper::impl::nested_name (tree t)
       default:
 	break;
       }
+  else
+    fwrite ("<anon>", 1, 6, stream);
 
   return false;
 }
@@ -9279,6 +9289,11 @@ module_state::write_namespaces (elf_out *to, depset::hash &table,
 		       inline_p ? ", inline" : "", ctx_num);
 
       sec.u (to->name (DECL_NAME (ns)));
+      if (!DECL_NAME (ns))
+	{
+	  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (ns));
+	  sec.u (to->name (DECL_ASSEMBLER_NAME_RAW (ns)));
+	}
       sec.u (ctx_num);
       /* Don't use bools, because this can be near the end of the
 	 section, and it won't save anything anyway.  */
@@ -9308,7 +9323,8 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
   spaces.safe_push (global_namespace);
   while (sec.more_p ())
     {
-      const char *name = from ()->name (sec.u ());
+      unsigned name = sec.u ();
+      unsigned anon_name = name ? 0 : sec.u ();
       unsigned parent = sec.u ();
       /* See comment in write_namespace about why not bits.  */
       unsigned flags = sec.u ();
@@ -9319,7 +9335,9 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
       if (sec.get_overrun ())
 	break;
 
-      tree id = name ? get_identifier (name) : NULL_TREE;
+      tree id = name ? get_identifier (from ()->name (name)) : NULL_TREE;
+      tree anon_id = anon_name
+	? get_identifier (from ()->name (anon_name)) : NULL_TREE;
       bool public_p = flags & 4;
       bool inline_p = flags & 2;
       bool export_p = flags & 1;
@@ -9329,7 +9347,8 @@ module_state::read_namespaces (auto_vec<tree> &spaces)
 		       public_p ? ", public" : "",
 		       inline_p ? ", inline" : "", spaces.length ());
       tree inner = add_imported_namespace (spaces[parent], id, mod,
-					   src_loc, export_p, inline_p);
+					   src_loc, export_p, inline_p,
+					   anon_id);
       spaces.safe_push (inner);
     }
   dump.outdent ();
