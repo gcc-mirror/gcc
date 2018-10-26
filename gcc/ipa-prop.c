@@ -115,8 +115,8 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range *>
     {
       gcc_checking_assert (!p->equiv ());
       inchash::hash hstate (p->kind ());
-      hstate.add_ptr (p->min ());
-      hstate.add_ptr (p->max ());
+      inchash::add_expr (p->min (), hstate);
+      inchash::add_expr (p->max (), hstate);
       return hstate.end ();
     }
   static bool
