@@ -521,13 +521,8 @@ symtogo() {
     if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
       continue
     fi
-    if [ -z "${result}" ]; then
-      result="${s}"
-    else
-      result="${result} ${s}"
-    fi
+    echo "$s"
   done
-  echo "$result" | sed -e 's/ /\n/g'
 }
 
 {
