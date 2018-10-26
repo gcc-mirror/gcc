@@ -513,9 +513,7 @@ localname() {
 #    Returned:          leaf.Mumble
 #
 symtogo() {
-  local s=""
-  local result=""
-  local ndots=""
+  result=""
   for tp in $*
   do
     s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
