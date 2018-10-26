@@ -1,3 +1,7 @@
+2018-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr78973-2.c: Remove xfail on dg-warning.
+
 2018-10-25  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/float128-cmp2-runnable.c: New test file.
