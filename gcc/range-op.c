@@ -2292,3 +2292,130 @@ range_op_handler (enum tree_code code)
 {
   return range_tree[code];
 }
+
+//   GIMPLE extensions
+
+// Return the First operand of this statement if it is a valid operand 
+// supported by ranges, otherwise return NULL_TREE. 
+
+tree
+grange_op::operand1 () const
+{
+  switch (gimple_code (this))
+    {
+      case GIMPLE_COND:
+        return gimple_cond_lhs (this);
+      case GIMPLE_ASSIGN:
+        {
+	  tree expr = gimple_assign_rhs1 (this);
+	  if (gimple_assign_rhs_code (this) == ADDR_EXPR)
+	    {
+	      // If the base address is an SSA_NAME, we return it here.
+	      // This allows processing of the range of that name, while the
+	      // rest of the expression is simply ignored.  The code in
+	      // range_ops will see the ADDR_EXPR and do the right thing.
+	      tree base = get_base_address (TREE_OPERAND (expr, 0));
+	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
+	        {
+		  // If the base address is an SSA_NAME, return it. 
+		  tree b = TREE_OPERAND (base, 0);
+		  if (TREE_CODE (b) == SSA_NAME)
+		    return b;
+		}
+	    }
+	  return expr;
+	}
+      default:
+        break;
+    }
+  return NULL;
+}
+
+
+// Fold this unary statement uusing R1 as operand1's range, returning the
+// result in RES.  Return false if the operation fails.
+
+bool
+grange_op::fold (irange &res, const irange &r1) const
+{
+  irange r2;
+  // Single ssa operations require the LHS type as the second range.
+  if (lhs ())
+    r2.set_varying (TREE_TYPE (lhs ()));
+  else
+    r2.set_undefined (r1.type ());
+
+  return handler()->fold_range (res, r1, r2);
+}
+
+
+// Fold this binary statement using R1 and R2 as the operands ranges,
+// returning the result in RES.  Return false if the operation fails.
+
+bool
+grange_op::fold (irange &res, const irange &r1, const irange &r2) const
+{
+  // Make sure this isnt a unary operation being passed a second range.
+  return handler()->fold_range (res, r1, r2);
+}
+
+// Calculate what we can determine of the range of this unary statement's
+// operand if the lhs of the expression has the range LHS_RANGE.  Return false
+// if nothing can be determined.
+
+bool
+grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
+{  
+  irange type_range;
+  gcc_checking_assert (gimple_num_ops (this) < 3);
+  // An empty range is viral, so return an empty range.
+  if (lhs_range.undefined_p ())
+    {
+      r.set_undefined (TREE_TYPE (operand1 ()));
+      return true;
+    }
+  // Unary operations require the type of the first operand in the second range
+  // position.
+  type_range.set_varying (TREE_TYPE (operand1 ()));
+  return handler ()->op1_range (r, lhs_range, type_range);
+}
+
+// Calculate what we can determine of the range of this statement's first 
+// operand if the lhs of the expression has the range LHS_RANGE and the second
+// operand has the range OP2_RANGE.  Return false if nothing can be determined.
+
+bool
+grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
+			    const irange &op2_range) const
+{  
+  // Unary operation are allowed to pass a range in for second operand
+  // as there are often additional restrictions beyond the type which can
+  // be imposed.  See operator_cast::op1_irange.()
+  
+  // An empty range is viral, so return an empty range.
+  if (op2_range.undefined_p () || lhs_range.undefined_p ())
+    {
+      r.set_undefined (op2_range.type ());
+      return true;
+    }
+  return handler ()->op1_range (r, lhs_range, op2_range);
+}
+
+// Calculate what we can determine of the range of this statement's second
+// operand if the lhs of the expression has the range LHS_RANGE and the first
+// operand has the range OP1_RANGE.  Return false if nothing can be determined.
+
+bool
+grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
+			    const irange &op1_range) const
+{  
+  // An empty range is viral, so return an empty range.
+  if (op1_range.undefined_p () || lhs_range.undefined_p ())
+    {
+      r.set_undefined (op1_range.type ());
+      return true;
+    }
+  return handler ()->op2_range (r, lhs_range, op1_range);
+}
+
+

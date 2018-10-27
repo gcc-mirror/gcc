@@ -46,233 +46,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range.h"
 #include "fold-const.h"
 
-// Evaluate a binary logical expression for this statement by combining the
-// true and false ranges for each of the operands based on the result value in 
-// the LHS. 
-
-bool
-glogical::combine (irange &r, const irange &lhs, const irange &op1_true,
-		   const irange &op1_false, const irange &op2_true,
-		   const irange &op2_false)
-{
-  // This is not a simple fold of a logical expression, rather it determines
-  // ranges which flow through the logical expression.
-  // Assuming x_8 is an unsigned char, and relational statements:
-  //	      b_1 = x_8 < 20
-  //	      b_2 = x_8 > 5
-  // consider the logical expression and branch:
-  //          c_2 = b_1 && b_2
-  //          if (c_2)
-  // To determine the range of x_8 on either edge of the branch,
-  // one must first determine what the range of x_8 is when the boolean
-  // values of b_1 and b_2 are both true and false.
-  //    b_1 TRUE      x_8 = [0, 19]
-  //    b_1 FALSE     x_8 = [20, 255]
-  //    b_2 TRUE      x_8 = [6, 255]
-  //    b_2 FALSE     x_8 = [0,5]. 
-  //
-  // These ranges are then combined based on the expected outcome of the branch
-  // The range on the TRUE side of the branch must satisfy 
-  //     b_1 == true && b_2 == true
-  // in terms of x_8, that means both x_8 == [0, 19] and x_8 = [6, 255]
-  // must be true.  The range of x_8 on the true side must be the intersection
-  // of both ranges since both must be true.  Thus the range of x_8
-  // on the true side is [6, 19]
-  // 
-  // To determine the ranges on the FALSE side, all 3 combinations of
-  // failing ranges must be considered, and combined as any of them can cause
-  // the false result.
-  
-  // If the LHS can be TRUE OR FALSE, then evaluate both a TRUE and FALSE
-  // results and combine them.  If we fell back to VARYING any range
-  // restrictions that have been discovered up to this point would be lost.  */
-  if (!lhs.singleton_p ())
-    {
-      irange r1;
-      irange bool_zero (boolean_type_node, boolean_false_node,
-			boolean_false_node);
-      irange bool_one (boolean_type_node, boolean_true_node, boolean_true_node);
-      if (combine (r1, bool_zero, op1_true, op1_false, op2_true, op2_false) &&
-	  combine (r, bool_one, op1_true, op1_false, op2_true, op2_false))
-	{
-	  r.union_ (r1);
-	  return true;
-	}
-      return false;
-
-    }
-
-  switch (gimple_expr_code (this))
-    {
-      //  A logical AND combines ranges from 2 boolean conditions.
-      //       c_2 = b_1 && b_2
-      case TRUTH_AND_EXPR:
-      case BIT_AND_EXPR:
-        if (!lhs.zero_p ())
-	  // The TRUE side is the intersection of the the 2 true ranges.
-	  r = range_intersect (op1_true, op2_true);
-	else
-	  {
-	    // The FALSE side is the union of the other 3 cases. 
-	    irange ff = range_intersect (op1_false, op2_false);
-	    irange tf = range_intersect (op1_true, op2_false);
-	    irange ft = range_intersect (op1_false, op2_true);
-	    r = range_union (ff, tf);
-	    r.union_ (ft);
-	  }
-        break;
-
-      //  A logical OR combines ranges from 2 boolean conditons.
-      // 	c_2 = b_1 || b_2
-      case TRUTH_OR_EXPR:
-      case BIT_IOR_EXPR:
-        if (lhs.zero_p ())
-	  // An OR operation will only take the FALSE path if both operands
-	  // are false. so [20, 255] intersect [0, 5] is the 
-	  // union: [0,5][20,255].  */
-	  r = range_intersect (op1_false, op2_false);
-	else
-	  {
-	    // The TRUE side of an OR operation will be the union of the other
-	    // three combinations.
-	    irange tt = range_intersect (op1_true, op2_true);
-	    irange tf = range_intersect (op1_true, op2_false);
-	    irange ft = range_intersect (op1_false, op2_true);
-	    r = range_union (tt, tf);
-	    r.union_ (ft);
-	  }
-	break;
-
-      default:
-        gcc_unreachable ();
-    }
-
-  return true;
-}
-
-// Return the First operand of this statement if it is a valid operand 
-// supported by ranges, otherwise return NULL_TREE. 
-
-tree
-grange_op::operand1 () const
-{
-  switch (gimple_code (this))
-    {
-      case GIMPLE_COND:
-        return gimple_cond_lhs (this);
-      case GIMPLE_ASSIGN:
-        {
-	  tree expr = gimple_assign_rhs1 (this);
-	  if (gimple_assign_rhs_code (this) == ADDR_EXPR)
-	    {
-	      // If the base address is an SSA_NAME, we return it here.
-	      // This allows processing of the range of that name, while the
-	      // rest of the expression is simply ignored.  The code in
-	      // range_ops will see the ADDR_EXPR and do the right thing.
-	      tree base = get_base_address (TREE_OPERAND (expr, 0));
-	      if (base != NULL_TREE && TREE_CODE (base) == MEM_REF)
-	        {
-		  // If the base address is an SSA_NAME, return it. 
-		  tree b = ssa_range::valid_ssa_p (TREE_OPERAND (base, 0));
-		  if (b)
-		    return b;
-		}
-	    }
-	  return expr;
-	}
-      default:
-        break;
-    }
-  return NULL;
-}
-
-
-// Fold this unary statement uusing R1 as operand1's range, returning the
-// result in RES.  Return false if the operation fails.
-
-bool
-grange_op::fold (irange &res, const irange &r1) const
-{
-  irange r2;
-  // Single ssa operations require the LHS type as the second range.
-  if (lhs ())
-    r2.set_varying (TREE_TYPE (lhs ()));
-  else
-    r2.set_undefined (r1.type ());
-
-  return handler()->fold_range (res, r1, r2);
-}
-
-
-// Fold this binary statement using R1 and R2 as the operands ranges,
-// returning the result in RES.  Return false if the operation fails.
-
-bool
-grange_op::fold (irange &res, const irange &r1, const irange &r2) const
-{
-  // Make sure this isnt a unary operation being passed a second range.
-  return handler()->fold_range (res, r1, r2);
-}
-
-// Calculate what we can determine of the range of this unary statement's
-// operand if the lhs of the expression has the range LHS_RANGE.  Return false
-// if nothing can be determined.
-
-bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range) const
-{  
-  irange type_range;
-  gcc_checking_assert (gimple_num_ops (this) < 3);
-  // An empty range is viral, so return an empty range.
-  if (lhs_range.undefined_p ())
-    {
-      r.set_undefined (TREE_TYPE (operand1 ()));
-      return true;
-    }
-  // Unary operations require the type of the first operand in the second range
-  // position.
-  type_range.set_varying (TREE_TYPE (operand1 ()));
-  return handler ()->op1_range (r, lhs_range, type_range);
-}
-
-// Calculate what we can determine of the range of this statement's first 
-// operand if the lhs of the expression has the range LHS_RANGE and the second
-// operand has the range OP2_RANGE.  Return false if nothing can be determined.
-
-bool
-grange_op::calc_op1_irange (irange &r, const irange &lhs_range,
-			    const irange &op2_range) const
-{  
-  // Unary operation are allowed to pass a range in for second operand
-  // as there are often additional restrictions beyond the type which can
-  // be imposed.  See operator_cast::op1_irange.()
-  
-  // An empty range is viral, so return an empty range.
-  if (op2_range.undefined_p () || lhs_range.undefined_p ())
-    {
-      r.set_undefined (op2_range.type ());
-      return true;
-    }
-  return handler ()->op1_range (r, lhs_range, op2_range);
-}
-
-// Calculate what we can determine of the range of this statement's second
-// operand if the lhs of the expression has the range LHS_RANGE and the first
-// operand has the range OP1_RANGE.  Return false if nothing can be determined.
-
-bool
-grange_op::calc_op2_irange (irange &r, const irange &lhs_range,
-			    const irange &op1_range) const
-{  
-  // An empty range is viral, so return an empty range.
-  if (op1_range.undefined_p () || lhs_range.undefined_p ())
-    {
-      r.set_undefined (op1_range.type ());
-      return true;
-    }
-  return handler ()->op2_range (r, lhs_range, op1_range);
-}
-
 
 gimple *
 gimple_outgoing_range_stmt_p (basic_block bb)
@@ -305,6 +78,16 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
       return s;
     }
   gcc_unreachable ();
+}
+
+// Return TRUe if statment S is capable of having its operands calculated.
+
+inline bool
+gimple_computable_stmt (gimple *s)
+{
+  if (is_a<grange_op *> (s))
+    return true;
+  return false;
 }
 
 
@@ -376,18 +159,22 @@ ssa_range::range_of_range_op (irange &r, grange_op *s)
   tree op2 = s->operand2 ();
 
   // Calculate a range for operand 1.
-  if (!range_of_expr (range1, op1, s))
-    return false;
-  if (!op2)
-    res = s->fold (r, range1);
-  else
+  res = range_of_expr (range1, op1, s);
+
+  // Calculate a result for op2 if it is needed.
+  if (res && op2)
+      res = range_of_expr (range2, op2, s);
+
+  // If we have all the operands we need, call fold.
+  if (res)
     {
-      // Calculate a range for operand 2.
-      if (!range_of_expr (range2, op2, s))
-	return false;
-      res = s->fold (r, range1, range2);
+      if (op2)
+	res = s->fold (r, range1, range2);
+      else
+	res = s->fold (r, range1);
     }
-  // If fold() fails, return varying_p.
+
+  // If range_of_expr or fold() fails, return varying.
   if (!res)
     r.set_varying (gimple_expr_type (s));
   return true;
@@ -462,7 +249,7 @@ ssa_range::range_of_call (irange &r, gcall *call)
 // be calculated, return false.
 
 bool
-ssa_range::range_of_stmt (irange &r, gimple *s)
+ssa_range::range_of_stmt (irange &r, gimple *s, tree name)
 {
   if (is_a<grange_op *> (s))
     return range_of_range_op (r, as_a<grange_op *> (s));
@@ -471,7 +258,12 @@ ssa_range::range_of_stmt (irange &r, gimple *s)
   if (is_a<gcall *>(s))
     return range_of_call (r, as_a<gcall *> (s));
 
-  return false;
+  // If no name is specified, we cant do anything.
+  if (!name)
+    return false;
+  // We don't understand the stmt, so return the global range.
+  r = range_from_ssa (name);
+  return true;
 }
 
 // Calculate a range for NAME on edge E and return it in R.  
@@ -502,16 +294,16 @@ ssa_range::range_on_edge (irange &r, edge e, tree name)
 bool
 ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
 {
-  gcc_checking_assert (valid_ssa_p (name));
+  irange lhs;
 
+  gcc_checking_assert (valid_ssa_p (name));
   // Determine if there is an outgoing edge.
-  gimple *s = gimple_outgoing_edge_range_p (r, e);
+  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
   if (!s)
     return false;
 
   // Otherwise use the outgoing edge as a LHS and try to calculate a range.
-  irange lhs = r;
-  return compute_operand_range (r, s, name, lhs);
+  return compute_operand_range_on_stmt (r, s, name, lhs);
 }
 
 // Return the range for NAME on entry to basic block BB in R.  
@@ -529,18 +321,15 @@ ssa_range::range_on_entry (irange &r, basic_block bb, tree name)
   if (!supports_type_p (type))
     return false;
 
-  if (bb == ENTRY_BLOCK_PTR_FOR_FN (cfun)
-      || bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
-    return false;
-
   // Start with an empty range.
   r.set_undefined (type);
+
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
 
   // Visit each predecessor to resolve them.
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      if (!range_on_edge (pred_range, e, name))
-        return false;
+      gcc_assert (range_on_edge (pred_range, e, name));
       r.union_ (pred_range);
       // If varying is reach, stop processing.
       if (r.varying_p ())
@@ -556,7 +345,15 @@ ssa_range::range_on_entry (irange &r, basic_block bb, tree name)
 bool
 ssa_range::range_on_exit (irange &r, basic_block bb, tree name)
 {
+  // on-exit from the exit block?
+  gcc_checking_assert (bb != EXIT_BLOCK_PTR_FOR_FN (cfun));
+
   gimple *s = last_stmt (bb);
+  // If there is no statement in the block and this isnt the entry block,
+  // go get the range_on_entry for this block.
+  // For the entry block, a NULL stmt will return the global value for NAME.
+  if (!s && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+    return range_on_entry (r, bb, name);
   return range_of_expr (r, name, s);
 }
 
@@ -565,8 +362,8 @@ ssa_range::range_on_exit (irange &r, basic_block bb, tree name)
 // Return false if no range can be calculated.
 
 bool
-ssa_range::compute_operand_range (irange &r, gimple *g, tree name,
-				     const irange &lhs)
+ssa_range::compute_operand_range_on_stmt (irange &r, gimple *g, tree name,
+					  const irange &lhs)
 {
   irange op1_range, op2_range;
 
@@ -1001,10 +798,39 @@ block_ranger::outgoing_edge_range_p (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
   if (!range_p (e->src, name))
     return false;
+
+  irange lhs;
+  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
+  gcc_checking_assert (s);
   
-  return ssa_range::outgoing_edge_range_p (r, e, name);
+  return compute_operand_range (r, s, name, lhs);
 }
 
+static inline bool
+is_gimple_logical_p (const gimple *gs)
+{
+  /* Look for boolean and/or condition.  */
+  if (gimple_code (gs) == GIMPLE_ASSIGN)
+    switch (gimple_expr_code (gs))
+      {
+	case TRUTH_AND_EXPR:
+	case TRUTH_OR_EXPR:
+	  return true;
+
+	case BIT_AND_EXPR:
+	case BIT_IOR_EXPR:
+	  // Bitwise operations on single bits are logical too.
+	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
+				  boolean_type_node))
+	    return true;
+	  break;
+
+	default:
+	  break;
+      }
+  return false;
+
+}
 // Given the expression in STMT, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
@@ -1032,13 +858,12 @@ block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
 
   // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
-    return ssa_range::compute_operand_range (r, stmt, name, lhs);
+    return compute_operand_range_on_stmt (r, stmt, name, lhs);
 
   // Check for logical combination cases which require developing ranges 
   // and combining the results based on the operation. 
-  glogical *logic = dyn_cast<glogical *> (s);
-  if (logic)
-    return process_logical (logic, r, name, lhs);
+  if (is_gimple_logical_p (stmt))
+    return compute_logical_operands (stmt, r, name, lhs);
 
   // Reaching this point means NAME is not in this stmt, but one of the
   // names in it ought to be derived from it. 
@@ -1048,24 +873,129 @@ block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
   if (op2_in_chain)
     { 
       if (op1_in_chain)
-	return get_range_thru_op1_and_op2 (stmt, r, name, lhs);
+	return compute_operand1_and_operand2_range (stmt, r, name, lhs);
       else
-	return get_range_thru_op2 (stmt, r, name, lhs);
+	return compute_operand2_range (stmt, r, name, lhs);
     }
   else
     if (op1_in_chain)
-      return get_range_thru_op1 (stmt, r, name, lhs);
+      return compute_operand1_range (stmt, r, name, lhs);
 
   // If neither operand is derived, then this stmt tells us nothing.
   return false;
+}
+
+// Evaluate a binary logical expression by combining the true and false
+// ranges for each of the operands based on the result value in the LHS. 
+
+bool
+logical_combine (irange &r, enum tree_code code, const irange &lhs,
+		 const irange &op1_true, const irange &op1_false,
+		 const irange &op2_true, const irange &op2_false)
+{
+  // This is not a simple fold of a logical expression, rather it determines
+  // ranges which flow through the logical expression.
+  // Assuming x_8 is an unsigned char, and relational statements:
+  //	      b_1 = x_8 < 20
+  //	      b_2 = x_8 > 5
+  // consider the logical expression and branch:
+  //          c_2 = b_1 && b_2
+  //          if (c_2)
+  // To determine the range of x_8 on either edge of the branch,
+  // one must first determine what the range of x_8 is when the boolean
+  // values of b_1 and b_2 are both true and false.
+  //    b_1 TRUE      x_8 = [0, 19]
+  //    b_1 FALSE     x_8 = [20, 255]
+  //    b_2 TRUE      x_8 = [6, 255]
+  //    b_2 FALSE     x_8 = [0,5]. 
+  //
+  // These ranges are then combined based on the expected outcome of the branch
+  // The range on the TRUE side of the branch must satisfy 
+  //     b_1 == true && b_2 == true
+  // in terms of x_8, that means both x_8 == [0, 19] and x_8 = [6, 255]
+  // must be true.  The range of x_8 on the true side must be the intersection
+  // of both ranges since both must be true.  Thus the range of x_8
+  // on the true side is [6, 19]
+  // 
+  // To determine the ranges on the FALSE side, all 3 combinations of
+  // failing ranges must be considered, and combined as any of them can cause
+  // the false result.
+  
+  // If the LHS can be TRUE OR FALSE, then evaluate both a TRUE and FALSE
+  // results and combine them.  If we fell back to VARYING any range
+  // restrictions that have been discovered up to this point would be lost.  */
+  if (!lhs.singleton_p ())
+    {
+      irange r1;
+      irange bool_zero (boolean_type_node, boolean_false_node,
+			boolean_false_node);
+      irange bool_one (boolean_type_node, boolean_true_node, boolean_true_node);
+      if (logical_combine (r1, code, bool_zero, op1_true, op1_false, op2_true,
+			   op2_false) &&
+	  logical_combine (r, code, bool_one, op1_true, op1_false, op2_true,
+			   op2_false))
+	{
+	  r.union_ (r1);
+	  return true;
+	}
+      return false;
+
+    }
+
+  switch (code)
+    {
+      //  A logical AND combines ranges from 2 boolean conditions.
+      //       c_2 = b_1 && b_2
+      case TRUTH_AND_EXPR:
+      case BIT_AND_EXPR:
+        if (!lhs.zero_p ())
+	  // The TRUE side is the intersection of the the 2 true ranges.
+	  r = range_intersect (op1_true, op2_true);
+	else
+	  {
+	    // The FALSE side is the union of the other 3 cases. 
+	    irange ff = range_intersect (op1_false, op2_false);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (ff, tf);
+	    r.union_ (ft);
+	  }
+        break;
+
+      //  A logical OR combines ranges from 2 boolean conditons.
+      // 	c_2 = b_1 || b_2
+      case TRUTH_OR_EXPR:
+      case BIT_IOR_EXPR:
+        if (lhs.zero_p ())
+	  // An OR operation will only take the FALSE path if both operands
+	  // are false. so [20, 255] intersect [0, 5] is the 
+	  // union: [0,5][20,255].  */
+	  r = range_intersect (op1_false, op2_false);
+	else
+	  {
+	    // The TRUE side of an OR operation will be the union of the other
+	    // three combinations.
+	    irange tt = range_intersect (op1_true, op2_true);
+	    irange tf = range_intersect (op1_true, op2_false);
+	    irange ft = range_intersect (op1_false, op2_true);
+	    r = range_union (tt, tf);
+	    r.union_ (ft);
+	  }
+	break;
+
+      default:
+        gcc_unreachable ();
+    }
+
+  return true;
 }
 
 // Given a logical STMT, calculate true and false for each potential path 
 // using NAME and resolve the outcome based on the logical operator.  
 
 bool
-block_ranger::process_logical (glogical *s, irange &r, tree name,
-			       const irange &lhs)
+block_ranger::compute_logical_operands (grange_op *s, irange &r, tree name,
+				        const irange &lhs)
 {
   irange op1_range, op2_range;
   tree op1, op2;
@@ -1120,7 +1050,8 @@ block_ranger::process_logical (glogical *s, irange &r, tree name,
 	  op2_false = op2_true; 
 	}
     }
-  if (!ret || !s->combine (r, lhs, op1_true, op1_false, op2_true, op2_false))
+  if (!ret || !logical_combine (r, gimple_expr_code (s), lhs, op1_true,
+				op1_false, op2_true, op2_false))
     r.set_varying (TREE_TYPE (name));
   return true;
 }
@@ -1131,8 +1062,8 @@ block_ranger::process_logical (glogical *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::get_range_thru_op1 (grange_op *s, irange &r, tree name,
-				  const irange &lhs)
+block_ranger::compute_operand1_range (grange_op *s, irange &r, tree name,
+				      const irange &lhs)
 {
   irange op1_range, op2_range;
   tree op1 = s->operand1 ();
@@ -1172,8 +1103,8 @@ block_ranger::get_range_thru_op1 (grange_op *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::get_range_thru_op2 (grange_op *s, irange &r, tree name,
-				  const irange &lhs)
+block_ranger::compute_operand2_range (grange_op *s, irange &r, tree name,
+				      const irange &lhs)
 {
   irange op1_range, op2_range;
   tree op1 = s->operand1 ();
@@ -1203,18 +1134,18 @@ block_ranger::get_range_thru_op2 (grange_op *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::get_range_thru_op1_and_op2 (grange_op *s, irange &r, tree name,
-					  const irange &lhs)
+block_ranger::compute_operand1_and_operand2_range (grange_op *s, irange &r,
+						   tree name, const irange &lhs)
 {
   irange op_range;
 
   // Calculate a good a range for op2. Since op1 == op2, this will have
   // already included whatever the actual range of name is.
-  if (!get_range_thru_op2 (s, op_range, name, lhs))
+  if (!compute_operand2_range (s, op_range, name, lhs))
     return false;
 
   // Now get the range thru op1... 
-  if (!get_range_thru_op1 (s, r, name, lhs))
+  if (!compute_operand1_range (s, r, name, lhs))
     return false;
 
   // Whichever range is the most permissive is the one we need to use. (?)
@@ -1798,15 +1729,8 @@ global_ranger::get_global_ssa_range (irange &r, tree name)
 
   // No range set so try to evaluate the definition.
   s = SSA_NAME_DEF_STMT (name);
-  if (s && range_of_stmt (r, s))
-    {
-      m_globals->set_global_range (name, r);
-      return true;
-    }
-
-  // No good range determined, use default value.
-  r = range_from_ssa (name);
-  m_globals->set_global_range (name, r);
+  // Range of stmt will set the global value.
+  gcc_assert (range_of_stmt (r, s, name));
   return true;
 }
 
@@ -1956,100 +1880,36 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   return true;
 }
 
-// This routine will check to see if NAME has a global range set, and return
-// it in R if so.   Otherwise it sets the default value as the global
-// value so the ranger can try to reduce it without ever causing a cycle.
 
-inline bool
-global_ranger::check_global_value (irange &r, tree name)
-{
-  // Not all statements have a LHS.  */
-  if (name)
-    {
-      gcc_checking_assert (supports_ssa_p (name));
-
-      // If this STMT has already been processed, return that value. 
-      if (has_global_ssa_range (r, name))
-	return true;
-     
-      // Avoid infinite recursion by initializing global cache
-      r = range_from_ssa (name);
-      set_global_ssa_range (name, r);
-    }
-  return false;
-}
-
-// When a range has been evaluated, adjust to the global value for NAME to
-// R if VALId is true. Otherwise the evaluation failed, so clear the initial
-// global value.
-
-inline bool
-global_ranger::adjust_global_value (bool valid, irange &r, tree name)
-{
-  if (name)
-    {
-      if (valid)
-	set_global_ssa_range (name, r);
-      else
-        clear_global_ssa_range (name);
-    }
-  return valid;
-}
-
-// Check for a global range for the result of CALL, and if there isn't
-// one, evaluate the call and set the global range.  
-// Either way, return the range in R
+// Calculate a range for statement S and return it in R.  Check the globhal
+// cache first to see if the evaluation can be avoided.  If a range cannot
+// be calculated, return false.
 
 bool
-global_ranger::range_of_call (irange &r, gcall *call)
+global_ranger::range_of_stmt (irange &r, gimple *s, tree name)
 {
-  bool ret;
-  tree name = gimple_get_lhs (call);
-  if (check_global_value (r, name))
+  // If no name, simply call the base routine.
+  if (!name)
+    return ssa_range::range_of_stmt (r, s, name);
+
+  gcc_checking_assert (supports_ssa_p (name));
+
+  // If this STMT has already been processed, return that value. 
+  if (has_global_ssa_range (r, name))
     return true;
  
-  ret = ssa_range::range_of_call (r, call);
-  return adjust_global_value (ret, r, name);
+  // Avoid infinite recursion by initializing global cache
+  irange tmp;
+  tmp = range_from_ssa (name);
+  set_global_ssa_range (name, tmp);
+
+  gcc_assert (ssa_range::range_of_stmt (r, s, name));
+
+  if (is_a<gphi *> (s))
+    r.intersect (tmp);
+  set_global_ssa_range (name, r);
+  return true;
 }
-
-// Check for a global range for the result of PHI, and if there isn't
-// one, evaluate the PHI node and set the global range.  
-// Either way, return the range in R
-
-bool
-global_ranger::range_of_phi (irange &r, gphi *phi)
-{
-  bool ret;
-  irange phi_range;
-  tree name = gimple_phi_result (phi);
-  if (check_global_value (r, name))
-    return true;
-
-  ret = ssa_range::range_of_phi (phi_range, phi);
-  if (ret)
-    r.intersect (phi_range);
-
-  return adjust_global_value (ret, r, name);
-}
-
-// Check for a global range for the result of S, and if there isn't
-// one, evaluate the statement and set the global range.  
-// Either way, return the range in R
-
-bool
-global_ranger::range_of_range_op (irange &r, grange_op *s)
-{
-  bool ret;
-  tree name = gimple_get_lhs (s);
-
-  if (check_global_value (r, name))
-    return true;
-
-  ret = ssa_range::range_of_range_op (r, s);
-
-  return adjust_global_value (ret, r, name);
-}
-
 
 // Determine a range for OP on stmt S, returning the result in R.
 // If OP is not defined in BB, find the range on entry to this block.
@@ -2068,7 +1928,7 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
       // if name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	{
-	  if (!range_of_stmt (r, def_stmt))
+	  if (!range_of_stmt (r, def_stmt, op))
 	    r.set_varying (TREE_TYPE (op));
 	}
       else
@@ -2174,7 +2034,7 @@ global_ranger::exercise (FILE *output)
 		&& SSA_NAME_DEF_STMT (name) &&
 		gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
 		!get_global_ssa_range (range, name))
-	      range_of_stmt (range, SSA_NAME_DEF_STMT (name));
+	      range_of_stmt (range, SSA_NAME_DEF_STMT (name), name);
 	  }
 
       if (output)

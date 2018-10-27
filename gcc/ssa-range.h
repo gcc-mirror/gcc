@@ -24,49 +24,29 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 
-// Gimple statement which supports range_op operations.
-// This can map to multiple gimple statement kinds, so quick access to the
-// operands is provided so the user does not need to know what they are.
-// Also provides access to the range operator interface.
+extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
+extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 
-class GTY((tag("GCC_SSA_RANGE_OPERATOR")))
-  grange_op: public gimple
-{
-public:
-  // Adds no new fields, adds invariant 
-  // stmt->code == GIMPLE_ASSIGN || stmt->code == GIMPLE_COND
-  // and thre is a range_operator handler for the gimple_expr_code.
-  tree lhs () const;
-  tree operand1 () const;
-  tree operand2 () const;
-
-  bool fold (irange &res, const irange &r1) const;
-  bool calc_op1_irange (irange &r, const irange &lhs_range) const;
-
-  bool fold (irange &res, const irange &r1, const irange &r2) const;
-  bool calc_op1_irange (irange &r, const irange &lhs_range,
-		   const irange &op2_range) const;
-  bool calc_op2_irange (irange &r, const irange &lhs_range,
-		   const irange &op1_range) const;
-private:
-  class range_operator *handler() const;
-};
-
-// SSA Range version of a GIMPLE  assignment stmt which is a logical operation
-// requiring special processing. This is specifically either a && or ||
-// operation. 
-
-class GTY((tag("GCC_GLOGICAL")))
-  glogical : public grange_op
-{
-  public:
-  // Adds no new fields, adds invariant stmt->code == GIMPLE_ASSIGN and 
-  // expr_code is an AND or OR on boolean compatiable operands.
-  bool combine (irange &r, const irange &lhs, const irange &op1_true,
-	        const irange &op1_false, const irange &op2_true,
-	        const irange &op2_false);
-};
-
+// THis is the basic range genrator interface. 
+//
+// This base class provides all the API entry points, but only provides 
+// functionality at the statement level.  Ie, it can calculate ranges on 
+// statements, but does no adidtonal lookup.
+//
+// ALL the range_of_* methods will return a range if the types is supported
+// by the range engine. It may be the full range for the type, AKA varying_p
+// or it may be a refined range.
+//
+// range_of_expr simply picks whatever is in GCC's global range table, or
+//               calculates a constant range as approriate.
+// range_on_edge will only provide a range if name occurs on the
+//               last stmt in the predecessor edge
+// range_of_stmt will calculate a result using the global range table.
+//               (via range_of_expr)
+// range_on_entry calculates the union of ranges on incoming edges.
+// 
+// outgoing_edge_range_p will only return a range if the edge specified 
+// defines a range for the specified name.  Otherwise false is returned.
 
 class ssa_range
 {
@@ -81,7 +61,7 @@ class ssa_range
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
 
   // Calculate a range for a gimple statement which support range operations.
-  bool range_of_stmt (irange &r, gimple *s);
+  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   // Calculate the range for NAME on edge E.
   bool range_on_edge (irange &r, edge e, tree name);
@@ -92,40 +72,43 @@ class ssa_range
   // Calculate the range for NAME at the end of block BB
   bool range_on_exit (irange &r, basic_block bb, tree name);
 
-  // Calculate a range for a kind of gimple statement .
-  virtual bool range_of_range_op  (irange &r, grange_op *s);
-  virtual bool range_of_phi (irange &r, gphi *phi);
-  virtual bool range_of_call (irange &r, gcall *call);
-
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
+protected:
+  // Calculate a range for a kind of gimple statement .
+  bool range_of_range_op  (irange &r, grange_op *s);
+  bool range_of_phi (irange &r, gphi *phi);
+  bool range_of_call (irange &r, gcall *call);
   // Calculate the range for NAME if the result of statement S is the range LHS.
-  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
+  bool compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
 				      const irange &lhs);
 };
 
-extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
-extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
-
-
-/* This is the primary interface class for the range generator at the basic
-   block level. It allows the client to query a range for an ssa-name within
-   a basic block, either on an outgoing edge, or on an individual statement. 
-
-   The functionality it adds over a ssa_range object is the ability to 
-   calculate ranges for any ssa_name in the defintion chain of names
-   found on the outgoing edge. ie:
-	 a_2 = b_6 +6
-	 c_3 = a_2 * 4
-	 if (c_3 < 10)
-   The ssa_range object can calculate a range for c_3 on the outgoing edge
-   since it is referenced in the statement which generated the range (c_3 < 10)
-   The block_ranger can also generate ranges for a_2 and b_6 on these edges.
-   
-   It is lightweight to declare, but for each basic block that is queried, it
-   will scan some or all of the statements in the block to determine what
-   ssa-names can have range information generated for them and cache this
-   information.  This will prevent constantly rescanning a block.  */
+// This is the primary interface class for the range generator at the basic
+// block level. 
+//
+// The functionality it adds over a ssa_range object is the ability to 
+// calculate ranges for any ssa_name in the defintion chain of names
+// found on the outgoing edge. ie:
+// BB4:
+//     a_2 = b_6 + 6
+//     c_3 = a_2 * 4
+//     if (c_3 < 10)
+// The ssa_range object can calculate a range for c_3 on the outgoing edge
+// since it is referenced in the statement which generated the range (c_3 < 10)
+// The block_ranger can also generate ranges for a_2 and b_6 on these edges.
+// 
+// It is lightweight to declare, but for each basic block that is queried, it
+// will scan some or all of the statements in the block to determine what
+// ssa-names can have range information generated for them and cache this
+// information.  
+//
+// single_import () is the only additional entry point. It provides the "input"
+// name to the chain of statements for name that can change the calculation
+// of its range.
+// ie, in the above example, b_6 is the "single_import" returned for both
+// a_2 and c_3 since a change in the range of b_6 used to calculate their
+// ranges may result in a different range.
    
 class block_ranger : public ssa_range
 {
@@ -134,38 +117,39 @@ public:
   ~block_ranger ();
 
   // If a range for name is defined by edge E, return it.
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name = NULL);
-  // Evaluate the range for name on stmt S if the lhs has range LHS.
-  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
-				      const irange &lhs);
-
-  bool range_p (basic_block bb, tree name);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
   tree single_import (tree name);
+
   void dump (FILE *f);
   void exercise (FILE *f);
-private:
+protected:
   class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
   irange m_bool_zero;		/* Bolean zero cached.  */
   irange m_bool_one;		/* Bolean true cached.  */
-  bool process_logical (glogical *s, irange &r, tree name,
-			const irange &lhs);
-  bool get_range_thru_op1 (grange_op *s, irange &r, tree name,
-			   const irange &lhs);
-  bool get_range_thru_op2 (grange_op *s, irange &r, tree name,
-			   const irange &lhs);
-  bool get_range_thru_op1_and_op2 (grange_op *s, irange &r, tree name,
-				   const irange &lhs);
+
+  bool range_p (basic_block bb, tree name);
+  // Evaluate the range for name on stmt S if the lhs has range LHS.
+  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
+				      const irange &lhs);
+  bool compute_logical_operands (grange_op *s, irange &r, tree name,
+				 const irange &lhs);
+  bool compute_operand1_range (grange_op *s, irange &r, tree name,
+			       const irange &lhs);
+  bool compute_operand2_range (grange_op *s, irange &r, tree name,
+			       const irange &lhs);
+  bool compute_operand1_and_operand2_range (grange_op *s, irange &r, tree name,
+					    const irange &lhs);
 };
 
 
-// This class utilizes a basic block GORI map and is used to query the range
+// This class utilizes a basic block range generation summary to query the range
 // of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
-// of range on entry to blocks.  ALL work is done on-demand so it is relatively
+// of range on entry to blocks.  All work is done on-demand so it is relatively
 // lightweight until used.
 // 
-// There is a global ssa-name table implemented within global_ranger via 
-// a set of private global_ssa_name routines.  These are here until such
-// time that there is a global irange table for real.  
+// There is a global ssa-name table maintained via a set of private 
+// global_ssa_name routines.  This is used to avoid recalculating ranges a
+// second time.
 
 class global_ranger : public block_ranger
 {
@@ -175,10 +159,7 @@ public:
 
   virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
   virtual bool range_on_entry (irange &r, basic_block bb, tree name);
-
-  virtual bool range_of_call (irange &r, gcall *call);
-  virtual bool range_of_phi (irange &r, gphi *phi);
-  virtual bool range_of_range_op  (irange &r, grange_op *s);
+  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
@@ -189,8 +170,6 @@ private:
   bool get_global_ssa_range (irange &r, tree name);
   void set_global_ssa_range (tree name, const irange&r);
   void clear_global_ssa_range (tree name);
-  bool adjust_global_value (bool valid, irange &r, tree name);
-  bool check_global_value (irange &r, tree name);
 
   class block_range_cache *m_block_cache;
   class ssa_global_cache *m_globals;
@@ -279,100 +258,4 @@ ssa_range::supports_p (tree expr)
   return supports_type_p (TREE_TYPE (expr));
 }
 
-
-// Return the LHS, of this statement. If there isn't a LHS return NULL_TREE.
-
-inline tree
-grange_op::lhs () const
-{
-  if (gimple_code (this) == GIMPLE_ASSIGN)
-    return gimple_assign_lhs (this);
-  return NULL_TREE;
-}
-
-// Return the second operand of this statement, otherwise return NULL_TREE.
-
-inline tree
-grange_op::operand2 () const
-{
-  if (gimple_code (this) == GIMPLE_COND)
-    return gimple_cond_rhs (this);
-
-  // At this point it must be an assignemnt statement.
-  if (gimple_num_ops (this) >= 3)
-    return gimple_assign_rhs2 (this);
-  return NULL_TREE;
-}
-
-// Return the range_operator pointer for this statement.
-
-inline range_operator *
-grange_op::handler () const
-{
-  return range_op_handler (gimple_expr_code (this));
-}
-
-
-template <>
-template <>
-inline bool
-is_a_helper <const grange_op *>::test (const gimple *gs)
-{ 
-  // Supported statement kind and there is a handler for the expression code.
-  if (dyn_cast<const gassign *> (gs) || dyn_cast<const gcond *>(gs))
-     return range_op_handler (gimple_expr_code (gs));
-  return false;
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <grange_op *>::test (gimple *gs)
-{ 
-  // Supported statement kind and there is a handler for the expression code.
-  if (dyn_cast<gassign *> (gs) || dyn_cast<gcond *>(gs))
-     return range_op_handler (gimple_expr_code (gs));
-  return false;
-}
-
-inline bool
-glogical_is_a_helper (const gimple *gs)
-{ 
-  /* Look for boolean and/or condition.  */
-  if (gimple_code (gs) == GIMPLE_ASSIGN)
-    switch (gimple_expr_code (gs))
-      {
-	case TRUTH_AND_EXPR:
-	case TRUTH_OR_EXPR:
-	  return true;
-
-	case BIT_AND_EXPR:
-	case BIT_IOR_EXPR:
-	  // Bitwise operations on single bits are logical too.
-	  if (types_compatible_p (TREE_TYPE (gimple_assign_rhs1 (gs)),
-				  boolean_type_node))
-	    return true;
-	  break;
-
-	default:
-	  break;
-      }
-  return false;
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <glogical *>::test (gimple *gs)
-{ 
-  return glogical_is_a_helper (gs);
-}
-
-template <>
-template <>
-inline bool
-is_a_helper <const glogical *>::test (const gimple *gs)
-{ 
-  return glogical_is_a_helper (gs);
-}
 #endif // GCC_SSA_RANGE_H
