@@ -1010,13 +1010,13 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree type, tree ar, tree ai,
   if (inplace_p)
     {
       gimple *old_stmt = gsi_stmt (*gsi);
-      gimple_call_set_nothrow (stmt, !stmt_could_throw_p (old_stmt));
+      gimple_call_set_nothrow (stmt, !stmt_could_throw_p (cfun, old_stmt));
       lhs = gimple_assign_lhs (old_stmt);
       gimple_call_set_lhs (stmt, lhs);
       gsi_replace (gsi, stmt, true);
 
       type = TREE_TYPE (type);
-      if (stmt_can_throw_internal (stmt))
+      if (stmt_can_throw_internal (cfun, stmt))
 	{
 	  edge_iterator ei;
 	  edge e;
@@ -1134,7 +1134,7 @@ expand_complex_multiplication (gimple_stmt_iterator *gsi, tree type,
 	  /* If optimizing for size or not at all just do a libcall.
 	     Same if there are exception-handling edges or signaling NaNs.  */
 	  if (optimize == 0 || optimize_bb_for_size_p (gsi_bb (*gsi))
-	     || stmt_can_throw_internal (gsi_stmt (*gsi))
+	     || stmt_can_throw_internal (cfun, gsi_stmt (*gsi))
 	     || flag_signaling_nans)
 	    {
 	      expand_complex_libcall (gsi, type, ar, ai, br, bi,

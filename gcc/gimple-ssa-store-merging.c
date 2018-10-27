@@ -4256,7 +4256,7 @@ handled_load (gimple *stmt, store_operand_info *op,
     }
   if (gimple_vuse (stmt)
       && gimple_assign_load_p (stmt)
-      && !stmt_can_throw_internal (stmt)
+      && !stmt_can_throw_internal (cfun, stmt)
       && !gimple_has_volatile_ops (stmt))
     {
       tree mem = gimple_assign_rhs1 (stmt);
@@ -4551,7 +4551,7 @@ pass_store_merging::execute (function *fun)
 	    }
 
 	  if (gimple_assign_single_p (stmt) && gimple_vdef (stmt)
-	      && !stmt_can_throw_internal (stmt)
+	      && !stmt_can_throw_internal (cfun, stmt)
 	      && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt)))
 	    process_store (stmt);
 	  else

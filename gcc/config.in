@@ -55,8 +55,7 @@
 #endif
 
 
-/* Define to larger than zero set to the default stack clash protector size as
-   a power of two in bytes. */
+/* Define to larger than zero set the default stack clash protector size. */
 #ifndef USED_FOR_TARGET
 #undef DEFAULT_STK_CLASH_GUARD_SIZE
 #endif
@@ -1466,6 +1465,13 @@
 #endif
 
 
+/* Define 0/1 if your linker supports the SHF_MERGE flag with section
+   alignment > 1. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_ALIGNED_SHF_MERGE
+#endif
+
+
 /* Define if your linker supports --as-needed/--no-as-needed or equivalent
    options. */
 #ifndef USED_FOR_TARGET
@@ -2059,13 +2065,7 @@
 #endif
 
 
-/* Define if we should link with --large-address-aware by default */
-#ifndef USED_FOR_TARGET
-#undef MINGW_DEFAULT_LARGE_ADDR_AWARE
-#endif
-
-
-/* Define if we should link with --large-address-aware by default */
+/* Define if we should link mingw executables with --large-address-aware */
 #ifndef USED_FOR_TARGET
 #undef MINGW_DEFAULT_LARGE_ADDR_AWARE
 #endif

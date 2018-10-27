@@ -85,7 +85,7 @@ var (
 	netpollWaiters uint32
 )
 
-//go:linkname poll_runtime_pollServerInit internal_poll.runtime_pollServerInit
+//go:linkname poll_runtime_pollServerInit internal..z2fpoll.runtime_pollServerInit
 func poll_runtime_pollServerInit() {
 	netpollinit()
 	atomic.Store(&netpollInited, 1)
@@ -95,7 +95,7 @@ func netpollinited() bool {
 	return atomic.Load(&netpollInited) != 0
 }
 
-//go:linkname poll_runtime_pollServerDescriptor internal_poll.runtime_pollServerDescriptor
+//go:linkname poll_runtime_pollServerDescriptor internal..z2fpoll.runtime_pollServerDescriptor
 
 // poll_runtime_pollServerDescriptor returns the descriptor being used,
 // or ^uintptr(0) if the system does not use a poll descriptor.
@@ -103,7 +103,7 @@ func poll_runtime_pollServerDescriptor() uintptr {
 	return netpolldescriptor()
 }
 
-//go:linkname poll_runtime_pollOpen internal_poll.runtime_pollOpen
+//go:linkname poll_runtime_pollOpen internal..z2fpoll.runtime_pollOpen
 func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
 	pd := pollcache.alloc()
 	lock(&pd.lock)
@@ -127,7 +127,7 @@ func poll_runtime_pollOpen(fd uintptr) (*pollDesc, int) {
 	return pd, int(errno)
 }
 
-//go:linkname poll_runtime_pollClose internal_poll.runtime_pollClose
+//go:linkname poll_runtime_pollClose internal..z2fpoll.runtime_pollClose
 func poll_runtime_pollClose(pd *pollDesc) {
 	if !pd.closing {
 		throw("runtime: close polldesc w/o unblock")
@@ -149,7 +149,7 @@ func (c *pollCache) free(pd *pollDesc) {
 	unlock(&c.lock)
 }
 
-//go:linkname poll_runtime_pollReset internal_poll.runtime_pollReset
+//go:linkname poll_runtime_pollReset internal..z2fpoll.runtime_pollReset
 func poll_runtime_pollReset(pd *pollDesc, mode int) int {
 	err := netpollcheckerr(pd, int32(mode))
 	if err != 0 {
@@ -163,7 +163,7 @@ func poll_runtime_pollReset(pd *pollDesc, mode int) int {
 	return 0
 }
 
-//go:linkname poll_runtime_pollWait internal_poll.runtime_pollWait
+//go:linkname poll_runtime_pollWait internal..z2fpoll.runtime_pollWait
 func poll_runtime_pollWait(pd *pollDesc, mode int) int {
 	err := netpollcheckerr(pd, int32(mode))
 	if err != 0 {
@@ -185,7 +185,7 @@ func poll_runtime_pollWait(pd *pollDesc, mode int) int {
 	return 0
 }
 
-//go:linkname poll_runtime_pollWaitCanceled internal_poll.runtime_pollWaitCanceled
+//go:linkname poll_runtime_pollWaitCanceled internal..z2fpoll.runtime_pollWaitCanceled
 func poll_runtime_pollWaitCanceled(pd *pollDesc, mode int) {
 	// This function is used only on windows after a failed attempt to cancel
 	// a pending async IO operation. Wait for ioready, ignore closing or timeouts.
@@ -193,7 +193,7 @@ func poll_runtime_pollWaitCanceled(pd *pollDesc, mode int) {
 	}
 }
 
-//go:linkname poll_runtime_pollSetDeadline internal_poll.runtime_pollSetDeadline
+//go:linkname poll_runtime_pollSetDeadline internal..z2fpoll.runtime_pollSetDeadline
 func poll_runtime_pollSetDeadline(pd *pollDesc, d int64, mode int) {
 	lock(&pd.lock)
 	if pd.closing {
@@ -263,7 +263,7 @@ func poll_runtime_pollSetDeadline(pd *pollDesc, d int64, mode int) {
 	}
 }
 
-//go:linkname poll_runtime_pollUnblock internal_poll.runtime_pollUnblock
+//go:linkname poll_runtime_pollUnblock internal..z2fpoll.runtime_pollUnblock
 func poll_runtime_pollUnblock(pd *pollDesc) {
 	lock(&pd.lock)
 	if pd.closing {

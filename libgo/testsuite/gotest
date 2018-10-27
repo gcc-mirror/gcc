@@ -504,6 +504,27 @@ localname() {
 	echo $1 | sed 's/^main\./__main__./'
 }
 
+# Takes a list of tests derived from 'nm' output (whose symbols are mangled)
+# and emits a demangled list of tests, using only the terminal package.
+# Example:
+#
+#    Original symbol:   foo/bar/leaf.Mumble
+#    Mangled symbol:    foo..z2fbar..z2fleaf.Mumble
+#    Returned:          leaf.Mumble
+#
+symtogo() {
+  result=""
+  for tp in $*
+  do
+    s=$(echo "$tp" | sed -e 's/\.\.z2f/%/g' | sed -e 's/.*%//')
+    # screen out methods (X.Y.Z)
+    if ! expr "$s" : '^[^.]*\.[^.]*$' >/dev/null 2>&1; then
+      continue
+    fi
+    echo "$s"
+  done
+}
+
 {
 	text="T"
 
@@ -514,26 +535,27 @@ localname() {
 	    text="[TD]"
 	fi
 
-	symtogo='sed -e s/_test\([^A-Za-z0-9]\)/XXXtest\1/ -e s/.*_\([^_]*\.\)/\1/ -e s/XXXtest/_test/'
-
 	# test functions are named TestFoo
 	# the grep -v eliminates methods and other special names
 	# that have multiple dots.
 	pattern='Test([^a-z].*)?'
 	# The -p option tells GNU nm not to sort.
 	# The -v option tells Solaris nm to sort by value.
-	tests=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '[^ ]\..*\.' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
+        testsyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+        tests=$(symtogo "$testsyms")
 	if [ "x$tests" = x ]; then
 		echo 'gotest: warning: no tests matching '$pattern in _gotest_.o $xofile 1>&2
 		exit 2
 	fi
 	# benchmarks are named BenchmarkFoo.
 	pattern='Benchmark([^a-z].*)?'
-	benchmarks=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '[^ ]\..*\.' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
+	benchmarksyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+        benchmarks=$(symtogo "$benchmarksyms")
 
 	# examples are named ExampleFoo
 	pattern='Example([^a-z].*)?'
-	examples=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | grep -v '[^ ]\..*\.' | fgrep -v ' __go_' | sed 's/.* //' | $symtogo)
+	examplesyms=$($NM -p -v _gotest_.o $xofile | egrep " $text .*\."$pattern'$' | fgrep -v ' __go_' | egrep -v '\.\.\w+$' | sed 's/.* //')
+	examples=$(symtogo "$examplesyms")
 
 	# package spec
 	echo 'package main'

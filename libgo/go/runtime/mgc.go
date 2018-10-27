@@ -219,7 +219,7 @@ func gcenable() {
 	memstats.enablegc = true // now that runtime is initialized, GC is okay
 }
 
-//go:linkname setGCPercent runtime_debug.setGCPercent
+//go:linkname setGCPercent runtime..z2fdebug.setGCPercent
 func setGCPercent(in int32) (out int32) {
 	lock(&mheap_.lock)
 	out = gcpercent

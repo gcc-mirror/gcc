@@ -16,7 +16,7 @@ import (
 	"unsafe"
 )
 
-//go:linkname runtime_debug_WriteHeapDump runtime_debug.WriteHeapDump
+//go:linkname runtime_debug_WriteHeapDump runtime..z2fdebug.WriteHeapDump
 func runtime_debug_WriteHeapDump(fd uintptr) {
 	stopTheWorld("write heap dump")
 

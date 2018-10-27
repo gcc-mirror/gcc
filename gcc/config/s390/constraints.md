@@ -89,6 +89,7 @@
 ;;    ZR -- Pointer with index register and short displacement.
 ;;    ZS -- Pointer without index register but with long displacement.
 ;;    ZT -- Pointer with index register and long displacement.
+;;    ZL -- LARL operand when in 64-bit mode, otherwise nothing.
 ;;
 ;;
 
@@ -562,3 +563,7 @@
 (define_address_constraint "ZT"
   "Pointer with index register and long displacement."
   (match_test "s390_mem_constraint (\"ZT\", op)"))
+
+(define_constraint "ZL"
+  "LARL operand when in 64-bit mode, otherwise nothing."
+  (match_test "TARGET_64BIT && larl_operand (op, VOIDmode)"))

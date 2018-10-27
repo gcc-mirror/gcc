@@ -1,3 +1,20 @@
+2018-10-25  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_sizeof_operand): Remove redundant use of
+	grokdeclarator.
+
+2018-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86288
+	* parser.c (cp_parser_std_attribute): Canonicalize attr_ns, and when
+	:: is not present and attr_ns non-NULL, canonicalize also attr_id.
+	(cp_parser_attribute_spec): Fix comment typo.
+
+2018-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84851
+	* call.c (maybe_warn_class_memaccess): Tighten up.
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-c++): New.

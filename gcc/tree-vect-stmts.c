@@ -1711,7 +1711,7 @@ vect_finish_stmt_generation_1 (stmt_vec_info stmt_info, gimple *vec_stmt)
      e.g. be in a must-not-throw region.  Ensure newly created stmts
      that could throw are part of the same region.  */
   int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
-  if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
+  if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
     add_stmt_to_eh_lp (vec_stmt, lp_nr);
 
   return vec_stmt_info;
@@ -3116,7 +3116,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       || TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
-  gcc_checking_assert (!stmt_can_throw_internal (stmt));
+  gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -3751,7 +3751,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
       && TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
-  gcc_checking_assert (!stmt_can_throw_internal (stmt));
+  gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
   vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -9533,14 +9533,18 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   if (!bb_vinfo
       && (STMT_VINFO_RELEVANT_P (stmt_info)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
-    ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node, cost_vec)
+    /* Prefer vectorizable_call over vectorizable_simd_clone_call so
+       -mveclibabi= takes preference over library functions with
+       the simd attribute.  */
+    ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	  || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					   cost_vec)
 	  || vectorizable_conversion (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_operation (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				cost_vec)
-	  || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_reduction (stmt_info, NULL, NULL, node,
 				     node_instance, cost_vec)
@@ -9552,8 +9556,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   else
     {
       if (bb_vinfo)
-	ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
-					    cost_vec)
+	ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	      || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					       cost_vec)
 	      || vectorizable_conversion (stmt_info, NULL, NULL, node,
 					  cost_vec)
 	      || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
@@ -9562,7 +9567,6 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 					  cost_vec)
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
-	      || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
 					 cost_vec)

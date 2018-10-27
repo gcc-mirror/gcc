@@ -24045,6 +24045,30 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+gcc_cv_ld_aligned_shf_merge=yes
+case "$target" in
+  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
+  # relinking on Solaris 11 < 11.4.
+  sparc*-*-solaris2.10*)
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+  # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
+  # alignment > 1.
+  sparc*-*-solaris2.11*)
+    if test x"$gnu_ld" = xno \
+       && test "$ld_vers_major" -lt 2 && test "$ld_vers_minor" -lt 3159; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+esac
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_ALIGNED_SHF_MERGE `if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for stabs directive" >&5
 $as_echo_n "checking assembler for stabs directive... " >&6; }
 if test "${gcc_cv_as_stabs_directive+set}" = set; then :

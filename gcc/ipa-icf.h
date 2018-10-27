@@ -255,9 +255,6 @@ protected:
 					            symtab_node *n2,
 					            bool address);
 
-  /* Compare two attribute lists.  */
-  static bool compare_attributes (const_tree list1, const_tree list2);
-
   /* Hash properties compared by compare_referenced_symbol_properties.  */
   void hash_referenced_symbol_properties (symtab_node *ref,
 					  inchash::hash &hstate,

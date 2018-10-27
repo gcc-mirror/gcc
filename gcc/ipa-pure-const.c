@@ -555,9 +555,9 @@ check_call (funct_state local, gcall *call, bool ipa)
 {
   int flags = gimple_call_flags (call);
   tree callee_t = gimple_call_fndecl (call);
-  bool possibly_throws = stmt_could_throw_p (call);
+  bool possibly_throws = stmt_could_throw_p (cfun, call);
   bool possibly_throws_externally = (possibly_throws
-  				     && stmt_can_throw_external (call));
+  				     && stmt_can_throw_external (cfun, call));
 
   if (possibly_throws)
     {
@@ -770,7 +770,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 			    ipa ? check_ipa_store :  check_store);
 
   if (gimple_code (stmt) != GIMPLE_CALL
-      && stmt_could_throw_p (stmt))
+      && stmt_could_throw_p (cfun, stmt))
     {
       if (cfun->can_throw_non_call_exceptions)
 	{
@@ -778,7 +778,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 	    fprintf (dump_file, "    can throw; looping\n");
 	  local->looping = true;
 	}
-      if (stmt_can_throw_external (stmt))
+      if (stmt_can_throw_external (cfun, stmt))
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "    can throw externally\n");
@@ -2307,7 +2307,7 @@ pass_nothrow::execute (function *)
       for (gimple_stmt_iterator gsi = gsi_start_bb (this_block);
 	   !gsi_end_p (gsi);
 	   gsi_next (&gsi))
-        if (stmt_can_throw_external (gsi_stmt (gsi)))
+        if (stmt_can_throw_external (cfun, gsi_stmt (gsi)))
 	  {
 	    if (is_gimple_call (gsi_stmt (gsi)))
 	      {

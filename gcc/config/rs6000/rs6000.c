@@ -1981,6 +1981,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
 #define TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P hook_bool_void_true
+
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME rs6000_mangle_decl_assembler_name
 
 
 /* Processor table.  */
@@ -21273,7 +21276,7 @@ print_operand_address (FILE *file, rtx x)
 	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base_oac, 0, 1))]);
     }
   else
-    gcc_unreachable ();
+    output_addr_const (file, x);
 }
 
 /* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
@@ -38963,6 +38966,76 @@ rs6000_globalize_decl_name (FILE * stream, tree decl)
     }
 }
 #endif
+
+
+/* On 64-bit Linux and Freebsd systems, possibly switch the long double library
+   function names from <foo>l to <foo>f128 if the default long double type is
+   IEEE 128-bit.  Typically, with the C and C++ languages, the standard math.h
+   include file switches the names on systems that support long double as IEEE
+   128-bit, but that doesn't work if the user uses __builtin_<foo>l directly.
+   In the future, glibc will export names like __ieee128_sinf128 and we can
+   switch to using those instead of using sinf128, which pollutes the user's
+   namespace.
+
+   This will switch the names for Fortran math functions as well (which doesn't
+   use math.h).  However, Fortran needs other changes to the compiler and
+   library before you can switch the real*16 type at compile time.
+
+   We use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change this name.  We
+   only do this if the default is that long double is IBM extended double, and
+   the user asked for IEEE 128-bit.  */
+
+static tree
+rs6000_mangle_decl_assembler_name (tree decl, tree id)
+{
+  if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
+      && TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl) )
+    {
+      size_t len = IDENTIFIER_LENGTH (id);
+      const char *name = IDENTIFIER_POINTER (id);
+
+      if (name[len - 1] == 'l')
+	{
+	  bool uses_ieee128_p = false;
+	  tree type = TREE_TYPE (decl);
+	  machine_mode ret_mode = TYPE_MODE (type);
+
+	  /* See if the function returns a IEEE 128-bit floating point type or
+	     complex type.  */
+	  if (ret_mode == TFmode || ret_mode == TCmode)
+	    uses_ieee128_p = true;
+	  else
+	    {
+	      function_args_iterator args_iter;
+	      tree arg;
+
+	      /* See if the function passes a IEEE 128-bit floating point type
+		 or complex type.  */
+	      FOREACH_FUNCTION_ARGS (type, arg, args_iter)
+		{
+		  machine_mode arg_mode = TYPE_MODE (arg);
+		  if (arg_mode == TFmode || arg_mode == TCmode)
+		    {
+		      uses_ieee128_p = true;
+		      break;
+		    }
+		}
+	    }
+
+	  /* If we passed or returned an IEEE 128-bit floating point type,
+	     change the name.  */
+	  if (uses_ieee128_p)
+	    {
+	      char *name2 = (char *) alloca (len + 4);
+	      memcpy (name2, name, len - 1);
+	      strcpy (name2 + len - 1, "f128");
+	      id = get_identifier (name2);
+	    }
+	}
+    }
+
+  return id;
+}
 
 
 struct gcc_target targetm = TARGET_INITIALIZER;

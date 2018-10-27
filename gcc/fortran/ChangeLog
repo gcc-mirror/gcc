@@ -1,3 +1,21 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/87725
+	* openmp.c (gfc_match_omp_clauses): Parse simd, monotonic and
+	nonmonotonic modifiers regardless of if they have been parsed
+	already or if the opposite one has.  Fix up check whether
+	comma after modifier should be parsed.
+	(resolve_omp_clauses): Diagnose schedule modifier restrictions.
+
+2018-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* frontend-passes.c (get_len_call): New function to generate a
+	call to intrinsic LEN.
+	(create_var): Use this to make length expressions for variable
+	rhs string lengths.
+	Clean up some white space issues.
+
 2018-10-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/71880

@@ -44,10 +44,48 @@ const int Export::checksum_len;
 // Constructor.
 
 Export::Export(Stream* stream)
-  : stream_(stream), type_refs_(), type_index_(1), packages_()
+  : stream_(stream), type_index_(1), packages_()
 {
   go_assert(Export::checksum_len == Go_sha1_helper::checksum_len);
 }
+
+// Type hash table operations, treating aliases as distinct.
+
+class Type_hash_alias_identical
+{
+ public:
+  unsigned int
+  operator()(const Type* type) const
+  {
+    return type->hash_for_method(NULL,
+				 (Type::COMPARE_ERRORS
+				  | Type::COMPARE_TAGS
+				  | Type::COMPARE_ALIASES));
+  }
+};
+
+class Type_alias_identical
+{
+ public:
+  bool
+  operator()(const Type* t1, const Type* t2) const
+  {
+    return Type::are_identical(t1, t2,
+			       (Type::COMPARE_ERRORS
+				| Type::COMPARE_TAGS
+				| Type::COMPARE_ALIASES),
+			       NULL);
+  }
+};
+
+// Mapping from Type objects to a constant index.  This would be nicer
+// as a field in Export, but then export.h would have to #include
+// types.h.
+
+typedef Unordered_map_hash(const Type*, int, Type_hash_alias_identical,
+			   Type_alias_identical) Type_refs;
+
+static Type_refs type_refs;
 
 // A functor to sort Named_object pointers by name.
 
@@ -139,9 +177,10 @@ Export::export_globals(const std::string& package_name,
 
   std::sort(exports.begin(), exports.end(), Sort_bindings());
 
-  // Find all packages not explicitly imported but mentioned by types.
+  // Assign indexes to all exported types and types referenced by
+  // exported types, and collect all packages mentioned.
   Unordered_set(const Package*) type_imports;
-  this->prepare_types(&exports, &type_imports);
+  int unexported_type_index = this->prepare_types(&exports, &type_imports);
 
   // Although the export data is readable, at least this version is,
   // it is conceptually a binary format.  Start with a four byte
@@ -178,10 +217,17 @@ Export::export_globals(const std::string& package_name,
   // and ABI being used, although ideally any problems in that area
   // would be caught by the linker.
 
+  // Write out all the types, both exported and not.
+  this->write_types(unexported_type_index);
+
+  // Write out the non-type export data.
   for (std::vector<Named_object*>::const_iterator p = exports.begin();
        p != exports.end();
        ++p)
-    (*p)->export_named_object(this);
+    {
+      if (!(*p)->is_type())
+	(*p)->export_named_object(this);
+    }
 
   std::string checksum = this->stream_->checksum();
   std::string s = "checksum ";
@@ -204,9 +250,10 @@ Export::export_globals(const std::string& package_name,
 class Find_types_to_prepare : public Traverse
 {
  public:
-  Find_types_to_prepare(Unordered_set(const Package*)* imports)
+  Find_types_to_prepare(Export* exp,
+			Unordered_set(const Package*)* imports)
     : Traverse(traverse_types),
-      imports_(imports)
+      exp_(exp), imports_(imports)
   { }
 
   int
@@ -221,18 +268,33 @@ class Find_types_to_prepare : public Traverse
   traverse_named_type(Named_type*);
 
  private:
+  // Exporters.
+  Export* exp_;
   // List of packages we are building.
   Unordered_set(const Package*)* imports_;
 };
 
-// Traverse a type.
+// Set type index of referenced type, record package imports, and make
+// sure we traverse methods of named types.
 
 int
 Find_types_to_prepare::type(Type* type)
 {
-  // Skip forwarders.
+  // Skip forwarders; don't try to give them a type index.
   if (type->forward_declaration_type() != NULL)
     return TRAVERSE_CONTINUE;
+
+  // Skip the void type, which we'll see when exporting
+  // unsafe.Pointer.  The void type is not itself exported, because
+  // Pointer_type::do_export checks for it.
+  if (type->is_void_type())
+    return TRAVERSE_SKIP_COMPONENTS;
+
+  if (!this->exp_->set_type_index(type))
+    {
+      // We've already seen this type.
+      return TRAVERSE_SKIP_COMPONENTS;
+    }
 
   // At this stage of compilation traversing interface types traverses
   // the final list of methods, but we export the locally defined
@@ -267,7 +329,7 @@ Find_types_to_prepare::type(Type* type)
 }
 
 // Traverse the types in a function type.  We don't need the function
-// type tself, just the receiver, parameter, and result types.
+// type itself, just the receiver, parameter, and result types.
 
 void
 Find_types_to_prepare::traverse_function(Function_type* type)
@@ -319,20 +381,34 @@ Find_types_to_prepare::traverse_named_type(Named_type* nt)
     }
 }
 
-// Collect all the pacakges we see in types, so that if we refer to
-// any types from indirectly importe packages we can tell the importer
-// about the package.
+// Prepare to export types by assigning a type index to every exported
+// type and every type referenced by an exported type.  Also collect
+// all the packages we see in types, so that if we refer to any types
+// from indirectly imported packages we can tell the importer about
+// the package.  This returns the number of exported types.
 
-void
+int
 Export::prepare_types(const std::vector<Named_object*>* exports,
 		      Unordered_set(const Package*)* imports)
 {
-  // Use a single index of the traversal class because traversal
+  // Assign indexes to all the exported types.
+  for (std::vector<Named_object*>::const_iterator p = exports->begin();
+       p != exports->end();
+       ++p)
+    {
+      if (!(*p)->is_type())
+	continue;
+      this->set_type_index((*p)->type_value());
+    }
+
+  int ret = this->type_index_;
+
+  // Use a single instance of the traversal class because traversal
   // classes keep track of which types they've already seen.  That
   // lets us avoid type reference loops.
-  Find_types_to_prepare find(imports);
+  Find_types_to_prepare find(this, imports);
 
-  // Traverse all the exported objects.
+  // Traverse all the exported objects and assign indexes to all types.
   for (std::vector<Named_object*>::const_iterator p = exports->begin();
        p != exports->end();
        ++p)
@@ -349,7 +425,8 @@ Export::prepare_types(const std::vector<Named_object*>* exports,
 	  break;
 
 	case Named_object::NAMED_OBJECT_TYPE:
-	  Type::traverse(no->type_value(), &find);
+	  Type::traverse(no->type_value()->real_type(), &find);
+	  find.traverse_named_type(no->type_value());
 	  break;
 
 	case Named_object::NAMED_OBJECT_VAR:
@@ -370,6 +447,31 @@ Export::prepare_types(const std::vector<Named_object*>* exports,
 	  break;
 	}
     }
+
+  return ret;
+}
+
+// Give a type an index if it doesn't already have one.  Return true
+// if we set the type index, false if it was already known.
+
+bool
+Export::set_type_index(Type* type)
+{
+  type = type->forwarded();
+
+  std::pair<Type_refs::iterator, bool> ins =
+    type_refs.insert(std::make_pair(type, 0));
+  if (!ins.second)
+    {
+      // We've already seen this type.
+      return false;
+    }
+
+  int index = this->type_index_;
+  ++this->type_index_;
+  ins.first->second = index;
+
+  return true;
 }
 
 // Sort packages.
@@ -705,6 +807,104 @@ Export::write_imported_init_fns(const std::string& package_name,
   this->write_c_string("\n");
 }
 
+// Write the types to the export stream.
+
+void
+Export::write_types(int unexported_type_index)
+{
+  // Map from type index to type.
+  std::vector<const Type*> types(static_cast<size_t>(this->type_index_));
+  for (Type_refs::const_iterator p = type_refs.begin();
+       p != type_refs.end();
+       ++p)
+    {
+      if (p->second >= 0)
+	types.at(p->second) = p->first;
+    }
+
+  // Write the type information to a buffer.
+  Stream_to_string type_data;
+  Export::Stream* orig_stream = this->stream_;
+  this->stream_ = &type_data;
+
+  std::vector<size_t> type_sizes(static_cast<size_t>(this->type_index_));
+  type_sizes[0] = 0;
+
+  // Start at 1 because type index 0 is not used.
+  size_t start_size = 0;
+  for (int i = 1; i < this->type_index_; ++i)
+    {
+      this->write_type_definition(types[i], i);
+
+      size_t cur_size = type_data.string().size();
+      type_sizes[i] = cur_size - start_size;
+      start_size = cur_size;
+    }
+
+  // Back to original stream.
+  this->stream_ = orig_stream;
+
+  // The line "types MAXP1 EXPORTEDP1 SIZES..." appears before the
+  // types.  MAXP1 is one more than the maximum type index used; that
+  // is, it is the size of the array we need to allocate to hold all
+  // the values.  Indexes 1 up to but not including EXPORTEDP1 are the
+  // exported types.  The other types are not exported.  SIZES... is a
+  // list of MAXP1-1 entries listing the size of the type definition
+  // for each type, starting at index 1.
+  char buf[100];
+  snprintf(buf, sizeof buf, "types %d %d", this->type_index_,
+	   unexported_type_index);
+  this->write_c_string(buf);
+
+  // Start at 1 because type index 0 is not used.
+  for (int i = 1; i < this->type_index_; ++i)
+    {
+      snprintf(buf, sizeof buf, " %lu",
+	       static_cast<unsigned long>(type_sizes[i]));
+      this->write_c_string(buf);
+    }
+  this->write_c_string("\n");
+  this->write_string(type_data.string());
+}
+
+// Write a single type to the export stream.
+
+void
+Export::write_type_definition(const Type* type, int index)
+{
+  this->write_c_string("type ");
+
+  char buf[30];
+  snprintf(buf, sizeof buf, "%d ", index);
+  this->write_c_string(buf);
+
+  const Named_type* nt = type->named_type();
+  if (nt != NULL)
+    {
+      const Named_object* no = nt->named_object();
+      const Package* package = no->package();
+
+      this->write_c_string("\"");
+      if (package != NULL && !Gogo::is_hidden_name(no->name()))
+	{
+	  this->write_string(package->pkgpath());
+	  this->write_c_string(".");
+	}
+      this->write_string(nt->named_object()->name());
+      this->write_c_string("\" ");
+
+      if (nt->is_alias())
+	this->write_c_string("= ");
+    }
+
+  type->export_type(this);
+
+  // Type::export_type will print a newline for a named type, but not
+  // otherwise.
+  if (nt == NULL)
+    this->write_c_string("\n");
+}
+
 // Write a name to the export stream.
 
 void
@@ -736,91 +936,19 @@ Export::write_unsigned(unsigned value)
   this->write_c_string(buf);
 }
 
-// Export a type.  We have to ensure that on import we create a single
-// Named_type node for each named type.  We do this by keeping a hash
-// table mapping named types to reference numbers.  The first time we
-// see a named type we assign it a reference number by making an entry
-// in the hash table.  If we see it again, we just refer to the
-// reference number.
-
-// Named types are, of course, associated with packages.  Note that we
-// may see a named type when importing one package, and then later see
-// the same named type when importing a different package.  The home
-// package may or may not be imported during this compilation.  The
-// reference number scheme has to get this all right.  Basic approach
-// taken from "On the Linearization of Graphs and Writing Symbol
-// Files" by Robert Griesemer.
+// Export a type.
 
 void
 Export::write_type(const Type* type)
 {
-  // We don't want to assign a reference number to a forward
-  // declaration to a type which was defined later.
   type = type->forwarded();
-
-  Type_refs::const_iterator p = this->type_refs_.find(type);
-  if (p != this->type_refs_.end())
-    {
-      // This type was already in the table.
-      int index = p->second;
-      go_assert(index != 0);
-      char buf[30];
-      snprintf(buf, sizeof buf, "<type %d>", index);
-      this->write_c_string(buf);
-      return;
-    }
-
-  const Named_type* named_type = type->named_type();
-  const Forward_declaration_type* forward = type->forward_declaration_type();
-
-  int index = this->type_index_;
-  ++this->type_index_;
-
+  Type_refs::const_iterator p = type_refs.find(type);
+  go_assert(p != type_refs.end());
+  int index = p->second;
+  go_assert(index != 0);
   char buf[30];
-  snprintf(buf, sizeof buf, "<type %d ", index);
+  snprintf(buf, sizeof buf, "<type %d>", index);
   this->write_c_string(buf);
-
-  if (named_type != NULL || forward != NULL)
-    {
-      const Named_object* named_object;
-      if (named_type != NULL)
-	{
-	  // The builtin types should have been predefined.
-	  go_assert(!Linemap::is_predeclared_location(named_type->location())
-		     || (named_type->named_object()->package()->package_name()
-			 == "unsafe"));
-	  named_object = named_type->named_object();
-	}
-      else
-	named_object = forward->named_object();
-
-      const Package* package = named_object->package();
-
-      std::string s = "\"";
-      if (package != NULL && !Gogo::is_hidden_name(named_object->name()))
-	{
-	  s += package->pkgpath();
-	  s += '.';
-	}
-      s += named_object->name();
-      s += "\" ";
-      this->write_string(s);
-
-      // We must add a named type to the table now, since the
-      // definition of the type may refer to the named type via a
-      // pointer.
-      this->type_refs_[type] = index;
-
-      if (named_type != NULL && named_type->is_alias())
-	this->write_c_string("= ");
-    }
-
-  type->export_type(this);
-
-  this->write_c_string(">");
-
-  if (named_type == NULL)
-    this->type_refs_[type] = index;
 }
 
 // Export escape note.
@@ -873,18 +1001,15 @@ Export::register_builtin_type(Gogo* gogo, const char* name, Builtin_code code)
   Named_object* named_object = gogo->lookup_global(name);
   go_assert(named_object != NULL && named_object->is_type());
   std::pair<Type_refs::iterator, bool> ins =
-    this->type_refs_.insert(std::make_pair(named_object->type_value(), code));
+    type_refs.insert(std::make_pair(named_object->type_value(), code));
   go_assert(ins.second);
 
   // We also insert the underlying type.  We can see the underlying
-  // type at least for string and bool.  We skip the type aliases byte
-  // and rune here.
-  if (code != BUILTIN_BYTE && code != BUILTIN_RUNE)
-    {
-      Type* real_type = named_object->type_value()->real_type();
-      ins = this->type_refs_.insert(std::make_pair(real_type, code));
-      go_assert(ins.second);
-    }
+  // type at least for string and bool.  It's OK if this insert
+  // fails--we expect duplications here, and it doesn't matter when
+  // they occur.
+  Type* real_type = named_object->type_value()->real_type();
+  type_refs.insert(std::make_pair(real_type, code));
 }
 
 // Class Export::Stream.

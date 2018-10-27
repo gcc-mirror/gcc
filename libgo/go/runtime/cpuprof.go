@@ -186,7 +186,7 @@ func CPUProfile() []byte {
 	panic("CPUProfile no longer available")
 }
 
-//go:linkname runtime_pprof_runtime_cyclesPerSecond runtime_pprof.runtime_cyclesPerSecond
+//go:linkname runtime_pprof_runtime_cyclesPerSecond runtime..z2fpprof.runtime_cyclesPerSecond
 func runtime_pprof_runtime_cyclesPerSecond() int64 {
 	return tickspersecond()
 }
@@ -197,7 +197,7 @@ func runtime_pprof_runtime_cyclesPerSecond() int64 {
 // on has been returned, readProfile returns eof=true.
 // The caller must save the returned data and tags before calling readProfile again.
 //
-//go:linkname runtime_pprof_readProfile runtime_pprof.readProfile
+//go:linkname runtime_pprof_readProfile runtime..z2fpprof.readProfile
 func runtime_pprof_readProfile() ([]uint64, []unsafe.Pointer, bool) {
 	lock(&cpuprof.lock)
 	log := cpuprof.log

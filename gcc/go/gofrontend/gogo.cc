@@ -256,26 +256,11 @@ Gogo::Gogo(Backend* backend, Linemap* linemap, int, int pointer_size)
   this->globals_->add_function_declaration("delete", NULL, delete_type, loc);
 }
 
-// Convert a pkgpath into a string suitable for a symbol.  Note that
-// this transformation is convenient but imperfect.  A -fgo-pkgpath
-// option of a/b_c will conflict with a -fgo-pkgpath option of a_b/c,
-// possibly leading to link time errors.
-
 std::string
 Gogo::pkgpath_for_symbol(const std::string& pkgpath)
 {
-  std::string s = pkgpath;
-  for (size_t i = 0; i < s.length(); ++i)
-    {
-      char c = s[i];
-      if ((c >= 'a' && c <= 'z')
-	  || (c >= 'A' && c <= 'Z')
-	  || (c >= '0' && c <= '9'))
-	;
-      else
-	s[i] = '_';
-    }
-  return s;
+  go_assert(!pkgpath.empty());
+  return go_encode_id(pkgpath);
 }
 
 // Get the package path to use for type reflection data.  This should
@@ -317,6 +302,32 @@ Gogo::set_prefix(const std::string& arg)
   go_assert(!this->prefix_from_option_);
   this->prefix_ = arg;
   this->prefix_from_option_ = true;
+}
+
+// Given a name which may or may not have been hidden, append the
+// appropriate version of the name to the result string. Take care
+// to avoid creating a sequence that will be rejected by go_encode_id
+// (avoid ..u, ..U, ..z).
+void
+Gogo::append_possibly_hidden_name(std::string *result, const std::string& name)
+{
+  // FIXME: This adds in pkgpath twice for hidden symbols, which is
+  // less than ideal.
+  if (!Gogo::is_hidden_name(name))
+    (*result) += name;
+  else
+    {
+      std::string n = ".";
+      std::string pkgpath = Gogo::hidden_name_pkgpath(name);
+      char lastR = result->at(result->length() - 1);
+      char firstP = pkgpath.at(0);
+      if (lastR == '.' && (firstP == 'u' || firstP == 'U' || firstP == 'z'))
+        n = "_.";
+      n.append(pkgpath);
+      n.append(1, '.');
+      n.append(Gogo::unpack_hidden_name(name));
+      (*result) += n;
+    }
 }
 
 // Munge name for use in an error message.
@@ -7511,8 +7522,8 @@ Named_object::export_named_object(Export* exp) const
       break;
 
     case NAMED_OBJECT_TYPE:
-      this->type_value()->export_named_type(exp, this->name_);
-      break;
+      // Types are handled by export::write_types.
+      go_unreachable();
 
     case NAMED_OBJECT_TYPE_DECLARATION:
       go_error_at(this->type_declaration_value()->location(),

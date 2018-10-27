@@ -3401,7 +3401,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	(cmp @0 @1))))))
 
 /* Optimize various special cases of (FTYPE) N CMP (FTYPE) M.  */
-(for cmp (tcc_comparison)
+(for cmp  (lt le eq ne ge gt unordered ordered unlt unle ungt unge uneq ltgt)
+     icmp (lt le eq ne ge gt unordered ordered lt   le   gt   ge   eq   ne)
  (simplify
   (cmp (float@0 @1) (float @2))
    (if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@0))
@@ -3416,15 +3417,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      }
      (if (fmt.can_represent_integral_type_p (type1)
 	  && fmt.can_represent_integral_type_p (type2))
-      (if (TYPE_PRECISION (type1) > TYPE_PRECISION (type2)
-           && type1_signed_p >= type2_signed_p)
-       (cmp @1 (convert @2))
-       (if (TYPE_PRECISION (type1) < TYPE_PRECISION (type2)
-            && type1_signed_p <= type2_signed_p)
-        (cmp (convert:type2 @1) @2)
-        (if (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
-             && type1_signed_p == type2_signed_p)
-	 (cmp @1 @2)))))))))
+      (if (cmp == ORDERED_EXPR || cmp == UNORDERED_EXPR)
+       { constant_boolean_node (cmp == ORDERED_EXPR, type); }
+       (if (TYPE_PRECISION (type1) > TYPE_PRECISION (type2)
+            && type1_signed_p >= type2_signed_p)
+        (icmp @1 (convert @2))
+        (if (TYPE_PRECISION (type1) < TYPE_PRECISION (type2)
+             && type1_signed_p <= type2_signed_p)
+         (icmp (convert:type2 @1) @2)
+         (if (TYPE_PRECISION (type1) == TYPE_PRECISION (type2)
+              && type1_signed_p == type2_signed_p)
+	  (icmp @1 @2))))))))))
 
 /* Optimize various special cases of (FTYPE) N CMP CST.  */
 (for cmp  (lt le eq ne ge gt)

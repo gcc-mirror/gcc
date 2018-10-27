@@ -99,6 +99,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "explow.h"
 #include "insn-attr.h"
 #include "rtlhooks-def.h"
+#include "expr.h"
 #include "params.h"
 #include "tree-pass.h"
 #include "valtrack.h"
@@ -2348,8 +2349,7 @@ cant_combine_insn_p (rtx_insn *insn)
     dest = SUBREG_REG (dest);
   if (REG_P (src) && REG_P (dest)
       && ((HARD_REGISTER_P (src)
-	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src))
-	   && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (src))))
+	   && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
 	  || (HARD_REGISTER_P (dest)
 	      && ! TEST_HARD_REG_BIT (fixed_reg_set, REGNO (dest))
 	      && targetm.class_likely_spilled_p (REGNO_REG_CLASS (REGNO (dest))))))
@@ -14935,11 +14935,55 @@ dump_combine_total_stats (FILE *file)
      total_attempts, total_merges, total_extras, total_successes);
 }
 
+/* Make pseudo-to-pseudo copies after every hard-reg-to-pseudo-copy, because
+   the reg-to-reg copy can usefully combine with later instructions, but we
+   do not want to combine the hard reg into later instructions, for that
+   restricts register allocation.  */
+static void
+make_more_copies (void)
+{
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      rtx_insn *insn;
+
+      FOR_BB_INSNS (bb, insn)
+        {
+          if (!NONDEBUG_INSN_P (insn))
+            continue;
+
+	  rtx set = single_set (insn);
+	  if (!set)
+	    continue;
+	  rtx src = SET_SRC (set);
+	  rtx dest = SET_DEST (set);
+	  if (dest == pc_rtx)
+	    continue;
+	  if (GET_CODE (src) == SUBREG)
+	    src = SUBREG_REG (src);
+	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
+	    continue;
+	  if (TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
+	    continue;
+
+	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
+	  rtx_insn *insn1 = gen_move_insn (new_reg, src);
+	  rtx_insn *insn2 = gen_move_insn (dest, new_reg);
+	  emit_insn_after (insn1, insn);
+	  emit_insn_after (insn2, insn1);
+	  delete_insn (insn);
+
+	  insn = insn2;
+	}
+    }
+}
+
 /* Try combining insns through substitution.  */
 static unsigned int
 rest_of_handle_combine (void)
 {
-  int rebuild_jump_labels_after_combine;
+  make_more_copies ();
 
   df_set_flags (DF_LR_RUN_DCE + DF_DEFER_INSN_RESCAN);
   df_note_add_problem ();
@@ -14948,7 +14992,7 @@ rest_of_handle_combine (void)
   regstat_init_n_sets_and_refs ();
   reg_n_sets_max = max_reg_num ();
 
-  rebuild_jump_labels_after_combine
+  int rebuild_jump_labels_after_combine
     = combine_instructions (get_insns (), max_reg_num ());
 
   /* Combining insns may have turned an indirect jump into a

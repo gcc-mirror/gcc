@@ -273,7 +273,7 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 			  || !(i & (ECF_CONST | ECF_PURE)))
 			need_temp = true;
 		    }
-		  if (stmt_can_throw_internal (stmt))
+		  if (stmt_can_throw_internal (cfun, stmt))
 		    need_temp = true;
 		}
 	    }

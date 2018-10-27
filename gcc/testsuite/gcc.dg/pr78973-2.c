@@ -14,7 +14,7 @@ void f (int n)
 {
   if (n <= 4)
     p = __builtin_malloc (n);
-  /* { dg-warning "argument 1 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size 4" "ilp32" { xfail { ! lp64 } } .-1 } */
+  /* { dg-warning "argument 1 range \\\[\[0-9\]+, \[0-9\]+\\\] exceeds maximum object size 4" "ilp32" { target *-*-* } .-1 } */
 }
 
 void g (unsigned n)

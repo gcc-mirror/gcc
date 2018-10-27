@@ -305,57 +305,6 @@ sem_function::get_hash (void)
   return m_hash;
 }
 
-/* Return ture if A1 and A2 represent equivalent function attribute lists.
-   Based on comp_type_attributes.  */
-
-bool
-sem_item::compare_attributes (const_tree a1, const_tree a2)
-{
-  const_tree a;
-  if (a1 == a2)
-    return true;
-  for (a = a1; a != NULL_TREE; a = TREE_CHAIN (a))
-    {
-      const struct attribute_spec *as;
-      const_tree attr;
-
-      as = lookup_attribute_spec (get_attribute_name (a));
-      /* TODO: We can introduce as->affects_decl_identity
-	 and as->affects_decl_reference_identity if attribute mismatch
-	 gets a common reason to give up on merging.  It may not be worth
-	 the effort.
-	 For example returns_nonnull affects only references, while
-	 optimize attribute can be ignored because it is already lowered
-	 into flags representation and compared separately.  */
-      if (!as)
-        continue;
-
-      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
-      if (!attr || !attribute_value_equal (a, attr))
-        break;
-    }
-  if (!a)
-    {
-      for (a = a2; a != NULL_TREE; a = TREE_CHAIN (a))
-	{
-	  const struct attribute_spec *as;
-
-	  as = lookup_attribute_spec (get_attribute_name (a));
-	  if (!as)
-	    continue;
-
-	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
-	    break;
-	  /* We don't need to compare trees again, as we did this
-	     already in first loop.  */
-	}
-      if (!a)
-        return true;
-    }
-  /* TODO: As in comp_type_attributes we may want to introduce target hook.  */
-  return false;
-}
-
 /* Compare properties of symbols N1 and N2 that does not affect semantics of
    symbol itself but affects semantics of its references from USED_BY (which
    may be NULL if it is unknown).  If comparsion is false, symbols
@@ -429,8 +378,8 @@ sem_item::compare_referenced_symbol_properties (symtab_node *used_by,
 	 variables just compare attributes for references - the codegen
 	 for constructors is affected only by those attributes that we lower
 	 to explicit representation (such as DECL_ALIGN or DECL_SECTION).  */
-      if (!compare_attributes (DECL_ATTRIBUTES (n1->decl),
-			       DECL_ATTRIBUTES (n2->decl)))
+      if (!attribute_list_equal (DECL_ATTRIBUTES (n1->decl),
+				 DECL_ATTRIBUTES (n2->decl)))
 	return return_false_with_msg ("different var decl attributes");
       if (comp_type_attributes (TREE_TYPE (n1->decl),
 				TREE_TYPE (n2->decl)) != 1)
@@ -716,8 +665,8 @@ sem_function::equals_wpa (sem_item *item,
   if (comp_type_attributes (TREE_TYPE (decl),
 			    TREE_TYPE (item->decl)) != 1)
     return return_false_with_msg ("different type attributes");
-  if (!compare_attributes (DECL_ATTRIBUTES (decl),
-			   DECL_ATTRIBUTES (item->decl)))
+  if (!attribute_list_equal (DECL_ATTRIBUTES (decl),
+			     DECL_ATTRIBUTES (item->decl)))
     return return_false_with_msg ("different decl attributes");
 
   /* The type of THIS pointer type memory location for

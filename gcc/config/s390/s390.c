@@ -3110,8 +3110,7 @@ s390_legitimate_address_without_index_p (rtx op)
    Valid addresses are single references or a sum of a reference and a
    constant integer. Return these parts in SYMREF and ADDEND.  You can
    pass NULL in REF and/or ADDEND if you are not interested in these
-   values.  Literal pool references are *not* considered symbol
-   references.  */
+   values.  */
 
 static bool
 s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
@@ -3130,7 +3129,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
       addr = XEXP (addr, 0);
     }
 
-  if ((GET_CODE (addr) == SYMBOL_REF && !CONSTANT_POOL_ADDRESS_P (addr))
+  if (GET_CODE (addr) == SYMBOL_REF
       || (GET_CODE (addr) == UNSPEC
 	  && (XINT (addr, 1) == UNSPEC_GOTENT
 	      || XINT (addr, 1) == UNSPEC_PLT)))
@@ -3153,6 +3152,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
 static int
 s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 {
+  rtx symref;
   struct s390_address addr;
   bool decomposed = false;
 
@@ -3161,7 +3161,10 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
-  if (s390_loadrelative_operand_p (op, NULL, NULL))
+  if (s390_loadrelative_operand_p (op, &symref, NULL)
+      && (!lit_pool_ok
+          || !SYMBOL_REF_P (symref)
+          || !CONSTANT_POOL_ADDRESS_P (symref)))
     return 0;
 
   /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
@@ -3854,6 +3857,10 @@ legitimate_pic_operand_p (rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
+    return 1;
+
+  /* Accept addresses that can be expressed relative to (pc).  */
+  if (larl_operand (op, VOIDmode))
     return 1;
 
   /* Reject everything else; must be handled

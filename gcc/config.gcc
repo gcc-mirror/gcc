@@ -485,7 +485,7 @@ powerpc*-*-*)
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
-	extra_headers="${extra_headers} pmmintrin.h"
+	extra_headers="${extra_headers} pmmintrin.h tmmintrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} amo.h"
 	case x$with_cpu in
@@ -1134,7 +1134,7 @@ arm*-*-netbsdelf*)
 	tm_file="dbxelf.h elfos.h ${nbsd_tm_file} arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
-	target_cpu_cname="arm6"
+	target_cpu_cname="strongarm"
 	;;
 arm*-*-linux-*)			# ARM GNU/Linux with ELF
 	tm_file="dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arm/elf.h arm/linux-gas.h arm/linux-elf.h"
@@ -3987,7 +3987,7 @@ case "${target}" in
 				TM_MULTILIB_CONFIG="$with_multilib_list"
 			fi
 		fi
-		target_cpu_cname=${target_cpu_cname:-arm6}
+		target_cpu_cname=${target_cpu_cname:-arm7tdmi}
 		with_cpu=${with_cpu:-$target_cpu_cname}
 		;;
 

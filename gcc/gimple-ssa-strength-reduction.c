@@ -1775,7 +1775,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
     {
       gimple *gs = gsi_stmt (gsi);
 
-      if (stmt_could_throw_p (gs))
+      if (stmt_could_throw_p (cfun, gs))
 	continue;
 
       if (gimple_vuse (gs) && gimple_assign_single_p (gs))

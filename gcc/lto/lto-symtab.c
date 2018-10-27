@@ -698,7 +698,7 @@ lto_symtab_merge_decls_2 (symtab_node *first, bool diagnosed_p)
 	  if (level & 2)
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
 			       OPT_Wodr,
-			       "%qD violates the C++ One Definition Rule ",
+			       "%qD violates the C++ One Definition Rule",
 			       decl);
 	  if (!diag && (level & 1))
 	    diag = warning_at (DECL_SOURCE_LOCATION (decl),
