@@ -1,3 +1,11 @@
+2018-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86907
+	* frontend-passes.c (check_locus_code): Add information that
+	warning about missing location information points to an
+	inconsisten internal state.
+	(check_locus_expr): Likewise.
+
 2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/87725
