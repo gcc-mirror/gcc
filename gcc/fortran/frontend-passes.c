@@ -190,7 +190,8 @@ check_locus_code (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
   current_code = c;
   if (c && *c && (((*c)->loc.nextc == NULL) || ((*c)->loc.lb == NULL)))
-    gfc_warning_internal (0, "No location in statement");
+    gfc_warning_internal (0, "Inconsistent internal state: "
+			  "No location in statement");
 
   return 0;
 }
@@ -205,7 +206,8 @@ check_locus_expr (gfc_expr **e, int *walk_subtrees ATTRIBUTE_UNUSED,
 {
 
   if (e && *e && (((*e)->where.nextc == NULL || (*e)->where.lb == NULL)))
-    gfc_warning_internal (0, "No location in expression near %L",
+    gfc_warning_internal (0, "Inconsistent internal state: "
+			  "No location in expression near %L",
 			  &((*current_code)->loc));
   return 0;
 }
