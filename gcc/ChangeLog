@@ -1,3 +1,9 @@
+2018-10-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/80024
+	* config/nios2/nios2.c (nios2_valid_target_attribute_rec): Fix
+	error message.
+
 2018-10-26  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
 
 	* doc/extend.texi (PowerPC builtins): Fix __builtin_unpack_ibm128
