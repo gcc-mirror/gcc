@@ -1,3 +1,10 @@
+2018-10-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/23_containers/deque/48101_neg.cc: Remove dg-prune-output
+	'std' from regex pattern for versioned namespace compatibility.
+	* testsuite/23_containers/vector/48101_neg.cc: Likewise.
+	* testsuite/27_io/filesystem/path/io/dr2989.cc: Likewise.
+
 2018-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87749
