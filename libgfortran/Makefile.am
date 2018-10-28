@@ -266,6 +266,44 @@ $(srcdir)/generated/iparity_i4.c \
 $(srcdir)/generated/iparity_i8.c \
 $(srcdir)/generated/iparity_i16.c
 
+i_findloc0_c= \
+$(srcdir)/generated/findloc0_i1.c \
+$(srcdir)/generated/findloc0_i2.c \
+$(srcdir)/generated/findloc0_i4.c \
+$(srcdir)/generated/findloc0_i8.c \
+$(srcdir)/generated/findloc0_i16.c \
+$(srcdir)/generated/findloc0_r4.c \
+$(srcdir)/generated/findloc0_r8.c \
+$(srcdir)/generated/findloc0_r16.c \
+$(srcdir)/generated/findloc0_c4.c \
+$(srcdir)/generated/findloc0_c8.c \
+$(srcdir)/generated/findloc0_c16.c
+
+i_findloc0s_c= \
+$(srcdir)/generated/findloc0_s1.c \
+$(srcdir)/generated/findloc0_s4.c
+
+i_findloc1_c= \
+$(srcdir)/generated/findloc1_i1.c \
+$(srcdir)/generated/findloc1_i2.c \
+$(srcdir)/generated/findloc1_i4.c \
+$(srcdir)/generated/findloc1_i8.c \
+$(srcdir)/generated/findloc1_i16.c \
+$(srcdir)/generated/findloc1_r4.c \
+$(srcdir)/generated/findloc1_r8.c \
+$(srcdir)/generated/findloc1_r16.c \
+$(srcdir)/generated/findloc1_c4.c \
+$(srcdir)/generated/findloc1_c8.c \
+$(srcdir)/generated/findloc1_c16.c
+
+i_findloc1s_c= \
+$(srcdir)/generated/findloc1_s1.c \
+$(srcdir)/generated/findloc1_s4.c
+
+i_findloc2s_c= \
+$(srcdir)/generated/findloc2_s1.c \
+$(srcdir)/generated/findloc2_s4.c
+
 i_maxloc0_c= \
 $(srcdir)/generated/maxloc0_4_i1.c \
 $(srcdir)/generated/maxloc0_8_i1.c \
@@ -754,7 +792,9 @@ m4_files= m4/iparm.m4 m4/ifunction.m4 m4/iforeach.m4 m4/all.m4 \
     m4/pow.m4 \
     m4/misc_specifics.m4 m4/pack.m4 \
     m4/unpack.m4 m4/spread.m4 m4/bessel.m4 m4/norm2.m4 m4/parity.m4 \
-    m4/iall.m4 m4/iany.m4 m4/iparity.m4 m4/iforeach-s.m4
+    m4/iall.m4 m4/iany.m4 m4/iparity.m4 m4/iforeach-s.m4 m4/findloc0.m4 \
+    m4/findloc0s.m4 m4/ifindloc0.m4 m4/findloc1.m4 m4/ifindloc1.m4 \
+    m4/findloc2s.m4 m4/ifindloc2.m4
 
 gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_maxloc1_c) $(i_maxval_c) $(i_minloc0_c) $(i_minloc1_c) $(i_minval_c) \
@@ -767,7 +807,9 @@ gfor_built_src= $(i_all_c) $(i_any_c) $(i_count_c) $(i_maxloc0_c) \
     $(i_cshift0_c) kinds.inc c99_protos.inc fpu-target.h fpu-target.inc \
     $(i_cshift1a_c) $(i_maxloc0s_c) $(i_minloc0s_c) $(i_maxloc1s_c) \
     $(i_minloc1s_c) $(i_maxloc2s_c) $(i_minloc2s_c) $(i_maxvals_c) \
-    $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c)
+    $(i_maxval0s_c) $(i_minval0s_c) $(i_maxval1s_c) $(i_minval1s_c) \
+    $(i_findloc0_c) $(i_findloc0s_c) $(i_findloc1_c) $(i_findloc1s_c) \
+    $(i_findloc2s_c)
 
 # Machine generated specifics
 gfor_built_specific_src= \
@@ -995,6 +1037,9 @@ I_M4_DEPS3=$(I_M4_DEPS) m4/iforeach-s.m4
 I_M4_DEPS4=$(I_M4_DEPS) m4/ifunction-s.m4
 I_M4_DEPS5=$(I_M4_DEPS) m4/iforeach-s2.m4
 I_M4_DEPS6=$(I_M4_DEPS) m4/ifunction-s2.m4
+I_M4_DEPS7=$(I_M4_DEPS) m4/ifindloc0.m4
+I_M4_DEPS8=$(I_M4_DEPS) m4/ifindloc1.m4
+I_M4_DEPS9=$(I_M4_DEPS) m4/ifindloc2.m4
 
 kinds.h: $(srcdir)/mk-kinds-h.sh
 	$(SHELL) $(srcdir)/mk-kinds-h.sh '$(FCCOMPILE)' > $@ || rm $@
@@ -1033,6 +1078,21 @@ $(i_any_c): m4/any.m4 $(I_M4_DEPS2)
 
 $(i_count_c): m4/count.m4 $(I_M4_DEPS2)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 count.m4 > $@
+
+$(i_findloc0_c): m4/findloc0.m4 $(I_M4_DEPS7)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 findloc0.m4 > $@
+
+$(i_findloc0s_c): m4/findloc0s.m4 $(I_M4_DEPS7)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 findloc0s.m4 > $@
+
+$(i_findloc1_c): m4/findloc1.m4 $(I_M4_DEPS8)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 findloc1.m4 > $@
+
+$(i_findloc1s_c): m4/findloc1s.m4 $(I_M4_DEPS8)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 findloc1s.m4 > $@
+
+$(i_findloc2s_c): m4/findloc2s.m4 $(I_M4_DEPS9)
+	$(M4) -Dfile=$@ -I$(srcdir)/m4 findloc2s.m4 > $@
 
 $(i_iall_c): m4/iall.m4 $(I_M4_DEPS1)
 	$(M4) -Dfile=$@ -I$(srcdir)/m4 iall.m4 > $@

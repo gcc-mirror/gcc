@@ -74,6 +74,7 @@ bool gfc_check_event_query (gfc_expr *, gfc_expr *, gfc_expr *);
 bool gfc_check_failed_or_stopped_images (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetputc (gfc_expr *, gfc_expr *);
 bool gfc_check_fgetput (gfc_expr *);
+bool gfc_check_findloc (gfc_actual_arglist *);
 bool gfc_check_float (gfc_expr *);
 bool gfc_check_fstat (gfc_expr *, gfc_expr *);
 bool gfc_check_ftell (gfc_expr *);
@@ -299,6 +300,8 @@ gfc_expr *gfc_simplify_exp (gfc_expr *);
 gfc_expr *gfc_simplify_exponent (gfc_expr *);
 gfc_expr *gfc_simplify_extends_type_of (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_failed_or_stopped_images (gfc_expr *, gfc_expr *);
+gfc_expr *gfc_simplify_findloc (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+				gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_float (gfc_expr *);
 gfc_expr *gfc_simplify_floor (gfc_expr *, gfc_expr *);
 gfc_expr *gfc_simplify_fraction (gfc_expr *);
@@ -488,6 +491,8 @@ void gfc_resolve_exponent (gfc_expr *, gfc_expr *);
 void gfc_resolve_extends_type_of (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_failed_images (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_fdate (gfc_expr *);
+void gfc_resolve_findloc (gfc_expr *,gfc_expr *, gfc_expr *, gfc_expr *,
+			  gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_floor (gfc_expr *, gfc_expr *, gfc_expr *);
 void gfc_resolve_fnum (gfc_expr *, gfc_expr *);
 void gfc_resolve_fraction (gfc_expr *, gfc_expr *);
@@ -670,9 +675,9 @@ void gfc_resolve_umask_sub (gfc_code *);
 void gfc_resolve_unlink_sub (gfc_code *);
 
 
-/* The mvbits() subroutine requires the most arguments: five.  */
+/* The findloc() subroutine requires the most arguments: six.  */
 
-#define MAX_INTRINSIC_ARGS 5
+#define MAX_INTRINSIC_ARGS 6
 
 extern const char *gfc_current_intrinsic;
 extern gfc_intrinsic_arg *gfc_current_intrinsic_arg[MAX_INTRINSIC_ARGS];
