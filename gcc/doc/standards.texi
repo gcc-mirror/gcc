@@ -320,6 +320,12 @@ capability is typically utilized to implement the HSA runtime API's HSAIL
 finalization extension for a gcc supported processor. HSA standards are
 freely available at @uref{http://www.hsafoundation.com/standards/}.
 
+@section D language
+
+GCC supports the D 2.0 programming language.  The D language itself is
+currently defined by its reference implementation and supporting language
+specification, described at @uref{https://dlang.org/spec/spec.html}.
+
 @section References for Other Languages
 
 @xref{Top, GNAT Reference Manual, About This Guide, gnat_rm,

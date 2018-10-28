@@ -1,0 +1,1340 @@
+2007-12-15  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos*/Makefile.{am,in}, phobos*/aclocal.m4: Automake changes
+
+	* setup-gcc.sh: Support Apple GCC build 5465
+
+	* patch-apple-gcc-5465, patch-build_gcc-5465, patch-toplev-5465:
+	new files
+
+2007-12-01  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/config/unix.x3, phobos/config/x3.c, phobos/config/x3.h
+	phobos/config/x3, phobos/config/x3main.c: better diagnostics
+	and behavior
+
+2007-11-24  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* setup-gcc.sh: Ignore .svn directories when making symlink trees.
+
+	* d-bi-attrs-34.h, d-bi-attrs-341.h, d-bi-attrs-40,h,
+	d-bi-attrs-41.h: Support attributes on declarations in
+	other modules.
+
+	* d-codegen.cc (IRState::attributes): Support constant declarations
+	as string arguments.
+
+2007-11-08  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-cppmngl.cc: Use base-36 in substitutions.  Other fixes.
+
+2007-10-17  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-cppmngl.cc: More C++ mangling fixes and cleanups.
+
+2007-10-16  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-glue.cc (EqualExp::toElem): Convert result to libcall
+	to expression type. (Bugzilla 1573)
+
+2007-10-15  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-cppmngl.cc: Improve C++ mangling.
+
+2007-10-14  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.022, 2.005
+
+	* dmd/..., dmd2/..., phobos/..., phobos2/...: Merge.
+
+	* Make-lang.in: Add builtin.dmd.o and d-cppmngl.o for V2.
+
+	* d-cppmngl.cc: New file
+
+	* phobos/std/c/dirent.d, phobos/std/c/linux/linux.d: Update
+	* phobs2/...: same
+
+	* symbol.h, d-decls.cc: Remove references to Classym
+
+	----
+
+	* d-glue.cc (CatExp::toElem): Null check. (Bugzilla 1581)
+
+	Remove carriage returns from files
+
+2007-10-13  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-glue.cc (CatExp::toElem): Flatten multiple CatExps into a
+	single library call. (Bugzilla 1556)
+
+	* phobos/std/boxer.d (box, boxArray), phobos2/...: Fix for
+	promoted types.	(Bugzilla 1543)
+
+	* d-codegen.cc (call): Catch a case in which a member function can
+	be called without 'this'. (Bugzilla 1568)
+
+	* dmd/mtype.c (TypeArray::dotExp): Correct return type of
+	sort and reverse functions. (SF 1809220 / Bugzilla 1554)
+
+	* dmd2/mtype.c: Ditto.
+
+	* patch-gcc-4.1.x: Add patch for ARM exception handling int nested
+	functions.
+
+	* d-objfile.cc: Make DT data TREE_CONSTANT
+
+	* dmd2/optimize.c: Fix for infinite recursion on initializer
+	when an error has already occurred.
+
+	-----
+
+	Add support for ARM EABI.  Fix some missing items from
+	cross-compilation changes.
+
+	* d-lang.cc: Add "Arm" and "Thumb" version identifiers
+
+	* phobos/unwind.d: Move pointer encoding to deh_pe.d. Move generic
+	unwinder interface to unwind_generic.d.  Import either generic or
+	ARM interfaces based on config value.
+
+	* phobos/unwind_generic.d, phobos/unwind_pe.d: New file; old code.
+
+	* phobos/unwind_arm.d: New file.
+
+	* phobos/deh.d: Support ARM exception handling ABI.
+
+	* phobos/configure.in, frag-ac.in: Add config for ARM unwinder
+
+	* phobos/configure.in, phobos/internal.c, phobos/monitor.c: Support
+	"no system" targets.
+
+	* phobos/cbridge_math.c: Correct identifier names for earlier
+	changes.
+
+	* phobos/Makefile.am, phobos/Makefile.in, phobos/config.h.in,
+	phobos/configure : Update.
+
+	* phobos2/...: Duplicate phobos/ changes
+
+2007-10-07  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge cross-compilation changes to phobos2
+
+	* phobos2/....: Merge
+
+	---
+
+	Enhance cross-compilation support:
+
+	* phobos/Makefile.am, phobos/Makefile.in, phobos/acinclude.m4,
+	phobos/aclocal.m4, phobos/configure.in, phobos/configure,
+	phobos/config.h.in: Replace "fragment generation" with "X3"
+	system.  Remove obsolete tests.
+
+	* phobos/config/{config-head, config-mid, config-tail}: Removed
+	* phobos/config/{makestruct.h, unix-head, unix-mid}: Removed
+	* phobos/{darwin8, mingw, skyos}: Removed
+
+	* phobos/config/{errno.x3, fpcls.x3, libc.x3, unix.x3},
+	phobos/config{x3, x3.c, x3.h, x3main.c}:  New files
+
+	* phobos/frag-ac.in: Now only contains boolean constants.
+	* phobos/frag-math.in: New file.  Contains old configured math
+	functions.
+
+	* phobos/gcc/configext.d: Removed
+	* phobos/gcc/support.d: Move fallback strtold definition here.
+
+	* phobos/Makefile.am: Do not compile std/c/stdio.o
+	* phobos/std/c/stdio.c: Change function definitions to external
+	declarations.
+
+	* phobos/gcc/deh.d, phobos/gcc/fpcls.d, phobos/gcc/fpmath.d,
+	phobos/gcc/support.d, phobos/gcc/threadsem.d,
+	phobos/internal/dgccmain2.d, phobos/internal/fpmath.d,
+	phobos/internal/gc/gcgcc.d, phobos/phobos-ver-syms.in,
+	phobos/std/c/dirent.d, phobos/std/c/math.d, phobos/std/c/stddef.d,
+	phobos/std/c/stdio.d, phobos/std/c/stdlib.d, phobos/std/c/time.d,
+	phobos/std/c/unix/unix.d, phobos/std/date.d, phobos/std/math.d,
+	phobos/std/math2.d, phobos/std/mmfile.d, phobos/std/random.d,
+	phobos/std/stdio.d, phobos/std/stream.d, phobos/std/system.d,
+	phobos/std/thread.d: Update.  Add some support for targets
+	withouth an operation system.
+
+2007-09-24  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-glue.cc (IndeExp::toElem), d-codegen.cc (arrayElemRef):
+	Put the BIND_EXPR "inside the brackets". (Bugzilla 1155)
+
+	(StructLiteralExp::toElem): Handle NULL elements (for anonymous
+	unions.)
+
+2007-09-23  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.{h,cc}, d-glue.cc: Add type to error_mark_node
+	for code that assumes the type of certain expressions.
+	(Bugzilla 1051)
+
+	* d-glue.cc (FuncDeclaration::toObjFile): Set DECL_IGNORED_P
+	on the frame paramter.  (Bugzilla 1033)
+
+	* d-glue.cc, d-codegen.cc, d-objfile.cc: Set DECL_IGNORED_P
+	in most cases where DECL_ARTIFICIAL is set.
+
+	* d-builtins2.cc (d_gcc_magic_builtins_module): Handle type
+	declarations after converting functions.
+
+	* d-glue.cc (make_assign_math_op): Special case for division
+	when lhs is imaginary. (Bugzilla 739)
+
+	* dmd-script: Apply Ander's patch for implicit -H and -D
+	behavior.  (Bugzilla 1502)
+
+	Use of -of argument does not depend on header generation.
+	(Bugzilla 1501)
+
+	* d-builtins2.cc,  dmd*/module.c: If the target va_list is a
+	struct, add the struct declaration to the object module.
+	(Bugzilla 1507)
+
+	* dmd2/parse.c: fix line endings
+
+	----
+
+	Update for D 2.0:
+
+	* Make-lang.in: Support both DMD front end version 1 and 2.
+	Replace gcc-mars.cc with  d/mars.c.
+
+	* gcc-mars.cc: Remove file.
+
+	* d-codegen.h, d-codegen.cc: Update for DMD 2.x.
+	Add _d_hidden_func libcall.
+
+	* d-decls.cc, d-glue.cc: Update for DMD 2.x.
+
+	* d-dmd-gcc.h: Add rtlsym, etc.
+
+	* d-lange.cc: Include mars.h.  Implement rtlsym.
+
+	* d-objfile.cc (ObjectFile::hasModule): Add checks to allow
+	this function to be called earlier.
+
+	* dmd*/mars.c: Make changes for GDC.
+
+	* dmd*/attrib.c: Use WANTinterpret for pragma(GNU_asm)
+
+	* dmd2/parse.c (parseDeclarator): Fix aliasing bug.
+
+	* rdmd.d: Update for D 2.0
+
+	* gdc-version: now only contains the GDC version
+
+	* setup-gcc.sh: Support building D version 1 or 2.  Take DMD
+	version from dmd*/mars.c.
+
+	* dmd2/, phobos2/: New directories
+
+	* phobos2/Makefile.am (MAIN_OBJS): add std.c.stdio module
+	for std{in,out,err} vars
+
+	* phobos*/std/c/stdio.d: Make functions with definitions
+	extern(D).
+
+	* phobos2/std/loader.d: Update for D 2.0.
+
+	* phobos2/std/hiddenfunc.d: Use C calling conventions for GDC.
+
+2007-09-14  David Friedman  <dvdfrdmn@users.sf.net>
+
+
+	* d-codegen.cc (convertTo, call): Prevent multiple re-evaluation
+	of delgate. (Bugzilla 1492)
+
+2007-09-13  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-glue.cc, d-codegen.h, d-codegen.cc: Make it an error
+	to reference a nested function without a body. (SF 1793594)
+
+2007-09-12  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/config/ldfuncs-ppclinux: Declare sqrt.
+
+	* target-ver-syms.sh, phobos/acinclude.m4, phobos/configure.in:
+	Support kfreebsd.
+
+	* d-codegen.{h, cc}, d-glue.cc: Change rawArray to toDArray. Do
+	not cast result to void[]. (Bugzilla 1490)
+
+2007-09-07  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/c/stdio.d: Define fpos_t correctly for Drawin
+	(Bugzilla 1469)
+
+2007-09-05  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.021
+
+	* dmd-script, d-spec.c (lang_specific_driver): Support
+	-debuglib= and -defaultlib= options.
+
+	* dmd/cast.c, dmd/constfold.c, dmd/declaration.c, dmd/dsymbol.c,
+	dmd/expression.c, dmd/expression.h, dmd/func.c, dmd/identifier.c,
+	dmd/idgen.c, dmd/init.c, dmd/init.h, dmd/interpret.c, dmd/lexer.c,
+	dmd/lexer.h, dmd/link.c, dmd/mars.c, dmd/mars.h, dmd/parse.c,
+	dmd/statement.c, dmd/staticassert.c, dmd/template.c: Merge
+
+	* internal/object.d, phobos/internal/trace.d, phobos/object.d,
+	phobos/std/c/windows/windows.d, phobos/std/date.d,
+	phobos/std/regexp.d, phobos/std/windows/registry.d: Merge
+
+	---
+
+	* phobos/std/stdio.d (readln): Use the result of getdelim
+	correctly. (SF 1788195)
+
+	* d-glue.cc (FuncDeclaration::toObjFile): Do not gimplify if
+	there were errors (Bugzilla 1415)
+
+2007-08-31  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-objfile.cc (outdata): Do not set TREE_CONSTANT on initializers
+	(Bugzilla 1453)
+
+2007-08-29  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-decls.cc (uniqueName): Allow multiple static declaration with
+	the same name if in a function. (SF 1783085)
+
+2007-08-28  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (call): Use CommaExp correctly. (Bugzilla 1443)
+
+	* dmd/todt.c (createTsarrayDt): Don't take quadratic time to build
+	the initializer. (Bugzilla 1440)
+
+2007-08-22  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Release GDC 0.24
+
+	---
+
+	* rdmd.d: Fix for Windows
+
+2007-08-21  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* GDC.html, History, README, gcc-mars.cc, gdc-version:
+	Update for 0.24
+
+	* rdmd.d, rdmd.1: New files. (Bugzilla 1152)
+
+	* patch-build_gcc-4.0: Build universal rdmd. (Bugzilla 1152)
+
+	* package/simple.sh: Install rdmd. (Bugzilla 1152)
+	Install man pages for MacOS build.
+
+	* dmd-script: Apply Ander's patch to make -op apply
+	to interface files. (Bugzilla 1137)
+
+	* d-lang.cc (d_parse_file): In -fall-sources mode,
+	only generate an interface file for the -fonly module.
+
+	* phobos/internal/adi.d (_adReverseChar, _adReverseWchar):
+	Make sure stride difference is signed.
+
+2007-08-20  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* patch-gcc-4.1.x, patch-gcc-4.0.x: Fix botched patches.
+
+2007-08-05  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (convertForArgument): Recognize
+	pointer arithmetic expression as reference.
+	(Bugzilla 1400)
+
+	* d-glue.cc (DotVarExp::toElem): Do not NOP_EXPR
+	the result. (Bugzilla 1398)
+
+2007-07-27  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/stdio: Fix breakage from last commit.
+	(SF 1761989)
+
+2007-07-26  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/c/stdio.d: Change import for gcc.config
+
+	* d-lang.cc: add flag_iso for target macros
+
+	* patch-gcc-4.0.x:  (gcc/tree-sra.c): Do not use SRA
+	on structs with aliased fields created for anonymous
+	unions.  (Followup to Bugzilla 1034)
+
+2007-07-25  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-lang.cc: implement d_gcc_is_target_win32
+
+	* dmd/parse.c (parseLinkage): use d_gcc_is_target_win32
+
+	* d-dmd-gcc.h (d_gcc_is_target_win32): added
+
+2007-07-24  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.019 - 1.020
+
+	* dmd/attrib.c, dmd/cast.c, dmd/constfold.c, dmd/declaration.h,
+	dmd/expression.c, dmd/expression.h, dmd/func.c, dmd/idgen.c,
+	dmd/inline.c, dmd/interpret.c, dmd/mars.c, dmd/mars.h,
+	dmd/mtype.c, dmd/mtype.h, dmd/opover.c, dmd/parse.c,
+	dmd/template.c, dmd/template.h, dmd/tocsym.c, dmd/toir.c: Merge
+
+	* phobos/internal/gc/gc.d, phobos/linux.mak,
+	phobos/std/demangle.d, phobos/std/format.d, phobos/std/loader.d,
+	phobos/std/socket.d, phobos/std/uni.d: Merge
+
+2007-07-22  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.015 - 1.018:
+
+	* dmd/lexer.c (escapeSequence): Change vendor string.
+
+	* dmd-script: Update documentation link
+
+	* dmd/attrib.c, dmd/cast.c, dmd/class.c, dmd/declaration.c,
+	dmd/dsymbol.c, dmd/expression.c, dmd/expression.h, dmd/func.c,
+	dmd/hdrgen.h, dmd/idgen.c, dmd/init.c, dmd/init.h, dmd/inline.c,
+	dmd/interpret.c, dmd/lexer.c, dmd/mars.c, dmd/mars.h,
+	dmd/module.c, dmd/mtype.c, dmd/mtype.h, dmd/optimize.c,
+	dmd/parse.c, dmd/scope.c, dmd/scope.h, dmd/statement.c,
+	dmd/statement.h, dmd/staticassert.c, dmd/template.c: Merge
+
+	* phobos/internal/dmain2.d, phobos/internal/gc/gcx.d,
+	phobos/internal/object.d, phobos/object.d, phobos/std/bind.d,
+	phobos/std/compiler.d, phobos/std/date.d, phobos/std/dateparse.d,
+	phobos/std/format.d, phobos/std/intrinsic.d, phobos/std/loader.d,
+	phobos/std/math2.d, phobos/std/metastrings.d, phobos/std/mmfile.d,
+	phobos/std/outbuffer.d, phobos/std/string.d,
+	phobos/std/windows/registry.d, phobos/win32.mak: Merge
+
+	----
+
+	* gdc_alloca.h: Support OpenBSD. (Bugzilla 1065)
+
+	* patch-gcc-4.1.x (gcc/tree-sra.c): Do not use SRA
+	on structs with aliased fields created for anonymous
+	unions.  (Bugzilla 1034)
+
+2007-07-19  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* patch-gcc-4.1.x (gcc/predict.c): Add null-pointer check.
+	(Bugzilla 1035)
+
+	---
+
+	* phobos/std/format.d (doFormatPtr): Fix accidental
+	reversion from DMD merge.
+
+	* d-codegen.cc (maybeSetUpBuiltin): Add some missing
+	instrinsics.
+
+	* phobos/Makefile.am (MAIN_OBJS): Add gcc.builtins
+	module to get built-instruct initializers.
+
+	* phobos/Makefile.in: Regenerated
+
+	* d-lang.cc (d_parse_file): Call d_gcc_magic_module
+	for each module on the command line.
+
+	* d-builtins2.cc (d_gcc_magic_builtins_module): output
+	declaration other than funcs
+
+2007-07-16  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* dmd/todt.c (StructLiteralExp::toDt): Use target_size_t
+	as in StructInitializer::toDt.
+
+	Bugzilla 1032:
+
+	* dmd/todt.c: Use DT_container for arrays, array elements,
+	and structs
+
+	* dt.h, d-objfile.cc: Add DT_container / dtcontainer
+
+2007-07-14  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (ArrayScope::setArrayExp, finish): Handle
+	constant lengths.  (Bugzilla 1031)
+
+2007-07-13  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (toElemLvalue): Use toElemLvalue recursively.
+	(Bugzilla 1191)
+
+	* d-codegen.cc (twoFieldCtor): Only set TREE_READONLY if
+	TREE_CONSTANT
+
+	* d-glue.cc (array_set_expr, AssocArrayLiteralExp::toElem,
+	(StructLiteralExp::toElem, NullExp::toElem):
+	Do not set TREE_READONLY.
+
+	* d-glue.cc (NewExp::toElem): Do not set TREE_READONLY on
+	new array dimensions.
+
+	* d-codegen.cc (darrayVal): Do not set TREE_READONLY.
+	(Bugzilla 1329)
+
+	(delegateVal): ditto
+
+	* d-codegen.cc (FieldVisitor::visit): Handle classes that
+	are forward references. (Bugzilla 1325)
+
+	* dmd-script: Pass -J option correctly.	(SF 1721435)
+
+	* d-glue.cc (DeleteExp::toElem): Handle interfaces.
+	(SF 1721496)
+
+	* d-decls.cc (VarDeclaration::toSymbol): Handle void initializer.
+	(SF 1749622)
+
+	* d-glue.cc (AndAndExp, OrOrExp): Handle void second expression.
+	(SF 1689634)
+
+	* phobos/gcc/cbridge_time.c (_d_gnu_cbridge_tza): Remove
+	daylight saving time offset from tm_gmtoff (Bugzilla 1208)
+
+	* phobos/std/format.d (doFormat): Use original signature.  Actual
+	work is done by new doFormatPtr. (Bugzilla 1109)
+
+	* phobos/std/boxer.d: Use doFormatPtr
+
+2007-07-11  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-convert.cc (default_conversion): make public
+	(SF 1711324 and 1709602)
+
+	* d-apple-gcc.c (build_function_call): re-enable some code
+
+2007-05-08  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-apple-gcc.c: Remove a variable that is now defined in d-lang.c
+
+	* d-lang.cc: Fix for other GCC versions.
+
+	* d-c-stubs.c: New file.
+
+	* Make-lang.in (D_BORROWED_C_OBJS): Always use C_TARGET_OBJS.  Add
+	stubs for C compiler to allow linking target-specific preprocessor
+	defines.
+
+2007-05-05  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (hwi2toli, getTargetSizeConst): Fix 2x wide int to
+	long int conversion.
+
+	* dmd/cast.c (implicitConvTo): Use GCC floating point
+	routines instead of native.
+
+	* d-gcc-real.cc (toInt): Correctly convert to long integer
+
+	* Make-lang.in (D_DMD_H): Add d-gcc-real.h
+
+	* phobos/internal/dgccmain2.d: Print newline after error message
+
+2007-04-29  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.014:
+
+	* dmd/aggregate.h, dmd/constfold.c, dmd/delegatize.c, dmd/enum.c,
+	dmd/enum.h, dmd/expression.c, dmd/expression.h, dmd/idgen.c,
+	dmd/inline.c, dmd/interpret.c, dmd/lexer.c, dmd/lexer.h,
+	dmd/mars.c, dmd/mtype.c, dmd/optimize.c, dmd/struct.c,
+	dmd/template.c, dmd/tocsym.c, dmd/todt.c, dmd/toobj.c,
+	dmd/typinf.c: Merge.
+
+	* phobos/internal/gc/gc.d, phobos/internal/gc/gcx.d,
+	phobos/std/format.d, phobos/std.ddoc: Merge.
+
+	* d-glue.d (StructLiteralExp::toElem): implement
+	* d-decls.d (EnumDeclaration::toInitializer): copy from tocsym.c
+
+	------------
+
+	Merge DMD 1.013:
+
+	* dmd/cast.c, dmd/constfold.c, dmd/declaration.c,
+	dmd/expression.c, dmd/expression.h, dmd/interpret.c, dmd/link.c,
+	dmd/mars.c, dmd/mtype.c, dmd/opover.c, dmd/optimize.c,
+	dmd/parse.c, dmd/port.h, dmd/statement.c: Merge.
+
+	* phobos/internal/aaA.d, phobos/internal/switch.d,
+	phobos/std/date.d, phobos/std/file.d, phobos/std/format: Merge.
+
+	* d-codegen.h, d-codegen.cc: add _d_assocarrayliteralTp
+	* d-glue.cc (AssocArrayLiteralExp::toElem): Implement.
+
+	* phobos/internal/aaA.d (_d_assocarrayliteralT): modified
+	to use pointers to keys, values.
+
+	--------------
+
+	Merge DMD 1.012:
+
+	* arraytypes.h, dmd/declaration.c, dmd/delegatize.c,
+	dmd/expression.c, dmd/expression.h, dmd/init.c, dmd/init.h,
+	dmd/inline.c, dmd/interpret.c, dmd/lexer.c, dmd/lexer.h,
+	dmd/mangle.c, dmd/mars.c, dmd/optimize.c, dmd/template.c,
+	dmd/template.h: Merge
+
+	* phobos/internal/object.d: Merge
+
+	* dmd/template.c (TemplateInstance::mangle): printf portability
+
+	* d-glue.cc (AssocArrayLiteralExp::toElem): non-working implementation
+
+2007-04-28  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.011:
+
+	* dmd/access.c, dmd/aggregate.h, dmd/arraytypes.h, dmd/attrib.c,
+	dmd/attrib.h, dmd/bit.c, dmd/cast.c, dmd/class.c, dmd/complex_t.h,
+	dmd/cond.c, dmd/cond.h, dmd/constfold.c, dmd/declaration.c,
+	dmd/declaration.h, dmd/delegatize.c, dmd/doc.c, dmd/doc.h,
+	dmd/dsymbol.c, dmd/dsymbol.h, dmd/dump.c, dmd/entity.c,
+	dmd/enum.c, dmd/enum.h, dmd/expression.c, dmd/expression.h,
+	dmd/func.c, dmd/hdrgen.c, dmd/hdrgen.h, dmd/html.c, dmd/html.h,
+	dmd/identifier.c, dmd/identifier.h, dmd/idgen.c, dmd/impcnvgen.c,
+	dmd/import.c, dmd/import.h, dmd/inifile.c, dmd/init.c, dmd/init.h,
+	dmd/inline.c, dmd/interpret.c, dmd/lexer.c, dmd/lexer.h,
+	dmd/link.c, dmd/macro.c, dmd/macro.h, dmd/mangle.c, dmd/mars.c,
+	dmd/mars.h, dmd/module.c, dmd/module.h, dmd/mtype.c, dmd/mtype.h,
+	dmd/opover.c, dmd/optimize.c, dmd/parse.c, dmd/parse.h,
+	dmd/scope.c, dmd/scope.h, dmd/statement.c, dmd/statement.h,
+	dmd/staticassert.c, dmd/staticassert.h, dmd/struct.c,
+	dmd/template.c, dmd/template.h, dmd/tocsym.c, dmd/todt.c,
+	dmd/toir.c, dmd/toir.h, dmd/toobj.c, dmd/total.h, dmd/typinf.c,
+	dmd/unialpha.c, dmd/utf.c, dmd/utf.h, dmd/version.c, dmd/version.h:
+	Merge
+
+	* phobos/internal/gc/gc.d, phobos/internal/gc/gcx.d,
+	phobos/internal/object.d, phobos/std/c/locale.d,
+	phobos/std/stdio.d, phobos/std/windows/registry.d: Merge
+
+	* dmd/expression.c: Comment out some logging code.
+	* d-builtins2.cc: Update and fix handling of built-in structs.
+	* d-codegen.cc, d-glue.cc: Update
+
+	----------------
+
+	Merge DMD 1.010:
+
+	* dmd/aggregate.h, dmd/class.c, dmd/declaration.c, dmd/doc.c,
+	dmd/dsymbol.c, dmd/expression.c, dmd/expression.h, dmd/func.c,
+	dmd/interpret.c, dmd/mars.c, dmd/scope.c, dmd/statement.c,
+	dmd/template.c, dmd/template.h, dmd/todt.c: Merge.
+
+	* phobos/internal/dmain2.d, phobos/internal/gc/gc.d,
+	phobos/internal/gc/gcx.d, phobos/internal/gc/testgc.d,
+	phobos/internal/object.d, phobos/object.d,
+	phobos/std/c/linux/linux.d, phobos/std/c/stdio.d,
+	phobos/std/file.d, phobos/std/gc.d, phobos/std/moduleinit.d,
+	phobos/std/regexp.d, phobos/std/stdio.d, phobos/std/string.d,
+	phobos/std.ddoc, phobos/win32.mak: Merge
+
+	* dmd/mtype.c, phobos/internal/dgccmain2.d: Update.
+	* d-glue.cc (gcc_d_backend_init): Update.
+
+	* phobos/config/unix-mid, phobos/std/c/unix/unix.d: Moved dirent
+	and stdio definitions out of configunix to std.c.unix.unix because
+	of compilation problems.
+
+	* phobos/internal/gc/gcx.d (GC.realloc, GC.extend, GC.free): Clear
+	gcx.p_cache
+
+	* phobos/std/stdio.d, phobos/frag-ac.in, phobos/configure.in:
+	  Account for various configurations.
+
+	* phobos/phobos-ver-syms.in: Remove GNU_Have_fwide
+	* phobos/configure: Regenerate
+
+2007-04-22  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-gcc-includes.h, d-lang.cc: Add target-specific preprocessor
+	symbols to the list of D version symbols.
+
+	* d-glue.cc (NewExp::toElem): Use NewExp::newtype (Bugzilla 1038)
+
+2007-04-16  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Merge DMD 1.009 (from 1.007):
+
+	* d-decls.c: Merge changes from dmd/tocsym.c
+
+	* dmd/constfold.c, dmd/declaration.c, dmd/declaration.h,
+	dmd/expression.c, dmd/expression.h, dmd/init.c, dmd/interpret.c,
+	dmd/mangle.c, dmd/mars.c, dmd/mars.h, dmd/mtype.c,
+	dmd/optimize.c, dmd/statement.c, dmd/staticassert.c,
+	dmd/tocsym.c, dmd/todt.c: Merge changes.
+
+	* phobos/std/path.d, phobos/std/string.d: Merge changes.
+
+	----
+
+	* d-builtins.c, d-builtins2.cc, d-lang.h: Reworked code to only
+	convert built-in functions when the gcc.builtins module is
+	imported.  RECORD_TYPE is now converted to a TypeStruct.  Fixed
+	problem that caused some functions to not be available.  Support
+	targets builtins.
+
+2007-03-11  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-decls.cc (ClassDeclaration::toSymbol): Do not set TREE_READONLY.
+	(Bugzilla 1037)
+
+2007-03-10  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (call): Handle CommaExp form of a delegate call
+	(Bugzilla 1043)
+
+	* d-decls.cc (VarDeclaration::toSymbol): Partial fix for Bugzilla 1044
+
+	* dt.h, d-objfile.cc, dmd/typeinf.c: Only pad 32-bit words in RTTI if
+	needed. (Bugzilla 1045, 1046)
+	* dmd/toobj.c: update
+
+	* d-glue.cc, d-objfile.cc: Additional GCC 3.3.x cleanup
+
+	----
+
+	* ChangeLog, History, Make-lang.in, asmstmt.cc, d-builtins.c,
+	d-codegen.cc, d-convert.cc, d-decls.cc, d-gcc-includes.h,
+	d-gcc-real.cc, d-glue.cc, d-gt.c, d-irstate.cc, d-lang.cc,
+	d-lang.h, d-misc.c, d-objfile.cc, d-spec.c, phobos/configure.in,
+	setup-gcc.sh: Remove support for GCC 3.3.x
+
+	* phobos/configure: Regenerated
+
+	* gcc-3.3.5-framework-headers.patch,
+	gcc-3.3.5-framework-linker.patch, patch-gcc-3.3.x,
+	patch-gcc-darwin-eh-3.3.x, patch-toplev-3.3.x,
+	phobos/config/ldfuncs33, phobos/config/noldfuncs33,
+	d-bi-attrs-33.h: Removed.
+
+2007-03-05  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Release GDC 0.23
+
+	* phobos/Makefile.am: Add all-local target to build libgphobos.a
+	* phobos/Makefile.in: Regenrated
+
+	PowerPC 64 fixes:
+
+	* d-glue.cc (TypeStruct:toCtype): Add words at the end of a struct.
+
+	* phobos/config/darwin8/frag-unix: More accurate struct definitions.
+	* phobos/internal/gc/gc_dyld.c: Support Mach-O 64.
+	* phobos/internal/gc/gcgcc.d: Correct stack for 64-bit Darwin.
+	* phobos/std/thread.d (getESP): Align result.
+
+2007-03-04  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Rest of DMD 1.007 Merge:
+
+	* package/simple.sh: Install GDC.html
+
+	* Make-lang.in (D_DMD_OBJS): add interpret.dmd.o
+
+	* gdc-version: update
+
+	* GDC.html, d-lang.cc, dmd-script, lang-specs.h, lang.opt,
+	patch-gcc-4.0.x, patch-gcc-4.1.x, patch-apple-gcc-4.0.x,
+	patch-gcc-3.4.x, patch-gcc-3.3.x: Add -J option.
+
+	* dmd/constfold.d, dmd/declaration.h, dmd/func.c: update
+
+	* d-glue.c: update
+
+	Initial merge of DMD 1.007 (from DMD 1.005):
+
+	* dmd/arraytypes.h, dmd/attrib.c, dmd/cond.c, dmd/constfold.c,
+	dmd/declaration.c, dmd/declaration.h, dmd/expression.c,
+	dmd/expression.h, dmd/func.c, dmd/idgen.c, dmd/init.c,
+	dmd/lexer.c, dmd/lexer.h, dmd/mars.c, dmd/mars.h, dmd/module.c,
+	dmd/mtype.c, dmd/opover.c, dmd/optimize.c, dmd/parse.c,
+	dmd/parse.h, dmd/statement.c, dmd/statement.h, dmd/template.c,
+	dmd/typinf.c: Merge
+
+	* phobos/internal/aApply.d, phobos/internal/aApplyR.d,
+	phobos/internal/adi.d, phobos/internal/dmain2.d,
+	phobos/internal/gc/gc.d, phobos/internal/gc/gcx.d,
+	phobos/internal/gc/win32.d, phobos/internal/object.d,
+	phobos/std/base64.d, phobos/std/c/string.d, phobos/std/c/time.d,
+	phobos/std/c/windows/com.d, phobos/std/c/windows/windows.d,
+	phobos/std/dateparse.d, phobos/std/demangle.d, phobos/std/file.d,
+	phobos/std/format.d, phobos/std/regexp.d, phobos/std/stdio.d,
+	phobos/std/stream.d, phobos/std/string.d, phobos/std/thread.d,
+	phobos/std/utf.d: Merge
+
+	* dmd/interpret.c: New file
+
+2007-03-03  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/c/darwin/darwin.d: Remove. (Bugzilla 984)
+
+	* phobos/std/date.d: Cleanup
+
+	* d-lang.cc: Evaluate BYTES_BIG_ENDIAN at runtime.
+
+	* d-codegen.cc: Cleanup.
+
+	* d-glue.cc: Initialize foreach key with zero, not default init.
+
+	* patch-gcc-4.0.x, patch-gcc-4.1.x, patch-apple-gcc-4.0.x:
+	Prevent emission of prologue and epilogue code for naked functions.
+	(Bugzilla 1013)
+
+2007-03-02  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-lang.cc: Test BYTES_BIG_ENDIAN at runtime.
+
+	* d-glue.cc (ForeachStatement::toIR): Initialize key to zero, not
+	defaultInit.
+
+	* patch-build_gcc-4.0, phobos/acinclude.m4, phobos/configure.in,
+	phobos/Makefile.am: Remove references to libgphobos.spec
+
+	* phobos/Makefile.in, phobos/configure: Regenerate
+
+	* patch-gcc-3.4.x, patch-gcc-3.3.x, patch-gcc-4.0.x,
+	patch-gcc-4.1.x, patch-apple-gcc-4.0.x: Support enabling
+	-pthread option by default without 'unrecognized option'
+	error message.
+
+	* d-spec.c (lang_specific_driver): Enable -pthread option
+
+	* phobos/libgphobos.spec.in: Remove
+
+2007-02-28  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/loader.d: Fix error
+
+2007-02-27  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* setup-gcc.sh: Create directory of links instead of a single
+	link.  No longer need to copy support files.
+
+	* target-ver-syms.sh: Support targets with both 32-bit and
+	64-bit modes.  Output preprocessor definitions instead of
+	command line otions.
+
+	* Make-lang.in: Put target-ver-syms.sh output in d-confdefs.h.
+
+	* package/simple.sh: Handle multilib.
+
+	* phobos/configure.in: Use Automake, multilib.
+	* phobos/Makefile.am: New file.
+	* phobos/acinclude.m4: Fix quoting.
+
+	* phobos/Makefile.in, phobos/configure: regenerated
+
+	* patch-gcc-3.3.x, patch-gcc-3.4.x, patch-gcc-4.0.x,
+	  patch-gcc-4.1.x, lang-specs.h: Add %N spec code.
+
+	* patch-build_gcc-4.0: Grab 64-bit libgphobos.a
+
+	* dt.h, d-objfile.cc
+	(dt_size): Change return type to target_size_t.  Use target_size_t.
+	(dtnzeros, dtdword, dtxoff): Change count to target_size_t
+	(dtabytes, dtnbytes, dtawords, dtnwords, dtnbits): Change count to size_t
+	(dti32): added
+
+	* d-todt.cc: Cleanup.
+
+	* d-objfile.cc:
+	(dt2node): use Type::tsize_t for DT_word and DT_xoff
+
+	* d-glue.cc:
+	(PtrExp::toElem): Use target_size_t for offset
+	(gcc_d_backend_init): Set CLASSINFO_SIZE and Tindex.
+	(AssignExp::toElem): Use tsize_t for _d_arraycopy arg
+	(CaseStatement::toIR): (not really a 64-bit change) Use int32 for
+	case value to match libcall
+	(CatAssignExp::toElem): cleanup (not 64-bit)
+	(ForeachStatement::toIR): fix bug in key increment expression
+
+	* d-codegen.{cc,h}
+	(AggLayout::addField): use target_size_t for offset
+
+	* d-codegen.cc:
+	(...): LIBCALL_ARRAYCAST: Use size_t args (libcall already uses size_t)
+	LIBCALL_ARRAYCOPY: ditto
+	(convertTo): Use Type::tsize_t for _d_arraycat arguments
+
+	* d-decls.cc
+	(ClassDeclaration::toVtblSymbol): Use Type::tindex for array size.
+	(FuncDeclaration::toThunkSymbol): Use target_ptrdiff_t
+
+	* lang.opt: add -fmultilib-dir
+
+	* d-lang.cc: Use -fmultilib-dir
+
+	(d_init): Set global.params.isX86_64 if TARGET_64BIT.
+	Set CPU version symbol according to TARGET_64BIT.
+	Remove BitsPerPointer and BitsPerWord version symbols.
+
+	* d-builtins2.cc
+	(d_gcc_magic_builtins_module): Change "abi" integer types
+	to "C".  Add "pointer" integer types.
+	(gcc_type_to_d_type): Use Type::tindex for array types.  Use whole
+	back-end size.
+
+	* symbol.h
+	(Thunk): Use target_ptrdiff_t for offset.
+
+	* dmd/mars.h: Define target_size_t and target_ptrdiff_t to allow use of
+	32-bit size-tracking variables when generating 32-bit code.
+
+	* dmd/aggregate.h:
+	(CLASSINFO_SIZE) change to 'extern int' %%....
+	* dmd/cast.d: Use target_ptrdiff_t with isBaseOf.
+
+	* dmd/class.c:
+	(ClassDeclaration::semantic): use PTRSIZE
+	(InterfaceDeclaration::semantic): Use sc->offset = PTRSIZE * 2 instead of
+	8 -- not sure what this is for...
+
+	* dmd/dsymbol.[ch]
+	(Dsymbol::size): Change to target_size_t
+
+	* dmd/init.h: ArrayInitializer::dim <- chg to target_size_t
+
+	* dmd/aggregate.h: Use target_ptrdiff_t and target_size_t
+
+	* dmd/typinf.c (TypeInfoStructDeclaration::toDt): Use dti32 for flags.
+	* dmd/toobj.c (Module::genmoduleinfo, ClassDeclaration::toObjFile,
+	InterfaceDeclaration::toObjFile): ditto
+
+	* dmd/func.c: Use target_ptrdiff_t with isBaseOf.
+	(NewDeclaration::semantic): Allow Type::tuns64 if 64-bit.
+
+	* dmd/mtype.c
+	(Type::init): set CLASSINFO_SIZE
+	(Type::dotExp): use Type::tsize_t for .offsetof property
+	(TypeArray::dotExp): use Type::tsize_t for _adReverse args
+	(TypeAArray::dotExp): use PTRSIZE to align keysize
+	(TypeStruct::dotExp): use Type::tsize_t for offset
+	(TypeStruct::alignsize): use target_size_t
+
+	* dmd/mtype.h: Add Tindex global variable.
+	(Type): Change tindex to baseic[Tindex].
+	(Type::isBaseOf): use target_ptrdiff_t
+
+	* dmd/expression.[ch]:
+	(SymOffExp): offset changed to target_size_t
+	(NewExp::semantic): use size_t as argument
+	(ArrayLiteralExp::toMangleBuffer, SymOffExp::toCBuffer): fix printf
+
+	* dmd/declaration.c
+	(VarDeclaration::semantic): use sinteger_t for dim
+
+	* dmd/declaration.h:
+	(Declaration::size): Use target_size_t
+	(VarDeclaration): Use target_size_t for offset
+
+	* dmd/schope.h:
+	(Scope::offset) Use target_size_t.
+
+	* dmd/statement.c:
+	(ForeachStatement::semantic): Change return value of _a*Apply* to
+	Type::tint32.  Fix logic for allowed index variable types.
+	Use PTRSIZE to align keysize.
+
+	* dmd/struct.c
+	(AggregateDeclaration::addField): use target_size_t
+
+	* dmd/todt.c
+	(StructInitializer::toDt): Use target_size_t for offsets
+	(ClassDeclaration::toDt2): Use PTRSIZE
+
+	* phobos/object.d, phobos/internal/object.d:
+	(Interface): Use ptrdiff_t for offset.
+	(*.toHash): cast pointer to size_t
+
+	* phobos/internal/object.d: Use integer type definitions from
+	phobos/object.d.  Split %.*s args.
+
+	* phobos/internal/adi.d:
+	(_adReverse): Use size_t for szelem.
+	* phobos/configure.in: fix multilib dir
+	* phobos/configure: updated
+
+	* phobos/config/cb_unix.c: Removed.
+
+	* phobos/config/gen_config1.c: Add ssize_t.
+
+	* phobos/config/config-head: Use __builtin_Clong and __builtin_Culong.
+	* phobos/config/config-mid: Support X86_64 and other 64-bit CPUs.
+	* phobos/config/unix-mid: Some size_t and ssize_t arg/return type fixes.
+
+	* phobos/config/darwin8/frag-gen, phobos/config/darwin8/frag-unix:
+	Support 32- and 64-bit.
+	* phobos/config/mingw/frag-unix, phobos/config/skyos/frag-unix:
+	Add ssize_t.
+
+	* phobos/gcc/builtins.d: Update documentation
+
+	* phobos/gcc/unwind.d: Use different builtin integer types.
+
+	* phobos/internal/arraycat.d (_d_arraycopy): use size_t arg
+
+	* phobos/std/c/fenv.d: Add field for 64-bit Linux.
+
+	* phobos/std/c/linuxextern.d: Use C long for timezone.
+
+	* phobos/std/c/stdio.d,
+	  phobos/std/c/stdlib.d, phobos/std/c/math.d,
+	  phobos/std/c/time.d: use C long types
+
+	* phobos/std/stdint.d: Add C long types.
+	Use ptrdiff_t and size_t for *intptr_t types.
+
+	* phobos/std/format.d: Formatting structs on X86_64 looses
+
+	* phobos/internal/cast.d (_d_isbaseof2): change offset to size_t
+
+	* phobos/internal/fpmath.d: Support 64-bit CPUs.
+
+	* phobos/std/file.d: Type of stat.st_size may vary; use auto.
+	(Unix read): Make sure file's size is within range.
+
+	* phobos/crc32.d, phobos/gcstats.d,
+	phobos/internal/qsortg.d:
+	phobos/internal/gc/gc.d (_d_arraycatnT),
+	phobos/internal/gc/gcold.d (_d_arraycatn),
+	phobos/internal/gc/gcx.d,
+	phobos/internal/mars.h,
+	phobos/std/base64.d, phobos/std/bitarray.d, phobos/std/math.d,
+	phobos/std/math2.d, phobos/std/md5sum.d, phobos/std/outbuffer.d,
+	phobos/std/path.d, phobos/std/string.d, phobos/std/uri.d
+	phobos/std/typeinfo/ti_AC.d,
+	use size_t, ptrdiff_t/ssize_t
+
+	* phobos/std/loader.d: Add definitions for 64-bit Mach-O objects.
+
+	* phobos/std/openrj.d, phobos/std/loader.d, phobos/std/moduleinit.d,
+	phobos/std/socket.d, phobos/std/regexp.d, phobos/std/uri.
+	d, phobos/std/zip.d: split '%.*s' args
+
+	* phobos/std/typeinfo/ti_A*.d, phobos/std/typeinfo/ti_ptr.d:
+	fix compare methods
+
+	* phobos/internal/gc/gc_dyld.c: use uintptr_t
+
+	* phobos/std/c/stdio.d, phobos/internal/gc/gcgcc.d:
+	Don't use old version symbols.
+
+	* phobos/std/c/mach/mach.d (natural_t): always a uint
+
+	* phobos/etc/c/zlib.d: use Culog_t
+
+2007-02-13  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* setup-gcc.sh: Copy the removed files from the top-level
+	directory.
+
+2007-02-10  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/config.guess, phobos/config.sub, phobos/install-sh:
+	Remove files.
+
+	* phobos/std/format.d (putAArray): account for
+	alignment of the value
+
+	* phobos/Makefile.in: fix metastrings.o
+
+2007-02-09  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/std/format.d (doFormat): use aligntsize
+
+	Rest of DMD 1.005 merge:
+
+	* phobos/Makefile.in (MAIN_OBJS): add metastrings.o
+
+2007-02-08  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-lang.cc, lang.opt: support -v1 option
+
+	* lang.opt (d_init_options): set global.params.Dversion
+
+	* dmd-script: -v1 -> -fd-version=1
+
+	* phobos/std/format.d (doFormat): Fix for var args differences
+
+	Initial merge of DMD 1.005:
+
+	dmd/attrib.c, dmd/attrib.h, dmd/cast.c, dmd/cond.c,
+	dmd/constfold.c, dmd/dsymbol.c, dmd/dsymbol.h, dmd/expression.c,
+	dmd/expression.h, dmd/func.c, dmd/idgen.c, dmd/inline.c,
+	dmd/lexer.c, dmd/lexer.h, dmd/mars.c, dmd/module.c, dmd/mtype.c,
+	dmd/mtype.h, dmd/optimize.c, dmd/parse.c, dmd/parse.h,
+	dmd/scope.c, dmd/statement.c, dmd/statement.h, dmd/template.c,
+	dmd/template.h, dmd/toobj.c, dmd/typinf.c: Merge.
+
+	phobos/internal/aaA.d, phobos/internal/gc/gc.d,
+	phobos/internal/object.d, phobos/linux.mak, phobos/std/c/stdlib.d,
+	phobos/std/conv.d, phobos/std/ctype.d, phobos/std/format.d,
+	phobos/std/regexp.d, phobos/std/zlib.d, phobos/std.ddoc,
+	phobos/win32.mak: Merge.
+
+	phobos/std/metastrings.d: New file
+
+2007-02-05  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Release GDC 0.22
+
+	* d-codegen.cc (twoFieldType): Fix back end -> front end type
+	mapping.
+
+	* Make-lang.in: Enable ELFOBJ to put some RTTI in the read-only
+	data section.
+
+	* GDC.html: Update
+
+2007-02-04  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/gcc/cbridge_time.c (_d_gnu_cbridge_tza),
+	phobos/std/date.d: Fix timezone adjust sign
+
+2007-02-03  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* phobos/config/unix-mid: Correctly initialize sockaddr*
+	(Bugzilla 818)
+
+	* dmd-script: Fix -H* options (Bugzilla 896).
+	Support -framework. Fix error message.
+
+	* d-lang.cc (d_write_global_declarations), patch-gcc-4.1.x:
+	Fixes for dwarf2out ICEs
+
+	* d-objfile.cc (check_static_sym): Fix setting TREE_CONSTANT.
+
+	Rest of DMD 1.004 merge:
+
+	* gcc-mars.cc, gdc-version: Update
+
+	* phobos/std/regexp.d: update
+
+	* phobos/internal/gc/gcold.d (_d_newarrayip):
+
+	* phobos/internal/gc/gc.d: Fix argument and result types.
+
+	* phobos/config/unix-head, phobos/config/unix-mid: Update
+
+	* phobos/Makefile.in: Update for files removed in DMD 1.004
+
+	* d-decls.cc (TypedefDeclaration::toInitializer): Copy
+	from dmd/tocsym.c.  Create the Sdt here.
+
+	* dmd/toobj.c (TypedefDeclaration::toObjFile): Update
+	for toInitializer change
+
+	* dmd/mtype.c (TypeArray::dotExp): Fix library call decls
+
+	* d-lang.cc: Update
+
+	* d-codegen.[ch], d-glue.cc: Update memory allocation library
+	calls.
+
+	* d-lang.cc (d_write_global_declarations): call
+	emit_debug_global_declarations only for GCC 4.0
+
+	* dmd/mtype.c (TypeArray::dotExp): update
+
+	* phobos/config/unix-head, phobos/config/unix-mid: update
+
+	* phobos/internal/gc/gcold.d: Use old GDC modifications.
+
+2007-02-02  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Initial merge DMD 1.004:
+
+	* dmd/aggregate.h, dmd/attrib.c, dmd/attrib.h, dmd/declaration.c,
+	dmd/declaration.h, dmd/dsymbol.c, dmd/dsymbol.h, dmd/expression.c,
+	dmd/import.c, dmd/import.h, dmd/inline.c, dmd/mars.c, dmd/mars.h,
+	dmd/module.c, dmd/module.h, dmd/mtype.c, dmd/mtype.h,
+	dmd/struct.c, dmd/template.c, dmd/template.h, dmd/tocsym.c,
+	dmd/todt.c, dmd/toobj.c, dmd/typinf.c: Merge DMD 1.004
+
+	* phobos/internal/aaA.d, phobos/internal/adi.d,
+	phobos/internal/arraycast.d, phobos/internal/arraycat.d,
+	phobos/internal/gc/gc.d, phobos/internal/gc/gcx.d,
+	phobos/internal/gc/linux.mak, phobos/internal/gc/win32.mak,
+	phobos/internal/object.d, phobos/linux.mak, phobos/object.d,
+	phobos/std/c/linux/linux.d, phobos/std/compiler.d,
+	phobos/std/file.d, phobos/std/gc.d, phobos/std/outbuffer.d,
+	phobos/std/random.d, phobos/std/regexp.d,
+	phobos/std/typeinfo/ti_AC.d, phobos/std/typeinfo/ti_Acdouble.d,
+	phobos/std/typeinfo/ti_Acfloat.d, phobos/std/typeinfo/ti_Acreal.d,
+	phobos/std/typeinfo/ti_Adouble.d, phobos/std/typeinfo/ti_Afloat.d,
+	phobos/std/typeinfo/ti_Ag.d, phobos/std/typeinfo/ti_Aint.d,
+	phobos/std/typeinfo/ti_Along.d, phobos/std/typeinfo/ti_Areal.d,
+	phobos/std/typeinfo/ti_Ashort.d, phobos/std/typeinfo/ti_C.d,
+	phobos/std/typeinfo/ti_cdouble.d, phobos/std/typeinfo/ti_cfloat.d,
+	phobos/std/typeinfo/ti_char.d, phobos/std/typeinfo/ti_creal.d,
+	phobos/std/typeinfo/ti_dchar.d, phobos/std/typeinfo/ti_delegate.d,
+	phobos/std/typeinfo/ti_double.d, phobos/std/typeinfo/ti_float.d,
+	phobos/std/typeinfo/ti_ptr.d, phobos/std/typeinfo/ti_real.d,
+	phobos/std/typeinfo/ti_void.d, phobos/std/typeinfo/ti_wchar.d,
+	phobos/win32.mak: Merge DMD 1.004
+
+	* phobos/std/typeinfo/ti_Aa.d, phobos/std/typeinfo/ti_Adchar.d,
+	phobos/std/typeinfo/ti_Aubyte.d, phobos/std/typeinfo/ti_Auint.d,
+	phobos/std/typeinfo/ti_Aulong.d, phobos/std/typeinfo/ti_Aushort.d,
+	phobos/std/typeinfo/ti_Awchar.d: Removed in DMD 1.004
+
+	* phobos/internal/gc/gcold.d: New in DMD 1.004
+
+2007-02-01  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-lang.cc (d_write_global_declarations): Emit debug info.
+
+	* d-codegen.cc (twoFieldType): Fix debugging information.
+	* d-objfile.cc (initTypeDecl): Ditto.
+
+	* d-glue.cc (PtrExp::toElem): Don't wrap the result in
+	a NOP_EXPR.
+
+	* Make-lang.in: Add d-tree.def to dependencies
+
+2007-01-30  David Friedman  <dvdfrdmn@users.sf.net>
+
+	GCC 4.1.x changes:
+
+	* GDC.html, INSTALL, INSTALL.html, README: update
+
+	* dmd/idgen.c, dmd/impcnvgen.c, dmd/mtype.h: Change to allow
+	compilation as C.
+
+	* patch-gcc-4.1.x, patch-toplev-4.1.x: New files
+
+	* Make-lang.in: Use $(version) instead of $(gcc_version).
+	Add d-bi-attrs-41.h.  Use C for generator programs instead of C++.
+
+	* d-bi-attrs-41.h: New file.
+
+	* d-builtins.c: update
+
+	* d-builtins2.cc: Do not associate d_gcc_builtin_va_list_d_type with
+	va_list_type_node.  Do this for GCC 4.0 and 4.1.
+
+	* d-codegen.cc: Use CtorEltMaker.
+	(maybeExpandSpecialCall): Cast d_gcc_builtin_va_list_d_type to
+	va_list_type_node.
+	(hostToTargetString): Update.
+
+	* d-codegen.h: Add CtorEltMaker class for before/after 4.1.x
+	compatibility.
+
+	* d-convert.cc: Add special case for pointer/int comparison
+
+	* d-decls.cc: Do not use SET_DECL_ASSEMBLER_NAME for CONST_DECLs
+
+	* d-gcc-includes.h: Include vec.h
+
+	* d-glue.cc: Use CtorEltMaker.
+	(gcc_d_backend_init): Call default_init_unwind_resume_libfunc
+
+	* d-lang.cc: Add d_types_compatible_p hook for va_list conversion
+
+	* d-lang.h: Update
+
+	* d-objfile.cc: CtorEltMaker.
+
+	* phobos/std/conv.d: Do not assume signed integer wraparound.
+
+2007-01-28  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-asm-i386.h, d-codegen.cc, d-gcc-real.cc,
+	d-decls.cc, d-glue.cc, d-lanc.cc: various fixes
+
+	* d-codegen.cc, d-codegen.h, d-glue.cc, d-lang.h:
+	Remove bit array code
+
+2007-01-27  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* d-asm-i386.h: fix fistp, lmsw, lldt, mov[sz]x, setCC, smsw, and
+	sldt instructions (Bugzilla 836, 837, 838, 839, 841, 843, 844).
+	Also r[co][lr].
+
+	* d-glue.cc (StringExp::toElem): Correct termination of wchar
+	and dchar (Bugzilla 889)
+
+2007-01-11  David Friedman  <dvdfrdmn@users.sf.net>
+
+	* INSTALL.html: fix corruption
+
+2007-01-03  David Friedman  <dvdfrdmn@users.sf.net>
+
+	Release GDC 0.21
+
+	* GDC.html: New file.
+
+	* README: Update, refer to GDC.html
+
+	Rest of DMD 1.00 merge:
+
+	* d-codegen.cc: Patch from Anders Bjšrklund for GCC 3.3
+
+	* d-glue.cc (FuncDeclaration::toObjFile): Fix shouldDefer/outputStage
+	logic.
+
+	* dmd/attrib.c (PragmaDeclaration::semantic): uint -> unsigned
+
+	* dmd/module.c (load): output to stdmsg
+
+	* dmd/mtype.c: revert '@' mangling changes
+
+	* gdc-version, gcc-mars.cc: update
+
+	* phobos/config/unix-mid: Support more functions
+
+	* phobos/acinclude.m4, phobos/config/gen_unix.c (c_pthread):
+	Support more types
+
+	* phobos/configure, phobos/config.h.in: update
+
+	* phobos/config/darwin8/frag-unix: update
+
+	Initial merge of DMD 1.00:
+
+	* dmd/cond.c, dmd/constfold.c, dmd/delegatize.c, dmd/dsymbol.c,
+	dmd/enum.c, dmd/expression.c, dmd/expression.h, dmd/init.c,
+	dmd/inline.c, dmd/mars.c, dmd/module.c, dmd/module.h, dmd/mtype.c,
+	dmd/parse.c, dmd/statement.c, dmd/struct.c, dmd/template.c,
+	dmd/todt.c: Merge 1.00
+
+	* internal/gc/gc.d, phobos/linux.mak,
+	phobos/std/c/linux/linux.d.orig-dmd, phobos/std/c/stdlib.d,
+	phobos/std/conv.d, phobos/win32.mak: Merge 1.00
+
+	* phobos/std/c/linux/pthread.d.orig-dmd: New file (originally
+	pthread.d DMD)
+
+	------------------------
+
+	* dmd/init.c (ArrayInitializer::semantic),
+	* dmd/root.c (OutBuffer::write4): 64-bit host cleanup
+
+	* d-asm-i386.h: cleanup, saftey
+
+2007-01-02  DF  <dvdfrdmn@users.sf.net>
+
+	* d-codegen.cc (convertTo): Use 64-bit for Tarray, Tsarray conversion.
+
+	* d-codegen.{h, cc} (darrayVal): use uinteger_t arg
+
+
+Copyright (C) 2007 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

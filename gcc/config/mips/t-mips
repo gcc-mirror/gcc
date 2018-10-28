@@ -24,3 +24,7 @@ $(srcdir)/config/mips/mips-tables.opt: $(srcdir)/config/mips/genopt.sh \
 frame-header-opt.o: $(srcdir)/config/mips/frame-header-opt.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+mips-d.o: $(srcdir)/config/mips/mips-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)

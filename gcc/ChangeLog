@@ -1,3 +1,105 @@
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (tm_d_file_list, tm_d_include_list): New variables.
+	(TM_D_H, D_TARGET_DEF, D_TARGET_H, D_TARGET_OBJS): New variables.
+	(tm_d.h, cs-tm_d.h, default-d.o): New rules.
+	(d/d-target-hooks-def.h, s-d-target-hooks-def-h): New rules.
+	(s-tm-texi): Also check timestamp on d-target.def.
+	(generated_files): Add TM_D_H and d-target-hooks-def.h.
+	(build/genhooks.o): Also depend on D_TARGET_DEF.
+	* config.gcc (tm_d_file, d_target_objs, target_has_targetdm): New
+	variables.
+	* config/aarch64/aarch64-d.c: New file.
+	* config/aarch64/aarch64-linux.h (GNU_USER_TARGET_D_CRITSEC_SIZE):
+	Define.
+	* config/aarch64/aarch64-protos.h (aarch64_d_target_versions): New
+	prototype.
+	* config/aarch64/aarch64.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/aarch64/t-aarch64 (aarch64-d.o): New rule.
+	* config/arm/arm-d.c: New file.
+	* config/arm/arm-protos.h (arm_d_target_versions): New prototype.
+	* config/arm/arm.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/arm/linux-eabi.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	* config/arm/t-arm (arm-d.o): New rule.
+	* config/default-d.c: New file.
+	* config/glibc-d.c: New file.
+	* config/gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/i386/i386-d.c: New file.
+	* config/i386/i386-protos.h (ix86_d_target_versions): New prototype.
+	* config/i386/i386.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/i386/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	(GNU_USER_TARGET_D_CRITSEC_SIZE): Define.
+	* config/i386/t-i386 (i386-d.o): New rule.
+	* config/kfreebsd-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/kopensolaris-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/linux-android.h (ANDROID_TARGET_D_OS_VERSIONS): Define.
+	* config/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/mips/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	* config/mips/mips-d.c: New file.
+	* config/mips/mips-protos.h (mips_d_target_versions): New prototype.
+	* config/mips/mips.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/mips/t-mips (mips-d.o): New rule.
+	* config/powerpcspe/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/powerpcspe/linux64.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/powerpcspe/powerpcspe-d.c: New file.
+	* config/powerpcspe/powerpcspe-protos.h (rs6000_d_target_versions):
+	New prototype.
+	* config/powerpcspe/powerpcspe.c (rs6000_output_function_epilogue):
+	Support GNU D by using 0 as the language type.
+	* config/powerpcspe/powerpcspe.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/powerpcspe/t-powerpcspe (powerpcspe-d.o): New rule.
+	* config/riscv/riscv-d.c: New file.
+	* config/riscv/riscv-protos.h (riscv_d_target_versions): New
+	prototype.
+	* config/riscv/riscv.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/riscv/t-riscv (riscv-d.o): New rule.
+	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/rs6000/linux64.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/rs6000/rs6000-d.c: New file.
+	* config/rs6000/rs6000-protos.h (rs6000_d_target_versions): New
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Support GNU D by using 0 as the language type.
+	* config/rs6000/rs6000.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/rs6000/t-rs6000 (rs6000-d.o): New rule.
+	* config/s390/s390-d.c: New file.
+	* config/s390/s390-protos.h (s390_d_target_versions): New prototype.
+	* config/s390/s390.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/s390/t-s390 (s390-d.o): New rule.
+	* config/sparc/sparc-d.c: New file.
+	* config/sparc/sparc-protos.h (sparc_d_target_versions): New
+	prototype.
+	* config/sparc/sparc.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/sparc/t-sparc (sparc-d.o): New rule.
+	* config/t-glibc (glibc-d.o): New rule.
+	* configure: Regenerated.
+	* configure.ac (tm_d_file): New variable.
+	(tm_d_file_list, tm_d_include_list, d_target_objs): Add substitutes.
+	* doc/contrib.texi (Contributors): Add self for the D frontend.
+	* doc/frontends.texi (G++ and GCC): Mention D as a supported language.
+	* doc/install.texi (Configuration): Mention libphobos as an option for
+	--enable-shared.  Mention d as an option for --enable-languages.
+	(Testing): Mention check-d as a target.
+	* doc/invoke.texi (Overall Options): Mention .d, .dd, and .di as file
+	name suffixes.  Mention d as a -x option.
+	* doc/sourcebuild.texi (Top Level): Mention libphobos.
+	* doc/standards.texi (Standards): Add section on D language.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add @node for D language and ABI, and @hook for
+	TARGET_CPU_VERSIONS, TARGET_D_OS_VERSIONS, and TARGET_D_CRITSEC_SIZE.
+	* dwarf2out.c (is_dlang): New function.
+	(gen_compile_unit_die): Use DW_LANG_D for D.
+	(declare_in_namespace): Return module die for D, instead of adding
+	extra declarations into the namespace.
+	(gen_namespace_die): Generate DW_TAG_module for D.
+	(gen_decl_die): Handle CONST_DECLSs for D.
+	(dwarf2out_decl): Likewise.
+	(prune_unused_types_walk_local_classes): Handle DW_tag_interface_type.
+	(prune_unused_types_walk): Handle DW_tag_interface_type same as other
+	kinds of aggregates.
+	* gcc.c (default_compilers): Add entries for .d, .dd and .di.
+	* genhooks.c: Include d/d-target.def.
+
 2018-10-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR target/85669

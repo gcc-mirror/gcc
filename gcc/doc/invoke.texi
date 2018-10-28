@@ -1439,6 +1439,15 @@ Go source code.
 @item @var{file}.brig
 BRIG files (binary representation of HSAIL).
 
+@item @var{file}.d
+D source code.
+
+@item @var{file}.di
+D interface file.
+
+@item @var{file}.dd
+D documentation code (Ddoc).
+
 @item @var{file}.ads
 Ada source code file that contains a library unit declaration (a
 declaration of a package, subprogram, or generic, or a generic
@@ -1482,6 +1491,7 @@ objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
+d
 f77  f77-cpp-input f95  f95-cpp-input
 go
 brig
