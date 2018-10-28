@@ -1,3 +1,10 @@
+2018-10-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/85669
+	* config/rs6000/darwin.h (STACK_BOUNDARY): New.
+	(RS6000_STARTING_FRAME_OFFSET): Adjust to preserve 16byte alignment.
+	(STACK_DYNAMIC_OFFSET): Likewise.
+
 2018-10-27  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/80024
