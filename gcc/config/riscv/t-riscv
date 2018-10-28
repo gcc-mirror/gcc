@@ -9,3 +9,8 @@ riscv-c.o: $(srcdir)/config/riscv/riscv-c.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H) $(TARGET_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/riscv/riscv-c.c
+
+riscv-d.o: $(srcdir)/config/riscv/riscv-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+

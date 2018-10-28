@@ -53,6 +53,19 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	builtin_assert ("system=posix");			\
     } while (0)
 
+#define GNU_USER_TARGET_D_OS_VERSIONS()				\
+    do {							\
+	builtin_version ("linux");				\
+	if (OPTION_GLIBC)					\
+	  builtin_version ("CRuntime_Glibc");			\
+	else if (OPTION_UCLIBC)					\
+	  builtin_version ("CRuntime_UClibc");			\
+	else if (OPTION_BIONIC)					\
+	  builtin_version ("CRuntime_Bionic");			\
+	else if (OPTION_MUSL)					\
+	  builtin_version ("CRuntime_Musl");			\
+    } while (0)
+
 /* Determine which dynamic linker to use depending on whether GLIBC or
    uClibc or Bionic or musl is the default C library and whether
    -muclibc or -mglibc or -mbionic or -mmusl has been passed to change

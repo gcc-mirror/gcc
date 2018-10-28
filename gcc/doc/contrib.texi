@@ -139,6 +139,9 @@ Joe Buck for his direction via the steering committee from its creation
 to 2013.
 
 @item
+Iain Buclaw for the D frontend.
+
+@item
 Craig Burley for leadership of the G77 Fortran effort.
 
 @item

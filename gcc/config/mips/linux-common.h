@@ -27,6 +27,9 @@ along with GCC; see the file COPYING3.  If not see
     ANDROID_TARGET_OS_CPP_BUILTINS();				\
   } while (0)
 
+#define EXTRA_TARGET_D_OS_VERSIONS()				\
+  ANDROID_TARGET_D_OS_VERSIONS();
+
 #undef  LINK_SPEC
 #define LINK_SPEC							\
   LINUX_OR_ANDROID_LD (GNU_USER_TARGET_LINK_SPEC,			\
