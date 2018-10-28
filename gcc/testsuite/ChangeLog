@@ -1,3 +1,13 @@
+2017-10-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.dg/findloc_1.f90: New test.
+	* gfortran.dg/findloc_2.f90: New test.
+	* gfortran.dg/findloc_3.f90: New test.
+	* gfortran.dg/findloc_4.f90: New test.
+	* gfortran.dg/findloc_5.f90: New test.
+	* gfortran.dg/findloc_6.f90: New test.
+
 2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
             Jinsong Ji  <jji@us.ibm.com>
 
