@@ -140,7 +140,7 @@ test_string_literals (gimple *stmt)
       return;
     }
 
-  tree t_caret_idx = gimple_call_arg (call, 1);
+  tree t_caret_idx = fold (gimple_call_arg (call, 1));
   if (TREE_CODE (t_caret_idx) != INTEGER_CST)
     {
       error_at (call->location, "integer constant required for arg 2");
@@ -148,7 +148,7 @@ test_string_literals (gimple *stmt)
     }
   int caret_idx = TREE_INT_CST_LOW (t_caret_idx);
 
-  tree t_start_idx = gimple_call_arg (call, 2);
+  tree t_start_idx = fold (gimple_call_arg (call, 2));
   if (TREE_CODE (t_start_idx) != INTEGER_CST)
     {
       error_at (call->location, "integer constant required for arg 3");
@@ -156,7 +156,7 @@ test_string_literals (gimple *stmt)
     }
   int start_idx = TREE_INT_CST_LOW (t_start_idx);
 
-  tree t_end_idx = gimple_call_arg (call, 3);
+  tree t_end_idx = fold (gimple_call_arg (call, 3));
   if (TREE_CODE (t_end_idx) != INTEGER_CST)
     {
       error_at (call->location, "integer constant required for arg 4");
