@@ -1,3 +1,7 @@
+2018-10-29  Paul Koning  <ni1d@arrl.net>
+
+	* doc/rtl.texi (CONST_WIDE_INT_ELT): Give correct macro name.
+
 2018-10-29  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc/config/rs6000/mmintrin.h (_mm_packs_pi16, _mm_packs_pi32,
