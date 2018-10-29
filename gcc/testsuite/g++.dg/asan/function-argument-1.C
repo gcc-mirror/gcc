@@ -28,4 +28,4 @@ main ()
 
 // { dg-output "ERROR: AddressSanitizer: stack-buffer-underflow on address.*(\n|\r\n|\r)" }
 // { dg-output "READ of size . at.*" }
-// { dg-output ".*'arg' <== Memory access at offset \[0-9\]* underflows this variable.*" }
+// { dg-output ".*'arg' \\(line 18\\) <== Memory access at offset \[0-9\]* underflows this variable.*" }

@@ -4034,10 +4034,12 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
     conv->bad_p = true;
 
   /* We're performing the maybe-rvalue overload resolution and
-     a conversion function is in play.  This isn't going to work
-     because we would not end up with a suitable constructor.  */
+     a conversion function is in play.  Reject converting the return
+     value of the conversion function to a base class.  */
   if ((flags & LOOKUP_PREFER_RVALUE) && !DECL_CONSTRUCTOR_P (cand->fn))
-    return NULL;
+    for (conversion *t = cand->second_conv; t; t = next_conversion (t))
+      if (t->kind == ck_base)
+	return NULL;
 
   /* Remember that this was a list-initialization.  */
   if (flags & LOOKUP_NO_NARROWING)
@@ -6512,6 +6514,38 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
   return error_mark_node;
 }
 
+/* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL
+   in the diagnostics.
+
+   If ISSUE_ERROR is true, then issue an error about the
+   access, followed by a note showing the declaration.
+   Otherwise, just show the note.  */
+
+void
+complain_about_access (tree decl, tree diag_decl, bool issue_error)
+{
+  if (TREE_PRIVATE (decl))
+    {
+      if (issue_error)
+	error ("%q#D is private within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl),
+	      "declared private here");
+    }
+  else if (TREE_PROTECTED (decl))
+    {
+      if (issue_error)
+	error ("%q#D is protected within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl),
+	      "declared protected here");
+    }
+  else
+    {
+      if (issue_error)
+	error ("%q#D is inaccessible within this context", diag_decl);
+      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
+    }
+}
+
 /* If the current scope isn't allowed to access DECL along
    BASETYPE_PATH, give an error.  The most derived class in
    BASETYPE_PATH is the one used to qualify DECL. DIAG_DECL is
@@ -6536,34 +6570,12 @@ enforce_access (tree basetype_path, tree decl, tree diag_decl,
 
   if (!accessible_p (basetype_path, decl, true))
     {
+      if (flag_new_inheriting_ctors)
+	diag_decl = strip_inheriting_ctors (diag_decl);
       if (complain & tf_error)
-	{
-	  if (flag_new_inheriting_ctors)
-	    diag_decl = strip_inheriting_ctors (diag_decl);
-	  if (TREE_PRIVATE (decl))
-	    {
-	      error ("%q#D is private within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl),
-		      "declared private here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	  else if (TREE_PROTECTED (decl))
-	    {
-	      error ("%q#D is protected within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl),
-		      "declared protected here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	  else
-	    {
-	      error ("%q#D is inaccessible within this context", diag_decl);
-	      inform (DECL_SOURCE_LOCATION (diag_decl), "declared here");
-	      if (afi)
-		afi->record_access_failure (basetype_path, diag_decl);
-	    }
-	}
+	complain_about_access (decl, diag_decl, true);
+      if (afi)
+	afi->record_access_failure (basetype_path, decl, diag_decl);
       return false;
     }
 
@@ -8186,6 +8198,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
+      auto_vec<location_t> arglocs (nargs);
       for (j = 0; j < nargs; j++)
 	{
 	  /* For -Wformat undo the implicit passing by hidden reference
@@ -8195,10 +8208,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	    fargs[j] = TREE_OPERAND (argarray[j], 0);
 	  else
 	    fargs[j] = maybe_constant_value (argarray[j]);
+	  arglocs.quick_push (EXPR_LOC_OR_LOC (argarray[j], input_location));
 	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs, NULL);
+					   nargs, fargs, &arglocs);
     }
 
   if (DECL_INHERITED_CTOR (fn))
@@ -8399,10 +8413,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
       && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL)
     maybe_warn_class_memaccess (input_location, fn, args);
 
-  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0
-      /* Don't mess with virtual lookup in instantiate_non_dependent_expr;
-	 virtual functions can't be constexpr.  */
-      && !in_template_function ())
+  if (DECL_VINDEX (fn) && (flags & LOOKUP_NONVIRTUAL) == 0)
     {
       tree t;
       tree binfo = lookup_base (TREE_TYPE (TREE_TYPE (argarray[0])),
@@ -8653,15 +8664,6 @@ maybe_warn_class_memaccess (location_t loc, tree fndecl,
       tree ctx = DECL_CONTEXT (current_function_decl);
       bool special = same_type_ignoring_top_level_qualifiers_p (ctx, desttype);
       tree binfo = TYPE_BINFO (ctx);
-
-      /* FIXME: The following if statement is overly permissive (see
-	 bug 84851).  Remove it in GCC 9.  */
-      if (special
-	  && !BINFO_VTABLE (binfo)
-	  && !BINFO_N_BASE_BINFOS (binfo)
-	  && (DECL_CONSTRUCTOR_P (current_function_decl)
-	      || DECL_DESTRUCTOR_P (current_function_decl)))
-	return;
 
       if (special
 	  && !BINFO_VTABLE (binfo)

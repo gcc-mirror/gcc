@@ -22,7 +22,9 @@ void foo(void) {
 
   vp = vec_sld(vp, vp, 5);
   vbc = vec_splat(vbc, 7);
-  vbs = vec_splat(vbs, 12);
-  vp = vec_splat(vp, 17);
-  vbi = vec_splat(vbi, 31);  
+  /*  The second argument to vec_splat needs to be less than the number of
+   elements in the referenced vector.  */
+  vbs = vec_splat(vbs, 4);
+  vp = vec_splat(vp, 1);
+  vbi = vec_splat(vbi, 3);  
 }

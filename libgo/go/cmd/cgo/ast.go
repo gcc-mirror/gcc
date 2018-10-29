@@ -95,7 +95,7 @@ func (f *File) ParseGo(name string, src []byte) {
 		}
 	}
 	if !sawC {
-		error_(token.NoPos, `cannot find import "C"`)
+		error_(ast1.Package, `cannot find import "C"`)
 	}
 
 	// In ast2, strip the import "C" line.
@@ -356,6 +356,7 @@ func (f *File) walk(x interface{}, context astContext, visit func(*File, interfa
 	case *ast.BadExpr:
 	case *ast.Ident:
 	case *ast.Ellipsis:
+		f.walk(&n.Elt, ctxType, visit)
 	case *ast.BasicLit:
 	case *ast.FuncLit:
 		f.walk(n.Type, ctxType, visit)

@@ -29,6 +29,7 @@
 #include "tm.h"
 #include "rtl.h"
 #include "rtl-iter.h"
+#include "memmodel.h"
 
 /* In ARMv8-A there's a general expectation that AESE/AESMC
    and AESD/AESIMC sequences of the form:
@@ -228,6 +229,28 @@ aarch_rev16_p (rtx x)
     is_rev = aarch_rev16_p_1 (right_sub_rtx, left_sub_rtx, GET_MODE (x));
 
   return is_rev;
+}
+
+/* Return non-zero if the RTX representing a memory model is a memory model
+   that needs acquire semantics.  */
+bool
+aarch_mm_needs_acquire (rtx const_int)
+{
+  enum memmodel model = memmodel_from_int (INTVAL (const_int));
+  return !(is_mm_relaxed (model)
+	   || is_mm_consume (model)
+	   || is_mm_release (model));
+}
+
+/* Return non-zero if the RTX representing a memory model is a memory model
+   that needs release semantics.  */
+bool
+aarch_mm_needs_release (rtx const_int)
+{
+  enum memmodel model = memmodel_from_int (INTVAL (const_int));
+  return !(is_mm_relaxed (model)
+	   || is_mm_consume (model)
+	   || is_mm_acquire (model));
 }
 
 /* Return nonzero if the CONSUMER instruction (a load) does need

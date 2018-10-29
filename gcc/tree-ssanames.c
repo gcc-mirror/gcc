@@ -331,7 +331,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
    NAME.  */
 
 void
-set_range_info_raw (tree name, enum value_range_type range_type,
+set_range_info_raw (tree name, enum value_range_kind range_type,
 		    const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -372,7 +372,7 @@ set_range_info_raw (tree name, enum value_range_type range_type,
    NAME while making sure we don't store useless range info.  */
 
 void
-set_range_info (tree name, enum value_range_type range_type,
+set_range_info (tree name, enum value_range_kind range_type,
 		const wide_int_ref &min, const wide_int_ref &max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -397,11 +397,11 @@ set_range_info (tree name, enum value_range_type range_type,
 }
 
 
-/* Gets range information MIN, MAX and returns enum value_range_type
-   corresponding to tree ssa_name NAME.  enum value_range_type returned
+/* Gets range information MIN, MAX and returns enum value_range_kind
+   corresponding to tree ssa_name NAME.  enum value_range_kind returned
    is used to determine if MIN and MAX are valid values.  */
 
-enum value_range_type
+enum value_range_kind
 get_range_info (const_tree name, wide_int *min, wide_int *max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
@@ -727,7 +727,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
 /* Creates a duplicate of the range_info_def at RANGE_INFO of type
    RANGE_TYPE for use by the SSA name NAME.  */
 void
-duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
+duplicate_ssa_name_range_info (tree name, enum value_range_kind range_type,
 			       struct range_info_def *range_info)
 {
   struct range_info_def *new_range_info;

@@ -370,7 +370,20 @@ rtx_writer::print_rtx_operand_codes_E_and_V (const_rtx in_rtx, int idx)
 	m_sawclose = 1;
 
       for (int j = 0; j < XVECLEN (in_rtx, idx); j++)
-	print_rtx (XVECEXP (in_rtx, idx, j));
+	{
+	  int j1;
+
+	  print_rtx (XVECEXP (in_rtx, idx, j));
+	  for (j1 = j + 1; j1 < XVECLEN (in_rtx, idx); j1++)
+	    if (XVECEXP (in_rtx, idx, j) != XVECEXP (in_rtx, idx, j1))
+	      break;
+
+	  if (j1 != j + 1)
+	    {
+	      fprintf (m_outfile, " repeated x%i", j1 - j);
+	      j = j1 - 1;
+	    }
+	}
 
       m_indent -= 2;
     }
@@ -398,7 +411,8 @@ rtx_writer::print_rtx_operand_code_i (const_rtx in_rtx, int idx)
       if (INSN_HAS_LOCATION (in_insn))
 	{
 	  expanded_location xloc = insn_location (in_insn);
-	  fprintf (m_outfile, " \"%s\":%i", xloc.file, xloc.line);
+	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,
+		   xloc.column);
 	}
 #endif
     }

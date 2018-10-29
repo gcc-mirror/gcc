@@ -3034,6 +3034,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 	{
 	  /* Initializing an element using value or default initialization
 	     we just pre-built above.  */
+	  if (init == void_node)
+	    /* Trivial default-init, don't do anything to the CONSTRUCTOR.  */
+	    return ctx->ctor;
 	  eltinit = cxx_eval_constant_expression (&new_ctx, init, lval,
 						  non_constant_p, overflow_p);
 	  reuse = i == 0;
@@ -4209,7 +4212,11 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	 CONST_DECL for aggregate constants.  */
       if (lval)
 	return t;
+      /* is_really_empty_class doesn't take into account _vptr, so initializing
+	 otherwise empty class with { } would overwrite the initializer that
+	 initialize_vtable created for us.  */
       if (COMPLETE_TYPE_P (TREE_TYPE (t))
+	  && !TYPE_POLYMORPHIC_P (TREE_TYPE (t))
 	  && is_really_empty_class (TREE_TYPE (t)))
 	{
 	  /* If the class is empty, we aren't actually loading anything.  */
@@ -4778,7 +4785,6 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case MODOP_EXPR:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
-    case OBJ_TYPE_REF:
     case NON_DEPENDENT_EXPR:
     case BASELINK:
     case OFFSET_REF:
@@ -4787,6 +4793,35 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		  "expression %qE is not a constant expression", t);
       *non_constant_p = true;
       break;
+
+    case OBJ_TYPE_REF:
+      {
+	/* Virtual function call.  Let the constexpr machinery figure out
+	   the dynamic type.  */
+	int token = tree_to_shwi (OBJ_TYPE_REF_TOKEN (t));
+	tree obj = OBJ_TYPE_REF_OBJECT (t);
+	obj = cxx_eval_constant_expression (ctx, obj, lval, non_constant_p,
+					    overflow_p);
+	/* We expect something in the form of &x.D.2103.D.2094; get x. */
+	if (TREE_CODE (obj) != ADDR_EXPR)
+	  {
+	    if (!ctx->quiet)
+	      error_at (cp_expr_loc_or_loc (t, input_location),
+			"expression %qE is not a constant expression", t);
+	    *non_constant_p = true;
+	    return t;
+	  }
+	obj = TREE_OPERAND (obj, 0);
+	while (TREE_CODE (obj) == COMPONENT_REF
+	       && DECL_FIELD_IS_BASE (TREE_OPERAND (obj, 1)))
+	  obj = TREE_OPERAND (obj, 0);
+	tree objtype = TREE_TYPE (obj);
+	/* Find the function decl in the virtual functions list.  TOKEN is
+	   the DECL_VINDEX that says which function we're looking for.  */
+	tree virtuals = BINFO_VIRTUALS (TYPE_BINFO (objtype));
+	r = TREE_VALUE (chain_index (token, virtuals));
+	break;
+      }
 
     case PLACEHOLDER_EXPR:
       /* Use of the value or address of the current object.  */
@@ -4926,6 +4961,9 @@ instantiate_constexpr_fns (tree t)
 }
 
 /* ALLOW_NON_CONSTANT is false if T is required to be a constant expression.
+   STRICT has the same sense as for constant_value_1: true if we only allow
+   conforming C++ constant expressions, or false if we want a constant value
+   even if it doesn't conform.
    PRETEND_CONST_REQUIRED is true if T is required to be const-evaluated as
    per P0595 even when ALLOW_NON_CONSTANT is true.  */
 
@@ -5327,7 +5365,7 @@ maybe_constant_init_1 (tree t, tree decl, bool allow_non_constant,
     /* No evaluation needed.  */;
   else
     t = cxx_eval_outermost_constant_expr (t, allow_non_constant,
-					  !allow_non_constant,
+					  /*strict*/false,
 					  pretend_const_required, decl);
   if (TREE_CODE (t) == TARGET_EXPR)
     {
@@ -5780,8 +5818,16 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case FOR_STMT:
       if (!RECUR (FOR_INIT_STMT (t), any))
 	return false;
-      if (!RECUR (FOR_COND (t), rval))
+      tmp = FOR_COND (t);
+      if (!RECUR (tmp, rval))
 	return false;
+      if (tmp)
+	{
+	  if (!processing_template_decl)
+	    tmp = cxx_eval_outermost_constant_expr (tmp, true);
+	  if (integer_zerop (tmp))
+	    return true;
+	}
       if (!RECUR (FOR_EXPR (t), any))
 	return false;
       if (!RECUR (FOR_BODY (t), any))
@@ -5802,8 +5848,13 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       return true;
 
     case WHILE_STMT:
-      if (!RECUR (WHILE_COND (t), rval))
+      tmp = WHILE_COND (t);
+      if (!RECUR (tmp, rval))
 	return false;
+      if (!processing_template_decl)
+	tmp = cxx_eval_outermost_constant_expr (tmp, true);
+      if (integer_zerop (tmp))
+	return true;
       if (!RECUR (WHILE_BODY (t), any))
 	return false;
       if (breaks (jump_target) || continues (jump_target))
@@ -5871,13 +5922,20 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OACC_UPDATE:
       /* GCC internal stuff.  */
     case VA_ARG_EXPR:
-    case OBJ_TYPE_REF:
     case TRANSACTION_EXPR:
     case ASM_EXPR:
     case AT_ENCODE_EXPR:
     fail:
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
+      return false;
+
+    case OBJ_TYPE_REF:
+      if (cxx_dialect >= cxx2a)
+	/* In C++2a virtual calls can be constexpr, don't give up yet.  */
+	return true;
+      else if (flags & tf_error)
+	error_at (loc, "virtual functions cannot be constexpr before C++2a");
       return false;
 
     case TYPEID_EXPR:

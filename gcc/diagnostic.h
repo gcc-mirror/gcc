@@ -211,6 +211,10 @@ struct diagnostic_context
      showing line numbers?  */
   bool show_line_numbers_p;
 
+  /* If printing source code, what should the minimum width of the margin
+     be?  Line numbers will be right-aligned, and padded to this width.  */
+  int min_margin_width;
+
   /* Usable by plugins; if true, print a debugging ruler above the
      source output.  */
   bool show_ruler_p;
@@ -273,6 +277,10 @@ diagnostic_inhibit_notes (diagnostic_context * context)
    diagnostic messages without going through `error', `warning',
    and similar functions.  */
 extern diagnostic_context *global_dc;
+
+/* Returns whether the diagnostic framework has been intialized already and is
+   ready for use.  */
+#define diagnostic_ready_p() (global_dc->printer != NULL)
 
 /* The total count of a KIND of diagnostics emitted so far.  */
 #define diagnostic_kind_count(DC, DK) (DC)->diagnostic_count[(int) (DK)]

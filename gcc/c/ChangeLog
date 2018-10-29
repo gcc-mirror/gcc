@@ -1,3 +1,53 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-errors.c (pedwarn_c11): New function.
+	* c-parser.c (disable_extension_diagnostics): Save
+	warn_c11_c2x_compat and set it to 0.
+	(restore_extension_diagnostics): Restore warn_c11_c2x_compat.
+	(c_parser_static_assert_declaration_no_semi): Handle
+	_Static_assert without string constant.
+	* c-tree.h (pedwarn_c11): New prototype.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-c): New.
+	(C_SELFTEST_FLAGS, C_SELFTEST_DEPS, s-selftest-c, selftest-c-gdb)
+	(selftest-gdb, selftest-c-valgrind, selftest-valgrind): Move here
+	from gcc/Makefile.in.
+
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* c-decl.c (warn_if_shadowing): Do not test DECL_FROM_INLINE.
+
+2018-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/87390
+	* c-typeck.c (build_binary_op): Use excess precision for
+	comparisons of integers and floating-point for C11 and later.
+
+2018-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/87347
+	* c-parser.c (warn_for_abs): Bail out if TYPE_ARG_TYPES is NULL.  Fix
+        comment.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-objc-common.c (range_label_for_type_mismatch::get_text):
+	Update for new param.
+	* c-typeck.c (maybe_range_label_for_tree_type_mismatch::get_text):
+	Likewise.
+
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* c-parser.c: (warn_for_abs): New function.
+	(c_parser_postfix_expression_after_primary): Call it.
+
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-typeck.c (digest_init): Shorten overlength strings.
+
 2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-decl.c (finish_decl): Call complete_flexible_array_elts.

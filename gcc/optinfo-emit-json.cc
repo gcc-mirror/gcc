@@ -299,12 +299,6 @@ optrecord_json_writer::inlining_chain_to_json (location_t loc)
 	     && BLOCK_ABSTRACT_ORIGIN (block))
 	{
 	  tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-	  while (TREE_CODE (ao) == BLOCK
-		 && BLOCK_ABSTRACT_ORIGIN (ao)
-		 && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	    ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
 	  if (TREE_CODE (ao) == FUNCTION_DECL)
 	    {
 	      fndecl = ao;
@@ -537,7 +531,7 @@ namespace selftest {
 static void
 test_building_json_from_dump_calls ()
 {
-  temp_dump_context tmp (true, MSG_NOTE);
+  temp_dump_context tmp (true, true, MSG_NOTE);
   dump_location_t loc;
   dump_printf_loc (MSG_NOTE, loc, "test of tree: ");
   dump_generic_expr (MSG_NOTE, TDF_SLIM, integer_zero_node);

@@ -100,11 +100,13 @@ static const struct lang_flags lang_defaults[] =
   /* GNUC99   */  { 1,  0,  1,  1,  0,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1 },
   /* GNUC11   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1 },
   /* GNUC17   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1 },
+  /* GNUC2X   */  { 1,  0,  1,  1,  1,  0,  1,   1,   1,   0,    0,     0,     0,   0,      1 },
   /* STDC89   */  { 0,  0,  0,  0,  0,  1,  0,   0,   0,   0,    0,     0,     1,   0,      0 },
   /* STDC94   */  { 0,  0,  0,  0,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0 },
   /* STDC99   */  { 1,  0,  1,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0 },
   /* STDC11   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0 },
   /* STDC17   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0 },
+  /* STDC2X   */  { 1,  0,  1,  1,  1,  1,  1,   1,   0,   0,    0,     0,     1,   0,      0 },
   /* GNUCXX   */  { 0,  1,  1,  1,  0,  0,  1,   0,   0,   0,    0,     0,     0,   0,      1 },
   /* CXX98    */  { 0,  1,  0,  1,  0,  1,  1,   0,   0,   0,    0,     0,     1,   0,      0 },
   /* GNUCXX11 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    0,     0,     0,   0,      1 },
@@ -521,6 +523,9 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
     _cpp_define_builtin (pfile, "__ASSEMBLER__ 1");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC94)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 199409L");
+  else if (CPP_OPTION (pfile, lang) == CLK_STDC2X
+	   || CPP_OPTION (pfile, lang) == CLK_GNUC2X)
+    _cpp_define_builtin (pfile, "__STDC_VERSION__ 202000L");
   else if (CPP_OPTION (pfile, lang) == CLK_STDC17
 	   || CPP_OPTION (pfile, lang) == CLK_GNUC17)
     _cpp_define_builtin (pfile, "__STDC_VERSION__ 201710L");

@@ -531,7 +531,7 @@
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://people.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf">
+	      xlink:href="https://people.cs.umass.edu/~emery/pubs/berger-oopsla2002.pdf">
       Reconsidering Custom Memory Allocation
 	</link>
       </title>

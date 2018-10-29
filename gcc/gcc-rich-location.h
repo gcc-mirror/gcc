@@ -56,7 +56,7 @@ class gcc_rich_location : public rich_location
 
 	gcc_rich_location richloc (primary_loc);
 	bool added secondary = richloc.add_location_if_nearby (secondary_loc);
-	error_at_rich_loc (&richloc, "main message");
+	error_at (&richloc, "main message");
 	if (!added secondary)
 	  inform (secondary_loc, "message for secondary");
 
@@ -109,7 +109,7 @@ class text_range_label : public range_label
  public:
   text_range_label (const char *text) : m_text (text) {}
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned /*range_idx*/) const FINAL OVERRIDE
   {
     return label_text (const_cast <char *> (m_text), false);
   }
@@ -155,7 +155,7 @@ class range_label_for_type_mismatch : public range_label
   {
   }
 
-  label_text get_text () const OVERRIDE;
+  label_text get_text (unsigned range_idx) const OVERRIDE;
 
  protected:
   tree m_labelled_type;

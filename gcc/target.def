@@ -3123,6 +3123,21 @@ In order to enforce the representation of @code{mode},\n\
  int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
+ DEFHOOK
+(setjmp_preserves_nonvolatile_regs_p,
+ "On some targets, it is assumed that the compiler will spill all pseudos\n\
+  that are live across a call to @code{setjmp}, while other targets treat\n\
+  @code{setjmp} calls as normal function calls.\n\
+  \n\
+  This hook returns false if @code{setjmp} calls do not preserve all\n\
+  non-volatile registers so that gcc that must spill all pseudos that are\n\
+  live across @code{setjmp} calls.  Define this to return true if the\n\
+  target does not need to spill all pseudos live across @code{setjmp} calls.\n\
+  The default implementation conservatively assumes all pseudos must be\n\
+  spilled across @code{setjmp} calls.",
+ bool, (void),
+ hook_bool_void_false)
+
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
 DEFHOOK
 (valid_pointer_mode,
@@ -5854,10 +5869,17 @@ these registers when the target switches are opposed to them.)",
  hook_void_void)
 
 DEFHOOK
-(stack_clash_protection_final_dynamic_probe,
- "Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.",
- bool, (rtx residual),
- default_stack_clash_protection_final_dynamic_probe)
+(stack_clash_protection_alloca_probe_range,
+ "Some targets have an ABI defined interval for which no probing needs to be done.\n\
+When a probe does need to be done this same interval is used as the probe distance \
+up when doing stack clash protection for alloca.\n\
+On such targets this value can be set to override the default probing up interval.\n\
+Define this variable to return nonzero if such a probe range is required or zero otherwise.  \
+Defining this hook also requires your functions which make use of alloca to have at least 8 byes\
+of outgoing arguments.  If this is not the case the stack will be corrupted.\n\
+You need not define this macro if it would always have the value zero.",
+ HOST_WIDE_INT, (void),
+ default_stack_clash_protection_alloca_probe_range)
 
 
 /* Functions specific to the C family of frontends.  */

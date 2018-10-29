@@ -1384,21 +1384,26 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	const char *type = NULL;
 	switch (list_type)
 	  {
-	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
-	  case OMP_LIST_DEVICE_RESIDENT: type = "USE_DEVICE"; break;
-	  case OMP_LIST_CACHE: type = ""; break;
 	  case OMP_LIST_PRIVATE: type = "PRIVATE"; break;
 	  case OMP_LIST_FIRSTPRIVATE: type = "FIRSTPRIVATE"; break;
 	  case OMP_LIST_LASTPRIVATE: type = "LASTPRIVATE"; break;
+	  case OMP_LIST_COPYPRIVATE: type = "COPYPRIVATE"; break;
 	  case OMP_LIST_SHARED: type = "SHARED"; break;
 	  case OMP_LIST_COPYIN: type = "COPYIN"; break;
 	  case OMP_LIST_UNIFORM: type = "UNIFORM"; break;
 	  case OMP_LIST_ALIGNED: type = "ALIGNED"; break;
 	  case OMP_LIST_LINEAR: type = "LINEAR"; break;
+	  case OMP_LIST_DEPEND: type = "DEPEND"; break;
+	  case OMP_LIST_MAP: type = "MAP"; break;
+	  case OMP_LIST_TO: type = "TO"; break;
+	  case OMP_LIST_FROM: type = "FROM"; break;
 	  case OMP_LIST_REDUCTION: type = "REDUCTION"; break;
+	  case OMP_LIST_DEVICE_RESIDENT: type = "DEVICE_RESIDENT"; break;
+	  case OMP_LIST_LINK: type = "LINK"; break;
+	  case OMP_LIST_USE_DEVICE: type = "USE_DEVICE"; break;
+	  case OMP_LIST_CACHE: type = "CACHE"; break;
 	  case OMP_LIST_IS_DEVICE_PTR: type = "IS_DEVICE_PTR"; break;
 	  case OMP_LIST_USE_DEVICE_PTR: type = "USE_DEVICE_PTR"; break;
-	  case OMP_LIST_DEPEND: type = "DEPEND"; break;
 	  default:
 	    gcc_unreachable ();
 	  }

@@ -257,9 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     //   fall back to lock protected access to both _S_global and
     //   its reference count.
     _M_impl = _S_global;
-    if (_M_impl == _S_classic)
-      _M_impl->_M_add_reference();
-    else
+    if (_M_impl != _S_classic)
       {
         __gnu_cxx::__scoped_lock sentry(get_locale_mutex());
         _S_global->_M_add_reference();
@@ -275,7 +273,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __gnu_cxx::__scoped_lock sentry(get_locale_mutex());
       __old = _S_global;
-      __other._M_impl->_M_add_reference();
+      if (__other._M_impl != _S_classic)
+	__other._M_impl->_M_add_reference();
       _S_global = __other._M_impl;
       const string __other_name = __other.name();
       if (__other_name != "*")
@@ -284,7 +283,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     // Reference count sanity check: one reference removed for the
     // subsition of __other locale, one added by return-by-value. Net
-    // difference: zero. When the returned locale object's destrutor
+    // difference: zero. When the returned locale object's destructor
     // is called, then the reference count is decremented and possibly
     // destroyed.
     return locale(__old);

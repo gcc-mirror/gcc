@@ -1290,7 +1290,6 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   gcond *cond_stmt;
   tree tmp0, tmp1, tmp;
   basic_block cond_bb, dcall_bb, icall_bb, join_bb = NULL;
-  tree optype = build_pointer_type (void_type_node);
   edge e_cd, e_ci, e_di, e_dj = NULL, e_ij;
   gimple_stmt_iterator gsi;
   int lp_nr, dflags;
@@ -1300,13 +1299,13 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   cond_bb = gimple_bb (icall_stmt);
   gsi = gsi_for_stmt (icall_stmt);
 
-  tmp0 = make_temp_ssa_name (optype, NULL, "PROF");
-  tmp1 = make_temp_ssa_name (optype, NULL, "PROF");
+  tmp0 = make_temp_ssa_name (ptr_type_node, NULL, "PROF");
+  tmp1 = make_temp_ssa_name (ptr_type_node, NULL, "PROF");
   tmp = unshare_expr (gimple_call_fn (icall_stmt));
   load_stmt = gimple_build_assign (tmp0, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
-  tmp = fold_convert (optype, build_addr (direct_call->decl));
+  tmp = fold_convert (ptr_type_node, build_addr (direct_call->decl));
   load_stmt = gimple_build_assign (tmp1, tmp);
   gsi_insert_before (&gsi, load_stmt, GSI_SAME_STMT);
 
@@ -1393,7 +1392,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 
   /* Build an EH edge for the direct call if necessary.  */
   lp_nr = lookup_stmt_eh_lp (icall_stmt);
-  if (lp_nr > 0 && stmt_could_throw_p (dcall_stmt))
+  if (lp_nr > 0 && stmt_could_throw_p (cfun, dcall_stmt))
     {
       add_stmt_to_eh_lp (dcall_stmt, lp_nr);
     }
@@ -1411,7 +1410,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
 		     PHI_ARG_DEF_FROM_EDGE (phi, e_eh));
 	  }
        }
-  if (!stmt_could_throw_p (dcall_stmt))
+  if (!stmt_could_throw_p (cfun, dcall_stmt))
     gimple_purge_dead_eh_edges (dcall_bb);
   return dcall_stmt;
 }
@@ -1635,8 +1634,8 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, profile_probabi
     }
 
   /* Because these are all string op builtins, they're all nothrow.  */
-  gcc_assert (!stmt_could_throw_p (vcall_stmt));
-  gcc_assert (!stmt_could_throw_p (icall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, vcall_stmt));
+  gcc_assert (!stmt_could_throw_p (cfun, icall_stmt));
 }
 
 /* Find values inside STMT for that we want to measure histograms for

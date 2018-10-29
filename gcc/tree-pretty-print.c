@@ -1124,9 +1124,6 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
   if (flags & TDF_ADDRESS)
     pp_printf (pp, "[%p] ", (void *) block);
 
-  if (BLOCK_ABSTRACT (block))
-    pp_string (pp, "[abstract] ");
-
   if (TREE_ASM_WRITTEN (block))
     pp_string (pp, "[written] ");
 
@@ -3976,35 +3973,11 @@ percent_K_format (text_info *text, location_t loc, tree block)
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
   *pp_ti_abstract_origin (text) = NULL;
 
-  if (in_lto_p)
-    {
-      /* ???  LTO drops all BLOCK_ABSTRACT_ORIGINs apart from those
-         representing the outermost block of an inlined function.
-	 So walk the BLOCK tree until we hit such a scope.  */
-      while (block
-	     && TREE_CODE (block) == BLOCK)
-	{
-	  if (inlined_function_outer_scope_p (block))
-	    {
-	      *pp_ti_abstract_origin (text) = block;
-	      break;
-	    }
-	  block = BLOCK_SUPERCONTEXT (block);
-	}
-      return;
-    }
-
   while (block
 	 && TREE_CODE (block) == BLOCK
 	 && BLOCK_ABSTRACT_ORIGIN (block))
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-      while (TREE_CODE (ao) == BLOCK
-	     && BLOCK_ABSTRACT_ORIGIN (ao)
-	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
       if (TREE_CODE (ao) == FUNCTION_DECL)
 	{
 	  *pp_ti_abstract_origin (text) = block;

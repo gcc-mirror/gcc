@@ -753,6 +753,10 @@ Set target-dependent initial values of fields in @var{opts}.
 Set target-dependent default values for @option{--param} settings, using calls to @code{set_default_param_value}.
 @end deftypefn
 
+@deftypefn {Common Target Hook} bool TARGET_OPTION_VALIDATE_PARAM (int, @var{int})
+Validate target-dependent value for @option{--param} settings, using calls to @code{set_param_value}.
+@end deftypefn
+
 @defmac SWITCHABLE_TARGET
 Some targets need to switch between substantially different subtargets
 during compilation.  For example, the MIPS target has one subtarget for
@@ -3450,8 +3454,12 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
-@deftypefn {Target Hook} bool TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE (rtx @var{residual})
-Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_STACK_CLASH_PROTECTION_ALLOCA_PROBE_RANGE (void)
+Some targets have an ABI defined interval for which no probing needs to be done.
+When a probe does need to be done this same interval is used as the probe distance up when doing stack clash protection for alloca.
+On such targets this value can be set to override the default probing up interval.
+Define this variable to return nonzero if such a probe range is required or zero otherwise.  Defining this hook also requires your functions which make use of alloca to have at least 8 byesof outgoing arguments.  If this is not the case the stack will be corrupted.
+You need not define this macro if it would always have the value zero.
 @end deftypefn
 
 @need 2000
@@ -10998,6 +11006,19 @@ extension.
 In order to enforce the representation of @code{mode},
 @code{TARGET_TRULY_NOOP_TRUNCATION} should return false when truncating to
 @code{mode}.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P (void)
+On some targets, it is assumed that the compiler will spill all pseudos
+  that are live across a call to @code{setjmp}, while other targets treat
+  @code{setjmp} calls as normal function calls.
+  
+  This hook returns false if @code{setjmp} calls do not preserve all
+  non-volatile registers so that gcc that must spill all pseudos that are
+  live across @code{setjmp} calls.  Define this to return true if the
+  target does not need to spill all pseudos live across @code{setjmp} calls.
+  The default implementation conservatively assumes all pseudos must be
+  spilled across @code{setjmp} calls.
 @end deftypefn
 
 @defmac STORE_FLAG_VALUE

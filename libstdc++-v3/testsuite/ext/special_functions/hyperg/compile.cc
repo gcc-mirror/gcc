@@ -1,5 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-D__STDCPP_WANT_MATH_SPEC_FUNCS__" }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // Copyright (C) 2016-2018 Free Software Foundation, Inc.
 //

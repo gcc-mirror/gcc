@@ -35,62 +35,65 @@ void
 riscv_cpu_cpp_builtins (cpp_reader *pfile)
 {
   builtin_define ("__riscv");
-  
+
   if (TARGET_RVC)
     builtin_define ("__riscv_compressed");
-  
+
   if (TARGET_RVE)
     builtin_define ("__riscv_32e");
 
   if (TARGET_ATOMIC)
     builtin_define ("__riscv_atomic");
-  
+
   if (TARGET_MUL)
     builtin_define ("__riscv_mul");
   if (TARGET_DIV)
     builtin_define ("__riscv_div");
   if (TARGET_DIV && TARGET_MUL)
     builtin_define ("__riscv_muldiv");
-  
+
   builtin_define_with_int_value ("__riscv_xlen", UNITS_PER_WORD * 8);
   if (TARGET_HARD_FLOAT)
     builtin_define_with_int_value ("__riscv_flen", UNITS_PER_FP_REG * 8);
-  
+
   if (TARGET_HARD_FLOAT && TARGET_FDIV)
     {
       builtin_define ("__riscv_fdiv");
       builtin_define ("__riscv_fsqrt");
     }
-  
+
   switch (riscv_abi)
     {
-    case ABI_ILP32:
     case ABI_ILP32E:
+      builtin_define ("__riscv_abi_rve");
+      gcc_fallthrough ();
+
+    case ABI_ILP32:
     case ABI_LP64:
       builtin_define ("__riscv_float_abi_soft");
       break;
-  
+
     case ABI_ILP32F:
     case ABI_LP64F:
       builtin_define ("__riscv_float_abi_single");
       break;
-  
+
     case ABI_ILP32D:
     case ABI_LP64D:
       builtin_define ("__riscv_float_abi_double");
       break;
     }
-  
+
   switch (riscv_cmodel)
     {
     case CM_MEDLOW:
       builtin_define ("__riscv_cmodel_medlow");
       break;
-  
+
     case CM_MEDANY:
       builtin_define ("__riscv_cmodel_medany");
       break;
-  
+
     case CM_PIC:
       builtin_define ("__riscv_cmodel_pic");
       break;

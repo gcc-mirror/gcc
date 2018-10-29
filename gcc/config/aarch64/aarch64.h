@@ -84,6 +84,18 @@
 
 #define LONG_DOUBLE_TYPE_SIZE	128
 
+/* This value is the amount of bytes a caller is allowed to drop the stack
+   before probing has to be done for stack clash protection.  */
+#define STACK_CLASH_CALLER_GUARD 1024
+
+/* This value represents the minimum amount of bytes we expect the function's
+   outgoing arguments to be when stack-clash is enabled.  */
+#define STACK_CLASH_MIN_BYTES_OUTGOING_ARGS 8
+
+/* This value controls how many pages we manually unroll the loop for when
+   generating stack clash probes.  */
+#define STACK_CLASH_MAX_UNROLL_PAGES 4
+
 /* The architecture reserves all bits of the address for hardware use,
    so the vbit must go into the delta field of pointers to member
    functions.  This is the same config as that in the AArch32
@@ -157,9 +169,10 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_FL_SM4	      (1 << 17)  /* Has ARMv8.4-A SM3 and SM4.  */
 #define AARCH64_FL_SHA3	      (1 << 18)  /* Has ARMv8.4-a SHA3 and SHA512.  */
 #define AARCH64_FL_F16FML     (1 << 19)  /* Has ARMv8.4-a FP16 extensions.  */
+#define AARCH64_FL_RCPC8_4    (1 << 20)  /* Has ARMv8.4-a RCPC extensions.  */
 
 /* Statistical Profiling extensions.  */
-#define AARCH64_FL_PROFILE    (1 << 20)
+#define AARCH64_FL_PROFILE    (1 << 21)
 
 /* Has FP and SIMD.  */
 #define AARCH64_FL_FPSIMD     (AARCH64_FL_FP | AARCH64_FL_SIMD)
@@ -178,7 +191,7 @@ extern unsigned aarch64_architecture_version;
   (AARCH64_FL_FOR_ARCH8_2 | AARCH64_FL_V8_3)
 #define AARCH64_FL_FOR_ARCH8_4			\
   (AARCH64_FL_FOR_ARCH8_3 | AARCH64_FL_V8_4 | AARCH64_FL_F16FML \
-   | AARCH64_FL_DOTPROD)
+   | AARCH64_FL_DOTPROD | AARCH64_FL_RCPC8_4)
 
 /* Macros to test ISA flags.  */
 
@@ -199,6 +212,7 @@ extern unsigned aarch64_architecture_version;
 #define AARCH64_ISA_SM4	           (aarch64_isa_flags & AARCH64_FL_SM4)
 #define AARCH64_ISA_SHA3	   (aarch64_isa_flags & AARCH64_FL_SHA3)
 #define AARCH64_ISA_F16FML	   (aarch64_isa_flags & AARCH64_FL_F16FML)
+#define AARCH64_ISA_RCPC8_4	   (aarch64_isa_flags & AARCH64_FL_RCPC8_4)
 
 /* Crypto is an optional extension to AdvSIMD.  */
 #define TARGET_CRYPTO (TARGET_SIMD && AARCH64_ISA_CRYPTO)
@@ -1065,5 +1079,18 @@ extern poly_uint16 aarch64_sve_vg;
 #endif
 
 #define REGMODE_NATURAL_SIZE(MODE) aarch64_regmode_natural_size (MODE)
+
+/* Allocate a minimum of STACK_CLASH_MIN_BYTES_OUTGOING_ARGS bytes for the
+   outgoing arguments if stack clash protection is enabled.  This is essential
+   as the extra arg space allows us to skip a check in alloca.  */
+#undef STACK_DYNAMIC_OFFSET
+#define STACK_DYNAMIC_OFFSET(FUNDECL)			   \
+   ((flag_stack_clash_protection			   \
+     && cfun->calls_alloca				   \
+     && known_lt (crtl->outgoing_args_size,		   \
+		  STACK_CLASH_MIN_BYTES_OUTGOING_ARGS))    \
+    ? ROUND_UP (STACK_CLASH_MIN_BYTES_OUTGOING_ARGS,       \
+		STACK_BOUNDARY / BITS_PER_UNIT)		   \
+    : (crtl->outgoing_args_size + STACK_POINTER_OFFSET))
 
 #endif /* GCC_AARCH64_H */

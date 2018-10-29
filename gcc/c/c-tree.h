@@ -762,6 +762,8 @@ extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+extern bool pedwarn_c11 (location_t, int opt, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(3,4);
 
 extern void
 set_c_expr_source_range (c_expr *expr,

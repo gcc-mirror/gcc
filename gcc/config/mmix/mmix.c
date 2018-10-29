@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -140,6 +141,7 @@ static void mmix_setup_incoming_varargs
   (cumulative_args_t, machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
+static void mmix_init_libfuncs (void);
 static bool mmix_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int mmix_register_move_cost (machine_mode,
 				    reg_class_t, reg_class_t);
@@ -220,6 +222,9 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #define TARGET_ASM_FILE_END mmix_file_end
 #undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
 #define TARGET_ASM_OUTPUT_SOURCE_FILENAME mmix_asm_output_source_filename
+
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS mmix_init_libfuncs
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage
@@ -1306,6 +1311,20 @@ mmix_asm_output_source_filename (FILE *stream, const char *name)
   fprintf (stream, "# 1 ");
   OUTPUT_QUOTED_STRING (stream, name);
   fprintf (stream, "\n");
+}
+
+/* Unfortunately, by default __builtin_ffs is expanded to ffs for
+   targets where INT_TYPE_SIZE < BITS_PER_WORD.  That together with
+   newlib since 2017-07-04 implementing ffs as __builtin_ffs leads to
+   (newlib) ffs recursively calling itself.  But, because of argument
+   promotion, and with ffs we're counting from the least bit, the
+   libgcc equivalent for ffsl works equally well for int arguments, so
+   just use that.  */
+
+static void
+mmix_init_libfuncs (void)
+{
+  set_optab_libfunc (ffs_optab, SImode, "__ffsdi2");
 }
 
 /* OUTPUT_QUOTED_STRING.  */

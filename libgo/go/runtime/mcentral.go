@@ -56,6 +56,15 @@ retry:
 			c.empty.insertBack(s)
 			unlock(&c.lock)
 			s.sweep(true)
+
+			// With gccgo's conservative GC, the returned span may
+			// now be full. See the comments in mspan.sweep.
+			if uintptr(s.allocCount) == s.nelems {
+				s.freeindex = s.nelems
+				lock(&c.lock)
+				goto retry
+			}
+
 			goto havespan
 		}
 		if s.sweepgen == sg-1 {
@@ -237,6 +246,6 @@ func (c *mcentral) grow() *mspan {
 	p := s.base()
 	s.limit = p + size*n
 
-	heapBitsForSpan(s.base()).initSpan(s)
+	heapBitsForAddr(s.base()).initSpan(s)
 	return s
 }

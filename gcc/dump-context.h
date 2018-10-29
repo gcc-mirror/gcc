@@ -24,6 +24,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "dumpfile.h"
 #include "pretty-print.h"
+#include "selftest.h"
+
+namespace selftest { class temp_dump_context; }
 
 /* A class for handling the various dump_* calls.
 
@@ -36,7 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 
 class dump_context
 {
-  friend class temp_dump_context;
+  friend class selftest::temp_dump_context;
+
  public:
   static dump_context &get () { return *s_current; }
 
@@ -45,6 +49,7 @@ class dump_context
   void refresh_dumps_are_enabled ();
 
   void dump_loc (dump_flags_t dump_kind, const dump_location_t &loc);
+  void dump_loc_immediate (dump_flags_t dump_kind, const dump_location_t &loc);
 
   void dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 			 gimple *gs, int spc);
@@ -100,6 +105,8 @@ class dump_context
 
   void emit_item (optinfo_item *item, dump_flags_t dump_kind);
 
+  bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
+
  private:
   optinfo &ensure_pending_optinfo ();
   optinfo &begin_next_optinfo (const dump_location_t &loc);
@@ -127,7 +134,52 @@ class dump_context
   static dump_context s_default;
 };
 
+/* A subclass of pretty_printer for implementing dump_context::dump_printf_va.
+   In particular, the formatted chunks are captured as optinfo_item instances,
+   thus retaining metadata about the entities being dumped (e.g. source
+   locations), rather than just as plain text.  */
+
+class dump_pretty_printer : public pretty_printer
+{
+public:
+  dump_pretty_printer (dump_context *context, dump_flags_t dump_kind);
+
+  void emit_items (optinfo *dest);
+
+private:
+  /* Information on an optinfo_item that was generated during phase 2 of
+     formatting.  */
+  struct stashed_item
+  {
+    stashed_item (const char **buffer_ptr_, optinfo_item *item_)
+      : buffer_ptr (buffer_ptr_), item (item_) {}
+    const char **buffer_ptr;
+    optinfo_item *item;
+  };
+
+  static bool format_decoder_cb (pretty_printer *pp, text_info *text,
+				 const char *spec, int /*precision*/,
+				 bool /*wide*/, bool /*set_locus*/,
+				 bool /*verbose*/, bool */*quoted*/,
+				 const char **buffer_ptr);
+
+  bool decode_format (text_info *text, const char *spec,
+		      const char **buffer_ptr);
+
+  void stash_item (const char **buffer_ptr, optinfo_item *item);
+
+  void emit_any_pending_textual_chunks (optinfo *dest);
+
+  void emit_item (optinfo_item *item, optinfo *dest);
+
+  dump_context *m_context;
+  dump_flags_t m_dump_kind;
+  auto_vec<stashed_item> m_stashed_items;
+};
+
 #if CHECKING_P
+
+namespace selftest {
 
 /* An RAII-style class for use in selftests for temporarily using a different
    dump_context.  */
@@ -136,6 +188,7 @@ class temp_dump_context
 {
  public:
   temp_dump_context (bool forcibly_enable_optinfo,
+		     bool forcibly_enable_dumping,
 		     dump_flags_t test_pp_flags);
   ~temp_dump_context ();
 
@@ -147,8 +200,58 @@ class temp_dump_context
   pretty_printer m_pp;
   dump_context m_context;
   dump_context *m_saved;
-  bool m_saved_flag_remarks;
 };
+
+/* Implementation detail of ASSERT_DUMPED_TEXT_EQ.  */
+
+extern void verify_dumped_text (const location &loc,
+				temp_dump_context *context,
+				const char *expected_text);
+
+/* Verify that the text dumped so far in CONTEXT equals
+   EXPECTED_TEXT.
+   As a side-effect, the internal buffer is 0-terminated.  */
+
+#define ASSERT_DUMPED_TEXT_EQ(CONTEXT, EXPECTED_TEXT)			\
+  SELFTEST_BEGIN_STMT							\
+    verify_dumped_text (SELFTEST_LOCATION, &(CONTEXT), (EXPECTED_TEXT)); \
+  SELFTEST_END_STMT
+
+
+/* Verify that ITEM has the expected values.  */
+
+void
+verify_item (const location &loc,
+	     const optinfo_item *item,
+	     enum optinfo_item_kind expected_kind,
+	     location_t expected_location,
+	     const char *expected_text);
+
+/* Verify that ITEM is a text item, with EXPECTED_TEXT.  */
+
+#define ASSERT_IS_TEXT(ITEM, EXPECTED_TEXT) \
+  SELFTEST_BEGIN_STMT						    \
+    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TEXT, \
+		 UNKNOWN_LOCATION, (EXPECTED_TEXT));		    \
+  SELFTEST_END_STMT
+
+/* Verify that ITEM is a tree item, with the expected values.  */
+
+#define ASSERT_IS_TREE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
+  SELFTEST_BEGIN_STMT						    \
+    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_TREE, \
+		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
+  SELFTEST_END_STMT
+
+/* Verify that ITEM is a gimple item, with the expected values.  */
+
+#define ASSERT_IS_GIMPLE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
+  SELFTEST_BEGIN_STMT						    \
+    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_GIMPLE, \
+		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
+  SELFTEST_END_STMT
+
+} // namespace selftest
 
 #endif /* CHECKING_P */
 

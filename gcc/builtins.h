@@ -57,7 +57,14 @@ extern bool get_pointer_alignment_1 (tree, unsigned int *,
 				     unsigned HOST_WIDE_INT *);
 extern unsigned int get_pointer_alignment (tree);
 extern unsigned string_length (const void*, unsigned, unsigned);
-extern tree c_strlen (tree, int, unsigned = 1);
+struct c_strlen_data
+{
+  tree decl;
+  tree len;
+  tree off;
+};
+
+extern tree c_strlen (tree, int, c_strlen_data * = NULL, unsigned = 1);
 extern void expand_builtin_setjmp_setup (rtx, rtx);
 extern void expand_builtin_setjmp_receiver (rtx);
 extern void expand_builtin_update_setjmp_buf (rtx);
@@ -103,6 +110,8 @@ extern bool target_char_cst_p (tree t, char *p);
 extern internal_fn associated_internal_fn (tree);
 extern internal_fn replacement_internal_fn (gcall *);
 
+extern void warn_string_no_nul (location_t, const char *, tree, tree);
+extern tree unterminated_array (tree, tree * = NULL, bool * = NULL);
 extern tree max_object_size ();
 
 #endif /* GCC_BUILTINS_H */

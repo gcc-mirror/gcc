@@ -1,5 +1,5 @@
 // PR c++/84854
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 constexpr int foo () { return 1; }
 constexpr int foo (int) { return 2; }

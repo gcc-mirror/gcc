@@ -498,7 +498,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 enum c_language_kind
 {
-  clk_c		= 0,		/* C90, C94, C99 or C11 */
+  clk_c		= 0,		/* C90, C94, C99, C11 or C2X */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
   clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
@@ -635,13 +635,17 @@ extern int flag_cond_mismatch;
 
 extern int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
+/* Nonzero means use the ISO C99 (or later) dialect of C.  */
 
 extern int flag_isoc99;
 
-/* Nonzero means use the ISO C11 dialect of C.  */
+/* Nonzero means use the ISO C11 (or later) dialect of C.  */
 
 extern int flag_isoc11;
+
+/* Nonzero means use the ISO C2X dialect of C.  */
+
+extern int flag_isoc2x;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -1000,8 +1004,9 @@ extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
-extern bool c_cpp_error (cpp_reader *, int, int, rich_location *,
-			 const char *, va_list *)
+extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			      enum cpp_warning_reason, rich_location *,
+			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *);
 

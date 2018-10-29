@@ -8,9 +8,7 @@ import (
 	"unsafe"
 )
 
-type mOS struct {
-	unused byte
-}
+type mOS struct{}
 
 //go:noescape
 //extern _umtx_op

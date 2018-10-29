@@ -3110,8 +3110,7 @@ s390_legitimate_address_without_index_p (rtx op)
    Valid addresses are single references or a sum of a reference and a
    constant integer. Return these parts in SYMREF and ADDEND.  You can
    pass NULL in REF and/or ADDEND if you are not interested in these
-   values.  Literal pool references are *not* considered symbol
-   references.  */
+   values.  */
 
 static bool
 s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
@@ -3130,7 +3129,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
       addr = XEXP (addr, 0);
     }
 
-  if ((GET_CODE (addr) == SYMBOL_REF && !CONSTANT_POOL_ADDRESS_P (addr))
+  if (GET_CODE (addr) == SYMBOL_REF
       || (GET_CODE (addr) == UNSPEC
 	  && (XINT (addr, 1) == UNSPEC_GOTENT
 	      || XINT (addr, 1) == UNSPEC_PLT)))
@@ -3153,6 +3152,7 @@ s390_loadrelative_operand_p (rtx addr, rtx *symref, HOST_WIDE_INT *addend)
 static int
 s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 {
+  rtx symref;
   struct s390_address addr;
   bool decomposed = false;
 
@@ -3161,7 +3161,10 @@ s390_check_qrst_address (char c, rtx op, bool lit_pool_ok)
 
   /* This check makes sure that no symbolic address (except literal
      pool references) are accepted by the R or T constraints.  */
-  if (s390_loadrelative_operand_p (op, NULL, NULL))
+  if (s390_loadrelative_operand_p (op, &symref, NULL)
+      && (!lit_pool_ok
+          || !SYMBOL_REF_P (symref)
+          || !CONSTANT_POOL_ADDRESS_P (symref)))
     return 0;
 
   /* Ensure literal pool references are only accepted if LIT_POOL_OK.  */
@@ -3854,6 +3857,10 @@ legitimate_pic_operand_p (rtx op)
 {
   /* Accept all non-symbolic constants.  */
   if (!SYMBOLIC_CONST (op))
+    return 1;
+
+  /* Accept addresses that can be expressed relative to (pc).  */
+  if (larl_operand (op, VOIDmode))
     return 1;
 
   /* Reject everything else; must be handled
@@ -6627,11 +6634,16 @@ s390_expand_vec_init (rtx target, rtx vals)
       return;
     }
 
+  /* Use vector replicate instructions.  vlrep/vrepi/vrep  */
   if (all_same)
     {
-      emit_insn (gen_rtx_SET (target,
-			      gen_rtx_VEC_DUPLICATE (mode,
-						     XVECEXP (vals, 0, 0))));
+      rtx elem = XVECEXP (vals, 0, 0);
+
+      /* vec_splats accepts general_operand as source.  */
+      if (!general_operand (elem, GET_MODE (elem)))
+	elem = force_reg (inner_mode, elem);
+
+      emit_insn (gen_rtx_SET (target, gen_rtx_VEC_DUPLICATE (mode, elem)));
       return;
     }
 
@@ -11082,7 +11094,7 @@ s390_emit_prologue (void)
 void
 s390_emit_epilogue (bool sibcall)
 {
-  rtx frame_pointer, return_reg, cfa_restores = NULL_RTX;
+  rtx frame_pointer, return_reg = NULL_RTX, cfa_restores = NULL_RTX;
   int area_bottom, area_top, offset = 0;
   int next_offset;
   int i;
@@ -11191,10 +11203,6 @@ s390_emit_epilogue (bool sibcall)
 
     }
 
-  /* Return register.  */
-
-  return_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
-
   /* Restore call saved gprs.  */
 
   if (cfun_frame_layout.first_restore_gpr != -1)
@@ -11284,7 +11292,19 @@ s390_emit_epilogue (bool sibcall)
   s390_restore_gprs_from_fprs ();
 
   if (! sibcall)
-    emit_jump_insn (gen_return_use (return_reg));
+    {
+      if (!return_reg && !s390_can_use_return_insn ())
+        /* We planned to emit (return), be we are not allowed to.  */
+        return_reg = gen_rtx_REG (Pmode, RETURN_REGNUM);
+
+      if (return_reg)
+        /* Emit (return) and (use).  */
+        emit_jump_insn (gen_return_use (return_reg));
+      else
+        /* The fact that RETURN_REGNUM is used is already reflected by
+           EPILOGUE_USES.  Emit plain (return).  */
+        emit_jump_insn (gen_return ());
+    }
 }
 
 /* Implement TARGET_SET_UP_BY_PROLOGUE.  */

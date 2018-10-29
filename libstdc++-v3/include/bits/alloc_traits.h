@@ -240,6 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Tp, typename... _Args>
 	static _Require<__has_construct<_Tp, _Args...>>
 	_S_construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       template<typename _Tp, typename... _Args>
@@ -247,17 +248,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Require<__and_<__not_<__has_construct<_Tp, _Args...>>,
 			       is_constructible<_Tp, _Args...>>>
 	_S_construct(_Alloc&, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(::new((void*)__p)
+			  _Tp(std::forward<_Args>(__args)...)))
 	{ ::new((void*)__p) _Tp(std::forward<_Args>(__args)...); }
 
       template<typename _Alloc2, typename _Tp>
 	static auto
 	_S_destroy(_Alloc2& __a, _Tp* __p, int)
+	noexcept(noexcept(__a.destroy(__p)))
 	-> decltype(__a.destroy(__p))
 	{ __a.destroy(__p); }
 
       template<typename _Alloc2, typename _Tp>
 	static void
 	_S_destroy(_Alloc2&, _Tp* __p, ...)
+	noexcept(noexcept(__p->~_Tp()))
 	{ __p->~_Tp(); }
 
       template<typename _Alloc2>
@@ -340,6 +345,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Tp, typename... _Args>
 	static auto construct(_Alloc& __a, _Tp* __p, _Args&&... __args)
+	noexcept(noexcept(_S_construct(__a, __p,
+				       std::forward<_Args>(__args)...)))
 	-> decltype(_S_construct(__a, __p, std::forward<_Args>(__args)...))
 	{ _S_construct(__a, __p, std::forward<_Args>(__args)...); }
 
@@ -353,6 +360,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       */
       template<typename _Tp>
 	static void destroy(_Alloc& __a, _Tp* __p)
+	noexcept(noexcept(_S_destroy(__a, __p, 0)))
 	{ _S_destroy(__a, __p, 0); }
 
       /**
@@ -472,6 +480,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up, typename... _Args>
 	static void
 	construct(allocator_type& __a, _Up* __p, _Args&&... __args)
+	noexcept(noexcept(__a.construct(__p, std::forward<_Args>(__args)...)))
 	{ __a.construct(__p, std::forward<_Args>(__args)...); }
 
       /**
@@ -484,6 +493,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Up>
 	static void
 	destroy(allocator_type& __a, _Up* __p)
+	noexcept(noexcept(__a.destroy(__p)))
 	{ __a.destroy(__p); }
 
       /**

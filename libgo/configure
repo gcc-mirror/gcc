@@ -13685,7 +13685,19 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=386
 else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef __ILP32__
+#error x32
+#endif
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
   GOARCH=amd64
+else
+  GOARCH=amd64p32
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
     ;;
@@ -14769,7 +14781,7 @@ else
 fi
 
 
-for ac_func in strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr
+for ac_func in strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr memmem
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"

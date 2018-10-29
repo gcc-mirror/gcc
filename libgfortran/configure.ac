@@ -276,7 +276,7 @@ AC_CHECK_TYPES([ptrdiff_t])
 
 # check header files (we assume C89 is available, so don't check for that)
 AC_CHECK_HEADERS_ONCE(unistd.h sys/random.h sys/time.h sys/times.h \
-sys/resource.h sys/types.h sys/stat.h sys/wait.h \
+sys/resource.h sys/types.h sys/stat.h sys/uio.h sys/wait.h \
 floatingpoint.h ieeefp.h fenv.h fptrap.h \
 fpxcp.h pwd.h complex.h xlocale.h)
 
@@ -315,7 +315,7 @@ else
    AC_CHECK_FUNCS_ONCE(getrusage times mkstemp strtof strtold snprintf \
    ftruncate chsize chdir getentropy getlogin gethostname kill link symlink \
    sleep ttyname \
-   alarm access fork setmode fcntl \
+   alarm access fork setmode fcntl writev \
    gettimeofday stat fstat lstat getpwuid vsnprintf dup \
    getcwd localtime_r gmtime_r getpwuid_r ttyname_r clock_gettime \
    getgid getpid getuid geteuid umask getegid \

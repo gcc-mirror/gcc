@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // 2010-05-20  Paolo Carlini  <paolo.carlini@oracle.com>
 //
@@ -20,6 +21,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // This file tests explicit instantiation of library containers
+// with an allocator for a different value_type (which is a GNU extension).
 
 #include <array>
 #include <testsuite_hooks.h>

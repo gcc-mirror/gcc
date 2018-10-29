@@ -1937,7 +1937,20 @@ gfc_simplify_expr (gfc_expr *p, int type)
       break;
 
     case EXPR_FUNCTION:
-      for (ap = p->value.function.actual; ap; ap = ap->next)
+      // For array-bound functions, we don't need to optimize
+      // the 'array' argument. In particular, if the argument
+      // is a PARAMETER, simplifying might convert an EXPR_VARIABLE
+      // into an EXPR_ARRAY; the latter has lbound = 1, the former
+      // can have any lbound.
+      ap = p->value.function.actual;
+      if (p->value.function.isym &&
+	  (p->value.function.isym->id == GFC_ISYM_LBOUND
+	   || p->value.function.isym->id == GFC_ISYM_UBOUND
+	   || p->value.function.isym->id == GFC_ISYM_LCOBOUND
+	   || p->value.function.isym->id == GFC_ISYM_UCOBOUND))
+	ap = ap->next;
+
+      for ( ; ap; ap = ap->next)
 	if (!gfc_simplify_expr (ap->expr, type))
 	  return false;
 
@@ -3957,13 +3970,13 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 	  }
     }
 
-  /* Error for assignments of contiguous pointers to targets which is not
+  /* Warn for assignments of contiguous pointers to targets which is not
      contiguous.  Be lenient in the definition of what counts as
      contiguous.  */
 
   if (lhs_attr.contiguous && !gfc_is_simply_contiguous (rvalue, false, true))
-    gfc_error ("Assignment to contiguous pointer from non-contiguous "
-	       "target at %L", &rvalue->where);
+    gfc_warning (OPT_Wextra, "Assignment to contiguous pointer from "
+		 "non-contiguous target at %L", &rvalue->where);
 
   /* Warn if it is the LHS pointer may lives longer than the RHS target.  */
   if (warn_target_lifetime

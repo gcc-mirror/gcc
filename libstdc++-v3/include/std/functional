@@ -864,7 +864,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename... _Args>					\
 	decltype(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>())		\
 	operator()(_Args&&... __args) _QUALS				\
-	noexcept(noexcept(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>()))	\
+	noexcept(__is_nothrow_invocable<_Fn _QUALS, _Args...>::value	\
+	    && noexcept(_S_not<__inv_res_t<_Fn _QUALS, _Args...>>()))	\
 	{								\
 	  return !std::__invoke(std::forward< _Fn _QUALS >(_M_fn),	\
 				std::forward<_Args>(__args)...);	\

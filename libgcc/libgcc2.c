@@ -1939,15 +1939,9 @@ NAME (TYPE x, int m)
 #define CONCAT2(A,B)	_CONCAT2(A,B)
 #define _CONCAT2(A,B)	A##B
 
-/* All of these would be present in a full C99 implementation of <math.h>
-   and <complex.h>.  Our problem is that only a few systems have such full
-   implementations.  Further, libgcc_s.so isn't currently linked against
-   libm.so, and even for systems that do provide full C99, the extra overhead
-   of all programs using libgcc having to link against libm.  So avoid it.  */
-
-#define isnan(x)	__builtin_expect ((x) != (x), 0)
-#define isfinite(x)	__builtin_expect (!isnan((x) - (x)), 1)
-#define isinf(x)	__builtin_expect (!isnan(x) & !isfinite(x), 0)
+#define isnan(x)	__builtin_isnan (x)
+#define isfinite(x)	__builtin_isfinite (x)
+#define isinf(x)	__builtin_isinf (x)
 
 #define INFINITY	CONCAT2(__builtin_huge_val, CEXT) ()
 #define I		1i

@@ -1,5 +1,5 @@
 // PR c++/85883
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <typename T1, typename T2>
 struct Bar

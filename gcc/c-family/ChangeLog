@@ -1,3 +1,106 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_isoc2x): New variable.
+	* c-common.h (clk_c): Update comment to reference C2X.
+	(flag_isoc99, flag_isoc11): Update comments to reference future
+	standard versions in general.
+	(flag_isoc2x): Declare.
+	* c-opts.c (set_std_c2x): New function.
+	(c_common_handle_option): Handle -std=c2x and -std=gnu2x.
+	(set_std_c89, set_std_c99, set_std_c11, set_std_c17): Set
+	flag_isoc2x to 0.
+	* c.opt (Wc11-c2x-compat, std=c2x, std=gnu2x): New options.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (std=c17, std=c18, std=gnu17, std=gnu18, std=iso9899:2017)
+	(std=iso9899:2018): Document C17 as published in 2018.
+
+2018-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR c++/87364
+	* c-pretty-print.c (c_pretty_printer::constant): Fix typo.
+
+2018-10-11  Will Wray  <wjwray@gmail.com>
+
+	PR c++/87364
+	* c-pretty-print.h (pp_c_type_cast): Prototype.
+	(pp_c_integer_constant): Likewise.
+	* c-pretty-print.c (pp_c_type_cast): No longer static.
+	(pp_c_integer_constant): Likewise.
+	(pp_c_enumeration_constant): Fix loop termination when finding
+	name of constant.  No longer returns a value.  Call
+	pp_c_integer_constant.
+	(c_pretty_printer::constant): Update for changes to
+	pp_c_enumeration_constant.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Return 201803 instead of 20180312
+	for no_unique_address.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_option_controlling_cpp_error): Rename to...
+	(c_option_controlling_cpp_diagnostic): ...this, and convert
+	"reason" from int to enum.
+	(c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-common.h (c_cpp_error): Rename to...
+	(c_cpp_diagnostic): ...this, converting level and reason to enums.
+	* c-opts.c (c_common_init_options): Update for renaming.
+
+2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
+
+	PR c/87286
+	* c-common.c (vector_types_compatible_elements_p): Use
+	INTEGRAL_TYPE_P instead of checking only for INTEGER_TYPE.
+
+2018-10-04  Vinay Kumar  <vinay.kumar@blackfigtech.com>
+
+	* c-attribs.c (get_priority): Add a warning flag warn_prio_ctor_dtor
+	to generate constructor destructor priority warning.
+	* c.opt (-Wprio-ctor-dtor): New option.
+
+2018-10-01  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Add no_unique_address.
+
+2018-10-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (get_underlying_decl): Get to the main type variant.
+	(dump_ada_node): Add const keyword.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* c-common.c (c_common_truthvalue_conversion):
+	Remove Pascal from documentation.
+
+2018-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c: Include diagnostic.h.
+	(dump_ada_declaration) <RECORD_TYPE>: Issue a warning on packed layout.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	* c.opt (Wclass-conversion): New.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (range_label_for_format_type_mismatch::get_text):
+	Update for new param.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (format_warning_at_char): Update for introduction of
+	format_string_diagnostic_t.
+	(format_type_warning): Likewise.
+
+2018-09-17  Martin Jambor  <mjambor@suse.cz>
+
+	PR c/63886
+	* c.opt (Wabsolute-value): New.
+
 2018-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-common.c (complete_flexible_array_elts): New helper function.

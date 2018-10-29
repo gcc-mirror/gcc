@@ -44,7 +44,7 @@ using __gnu_test::propagating_allocator;
 
 void test01()
 {
-  typedef std::allocator<T> alloc_type;
+  typedef std::allocator<std::pair<const T, T>> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1;
   test_type v2;
@@ -55,7 +55,7 @@ void test01()
 
 void test02()
 {
-  typedef std::allocator<T> alloc_type;
+  typedef std::allocator<std::pair<const T, T>> alloc_type;
   typedef std::unordered_multimap<T, T, hash_t, equal_to, alloc_type> test_type;
   test_type v1;
   test_type v2;
@@ -65,7 +65,7 @@ void test02()
 
 void test03()
 {
-  typedef std::allocator<T> alloc_type;
+  typedef std::allocator<std::pair<const T, T>> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to_t, alloc_type>
     test_type;
   test_type v1;
@@ -76,7 +76,7 @@ void test03()
 
 void test04()
 {
-  typedef propagating_allocator<T, false> alloc_type;
+  typedef propagating_allocator<std::pair<const T, T>, false> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   test_type v2(alloc_type(2));
@@ -86,7 +86,7 @@ void test04()
 
 void test05()
 {
-  typedef propagating_allocator<T, true> alloc_type;
+  typedef propagating_allocator<std::pair<const T, T>, true> alloc_type;
   typedef std::unordered_multimap<T, T, hash, equal_to, alloc_type> test_type;
   test_type v1(alloc_type(1));
   test_type v2(alloc_type(2));

@@ -11155,10 +11155,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  {
 	    rtx_code_label *label = gen_label_rtx ();
 	    int value = TREE_CODE (rhs) == BIT_IOR_EXPR;
-	    do_jump (TREE_OPERAND (rhs, 1),
-		     value ? label : 0,
-		     value ? 0 : label,
-		     profile_probability::uninitialized ());
+	    profile_probability prob = profile_probability::uninitialized ();
+ 	    if (value)
+ 	      jumpifnot (TREE_OPERAND (rhs, 1), label, prob);
+ 	    else
+ 	      jumpif (TREE_OPERAND (rhs, 1), label, prob);
 	    expand_assignment (lhs, build_int_cst (TREE_TYPE (rhs), value),
 			       false);
 	    do_pending_stack_adjust ();
@@ -11303,15 +11304,11 @@ is_aligning_offset (const_tree offset, const_tree exp)
 /* Return the tree node if an ARG corresponds to a string constant or zero
    if it doesn't.  If we return nonzero, set *PTR_OFFSET to the (possibly
    non-constant) offset in bytes within the string that ARG is accessing.
-   If NONSTR is non-null, consider valid even sequences of characters that
-   aren't nul-terminated strings.  In that case, if ARG refers to such
-   a sequence set *NONSTR to its declaration and clear it otherwise.
-   The type of the offset is sizetype.  If MEM_SIZE is non-zero the storage
-   size of the memory is returned.  If MEM_SIZE is zero, the string is
-   only returned when it is properly zero terminated.  */
+   If MEM_SIZE is non-zero the storage size of the memory is returned.
+   If DECL is non-zero the constant declaration is returned if available.  */
 
 tree
-string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
+string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 {
   tree array;
   STRIP_NOPS (arg);
@@ -11340,6 +11337,12 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 
 	      if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
 		return NULL_TREE;
+
+	      if (!integer_zerop (array_ref_low_bound (arg)))
+		return NULL_TREE;
+
+	      if (!integer_onep (array_ref_element_size (arg)))
+		return NULL_TREE;
 	    }
 	}
       array = get_addr_base_and_unit_offset (ref, &base_off);
@@ -11365,16 +11368,51 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
 	return NULL_TREE;
 
       tree offset;
-      if (tree str = string_constant (arg0, &offset, mem_size, nonstr))
+      if (tree str = string_constant (arg0, &offset, mem_size, decl))
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
 	      && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE
-	      && TREE_CODE (TREE_OPERAND (arg0, 0)) == ARRAY_REF)
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
 	  tree type = TREE_TYPE (arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
+	  return str;
+	}
+      return NULL_TREE;
+    }
+  else if (TREE_CODE (arg) == SSA_NAME)
+    {
+      gimple *stmt = SSA_NAME_DEF_STMT (arg);
+      if (!is_gimple_assign (stmt))
+	return NULL_TREE;
+
+      tree rhs1 = gimple_assign_rhs1 (stmt);
+      tree_code code = gimple_assign_rhs_code (stmt);
+      if (code == ADDR_EXPR)
+	return string_constant (rhs1, ptr_offset, mem_size, decl);
+      else if (code != POINTER_PLUS_EXPR)
+	return NULL_TREE;
+
+      tree offset;
+      if (tree str = string_constant (rhs1, &offset, mem_size, decl))
+	{
+	  /* Avoid pointers to arrays (see bug 86622).  */
+	  if (POINTER_TYPE_P (TREE_TYPE (rhs1))
+	      && TREE_CODE (TREE_TYPE (TREE_TYPE (rhs1))) == ARRAY_TYPE
+	      && !(decl && !*decl)
+	      && !(decl && tree_fits_uhwi_p (DECL_SIZE_UNIT (*decl))
+		   && mem_size && tree_fits_uhwi_p (*mem_size)
+		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
+	    return NULL_TREE;
+
+	  tree rhs2 = gimple_assign_rhs2 (stmt);
+	  tree type = TREE_TYPE (rhs2);
+	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, rhs2);
 	  return str;
 	}
       return NULL_TREE;
@@ -11395,11 +11433,7 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       if (TREE_CODE (chartype) != INTEGER_TYPE)
 	return NULL;
 
-      tree charsize = array_ref_element_size (arg);
-      /* Set the non-constant offset to the non-constant index scaled
-	 by the size of the character type.  */
-      offset = fold_build2 (MULT_EXPR, TREE_TYPE (offset),
-			    fold_convert (sizetype, varidx), charsize);
+      offset = fold_convert (sizetype, varidx);
     }
 
   if (TREE_CODE (array) == STRING_CST)
@@ -11407,9 +11441,10 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
       *ptr_offset = fold_convert (sizetype, offset);
       if (mem_size)
 	*mem_size = TYPE_SIZE_UNIT (TREE_TYPE (array));
-      /* This is not strictly correct.  FIXME in follow-up patch.  */
-      if (nonstr)
-	*nonstr = NULL_TREE;
+      if (decl)
+	*decl = NULL_TREE;
+      gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (array)))
+			   >= TREE_STRING_LENGTH (array));
       return array;
     }
 
@@ -11452,40 +11487,13 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *nonstr)
   if (!init || TREE_CODE (init) != STRING_CST)
     return NULL_TREE;
 
-  tree array_size = DECL_SIZE_UNIT (array);
-  if (!array_size || TREE_CODE (array_size) != INTEGER_CST)
-    return NULL_TREE;
-
-  /* Avoid returning an array that is unterminated because it lacks
-     a terminating nul, like
-     const char a[4] = "abcde";
-     but do handle those that are strings even if they have excess
-     initializers, such as in
-     const char a[4] = "abc\000\000";
-     The excess elements contribute to TREE_STRING_LENGTH()
-     but not to strlen().  */
-  unsigned HOST_WIDE_INT charsize
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (init))));
-  /* Compute the lower bound number of elements (not bytes) in the array
-     that the string is used to initialize.  The actual size of the array
-     may be greater if the string is shorter, but the the important
-     data point is whether the literal, inlcuding the terminating nul,
-     fits the array.  */
-  unsigned HOST_WIDE_INT array_elts
-    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (init))) / charsize;
-
-  /* Compute the string length in (wide) characters.  */
-  unsigned HOST_WIDE_INT length = TREE_STRING_LENGTH (init);
-  length = string_length (TREE_STRING_POINTER (init), charsize,
-			  length / charsize);
   if (mem_size)
     *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
-  if (nonstr)
-    *nonstr = array_elts > length ? NULL_TREE : array;
+  if (decl)
+    *decl = array;
 
-  if ((!mem_size && !nonstr)
-      && array_elts <= length)
-    return NULL_TREE;
+  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
+		       >= TREE_STRING_LENGTH (init));
 
   *ptr_offset = offset;
   return init;
@@ -11870,12 +11878,10 @@ do_store_flag (sepops ops, rtx target, machine_mode mode)
   /* We won't bother with store-flag operations involving function pointers
      when function pointers must be canonicalized before comparisons.  */
   if (targetm.have_canonicalize_funcptr_for_compare ()
-      && ((TREE_CODE (TREE_TYPE (arg0)) == POINTER_TYPE
-	   && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg0)))
-	       == FUNCTION_TYPE))
-	  || (TREE_CODE (TREE_TYPE (arg1)) == POINTER_TYPE
-	      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg1)))
-		  == FUNCTION_TYPE))))
+      && ((POINTER_TYPE_P (TREE_TYPE (arg0))
+	   && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg0))))
+	  || (POINTER_TYPE_P (TREE_TYPE (arg1))
+	      && FUNC_OR_METHOD_TYPE_P (TREE_TYPE (TREE_TYPE (arg1))))))
     return 0;
 
   STRIP_NOPS (arg0);

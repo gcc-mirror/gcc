@@ -82,7 +82,7 @@ value_range *
 evrp_range_analyzer::try_find_new_range (tree name,
 				    tree op, tree_code code, tree limit)
 {
-  value_range vr = VR_INITIALIZER;
+  value_range vr;
   value_range *old_vr = get_value_range (name);
 
   /* Discover VR when condition is true.  */
@@ -90,11 +90,11 @@ evrp_range_analyzer::try_find_new_range (tree name,
 							 limit, &vr);
   /* If we found any usable VR, set the VR to ssa_name and create a
      PUSH old value in the stack with the old VR.  */
-  if (vr.type == VR_RANGE || vr.type == VR_ANTI_RANGE)
+  if (!vr.undefined_p () && !vr.varying_p ())
     {
-      if (old_vr->type == vr.type
-	  && vrp_operand_equal_p (old_vr->min, vr.min)
-	  && vrp_operand_equal_p (old_vr->max, vr.max))
+      if (old_vr->kind () == vr.kind ()
+	  && vrp_operand_equal_p (old_vr->min (), vr.min ())
+	  && vrp_operand_equal_p (old_vr->max (), vr.max ()))
 	return NULL;
       value_range *new_vr = vr_values->allocate_value_range ();
       *new_vr = vr;
@@ -110,13 +110,10 @@ evrp_range_analyzer::set_ssa_range_info (tree lhs, value_range *vr)
   /* Set the SSA with the value range.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (lhs)))
     {
-      if ((vr->type == VR_RANGE
-	   || vr->type == VR_ANTI_RANGE)
-	  && (TREE_CODE (vr->min) == INTEGER_CST)
-	  && (TREE_CODE (vr->max) == INTEGER_CST))
-	set_range_info (lhs, vr->type,
-			wi::to_wide (vr->min),
-			wi::to_wide (vr->max));
+      if (vr->constant_p ())
+	set_range_info (lhs, vr->kind (),
+			wi::to_wide (vr->min ()),
+			wi::to_wide (vr->max ()));
     }
   else if (POINTER_TYPE_P (TREE_TYPE (lhs))
 	   && range_includes_zero_p (vr) == 0)
@@ -206,6 +203,14 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	     ordering issues that can lead to worse ranges.  */
 	  for (unsigned i = 0; i < vrs.length (); ++i)
 	    {
+	      /* But make sure we do not weaken ranges like when
+	         getting first [64, +INF] and then ~[0, 0] from
+		 conditions like (s & 0x3cc0) == 0).  */
+	      value_range *old_vr = get_value_range (vrs[i].first);
+	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
+	      tem.intersect (vrs[i].second);
+	      if (tem.ignore_equivs_equal_p (*old_vr))
+		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
 		  && all_uses_feed_or_dominated_by_stmt (vrs[i].first, stmt))
@@ -241,7 +246,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
       if (virtual_operand_p (lhs))
 	continue;
 
-      value_range vr_result = VR_INITIALIZER;
+      value_range vr_result;
       bool interesting = stmt_interesting_for_vrp (phi);
       if (!has_unvisited_preds && interesting)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
@@ -284,7 +289,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
   else if (stmt_interesting_for_vrp (stmt))
     {
       edge taken_edge;
-      value_range vr = VR_INITIALIZER;
+      value_range vr;
       vr_values->extract_range_from_stmt (stmt, &taken_edge, &output, &vr);
       if (output)
 	{
@@ -315,7 +320,7 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 bitmaps.  Ugh.  */
 	      value_range *new_vr = vr_values->allocate_value_range ();
 	      *new_vr = vr;
-	      new_vr->equiv = NULL;
+	      new_vr->equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }
 	}

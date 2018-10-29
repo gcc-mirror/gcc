@@ -158,11 +158,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       const chrono::duration<_Rep, _Period>& __rtime,
 	       _Predicate __p)
       {
-	using __dur = typename __clock_t::duration;
+	using __dur = typename __steady_clock_t::duration;
 	auto __reltime = chrono::duration_cast<__dur>(__rtime);
 	if (__reltime < __rtime)
 	  ++__reltime;
-	return wait_until(__lock, __clock_t::now() + __reltime, std::move(__p));
+	return wait_until(__lock, __steady_clock_t::now() + __reltime,
+			  std::move(__p));
       }
 
     native_handle_type

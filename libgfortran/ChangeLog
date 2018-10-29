@@ -1,3 +1,93 @@
+2018-10-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (compare_file_filename): Use gfc_charlen_type instead
+	of int for string length.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_access): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+	* io/unix.h (compare_file_filename): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+
+2018-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* io/close.c [!HAVE_UNLINK_OPEN_FILE]: Include <string.h>.
+
+2018-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Check for writev and sys/uio.h.
+	* libgfortran.h: Include sys/uio.h.
+	(st_vprintf): Remove prototype.
+	(struct iovec): Define if not available.
+	(estr_writev): New prototype.
+	* runtime/backtrace.c (error_callback): Use estr_writev.
+	* runtime/error.c (ST_VPRINTF_SIZE): Remove.
+	(estr_writev): New function.
+	(st_vprintf): Remove.
+	(gf_vsnprintf): New function.
+	(ST_ERRBUF_SIZE): New macro.
+	(st_printf): Use vsnprintf.
+	(os_error): Use estr_writev.
+	(runtime_error): Use vsnprintf and estr_writev.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(internal_error): Use estr_writev.
+	(generate_error_common): Likewise.
+	(generate_warning): Likewise.
+	(notify_std): Likewise.
+	* runtime/pause.c (pause_string): Likewise.
+	* runtime/stop.c (report_exception): Likewise.
+	(stop_string): Likewise.
+	(error_stop_string): Likewise.
+
+2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37802
+	* m4/matmul_internal.m4: Adjust error messages.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+        * generated/matmulavx128_c10.c: Regenerated.
+        * generated/matmulavx128_c16.c: Regenerated.
+        * generated/matmulavx128_c4.c: Regenerated.
+        * generated/matmulavx128_c8.c: Regenerated.
+        * generated/matmulavx128_i1.c: Regenerated.
+        * generated/matmulavx128_i16.c: Regenerated.
+        * generated/matmulavx128_i2.c: Regenerated.
+        * generated/matmulavx128_i4.c: Regenerated.
+        * generated/matmulavx128_i8.c: Regenerated.
+        * generated/matmulavx128_r10.c: Regenerated.
+        * generated/matmulavx128_r16.c: Regenerated.
+        * generated/matmulavx128_r4.c: Regenerated.
+        * generated/matmulavx128_r8.c: Regenerated.
+
+2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* io/unix.c (fallback_access): Avoid calling close on
+	uninitialized file descriptor.
+
 2018-09-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* runtime/minimal.c (estr_write): Define in terms of write.

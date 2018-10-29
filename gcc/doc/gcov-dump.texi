@@ -61,7 +61,7 @@ gcov-dump [@option{-v}|@option{--version}]
      [@option{-h}|@option{--help}]
      [@option{-l}|@option{--long}]
      [@option{-p}|@option{--positions}]
-     [@option{-w}|@option{--working-sets}] @var{gcovfiles}
+     @var{gcovfiles}
 @c man end
 @end ignore
 
@@ -84,10 +84,6 @@ Dump positions of records.
 @itemx --version
 Display the @command{gcov-dump} version number (on the standard output),
 and exit without doing any further processing.
-
-@item -w
-@itemx --working-sets
-Dump working set computed from summary.
 @end table
 
 @c man end

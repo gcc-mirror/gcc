@@ -162,6 +162,7 @@
 #include "df.h"
 #include "insn-config.h"
 #include "memmodel.h"
+#include "regs.h"
 #include "emit-rtl.h"  /* FIXME: Can go away once crtl is moved to rtl.h.  */
 #include "recog.h"
 #include "varasm.h"
@@ -711,7 +712,7 @@ replace_reg (rtx *reg, int regno)
   gcc_assert (IN_RANGE (regno, FIRST_STACK_REG, LAST_STACK_REG));
   gcc_assert (STACK_REG_P (*reg));
 
-  gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (*reg))
+  gcc_assert (GET_MODE_CLASS (GET_MODE (*reg)) == MODE_FLOAT
 	      || GET_MODE_CLASS (GET_MODE (*reg)) == MODE_COMPLEX_FLOAT);
 
   *reg = FP_MODE_REG (regno, GET_MODE (*reg));
@@ -765,8 +766,10 @@ get_hard_regnum (stack_ptr regstack, rtx reg)
    cases the movdf pattern to pop.  */
 
 static rtx_insn *
-emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where where)
+emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg,
+	       enum emit_where where)
 {
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
   rtx_insn *pop_insn;
   rtx pop_rtx;
   int hard_regno;
@@ -775,8 +778,8 @@ emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where wher
      CLOBBER and USE expressions.  */
   if (COMPLEX_MODE_P (GET_MODE (reg)))
     {
-      rtx reg1 = FP_MODE_REG (REGNO (reg), DFmode);
-      rtx reg2 = FP_MODE_REG (REGNO (reg) + 1, DFmode);
+      rtx reg1 = FP_MODE_REG (REGNO (reg), raw_mode);
+      rtx reg2 = FP_MODE_REG (REGNO (reg) + 1, raw_mode);
 
       pop_insn = NULL;
       if (get_hard_regnum (regstack, reg1) >= 0)
@@ -791,15 +794,15 @@ emit_pop_insn (rtx_insn *insn, stack_ptr regstack, rtx reg, enum emit_where wher
 
   gcc_assert (hard_regno >= FIRST_STACK_REG);
 
-  pop_rtx = gen_rtx_SET (FP_MODE_REG (hard_regno, DFmode),
-			 FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  pop_rtx = gen_rtx_SET (FP_MODE_REG (hard_regno, raw_mode),
+			 FP_MODE_REG (FIRST_STACK_REG, raw_mode));
 
   if (where == EMIT_AFTER)
     pop_insn = emit_insn_after (pop_rtx, insn);
   else
     pop_insn = emit_insn_before (pop_rtx, insn);
 
-  add_reg_note (pop_insn, REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, DFmode));
+  add_reg_note (pop_insn, REG_DEAD, FP_MODE_REG (FIRST_STACK_REG, raw_mode));
 
   regstack->reg[regstack->top - (hard_regno - FIRST_STACK_REG)]
     = regstack->reg[regstack->top];
@@ -820,7 +823,6 @@ static void
 emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
 {
   int hard_regno;
-  rtx swap_rtx;
   int other_reg;		/* swap regno temps */
   rtx_insn *i1;			/* the stack-reg insn prior to INSN */
   rtx i1set = NULL_RTX;		/* the SET rtx within I1 */
@@ -978,9 +980,13 @@ emit_swap_insn (rtx_insn *insn, stack_ptr regstack, rtx reg)
       return;
     }
 
-  swap_rtx = gen_swapxf (FP_MODE_REG (hard_regno, XFmode),
-			 FP_MODE_REG (FIRST_STACK_REG, XFmode));
-
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
+  rtx op1 = FP_MODE_REG (hard_regno, raw_mode);
+  rtx op2 = FP_MODE_REG (FIRST_STACK_REG, raw_mode);
+  rtx swap_rtx
+    = gen_rtx_PARALLEL (VOIDmode,
+			gen_rtvec (2, gen_rtx_SET (op1, op2),
+				   gen_rtx_SET (op2, op1)));
   if (i1)
     emit_insn_after (swap_rtx, i1);
   else if (current_block)
@@ -1812,7 +1818,6 @@ subst_stack_regs_pat (rtx_insn *insn, stack_ptr regstack, rtx pat)
 	      case UNSPEC_FRNDINT_FLOOR:
 	      case UNSPEC_FRNDINT_CEIL:
 	      case UNSPEC_FRNDINT_TRUNC:
-	      case UNSPEC_FRNDINT_MASK_PM:
 
 		/* Above insns operate on the top of the stack.  */
 
@@ -2487,6 +2492,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      enum emit_where where)
 {
   int reg;
+  machine_mode raw_mode = reg_raw_mode[FIRST_STACK_REG];
   rtx_insn *update_end = NULL;
   int i;
 
@@ -2588,7 +2594,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 		next--;
 	      dest = next--;
 	    }
-	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], DFmode),
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[dest], raw_mode),
 			 EMIT_BEFORE);
 	}
     }
@@ -2610,11 +2616,11 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	  {
 	    while (TEST_HARD_REG_BIT (new_stack->reg_set, old->reg[next]))
 	      next--;
-	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[next], DFmode),
+	    emit_pop_insn (insn, old, FP_MODE_REG (old->reg[next], raw_mode),
 			   EMIT_BEFORE);
 	  }
 	else
-	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], DFmode),
+	  emit_pop_insn (insn, old, FP_MODE_REG (old->reg[old->top], raw_mode),
 			 EMIT_BEFORE);
     }
 
@@ -2661,7 +2667,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 		gcc_assert (reg != -1);
 
 		emit_swap_insn (insn, old,
-				FP_MODE_REG (old->reg[reg], DFmode));
+				FP_MODE_REG (old->reg[reg], raw_mode));
 	      }
 
 	    /* See if any regs remain incorrect.  If so, bring an
@@ -2672,7 +2678,7 @@ change_stack (rtx_insn *insn, stack_ptr old, stack_ptr new_stack,
 	      if (new_stack->reg[reg] != old->reg[reg])
 		{
 		  emit_swap_insn (insn, old,
-				  FP_MODE_REG (old->reg[reg], DFmode));
+				  FP_MODE_REG (old->reg[reg], raw_mode));
 		  break;
 		}
 	  } while (reg >= 0);

@@ -72,7 +72,7 @@
   [(set (match_dup 0)
         (vec_merge:SUBST_V
 	  (match_dup 1)
-	  (match_operand:SUBST_V 2 "vector_move_operand" "0C")
+	  (match_operand:SUBST_V 2 "nonimm_or_0_operand" "0C")
 	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))])
 
 (define_subst_attr "mask_scalar_merge_name" "mask_scalar_merge" "" "_mask")
@@ -243,7 +243,7 @@
     (match_dup 1)
     (match_dup 2)
     (match_dup 3)
-    (match_operand:SUBST_V 4 "vector_move_operand")
+    (match_operand:SUBST_V 4 "nonimm_or_0_operand")
     (match_operand:<avx512fmaskmode> 5 "register_operand")])
 
 (define_subst_attr "mask_scalar_name" "mask_scalar" "" "_mask")
@@ -261,7 +261,7 @@
 	(vec_merge:SUBST_V
 	  (vec_merge:SUBST_V
 	    (match_dup 1)
-	    (match_operand:SUBST_V 3 "vector_move_operand" "0C")
+	    (match_operand:SUBST_V 3 "nonimm_or_0_operand" "0C")
 	    (match_operand:<avx512fmaskmode> 4 "register_operand" "Yk"))
 	  (match_dup 2)
 	  (const_int 1)))])

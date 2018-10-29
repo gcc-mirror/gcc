@@ -44,6 +44,7 @@ enable_vtable_verify = @enable_vtable_verify@
 enable_decimal_float = @enable_decimal_float@
 fixed_point = @fixed_point@
 with_aix_soname = @with_aix_soname@
+solaris_ld_v2_maps = @solaris_ld_v2_maps@
 enable_execute_stack = @enable_execute_stack@
 unwind_header = @unwind_header@
 md_unwind_header = @md_unwind_header@
@@ -470,6 +471,8 @@ LIB2_DIVMOD_FUNCS = _divdi3 _moddi3 _divmoddi4 \
 lib2funcs := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS),$(lib2funcs))
 LIB2_DIVMOD_FUNCS := $(filter-out $(LIB2FUNCS_EXCLUDE) $(LIB1ASMFUNCS), \
 		       $(LIB2_DIVMOD_FUNCS))
+
+LIB2FUNCS_ST := $(filter-out $(LIB2FUNCS_EXCLUDE),$(LIB2FUNCS_ST))
 
 # Build "libgcc1" (assembly) components.
 

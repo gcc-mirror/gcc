@@ -69,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
            typename _Alloc = allocator<_CharT> >
     class basic_string;
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
   /// A string of @c char
   typedef basic_string<char>    string;   
 
@@ -84,8 +86,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   /// A string of @c char32_t
   typedef basic_string<char32_t> u32string; 
 #endif
-
-_GLIBCXX_END_NAMESPACE_CXX11
 
   /** @}  */
 

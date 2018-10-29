@@ -15,12 +15,13 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-
 // This file tests explicit instantiation of library containers
+// with an allocator for a different value_type (which is a GNU extension).
 
 #include <vector>
 
 // { dg-do compile }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // libstdc++/21770
 template class std::vector<int, std::allocator<char> >;

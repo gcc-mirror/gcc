@@ -1112,8 +1112,13 @@ digest_init_r (tree type, tree init, int nested, int flags,
 		 counted in the length of the constant, but in C++ this would
 		 be invalid.  */
 	      if (size < TREE_STRING_LENGTH (init))
-		permerror (loc, "initializer-string for array "
-			   "of chars is too long");
+		{
+		  permerror (loc, "initializer-string for array "
+			     "of chars is too long");
+
+		  init = build_string (size, TREE_STRING_POINTER (init));
+		  TREE_TYPE (init) = type;
+		}
 	    }
 	  return init;
 	}
@@ -2210,7 +2215,7 @@ build_functional_cast (tree exp, tree parms, tsubst_flags_t complain)
    know what we're doing.  */
 
 tree
-add_exception_specifier (tree list, tree spec, int complain)
+add_exception_specifier (tree list, tree spec, tsubst_flags_t complain)
 {
   bool ok;
   tree core = spec;

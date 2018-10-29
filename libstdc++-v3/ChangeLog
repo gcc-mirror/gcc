@@ -1,3 +1,912 @@
+2018-10-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87749
+	* include/bits/basic_string.h [_GLIBCXX_USE_CXX11_ABI]
+	(basic_string::operator=(basic_string&&)): For short strings copy the
+	buffer inline. Only fall back to using assign(const basic_string&) to
+	do a deep copy when reallocation is needed.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/87749.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/char/
+	move_assign_optim.cc: New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/87749.cc:
+	New test.
+	* testsuite/21_strings/basic_string/modifiers/assign/wchar_t/
+	move_assign_optim.cc: New test.
+
+2018-10-25  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/alloc_traits.h (_S_construct, _S_destroy, construct,
+	destroy): Add noexcept specification.
+	* include/bits/allocator.h (construct, destroy): Likewise.
+	* include/ext/alloc_traits.h (construct, destroy): Likewise.
+	* include/ext/malloc_allocator.h (construct, destroy): Likewise.
+	* include/ext/new_allocator.h (construct, destroy): Likewise.
+	* include/bits/stl_uninitialized.h (__relocate_object_a, __relocate_a,
+	__relocate_a_1): New functions.
+	(__is_trivially_relocatable): New class.
+	* include/bits/stl_vector.h (__use_relocate): New static member.
+	* include/bits/vector.tcc (reserve, _M_realloc_insert,
+	_M_default_append): Use __relocate_a.
+	(reserve, _M_assign_aux, _M_realloc_insert, _M_fill_insert,
+	_M_default_append, _M_range_insert): Move _GLIBCXX_ASAN_ANNOTATE_REINIT
+	after _Destroy.
+	* testsuite/23_containers/vector/modifiers/push_back/49836.cc:
+	Replace CopyConsOnlyType with DelAnyAssign.
+
+2018-10-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/safe_unordered_container.h
+	(_Safe_unordered_container<>::_M_invalidate_locals): Take lambda
+	parameter type from local end variable.
+	(_Safe_unordered_container<>::_M_invalidate_all): Likewise.
+	* include/debug/unordered_map
+	(unordered_map<>::begin()): Use C++11 direct initialization.
+	(unordered_map<>::end()): Likewise.
+	(unordered_map<>::cbegin()): Likewise.
+	(unordered_map<>::cend()): Likewise.
+	(unordered_map<>::begin(size_type)): Likewise.
+	(unordered_map<>::end(size_type)): Likewise.
+	(unordered_map<>::cbegin(size_type)): Likewise.
+	(unordered_map<>::cend(size_type)): Likewise.
+	(unordered_map<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_map<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_map<>::insert(const value_type&)): Likewise.
+	(unordered_map<>::insert(value_type&&)): Likewise.
+	(unordered_map<>::insert<>(_Pair&&)): Likewise.
+	(unordered_map<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_map<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_map<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(unordered_map<>::try_emplace<>(const key_type&, _Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(key_type&&, _Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(const_iterator, const key_type&,
+	_Args&&...)): Likewise.
+	(unordered_map<>::try_emplace<>(const_iterator, key_type&&,
+	_Args&&...)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const key_type&, _Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(key_type&&, _Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const_iterator, const key_type&,
+	_Obj&&)): Likewise.
+	(unordered_map<>::insert_or_assign<>(const_iterator, key_type&&,
+	_Obj&&)): Likewise.
+	(unordered_map<>::insert(note_type&&)): Likewise.
+	(unordered_map<>::find(const key_type&)): Likewise.
+	(unordered_map<>::equal_range(const key_type&)): Likewise.
+	(unordered_map<>::_M_extract): New.
+	(unordered_map<>::extract(const_iterator)): Use latter.
+	(unordered_map<>::extract(const key_type&)): Likewise.
+	(unordered_map<>::_M_erase): New.
+	(unordered_map<>::erase(const key_type&)): Use latter.
+	(unordered_map<>::erase(const_iterator)): Likewise.
+	(unordered_map<>::erase(iterator)): Likewise.
+	(unordered_map<>::_M_invalidate): New.
+	(unordered_map<>::erase(const_iterator, const_iterator)): Use latter.
+	(unordered_multimap<>::begin()): Use C++11 direct initialization.
+	(unordered_multimap<>::end()): Likewise.
+	(unordered_multimap<>::cbegin()): Likewise.
+	(unordered_multimap<>::cend()): Likewise.
+	(unordered_multimap<>::begin(size_type)): Likewise.
+	(unordered_multimap<>::end(size_type)): Likewise.
+	(unordered_multimap<>::cbegin(size_type)): Likewise.
+	(unordered_multimap<>::cend(size_type)): Likewise.
+	(unordered_multimap<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_multimap<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_multimap<>::insert(const value_type&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_multimap<>::insert<>(_Pair&&)): Likewise.
+	(unordered_multimap<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(unordered_multimap<>::insert(note_type&&)): Likewise.
+	(unordered_multimap<>::insert(const_iterator, note_type&&)): Likewise.
+	(unordered_multimap<>::find(const key_type&)): Likewise.
+	(unordered_multimap<>::equal_range(const key_type&)): Likewise.
+	(unordered_multimap<>::_M_extract): New.
+	(unordered_multimap<>::extract(const_iterator)): Use latter.
+	(unordered_multimap<>::extract(const key_type&)): Likewise.
+	(unordered_multimap<>::_M_erase): New.
+	(unordered_multimap<>::erase(const_iterator)): Likewise.
+	(unordered_multimap<>::erase(iterator)): Likewise.
+	(unordered_multimap<>::_M_invalidate): New.
+	(unordered_multimap<>::erase(const key_type&)): Use latter.
+	(unordered_multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/unordered_set
+	(unordered_set<>::begin()): Use C++11 direct initialization.
+	(unordered_set<>::end()): Likewise.
+	(unordered_set<>::cbegin()): Likewise.
+	(unordered_set<>::cend()): Likewise.
+	(unordered_set<>::begin(size_type)): Likewise.
+	(unordered_set<>::end(size_type)): Likewise.
+	(unordered_set<>::cbegin(size_type)): Likewise.
+	(unordered_set<>::cend(size_type)): Likewise.
+	(unordered_set<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_set<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_set<>::insert(const value_type&)): Likewise.
+	(unordered_set<>::insert(value_type&&)): Likewise.
+	(unordered_set<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_set<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_set<>::insert(note_type&&)): Likewise.
+	(unordered_set<>::insert(const_iterator, note_type&&)): Likewise.
+	(unordered_set<>::find(const key_type&)): Likewise.
+	(unordered_set<>::equal_range(const key_type&)): Likewise.
+	(unordered_set<>::_M_extract): New.
+	(unordered_set<>::extract(const_iterator)): Use latter.
+	(unordered_set<>::extract(const key_type&)): Likewise.
+	(unordered_set<>::_M_erase): New.
+	(unordered_set<>::erase(const key_type&)): Use latter.
+	(unordered_set<>::erase(const_iterator)): Likewise.
+	(unordered_set<>::erase(iterator)): Likewise.
+	(unordered_set<>::_M_invalidate): New.
+	(unordered_set<>::erase(const_iterator, const_iterator)): Use latter.
+	(unordered_multiset<>::begin()): Use C++11 direct initialization.
+	(unordered_multiset<>::end()): Likewise.
+	(unordered_multiset<>::cbegin()): Likewise.
+	(unordered_multiset<>::cend()): Likewise.
+	(unordered_multiset<>::begin(size_type)): Likewise.
+	(unordered_multiset<>::end(size_type)): Likewise.
+	(unordered_multiset<>::cbegin(size_type)): Likewise.
+	(unordered_multiset<>::cend(size_type)): Likewise.
+	(unordered_multiset<>::emplace<>(_Args&&...)): Likewise.
+	(unordered_multiset<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(unordered_multiset<>::insert(const value_type&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, const value_type&)): Likewise.
+	(unordered_multiset<>::insert(value_type&&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, value_type&&)): Likewise.
+	(unordered_multiset<>::insert(node_type&&)): Likewise.
+	(unordered_multiset<>::insert(const_iterator, node_type&&)): Likewise.
+	(unordered_multiset<>::find(const key_type&)): Likewise.
+	(unordered_multiset<>::equal_range(const key_type&)): Likewise.
+	(unordered_multiset<>::_M_extract): New.
+	(unordered_multiset<>::extract(const_iterator)): Use latter.
+	(unordered_multiset<>::extract(const key_type&)): Likewise.
+	(unordered_multiset<>::_M_erase): New.
+	(unordered_multiset<>::erase(const_iterator)): Likewise.
+	(unordered_multiset<>::erase(iterator)): Likewise.
+	(unordered_multiset<>::_M_invalidate): New.
+	(unordered_multiset<>::erase(const key_type&)): Use latter.
+	(unordered_multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
+	* include/c_global/cstddef: Add versioned namespace.
+
+2018-10-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87704
+	* include/bits/unique_ptr.h (unique_ptr::unique_ptr(nullptr_t)): Do
+	not delegate to default constructor.
+	(unique_ptr<T[], D>::unique_ptr(nullptr_t)): Likewise.
+	* testsuite/20_util/unique_ptr/cons/incomplete.cc: New test.
+
+2018-10-20  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/util/testsuite_containers.h
+	(forward_members_unordered<>::forward_members_unordered
+	(const value_type&)): Add local_iterator pre and post increment checks.
+	* config/abi/pre/gnu.ver: Add GLIBCXX_3.4.26 new symbol.
+
+2018-10-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/array/requirements/explicit_instantiation/
+	3.cc: Skip test when compiled with a -std=c++NN strict mode.
+	* testsuite/23_containers/deque/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/3.cc: Likewise.
+	* testsuite/23_containers/vector/ext_pointer/explicit_instantiation/
+	3.cc: Likewise.
+	* testsuite/23_containers/vector/requirements/explicit_instantiation/
+	3.cc: Likewise.
+
+	* testsuite/23_containers/deque/48101_neg.cc: Prune additional errors
+	printed when __STRICT_ANSI__ is defined.
+	* testsuite/23_containers/forward_list/48101_neg.cc: Likewise.
+	* testsuite/23_containers/list/48101_neg.cc: Likewise.
+	* testsuite/23_containers/multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_multiset/48101_neg.cc: Likewise.
+	* testsuite/23_containers/unordered_set/48101_neg.cc: Likewise.
+	* testsuite/23_containers/vector/48101_neg.cc: Likewise.
+
+	* testsuite/23_containers/forward_list/requirements/
+	explicit_instantiation/5.cc [__STRICT_ANSI__]: Don't test non-standard
+	extension.
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/5.cc
+	[__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/5.cc
+	[__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/debug_container.cc
+	[__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/
+	explicit_instantiation/5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/unordered_multiset/requirements/
+	explicit_instantiation/5.cc [__STRICT_ANSI__]: Likewise.
+	* testsuite/23_containers/unordered_set/requirements/
+	explicit_instantiation/5.cc [__STRICT_ANSI__]: Likewise.
+
+	* testsuite/20_util/scoped_allocator/1.cc: Use allocator with correct
+	value type for the container.
+	* testsuite/23_containers/forward_list/cons/14.cc: Likewise.
+	* testsuite/23_containers/map/56613.cc: Likewise.
+	* testsuite/23_containers/unordered_map/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/copy.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move.cc: Likewise.
+	* testsuite/23_containers/unordered_map/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_map/cons/81891.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	generation_prohibited.cc: Likewise.
+	* testsuite/23_containers/unordered_map/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/55043.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/copy.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/copy_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/minimal.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/move_assign.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/allocator/noexcept.cc:
+	Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	basic.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	generation_prohibited.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/exception/
+	propagation_consistent.cc: Likewise.
+	* testsuite/23_containers/unordered_multimap/requirements/
+	explicit_instantiation/5.cc: Likewise.
+	* testsuite/ext/malloc_allocator/sanity.cc: Likewise.
+
+	* ext/special_functions/airy_ai/check_nan.cc: Skip test for
+	non-standard extension when a strict -std=c++NN dialect is used.
+	* ext/special_functions/airy_ai/check_value.cc: Likewise.
+	* ext/special_functions/airy_ai/compile.cc: Likewise.
+	* ext/special_functions/airy_bi/check_nan.cc: Likewise.
+	* ext/special_functions/airy_bi/check_value.cc: Likewise.
+	* ext/special_functions/airy_bi/compile.cc: Likewise.
+	* ext/special_functions/conf_hyperg/check_nan.cc: Likewise.
+	* ext/special_functions/conf_hyperg/check_value.cc: Likewise.
+	* ext/special_functions/conf_hyperg/compile.cc: Likewise.
+	* ext/special_functions/hyperg/check_nan.cc: Likewise.
+	* ext/special_functions/hyperg/check_value.cc: Likewise.
+	* ext/special_functions/hyperg/compile.cc: Likewise.
+
+	* testsuite/23_containers/list/requirements/explicit_instantiation/
+	5_c++0x.cc: Remove redundant test that is functionally identical to
+	the 5.cc test.
+	* testsuite/23_containers/map/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/multimap/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/multiset/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+	* testsuite/23_containers/set/requirements/explicit_instantiation/
+	5_c++0x.cc: Likewise.
+
+	* include/bits/regex_executor.tcc (_Backref_matcher::_M_apply): Use
+	_GLIBCXX_STD_A to refer to normal mode algorithms.
+	* testsuite/28_regex/headers/regex/parallel_mode.cc: New test.
+	* testsuite/28_regex/headers/regex/std_c++0x_neg.cc: Remove empty
+	whitespace.
+
+	* include/debug/map.h (map::erase(iterator)): Add abi-tag so that
+	C++11 version mangles differently from incompatible C++98 version.
+	* include/debug/multimap.h (multimap::erase(iterator)): Likewise.
+	* include/debug/multiset.h (multiset::erase(iterator))
+	(multiset::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h (set::erase(iterator))
+	(multiset::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/cons/2.cc: Add -ffloat-store to fix
+	failure when compiled without optimisation.
+	* testsuite/ext/profile/mutex_extensions_neg.cc: Prune additional
+	errors caused by C++17 std::pmr alias templates.
+
+	PR libstdc++/87642
+	* config/locale/gnu/monetary_members.cc
+	(moneypunct<char, true>::_M_initialize_moneypunct): Use
+	__narrow_multibyte_chars to convert multibyte thousands separators
+	to a single char.
+	* config/locale/gnu/numeric_members.cc
+	(numpunct<char>::_M_initialize_numpunct): Likewise.
+	(__narrow_multibyte_chars): New function.
+
+	PR libstdc++/87641
+	* include/bits/valarray_array.h (__valarray_sum): Use first element
+	to initialize accumulator instead of value-initializing it.
+	(__valarray_product<_Tp>): Move to ...
+	* src/c++98/valarray.cc (__valarray_product<_Tp>): Here. Use first
+	element to initialize accumulator.
+	(__valarray_product(const valarray<size_t>&)): Remove const_cast made
+	unnecessary by LWG 389.
+	* testsuite/26_numerics/valarray/87641.cc: New test.
+
+2018-10-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	Partial revert.
+	2018-10-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/list (list<>::cbegin()): Use C++11 direct
+	initialization.
+	(list<>::cend()): Likewise.
+	(list<>::erase(const_iterator, const_iterator)): Ensure consistent
+	iterator comparisons.
+	(list<>::splice(const_iterator, list&&, const_iterator,
+	const_iterator)): Likewise.
+
+	Partial revert.
+	2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
+	initialization.
+	(vector<>::cend()): Likewise.
+	(vector<>::insert(const_iterator, const _Tp&)): Use consistent
+	iterator comparison.
+	(vector<>::erase(const_iterator)): Likewise.
+	(vector<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-17  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/87619
+	* include/std/variant (__select_index): Fix an off-by-one.
+	* testsuite/20_util/variant/87619.cc: New.
+
+2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (random_device) [!_GLIBCXX_USE_DEV_RANDOM]:
+	Fix default constructor to call correct function.
+
+	* testsuite/experimental/net/internet/address/v4/creation.cc: Do not
+	declare ip in global namespace, to avoid collision with struct ip
+	defined in <netinet/ip.h>.
+
+	* include/experimental/bits/net.h: Move versioned namespace macros
+	to correct location.
+	* include/experimental/buffer: Likewise.
+	* include/experimental/executor: Likewise.
+	* include/experimental/internet: Likewise.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/netfwd: Likewise.
+	* include/experimental/socket: Likewise.
+	* include/experimental/timer: Likewise.
+
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for headers used by Networking TS.
+	* include/experimental/executor: Include <condition_variable>
+	instead of <mutex>.
+	* include/experimental/internet: Use autoconf macros for available
+	headers.  Include <sys/socket.h> for.  Remove <cstring> and use
+	__builtin_memcpy and __builtin_strchr.
+	(resolver_errc) [!_GLIBCXX_HAVE_NETDB_H]: Do not define.
+	(address_v4::to_string, address_v6::to_string)
+	[!_GLIBCXX_HAVE_ARPA_INET_H]: Likewise.
+	(basic_resolver_results) [!_GLIBCXX_HAVE_NETDB_H]: Make private
+	constructors report errors.
+	[!_GLIBCXX_HAVE_NETINET_TCP_H] (tcp::no_delay): Do not define.
+	* include/experimental/io_context: Likewise.
+	* include/experimental/socket: Likewise.
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H, !_GLIBCXX_HAVE_POLL_H] (socket_base): Do
+	not define nested types when relevant header not available.
+	(__socket_impl::native_non_blocking) [!_GLIBCXX_HAVE_FCNTL_H]: Report
+	an error.
+	(__basic_socket_impl::open, __basic_socket_impl::local_endpoint)
+	(__basic_socket_impl::bind) [!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(__basic_socket_impl::io_control) [!_GLIBCXX_HAVE_SYS_IOCTL_H]:
+	Likewise.
+	(basic_socket::at_mark, basic_socket::shutdown)
+	(basic_socket::remote_endpoint, basic_socket::connect)
+	(basic_socket::async_connect) [!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_socket::available) [_GLIBCXX_HAVE_SYS_IOCTL_H]: Check macro
+	for <sys/ioctl.h> availability.
+	(basic_socket::wait) [!_GLIBCXX_HAVE_POLL_H]: Likewise.
+	(basic_datagram_socket::receive, basic_datagram_socket::async_receive)
+	(basic_datagram_socket::receive_from)
+	(basic_datagram_socket::async_receive_from)
+	(basic_datagram_socket::send, basic_datagram_socket::async_send)
+	(basic_datagram_socket::send_to, basic_datagram_socket::async_send_to)
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_stream_socket::receive, basic_stream_socket::async_receive)
+	(basic_stream_socket::send, basic_stream_socket::async_send)
+	[!_GLIBCXX_HAVE_SYS_SOCKET_H]: Likewise.
+	(basic_socket_acceptor::listen, basic_socket_acceptor::accept)
+	(basic_socket_acceptor::async_accept) [!_GLIBCXX_HAVE_SYS_SOCKET_H]:
+	Likewise.
+	(basic_socket_acceptor::wait) [!_GLIBCXX_HAVE_POLL_H]: Likewise.
+
+	* testsuite/experimental/net/headers.cc: Remove dg-options.
+	* testsuite/experimental/net/buffer/arithmetic.cc: Replace dg-options
+	with dg-do using effective target.
+	* testsuite/experimental/net/buffer/const.cc: Likewise.
+	* testsuite/experimental/net/buffer/creation.cc: Likewise.
+	* testsuite/experimental/net/buffer/mutable.cc: Likewise.
+	* testsuite/experimental/net/buffer/size.cc: Likewise.
+	* testsuite/experimental/net/buffer/traits.cc: Likewise.
+	* testsuite/experimental/net/execution_context/use_service.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc:
+	Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc:
+	Likewise.
+	* testsuite/experimental/net/timer/waitable/cons.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/dest.cc: Likewise.
+	* testsuite/experimental/net/timer/waitable/ops.cc: Likewise.
+
+	* include/experimental/socket (basic_socket::at_mark): Add missing
+	return.
+
+	* acinclude.m4 (GLIBCXX_CHECK_RANDOM_TR1): Replace with ...
+	(GLIBCXX_CHECK_DEV_RANDOM): New macro with more descriptive name.
+	Define _GLIBCXX_USE_DEV_RANDOM as well as _GLIBCXX_USE_RANDOM_TR1.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_DEV_RANDOM instead of
+	GLIBCXX_CHECK_RANDOM_TR1.
+	crossconfig.m4: Likewise.
+	* include/bits/random.h (random_device): Use _GLIBCXX_USE_DEV_RANDOM
+	instead of _GLIBCXX_USE_RANDOM_TR1.
+	* testsuite/26_numerics/random/random_device/cons/token.cc: Likewise.
+
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/lib/dg-options.exp (add_options_for_net_ts): New proc.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc:
+	Add dg-add-options net_ts.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/creation.cc: Likewise.
+	* testsuite/experimental/net/internet/address/v4/members.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/base.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc: Likewise.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc: Likewise.
+
+2018-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/duration/literals/range_neg.cc: Adjust pruned
+	diagnostic to account for quotes around 'constexpr'.
+	* testsuite/23_containers/deque/capacity/max_size.cc: Define static
+	variable.
+	* testsuite/23_containers/vector/capacity/max_size.cc: Likewise.
+
+	PR libstdc++/87618
+	* config/abi/pre/gnu.ver: Fix typos in patterns for basic_stringbuf.
+	* testsuite/27_io/basic_stringbuf/cons/char/default.cc: Disable
+	optimisation to check constructor definition can be linked to.
+	* testsuite/27_io/basic_stringbuf/cons/wchar_t/default.cc: Likewise.
+
+2018-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/numpunct/members/char/3.cc: Adjust test to
+	account for change to glibc it_IT localedata (glibc bz#10797).
+
+	PR libstdc++/87587
+	* src/c++11/cxx11-shim_facets.cc: Suppress -Wabi warnings.
+
+2018-10-15  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/vector (vector<>::cbegin()): Use C++11 direct
+	initialization.
+	(vector<>::cend()): Likewise.
+	(vector<>::emplace(const_iterator, _Args&&...)): Likewise and use
+	consistent iterator comparison.
+	(vector<>::insert(const_iterator, size_type, const _Tp&)): Likewise.
+	(vector<>::insert(const_iterator, _InputIterator, _InputIterator)):
+	Likewise.
+	(vector<>::erase(const_iterator)): Likewise.
+	(vector<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	Initial commit of Networking TS implementation.
+	* include/Makefile.am: Add new headers.
+	* include/Makefile.in: Regenerate.
+	* include/experimental/bits/net.h: New header for common
+	implementation details of Networking TS.
+	* include/experimental/buffer: New header.
+	* include/experimental/executor: New header.
+	* include/experimental/internet: New header.
+	* include/experimental/io_context: New header.
+	* include/experimental/net: New header.
+	* include/experimental/netfwd: New header.
+	* include/experimental/socket: New header.
+	* include/experimental/timer: New header.
+	* testsuite/experimental/net/buffer/arithmetic.cc: New test.
+	* testsuite/experimental/net/buffer/const.cc: New test.
+	* testsuite/experimental/net/buffer/creation.cc: New test.
+	* testsuite/experimental/net/buffer/mutable.cc: New test.
+	* testsuite/experimental/net/buffer/size.cc: New test.
+	* testsuite/experimental/net/buffer/traits.cc: New test.
+	* testsuite/experimental/net/execution_context/use_service.cc: New
+	test.
+	* testsuite/experimental/net/headers.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/comparisons.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/cons.cc: New test.
+	* testsuite/experimental/net/internet/address/v4/creation.cc: New
+	test.
+	* testsuite/experimental/net/internet/address/v4/members.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/base.cc: New test.
+	* testsuite/experimental/net/internet/resolver/ops/lookup.cc: New
+	test.
+	* testsuite/experimental/net/internet/resolver/ops/reverse.cc: New
+	test.
+	* testsuite/experimental/net/timer/waitable/cons.cc: New test.
+	* testsuite/experimental/net/timer/waitable/dest.cc: New test.
+	* testsuite/experimental/net/timer/waitable/ops.cc: New test.
+
+	PR libstdc++/77691
+	* include/experimental/memory_resource (__resource_adaptor_imp): Do
+	not allocate sizes smaller than alignment when relying on guaranteed
+	alignment.
+	* testsuite/experimental/memory_resource/new_delete_resource.cc:
+	Adjust expected number of bytes allocated for alignof(max_align_t).
+
+2018-10-11  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/forward_list
+	(forward_list<>::before_begin()): Use C++11 direct initialization.
+	(forward_list<>::begin()): Likewise.
+	(forward_list<>::end()): Likewise.
+	(forward_list<>::cbefore_begin()): Likewise.
+	(forward_list<>::cbegin()): Likewise.
+	(forward_list<>::cend()): Likewise.
+	(forward_list<>::emplace_after<>(const_iterator, _Args&&...)): Likewise.
+	(forward_list<>::insert_after(const_iterator, const _Tp&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, _Tp&&)): Likewise.
+	(forward_list<>::insert_after(const_iterator, size_type, const _Tp&)):
+	Likewise.
+	(forward_list<>::insert_after(const_iterator, initializer_list<>)):
+	Likewise.
+	(forward_list<>::erase_after(const_iterator)): Likewise.
+	(forward_list<>::erase_after(const_iterator, const_iterator)): Likewise
+	and ensure consistent iterator comparison.
+
+	* include/bits/forward_list.h
+	(_Fwd_list_iterator<>::operator==): Replace member function with inline
+	friend.
+	(_Fwd_list_iterator<>::operator!=): Likewise.
+	(_Fwd_list_const_iterator<>::operator==): Likewise.
+	(_Fwd_list_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(operator!=(const _Fwd_list_iterator<>&,
+	const _Fwd_list_const_iterator<>&)): Remove.
+	(forward_list<>::_Node): Take typedef from base type.
+	(forward_list<>::iterator): Likewise.
+	(forward_list<>::const_iterator): Likewise.
+
+2018-10-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/80538
+	* src/c++11/thread.cc (this_thread::__sleep_for)
+	[_GLIBCXX_HAVE_SLEEP]: Only call sleep for non-zero values.
+	Loop while sleep call is interrupted and until steady_clock
+	shows requested duration has elapsed.
+	(!_GLIBCXX_HAVE_USLEEP]: Use the _GLIBCXX_HAVE_SLEEP code path, but
+	avoiding the usleep call.
+	* testsuite/30_threads/this_thread/60421.cc: Test repeated
+	signal interruptions.
+
+	* include/bits/allocator.h
+	(operator==(const allocator<_Tp>&, const allocator<_Tp>))
+	(operator!=(const allocator<_Tp>&, const allocator<_Tp>)): Replace
+	with inline friends.
+	* include/ext/debug_allocator.h (operator==, operator!=): Replace
+	with inline friend functions that compare to rebound allocators.
+	* include/ext/malloc_allocator.h (operator==, operator!=): Likewise.
+	* include/ext/new_allocator.h (operator==, operator!=): Likewise.
+	* testsuite/ext/debug_allocator/eq.cc: New test.
+	* testsuite/ext/ext_pointer/alloc_eq.cc: New test.
+	* testsuite/ext/malloc_allocator/eq.cc: New test.
+	* testsuite/ext/new_allocator/eq.cc: New test.
+
+2018-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87544
+	* include/bits/stl_vector.h (vector::_S_max_size): Limit size to
+	PTRDIFF_MAX / sizeof(value_type).
+	* include/ext/malloc_allocator.h (malloc_allocator::max_size):
+	Likewise.
+	* include/ext/new_allocator.h (new_allocator::max_size): Likewise.
+	* testsuite/23_containers/vector/allocator/minimal.cc: Adjust
+	expected value for max_size().
+	* testsuite/23_containers/vector/capacity/87544.cc: New test.
+
+2018-10-09  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	(_List_operator<>::operator==): Replace member function with inline
+	friend.
+	(_List_operator<>::operator!=): Likewise.
+	(_List_const_operator<>::operator==): Likewise.
+	(_List_const_operator<>::operator!=): Likewise.
+	(operator==(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+	(operator!=(const _List_iterator<>&, const _List_const_iterator<>&)):
+	Remove.
+
+2018-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stringfwd.h (string, wstring, u16string, u32string):
+	Define typedefs outside of __cxx11 inline namespace.
+	* python/libstdcxx/v6/printers.py (register_type_printers): Also
+	register printers for typedefs in new location.
+
+2018-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87538
+	* testsuite/experimental/functional/87538.cc: New test.
+
+	PR libstdc++/87538
+	* include/std/functional (_Not_fn::operator()): Check value of
+	__is_nothrow_invocable as well.
+	* testsuite/20_util/function_objects/not_fn/87538.cc: New test.
+
+2018-10-08  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/list (list<>::cbegin()): Use C++11 direct
+	initialization.
+	(list<>::cend()): Likewise.
+	(list<>::emplace<>(const_iterator, _Args&&...)): Likewise.
+	(list<>::insert(const_iterator, initializer_list<>)): Likewise.
+	(list<>::insert(const_iterator, size_type, const _Tp&)): Likewise.
+	(list<>::erase(const_iterator, const_iterator)): Ensure consistent
+	iterator comparisons.
+	(list<>::splice(const_iterator, list&&, const_iterator,
+	const_iterator)): Likewise.
+
+2018-10-05  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_tree.h
+	(_Rb_tree_iterator<>::operator==): Make inline friend.
+	(_Rb_tree_iterator<>::operator!=): Likewise.
+	(_Rb_tree_const_iterator<>::operator==): Likewise.
+	(_Rb_tree_const_iterator<>::operator!=): Likewise.
+	(operator==(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator!=(const _Rb_tree_iterator<>&,
+	const _Rb_tree_const_iterator&)): Remove.
+	(operator==(const _Rb_tree<>&, const _Rb_tree<>&)): Make inline friend.
+	(operator<(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator!=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise and
+	deprecate.
+	(operator>(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator<=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	(operator>=(const _Rb_tree<>&, const _Rb_tree<>&)): Likewise.
+	* include/debug/map.h (map<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multimap.h
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h (set<>::erase(const_iterator, const_iterator)):
+	Compare __victim with _Base::cend().
+	* include/debug/multiset.h
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/59439
+	* src/c++98/locale.cc (locale::locale(const locale&)): Bypass
+	reference count updates for the classic locale.
+	(locale::~locale()): Likewise.
+	(locale::operator=(const locale&)): Likewise.
+	* src/c++98/locale_init.cc (locale::locale()): Likewise.
+	(locale::global(const locale&)): Likewise.
+
+2018-10-03  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/map.h
+	(map<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(map<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(map<>::insert(value_type&&)): Likewise.
+	(map<>::insert<>(_Pair&&)): Likewise.
+	(map<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(map<>::try_emplace): Likewise.
+	(map<>::insert_or_assign): Likewise.
+	(map<>::insert(node_type&&)): Likewise.
+	(map<>::insert(const_iterator, node_type&&)): Likewise.
+	(map<>::erase(const_iterator)): Likewise.
+	(map<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multimap.h
+	(multimap<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multimap<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multimap<>::insert<>(_Pair&&)): Likewise.
+	(multimap<>::insert<>(const_iterator, _Pair&&)): Likewise.
+	(multimap<>::insert(node_type&&)): Likewise.
+	(multimap<>::insert(const_iterator, node_type&&)): Likewise.
+	(multimap<>::erase(const_iterator)): Likewise.
+	(multimap<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/set.h
+	(set<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(set<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(set<>::insert(value_type&&)): Likewise.
+	(set<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(set<>::insert(const_iterator, node_type&&)): Likewise.
+	(set<>::erase(const_iterator)): Likewise.
+	(set<>::erase(const_iterator, const_iterator)): Likewise.
+	* include/debug/multiset.h
+	(multiset<>::emplace<>(_Args&&...)): Use C++11 direct initialization.
+	(multiset<>::emplace_hint<>(const_iterator, _Args&&...)): Likewise.
+	(multiset<>::insert<>(value_type&&)): Likewise.
+	(multiset<>::insert<>(const_iterator, value_type&&)): Likewise.
+	(multiset<>::insert(node_type&&)): Likewise.
+	(multiset<>::insert(const_iterator, node_type&&)): Likewise.
+	(multiset<>::erase(const_iterator)): Likewise.
+	(multiset<>::erase(const_iterator, const_iterator)): Likewise.
+
+2018-10-02  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87258
+	* include/bits/stl_bvector.h (vector::begin(), vector::cbegin()):
+	Rebuild _M_start with an explicit 0 offset.
+
+2018-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/variant (__gen_vtable_impl::__visit_invoke): Call __get
+	directly instead of get, as caller ensures correct index is used.
+	(holds_alternative, get, get_if): Remove redundant inline specifiers.
+	(_VARIANT_RELATION_FUNCTION_TEMPLATE): Likewise.
+
+2018-10-02  Joseph Myers  <joseph@codesourcery.com>
+
+	* testsuite/lib/libstdc++.exp (libstdc++_init): Use
+	-fno-show-column in default cxxflags.
+
+2018-10-01  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* config/os/uclibc/os_defines.h (__NO_STRING_INLINES): Delete.
+
+2018-10-01  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link to "Reconsidering
+	Custom Memory Allocation".
+
+2018-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/html/*: Regenerate.
+
+2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/messages.xml: Switch link to www.oracle.com
+	to https.
+
+2018-09-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Update
+	link to Microsoft Component Model Object Technologies.
+
+2018-09-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/gnu/fdl-1.3.xml: The Free Software Foundation web
+	site now uses https. Also omit the unnecessary trailing slash.
+	* doc/xml/gnu/gpl-3.0.xml: Ditto.
+
+2018-09-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/debug/functions.h
+	(__foreign_iterator_aux3(const _Safe_iterator<>&, const _InputeIter&,
+	const _InputIter&, __true_type)): Use empty() rather than begin() ==
+	end().
+
+2018-09-25  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/condition_variable (condition_variable::wait_for): Use
+	steady clock in overload that uses a predicate.
+
+2018-09-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87431
+	* include/std/variant (_Variant_storage<true, _Types...>::_M_valid):
+	Avoid runtime test when all alternatives are scalars and so cannot
+	throw during initialization.
+
+2018-09-25  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/codecvt.xml: Move link to "UTF-8 and Unicode FAQ"
+	to https.
+
+2018-09-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/policy_data_structures_biblio.xml: Update link
+	to "Priority Queues and the STL".
+
+2018-09-23  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/using_exceptions.xml: Move boost.orgs link to
+	https.
+
+2018-09-21  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/87135
+	* src/c++11/hashtable_c++0x.cc (_Prime_rehash_policy::_M_next_bkt):
+	Use __builtin_floor to compute _M_next_resize.
+	* testsuite/23_containers/unordered_set/hash_policy/71181.cc: Adapt.
+	* testsuite/23_containers/unordered_set/hash_policy/prime_rehash.cc:
+	Adapt.
+
+2018-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/headers/cmath/hypot-long-double.cc: Remove.
+	* testsuite/26_numerics/headers/cmath/hypot.cc: Restore test for
+	long double unconditionally, but use lower tolerance when
+	sizeof(long double) == sizeof(double).
+
+2018-09-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* testsuite/26_numerics/headers/cmath/hypot-long-double.cc: Skip
+	on arm*.
+
+2018-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_automaton.tcc (_StateSeq<_TraitsT>::_M_clone()):
+	Remove __glibcxx_assert statements and use map::find instead of
+	map::operator[].
+
+2018-09-18  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/87135
+	* src/c++11/hashtable_c++0x.cc:
+	(_Prime_rehash_policy::_M_next_bkt): Return a prime no smaller than
+	requested size, but not necessarily greater.
+	(_Prime_rehash_policy::_M_need_rehash): Rehash only if target size is
+	strictly greater than next resize threshold.
+	* testsuite/23_containers/unordered_map/modifiers/reserve.cc: Adapt test
+	to validate that there is no rehash as long as number of insertion is
+	lower or equal to the reserved number of elements.
+
+2018-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unique_ptr.h (__uniq_ptr_impl): Remove static assertion
+	checking invocable condition.
+	(unique_ptr::~unique_ptr, unique_ptr::reset): Restore static assertion
+	here, where types must be complete. Pass pointer to deleter as an
+	rvalue.
+	* testsuite/20_util/unique_ptr/requirements/incomplete.cc: New test.
+
 2018-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/variant (variant) [__clang__]: Limit workaround to

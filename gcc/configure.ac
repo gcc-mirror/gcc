@@ -811,6 +811,29 @@ AC_MSG_RESULT($enable_multiarch$ma_msg_suffix)
 AC_SUBST(with_cpu)
 AC_SUBST(with_float)
 
+# default stack clash protection guard size as power of twos in bytes.
+# Please keep these in sync with params.def.
+stk_clash_min=12
+stk_clash_max=30
+
+# Keep the default value when the option is not used to 0, this allows us to
+# distinguish between the cases where the user specifially set a value via
+# configure and when the normal default value is used.
+AC_ARG_WITH(stack-clash-protection-guard-size,
+[AS_HELP_STRING([--with-stack-clash-protection-guard-size=size],
+[Set the default stack clash protection guard size for specific targets as a power of two in bytes.])],
+[DEFAULT_STK_CLASH_GUARD_SIZE="$with_stack_clash_protection_guard_size"], [DEFAULT_STK_CLASH_GUARD_SIZE=0])
+if test $DEFAULT_STK_CLASH_GUARD_SIZE -ne 0 \
+     && (test $DEFAULT_STK_CLASH_GUARD_SIZE -lt $stk_clash_min \
+	 || test $DEFAULT_STK_CLASH_GUARD_SIZE -gt $stk_clash_max); then
+  AC_MSG_ERROR(m4_normalize([
+		Invalid value $DEFAULT_STK_CLASH_GUARD_SIZE for --with-stack-clash-protection-guard-size. \
+		Must be between $stk_clash_min and $stk_clash_max.]))
+fi
+
+AC_DEFINE_UNQUOTED(DEFAULT_STK_CLASH_GUARD_SIZE, $DEFAULT_STK_CLASH_GUARD_SIZE,
+	[Define to larger than zero set the default stack clash protector size.])
+
 # Enable __cxa_atexit for C++.
 AC_ARG_ENABLE(__cxa_atexit,
 [AS_HELP_STRING([--enable-__cxa_atexit], [enable __cxa_atexit for C++])],
@@ -1828,6 +1851,13 @@ AS_IF([test x"$enable_mingw_wildcard" != xplatform ],
       [AC_DEFINE_UNQUOTED(MINGW_DOWILDCARD,
 		 $(test x"$enable_mingw_wildcard" = xno; echo $?),
 		 [Value to set mingw's _dowildcard to.])])
+
+AC_ARG_ENABLE(large-address-aware,
+[AS_HELP_STRING([--enable-large-address-aware],
+		[Link mingw executables with --large-address-aware])])
+AS_IF([test x"$enable_large_address_aware" = xyes],
+  [AC_DEFINE([MINGW_DEFAULT_LARGE_ADDR_AWARE], 1,
+    [Define if we should link mingw executables with --large-address-aware])])
 
 AC_ARG_ENABLE(leading-mingw64-underscores,
   AS_HELP_STRING([--enable-leading-mingw64-underscores],
@@ -3009,6 +3039,28 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
 
+gcc_cv_ld_aligned_shf_merge=yes
+case "$target" in
+  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
+  # relinking on Solaris 11 < 11.4.
+  sparc*-*-solaris2.10*)
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+  # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
+  # alignment > 1.
+  sparc*-*-solaris2.11*)
+    if test x"$gnu_ld" = xno \
+       && test "$ld_vers_major" -lt 2 && test "$ld_vers_minor" -lt 3159; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_LD_ALIGNED_SHF_MERGE,
+  [`if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`],
+[Define 0/1 if your linker supports the SHF_MERGE flag with section alignment > 1.])
+
 gcc_GAS_CHECK_FEATURE([stabs directive], gcc_cv_as_stabs_directive, ,,
 [.stabs "gcc2_compiled.",60,0,0,0],,
 [AC_DEFINE(HAVE_AS_STABS_DIRECTIVE, 1,
@@ -3145,6 +3197,15 @@ case "${target}" in
     [Define 0/1 if your linker supports hidden thunks in linkonce sections.])
   ;;
 esac
+
+gcc_GAS_CHECK_FEATURE([line table is_stmt support],
+ gcc_cv_as_is_stmt,
+ [2,16,92],,
+[	.text
+	.file 1 "conf.c"
+	.loc 1 1 0 is_stmt 1],,
+[AC_DEFINE(HAVE_GAS_LOC_STMT, 1,
+  [Define if your assembler supports the .loc is_stmt sub-directive.])])
 
 gcc_GAS_CHECK_FEATURE([line table discriminator support],
  gcc_cv_as_discriminator,
@@ -4515,51 +4576,6 @@ gd:
 	  [Define if your assembler supports mfcr field.])])
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5"
-	.csect .text[[PR]]
-	popcntb 3,3';;
-      *) conftest_s='	.machine power5
-	.text
-	popcntb 3,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([popcntb support],
-      gcc_cv_as_powerpc_popcntb, [2,17,0],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POPCNTB, 1,
-	  [Define if your assembler supports popcntb field.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5x"
-	.csect .text[[PR]]
-	frin 1,1';;
-      *) conftest_s='	.machine power5
-	.text
-	frin 1,1';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([fp round support],
-      gcc_cv_as_powerpc_fprnd, [2,17,0],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_FPRND, 1,
-	  [Define if your assembler supports fprnd.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	mffgpr 1,3';;
-      *) conftest_s='	.machine power6
-	.text
-	mffgpr 1,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([move fp gpr support],
-      gcc_cv_as_powerpc_mfpgpr, [2,19,2],,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_MFPGPR, 1,
-	  [Define if your assembler supports mffgpr and mftgpr.])])
-
-    case $target in
       *-*-aix*) conftest_s='	.csect .text[[PR]]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
@@ -4579,36 +4595,6 @@ LCF0:
 	  [Define if your assembler supports R_PPC_REL16 relocs.])])
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	cmpb 3,4,5';;
-      *) conftest_s='	.machine power6
-	.text
-	cmpb 3,4,5';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([compare bytes support],
-      gcc_cv_as_powerpc_cmpb, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_CMPB, 1,
-	  [Define if your assembler supports cmpb.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[[PR]]
-	dadd 1,2,3';;
-      *) conftest_s='	.machine power6
-	.text
-	dadd 1,2,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([decimal float support],
-      gcc_cv_as_powerpc_dfp, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_DFP, 1,
-	  [Define if your assembler supports DFP instructions.])])
-
-    case $target in
       *-*-aix*) conftest_s='	.machine "pwr7"
 	.csect .text[[PR]]
 	lxvd2x 1,2,3';;
@@ -4622,75 +4608,6 @@ LCF0:
       [$conftest_s],,
       [AC_DEFINE(HAVE_AS_VSX, 1,
 	  [Define if your assembler supports VSX instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr7"
-	.csect .text[[PR]]
-	popcntd 3,3';;
-      *) conftest_s='	.machine power7
-	.text
-	popcntd 3,3';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([popcntd support],
-      gcc_cv_as_powerpc_popcntd, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POPCNTD, 1,
-	  [Define if your assembler supports POPCNTD instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr8"
-	.csect .text[[PR]]';;
-      *) conftest_s='	.machine power8
-	.text';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([power8 support],
-      gcc_cv_as_powerpc_power8, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POWER8, 1,
-	  [Define if your assembler supports POWER8 instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr9"
-	.csect .text[[PR]]';;
-      *) conftest_s='	.machine power9
-	.text';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([power9 support],
-      gcc_cv_as_powerpc_power9, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_POWER9, 1,
-	  [Define if your assembler supports POWER9 instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.csect .text[[PR]]
-	lwsync';;
-      *) conftest_s='	.text
-	lwsync';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([lwsync support],
-      gcc_cv_as_powerpc_lwsync, [2,19,2], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_LWSYNC, 1,
-	  [Define if your assembler supports LWSYNC instructions.])])
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "476"
-	.csect .text[[PR]]
-	dci 0';;
-      *) conftest_s='	.machine "476"
-	.text
-	dci 0';;
-    esac
-
-    gcc_GAS_CHECK_FEATURE([data cache invalidate support],
-      gcc_cv_as_powerpc_dci, [9,99,0], -a32,
-      [$conftest_s],,
-      [AC_DEFINE(HAVE_AS_DCI, 1,
-	  [Define if your assembler supports the DCI/ICI instructions.])])
 
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],
       gcc_cv_as_powerpc_gnu_attribute, [2,18,0],,
@@ -6299,6 +6216,12 @@ do
 	check_languages="$check_languages check-$language"
 done
 
+selftest_languages=
+for language in $all_selected_languages
+do
+	selftest_languages="$selftest_languages selftest-$language"
+done
+
 # We link each language in with a set of hooks, reached indirectly via
 # lang.${target}.  Only do so for selected languages.
 
@@ -6382,6 +6305,7 @@ AC_SUBST(build_xm_include_list)
 AC_SUBST(build_xm_defines)
 AC_SUBST(build_file_translate)
 AC_SUBST(check_languages)
+AC_SUBST(selftest_languages)
 AC_SUBST(cpp_install_dir)
 AC_SUBST(xmake_file)
 AC_SUBST(tmake_file)

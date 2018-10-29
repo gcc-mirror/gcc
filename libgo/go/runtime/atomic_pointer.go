@@ -16,11 +16,24 @@ import (
 // Instead, these are wrappers around the actual atomics (casp1 and so on)
 // that use noescape to convey which arguments do not escape.
 
+// atomicwb performs a write barrier before an atomic pointer write.
+// The caller should guard the call with "if writeBarrier.enabled".
+//
+//go:nosplit
+func atomicwb(ptr *unsafe.Pointer, new unsafe.Pointer) {
+	slot := (*uintptr)(unsafe.Pointer(ptr))
+	if !getg().m.p.ptr().wbBuf.putFast(*slot, uintptr(new)) {
+		wbBufFlush(slot, uintptr(new))
+	}
+}
+
 // atomicstorep performs *ptr = new atomically and invokes a write barrier.
 //
 //go:nosplit
 func atomicstorep(ptr unsafe.Pointer, new unsafe.Pointer) {
-	writebarrierptr_prewrite((*uintptr)(ptr), uintptr(new))
+	if writeBarrier.enabled {
+		atomicwb((*unsafe.Pointer)(ptr), new)
+	}
 	atomic.StorepNoWB(noescape(ptr), new)
 }
 
@@ -29,7 +42,9 @@ func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
 	// The write barrier is only necessary if the CAS succeeds,
 	// but since it needs to happen before the write becomes
 	// public, we have to do it conservatively all the time.
-	writebarrierptr_prewrite((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
+	if writeBarrier.enabled {
+		atomicwb(ptr, new)
+	}
 	return atomic.Casp1((*unsafe.Pointer)(noescape(unsafe.Pointer(ptr))), noescape(old), new)
 }
 
@@ -37,33 +52,39 @@ func casp(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
 // We cannot just call the runtime routines, because the race detector expects
 // to be able to intercept the sync/atomic forms but not the runtime forms.
 
-//go:linkname sync_atomic_StoreUintptr sync_atomic.StoreUintptr
+//go:linkname sync_atomic_StoreUintptr sync..z2fatomic.StoreUintptr
 func sync_atomic_StoreUintptr(ptr *uintptr, new uintptr)
 
-//go:linkname sync_atomic_StorePointer sync_atomic.StorePointer
+//go:linkname sync_atomic_StorePointer sync..z2fatomic.StorePointer
 //go:nosplit
 func sync_atomic_StorePointer(ptr *unsafe.Pointer, new unsafe.Pointer) {
-	writebarrierptr_prewrite((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
+	if writeBarrier.enabled {
+		atomicwb(ptr, new)
+	}
 	sync_atomic_StoreUintptr((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
 }
 
-//go:linkname sync_atomic_SwapUintptr sync_atomic.SwapUintptr
+//go:linkname sync_atomic_SwapUintptr sync..z2fatomic.SwapUintptr
 func sync_atomic_SwapUintptr(ptr *uintptr, new uintptr) uintptr
 
-//go:linkname sync_atomic_SwapPointer sync_atomic.SwapPointer
+//go:linkname sync_atomic_SwapPointer sync..z2fatomic.SwapPointer
 //go:nosplit
 func sync_atomic_SwapPointer(ptr *unsafe.Pointer, new unsafe.Pointer) unsafe.Pointer {
-	writebarrierptr_prewrite((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
+	if writeBarrier.enabled {
+		atomicwb(ptr, new)
+	}
 	old := unsafe.Pointer(sync_atomic_SwapUintptr((*uintptr)(noescape(unsafe.Pointer(ptr))), uintptr(new)))
 	return old
 }
 
-//go:linkname sync_atomic_CompareAndSwapUintptr sync_atomic.CompareAndSwapUintptr
+//go:linkname sync_atomic_CompareAndSwapUintptr sync..z2fatomic.CompareAndSwapUintptr
 func sync_atomic_CompareAndSwapUintptr(ptr *uintptr, old, new uintptr) bool
 
-//go:linkname sync_atomic_CompareAndSwapPointer sync_atomic.CompareAndSwapPointer
+//go:linkname sync_atomic_CompareAndSwapPointer sync..z2fatomic.CompareAndSwapPointer
 //go:nosplit
 func sync_atomic_CompareAndSwapPointer(ptr *unsafe.Pointer, old, new unsafe.Pointer) bool {
-	writebarrierptr_prewrite((*uintptr)(unsafe.Pointer(ptr)), uintptr(new))
+	if writeBarrier.enabled {
+		atomicwb(ptr, new)
+	}
 	return sync_atomic_CompareAndSwapUintptr((*uintptr)(noescape(unsafe.Pointer(ptr))), uintptr(old), uintptr(new))
 }

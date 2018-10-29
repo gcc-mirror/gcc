@@ -100,8 +100,9 @@ format_warning_at_char (location_t fmt_string_loc, tree format_string_cst,
 
   substring_loc fmt_loc (fmt_string_loc, string_type, char_idx, char_idx,
 			 char_idx);
-  bool warned = format_warning_va (fmt_loc, NULL, UNKNOWN_LOCATION, NULL,
-				   NULL, opt, gmsgid, &ap);
+  format_string_diagnostic_t diag (fmt_loc, NULL, UNKNOWN_LOCATION, NULL,
+				   NULL);
+  bool warned = diag.emit_warning_va (opt, gmsgid, &ap);
   va_end (ap);
 
   return warned;
@@ -3596,9 +3597,9 @@ class range_label_for_format_type_mismatch
   {
   }
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
   {
-    label_text text = range_label_for_type_mismatch::get_text ();
+    label_text text = range_label_for_type_mismatch::get_text (range_idx);
     if (text.m_buffer == NULL)
       return text;
 
@@ -3694,13 +3695,13 @@ format_type_warning (const substring_loc &whole_fmt_loc,
   char *corrected_substring
     = get_corrected_substring (fmt_loc, type, arg_type, fki,
 			       offset_to_type_start, conversion_char);
-
+  format_string_diagnostic_t diag (fmt_loc, &fmt_label, param_loc, &param_label,
+				   corrected_substring);
   if (wanted_type_name)
     {
       if (arg_type)
-	format_warning_at_substring
-	  (fmt_loc, &fmt_label, param_loc, &param_label,
-	   corrected_substring, OPT_Wformat_,
+	diag.emit_warning
+	  (OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%s%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3708,9 +3709,8 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   format_length, format_start,
 	   wanted_type_name, p, arg_num, arg_type);
       else
-	format_warning_at_substring
-	  (fmt_loc, &fmt_label, param_loc, &param_label,
-	   corrected_substring, OPT_Wformat_,
+	diag.emit_warning
+	  (OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%s%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),
@@ -3719,9 +3719,8 @@ format_type_warning (const substring_loc &whole_fmt_loc,
   else
     {
       if (arg_type)
-	format_warning_at_substring
-	  (fmt_loc, &fmt_label, param_loc, &param_label,
-	   corrected_substring, OPT_Wformat_,
+	diag.emit_warning
+	  (OPT_Wformat_,
 	   "%s %<%s%.*s%> expects argument of type %<%T%s%>, "
 	   "but argument %d has type %qT",
 	   gettext (kind_descriptions[kind]),
@@ -3729,9 +3728,8 @@ format_type_warning (const substring_loc &whole_fmt_loc,
 	   format_length, format_start,
 	   wanted_type, p, arg_num, arg_type);
       else
-	format_warning_at_substring
-	  (fmt_loc, &fmt_label, param_loc, &param_label,
-	   corrected_substring, OPT_Wformat_,
+	diag.emit_warning
+	  (OPT_Wformat_,
 	   "%s %<%s%.*s%> expects a matching %<%T%s%> argument",
 	   gettext (kind_descriptions[kind]),
 	   (kind == CF_KIND_FORMAT ? "%" : ""),

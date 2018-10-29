@@ -1,5 +1,5 @@
 // PR c++/84098
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct A{};
 

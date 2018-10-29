@@ -71,41 +71,13 @@
 #define TARGET_PAIRED_FLOAT 0
 #endif
 
-#ifdef HAVE_AS_POPCNTB
 #define ASM_CPU_POWER5_SPEC "-mpower5"
-#else
-#define ASM_CPU_POWER5_SPEC "-mpower4"
-#endif
-
-#ifdef HAVE_AS_DFP
 #define ASM_CPU_POWER6_SPEC "-mpower6 -maltivec"
-#else
-#define ASM_CPU_POWER6_SPEC "-mpower4 -maltivec"
-#endif
-
-#ifdef HAVE_AS_POPCNTD
 #define ASM_CPU_POWER7_SPEC "-mpower7"
-#else
-#define ASM_CPU_POWER7_SPEC "-mpower4 -maltivec"
-#endif
-
-#ifdef HAVE_AS_POWER8
 #define ASM_CPU_POWER8_SPEC "-mpower8"
-#else
-#define ASM_CPU_POWER8_SPEC ASM_CPU_POWER7_SPEC
-#endif
-
-#ifdef HAVE_AS_POWER9
 #define ASM_CPU_POWER9_SPEC "-mpower9"
-#else
-#define ASM_CPU_POWER9_SPEC ASM_CPU_POWER8_SPEC
-#endif
 
-#ifdef HAVE_AS_DCI
 #define ASM_CPU_476_SPEC "-m476"
-#else
-#define ASM_CPU_476_SPEC "-mpower4"
-#endif
 
 /* Common ASM definitions used by ASM_SPEC among the various targets for
    handling -mcpu=xxx switches.  There is a parallel list in driver-powerpcspe.c to
@@ -238,98 +210,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #ifndef HAVE_AS_MFCRF
 #undef  TARGET_MFCRF
 #define TARGET_MFCRF 0
-#endif
-
-/* Define TARGET_POPCNTB if the target assembler does not support the
-   popcount byte instruction.  */
-
-#ifndef HAVE_AS_POPCNTB
-#undef  TARGET_POPCNTB
-#define TARGET_POPCNTB 0
-#endif
-
-/* Define TARGET_FPRND if the target assembler does not support the
-   fp rounding instructions.  */
-
-#ifndef HAVE_AS_FPRND
-#undef  TARGET_FPRND
-#define TARGET_FPRND 0
-#endif
-
-/* Define TARGET_CMPB if the target assembler does not support the
-   cmpb instruction.  */
-
-#ifndef HAVE_AS_CMPB
-#undef  TARGET_CMPB
-#define TARGET_CMPB 0
-#endif
-
-/* Define TARGET_MFPGPR if the target assembler does not support the
-   mffpr and mftgpr instructions. */
-
-#ifndef HAVE_AS_MFPGPR
-#undef  TARGET_MFPGPR
-#define TARGET_MFPGPR 0
-#endif
-
-/* Define TARGET_DFP if the target assembler does not support decimal
-   floating point instructions.  */
-#ifndef HAVE_AS_DFP
-#undef  TARGET_DFP
-#define TARGET_DFP 0
-#endif
-
-/* Define TARGET_POPCNTD if the target assembler does not support the
-   popcount word and double word instructions.  */
-
-#ifndef HAVE_AS_POPCNTD
-#undef  TARGET_POPCNTD
-#define TARGET_POPCNTD 0
-#endif
-
-/* Define the ISA 2.07 flags as 0 if the target assembler does not support the
-   waitasecond instruction.  Allow -mpower8-fusion, since it does not add new
-   instructions.  */
-
-#ifndef HAVE_AS_POWER8
-#undef  TARGET_DIRECT_MOVE
-#undef  TARGET_CRYPTO
-#undef  TARGET_HTM
-#undef  TARGET_P8_VECTOR
-#define TARGET_DIRECT_MOVE 0
-#define TARGET_CRYPTO 0
-#define TARGET_HTM 0
-#define TARGET_P8_VECTOR 0
-#endif
-
-/* Define the ISA 3.0 flags as 0 if the target assembler does not support
-   Power9 instructions.  Allow -mpower9-fusion, since it does not add new
-   instructions.  Allow -misel, since it predates ISA 3.0 and does
-   not require any Power9 features.  */
-
-#ifndef HAVE_AS_POWER9
-#undef  TARGET_FLOAT128_HW
-#undef  TARGET_MODULO
-#undef  TARGET_P9_VECTOR
-#undef  TARGET_P9_MINMAX
-#undef  TARGET_P9_DFORM_SCALAR
-#undef  TARGET_P9_DFORM_VECTOR
-#undef  TARGET_P9_MISC
-#define TARGET_FLOAT128_HW 0
-#define TARGET_MODULO 0
-#define TARGET_P9_VECTOR 0
-#define TARGET_P9_MINMAX 0
-#define TARGET_P9_DFORM_SCALAR 0
-#define TARGET_P9_DFORM_VECTOR 0
-#define TARGET_P9_MISC 0
-#endif
-
-/* Define TARGET_LWSYNC_INSTRUCTION if the assembler knows about lwsync.  If
-   not, generate the lwsync code as an integer constant.  */
-#ifdef HAVE_AS_LWSYNC
-#define TARGET_LWSYNC_INSTRUCTION 1
-#else
-#define TARGET_LWSYNC_INSTRUCTION 0
 #endif
 
 /* Define TARGET_TLS_MARKERS if the target assembler does not support

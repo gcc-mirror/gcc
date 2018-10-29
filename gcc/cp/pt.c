@@ -7776,7 +7776,7 @@ convert_template_argument (tree parm,
   tree val;
   int is_type, requires_type, is_tmpl_type, requires_tmpl_type;
 
-  if (parm == error_mark_node)
+  if (parm == error_mark_node || error_operand_p (arg))
     return error_mark_node;
 
   /* Trivially convert placeholders. */
@@ -23127,6 +23127,14 @@ do_decl_instantiation (tree decl, tree storage)
       error ("explicit instantiation of non-template %q#D", decl);
       return;
     }
+  else if (DECL_DECLARED_CONCEPT_P (decl))
+    {
+      if (VAR_P (decl))
+	error ("explicit instantiation of variable concept %q#D", decl);
+      else
+	error ("explicit instantiation of function concept %q#D", decl);
+      return;
+    }
 
   bool var_templ = (DECL_TEMPLATE_INFO (decl)
                     && variable_template_p (DECL_TI_TEMPLATE (decl)));
@@ -26121,7 +26129,7 @@ struct auto_hash : default_hash_traits<tree>
 inline hashval_t
 auto_hash::hash (tree t)
 {
-  if (tree c = PLACEHOLDER_TYPE_CONSTRAINTS (t))
+  if (tree c = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (t)))
     /* Matching constrained-type-specifiers denote the same template
        parameter, so hash the constraint.  */
     return hash_placeholder_constraint (c);
@@ -26880,7 +26888,7 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 
   /* Check any placeholder constraints against the deduced type. */
   if (flag_concepts && !processing_template_decl)
-    if (tree constr = PLACEHOLDER_TYPE_CONSTRAINTS (auto_node))
+    if (tree constr = NON_ERROR (PLACEHOLDER_TYPE_CONSTRAINTS (auto_node)))
       {
         /* Use the deduced type to check the associated constraints. If we
            have a partial-concept-id, rebuild the argument list so that

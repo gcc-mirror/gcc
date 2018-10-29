@@ -314,7 +314,7 @@ public:
   inline bool set_to_bottom ();
   bool meet_with (const value_range *p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
-  void init () { m_vr.type = VR_UNDEFINED; }
+  void init () { gcc_assert (m_vr.undefined_p ()); }
   void print (FILE * f);
 
 private:
@@ -403,16 +403,6 @@ ipa_get_poly_ctx_lat (struct ipa_node_params *info, int i)
 {
   struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
   return &plats->ctxlat;
-}
-
-/* Return the lattice corresponding to the value range of the Ith formal
-   parameter of the function described by INFO.  */
-
-static inline ipcp_vr_lattice *
-ipa_get_vr_lat (struct ipa_node_params *info, int i)
-{
-  struct ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
-  return &plats->m_value_range;
 }
 
 /* Return whether LAT is a lattice with a single constant and without an
@@ -924,28 +914,21 @@ ipcp_vr_lattice::meet_with (const value_range *p_vr)
   return meet_with_1 (p_vr);
 }
 
-/* Meet the current value of the lattice with value ranfge described by
-   OTHER_VR lattice.  */
+/* Meet the current value of the lattice with value range described by
+   OTHER_VR lattice.  Return TRUE if anything changed.  */
 
 bool
 ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
 {
-  tree min = m_vr.min, max = m_vr.max;
-  value_range_type type = m_vr.type;
-
   if (bottom_p ())
     return false;
 
-  if (other_vr->type == VR_VARYING)
+  if (other_vr->varying_p ())
     return set_to_bottom ();
 
-  vrp_meet (&m_vr, other_vr);
-  if (type != m_vr.type
-      || min != m_vr.min
-      || max != m_vr.max)
-    return true;
-  else
-    return false;
+  value_range save (m_vr);
+  m_vr.union_ (other_vr);
+  return !m_vr.ignore_equivs_equal_p (save);
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */
@@ -953,7 +936,7 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
 bool
 ipcp_vr_lattice::top_p () const
 {
-  return m_vr.type == VR_UNDEFINED;
+  return m_vr.undefined_p ();
 }
 
 /* Return true if value range information in the lattice is known to be
@@ -962,7 +945,7 @@ ipcp_vr_lattice::top_p () const
 bool
 ipcp_vr_lattice::bottom_p () const
 {
-  return m_vr.type == VR_VARYING;
+  return m_vr.varying_p ();
 }
 
 /* Set value range information in the lattice to bottom.  Return true if it
@@ -971,9 +954,9 @@ ipcp_vr_lattice::bottom_p () const
 bool
 ipcp_vr_lattice::set_to_bottom ()
 {
-  if (m_vr.type == VR_VARYING)
+  if (m_vr.varying_p ())
     return false;
-  m_vr.type = VR_VARYING;
+  m_vr.set_varying ();
   return true;
 }
 
@@ -1892,12 +1875,11 @@ ipa_vr_operation_and_type_effects (value_range *dst_vr, value_range *src_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  memset (dst_vr, 0, sizeof (*dst_vr));
+  *dst_vr = value_range ();
   extract_range_from_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
-  if (dst_vr->type == VR_RANGE || dst_vr->type == VR_ANTI_RANGE)
-    return true;
-  else
+  if (dst_vr->varying_p () || dst_vr->undefined_p ())
     return false;
+  return true;
 }
 
 /* Propagate value range across jump function JFUNC that is associated with
@@ -1950,11 +1932,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  value_range tmpvr;
-	  memset (&tmpvr, 0, sizeof (tmpvr));
-	  tmpvr.type = VR_RANGE;
-	  tmpvr.min = val;
-	  tmpvr.max = val;
+	  value_range tmpvr (VR_RANGE, val, val);
 	  return dest_lat->meet_with (&tmpvr);
 	}
     }
@@ -1963,7 +1941,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
   if (jfunc->m_vr
       && ipa_vr_operation_and_type_effects (&vr, jfunc->m_vr, NOP_EXPR,
 					    param_type,
-					    TREE_TYPE (jfunc->m_vr->min)))
+					    jfunc->m_vr->type ()))
     return dest_lat->meet_with (&vr);
   else
     return dest_lat->set_to_bottom ();
@@ -5038,9 +5016,9 @@ ipcp_store_vr_results (void)
 	      && !plats->m_value_range.top_p ())
 	    {
 	      vr.known = true;
-	      vr.type = plats->m_value_range.m_vr.type;
-	      vr.min = wi::to_wide (plats->m_value_range.m_vr.min);
-	      vr.max = wi::to_wide (plats->m_value_range.m_vr.max);
+	      vr.type = plats->m_value_range.m_vr.kind ();
+	      vr.min = wi::to_wide (plats->m_value_range.m_vr.min ());
+	      vr.max = wi::to_wide (plats->m_value_range.m_vr.max ());
 	    }
 	  else
 	    {

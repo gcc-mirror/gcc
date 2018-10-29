@@ -1,3 +1,443 @@
+2018-10-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/87725
+	* openmp.c (gfc_match_omp_clauses): Parse simd, monotonic and
+	nonmonotonic modifiers regardless of if they have been parsed
+	already or if the opposite one has.  Fix up check whether
+	comma after modifier should be parsed.
+	(resolve_omp_clauses): Diagnose schedule modifier restrictions.
+
+2018-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* frontend-passes.c (get_len_call): New function to generate a
+	call to intrinsic LEN.
+	(create_var): Use this to make length expressions for variable
+	rhs string lengths.
+	Clean up some white space issues.
+
+2018-10-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/71880
+	* trans-expr.c (gfc_trans_pointer_assignment): Set the string
+	length for array valued deferred length lhs.
+
+2018-10-18  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87625
+	* trans-array.c (gfc_is_reallocatable_lhs): Detect allocatable
+	polymorphic arrays.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* trans-stmt.c (trans_associate_var): All strings that return
+	as pointer types can be assigned directly to the associate
+	name so remove 'attr' and the condition that uses it.
+
+2018-10-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/58618
+	* trans-decl.c (gfc_get_symbol_decl): Deal correctly with the
+	initialization with NULL() of a deferred length pointer.
+
+2018-10-17  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87632
+	* resolve.c (resolve_select_type): Use correct variable.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-fortran): New.
+
+2018-10-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/56386
+	PR fortran/58906
+	PR fortran/77385
+	PR fortran/80260
+	PR fortran/82077
+	* resolve.c (resolve_variable): Fix up expressions with array
+	associate names, where the parser did not detect that this is
+	array and there was no array part_ref in the expression.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/67125
+	* trans-array.c (gfc_array_init_size, gfc_array_allocate):
+	Rename argument e3_is_array_constr to e3_has_nodescriptor
+	and update comments.
+	* trans-stmt.c (gfc_trans_allocate): Also fix lower bound
+	to 1 for nonalloc/nonpointer func results/vars besides
+	array constructors.
+
+2018-10-16  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87556
+	* trans-stmt.c (form_team, change_team, sync_team):
+	Don't ignore argse.pre/argse.post.
+
+2018-10-15  Paul Thomas  <pault@gcc.gnu.org>
+	Tobias Burnus  <burnus@gcc.gnu.org>
+
+	PR fortran/87566
+	* resolve.c (resolve_assoc_var): Add missing array spec for
+	class associate names.
+	(resolve_select_type): Handle case where last typed component
+	of the selector has a different type to the expression.
+	* trans-expr.c (gfc_find_and_cut_at_last_class_ref): Replace
+	call to gfc_expr_to_initialize with call to gfc_copy_expr.
+	(gfc_conv_class_to_class): Guard assignment to 'len' field
+	against case where zero constant is supplied.
+
+2018-10-12  Tobias Burnus  <burnus@net-b.de>
+
+	PR fortran/87597
+	* expr.c (gfc_simplify_expr): Avoid simplifying
+	the 'array' argument to lbound/ubound/lcobound/
+	ucobound.
+
+2018-10-12  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/58787
+	* decl.c (get_proc_name): Return with error before
+	creating sym_tree.
+
+2018-10-11  Tobias Burnus <burnus@net-b.de>
+
+	Revert:
+	2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
+2018-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c (gfc_cpp_init_0): Update for renamings.
+	(cb_cpp_error): Rename to...
+	(cb_cpp_diagnostic): ...this, converting level and reason to
+	enums.
+
+2018-10-09  Tobias Burnus <burnus@net-b.de>
+
+	PR fortran/83522
+	* resolve.c (resolve_ref): Reject nonscalar
+	substring references.
+
+2018-10-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87151
+	* trans-array.c (gfc_get_array_span): Deal with deferred char
+	array components having a TYPE_MAX_VALUE of zero.
+	(gfc_array_init_size): Use the hidden string length component
+	to build the descriptor dtype.
+	(gfc_array_allocate): Remove the erroneous replacement of the
+	charlen backend decl with a temporary.
+	(gfc_conv_expr_descriptor): Use the ss_info string length in
+	the case of deferred character components.
+	(gfc_alloc_allocatable_for_assignment): Actually compare the
+	string lengths for deferred characters. Make sure that kind > 1
+	is handled correctly. Set the span field of the descriptor.
+	* trans-intrinsic.c (gfc_conv_intrinsic_len): Remove the stupid
+	comment.
+
+	PR fortran/80931
+	* trans-array.c (gfc_array_allocate): Set the span field for
+	variable length character arrays.
+
+2018-10-08  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* expr.c (gfc_check_pointer_assign): Demote "Assignment to
+	contiguous pointer from non-contiguous target" to a warning.
+
+2018-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/86372
+	* trans-stmt.c (trans_associate_var): Character associate names
+	with variable string length do not have to be deferred length
+	for the string length to be set, if variable.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86111
+	* gfortran.h (enum arith): Add ARITH_WRONGCONCAT.
+	* arith.h (gfc_arith_error): Issue error for ARITH_WRONGCONCAT.
+	(gfc_arith_concat):  If the types of op1 and op2 are not
+	character of if their kinds do not match, issue ARITH_WRONGCONCAT.
+
+2018-10-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83999
+	* resolve.c (resolve_fl_procedure): Include class functions in
+	the test that elemental function results be scalar.
+
+2018-10-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/84640
+	* simplify.c (gfc_simplify_cshift): Extend size of hs_ex and ss_ex
+	by one. Set extents one past the array boundaries to zero to avoid
+	warning with instrumented compiler.
+	(gfc_simplify_eoshift): Likewise, only for ss_ex.
+
+2018-10-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87487
+	* trans-decl.c (gfc_get_symbol_decl): Make sure that deferred
+	character length pointer initializer has the right type to fix
+	problem with deferred_character_24.f90 on big endian.
+
+2018-10-03  Jeff Law  <law@redhat.comg>
+
+	* trans-types.c (get_typenode_from_name): Moved into gcc/tree.c.
+
+2018-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* trans-expr.c (gfc_trans_assignment_1): Set the 'identical'
+	flag in the call to gfc_check_dependency.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-array.c (gfc_is_reallocatable_lhs): Correct the problem
+	introduced by r264358, which prevented components of associate
+	names from being reallocated on assignment.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70752
+	PR fortran/72709
+	* trans-array.c (gfc_conv_scalarized_array_ref): If this is a
+	deferred type and the info->descriptor is present, use the
+	info->descriptor
+	(gfc_conv_array_ref): Is the se expr is a descriptor type, pass
+	it as 'decl' rather than the symbol backend_decl.
+	(gfc_array_allocate): If the se string_length is a component
+	reference, fix it and use it for the expression string length
+	if the latter is not a variable type. If it is a variable do
+	an assignment. Make use of component ref string lengths to set
+	the descriptor 'span'.
+	(gfc_conv_expr_descriptor): For pointer assignment, do not set
+	the span field if gfc_get_array_span returns zero.
+	* trans.c (get_array_span): If the upper bound a character type
+	is zero, use the descriptor span if available.
+
+2018-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/70149
+	* trans-decl.c (gfc_get_symbol_decl): A deferred character
+	length pointer that is initialized needs the string length to
+	be initialized as well.
+
+2018-09-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/65677
+	* trans-expr.c (gfc_trans_assignment_1): If there is dependency
+	fix the rse stringlength.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR fortran/87394
+	* decl.c (add_hidden_procptr_result): Simplify condition
+	as we are in branch witch 'case1 || case2'.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* trans.c (remove_suffix): Remove
+	unused function.
+
+2018-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87397
+	* gfc_conv_procedure_call: Do not add clobber on INTENT(OUT)
+	for variables in an associate statement.
+
+2018-09-24  Bernhard Reuther-Fischer  <aldot@gcc.gnu.org>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (resolve_oacc_loop_blocks):
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87397
+	* gfc_conv_procedure_call: Do not add clobber on INTENT(OUT)
+	for variables having the dimension attribute.
+
+2018-09-23  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans-expr.c (gfc_caf_get_image_index): Do array index
+	calculations in gfc_array_index_type.
+	* trans-intrinsic.c (conv_intrinsic_event_query): Likewise.
+	* trans-stmt.c (gfc_trans_lock_unlock): Likewise.
+	(gfc_trans_event_post_wait): Likewise.
+
+2018-09-23  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87395
+	* gfc_conv_procedure_call: Reformat comments slightly. Do not add
+	clobber on INTENT(OUT) for saved variables.
+
+2018-09-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/41453
+	* trans.h (gfc_conv_expr_reference): Add optional argument
+	add_clobber to prototype.
+	(gfc_conv_procedure_call):  Set add_clobber argument to
+	gfc_conv_procedure_reference to true for scalar, INTENT(OUT),
+	non-pointer, non-allocatable, non-dummy variables whose type
+	is neither BT_CHARACTER, BT_DERIVED or BT_CLASS, but only if
+	the procedure is not elemental.
+	* trans-expr.c (gfc_conv_procedure_reference): Add clobber
+	statement before call if add_clobber is set.
+
+2018-09-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85603
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): Test
+	the charlen backend_decl before using the VAR_P macro.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/77325
+	* trans-array.c (gfc_alloc_allocatable_for_assignment): If the
+	rhs has a charlen expression, convert that and use it.
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character array vars to a realocatable
+	lhs should not be added to the exterior block since vector
+	indices, for example, generate temporaries indexed within the
+	loop.
+
+2018-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87359
+	* trans-stmt.c (gfc_trans_allocate): Don't deallocate alloc
+	components if must_finalize is set for expr3.
+
+2018-09-21  Andrew Stubbs  <ams@codesourcery.com>
+            Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* trans-expr.c (gfc_trans_structure_assign): Ensure that the first
+	argument of a call to _gfortran_caf_register is of size_type_node.
+	* trans-intrinsic.c (conv_intrinsic_event_query): Convert computed
+	index to a size_type_node type.
+	* trans-stmt.c (gfc_trans_event_post_wait): Likewise.
+
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* gfortranspec.c (lang_specific_driver): Handle -r like -nostdlib.
+
+2018-09-20  Janus Weil  <janus@gcc.gnu.org>
+
+	* gfortran.h (gfc_str_startswith): New macro.
+	* decl.c (variable_decl, gfc_match_end): Use it.
+	* iresolve.c (is_trig_resolved): Ditto.
+	* module.c (load_omp_udrs, read_module): Ditto.
+	* options.c (gfc_handle_runtime_check_option): Ditto.
+	* primary.c (match_arg_list_function): Ditto.
+	* trans-decl.c (gfc_get_symbol_decl): Ditto.
+	* trans-expr.c (gfc_conv_procedure_call): Ditto.
+	* interface.c (dtio_op): Replace strncmp by strcmp.
+	* resolve.c (resolve_actual_arglist, resolve_function): Ditto.
+	* trans-expr.c (conv_arglist_function): Ditto.
+	* trans-intrinsic.c (gfc_conv_ieee_arithmetic_function): Replace macro
+	STARTS_WITH by gfc_str_startswith.
+
+2018-09-20  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* dump-parse-tree.c (show_omp_clauses): Add missing omp list_types
+	and reorder the switch cases to match the enum in gfortran.h.
+
+2018-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84109
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character intrinsic elemental function
+	results to a realocatable lhs must not be added to the exterior
+	block if they are array valued but must go to the loop body.
+
+2018-09-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/29550
+	* gfortran.h (gfc_expr): Add external_blas flag.
+	* frontend-passes.c (matrix_case): Add case A2TB2T.
+	(optimize_namespace): Handle flag_external_blas by
+	calling call_external_blas.
+	(get_array_inq_function): Add argument okind. If
+	it is nonzero, use it as the kind of argument
+	to be used.
+	(inline_limit_check): Remove m_case argument, add
+	limit argument instead.  Remove assert about m_case.
+	Set the limit for inlining from the limit argument.
+	(matmul_lhs_realloc): Handle case A2TB2T.
+	(inline_matmul_assign): Handle inline limit for other cases with
+	two rank-two matrices.  Remove no-op calls to inline_limit_check.
+	(call_external_blas): New function.
+	* trans-intrinsic.c (gfc_conv_intrinsic_funcall): Do not add
+	argument to external BLAS if external_blas is already set.
+
+2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87239
+	* trans-expr.c (gfc_trans_assignment_1): The rse.pre for the
+	assignment of deferred character elemental function results to
+	a realocatable lhs must not be added to the exterior block but
+	must go to the loop body.
+
+2018-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87336
+	* trans-array.c (gfc_get_array_span): Try to get the element
+	length of incomplete types. Return NULL_TREE otherwise.
+	(gfc_conv_expr_descriptor): Only set the 'span' field if the
+	above does not return NULL_TREE. Set 'span' field if possible
+	for all new descriptors.
+
+2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/64120
+	* trans-decl.c (gfc_get_symbol_decl): Flag allocatable, scalar
+	characters with a variable length expression for deferred init.
+	(gfc_trans_deferred_vars): Perform the assignment for these
+	symbols by calling gfc_conv_string_length.
+
+2018-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/85954
+	* resolve.c (resolve_assoc_var): If the target expression is a
+	deferred charlen dummy and the associate name shares the
+	charlen, generate a new one. Make sure that new charlens are in
+	the namespace list so that they get cleaned up.
+	* trans-array.c (gfc_is_reallocatable_lhs): Associate names are
+	not reallocatable.
+	* trans-decl.c (gfc_get_symbol_decl): Put deferred character
+	length dummy and result arrays on the deferred initialization
+	list so that the variable length arrays can be correctly dealt
+	with.
+	* trans-expr.c (gfc_conv_string_length): Return if 'expr' is
+	NULL rather than ICEing..
+
+2018-09-16  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/86484
+	PR fortran/84543
+	* match.c (gfc_match_assignment): For a polymorphic assignment,
+	make sure that the vtab for the rhs type is generated.
+
+2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37802
+	* frontend-passes.c (B_ERROR): New macro for matmul bounds
+	checking error messages.
+	(C_ERROR): Likewise.
+	(inline_matmul_assign): Reorganize bounds checking, use B_ERROR
+	and C_ERROR macros.
+
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* trans-array.c (gfc_conv_array_initializer): Remove excess precision
+	from overlength string initializers.
+
 2018-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87284

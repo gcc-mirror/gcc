@@ -65,11 +65,19 @@ var (
 	// request's Content-Type is not multipart/form-data.
 	ErrNotMultipart = &ProtocolError{"request Content-Type isn't multipart/form-data"}
 
-	// Deprecated: ErrHeaderTooLong is not used.
+	// Deprecated: ErrHeaderTooLong is no longer returned by
+	// anything in the net/http package. Callers should not
+	// compare errors against this variable.
 	ErrHeaderTooLong = &ProtocolError{"header too long"}
-	// Deprecated: ErrShortBody is not used.
+
+	// Deprecated: ErrShortBody is no longer returned by
+	// anything in the net/http package. Callers should not
+	// compare errors against this variable.
 	ErrShortBody = &ProtocolError{"entity body too short"}
-	// Deprecated: ErrMissingContentLength is not used.
+
+	// Deprecated: ErrMissingContentLength is no longer returned by
+	// anything in the net/http package. Callers should not
+	// compare errors against this variable.
 	ErrMissingContentLength = &ProtocolError{"missing ContentLength in HEAD response"}
 )
 
@@ -110,7 +118,7 @@ type Request struct {
 	// For server requests the URL is parsed from the URI
 	// supplied on the Request-Line as stored in RequestURI.  For
 	// most requests, fields other than Path and RawQuery will be
-	// empty. (See RFC 2616, Section 5.1.2)
+	// empty. (See RFC 7230, Section 5.3)
 	//
 	// For client requests, the URL's Host specifies the server to
 	// connect to, while the Request's Host field optionally
@@ -207,13 +215,18 @@ type Request struct {
 	// Transport.DisableKeepAlives were set.
 	Close bool
 
-	// For server requests Host specifies the host on which the
-	// URL is sought. Per RFC 2616, this is either the value of
-	// the "Host" header or the host name given in the URL itself.
+	// For server requests Host specifies the host on which the URL
+	// is sought. Per RFC 7230, section 5.4, this is either the value
+	// of the "Host" header or the host name given in the URL itself.
 	// It may be of the form "host:port". For international domain
 	// names, Host may be in Punycode or Unicode form. Use
 	// golang.org/x/net/idna to convert it to either format if
 	// needed.
+	// To prevent DNS rebinding attacks, server Handlers should
+	// validate that the Host header has a value for which the
+	// Handler considers itself authoritative. The included
+	// ServeMux supports patterns registered to particular host
+	// names and thus protects its registered Handlers.
 	//
 	// For client requests Host optionally overrides the Host
 	// header to send. If empty, the Request.Write method uses
@@ -268,8 +281,8 @@ type Request struct {
 	// This field is ignored by the HTTP client.
 	RemoteAddr string
 
-	// RequestURI is the unmodified Request-URI of the
-	// Request-Line (RFC 2616, Section 5.1) as sent by the client
+	// RequestURI is the unmodified request-target of the
+	// Request-Line (RFC 7230, Section 3.1.1) as sent by the client
 	// to a server. Usually the URL field should be used instead.
 	// It is an error to set this field in an HTTP client request.
 	RequestURI string
@@ -326,6 +339,10 @@ func (r *Request) Context() context.Context {
 
 // WithContext returns a shallow copy of r with its context changed
 // to ctx. The provided ctx must be non-nil.
+//
+// For outgoing client request, the context controls the entire
+// lifetime of a request and its response: obtaining a connection,
+// sending the request, and reading the response headers and body.
 func (r *Request) WithContext(ctx context.Context) *Request {
 	if ctx == nil {
 		panic("nil context")
@@ -411,7 +428,7 @@ var multipartByReader = &multipart.Form{
 }
 
 // MultipartReader returns a MIME multipart reader if this is a
-// multipart/form-data POST request, else returns nil and an error.
+// multipart/form-data or a multipart/mixed POST request, else returns nil and an error.
 // Use this function instead of ParseMultipartForm to
 // process the request body as a stream.
 func (r *Request) MultipartReader() (*multipart.Reader, error) {
@@ -422,16 +439,16 @@ func (r *Request) MultipartReader() (*multipart.Reader, error) {
 		return nil, errors.New("http: multipart handled by ParseMultipartForm")
 	}
 	r.MultipartForm = multipartByReader
-	return r.multipartReader()
+	return r.multipartReader(true)
 }
 
-func (r *Request) multipartReader() (*multipart.Reader, error) {
+func (r *Request) multipartReader(allowMixed bool) (*multipart.Reader, error) {
 	v := r.Header.Get("Content-Type")
 	if v == "" {
 		return nil, ErrNotMultipart
 	}
 	d, params, err := mime.ParseMediaType(v)
-	if err != nil || d != "multipart/form-data" {
+	if err != nil || !(d == "multipart/form-data" || allowMixed && d == "multipart/mixed") {
 		return nil, ErrNotMultipart
 	}
 	boundary, ok := params["boundary"]
@@ -481,7 +498,7 @@ func (r *Request) Write(w io.Writer) error {
 // WriteProxy is like Write but writes the request in the form
 // expected by an HTTP proxy. In particular, WriteProxy writes the
 // initial Request-URI line of the request with an absolute URI, per
-// section 5.1.2 of RFC 2616, including the scheme and host.
+// section 5.3 of RFC 7230, including the scheme and host.
 // In either case, WriteProxy also writes a Host header, using
 // either r.Host or r.URL.Host.
 func (r *Request) WriteProxy(w io.Writer) error {
@@ -550,6 +567,9 @@ func (r *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, waitF
 	if err != nil {
 		return err
 	}
+	if trace != nil && trace.WroteHeaderField != nil {
+		trace.WroteHeaderField("Host", []string{host})
+	}
 
 	// Use the defaultUserAgent unless the Header contains one, which
 	// may be blank to not send the header.
@@ -562,6 +582,9 @@ func (r *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, waitF
 		if err != nil {
 			return err
 		}
+		if trace != nil && trace.WroteHeaderField != nil {
+			trace.WroteHeaderField("User-Agent", []string{userAgent})
+		}
 	}
 
 	// Process Body,ContentLength,Close,Trailer
@@ -569,18 +592,18 @@ func (r *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, waitF
 	if err != nil {
 		return err
 	}
-	err = tw.WriteHeader(w)
+	err = tw.writeHeader(w, trace)
 	if err != nil {
 		return err
 	}
 
-	err = r.Header.WriteSubset(w, reqWriteExcludeHeader)
+	err = r.Header.writeSubset(w, reqWriteExcludeHeader, trace)
 	if err != nil {
 		return err
 	}
 
 	if extraHeaders != nil {
-		err = extraHeaders.Write(w)
+		err = extraHeaders.write(w, trace)
 		if err != nil {
 			return err
 		}
@@ -619,7 +642,7 @@ func (r *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, waitF
 	}
 
 	// Write body and trailer
-	err = tw.WriteBody(w)
+	err = tw.writeBody(w)
 	if err != nil {
 		if tw.bodyReadError == err {
 			err = requestBodyReadError{err}
@@ -858,7 +881,8 @@ func (r *Request) BasicAuth() (username, password string, ok bool) {
 // "Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==" returns ("Aladdin", "open sesame", true).
 func parseBasicAuth(auth string) (username, password string, ok bool) {
 	const prefix = "Basic "
-	if !strings.HasPrefix(auth, prefix) {
+	// Case insensitive prefix match. See Issue 22736.
+	if len(auth) < len(prefix) || !strings.EqualFold(auth[:len(prefix)], prefix) {
 		return
 	}
 	c, err := base64.StdEncoding.DecodeString(auth[len(prefix):])
@@ -910,6 +934,11 @@ func putTextprotoReader(r *textproto.Reader) {
 }
 
 // ReadRequest reads and parses an incoming request from b.
+//
+// ReadRequest is a low-level function and should only be used for
+// specialized applications; most code should use the Server to read
+// requests and handle them via the Handler interface. ReadRequest
+// only supports HTTP/1.x requests. For HTTP/2, use golang.org/x/net/http2.
 func ReadRequest(b *bufio.Reader) (*Request, error) {
 	return readRequest(b, deleteHostHeader)
 }
@@ -979,7 +1008,7 @@ func readRequest(b *bufio.Reader, deleteHostHeader bool) (req *Request, err erro
 	}
 	req.Header = Header(mimeHeader)
 
-	// RFC 2616: Must treat
+	// RFC 7230, section 5.3: Must treat
 	//	GET /index.html HTTP/1.1
 	//	Host: www.google.com
 	// and
@@ -1094,8 +1123,8 @@ func parsePostForm(r *Request) (vs url.Values, err error) {
 		return
 	}
 	ct := r.Header.Get("Content-Type")
-	// RFC 2616, section 7.2.1 - empty type
-	//   SHOULD be treated as application/octet-stream
+	// RFC 7231, section 3.1.1.5 - empty type
+	//   MAY be treated as application/octet-stream
 	if ct == "" {
 		ct = "application/octet-stream"
 	}
@@ -1207,7 +1236,7 @@ func (r *Request) ParseMultipartForm(maxMemory int64) error {
 		return nil
 	}
 
-	mr, err := r.multipartReader()
+	mr, err := r.multipartReader(false)
 	if err != nil {
 		return err
 	}
@@ -1248,8 +1277,8 @@ func (r *Request) FormValue(key string) string {
 	return ""
 }
 
-// PostFormValue returns the first value for the named component of the POST
-// or PUT request body. URL query parameters are ignored.
+// PostFormValue returns the first value for the named component of the POST,
+// PATCH, or PUT request body. URL query parameters are ignored.
 // PostFormValue calls ParseMultipartForm and ParseForm if necessary and ignores
 // any errors returned by these functions.
 // If key is not present, PostFormValue returns the empty string.

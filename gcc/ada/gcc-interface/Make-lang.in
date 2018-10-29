@@ -320,6 +320,7 @@ GNAT_ADA_OBJS =	\
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-lists.o \
+ ada/libgnat/g-sets.o \
  ada/libgnat/g-spchge.o	\
  ada/libgnat/g-speche.o	\
  ada/libgnat/g-u3spch.o	\
@@ -928,6 +929,9 @@ check_gnat_parallelize = 1000
 
 check-ada: check-acats check-gnat
 check-ada-subtargets: check-acats-subtargets check-gnat-subtargets
+
+# No ada-specific selftests
+selftest-ada:
 
 ACATSDIR = $(TESTSUITEDIR)/ada/acats
 ACATSCMD = run_acats.sh

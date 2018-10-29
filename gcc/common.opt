@@ -811,6 +811,10 @@ Wcoverage-mismatch
 Common Var(warn_coverage_mismatch) Init(1) Warning
 Warn in case profiles in -fprofile-use do not match.
 
+Wmissing-profile
+Common Var(warn_missing_profile) Init(1) Warning
+Warn in case profiles in -fprofile-use do not exist.
+
 Wvector-operation-performance
 Common Var(warn_vector_operation_performance) Warning
 Warn when a vector operation is compiled outside the SIMD.
@@ -1276,6 +1280,10 @@ Print fix-it hints to stderr in unified diff format.
 fdiagnostics-show-option
 Common Var(flag_diagnostics_show_option) Init(1)
 Amend appropriate diagnostic messages with the command line option that controls them.
+
+fdiagnostics-minimum-margin-width=
+Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
+Set minimum width of left margin of source code when showing source
 
 fdisable-
 Common Joined RejectNegative Var(common_deferred_options) Defer

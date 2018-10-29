@@ -54,7 +54,7 @@ package body GNAT.Lists is
 
       procedure Ensure_Unlocked (L : Instance);
       pragma Inline (Ensure_Unlocked);
-      --  Verify that list L is unlocked. Raise List_Locked if this is not the
+      --  Verify that list L is unlocked. Raise Iterated if this is not the
       --  case.
 
       function Find_Node
@@ -306,8 +306,8 @@ package body GNAT.Lists is
 
          --  The list has at least one outstanding iterator
 
-         if L.Locked > 0 then
-            raise List_Locked;
+         if L.Iterators > 0 then
+            raise Iterated;
          end if;
       end Ensure_Unlocked;
 
@@ -514,17 +514,6 @@ package body GNAT.Lists is
          return L.Nodes.Prev.Elem;
       end Last;
 
-      ------------
-      -- Length --
-      ------------
-
-      function Length (L : Instance) return Element_Count_Type is
-      begin
-         Ensure_Created (L);
-
-         return L.Elements;
-      end Length;
-
       ----------
       -- Lock --
       ----------
@@ -536,17 +525,14 @@ package body GNAT.Lists is
          --  The list may be locked multiple times if multiple iterators are
          --  operating over it.
 
-         L.Locked := L.Locked + 1;
+         L.Iterators := L.Iterators + 1;
       end Lock;
 
       ----------
       -- Next --
       ----------
 
-      procedure Next
-        (Iter : in out Iterator;
-         Elem : out Element_Type)
-      is
+      procedure Next (Iter : in out Iterator; Elem : out Element_Type) is
          Is_OK : constant Boolean  := Is_Valid (Iter);
          Saved : constant Node_Ptr := Iter.Nod;
 
@@ -617,6 +603,17 @@ package body GNAT.Lists is
          end if;
       end Replace;
 
+      ----------
+      -- Size --
+      ----------
+
+      function Size (L : Instance) return Natural is
+      begin
+         Ensure_Created (L);
+
+         return L.Elements;
+      end Size;
+
       ------------
       -- Unlock --
       ------------
@@ -628,7 +625,7 @@ package body GNAT.Lists is
          --  The list may be locked multiple times if multiple iterators are
          --  operating over it.
 
-         L.Locked := L.Locked - 1;
+         L.Iterators := L.Iterators - 1;
       end Unlock;
    end Doubly_Linked_List;
 

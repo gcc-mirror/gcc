@@ -2553,6 +2553,7 @@ as_fn_append ac_header_list " sys/times.h"
 as_fn_append ac_header_list " sys/resource.h"
 as_fn_append ac_header_list " sys/types.h"
 as_fn_append ac_header_list " sys/stat.h"
+as_fn_append ac_header_list " sys/uio.h"
 as_fn_append ac_header_list " sys/wait.h"
 as_fn_append ac_header_list " floatingpoint.h"
 as_fn_append ac_header_list " ieeefp.h"
@@ -2584,6 +2585,7 @@ as_fn_append ac_func_list " access"
 as_fn_append ac_func_list " fork"
 as_fn_append ac_func_list " setmode"
 as_fn_append ac_func_list " fcntl"
+as_fn_append ac_func_list " writev"
 as_fn_append ac_func_list " gettimeofday"
 as_fn_append ac_func_list " stat"
 as_fn_append ac_func_list " fstat"
@@ -12514,7 +12516,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12517 "configure"
+#line 12519 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12620,7 +12622,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12623 "configure"
+#line 12625 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16187,6 +16189,8 @@ done
 
 
 
+
+
 inttype_headers=`echo inttypes.h sys/inttypes.h  | sed -e 's/,/ /g'`
 
 acx_cv_header_stdint=stddef.h
@@ -16682,6 +16686,8 @@ _ACEOF
 
 fi
 done
+
+
 
 
 

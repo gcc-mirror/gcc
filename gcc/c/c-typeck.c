@@ -7485,19 +7485,17 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		}
 	    }
 
-	  TREE_TYPE (inside_init) = type;
 	  if (TYPE_DOMAIN (type) != NULL_TREE
 	      && TYPE_SIZE (type) != NULL_TREE
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	    {
 	      unsigned HOST_WIDE_INT len = TREE_STRING_LENGTH (inside_init);
+	      unsigned unit = TYPE_PRECISION (typ1) / BITS_PER_UNIT;
 
 	      /* Subtract the size of a single (possibly wide) character
 		 because it's ok to ignore the terminating null char
 		 that is counted in the length of the constant.  */
-	      if (compare_tree_int (TYPE_SIZE_UNIT (type),
-				    (len - (TYPE_PRECISION (typ1)
-					    / BITS_PER_UNIT))) < 0)
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len - unit) < 0)
 		pedwarn_init (init_loc, 0,
 			      ("initializer-string for array of chars "
 			       "is too long"));
@@ -7506,8 +7504,17 @@ digest_init (location_t init_loc, tree type, tree init, tree origtype,
 		warning_at (init_loc, OPT_Wc___compat,
 			    ("initializer-string for array chars "
 			     "is too long for C++"));
+	      if (compare_tree_int (TYPE_SIZE_UNIT (type), len) < 0)
+		{
+		  unsigned HOST_WIDE_INT size
+		    = tree_to_uhwi (TYPE_SIZE_UNIT (type));
+		  const char *p = TREE_STRING_POINTER (inside_init);
+
+		  inside_init = build_string (size, p);
+		}
 	    }
 
+	  TREE_TYPE (inside_init) = type;
 	  return inside_init;
 	}
       else if (INTEGRAL_TYPE_P (typ1))
@@ -11049,7 +11056,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
   {
   }
 
-  label_text get_text () const FINAL OVERRIDE
+  label_text get_text (unsigned range_idx) const FINAL OVERRIDE
   {
     if (m_expr == NULL_TREE
 	|| !EXPR_P (m_expr))
@@ -11061,7 +11068,7 @@ class maybe_range_label_for_tree_type_mismatch : public range_label
       other_type = TREE_TYPE (m_other_expr);
 
    range_label_for_type_mismatch inner (expr_type, other_type);
-   return inner.get_text ();
+   return inner.get_text (range_idx);
   }
 
  private:
@@ -11242,6 +11249,20 @@ build_binary_op (location_t location, enum tree_code code,
     case EXACT_DIV_EXPR:
       may_need_excess_precision = true;
       break;
+
+    case EQ_EXPR:
+    case NE_EXPR:
+    case LE_EXPR:
+    case GE_EXPR:
+    case LT_EXPR:
+    case GT_EXPR:
+      /* Excess precision for implicit conversions of integers to
+	 floating point in C11 and later.  */
+      may_need_excess_precision = (flag_isoc11
+				   && (ANY_INTEGRAL_TYPE_P (type0)
+				       || ANY_INTEGRAL_TYPE_P (type1)));
+      break;
+
     default:
       may_need_excess_precision = false;
       break;

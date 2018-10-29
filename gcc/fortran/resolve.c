@@ -2061,7 +2061,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	 nothing to do for %REF.  */
       if (arg->name && arg->name[0] == '%')
 	{
-	  if (strncmp ("%VAL", arg->name, 4) == 0)
+	  if (strcmp ("%VAL", arg->name) == 0)
 	    {
 	      if (e->ts.type == BT_CHARACTER || e->ts.type == BT_DERIVED)
 		{
@@ -2093,7 +2093,7 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	    }
 
 	  /* Statement functions have already been excluded above.  */
-	  else if (strncmp ("%LOC", arg->name, 4) == 0
+	  else if (strcmp ("%LOC", arg->name) == 0
 		   && e->ts.type == BT_PROCEDURE)
 	    {
 	      if (e->symtree->n.sym->attr.proc == PROC_INTERNAL)
@@ -3265,7 +3265,7 @@ resolve_function (gfc_expr *expr)
 	      if (arg->next->expr->expr_type != EXPR_CONSTANT)
 		break;
 
-	      if (arg->next->name && strncmp (arg->next->name, "kind", 4) == 0)
+	      if (arg->next->name && strcmp (arg->next->name, "kind") == 0)
 		break;
 
 	      if ((int)mpz_get_si (arg->next->expr->value.integer)
@@ -5436,6 +5436,24 @@ resolve_variable (gfc_expr *e)
 	gfc_fix_class_refs (e);
       if (!sym->attr.dimension && e->ref && e->ref->type == REF_ARRAY)
 	return false;
+      else if (sym->attr.dimension && (!e->ref || e->ref->type != REF_ARRAY))
+	{
+	  /* This can happen because the parser did not detect that the
+	     associate name is an array and the expression had no array
+	     part_ref.  */
+	  gfc_ref *ref = gfc_get_ref ();
+	  ref->type = REF_ARRAY;
+	  ref->u.ar = *gfc_get_array_ref();
+	  ref->u.ar.type = AR_FULL;
+	  if (sym->as)
+	    {
+	      ref->u.ar.as = sym->as;
+	      ref->u.ar.dimen = sym->as->rank;
+	    }
+	  ref->next = e->ref;
+	  e->ref = ref;
+
+	}
     }
 
   if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.generic)
@@ -8675,6 +8693,18 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	  if (as->corank != 0)
 	    sym->attr.codimension = 1;
 	}
+      else if (sym->ts.type == BT_CLASS && (!CLASS_DATA (sym)->as || sym->assoc->rankguessed))
+	{
+	  if (!CLASS_DATA (sym)->as)
+	    CLASS_DATA (sym)->as = gfc_get_array_spec ();
+	  as = CLASS_DATA (sym)->as;
+	  as->rank = target->rank;
+	  as->type = AS_DEFERRED;
+	  as->corank = gfc_get_corank (target);
+	  CLASS_DATA (sym)->attr.dimension = 1;
+	  if (as->corank != 0)
+	    CLASS_DATA (sym)->attr.codimension = 1;
+	}
     }
   else
     {
@@ -8744,6 +8774,14 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       if (!sym->ts.u.cl)
 	sym->ts.u.cl = target->ts.u.cl;
 
+      if (sym->ts.deferred && target->expr_type == EXPR_VARIABLE
+	  && target->symtree->n.sym->attr.dummy
+	  && sym->ts.u.cl == target->ts.u.cl)
+	{
+	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
+	  sym->ts.deferred = 1;
+	}
+
       if (!sym->ts.u.cl->length
 	  && !sym->ts.deferred
 	  && target->expr_type == EXPR_CONSTANT)
@@ -8756,7 +8794,7 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 		|| sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 		&& target->expr_type != EXPR_VARIABLE)
 	{
-	  sym->ts.u.cl = gfc_get_charlen();
+	  sym->ts.u.cl = gfc_new_charlen (sym->ns, NULL);
 	  sym->ts.deferred = 1;
 
 	  /* This is reset in trans-stmt.c after the assignment
@@ -8867,9 +8905,24 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 
   if (code->expr2)
     {
-      if (code->expr1->symtree->n.sym->attr.untyped)
-	code->expr1->symtree->n.sym->ts = code->expr2->ts;
-      selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+      gfc_ref *ref2 = NULL;
+      for (ref = code->expr2->ref; ref != NULL; ref = ref->next)
+	 if (ref->type == REF_COMPONENT
+	     && ref->u.c.component->ts.type == BT_CLASS)
+	   ref2 = ref;
+
+      if (ref2)
+	{
+	  if (code->expr1->symtree->n.sym->attr.untyped)
+	    code->expr1->symtree->n.sym->ts = ref2->u.c.component->ts;
+	  selector_type = CLASS_DATA (ref2->u.c.component)->ts.u.derived;
+	}
+      else
+	{
+	  if (code->expr1->symtree->n.sym->attr.untyped)
+	    code->expr1->symtree->n.sym->ts = code->expr2->ts;
+	  selector_type = CLASS_DATA (code->expr2)->ts.u.derived;
+	}
 
       if (code->expr2->rank && CLASS_DATA (code->expr1)->as)
 	CLASS_DATA (code->expr1)->as->rank = code->expr2->rank;
@@ -12495,7 +12548,8 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     }
 
   /* An elemental function is required to return a scalar 12.7.1  */
-  if (sym->attr.elemental && sym->attr.function && sym->as)
+  if (sym->attr.elemental && sym->attr.function
+      && (sym->as || (sym->ts.type == BT_CLASS && CLASS_DATA (sym)->as)))
     {
       gfc_error ("ELEMENTAL function %qs at %L must have a scalar "
 		 "result", sym->name, &sym->declared_at);

@@ -1,3 +1,101 @@
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR other/87735
+	* libgcov-profiler.c: Revert.
+
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c: Start from 1 in order to distinguish
+	functions which were seen and these that were not.
+
+2018-10-18  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodsi4.c (__udivmodsi4): Rename to conform to coding
+	standard.
+	* divmod.c: Update references to __udivmodsi4.
+	* udivmod.c: Ditto.
+	* udivhi3.c: New file.
+	* udivmodhi4.c: New file.
+	* config/pdp11/t-pdp11 (LIB2ADD): Add the new files.
+
+2018-10-17  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (LIB2FUNCS_ST): Filter out LIB2FUNCS_EXCLUDE.
+
+2018-10-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
+	defined (__FLOAT128_TYPE__) || defined (__LONG_DOUBLE_128__).
+
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11: Remove -mfloat32 switch.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84107
+	* libgcov-profiler.c (__gcov_indirect_call):
+	Change type to indirect_call_tuple.
+	(struct indirect_call_tuple): New struct.
+	(__gcov_indirect_call_topn_profiler): Change type.
+	(__gcov_indirect_call_profiler_v2): Use the new
+	variables.
+	* libgcov.h (struct indirect_call_tuple): New struct
+	definition.
+
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcc2.c (isnan): Use __builtin_isnan.
+	(isfinite): Use __builtin_isfinite.
+	(isinf): Use __builtin_isinf.
+
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
+2018-09-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxcache.c: New file.  Provide __clear_cache, based on
+	the cacheTextUpdate VxWorks service.
+	* config/t-vxworks (LIB2ADD): Add vxcache.c.
+	(LIB2FUNCS_EXCLUDE): Add _clear_cache.
+	* config/t-vxwoks7: Likewise.
+
+2018-09-21  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (crc32_unsigned): Remove.
+	(gcov_histogram_insert): Likewise.
+	(gcov_compute_histogram): Likewise.
+	(compute_summary): Simplify rapidly.
+	(merge_one_data): Do not handle PROGRAM_SUMMARY tag.
+	(merge_summary): Rapidly simplify.
+	(dump_one_gcov): Ignore gcov_summary.
+	(gcov_do_dump): Do not handle program summary, it's not
+	used.
+	* libgcov-util.c (tag_summary): Remove.
+	(read_gcda_finalize): Fix coding style.
+	(read_gcda_file): Initialize curr_object_summary.
+	(compute_summary): Remove.
+	(calculate_overlap): Remove settings of run_max.
+
+2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/linux-unwind.h (struct _rt_sigframe): Use struct
+	ucontext_t type instead.
+	(nds32_fallback_frame_state): Remove struct _sigframe statement.
+
+2018-09-21  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/t-nds32-glibc: New file.
+
+2018-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_ld_v2_maps): New test.
+	* configure: Regenerate.
+	* Makefile.in (solaris_ld_v2_maps): New variable.
+	* config/t-slibgcc-sld (libgcc-unwind.map): Emit v2 mapfile syntax
+	if supported.
+
 2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/86951
@@ -58,7 +156,7 @@
 	unordered store to release lock.
 	(__sync_lock_release_8): Likewise.
 	(SYNC_LOCK_RELEASE_2): Remove define.
-	 
+
 2018-08-02  Nicolas Pitre <nico@fluxnic.net>
 
 	PR libgcc/86512
@@ -369,7 +467,7 @@
 
 	* config/pa/fptr.c (_dl_read_access_allowed): New.
 	(__canonicalize_funcptr_for_compare): Use it.
-	
+
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83917
@@ -466,21 +564,21 @@
 	* config/rl78/t-rl78: Added smindi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/smaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added smaxdi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/umaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
-	
+
 2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/83452
 	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
 	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
-	
+
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/value-unwind.h (aarch64_vg): New function.

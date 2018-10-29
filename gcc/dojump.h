@@ -56,29 +56,22 @@ extern void save_pending_stack_adjust (saved_pending_stack_adjust *);
 
 extern void restore_pending_stack_adjust (saved_pending_stack_adjust *);
 
-/* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
-extern void jumpifnot (tree exp, rtx_code_label *label,
-		       profile_probability prob);
-extern void jumpifnot_1 (enum tree_code, tree, tree, rtx_code_label *,
-			 profile_probability);
+extern bool split_comparison (enum rtx_code, machine_mode,
+			      enum rtx_code *, enum rtx_code *);
 
 /* Generate code to evaluate EXP and jump to LABEL if the value is nonzero.  */
 extern void jumpif (tree exp, rtx_code_label *label, profile_probability prob);
 extern void jumpif_1 (enum tree_code, tree, tree, rtx_code_label *,
 		      profile_probability);
 
-/* Generate code to evaluate EXP and jump to IF_FALSE_LABEL if
-   the result is zero, or IF_TRUE_LABEL if the result is one.  */
-extern void do_jump (tree exp, rtx_code_label *if_false_label,
-		     rtx_code_label *if_true_label, profile_probability prob);
-extern void do_jump_1 (enum tree_code, tree, tree, rtx_code_label *,
-		       rtx_code_label *, profile_probability);
+/* Generate code to evaluate EXP and jump to LABEL if the value is zero.  */
+extern void jumpifnot (tree exp, rtx_code_label *label,
+		       profile_probability prob);
+extern void jumpifnot_1 (enum tree_code, tree, tree, rtx_code_label *,
+			 profile_probability);
 
 extern void do_compare_rtx_and_jump (rtx, rtx, enum rtx_code, int,
 				     machine_mode, rtx, rtx_code_label *,
 				     rtx_code_label *, profile_probability);
-
-extern bool split_comparison (enum rtx_code, machine_mode,
-			      enum rtx_code *, enum rtx_code *);
 
 #endif /* GCC_DOJUMP_H */

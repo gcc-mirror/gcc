@@ -5583,11 +5583,13 @@ layout_var_decl (tree decl)
 void
 maybe_commonize_var (tree decl)
 {
+  /* Don't mess with __FUNCTION__ and similar.  */
+  if (DECL_ARTIFICIAL (decl))
+    return;
+
   /* Static data in a function with comdat linkage also has comdat
      linkage.  */
   if ((TREE_STATIC (decl)
-       /* Don't mess with __FUNCTION__.  */
-       && ! DECL_ARTIFICIAL (decl)
        && DECL_FUNCTION_SCOPE_P (decl)
        && vague_linkage_p (DECL_CONTEXT (decl)))
       || (TREE_PUBLIC (decl) && DECL_INLINE_VAR_P (decl)))
@@ -6774,6 +6776,10 @@ initialize_artificial_var (tree decl, vec<constructor_elt, va_gc> *v)
   gcc_assert (TREE_CODE (init) == CONSTRUCTOR);
   DECL_INITIAL (decl) = init;
   DECL_INITIALIZED_P (decl) = 1;
+  /* Mark the decl as constexpr so that we can access its content
+     at compile time.  */
+  DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (decl) = true;
+  DECL_DECLARED_CONSTEXPR_P (decl) = true;
   determine_visibility (decl);
   layout_var_decl (decl);
   maybe_commonize_var (decl);
@@ -10854,12 +10860,13 @@ grokdeclarator (const cp_declarator *declarator,
 	  storage_class = sc_none;
 	  staticp = 0;
 	}
-      if (constexpr_p)
+      if (constexpr_p && cxx_dialect < cxx2a)
 	{
 	  gcc_rich_location richloc (declspecs->locations[ds_virtual]);
 	  richloc.add_range (declspecs->locations[ds_constexpr]);
-	  error_at (&richloc, "member %qD cannot be declared both %<virtual%> "
-		    "and %<constexpr%>", dname);
+	  pedwarn (&richloc, OPT_Wpedantic, "member %qD can be declared both "
+		   "%<virtual%> and %<constexpr%> only in -std=c++2a or "
+		   "-std=gnu++2a", dname);
 	}
     }
   friendp = decl_spec_seq_has_spec_p (declspecs, ds_friend);
@@ -11872,6 +11879,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* If this is declaring a typedef name, return a TYPE_DECL.  */
   if (typedef_p && decl_context != TYPENAME)
     {
+      bool alias_p = decl_spec_seq_has_spec_p (declspecs, ds_alias);
       tree decl;
 
       /* This declaration:
@@ -11894,7 +11902,12 @@ grokdeclarator (const cp_declarator *declarator,
 
       if (type_uses_auto (type))
 	{
-	  error ("typedef declared %<auto%>");
+	  if (alias_p)
+	    error_at (declspecs->locations[ds_type_spec],
+		      "%<auto%> not allowed in alias declaration");
+	  else
+	    error_at (declspecs->locations[ds_type_spec],
+		      "typedef declared %<auto%>");
 	  type = error_mark_node;
 	}
 
@@ -11954,7 +11967,7 @@ grokdeclarator (const cp_declarator *declarator,
 		      inlinep, friendp, raises != NULL_TREE,
 		      declspecs->locations);
 
-      if (decl_spec_seq_has_spec_p (declspecs, ds_alias))
+      if (alias_p)
 	/* Acknowledge that this was written:
 	     `using analias = atype;'.  */
 	TYPE_DECL_ALIAS_P (decl) = 1;
@@ -13537,7 +13550,7 @@ grok_op_properties (tree decl, bool complain)
   /* Warn about conversion operators that will never be used.  */
   if (IDENTIFIER_CONV_OP_P (name)
       && ! DECL_TEMPLATE_INFO (decl)
-      && warn_conversion)
+      && warn_class_conversion)
     {
       tree t = TREE_TYPE (name);
       int ref = TYPE_REF_P (t);
@@ -13546,31 +13559,29 @@ grok_op_properties (tree decl, bool complain)
 	t = TYPE_MAIN_VARIANT (TREE_TYPE (t));
 
       if (VOID_TYPE_P (t))
-	warning_at (loc, OPT_Wconversion,
-		    ref
-		    ? G_("conversion to a reference to void "
-			 "will never use a type conversion operator")
-		    : G_("conversion to void "
-			 "will never use a type conversion operator"));
+	warning_at (loc, OPT_Wclass_conversion, "converting %qT to %<void%> "
+		    "will never use a type conversion operator", class_type);
       else if (class_type)
 	{
-	  if (t == class_type)
-	    warning_at (loc, OPT_Wconversion,
+	  if (same_type_ignoring_top_level_qualifiers_p (t, class_type))
+	    warning_at (loc, OPT_Wclass_conversion,
 			ref
-			? G_("conversion to a reference to the same type "
+			? G_("converting %qT to a reference to the same type "
 			     "will never use a type conversion operator")
-			: G_("conversion to the same type "
-			     "will never use a type conversion operator"));
+			: G_("converting %qT to the same type "
+			     "will never use a type conversion operator"),
+			class_type);
 	  /* Don't force t to be complete here.  */
 	  else if (MAYBE_CLASS_TYPE_P (t)
 		   && COMPLETE_TYPE_P (t)
 		   && DERIVED_FROM_P (t, class_type))
-	    warning_at (loc, OPT_Wconversion,
+	    warning_at (loc, OPT_Wclass_conversion,
 			ref
-			? G_("conversion to a reference to a base class "
-			     "will never use a type conversion operator")
-			: G_("conversion to a base class "
-			     "will never use a type conversion operator"));
+			? G_("converting %qT to a reference to a base class "
+			     "%qT will never use a type conversion operator")
+			: G_("converting %qT to a base class %qT "
+			     "will never use a type conversion operator"),
+			class_type, t);
 	}
     }
 

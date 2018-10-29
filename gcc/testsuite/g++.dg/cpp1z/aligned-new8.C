@@ -1,6 +1,5 @@
 // PR c++/82760
-// { dg-options -std=c++17 }
-// { dg-do run }
+// { dg-do run { target c++17 } }
 
 #include <new>
 #include <cstddef>

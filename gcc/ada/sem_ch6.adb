@@ -1060,6 +1060,16 @@ package body Sem_Ch6 is
 
          Apply_Constraint_Check (Expr, R_Type);
 
+         --  The return value is converted to the return type of the function,
+         --  which implies a predicate check if the return type is predicated.
+         --  We do not apply the check to a case expression because it will
+         --  be expanded into a series of return statements, each of which
+         --  will receive a predicate check.
+
+         if Nkind (Expr) /= N_Case_Expression then
+            Apply_Predicate_Check (Expr, R_Type);
+         end if;
+
          --  Ada 2005 (AI-318-02): When the result type is an anonymous access
          --  type, apply an implicit conversion of the expression to that type
          --  to force appropriate static and run-time accessibility checks.
@@ -8922,7 +8932,17 @@ package body Sem_Ch6 is
               or else
                 (Chars (Entity (E1)) = Chars (Entity (E2))
                   and then Ekind (Entity (E1)) = E_Loop_Parameter
-                  and then Ekind (Entity (E2)) = E_Loop_Parameter);
+                  and then Ekind (Entity (E2)) = E_Loop_Parameter)
+
+              --  A call to an instantiation of Unchecked_Conversion is
+              --  rewritten with the name of the generated function
+              --  created for the instance, and this must be special-cased.
+
+              or else
+                 (Ekind (Entity (E1)) = E_Function
+                   and then Is_Intrinsic_Subprogram (Entity (E1))
+                   and then Is_Generic_Instance (Entity (E1))
+                   and then Entity (E2) = Alias (Entity (E1)));
 
          elsif Nkind (E1) = N_Expanded_Name
            and then Nkind (E2) = N_Expanded_Name

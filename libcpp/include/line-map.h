@@ -1017,7 +1017,7 @@ LINEMAPS_MACRO_LOWEST_LOCATION (const line_maps *set)
 {
   return LINEMAPS_MACRO_USED (set)
          ? MAP_START_LOCATION (LINEMAPS_LAST_MACRO_MAP (set))
-         : MAX_SOURCE_LOCATION;
+         : MAX_SOURCE_LOCATION + 1;
 }
 
 /* Returns the last macro map allocated in the line table SET.  */
@@ -1808,8 +1808,10 @@ class range_label
  public:
   virtual ~range_label () {}
 
-  /* Get localized text for the label.  */
-  virtual label_text get_text () const = 0;
+  /* Get localized text for the label.
+     The RANGE_IDX is provided, allowing for range_label instances to be
+     shared by multiple ranges if need be (the "flyweight" design pattern).  */
+  virtual label_text get_text (unsigned range_idx) const = 0;
 };
 
 /* A fix-it hint: a suggested insertion, replacement, or deletion of text.

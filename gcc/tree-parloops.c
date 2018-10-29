@@ -3076,7 +3076,7 @@ oacc_entry_exit_ok_1 (bitmap in_loop_bbs, vec<basic_block> region_bbs,
 	    continue;
 	  else if (!gimple_has_side_effects (stmt)
 		   && !gimple_could_trap_p (stmt)
-		   && !stmt_could_throw_p (stmt)
+		   && !stmt_could_throw_p (cfun, stmt)
 		   && !gimple_vdef (stmt)
 		   && !gimple_vuse (stmt))
 	    continue;

@@ -202,11 +202,9 @@ vect_mark_relevant (vec<stmt_vec_info> *worklist, stmt_vec_info stmt_info,
   bool save_live_p = STMT_VINFO_LIVE_P (stmt_info);
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "mark relevant %d, live %d: ", relevant, live_p);
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "mark relevant %d, live %d: %G", relevant, live_p,
+		     stmt_info->stmt);
 
   /* If this stmt is an original stmt in a pattern, we might need to mark its
      related pattern stmt instead of the original stmt.  However, such stmts
@@ -450,7 +448,7 @@ exist_non_indexing_operands_for_use_p (tree use, stmt_vec_info stmt_info)
 
    Return true if everything is as expected. Return false otherwise.  */
 
-static bool
+static opt_result
 process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 	     enum vect_relevant relevant, vec<stmt_vec_info> *worklist,
 	     bool force)
@@ -462,18 +460,15 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
   /* case 1: we are only interested in uses that need to be vectorized.  Uses
      that are used for address computation are not considered relevant.  */
   if (!force && !exist_non_indexing_operands_for_use_p (use, stmt_vinfo))
-     return true;
+    return opt_result::success ();
 
   if (!vect_is_simple_use (use, loop_vinfo, &dt, &dstmt_vinfo))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not vectorized: unsupported use in stmt.\n");
-      return false;
-    }
+    return opt_result::failure_at (stmt_vinfo->stmt,
+				   "not vectorized:"
+				   " unsupported use in stmt.\n");
 
   if (!dstmt_vinfo)
-    return true;
+    return opt_result::success ();
 
   def_bb = gimple_bb (dstmt_vinfo->stmt);
 
@@ -495,7 +490,7 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
       gcc_assert (STMT_VINFO_RELEVANT (dstmt_vinfo) < vect_used_by_reduction);
       gcc_assert (STMT_VINFO_LIVE_P (dstmt_vinfo)
 		  || STMT_VINFO_RELEVANT (dstmt_vinfo) > vect_unused_in_scope);
-      return true;
+      return opt_result::success ();
     }
 
   /* case 3a: outer-loop stmt defining an inner-loop stmt:
@@ -584,12 +579,12 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "induction value on backedge.\n");
-      return true;
+      return opt_result::success ();
     }
 
 
   vect_mark_relevant (worklist, dstmt_vinfo, relevant, false);
-  return true;
+  return opt_result::success ();
 }
 
 
@@ -609,7 +604,7 @@ process_use (stmt_vec_info stmt_vinfo, tree use, loop_vec_info loop_vinfo,
 
    This pass detects such stmts.  */
 
-bool
+opt_result
 vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 {
   struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -633,10 +628,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	{
 	  stmt_vec_info phi_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location, "init: phi relevant? ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, phi_info->stmt, 0);
-	    }
+	    dump_printf_loc (MSG_NOTE, vect_location, "init: phi relevant? %G",
+			     phi_info->stmt);
 
 	  if (vect_stmt_relevant_p (phi_info, loop_vinfo, &relevant, &live_p))
 	    vect_mark_relevant (&worklist, phi_info, relevant, live_p);
@@ -645,10 +638,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	{
 	  stmt_vec_info stmt_info = loop_vinfo->lookup_stmt (gsi_stmt (si));
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location, "init: stmt relevant? ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
-	    }
+	      dump_printf_loc (MSG_NOTE, vect_location,
+			       "init: stmt relevant? %G", stmt_info->stmt);
 
 	  if (vect_stmt_relevant_p (stmt_info, loop_vinfo, &relevant, &live_p))
 	    vect_mark_relevant (&worklist, stmt_info, relevant, live_p);
@@ -663,11 +654,8 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 
       stmt_vec_info stmt_vinfo = worklist.pop ();
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "worklist: examine stmt: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_vinfo->stmt, 0);
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "worklist: examine stmt: %G", stmt_vinfo->stmt);
 
       /* Examine the USEs of STMT. For each USE, mark the stmt that defines it
 	 (DEF_STMT) as relevant/irrelevant according to the relevance property
@@ -693,38 +681,24 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 		&& relevant != vect_used_in_scope
 		&& relevant != vect_used_by_reduction
 		&& relevant != vect_used_only_live)
-	      {
-		if (dump_enabled_p ())
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "unsupported use of reduction.\n");
-		return false;
-	      }
+	      return opt_result::failure_at
+		(stmt_vinfo->stmt, "unsupported use of reduction.\n");
 	    break;
 
           case vect_nested_cycle:
 	    if (relevant != vect_unused_in_scope
 		&& relevant != vect_used_in_outer_by_reduction
 		&& relevant != vect_used_in_outer)
-              {
-                if (dump_enabled_p ())
-                  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "unsupported use of nested cycle.\n");
-
-                return false;
-              }
+	      return opt_result::failure_at
+		(stmt_vinfo->stmt, "unsupported use of nested cycle.\n");
             break;
 
           case vect_double_reduction_def:
 	    if (relevant != vect_unused_in_scope
 		&& relevant != vect_used_by_reduction
 		&& relevant != vect_used_only_live)
-              {
-                if (dump_enabled_p ())
-                  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                                   "unsupported use of double reduction.\n");
-
-                return false;
-              }
+	      return opt_result::failure_at
+		(stmt_vinfo->stmt, "unsupported use of double reduction.\n");
             break;
 
           default:
@@ -744,20 +718,28 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      i = 1;
 	      if (rhs_code == COND_EXPR && COMPARISON_CLASS_P (op))
 		{
-		  if (!process_use (stmt_vinfo, TREE_OPERAND (op, 0),
-				    loop_vinfo, relevant, &worklist, false)
-		      || !process_use (stmt_vinfo, TREE_OPERAND (op, 1),
-				       loop_vinfo, relevant, &worklist, false))
-		    return false;
+		  opt_result res
+		    = process_use (stmt_vinfo, TREE_OPERAND (op, 0),
+				   loop_vinfo, relevant, &worklist, false);
+		  if (!res)
+		    return res;
+		  res = process_use (stmt_vinfo, TREE_OPERAND (op, 1),
+				     loop_vinfo, relevant, &worklist, false);
+		  if (!res)
+		    return res;
 		  i = 2;
 		}
 	      for (; i < gimple_num_ops (assign); i++)
 		{
 		  op = gimple_op (assign, i);
-                  if (TREE_CODE (op) == SSA_NAME
-		      && !process_use (stmt_vinfo, op, loop_vinfo, relevant,
-				       &worklist, false))
-                    return false;
+                  if (TREE_CODE (op) == SSA_NAME)
+		    {
+		      opt_result res
+			= process_use (stmt_vinfo, op, loop_vinfo, relevant,
+				       &worklist, false);
+		      if (!res)
+			return res;
+		    }
                  }
             }
 	  else if (gcall *call = dyn_cast <gcall *> (stmt_vinfo->stmt))
@@ -765,9 +747,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	      for (i = 0; i < gimple_call_num_args (call); i++)
 		{
 		  tree arg = gimple_call_arg (call, i);
-		  if (!process_use (stmt_vinfo, arg, loop_vinfo, relevant,
-				    &worklist, false))
-                    return false;
+		  opt_result res
+		    = process_use (stmt_vinfo, arg, loop_vinfo, relevant,
+				   &worklist, false);
+		  if (!res)
+		    return res;
 		}
 	    }
         }
@@ -775,9 +759,11 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	FOR_EACH_PHI_OR_STMT_USE (use_p, stmt_vinfo->stmt, iter, SSA_OP_USE)
           {
             tree op = USE_FROM_PTR (use_p);
-	    if (!process_use (stmt_vinfo, op, loop_vinfo, relevant,
-			      &worklist, false))
-              return false;
+	    opt_result res
+	      = process_use (stmt_vinfo, op, loop_vinfo, relevant,
+			     &worklist, false);
+	    if (!res)
+	      return res;
           }
 
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_vinfo))
@@ -785,13 +771,15 @@ vect_mark_stmts_to_be_vectorized (loop_vec_info loop_vinfo)
 	  gather_scatter_info gs_info;
 	  if (!vect_check_gather_scatter (stmt_vinfo, loop_vinfo, &gs_info))
 	    gcc_unreachable ();
-	  if (!process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
-			    &worklist, true))
-	    return false;
+	  opt_result res
+	    = process_use (stmt_vinfo, gs_info.offset, loop_vinfo, relevant,
+			   &worklist, true);
+	  if (!res)
+	    return res;
 	}
     } /* while worklist */
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Compute the prologue cost for invariant or constant operands.  */
@@ -1383,11 +1371,8 @@ vect_init_vector_1 (stmt_vec_info stmt_vinfo, gimple *new_stmt,
     }
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "created new init_stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, new_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "created new init_stmt: %G", new_stmt);
 }
 
 /* Function vect_init_vector.
@@ -1539,22 +1524,15 @@ vect_get_vec_def_for_operand (tree op, stmt_vec_info stmt_vinfo, tree vectype)
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location,
-                       "vect_get_vec_def_for_operand: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, op);
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "vect_get_vec_def_for_operand: %T\n", op);
 
   stmt_vec_info def_stmt_info;
   is_simple_use = vect_is_simple_use (op, loop_vinfo, &dt,
 				      &def_stmt_info, &def_stmt);
   gcc_assert (is_simple_use);
   if (def_stmt && dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "  def_stmt =  ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, def_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "  def_stmt =  %G", def_stmt);
 
   if (dt == vect_constant_def || dt == vect_external_def)
     {
@@ -1725,10 +1703,7 @@ vect_finish_stmt_generation_1 (stmt_vec_info stmt_info, gimple *vec_stmt)
   stmt_vec_info vec_stmt_info = vinfo->add_stmt (vec_stmt);
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, vec_stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "add new stmt: %G", vec_stmt);
 
   gimple_set_location (vec_stmt, gimple_location (stmt_info->stmt));
 
@@ -1736,7 +1711,7 @@ vect_finish_stmt_generation_1 (stmt_vec_info stmt_info, gimple *vec_stmt)
      e.g. be in a must-not-throw region.  Ensure newly created stmts
      that could throw are part of the same region.  */
   int lp_nr = lookup_stmt_eh_lp (stmt_info->stmt);
-  if (lp_nr != 0 && stmt_could_throw_p (vec_stmt))
+  if (lp_nr != 0 && stmt_could_throw_p (cfun, vec_stmt))
     add_stmt_to_eh_lp (vec_stmt, lp_nr);
 
   return vec_stmt_info;
@@ -2535,15 +2510,11 @@ vect_check_load_store_mask (stmt_vec_info stmt_info, tree mask,
 		TYPE_VECTOR_SUBPARTS (vectype)))
     {
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "vector mask type ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, mask_vectype);
-	  dump_printf (MSG_MISSED_OPTIMIZATION,
-		       " does not match vector data type ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, vectype);
-	  dump_printf (MSG_MISSED_OPTIMIZATION, ".\n");
-	}
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "vector mask type %T",
+			 " does not match vector data type %T.\n",
+			 mask_vectype, vectype);
+
       return false;
     }
 
@@ -3145,7 +3116,7 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       || TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
-  gcc_checking_assert (!stmt_can_throw_internal (stmt));
+  gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
   vectype_out = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -3222,12 +3193,8 @@ vectorizable_call (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!vectype_in)
     {
       if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "no vectype for scalar type ");
-          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-        }
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "no vectype for scalar type %T\n", rhs_type);
 
       return false;
     }
@@ -3784,7 +3751,7 @@ vectorizable_simd_clone_call (stmt_vec_info stmt_info,
       && TREE_CODE (gimple_call_lhs (stmt)) != SSA_NAME)
     return false;
 
-  gcc_checking_assert (!stmt_can_throw_internal (stmt));
+  gcc_checking_assert (!stmt_can_throw_internal (cfun, stmt));
 
   vectype = STMT_VINFO_VECTYPE (stmt_info);
 
@@ -4716,12 +4683,8 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!vectype_in)
     {
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "no vectype for scalar type ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	}
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "no vectype for scalar type %T\n", rhs_type);
 
       return false;
     }
@@ -4730,13 +4693,9 @@ vectorizable_conversion (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       && !VECTOR_BOOLEAN_TYPE_P (vectype_in))
     {
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "can't convert between boolean and non "
-			   "boolean vectors");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, rhs_type);
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	}
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't convert between boolean and non "
+			 "boolean vectors %T\n", rhs_type);
 
       return false;
     }
@@ -5893,13 +5852,9 @@ vectorizable_operation (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (!vectype)
     {
       if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "no vectype for scalar type ");
-          dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-                             TREE_TYPE (op0));
-          dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-        }
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "no vectype for scalar type %T\n",
+			 TREE_TYPE (op0));
 
       return false;
     }
@@ -7675,11 +7630,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	{
 	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "hoisting out of the vectorized loop: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
-	    }
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "hoisting out of the vectorized loop: %G", stmt);
 	  scalar_dest = copy_ssa_name (scalar_dest);
 	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
 	  gsi_insert_on_edge_immediate
@@ -9427,7 +9379,7 @@ can_vectorize_live_stmts (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 /* Make sure the statement is vectorizable.  */
 
-bool
+opt_result
 vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 		   slp_tree node, slp_instance node_instance,
 		   stmt_vector_for_cost *cost_vec)
@@ -9439,19 +9391,14 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   gimple_seq pattern_def_seq;
 
   if (dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: ");
-      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
-    }
+    dump_printf_loc (MSG_NOTE, vect_location, "==> examining statement: %G",
+		     stmt_info->stmt);
 
   if (gimple_has_volatile_ops (stmt_info->stmt))
-    {
-      if (dump_enabled_p ())
-        dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "not vectorized: stmt has volatile operands\n");
-
-      return false;
-    }
+    return opt_result::failure_at (stmt_info->stmt,
+				   "not vectorized:"
+				   " stmt has volatile operands: %G\n",
+				   stmt_info->stmt);
 
   if (STMT_VINFO_IN_PATTERN_P (stmt_info)
       && node == NULL
@@ -9468,17 +9415,16 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	    {
 	      /* Analyze def stmt of STMT if it's a pattern stmt.  */
 	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "==> examining pattern def statement: ");
-		  dump_gimple_stmt (MSG_NOTE, TDF_SLIM,
-				    pattern_def_stmt_info->stmt, 0);
-		}
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "==> examining pattern def statement: %G",
+				 pattern_def_stmt_info->stmt);
 
-	      if (!vect_analyze_stmt (pattern_def_stmt_info,
-				      need_to_vectorize, node, node_instance,
-				      cost_vec))
-		return false;
+	      opt_result res
+		= vect_analyze_stmt (pattern_def_stmt_info,
+				     need_to_vectorize, node, node_instance,
+				     cost_vec);
+	      if (!res)
+		return res;
 	    }
 	}
     }
@@ -9509,18 +9455,16 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
           /* Analyze PATTERN_STMT instead of the original stmt.  */
 	  stmt_info = pattern_stmt_info;
           if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_NOTE, vect_location,
-                               "==> examining pattern statement: ");
-	      dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt_info->stmt, 0);
-            }
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "==> examining pattern statement: %G",
+			     stmt_info->stmt);
         }
       else
         {
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location, "irrelevant.\n");
 
-          return true;
+          return opt_result::success ();
         }
     }
   else if (STMT_VINFO_IN_PATTERN_P (stmt_info)
@@ -9531,15 +9475,15 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
     {
       /* Analyze PATTERN_STMT too.  */
       if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_NOTE, vect_location,
-                           "==> examining pattern statement: ");
-	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, pattern_stmt_info->stmt, 0);
-        }
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "==> examining pattern statement: %G",
+			 pattern_stmt_info->stmt);
 
-      if (!vect_analyze_stmt (pattern_stmt_info, need_to_vectorize, node,
-			      node_instance, cost_vec))
-        return false;
+      opt_result res
+	= vect_analyze_stmt (pattern_stmt_info, need_to_vectorize, node,
+			     node_instance, cost_vec);
+      if (!res)
+	return res;
    }
 
   switch (STMT_VINFO_DEF_TYPE (stmt_info))
@@ -9582,21 +9526,25 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
     {
       dump_printf_loc (MSG_NOTE, vect_location,
 		       "handled only by SLP analysis\n");
-      return true;
+      return opt_result::success ();
     }
 
   ok = true;
   if (!bb_vinfo
       && (STMT_VINFO_RELEVANT_P (stmt_info)
 	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def))
-    ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node, cost_vec)
+    /* Prefer vectorizable_call over vectorizable_simd_clone_call so
+       -mveclibabi= takes preference over library functions with
+       the simd attribute.  */
+    ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	  || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					   cost_vec)
 	  || vectorizable_conversion (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_operation (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				cost_vec)
-	  || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_reduction (stmt_info, NULL, NULL, node,
 				     node_instance, cost_vec)
@@ -9608,8 +9556,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
   else
     {
       if (bb_vinfo)
-	ok = (vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
-					    cost_vec)
+	ok = (vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
+	      || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
+					       cost_vec)
 	      || vectorizable_conversion (stmt_info, NULL, NULL, node,
 					  cost_vec)
 	      || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
@@ -9618,7 +9567,6 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 					  cost_vec)
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
-	      || vectorizable_call (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
 	      || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
 					 cost_vec)
@@ -9627,37 +9575,22 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
     }
 
   if (!ok)
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "not vectorized: relevant stmt not ");
-          dump_printf (MSG_MISSED_OPTIMIZATION, "supported: ");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-			    stmt_info->stmt, 0);
-        }
-
-      return false;
-    }
+    return opt_result::failure_at (stmt_info->stmt,
+				   "not vectorized:"
+				   " relevant stmt not supported: %G",
+				   stmt_info->stmt);
 
   /* Stmts that are (also) "live" (i.e. - that are used out of the loop)
       need extra handling, except for vectorizable reductions.  */
   if (!bb_vinfo
       && STMT_VINFO_TYPE (stmt_info) != reduc_vec_info_type
       && !can_vectorize_live_stmts (stmt_info, NULL, node, NULL, cost_vec))
-    {
-      if (dump_enabled_p ())
-        {
-          dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                           "not vectorized: live stmt not supported: ");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-			    stmt_info->stmt, 0);
-        }
+    return opt_result::failure_at (stmt_info->stmt,
+				   "not vectorized:"
+				   " live stmt not supported: %G",
+				   stmt_info->stmt);
 
-       return false;
-    }
-
-  return true;
+  return opt_result::success ();
 }
 
 
@@ -10142,12 +10075,8 @@ vect_is_simple_use (tree operand, vec_info *vinfo, enum vect_def_type *dt,
       *vectype = STMT_VINFO_VECTYPE (def_stmt_info);
       gcc_assert (*vectype != NULL_TREE);
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "vect_is_simple_use: vectype ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, *vectype);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "vect_is_simple_use: vectype %T\n", *vectype);
     }
   else if (*dt == vect_uninitialized_def
 	   || *dt == vect_constant_def
@@ -10602,7 +10531,7 @@ vect_gen_while_not (gimple_seq *seq, tree mask_type, tree start_index,
      number of units needed to vectorize STMT_INFO, or NULL_TREE if the
      statement does not help to determine the overall number of units.  */
 
-bool
+opt_result
 vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 				tree *stmt_vectype_out,
 				tree *nunits_vectype_out)
@@ -10625,28 +10554,17 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "defer to SIMD clone analysis.\n");
-	  return true;
+	  return opt_result::success ();
 	}
 
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "not vectorized: irregular stmt.");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-	}
-      return false;
+      return opt_result::failure_at (stmt,
+				     "not vectorized: irregular stmt.%G", stmt);
     }
 
   if (VECTOR_MODE_P (TYPE_MODE (gimple_expr_type (stmt))))
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "not vectorized: vector stmt in loop:");
-	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-	}
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized: vector stmt in loop:%G",
+				   stmt);
 
   tree vectype;
   tree scalar_type = NULL_TREE;
@@ -10677,40 +10595,25 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
 				 "pure bool operation.\n");
-	      return true;
+	      return opt_result::success ();
 	    }
 	}
 
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "get vectype for scalar type:  ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "get vectype for scalar type:  %T\n", scalar_type);
       vectype = get_vectype_for_scalar_type (scalar_type);
       if (!vectype)
-	{
-	  if (dump_enabled_p ())
-	    {
-	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			       "not vectorized: unsupported data-type ");
-	      dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				 scalar_type);
-	      dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	    }
-	  return false;
-	}
+	return opt_result::failure_at (stmt,
+				       "not vectorized:"
+				       " unsupported data-type %T\n",
+				       scalar_type);
 
       if (!*stmt_vectype_out)
 	*stmt_vectype_out = vectype;
 
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, vectype);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n", vectype);
     }
 
   /* Don't try to compute scalar types if the stmt produces a boolean
@@ -10730,47 +10633,26 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
 						       &dummy, &dummy);
 	}
       if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "get vectype for scalar type:  ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, scalar_type);
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "get vectype for scalar type:  %T\n", scalar_type);
       nunits_vectype = get_vectype_for_scalar_type (scalar_type);
     }
   if (!nunits_vectype)
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "not vectorized: unsupported data-type ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, scalar_type);
-	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	}
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized: unsupported data-type %T\n",
+				   scalar_type);
 
   if (maybe_ne (GET_MODE_SIZE (TYPE_MODE (vectype)),
 		GET_MODE_SIZE (TYPE_MODE (nunits_vectype))))
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "not vectorized: different sized vector "
-			   "types in statement, ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, vectype);
-	  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-	  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM, nunits_vectype);
-	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-	}
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "not vectorized: different sized vector "
+				   "types in statement, %T and %T\n",
+				   vectype, nunits_vectype);
 
   if (dump_enabled_p ())
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "vectype: ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, nunits_vectype);
-      dump_printf (MSG_NOTE, "\n");
+      dump_printf_loc (MSG_NOTE, vect_location, "vectype: %T\n",
+		       nunits_vectype);
 
       dump_printf_loc (MSG_NOTE, vect_location, "nunits = ");
       dump_dec (MSG_NOTE, TYPE_VECTOR_SUBPARTS (nunits_vectype));
@@ -10778,14 +10660,14 @@ vect_get_vector_types_for_stmt (stmt_vec_info stmt_info,
     }
 
   *nunits_vectype_out = nunits_vectype;
-  return true;
+  return opt_result::success ();
 }
 
 /* Try to determine the correct vector type for STMT_INFO, which is a
    statement that produces a scalar boolean result.  Return the vector
    type on success, otherwise return NULL_TREE.  */
 
-tree
+opt_tree
 vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 {
   gimple *stmt = stmt_info->stmt;
@@ -10800,12 +10682,8 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
       mask_type = get_mask_type_for_scalar_type (scalar_type);
 
       if (!mask_type)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: unsupported mask\n");
-	  return NULL_TREE;
-	}
+	return opt_tree::failure_at (stmt,
+				     "not vectorized: unsupported mask\n");
     }
   else
     {
@@ -10816,17 +10694,9 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
       FOR_EACH_SSA_TREE_OPERAND (rhs, stmt, iter, SSA_OP_USE)
 	{
 	  if (!vect_is_simple_use (rhs, stmt_info->vinfo, &dt, &vectype))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "not vectorized: can't compute mask type "
-				   "for statement, ");
-		  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt,
-				    0);
-		}
-	      return NULL_TREE;
-	    }
+	    return opt_tree::failure_at (stmt,
+					 "not vectorized:can't compute mask"
+					 " type for statement, %G", stmt);
 
 	  /* No vectype probably means external definition.
 	     Allow it in case there is another operand which
@@ -10838,38 +10708,17 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 	    mask_type = vectype;
 	  else if (maybe_ne (TYPE_VECTOR_SUBPARTS (mask_type),
 			     TYPE_VECTOR_SUBPARTS (vectype)))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "not vectorized: different sized masks "
-				   "types in statement, ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				     mask_type);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				     vectype);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-	      return NULL_TREE;
-	    }
+	    return opt_tree::failure_at (stmt,
+					 "not vectorized: different sized mask"
+					 " types in statement, %T and %T\n",
+					 mask_type, vectype);
 	  else if (VECTOR_BOOLEAN_TYPE_P (mask_type)
 		   != VECTOR_BOOLEAN_TYPE_P (vectype))
-	    {
-	      if (dump_enabled_p ())
-		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "not vectorized: mixed mask and "
-				   "nonmask vector types in statement, ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				     mask_type);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, " and ");
-		  dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				     vectype);
-		  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-		}
-	      return NULL_TREE;
-	    }
+	    return opt_tree::failure_at (stmt,
+					 "not vectorized: mixed mask and "
+					 "nonmask vector types in statement, "
+					 "%T and %T\n",
+					 mask_type, vectype);
 	}
 
       /* We may compare boolean value loaded as vector of integers.
@@ -10883,12 +10732,10 @@ vect_get_mask_type_for_stmt (stmt_vec_info stmt_info)
 
   /* No mask_type should mean loop invariant predicate.
      This is probably a subject for optimization in if-conversion.  */
-  if (!mask_type && dump_enabled_p ())
-    {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-		       "not vectorized: can't compute mask type "
-		       "for statement, ");
-      dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
-    }
-  return mask_type;
+  if (!mask_type)
+    return opt_tree::failure_at (stmt,
+				 "not vectorized: can't compute mask type "
+				 "for statement: %G", stmt);
+
+  return opt_tree::success (mask_type);
 }

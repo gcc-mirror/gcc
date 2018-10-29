@@ -314,7 +314,8 @@ void test_macro_2 (const char *msg)
 
 void test_macro_3 (const char *msg)
 {
-#define FMT_STRING "hello %i world" /* { dg-warning "20: format '%i' expects argument of type 'int', but argument 2 has type 'const char \\*' " } */
+#define FMT_STRING "hello %i world" /* { dg-line test_macro_3_macro_line } */
+  /* { dg-warning "20: format '%i' expects argument of type 'int', but argument 2 has type 'const char \\*'" "" { target *-*-*} .-1 } */
   printf(FMT_STRING, msg);  /* { dg-message "10: in expansion of macro 'FMT_STRING" } */
 /* { dg-begin-multiline-output "" }
  #define FMT_STRING "hello %i world"
@@ -323,6 +324,14 @@ void test_macro_3 (const char *msg)
 /* { dg-begin-multiline-output "" }
    printf(FMT_STRING, msg);
           ^~~~~~~~~~
+   { dg-end-multiline-output "" } */
+/* { dg-message "28: format string is defined here" "" { target *-*-* } test_macro_3_macro_line } */
+/* { dg-begin-multiline-output "" }
+ #define FMT_STRING "hello %i world"
+                           ~^
+                            |
+                            int
+                           %s
    { dg-end-multiline-output "" } */
 #undef FMT_STRING
 }

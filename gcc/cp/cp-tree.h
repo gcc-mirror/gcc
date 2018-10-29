@@ -1877,6 +1877,8 @@ struct GTY(()) language_function {
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
 
+#define NON_ERROR(NODE) ((NODE) == error_mark_node ? NULL_TREE : (NODE))
+
 /* TRUE if a tree code represents a statement.  */
 extern bool statement_code_p[MAX_TREE_CODES];
 
@@ -6101,18 +6103,27 @@ extern void complain_about_bad_argument	(location_t arg_loc,
 class access_failure_info
 {
  public:
-  access_failure_info () : m_was_inaccessible (false), m_basetype_path (NULL_TREE),
-    m_field_decl (NULL_TREE) {}
+  access_failure_info () : m_was_inaccessible (false),
+    m_basetype_path (NULL_TREE),
+    m_decl (NULL_TREE), m_diag_decl (NULL_TREE) {}
 
-  void record_access_failure (tree basetype_path, tree field_decl);
+  void record_access_failure (tree basetype_path, tree decl, tree diag_decl);
+
+  bool was_inaccessible_p () const { return m_was_inaccessible; }
+  tree get_decl () const { return m_decl; }
+  tree get_diag_decl () const { return m_diag_decl; }
+  tree get_any_accessor (bool const_p) const;
   void maybe_suggest_accessor (bool const_p) const;
+  static void add_fixit_hint (rich_location *richloc, tree accessor);
 
  private:
   bool m_was_inaccessible;
   tree m_basetype_path;
-  tree m_field_decl;
+  tree m_decl;
+  tree m_diag_decl;
 };
 
+extern void complain_about_access		(tree, tree, bool);
 extern bool enforce_access			(tree, tree, tree,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
@@ -6459,7 +6470,7 @@ extern void perform_deferred_noexcept_checks	(void);
 extern bool nothrow_spec_p			(const_tree);
 extern bool type_noexcept_p			(const_tree);
 extern bool type_throw_all_p			(const_tree);
-extern tree build_noexcept_spec			(tree, int);
+extern tree build_noexcept_spec			(tree, tsubst_flags_t);
 extern void choose_personality_routine		(enum languages);
 extern tree build_must_not_throw_expr		(tree,tree);
 extern tree eh_type_info			(tree);
@@ -7413,7 +7424,7 @@ extern tree build_x_arrow			(location_t, tree,
 						 tsubst_flags_t);
 extern tree build_m_component_ref		(tree, tree, tsubst_flags_t);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
-extern tree add_exception_specifier		(tree, tree, int);
+extern tree add_exception_specifier		(tree, tree, tsubst_flags_t);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */

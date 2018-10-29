@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "params.h"
 #include "auto-profile.h"
+#include "profile.h"
 
 #include "gcov-io.c"
 
@@ -73,7 +74,6 @@ struct counts_entry : pointer_hash <counts_entry>
   unsigned lineno_checksum;
   unsigned cfg_checksum;
   gcov_type *counts;
-  gcov_summary summary;
 
   /* hash_table support.  */
   static inline hashval_t hash (const counts_entry *);
@@ -185,8 +185,6 @@ static void
 read_counts_file (void)
 {
   gcov_unsigned_t fn_ident = 0;
-  gcov_summary summary;
-  unsigned new_summary = 1;
   gcov_unsigned_t tag;
   int is_error = 0;
   unsigned lineno_checksum = 0;
@@ -236,27 +234,12 @@ read_counts_file (void)
 	    }
 	  else
 	    fn_ident = lineno_checksum = cfg_checksum = 0;
-	  new_summary = 1;
 	}
-      else if (tag == GCOV_TAG_PROGRAM_SUMMARY)
+      else if (tag == GCOV_TAG_OBJECT_SUMMARY)
 	{
-	  struct gcov_summary sum;
-
-	  if (new_summary)
-	    memset (&summary, 0, sizeof (summary));
-
-	  gcov_read_summary (&sum);
-	  summary.runs += sum.runs;
-	  summary.sum_all += sum.sum_all;
-	  if (summary.run_max < sum.run_max)
-	    summary.run_max = sum.run_max;
-	  summary.sum_max += sum.sum_max;
-          if (new_summary)
-	    memcpy (summary.histogram, sum.histogram,
-		sizeof (gcov_bucket_type) * GCOV_HISTOGRAM_SIZE);
-          else
-	    gcov_histogram_merge (summary.histogram, sum.histogram);
-	  new_summary = 0;
+	  profile_info = XCNEW (gcov_summary);
+	  profile_info->runs = gcov_read_unsigned ();
+	  profile_info->sum_max = gcov_read_unsigned ();
 	}
       else if (GCOV_TAG_IS_COUNTER (tag) && fn_ident)
 	{
@@ -276,9 +259,6 @@ read_counts_file (void)
 	      entry->ctr = elt.ctr;
 	      entry->lineno_checksum = lineno_checksum;
 	      entry->cfg_checksum = cfg_checksum;
-	      if (elt.ctr == GCOV_COUNTER_ARCS)
-		entry->summary = summary;
-              entry->summary.num = n_counts;
 	      entry->counts = XCNEWVEC (gcov_type, n_counts);
 	    }
 	  else if (entry->lineno_checksum != lineno_checksum
@@ -291,22 +271,6 @@ read_counts_file (void)
 	      delete counts_hash;
 	      counts_hash = NULL;
 	      break;
-	    }
-	  else if (entry->summary.num != n_counts)
-	    {
-	      error ("Profile data for function %u is corrupted", fn_ident);
-	      error ("number of counters is %d instead of %d", entry->summary.num, n_counts);
-	      delete counts_hash;
-	      counts_hash = NULL;
-	      break;
-	    }
-	  else
-	    {
-	      entry->summary.runs += summary.runs;
-	      entry->summary.sum_all += summary.sum_all;
-	      if (entry->summary.run_max < summary.run_max)
-		entry->summary.run_max = summary.run_max;
-	      entry->summary.sum_max += summary.sum_max;
 	    }
 	  for (ix = 0; ix != n_counts; ix++)
 	    entry->counts[ix] += gcov_read_counter ();
@@ -330,9 +294,8 @@ read_counts_file (void)
 /* Returns the counters for a particular tag.  */
 
 gcov_type *
-get_coverage_counts (unsigned counter, unsigned expected,
-                     unsigned cfg_checksum, unsigned lineno_checksum,
-		     const gcov_summary **summary)
+get_coverage_counts (unsigned counter, unsigned cfg_checksum,
+		     unsigned lineno_checksum)
 {
   counts_entry *entry, elt;
 
@@ -341,16 +304,21 @@ get_coverage_counts (unsigned counter, unsigned expected,
     {
       static int warned = 0;
 
-      if (!warned++ && dump_enabled_p ())
+      if (!warned++)
 	{
-	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
-	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			   (flag_guess_branch_prob
-			    ? "file %s not found, execution counts estimated\n"
-			    : "file %s not found, execution counts assumed to "
-			    "be zero\n"),
-			   da_file_name);
+	  warning (OPT_Wmissing_profile,
+		   "%qs profile count data file not found",
+		   da_file_name);
+	  if (dump_enabled_p ())
+	    {
+	      dump_user_location_t loc
+		= dump_user_location_t::from_location_t (input_location);
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			       "file %s not found, %s\n", da_file_name,
+			       (flag_guess_branch_prob
+				? "execution counts estimated"
+				: "execution counts assumed to be zero"));
+	    }
 	}
       return NULL;
     }
@@ -363,28 +331,35 @@ get_coverage_counts (unsigned counter, unsigned expected,
     }
   elt.ctr = counter;
   entry = counts_hash->find (&elt);
-  if (!entry || !entry->summary.num)
-    /* The function was not emitted, or is weak and not chosen in the
-       final executable.  Silently fail, because there's nothing we
-       can do about it.  */
-    return NULL;
+  if (!entry)
+    {
+      if (counter == GCOV_COUNTER_ARCS)
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wmissing_profile,
+		    "profile for function %qD not found in profile data",
+		    current_function_decl);
+      /* The function was not emitted, or is weak and not chosen in the
+	 final executable.  Silently fail, because there's nothing we
+	 can do about it.  */
+      return NULL;
+    }
   
-  if (entry->cfg_checksum != cfg_checksum
-      || entry->summary.num != expected)
+  if (entry->cfg_checksum != cfg_checksum)
     {
       static int warned = 0;
       bool warning_printed = false;
-      tree id = DECL_ASSEMBLER_NAME (current_function_decl);
 
       warning_printed =
-	warning_at (input_location, OPT_Wcoverage_mismatch,
-		    "the control flow of function %qE does not match "
-		    "its profile data (counter %qs)", id, ctr_names[counter]);
+	warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		    OPT_Wcoverage_mismatch,
+		    "the control flow of function %qD does not match "
+		    "its profile data (counter %qs)", current_function_decl,
+		    ctr_names[counter]);
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
 	    = dump_user_location_t::from_location_t (input_location);
-          dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+          dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
                            "function is hot\n");
@@ -392,14 +367,14 @@ get_coverage_counts (unsigned counter, unsigned expected,
 	  if (!seen_error ()
 	      && !warned++)
 	    {
-	      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                                "coverage mismatch ignored\n");
-	      dump_printf (MSG_OPTIMIZED_LOCATIONS,
+	      dump_printf (MSG_MISSED_OPTIMIZATION,
                            flag_guess_branch_prob
                            ? G_("execution counts estimated\n")
                            : G_("execution counts assumed to be zero\n"));
 	      if (!flag_guess_branch_prob)
-		dump_printf (MSG_OPTIMIZED_LOCATIONS,
+		dump_printf (MSG_MISSED_OPTIMIZATION,
                              "this can result in poorly optimized code\n");
 	    }
 	}
@@ -408,14 +383,12 @@ get_coverage_counts (unsigned counter, unsigned expected,
     }
   else if (entry->lineno_checksum != lineno_checksum)
     {
-      warning (OPT_Wcoverage_mismatch,
-               "source locations for function %qE have changed,"
-	       " the profile data may be out of date",
-	       DECL_ASSEMBLER_NAME (current_function_decl));
+      warning_at (DECL_SOURCE_LOCATION (current_function_decl),
+		  OPT_Wcoverage_mismatch,
+		  "source locations for function %qD have changed,"
+		  " the profile data may be out of date",
+		  current_function_decl);
     }
-
-  if (summary)
-    *summary = &entry->summary;
 
   return entry->counts;
 }
@@ -657,7 +630,8 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   gcov_write_string (IDENTIFIER_POINTER
 		     (DECL_ASSEMBLER_NAME (current_function_decl)));
   gcov_write_unsigned (DECL_ARTIFICIAL (current_function_decl)
-		       && !DECL_FUNCTION_VERSIONED (current_function_decl));
+		       && !DECL_FUNCTION_VERSIONED (current_function_decl)
+		       && !DECL_LAMBDA_FUNCTION (current_function_decl));
   gcov_write_filename (xloc.file);
   gcov_write_unsigned (xloc.line);
   gcov_write_unsigned (xloc.column);

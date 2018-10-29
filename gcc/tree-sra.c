@@ -1470,7 +1470,7 @@ scan_function (void)
 	  tree t;
 	  unsigned i;
 
-	  if (final_bbs && stmt_can_throw_external (stmt))
+	  if (final_bbs && stmt_can_throw_external (cfun, stmt))
 	    bitmap_set_bit (final_bbs, bb->index);
 	  switch (gimple_code (stmt))
 	    {

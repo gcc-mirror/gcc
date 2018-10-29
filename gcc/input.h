@@ -85,7 +85,10 @@ class char_span
 extern char_span location_get_source_line (const char *file_path, int line);
 
 extern bool location_missing_trailing_newline (const char *file_path);
-extern expanded_location expand_location_to_spelling_point (source_location);
+extern expanded_location
+expand_location_to_spelling_point (source_location,
+				   enum location_aspect aspect
+				     = LOCATION_ASPECT_CARET);
 extern source_location expansion_point_location_if_in_system_header (source_location);
 extern source_location expansion_point_location (source_location);
 

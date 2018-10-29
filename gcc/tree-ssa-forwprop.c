@@ -1391,7 +1391,7 @@ simplify_builtin_call (gimple_stmt_iterator *gsi_p, tree callee2)
 				    src_buf, ptr1_align, false))
 	    break;
 
-	  new_str_cst = build_string_literal (src_len + 1, src_buf);
+	  new_str_cst = build_string_literal (src_len, src_buf);
 	  if (callee1)
 	    {
 	      /* If STMT1 is a mem{,p}cpy call, adjust it and remove
@@ -2343,7 +2343,7 @@ pass_forwprop::execute (function *fun)
 		   && !gimple_has_volatile_ops (stmt)
 		   && (TREE_CODE (gimple_assign_rhs1 (stmt))
 		       != TARGET_MEM_REF)
-		   && !stmt_can_throw_internal (stmt))
+		   && !stmt_can_throw_internal (cfun, stmt))
 	    {
 	      /* Rewrite loads used only in real/imagpart extractions to
 	         component-wise loads.  */

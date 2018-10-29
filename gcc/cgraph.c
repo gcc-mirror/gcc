@@ -617,6 +617,7 @@ cgraph_node *
 cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 			   HOST_WIDE_INT fixed_offset,
 			   HOST_WIDE_INT virtual_value,
+			   HOST_WIDE_INT indirect_offset,
 			   tree virtual_offset,
 			   tree real_alias)
 {
@@ -635,6 +636,7 @@ cgraph_node::create_thunk (tree alias, tree, bool this_adjusting,
 
   node->thunk.fixed_offset = fixed_offset;
   node->thunk.virtual_value = virtual_value;
+  node->thunk.indirect_offset = indirect_offset;
   node->thunk.alias = real_alias;
   node->thunk.this_adjusting = this_adjusting;
   node->thunk.virtual_offset_p = virtual_offset != NULL;
@@ -813,9 +815,8 @@ cgraph_edge::set_call_stmt (gcall *new_stmt, bool update_speculative)
       e = make_direct (new_callee);
     }
 
-  push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
-  e->can_throw_external = stmt_can_throw_external (new_stmt);
-  pop_cfun ();
+  function *fun = DECL_STRUCT_FUNCTION (e->caller->decl);
+  e->can_throw_external = stmt_can_throw_external (fun, new_stmt);
   if (e->caller->call_site_hash)
     cgraph_add_edge_to_call_site_hash (e);
 }
@@ -868,10 +869,9 @@ symbol_table::create_edge (cgraph_node *caller, cgraph_node *callee,
   edge->count = count;
 
   edge->call_stmt = call_stmt;
-  push_cfun (DECL_STRUCT_FUNCTION (caller->decl));
   edge->can_throw_external
-    = call_stmt ? stmt_can_throw_external (call_stmt) : false;
-  pop_cfun ();
+    = call_stmt ? stmt_can_throw_external (DECL_STRUCT_FUNCTION (caller->decl),
+					   call_stmt) : false;
   if (call_stmt
       && callee && callee->decl
       && !gimple_check_call_matching_types (call_stmt, callee->decl,
@@ -2016,7 +2016,6 @@ cgraph_node::dump (FILE *f)
   if (profile_id)
     fprintf (f, "  Profile id: %i\n",
 	     profile_id);
-  fprintf (f, "  First run: %i\n", tp_first_run);
   cgraph_function_version_info *vi = function_version ();
   if (vi != NULL)
     {
@@ -2040,11 +2039,13 @@ cgraph_node::dump (FILE *f)
   fprintf (f, "  Function flags:");
   if (count.initialized_p ())
     {
-      fprintf (f, " count: ");
+      fprintf (f, " count:");
       count.dump (f);
     }
+  if (tp_first_run > 0)
+    fprintf (f, " first_run:%i", tp_first_run);
   if (origin)
-    fprintf (f, " nested in: %s", origin->asm_name ());
+    fprintf (f, " nested in:%s", origin->asm_name ());
   if (gimple_has_body_p (decl))
     fprintf (f, " body");
   if (process)
@@ -2081,10 +2082,6 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " unlikely_executed");
   if (frequency == NODE_FREQUENCY_EXECUTED_ONCE)
     fprintf (f, " executed_once");
-  if (only_called_at_startup)
-    fprintf (f, " only_called_at_startup");
-  if (only_called_at_exit)
-    fprintf (f, " only_called_at_exit");
   if (opt_for_fn (decl, optimize_size))
     fprintf (f, " optimize_size");
   if (parallelized_function)
@@ -2096,13 +2093,14 @@ cgraph_node::dump (FILE *f)
     {
       fprintf (f, "  Thunk");
       if (thunk.alias)
-        fprintf (f, "  of %s (asm: %s)",
+	fprintf (f, "  of %s (asm:%s)",
 		 lang_hooks.decl_printable_name (thunk.alias, 2),
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
-      fprintf (f, " fixed offset %i virtual value %i has "
-	       "virtual offset %i)\n",
+      fprintf (f, " fixed offset %i virtual value %i indirect_offset %i "
+		  "has virtual offset %i\n",
 	       (int)thunk.fixed_offset,
 	       (int)thunk.virtual_value,
+	       (int)thunk.indirect_offset,
 	       (int)thunk.virtual_offset_p);
     }
   if (alias && thunk.alias
@@ -2111,7 +2109,7 @@ cgraph_node::dump (FILE *f)
       fprintf (f, "  Alias of %s",
 	       lang_hooks.decl_printable_name (thunk.alias, 2));
       if (DECL_ASSEMBLER_NAME_SET_P (thunk.alias))
-        fprintf (f, " (asm: %s)",
+	fprintf (f, " (asm:%s)",
 		 IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (thunk.alias)));
       fprintf (f, "\n");
     }

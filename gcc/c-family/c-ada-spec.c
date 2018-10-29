@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-ada-spec.h"
 #include "fold-const.h"
 #include "c-pragma.h"
+#include "diagnostic.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -1019,13 +1020,18 @@ get_underlying_decl (tree type)
   if (DECL_P (type))
     return type;
 
-  /* type is a typedef.  */
-  if (TYPE_P (type) && TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
-    return TYPE_NAME (type);
+  if (TYPE_P (type))
+    {
+      type = TYPE_MAIN_VARIANT (type);
 
-  /* TYPE_STUB_DECL has been set for type.  */
-  if (TYPE_P (type) && TYPE_STUB_DECL (type))
-    return TYPE_STUB_DECL (type);
+      /* type is a typedef.  */
+      if (TYPE_NAME (type) && DECL_P (TYPE_NAME (type)))
+	return TYPE_NAME (type);
+
+      /* TYPE_STUB_DECL has been set for type.  */
+      if (TYPE_STUB_DECL (type))
+	return TYPE_STUB_DECL (type);
+    }
 
   return NULL_TREE;
 }
@@ -2142,8 +2148,8 @@ dump_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	}
       else
 	{
+	  const unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
 	  bool is_access = false;
-	  unsigned int quals = TYPE_QUALS (TREE_TYPE (node));
 
 	  if (VOID_TYPE_P (TREE_TYPE (node)))
 	    {
@@ -2698,6 +2704,16 @@ dump_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		dump_ada_node (buffer, t, type, spc, false, true);
 		TREE_VISITED (t) = 1;
 		return 1;
+	      }
+
+	    /* ??? Packed record layout is not supported.  */
+	    if (TYPE_PACKED (TREE_TYPE (t)))
+	      {
+		warning_at (DECL_SOURCE_LOCATION (t), 0,
+			    "unsupported record layout");
+		pp_string (buffer, "pragma Compile_Time_Warning (True, ");
+		pp_string (buffer, "\"probably incorrect record layout\");");
+		newline_and_indent (buffer, spc);
 	      }
 
 	    if (orig && TYPE_NAME (orig))

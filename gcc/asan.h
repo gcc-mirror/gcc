@@ -110,6 +110,8 @@ extern bool asan_sanitize_stack_p (void);
 
 extern bool asan_sanitize_allocas_p (void);
 
+extern hash_set<tree> *asan_handled_variables;
+
 /* Return TRUE if builtin with given FCODE will be intercepted by
    libasan.  */
 

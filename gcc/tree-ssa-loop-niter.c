@@ -353,7 +353,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
   mpz_t minm, maxm;
   basic_block bb;
   wide_int minv, maxv;
-  enum value_range_type rtype = VR_VARYING;
+  enum value_range_kind rtype = VR_VARYING;
 
   /* If the expression is a constant, we know its value exactly.  */
   if (integer_zerop (var))
@@ -4673,7 +4673,7 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
 {
   tree type;
   wide_int minv, maxv, diff, step_wi;
-  enum value_range_type rtype;
+  enum value_range_kind rtype;
 
   if (TREE_CODE (step) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (var)))
     return false;

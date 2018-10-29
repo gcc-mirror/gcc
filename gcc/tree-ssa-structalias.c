@@ -42,6 +42,7 @@
 #include "varasm.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "tree-ssa.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the
@@ -2928,15 +2929,26 @@ get_constraint_for_ssa_var (tree t, vec<ce_s> *results, bool address_p)
   /* We allow FUNCTION_DECLs here even though it doesn't make much sense.  */
   gcc_assert (TREE_CODE (t) == SSA_NAME || DECL_P (t));
 
-  /* For parameters, get at the points-to set for the actual parm
-     decl.  */
   if (TREE_CODE (t) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (t)
-      && (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
-	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL))
+      && SSA_NAME_IS_DEFAULT_DEF (t))
     {
-      get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
-      return;
+      /* For parameters, get at the points-to set for the actual parm
+	 decl.  */
+      if (TREE_CODE (SSA_NAME_VAR (t)) == PARM_DECL
+	  || TREE_CODE (SSA_NAME_VAR (t)) == RESULT_DECL)
+	{
+	  get_constraint_for_ssa_var (SSA_NAME_VAR (t), results, address_p);
+	  return;
+	}
+      /* For undefined SSA names return nothing.  */
+      else if (!ssa_defined_default_def_p (t))
+	{
+	  cexpr.var = nothing_id;
+	  cexpr.type = SCALAR;
+	  cexpr.offset = 0;
+	  results->safe_push (cexpr);
+	  return;
+	}
     }
 
   /* For global variables resort to the alias target.  */
@@ -4833,35 +4845,19 @@ find_func_aliases (struct function *fn, gimple *origt)
   gimple *t = origt;
   auto_vec<ce_s, 16> lhsc;
   auto_vec<ce_s, 16> rhsc;
-  struct constraint_expr *c;
   varinfo_t fi;
 
   /* Now build constraints expressions.  */
   if (gimple_code (t) == GIMPLE_PHI)
     {
-      size_t i;
-      unsigned int j;
-
       /* For a phi node, assign all the arguments to
 	 the result.  */
       get_constraint_for (gimple_phi_result (t), &lhsc);
-      for (i = 0; i < gimple_phi_num_args (t); i++)
+      for (unsigned i = 0; i < gimple_phi_num_args (t); i++)
 	{
-	  tree strippedrhs = PHI_ARG_DEF (t, i);
-
-	  STRIP_NOPS (strippedrhs);
 	  get_constraint_for_rhs (gimple_phi_arg_def (t, i), &rhsc);
-
-	  FOR_EACH_VEC_ELT (lhsc, j, c)
-	    {
-	      struct constraint_expr *c2;
-	      while (rhsc.length () > 0)
-		{
-		  c2 = &rhsc.last ();
-		  process_constraint (new_constraint (*c, *c2));
-		  rhsc.pop ();
-		}
-	    }
+	  process_all_all_constraints (lhsc, rhsc);
+	  rhsc.truncate (0);
 	}
     }
   /* In IPA mode, we need to generate constraints to pass call
@@ -7401,6 +7397,7 @@ delete_points_to_sets (void)
 struct vls_data
 {
   unsigned short clique;
+  bool escaped_p;
   bitmap rvars;
 };
 
@@ -7412,6 +7409,7 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 {
   unsigned short clique = ((vls_data *) data)->clique;
   bitmap rvars = ((vls_data *) data)->rvars;
+  bool escaped_p = ((vls_data *) data)->escaped_p;
   if (TREE_CODE (base) == MEM_REF
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
@@ -7432,7 +7430,8 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 	    return false;
 
 	  vi = get_varinfo (find (vi->id));
-	  if (bitmap_intersect_p (rvars, vi->solution))
+	  if (bitmap_intersect_p (rvars, vi->solution)
+	      || (escaped_p && bitmap_bit_p (vi->solution, escaped_id)))
 	    return false;
 	}
 
@@ -7467,33 +7466,40 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
   return false;
 }
 
-/* If REF is a MEM_REF then assign a clique, base pair to it, updating
-   CLIQUE, *RESTRICT_VAR and LAST_RUID.  Return whether dependence info
-   was assigned to REF.  */
+struct msdi_data {
+  tree ptr;
+  unsigned short *clique;
+  unsigned short *last_ruid;
+  varinfo_t restrict_var;
+};
+
+/* If BASE is a MEM_REF then assign a clique, base pair to it, updating
+   CLIQUE, *RESTRICT_VAR and LAST_RUID as passed via DATA.
+   Return whether dependence info was assigned to BASE.  */
 
 static bool
-maybe_set_dependence_info (tree ref, tree ptr,
-			   unsigned short &clique, varinfo_t restrict_var,
-			   unsigned short &last_ruid)
+maybe_set_dependence_info (gimple *, tree base, tree, void *data)
 {
-  while (handled_component_p (ref))
-    ref = TREE_OPERAND (ref, 0);
-  if ((TREE_CODE (ref) == MEM_REF
-       || TREE_CODE (ref) == TARGET_MEM_REF)
-      && TREE_OPERAND (ref, 0) == ptr)
+  tree ptr = ((msdi_data *)data)->ptr;
+  unsigned short &clique = *((msdi_data *)data)->clique;
+  unsigned short &last_ruid = *((msdi_data *)data)->last_ruid;
+  varinfo_t restrict_var = ((msdi_data *)data)->restrict_var;
+  if ((TREE_CODE (base) == MEM_REF
+       || TREE_CODE (base) == TARGET_MEM_REF)
+      && TREE_OPERAND (base, 0) == ptr)
     {
       /* Do not overwrite existing cliques.  This avoids overwriting dependence
 	 info inlined from a function with restrict parameters inlined
 	 into a function with restrict parameters.  This usually means we
 	 prefer to be precise in innermost loops.  */
-      if (MR_DEPENDENCE_CLIQUE (ref) == 0)
+      if (MR_DEPENDENCE_CLIQUE (base) == 0)
 	{
 	  if (clique == 0)
 	    clique = ++cfun->last_clique;
 	  if (restrict_var->ruid == 0)
 	    restrict_var->ruid = ++last_ruid;
-	  MR_DEPENDENCE_CLIQUE (ref) = clique;
-	  MR_DEPENDENCE_BASE (ref) = restrict_var->ruid;
+	  MR_DEPENDENCE_CLIQUE (base) = clique;
+	  MR_DEPENDENCE_BASE (base) = restrict_var->ruid;
 	  return true;
 	}
     }
@@ -7509,6 +7515,7 @@ compute_dependence_clique (void)
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
   bitmap rvars = BITMAP_ALLOC (NULL);
+  bool escaped_p = false;
   for (unsigned i = 0; i < num_ssa_names; ++i)
     {
       tree ptr = ssa_name (i);
@@ -7565,20 +7572,18 @@ compute_dependence_clique (void)
 	  imm_use_iterator ui;
 	  gimple *use_stmt;
 	  bool used = false;
+	  msdi_data data = { ptr, &clique, &last_ruid, restrict_var };
 	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
-	    {
-	      /* ???  Calls and asms.  */
-	      if (!gimple_assign_single_p (use_stmt))
-		continue;
-	      used |= maybe_set_dependence_info (gimple_assign_lhs (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	      used |= maybe_set_dependence_info (gimple_assign_rhs1 (use_stmt),
-						 ptr, clique, restrict_var,
-						 last_ruid);
-	    }
+	    used |= walk_stmt_load_store_ops (use_stmt, &data,
+					      maybe_set_dependence_info,
+					      maybe_set_dependence_info);
 	  if (used)
-	    bitmap_set_bit (rvars, restrict_var->id);
+	    {
+	      bitmap_set_bit (rvars, restrict_var->id);
+	      varinfo_t escaped = get_varinfo (find (escaped_id));
+	      if (bitmap_bit_p (escaped->solution, restrict_var->id))
+		escaped_p = true;
+	    }
 	}
     }
 
@@ -7591,7 +7596,7 @@ compute_dependence_clique (void)
 	 parameters) we can't restrict scoping properly thus the following
 	 is too aggressive there.  For now we have excluded those globals from
 	 getting into the MR_DEPENDENCE machinery.  */
-      vls_data data = { clique, rvars };
+      vls_data data = { clique, escaped_p, rvars };
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);

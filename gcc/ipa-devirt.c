@@ -292,19 +292,6 @@ struct odr_vtable_hasher:odr_name_hasher
   static inline bool equal (const odr_type_d *, const tree_node *);
 };
 
-/* Return type that was declared with T's name so that T is an
-   qualified variant of it.  */
-
-static inline tree
-main_odr_variant (const_tree t)
-{
-  if (TYPE_NAME (t) && TREE_CODE (TYPE_NAME (t)) == TYPE_DECL)
-    return TREE_TYPE (TYPE_NAME (t));
-  /* Unnamed types and non-C++ produced types can be compared by variants.  */
-  else
-    return TYPE_MAIN_VARIANT (t);
-}
-
 static bool
 can_be_name_hashed_p (tree t)
 {
@@ -316,7 +303,7 @@ can_be_name_hashed_p (tree t)
 static hashval_t
 hash_odr_name (const_tree t)
 {
-  gcc_checking_assert (main_odr_variant (t) == t);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
 
   /* If not in LTO, all main variants are unique, so we can do
      pointer hash.  */
@@ -365,7 +352,7 @@ hash_odr_vtable (const_tree t)
   gcc_checking_assert (!type_in_anonymous_namespace_p (t));
   gcc_checking_assert (TREE_CODE (t) == RECORD_TYPE
 		       && TYPE_BINFO (t) && BINFO_VTABLE (TYPE_BINFO (t)));
-  gcc_checking_assert (main_odr_variant (t) == t);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
 
   if (TREE_CODE (v) == POINTER_PLUS_EXPR)
     {
@@ -405,8 +392,6 @@ types_same_for_odr (const_tree type1, const_tree type2, bool strict)
 {
   gcc_checking_assert (TYPE_P (type1) && TYPE_P (type2));
 
-  type1 = main_odr_variant (type1);
-  type2 = main_odr_variant (type2);
   if (!strict)
     {
       type1 = TYPE_MAIN_VARIANT (type1);
@@ -419,8 +404,7 @@ types_same_for_odr (const_tree type1, const_tree type2, bool strict)
   if (!in_lto_p)
     return false;
 
-  /* Check for anonymous namespaces. Those have !TREE_PUBLIC
-     on the corresponding TYPE_STUB_DECL.  */
+  /* Anonymous namespace types are never duplicated.  */
   if ((type_with_linkage_p (type1) && type_in_anonymous_namespace_p (type1))
       || (type_with_linkage_p (type2) && type_in_anonymous_namespace_p (type2)))
     return false;
@@ -494,9 +478,8 @@ bool
 types_odr_comparable (tree t1, tree t2, bool strict)
 {
   return (!in_lto_p
-	  || (strict ? (main_odr_variant (t1) == main_odr_variant (t2)
-			&& main_odr_variant (t1))
-	      : TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
+	  || t1 == t2
+	  || (!strict && TYPE_MAIN_VARIANT (t1) == TYPE_MAIN_VARIANT (t2))
 	  || (odr_type_p (t1) && odr_type_p (t2))
 	  || (TREE_CODE (t1) == RECORD_TYPE && TREE_CODE (t2) == RECORD_TYPE
 	      && TYPE_BINFO (t1) && TYPE_BINFO (t2)
@@ -577,8 +560,8 @@ odr_name_hasher::equal (const odr_type_d *o1, const tree_node *t2)
 {
   tree t1 = o1->type;
 
-  gcc_checking_assert (main_odr_variant (t2) == t2);
-  gcc_checking_assert (main_odr_variant (t1) == t1);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t2) == t2);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t1) == t1);
   if (t1 == t2)
     return true;
   if (!in_lto_p)
@@ -602,8 +585,8 @@ odr_vtable_hasher::equal (const odr_type_d *o1, const tree_node *t2)
 {
   tree t1 = o1->type;
 
-  gcc_checking_assert (main_odr_variant (t2) == t2);
-  gcc_checking_assert (main_odr_variant (t1) == t1);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t2) == t2);
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t1) == t1);
   gcc_checking_assert (in_lto_p);
   t1 = TYPE_MAIN_VARIANT (t1);
   t2 = TYPE_MAIN_VARIANT (t2);
@@ -667,8 +650,6 @@ odr_subtypes_equivalent_p (tree t1, tree t2,
   /* This can happen in incomplete types that should be handled earlier.  */
   gcc_assert (t1 && t2);
 
-  t1 = main_odr_variant (t1);
-  t2 = main_odr_variant (t2);
   if (t1 == t2)
     return true;
 
@@ -1866,7 +1847,12 @@ add_type_duplicate (odr_type val, tree type)
      before we can pass them to odr_types_equivalent_p (PR lto/83121).  */
   if (lto_location_cache::current_cache)
     lto_location_cache::current_cache->apply_location_cache ();
-  if (!odr_types_equivalent_p (val->type, type,
+  /* As a special case we stream mangles names of integer types so we can see
+     if they are believed to be same even though they have different
+     representation.  Avoid bogus warning on mismatches in these.  */
+  if (TREE_CODE (type) != INTEGER_TYPE
+      && TREE_CODE (val->type) != INTEGER_TYPE
+      && !odr_types_equivalent_p (val->type, type,
 			       !flag_ltrans && !val->odr_violated && !warned,
 			       &warned, &visited,
 			       DECL_SOURCE_LOCATION (TYPE_NAME (val->type)),
@@ -1985,7 +1971,7 @@ get_odr_type (tree type, bool insert)
   bool insert_to_odr_array = false;
   int base_id = -1;
 
-  type = main_odr_variant (type);
+  type = TYPE_MAIN_VARIANT (type);
 
   gcc_checking_assert (can_be_name_hashed_p (type)
 		       || can_be_vtable_hashed_p (type));
@@ -2122,15 +2108,7 @@ register_odr_type (tree type)
       if (in_lto_p)
         odr_vtable_hash = new odr_vtable_hash_type (23);
     }
-  /* Arrange things to be nicer and insert main variants first.
-     ??? fundamental prerecorded types do not have mangled names; this
-     makes it possible that non-ODR type is main_odr_variant of ODR type.
-     Things may get smoother if LTO FE set mangled name of those types same
-     way as C++ FE does.  */
-  if (odr_type_p (main_odr_variant (TYPE_MAIN_VARIANT (type)))
-      && odr_type_p (TYPE_MAIN_VARIANT (type)))
-    get_odr_type (TYPE_MAIN_VARIANT (type), true);
-  if (TYPE_MAIN_VARIANT (type) != type && odr_type_p (main_odr_variant (type)))
+  if (type == TYPE_MAIN_VARIANT (type))
     get_odr_type (type, true);
 }
 

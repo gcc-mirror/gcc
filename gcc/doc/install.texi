@@ -1414,6 +1414,11 @@ These features are extensions to the traditional
 SVR4-based MIPS ABIs and require support from GNU binutils
 and the runtime C library.
 
+@item --with-stack-clash-protection-guard-size=@var{size}
+On certain targets this option sets the default stack clash protection guard
+size as a power of two in bytes.  On AArch64 @var{size} is required to be either
+12 (4KB) or 16 (64KB).
+
 @item --enable-__cxa_atexit
 Define if you want to use __cxa_atexit, rather than atexit, to
 register C++ destructors for local statics and global objects.
@@ -1728,6 +1733,14 @@ Using the GNU Compiler Collection (GCC)},
 @ifhtml
 See ``i386 and x86-64 Options'' in the main manual
 @end ifhtml
+
+@item --enable-large-address-aware
+The @option{--enable-large-address-aware} option arranges for MinGW
+executables to be linked using the @option{--large-address-aware}
+option, that enables the use of more than 2GB of memory.  If GCC is
+configured with this option, its effects can be reversed by passing the
+@option{-Wl,--disable-large-address-aware} option to the so-configured
+compiler driver.
 
 @item --enable-win32-registry
 @itemx --enable-win32-registry=@var{key}
@@ -4395,9 +4408,11 @@ supported as cross-compilation target only.
 @c alone is too unspecific and must be avoided.
 @anchor{x-x-solaris2}
 @heading *-*-solaris2*
-Support for Solaris 9 has been removed in GCC 5.  Support for Solaris
-8 has been removed in GCC 4.8.  Support for Solaris 7 has been removed
-in GCC 4.6.
+Support for Solaris 10 has been obsoleted in GCC 9, but can still be
+enabled by configuring with @option{--enable-obsolete}.  Support will be
+removed in GCC 10.  Support for Solaris 9 has been removed in GCC 5.
+Support for Solaris 8 has been removed in GCC 4.8.  Support for Solaris
+7 has been removed in GCC 4.6.
 
 Sun does not ship a C compiler with Solaris 2 before Solaris 10, though
 you can download the Sun Studio compilers for free.  In Solaris 10 and

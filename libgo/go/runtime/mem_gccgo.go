@@ -21,9 +21,6 @@ func sysMmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr)
 //extern munmap
 func munmap(addr unsafe.Pointer, length uintptr) int32
 
-//extern mincore
-func mincore(addr unsafe.Pointer, n uintptr, dst *byte) int32
-
 //extern madvise
 func madvise(addr unsafe.Pointer, n uintptr, flags int32) int32
 
@@ -47,54 +44,6 @@ func mmap(addr unsafe.Pointer, n uintptr, prot, flags, fd int32, off uintptr) (u
 		return nil, errno()
 	}
 	return p, 0
-}
-
-// NOTE: vec must be just 1 byte long here.
-// Mincore returns ENOMEM if any of the pages are unmapped,
-// but we want to know that all of the pages are unmapped.
-// To make these the same, we can only ask about one page
-// at a time. See golang.org/issue/7476.
-var addrspace_vec [1]byte
-
-func addrspace_free(v unsafe.Pointer, n uintptr) bool {
-	for off := uintptr(0); off < n; off += physPageSize {
-		// Use a length of 1 byte, which the kernel will round
-		// up to one physical page regardless of the true
-		// physical page size.
-		errval := 0
-		if mincore(unsafe.Pointer(uintptr(v)+off), 1, &addrspace_vec[0]) < 0 {
-			errval = errno()
-		}
-		if errval == _ENOSYS {
-			// mincore is not available on this system.
-			// Assume the address is available.
-			return true
-		}
-		if errval == _EINVAL {
-			// Address is not a multiple of the physical
-			// page size. Shouldn't happen, but just ignore it.
-			continue
-		}
-		// ENOMEM means unmapped, which is what we want.
-		// Anything else we assume means the pages are mapped.
-		if errval != _ENOMEM {
-			return false
-		}
-	}
-	return true
-}
-
-func mmap_fixed(v unsafe.Pointer, n uintptr, prot, flags, fd int32, offset uintptr) (unsafe.Pointer, int) {
-	p, err := mmap(v, n, prot, flags, fd, offset)
-	// On some systems, mmap ignores v without
-	// MAP_FIXED, so retry if the address space is free.
-	if p != v && addrspace_free(v, n) {
-		if err == 0 {
-			munmap(p, n)
-		}
-		p, err = mmap(v, n, prot, flags|_MAP_FIXED, fd, offset)
-	}
-	return p, err
 }
 
 // Don't split the stack as this method may be invoked without a valid G, which
@@ -227,62 +176,17 @@ func sysFault(v unsafe.Pointer, n uintptr) {
 	mmap(v, n, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE|_MAP_FIXED, mmapFD, 0)
 }
 
-func sysReserve(v unsafe.Pointer, n uintptr, reserved *bool) unsafe.Pointer {
-	// On 64-bit, people with ulimit -v set complain if we reserve too
-	// much address space. Instead, assume that the reservation is okay
-	// if we can reserve at least 64K and check the assumption in SysMap.
-	// Only user-mode Linux (UML) rejects these requests.
-	if sys.PtrSize == 8 && uint64(n) > 1<<32 {
-		p, err := mmap_fixed(v, 64<<10, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE, mmapFD, 0)
-		if p != v || err != 0 {
-			if err == 0 {
-				munmap(p, 64<<10)
-			}
-			return nil
-		}
-		munmap(p, 64<<10)
-		*reserved = false
-		return v
-	}
-
+func sysReserve(v unsafe.Pointer, n uintptr) unsafe.Pointer {
 	p, err := mmap(v, n, _PROT_NONE, _MAP_ANON|_MAP_PRIVATE, mmapFD, 0)
 	if err != 0 {
 		return nil
 	}
-	*reserved = true
 	return p
 }
 
-func sysMap(v unsafe.Pointer, n uintptr, reserved bool, sysStat *uint64) {
+func sysMap(v unsafe.Pointer, n uintptr, sysStat *uint64) {
 	mSysStatInc(sysStat, n)
 
-	// On 64-bit, we don't actually have v reserved, so tread carefully.
-	if !reserved {
-		flags := int32(_MAP_ANON | _MAP_PRIVATE)
-		if GOOS == "dragonfly" {
-			// TODO(jsing): For some reason DragonFly seems to return
-			// memory at a different address than we requested, even when
-			// there should be no reason for it to do so. This can be
-			// avoided by using MAP_FIXED, but I'm not sure we should need
-			// to do this - we do not on other platforms.
-			flags |= _MAP_FIXED
-		}
-		p, err := mmap_fixed(v, n, _PROT_READ|_PROT_WRITE, flags, mmapFD, 0)
-		if err == _ENOMEM {
-			throw("runtime: out of memory")
-		}
-		if p != v || err != 0 {
-			print("runtime: address space conflict: map(", v, ") = ", p, " (err ", err, ")\n")
-			throw("runtime: address space conflict")
-		}
-		return
-	}
-
-	if GOOS == "aix" {
-		// AIX does not allow mapping a range that is already mapped.
-		// So always unmap first even if it is already unmapped.
-		munmap(v, n)
-	}
 	p, err := mmap(v, n, _PROT_READ|_PROT_WRITE, _MAP_ANON|_MAP_FIXED|_MAP_PRIVATE, mmapFD, 0)
 	if err == _ENOMEM {
 		throw("runtime: out of memory")

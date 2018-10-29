@@ -547,7 +547,7 @@ free_bb (struct occurrence *occ)
    depending on the uses of x, r1, r2.  This removes one multiplication and
    allows the sqrt and division operations to execute in parallel.
    DEF_GSI is the gsi of the initial division by sqrt that defines
-   DEF (x in the example abovs).  */
+   DEF (x in the example above).  */
 
 static void
 optimize_recip_sqrt (gimple_stmt_iterator *def_gsi, tree def)
@@ -947,13 +947,13 @@ pass_cse_reciprocals::execute (function *fun)
 	      && FLOAT_TYPE_P (TREE_TYPE (def))
 	      && TREE_CODE (def) == SSA_NAME)
 	    {
+	      execute_cse_reciprocals_1 (&gsi, def);
+	      stmt = gsi_stmt (gsi);
 	      if (flag_unsafe_math_optimizations
 		  && is_gimple_assign (stmt)
-		  && !stmt_can_throw_internal (stmt)
+		  && !stmt_can_throw_internal (cfun, stmt)
 		  && gimple_assign_rhs_code (stmt) == RDIV_EXPR)
 		optimize_recip_sqrt (&gsi, def);
-	      else
-		execute_cse_reciprocals_1 (&gsi, def);
 	    }
 	}
 
@@ -2904,7 +2904,8 @@ convert_mult_to_fma_1 (tree mul_result, tree op1, tree op2)
       else
 	fma_stmt = gimple_build_call_internal (IFN_FMA, 3, mulop1, op2, addop);
       gimple_set_lhs (fma_stmt, gimple_get_lhs (use_stmt));
-      gimple_call_set_nothrow (fma_stmt, !stmt_can_throw_internal (use_stmt));
+      gimple_call_set_nothrow (fma_stmt, !stmt_can_throw_internal (cfun,
+								   use_stmt));
       gsi_replace (&gsi, fma_stmt, true);
       /* Follow all SSA edges so that we generate FMS, FNMA and FNMS
 	 regardless of where the negation occurs.  */
@@ -3534,7 +3535,7 @@ divmod_candidate_p (gassign *stmt)
 static bool
 convert_to_divmod (gassign *stmt)
 {
-  if (stmt_can_throw_internal (stmt)
+  if (stmt_can_throw_internal (cfun, stmt)
       || !divmod_candidate_p (stmt))
     return false;
 
@@ -3560,7 +3561,7 @@ convert_to_divmod (gassign *stmt)
 	  && operand_equal_p (op1, gimple_assign_rhs1 (use_stmt), 0)
 	  && operand_equal_p (op2, gimple_assign_rhs2 (use_stmt), 0))
 	{
-	  if (stmt_can_throw_internal (use_stmt))
+	  if (stmt_can_throw_internal (cfun, use_stmt))
 	    continue;
 
 	  basic_block bb = gimple_bb (use_stmt);
@@ -3598,7 +3599,7 @@ convert_to_divmod (gassign *stmt)
 	  && operand_equal_p (top_op2, gimple_assign_rhs2 (use_stmt), 0))
 	{
 	  if (use_stmt == top_stmt
-	      || stmt_can_throw_internal (use_stmt)
+	      || stmt_can_throw_internal (cfun, use_stmt)
 	      || !dominated_by_p (CDI_DOMINATORS, gimple_bb (use_stmt), top_bb))
 	    continue;
 

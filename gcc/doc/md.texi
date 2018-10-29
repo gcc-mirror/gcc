@@ -7619,7 +7619,23 @@ simplified) from the PDP-11 target:
 
 @smallexample
 @group
-(define_insn "doloop_end"
+(define_expand "doloop_end"
+  [(parallel [(set (pc)
+                   (if_then_else
+                    (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
+                        (const_int 1))
+                    (label_ref (match_operand 1 "" ""))
+                    (pc)))
+              (set (match_dup 0)
+                   (plus:HI (match_dup 0)
+                         (const_int -1)))])]
+  ""
+  "@{
+    if (GET_MODE (operands[0]) != HImode)
+      FAIL;
+  @}")
+
+(define_insn "doloop_end_insn"
   [(set (pc)
         (if_then_else
          (ne (match_operand:HI 0 "nonimmediate_operand" "+r,!m")
@@ -7662,9 +7678,22 @@ will be non-negative.
 Since the @code{doloop_end} insn is a jump insn that also has an output,
 the reload pass does not handle the output operand.  Therefore, the
 constraint must allow for that operand to be in memory rather than a
-register.  In the example shown above, that is handled by using a loop
-instruction sequence that can handle memory operands when the memory
-alternative appears.
+register.  In the example shown above, that is handled (in the
+@code{doloop_end_insn} pattern) by using a loop instruction sequence
+that can handle memory operands when the memory alternative appears.
+
+GCC does not check the mode of the loop register operand when generating
+the @code{doloop_end} pattern.  If the pattern is only valid for some
+modes but not others, the pattern should be a @code{define_expand}
+pattern that checks the operand mode in the preparation code, and issues
+@code{FAIL} if an unsupported mode is found.  The example above does
+this, since the machine instruction to be used only exists for
+@code{HImode}.
+
+If the @code{doloop_end} pattern is a @code{define_expand}, there must
+also be a @code{define_insn} or @code{define_insn_and_split} matching
+the generated pattern.  Otherwise, the compiler will fail during loop
+optimization.
 
 @end ifset
 @ifset INTERNALS

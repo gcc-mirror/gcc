@@ -132,9 +132,10 @@ func (s *StdSizes) Sizeof(T Type) int64 {
 		}
 	case *Array:
 		n := t.len
-		if n == 0 {
+		if n <= 0 {
 			return 0
 		}
+		// n > 0
 		a := s.Alignof(t.elem)
 		z := s.Sizeof(t.elem)
 		return align(z, a)*(n-1) + z
@@ -166,6 +167,7 @@ var gcArchSizes = map[string]*StdSizes{
 	"mips64le": {8, 8},
 	"ppc64":    {8, 8},
 	"ppc64le":  {8, 8},
+	"riscv64":  {8, 8},
 	"s390x":    {8, 8},
 	"wasm":     {8, 8},
 	// When adding more architectures here,
@@ -177,7 +179,7 @@ var gcArchSizes = map[string]*StdSizes{
 //
 // Supported architectures for compiler "gc":
 // "386", "arm", "arm64", "amd64", "amd64p32", "mips", "mipsle",
-// "mips64", "mips64le", "ppc64", "ppc64le", "s390x", "wasm".
+// "mips64", "mips64le", "ppc64", "ppc64le", "riscv64", "s390x", "wasm".
 func SizesFor(compiler, arch string) Sizes {
 	var m map[string]*StdSizes
 	switch compiler {

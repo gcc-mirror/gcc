@@ -193,10 +193,10 @@ type_with_linkage_p (const_tree t)
   if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
     return true;
 
-  /* If free lang data was not run check if indeed the type looks like C++
-     type with linkage.  */
-  if (in_lto_p || !TYPE_STUB_DECL (t))
+  if (in_lto_p)
     return false;
+  /* We used to check for TYPE_STUB_DECL but that is set to NULL for forward
+     declarations.  */
 
   if (!RECORD_OR_UNION_TYPE_P (t) && TREE_CODE (t) != ENUMERAL_TYPE)
     return false;

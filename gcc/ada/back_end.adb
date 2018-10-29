@@ -210,6 +210,9 @@ package body Back_End is
       Next_Arg : Positive;
       --  Next argument to be scanned
 
+      Arg_Count : constant Natural := Natural (save_argc - 1);
+      Args      : Argument_List (1 .. Arg_Count);
+
       Output_File_Name_Seen : Boolean := False;
       --  Set to True after having scanned file_name for switch "-gnatO file"
 
@@ -234,13 +237,26 @@ package body Back_End is
          Last  : constant Natural  := Switch_Last (Switch_Chars);
 
       begin
-         --  Skip -o, -G or internal GCC switches together with their argument.
+         --  Skip -o or internal GCC switches together with their argument.
 
          if Switch_Chars (First .. Last) = "o"
-           or else Switch_Chars (First .. Last) = "G"
            or else Is_Internal_GCC_Switch (Switch_Chars)
          then
             Next_Arg := Next_Arg + 1;
+
+         --  Store -G xxx as -Gxxx and go directly to the next argument.
+
+         elsif Switch_Chars (First .. Last) = "G" then
+            Next_Arg := Next_Arg + 1;
+
+            --  Should never get there with -G not followed by an argument,
+            --  but use defensive code nonetheless.
+            --  Store as -Gxxx to avoid storing parameters in ALI files that
+            --  might create confusion.
+
+            if Next_Arg <= Args'Last then
+               Store_Compilation_Switch (Switch_Chars & Args (Next_Arg).all);
+            end if;
 
          --  Do not record -quiet switch
 
@@ -293,11 +309,6 @@ package body Back_End is
             end if;
          end if;
       end Scan_Back_End_Switches;
-
-      --  Local variables
-
-      Arg_Count : constant Natural := Natural (save_argc - 1);
-      Args      : Argument_List (1 .. Arg_Count);
 
    --  Start of processing for Scan_Compiler_Arguments
 
@@ -374,6 +385,9 @@ package body Back_End is
 
             elsif Is_Front_End_Switch (Argv) then
                Scan_Front_End_Switches (Argv, Args, Next_Arg);
+
+            elsif Argv (Argv'First + 1 .. Argv'Last) = "fopenacc" then
+               Opt.OpenAcc_Enabled := True;
 
             --  All non-front-end switches are back-end switches
 

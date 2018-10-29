@@ -1161,7 +1161,7 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
       || (optimize_bb_for_size_p (bb) && npred_ok > 1)
       /* If we don't have profile information we cannot tell if splitting
          a critical edge is profitable or not so don't do it.  */
-      || ((! profile_info || profile_status_for_fn (cfun) != PROFILE_READ
+      || ((!profile_info || profile_status_for_fn (cfun) != PROFILE_READ
 	   || targetm.cannot_modify_jumps_p ())
 	  && critical_edge_split))
     goto cleanup;

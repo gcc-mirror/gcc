@@ -337,7 +337,7 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type rng;
+      value_range_kind rng = VR_RANGE;
       irange r;
       if (maybe_get_range_on_stmt (r, offset, call))
 	{
@@ -347,18 +347,11 @@ builtin_memref::extend_offset_range (tree offset)
 	      rng = VR_ANTI_RANGE;
 	      r = anti;
 	    }
-	  else
-	    rng = VR_RANGE;
 	  min = r.lower_bound ();
 	  max = r.upper_bound ();
 	}
       else
-	{
-	  tree type = TREE_TYPE (offset);
-	  rng = VR_RANGE;
-	  min = wi::to_wide (TYPE_MIN_VALUE (type));
-	  max = wi::to_wide (TYPE_MAX_VALUE (type));
-	}
+	rng = VR_VARYING;
       if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);

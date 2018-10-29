@@ -271,6 +271,10 @@ Warn if a subobject has an abi_tag attribute that the complete object type does 
 Wpsabi
 C ObjC C++ ObjC++ LTO Var(warn_psabi) Init(1) Warning Undocumented LangEnabledBy(C ObjC C++ ObjC++,Wabi)
 
+Wabsolute-value
+C ObjC Var(warn_absolute_value) Warning EnabledBy(Wextra)
+Warn on suspicious calls of standard functions computing absolute values.
+
 Waddress
 C ObjC C++ ObjC++ Var(warn_address) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about suspicious uses of memory addresses.
@@ -361,6 +365,10 @@ Warn when a built-in function is declared with the wrong signature.
 Wbuiltin-macro-redefined
 C ObjC C++ ObjC++ CPP(warn_builtin_macro_redefined) CppReason(CPP_W_BUILTIN_MACRO_REDEFINED) Var(cpp_warn_builtin_macro_redefined) Init(1) Warning
 Warn when a built-in preprocessor macro is undefined or redefined.
+
+Wc11-c2x-compat
+C ObjC Var(warn_c11_c2x_compat) Init(-1) Warning
+Warn about features not present in ISO C11, but present in ISO C2X.
 
 Wc90-c99-compat
 C ObjC CPP(cpp_warn_c90_c99_compat) CppReason(CPP_W_C90_C99_COMPAT) Var(warn_c90_c99_compat) Init(-1) Warning
@@ -846,6 +854,10 @@ Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
 Warn when non-templatized friend functions are declared within a template.
 
+Wclass-conversion
+C++ ObjC++ Var(warn_class_conversion) Init(1) Warning
+Warn when a conversion function will never be called due to the type it converts to.
+
 Wclass-memaccess
 C++ ObjC++ Var(warn_class_memaccess) Warning LangEnabledBy(C++ ObjC++, Wall)
 Warn for unsafe raw memory writes to objects of class types.
@@ -964,6 +976,10 @@ Warn when a pointer is cast to an integer of a different size.
 Wpragmas
 C ObjC C++ ObjC++ Var(warn_pragmas) Init(1) Warning
 Warn about misuses of pragmas.
+
+Wprio-ctor-dtor
+C ObjC C++ ObjC++ Var(warn_prio_ctor_dtor) Init(1) Warning
+Warn if constructor or destructors with priorities from 0 to 100 are used.
 
 Wproperty-assign-default
 ObjC ObjC++ Var(warn_property_assign_default) Init(1) Warning
@@ -1980,11 +1996,15 @@ Deprecated in favor of -std=c11.
 
 std=c17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=c18
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
+
+std=c2x
+C ObjC
+Conform to the ISO 202X C standard draft (experimental and incomplete support).
 
 std=c89
 C ObjC Alias(std=c90)
@@ -2050,11 +2070,15 @@ Deprecated in favor of -std=gnu11.
 
 std=gnu17
 C ObjC
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
 
 std=gnu18
 C ObjC Alias(std=gnu17)
-Conform to the ISO 2017 C standard (expected to be published in 2018) with GNU extensions.
+Conform to the ISO 2017 C standard (published in 2018) with GNU extensions.
+
+std=gnu2x
+C ObjC
+Conform to the ISO 202X C standard draft with GNU extensions (experimental and incomplete support).
 
 std=gnu89
 C ObjC Alias(std=gnu90)
@@ -2094,11 +2118,11 @@ Conform to the ISO 2011 C standard.
 
 std=iso9899:2017
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 std=iso9899:2018
 C ObjC Alias(std=c17)
-Conform to the ISO 2017 C standard (expected to be published in 2018).
+Conform to the ISO 2017 C standard (published in 2018).
 
 traditional
 Driver

@@ -31,15 +31,15 @@ along with this program; see the file COPYING3.  If not see
 
 ATTRIBUTE_FPTR_PRINTF(5,0)
 static bool
-cpp_diagnostic_at (cpp_reader * pfile, int level, int reason,
-		   rich_location *richloc,
+cpp_diagnostic_at (cpp_reader * pfile, enum cpp_diagnostic_level level,
+		   enum cpp_warning_reason reason, rich_location *richloc,
 		   const char *msgid, va_list *ap)
 {
   bool ret;
 
-  if (!pfile->cb.error)
+  if (!pfile->cb.diagnostic)
     abort ();
-  ret = pfile->cb.error (pfile, level, reason, richloc, _(msgid), ap);
+  ret = pfile->cb.diagnostic (pfile, level, reason, richloc, _(msgid), ap);
 
   return ret;
 }
@@ -48,8 +48,9 @@ cpp_diagnostic_at (cpp_reader * pfile, int level, int reason,
 
 ATTRIBUTE_FPTR_PRINTF(4,0)
 static bool
-cpp_diagnostic (cpp_reader * pfile, int level, int reason,
-                const char *msgid, va_list *ap)
+cpp_diagnostic (cpp_reader * pfile, enum cpp_diagnostic_level level,
+		enum cpp_warning_reason reason,
+		const char *msgid, va_list *ap)
 {
   source_location src_loc;
 
@@ -77,7 +78,8 @@ cpp_diagnostic (cpp_reader * pfile, int level, int reason,
 /* Print a warning or error, depending on the value of LEVEL.  */
 
 bool
-cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
+cpp_error (cpp_reader * pfile, enum cpp_diagnostic_level level,
+	   const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -93,7 +95,8 @@ cpp_error (cpp_reader * pfile, int level, const char *msgid, ...)
 /* Print a warning.  The warning reason may be given in REASON.  */
 
 bool
-cpp_warning (cpp_reader * pfile, int reason, const char *msgid, ...)
+cpp_warning (cpp_reader * pfile, enum cpp_warning_reason reason,
+	     const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -109,7 +112,8 @@ cpp_warning (cpp_reader * pfile, int reason, const char *msgid, ...)
 /* Print a pedantic warning.  The warning reason may be given in REASON.  */
 
 bool
-cpp_pedwarning (cpp_reader * pfile, int reason, const char *msgid, ...)
+cpp_pedwarning (cpp_reader * pfile, enum cpp_warning_reason reason,
+		const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -126,7 +130,8 @@ cpp_pedwarning (cpp_reader * pfile, int reason, const char *msgid, ...)
    given in REASON.  */
 
 bool
-cpp_warning_syshdr (cpp_reader * pfile, int reason, const char *msgid, ...)
+cpp_warning_syshdr (cpp_reader * pfile, enum cpp_warning_reason reason,
+		    const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -143,18 +148,19 @@ cpp_warning_syshdr (cpp_reader * pfile, int reason, const char *msgid, ...)
 
 ATTRIBUTE_FPTR_PRINTF(6,0)
 static bool
-cpp_diagnostic_with_line (cpp_reader * pfile, int level, int reason,
-		          source_location src_loc, unsigned int column,
-		          const char *msgid, va_list *ap)
+cpp_diagnostic_with_line (cpp_reader * pfile, enum cpp_diagnostic_level level,
+			  enum cpp_warning_reason reason,
+			  source_location src_loc, unsigned int column,
+			  const char *msgid, va_list *ap)
 {
   bool ret;
   
-  if (!pfile->cb.error)
+  if (!pfile->cb.diagnostic)
     abort ();
   rich_location richloc (pfile->line_table, src_loc);
   if (column)
     richloc.override_column (column);
-  ret = pfile->cb.error (pfile, level, reason, &richloc, _(msgid), ap);
+  ret = pfile->cb.diagnostic (pfile, level, reason, &richloc, _(msgid), ap);
 
   return ret;
 }
@@ -162,7 +168,7 @@ cpp_diagnostic_with_line (cpp_reader * pfile, int level, int reason,
 /* Print a warning or error, depending on the value of LEVEL.  */
 
 bool
-cpp_error_with_line (cpp_reader *pfile, int level,
+cpp_error_with_line (cpp_reader *pfile, enum cpp_diagnostic_level level,
 		     source_location src_loc, unsigned int column,
 		     const char *msgid, ...)
 {
@@ -181,7 +187,7 @@ cpp_error_with_line (cpp_reader *pfile, int level,
 /* Print a warning.  The warning reason may be given in REASON.  */
 
 bool
-cpp_warning_with_line (cpp_reader *pfile, int reason,
+cpp_warning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
 		       source_location src_loc, unsigned int column,
 		       const char *msgid, ...)
 {
@@ -200,9 +206,9 @@ cpp_warning_with_line (cpp_reader *pfile, int reason,
 /* Print a pedantic warning.  The warning reason may be given in REASON.  */
 
 bool
-cpp_pedwarning_with_line (cpp_reader *pfile, int reason,
-		          source_location src_loc, unsigned int column,
-		          const char *msgid, ...)
+cpp_pedwarning_with_line (cpp_reader *pfile, enum cpp_warning_reason reason,
+			  source_location src_loc, unsigned int column,
+			  const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -220,9 +226,9 @@ cpp_pedwarning_with_line (cpp_reader *pfile, int reason,
    given in REASON.  */
 
 bool
-cpp_warning_with_line_syshdr (cpp_reader *pfile, int reason,
-		              source_location src_loc, unsigned int column,
-		              const char *msgid, ...)
+cpp_warning_with_line_syshdr (cpp_reader *pfile, enum cpp_warning_reason reason,
+			      source_location src_loc, unsigned int column,
+			      const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -240,8 +246,8 @@ cpp_warning_with_line_syshdr (cpp_reader *pfile, int reason,
    a column override.  */
 
 bool
-cpp_error_at (cpp_reader * pfile, int level, source_location src_loc,
-	      const char *msgid, ...)
+cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level level,
+	      source_location src_loc, const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -260,8 +266,8 @@ cpp_error_at (cpp_reader * pfile, int level, source_location src_loc,
    a column override.  */
 
 bool
-cpp_error_at (cpp_reader * pfile, int level, rich_location *richloc,
-	      const char *msgid, ...)
+cpp_error_at (cpp_reader * pfile, enum cpp_diagnostic_level level,
+	      rich_location *richloc, const char *msgid, ...)
 {
   va_list ap;
   bool ret;
@@ -279,7 +285,8 @@ cpp_error_at (cpp_reader * pfile, int level, rich_location *richloc,
    information from errno.  */
 
 bool
-cpp_errno (cpp_reader *pfile, int level, const char *msgid)
+cpp_errno (cpp_reader *pfile, enum cpp_diagnostic_level level,
+	   const char *msgid)
 {
   return cpp_error (pfile, level, "%s: %s", _(msgid), xstrerror (errno));
 }
@@ -289,7 +296,8 @@ cpp_errno (cpp_reader *pfile, int level, const char *msgid)
    that is not localized, but "" is replaced with localized "stdout".  */
 
 bool
-cpp_errno_filename (cpp_reader *pfile, int level, const char *filename,
+cpp_errno_filename (cpp_reader *pfile, enum cpp_diagnostic_level level,
+		    const char *filename,
 		    source_location loc)
 {
   if (filename[0] == '\0')

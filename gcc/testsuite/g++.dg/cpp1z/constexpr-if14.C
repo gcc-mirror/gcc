@@ -1,5 +1,5 @@
 // PR c++/84421
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 struct A{
   constexpr operator bool() const { return true; }

@@ -721,7 +721,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		if (TREE_CODE (tmp_var) != SSA_NAME)
 		  return false;
 		wide_int var_min, var_max;
-		value_range_type vr_type = get_range_info (tmp_var, &var_min,
+		value_range_kind vr_type = get_range_info (tmp_var, &var_min,
 							   &var_max);
 		wide_int var_nonzero = get_nonzero_bits (tmp_var);
 		signop sgn = TYPE_SIGN (itype);
@@ -807,7 +807,8 @@ canonicalize_base_object_address (tree addr)
   return build_fold_addr_expr (TREE_OPERAND (addr, 0));
 }
 
-/* Analyze the behavior of memory reference REF.  There are two modes:
+/* Analyze the behavior of memory reference REF within STMT.
+   There are two modes:
 
    - BB analysis.  In this case we simply split the address into base,
      init and offset components, without reference to any containing loop.
@@ -827,9 +828,9 @@ canonicalize_base_object_address (tree addr)
    Return true if the analysis succeeded and store the results in DRB if so.
    BB analysis can only fail for bitfield or reversed-storage accesses.  */
 
-bool
+opt_result
 dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
-		      struct loop *loop)
+		      struct loop *loop, const gimple *stmt)
 {
   poly_int64 pbitsize, pbitpos;
   tree base, poffset;
@@ -848,18 +849,12 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
 
   poly_int64 pbytepos;
   if (!multiple_p (pbitpos, BITS_PER_UNIT, &pbytepos))
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "failed: bit offset alignment.\n");
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "failed: bit offset alignment.\n");
 
   if (preversep)
-    {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "failed: reverse storage order.\n");
-      return false;
-    }
+    return opt_result::failure_at (stmt,
+				   "failed: reverse storage order.\n");
 
   /* Calculate the alignment and misalignment for the inner reference.  */
   unsigned int HOST_WIDE_INT bit_base_misalignment;
@@ -895,11 +890,8 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
   if (in_loop)
     {
       if (!simple_iv (loop, loop, base, &base_iv, true))
-        {
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "failed: evolution of base is not affine.\n");
-	  return false;
-        }
+	return opt_result::failure_at
+	  (stmt, "failed: evolution of base is not affine.\n");
     }
   else
     {
@@ -921,11 +913,8 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
           offset_iv.step = ssize_int (0);
         }
       else if (!simple_iv (loop, loop, poffset, &offset_iv, true))
-        {
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "failed: evolution of offset is not affine.\n");
-	  return false;
-        }
+	return opt_result::failure_at
+	  (stmt, "failed: evolution of offset is not affine.\n");
     }
 
   init = ssize_int (pbytepos);
@@ -981,7 +970,7 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
   if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "success.\n");
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Return true if OP is a valid component reference for a DR access
@@ -1205,7 +1194,7 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
   DR_IS_CONDITIONAL_IN_STMT (dr) = is_conditional_in_stmt;
 
   dr_analyze_innermost (&DR_INNERMOST (dr), memref,
-			nest != NULL ? loop : NULL);
+			nest != NULL ? loop : NULL, stmt);
   dr_analyze_indices (dr, nest, loop);
   dr_analyze_alias (dr);
 
@@ -1318,38 +1307,27 @@ data_ref_compare_tree (tree t1, tree t2)
 /* Return TRUE it's possible to resolve data dependence DDR by runtime alias
    check.  */
 
-bool
+opt_result
 runtime_alias_check_p (ddr_p ddr, struct loop *loop, bool speed_p)
 {
   if (dump_enabled_p ())
-    {
-      dump_printf (MSG_NOTE, "consider run-time aliasing test between ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
-      dump_printf (MSG_NOTE,  " and ");
-      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
-      dump_printf (MSG_NOTE, "\n");
-    }
+    dump_printf (MSG_NOTE,
+		 "consider run-time aliasing test between %T and %T\n",
+		 DR_REF (DDR_A (ddr)), DR_REF (DDR_B (ddr)));
 
   if (!speed_p)
-    {
-      if (dump_enabled_p ())
-	dump_printf (MSG_MISSED_OPTIMIZATION,
-		     "runtime alias check not supported when optimizing "
-		     "for size.\n");
-      return false;
-    }
+    return opt_result::failure_at (DR_STMT (DDR_A (ddr)),
+				   "runtime alias check not supported when"
+				   " optimizing for size.\n");
 
   /* FORNOW: We don't support versioning with outer-loop in either
      vectorization or loop distribution.  */
   if (loop != NULL && loop->inner != NULL)
-    {
-      if (dump_enabled_p ())
-	dump_printf (MSG_MISSED_OPTIMIZATION,
-		     "runtime alias check not supported for outer loop.\n");
-      return false;
-    }
+    return opt_result::failure_at (DR_STMT (DDR_A (ddr)),
+				   "runtime alias check not supported for"
+				   " outer loop.\n");
 
-  return true;
+  return opt_result::success ();
 }
 
 /* Operator == between two dr_with_seg_len objects.
@@ -1469,17 +1447,9 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
       if (*dr_a1 == *dr_a2 && *dr_b1 == *dr_b2)
 	{
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf (MSG_NOTE, "found equal ranges ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
+	    dump_printf (MSG_NOTE, "found equal ranges %T, %T and %T, %T\n",
+			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
+			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pairs->ordered_remove (i--);
 	  continue;
 	}
@@ -1576,17 +1546,9 @@ prune_runtime_alias_test_list (vec<dr_with_seg_len_pair_t> *alias_pairs,
 	      dr_a1->align = MIN (dr_a1->align, new_align);
 	    }
 	  if (dump_enabled_p ())
-	    {
-	      dump_printf (MSG_NOTE, "merging ranges for ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a1->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b1->dr));
-	      dump_printf (MSG_NOTE,  " and ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a2->dr));
-	      dump_printf (MSG_NOTE,  ", ");
-	      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b2->dr));
-	      dump_printf (MSG_NOTE, "\n");
-	    }
+	    dump_printf (MSG_NOTE, "merging ranges for %T, %T and %T, %T\n",
+			 DR_REF (dr_a1->dr), DR_REF (dr_b1->dr),
+			 DR_REF (dr_a2->dr), DR_REF (dr_b2->dr));
 	  alias_pairs->ordered_remove (i);
 	  i--;
 	}
@@ -1925,13 +1887,9 @@ create_runtime_alias_checks (struct loop *loop,
       const dr_with_seg_len& dr_b = (*alias_pairs)[i].second;
 
       if (dump_enabled_p ())
-	{
-	  dump_printf (MSG_NOTE, "create runtime check for data references ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_a.dr));
-	  dump_printf (MSG_NOTE, " and ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (dr_b.dr));
-	  dump_printf (MSG_NOTE, "\n");
-	}
+	dump_printf (MSG_NOTE,
+		     "create runtime check for data references %T and %T\n",
+		     DR_REF (dr_a.dr), DR_REF (dr_b.dr));
 
       /* Create condition expression for each pair data references.  */
       create_intersect_range_checks (loop, &part_cond_expr, dr_a, dr_b);
@@ -5067,18 +5025,18 @@ loop_nest_has_data_refs (loop_p loop)
    reference, returns false, otherwise returns true.  NEST is the outermost
    loop of the loop nest in which the references should be analyzed.  */
 
-bool
+opt_result
 find_data_references_in_stmt (struct loop *nest, gimple *stmt,
 			      vec<data_reference_p> *datarefs)
 {
   unsigned i;
   auto_vec<data_ref_loc, 2> references;
   data_ref_loc *ref;
-  bool ret = true;
   data_reference_p dr;
 
   if (get_references_in_stmt (stmt, &references))
-    return false;
+    return opt_result::failure_at (stmt, "statement clobbers memory: %G",
+				   stmt);
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
@@ -5089,7 +5047,7 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
       datarefs->safe_push (dr);
     }
 
-  return ret;
+  return opt_result::success ();
 }
 
 /* Stores the data references in STMT to DATAREFS.  If there is an

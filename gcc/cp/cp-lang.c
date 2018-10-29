@@ -83,6 +83,9 @@ static tree cxx_enum_underlying_base_type (const_tree);
 #define LANG_HOOKS_RUN_LANG_SELFTESTS selftest::run_cp_tests
 #endif /* #if CHECKING_P */
 
+#undef LANG_HOOKS_GET_SUBSTRING_LOCATION
+#define LANG_HOOKS_GET_SUBSTRING_LOCATION c_get_substring_location
+
 /* Each front end provides its own lang hook initializer.  */
 struct lang_hooks lang_hooks = LANG_HOOKS_INITIALIZER;
 

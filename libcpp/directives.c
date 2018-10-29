@@ -102,7 +102,8 @@ static const char *parse_include (cpp_reader *, int *, const cpp_token ***,
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static bool strtolinenum (const uchar *, size_t, linenum_type *, bool *);
-static void do_diagnostic (cpp_reader *, int, int, int);
+static void do_diagnostic (cpp_reader *, enum cpp_diagnostic_level code,
+			   enum cpp_warning_reason reason, int);
 static cpp_hashnode *lex_macro_node (cpp_reader *, bool);
 static int undefine_macros (cpp_reader *, cpp_hashnode *, void *);
 static void do_include_common (cpp_reader *, enum include_type);
@@ -227,7 +228,7 @@ skip_rest_of_line (cpp_reader *pfile)
 /* Helper function for check_oel.  */
 
 static void
-check_eol_1 (cpp_reader *pfile, bool expand, int reason)
+check_eol_1 (cpp_reader *pfile, bool expand, enum cpp_warning_reason reason)
 {
   if (! SEEN_EOL () && (expand
 			? cpp_get_token (pfile)
@@ -1140,7 +1141,8 @@ _cpp_do_file_change (cpp_reader *pfile, enum lc_reason reason,
 /* Report a warning or error detected by the program we are
    processing.  Use the directive's tokens in the error message.  */
 static void
-do_diagnostic (cpp_reader *pfile, int code, int reason, int print_dir)
+do_diagnostic (cpp_reader *pfile, enum cpp_diagnostic_level code,
+	       enum cpp_warning_reason reason, int print_dir)
 {
   const unsigned char *dir_name;
   unsigned char *line;
@@ -1166,7 +1168,7 @@ do_diagnostic (cpp_reader *pfile, int code, int reason, int print_dir)
 static void
 do_error (cpp_reader *pfile)
 {
-  do_diagnostic (pfile, CPP_DL_ERROR, 0, 1);
+  do_diagnostic (pfile, CPP_DL_ERROR, CPP_W_NONE, 1);
 }
 
 static void
@@ -1720,7 +1722,7 @@ do_pragma_dependency (cpp_reader *pfile)
       if (cpp_get_token (pfile)->type != CPP_EOF)
 	{
 	  _cpp_backup_tokens (pfile, 1);
-	  do_diagnostic (pfile, CPP_DL_WARNING, 0, 0);
+	  do_diagnostic (pfile, CPP_DL_WARNING, CPP_W_NONE, 0);
 	}
     }
 

@@ -1,4 +1,4 @@
-// go-encode-id.cc -- Go identifier encoding hooks
+// go-encode-id.cc -- Go identifier and packagepath encoding/decoding hooks
 
 // Copyright 2016 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
@@ -82,10 +82,10 @@ fetch_utf8_char(const char* p, unsigned int* pc)
   return len;
 }
 
-// Encode an identifier using ASCII characters.  The encoding is
-// described in detail near the end of the long comment at the start
-// of names.cc.  Short version: translate all non-ASCII-alphanumeric
-// characters into ..uXXXX or ..UXXXXXXXX.
+// Encode an identifier using assembler-friendly characters. The encoding is
+// described in detail near the end of the long comment at the start of
+// names.cc. Short version: translate all non-ASCII-alphanumeric characters into
+// ..uXXXX or ..UXXXXXXXX, translate ASCII non-alphanumerics into ".zXX".
 
 std::string
 go_encode_id(const std::string &id)
@@ -97,7 +97,8 @@ go_encode_id(const std::string &id)
     }
 
   // The encoding is only unambiguous if the input string does not
-  // contain ..u or ..U.
+  // contain ..z, ..u or ..U.
+  go_assert(id.find("..z") == std::string::npos);
   go_assert(id.find("..u") == std::string::npos);
   go_assert(id.find("..U") == std::string::npos);
 
@@ -116,17 +117,16 @@ go_encode_id(const std::string &id)
     {
       unsigned int c;
       size_t len = fetch_utf8_char(p, &c);
-      if (len == 1)
+      if (len == 1 && !char_needs_encoding(c))
 	{
-	  // At this point we should only be seeing alphanumerics or
-	  // underscore or dot.
-	  go_assert(!char_needs_encoding(c));
 	  ret += c;
 	}
       else
 	{
 	  char buf[16];
-	  if (c < 0x10000)
+          if (len == 1)
+            snprintf(buf, sizeof buf, "..z%02x", c);
+	  else if (c < 0x10000)
 	    snprintf(buf, sizeof buf, "..u%04x", c);
 	  else
 	    snprintf(buf, sizeof buf, "..U%08x", c);
@@ -140,6 +140,77 @@ go_encode_id(const std::string &id)
 	}
       p += len;
     }
+  return ret;
+}
+
+// Convert a hex digit string to a unicode codepoint. No checking
+// to insure that the hex digit is meaningful.
+
+static unsigned
+hex_digits_to_unicode_codepoint(const char *digits, unsigned ndig)
+{
+  unsigned result = 0;
+  for (unsigned i = 0; i < ndig; ++i) {
+    result <<= 4;
+    result |= Lex::hex_val(digits[i]);
+  }
+  return result;
+}
+
+// Decode/demangle a mangled string produced by go_encode_id(). Returns
+// empty string if demangling process fails in some way.  At the moment
+// this routine is unused; there is an equivalent routine in the runtime
+// used for demangling symbols appearing in stack traces.
+
+std::string
+go_decode_id(const std::string &encoded)
+{
+  std::string ret;
+  const char* p = encoded.c_str();
+  const char* pend = p + encoded.length();
+  const Location loc = Linemap::predeclared_location();
+
+  // Special case for initial "_", in case it was introduced
+  // as a way to prevent encoded symbol starting with ".".
+  if (*p == '_' && (strncmp(p+1, "..u", 3) == 0 || strncmp(p+1, "..U", 3) == 0))
+    p++;
+
+  while (p < pend)
+    {
+      if (strncmp(p, "..z", 3) == 0)
+        {
+          const char* digits = p+3;
+          if (strlen(digits) < 2)
+            return "";
+          unsigned rune = hex_digits_to_unicode_codepoint(digits, 2);
+          Lex::append_char(rune, true, &ret, loc);
+          p += 5;
+        }
+      else if (strncmp(p, "..u", 3) == 0)
+        {
+          const char* digits = p+3;
+          if (strlen(digits) < 4)
+            return "";
+          unsigned rune = hex_digits_to_unicode_codepoint(digits, 4);
+          Lex::append_char(rune, true, &ret, loc);
+          p += 7;
+        }
+      else if (strncmp(p, "..U", 3) == 0)
+        {
+          const char* digits = p+3;
+          if (strlen(digits) < 8)
+            return "";
+          unsigned rune = hex_digits_to_unicode_codepoint(digits, 8);
+          Lex::append_char(rune, true, &ret, loc);
+          p += 11;
+        }
+      else
+        {
+          ret += *p;
+          p += 1;
+        }
+    }
+
   return ret;
 }
 

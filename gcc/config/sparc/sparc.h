@@ -1496,41 +1496,10 @@ do {									   \
 #define DITF_CONVERSION_LIBFUNCS	0
 #define SUN_INTEGER_MULTIPLY_64 	0
 
-/* Provide the cost of a branch.  For pre-v9 processors we use
-   a value of 3 to take into account the potential annulling of
-   the delay slot (which ends up being a bubble in the pipeline slot)
-   plus a cycle to take into consideration the instruction cache
-   effects.
-
-   On v9 and later, which have branch prediction facilities, we set
-   it to the depth of the pipeline as that is the cost of a
-   mispredicted branch.
-
-   On Niagara, normal branches insert 3 bubbles into the pipe
-   and annulled branches insert 4 bubbles.
-
-   On Niagara-2 and Niagara-3, a not-taken branch costs 1 cycle whereas
-   a taken branch costs 6 cycles.
-
-   The T4 Supplement specifies the branch latency at 2 cycles.
-   The M7 Supplement specifies the branch latency at 1 cycle. */
-
-#define BRANCH_COST(speed_p, predictable_p) \
-	((sparc_cpu == PROCESSOR_V9 \
-	  || sparc_cpu == PROCESSOR_ULTRASPARC) \
-	 ? 7 \
-         : (sparc_cpu == PROCESSOR_ULTRASPARC3 \
-            ? 9 \
-	 : (sparc_cpu == PROCESSOR_NIAGARA \
-	    ? 4 \
-	 : ((sparc_cpu == PROCESSOR_NIAGARA2 \
-	     || sparc_cpu == PROCESSOR_NIAGARA3) \
-	    ? 5 \
-	 : (sparc_cpu == PROCESSOR_NIAGARA4 \
-	    ? 2 \
-	 : (sparc_cpu == PROCESSOR_NIAGARA7 \
-	    ? 1 \
-	 : 3))))))
+/* A C expression for the cost of a branch instruction.  A value of 1
+   is the default; other values are interpreted relative to that.  */
+#define BRANCH_COST(SPEED_P, PREDICTABLE_P) \
+  (sparc_branch_cost (SPEED_P, PREDICTABLE_P))
 
 /* Control the assembler format that we output.  */
 

@@ -656,6 +656,7 @@ TM_ENDIAN_CONFIG
 tmake_file
 xmake_file
 cpp_install_dir
+selftest_languages
 check_languages
 build_file_translate
 build_xm_defines
@@ -906,6 +907,7 @@ enable_valgrind_annotations
 with_stabs
 enable_multilib
 enable_multiarch
+with_stack_clash_protection_guard_size
 enable___cxa_atexit
 enable_decimal_float
 enable_fixed_point
@@ -927,6 +929,7 @@ enable_sjlj_exceptions
 with_gcc_major_version_only
 enable_secureplt
 enable_mingw_wildcard
+enable_large_address_aware
 enable_leading_mingw64_underscores
 enable_cld
 enable_frame_pointer
@@ -1644,6 +1647,8 @@ Optional Features:
   --enable-secureplt      enable -msecure-plt by default for PowerPC
   --enable-mingw-wildcard Set whether to expand wildcard on command-line.
                           Default to platform configuration
+  --enable-large-address-aware
+                          Link mingw executables with --large-address-aware
   --enable-leading-mingw64-underscores
                           enable leading underscores on 64 bit mingw targets
   --enable-cld            enable -mcld by default for 32bit x86
@@ -1727,6 +1732,9 @@ Optional Packages:
   --with-gnu-as           arrange to work with GNU as
   --with-as               arrange to use the specified as (full pathname)
   --with-stabs            arrange to use stabs instead of host debug format
+  --with-stack-clash-protection-guard-size=size
+                          Set the default stack clash protection guard size
+                          for specific targets as a power of two in bytes.
   --with-dwarf2           force the default debug format to be DWARF 2
   --with-specs=SPECS      add SPECS to driver command-line processing
   --with-pkgversion=PKG   Use PKG in the version string in place of "GCC"
@@ -7439,6 +7447,34 @@ $as_echo "$enable_multiarch$ma_msg_suffix" >&6; }
 
 
 
+# default stack clash protection guard size as power of twos in bytes.
+# Please keep these in sync with params.def.
+stk_clash_min=12
+stk_clash_max=30
+
+# Keep the default value when the option is not used to 0, this allows us to
+# distinguish between the cases where the user specifially set a value via
+# configure and when the normal default value is used.
+
+# Check whether --with-stack-clash-protection-guard-size was given.
+if test "${with_stack_clash_protection_guard_size+set}" = set; then :
+  withval=$with_stack_clash_protection_guard_size; DEFAULT_STK_CLASH_GUARD_SIZE="$with_stack_clash_protection_guard_size"
+else
+  DEFAULT_STK_CLASH_GUARD_SIZE=0
+fi
+
+if test $DEFAULT_STK_CLASH_GUARD_SIZE -ne 0 \
+     && (test $DEFAULT_STK_CLASH_GUARD_SIZE -lt $stk_clash_min \
+	 || test $DEFAULT_STK_CLASH_GUARD_SIZE -gt $stk_clash_max); then
+  as_fn_error "Invalid value $DEFAULT_STK_CLASH_GUARD_SIZE for --with-stack-clash-protection-guard-size. Must be between $stk_clash_min and $stk_clash_max." "$LINENO" 5
+fi
+
+
+cat >>confdefs.h <<_ACEOF
+#define DEFAULT_STK_CLASH_GUARD_SIZE $DEFAULT_STK_CLASH_GUARD_SIZE
+_ACEOF
+
+
 # Enable __cxa_atexit for C++.
 # Check whether --enable-__cxa_atexit was given.
 if test "${enable___cxa_atexit+set}" = set; then :
@@ -12002,6 +12038,17 @@ if test x"$enable_mingw_wildcard" != xplatform ; then :
 cat >>confdefs.h <<_ACEOF
 #define MINGW_DOWILDCARD $(test x"$enable_mingw_wildcard" = xno; echo $?)
 _ACEOF
+
+fi
+
+# Check whether --enable-large-address-aware was given.
+if test "${enable_large_address_aware+set}" = set; then :
+  enableval=$enable_large_address_aware;
+fi
+
+if test x"$enable_large_address_aware" = xyes; then :
+
+$as_echo "#define MINGW_DEFAULT_LARGE_ADDR_AWARE 1" >>confdefs.h
 
 fi
 
@@ -18463,7 +18510,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18466 "configure"
+#line 18513 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -18569,7 +18616,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 18572 "configure"
+#line 18619 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -23692,6 +23739,30 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
+gcc_cv_ld_aligned_shf_merge=yes
+case "$target" in
+  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
+  # relinking on Solaris 11 < 11.4.
+  sparc*-*-solaris2.10*)
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+  # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
+  # alignment > 1.
+  sparc*-*-solaris2.11*)
+    if test x"$gnu_ld" = xno \
+       && test "$ld_vers_major" -lt 2 && test "$ld_vers_minor" -lt 3159; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+esac
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_LD_ALIGNED_SHF_MERGE `if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`
+_ACEOF
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for stabs directive" >&5
 $as_echo_n "checking assembler for stabs directive... " >&6; }
 if test "${gcc_cv_as_stabs_directive+set}" = set; then :
@@ -23941,6 +24012,44 @@ _ACEOF
 
   ;;
 esac
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for line table is_stmt support" >&5
+$as_echo_n "checking assembler for line table is_stmt support... " >&6; }
+if test "${gcc_cv_as_is_stmt+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_is_stmt=no
+    if test $in_tree_gas = yes; then
+    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 16 \) \* 1000 + 92`
+  then gcc_cv_as_is_stmt=yes
+fi
+  elif test x$gcc_cv_as != x; then
+    $as_echo '	.text
+	.file 1 "conf.c"
+	.loc 1 1 0 is_stmt 1' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_is_stmt=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_is_stmt" >&5
+$as_echo "$gcc_cv_as_is_stmt" >&6; }
+if test $gcc_cv_as_is_stmt = yes; then
+
+$as_echo "#define HAVE_GAS_LOC_STMT 1" >>confdefs.h
+
+fi
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for line table discriminator support" >&5
 $as_echo_n "checking assembler for line table discriminator support... " >&6; }
@@ -26591,141 +26700,6 @@ fi
 
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5"
-	.csect .text[PR]
-	popcntb 3,3';;
-      *) conftest_s='	.machine power5
-	.text
-	popcntb 3,3';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for popcntb support" >&5
-$as_echo_n "checking assembler for popcntb support... " >&6; }
-if test "${gcc_cv_as_powerpc_popcntb+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_popcntb=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_popcntb=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_popcntb=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_popcntb" >&5
-$as_echo "$gcc_cv_as_powerpc_popcntb" >&6; }
-if test $gcc_cv_as_powerpc_popcntb = yes; then
-
-$as_echo "#define HAVE_AS_POPCNTB 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr5x"
-	.csect .text[PR]
-	frin 1,1';;
-      *) conftest_s='	.machine power5
-	.text
-	frin 1,1';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for fp round support" >&5
-$as_echo_n "checking assembler for fp round support... " >&6; }
-if test "${gcc_cv_as_powerpc_fprnd+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_fprnd=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 17 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_fprnd=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_fprnd=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_fprnd" >&5
-$as_echo "$gcc_cv_as_powerpc_fprnd" >&6; }
-if test $gcc_cv_as_powerpc_fprnd = yes; then
-
-$as_echo "#define HAVE_AS_FPRND 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[PR]
-	mffgpr 1,3';;
-      *) conftest_s='	.machine power6
-	.text
-	mffgpr 1,3';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for move fp gpr support" >&5
-$as_echo_n "checking assembler for move fp gpr support... " >&6; }
-if test "${gcc_cv_as_powerpc_mfpgpr+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_mfpgpr=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_mfpgpr=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_mfpgpr=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_mfpgpr" >&5
-$as_echo "$gcc_cv_as_powerpc_mfpgpr" >&6; }
-if test $gcc_cv_as_powerpc_mfpgpr = yes; then
-
-$as_echo "#define HAVE_AS_MFPGPR 1" >>confdefs.h
-
-fi
-
-
-    case $target in
       *-*-aix*) conftest_s='	.csect .text[PR]
 LCF..0:
 	addis 11,30,_GLOBAL_OFFSET_TABLE_-LCF..0@ha';;
@@ -26775,96 +26749,6 @@ fi
 
 
     case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[PR]
-	cmpb 3,4,5';;
-      *) conftest_s='	.machine power6
-	.text
-	cmpb 3,4,5';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for compare bytes support" >&5
-$as_echo_n "checking assembler for compare bytes support... " >&6; }
-if test "${gcc_cv_as_powerpc_cmpb+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_cmpb=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_cmpb=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_cmpb=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_cmpb" >&5
-$as_echo "$gcc_cv_as_powerpc_cmpb" >&6; }
-if test $gcc_cv_as_powerpc_cmpb = yes; then
-
-$as_echo "#define HAVE_AS_CMPB 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr6"
-	.csect .text[PR]
-	dadd 1,2,3';;
-      *) conftest_s='	.machine power6
-	.text
-	dadd 1,2,3';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for decimal float support" >&5
-$as_echo_n "checking assembler for decimal float support... " >&6; }
-if test "${gcc_cv_as_powerpc_dfp+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_dfp=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_dfp=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_dfp=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_dfp" >&5
-$as_echo "$gcc_cv_as_powerpc_dfp" >&6; }
-if test $gcc_cv_as_powerpc_dfp = yes; then
-
-$as_echo "#define HAVE_AS_DFP 1" >>confdefs.h
-
-fi
-
-
-    case $target in
       *-*-aix*) conftest_s='	.machine "pwr7"
 	.csect .text[PR]
 	lxvd2x 1,2,3';;
@@ -26905,225 +26789,6 @@ $as_echo "$gcc_cv_as_powerpc_vsx" >&6; }
 if test $gcc_cv_as_powerpc_vsx = yes; then
 
 $as_echo "#define HAVE_AS_VSX 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr7"
-	.csect .text[PR]
-	popcntd 3,3';;
-      *) conftest_s='	.machine power7
-	.text
-	popcntd 3,3';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for popcntd support" >&5
-$as_echo_n "checking assembler for popcntd support... " >&6; }
-if test "${gcc_cv_as_powerpc_popcntd+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_popcntd=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_popcntd=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_popcntd=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_popcntd" >&5
-$as_echo "$gcc_cv_as_powerpc_popcntd" >&6; }
-if test $gcc_cv_as_powerpc_popcntd = yes; then
-
-$as_echo "#define HAVE_AS_POPCNTD 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr8"
-	.csect .text[PR]';;
-      *) conftest_s='	.machine power8
-	.text';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for power8 support" >&5
-$as_echo_n "checking assembler for power8 support... " >&6; }
-if test "${gcc_cv_as_powerpc_power8+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_power8=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_power8=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_power8=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_power8" >&5
-$as_echo "$gcc_cv_as_powerpc_power8" >&6; }
-if test $gcc_cv_as_powerpc_power8 = yes; then
-
-$as_echo "#define HAVE_AS_POWER8 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "pwr9"
-	.csect .text[PR]';;
-      *) conftest_s='	.machine power9
-	.text';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for power9 support" >&5
-$as_echo_n "checking assembler for power9 support... " >&6; }
-if test "${gcc_cv_as_powerpc_power9+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_power9=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_power9=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_power9=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_power9" >&5
-$as_echo "$gcc_cv_as_powerpc_power9" >&6; }
-if test $gcc_cv_as_powerpc_power9 = yes; then
-
-$as_echo "#define HAVE_AS_POWER9 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.csect .text[PR]
-	lwsync';;
-      *) conftest_s='	.text
-	lwsync';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for lwsync support" >&5
-$as_echo_n "checking assembler for lwsync support... " >&6; }
-if test "${gcc_cv_as_powerpc_lwsync+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_lwsync=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 2 \* 1000 \) + 19 \) \* 1000 + 2`
-  then gcc_cv_as_powerpc_lwsync=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_lwsync=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_lwsync" >&5
-$as_echo "$gcc_cv_as_powerpc_lwsync" >&6; }
-if test $gcc_cv_as_powerpc_lwsync = yes; then
-
-$as_echo "#define HAVE_AS_LWSYNC 1" >>confdefs.h
-
-fi
-
-
-    case $target in
-      *-*-aix*) conftest_s='	.machine "476"
-	.csect .text[PR]
-	dci 0';;
-      *) conftest_s='	.machine "476"
-	.text
-	dci 0';;
-    esac
-
-    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for data cache invalidate support" >&5
-$as_echo_n "checking assembler for data cache invalidate support... " >&6; }
-if test "${gcc_cv_as_powerpc_dci+set}" = set; then :
-  $as_echo_n "(cached) " >&6
-else
-  gcc_cv_as_powerpc_dci=no
-    if test $in_tree_gas = yes; then
-    if test $gcc_cv_gas_vers -ge `expr \( \( 9 \* 1000 \) + 99 \) \* 1000 + 0`
-  then gcc_cv_as_powerpc_dci=yes
-fi
-  elif test x$gcc_cv_as != x; then
-    $as_echo "$conftest_s" > conftest.s
-    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -a32 -o conftest.o conftest.s >&5'
-  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
-  (eval $ac_try) 2>&5
-  ac_status=$?
-  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
-  test $ac_status = 0; }; }
-    then
-	gcc_cv_as_powerpc_dci=yes
-    else
-      echo "configure: failed program was" >&5
-      cat conftest.s >&5
-    fi
-    rm -f conftest.o conftest.s
-  fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_powerpc_dci" >&5
-$as_echo "$gcc_cv_as_powerpc_dci" >&6; }
-if test $gcc_cv_as_powerpc_dci = yes; then
-
-$as_echo "#define HAVE_AS_DCI 1" >>confdefs.h
 
 fi
 
@@ -29704,6 +29369,12 @@ do
 	check_languages="$check_languages check-$language"
 done
 
+selftest_languages=
+for language in $all_selected_languages
+do
+	selftest_languages="$selftest_languages selftest-$language"
+done
+
 # We link each language in with a set of hooks, reached indirectly via
 # lang.${target}.  Only do so for selected languages.
 
@@ -29774,6 +29445,7 @@ fi
 
 
 # Substitute configuration variables
+
 
 
 

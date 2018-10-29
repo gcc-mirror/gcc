@@ -1978,6 +1978,12 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_ASM_GLOBALIZE_DECL_NAME
 #define TARGET_ASM_GLOBALIZE_DECL_NAME rs6000_globalize_decl_name
 #endif
+
+#undef TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P
+#define TARGET_SETJMP_PRESERVES_NONVOLATILE_REGS_P hook_bool_void_true
+
+#undef TARGET_MANGLE_DECL_ASSEMBLER_NAME
+#define TARGET_MANGLE_DECL_ASSEMBLER_NAME rs6000_mangle_decl_assembler_name
 
 
 /* Processor table.  */
@@ -2300,7 +2306,6 @@ rs6000_debug_vector_unit (enum rs6000_vector v)
     case VECTOR_ALTIVEC:   ret = "altivec";   break;
     case VECTOR_VSX:	   ret = "vsx";       break;
     case VECTOR_P8_VECTOR: ret = "p8_vector"; break;
-    case VECTOR_OTHER:	   ret = "other";     break;
     default:		   ret = "unknown";   break;
     }
 
@@ -3871,48 +3876,6 @@ rs6000_option_override_internal (bool global_init_p)
     cpu_index = main_target_opt->x_rs6000_cpu_index;
   else if (OPTION_TARGET_CPU_DEFAULT)
     cpu_index = rs6000_cpu_name_lookup (OPTION_TARGET_CPU_DEFAULT);
-
-  if (cpu_index >= 0)
-    {
-      const char *unavailable_cpu = NULL;
-      switch (processor_target_table[cpu_index].processor)
-	{
-#ifndef HAVE_AS_POWER9
-	case PROCESSOR_POWER9:
-	  unavailable_cpu = "power9";
-	  break;
-#endif
-#ifndef HAVE_AS_POWER8
-	case PROCESSOR_POWER8:
-	  unavailable_cpu = "power8";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTD
-	case PROCESSOR_POWER7:
-	  unavailable_cpu = "power7";
-	  break;
-#endif
-#ifndef HAVE_AS_DFP
-	case PROCESSOR_POWER6:
-	  unavailable_cpu = "power6";
-	  break;
-#endif
-#ifndef HAVE_AS_POPCNTB
-	case PROCESSOR_POWER5:
-	  unavailable_cpu = "power5";
-	  break;
-#endif
-	default:
-	  break;
-	}
-      if (unavailable_cpu)
-	{
-	  cpu_index = -1;
-	  warning (0, "will not generate %qs instructions because "
-		   "assembler lacks %qs support", unavailable_cpu,
-		   unavailable_cpu);
-	}
-    }
 
   /* If we have a cpu, either through an explicit -mcpu=<xxx> or if the
      compiler was configured with --with-cpu=<xxx>, replace all of the ISA bits
@@ -13303,6 +13266,13 @@ rs6000_expand_zeroop_builtin (enum insn_code icode, rtx target)
     /* Builtin not supported on this processor.  */
     return 0;
 
+  if (icode == CODE_FOR_rs6000_mffsl
+      && rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_mffsl() not supported with -msoft-float");
+      return const0_rtx;
+    }
+
   if (target == 0
       || GET_MODE (target) != tmode
       || ! (*insn_data[icode].operand[0].predicate) (target, tmode))
@@ -13351,6 +13321,134 @@ rs6000_expand_mtfsf_builtin (enum insn_code icode, tree exp)
     op1 = copy_to_mode_reg (mode1, op1);
 
   pat = GEN_FCN (icode) (op0, op1);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+
+static rtx
+rs6000_expand_mtfsb_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_mtfsb0 and __builtin_mtfsb1 not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* Only allow bit numbers 0 to 31.  */
+  if (!u5bit_cint_operand (op0, VOIDmode))
+    {
+       error ("Argument must be a constant between 0 and 31.");
+       return const0_rtx;
+     }
+
+  pat = GEN_FCN (icode) (op0);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+
+static rtx
+rs6000_expand_set_fpscr_rn_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+  machine_mode mode0 = insn_data[icode].operand[0].mode;
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_set_fpscr_rn not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* If the argument is a constant, check the range. Argument can only be a
+     2-bit value.  Unfortunately, can't check the range of the value at
+     compile time if the argument is a variable.  The least significant two
+     bits of the argument, regardless of type, are used to set the rounding
+     mode.  All other bits are ignored.  */
+  if (GET_CODE (op0) == CONST_INT && !const_0_to_3_operand(op0, VOIDmode))
+    {
+      error ("Argument must be a value between 0 and 3.");
+      return const0_rtx;
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  pat = GEN_FCN (icode) (op0);
+  if (!pat)
+    return const0_rtx;
+  emit_insn (pat);
+
+  return NULL_RTX;
+}
+static rtx
+rs6000_expand_set_fpscr_drn_builtin (enum insn_code icode, tree exp)
+{
+  rtx pat;
+  tree arg0 = CALL_EXPR_ARG (exp, 0);
+  rtx op0 = expand_normal (arg0);
+  machine_mode mode0 = insn_data[icode].operand[0].mode;
+
+  if (TARGET_32BIT)
+    /* Builtin not supported in 32-bit mode.  */
+    fatal_error (input_location,
+		 "__builtin_set_fpscr_drn is not supported in 32-bit mode.");
+
+  if (rs6000_isa_flags_explicit & OPTION_MASK_SOFT_FLOAT)
+    {
+      error ("__builtin_set_fpscr_drn not supported with -msoft-float");
+      return const0_rtx;
+    }
+
+  if (icode == CODE_FOR_nothing)
+    /* Builtin not supported on this processor.  */
+    return 0;
+
+  /* If we got invalid arguments bail out before generating bad rtl.  */
+  if (arg0 == error_mark_node)
+    return const0_rtx;
+
+  /* If the argument is a constant, check the range. Agrument can only be a
+     3-bit value.  Unfortunately, can't check the range of the value at
+     compile time if the argument is a variable. The least significant two
+     bits of the argument, regardless of type, are used to set the rounding
+     mode.  All other bits are ignored.  */
+  if (GET_CODE (op0) == CONST_INT && !const_0_to_7_operand(op0, VOIDmode))
+   {
+      error ("Argument must be a value between 0 and 7.");
+      return const0_rtx;
+    }
+
+  if (! (*insn_data[icode].operand[0].predicate) (op0, mode0))
+    op0 = copy_to_mode_reg (mode0, op0);
+
+  pat = GEN_FCN (icode) (op0);
   if (! pat)
     return const0_rtx;
   emit_insn (pat);
@@ -13457,13 +13555,58 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return const0_rtx;
 
-  if (icode == CODE_FOR_altivec_vcfux
+  if (icode == CODE_FOR_unpackv1ti
+	   || icode == CODE_FOR_unpackkf
+	   || icode == CODE_FOR_unpacktf
+	   || icode == CODE_FOR_unpackif
+	   || icode == CODE_FOR_unpacktd)
+    {
+      /* Only allow 1-bit unsigned literals. */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
+	{
+	  error ("argument 2 must be a 1-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltw)
+    {
+      /* Only allow 2-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~3)
+	{
+	  error ("argument 2 must be a 2-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vsplth)
+    {
+      /* Only allow 3-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~7)
+	{
+	  error ("argument 2 must be a 3-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vspltb)
+    {
+      /* Only allow 4-bit unsigned literals.  */
+      STRIP_NOPS (arg1);
+      if (TREE_CODE (arg1) != INTEGER_CST
+	  || TREE_INT_CST_LOW (arg1) & ~15)
+	{
+	  error ("argument 2 must be a 4-bit unsigned literal");
+	  return CONST0_RTX (tmode);
+	}
+    }
+  else if (icode == CODE_FOR_altivec_vcfux
       || icode == CODE_FOR_altivec_vcfsx
       || icode == CODE_FOR_altivec_vctsxs
-      || icode == CODE_FOR_altivec_vctuxs
-      || icode == CODE_FOR_altivec_vspltb
-      || icode == CODE_FOR_altivec_vsplth
-      || icode == CODE_FOR_altivec_vspltw)
+      || icode == CODE_FOR_altivec_vctuxs)
     {
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
@@ -13505,21 +13648,6 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 127))
 	{
 	  error ("argument 2 must be a 7-bit unsigned literal");
-	  return CONST0_RTX (tmode);
-	}
-    }
-  else if (icode == CODE_FOR_unpackv1ti
-	   || icode == CODE_FOR_unpackkf
-	   || icode == CODE_FOR_unpacktf
-	   || icode == CODE_FOR_unpackif
-	   || icode == CODE_FOR_unpacktd)
-    {
-      /* Only allow 1-bit unsigned literals. */
-      STRIP_NOPS (arg1);
-      if (TREE_CODE (arg1) != INTEGER_CST
-	  || !IN_RANGE (TREE_INT_CST_LOW (arg1), 0, 1))
-	{
-	  error ("argument 2 must be a 1-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
     }
@@ -15113,6 +15241,25 @@ fold_compare_helper (gimple_stmt_iterator *gsi, tree_code code, gimple *stmt)
   gsi_replace (gsi, g, true);
 }
 
+/* Helper function to map V2DF and V4SF types to their
+ integral equivalents (V2DI and V4SI).  */
+tree map_to_integral_tree_type (tree input_tree_type)
+{
+  if (INTEGRAL_TYPE_P (TREE_TYPE (input_tree_type)))
+    return input_tree_type;
+  else
+    {
+      if (types_compatible_p (TREE_TYPE (input_tree_type),
+			      TREE_TYPE (V2DF_type_node)))
+	return V2DI_type_node;
+      else if (types_compatible_p (TREE_TYPE (input_tree_type),
+				   TREE_TYPE (V4SF_type_node)))
+	return V4SI_type_node;
+      else
+	gcc_unreachable ();
+    }
+}
+
 /* Helper function to handle the vector merge[hl] built-ins.  The
    implementation difference between h and l versions for this code are in
    the values used when building of the permute vector for high word versus
@@ -15135,19 +15282,7 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
      float types, the permute type needs to map to the V2 or V4 type that
      matches size.  */
   tree permute_type;
-  if (INTEGRAL_TYPE_P (TREE_TYPE (lhs_type)))
-    permute_type = lhs_type;
-  else
-    {
-      if (types_compatible_p (TREE_TYPE (lhs_type),
-			      TREE_TYPE (V2DF_type_node)))
-	permute_type = V2DI_type_node;
-      else if (types_compatible_p (TREE_TYPE (lhs_type),
-				   TREE_TYPE (V4SF_type_node)))
-	permute_type = V4SI_type_node;
-      else
-	gcc_unreachable ();
-    }
+  permute_type = map_to_integral_tree_type (lhs_type);
   tree_vector_builder elts (permute_type, VECTOR_CST_NELTS (arg0), 1);
 
   for (int i = 0; i < midpoint; i++)
@@ -15156,6 +15291,40 @@ fold_mergehl_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_high)
 				     offset + i));
       elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
 				     offset + n_elts + i));
+    }
+
+  tree permute = elts.build ();
+
+  gimple *g = gimple_build_assign (lhs, VEC_PERM_EXPR, arg0, arg1, permute);
+  gimple_set_location (g, gimple_location (stmt));
+  gsi_replace (gsi, g, true);
+}
+
+/* Helper function to handle the vector merge[eo] built-ins.  */
+static void
+fold_mergeeo_helper (gimple_stmt_iterator *gsi, gimple *stmt, int use_odd)
+{
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  tree lhs_type = TREE_TYPE (lhs);
+  int n_elts = TYPE_VECTOR_SUBPARTS (lhs_type);
+
+  /* The permute_type will match the lhs for integral types.  For double and
+     float types, the permute type needs to map to the V2 or V4 type that
+     matches size.  */
+  tree permute_type;
+  permute_type = map_to_integral_tree_type (lhs_type);
+
+  tree_vector_builder elts (permute_type, VECTOR_CST_NELTS (arg0), 1);
+
+ /* Build the permute vector.  */
+  for (int i = 0; i < n_elts / 2; i++)
+    {
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     2*i + use_odd));
+      elts.safe_push (build_int_cst (TREE_TYPE (permute_type),
+				     2*i + use_odd + n_elts));
     }
 
   tree permute = elts.build ();
@@ -15640,34 +15809,34 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_LXVD2X_V2DF:
     case VSX_BUILTIN_LXVD2X_V2DI:
       {
-	 arg0 = gimple_call_arg (stmt, 0);  // offset
-	 arg1 = gimple_call_arg (stmt, 1);  // address
-	 lhs = gimple_call_lhs (stmt);
-	 location_t loc = gimple_location (stmt);
-	 /* Since arg1 may be cast to a different type, just use ptr_type_node
-	    here instead of trying to enforce TBAA on pointer types.  */
-	 tree arg1_type = ptr_type_node;
-	 tree lhs_type = TREE_TYPE (lhs);
-	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
-	   required alignment (power) is 4 bytes regardless of data type.  */
-	 tree align_ltype = build_aligned_type (lhs_type, 4);
-	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
-	    the tree using the value from arg0.  The resulting type will match
-	    the type of arg1.  */
-	 gimple_seq stmts = NULL;
-	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
-	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+	arg0 = gimple_call_arg (stmt, 0);  // offset
+	arg1 = gimple_call_arg (stmt, 1);  // address
+	lhs = gimple_call_lhs (stmt);
+	location_t loc = gimple_location (stmt);
+	/* Since arg1 may be cast to a different type, just use ptr_type_node
+	   here instead of trying to enforce TBAA on pointer types.  */
+	tree arg1_type = ptr_type_node;
+	tree lhs_type = TREE_TYPE (lhs);
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	  required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_ltype = build_aligned_type (lhs_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg0.  The resulting type will match
+	   the type of arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg1_type, arg1, temp_offset);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 /* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
-	    take an offset, but since we've already incorporated the offset
-	    above, here we just pass in a zero.  */
-	 gimple *g;
-	 g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
-						build_int_cst (arg1_type, 0)));
-	 gimple_set_location (g, loc);
-	 gsi_replace (gsi, g, true);
-	 return true;
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	   take an offset, but since we've already incorporated the offset
+	   above, here we just pass in a zero.  */
+	gimple *g;
+	g = gimple_build_assign (lhs, build2 (MEM_REF, align_ltype, temp_addr,
+					      build_int_cst (arg1_type, 0)));
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* unaligned Vector stores.  */
@@ -15678,29 +15847,29 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_STXVD2X_V2DF:
     case VSX_BUILTIN_STXVD2X_V2DI:
       {
-	 arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
-	 arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
-	 tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
-	 location_t loc = gimple_location (stmt);
-	 tree arg0_type = TREE_TYPE (arg0);
-	 /* Use ptr_type_node (no TBAA) for the arg2_type.  */
-	 tree arg2_type = ptr_type_node;
-	 /* In GIMPLE the type of the MEM_REF specifies the alignment.  The
-	    required alignment (power) is 4 bytes regardless of data type.  */
-	 tree align_stype = build_aligned_type (arg0_type, 4);
-	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
-	    the tree using the value from arg1.  */
-	 gimple_seq stmts = NULL;
-	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
-	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+	arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	location_t loc = gimple_location (stmt);
+	tree arg0_type = TREE_TYPE (arg0);
+	/* Use ptr_type_node (no TBAA) for the arg2_type.  */
+	tree arg2_type = ptr_type_node;
+	/* In GIMPLE the type of the MEM_REF specifies the alignment.  The
+	   required alignment (power) is 4 bytes regardless of data type.  */
+	tree align_stype = build_aligned_type (arg0_type, 4);
+	/* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	   the tree using the value from arg1.  */
+	gimple_seq stmts = NULL;
+	tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
 				       arg2_type, arg2, temp_offset);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 gimple *g;
-	 g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
-					   build_int_cst (arg2_type, 0)), arg0);
-	 gimple_set_location (g, loc);
-	 gsi_replace (gsi, g, true);
-	 return true;
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	gimple *g;
+	g = gimple_build_assign (build2 (MEM_REF, align_stype, temp_addr,
+					 build_int_cst (arg2_type, 0)), arg0);
+	gimple_set_location (g, loc);
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
     /* Vector Fused multiply-add (fma).  */
@@ -15772,35 +15941,34 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case ALTIVEC_BUILTIN_VSPLTISH:
     case ALTIVEC_BUILTIN_VSPLTISW:
       {
-	 int size;
+	int size;
+	if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
+	  size = 8;
+	else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
+	  size = 16;
+	else
+	  size = 32;
 
-         if (fn_code == ALTIVEC_BUILTIN_VSPLTISB)
-           size = 8;
-         else if (fn_code == ALTIVEC_BUILTIN_VSPLTISH)
-           size = 16;
-         else
-           size = 32;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
 
-	 arg0 = gimple_call_arg (stmt, 0);
-	 lhs = gimple_call_lhs (stmt);
-
-	 /* Only fold the vec_splat_*() if the lower bits of arg 0 is a
-	    5-bit signed constant in range -16 to +15.  */
-	 if (TREE_CODE (arg0) != INTEGER_CST
-	     || !IN_RANGE (sext_hwi(TREE_INT_CST_LOW (arg0), size),
-			   -16, 15))
-	   return false;
-	 gimple_seq stmts = NULL;
-	 location_t loc = gimple_location (stmt);
-	 tree splat_value = gimple_convert (&stmts, loc,
-					    TREE_TYPE (TREE_TYPE (lhs)), arg0);
-	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
-	 tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
-	 g = gimple_build_assign (lhs, splat_tree);
-	 gimple_set_location (g, gimple_location (stmt));
-	 gsi_replace (gsi, g, true);
-	 return true;
-	}
+	/* Only fold the vec_splat_*() if the lower bits of arg 0 is a
+	   5-bit signed constant in range -16 to +15.  */
+	if (TREE_CODE (arg0) != INTEGER_CST
+	    || !IN_RANGE (sext_hwi (TREE_INT_CST_LOW (arg0), size),
+			  -16, 15))
+	  return false;
+	gimple_seq stmts = NULL;
+	location_t loc = gimple_location (stmt);
+	tree splat_value = gimple_convert (&stmts, loc,
+					   TREE_TYPE (TREE_TYPE (lhs)), arg0);
+	gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	tree splat_tree = build_vector_from_val (TREE_TYPE (lhs), splat_value);
+	g = gimple_build_assign (lhs, splat_tree);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
+      }
 
     /* Flavors of vec_splat.  */
     /* a = vec_splat (b, 0x3) becomes a = { b[3],b[3],b[3],...};  */
@@ -15852,8 +16020,8 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_VEC_MERGEL_V2DI:
     case VSX_BUILTIN_XXMRGLW_4SF:
     case VSX_BUILTIN_VEC_MERGEL_V2DF:
-	fold_mergehl_helper (gsi, stmt, 1);
-	return true;
+      fold_mergehl_helper (gsi, stmt, 1);
+      return true;
     /* vec_mergeh (integrals).  */
     case ALTIVEC_BUILTIN_VMRGHH:
     case ALTIVEC_BUILTIN_VMRGHW:
@@ -15862,55 +16030,70 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
     case VSX_BUILTIN_VEC_MERGEH_V2DI:
     case VSX_BUILTIN_XXMRGHW_4SF:
     case VSX_BUILTIN_VEC_MERGEH_V2DF:
-	fold_mergehl_helper (gsi, stmt, 0);
-	return true;
+      fold_mergehl_helper (gsi, stmt, 0);
+      return true;
+
+    /* Flavors of vec_mergee.  */
+    case P8V_BUILTIN_VMRGEW_V4SI:
+    case P8V_BUILTIN_VMRGEW_V2DI:
+    case P8V_BUILTIN_VMRGEW_V4SF:
+    case P8V_BUILTIN_VMRGEW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 0);
+      return true;
+    /* Flavors of vec_mergeo.  */
+    case P8V_BUILTIN_VMRGOW_V4SI:
+    case P8V_BUILTIN_VMRGOW_V2DI:
+    case P8V_BUILTIN_VMRGOW_V4SF:
+    case P8V_BUILTIN_VMRGOW_V2DF:
+      fold_mergeeo_helper (gsi, stmt, 1);
+      return true;
 
     /* d = vec_pack (a, b) */
     case P8V_BUILTIN_VPKUDUM:
     case ALTIVEC_BUILTIN_VPKUHUM:
     case ALTIVEC_BUILTIN_VPKUWUM:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       arg1 = gimple_call_arg (stmt, 1);
-       lhs = gimple_call_lhs (stmt);
-       gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	arg1 = gimple_call_arg (stmt, 1);
+	lhs = gimple_call_lhs (stmt);
+	gimple *g = gimple_build_assign (lhs, VEC_PACK_TRUNC_EXPR, arg0, arg1);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
 
-   /* d = vec_unpackh (a) */
-   /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
-      in this code is sensitive to endian-ness, and needs to be inverted to
-      handle both LE and BE targets.  */
+    /* d = vec_unpackh (a) */
+    /* Note that the UNPACK_{HI,LO}_EXPR used in the gimple_build_assign call
+       in this code is sensitive to endian-ness, and needs to be inverted to
+       handle both LE and BE targets.  */
     case ALTIVEC_BUILTIN_VUPKHSB:
     case ALTIVEC_BUILTIN_VUPKHSH:
     case P8V_BUILTIN_VUPKHSW:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       lhs = gimple_call_lhs (stmt);
-       if (BYTES_BIG_ENDIAN)
-	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
-       else
-	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
-   /* d = vec_unpackl (a) */
+    /* d = vec_unpackl (a) */
     case ALTIVEC_BUILTIN_VUPKLSB:
     case ALTIVEC_BUILTIN_VUPKLSH:
     case P8V_BUILTIN_VUPKLSW:
       {
-       arg0 = gimple_call_arg (stmt, 0);
-       lhs = gimple_call_lhs (stmt);
-       if (BYTES_BIG_ENDIAN)
-	 g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
-       else
-	 g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
-       gimple_set_location (g, gimple_location (stmt));
-       gsi_replace (gsi, g, true);
-       return true;
+	arg0 = gimple_call_arg (stmt, 0);
+	lhs = gimple_call_lhs (stmt);
+	if (BYTES_BIG_ENDIAN)
+	  g = gimple_build_assign (lhs, VEC_UNPACK_LO_EXPR, arg0);
+	else
+	  g = gimple_build_assign (lhs, VEC_UNPACK_HI_EXPR, arg0);
+	gimple_set_location (g, gimple_location (stmt));
+	gsi_replace (gsi, g, true);
+	return true;
       }
     /* There is no gimple type corresponding with pixel, so just return.  */
     case ALTIVEC_BUILTIN_VUPKHPX:
@@ -15989,7 +16172,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
      overload table in rs6000-c.c to switch between the two.  If we don't have
      the proper assembler, don't do this switch because CODE_FOR_*kf* and
      CODE_FOR_*tf* will be CODE_FOR_nothing.  */
-#ifdef HAVE_AS_POWER9
   if (FLOAT128_IEEE_P (TFmode))
     switch (icode)
       {
@@ -16010,7 +16192,6 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       case CODE_FOR_xsiexpqpf_kf:	icode = CODE_FOR_xsiexpqpf_tf;	break;
       case CODE_FOR_xststdcqp_kf:	icode = CODE_FOR_xststdcqp_tf;	break;
       }
-#endif
 
   if (TARGET_DEBUG_BUILTIN)
     {
@@ -16080,6 +16261,24 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
     case RS6000_BUILTIN_MFFS:
       return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffs, target);
+
+    case RS6000_BUILTIN_MTFSB0:
+      return rs6000_expand_mtfsb_builtin (CODE_FOR_rs6000_mtfsb0, exp);
+
+    case RS6000_BUILTIN_MTFSB1:
+      return rs6000_expand_mtfsb_builtin (CODE_FOR_rs6000_mtfsb1, exp);
+
+    case RS6000_BUILTIN_SET_FPSCR_RN:
+      return rs6000_expand_set_fpscr_rn_builtin (CODE_FOR_rs6000_set_fpscr_rn,
+						 exp);
+
+    case RS6000_BUILTIN_SET_FPSCR_DRN:
+      return
+        rs6000_expand_set_fpscr_drn_builtin (CODE_FOR_rs6000_set_fpscr_drn,
+					     exp);
+
+    case RS6000_BUILTIN_MFFSL:
+      return rs6000_expand_zeroop_builtin (CODE_FOR_rs6000_mffsl, target);
 
     case RS6000_BUILTIN_MTFSF:
       return rs6000_expand_mtfsf_builtin (CODE_FOR_rs6000_mtfsf, exp);
@@ -16463,6 +16662,29 @@ rs6000_init_builtins (void)
 
   ftype = build_function_type_list (double_type_node, NULL_TREE);
   def_builtin ("__builtin_mffs", ftype, RS6000_BUILTIN_MFFS);
+
+  ftype = build_function_type_list (double_type_node, NULL_TREE);
+  def_builtin ("__builtin_mffsl", ftype, RS6000_BUILTIN_MFFSL);
+
+  ftype = build_function_type_list (void_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_mtfsb0", ftype, RS6000_BUILTIN_MTFSB0);
+
+  ftype = build_function_type_list (void_type_node,
+				    intSI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_mtfsb1", ftype, RS6000_BUILTIN_MTFSB1);
+
+  ftype = build_function_type_list (void_type_node,
+				    intDI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_set_fpscr_rn", ftype, RS6000_BUILTIN_SET_FPSCR_RN);
+
+  ftype = build_function_type_list (void_type_node,
+				    intDI_type_node,
+				    NULL_TREE);
+  def_builtin ("__builtin_set_fpscr_drn", ftype, RS6000_BUILTIN_SET_FPSCR_DRN);
 
   ftype = build_function_type_list (void_type_node,
 				    intSI_type_node, double_type_node,
@@ -21054,7 +21276,7 @@ print_operand_address (FILE *file, rtx x)
 	fprintf (file, "(%s)", reg_names[REGNO (XVECEXP (tocrel_base_oac, 0, 1))]);
     }
   else
-    gcc_unreachable ();
+    output_addr_const (file, x);
 }
 
 /* Implement TARGET_ASM_OUTPUT_ADDR_CONST_EXTRA.  */
@@ -24331,6 +24553,12 @@ static bool
 rs6000_function_ok_for_sibcall (tree decl, tree exp)
 {
   tree fntype;
+
+  /* The sibcall epilogue may clobber the static chain register.
+     ??? We could work harder and avoid that, but it's probably
+     not worth the hassle in practice.  */
+  if (CALL_EXPR_STATIC_CHAIN (exp))
+    return false;
 
   if (decl)
     fntype = TREE_TYPE (decl);
@@ -28403,7 +28631,7 @@ rs6000_output_function_epilogue (FILE *file)
       /* Language type.  Unfortunately, there does not seem to be any
 	 official way to discover the language being compiled, so we
 	 use language_string.
-	 C is 0.  Fortran is 1.  Pascal is 2.  Ada is 3.  C++ is 9.
+	 C is 0.  Fortran is 1.  Ada is 3.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
 	 a number, so for now use 9.  LTO, Go and JIT aren't assigned numbers
 	 either, so for now use 0.  */
@@ -28415,8 +28643,6 @@ rs6000_output_function_epilogue (FILE *file)
       else if (! strcmp (language_string, "GNU F77")
 	       || lang_GNU_Fortran ())
 	i = 1;
-      else if (! strcmp (language_string, "GNU Pascal"))
-	i = 2;
       else if (! strcmp (language_string, "GNU Ada"))
 	i = 3;
       else if (lang_GNU_CXX ()
@@ -38740,6 +38966,76 @@ rs6000_globalize_decl_name (FILE * stream, tree decl)
     }
 }
 #endif
+
+
+/* On 64-bit Linux and Freebsd systems, possibly switch the long double library
+   function names from <foo>l to <foo>f128 if the default long double type is
+   IEEE 128-bit.  Typically, with the C and C++ languages, the standard math.h
+   include file switches the names on systems that support long double as IEEE
+   128-bit, but that doesn't work if the user uses __builtin_<foo>l directly.
+   In the future, glibc will export names like __ieee128_sinf128 and we can
+   switch to using those instead of using sinf128, which pollutes the user's
+   namespace.
+
+   This will switch the names for Fortran math functions as well (which doesn't
+   use math.h).  However, Fortran needs other changes to the compiler and
+   library before you can switch the real*16 type at compile time.
+
+   We use the TARGET_MANGLE_DECL_ASSEMBLER_NAME hook to change this name.  We
+   only do this if the default is that long double is IBM extended double, and
+   the user asked for IEEE 128-bit.  */
+
+static tree
+rs6000_mangle_decl_assembler_name (tree decl, tree id)
+{
+  if (!TARGET_IEEEQUAD_DEFAULT && TARGET_IEEEQUAD && TARGET_LONG_DOUBLE_128
+      && TREE_CODE (decl) == FUNCTION_DECL && DECL_IS_BUILTIN (decl) )
+    {
+      size_t len = IDENTIFIER_LENGTH (id);
+      const char *name = IDENTIFIER_POINTER (id);
+
+      if (name[len - 1] == 'l')
+	{
+	  bool uses_ieee128_p = false;
+	  tree type = TREE_TYPE (decl);
+	  machine_mode ret_mode = TYPE_MODE (type);
+
+	  /* See if the function returns a IEEE 128-bit floating point type or
+	     complex type.  */
+	  if (ret_mode == TFmode || ret_mode == TCmode)
+	    uses_ieee128_p = true;
+	  else
+	    {
+	      function_args_iterator args_iter;
+	      tree arg;
+
+	      /* See if the function passes a IEEE 128-bit floating point type
+		 or complex type.  */
+	      FOREACH_FUNCTION_ARGS (type, arg, args_iter)
+		{
+		  machine_mode arg_mode = TYPE_MODE (arg);
+		  if (arg_mode == TFmode || arg_mode == TCmode)
+		    {
+		      uses_ieee128_p = true;
+		      break;
+		    }
+		}
+	    }
+
+	  /* If we passed or returned an IEEE 128-bit floating point type,
+	     change the name.  */
+	  if (uses_ieee128_p)
+	    {
+	      char *name2 = (char *) alloca (len + 4);
+	      memcpy (name2, name, len - 1);
+	      strcpy (name2 + len - 1, "f128");
+	      id = get_identifier (name2);
+	    }
+	}
+    }
+
+  return id;
+}
 
 
 struct gcc_target targetm = TARGET_INITIALIZER;

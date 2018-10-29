@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-phiopt1" } */
+/* { dg-options "-O -fdump-tree-phiopt2" } */
 
 struct C { int i; };
 int *g(struct C *p)
@@ -9,4 +9,4 @@ int *g(struct C *p)
   return (int *)0;
 }
 
-/* { dg-final { scan-tree-dump-not "if" "phiopt1" } } */
+/* { dg-final { scan-tree-dump-not "if" "phiopt2" } } */

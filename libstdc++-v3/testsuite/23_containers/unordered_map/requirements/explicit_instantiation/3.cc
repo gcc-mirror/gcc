@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-skip-if "no extensions in strict dialects" { *-*-* } { "-std=c++*" } }
 
 // Copyright (C) 2007-2018 Free Software Foundation, Inc.
 //
@@ -16,6 +17,9 @@
 // You should have received a copy of the GNU General Public License
 // along with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
+
+// This file tests explicit instantiation of library containers
+// with an allocator for a different value_type (which is a GNU extension).
 
 #include <unordered_map>
 

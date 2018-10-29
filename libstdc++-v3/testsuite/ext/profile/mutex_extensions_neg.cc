@@ -29,3 +29,5 @@
 
 // "template argument 1 is invalid"
 // { dg-prune-output "tuple:993" }
+// PMR alias templates cause ambiguities between debug and profile containers:
+// { dg-prune-output "is ambiguous" }

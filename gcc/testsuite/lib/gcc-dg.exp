@@ -1194,6 +1194,26 @@ proc dg-locus { args } {
     verbose "process-message:\n${dg-messages}" 2
 }
 
+# Handle output from -fopt-info for MSG_OPTIMIZED_LOCATIONS:
+# a successful optimization.
+
+proc dg-optimized { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "optimized: " "$args"
+}
+
+# Handle output from -fopt-info for MSG_MISSED_OPTIMIZATION:
+# a missed optimization.
+
+proc dg-missed { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "missed: " "$args"
+}
+
 # Check the existence of a gdb in the path, and return true if there
 # is one.
 #

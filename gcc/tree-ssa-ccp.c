@@ -1119,7 +1119,7 @@ ccp_propagate::visit_phi (gphi *phi)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file,
-	      "\n    Argument #%d (%d -> %d %sexecutable)\n",
+	      "\tArgument #%d (%d -> %d %sexecutable)\n",
 	      i, e->src->index, e->dest->index,
 	      (e->flags & EDGE_EXECUTABLE) ? "" : "not ");
 	}
@@ -2931,7 +2931,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
   gimple_set_location (g, gimple_location (call));
   gimple_set_vuse (g, gimple_vuse (call));
   gimple_set_vdef (g, gimple_vdef (call));
-  bool throws = stmt_can_throw_internal (call);
+  bool throws = stmt_can_throw_internal (cfun, call);
   gimple_call_set_nothrow (as_a <gcall *> (g),
 			   gimple_call_nothrow_p (as_a <gcall *> (call)));
   SSA_NAME_DEF_STMT (gimple_vdef (call)) = g;

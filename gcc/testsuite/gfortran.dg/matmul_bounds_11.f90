@@ -11,5 +11,5 @@ program main
   res = matmul(a,b)
   print *,res
 end program main
-! { dg-output "Fortran runtime error: Dimension of array B incorrect in MATMUL intrinsic.*" }
+! { dg-output "Fortran runtime error: Incorrect extent in argument B in MATMUL intrinsic in dimension 1: is 3, should be 2" }
 

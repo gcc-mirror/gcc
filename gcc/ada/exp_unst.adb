@@ -227,6 +227,12 @@ package body Exp_Unst is
       while Present (S) and then S /= Standard_Standard loop
          if Is_Concurrent_Type (S) then
             return True;
+
+         elsif Is_Private_Type (S)
+           and then Present (Full_View (S))
+           and then Is_Concurrent_Type (Full_View (S))
+         then
+            return True;
          end if;
 
          S := Scope (S);
@@ -535,6 +541,27 @@ package body Exp_Unst is
                         end loop;
                      end;
 
+                     --  The type of the prefix may be have an uplevel
+                     --  reference if this needs bounds.
+
+                     if Nkind (N) = N_Attribute_Reference then
+                        declare
+                           Attr : constant Attribute_Id :=
+                                    Get_Attribute_Id (Attribute_Name (N));
+                           DT   : Boolean := False;
+
+                        begin
+                           if (Attr = Attribute_First
+                                 or else Attr = Attribute_Last
+                                 or else Attr = Attribute_Length)
+                             and then Is_Constrained (Etype (Prefix (N)))
+                           then
+                              Check_Static_Type
+                                (Etype (Prefix (N)), Empty, DT);
+                           end if;
+                        end;
+                     end if;
+
                   --  Binary operator cases. These can apply to arrays for
                   --  which we may need bounds.
 
@@ -699,6 +726,9 @@ package body Exp_Unst is
                  and then Corresponding_Procedure (Callee) = Caller
                then
                   return;
+
+               elsif Ekind_In (Callee, E_Entry, E_Entry_Family) then
+                  return;
                end if;
 
                --  We have a new uplevel referenced entity
@@ -722,6 +752,10 @@ package body Exp_Unst is
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
 
+            --  Subprograms declared in tasks and protected types cannot
+            --  be eliminated because calls to them may be in other units,
+            --  so they must be treated as reachable.
+
             begin
                --  Subprograms declared in tasks and protected types cannot
                --  be eliminated because calls to them may be in other units,
@@ -732,10 +766,6 @@ package body Exp_Unst is
                    Bod           => Bod,
                    Lev           => L,
                    Reachable     => In_Synchronized_Unit (E),
-
-                   --  Subprograms declared in tasks and protected types are
-                   --  reachable and cannot be eliminated.
-
                    Uplevel_Ref   => L,
                    Declares_AREC => False,
                    Uents         => No_Elist,
@@ -748,6 +778,22 @@ package body Exp_Unst is
                    ARECnU        => Empty));
 
                Set_Subps_Index (E, UI_From_Int (Subps.Last));
+
+               --  If we marked this reachable because it's in a synchronized
+               --  unit, we have to mark all enclosing subprograms as reachable
+               --  as well.
+
+               if In_Synchronized_Unit (E) then
+                  declare
+                     S : Entity_Id := E;
+
+                  begin
+                     for J in reverse 1 .. L  - 1 loop
+                        S := Enclosing_Subprogram (S);
+                        Subps.Table (Subp_Index (S)).Reachable := True;
+                     end loop;
+                  end;
+               end if;
             end Register_Subprogram;
 
          --  Start of processing for Visit_Node
@@ -1108,12 +1154,24 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations can be ignored
+               --  Pragmas and component declarations can be ignored.
+               --  Quantified expressions are expanded into explicit loops
+               --  and the original epression must be ignored.
 
                when N_Component_Declaration
                   | N_Pragma
+                  | N_Quantified_Expression
                =>
                   return Skip;
+
+               --  We want to skip the function spec for a generic function
+               --  to avoid looking at any generic types that might be in
+               --  its formals.
+
+               when N_Function_Specification =>
+                  if Is_Generic_Subprogram  (Unique_Defining_Entity (N)) then
+                     return Skip;
+                  end if;
 
                --  Otherwise record an uplevel reference in a local identifier
 
@@ -1331,10 +1389,10 @@ package body Exp_Unst is
 
                         --  If this entity was marked reachable because it is
                         --  in a task or protected type, there may not appear
-                        --  to be any calls to it, which would normally adjust
-                        --  the levels of the parent subprograms. So we need to
-                        --  be sure that the uplevel reference of that entity
-                        --  takes into account possible calls.
+                        --  to be any calls to it, which would normally
+                        --  adjust the levels of the parent subprograms.
+                        --  So we need to be sure that the uplevel reference
+                        --  of that entity takes into account possible calls.
 
                         if In_Synchronized_Unit (SUBF.Ent)
                           and then SUBT.Lev < SUBI.Uplevel_Ref
@@ -1575,7 +1633,7 @@ package body Exp_Unst is
       --  Loop through subprograms
 
       Subp_Loop : declare
-         Addr : constant Entity_Id := RTE (RE_Address);
+         Addr : Entity_Id := Empty;
 
       begin
          for J in Subps_First .. Subps.Last loop
@@ -1693,8 +1751,13 @@ package body Exp_Unst is
 
                   begin
                      --  Build list of component declarations for ARECnT
+                     --  and load System.Address.
 
                      Clist := Empty_List;
+
+                     if No (Addr) then
+                        Addr := RTE (RE_Address);
+                     end if;
 
                      --  If we are in a subprogram that has a static link that
                      --  is passed in (as indicated by ARECnF being defined),
@@ -1909,7 +1972,9 @@ package body Exp_Unst is
 
                                  Asn  : Node_Id;
                                  Attr : Name_Id;
+                                 Comp : Entity_Id;
                                  Ins  : Node_Id;
+                                 Rhs  : Node_Id;
 
                               begin
                                  --  For parameters, we insert the assignment
@@ -1944,6 +2009,32 @@ package body Exp_Unst is
                                     Attr := Name_Address;
                                  end if;
 
+                                 Rhs :=  Make_Attribute_Reference (Loc,
+                                         Prefix         =>
+                                           New_Occurrence_Of (Ent, Loc),
+                                         Attribute_Name => Attr);
+
+                                 --  If the entity is an unconstrained formal
+                                 --  we wrap the attribute reference in an
+                                 --  unchecked conversion to the type of the
+                                 --  activation record component, to prevent
+                                 --  spurious subtype conformance errors within
+                                 --  instances.
+
+                                 if Is_Formal (Ent)
+                                   and then not Is_Constrained (Etype (Ent))
+                                 then
+                                    --  Find target component and its type.
+
+                                    Comp := First_Component (STJ.ARECnT);
+                                    while Chars (Comp) /= Chars (Ent) loop
+                                       Comp := Next_Component (Comp);
+                                    end loop;
+
+                                    Rhs := Unchecked_Convert_To (
+                                              Etype (Comp), Rhs);
+                                 end if;
+
                                  Asn :=
                                    Make_Assignment_Statement (Loc,
                                      Name       =>
@@ -1955,23 +2046,33 @@ package body Exp_Unst is
                                              (Activation_Record_Component
                                                 (Ent),
                                               Loc)),
-
-                                     Expression =>
-                                       Make_Attribute_Reference (Loc,
-                                         Prefix         =>
-                                           New_Occurrence_Of (Ent, Loc),
-                                         Attribute_Name => Attr));
+                                     Expression => Rhs);
 
                                  --  If we have a loop parameter, we have
                                  --  to insert before the first statement
                                  --  of the loop. Ins points to the
-                                 --  N_Loop_Parameter_Specification.
+                                 --  N_Loop_Parameter_Specification or to
+                                 --  an N_Iterator_Specification.
 
-                                 if Ekind (Ent) = E_Loop_Parameter then
-                                    Ins :=
-                                      First
-                                        (Statements (Parent (Parent (Ins))));
-                                    Insert_Before (Ins, Asn);
+                                 if Nkind_In
+                                      (Ins, N_Iterator_Specification,
+                                            N_Loop_Parameter_Specification)
+                                 then
+                                    --  Quantified expression are rewritten as
+                                    --  loops during expansion.
+
+                                    if Nkind (Parent (Ins)) =
+                                         N_Quantified_Expression
+                                    then
+                                       null;
+
+                                    else
+                                       Ins :=
+                                         First
+                                           (Statements
+                                             (Parent (Parent (Ins))));
+                                       Insert_Before (Ins, Asn);
+                                    end if;
 
                                  else
                                     Insert_After (Ins, Asn);
@@ -2369,6 +2470,13 @@ package body Exp_Unst is
 
          elsif Nkind (N) in N_Body_Stub then
             Do_Search (Library_Unit (N));
+
+         --  Skip generic packages
+
+         elsif Nkind (N) = N_Package_Body
+           and then Ekind (Corresponding_Spec (N)) = E_Generic_Package
+         then
+            return Skip;
          end if;
 
          return OK;

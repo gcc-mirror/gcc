@@ -3809,6 +3809,7 @@ package body Sem_Res is
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
               and then not Is_Class_Wide_Type (Etype (Expression (A)))
+              and then not Is_Interface (Etype (A))
             then
                if Ekind (F) = E_In_Out_Parameter
                  and then Is_Array_Type (Etype (F))
@@ -6067,7 +6068,7 @@ package body Sem_Res is
       --  (including the body of another expression function) which would
       --  place the freeze node in the wrong scope. An expression function
       --  is frozen in the usual fashion, by the appearance of a real body,
-      --  or at the end of a declarative part. However an implcit call to
+      --  or at the end of a declarative part. However an implicit call to
       --  an expression function may appear when it is part of a default
       --  expression in a call to an initialiation procedure, and must be
       --  frozen now, even if the body is inserted at a later point.
@@ -6841,9 +6842,15 @@ package body Sem_Res is
                     ("cannot inline & (possible check on input parameters)?",
                      N, Nam_UA);
 
-               --  Otherwise, inline the call
+               --  Otherwise, inline the call, issuing an info message when
+               --  -gnatd_f is set.
 
                else
+                  if Debug_Flag_Underscore_F then
+                     Error_Msg_NE
+                       ("info: analyzing call to & in context?", N, Nam_UA);
+                  end if;
+
                   Expand_Inlined_Call (N, Nam_UA, Nam);
                end if;
             end if;

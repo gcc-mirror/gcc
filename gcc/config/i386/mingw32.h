@@ -114,12 +114,20 @@ along with GCC; see the file COPYING3.  If not see
 #define SUBTARGET_EXTRA_SPECS						\
   { "shared_libgcc_undefs", SHARED_LIBGCC_UNDEFS_SPEC }
 
+#if MINGW_DEFAULT_LARGE_ADDR_AWARE
+# define LINK_SPEC_LARGE_ADDR_AWARE \
+  "%{!shared:%{!mdll:--large-address-aware}}"
+#else
+# define LINK_SPEC_LARGE_ADDR_AWARE ""
+#endif
+
 #define LINK_SPEC "%{mwindows:--subsystem windows} \
   %{mconsole:--subsystem console} \
   %{shared: %{mdll: %eshared and mdll are not compatible}} \
   %{shared: --shared} %{mdll:--dll} \
   %{static:-Bstatic} %{!static:-Bdynamic} \
   %{shared|mdll: " SUB_LINK_ENTRY " --enable-auto-image-base} \
+  " LINK_SPEC_LARGE_ADDR_AWARE "\
   %(shared_libgcc_undefs)"
 
 /* Include in the mingw32 libraries with libgcc */

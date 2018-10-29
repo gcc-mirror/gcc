@@ -2582,7 +2582,7 @@ expand_call_tm (struct tm_region *region,
       gassign *assign_stmt;
 
       /* Remember if the call was going to throw.  */
-      if (stmt_can_throw_internal (stmt))
+      if (stmt_can_throw_internal (cfun, stmt))
 	{
 	  edge_iterator ei;
 	  edge e;

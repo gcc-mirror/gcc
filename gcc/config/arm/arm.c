@@ -17647,7 +17647,11 @@ arm_reorg (void)
 
   if (use_cmse)
     cmse_nonsecure_call_clear_caller_saved ();
-  if (TARGET_THUMB1)
+
+  /* We cannot run the Thumb passes for thunks because there is no CFG.  */
+  if (cfun->is_thunk)
+    ;
+  else if (TARGET_THUMB1)
     thumb1_reorg ();
   else if (TARGET_THUMB2)
     thumb2_reorg ();
@@ -26721,6 +26725,8 @@ static void
 arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 		       HOST_WIDE_INT vcall_offset, tree function)
 {
+  const bool long_call_p = arm_is_long_call_p (function);
+
   /* On ARM, this_regno is R0 or R1 depending on
      whether the function returns an aggregate or not.
   */
@@ -26758,9 +26764,22 @@ arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
       TREE_USED (function) = 1;
     }
   rtx funexp = XEXP (DECL_RTL (function), 0);
+  if (long_call_p)
+    {
+      emit_move_insn (temp, funexp);
+      funexp = temp;
+    }
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  rtx_insn * insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx_insn *insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
   SIBLING_CALL_P (insn) = 1;
+  emit_barrier ();
+
+  /* Indirect calls require a bit of fixup in PIC mode.  */
+  if (long_call_p)
+    {
+      split_all_insns_noflow ();
+      arm_reorg ();
+    }
 
   insn = get_insns ();
   shorten_branches (insn);
@@ -28626,7 +28645,7 @@ arm_expand_compare_and_swap (rtx operands[])
 void
 arm_split_compare_and_swap (rtx operands[])
 {
-  rtx rval, mem, oldval, newval, neg_bval;
+  rtx rval, mem, oldval, newval, neg_bval, mod_s_rtx;
   machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
@@ -28638,20 +28657,16 @@ arm_split_compare_and_swap (rtx operands[])
   oldval = operands[3];
   newval = operands[4];
   is_weak = (operands[5] != const0_rtx);
-  mod_s = memmodel_from_int (INTVAL (operands[6]));
+  mod_s_rtx = operands[6];
+  mod_s = memmodel_from_int (INTVAL (mod_s_rtx));
   mod_f = memmodel_from_int (INTVAL (operands[7]));
   neg_bval = TARGET_THUMB1 ? operands[0] : operands[8];
   mode = GET_MODE (mem);
 
   bool is_armv8_sync = arm_arch8 && is_mm_sync (mod_s);
 
-  bool use_acquire = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
-			  || is_mm_release (mod_s));
-		
-  bool use_release = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
-			  || is_mm_acquire (mod_s));
+  bool use_acquire = TARGET_HAVE_LDACQ && aarch_mm_needs_acquire (mod_s_rtx);
+  bool use_release = TARGET_HAVE_LDACQ && aarch_mm_needs_release (mod_s_rtx);
 
   /* For ARMv8, the load-acquire is too weak for __sync memory orders.  Instead,
      a full barrier is emitted after the store-release.  */
@@ -28746,13 +28761,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 
   bool is_armv8_sync = arm_arch8 && is_mm_sync (model);
 
-  bool use_acquire = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (model) || is_mm_consume (model)
-			  || is_mm_release (model));
-
-  bool use_release = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (model) || is_mm_consume (model)
-			  || is_mm_acquire (model));
+  bool use_acquire = TARGET_HAVE_LDACQ && aarch_mm_needs_acquire (model_rtx);
+  bool use_release = TARGET_HAVE_LDACQ && aarch_mm_needs_release (model_rtx);
 
   /* For ARMv8, a load-acquire is too weak for __sync memory orders.  Instead,
      a full barrier is emitted after the store-release.  */

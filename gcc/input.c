@@ -813,10 +813,10 @@ expand_location (source_location loc)
    "<built-in>".  */
 
 expanded_location
-expand_location_to_spelling_point (source_location loc)
+expand_location_to_spelling_point (source_location loc,
+				   enum location_aspect aspect)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/false,
-			    LOCATION_ASPECT_CARET);
+  return expand_location_1 (loc, /*expansion_point_p=*/false, aspect);
 }
 
 /* The rich_location class within libcpp requires a way to expand
@@ -1397,24 +1397,32 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       source_range src_range = get_range_from_loc (line_table, strlocs[i]);
 
       if (src_range.m_start >= LINEMAPS_MACRO_LOWEST_LOCATION (line_table))
-	/* If the string is within a macro expansion, we can't get at the
-	   end location.  */
-	return "macro expansion";
+	{
+	  /* If the string token was within a macro expansion, then we can
+	     cope with it for the simple case where we have a single token.
+	     Otherwise, bail out.  */
+	  if (src_range.m_start != src_range.m_finish)
+	    return "macro expansion";
+	}
+      else
+	{
+	  if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	    /* If so, we can't reliably determine where the token started within
+	       its line.  */
+	    return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
 
-      if (src_range.m_start >= LINE_MAP_MAX_LOCATION_WITH_COLS)
-	/* If so, we can't reliably determine where the token started within
-	   its line.  */
-	return "range starts after LINE_MAP_MAX_LOCATION_WITH_COLS";
-
-      if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
-	/* If so, we can't reliably determine where the token finished within
-	   its line.  */
-	return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+	  if (src_range.m_finish >= LINE_MAP_MAX_LOCATION_WITH_COLS)
+	    /* If so, we can't reliably determine where the token finished
+	       within its line.  */
+	    return "range ends after LINE_MAP_MAX_LOCATION_WITH_COLS";
+	}
 
       expanded_location start
-	= expand_location_to_spelling_point (src_range.m_start);
+	= expand_location_to_spelling_point (src_range.m_start,
+					     LOCATION_ASPECT_START);
       expanded_location finish
-	= expand_location_to_spelling_point (src_range.m_finish);
+	= expand_location_to_spelling_point (src_range.m_finish,
+					     LOCATION_ASPECT_FINISH);
       if (start.file != finish.file)
 	return "range endpoints are in different files";
       if (start.line != finish.line)
@@ -1449,9 +1457,17 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
 	 halfway through the token.
 	 Ensure that the loc_reader uses the linemap of the
 	 *end* of the token for its start location.  */
+      const line_map_ordinary *start_ord_map;
+      linemap_resolve_location (line_table, src_range.m_start,
+				LRK_SPELLING_LOCATION, &start_ord_map);
       const line_map_ordinary *final_ord_map;
       linemap_resolve_location (line_table, src_range.m_finish,
-				LRK_MACRO_EXPANSION_POINT, &final_ord_map);
+				LRK_SPELLING_LOCATION, &final_ord_map);
+      /* Bulletproofing.  We ought to only have different ordinary maps
+	 for start vs finish due to line-length jumps.  */
+      if (start_ord_map != final_ord_map
+	  && start_ord_map->to_file != final_ord_map->to_file)
+	  return "start and finish are spelled in different ordinary maps";
       location_t start_loc
 	= linemap_position_for_line_and_column (line_table, final_ord_map,
 						start.line, start.column);
@@ -2108,14 +2124,14 @@ class ebcdic_execution_charset : public lexer_test_options
     cpp_opts->narrow_charset = "IBM1047";
 
     cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
-    callbacks->error = on_error;
+    callbacks->diagnostic = on_diagnostic;
   }
 
-  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
-			int level ATTRIBUTE_UNUSED,
-			int reason ATTRIBUTE_UNUSED,
-			rich_location *richloc ATTRIBUTE_UNUSED,
-			const char *msgid, va_list *ap ATTRIBUTE_UNUSED)
+  static bool on_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			     enum cpp_diagnostic_level level ATTRIBUTE_UNUSED,
+			     enum cpp_warning_reason reason ATTRIBUTE_UNUSED,
+			     rich_location *richloc ATTRIBUTE_UNUSED,
+			     const char *msgid, va_list *ap ATTRIBUTE_UNUSED)
     ATTRIBUTE_FPTR_PRINTF(5,0)
   {
     gcc_assert (s_singleton);
@@ -2145,53 +2161,53 @@ class ebcdic_execution_charset : public lexer_test_options
 
 ebcdic_execution_charset *ebcdic_execution_charset::s_singleton;
 
-/* A lexer_test_options subclass that records a list of error
+/* A lexer_test_options subclass that records a list of diagnostic
    messages emitted by the lexer.  */
 
-class lexer_error_sink : public lexer_test_options
+class lexer_diagnostic_sink : public lexer_test_options
 {
  public:
-  lexer_error_sink ()
+  lexer_diagnostic_sink ()
   {
     gcc_assert (s_singleton == NULL);
     s_singleton = this;
   }
-  ~lexer_error_sink ()
+  ~lexer_diagnostic_sink ()
   {
     gcc_assert (s_singleton == this);
     s_singleton = NULL;
 
     int i;
     char *str;
-    FOR_EACH_VEC_ELT (m_errors, i, str)
+    FOR_EACH_VEC_ELT (m_diagnostics, i, str)
       free (str);
   }
 
   void apply (lexer_test &test) FINAL OVERRIDE
   {
     cpp_callbacks *callbacks = cpp_get_callbacks (test.m_parser);
-    callbacks->error = on_error;
+    callbacks->diagnostic = on_diagnostic;
   }
 
-  static bool on_error (cpp_reader *pfile ATTRIBUTE_UNUSED,
-			int level ATTRIBUTE_UNUSED,
-			int reason ATTRIBUTE_UNUSED,
-			rich_location *richloc ATTRIBUTE_UNUSED,
-			const char *msgid, va_list *ap)
+  static bool on_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+			     enum cpp_diagnostic_level level ATTRIBUTE_UNUSED,
+			     enum cpp_warning_reason reason ATTRIBUTE_UNUSED,
+			     rich_location *richloc ATTRIBUTE_UNUSED,
+			     const char *msgid, va_list *ap)
     ATTRIBUTE_FPTR_PRINTF(5,0)
   {
     char *msg = xvasprintf (msgid, *ap);
-    s_singleton->m_errors.safe_push (msg);
+    s_singleton->m_diagnostics.safe_push (msg);
     return true;
   }
 
-  auto_vec<char *> m_errors;
+  auto_vec<char *> m_diagnostics;
 
  private:
-  static lexer_error_sink *s_singleton;
+  static lexer_diagnostic_sink *s_singleton;
 };
 
-lexer_error_sink *lexer_error_sink::s_singleton;
+lexer_diagnostic_sink *lexer_diagnostic_sink::s_singleton;
 
 /* Constructor.  Override line_table with a new instance based on CASE_,
    and write CONTENT to a tempfile.  Create a cpp_reader, and use it to
@@ -3405,21 +3421,21 @@ test_lexer_string_locations_raw_string_unterminated (const line_table_case &case
 {
   const char *content = "R\"ouch()ouCh\" /* etc */";
 
-  lexer_error_sink errors;
-  lexer_test test (case_, content, &errors);
+  lexer_diagnostic_sink diagnostics;
+  lexer_test test (case_, content, &diagnostics);
   test.m_implicitly_expect_EOF = false;
 
   /* Attempt to parse the raw string.  */
   const cpp_token *tok = test.get_token ();
   ASSERT_EQ (tok->type, CPP_EOF);
 
-  ASSERT_EQ (1, errors.m_errors.length ());
+  ASSERT_EQ (1, diagnostics.m_diagnostics.length ());
   /* We expect the message "unterminated raw string"
      in the "cpplib" translation domain.
      It's not clear that dgettext is available on all supported hosts,
      so this assertion is commented-out for now.
        ASSERT_STREQ (dgettext ("cpplib", "unterminated raw string"),
-                     errors.m_errors[0]);
+                     diagnostics.m_diagnostics[0]);
   */
 }
 

@@ -464,15 +464,6 @@ SSA_VAL (tree x, bool *visited = NULL)
   return tem && tem->visited ? tem->valnum : x;
 }
 
-/* Return whether X was visited.  */
-
-inline bool
-SSA_VISITED (tree x)
-{
-  vn_ssa_aux_t tem = vn_ssa_aux_hash->find_with_hash (x, SSA_NAME_VERSION (x));
-  return tem && tem->visited;
-}
-
 /* Return the SSA value of the VUSE x, supporting released VDEFs
    during elimination which will value-number the VDEF to the
    associated VUSE (but not substitute in the whole lattice).  */
@@ -1219,7 +1210,7 @@ copy_reference_ops_from_call (gcall *call,
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
-  if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
+  if (stmt_could_throw_p (cfun, call) && (lr = lookup_stmt_eh_lp (call)) > 0)
     temp.op2 = size_int (lr);
   temp.off = -1;
   result->safe_push (temp);
@@ -4196,7 +4187,10 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	  }
       }
 
-  /* If we value-number a virtual operand never value-number to the
+  /* If the value we want to use is flowing over the backedge and we
+     should take it as VARYING but it has a non-VARYING value drop to
+     VARYING.
+     If we value-number a virtual operand never value-number to the
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
      non-backedge everything is OK though.  */
@@ -4204,7 +4198,8 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
       && !seen_non_backedge
       && TREE_CODE (backedge_val) == SSA_NAME
       && sameval == backedge_val
-      && SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val))
+      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	  || SSA_VAL (backedge_val) != backedge_val))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);
@@ -5461,7 +5456,10 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 		if (is_gimple_assign (stmt))
 		  {
 		    gimple_assign_set_rhs_from_tree (&gsi, sprime);
-		    update_stmt (gsi_stmt (gsi));
+		    stmt = gsi_stmt (gsi);
+		    update_stmt (stmt);
+		    if (maybe_clean_or_replace_eh_stmt (stmt, stmt))
+		      bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 		    continue;
 		  }
 		else
@@ -5975,7 +5973,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 		fprintf (dump_file,
 			 "marking outgoing edge %d -> %d executable\n",
 			 e->src->index, e->dest->index);
-	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 	      e->flags |= EDGE_EXECUTABLE;
 	      e->dest->flags |= BB_EXECUTABLE;
 	    }
@@ -6122,7 +6119,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 			 "marking known outgoing %sedge %d -> %d executable\n",
 			 e->flags & EDGE_DFS_BACK ? "back-" : "",
 			 e->src->index, e->dest->index);
-	      gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 	      e->flags |= EDGE_EXECUTABLE;
 	      e->dest->flags |= BB_EXECUTABLE;
 	    }
@@ -6145,7 +6141,6 @@ process_bb (rpo_elim &avail, basic_block bb,
 		    fprintf (dump_file,
 			     "marking outgoing edge %d -> %d executable\n",
 			     e->src->index, e->dest->index);
-		  gcc_checking_assert (iterate || !(e->flags & EDGE_DFS_BACK));
 		  e->flags |= EDGE_EXECUTABLE;
 		  e->dest->flags |= BB_EXECUTABLE;
 		}
@@ -6374,6 +6369,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
   vn_valueize = rpo_vn_valueize;
 
   /* Initialize the unwind state and edge/BB executable state.  */
+  bool need_max_rpo_iterate = false;
   for (int i = 0; i < n; ++i)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
@@ -6387,15 +6383,15 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	{
 	  if (e->flags & EDGE_DFS_BACK)
 	    has_backedges = true;
-	  if (! iterate && (e->flags & EDGE_DFS_BACK))
-	    e->flags |= EDGE_EXECUTABLE;
-	  else
-	    e->flags &= ~EDGE_EXECUTABLE;
-	  if (e == entry)
+	  e->flags &= ~EDGE_EXECUTABLE;
+	  if (iterate || e == entry)
 	    continue;
 	  if (bb_to_rpo[e->src->index] > i)
-	    rpo_state[i].max_rpo = MAX (rpo_state[i].max_rpo,
-					bb_to_rpo[e->src->index]);
+	    {
+	      rpo_state[i].max_rpo = MAX (rpo_state[i].max_rpo,
+					  bb_to_rpo[e->src->index]);
+	      need_max_rpo_iterate = true;
+	    }
 	  else
 	    rpo_state[i].max_rpo
 	      = MAX (rpo_state[i].max_rpo,
@@ -6405,6 +6401,35 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
     }
   entry->flags |= EDGE_EXECUTABLE;
   entry->dest->flags |= BB_EXECUTABLE;
+
+  /* When there are irreducible regions the simplistic max_rpo computation
+     above for the case of backedges doesn't work and we need to iterate
+     until there are no more changes.  */
+  unsigned nit = 0;
+  while (need_max_rpo_iterate)
+    {
+      nit++;
+      need_max_rpo_iterate = false;
+      for (int i = 0; i < n; ++i)
+	{
+	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    {
+	      if (e == entry)
+		continue;
+	      int max_rpo = MAX (rpo_state[i].max_rpo,
+				 rpo_state[bb_to_rpo[e->src->index]].max_rpo);
+	      if (rpo_state[i].max_rpo != max_rpo)
+		{
+		  rpo_state[i].max_rpo = max_rpo;
+		  need_max_rpo_iterate = true;
+		}
+	    }
+	}
+    }
+  statistics_histogram_event (cfun, "RPO max_rpo iterations", nit);
 
   /* As heuristic to improve compile-time we handle only the N innermost
      loops and the outermost one optimistically.  */
@@ -6666,6 +6691,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
   XDELETEVEC (bb_to_rpo);
   XDELETEVEC (rpo);
+  XDELETEVEC (rpo_state);
 
   return todo;
 }

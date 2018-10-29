@@ -666,7 +666,7 @@ hashable_expr_equal_p (const struct hashable_expr *expr0,
                                  expr1->ops.call.args[i], 0))
             return false;
 
-	if (stmt_could_throw_p (expr0->ops.call.fn_from))
+	if (stmt_could_throw_p (cfun, expr0->ops.call.fn_from))
 	  {
 	    int lp0 = lookup_stmt_eh_lp (expr0->ops.call.fn_from);
 	    int lp1 = lookup_stmt_eh_lp (expr1->ops.call.fn_from);

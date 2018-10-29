@@ -2205,6 +2205,7 @@ emit_final_str_compare_vec (rtx str1, rtx str2, rtx result,
     }
   else
     {
+      gcc_assert (TARGET_P8_VECTOR);
       rtx diffix = gen_reg_rtx (DImode);
       rtx result_gbbd = gen_reg_rtx (V16QImode);
       /* Since each byte of the input is either 00 or FF, the bytes in 
@@ -2313,9 +2314,12 @@ expand_strn_compare (rtx operands[], int no_length)
   /* Is it OK to use vec/vsx for this. TARGET_VSX means we have at
      least POWER7 but we use TARGET_EFFICIENT_UNALIGNED_VSX which is
      at least POWER8.  That way we can rely on overlapping compares to
-     do the final comparison of less than 16 bytes.  Also I do not want
-     to deal with making this work for 32 bits.  */
-  int use_vec = (bytes >= 16 && !TARGET_32BIT && TARGET_EFFICIENT_UNALIGNED_VSX);
+     do the final comparison of less than 16 bytes.  Also I do not
+     want to deal with making this work for 32 bits.  In addition, we
+     have to make sure that we have at least P8_VECTOR (we don't allow
+     P9_VECTOR without P8_VECTOR).  */
+  int use_vec = (bytes >= 16 && !TARGET_32BIT
+		 && TARGET_EFFICIENT_UNALIGNED_VSX && TARGET_P8_VECTOR);
 
   if (use_vec)
     required_align = 16;

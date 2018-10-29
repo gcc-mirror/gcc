@@ -70,9 +70,6 @@ DEFTREECODE (TREE_VEC, "tree_vec", tcc_exceptional, 0)
    could either point to another BLOCK node or it could point to a
    FUNCTION_DECL node (e.g. in the case of a block representing the
    outermost scope of a particular inlining of a function).
-   BLOCK_ABSTRACT is nonzero if the block represents an abstract
-   instance of a block (i.e. one which is nested within an abstract
-   instance of an inline function).
    TREE_ASM_WRITTEN is nonzero if the block was actually referenced
    in the generated assembly.  */
 DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
@@ -141,11 +138,7 @@ DEFTREECODE (BOOLEAN_TYPE, "boolean_type", tcc_type, 0)
 /* Integer types in all languages, including char in C.
    Also used for sub-ranges of other discrete types.
    Has components TYPE_MIN_VALUE, TYPE_MAX_VALUE (expressions, inclusive)
-   and TYPE_PRECISION (number of bits used by this type).
-   In the case of a subrange type in Pascal, the TREE_TYPE
-   of this will point at the supertype (another INTEGER_TYPE,
-   or an ENUMERAL_TYPE or BOOLEAN_TYPE).
-   Otherwise, the TREE_TYPE is zero.  */
+   and TYPE_PRECISION (number of bits used by this type).  */
 DEFTREECODE (INTEGER_TYPE, "integer_type", tcc_type, 0)
 
 /* C's float and double.  Different floating types are distinguished
@@ -200,16 +193,15 @@ DEFTREECODE (VECTOR_TYPE, "vector_type", tcc_type, 0)
  and holds the type to coerce a value of that array type to in C.
  TYPE_STRING_FLAG indicates a string (in contrast to an array of chars)
  in languages (such as Chill) that make a distinction.  */
-/* Array types in C or Pascal */
+/* Array types in C */
 DEFTREECODE (ARRAY_TYPE, "array_type", tcc_type, 0)
 
-/* Struct in C, or record in Pascal.  */
+/* Struct in C.  */
 /* Special fields:
    TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct,
      VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
      types and enumerators and FUNCTION_DECLs for methods associated
-     with the type.
-   A few may need to be added for Pascal.  */
+     with the type.  */
 /* See the comment above, before ENUMERAL_TYPE, for how
    forward references to struct tags are handled in C.  */
 DEFTREECODE (RECORD_TYPE, "record_type", tcc_type, 0)
@@ -460,7 +452,7 @@ DEFTREECODE (IMAGPART_EXPR, "imagpart_expr", tcc_reference, 1)
    generating insns.  */
 DEFTREECODE (VIEW_CONVERT_EXPR, "view_convert_expr", tcc_reference, 1)
 
-/* C unary `*' or Pascal `^'.  One operand, an expression for a pointer.  */
+/* C unary `*'.  One operand, an expression for a pointer.  */
 DEFTREECODE (INDIRECT_REF, "indirect_ref", tcc_reference, 1)
 
 /* Used to represent lookup in a virtual method table which is dependent on
@@ -632,7 +624,7 @@ DEFTREECODE (CLEANUP_POINT_EXPR, "cleanup_point_expr", tcc_expression, 1)
    object of the same type or even for one and the same object within
    its scope.
 
-   Record types with discriminants in Ada or schema types in Pascal are
+   Record types with discriminants in Ada are
    examples of such types.  This mechanism is also used to create "fat
    pointers" for unconstrained array types in Ada; the fat pointer is a
    structure one of whose fields is a pointer to the actual array type

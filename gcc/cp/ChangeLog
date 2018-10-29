@@ -1,3 +1,270 @@
+2018-10-25  Jason Merrill  <jason@redhat.com>
+
+	* parser.c (cp_parser_sizeof_operand): Remove redundant use of
+	grokdeclarator.
+
+2018-10-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86288
+	* parser.c (cp_parser_std_attribute): Canonicalize attr_ns, and when
+	:: is not present and attr_ns non-NULL, canonicalize also attr_id.
+	(cp_parser_attribute_spec): Fix comment typo.
+
+2018-10-24  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/84851
+	* call.c (maybe_warn_class_memaccess): Tighten up.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-c++): New.
+	(CPP_SELFTEST_FLAGS, CPP_SELFTEST_DEPS, s-selftest-c++)
+	(selftest-c++-gdb, selftest-c++-valgrind): Move here from
+	gcc/Makefile.in.
+
+2018-10-17  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84705
+	* tree.c (build_cplus_new): Avoid duplicate diagnostic about
+	incomplete type, early return error_mark_node if the second
+	argument is error_mark_node.
+
+2018-10-12  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.h (struct cp_parser): Drop implicit_extern_c.
+	* parser.c (cp_debug_parser): Drop implicit_extern_c.
+	(cp_parser_new): Likewise.
+	(cp_parser_translation_unit): Handle implicit extern c here.  Call
+	cp_parser_toplevel_declaration.
+	(cp_parser_toplevel_declaration): New, broken out of ...
+	(cp_parser_declaration_seq_opt): ... here.  Call it.  Drop
+	implicit extern C handling.
+
+2018-10-11  Will Wray  <wjwray@gmail.com>
+
+	PR c++/87364
+	* cxx-pretty-print.c (pp_cxx_enumeration_constant): New function.
+	(cxx_pretty_printer::constant): Use it.
+
+2018-10-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/84993
+	* call.c (enforce_access): Move diagnostics to...
+	(complain_about_access): ...this new function.
+	* cp-tree.h (class access_failure_info): Rename split out field
+	"m_field_decl" into "m_decl" and "m_diag_decl".
+	(access_failure_info::record_access_failure): Add tree param.
+	(access_failure_info::was_inaccessible_p): New accessor.
+	(access_failure_info::get_decl): New accessor.
+	(access_failure_info::get_diag_decl): New accessor.
+	(access_failure_info::get_any_accessor): New member function.
+	(access_failure_info::add_fixit_hint): New static member function.
+	(complain_about_access): New decl.
+	* typeck.c (access_failure_info::record_access_failure): Update
+	for change to fields.
+	(access_failure_info::maybe_suggest_accessor): Split out into...
+	(access_failure_info::get_any_accessor): ...this new function...
+	(access_failure_info::add_fixit_hint): ...and this new function.
+	(finish_class_member_access_expr): Split out "has no member named"
+	error-handling into...
+	(complain_about_unrecognized_member): ...this new function, and
+	check that the guessed name is accessible along the access path.
+	Only provide a spell-correction fix-it hint if it is; otherwise,
+	attempt to issue an accessor fix-it hint.
+
+2018-10-11  Nathan Sidwell  <nathan@acm.org>
+
+	* parser.c (cp_parser_translation_unit): Return void.  Don't fail
+	at first extra }, simplify logic.
+	(c_parse_file): Call finish_translation_unit here.
+
+2018-10-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87582
+	* typeck.c (maybe_warn_about_returning_address_of_local): If
+	whats_returned is a structured binding identifier and the structured
+	binding is a reference, recurse on its initializer.
+
+	PR c++/87547
+	* rtti.c (get_tinfo_decl_dynamic): Use unlowered_expr_type instead
+	of TREE_TYPE.
+
+2018-10-10  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87567 - constexpr rejects call to non-constexpr function.
+	* constexpr.c (potential_constant_expression_1) <case FOR_STMT>: Return
+	true if the condition is always false.
+	<case WHILE_STMT>: Likewise.
+
+2018-10-09  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84423
+	* pt.c (convert_template_argument): Immediately return error_mark_node
+	if the second argument is erroneous.
+	* parser.c (cp_parser_type_id): Add location_t * parameter.
+	(cp_parser_type_id_1): Likewise.
+	(cp_parser_alias_declaration): Adjust cp_parser_type_id call,
+	obtain the location of the type and save it.
+	(cp_parser_template_type_arg): Adjust.
+	(cp_parser_trailing_type_id): Likewise.
+	* decl.c (grokdeclarator): Improve error message for 'auto' in
+	alias declaration.
+
+2018-10-08  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71128
+	* pt.c (do_decl_instantiation): Per 12.6.8/5, a concept cannot be
+	explicitly instantiated.
+
+2018-10-05  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* call.c (build_over_call): Build a vec of locations of the
+	arguments before the call to maybe_constant_value, and pass to
+	check_function_arguments.
+	* cp-lang.c (LANG_HOOKS_GET_SUBSTRING_LOCATION): Define as
+	c_get_substring_location.
+	* parser.c (cp_parser_string_literal): Capture string
+	concatenation locations.
+
+2018-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	* lang-specs.h: Use string contatenation, not line splicing.
+
+2018-10-03  Jason Merrill  <jason@redhat.com>
+
+	Implement P0840, language support for empty objects.
+	* tree.c (handle_no_unique_addr_attribute): New.
+	(cxx_attribute_table): Add [[no_unique_address]].
+	* class.c (field_poverlapping_p): New.
+	(layout_class_type): Check it.  Adjust DECL_SIZE of potentially
+	overlapping fields.
+	(layout_empty_base_or_field): Rename from layout_empty_base, handle
+	FIELD_DECL as well.
+	(build_base_field, record_subobject_offsets): Adjust.
+
+2018-10-03  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/86109
+	* parser.c (cp_parser_lambda_declarator_opt):
+	Set DECL_LAMBDA_FUNCTION for lambdas.
+
+2018-10-02  Richard Biener  <rguenther@suse.de>
+
+	* name-lookup.c (check_local_shadow): Do not test DECL_FROM_INLINE.
+
+2018-09-28  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* method.c (use_thunk): Adjust call to cgraph_node::create_thunk.
+
+2018-09-28  Richard Biener  <rguenther@suse.de>
+
+	* error.c (cp_print_error_function): Simplify by eliding
+	the BLOCK_ABSTRACT_ORIGIN chasing.
+
+2018-09-27  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/84940
+	* semantics.c (finish_unary_op_expr): Check return value of
+	build_x_unary_op for error_mark_node.
+
+2018-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87398
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Only
+	look through COMPONENT_REFs with DECL_FIELD_IS_BASE FIELD_DECLs.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* name-lookup.c (namespace_scope_ht_size): Remove
+	unused function.
+	* parser.c (cp_lexer_next_token_is_not_keyword): Likewise.
+
+2018-09-24  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85070
+	* method.c (lazily_declare_fn): During error-recovery add_method
+	may return false.
+
+2018-09-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87372 - __func__ constexpr evaluation.
+	* constexpr.c (maybe_constant_init_1): Pass false for strict down to
+	cxx_eval_outermost_constant_expr.
+
+2018-09-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87109 - wrong ctor with maybe-rvalue semantics.
+	* call.c (build_user_type_conversion_1): Refine the maybe-rvalue
+	check to only return if we're converting the return value to a base
+	class.
+
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* g++spec.c (lang_specific_driver): Handle -r like -nostdlib.
+
+2018-09-20  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87075 - ICE with constexpr array initialization.
+	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	Add -Wclass-conversion.
+	* decl.c (grok_op_properties): Change a warning from -Wconversion to
+	-Wclass-conversion.  Make it print the types.
+
+2018-09-19  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/87324
+	* parser.c (cp_parser_initializer_list): Assign error_mark_node
+	to the index upon error.
+
+2018-09-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87357 - missing -Wconversion warning
+	* decl.c (grok_op_properties): Remove diagnostic parts mentioning
+	a conversion to a reference to void.  Use
+	same_type_ignoring_top_level_qualifiers_p rather than comparing types
+	directly.
+
+2018-09-18  Marek Polacek  <polacek@redhat.com>
+
+	P1064R0 - Allowing Virtual Function Calls in Constant Expressions
+	* call.c (build_over_call): No longer check if we're outside a template
+	function.
+	* class.c (build_vtbl_initializer): Build vtable's constructor with
+	indexes.
+	* constexpr.c (cxx_eval_constant_expression): Don't ignore _vptr's
+	initializer.  Handle OBJ_TYPE_REF.
+	(potential_constant_expression_1): Handle OBJ_TYPE_REF.
+	* decl.c (maybe_commonize_var): Bail out for any DECL_ARTIFICIAL.
+	(initialize_artificial_var): Mark the variable as constexpr.
+	(grokdeclarator): Change error to pedwarn.  Only warn when
+	pedantic and not C++2a.
+
+2018-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/85065
+	* cp-tree.h (NON_ERROR): New.
+	* pt.c (auto_hash::hash): Use it.
+	(do_auto_deduction): Likewise.
+
+2018-09-18  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86881
+	* name-lookup.c (check_local_shadow): Ignore auto types.
+
+2018-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.c (range_label_for_type_mismatch::get_text): Update for
+	new param.
+
+2018-09-13  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck2.c (digest_init_r): Fix overlength strings.
+
 2018-09-13  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR c++/87093

@@ -1042,11 +1042,6 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "vector_memory_operand")))
 
-; Return true when OP is operand acceptable for standard SSE move.
-(define_predicate "vector_move_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (match_operand 0 "const0_operand")))
-
 ;; Return true when OP is either nonimmediate operand, or any
 ;; CONST_VECTOR.
 (define_predicate "nonimmediate_or_const_vector_operand"
@@ -1061,6 +1056,11 @@
 ;; Return true if OP is a register or a zero.
 (define_predicate "reg_or_0_operand"
   (ior (match_operand 0 "register_operand")
+       (match_operand 0 "const0_operand")))
+
+; Return true when OP is a nonimmediate or zero.
+(define_predicate "nonimm_or_0_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
        (match_operand 0 "const0_operand")))
 
 (define_predicate "norex_memory_operand"
@@ -1406,36 +1406,6 @@
   (and (match_code "mem")
        (match_test "MEM_ALIGN (op) < GET_MODE_BITSIZE (mode)")))
 
-;; Return true if OP is a emms operation, known to be a PARALLEL.
-(define_predicate "emms_operation"
-  (match_code "parallel")
-{
-  unsigned i;
-
-  if (XVECLEN (op, 0) != 17)
-    return false;
-
-  for (i = 0; i < 8; i++)
-    {
-      rtx elt = XVECEXP (op, 0, i+1);
-
-      if (GET_CODE (elt) != CLOBBER
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != XFmode
-	  || REGNO (SET_DEST (elt)) != FIRST_STACK_REG + i)
-        return false;
-
-      elt = XVECEXP (op, 0, i+9);
-
-      if (GET_CODE (elt) != CLOBBER
-	  || GET_CODE (SET_DEST (elt)) != REG
-	  || GET_MODE (SET_DEST (elt)) != DImode
-	  || REGNO (SET_DEST (elt)) != FIRST_MMX_REG + i)
-	return false;
-    }
-  return true;
-})
-
 ;; Return true if OP is a vzeroall operation, known to be a PARALLEL.
 (define_predicate "vzeroall_operation"
   (match_code "parallel")
@@ -1452,15 +1422,21 @@
       if (GET_CODE (elt) != SET
 	  || GET_CODE (SET_DEST (elt)) != REG
 	  || GET_MODE (SET_DEST (elt)) != V8SImode
-	  || REGNO (SET_DEST (elt)) != SSE_REGNO (i)
+	  || REGNO (SET_DEST (elt)) != GET_SSE_REGNO (i)
 	  || SET_SRC (elt) != CONST0_RTX (V8SImode))
 	return false;
     }
   return true;
 })
 
-;; return true if OP is a vzeroupper operation.
-(define_predicate "vzeroupper_operation"
+;; return true if OP is a vzeroall pattern.
+(define_predicate "vzeroall_pattern"
+  (and (match_code "parallel")
+       (match_code "unspec_volatile" "a")
+       (match_test "XINT (XVECEXP (op, 0, 0), 1) == UNSPECV_VZEROALL")))
+
+;; return true if OP is a vzeroupper pattern.
+(define_predicate "vzeroupper_pattern"
   (and (match_code "unspec_volatile")
        (match_test "XINT (op, 1) == UNSPECV_VZEROUPPER")))
 

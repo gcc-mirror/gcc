@@ -3339,10 +3339,6 @@ cp_print_error_function (diagnostic_context *context,
 	  if (abstract_origin)
 	    {
 	      ao = BLOCK_ABSTRACT_ORIGIN (abstract_origin);
-	      while (TREE_CODE (ao) == BLOCK
-		     && BLOCK_ABSTRACT_ORIGIN (ao)
-		     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-		ao = BLOCK_ABSTRACT_ORIGIN (ao);
 	      gcc_assert (TREE_CODE (ao) == FUNCTION_DECL);
 	      fndecl = ao;
 	    }
@@ -3364,12 +3360,6 @@ cp_print_error_function (diagnostic_context *context,
 		     && BLOCK_ABSTRACT_ORIGIN (block))
 		{
 		  ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-		  while (TREE_CODE (ao) == BLOCK
-			 && BLOCK_ABSTRACT_ORIGIN (ao)
-			 && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-		    ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
 		  if (TREE_CODE (ao) == FUNCTION_DECL)
 		    {
 		      fndecl = ao;
@@ -4289,7 +4279,7 @@ qualified_name_lookup_error (tree scope, tree name,
    Compare with print_template_differences above.  */
 
 label_text
-range_label_for_type_mismatch::get_text () const
+range_label_for_type_mismatch::get_text (unsigned /*range_idx*/) const
 {
   if (m_labelled_type == NULL_TREE)
     return label_text (NULL, false);

@@ -1,6 +1,6 @@
 /* nodiscard attribute tests, adapted from gcc.dg/attr-warn-unused-result.c.  */
-/* { dg-do compile } */
-/* { dg-options "-std=c++17 -O -ftrack-macro-expansion=0" } */
+/* { dg-do compile { target c++17 } } */
+/* { dg-options "-O -ftrack-macro-expansion=0" } */
 
 #define WUR [[nodiscard]]
 #define WURAI [[nodiscard, gnu::always_inline]] inline

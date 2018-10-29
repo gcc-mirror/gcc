@@ -263,7 +263,7 @@
 ;; alternative). This attribute is used to compute attribute "enabled", use type
 ;; "any" to enable an alternative in all cases.
 
-(define_enum "arches" [ any fp simd sve fp16])
+(define_enum "arches" [ any rcpc8_4 fp simd sve fp16])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -284,6 +284,9 @@
   (if_then_else
     (ior
 	(eq_attr "arch" "any")
+
+	(and (eq_attr "arch" "rcpc8_4")
+	     (match_test "AARCH64_ISA_RCPC8_4"))
 
 	(and (eq_attr "arch" "fp")
 	     (match_test "TARGET_FLOAT"))
@@ -1517,26 +1520,34 @@
 )
 
 (define_insn "*zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r,r")
-        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,r,w,w,r,w")
+        (zero_extend:DI (match_operand:SI 1 "nonimmediate_operand" "r,m,r,m,w,w")))]
   ""
   "@
    uxtw\t%0, %w1
-   ldr\t%w0, %1"
-  [(set_attr "type" "extend,load_4")]
+   ldr\t%w0, %1
+   fmov\t%s0, %w1
+   ldr\t%s0, %1
+   fmov\t%w0, %s1
+   fmov\t%s0, %s1"
+  [(set_attr "type" "extend,load_4,f_mcr,f_loads,f_mrc,fmov")
+   (set_attr "arch" "*,*,fp,fp,fp,fp")]
 )
 
 (define_insn "*load_pair_zero_extendsidi2_aarch64"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump")))
-   (set (match_operand:DI 2 "register_operand" "=r")
-	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m")))]
+  [(set (match_operand:DI 0 "register_operand" "=r,w")
+	(zero_extend:DI (match_operand:SI 1 "aarch64_mem_pair_operand" "Ump,Ump")))
+   (set (match_operand:DI 2 "register_operand" "=r,w")
+	(zero_extend:DI (match_operand:SI 3 "memory_operand" "m,m")))]
   "rtx_equal_p (XEXP (operands[3], 0),
 		plus_constant (Pmode,
 			       XEXP (operands[1], 0),
 			       GET_MODE_SIZE (SImode)))"
-  "ldp\\t%w0, %w2, %1"
-  [(set_attr "type" "load_8")]
+  "@
+   ldp\t%w0, %w2, %1
+   ldp\t%s0, %s2, %1"
+  [(set_attr "type" "load_8,neon_load1_2reg")
+   (set_attr "arch" "*,fp")]
 )
 
 (define_expand "<ANY_EXTEND:optab><SHORT:mode><GPI:mode>2"
@@ -1563,7 +1574,8 @@
    and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
    ldr<SHORT:size>\t%w0, %1
    ldr\t%<SHORT:size>0, %1"
-  [(set_attr "type" "logic_imm,load_4,load_4")]
+  [(set_attr "type" "logic_imm,load_4,f_loads")
+   (set_attr "arch" "*,*,fp")]
 )
 
 (define_expand "<optab>qihi2"
@@ -5361,6 +5373,33 @@
   [(set_attr "type" "bfm")]
 )
 
+; Zero-extended version of above (aarch64_bfxil)
+(define_insn "*aarch64_bfxilsi_uxtw"
+  [(set (match_operand:DI 0 "register_operand" "=r,r")
+	(zero_extend:DI (ior:SI (and:SI (match_operand:SI 1 "register_operand"
+					"r,0")
+		    (match_operand:SI 3 "const_int_operand" "n, Ulc"))
+	    (and:SI (match_operand:SI 2 "register_operand" "0,r")
+		    (match_operand:SI 4 "const_int_operand" "Ulc, n")))))]
+  "(INTVAL (operands[3]) == ~INTVAL (operands[4]))
+  && (aarch64_high_bits_all_ones_p (INTVAL (operands[3]))
+    || aarch64_high_bits_all_ones_p (INTVAL (operands[4])))"
+  {
+    switch (which_alternative)
+    {
+      case 0:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[3])));
+	return "bfxil\\t%0, %1, 0, %3";
+      case 1:
+	operands[3] = GEN_INT (ctz_hwi (~INTVAL (operands[4])));
+	return "bfxil\\t%0, %2, 0, %3";
+      default:
+	gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "bfm")]
+)
+
 ;; There are no canonicalisation rules for the position of the lshiftrt, ashift
 ;; operations within an IOR/AND RTX, therefore we have two patterns matching
 ;; each valid permutation.
@@ -6473,7 +6512,7 @@
 )
 
 (define_insn "probe_stack_range"
-  [(set (match_operand:DI 0 "register_operand" "=r")
+  [(set (match_operand:DI 0 "register_operand" "=rk")
 	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")
 			     (match_operand:DI 2 "register_operand" "r")]
 			      UNSPECV_PROBE_STACK_RANGE))]
@@ -6482,6 +6521,25 @@
   return aarch64_output_probe_stack_range (operands[0], operands[2]);
 }
   [(set_attr "length" "32")]
+)
+
+;; This instruction is used to generate the stack clash stack adjustment and
+;; probing loop.  We can't change the control flow during prologue and epilogue
+;; code generation.  So we must emit a volatile unspec and expand it later on.
+
+(define_insn "@probe_sve_stack_clash_<mode>"
+  [(set (match_operand:P 0 "register_operand" "=rk")
+	(unspec_volatile:P [(match_operand:P 1 "register_operand" "0")
+			    (match_operand:P 2 "register_operand" "r")
+			    (match_operand:P 3 "const_int_operand" "n")
+			    (match_operand:P 4 "aarch64_plus_immediate" "L")]
+			     UNSPECV_PROBE_STACK_RANGE))]
+  "TARGET_SVE"
+{
+  return aarch64_output_probe_sve_stack_clash (operands[0], operands[2],
+					       operands[3], operands[4]);
+}
+  [(set_attr "length" "28")]
 )
 
 ;; Named pattern for expanding thread pointer reference.
@@ -6658,7 +6716,7 @@
 ;; Support for __builtin_speculation_safe_value when we have speculation
 ;; tracking enabled.  Use the speculation tracker to decide whether to
 ;; copy operand 1 to the target, or to copy the fail value (operand 2).
-(define_expand "despeculate_copy<ALLI_TI:mode>"
+(define_expand "@despeculate_copy<ALLI_TI:mode>"
   [(set (match_operand:ALLI_TI 0 "register_operand" "=r")
 	(unspec_volatile:ALLI_TI
 	 [(match_operand:ALLI_TI 1 "register_operand" "r")

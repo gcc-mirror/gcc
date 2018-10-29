@@ -31,7 +31,7 @@ extern void exit (int);
 static ATTR void recurser_void1 (int);
 static ATTR void recurser_void2 (int);
 extern void track (int);
-volatile int v;
+static volatile int v;
 
 int main ()
 {

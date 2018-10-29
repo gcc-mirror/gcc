@@ -114,52 +114,71 @@ estr_write (const char *str)
 }
 
 
-/* st_vprintf()-- vsnprintf-like function for error output.  We use a
-   stack allocated buffer for formatting; since this function might be
-   called from within a signal handler, printing directly to stderr
-   with vfprintf is not safe since the stderr locking might lead to a
-   deadlock.  */
+/* Write a vector of strings to standard error.  This function is
+   async-signal-safe.  */
 
-#define ST_VPRINTF_SIZE 512
+ssize_t
+estr_writev (const struct iovec *iov, int iovcnt)
+{
+#ifdef HAVE_WRITEV
+  return writev (STDERR_FILENO, iov, iovcnt);
+#else
+  ssize_t w = 0;
+  for (int i = 0; i < iovcnt; i++)
+    {
+      ssize_t r = write (STDERR_FILENO, iov[i].iov_base, iov[i].iov_len);
+      if (r == -1)
+	return r;
+      w += r;
+    }
+  return w;
+#endif
+}
 
-int
-st_vprintf (const char *format, va_list ap)
+
+#ifndef HAVE_VSNPRINTF
+static int
+gf_vsnprintf (char *str, size_t size, const char *format, va_list ap)
 {
   int written;
-  char buffer[ST_VPRINTF_SIZE];
 
-#ifdef HAVE_VSNPRINTF
-  written = vsnprintf(buffer, ST_VPRINTF_SIZE, format, ap);
-#else
   written = vsprintf(buffer, format, ap);
 
-  if (written >= ST_VPRINTF_SIZE - 1)
+  if (written >= size - 1)
     {
       /* The error message was longer than our buffer.  Ouch.  Because
 	 we may have messed up things badly, report the error and
 	 quit.  */
-#define ERROR_MESSAGE "Internal error: buffer overrun in st_vprintf()\n"
-      write (STDERR_FILENO, buffer, ST_VPRINTF_SIZE - 1);
-      write (STDERR_FILENO, ERROR_MESSAGE, strlen(ERROR_MESSAGE));
+#define ERROR_MESSAGE "Internal error: buffer overrun in gf_vsnprintf()\n"
+      write (STDERR_FILENO, buffer, size - 1);
+      write (STDERR_FILENO, ERROR_MESSAGE, strlen (ERROR_MESSAGE));
       sys_abort ();
 #undef ERROR_MESSAGE
 
     }
-#endif
-
-  written = write (STDERR_FILENO, buffer, written);
   return written;
 }
 
+#define vsnprintf gf_vsnprintf
+#endif
+
+
+/* printf() like function for for printing to stderr.  Uses a stack
+   allocated buffer and doesn't lock stderr, so it should be safe to
+   use from within a signal handler.  */
+
+#define ST_ERRBUF_SIZE 512
 
 int
 st_printf (const char * format, ...)
 {
+  char buffer[ST_ERRBUF_SIZE];
   int written;
   va_list ap;
   va_start (ap, format);
-  written = st_vprintf (format, ap);
+  written = vsnprintf (buffer, ST_ERRBUF_SIZE, format, ap);
   va_end (ap);
+  written = write (STDERR_FILENO, buffer, written);
   return written;
 }
 
@@ -340,12 +359,19 @@ void
 os_error (const char *message)
 {
   char errmsg[STRERR_MAXSZ];
+  struct iovec iov[5];
   recursion_check ();
-  estr_write ("Operating system error: ");
-  estr_write (gf_strerror (errno, errmsg, STRERR_MAXSZ));
-  estr_write ("\n");
-  estr_write (message);
-  estr_write ("\n");
+  iov[0].iov_base = (char*) "Operating system error: ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
+  iov[1].iov_base = gf_strerror (errno, errmsg, STRERR_MAXSZ);
+  iov[1].iov_len = strlen (iov[1].iov_base);
+  iov[2].iov_base = (char*) "\n";
+  iov[2].iov_len = 1;
+  iov[3].iov_base = (char*) message;
+  iov[3].iov_len = strlen (message);
+  iov[4].iov_base = (char*) "\n";
+  iov[4].iov_len = 1;
+  estr_writev (iov, 5);
   exit_error (1);
 }
 iexport(os_error);
@@ -357,14 +383,25 @@ iexport(os_error);
 void
 runtime_error (const char *message, ...)
 {
+  char buffer[ST_ERRBUF_SIZE];
+  struct iovec iov[3];
   va_list ap;
+  int written;
 
   recursion_check ();
-  estr_write ("Fortran runtime error: ");
+  iov[0].iov_base = (char*) "Fortran runtime error: ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
   va_start (ap, message);
-  st_vprintf (message, ap);
+  written = vsnprintf (buffer, ST_ERRBUF_SIZE, message, ap);
   va_end (ap);
-  estr_write ("\n");
+  if (written >= 0)
+    {
+      iov[1].iov_base = buffer;
+      iov[1].iov_len = written;
+      iov[2].iov_base = (char*) "\n";
+      iov[2].iov_len = 1;
+      estr_writev (iov, 3);
+    }
   exit_error (2);
 }
 iexport(runtime_error);
@@ -375,15 +412,27 @@ iexport(runtime_error);
 void
 runtime_error_at (const char *where, const char *message, ...)
 {
+  char buffer[ST_ERRBUF_SIZE];
   va_list ap;
+  struct iovec iov[4];
+  int written;
 
   recursion_check ();
-  estr_write (where);
-  estr_write ("\nFortran runtime error: ");
+  iov[0].iov_base = (char*) where;
+  iov[0].iov_len = strlen (where);
+  iov[1].iov_base = (char*) "\nFortran runtime error: ";
+  iov[1].iov_len = strlen (iov[1].iov_base);
   va_start (ap, message);
-  st_vprintf (message, ap);
+  written = vsnprintf (buffer, ST_ERRBUF_SIZE, message, ap);
   va_end (ap);
-  estr_write ("\n");
+  if (written >= 0)
+    {
+      iov[2].iov_base = buffer;
+      iov[2].iov_len = written;
+      iov[3].iov_base = (char*) "\n";
+      iov[3].iov_len = 1;
+      estr_writev (iov, 4);
+    }
   exit_error (2);
 }
 iexport(runtime_error_at);
@@ -392,14 +441,26 @@ iexport(runtime_error_at);
 void
 runtime_warning_at (const char *where, const char *message, ...)
 {
+  char buffer[ST_ERRBUF_SIZE];
   va_list ap;
+  struct iovec iov[4];
+  int written;
 
-  estr_write (where);
-  estr_write ("\nFortran runtime warning: ");
+  iov[0].iov_base = (char*) where;
+  iov[0].iov_len = strlen (where);
+  iov[1].iov_base = (char*) "\nFortran runtime warning: ";
+  iov[1].iov_len = strlen (iov[1].iov_base);
   va_start (ap, message);
-  st_vprintf (message, ap);
+  written = vsnprintf (buffer, ST_ERRBUF_SIZE, message, ap);
   va_end (ap);
-  estr_write ("\n");
+  if (written >= 0)
+    {
+      iov[2].iov_base = buffer;
+      iov[2].iov_len = written;
+      iov[3].iov_base = (char*) "\n";
+      iov[3].iov_len = 1;
+      estr_writev (iov, 4);
+    }
 }
 iexport(runtime_warning_at);
 
@@ -410,11 +471,17 @@ iexport(runtime_warning_at);
 void
 internal_error (st_parameter_common *cmp, const char *message)
 {
+  struct iovec iov[3];
+
   recursion_check ();
   show_locus (cmp);
-  estr_write ("Internal Error: ");
-  estr_write (message);
-  estr_write ("\n");
+  iov[0].iov_base = (char*) "Internal Error: ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
+  iov[1].iov_base = (char*) message;
+  iov[1].iov_len = strlen (message);
+  iov[2].iov_base = (char*) "\n";
+  iov[2].iov_len = 1;
+  estr_writev (iov, 3);
 
   /* This function call is here to get the main.o object file included
      when linking statically. This works because error.o is supposed to
@@ -609,9 +676,14 @@ generate_error_common (st_parameter_common *cmp, int family, const char *message
 
   recursion_check ();
   show_locus (cmp);
-  estr_write ("Fortran runtime error: ");
-  estr_write (message);
-  estr_write ("\n");
+  struct iovec iov[3];
+  iov[0].iov_base = (char*) "Fortran runtime error: ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
+  iov[1].iov_base = (char*) message;
+  iov[1].iov_len = strlen (message);
+  iov[2].iov_base = (char*) "\n";
+  iov[2].iov_len = 1;
+  estr_writev (iov, 3);
   return false;
 }
 
@@ -645,9 +717,14 @@ generate_warning (st_parameter_common *cmp, const char *message)
     message = " ";
 
   show_locus (cmp);
-  estr_write ("Fortran runtime warning: ");
-  estr_write (message);
-  estr_write ("\n");
+  struct iovec iov[3];
+  iov[0].iov_base = (char*) "Fortran runtime warning: ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
+  iov[1].iov_base = (char*) message;
+  iov[1].iov_len = strlen (message);
+  iov[2].iov_base = (char*) "\n";
+  iov[2].iov_len = 1;
+  estr_writev (iov, 3);
 }
 
 
@@ -678,6 +755,7 @@ bool
 notify_std (st_parameter_common *cmp, int std, const char * message)
 {
   int warning;
+  struct iovec iov[3];
 
   if (!compile_options.pedantic)
     return true;
@@ -690,17 +768,25 @@ notify_std (st_parameter_common *cmp, int std, const char * message)
     {
       recursion_check ();
       show_locus (cmp);
-      estr_write ("Fortran runtime error: ");
-      estr_write (message);
-      estr_write ("\n");
+      iov[0].iov_base = (char*) "Fortran runtime error: ";
+      iov[0].iov_len = strlen (iov[0].iov_base);
+      iov[1].iov_base = (char*) message;
+      iov[1].iov_len = strlen (message);
+      iov[2].iov_base = (char*) "\n";
+      iov[2].iov_len = 1;
+      estr_writev (iov, 3);
       exit_error (2);
     }
   else
     {
       show_locus (cmp);
-      estr_write ("Fortran runtime warning: ");
-      estr_write (message);
-      estr_write ("\n");
+      iov[0].iov_base = (char*) "Fortran runtime warning: ";
+      iov[0].iov_len = strlen (iov[0].iov_base);
+      iov[1].iov_base = (char*) message;
+      iov[1].iov_len = strlen (message);
+      iov[2].iov_base = (char*) "\n";
+      iov[2].iov_len = 1;
+      estr_writev (iov, 3);
     }
   return false;
 }

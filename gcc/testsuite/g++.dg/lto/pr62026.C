@@ -1,5 +1,5 @@
 // { dg-lto-do link }
-// { dg-lto-options {{-flto -O3 -r -nostdlib}} }
+// { dg-lto-options {{-flto -O3 -r}} }
 class C;
 class F {
   virtual C m_fn1();

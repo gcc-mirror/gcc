@@ -24,7 +24,7 @@
 int main()
 {
   std::map<int, int, std::less<int>,
-	   __gnu_cxx::malloc_allocator<std::pair<int, int> > > allocs;
+	   __gnu_cxx::malloc_allocator<std::pair<const int, int> > > allocs;
   allocs[9] = 3;
   std::vector<int, __gnu_cxx::malloc_allocator<int>> vec(10);
   vec[5] = 42;

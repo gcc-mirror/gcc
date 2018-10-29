@@ -195,7 +195,7 @@ mark_stmt_if_obviously_necessary (gimple *stmt, bool aggressive)
      throw.  If a statement could throw, it can be deemed necessary.  */
   if (cfun->can_throw_non_call_exceptions
       && !cfun->can_delete_dead_exceptions
-      && stmt_could_throw_p (stmt))
+      && stmt_could_throw_p (cfun, stmt))
     {
       mark_stmt_necessary (stmt, true);
       return;
@@ -473,7 +473,7 @@ mark_aliased_reaching_defs_necessary_1 (ao_ref *ref, tree vdef, void *data)
          ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
 	 might throw as well.  */
-      && !stmt_can_throw_internal (def_stmt))
+      && !stmt_can_throw_internal (cfun, def_stmt))
     {
       tree base, lhs = gimple_get_lhs (def_stmt);
       poly_int64 size, offset, max_size;

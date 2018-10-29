@@ -1449,7 +1449,7 @@
 	  UNSPECV_LOCK))
    (set (match_operand:SDIM 0 "nvptx_register_operand" "=R")
 	(match_dup 1))]
-  "TARGET_SM35"
+  "<MODE>mode == SImode || TARGET_SM35"
   "%.\\tatom%A1.b%T0.<logic>\\t%0, %1, %2;"
   [(set_attr "atomic" "true")])
 

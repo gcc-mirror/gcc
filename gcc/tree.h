@@ -1789,7 +1789,8 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define BLOCK_SUPERCONTEXT(NODE) (BLOCK_CHECK (NODE)->block.supercontext)
 #define BLOCK_CHAIN(NODE) (BLOCK_CHECK (NODE)->block.chain)
 #define BLOCK_ABSTRACT_ORIGIN(NODE) (BLOCK_CHECK (NODE)->block.abstract_origin)
-#define BLOCK_ABSTRACT(NODE) (BLOCK_CHECK (NODE)->block.abstract_flag)
+#define BLOCK_ORIGIN(NODE) \
+  (BLOCK_ABSTRACT_ORIGIN(NODE) ? BLOCK_ABSTRACT_ORIGIN(NODE) : (NODE))
 #define BLOCK_DIE(NODE) (BLOCK_CHECK (NODE)->block.die)
 
 /* True if BLOCK has the same ranges as its BLOCK_SUPERCONTEXT.  */
@@ -3039,6 +3040,10 @@ extern vec<tree, va_gc> **decl_debug_args_insert (tree);
 #define DECL_CXX_DESTRUCTOR_P(NODE)\
    (FUNCTION_DECL_CHECK (NODE)->decl_with_vis.cxx_destructor)
 
+/* In FUNCTION_DECL, this is set if this function is a lambda function.  */
+#define DECL_LAMBDA_FUNCTION(NODE) \
+  (FUNCTION_DECL_CHECK (NODE)->function_decl.lambda_function)
+
 /* In FUNCTION_DECL that represent an virtual method this is set when
    the method is final.  */
 #define DECL_FINAL_P(NODE)\
@@ -4231,16 +4236,23 @@ extern tree purpose_member (const_tree, tree);
 extern bool vec_member (const_tree, vec<tree, va_gc> *);
 extern tree chain_index (int, tree);
 
+/* Arguments may be null.  */
 extern int tree_int_cst_equal (const_tree, const_tree);
 
+/* The following predicates are safe to call with a null argument.  */
 extern bool tree_fits_shwi_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_poly_int64_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_uhwi_p (const_tree) ATTRIBUTE_PURE;
 extern bool tree_fits_poly_uint64_p (const_tree) ATTRIBUTE_PURE;
-extern HOST_WIDE_INT tree_to_shwi (const_tree);
-extern poly_int64 tree_to_poly_int64 (const_tree);
-extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree);
-extern poly_uint64 tree_to_poly_uint64 (const_tree);
+
+extern HOST_WIDE_INT tree_to_shwi (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
+extern poly_int64 tree_to_poly_int64 (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
+extern unsigned HOST_WIDE_INT tree_to_uhwi (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
+extern poly_uint64 tree_to_poly_uint64 (const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_PURE;
 #if !defined ENABLE_TREE_CHECKING && (GCC_VERSION >= 4003)
 extern inline __attribute__ ((__gnu_inline__)) HOST_WIDE_INT
 tree_to_shwi (const_tree t)
@@ -4450,45 +4462,45 @@ extern vec<tree, va_gc> *ctor_to_vec (tree);
 
 /* zerop (tree x) is nonzero if X is a constant of value 0.  */
 
-extern int zerop (const_tree);
+extern bool zerop (const_tree);
 
 /* integer_zerop (tree x) is nonzero if X is an integer constant of value 0.  */
 
-extern int integer_zerop (const_tree);
+extern bool integer_zerop (const_tree);
 
 /* integer_onep (tree x) is nonzero if X is an integer constant of value 1.  */
 
-extern int integer_onep (const_tree);
+extern bool integer_onep (const_tree);
 
 /* integer_onep (tree x) is nonzero if X is an integer constant of value 1, or
    a vector or complex where each part is 1.  */
 
-extern int integer_each_onep (const_tree);
+extern bool integer_each_onep (const_tree);
 
 /* integer_all_onesp (tree x) is nonzero if X is an integer constant
    all of whose significant bits are 1.  */
 
-extern int integer_all_onesp (const_tree);
+extern bool integer_all_onesp (const_tree);
 
 /* integer_minus_onep (tree x) is nonzero if X is an integer constant of
    value -1.  */
 
-extern int integer_minus_onep (const_tree);
+extern bool integer_minus_onep (const_tree);
 
 /* integer_pow2p (tree x) is nonzero is X is an integer constant with
    exactly one bit 1.  */
 
-extern int integer_pow2p (const_tree);
+extern bool integer_pow2p (const_tree);
 
 /* integer_nonzerop (tree x) is nonzero if X is an integer constant
    with a nonzero value.  */
 
-extern int integer_nonzerop (const_tree);
+extern bool integer_nonzerop (const_tree);
 
 /* integer_truep (tree x) is nonzero if X is an integer constant of value 1 or
    a vector where each element is an integer constant of value -1.  */
 
-extern int integer_truep (const_tree);
+extern bool integer_truep (const_tree);
 
 extern bool cst_and_fits_in_hwi (const_tree);
 extern tree num_ending_zeros (const_tree);
@@ -4496,7 +4508,7 @@ extern tree num_ending_zeros (const_tree);
 /* fixed_zerop (tree x) is nonzero if X is a fixed-point constant of
    value 0.  */
 
-extern int fixed_zerop (const_tree);
+extern bool fixed_zerop (const_tree);
 
 /* staticp (tree x) is nonzero if X is a reference to data allocated
    at a fixed address in memory.  Returns the outermost data.  */
@@ -4707,8 +4719,8 @@ extern tree decl_function_context (const_tree);
    this _DECL with its context, or zero if none.  */
 extern tree decl_type_context (const_tree);
 
-/* Return 1 if EXPR is the real constant zero.  */
-extern int real_zerop (const_tree);
+/* Return true if EXPR is the real constant zero.  */
+extern bool real_zerop (const_tree);
 
 /* Initialize the iterator I with arguments from function FNDECL  */
 
@@ -4889,11 +4901,12 @@ bit_field_offset (const_tree t)
 }
 
 extern tree strip_float_extensions (tree);
-extern int really_constant_p (const_tree);
+extern bool really_constant_p (const_tree);
 extern bool ptrdiff_tree_p (const_tree, poly_int64_pod *);
 extern bool decl_address_invariant_p (const_tree);
 extern bool decl_address_ip_invariant_p (const_tree);
-extern bool int_fits_type_p (const_tree, const_tree);
+extern bool int_fits_type_p (const_tree, const_tree)
+  ATTRIBUTE_NONNULL (1) ATTRIBUTE_NONNULL (2) ATTRIBUTE_PURE;
 #ifndef GENERATOR_FILE
 extern void get_type_static_bounds (const_tree, mpz_t, mpz_t);
 #endif
@@ -4920,14 +4933,14 @@ static inline hashval_t iterative_hash_expr(const_tree tree, hashval_t seed)
 }
 
 extern int compare_tree_int (const_tree, unsigned HOST_WIDE_INT);
-extern int type_list_equal (const_tree, const_tree);
-extern int chain_member (const_tree, const_tree);
+extern bool type_list_equal (const_tree, const_tree);
+extern bool chain_member (const_tree, const_tree);
 extern void dump_tree_statistics (void);
 extern void recompute_tree_invariant_for_addr_expr (tree);
 extern bool needs_to_live_in_memory (const_tree);
 extern tree reconstruct_complex_type (tree, tree);
-extern int real_onep (const_tree);
-extern int real_minus_onep (const_tree);
+extern bool real_onep (const_tree);
+extern bool real_minus_onep (const_tree);
 extern void init_ttree (void);
 extern void build_common_tree_nodes (bool);
 extern void build_common_builtin_nodes (void);
@@ -4972,6 +4985,9 @@ extern tree get_base_address (tree t);
 /* Return a tree of sizetype representing the size, in bytes, of the element
    of EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */
 extern tree array_ref_element_size (tree);
+
+/* Return a typenode for the "standard" C type with a given name.  */
+extern tree get_typenode_from_name (const char *);
 
 /* Return a tree representing the upper bound of the array mentioned in
    EXP, an ARRAY_REF or an ARRAY_RANGE_REF.  */

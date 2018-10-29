@@ -1,3 +1,30 @@
+2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	* dg-cmp-results.sh: Print NA-FAIL and NA->UNRESOLVED changes at
+	default verbosity.
+
+2018-10-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config-list.mk (LIST): Switch to i686-solaris2.11,
+	sparc64-sun-solaris2.11.
+
+2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* unused_functions.py: Handle archive files.
+
+2018-10-04  Bernhard Reutner-Fischer  <aldot@gcc.gnu.org>
+
+	* unused_functions.py: New file.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	* filter-rtags-warnings.py: New file.
+
+2018-09-25  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/86078
+	* check-params-in-docs.py: New file.
+
 2018-08-17  Jojo  <jijie_rong@c-sky.com>
 	    Huibin Wang  <huibin_wang@c-sky.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>

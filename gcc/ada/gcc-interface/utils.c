@@ -990,15 +990,16 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
     }
   else
     {
+      tree type_size = TYPE_ADA_SIZE (type);
       /* Do not try to shrink the size if the RM size is not constant.  */
       if (TYPE_CONTAINS_TEMPLATE_P (type)
-	  || !tree_fits_uhwi_p (TYPE_ADA_SIZE (type)))
+	  || !tree_fits_uhwi_p (type_size))
 	return type;
 
       /* Round the RM size up to a unit boundary to get the minimal size
 	 for a BLKmode record.  Give up if it's already the size and we
 	 don't need to lower the alignment.  */
-      new_size = tree_to_uhwi (TYPE_ADA_SIZE (type));
+      new_size = tree_to_uhwi (type_size);
       new_size = (new_size + BITS_PER_UNIT - 1) & -BITS_PER_UNIT;
       if (new_size == size && (max_align == 0 || align <= max_align))
 	return type;
@@ -3293,6 +3294,7 @@ finish_subprog_decl (tree decl, tree asm_name, tree type)
 
   DECL_ARTIFICIAL (result_decl) = 1;
   DECL_IGNORED_P (result_decl) = 1;
+  DECL_CONTEXT (result_decl) = decl;
   DECL_BY_REFERENCE (result_decl) = TREE_ADDRESSABLE (type);
   DECL_RESULT (decl) = result_decl;
 
@@ -3368,9 +3370,6 @@ end_subprog_body (tree body)
   DECL_INITIAL (fndecl) = current_binding_level->block;
   gnat_poplevel ();
 
-  /* Mark the RESULT_DECL as being in this subprogram. */
-  DECL_CONTEXT (DECL_RESULT (fndecl)) = fndecl;
-
   /* The body should be a BIND_EXPR whose BLOCK is the top-level one.  */
   if (TREE_CODE (body) == BIND_EXPR)
     {
@@ -3389,7 +3388,7 @@ void
 rest_of_subprog_body_compilation (tree subprog_decl)
 {
   /* We cannot track the location of errors past this point.  */
-  error_gnat_node = Empty;
+  Current_Error_Node = Empty;
 
   /* If we're only annotating types, don't actually compile this function.  */
   if (type_annotate_only)
@@ -5093,8 +5092,16 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
   tree etype = TREE_TYPE (expr);
   enum tree_code ecode = TREE_CODE (etype);
   enum tree_code code = TREE_CODE (type);
+  const bool ebiased
+    = (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype));
+  const bool biased
+    = (code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type));
+  const bool ereverse
+    = (AGGREGATE_TYPE_P (etype) && TYPE_REVERSE_STORAGE_ORDER (etype));
+  const bool reverse
+    = (AGGREGATE_TYPE_P (type) && TYPE_REVERSE_STORAGE_ORDER (type));
   tree tem;
-  int c;
+  int c = 0;
 
   /* If the expression is already of the right type, we are done.  */
   if (etype == type)
@@ -5110,7 +5117,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	   || (ecode == RECORD_TYPE && TYPE_JUSTIFIED_MODULAR_P (etype))))
       || code == UNCONSTRAINED_ARRAY_TYPE)
     {
-      if (ecode == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (etype))
+      if (ebiased)
 	{
 	  tree ntype = copy_type (etype);
 	  TYPE_BIASED_REPRESENTATION_P (ntype) = 0;
@@ -5118,7 +5125,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  expr = build1 (NOP_EXPR, ntype, expr);
 	}
 
-      if (code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
+      if (biased)
 	{
 	  tree rtype = copy_type (type);
 	  TYPE_BIASED_REPRESENTATION_P (rtype) = 0;
@@ -5147,30 +5154,35 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      Finally, for the sake of consistency, we do the unchecked conversion
      to an integral type with reverse storage order as soon as the source
      type is an aggregate type with reverse storage order, even if there
-     are no considerations of precision or size involved.  */
-  else if (INTEGRAL_TYPE_P (type)
-	   && TYPE_RM_SIZE (type)
-	   && (tree_int_cst_compare (TYPE_RM_SIZE (type),
-				     TYPE_SIZE (type)) < 0
-	       || (AGGREGATE_TYPE_P (etype)
-		   && TYPE_REVERSE_STORAGE_ORDER (etype))))
+     are no considerations of precision or size involved.  Ultimately, we
+     further extend this processing to any scalar type.  */
+  else if ((INTEGRAL_TYPE_P (type)
+	    && TYPE_RM_SIZE (type)
+	    && ((c = tree_int_cst_compare (TYPE_RM_SIZE (type),
+					   TYPE_SIZE (type))) < 0
+		|| ereverse))
+	   || (SCALAR_FLOAT_TYPE_P (type) && ereverse))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (type));
       tree field_type, field;
 
-      if (AGGREGATE_TYPE_P (etype))
-	TYPE_REVERSE_STORAGE_ORDER (rec_type)
-	  = TYPE_REVERSE_STORAGE_ORDER (etype);
+      TYPE_REVERSE_STORAGE_ORDER (rec_type) = ereverse;
 
-      if (type_unsigned_for_rm (type))
-	field_type = make_unsigned_type (prec);
+      if (c < 0)
+	{
+	  const unsigned HOST_WIDE_INT prec
+	    = TREE_INT_CST_LOW (TYPE_RM_SIZE (type));
+	  if (type_unsigned_for_rm (type))
+	    field_type = make_unsigned_type (prec);
+	  else
+	    field_type = make_signed_type (prec);
+	  SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (type));
+	}
       else
-	field_type = make_signed_type (prec);
-      SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (type));
+	field_type = type;
 
       field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
-				 NULL_TREE, bitsize_zero_node, 1, 0);
+				 NULL_TREE, bitsize_zero_node, c < 0, 0);
 
       finish_record_type (rec_type, field, 1, false);
 
@@ -5185,31 +5197,35 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 
      The same considerations as above apply if the target type is an aggregate
      type with reverse storage order and we also proceed similarly.  */
-  else if (INTEGRAL_TYPE_P (etype)
-	   && TYPE_RM_SIZE (etype)
-	   && (tree_int_cst_compare (TYPE_RM_SIZE (etype),
-				     TYPE_SIZE (etype)) < 0
-	       || (AGGREGATE_TYPE_P (type)
-		   && TYPE_REVERSE_STORAGE_ORDER (type))))
+  else if ((INTEGRAL_TYPE_P (etype)
+	    && TYPE_RM_SIZE (etype)
+	    && ((c = tree_int_cst_compare (TYPE_RM_SIZE (etype),
+					   TYPE_SIZE (etype))) < 0
+		|| reverse))
+	   || (SCALAR_FLOAT_TYPE_P (etype) && reverse))
     {
       tree rec_type = make_node (RECORD_TYPE);
-      unsigned HOST_WIDE_INT prec = TREE_INT_CST_LOW (TYPE_RM_SIZE (etype));
       vec<constructor_elt, va_gc> *v;
       vec_alloc (v, 1);
       tree field_type, field;
 
-      if (AGGREGATE_TYPE_P (type))
-	TYPE_REVERSE_STORAGE_ORDER (rec_type)
-	  = TYPE_REVERSE_STORAGE_ORDER (type);
+      TYPE_REVERSE_STORAGE_ORDER (rec_type) = reverse;
 
-      if (type_unsigned_for_rm (etype))
-	field_type = make_unsigned_type (prec);
+      if (c < 0)
+	{
+	  const unsigned HOST_WIDE_INT prec
+	    = TREE_INT_CST_LOW (TYPE_RM_SIZE (etype));
+	  if (type_unsigned_for_rm (etype))
+	    field_type = make_unsigned_type (prec);
+	  else
+	    field_type = make_signed_type (prec);
+	  SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (etype));
+	}
       else
-	field_type = make_signed_type (prec);
-      SET_TYPE_RM_SIZE (field_type, TYPE_RM_SIZE (etype));
+	field_type = etype;
 
       field = create_field_decl (get_identifier ("OBJ"), field_type, rec_type,
-				 NULL_TREE, bitsize_zero_node, 1, 0);
+				 NULL_TREE, bitsize_zero_node, c < 0, 0);
 
       finish_record_type (rec_type, field, 1, false);
 
@@ -5307,20 +5323,21 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
      to its size, sign- or zero-extend the result.  But we need not do this
      if the input is also an integral type and both are unsigned or both are
      signed and have the same precision.  */
+  tree type_rm_size;
   if (!notrunc_p
+      && !biased
       && INTEGRAL_TYPE_P (type)
-      && !(code == INTEGER_TYPE && TYPE_BIASED_REPRESENTATION_P (type))
-      && TYPE_RM_SIZE (type)
-      && tree_int_cst_compare (TYPE_RM_SIZE (type), TYPE_SIZE (type)) < 0
+      && (type_rm_size = TYPE_RM_SIZE (type))
+      && tree_int_cst_compare (type_rm_size, TYPE_SIZE (type)) < 0
       && !(INTEGRAL_TYPE_P (etype)
 	   && type_unsigned_for_rm (type) == type_unsigned_for_rm (etype)
 	   && (type_unsigned_for_rm (type)
-	       || tree_int_cst_compare (TYPE_RM_SIZE (type),
+	       || tree_int_cst_compare (type_rm_size,
 					TYPE_RM_SIZE (etype)
 					? TYPE_RM_SIZE (etype)
 					: TYPE_SIZE (etype)) == 0)))
     {
-      if (integer_zerop (TYPE_RM_SIZE (type)))
+      if (integer_zerop (type_rm_size))
 	expr = build_int_cst (type, 0);
       else
 	{
@@ -5330,7 +5347,7 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 	  tree shift_expr
 	    = convert (base_type,
 		       size_binop (MINUS_EXPR,
-				   TYPE_SIZE (type), TYPE_RM_SIZE (type)));
+				   TYPE_SIZE (type), type_rm_size));
 	  expr
 	    = convert (type,
 		       build_binary_op (RSHIFT_EXPR, base_type,

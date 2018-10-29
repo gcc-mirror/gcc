@@ -252,8 +252,13 @@ changequote([,])dnl
 #ifdef __x86_64__
 #error 64-bit
 #endif],
-[GOARCH=386],
-[GOARCH=amd64])
+	[GOARCH=386],
+	AC_COMPILE_IFELSE([
+#ifdef __ILP32__
+#error x32
+#endif],
+	[GOARCH=amd64],
+	[GOARCH=amd64p32]))
     ;;
   ia64-*-*)
     GOARCH=ia64
@@ -539,7 +544,7 @@ AC_CHECK_HEADERS([linux/filter.h linux/if_addr.h linux/if_ether.h linux/if_tun.h
 
 AM_CONDITIONAL(HAVE_SYS_MMAN_H, test "$ac_cv_header_sys_mman_h" = yes)
 
-AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr)
+AC_CHECK_FUNCS(strerror_r strsignal wait4 mincore setenv unsetenv dl_iterate_phdr memmem)
 AM_CONDITIONAL(HAVE_STRERROR_R, test "$ac_cv_func_strerror_r" = yes)
 AM_CONDITIONAL(HAVE_WAIT4, test "$ac_cv_func_wait4" = yes)
 

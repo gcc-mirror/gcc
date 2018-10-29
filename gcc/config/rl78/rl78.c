@@ -366,6 +366,7 @@ rl78_option_override (void)
       && strcmp (lang_hooks.name, "GNU C")
       && strcmp (lang_hooks.name, "GNU C11")
       && strcmp (lang_hooks.name, "GNU C17")
+      && strcmp (lang_hooks.name, "GNU C2X")
       && strcmp (lang_hooks.name, "GNU C89")
       && strcmp (lang_hooks.name, "GNU C99")
       /* Compiling with -flto results in a language of GNU GIMPLE being used... */
@@ -2735,38 +2736,44 @@ insn_ok_now (rtx_insn * insn)
 	    if (GET_CODE (OP (i)) == MEM
 		&& GET_MODE (XEXP (OP (i), 0)) == SImode
 		&& GET_CODE (XEXP (OP (i), 0)) != UNSPEC)
-	      return false;
+	      goto not_ok;
 
 	  return true;
 	}
     }
-  else
-    {
-      /* We need to re-recog the insn with virtual registers to get
-	 the operands.  */
-      cfun->machine->virt_insns_ok = 1;
-      if (recog (pattern, insn, 0) > -1)
-	{
-	  extract_insn (insn);
-	  if (constrain_operands (0, get_preferred_alternatives (insn)))
-	    {
-	      cfun->machine->virt_insns_ok = 0;
-	      return false;
-	    }
-	}
+
+  /* INSN is not OK as-is.  It may not be recognized in real mode or
+     it might not have satisfied its constraints in real mode.  Either
+     way it will require fixups.
+
+     It is vital we always re-recognize at this point as some insns
+     have fewer operands in real mode than virtual mode.  If we do
+     not re-recognize, then the recog_data will refer to real mode
+     operands and we may read invalid data.  Usually this isn't a
+     problem, but once in a while the data we read is bogus enough
+     to cause a segfault or other undesirable behavior.  */
+ not_ok:
+
+  /* We need to re-recog the insn with virtual registers to get
+     the operands.  */
+    INSN_CODE (insn) = -1;
+    cfun->machine->virt_insns_ok = 1;
+    if (recog (pattern, insn, 0) > -1)
+      {
+	extract_insn (insn);
+	/* In theory this should always be true.  */
+	if (constrain_operands (0, get_preferred_alternatives (insn)))
+	  {
+	    cfun->machine->virt_insns_ok = 0;
+	    return false;
+	  }
+      }
 
 #if DEBUG_ALLOC
-      fprintf (stderr, "\033[41;30m Unrecognized *virtual* insn \033[0m\n");
-      debug_rtx (insn);
-#endif
-      gcc_unreachable ();
-    }
-
-#if DEBUG_ALLOC
-  fprintf (stderr, "\033[31m");
+  fprintf (stderr, "\033[41;30m Unrecognized *virtual* insn \033[0m\n");
   debug_rtx (insn);
-  fprintf (stderr, "\033[0m");
 #endif
+  gcc_unreachable ();
   return false;
 }
 

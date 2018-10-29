@@ -42,14 +42,12 @@ extern bool wide_int_range_multiplicative_op (wide_int &res_lb,
 					      const wide_int &vr0_ub,
 					      const wide_int &vr1_lb,
 					      const wide_int &vr1_ub,
-					      bool overflow_undefined,
-					      bool overflow_wraps);
+					      bool overflow_undefined);
 extern bool wide_int_range_lshift (wide_int &res_lb, wide_int &res_ub,
 				   signop sign, unsigned prec,
 				   const wide_int &, const wide_int &,
 				   const wide_int &, const wide_int &,
-				   bool overflow_undefined,
-				   bool overflow_wraps);
+				   bool overflow_undefined);
 extern void wide_int_range_set_zero_nonzero_bits (signop,
 						  const wide_int &lb,
 						  const wide_int &ub,
@@ -124,14 +122,14 @@ extern bool wide_int_range_div (wide_int &wmin, wide_int &wmax,
 				const wide_int &divisor_min,
 				const wide_int &divisor_max,
 				bool overflow_undefined,
-				bool overflow_wraps,
 				bool &extra_range_p,
 				wide_int &extra_min, wide_int &extra_max);
 
-/* Return TRUE if shifting by range [MIN, MAX] is undefined behavior.  */
+/* Return TRUE if shifting by range [MIN, MAX] is undefined behavior,
+   interpreting MIN and MAX according to SIGN.  */
 
 inline bool
-wide_int_range_shift_undefined_p (unsigned prec,
+wide_int_range_shift_undefined_p (signop sign, unsigned prec,
 				  const wide_int &min, const wide_int &max)
 {
   /* ?? Note: The original comment said this only applied to
@@ -142,7 +140,7 @@ wide_int_range_shift_undefined_p (unsigned prec,
      behavior from the shift operation.  We cannot even trust
      SHIFT_COUNT_TRUNCATED at this stage, because that applies to rtl
      shifts, and the operation at the tree level may be widened.  */
-  return wi::sign_mask (min) || wi::ge_p (max, prec, UNSIGNED);
+  return wi::lt_p (min, 0, sign) || wi::ge_p (max, prec, sign);
 }
 
 /* Calculate MIN/MAX_EXPR of two ranges and store the result in [MIN, MAX].  */

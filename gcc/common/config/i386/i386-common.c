@@ -194,8 +194,10 @@ along with GCC; see the file COPYING3.  If not see
   (OPTION_MASK_ISA_AVX512F | OPTION_MASK_ISA_AVX512CD_UNSET \
    | OPTION_MASK_ISA_AVX512PF_UNSET | OPTION_MASK_ISA_AVX512ER_UNSET \
    | OPTION_MASK_ISA_AVX512DQ_UNSET | OPTION_MASK_ISA_AVX512BW_UNSET \
-   | OPTION_MASK_ISA_AVX512VL_UNSET | OPTION_MASK_ISA_AVX512VBMI2_UNSET \
-   | OPTION_MASK_ISA_AVX512VNNI_UNSET | OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET \
+   | OPTION_MASK_ISA_AVX512VL_UNSET | OPTION_MASK_ISA_AVX512IFMA_UNSET \
+   | OPTION_MASK_ISA_AVX512VBMI2_UNSET \
+   | OPTION_MASK_ISA_AVX512VNNI_UNSET \
+   | OPTION_MASK_ISA_AVX512VPOPCNTDQ_UNSET \
    | OPTION_MASK_ISA_AVX512BITALG_UNSET)
 #define OPTION_MASK_ISA_AVX512CD_UNSET OPTION_MASK_ISA_AVX512CD
 #define OPTION_MASK_ISA_AVX512PF_UNSET OPTION_MASK_ISA_AVX512PF
@@ -1461,49 +1463,45 @@ i386_except_unwind_info (struct gcc_options *opts)
 #define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
 
 /* This table must be in sync with enum processor_type in i386.h.  */
-const struct ptt processor_target_table[PROCESSOR_max] =
+const char *const processor_names[PROCESSOR_max] =
 {
-  /* The "0:0:8" label alignment specified for some processors generates
-     secondary 8-byte alignment only for those label/jump/loop targets
-     which have primary alignment.  */
-
-  {"generic",        "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"i386",           "4",       "4",       NULL,    "4" },
-  {"i486",           "16",      "16",      "0:0:8", "16"},
-  {"pentium",        "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"lakemont",       "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"pentiumpro",     "16",      "16:11:8", "0:0:8", "16"},
-  {"pentium4",       NULL,      NULL,      NULL,    NULL},
-  {"nocona",         NULL,      NULL,      NULL,    NULL},
-  {"core2",          "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"nehalem",        "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"sandybridge",    "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"haswell",        "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"bonnell",        "16",      "16:8:8",  "0:0:8", "16"},
-  {"silvermont",     "16",      "16:8:8",  "0:0:8", "16"},
-  {"goldmont",       "16",      "16:8:8",  "0:0:8", "16"},
-  {"goldmont-plus",  "16",      "16:8:8",  "0:0:8", "16"},
-  {"tremont",        "16",      "16:8:8",  "0:0:8", "16"},
-  {"knl",            "16",      "16:8:8",  "0:0:8", "16"},
-  {"knm",            "16",      "16:8:8",  "0:0:8", "16"},
-  {"skylake",        "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"skylake-avx512", "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"cannonlake",     "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"icelake-client", "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"icelake-server", "16:11:8", "16:11:8", "0:0:8", "16"},
-  {"intel",          "16",      "16:8:8",  "0:0:8", "16"},
-  {"geode",          NULL,      NULL,      NULL,    NULL},
-  {"k6",             "32:8:8",  "32:8:8",  "0:0:8", "32"},
-  {"athlon",         "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"k8",             "16:8:8",  "16:8:8",  "0:0:8", "16"},
-  {"amdfam10",       "32:25:8", "32:8:8",  "0:0:8", "32"},
-  {"bdver1",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver2",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver3",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"bdver4",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"btver1",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"btver2",         "16:11:8", "16:8:8",  "0:0:8", "11"},
-  {"znver1",         "16",      "16",      "0:0:8", "16"}
+  "generic",
+  "i386",
+  "i486",
+  "pentium",
+  "lakemont",
+  "pentiumpro",
+  "pentium4",
+  "nocona",
+  "core2",
+  "nehalem",
+  "sandybridge",
+  "haswell",
+  "bonnell",
+  "silvermont",
+  "goldmont",
+  "goldmont-plus",
+  "tremont",
+  "knl",
+  "knm",
+  "skylake",
+  "skylake-avx512",
+  "cannonlake",
+  "icelake-client",
+  "icelake-server",
+  "intel",
+  "geode",
+  "k6",
+  "athlon",
+  "k8",
+  "amdfam10",
+  "bdver1",
+  "bdver2",
+  "bdver3",
+  "bdver4",
+  "btver1",
+  "btver2",
+  "znver1"
 };
 
 const pta processor_alias_table[] =
@@ -1715,7 +1713,7 @@ ix86_get_valid_option_values (int option_code,
       break;
     case OPT_mtune_:
       for (unsigned i = 0; i < PROCESSOR_max; i++)
-	v.safe_push (processor_target_table[i].name);
+	v.safe_push (processor_names[i]);
       break;
     default:
       break;

@@ -3604,7 +3604,10 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  gcc_assert (mode == GET_MODE_INNER (GET_MODE (trueop0)));
 	  gcc_assert (GET_CODE (trueop1) == PARALLEL);
 	  gcc_assert (XVECLEN (trueop1, 0) == 1);
-	  gcc_assert (CONST_INT_P (XVECEXP (trueop1, 0, 0)));
+
+	  /* We can't reason about selections made at runtime.  */
+	  if (!CONST_INT_P (XVECEXP (trueop1, 0, 0)))
+	    return 0;
 
 	  if (vec_duplicate_p (trueop0, &elt0))
 	    return elt0;
@@ -3703,7 +3706,9 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 		{
 		  rtx x = XVECEXP (trueop1, 0, i);
 
-		  gcc_assert (CONST_INT_P (x));
+		  if (!CONST_INT_P (x))
+		    return 0;
+
 		  RTVEC_ELT (v, i) = CONST_VECTOR_ELT (trueop0,
 						       INTVAL (x));
 		}
@@ -5573,6 +5578,68 @@ simplify_cond_clz_ctz (rtx x, rtx_code cmp_code, rtx true_val, rtx false_val)
   return NULL_RTX;
 }
 
+/* Try to simplify X given that it appears within operand OP of a
+   VEC_MERGE operation whose mask is MASK.  X need not use the same
+   vector mode as the VEC_MERGE, but it must have the same number of
+   elements.
+
+   Return the simplified X on success, otherwise return NULL_RTX.  */
+
+rtx
+simplify_merge_mask (rtx x, rtx mask, int op)
+{
+  gcc_assert (VECTOR_MODE_P (GET_MODE (x)));
+  poly_uint64 nunits = GET_MODE_NUNITS (GET_MODE (x));
+  if (GET_CODE (x) == VEC_MERGE && rtx_equal_p (XEXP (x, 2), mask))
+    {
+      if (side_effects_p (XEXP (x, 1 - op)))
+	return NULL_RTX;
+
+      return XEXP (x, op);
+    }
+  if (UNARY_P (x)
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))), nunits))
+    {
+      rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
+      if (top0)
+	return simplify_gen_unary (GET_CODE (x), GET_MODE (x), top0,
+				   GET_MODE (XEXP (x, 0)));
+    }
+  if (BINARY_P (x)
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))), nunits)
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 1)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 1))), nunits))
+    {
+      rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
+      rtx top1 = simplify_merge_mask (XEXP (x, 1), mask, op);
+      if (top0 || top1)
+	return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
+				    top0 ? top0 : XEXP (x, 0),
+				    top1 ? top1 : XEXP (x, 1));
+    }
+  if (GET_RTX_CLASS (GET_CODE (x)) == RTX_TERNARY
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 0))), nunits)
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 1)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 1))), nunits)
+      && VECTOR_MODE_P (GET_MODE (XEXP (x, 2)))
+      && known_eq (GET_MODE_NUNITS (GET_MODE (XEXP (x, 2))), nunits))
+    {
+      rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
+      rtx top1 = simplify_merge_mask (XEXP (x, 1), mask, op);
+      rtx top2 = simplify_merge_mask (XEXP (x, 2), mask, op);
+      if (top0 || top1 || top2)
+	return simplify_gen_ternary (GET_CODE (x), GET_MODE (x),
+				     GET_MODE (XEXP (x, 0)),
+				     top0 ? top0 : XEXP (x, 0),
+				     top1 ? top1 : XEXP (x, 1),
+				     top2 ? top2 : XEXP (x, 2));
+    }
+  return NULL_RTX;
+}
+
 
 /* Simplify CODE, an operation with result mode MODE and three operands,
    OP0, OP1, and OP2.  OP0_MODE was the mode of OP0 before it became
@@ -5961,6 +6028,16 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       if (rtx_equal_p (op0, op1)
 	  && !side_effects_p (op2) && !side_effects_p (op1))
 	return op0;
+
+      if (!side_effects_p (op2))
+	{
+	  rtx top0 = simplify_merge_mask (op0, op2, 0);
+	  rtx top1 = simplify_merge_mask (op1, op2, 1);
+	  if (top0 || top1)
+	    return simplify_gen_ternary (code, mode, mode,
+					 top0 ? top0 : op0,
+					 top1 ? top1 : op1, op2);
+	}
 
       break;
 
@@ -6524,6 +6601,23 @@ simplify_subreg (machine_mode outermode, rtx op,
       return NULL_RTX;
     }
 
+  /* Simplify
+	(subreg (vec_merge (X)
+			   (vector)
+			   (const_int ((1 << N) | M)))
+		(N * sizeof (outermode)))
+     to
+	(subreg (X) (N * sizeof (outermode)))
+   */
+  unsigned int idx;
+  if (constant_multiple_p (byte, GET_MODE_SIZE (outermode), &idx)
+      && idx < HOST_BITS_PER_WIDE_INT
+      && GET_CODE (op) == VEC_MERGE
+      && GET_MODE_INNER (innermode) == outermode
+      && CONST_INT_P (XEXP (op, 2))
+      && (UINTVAL (XEXP (op, 2)) & (HOST_WIDE_INT_1U << idx)) != 0)
+    return simplify_gen_subreg (outermode, XEXP (op, 0), innermode, byte);
+
   /* A SUBREG resulting from a zero extension may fold to zero if
      it extracts higher bits that the ZERO_EXTEND's source bits.  */
   if (GET_CODE (op) == ZERO_EXTEND && SCALAR_INT_MODE_P (innermode))
@@ -6754,15 +6848,29 @@ test_vector_ops_duplicate (machine_mode mode, rtx scalar_reg)
 		     simplify_binary_operation (VEC_SELECT, inner_mode,
 						duplicate, zero_par));
 
-  /* And again with the final element.  */
   unsigned HOST_WIDE_INT const_nunits;
   if (nunits.is_constant (&const_nunits))
     {
+      /* And again with the final element.  */
       rtx last_index = gen_int_mode (const_nunits - 1, word_mode);
       rtx last_par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (1, last_index));
       ASSERT_RTX_PTR_EQ (scalar_reg,
 			 simplify_binary_operation (VEC_SELECT, inner_mode,
 						    duplicate, last_par));
+
+      /* Test a scalar subreg of a VEC_MERGE of a VEC_DUPLICATE.  */
+      rtx vector_reg = make_test_reg (mode);
+      for (unsigned HOST_WIDE_INT i = 0; i < const_nunits; i++)
+	{
+	  if (i >= HOST_BITS_PER_WIDE_INT)
+	    break;
+	  rtx mask = GEN_INT ((HOST_WIDE_INT_1U << i) | (i + 1));
+	  rtx vm = gen_rtx_VEC_MERGE (mode, duplicate, vector_reg, mask);
+	  poly_uint64 offset = i * GET_MODE_SIZE (inner_mode);
+	  ASSERT_RTX_EQ (scalar_reg,
+			 simplify_gen_subreg (inner_mode, vm,
+					      mode, offset));
+	}
     }
 
   /* Test a scalar subreg of a VEC_DUPLICATE.  */
@@ -6851,6 +6959,69 @@ test_vector_ops_series (machine_mode mode, rtx scalar_reg)
 					    constm1_rtx));
 }
 
+/* Verify simplify_merge_mask works correctly.  */
+
+static void
+test_vec_merge (machine_mode mode)
+{
+  rtx op0 = make_test_reg (mode);
+  rtx op1 = make_test_reg (mode);
+  rtx op2 = make_test_reg (mode);
+  rtx op3 = make_test_reg (mode);
+  rtx op4 = make_test_reg (mode);
+  rtx op5 = make_test_reg (mode);
+  rtx mask1 = make_test_reg (SImode);
+  rtx mask2 = make_test_reg (SImode);
+  rtx vm1 = gen_rtx_VEC_MERGE (mode, op0, op1, mask1);
+  rtx vm2 = gen_rtx_VEC_MERGE (mode, op2, op3, mask1);
+  rtx vm3 = gen_rtx_VEC_MERGE (mode, op4, op5, mask1);
+
+  /* Simple vec_merge.  */
+  ASSERT_EQ (op0, simplify_merge_mask (vm1, mask1, 0));
+  ASSERT_EQ (op1, simplify_merge_mask (vm1, mask1, 1));
+  ASSERT_EQ (NULL_RTX, simplify_merge_mask (vm1, mask2, 0));
+  ASSERT_EQ (NULL_RTX, simplify_merge_mask (vm1, mask2, 1));
+
+  /* Nested vec_merge.
+     It's tempting to make this simplify right down to opN, but we don't
+     because all the simplify_* functions assume that the operands have
+     already been simplified.  */
+  rtx nvm = gen_rtx_VEC_MERGE (mode, vm1, vm2, mask1);
+  ASSERT_EQ (vm1, simplify_merge_mask (nvm, mask1, 0));
+  ASSERT_EQ (vm2, simplify_merge_mask (nvm, mask1, 1));
+
+  /* Intermediate unary op. */
+  rtx unop = gen_rtx_NOT (mode, vm1);
+  ASSERT_RTX_EQ (gen_rtx_NOT (mode, op0),
+		 simplify_merge_mask (unop, mask1, 0));
+  ASSERT_RTX_EQ (gen_rtx_NOT (mode, op1),
+		 simplify_merge_mask (unop, mask1, 1));
+
+  /* Intermediate binary op. */
+  rtx binop = gen_rtx_PLUS (mode, vm1, vm2);
+  ASSERT_RTX_EQ (gen_rtx_PLUS (mode, op0, op2), 
+		 simplify_merge_mask (binop, mask1, 0));
+  ASSERT_RTX_EQ (gen_rtx_PLUS (mode, op1, op3),
+		 simplify_merge_mask (binop, mask1, 1));
+
+  /* Intermediate ternary op. */
+  rtx tenop = gen_rtx_FMA (mode, vm1, vm2, vm3);
+  ASSERT_RTX_EQ (gen_rtx_FMA (mode, op0, op2, op4),
+		 simplify_merge_mask (tenop, mask1, 0));
+  ASSERT_RTX_EQ (gen_rtx_FMA (mode, op1, op3, op5),
+		 simplify_merge_mask (tenop, mask1, 1));
+
+  /* Side effects.  */
+  rtx badop0 = gen_rtx_PRE_INC (mode, op0);
+  rtx badvm = gen_rtx_VEC_MERGE (mode, badop0, op1, mask1);
+  ASSERT_EQ (badop0, simplify_merge_mask (badvm, mask1, 0));
+  ASSERT_EQ (NULL_RTX, simplify_merge_mask (badvm, mask1, 1));
+
+  /* Called indirectly.  */
+  ASSERT_RTX_EQ (gen_rtx_VEC_MERGE (mode, op0, op3, mask1),
+		 simplify_rtx (nvm));
+}
+
 /* Verify some simplifications involving vectors.  */
 
 static void
@@ -6866,6 +7037,7 @@ test_vector_ops ()
 	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_INT
 	      && maybe_gt (GET_MODE_NUNITS (mode), 2))
 	    test_vector_ops_series (mode, scalar_reg);
+	  test_vec_merge (mode);
 	}
     }
 }

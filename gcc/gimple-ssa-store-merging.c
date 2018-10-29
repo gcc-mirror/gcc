@@ -2701,16 +2701,25 @@ imm_store_chain_info::coalesce_immediate_stores ()
 		    merged_store->start + merged_store->width - 1))
 	{
 	  /* Only allow overlapping stores of constants.  */
-	  if (info->rhs_code == INTEGER_CST
-	      && merged_store->stores[0]->rhs_code == INTEGER_CST)
+	  if (info->rhs_code == INTEGER_CST)
 	    {
+	      bool only_constants = true;
+	      store_immediate_info *infoj;
+	      unsigned int j;
+	      FOR_EACH_VEC_ELT (merged_store->stores, j, infoj)
+		if (infoj->rhs_code != INTEGER_CST)
+		  {
+		    only_constants = false;
+		    break;
+		  }
 	      unsigned int last_order
 		= MAX (merged_store->last_order, info->order);
 	      unsigned HOST_WIDE_INT end
 		= MAX (merged_store->start + merged_store->width,
 		       info->bitpos + info->bitsize);
-	      if (check_no_overlap (m_store_info, i, INTEGER_CST,
-				    last_order, end))
+	      if (only_constants
+		  && check_no_overlap (m_store_info, i, INTEGER_CST,
+				       last_order, end))
 		{
 		  /* check_no_overlap call above made sure there are no
 		     overlapping stores with non-INTEGER_CST rhs_code
@@ -4247,7 +4256,7 @@ handled_load (gimple *stmt, store_operand_info *op,
     }
   if (gimple_vuse (stmt)
       && gimple_assign_load_p (stmt)
-      && !stmt_can_throw_internal (stmt)
+      && !stmt_can_throw_internal (cfun, stmt)
       && !gimple_has_volatile_ops (stmt))
     {
       tree mem = gimple_assign_rhs1 (stmt);
@@ -4542,7 +4551,7 @@ pass_store_merging::execute (function *fun)
 	    }
 
 	  if (gimple_assign_single_p (stmt) && gimple_vdef (stmt)
-	      && !stmt_can_throw_internal (stmt)
+	      && !stmt_can_throw_internal (cfun, stmt)
 	      && lhs_valid_for_store_merging_p (gimple_assign_lhs (stmt)))
 	    process_store (stmt);
 	  else

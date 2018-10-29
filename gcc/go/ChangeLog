@@ -1,3 +1,11 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-go): New.
+
+2018-09-20  Allan Sandfeld Jensen  <allan.jensen@qt.io>
+
+	* gospec.c (lang_specific_driver): Handle -r like -nostdlib.
+
 2018-08-27  Martin Liska  <mliska@suse.cz>
 
 	* go-gcc.cc (Gcc_backend::call_expression): Use new function

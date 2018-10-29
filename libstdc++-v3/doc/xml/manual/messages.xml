@@ -541,7 +541,7 @@ void test01()
   <biblioentry>
       <title>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	      xlink:href="http://www.oracle.com/technetwork/java/api/index.html">
+	      xlink:href="https://www.oracle.com/technetwork/java/api/index.html">
 	API Specifications, Java Platform
 	</link>
       </title>

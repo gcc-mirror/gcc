@@ -88,7 +88,7 @@ private
    pragma Assert (Element_Type'Alignment <= Standard'Maximum_Alignment);
    --  This prevents elements with a user-specified Alignment that is too big
 
-   type Storage_Element is mod System.Storage_Unit;
+   type Storage_Element is mod 2 ** System.Storage_Unit;
    type Storage_Array is array (Positive range <>) of Storage_Element;
    type Holder is record
       Data : Storage_Array (1 .. Max_Size_In_Storage_Elements);
