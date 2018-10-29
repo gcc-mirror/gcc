@@ -1,3 +1,10 @@
+2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/gimplefe-30.c: New test.
+	* gcc.dg/gimplefe-31.c: New test.
+	* gcc.dg/gimplefe-32.c: New test.
+	* gcc.dg/gimplefe-33.c: New test.
+
 2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* gcc.misc-tests/help.exp: Add D to option descriptions check.

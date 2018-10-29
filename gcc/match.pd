@@ -590,6 +590,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult (abs@1 @0) @1)
  (mult @0 @0))
 
+/* Convert absu(x)*absu(x) -> x*x.  */
+(simplify
+ (mult (absu@1 @0) @1)
+ (mult (convert@2 @0) @2))
+
 /* cos(copysign(x, y)) -> cos(x).  Similarly for cosh.  */
 (for coss (COS COSH)
      copysigns (COPYSIGN)
@@ -1121,15 +1126,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && tree_nop_conversion_p (type, TREE_TYPE (@2)))
   (bit_xor (convert @1) (convert @2))))
 
+/* Convert abs (abs (X)) into abs (X).
+   also absu (absu (X)) into absu (X).  */
 (simplify
  (abs (abs@1 @0))
  @1)
+
+(simplify
+ (absu (convert@2 (absu@1 @0)))
+ (if (tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@1)))
+  @1))
+
+/* Convert abs[u] (-X) -> abs[u] (X).  */
 (simplify
  (abs (negate @0))
  (abs @0))
+
+(simplify
+ (absu (negate @0))
+ (absu @0))
+
+/* Convert abs[u] (X)  where X is nonnegative -> (X).  */
 (simplify
  (abs tree_expr_nonnegative_p@0)
  @0)
+
+(simplify
+ (absu tree_expr_nonnegative_p@0)
+ (convert @0))
 
 /* A few cases of fold-const.c negate_expr_p predicate.  */
 (match negate_expr_p

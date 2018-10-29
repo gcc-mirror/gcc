@@ -1,3 +1,11 @@
+2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* doc/generic.texi (ABSU_EXPR): Document.
+	* match.pd (absu(x)*absu(x) -> x*x): Handle.
+	(absu(absu(X)) -> absu(X)): Likewise.
+	(absu(-X) -> absu(X)): Likewise.
+	(absu(X)  where X is nonnegative -> X): Likewise.
+
 2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.in (tm_d_file_list, tm_d_include_list): New variables.
