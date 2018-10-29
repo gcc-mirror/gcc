@@ -1,3 +1,8 @@
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87790
+	* gcc.dg/pr87790.c: New testcase.
+
 2018-10-29  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/gcov-8.C: Do not check intermediate format.

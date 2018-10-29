@@ -1,5 +1,14 @@
 2018-10-29  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87790
+	* tree-vect-slp.c (vect_mark_slp_stmts): Simplify.
+	(vect_make_slp_decision): Adjust.
+	(vect_slp_analyze_bb_1): Likewise.
+	(vect_detect_hybrid_slp_stmts): Properly union SLP type over
+	edges.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87785
 	* tree-vect-slp.c (vect_build_slp_tree_2): Remove loads argument
 	and processing.

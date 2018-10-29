@@ -1469,14 +1469,10 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
   vect_print_slp_tree (dump_kind, loc, node, visited);
 }
 
-/* Mark the tree rooted at NODE with MARK (PURE_SLP or HYBRID).
-   If MARK is HYBRID, it refers to a specific stmt in NODE (the stmt at index
-   J).  Otherwise, MARK is PURE_SLP and J is -1, which indicates that all the
-   stmts in NODE are to be marked.  */
+/* Mark the tree rooted at NODE with PURE_SLP.  */
 
 static void
-vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j,
-		     hash_set<slp_tree> &visited)
+vect_mark_slp_stmts (slp_tree node, hash_set<slp_tree> &visited)
 {
   int i;
   stmt_vec_info stmt_info;
@@ -1489,18 +1485,17 @@ vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j,
     return;
 
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    if (j < 0 || i == j)
-      STMT_SLP_TYPE (stmt_info) = mark;
+    STMT_SLP_TYPE (stmt_info) = pure_slp;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_mark_slp_stmts (child, mark, j, visited);
+    vect_mark_slp_stmts (child, visited);
 }
 
 static void
-vect_mark_slp_stmts (slp_tree node, enum slp_vect_type mark, int j)
+vect_mark_slp_stmts (slp_tree node)
 {
   hash_set<slp_tree> visited;
-  vect_mark_slp_stmts (node, mark, j, visited);
+  vect_mark_slp_stmts (node, visited);
 }
 
 /* Mark the statements of the tree rooted at NODE as relevant (vect_used).  */
@@ -2216,7 +2211,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
       /* Mark all the stmts that belong to INSTANCE as PURE_SLP stmts.  Later we
 	 call vect_detect_hybrid_slp () to find stmts that need hybrid SLP and
 	 loop-based vectorization.  Such stmts will be marked as HYBRID.  */
-      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
+      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
       decided_to_slp++;
     }
 
@@ -2240,7 +2235,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 
 static void
 vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype,
-			      hash_set<slp_tree> &visited)
+			      hash_map<slp_tree, unsigned> &visited)
 {
   stmt_vec_info stmt_vinfo = SLP_TREE_SCALAR_STMTS (node)[i];
   imm_use_iterator imm_iter;
@@ -2250,15 +2245,16 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype,
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_vinfo);
   int j;
 
-  if (visited.add (node))
-    return;
+  /* We need to union stype over the incoming graph edges but we still
+     want to limit recursion to stay O(N+E).  */
+  bool only_edge = (++visited.get_or_insert (node) < node->refcnt);
 
   /* Propagate hybrid down the SLP tree.  */
   if (stype == hybrid)
     ;
   else if (HYBRID_SLP_STMT (stmt_vinfo))
     stype = hybrid;
-  else
+  else if (!only_edge)
     {
       /* Check if a pure SLP stmt has uses in non-SLP stmts.  */
       gcc_checking_assert (PURE_SLP_STMT (stmt_vinfo));
@@ -2300,15 +2296,16 @@ vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype,
       STMT_SLP_TYPE (stmt_vinfo) = hybrid;
     }
 
-  FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
-    if (SLP_TREE_DEF_TYPE (child) != vect_external_def)
-      vect_detect_hybrid_slp_stmts (child, i, stype, visited);
+  if (!only_edge)
+    FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
+      if (SLP_TREE_DEF_TYPE (child) != vect_external_def)
+	vect_detect_hybrid_slp_stmts (child, i, stype, visited);
 }
 
 static void
 vect_detect_hybrid_slp_stmts (slp_tree node, unsigned i, slp_vect_type stype)
 {
-  hash_set<slp_tree> visited;
+  hash_map<slp_tree, unsigned> visited;
   vect_detect_hybrid_slp_stmts (node, i, stype, visited);
 }
 
@@ -2894,7 +2891,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 
       /* Mark all the statements that we want to vectorize as pure SLP and
 	 relevant.  */
-      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance), pure_slp, -1);
+      vect_mark_slp_stmts (SLP_INSTANCE_TREE (instance));
       vect_mark_slp_stmts_relevant (SLP_INSTANCE_TREE (instance));
 
       i++;
