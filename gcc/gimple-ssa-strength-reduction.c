@@ -1775,7 +1775,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
     {
       gimple *gs = gsi_stmt (gsi);
 
-      if (stmt_could_throw_p (gs))
+      if (stmt_could_throw_p (cfun, gs))
 	continue;
 
       if (gimple_vuse (gs) && gimple_assign_single_p (gs))
@@ -2779,17 +2779,23 @@ record_phi_increments_1 (slsr_cand_t basis, gimple *phi)
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
+	record_phi_increments_1 (basis, arg_def);
+      else
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  widest_int diff;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    record_phi_increments_1 (basis, arg_def);
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    {
+	      diff = -basis->index;
+	      record_increment (phi_cand, diff, PHI_ADJUST);
+	    }
 	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
+	      diff = arg_cand->index - basis->index;
 	      record_increment (arg_cand, diff, PHI_ADJUST);
 	    }
 	}
@@ -2864,29 +2870,43 @@ phi_incr_cost_1 (slsr_cand_t c, const widest_int &incr, gimple *phi,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
-      
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
+	  int feeding_savings = 0;
+	  tree feeding_var = gimple_phi_result (arg_def);
+	  cost += phi_incr_cost_1 (c, incr, arg_def, &feeding_savings);
+	  if (uses_consumed_by_stmt (feeding_var, phi))
+	    *savings += feeding_savings;
+	}
+      else
+	{
+	  widest_int diff;
+	  slsr_cand_t arg_cand;
+
+	  /* When the PHI argument is just a pass-through to the base
+	     expression of the hidden basis, the difference is zero minus
+	     the index of the basis.  There is no potential savings by
+	     eliminating a statement in this case.  */
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
 	    {
-	      int feeding_savings = 0;
-	      tree feeding_var = gimple_phi_result (arg_def);
-	      cost += phi_incr_cost_1 (c, incr, arg_def, &feeding_savings);
-	      if (uses_consumed_by_stmt (feeding_var, phi))
-		*savings += feeding_savings;
+	      arg_cand = (slsr_cand_t)NULL;
+	      diff = -basis->index;
 	    }
 	  else
 	    {
-	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
-
-	      if (incr == diff)
+	      arg_cand = base_cand_from_table (arg);
+	      diff = arg_cand->index - basis->index;
+	    }
+	  
+	  if (incr == diff)
+	    {
+	      tree basis_lhs = gimple_assign_lhs (basis->cand_stmt);
+	      cost += add_cost (true, TYPE_MODE (TREE_TYPE (basis_lhs)));
+	      if (arg_cand)
 		{
-		  tree basis_lhs = gimple_assign_lhs (basis->cand_stmt);
 		  tree lhs = gimple_assign_lhs (arg_cand->cand_stmt);
-		  cost += add_cost (true, TYPE_MODE (TREE_TYPE (basis_lhs)));
 		  if (uses_consumed_by_stmt (lhs, phi))
 		    *savings += stmt_cost (arg_cand->cand_stmt, true);
 		}
@@ -3228,23 +3248,26 @@ ncd_with_phi (slsr_cand_t c, const widest_int &incr, gphi *phi,
   for (i = 0; i < gimple_phi_num_args (phi); i++)
     {
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
+	ncd = ncd_with_phi (c, incr, as_a <gphi *> (arg_def), ncd, where);
+      else 
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  widest_int diff;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    ncd = ncd_with_phi (c, incr, as_a <gphi *> (arg_def), ncd,
-				where);
-	  else 
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    diff = -basis->index;
+	  else
 	    {
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int diff = arg_cand->index - basis->index;
-	      basic_block pred = gimple_phi_arg_edge (phi, i)->src;
-
-	      if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
-		ncd = ncd_for_two_cands (ncd, pred, *where, NULL, where);
+	      diff = arg_cand->index - basis->index;
 	    }
+	  
+	  basic_block pred = gimple_phi_arg_edge (phi, i)->src;
+	  
+	  if ((incr == diff) || (!address_arithmetic_p && incr == -diff))
+	    ncd = ncd_for_two_cands (ncd, pred, *where, NULL, where);
 	}
     }
 
@@ -3515,51 +3538,53 @@ all_phi_incrs_profitable_1 (slsr_cand_t c, gphi *phi, int *spread)
 	return false;
 
       tree arg = gimple_phi_arg_def (phi, i);
+      gimple *arg_def = SSA_NAME_DEF_STMT (arg);
 
-      if (!operand_equal_p (arg, phi_cand->base_expr, 0))
+      if (gimple_code (arg_def) == GIMPLE_PHI)
 	{
-	  gimple *arg_def = SSA_NAME_DEF_STMT (arg);
+	  if (!all_phi_incrs_profitable_1 (c, as_a <gphi *> (arg_def), spread)
+	      || *spread > MAX_SPREAD)
+	    return false;
+	}
+      else
+	{
+	  int j;
+	  widest_int increment;
 
-	  if (gimple_code (arg_def) == GIMPLE_PHI)
-	    {
-	      if (!all_phi_incrs_profitable_1 (c, as_a <gphi *> (arg_def),
-					       spread)
-		  || *spread > MAX_SPREAD)
-		return false;
-	    }
+	  if (operand_equal_p (arg, phi_cand->base_expr, 0))
+	    increment = -basis->index;
 	  else
 	    {
-	      int j;
 	      slsr_cand_t arg_cand = base_cand_from_table (arg);
-	      widest_int increment = arg_cand->index - basis->index;
-
-	      if (!address_arithmetic_p && wi::neg_p (increment))
-		increment = -increment;
-
-	      j = incr_vec_index (increment);
-
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "  Conditional candidate %d, phi: ",
-			   c->cand_num);
-		  print_gimple_stmt (dump_file, phi, 0);
-		  fputs ("    increment: ", dump_file);
-		  print_decs (increment, dump_file);
-		  if (j < 0)
-		    fprintf (dump_file,
-			     "\n  Not replaced; incr_vec overflow.\n");
-		  else {
-		    fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
-		    if (profitable_increment_p (j))
-		      fputs ("  Replacing...\n", dump_file);
-		    else
-		      fputs ("  Not replaced.\n", dump_file);
-		  }
-		}
-
-	      if (j < 0 || !profitable_increment_p (j))
-		return false;
+	      increment = arg_cand->index - basis->index;
 	    }
+
+	  if (!address_arithmetic_p && wi::neg_p (increment))
+	    increment = -increment;
+
+	  j = incr_vec_index (increment);
+
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "  Conditional candidate %d, phi: ",
+		       c->cand_num);
+	      print_gimple_stmt (dump_file, phi, 0);
+	      fputs ("    increment: ", dump_file);
+	      print_decs (increment, dump_file);
+	      if (j < 0)
+		fprintf (dump_file,
+			 "\n  Not replaced; incr_vec overflow.\n");
+	      else {
+		fprintf (dump_file, "\n    cost: %d\n", incr_vec[j].cost);
+		if (profitable_increment_p (j))
+		  fputs ("  Replacing...\n", dump_file);
+		else
+		  fputs ("  Not replaced.\n", dump_file);
+	      }
+	    }
+
+	  if (j < 0 || !profitable_increment_p (j))
+	    return false;
 	}
     }
 

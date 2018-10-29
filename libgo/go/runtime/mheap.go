@@ -1165,7 +1165,7 @@ func (h *mheap) scavenge(k int32, now, limit uint64) {
 	}
 }
 
-//go:linkname runtime_debug_freeOSMemory runtime_debug.freeOSMemory
+//go:linkname runtime_debug_freeOSMemory runtime..z2fdebug.freeOSMemory
 func runtime_debug_freeOSMemory() {
 	GC()
 	systemstack(func() { mheap_.scavenge(-1, ^uint64(0), 0) })

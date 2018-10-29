@@ -270,6 +270,9 @@ lang_checks_parallelized += check-jit
 # we want them to be placed in different "buckets".
 check_jit_parallelize = 10
 
+# No jit-specific selftests
+selftest-jit:
+
 #
 # Install hooks:
 jit.install-common: installdirs

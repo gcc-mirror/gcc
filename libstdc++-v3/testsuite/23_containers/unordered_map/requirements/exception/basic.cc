@@ -27,7 +27,8 @@ void
 value()
 {
   typedef __gnu_cxx::throw_value_limit value_type;
-  typedef __gnu_cxx::throw_allocator_limit<value_type> allocator_type;
+  typedef std::pair<const value_type, value_type> pair_type;
+  typedef __gnu_cxx::throw_allocator_limit<pair_type> allocator_type;
   typedef std::hash<value_type> hash_type;
   typedef std::equal_to<value_type> pred_type;
   typedef std::unordered_map<value_type, value_type, hash_type, pred_type, allocator_type> test_type;

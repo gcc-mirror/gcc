@@ -170,6 +170,9 @@ lang_checks_parallelized += check-gfortran
 # For description see the check_$lang_parallelize comment in gcc/Makefile.in.
 check_gfortran_parallelize = 10000
 
+# No fortran-specific selftests
+selftest-fortran:
+
 # GFORTRAN documentation.
 GFORTRAN_TEXI = \
   $(srcdir)/fortran/gfortran.texi \

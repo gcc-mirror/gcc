@@ -98,6 +98,9 @@ lang_checks += check-objc
 lang_checks_parallelized += check-objc
 check_objc_parallelize = 6
 
+# No objc-c-specific selftests
+selftest-objc:
+
 #
 # Install hooks:
 # cc1obj is installed elsewhere as part of $(COMPILERS).

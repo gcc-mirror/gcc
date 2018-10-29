@@ -2246,7 +2246,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
          propagation can change an INDIRECT_REF which throws
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
-      can_throw = stmt_can_throw_internal (copy_stmt);
+      can_throw = stmt_can_throw_internal (cfun, copy_stmt);
       nonlocal_goto
 	= (stmt_can_make_abnormal_goto (copy_stmt)
 	   && !computed_goto_p (copy_stmt));
@@ -2514,7 +2514,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 
   if (gsi_end_p (si)
       || gsi_one_before_end_p (si)
-      || !(stmt_can_throw_internal (gsi_stmt (si))
+      || !(stmt_can_throw_internal (cfun, gsi_stmt (si))
 	   || stmt_can_make_abnormal_goto (gsi_stmt (si))))
     return;
 

@@ -482,6 +482,7 @@ namespace __debug
 	return { _Base::erase(__position.base()), this };
       }
 
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(iterator __position)
       { return erase(const_iterator(__position)); }

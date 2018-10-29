@@ -1,4 +1,5 @@
-// { dg-options "-std=c++17 -fconcepts" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-fconcepts" }
 
 // Check argument deduction constraints.
 // TODO: We shoul have more of these...

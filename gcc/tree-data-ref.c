@@ -721,7 +721,7 @@ split_constant_offset_1 (tree type, tree op0, enum tree_code code, tree op1,
 		if (TREE_CODE (tmp_var) != SSA_NAME)
 		  return false;
 		wide_int var_min, var_max;
-		value_range_type vr_type = get_range_info (tmp_var, &var_min,
+		value_range_kind vr_type = get_range_info (tmp_var, &var_min,
 							   &var_max);
 		wide_int var_nonzero = get_nonzero_bits (tmp_var);
 		signop sgn = TYPE_SIGN (itype);

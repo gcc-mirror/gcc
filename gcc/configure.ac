@@ -1754,6 +1754,7 @@ AC_SUBST(build_subdir)
 
 tm_file="${tm_file} defaults.h"
 tm_p_file="${tm_p_file} tm-preds.h"
+tm_d_file="${tm_d_file} defaults.h"
 host_xm_file="auto-host.h ansidecl.h ${host_xm_file}"
 build_xm_file="${build_auto} ansidecl.h ${build_xm_file}"
 # We don't want ansidecl.h in target files, write code there in ISO/GNU C.
@@ -1983,6 +1984,21 @@ for f in $tm_p_file; do
     * )
        tm_p_file_list="${tm_p_file_list} \$(srcdir)/config/$f"
        tm_p_include_list="${tm_p_include_list} config/$f"
+  esac
+done
+
+tm_d_file_list=
+tm_d_include_list="options.h insn-constants.h"
+for f in $tm_d_file; do
+  case $f in
+    defaults.h )
+       tm_d_file_list="${tm_d_file_list} \$(srcdir)/$f"
+       tm_d_include_list="${tm_d_include_list} $f"
+       ;;
+    * )
+       tm_d_file_list="${tm_d_file_list} \$(srcdir)/config/$f"
+       tm_d_include_list="${tm_d_include_list} config/$f"
+       ;;
   esac
 done
 
@@ -3040,6 +3056,28 @@ esac
 AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_MERGE,
   [`if test $gcc_cv_as_shf_merge = yes; then echo 1; else echo 0; fi`],
 [Define 0/1 if your assembler supports marking sections with SHF_MERGE flag.])
+
+gcc_cv_ld_aligned_shf_merge=yes
+case "$target" in
+  # While Solaris 10/SPARC ld isn't affected, disable to avoid problems
+  # relinking on Solaris 11 < 11.4.
+  sparc*-*-solaris2.10*)
+    if test x"$gnu_ld" = xno; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+  # SHF_MERGE support is broken in Solaris ld up to Solaris 11.3/SPARC for
+  # alignment > 1.
+  sparc*-*-solaris2.11*)
+    if test x"$gnu_ld" = xno \
+       && test "$ld_vers_major" -lt 2 && test "$ld_vers_minor" -lt 3159; then
+      gcc_cv_ld_aligned_shf_merge=no
+    fi
+    ;;
+esac
+AC_DEFINE_UNQUOTED(HAVE_LD_ALIGNED_SHF_MERGE,
+  [`if test $gcc_cv_ld_aligned_shf_merge = yes; then echo 1; else echo 0; fi`],
+[Define 0/1 if your linker supports the SHF_MERGE flag with section alignment > 1.])
 
 gcc_GAS_CHECK_FEATURE([stabs directive], gcc_cv_as_stabs_directive, ,,
 [.stabs "gcc2_compiled.",60,0,0,0],,
@@ -6196,6 +6234,12 @@ do
 	check_languages="$check_languages check-$language"
 done
 
+selftest_languages=
+for language in $all_selected_languages
+do
+	selftest_languages="$selftest_languages selftest-$language"
+done
+
 # We link each language in with a set of hooks, reached indirectly via
 # lang.${target}.  Only do so for selected languages.
 
@@ -6279,6 +6323,7 @@ AC_SUBST(build_xm_include_list)
 AC_SUBST(build_xm_defines)
 AC_SUBST(build_file_translate)
 AC_SUBST(check_languages)
+AC_SUBST(selftest_languages)
 AC_SUBST(cpp_install_dir)
 AC_SUBST(xmake_file)
 AC_SUBST(tmake_file)
@@ -6316,6 +6361,8 @@ AC_SUBST(tm_include_list)
 AC_SUBST(tm_defines)
 AC_SUBST(tm_p_file_list)
 AC_SUBST(tm_p_include_list)
+AC_SUBST(tm_d_file_list)
+AC_SUBST(tm_d_include_list)
 AC_SUBST(xm_file_list)
 AC_SUBST(xm_include_list)
 AC_SUBST(xm_defines)
@@ -6323,6 +6370,7 @@ AC_SUBST(use_gcc_stdint)
 AC_SUBST(c_target_objs)
 AC_SUBST(cxx_target_objs)
 AC_SUBST(fortran_target_objs)
+AC_SUBST(d_target_objs)
 AC_SUBST(target_cpu_default)
 
 AC_SUBST_FILE(language_hooks)

@@ -178,7 +178,10 @@ Expression::convert_for_assignment(Gogo*, Type* lhs_type,
       || rhs->is_error_expression())
     return Expression::make_error(location);
 
-  bool are_identical = Type::are_identical(lhs_type, rhs_type, false, NULL);
+  bool are_identical = Type::are_identical(lhs_type, rhs_type,
+					   (Type::COMPARE_ERRORS
+					    | Type::COMPARE_TAGS),
+					   NULL);
   if (!are_identical && lhs_type->interface_type() != NULL)
     {
       if (rhs_type->interface_type() == NULL)
@@ -341,7 +344,9 @@ Expression::convert_interface_to_interface(Type *lhs_type, Expression* rhs,
                                            bool for_type_guard,
                                            Location location)
 {
-  if (Type::are_identical(lhs_type, rhs->type(), false, NULL))
+  if (Type::are_identical(lhs_type, rhs->type(),
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     return rhs;
 
   Interface_type* lhs_interface_type = lhs_type->interface_type();
@@ -3389,7 +3394,9 @@ Type_conversion_expression::do_is_static_initializer() const
   if (!this->expr_->is_static_initializer())
     return false;
 
-  if (Type::are_identical(type, expr_type, false, NULL))
+  if (Type::are_identical(type, expr_type,
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     return true;
 
   if (type->is_string_type() && expr_type->is_string_type())
@@ -3503,7 +3510,9 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
   Btype* btype = type->get_backend(gogo);
   Location loc = this->location();
 
-  if (Type::are_identical(type, expr_type, false, NULL))
+  if (Type::are_identical(type, expr_type,
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			  NULL))
     {
       Bexpression* bexpr = this->expr_->get_backend(context);
       return gogo->backend()->convert_expression(btype, bexpr, loc);
@@ -5433,7 +5442,10 @@ Binary_expression::lower_struct_comparison(Gogo* gogo,
   Struct_type* st2 = this->right_->type()->struct_type();
   if (st2 == NULL)
     return this;
-  if (st != st2 && !Type::are_identical(st, st2, false, NULL))
+  if (st != st2
+      && !Type::are_identical(st, st2,
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL))
     return this;
   if (!Type::are_compatible_for_comparison(true, this->left_->type(),
 					   this->right_->type(), NULL))
@@ -5512,7 +5524,10 @@ Binary_expression::lower_array_comparison(Gogo* gogo,
   Array_type* at2 = this->right_->type()->array_type();
   if (at2 == NULL)
     return this;
-  if (at != at2 && !Type::are_identical(at, at2, false, NULL))
+  if (at != at2
+      && !Type::are_identical(at, at2,
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL))
     return this;
   if (!Type::are_compatible_for_comparison(true, this->left_->type(),
 					   this->right_->type(), NULL))
@@ -6902,7 +6917,7 @@ Bound_method_expression::do_check_types(Gogo*)
 		 ? this->expr_type_
 		 : this->expr_->type());
   etype = etype->deref();
-  if (!Type::are_identical(rtype, etype, true, NULL))
+  if (!Type::are_identical(rtype, etype, Type::COMPARE_TAGS, NULL))
     this->report_error(_("method type does not match object type"));
 }
 
@@ -8404,7 +8419,9 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
 	  && !rnc.type()->is_abstract()
 	  && inc.type() != NULL
 	  && !inc.type()->is_abstract()
-	  && !Type::are_identical(rnc.type(), inc.type(), false, NULL))
+	  && !Type::are_identical(rnc.type(), inc.type(),
+				  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+				  NULL))
 	return false;
 
       mpfr_t r;
@@ -8885,7 +8902,7 @@ Builtin_call_expression::do_check_types(Gogo*)
 	if (arg2_type->is_slice_type())
 	  {
 	    Type* e2 = arg2_type->array_type()->element_type();
-	    if (!Type::are_identical(e1, e2, true, NULL))
+	    if (!Type::are_identical(e1, e2, Type::COMPARE_TAGS, NULL))
 	      this->report_error(_("element types must be the same"));
 	  }
 	else if (arg2_type->is_string_type())
@@ -9023,7 +9040,8 @@ Builtin_call_expression::do_check_types(Gogo*)
 		 || args->back()->type()->is_error())
 	  this->set_is_error();
 	else if (!Type::are_identical(args->front()->type(),
-				      args->back()->type(), true, NULL))
+				      args->back()->type(),
+				      Type::COMPARE_TAGS, NULL))
 	  this->report_error(_("complex arguments must have identical types"));
 	else if (args->front()->type()->float_type() == NULL)
 	  this->report_error(_("complex arguments must have "
@@ -9935,7 +9953,8 @@ Call_expression::do_flatten(Gogo* gogo, Named_object*,
       for (; pa != this->args_->end(); ++pa, ++pp)
 	{
 	  go_assert(pp != fntype->parameters()->end());
-	  if (Type::are_identical(pp->type(), (*pa)->type(), true, NULL))
+	  if (Type::are_identical(pp->type(), (*pa)->type(),
+				  Type::COMPARE_TAGS, NULL))
 	    args->push_back(*pa);
 	  else
 	    {
@@ -10089,7 +10108,7 @@ Call_expression::do_type()
   else if (results->size() == 1)
     ret = results->begin()->type();
   else
-    ret = Type::make_call_multiple_result_type();
+    ret = Type::make_call_multiple_result_type(this);
 
   this->type_ = ret;
 
@@ -11630,7 +11649,9 @@ Map_index_expression::do_flatten(Gogo* gogo, Named_object*,
       return Expression::make_error(loc);
     }
 
-  if (!Type::are_identical(mt->key_type(), this->index_->type(), false, NULL))
+  if (!Type::are_identical(mt->key_type(), this->index_->type(),
+			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			   NULL))
     {
       if (this->index_->type()->interface_type() != NULL
 	  && !this->index_->is_variable())
@@ -15948,7 +15969,8 @@ Type*
 Conditional_expression::do_type()
 {
   Type* result_type = Type::make_void_type();
-  if (Type::are_identical(this->then_->type(), this->else_->type(), false,
+  if (Type::are_identical(this->then_->type(), this->else_->type(),
+			  Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
                           NULL))
     result_type = this->then_->type();
   else if (this->then_->is_nil_expression()

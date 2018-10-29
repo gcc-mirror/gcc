@@ -28,15 +28,9 @@ struct MoveOnly
   MoveOnly(MoveOnly&&) = default;
 };
 
-using hash = std::hash<int>;
-using equal = std::equal_to<int>;
-
-template<typename Alloc>
-  using test_type = std::unordered_map<int, MoveOnly, hash, equal, Alloc>;
-
 void test01()
 {
-  typedef test_type<std::allocator<MoveOnly>> uim;
+  typedef std::unordered_map<int, MoveOnly> uim;
   std::vector<uim> v;
   v.emplace_back(uim());
 }

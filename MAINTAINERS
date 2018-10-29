@@ -150,6 +150,7 @@ BRIG (HSAIL) front end	Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
 BRIG (HSAIL) front end 	Martin Jambor		<mjambor@suse.cz>
 c++			Jason Merrill		<jason@redhat.com>
 c++			Nathan Sidwell		<nathan@acm.org>
+D front end		Iain Buclaw		<ibuclaw@gdcproject.org>
 go			Ian Lance Taylor	<ian@airs.com>
 objective-c/c++		Mike Stump		<mikestump@comcast.net>
 objective-c/c++		Iain Sandoe		<iain@codesourcery.com>
@@ -175,6 +176,7 @@ libquadmath		Jakub Jelinek		<jakub@redhat.com>
 libvtv			Caroline Tice		<cmtice@google.com>
 libhsail-rt		Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
 libhsail-rt		Martin Jambor		<mjambor@suse.cz>
+libphobos		Iain Buclaw		<ibuclaw@gdcproject.org>
 line map		Dodji Seketeli		<dodji@redhat.com>
 soft-fp			Joseph Myers		<joseph@codesourcery.com>
 scheduler (+ haifa)	Jim Wilson		<wilson@tuliptree.org>
@@ -330,7 +332,6 @@ Joel Brobecker					<brobecker@gnat.com>
 Dave Brolley					<brolley@redhat.com>
 Julian Brown					<julian@codesourcery.com>
 Christian Bruel					<christian.bruel@st.com>
-Iain Buclaw					<ibuclaw@gdcproject.org>
 Kevin Buettner					<kevinb@redhat.com>
 Adam Butcher					<adam@jessamine.co.uk>
 Andrew Cagney					<cagney@gnu.org>
@@ -464,6 +465,7 @@ Georg-Johann Lay				<avr@gjlay.de>
 Vlad Lazar					<vlad.lazar@arm.com>
 Marc Lehmann					<pcg@goof.com>
 James Lemke					<jim@lemke.org>
+Ilya Leoshkevich				<iii@linux.ibm.com>
 Kriang Lerdsuwanakij				<lerdsuwa@users.sourceforge.net>
 Renlin Li					<renlin.li@arm.com>
 Xinliang David Li				<davidxl@google.com>

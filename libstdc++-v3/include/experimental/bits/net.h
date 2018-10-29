@@ -40,13 +40,13 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace experimental
 {
 namespace net
 {
 inline namespace v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @ingroup networking
@@ -163,10 +163,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @}
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace v1
 } // namespace net
 } // namespace experimental
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

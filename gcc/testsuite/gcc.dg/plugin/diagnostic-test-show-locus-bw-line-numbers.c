@@ -14,8 +14,8 @@ void test_simple (void)
   myvar = myvar.x; /* { dg-warning "test" } */
 
 /* { dg-begin-multiline-output "" }
-14 |   myvar = myvar.x;
-   |           ~~~~~^~
+   14 |   myvar = myvar.x;
+      |           ~~~~~^~
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -27,12 +27,12 @@ void test_multiline (void)
        + second_function ()); /* { dg-warning "test" } */
 
 /* { dg-begin-multiline-output "" }
-26 |   x = (first_function ()
-   |        ~~~~~~~~~~~~~~~~~
-27 |        + second_function ());
-   |        ^ ~~~~~~~~~~~~~~~~~~
-   |        |
-   |        label
+   26 |   x = (first_function ()
+      |        ~~~~~~~~~~~~~~~~~
+   27 |        + second_function ());
+      |        ^ ~~~~~~~~~~~~~~~~~~
+      |        |
+      |        label
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -42,14 +42,14 @@ void test_very_wide_line (void)
 #if 0
                                                                                 float f = foo * bar; /* { dg-warning "95: test" } */
 /* { dg-begin-multiline-output "" }
-   | 0         0         0         0         0         0         1         
-   | 4         5         6         7         8         9         0         
-   | 0123456789012345678901234567890123456789012345678901234567890123456789
-43 |                                          float f = foo * bar;
-   |                                                    ~~~~^~~~~
-   |                                                        |
-   |                                                        label
-   |                                                    bar * foo
+      |        0         0         0         0         0         1         1  
+      |        5         6         7         8         9         0         1  
+      | 3456789012345678901234567890123456789012345678901234567890123456789012
+   43 |                                       float f = foo * bar;
+      |                                                 ~~~~^~~~~
+      |                                                     |
+      |                                                     label 0
+      |                                                 bar * foo
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -62,9 +62,9 @@ void test_fixit_insert (void)
 #if 0
    int a[2][2] = { 0, 1 , 2, 3 }; /* { dg-warning "insertion hints" } */
 /* { dg-begin-multiline-output "" }
-63 |    int a[2][2] = { 0, 1 , 2, 3 };
-   |                    ^~~~
-   |                    {   }
+   63 |    int a[2][2] = { 0, 1 , 2, 3 };
+      |                    ^~~~
+      |                    {   }
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -76,9 +76,9 @@ void test_fixit_remove (void)
 #if 0
   int a;; /* { dg-warning "example of a removal hint" } */
 /* { dg-begin-multiline-output "" }
-77 |   int a;;
-   |         ^
-   |         -
+   77 |   int a;;
+      |         ^
+      |         -
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -90,9 +90,9 @@ void test_fixit_replace (void)
 #if 0
   gtk_widget_showall (dlg); /* { dg-warning "example of a replacement hint" } */
 /* { dg-begin-multiline-output "" }
-91 |   gtk_widget_showall (dlg);
-   |   ^~~~~~~~~~~~~~~~~~
-   |   gtk_widget_show_all
+   91 |   gtk_widget_showall (dlg);
+      |   ^~~~~~~~~~~~~~~~~~
+      |   gtk_widget_show_all
    { dg-end-multiline-output "" } */
 #endif
 }
@@ -111,10 +111,10 @@ void test_fixit_insert_newline (void)
       x = b;
     }
 /* { dg-begin-multiline-output "" }
-109 |       x = a;
-+++ |+      break;
-110 |     case 'b':
-    |     ^~~~~~~~
+  109 |       x = a;
+  +++ |+      break;
+  110 |     case 'b':
+      |     ^~~~~~~~
    { dg-end-multiline-output "" } */
 #endif
 }

@@ -649,7 +649,7 @@ size_must_be_zero_p (tree size)
     return false;
 
   wide_int min, max;
-  enum value_range_type rtype = get_range_info (size, &min, &max);
+  enum value_range_kind rtype = get_range_info (size, &min, &max);
   if (rtype != VR_ANTI_RANGE)
     return false;
 
@@ -4023,7 +4023,7 @@ fold_builtin_atomic_compare_exchange (gimple_stmt_iterator *gsi)
   gimple_set_vuse (g, gimple_vuse (stmt));
   SSA_NAME_DEF_STMT (gimple_vdef (g)) = g;
   tree oldlhs = gimple_call_lhs (stmt);
-  if (stmt_can_throw_internal (stmt))
+  if (stmt_can_throw_internal (cfun, stmt))
     {
       throws = true;
       e = find_fallthru_edge (gsi_bb (*gsi)->succs);

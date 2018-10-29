@@ -3702,7 +3702,7 @@ suitable_cond_bb (basic_block bb, basic_block test_bb, basic_block *other_bb,
       || (gimple_code (stmt) != GIMPLE_COND
 	  && (backward || !final_range_test_p (stmt)))
       || gimple_visited_p (stmt)
-      || stmt_could_throw_p (stmt)
+      || stmt_could_throw_p (cfun, stmt)
       || *other_bb == bb)
     return false;
   is_cond = gimple_code (stmt) == GIMPLE_COND;
@@ -3958,7 +3958,7 @@ maybe_optimize_range_tests (gimple *stmt)
   else
     return cfg_cleanup_needed;
 
-  if (stmt_could_throw_p (stmt))
+  if (stmt_could_throw_p (cfun, stmt))
     return cfg_cleanup_needed;
 
   /* As relative ordering of post-dominator sons isn't fixed,
@@ -5109,14 +5109,14 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
     {
       binlhsdef = SSA_NAME_DEF_STMT (binlhs);
       binlhsisreassoc = (is_reassociable_op (binlhsdef, rhscode, loop)
-			 && !stmt_could_throw_p (binlhsdef));
+			 && !stmt_could_throw_p (cfun, binlhsdef));
     }
 
   if (TREE_CODE (binrhs) == SSA_NAME)
     {
       binrhsdef = SSA_NAME_DEF_STMT (binrhs);
       binrhsisreassoc = (is_reassociable_op (binrhsdef, rhscode, loop)
-			 && !stmt_could_throw_p (binrhsdef));
+			 && !stmt_could_throw_p (cfun, binrhsdef));
     }
 
   /* If the LHS is not reassociable, but the RHS is, we need to swap
@@ -5851,7 +5851,7 @@ reassociate_bb (basic_block bb)
       stmt = gsi_stmt (gsi);
 
       if (is_gimple_assign (stmt)
-	  && !stmt_could_throw_p (stmt))
+	  && !stmt_could_throw_p (cfun, stmt))
 	{
 	  tree lhs, rhs1, rhs2;
 	  enum tree_code rhs_code = gimple_assign_rhs_code (stmt);

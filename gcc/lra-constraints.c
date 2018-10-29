@@ -1969,6 +1969,7 @@ process_alt_operands (int only_alternative)
       if (!TEST_BIT (preferred, nalt))
 	continue;
 
+      bool matching_early_clobber[MAX_RECOG_OPERANDS];
       curr_small_class_check++;
       overall = losers = addr_losers = 0;
       static_reject = reject = reload_nregs = reload_sum = 0;
@@ -1980,6 +1981,7 @@ process_alt_operands (int only_alternative)
 	    fprintf (lra_dump_file,
 		     "            Staticly defined alt reject+=%d\n", inc);
 	  static_reject += inc;
+	  matching_early_clobber[nop] = 0;
 	}
       reject += static_reject;
       early_clobbered_regs_num = 0;
@@ -2175,7 +2177,11 @@ process_alt_operands (int only_alternative)
 				 "            %d Matching earlyclobber alt:"
 				 " reject--\n",
 				 nop);
-			    reject--;
+			    if (!matching_early_clobber[m])
+			      {
+				reject--;
+				matching_early_clobber[m] = 1;
+			      }
 			  }
 			/* Otherwise we prefer no matching
 			   alternatives because it gives more freedom
@@ -2921,15 +2927,11 @@ process_alt_operands (int only_alternative)
 	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]
 		= last_conflict_j;
 	      losers++;
-	      /* Early clobber was already reflected in REJECT. */
-	      lra_assert (reject > 0);
 	      if (lra_dump_file != NULL)
 		fprintf
 		  (lra_dump_file,
 		   "            %d Conflict early clobber reload: reject--\n",
 		   i);
-	      reject--;
-	      overall += LRA_LOSER_COST_FACTOR - 1;
 	    }
 	  else
 	    {
@@ -2953,17 +2955,21 @@ process_alt_operands (int only_alternative)
 		}
 	      curr_alt_win[i] = curr_alt_match_win[i] = false;
 	      losers++;
-	      /* Early clobber was already reflected in REJECT. */
-	      lra_assert (reject > 0);
 	      if (lra_dump_file != NULL)
 		fprintf
 		  (lra_dump_file,
 		   "            %d Matched conflict early clobber reloads: "
 		   "reject--\n",
 		   i);
-	      reject--;
-	      overall += LRA_LOSER_COST_FACTOR - 1;
 	    }
+	  /* Early clobber was already reflected in REJECT. */
+	  if (!matching_early_clobber[i])
+	    {
+	      lra_assert (reject > 0);
+	      reject--;
+	      matching_early_clobber[i] = 1;
+	    }
+	  overall += LRA_LOSER_COST_FACTOR - 1;
 	}
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "          alt=%d,overall=%d,losers=%d,rld_nregs=%d\n",
@@ -5696,12 +5702,15 @@ spill_hard_reg_in_range (int regno, enum reg_class rclass, rtx_insn *from, rtx_i
 	continue;
       for (insn = from; insn != NEXT_INSN (to); insn = NEXT_INSN (insn))
 	{
-	  lra_insn_recog_data_t id = lra_insn_recog_data[uid = INSN_UID (insn)];
-	  struct lra_static_insn_data *static_id = id->insn_static_data;
+	  struct lra_static_insn_data *static_id;
 	  struct lra_insn_reg *reg;
 
-	  if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap, uid))
+	  if (!INSN_P (insn))
+	      continue;
+	  if (bitmap_bit_p (&lra_reg_info[hard_regno].insn_bitmap,
+			    INSN_UID (insn)))
 	    break;
+	  static_id = lra_get_insn_recog_data (insn)->insn_static_data;
 	  for (reg = static_id->hard_regs; reg != NULL; reg = reg->next)
 	    if (reg->regno == hard_regno)
 	      break;

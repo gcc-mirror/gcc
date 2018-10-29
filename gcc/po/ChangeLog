@@ -1,3 +1,11 @@
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* EXCLUDES: Add sources from d/dmd.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* es.po: Update.
+
 2018-10-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* ru.po: Update.

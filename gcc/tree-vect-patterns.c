@@ -53,7 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 static bool
 vect_get_range_info (tree var, wide_int *min_value, wide_int *max_value)
 {
-  value_range_type vr_type = get_range_info (var, min_value, max_value);
+  value_range_kind vr_type = get_range_info (var, min_value, max_value);
   wide_int nonzero = get_nonzero_bits (var);
   signop sgn = TYPE_SIGN (TREE_TYPE (var));
   if (intersect_range_with_nonzero_bits (vr_type, min_value, max_value,
@@ -3235,7 +3235,7 @@ check_bool_pattern (tree var, vec_info *vinfo, hash_set<gimple *> &stmts)
 
 	  /* If the comparison can throw, then is_gimple_condexpr will be
 	     false and we can't make a COND_EXPR/VEC_COND_EXPR out of it.  */
-	  if (stmt_could_throw_p (def_stmt))
+	  if (stmt_could_throw_p (cfun, def_stmt))
 	    return false;
 
 	  comp_vectype = get_vectype_for_scalar_type (TREE_TYPE (rhs1));

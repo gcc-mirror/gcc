@@ -1827,7 +1827,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		     type canonical of a derived type in the same SCC.  */
 		  if (!TYPE_CANONICAL (t))
 		    gimple_register_canonical_type (t);
-		  if (odr_type_p (t))
+		  if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
 		    odr_types.safe_push (t);
 		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its

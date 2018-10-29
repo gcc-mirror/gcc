@@ -211,6 +211,10 @@ struct diagnostic_context
      showing line numbers?  */
   bool show_line_numbers_p;
 
+  /* If printing source code, what should the minimum width of the margin
+     be?  Line numbers will be right-aligned, and padded to this width.  */
+  int min_margin_width;
+
   /* Usable by plugins; if true, print a debugging ruler above the
      source output.  */
   bool show_ruler_p;

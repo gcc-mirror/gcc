@@ -1,5 +1,5 @@
-//  { dg-do compile }
-// { dg-options "-O2 -std=c++17 -fdump-tree-eipa_sra" }
+// { dg-do compile { target c++17 } }
+// { dg-options "-O2 -fdump-tree-eipa_sra" }
 
 
 #include <type_traits>

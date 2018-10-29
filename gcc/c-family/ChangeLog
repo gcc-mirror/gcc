@@ -1,3 +1,21 @@
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c-common.c (flag_isoc2x): New variable.
+	* c-common.h (clk_c): Update comment to reference C2X.
+	(flag_isoc99, flag_isoc11): Update comments to reference future
+	standard versions in general.
+	(flag_isoc2x): Declare.
+	* c-opts.c (set_std_c2x): New function.
+	(c_common_handle_option): Handle -std=c2x and -std=gnu2x.
+	(set_std_c89, set_std_c99, set_std_c11, set_std_c17): Set
+	flag_isoc2x to 0.
+	* c.opt (Wc11-c2x-compat, std=c2x, std=gnu2x): New options.
+
+2018-10-17  Joseph Myers  <joseph@codesourcery.com>
+
+	* c.opt (std=c17, std=c18, std=gnu17, std=gnu18, std=iso9899:2017)
+	(std=iso9899:2018): Document C17 as published in 2018.
+
 2018-10-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR c++/87364

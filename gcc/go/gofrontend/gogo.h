@@ -12,9 +12,7 @@
 class Traverse;
 class Statement_inserter;
 class Type;
-class Type_hash_identical;
 class Type_equal;
-class Type_identical;
 class Typed_identifier;
 class Typed_identifier_list;
 class Function_type;
@@ -201,26 +199,10 @@ class Gogo
     return name.substr(1, name.rfind('.') - 1);
   }
 
-  // Given a name which may or may not have been hidden, return the
-  // name to use within a mangled symbol name.
-  static std::string
-  mangle_possibly_hidden_name(const std::string& name)
-  { 
-    // FIXME: This adds in pkgpath twice for hidden symbols, which is
-    // less than ideal.
-    std::string n;
-    if (!Gogo::is_hidden_name(name))
-      n = name;
-    else
-      {
-        n = ".";
-        std::string pkgpath = Gogo::hidden_name_pkgpath(name);
-        n.append(Gogo::pkgpath_for_symbol(pkgpath));
-        n.append(1, '.');
-        n.append(Gogo::unpack_hidden_name(name));
-      }
-    return n;
-  }
+  // Given a name which may or may not have been hidden, append the
+  // appropriate version of the name to the result string.
+  static void
+  append_possibly_hidden_name(std::string *result, const std::string& name);
 
   // Given a name which may or may not have been hidden, return the
   // name to use in an error message.
@@ -680,7 +662,7 @@ class Gogo
   // Add notes about the escape level of a function's input and output
   // parameters for exporting and importing top level functions. 
   void
-  tag_function(Named_object*);
+  tag_function(Escape_context*, Named_object*);
 
   // Reclaim memory of escape analysis Nodes.
   void

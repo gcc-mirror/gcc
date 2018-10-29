@@ -1,3 +1,11 @@
+2018-10-26  Jan Hubicka  <jh@suse.cz>
+
+	* lto/lto-symtab.c (lto_symtab_merge_decls_2): Fix extra space.
+
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-lto): New.
+
 2018-08-29  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/87130

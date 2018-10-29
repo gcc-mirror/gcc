@@ -324,6 +324,7 @@ namespace __debug
 #endif // C++17
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __position)
       {
@@ -358,6 +359,7 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __first, const_iterator __last)
       {

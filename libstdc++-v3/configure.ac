@@ -255,8 +255,8 @@ if $GLIBCXX_IS_NATIVE; then
   GLIBCXX_CHECK_MATH_SUPPORT
   GLIBCXX_CHECK_STDLIB_SUPPORT
 
-  # For /dev/random and /dev/urandom for TR1.
-  GLIBCXX_CHECK_RANDOM_TR1
+  # For /dev/random and /dev/urandom for std::random_device.
+  GLIBCXX_CHECK_DEV_RANDOM
 
   # For TLS support.
   GCC_CHECK_TLS
@@ -422,6 +422,9 @@ GLIBCXX_CHECK_GTHREADS
 AC_CHECK_HEADERS([fcntl.h dirent.h sys/statvfs.h utime.h])
 GLIBCXX_ENABLE_FILESYSTEM_TS
 GLIBCXX_CHECK_FILESYSTEM_DEPS
+
+# For Networking TS.
+AC_CHECK_HEADERS([fcntl.h sys/ioctl.h sys/socket.h sys/uio.h poll.h netdb.h arpa/inet.h netinet/in.h netinet/tcp.h])
 
 # For Transactional Memory TS
 GLIBCXX_CHECK_SIZE_T_MANGLING

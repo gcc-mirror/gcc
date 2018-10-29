@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -fdump-tree-phiopt1" } */
+/* { dg-options "-O -fdump-tree-phiopt2" } */
 
 int f0(int i)
 {
@@ -33,4 +33,4 @@ int f5(int i)
 
 /* We should if-convert all functions to carry out the operation
    unconditionally.  */
-/* { dg-final { scan-tree-dump-not "= PHI" "phiopt1" } } */
+/* { dg-final { scan-tree-dump-not "= PHI" "phiopt2" } } */

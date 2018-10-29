@@ -83,7 +83,7 @@ bool type_known_to_have_no_derivations_p (tree);
 bool contains_polymorphic_type_p (const_tree);
 void register_odr_type (tree);
 bool types_must_be_same_for_odr (tree, tree);
-bool types_odr_comparable (tree, tree, bool strict = false);
+bool types_odr_comparable (tree, tree);
 cgraph_node *try_speculative_devirtualization (tree, HOST_WIDE_INT,
 					       ipa_polymorphic_call_context);
 void warn_types_mismatch (tree t1, tree t2, location_t loc1 = UNKNOWN_LOCATION,
@@ -179,6 +179,7 @@ polymorphic_type_binfo_p (const_tree binfo)
 inline bool
 type_with_linkage_p (const_tree t)
 {
+  gcc_checking_assert (TYPE_MAIN_VARIANT (t) == t);
   if (!TYPE_NAME (t) || TREE_CODE (TYPE_NAME (t)) != TYPE_DECL)
     return false;
 
@@ -193,10 +194,10 @@ type_with_linkage_p (const_tree t)
   if (DECL_ASSEMBLER_NAME_SET_P (TYPE_NAME (t)))
     return true;
 
-  /* If free lang data was not run check if indeed the type looks like C++
-     type with linkage.  */
-  if (in_lto_p || !TYPE_STUB_DECL (t))
+  if (in_lto_p)
     return false;
+  /* We used to check for TYPE_STUB_DECL but that is set to NULL for forward
+     declarations.  */
 
   if (!RECORD_OR_UNION_TYPE_P (t) && TREE_CODE (t) != ENUMERAL_TYPE)
     return false;

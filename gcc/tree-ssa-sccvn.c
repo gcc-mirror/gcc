@@ -1210,7 +1210,7 @@ copy_reference_ops_from_call (gcall *call,
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);
-  if (stmt_could_throw_p (call) && (lr = lookup_stmt_eh_lp (call)) > 0)
+  if (stmt_could_throw_p (cfun, call) && (lr = lookup_stmt_eh_lp (call)) > 0)
     temp.op2 = size_int (lr);
   temp.off = -1;
   result->safe_push (temp);
@@ -6691,6 +6691,7 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 
   XDELETEVEC (bb_to_rpo);
   XDELETEVEC (rpo);
+  XDELETEVEC (rpo_state);
 
   return todo;
 }

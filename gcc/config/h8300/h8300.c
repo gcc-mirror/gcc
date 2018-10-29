@@ -865,15 +865,15 @@ h8300_expand_prologue (void)
 	  if (TARGET_H8300S)
 	    {
 	      /* See how many registers we can push at the same time.  */
-	      if ((!TARGET_H8300SX || (regno & 3) == 0)
+	      if ((TARGET_H8300SX || (regno & 3) == 0)
 		  && ((saved_regs >> regno) & 0x0f) == 0x0f)
 		n_regs = 4;
 
-	      else if ((!TARGET_H8300SX || (regno & 3) == 0)
+	      else if ((TARGET_H8300SX || (regno & 3) == 0)
 		       && ((saved_regs >> regno) & 0x07) == 0x07)
 		n_regs = 3;
 
-	      else if ((!TARGET_H8300SX || (regno & 1) == 0)
+	      else if ((TARGET_H8300SX || (regno & 1) == 0)
 		       && ((saved_regs >> regno) & 0x03) == 0x03)
 		n_regs = 2;
 	    }

@@ -76,6 +76,7 @@ set plugin_test_list [list \
 	  diagnostic-test-show-locus-color.c \
 	  diagnostic-test-show-locus-no-labels.c \
 	  diagnostic-test-show-locus-bw-line-numbers.c \
+	  diagnostic-test-show-locus-bw-line-numbers-2.c \
 	  diagnostic-test-show-locus-color-line-numbers.c \
 	  diagnostic-test-show-locus-parseable-fixits.c \
 	  diagnostic-test-show-locus-generate-patch.c }\

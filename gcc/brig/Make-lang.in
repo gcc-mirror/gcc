@@ -148,6 +148,9 @@ brig.srcman: doc/gccbrig.1
 
 lang_checks += check-brig
 
+# No brig-specific selftests
+selftest-brig:
+
 # Install hooks.
 
 brig.install-common: installdirs

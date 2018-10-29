@@ -394,7 +394,7 @@ gfc_find_and_cut_at_last_class_ref (gfc_expr *e)
       e->ref = NULL;
     }
 
-  base_expr = gfc_expr_to_initialize (e);
+  base_expr = gfc_copy_expr (e);
 
   /* Restore the original tail expression.  */
   if (class_ref)
@@ -1131,7 +1131,8 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
 
       /* Return the len component, except in the case of scalarized array
 	references, where the dynamic type cannot change.  */
-      if (!elemental && full_array && copyback)
+      if (!elemental && full_array && copyback
+	  && (UNLIMITED_POLY (e) || VAR_P (tmp)))
 	  gfc_add_modify (&parmse->post, tmp,
 			  fold_convert (TREE_TYPE (tmp), ctree));
     }
@@ -8867,6 +8868,19 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  msg = _("Target of rank remapping is too small (%ld < %ld)");
 	  gfc_trans_runtime_check (true, false, fault, &block, &expr2->where,
 				   msg, rsize, lsize);
+	}
+
+      if (expr1->ts.type == BT_CHARACTER
+	  && expr1->symtree->n.sym->ts.deferred
+	  && expr1->symtree->n.sym->ts.u.cl->backend_decl
+	  && VAR_P (expr1->symtree->n.sym->ts.u.cl->backend_decl))
+	{
+	  tmp = expr1->symtree->n.sym->ts.u.cl->backend_decl;
+	  if (expr2->expr_type != EXPR_NULL)
+	    gfc_add_modify (&block, tmp,
+			    fold_convert (TREE_TYPE (tmp), strlen_rhs));
+	  else
+	    gfc_add_modify (&block, tmp, build_zero_cst (TREE_TYPE (tmp)));
 	}
 
       gfc_add_block_to_block (&block, &lse.post);

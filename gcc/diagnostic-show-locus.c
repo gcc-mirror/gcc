@@ -930,6 +930,9 @@ layout::layout (diagnostic_context * context,
   /* If we're showing jumps in the line-numbering, allow at least 3 chars.  */
   if (m_line_spans.length () > 1)
     m_linenum_width = MAX (m_linenum_width, 3);
+  /* If there's a minimum margin width, apply it (subtracting 1 for the space
+     after the line number.  */
+  m_linenum_width = MAX (m_linenum_width, context->min_margin_width - 1);
 
   /* Adjust m_x_offset.
      Center the primary caret to fit in max_width; all columns
@@ -1386,7 +1389,12 @@ layout::start_annotation_line (char margin_char) const
 {
   if (m_show_line_numbers_p)
     {
-      for (int i = 0; i < m_linenum_width; i++)
+      /* Print the margin.  If MARGIN_CHAR != ' ', then print up to 3
+	 of it, right-aligned, padded with spaces.  */
+      int i;
+      for (i = 0; i < m_linenum_width - 3; i++)
+	pp_space (m_pp);
+      for (; i < m_linenum_width; i++)
 	pp_character (m_pp, margin_char);
       pp_string (m_pp, " |");
     }
@@ -3027,12 +3035,12 @@ test_diagnostic_show_locus_fixit_lines (const line_table_case &case_)
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
-		  "  3 |                        y\n"
-		  "    |                        .\n"
-		  "....\n"
-		  "  6 |                         : 0.0};\n"
-		  "    |                         ^\n"
-		  "    |                         =\n",
+		  "    3 |                        y\n"
+		  "      |                        .\n"
+		  "......\n"
+		  "    6 |                         : 0.0};\n"
+		  "      |                         ^\n"
+		  "      |                         =\n",
 		  pp_formatted_text (dc.printer));
   }
 }
@@ -3523,10 +3531,10 @@ test_fixit_insert_containing_newline (const line_table_case &case_)
       dc.show_line_numbers_p = true;
       diagnostic_show_locus (&dc, &richloc, DK_ERROR);
       ASSERT_STREQ ("\n"
-		    "2 |       x = a;\n"
-		    "+ |+      break;\n"
-		    "3 |     case 'b':\n"
-		    "  |     ^~~~~~~~~\n",
+		    "    2 |       x = a;\n"
+		    "  +++ |+      break;\n"
+		    "    3 |     case 'b':\n"
+		    "      |     ^~~~~~~~~\n",
 		    pp_formatted_text (dc.printer));
     }
   }
@@ -3605,11 +3613,11 @@ test_fixit_insert_containing_newline_2 (const line_table_case &case_)
     dc.show_line_numbers_p = true;
     diagnostic_show_locus (&dc, &richloc, DK_ERROR);
     ASSERT_STREQ ("\n"
-		  "+ |+#include <stdio.h>\n"
-		  "1 | test (int ch)\n"
-		  "2 | {\n"
-		  "3 |  putchar (ch);\n"
-		  "  |  ^~~~~~~\n",
+		  "  +++ |+#include <stdio.h>\n"
+		  "    1 | test (int ch)\n"
+		  "    2 | {\n"
+		  "    3 |  putchar (ch);\n"
+		  "      |  ^~~~~~~\n",
 		  pp_formatted_text (dc.printer));
   }
 }
@@ -3734,6 +3742,7 @@ test_line_numbers_multiline_range ()
 
   test_diagnostic_context dc;
   dc.show_line_numbers_p = true;
+  dc.min_margin_width = 0;
   gcc_rich_location richloc (loc);
   diagnostic_show_locus (&dc, &richloc, DK_ERROR);
   ASSERT_STREQ ("\n"

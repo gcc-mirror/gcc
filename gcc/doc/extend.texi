@@ -66,7 +66,7 @@ extensions, accepted by GCC in C90 mode and in C++.
 * C++ Comments::        C++ comments are recognized.
 * Dollar Signs::        Dollar sign is allowed in identifiers.
 * Character Escapes::   @samp{\e} stands for the character @key{ESC}.
-* Alignment::           Inquiring about the alignment of a type or variable.
+* Alignment::           Determining the alignment of a function, type or variable.
 * Inline::              Defining inline functions (as fast as macros).
 * Volatiles::           What constitutes an access to a volatile object.
 * Using Assembly Language with C:: Instructions and extensions for interfacing C with assembler.
@@ -2380,10 +2380,14 @@ is not defined in the same translation unit.
 This attribute requires assembler and object file support,
 and may not be available on all targets.
 
-@item aligned (@var{alignment})
+@item aligned
+@itemx aligned (@var{alignment})
 @cindex @code{aligned} function attribute
-This attribute specifies a minimum alignment for the function,
-measured in bytes.
+The @code{aligned} attribute specifies a minimum alignment for
+the function, measured in bytes.  When specified, @var{alignment} must
+be an integer constant power of 2.  Specifying no @var{alignment} argument
+implies the maximum alignment for the target, which is often, but by no
+means always, 8 or 16 bytes.
 
 You cannot use this attribute to decrease the alignment of a function,
 only to increase it.  However, when you explicitly specify a function
@@ -3075,7 +3079,8 @@ including those that do not have an attribute suitable for disabling
 them individually.  This attribute is supported mainly for the purpose
 of testing the compiler.
 
-@item nonnull (@var{arg-index}, @dots{})
+@item nonnull
+@itemx nonnull (@var{arg-index}, @dots{})
 @cindex @code{nonnull} function attribute
 @cindex functions with non-null pointer arguments
 The @code{nonnull} attribute specifies that some function parameters should
@@ -3092,10 +3097,15 @@ causes the compiler to check that, in calls to @code{my_memcpy},
 arguments @var{dest} and @var{src} are non-null.  If the compiler
 determines that a null pointer is passed in an argument slot marked
 as non-null, and the @option{-Wnonnull} option is enabled, a warning
-is issued.  The compiler may also choose to make optimizations based
-on the knowledge that certain function arguments will never be null.
+is issued.  @xref{Warning Options}.  Unless disabled by
+the @option{-fno-delete-null-pointer-checks} option the compiler may
+also perform optimizations based on the knowledge that certain function
+arguments cannot be null. In addition,
+the @option{-fisolate-erroneous-paths-attribute} option can be specified
+to have GCC transform calls with null arguments to non-null functions
+into traps. @xref{Optimize Options}.
 
-If no argument index list is given to the @code{nonnull} attribute,
+If no @var{arg-index} is given to the @code{nonnull} attribute,
 all pointer arguments are marked as non-null.  To illustrate, the
 following declaration is equivalent to the previous example:
 
@@ -6010,9 +6020,15 @@ The following attributes are supported on most targets.
 
 @table @code
 @cindex @code{aligned} variable attribute
-@item aligned (@var{alignment})
-This attribute specifies a minimum alignment for the variable or
-structure field, measured in bytes.  For example, the declaration:
+@item aligned
+@itemx aligned (@var{alignment})
+The @code{aligned} attribute specifies a minimum alignment for the variable
+or structure field, measured in bytes.  When specified, @var{alignment} must
+be an integer constant power of 2.  Specifying no @var{alignment} argument
+implies the maximum alignment for the target, which is often, but by no
+means always, 8 or 16 bytes.
+
+For example, the declaration:
 
 @smallexample
 int x __attribute__ ((aligned (16))) = 0;
@@ -6939,9 +6955,13 @@ The following type attributes are supported on most targets.
 
 @table @code
 @cindex @code{aligned} type attribute
-@item aligned (@var{alignment})
-This attribute specifies a minimum alignment (in bytes) for variables
-of the specified type.  For example, the declarations:
+@item aligned
+@itemx aligned (@var{alignment})
+The @code{aligned} attribute specifies a minimum alignment (in bytes) for
+variables of the specified type.  When specified, @var{alignment} must be
+a power of 2.  Specifying no @var{alignment} argument implies the maximum
+alignment for the target, which is often, but by no means always, 8 or 16
+bytes.  For example, the declarations:
 
 @smallexample
 struct S @{ short f[3]; @} __attribute__ ((aligned (8)));
@@ -7938,29 +7958,29 @@ You can use the sequence @samp{\e} in a string or character constant to
 stand for the ASCII character @key{ESC}.
 
 @node Alignment
-@section Inquiring on Alignment of Types or Variables
+@section Determining the Alignment of Functions, Types or Variables
 @cindex alignment
 @cindex type alignment
 @cindex variable alignment
 
-The keyword @code{__alignof__} allows you to inquire about how an object
-is aligned, or the minimum alignment usually required by a type.  Its
-syntax is just like @code{sizeof}.
+The keyword @code{__alignof__} determines the alignment requirement of
+a function, object, or a type, or the minimum alignment usually required
+by a type.  Its syntax is just like @code{sizeof} and C11 @code{_Alignof}.
 
 For example, if the target machine requires a @code{double} value to be
 aligned on an 8-byte boundary, then @code{__alignof__ (double)} is 8.
 This is true on many RISC machines.  On more traditional machine
 designs, @code{__alignof__ (double)} is 4 or even 2.
 
-Some machines never actually require alignment; they allow reference to any
+Some machines never actually require alignment; they allow references to any
 data type even at an odd address.  For these machines, @code{__alignof__}
 reports the smallest alignment that GCC gives the data type, usually as
 mandated by the target ABI.
 
 If the operand of @code{__alignof__} is an lvalue rather than a type,
 its value is the required alignment for its type, taking into account
-any minimum alignment specified with GCC's @code{__attribute__}
-extension (@pxref{Variable Attributes}).  For example, after this
+any minimum alignment specified by attribute @code{aligned}
+(@pxref{Common Variable Attributes}).  For example, after this
 declaration:
 
 @smallexample
@@ -7970,9 +7990,12 @@ struct foo @{ int x; char y; @} foo1;
 @noindent
 the value of @code{__alignof__ (foo1.y)} is 1, even though its actual
 alignment is probably 2 or 4, the same as @code{__alignof__ (int)}.
+It is an error to ask for the alignment of an incomplete type other
+than @code{void}.
 
-It is an error to ask for the alignment of an incomplete type.
-
+If the operand of the @code{__alignof__} expression is a function,
+the expression evaluates to the alignment of the function which may
+be specified by attribute @code{aligned} (@pxref{Common Function Attributes}).
 
 @node Inline
 @section An Inline Function is As Fast As a Macro
@@ -15788,7 +15811,7 @@ processors:
 @smallexample
 uint64_t __builtin_ppc_get_timebase ();
 unsigned long __builtin_ppc_mftb ();
-__ibm128 __builtin_unpack_ibm128 (__ibm128, int);
+double __builtin_unpack_ibm128 (__ibm128, int);
 __ibm128 __builtin_pack_ibm128 (double, double);
 double __builtin_mffs (void);
 void __builtin_mtfsb0 (const int);
@@ -15904,13 +15927,13 @@ The @code{__builtin_unpack_longdouble} function takes a
 the constant is 0, the first @code{double} within the
 @code{long double} is returned, otherwise the second @code{double}
 is returned.  The @code{__builtin_unpack_longdouble} function is only
-availble if @code{long double} uses the IBM extended double
+available if @code{long double} uses the IBM extended double
 representation.
 
 The @code{__builtin_pack_longdouble} function takes two @code{double}
 arguments and returns a @code{long double} value that combines the two
 arguments.  The @code{__builtin_pack_longdouble} function is only
-availble if @code{long double} uses the IBM extended double
+available if @code{long double} uses the IBM extended double
 representation.
 
 The @code{__builtin_unpack_ibm128} function takes a @code{__ibm128}

@@ -472,7 +472,9 @@ Temporary_statement::do_flatten(Gogo*, Named_object*, Block*,
 
   if (this->type_ != NULL
       && this->init_ != NULL
-      && !Type::are_identical(this->type_, this->init_->type(), false, NULL)
+      && !Type::are_identical(this->type_, this->init_->type(),
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL)
       && this->init_->type()->interface_type() != NULL
       && !this->init_->is_variable())
     {
@@ -841,7 +843,8 @@ Assignment_statement::do_flatten(Gogo*, Named_object*, Block*,
 
   if (!this->lhs_->is_sink_expression()
       && !Type::are_identical(this->lhs_->type(), this->rhs_->type(),
-			      false, NULL)
+			      Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			      NULL)
       && this->rhs_->type()->interface_type() != NULL
       && !this->rhs_->is_variable())
     {
@@ -4384,7 +4387,9 @@ Send_statement::do_flatten(Gogo*, Named_object*, Block*,
     }
 
   Type* element_type = this->channel_->type()->channel_type()->element_type();
-  if (!Type::are_identical(element_type, this->val_->type(), false, NULL)
+  if (!Type::are_identical(element_type, this->val_->type(),
+			   Type::COMPARE_ERRORS | Type::COMPARE_TAGS,
+			   NULL)
       && this->val_->type()->interface_type() != NULL
       && !this->val_->is_variable())
     {

@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "params.h"
 #include "case-cfn-macros.h"
 
-static unsigned int tree_ssa_phiopt_worker (bool, bool);
+static unsigned int tree_ssa_phiopt_worker (bool, bool, bool);
 static bool conditional_replacement (basic_block, basic_block,
 				     edge, edge, gphi *, tree, tree);
 static gphi *factor_out_conditional_conversion (edge, edge, gphi *, tree, tree,
@@ -119,7 +119,7 @@ tree_ssa_cs_elim (void)
      An interfacing issue of find_data_references_in_bb.  */
   loop_optimizer_init (LOOPS_NORMAL);
   scev_initialize ();
-  todo = tree_ssa_phiopt_worker (true, false);
+  todo = tree_ssa_phiopt_worker (true, false, false);
   scev_finalize ();
   loop_optimizer_finalize ();
   return todo;
@@ -159,7 +159,7 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
    DO_HOIST_LOADS is true when we want to hoist adjacent loads out
    of diamond control flow patterns, false otherwise.  */
 static unsigned int
-tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
+tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads, bool early_p)
 {
   basic_block bb;
   basic_block *bb_order;
@@ -289,18 +289,19 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 
 	  /* Value replacement can work with more than one PHI
 	     so try that first. */
-	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      phi = as_a <gphi *> (gsi_stmt (gsi));
-	      arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
-	      arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
-	      if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1) == 2)
-		{
-		  candorest = false;
-	          cfgchanged = true;
-		  break;
-		}
-	    }
+	  if (!early_p)
+	    for (gsi = gsi_start (phis); !gsi_end_p (gsi); gsi_next (&gsi))
+	      {
+		phi = as_a <gphi *> (gsi_stmt (gsi));
+		arg0 = gimple_phi_arg_def (phi, e1->dest_idx);
+		arg1 = gimple_phi_arg_def (phi, e2->dest_idx);
+		if (value_replacement (bb, bb1, e1, e2, phi, arg0, arg1) == 2)
+		  {
+		    candorest = false;
+		    cfgchanged = true;
+		    break;
+		  }
+	      }
 
 	  if (!candorest)
 	    continue;
@@ -331,12 +332,14 @@ tree_ssa_phiopt_worker (bool do_store_elim, bool do_hoist_loads)
 	    }
 
 	  /* Do the replacement of conditional if it can be done.  */
-	  if (conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
+	  if (!early_p
+	      && conditional_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (abs_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
-	  else if (cond_removal_in_popcount_pattern (bb, bb1, e1, e2,
-						     phi, arg0, arg1))
+	  else if (!early_p
+		   && cond_removal_in_popcount_pattern (bb, bb1, e1, e2,
+							phi, arg0, arg1))
 	    cfgchanged = true;
 	  else if (minmax_replacement (bb, bb1, e1, e2, phi, arg0, arg1))
 	    cfgchanged = true;
@@ -913,7 +916,9 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
       gsi_next_nondebug (&gsi);
       if (!is_gimple_assign (stmt))
 	{
-	  emtpy_or_with_defined_p = false;
+	  if (gimple_code (stmt) != GIMPLE_PREDICT
+	      && gimple_code (stmt) != GIMPLE_NOP)
+	    emtpy_or_with_defined_p = false;
 	  continue;
 	}
       /* Now try to adjust arg0 or arg1 according to the computation
@@ -2794,17 +2799,26 @@ class pass_phiopt : public gimple_opt_pass
 {
 public:
   pass_phiopt (gcc::context *ctxt)
-    : gimple_opt_pass (pass_data_phiopt, ctxt)
+    : gimple_opt_pass (pass_data_phiopt, ctxt), early_p (false)
   {}
 
   /* opt_pass methods: */
   opt_pass * clone () { return new pass_phiopt (m_ctxt); }
+  void set_pass_param (unsigned n, bool param)
+    {
+      gcc_assert (n == 0);
+      early_p = param;
+    }
   virtual bool gate (function *) { return flag_ssa_phiopt; }
   virtual unsigned int execute (function *)
     {
-      return tree_ssa_phiopt_worker (false, gate_hoist_loads ());
+      return tree_ssa_phiopt_worker (false,
+				     !early_p ? gate_hoist_loads () : false,
+				     early_p);
     }
 
+private:
+  bool early_p;
 }; // class pass_phiopt
 
 } // anon namespace

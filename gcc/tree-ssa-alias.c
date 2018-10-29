@@ -2396,7 +2396,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 	 ???  We only need to care about the RHS throwing.  For aggregate
 	 assignments or similar calls and non-call exceptions the LHS
 	 might throw as well.  */
-      && !stmt_can_throw_internal (stmt))
+      && !stmt_can_throw_internal (cfun, stmt))
     {
       tree lhs = gimple_get_lhs (stmt);
       /* If LHS is literally a base of the access we are done.  */

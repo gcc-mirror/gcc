@@ -23,6 +23,11 @@
 ;; -------------------------------------------------------------------------
 
 ;; Nonzero if OP can be source of a simple move operation.
+;;
+;; The CONST_INT could really be CONST if we were to fix
+;; ft32_print_operand_address to format the address correctly.
+;; It might require assembler/linker work as well to ensure
+;; the right relocation is emitted.
 
 (define_predicate "ft32_general_movsrc_operand"
   (match_code "mem,const_int,reg,subreg,symbol_ref,label_ref,const")
@@ -34,7 +39,7 @@
   if (MEM_P (op)
       && GET_CODE (XEXP (op, 0)) == PLUS
       && GET_CODE (XEXP (XEXP (op, 0), 0)) == REG
-      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST)
+      && GET_CODE (XEXP (XEXP (op, 0), 1)) == CONST_INT)
     return 1;
 
   return general_operand (op, mode);

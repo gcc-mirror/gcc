@@ -441,7 +441,7 @@ func badTimer() {
 
 // Entry points for net, time to call nanotime.
 
-//go:linkname poll_runtimeNano internal_poll.runtimeNano
+//go:linkname poll_runtimeNano internal..z2fpoll.runtimeNano
 func poll_runtimeNano() int64 {
 	return nanotime()
 }

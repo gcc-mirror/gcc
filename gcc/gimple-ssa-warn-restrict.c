@@ -312,7 +312,7 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type rng = get_range_info (offset, &min, &max);
+      value_range_kind rng = get_range_info (offset, &min, &max);
       if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);
