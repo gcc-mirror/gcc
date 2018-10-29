@@ -1,3 +1,9 @@
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87785
+	* tree-vect-slp.c (vect_gather_slp_loads): Only gather
+	internal defs.
+
 2018-10-29  Olivier Hainque  <hainque@adacore.com>
 
 	* VXWORKS_NET_LIBS_RTP: New macro, network part of VXWORKS_LIBS_RTP.
