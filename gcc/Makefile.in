@@ -2899,10 +2899,13 @@ s-iov: build/gcov-iov$(build_exeext) $(BASEVER) $(DEVPHASE)
 	$(SHELL) $(srcdir)/../move-if-change tmp-gcov-iov.h gcov-iov.h
 	$(STAMP) s-iov
 
-GCOV_OBJS = gcov.o
+# gcov.o needs $(ZLIBINC) added to the include flags.
+CFLAGS-gcov.o += $(ZLIBINC)
+
+GCOV_OBJS = gcov.o json.o
 gcov$(exeext): $(GCOV_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_OBJS) \
-		hash-table.o ggc-none.o $(LIBS) -o $@
+		hash-table.o ggc-none.o $(LIBS) $(ZLIB) -o $@
 GCOV_DUMP_OBJS = gcov-dump.o
 gcov-dump$(exeext): $(GCOV_DUMP_OBJS) $(LIBDEPS)
 	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) $(GCOV_DUMP_OBJS) \
