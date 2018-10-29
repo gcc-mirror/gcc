@@ -1,3 +1,10 @@
+2018-10-29  Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+        PR c++/66053
+        * semantics.c (handle_omp_array_sections_1): Allow array
+        sections with "this" pointer for OpenACC.
+
 2018-10-25  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_sizeof_operand): Remove redundant use of
