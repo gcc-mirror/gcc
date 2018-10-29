@@ -1,3 +1,8 @@
+2018-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87594 - constexpr rejects-valid with range-based for.
+	* g++.dg/cpp1y/constexpr-loop8.C: New test.
+
 2018-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87785
