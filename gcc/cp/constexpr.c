@@ -5825,7 +5825,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	{
 	  if (!processing_template_decl)
 	    tmp = cxx_eval_outermost_constant_expr (tmp, true);
-	  if (integer_zerop (tmp))
+	  /* If we couldn't evaluate the condition, it might not ever be
+	     true.  */
+	  if (!integer_onep (tmp))
 	    return true;
 	}
       if (!RECUR (FOR_EXPR (t), any))
@@ -5853,7 +5855,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 	return false;
       if (!processing_template_decl)
 	tmp = cxx_eval_outermost_constant_expr (tmp, true);
-      if (integer_zerop (tmp))
+      /* If we couldn't evaluate the condition, it might not ever be true.  */
+      if (!integer_onep (tmp))
 	return true;
       if (!RECUR (WHILE_BODY (t), any))
 	return false;
