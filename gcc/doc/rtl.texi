@@ -1732,7 +1732,7 @@ Note that this generally is smaller than the number of
 @code{HOST_WIDE_INT}s implied by the mode size.
 
 @findex CONST_WIDE_INT_ELT
-@item CONST_WIDE_INT_NUNITS (@var{code},@var{i})
+@item CONST_WIDE_INT_ELT (@var{code},@var{i})
 Returns the @code{i}th element of the array.   Element 0 is contains
 the low order bits of the constant.
 
