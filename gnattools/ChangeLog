@@ -1,3 +1,8 @@
+2018-10-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR ada/81878
+	* Makefile.in (TOOLS_FLAGS_TO_PASS_NATIVE): Add -B ../../.
+
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR ada/81878
