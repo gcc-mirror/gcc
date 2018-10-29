@@ -1,3 +1,13 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/ux.texi (Quoting): New subsection, adapted from material at
+	https://gcc.gnu.org/wiki/DiagnosticsGuidelines written by
+	MartinSebor and ManuelLopezIbanez.
+	(Fix-it hints): Note that fix-it hints shouldn't be marked for
+	translation.
+
 2018-10-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/87469
