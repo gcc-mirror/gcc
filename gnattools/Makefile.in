@@ -70,9 +70,12 @@ INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
 # Variables for gnattools, native
+# Due to Windows path translations (See PR ada/81878) we need to add
+# -B../../ to the compiler paths as a workaround for that $(CXX) contains
+# Unix style paths that won't be translated by the runtime.
 TOOLS_FLAGS_TO_PASS_NATIVE= \
 	"CC=../../xgcc -B../../" \
-	"CXX=$(CXX)" \
+	"CXX=$(CXX) -B../../" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
