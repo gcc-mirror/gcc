@@ -1,3 +1,10 @@
+2018-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_PERSONALITY): New VxWorks
+	ports configuration macro, defaults to "gnu".
+	(VXWORKS_OS_CPP_BUILTINS): Use it. Feed TOOL and
+	TOOL_FAMILY instead of _VX_TOOL/_VXTOOL_FAMILY.
+
 2018-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87790
