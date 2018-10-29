@@ -1,3 +1,9 @@
+2018-10-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/87469
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): Fix niter
+	max value.
+
 2018-10-29  Paul A. Clarke  <pc@us.ibm.com>
 
 	* gcc.target/powerpc/ssse3-check.h: Remove inaccurate comment.
