@@ -1645,7 +1645,8 @@ vect_gather_slp_loads (slp_instance inst, slp_tree node,
   if (SLP_TREE_CHILDREN (node).length () == 0)
     {
       stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-      if (STMT_VINFO_GROUPED_ACCESS (stmt_info)
+      if (SLP_TREE_DEF_TYPE (node) == vect_internal_def
+	  && STMT_VINFO_GROUPED_ACCESS (stmt_info)
 	  && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
 	SLP_INSTANCE_LOADS (inst).safe_push (node);
     }
