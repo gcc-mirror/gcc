@@ -1,5 +1,9 @@
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
+	* name-hint.h (name_hint::take_deferred): New member function.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
 	PR c++/56856
 	* c-common.c (check_function_sentinel): Call fold_for_warn on the
 	argument.

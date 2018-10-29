@@ -1,3 +1,9 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* testsuite/17_intro/using_namespace_std_exp_neg.cc: Remove
+	"expected namespace-name before" error.
+	* testsuite/17_intro/using_namespace_std_tr1_neg.cc: Likewise.
+
 2018-10-28  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/23_containers/deque/48101_neg.cc: Remove dg-prune-output

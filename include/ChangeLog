@@ -1,3 +1,8 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* unique-ptr.h (gnu::move): Generalize so it applies to all
+	lvalue references, rather than just to unique_ptr values.
+
 2018-07-26  Martin Liska  <mliska@suse.cz>
 
 	PR lto/86548

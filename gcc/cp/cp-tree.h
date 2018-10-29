@@ -6445,6 +6445,7 @@ extern const char *decl_as_string		(tree, int);
 extern const char *decl_as_string_translate	(tree, int);
 extern const char *decl_as_dwarf_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
+extern const char *expr_to_string		(tree);
 extern const char *lang_decl_name		(tree, int, bool);
 extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
@@ -7478,8 +7479,6 @@ extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for            (location_t, tree, bool);
-extern bool suggest_alternative_in_explicit_scope (location_t, tree, tree);
 extern tree strip_using_decl                    (tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
