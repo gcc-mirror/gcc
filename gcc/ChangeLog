@@ -1,3 +1,19 @@
+2018-10-29  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc/config/rs6000/mmintrin.h (_mm_packs_pi16, _mm_packs_pi32,
+	_mm_packs_pu16, _mm_unpackhi_pi8, _mm_unpacklo_pi8, _mm_add_pi8,
+	_mm_add_pi16, _mm_add_pi32, _mm_sub_pi8, _mm_sub_pi16, _mm_sub_pi32,
+	_mm_cmpgt_pi8, _mm_cmpeq_pi16, _mm_cmpgt_pi16, _mm_cmpeq_pi32,
+	_mm_cmpgt_pi32, _mm_adds_pi8, _mm_adds_pi16, _mm_adds_pu8,
+	_mm_adds_pu16, _mm_subs_pi8, _mm_subs_pi16, _mm_subs_pu8,
+	_mm_subs_pu16, _mm_madd_pi16, _mm_mulhi_pi16, _mm_mullo_pi16,
+	_mm_sll_pi16, _mm_sra_pi16, _mm_srl_pi16, _mm_set1_pi16, _mm_set1_pi8):
+	Change 'vector' to '__vector'.
+	* gcc/config/rs6000/xmmintrin.h (_mm_cvtps_pi32, _mm_cvttps_pi32,
+	_mm_cvtps_pi16, _mm_cvtps_pi8, _mm_max_pi16, _mm_max_pu8, _mm_min_pi16,
+	_mm_min_pu8, _mm_mulhi_pu16, _mm_shuffle_pi16, _mm_avg_pu8,
+	_mm_avg_pu16): Likewise.  And, whitespace corrections.
+
 2018-10-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87785
