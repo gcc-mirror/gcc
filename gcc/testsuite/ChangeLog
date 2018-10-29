@@ -1,5 +1,15 @@
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
+	PR c++/87721
+	* c-c++-common/substring-location-PR-87721.c: New test.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Add test for
+	PR 87721.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(test_string_literals): Fold the index arguments before checking
+	for INTEGER_CST.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-c++-common/spellcheck-reserved.c: Update expected output for
 	C++ for merger of "did you mean" suggestions into the error
 	message.

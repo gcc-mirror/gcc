@@ -1,3 +1,10 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87721
+	* input.c (get_substring_ranges_for_loc): Detect if
+	linemap_resolve_location gives us a NULL map, and reject
+	this case.
+
 2018-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* config.gcc (xstormy16-*-elf): Set tm_d_file.
