@@ -175,6 +175,13 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define TARGET_POSIX_IO
 
 /* A VxWorks implementation of TARGET_OS_CPP_BUILTINS.  */
+
+/* The VxWorks personality we rely on, controlling which sections of system
+   headers files we trigger.  This might be redefined on targets where the
+   base VxWorks environment doesn't come with a GNU toolchain.  */
+
+#define VXWORKS_PERSONALITY "gnu"
+
 #define VXWORKS_OS_CPP_BUILTINS()					\
   do									\
     {									\
@@ -185,8 +192,8 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	builtin_define ("__RTP__");					\
       else								\
 	builtin_define ("_WRS_KERNEL");					\
-      builtin_define ("_VX_TOOL_FAMILY=gnu");				\
-      builtin_define ("_VX_TOOL=gnu");					\
+      builtin_define ("TOOL_FAMILY=" VXWORKS_PERSONALITY);		\
+      builtin_define ("TOOL=" VXWORKS_PERSONALITY);			\
       if (TARGET_VXWORKS7)						\
         {								\
            builtin_define ("_VSB_CONFIG_FILE=<config/vsbConfig.h>");	\
@@ -208,6 +215,7 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* We provide our own version of __clear_cache in libgcc, using a separate C
    file to facilitate #inclusion of VxWorks header files.  */
+#undef CLEAR_INSN_CACHE
 #define CLEAR_INSN_CACHE 1
 
 /* Default dwarf control values, for non-gdb debuggers that come with
