@@ -1,6 +1,9 @@
 2018-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_imports): Do in one pass.
+
+	gcc/cp/
 	* module.cc (module_state::direct_import): Drop DEFERRABLE arg.
 	({import,declare}_module): Deal with deferring here.
 	(process_deferred_imports): Adjust direct_import call.

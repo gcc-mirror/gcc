@@ -8156,27 +8156,26 @@ module_state::write_imports (bytes_out &sec, bool direct)
     }
 }
 
+/* READER, LMAPS  != NULL == direct imports,
+   == NUL == indirect imports.  */
+
 unsigned
 module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 {
   unsigned count = sec.u ();
-  typedef std::pair<unsigned, bool> ix_bool_t;
-  typedef std::pair<module_state *, ix_bool_t> tuple;
-  auto_vec<tuple> imports (count);
   unsigned loaded = 0;
 
-  /* First read the table, and initialize locations.
-     We do this in two passes to cluster line maps.  */
-  // FIXME:we don't need to be so clever
   while (count--)
     {
       unsigned ix = sec.u ();
       if (ix >= slurp ()->remap->length ()
 	  || ix < MODULE_IMPORT_BASE || (*slurp ()->remap)[ix])
-	break;
+	{
+	  sec.set_overrun ();
+	  break;
+	}
 
-      size_t len;
-      const char *name = sec.str (&len);
+      const char *name = sec.str (NULL);
       module_state *imp = get_module (name);
       unsigned crc = sec.u32 ();
       bool exported = false;
@@ -8184,80 +8183,69 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
       if (lmaps)
 	{
 	  /* A direct import, maybe load it.  */
-	  size_t len;
+	  size_t flen;
 	  location_t floc = read_location (sec);
-	  const char *filename_str = sec.str (&len);
-
+	  const char *fname = sec.str (&flen);
 	  exported = sec.u ();
+
 	  if (sec.get_overrun ())
 	    break;
+
 	  if (!imp->check_not_purview (loc))
-	    imp = NULL;
-	  else
+	    continue;
+
+	  if (imp->is_detached ())
+	    imp->attach (floc);
+
+	  if (!imp->is_imported ())
 	    {
-	      if (imp->is_detached ())
-		imp->attach (floc);
-	      if (!imp->is_imported ())
-		{
-		  imp->crc = crc;
-		  if (!imp->filename && filename_str[0])
-		    {
-		      char *rel = XNEWVEC (char, len + 1);
-		      memcpy (rel, filename_str, len + 1);
-		      imp->filename = rel;
-		    }
-		}
+	      unsigned n = dump.push (imp);
+	      imp->maybe_create_loc ();
+	      imp->crc = crc;
+	      if (imp->filename)
+		fname = NULL;
+	      else if (!fname[0])
+		fname = module_mapper::import_export (imp, false);
+	      if (!imp->do_import (fname, reader))
+		imp = NULL;
+	      dump.pop (n);
+	      if (!imp)
+		continue;
 	    }
 	}
-      else if (imp->is_detached ())
-	/* An indirect import, find it, it should be there.  */
-	error_at (loc, "indirect import %qs is not already loaded",
-		  imp->fullname);
-
-      if (imp && imp->crc != crc)
+      else
 	{
-	  error_at (loc, "import %qs has CRC mismatch", imp->fullname);
-	  imp = NULL;
-	}
+	  if (sec.get_overrun ())
+	    break;
 
-      if (imp)
-	imports.quick_push (tuple (imp, ix_bool_t (ix, exported)));
-    }
-
-  /* Now process the imports.  */
-  for (unsigned ix = 0; ix != imports.length (); ix++)
-    {
-      tuple &tup = imports[ix];
-      if (lmaps && !tup.first->is_imported ())
-	{
-	  char *fname = NULL;
-	  unsigned n = dump.push (tup.first);
-	  tup.first->maybe_create_loc ();
-	  if (!tup.first->filename)
-	    fname = module_mapper::import_export (tup.first, false);
-	  if (!tup.first->do_import (fname, reader))
-	    tup.first = NULL;
-	  dump.pop (n);
-	}
-
-      if (tup.first)
-	{
-	  module_state *imp = tup.first;
-	  if (imp->is_alias ())
+	  /* An indirect import, find it, it should already be here.  */
+	  if (imp->is_detached ())
 	    {
-	      imp = imp->u1.alias;
-	      dump () && dump ("Module %M is alias of %M", tup.first, imp);
+	      error_at (loc, "indirect import %qs is not already loaded",
+			imp->fullname);
+	      continue;
 	    }
-	  (*slurp ()->remap)[tup.second.first] = imp->mod;
-	  if (lmaps)
-	    set_import (imp, tup.second.second);
-	  dump () && dump ("Found %simport:%u %M->%u",
-			   !lmaps ? "indirect " : imp->exported_p
-			   ? "exported " : "", tup.second.first, imp,
-			   imp->mod);
-	  loaded++;
 	}
+
+      if (imp->crc != crc)
+	error_at (loc, "import %qs has CRC mismatch", imp->fullname);
+
+      if (imp->is_alias ())
+	{
+	  dump () && dump ("Module %M is alias of %M", imp, imp->u1.alias);
+	  imp = imp->u1.alias;
+	}
+
+      (*slurp ()->remap)[ix] = imp->mod;
+      if (lmaps)
+	set_import (imp, exported);
+      dump () && dump ("Found %simport:%u %M->%u",
+		       !lmaps ? "indirect " : imp->exported_p
+		       ? "exported " : "", ix, imp,
+		       imp->mod);
+      loaded++;
     }
+
   return loaded;
 }
 
