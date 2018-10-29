@@ -1,3 +1,8 @@
+2018-10-29  Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/this.C: New.
+
 2018-09-18  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* plugin/plugin-nvptx.c (struct cuda_map): New.
