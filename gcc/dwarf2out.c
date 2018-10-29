@@ -23879,6 +23879,10 @@ gen_label_die (tree decl, dw_die_ref context_die)
 static inline void
 add_call_src_coords_attributes (tree stmt, dw_die_ref die)
 {
+  /* We can end up with BUILTINS_LOCATION here.  */
+  if (RESERVED_LOCATION_P (BLOCK_SOURCE_LOCATION (stmt)))
+    return;
+
   expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (stmt));
 
   if (dwarf_version >= 3 || !dwarf_strict)
