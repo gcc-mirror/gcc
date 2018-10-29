@@ -73,7 +73,7 @@ empty_range_check (irange& r, const irange& op1, const irange & op2, tree type)
 }
 
 /* Given newly calculated lbound and ubound, examine their respective
-   overflow bits to determine how to add [lbound,ubound] into range R.
+   overflow bits to determine how to add [lbound, ubound] into range R.
 
    This is the irange implementation of set_value_range_with_overflow,
    which we can't share because the VRP implementation deals with
@@ -89,6 +89,15 @@ accumulate_range (irange& r,
 		  bool overflow_wraps = false)
 {
   tree type = r.type ();
+
+  /* For one bit precision if max < min, then the swapped
+     range covers all values.  */
+  if (TYPE_PRECISION (type) == 1 && wi::lt_p (ub, lb, TYPE_SIGN (type)))
+    {
+      r.set_varying (type);
+      return;
+    }
+
   if (overflow_wraps)
     {
       // No overflow or both overflow or underflow.  The range can be
@@ -799,12 +808,11 @@ irange_multiplicative_op (enum tree_code code, signop s, irange& r,
 {
   wide_int new_lb, new_ub;
   bool overflow_undefined = TYPE_OVERFLOW_UNDEFINED (r.type ());
-  bool overflow_wraps = TYPE_OVERFLOW_WRAPS (r.type ());
   unsigned prec = TYPE_PRECISION (r.type ());
   if (wide_int_range_multiplicative_op (new_lb, new_ub,
 					code, s, prec,
 					lh_lb, lh_ub, rh_lb, rh_ub,
-					overflow_undefined, overflow_wraps))
+					overflow_undefined))
     {
       accumulate_range_and_canonicalize (s, r, new_lb, new_ub);
       return true;
@@ -988,12 +996,14 @@ irange_adjust_bit_and_mask (irange &r, signop s,
    the result is assumed to span the entire domain (range_for_type).  */
 
 static bool
-op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
-       const wide_int lh_ub, const wide_int &rh_lb, const wide_int &rh_ub)
+op_wi (enum tree_code code, irange &r, tree rh_type,
+       const wide_int &lh_lb, const wide_int lh_ub,
+       const wide_int &rh_lb, const wide_int &rh_ub)
 {
   wide_int new_lb, new_ub, tmp;
   wi::overflow_type ov_lb, ov_ub;
   tree type = r.type ();
+  signop s = TYPE_SIGN (type);
 
   if (POINTER_TYPE_P (type))
     {
@@ -1024,7 +1034,8 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
       return false;
 
     case RSHIFT_EXPR:
-      if (!wide_int_range_shift_undefined_p (TYPE_PRECISION (type),
+      if (!wide_int_range_shift_undefined_p (TYPE_SIGN (rh_type),
+					     TYPE_PRECISION (type),
 					     rh_lb, rh_ub)
 	  && irange_multiplicative_op (code, s, r,
 				       lh_lb, lh_ub, rh_lb, rh_ub))
@@ -1033,12 +1044,12 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
       return false;
 
     case LSHIFT_EXPR:
-      if (!wide_int_range_shift_undefined_p (TYPE_PRECISION (type),
+      if (!wide_int_range_shift_undefined_p (TYPE_SIGN (rh_type),
+					     TYPE_PRECISION (type),
 					     rh_lb, rh_ub)
 	  && wide_int_range_lshift (new_lb, new_ub, s, TYPE_PRECISION (type),
 				    lh_lb, lh_ub, rh_lb, rh_ub,
-				    TYPE_OVERFLOW_UNDEFINED (type),
-				    TYPE_OVERFLOW_WRAPS (type)))
+				    TYPE_OVERFLOW_UNDEFINED (type)))
 	{
 	  accumulate_range_and_canonicalize (s, r, new_lb, new_ub);
 	  return true;
@@ -1151,7 +1162,6 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 				lh_lb, lh_ub,
 				rh_lb, rh_ub,
 				TYPE_OVERFLOW_UNDEFINED (type),
-				TYPE_OVERFLOW_WRAPS (type),
 				extra_range_p, extra_min, extra_max))
 	  {
 	    accumulate_range (r, new_lb, new_ub);
@@ -1182,37 +1192,34 @@ op_wi (enum tree_code code, signop s, irange &r, const wide_int &lh_lb,
 }
 
 /* Perform an operation between a constant and a range.  */
+
 static bool
-op_ir (enum tree_code code, irange& r, const wide_int& lh, const irange& rh)
+op_ir (enum tree_code code, irange &r, const wide_int &lh, const irange &rh)
 {
-  unsigned x;
-  signop s = TYPE_SIGN (r.type ());
   r.set_undefined (r.type ());
-  for (x = 0; x < rh.num_pairs () ; x++)
-    {
-      if (!op_wi (code, s, r, lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
-        return false;
-    }
+  for (unsigned x = 0; x < rh.num_pairs () ; x++)
+    if (!op_wi (code, r, rh.type (),
+		lh, lh, rh.lower_bound (x), rh.upper_bound (x)))
+      return false;
   return true;
 }
 
 /* Perform an operation between a range and a constant.  */
-static bool
-op_ri (enum tree_code code, irange& r, const irange& lh, const wide_int& rh)
-{
-  unsigned x;
-  signop s = TYPE_SIGN (r.type ());
 
+static bool
+op_ri (enum tree_code code, irange &r, tree rh_type,
+       const irange &lh, const wide_int &rh)
+{
   r.set_undefined (r.type ());
-  for (x = 0; x < lh.num_pairs () ; x++)
-    {
-      if (!op_wi (code, s, r, lh.lower_bound (x), lh.upper_bound (x), rh, rh))
-        return false;
-    }
+  for (unsigned x = 0; x < lh.num_pairs () ; x++)
+    if (!op_wi (code, r, rh_type,
+		lh.lower_bound (x), lh.upper_bound (x), rh, rh))
+      return false;
   return true;
 }
 
 /* Perform an operation between 2 ranges.  */
+
 static bool
 op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
 {
@@ -1229,15 +1236,14 @@ op_rr (enum tree_code code, irange& r, const irange& lh, const irange& rh)
     res = op_ir (code, r, lh.upper_bound (), rh);
 
   if (!res && wi::eq_p (rh.upper_bound (), rh.lower_bound ()))
-    res = op_ri (code, r, lh, rh.upper_bound ());
+    res = op_ri (code, r, rh.type (), lh, rh.upper_bound ());
 
   if (!res)
     {
-      signop s = TYPE_SIGN (type);
       for (unsigned x = 0; x < lh.num_pairs (); ++x)
 	for (unsigned y = 0; y < rh.num_pairs (); ++y)
 	  {
-	    res = op_wi (code, s, r,
+	    res = op_wi (code, r, rh.type (),
 			 lh.lower_bound (x), lh.upper_bound (x),
 			 rh.lower_bound (y), rh.upper_bound (y));
 	    if (!res)
@@ -1261,12 +1267,11 @@ op_rr_unary (enum tree_code code, irange &r, const irange &lh)
   if (lh.undefined_p ())
     return true;
 
-  signop s = TYPE_SIGN (type);
   for (unsigned x = 0; x < lh.num_pairs (); ++x)
     {
       wide_int lower_bound = lh.lower_bound (x);
       wide_int upper_bound = lh.upper_bound (x);
-      res = op_wi (code, s, r,
+      res = op_wi (code, r, type,
 		   lower_bound, upper_bound, lower_bound, upper_bound);
       if (!res)
 	return false;

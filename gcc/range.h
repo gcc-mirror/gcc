@@ -117,7 +117,7 @@ irange range_from_ssa (tree ssa);
 void range_positives (irange *r, tree type);
 void range_negatives (irange *r, tree type);
 void value_range_to_irange (irange &, tree type, const value_range &);
-void value_range_to_irange (irange &, tree type, enum value_range_type kind,
+void value_range_to_irange (irange &, tree type, enum value_range_kind kind,
 			    const wide_int &, const wide_int &);
 void irange_to_value_range (value_range &, const irange &);
 

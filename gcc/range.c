@@ -122,7 +122,7 @@ range_from_ssa (tree ssa)
   if (!SSA_NAME_RANGE_INFO (ssa) || POINTER_TYPE_P (type))
     return irange (type);
   wide_int min, max;
-  enum value_range_type kind = get_range_info (ssa, &min, &max);
+  enum value_range_kind kind = get_range_info (ssa, &min, &max);
   irange tmp;
   value_range_to_irange (tmp, type, kind, min, max);
   return tmp;
@@ -862,16 +862,14 @@ irange::singleton_p (wide_int &elem) const
   return false;
 }
 
-// Convert irange  to a value_range_type.
+// Convert irange  to a value_range_kind.
 
 void
 irange_to_value_range (value_range &vr, const irange &r)
 {
-  vr.equiv = NULL;
   if (r.varying_p ())
     {
-      vr.type = VR_VARYING;
-      vr.min = vr.max = NULL;
+      vr.set_varying ();
       return;
     }
   tree type = r.type ();
@@ -881,10 +879,8 @@ irange_to_value_range (value_range &vr, const irange &r)
       && r.num_pairs () == 1
       && r.lower_bound () == wi::uhwi (1, precision)
       && r.upper_bound () == wi::max_value (precision, UNSIGNED))
-    {
-      vr.type = VR_ANTI_RANGE;
-      vr.min = vr.max = build_int_cst (type, 0);
-    }
+    vr = value_range (VR_ANTI_RANGE,
+		      build_int_cst (type, 0), build_int_cst (type, 0));
   // Represent anti-ranges.
   else if ((r.num_pairs () == 2
 	    || r.num_pairs () == 3)
@@ -908,23 +904,21 @@ irange_to_value_range (value_range &vr, const irange &r)
 	  tmp.union_ (irange (type, r.lower_bound (1), r.upper_bound ()));
 	}
       tmp = range_invert (tmp);
-      vr.min = wide_int_to_tree (type, tmp.lower_bound ());
-      vr.max = wide_int_to_tree (type, tmp.upper_bound ());
-      vr.type = VR_ANTI_RANGE;
+      vr = value_range (VR_ANTI_RANGE,
+			wide_int_to_tree (type, tmp.lower_bound ()),
+			wide_int_to_tree (type, tmp.upper_bound ()));
     }
   else
-    {
-      vr.min = wide_int_to_tree (type, r.lower_bound ());
-      vr.max = wide_int_to_tree (type, r.upper_bound ());
-      vr.type = VR_RANGE;
-    }
+    vr = value_range (VR_RANGE,
+		      wide_int_to_tree (type, r.lower_bound ()),
+		      wide_int_to_tree (type, r.upper_bound ()));
 }
 
 // Convert a value_range to an irange and store it in R.
 
 void
 value_range_to_irange (irange &r,
-		       tree type, enum value_range_type kind,
+		       tree type, enum value_range_kind kind,
 		       const wide_int &min, const wide_int &max)
 {
   gcc_assert (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type));
@@ -940,12 +934,12 @@ value_range_to_irange (irange &r,
 void
 value_range_to_irange (irange &r, tree type, const value_range &vr)
 {
-  if (vr.type == VR_VARYING || vr.type == VR_UNDEFINED)
+  if (vr.varying_p () || vr.undefined_p ())
     r.set_varying (type);
   else
-    value_range_to_irange (r, TREE_TYPE (vr.min), vr.type,
-			   wi::to_wide (vr.min),
-			   wi::to_wide (vr.max));
+    value_range_to_irange (r, TREE_TYPE (vr.min ()), vr.kind (),
+			   wi::to_wide (vr.min ()),
+			   wi::to_wide (vr.max ()));
 }
 
 #ifdef CHECKING_P
@@ -1453,9 +1447,9 @@ irange_tests ()
   r0 = irange (integer_type_node, INT (10), INT (20), irange::INVERSE);
   value_range vr;
   irange_to_value_range (vr, r0);
-  ASSERT_TRUE (vr.type == VR_ANTI_RANGE);
-  ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min))
-	       && wi::eq_p (20, wi::to_wide (vr.max)));
+  ASSERT_TRUE (vr.kind () == VR_ANTI_RANGE);
+  ASSERT_TRUE (wi::eq_p (10, wi::to_wide (vr.min ()))
+	       && wi::eq_p (20, wi::to_wide (vr.max ())));
   value_range_to_irange (r1, integer_type_node, vr);
   ASSERT_TRUE (r0 == r1);
 }
