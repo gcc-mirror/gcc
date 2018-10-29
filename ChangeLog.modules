@@ -1,3 +1,10 @@
+2018-10-29  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::direct_import): Drop DEFERRABLE arg.
+	({import,declare}_module): Deal with deferring here.
+	(process_deferred_imports): Adjust direct_import call.
+
 2018-10-27  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r265554.

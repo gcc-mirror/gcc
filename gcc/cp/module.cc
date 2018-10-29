@@ -2973,7 +2973,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
   void attach (location_t);
   bool do_import (const char *filename, cpp_reader *);
-  void direct_import (int deferrable, cpp_reader *);
+  void direct_import (cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -11981,67 +11981,59 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   return ok;
 }
 
-/* Import this module now.  Fatal error on failure.  DEFERRED_P is
-   true if this was a deferred import.  We include the case of an
-   interface unit's module declaration, setting up for an export in
-   that case.  */
+/* Import this module now.  Fatal error on failure.  We include the
+   case of an interface unit's module declaration, setting up for an
+   export in that case.  */
 
 void
-module_state::direct_import (int deferrable, cpp_reader *reader)
+module_state::direct_import (cpp_reader *reader)
 {
   unsigned n = dump.push (this);
   bool ok = true;
 
-  if (is_legacy ())
-    deferrable = 0;
-  if (deferrable > 0)
-    vec_safe_push (pending_imports, this);
-  else
+  direct_p = true;
+  if (!is_imported ())
     {
-      direct_p = true;
-      if (!is_imported ())
+      bool is_interface = mod == MODULE_PURVIEW;
+      char *fname = NULL;
+      unsigned pre_hwm = 0;
+
+      if (is_legacy ())
 	{
-	  bool is_interface = mod == MODULE_PURVIEW;
-	  char *fname = NULL;
-	  unsigned pre_hwm = 0;
+	  /* Preserve the state of the line-map.  */
+	  pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
+	  if (module_maybe_interface_p ())
+	    spans.close ();
 
-	  if (!deferrable)
-	    {
-	      /* Preserve the state of the line-map.  */
-	      pre_hwm = LINEMAPS_ORDINARY_USED (line_table);
-	      if (module_maybe_interface_p ())
-		spans.close ();
-
-	      maybe_create_loc ();
-	      fname = module_mapper::import_export (this, is_interface);
-	    }
-
-	  if (!is_interface)
-	    ok = do_import (fname, reader);
-	  else if (fname)
-	    filename = xstrdup (fname);
-
-	  /* Restore the line-map state.  */
-	  if (!deferrable)
-	    {
-	      linemap_module_restore (line_table, pre_hwm);
-	      if (module_maybe_interface_p ())
-		spans.open ();
-	    }
+	  maybe_create_loc ();
+	  fname = module_mapper::import_export (this, is_interface);
 	}
 
-      if (!ok)
-	fatal_error (loc, "returning to gate for a mechanical issue");
-      else if (mod != MODULE_PURVIEW)
+      if (!is_interface)
+	ok = do_import (fname, reader);
+      else if (fname)
+	filename = xstrdup (fname);
+
+      /* Restore the line-map state.  */
+      if (is_legacy ())
 	{
-	  module_state *imp = resolve_alias ();
-	  imp->direct_p = true;
-	  if (exported_p)
-	    imp->exported_p = true;
-	  (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
-	  if (imp->is_legacy ())
-	    imp->import_macros ();
+	  linemap_module_restore (line_table, pre_hwm);
+	  if (module_maybe_interface_p ())
+	    spans.open ();
 	}
+    }
+
+  if (!ok)
+    fatal_error (loc, "returning to gate for a mechanical issue");
+  else if (mod != MODULE_PURVIEW)
+    {
+      module_state *imp = resolve_alias ();
+      imp->direct_p = true;
+      if (exported_p)
+	imp->exported_p = true;
+      (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
+      if (imp->is_legacy ())
+	imp->import_macros ();
     }
 
   dump.pop (n);
@@ -12139,7 +12131,10 @@ import_module (module_state *imp, location_t from_loc, bool exporting,
   if (exporting)
     imp->exported_p = true;
 
-  imp->direct_import (true, reader);
+  if (imp->is_legacy ())
+    imp->direct_import (reader);
+  else
+    vec_safe_push (pending_imports, imp);
 
   gcc_assert (global_namespace == current_scope ());
 }
@@ -12189,7 +12184,10 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   else
     state->mod = MODULE_UNKNOWN;
 
-  state->direct_import (true, reader);
+  if (state->is_legacy ())
+    state->direct_import (reader);
+  else
+    vec_safe_push (pending_imports, state);
 }
 
 /* Track if NODE undefs an imported macro.  */
@@ -12363,10 +12361,10 @@ process_deferred_imports (cpp_reader *reader)
      importer's import table).  */
   for (unsigned ix = is_interface ? 1 : 0;
        ix != pending_imports->length (); ix++)
-      {
-	module_state *imp = (*pending_imports)[ix];
-	imp->direct_import (-1, reader);
-      }
+    {
+      module_state *imp = (*pending_imports)[ix];
+      imp->direct_import (reader);
+    }
 
   dump.pop (0);
 
