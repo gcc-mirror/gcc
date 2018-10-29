@@ -1,3 +1,11 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c (implicit_decl_warning): Update "is there a suggestion"
+	logic for change to name_hint::operator bool.
+	(undeclared_variable): Likewise.
+	* c-parser.c (c_parser_declaration_or_fndef): Likewise.
+	(c_parser_parameter_declaration): Likewise.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-errors.c (pedwarn_c11): New function.

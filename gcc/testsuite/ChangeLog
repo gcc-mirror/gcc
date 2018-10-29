@@ -1,3 +1,32 @@
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/spellcheck-reserved.c: Update expected output for
+	C++ for merger of "did you mean" suggestions into the error
+	message.
+	* g++.dg/ext/builtin3.C: Update expected output for merger of "did
+	you mean" suggestion into the error.
+	* g++.dg/lookup/error1.C: Likewise.
+	* g++.dg/lookup/pr77549.C: Likewise.
+	* g++.dg/lookup/pr80913.C: Likewise.
+	* g++.dg/lookup/suggestions1.C: Likewise.
+	* g++.dg/lookup/suggestions2.C: New test.
+	* g++.dg/overload/koenig1.C: Update expected output as above.
+	* g++.dg/spellcheck-identifiers-2.C: Likewise.
+	* g++.dg/spellcheck-identifiers.C: Likewise.
+	* g++.dg/spellcheck-ns.C: New test.
+	* g++.dg/spellcheck-pr77829.C: Update expected output as above.
+	* g++.dg/spellcheck-pr78656.C: Likewise.
+	* g++.dg/spellcheck-pr79298.C: Likewise, adding
+	-fdiagnostics-show-caret to options.
+	* g++.dg/spellcheck-pr80177.C: Likewise.
+	* g++.dg/spellcheck-single-vs-multiple.C: New test.
+	* g++.dg/spellcheck-typenames.C: Update expected output as above.
+	* g++.dg/template/static10.C: Likewise.
+	* g++.old-deja/g++.mike/ns5.C: Likewise.
+	* g++.old-deja/g++.mike/ns7.C: Likewise.
+	* g++.old-deja/g++.ns/koenig5.C: Likewise.
+	* g++.old-deja/g++.other/lineno5.C: Likewise.
+
 2018-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/auto24.C: Test location too.

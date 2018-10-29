@@ -1822,12 +1822,12 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  auto_diagnostic_group d;
 	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
 					      here);
-	  if (hint)
+	  if (const char *suggestion = hint.suggestion ())
 	    {
-	      richloc.add_fixit_replace (hint.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			name, hint.suggestion ());
+			name, suggestion);
 	    }
 	  else
 	    error_at (here, "unknown type name %qE", name);
@@ -4074,13 +4074,13 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
 	  name_hint hint = lookup_name_fuzzy (token->value,
 					      FUZZY_LOOKUP_TYPENAME,
 					      token->location);
-	  if (hint)
+	  if (const char *suggestion = hint.suggestion ())
 	    {
 	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_replace (hint.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			token->value, hint.suggestion ());
+			token->value, suggestion);
 	    }
 	  else
 	    error_at (token->location, "unknown type name %qE", token->value);

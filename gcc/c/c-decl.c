@@ -3150,27 +3150,27 @@ implicit_decl_warning (location_t loc, tree id, tree olddecl)
 
   if (flag_isoc99)
     {
-      if (hint)
+      if (const char *suggestion = hint.suggestion ())
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (hint.suggestion ());
+	  richloc.add_fixit_replace (suggestion);
 	  warned = pedwarn (&richloc, OPT_Wimplicit_function_declaration,
 			    "implicit declaration of function %qE;"
 			    " did you mean %qs?",
-			    id, hint.suggestion ());
+			    id, suggestion);
 	}
       else
 	warned = pedwarn (loc, OPT_Wimplicit_function_declaration,
 			  "implicit declaration of function %qE", id);
     }
-  else if (hint)
+  else if (const char *suggestion = hint.suggestion ())
     {
       gcc_rich_location richloc (loc);
-      richloc.add_fixit_replace (hint.suggestion ());
+      richloc.add_fixit_replace (suggestion);
       warned = warning_at
 	(&richloc, OPT_Wimplicit_function_declaration,
 	 G_("implicit declaration of function %qE; did you mean %qs?"),
-	 id, hint.suggestion ());
+	 id, suggestion);
     }
   else
     warned = warning_at (loc, OPT_Wimplicit_function_declaration,
@@ -3513,14 +3513,14 @@ undeclared_variable (location_t loc, tree id)
   if (current_function_decl == NULL_TREE)
     {
       name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
-      if (guessed_id)
+      if (const char *suggestion = guessed_id.suggestion ())
 	{
 	  gcc_rich_location richloc (loc);
-	  richloc.add_fixit_replace (guessed_id.suggestion ());
+	  richloc.add_fixit_replace (suggestion);
 	  error_at (&richloc,
 		    "%qE undeclared here (not in a function);"
 		    " did you mean %qs?",
-		    id, guessed_id.suggestion ());
+		    id, suggestion);
 	}
       else
 	error_at (loc, "%qE undeclared here (not in a function)", id);
@@ -3531,14 +3531,14 @@ undeclared_variable (location_t loc, tree id)
       if (!objc_diagnose_private_ivar (id))
 	{
 	  name_hint guessed_id = lookup_name_fuzzy (id, FUZZY_LOOKUP_NAME, loc);
-	  if (guessed_id)
+	  if (const char *suggestion = guessed_id.suggestion ())
 	    {
 	      gcc_rich_location richloc (loc);
-	      richloc.add_fixit_replace (guessed_id.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"%qE undeclared (first use in this function);"
 			" did you mean %qs?",
-			id, guessed_id.suggestion ());
+			id, suggestion);
 	    }
 	  else
 	    error_at (loc, "%qE undeclared (first use in this function)", id);
