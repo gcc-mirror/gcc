@@ -1,3 +1,8 @@
+2018-10-29  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-8.C: Do not check intermediate format.
+	* lib/gcov.exp: Remove legacy verify-intermediate.
+
 2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* gcc.dg/gimplefe-30.c: New test.

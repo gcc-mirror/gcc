@@ -1,3 +1,33 @@
+2018-10-29  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Make dependency to json.o.
+	* doc/gcov.texi: Document new JSON format, remove
+	old intermediate format documentation.
+	* gcov.c (struct function_info): Come up with m_name and
+	m_demangled_name.
+	(function_info::function_info): Initialize it.
+	(function_info::~function_info): Release it.
+	(main): Rename flag_intermediate_format to flag_json_format.
+	(print_usage): Describe --json-format.
+	(process_args): Set flag_json_format.
+	(output_intermediate_line): Remove.
+	(output_intermediate_json_line): Likewise.
+	(get_gcov_intermediate_filename): Return new extension
+	".gcov.json.gz".
+	(output_intermediate_file): Implement JSON emission.
+	(output_json_intermediate_file): Implement JSON emission.
+	(generate_results): Use ::get_name for function name.
+	Handle JSON output file.
+	(read_graph_file): Use ::get_name instead of cplus_demangle.
+	(read_count_file): Likewise.
+	(solve_flow_graph): Likewise.
+	(add_line_counts): Likewise.
+	(accumulate_line_counts): Use new flag_json_format.
+	(output_function_details): Use ::get_name instead of cplus_demangle.
+	(output_lines): Likewise.
+	* json.cc (test_writing_literals): Add new tests.
+	* json.h (class literal): Add new boolean constructor.
+
 2018-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/87701
