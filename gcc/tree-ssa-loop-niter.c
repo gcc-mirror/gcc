@@ -2589,11 +2589,9 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   if (TREE_CODE (call) == INTEGER_CST)
     max = tree_to_uhwi (call);
   else
-    {
-      max = TYPE_PRECISION (TREE_TYPE (src));
-      if (adjust)
-	max = max - 1;
-    }
+    max = TYPE_PRECISION (TREE_TYPE (src));
+  if (adjust)
+    max = max - 1;
 
   niter->niter = iter;
   niter->assumptions = boolean_true_node;
