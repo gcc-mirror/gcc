@@ -69,13 +69,19 @@ along with GCC; see the file COPYING3.  If not see
    libgcc.a that we need to use e.g. to satisfy references to __init and
    __fini.  We still want our libgcc to prevail for symbols it would provide
    (e.g. register save entry points), so re-place it here between libraries
-   that might reference it and libc_internal.  Also, some versions of VxWorks
-   rely on explicit extra libraries for system calls.  */
+   that might reference it and libc_internal.
+
+   In addition, some versions of VxWorks rely on explicit extra libraries for
+   system calls and the set of base network libraries of common use varies
+   across architectures.  The default settings defined here might be redefined
+   by target specific port configuration files.  */
 
 #define VXWORKS_SYSCALL_LIBS_RTP
 
+#define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
+
 #define VXWORKS_LIBS_RTP \
-  VXWORKS_SYSCALL_LIBS_RTP " -lnet -ldsi -lc -lgcc -lc_internal"
+  VXWORKS_SYSCALL_LIBS_RTP " " VXWORKS_NET_LIBS_RTP " -lc -lgcc -lc_internal"
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
