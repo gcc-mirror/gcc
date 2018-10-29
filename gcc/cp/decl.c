@@ -88,7 +88,7 @@ static void finish_constructor_body (void);
 static void begin_destructor_body (void);
 static void finish_destructor_body (void);
 static void record_key_method_defined (tree);
-static tree create_array_type_for_decl (tree, tree, tree);
+static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
 static tree start_cleanup_fn (void);
@@ -9835,7 +9835,7 @@ get_scope_of_declarator (const cp_declarator *declarator)
    with this type.  */
 
 static tree
-create_array_type_for_decl (tree name, tree type, tree size)
+create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 {
   tree itype = NULL_TREE;
 
@@ -9848,9 +9848,9 @@ create_array_type_for_decl (tree name, tree type, tree size)
   if (type_uses_auto (type))
     {
       if (name)
-   error ("%qD declared as array of %qT", name, type);
+	error_at (loc, "%qD declared as array of %qT", name, type);
       else
-   error ("creating array of %qT", type);
+	error ("creating array of %qT", type);
       return error_mark_node;
     }
 
@@ -9860,28 +9860,29 @@ create_array_type_for_decl (tree name, tree type, tree size)
     {
     case VOID_TYPE:
       if (name)
-        error ("declaration of %qD as array of void", name);
+	error_at (loc, "declaration of %qD as array of void", name);
       else
         error ("creating array of void");
       return error_mark_node;
 
     case FUNCTION_TYPE:
       if (name)
-        error ("declaration of %qD as array of functions", name);
+	error_at (loc, "declaration of %qD as array of functions", name);
       else
         error ("creating array of functions");
       return error_mark_node;
 
     case REFERENCE_TYPE:
       if (name)
-        error ("declaration of %qD as array of references", name);
+	error_at (loc, "declaration of %qD as array of references", name);
       else
         error ("creating array of references");
       return error_mark_node;
 
     case METHOD_TYPE:
       if (name)
-        error ("declaration of %qD as array of function members", name);
+	error_at (loc, "declaration of %qD as array of function members",
+		  name);
       else
         error ("creating array of function members");
       return error_mark_node;
@@ -9897,9 +9898,9 @@ create_array_type_for_decl (tree name, tree type, tree size)
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     {
       if (name)
-	error ("declaration of %qD as multidimensional array must "
-	       "have bounds for all dimensions except the first",
-	       name);
+	error_at (loc, "declaration of %qD as multidimensional array must "
+		  "have bounds for all dimensions except the first",
+		  name);
       else
 	error ("multidimensional array must have bounds for all "
 	       "dimensions except the first");
@@ -11164,7 +11165,8 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
-					     declarator->u.array.bounds);
+					     declarator->u.array.bounds,
+					     declarator->id_loc);
 	  if (!valid_array_size_p (input_location, type, dname))
 	    type = error_mark_node;
 

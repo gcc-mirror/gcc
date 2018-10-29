@@ -1,3 +1,17 @@
+2018-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/auto24.C: Test location too.
+	* g++.dg/cpp0x/auto3.C: Likewise.
+	* g++.dg/cpp0x/auto42.C: Likewise.
+	* g++.dg/cpp0x/initlist57.C: Likewise.
+	* g++.dg/cpp0x/initlist75.C: Likewise.
+	* g++.dg/cpp0x/initlist80.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice13.C: Likewise.
+	* g++.old-deja/g++.brendan/array-refs.C: Likewise.
+	* g++.old-deja/g++.bugs/900322_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900519_07.C: Likewise.
+	* g++.old-deja/g++.other/typeck1.C: Likewise.
+
 2018-10-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	PR middle-end/87469
