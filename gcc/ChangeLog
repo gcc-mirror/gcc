@@ -1,3 +1,7 @@
+2018-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (xstormy16-*-elf): Set tm_d_file.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 	    Martin Sebor  <msebor@redhat.com>
 	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
