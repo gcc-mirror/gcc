@@ -1,5 +1,9 @@
 2018-10-29  Olivier Hainque  <hainque@adacore.com>
 
+	* VXWORKS_NET_LIBS_RTP: New macro, network part of VXWORKS_LIBS_RTP.
+
+2018-10-29  Olivier Hainque  <hainque@adacore.com>
+
 	* config/vxworks.h (VXWORKS_PERSONALITY): New VxWorks
 	ports configuration macro, defaults to "gnu".
 	(VXWORKS_OS_CPP_BUILTINS): Use it. Feed TOOL and
