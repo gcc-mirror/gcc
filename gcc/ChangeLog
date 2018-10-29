@@ -1,3 +1,9 @@
+2018-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87701
+	PR rtl-optimization/87780
+	* combine.c (make_more_copies): Rewrite.
+
 2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
 
 	* doc/generic.texi (ABSU_EXPR): Document.
