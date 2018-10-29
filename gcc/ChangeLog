@@ -1,3 +1,13 @@
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87785
+	* tree-vect-slp.c (vect_build_slp_tree_2): Remove loads argument
+	and processing.
+	(vect_build_slp_tree): Likewise.
+	(vect_gather_slp_loads): New function.
+	(vect_analyze_slp_instance): Gather loads separately from the
+	SLP tree build.
+
 2018-10-29  Martin Liska  <mliska@suse.cz>
 
 	* Makefile.in: Make dependency to json.o.
