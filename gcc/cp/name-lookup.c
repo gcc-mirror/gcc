@@ -2665,7 +2665,6 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   tree to_val = decl;
   tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
   tree to_type = old_type;
-  tree export_tail = NULL;
 
   gcc_assert (level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
@@ -2743,7 +2742,7 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	warning (OPT_Wshadow, "%q#D hides constructor for %q#D",
 		 decl, to_type);
 
-      to_val = ovl_insert (decl, old, false, &export_tail);
+      to_val = ovl_insert (decl, old, false);
     }
   else if (!old)
     ;
@@ -2811,12 +2810,10 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
 	      STAT_TYPE (*slot) = to_type;
 	      STAT_DECL (*slot) = to_val;
 	    }
-	  else if (to_type || export_tail)
+	  else if (to_type)
 	    *slot = stat_hack (to_val, to_type);
 	  else
 	    *slot = to_val;
-	  if (export_tail && STAT_HACK_P (*slot))
-	    STAT_EXPORTS (*slot) = export_tail;
 	}
       else
 	{

@@ -2193,12 +2193,11 @@ ovl_copy (tree ovl)
 
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  If EXPORT_TAIL is non-null, store through it with an
-   updated export list change.  Overloads are ordered as hidden,
-   regular, exported.  */
+   DECL_HIDDEN.  Overloads are ordered as hidden, regular,
+   exported.  */
 
 tree
-ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
+ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
   bool copying = false; /* Checking use only.  */
   bool hidden_p = DECL_HIDDEN_P (fn);
@@ -2238,8 +2237,6 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
 	  trail = ovl_make (fn, NULL_TREE);
 	  OVL_EXPORT_P (trail) = true;
 	}
-      if (export_tail)
-	*export_tail = trail;
       /* Now swap things round, so it looks like we're prepending as
 	 normal.  */
       fn = maybe_ovl;
@@ -2272,9 +2269,6 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p, tree *export_tail)
     }
   else
     result = trail;
-
-  if (export_tail && DECL_MODULE_EXPORT_P (fn) && result != fn)
-    *export_tail = trail;
 
   return result;
 }

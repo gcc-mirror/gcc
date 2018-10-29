@@ -271,7 +271,7 @@ cxx_print_xnode (FILE *file, tree node, int indent)
 		  if (cluster->indices[jx].span > 1)
 		    len
 		      += sprintf (&pfx[len], "(+%u)", cluster->indices[jx].span);
-		  len += sprintf (&pfx[len], "cluster:%u", ix);
+		  len += sprintf (&pfx[len], " cluster:%u", ix);
 		  if (cluster->slots[jx])
 		    print_node (file, pfx, cluster->slots[jx], indent + 4);
 		  else
