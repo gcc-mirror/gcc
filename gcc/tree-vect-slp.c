@@ -1116,7 +1116,9 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	    if (stmt_info != other_info)
 	      return NULL;
 	}
-      else
+      else if (def_type == vect_reduction_def
+	       || def_type == vect_double_reduction_def
+	       || def_type == vect_nested_cycle)
 	{
 	  /* Else def types have to match.  */
 	  stmt_vec_info other_info;
@@ -1130,6 +1132,8 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		return NULL;
 	    }
 	}
+      else
+	return NULL;
       node = vect_create_new_slp_node (stmts);
       return node;
     }
