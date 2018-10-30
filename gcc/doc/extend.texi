@@ -12025,12 +12025,12 @@ when testing pointer or floating-point values.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect_with_probability
-(long @var{exp}, long @var{c}, long @var{probability})
+(long @var{exp}, long @var{c}, double @var{probability})
 
-The built-in has same semantics as @code{__builtin_expect},
-but user can provide expected probability (in percent) for value of @var{exp}.
-Last argument @var{probability} is of float type and valid values
-are in inclusive range 0.0f and 1.0f.
+This function has the same semantics as @code{__builtin_expect},
+but the caller provides the expected probability that @var{exp} == @var{c}.
+The last argument, @var{probability}, is a floating-point value in the
+range 0.0 to 1.0, inclusive.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_trap (void)
