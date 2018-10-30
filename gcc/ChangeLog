@@ -1,3 +1,8 @@
+2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi: Fix prototype and description of
+	__builtin_expect_with_probability.
+
 2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* cgraph.h (clone_function_name_1): Replaced by new
