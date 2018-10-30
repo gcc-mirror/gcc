@@ -1,3 +1,9 @@
+2018-10-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87708
+	* gcc.dg/ira-shrinkwrap-prep-1.c: xfail test.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: xfail test.
+
 2018-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp1z/has-unique-obj-representations1.C: Test location too.
