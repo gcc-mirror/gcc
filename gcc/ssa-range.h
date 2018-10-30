@@ -27,11 +27,11 @@ along with GCC; see the file COPYING3.  If not see
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 
-// THis is the basic range genrator interface. 
+// This is the basic range generator interface. 
 //
 // This base class provides all the API entry points, but only provides 
 // functionality at the statement level.  Ie, it can calculate ranges on 
-// statements, but does no adidtonal lookup.
+// statements, but does no additonal lookup.
 //
 // ALL the range_of_* methods will return a range if the types is supported
 // by the range engine. It may be the full range for the type, AKA varying_p
@@ -47,10 +47,40 @@ extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 // 
 // outgoing_edge_range_p will only return a range if the edge specified 
 // defines a range for the specified name.  Otherwise false is returned.
-
+//
+// The calculate_* routines provide functionality to calculate ranges for 
+// ssa_names in poerand positions based on a range for the LHS. 
+// BB4:
+//     a_2 = b_6 + 6
+//     c_3 = a_2 * 4
+//     if (c_3 < 10)
+//  
+// Calculate_operand_range_on_stmt provides the ability to calculate a range
+// for c_3 on the outgoing edge since it is referenced in the statement which
+// generated the range (c_3 < 10)
+//
+// If the object is created with the support_calculations flag set to TRUE,
+// it enables building defintion chains which will allow the calculation
+// of ssa-anems found within these chains.  In this example, it can also
+// generate ranges for a_2 and b_6 on outgoing edges .
+// 
+// It is lightweight to declare in this case, but for each basic block that is
+// queried, it will scan some or all of the statements in the block to
+// determine what ssa-names can have range information generated for them and
+// cache this information.  
+//
+// single_import () provides the "input" name to the chain of statements for
+// name that can change the calculation of its range.
+// ie, in the above example, b_6 is the "single_import" returned for both
+// a_2 and c_3 since a change in the range of b_6 used to calculate their
+// ranges may result in a different range.
+ 
 class ssa_range
 {
   public:
+  ssa_range (bool support_calculations);
+  ~ssa_range ();
+
   static bool supports_type_p (tree type);
   static bool supports_ssa_p (tree ssa);
   static bool supports_const_p (tree c);
@@ -74,62 +104,27 @@ class ssa_range
 
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
-protected:
-  // Calculate a range for a kind of gimple statement .
-  bool range_of_range_op  (irange &r, grange_op *s);
-  bool range_of_phi (irange &r, gphi *phi);
-  bool range_of_call (irange &r, gcall *call);
-  // Calculate the range for NAME if the result of statement S is the range LHS.
-  bool compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
-				      const irange &lhs);
-};
-
-// This is the primary interface class for the range generator at the basic
-// block level. 
-//
-// The functionality it adds over a ssa_range object is the ability to 
-// calculate ranges for any ssa_name in the defintion chain of names
-// found on the outgoing edge. ie:
-// BB4:
-//     a_2 = b_6 + 6
-//     c_3 = a_2 * 4
-//     if (c_3 < 10)
-// The ssa_range object can calculate a range for c_3 on the outgoing edge
-// since it is referenced in the statement which generated the range (c_3 < 10)
-// The block_ranger can also generate ranges for a_2 and b_6 on these edges.
-// 
-// It is lightweight to declare, but for each basic block that is queried, it
-// will scan some or all of the statements in the block to determine what
-// ssa-names can have range information generated for them and cache this
-// information.  
-//
-// single_import () is the only additional entry point. It provides the "input"
-// name to the chain of statements for name that can change the calculation
-// of its range.
-// ie, in the above example, b_6 is the "single_import" returned for both
-// a_2 and c_3 since a change in the range of b_6 used to calculate their
-// ranges may result in a different range.
-   
-class block_ranger : public ssa_range
-{
-public:
-  block_ranger ();
-  ~block_ranger ();
-
-  // If a range for name is defined by edge E, return it.
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
   tree single_import (tree name);
 
   void dump (FILE *f);
   void exercise (FILE *f);
 protected:
+  // Calculate the range for NAME if the result of statement S is the range LHS.
   class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
   irange m_bool_zero;		/* Bolean zero cached.  */
   irange m_bool_one;		/* Bolean true cached.  */
 
+  // Calculate a range for a kind of gimple statement .
+  bool range_of_range_op  (irange &r, grange_op *s);
+  bool range_of_phi (irange &r, gphi *phi);
+  bool range_of_call (irange &r, gcall *call);
   bool range_p (basic_block bb, tree name);
+
   // Evaluate the range for name on stmt S if the lhs has range LHS.
-  virtual bool compute_operand_range (irange &r, gimple *s, tree name,
+  bool compute_operand_range (irange &r, gimple *s, tree name,
+			      const irange &lhs);
+  // Evaluate the range for NAME on S is NAME is on the stmt.
+  bool compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
 				      const irange &lhs);
   bool compute_logical_operands (grange_op *s, irange &r, tree name,
 				 const irange &lhs);
@@ -141,6 +136,7 @@ protected:
 					    const irange &lhs);
 };
 
+  
 
 // This class utilizes a basic block range generation summary to query the range
 // of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
@@ -151,7 +147,7 @@ protected:
 // global_ssa_name routines.  This is used to avoid recalculating ranges a
 // second time.
 
-class global_ranger : public block_ranger
+class global_ranger : public ssa_range
 {
 public:
   global_ranger ();

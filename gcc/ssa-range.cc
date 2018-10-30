@@ -51,7 +51,7 @@ gimple *
 gimple_outgoing_range_stmt_p (basic_block bb)
 {
   gimple *s = last_stmt (bb);
-  if (s && is_a<gcond *> (s))
+  if (s && (is_a<gcond *> (s) || is_a<gswitch *> (s)))
     return s;
   return NULL;
 }
@@ -77,19 +77,59 @@ gimple_outgoing_edge_range_p (irange &r, edge e)
 	gcc_unreachable ();
       return s;
     }
-  gcc_unreachable ();
+
+  gcc_checking_assert (is_a<gswitch *> (s));
+  gswitch *sw = as_a<gswitch *> (s);
+  tree type = TREE_TYPE (gimple_switch_index (sw));
+
+  if (!ssa_range::supports_type_p (type))
+    return NULL;
+
+  unsigned x, lim;
+  lim = gimple_switch_num_labels (sw);
+
+  // ADA currently has cases where the index is 64 bits and the case
+  // arguments are  32 bit, causing a trap when we create a case_range.
+  // Until this is resolved (https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87798)
+  // punt on these switches.
+  if (lim > 1 && 
+      TYPE_PRECISION (TREE_TYPE (CASE_LOW (gimple_switch_label (sw, 1)))) != 
+      TYPE_PRECISION (type))
+    return NULL;
+
+  if (e != gimple_switch_default_edge (cfun, sw))
+    {
+      r.set_undefined (type);
+      // Loop through all the switches edges, ignoring the default edge.
+      // unioning the ranges together.
+      for (x = 1; x < lim; x++)
+	{
+	  if (gimple_switch_edge (cfun, sw, x) != e)
+	    continue;
+	  tree low = CASE_LOW (gimple_switch_label (sw, x));
+	  tree high = CASE_HIGH (gimple_switch_label (sw, x));
+	  if (!high)
+	    high = low;
+	  irange case_range (type, low, high);
+	  r.union_ (case_range);
+	}
+      return s;
+    }
+  r.set_varying (type);
+  // Loop through all the switches edges, ignoring the default edge.
+  // intersecting the ranges not covered by the case.
+  for (x = 1; x < lim; x++)
+    {
+      tree low = CASE_LOW (gimple_switch_label (sw, x));
+      tree high = CASE_HIGH (gimple_switch_label (sw, x));
+      if (!high)
+	high = low;
+      irange case_range (type, low, high, irange::INVERSE);
+      r.intersect (case_range);
+    }
+
+  return s;
 }
-
-// Return TRUe if statment S is capable of having its operands calculated.
-
-inline bool
-gimple_computable_stmt (gimple *s)
-{
-  if (is_a<grange_op *> (s))
-    return true;
-  return false;
-}
-
 
 // This function returns a range for a tree node.  If optional statement S
 // is present, then the range would be if it were to appear as a use on S.
@@ -154,10 +194,14 @@ ssa_range::range_of_range_op (irange &r, grange_op *s)
 {
   irange range1, range2;
   bool res;
+  gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
+  // The statement can be a supported type, but the operands may not be
+  // ie,   int_a_2 = (int) float_f_2.
+  
   // Calculate a range for operand 1.
   res = range_of_expr (range1, op1, s);
 
@@ -203,19 +247,9 @@ ssa_range::range_of_phi (irange &r, gphi *phi)
       edge e = gimple_phi_arg_edge (phi, x);
       // Try to find a range from the edge.  If that fails, return varying.
       if (valid_ssa_p (arg))
-        {
-	  if (!range_on_edge (arg_range, e, arg))
-	    {
-	      r.set_varying (type);
-	      return true;
-	    }
-	}
+	gcc_assert (range_on_edge (arg_range, e, arg));
       else
-	if (!range_of_expr (arg_range, arg))
-	  {
-	    r.set_varying (type);
-	    return true;
-	  }
+	gcc_assert (range_of_expr (arg_range, arg));
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
@@ -258,9 +292,15 @@ ssa_range::range_of_stmt (irange &r, gimple *s, tree name)
   if (is_a<gcall *>(s))
     return range_of_call (r, as_a<gcall *> (s));
 
-  // If no name is specified, we cant do anything.
+  // If no name is specified, try the expression kind.
   if (!name)
-    return false;
+    {
+      tree t = gimple_expr_type (s);
+      if (!supports_type_p (t))
+	return false;
+      r.set_varying (t);
+      return true;
+    }
   // We don't understand the stmt, so return the global range.
   r = range_from_ssa (name);
   return true;
@@ -277,8 +317,7 @@ ssa_range::range_on_edge (irange &r, edge e, tree name)
   if (!supports_ssa_p (name))
     return false;
 
-  if (!range_on_exit (r, e->src, name))
-    return false;
+  gcc_assert (range_on_exit (r, e->src, name));
 
   // Check to see if NAME is defined on edge e.
   if (outgoing_edge_range_p (edge_range, e, name))
@@ -299,11 +338,20 @@ ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_edge_range_p (lhs, e);
-  if (!s)
+  if (!m_gori)
+    {
+      if (!s)
+	return false;
+      // Otherwise use the outgoing edge as a LHS and try to calculate a range.
+      return compute_operand_range_on_stmt (r, s, name, lhs);
+    }
+
+  if (!range_p (e->src, name))
     return false;
 
-  // Otherwise use the outgoing edge as a LHS and try to calculate a range.
-  return compute_operand_range_on_stmt (r, s, name, lhs);
+  gcc_checking_assert (s);
+  return compute_operand_range (r, s, name, lhs);
+
 }
 
 // Return the range for NAME on entry to basic block BB in R.  
@@ -369,7 +417,16 @@ ssa_range::compute_operand_range_on_stmt (irange &r, gimple *g, tree name,
 
   grange_op *s = dyn_cast <grange_op *> (g);
   if (!s)
-    return false;
+    {
+      // If name matches, the range is simply the range from the edge
+      if (gimple_code (g) == GIMPLE_SWITCH &&
+	  gimple_switch_index (as_a<gswitch *> (g)) == name)
+        {
+	  r = lhs;
+	  return true;
+	}
+      return false;
+    }
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -620,12 +677,21 @@ void
 gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
 {
   bitmap b;
-  grange_op *stmt = dyn_cast<grange_op *>(s);
-  if (!stmt)
-    return;
+  tree ssa1 = NULL_TREE;
+  tree ssa2 = NULL_TREE;
 
-  tree ssa1 = ssa_range::valid_ssa_p (stmt->operand1 ());
-  tree ssa2 = ssa_range::valid_ssa_p (stmt->operand2 ());
+  grange_op *stmt = dyn_cast<grange_op *>(s);
+  if (stmt)
+    {
+      ssa1 = ssa_range::valid_ssa_p (stmt->operand1 ());
+      ssa2 = ssa_range::valid_ssa_p (stmt->operand2 ());
+    }
+  else
+    if (gimple_code (s) == GIMPLE_SWITCH)
+      ssa1 = gimple_switch_index (as_a<gswitch *> (s));
+    else
+      return;
+
 
   if (ssa1)
     {
@@ -659,6 +725,7 @@ gori_map::calc_def_chain (tree name, basic_block bb)
 {
   unsigned v = SSA_NAME_VERSION (name);
   gimple *s = SSA_NAME_DEF_STMT (name);
+  // a switch cant be a DEF stmt, so dont bother checking for it.
   grange_op *stmt = dyn_cast <grange_op *>(s);
 
   if (!stmt || gimple_bb (stmt) != bb)
@@ -773,37 +840,27 @@ gori_map::dump(FILE *f)
 
 // Initialize a block ranger.
 
-block_ranger::block_ranger ()
+ssa_range::ssa_range (bool support_calculations)
 {
-  // Create a boolean_type true and false range.
-  m_bool_zero = irange (boolean_type_node, boolean_false_node,
-			boolean_false_node);
-  m_bool_one = irange (boolean_type_node, boolean_true_node, boolean_true_node);
-  m_gori = new gori_map ();
+  if (support_calculations)
+    {
+      // Create a boolean_type true and false range.
+      m_bool_zero = irange (boolean_type_node, boolean_false_node,
+			    boolean_false_node);
+      m_bool_one = irange (boolean_type_node, boolean_true_node,
+			   boolean_true_node);
+      m_gori = new gori_map ();
+    }
+  else
+    m_gori = NULL;
 }
 
 // Destruct a block ranger.
 
-block_ranger::~block_ranger ()
+ssa_range::~ssa_range ()
 {
-  delete m_gori;
-}
-
-// Calculate a range for NAME on edge E, returning the result in R.
-
-bool
-block_ranger::outgoing_edge_range_p (irange &r, edge e, tree name)
-{
-  // If this block doesnt produce ranges for NAME, bail now.
-  gcc_checking_assert (valid_ssa_p (name));
-  if (!range_p (e->src, name))
-    return false;
-
-  irange lhs;
-  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
-  gcc_checking_assert (s);
-  
-  return compute_operand_range (r, s, name, lhs);
+  if (m_gori)
+    delete m_gori;
 }
 
 static inline bool
@@ -836,8 +893,8 @@ is_gimple_logical_p (const gimple *gs)
 // looked for was not resolvable. 
 
 bool
-block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
-				     const irange &lhs)
+ssa_range::compute_operand_range (irange &r, gimple *s, tree name,
+				   const irange &lhs)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -851,7 +908,20 @@ block_ranger::compute_operand_range (irange &r, gimple *s, tree name,
 
   grange_op *stmt = dyn_cast<grange_op *> (s);
   if (!stmt)
-    return false;
+    {
+      // Chekc for a switch statement.
+      gswitch *gs = dyn_cast<gswitch *> (s);
+      if (!gs)
+	return false;
+      op1 = gimple_switch_index (gs);
+      if (op1 == name)
+        return compute_operand_range_on_stmt (r, s, name, lhs);
+      // IF op1 is in the defintion chain, pass lhs back.
+      op1_in_chain = m_gori->in_chain_p (name, op1);
+      if (!op1_in_chain)
+        return false;
+      return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, lhs);
+    }
 
   op1 = stmt->operand1 ();
   op2 = stmt->operand2 ();
@@ -994,13 +1064,13 @@ logical_combine (irange &r, enum tree_code code, const irange &lhs,
 // using NAME and resolve the outcome based on the logical operator.  
 
 bool
-block_ranger::compute_logical_operands (grange_op *s, irange &r, tree name,
+ssa_range::compute_logical_operands (grange_op *s, irange &r, tree name,
 				        const irange &lhs)
 {
   irange op1_range, op2_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
-  bool ret;
+  bool ret = true;
 
   irange op1_true, op1_false, op2_true, op2_false;
 
@@ -1029,7 +1099,7 @@ block_ranger::compute_logical_operands (grange_op *s, irange &r, tree name,
   else
     {
       // Otherwise just get the value for name in operand 1 position
-      ret = range_of_expr (op1_true, name, s);
+      gcc_assert (range_of_expr (op1_true, name, s));
       op1_false = op1_true;
     }
 
@@ -1046,7 +1116,7 @@ block_ranger::compute_logical_operands (grange_op *s, irange &r, tree name,
       else
 	{
 	  // Otherwise just get the value for name in operand 2 position
-	  ret &= range_of_expr (op2_true, name, s);
+	  gcc_assert (range_of_expr (op2_true, name, s));
 	  op2_false = op2_true; 
 	}
     }
@@ -1062,7 +1132,7 @@ block_ranger::compute_logical_operands (grange_op *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::compute_operand1_range (grange_op *s, irange &r, tree name,
+ssa_range::compute_operand1_range (grange_op *s, irange &r, tree name,
 				      const irange &lhs)
 {
   irange op1_range, op2_range;
@@ -1103,7 +1173,7 @@ block_ranger::compute_operand1_range (grange_op *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::compute_operand2_range (grange_op *s, irange &r, tree name,
+ssa_range::compute_operand2_range (grange_op *s, irange &r, tree name,
 				      const irange &lhs)
 {
   irange op1_range, op2_range;
@@ -1134,7 +1204,7 @@ block_ranger::compute_operand2_range (grange_op *s, irange &r, tree name,
 // range could be calculated.
 
 bool
-block_ranger::compute_operand1_and_operand2_range (grange_op *s, irange &r,
+ssa_range::compute_operand1_and_operand2_range (grange_op *s, irange &r,
 						   tree name, const irange &lhs)
 {
   irange op_range;
@@ -1159,9 +1229,9 @@ block_ranger::compute_operand1_and_operand2_range (grange_op *s, irange &r,
 // Dump the block rangers data structures.
 
 void
-block_ranger::dump (FILE *f)
+ssa_range::dump (FILE *f)
 {
-  if (!f)
+  if (!f || !m_gori)
     return;
 
   fprintf (f, "\nDUMPING GORI MAP\n");
@@ -1173,14 +1243,15 @@ block_ranger::dump (FILE *f)
 // Otherwise return NULL_TREE.
 
 tree
-block_ranger::single_import (tree name)
+ssa_range::single_import (tree name)
 {
+  gcc_checking_assert (m_gori);
   return m_gori->single_import (name);
 }
 
 // Return TRUE if the outgoing edges of block BB define a range for NAME.
 bool
-block_ranger::range_p (basic_block bb, tree name)
+ssa_range::range_p (basic_block bb, tree name)
 {
   return m_gori->is_export_p (name, bb);
 }
@@ -1191,7 +1262,7 @@ block_ranger::range_p (basic_block bb, tree name)
 // convenient way to show all the ranges that could be calculated.
 
 void
-block_ranger::exercise (FILE *output)
+ssa_range::exercise (FILE *output)
 {
 
   basic_block bb;
@@ -1675,7 +1746,7 @@ ssa_global_cache::dump (FILE *f)
 
 // Initialize a global_ranger.
 
-global_ranger::global_ranger () 
+global_ranger::global_ranger () : ssa_range (true)
 {
   m_block_cache = new block_range_cache ();
   m_globals = new ssa_global_cache ();
@@ -1927,14 +1998,10 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
       // if name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
-	{
-	  if (!range_of_stmt (r, def_stmt, op))
-	    r.set_varying (TREE_TYPE (op));
-	}
+	gcc_assert (range_of_stmt (r, def_stmt, op));
       else
 	// Otherwise OP comes from outside this block, try range on entry.
-	if (!range_on_entry (r, bb, op))
-	  r.set_varying (TREE_TYPE (op));
+	gcc_assert (range_on_entry (r, bb, op));
 
       // No range yet, see if there is a dereference in the block.
       // We don't care if it's between the def and a use within a block
@@ -1959,7 +2026,7 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
 void
 global_ranger::dump(FILE *f)
 {
-  block_ranger::dump (f);
+  ssa_range::dump (f);
   dump_global_ssa_range (f);
 }
 
