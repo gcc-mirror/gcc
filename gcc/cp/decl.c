@@ -12210,7 +12210,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  /* Do not warn on flexible array members in system
 		     headers because glibc uses them.  */;
 		else if (name)
-		  pedwarn (input_location, OPT_Wpedantic,
+		  pedwarn (declarator->id_loc, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array member %qs", name);
 		else
 		  pedwarn (input_location, OPT_Wpedantic,
