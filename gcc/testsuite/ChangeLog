@@ -1,3 +1,7 @@
+2018-10-30  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Skip if no weak support.
+
 2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* gcc.dg/tree-prof/cold_partition_label.c: Update for cold
