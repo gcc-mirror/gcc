@@ -10,7 +10,10 @@
    possibly others get 5.  We really should rewrite threading tests to
    test a specific IL sequence, not gobs of code whose IL can vary
    from architecture to architecture.  */
-/* { dg-final { scan-tree-dump "Jumps threaded: \[35\]" "thread3" } } */
+/* The ssa-range branch gets 4 paths because we thread the default
+   case of the switch through the loop comparison.  Basically, we know
+   that s != SI coming out of the default case.  */
+/* { dg-final { scan-tree-dump "Jumps threaded: \[45\]" "thread3" } } */
 
 enum STATE {
   S0=0,
