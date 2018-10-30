@@ -1,3 +1,17 @@
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* gimple-ssa-sprintf.c (format_directive): Use %G to include
+	inlining context.
+	(sprintf_dom_walker::compute_format_length):
+	Avoid setting POSUNDER4K here.
+	(get_destination_size): Handle null argument values.
+	(get_user_idx_format): New function.
+	(sprintf_dom_walker::handle_gimple_call): Handle all printf-like
+	functions, including user-defined with attribute format printf.
+	Use %G to include inlining context.
+	Set POSUNDER4K here.
+
 2018-10-30  Jan Hubicka  <jh@suse.cz>
 
 	* params.def (lto-partitions): Bump from 32 to 128.

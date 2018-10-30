@@ -1,3 +1,14 @@
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* gcc.c-torture/execute/fprintf-2.c: New test.
+	* gcc.c-torture/execute/printf-2.c: Same.
+	* gcc.c-torture/execute/user-printf.c: Same.
+	* gcc.dg/tree-ssa/builtin-fprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-printf-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-printf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/user-printf-warn-1.c: Same.
+
 2018-10-30  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0892R2, explicit(bool).
