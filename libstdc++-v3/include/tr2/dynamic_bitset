@@ -727,10 +727,11 @@ namespace tr2
       void
       push_back(bool __bit)
       {
-	if (size_t __offset = this->size() % bits_per_block == 0)
-	  this->_M_do_append_block(block_type(0), this->_M_Nb);
+	if (this->size() % bits_per_block == 0)
+	  this->_M_do_append_block(block_type(__bit), this->_M_Nb);
+	else
+	  this->_M_unchecked_set(this->_M_Nb, __bit);
 	++this->_M_Nb;
-	this->_M_unchecked_set(this->_M_Nb, __bit);
       }
 
       /**

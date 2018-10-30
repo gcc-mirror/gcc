@@ -1,3 +1,12 @@
+2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87784
+	* include/tr2/dynamic_bitset (dynamic_bitset::push_back): When there
+	are no unused bits in the last block, append a new block with the
+	right value so the bit doesn't need to be set. Only increment size
+	after setting the new bit, not before.
+	* testsuite/tr2/dynamic_bitset/pr87784.cc: New test.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* testsuite/17_intro/using_namespace_std_exp_neg.cc: Remove
