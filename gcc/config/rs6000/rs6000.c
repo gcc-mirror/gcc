@@ -8423,6 +8423,22 @@ rs6000_const_not_ok_for_debug_p (rtx x)
   return false;
 }
 
+/* Helper function for making sure we will make full
+   use of indexed addressing.  */
+
+rtx
+rs6000_force_indexed_or_indirect_mem (rtx x)
+{
+  machine_mode m = GET_MODE (x);
+  if (!indexed_or_indirect_operand (x, m))
+    {
+      rtx addr = XEXP (x, 0);
+      addr = force_reg (Pmode, addr);
+      x = replace_equiv_address_nv (x, addr);
+    }
+  return x;
+}
+
 
 /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
 

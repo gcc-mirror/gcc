@@ -1,3 +1,14 @@
+2018-10-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (bswapdi2): Force address into register
+	if not in indexed or indirect form.
+	(bswapdi2_load): Change predicate to indexed_or_indirect_operand.
+	(bswapdi2_store): Ditto.
+	* config/rs6000/rs6000.c (rs6000_force_indexed_or_indirect_mem): New
+	helper function.
+	* config/rs6000/rs6000-protos.h (rs6000_force_indexed_or_indirect_mem):
+	Prototype for helper function.
+
 2018-10-30  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (optimize): Clarify/expand attribute documentation.
