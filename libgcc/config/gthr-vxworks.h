@@ -63,8 +63,9 @@ __gthread_mutex_init_function (__gthread_mutex_t *mutex)
 }
 
 static inline int
-__gthread_mutex_destroy (__gthread_mutex_t * UNUSED(mutex))
+__gthread_mutex_destroy (__gthread_mutex_t *mutex)
 {
+  semDelete(*mutex);
   return 0;
 }
 
