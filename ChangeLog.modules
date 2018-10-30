@@ -1,3 +1,18 @@
+2018-10-30  Nathan Sidwell  <nathan@acm.org>
+
+	Less ordered overloads
+	gcc/cp/
+	* cp-tree.h (ovl_sort): Declare.
+	* name-lookup.h (extract_module_binding): Binding is reference.
+	* tree.c (ovl_insert): Don't sort non-hidden members.
+	(ovl_splice, ovl_sort): New.
+	* name-lookup.c (extract_module_binding): Binding is reference.
+	Sort the binding.
+	* ptree.c (cxx_print_xnode): Print MODULE_VEC name.
+	* module.cc (module_state::add_writables): Binding is reference.
+	gcc/testsuite/
+	* g++.dg/lookup/friend21.C: New.
+
 2018-10-29  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

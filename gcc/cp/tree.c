@@ -2193,84 +2193,110 @@ ovl_copy (tree ovl)
 
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  Overloads are ordered as hidden, regular,
-   exported.  */
+   DECL_HIDDEN.  Overloads are ordered as hidden then regular.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
-  bool copying = false; /* Checking use only.  */
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  int weight = hidden_p - DECL_MODULE_EXPORT_P (fn);
-
-  tree result = NULL_TREE;
+  tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
 
-  /* Find insertion point.  */
-  while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && weight < (OVL_HIDDEN_P (maybe_ovl) - OVL_EXPORT_P (maybe_ovl)))
+  /* Skip hidden.  */
+  for (; maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
+	 && OVL_HIDDEN_P (maybe_ovl);
+       maybe_ovl = OVL_CHAIN (maybe_ovl))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
-			   && !OVL_EXPORT_P (maybe_ovl)
-			   && (!copying || OVL_USED_P (maybe_ovl)));
-      if (OVL_USED_P (maybe_ovl))
-	{
-	  copying = true;
-	  maybe_ovl = ovl_copy (maybe_ovl);
-	  if (insert_after)
-	    OVL_CHAIN (insert_after) = maybe_ovl;
-	}
-      if (!result)
-	result = maybe_ovl;
+			   && !OVL_USED_P (maybe_ovl));
       insert_after = maybe_ovl;
-      maybe_ovl = OVL_CHAIN (maybe_ovl);
     }
 
-  tree trail = fn;
-  if (maybe_ovl && TREE_CODE (maybe_ovl) != OVERLOAD
-      && !DECL_MODULE_EXPORT_P (maybe_ovl) && DECL_MODULE_EXPORT_P (fn))
-    {
-      /* We must place FN after MAYBE_OVL, which is a raw _DECL  */
-      gcc_assert (!using_p && !hidden_p);
-      if (TREE_CODE (fn) == TEMPLATE_DECL)
-	{
-	  trail = ovl_make (fn, NULL_TREE);
-	  OVL_EXPORT_P (trail) = true;
-	}
-      /* Now swap things round, so it looks like we're prepending as
-	 normal.  */
-      fn = maybe_ovl;
-      maybe_ovl = trail;
-    }
-
+  bool hidden_p = DECL_HIDDEN_P (fn);
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
-      trail = ovl_make (fn, maybe_ovl);
+      maybe_ovl = ovl_make (fn, maybe_ovl);
       if (hidden_p)
-	OVL_HIDDEN_P (trail) = true;
+	OVL_HIDDEN_P (maybe_ovl) = true;
       if (using_p)
-	OVL_HAS_USING_P (trail) = OVL_USING_P (trail) = true;
-      if (DECL_MODULE_EXPORT_P (fn))
-	OVL_EXPORT_P (trail) = true;
+	OVL_HAS_USING_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
+  else
+    maybe_ovl = fn;
 
   if (insert_after)
     {
-      OVL_CHAIN (insert_after) = trail;
+      OVL_CHAIN (insert_after) = maybe_ovl;
       TREE_TYPE (insert_after) = unknown_type_node;
-      if (using_p)
-	for (tree probe = result; !OVL_HAS_USING_P (probe);
-	     probe = OVL_CHAIN (probe))
-	  OVL_HAS_USING_P (probe) = true;
-      else
-	gcc_checking_assert (TREE_CODE (trail) != OVERLOAD
-			     || !OVL_HAS_USING_P (trail)
-			     || OVL_HAS_USING_P (insert_after));
     }
   else
-    result = trail;
+    result = maybe_ovl;
 
   return result;
+}
+
+/* Splice PART into OVL.  */
+
+static tree
+ovl_splice (tree part, tree ovl)
+{
+  for (tree next; part && TREE_CODE (part) == OVERLOAD; part = next)
+    {
+      next = OVL_CHAIN (part);
+      OVL_CHAIN (part) = ovl;
+      ovl = part;
+    }
+  if (part)
+    ovl = ovl_insert (part, ovl);
+  return ovl;
+}
+
+/* Order OVL by hidden/internal/module/export.  */
+
+tree
+ovl_sort (tree ovl)
+{
+  if (TREE_CODE (ovl) != OVERLOAD)
+    return ovl;
+
+  /* Skip hidden, these must already be at the front.  */
+  tree hidden = NULL_TREE, hidden_end = NULL_TREE;
+  for (; ovl && TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
+       ovl = OVL_CHAIN (ovl))
+    {
+      if (!hidden)
+	hidden = ovl;
+      hidden_end = ovl;
+    }
+
+  /* Separate into intern/module/export sets */
+  tree intern = NULL_TREE;
+  tree mod = NULL_TREE;
+  tree exp = NULL_TREE;
+  for (ovl_iterator iter (ovl); iter; ++iter)
+    {
+      tree decl = *iter;
+      if (iter.using_p ())
+	intern = ovl_insert (decl, intern, true);
+      else if (DECL_MODULE_EXPORT_P (decl))
+	exp = ovl_insert (decl, exp);
+      else if (TREE_PUBLIC (decl))
+	mod = ovl_insert (decl, mod);
+      else
+	intern = ovl_insert (decl, intern);
+    }
+
+  /* Splice the sets together.  */
+  tree first = NULL_TREE;
+  first = ovl_splice (exp, first);
+  first = ovl_splice (mod, first);
+  first = ovl_splice (intern, first);
+  if (hidden_end)
+    {
+      OVL_CHAIN (hidden_end) = first;
+      first = hidden;
+    }
+
+  return first;
 }
 
 /* Skip any hidden names at the beginning of OVL.   */

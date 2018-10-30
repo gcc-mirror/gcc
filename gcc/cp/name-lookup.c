@@ -3565,25 +3565,30 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
-/* Given a namespace-level binding BINDING, extract the VALUE and TYPE
-   bindings.  */
+/* Given a namespace-level binding BINDING, extract & sort the current
+   module's VALUE and TYPE bindings.  */
 
 tree
-extract_module_binding (tree binding, tree &type)
+extract_module_binding (tree &binding, tree &type)
 {
-  if (TREE_CODE (binding) == MODULE_VECTOR)
+  tree *slot = &binding;
+
+  if (TREE_CODE (*slot) == MODULE_VECTOR)
     {
-      binding = MODULE_VECTOR_CLUSTER
-	(binding, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
+      tree &slot_ref = MODULE_VECTOR_CLUSTER
+	(*slot, (MODULE_SLOT_CURRENT / MODULE_VECTOR_SLOTS_PER_CLUSTER))
 	.slots[MODULE_SLOT_CURRENT % MODULE_VECTOR_SLOTS_PER_CLUSTER];
-      if (!binding)
+      slot = &slot_ref;
+      if (!*slot)
 	return NULL_TREE;
     }
 
-  type = MAYBE_STAT_TYPE (binding);
-  tree value = ovl_skip_hidden (MAYBE_STAT_DECL (binding));
+  type = MAYBE_STAT_TYPE (*slot);
+  slot = &MAYBE_STAT_DECL (*slot);
+  tree value = ovl_sort (*slot);
+  *slot = value;
 
-  return value;
+  return ovl_skip_hidden (value);
 }
 
 /* Imported module MOD has a binding to NS::NAME, stored in section

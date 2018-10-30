@@ -10854,7 +10854,7 @@ module_state::add_writables (depset::hash &table, tree ns)
   for (hash_table<named_decl_hash>::iterator iter
 	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
     {
-      tree bind = *iter;
+      tree &bind = *iter;
 
       tree type = NULL_TREE;
       if (tree value = extract_module_binding (bind, type))

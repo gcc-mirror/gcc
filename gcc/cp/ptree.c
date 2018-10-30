@@ -258,8 +258,8 @@ cxx_print_xnode (FILE *file, tree node, int indent)
     case MODULE_VECTOR:
       {
 	unsigned len = MODULE_VECTOR_NUM_CLUSTERS (node);
-	indent_to (file, indent + 4);
-	fprintf (file, "clusters %u", len);
+	print_node (file, "name", MODULE_VECTOR_NAME (node), indent + 4);
+	fprintf (file, " clusters %u", len);
 	for (unsigned ix = 0; ix != len; ix++)
 	  {
 	    module_cluster *cluster = &MODULE_VECTOR_CLUSTER (node, ix);
