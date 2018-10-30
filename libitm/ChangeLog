@@ -1,5 +1,6 @@
 2018-10-30  Nicholas Krause <xerofoify@gmail.com>
 
+	PR libitm/86293
 	* method-serial.cc: Mark varible as potentially unused
 	to silence warning.
 
