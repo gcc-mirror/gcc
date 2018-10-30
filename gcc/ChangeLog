@@ -1,3 +1,7 @@
+2018-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcov.c (output_lines): Remove duplicate line.
+
 2018-10-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (bswapdi2): Force address into register
