@@ -1,6 +1,17 @@
 /* PR tree-optimization/81384 - built-in form of strnlen missing
    Test to verify that strnlen built-in expansion works correctly.  */
 
+/* FIXME: The -fprintf-return-value pass was previously calling the
+   evrp engine and setting global ranges.  These global ranges were
+   then being used by the RTL optimizers to optimize away strnlen
+   calls.
+
+   I've documented this here:
+
+   https://gcc.gnu.org/bugzilla/show_bug.cgi?id=87813
+*/
+
+
 #define PTRDIFF_MAX __PTRDIFF_MAX__
 #define SIZE_MAX    __SIZE_MAX__
 #define NOIPA __attribute__ ((noipa))
