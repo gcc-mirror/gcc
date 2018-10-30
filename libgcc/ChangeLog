@@ -1,3 +1,7 @@
+2018-10-30  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h (__gthread_mutex_destroy): Call semDelete.
+
 2018-10-25  Martin Liska  <mliska@suse.cz>
 
 	PR other/87735
