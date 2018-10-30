@@ -1,5 +1,9 @@
 2018-10-30  Jan Hubicka  <jh@suse.cz>
 
+	* params.def (lto-partitions): Bump from 32 to 128.
+
+2018-10-30  Jan Hubicka  <jh@suse.cz>
+
 	* tree.c
 	(free_lang_data_d, add_tree_to_fld_list, fld_worklist_push): Move
 	head in file.
