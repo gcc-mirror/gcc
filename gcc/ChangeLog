@@ -1,3 +1,8 @@
+2018-10-30 Sameera Deshpande <sameera.deshpande@linaro.org
+
+	* gcc/config/aarch64/falkor-tag-collision-avoidance.c
+	(execute_tag_collision_avoidance): Call df_note_add_problem.
+
 2018-10-30  Martin Liska  <mliska@suse.cz>
 
 	* doc/extend.texi: Fix typo in documentation
