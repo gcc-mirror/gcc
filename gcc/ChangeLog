@@ -1,3 +1,18 @@
+2018-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c
+	(free_lang_data_d, add_tree_to_fld_list, fld_worklist_push): Move
+	head in file.
+	(free_lang_data_in_type): Forward declare.
+	(fld_type_variant_equal_p): New function.
+	(fld_type_variant): New function
+	(fld_incomplete_types): New hash.
+	(fld_incomplete_type_of): New function
+	(fld_simplfied-type): New function.
+	(free_lang_data_in_decl): Add fld parameter; simplify type of FIELD_DECL
+	(free_lang_data): Allocate and free fld_incomplete_type; update call
+	of free_lang_data_in_decl.
+
 2018-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcov.c (output_lines): Remove duplicate line.
