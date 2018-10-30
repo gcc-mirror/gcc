@@ -1,3 +1,8 @@
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (optimize): Clarify/expand attribute documentation.
+	(target, pragma GCC optimize, pragma GCC target): Ditto.
+
 2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi: Fix prototype and description of
