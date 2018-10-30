@@ -1,3 +1,8 @@
+2018-10-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Fix typo in documentation
+	of __builtin_expect_with_probability.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/87721
