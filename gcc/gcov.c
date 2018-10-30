@@ -3001,8 +3001,6 @@ output_lines (FILE *gcov_file, const source_info *src)
 	     SGR_SEQ (COLOR_BG_GREEN) "> 10%" SGR_RESET "\n");
 
   fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
-
-  fprintf (gcov_file, DEFAULT_LINE_START "Source:%s\n", src->coverage.name);
   if (!multiple_files)
     {
       fprintf (gcov_file, DEFAULT_LINE_START "Graph:%s\n", bbg_file_name);
