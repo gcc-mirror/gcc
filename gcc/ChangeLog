@@ -1,3 +1,30 @@
+2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* cgraph.h (clone_function_name_1): Replaced by new
+	  clone_function_name_numbered that takes name as string; for
+	  privatize_symbol_name_1 use only.
+	  (clone_function_name): Renamed to
+	  clone_function_name_numbered to be explicit about numbering.
+	  (clone_function_name): New two-argument function that does
+	  not number its output.
+	  (clone_function_name): New three-argument function that
+	  takes a number to append to its output.
+	* cgraphclones.c (duplicate_thunk_for_node):
+	  (clone_function_name_1): Renamed.
+	  (clone_function_name_numbered): Two new functions.
+	  (clone_function_name): Improved documentation.
+	  (cgraph_node::create_virtual_clone): Use clone_function_name_numbered.
+	* config/rs6000/rs6000.c (make_resolver_func): Ditto.
+	* final.c (final_scan_insn_1): Use the new clone_function_name
+	  without numbering.
+	* multiple_target.c (create_dispatcher_calls): Ditto.
+	  (create_target_clone): Ditto.
+	* omp-expand.c (grid_expand_target_grid_body): Ditto.
+	* omp-low.c (create_omp_child_function_name): Ditto.
+	* omp-simd-clone.c (simd_clone_create): Ditto.
+	* symtab.c (simd_symtab_node::noninterposable_alias): Use the
+	  new clone_function_name without numbering.
+
 2018-10-30  Richard Earnshaw  <rearnsha@arm.com>
 
 	* alloc-pool.h (base_pool_allocator <TBlockAllocator>::initialize):

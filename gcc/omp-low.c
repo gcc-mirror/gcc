@@ -1531,8 +1531,8 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 static tree
 create_omp_child_function_name (bool task_copy)
 {
-  return clone_function_name (current_function_decl,
-			      task_copy ? "_omp_cpyfn" : "_omp_fn");
+  return clone_function_name_numbered (current_function_decl,
+				       task_copy ? "_omp_cpyfn" : "_omp_fn");
 }
 
 /* Return true if CTX may belong to offloaded code: either if current function
