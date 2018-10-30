@@ -4961,11 +4961,9 @@ static gfc_expr *
 simplify_min_max (gfc_expr *expr, int sign)
 {
   gfc_actual_arglist *arg, *last, *extremum;
-  gfc_intrinsic_sym * specific;
 
   last = NULL;
   extremum = NULL;
-  specific = expr->value.function.isym;
 
   arg = expr->value.function.actual;
 
@@ -4994,15 +4992,6 @@ simplify_min_max (gfc_expr *expr, int sign)
      expression.  */
   if (expr->value.function.actual->next != NULL)
     return NULL;
-
-  /* Convert to the correct type and kind.  */
-  if (expr->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (expr->value.function.actual->expr,
-	expr->ts.type, expr->ts.kind);
-
-  if (specific->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (expr->value.function.actual->expr,
-	specific->ts.type, specific->ts.kind);
 
   return gfc_copy_expr (expr->value.function.actual->expr);
 }
