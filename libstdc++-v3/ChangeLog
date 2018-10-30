@@ -1,5 +1,18 @@
 2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/87809
+	* include/bits/forward_list.h (_Fwd_list_impl::_Fwd_list_impl()): Use
+	trait in exception-specification instead of possibly invalid
+	expression.
+	* include/bits/stl_bvector.h (_Bvector_impl::_Bvector_impl()):
+	Likewise.
+	* include/bits/stl_list.h (_List_impl::_List_impl()): Likewise.
+	* include/bits/stl_vector.h (_Vector_impl::_Vector_impl()): Likewise.
+	* testsuite/23_containers/forward_list/cons/87809.cc: New test.
+	* testsuite/23_containers/list/cons/87809.cc: New test.
+	* testsuite/23_containers/vector/bool/cons/87809.cc: New test.
+	* testsuite/23_containers/vector/cons/87809.cc: New test.
+
 	PR libstdc++/87784
 	* include/tr2/dynamic_bitset (dynamic_bitset::push_back): When there
 	are no unused bits in the last block, append a new block with the
