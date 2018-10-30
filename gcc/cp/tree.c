@@ -2166,8 +2166,8 @@ ovl_make (tree fn, tree next)
 
   TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
 			? unknown_type_node : TREE_TYPE (fn));
-  if (next && TREE_CODE (next) == OVERLOAD && OVL_HAS_USING_P (next))
-    OVL_HAS_USING_P (result) = true;
+  if (next && TREE_CODE (next) == OVERLOAD && OVL_DEDUP_P (next))
+    OVL_DEDUP_P (result) = true;
   OVL_FUNCTION (result) = fn;
   OVL_CHAIN (result) = next;
   return result;
@@ -2182,7 +2182,7 @@ ovl_copy (tree ovl)
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  OVL_HAS_USING_P (result) = OVL_HAS_USING_P (ovl);
+  OVL_DEDUP_P (result) = OVL_DEDUP_P (ovl);
   OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
   OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
   OVL_USING_P (result) = OVL_USING_P (ovl);
@@ -2218,7 +2218,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
       if (hidden_p)
 	OVL_HIDDEN_P (maybe_ovl) = true;
       if (using_p)
-	OVL_HAS_USING_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
+	OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
   else
     maybe_ovl = fn;
@@ -2439,7 +2439,7 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 	      {
 		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
 		/* Propagate OVL_USING, but OVL_HIDDEN &
-		   OVL_HAS_USING_P don't matter.  */
+		   OVL_DEDUP_P don't matter.  */
 		if (OVL_USING_P (fns))
 		  OVL_USING_P (lookup) = true;
 	      }

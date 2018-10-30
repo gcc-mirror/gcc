@@ -1,5 +1,12 @@
 2018-10-30  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (OVL_HAS_USING_P): Rename to ...
+	(OVL_DEDUP_P): ... here.
+	* name-lookup.c (name_lookup::add_overload)
+	(get_class_binding_direct): Adjust.
+	* tree.c (ovl_make, ovl_copy, ovl_insert, lookup_maybe_add): Adjust.
+
 	Less ordered overloads
 	gcc/cp/
 	* cp-tree.h (ovl_sort): Declare.
