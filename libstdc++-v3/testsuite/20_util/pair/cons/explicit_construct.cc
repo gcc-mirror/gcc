@@ -37,7 +37,7 @@ struct ExplicitDefaultDefault
 
 std::pair<int, int> f1() {return {1,2};}
 
-std::pair<Explicit, Explicit> f2() {return {1,2};} // { dg-error "explicit" }
+std::pair<Explicit, Explicit> f2() {return {1,2};} // { dg-error "could not convert" }
 
 std::pair<long, long> f3() {return std::pair<int, int>{1,2};}
 
@@ -52,7 +52,7 @@ std::pair<int, int> v0{1,2};
 
 std::pair<Explicit, Explicit> v1{1,2};
 
-std::pair<Explicit, Explicit> v2 = {1,2}; // { dg-error "explicit" }
+std::pair<Explicit, Explicit> v2 = {1,2}; // { dg-error "could not convert" }
 
 std::pair<Explicit, Explicit> v3{std::pair<int,int>{1,2}};
 
@@ -83,12 +83,12 @@ void f7(std::pair<long, long>) {}
 
 std::pair<ExplicitDefault, int> f8()
 {
-  return {}; // { dg-error "explicit" }
+  return {}; // { dg-error "could not convert" }
 }
 
 std::pair<ExplicitDefaultDefault, int> f9()
 {
-  return {}; // { dg-error "explicit" }
+  return {}; // { dg-error "could not convert" }
 }
 
 void f10(std::pair<ExplicitDefault, int>) {}
@@ -99,7 +99,7 @@ void test_arg_passing()
 {
   f6(v0); // { dg-error "could not convert" }
   f6(v1);
-  f6({1,2}); // { dg-error "explicit" }
+  f6({1,2}); // { dg-error "could not convert" }
   f6(std::pair<Explicit, Explicit>{});
   f6(std::pair<int, int>{}); // { dg-error "could not convert" }
   f7(v0);
@@ -107,8 +107,8 @@ void test_arg_passing()
   f7({1,2});
   f7(std::pair<int, int>{});
   f7(std::pair<long, long>{});
-  f10({}); // { dg-error "explicit" }
-  f11({}); // { dg-error "explicit" }
+  f10({}); // { dg-error "could not convert" }
+  f11({}); // { dg-error "could not convert" }
   f10(std::pair<ExplicitDefault, int>{});
   f11(std::pair<ExplicitDefaultDefault, int>{});
 }
@@ -130,6 +130,6 @@ std::pair<int*, ExplicitMoveOnly> v14{0, MoveOnly{}};
 std::pair<ExplicitMoveOnly, int*> v15{MoveOnly{}, 0};
 
 std::pair<int*, ExplicitMoveOnly> v16 =
-  {0, MoveOnly{}}; // { dg-error "explicit" }
+  {0, MoveOnly{}}; // { dg-error "could not convert" }
 std::pair<ExplicitMoveOnly, int*> v17 =
-  {MoveOnly{}, 0}; // { dg-error "explicit" }
+  {MoveOnly{}, 0}; // { dg-error "could not convert" }

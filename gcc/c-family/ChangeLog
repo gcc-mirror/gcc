@@ -1,3 +1,8 @@
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_explicit_bool.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* name-hint.h (name_hint::take_deferred): New member function.

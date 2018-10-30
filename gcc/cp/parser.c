@@ -13897,6 +13897,9 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
      virtual
      explicit
 
+   C++2A Extension:
+     explicit(constant-expression)
+
    Returns an IDENTIFIER_NODE corresponding to the keyword used.
    Updates DECL_SPECS, if it is non-NULL.  */
 
@@ -13923,8 +13926,53 @@ cp_parser_function_specifier_opt (cp_parser* parser,
       break;
 
     case RID_EXPLICIT:
-      set_and_check_decl_spec_loc (decl_specs, ds_explicit, token);
-      break;
+      {
+	tree id = cp_lexer_consume_token (parser->lexer)->u.value;
+	/* If we see '(', it's C++20 explicit(bool).  */
+	tree expr;
+	if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	  {
+	    matching_parens parens;
+	    parens.consume_open (parser);
+
+	    /* New types are not allowed in an explicit-specifier.  */
+	    const char *saved_message
+	      = parser->type_definition_forbidden_message;
+	    parser->type_definition_forbidden_message
+	      = G_("types may not be defined in explicit-specifier");
+
+	    if (cxx_dialect < cxx2a)
+	      pedwarn (token->location, 0,
+		       "%<explicit(bool)%> only available with -std=c++2a "
+		       "or -std=gnu++2a");
+
+	    /* Parse the constant-expression.  */
+	    expr = cp_parser_constant_expression (parser);
+
+	    /* Restore the saved message.  */
+	    parser->type_definition_forbidden_message = saved_message;
+	    parens.require_close (parser);
+	  }
+	else
+	  /* The explicit-specifier explicit without a constant-expression is
+	     equivalent to the explicit-specifier explicit(true).  */
+	  expr = boolean_true_node;
+
+	/* [dcl.fct.spec]
+	   "the constant-expression, if supplied, shall be a contextually
+	   converted constant expression of type bool."  */
+	expr = build_explicit_specifier (expr, tf_warning_or_error);
+	/* We could evaluate it -- mark the decl as appropriate.  */
+	if (expr == boolean_true_node)
+	  set_and_check_decl_spec_loc (decl_specs, ds_explicit, token);
+	else if (expr == boolean_false_node)
+	  /* Don't mark the decl as explicit.  */;
+	else if (decl_specs)
+	  /* The expression was value-dependent.  Remember it so that we can
+	     substitute it later.  */
+	  decl_specs->explicit_specifier = expr;
+	return id;
+      }
 
     default:
       return NULL_TREE;

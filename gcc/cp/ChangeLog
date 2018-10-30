@@ -1,3 +1,19 @@
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* call.c (add_template_candidate_real): Return if the declaration is
+	explicit and we're only looking for non-converting constructor.
+	* cp-tree.h (lang_decl_fn): Add has_dependent_explicit_spec_p bit.
+	(DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P): New macro.
+	(cp_decl_specifier_seq): Add explicit_specifier field.
+	(build_explicit_specifier, store_explicit_specifier): Declare.
+	* decl.c (grokdeclarator): Call store_explicit_specifier.
+	(build_explicit_specifier): New function.
+	* parser.c (cp_parser_function_specifier_opt) <case RID_EXPLICIT>:
+	Parse C++20 explicit(bool).
+	* pt.c (store_explicit_specifier, lookup_explicit_specifier): New.
+	(tsubst_function_decl): Handle explicit(dependent-expr).
+
 2018-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* decl.c (grokdeclarator): Use declarator->id_loc in diagnostic
