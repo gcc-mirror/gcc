@@ -1,3 +1,11 @@
+2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: Update for cold
+	  section names without numbers.
+	* gcc.dg/tree-prof/section-attr-1.c: Ditto.
+	* gcc.dg/tree-prof/section-attr-2.c: Ditto.
+	* gcc.dg/tree-prof/section-attr-3.c: Ditto.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/87721

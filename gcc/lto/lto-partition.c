@@ -964,8 +964,8 @@ privatize_symbol_name_1 (symtab_node *node, tree decl)
 
   name = maybe_rewrite_identifier (name);
   symtab->change_decl_assembler_name (decl,
-				      clone_function_name_1 (name,
-							     "lto_priv"));
+				      clone_function_name_numbered (
+					  name, "lto_priv"));
 
   if (node->lto_file_data)
     lto_record_renamed_decl (node->lto_file_data, name,
