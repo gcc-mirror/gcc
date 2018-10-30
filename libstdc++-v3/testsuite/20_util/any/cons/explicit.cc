@@ -24,7 +24,7 @@
 
 int main()
 {
-  std::any a = {std::in_place_type<int>, 42}; // { dg-error "converting" }
+  std::any a = {std::in_place_type<int>, 42}; // { dg-error "convert" }
   std::any a2 = {std::in_place_type<std::vector<int>>,
-		 {42, 666}}; // { dg-error "converting" }
+		 {42, 666}}; // { dg-error "convert" }
 }

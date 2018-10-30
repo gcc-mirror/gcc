@@ -1,3 +1,20 @@
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* g++.dg/cpp2a/explicit1.C: New test.
+	* g++.dg/cpp2a/explicit10.C: New test.
+	* g++.dg/cpp2a/explicit11.C: New test.
+	* g++.dg/cpp2a/explicit12.C: New test.
+	* g++.dg/cpp2a/explicit13.C: New test.
+	* g++.dg/cpp2a/explicit2.C: New test.
+	* g++.dg/cpp2a/explicit3.C: New test.
+	* g++.dg/cpp2a/explicit4.C: New test.
+	* g++.dg/cpp2a/explicit5.C: New test.
+	* g++.dg/cpp2a/explicit6.C: New test.
+	* g++.dg/cpp2a/explicit7.C: New test.
+	* g++.dg/cpp2a/explicit8.C: New test.
+	* g++.dg/cpp2a/explicit9.C: New test.
+
 2018-10-30  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/87708

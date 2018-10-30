@@ -2587,7 +2587,8 @@ struct GTY(()) lang_decl_fn {
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  unsigned spare : 13;
+  unsigned has_dependent_explicit_spec_p : 1;
+  unsigned spare : 12;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3032,6 +3033,12 @@ struct GTY(()) lang_decl {
    virtual function.  */
 #define DECL_PURE_VIRTUAL_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->pure_virtual)
+
+/* Nonzero for FUNCTION_DECL means that this member function (either
+   a constructor or a conversion function) has an explicit specifier
+   with a value-dependent expression.  */
+#define DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P(NODE) \
+  (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
 
 /* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
    invalid overrider for a function from a base class.  Once we have
@@ -5748,6 +5755,8 @@ struct cp_decl_specifier_seq {
   /* If non-NULL, a built-in type that the user attempted to redefine
      to some other type.  */
   tree redefined_builtin_type;
+  /* The explicit-specifier, if any.  */
+  tree explicit_specifier;
   /* The storage class specified -- or sc_none if no storage class was
      explicitly specified.  */
   cp_storage_class storage_class;
@@ -6375,6 +6384,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 extern bool check_array_designated_initializer  (constructor_elt *,
 						 unsigned HOST_WIDE_INT);
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
+extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6772,6 +6782,7 @@ extern bool dguide_name_p			(tree);
 extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
+extern void store_explicit_specifier		(tree, tree);
 
 /* in repo.c */
 extern void init_repo				(void);

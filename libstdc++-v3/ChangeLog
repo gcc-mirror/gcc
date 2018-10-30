@@ -1,3 +1,10 @@
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* testsuite/20_util/any/cons/explicit.cc: Adjust dg-error.
+	* testsuite/20_util/pair/cons/explicit_construct.cc: Likewise.
+	* testsuite/20_util/tuple/cons/explicit_construct.cc: Likewise.
+
 2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87809
