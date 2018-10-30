@@ -1,3 +1,9 @@
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* c-format.c (check_format_types): Avoid diagnosing null pointer
+	arguments to printf-family of functions.
+
 2018-10-30  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0892R2, explicit(bool).

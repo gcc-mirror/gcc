@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "langhooks.h"
 
+#include "attribs.h"
 #include "builtins.h"
 #include "stor-layout.h"
 
@@ -2796,8 +2797,9 @@ format_directive (const sprintf_dom_walker::call_info &info,
   if (fmtres.nullp)
     {
       fmtwarn (dirloc, argloc, NULL, info.warnopt (),
-	       "%<%.*s%> directive argument is null",
-	       dirlen, target_to_host (hostdir, sizeof hostdir, dir.beg));
+	       "%G%<%.*s%> directive argument is null",
+	       info.callstmt, dirlen,
+	       target_to_host (hostdir, sizeof hostdir, dir.beg));
 
       /* Don't bother processing the rest of the format string.  */
       res->warned = true;
@@ -3475,7 +3477,6 @@ sprintf_dom_walker::compute_format_length (call_info &info,
      by the known range [0, 0] (with no conversion resulting in a failure
      or producing more than 4K bytes) until determined otherwise.  */
   res->knownrange = true;
-  res->posunder4k = true;
   res->floating = false;
   res->warned = false;
 
@@ -3518,6 +3519,10 @@ sprintf_dom_walker::compute_format_length (call_info &info,
 static unsigned HOST_WIDE_INT
 get_destination_size (tree dest)
 {
+  /* When there is no destination return -1.  */
+  if (!dest)
+    return HOST_WIDE_INT_M1U;
+
   /* Initialize object size info before trying to compute it.  */
   init_object_sizes ();
 
@@ -3738,6 +3743,37 @@ try_simplify_call (gimple_stmt_iterator *gsi,
   return false;
 }
 
+/* Return the zero-based index of the format string argument of a printf
+   like function and set *IDX_ARGS to the first format argument.  When
+   no such index exists return UINT_MAX.  */
+
+static unsigned
+get_user_idx_format (tree fndecl, unsigned *idx_args)
+{
+  tree attrs = lookup_attribute ("format", DECL_ATTRIBUTES (fndecl));
+  if (!attrs)
+    attrs = lookup_attribute ("format", TYPE_ATTRIBUTES (TREE_TYPE (fndecl)));
+
+  if (!attrs)
+    return UINT_MAX;
+
+  attrs = TREE_VALUE (attrs);
+
+  tree archetype = TREE_VALUE (attrs);
+  if (strcmp ("printf", IDENTIFIER_POINTER (archetype)))
+    return UINT_MAX;
+
+  attrs = TREE_CHAIN (attrs);
+  tree fmtarg = TREE_VALUE (attrs);
+
+  attrs = TREE_CHAIN (attrs);
+  tree elliparg = TREE_VALUE (attrs);
+
+  /* Attribute argument indices are 1-based but we use zero-based.  */
+  *idx_args = tree_to_uhwi (elliparg) - 1;
+  return tree_to_uhwi (fmtarg) - 1;
+}
+
 /* Determine if a GIMPLE CALL is to one of the sprintf-like built-in
    functions and if so, handle it.  Return true if the call is removed
    and gsi_next should not be performed in the caller.  */
@@ -3748,11 +3784,22 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   call_info info = call_info ();
 
   info.callstmt = gsi_stmt (*gsi);
-  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+  info.func = gimple_call_fndecl (info.callstmt);
+  if (!info.func)
     return false;
 
-  info.func = gimple_call_fndecl (info.callstmt);
   info.fncode = DECL_FUNCTION_CODE (info.func);
+
+  /* Format string argument number (valid for all functions).  */
+  unsigned idx_format = UINT_MAX;
+  if (!gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
+    {
+      unsigned idx_args;
+      idx_format = get_user_idx_format (info.func, &idx_args);
+      if (idx_format == UINT_MAX)
+	return false;
+      info.argidx = idx_args;
+    }
 
   /* The size of the destination as in snprintf(dest, size, ...).  */
   unsigned HOST_WIDE_INT dstsize = HOST_WIDE_INT_M1U;
@@ -3760,17 +3807,70 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* The size of the destination determined by __builtin_object_size.  */
   unsigned HOST_WIDE_INT objsize = HOST_WIDE_INT_M1U;
 
-  /* Buffer size argument number (snprintf and vsnprintf).  */
-  unsigned HOST_WIDE_INT idx_dstsize = HOST_WIDE_INT_M1U;
+  /* Zero-based buffer size argument number (snprintf and vsnprintf).  */
+  unsigned idx_dstsize = UINT_MAX;
 
   /* Object size argument number (snprintf_chk and vsnprintf_chk).  */
-  unsigned HOST_WIDE_INT idx_objsize = HOST_WIDE_INT_M1U;
+  unsigned idx_objsize = UINT_MAX;
 
-  /* Format string argument number (valid for all functions).  */
-  unsigned idx_format;
+  /* Destinaton argument number (valid for sprintf functions only).  */
+  unsigned idx_dstptr = 0;
 
   switch (info.fncode)
     {
+    case BUILT_IN_NONE:
+      // User-defined function with attribute format (printf).
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF:
+      // Signature:
+      //   __builtin_fprintf (FILE*, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF_CHK:
+      // Signature:
+      //   __builtin_fprintf_chk (FILE*, ost, format, ...)
+      idx_format = 2;
+      info.argidx = 3;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_FPRINTF_UNLOCKED:
+      // Signature:
+      //   __builtin_fprintf_unnlocked (FILE*, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF:
+      // Signature:
+      //   __builtin_printf (format, ...)
+      idx_format = 0;
+      info.argidx = 1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF_CHK:
+      // Signature:
+      //   __builtin_printf_chk (it, format, ...)
+      idx_format = 1;
+      info.argidx = 2;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_PRINTF_UNLOCKED:
+      // Signature:
+      //   __builtin_printf (format, ...)
+      idx_format = 0;
+      info.argidx = 1;
+      idx_dstptr = -1;
+      break;
+
     case BUILT_IN_SPRINTF:
       // Signature:
       //   __builtin_sprintf (dst, format, ...)
@@ -3803,6 +3903,38 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
       idx_format = 4;
       info.argidx = 5;
       info.bounded = true;
+      break;
+
+    case BUILT_IN_VFPRINTF:
+      // Signature:
+      //   __builtin_vprintf (FILE*, format, va_list)
+      idx_format = 1;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VFPRINTF_CHK:
+      // Signature:
+      //   __builtin___vfprintf_chk (FILE*, ost, format, va_list)
+      idx_format = 2;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VPRINTF:
+      // Signature:
+      //   __builtin_vprintf (format, va_list)
+      idx_format = 0;
+      info.argidx = -1;
+      idx_dstptr = -1;
+      break;
+
+    case BUILT_IN_VPRINTF_CHK:
+      // Signature:
+      //   __builtin___vprintf_chk (ost, format, va_list)
+      idx_format = 1;
+      info.argidx = -1;
+      idx_dstptr = -1;
       break;
 
     case BUILT_IN_VSNPRINTF:
@@ -3846,8 +3978,10 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* Set the global warning level for this function.  */
   warn_level = info.bounded ? warn_format_trunc : warn_format_overflow;
 
-  /* The first argument is a pointer to the destination.  */
-  tree dstptr = gimple_call_arg (info.callstmt, 0);
+  /* For all string functions the first argument is a pointer to
+     the destination.  */
+  tree dstptr = (idx_dstptr < gimple_call_num_args (info.callstmt)
+		 ? gimple_call_arg (info.callstmt, 0) : NULL_TREE);
 
   info.format = gimple_call_arg (info.callstmt, idx_format);
 
@@ -3855,7 +3989,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
      or upper bound of a range.  */
   bool dstsize_cst_p = true;
 
-  if (idx_dstsize == HOST_WIDE_INT_M1U)
+  if (idx_dstsize == UINT_MAX)
     {
       /* For non-bounded functions like sprintf, determine the size
 	 of the destination from the object or pointer passed to it
@@ -3880,7 +4014,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	      /* Avoid warning if -Wstringop-overflow is specified since
 		 it also warns for the same thing though only for the
 		 checking built-ins.  */
-	      if ((idx_objsize == HOST_WIDE_INT_M1U
+	      if ((idx_objsize == UINT_MAX
 		   || !warn_stringop_overflow))
 		warning_at (gimple_location (info.callstmt), info.warnopt (),
 			    "specified bound %wu exceeds maximum object size "
@@ -3910,7 +4044,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	}
     }
 
-  if (idx_objsize != HOST_WIDE_INT_M1U)
+  if (idx_objsize != UINT_MAX)
     if (tree size = gimple_call_arg (info.callstmt, idx_objsize))
       if (tree_fits_uhwi_p (size))
 	objsize = tree_to_uhwi (size);
@@ -3930,14 +4064,15 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
       /* For calls to non-bounded functions or to those of bounded
 	 functions with a non-zero size, warn if the destination
 	 pointer is null.  */
-      if (integer_zerop (dstptr))
+      if (dstptr && integer_zerop (dstptr))
 	{
 	  /* This is diagnosed with -Wformat only when the null is a constant
 	     pointer.  The warning here diagnoses instances where the pointer
 	     is not constant.  */
 	  location_t loc = gimple_location (info.callstmt);
 	  warning_at (EXPR_LOC_OR_LOC (dstptr, loc),
-		      info.warnopt (), "null destination pointer");
+		      info.warnopt (), "%Gnull destination pointer",
+		      info.callstmt);
 	  return false;
 	}
 
@@ -3950,7 +4085,7 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	  /* Avoid warning if -Wstringop-overflow is specified since
 	     it also warns for the same thing though only for the
 	     checking built-ins.  */
-	  && (idx_objsize == HOST_WIDE_INT_M1U
+	  && (idx_objsize == UINT_MAX
 	      || !warn_stringop_overflow))
 	{
 	  warning_at (gimple_location (info.callstmt), info.warnopt (),
@@ -3959,14 +4094,15 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
 	}
     }
 
-  if (integer_zerop (info.format))
+  /* Determine if the format argument may be null and warn if not
+     and if the argument is null.  */
+  if (integer_zerop (info.format)
+      && gimple_call_builtin_p (info.callstmt, BUILT_IN_NORMAL))
     {
-      /* This is diagnosed with -Wformat only when the null is a constant
-	 pointer.  The warning here diagnoses instances where the pointer
-	 is not constant.  */
       location_t loc = gimple_location (info.callstmt);
       warning_at (EXPR_LOC_OR_LOC (info.format, loc),
-		  info.warnopt (), "null format string");
+		  info.warnopt (), "%Gnull format string",
+		  info.callstmt);
       return false;
     }
 
@@ -3977,6 +4113,14 @@ sprintf_dom_walker::handle_gimple_call (gimple_stmt_iterator *gsi)
   /* The result is the number of bytes output by the formatted function,
      including the terminating NUL.  */
   format_result res = format_result ();
+
+  /* I/O functions with no destination argument (i.e., all forms of fprintf
+     and printf) may fail under any conditions.  Others (i.e., all forms of
+     sprintf) may only fail under specific conditions determined for each
+     directive.  Clear POSUNDER4K for the former set of functions and set
+     it to true for the latter (it can only be cleared later, but it is
+     never set to true again).  */
+  res.posunder4k = dstptr;
 
   bool success = compute_format_length (info, &res);
   if (res.warned)
