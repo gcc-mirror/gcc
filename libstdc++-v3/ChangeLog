@@ -1,3 +1,20 @@
+2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87809
+	* include/bits/forward_list.h (_Fwd_list_impl::_Fwd_list_impl()): Use
+	trait in exception-specification instead of possibly invalid
+	expression.
+	* include/bits/stl_bvector.h (_Bvector_impl::_Bvector_impl()):
+	Likewise.
+	* include/bits/stl_list.h (_List_impl::_List_impl()): Likewise.
+	* testsuite/23_containers/forward_list/cons/87809.cc: New test.
+	* testsuite/23_containers/list/cons/87809.cc: New test.
+	* testsuite/23_containers/vector/bool/cons/87809.cc: New test.
+	* testsuite/23_containers/vector/cons/87809.cc: New test.
+
 2018-10-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87749
