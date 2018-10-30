@@ -1,6 +1,12 @@
+2018-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87800
+	* tree-vect-slp.c (vect_build_slp_tree_2): Reject any
+	non-induction or reduction PHIs.
+
 2018-10-30 Sameera Deshpande <sameera.deshpande@linaro.org
 
-	* gcc/config/aarch64/falkor-tag-collision-avoidance.c
+	* config/aarch64/falkor-tag-collision-avoidance.c
 	(execute_tag_collision_avoidance): Call df_note_add_problem.
 
 2018-10-30  Martin Liska  <mliska@suse.cz>
