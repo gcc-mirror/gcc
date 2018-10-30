@@ -1,3 +1,9 @@
+2018-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85896
+	* simplify.c (simplify_min_max): Do not convert the type of the
+	return expression.
+
 2017-10-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613
