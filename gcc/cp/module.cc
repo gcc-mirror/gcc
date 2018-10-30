@@ -2788,7 +2788,9 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned crc;		/* CRC we saw reading it in. */
 
   bool legacy_p : 1;	/* Is a legacy import.  */
-  bool direct_p : 1;	/* A direct import of TU.  */
+  bool direct_p : 1;	/* A direct import of TU (includes interface
+			   of implementation).  */
+  bool interface_p : 1; /* Is interface of implementation.  */
   bool exported_p : 1;	/* We are exported.  */
   bool imported_p : 1;	/* Import has been done.  */
   bool alias_p : 1;	/* Alias for other module.  */
@@ -2835,6 +2837,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bool is_imported () const
   {
     return imported_p;
+  }
+  bool is_interface () const
+  {
+    return interface_p;
   }
   bool is_legacy () const
   {
@@ -2997,7 +3003,7 @@ module_state::module_state (tree name, module_state *parent)
     mod (MODULE_UNKNOWN), subst (0), crc (0)
 {
   u1.slurp = NULL;
-  legacy_p = direct_p = exported_p = imported_p = alias_p = false;
+  legacy_p = direct_p = interface_p = exported_p = imported_p = alias_p = false;
   if (name && (IDENTIFIER_POINTER (name)[0] == '"'
 	       || IDENTIFIER_POINTER (name)[0] == '<'))
     legacy_p = true;
@@ -6962,7 +6968,10 @@ module_state::resolve_alias ()
 bool
 module_state::check_not_purview (location_t loc)
 {
-  if ((*modules)[MODULE_PURVIEW] == this)
+  module_state *imp = (*modules)[MODULE_PURVIEW];
+  if (imp && imp->is_alias ())
+    imp = imp->u1.alias;
+  if (imp == this)
     {
       /* Cannot import the current module.  */
       error_at (loc, "cannot import module %qs in its own purview", fullname);
@@ -6993,7 +7002,12 @@ module_state::mangle ()
 void
 mangle_module (int mod)
 {
-  (*modules)[mod]->mangle ();
+  module_state *imp = (*modules)[mod];
+
+  if (imp->is_alias ())
+    imp = imp->u1.alias;
+
+  imp->mangle ();
 }
 
 /* Clean up substitutions.  */
@@ -9141,7 +9155,9 @@ module_state::read_cluster (unsigned snum)
 		else if (decls
 			 || (TREE_CODE (decl) == TEMPLATE_DECL
 			     && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
-				 == FUNCTION_DECL)))
+				 == FUNCTION_DECL))
+			 || (TREE_CODE (decl) == FUNCTION_DECL
+			     && is_interface ()))
 		  {
 		    if (!DECL_DECLARES_FUNCTION_P (decl)
 			|| (decls
@@ -9164,11 +9180,10 @@ module_state::read_cluster (unsigned snum)
 		type = NULL_TREE;
 	      }
 
-	    if (!set_module_binding (ns, name, mod, decls, type, export_tail))
-	      {
-		sec.set_overrun ();
-		dump () && dump ("Binding of %P", ns, name);
-	      }
+	    dump () && dump ("Binding of %P", ns, name);
+	    if (!set_module_binding (ns, name, mod, is_interface (),
+				     decls, type, export_tail))
+	      sec.set_overrun ();
 	  }
 	  break;
 
@@ -11530,28 +11545,25 @@ module_state::read (int fd, int e, cpp_reader *reader)
 
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
-  if (this == (*modules)[MODULE_PURVIEW])
-    mod = MODULE_PURVIEW;
+  gcc_checking_assert (this != (*modules)[MODULE_PURVIEW]);
+
+  unsigned ix = modules->length ();
+  if (ix == MODULE_LIMIT)
+    {
+      sorry ("too many modules loaded (limit is %u)", ix);
+      from ()->set_error (elf::E_BAD_IMPORT);
+      return NULL;
+    }
   else
     {
-      unsigned ix = modules->length ();
-      if (ix == MODULE_LIMIT)
-	{
-	  sorry ("too many modules loaded (limit is %u)", ix);
-	  from ()->set_error (elf::E_BAD_IMPORT);
-	  return NULL;
-	}
-      else
-	{
-	  vec_safe_push (modules, this);
-	  /* We always import and export ourselves. */
-	  bitmap_set_bit (imports, ix);
-	  bitmap_set_bit (exports, ix);
-	  if (is_legacy ())
-	    bitmap_set_bit (slurp ()->legacies, ix);
-	}
-      mod = ix;
+      vec_safe_push (modules, this);
+      /* We always import and export ourselves. */
+      bitmap_set_bit (imports, ix);
+      bitmap_set_bit (exports, ix);
+      if (is_legacy ())
+	bitmap_set_bit (slurp ()->legacies, ix);
     }
+  mod = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
   dump () && dump ("Assigning %N module number %u", name, mod);
@@ -11596,7 +11608,8 @@ module_state::read (int fd, int e, cpp_reader *reader)
   slurp ()->remaining = config.sec_range.second - config.sec_range.first;
   slurp ()->lru = ++lazy_lru;
 
-  if (mod == MODULE_PURVIEW || (!flag_preprocess_only && !flag_module_lazy))
+  // FIXME:Lazy interface?
+  if (is_interface () || (!flag_preprocess_only && !flag_module_lazy))
     {
       /* Read the sections in forward order, so that dependencies are read
 	 first.  See note about tarjan_connect.  */
@@ -11709,7 +11722,11 @@ module_state::check_read (bool outermost, tree ns, tree id)
 char const *
 module_name (unsigned ix)
 {
-  return (*modules)[ix]->fullname;
+  module_state *imp = (*modules)[ix];
+  if (imp->is_alias ())
+    imp = imp->u1.alias;
+
+  return imp->fullname;
 }
 
 /* Return the bitmap describing what modules are imported into
@@ -11731,7 +11748,9 @@ module_state::set_import (module_state const *other, bool is_export)
   /* We see OTHER's exports (which include OTHER).  */
   bitmap_ior_into (imports, other->exports);
 
-  if (is_export)
+  if (other->is_interface ())
+    bitmap_set_bit (exports, other->mod);
+  else if (is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
@@ -12022,6 +12041,8 @@ module_state::direct_import (cpp_reader *reader)
       (*modules)[MODULE_NONE]->set_import (imp, imp->exported_p);
       if (imp->is_legacy ())
 	imp->import_macros ();
+      if (imp->is_interface ())
+	bitmap_ior_into ((*modules)[MODULE_NONE]->imports, imp->imports);
     }
 
   dump.pop (n);
@@ -12142,8 +12163,6 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
       return;
     }
 
-  module_purview = exporting_p ? 2 : 1;
-
   from_loc = ordinary_loc_of (line_table, from_loc);
   gcc_assert (!(*modules)[MODULE_PURVIEW]);
   gcc_assert (state->is_legacy () == modules_legacy_p ());
@@ -12158,19 +12177,28 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 
   state->attach (from_loc);
 
-  /* Copy the importing information we may have already done.  */
-  state->imports = (*modules)[MODULE_NONE]->imports;
-
-  (*modules)[MODULE_NONE] = state;
-  (*modules)[MODULE_PURVIEW] = state;
-  current_module = MODULE_PURVIEW;
+  module_state *gmf = (*modules)[MODULE_NONE];
   if (exporting_p)
     {
+      /* Copy the importing information we may have already done.  */
+      state->imports = gmf->imports;
+
       state->exported_p = true;
       state->mod = MODULE_PURVIEW;
+      gmf = state;
+      (*modules)[MODULE_NONE] = state;
+      module_purview = 2;
     }
   else
-    state->mod = MODULE_UNKNOWN;
+    {
+      state->interface_p = true;
+      gmf->alias_p = true;
+      gmf->u1.alias = state;
+      module_purview = 1;
+    }
+
+  current_module = MODULE_PURVIEW;
+  (*modules)[MODULE_PURVIEW] = gmf;
 
   if (state->is_legacy ())
     state->direct_import (reader);

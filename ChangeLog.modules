@@ -1,5 +1,22 @@
 2018-10-30  Nathan Sidwell  <nathan@acm.org>
 
+	Module interface gets own mod number
+	gcc/cp/
+	* cp-tree.g (ovl_iterator::set_dedup): New.
+	* module.cc (module_state::{interface_p,is_interface}): New.
+	(module_state::check_not_purview): Adjust.
+	(mangle_module, module_name): Likewise.
+	(module_state::read_cluster): Adjust.
+	(module_state::read): Adjust.
+	(module_state::{set_import,direct_import}): Adjust import setting.
+	(declare_module): Module interface gets number.
+	* name-lookup.h (set_module_binding): Add iface parameter.
+	* name-lookup.c (name_lookup::search_namespace): Fix indexing.
+	(set_module_binding): Insert interface decls.
+	gcc/testsuite/
+	* g++.dg/modules/namespace-4_b.C: Remove xfails.
+	* g++.dg/modules/static-1_b.C: Remove xfails.
+
 	gcc/cp/
 	* cp-tree.h (OVL_HAS_USING_P): Rename to ...
 	(OVL_DEDUP_P): ... here.

@@ -756,11 +756,11 @@ name_lookup::search_namespace_only (tree scope)
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 
-	  // FIXME: namespaces are simpler, just use process_binding
 	  if (cluster->slots[MODULE_SLOT_CURRENT])
 	    marker = process_module_binding (imports, marker,
 					     cluster->slots[MODULE_SLOT_CURRENT],
-					     MODULE_SLOT_CURRENT, 1);
+					     module_purview_p () ? MODULE_PURVIEW
+					     : MODULE_NONE, 1);
 
 	  /* Scan the imported bindings.  */
 	  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
@@ -3613,8 +3613,8 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
    the value and type bindings.  */
 
 bool
-set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type,
-		    tree export_tail)
+set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
+		    tree value, tree type, tree export_tail)
 {
   if (!value)
     /* Bogus BMIs could give rise to nothing to bind.  */
@@ -3622,31 +3622,77 @@ set_module_binding (tree ns, tree name, unsigned mod, tree value, tree type,
 
   gcc_assert (TREE_CODE (value) != NAMESPACE_DECL
 	      || DECL_NAMESPACE_ALIAS (value));
+  gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
 
   tree *slot = find_namespace_slot (ns, name, true);
-  mc_slot *mslot = module_binding_slot
-    (slot, name, mod == MODULE_PURVIEW ? MODULE_SLOT_CURRENT : mod,
-     mod < MODULE_IMPORT_BASE);
+  mc_slot *mslot = module_binding_slot (slot, name, mod, false);
 
-  if (mod == MODULE_PURVIEW ? *mslot : !mslot->is_lazy ())
+  if (!mslot->is_lazy ())
     return false;
+
+  if (!TREE_PUBLIC (ns))
+    inter_p = false;
+
   for (ovl_iterator iter (value); iter; ++iter)
     {
       tree decl = *iter;
 
       gcc_assert (!iter.using_p () && !iter.hidden_p ());
       gcc_assert (!DECL_CHAIN (decl));
+      if (inter_p)
+	iter.set_dedup ();
       add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
       newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
     }
 
-  if (type || (export_tail && TREE_CODE (value) == OVERLOAD))
+  tree bind = value;
+  if (type || (export_tail && TREE_CODE (bind) == OVERLOAD))
     {
-      value = stat_hack (value, type);
-      STAT_EXPORTS (value) = export_tail;
+      bind = stat_hack (bind, type);
+      STAT_EXPORTS (bind) = export_tail;
     }
 
-  *mslot = value;
+  *mslot = bind;
+
+  // FIXME:proper merging by doing proper lookup at pushdecl time
+  if (inter_p)
+    {
+      /* Add the non-internal things into the current module.  */
+      mc_slot *mslot = module_binding_slot (slot, name,
+					    MODULE_SLOT_CURRENT, false);
+      tree &binding = *mslot;
+      gcc_assert (!STAT_HACK_P (binding) || !type);
+
+      bind = MAYBE_STAT_DECL (binding);
+      value = ovl_skip_hidden (value);
+      /* Skip non-public functions.  */
+      for (; value && TREE_CODE (value) == OVERLOAD; value = TREE_CHAIN (value))
+	{
+	  tree decl = OVL_FUNCTION (value);
+	  if (TREE_PUBLIC (decl))
+	    bind = ovl_insert (decl, bind, OVL_USING_P (value));
+	}
+
+      /* Typedefs & template types don't get TREE_PUBLIC set.  */
+      if (value
+	  && (TREE_PUBLIC (value)
+	      || TREE_CODE (value) == TYPE_DECL
+	      || TREE_CODE (value) != TEMPLATE_DECL))
+	bind = ovl_insert (value, bind, false);
+
+      if (!bind)
+	{
+	  bind = type;
+	  type = NULL_TREE;
+	}
+
+      if (type)
+	binding = stat_hack (bind, type);
+      else if (STAT_HACK_P (binding))
+	STAT_DECL (*mslot) = bind;
+      else
+	binding = bind;
+    }
 
   return true;
 }

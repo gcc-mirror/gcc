@@ -789,6 +789,11 @@ class ovl_iterator  {
   {
     return TREE_CODE (ovl) == OVERLOAD && OVL_HIDDEN_P (ovl);
   }
+  void set_dedup ()
+  {
+    if (TREE_CODE (ovl) == OVERLOAD)
+      OVL_DEDUP_P (ovl) = true;
+  }
 
  public:
   tree remove_node (tree head)

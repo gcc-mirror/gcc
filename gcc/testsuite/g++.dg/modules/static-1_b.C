@@ -5,7 +5,14 @@ module Foo;
 void Frob ()
 {
   Bar (); // { dg-error "not declared" }
-  // XFAIL until module interface gets its own number
-  Baz (); // { dg-error "not declared" "" { xfail *-*-* } }
+  Baz (); // { dg-error "not declared"  }
 }
 
+static void Baz () {}
+static void Bar () {}
+
+void Quux ()
+{
+  Bar ();
+  Baz ();
+}
