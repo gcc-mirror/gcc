@@ -263,6 +263,18 @@
   }
 )
 
+;; It is tempting to want to use ST<OP> for relaxed and release
+;; memory models here.  However, that is incompatible with the
+;; C++ memory model for the following case:
+;;
+;;	atomic_fetch_add(ptr, 1, memory_order_relaxed);
+;;	atomic_thread_fence(memory_order_acquire);
+;;
+;; The problem is that the architecture says that ST<OP> (and LD<OP>
+;; insns where the destination is XZR) are not regarded as a read.
+;; However we also implement the acquire memory barrier with DMB LD,
+;; and so the ST<OP> is not blocked by the barrier.
+
 (define_insn "aarch64_atomic_<atomic_ldoptab><mode>_lse"
   [(set (match_operand:ALLI 0 "aarch64_sync_memory_operand" "+Q")
 	(unspec_volatile:ALLI
@@ -270,7 +282,7 @@
 	   (match_operand:ALLI 1 "register_operand" "r")
 	   (match_operand:SI 2 "const_int_operand")]
       ATOMIC_LDOP))
-   (clobber (match_scratch:ALLI 3 "=&r"))]
+   (clobber (match_scratch:ALLI 3 "=r"))]
   "TARGET_LSE"
   {
    enum memmodel model = memmodel_from_int (INTVAL (operands[2]));
