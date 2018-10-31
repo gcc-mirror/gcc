@@ -1,3 +1,9 @@
+2018-10-31 Sameera Deshpande <sameera.deshpande@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (saphira): Use saphira pipeline.
+	* config/aarch64/aarch64.md: Include saphira.md
+	* config/aarch64/saphira.md: New file for pipeline description.
+
 2018-10-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/87041
