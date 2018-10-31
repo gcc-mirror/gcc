@@ -2980,13 +2980,11 @@ _cpp_backup_tokens (cpp_reader *pfile, unsigned int count)
 
 /* #define directive parsing and handling.  */
 
-/* Returns nonzero if a macro redefinition warning is required.  */
+/* Returns true if a macro redefinition warning is required.  */
 static bool
 warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
 		      const cpp_macro *macro2)
 {
-  unsigned int i;
-
   /* Some redefinitions need to be warned about regardless.  */
   if (node->flags & NODE_WARN)
     return true;
@@ -3021,18 +3019,18 @@ warn_of_redefinition (cpp_reader *pfile, cpp_hashnode *node,
     return true;
 
   /* Check parameter spellings.  */
-  for (i = 0; i < macro1->paramc; i++)
+  for (unsigned i = macro1->paramc; i--; )
     if (macro1->parm.params[i] != macro2->parm.params[i])
       return true;
 
   /* Check the replacement text or tokens.  */
-  if (CPP_OPTION (pfile, traditional))
+  if (macro1->kind == cmk_traditional)
     return _cpp_expansions_different_trad (macro1, macro2);
 
   if (macro1->count != macro2->count)
     return true;
 
-  for (i = 0; i < macro1->count; i++)
+  for (unsigned i= macro1->count; i--; )
     if (!_cpp_equiv_tokens (&macro1->exp.tokens[i], &macro2->exp.tokens[i]))
       return true;
 
@@ -3439,7 +3437,7 @@ create_iso_definition (cpp_reader *pfile)
     (pfile, sizeof (cpp_macro) - sizeof (cpp_token)
      + sizeof (cpp_token) * macro->count);
 
-  /* Clear whitespace on first token for warn_of_redefinition().  */
+  /* Clear whitespace on first token.  */
   if (macro->count)
     macro->exp.tokens[0].flags &= ~PREV_WHITE;
 
@@ -3766,12 +3764,4 @@ cpp_macro_definition (cpp_reader *pfile, cpp_hashnode *node)
 
   *buffer = '\0';
   return pfile->macro_buffer;
-}
-
-/* Get the line at which the macro was defined.  */
-
-source_location
-cpp_macro_definition_location (cpp_hashnode *node)
-{
-  return node->value.macro->line;
 }

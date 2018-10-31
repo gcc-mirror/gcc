@@ -1017,7 +1017,10 @@ inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
 
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
-extern source_location cpp_macro_definition_location (cpp_hashnode *);
+inline source_location cpp_macro_definition_location (cpp_hashnode *node)
+{
+  return node->value.macro->line;
+}
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 

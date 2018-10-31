@@ -1,5 +1,10 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h (cpp_macro_definition_location): Make inline.
+	* macro.c (warn_of_redefinition): Fix comments, examine macro
+	type, use C++ for.
+	(cpp_macro_definition_location): Don't define here.
+
 	* include/cpplib.h (HT_NODE): Don't cast NODE.
 	(NODE_LEN, NODE_NAME): Use HT_NODE.
 
