@@ -422,7 +422,8 @@ name_lookup::add_overload (tree fns)
       tree probe = fns;
       if (flags & LOOKUP_HIDDEN)
 	probe = ovl_skip_hidden (probe);
-      if (probe && TREE_CODE (probe) == OVERLOAD && OVL_USING_P (probe))
+      if (probe && TREE_CODE (probe) == OVERLOAD
+	  && OVL_DEDUP_P (probe))
 	{
 	  /* We're about to add something found by a using
 	     declaration, so need to engage deduping mode.  */
@@ -1260,7 +1261,8 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
 
       if (type_or_fns < 0)
 	/* Don't bother looking for field.  We don't want it.  */;
-      else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
+      else if (!val || (TREE_CODE (val) == OVERLOAD
+			&& OVL_DEDUP_P (val)))
 	/* Dependent using declarations are a 'field', make sure we
 	   return that even if we saw an overload already.  */
 	if (tree field_val = fields_linear_search (klass, lookup,

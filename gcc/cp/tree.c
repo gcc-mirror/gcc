@@ -2153,6 +2153,8 @@ ovl_make (tree fn, tree next)
 
   TREE_TYPE (result) = (next || TREE_CODE (fn) == TEMPLATE_DECL
 			? unknown_type_node : TREE_TYPE (fn));
+  if (next && TREE_CODE (next) == OVERLOAD && OVL_DEDUP_P (next))
+    OVL_DEDUP_P (result) = true;
   OVL_FUNCTION (result) = fn;
   OVL_CHAIN (result) = next;
   return result;
@@ -2167,64 +2169,54 @@ ovl_copy (tree ovl)
   TREE_TYPE (result) = TREE_TYPE (ovl);
   OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
   OVL_CHAIN (result) = OVL_CHAIN (ovl);
+  OVL_DEDUP_P (result) = OVL_DEDUP_P (ovl);
+  OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
   OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
   OVL_USING_P (result) = OVL_USING_P (ovl);
-  OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
 
   return result;
 }
 
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
-   DECL_HIDDEN.  Overloads are ordered as hidden, using, regular.  */
+   DECL_HIDDEN.  We keep the hidden decls first, but remaining ones
+   are unordered.  */
 
 tree
 ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 {
-  bool copying = false; /* Checking use only.  */
-  bool hidden_p = DECL_HIDDEN_P (fn);
-  int weight = (hidden_p << 1) | (using_p << 0);
-
-  tree result = NULL_TREE;
+  tree result = maybe_ovl;
   tree insert_after = NULL_TREE;
 
-  /* Find insertion point.  */
-  while (maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
-	 && (weight < ((OVL_HIDDEN_P (maybe_ovl) << 1)
-		       | (OVL_USING_P (maybe_ovl) << 0))))
+  /* Skip hidden.  */
+  for (; maybe_ovl && TREE_CODE (maybe_ovl) == OVERLOAD
+	 && OVL_HIDDEN_P (maybe_ovl);
+       maybe_ovl = OVL_CHAIN (maybe_ovl))
     {
       gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
-			   && (!copying || OVL_USED_P (maybe_ovl)));
-      if (OVL_USED_P (maybe_ovl))
-	{
-	  copying = true;
-	  maybe_ovl = ovl_copy (maybe_ovl);
-	  if (insert_after)
-	    OVL_CHAIN (insert_after) = maybe_ovl;
-	}
-      if (!result)
-	result = maybe_ovl;
+			   && !OVL_USED_P (maybe_ovl));
       insert_after = maybe_ovl;
-      maybe_ovl = OVL_CHAIN (maybe_ovl);
     }
 
-  tree trail = fn;
+  bool hidden_p = DECL_HIDDEN_P (fn);
   if (maybe_ovl || using_p || hidden_p || TREE_CODE (fn) == TEMPLATE_DECL)
     {
-      trail = ovl_make (fn, maybe_ovl);
+      maybe_ovl = ovl_make (fn, maybe_ovl);
       if (hidden_p)
-	OVL_HIDDEN_P (trail) = true;
+	OVL_HIDDEN_P (maybe_ovl) = true;
       if (using_p)
-	OVL_USING_P (trail) = true;
+	OVL_DEDUP_P (maybe_ovl) = OVL_USING_P (maybe_ovl) = true;
     }
+  else
+    maybe_ovl = fn;
 
   if (insert_after)
     {
-      OVL_CHAIN (insert_after) = trail;
+      OVL_CHAIN (insert_after) = maybe_ovl;
       TREE_TYPE (insert_after) = unknown_type_node;
     }
   else
-    result = trail;
+    result = maybe_ovl;
 
   return result;
 }
@@ -2367,7 +2359,8 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
 	    for (; fns != probe; fns = OVL_CHAIN (fns))
 	      {
 		lookup = lookup_add (OVL_FUNCTION (fns), lookup);
-		/* Propagate OVL_USING, but OVL_HIDDEN doesn't matter.  */
+		/* Propagate OVL_USING, but OVL_HIDDEN &
+		   OVL_DEDUP_P don't matter.  */
 		if (OVL_USING_P (fns))
 		  OVL_USING_P (lookup) = true;
 	      }
