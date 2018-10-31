@@ -1,3 +1,9 @@
+2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/atomics.md (aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse):
+	scratch register need not be early-clobber.  Document the reason
+	why we cannot use ST<OP>.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
