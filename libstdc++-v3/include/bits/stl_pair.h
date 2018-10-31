@@ -187,7 +187,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   };
 #endif // C++11
 
-  class __pair_base
+  template<typename _U1, typename _U2> class __pair_base
   {
 #if __cplusplus >= 201103L
     template<typename _T1, typename _T2> friend struct pair;
@@ -206,7 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   template<typename _T1, typename _T2>
     struct pair
-    : private __pair_base
+    : private __pair_base<_T1, _T2>
     {
       typedef _T1 first_type;    /// @c first_type is the first bound type
       typedef _T2 second_type;   /// @c second_type is the second bound type
