@@ -1,3 +1,10 @@
+2018-10-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87822
+	* include/bits/stl_pair.h (__pair_base): Change to class template.
+	(pair): Make base class type depend on template parameters.
+	* testsuite/20_util/pair/87822.cc: New test.
+
 2018-10-30  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0892R2, explicit(bool).
