@@ -1,5 +1,12 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* internal.h (struct cpp_reader): Rename forced_token_location_p
+	to forced_token_location and drop its pointerness.
+	* include/cpplib.h (cpp_force_token_locations): Take location, not
+	pointer to one.
+	* init.c (cpp_create_reader): Adjust.
+	* lex.c (cpp_read_main_file): 
+
 	* directives.c (do_include_common): Commonize cleanup path.
 	(_cpp_pop_buffer): Fix leak.
 

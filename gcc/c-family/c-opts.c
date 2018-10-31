@@ -1396,8 +1396,7 @@ c_finish_options (void)
 							   0)));
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (parse_in, &builtins_loc);
+      cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
 
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);

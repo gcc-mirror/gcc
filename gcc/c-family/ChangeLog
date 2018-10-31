@@ -1,3 +1,7 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* c-opts.c (c_finish_options): Adjust cpp_force_token_locations call.
+
 2018-10-30  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/87041
