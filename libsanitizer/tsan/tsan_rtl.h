@@ -32,12 +32,13 @@
 #include "sanitizer_common/sanitizer_libignore.h"
 #include "sanitizer_common/sanitizer_suppressions.h"
 #include "sanitizer_common/sanitizer_thread_registry.h"
+#include "sanitizer_common/sanitizer_vector.h"
 #include "tsan_clock.h"
 #include "tsan_defs.h"
 #include "tsan_flags.h"
+#include "tsan_mman.h"
 #include "tsan_sync.h"
 #include "tsan_trace.h"
-#include "tsan_vector.h"
 #include "tsan_report.h"
 #include "tsan_platform.h"
 #include "tsan_mutexset.h"
@@ -517,7 +518,9 @@ struct Context {
   Context();
 
   bool initialized;
+#if !SANITIZER_GO
   bool after_multithreaded_fork;
+#endif
 
   MetaMap metamap;
 
@@ -572,11 +575,8 @@ const char *GetObjectTypeFromTag(uptr tag);
 const char *GetReportHeaderFromTag(uptr tag);
 uptr TagFromShadowStackFrame(uptr pc);
 
-class ScopedReport {
+class ScopedReportBase {
  public:
-  explicit ScopedReport(ReportType typ, uptr tag = kExternalTagNone);
-  ~ScopedReport();
-
   void AddMemoryAccess(uptr addr, uptr external_tag, Shadow s, StackTrace stack,
                        const MutexSet *mset);
   void AddStack(StackTrace stack, bool suppressable = false);
@@ -591,6 +591,10 @@ class ScopedReport {
 
   const ReportDesc *GetReport() const;
 
+ protected:
+  ScopedReportBase(ReportType typ, uptr tag);
+  ~ScopedReportBase();
+
  private:
   ReportDesc *rep_;
   // Symbolizer makes lots of intercepted calls. If we try to process them,
@@ -599,8 +603,17 @@ class ScopedReport {
 
   void AddDeadMutex(u64 id);
 
-  ScopedReport(const ScopedReport&);
-  void operator = (const ScopedReport&);
+  ScopedReportBase(const ScopedReportBase &) = delete;
+  void operator=(const ScopedReportBase &) = delete;
+};
+
+class ScopedReport : public ScopedReportBase {
+ public:
+  explicit ScopedReport(ReportType typ, uptr tag = kExternalTagNone);
+  ~ScopedReport();
+
+ private:
+  ScopedErrorReportLock lock_;
 };
 
 ThreadContext *IsThreadStackOrTls(uptr addr, bool *is_stack);
@@ -635,6 +648,10 @@ void ObtainCurrentStack(ThreadState *thr, uptr toppc, StackTraceTy *stack,
   ExtractTagFromStack(stack, tag);
 }
 
+#define GET_STACK_TRACE_FATAL(thr, pc) \
+  VarSizeStackTrace stack; \
+  ObtainCurrentStack(thr, pc, &stack); \
+  stack.ReverseOrder();
 
 #if TSAN_COLLECT_STATS
 void StatAggregate(u64 *dst, u64 *src);
@@ -688,6 +705,7 @@ void PrintCurrentStack(ThreadState *thr, uptr pc);
 void PrintCurrentStackSlow(uptr pc);  // uses libunwind
 
 void Initialize(ThreadState *thr);
+void MaybeSpawnBackgroundThread();
 int Finalize(ThreadState *thr);
 
 void OnUserAlloc(ThreadState *thr, uptr pc, uptr p, uptr sz, bool write);

@@ -147,6 +147,23 @@ static void CheckODRViolationViaIndicator(const Global *g) {
   }
 }
 
+// Check ODR violation for given global G by checking if it's already poisoned.
+// We use this method in case compiler doesn't use private aliases for global
+// variables.
+static void CheckODRViolationViaPoisoning(const Global *g) {
+  if (__asan_region_is_poisoned(g->beg, g->size_with_redzone)) {
+    // This check may not be enough: if the first global is much larger
+    // the entire redzone of the second global may be within the first global.
+    for (ListOfGlobals *l = list_of_all_globals; l; l = l->next) {
+      if (g->beg == l->g->beg &&
+          (flags()->detect_odr_violation >= 2 || g->size != l->g->size) &&
+          !IsODRViolationSuppressed(g->name))
+        ReportODRViolation(g, FindRegistrationSite(g),
+                           l->g, FindRegistrationSite(l->g));
+    }
+  }
+}
+
 // Clang provides two different ways for global variables protection:
 // it can poison the global itself or its private alias. In former
 // case we may poison same symbol multiple times, that can help us to
@@ -194,6 +211,8 @@ static void RegisterGlobal(const Global *g) {
     // where two globals with the same name are defined in different modules.
     if (UseODRIndicator(g))
       CheckODRViolationViaIndicator(g);
+    else
+      CheckODRViolationViaPoisoning(g);
   }
   if (CanPoisonMemory())
     PoisonRedZones(*g);
@@ -203,8 +222,9 @@ static void RegisterGlobal(const Global *g) {
   list_of_all_globals = l;
   if (g->has_dynamic_init) {
     if (!dynamic_init_globals) {
-      dynamic_init_globals = new(allocator_for_globals)
-          VectorOfGlobals(kDynamicInitGlobalsInitialCapacity);
+      dynamic_init_globals =
+          new (allocator_for_globals) VectorOfGlobals;  // NOLINT
+      dynamic_init_globals->reserve(kDynamicInitGlobalsInitialCapacity);
     }
     DynInitGlobal dyn_global = { *g, false };
     dynamic_init_globals->push_back(dyn_global);
@@ -337,9 +357,11 @@ void __asan_register_globals(__asan_global *globals, uptr n) {
   GET_STACK_TRACE_MALLOC;
   u32 stack_id = StackDepotPut(stack);
   BlockingMutexLock lock(&mu_for_globals);
-  if (!global_registration_site_vector)
+  if (!global_registration_site_vector) {
     global_registration_site_vector =
-        new(allocator_for_globals) GlobalRegistrationSiteVector(128);
+        new (allocator_for_globals) GlobalRegistrationSiteVector;  // NOLINT
+    global_registration_site_vector->reserve(128);
+  }
   GlobalRegistrationSite site = {stack_id, &globals[0], &globals[n - 1]};
   global_registration_site_vector->push_back(site);
   if (flags()->report_globals >= 2) {

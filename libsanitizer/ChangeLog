@@ -1,5 +1,9 @@
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
+	* All source files: Merge from upstream 345033.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
 	* HOWTO_MERGE: Enhance documentation.
 	* merge.sh: Add support for git as well.
 

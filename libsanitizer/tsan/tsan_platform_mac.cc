@@ -229,7 +229,7 @@ static void my_pthread_introspection_hook(unsigned int event, pthread_t thread,
 
 void InitializePlatformEarly() {
 #if defined(__aarch64__)
-  uptr max_vm = GetMaxVirtualAddress() + 1;
+  uptr max_vm = GetMaxUserVirtualAddress() + 1;
   if (max_vm != Mapping::kHiAppMemEnd) {
     Printf("ThreadSanitizer: unsupported vm address limit %p, expected %p.\n",
            max_vm, Mapping::kHiAppMemEnd);
@@ -237,6 +237,9 @@ void InitializePlatformEarly() {
   }
 #endif
 }
+
+static const uptr kPthreadSetjmpXorKeySlot = 0x7;
+extern "C" uptr __tsan_darwin_setjmp_xor_key = 0;
 
 void InitializePlatform() {
   DisableCoreDumperIfNecessary();
@@ -249,6 +252,11 @@ void InitializePlatform() {
   prev_pthread_introspection_hook =
       pthread_introspection_hook_install(&my_pthread_introspection_hook);
 #endif
+
+  if (GetMacosVersion() >= MACOS_VERSION_MOJAVE) {
+    __tsan_darwin_setjmp_xor_key =
+        (uptr)pthread_getspecific(kPthreadSetjmpXorKeySlot);
+  }
 }
 
 #if !SANITIZER_GO

@@ -7,7 +7,8 @@
 
 #include "sanitizer_platform.h"
 
-#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_MAC || SANITIZER_NETBSD
+#if SANITIZER_FREEBSD || SANITIZER_LINUX || SANITIZER_MAC || \
+    SANITIZER_NETBSD || SANITIZER_OPENBSD
 
 #include "sanitizer_libignore.h"
 #include "sanitizer_flags.h"
@@ -78,7 +79,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
         lib->name = internal_strdup(mod.full_name());
         const uptr idx =
             atomic_load(&ignored_ranges_count_, memory_order_relaxed);
-        CHECK_LT(idx, kMaxLibs);
+        CHECK_LT(idx, ARRAY_SIZE(ignored_code_ranges_));
         ignored_code_ranges_[idx].begin = range.beg;
         ignored_code_ranges_[idx].end = range.end;
         atomic_store(&ignored_ranges_count_, idx + 1, memory_order_release);
@@ -107,7 +108,7 @@ void LibIgnore::OnLibraryLoaded(const char *name) {
                 range.beg, range.end, mod.full_name());
         const uptr idx =
             atomic_load(&instrumented_ranges_count_, memory_order_relaxed);
-        CHECK_LT(idx, kMaxLibs);
+        CHECK_LT(idx, ARRAY_SIZE(instrumented_code_ranges_));
         instrumented_code_ranges_[idx].begin = range.beg;
         instrumented_code_ranges_[idx].end = range.end;
         atomic_store(&instrumented_ranges_count_, idx + 1,
