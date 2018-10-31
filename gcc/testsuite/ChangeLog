@@ -1,3 +1,7 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/friend21.C: New.
+
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193
