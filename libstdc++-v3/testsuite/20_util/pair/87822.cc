@@ -26,6 +26,7 @@ test01()
   static_assert(sizeof(p) == (3 * sizeof(int)), "PR libstdc++/87822");
 #endif
   VERIFY( (void*)&p == (void*)&p.first );
+  VERIFY( (void*)&p == (void*)&p.first.first );
 }
 
 struct empty { };
@@ -40,8 +41,24 @@ test02()
   VERIFY( (void*)&p == (void*)&p.first );
 }
 
+void
+test03()
+{
+  typedef std::pair<int, int> int_pair;
+  typedef std::pair<int_pair, int_pair> int_pair_pair;
+  std::pair<int_pair_pair, int_pair_pair> p;
+#if __cplusplus >= 201103L
+  static_assert(sizeof(int_pair_pair) == (2 * sizeof(int_pair)), "nested");
+  static_assert(sizeof(p) == (2 * sizeof(int_pair_pair)), "nested again");
+#endif
+  VERIFY( (void*)&p == (void*)&p.first );
+  VERIFY( (void*)&p == (void*)&p.first.first );
+  VERIFY( (void*)&p == (void*)&p.first.first.first );
+}
+
 int main()
 {
   test01();
   test02();
+  test03();
 }
