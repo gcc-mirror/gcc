@@ -15,7 +15,7 @@
 # along with this program; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-ACLOCAL_AMFLAGS = -I ./config -I ../config
+ACLOCAL_AMFLAGS = -I ../config
 
 gcc_version := $(shell $(GCC_FOR_TARGET) -dumpversion)
 

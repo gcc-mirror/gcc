@@ -16,7 +16,6 @@ dnl You should have received a copy of the GNU General Public License
 dnl along with GCC; see the file COPYING3.  If not see
 dnl <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.64)
 AC_INIT([libcc1], [version-unused])
 AC_CONFIG_SRCDIR([libcc1.cc])
 AC_CONFIG_HEADER(cc1plugin-config.h)

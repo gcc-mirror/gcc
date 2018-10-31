@@ -34,7 +34,6 @@
 #  POSSIBILITY OF SUCH DAMAGE.
 
 AC_INIT([phsa HSAIL runtime library], [1.0], [pekka.jaaskelainen@parmance.com])
-AC_PREREQ([2.64])
 
 # Needed to define ${target}.  Needs to be very early to avoid annoying
 # warning about calling AC_ARG_PROGRAM before AC_CANONICAL_SYSTEM

@@ -25,7 +25,7 @@ AC_DEFUN([GCC_CHECK_MATH_FUNC],
   AC_REQUIRE([GCC_CHECK_LIBM])
   AC_REQUIRE([GCC_CHECK_MATH_HEADERS])
   AC_CACHE_CHECK([for $1], [gcc_cv_math_func_$1],
-		 [AC_LINK_IFELSE([
+		 [AC_LINK_IFELSE([AC_LANG_SOURCE([
 #ifdef HAVE_COMPLEX_H
 #include <complex.h>
 #endif
@@ -40,7 +40,7 @@ main ()
 {
   return 0;
 }
-],
+])],
 [gcc_cv_math_func_$1=yes],
 [gcc_cv_math_func_$1=no])])
   if test $gcc_cv_math_func_$1 = yes; then

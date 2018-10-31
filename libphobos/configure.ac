@@ -26,7 +26,6 @@
 #    autoreconf2.64
 #
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libphobos)
 AC_CONFIG_SRCDIR(libdruntime/gcc/attribute.d)
 AC_CONFIG_HEADERS(config.h)
@@ -46,7 +45,8 @@ AC_SUBST(target_alias)
 # -Wall: Issue all automake warnings.
 # -Wno-portability: Don't warn about constructs supported by GNU make.
 #    (because GCC requires GNU make anyhow).
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability])
+#  -Wno-override: Overrides used in testsuite.
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability -Wno-override])
 
 m4_rename([_AC_ARG_VAR_PRECIOUS],[glibd_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])

@@ -195,3 +195,4 @@ state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
 xcoff.lo: config.h backtrace.h internal.h
 
+include $(top_srcdir)/../multilib.am

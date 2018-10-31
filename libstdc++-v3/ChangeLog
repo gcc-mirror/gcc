@@ -1,3 +1,14 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure, doc/Makefile.in,
+	include/Makefile.in, libsupc++/Makefile.in, po/Makefile.in,
+	python/Makefile.in, src/Makefile.in, src/c++11/Makefile.in,
+	src/c++17/Makefile.in, src/c++98/Makefile.in,
+	src/filesystem/Makefile.in, testsuite/Makefile.in: Regenerate.
+
 2018-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/pair/87822.cc: Test deeper nesting.

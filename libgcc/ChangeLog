@@ -1,3 +1,9 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* configure: Regenerate.
+
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/lib1funcs.S (_muldi3): New function.
