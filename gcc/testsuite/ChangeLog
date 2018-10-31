@@ -1,3 +1,8 @@
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/87802
+	* g++.dg/vect/slp-pr87105.cc: XFAIL for strict alignment targets.
+
 2018-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85896
