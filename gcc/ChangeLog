@@ -1,3 +1,8 @@
+2018-10-31  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* tree-ssa-loop-ivcanon.c (try_peel_loop): Fix typo and remove dead
+	initialization.
+
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193
