@@ -1,5 +1,18 @@
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* sanitizer_common/Makefile.am: Include new files, remove old
+	files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Include new files, remove old
+	files.
+	* ubsan/Makefile.in: Likewise.
+	* asan/Makefile.am: Include new files.
+	* asan/Makefile.in: Regenerate.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
 	* All source files: Merge from upstream 345033.
 
 2018-10-31  Martin Liska  <mliska@suse.cz>
