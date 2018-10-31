@@ -1,3 +1,10 @@
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR bootstrap/87789
+	PR d/87818
+	PR d/87819
+	* configure.tgt: New file.
+
 2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.am: New file.
