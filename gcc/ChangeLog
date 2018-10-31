@@ -1,3 +1,15 @@
+2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	PR target/87374
+	* config/arm/arm.c (arm_option_check_internal): Disable the combined
+	use of -mslow-flash-data and -mword-relocations.
+	(arm_option_override): Enable -mword-relocations if -fpic or -fPIC.
+	* config/arm/arm.md (SYMBOL_REF MOVT splitter): Stop checking for
+	flag_pic.
+	* doc/invoke.texi (-mword-relocations): Mention conflict with
+	-mslow-flash-data.
+	(-mslow-flash-data): Reciprocally.
+
 2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
 	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Force

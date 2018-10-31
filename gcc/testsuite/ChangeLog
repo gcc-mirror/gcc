@@ -1,3 +1,17 @@
+2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	PR target/87374
+	* gcc.target/arm/movdi_movt.c: Skip if both -mslow-flash-data and
+	-mword-relocations would be passed when compiling the test.
+	* gcc.target/arm/movsi_movt.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-1.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-2.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-3.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-4.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-5.c: Likewise.
+	* gcc.target/arm/tls-disable-literal-pool.c: Likewise.
+
 2018-10-31  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/87802
