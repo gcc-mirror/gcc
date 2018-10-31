@@ -317,10 +317,10 @@ d/%.o: d/dmd/root/%.c $(D_GENERATED_SRCS)
 
 # Generated programs.
 d/idgen: d/idgen.dmdgen.o
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKER_FLAGS) $(BUILD_LDFLAGS) -o $@ $^
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $^
 
 d/impcvgen: d/impcnvgen.dmdgen.o
-	+$(LINKER_FOR_BUILD) $(BUILD_LINKER_FLAGS) $(BUILD_LDFLAGS) -o $@ $^
+	+$(LINKER_FOR_BUILD) $(BUILD_LINKERFLAGS) $(BUILD_LDFLAGS) -o $@ $^
 
 # Generated sources.
 d/id.c: d/idgen
