@@ -1,5 +1,12 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New
+	predicates.
+	(IS_ADHOC_LOC): Move earlier.
+	(MAP_ORDINARY_P): Use IS_ORDINARY_LOC.
+	* line-map.c (linemap_location_from_macro_expansion_p): Use
+	IS_MACRO_LOC.
+
 	* include/cpplib.h (cpp_macro_definition_location): Make inline.
 	* macro.c (warn_of_redefinition): Fix comments, examine macro
 	type, use C++ for.
