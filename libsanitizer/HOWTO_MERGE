@@ -3,7 +3,8 @@ track various ABI changes and GCC-specific patches carefully.  Here is a
 general list of actions required to perform the merge:
 
 * Checkout recent GCC tree.
-* Run merge.sh script from libsanitizer directory.
+* Run merge.sh script from libsanitizer directory.  The script accepts one
+  argument that is control version system (svn or git).
 * Modify Makefile.am files into asan/tsan/lsan/ubsan/sanitizer_common/interception
   directories if needed.  In particular, you may need to add new source files
   and remove old ones in source files list, add new flags to {C, CXX}FLAGS if
@@ -20,7 +21,7 @@ general list of actions required to perform the merge:
 * Update ASan testsuite with corresponding tests from lib/asan/tests directory.
   Not all tests can be migrated easily, so you don't need them all to be adapted.
 * Modify configure.ac file if needed (e.g. if you need to add link against new
-  library for sanitizer lilbs).
+  library for sanitizer libs).
 * Add new target platforms in configure.tgt script if needed.
 * Bump SONAME for sanitizer libraries in asan/tsan/ubsan libtool-version files
   if ABI has changed.
@@ -30,7 +31,9 @@ general list of actions required to perform the merge:
 * Run regression testing on at least three platforms (e.g. x86-linux-gnu, x86_64-linux-gnu,
   aarch64-linux-gnu, arm-linux-gnueabi).
 * Run {A, UB}San bootstrap on at least three platforms.
-* Compare ABI of corresponding libclang_rt-asan and newly build libasan libraries.
+* Compare ABI of corresponding libclang_rt.asan and newly build libasan libraries.
+  Similarly you can compare latest GCC release with the newly built libraries
+  (libasan.so.*, libubsan.so.*, libtsan.so*).
   You can use a pretty good libabigail tool (https://sourceware.org/libabigail/index.html)
   to perform such a comparision.  Note, that the list of exported symbols may differ,
   e.g. because libasan currently does not include UBSan runtime.
