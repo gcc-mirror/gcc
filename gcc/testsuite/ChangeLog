@@ -1,3 +1,10 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/pr63839.c: Update to new sanitizer message.
+	* c-c++-common/ubsan/unreachable-1.c (main): Likewise.
+	* c-c++-common/ubsan/unreachable-2.c: Likewise.
+	* c-c++-common/ubsan/unreachable-4.c (main): Likewise.
+
 2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	PR target/87374
