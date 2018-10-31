@@ -128,6 +128,15 @@ struct alloca_type_and_limit {
   }
 };
 
+/* Return TRUE if the user specified a limit for either VLAs or ALLOCAs.  */
+
+static bool
+warn_limit_specified_p (bool is_vla)
+{
+  unsigned HOST_WIDE_INT max = is_vla ? warn_vla_limit : warn_alloca_limit;
+  return max != HOST_WIDE_INT_MAX;
+}
+
 /* Return the value of the argument N to -Walloca-larger-than= or
    -Wvla-larger-than= adjusted for the target data model so that
    when N == HOST_WIDE_INT_MAX, the adjusted value is set to
@@ -203,7 +212,8 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
     }
 
   irange r;
-  if (TREE_CODE (len) == SSA_NAME
+  if (warn_limit_specified_p (is_vla)
+      && TREE_CODE (len) == SSA_NAME
       && ranger.range_of_expr (r, len, stmt)
       && !r.varying_p ())
     {
@@ -212,18 +222,8 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
 			    build_int_cst (size_type_node, 0),
 			    build_int_cst (size_type_node, max_size),
 			    irange::INVERSE);
-      /* FIXME:
-	 This needs to be looked at.  It causes:
-	 > FAIL: gcc.dg/Walloca-10.c  (test for warnings, line 22)
-	 > FAIL: gcc.dg/Walloca-12.c  (test for warnings, line 11)
-	 > FAIL: gcc.dg/Walloca-1.c  (test for warnings, line 27)
-	 > FAIL: gcc.dg/Walloca-2.c  (test for warnings, line 39)
-	 > FAIL: gcc.dg/Walloca-3.c  (test for warnings, line 16)
-	 > FAIL: gcc.dg/Walloca-larger-than.c  (test for warnings, line 24)
-	 > FAIL: gcc.dg/Wvla-larger-than-2.c  (test for warnings, line 26)
-	 > FAIL: gcc.dg/Wvla-larger-than-2.c  (test for warnings, line 37)
-      */
-      //if (r.intersect (invalid_range).undefined_p ())
+
+      if (r.intersect (invalid_range).undefined_p ())
 	return alloca_type_and_limit (ALLOCA_OK);
       return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
 				    wi::to_wide (integer_zero_node));
