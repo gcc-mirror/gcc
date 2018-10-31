@@ -1,3 +1,11 @@
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70359
+	PR middle-end/86270
+	* tree-outof-ssa.c (insert_backedge_copies): Restrict
+	copy generation to useful cases.  Place the copy before
+	the definition of the backedge value when possible.
+
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-arch.h (ARC_TUNE_ARC7XX): New tune value.
