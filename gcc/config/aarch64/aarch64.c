@@ -14840,15 +14840,6 @@ aarch64_emit_bic (machine_mode mode, rtx dst, rtx s1, rtx s2, int shift)
   emit_insn (gen (dst, s2, shift_rtx, s1));
 }
 
-/* Emit an atomic swap.  */
-
-static void
-aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
-			  rtx mem, rtx model)
-{
-  emit_insn (gen_aarch64_atomic_swp (mode, dst, mem, value, model));
-}
-
 /* Emit an atomic load+operate.  CODE is the operation.  OUT_DATA is the
    location to store the data read from memory.  OUT_RESULT is the location to
    store the result of the operation.  MEM is the memory location to read and
@@ -14889,10 +14880,6 @@ aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
      a SET then emit a swap instruction and finish.  */
   switch (code)
     {
-    case SET:
-      aarch64_emit_atomic_swap (mode, out_data, src, mem, model_rtx);
-      return;
-
     case MINUS:
       /* Negate the value and treat it as a PLUS.  */
       {
