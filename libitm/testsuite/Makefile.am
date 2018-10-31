@@ -10,4 +10,4 @@ EXPECT = $(shell if test -f $(top_builddir)/../expect/expect; then \
 
 _RUNTEST = $(shell if test -f $(top_srcdir)/../dejagnu/runtest; then \
 	     echo $(top_srcdir)/../dejagnu/runtest; else echo runtest; fi)
-RUNTEST = "$(_RUNTEST) $(AM_RUNTESTFLAGS)"
+RUNTEST = $(_RUNTEST) $(AM_RUNTESTFLAGS)

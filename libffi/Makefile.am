@@ -1,6 +1,6 @@
 ## Process this with automake to create Makefile.in
 
-AUTOMAKE_OPTIONS = foreign subdir-objects
+AUTOMAKE_OPTIONS = foreign subdir-objects info-in-builddir
 
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -52,7 +52,7 @@ stamp-build-info: doc/libffi.texi $(srcdir)/doc/version.texi doc/$(am__dirstamp)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir)/doc -o doc/libffi.info $(srcdir)/doc/libffi.texi
 	@touch $@
 
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) doc/libffi.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO)
 MAINTAINERCLEANFILES = $(srcdir)/doc/libffi.info
 
 ## ################################################################
@@ -243,3 +243,5 @@ mostlyclean-recursive: mostlyclean-multi
 clean-recursive: clean-multi
 distclean-recursive: distclean-multi
 maintainer-clean-recursive: maintainer-clean-multi
+
+include $(top_srcdir)/../multilib.am

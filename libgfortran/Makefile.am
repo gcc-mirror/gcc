@@ -1223,3 +1223,5 @@ $(gfor_misc_specifics): m4/misc_specifics.m4 m4/head.m4
 endif
 
 EXTRA_DIST = $(m4_files)
+
+include $(top_srcdir)/../multilib.am

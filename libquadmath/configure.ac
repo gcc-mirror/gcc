@@ -1,7 +1,6 @@
 # Process this file with autoconf to produce a configure script, like so:
 # aclocal && autoconf && autoheader && automake
 
-AC_PREREQ(2.64)
 AC_INIT([GCC Quad-precision Math Library], 0.1,,[libquadmath])
 AC_CONFIG_HEADER(config.h)
 

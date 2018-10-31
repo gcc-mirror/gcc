@@ -2,7 +2,6 @@
 # 
 # aclocal -I .. -I ../config && autoconf && autoheader && automake
 
-AC_PREREQ(2.64)
 AC_INIT(libssp, 1.0)
 AC_CONFIG_SRCDIR(ssp.c)
 AC_CANONICAL_SYSTEM
@@ -131,7 +130,7 @@ else
 fi
 
 AC_MSG_CHECKING([whether vsnprintf is usable])
-AC_RUN_IFELSE(AC_LANG_PROGRAM([
+AC_RUN_IFELSE([AC_LANG_PROGRAM([
 #include <stdarg.h>
 #include <string.h>
 #include <stdio.h>
@@ -147,7 +146,7 @@ int foo (char *buf, size_t n, const char *fmt, ...)
 [char buf@<:@8@:>@; memset (buf, 'A', sizeof (buf));
  if (foo (buf, 4, ".%s.", "CDEFG") != 7)
    return 1;
- return memcmp (buf, ".CD\0AAAA", sizeof (buf)) != 0;]),
+ return memcmp (buf, ".CD\0AAAA", sizeof (buf)) != 0;])],
 [ssp_have_usable_vsnprintf=define],
 [ssp_have_usable_vsnprintf=undef],
 [ssp_have_usable_vsnprintf=undef])

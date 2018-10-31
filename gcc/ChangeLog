@@ -1,3 +1,12 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.  Use single
+	line for second argument of AC_DEFINE_UNQUOTED.
+	* doc/install.texi (Tools/packages necessary for modifying GCC):
+	Update to autoconf 2.69 and automake 1.15.1.
+	* aclocal.m4, config.in, configure: Regenerate.
+
 2018-10-31  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* tree-ssa-loop-ivcanon.c (try_peel_loop): Fix typo and remove dead

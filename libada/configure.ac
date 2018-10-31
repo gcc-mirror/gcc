@@ -22,7 +22,6 @@ sinclude(../config/picflag.m4)
 sinclude(../config/unwind_ipinfo.m4)
 
 AC_INIT
-AC_PREREQ([2.64])
 
 AC_CONFIG_SRCDIR([Makefile.in])
 
