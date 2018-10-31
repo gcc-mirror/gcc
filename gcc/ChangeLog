@@ -1,5 +1,8 @@
 2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Force
+	16-byte modes held in GP registers to use an even regno.
+
 	* config/aarch64/aarch64.c (aarch64_emit_bic): Remove.
 	(aarch64_atomic_ldop_supported_p): Remove.
 	(aarch64_gen_atomic_ldop): Remove.
