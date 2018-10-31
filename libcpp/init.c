@@ -264,7 +264,7 @@ cpp_create_reader (enum c_lang lang, cpp_hash_table *table,
   pfile->pushed_macros = 0;
 
   /* Do not force token locations by default.  */
-  pfile->forced_token_location_p = NULL;
+  pfile->forced_token_location = 0;
 
   /* Initialize source_date_epoch to -2 (not yet set).  */
   pfile->source_date_epoch = (time_t) -2;
