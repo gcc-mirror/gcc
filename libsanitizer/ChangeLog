@@ -1,3 +1,8 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* HOWTO_MERGE: Enhance documentation.
+	* merge.sh: Add support for git as well.
+
 2018-08-02  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/86022
