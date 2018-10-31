@@ -1,5 +1,8 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* include/cpplib.h (HT_NODE): Don't cast NODE.
+	(NODE_LEN, NODE_NAME): Use HT_NODE.
+
 	* directives.c (DIRECTIVE_TABLE): Drop historical frequency
 	comments.
 	* files.c (_cpp_stack_file): Fix indentation.
