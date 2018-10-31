@@ -2186,7 +2186,6 @@ ovl_copy (tree ovl)
   OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
   OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
   OVL_USING_P (result) = OVL_USING_P (ovl);
-  OVL_EXPORT_P (result) = OVL_EXPORT_P (ovl);
 
   return result;
 }

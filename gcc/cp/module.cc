@@ -9165,8 +9165,6 @@ module_state::read_cluster (unsigned snum)
 			    && TREE_CODE (decls) != FUNCTION_DECL))
 		      sec.set_overrun ();
 		    decls = ovl_make (decl, decls);
-		    if (DECL_MODULE_EXPORT_P (decl))
-		      OVL_EXPORT_P (decls) = true;
 		  }
 		else
 		  decls = decl;

@@ -1,3 +1,11 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (OVL_EXPORT_P): Delete.
+	(OVL_DEDUP_P): Move to lang flag 0.
+	* module.cc (module_state::read_cluster): Don't set OVL_EXPORT_P.
+	* tree.c (ovl_copy): Don't copy OVL_EXPORT_P.
+
 2018-10-30  Nathan Sidwell  <nathan@acm.org>
 
 	Module interface gets own mod number

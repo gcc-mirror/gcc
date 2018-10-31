@@ -411,7 +411,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
       REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
-      OVL_EXPORT_P (in OVERLOAD)
+      OVL_DEDUP_P (in OVERLOAD)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -464,7 +464,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_VTABLE_OR_VTT_P (in VAR_DECL)
       FUNCTION_RVALUE_QUALIFIED (in FUNCTION_TYPE, METHOD_TYPE)
       CALL_EXPR_REVERSE_ARGS (in CALL_EXPR, AGGR_INIT_EXPR)
-      OVL_DEDUP_P (in OVERLOAD)
       CONSTRUCTOR_PLACEHOLDER_BOUNDARY (in CONSTRUCTOR)
    6: IDENTIFIER_REPO_CHOSEN (in IDENTIFIER_NODE)
       TYPE_MARKED_P (in _TYPE)
@@ -702,10 +701,9 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_CHAIN(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
-/* It is not an accident that EXPORT, VIA_USING and HIDDEN use
-   contiguous bit fields.  */
-/* If set, this is an exported declaration.   */
-#define OVL_EXPORT_P(NODE)	TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
+/* If set, this overload set contains decls reachable via another path
+   (i.e. has using decls.).  */
+#define OVL_DEDUP_P(NODE)	TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
 /* If set, this overload is a hidden decl.  */
@@ -714,9 +712,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
-/* If set, this overload set contains decls reachable via another path
-   (i.e. has using decls.).  */
-#define OVL_DEDUP_P(NODE) TREE_LANG_FLAG_5 (OVERLOAD_CHECK (NODE))
 /* If set, this is a persistant lookup. */
 #define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
