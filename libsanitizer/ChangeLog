@@ -1,5 +1,20 @@
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Update patch list.
+	* asan/asan_globals.cc (CheckODRViolationViaIndicator): Apply
+	patches from GCC's trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* sanitizer_common/sanitizer_mac.cc (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cc (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
 	* config.h.in: Regenerate.
 	* configure: Likewise.
 	* sanitizer_common/Makefile.am: Include new files, remove old
