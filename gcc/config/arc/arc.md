@@ -5310,27 +5310,6 @@ archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "call")
    (set_attr "is_SIBCALL" "yes")])
 
-(define_insn "tls_load_tp_soft"
-  [(set (reg:SI R0_REG) (unspec:SI [(const_int 0)] UNSPEC_TLS_OFF))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  "*return arc_output_libcall (\"__read_tp\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "tls_gd_get_addr"
-  [(set (reg:SI R0_REG)
-	(call:SI (mem:SI (unspec:SI [(match_operand:SI 0
-				      "symbolic_operand" "X,X")]
-			  UNSPEC_TLS_GD))
-		 (const_int 0)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  ".tls_gd_ld %0`bl%* __tls_get_addr@plt"
-  [(set_attr "type" "call")
-   ; With TARGET_MEDIUM_CALLS, plt calls are not predicable.
-   (set_attr "predicable" "no")])
-
 ;; For thread pointer builtins
 (define_expand "get_thread_pointersi"
   [(set (match_operand:SI 0 "register_operand") (match_dup 1))]

@@ -5561,51 +5561,32 @@ arc_raw_symbolic_reference_mentioned_p (rtx op, bool skip_local)
   return false;
 }
 
-/* Get the thread pointer.  */
+/* The __tls_get_attr symbol.  */
+static GTY(()) rtx arc_tls_symbol;
+
+/* Emit a call to __tls_get_addr.  TI is the argument to this function.
+   RET is an RTX for the return value location.  The entire insn sequence
+   is returned.  */
 
 static rtx
-arc_get_tp (void)
+arc_call_tls_get_addr (rtx ti)
 {
-   /* If arc_tp_regno has been set, we can use that hard register
-      directly as a base register.  */
-  if (arc_tp_regno != -1)
-    return gen_rtx_REG (Pmode, arc_tp_regno);
+  rtx arg = gen_rtx_REG (Pmode, R0_REG);
+  rtx ret = gen_rtx_REG (Pmode, R0_REG);
+  rtx fn;
+  rtx_insn *insn;
 
-  /* Otherwise, call __read_tp.  Copy the result to a pseudo to avoid
-     conflicts with function arguments / results.  */
-  rtx reg = gen_reg_rtx (Pmode);
-  emit_insn (gen_tls_load_tp_soft ());
-  emit_move_insn (reg, gen_rtx_REG (Pmode, R0_REG));
-  return reg;
-}
+  if (!arc_tls_symbol)
+    arc_tls_symbol = init_one_libfunc ("__tls_get_addr");
 
-/* Helper to be used by TLS Global dynamic model.  */
+  emit_move_insn (arg, ti);
+  fn = gen_rtx_MEM (SImode, arc_tls_symbol);
+  insn = emit_call_insn (gen_call_value (ret, fn, const0_rtx));
+  RTL_CONST_CALL_P (insn) = 1;
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), ret);
+  use_reg (&CALL_INSN_FUNCTION_USAGE (insn), arg);
 
-static rtx
-arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
-{
-  rtx r0 = gen_rtx_REG (Pmode, R0_REG);
-  rtx call_fusage = NULL_RTX;
-
-  start_sequence ();
-
-  rtx x = arc_unspec_offset (sym, reloc);
-  emit_move_insn (r0, x);
-  use_reg (&call_fusage, r0);
-
-  gcc_assert (reloc == UNSPEC_TLS_GD);
-  rtx call_insn = emit_call_insn (gen_tls_gd_get_addr (sym));
-  /* Should we set RTL_CONST_CALL_P?  We read memory, but not in a
-     way that the application should care.  */
-  RTL_PURE_CALL_P (call_insn) = 1;
-  add_function_usage_to (call_insn, call_fusage);
-
-  rtx_insn *insns = get_insns ();
-  end_sequence ();
-
-  rtx dest = gen_reg_rtx (Pmode);
-  emit_libcall_block (insns, dest, r0, eqv);
-  return dest;
+  return ret;
 }
 
 #define DTPOFF_ZERO_SYM ".tdata"
@@ -5616,16 +5597,26 @@ arc_emit_call_tls_get_addr (rtx sym, int reloc, rtx eqv)
 static rtx
 arc_legitimize_tls_address (rtx addr, enum tls_model model)
 {
+  rtx tmp;
+
   if (!flag_pic && model == TLS_MODEL_LOCAL_DYNAMIC)
     model = TLS_MODEL_LOCAL_EXEC;
 
+
+  /* The TP pointer needs to be set.  */
+  gcc_assert (arc_tp_regno != -1);
+
   switch (model)
     {
+    case TLS_MODEL_GLOBAL_DYNAMIC:
+      tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, arc_unspec_offset (addr, UNSPEC_TLS_GD));
+      return arc_call_tls_get_addr (tmp);
+
     case TLS_MODEL_LOCAL_DYNAMIC:
       rtx base;
       tree decl;
       const char *base_name;
-      rtvec v;
 
       decl = SYMBOL_REF_DECL (addr);
       base_name = DTPOFF_ZERO_SYM;
@@ -5633,31 +5624,21 @@ arc_legitimize_tls_address (rtx addr, enum tls_model model)
 	base_name = ".tbss";
 
       base = gen_rtx_SYMBOL_REF (Pmode, base_name);
-      if (strcmp (base_name, DTPOFF_ZERO_SYM) == 0)
-	{
-	  if (!flag_pic)
-	    goto local_exec;
-	  v = gen_rtvec (1, addr);
-	}
-      else
-	v = gen_rtvec (2, addr, base);
-      addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_TLS_OFF);
-      addr = gen_rtx_CONST (Pmode, addr);
-      base = arc_legitimize_tls_address (base, TLS_MODEL_GLOBAL_DYNAMIC);
-      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base), addr);
-
-    case TLS_MODEL_GLOBAL_DYNAMIC:
-      return arc_emit_call_tls_get_addr (addr, UNSPEC_TLS_GD, addr);
+      tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, arc_unspec_offset (base, UNSPEC_TLS_GD));
+      base = arc_call_tls_get_addr (tmp);
+      return gen_rtx_PLUS (Pmode, force_reg (Pmode, base),
+			   arc_unspec_offset (addr, UNSPEC_TLS_OFF));
 
     case TLS_MODEL_INITIAL_EXEC:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_IE);
       addr = copy_to_mode_reg (Pmode, gen_const_mem (Pmode, addr));
-      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+      return gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, arc_tp_regno), addr);
 
     case TLS_MODEL_LOCAL_EXEC:
-    local_exec:
       addr = arc_unspec_offset (addr, UNSPEC_TLS_OFF);
-      return gen_rtx_PLUS (Pmode, arc_get_tp (), addr);
+      return gen_rtx_PLUS (Pmode, gen_rtx_REG (Pmode, arc_tp_regno), addr);
+
     default:
       gcc_unreachable ();
     }
