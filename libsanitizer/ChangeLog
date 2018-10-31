@@ -1,5 +1,9 @@
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Update to installed revisions.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
 	* ubsan/ubsan_platform.h: Add ifndef as we define it with
 	-DCAN_SANITIZE_UB CFLAGS.
 
