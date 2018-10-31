@@ -6969,8 +6969,8 @@ bool
 module_state::check_not_purview (location_t loc)
 {
   module_state *imp = (*modules)[MODULE_PURVIEW];
-  if (imp && imp->is_alias ())
-    imp = imp->u1.alias;
+  if (imp && !imp->name)
+    imp = imp->parent;
   if (imp == this)
     {
       /* Cannot import the current module.  */
@@ -7004,8 +7004,8 @@ mangle_module (int mod)
 {
   module_state *imp = (*modules)[mod];
 
-  if (imp->is_alias ())
-    imp = imp->u1.alias;
+  if (!imp->name)
+    imp = imp->parent;
 
   imp->mangle ();
 }
@@ -11721,8 +11721,8 @@ char const *
 module_name (unsigned ix)
 {
   module_state *imp = (*modules)[ix];
-  if (imp->is_alias ())
-    imp = imp->u1.alias;
+  if (!imp->name)
+    imp = imp->parent;
 
   return imp->fullname;
 }
@@ -12190,8 +12190,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
   else
     {
       state->interface_p = true;
-      gmf->alias_p = true;
-      gmf->u1.alias = state;
+      gmf->parent = state;
       module_purview = 1;
     }
 

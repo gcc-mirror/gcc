@@ -1,5 +1,10 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (module_state::check_not_purview): Check name.
+	(mangle_mondule, module_name): Likewise.
+	(declare_module): Set parent, not alias.
+
 	Merge trunk r265692.
 
 	Merge trunk r265679.
