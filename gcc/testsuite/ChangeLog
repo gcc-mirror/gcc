@@ -1,5 +1,13 @@
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/tls-gd.c: New file.
+	* gcc.target/arc/tls-ie.c: Likewise.
+	* gcc.target/arc/tls-ld.c: Likewise.
+	* gcc.target/arc/tls-le.c: Likewise.
+	* gcc.target/arc/tls-1.c: Update test.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/mulsi3_highpart-2.c: Update test.
 
 2018-10-31  Martin Liska  <mliska@suse.cz>

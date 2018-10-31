@@ -1,5 +1,14 @@
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_get_tp): Remove function.
+	(arc_emit_call_tls_get_addr): Likewise.
+	(arc_call_tls_get_addr): New function.
+	(arc_legitimize_tls_address): Make use of arc_call_tls_get_addr.
+	* config/arc/arc.md (tls_load_tp_soft): Remove.
+	(tls_gd_get_addr): Likewise.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (mulsi3): Remove call to mulsi_600_lib.
 	(mulsi3_600_lib): Remove pattern.
 	(umulsi3_highpart_600_lib_le): Likewise.
