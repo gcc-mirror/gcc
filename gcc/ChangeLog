@@ -1,5 +1,11 @@
 2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
+	* optabs-libfuncs.c (build_libfunc_function_visibility):
+	New, split out from...
+	(build_libfunc_function): ... here.
+	(init_one_libfunc_visibility): New, split out from ...
+	(init_one_libfunc): ... here.
+
 	* config/aarch64/atomics.md (aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse):
 	scratch register need not be early-clobber.  Document the reason
 	why we cannot use ST<OP>.
