@@ -1,3 +1,10 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* gcc.target/aarch64/spellcheck_7.c: New test.
+	* gcc.target/aarch64/spellcheck_8.c: New test.
+	* gcc.target/aarch64/spellcheck_9.c: New test.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/using60.C: New.

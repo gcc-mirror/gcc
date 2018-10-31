@@ -1,3 +1,7 @@
+2018-10-31  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
 2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR bootstrap/87788

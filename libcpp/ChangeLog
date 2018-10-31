@@ -1,3 +1,34 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* internal.h (struct cpp_reader): Rename forced_token_location_p
+	to forced_token_location and drop its pointerness.
+	* include/cpplib.h (cpp_force_token_locations): Take location, not
+	pointer to one.
+	* init.c (cpp_create_reader): Adjust.
+	* lex.c (cpp_read_main_file): 
+
+	* directives.c (do_include_common): Commonize cleanup path.
+	(_cpp_pop_buffer): Fix leak.
+
+	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New
+	predicates.
+	(IS_ADHOC_LOC): Move earlier.
+	(MAP_ORDINARY_P): Use IS_ORDINARY_LOC.
+	* line-map.c (linemap_location_from_macro_expansion_p): Use
+	IS_MACRO_LOC.
+
+	* include/cpplib.h (cpp_macro_definition_location): Make inline.
+	* macro.c (warn_of_redefinition): Fix comments, examine macro
+	type, use C++ for.
+	(cpp_macro_definition_location): Don't define here.
+
+	* include/cpplib.h (HT_NODE): Don't cast NODE.
+	(NODE_LEN, NODE_NAME): Use HT_NODE.
+
+	* directives.c (DIRECTIVE_TABLE): Drop historical frequency
+	comments.
+	* files.c (_cpp_stack_file): Fix indentation.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* include/cpplib.h (enum c_lang): Add CLK_GNUC2X and CLK_STDC2X.

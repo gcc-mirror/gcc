@@ -1,3 +1,23 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	PR driver/83193
+	* common/config/aarch64/aarch64-common.c (aarch64_parse_extension):
+	Add new argument invalid_extension.
+	(aarch64_get_all_extension_candidates): New function.
+	(aarch64_rewrite_selected_cpu): Add NULL to function call.
+	* config/aarch64/aarch64-protos.h (aarch64_parse_extension): Add
+	new argument.
+	(aarch64_get_all_extension_candidates): New function.
+	* config/aarch64/aarch64.c (aarch64_parse_arch): Add new
+	argument invalid_extension.
+	(aarch64_parse_cpu): Likewise.
+	(aarch64_print_hint_for_extensions): New function.
+	(aarch64_validate_mcpu): Provide hint about invalid extension.
+	(aarch64_validate_march): Likewise.
+	(aarch64_handle_attr_arch): Pass new argument.
+	(aarch64_handle_attr_cpu): Provide hint about invalid extension.
+	(aarch64_handle_attr_isa_flags): Likewise.
+
 2018-10-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70359
