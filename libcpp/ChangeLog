@@ -1,5 +1,8 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	* directives.c (do_include_common): Commonize cleanup path.
+	(_cpp_pop_buffer): Fix leak.
+
 	* include/line-map.h (IS_ORDINARY_LOC, IS_MACRO_LOC): New
 	predicates.
 	(IS_ADHOC_LOC): Move earlier.
