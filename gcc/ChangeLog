@@ -1,3 +1,8 @@
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-eh.c (replace_trapping_overflow): Simplify ABS_EXPR case
+	using ABSU_EXPR.
+
 2018-10-31 Sameera Deshpande <sameera.deshpande@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (saphira): Use saphira pipeline.
