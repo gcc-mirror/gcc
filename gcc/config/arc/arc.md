@@ -2076,43 +2076,20 @@ archs4x, archs4xd, archs4xd_slow"
 ;; SI <- SI * SI
 
 (define_expand "mulsi3"
- [(set (match_operand:SI 0 "nonimmediate_operand"            "")
+ [(set (match_operand:SI 0 "register_operand"            "")
 	(mult:SI (match_operand:SI 1 "register_operand"  "")
 		 (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
+  "TARGET_ANY_MPY"
 {
-  if (TARGET_MPY)
+  if (TARGET_MUL64_SET)
     {
-      if (!register_operand (operands[0], SImode))
-	{
-	  rtx result = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_mulsi3 (result, operands[1], operands[2]));
-	  emit_move_insn (operands[0], result);
-	  DONE;
-	}
-    }
-  else if (TARGET_MUL64_SET)
-    {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi64 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi64 (operands[0], operands[1], operands[2]));
      DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi32x16 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi32x16 (operands[0], operands[1], operands[2]));
      DONE;
-    }
-  else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_mulsi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (SImode, R0_REG));
-      DONE;
     }
 })
 
@@ -2228,27 +2205,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "multi,multi,multi,multi")
    (set_attr "predicable" "yes,yes,no,yes")
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
-
-; If we compile without an mul option enabled, but link with libraries
-; for a mul option, we'll see clobbers of multiplier output registers.
-; There is also an implementation using norm that clobbers the loop registers.
-(define_insn "mulsi3_600_lib"
-  [(set (reg:SI R0_REG)
-	(mult:SI (reg:SI R0_REG) (reg:SI R1_REG)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R2_REG))
-   (clobber (reg:SI R3_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:SI LP_COUNT))
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__mulsi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
 
 (define_insn_and_split "mulsidi_600"
   [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
@@ -2504,48 +2460,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "yes,no,yes,no")
    (set_attr "cond" "canuse,nocond,canuse,nocond")])
 
-; Implementations include additional labels for umulsidi3, so we got all
-; the same clobbers - plus one for the result low part.  */
-(define_insn "umulsi3_highpart_600_lib_le"
-  [(set (reg:SI R1_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R0_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "umulsi3_highpart_600_lib_be"
-  [(set (reg:SI R0_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
 ;; (zero_extend:DI (const_int)) leads to internal errors in combine, so we
 ;; need a separate pattern for immediates
 ;; ??? This is fine for combine, but not for reload.
@@ -2572,22 +2486,10 @@ archs4x, archs4xd, archs4xd_slow"
 	   (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 	   (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" "")))
 	  (const_int 32))))]
-  "!TARGET_MUL64_SET && !TARGET_MULMAC_32BY16_SET"
+  "TARGET_MPY"
   "
 {
   rtx target = operands[0];
-
-  if (!TARGET_MPY)
-    {
-      emit_move_insn (gen_rtx_REG (SImode, 0), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, 1), operands[2]);
-      if (TARGET_BIG_ENDIAN)
-	emit_insn (gen_umulsi3_highpart_600_lib_be ());
-      else
-	emit_insn (gen_umulsi3_highpart_600_lib_le ());
-      emit_move_insn (target, gen_rtx_REG (SImode, 0));
-      DONE;
-    }
 
   if (!register_operand (target, SImode))
     target = gen_reg_rtx (SImode);
@@ -2607,7 +2509,7 @@ archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
-  ""
+  "TARGET_ANY_MPY"
 {
   if (TARGET_PLUS_MACD)
     {
@@ -2646,12 +2548,8 @@ archs4x, archs4xd, archs4xd_slow"
       DONE;
     }
   else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_umulsidi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, R0_REG));
-      DONE;
+  {
+   gcc_unreachable ();
     }
 })
 
@@ -2729,7 +2627,7 @@ archs4x, archs4xd, archs4xd_slow"
 		 (zero_extend:DI (match_operand:SI 2 "extend_operand" "cL"))))]
   "TARGET_MPY && !TARGET_PLUS_MACD"
   "#"
-  "reload_completed"
+  "TARGET_MPY && !TARGET_PLUS_MACD && reload_completed"
   [(const_int 0)]
 {
   int hi = !TARGET_BIG_ENDIAN;
@@ -2742,42 +2640,6 @@ archs4x, archs4xd, archs4xd_slow"
 }
   [(set_attr "type" "umulti")
   (set_attr "length" "8")])
-
-(define_insn "umulsidi3_600_lib"
-  [(set (reg:DI R0_REG)
-	(mult:DI (zero_extend:DI (reg:SI R0_REG))
-		 (zero_extend:DI (reg:SI R1_REG))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-   "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsidi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_peephole2
-  [(parallel
-     [(set (reg:DI R0_REG)
-	   (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		    (zero_extend:DI (reg:SI R1_REG))))
-      (clobber (reg:SI RETURN_ADDR_REGNUM))
-      (clobber (reg:DI R2_REG))
-      (clobber (reg:SI R12_REG))
-      (clobber (reg:DI MUL64_OUT_REG))
-      (clobber (reg:CC CC_REG))])]
-  "!TARGET_ANY_MPY
-   && peep2_regno_dead_p (1, TARGET_BIG_ENDIAN ? R1_REG : R0_REG)"
-  [(pc)]
-{
-  if (TARGET_BIG_ENDIAN)
-    emit_insn (gen_umulsi3_highpart_600_lib_be ());
-  else
-    emit_insn (gen_umulsi3_highpart_600_lib_le ());
-  DONE;
-})
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")

@@ -1,3 +1,13 @@
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsi3): Remove call to mulsi_600_lib.
+	(mulsi3_600_lib): Remove pattern.
+	(umulsi3_highpart_600_lib_le): Likewise.
+	(umulsi3_highpart): Remove call to umulsi3_highpart_600_lib_le.
+	(umulsidi3): Remove call to umulsidi3_600_lib.
+	(umulsidi3_600_lib): Remove pattern.
+	(peephole2): Remove peephole using the above deprecated patterns.
+
 2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	PR target/87374

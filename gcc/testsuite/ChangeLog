@@ -1,3 +1,7 @@
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/mulsi3_highpart-2.c: Update test.
+
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
 	* c-c++-common/ubsan/pr63839.c: Update to new sanitizer message.
