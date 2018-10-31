@@ -1139,10 +1139,10 @@ try_peel_loop (struct loop *loop,
     if (e->src != loop->latch)
       {
 	if (e->src->count.initialized_p ())
-	  entry_count = e->src->count + e->src->count;
+	  entry_count += e->src->count;
 	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
       }
-  profile_probability p = profile_probability::very_unlikely ();
+  profile_probability p;
   p = entry_count.probability_in (loop->header->count);
   scale_loop_profile (loop, p, 0);
   bitmap_set_bit (peeled_loops, loop->num);
