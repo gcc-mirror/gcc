@@ -1,5 +1,27 @@
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_override_options): Remove
+	TARGET_COMPACT_CASESI.
+	* config/arc/arc.h (ASM_OUTPUT_ADDR_DIFF_ELT): Update.
+	(CASE_VECTOR_MODE): Likewise.
+	(CASE_VECTOR_PC_RELATIVE): Likewise.
+	(CASE_VECTOR_SHORTEN_MODE): Likewise.
+	(CASE_VECTOR_SHORTEN_MODE1): Delete.
+	(ADDR_VEC_ALIGN): Update.
+	(ASM_OUTPUT_CASE_LABEL): Undefine.
+	(ASM_OUTPUT_BEFORE_CASE_LABEL): Undefine.
+	(TARGET_BI_BIH): Define.
+	(DEFAULT_BRANCH_INDEX): Likewise.
+	* config/arc/arc.md (casesi): Rework to accept BI/BIH
+	instructions, remove compact_casesi use case.
+	(casesi_compact_jump): Remove.
+	(casesi_dispatch): New pattern.
+	* config/arc/arc.opt: Add mbranch-index option. Deprecate
+	compact_casesi option.
+	* doc/invoke.texi: Document mbranch-index option.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_get_tp): Remove function.
 	(arc_emit_call_tls_get_addr): Likewise.
 	(arc_call_tls_get_addr): New function.

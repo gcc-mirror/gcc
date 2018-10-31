@@ -1290,33 +1290,14 @@ arc_override_options (void)
   if (arc_size_opt_level == 3)
     optimize_size = 1;
 
-  /* Compact casesi is not a valid option for ARCv2 family.  */
-  if (TARGET_V2)
-    {
-      if (TARGET_COMPACT_CASESI)
-	{
-	  warning (OPT_mcompact_casesi,
-		   "compact-casesi is not applicable to ARCv2");
-	  TARGET_COMPACT_CASESI = 0;
-	}
-    }
-  else if (optimize_size == 1
-	   && !global_options_set.x_TARGET_COMPACT_CASESI)
-    TARGET_COMPACT_CASESI = 1;
-
   if (flag_pic)
     target_flags |= MASK_NO_SDATA_SET;
 
   if (flag_no_common == 255)
     flag_no_common = !TARGET_NO_SDATA_SET;
 
-  /* TARGET_COMPACT_CASESI needs the "q" register class.  */
   if (TARGET_MIXED_CODE)
     TARGET_Q_CLASS = 1;
-  if (!TARGET_Q_CLASS)
-    TARGET_COMPACT_CASESI = 0;
-  if (TARGET_COMPACT_CASESI)
-    TARGET_CASE_VECTOR_PC_RELATIVE = 1;
 
   /* Check for small data option */
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)

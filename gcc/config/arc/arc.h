@@ -1266,29 +1266,45 @@ do {							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);	\
   fprintf (FILE, "\t.word ");				\
   assemble_name (FILE, label);				\
-  fprintf(FILE, "\n");					\
+  fprintf (FILE, "\n");					\
 } while (0)
 
 /* This is how to output an element of a case-vector that is relative.  */
-#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL) \
-do {							\
-  char label[30];					\
-  ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);	\
-  switch (GET_MODE (BODY))				\
-    {							\
-    case E_QImode: fprintf (FILE, "\t.byte "); break;	\
-    case E_HImode: fprintf (FILE, "\t.hword "); break;	\
-    case E_SImode: fprintf (FILE, "\t.word "); break;	\
-    default: gcc_unreachable ();			\
-    }							\
-  assemble_name (FILE, label);				\
-  fprintf (FILE, "-");					\
-  ASM_GENERATE_INTERNAL_LABEL (label, "L", REL);	\
-  assemble_name (FILE, label);				\
-  if (TARGET_COMPACT_CASESI)				\
-    fprintf (FILE, " + %d", 4 + arc_get_unalign ());	\
-  fprintf(FILE, "\n");                                  \
-} while (0)
+#define ASM_OUTPUT_ADDR_DIFF_ELT(FILE, BODY, VALUE, REL)	\
+  do {								\
+    char label[30];						\
+    ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);		\
+    if (!TARGET_BI_BIH)						\
+      {								\
+	switch (GET_MODE (BODY))				\
+	  {							\
+	  case E_QImode: fprintf (FILE, "\t.byte "); break;	\
+	  case E_HImode: fprintf (FILE, "\t.hword "); break;	\
+	  case E_SImode: fprintf (FILE, "\t.word "); break;	\
+	  default: gcc_unreachable ();				\
+	  }							\
+	assemble_name (FILE, label);				\
+	fprintf (FILE, "-");					\
+	ASM_GENERATE_INTERNAL_LABEL (label, "L", REL);		\
+	assemble_name (FILE, label);				\
+	fprintf (FILE, "\n");					\
+      }								\
+    else							\
+      {								\
+      switch (GET_MODE (BODY))					\
+	{							\
+	case E_SImode: fprintf (FILE, "\tb\t@"); break;		\
+	case E_HImode:						\
+	case E_QImode: fprintf (FILE, "\tb_s\t@"); break;	\
+	default: gcc_unreachable ();				\
+	}							\
+      assemble_name (FILE, label);				\
+      fprintf(FILE, "\n");					\
+    }								\
+  } while (0)
+
+/* Defined to also emit an .align in elfos.h.  We don't want that.  */
+#undef ASM_OUTPUT_CASE_LABEL
 
 /* ADDR_DIFF_VECs are in the text section and thus can affect the
    current alignment.  */
@@ -1386,36 +1402,34 @@ do { \
    for the index in the tablejump instruction.
    If we have pc relative case vectors, we start the case vector shortening
    with QImode.  */
-#define CASE_VECTOR_MODE \
-  ((optimize && (CASE_VECTOR_PC_RELATIVE || flag_pic)) ? QImode : Pmode)
+#define CASE_VECTOR_MODE						\
+  (TARGET_BI_BIH ? SImode						\
+   : (optimize && (CASE_VECTOR_PC_RELATIVE || flag_pic)) ? QImode : Pmode)
 
 /* Define as C expression which evaluates to nonzero if the tablejump
    instruction expects the table to contain offsets from the address of the
    table.
    Do not define this if the table should contain absolute addresses.  */
-#define CASE_VECTOR_PC_RELATIVE TARGET_CASE_VECTOR_PC_RELATIVE
+#define CASE_VECTOR_PC_RELATIVE					\
+  (TARGET_CASE_VECTOR_PC_RELATIVE || TARGET_BI_BIH)
 
-#define CASE_VECTOR_SHORTEN_MODE(MIN_OFFSET, MAX_OFFSET, BODY) \
-  CASE_VECTOR_SHORTEN_MODE_1 \
-    (MIN_OFFSET, TARGET_COMPACT_CASESI ? MAX_OFFSET + 6 : MAX_OFFSET, BODY)
+#define CASE_VECTOR_SHORTEN_MODE(MIN_OFFSET, MAX_OFFSET, BODY)		\
+  (TARGET_BI_BIH ?						\
+   ((MIN_OFFSET) >= -512 && (MAX_OFFSET) <= 508 ? HImode : SImode)	\
+   : ((MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 255				\
+      ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, QImode)	\
+      : (MIN_OFFSET) >= -128 && (MAX_OFFSET) <= 127			\
+      ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, QImode)	\
+      : (MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 65535			\
+      ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, HImode)	\
+      : (MIN_OFFSET) >= -32768 && (MAX_OFFSET) <= 32767			\
+      ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, HImode)	\
+      : SImode))
 
-#define CASE_VECTOR_SHORTEN_MODE_1(MIN_OFFSET, MAX_OFFSET, BODY) \
-((MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 255 \
- ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, QImode) \
- : (MIN_OFFSET) >= -128 && (MAX_OFFSET) <= 127 \
- ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, QImode) \
- : (MIN_OFFSET) >= 0 && (MAX_OFFSET) <= 65535 \
- ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 1, HImode) \
- : (MIN_OFFSET) >= -32768 && (MAX_OFFSET) <= 32767 \
- ? (ADDR_DIFF_VEC_FLAGS (BODY).offset_unsigned = 0, HImode) \
- : SImode)
-
-#define ADDR_VEC_ALIGN(VEC_INSN) \
-  (exact_log2 (GET_MODE_SIZE (as_a <scalar_int_mode> \
-			      (GET_MODE (PATTERN (VEC_INSN))))))
-#undef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN ((FILE), ADDR_VEC_ALIGN (TABLE))
+#define ADDR_VEC_ALIGN(VEC_INSN)					\
+  (TARGET_BI_BIH ? 0							\
+   : exact_log2 (GET_MODE_SIZE (as_a <scalar_int_mode>			\
+				(GET_MODE (PATTERN (VEC_INSN))))))
 
 #define INSN_LENGTH_ALIGNMENT(INSN)		  \
   ((JUMP_TABLE_DATA_P (INSN)			  \
@@ -1637,5 +1651,11 @@ enum
 			     && (arc_fpu_build == FPX_QK))
 /* DBNZ support is available for ARCv2 core3 and newer cpus.  */
 #define TARGET_DBNZ (TARGET_V2 && (arc_tune >= ARC_TUNE_CORE_3))
+
+/* BI/BIH feature macro.  */
+#define TARGET_BI_BIH (TARGET_BRANCH_INDEX && TARGET_CODE_DENSITY)
+
+/* The default option for BI/BIH instructions.  */
+#define DEFAULT_BRANCH_INDEX 0
 
 #endif /* GCC_ARC_H */

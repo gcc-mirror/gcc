@@ -3968,60 +3968,70 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse_limm,canuse,canuse,canuse")])
 
 ;; Implement a switch statement.
-
 (define_expand "casesi"
-  [(set (match_dup 5)
-	(minus:SI (match_operand:SI 0 "register_operand" "")
-		  (match_operand:SI 1 "nonmemory_operand" "")))
-   (set (reg:CC CC_REG)
-	(compare:CC (match_dup 5)
-		    (match_operand:SI 2 "nonmemory_operand" "")))
-   (set (pc)
-	(if_then_else (gtu (reg:CC CC_REG)
-			   (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (set (match_dup 6)
-	(unspec:SI [(match_operand 3 "" "")
-		    (match_dup 5) (match_dup 7)] UNSPEC_ARC_CASESI))
-   (parallel [(set (pc) (match_dup 6)) (use (match_dup 7))])]
+  [(match_operand:SI 0 "register_operand" "")	; Index
+   (match_operand:SI 1 "const_int_operand" "")	; Lower bound
+   (match_operand:SI 2 "const_int_operand" "")	; Total range
+   (match_operand:SI 3 "" "")		; Table label
+   (match_operand:SI 4 "" "")]		; Out of range label
   ""
-  "
 {
-  rtx x;
-
-  operands[5] = gen_reg_rtx (SImode);
-  operands[6] = gen_reg_rtx (SImode);
-  operands[7] = operands[3];
-  emit_insn (gen_subsi3 (operands[5], operands[0], operands[1]));
-  emit_insn (gen_cmpsi_cc_insn_mixed (operands[5], operands[2]));
-  x = gen_rtx_GTU (VOIDmode, gen_rtx_REG (CCmode, CC_REG), const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (VOIDmode, operands[4]), pc_rtx);
-  emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  if (TARGET_COMPACT_CASESI)
+  if (operands[1] != const0_rtx)
     {
-      emit_jump_insn (gen_casesi_compact_jump (operands[5], operands[7]));
+      rtx reg = gen_reg_rtx (SImode);
+      emit_insn (gen_subsi3 (reg, operands[0], operands[1]));
+      operands[0] = reg;
     }
+  emit_jump_insn (gen_cbranchsi4 (gen_rtx_GTU (SImode, operands[0],
+					       operands[2]),
+				  operands[0], operands[2], operands[4]));
+  if (TARGET_BI_BIH)
+    emit_jump_insn (gen_casesi_dispatch (operands[0], operands[3]));
   else
     {
+      rtx reg = gen_reg_rtx (SImode);
+      rtx lbl = operands[3];
       operands[3] = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-      if (flag_pic || !cse_not_expected)
+      if (flag_pic)
 	operands[3] = force_reg (Pmode, operands[3]);
-      emit_insn (gen_casesi_load (operands[6],
-				  operands[3], operands[5], operands[7]));
+      emit_insn (gen_casesi_load (reg,
+				  operands[3], operands[0], lbl));
       if (CASE_VECTOR_PC_RELATIVE || flag_pic)
-	emit_insn (gen_addsi3 (operands[6], operands[6], operands[3]));
-      emit_jump_insn (gen_casesi_jump (operands[6], operands[7]));
+	emit_insn (gen_addsi3 (reg, reg, operands[3]));
+      emit_jump_insn (gen_casesi_jump (reg, lbl));
     }
   DONE;
-}")
+})
+
+(define_insn "casesi_dispatch"
+  [(set (pc)
+	(unspec:SI [(match_operand:SI 0 "register_operand" "r")
+		    (label_ref (match_operand 1 "" ""))]
+		   UNSPEC_ARC_CASESI))]
+  "TARGET_BI_BIH"
+{
+  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+  switch (GET_MODE (diff_vec))
+    {
+    case E_SImode:
+      return \"bi\\t[%0]\";
+    case E_HImode:
+    case E_QImode:
+      return \"bih\\t[%0]\";
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "brcc_no_delay_slot")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")])
 
 (define_insn "casesi_load"
-  [(set (match_operand:SI 0 "register_operand"             "=Rcq,r,r")
-	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "Rcq,c,Cal")
-		    (match_operand:SI 2 "register_operand"  "Rcq,c,c")
-		    (label_ref (match_operand 3 "" ""))] UNSPEC_ARC_CASESI))]
+  [(set (match_operand:SI 0 "register_operand"             "=q,r,r")
+	(mem:SI (unspec:SI [(match_operand:SI 1 "nonmemory_operand" "q,r,Cal")
+			    (match_operand:SI 2 "register_operand"  "q,r,r")]
+			   UNSPEC_ARC_CASESI)))
+   (use (label_ref (match_operand 3 "" "")))]
   ""
   "*
 {
@@ -4037,15 +4047,15 @@ archs4x, archs4xd, archs4xd_slow"
   switch (GET_MODE (diff_vec))
     {
     case E_SImode:
-      return \"ld.as %0,[%1,%2]%&\";
+      return \"ld.as\\t%0,[%1,%2]%&\";
     case E_HImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ld%_.as %0,[%1,%2]\";
-      return \"ld%_.x.as %0,[%1,%2]\";
+	return \"ld%_.as\\t%0,[%1,%2]\";
+      return \"ld%_.x.as\\t%0,[%1,%2]\";
     case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ldb%? %0,[%1,%2]%&\";
-      return \"ldb.x %0,[%1,%2]\";
+	return \"ldb%?\\t%0,[%1,%2]%&\";
+      return \"ldb.x\\t%0,[%1,%2]\";
     default:
       gcc_unreachable ();
     }
@@ -4084,110 +4094,6 @@ archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "jump")
    (set_attr "iscompact" "false,maybe,false")
    (set_attr "cond" "canuse")])
-
-(define_insn "casesi_compact_jump"
-  [(set (pc)
-	(unspec:SI [(match_operand:SI 0 "register_operand" "c,q")]
-		   UNSPEC_ARC_CASESI))
-   (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_scratch:SI 2 "=q,0"))]
-  "TARGET_COMPACT_CASESI"
-  "*
-{
-  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
-  int unalign = arc_get_unalign ();
-  rtx xop[3];
-  const char *s;
-
-  xop[0] = operands[0];
-  xop[2] = operands[2];
-  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  switch (GET_MODE (diff_vec))
-    {
-    case E_SImode:
-      /* Max length can be 12 in this case, but this is OK because
-	 2 of these are for alignment, and are anticipated in the length
-	 of the ADDR_DIFF_VEC.  */
-      if (unalign && !satisfies_constraint_Rcq (xop[0]))
-	s = \"add2 %2,pcl,%0\n\tld_s %2,[%2,12]\";
-      else if (unalign)
-	s = \"add_s %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      else
-	s = \"add %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      arc_clear_unalign ();
-      break;
-    case E_HImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      else
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.x.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s.x %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      arc_toggle_unalign ();
-      break;
-    case E_QImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if ((rtx_equal_p (xop[2], xop[0])
-	       || find_reg_note (insn, REG_DEAD, xop[0]))
-	      && satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %0,%0,pcl\n\tldb_s %2,[%0,%1]\";
-	      xop[1] = GEN_INT (8 + unalign);
-	    }
-	  else
-	    {
-	      s = \"add %2,%0,pcl\n\tldb_s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	      arc_toggle_unalign ();
-	    }
-	}
-      else if ((rtx_equal_p (xop[0], xop[2])
-		|| find_reg_note (insn, REG_DEAD, xop[0]))
-	       && satisfies_constraint_Rcq (xop[0]))
-	{
-	  s = \"add_s %0,%0,%1\n\tldb.x %2,[pcl,%0]\";
-	  xop[1] = GEN_INT (10 - unalign);
-	  arc_toggle_unalign ();
-	}
-      else
-	{
-	  /* ??? Length is 12.  */
-	  s = \"add %2,%0,%1\n\tldb.x %2,[pcl,%2]\";
-	  xop[1] = GEN_INT (8 + unalign);
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  output_asm_insn (s, xop);
-  return \"add_s %2,%2,pcl\n\tj_s%* [%2]\";
-}"
-  [(set_attr "length" "10")
-   (set_attr "type" "jump")
-   (set_attr "iscompact" "true")
-   (set_attr "cond" "nocond")])
 
 (define_expand "call"
   ;; operands[1] is stack_size_rtx

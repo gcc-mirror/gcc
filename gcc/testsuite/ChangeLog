@@ -1,5 +1,9 @@
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/jumptable.c: New test.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/tls-gd.c: New file.
 	* gcc.target/arc/tls-ie.c: Likewise.
 	* gcc.target/arc/tls-ld.c: Likewise.
