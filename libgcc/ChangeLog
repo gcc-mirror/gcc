@@ -1,3 +1,12 @@
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (_muldi3): New function.
+	* config/arc/t-arc (LIB1ASMFUNCS): Add _muldi3.
+
+2018-10-30  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h (__gthread_mutex_destroy): Call semDelete.
+
 2018-10-25  Martin Liska  <mliska@suse.cz>
 
 	PR other/87735

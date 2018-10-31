@@ -14956,25 +14956,20 @@ make_more_copies (void)
 	  rtx set = single_set (insn);
 	  if (!set)
 	    continue;
-	  rtx src = SET_SRC (set);
 	  rtx dest = SET_DEST (set);
 	  if (dest == pc_rtx)
 	    continue;
-	  if (GET_CODE (src) == SUBREG)
-	    src = SUBREG_REG (src);
+	  rtx src = SET_SRC (set);
 	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
 	    continue;
 	  if (TEST_HARD_REG_BIT (fixed_reg_set, REGNO (src)))
 	    continue;
 
 	  rtx new_reg = gen_reg_rtx (GET_MODE (dest));
-	  rtx_insn *insn1 = gen_move_insn (new_reg, src);
-	  rtx_insn *insn2 = gen_move_insn (dest, new_reg);
-	  emit_insn_after (insn1, insn);
-	  emit_insn_after (insn2, insn1);
-	  delete_insn (insn);
-
-	  insn = insn2;
+	  rtx_insn *new_insn = gen_move_insn (new_reg, src);
+	  SET_SRC (set) = new_reg;
+	  emit_insn_before (new_insn, insn);
+	  df_insn_rescan (insn);
 	}
     }
 }

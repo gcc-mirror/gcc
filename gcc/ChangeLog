@@ -1,3 +1,501 @@
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70359
+	PR middle-end/86270
+	* tree-outof-ssa.c (insert_backedge_copies): Restrict
+	copy generation to useful cases.  Place the copy before
+	the definition of the backedge value when possible.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-arch.h (ARC_TUNE_ARC7XX): New tune value.
+	* config/arc/arc.c (arc_active_insn): New function.
+	(check_store_cacheline_hazard): Likewise.
+	(workaround_arc_anomaly): Use check_store_cacheline_hazard.
+	(arc_override_options): Disable delay slot scheduler for older
+	A7.
+	(arc_store_addr_hazard_p): New implementation, old one renamed to
+	...
+	(arc_store_addr_hazard_internal_p): Renamed.
+	(arc_reorg): Don't combine into brcc instructions which are part
+	of hardware hazard solution.
+	* config/arc/arc.md (attr tune): Consider new arc7xx tune value.
+	(tune_arc700): Likewise.
+	* config/arc/arc.opt (arc7xx): New tune value.
+	* config/arc/arc700.md: Improve A7 scheduler.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_override_options): Remove
+	TARGET_COMPACT_CASESI.
+	* config/arc/arc.h (ASM_OUTPUT_ADDR_DIFF_ELT): Update.
+	(CASE_VECTOR_MODE): Likewise.
+	(CASE_VECTOR_PC_RELATIVE): Likewise.
+	(CASE_VECTOR_SHORTEN_MODE): Likewise.
+	(CASE_VECTOR_SHORTEN_MODE1): Delete.
+	(ADDR_VEC_ALIGN): Update.
+	(ASM_OUTPUT_CASE_LABEL): Undefine.
+	(ASM_OUTPUT_BEFORE_CASE_LABEL): Undefine.
+	(TARGET_BI_BIH): Define.
+	(DEFAULT_BRANCH_INDEX): Likewise.
+	* config/arc/arc.md (casesi): Rework to accept BI/BIH
+	instructions, remove compact_casesi use case.
+	(casesi_compact_jump): Remove.
+	(casesi_dispatch): New pattern.
+	* config/arc/arc.opt: Add mbranch-index option. Deprecate
+	compact_casesi option.
+	* doc/invoke.texi: Document mbranch-index option.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_get_tp): Remove function.
+	(arc_emit_call_tls_get_addr): Likewise.
+	(arc_call_tls_get_addr): New function.
+	(arc_legitimize_tls_address): Make use of arc_call_tls_get_addr.
+	* config/arc/arc.md (tls_load_tp_soft): Remove.
+	(tls_gd_get_addr): Likewise.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (mulsi3): Remove call to mulsi_600_lib.
+	(mulsi3_600_lib): Remove pattern.
+	(umulsi3_highpart_600_lib_le): Likewise.
+	(umulsi3_highpart): Remove call to umulsi3_highpart_600_lib_le.
+	(umulsidi3): Remove call to umulsidi3_600_lib.
+	(umulsidi3_600_lib): Remove pattern.
+	(peephole2): Remove peephole using the above deprecated patterns.
+
+2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	PR target/87374
+	* config/arm/arm.c (arm_option_check_internal): Disable the combined
+	use of -mslow-flash-data and -mword-relocations.
+	(arm_option_override): Enable -mword-relocations if -fpic or -fPIC.
+	* config/arm/arm.md (SYMBOL_REF MOVT splitter): Stop checking for
+	flag_pic.
+	* doc/invoke.texi (-mword-relocations): Mention conflict with
+	-mslow-flash-data.
+	(-mslow-flash-data): Reciprocally.
+
+2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Force
+	16-byte modes held in GP registers to use an even regno.
+
+	* config/aarch64/aarch64.c (aarch64_emit_bic): Remove.
+	(aarch64_atomic_ldop_supported_p): Remove.
+	(aarch64_gen_atomic_ldop): Remove.
+	* config/aarch64/atomic.md (atomic_<atomic_optab><ALLI>):
+	Fully expand LSE operations here.
+	(atomic_fetch_<atomic_optab><ALLI>): Likewise.
+	(atomic_<atomic_optab>_fetch<ALLI>): Likewise.
+	(aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse): Drop atomic_op iterator
+	and use ATOMIC_LDOP instead; use register_operand for the input;
+	drop the split and emit insns directly.
+	(aarch64_atomic_fetch_<ATOMIC_LDOP><ALLI>_lse): Likewise.
+	(aarch64_atomic_<atomic_op>_fetch<ALLI>_lse): Remove.
+	(@aarch64_atomic_load<ATOMIC_LDOP><ALLI>): Remove.
+
+	* config/aarch64/aarch64.c (aarch64_emit_atomic_swap): Remove.
+	(aarch64_gen_atomic_ldop): Don't call it.
+	* config/aarch64/atomics.md (atomic_exchange<ALLI>):
+	Use aarch64_reg_or_zero.
+	(aarch64_atomic_exchange<ALLI>): Likewise.
+	(aarch64_atomic_exchange<ALLI>_lse): Remove split; remove & from
+	operand 0; use aarch64_reg_or_zero for input; merge ...
+	(@aarch64_atomic_swp<ALLI>): ... this and remove.
+
+	* config/aarch64/aarch64.c (aarch64_gen_compare_reg_maybe_ze): New.
+	(aarch64_split_compare_and_swap): Use it.
+	(aarch64_expand_compare_and_swap): Likewise.  Remove convert_modes;
+	test oldval against the proper predicate.
+	* config/aarch64/atomics.md (@atomic_compare_and_swap<ALLI>):
+	Use nonmemory_operand for expected.
+	(cas_short_expected_pred): New.
+	(@aarch64_compare_and_swap<SHORT>): Use it; use "rn" not "rI" to match.
+	(@aarch64_compare_and_swap<GPI>): Use "rn" not "rI" for expected.
+	* config/aarch64/predicates.md (aarch64_plushi_immediate): New.
+	(aarch64_plushi_operand): New.
+
+	* config/aarch64/aarch64.c (aarch64_expand_compare_and_swap):
+	Force oldval into the rval register for TARGET_LSE; emit the compare
+	during initial expansion so that it may be deleted if unused.
+	(aarch64_gen_atomic_cas): Remove.
+	* config/aarch64/atomics.md (@aarch64_compare_and_swap<SHORT>_lse):
+	Change =&r to +r for operand 0; use match_dup for operand 2;
+	remove is_weak and mod_f operands as unused.  Drop the split
+	and merge with...
+	(@aarch64_atomic_cas<SHORT>): ... this pattern's output; remove.
+	(@aarch64_compare_and_swap<GPI>_lse): Similarly.
+	(@aarch64_atomic_cas<GPI>): Similarly.
+
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	* tree-eh.c (replace_trapping_overflow): Simplify ABS_EXPR case
+	using ABSU_EXPR.
+
+2018-10-31 Sameera Deshpande <sameera.deshpande@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (saphira): Use saphira pipeline.
+	* config/aarch64/aarch64.md: Include saphira.md
+	* config/aarch64/saphira.md: New file for pipeline description.
+
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* gimple-ssa-sprintf.c (format_directive): Use %G to include
+	inlining context.
+	(sprintf_dom_walker::compute_format_length):
+	Avoid setting POSUNDER4K here.
+	(get_destination_size): Handle null argument values.
+	(get_user_idx_format): New function.
+	(sprintf_dom_walker::handle_gimple_call): Handle all printf-like
+	functions, including user-defined with attribute format printf.
+	Use %G to include inlining context.
+	Set POSUNDER4K here.
+
+2018-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* params.def (lto-partitions): Bump from 32 to 128.
+
+2018-10-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c
+	(free_lang_data_d, add_tree_to_fld_list, fld_worklist_push): Move
+	head in file.
+	(free_lang_data_in_type): Forward declare.
+	(fld_type_variant_equal_p): New function.
+	(fld_type_variant): New function
+	(fld_incomplete_types): New hash.
+	(fld_incomplete_type_of): New function
+	(fld_simplfied-type): New function.
+	(free_lang_data_in_decl): Add fld parameter; simplify type of FIELD_DECL
+	(free_lang_data): Allocate and free fld_incomplete_type; update call
+	of free_lang_data_in_decl.
+
+2018-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcov.c (output_lines): Remove duplicate line.
+
+2018-10-30  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (bswapdi2): Force address into register
+	if not in indexed or indirect form.
+	(bswapdi2_load): Change predicate to indexed_or_indirect_operand.
+	(bswapdi2_store): Ditto.
+	* config/rs6000/rs6000.c (rs6000_force_indexed_or_indirect_mem): New
+	helper function.
+	* config/rs6000/rs6000-protos.h (rs6000_force_indexed_or_indirect_mem):
+	Prototype for helper function.
+
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (optimize): Clarify/expand attribute documentation.
+	(target, pragma GCC optimize, pragma GCC target): Ditto.
+
+2018-10-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi: Fix prototype and description of
+	__builtin_expect_with_probability.
+
+2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* cgraph.h (clone_function_name_1): Replaced by new
+	  clone_function_name_numbered that takes name as string; for
+	  privatize_symbol_name_1 use only.
+	  (clone_function_name): Renamed to
+	  clone_function_name_numbered to be explicit about numbering.
+	  (clone_function_name): New two-argument function that does
+	  not number its output.
+	  (clone_function_name): New three-argument function that
+	  takes a number to append to its output.
+	* cgraphclones.c (duplicate_thunk_for_node):
+	  (clone_function_name_1): Renamed.
+	  (clone_function_name_numbered): Two new functions.
+	  (clone_function_name): Improved documentation.
+	  (cgraph_node::create_virtual_clone): Use clone_function_name_numbered.
+	* config/rs6000/rs6000.c (make_resolver_func): Ditto.
+	* final.c (final_scan_insn_1): Use the new clone_function_name
+	  without numbering.
+	* multiple_target.c (create_dispatcher_calls): Ditto.
+	  (create_target_clone): Ditto.
+	* omp-expand.c (grid_expand_target_grid_body): Ditto.
+	* omp-low.c (create_omp_child_function_name): Ditto.
+	* omp-simd-clone.c (simd_clone_create): Ditto.
+	* symtab.c (simd_symtab_node::noninterposable_alias): Use the
+	  new clone_function_name without numbering.
+
+2018-10-30  Richard Earnshaw  <rearnsha@arm.com>
+
+	* alloc-pool.h (base_pool_allocator <TBlockAllocator>::initialize):
+	Assert that the allocation size is not zero.
+
+2018-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87800
+	* tree-vect-slp.c (vect_build_slp_tree_2): Reject any
+	non-induction or reduction PHIs.
+
+2018-10-30 Sameera Deshpande <sameera.deshpande@linaro.org
+
+	* config/aarch64/falkor-tag-collision-avoidance.c
+	(execute_tag_collision_avoidance): Call df_note_add_problem.
+
+2018-10-30  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Fix typo in documentation
+	of __builtin_expect_with_probability.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87721
+	* input.c (get_substring_ranges_for_loc): Detect if
+	linemap_resolve_location gives us a NULL map, and reject
+	this case.
+
+2018-10-29  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* config.gcc (xstormy16-*-elf): Set tm_d_file.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+	    Martin Sebor  <msebor@redhat.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+
+	* doc/ux.texi (Quoting): New subsection, adapted from material at
+	https://gcc.gnu.org/wiki/DiagnosticsGuidelines written by
+	MartinSebor and ManuelLopezIbanez.
+	(Fix-it hints): Note that fix-it hints shouldn't be marked for
+	translation.
+
+2018-10-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/87469
+	* tree-ssa-loop-niter.c (number_of_iterations_popcount): Fix niter
+	max value.
+
+2018-10-29  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc.target/powerpc/ssse3-check.h: Remove inaccurate comment.
+
+2018-10-29  Paul Koning  <ni1d@arrl.net>
+
+	* doc/rtl.texi (CONST_WIDE_INT_ELT): Give correct macro name.
+
+2018-10-29  Paul A. Clarke  <pc@us.ibm.com>
+
+	* gcc/config/rs6000/mmintrin.h (_mm_packs_pi16, _mm_packs_pi32,
+	_mm_packs_pu16, _mm_unpackhi_pi8, _mm_unpacklo_pi8, _mm_add_pi8,
+	_mm_add_pi16, _mm_add_pi32, _mm_sub_pi8, _mm_sub_pi16, _mm_sub_pi32,
+	_mm_cmpgt_pi8, _mm_cmpeq_pi16, _mm_cmpgt_pi16, _mm_cmpeq_pi32,
+	_mm_cmpgt_pi32, _mm_adds_pi8, _mm_adds_pi16, _mm_adds_pu8,
+	_mm_adds_pu16, _mm_subs_pi8, _mm_subs_pi16, _mm_subs_pu8,
+	_mm_subs_pu16, _mm_madd_pi16, _mm_mulhi_pi16, _mm_mullo_pi16,
+	_mm_sll_pi16, _mm_sra_pi16, _mm_srl_pi16, _mm_set1_pi16, _mm_set1_pi8):
+	Change 'vector' to '__vector'.
+	* gcc/config/rs6000/xmmintrin.h (_mm_cvtps_pi32, _mm_cvttps_pi32,
+	_mm_cvtps_pi16, _mm_cvtps_pi8, _mm_max_pi16, _mm_max_pu8, _mm_min_pi16,
+	_mm_min_pu8, _mm_mulhi_pu16, _mm_shuffle_pi16, _mm_avg_pu8,
+	_mm_avg_pu16): Likewise.  And, whitespace corrections.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87785
+	* tree-vect-slp.c (vect_gather_slp_loads): Only gather
+	internal defs.
+
+2018-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* VXWORKS_NET_LIBS_RTP: New macro, network part of VXWORKS_LIBS_RTP.
+
+2018-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_PERSONALITY): New VxWorks
+	ports configuration macro, defaults to "gnu".
+	(VXWORKS_OS_CPP_BUILTINS): Use it. Feed TOOL and
+	TOOL_FAMILY instead of _VX_TOOL/_VXTOOL_FAMILY.
+
+2018-10-29  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (CLEAR_INSN_CACHE): #undef before #define.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87790
+	* tree-vect-slp.c (vect_mark_slp_stmts): Simplify.
+	(vect_make_slp_decision): Adjust.
+	(vect_slp_analyze_bb_1): Likewise.
+	(vect_detect_hybrid_slp_stmts): Properly union SLP type over
+	edges.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87785
+	* tree-vect-slp.c (vect_build_slp_tree_2): Remove loads argument
+	and processing.
+	(vect_build_slp_tree): Likewise.
+	(vect_gather_slp_loads): New function.
+	(vect_analyze_slp_instance): Gather loads separately from the
+	SLP tree build.
+
+2018-10-29  Martin Liska  <mliska@suse.cz>
+
+	* Makefile.in: Make dependency to json.o.
+	* doc/gcov.texi: Document new JSON format, remove
+	old intermediate format documentation.
+	* gcov.c (struct function_info): Come up with m_name and
+	m_demangled_name.
+	(function_info::function_info): Initialize it.
+	(function_info::~function_info): Release it.
+	(main): Rename flag_intermediate_format to flag_json_format.
+	(print_usage): Describe --json-format.
+	(process_args): Set flag_json_format.
+	(output_intermediate_line): Remove.
+	(output_intermediate_json_line): Likewise.
+	(get_gcov_intermediate_filename): Return new extension
+	".gcov.json.gz".
+	(output_intermediate_file): Implement JSON emission.
+	(output_json_intermediate_file): Implement JSON emission.
+	(generate_results): Use ::get_name for function name.
+	Handle JSON output file.
+	(read_graph_file): Use ::get_name instead of cplus_demangle.
+	(read_count_file): Likewise.
+	(solve_flow_graph): Likewise.
+	(add_line_counts): Likewise.
+	(accumulate_line_counts): Use new flag_json_format.
+	(output_function_details): Use ::get_name instead of cplus_demangle.
+	(output_lines): Likewise.
+	* json.cc (test_writing_literals): Add new tests.
+	* json.h (class literal): Add new boolean constructor.
+
+2018-10-29  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87701
+	PR rtl-optimization/87780
+	* combine.c (make_more_copies): Rewrite.
+
+2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* doc/generic.texi (ABSU_EXPR): Document.
+	* match.pd (absu(x)*absu(x) -> x*x): Handle.
+	(absu(absu(X)) -> absu(X)): Likewise.
+	(absu(-X) -> absu(X)): Likewise.
+	(absu(X)  where X is nonnegative -> X): Likewise.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.in (tm_d_file_list, tm_d_include_list): New variables.
+	(TM_D_H, D_TARGET_DEF, D_TARGET_H, D_TARGET_OBJS): New variables.
+	(tm_d.h, cs-tm_d.h, default-d.o): New rules.
+	(d/d-target-hooks-def.h, s-d-target-hooks-def-h): New rules.
+	(s-tm-texi): Also check timestamp on d-target.def.
+	(generated_files): Add TM_D_H and d-target-hooks-def.h.
+	(build/genhooks.o): Also depend on D_TARGET_DEF.
+	* config.gcc (tm_d_file, d_target_objs, target_has_targetdm): New
+	variables.
+	* config/aarch64/aarch64-d.c: New file.
+	* config/aarch64/aarch64-linux.h (GNU_USER_TARGET_D_CRITSEC_SIZE):
+	Define.
+	* config/aarch64/aarch64-protos.h (aarch64_d_target_versions): New
+	prototype.
+	* config/aarch64/aarch64.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/aarch64/t-aarch64 (aarch64-d.o): New rule.
+	* config/arm/arm-d.c: New file.
+	* config/arm/arm-protos.h (arm_d_target_versions): New prototype.
+	* config/arm/arm.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/arm/linux-eabi.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	* config/arm/t-arm (arm-d.o): New rule.
+	* config/default-d.c: New file.
+	* config/glibc-d.c: New file.
+	* config/gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/i386/i386-d.c: New file.
+	* config/i386/i386-protos.h (ix86_d_target_versions): New prototype.
+	* config/i386/i386.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/i386/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	(GNU_USER_TARGET_D_CRITSEC_SIZE): Define.
+	* config/i386/t-i386 (i386-d.o): New rule.
+	* config/kfreebsd-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/kopensolaris-gnu.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/linux-android.h (ANDROID_TARGET_D_OS_VERSIONS): Define.
+	* config/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/mips/linux-common.h (EXTRA_TARGET_D_OS_VERSIONS): Define.
+	* config/mips/mips-d.c: New file.
+	* config/mips/mips-protos.h (mips_d_target_versions): New prototype.
+	* config/mips/mips.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/mips/t-mips (mips-d.o): New rule.
+	* config/powerpcspe/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/powerpcspe/linux64.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/powerpcspe/powerpcspe-d.c: New file.
+	* config/powerpcspe/powerpcspe-protos.h (rs6000_d_target_versions):
+	New prototype.
+	* config/powerpcspe/powerpcspe.c (rs6000_output_function_epilogue):
+	Support GNU D by using 0 as the language type.
+	* config/powerpcspe/powerpcspe.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/powerpcspe/t-powerpcspe (powerpcspe-d.o): New rule.
+	* config/riscv/riscv-d.c: New file.
+	* config/riscv/riscv-protos.h (riscv_d_target_versions): New
+	prototype.
+	* config/riscv/riscv.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/riscv/t-riscv (riscv-d.o): New rule.
+	* config/rs6000/linux.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/rs6000/linux64.h (GNU_USER_TARGET_D_OS_VERSIONS): Define.
+	* config/rs6000/rs6000-d.c: New file.
+	* config/rs6000/rs6000-protos.h (rs6000_d_target_versions): New
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_output_function_epilogue):
+	Support GNU D by using 0 as the language type.
+	* config/rs6000/rs6000.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/rs6000/t-rs6000 (rs6000-d.o): New rule.
+	* config/s390/s390-d.c: New file.
+	* config/s390/s390-protos.h (s390_d_target_versions): New prototype.
+	* config/s390/s390.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/s390/t-s390 (s390-d.o): New rule.
+	* config/sparc/sparc-d.c: New file.
+	* config/sparc/sparc-protos.h (sparc_d_target_versions): New
+	prototype.
+	* config/sparc/sparc.h (TARGET_D_CPU_VERSIONS): Define.
+	* config/sparc/t-sparc (sparc-d.o): New rule.
+	* config/t-glibc (glibc-d.o): New rule.
+	* configure: Regenerated.
+	* configure.ac (tm_d_file): New variable.
+	(tm_d_file_list, tm_d_include_list, d_target_objs): Add substitutes.
+	* doc/contrib.texi (Contributors): Add self for the D frontend.
+	* doc/frontends.texi (G++ and GCC): Mention D as a supported language.
+	* doc/install.texi (Configuration): Mention libphobos as an option for
+	--enable-shared.  Mention d as an option for --enable-languages.
+	(Testing): Mention check-d as a target.
+	* doc/invoke.texi (Overall Options): Mention .d, .dd, and .di as file
+	name suffixes.  Mention d as a -x option.
+	* doc/sourcebuild.texi (Top Level): Mention libphobos.
+	* doc/standards.texi (Standards): Add section on D language.
+	* doc/tm.texi: Regenerated.
+	* doc/tm.texi.in: Add @node for D language and ABI, and @hook for
+	TARGET_CPU_VERSIONS, TARGET_D_OS_VERSIONS, and TARGET_D_CRITSEC_SIZE.
+	* dwarf2out.c (is_dlang): New function.
+	(gen_compile_unit_die): Use DW_LANG_D for D.
+	(declare_in_namespace): Return module die for D, instead of adding
+	extra declarations into the namespace.
+	(gen_namespace_die): Generate DW_TAG_module for D.
+	(gen_decl_die): Handle CONST_DECLSs for D.
+	(dwarf2out_decl): Likewise.
+	(prune_unused_types_walk_local_classes): Handle DW_tag_interface_type.
+	(prune_unused_types_walk): Handle DW_tag_interface_type same as other
+	kinds of aggregates.
+	* gcc.c (default_compilers): Add entries for .d, .dd and .di.
+	* genhooks.c: Include d/d-target.def.
+
+2018-10-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR target/85669
+	* config/rs6000/darwin.h (STACK_BOUNDARY): New.
+	(RS6000_STARTING_FRAME_OFFSET): Adjust to preserve 16byte alignment.
+	(STACK_DYNAMIC_OFFSET): Likewise.
+
+2018-10-27  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/80024
+	* config/nios2/nios2.c (nios2_valid_target_attribute_rec): Fix
+	error message.
+
 2018-10-26  Tulio Magno Quites Machado Filho  <tuliom@linux.ibm.com>
 
 	* doc/extend.texi (PowerPC builtins): Fix __builtin_unpack_ibm128

@@ -1,5 +1,7 @@
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r265679.
+
 	gcc/cp/
 	* cp-tree.h (OVL_EXPORT_P): Delete.
 	(OVL_DEDUP_P): Move to lang flag 0.

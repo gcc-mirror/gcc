@@ -2382,8 +2382,11 @@ tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree,
 		   HOST_WIDE_INT);
 /* In cgraphclones.c  */
 
-tree clone_function_name_1 (const char *, const char *);
-tree clone_function_name (tree decl, const char *);
+tree clone_function_name_numbered (const char *name, const char *suffix);
+tree clone_function_name_numbered (tree decl, const char *suffix);
+tree clone_function_name (const char *name, const char *suffix,
+			  unsigned long number);
+tree clone_function_name (tree decl, const char *suffix);
 
 void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,
 			       bool, bitmap, bool, bitmap, basic_block);

@@ -1103,7 +1103,7 @@ DEFPARAM (PARAM_IPA_MAX_AA_STEPS,
 DEFPARAM (PARAM_LTO_PARTITIONS,
 	  "lto-partitions",
 	  "Number of partitions the program should be split to.",
-	  32, 1, 0)
+	  128, 1, 0)
 
 DEFPARAM (MIN_PARTITION_SIZE,
 	  "lto-min-partition",

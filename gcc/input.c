@@ -1463,6 +1463,8 @@ get_substring_ranges_for_loc (cpp_reader *pfile,
       const line_map_ordinary *final_ord_map;
       linemap_resolve_location (line_table, src_range.m_finish,
 				LRK_SPELLING_LOCATION, &final_ord_map);
+      if (start_ord_map == NULL || final_ord_map == NULL)
+	return "failed to get ordinary maps";
       /* Bulletproofing.  We ought to only have different ordinary maps
 	 for start vs finish due to line-length jumps.  */
       if (start_ord_map != final_ord_map

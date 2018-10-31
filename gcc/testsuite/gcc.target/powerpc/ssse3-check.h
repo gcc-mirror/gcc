@@ -3,7 +3,6 @@
 
 #include "m128-check.h"
 
-/* define DEBUG replace abort with printf on error.  */
 //#define DEBUG 1
 
 #define TEST ssse3_test

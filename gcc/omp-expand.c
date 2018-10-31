@@ -7625,7 +7625,8 @@ grid_expand_target_grid_body (struct omp_region *target)
     expand_omp (gpukernel->inner);
 
   tree kern_fndecl = copy_node (orig_child_fndecl);
-  DECL_NAME (kern_fndecl) = clone_function_name (kern_fndecl, "kernel");
+  DECL_NAME (kern_fndecl) = clone_function_name_numbered (kern_fndecl,
+							  "kernel");
   SET_DECL_ASSEMBLER_NAME (kern_fndecl, DECL_NAME (kern_fndecl));
   tree tgtblock = gimple_block (tgt_stmt);
   tree fniniblock = make_node (BLOCK);

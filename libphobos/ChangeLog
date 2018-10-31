@@ -1,0 +1,57 @@
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR bootstrap/87789
+	PR d/87818
+	PR d/87819
+	* configure.tgt: New file.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.am: New file.
+	* Makefile.in: New file.
+	* acinclude.m4: New file.
+	* aclocal.m4: New file.
+	* config.h.in: New file.
+	* configure: New file.
+	* configure.ac: New file.
+	* d_rules.am: New file.
+	* libdruntime/Makefile.am: New file.
+	* libdruntime/Makefile.in: New file.
+	* libdruntime/__entrypoint.di: New file.
+	* libdruntime/__main.di: New file.
+	* libdruntime/gcc/attribute.d: New file.
+	* libdruntime/gcc/backtrace.d: New file.
+	* libdruntime/gcc/builtins.d: New file.
+	* libdruntime/gcc/config.d.in: New file.
+	* libdruntime/gcc/deh.d: New file.
+	* libdruntime/gcc/libbacktrace.d.in: New file.
+	* libdruntime/gcc/unwind/arm.d: New file.
+	* libdruntime/gcc/unwind/arm_common.d: New file.
+	* libdruntime/gcc/unwind/c6x.d: New file.
+	* libdruntime/gcc/unwind/generic.d: New file.
+	* libdruntime/gcc/unwind/package.d: New file.
+	* libdruntime/gcc/unwind/pe.d: New file.
+	* m4/autoconf.m4: New file.
+	* m4/druntime.m4: New file.
+	* m4/druntime/cpu.m4: New file.
+	* m4/druntime/libraries.m4: New file.
+	* m4/druntime/os.m4: New file.
+	* m4/gcc_support.m4: New file.
+	* m4/gdc.m4: New file.
+	* m4/libtool.m4: New file.
+	* src/Makefile.am: New file.
+	* src/Makefile.in: New file.
+	* src/libgphobos.spec.in: New file.
+	* testsuite/Makefile.am: New file.
+	* testsuite/Makefile.in: New file.
+	* testsuite/config/default.exp: New file.
+	* testsuite/lib/libphobos-dg.exp: New file.
+	* testsuite/lib/libphobos.exp: New file.
+	* testsuite/testsuite_flags.in: New file.
+
+
+Copyright (C) 2018 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.

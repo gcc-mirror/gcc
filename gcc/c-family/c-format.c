@@ -3128,8 +3128,11 @@ check_format_types (const substring_loc &fmt_loc,
 		warning (OPT_Wformat_, "writing through null pointer "
 			 "(argument %d)", arg_num);
 
-	      /* Check for reading through a NULL pointer.  */
-	      if (types->reading_from_flag
+	      /* Check for reading through a NULL pointer.  Ignore
+		 printf-family of functions as they are checked for
+		 null arguments by the middle-end.  */
+	      if (fki->conversion_specs != print_char_table
+		  && types->reading_from_flag
 		  && i == 0
 		  && cur_param != 0
 		  && integer_zerop (cur_param))

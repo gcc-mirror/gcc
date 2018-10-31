@@ -701,8 +701,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_CHAIN(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
-/* If set, this overload set contains decls reachable via another path
-   (i.e. has using decls.).  */
+/* If set, this or a subsequent overload contains decls that need deduping.  */
 #define OVL_DEDUP_P(NODE)	TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
@@ -2714,7 +2713,8 @@ struct GTY(()) lang_decl_fn {
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  unsigned spare : 13;
+  unsigned has_dependent_explicit_spec_p : 1;
+  unsigned spare : 12;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3148,6 +3148,12 @@ struct GTY(()) lang_decl {
    virtual function.  */
 #define DECL_PURE_VIRTUAL_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->pure_virtual)
+
+/* Nonzero for FUNCTION_DECL means that this member function (either
+   a constructor or a conversion function) has an explicit specifier
+   with a value-dependent expression.  */
+#define DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P(NODE) \
+  (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
 
 /* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
    invalid overrider for a function from a base class.  Once we have
@@ -5853,6 +5859,8 @@ struct cp_decl_specifier_seq {
   /* If non-NULL, a built-in type that the user attempted to redefine
      to some other type.  */
   tree redefined_builtin_type;
+  /* The explicit-specifier, if any.  */
+  tree explicit_specifier;
   /* The storage class specified -- or sc_none if no storage class was
      explicitly specified.  */
   cp_storage_class storage_class;
@@ -6481,6 +6489,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 extern bool check_array_designated_initializer  (constructor_elt *,
 						 unsigned HOST_WIDE_INT);
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
+extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6551,6 +6560,7 @@ extern const char *decl_as_string		(tree, int);
 extern const char *decl_as_string_translate	(tree, int);
 extern const char *decl_as_dwarf_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
+extern const char *expr_to_string		(tree);
 extern const char *lang_decl_name		(tree, int, bool);
 extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
@@ -6919,6 +6929,7 @@ extern bool dguide_name_p			(tree);
 extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
+extern void store_explicit_specifier		(tree, tree);
 
 /* in repo.c */
 extern void init_repo				(void);
@@ -7632,8 +7643,6 @@ extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for            (location_t, tree, bool);
-extern bool suggest_alternative_in_explicit_scope (location_t, tree, tree);
 extern tree strip_using_decl                    (tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */

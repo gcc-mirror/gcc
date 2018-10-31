@@ -1,3 +1,12 @@
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::function): Change to use a single flags
+	parameter.
+
+2018-10-29  Ian Lance Taylor  <iant@golang.org>
+
+	* go-linemap.cc (Gcc_linemap::location_file): New method.
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-go): New.

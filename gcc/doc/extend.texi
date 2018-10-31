@@ -3193,21 +3193,32 @@ the standard C library can be guaranteed not to throw an exception
 with the notable exceptions of @code{qsort} and @code{bsearch} that
 take function pointer arguments.
 
-@item optimize
+@item optimize (@var{level}, @dots{})
+@item optimize (@var{string}, @dots{})
 @cindex @code{optimize} function attribute
 The @code{optimize} attribute is used to specify that a function is to
 be compiled with different optimization options than specified on the
-command line.  Arguments can either be numbers or strings.  Numbers
-are assumed to be an optimization level.  Strings that begin with
-@code{O} are assumed to be an optimization option, while other options
-are assumed to be used with a @code{-f} prefix.  You can also use the
-@samp{#pragma GCC optimize} pragma to set the optimization options
-that affect more than one function.
-@xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC optimize} pragma.
+command line.  Valid arguments are constant non-negative integers and
+strings.  Each numeric argument specifies an optimization @var{level}.
+Each @var{string} argument consists of one or more comma-separated
+substrings.  Each substring that begins with the letter @code{O} refers
+to an optimization option such as @option{-O0} or @option{-Os}.  Other
+substrings are taken as suffixes to the @code{-f} prefix jointly
+forming the name of an optimization option.  @xref{Optimize Options}.
 
-This attribute should be used for debugging purposes only.  It is not
-suitable in production code.
+@samp{#pragma GCC optimize} can be used to set optimization options
+for more than one function.  @xref{Function Specific Option Pragmas},
+for details about the pragma.
+
+Providing multiple strings as arguments separated by commas to specify
+multiple options is equivalent to separating the option suffixes with
+a comma (@samp{,}) within a single string.  Spaces are not permitted
+within the strings.
+
+Not every optimization option that starts with the @var{-f} prefix
+specified by the attribute necessarily has an effect on the function.
+The @code{optimize} attribute should be used for debugging purposes only.
+It is not suitable in production code.
 
 @item patchable_function_entry
 @cindex @code{patchable_function_entry} function attribute
@@ -3361,17 +3372,21 @@ This attribute adds stack protection code to the function if
 flags @option{-fstack-protector}, @option{-fstack-protector-strong}
 or @option{-fstack-protector-explicit} are set.
 
-@item target (@var{options})
+@item target (@var{string}, @dots{})
 @cindex @code{target} function attribute
 Multiple target back ends implement the @code{target} attribute
 to specify that a function is to
 be compiled with different target options than specified on the
-command line.  This can be used for instance to have functions
+command line.  One or more strings can be provided as arguments.
+Each string consists of one or more comma-separated suffixes to
+the @code{-m} prefix jointly forming the name of a machine-dependent
+option.  @xref{Submodel Options,,Machine-Dependent Options}.
+
+The @code{target} attribute can be used for instance to have a function
 compiled with a different ISA (instruction set architecture) than the
-default.  You can also use the @samp{#pragma GCC target} pragma to set
-more than one function to be compiled with specific target options.
-@xref{Function Specific Option Pragmas}, for details about the
-@samp{#pragma GCC target} pragma.
+default.  @samp{#pragma GCC target} can be used to specify target-specific
+options for more than one function.  @xref{Function Specific Option Pragmas},
+for details about the pragma.
 
 For instance, on an x86, you could declare one function with the
 @code{target("sse4.1,arch=core2")} attribute and another with
@@ -3389,9 +3404,10 @@ int core2_func (void) __attribute__ ((__target__ ("arch=core2")));
 int sse3_func (void) __attribute__ ((__target__ ("sse3")));
 @end smallexample
 
-You can either use multiple
-strings separated by commas to specify multiple options,
-or separate the options with a comma (@samp{,}) within a single string.
+Providing multiple strings as arguments separated by commas to specify
+multiple options is equivalent to separating the option suffixes with
+a comma (@samp{,}) within a single string.  Spaces are not permitted
+within the strings.
 
 The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
@@ -12025,12 +12041,12 @@ when testing pointer or floating-point values.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect_with_probability
-(long @var{exp}, long @var{c}, long @var{probability})
+(long @var{exp}, long @var{c}, double @var{probability})
 
-The built-in has same semantics as @code{__builtin_expect_with_probability},
-but user can provide expected probability (in percent) for value of @var{exp}.
-Last argument @var{probability} is of float type and valid values
-are in inclusive range 0.0f and 1.0f.
+This function has the same semantics as @code{__builtin_expect},
+but the caller provides the expected probability that @var{exp} == @var{c}.
+The last argument, @var{probability}, is a floating-point value in the
+range 0.0 to 1.0, inclusive.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_trap (void)
@@ -22404,30 +22420,32 @@ push_macro} and restored by @code{#pragma pop_macro}.
 @subsection Function Specific Option Pragmas
 
 @table @code
-@item #pragma GCC target (@var{"string"}...)
+@item #pragma GCC target (@var{string}, @dots{})
 @cindex pragma GCC target
 
-This pragma allows you to set target specific options for functions
+This pragma allows you to set target-specific options for functions
 defined later in the source file.  One or more strings can be
-specified.  Each function that is defined after this point is as
-if @code{attribute((target("STRING")))} was specified for that
-function.  The parenthesis around the options is optional.
-@xref{Function Attributes}, for more information about the
-@code{target} attribute and the attribute syntax.
+specified.  Each function that is defined after this point is treated
+as if it had been declared with one @code{target(}@var{string}@code{)}
+attribute for each @var{string} argument.  The parentheses around
+the strings in the pragma are optional.  @xref{Function Attributes},
+for more information about the @code{target} attribute and the attribute
+syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
 x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
 
-@item #pragma GCC optimize (@var{"string"}...)
+@item #pragma GCC optimize (@var{string}, @dots{})
 @cindex pragma GCC optimize
 
 This pragma allows you to set global optimization options for functions
 defined later in the source file.  One or more strings can be
-specified.  Each function that is defined after this point is as
-if @code{attribute((optimize("STRING")))} was specified for that
-function.  The parenthesis around the options is optional.
-@xref{Function Attributes}, for more information about the
-@code{optimize} attribute and the attribute syntax.
+specified.  Each function that is defined after this point is treated
+as if it had been declared with one @code{optimize(}@var{string}@code{)}
+attribute for each @var{string} argument.  The parentheses around
+the strings in the pragma are optional.  @xref{Function Attributes},
+for more information about the @code{optimize} attribute and the attribute
+syntax.
 
 @item #pragma GCC push_options
 @itemx #pragma GCC pop_options

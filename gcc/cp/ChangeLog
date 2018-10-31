@@ -1,3 +1,127 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_DEDUP_P): New.
+	* name-lookup.c (name_lookup::add_overload): Check OVL_DEDUP_P.
+	(get_class_binding_direct): Likwise.
+	* tree.c (ovl_make): Propagate OVL_DEDUP_P.
+	(ovl_copy): Copy it.
+	(ovl_insert): Do not keep using-decls ordered.
+	(lookup_maybe_add): Adjust comment.
+
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* call.c (add_template_candidate_real): Return if the declaration is
+	explicit and we're only looking for non-converting constructor.
+	* cp-tree.h (lang_decl_fn): Add has_dependent_explicit_spec_p bit.
+	(DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P): New macro.
+	(cp_decl_specifier_seq): Add explicit_specifier field.
+	(build_explicit_specifier, store_explicit_specifier): Declare.
+	* decl.c (grokdeclarator): Call store_explicit_specifier.
+	(build_explicit_specifier): New function.
+	* parser.c (cp_parser_function_specifier_opt) <case RID_EXPLICIT>:
+	Parse C++20 explicit(bool).
+	* pt.c (store_explicit_specifier, lookup_explicit_specifier): New.
+	(tsubst_function_decl): Handle explicit(dependent-expr).
+
+2018-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (grokdeclarator): Use declarator->id_loc in diagnostic
+	about flexible array members.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* cp-name-hint.h: New file.
+	* cp-tree.h (expr_to_string): New decl.
+	(suggest_alternatives_for): Move to cp-name-hint.h, changing
+	return type from bool to name_hint.
+	(suggest_alternative_in_explicit_scope): Likewise.
+	* error.c: Define INCLUDE_UNIQUE_PTR.  Include "cp-name-hint.h".
+	(expr_to_string): Make non-static.
+	(qualified_name_lookup_error): For the non-"::" case, take
+	responsibity for issuing any suggestion from
+	suggest_alternative_in_explicit_scope, as it changes from
+	returning a bool to returning a name_hint.  Replace fallback call
+	to suggest_alternatives_for to a call to
+	suggest_alternatives_in_other_namespaces, capturing the fact that
+	we don't have enough location information to issue a fix-it hint
+	for this case.  Update the error to support emitting a fix-it hint
+	where appropriate.  For the "::" case, take responsibility for
+	issuing any suggestion from suggest_alternatives_for, supporting
+	emitting a fix-it hint.
+	* lex.c: Define INCLUDE_UNIQUE_PTR.  Include "gcc-rich-location.h"
+	and "cp-name-hint.h".
+	(unqualified_name_lookup_error): Take responsibility for issuing
+	any suggestion from suggest_alternatives_for, supporting emitting
+	a fix-it hint.
+	* name-lookup.c (class namespace_limit_reached): New subclass of
+	deferred_diagnostic.
+	(class show_candidate_location): Likewise.
+	(class suggest_alternatives): Likewise.
+	(class namespace_hints): New class.
+	(suggest_alternatives_for): Convert return type from bool to
+	name_hint, replacing all direct diagnostic emission by setting
+	suggestions on the return value, or creating deferred diagnostics.
+	Specifically, split out initial traversal of namespaces into
+	namespace_hints' ctor, and maybe_decorate_with_limit, and move the
+	rest of the implementation to
+	namespace_hints::convert_candidates_to_name_hint and
+	suggest_alternatives_for_1.
+	(namespace_hints::namespace_hints): New ctor, adapted from
+	suggest_alternatives_for's initial namespace traversal, storing
+	location and name, and converting locals "candidates", "limited"
+	and "limit" into members.
+	(namespace_hints::convert_candidates_to_name_hint): New member
+	function.
+	(namespace_hints::maybe_decorate_with_limit): New member function.
+	(suggest_alternatives_for_1): New function, based on second half
+	of old implementation of suggest_alternatives_for, converting from
+	immediate emission of suggestions to using name_hint.
+	(suggest_alternatives_in_other_namespaces): New function.
+	(maybe_suggest_missing_std_header): Convert from immediate
+	emission of suggestions to using name_hint, moving emission
+	implementation to...
+	(class missing_std_header): New subclass of deferred_diagnostic.
+	(maybe_suggest_missing_header): Convert return type from bool to
+	name_hint.
+	(suggest_alternative_in_explicit_scope): Convert from immediate
+	emission of suggestions to using name_hint.
+	* parser.c: Replace include of "c-family/name-hint.h" with
+	"cp-name-hint.h".
+	(cp_parser_diagnose_invalid_type_name): Update
+	"is there a suggestion" logic for change to
+	name_hint::operator bool.  Take responsibility for emitting
+	fix-it hints from suggest_alternative_in_explicit_scope.
+	(cp_parser_namespace_name): Take responsibility for emitting
+	fix-it hints from suggest_alternative_in_explicit_scope.  Don't
+	emit the "expected namespace-name" error if we've already emitted
+	an "is not a namespace-name" error.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* call.c (build_over_call): Eliminate the "arglocs" array, and the
+	call to maybe_constant_value when building "fargs".
+
+2018-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl.c (create_array_type_for_decl): Add location_t parameter
+	and use it.
+	(grokdeclarator): Adjust call.
+
+2018-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87594 - constexpr rejects-valid with range-based for.
+	* constexpr.c (potential_constant_expression_1): If the condition
+	can't be evaluated, return true.
+
+2018-10-29  Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+        PR c++/66053
+        * semantics.c (handle_omp_array_sections_1): Allow array
+        sections with "this" pointer for OpenACC.
+
 2018-10-25  Jason Merrill  <jason@redhat.com>
 
 	* parser.c (cp_parser_sizeof_operand): Remove redundant use of

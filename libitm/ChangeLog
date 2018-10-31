@@ -1,3 +1,9 @@
+2018-10-30  Nicholas Krause <xerofoify@gmail.com>
+
+	PR libitm/86293
+	* method-serial.cc: Mark varible as potentially unused
+	to silence warning.
+
 2018-08-03  Sergei Trofimovich  <slyfox@gentoo.org>
 
 	* config/sh/sjlj.S: Adjust to use PIC vs normal code to avoid

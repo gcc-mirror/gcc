@@ -18,7 +18,8 @@ namespace __sanitizer {
 uptr StackTrace::GetNextInstructionPc(uptr pc) {
 #if defined(__mips__)
   return pc + 8;
-#elif defined(__powerpc__)
+#elif defined(__powerpc__) || defined(__sparc__) || defined(__arm__) || \
+    defined(__aarch64__)
   return pc + 4;
 #else
   return pc + 1;
@@ -37,6 +38,9 @@ void BufferedStackTrace::Init(const uptr *pcs, uptr cnt, uptr extra_top_pc) {
     trace_buffer[cnt] = extra_top_pc;
   top_frame_bp = 0;
 }
+
+// Sparc implemention is in its own file.
+#if !defined(__sparc__)
 
 // In GCC on ARM bp points to saved lr, not fp, so we should check the next
 // cell in stack to be a saved frame pointer. GetCanonicFrame returns the
@@ -78,21 +82,14 @@ void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
          IsAligned((uptr)frame, sizeof(*frame)) &&
          size < max_depth) {
 #ifdef __powerpc__
-    // PowerPC ABIs specify that the return address is saved on the
-    // *caller's* stack frame.  Thus we must dereference the back chain
-    // to find the caller frame before extracting it.
+    // PowerPC ABIs specify that the return address is saved at offset
+    // 16 of the *caller's* stack frame.  Thus we must dereference the
+    // back chain to find the caller frame before extracting it.
     uhwptr *caller_frame = (uhwptr*)frame[0];
     if (!IsValidFrame((uptr)caller_frame, stack_top, bottom) ||
         !IsAligned((uptr)caller_frame, sizeof(uhwptr)))
       break;
-    // For most ABIs the offset where the return address is saved is two
-    // register sizes.  The exception is the SVR4 ABI, which uses an
-    // offset of only one register size.
-#ifdef _CALL_SYSV
-    uhwptr pc1 = caller_frame[1];
-#else
     uhwptr pc1 = caller_frame[2];
-#endif
 #elif defined(__s390__)
     uhwptr pc1 = frame[14];
 #else
@@ -110,6 +107,8 @@ void BufferedStackTrace::FastUnwindStack(uptr pc, uptr bp, uptr stack_top,
     frame = GetCanonicFrame((uptr)frame[0], stack_top, bottom);
   }
 }
+
+#endif  // !defined(__sparc__)
 
 void BufferedStackTrace::PopStackFrames(uptr count) {
   CHECK_LT(count, size);

@@ -99,5 +99,5 @@ class AllocatorGlobalStats : public AllocatorStats {
   }
 
  private:
-  mutable SpinMutex mu_;
+  mutable StaticSpinMutex mu_;
 };

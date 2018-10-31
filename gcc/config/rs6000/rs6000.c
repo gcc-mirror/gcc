@@ -8423,6 +8423,22 @@ rs6000_const_not_ok_for_debug_p (rtx x)
   return false;
 }
 
+/* Helper function for making sure we will make full
+   use of indexed addressing.  */
+
+rtx
+rs6000_force_indexed_or_indirect_mem (rtx x)
+{
+  machine_mode m = GET_MODE (x);
+  if (!indexed_or_indirect_operand (x, m))
+    {
+      rtx addr = XEXP (x, 0);
+      addr = force_reg (Pmode, addr);
+      x = replace_equiv_address_nv (x, addr);
+    }
+  return x;
+}
+
 
 /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
 
@@ -28633,11 +28649,12 @@ rs6000_output_function_epilogue (FILE *file)
 	 use language_string.
 	 C is 0.  Fortran is 1.  Ada is 3.  C++ is 9.
 	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
-	 a number, so for now use 9.  LTO, Go and JIT aren't assigned numbers
-	 either, so for now use 0.  */
+	 a number, so for now use 9.  LTO, Go, D, and JIT aren't assigned
+	 numbers either, so for now use 0.  */
       if (lang_GNU_C ()
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go")
+	  || ! strcmp (language_string, "GNU D")
 	  || ! strcmp (language_string, "libgccjit"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
@@ -36996,7 +37013,7 @@ make_resolver_func (const tree default_decl,
 {
   /* Make the resolver function static.  The resolver function returns
      void *.  */
-  tree decl_name = clone_function_name (default_decl, "resolver");
+  tree decl_name = clone_function_name_numbered (default_decl, "resolver");
   const char *resolver_name = IDENTIFIER_POINTER (decl_name);
   tree type = build_function_type_list (ptr_type_node, NULL_TREE);
   tree decl = build_fn_decl (resolver_name, type);

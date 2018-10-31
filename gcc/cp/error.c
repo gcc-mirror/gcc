@@ -18,6 +18,8 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
@@ -32,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ubsan.h"
 #include "internal-fn.h"
 #include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 #define pp_separate_with_comma(PP) pp_cxx_separate_with (PP, ',')
 #define pp_separate_with_semicolon(PP) pp_cxx_separate_with (PP, ';')
@@ -54,7 +57,6 @@ static const char *args_to_string (tree, int);
 static const char *code_to_string (enum tree_code);
 static const char *cv_to_string (tree, int);
 static const char *decl_to_string (tree, int);
-static const char *expr_to_string (tree);
 static const char *fndecl_to_string (tree, int);
 static const char *op_to_string	(bool, enum tree_code);
 static const char *parm_to_string (int);
@@ -3080,7 +3082,7 @@ decl_to_string (tree decl, int verbose)
   return pp_ggc_formatted_text (cxx_pp);
 }
 
-static const char *
+const char *
 expr_to_string (tree decl)
 {
   reinit_cxx_pp ();
@@ -4282,15 +4284,42 @@ qualified_name_lookup_error (tree scope, tree name,
   else if (scope != global_namespace)
     {
       auto_diagnostic_group d;
-      error_at (location, "%qD is not a member of %qD", name, scope);
-      if (!suggest_alternative_in_explicit_scope (location, name, scope))
-	suggest_alternatives_for (location, name, false);
+      bool emit_fixit = true;
+      name_hint hint
+	= suggest_alternative_in_explicit_scope (location, name, scope);
+      if (!hint)
+	{
+	  hint = suggest_alternatives_in_other_namespaces (location, name);
+	  /* "location" is just the location of the name, not of the explicit
+	     scope, and it's not easy to get at the latter, so we can't issue
+	     fix-it hints for the suggestion.  */
+	  emit_fixit = false;
+	}
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  if (emit_fixit)
+	    richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc, "%qD is not a member of %qD; did you mean %qs?",
+		    name, scope, suggestion);
+	}
+      else
+	error_at (location, "%qD is not a member of %qD", name, scope);
     }
   else
     {
       auto_diagnostic_group d;
-      error_at (location, "%<::%D%> has not been declared", name);
-      suggest_alternatives_for (location, name, true);
+      name_hint hint = suggest_alternatives_for (location, name, true);
+      if (const char *suggestion = hint.suggestion ())
+	{
+	  gcc_rich_location richloc (location);
+	  richloc.add_fixit_replace (suggestion);
+	  error_at (&richloc,
+		    "%<::%D%> has not been declared; did you mean %qs?",
+		    name, suggestion);
+	}
+      else
+	error_at (location, "%<::%D%> has not been declared", name);
     }
 }
 

@@ -263,6 +263,9 @@ EnumValue
 Enum(arc_tune_attr) String(arc601) Value(ARC_TUNE_ARC600)
 
 EnumValue
+Enum(arc_tune_attr) String(arc7xx) Value(ARC_TUNE_ARC7XX)
+
+EnumValue
 Enum(arc_tune_attr) String(arc700) Value(ARC_TUNE_ARC700_4_2_STD)
 
 EnumValue
@@ -328,7 +331,7 @@ Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)
 Use pc-relative switch case tables - this enables case table shortening.
 
 mcompact-casesi
-Target Var(TARGET_COMPACT_CASESI)
+Target Warn(%qs is deprecated)
 Enable compact casesi pattern.
 
 mq-class
@@ -531,3 +534,7 @@ Enum(arc_lpc) String(32) Value(32)
 mrf16
 Target Report Mask(RF16)
 Enable 16-entry register file.
+
+mbranch-index
+Target Report Var(TARGET_BRANCH_INDEX) Init(DEFAULT_BRANCH_INDEX)
+Enable use of BI/BIH instructions when available.

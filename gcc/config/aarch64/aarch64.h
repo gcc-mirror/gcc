@@ -26,6 +26,9 @@
 #define TARGET_CPU_CPP_BUILTINS()	\
   aarch64_cpu_cpp_builtins (pfile)
 
+/* Target CPU versions for D.  */
+#define TARGET_D_CPU_VERSIONS aarch64_d_target_versions
+
 
 
 #define REGISTER_TARGET_PRAGMAS() aarch64_register_pragmas ()

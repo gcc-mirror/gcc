@@ -18,6 +18,7 @@ ubsan_plugin_files = \
 	ubsan_handlers.cc \
 	ubsan_handlers_cxx.cc \
 	ubsan_init.cc \
+	ubsan_monitor.cc \
 	ubsan_type_hash.cc \
 	ubsan_type_hash_itanium.cc \
 	ubsan_type_hash_win.cc \

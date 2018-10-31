@@ -43,7 +43,10 @@ static cxx_binding *cxx_binding_make (tree value, tree type);
 static cp_binding_level *innermost_nonclass_level (void);
 static void set_identifier_type_value_with_scope (tree id, tree decl,
 						  cp_binding_level *b);
-static bool maybe_suggest_missing_std_header (location_t location, tree name);
+static name_hint maybe_suggest_missing_std_header (location_t location,
+						   tree name);
+static name_hint suggest_alternatives_for_1 (location_t location, tree name,
+					     bool suggest_misspellings);
 
 /* Create an overload suitable for recording an artificial TYPE_DECL
    and another decl.  We use this machanism to implement the struct
@@ -5957,20 +5960,132 @@ has_using_namespace_std_directive_p ()
   return false;
 }
 
-/* Suggest alternatives for NAME, an IDENTIFIER_NODE for which name
-   lookup failed.  Search through all available namespaces and print out
-   possible candidates.  If no exact matches are found, and
-   SUGGEST_MISSPELLINGS is true, then also look for near-matches and
-   suggest the best near-match, if there is one.  */
+/* Subclass of deferred_diagnostic, for issuing a note when
+   --param cxx-max-namespaces-for-diagnostic-help is reached.
 
-void
-suggest_alternatives_for (location_t location, tree name,
-			  bool suggest_misspellings)
+   The note should be issued after the error, but before any other
+   deferred diagnostics.  This is handled by decorating a wrapped
+   deferred_diagnostic, and emitting a note before that wrapped note is
+   deleted.  */
+
+class namespace_limit_reached : public deferred_diagnostic
 {
-  vec<tree> candidates = vNULL;
-  vec<tree> worklist = vNULL;
-  unsigned limit = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
-  bool limited = false;
+ public:
+  namespace_limit_reached (location_t loc, unsigned limit, tree name,
+			   gnu::unique_ptr<deferred_diagnostic> wrapped)
+  : deferred_diagnostic (loc),
+    m_limit (limit), m_name (name),
+    m_wrapped (move (wrapped))
+  {
+  }
+
+  ~namespace_limit_reached ()
+  {
+    /* Unconditionally warn that the search was truncated.  */
+    inform (get_location (),
+	    "maximum limit of %d namespaces searched for %qE",
+	    m_limit, m_name);
+    /* m_wrapped will be implicitly deleted after this, emitting any followup
+       diagnostic after the above note.  */
+  }
+
+ private:
+  unsigned m_limit;
+  tree m_name;
+  gnu::unique_ptr<deferred_diagnostic> m_wrapped;
+};
+
+/* Subclass of deferred_diagnostic, for use when issuing a single suggestion.
+   Emit a note showing the location of the declaration of the suggestion.  */
+
+class show_candidate_location : public deferred_diagnostic
+{
+ public:
+  show_candidate_location (location_t loc, tree candidate)
+  : deferred_diagnostic (loc),
+    m_candidate (candidate)
+  {
+  }
+
+  ~show_candidate_location ()
+  {
+    inform (location_of (m_candidate), "%qE declared here", m_candidate);
+  }
+
+ private:
+  tree m_candidate;
+};
+
+/* Subclass of deferred_diagnostic, for use when there are multiple candidates
+   to be suggested by suggest_alternatives_for.
+
+   Emit a series of notes showing the various suggestions.  */
+
+class suggest_alternatives : public deferred_diagnostic
+{
+ public:
+  suggest_alternatives (location_t loc, vec<tree> candidates)
+  : deferred_diagnostic (loc),
+    m_candidates (candidates)
+  {
+  }
+
+  ~suggest_alternatives ()
+  {
+    if (m_candidates.length ())
+      {
+	inform_n (get_location (), m_candidates.length (),
+		  "suggested alternative:",
+		  "suggested alternatives:");
+	for (unsigned ix = 0; ix != m_candidates.length (); ix++)
+	  {
+	    tree val = m_candidates[ix];
+
+	    inform (location_of (val), "  %qE", val);
+	  }
+      }
+    m_candidates.release ();
+  }
+
+ private:
+  vec<tree> m_candidates;
+};
+
+/* A class for encapsulating the result of a search across
+   multiple namespaces for an unrecognized name seen at a
+   given source location.  */
+
+class namespace_hints
+{
+ public:
+  namespace_hints (location_t loc, tree name);
+
+  name_hint convert_candidates_to_name_hint ();
+  name_hint maybe_decorate_with_limit (name_hint);
+
+ private:
+  location_t m_loc;
+  tree m_name;
+  vec<tree> m_candidates;
+
+  /* Value of "--param cxx-max-namespaces-for-diagnostic-help".  */
+  unsigned m_limit;
+
+  /* Was the limit reached?  */
+  bool m_limited;
+};
+
+/* Constructor for namespace_hints.  Search namespaces, looking for a match
+   for unrecognized NAME seen at LOC.  */
+
+namespace_hints::namespace_hints (location_t loc, tree name)
+: m_loc(loc), m_name (name)
+{
+  auto_vec<tree> worklist;
+
+  m_candidates = vNULL;
+  m_limited = false;
+  m_limit = PARAM_VALUE (CXX_MAX_NAMESPACES_FOR_DIAGNOSTIC_HELP);
 
   /* Breadth-first search of namespaces.  Up to limit namespaces
      searched (limit zero == unlimited).  */
@@ -5981,14 +6096,14 @@ suggest_alternatives_for (location_t location, tree name,
       name_lookup lookup (name);
 
       if (lookup.search_qualified (ns, false))
-	candidates.safe_push (lookup.value);
+	m_candidates.safe_push (lookup.value);
 
-      if (!limited)
+      if (!m_limited)
 	{
 	  /* Look for child namespaces.  We have to do this
 	     indirectly because they are chained in reverse order,
 	     which is confusing to the user.  */
-	  vec<tree> children = vNULL;
+	  auto_vec<tree> children;
 
 	  for (tree decl = NAMESPACE_LEVEL (ns)->names;
 	       decl; decl = TREE_CHAIN (decl))
@@ -5997,60 +6112,141 @@ suggest_alternatives_for (location_t location, tree name,
 		&& !DECL_NAMESPACE_INLINE_P (decl))
 	      children.safe_push (decl);
 
-	  while (!limited && !children.is_empty ())
+	  while (!m_limited && !children.is_empty ())
 	    {
-	      if (worklist.length () == limit)
-		{
-		  /* Unconditionally warn that the search was truncated.  */
-		  inform (location,
-			  "maximum limit of %d namespaces searched for %qE",
-			  limit, name);
-		  limited = true;
-		}
+	      if (worklist.length () == m_limit)
+		m_limited = true;
 	      else
 		worklist.safe_push (children.pop ());
 	    }
-	  children.release ();
 	}
     }
-  worklist.release ();
+}
 
-  if (candidates.length ())
+/* Drop ownership of m_candidates, using it to generate a name_hint at m_loc
+   for m_name, an IDENTIFIER_NODE for which name lookup failed.
+
+   If m_candidates is non-empty, use it to generate a suggestion and/or
+   a deferred diagnostic that lists the possible candidate(s).
+*/
+
+name_hint
+namespace_hints::convert_candidates_to_name_hint ()
+{
+  /* How many candidates do we have?  */
+
+  /* If we have just one candidate, issue a name_hint with it as a suggestion
+     (so that consumers are able to suggest it within the error message and emit
+     it as a fix-it hint), and with a note showing the candidate's location.  */
+  if (m_candidates.length () == 1)
     {
-      inform_n (location, candidates.length (),
-		"suggested alternative:",
-		"suggested alternatives:");
-      for (unsigned ix = 0; ix != candidates.length (); ix++)
-	{
-	  tree val = candidates[ix];
-
-	  inform (location_of (val), "  %qE", val);
-	}
-      candidates.release ();
-      return;
+      tree candidate = m_candidates[0];
+      /* Clean up CANDIDATES.  */
+      m_candidates.release ();
+      return name_hint (expr_to_string (candidate),
+			new show_candidate_location (m_loc, candidate));
     }
+  else if (m_candidates.length () > 1)
+    /* If we have more than one candidate, issue a name_hint without a single
+       "suggestion", but with a deferred diagnostic that lists the
+       various candidates.  This takes ownership of m_candidates.  */
+    return name_hint (NULL, new suggest_alternatives (m_loc, m_candidates));
 
+  /* Otherwise, m_candidates ought to be empty, so no cleanup is necessary.  */
+  gcc_assert (m_candidates.length () == 0);
+  gcc_assert (m_candidates == vNULL);
+
+  return name_hint ();
+}
+
+/* If --param cxx-max-namespaces-for-diagnostic-help was reached,
+   then we want to emit a note about after the error, but before
+   any other deferred diagnostics.
+
+   Handle this by figuring out what hint is needed, then optionally
+   decorating HINT with a namespace_limit_reached wrapper.  */
+
+name_hint
+namespace_hints::maybe_decorate_with_limit (name_hint hint)
+{
+  if (m_limited)
+    return name_hint (hint.suggestion (),
+		      new namespace_limit_reached (m_loc, m_limit,
+						   m_name,
+						   hint.take_deferred ()));
+  else
+    return hint;
+}
+
+/* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which
+   name lookup failed.
+
+   Search through all available namespaces and generate a suggestion and/or
+   a deferred diagnostic that lists possible candidate(s).
+
+   If no exact matches are found, and SUGGEST_MISSPELLINGS is true, then also
+   look for near-matches and suggest the best near-match, if there is one.
+
+   If nothing is found, then an empty name_hint is returned.  */
+
+name_hint
+suggest_alternatives_for (location_t location, tree name,
+			  bool suggest_misspellings)
+{
+  /* First, search for exact matches in other namespaces.  */
+  namespace_hints ns_hints (location, name);
+  name_hint result = ns_hints.convert_candidates_to_name_hint ();
+
+  /* Otherwise, try other approaches.  */
+  if (!result)
+    result = suggest_alternatives_for_1 (location, name, suggest_misspellings);
+
+  return ns_hints.maybe_decorate_with_limit (gnu::move (result));
+}
+
+/* The second half of suggest_alternatives_for, for when no exact matches
+   were found in other namespaces.  */
+
+static name_hint
+suggest_alternatives_for_1 (location_t location, tree name,
+			    bool suggest_misspellings)
+{
   /* No candidates were found in the available namespaces.  */
 
   /* If there's a "using namespace std;" active, and this
      is one of the most common "std::" names, then it's probably a
      missing #include.  */
   if (has_using_namespace_std_directive_p ())
-    if (maybe_suggest_missing_std_header (location, name))
-      return;
+    {
+      name_hint hint = maybe_suggest_missing_std_header (location, name);
+      if (hint)
+	return hint;
+    }
 
   /* Otherwise, consider misspellings.  */
   if (!suggest_misspellings)
-    return;
-  if (name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME,
-					  location))
-    {
-      /* Show a spelling correction.  */
-      gcc_rich_location richloc (location);
+    return name_hint ();
 
-      richloc.add_fixit_replace (hint.suggestion ());
-      inform (&richloc, "suggested alternative: %qs", hint.suggestion ());
-    }
+  return lookup_name_fuzzy (name, FUZZY_LOOKUP_NAME, location);
+}
+
+/* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which
+   name lookup failed.
+
+   Search through all available namespaces and generate a suggestion and/or
+   a deferred diagnostic that lists possible candidate(s).
+
+   This is similiar to suggest_alternatives_for, but doesn't fallback to
+   the other approaches used by that function.  */
+
+name_hint
+suggest_alternatives_in_other_namespaces (location_t location, tree name)
+{
+  namespace_hints ns_hints (location, name);
+
+  name_hint result = ns_hints.convert_candidates_to_name_hint ();
+
+  return ns_hints.maybe_decorate_with_limit (gnu::move (result));
 }
 
 /* A well-known name within the C++ standard library, returned by
@@ -6261,11 +6457,51 @@ get_cxx_dialect_name (enum cxx_dialect dialect)
     }
 }
 
-/* Suggest pertinent header files for NAME at LOCATION, for common
-   names within the "std" namespace.
-   Return true iff a suggestion was offered.  */
+/* Subclass of deferred_diagnostic for use for names in the "std" namespace
+   that weren't recognized, but for which we know which header it ought to be
+   in.
 
-static bool
+   Emit a note either suggesting the header to be included, or noting that
+   the current dialect is too early for the given name.  */
+
+class missing_std_header : public deferred_diagnostic
+{
+ public:
+  missing_std_header (location_t loc,
+		      const char *name_str,
+		      const std_name_hint *header_hint)
+  : deferred_diagnostic (loc),
+    m_name_str (name_str),
+    m_header_hint (header_hint)
+  {}
+  ~missing_std_header ()
+  {
+    gcc_rich_location richloc (get_location ());
+    if (cxx_dialect >= m_header_hint->min_dialect)
+      {
+	const char *header = m_header_hint->header;
+	maybe_add_include_fixit (&richloc, header, true);
+	inform (&richloc,
+		"%<std::%s%> is defined in header %qs;"
+		" did you forget to %<#include %s%>?",
+		m_name_str, header, header);
+      }
+    else
+      inform (&richloc,
+	      "%<std::%s%> is only available from %s onwards",
+	      m_name_str, get_cxx_dialect_name (m_header_hint->min_dialect));
+  }
+
+private:
+  const char *m_name_str;
+  const std_name_hint *m_header_hint;
+};
+
+/* Attempt to generate a name_hint that suggests pertinent header files
+   for NAME at LOCATION, for common names within the "std" namespace,
+   or an empty name_hint if this isn't applicable.  */
+
+static name_hint
 maybe_suggest_missing_std_header (location_t location, tree name)
 {
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
@@ -6273,62 +6509,49 @@ maybe_suggest_missing_std_header (location_t location, tree name)
   const char *name_str = IDENTIFIER_POINTER (name);
   const std_name_hint *header_hint = get_std_name_hint (name_str);
   if (!header_hint)
-    return false;
+    return name_hint ();
 
-  gcc_rich_location richloc (location);
-  if (cxx_dialect >= header_hint->min_dialect)
-    {
-      const char *header = header_hint->header;
-      maybe_add_include_fixit (&richloc, header, true);
-      inform (&richloc,
-	      "%<std::%s%> is defined in header %qs;"
-	      " did you forget to %<#include %s%>?",
-	      name_str, header, header);
-    }
-  else
-    {
-      inform (&richloc,
-	      "%<std::%s%> is only available from %s onwards",
-	      name_str, get_cxx_dialect_name (header_hint->min_dialect));
-    }
-  return true;
+  return name_hint (NULL, new missing_std_header (location, name_str,
+						  header_hint));
 }
 
-/* If SCOPE is the "std" namespace, then suggest pertinent header
-   files for NAME at LOCATION.
-   Return true iff a suggestion was offered.  */
+/* Attempt to generate a name_hint that suggests a missing header file
+   for NAME within SCOPE at LOCATION, or an empty name_hint if this isn't
+   applicable.  */
 
-static bool
+static name_hint
 maybe_suggest_missing_header (location_t location, tree name, tree scope)
 {
   if (scope == NULL_TREE)
-    return false;
+    return name_hint ();
   if (TREE_CODE (scope) != NAMESPACE_DECL)
-    return false;
+    return name_hint ();
   /* We only offer suggestions for the "std" namespace.  */
   if (scope != std_node)
-    return false;
+    return name_hint ();
   return maybe_suggest_missing_std_header (location, name);
 }
 
-/* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
-   lookup failed within the explicitly provided SCOPE.  Suggest the
-   the best meaningful candidates (if any) as a fix-it hint.
-   Return true iff a suggestion was provided.  */
+/* Generate a name_hint at LOCATION for NAME, an IDENTIFIER_NODE for which name
+   lookup failed within the explicitly provided SCOPE.
 
-bool
+   Suggest the the best meaningful candidates (if any), otherwise
+   an empty name_hint is returned.  */
+
+name_hint
 suggest_alternative_in_explicit_scope (location_t location, tree name,
 				       tree scope)
 {
   /* Something went very wrong; don't suggest anything.  */
   if (name == error_mark_node)
-    return false;
+    return name_hint ();
 
   /* Resolve any namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
 
-  if (maybe_suggest_missing_header (location, name, scope))
-    return true;
+  name_hint hint = maybe_suggest_missing_header (location, name, scope);
+  if (hint)
+    return hint;
 
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
@@ -6338,15 +6561,9 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
   /* See if we have a good suggesion for the user.  */
   const char *fuzzy_name = bm.get_best_meaningful_candidate ();
   if (fuzzy_name)
-    {
-      gcc_rich_location richloc (location);
-      richloc.add_fixit_replace (fuzzy_name);
-      inform (&richloc, "suggested alternative: %qs",
-	      fuzzy_name);
-      return true;
-    }
+    return name_hint (fuzzy_name, NULL);
 
-  return false;
+  return name_hint ();
 }
 
 /* Look up NAME (an IDENTIFIER_NODE) in SCOPE (either a NAMESPACE_DECL

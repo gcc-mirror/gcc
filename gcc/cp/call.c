@@ -3251,6 +3251,12 @@ add_template_candidate_real (struct z_candidate **candidates, tree tmpl,
       goto fail;
     }
 
+  /* Now the explicit specifier might have been deduced; check if this
+     declaration is explicit.  If it is and we're ignoring non-converting
+     constructors, don't add this function to the set of candidates.  */
+  if ((flags & LOOKUP_ONLYCONVERTING) && DECL_NONCONVERTING_P (fn))
+    return NULL;
+
   if (DECL_CONSTRUCTOR_P (fn) && nargs == 2)
     {
       tree arg_types = FUNCTION_FIRST_USER_PARMTYPE (fn);
@@ -8198,7 +8204,6 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
     {
       tree *fargs = (!nargs ? argarray
 			    : (tree *) alloca (nargs * sizeof (tree)));
-      auto_vec<location_t> arglocs (nargs);
       for (j = 0; j < nargs; j++)
 	{
 	  /* For -Wformat undo the implicit passing by hidden reference
@@ -8207,12 +8212,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	      && TYPE_REF_P (TREE_TYPE (argarray[j])))
 	    fargs[j] = TREE_OPERAND (argarray[j], 0);
 	  else
-	    fargs[j] = maybe_constant_value (argarray[j]);
-	  arglocs.quick_push (EXPR_LOC_OR_LOC (argarray[j], input_location));
+	    fargs[j] = argarray[j];
 	}
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs, &arglocs);
+					   nargs, fargs, NULL);
     }
 
   if (DECL_INHERITED_CTOR (fn))

@@ -82,23 +82,28 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
-	sanitizer_allocator_checks.lo sanitizer_common.lo \
-	sanitizer_common_libcdep.lo sanitizer_coverage_libcdep_new.lo \
+	sanitizer_allocator_checks.lo sanitizer_allocator_report.lo \
+	sanitizer_common.lo sanitizer_common_libcdep.lo \
+	sanitizer_coverage_libcdep_new.lo \
 	sanitizer_deadlock_detector1.lo \
 	sanitizer_deadlock_detector2.lo sanitizer_errno.lo \
 	sanitizer_file.lo sanitizer_flags.lo sanitizer_flag_parser.lo \
 	sanitizer_libc.lo sanitizer_libignore.lo sanitizer_linux.lo \
 	sanitizer_linux_libcdep.lo sanitizer_linux_s390.lo \
-	sanitizer_mac.lo sanitizer_mac_libcdep.lo \
-	sanitizer_persistent_allocator.lo \
+	sanitizer_mac.lo sanitizer_mac_libcdep.lo sanitizer_netbsd.lo \
+	sanitizer_openbsd.lo sanitizer_persistent_allocator.lo \
 	sanitizer_platform_limits_linux.lo \
-	sanitizer_platform_limits_posix.lo sanitizer_posix.lo \
+	sanitizer_platform_limits_openbsd.lo \
+	sanitizer_platform_limits_posix.lo \
+	sanitizer_platform_limits_solaris.lo sanitizer_posix.lo \
 	sanitizer_posix_libcdep.lo sanitizer_printf.lo \
-	sanitizer_procmaps_common.lo sanitizer_procmaps_freebsd.lo \
+	sanitizer_procmaps_bsd.lo sanitizer_procmaps_common.lo \
 	sanitizer_procmaps_linux.lo sanitizer_procmaps_mac.lo \
-	sanitizer_stackdepot.lo sanitizer_stacktrace.lo \
-	sanitizer_stacktrace_libcdep.lo sanitizer_symbolizer_mac.lo \
-	sanitizer_stacktrace_printer.lo \
+	sanitizer_procmaps_solaris.lo sanitizer_rtems.lo \
+	sanitizer_solaris.lo sanitizer_stackdepot.lo \
+	sanitizer_stacktrace.lo sanitizer_stacktrace_libcdep.lo \
+	sanitizer_stacktrace_sparc.lo sanitizer_symbolizer_mac.lo \
+	sanitizer_symbolizer_report.lo sanitizer_stacktrace_printer.lo \
 	sanitizer_stoptheworld_linux_libcdep.lo \
 	sanitizer_stoptheworld_mac.lo sanitizer_suppressions.lo \
 	sanitizer_symbolizer.lo sanitizer_symbolizer_libbacktrace.lo \
@@ -106,7 +111,8 @@ am__objects_1 = sancov_flags.lo sanitizer_allocator.lo \
 	sanitizer_symbolizer_posix_libcdep.lo \
 	sanitizer_symbolizer_win.lo sanitizer_termination.lo \
 	sanitizer_thread_registry.lo sanitizer_tls_get_addr.lo \
-	sanitizer_unwind_linux_libcdep.lo sanitizer_win.lo
+	sanitizer_unwind_linux_libcdep.lo sanitizer_unwind_win.lo \
+	sanitizer_win.lo
 am_libsanitizer_common_la_OBJECTS = $(am__objects_1)
 libsanitizer_common_la_OBJECTS = $(am_libsanitizer_common_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -309,6 +315,7 @@ sanitizer_common_files = \
 	sancov_flags.cc \
 	sanitizer_allocator.cc \
 	sanitizer_allocator_checks.cc \
+	sanitizer_allocator_report.cc \
 	sanitizer_common.cc \
 	sanitizer_common_libcdep.cc \
 	sanitizer_coverage_libcdep_new.cc \
@@ -325,20 +332,29 @@ sanitizer_common_files = \
 	sanitizer_linux_s390.cc \
 	sanitizer_mac.cc \
 	sanitizer_mac_libcdep.cc \
+	sanitizer_netbsd.cc \
+	sanitizer_openbsd.cc \
 	sanitizer_persistent_allocator.cc \
 	sanitizer_platform_limits_linux.cc \
+	sanitizer_platform_limits_openbsd.cc \
 	sanitizer_platform_limits_posix.cc \
+	sanitizer_platform_limits_solaris.cc \
 	sanitizer_posix.cc \
 	sanitizer_posix_libcdep.cc \
 	sanitizer_printf.cc \
+	sanitizer_procmaps_bsd.cc \
 	sanitizer_procmaps_common.cc \
-	sanitizer_procmaps_freebsd.cc \
 	sanitizer_procmaps_linux.cc \
 	sanitizer_procmaps_mac.cc \
+	sanitizer_procmaps_solaris.cc \
+	sanitizer_rtems.cc \
+	sanitizer_solaris.cc \
 	sanitizer_stackdepot.cc \
 	sanitizer_stacktrace.cc \
 	sanitizer_stacktrace_libcdep.cc \
+	sanitizer_stacktrace_sparc.cc \
 	sanitizer_symbolizer_mac.cc \
+	sanitizer_symbolizer_report.cc \
 	sanitizer_stacktrace_printer.cc \
 	sanitizer_stoptheworld_linux_libcdep.cc \
 	sanitizer_stoptheworld_mac.cc \
@@ -352,6 +368,7 @@ sanitizer_common_files = \
 	sanitizer_thread_registry.cc \
 	sanitizer_tls_get_addr.cc \
 	sanitizer_unwind_linux_libcdep.cc \
+	sanitizer_unwind_win.cc \
 	sanitizer_win.cc
 
 libsanitizer_common_la_SOURCES = $(sanitizer_common_files) 
@@ -453,6 +470,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sancov_flags.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator_checks.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_allocator_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_common_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_coverage_libcdep_new.Plo@am__quote@
@@ -471,20 +489,28 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_linux_x86_64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_mac_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_netbsd.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_persistent_allocator.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_linux.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_openbsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_posix.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_platform_limits_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_posix.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_posix_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_printf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_bsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_common.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_freebsd.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_mac.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_procmaps_solaris.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_rtems.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_solaris.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stackdepot.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_printer.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stacktrace_sparc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_linux_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_stoptheworld_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_suppressions.Plo@am__quote@
@@ -493,11 +519,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_libcdep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_mac.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_posix_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_report.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_symbolizer_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_termination.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_thread_registry.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_tls_get_addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_linux_libcdep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_unwind_win.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sanitizer_win.Plo@am__quote@
 
 .S.o:

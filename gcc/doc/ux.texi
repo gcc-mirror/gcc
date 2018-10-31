@@ -383,6 +383,38 @@ of the @code{auto_diagnostic_group} are related.  (Currently it doesn't
 do anything with this information, but we may implement that in the
 future).
 
+@subsection Quoting
+Text should be quoted by either using the @samp{q} modifier in a directive
+such as @samp{%qE}, or by enclosing the quoted text in a pair of @samp{%<}
+and @samp{%>} directives, and never by using explicit quote characters.
+The directives handle the appropriate quote characters for each language
+and apply the correct color or highlighting.
+
+The following elements should be quoted in GCC diagnostics:
+
+@itemize @bullet
+@item
+Language keywords.
+@item
+Tokens.
+@item
+Boolean, numerical, character, and string constants that appear in the
+source code.
+@item
+Identifiers, including function, macro, type, and variable names.
+@end itemize
+
+Other elements such as numbers that do not refer to numeric constants that
+appear in the source code should not be quoted. For example, in the message:
+
+@smallexample
+argument %d of %qE must be a pointer type
+@end smallexample
+
+@noindent
+since the argument number does not refer to a numerical constant in the
+source code it should not be quoted.
+
 @subsection Spelling and Terminology
 
 See the @uref{https://gcc.gnu.org/codingconventions.html#Spelling
@@ -399,6 +431,9 @@ They are printed by default underneath the code in question.  They
 can also be viewed via @option{-fdiagnostics-generate-patch} and
 @option{-fdiagnostics-parseable-fixits}.  With the latter, an IDE
 ought to be able to offer to automatically apply the suggested fix.
+
+Fix-it hints contain code fragments, and thus they should not be marked
+for translation.
 
 Fix-it hints can be added to a diagnostic by using a @code{rich_location}
 rather than a @code{location_t} - the fix-it hints are added to the

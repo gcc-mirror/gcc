@@ -653,7 +653,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level} @gol
 -mtune=@var{cpu}  -mmultcost=@var{num} @gol
 -munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo} @gol
--mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu} -mrf16}
+-mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu} -mrf16  -mbranch-index}
 
 @emph{ARM Options}
 @gccoptlist{-mapcs-frame  -mno-apcs-frame @gol
@@ -1441,6 +1441,15 @@ Go source code.
 @item @var{file}.brig
 BRIG files (binary representation of HSAIL).
 
+@item @var{file}.d
+D source code.
+
+@item @var{file}.di
+D interface file.
+
+@item @var{file}.dd
+D documentation code (Ddoc).
+
 @item @var{file}.ads
 Ada source code file that contains a library unit declaration (a
 declaration of a package, subprogram, or generic, or a generic
@@ -1484,6 +1493,7 @@ objective-c  objective-c-header  objective-c-cpp-output
 objective-c++ objective-c++-header objective-c++-cpp-output
 assembler  assembler-with-cpp
 ada
+d
 f77  f77-cpp-input f95  f95-cpp-input
 go
 brig
@@ -15894,6 +15904,11 @@ This option instructs the compiler to generate code for a 16-entry
 register file.  This option defines the @code{__ARC_RF16__}
 preprocessor macro.
 
+@item -mbranch-index
+@opindex mbranch-index
+Enable use of @code{bi} or @code{bih} instructions to implement jump
+tables.
+
 @end table
 
 The following options are passed through to the assembler, and also
@@ -16065,7 +16080,7 @@ This is the default for @option{-Os}.
 @item -mcompact-casesi
 @opindex mcompact-casesi
 Enable compact @code{casesi} pattern.  This is the default for @option{-Os},
-and only available for ARCv1 cores.
+and only available for ARCv1 cores.  This option is deprecated.
 
 @item -mno-cond-exec
 @opindex mno-cond-exec
@@ -17089,7 +17104,7 @@ this option and always use the original scheme.
 Only generate absolute relocations on word-sized values (i.e. R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
-is specified.
+is specified. This option conflicts with @option{-mslow-flash-data}.
 
 @item -mfix-cortex-m3-ldrd
 @opindex mfix-cortex-m3-ldrd
@@ -17126,7 +17141,7 @@ to Neon is high.
 Assume loading data from flash is slower than fetching instruction.
 Therefore literal load is minimized for better performance.
 This option is only supported when compiling for ARMv7 M-profile and
-off by default.
+off by default. It conflicts with @option{-mword-relocations}.
 
 @item -masm-syntax-unified
 @opindex masm-syntax-unified

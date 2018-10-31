@@ -5037,7 +5037,163 @@ protected_set_expr_location (tree t, location_t loc)
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, loc);
 }
+
+/* Data used when collecting DECLs and TYPEs for language data removal.  */
+
+struct free_lang_data_d
+{
+  free_lang_data_d () : decls (100), types (100) {}
+
+  /* Worklist to avoid excessive recursion.  */
+  auto_vec<tree> worklist;
+
+  /* Set of traversed objects.  Used to avoid duplicate visits.  */
+  hash_set<tree> pset;
+
+  /* Array of symbols to process with free_lang_data_in_decl.  */
+  auto_vec<tree> decls;
+
+  /* Array of types to process with free_lang_data_in_type.  */
+  auto_vec<tree> types;
+};
+
+
+/* Add type or decl T to one of the list of tree nodes that need their
+   language data removed.  The lists are held inside FLD.  */
+
+static void
+add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
+{
+  if (DECL_P (t))
+    fld->decls.safe_push (t);
+  else if (TYPE_P (t))
+    fld->types.safe_push (t);
+  else
+    gcc_unreachable ();
+}
+
+/* Push tree node T into FLD->WORKLIST.  */
+
+static inline void
+fld_worklist_push (tree t, struct free_lang_data_d *fld)
+{
+  if (t && !is_lang_specific (t) && !fld->pset.contains (t))
+    fld->worklist.safe_push ((t));
+}
+
+
 
+/* Do same comparsion as check_qualified_type skipping lang part of type
+   and be more permissive about type names: we only care that names are
+   same (for diagnostics) and that ODR names are the same.  */
+
+static bool
+fld_type_variant_equal_p (tree t, tree v)
+{
+  if (TYPE_QUALS (t) != TYPE_QUALS (v)
+      || TYPE_NAME (t) != TYPE_NAME (v)
+      || TYPE_ALIGN (t) != TYPE_ALIGN (v)
+      || !attribute_list_equal (TYPE_ATTRIBUTES (t),
+			        TYPE_ATTRIBUTES (v)))
+    return false;
+
+  return true;
+}
+
+/* Find variant of FIRST that match T and create new one if necessary.  */
+
+static tree
+fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
+{
+  if (first == TYPE_MAIN_VARIANT (t))
+    return t;
+  for (tree v = first; v; v = TYPE_NEXT_VARIANT (v))
+    if (fld_type_variant_equal_p (t, v))
+      return v;
+  tree v = build_variant_type_copy (first);
+  TYPE_READONLY (v) = TYPE_READONLY (t);
+  TYPE_VOLATILE (v) = TYPE_VOLATILE (t);
+  TYPE_ATOMIC (v) = TYPE_ATOMIC (t);
+  TYPE_RESTRICT (v) = TYPE_RESTRICT (t);
+  TYPE_ADDR_SPACE (v) = TYPE_ADDR_SPACE (t);
+  TYPE_NAME (v) = TYPE_NAME (t);
+  TYPE_ATTRIBUTES (v) = TYPE_ATTRIBUTES (t);
+  add_tree_to_fld_list (v, fld);
+  return v;
+}
+
+/* Map complete types to incomplete types.  */
+
+static hash_map<tree, tree> *fld_incomplete_types;
+
+/* For T being aggregate type try to turn it into a incomplete variant.
+   Return T if no simplification is possible.  */
+
+static tree
+fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
+{
+  if (!t)
+    return NULL;
+  if (POINTER_TYPE_P (t))
+    {
+      tree t2 = fld_incomplete_type_of (TREE_TYPE (t), fld);
+      if (t2 != TREE_TYPE (t))
+	{
+	  tree first;
+	  if (TREE_CODE (t) == POINTER_TYPE)
+	    first = build_pointer_type_for_mode (t2, TYPE_MODE (t),
+						TYPE_REF_CAN_ALIAS_ALL (t));
+	  else
+	    first = build_reference_type_for_mode (t2, TYPE_MODE (t),
+						TYPE_REF_CAN_ALIAS_ALL (t));
+	  add_tree_to_fld_list (first, fld);
+	  return fld_type_variant (first, t, fld);
+	}
+      return t;
+    }
+  if (!RECORD_OR_UNION_TYPE_P (t) || !COMPLETE_TYPE_P (t))
+    return t;
+  if (TYPE_MAIN_VARIANT (t) == t)
+    {
+      bool existed;
+      tree &copy
+	 = fld_incomplete_types->get_or_insert (t, &existed);
+
+      if (!existed)
+	{
+	  copy = build_distinct_type_copy (t);
+
+	  /* It is possible type was not seen by free_lang_data yet.  */
+	  add_tree_to_fld_list (copy, fld);
+	  TYPE_SIZE (copy) = NULL;
+	  SET_TYPE_MODE (copy, VOIDmode);
+	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
+	  TYPE_SIZE_UNIT (copy) = NULL;
+	  if (AGGREGATE_TYPE_P (t))
+	    {
+	      TYPE_FIELDS (copy) = NULL;
+	      TYPE_BINFO (copy) = NULL;
+	    }
+	  else
+	    TYPE_VALUES (copy) = NULL;
+	}
+      return copy;
+   }
+  return (fld_type_variant
+	    (fld_incomplete_type_of (TYPE_MAIN_VARIANT (t), fld), t, fld));
+}
+
+/* Simplify type T for scenarios where we do not need complete pointer
+   types.  */
+
+static tree
+fld_simplified_type (tree t, struct free_lang_data_d *fld)
+{
+  if (t && POINTER_TYPE_P (t))
+    return fld_incomplete_type_of (t, fld);
+  return t;
+}
+
 /* Reset the expression *EXPR_P, a size or position.
 
    ??? We could reset all non-constant sizes or positions.  But it's cheap
@@ -5261,7 +5417,7 @@ need_assembler_name_p (tree decl)
    DECL.  */
 
 static void
-free_lang_data_in_decl (tree decl)
+free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
 {
   gcc_assert (DECL_P (decl));
 
@@ -5356,7 +5512,10 @@ free_lang_data_in_decl (tree decl)
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
-    DECL_INITIAL (decl) = NULL_TREE;
+    {
+      TREE_TYPE (decl) = fld_simplified_type (TREE_TYPE (decl), fld);
+      DECL_INITIAL (decl) = NULL_TREE;
+    }
   else if (TREE_CODE (decl) == TRANSLATION_UNIT_DECL
            && DECL_INITIAL (decl)
            && TREE_CODE (DECL_INITIAL (decl)) == BLOCK)
@@ -5397,50 +5556,6 @@ free_lang_data_in_decl (tree decl)
 	   DECL_CONTEXT (decl) = ctx;
 	 }
     }
-}
-
-
-/* Data used when collecting DECLs and TYPEs for language data removal.  */
-
-struct free_lang_data_d
-{
-  free_lang_data_d () : decls (100), types (100) {}
-
-  /* Worklist to avoid excessive recursion.  */
-  auto_vec<tree> worklist;
-
-  /* Set of traversed objects.  Used to avoid duplicate visits.  */
-  hash_set<tree> pset;
-
-  /* Array of symbols to process with free_lang_data_in_decl.  */
-  auto_vec<tree> decls;
-
-  /* Array of types to process with free_lang_data_in_type.  */
-  auto_vec<tree> types;
-};
-
-
-/* Add type or decl T to one of the list of tree nodes that need their
-   language data removed.  The lists are held inside FLD.  */
-
-static void
-add_tree_to_fld_list (tree t, struct free_lang_data_d *fld)
-{
-  if (DECL_P (t))
-    fld->decls.safe_push (t);
-  else if (TYPE_P (t))
-    fld->types.safe_push (t);
-  else
-    gcc_unreachable ();
-}
-
-/* Push tree node T into FLD->WORKLIST.  */
-
-static inline void
-fld_worklist_push (tree t, struct free_lang_data_d *fld)
-{
-  if (t && !is_lang_specific (t) && !fld->pset.contains (t))
-    fld->worklist.safe_push ((t));
 }
 
 
@@ -5841,7 +5956,7 @@ free_lang_data_in_cgraph (void)
 
   /* Traverse every decl found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.decls, i, t)
-    free_lang_data_in_decl (t);
+    free_lang_data_in_decl (t, &fld);
 
   /* Traverse every type found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.types, i, t)
@@ -5865,6 +5980,8 @@ free_lang_data (void)
   if (in_lto_p
       || (!flag_generate_lto && !flag_generate_offload))
     return 0;
+
+  fld_incomplete_types = new hash_map<tree, tree>;
 
   /* Provide a dummy TRANSLATION_UNIT_DECL if the FE failed to provide one.  */
   if (vec_safe_is_empty (all_translation_units))
@@ -5903,6 +6020,8 @@ free_lang_data (void)
   tree_diagnostics_defaults (global_dc);
 
   rebuild_type_inheritance_graph ();
+
+  delete fld_incomplete_types;
 
   return 0;
 }

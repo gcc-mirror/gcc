@@ -111,4 +111,7 @@ unsigned int sparc_regmode_natural_size (machine_mode);
 
 extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);
 
+/* Routines implemented in sparc-d.c  */
+extern void sparc_d_target_versions (void);
+
 #endif /* __SPARC_PROTOS_H__ */

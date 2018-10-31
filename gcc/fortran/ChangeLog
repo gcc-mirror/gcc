@@ -1,3 +1,54 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* trans-decl.c (struct module_hasher): Call htab_hash_string
+	for s->name and not for s.
+
+2018-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85896
+	* simplify.c (simplify_min_max): Do not convert the type of the
+	return expression.
+
+2017-10-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.h (gfc_isym_id): Add GFC_ISYM_FINDLOC.
+	(gfc_check_f): Add f6fl field.
+	(gfc_simplify_f): Add f6 field.
+	(gfc_resolve_f): Likewise.
+	(gfc_type_letter): Add optional logical_equas_int flag.
+	* check.c (intrinsic_type_check): New function.
+	(gfc_check_findloc): New function.
+	* intrinsics.c (gfc_type_letter): If logical_equals_int is
+	set, act accordingly.
+	(add_sym_5ml):  Reformat comment.
+	(add_sym_6fl): New function.
+	(add_functions): Add findloc.
+	(check_arglist): Add sixth argument, handle it.
+	(resolve_intrinsic): Likewise.
+	(check_specific): Handle findloc.
+	* intrinsic.h (gfc_check_findloc): Add prototype.
+	(gfc_simplify_findloc): Likewise.
+	(gfc_resolve_findloc): Likewise.
+	(MAX_INTRINSIC_ARGS): Adjust.
+	* iresolve.c (gfc_resolve_findloc): New function.
+	* simplify.c (gfc_simplify_minmaxloc): Make static.
+	(simplify_findloc_to_scalar): New function.
+	(simplify_findloc_nodim): New function.
+	(simplify_findloc_to_array): New function.
+	(gfc_simplify_findloc): New function.
+	(gfc_conv_intrinsic_findloc): New function.
+	(gfc_conv_intrinsic_function): Handle GFC_ISYM_FINDLOC.
+	(gfc_is_intrinsic_libcall): Likewise.
+
+2018-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/86907
+	* frontend-passes.c (check_locus_code): Add information that
+	warning about missing location information points to an
+	inconsisten internal state.
+	(check_locus_expr): Likewise.
+
 2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR fortran/87725

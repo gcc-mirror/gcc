@@ -5310,7 +5310,7 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 	}
 
       /* Validate the sentinel.  */
-      sentinel = argarray[nargs - 1 - pos];
+      sentinel = fold_for_warn (argarray[nargs - 1 - pos]);
       if ((!POINTER_TYPE_P (TREE_TYPE (sentinel))
 	   || !integer_zerop (sentinel))
 	  /* Although __null (in C++) is only an integer we allow it
@@ -5329,10 +5329,15 @@ check_function_sentinel (const_tree fntype, int nargs, tree *argarray)
 
 static bool
 check_function_restrict (const_tree fndecl, const_tree fntype,
-			 int nargs, tree *argarray)
+			 int nargs, tree *unfolded_argarray)
 {
   int i;
   tree parms = TYPE_ARG_TYPES (fntype);
+
+  /* Call fold_for_warn on all of the arguments.  */
+  auto_vec<tree> argarray (nargs);
+  for (i = 0; i < nargs; i++)
+    argarray.quick_push (fold_for_warn (unfolded_argarray[i]));
 
   if (fndecl
       && TREE_CODE (fndecl) == FUNCTION_DECL)
@@ -5370,7 +5375,7 @@ check_function_restrict (const_tree fndecl, const_tree fntype,
       if (POINTER_TYPE_P (type)
 	  && TYPE_RESTRICT (type)
 	  && !TYPE_READONLY (TREE_TYPE (type)))
-	warned |= warn_for_restrict (i, argarray, nargs);
+	warned |= warn_for_restrict (i, argarray.address (), nargs);
     }
 
   for (i = 0; i < nargs; i++)
@@ -5617,7 +5622,11 @@ attribute_fallthrough_p (tree attr)
 /* Check for valid arguments being passed to a function with FNTYPE.
    There are NARGS arguments in the array ARGARRAY.  LOC should be used
    for diagnostics.  Return true if either -Wnonnull or -Wrestrict has
-   been issued.  */
+   been issued.
+
+   The arguments in ARGARRAY may not have been folded yet (e.g. for C++,
+   to preserve location wrappers); checks that require folded arguments
+   should call fold_for_warn on them.  */
 
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,

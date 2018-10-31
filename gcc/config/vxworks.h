@@ -69,13 +69,19 @@ along with GCC; see the file COPYING3.  If not see
    libgcc.a that we need to use e.g. to satisfy references to __init and
    __fini.  We still want our libgcc to prevail for symbols it would provide
    (e.g. register save entry points), so re-place it here between libraries
-   that might reference it and libc_internal.  Also, some versions of VxWorks
-   rely on explicit extra libraries for system calls.  */
+   that might reference it and libc_internal.
+
+   In addition, some versions of VxWorks rely on explicit extra libraries for
+   system calls and the set of base network libraries of common use varies
+   across architectures.  The default settings defined here might be redefined
+   by target specific port configuration files.  */
 
 #define VXWORKS_SYSCALL_LIBS_RTP
 
+#define VXWORKS_NET_LIBS_RTP "-lnet -ldsi"
+
 #define VXWORKS_LIBS_RTP \
-  VXWORKS_SYSCALL_LIBS_RTP " -lnet -ldsi -lc -lgcc -lc_internal"
+  VXWORKS_SYSCALL_LIBS_RTP " " VXWORKS_NET_LIBS_RTP " -lc -lgcc -lc_internal"
 
 /* On Vx6 and previous, the libraries to pick up depends on the architecture,
    so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
@@ -175,6 +181,13 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 #define TARGET_POSIX_IO
 
 /* A VxWorks implementation of TARGET_OS_CPP_BUILTINS.  */
+
+/* The VxWorks personality we rely on, controlling which sections of system
+   headers files we trigger.  This might be redefined on targets where the
+   base VxWorks environment doesn't come with a GNU toolchain.  */
+
+#define VXWORKS_PERSONALITY "gnu"
+
 #define VXWORKS_OS_CPP_BUILTINS()					\
   do									\
     {									\
@@ -185,8 +198,8 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	builtin_define ("__RTP__");					\
       else								\
 	builtin_define ("_WRS_KERNEL");					\
-      builtin_define ("_VX_TOOL_FAMILY=gnu");				\
-      builtin_define ("_VX_TOOL=gnu");					\
+      builtin_define ("TOOL_FAMILY=" VXWORKS_PERSONALITY);		\
+      builtin_define ("TOOL=" VXWORKS_PERSONALITY);			\
       if (TARGET_VXWORKS7)						\
         {								\
            builtin_define ("_VSB_CONFIG_FILE=<config/vsbConfig.h>");	\
@@ -208,6 +221,7 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 
 /* We provide our own version of __clear_cache in libgcc, using a separate C
    file to facilitate #inclusion of VxWorks header files.  */
+#undef CLEAR_INSN_CACHE
 #define CLEAR_INSN_CACHE 1
 
 /* Default dwarf control values, for non-gdb debuggers that come with

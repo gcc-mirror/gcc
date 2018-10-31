@@ -4601,7 +4601,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (t) == PARM_DECL
+      else if (ort == C_ORT_OMP
+	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
 	       && DECL_NAME (t) == this_identifier)
 	{

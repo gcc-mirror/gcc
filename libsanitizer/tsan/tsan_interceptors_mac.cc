@@ -98,7 +98,7 @@ OSATOMIC_INTERCEPTORS_BITWISE(OSAtomicXor, fetch_xor,
   TSAN_INTERCEPTOR(bool, f, t old_value, t new_value, t volatile *ptr) {    \
     SCOPED_TSAN_INTERCEPTOR(f, old_value, new_value, ptr);                  \
     return tsan_atomic_f##_compare_exchange_strong(                         \
-        (tsan_t *)ptr, (tsan_t *)&old_value, (tsan_t)new_value,             \
+        (volatile tsan_t *)ptr, (tsan_t *)&old_value, (tsan_t)new_value,    \
         kMacOrderNonBarrier, kMacOrderNonBarrier);                          \
   }                                                                         \
                                                                             \
@@ -106,7 +106,7 @@ OSATOMIC_INTERCEPTORS_BITWISE(OSAtomicXor, fetch_xor,
                    t volatile *ptr) {                                       \
     SCOPED_TSAN_INTERCEPTOR(f##Barrier, old_value, new_value, ptr);         \
     return tsan_atomic_f##_compare_exchange_strong(                         \
-        (tsan_t *)ptr, (tsan_t *)&old_value, (tsan_t)new_value,             \
+        (volatile tsan_t *)ptr, (tsan_t *)&old_value, (tsan_t)new_value,    \
         kMacOrderBarrier, kMacOrderNonBarrier);                             \
   }
 
@@ -120,14 +120,14 @@ OSATOMIC_INTERCEPTORS_CAS(OSAtomicCompareAndSwap32, __tsan_atomic32, a32,
 OSATOMIC_INTERCEPTORS_CAS(OSAtomicCompareAndSwap64, __tsan_atomic64, a64,
                           int64_t)
 
-#define OSATOMIC_INTERCEPTOR_BITOP(f, op, clear, mo)          \
-  TSAN_INTERCEPTOR(bool, f, uint32_t n, volatile void *ptr) { \
-    SCOPED_TSAN_INTERCEPTOR(f, n, ptr);                       \
-    char *byte_ptr = ((char *)ptr) + (n >> 3);                \
-    char bit = 0x80u >> (n & 7);                              \
-    char mask = clear ? ~bit : bit;                           \
-    char orig_byte = op((a8 *)byte_ptr, mask, mo);            \
-    return orig_byte & bit;                                   \
+#define OSATOMIC_INTERCEPTOR_BITOP(f, op, clear, mo)             \
+  TSAN_INTERCEPTOR(bool, f, uint32_t n, volatile void *ptr) {    \
+    SCOPED_TSAN_INTERCEPTOR(f, n, ptr);                          \
+    volatile char *byte_ptr = ((volatile char *)ptr) + (n >> 3); \
+    char bit = 0x80u >> (n & 7);                                 \
+    char mask = clear ? ~bit : bit;                              \
+    char orig_byte = op((volatile a8 *)byte_ptr, mask, mo);      \
+    return orig_byte & bit;                                      \
   }
 
 #define OSATOMIC_INTERCEPTORS_BITOP(f, op, clear)               \
@@ -291,6 +291,43 @@ TSAN_INTERCEPTOR(void, xpc_connection_cancel, xpc_connection_t connection) {
 }
 
 #endif  // #if defined(__has_include) && __has_include(<xpc/xpc.h>)
+
+// Is the Obj-C object a tagged pointer (i.e. isn't really a valid pointer and
+// contains data in the pointers bits instead)?
+static bool IsTaggedObjCPointer(void *obj) {
+  const uptr kPossibleTaggedBits = 0x8000000000000001ull;
+  return ((uptr)obj & kPossibleTaggedBits) != 0;
+}
+
+// Return an address on which we can synchronize (Acquire and Release) for a
+// Obj-C tagged pointer (which is not a valid pointer). Ideally should be a
+// derived address from 'obj', but for now just return the same global address.
+// TODO(kubamracek): Return different address for different pointers.
+static uptr SyncAddressForTaggedPointer(void *obj) {
+  (void)obj;
+  static u64 addr;
+  return (uptr)&addr;
+}
+
+// Address on which we can synchronize for an Objective-C object. Supports
+// tagged pointers.
+static uptr SyncAddressForObjCObject(void *obj) {
+  if (IsTaggedObjCPointer(obj)) return SyncAddressForTaggedPointer(obj);
+  return (uptr)obj;
+}
+
+TSAN_INTERCEPTOR(int, objc_sync_enter, void *obj) {
+  SCOPED_TSAN_INTERCEPTOR(objc_sync_enter, obj);
+  int result = REAL(objc_sync_enter)(obj);
+  if (obj) Acquire(thr, pc, SyncAddressForObjCObject(obj));
+  return result;
+}
+
+TSAN_INTERCEPTOR(int, objc_sync_exit, void *obj) {
+  SCOPED_TSAN_INTERCEPTOR(objc_sync_enter, obj);
+  if (obj) Release(thr, pc, SyncAddressForObjCObject(obj));
+  return REAL(objc_sync_exit)(obj);
+}
 
 // On macOS, libc++ is always linked dynamically, so intercepting works the
 // usual way.

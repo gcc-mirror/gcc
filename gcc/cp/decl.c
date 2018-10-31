@@ -87,7 +87,7 @@ static void finish_constructor_body (void);
 static void begin_destructor_body (void);
 static void finish_destructor_body (void);
 static void record_key_method_defined (tree);
-static tree create_array_type_for_decl (tree, tree, tree);
+static tree create_array_type_for_decl (tree, tree, tree, location_t);
 static tree get_atexit_node (void);
 static tree get_dso_handle_node (void);
 static tree start_cleanup_fn (void);
@@ -9870,7 +9870,7 @@ get_scope_of_declarator (const cp_declarator *declarator)
    with this type.  */
 
 static tree
-create_array_type_for_decl (tree name, tree type, tree size)
+create_array_type_for_decl (tree name, tree type, tree size, location_t loc)
 {
   tree itype = NULL_TREE;
 
@@ -9883,9 +9883,9 @@ create_array_type_for_decl (tree name, tree type, tree size)
   if (type_uses_auto (type))
     {
       if (name)
-   error ("%qD declared as array of %qT", name, type);
+	error_at (loc, "%qD declared as array of %qT", name, type);
       else
-   error ("creating array of %qT", type);
+	error ("creating array of %qT", type);
       return error_mark_node;
     }
 
@@ -9895,28 +9895,29 @@ create_array_type_for_decl (tree name, tree type, tree size)
     {
     case VOID_TYPE:
       if (name)
-        error ("declaration of %qD as array of void", name);
+	error_at (loc, "declaration of %qD as array of void", name);
       else
         error ("creating array of void");
       return error_mark_node;
 
     case FUNCTION_TYPE:
       if (name)
-        error ("declaration of %qD as array of functions", name);
+	error_at (loc, "declaration of %qD as array of functions", name);
       else
         error ("creating array of functions");
       return error_mark_node;
 
     case REFERENCE_TYPE:
       if (name)
-        error ("declaration of %qD as array of references", name);
+	error_at (loc, "declaration of %qD as array of references", name);
       else
         error ("creating array of references");
       return error_mark_node;
 
     case METHOD_TYPE:
       if (name)
-        error ("declaration of %qD as array of function members", name);
+	error_at (loc, "declaration of %qD as array of function members",
+		  name);
       else
         error ("creating array of function members");
       return error_mark_node;
@@ -9932,9 +9933,9 @@ create_array_type_for_decl (tree name, tree type, tree size)
   if (TREE_CODE (type) == ARRAY_TYPE && !TYPE_DOMAIN (type))
     {
       if (name)
-	error ("declaration of %qD as multidimensional array must "
-	       "have bounds for all dimensions except the first",
-	       name);
+	error_at (loc, "declaration of %qD as multidimensional array must "
+		  "have bounds for all dimensions except the first",
+		  name);
       else
 	error ("multidimensional array must have bounds for all "
 	       "dimensions except the first");
@@ -11199,7 +11200,8 @@ grokdeclarator (const cp_declarator *declarator,
 	{
 	case cdk_array:
 	  type = create_array_type_for_decl (dname, type,
-					     declarator->u.array.bounds);
+					     declarator->u.array.bounds,
+					     declarator->id_loc);
 	  if (!valid_array_size_p (input_location, type, dname))
 	    type = error_mark_node;
 
@@ -12246,7 +12248,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  /* Do not warn on flexible array members in system
 		     headers because glibc uses them.  */;
 		else if (name)
-		  pedwarn (input_location, OPT_Wpedantic,
+		  pedwarn (declarator->id_loc, OPT_Wpedantic,
 			   "ISO C++ forbids flexible array member %qs", name);
 		else
 		  pedwarn (input_location, OPT_Wpedantic,
@@ -12418,6 +12420,9 @@ grokdeclarator (const cp_declarator *declarator,
 	       is called a converting constructor.  */
 	    if (explicitp == 2)
 	      DECL_NONCONVERTING_P (decl) = 1;
+
+	    if (declspecs->explicit_specifier)
+	      store_explicit_specifier (decl, declspecs->explicit_specifier);
 	  }
 	else if (!staticp && !dependent_type_p (type)
 		 && !COMPLETE_TYPE_P (complete_type (type))
@@ -16603,6 +16608,22 @@ require_deduced_type (tree decl, tsubst_flags_t complain)
       return false;
     }
   return true;
+}
+
+/* Create a representation of the explicit-specifier with
+   constant-expression of EXPR.  COMPLAIN is as for tsubst.  */
+
+tree
+build_explicit_specifier (tree expr, tsubst_flags_t complain)
+{
+  if (processing_template_decl && value_dependent_expression_p (expr))
+    /* Wait for instantiation, tsubst_function_decl will handle it.  */
+    return expr;
+
+  expr = build_converted_constant_expr (boolean_type_node, expr, complain);
+  expr = instantiate_non_dependent_expr (expr);
+  expr = cxx_constant_value (expr);
+  return expr;
 }
 
 #include "gt-cp-decl.h"

@@ -4264,8 +4264,8 @@ nios2_valid_target_attribute_rec (tree args)
 			    continue;
 			  if (!ISDIGIT (*t))
 			    {			 
-			      error ("`custom-%s=' argument requires "
-				     "numeric digits", N2FPU_NAME (code));
+			      error ("%<custom-%s=%> argument should be "
+				     "a non-negative integer", N2FPU_NAME (code));
 			      return false;
 			    }
 			}

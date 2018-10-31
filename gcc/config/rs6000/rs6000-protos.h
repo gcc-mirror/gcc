@@ -47,6 +47,7 @@ extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (machine_mode);
+extern rtx rs6000_force_indexed_or_indirect_mem (rtx x);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -223,6 +224,9 @@ extern void rs6000_activate_target_options (tree new_tree);
 extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
+
+/* Declare functions in rs6000-d.c  */
+extern void rs6000_d_target_versions (void);
 
 #if TARGET_MACHO
 char *output_call (rtx_insn *, rtx *, int, int);

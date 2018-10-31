@@ -1,3 +1,254 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/using60.C: New.
+
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/70359
+	PR middle-end/86270
+	* gcc.target/i386/pr70359.c: New testcase.
+	* gcc.target/i386/pr86270.c: Likewise.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/jumptable.c: New test.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/tls-gd.c: New file.
+	* gcc.target/arc/tls-ie.c: Likewise.
+	* gcc.target/arc/tls-ld.c: Likewise.
+	* gcc.target/arc/tls-le.c: Likewise.
+	* gcc.target/arc/tls-1.c: Update test.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/mulsi3_highpart-2.c: Update test.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* c-c++-common/ubsan/pr63839.c: Update to new sanitizer message.
+	* c-c++-common/ubsan/unreachable-1.c (main): Likewise.
+	* c-c++-common/ubsan/unreachable-2.c: Likewise.
+	* c-c++-common/ubsan/unreachable-4.c (main): Likewise.
+
+2018-10-31  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
+
+	PR target/87374
+	* gcc.target/arm/movdi_movt.c: Skip if both -mslow-flash-data and
+	-mword-relocations would be passed when compiling the test.
+	* gcc.target/arm/movsi_movt.c: Likewise.
+	* gcc.target/arm/pr81863.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-1.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-2.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-3.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-4.c: Likewise.
+	* gcc.target/arm/thumb2-slow-flash-data-5.c: Likewise.
+	* gcc.target/arm/tls-disable-literal-pool.c: Likewise.
+
+2018-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/87802
+	* g++.dg/vect/slp-pr87105.cc: XFAIL for strict alignment targets.
+
+2018-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/85896
+	* gfortran.dg/min_max_type.f90: New test.
+
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* gcc.c-torture/execute/fprintf-2.c: New test.
+	* gcc.c-torture/execute/printf-2.c: Same.
+	* gcc.c-torture/execute/user-printf.c: Same.
+	* gcc.dg/tree-ssa/builtin-fprintf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/builtin-printf-2.c: Same.
+	* gcc.dg/tree-ssa/builtin-printf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/user-printf-warn-1.c: Same.
+
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* g++.dg/cpp2a/explicit1.C: New test.
+	* g++.dg/cpp2a/explicit10.C: New test.
+	* g++.dg/cpp2a/explicit11.C: New test.
+	* g++.dg/cpp2a/explicit12.C: New test.
+	* g++.dg/cpp2a/explicit13.C: New test.
+	* g++.dg/cpp2a/explicit2.C: New test.
+	* g++.dg/cpp2a/explicit3.C: New test.
+	* g++.dg/cpp2a/explicit4.C: New test.
+	* g++.dg/cpp2a/explicit5.C: New test.
+	* g++.dg/cpp2a/explicit6.C: New test.
+	* g++.dg/cpp2a/explicit7.C: New test.
+	* g++.dg/cpp2a/explicit8.C: New test.
+	* g++.dg/cpp2a/explicit9.C: New test.
+
+2018-10-30  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87708
+	* gcc.dg/ira-shrinkwrap-prep-1.c: xfail test.
+	* gcc.dg/ira-shrinkwrap-prep-2.c: xfail test.
+
+2018-10-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp1z/has-unique-obj-representations1.C: Test location too.
+	* g++.dg/ext/flexarray-mangle-2.C: Likewise.
+	* g++.dg/ext/flexarray-mangle.C: Likewise.
+	* g++.dg/ext/flexarray-subst.C: Likewise.
+	* g++.dg/ext/flexary10.C: Likewise.
+	* g++.dg/ext/flexary11.C: Likewise.
+	* g++.dg/ext/flexary14.C: Likewise.
+	* g++.dg/ext/flexary16.C: Likewise.
+	* g++.dg/ext/flexary26.C: Likewise.
+	* g++.dg/ext/flexary27.C: Likewise.
+	* g++.dg/ext/flexary7.C: Likewise.
+	* g++.dg/ext/pr71290.C: Likewise.
+
+2018-10-30  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.dg/tree-ssa/attr-alias.c: Skip if no weak support.
+
+2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* gcc.dg/tree-prof/cold_partition_label.c: Update for cold
+	  section names without numbers.
+	* gcc.dg/tree-prof/section-attr-1.c: Ditto.
+	* gcc.dg/tree-prof/section-attr-2.c: Ditto.
+	* gcc.dg/tree-prof/section-attr-3.c: Ditto.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/87721
+	* c-c++-common/substring-location-PR-87721.c: New test.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c: Add test for
+	PR 87721.
+	* gcc.dg/plugin/diagnostic_plugin_test_string_literals.c
+	(test_string_literals): Fold the index arguments before checking
+	for INTEGER_CST.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/spellcheck-reserved.c: Update expected output for
+	C++ for merger of "did you mean" suggestions into the error
+	message.
+	* g++.dg/ext/builtin3.C: Update expected output for merger of "did
+	you mean" suggestion into the error.
+	* g++.dg/lookup/error1.C: Likewise.
+	* g++.dg/lookup/pr77549.C: Likewise.
+	* g++.dg/lookup/pr80913.C: Likewise.
+	* g++.dg/lookup/suggestions1.C: Likewise.
+	* g++.dg/lookup/suggestions2.C: New test.
+	* g++.dg/overload/koenig1.C: Update expected output as above.
+	* g++.dg/spellcheck-identifiers-2.C: Likewise.
+	* g++.dg/spellcheck-identifiers.C: Likewise.
+	* g++.dg/spellcheck-ns.C: New test.
+	* g++.dg/spellcheck-pr77829.C: Update expected output as above.
+	* g++.dg/spellcheck-pr78656.C: Likewise.
+	* g++.dg/spellcheck-pr79298.C: Likewise, adding
+	-fdiagnostics-show-caret to options.
+	* g++.dg/spellcheck-pr80177.C: Likewise.
+	* g++.dg/spellcheck-single-vs-multiple.C: New test.
+	* g++.dg/spellcheck-typenames.C: Update expected output as above.
+	* g++.dg/template/static10.C: Likewise.
+	* g++.old-deja/g++.mike/ns5.C: Likewise.
+	* g++.old-deja/g++.mike/ns7.C: Likewise.
+	* g++.old-deja/g++.ns/koenig5.C: Likewise.
+	* g++.old-deja/g++.other/lineno5.C: Likewise.
+
+2018-10-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/auto24.C: Test location too.
+	* g++.dg/cpp0x/auto3.C: Likewise.
+	* g++.dg/cpp0x/auto42.C: Likewise.
+	* g++.dg/cpp0x/initlist57.C: Likewise.
+	* g++.dg/cpp0x/initlist75.C: Likewise.
+	* g++.dg/cpp0x/initlist80.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-ice13.C: Likewise.
+	* g++.old-deja/g++.brendan/array-refs.C: Likewise.
+	* g++.old-deja/g++.bugs/900322_01.C: Likewise.
+	* g++.old-deja/g++.bugs/900519_07.C: Likewise.
+	* g++.old-deja/g++.other/typeck1.C: Likewise.
+
+2018-10-29  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/87469
+	* g++.dg/pr87469.C: New test.
+
+2018-10-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/87594 - constexpr rejects-valid with range-based for.
+	* g++.dg/cpp1y/constexpr-loop8.C: New test.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87785
+	* gcc.dg/torture/20181029-1.c: New testcase.
+	* gcc.dg/torture/20181029-2.c: Likewise.
+
+2018-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87790
+	* gcc.dg/pr87790.c: New testcase.
+
+2018-10-29  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/gcov-8.C: Do not check intermediate format.
+	* lib/gcov.exp: Remove legacy verify-intermediate.
+
+2018-10-28  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.dg/gimplefe-30.c: New test.
+	* gcc.dg/gimplefe-31.c: New test.
+	* gcc.dg/gimplefe-32.c: New test.
+	* gcc.dg/gimplefe-33.c: New test.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* gcc.misc-tests/help.exp: Add D to option descriptions check.
+	* gdc.dg/asan/asan.exp: New file.
+	* gdc.dg/asan/gdc272.d: New test.
+	* gdc.dg/compilable.d: New test.
+	* gdc.dg/dg.exp: New file.
+	* gdc.dg/gdc254.d: New test.
+	* gdc.dg/gdc260.d: New test.
+	* gdc.dg/gdc270a.d: New test.
+	* gdc.dg/gdc270b.d: New test.
+	* gdc.dg/gdc282.d: New test.
+	* gdc.dg/gdc283.d: New test.
+	* gdc.dg/imports/gdc170.d: New test.
+	* gdc.dg/imports/gdc231.d: New test.
+	* gdc.dg/imports/gdc239.d: New test.
+	* gdc.dg/imports/gdc241a.d: New test.
+	* gdc.dg/imports/gdc241b.d: New test.
+	* gdc.dg/imports/gdc251a.d: New test.
+	* gdc.dg/imports/gdc251b.d: New test.
+	* gdc.dg/imports/gdc253.d: New test.
+	* gdc.dg/imports/gdc254a.d: New test.
+	* gdc.dg/imports/gdc256.d: New test.
+	* gdc.dg/imports/gdc27.d: New test.
+	* gdc.dg/imports/gdcpkg256/package.d: New test.
+	* gdc.dg/imports/runnable.d: New test.
+	* gdc.dg/link.d: New test.
+	* gdc.dg/lto/lto.exp: New file.
+	* gdc.dg/lto/ltotests_0.d: New test.
+	* gdc.dg/lto/ltotests_1.d: New test.
+	* gdc.dg/runnable.d: New test.
+	* gdc.dg/simd.d: New test.
+	* gdc.test/gdc-test.exp: New file.
+	* lib/gdc-dg.exp: New file.
+	* lib/gdc.exp: New file.
+
+2017-10-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.dg/findloc_1.f90: New test.
+	* gfortran.dg/findloc_2.f90: New test.
+	* gfortran.dg/findloc_3.f90: New test.
+	* gfortran.dg/findloc_4.f90: New test.
+	* gfortran.dg/findloc_5.f90: New test.
+	* gfortran.dg/findloc_6.f90: New test.
+
 2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
             Jinsong Ji  <jji@us.ibm.com>
 

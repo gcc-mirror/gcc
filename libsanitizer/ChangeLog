@@ -1,3 +1,53 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update to installed revisions.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* ubsan/ubsan_platform.h: Add ifndef as we define it with
+	-DCAN_SANITIZE_UB CFLAGS.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* asan/asan_mapping.h: Revert shadow memory offset to 1 << 41.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Update patch list.
+	* asan/asan_globals.cc (CheckODRViolationViaIndicator): Apply
+	patches from GCC's trunk.
+	(CheckODRViolationViaPoisoning): Likewise.
+	(RegisterGlobal): Likewise.
+	* sanitizer_common/sanitizer_mac.cc (defined): Likewise.
+	* sanitizer_common/sanitizer_stacktrace.cc (GetCanonicFrame): Likewise.
+	* ubsan/ubsan_handlers.cc (__ubsan::__ubsan_handle_cfi_bad_icall): Likewise.
+	(__ubsan::__ubsan_handle_cfi_bad_icall_abort): Likewise.
+	* ubsan/ubsan_handlers.h (struct CFIBadIcallData): Likewise.
+	(struct CFICheckFailData): Likewise.
+	(RECOVERABLE): Likewise.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* sanitizer_common/Makefile.am: Include new files, remove old
+	files.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* ubsan/Makefile.am: Include new files, remove old
+	files.
+	* ubsan/Makefile.in: Likewise.
+	* asan/Makefile.am: Include new files.
+	* asan/Makefile.in: Regenerate.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* All source files: Merge from upstream 345033.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* HOWTO_MERGE: Enhance documentation.
+	* merge.sh: Add support for git as well.
+
 2018-08-02  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/86022

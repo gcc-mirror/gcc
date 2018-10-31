@@ -359,6 +359,7 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_1) gfc_array_i1;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_2) gfc_array_i2;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_4) gfc_array_i4;
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_8) gfc_array_i8;
+typedef GFC_ARRAY_DESCRIPTOR (index_type) gfc_array_index_type;
 #ifdef HAVE_GFC_INTEGER_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_INTEGER_16) gfc_array_i16;
 #endif
@@ -385,8 +386,9 @@ typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_8) gfc_array_l8;
 #ifdef HAVE_GFC_LOGICAL_16
 typedef GFC_ARRAY_DESCRIPTOR (GFC_LOGICAL_16) gfc_array_l16;
 #endif
-typedef gfc_array_i1 gfc_array_s1;
-typedef gfc_array_i4 gfc_array_s4;
+
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_1) gfc_array_s1;
+typedef GFC_ARRAY_DESCRIPTOR (GFC_UINTEGER_4) gfc_array_s4;
 
 /* These are for when you actually want to declare a descriptor, as
    opposed to a pointer to it.  */
@@ -1757,7 +1759,9 @@ void cshift1_16_c16 (gfc_array_c16 * const restrict,
 internal_proto(cshift1_16_c16);
 #endif
 
-/* Define this if we support asynchronous I/O on this platform.  This
-   currently requires weak symbols.  */
+/* We always have these.  */
+
+#define HAVE_GFC_UINTEGER_1 1
+#define HAVE_GFC_UINTEGER_4 1
 
 #endif  /* LIBGFOR_H  */

@@ -1,3 +1,29 @@
+2018-10-30  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/87041
+	* c-format.c (check_format_types): Avoid diagnosing null pointer
+	arguments to printf-family of functions.
+
+2018-10-30  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0892R2, explicit(bool).
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_explicit_bool.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	* name-hint.h (name_hint::take_deferred): New member function.
+
+2018-10-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/56856
+	* c-common.c (check_function_sentinel): Call fold_for_warn on the
+	argument.
+	(check_function_restrict): Rename param "argarray" to
+	"unfolded_argarray", and make a copy named "argarray", calling
+	fold_for_warn on each argument.
+	(check_function_arguments): Add note about responsibility for
+	folding the arguments.
+
 2018-10-17  Joseph Myers  <joseph@codesourcery.com>
 
 	* c-common.c (flag_isoc2x): New variable.
