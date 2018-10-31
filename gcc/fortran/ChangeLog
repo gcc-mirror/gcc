@@ -1,3 +1,8 @@
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
+	* trans-decl.c (struct module_hasher): Call htab_hash_string
+	for s->name and not for s.
+
 2018-10-30  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/85896
