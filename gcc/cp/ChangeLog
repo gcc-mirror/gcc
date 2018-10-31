@@ -1,3 +1,13 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (OVL_DEDUP_P): New.
+	* name-lookup.c (name_lookup::add_overload): Check OVL_DEDUP_P.
+	(get_class_binding_direct): Likwise.
+	* tree.c (ovl_make): Propagate OVL_DEDUP_P.
+	(ovl_copy): Copy it.
+	(ovl_insert): Do not keep using-decls ordered.
+	(lookup_maybe_add): Adjust comment.
+
 2018-10-30  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0892R2, explicit(bool).

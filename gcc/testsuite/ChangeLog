@@ -1,3 +1,7 @@
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/using60.C: New.
+
 2018-10-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/70359
