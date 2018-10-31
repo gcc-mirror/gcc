@@ -263,6 +263,9 @@ EnumValue
 Enum(arc_tune_attr) String(arc601) Value(ARC_TUNE_ARC600)
 
 EnumValue
+Enum(arc_tune_attr) String(arc7xx) Value(ARC_TUNE_ARC7XX)
+
+EnumValue
 Enum(arc_tune_attr) String(arc700) Value(ARC_TUNE_ARC700_4_2_STD)
 
 EnumValue

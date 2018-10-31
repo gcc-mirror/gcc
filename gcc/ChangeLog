@@ -1,5 +1,23 @@
 2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc-arch.h (ARC_TUNE_ARC7XX): New tune value.
+	* config/arc/arc.c (arc_active_insn): New function.
+	(check_store_cacheline_hazard): Likewise.
+	(workaround_arc_anomaly): Use check_store_cacheline_hazard.
+	(arc_override_options): Disable delay slot scheduler for older
+	A7.
+	(arc_store_addr_hazard_p): New implementation, old one renamed to
+	...
+	(arc_store_addr_hazard_internal_p): Renamed.
+	(arc_reorg): Don't combine into brcc instructions which are part
+	of hardware hazard solution.
+	* config/arc/arc.md (attr tune): Consider new arc7xx tune value.
+	(tune_arc700): Likewise.
+	* config/arc/arc.opt (arc7xx): New tune value.
+	* config/arc/arc700.md: Improve A7 scheduler.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_override_options): Remove
 	TARGET_COMPACT_CASESI.
 	* config/arc/arc.h (ASM_OUTPUT_ADDR_DIFF_ELT): Update.

@@ -1303,6 +1303,10 @@ arc_override_options (void)
   if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
     g_switch_value = TARGET_LL64 ? 8 : 4;
 
+  /* A7 has an issue with delay slots.  */
+  if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
+    flag_delayed_branch = 0;
+
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
 }
@@ -7137,11 +7141,90 @@ arc_invalid_within_doloop (const rtx_insn *insn)
   return NULL;
 }
 
+/* Return the next active insn, skiping the inline assembly code.  */
+
+static rtx_insn *
+arc_active_insn (rtx_insn *insn)
+{
+  rtx_insn *nxt = next_active_insn (insn);
+
+  if (nxt && GET_CODE (PATTERN (nxt)) == ASM_INPUT)
+    nxt = next_active_insn (nxt);
+  return nxt;
+}
+
+/* Search for a sequence made out of two stores and a given number of
+   loads, insert a nop if required.  */
+
+static void
+check_store_cacheline_hazard (void)
+{
+  rtx_insn *insn, *succ0, *insn1;
+  bool found = false;
+
+  for (insn = get_insns (); insn; insn = arc_active_insn (insn))
+    {
+      succ0 = arc_active_insn (insn);
+
+      if (!succ0)
+	return;
+
+      if (!single_set (insn) || !single_set (succ0))
+	continue;
+
+      if ((get_attr_type (insn) != TYPE_STORE)
+	  || (get_attr_type (succ0) != TYPE_STORE))
+	continue;
+
+      /* Found at least two consecutive stores.  Goto the end of the
+	 store sequence.  */
+      for (insn1 = succ0; insn1; insn1 = arc_active_insn (insn1))
+	if (!single_set (insn1) || get_attr_type (insn1) != TYPE_STORE)
+	  break;
+
+      /* Now, check the next two instructions for the following cases:
+         1. next instruction is a LD => insert 2 nops between store
+	    sequence and load.
+	 2. next-next instruction is a LD => inset 1 nop after the store
+	    sequence.  */
+      if (insn1 && single_set (insn1)
+	  && (get_attr_type (insn1) == TYPE_LOAD))
+	{
+	  found = true;
+	  emit_insn_before (gen_nopv (), insn1);
+	  emit_insn_before (gen_nopv (), insn1);
+	}
+      else
+	{
+	  if (insn1 && (get_attr_type (insn1) == TYPE_COMPARE))
+	    {
+	      /* REG_SAVE_NOTE is used by Haifa scheduler, we are in
+		 reorg, so it is safe to reuse it for avoiding the
+		 current compare insn to be part of a BRcc
+		 optimization.  */
+	      add_reg_note (insn1, REG_SAVE_NOTE, GEN_INT (3));
+	    }
+	  insn1 = arc_active_insn (insn1);
+	  if (insn1 && single_set (insn1)
+	      && (get_attr_type (insn1) == TYPE_LOAD))
+	    {
+	      found = true;
+	      emit_insn_before (gen_nopv (), insn1);
+	    }
+	}
+
+      insn = insn1;
+      if (found)
+	found = false;
+    }
+}
+
 /* Return true if a load instruction (CONSUMER) uses the same address as a
    store instruction (PRODUCER).  This function is used to avoid st/ld
    address hazard in ARC700 cores.  */
-bool
-arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
+
+static bool
+arc_store_addr_hazard_internal_p (rtx_insn* producer, rtx_insn* consumer)
 {
   rtx in_set, out_set;
   rtx out_addr, in_addr;
@@ -7189,6 +7272,16 @@ arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
   return false;
 }
 
+/* Return TRUE is we have an store address hazard.  */
+
+bool
+arc_store_addr_hazard_p (rtx_insn* producer, rtx_insn* consumer)
+{
+  if (TARGET_ARC700 && (arc_tune != ARC_TUNE_ARC7XX))
+    return true;
+  return arc_store_addr_hazard_internal_p (producer, consumer);
+}
+
 /* The same functionality as arc_hazard.  It is called in machine
    reorg before any other optimization.  Hence, the NOP size is taken
    into account when doing branch shortening.  */
@@ -7197,6 +7290,7 @@ static void
 workaround_arc_anomaly (void)
 {
   rtx_insn *insn, *succ0;
+  rtx_insn *succ1;
 
   /* For any architecture: call arc_hazard here.  */
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
@@ -7208,27 +7302,30 @@ workaround_arc_anomaly (void)
 	}
     }
 
-  if (TARGET_ARC700)
+  if (!TARGET_ARC700)
+    return;
+
+  /* Old A7 are suffering of a cache hazard, and we need to insert two
+     nops between any sequence of stores and a load.  */
+  if (arc_tune != ARC_TUNE_ARC7XX)
+    check_store_cacheline_hazard ();
+
+  for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      rtx_insn *succ1;
-
-      for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
+      succ0 = next_real_insn (insn);
+      if (arc_store_addr_hazard_internal_p (insn, succ0))
 	{
-	  succ0 = next_real_insn (insn);
-	  if (arc_store_addr_hazard_p (insn, succ0))
-	    {
-	      emit_insn_after (gen_nopv (), insn);
-	      emit_insn_after (gen_nopv (), insn);
-	      continue;
-	    }
-
-	  /* Avoid adding nops if the instruction between the ST and LD is
-	     a call or jump.  */
-	  succ1 = next_real_insn (succ0);
-	  if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
-	      && arc_store_addr_hazard_p (insn, succ1))
-	    emit_insn_after (gen_nopv (), insn);
+	  emit_insn_after (gen_nopv (), insn);
+	  emit_insn_after (gen_nopv (), insn);
+	  continue;
 	}
+
+      /* Avoid adding nops if the instruction between the ST and LD is
+	 a call or jump.  */
+      succ1 = next_real_insn (succ0);
+      if (succ0 && !JUMP_P (succ0) && !CALL_P (succ0)
+	  && arc_store_addr_hazard_internal_p (insn, succ1))
+	emit_insn_after (gen_nopv (), insn);
     }
 }
 
@@ -7866,10 +7963,14 @@ arc_reorg (void)
 	      if (!link_insn)
 		continue;
 	      else
-		/* Check if this is a data dependency.  */
 		{
+		  /* Check if this is a data dependency.  */
 		  rtx op, cc_clob_rtx, op0, op1, brcc_insn, note;
 		  rtx cmp0, cmp1;
+
+		  /* Make sure we can use it for brcc insns.  */
+		  if (find_reg_note (link_insn, REG_SAVE_NOTE, GEN_INT (3)))
+		    continue;
 
 		  /* Ok this is the set cc. copy args here.  */
 		  op = XEXP (pc_target, 0);
