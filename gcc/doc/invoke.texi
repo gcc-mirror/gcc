@@ -17034,7 +17034,7 @@ this option and always use the original scheme.
 Only generate absolute relocations on word-sized values (i.e. R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
-is specified.
+is specified. This option conflicts with @option{-mslow-flash-data}.
 
 @item -mfix-cortex-m3-ldrd
 @opindex mfix-cortex-m3-ldrd
@@ -17071,7 +17071,7 @@ to Neon is high.
 Assume loading data from flash is slower than fetching instruction.
 Therefore literal load is minimized for better performance.
 This option is only supported when compiling for ARMv7 M-profile and
-off by default.
+off by default. It conflicts with @option{-mword-relocations}.
 
 @item -masm-syntax-unified
 @opindex masm-syntax-unified
