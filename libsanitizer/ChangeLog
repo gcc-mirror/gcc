@@ -1,5 +1,9 @@
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
+	* asan/asan_mapping.h: Revert shadow memory offset to 1 << 41.
+
+2018-10-31  Martin Liska  <mliska@suse.cz>
+
 	* LOCAL_PATCHES: Update patch list.
 	* asan/asan_globals.cc (CheckODRViolationViaIndicator): Apply
 	patches from GCC's trunk.
