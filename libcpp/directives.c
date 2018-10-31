@@ -133,35 +133,30 @@ static void do_pragma_push_macro (cpp_reader *);
 static void do_pragma_pop_macro (cpp_reader *);
 static void cpp_pop_definition (cpp_reader *, struct def_pragma_macro *);
 
-/* This is the table of directive handlers.  It is ordered by
-   frequency of occurrence; the numbers at the end are directive
-   counts from all the source code I have lying around (egcs and libc
-   CVS as of 1999-05-18, plus grub-0.5.91, linux-2.2.9, and
-   pcmcia-cs-3.0.9).  This is no longer important as directive lookup
-   is now O(1).  All extensions other than #warning, #include_next,
-   and #import are deprecated.  The name is where the extension
-   appears to have come from.  */
+/* This is the table of directive handlers.  All extensions other than
+   #warning, #include_next, and #import are deprecated.  The name is
+   where the extension appears to have come from.  */
 
 #define DIRECTIVE_TABLE							\
-D(define,	T_DEFINE = 0,	KANDR,     IN_I)	   /* 270554 */ \
-D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)  /*  52262 */ \
-D(endif,	T_ENDIF,	KANDR,     COND)	   /*  45855 */ \
-D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND) /*  22000 */ \
-D(if,		T_IF,		KANDR, COND | IF_COND | EXPAND) /*  18162 */ \
-D(else,		T_ELSE,		KANDR,     COND)	   /*   9863 */ \
-D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND) /*   9675 */ \
-D(undef,	T_UNDEF,	KANDR,     IN_I)	   /*   4837 */ \
-D(line,		T_LINE,		KANDR,     EXPAND)	   /*   2465 */ \
-D(elif,		T_ELIF,		STDC89,    COND | EXPAND)  /*    610 */ \
-D(error,	T_ERROR,	STDC89,    0)		   /*    475 */ \
-D(pragma,	T_PRAGMA,	STDC89,    IN_I)	   /*    195 */ \
-D(warning,	T_WARNING,	EXTENSION, 0)		   /*     22 */ \
-D(include_next,	T_INCLUDE_NEXT,	EXTENSION, INCL | EXPAND)  /*     19 */ \
-D(ident,	T_IDENT,	EXTENSION, IN_I)           /*     11 */ \
-D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* 0 ObjC */	\
-D(assert,	T_ASSERT,	EXTENSION, DEPRECATED)	   /* 0 SVR4 */	\
-D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED)	   /* 0 SVR4 */	\
-D(sccs,		T_SCCS,		EXTENSION, IN_I)           /* 0 SVR4? */
+  D(define,	T_DEFINE = 0,	KANDR,     IN_I)			\
+  D(include,	T_INCLUDE,	KANDR,     INCL | EXPAND)		\
+  D(endif,	T_ENDIF,	KANDR,     COND)			\
+  D(ifdef,	T_IFDEF,	KANDR,     COND | IF_COND)		\
+  D(if,		T_IF,		KANDR, 	   COND | IF_COND | EXPAND) 	\
+  D(else,	T_ELSE,		KANDR,     COND)	   		\
+  D(ifndef,	T_IFNDEF,	KANDR,     COND | IF_COND)		\
+  D(undef,	T_UNDEF,	KANDR,     IN_I)			\
+  D(line,	T_LINE,		KANDR,     EXPAND)			\
+  D(elif,	T_ELIF,		STDC89,    COND | EXPAND)		\
+  D(error,	T_ERROR,	STDC89,    0)				\
+  D(pragma,	T_PRAGMA,	STDC89,    IN_I)			\
+  D(warning,	T_WARNING,	EXTENSION, 0)				\
+  D(include_next, T_INCLUDE_NEXT, EXTENSION, INCL | EXPAND)		\
+  D(ident,	T_IDENT,	EXTENSION, IN_I)			\
+  D(import,	T_IMPORT,	EXTENSION, INCL | EXPAND)  /* ObjC */	\
+  D(assert,	T_ASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(unassert,	T_UNASSERT,	EXTENSION, DEPRECATED)	   /* SVR4 */	\
+  D(sccs,	T_SCCS,		EXTENSION, IN_I)   	   /*  SVR4? */
 
 /* #sccs is synonymous with #ident.  */
 #define do_sccs do_ident
