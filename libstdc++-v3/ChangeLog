@@ -1,5 +1,7 @@
 2018-10-31  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/pair/87822.cc: Test deeper nesting.
+
 	PR libstdc++/87822
 	* include/bits/stl_pair.h (__pair_base): Change to class template.
 	(pair): Make base class type depend on template parameters.
