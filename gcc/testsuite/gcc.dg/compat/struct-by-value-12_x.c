@@ -1,3 +1,5 @@
+/* { dg-skip-if "limited code space" { pdp11-*-* } } */
+
 #include "compat-common.h"
 
 #include "fp-struct-defs.h"

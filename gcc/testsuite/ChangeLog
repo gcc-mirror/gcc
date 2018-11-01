@@ -1,3 +1,48 @@
+2018-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.c-torture/execute/20010904-1.c: Align 2 if pdp11.
+	* gcc.c-torture/execute/20010904-2.c: Ditto.
+	* c-c++-common/builtin-arith-overflow-2.c: Skip if pdp11.
+	* gcc.dg/Walloc-size-larger-than-4.c: Ditto.
+	* gcc.dg/Walloc-size-larger-than-5.c: Ditto.
+	* gcc.dg/Walloc-size-larger-than-6.c: Ditto.
+	* gcc.dg/Walloc-size-larger-than-7.c: Ditto.
+	* gcc.dg/Walloca-14.c: Ditto.
+	* gcc.dg/Wlarger-than3.c: Ditto.
+	* gcc.dg/compat/pr83487-1_y.c: Ditto.
+	* gcc.dg/compat/struct-by-value-2_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-3_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-4_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-5b_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-6b_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-7b_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-8_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-9_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-10_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-11_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-12_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-13_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-14_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-15_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-16_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-17_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-18_x.c: Ditto.
+	* gcc.dg/compat/struct-by-value-22_x.c: Ditto.
+	* gcc.dg/compat/struct-return-2_x.c: Ditto.
+	* gcc.dg/falign-labels-1.c: Ditto.
+	* gcc.dg/long_branch.c: Ditto.
+	* gcc.dg/nextafter-1.c: Ditto.
+	* gcc.dg/pr35045.c: Ditto.
+	* gcc.dg/pr48616.c: Ditto.
+	* gcc.dg/pr84100.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-9.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Ditto.
+	* gcc.dg/tree-ssa/builtin-sprintf.c: Ditto.
+	* gcc.dg/Wattributes-10.c: Expect error if pdp11.
+	* gcc.dg/attr-alloc_size-11.c: Don't XFAIL if pdp11.
+	* gcc.dg/builtin-inf-1.c: Add pdp11 to warnings about INF.
+	* gcc.dg/builtins-1.c: Ditto.
+
 2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/46020
