@@ -1,3 +1,14 @@
+2018-11-01  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/64266
+	PR bootstrap/70422
+	PR ipa/81277
+	* g++.dg/cpp0x/constexpr-__func__2.C: Make it a compilation
+	test.
+	* g++.old-deja/g++.ext/pretty4.C: Remove as the run-time
+	assumptions are not longer valid.
+
 2018-10-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/20520

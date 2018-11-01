@@ -1,3 +1,16 @@
+2018-11-01  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/64266
+	PR bootstrap/70422
+	PR ipa/81277
+	* cp-tree.h (DECL_FNAME_P): New macro.
+	* decl.c (cp_make_fname_decl): Set DECL_DECLARED_CONSTEXPR_P,
+        DECL_VALUE_EXPR, DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	(cp_finish_decl):
+	* lambda.c (is_capture_proxy): Use DECL_FNAME_P.
+	* pt.c (tsubst_expr): Handle DECL_PRETTY_FUNCTION_P.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (OVL_DEDUP_P): New.
