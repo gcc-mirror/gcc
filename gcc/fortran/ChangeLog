@@ -1,5 +1,10 @@
 2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/46020
+	* decl.c (verify_bind_c_sym): Improve error message.
+
+2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/54613
 	* gfortran.texi (File format of unformatted sequential files):
 	Replace random comma with period.
