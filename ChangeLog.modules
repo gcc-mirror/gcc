@@ -1,5 +1,8 @@
 2018-11-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r265714.
+	Move to autoconf 2.69.
+
 	gcc/cp/
 	* module.cc (module_state::read): Don't read macros for
 	preprocessed innput.

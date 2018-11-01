@@ -23,7 +23,6 @@
 # Initialization and sanity checks
 # --------------------------------
 
-AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR(tree.c)
 AC_CONFIG_HEADER(auto-host.h:config.in)
@@ -450,11 +449,11 @@ if test "$GCC" = yes; then
   # -fno-strict-aliasing *and* is older than GCC 4.3.
   CXXFLAGS="$CXXFLAGS -fno-strict-aliasing"
   AC_MSG_CHECKING([whether $CXX is affected by placement new aliasing bug])
-  AC_COMPILE_IFELSE([
+  AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #if (__GNUC__ > 4) || (__GNUC__ == 4 && __GNUC_MINOR__ >= 3)
 #error compiler not affected by placement new aliasing bug
 #endif
-],
+])],
     [AC_MSG_RESULT([yes]); aliasing_flags='-fno-strict-aliasing'],
     [AC_MSG_RESULT([no])])
 
@@ -1746,12 +1745,12 @@ case ${host} in
   powerpc*-*-darwin*)
     AC_CACHE_CHECK([whether mcontext_t fields have underscores],
       gcc_cv_mcontext_underscores,
-      AC_COMPILE_IFELSE([
+      AC_COMPILE_IFELSE([AC_LANG_SOURCE([
 #include <sys/cdefs.h>
 #include <sys/signal.h>
 #include <ucontext.h>
 int main() { mcontext_t m; if (m->ss.srr0) return 0; return 0; }
-],
+])],
 	gcc_cv_mcontext_underscores=no, gcc_cv_mcontext_underscores=yes))
       if test $gcc_cv_mcontext_underscores = yes; then
         AC_DEFINE(HAS_MCONTEXT_T_UNDERSCORES,,dnl
@@ -3039,8 +3038,7 @@ gcc_GAS_CHECK_FEATURE([cfi personality directive],
 	.cfi_personality 0, symbol
 	.cfi_endproc])
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_PERSONALITY_DIRECTIVE,
-  [`if test $gcc_cv_as_cfi_personality_directive = yes;
-    then echo 1; else echo 0; fi`],
+  [`if test $gcc_cv_as_cfi_personality_directive = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports .cfi_personality.])
 
 gcc_GAS_CHECK_FEATURE([cfi sections directive],
@@ -3067,8 +3065,7 @@ gcc_GAS_CHECK_FEATURE([cfi sections directive],
 esac])
 GCC_TARGET_TEMPLATE(HAVE_GAS_CFI_SECTIONS_DIRECTIVE)
 AC_DEFINE_UNQUOTED(HAVE_GAS_CFI_SECTIONS_DIRECTIVE,
-  [`if test $gcc_cv_as_cfi_sections_directive = yes;
-    then echo 1; else echo 0; fi`],
+  [`if test $gcc_cv_as_cfi_sections_directive = yes; then echo 1; else echo 0; fi`],
   [Define 0/1 if your assembler supports .cfi_sections.])
 
 # GAS versions up to and including 2.11.0 may mis-optimize
@@ -5672,7 +5669,7 @@ AC_MSG_CHECKING(linker mapfile support for clearing hardware capabilities)
 saved_LDFLAGS="$LDFLAGS"
 for clearcap_map in sol2-clearcapv2.map sol2-clearcap.map; do
   LDFLAGS="$saved_LDFLAGS -Wl,-M,${srcdir}/config/$clearcap_map"
-  AC_LINK_IFELSE([int main(void) {return 0;}],
+  AC_LINK_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
     [gcc_cv_ld_clearcap=yes; break], [gcc_cv_ld_clearcap=no])
 done
 LDFLAGS="$saved_LDFLAGS"
@@ -6640,7 +6637,7 @@ AC_CACHE_CHECK([for -fno-PIE option],
   [gcc_cv_c_no_fpie],
   [saved_CXXFLAGS="$CXXFLAGS"
    CXXFLAGS="$CXXFLAGS -fno-PIE"
-   AC_COMPILE_IFELSE([int main(void) {return 0;}],
+   AC_COMPILE_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
      [gcc_cv_c_no_fpie=yes],
      [gcc_cv_c_no_fpie=no])
    CXXFLAGS="$saved_CXXFLAGS"])
@@ -6654,7 +6651,7 @@ AC_CACHE_CHECK([for -no-pie option],
   [gcc_cv_no_pie],
   [saved_LDFLAGS="$LDFLAGS"
    LDFLAGS="$LDFLAGS -no-pie"
-   AC_LINK_IFELSE([int main(void) {return 0;}],
+   AC_LINK_IFELSE([AC_LANG_SOURCE([int main(void) {return 0;}])],
      [gcc_cv_no_pie=yes],
      [gcc_cv_no_pie=no])
    LDFLAGS="$saved_LDFLAGS"])

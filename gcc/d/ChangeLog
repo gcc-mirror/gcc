@@ -1,3 +1,14 @@
+2018-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR d/87824
+	* lang.opt (Wpsabi): New option.
+
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87825
+	* Make-lang.in (d/idgen) Link with BUILD_LINKERFLAGS.
+	(d/impcvgen): Likewise.
+
 2018-10-26  Eugene Wissner  <belka@caraus.de>
 
 	* Make-lang.in (selftest-d): New.

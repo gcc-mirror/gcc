@@ -164,7 +164,7 @@ AC_DEFUN([DRUNTIME_OS_MINFO_BRACKETING],
 [
   AC_LANG_PUSH([C])
   AC_MSG_CHECKING([for minfo section bracketing])
-  AC_LINK_IFELSE([
+  AC_LINK_IFELSE([AC_LANG_SOURCE([
     void* module_info_ptr __attribute__((section ("minfo")));
     extern void* __start_minfo __attribute__((visibility ("hidden")));
     extern void* __stop_minfo __attribute__((visibility ("hidden")));
@@ -174,7 +174,7 @@ AC_DEFUN([DRUNTIME_OS_MINFO_BRACKETING],
         // Never run, just to prevent compiler from optimizing access
         return &__start_minfo == &__stop_minfo;
     }
-  ],
+  ])],
     [AC_MSG_RESULT([yes])
      DCFG_MINFO_BRACKETING=true],
     [AC_MSG_RESULT([no])

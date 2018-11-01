@@ -1,3 +1,9 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Regenerate.
+
 2018-10-29  Tamar Christina  <tamar.christina@arm.com>
 
 	PR ada/81878

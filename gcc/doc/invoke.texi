@@ -8650,7 +8650,8 @@ If supported for the target machine, attempt to reorder instructions
 to exploit instruction slots available after delayed branch
 instructions.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os},
+but not at @option{-Og}.
 
 @item -fschedule-insns
 @opindex fschedule-insns

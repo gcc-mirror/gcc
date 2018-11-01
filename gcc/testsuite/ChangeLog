@@ -1,3 +1,33 @@
+2018-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/anon5.C: New.
+
+2018-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR d/87824
+	* gdc.dg/simd.d: Add -Wno-psabi.
+	* gdc.dg/compilable.d: Likewise.
+
+2018-11-01  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/64266
+	PR bootstrap/70422
+	PR ipa/81277
+	* g++.dg/cpp0x/constexpr-__func__2.C: Make it a compilation
+	test.
+	* g++.old-deja/g++.ext/pretty4.C: Remove as the run-time
+	assumptions are not longer valid.
+
+2018-10-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/20520
+	* gfortran.dg/allocatable_uninitialized_1.f90: New test.
+
+2018-10-31  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/friend21.C: New.
+
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193

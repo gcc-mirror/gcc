@@ -1,3 +1,35 @@
+2018-10-31  Alexandre Oliva <aoliva@redhat.com>
+
+	* opts.c (default_options_table): Do not enable
+	OPT_fdelayed_branch at -Og.
+	* doc/invoke.texi (-fdelayed-branch): Document it.
+
+2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
+
+	* optabs-libfuncs.c (build_libfunc_function_visibility):
+	New, split out from...
+	(build_libfunc_function): ... here.
+	(init_one_libfunc_visibility): New, split out from ...
+	(init_one_libfunc): ... here.
+
+	* config/aarch64/atomics.md (aarch64_atomic_<ATOMIC_LDOP><ALLI>_lse):
+	scratch register need not be early-clobber.  Document the reason
+	why we cannot use ST<OP>.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.  Use single
+	line for second argument of AC_DEFINE_UNQUOTED.
+	* doc/install.texi (Tools/packages necessary for modifying GCC):
+	Update to autoconf 2.69 and automake 1.15.1.
+	* aclocal.m4, config.in, configure: Regenerate.
+
+2018-10-31  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* tree-ssa-loop-ivcanon.c (try_peel_loop): Fix typo and remove dead
+	initialization.
+
 2018-10-31  Martin Liska  <mliska@suse.cz>
 
 	PR driver/83193
@@ -1874,7 +1906,7 @@
 	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Define,
 	based on MINGW_DEFAULT_LARGE_ADDR_AWARE.
 	(LINK_SPEC): Insert it.
-	* config/i386/mingw-264.h: Likewise.
+	* config/i386/mingw-w64.h: Likewise.
 
 	* cygming.h (HAVE_GAS_ALIGNED_COMM): Fallback-define.
 

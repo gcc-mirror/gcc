@@ -1,3 +1,9 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* aclocal.m4, config.in, configure: Regenerate.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* internal.h (struct cpp_reader): Rename forced_token_location_p

@@ -1,3 +1,47 @@
+2018-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (struct lang_function): Delete x_local_names field.
+	(struct lang_decl_base): Rename u2sel to spare.
+	(struct lang_decl_min): Remove lang_decl_u2 union.  Keep access
+	field.
+	(LANG_DECL_U2_CHECK): Delete.
+	(DECL_DISCRIMINATOR_P): Require function scope.
+	(DECL_DISCRIMINATOR): Adjust.
+	(DECL_DISCRIMINATOR_SET_P): Delete.
+	(DECL_CAPTURED_VARIABLE, DECL_ACCESS, THUnK_VIRTUAL_OFFSET): Adjust.
+	(local_classes): Don't declare.
+	(determine_local_discriminator): Declare.
+	* decl.c (push_local_name): Delete.
+	(local_entities, determina_local_discrminator): New.
+	(duplicate_decls): Copy DECL_ACCESS. Fix formatting.
+	(cp_finish_decl): Use determine_local_discriminator.
+	(save_function_data): Drop x_local_names.
+	(finish_function): Drop local_names.
+	* decl2.c (finish_anon_union): Use determine_local_disciminator.
+	* mangle.c (write_unnamed_type_name): Use
+	discriminator_for_local_entity.
+	(local_class_index): Delete.
+	(discriminator_for_local_entity): Reimplement.
+	(write_local_name): Adjust discriminator code.
+	* name-lookup.c (do_pushtag): Call determine_local_discrimiator.
+	* semantics.c (finish_omp_threadprivate): Drop DECL_DISCRIMINATOR
+	handling.
+	* class.c (local_classes): Delete.
+	(init_class_processing): Don't init it.
+
+2018-11-01  Martin Liska  <mliska@suse.cz>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/64266
+	PR bootstrap/70422
+	PR ipa/81277
+	* cp-tree.h (DECL_FNAME_P): New macro.
+	* decl.c (cp_make_fname_decl): Set DECL_DECLARED_CONSTEXPR_P,
+        DECL_VALUE_EXPR, DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P.
+	(cp_finish_decl):
+	* lambda.c (is_capture_proxy): Use DECL_FNAME_P.
+	* pt.c (tsubst_expr): Handle DECL_PRETTY_FUNCTION_P.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (OVL_DEDUP_P): New.

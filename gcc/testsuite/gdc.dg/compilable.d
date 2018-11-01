@@ -1,4 +1,4 @@
-// { dg-options "-I $srcdir/gdc.dg -I $srcdir/gdc.dg/imports" }
+// { dg-options "-I $srcdir/gdc.dg -I $srcdir/gdc.dg/imports -Wno-psabi" }
 // { dg-additional-sources "imports/gdc27.d imports/gdc231.d" }
 // { dg-do compile }
 

@@ -3244,6 +3244,14 @@ struct GTY(()) lang_decl {
   (DECL_NAME (NODE) \
    && id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__"))
 
+/* For a DECL, true if it is __func__ or similar.  */
+#define DECL_FNAME_P(NODE)					\
+  (VAR_P (NODE) && DECL_NAME (NODE) && DECL_ARTIFICIAL (NODE)	\
+   && DECL_HAS_VALUE_EXPR_P (NODE)				\
+   && (id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__")	\
+       || id_equal (DECL_NAME (NODE), "__FUNCTION__")		\
+       || id_equal (DECL_NAME (NODE), "__func__")))
+
 /* Nonzero if the variable was declared to be thread-local.
    We need a special C++ version of this test because the middle-end
    DECL_THREAD_LOCAL_P uses the symtab, so we can't use it for

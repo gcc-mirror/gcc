@@ -9,7 +9,7 @@
 
 # AC_LANG(D)
 # -----------
-AC_LANG_DEFINE([D], [d], [GDC], [],
+AC_LANG_DEFINE([D], [d], [GDC], [GDC], [],
 [ac_ext=d
 ac_compile='$GDC -c $GDCFLAGS conftest.$ac_ext >&AS_MESSAGE_LOG_FD'
 ac_link='$GDC -o conftest$ac_exeext $GDCFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&AS_MESSAGE_LOG_FD'
