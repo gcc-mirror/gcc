@@ -26646,7 +26646,8 @@ fi
     $as_echo '	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [r15], x#'[] > conftest.s
+	ld8.mov r16 = [r15], x#
+' > conftest.s
     if { ac_try='$gcc_cv_as $gcc_cv_as_flags  -o conftest.o conftest.s >&5'
   { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
   (eval $ac_try) 2>&5

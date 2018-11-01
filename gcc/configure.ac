@@ -4550,7 +4550,8 @@ gd:
 [	.text
 	addl r15 = @ltoffx(x#), gp
 	;;
-	ld8.mov r16 = [[r15]], x#],,
+	ld8.mov r16 = [[r15]], x#
+],,
     [AC_DEFINE(HAVE_AS_LTOFFX_LDXMOV_RELOCS, 1,
 	  [Define if your assembler supports ltoffx and ldxmov relocations.])])
 
