@@ -1,3 +1,7 @@
+2018-11-01  Marek Polacek  <polacek@redhat.com>
+
+	* g++.dg/cpp1z/constexpr-lambda22.C: New test,
+
 2018-11-01  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.dg/tree-ssa/cunroll-13.c: Add missing cast from literal to int32.
