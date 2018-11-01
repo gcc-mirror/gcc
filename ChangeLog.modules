@@ -1,5 +1,13 @@
 2018-11-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* decl.c (duplicate_decls): Refactor checks.
+	* name-lookup.c (name_lookup::process_module_binding): Only pubic
+	namespaces are shared.
+	gcc/testsuite/
+	* g++.dg/lookup/crash6.C: Adjust error
+	* g++.dg/parse/crash38.C: Likewise.
+
 	Merge trunk r265714.
 	Move to autoconf 2.69.
 

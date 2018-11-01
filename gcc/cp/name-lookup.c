@@ -723,10 +723,11 @@ name_lookup::process_module_binding (bitmap imports, unsigned marker,
 	return marker;
     }
 
-  /* Optimize for (re-)finding a namespace.  We only need to look
-     once.  */
+  /* Optimize for (re-)finding a public namespace.  We only need to
+     look once.  */
   if (new_val && !new_type
       && TREE_CODE (new_val) == NAMESPACE_DECL
+      && TREE_PUBLIC (new_val)
       && !DECL_NAMESPACE_ALIAS (new_val))
     {
       if (marker & 2)
