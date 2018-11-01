@@ -3624,7 +3624,7 @@
   if (MEM_P (operands[0]))
     {
       if (can_create_pseudo_p ())
-	dest = rs6000_address_for_fpconvert (dest);
+	dest = rs6000_force_indexed_or_indirect_mem (dest);
 
       if (TARGET_P8_VECTOR)
 	emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
@@ -4088,7 +4088,7 @@
 {
   rtx op1 = operands[1];
   if (MEM_P (op1))
-    operands[1] = rs6000_address_for_fpconvert (op1);
+    operands[1] = rs6000_force_indexed_or_indirect_mem (op1);
   else if (!REG_P (op1))
     op1 = force_reg (<VSX_D:VS_scalar>mode, op1);
 })
