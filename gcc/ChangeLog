@@ -1906,7 +1906,7 @@
 	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Define,
 	based on MINGW_DEFAULT_LARGE_ADDR_AWARE.
 	(LINK_SPEC): Insert it.
-	* config/i386/mingw-264.h: Likewise.
+	* config/i386/mingw-w64.h: Likewise.
 
 	* cygming.h (HAVE_GAS_ALIGNED_COMM): Fallback-define.
 
