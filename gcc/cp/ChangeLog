@@ -1,3 +1,16 @@
+2018-11-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0846R0, ADL and function templates.
+	* decl.c (grokfndecl): Allow FUNCTION_DECL in assert.
+	* lex.c (unqualified_fn_lookup_error): Handle TEMPLATE_ID_EXPR.
+	* parser.c (cp_parser_postfix_expression): Do ADL for a template-name.
+	(cp_parser_template_id): Give errors if parsing the template argument
+	list didn't go well.  Allow FUNCTION_DECL in assert.
+	(cp_parser_template_name): Consider a name to refer to a template if
+	it is an unqualified-id followed by a <.  Don't return the identifier
+	if the decl is a function and dependent.
+	* pt.c (tsubst_copy) <case OVERLOAD>: Remove assert.
+
 2018-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct lang_function): Delete x_local_names field.

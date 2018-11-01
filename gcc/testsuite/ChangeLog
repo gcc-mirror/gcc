@@ -1,3 +1,28 @@
+2018-11-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0846R0, ADL and function templates.
+	* g++.dg/addr_builtin-1.C: Adjust dg-error.
+	* g++.dg/cpp2a/fn-template1.C: New test.
+	* g++.dg/cpp2a/fn-template10.C: New test.
+	* g++.dg/cpp2a/fn-template11.C: New test.
+	* g++.dg/cpp2a/fn-template12.C: New test.
+	* g++.dg/cpp2a/fn-template13.C: New test.
+	* g++.dg/cpp2a/fn-template14.C: New test.
+	* g++.dg/cpp2a/fn-template15.C: New test.
+	* g++.dg/cpp2a/fn-template16.C: New test.
+	* g++.dg/cpp2a/fn-template2.C: New test.
+	* g++.dg/cpp2a/fn-template3.C: New test.
+	* g++.dg/cpp2a/fn-template4.C: New test.
+	* g++.dg/cpp2a/fn-template5.C: New test.
+	* g++.dg/cpp2a/fn-template6.C: New test.
+	* g++.dg/cpp2a/fn-template7.C: New test.
+	* g++.dg/cpp2a/fn-template8.C: New test.
+	* g++.dg/cpp2a/fn-template9.C: New test.
+	* g++.dg/parse/fn-template1.C: New test.
+	* g++.dg/parse/fn-template2.C: New test.
+	* g++.dg/parse/template19.C: Adjust dg-error.
+	* g++.dg/template/pr61745.C: Add target to dg-error.
+
 2017-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54613

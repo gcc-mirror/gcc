@@ -7195,7 +7195,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    if (idk == CP_ID_KIND_UNQUALIFIED
 		|| idk == CP_ID_KIND_TEMPLATE_ID)
 	      {
-		if (identifier_p (postfix_expression))
+		if (identifier_p (postfix_expression)
+		    /* In C++2A, we may need to perform ADL for a template
+		       name.  */
+		    || (TREE_CODE (postfix_expression) == TEMPLATE_ID_EXPR
+			&& identifier_p (TREE_OPERAND (postfix_expression, 0))))
 		  {
 		    if (!args->is_empty ())
 		      {
@@ -16029,6 +16033,37 @@ cp_parser_template_id (cp_parser *parser,
 	}
       /* Parse the arguments.  */
       arguments = cp_parser_enclosed_template_argument_list (parser);
+
+      if ((cxx_dialect > cxx17)
+	  && (TREE_CODE (templ) == FUNCTION_DECL || identifier_p (templ))
+	  && !template_keyword_p
+	  && (cp_parser_error_occurred (parser)
+	      || cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)))
+	{
+	  /* This didn't go well.  */
+	  if (TREE_CODE (templ) == FUNCTION_DECL)
+	    {
+	      /* C++2A says that "function-name < a;" is now ill-formed.  */
+	      if (cp_parser_error_occurred (parser))
+		{
+		  error_at (token->location, "invalid template-argument-list");
+		  inform (token->location, "function name as the left hand "
+			  "operand of %<<%> is ill-formed in C++2a; wrap the "
+			  "function name in %<()%>");
+		}
+	      else
+		/* We expect "f<targs>" to be followed by "(args)".  */
+		error_at (cp_lexer_peek_token (parser->lexer)->location,
+			  "expected %<(%> after template-argument-list");
+	      if (start_of_id)
+		/* Purge all subsequent tokens.  */
+		cp_lexer_purge_tokens_after (parser->lexer, start_of_id);
+	    }
+	  else
+	    cp_parser_simulate_error (parser);
+	  pop_deferring_access_checks ();
+	  return error_mark_node;
+	}
     }
 
   /* Set the location to be of the form:
@@ -16085,6 +16120,7 @@ cp_parser_template_id (cp_parser *parser,
 	 a function-template.  */
       gcc_assert ((DECL_FUNCTION_TEMPLATE_P (templ)
 		   || TREE_CODE (templ) == OVERLOAD
+		   || TREE_CODE (templ) == FUNCTION_DECL
 		   || BASELINK_P (templ)));
 
       template_id = lookup_template_function (templ, arguments);
@@ -16287,6 +16323,10 @@ cp_parser_template_name (cp_parser* parser,
 	}
     }
 
+  /* cp_parser_lookup_name clears OBJECT_TYPE.  */
+  const bool scoped_p = ((parser->scope ? parser->scope
+			  : parser->context->object_type) != NULL_TREE);
+
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
 				tag_type,
@@ -16319,21 +16359,33 @@ cp_parser_template_name (cp_parser* parser,
 	if (TREE_CODE (*iter) == TEMPLATE_DECL)
 	  found = true;
 
+      if (!found
+	  && (cxx_dialect > cxx17)
+	  && !scoped_p
+	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	{
+	  /* [temp.names] says "A name is also considered to refer to a template
+	     if it is an unqualified-id followed by a < and name lookup finds
+	     either one or more functions or finds nothing."  */
+
+	  /* The "more functions" case.  Just use the OVERLOAD as normally.
+	     We don't use is_overloaded_fn here to avoid considering
+	     BASELINKs.  */
+	  if (TREE_CODE (decl) == OVERLOAD
+	      /* Name lookup found one function.  */
+	      || TREE_CODE (decl) == FUNCTION_DECL)
+	    found = true;
+	  /* Name lookup found nothing.  */
+	  else if (decl == error_mark_node)
+	    return identifier;
+	}
+
       if (!found)
 	{
 	  /* The name does not name a template.  */
 	  cp_parser_error (parser, "expected template-name");
 	  return error_mark_node;
 	}
-    }
-
-  /* If DECL is dependent, and refers to a function, then just return
-     its name; we will look it up again during template instantiation.  */
-  if (DECL_FUNCTION_TEMPLATE_P (decl) || !DECL_P (decl))
-    {
-      tree scope = ovl_scope (decl);
-      if (TYPE_P (scope) && dependent_type_p (scope))
-	return identifier;
     }
 
   return decl;
