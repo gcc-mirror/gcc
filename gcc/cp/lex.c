@@ -541,6 +541,9 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   if (loc == UNKNOWN_LOCATION)
     loc = input_location;
 
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    name = TREE_OPERAND (name, 0);
+
   if (processing_template_decl)
     {
       /* In a template, it is invalid to write "f()" or "f(3)" if no

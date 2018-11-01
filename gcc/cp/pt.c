@@ -15538,10 +15538,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case OVERLOAD:
-      /* An OVERLOAD will always be a non-dependent overload set; an
-	 overload set from function scope will just be represented with an
-	 IDENTIFIER_NODE, and from class scope with a BASELINK.  */
-      gcc_assert (!uses_template_parms (t));
       /* We must have marked any lookups as persistent.  */
       gcc_assert (!OVL_LOOKUP_P (t) || OVL_USED_P (t));
       return t;

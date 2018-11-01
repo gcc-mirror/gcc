@@ -6,6 +6,6 @@ template<int> struct A
 {
   template<int> void foo()
   {
-    foo<0>::; // { dg-error "before" }
+    foo<0>::; // { dg-error "before|function template-id" }
   }
 };
