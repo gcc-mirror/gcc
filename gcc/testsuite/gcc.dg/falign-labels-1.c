@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-falign-labels=8" } */
+/* { dg-skip-if "no label alignment > 2" { "pdp11-*-*" } } */
 
 /* On ARMv7-A CPUs, this test resulted in incorrect code generation.
    The code generated for the switch statement expected the jump table
