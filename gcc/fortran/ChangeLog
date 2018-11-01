@@ -1,3 +1,10 @@
+2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/87782
+	* frontend-passes.c (constant_string_length): If there is a
+	substring with a length which cannot be reduced to a constant,
+	return NULL.
+
 2018-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40196
