@@ -1,3 +1,8 @@
+2018-11-30  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data_in_decl): Free TREE_TYPE and alignment of
+	TYPE_DECL.
+
 2018-11-01  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-protos.h (rs6000_address_for_fpconvert): Remove
