@@ -1,3 +1,9 @@
+2018-11-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR d/87824
+	* gdc.dg/simd.d: Add -Wno-psabi.
+	* gdc.dg/compilable.d: Likewise.
+
 2018-11-01  Martin Liska  <mliska@suse.cz>
 	    Jason Merrill  <jason@redhat.com>
 
