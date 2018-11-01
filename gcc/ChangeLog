@@ -1,3 +1,27 @@
+2018-11-01  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_address_for_fpconvert): Remove
+	prototype.
+	* config/rs6000/rs6000.c (rs6000_force_indexed_or_indirect_mem):
+	Combine with rs6000_address_for_fpconvert.
+	(rs6000_address_for_fpconvert): Combine with
+	rs6000_force_indexed_or_indirect_mem.
+	(rs6000_expand_vector_init): Change function call from
+	rs6000_address_for_fpconvert to rs6000_force_indexed_or_indirect_mem.
+	* config/rs6000/rs6000.md (floatsi<mode>2_lfiwax): Change call from
+	rs6000_address_for_fpconvert to rs6000_force_indexed_or_indirect_mem.
+	(floatsi<mode>2_lfiwax_mem): Ditto.
+	(floatunssi<mode>2_lfiwzx): Ditto.
+	(floatunssi<mode>2_lfiwzx_mem): Ditto.
+	(float<QHI:mode><FP_ISA3:mode>2): Ditto.
+	(floatuns<QHI:mode><FP_ISA3:mode>2): Ditto.
+	(fix_trunc<mode>si2_stfiwx): Ditto.
+	(fixuns_trunc<mode>si2_stfiwx): Ditto.
+	(float_<mode>si2_hw): Ditto.
+	(floatuns_<mode>si2_hw): Ditto.
+	* config/rs6000/vsx.md (*vsx_extract_si): Ditto.
+	(vsx_splat_<mode>): Ditto.
+
 2018-11-01  Joseph Myers  <joseph@codesourcery.com>
 
 	* configure.ac (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Add newline
