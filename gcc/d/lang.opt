@@ -130,6 +130,10 @@ Werror
 D
 ; Documented in common.opt
 
+Wpsabi
+D
+; Documented in C
+
 Wspeculative
 D
 Warn from speculative compiles such as __traits(compiles).

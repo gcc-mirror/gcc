@@ -1,3 +1,4 @@
+// { dg-options "-Wno-psabi" }
 // { dg-do run { target hw } }
 import core.simd;
 import core.stdc.string;
