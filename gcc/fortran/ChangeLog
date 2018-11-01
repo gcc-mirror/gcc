@@ -1,3 +1,13 @@
+2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.texi (File format of unformatted sequential files):
+	Replace random comma with period.
+	* intrinsic.texi (Intrinsic Procedures): Add FINDLOC to menu.
+	(FINDLOC): Document.
+	(MAXLOC): Add refrence to FINDLOC.
+	(MINLOC): Likewise.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* cpp.c (gfc_cpp_init): Adjust cpp_force_token_locations call.
