@@ -1,3 +1,9 @@
+2018-11-01  Joseph Myers  <joseph@codesourcery.com>
+
+	* configure.ac (gcc_cv_as_ia64_ltoffx_ldxmov_relocs): Add newline
+	at end of assembler input text.
+	* configure: Regenerate.
+
 2018-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87826
