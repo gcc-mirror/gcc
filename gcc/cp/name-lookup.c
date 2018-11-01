@@ -6879,7 +6879,7 @@ do_pushtag (tree name, tree type, tag_scope scope)
 	    }
 	  /* Lambdas use LAMBDA_EXPR_DISCRIMINATOR instead.  */
 	  else if (!LAMBDA_TYPE_P (type))
-	    vec_safe_push (local_classes, type);
+	    determine_local_discriminator (TYPE_NAME (type));
 	}
     }
 

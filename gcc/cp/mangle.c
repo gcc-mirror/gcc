@@ -233,7 +233,6 @@ static void write_discriminator (const int);
 static void write_local_name (tree, const tree, const tree);
 static void dump_substitution_candidates (void);
 static tree mangle_decl_string (const tree);
-static int local_class_index (tree);
 static void maybe_check_abi_tags (tree, tree = NULL_TREE, int = 10);
 static bool equal_abi_tags (tree, tree);
 
@@ -1642,7 +1641,7 @@ write_unnamed_type_name (const tree type)
   MANGLE_TRACE_TREE ("unnamed-type-name", type);
 
   if (TYPE_FUNCTION_SCOPE_P (type))
-    discriminator = local_class_index (type);
+    discriminator = discriminator_for_local_entity (TYPE_NAME (type));
   else if (TYPE_CLASS_SCOPE_P (type))
     discriminator = nested_anon_class_index (type);
   else
@@ -1913,58 +1912,25 @@ write_special_name_destructor (const tree dtor)
     }
 }
 
-/* Scan the vector of local classes and return how many others with the
-   same name (or same no name) and context precede ENTITY.  */
-
-static int
-local_class_index (tree entity)
-{
-  int ix, discriminator = 0;
-  tree name = (TYPE_UNNAMED_P (entity) ? NULL_TREE
-	       : TYPE_IDENTIFIER (entity));
-  tree ctx = TYPE_CONTEXT (entity);
-  for (ix = 0; ; ix++)
-    {
-      tree type = (*local_classes)[ix];
-      if (type == entity)
-	return discriminator;
-      if (TYPE_CONTEXT (type) == ctx
-	  && (name ? TYPE_IDENTIFIER (type) == name
-	      : TYPE_UNNAMED_P (type)))
-	++discriminator;
-    }
-  gcc_unreachable ();
-}
-
 /* Return the discriminator for ENTITY appearing inside
-   FUNCTION.  The discriminator is the lexical ordinal of VAR among
-   entities with the same name in the same FUNCTION.  */
+   FUNCTION.  The discriminator is the lexical ordinal of VAR or TYPE among
+   entities with the same name and kind in the same FUNCTION.  */
 
 static int
 discriminator_for_local_entity (tree entity)
 {
-  if (DECL_DISCRIMINATOR_P (entity))
+  if (!DECL_LANG_SPECIFIC (entity))
     {
-      if (DECL_DISCRIMINATOR_SET_P (entity))
-	return DECL_DISCRIMINATOR (entity);
-      else
-	/* The first entity with a particular name doesn't get
-	   DECL_DISCRIMINATOR set up.  */
-	return 0;
+      /* Some decls, like __FUNCTION__, don't need a discriminator.  */
+      gcc_checking_assert (DECL_ARTIFICIAL (entity));
+      return 0;
     }
-  else if (TREE_CODE (entity) == TYPE_DECL)
-    {
-      /* Scan the list of local classes.  */
-      entity = TREE_TYPE (entity);
-
-      /* Lambdas and unnamed types have their own discriminators.  */
-      if (LAMBDA_TYPE_P (entity) || TYPE_UNNAMED_P (entity))
-	return 0;
-
-      return local_class_index (entity);
-    }
+  else if (tree disc = DECL_DISCRIMINATOR (entity))
+    return TREE_INT_CST_LOW (disc);
   else
-    gcc_unreachable ();
+    /* The first entity with a particular name doesn't get
+       DECL_DISCRIMINATOR set up.  */
+    return 0;
 }
 
 /* Return the discriminator for STRING, a string literal used inside
@@ -2062,7 +2028,11 @@ write_local_name (tree function, const tree local_entity,
 	 from <local-name>, so it doesn't try to process the enclosing
 	 function scope again.  */
       write_name (entity, /*ignore_local_scope=*/1);
-      write_discriminator (discriminator_for_local_entity (local_entity));
+      if (DECL_DISCRIMINATOR_P (local_entity)
+	  && !(TREE_CODE (local_entity) == TYPE_DECL
+	       && (LAMBDA_TYPE_P (TREE_TYPE (local_entity))
+		   || TYPE_UNNAMED_P (TREE_TYPE (local_entity)))))
+	write_discriminator (discriminator_for_local_entity (local_entity));
     }
 }
 
