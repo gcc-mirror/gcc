@@ -1,3 +1,8 @@
+2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/46020
+	* gfortran.dg/bind_c_18.f90: Adjust error message.
+
 2018-11-01  Marek Polacek  <polacek@redhat.com>
 
 	* g++.dg/cpp1z/constexpr-lambda22.C: New test,
