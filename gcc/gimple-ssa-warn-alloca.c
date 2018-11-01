@@ -75,8 +75,9 @@ public:
 bool
 pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
 {
-  // The first time we run, we run too early in the pipeline and can
-  // only perform strict alloca checking.
+  // The first time this pass is called, it is called before
+  // optimizations have been run and range information is unavailable,
+  // so we can only perform strict alloca checking.
   if (first_time_p)
     return warn_alloca != 0;
 
@@ -110,7 +111,7 @@ enum alloca_type {
   ALLOCA_UNBOUNDED
 };
 
-// Type of an alloca call with its corresponding argument, if applicable.
+// Type of an alloca call with its corresponding limit, if applicable.
 struct alloca_type_and_limit {
   enum alloca_type type;
   // For ALLOCA_BOUND_MAYBE_LARGE and ALLOCA_BOUND_DEFINITELY_LARGE
@@ -160,8 +161,21 @@ adjusted_warn_limit (bool idx)
   return limits[idx];
 }
 
+static struct alloca_type_and_limit
+alloca_call_type_by_arg (unsigned HOST_WIDE_INT max_size)
+{
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  /* When MAX_SIZE is greater than or equal to PTRDIFF_MAX treat
+     allocations that aren't visibly constrained as OK, otherwise
+     report them as (potentially) unbounded.  */
+  alloca_type unbounded_result = (max_size < maxobjsize.to_uhwi ()
+				  ? ALLOCA_UNBOUNDED : ALLOCA_OK);
+  return alloca_type_and_limit (unbounded_result);
+}
+
 // Analyze the alloca call in STMT and return the alloca type with its
-// corresponding argument (if applicable).  IS_VLA is set if the alloca
+// corresponding limit (if applicable).  IS_VLA is set if the alloca
 // call was created by the gimplifier for a VLA.
 
 static struct alloca_type_and_limit
@@ -195,22 +209,25 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
       return alloca_type_and_limit (ALLOCA_OK);
     }
 
-  // If we have a declared maximum size, use that.
+  struct alloca_type_and_limit ret = alloca_type_and_limit (ALLOCA_OK);
+  // If we have a declared maximum size, we can take it into account.
   if (gimple_call_builtin_p (stmt, BUILT_IN_ALLOCA_WITH_ALIGN_AND_MAX))
     {
       tree arg = gimple_call_arg (stmt, 2);
       if (compare_tree_int (arg, max_size) <= 0)
-	return alloca_type_and_limit (ALLOCA_OK);
+	ret = alloca_type_and_limit (ALLOCA_OK);
       else
 	{
 	  const offset_int maxobjsize
 	    = wi::to_offset (max_object_size ());
 	  alloca_type result = (max_size < maxobjsize
 				? ALLOCA_BOUND_MAYBE_LARGE : ALLOCA_OK);
-	  return alloca_type_and_limit (result, wi::to_wide (arg));
+	  ret = alloca_type_and_limit (result, wi::to_wide (arg));
 	}
+      return ret;
     }
 
+  // If the user specified a limit, use it possibly warn.
   irange r;
   if (warn_limit_specified_p (is_vla)
       && TREE_CODE (len) == SSA_NAME
@@ -223,19 +240,13 @@ alloca_call_type (global_ranger &ranger, gimple *stmt, bool is_vla)
 			    build_int_cst (size_type_node, max_size),
 			    irange::INVERSE);
 
-      if (r.intersect (invalid_range).undefined_p ())
-	return alloca_type_and_limit (ALLOCA_OK);
-      return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
-				    wi::to_wide (integer_zero_node));
+      if (!r.intersect (invalid_range).undefined_p ())
+	return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
+				      wi::to_wide (integer_zero_node));
+      return alloca_type_and_limit (ALLOCA_OK);
     }
 
-  /* When MAX_SIZE is greater than or equal to PTRDIFF_MAX treat
-     allocations that aren't visibly constrained as OK, otherwise
-     report them as (potentially) unbounded.  */
-  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
-  alloca_type unbounded_result = (max_size < maxobjsize.to_uhwi ()
-				  ? ALLOCA_UNBOUNDED : ALLOCA_OK);
-  return alloca_type_and_limit (unbounded_result);
+  return alloca_call_type_by_arg (max_size);
 }
 
 // Return TRUE if STMT is in a loop, otherwise return FALSE.
@@ -251,12 +262,8 @@ in_loop_p (gimple *stmt)
 unsigned int
 pass_walloca::execute (function *fun)
 {
-  basic_block bb;
   global_ranger ranger;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    ranger.exercise (dump_file);
-
+  basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
     {
       for (gimple_stmt_iterator si = gsi_start_bb (bb); !gsi_end_p (si);

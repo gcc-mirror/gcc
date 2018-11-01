@@ -1248,7 +1248,7 @@ alloc_max_size (void)
 
 bool
 get_size_range (tree exp, tree range[2], bool allow_zero /* = false */,
-		gcall *call /* = NULL */)
+		gimple *call /* = NULL */)
 {
   if (tree_fits_uhwi_p (exp))
     {

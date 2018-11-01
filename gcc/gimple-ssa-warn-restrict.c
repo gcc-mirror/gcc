@@ -79,7 +79,7 @@ pass_wrestrict::gate (function *fun ATTRIBUTE_UNUSED)
   return warn_array_bounds != 0 || warn_restrict != 0;
 }
 
-static void check_call (gcall *);
+static void check_call (gimple *);
 
 static void
 wrestrict_walk (basic_block bb)
@@ -92,7 +92,7 @@ wrestrict_walk (basic_block bb)
       if (!is_gimple_call (stmt))
 	continue;
 
-      check_call (as_a <gcall *> (stmt));
+      check_call (stmt);
     }
 }
 
@@ -100,8 +100,6 @@ unsigned
 pass_wrestrict::execute (function *fun)
 {
   basic_block bb;
-  /* Note: This used to be a domwalk, but was likely doing so because
-     it needed evrp for range information.  */
   FOR_EACH_BB_FN (bb, fun)
     wrestrict_walk (bb);
 
@@ -141,12 +139,13 @@ struct builtin_memref
      only the destination reference is.  */
   bool strbounded_p;
 
-  builtin_memref (gcall *, tree, tree);
+  builtin_memref (gimple *, tree, tree);
 
   tree offset_out_of_bounds (int, offset_int[2]) const;
 
 private:
-  gcall *call;
+  /* Built-in call.  */
+  gimple *call;
 
   /* Ctor helper to set or extend OFFRANGE based on argument.  */
   void extend_offset_range (tree);
@@ -213,7 +212,7 @@ class builtin_access
    a size SIZE in bytes.  If SIZE is NULL_TREE then the size is assumed
    to be unknown.  */
 
-builtin_memref::builtin_memref (gcall *_call, tree expr, tree size)
+builtin_memref::builtin_memref (gimple *_call, tree expr, tree size)
 : ptr (expr),
   ref (),
   base (),
@@ -280,40 +279,25 @@ builtin_memref::builtin_memref (gcall *_call, tree expr, tree size)
     }
 }
 
-/* Get the range SSA would have if control flowed to STMT.  If a
-   suitable range is found, and it is not the entire range, return TRUE
-   and store it in R.  */
+/* Get the range SSA would have if control flowed to STMT.  This is
+   the ranger equivalence of get_range_info.  */
 
-static inline bool
-maybe_get_range_on_stmt (irange &r, tree ssa, gimple *stmt)
+static inline value_range_kind
+ranger_get_range_info (gimple *stmt, tree ssa, wide_int *min, wide_int *max)
 {
   /* Don't call the ranger if we have no CFG.  */
   if (DECL_SAVED_TREE (cfun->decl))
-    return false;
-  return on_demand_get_range_on_stmt (r, ssa, stmt);
-}
+    return VR_VARYING;
 
-/* Return true if the range in R is the inverse of a range and store
-   the inverse of the range in ANTI.  This is a temporary measure to
-   mimic what ANTI_RANGEs were, so we don't have to rewrite this pass
-   to use iranges instead of lower/upper bound ranges (FIXME ??).  */
+  irange r;
+  if (!on_demand_get_range_on_stmt (r, ssa, stmt))
+    return VR_VARYING;
 
-static bool
-anti_range_p (const irange &r, irange &anti)
-{
-  tree type = r.type ();
-  unsigned int precision = TYPE_PRECISION (type);
-  wide_int min = wi::min_value (precision, TYPE_SIGN (type));
-  wide_int max = wi::max_value (precision, TYPE_SIGN (type));
-  // Note: VR_ANTI_RANGE([3,10]) ==> [-MIN,2][11,MAX]
-  if (r.num_pairs () == 2
-      && r.lower_bound () == min && r.upper_bound () == max)
-    {
-      anti = range_invert (r);
-      gcc_assert (anti.num_pairs () == 1);
-      return true;
-    }
-  return false;
+  value_range vr;
+  irange_to_value_range (vr, r);
+  *min = wi::to_wide (vr.min ());
+  *max = wi::to_wide (vr.max ());
+  return vr.kind ();
 }
 
 /* Ctor helper to set or extend OFFRANGE based on the OFFSET argument.  */
@@ -337,21 +321,7 @@ builtin_memref::extend_offset_range (tree offset)
   if (TREE_CODE (offset) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_kind rng = VR_RANGE;
-      irange r;
-      if (maybe_get_range_on_stmt (r, offset, call))
-	{
-	  irange anti;
-	  if (anti_range_p (r, anti))
-	    {
-	      rng = VR_ANTI_RANGE;
-	      r = anti;
-	    }
-	  min = r.lower_bound ();
-	  max = r.upper_bound ();
-	}
-      else
-	rng = VR_VARYING;
+      value_range_kind rng = ranger_get_range_info (call, offset, &min, &max);
       if (rng == VR_RANGE)
 	{
 	  offrange[0] += offset_int::from (min, SIGNED);
@@ -732,7 +702,7 @@ builtin_access::builtin_access (gimple *call, builtin_memref &dst,
     {
       tree size = gimple_call_arg (call, sizeargno);
       tree range[2];
-      if (get_size_range (size, range, true, as_a <gcall *> (call)))
+      if (get_size_range (size, range, true, call))
 	{
 	  bounds[0] = wi::to_offset (range[0]);
 	  bounds[1] = wi::to_offset (range[1]);
@@ -1762,7 +1732,7 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
    if/when appropriate.  */
 
 static void
-check_call (gcall *call)
+check_call (gimple *call)
 {
   /* Avoid checking the call if it has already been diagnosed for
      some reason.  */
@@ -1870,8 +1840,8 @@ check_bounds_or_overlap (gimple *call, tree dst, tree src, tree dstsize,
 
   tree func = gimple_call_fndecl (call);
 
-  builtin_memref dstref (as_a <gcall *> (call), dst, dstsize);
-  builtin_memref srcref (as_a <gcall *> (call), src, srcsize);
+  builtin_memref dstref (call, dst, dstsize);
+  builtin_memref srcref (call, src, srcsize);
 
   builtin_access acs (call, dstref, srcref);
 
