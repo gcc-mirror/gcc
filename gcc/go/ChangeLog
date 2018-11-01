@@ -1,3 +1,9 @@
+2018-10-31  Ian Lance Taylor  <iant@golang.org>
+
+	* go-gcc.cc (Gcc_backend::write_global_definitions): Don't call
+	gimplify_function_tree.  Instead call allocate_struct_function if
+	necessary.
+
 2018-10-29  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::function): Change to use a single flags

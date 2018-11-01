@@ -3246,7 +3246,8 @@ Gcc_backend::write_global_definitions(
       if (decl != error_mark_node)
         {
           go_preserve_from_gc(decl);
-          gimplify_function_tree(decl);
+	  if (DECL_STRUCT_FUNCTION(decl) == NULL)
+	    allocate_struct_function(decl, false);
           cgraph_node::finalize_function(decl, true);
 
           defs[i] = decl;
