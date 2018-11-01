@@ -1,3 +1,7 @@
+2018-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/abi/anon5.C: New.
+
 2018-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR d/87824

@@ -1793,7 +1793,7 @@ struct GTY(()) language_function {
   hash_table<named_label_hash> *x_named_labels;
 
   cp_binding_level *bindings;
-  vec<tree, va_gc> *x_local_names;
+
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
      vec<bool> doesn't work with gtype.  */
   vec<tree, va_gc> *infinite_loops;
@@ -2527,7 +2527,7 @@ struct GTY(()) lang_decl_base {
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
-  unsigned u2sel : 1;
+  unsigned spare : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
@@ -2555,17 +2555,12 @@ struct GTY(()) lang_decl_min {
      DECL_TEMPLATE_INFO.  */
   tree template_info;
 
-  union lang_decl_u2 {
-    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
-       THUNK_VIRTUAL_OFFSET.
-       In a VAR_DECL for which DECL_HAS_VALUE_EXPR_P holds,
-       this is DECL_CAPTURED_VARIABLE.
-       Otherwise this is DECL_ACCESS.  */
-    tree GTY ((tag ("0"))) access;
-
-    /* For TREE_STATIC VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
-    int GTY ((tag ("1"))) discriminator;
-  } GTY ((desc ("%0.u.base.u2sel"))) u2;
+  /* In a DECL_THUNK_P FUNCTION_DECL, this is THUNK_VIRTUAL_OFFSET.
+     In a lambda-capture proxy VAR_DECL, this is DECL_CAPTURED_VARIABLE.
+     In a function-scope TREE_STATIC VAR_DECL or IMPLICIT_TYPEDEF_P TYPE_DECL,
+     this is DECL_DISCRIMINATOR.
+     Otherwise, in a class-scope DECL, this is DECL_ACCESS.   */
+  tree access;
 };
 
 /* Additional DECL_LANG_SPECIFIC information for functions.  */
@@ -2721,12 +2716,6 @@ struct GTY(()) lang_decl {
     lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
   &lt->u.decomp; })
 
-#define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
-({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
-    if (!LANG_DECL_HAS_MIN (NODE) || lt->u.base.u2sel != TF)	\
-      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
-    &lt->u.min.u2; })
-
 #else
 
 #define LANG_DECL_MIN_CHECK(NODE) \
@@ -2743,9 +2732,6 @@ struct GTY(()) lang_decl {
 
 #define LANG_DECL_DECOMP_CHECK(NODE) \
   (&DECL_LANG_SPECIFIC (NODE)->u.decomp)
-
-#define LANG_DECL_U2_CHECK(NODE, TF) \
-  (&DECL_LANG_SPECIFIC (NODE)->u.min.u2)
 
 #endif /* ENABLE_TREE_CHECKING */
 
@@ -2854,15 +2840,13 @@ struct GTY(()) lang_decl {
 	 CLONE = DECL_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
-#define DECL_DISCRIMINATOR_P(NODE)	\
-  (VAR_P (NODE) && DECL_FUNCTION_SCOPE_P (NODE))
+#define DECL_DISCRIMINATOR_P(NODE)				\
+  (((TREE_CODE (NODE) == VAR_DECL && TREE_STATIC (NODE))	\
+    || DECL_IMPLICIT_TYPEDEF_P (NODE))				\
+   && DECL_FUNCTION_SCOPE_P (NODE))
 
 /* Discriminator for name mangling.  */
-#define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)
-
-/* True iff DECL_DISCRIMINATOR is set for a DECL_DISCRIMINATOR_P decl.  */
-#define DECL_DISCRIMINATOR_SET_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE) && DECL_LANG_SPECIFIC (NODE)->u.base.u2sel == 1)
+#define DECL_DISCRIMINATOR(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* The index of a user-declared parameter in its function, starting at 1.
    All artificial parameters will have index 0.  */
@@ -3334,7 +3318,7 @@ struct GTY(()) lang_decl {
 
 /* For a lambda capture proxy, its captured variable.  */
 #define DECL_CAPTURED_VARIABLE(NODE) \
-  (LANG_DECL_U2_CHECK (NODE, 0)->access)
+  (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* For a VAR_DECL, indicates that the variable is actually a
    non-static data member of anonymous union that has been promoted to
@@ -4509,7 +4493,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    For example, if a member that would normally be public in a
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
-#define DECL_ACCESS(NODE) (LANG_DECL_U2_CHECK (NODE, 0)->access)
+#define DECL_ACCESS(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* Nonzero if the FUNCTION_DECL is a global constructor.  */
 #define DECL_GLOBAL_CTOR_P(NODE) \
@@ -4846,7 +4830,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    binfos.)  */
 
 #define THUNK_VIRTUAL_OFFSET(DECL) \
-  (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->access)
+  (LANG_DECL_MIN_CHECK (FUNCTION_DECL_CHECK (DECL))->access)
 
 /* A thunk which is equivalent to another thunk.  */
 #define THUNK_ALIAS(DECL) \
@@ -5239,10 +5223,6 @@ struct local_specialization_stack
 /* in class.c */
 
 extern int current_class_depth;
-
-/* An array of all local classes present in this translation unit, in
-   declaration order.  */
-extern GTY(()) vec<tree, va_gc> *local_classes;
 
 /* in decl.c */
 
@@ -6303,6 +6283,7 @@ extern void pop_switch				(void);
 extern void note_break_stmt			(void);
 extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
+extern void determine_local_discriminator	(tree);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree, bool);
