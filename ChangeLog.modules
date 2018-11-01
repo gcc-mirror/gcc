@@ -1,8 +1,15 @@
+2018-11-01  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* module.cc (module_state::read): Don't read macros for
+	preprocessed innput.
+	(module_state::set_import): Adjust legacy test.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
 	* module.cc (module_state::check_not_purview): Check name.
-	(mangle_mondule, module_name): Likewise.
+	(mangle_module, module_name): Likewise.
 	(declare_module): Set parent, not alias.
 
 	Merge trunk r265692.

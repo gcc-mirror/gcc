@@ -11582,8 +11582,11 @@ module_state::read (int fd, int e, cpp_reader *reader)
      read_config.  */
   gcc_assert (!from ()->is_frozen ());
 
-  if (config.any_macros && !read_macros ())
-    return NULL;
+  /* Look away.  Look away now.  */
+  extern cpp_options *cpp_opts;
+  if (config.any_macros && !cpp_opts->preprocessed)
+    if (!read_macros ())
+      return NULL;
 
   if (!flag_preprocess_only)
     {
@@ -11752,7 +11755,7 @@ module_state::set_import (module_state const *other, bool is_export)
     /* We'll export OTHER's exports.  */
     bitmap_ior_into (exports, other->exports);
 
-  if (is_legacy () && other->is_legacy () && mod != MODULE_PURVIEW)
+  if (is_legacy () && other->is_legacy () && mod >= MODULE_IMPORT_BASE)
     /* We only see OTHER's legacies if it is legacy.  */
     bitmap_ior_into (slurp ()->legacies, other->slurp ()->legacies);
 }
