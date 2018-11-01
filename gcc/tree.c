@@ -5510,6 +5510,8 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+      TREE_TYPE (decl) = void_type_node;
+      SET_DECL_ALIGN (decl, 0);
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     {
