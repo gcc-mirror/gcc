@@ -5037,6 +5037,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 		    break;
 
 		  case REF_COMPONENT:
+		  case REF_INQUIRY:
 		    break;
 		  }
 	      }

@@ -3367,7 +3367,7 @@ add_subroutines (void)
     *st = "status", *stat = "stat", *sz = "size", *t = "to",
     *tm = "time", *tp = "topos", *trim_name = "trim_name", *ut = "unit",
     *val = "value", *vl = "values", *whence = "whence", *zn = "zone";
- 
+
   int di, dr, dc, dl, ii;
 
   di = gfc_default_integer_kind;

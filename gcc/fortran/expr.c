@@ -599,6 +599,7 @@ gfc_free_ref_list (gfc_ref *p)
 	  break;
 
 	case REF_COMPONENT:
+	case REF_INQUIRY:
 	  break;
 	}
 
@@ -754,6 +755,10 @@ gfc_copy_ref (gfc_ref *src)
 
     case REF_COMPONENT:
       dest->u.c = src->u.c;
+      break;
+
+    case REF_INQUIRY:
+      dest->u.i = src->u.i;
       break;
 
     case REF_SUBSTRING:
@@ -1691,6 +1696,109 @@ find_substring_ref (gfc_expr *p, gfc_expr **newp)
 }
 
 
+/* Pull an inquiry result out of an expression.  */
+
+static bool
+find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
+{
+  gfc_ref *ref;
+  gfc_ref *inquiry = NULL;
+  gfc_expr *tmp;
+
+  tmp = gfc_copy_expr (p);
+
+  if (tmp->ref && tmp->ref->type == REF_INQUIRY)
+    {
+      inquiry = tmp->ref;
+      tmp->ref = NULL;
+    }
+  else
+    {
+      for (ref = tmp->ref; ref; ref = ref->next)
+	if (ref->next && ref->next->type == REF_INQUIRY)
+	  {
+	    inquiry = ref->next;
+	    ref->next = NULL;
+	  }
+    }
+
+  if (!inquiry)
+    {
+      gfc_free_expr (tmp);
+      return false;
+    }
+
+  gfc_resolve_expr (tmp);
+
+  switch (inquiry->u.i)
+    {
+    case INQUIRY_LEN:
+      if (tmp->ts.type != BT_CHARACTER)
+	goto cleanup;
+
+      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+	goto cleanup;
+
+      if (!tmp->ts.u.cl->length
+	  || tmp->ts.u.cl->length->expr_type != EXPR_CONSTANT)
+	goto cleanup;
+
+      *newp = gfc_copy_expr (tmp->ts.u.cl->length);
+      break;
+
+    case INQUIRY_KIND:
+      if (tmp->ts.type == BT_DERIVED || tmp->ts.type == BT_CLASS)
+	goto cleanup;
+
+      if (!gfc_notify_std (GFC_STD_F2003, "KIND part_ref at %C"))
+	goto cleanup;
+
+      *newp = gfc_get_int_expr (gfc_default_integer_kind,
+				NULL, tmp->ts.kind);
+      break;
+
+    case INQUIRY_RE:
+      if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	goto cleanup;
+
+      if (!gfc_notify_std (GFC_STD_F2008, "RE part_ref at %C"))
+	goto cleanup;
+
+      *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
+      mpfr_set ((*newp)->value.real,
+		mpc_realref (p->value.complex), GFC_RND_MODE);
+      break;
+
+    case INQUIRY_IM:
+      if (tmp->ts.type != BT_COMPLEX || tmp->expr_type != EXPR_CONSTANT)
+	goto cleanup;
+
+      if (!gfc_notify_std (GFC_STD_F2008, "IM part_ref at %C"))
+	goto cleanup;
+
+      *newp = gfc_get_constant_expr (BT_REAL, tmp->ts.kind, &tmp->where);
+      mpfr_set ((*newp)->value.real,
+		mpc_imagref (p->value.complex), GFC_RND_MODE);
+      break;
+    }
+
+  if (!(*newp))
+    goto cleanup;
+  else if ((*newp)->expr_type != EXPR_CONSTANT)
+    {
+      gfc_free_expr (*newp);
+      goto cleanup;
+    }
+
+  gfc_free_expr (tmp);
+  return true;
+
+cleanup:
+  gfc_free_expr (tmp);
+  return false;
+}
+
+
 
 /* Simplify a subobject reference of a constructor.  This occurs when
    parameter variable values are substituted.  */
@@ -1699,7 +1807,7 @@ static bool
 simplify_const_ref (gfc_expr *p)
 {
   gfc_constructor *cons, *c;
-  gfc_expr *newp;
+  gfc_expr *newp = NULL;
   gfc_ref *last_ref;
 
   while (p->ref)
@@ -1800,8 +1908,17 @@ simplify_const_ref (gfc_expr *p)
 	  remove_subobject_ref (p, cons);
 	  break;
 
+	case REF_INQUIRY:
+	  if (!find_inquiry_ref (p, &newp))
+	    return false;
+
+	  gfc_replace_expr (p, newp);
+	  gfc_free_ref_list (p->ref);
+	  p->ref = NULL;
+	  break;
+
 	case REF_SUBSTRING:
-  	  if (!find_substring_ref (p, &newp))
+	  if (!find_substring_ref (p, &newp))
 	    return false;
 
 	  gfc_replace_expr (p, newp);
@@ -1818,9 +1935,10 @@ simplify_const_ref (gfc_expr *p)
 /* Simplify a chain of references.  */
 
 static bool
-simplify_ref_chain (gfc_ref *ref, int type)
+simplify_ref_chain (gfc_ref *ref, int type, gfc_expr **p)
 {
   int n;
+  gfc_expr *newp;
 
   for (; ref; ref = ref->next)
     {
@@ -1843,6 +1961,15 @@ simplify_ref_chain (gfc_ref *ref, int type)
 	    return false;
 	  if (!gfc_simplify_expr (ref->u.ss.end, type))
 	    return false;
+	  break;
+
+	case REF_INQUIRY:
+	  if (!find_inquiry_ref (*p, &newp))
+	    return false;
+
+	  gfc_replace_expr (*p, newp);
+	  gfc_free_ref_list ((*p)->ref);
+	  (*p)->ref = NULL;
 	  break;
 
 	default:
@@ -1933,6 +2060,9 @@ gfc_simplify_expr (gfc_expr *p, int type)
   switch (p->expr_type)
     {
     case EXPR_CONSTANT:
+      if (p->ref && p->ref->type == REF_INQUIRY)
+	simplify_ref_chain (p->ref, type, &p);
+      break;
     case EXPR_NULL:
       break;
 
@@ -1969,7 +2099,7 @@ gfc_simplify_expr (gfc_expr *p, int type)
       break;
 
     case EXPR_SUBSTRING:
-      if (!simplify_ref_chain (p->ref, type))
+      if (!simplify_ref_chain (p->ref, type, &p))
 	return false;
 
       if (gfc_is_constant_expr (p))
@@ -2031,14 +2161,14 @@ gfc_simplify_expr (gfc_expr *p, int type)
 	}
 
       /* Simplify subcomponent references.  */
-      if (!simplify_ref_chain (p->ref, type))
+      if (!simplify_ref_chain (p->ref, type, &p))
 	return false;
 
       break;
 
     case EXPR_STRUCTURE:
     case EXPR_ARRAY:
-      if (!simplify_ref_chain (p->ref, type))
+      if (!simplify_ref_chain (p->ref, type, &p))
 	return false;
 
       if (!simplify_constructor (p->value.constructor, type))
@@ -3306,14 +3436,22 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 
   sym = lvalue->symtree->n.sym;
 
-  /* See if this is the component or subcomponent of a pointer.  */
+  /* See if this is the component or subcomponent of a pointer and guard
+     against assignment to LEN or KIND part-refs.  */
   has_pointer = sym->attr.pointer;
   for (ref = lvalue->ref; ref; ref = ref->next)
-    if (ref->type == REF_COMPONENT && ref->u.c.component->attr.pointer)
-      {
-	has_pointer = 1;
-	break;
-      }
+    {
+      if (!has_pointer && ref->type == REF_COMPONENT
+	  && ref->u.c.component->attr.pointer)
+        has_pointer = 1;
+      else if (ref->type == REF_INQUIRY
+	       && (ref->u.i == INQUIRY_LEN || ref->u.i == INQUIRY_KIND))
+	{
+	  gfc_error ("Assignment to a LEN or KIND part_ref at %L is not "
+		     "allowed", &lvalue->where);
+	  return false;
+	}
+    }
 
   /* 12.5.2.2, Note 12.26: The result variable is very similar to any other
      variable local to a function subprogram.  Its existence begins when
@@ -4791,6 +4929,7 @@ gfc_get_full_arrayspec_from_expr (gfc_expr *expr)
 	      continue;
 
 	    case REF_SUBSTRING:
+	    case REF_INQUIRY:
 	      continue;
 
 	    case REF_ARRAY:
@@ -4942,6 +5081,9 @@ gfc_traverse_expr (gfc_expr *expr, gfc_symbol *sym,
 		  return true;
 	      }
 	  break;
+
+	case REF_INQUIRY:
+	  return true;
 
 	default:
 	  gcc_unreachable ();
@@ -5297,6 +5439,7 @@ gfc_is_coarray (gfc_expr *e)
 	break;
 
      case REF_SUBSTRING:
+     case REF_INQUIRY:
 	break;
     }
 

@@ -1,3 +1,49 @@
+2018-11-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/40196
+	* dependency.c (are_identical_variables): Return false if the
+	inquiry refs are not the same.
+	(gfc_ref_needs_temporary_p): Break on an inquiry ref.
+	* dump_parse_tree.c (show_ref): Show the inquiry ref type.
+	* expr.c (gfc_free_ref_list): Break on an inquiry ref.
+	(gfc_copy_ref): Copy the inquiry ref types.
+	(find_inquiry_ref): New function.
+	(simplify_const_ref, simplify_ref_chain): Call it. Add new arg
+	to simplify_ref_chain.
+	(gfc_simplify_expr): Use the new arg in call to
+	simplify_ref_chain.
+	(gfc_get_full_arrayspec_from_expr, gfc_is_coarray): Break on
+	inquiry ref.
+	(gfc_traverse_expr): Return true for inquiry ref.
+	* frontend-passes.c (gfc_expr_walker): Break on inquiry ref.
+	* gfortran.h : Add enums and union member in gfc_ref to
+	implement inquiry refs.
+	* intrinsic.c : Fix white nois.
+	* match.c (gfc_match_assignment): A constant lavlue is an
+	error.
+	* module.c : Add DECL_MIO_NAME for inquiry_type and the mstring
+	for inquiry_types.
+	(mio_ref): Handle inquiry refs.
+	* primary.c (is_inquiry_ref): New function.
+	(gfc_match_varspec): Handle inquiry refs calling new function.
+	(gfc_variable_attr): Detect inquiry ref for disambiguation
+	with components.
+	(caf_variable_attr): Treat inquiry and substring refs in the
+	same way.
+	* resolve.c (find_array_spec): ditto.
+	(gfc_resolve_substring_charlen): If there is neither a charlen
+	ref not an inquiry ref, return.
+	(resolve_ref): Handle inqiry refs as appropriate.
+	(resolve_allocate_expr): Entities with an inquiry ref cannot be
+	allocated.
+	* simplify.c (simplify_bound, simplify_cobound): Punt on
+	inquiry refs.
+	* trans-array.c (get_array_ctor_var_strlen): Break on inquiry
+	ref.
+	*trans-expr.c (conv_inquiry): New function.
+	(gfc_conv_variable): Retain the last typespec to pass to
+	conv_inquiry on detecting an inquiry ref.
+
 2018-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/46020
