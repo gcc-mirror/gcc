@@ -1,3 +1,9 @@
+2018-10-31  Alexandre Oliva <aoliva@redhat.com>
+
+	* opts.c (default_options_table): Do not enable
+	OPT_fdelayed_branch at -Og.
+	* doc/invoke.texi (-fdelayed-branch): Document it.
+
 2018-10-31  Richard Henderson  <richard.henderson@linaro.org>
 
 	* optabs-libfuncs.c (build_libfunc_function_visibility):
