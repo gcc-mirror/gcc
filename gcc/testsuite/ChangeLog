@@ -1,3 +1,13 @@
+2017-11-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* gfortran.dg/findloc_1.f90: Actually commit.
+	* gfortran.dg/findloc_2.f90: Actually commit.
+	* gfortran.dg/findloc_3.f90: Actually commit.
+	* gfortran.dg/findloc_4.f90: Actually commit.
+	* gfortran.dg/findloc_5.f90: Actually commit.
+	* gfortran.dg/findloc_6.f90: Actually commit.
+
 2018-11-01  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/40196
