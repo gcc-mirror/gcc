@@ -1,3 +1,8 @@
+2018-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11 (LIB2ADD): Add divmod.c.
+	(HOST_LIBGCC2_CFLAGS): Change to optimize for size.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
