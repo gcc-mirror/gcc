@@ -4859,7 +4859,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   TREE_LANG_FLAG_3 (RETURN_EXPR_CHECK (NODE))
 
 /* True if NODE is a co-routine FUNCTION_DECL.  */
-#define DECL_COROUTINE_FUNCTION_P(NODE) \
+#define DECL_COROUTINE_P(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
 
 /* The PROMISE_TYPE associated with this coroutine type.  */
@@ -6918,7 +6918,6 @@ extern tree begin_do_stmt			(void);
 extern void finish_do_body			(tree);
 extern void finish_do_stmt		(tree, tree, bool, unsigned short);
 extern tree finish_return_stmt			(tree);
-extern bool co_return_context_valid_p		(location_t, tree);
 extern tree finish_co_return_stmt		(tree);
 extern tree begin_for_scope			(tree *);
 extern tree begin_for_stmt			(tree, tree);
@@ -7641,6 +7640,9 @@ extern void cp_ubsan_instrument_member_accesses (tree *);
 extern tree cp_ubsan_maybe_instrument_downcast	(location_t, tree, tree, tree);
 extern tree cp_ubsan_maybe_instrument_cast_to_vbase (location_t, tree, tree);
 extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
+
+/* In coroutines.cc */
+extern bool co_return_context_valid_p		(location_t, tree);
 
 /* Inline bodies.  */
 

@@ -1,3 +1,11 @@
+2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp
+	* cp-tree.h (DECL_COROUTINE_FUNCTION_P): Rename to DECL_COROUTINE_P.
+	(co_return_context_valid_p): Move declaration to new section for
+	coroutines.cc.
+	* semantics.c (finish_co_return_stmt): Rename DECL_COROUTINE_FUNCTION_P.
+
 2018-10-29  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Merge trunk r265582.

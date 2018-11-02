@@ -957,7 +957,7 @@ finish_co_return_stmt (tree expr)
 
   /* The current function has now become a coroutine, if it wasn't
      already.  */
-  DECL_COROUTINE_FUNCTION_P (current_function_decl) = 1;
+  DECL_COROUTINE_P (current_function_decl) = 1;
 
   return r;
 }
