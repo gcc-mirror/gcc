@@ -1798,12 +1798,18 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	   rid of the extra bytes.  */
 	cmp_bytes = bytes_to_compare;
 
-      rtx offset_reg = gen_reg_rtx (Pmode);
-      emit_move_insn (offset_reg, GEN_INT (offset));
-
-      rtx addr1 = gen_rtx_PLUS (Pmode, src1_addr, offset_reg);
+      rtx offset_rtx;
+      if (BYTES_BIG_ENDIAN || TARGET_AVOID_XFORM)
+	offset_rtx = GEN_INT (offset);
+      else
+	{
+	  offset_rtx = gen_reg_rtx (Pmode);
+	  emit_move_insn (offset_rtx, GEN_INT (offset));
+	}
+      rtx addr1 = gen_rtx_PLUS (Pmode, src1_addr, offset_rtx);
+      rtx addr2 = gen_rtx_PLUS (Pmode, src2_addr, offset_rtx);
+	  
       do_load_for_compare_from_addr (load_mode, tmp_reg_src1, addr1, orig_src1);
-      rtx addr2 = gen_rtx_PLUS (Pmode, src2_addr, offset_reg);
       do_load_for_compare_from_addr (load_mode, tmp_reg_src2, addr2, orig_src2);
 
       /* We must always left-align the data we read, and
