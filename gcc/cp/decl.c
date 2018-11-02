@@ -15875,6 +15875,20 @@ finish_function (bool inline_p)
      error_mark_node.  */
   gcc_assert (DECL_INITIAL (fndecl) == error_mark_node);
 
+  if (flag_coroutines
+      && !processing_template_decl
+      && DECL_COROUTINE_P (fndecl))
+    {
+      fndecl = morph_fn_to_coro (fndecl);
+      if (fndecl == NULL_TREE)
+        return error_mark_node;
+
+      if (use_eh_spec_block (fndecl))
+	finish_eh_spec_block (TYPE_RAISES_EXCEPTIONS
+			      (TREE_TYPE (fndecl)),
+			      current_eh_spec_block);
+    }
+  else
   /* For a cloned function, we've already got all the code we need;
      there's no need to add any extra bits.  */
   if (!DECL_CLONED_FUNCTION_P (fndecl))

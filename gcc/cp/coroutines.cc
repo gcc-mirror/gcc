@@ -185,6 +185,42 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 
 /* Here we will check the constraints that are not per keyword.  */
 
+static bool
+coro_function_valid_p (tree fndecl)
+{
+  location_t f_loc = DECL_SOURCE_LOCATION (fndecl);
+
+  /* Since we think the function is a coroutine, that implies we parsed
+     a keyword that triggered this.  Keywords check promise validity for
+     their context and thus the promise type should be known at this point.
+  */
+  gcc_assert (DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
+
+  if (current_function_returns_value || current_function_returns_null)
+    /* TODO: file or extract positions of returns (and the first coro
+       keyword so that we can add notes to the diagnostic about where
+       the bad keyword is and what mad eit into a coro.  */
+    error_at (f_loc, "return statement not allowed in coroutine;"
+                     " did you mean %<co_return%>?" );
+
+  return true;
+}
+
+/* Here we:
+   a) Check that the function and promise type are valid for a
+      coroutine.
+   b) Carry out the initial morph to create the skeleton of the
+      coroutine ramp function and the rewritten body.
+*/
+tree morph_fn_to_coro (tree orig)
+{
+  if (!coro_function_valid_p (orig))
+    return NULL_TREE;
+
+  tree fncontent = DECL_SAVED_TREE (orig);
+  gcc_assert (orig == current_function_decl);
+  return orig;
+}
 
 bool
 co_await_context_valid_p (location_t kw, tree expr)

@@ -1,6 +1,15 @@
 2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp
+	* coroutines.cc (coro_function_valid_p): New.
+	(morph_fn_to_coro): New.
+	* cp-tree.h (morph_fn_to_coro): New.
+	* decl.c (finish_function): When we have a coroutine, call out to
+	morph the user's original function to add the ramp function base.
+
+2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp
 	* call.c (op_error): Handle COAWAIT_EXPR. (build_new_op_1): Likewise.
 	* coroutines.cc (co_await_context_valid_p): New.
 	* cp-tree.h (co_await_context_valid_p): New.
