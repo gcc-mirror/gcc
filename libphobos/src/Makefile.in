@@ -603,6 +603,8 @@ libdir = @libdir@
 libexecdir = @libexecdir@
 libphobos_builddir = @libphobos_builddir@
 libphobos_srcdir = @libphobos_srcdir@
+libphobos_toolexecdir = @libphobos_toolexecdir@
+libphobos_toolexeclibdir = @libphobos_toolexeclibdir@
 localedir = @localedir@
 localstatedir = @localstatedir@
 mandir = @mandir@
@@ -615,6 +617,7 @@ phobos_compiler_shared_flag = @phobos_compiler_shared_flag@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
+runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -624,8 +627,6 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-toolexecdir = @toolexecdir@
-toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
@@ -633,6 +634,8 @@ top_srcdir = @top_srcdir@
 # If there are no sources with known extension (i.e. only D sources)
 # automake forgets to set this
 CCLD = $(CC)
+toolexecdir = $(libphobos_toolexecdir)
+toolexeclibdir = $(libphobos_toolexeclibdir)
 LTDCOMPILE = $(LIBTOOL) --tag=D $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(GDC) $(AM_DFLAGS)
 

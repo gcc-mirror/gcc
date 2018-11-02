@@ -638,8 +638,8 @@ PHOBOS_SOVERSION
 DRUNTIME_SOVERSION
 SPEC_PHOBOS_DEPS
 gdc_include_dir
-toolexeclibdir
-toolexecdir
+libphobos_toolexeclibdir
+libphobos_toolexecdir
 gcc_version
 DRUNTIME_ZLIB_SYSTEM_FALSE
 DRUNTIME_ZLIB_SYSTEM_TRUE
@@ -783,6 +783,7 @@ infodir
 docdir
 oldincludedir
 includedir
+runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -823,6 +824,7 @@ with_libatomic
 with_libbacktrace
 with_target_system_zlib
 with_cross_host
+enable_version_specific_runtime_libs
 '
       ac_precious_vars='build_alias
 host_alias
@@ -867,6 +869,7 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
+runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE_TARNAME}'
@@ -1119,6 +1122,15 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
+  -runstatedir | --runstatedir | --runstatedi | --runstated \
+  | --runstate | --runstat | --runsta | --runst | --runs \
+  | --run | --ru | --r)
+    ac_prev=runstatedir ;;
+  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
+  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
+  | --run=* | --ru=* | --r=*)
+    runstatedir=$ac_optarg ;;
+
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1256,7 +1268,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir
+		libdir localedir mandir runstatedir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1409,6 +1421,7 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
+  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1466,6 +1479,9 @@ Optional Features:
   --enable-thread-lib=<arg>
                           specify linker option for the system thread library
                           (default: autodetect)
+  --enable-version-specific-runtime-libs
+                          Specify that runtime libraries should be installed
+                          in a compiler-specific directory
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -11493,7 +11509,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11496 "configure"
+#line 11512 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11599,7 +11615,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11602 "configure"
+#line 11618 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14806,30 +14822,44 @@ if test "${with_cross_host+set}" = set; then :
 fi
 
 
-  toolexecdir=no
-  toolexeclibdir=no
+  libphobos_toolexecdir=no
+  libphobos_toolexeclibdir=no
 
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-version-specific-runtime-libs" >&5
+$as_echo_n "checking for --enable-version-specific-runtime-libs... " >&6; }
+  # Check whether --enable-version-specific-runtime-libs was given.
+if test "${enable_version_specific_runtime_libs+set}" = set; then :
+  enableval=$enable_version_specific_runtime_libs; case "$enableval" in
+      yes) version_specific_libs=yes ;;
+      no)  version_specific_libs=no ;;
+      *)   as_fn_error $? "Unknown argument to enable/disable version-specific libs" "$LINENO" 5;;
+     esac
+else
   version_specific_libs=no
+fi
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $version_specific_libs" >&5
+$as_echo "$version_specific_libs" >&6; }
 
   # Version-specific runtime libs processing.
   if test $version_specific_libs = yes; then
-      toolexecdir='${libdir}/gcc/${host_alias}'
-      toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
+    libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
+    libphobos_toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
   else
-      # Calculate toolexecdir, toolexeclibdir
-      # Install a library built with a cross compiler in tooldir, not libdir.
-      if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
-          toolexecdir='${exec_prefix}/${host_alias}'
-          toolexeclibdir='${toolexecdir}/lib'
-      else
-          toolexecdir='${libdir}/gcc/${host_alias}'
-          toolexeclibdir='${libdir}'
-      fi
-      multi_os_directory=`$GDC -print-multi-os-directory`
-      case $multi_os_directory in
-          .) ;; # Avoid trailing /.
-          *) toolexeclibdir=${toolexeclibdir}/${multi_os_directory} ;;
-      esac
+    # Calculate libphobos_toolexecdir, libphobos_toolexeclibdir
+    # Install a library built with a cross compiler in tooldir, not libdir.
+    if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
+      libphobos_toolexecdir='${exec_prefix}/${host_alias}'
+      libphobos_toolexeclibdir='${toolexecdir}/lib'
+    else
+      libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
+      libphobos_toolexeclibdir='${libdir}'
+    fi
+    multi_os_directory=`$GDC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) libphobos_toolexeclibdir=${libphobos_toolexeclibdir}/${multi_os_directory} ;;
+    esac
   fi
 
 
@@ -14870,7 +14900,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile libdruntime/Makefile testsuite/Makefile"
+ac_config_files="$ac_config_files Makefile"
 
 
 ac_config_files="$ac_config_files libdruntime/gcc/config.d libdruntime/gcc/libbacktrace.d"
@@ -14880,8 +14910,15 @@ ac_config_files="$ac_config_files src/libgphobos.spec"
 ac_config_files="$ac_config_files testsuite/testsuite_flags"
 
 
-# We need multilib support, but only if configuring for the target.
-ac_config_commands="$ac_config_commands default"
+# Multilibs need MULTISUBDIR defined correctly in certain makefiles so
+# that multilib installs will end up installed in the correct place.
+# The testsuite needs it for multilib-aware ABI baseline files.
+# To work around this not being passed down from config-ml.in ->
+# srcdir/Makefile.am -> srcdir/{src,libdruntime,...}/Makefile.am, manually
+# append it here.  Only modify Makefiles that have just been created.
+#
+# Also, get rid of this simulated-VPATH thing that automake does.
+ac_config_files="$ac_config_files libdruntime/Makefile src/Makefile testsuite/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -16010,11 +16047,6 @@ fi
 
 
 
-# Variables needed in config.status (file generation) which aren't already
-# passed by autoconf.
-SUBDIRS="$SUBDIRS"
-
-
 _ACEOF
 
 cat >>$CONFIG_STATUS <<\_ACEOF || ac_write_fail=1
@@ -16027,14 +16059,13 @@ do
     "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
-    "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
-    "libdruntime/Makefile") CONFIG_FILES="$CONFIG_FILES libdruntime/Makefile" ;;
-    "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
     "libdruntime/gcc/config.d") CONFIG_FILES="$CONFIG_FILES libdruntime/gcc/config.d" ;;
     "libdruntime/gcc/libbacktrace.d") CONFIG_FILES="$CONFIG_FILES libdruntime/gcc/libbacktrace.d" ;;
     "src/libgphobos.spec") CONFIG_FILES="$CONFIG_FILES src/libgphobos.spec" ;;
     "testsuite/testsuite_flags") CONFIG_FILES="$CONFIG_FILES testsuite/testsuite_flags" ;;
-    "default") CONFIG_COMMANDS="$CONFIG_COMMANDS default" ;;
+    "libdruntime/Makefile") CONFIG_FILES="$CONFIG_FILES libdruntime/Makefile" ;;
+    "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
+    "testsuite/Makefile") CONFIG_FILES="$CONFIG_FILES testsuite/Makefile" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -17421,32 +17452,38 @@ _LT_EOF
 
  ;;
     "testsuite/testsuite_flags":F) chmod +x testsuite/testsuite_flags ;;
-    "default":C) if test -n "$CONFIG_FILES"; then
-   if test -n "${with_target_subdir}"; then
-     # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
-     # that multilib installs will end up installed in the correct place.
-     # The testsuite needs it for multilib-aware ABI baseline files.
-     # To work around this not being passed down from config-ml.in ->
-     # srcdir/Makefile.am -> srcdir/{src,libdruntime,...}/Makefile.am, manually
-     # append it here.  Only modify Makefiles that have just been created.
-     #
-     # Also, get rid of this simulated-VPATH thing that automake does.
-     cat > vpsed << \_EOF
-  s!`test -f '$<' || echo '$(srcdir)/'`!!
+    "libdruntime/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
-     for i in $SUBDIRS; do
-      case $CONFIG_FILES in
-       *${i}/Makefile*)
-	 #echo "Adding MULTISUBDIR to $i/Makefile"
-	 sed -f vpsed $i/Makefile > tmp
-	 grep '^MULTISUBDIR =' Makefile >> tmp
-	 mv tmp $i/Makefile
-	 ;;
-      esac
-     done
-     rm vpsed
-   fi
- fi
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "src/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
+ ;;
+    "testsuite/Makefile":F) cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
+_EOF
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   { ml_norecursion=; unset ml_norecursion;}
  ;;
 
   esac
