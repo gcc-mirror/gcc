@@ -10,8 +10,8 @@ namespace experimental {
 inline namespace coroutines_n4760 {
 
 // 21.11.1 coroutine traits
-template<typename R, typename...> struct coroutine_traits {
-  using promise_type = typename R::promise_type;
+template<typename _R, typename...> struct coroutine_traits {
+  using promise_type = typename _R::promise_type;
 };
 
 // 21.11.2  coroutine handle
