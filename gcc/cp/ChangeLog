@@ -1,3 +1,7 @@
+2018-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Refactor checks.
+
 2018-11-01  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0846R0, ADL and function templates.

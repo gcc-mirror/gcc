@@ -1,3 +1,8 @@
+2018-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/lookup/crash6.C: Adjust error
+	* g++.dg/parse/crash38.C: Likewise.
+
 2018-11-02  Andreas Schwab  <schwab@linux-m68k.org>
 
 	* gcc.c-torture/execute/20010904-2.c: Fix last change.
