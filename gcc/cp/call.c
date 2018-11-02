@@ -4758,6 +4758,16 @@ op_error (location_t loc, enum tree_code code, enum tree_code code2,
 		  opname, opname, arg1, TREE_TYPE (arg1));
       break;
 
+    case COAWAIT_EXPR:
+      if (flag_diagnostics_show_caret)
+	error_at (loc, op_error_string (G_("%<operator %s%>"), 1, match),
+		  opname, TREE_TYPE (arg1));
+      else
+	error_at (loc, op_error_string (G_("%<operator %s%> in %<%s%E%>"),
+					  1, match),
+		   opname, opname, arg1, TREE_TYPE (arg1));
+      break;
+
     default:
       if (arg2)
 	if (flag_diagnostics_show_caret)
@@ -5881,6 +5891,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
 	case ADDR_EXPR:
 	case COMPOUND_EXPR:
 	case COMPONENT_REF:
+	case COAWAIT_EXPR:
 	  result = NULL_TREE;
 	  result_valid_p = true;
 	  break;
@@ -6110,6 +6121,7 @@ build_new_op_1 (location_t loc, enum tree_code code, int flags, tree arg1,
     case ADDR_EXPR:
     case COMPONENT_REF:
     case COMPOUND_EXPR:
+    case COAWAIT_EXPR:
       return NULL_TREE;
 
     default:

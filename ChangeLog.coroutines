@@ -1,6 +1,16 @@
 2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp
+	* call.c (op_error): Handle COAWAIT_EXPR. (build_new_op_1): Likewise.
+	* coroutines.cc (co_await_context_valid_p): New.
+	* cp-tree.h (co_await_context_valid_p): New.
+	* parser.c (cp_parser_unary_expression): Handle RID_CO_AWAIT.
+	gcc/testsuite
+	* g++.dg/coroutines/coro-await-context-auto-fn.C: New.
+
+2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp
 	* coroutines.cc (co_return_context_valid_p): Factor code to provide
 	common functionality.  (coro_promise_type_found_p): New.
 	(coro_common_keyword_context_valid_p): New.

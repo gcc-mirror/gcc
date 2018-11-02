@@ -7964,6 +7964,7 @@ cp_parser_pseudo_destructor_name (cp_parser* parser,
      postfix-expression
      ++ cast-expression
      -- cast-expression
+     await-expression
      unary-operator cast-expression
      sizeof unary-expression
      sizeof ( type-id )
@@ -8176,6 +8177,30 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 
 	    return cp_expr (finish_noexcept_expr (expr, tf_warning_or_error),
 			    noexcept_loc);
+	  }
+
+	case RID_CO_AWAIT:
+	  {
+	    tree expr;
+	    location_t kw_loc = token->location;
+
+	    /* Consume the `co_await' token.  */
+	    cp_lexer_consume_token (parser->lexer);
+	    /* Parse the cast-expression.  */
+	    expr = cp_parser_simple_cast_expression (parser);
+	    if (! co_await_context_valid_p (kw_loc, expr))
+	      return error_mark_node;
+
+	    /* FIXME: we're not checking anything here yet, this is just a
+	       placeholder in the initial work.  */
+
+	    /* The current function has now become a coroutine, if it wasn't
+	       already.  */
+	    DECL_COROUTINE_P (current_function_decl) = 1;
+	    /* We are going to ignore a => o and o => e and only start out
+	       with the trivial case where a ==> e.  */
+	    return build4_loc (kw_loc, COAWAIT_EXPR, void_type_node,
+			       expr, NULL_TREE, NULL_TREE, NULL_TREE);
 	  }
 
 	default:

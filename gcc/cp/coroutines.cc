@@ -186,6 +186,20 @@ coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
 /* Here we will check the constraints that are not per keyword.  */
 
 
+bool
+co_await_context_valid_p (location_t kw, tree expr)
+{
+  if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
+					   "co_await"))
+    return false;
+
+  if (! coro_promise_type_found_p (current_function_decl, kw))
+    return false;
+
+  /* FIXME: we can probably do more here.  */
+  return true;
+}
+
 /* Check that it's valid to have a co_return keyword here.
    True if this is a valid context (we don't check the content
    of the expr - except to decide if the promise_type needs as

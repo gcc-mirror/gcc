@@ -7643,6 +7643,7 @@ extern void cp_ubsan_maybe_initialize_vtbl_ptrs (tree);
 
 /* In coroutines.cc */
 extern bool co_return_context_valid_p		(location_t, tree);
+extern bool co_await_context_valid_p		(location_t, tree);
 
 /* Inline bodies.  */
 
