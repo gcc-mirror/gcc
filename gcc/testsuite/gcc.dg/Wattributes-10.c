@@ -12,7 +12,7 @@ struct S
 
   int* __attribute__ ((aligned (16), packed)) qaligned;   /* { dg-warning "ignoring attribute .packed. because it conflicts with attribute .aligned." } */
   int* __attribute__ ((packed, aligned (16))) qpacked;    /* { dg-warning ".packed. attribute ignored for type .int \\\*." } */
-} s;    /* { dg-error "alignment of 's' is greater" { target pdp11*-*-* } } */
+} s;    /* { dg-error "alignment of 's' is greater" "" { target pdp11*-*-* } } */
 
 
 void test (void)
