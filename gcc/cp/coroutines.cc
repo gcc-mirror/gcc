@@ -217,7 +217,6 @@ tree morph_fn_to_coro (tree orig)
   if (!coro_function_valid_p (orig))
     return NULL_TREE;
 
-  tree fncontent = DECL_SAVED_TREE (orig);
   gcc_assert (orig == current_function_decl);
   return orig;
 }
@@ -231,6 +230,12 @@ co_await_context_valid_p (location_t kw, tree expr)
 
   if (! coro_promise_type_found_p (current_function_decl, kw))
     return false;
+
+  if (expr == NULL_TREE)
+    {
+      error_at (kw, "co_await requires an expression." );
+      return false;
+    }
 
   /* FIXME: we can probably do more here.  */
   return true;
