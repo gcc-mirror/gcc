@@ -4077,11 +4077,6 @@ EOF
     ;;
 
   sparc*-*-*)
-    gcc_GAS_CHECK_FEATURE([.register], gcc_cv_as_sparc_register_op,,,
-      [.register %g2, #scratch],,
-      [AC_DEFINE(HAVE_AS_REGISTER_PSEUDO_OP, 1,
-		[Define if your assembler supports .register.])])
-
     gcc_GAS_CHECK_FEATURE([-relax option], gcc_cv_as_sparc_relax,,
       [-relax], [.text],,
       [AC_DEFINE(HAVE_AS_RELAX_OPTION, 1,

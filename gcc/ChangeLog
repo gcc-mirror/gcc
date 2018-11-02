@@ -1,3 +1,15 @@
+2018-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_as_sparc_register_op): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sparc/sparc.c (sparc_output_scratch_registers): Remove
+	HAVE_AS_REGISTER_PSEUDO_OP guard.
+	* config/sparc/sparc.h (ASM_ARCH64_SPEC): Remove
+	!HAVE_AS_REGISTER_PSEUDO_OP support.
+	(ASM_DECLARE_REGISTER_GLOBAL): Remove HAVE_AS_REGISTER_PSEUDO_OP
+	guard.
+
 2018-11-02  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (build_abbrev_table): Guard lookup_external_ref call
