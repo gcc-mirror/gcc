@@ -5583,7 +5583,6 @@ sparc_initial_elimination_offset (int to)
 void
 sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_AS_REGISTER_PSEUDO_OP
   int i;
 
   if (TARGET_ARCH32)
@@ -5604,7 +5603,6 @@ sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 	}
       if (i == 3) i = 5;
     }
-#endif
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
