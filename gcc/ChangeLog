@@ -1,3 +1,21 @@
+2018-11-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-coalesce.c (struct coalesce_list): Add obstack member.
+	(pop_cost_one_pair): Do not free pair.
+	(pop_best_coalesce): Likewise.
+	(create_coalesce_list): Initialize obstack.
+	(delete_coalesce_list): Free obstack.
+	(find_coalesce_pair): Obstack-allocate coalesce pairs.
+	(add_cost_one_coalesce): Likewise.
+	(struct live_track): Remove bitmap pointer indirections.
+	(new_live_track): Adjust.
+	(delete_live_track): Likewise.
+	(live_track_remove_partition): Likewise.
+	(live_track_add_partition): Likewise.
+	(live_track_live_p): Likewise.
+	(live_track_process_def): Likewise.
+	(live_track_clear_base_vars): Likewise.
+
 2018-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_as_sparc_register_op): Remove.
