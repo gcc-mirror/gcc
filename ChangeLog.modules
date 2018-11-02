@@ -1,4 +1,9 @@
-2018-11-01  Nathan Sidwell  <nathan@acm.org>
+2018-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* decl.c (duplicate_decls): Refactor export check.
+	gcc/testsuite/
+	* g++.dg/modules/export-1.C: New.
 
 	gcc/cp/
 	* decl.c (duplicate_decls): Refactor checks.
@@ -7,6 +12,8 @@
 	gcc/testsuite/
 	* g++.dg/lookup/crash6.C: Adjust error
 	* g++.dg/parse/crash38.C: Likewise.
+
+2018-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r265714.
 	Move to autoconf 2.69.

@@ -1834,15 +1834,6 @@ next_arg:;
 	    }
 	}
 
-      if (VAR_OR_FUNCTION_DECL_P (olddecl)
-	  && DECL_MODULE_EXPORT_P (newdecl)
-	  && !DECL_MODULE_EXPORT_P (olddecl))
-	{
-	  error ("conflicting exporting declaration of %q#D", newdecl);
-	  inform (DECL_SOURCE_LOCATION (olddecl),
-		  "previous non-exporting declaration");
-	}
-
       if (DECL_LANG_SPECIFIC (olddecl) && DECL_USE_TEMPLATE (olddecl))
 	;
       else if (TREE_CODE (olddecl) == FUNCTION_DECL)
@@ -1915,6 +1906,18 @@ next_arg:;
 
   if (!validate_constexpr_redeclaration (olddecl, newdecl))
     return error_mark_node;
+
+  if (TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
+      && TREE_CODE (olddecl) != NAMESPACE_DECL)
+    {
+      if (DECL_MODULE_EXPORT_P (newdecl)
+	  && !DECL_MODULE_EXPORT_P (olddecl))
+	{
+	  error ("conflicting exporting declaration %qD", newdecl);
+	  inform (olddecl_loc, "previous declaration %q#D here", olddecl);
+	  DECL_MODULE_EXPORT_P (newdecl) = false;
+	}
+    }
 
   /* We have committed to returning OLDDECL at this point.  */
 
@@ -2328,14 +2331,7 @@ next_arg:;
 	      || (TREE_CODE (olddecl) == TEMPLATE_DECL
 		  && (TREE_CODE (DECL_TEMPLATE_RESULT (olddecl))
 		      == FUNCTION_DECL))))
-	{
-	  tree fn = olddecl;
-
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    fn = DECL_TEMPLATE_RESULT (olddecl);
-
-	  new_redefines_gnu_inline = GNU_INLINE_P (fn) && DECL_INITIAL (fn);
-	}
+	new_redefines_gnu_inline = GNU_INLINE_P (STRIP_TEMPLATE (olddecl));
 
       if (!new_redefines_gnu_inline)
 	{
@@ -2343,23 +2339,28 @@ next_arg:;
 	  DECL_NOT_REALLY_EXTERN (newdecl) |= DECL_NOT_REALLY_EXTERN (olddecl);
 	  DECL_COMDAT (newdecl) |= DECL_COMDAT (olddecl);
 	}
-      DECL_TEMPLATE_INSTANTIATED (newdecl)
-	|= DECL_TEMPLATE_INSTANTIATED (olddecl);
-      DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
 
-      /* If the OLDDECL is an instantiation and/or specialization,
-	 then the NEWDECL must be too.  But, it may not yet be marked
-	 as such if the caller has created NEWDECL, but has not yet
-	 figured out that it is a redeclaration.  */
-      if (!DECL_USE_TEMPLATE (newdecl))
-	DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+      if (TREE_CODE (newdecl) != TYPE_DECL)
+	{
+	  DECL_TEMPLATE_INSTANTIATED (newdecl)
+	    |= DECL_TEMPLATE_INSTANTIATED (olddecl);
+	  DECL_ODR_USED (newdecl) |= DECL_ODR_USED (olddecl);
+
+	  /* If the OLDDECL is an instantiation and/or specialization,
+	     then the NEWDECL must be too.  But, it may not yet be marked
+	     as such if the caller has created NEWDECL, but has not yet
+	     figured out that it is a redeclaration.  */
+	  if (!DECL_USE_TEMPLATE (newdecl))
+	    DECL_USE_TEMPLATE (newdecl) = DECL_USE_TEMPLATE (olddecl);
+
+	  DECL_INITIALIZED_IN_CLASS_P (newdecl)
+	    |= DECL_INITIALIZED_IN_CLASS_P (olddecl);
+	}
 
       /* Don't really know how much of the language-specific
 	 values we should copy from old to new.  */
       DECL_IN_AGGR_P (newdecl) = DECL_IN_AGGR_P (olddecl);
       DECL_REPO_AVAILABLE_P (newdecl) = DECL_REPO_AVAILABLE_P (olddecl);
-      DECL_INITIALIZED_IN_CLASS_P (newdecl)
-	|= DECL_INITIALIZED_IN_CLASS_P (olddecl);
 
       if (LANG_DECL_HAS_MIN (newdecl))
 	{
@@ -2375,9 +2376,10 @@ next_arg:;
 	    }
 	  DECL_TEMPLATE_INFO (newdecl) = DECL_TEMPLATE_INFO (olddecl);
 	}
-      /* Only functions have these fields.  */
+
       if (DECL_DECLARES_FUNCTION_P (newdecl))
 	{
+	  /* Only functions have these fields.  */
 	  DECL_NONCONVERTING_P (newdecl) = DECL_NONCONVERTING_P (olddecl);
 	  DECL_BEFRIENDING_CLASSES (newdecl)
 	    = chainon (DECL_BEFRIENDING_CLASSES (newdecl),
@@ -2387,10 +2389,12 @@ next_arg:;
 	  if (DECL_VIRTUAL_P (newdecl))
 	    SET_DECL_THUNKS (newdecl, DECL_THUNKS (olddecl));
 	}
-      /* Only variables have this field.  */
-      else if (VAR_P (newdecl)
-	       && VAR_HAD_UNKNOWN_BOUND (olddecl))
-	SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
+      else if (VAR_P (newdecl))
+	{
+	  /* Only variables have this field.  */
+	  if (VAR_HAD_UNKNOWN_BOUND (olddecl))
+	    SET_VAR_HAD_UNKNOWN_BOUND (newdecl);
+	}
     }
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
