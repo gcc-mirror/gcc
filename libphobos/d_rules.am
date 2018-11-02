@@ -19,6 +19,9 @@
 # automake forgets to set this
 CCLD = $(CC)
 
+toolexecdir = $(libphobos_toolexecdir)
+toolexeclibdir = $(libphobos_toolexeclibdir)
+
 # Compile D into normal object files
 .d.o:
 	$(GDC) $(GDCFLAGS) $(MULTIFLAGS) $(D_EXTRA_DFLAGS) -c -o $@ $<
