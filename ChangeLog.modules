@@ -1,6 +1,13 @@
 2018-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* module.cc (module_state::read_cluster): Preserve export_tail.
+	* name-lookup.c (STAT_HACK_TYPE_VISIBILE_P): New.
+	(name_lookup::process_module_binding): Reimplement.
+	(name_lookp::search_namespace_only): Likewise.
+	(set_module_binding): Adjust when STAT_HACK_EXPORTS is set.
+
+	gcc/cp/
 	* decl.c (duplicate_decls): Refactor export check.
 	gcc/testsuite/
 	* g++.dg/modules/export-1.C: New.

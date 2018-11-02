@@ -53,6 +53,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
    stat hack.  */
 
 #define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
+#define STAT_HACK_TYPE_VISIBLE_P(N) OVL_USED_P (N)
 #define STAT_TYPE(N) TREE_TYPE (N)
 #define STAT_DECL(N) OVL_FUNCTION (N)
 #define STAT_EXPORTS(N) OVL_CHAIN (N)
@@ -366,7 +367,7 @@ private:
   void add_value (tree new_val);
   void add_type (tree new_type);
   bool process_binding (tree val_bind, tree type_bind);
-  unsigned process_module_binding (bitmap, unsigned, tree, unsigned, unsigned);
+  unsigned process_module_binding (tree val_bind, tree type_bind, unsigned);
   /* Look in only namespace.  */
   bool search_namespace_only (tree scope);
   /* Look in namespace and its (recursive) inlines. Ignore using
@@ -678,51 +679,9 @@ name_lookup::process_binding (tree new_val, tree new_type)
    find it once.  */
 
 unsigned
-name_lookup::process_module_binding (bitmap imports, unsigned marker,
-				     tree bind, unsigned ix, unsigned span)
+name_lookup::process_module_binding (tree new_val, tree new_type,
+				     unsigned marker)
 {
-  tree new_type = MAYBE_STAT_TYPE (bind);
-  tree new_val = MAYBE_STAT_DECL (bind);
-
-  if (ix > current_module || ix + span <= current_module)
-    {
-      /* Looking at something other than the current module.  */
-      if (!imports)
-	return marker;
-
-      /* Figure out what's being exported.  */
-      if (new_type && !DECL_MODULE_EXPORT_P (new_type))
-	new_type = NULL_TREE;
-
-      if (TREE_CODE (new_val) == OVERLOAD)
-	{
-	  if (STAT_HACK_P (bind))
-	    new_val = STAT_EXPORTS (bind);
-	  else
-	    new_val = NULL_TREE;
-	}
-      else if (TREE_CODE (new_val) == NAMESPACE_DECL)
-	{
-	  if (!TREE_PUBLIC (new_val) || STAT_HACK_P (bind))
-	    new_val = NULL_TREE;
-	}
-      else if (!DECL_MODULE_EXPORT_P (new_val))
-	new_val = NULL_TREE;
-
-      if (!new_type && !new_val)
-	/* You aint seen nuthin', right?  */
-	return marker;
-
-      /* Are we importing this module?  */
-      bool found = false;
-      for (; !found && span--; ix++)
-	if (bitmap_bit_p (imports, ix))
-	  found = true;
-
-      if (!found)
-	return marker;
-    }
-
   /* Optimize for (re-)finding a public namespace.  We only need to
      look once.  */
   if (new_val && !new_type
@@ -747,6 +706,7 @@ bool
 name_lookup::search_namespace_only (tree scope)
 {
   bool found = false;
+  gcc_checking_assert (current_module <= MODULE_IMPORT_BASE);
 
   if (tree *binding = find_namespace_slot (scope, name))
     {
@@ -756,15 +716,14 @@ name_lookup::search_namespace_only (tree scope)
 	  /* I presume the binding list is going to be sparser than
 	     the import bitmap.  Hence iterate over the former
 	     checking for bits set in the bitmap.  */
-	  bitmap imports = module_import_bitmap (current_module);
+	  bitmap imports = module_import_bitmap (MODULE_NONE);
 	  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (val);
 	  int marker = 0;
 
-	  if (cluster->slots[MODULE_SLOT_CURRENT])
-	    marker = process_module_binding (imports, marker,
-					     cluster->slots[MODULE_SLOT_CURRENT],
-					     module_purview_p () ? MODULE_PURVIEW
-					     : MODULE_NONE, 1);
+	  if (tree bind = cluster->slots[MODULE_SLOT_CURRENT])
+	    marker = process_module_binding (MAYBE_STAT_DECL (bind),
+					     MAYBE_STAT_TYPE (bind),
+					     marker);
 
 	  /* Scan the imported bindings.  */
 	  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
@@ -772,20 +731,42 @@ name_lookup::search_namespace_only (tree scope)
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ++cluster, --ix;)
 	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
 	      {
+		/* Are we importing this module?  */
+		for (unsigned base = cluster->indices[jx].base,
+		       span = cluster->indices[jx].span; span--; base++)
+		  if (bitmap_bit_p (imports, base))
+		    goto found;
+		continue;
+	      found:;
+		/* Is it loaded?  */
 		if (cluster->slots[jx].is_lazy ())
 		  {
 		    gcc_assert (cluster->indices[jx].span == 1);
 		    lazy_load_binding (cluster->indices[jx].base,
 				       scope, name, &cluster->slots[jx], true);
 		  }
-		if (cluster->slots[jx])
-		  marker = process_module_binding
-		    (imports, marker, cluster->slots[jx],
-		     cluster->indices[jx].base, cluster->indices[jx].span);
+		tree bind = cluster->slots[jx];
+		if (!bind)
+		  /* Load errors could mean there's nothing here.  */
+		  continue;
+
+		/* Extract what we can see from here.  If there's no
+		   stat_hack, then everything was exported.  */
+		tree type = NULL_TREE;
+		if (STAT_HACK_P (bind))
+		  {
+		    type = STAT_TYPE (bind);
+		    bind = STAT_EXPORTS (bind);
+		    if (type && !DECL_MODULE_EXPORT_P (type))
+		      type = NULL_TREE;
+		  }
+
+		/* And process it.  */
+		marker = process_module_binding (bind, type, marker);
 	      }
 	  found |= marker & 1;
 	}
-      else if (current_module <= MODULE_IMPORT_BASE)
+      else
 	/* Only a current module binding, visible from the current module.  */
 	found |= process_binding (MAYBE_STAT_DECL (val), MAYBE_STAT_TYPE (val));
     }
@@ -3650,7 +3631,7 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     }
 
   tree bind = value;
-  if (type || (export_tail && TREE_CODE (bind) == OVERLOAD))
+  if (type || export_tail != bind)
     {
       bind = stat_hack (bind, type);
       STAT_EXPORTS (bind) = export_tail;

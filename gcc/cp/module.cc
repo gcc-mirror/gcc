@@ -9175,6 +9175,10 @@ module_state::read_cluster (unsigned snum)
 	    if (!decls)
 	      {
 		decls = type;
+		if (!type)
+		  sec.set_overrun ();
+		else if (DECL_MODULE_EXPORT_P (type))
+		  export_tail = decls;
 		type = NULL_TREE;
 	      }
 
