@@ -1,3 +1,10 @@
+2018-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87776
+	* tree-ssa-sccvn.c (do_rpo_vn): Do not mark backedges
+	executable when iterating but running into rpo-vn-max-loop-depth
+	and not eliding the iteration.
+
 2018-11-30  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (free_lang_data_in_decl): Free TREE_TYPE and alignment of
