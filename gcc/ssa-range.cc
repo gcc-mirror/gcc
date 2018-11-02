@@ -186,6 +186,7 @@ ssa_range::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
   return false;
 }
 
+
 // Calculate a range for range_op statement S and return it in R.  If a range
 // cannot be calculated, return false.  
 
@@ -279,6 +280,41 @@ ssa_range::range_of_call (irange &r, gcall *call)
   return true;
 }
 
+// Calculate a range for COND_EXPR statement S and return it in R.  If a range
+// cannot be calculated, return false. 
+
+bool
+ssa_range::range_of_cond_expr  (irange &r, gassign *s)
+{
+  irange cond_range, range1, range2;
+  tree cond = gimple_assign_rhs1 (s);
+  tree op1 = gimple_assign_rhs2 (s);
+  tree op2 = gimple_assign_rhs3 (s);
+
+  gcc_checking_assert (gimple_assign_rhs_code (s) == COND_EXPR);
+  gcc_checking_assert (useless_type_conversion_p  (TREE_TYPE (op1),
+						   TREE_TYPE (op2)));
+  if (!supports_type_p (TREE_TYPE (op1)))
+    return false;
+
+  gcc_assert (range_of_expr (cond_range, cond, s));
+  gcc_assert (range_of_expr (range1, op1, s));
+  gcc_assert (range_of_expr (range2, op2, s));
+
+  if (cond_range.singleton_p ())
+    {
+      // False, pick second operand
+      if (cond_range.zero_p ())
+        r = range2;
+      else
+        r = range1;
+    }
+  else
+    r = range_union (range1, range2);
+  return true;
+}
+
+
 // Calculate a range for statement S and return it in R.  If a range cannot
 // be calculated, return false.
 
@@ -291,6 +327,8 @@ ssa_range::range_of_stmt (irange &r, gimple *s, tree name)
     return range_of_phi (r, as_a<gphi *> (s));
   if (is_a<gcall *>(s))
     return range_of_call (r, as_a<gcall *> (s));
+  if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
+    return range_of_cond_expr (r, as_a<gassign *> (s));
 
   // If no name is specified, try the expression kind.
   if (!name)
@@ -338,12 +376,14 @@ ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
   gcc_checking_assert (valid_ssa_p (name));
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_edge_range_p (lhs, e);
+
+  // If therre are no gori tables, we only look at this statement 
   if (!m_gori)
     {
       if (!s)
 	return false;
       // Otherwise use the outgoing edge as a LHS and try to calculate a range.
-      return compute_operand_range_on_stmt (r, s, name, lhs);
+      return compute_operand_range (r, s, name, lhs);
     }
 
   if (!range_p (e->src, name))
@@ -410,23 +450,10 @@ ssa_range::range_on_exit (irange &r, basic_block bb, tree name)
 // Return false if no range can be calculated.
 
 bool
-ssa_range::compute_operand_range_on_stmt (irange &r, gimple *g, tree name,
+ssa_range::compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
 					  const irange &lhs)
 {
   irange op1_range, op2_range;
-
-  grange_op *s = dyn_cast <grange_op *> (g);
-  if (!s)
-    {
-      // If name matches, the range is simply the range from the edge
-      if (gimple_code (g) == GIMPLE_SWITCH &&
-	  gimple_switch_index (as_a<gswitch *> (g)) == name)
-        {
-	  r = lhs;
-	  return true;
-	}
-      return false;
-    }
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -888,13 +915,53 @@ is_gimple_logical_p (const gimple *gs)
   return false;
 
 }
-// Given the expression in STMT, return an evaluation in R for NAME
+// Given the statement S, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
 
 bool
 ssa_range::compute_operand_range (irange &r, gimple *s, tree name,
 				   const irange &lhs)
+{
+  if (is_a<grange_op *> (s))
+    return compute_operand_range_op (r, as_a<grange_op *> (s), name, lhs);
+  if (is_a<gswitch *> (s))
+    return compute_operand_range_switch (r, as_a<gswitch *> (s), name, lhs);
+  return false;
+}
+    
+// Given the switch S, return an evaluation in R for NAME
+// when the lhs evaluates to LHS.  Returning false means the name being
+// looked for was not resolvable. 
+
+bool
+ssa_range::compute_operand_range_switch (irange &r, gswitch *s, tree name,
+				   const irange &lhs)
+{
+  tree op1 = gimple_switch_index (s);
+
+  // If name matches, the range is simply the range from the edge.
+  // Empty ranges are viral as they are on a path which isn't executable.
+  if (op1 == name || lhs.undefined_p ())
+    {
+      r = lhs;
+      return true;
+    }
+
+  // If op1 is in the defintion chain, pass lhs back.
+  if (m_gori && m_gori->in_chain_p (name, op1))
+    return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, lhs);
+
+  return false;
+}
+
+// Given the range_op S, return an evaluation in R for NAME
+// when the lhs evaluates to LHS.  Returning false means the name being
+// looked for was not resolvable. 
+
+bool
+ssa_range::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
+				     const irange &lhs)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -904,23 +971,6 @@ ssa_range::compute_operand_range (irange &r, gimple *s, tree name,
     {
       r.set_undefined (TREE_TYPE (name));
       return true;
-    }
-
-  grange_op *stmt = dyn_cast<grange_op *> (s);
-  if (!stmt)
-    {
-      // Chekc for a switch statement.
-      gswitch *gs = dyn_cast<gswitch *> (s);
-      if (!gs)
-	return false;
-      op1 = gimple_switch_index (gs);
-      if (op1 == name)
-        return compute_operand_range_on_stmt (r, s, name, lhs);
-      // IF op1 is in the defintion chain, pass lhs back.
-      op1_in_chain = m_gori->in_chain_p (name, op1);
-      if (!op1_in_chain)
-        return false;
-      return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, lhs);
     }
 
   op1 = stmt->operand1 ();

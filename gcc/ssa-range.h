@@ -118,13 +118,19 @@ protected:
   bool range_of_range_op  (irange &r, grange_op *s);
   bool range_of_phi (irange &r, gphi *phi);
   bool range_of_call (irange &r, gcall *call);
+  bool range_of_cond_expr (irange &r, gassign* call);
+
   bool range_p (basic_block bb, tree name);
 
   // Evaluate the range for name on stmt S if the lhs has range LHS.
   bool compute_operand_range (irange &r, gimple *s, tree name,
 			      const irange &lhs);
+  bool compute_operand_range_op (irange &r, grange_op *stmt, tree name,
+				 const irange &lhs);
+  bool compute_operand_range_switch (irange &r, gswitch *s, tree name,
+				     const irange &lhs);
   // Evaluate the range for NAME on S is NAME is on the stmt.
-  bool compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
+  bool compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
 				      const irange &lhs);
   bool compute_logical_operands (grange_op *s, irange &r, tree name,
 				 const irange &lhs);
