@@ -1,5 +1,13 @@
 2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
 
+	gcc/cp
+	* cp-objcp-common.c (cp_common_init_ts): Add COAWAIT_EXPR to typed
+	trees.
+	* cp-tree.def (COAWAIT_EXPR): New tree code.
+	* operators.def (co_await): New unary operator.
+
+2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
+
 	gcc/testsuite
 	* g++.dg/coroutines/coro.h (coroutine_traits): Move typename into the
 	implementation space.

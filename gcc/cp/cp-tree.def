@@ -594,6 +594,19 @@ DEFTREECODE (PARM_CONSTR, "parm_constr", tcc_expression, 2)
 DEFTREECODE (CONJ_CONSTR, "conj_constr", tcc_expression, 2)
 DEFTREECODE (DISJ_CONSTR, "disj_constr", tcc_expression, 2)
 
+/* The co_await expression is used to support coroutines.
+
+  Op 0 is the cast expresssion (potentially modified by the
+  promise "await_transform()" method).
+  Op1 is the awaitable ready method.
+  Op2 is the awaitable suspend method.
+  Op3 is the awaitable resume method.
+
+  At parse-time, only Op0 is populated and the expr type may be set to
+  void if the cast expression is a dependent type.  In this case
+  Op1-Op3 will be NULL_TREE.
+*/
+DEFTREECODE (COAWAIT_EXPR, "co_await", tcc_expression, 4)
 
 /*
 Local variables:
