@@ -9023,8 +9023,9 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
 	struct external_ref *ref_p;
 	gcc_assert (AT_ref (a)->comdat_type_p || AT_ref (a)->die_id.die_symbol);
 
-	ref_p = lookup_external_ref (extern_map, c);
-	if (ref_p->stub && ref_p->stub != die)
+	if (is_type_die (c)
+	    && (ref_p = lookup_external_ref (extern_map, c))
+	    && ref_p->stub && ref_p->stub != die)
 	  change_AT_die_ref (a, ref_p->stub);
 	else
 	  /* We aren't changing this reference, so mark it external.  */

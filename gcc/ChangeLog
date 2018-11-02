@@ -1,5 +1,10 @@
 2018-11-02  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (build_abbrev_table): Guard lookup_external_ref call
+	with is_type_die.
+
+2018-11-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87776
 	* tree-ssa-sccvn.c (do_rpo_vn): Do not mark backedges
 	executable when iterating but running into rpo-vn-max-loop-depth
