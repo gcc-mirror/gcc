@@ -1,6 +1,22 @@
 2018-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (module_may_redeclare): Declare.
+	* decl.c (duplicate_decls): Check moduleness.
+	* module.cc (module_state::read_cluster): Adjust export tail.
+	(module_may_redeclare): New.
+	* name-lookup.c (name_lookup::search_namespace_only): Check
+	STAT_TYPE_VISIBLE_P.
+	(update_binding): Allow NULL LEVEL.
+	(check_module_override): New.
+	(do_pushdecl): Deal with module overrides.
+	(set_module_binding): Adjust.  Don't push interface bindings.
+	gcc/testsuite/
+	* g++.dg/modules/ambig-1_[ab].C: New.
+	* g++.dg/modules/macro-4_e.C: Avoid error.
+	* g++.dg/modules/namespace-2_b.C: Remove xfail.
+
+	gcc/cp/
 	* module.cc (module_state::read_cluster): Preserve export_tail.
 	* name-lookup.c (STAT_HACK_TYPE_VISIBILE_P): New.
 	(name_lookup::process_module_binding): Reimplement.

@@ -9168,7 +9168,13 @@ module_state::read_cluster (unsigned snum)
 		  }
 		else
 		  decls = decl;
-		if (DECL_MODULE_EXPORT_P (decl))
+		if (DECL_MODULE_EXPORT_P (decl)
+		    || (is_interface ()
+			&& (TREE_PUBLIC (decl)
+			    /* Template types don't get TREE_PUBLIC set.  */
+			    || (TREE_CODE (decl) == TEMPLATE_DECL
+				&& (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
+				    == TYPE_DECL)))))
 		  export_tail = decls;
 	      }
 
@@ -9177,7 +9183,7 @@ module_state::read_cluster (unsigned snum)
 		decls = type;
 		if (!type)
 		  sec.set_overrun ();
-		else if (DECL_MODULE_EXPORT_P (type))
+		else if (DECL_MODULE_EXPORT_P (type) || is_interface ())
 		  export_tail = decls;
 		type = NULL_TREE;
 	      }
@@ -11837,6 +11843,19 @@ get_module_owner (tree decl)
 	ctx = global_namespace;
     }
   return ctx;
+}
+
+/* Is it permissible to redeclare an entity with owner FROM.  */
+bool
+module_may_redeclare (unsigned from)
+{
+  if (from == MODULE_PURVIEW)
+    return true;
+
+  if (from == MODULE_NONE)
+    return !module_purview_p ();
+
+  return (*modules)[from]->is_interface ();
 }
 
 /* Set the module EXPORT and OWNER fields on DECL.  */

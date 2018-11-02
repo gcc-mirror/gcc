@@ -53,7 +53,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
    stat hack.  */
 
 #define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
-#define STAT_HACK_TYPE_VISIBLE_P(N) OVL_USED_P (N)
+#define STAT_TYPE_VISIBLE_P(N) OVL_USED_P (N)
 #define STAT_TYPE(N) TREE_TYPE (N)
 #define STAT_DECL(N) OVL_FUNCTION (N)
 #define STAT_EXPORTS(N) OVL_CHAIN (N)
@@ -755,10 +755,9 @@ name_lookup::search_namespace_only (tree scope)
 		tree type = NULL_TREE;
 		if (STAT_HACK_P (bind))
 		  {
-		    type = STAT_TYPE (bind);
+		    if (STAT_TYPE_VISIBLE_P (bind))
+		      type = STAT_TYPE (bind);
 		    bind = STAT_EXPORTS (bind);
-		    if (type && !DECL_MODULE_EXPORT_P (type))
-		      type = NULL_TREE;
 		  }
 
 		/* And process it.  */
@@ -2650,8 +2649,9 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
   tree old_type = slot ? MAYBE_STAT_TYPE (*slot) : binding->type;
   tree to_type = old_type;
 
-  gcc_assert (level->kind == sk_namespace ? !binding
+  gcc_assert (!level || level->kind == sk_namespace ? !binding
 	      : level->kind != sk_class && !slot);
+
   if (old == error_mark_node)
     old = NULL_TREE;
 
@@ -2773,12 +2773,12 @@ update_binding (cp_binding_level *level, cxx_binding *binding, tree *slot,
  done:
   if (to_val)
     {
-      if (level->kind == sk_namespace || to_type == decl || to_val == decl)
+      if (slot || to_type == decl || to_val == decl)
 	{
 	  /* Don't add namespaces here.  They're done in
 	     push_namespace.  */
-	  if (TREE_CODE (decl) != NAMESPACE_DECL
-	      || DECL_NAMESPACE_ALIAS (decl))
+	  if (level && (TREE_CODE (decl) != NAMESPACE_DECL
+			|| DECL_NAMESPACE_ALIAS (decl)))
 	    add_decl_to_level (level, decl);
 	}
       else
@@ -3317,6 +3317,63 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
+static tree
+check_module_override (tree decl, tree mvec, bool is_friend,
+		       tree scope, tree name)
+{
+  bitmap imports = module_import_bitmap (current_module);
+  module_cluster *cluster = MODULE_VECTOR_CLUSTER_BASE (mvec);
+
+  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
+		       == MODULE_IMPORT_BASE);
+  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (mvec); ++cluster, --ix;)
+    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
+      {
+	/* Are we importing this module?  */
+	for (unsigned base = cluster->indices[jx].base,
+	       span = cluster->indices[jx].span; span--; base++)
+	  if (bitmap_bit_p (imports, base))
+	    goto found;
+	continue;
+      found:;
+	/* Is it loaded? */
+	if (cluster->slots[jx].is_lazy ())
+	  {
+	    gcc_assert (cluster->indices[jx].span == 1);
+	    lazy_load_binding (cluster->indices[jx].base,
+			       scope, name, &cluster->slots[jx], true);
+	  }
+	tree bind = cluster->slots[jx];
+	if (!bind)
+	  /* Errors could cause there to be nothing.  */
+	  continue;
+
+	tree type = NULL_TREE;
+	if (STAT_HACK_P (bind))
+	  {
+	    if (STAT_TYPE_VISIBLE_P (bind))
+	      type = STAT_TYPE (bind);
+	    bind = STAT_EXPORTS (bind);
+	  }
+	// FIXME:Deal with shadowed type?
+	gcc_checking_assert (!type);
+
+	for (ovl_iterator iter (bind); iter; ++iter)
+	  if (iter.using_p ())
+	    ;
+	  else if (tree match = duplicate_decls (decl, *iter, is_friend))
+	    {
+	      if (TREE_CODE (match) == TYPE_DECL)
+		/* The IDENTIFIER will have the type referring to the
+		   now-smashed TYPE_DECL, because ...?  Reset it.  */
+		SET_IDENTIFIER_TYPE_VALUE (name, TREE_TYPE (match));
+	      return match;
+	    }
+      }
+
+  return NULL_TREE;
+}
+
 /* Record DECL as belonging to the current lexical scope.  Check for
    errors (such as an incompatible declaration for the same name
    already seen in the same scope).  IS_FRIEND is true if DECL is
@@ -3416,6 +3473,24 @@ do_pushdecl (tree decl, bool is_friend)
 		  check_extern_c_conflict (match);
 	      }
 	    return match;
+	  }
+
+      /* Check for redeclaring an import.  */
+      if (slot && *slot && TREE_CODE (*slot) == MODULE_VECTOR)
+	if (tree match
+	    = check_module_override (decl, *slot, is_friend, ns, name))
+	  {
+	    if (match == error_mark_node)
+	      return match;
+	    /* We found a decl in an interface, push it into this
+	       binding.  */
+	    decl = update_binding (NULL, binding, mslot, old, match, is_friend);
+
+	    if (match == decl && DECL_MODULE_EXPORT_P (decl)
+		&& !DECL_MODULE_EXPORT_P (level->this_entity))
+	      implicitly_export_namespace (level->this_entity);
+
+	    return decl;
 	  }
 
       /* We are pushing a new decl.  */
@@ -3635,49 +3710,11 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     {
       bind = stat_hack (bind, type);
       STAT_EXPORTS (bind) = export_tail;
+      if (inter_p || (type && DECL_MODULE_EXPORT_P (type)))
+	STAT_TYPE_VISIBLE_P (bind) = true;
     }
 
   *mslot = bind;
-
-  // FIXME:proper merging by doing proper lookup at pushdecl time
-  if (inter_p)
-    {
-      /* Add the non-internal things into the current module.  */
-      mc_slot *mslot = module_binding_slot (slot, name,
-					    MODULE_SLOT_CURRENT, false);
-      tree &binding = *mslot;
-      gcc_assert (!STAT_HACK_P (binding) || !type);
-
-      bind = MAYBE_STAT_DECL (binding);
-      value = ovl_skip_hidden (value);
-      /* Skip non-public functions.  */
-      for (; value && TREE_CODE (value) == OVERLOAD; value = TREE_CHAIN (value))
-	{
-	  tree decl = OVL_FUNCTION (value);
-	  if (TREE_PUBLIC (decl))
-	    bind = ovl_insert (decl, bind, OVL_USING_P (value));
-	}
-
-      /* Typedefs & template types don't get TREE_PUBLIC set.  */
-      if (value
-	  && (TREE_PUBLIC (value)
-	      || TREE_CODE (value) == TYPE_DECL
-	      || TREE_CODE (value) != TEMPLATE_DECL))
-	bind = ovl_insert (value, bind, false);
-
-      if (!bind)
-	{
-	  bind = type;
-	  type = NULL_TREE;
-	}
-
-      if (type)
-	binding = stat_hack (bind, type);
-      else if (STAT_HACK_P (binding))
-	STAT_DECL (*mslot) = bind;
-      else
-	binding = bind;
-    }
 
   return true;
 }

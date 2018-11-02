@@ -4,7 +4,7 @@ import "macro-4_b.H";
 import "macro-4_a.H";
 import "macro-4_c.H";
 
-int a;
+int stop;
 
 #ifndef FIVE
 #error bah!

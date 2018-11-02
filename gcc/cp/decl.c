@@ -1907,11 +1907,19 @@ next_arg:;
   if (!validate_constexpr_redeclaration (olddecl, newdecl))
     return error_mark_node;
 
-  if (TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
+  if (flag_modules
+      && TREE_CODE (CP_DECL_CONTEXT (olddecl)) == NAMESPACE_DECL
       && TREE_CODE (olddecl) != NAMESPACE_DECL)
     {
-      if (DECL_MODULE_EXPORT_P (newdecl)
-	  && !DECL_MODULE_EXPORT_P (olddecl))
+      if (!module_may_redeclare (MAYBE_DECL_MODULE_OWNER (olddecl)))
+	{
+	  error ("declaration %qD conflicts with import", newdecl);
+	  inform (olddecl_loc, "import declared %q#D here", olddecl);
+
+	  return error_mark_node;
+	}
+
+      if (DECL_MODULE_EXPORT_P (newdecl) && !DECL_MODULE_EXPORT_P (olddecl))
 	{
 	  error ("conflicting exporting declaration %qD", newdecl);
 	  inform (olddecl_loc, "previous declaration %q#D here", olddecl);
