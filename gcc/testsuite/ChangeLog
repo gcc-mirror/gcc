@@ -1,3 +1,45 @@
+2018-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/compat/pr83487-1_y.c: Move dg-skip-if ...
+	* gcc.dg/compat/pr83487-1_main.c: ... here.
+	* gcc.dg/compat/struct-by-value-10_main.c,
+	gcc.dg/compat/struct-by-value-10_x.c,
+	gcc.dg/compat/struct-by-value-11_main.c,
+	gcc.dg/compat/struct-by-value-11_x.c,
+	gcc.dg/compat/struct-by-value-12_main.c,
+	gcc.dg/compat/struct-by-value-12_x.c,
+	gcc.dg/compat/struct-by-value-13_main.c,
+	gcc.dg/compat/struct-by-value-13_x.c,
+	gcc.dg/compat/struct-by-value-14_main.c,
+	gcc.dg/compat/struct-by-value-14_x.c,
+	gcc.dg/compat/struct-by-value-15_main.c,
+	gcc.dg/compat/struct-by-value-15_x.c,
+	gcc.dg/compat/struct-by-value-17_main.c,
+	gcc.dg/compat/struct-by-value-17_x.c,
+	gcc.dg/compat/struct-by-value-18_main.c,
+	gcc.dg/compat/struct-by-value-18_x.c,
+	gcc.dg/compat/struct-by-value-2_main.c,
+	gcc.dg/compat/struct-by-value-2_x.c,
+	gcc.dg/compat/struct-by-value-22_main.c,
+	gcc.dg/compat/struct-by-value-22_x.c,
+	gcc.dg/compat/struct-by-value-3_main.c,
+	gcc.dg/compat/struct-by-value-3_x.c,
+	gcc.dg/compat/struct-by-value-4_main.c,
+	gcc.dg/compat/struct-by-value-4_x.c,
+	gcc.dg/compat/struct-by-value-5b_main.c,
+	gcc.dg/compat/struct-by-value-5b_x.c,
+	gcc.dg/compat/struct-by-value-6b_main.c,
+	gcc.dg/compat/struct-by-value-6b_x.c,
+	gcc.dg/compat/struct-by-value-6b_main.c,
+	gcc.dg/compat/struct-by-value-7b_x.c,
+	gcc.dg/compat/struct-by-value-7b_main.c,
+	gcc.dg/compat/struct-by-value-8_main.c,
+	gcc.dg/compat/struct-by-value-8_x.c,
+	gcc.dg/compat/struct-by-value-9_main.c,
+	gcc.dg/compat/struct-by-value-9_x.c,
+	gcc.dg/compat/struct-return-2_main.c,
+	gcc.dg/compat/struct-return-2_x.c: Likewise.
+
 2018-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/lookup/crash6.C: Adjust error
