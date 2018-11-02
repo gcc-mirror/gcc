@@ -1,6 +1,13 @@
 2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	gcc/cp
+	* coroutines.cc (co_return_context_valid_p): Factor code to provide
+	common functionality.  (coro_promise_type_found_p): New.
+	(coro_common_keyword_context_valid_p): New.
+
+2018-11-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	gcc/cp
 	* cp-objcp-common.c (cp_common_init_ts): Add COAWAIT_EXPR to typed
 	trees.
 	* cp-tree.def (COAWAIT_EXPR): New tree code.

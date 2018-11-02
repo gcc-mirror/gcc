@@ -100,6 +100,92 @@ find_promise_type (location_t kw)
   return promise_type;
 }
 
+static bool
+coro_promise_type_found_p (tree fndecl, location_t loc)
+{
+  gcc_assert (fndecl != NULL_TREE);
+
+  /* FIXME: the state needs to be in a hashtab on the side and this name
+     is too long!!  */
+
+  /* If we don't already have a current promise type, try to look it up.  */
+  if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
+    DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (loc);
+
+  if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
+    {
+      error_at (loc, "unable to find the promise type for this coroutine");
+      return false;
+    }
+  return true;
+}
+
+/* Here we will check the constraints that are comon to all keywords.  */
+
+static bool
+coro_common_keyword_context_valid_p (tree fndecl, location_t kw_loc,
+				     const char *kw_name)
+{
+  if (fndecl == NULL_TREE)
+    {
+      error_at (kw_loc, "%qs cannot be used outside a function", kw_name);
+      return false;
+    }
+
+  /* This is arranged in order of prohibitions in the TS.  */
+  if (DECL_MAIN_P (fndecl))
+    {
+      // [6.6.1, main shall not be a coroutine].
+      error_at (kw_loc, "%qs cannot be used in"
+		" the %<main%> function", kw_name);
+      return false;
+    }
+
+  if (DECL_DECLARED_CONSTEXPR_P (fndecl))
+    {
+      // [10.1.5, not constexpr specifier].
+      error_at (kw_loc, "%qs cannot be used in"
+		" a %<constexpr%> function", kw_name);
+      cp_function_chain->invalid_constexpr = true;
+      return false;
+    }
+
+  if (current_function_auto_return_pattern)
+    {
+      // [10.1.6.4, not auto specifier].
+      error_at (kw_loc, "%qs cannot be used in"
+		" a function with a deduced return type", kw_name);
+      return false;
+    }
+
+  if (varargs_function_p (fndecl))
+    {
+      // [11.4.4, shall not be varargs].
+      error_at (kw_loc, "%qs cannot be used in"
+		" a varargs function", kw_name);
+      return false;
+    }
+
+  if (DECL_CONSTRUCTOR_P (fndecl))
+    {
+      // [15.1, A constructor shall not be a coroutine.
+      error_at (kw_loc, "%qs cannot be used in a constructor", kw_name);
+      return false;
+    }
+
+  if (DECL_DESTRUCTOR_P (fndecl))
+    {
+      // [15.2, A destructor shall not be a coroutine.
+      error_at (kw_loc, "%qs cannot be used in a destructor", kw_name);
+      return false;
+    }
+
+  return true;
+}
+
+/* Here we will check the constraints that are not per keyword.  */
+
+
 /* Check that it's valid to have a co_return keyword here.
    True if this is a valid context (we don't check the content
    of the expr - except to decide if the promise_type needs as
@@ -108,66 +194,12 @@ find_promise_type (location_t kw)
 bool
 co_return_context_valid_p (location_t kw, tree expr)
 {
-  /* This is arranged in order of prohibitions in the TS.  */
-  if (DECL_MAIN_P (current_function_decl))
-    {
-      // [6.6.1, main shall not be a coroutine].
-      error_at (kw, "%<co_return%> cannot be used in"
-		" the %<main%> function");
-      return false;
-    }
+  if (! coro_common_keyword_context_valid_p (current_function_decl, kw,
+					   "co_return"))
+    return false;
 
-  if (DECL_DECLARED_CONSTEXPR_P (current_function_decl))
-    {
-      // [10.1.5, not constexpr specifier].
-      error_at (kw, "%<co_return%> cannot be used in"
-		" a %<constexpr%> function");
-      cp_function_chain->invalid_constexpr = true;
-      return false;
-    }
-
-  if (current_function_auto_return_pattern)
-    {
-      // [10.1.6.4, not auto specifier].
-      error_at (kw, "%<co_return%> cannot be used in"
-		" a function with a deduced return type");
-      return false;
-    }
-
-  if (varargs_function_p (current_function_decl))
-    {
-      // [11.4.4, shall not be varargs].
-      error_at (kw, "%<co_return%> cannot be used in"
-		" a varargs function");
-      return false;
-    }
-
-  if (DECL_CONSTRUCTOR_P (current_function_decl))
-    {
-      // [15.1, A constructor shall not be a coroutine.
-      error_at (kw, "%<co_return%> cannot be used in a constructor");
-      return false;
-    }
-
-  if (DECL_DESTRUCTOR_P (current_function_decl))
-    {
-      // [15.2, A destructor shall not be a coroutine.
-      error_at (kw, "%<co_return%> cannot be used in a destructor");
-      return false;
-    }
-
-  /* FIXME: the state needs to be in a hashtab on the side and this name
-     is too long!!  */
-
-  /* If we don't already have a current promise type, try to look it up.  */
-  if (DECL_COROUTINE_PROMISE_TYPE(current_function_decl) == NULL_TREE)
-    DECL_COROUTINE_PROMISE_TYPE(current_function_decl) = find_promise_type (kw);
-
-  if (DECL_COROUTINE_PROMISE_TYPE(current_function_decl) == NULL_TREE)
-    {
-      error_at (kw, "unable to find the promise type for this coroutine");
-      return false;
-    }
+  if (! coro_promise_type_found_p (current_function_decl, kw))
+    return false;
 
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
