@@ -5648,7 +5648,7 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 	    || tmp_sym->ts.u.cl->length->expr_type != EXPR_CONSTANT
 	    || mpz_cmp_si (tmp_sym->ts.u.cl->length->value.integer, 1) != 0)
 	  gfc_error ("Return type of BIND(C) function %qs of character "
-		     "type at %L must have length 1 ", tmp_sym->name,
+		     "type at %L must have length 1", tmp_sym->name,
 			 &(tmp_sym->declared_at));
     }
 
