@@ -11407,6 +11407,12 @@ aarch64_override_options (void)
        || (aarch64_arch_string && valid_arch))
     gcc_assert (explicit_arch != aarch64_no_arch);
 
+  /* The pass to insert speculation tracking runs before
+     shrink-wrapping and the latter does not know how to update the
+     tracking status.  So disable it in this case.  */
+  if (aarch64_track_speculation)
+    flag_shrink_wrap = 0;
+
   aarch64_override_options_internal (&global_options);
 
   /* Save these options as the default ones in case we push and pop them later

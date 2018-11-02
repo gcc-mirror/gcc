@@ -1,3 +1,8 @@
+2018-11-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64.c ((aarch64_override_options): Disable
+	shrink-wrapping when -mtrack-speculation.
+
 2018-11-02  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-coalesce.c (struct coalesce_list): Add obstack member.
