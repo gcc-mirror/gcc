@@ -1,3 +1,8 @@
+2018-11-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87776
+	* gcc.dg/torture/pr87776.c: New testcase.
+
 2018-11-01  Marek Polacek  <polacek@redhat.com>
 
 	Implement P0846R0, ADL and function templates.

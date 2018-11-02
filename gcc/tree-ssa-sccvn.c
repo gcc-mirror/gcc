@@ -6449,7 +6449,6 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	      FOR_EACH_EDGE (e, ei, header->preds)
 		if (e->flags & EDGE_DFS_BACK)
 		  {
-		    e->flags |= EDGE_EXECUTABLE;
 		    /* There can be a non-latch backedge into the header
 		       which is part of an outer irreducible region.  We
 		       cannot avoid iterating this block then.  */
@@ -6462,6 +6461,8 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 				   e->src->index, e->dest->index, loop->num);
 			non_latch_backedge = true;
 		      }
+		    else
+		      e->flags |= EDGE_EXECUTABLE;
 		  }
 	      rpo_state[bb_to_rpo[header->index]].iterate = non_latch_backedge;
 	    }
