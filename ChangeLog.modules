@@ -1,6 +1,9 @@
 2018-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.c (module_state::read): Interface can be lazy too.
+
+	gcc/cp/
 	* name-lookup.c (STAT_EXPORTS): Rename to ...
 	(STAT_VISIBLE): ... this.
 	(name_lookup::search_namespace_only, name_lookup::add_module_fns)

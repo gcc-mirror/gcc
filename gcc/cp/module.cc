@@ -11619,8 +11619,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
   slurp ()->remaining = config.sec_range.second - config.sec_range.first;
   slurp ()->lru = ++lazy_lru;
 
-  // FIXME:Lazy interface?
-  if (is_interface () || (!flag_preprocess_only && !flag_module_lazy))
+  if (!flag_preprocess_only && !flag_module_lazy)
     {
       /* Read the sections in forward order, so that dependencies are read
 	 first.  See note about tarjan_connect.  */
