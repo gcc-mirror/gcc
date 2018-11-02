@@ -56,7 +56,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
 #define STAT_TYPE_VISIBLE_P(N) OVL_USED_P (N)
 #define STAT_TYPE(N) TREE_TYPE (N)
 #define STAT_DECL(N) OVL_FUNCTION (N)
-#define STAT_EXPORTS(N) OVL_CHAIN (N)
+#define STAT_VISIBLE(N) OVL_CHAIN (N)
 #define MAYBE_STAT_DECL(N) (STAT_HACK_P (N) ? STAT_DECL (N) : N)
 #define MAYBE_STAT_TYPE(N) (STAT_HACK_P (N) ? STAT_TYPE (N) : NULL_TREE)
 
@@ -757,7 +757,7 @@ name_lookup::search_namespace_only (tree scope)
 		  {
 		    if (STAT_TYPE_VISIBLE_P (bind))
 		      type = STAT_TYPE (bind);
-		    bind = STAT_EXPORTS (bind);
+		    bind = STAT_VISIBLE (bind);
 		  }
 
 		/* And process it.  */
@@ -992,7 +992,7 @@ name_lookup::add_module_fns (bitmap imports, tree bind,
       if (TREE_CODE (val) == OVERLOAD)
 	{
 	  if (STAT_HACK_P (bind))
-	    val = STAT_EXPORTS (bind);
+	    val = STAT_VISIBLE (bind);
 	  else
 	    val = NULL_TREE;
 	}
@@ -3317,6 +3317,10 @@ newbinding_bookkeeping (tree name, tree decl, cp_binding_level *level)
     check_extern_c_conflict (decl);
 }
 
+/* DECL is being pushed.  Check whether it hides or ambiguates
+   somethig seen as an import.  This include decls seen in our own
+   interface, which is OK.  */
+
 static tree
 check_module_override (tree decl, tree mvec, bool is_friend,
 		       tree scope, tree name)
@@ -3353,7 +3357,7 @@ check_module_override (tree decl, tree mvec, bool is_friend,
 	  {
 	    if (STAT_TYPE_VISIBLE_P (bind))
 	      type = STAT_TYPE (bind);
-	    bind = STAT_EXPORTS (bind);
+	    bind = STAT_VISIBLE (bind);
 	  }
 	// FIXME:Deal with shadowed type?
 	gcc_checking_assert (!type);
@@ -3674,7 +3678,7 @@ import_module_binding  (tree ns, tree name, unsigned mod, unsigned snum)
 
 bool
 set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
-		    tree value, tree type, tree export_tail)
+		    tree value, tree type, tree visible)
 {
   if (!value)
     /* Bogus BMIs could give rise to nothing to bind.  */
@@ -3706,10 +3710,10 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
     }
 
   tree bind = value;
-  if (type || export_tail != bind)
+  if (type || visible != bind)
     {
       bind = stat_hack (bind, type);
-      STAT_EXPORTS (bind) = export_tail;
+      STAT_VISIBLE (bind) = visible;
       if (inter_p || (type && DECL_MODULE_EXPORT_P (type)))
 	STAT_TYPE_VISIBLE_P (bind) = true;
     }

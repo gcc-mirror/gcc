@@ -9139,7 +9139,7 @@ module_state::read_cluster (unsigned snum)
 	    tree name = sec.tree_node ();
 	    tree decls = NULL_TREE;
 	    tree type = NULL_TREE;
-	    tree export_tail = NULL_TREE;
+	    tree visible = NULL_TREE;
 
 	    while (tree decl = sec.tree_node ())
 	      {
@@ -9175,7 +9175,7 @@ module_state::read_cluster (unsigned snum)
 			    || (TREE_CODE (decl) == TEMPLATE_DECL
 				&& (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
 				    == TYPE_DECL)))))
-		  export_tail = decls;
+		  visible = decls;
 	      }
 
 	    if (!decls)
@@ -9184,13 +9184,13 @@ module_state::read_cluster (unsigned snum)
 		if (!type)
 		  sec.set_overrun ();
 		else if (DECL_MODULE_EXPORT_P (type) || is_interface ())
-		  export_tail = decls;
+		  visible = decls;
 		type = NULL_TREE;
 	      }
 
 	    dump () && dump ("Binding of %P", ns, name);
 	    if (!set_module_binding (ns, name, mod, is_interface (),
-				     decls, type, export_tail))
+				     decls, type, visible))
 	      sec.set_overrun ();
 	  }
 	  break;

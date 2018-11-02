@@ -1,6 +1,13 @@
 2018-11-02  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (STAT_EXPORTS): Rename to ...
+	(STAT_VISIBLE): ... this.
+	(name_lookup::search_namespace_only, name_lookup::add_module_fns)
+	(check_module_override, set_module_binding): Adjust.
+	* module.cc (module_state::read_cluster): Likewise.
+
+	gcc/cp/
 	* cp-tree.h (module_may_redeclare): Declare.
 	* decl.c (duplicate_decls): Check moduleness.
 	* module.cc (module_state::read_cluster): Adjust export tail.

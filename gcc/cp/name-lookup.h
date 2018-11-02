@@ -342,7 +342,7 @@ extern tree merge_global_decl (tree ctx, unsigned mod, tree decl);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,
-				tree value, tree type, tree exports);
+				tree value, tree type, tree visible);
 extern tree extract_module_binding (tree &binding, tree &maybe_type);
 extern int get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl);
 extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);
