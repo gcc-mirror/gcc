@@ -1,5 +1,3 @@
-/* { dg-skip-if "limited code space" { pdp11-*-* } } */
-
 #ifndef SKIP_VLA_IN_STRUCT
 
 #ifndef T

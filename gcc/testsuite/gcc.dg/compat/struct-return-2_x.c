@@ -1,5 +1,3 @@
-/* { dg-skip-if "limited code space" { pdp11-*-* } } */
-
 #include "compat-common.h"
 
 #ifdef SKIP_VA

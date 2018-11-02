@@ -1,5 +1,3 @@
-/* { dg-skip-if "no large alignment" { pdp11-*-* } } */
-
 #include "pr83487-1.h"
 
 struct A a;
