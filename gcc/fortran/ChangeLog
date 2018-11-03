@@ -1,3 +1,12 @@
+2019-11-03  Tobias Burnus  <burnus@net-b.de>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/87597
+	* expr.c (gfc_simplify_expr): Avoid simplifying
+	the 'array' argument to lbound/ubound/lcobound/
+	ucobound.
+
 2018-10-12  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
