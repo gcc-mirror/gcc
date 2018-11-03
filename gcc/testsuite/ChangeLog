@@ -1,3 +1,10 @@
+2018-11-03  Tobias Burnus  <burnus@net-b.de>
+	Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/87597
+	* gfortran.dg/inline_matmul_24.f90: New.
+
 2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
 
 	Backport from mainline
