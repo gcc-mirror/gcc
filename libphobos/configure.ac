@@ -26,7 +26,6 @@
 #    autoreconf2.64
 #
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libphobos)
 AC_CONFIG_SRCDIR(libdruntime/gcc/attribute.d)
 AC_CONFIG_HEADERS(config.h)
@@ -46,7 +45,8 @@ AC_SUBST(target_alias)
 # -Wall: Issue all automake warnings.
 # -Wno-portability: Don't warn about constructs supported by GNU make.
 #    (because GCC requires GNU make anyhow).
-AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability])
+#  -Wno-override: Overrides used in testsuite.
+AM_INIT_AUTOMAKE([1.11.1 foreign no-dist no-define no-dependencies -Wall -Wno-portability -Wno-override])
 
 m4_rename([_AC_ARG_VAR_PRECIOUS],[glibd_PRECIOUS])
 m4_define([_AC_ARG_VAR_PRECIOUS],[])
@@ -168,45 +168,31 @@ AC_SUBST(GDCFLAGSX)
 AC_CHECK_HEADER(stdio.h,:,
   [AC_MSG_ERROR([cannot find stdio.h.])])
 
-AC_CONFIG_FILES(Makefile src/Makefile libdruntime/Makefile testsuite/Makefile)
+AC_CONFIG_FILES(Makefile)
 
 AC_CONFIG_FILES(libdruntime/gcc/config.d libdruntime/gcc/libbacktrace.d)
 AC_CONFIG_FILES(src/libgphobos.spec)
 AC_CONFIG_FILES([testsuite/testsuite_flags],[chmod +x testsuite/testsuite_flags])
 
-# We need multilib support, but only if configuring for the target.
-AC_CONFIG_COMMANDS([default],
-[if test -n "$CONFIG_FILES"; then
-   if test -n "${with_target_subdir}"; then
-     # Multilibs need MULTISUBDIR defined correctly in certain makefiles so
-     # that multilib installs will end up installed in the correct place.
-     # The testsuite needs it for multilib-aware ABI baseline files.
-     # To work around this not being passed down from config-ml.in ->
-     # srcdir/Makefile.am -> srcdir/{src,libdruntime,...}/Makefile.am, manually
-     # append it here.  Only modify Makefiles that have just been created.
-     #
-     # Also, get rid of this simulated-VPATH thing that automake does.
-     cat > vpsed << \_EOF
-  s!`test -f '$<' || echo '$(srcdir)/'`!!
+# Multilibs need MULTISUBDIR defined correctly in certain makefiles so
+# that multilib installs will end up installed in the correct place.
+# The testsuite needs it for multilib-aware ABI baseline files.
+# To work around this not being passed down from config-ml.in ->
+# srcdir/Makefile.am -> srcdir/{src,libdruntime,...}/Makefile.am, manually
+# append it here.  Only modify Makefiles that have just been created.
+#
+# Also, get rid of this simulated-VPATH thing that automake does.
+AC_CONFIG_FILES(AC_FOREACH([DIR], [libdruntime src testsuite], [DIR/Makefile ]),
+  [cat > vpsed$$ << \_EOF
+s!`test -f '$<' || echo '$(srcdir)/'`!!
 _EOF
-     for i in $SUBDIRS; do
-      case $CONFIG_FILES in
-       *${i}/Makefile*)
-	 #echo "Adding MULTISUBDIR to $i/Makefile"
-	 sed -f vpsed $i/Makefile > tmp
-	 grep '^MULTISUBDIR =' Makefile >> tmp
-	 mv tmp $i/Makefile
-	 ;;
-      esac
-     done
-     rm vpsed
-   fi
- fi
-],
-[
-# Variables needed in config.status (file generation) which aren't already
-# passed by autoconf.
-SUBDIRS="$SUBDIRS"
+   sed -f vpsed$$ $ac_file > tmp$$
+   mv tmp$$ $ac_file
+   rm vpsed$$
+   echo 'MULTISUBDIR =' >> $ac_file
+   ml_norecursion=yes
+   . ${multi_basedir}/config-ml.in
+   AS_UNSET([ml_norecursion])
 ])
 
 AC_OUTPUT

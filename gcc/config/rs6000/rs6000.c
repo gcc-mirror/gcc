@@ -6560,7 +6560,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	{
 	  rtx element0 = XVECEXP (vals, 0, 0);
 	  if (MEM_P (element0))
-	    element0 = rs6000_address_for_fpconvert (element0);
+	    element0 = rs6000_force_indexed_or_indirect_mem (element0);
 	  else
 	    element0 = force_reg (SImode, element0);
 
@@ -6601,7 +6601,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	  if (TARGET_P9_VECTOR)
 	    {
 	      if (MEM_P (element0))
-		element0 = rs6000_address_for_fpconvert (element0);
+		element0 = rs6000_force_indexed_or_indirect_mem (element0);
 
 	      emit_insn (gen_vsx_splat_v4sf (target, element0));
 	    }
@@ -8422,7 +8422,6 @@ rs6000_const_not_ok_for_debug_p (rtx x)
 
   return false;
 }
-
 
 /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
 
@@ -36997,7 +36996,7 @@ make_resolver_func (const tree default_decl,
 {
   /* Make the resolver function static.  The resolver function returns
      void *.  */
-  tree decl_name = clone_function_name (default_decl, "resolver");
+  tree decl_name = clone_function_name_numbered (default_decl, "resolver");
   const char *resolver_name = IDENTIFIER_POINTER (decl_name);
   tree type = build_function_type_list (ptr_type_node, NULL_TREE);
   tree decl = build_fn_decl (resolver_name, type);
@@ -37296,21 +37295,19 @@ rs6000_allocate_stack_temp (machine_mode mode,
   return stack;
 }
 
-/* Given a memory reference, if it is not a reg or reg+reg addressing, convert
-   to such a form to deal with memory reference instructions like STFIWX that
-   only take reg+reg addressing.  */
+/* Given a memory reference, if it is not a reg or reg+reg addressing,
+   convert to such a form to deal with memory reference instructions
+   like STFIWX and LDBRX that only take reg+reg addressing.  */
 
 rtx
-rs6000_address_for_fpconvert (rtx x)
+rs6000_force_indexed_or_indirect_mem (rtx x)
 {
-  rtx addr;
+  machine_mode mode = GET_MODE (x);
 
   gcc_assert (MEM_P (x));
-  addr = XEXP (x, 0);
-  if (can_create_pseudo_p ()
-      && ! legitimate_indirect_address_p (addr, reload_completed)
-      && ! legitimate_indexed_address_p (addr, reload_completed))
+  if (can_create_pseudo_p () && !indexed_or_indirect_operand (x, mode))
     {
+      rtx addr = XEXP (x, 0);
       if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
 	{
 	  rtx reg = XEXP (addr, 0);
@@ -37330,7 +37327,7 @@ rs6000_address_for_fpconvert (rtx x)
 	  addr = reg;
 	}
 
-      x = replace_equiv_address (x, copy_addr_to_reg (addr));
+      x = replace_equiv_address (x, force_reg (Pmode, addr));
     }
 
   return x;

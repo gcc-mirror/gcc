@@ -30,8 +30,7 @@ void test (const char *buf, char ch)
 {
   __builtin_strtchr (buf, ch); /* { dg-line misspelled_reserved } */
   /* { dg-warning "did you mean '__builtin_strchr'" "" { target c } misspelled_reserved } */
-  /* { dg-error "not declared"  "" { target c++ } misspelled_reserved } */
-  /* { dg-message "'__builtin_strrchr'"  "" { target c++ } misspelled_reserved } */
+  /* { dg-error "'__builtin_strtchr' was not declared in this scope; did you mean '__builtin_strrchr'\\?" "" { target c++ } misspelled_reserved } */
 }
 
 /* Similarly for a name that begins with a single underscore.  */
@@ -40,8 +39,7 @@ void test_2 (const char *buf, char ch)
 {
   _builtin_strchr (buf, ch); /* { dg-line misspelled_one_underscore } */
   /* { dg-warning "did you mean '__builtin_strchr'" "" { target c } misspelled_one_underscore } */
-  /* { dg-error "not declared"  "" { target c++ } misspelled_one_underscore } */
-  /* { dg-message "'__builtin_strchr'"  "" { target c++ } misspelled_one_underscore } */
+  /* { dg-error "'_builtin_strchr' was not declared in this scope; did you mean '__builtin_strchr'\\?" "" { target c++ } misspelled_one_underscore } */
 }
 
 /* Verify that we can correct "__FILE_" to "__FILE__".  */
@@ -50,6 +48,5 @@ const char * test_3 (void)
 {
   return __FILE_; /* { dg-line misspelled__FILE_ } */
   /* { dg-error "did you mean '__FILE__'" "" { target c } misspelled__FILE_ } */
-  /* { dg-error "not declared"  "" { target c++ } misspelled__FILE_ } */
-  /* { dg-message "'__FILE__'"  "" { target c++ } misspelled__FILE_ } */
+  /* { dg-error "'__FILE_' was not declared in this scope; did you mean '__FILE__'\\?"  "" { target c++ } misspelled__FILE_ } */
 }

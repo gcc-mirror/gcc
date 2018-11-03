@@ -2759,27 +2759,9 @@ replace_trapping_overflow (tree *tp, int *walk_subtrees, void *data)
 
       if (TREE_CODE (*tp) == ABS_EXPR)
 	{
-	  tree op = TREE_OPERAND (*tp, 0);
-	  op = save_expr (op);
-	  /* save_expr skips simple arithmetics, which is undesirable
-	     here, if it might trap due to flag_trapv.  We need to
-	     force a SAVE_EXPR in the COND_EXPR condition, to evaluate
-	     it before the comparison.  */
-	  if (EXPR_P (op)
-	      && TREE_CODE (op) != SAVE_EXPR
-	      && walk_tree (&op, find_trapping_overflow, NULL, NULL))
-	    {
-	      op = build1_loc (EXPR_LOCATION (op), SAVE_EXPR, type, op);
-	      TREE_SIDE_EFFECTS (op) = 1;
-	    }
-	  /* Change abs (op) to op < 0 ? -op : op and handle the NEGATE_EXPR
-	     like other signed integer trapping operations.  */
-	  tree cond = fold_build2 (LT_EXPR, boolean_type_node,
-				   op, build_int_cst (type, 0));
-	  tree neg = fold_build1 (NEGATE_EXPR, utype,
-				  fold_convert (utype, op));
-	  *tp = fold_build3 (COND_EXPR, type, cond,
-			     fold_convert (type, neg), op);
+	  TREE_SET_CODE (*tp, ABSU_EXPR);
+	  TREE_TYPE (*tp) = utype;
+	  *tp = fold_convert (type, *tp);
 	}
       else
 	{

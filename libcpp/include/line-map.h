@@ -558,12 +558,32 @@ struct GTY((tag ("2"))) line_map_macro : public line_map {
 #define linemap_assert_fails(EXPR) (! (EXPR))
 #endif
 
+/* Get whether location LOC is an ad-hoc, ordinary or macro location.  */
+
+inline bool
+IS_ORDINARY_LOC (source_location loc)
+{
+  return loc < LINE_MAP_MAX_LOCATION;
+}
+
+inline bool
+IS_ADHOC_LOC (source_location loc)
+{
+  return loc > MAX_SOURCE_LOCATION;
+}
+
+inline bool
+IS_MACRO_LOC (source_location loc)
+{
+  return !IS_ORDINARY_LOC (loc) && !IS_ADHOC_LOC (loc);
+}
+
 /* Categorize line map kinds.  */
 
 inline bool
 MAP_ORDINARY_P (const line_map *map)
 {
-  return map->start_location < LINE_MAP_MAX_LOCATION;
+  return IS_ORDINARY_LOC (map->start_location);
 }
 
 /* Return TRUE if MAP encodes locations coming from a macro
@@ -1036,14 +1056,6 @@ extern source_location get_location_from_adhoc_loc (struct line_maps *,
 						    source_location);
 
 extern source_range get_range_from_loc (line_maps *set, source_location loc);
-
-/* Get whether location LOC is an ad-hoc location.  */
-
-inline bool
-IS_ADHOC_LOC (source_location loc)
-{
-  return (loc & MAX_SOURCE_LOCATION) != loc;
-}
 
 /* Get whether location LOC is a "pure" location, or
    whether it is an ad-hoc location, or embeds range information.  */

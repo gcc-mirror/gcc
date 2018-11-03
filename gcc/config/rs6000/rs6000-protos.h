@@ -47,6 +47,7 @@ extern bool legitimate_constant_pool_address_p (const_rtx, machine_mode,
 extern bool legitimate_indirect_address_p (rtx, int);
 extern bool legitimate_indexed_address_p (rtx, int);
 extern bool avoiding_indexed_address_p (machine_mode);
+extern rtx rs6000_force_indexed_or_indirect_mem (rtx x);
 
 extern rtx rs6000_got_register (rtx);
 extern rtx find_addr_reg (rtx);
@@ -152,7 +153,6 @@ extern void rs6000_emit_parity (rtx, rtx);
 
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
-extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
 extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);

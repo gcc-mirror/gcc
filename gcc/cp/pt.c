@@ -12803,6 +12803,28 @@ tsubst_default_arguments (tree fn, tsubst_flags_t complain)
 						    complain);
 }
 
+/* Hash table mapping a FUNCTION_DECL to its dependent explicit-specifier.  */
+static GTY((cache)) tree_cache_map *explicit_specifier_map;
+
+/* Store a pair to EXPLICIT_SPECIFIER_MAP.  */
+
+void
+store_explicit_specifier (tree v, tree t)
+{
+  if (!explicit_specifier_map)
+    explicit_specifier_map = tree_cache_map::create_ggc (37);
+  DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (v) = true;
+  explicit_specifier_map->put (v, t);
+}
+
+/* Lookup an element in EXPLICIT_SPECIFIER_MAP.  */
+
+static tree
+lookup_explicit_specifier (tree v)
+{
+  return *explicit_specifier_map->get (v);
+}
+
 /* Subroutine of tsubst_decl for the case when T is a FUNCTION_DECL.  */
 
 static tree
@@ -12942,6 +12964,17 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (!DECL_DELETED_FN (r))
     DECL_INITIAL (r) = NULL_TREE;
   DECL_CONTEXT (r) = ctx;
+
+  /* Handle explicit(dependent-expr).  */
+  if (DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P (t))
+    {
+      tree spec = lookup_explicit_specifier (t);
+      spec = tsubst_copy_and_build (spec, args, complain, in_decl,
+				    /*function_p=*/false,
+				    /*i_c_e_p=*/true);
+      spec = build_explicit_specifier (spec, complain);
+      DECL_NONCONVERTING_P (r) = (spec == boolean_true_node);
+    }
 
   /* OpenMP UDRs have the only argument a reference to the declared
      type.  We want to diagnose if the declared type is a reference,
@@ -15505,10 +15538,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case OVERLOAD:
-      /* An OVERLOAD will always be a non-dependent overload set; an
-	 overload set from function scope will just be represented with an
-	 IDENTIFIER_NODE, and from class scope with a BASELINK.  */
-      gcc_assert (!uses_template_parms (t));
       /* We must have marked any lookups as persistent.  */
       gcc_assert (!OVL_LOOKUP_P (t) || OVL_USED_P (t));
       return t;
@@ -16702,6 +16731,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    register_local_specialization (inst, decl);
 	    break;
 	  }
+	else if (DECL_PRETTY_FUNCTION_P (decl))
+	  decl = make_fname_decl (DECL_SOURCE_LOCATION (decl),
+				  DECL_NAME (decl),
+				  true/*DECL_PRETTY_FUNCTION_P (decl)*/);
 	else if (DECL_IMPLICIT_TYPEDEF_P (decl)
 		 && LAMBDA_TYPE_P (TREE_TYPE (decl)))
 	  /* Don't copy the old closure; we'll create a new one in
@@ -16760,17 +16793,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 						   complain, in_decl, &first,
 						   &cnt);
 
-		    if (VAR_P (decl)
-			&& DECL_PRETTY_FUNCTION_P (decl))
-		      {
-			/* For __PRETTY_FUNCTION__ we have to adjust the
-			   initializer.  */
-			const char *const name
-			  = cxx_printable_name (current_function_decl, 2);
-			init = cp_fname_init (name, &TREE_TYPE (decl));
-		      }
-		    else
-		      init = tsubst_init (init, decl, args, complain, in_decl);
+		    init = tsubst_init (init, decl, args, complain, in_decl);
 
 		    if (VAR_P (decl))
 		      const_init = (DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P

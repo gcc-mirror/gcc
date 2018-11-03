@@ -1,3 +1,20 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(CLEANFILES): Remove libitm.info.
+	* configure.ac: Remove AC_PREREQ.
+	* testsuite/Makefile.am (RUNTEST): Remove quotes.
+	* Makefile.in, aclocal.m4, configure, testsuite/Makefile.in:
+	Regenerate.
+
+2018-10-30  Nicholas Krause <xerofoify@gmail.com>
+
+	PR libitm/86293
+	* method-serial.cc: Mark varible as potentially unused
+	to silence warning.
+
 2018-08-03  Sergei Trofimovich  <slyfox@gentoo.org>
 
 	* config/sh/sjlj.S: Adjust to use PIC vs normal code to avoid

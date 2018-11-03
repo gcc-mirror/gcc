@@ -719,10 +719,12 @@ Gogo::init_imports(std::vector<Bstatement*>& init_stmts, Bfunction *bfunction)
       const Import_init* ii = *p;
       std::string user_name = ii->package_name() + ".init";
       const std::string& init_name(ii->init_name());
-
+      const unsigned int flags =
+	(Backend::function_is_visible
+	 | Backend::function_is_declaration
+	 | Backend::function_is_inlinable);
       Bfunction* pfunc = this->backend()->function(fntype, user_name, init_name,
-                                                   true, true, true, false,
-                                                   false, false, unknown_loc);
+						   flags, unknown_loc);
       Bexpression* pfunc_code =
           this->backend()->function_code_expression(pfunc, unknown_loc);
       Bexpression* pfunc_call =
@@ -5521,7 +5523,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
   if (this->fndecl_ == NULL)
     {
-      bool is_visible = false;
+      unsigned int flags = 0;
       bool is_init_fn = false;
       Type* rtype = NULL;
       if (no->package() != NULL)
@@ -5533,12 +5535,12 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	;
       else if (no->name() == gogo->get_init_fn_name())
 	{
-	  is_visible = true;
+	  flags |= Backend::function_is_visible;
 	  is_init_fn = true;
 	}
       else if (Gogo::unpack_hidden_name(no->name()) == "main"
                && gogo->is_main_package())
-        is_visible = true;
+	flags |= Backend::function_is_visible;
       // Methods have to be public even if they are hidden because
       // they can be pulled into type descriptors when using
       // anonymous fields.
@@ -5546,7 +5548,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
                || this->type_->is_method())
         {
 	  if (!this->is_unnamed_type_stub_method_)
-	    is_visible = true;
+	    flags |= Backend::function_is_visible;
 	  if (this->type_->is_method())
 	    rtype = this->type_->receiver()->type();
         }
@@ -5559,7 +5561,7 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
 	  // If an assembler name is explicitly specified, there must
 	  // be some reason to refer to the symbol from a different
 	  // object file.
-	  is_visible = true;
+	  flags |= Backend::function_is_visible;
 	}
       else if (is_init_fn)
 	{
@@ -5591,6 +5593,9 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if ((this->pragmas_ & GOPRAGMA_NOINLINE) != 0)
 	is_inlinable = false;
 
+      if (is_inlinable)
+	flags |= Backend::function_is_inlinable;
+
       // If this is a thunk created to call a function which calls
       // the predeclared recover function, we need to disable
       // stack splitting for the thunk.
@@ -5600,20 +5605,22 @@ Function::get_or_make_decl(Gogo* gogo, Named_object* no)
       if ((this->pragmas_ & GOPRAGMA_NOSPLIT) != 0)
 	disable_split_stack = true;
 
+      if (disable_split_stack)
+	flags |= Backend::function_no_split_stack;
+
       // This should go into a unique section if that has been
       // requested elsewhere, or if this is a nointerface function.
       // We want to put a nointerface function into a unique section
       // because there is a good chance that the linker garbage
       // collection can discard it.
-      bool in_unique_section = (this->in_unique_section_
-				|| (this->is_method() && this->nointerface()));
+      if (this->in_unique_section_
+	  || (this->is_method() && this->nointerface()))
+	flags |= Backend::function_in_unique_section;
 
       Btype* functype = this->type_->get_backend_fntype(gogo);
       this->fndecl_ =
           gogo->backend()->function(functype, no->get_id(gogo), asm_name,
-                                    is_visible, false, is_inlinable,
-                                    disable_split_stack, false,
-				    in_unique_section, this->location());
+				    flags, this->location());
     }
   return this->fndecl_;
 }
@@ -5625,7 +5632,10 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 {
   if (this->fndecl_ == NULL)
     {
-      bool does_not_return = false;
+      unsigned int flags =
+	(Backend::function_is_visible
+	 | Backend::function_is_declaration
+	 | Backend::function_is_inlinable);
 
       // Let Go code use an asm declaration to pick up a builtin
       // function.
@@ -5641,7 +5651,7 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
 
 	  if (this->asm_name_ == "runtime.gopanic"
 	      || this->asm_name_ == "__go_runtime_error")
-	    does_not_return = true;
+	    flags |= Backend::function_does_not_return;
 	}
 
       std::string asm_name;
@@ -5658,8 +5668,7 @@ Function_declaration::get_or_make_decl(Gogo* gogo, Named_object* no)
       Btype* functype = this->fntype_->get_backend_fntype(gogo);
       this->fndecl_ =
           gogo->backend()->function(functype, no->get_id(gogo), asm_name,
-                                    true, true, true, false, does_not_return,
-				    false, this->location());
+				    flags, this->location());
     }
 
   return this->fndecl_;

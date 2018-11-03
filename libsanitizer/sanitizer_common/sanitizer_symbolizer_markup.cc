@@ -1,4 +1,4 @@
-//===-- sanitizer_symbolizer_fuchsia.cc -----------------------------------===//
+//===-- sanitizer_symbolizer_markup.cc ------------------------------------===//
 //
 // This file is distributed under the University of Illinois Open Source
 // License. See LICENSE.TXT for details.
@@ -7,38 +7,33 @@
 //
 // This file is shared between various sanitizers' runtime libraries.
 //
-// Implementation of Fuchsia-specific symbolizer.
+// Implementation of offline markup symbolizer.
 //===----------------------------------------------------------------------===//
 
 #include "sanitizer_platform.h"
-#if SANITIZER_FUCHSIA
+#if SANITIZER_SYMBOLIZER_MARKUP
 
-#include "sanitizer_fuchsia.h"
+#if SANITIZER_FUCHSIA
+#include "sanitizer_symbolizer_fuchsia.h"
+#elif SANITIZER_RTEMS
+#include "sanitizer_symbolizer_rtems.h"
+#endif
+#include "sanitizer_stacktrace.h"
 #include "sanitizer_symbolizer.h"
+
+#include <limits.h>
+#include <unwind.h>
 
 namespace __sanitizer {
 
-// For Fuchsia we don't do any actual symbolization per se.
+// This generic support for offline symbolizing is based on the
+// Fuchsia port.  We don't do any actual symbolization per se.
 // Instead, we emit text containing raw addresses and raw linkage
 // symbol names, embedded in Fuchsia's symbolization markup format.
 // Fuchsia's logging infrastructure emits enough information about
 // process memory layout that a post-processing filter can do the
 // symbolization and pretty-print the markup.  See the spec at:
 // https://fuchsia.googlesource.com/zircon/+/master/docs/symbolizer_markup.md
-
-// This is used by UBSan for type names, and by ASan for global variable names.
-constexpr const char *kFormatDemangle = "{{{symbol:%s}}}";
-constexpr uptr kFormatDemangleMax = 1024;  // Arbitrary.
-
-// Function name or equivalent from PC location.
-constexpr const char *kFormatFunction = "{{{pc:%p}}}";
-constexpr uptr kFormatFunctionMax = 64;  // More than big enough for 64-bit hex.
-
-// Global variable name or equivalent from data memory address.
-constexpr const char *kFormatData = "{{{data:%p}}}";
-
-// One frame in a backtrace (printed on a line by itself).
-constexpr const char *kFormatFrame = "{{{bt:%u:%p}}}";
 
 // This is used by UBSan for type names, and by ASan for global variable names.
 // It's expected to return a static buffer that will be reused on each call.
@@ -100,6 +95,49 @@ Symbolizer *Symbolizer::PlatformInit() {
 
 void Symbolizer::LateInitialize() { Symbolizer::GetOrInit(); }
 
+void StartReportDeadlySignal() {}
+void ReportDeadlySignal(const SignalContext &sig, u32 tid,
+                        UnwindSignalStackCallbackType unwind,
+                        const void *unwind_context) {}
+
+#if SANITIZER_CAN_SLOW_UNWIND
+struct UnwindTraceArg {
+  BufferedStackTrace *stack;
+  u32 max_depth;
+};
+
+_Unwind_Reason_Code Unwind_Trace(struct _Unwind_Context *ctx, void *param) {
+  UnwindTraceArg *arg = static_cast<UnwindTraceArg *>(param);
+  CHECK_LT(arg->stack->size, arg->max_depth);
+  uptr pc = _Unwind_GetIP(ctx);
+  if (pc < PAGE_SIZE) return _URC_NORMAL_STOP;
+  arg->stack->trace_buffer[arg->stack->size++] = pc;
+  return (arg->stack->size == arg->max_depth ? _URC_NORMAL_STOP
+                                             : _URC_NO_REASON);
+}
+
+void BufferedStackTrace::SlowUnwindStack(uptr pc, u32 max_depth) {
+  CHECK_GE(max_depth, 2);
+  size = 0;
+  UnwindTraceArg arg = {this, Min(max_depth + 1, kStackTraceMax)};
+  _Unwind_Backtrace(Unwind_Trace, &arg);
+  CHECK_GT(size, 0);
+  // We need to pop a few frames so that pc is on top.
+  uptr to_pop = LocatePcInTrace(pc);
+  // trace_buffer[0] belongs to the current function so we always pop it,
+  // unless there is only 1 frame in the stack trace (1 frame is always better
+  // than 0!).
+  PopStackFrames(Min(to_pop, static_cast<uptr>(1)));
+  trace_buffer[0] = pc;
+}
+
+void BufferedStackTrace::SlowUnwindStackWithContext(uptr pc, void *context,
+                                                    u32 max_depth) {
+  CHECK_NE(context, nullptr);
+  UNREACHABLE("signal context doesn't exist");
+}
+#endif  // SANITIZER_CAN_SLOW_UNWIND
+
 }  // namespace __sanitizer
 
-#endif  // SANITIZER_FUCHSIA
+#endif  // SANITIZER_SYMBOLIZER_MARKUP

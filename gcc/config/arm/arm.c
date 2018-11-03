@@ -2893,17 +2893,22 @@ arm_option_check_internal (struct gcc_options *opts)
       flag_pic = 0;
     }
 
-  /* We only support -mpure-code and -mslow-flash-data on M-profile targets
-     with MOVT.  */
-  if ((target_pure_code || target_slow_flash_data)
-      && (!TARGET_HAVE_MOVT || arm_arch_notm || flag_pic || TARGET_NEON))
+  if (target_pure_code || target_slow_flash_data)
     {
       const char *flag = (target_pure_code ? "-mpure-code" :
 					     "-mslow-flash-data");
-      error ("%s only supports non-pic code on M-profile targets with the "
-	     "MOVT instruction", flag);
-    }
 
+      /* We only support -mpure-code and -mslow-flash-data on M-profile targets
+	 with MOVT.  */
+      if (!TARGET_HAVE_MOVT || arm_arch_notm || flag_pic || TARGET_NEON)
+	error ("%s only supports non-pic code on M-profile targets with the "
+	       "MOVT instruction", flag);
+
+      /* Cannot load addresses: -mslow-flash-data forbids literal pool and
+	 -mword-relocations forbids relocation of MOVT/MOVW.  */
+      if (target_word_relocations)
+	error ("%s incompatible with -mword-relocations", flag);
+    }
 }
 
 /* Recompute the global settings depending on target attribute options.  */
@@ -3488,6 +3493,9 @@ arm_option_override (void)
       else
 	arm_pic_register = pic_register;
     }
+
+  if (flag_pic)
+    target_word_relocations = 1;
 
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)

@@ -444,7 +444,8 @@ simd_clone_create (struct cgraph_node *old_node)
     {
       tree old_decl = old_node->decl;
       tree new_decl = copy_node (old_node->decl);
-      DECL_NAME (new_decl) = clone_function_name (old_decl, "simdclone");
+      DECL_NAME (new_decl) = clone_function_name_numbered (old_decl,
+							   "simdclone");
       SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
       SET_DECL_RTL (new_decl, NULL);
       DECL_STATIC_CONSTRUCTOR (new_decl) = 0;

@@ -15,7 +15,6 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.  
 
-AC_PREREQ(2.59)
 AC_INIT([GNU TM Runtime Library], 1.0,,[libitm])
 AC_CONFIG_HEADER(config.h)
 

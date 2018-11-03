@@ -262,7 +262,9 @@ do_shift_rotate (enum tree_code code,
   int i, size = TYPE_PRECISION (n->type) / BITS_PER_UNIT;
   unsigned head_marker;
 
-  if (count % BITS_PER_UNIT != 0)
+  if (count < 0
+      || count >= TYPE_PRECISION (n->type)
+      || count % BITS_PER_UNIT != 0)
     return false;
   count = (count / BITS_PER_UNIT) * BITS_PER_MARKER;
 

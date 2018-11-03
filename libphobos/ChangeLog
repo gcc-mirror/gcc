@@ -1,3 +1,35 @@
+2018-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87827
+	* Makefile.in: Rebuild.
+	* configure: Rebuild.
+	* configure.ac: Properly set MULTISUBDIR.
+	* d_rules.am: Set toolexecdir and toolexeclibdir.
+	* libdruntime/Makefile.in: Rebuild.
+	* m4/druntime.m4 (DRUNTIME_INSTALL_DIRECTORIES): Add
+	--enable-version-specific-runtime-libs.
+	* src/Makefile.in: Rebuild.
+	* testsuite/Makefile.in: Rebuild.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.  Use -Wno-override in
+	AM_INIT_AUTOMAKE call.
+	* m4/autoconf.m4: Add extra argument to AC_LANG_DEFINE call.
+	* m4/druntime/os.m4: Use AC_LANG_SOURCE.
+	* testsuite/Makefile.am (RUNTEST): Remove quotes.
+	* Makefile.in, aclocal.m4, configure, libdruntime/Makefile.in,
+	src/Makefile.in, testsuite/Makefile.in: Regenerate.
+
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR bootstrap/87789
+	PR d/87818
+	PR d/87819
+	* configure.tgt: New file.
+
 2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* Makefile.am: New file.

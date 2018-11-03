@@ -1,6 +1,5 @@
 # Process this file with autoreconf to produce a configure script.
 
-AC_PREREQ(2.64)
 AC_INIT(package-unused, version-unused,, libstdc++)
 AC_CONFIG_SRCDIR(src/shared/hashtable-aux.cc)
 AC_CONFIG_HEADER(config.h)

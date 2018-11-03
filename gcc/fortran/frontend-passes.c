@@ -638,23 +638,27 @@ constant_string_length (gfc_expr *e)
 	return gfc_copy_expr(length);
     }
 
-  /* Return length of substring, if constant. */
+  /* See if there is a substring. If it has a constant length, return
+     that and NULL otherwise.  */
   for (ref = e->ref; ref; ref = ref->next)
     {
-      if (ref->type == REF_SUBSTRING
-	  && gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &value))
+      if (ref->type == REF_SUBSTRING)
 	{
-	  res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
-				       &e->where);
+	  if (gfc_dep_difference (ref->u.ss.end, ref->u.ss.start, &value))
+	    {
+	      res = gfc_get_constant_expr (BT_INTEGER, gfc_charlen_int_kind,
+					   &e->where);
 
-	  mpz_add_ui (res->value.integer, value, 1);
-	  mpz_clear (value);
-	  return res;
+	      mpz_add_ui (res->value.integer, value, 1);
+	      mpz_clear (value);
+	      return res;
+	    }
+	  else
+	    return NULL;
 	}
     }
 
   /* Return length of char symbol, if constant.  */
-
   if (e->symtree && e->symtree->n.sym->ts.u.cl
       && e->symtree->n.sym->ts.u.cl->length
       && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
@@ -5037,6 +5041,7 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 		    break;
 
 		  case REF_COMPONENT:
+		  case REF_INQUIRY:
 		    break;
 		  }
 	      }

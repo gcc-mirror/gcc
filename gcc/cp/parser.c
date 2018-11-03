@@ -43,7 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "gcc-rich-location.h"
 #include "tree-iterator.h"
-#include "c-family/name-hint.h"
+#include "cp-name-hint.h"
 
 
 /* The lexer.  */
@@ -3292,13 +3292,13 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       name_hint hint;
       if (TREE_CODE (id) == IDENTIFIER_NODE)
 	hint = lookup_name_fuzzy (id, FUZZY_LOOKUP_TYPENAME, location);
-      if (hint)
+      if (const char *suggestion = hint.suggestion ())
 	{
 	  gcc_rich_location richloc (location);
-	  richloc.add_fixit_replace (hint.suggestion ());
+	  richloc.add_fixit_replace (suggestion);
 	  error_at (&richloc,
 		    "%qE does not name a type; did you mean %qs?",
-		    id, hint.suggestion ());
+		    id, suggestion);
 	}
       else
 	error_at (location, "%qE does not name a type", id);
@@ -3364,23 +3364,53 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       if (TREE_CODE (parser->scope) == NAMESPACE_DECL)
 	{
 	  auto_diagnostic_group d;
+	  name_hint hint;
+	  if (decl == error_mark_node)
+	    hint = suggest_alternative_in_explicit_scope (location, id,
+							  parser->scope);
+	  const char *suggestion = hint.suggestion ();
+	  gcc_rich_location richloc (location_of (id));
+	  if (suggestion)
+	    richloc.add_fixit_replace (suggestion);
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_LESS))
-	    error_at (location_of (id),
-		      "%qE in namespace %qE does not name a template type",
-		      id, parser->scope);
+	    {
+	      if (suggestion)
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a template"
+			  " type; did you mean %qs?",
+			  id, parser->scope, suggestion);
+	      else
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a template type",
+			  id, parser->scope);
+	    }
 	  else if (TREE_CODE (id) == TEMPLATE_ID_EXPR)
-	    error_at (location_of (id),
-		      "%qE in namespace %qE does not name a template type",
-		      TREE_OPERAND (id, 0), parser->scope);
+	    {
+	      if (suggestion)
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a template"
+			  " type; did you mean %qs?",
+			  TREE_OPERAND (id, 0), parser->scope, suggestion);
+	      else
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a template"
+			  " type",
+			  TREE_OPERAND (id, 0), parser->scope);
+	    }
 	  else
-	    error_at (location_of (id),
-		      "%qE in namespace %qE does not name a type",
-		      id, parser->scope);
+	    {
+	      if (suggestion)
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a type"
+			  "; did you mean %qs?",
+			  id, parser->scope, suggestion);
+	      else
+		error_at (&richloc,
+			  "%qE in namespace %qE does not name a type",
+			  id, parser->scope);
+	    }
 	  if (DECL_P (decl))
 	    inform (DECL_SOURCE_LOCATION (decl), "%qD declared here", decl);
-	  else if (decl == error_mark_node)
-	    suggest_alternative_in_explicit_scope (location, id,
-						   parser->scope);
 	}
       else if (CLASS_TYPE_P (parser->scope)
 	       && constructor_name_p (id, parser->scope))
@@ -7165,7 +7195,11 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	    if (idk == CP_ID_KIND_UNQUALIFIED
 		|| idk == CP_ID_KIND_TEMPLATE_ID)
 	      {
-		if (identifier_p (postfix_expression))
+		if (identifier_p (postfix_expression)
+		    /* In C++2A, we may need to perform ADL for a template
+		       name.  */
+		    || (TREE_CODE (postfix_expression) == TEMPLATE_ID_EXPR
+			&& identifier_p (TREE_OPERAND (postfix_expression, 0))))
 		  {
 		    if (!args->is_empty ())
 		      {
@@ -13907,6 +13941,9 @@ cp_parser_storage_class_specifier_opt (cp_parser* parser)
      virtual
      explicit
 
+   C++2A Extension:
+     explicit(constant-expression)
+
    Returns an IDENTIFIER_NODE corresponding to the keyword used.
    Updates DECL_SPECS, if it is non-NULL.  */
 
@@ -13933,8 +13970,53 @@ cp_parser_function_specifier_opt (cp_parser* parser,
       break;
 
     case RID_EXPLICIT:
-      set_and_check_decl_spec_loc (decl_specs, ds_explicit, token);
-      break;
+      {
+	tree id = cp_lexer_consume_token (parser->lexer)->u.value;
+	/* If we see '(', it's C++20 explicit(bool).  */
+	tree expr;
+	if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
+	  {
+	    matching_parens parens;
+	    parens.consume_open (parser);
+
+	    /* New types are not allowed in an explicit-specifier.  */
+	    const char *saved_message
+	      = parser->type_definition_forbidden_message;
+	    parser->type_definition_forbidden_message
+	      = G_("types may not be defined in explicit-specifier");
+
+	    if (cxx_dialect < cxx2a)
+	      pedwarn (token->location, 0,
+		       "%<explicit(bool)%> only available with -std=c++2a "
+		       "or -std=gnu++2a");
+
+	    /* Parse the constant-expression.  */
+	    expr = cp_parser_constant_expression (parser);
+
+	    /* Restore the saved message.  */
+	    parser->type_definition_forbidden_message = saved_message;
+	    parens.require_close (parser);
+	  }
+	else
+	  /* The explicit-specifier explicit without a constant-expression is
+	     equivalent to the explicit-specifier explicit(true).  */
+	  expr = boolean_true_node;
+
+	/* [dcl.fct.spec]
+	   "the constant-expression, if supplied, shall be a contextually
+	   converted constant expression of type bool."  */
+	expr = build_explicit_specifier (expr, tf_warning_or_error);
+	/* We could evaluate it -- mark the decl as appropriate.  */
+	if (expr == boolean_true_node)
+	  set_and_check_decl_spec_loc (decl_specs, ds_explicit, token);
+	else if (expr == boolean_false_node)
+	  /* Don't mark the decl as explicit.  */;
+	else if (decl_specs)
+	  /* The expression was value-dependent.  Remember it so that we can
+	     substitute it later.  */
+	  decl_specs->explicit_specifier = expr;
+	return id;
+      }
 
     default:
       return NULL_TREE;
@@ -15991,6 +16073,37 @@ cp_parser_template_id (cp_parser *parser,
 	}
       /* Parse the arguments.  */
       arguments = cp_parser_enclosed_template_argument_list (parser);
+
+      if ((cxx_dialect > cxx17)
+	  && (TREE_CODE (templ) == FUNCTION_DECL || identifier_p (templ))
+	  && !template_keyword_p
+	  && (cp_parser_error_occurred (parser)
+	      || cp_lexer_next_token_is_not (parser->lexer, CPP_OPEN_PAREN)))
+	{
+	  /* This didn't go well.  */
+	  if (TREE_CODE (templ) == FUNCTION_DECL)
+	    {
+	      /* C++2A says that "function-name < a;" is now ill-formed.  */
+	      if (cp_parser_error_occurred (parser))
+		{
+		  error_at (token->location, "invalid template-argument-list");
+		  inform (token->location, "function name as the left hand "
+			  "operand of %<<%> is ill-formed in C++2a; wrap the "
+			  "function name in %<()%>");
+		}
+	      else
+		/* We expect "f<targs>" to be followed by "(args)".  */
+		error_at (cp_lexer_peek_token (parser->lexer)->location,
+			  "expected %<(%> after template-argument-list");
+	      if (start_of_id)
+		/* Purge all subsequent tokens.  */
+		cp_lexer_purge_tokens_after (parser->lexer, start_of_id);
+	    }
+	  else
+	    cp_parser_simulate_error (parser);
+	  pop_deferring_access_checks ();
+	  return error_mark_node;
+	}
     }
 
   /* Set the location to be of the form:
@@ -16047,6 +16160,7 @@ cp_parser_template_id (cp_parser *parser,
 	 a function-template.  */
       gcc_assert ((DECL_FUNCTION_TEMPLATE_P (templ)
 		   || TREE_CODE (templ) == OVERLOAD
+		   || TREE_CODE (templ) == FUNCTION_DECL
 		   || BASELINK_P (templ)));
 
       template_id = lookup_template_function (templ, arguments);
@@ -16249,6 +16363,10 @@ cp_parser_template_name (cp_parser* parser,
 	}
     }
 
+  /* cp_parser_lookup_name clears OBJECT_TYPE.  */
+  const bool scoped_p = ((parser->scope ? parser->scope
+			  : parser->context->object_type) != NULL_TREE);
+
   /* Look up the name.  */
   decl = cp_parser_lookup_name (parser, identifier,
 				tag_type,
@@ -16281,21 +16399,33 @@ cp_parser_template_name (cp_parser* parser,
 	if (TREE_CODE (*iter) == TEMPLATE_DECL)
 	  found = true;
 
+      if (!found
+	  && (cxx_dialect > cxx17)
+	  && !scoped_p
+	  && cp_lexer_next_token_is (parser->lexer, CPP_LESS))
+	{
+	  /* [temp.names] says "A name is also considered to refer to a template
+	     if it is an unqualified-id followed by a < and name lookup finds
+	     either one or more functions or finds nothing."  */
+
+	  /* The "more functions" case.  Just use the OVERLOAD as normally.
+	     We don't use is_overloaded_fn here to avoid considering
+	     BASELINKs.  */
+	  if (TREE_CODE (decl) == OVERLOAD
+	      /* Name lookup found one function.  */
+	      || TREE_CODE (decl) == FUNCTION_DECL)
+	    found = true;
+	  /* Name lookup found nothing.  */
+	  else if (decl == error_mark_node)
+	    return identifier;
+	}
+
       if (!found)
 	{
 	  /* The name does not name a template.  */
 	  cp_parser_error (parser, "expected template-name");
 	  return error_mark_node;
 	}
-    }
-
-  /* If DECL is dependent, and refers to a function, then just return
-     its name; we will look it up again during template instantiation.  */
-  if (DECL_FUNCTION_TEMPLATE_P (decl) || !DECL_P (decl))
-    {
-      tree scope = ovl_scope (decl);
-      if (TYPE_P (scope) && dependent_type_p (scope))
-	return identifier;
     }
 
   return decl;
@@ -18660,13 +18790,26 @@ cp_parser_namespace_name (cp_parser* parser)
       if (!cp_parser_uncommitted_to_tentative_parse_p (parser))
 	{
 	  auto_diagnostic_group d;
-	  error_at (token->location, "%qD is not a namespace-name", identifier);
+	  name_hint hint;
 	  if (namespace_decl == error_mark_node
 	      && parser->scope && TREE_CODE (parser->scope) == NAMESPACE_DECL)
-	    suggest_alternative_in_explicit_scope (token->location, identifier,
-						   parser->scope);
+	    hint = suggest_alternative_in_explicit_scope (token->location,
+							  identifier,
+							  parser->scope);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (token->location);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD is not a namespace-name; did you mean %qs?",
+			identifier, suggestion);
+	    }
+	  else
+	    error_at (token->location, "%qD is not a namespace-name",
+		      identifier);
 	}
-      cp_parser_error (parser, "expected namespace-name");
+      else
+	cp_parser_error (parser, "expected namespace-name");
       namespace_decl = error_mark_node;
     }
 

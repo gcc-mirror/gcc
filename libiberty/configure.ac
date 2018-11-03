@@ -1,6 +1,5 @@
 dnl Process this file with autoconf to produce a configure script
 
-AC_PREREQ(2.64)
 AC_INIT
 AC_CONFIG_SRCDIR([xmalloc.c])
 

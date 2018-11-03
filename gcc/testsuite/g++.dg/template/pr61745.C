@@ -18,5 +18,7 @@ public:
   // this compiles only if the following definition is moved
   // AFTER the friend declaration
   Zp  operator-() const { return Zp(p-val); }
-  friend Zp<INT,P> operator- <>(const Zp<INT,P>& a, const Zp<INT,P>& b); // { dg-error "declaration|expected" }
+  // In C++2A, we have an unqualified-id (operator-) followed by
+  // '<', and name lookup found a function.
+  friend Zp<INT,P> operator- <>(const Zp<INT,P>& a, const Zp<INT,P>& b); // { dg-error "declaration|expected" "" { target c++17_down } }
 };

@@ -2078,6 +2078,9 @@ get_array_ctor_var_strlen (stmtblock_t *block, gfc_expr * expr, tree * len)
 	  mpz_clear (char_len);
 	  return;
 
+	case REF_INQUIRY:
+	  break;
+
 	default:
 	 gcc_unreachable ();
 	}

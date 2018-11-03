@@ -11,7 +11,7 @@ implicit none
     END FUNCTION
   END INTERFACE
   INTERFACE 
-    FUNCTION two() BIND(C,name="two") RESULT(r) ! { dg-error "cannot be a character string" }
+    FUNCTION two() BIND(C,name="two") RESULT(r) ! { dg-error "must have length 1" }
       USE iso_c_binding
       CHARACTER(kind=C_CHAR,len=2) :: r
     END FUNCTION

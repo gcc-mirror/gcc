@@ -45,5 +45,5 @@ foo (int path)
     }
 }
 
-/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold\.0" { target *-*-linux* *-*-gnu* } } } */
-/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\.\*\[\\n\\r\]+_foo\.cold\.0:" { target *-*-darwin* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\*\[\\n\\r\]+_foo\.cold:" { target *-*-darwin* } } } */

@@ -1666,7 +1666,11 @@ finish_anon_union (tree anon_union_decl)
       DECL_NAME (anon_union_decl) = DECL_NAME (main_decl);
       maybe_commonize_var (anon_union_decl);
       if (TREE_STATIC (anon_union_decl) || DECL_EXTERNAL (anon_union_decl))
-	mangle_decl (anon_union_decl);
+	{
+	  if (DECL_DISCRIMINATOR_P (anon_union_decl))
+	    determine_local_discriminator (anon_union_decl);
+	  mangle_decl (anon_union_decl);
+	}
       DECL_NAME (anon_union_decl) = NULL_TREE;
     }
 

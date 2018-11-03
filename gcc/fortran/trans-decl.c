@@ -4825,7 +4825,11 @@ struct module_hasher : ggc_ptr_hash<module_htab_entry>
 {
   typedef const char *compare_type;
 
-  static hashval_t hash (module_htab_entry *s) { return htab_hash_string (s); }
+  static hashval_t hash (module_htab_entry *s)
+  {
+    return htab_hash_string (s->name);
+  }
+
   static bool
   equal (module_htab_entry *a, const char *b)
   {

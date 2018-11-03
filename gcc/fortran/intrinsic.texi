@@ -148,6 +148,7 @@ Some basic guidelines for editing this document:
 * @code{FDATE}:         FDATE,     Subroutine (or function) to get the current time as a string
 * @code{FGET}:          FGET,      Read a single character in stream mode from stdin
 * @code{FGETC}:         FGETC,     Read a single character in stream mode
+* @code{FINDLOC}:       FINDLOC,   Search an array for a value
 * @code{FLOOR}:         FLOOR,     Integer floor function
 * @code{FLUSH}:         FLUSH,     Flush I/O unit(s)
 * @code{FNUM}:          FNUM,      File number function
@@ -6021,7 +6022,67 @@ END PROGRAM
 @ref{FGET}, @ref{FPUT}, @ref{FPUTC}
 @end table
 
+@node FINDLOC
+@section @code{FINDLOC} --- Search an array for a value
+@fnindex FINDLOC
+@cindex findloc
 
+@table @asis
+@item @emph{Description}:
+Determines the location of the element in the array with the value
+given in the @var{VALUE} argument, or, if the @var{DIM} argument is
+supplied, determines the locations of the maximum element along each
+row of the array in the @var{DIM} direction.  If @var{MASK} is
+present, only the elements for which @var{MASK} is @code{.TRUE.} are
+considered.  If more than one element in the array has the value
+@var{VALUE}, the location returned is that of the first such element
+in array element order if the @var{BACK} is not present or if it is
+@code{.FALSE.}. If @var{BACK} is true, the location returned is that
+of the last such element. If the array has zero size, or all of the
+elements of @var{MASK} are @code{.FALSE.}, then the result is an array
+of zeroes.  Similarly, if @var{DIM} is supplied and all of the
+elements of @var{MASK} along a given row are zero, the result value
+for that row is zero.
+
+@item @emph{Standard}:
+Fortran 2008 and later.
+
+@item @emph{Class}:
+Transformational function
+
+@item @emph{Syntax}:
+@multitable @columnfractions .80
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, DIM [, MASK] [,KIND] [,BACK])}
+@item @code{RESULT = FINDLOC(ARRAY, VALUE, [, MASK] [,KIND] [,BACK])}
+@end multitable
+
+@item @emph{Arguments}:
+@multitable @columnfractions .15 .70
+@item @var{ARRAY} @tab Shall be an array of intrinsic type.
+@item @var{VALUE} @tab A scalar of intrinsic type which is in type
+conformance with @var{ARRAY}.
+@item @var{DIM} @tab (Optional) Shall be a scalar of type
+@code{INTEGER}, with a value between one and the rank of @var{ARRAY},
+inclusive.  It may not be an optional dummy argument.
+@item @var{KIND} @tab (Optional) An @code{INTEGER} initialization
+expression indicating the kind parameter of the result.
+@item @var{BACK} @tab (Optional) A scalar of type @code{LOGICAL}.
+@end multitable
+
+@item @emph{Return value}:
+If @var{DIM} is absent, the result is a rank-one array with a length
+equal to the rank of @var{ARRAY}.  If @var{DIM} is present, the result
+is an array with a rank one less than the rank of @var{ARRAY}, and a
+size corresponding to the size of @var{ARRAY} with the @var{DIM}
+dimension removed.  If @var{DIM} is present and @var{ARRAY} has a rank
+of one, the result is a scalar.  If the optional argument @var{KIND}
+is present, the result is an integer of kind @var{KIND}, otherwise it
+is of default kind.
+
+@item @emph{See also}:
+@ref{MAXLOC}, @ref{MINLOC}
+
+@end table
 
 @node FLOOR
 @section @code{FLOOR} --- Integer floor function
@@ -10039,7 +10100,7 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{MAX}, @ref{MAXVAL}
+@ref{FINDLOC}, @ref{MAX}, @ref{MAXVAL}
 
 @end table
 
@@ -10395,7 +10456,7 @@ is present, the result is an integer of kind @var{KIND}, otherwise it
 is of default kind.
 
 @item @emph{See also}:
-@ref{MIN}, @ref{MINVAL}
+@ref{FINDLOC}, @ref{MIN}, @ref{MINVAL}
 
 @end table
 

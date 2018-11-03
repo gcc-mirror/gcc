@@ -1,3 +1,23 @@
+2018-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11 (LIB2ADD): Add divmod.c.
+	(HOST_LIBGCC2_CFLAGS): Change to optimize for size.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* configure: Regenerate.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (_muldi3): New function.
+	* config/arc/t-arc (LIB1ASMFUNCS): Add _muldi3.
+
+2018-10-30  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h (__gthread_mutex_destroy): Call semDelete.
+
 2018-10-25  Martin Liska  <mliska@suse.cz>
 
 	PR other/87735

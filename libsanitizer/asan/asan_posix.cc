@@ -23,7 +23,6 @@
 #include "sanitizer_common/sanitizer_procmaps.h"
 
 #include <pthread.h>
-#include <signal.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/resource.h>

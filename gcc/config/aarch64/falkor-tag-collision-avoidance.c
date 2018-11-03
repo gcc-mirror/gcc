@@ -805,6 +805,7 @@ execute_tag_collision_avoidance ()
   df_set_flags (DF_RD_PRUNE_DEAD_DEFS);
   df_chain_add_problem (DF_UD_CHAIN);
   df_compute_regs_ever_live (true);
+  df_note_add_problem ();
   df_analyze ();
   df_set_flags (DF_DEFER_INSN_RESCAN);
 

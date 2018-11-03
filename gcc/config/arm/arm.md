@@ -6128,7 +6128,7 @@
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
        (match_operand:SI 1 "general_operand" ""))]
   "TARGET_USE_MOVT && GET_CODE (operands[1]) == SYMBOL_REF
-   && !flag_pic && !target_word_relocations
+   && !target_word_relocations
    && !arm_tls_referenced_p (operands[1])"
   [(clobber (const_int 0))]
 {

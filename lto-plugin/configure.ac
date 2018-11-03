@@ -1,4 +1,3 @@
-AC_PREREQ(2.64)
 AC_INIT([LTO plugin for ld], 0.1,,[lto-plugin])
 AC_CANONICAL_SYSTEM
 GCC_TOPLEV_SUBDIRS
@@ -18,8 +17,8 @@ ACX_PROG_CC_WARNING_OPTS([-Wall], [ac_lto_plugin_warn_cflags])
 saved_LDFLAGS="$LDFLAGS"
 LDFLAGS="$LDFLAGS -static-libgcc"
 AC_MSG_CHECKING([for -static-libgcc])
-AC_LINK_IFELSE([
-  int main() {}], [have_static_libgcc=yes], [have_static_libgcc=no])
+AC_LINK_IFELSE([AC_LANG_SOURCE([
+  int main() {}])], [have_static_libgcc=yes], [have_static_libgcc=no])
 AC_MSG_RESULT($have_static_libgcc); 
 LDFLAGS="$saved_LDFLAGS"
 # Need -Wc to get it through libtool.

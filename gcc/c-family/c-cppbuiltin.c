@@ -955,7 +955,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (cxx_dialect > cxx14)
 	{
-	  /* Set feature test macros for C++1z.  */
+	  /* Set feature test macros for C++17.  */
 	  cpp_define (pfile, "__cpp_unicode_characters=201411");
 	  cpp_define (pfile, "__cpp_static_assert=201411");
 	  cpp_define (pfile, "__cpp_namespace_attributes=201411");
@@ -974,6 +974,11 @@ c_cpp_builtins (cpp_reader *pfile)
 	  cpp_define (pfile, "__cpp_template_auto=201606");
 	  cpp_define (pfile, "__cpp_structured_bindings=201606");
 	  cpp_define (pfile, "__cpp_variadic_using=201611");
+	}
+      if (cxx_dialect > cxx17)
+	{
+	  /* Set feature test macros for C++2a.  */
+	  cpp_define (pfile, "__cpp_explicit_bool=201806");
 	}
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");

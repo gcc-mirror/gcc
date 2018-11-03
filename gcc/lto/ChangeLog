@@ -1,3 +1,8 @@
+2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* lto-partition.c (privatize_symbol_name_1): Use
+	  clone_function_name_numbered.
+
 2018-10-26  Jan Hubicka  <jh@suse.cz>
 
 	* lto/lto-symtab.c (lto_symtab_merge_decls_2): Fix extra space.

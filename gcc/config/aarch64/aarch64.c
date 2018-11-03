@@ -1452,10 +1452,14 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   if (regno == FRAME_POINTER_REGNUM || regno == ARG_POINTER_REGNUM)
     return mode == Pmode;
 
-  if (GP_REGNUM_P (regno) && known_le (GET_MODE_SIZE (mode), 16))
-    return true;
-
-  if (FP_REGNUM_P (regno))
+  if (GP_REGNUM_P (regno))
+    {
+      if (known_le (GET_MODE_SIZE (mode), 8))
+	return true;
+      else if (known_le (GET_MODE_SIZE (mode), 16))
+	return (regno & 1) == 0;
+    }
+  else if (FP_REGNUM_P (regno))
     {
       if (vec_flags & VEC_STRUCT)
 	return end_hard_regno (mode, regno) - 1 <= V31_REGNUM;
@@ -1612,6 +1616,33 @@ aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 
   emit_set_insn (cc_reg, gen_rtx_COMPARE (mode, x, y));
   return cc_reg;
+}
+
+/* Similarly, but maybe zero-extend Y if Y_MODE < SImode.  */
+
+static rtx
+aarch64_gen_compare_reg_maybe_ze (RTX_CODE code, rtx x, rtx y,
+                                  machine_mode y_mode)
+{
+  if (y_mode == E_QImode || y_mode == E_HImode)
+    {
+      if (CONST_INT_P (y))
+	y = GEN_INT (INTVAL (y) & GET_MODE_MASK (y_mode));
+      else
+	{
+	  rtx t, cc_reg;
+	  machine_mode cc_mode;
+
+	  t = gen_rtx_ZERO_EXTEND (SImode, y);
+	  t = gen_rtx_COMPARE (CC_SWPmode, t, x);
+	  cc_mode = CC_SWPmode;
+	  cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
+	  emit_set_insn (cc_reg, t);
+	  return cc_reg;
+	}
+    }
+
+  return aarch64_gen_compare_reg (code, x, y);
 }
 
 /* Build the SYMBOL_REF for __tls_get_addr.  */
@@ -10514,11 +10545,13 @@ static void initialize_aarch64_code_model (struct gcc_options *);
 /* Parse the TO_PARSE string and put the architecture struct that it
    selects into RES and the architectural features into ISA_FLAGS.
    Return an aarch64_parse_opt_result describing the parse result.
-   If there is an error parsing, RES and ISA_FLAGS are left unchanged.  */
+   If there is an error parsing, RES and ISA_FLAGS are left unchanged.
+   When the TO_PARSE string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 static enum aarch64_parse_opt_result
 aarch64_parse_arch (const char *to_parse, const struct processor **res,
-		    unsigned long *isa_flags)
+		    unsigned long *isa_flags, std::string *invalid_extension)
 {
   char *ext;
   const struct processor *arch;
@@ -10549,7 +10582,7 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
 	      enum aarch64_parse_opt_result ext_res
-		= aarch64_parse_extension (ext, &isa_temp);
+		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
 	      if (ext_res != AARCH64_PARSE_OK)
 		return ext_res;
@@ -10569,11 +10602,13 @@ aarch64_parse_arch (const char *to_parse, const struct processor **res,
 /* Parse the TO_PARSE string and put the result tuning in RES and the
    architecture flags in ISA_FLAGS.  Return an aarch64_parse_opt_result
    describing the parse result.  If there is an error parsing, RES and
-   ISA_FLAGS are left unchanged.  */
+   ISA_FLAGS are left unchanged.
+   When the TO_PARSE string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 static enum aarch64_parse_opt_result
 aarch64_parse_cpu (const char *to_parse, const struct processor **res,
-		   unsigned long *isa_flags)
+		   unsigned long *isa_flags, std::string *invalid_extension)
 {
   char *ext;
   const struct processor *cpu;
@@ -10605,7 +10640,7 @@ aarch64_parse_cpu (const char *to_parse, const struct processor **res,
 	    {
 	      /* TO_PARSE string contains at least one extension.  */
 	      enum aarch64_parse_opt_result ext_res
-		= aarch64_parse_extension (ext, &isa_temp);
+		= aarch64_parse_extension (ext, &isa_temp, invalid_extension);
 
 	      if (ext_res != AARCH64_PARSE_OK)
 		return ext_res;
@@ -11087,6 +11122,26 @@ aarch64_print_hint_for_arch (const char *str)
   aarch64_print_hint_for_core_or_arch (str, true);
 }
 
+
+/* Print a hint with a suggestion for an extension name
+   that most closely resembles what the user passed in STR.  */
+
+void
+aarch64_print_hint_for_extensions (const std::string &str)
+{
+  auto_vec<const char *> candidates;
+  aarch64_get_all_extension_candidates (&candidates);
+  char *s;
+  const char *hint = candidates_list_and_hint (str.c_str (), s, candidates);
+  if (hint)
+    inform (input_location, "valid arguments are: %s;"
+			     " did you mean %qs?", s, hint);
+  else
+    inform (input_location, "valid arguments are: %s;", s);
+
+  XDELETEVEC (s);
+}
+
 /* Validate a command-line -mcpu option.  Parse the cpu and extensions (if any)
    specified in STR and throw errors if appropriate.  Put the results if
    they are valid in RES and ISA_FLAGS.  Return whether the option is
@@ -11096,8 +11151,9 @@ static bool
 aarch64_validate_mcpu (const char *str, const struct processor **res,
 		       unsigned long *isa_flags)
 {
+  std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_cpu (str, res, isa_flags);
+    = aarch64_parse_cpu (str, res, isa_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     return true;
@@ -11112,7 +11168,9 @@ aarch64_validate_mcpu (const char *str, const struct processor **res,
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier in %<-mcpu=%s%>", str);
+	error ("invalid feature modifier %qs in %<-mcpu=%s%>",
+	       invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
       default:
 	gcc_unreachable ();
@@ -11130,8 +11188,9 @@ static bool
 aarch64_validate_march (const char *str, const struct processor **res,
 			 unsigned long *isa_flags)
 {
+  std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_arch (str, res, isa_flags);
+    = aarch64_parse_arch (str, res, isa_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     return true;
@@ -11146,7 +11205,9 @@ aarch64_validate_march (const char *str, const struct processor **res,
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid feature modifier in %<-march=%s%>", str);
+	error ("invalid feature modifier %qs in %<-march=%s%>",
+	       invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
       default:
 	gcc_unreachable ();
@@ -11345,6 +11406,12 @@ aarch64_override_options (void)
   if ((aarch64_cpu_string && valid_cpu)
        || (aarch64_arch_string && valid_arch))
     gcc_assert (explicit_arch != aarch64_no_arch);
+
+  /* The pass to insert speculation tracking runs before
+     shrink-wrapping and the latter does not know how to update the
+     tracking status.  So disable it in this case.  */
+  if (aarch64_track_speculation)
+    flag_shrink_wrap = 0;
 
   aarch64_override_options_internal (&global_options);
 
@@ -11546,8 +11613,9 @@ static bool
 aarch64_handle_attr_arch (const char *str)
 {
   const struct processor *tmp_arch = NULL;
+  std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags);
+    = aarch64_parse_arch (str, &tmp_arch, &aarch64_isa_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     {
@@ -11567,7 +11635,9 @@ aarch64_handle_attr_arch (const char *str)
 	aarch64_print_hint_for_arch (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
+	error ("invalid feature modifier %s of value (\"%s\") in "
+	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
       default:
 	gcc_unreachable ();
@@ -11582,8 +11652,9 @@ static bool
 aarch64_handle_attr_cpu (const char *str)
 {
   const struct processor *tmp_cpu = NULL;
+  std::string invalid_extension;
   enum aarch64_parse_opt_result parse_res
-    = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags);
+    = aarch64_parse_cpu (str, &tmp_cpu, &aarch64_isa_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     {
@@ -11606,7 +11677,9 @@ aarch64_handle_attr_cpu (const char *str)
 	aarch64_print_hint_for_core (str);
 	break;
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
+	error ("invalid feature modifier %s of value (\"%s\") in "
+	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
+	aarch64_print_hint_for_extensions (invalid_extension);
 	break;
       default:
 	gcc_unreachable ();
@@ -11664,7 +11737,8 @@ aarch64_handle_attr_isa_flags (char *str)
       str += 8;
     }
 
-  parse_res = aarch64_parse_extension (str, &isa_flags);
+  std::string invalid_extension;
+  parse_res = aarch64_parse_extension (str, &isa_flags, &invalid_extension);
 
   if (parse_res == AARCH64_PARSE_OK)
     {
@@ -11679,7 +11753,8 @@ aarch64_handle_attr_isa_flags (char *str)
 	break;
 
       case AARCH64_PARSE_INVALID_FEATURE:
-	error ("invalid value (\"%s\") in %<target()%> pragma or attribute", str);
+	error ("invalid feature modifier %s of value (\"%s\") in "
+	       "%<target()%> pragma or attribute", invalid_extension.c_str (), str);
 	break;
 
       default:
@@ -14575,8 +14650,8 @@ aarch64_emit_unlikely_jump (rtx insn)
 void
 aarch64_expand_compare_and_swap (rtx operands[])
 {
-  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
-  machine_mode mode, cmp_mode;
+  rtx bval, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x, cc_reg;
+  machine_mode mode, r_mode;
 
   bval = operands[0];
   rval = operands[1];
@@ -14587,79 +14662,53 @@ aarch64_expand_compare_and_swap (rtx operands[])
   mod_s = operands[6];
   mod_f = operands[7];
   mode = GET_MODE (mem);
-  cmp_mode = mode;
 
   /* Normally the succ memory model must be stronger than fail, but in the
      unlikely event of fail being ACQUIRE and succ being RELEASE we need to
      promote succ to ACQ_REL so that we don't lose the acquire semantics.  */
-
   if (is_mm_acquire (memmodel_from_int (INTVAL (mod_f)))
       && is_mm_release (memmodel_from_int (INTVAL (mod_s))))
     mod_s = GEN_INT (MEMMODEL_ACQ_REL);
 
-  switch (mode)
+  r_mode = mode;
+  if (mode == QImode || mode == HImode)
     {
-    case E_QImode:
-    case E_HImode:
-      /* For short modes, we're going to perform the comparison in SImode,
-	 so do the zero-extension now.  */
-      cmp_mode = SImode;
-      rval = gen_reg_rtx (SImode);
-      oldval = convert_modes (SImode, mode, oldval, true);
-      /* Fall through.  */
-
-    case E_SImode:
-    case E_DImode:
-      /* Force the value into a register if needed.  */
-      if (!aarch64_plus_operand (oldval, mode))
-	oldval = force_reg (cmp_mode, oldval);
-      break;
-
-    default:
-      gcc_unreachable ();
+      r_mode = SImode;
+      rval = gen_reg_rtx (r_mode);
     }
 
   if (TARGET_LSE)
-    emit_insn (gen_aarch64_compare_and_swap_lse (mode, rval, mem, oldval,
-						 newval, is_weak, mod_s,
-						 mod_f));
-  else
-    emit_insn (gen_aarch64_compare_and_swap (mode, rval, mem, oldval, newval,
-					     is_weak, mod_s, mod_f));
-
-
-  if (mode == QImode || mode == HImode)
-    emit_move_insn (operands[1], gen_lowpart (mode, rval));
-
-  x = gen_rtx_REG (CCmode, CC_REGNUM);
-  x = gen_rtx_EQ (SImode, x, const0_rtx);
-  emit_insn (gen_rtx_SET (bval, x));
-}
-
-/* Test whether the target supports using a atomic load-operate instruction.
-   CODE is the operation and AFTER is TRUE if the data in memory after the
-   operation should be returned and FALSE if the data before the operation
-   should be returned.  Returns FALSE if the operation isn't supported by the
-   architecture.  */
-
-bool
-aarch64_atomic_ldop_supported_p (enum rtx_code code)
-{
-  if (!TARGET_LSE)
-    return false;
-
-  switch (code)
     {
-    case SET:
-    case AND:
-    case IOR:
-    case XOR:
-    case MINUS:
-    case PLUS:
-      return true;
-    default:
-      return false;
+      /* The CAS insn requires oldval and rval overlap, but we need to
+	 have a copy of oldval saved across the operation to tell if
+	 the operation is successful.  */
+      if (reg_overlap_mentioned_p (rval, oldval))
+        rval = copy_to_mode_reg (r_mode, oldval);
+      else
+	emit_move_insn (rval, gen_lowpart (r_mode, oldval));
+
+      emit_insn (gen_aarch64_compare_and_swap_lse (mode, rval, mem,
+						   newval, mod_s));
+      cc_reg = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
     }
+  else
+    {
+      /* The oldval predicate varies by mode.  Test it and force to reg.  */
+      insn_code code = code_for_aarch64_compare_and_swap (mode);
+      if (!insn_data[code].operand[2].predicate (oldval, mode))
+	oldval = force_reg (mode, oldval);
+
+      emit_insn (GEN_FCN (code) (rval, mem, oldval, newval,
+				 is_weak, mod_s, mod_f));
+      cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
+    }
+
+  if (r_mode != mode)
+    rval = gen_lowpart (mode, rval);
+  emit_move_insn (operands[1], rval);
+
+  x = gen_rtx_EQ (SImode, cc_reg, const0_rtx);
+  emit_insn (gen_rtx_SET (bval, x));
 }
 
 /* Emit a barrier, that is appropriate for memory model MODEL, at the end of a
@@ -14677,31 +14726,6 @@ aarch64_emit_post_barrier (enum memmodel model)
     {
       emit_insn (gen_mem_thread_fence (GEN_INT (MEMMODEL_SEQ_CST)));
     }
-}
-
-/* Emit an atomic compare-and-swap operation.  RVAL is the destination register
-   for the data in memory.  EXPECTED is the value expected to be in memory.
-   DESIRED is the value to store to memory.  MEM is the memory location.  MODEL
-   is the memory ordering to use.  */
-
-void
-aarch64_gen_atomic_cas (rtx rval, rtx mem,
-			rtx expected, rtx desired,
-			rtx model)
-{
-  machine_mode mode;
-
-  mode = GET_MODE (mem);
-
-  /* Move the expected value into the CAS destination register.  */
-  emit_insn (gen_rtx_SET (rval, expected));
-
-  /* Emit the CAS.  */
-  emit_insn (gen_aarch64_atomic_cas (mode, rval, mem, desired, model));
-
-  /* Compare the expected value with the value loaded by the CAS, to establish
-     whether the swap was made.  */
-  aarch64_gen_compare_reg (EQ, rval, expected);
 }
 
 /* Split a compare and swap pattern.  */
@@ -14772,10 +14796,10 @@ aarch64_split_compare_and_swap (rtx operands[])
     }
   else
     {
-      cond = aarch64_gen_compare_reg (NE, rval, oldval);
+      cond = aarch64_gen_compare_reg_maybe_ze (NE, rval, oldval, mode);
       x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
       x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-				 gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
+				gen_rtx_LABEL_REF (Pmode, label2), pc_rtx);
       aarch64_emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
     }
 
@@ -14817,169 +14841,6 @@ aarch64_split_compare_and_swap (rtx operands[])
   /* Emit any final barrier needed for a __sync operation.  */
   if (is_mm_sync (model))
     aarch64_emit_post_barrier (model);
-}
-
-/* Emit a BIC instruction.  */
-
-static void
-aarch64_emit_bic (machine_mode mode, rtx dst, rtx s1, rtx s2, int shift)
-{
-  rtx shift_rtx = GEN_INT (shift);
-  rtx (*gen) (rtx, rtx, rtx, rtx);
-
-  switch (mode)
-    {
-    case E_SImode: gen = gen_and_one_cmpl_lshrsi3; break;
-    case E_DImode: gen = gen_and_one_cmpl_lshrdi3; break;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen (dst, s2, shift_rtx, s1));
-}
-
-/* Emit an atomic swap.  */
-
-static void
-aarch64_emit_atomic_swap (machine_mode mode, rtx dst, rtx value,
-			  rtx mem, rtx model)
-{
-  emit_insn (gen_aarch64_atomic_swp (mode, dst, mem, value, model));
-}
-
-/* Emit an atomic load+operate.  CODE is the operation.  OUT_DATA is the
-   location to store the data read from memory.  OUT_RESULT is the location to
-   store the result of the operation.  MEM is the memory location to read and
-   modify.  MODEL_RTX is the memory ordering to use.  VALUE is the second
-   operand for the operation.  Either OUT_DATA or OUT_RESULT, but not both, can
-   be NULL.  */
-
-void
-aarch64_gen_atomic_ldop (enum rtx_code code, rtx out_data, rtx out_result,
-			 rtx mem, rtx value, rtx model_rtx)
-{
-  machine_mode mode = GET_MODE (mem);
-  machine_mode wmode = (mode == DImode ? DImode : SImode);
-  const bool short_mode = (mode < SImode);
-  int ldop_code;
-  rtx src;
-  rtx x;
-
-  if (out_data)
-    out_data = gen_lowpart (mode, out_data);
-
-  if (out_result)
-    out_result = gen_lowpart (mode, out_result);
-
-  /* Make sure the value is in a register, putting it into a destination
-     register if it needs to be manipulated.  */
-  if (!register_operand (value, mode)
-      || code == AND || code == MINUS)
-    {
-      src = out_result ? out_result : out_data;
-      emit_move_insn (src, gen_lowpart (mode, value));
-    }
-  else
-    src = value;
-  gcc_assert (register_operand (src, mode));
-
-  /* Preprocess the data for the operation as necessary.  If the operation is
-     a SET then emit a swap instruction and finish.  */
-  switch (code)
-    {
-    case SET:
-      aarch64_emit_atomic_swap (mode, out_data, src, mem, model_rtx);
-      return;
-
-    case MINUS:
-      /* Negate the value and treat it as a PLUS.  */
-      {
-	rtx neg_src;
-
-	/* Resize the value if necessary.  */
-	if (short_mode)
-	  src = gen_lowpart (wmode, src);
-
-	neg_src = gen_rtx_NEG (wmode, src);
-	emit_insn (gen_rtx_SET (src, neg_src));
-
-	if (short_mode)
-	  src = gen_lowpart (mode, src);
-      }
-      /* Fall-through.  */
-    case PLUS:
-      ldop_code = UNSPECV_ATOMIC_LDOP_PLUS;
-      break;
-
-    case IOR:
-      ldop_code = UNSPECV_ATOMIC_LDOP_OR;
-      break;
-
-    case XOR:
-      ldop_code = UNSPECV_ATOMIC_LDOP_XOR;
-      break;
-
-    case AND:
-      {
-	rtx not_src;
-
-	/* Resize the value if necessary.  */
-	if (short_mode)
-	  src = gen_lowpart (wmode, src);
-
-	not_src = gen_rtx_NOT (wmode, src);
-	emit_insn (gen_rtx_SET (src, not_src));
-
-	if (short_mode)
-	  src = gen_lowpart (mode, src);
-      }
-      ldop_code = UNSPECV_ATOMIC_LDOP_BIC;
-      break;
-
-    default:
-      /* The operation can't be done with atomic instructions.  */
-      gcc_unreachable ();
-    }
-
-  emit_insn (gen_aarch64_atomic_load (ldop_code, mode,
-				      out_data, mem, src, model_rtx));
-
-  /* If necessary, calculate the data in memory after the update by redoing the
-     operation from values in registers.  */
-  if (!out_result)
-    return;
-
-  if (short_mode)
-    {
-      src = gen_lowpart (wmode, src);
-      out_data = gen_lowpart (wmode, out_data);
-      out_result = gen_lowpart (wmode, out_result);
-    }
-
-  x = NULL_RTX;
-
-  switch (code)
-    {
-    case MINUS:
-    case PLUS:
-      x = gen_rtx_PLUS (wmode, out_data, src);
-      break;
-    case IOR:
-      x = gen_rtx_IOR (wmode, out_data, src);
-      break;
-    case XOR:
-      x = gen_rtx_XOR (wmode, out_data, src);
-      break;
-    case AND:
-      aarch64_emit_bic (wmode, out_result, out_data, src, 0);
-      return;
-    default:
-      gcc_unreachable ();
-    }
-
-  emit_set_insn (out_result, x);
-
-  return;
 }
 
 /* Split an atomic operation.  */

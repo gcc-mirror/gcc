@@ -4635,7 +4635,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (t) == PARM_DECL
+      else if (ort == C_ORT_OMP
+	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
 	       && DECL_NAME (t) == this_identifier)
 	{
@@ -7600,14 +7601,7 @@ finish_omp_threadprivate (tree vars)
 	{
 	  /* Allocate a LANG_SPECIFIC structure for V, if needed.  */
 	  if (DECL_LANG_SPECIFIC (v) == NULL)
-	    {
-	      retrofit_lang_decl (v);
-
-	      /* Make sure that DECL_DISCRIMINATOR_P continues to be true
-		 after the allocation of the lang_decl structure.  */
-	      if (DECL_DISCRIMINATOR_P (v))
-		DECL_LANG_SPECIFIC (v)->u.base.u2sel = 1;
-	    }
+	    retrofit_lang_decl (v);
 
 	  if (! CP_DECL_THREAD_LOCAL_P (v))
 	    {

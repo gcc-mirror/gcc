@@ -844,9 +844,9 @@ enum cpp_builtin_type
 };
 
 #define CPP_HASHNODE(HNODE)	((cpp_hashnode *) (HNODE))
-#define HT_NODE(NODE)		((ht_identifier *) (NODE))
-#define NODE_LEN(NODE)		HT_LEN (&(NODE)->ident)
-#define NODE_NAME(NODE)		HT_STR (&(NODE)->ident)
+#define HT_NODE(NODE)		(&(NODE)->ident)
+#define NODE_LEN(NODE)		HT_LEN (HT_NODE (NODE))
+#define NODE_NAME(NODE)		HT_STR (HT_NODE (NODE))
 
 /* The common part of an identifier node shared amongst all 3 C front
    ends.  Also used to store CPP identifiers, which are a superset of
@@ -1017,7 +1017,10 @@ inline bool cpp_fun_like_macro_p (cpp_hashnode *node)
 
 extern const unsigned char *cpp_macro_definition (cpp_reader *,
 						  cpp_hashnode *);
-extern source_location cpp_macro_definition_location (cpp_hashnode *);
+inline source_location cpp_macro_definition_location (cpp_hashnode *node)
+{
+  return node->value.macro->line;
+}
 extern void _cpp_backup_tokens (cpp_reader *, unsigned int);
 extern const cpp_token *cpp_peek_token (cpp_reader *, int);
 
@@ -1278,7 +1281,7 @@ extern int cpp_read_state (cpp_reader *, const char *, FILE *,
 			   struct save_macro_data *);
 
 /* In lex.c */
-extern void cpp_force_token_locations (cpp_reader *, source_location *);
+extern void cpp_force_token_locations (cpp_reader *, source_location);
 extern void cpp_stop_forcing_token_locations (cpp_reader *);
 
 /* In expr.c */

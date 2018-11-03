@@ -401,13 +401,13 @@ search path.
 
 @heading Tools/packages necessary for modifying GCC
 @table @asis
-@item autoconf version 2.64
+@item autoconf version 2.69
 @itemx GNU m4 version 1.4.6 (or later)
 
 Necessary when modifying @file{configure.ac}, @file{aclocal.m4}, etc.@:
 to regenerate @file{configure} and @file{config.in} files.
 
-@item automake version 1.11.6
+@item automake version 1.15.1
 
 Necessary when modifying a @file{Makefile.am} file to regenerate its
 associated @file{Makefile.in}.
@@ -418,12 +418,9 @@ file.  Specifically this applies to the @file{gcc}, @file{intl},
 as any of their subdirectories.
 
 For directories that use automake, GCC requires the latest release in
-the 1.11 series, which is currently 1.11.6.  When regenerating a directory
-to a newer version, please update all the directories using an older 1.11
+the 1.15 series, which is currently 1.15.1.  When regenerating a directory
+to a newer version, please update all the directories using an older 1.15
 to the latest released version.
-
-Note that @command{automake} 1.11.6 is incompatible with
-@command{perl} version 5.6.26.
 
 @item gettext version 0.14.5 (or later)
 
