@@ -1,3 +1,10 @@
+2018-11-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/87079
+
+	* config/nios2/nios2.c (nios2_rtx_costs): Recognize <mul>sidi3
+	pattern.
+
 2018-11-02  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_strncmp_gpr_sequence): Pay

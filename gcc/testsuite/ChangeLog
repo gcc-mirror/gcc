@@ -1,3 +1,10 @@
+2018-11-03  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR target/87079
+
+	* gcc.target/nios2/pr87079-1.c: New.	
+	* gcc.target/nios2/pr87079-2.c: New.	
+
 2018-11-02  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc.dg/compat/pr83487-1_y.c: Move dg-skip-if ...
