@@ -1,3 +1,33 @@
+2018-11-04  Venkataramanan Kumar <venkataramanan.kumar@amd.com>
+
+	* common/config/i386/i386-common.c (processor_alias_table): Add
+	znver2 entry.
+	* config.gcc (i[34567]86-*-linux* | ...): Add znver2.
+	(case ${target}): Add znver2.
+	* config/i386/driver-i386.c: (host_detect_local_cpu): Let
+	-march=native recognize znver2 processors.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Add znver2.
+	* config/i386/i386.c (m_znver2): New definition.
+	(m_ZNVER): New definition.
+	(m_AMD_MULTIPLE): Includes m_znver2.
+	(processor_cost_table): Add znver2 entry.
+	(processor_target_table): Add znver2 entry.
+	(get_builtin_code_for_version): Set priority for
+	PROCESSOR_ZNVER2.
+	(processor_model): Add M_AMDFAM17H_ZNVER2.
+	(arch_names_table): Ditto.
+	(ix86_reassociation_width): Include znver2.
+	* config/i386/i386.h (TARGET_znver2): New definition.
+	(struct ix86_size_cost): Add TARGET_ZNVER2.
+	(enum processor_type): Add PROCESSOR_ZNVER2.
+	* config/i386/i386.md (define_attr "cpu"): Add znver2.
+	* config/i386/x86-tune-costs.h: (processor_costs) Add znver2 costs.
+	* config/i386/x86-tune-sched.c: (ix86_issue_rate): Add znver2.
+	(ix86_adjust_cost): Add znver2.
+	* config/i386/x86-tune.def:  Replace m_ZNVER1 by m_ZNVER.
+	* gcc/doc/extend.texi: Add details about znver2.
+	* gcc/doc/invoke.texi: Add details about znver2.
+
 2018-11-03  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR target/87079
