@@ -734,11 +734,14 @@ c_strlen (tree src, int only_value, c_strlen_data *data, unsigned eltsize)
 	 of the string subtract the offset from the length of the string,
 	 and return that.  Otherwise the length is zero.  Take care to
 	 use SAVE_EXPR in case the OFFSET has side-effects.  */
-      tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff) : byteoff;
-      offsave = fold_convert (ssizetype, offsave);
+      tree offsave = TREE_SIDE_EFFECTS (byteoff) ? save_expr (byteoff)
+						 : byteoff;
+      offsave = fold_convert_loc (loc, sizetype, offsave);
       tree condexp = fold_build2_loc (loc, LE_EXPR, boolean_type_node, offsave,
-				      build_int_cst (ssizetype, len));
-      tree lenexp = size_diffop_loc (loc, ssize_int (len), offsave);
+				      size_int (len));
+      tree lenexp = fold_build2_loc (loc, MINUS_EXPR, sizetype, size_int (len),
+				     offsave);
+      lenexp = fold_convert_loc (loc, ssizetype, lenexp);
       return fold_build3_loc (loc, COND_EXPR, ssizetype, condexp, lenexp,
 			      build_zero_cst (ssizetype));
     }
