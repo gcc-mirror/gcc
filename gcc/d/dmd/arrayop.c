@@ -8,10 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/arrayop.c
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/rmem.h"
 #include "root/aav.h"
 

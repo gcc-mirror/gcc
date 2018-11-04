@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/func.c
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "init.h"
@@ -4254,7 +4253,7 @@ void FuncDeclaration::checkDmain()
         error("parameters must be main() or main(string[] args)");
 }
 
-const char *FuncDeclaration::kind()
+const char *FuncDeclaration::kind() const
 {
     return generated ? "generated function" : "function";
 }
@@ -4645,7 +4644,7 @@ FuncAliasDeclaration::FuncAliasDeclaration(Identifier *ident, FuncDeclaration *f
     userAttribDecl = funcalias->userAttribDecl;
 }
 
-const char *FuncAliasDeclaration::kind()
+const char *FuncAliasDeclaration::kind() const
 {
     return "function alias";
 }
@@ -4756,7 +4755,7 @@ void FuncLiteralDeclaration::modifyReturns(Scope *sc, Type *tret)
         ((TypeFunction *)type)->next = tret;
 }
 
-const char *FuncLiteralDeclaration::kind()
+const char *FuncLiteralDeclaration::kind() const
 {
     return (tok != TOKfunction) ? "delegate" : "function";
 }
@@ -4869,7 +4868,7 @@ void CtorDeclaration::semantic(Scope *sc)
     }
 }
 
-const char *CtorDeclaration::kind()
+const char *CtorDeclaration::kind() const
 {
     return "constructor";
 }
@@ -5039,7 +5038,7 @@ bool DtorDeclaration::addPostInvariant()
     return false;
 }
 
-const char *DtorDeclaration::kind()
+const char *DtorDeclaration::kind() const
 {
     return "destructor";
 }
@@ -5521,7 +5520,7 @@ void NewDeclaration::semantic(Scope *sc)
     FuncDeclaration::semantic(sc);
 }
 
-const char *NewDeclaration::kind()
+const char *NewDeclaration::kind() const
 {
     return "allocator";
 }
@@ -5600,7 +5599,7 @@ void DeleteDeclaration::semantic(Scope *sc)
     FuncDeclaration::semantic(sc);
 }
 
-const char *DeleteDeclaration::kind()
+const char *DeleteDeclaration::kind() const
 {
     return "deallocator";
 }

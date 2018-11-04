@@ -24,12 +24,12 @@
  * Copyright: Copyright (C) 2014-2018 by The D Language Foundation, All Rights Reserved
  * License:   $(LINK2 http://www.boost.org/LICENSE_1_0.txt, Boost License 1.0)
  * Authors:   Walter Bright
- * Source:    https://github.com/D-Programming-Language/dmd/blob/master/src/root/port.c
+ * Source:    https://github.com/D-Programming-Language/dmd/blob/master/src/root/checkedint.c
  */
 
-#include <assert.h>
-
+#include "dsystem.h"
 #include "checkedint.h"
+
 
 /*******************************
  * Add two signed integers, checking for overflow.

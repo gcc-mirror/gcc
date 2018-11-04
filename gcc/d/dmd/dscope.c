@@ -8,10 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/scope.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>                     // strlen()
-
+#include "root/dsystem.h"               // strlen()
 #include "root/root.h"
 #include "root/rmem.h"
 #include "root/speller.h"

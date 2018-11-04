@@ -17,8 +17,6 @@
 /// [3] http://unicode.org/faq/utf_bom.html
 /// [4] http://www.unicode.org/versions/Unicode6.1.0/ch03.pdf
 
-#include <assert.h>
-
 #include "utf.h"
 
 /* The following encodings are valid, except for the 5 and 6 byte

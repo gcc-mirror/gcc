@@ -5,8 +5,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/object.c
  */
 
-#include <stdio.h>
-
+#include "dsystem.h"
 #include "object.h"
 #include "outbuffer.h"
 

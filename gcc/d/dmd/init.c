@@ -8,10 +8,9 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/init.c
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include "root/dsystem.h"
+#include "root/checkedint.h"
 
-#include "checkedint.h"
 #include "mars.h"
 #include "init.h"
 #include "expression.h"

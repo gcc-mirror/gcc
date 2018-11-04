@@ -7,11 +7,7 @@
 
 #pragma once
 
-#include <assert.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
+#include "dsystem.h"
 #include "object.h"
 #include "rmem.h"
 

@@ -6,9 +6,7 @@
 // Source: https://github.com/D-Programming-Language/dmd/blob/master/src/nspace.c
 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "dsymbol.h"
@@ -156,7 +154,7 @@ void Nspace::semantic3(Scope *sc)
     }
 }
 
-const char *Nspace::kind()
+const char *Nspace::kind() const
 {
     return "namespace";
 }

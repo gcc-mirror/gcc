@@ -10,16 +10,7 @@
 
 /* Lexical Analyzer */
 
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdarg.h>
-#include <errno.h>
-#include <wchar.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <time.h>       // for time() and ctime()
-
+#include "root/dsystem.h" // for time() and ctime()
 #include "root/rmem.h"
 
 #include "mars.h"

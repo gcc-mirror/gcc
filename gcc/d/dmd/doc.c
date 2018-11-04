@@ -10,12 +10,7 @@
 
 // This implements the Ddoc capability.
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/rmem.h"
 #include "root/root.h"
 #include "root/port.h"

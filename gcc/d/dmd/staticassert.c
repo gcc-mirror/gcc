@@ -8,9 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/staticassert.c
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "dsymbol.h"
@@ -98,7 +96,7 @@ bool StaticAssert::oneMember(Dsymbol **ps, Identifier *)
     return true;
 }
 
-const char *StaticAssert::kind()
+const char *StaticAssert::kind() const
 {
     return "static assert";
 }

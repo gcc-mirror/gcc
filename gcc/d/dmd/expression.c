@@ -8,12 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/expression.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <math.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/rmem.h"
 #include "root/root.h"
 

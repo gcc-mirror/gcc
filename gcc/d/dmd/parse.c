@@ -10,11 +10,9 @@
 
 // This is the D parser
 
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>                     // strlen(),memcpy()
-
+#include "root/dsystem.h"               // strlen(),memcpy()
 #include "root/rmem.h"
+
 #include "mars.h"
 #include "lexer.h"
 #include "parse.h"

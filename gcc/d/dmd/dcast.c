@@ -8,10 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/cast.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>                     // mem{set|cpy}()
-
+#include "root/dsystem.h"               // mem{set|cpy}()
 #include "root/rmem.h"
 
 #include "mars.h"

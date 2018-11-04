@@ -10,7 +10,7 @@
 
 #pragma once
 
-#include <stdlib.h>
+#include "root/dsystem.h"
 
 /// A UTF-8 code unit
 typedef unsigned char   utf8_t;

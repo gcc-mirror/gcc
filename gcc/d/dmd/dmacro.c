@@ -11,11 +11,7 @@
 /* Simple macro text processor.
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "errors.h"

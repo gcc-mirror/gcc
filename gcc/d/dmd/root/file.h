@@ -8,8 +8,7 @@
 
 #pragma once
 
-#include <stddef.h>
-
+#include "dsystem.h"
 #include "array.h"
 
 typedef Array<struct File *> Files;

@@ -8,10 +8,8 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/argtypes.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-
-#include "checkedint.h"
+#include "root/dsystem.h"
+#include "root/checkedint.h"
 
 #include "mars.h"
 #include "dsymbol.h"

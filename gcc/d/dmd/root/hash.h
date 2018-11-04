@@ -10,8 +10,7 @@
 
 #pragma once
 
-#include <stdint.h>                     // uint{8|16|32}_t
-#include <stdlib.h>
+#include "dsystem.h"                    // uint{8|16|32}_t
 
 // MurmurHash2 was written by Austin Appleby, and is placed in the public
 // domain. The author hereby disclaims copyright to this source code.
