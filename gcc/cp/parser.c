@@ -4647,16 +4647,15 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
       if (flag_modules && !flag_module_keywords)
 	{
-	  /* For modules, we don't try tentative parsing.  You lose in
-	     global module fragment.  */
-	  if (C_RID_CODE (next->u.value) == RID_MODULE)
+	  if (C_RID_CODE (next->u.value) == RID_MODULE
+	      && !cp_lexer_nth_token_is (parser->lexer,
+					 exporting ? 3 : 2, CPP_SCOPE))
 	    goto is_module;
 
-	  if (C_RID_CODE (next->u.value) == RID_IMPORT)
-	    {
-	      cp_parser_parse_tentatively (parser);
-	      goto is_import;
-	    }
+	  if (C_RID_CODE (next->u.value) == RID_IMPORT
+	      && !cp_lexer_nth_token_is (parser->lexer,
+					 exporting ? 3 : 2, CPP_SCOPE))
+	    goto is_import;
 	}
       goto is_other;
 
@@ -4692,9 +4691,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       if (exporting)
 	cp_lexer_consume_token (parser->lexer);
       cp_parser_import_declaration (parser, exporting, preamble < 0);
-      if (cp_parser_parsing_tentatively (parser)
-	  && !cp_parser_parse_definitely (parser))
-	goto is_other;
 
       first = false;
       if (next == imp_tok)
@@ -12868,7 +12864,6 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
 {
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_HEADER_NAME)
     {
-      cp_parser_commit_to_tentative_parse (parser);
       cp_token *token = cp_lexer_consume_token (parser->lexer);
 
       if (!for_module)
@@ -12891,7 +12886,6 @@ cp_parser_module_name (cp_parser *parser, bool for_module)
       parent = get_module (name, parent);
       if (cp_lexer_peek_token (parser->lexer)->type != CPP_DOT)
 	return parent;
-      cp_parser_commit_to_tentative_parse (parser);
     }
 }
 
@@ -12906,11 +12900,13 @@ cp_parser_module_declaration (cp_parser *parser, bool exporting)
   module_state *mod = cp_parser_module_name (parser, true);
   tree attrs = cp_parser_attributes_opt (parser);
 
-  cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
-  /* Don't try and resync after error, because we're probably due
-     another tokenize call.  */
-
-  if (mod)
+  if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+    }
+  else
     declare_module (mod, token->location, exporting, attrs, parse_in);
 }
 
@@ -12923,15 +12919,15 @@ cp_parser_import_declaration (cp_parser *parser, bool exporting,
 {
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   module_state *mod = cp_parser_module_name (parser, false);
-  if (!mod)
-    return;
-
   tree attrs = cp_parser_attributes_opt (parser);
 
-  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
-    return;
-
-  if (past_preamble)
+  if (!mod || !cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+    {
+      cp_parser_skip_to_end_of_statement (parser);
+      if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
+	cp_lexer_consume_token (parser->lexer);
+    }
+  else if (past_preamble)
     error_at (token->location,
 	      "module import declarations must be within preamble");
   else
@@ -39433,44 +39429,35 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->type == CPP_OPEN_BRACE)
 	{
-	  if (imp_off)
-	    break;
-
 	  depth++;
 	  in_decl = false;
 	}
       else if (tok->type == CPP_CLOSE_BRACE)
 	{
-	  if (imp_off)
-	    break;
-
 	  if (depth)
 	    depth--;
+	  else if (imp_off)
+	    break;
+
 	  in_decl = false;
 	}
       else if (tok->type == CPP_SEMICOLON)
 	{
-	  if (imp_off)
+	  if (!depth && imp_off)
 	    break;
 	  in_decl = false;
 	}
       else if (tok->keyword == RID_EXPORT)
-	{
-	  if (imp_off)
-	    break;
-	}
+	;
       else if (tok->keyword == RID_IMPORT
 	       || (!in_decl && !depth && tok->type == CPP_NAME && flag_modules
 		   && C_RID_CODE (tok->u.value) == RID_IMPORT))
 	{
-	  if (imp_off)
-	    break;
-
 	  cpp_enable_filename_token (parse_in, true);
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN
 					   | C_LEX_STRING_IS_HEADER, tok);
 	  cpp_enable_filename_token (parse_in, false);
-	  if (!depth && tok->type == CPP_HEADER_NAME)
+	  if (!depth && tok->type == CPP_HEADER_NAME && !imp_off)
 	    /* A stoppable decl.  */
 	    imp_off = parser->lexer->buffer->length ();
 	  in_decl = true;

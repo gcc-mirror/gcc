@@ -4,5 +4,5 @@ export module bob;
 // { dg-module-bmi bob }
 
 export struct import {};
-export import *a;
-export import (b);
+export ::import *a;
+export ::import (b);

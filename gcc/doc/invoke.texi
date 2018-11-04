@@ -2581,8 +2581,11 @@ usually not needed, as that is the default.  For now.
 @item -fno-module-keywords
 @opindex fno-module-keywords
 Disable @code{module} and @code{import} as keywords, thus allowing
-them to be used as identifiers even when @option{-fmodules-ts} is
-ineffect.  This is a non-standard extension.
+them to be used as identifiers even when @option{-fmodules-ts} is in
+effect.  At the outermost scope, at the start of a declaration (after
+an optional @code{export}) and provided they are not followed by
+@code{::}, they are treated as keywords.  Otherwise they are regular
+identifiers.  This is a non-standard extension.
 
 @item -fno-module-lazy
 @opindex fno-module-lazy
@@ -2590,13 +2593,11 @@ ineffect.  This is a non-standard extension.
 Disable lazy module importing and module mapper creation.
 
 @item -fmodule-legacy
-@itemx -fmodule-legacy[=@var{name}]
-@itemx -fmodule-legacy[=@var{name}?@var{macro}]
-@itemx -fmodule-legacy[=?@var{macro}]
+@itemx -fmodule-legacy=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
 @opindex fmodule-legacy
 Compile as a legacy header module.  The @var{name} may use
 @samp{"..."} or @samp{<...>} to indicate a user or system header, and
-defaults user.  If a name is omitted, the source filename is used.
+defaults to user.  If a name is omitted, the source filename is used.
 The source filename may be partitioned by a @samp{/./} component, in
 which case the fragment following is used as the name.  A @samp{?}
 character separates the legacy name from a controlling macro.  If this
@@ -2615,10 +2616,10 @@ Load legacy module macros at end of compilation.  This is not standard
 conforming, but can be helpful to confirm all imported macros are
 consistent.
 
-@item -fmodule-mapper=@var{[hostname]:port}
-@itemx -fmodule-mapper=|@var{program}
-@itemx -fmodule-mapper==@var{socket}
-@itemx -fmodule-mapper=@var{file}
+@item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{cookie}@r{]}
+@itemx -fmodule-mapper=|@var{program}@r{[}?@var{cookie}@r{]} @var{args...}
+@itemx -fmodule-mapper==@var{socket}@r{[}?@var{cookie}@r{]}
+@itemx -fmodule-mapper=@var{file}@r{[}?@var{cookie}@r{]}
 @opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
 unspecified a default is provided.
@@ -29768,30 +29769,71 @@ not get debugging information for routines in the precompiled header.
 @cindex Speed of Compilation
 
 C++ Modules are an experimental feature, providing a modular system
-for C++, replacing header file technology.  There are two module
+for C++, replacing header file technology.  There were two module
 schemes, which overlap to some extent:
 
 @itemize
 
 @item n4720
 ``Working Draft, Extensions to C++ for Modules'', aka the TS,
-@uref{http://wg21.link/n4720}.
+@uref{http://wg21.link/n4720}
 
 @item p0947
 ``Another Take On Modules'', aka the ATOM proposal
-@uref{http://wg21.link/p0947r0}.
+@uref{http://wg21.link/p0947r0}
 
 @end itemize
 
-Enable with @option{-fmodules-ts}.  @emph{Modules support is a work in
-progress.  The implementation is not complete, and the specification
-is a moving target.  Syntax, semantics and command-line options are
-not stable.}
+These are now combined in:
+
+@itemize
+
+@item p1103
+``Merging Modules'' @uref{http//wg21.link/p1103r2}
+
+@end itemize
+
+@noindent
+which I aim to follow.  Use the @option{-fmodules-ts} option to
+enable.  @emph{Modules support is a work in progress.  The
+implementation is not complete, and the specification is a moving
+target.  Syntax, semantics and command-line options are not stable.}
 
 A module interface unit creates a Binary Module Interface (BMI) file,
 encoding the exported declarations of the module.  Importing a module
 reads in the BMI.  The dependency graph of imports is a Directed
 Acyclic Graph (DAG).
+
+The @option{-fno-module-lazy} option disables lazy module loading.
+Usually importing a module will load minimal information, defering the
+bulk of the loading to the point at which name-lookup inspects a
+particular namespace-scope name.
+
+The @option{-fmodule-legacy} family of options enable compilation of a
+header file as a legacy header module.  Using this option implies
+@option{-fmodules-ts}.
+
+As @code{module} and @code{import} are not-infrequently used as
+identifiers in existing codebases, making them unconditional keywords
+can present difficulties.  The @option{-fno-module-keywords} option
+may be used to make them context sensitive.
+
+The @option{-fmodule-only} disables generation of the associated
+object file for compiling a module interface.  Only the binary module
+interface is generated.
+
+The @option{--param lazy-modules=@var{n}} parameter controls the limit
+on the number of concurrently open module files during lazy loading.
+Should more modules be imported, an LRU algorithm is used to determine
+which files to close -- until that file is needed again.  This limit
+may be exceeded with deep module dependency hierarchies.  With large
+code bases there may be more imports than the process limit of file
+descriptors.  By default, the limit is 20 less than the per-process
+limit, if that is determinable.
+
+@node C++ Module Mapper
+@subsection Module Mapper
+@cindex C++ Module Mapper
 
 An module mapper provides a line-based server or file that the compiler
 queries to determine the mapping between module names and BMI files.
@@ -29801,31 +29843,26 @@ operand may have one of the following forms:
 
 @table @gcctabopt
 
-@item @var{hostname}:@var{port}
-@itemx :@var{port}
-@itemx @var{hostname}:@var{port}?@var{cookie}
-@itemx :@var{port}?@var{cookie}
-A hostname and a numeric port number to connect to.  If the hostname
-is omitted, the loopback address is used.  If the hostname corresponds
-to multiple IPV6 addresses, these are tried in turn, until one is
-successful.  If your host lacks ipv6, this form is non-functional.  If
-you must use ipv4, you may use @option{-fmodule-mapper='|ncat
-@var{ipv4host} @var{port}'}.
+@item @r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{cookie}@r{]}
+An optional hostname and a numeric port number to connect to.  If the
+hostname is omitted, the loopback address is used.  If the hostname
+corresponds to multiple IPV6 addresses, these are tried in turn, until
+one is successful.  If your host lacks ipv6, this form is
+non-functional.  If you must use ipv4 @emph{get with the 21st century},
+or failing that use @option{-fmodule-mapper='|ncat @var{ipv4host}
+@var{port}'}.
 
-@item =@var{socket}
-@itemx =@var{socket}?@var{cookie}
+@item =@var{socket}@r{[}?@var{cookie}@r{]}
 A local domain socket.  If your host lacks local domain sockets, this
 form is non-functional.
 
-@item |@var{program} @var{args...}
-@itemx |@var{program}?@var{cookie} @var{args...}
+@item |@var{program}@r{[}?@var{cookie}@r{]} @r{[}@var{args...}@r{]}
 A program to spawn, and communicate with on its stdin/stdout streams.
 Your @var{PATH} environment variable is searched for the program.
 Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).
 
-@item @var{file}
-@itemx @var{file}?@var{cookie}
+@item @var{file}@r{[}?@var{cookie}@r{]}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
@@ -29888,7 +29925,7 @@ the inclusion.  A response of @samp{INCLUDE} causes textual inclusion.
 A response of @samp{IMPORT [@var{module}]} causes importation.  If the
 import response includes a module name, that will be the imported
 module.  Otherwise the import shall be @var{header}.  A subsequent
-@samp{IMPORT} or @samp{BYIMPORT} query will be forthcoming.
+@samp{IMPORT} query will be forthcoming.
 
 @end table
 
@@ -29902,7 +29939,7 @@ of the batch should begin with @samp{-}, and may be empty.  Similarly
 responses may be batched, both in response to a set of batched
 requests.  Each non-ultimate line of a batched response begins with a
 @samp{+}.  The final line should begin with @samp{-}, and may
-otherwise be empty.  Response to a batched request are in request
+otherwise be empty.  Responses to a batched request are in request
 order.  Servers should not commence responses until all requests of a
 batch have been received.  There may be a fixed-capacity pipe between
 client and server, and sending responses before the client has started
@@ -29934,7 +29971,7 @@ A numeric version number, currently 0.
 
 @end table
 
-A project-specific oracle is expected to be provided by the build
+A project-specific mapper is expected to be provided by the build
 system that invokes the compiler.  It is not expected that a
 general-purpose server is provided for all compilations.  As such, the
 server will know the build configuration, the compiler it invoked, and
@@ -29952,30 +29989,10 @@ server traffic, but requires the build system to recreate the same
 directory structure within the repository across a parellelized build
 system.
 
-The default oracle generates BMI files in the current directory,
+The default mapper generates BMI files in the current directory,
 mapping @samp{.} & @samp{:} to @samp{-} & @samp{+} respectively and
 appending a @samp{.nms} suffix.  Legacy header modules additionally
-map @samp{/} to @samp{=} but append a @samp{rmf} suffix.
+map @samp{/} to @samp{=} and insert a @samp{.u} or @samp{.s} just
+before the final suffix.
 
-It is expected that build systems will provide their own oracles.
-
-The @option{-fno-module-lazy} option disables lazy module loading.
-Usually importing a module will load minimal information, defering the
-bulk of the loading to the point at which name-lookup inspects a
-particular namespace-scope name.
-
-The @option{-fmodule-legacy} family of options enable compilation of
-a header file as an Atom legacy header module.
-
-The @option{-fmodule-only} disables generation of the associated
-object file for compiling a module interface.  Only the binary module
-interface is generated.
-
-The @option{--param lazy-modules=@var{n}} parameter controls the limit
-on the number of concurrently open module files during lazy loading.
-Should more modules be imported, an LRU algorithm is used to determine
-which files to close -- until that file is needed again.  This limit
-may be exceeded with deep module dependency hierarchies.  With large
-code bases there may be more imports than the process limit of file
-descriptors.  By default, the limit is 20 less than the per-process
-limit, if that is determinable.
+It is expected that build systems will provide their own mappers.
