@@ -1,3 +1,8 @@
+2018-11-04  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c: (get_amd_cpu): Add znver2.
+	* config/i386/cpuinfo.h (processor_types): Add znver2.
+
 2018-11-01  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/t-pdp11 (LIB2ADD): Add divmod.c.

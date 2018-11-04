@@ -169,12 +169,14 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_BDVER3 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER3)
 #define m_BDVER4 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER4)
 #define m_ZNVER1 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER1)
+#define m_ZNVER2 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER2)
 #define m_BTVER1 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER1)
 #define m_BTVER2 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER2)
 #define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3 | m_BDVER4)
 #define m_BTVER (m_BTVER1 | m_BTVER2)
+#define m_ZNVER	(m_ZNVER1 | m_ZNVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER \
-			| m_ZNVER1)
+			| m_ZNVER)
 
 #define m_GENERIC (HOST_WIDE_INT_1U<<PROCESSOR_GENERIC)
 
@@ -868,6 +870,7 @@ static const struct processor_costs *processor_cost_table[PROCESSOR_max] =
   &btver1_cost,
   &btver2_cost,
   &znver1_cost,
+  &znver2_cost
 };
 
 static unsigned int
@@ -31601,6 +31604,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "znver1";
 	      priority = P_PROC_AVX2;
 	      break;
+	    case PROCESSOR_ZNVER2:
+	      arg_str = "znver2";
+	      priority = P_PROC_AVX2;
+	      break;
 	    }
 	}
 
@@ -32276,7 +32283,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_SKYLAKE_AVX512,
     M_INTEL_COREI7_CANNONLAKE,
     M_INTEL_COREI7_ICELAKE_CLIENT,
-    M_INTEL_COREI7_ICELAKE_SERVER
+    M_INTEL_COREI7_ICELAKE_SERVER,
+    M_AMDFAM17H_ZNVER2
   };
 
   static struct _arch_names_table
@@ -32323,6 +32331,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"btver2", M_AMD_BTVER2},
       {"amdfam17h", M_AMDFAM17H},
       {"znver1", M_AMDFAM17H_ZNVER1},
+      {"znver2", M_AMDFAM17H_ZNVER2},
     };
 
   static struct _isa_names_table
@@ -49200,8 +49209,8 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 
       /* Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
-      if (ix86_tune == PROCESSOR_ZNVER1 && INTEGRAL_MODE_P (mode)
-	  && op != PLUS && op != MINUS)
+      if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2)
+	   && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */
