@@ -2715,6 +2715,7 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
 		return false;
 
 	      gimple_seq stmts = NULL;
+	      len = force_gimple_operand (len, &stmts, true, NULL_TREE);
 	      len = gimple_convert (&stmts, loc, size_type_node, len);
 	      len = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node, len,
 				  build_int_cst (size_type_node, 1));
