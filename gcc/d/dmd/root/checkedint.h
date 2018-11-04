@@ -5,15 +5,10 @@
  * http://www.digitalmars.com
  * Distributed under the Boost Software License, Version 1.0.
  * http://www.boost.org/LICENSE_1_0.txt
- * https://github.com/D-Programming-Language/dmd/blob/master/src/checkedint.h
+ * https://github.com/D-Programming-Language/dmd/blob/master/src/root/checkedint.h
  */
 
-#pragma once
-
-#ifndef __STDC_LIMIT_MACROS
-#define __STDC_LIMIT_MACROS 1
-#endif
-#include <stdint.h>
+#include "dsystem.h"
 
 
 int adds(int x, int y, bool& overflow);

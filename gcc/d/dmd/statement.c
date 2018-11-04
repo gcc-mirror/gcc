@@ -8,9 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/statement.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "statement.h"
 #include "errors.h"

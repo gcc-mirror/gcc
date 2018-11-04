@@ -127,7 +127,7 @@ public:
 
     Declaration(Identifier *id);
     void semantic(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     d_uns64 size(Loc loc);
     int checkModify(Loc loc, Scope *sc, Type *t, Expression *e1, int flag);
 
@@ -177,7 +177,7 @@ public:
 
     TupleDeclaration(Loc loc, Identifier *ident, Objects *objects);
     Dsymbol *syntaxCopy(Dsymbol *);
-    const char *kind();
+    const char *kind() const;
     Type *getType();
     Dsymbol *toAlias2();
     bool needThis();
@@ -202,7 +202,7 @@ public:
     void semantic(Scope *sc);
     void aliasSemantic(Scope *sc);
     bool overloadInsert(Dsymbol *s);
-    const char *kind();
+    const char *kind() const;
     Type *getType();
     Dsymbol *toAlias();
     Dsymbol *toAlias2();
@@ -222,7 +222,7 @@ public:
     bool hasOverloads;
 
     OverDeclaration(Identifier *ident, Dsymbol *s, bool hasOverloads = true);
-    const char *kind();
+    const char *kind() const;
     void semantic(Scope *sc);
     bool equals(RootObject *o);
     bool overloadInsert(Dsymbol *s);
@@ -269,7 +269,7 @@ public:
     void semantic(Scope *sc);
     void setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion);
     void semantic2(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     AggregateDeclaration *isThis();
     bool needThis();
     bool isExport() const;
@@ -654,7 +654,7 @@ public:
     virtual bool isFinalFunc();
     virtual bool addPreInvariant();
     virtual bool addPostInvariant();
-    const char *kind();
+    const char *kind() const;
     FuncDeclaration *isUnique();
     bool checkNestedReference(Scope *sc, Loc loc);
     bool needsClosure();
@@ -690,7 +690,7 @@ public:
     FuncAliasDeclaration(Identifier *ident, FuncDeclaration *funcalias, bool hasOverloads = true);
 
     FuncAliasDeclaration *isFuncAliasDeclaration() { return this; }
-    const char *kind();
+    const char *kind() const;
 
     FuncDeclaration *toAliasFunc();
     void accept(Visitor *v) { v->visit(this); }
@@ -717,7 +717,7 @@ public:
     void modifyReturns(Scope *sc, Type *tret);
 
     FuncLiteralDeclaration *isFuncLiteralDeclaration() { return this; }
-    const char *kind();
+    const char *kind() const;
     const char *toPrettyChars(bool QualifyTypes = false);
     void accept(Visitor *v) { v->visit(this); }
 };
@@ -728,7 +728,7 @@ public:
     CtorDeclaration(Loc loc, Loc endloc, StorageClass stc, Type *type);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     const char *toChars();
     bool isVirtual();
     bool addPreInvariant();
@@ -760,7 +760,7 @@ public:
     DtorDeclaration(Loc loc, Loc endloc, StorageClass stc, Identifier *id);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     const char *toChars();
     bool isVirtual();
     bool addPreInvariant();
@@ -870,7 +870,7 @@ public:
     NewDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments, int varargs);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     bool isVirtual();
     bool addPreInvariant();
     bool addPostInvariant();
@@ -888,7 +888,7 @@ public:
     DeleteDeclaration(Loc loc, Loc endloc, StorageClass stc, Parameters *arguments);
     Dsymbol *syntaxCopy(Dsymbol *);
     void semantic(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     bool isDelete();
     bool isVirtual();
     bool addPreInvariant();

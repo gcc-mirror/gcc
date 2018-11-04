@@ -19,6 +19,7 @@
 class ClassDeclaration;
 class Dsymbol;
 class Expression;
+class Parameter;
 class Type;
 struct OutBuffer;
 

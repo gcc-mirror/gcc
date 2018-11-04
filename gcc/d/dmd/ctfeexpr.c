@@ -8,12 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/ctfeexpr.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>                     // mem{cpy|set}()
-#include <new>
-
+#include "root/dsystem.h"               // mem{cpy|set}()
 #include "root/rmem.h"
 
 #include "mars.h"

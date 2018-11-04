@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/intrange.c
  */
 
-#include <stddef.h>
-#include <stdint.h>
+#include "root/dsystem.h"
 
 #include "intrange.h"
 #include "mars.h"

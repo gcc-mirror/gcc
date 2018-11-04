@@ -10,11 +10,7 @@
 
 #pragma once
 
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
-#include <ctype.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
 
 

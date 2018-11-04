@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/aliasthis.c
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "identifier.h"
@@ -163,7 +162,7 @@ void AliasThis::semantic(Scope *sc)
     semanticRun = PASSsemanticdone;
 }
 
-const char *AliasThis::kind()
+const char *AliasThis::kind() const
 {
     return "alias this";
 }

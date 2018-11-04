@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/impcnvgen.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "root/dsystem.h"
 
 #include "mtype.h"
 

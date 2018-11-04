@@ -83,7 +83,7 @@ public:
     void semantic(Scope *sc);
     bool overloadInsert(Dsymbol *s);
     bool hasStaticCtorOrDtor();
-    const char *kind();
+    const char *kind() const;
     const char *toChars();
 
     Prot prot();
@@ -331,7 +331,7 @@ public:
     void semantic2(Scope *sc);
     void semantic3(Scope *sc);
     Dsymbol *toAlias();                 // resolve real symbol
-    const char *kind();
+    const char *kind() const;
     bool oneMember(Dsymbol **ps, Identifier *ident);
     const char *toChars();
     const char* toPrettyCharsHelper();
@@ -371,7 +371,7 @@ public:
     void semantic(Scope *sc);
     void semantic2(Scope *sc);
     void semantic3(Scope *sc);
-    const char *kind();
+    const char *kind() const;
     bool oneMember(Dsymbol **ps, Identifier *ident);
     int apply(Dsymbol_apply_ft_t fp, void *param);
     bool hasPointers();

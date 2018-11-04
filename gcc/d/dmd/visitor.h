@@ -9,7 +9,7 @@
 
 #pragma once
 
-#include <assert.h>
+#include "root/dsystem.h"
 
 class Statement;
 class ErrorStatement;

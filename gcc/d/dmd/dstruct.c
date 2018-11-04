@@ -8,10 +8,9 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/struct.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
+
 #include "errors.h"
 #include "aggregate.h"
 #include "scope.h"
@@ -1438,7 +1437,7 @@ bool StructDeclaration::isPOD()
     return (ispod == ISPODyes);
 }
 
-const char *StructDeclaration::kind()
+const char *StructDeclaration::kind() const
 {
     return "struct";
 }
@@ -1457,7 +1456,7 @@ Dsymbol *UnionDeclaration::syntaxCopy(Dsymbol *s)
     return StructDeclaration::syntaxCopy(ud);
 }
 
-const char *UnionDeclaration::kind()
+const char *UnionDeclaration::kind() const
 {
     return "union";
 }

@@ -6,37 +6,19 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/filename.c
  */
 
+#include "dsystem.h"
 #include "filename.h"
-
-#include <stdint.h>
-#include <ctype.h>
 
 #include "outbuffer.h"
 #include "array.h"
 #include "file.h"
 #include "rmem.h"
 
-#if defined (__sun)
-#include <alloca.h>
-#endif
-
-#if _MSC_VER ||__MINGW32__
-#include <malloc.h>
-#include <string>
-#endif
-
 #if _WIN32
 #include <windows.h>
-#include <direct.h>
-#include <errno.h>
 #endif
 
 #if POSIX
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
 #include <utime.h>
 #endif
 

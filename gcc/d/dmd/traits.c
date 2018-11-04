@@ -8,16 +8,11 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/traits.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <assert.h>
-#include <math.h>
-
+#include "root/dsystem.h"
 #include "root/rmem.h"
 #include "root/aav.h"
+#include "root/checkedint.h"
 
-#include "checkedint.h"
 #include "errors.h"
 #include "mtype.h"
 #include "init.h"

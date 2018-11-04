@@ -8,22 +8,8 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/mtype.c
  */
 
-#define __C99FEATURES__ 1       // Needed on Solaris for NaN and more
-#define __USE_ISOC99 1          // so signbit() gets defined
-
-#include <math.h>
-#include <stdio.h>
-#include <assert.h>
-#include <float.h>
-
-#if _MSC_VER
-#include <malloc.h>
-#include <limits>
-#elif __MINGW32__
-#include <malloc.h>
-#endif
-
-#include "checkedint.h"
+#include "root/dsystem.h"
+#include "root/checkedint.h"
 #include "root/rmem.h"
 
 #include "mars.h"
@@ -2336,8 +2322,7 @@ Identifier *Type::getTypeInfoIdent()
     // Allocate buffer on stack, fail over to using malloc()
     char namebuf[128];
     size_t namelen = 19 + sizeof(len) * 3 + len + 1;
-    char *name = namelen <= sizeof(namebuf) ? namebuf : (char *)malloc(namelen);
-    assert(name);
+    char *name = namelen <= sizeof(namebuf) ? namebuf : (char *)mem.xmalloc(namelen);
 
     sprintf(name, "_D%lluTypeInfo_%s6__initZ", (unsigned long long) 9 + len, buf.data);
     //printf("%p, deco = %s, name = %s\n", this, deco, name);
@@ -9343,20 +9328,23 @@ bool Parameter::isCovariantScope(bool returnByRef, StorageClass from, StorageCla
         static unsigned buildSR(bool returnByRef, StorageClass stc)
         {
             unsigned result;
-            switch (stc & (STCref | STCscope | STCreturn))
-            {
-                case 0:                    result = SRNone;        break;
-                case STCref:               result = SRRef;         break;
-                case STCscope:             result = SRScope;       break;
-                case STCreturn | STCref:   result = SRReturnRef;   break;
-                case STCreturn | STCscope: result = SRReturnScope; break;
-                case STCref    | STCscope: result = SRRefScope;    break;
-                case STCreturn | STCref | STCscope:
-                    result = returnByRef ? SRReturnRef_Scope : SRRef_ReturnScope;
-                    break;
-                default:
-                    assert(0);
-            }
+            StorageClass stc2 = stc & (STCref | STCscope | STCreturn);
+            if (stc2 == 0)
+                result = SRNone;
+            else if (stc2 == STCref)
+                result = SRRef;
+            else if (stc2 == STCscope)
+                result = SRScope;
+            else if (stc2 == (STCscope | STCreturn))
+                result = SRReturnScope;
+            else if (stc2 == (STCref | STCreturn))
+                result = SRReturnRef;
+            else if (stc2 == (STCscope | STCref))
+                result = SRRefScope;
+            else if (stc2 == (STCscope | STCref | STCreturn))
+                result = returnByRef ? SRReturnRef_Scope : SRRef_ReturnScope;
+            else
+                assert(0);
             return result;
         }
 

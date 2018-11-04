@@ -8,11 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/mangle.c
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
 
 #include "mangle.h"

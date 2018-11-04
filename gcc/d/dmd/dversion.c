@@ -8,9 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/version.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
 
 #include "identifier.h"
@@ -106,7 +104,7 @@ void DebugSymbol::semantic(Scope *)
         semanticRun = PASSsemanticdone;
 }
 
-const char *DebugSymbol::kind()
+const char *DebugSymbol::kind() const
 {
     return "debug";
 }
@@ -196,7 +194,7 @@ void VersionSymbol::semantic(Scope *)
         semanticRun = PASSsemanticdone;
 }
 
-const char *VersionSymbol::kind()
+const char *VersionSymbol::kind() const
 {
     return "version";
 }

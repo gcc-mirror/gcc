@@ -8,9 +8,8 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/module.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
+#include "root/dsystem.h"
+#include "root/rmem.h"
 
 #include "mars.h"
 #include "module.h"
@@ -23,14 +22,6 @@
 #include "expression.h"
 #include "lexer.h"
 #include "attrib.h"
-
-// For getcwd()
-#if _WIN32
-#include <direct.h>
-#endif
-#if POSIX
-#include <unistd.h>
-#endif
 
 AggregateDeclaration *Module::moduleinfo;
 
@@ -193,7 +184,7 @@ void Module::deleteObjFile()
         docfile->remove();
 }
 
-const char *Module::kind()
+const char *Module::kind() const
 {
     return "module";
 }
@@ -310,7 +301,8 @@ bool Module::read(Loc loc)
         {
             ::error(loc, "cannot find source code for runtime library file 'object.d'");
             errorSupplemental(loc, "dmd might not be correctly installed. Run 'dmd -man' for installation instructions.");
-            errorSupplemental(loc, "config file: %s", FileName::canonicalName(global.inifilename));
+            const char *dmdConfFile = FileName::canonicalName(global.inifilename);
+            errorSupplemental(loc, "config file: %s", dmdConfFile ? dmdConfFile : "not found");
         }
         else
         {
@@ -1043,8 +1035,7 @@ void Module::runDeferredSemantic()
         }
         else
         {
-            todo = (Dsymbol **)malloc(len * sizeof(Dsymbol *));
-            assert(todo);
+            todo = (Dsymbol **)mem.xmalloc(len * sizeof(Dsymbol *));
             todoalloc = todo;
         }
         memcpy(todo, deferred.tdata(), len * sizeof(Dsymbol *));
@@ -1219,7 +1210,7 @@ Package::Package(Identifier *ident)
 }
 
 
-const char *Package::kind()
+const char *Package::kind() const
 {
     return "package";
 }
