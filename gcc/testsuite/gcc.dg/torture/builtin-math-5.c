@@ -6,6 +6,7 @@
    Origin: Kaveh R. Ghazi,  January 28, 2009.  */
 
 /* { dg-do compile } */
+/* { dg-require-effective-target inf } */
 /* { dg-options "-fdump-tree-original" } */
 
 extern void foof (_Complex float);

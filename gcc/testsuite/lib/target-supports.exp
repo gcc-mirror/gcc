@@ -8933,3 +8933,10 @@ proc check_effective_target_cet { } {
 	}
     } "-O2" ]
 }
+
+# Return 1 if target supports floating point "infinite"
+proc check_effective_target_inf { } {
+    return [check_no_compiler_messages supports_inf assembly {
+        const double pinf = __builtin_inf ();
+    }]
+}

@@ -1,6 +1,7 @@
 /* Test __builtin_complex semantics.  */
 /* { dg-do run } */
 /* { dg-options "-std=c11 -pedantic-errors" } */
+/* { dg-require-effective-target inf } */
 /* { dg-add-options ieee } */
 
 extern void exit (int);
