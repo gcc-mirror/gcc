@@ -576,6 +576,8 @@ build_aggr_init_expr (tree type, tree init)
   tree rval;
   int is_ctor;
 
+  gcc_assert (!VOID_TYPE_P (type));
+
   /* Don't build AGGR_INIT_EXPR in a template.  */
   if (processing_template_decl)
     return init;

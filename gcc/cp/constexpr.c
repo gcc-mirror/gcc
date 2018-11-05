@@ -2778,8 +2778,10 @@ initialized_type (tree t)
 {
   if (TYPE_P (t))
     return t;
-  tree type = cv_unqualified (TREE_TYPE (t));
-  if (TREE_CODE (t) == CALL_EXPR || TREE_CODE (t) == AGGR_INIT_EXPR)
+  tree type = TREE_TYPE (t);
+  if (!VOID_TYPE_P (type))
+    /* No need to look deeper.  */;
+  else if (TREE_CODE (t) == CALL_EXPR)
     {
       /* A constructor call has void type, so we need to look deeper.  */
       tree fn = get_function_named_in_call (t);
@@ -2787,7 +2789,9 @@ initialized_type (tree t)
 	  && DECL_CXX_CONSTRUCTOR_P (fn))
 	type = DECL_CONTEXT (fn);
     }
-  return type;
+  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    type = TREE_TYPE (AGGR_INIT_EXPR_SLOT (t));
+  return cv_unqualified (type);
 }
 
 /* We're about to initialize element INDEX of an array or class from VALUE.
@@ -3000,7 +3004,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 					&argvec, elttype, LOOKUP_NORMAL,
 					complain);
       release_tree_vector (argvec);
-      init = build_aggr_init_expr (TREE_TYPE (init), init);
+      init = build_aggr_init_expr (elttype, init);
       pre_init = true;
     }
 
@@ -5089,7 +5093,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = build_nop (TREE_TYPE (r), r);
       TREE_CONSTANT (r) = false;
     }
-  else if (non_constant_p || r == t)
+  else if (non_constant_p)
     return t;
 
   if (should_unshare)
@@ -5097,18 +5101,18 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   if (TREE_CODE (r) == CONSTRUCTOR && CLASS_TYPE_P (TREE_TYPE (r)))
     {
+      r = adjust_temp_type (type, r);
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else
+      else if (TREE_CODE (t) != CONSTRUCTOR)
 	{
 	  r = get_target_expr (r);
 	  TREE_CONSTANT (r) = true;
-	  return r;
 	}
     }
-  else
-    return r;
+
+  return r;
 }
 
 /* Returns true if T is a valid subexpression of a constant expression,
