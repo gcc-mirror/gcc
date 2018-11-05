@@ -6,6 +6,7 @@
    Origin: Kaveh R. Ghazi,  February 23, 2007.  */
 
 /* { dg-do link } */
+/* { dg-require-effective-target inf } */
 /* { dg-options "-fno-finite-math-only" { target sh*-*-* } } */
 /* { dg-options "-funsafe-math-optimizations -fsigned-zeros -fno-associative-math" { target powerpc-*-darwin* powerpc*-*-linux* } } */
 

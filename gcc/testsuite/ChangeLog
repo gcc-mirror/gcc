@@ -1,3 +1,20 @@
+2018-11-05  Paul Koning  <ni1d@arrl.net>
+
+	* lib/target-supports.exp: Add check for "inf" effective target
+	keyword.
+	* gcc.dg/builtins-44.c: Skip if no infinite support.
+	* gcc.dg/builtins-45.c: Ditto.
+	* gcc.dg/torture/builtin-complex-1.c: Ditto.
+	* gcc.dg/torture/builtin-cproj-1.c: Ditto.
+	* gcc.dg/torture/builtin-frexp-1.c: Ditto.
+	* gcc.dg/torture/builtin-ldexp-1.c: Ditto.
+	* gcc.dg/torture/builtin-logb-1.c: Ditto.
+	* gcc.dg/torture/builtin-math-2.c: Ditto.
+	* gcc.dg/torture/builtin-math-5.c: Ditto.
+	* gcc.dg/torture/builtin-math-7.c: Ditto.
+	* gcc.dg/torture/builtin-modf-1.c: Ditto.
+	* gcc.dg/torture/type-generic-1.c: Ditto.
+
 2018-11-05  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/md/andc-splitter-1.c: Add colon to
