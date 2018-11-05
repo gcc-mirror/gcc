@@ -1,5 +1,9 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	* symtab.c (ht_dump_statistics): Replace %zu with %lu format.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	* symtab.c (ht_dump_statistics): Fix format and
 	pass missing argument.
 
