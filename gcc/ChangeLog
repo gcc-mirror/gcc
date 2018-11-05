@@ -1,3 +1,15 @@
+2018-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-scalar-evolution.h (final_value_replacement_loop): Update
+	prototype.
+	* tree-scalar-evolution.c (final_value_replacement_loop): Return
+	whether anything was done.
+	(scev_const_prop): Remove constant propagation part, fold
+	remains into ...
+	* tree-ssa-loop.c (pass_scev_cprop::execute): ... here.
+	(pass_data_scev_cprop): TODO_cleanup_cfg is now done
+	conditionally.
+
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87859
