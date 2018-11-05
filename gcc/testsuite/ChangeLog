@@ -1,3 +1,8 @@
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/77698
+	* gcc.dg/tree-prof/pr77698.c: New test.
+
 2018-11-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR tree-optimization/86572

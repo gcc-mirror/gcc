@@ -533,11 +533,10 @@ ipa_profile (void)
 		   cumulated_size * 100.0 / overall_size);
 	}
 
-      if (threshold > get_hot_bb_threshold ()
-	  || in_lto_p)
+      if (in_lto_p)
 	{
 	  if (dump_file)
-	    fprintf (dump_file, "Threshold updated.\n");
+	    fprintf (dump_file, "Setting hotness threshold in LTO mode.\n");
           set_hot_bb_threshold (threshold);
 	}
     }
