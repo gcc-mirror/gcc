@@ -8196,7 +8196,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
   edge e = single_exit (loop);
   if (! single_pred_p (e->dest))
     {
-      split_loop_exit_edge (e);
+      split_loop_exit_edge (e, true);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE, "split exit edge\n");
     }
