@@ -416,6 +416,12 @@
 #  error "__cpp_variadic_using != 201611"
 #endif
 
+// C++20 features
+
+#if __cpp_nontype_template_parameter_class != 201806
+# error "__cpp_nontype_template_parameter_class != 201806"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

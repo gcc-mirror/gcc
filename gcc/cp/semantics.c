@@ -3648,8 +3648,17 @@ finish_id_expression (tree id_expression,
       *idk = CP_ID_KIND_NONE;
       if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
 	decl = TEMPLATE_PARM_DECL (decl);
-      r = convert_from_reference (DECL_INITIAL (decl));
-
+      r = DECL_INITIAL (decl);
+      if (CLASS_TYPE_P (TREE_TYPE (r)) && !CP_TYPE_CONST_P (TREE_TYPE (r)))
+	{
+	  /* If the entity is a template parameter object for a template
+	     parameter of type T, the type of the expression is const T.  */
+	  tree ctype = TREE_TYPE (r);
+	  ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+						   | TYPE_QUAL_CONST));
+	  r = build1 (VIEW_CONVERT_EXPR, ctype, r);
+	}
+      r = convert_from_reference (r);
       if (integral_constant_expression_p
 	  && !dependent_type_p (TREE_TYPE (decl))
 	  && !(INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (r))))
@@ -8802,7 +8811,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      if (INDIRECT_REF_P (expr))
+      if (INDIRECT_REF_P (expr)
+	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
         expr = TREE_OPERAND (expr, 0);

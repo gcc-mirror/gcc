@@ -1,5 +1,15 @@
 2018-11-04  Jason Merrill  <jason@redhat.com>
 
+	Implement P0732R2, class types in non-type template parameters.
+	* error.c (dump_simple_decl): Look through a template parm object.
+	* mangle.c (write_template_arg): Likewise.
+	(mangle_template_parm_object): New.
+	* pt.c (template_parm_object_p, get_template_parm_object): New.
+	(invalid_tparm_referent_p): Factor from convert_nontype_argument.
+	(convert_nontype_argument, invalid_nontype_parm_type_p): Handle
+	class-type template arguments.
+	* tree.c (lvalue_kind): Likewise.
+
 	* cvt.c (ocp_convert): Don't wrap a CONSTRUCTOR in a NOP_EXPR.
 	* constexpr.c (initialized_type): Fix AGGR_INIT_EXPR handling.
 	(cxx_eval_vec_init_1): Correct type of AGGR_INIT_EXPR.
