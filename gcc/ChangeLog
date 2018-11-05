@@ -1,5 +1,15 @@
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/87859
+	* gimple-ssa-store-merging.c (struct merged_store_group): Add
+	first_nonmergeable_order member.
+	(merged_store_group::merged_store_group): Initialize them.
+	(imm_store_chain_info::coalesce_immediate_stores): Don't merge
+	stores with order >= first_nonmergeable_order.
+	Set merged_store->first_nonmergeable_order if we've skipped any
+	stores.  Attempt to merge overlapping INTEGER_CST stores that
+	we would otherwise skip.
+
 	PR sanitizer/87837
 	* match.pd (X + Y < X): Don't optimize if TYPE_OVERFLOW_SANITIZED.
 
