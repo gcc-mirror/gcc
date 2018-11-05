@@ -1,3 +1,12 @@
+2018-11-05  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	PR target/87853
+	* config/i386/emmintrin.h (__v16qs): New to cope with option
+	-funsigned-char.
+	(_mm_cmpeq_epi8): Replace __v16qi with __v16qs.
+	(_mm_cmplt_epi8): Likewise.
+	(_mm_cmpgt_epi8): Likewise.
+
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR rtl-optimization/87852
