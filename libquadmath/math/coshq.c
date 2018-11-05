@@ -9,11 +9,11 @@
  * ====================================================
  */
 
-/* Changes for 128-bit __float128 are
+/* Changes for 128-bit long double are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -27,34 +27,34 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 /* coshq(x)
  * Method :
- * mathematically coshq(x) if defined to be (exp(x)+exp(-x))/2
- *      1. Replace x by |x| (coshq(x) = coshq(-x)).
+ * mathematically coshl(x) if defined to be (exp(x)+exp(-x))/2
+ *      1. Replace x by |x| (coshl(x) = coshl(-x)).
  *      2.
  *                                                      [ exp(x) - 1 ]^2
- *          0        <= x <= ln2/2  :  coshq(x) := 1 + -------------------
+ *          0        <= x <= ln2/2  :  coshl(x) := 1 + -------------------
  *                                                         2*exp(x)
  *
  *                                                 exp(x) +  1/exp(x)
- *          ln2/2    <= x <= 22     :  coshq(x) := -------------------
+ *          ln2/2    <= x <= 22     :  coshl(x) := -------------------
  *                                                         2
- *          22       <= x <= lnovft :  coshq(x) := expq(x)/2
- *          lnovft   <= x <= ln2ovft:  coshq(x) := expq(x/2)/2 * expq(x/2)
- *          ln2ovft  <  x           :  coshq(x) := huge*huge (overflow)
+ *          22       <= x <= lnovft :  coshl(x) := expq(x)/2
+ *          lnovft   <= x <= ln2ovft:  coshl(x) := expq(x/2)/2 * expq(x/2)
+ *          ln2ovft  <  x           :  coshl(x) := huge*huge (overflow)
  *
  * Special cases:
- *      coshq(x) is |x| if x is +INF, -INF, or NaN.
- *      only coshq(0)=1 is exact for finite x.
+ *      coshl(x) is |x| if x is +INF, -INF, or NaN.
+ *      only coshl(0)=1 is exact for finite x.
  */
 
 #include "quadmath-imp.h"
 
-static const __float128 one = 1.0Q, half = 0.5Q, huge = 1.0e4900Q,
-  ovf_thresh = 1.1357216553474703894801348310092223067821E4Q;
+static const __float128 one = 1.0, half = 0.5, huge = 1.0e4900Q,
+ovf_thresh = 1.1357216553474703894801348310092223067821E4Q;
 
 __float128
 coshq (__float128 x)
@@ -73,7 +73,7 @@ coshq (__float128 x)
   if (ex >= 0x7fff0000)
     return x * x;
 
-  /* |x| in [0,0.5*ln2], return 1+expm1l(|x|)^2/(2*expq(|x|)) */
+  /* |x| in [0,0.5*ln2], return 1+expm1q(|x|)^2/(2*expq(|x|)) */
   if (ex < 0x3ffd62e4) /* 0.3465728759765625 */
     {
       if (ex < 0x3fb80000) /* |x| < 2^-116 */

@@ -1,4 +1,4 @@
-/* floorq.c -- __float128 version of s_floor.c.
+/* s_floorl.c -- long double version of s_floor.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -13,10 +13,22 @@
  * ====================================================
  */
 
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
+/*
+ * floorq(x)
+ * Return x rounded toward -inf to integral value
+ * Method:
+ *	Bit twiddling.
+ */
+
+#define NO_MATH_REDIRECT
+
 #include "quadmath-imp.h"
 
-__float128
-floorq (__float128 x)
+__float128 floorq(__float128 x)
 {
 	int64_t i0,i1,j0;
 	uint64_t i,j;
