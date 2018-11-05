@@ -1,5 +1,11 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	PR web/87829
+	* doc/invoke.texi: Remove options that are
+	not disabled with -Os.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	PR c/87811
 	* doc/extend.texi: Update constrain about the last argument
 	of __builtin_expect_with_probability.
