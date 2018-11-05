@@ -1,3 +1,8 @@
+2018-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/87871
+	* combine.c (make_more_copies): Skip if dest is frame_pointer_rtx.
+
 2018-11-05  Paul Koning  <ni1d@arrl.net>
 
 	* doc/sourcebuild.texi (target attributes): Document new "inf"

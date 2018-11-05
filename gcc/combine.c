@@ -14959,6 +14959,9 @@ make_more_copies (void)
 	  rtx dest = SET_DEST (set);
 	  if (dest == pc_rtx)
 	    continue;
+	  /* See PR87871.  */
+	  if (dest == frame_pointer_rtx)
+	    continue;
 	  rtx src = SET_SRC (set);
 	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
 	    continue;
