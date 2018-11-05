@@ -1,3 +1,11 @@
+2018-11-10  Julian Brown  <julian@codesourcery.com>
+
+	* libgomp.h (OFFSET_INLINED, OFFSET_POINTER, OFFSET_STRUCT): Define.
+	* target.c (FIELD_TGT_EMPTY): Define.
+	(gomp_map_val): Use OFFSET_* macros instead of magic constants.  Write
+	as switch instead of list of ifs.
+	(gomp_map_vars_internal): Use OFFSET_* and FIELD_TGT_EMPTY macros.
+
 2019-02-26  Chung-Lin Tang  <cltang@codesourcery.com>
 
 	* target.c (goacc_device_copy_async): New function.

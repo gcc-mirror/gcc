@@ -45,6 +45,8 @@
 #include "plugin-suffix.h"
 #endif
 
+#define FIELD_TGT_EMPTY (~(size_t) 0)
+
 static void gomp_target_init (void);
 
 /* The whole initialization code for offloading plugins is only run one.  */
@@ -205,8 +207,8 @@ goacc_device_copy_async (struct gomp_device_descr *devicep,
     }
 }
 
-/* Infrastructure for coalescing adjacent or nearly adjacent (in device addresses)
-   host to device memory transfers.  */
+/* Infrastructure for coalescing adjacent or nearly adjacent (in device
+   addresses) host to device memory transfers.  */
 
 struct gomp_coalesce_chunk
 {
@@ -510,17 +512,25 @@ gomp_map_val (struct target_mem_desc *tgt, void **hostaddrs, size_t i)
     return tgt->list[i].key->tgt->tgt_start
 	   + tgt->list[i].key->tgt_offset
 	   + tgt->list[i].offset;
-  if (tgt->list[i].offset == ~(uintptr_t) 0)
-    return (uintptr_t) hostaddrs[i];
-  if (tgt->list[i].offset == ~(uintptr_t) 1)
-    return 0;
-  if (tgt->list[i].offset == ~(uintptr_t) 2)
-    return tgt->list[i + 1].key->tgt->tgt_start
-	   + tgt->list[i + 1].key->tgt_offset
-	   + tgt->list[i + 1].offset
-	   + (uintptr_t) hostaddrs[i]
-	   - (uintptr_t) hostaddrs[i + 1];
-  return tgt->tgt_start + tgt->list[i].offset;
+
+  switch (tgt->list[i].offset)
+    {
+    case OFFSET_INLINED:
+      return (uintptr_t) hostaddrs[i];
+
+    case OFFSET_POINTER:
+      return 0;
+
+    case OFFSET_STRUCT:
+      return tgt->list[i + 1].key->tgt->tgt_start
+	     + tgt->list[i + 1].key->tgt_offset
+	     + tgt->list[i + 1].offset
+	     + (uintptr_t) hostaddrs[i]
+	     - (uintptr_t) hostaddrs[i + 1];
+
+    default:
+      return tgt->tgt_start + tgt->list[i].offset;
+    }
 }
 
 static inline __attribute__((always_inline)) struct target_mem_desc *
@@ -588,7 +598,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  || (kind & typemask) == GOMP_MAP_FIRSTPRIVATE_INT)
 	{
 	  tgt->list[i].key = NULL;
-	  tgt->list[i].offset = ~(uintptr_t) 0;
+	  tgt->list[i].offset = OFFSET_INLINED;
 	  continue;
 	}
       else if ((kind & typemask) == GOMP_MAP_USE_DEVICE_PTR)
@@ -606,7 +616,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    = (void *) (n->tgt->tgt_start + n->tgt_offset
 			+ cur_node.host_start);
 	  tgt->list[i].key = NULL;
-	  tgt->list[i].offset = ~(uintptr_t) 0;
+	  tgt->list[i].offset = OFFSET_INLINED;
 	  continue;
 	}
       else if ((kind & typemask) == GOMP_MAP_STRUCT)
@@ -617,7 +627,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  cur_node.host_end = (uintptr_t) hostaddrs[last]
 			      + sizes[last];
 	  tgt->list[i].key = NULL;
-	  tgt->list[i].offset = ~(uintptr_t) 2;
+	  tgt->list[i].offset = OFFSET_STRUCT;
 	  splay_tree_key n = splay_tree_lookup (mem_map, &cur_node);
 	  if (n == NULL)
 	    {
@@ -650,7 +660,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
       else if ((kind & typemask) == GOMP_MAP_ALWAYS_POINTER)
 	{
 	  tgt->list[i].key = NULL;
-	  tgt->list[i].offset = ~(uintptr_t) 1;
+	  tgt->list[i].offset = OFFSET_POINTER;
 	  has_firstprivate = true;
 	  continue;
 	}
@@ -680,7 +690,7 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	  if (!n)
 	    {
 	      tgt->list[i].key = NULL;
-	      tgt->list[i].offset = ~(uintptr_t) 1;
+	      tgt->list[i].offset = OFFSET_POINTER;
 	      continue;
 	    }
 	}
@@ -872,6 +882,8 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	    else
 	      k->host_end = k->host_start + sizeof (void *);
 	    splay_tree_key n = splay_tree_lookup (mem_map, k);
+	    /* Need to account for the case where a struct field hasn't been
+	       mapped onto the accelerator yet.  */
 	    if (n && n->refcount != REFCOUNT_LINK)
 	      gomp_map_vars_existing (devicep, aq, n, k, &tgt->list[i],
 				      kind & typemask, cbufp);
@@ -888,12 +900,12 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 		size_t align = (size_t) 1 << (kind >> rshift);
 		tgt->list[i].key = k;
 		k->tgt = tgt;
-		if (field_tgt_clear != ~(size_t) 0)
+		if (field_tgt_clear != FIELD_TGT_EMPTY)
 		  {
 		    k->tgt_offset = k->host_start - field_tgt_base
 				    + field_tgt_offset;
 		    if (i == field_tgt_clear)
-		      field_tgt_clear = ~(size_t) 0;
+		      field_tgt_clear = FIELD_TGT_EMPTY;
 		  }
 		else
 		  {
