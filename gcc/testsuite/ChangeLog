@@ -1,4 +1,9 @@
-2018-10-26  Robin Dapp  <rdapp@linux.ibm.com>
+2018-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87873
+	* gcc.dg/pr87873.c: New testcase.
+
+2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.target/s390/ifcvt-one-insn-bool.c: New test.
 	* gcc.target/s390/ifcvt-one-insn-char.c: New test.

@@ -1,3 +1,15 @@
+2018-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87873
+	* tree-ssa-loop-manip.h (split_loop_exit_edge): Add copy_constants_p
+	argument.
+	* tree-ssa-loop-manip.c (split_loop_exit_edge): Likewise.
+	* tree-vect-loop.c (vect_transform_loop): When splitting the
+	loop exit also create forwarder PHIs for constants.
+	* tree-vect-loop-manip.c (slpeel_duplicate_current_defs_from_edges):
+	Handle constant to_arg, add extra checking we match up the correct
+	PHIs.
+
 2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.md: QImode and HImode for load on condition.

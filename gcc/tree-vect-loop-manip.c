@@ -977,10 +977,15 @@ slpeel_duplicate_current_defs_from_edges (edge from, edge to)
 	}
       if (TREE_CODE (from_arg) != SSA_NAME)
 	gcc_assert (operand_equal_p (from_arg, to_arg, 0));
-      else
+      else if (TREE_CODE (to_arg) == SSA_NAME)
 	{
 	  if (get_current_def (to_arg) == NULL_TREE)
-	    set_current_def (to_arg, get_current_def (from_arg));
+	    {
+	      gcc_assert (types_compatible_p (TREE_TYPE (to_arg),
+					      TREE_TYPE (get_current_def
+							   (from_arg))));
+	      set_current_def (to_arg, get_current_def (from_arg));
+	    }
 	}
       gsi_next (&gsi_from);
       gsi_next (&gsi_to);
