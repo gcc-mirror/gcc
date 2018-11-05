@@ -1,5 +1,9 @@
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/87859
+	* gcc.dg/store_merging_24.c: New test.
+	* gcc.dg/store_merging_25.c: New test.
+
 	PR sanitizer/87837
 	* c-c++-common/ubsan/pr87837.c: New test.
 
