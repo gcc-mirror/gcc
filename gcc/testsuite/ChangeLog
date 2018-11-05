@@ -1,3 +1,10 @@
+2018-11-05  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/md/andc-splitter-1.c: Add colon to
+	expectations.
+	* gcc.target/s390/md/andc-splitter-2.c: Likewise.
+	* gcc.target/s390/md/setmem_long-1.c: Likewise.
+
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87873
