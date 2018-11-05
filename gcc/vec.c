@@ -141,7 +141,6 @@ vec_prefix::release_overhead (void *ptr, size_t size, bool in_dtor
   vec_mem_desc.release_instance_overhead (ptr, size, in_dtor);
 }
 
-
 /* Calculate the number of slots to reserve a vector, making sure that
    it is of at least DESIRED size by growing ALLOC exponentially.  */
 

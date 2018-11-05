@@ -1,3 +1,9 @@
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	* mem-stats.h (mem_alloc_description::get_list): Fix GNU coding
+	style.
+	* vec.c: Likewise.
+
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
 	* tree-scalar-evolution.h (final_value_replacement_loop): Update
