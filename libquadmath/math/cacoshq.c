@@ -1,5 +1,5 @@
-/* Return arc hyperbole cosine for __float128 value.
-   Copyright (C) 1997, 1998, 2006 Free Software Foundation, Inc.
+/* Return arc hyperbolic cosine for a complex type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,12 +14,10 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 
 __complex128
 cacoshq (__complex128 x)
@@ -38,57 +36,54 @@ cacoshq (__complex128 x)
 	    __imag__ res = nanq ("");
 	  else
 	    __imag__ res = copysignq ((rcls == QUADFP_INFINITE
-				       ? (__real__ x < 0.0
-					  ? M_PIq - M_PI_4q : M_PI_4q)
-				       : M_PI_2q), __imag__ x);
+					? (__real__ x < 0
+					   ? M_PIq - M_PI_4q
+					   : M_PI_4q)
+					: M_PI_2q), __imag__ x);
 	}
       else if (rcls == QUADFP_INFINITE)
 	{
 	  __real__ res = HUGE_VALQ;
 
 	  if (icls >= QUADFP_ZERO)
-	    __imag__ res = copysignq (signbitq (__real__ x) ? M_PIq : 0.0,
-				      __imag__ x);
+	    __imag__ res = copysignq (signbitq (__real__ x)
+				       ? M_PIq : 0, __imag__ x);
 	  else
 	    __imag__ res = nanq ("");
 	}
       else
 	{
 	  __real__ res = nanq ("");
-	  __imag__ res = nanq ("");
+	  if (rcls == QUADFP_ZERO)
+	    __imag__ res = M_PI_2q;
+	  else
+	    __imag__ res = nanq ("");
 	}
     }
   else if (rcls == QUADFP_ZERO && icls == QUADFP_ZERO)
     {
-      __real__ res = 0.0;
+      __real__ res = 0;
       __imag__ res = copysignq (M_PI_2q, __imag__ x);
-    }
-  /* The factor 16 is just a guess.  */
-  else if (16.0Q * fabsq (__imag__ x) < fabsq (__real__ x))
-    {
-      /* Kahan's formula which avoid cancellation through subtraction in
-	 some cases.  */
-      res = 2.0Q * clogq (csqrtq ((x + 1.0Q) / 2.0Q)
-			    + csqrtq ((x - 1.0Q) / 2.0Q));
-      if (signbitq (__real__ res))
-	__real__ res = 0.0Q;
     }
   else
     {
       __complex128 y;
 
-      __real__ y = (__real__ x - __imag__ x) * (__real__ x + __imag__ x) - 1.0;
-      __imag__ y = 2.0 * __real__ x * __imag__ x;
+      __real__ y = -__imag__ x;
+      __imag__ y = __real__ x;
 
-      y = csqrtq (y);
+      y = __quadmath_kernel_casinhq (y, 1);
 
-      if (signbitq (x))
-	y = -y;
-
-      __real__ y += __real__ x;
-      __imag__ y += __imag__ x;
-
-      res = clogq (y);
+      if (signbitq (__imag__ x))
+	{
+	  __real__ res = __real__ y;
+	  __imag__ res = -__imag__ y;
+	}
+      else
+	{
+	  __real__ res = -__real__ y;
+	  __imag__ res = __imag__ y;
+	}
     }
 
   return res;

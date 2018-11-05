@@ -1,5 +1,5 @@
-/* sinhq.c -- __float128 version of e_sinh.c.
- * Conversion to __float128 by Ulrich Drepper,
+/* e_sinhl.c -- long double version of e_sinh.c.
+ * Conversion to long double by Ulrich Drepper,
  * Cygnus Support, drepper@cygnus.com.
  */
 
@@ -14,11 +14,11 @@
  * ====================================================
  */
 
-/* Changes for 128-bit __float128 are
+/* Changes for 128-bit long double are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -32,31 +32,31 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 /* sinhq(x)
  * Method :
  * mathematically sinh(x) if defined to be (exp(x)-exp(-x))/2
- *      1. Replace x by |x| (sinhq(-x) = -sinhq(x)).
+ *      1. Replace x by |x| (sinhl(-x) = -sinhl(x)).
  *      2.
  *                                                   E + E/(E+1)
- *          0        <= x <= 25     :  sinhq(x) := --------------, E=expm1q(x)
+ *          0        <= x <= 25     :  sinhl(x) := --------------, E=expm1q(x)
  *                                                       2
  *
- *          25       <= x <= lnovft :  sinhq(x) := expq(x)/2
- *          lnovft   <= x <= ln2ovft:  sinhq(x) := expq(x/2)/2 * expq(x/2)
- *          ln2ovft  <  x           :  sinhq(x) := x*shuge (overflow)
+ *          25       <= x <= lnovft :  sinhl(x) := expq(x)/2
+ *          lnovft   <= x <= ln2ovft:  sinhl(x) := expq(x/2)/2 * expq(x/2)
+ *          ln2ovft  <  x           :  sinhl(x) := x*shuge (overflow)
  *
  * Special cases:
- *      sinhq(x) is |x| if x is +INF, -INF, or NaN.
- *      only sinhq(0)=0 is exact for finite x.
+ *      sinhl(x) is |x| if x is +INF, -INF, or NaN.
+ *      only sinhl(0)=0 is exact for finite x.
  */
 
 #include "quadmath-imp.h"
 
 static const __float128 one = 1.0, shuge = 1.0e4931Q,
-  ovf_thresh = 1.1357216553474703894801348310092223067821E4Q;
+ovf_thresh = 1.1357216553474703894801348310092223067821E4Q;
 
 __float128
 sinhq (__float128 x)
@@ -74,7 +74,7 @@ sinhq (__float128 x)
   if (ix >= 0x7fff0000)
     return x + x;
 
-  h = 0.5Q;
+  h = 0.5;
   if (jx & 0x80000000)
     h = -h;
 
@@ -92,7 +92,7 @@ sinhq (__float128 x)
 	}
       t = expm1q (u.value);
       if (ix < 0x3fff0000)
-	return h * (2.0Q * t - t * t / (t + one));
+	return h * (2.0 * t - t * t / (t + one));
       return h * (t + t / (t + one));
     }
 
@@ -104,11 +104,11 @@ sinhq (__float128 x)
      Overflow threshold is log(2 * maxdouble).  */
   if (u.value <= ovf_thresh)
     {
-      w = expq (0.5Q * u.value);
+      w = expq (0.5 * u.value);
       t = h * w;
       return t * w;
     }
 
-  /* |x| > overflowthreshold, sinhq(x) overflow */
+  /* |x| > overflowthreshold, sinhl(x) overflow */
   return x * shuge;
 }

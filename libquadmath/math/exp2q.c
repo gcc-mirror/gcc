@@ -1,7 +1,6 @@
-/* Return arc sine of a complex float type.
-   Copyright (C) 1997-2018 Free Software Foundation, Inc.
+/* Compute 2^x.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
-   Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
    The GNU C Library is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -19,40 +18,34 @@
 
 #include "quadmath-imp.h"
 
-__complex128
-casinq (__complex128 x)
+__float128
+exp2q (__float128 x)
 {
-  __complex128 res;
-
-  if (isnanq (__real__ x) || isnanq (__imag__ x))
+  if (__glibc_likely (__builtin_isless (x, (__float128) FLT128_MAX_EXP)))
     {
-      if (__real__ x == 0)
+      if (__builtin_expect (__builtin_isgreaterequal (x, (__float128) (FLT128_MIN_EXP - FLT128_MANT_DIG
+							- 1)), 1))
 	{
-	  res = x;
-	}
-      else if (isinfq (__real__ x) || isinfq (__imag__ x))
-	{
-	  __real__ res = nanq ("");
-	  __imag__ res = copysignq (HUGE_VALQ, __imag__ x);
+	  int intx = (int) x;
+	  __float128 fractx = x - intx;
+	  __float128 result;
+	  if (fabsq (fractx) < FLT128_EPSILON / 4)
+	    result = scalbnq (1 + fractx, intx);
+	  else
+	    result = scalbnq (expq (M_LN2q * fractx), intx);
+	  math_check_force_underflow_nonneg (result);
+	  return result;
 	}
       else
 	{
-	  __real__ res = nanq ("");
-	  __imag__ res = nanq ("");
+	  /* Underflow or exact zero.  */
+	  if (isinfq (x))
+	    return 0;
+	  else
+	    return FLT128_MIN * FLT128_MIN;
 	}
     }
   else
-    {
-      __complex128 y;
-
-      __real__ y = -__imag__ x;
-      __imag__ y = __real__ x;
-
-      y = casinhq (y);
-
-      __real__ res = __imag__ y;
-      __imag__ res = -__real__ y;
-    }
-
-  return res;
+    /* Infinity, NaN or overflow.  */
+    return FLT128_MAX * x;
 }
