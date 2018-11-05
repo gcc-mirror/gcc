@@ -340,9 +340,10 @@ public:
   void register_object_overhead (T *usage, size_t size, const void *ptr);
 
   /* Release PTR pointer of SIZE bytes. If REMOVE_FROM_MAP is set to true,
-     remove the instance from reverse map.  */
-  void release_instance_overhead (void *ptr, size_t size,
-				  bool remove_from_map = false);
+     remove the instance from reverse map.  Return memory usage that belongs
+     to this memory description.  */
+  T * release_instance_overhead (void *ptr, size_t size,
+				 bool remove_from_map = false);
 
   /* Release intance object identified by PTR pointer.  */
   void release_object_overhead (void *ptr);
@@ -503,7 +504,7 @@ mem_alloc_description<T>::register_overhead (size_t size,
 /* Release PTR pointer of SIZE bytes.  */
 
 template <class T>
-inline void
+inline T *
 mem_alloc_description<T>::release_instance_overhead (void *ptr, size_t size,
 						     bool remove_from_map)
 {
@@ -512,14 +513,16 @@ mem_alloc_description<T>::release_instance_overhead (void *ptr, size_t size,
   if (!slot)
     {
       /* Due to PCH, it can really happen.  */
-      return;
+      return NULL;
     }
 
-  mem_usage_pair<T> usage_pair = *slot;
-  usage_pair.usage->release_overhead (size);
+  T *usage = (*slot).usage;
+  usage->release_overhead (size);
 
   if (remove_from_map)
     m_reverse_map->remove (ptr);
+
+  return usage;
 }
 
 /* Release intance object identified by PTR pointer.  */

@@ -1,5 +1,17 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	* mem-stats.h (mem_alloc_description::release_instance_overhead):
+	Return T *.
+	* vec.c (struct vec_usage): Register m_element_size.
+	(vec_prefix::register_overhead): New arguments: elements and
+	element_size.
+	(vec_prefix::release_overhead): Subtract elements.
+	* vec.h (struct vec_prefix): Change signature.
+	(va_heap::reserve): Pass proper arguments.
+	(va_heap::release): Likewise.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	* mem-stats.h (mem_alloc_description::get_list): Fix GNU coding
 	style.
 	* vec.c: Likewise.
