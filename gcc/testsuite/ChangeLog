@@ -1,3 +1,8 @@
+2018-10-26  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.target/s390/ifcvt-one-insn-bool.c: New test.
+	* gcc.target/s390/ifcvt-one-insn-char.c: New test.
+
 2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* gcc.dg/loop-8.c: On s390, always run the test with -march=zEC12.
