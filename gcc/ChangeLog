@@ -1,3 +1,14 @@
+2018-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85488
+	PR middle-end/87649
+	* omp-low.c (check_omp_nesting_restrictions): Diagnose ordered without
+	depend closely nested inside of loop with ordered clause with
+	a parameter.
+
 2018-10-29  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

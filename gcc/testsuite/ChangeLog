@@ -1,5 +1,16 @@
+2018-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2018-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/85488
+	PR middle-end/87649
+	* c-c++-common/gomp/doacross-2.c: New test.
+	* c-c++-common/gomp/sink-3.c: Expect another error during error
+	recovery.
+
 2018-11-03  Tobias Burnus  <burnus@net-b.de>
-	Thomas Koenig  <tkoenig@gcc.gnu.org>
+	    Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backport from trunk
 	PR fortran/87597
