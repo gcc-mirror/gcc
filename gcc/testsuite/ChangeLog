@@ -1,5 +1,12 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	PR c/87811
+	* gcc.dg/pr87811.c: New test.
+	* gcc.dg/pr87811-2.c: Likewise.
+	* gcc.dg/pr87811-3.c: Likewise.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/77698
 	* gcc.dg/tree-prof/pr77698.c: New test.
 

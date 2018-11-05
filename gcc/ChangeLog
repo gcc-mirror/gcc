@@ -1,5 +1,18 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	PR c/87811
+	* doc/extend.texi: Update constrain about the last argument
+	of __builtin_expect_with_probability.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR c/87811
+	* predict.c (expr_expected_value_1): Verify
+	that last argument is a real constants and emit
+	error.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	PR gcov-profile/77698
 	* ipa-profile.c (ipa_profile): Adjust hotness threshold
 	only in LTO mode.
