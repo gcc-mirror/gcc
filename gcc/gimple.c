@@ -2149,15 +2149,16 @@ dump_gimple_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   for (i = 0; i < (int) gimple_alloc_kind_all; ++i)
     {
-      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
-	       gimple_alloc_kind_names[i], gimple_alloc_counts[i],
-	       gimple_alloc_sizes[i]);
+      fprintf (stderr, "%-20s %7" PRIu64 "%c %10" PRIu64 "%c\n",
+	       gimple_alloc_kind_names[i],
+	       SIZE_AMOUNT (gimple_alloc_counts[i]),
+	       SIZE_AMOUNT (gimple_alloc_sizes[i]));
       total_tuples += gimple_alloc_counts[i];
       total_bytes += gimple_alloc_sizes[i];
     }
   fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
-	   total_tuples, total_bytes);
+  fprintf (stderr, "%-20s %7" PRIu64 "%c %10" PRIu64 "%c\n", "Total",
+	   SIZE_AMOUNT (total_tuples), SIZE_AMOUNT (total_bytes));
   fprintf (stderr, "---------------------------------------\n");
 }
 

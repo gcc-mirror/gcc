@@ -112,8 +112,10 @@ fini_ssanames (struct function *fn)
 void
 ssanames_print_statistics (void)
 {
-  fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
-  fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
+  fprintf (stderr, "SSA_NAME nodes allocated: %u%c\n",
+	   SIZE_AMOUNT (ssa_name_nodes_created));
+  fprintf (stderr, "SSA_NAME nodes reused: %u%c\n",
+	   SIZE_AMOUNT (ssa_name_nodes_reused));
 }
 
 /* Verify the state of the SSA_NAME lists.

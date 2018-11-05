@@ -1,5 +1,48 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	* alloc-pool.h (struct pool_usage): Use SIZE_AMOUNT.
+	* bitmap.h (struct bitmap_usage): Likewise.
+	* ggc-common.c (SCALE): Remove.
+	(LABEL): Likewise.
+	(struct ggc_usage): Use SIZE_AMOUNT. And update
+	compare method.
+	* ggc-page.c (SCALE): Remove.
+	(STAT_LABEL): Remove.
+	(ggc_print_statistics): Use SIZE_AMOUNT.
+	* gimple.h (SCALE): Remove.
+	(LABEL): Likewise.
+	* input.c (ONE_K): Remove.
+	(ONE_M): Likewise.
+	(SCALE): Likewise.
+	(STAT_LABEL): Likewise.
+	(FORMAT_AMOUNT): Likewise.
+	(dump_line_table_statistics): Use SIZE_AMOUNT.
+	* mem-stats.h (struct mem_usage): Likewise.
+	* rtl.c (dump_rtx_statistics): Likewise.
+	(rtx_alloc_counts): Change type to size_t.
+	(rtx_alloc_sizes): Likewise.
+	(rtx_count_cmp): New.
+	(dump_rtx_statistics): Sort first based on counts.
+	* tree.c (tree_nodes_cmp): New.
+	(tree_codes_cmp): New.
+	(dump_tree_statistics): Sort first based on counts.
+	* system.h (ONE_K): New.
+	(ONE_M): Likewise.
+	(SIZE_SCALE): Likewise.
+	(SIZE_LABEL): Likewise.
+	(SIZE_AMOUNT): Likewise.
+	* tree-cfg.c (dump_cfg_stats): Use SIZE_AMOUNT.
+	* tree-dfa.c (dump_dfa_stats): Likewise.
+	* tree-phinodes.c (phinodes_print_statistics): Likewise.
+	* tree-ssanames.c (ssanames_print_statistics): Likewise.
+	* tree.c (dump_tree_statistics): Likewise.
+	* vec.c (struct vec_usage): Likewise.
+	* trans-mem.c (tm_mangle): Enlarge buffer in order to not
+	trigger a -Werror=format-overflow with
+	--enable-gather-detailed-stats.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	* mem-stats.h (mem_alloc_description::release_instance_overhead):
 	Return T *.
 	* vec.c (struct vec_usage): Register m_element_size.

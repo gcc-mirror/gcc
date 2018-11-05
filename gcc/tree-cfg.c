@@ -2584,18 +2584,18 @@ dump_cfg_stats (FILE *file)
   size = n_basic_blocks_for_fn (cfun) * sizeof (struct basic_block_def);
   total += size;
   fprintf (file, fmt_str_1, "Basic blocks", n_basic_blocks_for_fn (cfun),
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   num_edges = 0;
   FOR_EACH_BB_FN (bb, cfun)
     num_edges += EDGE_COUNT (bb->succs);
   size = num_edges * sizeof (struct edge_def);
   total += size;
-  fprintf (file, fmt_str_2, "Edges", num_edges, SCALE (size), LABEL (size));
+  fprintf (file, fmt_str_2, "Edges", num_edges, SIZE_AMOUNT (size));
 
   fprintf (file, "---------------------------------------------------------\n");
-  fprintf (file, fmt_str_3, "Total memory used by CFG data", SCALE (total),
-	   LABEL (total));
+  fprintf (file, fmt_str_3, "Total memory used by CFG data",
+	   SIZE_AMOUNT (total));
   fprintf (file, "---------------------------------------------------------\n");
   fprintf (file, "\n");
 

@@ -9226,6 +9226,28 @@ get_call_combined_fn (const_tree call)
   return CFN_LAST;
 }
 
+/* Comparator of indices based on tree_node_counts.  */
+
+static int
+tree_nodes_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return tree_node_counts[*n1] - tree_node_counts[*n2];
+}
+
+/* Comparator of indices based on tree_code_counts.  */
+
+static int
+tree_codes_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return tree_code_counts[*n1] - tree_code_counts[*n2];
+}
+
 #define TREE_MEM_USAGE_SPACES 40
 
 /* Print debugging information about tree nodes generated during the compile,
@@ -9236,34 +9258,55 @@ dump_tree_statistics (void)
 {
   if (GATHER_STATISTICS)
     {
-      int i;
       uint64_t total_nodes, total_bytes;
       fprintf (stderr, "\nKind                   Nodes      Bytes\n");
       mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       total_nodes = total_bytes = 0;
-      for (i = 0; i < (int) all_kinds; i++)
-	{
-	  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
-		   tree_node_kind_names[i], tree_node_counts[i],
-		   tree_node_sizes[i]);
-	  total_nodes += tree_node_counts[i];
-	  total_bytes += tree_node_sizes[i];
-	}
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
-	       total_nodes, total_bytes);
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "Code                   Nodes\n");
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      for (i = 0; i < (int) MAX_TREE_CODES; i++)
-	fprintf (stderr, "%-32s %7" PRIu64 "\n",
-		 get_tree_code_name ((enum tree_code) i), tree_code_counts[i]);
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "\n");
-      ssanames_print_statistics ();
-      fprintf (stderr, "\n");
-      phinodes_print_statistics ();
-      fprintf (stderr, "\n");
+
+      {
+	auto_vec<unsigned> indices (all_kinds);
+	for (unsigned i = 0; i < all_kinds; i++)
+	  indices.quick_push (i);
+	indices.qsort (tree_nodes_cmp);
+
+	for (unsigned i = 0; i < (int) all_kinds; i++)
+	  {
+	    unsigned j = indices[i];
+	    fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n",
+		     tree_node_kind_names[i], SIZE_AMOUNT (tree_node_counts[j]),
+		     SIZE_AMOUNT (tree_node_sizes[j]));
+	    total_nodes += tree_node_counts[j];
+	    total_bytes += tree_node_sizes[j];
+	  }
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+	fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n", "Total",
+		 SIZE_AMOUNT (total_nodes), SIZE_AMOUNT (total_bytes));
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+      }
+
+      {
+	fprintf (stderr, "Code                              Nodes\n");
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+
+	auto_vec<unsigned> indices (MAX_TREE_CODES);
+	for (unsigned i = 0; i < MAX_TREE_CODES; i++)
+	  indices.quick_push (i);
+	indices.qsort (tree_codes_cmp);
+
+	for (unsigned i = 0; i < MAX_TREE_CODES; i++)
+	  {
+	    unsigned j = indices[i];
+	    fprintf (stderr, "%-32s %6" PRIu64 "%c\n",
+		     get_tree_code_name ((enum tree_code) j),
+		     SIZE_AMOUNT (tree_code_counts[j]));
+	  }
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+	fprintf (stderr, "\n");
+	ssanames_print_statistics ();
+	fprintf (stderr, "\n");
+	phinodes_print_statistics ();
+	fprintf (stderr, "\n");
+      }
     }
   else
     fprintf (stderr, "(No per-node statistics)\n");
