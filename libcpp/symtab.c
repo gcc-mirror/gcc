@@ -321,7 +321,7 @@ ht_dump_statistics (cpp_hash_table *table)
   else
     {
       overhead = obstack_memory_used (&table->stack) - total_bytes;
-      fprintf (stderr, "obstack bytes\t%zu%c (%zu%c overhead)\n",
+      fprintf (stderr, "obstack bytes\t%lu%c (%lu%c overhead)\n",
 	       SCALE (total_bytes), LABEL (total_bytes),
 	       SCALE (overhead), LABEL (overhead));
     }
