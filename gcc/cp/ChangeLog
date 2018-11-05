@@ -1,5 +1,12 @@
 2018-11-04  Jason Merrill  <jason@redhat.com>
 
+	* cvt.c (ocp_convert): Don't wrap a CONSTRUCTOR in a NOP_EXPR.
+	* constexpr.c (initialized_type): Fix AGGR_INIT_EXPR handling.
+	(cxx_eval_vec_init_1): Correct type of AGGR_INIT_EXPR.
+	(cxx_eval_outermost_constant_expr): Make sure a CONSTRUCTOR has the
+	right type.  Don't wrap a CONSTRUCTOR if one was passed in.
+	* tree.c (build_aggr_init_expr): Check for void.
+
 	PR c++/60503 - wrong lambda attribute syntax.
 	* parser.c (cp_parser_lambda_declarator_opt): Fix attribute
 	handling.
