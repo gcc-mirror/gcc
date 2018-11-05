@@ -1,4 +1,5 @@
 // { dg-do run { target c++14 } }
+// { dg-options -w }
 
 #include <cassert>
 
