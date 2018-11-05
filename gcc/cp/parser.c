@@ -4565,40 +4565,47 @@ cp_parser_userdef_string_literal (tree literal)
   tree value = USERDEF_LITERAL_VALUE (literal);
   int len = TREE_STRING_LENGTH (value)
 	/ TREE_INT_CST_LOW (TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (value)))) - 1;
-  tree decl, result;
-  vec<tree, va_gc> *args;
+  tree decl;
 
   /* Build up a call to the user-defined operator.  */
   /* Lookup the name we got back from the id-expression.  */
-  args = make_tree_vector ();
+  releasing_vec rargs;
+  vec<tree, va_gc> *&args = rargs.get_ref();
   vec_safe_push (args, value);
   vec_safe_push (args, build_int_cst (size_type_node, len));
   decl = lookup_literal_operator (name, args);
 
   if (decl && decl != error_mark_node)
-    {
-      result = finish_call_expr (decl, &args, false, true,
-				 tf_warning_or_error);
-      release_tree_vector (args);
-      return result;
-    }
-  release_tree_vector (args);
+    return finish_call_expr (decl, &args, false, true,
+			     tf_warning_or_error);
 
-  /* Look for a template function with typename parameter CharT
-     and parameter pack CharT...  Call the function with
-     template parameter characters representing the string.  */
-  args = make_tree_vector ();
+  /* Look for a suitable template function, either (C++20) with a single
+     parameter of class type, or (N3599) with typename parameter CharT and
+     parameter pack CharT...  */
+  args->truncate (0);
   decl = lookup_literal_operator (name, args);
   if (decl && decl != error_mark_node)
     {
-      tree tmpl_args = make_string_pack (value);
+      /* Use resolve_nondeduced_context to try to choose one form of template
+	 or the other.  */
+      tree tmpl_args = make_tree_vec (1);
+      TREE_VEC_ELT (tmpl_args, 0) = value;
       decl = lookup_template_function (decl, tmpl_args);
-      result = finish_call_expr (decl, &args, false, true,
-				 tf_warning_or_error);
-      release_tree_vector (args);
-      return result;
+      tree res = resolve_nondeduced_context (decl, tf_none);
+      if (DECL_P (res))
+	decl = res;
+      else
+	{
+	  TREE_OPERAND (decl, 1) = make_string_pack (value);
+	  res = resolve_nondeduced_context (decl, tf_none);
+	  if (DECL_P (res))
+	    decl = res;
+	}
+      if (!DECL_P (decl) && cxx_dialect > cxx17)
+	TREE_OPERAND (decl, 1) = tmpl_args;
+      return finish_call_expr (decl, &args, false, true,
+			       tf_warning_or_error);
     }
-  release_tree_vector (args);
 
   error ("unable to find string literal operator %qD with %qT, %qT arguments",
 	 name, TREE_TYPE (value), size_type_node);
@@ -27222,8 +27229,12 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
 	    {
 	      tree parm_list = TREE_VEC_ELT (parameter_list, 0);
 	      tree parm = INNERMOST_TEMPLATE_PARMS (parm_list);
-	      if (TREE_TYPE (parm) != char_type_node
-		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
+	      if (CLASS_TYPE_P (TREE_TYPE (parm)))
+		/* OK, C++20 string literal operator template.  We don't need
+		   to warn in lower dialects here because we will have already
+		   warned about the template parameter.  */;
+	      else if (TREE_TYPE (parm) != char_type_node
+		       || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
 	    }
 	  else if (num_parms == 2 && cxx_dialect >= cxx14)
@@ -27236,20 +27247,25 @@ cp_parser_template_declaration_after_parameters (cp_parser* parser,
 		  || TREE_TYPE (parm) != TREE_TYPE (type)
 		  || !TEMPLATE_PARM_PARAMETER_PACK (DECL_INITIAL (parm)))
 		ok = false;
+	      else
+		/* http://cplusplus.github.io/EWG/ewg-active.html#66  */
+		pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wpedantic,
+			 "ISO C++ did not adopt string literal operator templa"
+			 "tes taking an argument pack of characters");
 	    }
 	  else
 	    ok = false;
 	}
       if (!ok)
 	{
-	  if (cxx_dialect >= cxx14)
-	    error ("literal operator template %qD has invalid parameter list."
-		   "  Expected non-type template argument pack <char...>"
-		   " or <typename CharT, CharT...>",
+	  if (cxx_dialect > cxx17)
+	    error ("literal operator template %qD has invalid parameter list;"
+		   "  Expected non-type template parameter pack <char...> "
+		   "  or single non-type parameter of class type",
 		   decl);
 	  else
 	    error ("literal operator template %qD has invalid parameter list."
-		   "  Expected non-type template argument pack <char...>",
+		   "  Expected non-type template parameter pack <char...>",
 		   decl);
 	}
     }

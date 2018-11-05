@@ -1,5 +1,14 @@
 2018-11-04  Jason Merrill  <jason@redhat.com>
 
+	Implement UDL changes from P0732R2.
+	* cp-tree.h (struct releasing_vec): Move from mangle.c.
+	Add get_ref method.
+	* parser.c (cp_parser_userdef_string_literal): Use it.  Handle
+	passing the string to a single template parameter of class type.
+	(cp_parser_template_declaration_after_parameters): Allow it.
+	Pedwarn about the character pack template that was proposed but not
+	accepted for C++14, and don't suggest it.
+
 	Implement P0732R2, class types in non-type template parameters.
 	* error.c (dump_simple_decl): Look through a template parm object.
 	* mangle.c (write_template_arg): Likewise.

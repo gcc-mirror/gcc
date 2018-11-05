@@ -1545,30 +1545,6 @@ write_abi_tags (tree tags)
   release_tree_vector (vec);
 }
 
-/* Simplified unique_ptr clone to release a tree vec on exit.  */
-
-struct releasing_vec
-{
-  typedef vec<tree, va_gc> vec_t;
-
-  releasing_vec (vec_t *v): v(v) { }
-  releasing_vec (): v(make_tree_vector ()) { }
-
-  /* Copy constructor is deliberately declared but not defined,
-     copies must always be elided.  */
-  releasing_vec (const releasing_vec &);
-
-  vec_t &operator* () const { return *v; }
-  vec_t *operator-> () const { return v; }
-  vec_t *get () const { return v; }
-  operator vec_t *() const { return v; }
-  tree& operator[] (unsigned i) const { return (*v)[i]; }
-
-  ~releasing_vec() { release_tree_vector (v); }
-private:
-  vec_t *v;
-};
-
 /* True iff the TREE_LISTS T1 and T2 of ABI tags are equivalent.  */
 
 static bool

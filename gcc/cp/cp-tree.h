@@ -871,6 +871,34 @@ struct named_decl_hash : ggc_remove <tree>
   static void mark_deleted (value_type) { gcc_unreachable (); }
 };
 
+/* Simplified unique_ptr clone to release a tree vec on exit.  */
+
+struct releasing_vec
+{
+  typedef vec<tree, va_gc> vec_t;
+
+  releasing_vec (vec_t *v): v(v) { }
+  releasing_vec (): v(make_tree_vector ()) { }
+
+  /* Copy ops are deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+  releasing_vec &operator= (const releasing_vec &);
+
+  vec_t &operator* () const { return *v; }
+  vec_t *operator-> () const { return v; }
+  vec_t *get() const { return v; }
+  operator vec_t *() const { return v; }
+  tree& operator[] (unsigned i) const { return (*v)[i]; }
+
+  /* Necessary for use with vec** and vec*& interfaces.  */
+  vec_t *&get_ref () { return v; }
+
+  ~releasing_vec() { release_tree_vector (v); }
+private:
+  vec_t *v;
+};
+
 struct GTY(()) tree_template_decl {
   struct tree_decl_common common;
   tree arguments;
