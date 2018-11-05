@@ -1,3 +1,8 @@
+2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/s390.c (s390_register_move_cost): Increase costs for
+        moves involving the CC reg.
+
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87873

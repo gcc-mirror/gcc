@@ -3416,6 +3416,11 @@ s390_register_move_cost (machine_mode mode,
 	  && reg_classes_intersect_p (to, GENERAL_REGS)))
     return 10;
 
+  /* We usually do not want to copy via CC.  */
+  if (reg_classes_intersect_p (from, CC_REGS)
+       || reg_classes_intersect_p (to, CC_REGS))
+    return 5;
+
   return 1;
 }
 
