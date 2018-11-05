@@ -1,3 +1,8 @@
+2018-11-05  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/pr41488.c: Scan ivcanon dump instead of sccp one.
+	* gcc.dg/tree-ssa/scev-7.c: Likewise.
+
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87859
