@@ -10596,8 +10596,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       parens.require_close (parser);
 
-      attributes = cp_parser_attributes_opt (parser);
-
       /* In the decl-specifier-seq of the lambda-declarator, each
 	 decl-specifier shall either be mutable or constexpr.  */
       int declares_class_or_enum;
@@ -10617,6 +10615,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
       /* Parse optional exception specification.  */
       exception_spec = cp_parser_exception_specification_opt (parser);
+
+      attributes = cp_parser_std_attribute_spec_seq (parser);
 
       /* Parse optional trailing return type.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
@@ -10668,15 +10668,14 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
                                        REF_QUAL_NONE,
 				       tx_qual,
 				       exception_spec,
-                                       /*late_return_type=*/NULL_TREE,
+                                       return_type,
                                        /*requires_clause*/NULL_TREE);
     declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
-    if (return_type)
-      declarator->u.function.late_return_type = return_type;
+    declarator->std_attributes = attributes;
 
     fco = grokmethod (&return_type_specs,
 		      declarator,
-		      attributes);
+		      NULL_TREE);
     if (fco != error_mark_node)
       {
 	DECL_INITIALIZED_IN_CLASS_P (fco) = 1;
