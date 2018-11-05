@@ -25217,14 +25217,19 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 	  return error_mark_node;
 	}
 
+      attr_ns = canonicalize_attr_name (attr_ns);
       attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (attr_ns, attr_id),
 				   NULL_TREE);
       token = cp_lexer_peek_token (parser->lexer);
     }
   else if (attr_ns)
-    attribute = build_tree_list (build_tree_list (attr_ns, attr_id),
-				 NULL_TREE);
+    {
+      attr_ns = canonicalize_attr_name (attr_ns);
+      attr_id = canonicalize_attr_name (attr_id);
+      attribute = build_tree_list (build_tree_list (attr_ns, attr_id),
+				   NULL_TREE);
+    }
   else
     {
       attr_id = canonicalize_attr_name (attr_id);
@@ -25416,7 +25421,7 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	  || !cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE))
 	cp_parser_skip_to_end_of_statement (parser);
       else
-	/* Warn about parsing c++11 attribute in non-c++1 mode, only
+	/* Warn about parsing c++11 attribute in non-c++11 mode, only
 	   when we are sure that we have actually parsed them.  */
 	maybe_warn_cpp0x (CPP0X_ATTRIBUTES);
     }
