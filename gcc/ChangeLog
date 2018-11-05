@@ -1,3 +1,9 @@
+2018-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/87852
+	* fwprop.c (use_killed_between): Only consider single-defs of the
+	use whose definition statement dominates the use.
+
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
 	PR web/87829
