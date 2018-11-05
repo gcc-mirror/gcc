@@ -1,3 +1,8 @@
+2018-11-05  Paul Koning  <ni1d@arrl.net>
+
+	* doc/sourcebuild.texi (target attributes): Document new "inf"
+	effective target keyword.
+
 2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.c (s390_register_move_cost): Increase costs for

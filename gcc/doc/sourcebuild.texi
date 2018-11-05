@@ -1393,8 +1393,11 @@ for any options added with @code{dg-add-options}.
 Target has runtime support for any options added with
 @code{dg-add-options} for any @code{_Float@var{n}} or
 @code{_Float@var{n}x} type.
-@end table
 
+@item inf
+Target supports floating point infinite (@code{inf}) for type
+@code{double}.
+@end table
 @subsubsection Fortran-specific attributes
 
 @table @code
