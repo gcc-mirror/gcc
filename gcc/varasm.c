@@ -2954,6 +2954,11 @@ decode_addr_const (tree exp, struct addr_const *value)
 		       gen_rtx_SYMBOL_REF (Pmode, "origin of addresses"));
       break;
 
+    case COMPOUND_LITERAL_EXPR:
+      gcc_assert (COMPOUND_LITERAL_EXPR_DECL (target));
+      x = DECL_RTL (COMPOUND_LITERAL_EXPR_DECL (target));
+      break;
+
     default:
       gcc_unreachable ();
     }
