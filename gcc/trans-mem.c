@@ -4859,7 +4859,7 @@ tm_mangle (tree old_asm_id)
 
   if (dc == NULL)
     {
-      char length[8];
+      char length[12];
 
     do_unencoded:
       sprintf (length, "%u", IDENTIFIER_LENGTH (old_asm_id));

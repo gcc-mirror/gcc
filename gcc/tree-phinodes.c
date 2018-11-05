@@ -80,8 +80,9 @@ unsigned int phi_nodes_created;
 void
 phinodes_print_statistics (void)
 {
-  fprintf (stderr, "PHI nodes allocated: %u\n", phi_nodes_created);
-  fprintf (stderr, "PHI nodes reused: %u\n", phi_nodes_reused);
+  fprintf (stderr, "PHI nodes allocated: %u%c\n",
+	   SIZE_AMOUNT (phi_nodes_created));
+  fprintf (stderr, "PHI nodes reused: %u%c\n", SIZE_AMOUNT (phi_nodes_reused));
 }
 
 /* Allocate a PHI node with at least LEN arguments.  If the free list
