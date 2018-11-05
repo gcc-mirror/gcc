@@ -1,3 +1,8 @@
+2018-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/87837
+	* match.pd (X + Y < X): Don't optimize if TYPE_OVERFLOW_SANITIZED.
+
 2018-11-05  Xuepeng Guo  <xuepeng.guo@intel.com>
 
 	PR target/87853
