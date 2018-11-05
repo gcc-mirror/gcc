@@ -8065,7 +8065,7 @@ Builtin_call_expression::do_numeric_constant_value(Numeric_constant* nc) const
       if (arg_type->is_error())
 	return false;
       if (arg_type->is_abstract())
-	return false;
+	arg_type = arg_type->make_non_abstract_type();
       if (this->seen_)
         return false;
 
