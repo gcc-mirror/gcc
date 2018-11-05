@@ -1,5 +1,8 @@
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/87837
+	* c-c++-common/ubsan/pr87837.c: New test.
+
 	Backported from mainline
 	2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 

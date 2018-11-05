@@ -1,5 +1,8 @@
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/87837
+	* match.pd (X + Y < X): Don't optimize if TYPE_OVERFLOW_SANITIZED.
+
 	Backported from mainline
 	2018-10-20  Jakub Jelinek  <jakub@redhat.com>
 

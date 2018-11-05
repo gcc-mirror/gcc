@@ -1417,6 +1417,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (op:c (plus:c@2 @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
        && (CONSTANT_CLASS_P (@0) || single_use (@2)))
    (op @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 /* For equality, this is also true with wrapping overflow.  */
