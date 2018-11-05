@@ -3437,6 +3437,10 @@ write_template_arg (tree node)
 	}
     }
 
+  if (template_parm_object_p (node))
+    /* We want to mangle the argument, not the var we stored it in.  */
+    node = DECL_INITIAL (node);
+
   /* Strip a conversion added by convert_nontype_argument.  */
   if (TREE_CODE (node) == IMPLICIT_CONV_EXPR)
     node = TREE_OPERAND (node, 0);
@@ -4255,6 +4259,19 @@ mangle_ref_init_variable (const tree variable)
   /* Avoid name clashes with aggregate initialization of multiple
      references at once.  */
   write_unsigned_number (temp_count++);
+  return finish_mangling_get_identifier ();
+}
+
+/* Return an identifier for the mangled name of a C++20 template parameter
+   object for template argument EXPR.  */
+
+tree
+mangle_template_parm_object (tree expr)
+{
+  start_mangling (expr);
+  write_string ("_ZTAX");
+  write_expression (expr);
+  write_char ('E');
   return finish_mangling_get_identifier ();
 }
 

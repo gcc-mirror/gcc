@@ -1,3 +1,8 @@
+2018-10-19  Jason Merrill  <jason@redhat.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Add
+	__cpp_nontype_template_parameter_class.
+
 2018-10-31  Nathan Sidwell  <nathan@acm.org>
 
 	* c-opts.c (c_finish_options): Force command line macro

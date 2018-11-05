@@ -280,6 +280,12 @@ lvalue_kind (const_tree ref)
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
+    case TEMPLATE_PARM_INDEX:
+      if (CLASS_TYPE_P (TREE_TYPE (ref)))
+	/* A template parameter object is an lvalue.  */
+	return clk_ordinary;
+      return clk_none;
+
     default:
     default_:
       if (!TREE_TYPE (ref))
