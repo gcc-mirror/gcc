@@ -1,3 +1,8 @@
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	* symtab.c (ht_dump_statistics): Make dump conditional
+	based on alloc_subobject.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
