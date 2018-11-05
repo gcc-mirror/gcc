@@ -1,3 +1,10 @@
+2018-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* LOCAL_PATCHES: Add r258525.
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Use the correct frame offset
+	for PowerPC SYSV ABI.
+
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/87860
