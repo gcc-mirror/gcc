@@ -1,3 +1,8 @@
+2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* config/s390/predicates.md: Fix typo.
+	* config/s390/s390.md: Allow immediates for load on condition.
+
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
 	* alloc-pool.h (struct pool_usage): Use SIZE_AMOUNT.

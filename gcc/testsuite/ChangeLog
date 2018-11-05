@@ -1,3 +1,7 @@
+2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
+
+	* gcc.dg/loop-8.c: On s390, always run the test with -march=zEC12.
+
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/pr41488.c: Scan ivcanon dump instead of sccp one.
