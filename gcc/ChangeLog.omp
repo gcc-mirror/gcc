@@ -1,3 +1,9 @@
+2018-11-10  Julian Brown  <julian@codesourcery.com>
+
+	* gimplify.c (insert_struct_comp_map, check_base_and_compare_lt): New.
+	(gimplify_scan_omp_clauses): Outline duplicated code into calls to
+	above two functions.
+
 2015-08-20  Thomas Schwinge  <thomas@codesourcery.com>
 	    Joseph Myers  <joseph@codesourcery.com>
 
