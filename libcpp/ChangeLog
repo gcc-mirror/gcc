@@ -1,5 +1,10 @@
 2018-11-05  Martin Liska  <mliska@suse.cz>
 
+	* symtab.c (ht_dump_statistics): Fix format and
+	pass missing argument.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
 	* symtab.c (ht_dump_statistics): Make dump conditional
 	based on alloc_subobject.
 
