@@ -1,3 +1,10 @@
+018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (fld_type_variant): Copy canonical type.
+	(fld_incomplete_type_of): Check that canonical types looks sane;
+	copy canonical type.
+	(verify_type): Accept when incomplete type has complete canonical type.
+
 2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (free_lang_data): Reset overwite_assembler_name,
