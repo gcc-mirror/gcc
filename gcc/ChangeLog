@@ -1,3 +1,9 @@
+2018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data): Reset overwite_assembler_name,
+	print_xnode, print_decl, print_type and print_identifier of
+	langhooks.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87889
