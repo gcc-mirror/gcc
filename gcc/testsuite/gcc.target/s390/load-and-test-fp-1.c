@@ -14,4 +14,4 @@ foo (double dummy, double a)
   return a;
 }
 
-/* { dg-final { scan-assembler "cdbr\t" } } */
+/* { dg-final { scan-assembler {\tcdbr?\t} } } */
