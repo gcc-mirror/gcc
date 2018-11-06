@@ -5173,6 +5173,7 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
 	  TYPE_SIZE_UNIT (copy) = NULL;
 	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
+	  TYPE_TYPELESS_STORAGE (copy) = 0;
 	  if (AGGREGATE_TYPE_P (t))
 	    {
 	      TYPE_FIELDS (copy) = NULL;
