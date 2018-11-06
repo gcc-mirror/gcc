@@ -100,9 +100,9 @@ avx512f_test (void)
 	  s2.a[0] = controls[j];
 	  compute_fixupimmpd (&res_ref[0], s1.a[0], s2.a[0]);
 
-	  res1.x = _mm_fixupimm_sd (res1.x, s1.x, s2.x, 0);
+	  res1.x = _mm_fixupimm_sd (s1.x, s2.x, 0);
 	  res2.x = _mm_mask_fixupimm_sd (res2.x, mask, s1.x, s2.x, 0);
-	  res3.x = _mm_maskz_fixupimm_sd (mask, res3.x, s1.x, s2.x, 0);
+	  res3.x = _mm_maskz_fixupimm_sd (mask, s1.x, s2.x, 0);
 
 	  if (check_union128d (res1, res_ref))
 	    abort ();

@@ -1,3 +1,59 @@
+2018-11-06 Wei Xiao <wei3.xiao@intel.com>
+
+	* config/i386/avx512fintrin.h: Update VFIXUPIMM* intrinsics.
+	(_mm512_fixupimm_round_pd): Update parameters and builtin.
+	(_mm512_maskz_fixupimm_round_pd): Ditto.
+	(_mm512_fixupimm_round_ps): Ditto.
+	(_mm512_maskz_fixupimm_round_ps): Ditto.
+	(_mm_fixupimm_round_sd): Ditto.
+	(_mm_maskz_fixupimm_round_sd): Ditto.
+	(_mm_fixupimm_round_ss): Ditto.
+	(_mm_maskz_fixupimm_round_ss): Ditto.
+	(_mm512_fixupimm_pd): Ditto.
+	(_mm512_maskz_fixupimm_pd): Ditto.
+	(_mm512_fixupimm_ps): Ditto.
+	(_mm512_maskz_fixupimm_ps): Ditto.
+	(_mm_fixupimm_sd): Ditto.
+	(_mm_maskz_fixupimm_sd): Ditto.
+	(_mm_fixupimm_ss): Ditto.
+	(_mm_maskz_fixupimm_ss): Ditto.
+	(_mm512_mask_fixupimm_round_pd): Update builtin.
+	(_mm512_mask_fixupimm_round_ps): Ditto.
+	(_mm_mask_fixupimm_round_sd): Ditto.
+	(_mm_mask_fixupimm_round_ss): Ditto.
+	(_mm512_mask_fixupimm_pd): Ditto.
+	(_mm512_mask_fixupimm_ps): Ditto.
+	(_mm_mask_fixupimm_sd): Ditto.
+	(_mm_mask_fixupimm_ss): Ditto.
+	* config/i386/avx512vlintrin.h:
+	(_mm256_fixupimm_pd): Update parameters and builtin.
+	(_mm256_maskz_fixupimm_pd): Ditto.
+	(_mm256_fixupimm_ps): Ditto.
+	(_mm256_maskz_fixupimm_ps): Ditto.
+	(_mm_fixupimm_pd): Ditto.
+	(_mm_maskz_fixupimm_pd): Ditto.
+	(_mm_fixupimm_ps): Ditto.
+	(_mm_maskz_fixupimm_ps): Ditto.
+	(_mm256_mask_fixupimm_pd): Update builtin.
+	(_mm256_mask_fixupimm_ps): Ditto.
+	(_mm_mask_fixupimm_pd): Ditto.
+	(_mm_mask_fixupimm_ps): Ditto.
+	* config/i386/i386-builtin-types.def: Add new types and remove useless ones.
+	* config/i386/i386-builtin.def: Update builtin definitions.
+	* config/i386/i386.c: Handle new builtin types and remove useless ones.
+	* config/i386/sse.md: Update VFIXUPIMM* patterns.
+	(<avx512>_fixupimm<mode>_maskz<round_saeonly_expand_name>): Update.
+	(<avx512>_fixupimm<mode><sd_maskz_name><round_saeonly_name>): Update.
+	(<avx512>_fixupimm<mode>_mask<round_saeonly_name>): Update.
+	(avx512f_sfixupimm<mode>_maskz<round_saeonly_expand_name>): Update.
+	(avx512f_sfixupimm<mode><sd_maskz_name><round_saeonly_name>): Update.
+	(avx512f_sfixupimm<mode>_mask<round_saeonly_name>): Update.
+	* config/i386/subst.md:
+	(round_saeonly_sd_mask_operand4): Add new subst_attr.
+	(round_saeonly_sd_mask_op4): Ditto.
+	(round_saeonly_expand_operand5): Ditto.
+	(round_saeonly_expand): Update.
+
 2018-11-05  Max Filippov  <jcmvbkbc@gmail.com>
 
 	* config/xtensa/uclinux.h (XTENSA_ALWAYS_PIC): Change to 0.

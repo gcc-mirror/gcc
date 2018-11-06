@@ -69,21 +69,21 @@ test8bit (void)
   m512  = _mm512_mask_shuffle_ps (m512, mmask16, m512, m512, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512  = _mm512_maskz_shuffle_ps (mmask16, m512, m512, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
 
-  m512d = _mm512_fixupimm_pd (m512d, m512d, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m512d = _mm512_fixupimm_pd (m512d, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m512d = _mm512_mask_fixupimm_pd (m512d, mmask8, m512d, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
-  m512d = _mm512_maskz_fixupimm_pd (mmask8, m512d, m512d, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m512d = _mm512_maskz_fixupimm_pd (mmask8, m512d, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
-  m512  = _mm512_fixupimm_ps (m512, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m512  = _mm512_fixupimm_ps (m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m512  = _mm512_mask_fixupimm_ps (m512, mmask16, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
-  m512  = _mm512_maskz_fixupimm_ps (mmask16, m512, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m512  = _mm512_maskz_fixupimm_ps (mmask16, m512, m512i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
-  m128d = _mm_fixupimm_sd (m128d, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128d = _mm_fixupimm_sd (m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m128d = _mm_mask_fixupimm_sd (m128d, mmask8, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
-  m128d = _mm_maskz_fixupimm_sd (mmask8, m128d, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128d = _mm_maskz_fixupimm_sd (mmask8, m128d, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
-  m128  = _mm_fixupimm_ss (m128, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128  = _mm_fixupimm_ss (m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
   m128  = _mm_mask_fixupimm_ss (m128, mmask8, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
-  m128  = _mm_maskz_fixupimm_ss (mmask8, m128, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
+  m128  = _mm_maskz_fixupimm_ss (mmask8, m128, m128i, 256); /* { dg-error "the immediate argument must be an 8-bit immediate" } */
 
   m512i = _mm512_rol_epi32 (m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
   m512i = _mm512_mask_rol_epi32 (m512i, mmask16, m512i, 256); /* { dg-error "the last argument must be an 8-bit immediate" } */
