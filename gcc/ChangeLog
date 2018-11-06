@@ -1,3 +1,9 @@
+2018-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87889
+	* tree-vect-loop-manip.c (slpeel_duplicate_current_defs_from_edges):
+	Do nothing if old and new arg are the same
+
 2018-11-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/87723

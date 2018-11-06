@@ -1,3 +1,8 @@
+2018-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87889
+	* gcc.dg/pr87894.c: New testcase.
+
 2018-11-06  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	PR target/87723
