@@ -6687,7 +6687,7 @@
 ;; SPECULATION_TRACKER_REGNUM is reserved for this purpose when necessary.
 (define_insn "speculation_tracker"
   [(set (reg:DI SPECULATION_TRACKER_REGNUM)
-	(unspec [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
+	(unspec:DI [(reg:DI SPECULATION_TRACKER_REGNUM) (match_operand 0)]
 	 UNSPEC_SPECULATION_TRACKER))]
   ""
   {

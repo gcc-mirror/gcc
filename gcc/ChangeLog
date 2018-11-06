@@ -1,9 +1,14 @@
+2018-11-06  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/aarch64/aarch64.md (speculation_tracker): Set the mode for
+	the UNSPEC.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86850
 	* vec.h (vec<T, va_heap, vl_ptr>::splice): Check src.length ()
 	instead of src.m_vec.
- 
+
 2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (fld_simplified_type_name): Break out form ...
