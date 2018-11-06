@@ -1,3 +1,9 @@
+2018-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/18041
+	* gcc.target/i386/pr18041-1.c: New testcase.
+	* gcc.target/i386/pr18041-2.c: Likewise.
+
 2018-11-06 Wei Xiao <wei3.xiao@intel.com>
 
 	* gcc.target/i386/avx-1.c: Update tests for VFIXUPIMM* intrinsics.

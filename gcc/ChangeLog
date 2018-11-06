@@ -1,3 +1,9 @@
+2018-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/18041
+	* simplify-rtx.c (simplify_binary_operation_1): Add pattern
+	matching bitfield insertion.
+
 2018-11-06  Alexandre Oliva <aoliva@redhat.com>
 
 	* auto-inc-dec.c: Include valtrack.h.  Improve comments.
