@@ -5083,6 +5083,21 @@ fld_worklist_push (tree t, struct free_lang_data_d *fld)
 
 
 
+/* Return simplified TYPE_NAME of TYPE.  */
+
+static tree
+fld_simplified_type_name (tree type)
+{
+  if (!TYPE_NAME (type) || TREE_CODE (TYPE_NAME (type)) != TYPE_DECL)
+    return TYPE_NAME (type);
+  /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
+     TYPE_DECL if the type doesn't have linkage.
+     this must match fld_  */
+  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
+    return DECL_NAME (TYPE_NAME (type));
+  return TYPE_NAME (type);
+}
+
 /* Do same comparsion as check_qualified_type skipping lang part of type
    and be more permissive about type names: we only care that names are
    same (for diagnostics) and that ODR names are the same.  */
@@ -5091,8 +5106,8 @@ static bool
 fld_type_variant_equal_p (tree t, tree v)
 {
   if (TYPE_QUALS (t) != TYPE_QUALS (v)
-      || TYPE_NAME (t) != TYPE_NAME (v)
       || TYPE_ALIGN (t) != TYPE_ALIGN (v)
+      || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
 			        TYPE_ATTRIBUTES (v)))
     return false;
@@ -5338,12 +5353,11 @@ free_lang_data_in_type (tree type)
     }
 
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
-     TYPE_DECL if the type doesn't have linkage.  */
+     TYPE_DECL if the type doesn't have linkage.
+     this must match fld_  */
   if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
-    {
-      TYPE_NAME (type) = TYPE_IDENTIFIER (type);
-      TYPE_STUB_DECL (type) = NULL;
-    }
+    TYPE_STUB_DECL (type) = NULL;
+  TYPE_NAME (type) = fld_simplified_type_name (type);
 }
 
 

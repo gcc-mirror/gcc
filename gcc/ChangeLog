@@ -1,3 +1,9 @@
+2018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (fld_simplified_type_name): Break out form ...
+	(free_lang_data_in_type): ... here.
+	(fld_type_variant_equal_p): Use it.
+
 2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* config/default-d.c: Include memmodel.h.
