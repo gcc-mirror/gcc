@@ -1,3 +1,9 @@
+2018-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.c (vect_slp_bb): Move opening of vect_slp_analyze_bb
+	dump-scope ...
+	(vect_slp_analyze_bb_1): ... here to avoid hiding optimized locations.
+
 2018-11-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/config/msp430/msp430.h (REG_CLASS_CONTENTS): Add R0 to
