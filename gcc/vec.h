@@ -1688,7 +1688,7 @@ template<typename T>
 inline void
 vec<T, va_heap, vl_ptr>::splice (const vec<T, va_heap, vl_ptr> &src)
 {
-  if (src.m_vec)
+  if (src.length ())
     m_vec->splice (*(src.m_vec));
 }
 
