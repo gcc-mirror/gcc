@@ -5119,6 +5119,8 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
   TYPE_NAME (v) = TYPE_NAME (t);
   TYPE_ATTRIBUTES (v) = TYPE_ATTRIBUTES (t);
   TYPE_CANONICAL (v) = TYPE_CANONICAL (t);
+  SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
+  gcc_checking_assert (fld_type_variant_equal_p (t,v));
   add_tree_to_fld_list (v, fld);
   return v;
 }
