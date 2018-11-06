@@ -1,3 +1,8 @@
+2018-11-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/87723
+	* gcc.target/s390/pr87723.c: New test.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/18041
