@@ -1,3 +1,13 @@
+2018-11-06  Alexandre Oliva <aoliva@redhat.com>
+
+	* auto-inc-dec.c: Include valtrack.h.  Improve comments.
+	(reg_next_debug_use): New.
+	(attempt_change): Propagate adjusted expression into affected
+	debug insns.
+	(merge_in_block): Track uses in debug insns.
+	(pass_inc_dec::execute): Allocate and release
+	reg_next_debug_use.
+
 2018-11-06 Wei Xiao <wei3.xiao@intel.com>
 
 	* config/i386/avx512fintrin.h: Update VFIXUPIMM* intrinsics.
