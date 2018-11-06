@@ -1,6 +1,12 @@
 2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/80953
+	* configure.tgt (sparc*-*-solaris2.11*): Enable.
+	(x86_64-*-solaris2.11* | i?86-*-solaris2.11*): Enable.
+
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
 	* sanitizer_common/sanitizer_internal_defs.h,
 	sanitizer_common/sanitizer_platform_limits_solaris.h,
 	sanitizer_common/sanitizer_procmaps_solaris.cc,
