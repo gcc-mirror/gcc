@@ -1,3 +1,7 @@
+2018-11-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/load-and-test-fp-1.c: Accept cdb.
+
 2018-11-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc/testsuite/gcc.target/msp430/special-regs.c: New test.
