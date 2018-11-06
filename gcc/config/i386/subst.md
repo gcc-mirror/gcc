@@ -149,6 +149,7 @@
 (define_subst_attr "round_saeonly_mask_operand3" "mask" "%r3" "%r5")
 (define_subst_attr "round_saeonly_mask_operand4" "mask" "%r4" "%r6")
 (define_subst_attr "round_saeonly_mask_scalar_merge_operand4" "mask_scalar_merge" "%r4" "%r5")
+(define_subst_attr "round_saeonly_sd_mask_operand4" "sd" "%r4" "%r6")
 (define_subst_attr "round_saeonly_sd_mask_operand5" "sd" "%r5" "%r7")
 (define_subst_attr "round_saeonly_op2" "round_saeonly" "" "%r2")
 (define_subst_attr "round_saeonly_op3" "round_saeonly" "" "%r3")
@@ -160,6 +161,7 @@
 (define_subst_attr "round_saeonly_mask_op3" "round_saeonly" "" "<round_saeonly_mask_operand3>")
 (define_subst_attr "round_saeonly_mask_op4" "round_saeonly" "" "<round_saeonly_mask_operand4>")
 (define_subst_attr "round_saeonly_mask_scalar_merge_op4" "round_saeonly" "" "<round_saeonly_mask_scalar_merge_operand4>")
+(define_subst_attr "round_saeonly_sd_mask_op4" "round_saeonly" "" "<round_saeonly_sd_mask_operand4>")
 (define_subst_attr "round_saeonly_sd_mask_op5" "round_saeonly" "" "<round_saeonly_sd_mask_operand5>")
 (define_subst_attr "round_saeonly_mask_arg3" "round_saeonly" "" ", operands[<mask_expand_op3>]")
 (define_subst_attr "round_saeonly_constraint" "round_saeonly" "vm" "v")
@@ -212,23 +214,21 @@
 
 (define_subst_attr "round_saeonly_expand_name" "round_saeonly_expand" "" "_round")
 (define_subst_attr "round_saeonly_expand_nimm_predicate" "round_saeonly_expand" "nonimmediate_operand" "register_operand")
-(define_subst_attr "round_saeonly_expand_operand6" "round_saeonly_expand" "" ", operands[6]")
+(define_subst_attr "round_saeonly_expand_operand5" "round_saeonly_expand" "" ", operands[5]")
 
 (define_subst "round_saeonly_expand"
  [(match_operand:SUBST_V 0)
   (match_operand:SUBST_V 1)
-  (match_operand:SUBST_V 2)
-  (match_operand:SUBST_A 3)
-  (match_operand:SI 4)
-  (match_operand:SUBST_S 5)]
+  (match_operand:SUBST_A 2)
+  (match_operand:SI 3)
+  (match_operand:SUBST_S 4)]
   "TARGET_AVX512F"
   [(match_dup 0)
    (match_dup 1)
    (match_dup 2)
    (match_dup 3)
    (match_dup 4)
-   (match_dup 5)
-   (unspec [(match_operand:SI 6 "const48_operand")] UNSPEC_EMBEDDED_ROUNDING)])
+   (unspec [(match_operand:SI 5 "const48_operand")] UNSPEC_EMBEDDED_ROUNDING)])
 
 (define_subst_attr "mask_expand4_name" "mask_expand4" "" "_mask")
 (define_subst_attr "mask_expand4_args" "mask_expand4" "" ", operands[4], operands[5]")
