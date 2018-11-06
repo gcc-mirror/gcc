@@ -1,3 +1,8 @@
+2018-11-06  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/87762
+	* config/s390/s390.md: Add relative_long attribute.
+
 2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-pure-const.c (check_decl): Do not test TYPE_NEEDS_CONSTRUCTING.
