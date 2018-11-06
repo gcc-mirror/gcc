@@ -1,3 +1,9 @@
+2018-11-06  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	PR target/87723
+	* config/s390/s390.md ("*r<noxa>sbg_di_rotl"): Remove mode
+	attributes for operands 3 and 4.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/18041
