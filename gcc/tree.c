@@ -5118,6 +5118,7 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
   TYPE_ADDR_SPACE (v) = TYPE_ADDR_SPACE (t);
   TYPE_NAME (v) = TYPE_NAME (t);
   TYPE_ATTRIBUTES (v) = TYPE_ATTRIBUTES (t);
+  TYPE_CANONICAL (v) = TYPE_CANONICAL (t);
   add_tree_to_fld_list (v, fld);
   return v;
 }
@@ -5146,6 +5147,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  else
 	    first = build_reference_type_for_mode (t2, TYPE_MODE (t),
 						TYPE_REF_CAN_ALIAS_ALL (t));
+	  gcc_assert (TYPE_CANONICAL (t2) != t2
+		      && TYPE_CANONICAL (t2) == TYPE_CANONICAL (TREE_TYPE (t)));
 	  add_tree_to_fld_list (first, fld);
 	  return fld_type_variant (first, t, fld);
 	}
@@ -5169,6 +5172,7 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  SET_TYPE_MODE (copy, VOIDmode);
 	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
 	  TYPE_SIZE_UNIT (copy) = NULL;
+	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
 	  if (AGGREGATE_TYPE_P (t))
 	    {
 	      TYPE_FIELDS (copy) = NULL;
@@ -13887,7 +13891,8 @@ verify_type (const_tree t)
 	      with variably sized arrays because their sizes possibly
 	      gimplified to different variables.  */
 	   && !variably_modified_type_p (ct, NULL)
-	   && !gimple_canonical_types_compatible_p (t, ct, false))
+	   && !gimple_canonical_types_compatible_p (t, ct, false)
+	   && COMPLETE_TYPE_P (t))
     {
       error ("TYPE_CANONICAL is not compatible");
       debug_tree (ct);

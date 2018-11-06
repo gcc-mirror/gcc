@@ -1,3 +1,7 @@
+2018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/lto/tbaa-1.c: New testcase.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87889
