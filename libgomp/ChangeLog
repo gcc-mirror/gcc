@@ -1,3 +1,81 @@
+2018-11-06  Chung-Lin Tang <cltang@codesourcery.com>
+
+	* oacc-mem.c (memcpy_tofrom_device): New function, combined from
+	acc_memcpy_to/from_device functions, now with async parameter.
+	(acc_memcpy_to_device): Modify to use memcpy_tofrom_device.
+	(acc_memcpy_from_device): Likewise.
+	(acc_memcpy_to_device_async): New API function.
+	(acc_memcpy_from_device_async): Likewise.
+	(present_create_copy): Add async parameter and async setting/unsetting.
+	(acc_create): Adjust present_create_copy call.
+	(acc_copyin): Likewise.
+	(acc_present_or_create): Likewise.
+	(acc_present_or_copyin): Likewise.
+	(acc_create_async): New API function.
+	(acc_copyin_async): New API function.
+	(delete_copyout): Add async parameter and async setting/unsetting.
+	(acc_delete): Adjust delete_copyout call.
+	(acc_copyout): Likewise.
+	(acc_delete_async): New API function.
+	(acc_copyout_async): Likewise.
+	(update_dev_host): Add async parameter and async setting/unsetting.
+	(acc_update_device): Adjust update_dev_host call.
+	(acc_update_self): Likewise.
+	(acc_update_device_async): New API function.
+	(acc_update_self_async): Likewise.
+	* openacc.h (acc_copyin_async): Declare new API function.
+	(acc_create_async): Likewise.
+	(acc_copyout_async): Likewise.
+	(acc_delete_async): Likewise.
+	(acc_update_device_async): Likewise.
+	(acc_update_self_async): Likewise.
+	(acc_memcpy_to_device_async): Likewise.
+	(acc_memcpy_from_device_async): Likewise.
+	* openacc_lib.h (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* openacc.f90 (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* libgomp.map (OACC_2.5): Add acc_copyin_async*, acc_copyout_async*,
+	acc_copyout_finalize_async*, acc_create_async*, acc_delete_async*,
+	acc_delete_finalize_async*, acc_memcpy_from_device_async*,
+	acc_memcpy_to_device_async*, acc_update_device_async*, and
+	acc_update_self_async* entries.
+	* testsuite/libgomp.oacc-c-c++-common/lib-94.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: New test.
+	* testsuite/libgomp.oacc-fortran/lib-16.f90: New test.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
