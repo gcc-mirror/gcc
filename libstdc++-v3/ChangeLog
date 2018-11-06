@@ -1,3 +1,35 @@
+2018-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement std::pmr::unsynchronized_pool_resource
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* include/std/memory_resource (std::pmr::__pool_resource): New class.
+	(std::pmr::unsynchronized_pool_resource): New class.
+	* src/c++17/Makefile.am: Add -fimplicit-templates to flags for
+	memory_resource.cc
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/memory_resource.cc (bitset, chunk, big_block): New
+	internal classes.
+	(__pool_resource::_Pool): Define new class.
+	(munge_options, pool_index, select_num_pools): New internal functions.
+	(__pool_resource::__pool_resource, __pool_resource::~__pool_resource)
+	(__pool_resource::allocate, __pool_resource::deallocate)
+	(__pool_resource::_M_alloc_pools): Define member functions.
+	(unsynchronized_pool_resource::unsynchronized_pool_resource)
+	(unsynchronized_pool_resource::~unsynchronized_pool_resource)
+	(unsynchronized_pool_resource::release)
+	(unsynchronized_pool_resource::_M_find_pool)
+	(unsynchronized_pool_resource::do_allocate)
+	(unsynchronized_pool_resource::do_deallocate): Define member
+	functions.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/is_equal.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/options.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/release.cc: New
+	test.
+
 2018-11-06  John Bytheway  <jbytheway@gmail.com>
 
 	PR libstdc++/87872

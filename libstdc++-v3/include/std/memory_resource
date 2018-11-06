@@ -33,9 +33,9 @@
 
 #if __cplusplus >= 201703L
 
-#include <bit>				// __ceil2, __log2p1
 #include <memory>			// align, allocator_arg_t, __uses_alloc
 #include <utility>			// pair, index_sequence
+#include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t
 #include <debug/assertions.h>
 
@@ -296,8 +296,107 @@ namespace pmr
     size_t largest_required_pool_block = 0;
   };
 
-  // TODO class synchronized_pool_resource;
-  // TODO class unsynchronized_pool_resource;
+  // Common implementation details for unsynchronized/synchronized pool resources.
+  class __pool_resource
+  {
+    friend class synchronized_pool_resource;
+    friend class unsynchronized_pool_resource;
+
+    __pool_resource(const pool_options& __opts, memory_resource* __upstream);
+
+    ~__pool_resource();
+
+    __pool_resource(const __pool_resource&) = delete;
+    __pool_resource& operator=(const __pool_resource&) = delete;
+
+    // Allocate a large unpooled block.
+    void*
+    allocate(size_t __bytes, size_t __alignment);
+
+    // Deallocate a large unpooled block.
+    void
+    deallocate(void* __p, size_t __bytes, size_t __alignment);
+
+
+    // Deallocate unpooled memory.
+    void release() noexcept;
+
+    memory_resource* resource() const noexcept
+    { return _M_unpooled.get_allocator().resource(); }
+
+    struct _Pool;
+
+    _Pool* _M_alloc_pools();
+
+    const pool_options _M_opts;
+
+    struct _BigBlock;
+    // Collection of blocks too big for any pool, sorted by address.
+    // This also stores the only copy of the upstream memory resource pointer.
+    pmr::vector<_BigBlock> _M_unpooled;
+
+    const int _M_npools;
+  };
+
+  // TODO class synchronized_pool_resource
+
+  /// A non-thread-safe memory resource that manages pools of fixed-size blocks.
+  class unsynchronized_pool_resource : public memory_resource
+  {
+  public:
+    [[__gnu__::__nonnull__]]
+    unsynchronized_pool_resource(const pool_options& __opts,
+				 memory_resource* __upstream);
+
+    unsynchronized_pool_resource()
+    : unsynchronized_pool_resource(pool_options(), get_default_resource())
+    { }
+
+    [[__gnu__::__nonnull__]]
+    explicit
+    unsynchronized_pool_resource(memory_resource* __upstream)
+    : unsynchronized_pool_resource(pool_options(), __upstream)
+    { }
+
+    explicit
+    unsynchronized_pool_resource(const pool_options& __opts)
+    : unsynchronized_pool_resource(__opts, get_default_resource()) { }
+
+    unsynchronized_pool_resource(const unsynchronized_pool_resource&) = delete;
+
+    virtual ~unsynchronized_pool_resource();
+
+    unsynchronized_pool_resource&
+    operator=(const unsynchronized_pool_resource&) = delete;
+
+    void release();
+
+    [[__gnu__::__returns_nonnull__]]
+    memory_resource*
+    upstream_resource() const noexcept
+    { return _M_impl.resource(); }
+
+    pool_options options() const noexcept { return _M_impl._M_opts; }
+
+  protected:
+    void*
+    do_allocate(size_t __bytes, size_t __alignment) override;
+
+    void
+    do_deallocate(void* __p, size_t __bytes, size_t __alignment) override;
+
+    bool
+    do_is_equal(const memory_resource& __other) const noexcept override
+    { return this == &__other; }
+
+  private:
+    using _Pool = __pool_resource::_Pool;
+
+    auto _M_find_pool(size_t) noexcept;
+
+    __pool_resource _M_impl;
+    _Pool* _M_pools = nullptr;
+  };
 
   class monotonic_buffer_resource : public memory_resource
   {
