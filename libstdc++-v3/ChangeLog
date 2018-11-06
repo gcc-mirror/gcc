@@ -1,3 +1,9 @@
+2018-11-06  John Bytheway  <jbytheway@gmail.com>
+
+	PR libstdc++/87872
+	* include/debug/safe_sequence.tcc
+	(_Safe_sequence<>::_M_transfer_from_if): Skip transfer to self.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856
