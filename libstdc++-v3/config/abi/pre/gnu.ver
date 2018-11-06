@@ -2055,6 +2055,15 @@ GLIBCXX_3.4.26 {
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKwSt13_Ios_Openmode;
 
     _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
+
+    # <memory_resource> members
+    _ZTINSt3pmr28unsynchronized_pool_resourceE;
+    _ZNSt3pmr28unsynchronized_pool_resourceC[12]ERKNS_12pool_optionsEPNS_15memory_resourceE;
+    _ZNSt3pmr28unsynchronized_pool_resourceD[12]Ev;
+    _ZNSt3pmr28unsynchronized_pool_resource7releaseEv;
+    _ZNSt3pmr28unsynchronized_pool_resource11do_allocateEmm;
+    _ZNSt3pmr28unsynchronized_pool_resource13do_deallocateEPvmm;
+
 } GLIBCXX_3.4.25;
 
 # Symbols in the support library (libsupc++) have their own tag.

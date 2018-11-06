@@ -23,7 +23,9 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <memory_resource>
+#include <algorithm>			// lower_bound, rotate
 #include <atomic>
+#include <bit>				// __ceil2, __log2p1
 #include <new>
 #if ATOMIC_POINTER_LOCK_FREE != 2
 # include <bits/std_mutex.h>	// std::mutex, std::lock_guard
@@ -246,8 +248,788 @@ namespace pmr
     _Chunk::release(_M_head, _M_upstream);
   }
 
+  // Helper types for synchronized_pool_resource & unsynchronized_pool_resource
+
+  namespace {
+
+  // Simple bitset with runtime size. Tracks used blocks in a pooled chunk.
+  struct bitset
+  {
+    using word = uint64_t;
+    using size_type = uint32_t;
+
+    static constexpr unsigned bits_per_word = numeric_limits<word>::digits;
+
+    // The bitset does not own p
+    bitset(void* p, size_type num_blocks)
+    : _M_words(static_cast<word*>(p)), _M_size(num_blocks),
+      _M_next_word(0)
+    {
+      const size_type last_word = num_blocks / bits_per_word;
+      __builtin_memset(_M_words, 0, last_word * sizeof(*_M_words));
+      // Set bits beyond _M_size, so they are not treated as free blocks:
+      if (const size_type extra_bits = num_blocks % bits_per_word)
+	_M_words[last_word] = (word)-1 << extra_bits;
+      __glibcxx_assert( empty() );
+      __glibcxx_assert( free() == num_blocks );
+    }
+
+    bitset() = default;
+    ~bitset() = default;
+
+    // Number of blocks
+    size_t size() const noexcept { return _M_size; }
+
+    // Number of unset bits
+    size_t free() const noexcept
+    {
+      size_t n = 0;
+      for (size_type i = _M_next_word; i < nwords(); ++i)
+	n += (bits_per_word - std::__popcount(_M_words[i]));
+      return n;
+    }
+
+    // True if all bits are set
+    bool full() const noexcept { return _M_next_word >= nwords(); }
+
+    // True if size() != 0 and no bits are set.
+    bool empty() const noexcept
+    {
+      if (nwords() == 0)
+	return false;
+      if (_M_next_word != 0)
+	return false;
+      for (size_type i = 0; i < nwords() - 1; ++i)
+	if (_M_words[i] != 0)
+	  return false;
+      word last = _M_words[nwords() - 1];
+      if (const size_type extra_bits = size() % bits_per_word)
+	last <<= (bits_per_word - extra_bits);
+      return last == 0;
+    }
+
+    void reset() noexcept
+    {
+      _M_words = nullptr;
+      _M_size = _M_next_word = 0;
+    }
+
+    bool operator[](size_type n) const noexcept
+    {
+      __glibcxx_assert( n < _M_size );
+      const size_type wd = n / bits_per_word;
+      const word bit = word(1) << (n % bits_per_word);
+      return _M_words[wd] & bit;
+    }
+
+    size_type find_first_unset() const noexcept
+    {
+      for (size_type i = _M_next_word; i < nwords(); ++i)
+	{
+	  const size_type n = std::__countr_one(_M_words[i]);
+	  if (n < bits_per_word)
+	    return (i * bits_per_word) + n;
+	}
+      return size_type(-1);
+    }
+
+    size_type get_first_unset() noexcept
+    {
+      for (size_type i = _M_next_word; i < nwords(); ++i)
+	{
+	  const size_type n = std::__countr_one(_M_words[i]);
+	  if (n < bits_per_word)
+	    {
+	      const word bit = word(1) << n;
+	      _M_words[i] |= bit;
+	      if (i == _M_next_word)
+		{
+		  while (_M_words[_M_next_word] == word(-1)
+		      && ++_M_next_word != nwords())
+		    { }
+		}
+	      return (i * bits_per_word) + n;
+	    }
+	}
+      return size_type(-1);
+    }
+
+    void set(size_type n) noexcept
+    {
+      __glibcxx_assert( n < _M_size );
+      const size_type wd = n / bits_per_word;
+      const word bit = word(1) << (n % bits_per_word);
+      _M_words[wd] |= bit;
+      if (wd == _M_next_word)
+	{
+	  while (_M_words[_M_next_word] == word(-1)
+	      && ++_M_next_word != nwords())
+	    { }
+	}
+    }
+
+    void clear(size_type n) noexcept
+    {
+      __glibcxx_assert( n < _M_size );
+      const size_type wd = n / bits_per_word;
+      const word bit = word(1) << (n % bits_per_word);
+      _M_words[wd] &= ~bit;
+      if (wd < _M_next_word)
+	_M_next_word = wd;
+    }
+
+    void swap(bitset& b) noexcept
+    {
+      std::swap(_M_words, b._M_words);
+      size_type tmp = _M_size;
+      _M_size = b._M_size;
+      b._M_size = tmp;
+      tmp = _M_next_word;
+      _M_next_word = b._M_next_word;
+      b._M_next_word = tmp;
+    }
+
+    size_type nwords() const noexcept
+    { return (_M_size + bits_per_word - 1) / bits_per_word; }
+
+    // Maximum value that can be stored in bitset::_M_size member (approx 500k)
+    static constexpr size_t max_blocks_per_chunk() noexcept
+    { return (1ull << _S_size_digits) - 1; }
+
+    word* data() const noexcept { return _M_words; }
+
+  private:
+    static constexpr unsigned _S_size_digits
+      = (numeric_limits<size_type>::digits
+	  + std::__log2p1(bits_per_word) - 1) / 2;
+
+    word* _M_words = nullptr;
+    // Number of blocks represented by the bitset:
+    size_type _M_size : _S_size_digits;
+    // Index of the first word with unset bits:
+    size_type _M_next_word : numeric_limits<size_type>::digits - _S_size_digits;
+  };
+
+  // A "chunk" belonging to a pool.
+  // A chunk contains many blocks of the same size.
+  // Derived from bitset to reuse its tail-padding.
+  struct chunk : bitset
+  {
+    chunk() = default;
+
+    // p points to the start of a chunk of size bytes in length.
+    // The chunk has space for n blocks, followed by a bitset of size n
+    // that begins at address words.
+    // This object does not own p or words, the caller will free it.
+    chunk(void* p, size_t bytes, void* words, size_t n)
+    : bitset(words, n),
+      _M_bytes(bytes),
+      _M_p(static_cast<std::byte*>(p))
+    { }
+
+    chunk(chunk&& c) noexcept
+    : bitset(std::move(c)), _M_bytes(c._M_bytes), _M_p(c._M_p)
+    {
+      c._M_bytes = 0;
+      c._M_p = nullptr;
+      c.reset();
+    }
+
+    chunk& operator=(chunk&& c) noexcept
+    {
+      swap(c);
+      return *this;
+    }
+
+    // Allocated size of chunk:
+    unsigned _M_bytes = 0;
+    // Start of allocated chunk:
+    std::byte* _M_p = nullptr;
+
+    // True if there are free blocks in this chunk
+    using bitset::full;
+    // Number of blocks in this chunk
+    using bitset::size;
+
+    // Determine if block with address p and size block_size
+    // is contained within this chunk.
+    bool owns(void* p, size_t block_size)
+    {
+      std::less_equal<uintptr_t> less_equal;
+      return less_equal(reinterpret_cast<uintptr_t>(_M_p),
+			reinterpret_cast<uintptr_t>(p))
+	&& less_equal(reinterpret_cast<uintptr_t>(p) + block_size,
+		      reinterpret_cast<uintptr_t>(bitset::data()));
+    }
+
+    // Allocate next available block of block_size bytes from this chunk.
+    void* reserve(size_t block_size) noexcept
+    {
+      const size_type n = get_first_unset();
+      if (n == size_type(-1))
+	return nullptr;
+      return _M_p + (n * block_size);
+    }
+
+    // Deallocate a single block of block_size bytes
+    void release(void* vp, size_t block_size)
+    {
+      __glibcxx_assert( owns(vp, block_size) );
+      const size_t offset = static_cast<std::byte*>(vp) - _M_p;
+      // Pointer is correctly aligned for a block in this chunk:
+      __glibcxx_assert( (offset % block_size) == 0 );
+      // Block has been allocated:
+      __glibcxx_assert( (*this)[offset / block_size] == true );
+      bitset::clear(offset / block_size);
+    }
+
+    // Deallocate a single block if it belongs to this chunk.
+    bool try_release(void* p, size_t block_size)
+    {
+      if (!owns(p, block_size))
+	return false;
+      release(p, block_size);
+      return true;
+    }
+
+    void swap(chunk& c) noexcept
+    {
+      std::swap(_M_bytes, c._M_bytes);
+      std::swap(_M_p, c._M_p);
+      bitset::swap(c);
+    }
+
+    bool operator<(const chunk& c) const noexcept
+    { return std::less<const void*>{}(_M_p, c._M_p); }
+
+    friend void swap(chunk& l, chunk& r) { l.swap(r); }
+
+    friend bool operator<(const void* p, const chunk& c) noexcept
+    { return std::less<const void*>{}(p, c._M_p); }
+  };
+
+#ifdef __LP64__
+  // TODO pad up to 4*sizeof(void*) to avoid splitting across cache lines?
+  static_assert(sizeof(chunk) == (3 * sizeof(void*)), "");
+#else
+  static_assert(sizeof(chunk) == (4 * sizeof(void*)), "");
+#endif
+
+  // An oversized allocation that doesn't fit in a pool.
+  struct big_block
+  {
+    static constexpr unsigned _S_alignbits
+      = std::__log2p1((unsigned)numeric_limits<size_t>::digits) - 1;
+    static constexpr unsigned _S_sizebits
+      = numeric_limits<size_t>::digits - _S_alignbits;
+    // The maximum value that can be stored in _S_size
+    static constexpr size_t all_ones = (1ul << _S_sizebits) - 1u;
+    // The minimum size of a big block
+    static constexpr size_t min = 1u << _S_alignbits;
+
+    big_block(size_t bytes, size_t alignment)
+    : _M_size((bytes + min - 1u) >> _S_alignbits),
+      _M_align_exp(std::__log2p1(alignment) - 1u)
+    {
+      if (__builtin_expect(std::__countl_one(bytes) == _S_sizebits, false))
+	_M_size = all_ones;
+    }
+
+    void* pointer = nullptr;
+    size_t _M_size : numeric_limits<size_t>::digits - _S_alignbits;
+    size_t _M_align_exp : _S_alignbits;
+
+    size_t size() const noexcept
+    {
+      if (__builtin_expect(_M_size == all_ones, false))
+	return (size_t)-1;
+      else
+	return _M_size << _S_alignbits;
+    }
+
+    size_t align() const noexcept { return 1ul << _M_align_exp; }
+
+    friend bool operator<(void* p, const big_block& b) noexcept
+    { return less<void*>{}(p, b.pointer); }
+
+    friend bool operator<(const big_block& b, void* p) noexcept
+    { return less<void*>{}(b.pointer, p); }
+  };
+
+  static_assert(sizeof(big_block) == (2 * sizeof(void*)));
+
+  } // namespace
+
+  // A pool that serves blocks of a particular size.
+  // Each pool manages a number of chunks.
+  // When a pool is full it is replenished by allocating another chunk.
+  struct __pool_resource::_Pool
+  {
+    // Smallest supported block size
+    static constexpr unsigned _S_min_block
+      = std::max(sizeof(void*), alignof(bitset::word));
+
+    _Pool(size_t __block_size, size_t __blocks_per_chunk)
+    : _M_chunks(),
+      _M_block_sz(__block_size),
+      _M_blocks_per_chunk(__blocks_per_chunk)
+    {
+      __glibcxx_assert(block_size() == __block_size);
+    }
+
+    // Must call release(r) before destruction!
+    ~_Pool() { __glibcxx_assert(_M_chunks.empty()); }
+
+    _Pool(_Pool&&) noexcept = default;
+    _Pool& operator=(_Pool&&) noexcept = default;
+
+    // Size of blocks in this pool
+    size_t block_size() const noexcept
+#if POW2_BLKSZ
+    { return _S_min_block << _M_blksize_mul; }
+#else
+    { return _M_block_sz; }
+#endif
+
+    // Allocate a block if the pool is not full, otherwise return null.
+    void* try_allocate() noexcept
+    {
+      const size_t blocksz = block_size();
+      if (!_M_chunks.empty())
+	{
+	  auto& last = _M_chunks.back();
+	  if (void* p = last.reserve(blocksz))
+	    return p;
+	  // TODO last is full, so move another chunk to the back instead?
+	  for (auto it = _M_chunks.begin(); it != &last; ++it)
+	    if (void* p = it->reserve(blocksz))
+	      return p;
+	}
+      return nullptr;
+    }
+
+    // Allocate a block from the pool, replenishing from upstream if needed.
+    void* allocate(memory_resource* r, const pool_options& opts)
+    {
+      if (void* p = try_allocate())
+	return p;
+      replenish(r, opts);
+      return _M_chunks.back().reserve(block_size());
+    }
+
+    // Return a block to the pool.
+    bool deallocate(memory_resource*, void* p)
+    {
+      const size_t blocksz = block_size();
+      if (__builtin_expect(!_M_chunks.empty(), true))
+	{
+	  auto& last = _M_chunks.back();
+	  if (last.try_release(p, blocksz))
+	    return true;
+	  auto it = std::upper_bound(_M_chunks.begin(), &last, p);
+	  if (it != _M_chunks.begin())
+	    {
+	      it--;
+	      if (it->try_release(p, blocksz))
+		// If chunk is empty could return to upstream, but we don't
+		// currently do that. Pools only increase in size.
+		return true;
+	    }
+	}
+      return false;
+    }
+
+    void replenish(memory_resource* __r, const pool_options& __opts)
+    {
+      using word = chunk::word;
+      const size_t __blocks
+	= std::min<size_t>(__opts.max_blocks_per_chunk, _M_blocks_per_chunk);
+      const auto __bits = chunk::bits_per_word;
+      const size_t __words = (__blocks + __bits - 1) / __bits;
+      const size_t __block_size = block_size();
+      size_t __bytes = __blocks * __block_size + __words * sizeof(word);
+      size_t __alignment = std::__ceil2(__block_size);
+      void* __p = __r->allocate(__bytes, __alignment);
+      __try
+	{
+	  size_t __n = __blocks * __block_size;
+	  void* __pwords = static_cast<char*>(__p) + __n;
+	  _M_chunks.insert(chunk(__p, __bytes, __pwords, __blocks), __r);
+	}
+      __catch (...)
+	{
+	  __r->deallocate(__p, __bytes, __alignment);
+	}
+      if (_M_blocks_per_chunk < __opts.max_blocks_per_chunk)
+	_M_blocks_per_chunk *= 2;
+    }
+
+    void release(memory_resource* __r)
+    {
+      const size_t __alignment = std::__ceil2(block_size());
+      for (auto& __c : _M_chunks)
+	if (__c._M_p)
+	  __r->deallocate(__c._M_p, __c._M_bytes, __alignment);
+      _M_chunks.clear(__r);
+    }
+
+    // A "resourceless vector" instead of pmr::vector, to save space.
+    // All resize operations need to be passed a memory resource, which
+    // obviously needs to be the same one every time.
+    // Chunks are kept sorted by address of their first block, except for
+    // the most recently-allocated Chunk which is at the end of the vector.
+    struct vector
+    {
+      using value_type = chunk;
+      using size_type = unsigned;
+      using iterator = value_type*;
+
+      // A vector owns its data pointer but not memory held by its elements.
+      chunk* data = nullptr;
+      size_type size = 0;
+      size_type capacity = 0;
+
+      vector() = default;
+
+      vector(size_type __n, memory_resource* __r)
+      : data(polymorphic_allocator<value_type>(__r).allocate(__n)),
+	capacity(__n)
+      { }
+
+      // Must call clear(r) before destruction!
+      ~vector() { __glibcxx_assert(data == nullptr); }
+
+      vector(vector&& __rval) noexcept
+	: data(__rval.data), size(__rval.size), capacity(__rval.capacity)
+      {
+	__rval.data = nullptr;
+	__rval.capacity = __rval.size = 0;
+      }
+
+      vector& operator=(vector&& __rval) noexcept
+      {
+	__glibcxx_assert(data == nullptr);
+	data = __rval.data;
+	size = __rval.size;
+	capacity = __rval.capacity;
+	__rval.data = nullptr;
+	__rval.capacity = __rval.size = 0;
+	return *this;
+      }
+
+      // void resize(size_type __n, memory_resource* __r);
+      // void reserve(size_type __n, memory_resource* __r);
+
+      void clear(memory_resource* __r)
+      {
+	if (!data)
+	  return;
+	// Chunks must be individually freed before clearing the vector.
+	std::destroy(begin(), end());
+	polymorphic_allocator<value_type>(__r).deallocate(data, capacity);
+	data = nullptr;
+	capacity = size = 0;
+      }
+
+      // Sort existing elements then insert new one at the end.
+      iterator insert(chunk&& c, memory_resource* r)
+      {
+	if (size < capacity)
+	  {
+	    if (size > 1)
+	      {
+		auto mid = end() - 1;
+		std::rotate(std::lower_bound(begin(), mid, *mid), mid, end());
+	      }
+	  }
+	else if (size > 0)
+	  {
+	    polymorphic_allocator<value_type> __alloc(r);
+	    auto __mid = std::lower_bound(begin(), end() - 1, back());
+	    auto __p = __alloc.allocate(capacity * 1.5);
+	    // move [begin,__mid) to new storage
+	    auto __p2 = std::move(begin(), __mid, __p);
+	    // move end-1 to new storage
+	    *__p2 = std::move(back());
+	    // move [__mid,end-1) to new storage
+	    std::move(__mid, end() - 1, ++__p2);
+	    std::destroy(begin(), end());
+	    __alloc.deallocate(data, capacity);
+	    data = __p;
+	    capacity *= 1.5;
+	  }
+	else
+	  {
+	    polymorphic_allocator<value_type> __alloc(r);
+	    data = __alloc.allocate(capacity = 8);
+	  }
+	auto back = ::new (data + size) chunk(std::move(c));
+	__glibcxx_assert(std::is_sorted(begin(), back));
+	++size;
+	return back;
+      }
+
+      iterator begin() const { return data; }
+      iterator end() const { return data + size; }
+
+      bool empty() const noexcept { return size == 0; }
+
+      value_type& back() { return data[size - 1]; }
+    };
+
+    vector _M_chunks;
+    unsigned _M_block_sz; 	// size of blocks allocated from this pool
+    unsigned _M_blocks_per_chunk;	// number of blocks to allocate next
+  };
+
+  // An oversized allocation that doesn't fit in a pool.
+  struct __pool_resource::_BigBlock : big_block
+  {
+    using big_block::big_block;
+  };
+
+  namespace {
+
+  pool_options
+  munge_options(pool_options opts)
+  {
+    // The values in the returned struct may differ from those supplied
+    // to the pool resource constructor in that values of zero will be
+    // replaced with implementation-defined defaults, and sizes may be
+    // rounded to unspecified granularity.
+
+    // Absolute maximum. Each pool might have a smaller maximum.
+    if (opts.max_blocks_per_chunk == 0)
+      {
+	opts.max_blocks_per_chunk = 1024 * 10; // TODO a good default?
+      }
+    else
+      {
+	// TODO round to preferred granularity ?
+      }
+
+    if (opts.max_blocks_per_chunk > chunk::max_blocks_per_chunk())
+      {
+	opts.max_blocks_per_chunk = chunk::max_blocks_per_chunk();
+      }
+
+    // Absolute minimum. Likely to be much larger in practice.
+    if (opts.largest_required_pool_block == 0)
+      {
+	opts.largest_required_pool_block = 4096; // TODO a good default?
+      }
+    else
+      {
+	// TODO round to preferred granularity ?
+      }
+
+    if (opts.largest_required_pool_block < big_block::min)
+      {
+	opts.largest_required_pool_block = big_block::min;
+      }
+    return opts;
+  }
+
+  const size_t pool_sizes[] = {
+      8, 16, 24,
+      32, 48,
+      64, 80, 96, 112,
+      128, 192,
+      256, 320, 384, 448,
+      512, 768,
+      1024, 1536,
+      2048, 3072,
+      1<<12, 1<<13, 1<<14, 1<<15, 1<<16, 1<<17,
+      1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
+  };
+
+  inline int
+  pool_index(size_t block_size, int npools)
+  {
+    auto p = std::lower_bound(pool_sizes, pool_sizes + npools, block_size);
+    int n = p - pool_sizes;
+    if (n != npools)
+      return n;
+    return -1;
+  }
+
+  inline int
+  select_num_pools(const pool_options& opts)
+  {
+    auto p = std::lower_bound(std::begin(pool_sizes), std::end(pool_sizes),
+			      opts.largest_required_pool_block);
+    if (int npools = p - std::begin(pool_sizes))
+      return npools;
+    return 1;
+  }
+
+  } // namespace
+
+  __pool_resource::
+  __pool_resource(const pool_options& opts, memory_resource* upstream)
+  : _M_opts(munge_options(opts)), _M_unpooled(upstream),
+    _M_npools(select_num_pools(_M_opts))
+  { }
+
+  __pool_resource::~__pool_resource() { release(); }
+
+  void
+  __pool_resource::release() noexcept
+  {
+    memory_resource* res = resource();
+    // deallocate oversize allocations
+    for (auto& b : _M_unpooled)
+      res->deallocate(b.pointer, b.size(), b.align());
+    pmr::vector<_BigBlock>{res}.swap(_M_unpooled);
+  }
+
+  void*
+  __pool_resource::allocate(size_t bytes, size_t alignment)
+  {
+    auto& b = _M_unpooled.emplace_back(bytes, alignment);
+    __try {
+      void* p = resource()->allocate(b.size(), alignment);
+      b.pointer = p;
+      if (_M_unpooled.size() > 1)
+	{
+	  const auto mid = _M_unpooled.end() - 1;
+	  // move to right position in vector
+	  std::rotate(std::lower_bound(_M_unpooled.begin(), mid, p),
+		      mid, _M_unpooled.end());
+	}
+      return p;
+    } __catch(...) {
+      _M_unpooled.pop_back();
+      __throw_exception_again;
+    }
+  }
+
+  void
+  __pool_resource::deallocate(void* p, size_t bytes [[maybe_unused]],
+			      size_t alignment [[maybe_unused]])
+  {
+    const auto it
+      = std::lower_bound(_M_unpooled.begin(), _M_unpooled.end(), p);
+    __glibcxx_assert(it != _M_unpooled.end() && it->pointer == p);
+    if (it != _M_unpooled.end() && it->pointer == p) // [[likely]]
+      {
+	const auto b = *it;
+	__glibcxx_assert(b.size() == bytes);
+	__glibcxx_assert(b.align() == alignment);
+	_M_unpooled.erase(it);
+	resource()->deallocate(p, b.size(), b.align());
+      }
+  }
+
+  // Create array of pools, allocated from upstream resource.
+  auto
+  __pool_resource::_M_alloc_pools()
+  -> _Pool*
+  {
+    polymorphic_allocator<_Pool> alloc{resource()};
+    _Pool* p = alloc.allocate(_M_npools);
+    for (int i = 0; i < _M_npools; ++i)
+      {
+	const size_t block_size = pool_sizes[i];
+	// Decide on initial number of blocks per chunk.
+	// Always have at least 16 blocks per chunk:
+	const size_t min_blocks_per_chunk = 16;
+	// But for smaller blocks, use a larger initial size:
+	size_t blocks_per_chunk
+	  = std::max(1024 / block_size, min_blocks_per_chunk);
+	// But don't exceed the requested max_blocks_per_chunk:
+	blocks_per_chunk
+	  = std::min(blocks_per_chunk, _M_opts.max_blocks_per_chunk);
+	// Allow space for bitset to track which blocks are used/unused:
+	blocks_per_chunk *= 1 - 1.0 / (__CHAR_BIT__ * block_size);
+	// Construct a _Pool for the given block size and initial chunk size:
+	alloc.construct(p + i, block_size, blocks_per_chunk);
+      }
+    return p;
+  }
+
+  // unsynchronized_pool_resource member functions
+
+  // Constructor
+  unsynchronized_pool_resource::
+  unsynchronized_pool_resource(const pool_options& opts,
+			       memory_resource* upstream)
+  : _M_impl(opts, upstream), _M_pools(_M_impl._M_alloc_pools())
+  { }
+
+  // Destructor
+  unsynchronized_pool_resource::~unsynchronized_pool_resource()
+  { release(); }
+
+  // Return all memory to upstream resource.
+  void
+  unsynchronized_pool_resource::release()
+  {
+    // release pooled memory
+    if (_M_pools)
+      {
+	memory_resource* res = upstream_resource();
+	polymorphic_allocator<_Pool> alloc{res};
+	for (int i = 0; i < _M_impl._M_npools; ++i)
+	  {
+	    _M_pools[i].release(res);
+	    alloc.destroy(_M_pools + i);
+	  }
+	alloc.deallocate(_M_pools, _M_impl._M_npools);
+	_M_pools = nullptr;
+      }
+
+    // release unpooled memory
+    _M_impl.release();
+  }
+
+  // Find the right pool for a block of size block_size.
+  auto
+  unsynchronized_pool_resource::_M_find_pool(size_t block_size) noexcept
+  {
+    __pool_resource::_Pool* pool = nullptr;
+    if (_M_pools) // [[likely]]
+      {
+	int index = pool_index(block_size, _M_impl._M_npools);
+	if (index != -1)
+	  pool = _M_pools + index;
+      }
+    return pool;
+  }
+
+  // Override for memory_resource::do_allocate
+  void*
+  unsynchronized_pool_resource::do_allocate(size_t bytes, size_t alignment)
+  {
+    const auto block_size = std::max(bytes, alignment);
+    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+      {
+	// Recreate pools if release() has been called:
+	if (__builtin_expect(_M_pools == nullptr, false))
+	  _M_pools = _M_impl._M_alloc_pools();
+	if (auto pool = _M_find_pool(block_size))
+	  return pool->allocate(upstream_resource(), _M_impl._M_opts);
+      }
+    return _M_impl.allocate(bytes, alignment);
+  }
+
+  // Override for memory_resource::do_deallocate
+  void
+  unsynchronized_pool_resource::
+  do_deallocate(void* p, size_t bytes, size_t alignment)
+  {
+    size_t block_size = std::max(bytes, alignment);
+    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+      {
+	if (auto pool = _M_find_pool(block_size))
+	  {
+	    pool->deallocate(upstream_resource(), p);
+	    return;
+	  }
+      }
+    _M_impl.deallocate(p, bytes, alignment);
+  }
+
 } // namespace pmr
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-
-
