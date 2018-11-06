@@ -5259,6 +5259,8 @@ free_lang_data_in_type (tree type)
   TREE_LANG_FLAG_5 (type) = 0;
   TREE_LANG_FLAG_6 (type) = 0;
 
+  TYPE_NEEDS_CONSTRUCTING (type) = 0;
+
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       /* Remove the const and volatile qualifiers from arguments.  The

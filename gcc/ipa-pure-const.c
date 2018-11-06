@@ -339,7 +339,7 @@ check_decl (funct_state local,
   if (DECL_EXTERNAL (t) || TREE_PUBLIC (t))
     {
       /* Readonly reads are safe.  */
-      if (TREE_READONLY (t) && !TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (t)))
+      if (TREE_READONLY (t))
 	return; /* Read of a constant, do not change the function state.  */
       else
 	{
