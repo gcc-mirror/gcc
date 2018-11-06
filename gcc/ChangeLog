@@ -1,3 +1,22 @@
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* config/sol2.h (ASAN_CC1_SPEC): Define.
+	(LD_WHOLE_ARCHIVE_OPTION): Define.
+	(LD_NO_WHOLE_ARCHIVE_OPTION): Define.
+	(ASAN_REJECT_SPEC): Provide default.
+	(LIBASAN_EARLY_SPEC): Define.
+	(LIBTSAN_EARLY_SPEC): Define.
+	(LIBLSAN_EARLY_SPEC): Define.
+	* config/i386/sol2.h (CC1_SPEC): Redefine.
+	(ASAN_REJECT_SPEC): Define.
+
+	* config/sparc/sparc.c (sparc_asan_shadow_offset): Declare.
+	(TARGET_ASAN_SHADOW_OFFSET): Define.
+	(sparc_asan_shadow_offset): New function.
+	* config/sparc/sol2.h (CC1_SPEC): Append ASAN_CC1_SPEC.
+	(ASAN_REJECT_SPEC): Define.
+
 018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (fld_type_variant): Copy canonical type.

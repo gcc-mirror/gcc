@@ -1,3 +1,10 @@
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* c-c++-common/asan/alloca_loop_unpoisoning.c: Require alloca
+	support.
+	(foo): Use __builtin_alloca.
+
 2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* gcc.dg/lto/tbaa-1.c: New testcase.
