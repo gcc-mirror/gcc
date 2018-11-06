@@ -1,3 +1,7 @@
+2018-11-06  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc/testsuite/gcc.target/msp430/special-regs.c: New test.
+
 2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/80953
