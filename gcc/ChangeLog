@@ -1,3 +1,12 @@
+2018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-pure-const.c (check_decl): Do not test TYPE_NEEDS_CONSTRUCTING.
+	* lto-streamer-out.c (hash_tree): Do not hash TYPE_NEEDS_CONSTRUCTING.
+	* tree-streamer-in.c (unpack_ts_type_common_value_fields): Do not
+	stream TYPE_NEEDS_CONSTRUCTING.
+	* tree-streamer-out.c (pack_ts_type_common_value_fields): Likewise.
+	* tree.c (free_lang_data_in_type): Clear TYPE_NEEDS_CONSTRUCTING.
+
 2018-11-06  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-slp.c (vect_slp_bb): Move opening of vect_slp_analyze_bb

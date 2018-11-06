@@ -367,7 +367,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
