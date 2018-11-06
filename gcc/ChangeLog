@@ -1,3 +1,12 @@
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/default-d.c: Include memmodel.h.
+
+	* config/sol2-d.c: New file.
+	* config/t-sol2 (sol2-d.o): New rule.
+	* config.gcc <*-*-solaris2*>: Set d_target_objs,
+	target_has_targetdm.
+
 2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (fld_type_variant): Also copy alignment; be sure that
