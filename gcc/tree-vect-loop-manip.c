@@ -977,7 +977,8 @@ slpeel_duplicate_current_defs_from_edges (edge from, edge to)
 	}
       if (TREE_CODE (from_arg) != SSA_NAME)
 	gcc_assert (operand_equal_p (from_arg, to_arg, 0));
-      else if (TREE_CODE (to_arg) == SSA_NAME)
+      else if (TREE_CODE (to_arg) == SSA_NAME
+	       && from_arg != to_arg)
 	{
 	  if (get_current_def (to_arg) == NULL_TREE)
 	    {
