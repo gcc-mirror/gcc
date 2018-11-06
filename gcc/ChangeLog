@@ -1,3 +1,7 @@
+2018-11-06  Jan Hubicka  <jh@suse.cz>
+
+	 * tree.c (fld_simplified_type_of): Clear TYPELESS_STORAGE flag.
+
 2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR sanitizer/80953
@@ -17,7 +21,7 @@
 	* config/sparc/sol2.h (CC1_SPEC): Append ASAN_CC1_SPEC.
 	(ASAN_REJECT_SPEC): Define.
 
-018-11-06  Jan Hubicka  <jh@suse.cz>
+2018-11-06  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (fld_type_variant): Copy canonical type.
 	(fld_incomplete_type_of): Check that canonical types looks sane;
