@@ -2779,6 +2779,8 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       vec<data_reference_p> datarefs, int n_stmts,
 		       bool &fatal, vec_info_shared *shared)
 {
+  DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
+
   bb_vec_info bb_vinfo;
   slp_instance instance;
   int i;
@@ -2948,8 +2950,6 @@ vect_slp_bb (basic_block bb)
   gimple_stmt_iterator gsi;
   bool any_vectorized = false;
   auto_vector_sizes vector_sizes;
-
-  DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
 
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
