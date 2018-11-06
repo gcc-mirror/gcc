@@ -1,3 +1,10 @@
+2018-11-06  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (bswap<mode>2): Force address into register
+	if not in indexed or indirect form.
+	(bswap<mode>2_load): Change predicate to indexed_or_indirect_operand.
+	(bswap<mode>2_store): Ditto.
+
 2018-11-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/aarch64/aarch64.md (speculation_tracker): Set the mode for
