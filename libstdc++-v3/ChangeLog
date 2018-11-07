@@ -1,3 +1,7 @@
+2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+        * configure: Regenerated.
+
 2018-11-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/abi/pre/gnu.ver: Fix patterns for size_t parameters.
