@@ -1,3 +1,7 @@
+2018-11-07  Martin Liska  <mliska@suse.cz>
+
+	* mem-stats.h: Fix GNU coding style.
+
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* config/mips/gs264e.md: New.

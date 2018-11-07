@@ -316,23 +316,23 @@ public:
   bool contains_descriptor_for_instance (const void *ptr);
 
   /* Return descriptor for instance PTR.  */
-  T * get_descriptor_for_instance (const void *ptr);
+  T *get_descriptor_for_instance (const void *ptr);
 
   /* Register memory allocation descriptor for container PTR which is
      described by a memory LOCATION.  */
-  T * register_descriptor (const void *ptr, mem_location *location);
+  T *register_descriptor (const void *ptr, mem_location *location);
 
   /* Register memory allocation descriptor for container PTR.  ORIGIN identifies
      type of container and GGC identifes if the allocation is handled in GGC
      memory.  Each location is identified by file NAME, LINE in source code and
      FUNCTION name.  */
-  T * register_descriptor (const void *ptr, mem_alloc_origin origin,
-			   bool ggc, const char *name, int line,
-			   const char *function);
+  T *register_descriptor (const void *ptr, mem_alloc_origin origin,
+			  bool ggc, const char *name, int line,
+			  const char *function);
 
   /* Register instance overhead identified by PTR pointer. Allocation takes
      SIZE bytes.  */
-  T * register_instance_overhead (size_t size, const void *ptr);
+  T *register_instance_overhead (size_t size, const void *ptr);
 
   /* For containers (and GGC) where we want to track every instance object,
      we register allocation of SIZE bytes, identified by PTR pointer, belonging
@@ -342,8 +342,8 @@ public:
   /* Release PTR pointer of SIZE bytes. If REMOVE_FROM_MAP is set to true,
      remove the instance from reverse map.  Return memory usage that belongs
      to this memory description.  */
-  T * release_instance_overhead (void *ptr, size_t size,
-				 bool remove_from_map = false);
+  T *release_instance_overhead (void *ptr, size_t size,
+				bool remove_from_map = false);
 
   /* Release intance object identified by PTR pointer.  */
   void release_object_overhead (void *ptr);
@@ -355,9 +355,9 @@ public:
      are filtered by ORIGIN type, LENGTH is return value where we register
      the number of elements in the list. If we want to process custom order,
      CMP comparator can be provided.  */
-  mem_list_t * get_list (mem_alloc_origin origin, unsigned *length,
-			 int (*cmp) (const void *first,
-				     const void *second) = NULL);
+  mem_list_t *get_list (mem_alloc_origin origin, unsigned *length,
+			int (*cmp) (const void *first,
+				    const void *second) = NULL);
 
   /* Dump all tracked instances of type ORIGIN. If we want to process custom
      order, CMP comparator can be provided.  */
