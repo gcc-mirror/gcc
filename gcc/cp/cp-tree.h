@@ -6727,7 +6727,8 @@ inline bool modules_legacy_p () { return flag_modules < 0; }
 extern int module_purview;
 inline bool module_purview_p () { return module_purview > 0; }
 inline bool module_interface_p () { return module_purview > 1; }
-inline bool module_gmf_p () { return module_purview < 0; }
+inline bool module_gmf_p () { return !module_purview; }
+inline bool not_module_p () { return module_purview < 0; }
 inline bool module_exporting_p () { return module_export_depth != 0; }
 inline bool push_module_export () { return module_export_depth++; }
 inline void pop_module_export () { module_export_depth--; }

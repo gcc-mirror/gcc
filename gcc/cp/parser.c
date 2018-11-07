@@ -4668,7 +4668,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	{
 	  cp_lexer_consume_token (parser->lexer); /* module */
 	  cp_lexer_consume_token (parser->lexer); /* ; */
-	  declare_module (NULL, next->location, false, NULL, parse_in);
 	  gmf = true;
 	}
       else
@@ -4692,15 +4691,19 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	cp_lexer_consume_token (parser->lexer);
       cp_parser_import_declaration (parser, exporting, preamble < 0);
 
+      if (first)
+	module_purview = -1;
       first = false;
       if (next == imp_tok)
 	/* This was a macro-affecting import.  */
 	break;
       deferred_imports = true;
-      first = false;
       continue;
 
     is_other:
+      if (first)
+	module_purview = -1;
+      first = false;
       if (token->type == CPP_CLOSE_BRACE)
 	{
 	  cp_parser_error (parser, "expected declaration");
@@ -4708,8 +4711,6 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  /* If the next token is now a `;', consume it.  */
 	  if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	    cp_lexer_consume_token (parser->lexer);
-	  if (preamble > 0)
-	    preamble = -1;
 	}
       else
 	{
@@ -4719,10 +4720,9 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	      process_deferred_imports (parse_in);
 	    }
 	  cp_parser_toplevel_declaration (parser);
-	  if (preamble > 0)
-	    preamble = -1;
 	}
-      first = false;
+      if (preamble > 0)
+	preamble = -1;
     }
 
 

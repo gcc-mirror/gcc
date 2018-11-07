@@ -12179,12 +12179,7 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
-  if (!state)
-    {
-      /* Starting Global Module Fragment.  */
-      module_purview = -1;
-      return;
-    }
+  gcc_assert (module_gmf_p ());
 
   from_loc = ordinary_loc_of (line_table, from_loc);
   gcc_assert (!(*modules)[MODULE_PURVIEW]);
