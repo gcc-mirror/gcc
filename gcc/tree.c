@@ -5197,6 +5197,7 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  TYPE_SIZE_UNIT (copy) = NULL;
 	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
 	  TYPE_TYPELESS_STORAGE (copy) = 0;
+	  TREE_ADDRESSABLE (copy) = 0;
 	  if (AGGREGATE_TYPE_P (t))
 	    {
 	      TYPE_FIELDS (copy) = NULL;
@@ -5496,6 +5497,17 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node;
+      /* Frontends do not set TREE_ADDRESSABLE on public variables even though
+	 the address may be taken in other unit, so this flag has no practical
+	 use for middle-end.
+
+	 It would make more sense if frontends set TREE_ADDRESSABLE to 0 only
+	 for public objects that indeed can not be adressed, but it is not
+	 the case.  Set the flag to true so we do not get merge failures for
+	 i.e. virtual tables between units that take address of it and
+	 units that don't.  */
+      if (TREE_PUBLIC (decl))
+	TREE_ADDRESSABLE (decl) = true;
       TREE_TYPE (decl) = fld_simplified_type (TREE_TYPE (decl), fld);
       if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
@@ -5551,6 +5563,9 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     }
   else if (VAR_P (decl))
     {
+      /* See comment above why we set the flag for functoins.  */
+      if (TREE_PUBLIC (decl))
+	TREE_ADDRESSABLE (decl) = true;
       if ((DECL_EXTERNAL (decl)
 	   && (!TREE_STATIC (decl) || !TREE_READONLY (decl)))
 	  || (decl_function_context (decl) && !TREE_STATIC (decl)))
@@ -5560,8 +5575,11 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     {
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
+      /* TREE_PUBLIC is used to tell if type is anonymous.  */
+      TYPE_DECL_SUPPRESS_DEBUG (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+      DECL_MODE (decl) = VOIDmode;
       TREE_TYPE (decl) = void_type_node;
       SET_DECL_ALIGN (decl, 0);
     }
