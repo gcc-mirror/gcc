@@ -1,3 +1,9 @@
+2018-11-07  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/87874
+	* lra.c (lra_substitute_pseudo): Do not create a subreg for
+	const wide ints.
+
 2018-11-06  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000.md (bswap<mode>2): Force address into register

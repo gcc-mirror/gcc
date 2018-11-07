@@ -1,3 +1,8 @@
+2018-11-07  Alexandre Oliva <aoliva@redhat.com>
+
+	PR rtl-optimization/87874
+	* gcc.dg/pr87874.c: New.
+
 2018-11-06  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/load-and-test-fp-1.c: Accept cdb.
