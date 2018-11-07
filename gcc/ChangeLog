@@ -1,3 +1,14 @@
+2018-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* ipa-devirt.c (odr_types_equivalent_p): Expect constants
+	than const decls in TREE_VALUE of enum.
+	(dump_type_inheritance_graph): Improve duplicate dumping.
+	(free_enum_values): New.
+	(build_type_inheritance_graph): Use it.
+	* tree.c (free_lang_data_in_type): Free TYPE_VALUES of enums
+	which are not main variants or not ODR types.
+	(verify_type_variant): Expect variants to have no TYPE_VALUES.
+
 2018-11-07  Richard Biener  <rguenther@suse.de>
 
 	* ipa-inline.c (want_inline_small_function_p): Compute

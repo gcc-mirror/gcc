@@ -5345,6 +5345,20 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 	   || SCALAR_FLOAT_TYPE_P (type)
 	   || FIXED_POINT_TYPE_P (type))
     {
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  /* Type values are used only for C++ ODR checking.  Drop them
+	     for all type variants and non-ODR types.  */
+	  if (TYPE_MAIN_VARIANT (type) != type
+	      || !type_with_linkage_p (type))
+	    TYPE_VALUES (type) = NULL;
+	  else
+	  /* Simplify representation by recording only values rather
+	     than const decls.  */
+	    for (tree e = TYPE_VALUES (type); e; e = TREE_CHAIN (e))
+	      if (TREE_CODE (TREE_VALUE (e)) == CONST_DECL)
+		TREE_VALUE (e) = DECL_INITIAL (TREE_VALUE (e));
+	}
       free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
       free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
     }
@@ -13525,7 +13539,8 @@ verify_type_variant (const_tree t, tree tv)
     }
 
   /* Check various uses of TYPE_VALUES_RAW.  */
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
+  if (TREE_CODE (t) == ENUMERAL_TYPE
+      && TYPE_VALUES (t))
     verify_variant_match (TYPE_VALUES);
   else if (TREE_CODE (t) == ARRAY_TYPE)
     verify_variant_match (TYPE_DOMAIN);
