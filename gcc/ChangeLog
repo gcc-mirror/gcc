@@ -1,3 +1,14 @@
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* config/mips/mips.c: Fix typo in documentation of
+	mips_loongson_ext2_prefetch_cookie.
+	(mips_option_override): fix brain twister logical.
+	* config/mips/mips.h: Fix typo in documentation of
+	ISA_HAS_CTZ_CTO and define pattern.
+	* config/mips/mips.md (prefetch): Hoist EXT2 above
+	the 2EF/EXT block.
+	(prefetch_indexed): Hoist EXT2 above the EXT block.
+
 2018-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (free_lang_data_in_type): Add fld parameter; simplify

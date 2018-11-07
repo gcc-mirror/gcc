@@ -1158,7 +1158,7 @@ struct mips_cpu_info {
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO		(mips_isa_rev >= 1 && !TARGET_MIPS16)
 
-/* ISA has count tailing zeroes/ones instruction.  */
+/* ISA has count trailing zeroes/ones instruction.  */
 #define ISA_HAS_CTZ_CTO		(TARGET_LOONGSON_EXT2)
 
 /* ISA has three operand multiply instructions that put
