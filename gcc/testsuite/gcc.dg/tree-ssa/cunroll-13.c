@@ -29,7 +29,7 @@ bb_3:
   return;
 
 bb_4:
-  _1 = _2 + 1;
+  _1 = _2 + _Literal (i32) 1;
   a_6(D)->a[i_19] = _1;
   i_8 = i_19 + _Literal (i32) 1;
   if (i_8 <= _Literal (i32) 123455)

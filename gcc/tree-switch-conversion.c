@@ -44,6 +44,7 @@ Software Foundation, 51 Franklin Street, Fifth Floor, Boston, MA
 #include "gimplify.h"
 #include "gimple-iterator.h"
 #include "gimplify-me.h"
+#include "gimple-fold.h"
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "alloc-pool.h"
@@ -78,7 +79,6 @@ switch_conversion::collect (gswitch *swtch)
   unsigned int i;
   edge e, e_default, e_first;
   edge_iterator ei;
-  basic_block first;
 
   m_switch = swtch;
 
@@ -87,9 +87,8 @@ switch_conversion::collect (gswitch *swtch)
      Collect the bits we can deduce from the CFG.  */
   m_index_expr = gimple_switch_index (swtch);
   m_switch_bb = gimple_bb (swtch);
-  m_default_bb
-    = label_to_block (CASE_LABEL (gimple_switch_default_label (swtch)));
-  e_default = find_edge (m_switch_bb, m_default_bb);
+  e_default = gimple_switch_default_edge (cfun, swtch);
+  m_default_bb = e_default->dest;
   m_default_prob = e_default->probability;
   m_default_count = e_default->count ();
   FOR_EACH_EDGE (e, ei, m_switch_bb->succs)
@@ -120,15 +119,9 @@ switch_conversion::collect (gswitch *swtch)
     }
 
   if (m_contiguous_range)
-    {
-      first = label_to_block (CASE_LABEL (gimple_switch_label (swtch, 1)));
-      e_first = find_edge (m_switch_bb, first);
-    }
+    e_first = gimple_switch_edge (cfun, swtch, 1);
   else
-    {
-      first = m_default_bb;
-      e_first = e_default;
-    }
+    e_first = e_default;
 
   /* See if there is one common successor block for all branch
      targets.  If it exists, record it in FINAL_BB.
@@ -306,8 +299,7 @@ switch_conversion::check_final_bb ()
 		  unsigned int branch_num = gimple_switch_num_labels (m_switch);
 		  for (unsigned int i = 1; i < branch_num; i++)
 		    {
-		      tree lab = CASE_LABEL (gimple_switch_label (m_switch, i));
-		      if (label_to_block (lab) == bb)
+		      if (gimple_switch_label_bb (cfun, m_switch, i) == bb)
 			{
 			  m_reason = reason;
 			  return false;
@@ -351,7 +343,7 @@ void
 switch_conversion::gather_default_values (tree default_case)
 {
   gphi_iterator gsi;
-  basic_block bb = label_to_block (CASE_LABEL (default_case));
+  basic_block bb = label_to_block (cfun, CASE_LABEL (default_case));
   edge e;
   int i = 0;
 
@@ -388,7 +380,7 @@ switch_conversion::build_constructors ()
   for (i = 1; i < branch_num; i++)
     {
       tree cs = gimple_switch_label (m_switch, i);
-      basic_block bb = label_to_block (CASE_LABEL (cs));
+      basic_block bb = label_to_block (cfun, CASE_LABEL (cs));
       edge e;
       tree high;
       gphi_iterator gsi;
@@ -448,25 +440,63 @@ switch_conversion::build_constructors ()
     }
 }
 
-/* If all values in the constructor vector are the same, return the value.
-   Otherwise return NULL_TREE.  Not supposed to be called for empty
-   vectors.  */
+/* If all values in the constructor vector are products of a linear function
+   a * x + b, then return true.  When true, COEFF_A and COEFF_B and
+   coefficients of the linear function.  Note that equal values are special
+   case of a linear function with a and b equal to zero.  */
 
-tree
-switch_conversion::contains_same_values_p (vec<constructor_elt, va_gc> *vec)
+bool
+switch_conversion::contains_linear_function_p (vec<constructor_elt, va_gc> *vec,
+					       wide_int *coeff_a,
+					       wide_int *coeff_b)
 {
   unsigned int i;
-  tree prev = NULL_TREE;
   constructor_elt *elt;
 
+  gcc_assert (vec->length () >= 2);
+
+  /* Let's try to find any linear function a * x + y that can apply to
+     given values. 'a' can be calculated as follows:
+
+     a = (y2 - y1) / (x2 - x1) where x2 - x1 = 1 (consecutive case indices)
+     a = y2 - y1
+
+     and
+
+     b = y2 - a * x2
+
+  */
+
+  tree elt0 = (*vec)[0].value;
+  tree elt1 = (*vec)[1].value;
+
+  if (TREE_CODE (elt0) != INTEGER_CST || TREE_CODE (elt1) != INTEGER_CST)
+    return false;
+
+  wide_int range_min = wi::to_wide (fold_convert (TREE_TYPE (elt0),
+						  m_range_min));
+  wide_int y1 = wi::to_wide (elt0);
+  wide_int y2 = wi::to_wide (elt1);
+  wide_int a = y2 - y1;
+  wide_int b = y2 - a * (range_min + 1);
+
+  /* Verify that all values fulfill the linear function.  */
   FOR_EACH_VEC_SAFE_ELT (vec, i, elt)
     {
-      if (!prev)
-	prev = elt->value;
-      else if (!operand_equal_p (elt->value, prev, OEP_ONLY_CONST))
-	return NULL_TREE;
+      if (TREE_CODE (elt->value) != INTEGER_CST)
+	return false;
+
+      wide_int value = wi::to_wide (elt->value);
+      if (a * range_min + b != value)
+	return false;
+
+      ++range_min;
     }
-  return prev;
+
+  *coeff_a = a;
+  *coeff_b = b;
+
+  return true;
 }
 
 /* Return type which should be used for array elements, either TYPE's
@@ -560,7 +590,7 @@ void
 switch_conversion::build_one_array (int num, tree arr_index_type,
 				    gphi *phi, tree tidx)
 {
-  tree name, cst;
+  tree name;
   gimple *load;
   gimple_stmt_iterator gsi = gsi_for_stmt (m_switch);
   location_t loc = gimple_location (m_switch);
@@ -570,9 +600,27 @@ switch_conversion::build_one_array (int num, tree arr_index_type,
   name = copy_ssa_name (PHI_RESULT (phi));
   m_target_inbound_names[num] = name;
 
-  cst = contains_same_values_p (m_constructors[num]);
-  if (cst)
-    load = gimple_build_assign (name, cst);
+  wide_int coeff_a, coeff_b;
+  bool linear_p = contains_linear_function_p (m_constructors[num], &coeff_a,
+					      &coeff_b);
+  if (linear_p)
+    {
+      if (dump_file && coeff_a.to_uhwi () > 0)
+	fprintf (dump_file, "Linear transformation with A = %" PRId64
+		 " and B = %" PRId64 "\n", coeff_a.to_shwi (),
+		 coeff_b.to_shwi ());
+
+      tree t = unsigned_type_for (TREE_TYPE (m_index_expr));
+      gimple_seq seq = NULL;
+      tree tmp = gimple_convert (&seq, t, m_index_expr);
+      tree tmp2 = gimple_build (&seq, MULT_EXPR, t,
+				wide_int_to_tree (t, coeff_a), tmp);
+      tree tmp3 = gimple_build (&seq, PLUS_EXPR, t, tmp2,
+				wide_int_to_tree (t, coeff_b));
+      tree tmp4 = gimple_convert (&seq, TREE_TYPE (name), tmp3);
+      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+      load = gimple_build_assign (name, tmp4);
+    }
   else
     {
       tree array_type, ctor, decl, value_type, fetch, default_type;
@@ -1070,6 +1118,9 @@ void
 jump_table_cluster::emit (tree index_expr, tree,
 			  tree default_label_expr, basic_block default_bb)
 {
+  unsigned HOST_WIDE_INT range = get_range (get_low (), get_high ());
+  unsigned HOST_WIDE_INT nondefault_range = 0;
+
   /* For jump table we just emit a new gswitch statement that will
      be latter lowered to jump table.  */
   auto_vec <tree> labels;
@@ -1086,6 +1137,39 @@ jump_table_cluster::emit (tree index_expr, tree,
 				    unshare_expr (default_label_expr), labels);
   gimple_stmt_iterator gsi = gsi_start_bb (m_case_bb);
   gsi_insert_after (&gsi, s, GSI_NEW_STMT);
+
+  /* Set up even probabilities for all cases.  */
+  for (unsigned i = 0; i < m_cases.length (); i++)
+    {
+      simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
+      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      unsigned HOST_WIDE_INT case_range
+	= sc->get_range (sc->get_low (), sc->get_high ());
+      nondefault_range += case_range;
+
+      /* case_edge->aux is number of values in a jump-table that are covered
+	 by the case_edge.  */
+      case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + case_range);
+    }
+
+  edge default_edge = gimple_switch_default_edge (cfun, s);
+  default_edge->probability = profile_probability::never ();
+
+  for (unsigned i = 0; i < m_cases.length (); i++)
+    {
+      simple_cluster *sc = static_cast<simple_cluster *> (m_cases[i]);
+      edge case_edge = find_edge (m_case_bb, sc->m_case_bb);
+      case_edge->probability
+	= profile_probability::always ().apply_scale ((intptr_t)case_edge->aux,
+						      range);
+    }
+
+  /* Number of non-default values is probability of default edge.  */
+  default_edge->probability
+    += profile_probability::always ().apply_scale (nondefault_range,
+						   range).invert ();
+
+  switch_decision_tree::reset_out_edges_aux (s);
 }
 
 /* Find jump tables of given CLUSTERS, where all members of the vector
@@ -1252,12 +1336,16 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters)
     return clusters.copy ();
 
   /* Find and build the clusters.  */
-  for (int end = l;;)
+  for (unsigned end = l;;)
     {
       int start = min[end].m_start;
 
       if (is_beneficial (clusters, start, end - 1))
-	output.safe_push (new bit_test_cluster (clusters, start, end - 1));
+	{
+	  bool entire = start == 0 && end == clusters.length ();
+	  output.safe_push (new bit_test_cluster (clusters, start, end - 1,
+						  entire));
+	}
       else
 	for (int i = end - 1; i >=  start; i--)
 	  output.safe_push (clusters[i]);
@@ -1407,6 +1495,7 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   tree minval = get_low ();
   tree maxval = get_high ();
   tree range = int_const_binop (MINUS_EXPR, maxval, minval);
+  unsigned HOST_WIDE_INT bt_range = get_range (minval, maxval);
 
   /* Go through all case labels, and collect the case labels, profile
      counts, and other information we need to build the branch tests.  */
@@ -1425,11 +1514,11 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 	  test[k].mask = wi::zero (prec);
 	  test[k].target_bb = n->m_case_bb;
 	  test[k].label = n->m_case_label_expr;
-	  test[k].bits = 1;
+	  test[k].bits = 0;
 	  count++;
 	}
-      else
-	test[k].bits++;
+
+      test[k].bits += n->get_range (n->get_low (), n->get_high ());
 
       lo = tree_to_uhwi (int_const_binop (MINUS_EXPR, n->get_low (), minval));
       if (n->get_high () == NULL_TREE)
@@ -1486,14 +1575,20 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 				  /*simple=*/true, NULL_TREE,
 				  /*before=*/true, GSI_SAME_STMT);
 
-  /* if (idx > range) goto default */
-  range = force_gimple_operand_gsi (&gsi,
+  if (m_handles_entire_switch)
+    {
+      /* if (idx > range) goto default */
+      range
+	= force_gimple_operand_gsi (&gsi,
 				    fold_convert (unsigned_index_type, range),
 				    /*simple=*/true, NULL_TREE,
 				    /*before=*/true, GSI_SAME_STMT);
-  tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
-  basic_block new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, default_bb);
-  gsi = gsi_last_bb (new_bb);
+      tmp = fold_build2 (GT_EXPR, boolean_type_node, idx, range);
+      basic_block new_bb
+	= hoist_edge_and_branch_if_true (&gsi, tmp, default_bb,
+					 profile_probability::unlikely ());
+      gsi = gsi_last_bb (new_bb);
+    }
 
   /* csui = (1 << (word_mode) idx) */
   csui = make_ssa_name (word_type_node);
@@ -1506,17 +1601,23 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gsi_insert_before (&gsi, shift_stmt, GSI_SAME_STMT);
   update_stmt (shift_stmt);
 
+  profile_probability prob = profile_probability::always ();
+
   /* for each unique set of cases:
        if (const & csui) goto target  */
   for (k = 0; k < count; k++)
     {
+      prob = profile_probability::always ().apply_scale (test[k].bits,
+							 bt_range);
+      bt_range -= test[k].bits;
       tmp = wide_int_to_tree (word_type_node, test[k].mask);
       tmp = fold_build2 (BIT_AND_EXPR, word_type_node, csui, tmp);
       tmp = force_gimple_operand_gsi (&gsi, tmp,
 				      /*simple=*/true, NULL_TREE,
 				      /*before=*/true, GSI_SAME_STMT);
       tmp = fold_build2 (NE_EXPR, boolean_type_node, tmp, word_mode_zero);
-      new_bb = hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb);
+      basic_block new_bb
+	= hoist_edge_and_branch_if_true (&gsi, tmp, test[k].target_bb, prob);
       gsi = gsi_last_bb (new_bb);
     }
 
@@ -1524,7 +1625,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
   gcc_assert (EDGE_COUNT (gsi_bb (gsi)->succs) == 0);
 
   /* If nothing matched, go to the default label.  */
-  make_edge (gsi_bb (gsi), default_bb, EDGE_FALLTHRU);
+  edge e = make_edge (gsi_bb (gsi), default_bb, EDGE_FALLTHRU);
+  e->probability = profile_probability::always ();
 }
 
 /* Split the basic block at the statement pointed to by GSIP, and insert
@@ -1544,7 +1646,8 @@ bit_test_cluster::emit (tree index_expr, tree index_type,
 
 basic_block
 bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
-						 tree cond, basic_block case_bb)
+						 tree cond, basic_block case_bb,
+						 profile_probability prob)
 {
   tree tmp;
   gcond *cond_stmt;
@@ -1552,6 +1655,7 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
   basic_block new_bb, split_bb = gsi_bb (*gsip);
 
   edge e_true = make_edge (split_bb, case_bb, EDGE_TRUE_VALUE);
+  e_true->probability = prob;
   gcc_assert (e_true->src == split_bb);
 
   tmp = force_gimple_operand_gsi (gsip, cond, /*simple=*/true, NULL,
@@ -1577,15 +1681,11 @@ bit_test_cluster::hoist_edge_and_branch_if_true (gimple_stmt_iterator *gsip,
 void
 switch_decision_tree::compute_cases_per_edge ()
 {
-  basic_block bb = gimple_bb (m_switch);
-  reset_out_edges_aux ();
+  reset_out_edges_aux (m_switch);
   int ncases = gimple_switch_num_labels (m_switch);
   for (int i = ncases - 1; i >= 1; --i)
     {
-      tree elt = gimple_switch_label (m_switch, i);
-      tree lab = CASE_LABEL (elt);
-      basic_block case_bb = label_to_block_fn (cfun, lab);
-      edge case_edge = find_edge (bb, case_bb);
+      edge case_edge = gimple_switch_edge (cfun, m_switch, i);
       case_edge->aux = (void *) ((intptr_t) (case_edge->aux) + 1);
     }
 }
@@ -1601,8 +1701,7 @@ switch_decision_tree::analyze_switch_statement ()
   auto_vec<cluster *> clusters;
   clusters.create (l - 1);
 
-  tree default_label = CASE_LABEL (gimple_switch_default_label (m_switch));
-  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block default_bb = gimple_switch_default_bb (cfun, m_switch);
   m_case_bbs.reserve (l);
   m_case_bbs.quick_push (default_bb);
 
@@ -1612,18 +1711,19 @@ switch_decision_tree::analyze_switch_statement ()
     {
       tree elt = gimple_switch_label (m_switch, i);
       tree lab = CASE_LABEL (elt);
-      basic_block case_bb = label_to_block_fn (cfun, lab);
+      basic_block case_bb = label_to_block (cfun, lab);
       edge case_edge = find_edge (bb, case_bb);
       tree low = CASE_LOW (elt);
       tree high = CASE_HIGH (elt);
 
       profile_probability p
 	= case_edge->probability.apply_scale (1, (intptr_t) (case_edge->aux));
-      clusters.quick_push (new simple_cluster (low, high, elt, case_bb, p));
-      m_case_bbs.quick_push (case_bb);
+      clusters.quick_push (new simple_cluster (low, high, elt, case_edge->dest,
+					       p));
+      m_case_bbs.quick_push (case_edge->dest);
     }
 
-  reset_out_edges_aux ();
+  reset_out_edges_aux (m_switch);
 
   /* Find jump table clusters.  */
   vec<cluster *> output = jump_table_cluster::find_jump_tables (clusters);
@@ -1694,9 +1794,8 @@ switch_decision_tree::try_switch_expansion (vec<cluster *> &clusters)
     return false;
 
   /* Find the default case target label.  */
-  tree default_label_expr = CASE_LABEL (gimple_switch_default_label (m_switch));
-  m_default_bb = label_to_block_fn (cfun, default_label_expr);
-  edge default_edge = find_edge (bb, m_default_bb);
+  edge default_edge = gimple_switch_default_edge (cfun, m_switch);
+  m_default_bb = default_edge->dest;
 
   /* Do the insertion of a case label into m_case_list.  The labels are
      fed to us in descending order from the sorted vector of case labels used
@@ -1879,6 +1978,7 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
       int ranges = 0;
       case_tree_node **npp;
       case_tree_node *left;
+      profile_probability prob = profile_probability::never ();
 
       /* Count the number of entries on branch.  Also count the ranges.  */
 
@@ -1888,6 +1988,7 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	    ranges++;
 
 	  i++;
+	  prob += np->m_c->m_prob;
 	  np = np->m_right;
 	}
 
@@ -1896,39 +1997,35 @@ switch_decision_tree::balance_case_nodes (case_tree_node **head,
 	  /* Split this list if it is long enough for that to help.  */
 	  npp = head;
 	  left = *npp;
+	  profile_probability pivot_prob = prob.apply_scale (1, 2);
 
-	  /* If there are just three nodes, split at the middle one.  */
-	  if (i == 3)
-	    npp = &(*npp)->m_right;
-	  else
+	  /* Find the place in the list that bisects the list's total cost,
+	     where ranges count as 2.  */
+	  while (1)
 	    {
-	      /* Find the place in the list that bisects the list's total cost,
-		 where ranges count as 2.
-		 Here I gets half the total cost.  */
-	      i = (i + ranges + 1) / 2;
-	      while (1)
-		{
-		  /* Skip nodes while their cost does not reach that amount.  */
-		  if (!tree_int_cst_equal ((*npp)->m_c->get_low (),
-					   (*npp)->m_c->get_high ()))
-		    i--;
-		  i--;
-		  if (i <= 0)
-		    break;
-		  npp = &(*npp)->m_right;
-		}
+	      /* Skip nodes while their probability does not reach
+		 that amount.  */
+	      prob -= (*npp)->m_c->m_prob;
+	      if ((prob.initialized_p () && prob < pivot_prob)
+		  || ! (*npp)->m_right)
+		break;
+	      npp = &(*npp)->m_right;
 	    }
-	  *head = np = *npp;
-	  *npp = 0;
+
+	  np = *npp;
+ 	  *npp = 0;
+	  *head = np;
 	  np->m_parent = parent;
-	  np->m_left = left;
+	  np->m_left = left == np ? NULL : left;
 
 	  /* Optimize each of the two split parts.  */
 	  balance_case_nodes (&np->m_left, np);
 	  balance_case_nodes (&np->m_right, np);
 	  np->m_c->m_subtree_prob = np->m_c->m_prob;
-	  np->m_c->m_subtree_prob += np->m_left->m_c->m_subtree_prob;
-	  np->m_c->m_subtree_prob += np->m_right->m_c->m_subtree_prob;
+	  if (np->m_left)
+	    np->m_c->m_subtree_prob += np->m_left->m_c->m_subtree_prob;
+	  if (np->m_right)
+	    np->m_c->m_subtree_prob += np->m_right->m_c->m_subtree_prob;
 	}
       else
 	{
@@ -1962,7 +2059,9 @@ switch_decision_tree::dump_case_nodes (FILE *f, case_tree_node *root,
   fprintf (f, "%*s", indent_step * indent_level, "");
   root->m_c->dump (f);
   root->m_c->m_prob.dump (f);
-  fputs ("\n", f);
+  fputs (" subtree: ", f);
+  root->m_c->m_subtree_prob.dump (f);
+  fputs (")\n", f);
 
   dump_case_nodes (f, root->m_right, indent_step, indent_level);
 }
@@ -2008,6 +2107,34 @@ switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
   return false_edge->dest;
 }
 
+/* Generate code to jump to LABEL if OP0 and OP1 are equal.
+   PROB is the probability of jumping to LABEL_BB.
+   BB is a basic block where the new condition will be placed.  */
+
+basic_block
+switch_decision_tree::do_jump_if_equal (basic_block bb, tree op0, tree op1,
+					basic_block label_bb,
+					profile_probability prob)
+{
+  op1 = fold_convert (TREE_TYPE (op0), op1);
+
+  gcond *cond = gimple_build_cond (EQ_EXPR, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gsi_insert_before (&gsi, cond, GSI_SAME_STMT);
+
+  gcc_assert (single_succ_p (bb));
+
+  /* Make a new basic block where false branch will take place.  */
+  edge false_edge = split_block (bb, cond);
+  false_edge->flags = EDGE_FALSE_VALUE;
+  false_edge->probability = prob.invert ();
+
+  edge true_edge = make_edge (bb, label_bb, EDGE_TRUE_VALUE);
+  true_edge->probability = prob;
+
+  return false_edge->dest;
+}
+
 /* Emit step-by-step code to select a case for the value of INDEX.
    The thus generated decision tree follows the form of the
    case-node binary tree NODE, whose nodes represent test conditions.
@@ -2020,41 +2147,193 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 				       profile_probability default_prob,
 				       tree index_type)
 {
+  profile_probability p;
+
   /* If node is null, we are done.  */
   if (node == NULL)
     return bb;
 
-  /* Branch to a label where we will handle it later.  */
-  basic_block test_bb = split_edge (single_succ_edge (bb));
-  redirect_edge_succ (single_pred_edge (test_bb),
-		      single_succ_edge (bb)->dest);
+  /* Single value case.  */
+  if (node->m_c->is_single_value_p ())
+    {
+      /* Node is single valued.  First see if the index expression matches
+	 this node and then check our children, if any.  */
+      p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
+      bb = do_jump_if_equal (bb, index, node->m_c->get_low (),
+			     node->m_c->m_case_bb, p);
+      /* Since this case is taken at this point, reduce its weight from
+	 subtree_weight.  */
+      node->m_c->m_subtree_prob -= p;
 
-  profile_probability probability
-    = (node->m_right
-       ? node->m_right->m_c->m_subtree_prob : profile_probability::never ());
-  probability = ((probability + default_prob.apply_scale (1, 2))
-		 / (node->m_c->m_subtree_prob + default_prob));
-  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (), GT_EXPR,
-				test_bb, probability);
-  default_prob = default_prob.apply_scale (1, 2);
+      if (node->m_left != NULL && node->m_right != NULL)
+	{
+	  /* 1) the node has both children
 
-  /* Value belongs to this node or to the left-hand subtree.  */
-  probability = node->m_c->m_prob /
-    (node->m_c->m_subtree_prob + default_prob);
-  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (), GE_EXPR,
-				node->m_c->m_case_bb, probability);
+	     If both children are single-valued cases with no
+	     children, finish up all the work.  This way, we can save
+	     one ordered comparison.  */
 
-  /* Handle the left-hand subtree.  */
-  bb = emit_case_nodes (bb, index, node->m_left,
-			default_prob, index_type);
+	  if (!node->m_left->has_child ()
+	      && node->m_left->m_c->is_single_value_p ()
+	      && !node->m_right->has_child ()
+	      && node->m_right->m_c->is_single_value_p ())
+	    {
+	      p = (node->m_right->m_c->m_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
+				     node->m_right->m_c->m_case_bb, p);
 
-  /* If the left-hand subtree fell through,
-     don't let it fall into the right-hand subtree.  */
-  if (m_default_bb)
-    emit_jump (bb, m_default_bb);
+	      p = (node->m_left->m_c->m_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
+				     node->m_left->m_c->m_case_bb, p);
+	    }
+	  else
+	    {
+	      /* Branch to a label where we will handle it later.  */
+	      basic_block test_bb = split_edge (single_succ_edge (bb));
+	      redirect_edge_succ (single_pred_edge (test_bb),
+				  single_succ_edge (bb)->dest);
 
-  bb = emit_case_nodes (test_bb, index, node->m_right,
-			default_prob, index_type);
+	      p = ((node->m_right->m_c->m_subtree_prob
+		    + default_prob.apply_scale (1, 2))
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					    GT_EXPR, test_bb, p);
+	      default_prob = default_prob.apply_scale (1, 2);
+
+	      /* Handle the left-hand subtree.  */
+	      bb = emit_case_nodes (bb, index, node->m_left,
+				    default_prob, index_type);
+
+	      /* If the left-hand subtree fell through,
+		 don't let it fall into the right-hand subtree.  */
+	      if (bb && m_default_bb)
+		emit_jump (bb, m_default_bb);
+
+	      bb = emit_case_nodes (test_bb, index, node->m_right,
+				    default_prob, index_type);
+	    }
+	}
+      else if (node->m_left == NULL && node->m_right != NULL)
+	{
+	  /* 2) the node has only right child.  */
+
+	  /* Here we have a right child but no left so we issue a conditional
+	     branch to default and process the right child.
+
+	     Omit the conditional branch to default if the right child
+	     does not have any children and is single valued; it would
+	     cost too much space to save so little time.  */
+
+	  if (node->m_right->has_child ()
+	      || !node->m_right->m_c->is_single_value_p ())
+	    {
+	      p = (default_prob.apply_scale (1, 2)
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
+					    LT_EXPR, m_default_bb, p);
+	      default_prob = default_prob.apply_scale (1, 2);
+
+	      bb = emit_case_nodes (bb, index, node->m_right, default_prob,
+				    index_type);
+	    }
+	  else
+	    {
+	      /* We cannot process node->right normally
+		 since we haven't ruled out the numbers less than
+		 this node's value.  So handle node->right explicitly.  */
+	      p = (node->m_right->m_c->m_subtree_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
+				     node->m_right->m_c->m_case_bb, p);
+	    }
+	}
+      else if (node->m_left != NULL && node->m_right == NULL)
+	{
+	  /* 3) just one subtree, on the left.  Similar case as previous.  */
+
+	  if (node->m_left->has_child ()
+	      || !node->m_left->m_c->is_single_value_p ())
+	    {
+	      p = (default_prob.apply_scale (1, 2)
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					    GT_EXPR, m_default_bb, p);
+		  default_prob = default_prob.apply_scale (1, 2);
+
+	      bb = emit_case_nodes (bb, index, node->m_left, default_prob,
+				    index_type);
+	    }
+	  else
+	    {
+	      /* We cannot process node->left normally
+		 since we haven't ruled out the numbers less than
+		 this node's value.  So handle node->left explicitly.  */
+	      p = (node->m_left->m_c->m_subtree_prob
+		   / (node->m_c->m_subtree_prob + default_prob));
+	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
+				     node->m_left->m_c->m_case_bb, p);
+	    }
+	}
+    }
+  else
+    {
+      /* Node is a range.  These cases are very similar to those for a single
+	 value, except that we do not start by testing whether this node
+	 is the one to branch to.  */
+      if (node->has_child () || node->m_c->get_type () != SIMPLE_CASE)
+	{
+	  /* Branch to a label where we will handle it later.  */
+	  basic_block test_bb = split_edge (single_succ_edge (bb));
+	  redirect_edge_succ (single_pred_edge (test_bb),
+			      single_succ_edge (bb)->dest);
+
+
+	   profile_probability right_prob = profile_probability::never ();
+	   if (node->m_right)
+	     right_prob = node->m_right->m_c->m_subtree_prob;
+	  p = ((right_prob + default_prob.apply_scale (1, 2))
+	       / (node->m_c->m_subtree_prob + default_prob));
+
+	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
+					GT_EXPR, test_bb, p);
+	  default_prob = default_prob.apply_scale (1, 2);
+
+	  /* Value belongs to this node or to the left-hand subtree.  */
+	  p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
+	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
+					GE_EXPR, node->m_c->m_case_bb, p);
+
+	  /* Handle the left-hand subtree.  */
+	  bb = emit_case_nodes (bb, index, node->m_left,
+				default_prob, index_type);
+
+	  /* If the left-hand subtree fell through,
+	     don't let it fall into the right-hand subtree.  */
+	  if (bb && m_default_bb)
+	    emit_jump (bb, m_default_bb);
+
+	  bb = emit_case_nodes (test_bb, index, node->m_right,
+				default_prob, index_type);
+	}
+      else
+	{
+	  /* Node has no children so we check low and high bounds to remove
+	     redundant tests.  Only one of the bounds can exist,
+	     since otherwise this node is bounded--a case tested already.  */
+	  tree lhs, rhs;
+	  generate_range_test (bb, index, node->m_c->get_low (),
+			       node->m_c->get_high (), &lhs, &rhs);
+	  p = default_prob / (node->m_c->m_subtree_prob + default_prob);
+
+	  bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
+					m_default_bb, p);
+
+	  emit_jump (bb, node->m_c->m_case_bb);
+	  return NULL;
+	}
+    }
 
   return bb;
 }
@@ -2204,8 +2483,13 @@ pass_lower_switch<O0>::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       gimple *stmt = last_stmt (bb);
-      if (stmt && gimple_code (stmt) == GIMPLE_SWITCH)
-	switch_statements.safe_push (stmt);
+      gswitch *swtch;
+      if (stmt && (swtch = dyn_cast<gswitch *> (stmt)))
+	{
+	  if (!O0)
+	    group_case_labels_stmt (swtch);
+	  switch_statements.safe_push (swtch);
+	}
     }
 
   for (unsigned i = 0; i < switch_statements.length (); i++)

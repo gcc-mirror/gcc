@@ -19,7 +19,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.64)
 AC_INIT(libdecnumber, [ ], gcc-bugs@gcc.gnu.org, libdecnumber)
 AC_CONFIG_SRCDIR(decNumber.h)
 AC_CONFIG_MACRO_DIR(../config)

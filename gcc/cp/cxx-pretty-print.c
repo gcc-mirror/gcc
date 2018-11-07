@@ -294,6 +294,39 @@ pp_cxx_qualified_id (cxx_pretty_printer *pp, tree t)
     }
 }
 
+/* Given a value e of ENUMERAL_TYPE:
+   Print out the first ENUMERATOR id with value e, if one is found,
+   (including nested names but excluding the enum name if unscoped)
+   else print out the value as a C-style cast (type-id)value.  */
+
+static void
+pp_cxx_enumeration_constant (cxx_pretty_printer *pp, tree e)
+{
+  tree type = TREE_TYPE (e);
+  tree value;
+
+  /* Find the name of this constant.  */
+  for (value = TYPE_VALUES (type);
+       value != NULL_TREE
+	&& !tree_int_cst_equal (DECL_INITIAL (TREE_VALUE (value)), e);
+       value = TREE_CHAIN (value))
+    ;
+
+  if (value != NULL_TREE)
+    {
+      if (!ENUM_IS_SCOPED (type))
+	type = get_containing_scope (type);
+      pp_cxx_nested_name_specifier (pp, type);
+      pp->id_expression (TREE_PURPOSE (value));
+    }
+  else
+    {
+      /* Value must have been cast.  */
+       pp_c_type_cast (pp, type);
+       pp_c_integer_constant (pp, e);
+    }
+}
+
 
 void
 cxx_pretty_printer::constant (tree t)
@@ -315,6 +348,11 @@ cxx_pretty_printer::constant (tree t)
       if (NULLPTR_TYPE_P (TREE_TYPE (t)))
 	{
 	  pp_string (this, "nullptr");
+	  break;
+	}
+      else if (TREE_CODE (TREE_TYPE (t)) == ENUMERAL_TYPE)
+	{
+	  pp_cxx_enumeration_constant (this, t);
 	  break;
 	}
       /* fall through.  */
@@ -2021,6 +2059,12 @@ cxx_pretty_printer::statement (tree t)
       pp_cxx_ws_string (this, "for");
       pp_space (this);
       pp_cxx_left_paren (this);
+      if (RANGE_FOR_INIT_STMT (t))
+	{
+	  statement (RANGE_FOR_INIT_STMT (t));
+	  pp_needs_newline (this) = false;
+	  pp_cxx_whitespace (this);
+	}
       statement (RANGE_FOR_DECL (t));
       pp_space (this);
       pp_needs_newline (this) = false;

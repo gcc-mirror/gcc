@@ -491,6 +491,7 @@ warn_logical_not_parentheses (location_t location, enum tree_code code,
       && integer_zerop (rhs))
     return;
 
+  auto_diagnostic_group d;
   if (warning_at (location, OPT_Wlogical_not_parentheses,
 		  "logical not is only applied to the left hand side of "
 		  "comparison")
@@ -701,7 +702,7 @@ sizeof_pointer_memaccess_warning (location_t *sizeof_arg_loc, tree callee,
   location_t loc;
 
   if (TREE_CODE (callee) != FUNCTION_DECL
-      || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL
+      || !fndecl_built_in_p (callee, BUILT_IN_NORMAL)
       || vec_safe_length (params) <= 1)
     return;
 
@@ -2232,6 +2233,7 @@ warn_duplicated_cond_add_or_warn (location_t loc, tree cond, vec<tree> **chain)
   FOR_EACH_VEC_ELT (**chain, ix, t)
     if (operand_equal_p (cond, t, 0))
       {
+	auto_diagnostic_group d;
 	if (warning_at (loc, OPT_Wduplicated_cond,
 			"duplicated %<if%> condition"))
 	  inform (EXPR_LOCATION (t), "previously used here");
@@ -2427,7 +2429,7 @@ warn_for_restrict (unsigned param_pos, tree *argarray, unsigned nargs)
     {
       arg = argarray[pos - 1];
       if (EXPR_HAS_LOCATION (arg))
-	richloc.add_range (EXPR_LOCATION (arg), false);
+	richloc.add_range (EXPR_LOCATION (arg));
     }
 
   return warning_n (&richloc, OPT_Wrestrict, arg_positions.length (),
@@ -2601,6 +2603,7 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
 	return;
     }
 
+  auto_diagnostic_group d;
   if (warning_at (body_loc, OPT_Wmultistatement_macros,
 		  "macro expands to multiple statements"))
     inform (guard_loc, "some parts of macro expansion are not guarded by "

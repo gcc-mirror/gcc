@@ -1,5 +1,5 @@
 ! { dg-lto-do link }
-! { dg-lto-options {{-flto -g -fPIC -r -nostdlib} {-O -flto -g -fPIC -r -nostdlib}} }
+! { dg-lto-options {{-flto -g -fPIC -r} {-O -flto -g -fPIC -r}} }
 ! { dg-extra-ld-options "-flinker-output=nolto-rel" }
 
       FUNCTION makenumberstring(x)

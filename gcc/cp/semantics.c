@@ -1061,7 +1061,35 @@ finish_for_stmt (tree for_stmt)
 		     : &FOR_SCOPE (for_stmt));
   tree scope = *scope_ptr;
   *scope_ptr = NULL;
+
+  /* During parsing of the body, range for uses "__for_{range,begin,end} "
+     decl names to make those unaccessible by code in the body.
+     Change it to ones with underscore instead of space, so that it can
+     be inspected in the debugger.  */
+  tree range_for_decl[3] = { NULL_TREE, NULL_TREE, NULL_TREE };
+  gcc_assert (CPTI_FOR_BEGIN__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 1
+	      && CPTI_FOR_END__IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 2
+	      && CPTI_FOR_RANGE_IDENTIFIER == CPTI_FOR_RANGE__IDENTIFIER + 3
+	      && CPTI_FOR_BEGIN_IDENTIFIER == CPTI_FOR_BEGIN__IDENTIFIER + 3
+	      && CPTI_FOR_END_IDENTIFIER == CPTI_FOR_END__IDENTIFIER + 3);
+  for (int i = 0; i < 3; i++)
+    {
+      tree id = cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER + i];
+      if (IDENTIFIER_BINDING (id)
+	  && IDENTIFIER_BINDING (id)->scope == current_binding_level)
+	{
+	  range_for_decl[i] = IDENTIFIER_BINDING (id)->value;
+	  gcc_assert (VAR_P (range_for_decl[i])
+		      && DECL_ARTIFICIAL (range_for_decl[i]));
+	}
+    }
+
   add_stmt (do_poplevel (scope));
+
+  for (int i = 0; i < 3; i++)
+    if (range_for_decl[i])
+      DECL_NAME (range_for_decl[i])
+	= cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER + i];
 }
 
 /* Begin a range-for-statement.  Returns a new RANGE_FOR_STMT.
@@ -1074,8 +1102,8 @@ begin_range_for_stmt (tree scope, tree init)
 {
   begin_maybe_infinite_loop (boolean_false_node);
 
-  tree r = build_stmt (input_location, RANGE_FOR_STMT,
-		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
+  tree r = build_stmt (input_location, RANGE_FOR_STMT, NULL_TREE, NULL_TREE,
+		       NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE);
 
   if (scope == NULL_TREE)
     {
@@ -1083,22 +1111,23 @@ begin_range_for_stmt (tree scope, tree init)
       scope = begin_for_scope (&init);
     }
 
-  /* RANGE_FOR_STMTs do not use nor save the init tree, so we
-     pop it now.  */
-  if (init)
-    pop_stmt_list (init);
+  /* Since C++20, RANGE_FOR_STMTs can use the init tree, so save it.  */
+  RANGE_FOR_INIT_STMT (r) = init;
   RANGE_FOR_SCOPE (r) = scope;
 
   return r;
 }
 
 /* Finish the head of a range-based for statement, which may
-   be given by RANGE_FOR_STMT. DECL must be the declaration
+   be given by RANGE_FOR_STMT.  DECL must be the declaration
    and EXPR must be the loop expression. */
 
 void
 finish_range_for_decl (tree range_for_stmt, tree decl, tree expr)
 {
+  if (processing_template_decl)
+    RANGE_FOR_INIT_STMT (range_for_stmt)
+      = pop_stmt_list (RANGE_FOR_INIT_STMT (range_for_stmt));
   RANGE_FOR_DECL (range_for_stmt) = decl;
   RANGE_FOR_EXPR (range_for_stmt) = expr;
   add_stmt (range_for_stmt);
@@ -1505,7 +1534,7 @@ finish_asm_stmt (int volatile_p, tree string, tree output_operands,
 		     effectively const.  */
 		  || (CLASS_TYPE_P (TREE_TYPE (operand))
 		      && C_TYPE_FIELDS_READONLY (TREE_TYPE (operand)))))
-	    cxx_readonly_error (operand, lv_asm);
+	    cxx_readonly_error (input_location, operand, lv_asm);
 
 	  tree *op = &operand;
 	  while (TREE_CODE (*op) == COMPOUND_EXPR)
@@ -2519,8 +2548,7 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
 	  if ((complain & tf_warning)
 	      && TREE_CODE (fn) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fn) == BUILT_IN_MEMSET
+	      && fndecl_built_in_p (fn, BUILT_IN_MEMSET)
 	      && vec_safe_length (*args) == 3
 	      && !any_type_dependent_arguments_p (*args))
 	    {
@@ -2700,13 +2728,14 @@ finish_unary_op_expr (location_t op_loc, enum tree_code code, cp_expr expr,
   /* TODO: build_x_unary_op doesn't always honor the location.  */
   result.set_location (combined_loc);
 
-  tree result_ovl, expr_ovl;
+  if (result == error_mark_node)
+    return result;
 
   if (!(complain & tf_warning))
     return result;
 
-  result_ovl = result;
-  expr_ovl = expr;
+  tree result_ovl = result;
+  tree expr_ovl = expr;
 
   if (!processing_template_decl)
     expr_ovl = cp_fully_fold (expr_ovl);
@@ -3620,8 +3649,17 @@ finish_id_expression (tree id_expression,
       *idk = CP_ID_KIND_NONE;
       if (TREE_CODE (decl) == TEMPLATE_PARM_INDEX)
 	decl = TEMPLATE_PARM_DECL (decl);
-      r = convert_from_reference (DECL_INITIAL (decl));
-
+      r = DECL_INITIAL (decl);
+      if (CLASS_TYPE_P (TREE_TYPE (r)) && !CP_TYPE_CONST_P (TREE_TYPE (r)))
+	{
+	  /* If the entity is a template parameter object for a template
+	     parameter of type T, the type of the expression is const T.  */
+	  tree ctype = TREE_TYPE (r);
+	  ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+						   | TYPE_QUAL_CONST));
+	  r = build1 (VIEW_CONVERT_EXPR, ctype, r);
+	}
+      r = convert_from_reference (r);
       if (integral_constant_expression_p
 	  && !dependent_type_p (TREE_TYPE (decl))
 	  && !(INTEGRAL_OR_ENUMERATION_TYPE_P (TREE_TYPE (r))))
@@ -4572,7 +4610,8 @@ handle_omp_array_sections_1 (tree c, tree t, vec<tree> &types,
 		      omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
 	  return error_mark_node;
 	}
-      else if (TREE_CODE (t) == PARM_DECL
+      else if (ort == C_ORT_OMP
+	       && TREE_CODE (t) == PARM_DECL
 	       && DECL_ARTIFICIAL (t)
 	       && DECL_NAME (t) == this_identifier)
 	{
@@ -7176,7 +7215,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	handle_map_references:
 	  if (!remove
 	      && !processing_template_decl
-	      && (ort & C_ORT_OMP_DECLARE_SIMD) == C_ORT_OMP
+	      && ort != C_ORT_DECLARE_SIMD
 	      && TYPE_REF_P (TREE_TYPE (OMP_CLAUSE_DECL (c))))
 	    {
 	      t = OMP_CLAUSE_DECL (c);
@@ -7911,14 +7950,7 @@ finish_omp_threadprivate (tree vars)
 	{
 	  /* Allocate a LANG_SPECIFIC structure for V, if needed.  */
 	  if (DECL_LANG_SPECIFIC (v) == NULL)
-	    {
-	      retrofit_lang_decl (v);
-
-	      /* Make sure that DECL_DISCRIMINATOR_P continues to be true
-		 after the allocation of the lang_decl structure.  */
-	      if (DECL_DISCRIMINATOR_P (v))
-		DECL_LANG_SPECIFIC (v)->u.base.u2sel = 1;
-	    }
+	    retrofit_lang_decl (v);
 
 	  if (! CP_DECL_THREAD_LOCAL_P (v))
 	    {
@@ -9270,7 +9302,8 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
       if (identifier_p (expr))
         expr = lookup_name (expr);
 
-      if (INDIRECT_REF_P (expr))
+      if (INDIRECT_REF_P (expr)
+	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)
         /* This can happen when the expression is, e.g., "a.b". Just
            look at the underlying operand.  */
         expr = TREE_OPERAND (expr, 0);

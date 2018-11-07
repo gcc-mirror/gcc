@@ -26,20 +26,22 @@ void test01()
 {
   std::__detail::_Prime_rehash_policy policy;
 
-  for (std::size_t i = 1;;)
+  // Starts at 4 because 2 & 3 are two consecutives primes that make this test
+  // fail.
+  for (std::size_t i = 4;;)
     {
       auto nxt = policy._M_next_bkt(i);
 
-      if (nxt == i)
+      if (nxt <= i)
 	{
-	  // Equals only when reaching max.
-	  constexpr auto mx = std::numeric_limits<std::size_t>::max() - 1;
+	  // Lower or equals only when reaching max prime.
+	  constexpr auto mx = std::numeric_limits<std::size_t>::max();
 	  VERIFY( nxt == policy._M_next_bkt(mx) );
 	  break;
 	}
 
       VERIFY( nxt > i );
-      i = nxt;
+      i = nxt + 1;
     }
 }
 

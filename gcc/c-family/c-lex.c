@@ -199,7 +199,7 @@ fe_file_change (const line_map_ordinary *new_map)
 	 we already did in compile_file.  */
       if (!MAIN_FILE_P (new_map))
 	{
-	  unsigned int included_at = LAST_SOURCE_LINE_LOCATION (new_map - 1);
+	  location_t included_at = linemap_included_from (new_map);
 	  int line = 0;
 	  if (included_at > BUILTINS_LOCATION)
 	    line = SOURCE_LINE (new_map - 1, included_at);
@@ -356,6 +356,8 @@ c_common_has_attribute (cpp_reader *pfile)
 		       || is_attribute_p ("nodiscard", attr_name)
 		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
+	      else if (is_attribute_p ("no_unique_address", attr_name))
+		result = 201803;
 	      if (result)
 		attr_name = NULL_TREE;
 	    }

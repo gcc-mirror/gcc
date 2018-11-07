@@ -498,7 +498,7 @@ extern GTY(()) tree c_global_trees[CTI_MAX];
 
 enum c_language_kind
 {
-  clk_c		= 0,		/* C90, C94, C99 or C11 */
+  clk_c		= 0,		/* C90, C94, C99, C11 or C2X */
   clk_objc	= 1,		/* clk_c with ObjC features.  */
   clk_cxx	= 2,		/* ANSI/ISO C++ */
   clk_objcxx	= 3		/* clk_cxx with ObjC features.  */
@@ -635,13 +635,17 @@ extern int flag_cond_mismatch;
 
 extern int flag_isoc94;
 
-/* Nonzero means use the ISO C99 (or C11) dialect of C.  */
+/* Nonzero means use the ISO C99 (or later) dialect of C.  */
 
 extern int flag_isoc99;
 
-/* Nonzero means use the ISO C11 dialect of C.  */
+/* Nonzero means use the ISO C11 (or later) dialect of C.  */
 
 extern int flag_isoc11;
+
+/* Nonzero means use the ISO C2X dialect of C.  */
+
+extern int flag_isoc2x;
 
 /* Nonzero means that we have builtin functions, and main is an int.  */
 
@@ -808,7 +812,8 @@ extern void check_function_format (tree, int, tree *, vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-extern bool c_common_handle_option (size_t, const char *, int, int, location_t,
+extern bool c_common_handle_option (size_t, const char *, HOST_WIDE_INT, int,
+				    location_t,
 				    const struct cl_option_handlers *);
 extern bool default_handle_c_option (size_t, const char *, int);
 extern tree c_common_type_for_mode (machine_mode, int);
@@ -999,8 +1004,9 @@ extern void init_c_lex (void);
 
 extern void c_cpp_builtins (cpp_reader *);
 extern void c_cpp_builtins_optimize_pragma (cpp_reader *, tree, tree);
-extern bool c_cpp_error (cpp_reader *, int, int, rich_location *,
-			 const char *, va_list *)
+extern bool c_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			      enum cpp_warning_reason, rich_location *,
+			      const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 extern int c_common_has_attribute (cpp_reader *);
 
@@ -1037,6 +1043,7 @@ extern tree fold_offsetof (tree, tree = size_type_node,
 			   tree_code ctx = ERROR_MARK);
 
 extern int complete_array_type (tree *, tree, bool);
+extern void complete_flexible_array_elts (tree);
 
 extern tree builtin_type_for_size (int, bool);
 
@@ -1329,16 +1336,18 @@ excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);
 extern int c_flt_eval_method (bool ts18661_p);
 extern void add_no_sanitize_value (tree node, unsigned int flags);
 
-extern void maybe_add_include_fixit (rich_location *, const char *);
+extern void maybe_add_include_fixit (rich_location *, const char *, bool);
 extern void maybe_suggest_missing_token_insertion (rich_location *richloc,
 						   enum cpp_ttype token_type,
 						   location_t prev_token_loc);
+extern tree braced_list_to_string (tree, tree);
 
 #if CHECKING_P
 namespace selftest {
   /* Declarations for specific families of tests within c-family,
      by source file, in alphabetical order.  */
   extern void c_format_c_tests (void);
+  extern void c_indentation_c_tests (void);
   extern void c_pretty_print_c_tests (void);
   extern void c_spellcheck_cc_tests (void);
 

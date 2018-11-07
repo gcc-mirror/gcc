@@ -1,5 +1,5 @@
 // PR c++/84355
-// { dg-additional-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 template <class, class> struct same;
 template <class T> struct same<T,T> {};

@@ -3537,20 +3537,20 @@ expression_expensive_p (tree expr)
     }
 }
 
-/* Do final value replacement for LOOP.  */
+/* Do final value replacement for LOOP, return true if we did anything.  */
 
-void
+bool
 final_value_replacement_loop (struct loop *loop)
 {
   /* If we do not know exact number of iterations of the loop, we cannot
      replace the final value.  */
   edge exit = single_exit (loop);
   if (!exit)
-    return;
+    return false;
 
   tree niter = number_of_latch_executions (loop);
   if (niter == chrec_dont_know)
-    return;
+    return false;
 
   /* Ensure that it is possible to insert new statements somewhere.  */
   if (!single_pred_p (exit->dest))
@@ -3563,6 +3563,7 @@ final_value_replacement_loop (struct loop *loop)
     = superloop_at_depth (loop,
 			  loop_depth (exit->dest->loop_father) + 1);
 
+  bool any = false;
   gphi_iterator psi;
   for (psi = gsi_start_phis (exit->dest); !gsi_end_p (psi); )
     {
@@ -3617,8 +3618,10 @@ final_value_replacement_loop (struct loop *loop)
 	{
 	  fprintf (dump_file, "\nfinal value replacement:\n  ");
 	  print_gimple_stmt (dump_file, phi, 0);
-	  fprintf (dump_file, "  with\n  ");
+	  fprintf (dump_file, " with expr: ");
+	  print_generic_expr (dump_file, def);
 	}
+      any = true;
       def = unshare_expr (def);
       remove_phi_node (&psi, false);
 
@@ -3656,104 +3659,13 @@ final_value_replacement_loop (struct loop *loop)
       gsi_insert_before (&gsi, ass, GSI_SAME_STMT);
       if (dump_file)
 	{
+	  fprintf (dump_file, "\n final stmt:\n  ");
 	  print_gimple_stmt (dump_file, ass, 0);
 	  fprintf (dump_file, "\n");
 	}
     }
-}
 
-/* Replace ssa names for that scev can prove they are constant by the
-   appropriate constants.  Also perform final value replacement in loops,
-   in case the replacement expressions are cheap.
-
-   We only consider SSA names defined by phi nodes; rest is left to the
-   ordinary constant propagation pass.  */
-
-unsigned int
-scev_const_prop (void)
-{
-  basic_block bb;
-  tree name, type, ev;
-  gphi *phi;
-  struct loop *loop;
-  bitmap ssa_names_to_remove = NULL;
-  unsigned i;
-  gphi_iterator psi;
-
-  if (number_of_loops (cfun) <= 1)
-    return 0;
-
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      loop = bb->loop_father;
-
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  phi = psi.phi ();
-	  name = PHI_RESULT (phi);
-
-	  if (virtual_operand_p (name))
-	    continue;
-
-	  type = TREE_TYPE (name);
-
-	  if (!POINTER_TYPE_P (type)
-	      && !INTEGRAL_TYPE_P (type))
-	    continue;
-
-	  ev = resolve_mixers (loop, analyze_scalar_evolution (loop, name),
-			       NULL);
-	  if (!is_gimple_min_invariant (ev)
-	      || !may_propagate_copy (name, ev))
-	    continue;
-
-	  /* Replace the uses of the name.  */
-	  if (name != ev)
-	    {
-	      if (dump_file && (dump_flags & TDF_DETAILS))
-		{
-		  fprintf (dump_file, "Replacing uses of: ");
-		  print_generic_expr (dump_file, name);
-		  fprintf (dump_file, " with: ");
-		  print_generic_expr (dump_file, ev);
-		  fprintf (dump_file, "\n");
-		}
-	      replace_uses_by (name, ev);
-	    }
-
-	  if (!ssa_names_to_remove)
-	    ssa_names_to_remove = BITMAP_ALLOC (NULL);
-	  bitmap_set_bit (ssa_names_to_remove, SSA_NAME_VERSION (name));
-	}
-    }
-
-  /* Remove the ssa names that were replaced by constants.  We do not
-     remove them directly in the previous cycle, since this
-     invalidates scev cache.  */
-  if (ssa_names_to_remove)
-    {
-      bitmap_iterator bi;
-
-      EXECUTE_IF_SET_IN_BITMAP (ssa_names_to_remove, 0, i, bi)
-	{
-	  gimple_stmt_iterator psi;
-	  name = ssa_name (i);
-	  phi = as_a <gphi *> (SSA_NAME_DEF_STMT (name));
-
-	  gcc_assert (gimple_code (phi) == GIMPLE_PHI);
-	  psi = gsi_for_stmt (phi);
-	  remove_phi_node (&psi, true);
-	}
-
-      BITMAP_FREE (ssa_names_to_remove);
-      scev_reset ();
-    }
-
-  /* Now the regular final value replacement.  */
-  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
-    final_value_replacement_loop (loop);
-
-  return 0;
+  return any;
 }
 
 #include "gt-tree-scalar-evolution.h"

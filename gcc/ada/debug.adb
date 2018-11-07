@@ -150,7 +150,7 @@ package body Debug is
    --  d_c
    --  d_d
    --  d_e  Ignore entry calls and requeue statements for elaboration
-   --  d_f
+   --  d_f  Issue info messages related to GNATprove usage
    --  d_g
    --  d_h
    --  d_i  Ignore activations and calls to instances for elaboration
@@ -172,7 +172,7 @@ package body Debug is
    --  d_y
    --  d_z
 
-   --  d_A
+   --  d_A  Stop generation of ALI file
    --  d_B
    --  d_C
    --  d_D
@@ -831,6 +831,11 @@ package body Debug is
    --       control, conditional entry calls, timed entry calls, and requeue
    --       statements in both the static and dynamic elaboration models.
 
+   --  d_f  Issue info messages related to GNATprove usage to help users
+   --       understand analysis results. By default these are not issued as
+   --       beginners find them confusing. Set automatically by GNATprove when
+   --       switch --info is used.
+
    --  d_i  The compiler ignores calls and task activations when they target a
    --       subprogram or task type defined in an external instance for both
    --       the static and dynamic elaboration models.
@@ -842,6 +847,8 @@ package body Debug is
    --  d_s  The compiler stops the examination of a task body once it reaches
    --       a call to routine Ada.Synchronous_Task_Control.Suspend_Until_True
    --       or Ada.Synchronous_Barriers.Wait_For_Release.
+
+   --  d_A  Do not generate ALI files by setting Opt.Disable_ALI_File.
 
    --  d_L  Output trace information on elaboration checking. This debug switch
    --       causes output to be generated showing each call or instantiation as

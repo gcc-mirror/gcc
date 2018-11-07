@@ -40,6 +40,10 @@ x86-tune-sched-core.o: $(srcdir)/config/i386/x86-tune-sched-core.c
 	  $(COMPILE) $<
 	  $(POSTCOMPILE)
 
+i386-d.o: $(srcdir)/config/i386/i386-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 i386.o: i386-builtin-types.inc
 
 i386-builtin-types.inc: s-i386-bt ; @true

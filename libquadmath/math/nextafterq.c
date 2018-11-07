@@ -1,4 +1,4 @@
-/* nextafterq.c -- __float128 version of s_nextafter.c.
+/* s_nextafterl.c -- long double version of s_nextafter.c.
  * Conversion to IEEE quad long double by Jakub Jelinek, jj@ultra.linux.cz.
  */
 
@@ -13,11 +13,20 @@
  * ====================================================
  */
 
-#include <errno.h>
+#if defined(LIBM_SCCS) && !defined(lint)
+static char rcsid[] = "$NetBSD: $";
+#endif
+
+/* IEEE functions
+ *	nextafterq(x,y)
+ *	return the next machine floating-point number of x in the
+ *	direction toward y.
+ *   Special cases:
+ */
+
 #include "quadmath-imp.h"
 
-__float128
-nextafterq (__float128 x, __float128 y)
+__float128 nextafterq(__float128 x, __float128 y)
 {
 	int64_t hx,hy,ix,iy;
 	uint64_t lx,ly;
@@ -32,9 +41,11 @@ nextafterq (__float128 x, __float128 y)
 	   return x+y;
 	if(x==y) return y;		/* x=y, return y */
 	if((ix|lx)==0) {			/* x == 0 */
+	    __float128 u;
 	    SET_FLT128_WORDS64(x,hy&0x8000000000000000ULL,1);/* return +-minsubnormal */
-
-	    /* here we should raise an underflow flag */
+	    u = math_opt_barrier (x);
+	    u = u * u;
+	    math_force_eval (u);		/* raise underflow flag */
 	    return x;
 	}
 	if(hx>=0) {			/* x > 0 */
@@ -61,7 +72,7 @@ nextafterq (__float128 x, __float128 y)
 	    errno = ERANGE;
 	}
 	if(hy==0) {
-	    __float128 u = x*x;			/* underflow */
+	    __float128 u = x*x;		/* underflow */
 	    math_force_eval (u);		/* raise underflow flag */
 	    errno = ERANGE;
 	}

@@ -125,6 +125,7 @@ Additional tutorial information is linked to from
 * LTO::             Using Link-Time Optimization.
 
 * Match and Simplify:: How to write expression simplification patterns for GIMPLE and GENERIC
+* User Experience Guidelines:: Guidelines for implementing diagnostics and options.
 * Funding::         How to help assure funding for free software.
 * GNU Project::     The GNU Project and GNU/Linux.
 
@@ -162,6 +163,7 @@ Additional tutorial information is linked to from
 @include plugins.texi
 @include lto.texi
 @include match-and-simplify.texi
+@include ux.texi
 
 @include funding.texi
 @include gnu.texi

@@ -58,8 +58,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<> struct char_traits<wchar_t>;
 #endif
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
   template<> struct char_traits<char16_t>;
   template<> struct char_traits<char32_t>;
 #endif
@@ -70,6 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
            typename _Alloc = allocator<_CharT> >
     class basic_string;
 
+_GLIBCXX_END_NAMESPACE_CXX11
+
   /// A string of @c char
   typedef basic_string<char>    string;   
 
@@ -78,16 +79,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   typedef basic_string<wchar_t> wstring;   
 #endif
 
-#if ((__cplusplus >= 201103L) \
-     && defined(_GLIBCXX_USE_C99_STDINT_TR1))
+#if __cplusplus >= 201103L
   /// A string of @c char16_t
   typedef basic_string<char16_t> u16string; 
 
   /// A string of @c char32_t
   typedef basic_string<char32_t> u32string; 
 #endif
-
-_GLIBCXX_END_NAMESPACE_CXX11
 
   /** @}  */
 

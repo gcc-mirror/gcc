@@ -694,7 +694,7 @@ optimize_va_list_gpr_fpr_size (function *fun)
 
 	  callee = gimple_call_fndecl (stmt);
 	  if (!callee
-	      || DECL_BUILT_IN_CLASS (callee) != BUILT_IN_NORMAL)
+	      || !fndecl_built_in_p (callee, BUILT_IN_NORMAL))
 	    continue;
 
 	  switch (DECL_FUNCTION_CODE (callee))
@@ -867,9 +867,8 @@ optimize_va_list_gpr_fpr_size (function *fun)
 	      tree callee = gimple_call_fndecl (stmt);
 
 	      if (callee
-		  && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
-		  && (DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_START
-		      || DECL_FUNCTION_CODE (callee) == BUILT_IN_VA_END))
+		  && (fndecl_built_in_p (callee, BUILT_IN_VA_START)
+		      || fndecl_built_in_p (callee, BUILT_IN_VA_END)))
 		continue;
 	    }
 

@@ -1,6 +1,5 @@
 ! Compiled with pr83149.f90
 ! { dg-do run }
-! { dg-options "-fno-whole-file" }
 ! { dg-compile-aux-modules "pr83149.f90" }
 ! { dg-additional-sources pr83149.f90 }
 !

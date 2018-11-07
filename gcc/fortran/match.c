@@ -1350,6 +1350,14 @@ gfc_match_assignment (void)
 
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
+
+  if (lvalue->expr_type == EXPR_CONSTANT)
+    {
+      /* This clobbers %len and %kind.  */
+      m = MATCH_ERROR;
+      gfc_error ("Assignment to a constant expression at %C");
+    }
+
   if (m != MATCH_YES)
     {
       gfc_current_locus = old_loc;
@@ -1365,6 +1373,9 @@ gfc_match_assignment (void)
   new_st.expr2 = rvalue;
 
   gfc_check_do_variable (lvalue->symtree);
+
+  if (lvalue->ts.type == BT_CLASS)
+    gfc_find_vtab (&rvalue->ts);
 
   return MATCH_YES;
 }
@@ -1889,17 +1900,21 @@ gfc_match_associate (void)
       gfc_association_list* a;
 
       /* Match the next association.  */
-      if (gfc_match (" %n => %e", newAssoc->name, &newAssoc->target)
-	    != MATCH_YES)
+      if (gfc_match (" %n =>", newAssoc->name) != MATCH_YES)
+	{
+	  gfc_error ("Expected association at %C");
+	  goto assocListError;
+	}
+
+      if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
 	{
 	  /* Have another go, allowing for procedure pointer selectors.  */
 	  gfc_matching_procptr_assignment = 1;
-	  if (gfc_match (" %n => %e", newAssoc->name, &newAssoc->target)
- 	      != MATCH_YES)
- 	    {
- 	      gfc_error ("Expected association at %C");
- 	      goto assocListError;
- 	    }
+	  if (gfc_match (" %e", &newAssoc->target) != MATCH_YES)
+	    {
+	      gfc_error ("Invalid association target at %C");
+	      goto assocListError;
+	    }
 	  gfc_matching_procptr_assignment = 0;
 	}
       newAssoc->where = gfc_current_locus;

@@ -1692,12 +1692,43 @@ Alphabetical List of All Switches
     Maximum_Alignment          : Pos; -- Maximum permitted alignment
     Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
     Pointer_Size               : Pos; -- System.Address'Size
-    Short_Enums                : Nat; -- Short foreign convention enums?
+    Short_Enums                : Nat; -- Foreign enums use short size?
     Short_Size                 : Pos; -- Standard.Short_Integer'Size
     Strict_Alignment           : Nat; -- Strict alignment?
     System_Allocator_Alignment : Nat; -- Alignment for malloc calls
     Wchar_T_Size               : Pos; -- Interfaces.C.wchar_t'Size
     Words_BE                   : Nat; -- Words stored big-endian?
+
+  ``Bits_Per_Unit`` is the number of bits in a storage unit, the equivalent of
+  GCC macro ``BITS_PER_UNIT`` documented as follows: `Define this macro to be
+  the number of bits in an addressable storage unit (byte); normally 8.`
+
+  ``Bits_Per_Word`` is the number of bits in a machine word, the equivalent of
+  GCC macro ``BITS_PER_WORD`` documented as follows: `Number of bits in a word;
+  normally 32.`
+
+  ``Double_Scalar_Alignment`` is the alignment for a scalar whose size is two
+  machine words. It should be the same as the alignment for C ``long_long`` on
+  most targets.
+
+  ``Maximum_Alignment`` is the maximum alignment that the compiler might choose
+  by default for a type or object, which is also the maximum alignment that can
+  be specified in GNAT. It is computed for GCC backends as ``BIGGEST_ALIGNMENT
+  / BITS_PER_UNIT`` where GCC macro ``BIGGEST_ALIGNMENT`` is documented as
+  follows: `Biggest alignment that any data type can require on this machine,
+  in bits.`
+
+  ``Max_Unaligned_Field`` is the maximum size for unaligned bit field, which is
+  64 for the majority of GCC targets (but can be different on some targets like
+  AAMP).
+
+  ``Strict_Alignment`` is the equivalent of GCC macro ``STRICT_ALIGNMENT``
+  documented as follows: `Define this macro to be the value 1 if instructions
+  will fail to work if given data not on the nominal alignment. If instructions
+  will merely go slower in that case, define this macro as 0.`
+
+  ``System_Allocator_Alignment`` is the guaranteed alignment of data returned
+  by calls to ``malloc``.
 
 
   The format of the input file is as follows. First come the values of

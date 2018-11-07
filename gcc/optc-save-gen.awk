@@ -478,13 +478,14 @@ print "{";
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
 	print "  if (ptr->x_" var_target_other[i] ")";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	hwi = host_wide_int[var_target_other[i]]
+	if (hwi == "yes")
 		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
 	else
-		print "    fprintf (file, \"%*s%s (%#x)\\n\",";
+		print "    fprintf (file, \"%*s%s (%#lx)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	if (hwi == "yes")
 		print "             ptr->x_" var_target_other[i] ");";
 	else
 		print "             (unsigned long)ptr->x_" var_target_other[i] ");";
@@ -544,13 +545,14 @@ print "{";
 print "  fputs (\"\\n\", file);";
 for (i = 0; i < n_target_other; i++) {
 	print "  if (ptr1->x_" var_target_other[i] " != ptr2->x_" var_target_other[i] ")";
-	if (host_wide_int[var_target_other[i]] == "yes")
+	hwi = host_wide_int[var_target_other[i]]
+	if (hwi == "yes")
 		print "    fprintf (file, \"%*s%s (%#\" HOST_WIDE_INT_PRINT \"x/%#\" HOST_WIDE_INT_PRINT \"x)\\n\",";
 	else
-		print "    fprintf (file, \"%*s%s (%#x/%#x)\\n\",";
+		print "    fprintf (file, \"%*s%s (%#lx/%#lx)\\n\",";
 	print "             indent, \"\",";
 	print "             \"" var_target_other[i] "\",";
-	if (host_wide_int[var_target_other[i]] == "yes") {
+	if (hwi == "yes") {
 		print "             ptr1->x_" var_target_other[i] ",";
 		print "             ptr2->x_" var_target_other[i] ");";
 	}

@@ -6545,14 +6545,4 @@ gimple_set_do_not_emit_location (gimple *g)
   gimple_set_plf (g, GF_PLF_1, true);
 }
 
-
-/* Macros for showing usage statistics.  */
-#define SCALE(x) ((unsigned long) ((x) < 1024*10	\
-		  ? (x)					\
-		  : ((x) < 1024*1024*10			\
-		     ? (x) / 1024			\
-		     : (x) / (1024*1024))))
-
-#define LABEL(x) ((x) < 1024*10 ? 'b' : ((x) < 1024*1024*10 ? 'k' : 'M'))
-
 #endif  /* GCC_GIMPLE_H */

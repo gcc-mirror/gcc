@@ -2205,7 +2205,7 @@ increase_alignment_1 (symtab_node *n, void *v)
 void
 symtab_node::increase_alignment (unsigned int align)
 {
-  gcc_assert (can_increase_alignment_p () && align < MAX_OFILE_ALIGNMENT);
+  gcc_assert (can_increase_alignment_p () && align <= MAX_OFILE_ALIGNMENT);
   ultimate_alias_target()->call_for_symbol_and_aliases (increase_alignment_1,
 						        (void *)(size_t) align,
 						        true);
@@ -2323,7 +2323,7 @@ symtab_node::output_to_lto_symbol_table_p (void)
     return false;
   /* FIXME: Builtins corresponding to real functions probably should have
      symbol table entries.  */
-  if (is_builtin_fn (decl))
+  if (TREE_CODE (decl) == FUNCTION_DECL && fndecl_built_in_p (decl))
     return false;
 
   /* We have real symbol that should be in symbol table.  However try to trim

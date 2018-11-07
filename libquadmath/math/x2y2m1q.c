@@ -1,5 +1,5 @@
 /* Compute x^2 + y^2 - 1, without large cancellation error.
-   Copyright (C) 2012 Free Software Foundation, Inc.
+   Copyright (C) 2012-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -17,7 +17,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-#include <stdlib.h>
 
 /* Calculate X + Y exactly and store the result in *HI + *LO.  It is
    given that |X| >= |Y| and the values are small enough that no
@@ -29,18 +28,6 @@ add_split (__float128 *hi, __float128 *lo, __float128 x, __float128 y)
   /* Apply Dekker's algorithm.  */
   *hi = x + y;
   *lo = (x - *hi) + y;
-}
-
-/* Calculate X * Y exactly and store the result in *HI + *LO.  It is
-   given that the values are small enough that no overflow occurs and
-   large enough (or zero) that no underflow occurs.  */
-
-static inline void
-mul_split (__float128 *hi, __float128 *lo, __float128 x, __float128 y)
-{
-  /* Fast built-in fused multiply-add.  */
-  *hi = x * y;
-  *lo = fmaq (x, y, -*hi);
 }
 
 /* Compare absolute values of floating-point values pointed to by P
@@ -60,34 +47,26 @@ compare (const void *p, const void *q)
 }
 
 /* Return X^2 + Y^2 - 1, computed without large cancellation error.
-   It is given that 1 > X >= Y >= epsilon / 2, and that either X >=
-   0.75 or Y >= 0.5.  */
+   It is given that 1 > X >= Y >= epsilon / 2, and that X^2 + Y^2 >=
+   0.5.  */
 
 __float128
 __quadmath_x2y2m1q (__float128 x, __float128 y)
 {
-  __float128 vals[4];
-  size_t i;
-
-  /* FIXME:  SET_RESTORE_ROUNDL (FE_TONEAREST);  */
-  mul_split (&vals[1], &vals[0], x, x);
-  mul_split (&vals[3], &vals[2], y, y);
-  if (x >= 0.75Q)
-    vals[1] -= 1.0Q;
-  else
-    {
-      vals[1] -= 0.5Q;
-      vals[3] -= 0.5Q;
-    }
-  qsort (vals, 4, sizeof (__float128), compare);
+  __float128 vals[5];
+  SET_RESTORE_ROUNDF128 (FE_TONEAREST);
+  mul_splitq (&vals[1], &vals[0], x, x);
+  mul_splitq (&vals[3], &vals[2], y, y);
+  vals[4] = -1;
+  qsort (vals, 5, sizeof (__float128), compare);
   /* Add up the values so that each element of VALS has absolute value
      at most equal to the last set bit of the next nonzero
      element.  */
-  for (i = 0; i <= 2; i++)
+  for (size_t i = 0; i <= 3; i++)
     {
       add_split (&vals[i + 1], &vals[i], vals[i + 1], vals[i]);
-      qsort (vals + i + 1, 3 - i, sizeof (__float128), compare);
+      qsort (vals + i + 1, 4 - i, sizeof (__float128), compare);
     }
   /* Now any error from this addition will be small.  */
-  return vals[3] + vals[2] + vals[1] + vals[0];
+  return vals[4] + vals[3] + vals[2] + vals[1] + vals[0];
 }

@@ -246,6 +246,17 @@ proc add_options_for_no_pch { flags } {
     return "-D__GLIBCXX__=99999999"
 }
 
+# Add to FLAGS all the target-specific flags needed for networking.
+
+proc add_options_for_net_ts { flags } {
+    # Before they were integrated into libc in Solaris 11.4, Solaris needs
+    # libsocket and libnsl for networking applications.
+    if { [istarget *-*-solaris2*] } {
+	return "$flags -lsocket -lnsl"
+    }
+    return $flags
+}
+
 # Like dg-options, but adds to the default options rather than replacing them.
 
 proc dg-additional-options { args } {

@@ -1,3 +1,58 @@
+2018-10-23  Jason Merrill  <jason@redhat.com>
+
+	Implement P0732R2, class types in non-type template parameters.
+	* cp-demangle.c (d_dump, d_make_comp, d_count_templates_scopes)
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_TPARM_OBJ.
+	(d_special_name): Handle TA.
+	(d_expresion_1): Fix demangling of brace-enclosed initializer list.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* configure.ac: Remove AC_PREREQ.
+	* configure: Re-generate.
+	* config.in: Re-generate.
+
+2018-10-01  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac (checkfuncs): Add pipe2.
+	* config.in, configure: Rebuilt.
+	* pex-unix.c (pex_unix_exec_child): Comminicate errors from child
+	to parent with a pipe, when possible.
+
+2018-08-23  Nathan Sidwell  <nathan@acm.org>
+	    Martin Liska  <mliska@suse.cz>
+
+	PR driver/87056
+	* pex-unix.c (pex_unix_exec_child): Duplicate bad_fn into local
+	scopes to avoid potential clobber.
+
+2018-08-20  Nathan Sidwell  <nathan@acm.org>
+
+	* pex-unix.c (pex_child_error): Delete.
+	(pex_unix_exec_child): Commonize error paths to single message &
+	exit.
+
+2018-07-30  Tom Tromey  <tom@tromey.com>
+
+	* cplus-dem.c (remember_Btype): Don't call memcpy with LEN==0.
+
+2018-07-26  Martin Liska  <mliska@suse.cz>
+
+	PR lto/86548
+	* make-temp-file.c (TEMP_FILE): Remove leading 'cc'.
+	(make_temp_file): Call make_temp_file_with_prefix with
+	first argument set to NULL.
+	(make_temp_file_with_prefix): Support also prefix.
+
+2018-07-19  Eli Zaretskii  <eliz@gnu.org>
+
+	* simple-object-elf.c (ENOTSUP): If not defined by errno.h, redirect
+	to ENOSYS.
+
 2018-05-30  Jan Hubicka  <hubicka@ucw.cz>
 
 	* simple-object.c (handle_lto_debug_sections): Add rename parameter.
@@ -899,8 +954,8 @@
 	* functions.texi: Regenerate.
 
 2014-12-11  Uros Bizjak  <ubizjak@gmail.com>
-            Ben Elliston  <bje@au.ibm.com>
-            Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Ben Elliston  <bje@au.ibm.com>
+	    Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 
 	* xvasprintf.c: New file.
 	* vprintf-support.h: Likewise.

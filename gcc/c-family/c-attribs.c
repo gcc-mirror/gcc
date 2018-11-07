@@ -1350,12 +1350,12 @@ get_priority (tree args, bool is_destructor)
   if (pri <= MAX_RESERVED_INIT_PRIORITY)
     {
       if (is_destructor)
-	warning (0,
+	warning (OPT_Wprio_ctor_dtor,
 		 "destructor priorities from 0 to %d are reserved "
 		 "for the implementation",
 		 MAX_RESERVED_INIT_PRIORITY);
       else
-	warning (0,
+	warning (OPT_Wprio_ctor_dtor,
 		 "constructor priorities from 0 to %d are reserved "
 		 "for the implementation",
 		 MAX_RESERVED_INIT_PRIORITY);
@@ -1881,6 +1881,7 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       bitalign /= BITS_PER_UNIT;
 
       bool diagd = true;
+      auto_diagnostic_group d;
       if (DECL_USER_ALIGN (decl) || DECL_USER_ALIGN (last_decl))
 	diagd = warning (OPT_Wattributes,
 			  "ignoring attribute %<%E (%u)%> because it conflicts "

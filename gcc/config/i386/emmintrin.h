@@ -45,6 +45,7 @@ typedef unsigned int __v4su __attribute__ ((__vector_size__ (16)));
 typedef short __v8hi __attribute__ ((__vector_size__ (16)));
 typedef unsigned short __v8hu __attribute__ ((__vector_size__ (16)));
 typedef char __v16qi __attribute__ ((__vector_size__ (16)));
+typedef signed char __v16qs __attribute__ ((__vector_size__ (16)));
 typedef unsigned char __v16qu __attribute__ ((__vector_size__ (16)));
 
 /* The Intel API is flexible enough that we must allow aliasing with other
@@ -113,7 +114,7 @@ _mm_setzero_pd (void)
 extern __inline __m128d __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_move_sd (__m128d __A, __m128d __B)
 {
-  return (__m128d) __builtin_ia32_movsd ((__v2df)__A, (__v2df)__B);
+  return __extension__ (__m128d) __builtin_shuffle ((__v2df)__A, (__v2df)__B, (__v2di){2, 1});
 }
 
 /* Load two DPFP values from P.  The address must be 16-byte aligned.  */
@@ -1295,7 +1296,7 @@ _mm_xor_si128 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpeq_epi8 (__m128i __A, __m128i __B)
 {
-  return (__m128i) ((__v16qi)__A == (__v16qi)__B);
+  return (__m128i) ((__v16qs)__A == (__v16qs)__B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1313,7 +1314,7 @@ _mm_cmpeq_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmplt_epi8 (__m128i __A, __m128i __B)
 {
-  return (__m128i) ((__v16qi)__A < (__v16qi)__B);
+  return (__m128i) ((__v16qs)__A < (__v16qs)__B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -1331,7 +1332,7 @@ _mm_cmplt_epi32 (__m128i __A, __m128i __B)
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_cmpgt_epi8 (__m128i __A, __m128i __B)
 {
-  return (__m128i) ((__v16qi)__A > (__v16qi)__B);
+  return (__m128i) ((__v16qs)__A > (__v16qs)__B);
 }
 
 extern __inline __m128i __attribute__((__gnu_inline__, __always_inline__, __artificial__))

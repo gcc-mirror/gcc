@@ -805,7 +805,7 @@ should_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
 
   /* Skip if the file had a header guard and the macro is defined.
      PCH relies on this appearing before the PCH handler below.  */
-  if (file->cmacro && file->cmacro->type == NT_MACRO)
+  if (file->cmacro && cpp_macro_p (file->cmacro))
     return false;
 
   /* Handle PCH files immediately; don't stack them.  */
@@ -898,7 +898,7 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, bool import,
   int sysp;
 
   if (!should_stack_file (pfile, file, import, loc))
-      return false;
+    return false;
 
   if (pfile->buffer == NULL || file->dir == NULL)
     sysp = 0;

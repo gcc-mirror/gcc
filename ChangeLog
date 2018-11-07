@@ -1,3 +1,119 @@
+2018-11-04  Stafford Horne  <shorne@gmail.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* multilib.am: New file.  From automake.
+
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* libtool.m4: Use AC_LANG_SOURCE.
+	* configure.ac: Remove AC_PREREQ, use AC_LANG_SOURCE.
+	* ar-lib: New file.
+	* test-driver: New file.
+	* configure: Re-generate.
+
+2018-10-31  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-31  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR bootstrap/87788
+	PR d/87799
+	* configure: Rebuild.
+	* configure.ac: Disable D on systems where it is known not to work.
+
+2018-10-28  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* Makefile.def (target_modules): Add libphobos.
+	(flags_to_pass): Add GDC, GDCFLAGS, GDC_FOR_TARGET and
+	GDCFLAGS_FOR_TARGET.
+	(dependencies): Make libphobos depend on libatomic, libbacktrace
+	configure, and zlib configure.
+	(language): Add language d.
+	* Makefile.in: Rebuild.
+	* Makefile.tpl (BUILD_EXPORTS): Add GDC and GDCFLAGS.
+	(HOST_EXPORTS): Add GDC.
+	(POSTSTAGE1_HOST_EXPORTS): Add GDC and GDC_FOR_BUILD.
+	(BASE_TARGET_EXPORTS): Add GDC.
+	(GDC_FOR_BUILD, GDC, GDCFLAGS): New variables.
+	(GDC_FOR_TARGET, GDC_FLAGS_FOR_TARGET): New variables.
+	(EXTRA_HOST_FLAGS): Add GDC.
+	(STAGE1_FLAGS_TO_PASS): Add GDC.
+	(EXTRA_TARGET_FLAGS): Add GDC and GDCFLAGS.
+	* config-ml.in: Treat GDC and GDCFLAGS like other compiler/flag
+	environment variables.
+	* configure: Rebuild.
+	* configure.ac: Add target-libphobos to target_libraries.  Set and
+	substitute GDC_FOR_BUILD and GDC_FOR_TARGET.
+
+2018-10-24  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* MAINTAINERS (Write After Approval): Add myself.
+
+2018-10-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* MAINTAINERS (Write After Approval): Remove myself.
+
+2018-10-23  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* MAINTAINERS: Add myself as D front-end and libphobos maintainer.
+
+2018-10-14  Bin Cheng <bin.cheng@linux.alibaba.com>
+
+	* MAINTAINERS: Update my email address.
+
+2018-10-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: List myself as "libgomp (OpenACC)" and "OpenACC"
+	maintainer.
+
+2018-09-13  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* MAINTAINERS (Write After Approval): Add self.
+
+2018-09-13  Sam Tebbs  <sam.tebbs@arm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-09-04  Xuepeng Guo  <xuepeng.guo@intel.com>
+
+	* MAINTAINERS: Update my email address.
+
+2018-08-29  Vlad Lazar  <vlad.lazar@arm.com>
+
+	* MAINTAINERS (write after approval): Add myself.
+
+2018-08-21  Richard Sandiford  <richard.sandiford@arm.com>
+
+	* MAINTAINERS: Add self to global reviewers list.
+
+2018-08-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	MAINTAINERS: Add c-sky port maintainers.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Revert change in previous commit and
+	join lines.
+
+2018-08-10  Martin Liska  <mliska@suse.cz>
+
+	* MAINTAINERS: Remove extra line.
+
+2018-08-06  Naveen H.S  <naveenh@marvell.com>
+
+	* MAINTAINERS: Update my email address.
+
+2018-07-19  DJ Delorie  <dj@redhat.com>
+
+	* MAINTAINERS (m32c, msp43, rl78, libiberty, build): Remove myself
+	as maintainer.
+
 2018-07-16  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* MAINTAINERS: Adjust email address for me and my colleague Robin
@@ -25,7 +141,7 @@
 
 2018-06-19  Bernhard M. Wiedemann  <bwiedemann@suse.de>
 
-        * libtool.m4: Sort output of 'find' to enable deterministic builds.
+	* libtool.m4: Sort output of 'find' to enable deterministic builds.
 	* ltmain.sh: Likewise.
 
 2018-07-03  Segher Boessenkool  <segher@kernel.crashing.org>

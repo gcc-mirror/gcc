@@ -353,7 +353,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
   mpz_t minm, maxm;
   basic_block bb;
   wide_int minv, maxv;
-  enum value_range_type rtype = VR_VARYING;
+  enum value_range_kind rtype = VR_VARYING;
 
   /* If the expression is a constant, we know its value exactly.  */
   if (integer_zerop (var))
@@ -2589,11 +2589,9 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   if (TREE_CODE (call) == INTEGER_CST)
     max = tree_to_uhwi (call);
   else
-    {
-      max = TYPE_PRECISION (TREE_TYPE (src));
-      if (adjust)
-	max = max - 1;
-    }
+    max = TYPE_PRECISION (TREE_TYPE (src));
+  if (adjust)
+    max = max - 1;
 
   niter->niter = iter;
   niter->assumptions = boolean_true_node;
@@ -3231,6 +3229,7 @@ do_warn_aggressive_loop_optimizations (struct loop *loop,
   char buf[WIDE_INT_PRINT_BUFFER_SIZE];
   print_dec (i_bound, buf, TYPE_UNSIGNED (TREE_TYPE (loop->nb_iterations))
 	     ? UNSIGNED : SIGNED);
+  auto_diagnostic_group d;
   if (warning_at (gimple_location (stmt), OPT_Waggressive_loop_optimizations,
 		  "iteration %s invokes undefined behavior", buf))
     inform (gimple_location (estmt), "within this loop");
@@ -4672,7 +4671,7 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
 {
   tree type;
   wide_int minv, maxv, diff, step_wi;
-  enum value_range_type rtype;
+  enum value_range_kind rtype;
 
   if (TREE_CODE (step) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (var)))
     return false;

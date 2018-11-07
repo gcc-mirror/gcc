@@ -27,7 +27,7 @@ int main()
 {
   std::list<int> l;
 
-  int array[] { 0, 1, 2 };
+  int array[] = { 0, 1, 2 };
   input_iterator_seq seq(array, array + 3);
 
   l.assign(seq.begin(), seq.end());

@@ -152,6 +152,10 @@ arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-c.c
 
+arm-d.o: $(srcdir)/config/arm/arm-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 arm-common.o: arm-cpu-cdata.h
 
 driver-arm.o: arm-native.h

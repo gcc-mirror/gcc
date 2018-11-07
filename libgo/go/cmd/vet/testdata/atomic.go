@@ -43,10 +43,20 @@ func AtomicTests() {
 
 	{
 		// A variable declaration creates a new variable in the current scope.
-		x := atomic.AddUint64(&x, 1) // ERROR "declaration of .x. shadows declaration at testdata/atomic.go:16"
+		x := atomic.AddUint64(&x, 1) // ERROR "declaration of .x. shadows declaration at atomic.go:16"
 
 		// Re-declaration assigns a new value.
 		x, w := atomic.AddUint64(&x, 1), 10 // ERROR "direct assignment to atomic value"
 		_ = w
 	}
+}
+
+type T struct{}
+
+func (T) AddUint64(addr *uint64, delta uint64) uint64 { return 0 }
+
+func NonAtomic() {
+	x := uint64(1)
+	var atomic T
+	x = atomic.AddUint64(&x, 1) // ok; not the imported pkg
 }

@@ -39,7 +39,7 @@ set_precision (void)
 {
   unsigned short int cwd;
 
-  asm volatile ("fstcw\t%0" : "=m" (cwd));
+  asm volatile ("fnstcw\t%0" : "=m" (cwd));
 
   cwd &= ~X87CW_PCMASK;
   cwd |= X87CW;

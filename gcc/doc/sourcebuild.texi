@@ -66,7 +66,7 @@ include it in @code{libc}.
 The Ada runtime library.
 
 @item libatomic
-The runtime support library for atomic operations (e.g. for @code{__sync}
+The runtime support library for atomic operations (e.g.@: for @code{__sync}
 and @code{__atomic}).
 
 @item libcpp
@@ -105,6 +105,10 @@ The Objective-C and Objective-C++ runtime library.
 
 @item libquadmath
 The runtime support library for quad-precision math operations.
+
+@item libphobos
+The D standard and runtime library.  The bulk of this library is mirrored
+from the @uref{https://github.com/@/dlang, master D repositories}.
 
 @item libssp
 The Stack protector runtime library.
@@ -1389,8 +1393,11 @@ for any options added with @code{dg-add-options}.
 Target has runtime support for any options added with
 @code{dg-add-options} for any @code{_Float@var{n}} or
 @code{_Float@var{n}x} type.
-@end table
 
+@item inf
+Target supports floating point infinite (@code{inf}) for type
+@code{double}.
+@end table
 @subsubsection Fortran-specific attributes
 
 @table @code
@@ -2104,7 +2111,7 @@ Target uses a dummy @code{wcsftime} function that always returns zero.
 
 @item fd_truncate
 Target can truncate a file from a file descriptor, as used by
-@file{libgfortran/io/unix.c:fd_truncate}; i.e. @code{ftruncate} or
+@file{libgfortran/io/unix.c:fd_truncate}; i.e.@: @code{ftruncate} or
 @code{chsize}.
 
 @item freestanding
@@ -2152,8 +2159,8 @@ time) should be run on this target.  This can be enabled by setting the
 @env{GCC_TEST_RUN_EXPENSIVE} environment variable to a non-empty string.
 
 @item simulator
-Test system runs executables on a simulator (i.e. slowly) rather than
-hardware (i.e. fast).
+Test system runs executables on a simulator (i.e.@: slowly) rather than
+hardware (i.e.@: fast).
 
 @item signal
 Target has @code{signal.h}.
@@ -3214,7 +3221,7 @@ bb_5:
 
 The @code{startwith} argument indicates at which pass to begin.
 
-Use the dump modifier @code{-gimple} (e.g. @option{-fdump-tree-all-gimple})
+Use the dump modifier @code{-gimple} (e.g.@: @option{-fdump-tree-all-gimple})
 to make tree dumps more closely follow the format accepted by the GIMPLE
 parser.
 

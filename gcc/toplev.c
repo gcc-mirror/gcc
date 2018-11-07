@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
+#include "optinfo-emit-json.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -487,6 +488,8 @@ compile_file (void)
   if (lang_hooks.decls.post_compilation_parsing_cleanups)
     lang_hooks.decls.post_compilation_parsing_cleanups ();
 
+  optimization_records_finish ();
+
   if (seen_error ())
     return;
 
@@ -526,7 +529,9 @@ compile_file (void)
       dwarf2out_frame_finish ();
 #endif
 
+      debuginfo_start ();
       (*debug_hooks->finish) (main_input_filename);
+      debuginfo_stop ();
       timevar_pop (TV_SYMOUT);
 
       /* Output some stuff at end of file if nec.  */
@@ -1021,7 +1026,7 @@ output_stack_usage (void)
 	       stack_usage_kind_str[stack_usage_kind]);
     }
 
-  if (warn_stack_usage >= 0)
+  if (warn_stack_usage >= 0 && warn_stack_usage < HOST_WIDE_INT_MAX)
     {
       const location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
 
@@ -1031,10 +1036,10 @@ output_stack_usage (void)
 	{
 	  if (stack_usage_kind == DYNAMIC_BOUNDED)
 	    warning_at (loc,
-			OPT_Wstack_usage_, "stack usage might be %wd bytes",
+			OPT_Wstack_usage_, "stack usage might be %wu bytes",
 			stack_usage);
 	  else
-	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wd bytes",
+	    warning_at (loc, OPT_Wstack_usage_, "stack usage is %wu bytes",
 			stack_usage);
 	}
     }
@@ -1109,8 +1114,14 @@ general_init (const char *argv0, bool init_signals)
 
   global_dc->show_caret
     = global_options_init.x_flag_diagnostics_show_caret;
+  global_dc->show_labels_p
+    = global_options_init.x_flag_diagnostics_show_labels;
+  global_dc->show_line_numbers_p
+    = global_options_init.x_flag_diagnostics_show_line_numbers;
   global_dc->show_option_requested
     = global_options_init.x_flag_diagnostics_show_option;
+  global_dc->min_margin_width
+    = global_options_init.x_diagnostics_minimum_margin_width;
   global_dc->show_column
     = global_options_init.x_flag_show_column;
   global_dc->internal_error = internal_error_function;
@@ -1180,6 +1191,7 @@ general_init (const char *argv0, bool init_signals)
   symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
 
   statistics_early_init ();
+  debuginfo_early_init ();
   finish_params ();
 }
 
@@ -2074,6 +2086,7 @@ finalize (bool no_backend)
   if (!no_backend)
     {
       statistics_fini ();
+      debuginfo_fini ();
 
       g->get_passes ()->finish_optimization_passes ();
 
@@ -2118,6 +2131,8 @@ do_compile ()
 
       timevar_start (TV_PHASE_SETUP);
 
+      optimization_records_start ();
+
       /* This must be run always, because it is needed to compute the FP
 	 predefined macros, such as __LDBL_MAX__, for targets using non
 	 default FP formats.  */
@@ -2149,6 +2164,7 @@ do_compile ()
           init_final (main_input_filename);
           coverage_init (aux_base_name);
           statistics_init ();
+          debuginfo_init ();
           invoke_plugin_callbacks (PLUGIN_START_UNIT, NULL);
 
           timevar_stop (TV_PHASE_SETUP);

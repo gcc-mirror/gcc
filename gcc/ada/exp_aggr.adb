@@ -6195,10 +6195,11 @@ package body Exp_Aggr is
       --  Look if in place aggregate expansion is possible
 
       --  For object declarations we build the aggregate in place, unless
-      --  the array is bit-packed or the component is controlled.
+      --  the array is bit-packed.
 
       --  For assignments we do the assignment in place if all the component
-      --  associations have compile-time known values. For other cases we
+      --  associations have compile-time known values, or are default-
+      --  initialized limited components, e.g. tasks. For other cases we
       --  create a temporary. The analysis for safety of on-line assignment
       --  is delicate, i.e. we don't know how to do it fully yet ???
 
@@ -6211,7 +6212,12 @@ package body Exp_Aggr is
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
-      if Has_Default_Init_Comps (N) then
+      --  An array of limited components is built in place
+
+      if Is_Limited_Type (Typ) then
+         Maybe_In_Place_OK := True;
+
+      elsif Has_Default_Init_Comps (N) then
          Maybe_In_Place_OK := False;
 
       elsif Is_Bit_Packed_Array (Typ)
@@ -6247,15 +6253,17 @@ package body Exp_Aggr is
       --  expected to appear in qualified form. In-place expansion eliminates
       --  the qualification and eventually violates this SPARK 05 restiction.
 
-      --  Should document the rest of the guards ???
+      --  Arrays of limited components must be built in place. The code
+      --  previously excluded controlled components but this is an old
+      --  oversight: the rules in 7.6 (17) are clear.
 
-      if not Has_Default_Init_Comps (N)
+      if (not Has_Default_Init_Comps (N)
+           or else Is_Limited_Type (Etype (N)))
         and then Comes_From_Source (Parent_Node)
         and then Parent_Kind = N_Object_Declaration
         and then Present (Expression (Parent_Node))
         and then not
           Must_Slide (Etype (Defining_Identifier (Parent_Node)), Typ)
-        and then not Has_Controlled_Component (Typ)
         and then not Is_Bit_Packed_Array (Typ)
         and then not Restriction_Check_Required (SPARK_05)
       then
@@ -6288,6 +6296,15 @@ package body Exp_Aggr is
       elsif Maybe_In_Place_OK
         and then Nkind (Parent (N)) = N_Qualified_Expression
         and then Nkind (Parent (Parent (N))) = N_Allocator
+      then
+         Set_Expansion_Delayed (N);
+         return;
+
+      --  Limited arrays in return statements are expanded when
+      --  enclosing construct is expanded.
+
+      elsif Maybe_In_Place_OK
+        and then Nkind (Parent (N)) = N_Simple_Return_Statement
       then
          Set_Expansion_Delayed (N);
          return;
@@ -6337,6 +6354,7 @@ package body Exp_Aggr is
              Defining_Identifier => Tmp,
              Object_Definition   => New_Occurrence_Of (Typ, Loc));
          Set_No_Initialization (Tmp_Decl, True);
+         Set_Warnings_Off (Tmp);
 
          --  If we are within a loop, the temporary will be pushed on the
          --  stack at each iteration. If the aggregate is the expression
@@ -6365,8 +6383,9 @@ package body Exp_Aggr is
             Target := New_Occurrence_Of (Tmp, Loc);
 
          else
-            if Has_Default_Init_Comps (N) then
-
+            if Has_Default_Init_Comps (N)
+              and then not Maybe_In_Place_OK
+            then
                --  Ada 2005 (AI-287): This case has not been analyzed???
 
                raise Program_Error;
@@ -7242,21 +7261,19 @@ package body Exp_Aggr is
             --  constraint error.
 
             declare
-               Comp : Entity_Id;
+               Comp : constant Entity_Id := First (Choices (C));
                Indx : Node_Id;
 
             begin
-               Comp := First (Choices (C));
                if Present (Etype (Comp))
                  and then Is_Array_Type (Etype (Comp))
                then
                   Indx := First_Index (Etype (Comp));
-
                   while Present (Indx) loop
-                     if Nkind (Type_Low_Bound (Etype (Indx)))
-                       = N_Raise_Constraint_Error
-                     or else Nkind (Type_High_Bound (Etype (Indx)))
-                       = N_Raise_Constraint_Error
+                     if Nkind (Type_Low_Bound (Etype (Indx))) =
+                          N_Raise_Constraint_Error
+                       or else Nkind (Type_High_Bound (Etype (Indx))) =
+                                 N_Raise_Constraint_Error
                      then
                         return False;
                      end if;
@@ -7276,10 +7293,11 @@ package body Exp_Aggr is
             --  the machine.)
 
             if Is_Tagged_Type (Etype (Expr_Q))
-              and then (Nkind (Expr_Q) = N_Type_Conversion
-                         or else (Is_Entity_Name (Expr_Q)
-                                    and then
-                                      Ekind (Entity (Expr_Q)) in Formal_Kind))
+              and then
+                (Nkind (Expr_Q) = N_Type_Conversion
+                  or else
+                    (Is_Entity_Name (Expr_Q)
+                      and then Is_Formal (Entity (Expr_Q))))
               and then Tagged_Type_Expansion
             then
                Static_Components := False;

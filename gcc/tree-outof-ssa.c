@@ -65,7 +65,7 @@ ssa_is_replaceable_p (gimple *stmt)
     return false;
 
   /* If the statement may throw an exception, it cannot be replaced.  */
-  if (stmt_could_throw_p (stmt))
+  if (stmt_could_throw_p (cfun, stmt))
     return false;
 
   /* Punt if there is more than 1 def.  */
@@ -1171,15 +1171,19 @@ insert_backedge_copies (void)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
 	      edge e = gimple_phi_arg_edge (phi, i);
+	      /* We are only interested in copies emitted on critical
+                 backedges.  */
+	      if (!(e->flags & EDGE_DFS_BACK)
+		  || !EDGE_CRITICAL_P (e))
+		continue;
 
 	      /* If the argument is not an SSA_NAME, then we will need a
-		 constant initialization.  If the argument is an SSA_NAME with
-		 a different underlying variable then a copy statement will be
-		 needed.  */
-	      if ((e->flags & EDGE_DFS_BACK)
-		  && (TREE_CODE (arg) != SSA_NAME
-		      || SSA_NAME_VAR (arg) != SSA_NAME_VAR (result)
-		      || trivially_conflicts_p (bb, result, arg)))
+		 constant initialization.  If the argument is an SSA_NAME then
+		 a copy statement may be needed.  First handle the case
+		 where we cannot insert before the argument definition.  */
+	      if (TREE_CODE (arg) != SSA_NAME
+		  || (gimple_code (SSA_NAME_DEF_STMT (arg)) == GIMPLE_PHI
+		      && trivially_conflicts_p (bb, result, arg)))
 		{
 		  tree name;
 		  gassign *stmt;
@@ -1225,6 +1229,34 @@ insert_backedge_copies (void)
 		  else
 		    gsi_insert_after (&gsi2, stmt, GSI_NEW_STMT);
 		  SET_PHI_ARG_DEF (phi, i, name);
+		}
+	      /* Insert a copy before the definition of the backedge value
+		 and adjust all conflicting uses.  */
+	      else if (trivially_conflicts_p (bb, result, arg))
+		{
+		  gimple *def = SSA_NAME_DEF_STMT (arg);
+		  if (gimple_nop_p (def)
+		      || gimple_code (def) == GIMPLE_PHI)
+		    continue;
+		  tree name = copy_ssa_name (result);
+		  gimple *stmt = gimple_build_assign (name, result);
+		  imm_use_iterator imm_iter;
+		  gimple *use_stmt;
+		  /* The following matches trivially_conflicts_p.  */
+		  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, result)
+		    {
+		      if (gimple_bb (use_stmt) != bb
+			  || (gimple_code (use_stmt) != GIMPLE_PHI
+			      && (maybe_renumber_stmts_bb (bb), true)
+			      && gimple_uid (use_stmt) > gimple_uid (def)))
+			{
+			  use_operand_p use;
+			  FOR_EACH_IMM_USE_ON_STMT (use, imm_iter)
+			    SET_USE (use, name);
+			}
+		    }
+		  gimple_stmt_iterator gsi = gsi_for_stmt (def);
+		  gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
 		}
 	    }
 	}

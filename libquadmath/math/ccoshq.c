@@ -1,5 +1,5 @@
-/* Complex cosine hyperbole function for complex __float128.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Complex cosine hyperbolic function for float types.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,11 +19,6 @@
 
 #include "quadmath-imp.h"
 
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-#endif
-
-
 __complex128
 ccoshq (__complex128 x)
 {
@@ -31,23 +26,23 @@ ccoshq (__complex128 x)
   int rcls = fpclassifyq (__real__ x);
   int icls = fpclassifyq (__imag__ x);
 
-  if (__builtin_expect (rcls >= QUADFP_ZERO, 1))
+  if (__glibc_likely (rcls >= QUADFP_ZERO))
     {
       /* Real part is finite.  */
-      if (__builtin_expect (icls >= QUADFP_ZERO, 1))
+      if (__glibc_likely (icls >= QUADFP_ZERO))
 	{
 	  /* Imaginary part is finite.  */
 	  const int t = (int) ((FLT128_MAX_EXP - 1) * M_LN2q);
 	  __float128 sinix, cosix;
 
-	  if (__builtin_expect (icls != QUADFP_SUBNORMAL, 1))
+	  if (__glibc_likely (fabsq (__imag__ x) > FLT128_MIN))
 	    {
 	      sincosq (__imag__ x, &sinix, &cosix);
 	    }
 	  else
 	    {
 	      sinix = __imag__ x;
-	      cosix = 1.0Q;
+	      cosix = 1;
 	    }
 
 	  if (fabsq (__real__ x) > t)
@@ -57,8 +52,8 @@ ccoshq (__complex128 x)
 	      if (signbitq (__real__ x))
 		sinix = -sinix;
 	      rx -= t;
-	      sinix *= exp_t / 2.0Q;
-	      cosix *= exp_t / 2.0Q;
+	      sinix *= exp_t / 2;
+	      cosix *= exp_t / 2;
 	      if (rx > t)
 		{
 		  rx -= t;
@@ -83,62 +78,53 @@ ccoshq (__complex128 x)
 	      __real__ retval = coshq (__real__ x) * cosix;
 	      __imag__ retval = sinhq (__real__ x) * sinix;
 	    }
+
+	  math_check_force_underflow_complex (retval);
 	}
       else
 	{
-	  __imag__ retval = __real__ x == 0.0Q ? 0.0Q : nanq ("");
-	  __real__ retval = nanq ("") + nanq ("");
-
-#ifdef HAVE_FENV_H
-	  if (icls == QUADFP_INFINITE)
-	    feraiseexcept (FE_INVALID);
-#endif
-        }
+	  __imag__ retval = __real__ x == 0 ? 0 : nanq ("");
+	  __real__ retval = __imag__ x - __imag__ x;
+	}
     }
   else if (rcls == QUADFP_INFINITE)
     {
       /* Real part is infinite.  */
-      if (__builtin_expect (icls > QUADFP_ZERO, 1))
+      if (__glibc_likely (icls > QUADFP_ZERO))
 	{
 	  /* Imaginary part is finite.  */
 	  __float128 sinix, cosix;
 
-	  if (__builtin_expect (icls != QUADFP_SUBNORMAL, 1))
+	  if (__glibc_likely (fabsq (__imag__ x) > FLT128_MIN))
 	    {
 	      sincosq (__imag__ x, &sinix, &cosix);
 	    }
 	  else
 	    {
 	      sinix = __imag__ x;
-	      cosix = 1.0Q;
+	      cosix = 1;
 	    }
 
 	  __real__ retval = copysignq (HUGE_VALQ, cosix);
 	  __imag__ retval = (copysignq (HUGE_VALQ, sinix)
-			     * copysignq (1.0Q, __real__ x));
+			     * copysignq (1, __real__ x));
 	}
       else if (icls == QUADFP_ZERO)
 	{
 	  /* Imaginary part is 0.0.  */
 	  __real__ retval = HUGE_VALQ;
-	  __imag__ retval = __imag__ x * copysignq (1.0Q, __real__ x);
+	  __imag__ retval = __imag__ x * copysignq (1, __real__ x);
 	}
       else
 	{
-	  /* The addition raises the invalid exception.  */
 	  __real__ retval = HUGE_VALQ;
-	  __imag__ retval = nanq ("") + nanq ("");
-
-#ifdef HAVE_FENV_H
-	  if (icls == QUADFP_INFINITE)
-	    feraiseexcept (FE_INVALID);
-#endif
-	 }
+	  __imag__ retval = __imag__ x - __imag__ x;
+	}
     }
   else
     {
       __real__ retval = nanq ("");
-      __imag__ retval = __imag__ x == 0.0 ? __imag__ x : nanq ("");
+      __imag__ retval = __imag__ x == 0 ? __imag__ x : nanq ("");
     }
 
   return retval;

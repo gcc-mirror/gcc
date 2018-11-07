@@ -209,6 +209,7 @@ procedure VxAddr2Line is
    --  Prints the message and then terminates the program
 
    procedure Usage;
+   pragma No_Return (Usage);
    --  Displays the short help message and then terminates the program
 
    function Get_Reference_Offset return Unsigned_64;
@@ -319,7 +320,7 @@ procedure VxAddr2Line is
       declare
          Match_String : constant String := Expect_Out_Match (Pd);
          Matches      : Match_Array (0 .. 1);
-         Value        : Unsigned_64;
+         Value        : Unsigned_64 := 0;
 
       begin
          Match (Reference, Match_String, Matches);

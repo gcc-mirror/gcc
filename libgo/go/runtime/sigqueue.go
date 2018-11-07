@@ -117,7 +117,7 @@ Send:
 
 // Called to receive the next queued signal.
 // Must only be called from a single goroutine at a time.
-//go:linkname signal_recv os_signal.signal_recv
+//go:linkname signal_recv os..z2fsignal.signal_recv
 func signal_recv() uint32 {
 	for {
 		// Serve any signals from local copy.
@@ -161,7 +161,7 @@ func signal_recv() uint32 {
 // the signal(s) in question, and here we are just waiting to make sure
 // that all the signals have been delivered to the user channels
 // by the os/signal package.
-//go:linkname signalWaitUntilIdle os_signal.signalWaitUntilIdle
+//go:linkname signalWaitUntilIdle os..z2fsignal.signalWaitUntilIdle
 func signalWaitUntilIdle() {
 	// Although the signals we care about have been removed from
 	// sig.wanted, it is possible that another thread has received
@@ -181,7 +181,7 @@ func signalWaitUntilIdle() {
 }
 
 // Must only be called from a single goroutine at a time.
-//go:linkname signal_enable os_signal.signal_enable
+//go:linkname signal_enable os..z2fsignal.signal_enable
 func signal_enable(s uint32) {
 	if !sig.inuse {
 		// The first call to signal_enable is for us
@@ -208,7 +208,7 @@ func signal_enable(s uint32) {
 }
 
 // Must only be called from a single goroutine at a time.
-//go:linkname signal_disable os_signal.signal_disable
+//go:linkname signal_disable os..z2fsignal.signal_disable
 func signal_disable(s uint32) {
 	if s >= uint32(len(sig.wanted)*32) {
 		return
@@ -221,7 +221,7 @@ func signal_disable(s uint32) {
 }
 
 // Must only be called from a single goroutine at a time.
-//go:linkname signal_ignore os_signal.signal_ignore
+//go:linkname signal_ignore os..z2fsignal.signal_ignore
 func signal_ignore(s uint32) {
 	if s >= uint32(len(sig.wanted)*32) {
 		return
@@ -237,7 +237,18 @@ func signal_ignore(s uint32) {
 	atomic.Store(&sig.ignored[s/32], i)
 }
 
+// sigInitIgnored marks the signal as already ignored. This is called at
+// program start by initsig. In a shared library initsig is called by
+// libpreinit, so the runtime may not be initialized yet.
+//go:nosplit
+func sigInitIgnored(s uint32) {
+	i := sig.ignored[s/32]
+	i |= 1 << (s & 31)
+	atomic.Store(&sig.ignored[s/32], i)
+}
+
 // Checked by signal handlers.
+//go:linkname signal_ignored os..z2fsignal.signal_ignored
 func signal_ignored(s uint32) bool {
 	i := atomic.Load(&sig.ignored[s/32])
 	return i&(1<<(s&31)) != 0

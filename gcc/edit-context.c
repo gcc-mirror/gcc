@@ -182,7 +182,7 @@ class line_event
 {
  public:
   line_event (int start, int next, int len) : m_start (start),
-    m_next (next), m_delta (len - (next - start)) {}
+    m_delta (len - (next - start)) {}
 
   int get_effective_column (int orig_column) const
   {
@@ -194,7 +194,6 @@ class line_event
 
  private:
   int m_start;
-  int m_next;
   int m_delta;
 };
 

@@ -154,6 +154,24 @@ enum cp_tree_index
     CPTI_AUTO_IDENTIFIER,
     CPTI_DECLTYPE_AUTO_IDENTIFIER,
     CPTI_INIT_LIST_IDENTIFIER,
+    CPTI_FOR_RANGE__IDENTIFIER,
+    CPTI_FOR_BEGIN__IDENTIFIER,
+    CPTI_FOR_END__IDENTIFIER,
+    CPTI_FOR_RANGE_IDENTIFIER,
+    CPTI_FOR_BEGIN_IDENTIFIER,
+    CPTI_FOR_END_IDENTIFIER,
+    CPTI_ABI_TAG_IDENTIFIER,
+    CPTI_ALIGNED_IDENTIFIER,
+    CPTI_BEGIN_IDENTIFIER,
+    CPTI_END_IDENTIFIER,
+    CPTI_GET_IDENTIFIER,
+    CPTI_GNU_IDENTIFIER,
+    CPTI_TUPLE_ELEMENT_IDENTIFIER,
+    CPTI_TUPLE_SIZE_IDENTIFIER,
+    CPTI_TYPE_IDENTIFIER,
+    CPTI_VALUE_IDENTIFIER,
+    CPTI_FUN_IDENTIFIER,
+    CPTI_CLOSURE_IDENTIFIER,
 
     CPTI_LANG_NAME_C,
     CPTI_LANG_NAME_CPLUSPLUS,
@@ -274,6 +292,24 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define auto_identifier			cp_global_trees[CPTI_AUTO_IDENTIFIER]
 #define decltype_auto_identifier	cp_global_trees[CPTI_DECLTYPE_AUTO_IDENTIFIER]
 #define init_list_identifier		cp_global_trees[CPTI_INIT_LIST_IDENTIFIER]
+#define for_range__identifier		cp_global_trees[CPTI_FOR_RANGE__IDENTIFIER]
+#define for_begin__identifier		cp_global_trees[CPTI_FOR_BEGIN__IDENTIFIER]
+#define for_end__identifier		cp_global_trees[CPTI_FOR_END__IDENTIFIER]
+#define for_range_identifier		cp_global_trees[CPTI_FOR_RANGE_IDENTIFIER]
+#define for_begin_identifier		cp_global_trees[CPTI_FOR_BEGIN_IDENTIFIER]
+#define for_end_identifier		cp_global_trees[CPTI_FOR_END_IDENTIFIER]
+#define abi_tag_identifier		cp_global_trees[CPTI_ABI_TAG_IDENTIFIER]
+#define aligned_identifier		cp_global_trees[CPTI_ALIGNED_IDENTIFIER]
+#define begin_identifier		cp_global_trees[CPTI_BEGIN_IDENTIFIER]
+#define end_identifier			cp_global_trees[CPTI_END_IDENTIFIER]
+#define get__identifier			cp_global_trees[CPTI_GET_IDENTIFIER]
+#define gnu_identifier			cp_global_trees[CPTI_GNU_IDENTIFIER]
+#define tuple_element_identifier	cp_global_trees[CPTI_TUPLE_ELEMENT_IDENTIFIER]
+#define tuple_size_identifier		cp_global_trees[CPTI_TUPLE_SIZE_IDENTIFIER]
+#define type_identifier			cp_global_trees[CPTI_TYPE_IDENTIFIER]
+#define value_identifier		cp_global_trees[CPTI_VALUE_IDENTIFIER]
+#define fun_identifier			cp_global_trees[CPTI_FUN_IDENTIFIER]
+#define closure_identifier		cp_global_trees[CPTI_CLOSURE_IDENTIFIER]
 #define lang_name_c			cp_global_trees[CPTI_LANG_NAME_C]
 #define lang_name_cplusplus		cp_global_trees[CPTI_LANG_NAME_CPLUSPLUS]
 
@@ -373,6 +409,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       SWITCH_STMT_ALL_CASES_P (in SWITCH_STMT)
       REINTERPRET_CAST_P (in NOP_EXPR)
       ALIGNOF_EXPR_STD_P (in ALIGNOF_EXPR)
+      OVL_DEDUP_P (in OVERLOAD)
    1: IDENTIFIER_KIND_BIT_1 (in IDENTIFIER_NODE)
       TI_PENDING_TEMPLATE_FLAG.
       TEMPLATE_PARMS_FOR_INLINE.
@@ -659,6 +696,8 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_CHAIN(NODE) \
   (((struct tree_overload*)OVERLOAD_CHECK (NODE))->common.chain)
 
+/* If set, this or a subsequent overload contains decls that need deduping.  */
+#define OVL_DEDUP_P(NODE)	TREE_LANG_FLAG_0 (OVERLOAD_CHECK (NODE))
 /* If set, this was imported in a using declaration.   */
 #define OVL_USING_P(NODE)	TREE_LANG_FLAG_1 (OVERLOAD_CHECK (NODE))
 /* If set, this overload is a hidden decl.  */
@@ -684,8 +723,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
-/* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
-   fns.  */
+/* OVL_HIDDEN_P nodes come before other nodes.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -830,6 +868,34 @@ struct named_decl_hash : ggc_remove <tree>
   /* Nothing is deletable.  Everything is insertable.  */
   static bool is_deleted (value_type) { return false; }
   static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+/* Simplified unique_ptr clone to release a tree vec on exit.  */
+
+struct releasing_vec
+{
+  typedef vec<tree, va_gc> vec_t;
+
+  releasing_vec (vec_t *v): v(v) { }
+  releasing_vec (): v(make_tree_vector ()) { }
+
+  /* Copy ops are deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+  releasing_vec &operator= (const releasing_vec &);
+
+  vec_t &operator* () const { return *v; }
+  vec_t *operator-> () const { return v; }
+  vec_t *get() const { return v; }
+  operator vec_t *() const { return v; }
+  tree& operator[] (unsigned i) const { return (*v)[i]; }
+
+  /* Necessary for use with vec** and vec*& interfaces.  */
+  vec_t *&get_ref () { return v; }
+
+  ~releasing_vec() { release_tree_vector (v); }
+private:
+  vec_t *v;
 };
 
 struct GTY(()) tree_template_decl {
@@ -1754,7 +1820,7 @@ struct GTY(()) language_function {
   hash_table<named_label_hash> *x_named_labels;
 
   cp_binding_level *bindings;
-  vec<tree, va_gc> *x_local_names;
+
   /* Tracking possibly infinite loops.  This is a vec<tree> only because
      vec<bool> doesn't work with gtype.  */
   vec<tree, va_gc> *infinite_loops;
@@ -1840,6 +1906,8 @@ struct GTY(()) language_function {
 
 /* In parser.c.  */
 extern tree cp_literal_operator_id (const char *);
+
+#define NON_ERROR(NODE) ((NODE) == error_mark_node ? NULL_TREE : (NODE))
 
 /* TRUE if a tree code represents a statement.  */
 extern bool statement_code_p[MAX_TREE_CODES];
@@ -2486,7 +2554,7 @@ struct GTY(()) lang_decl_base {
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
   unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
-  unsigned u2sel : 1;
+  unsigned spare : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
   unsigned var_declared_inline_p : 1;	   /* var */
   unsigned dependent_init_p : 1;	   /* var */
@@ -2514,17 +2582,12 @@ struct GTY(()) lang_decl_min {
      DECL_TEMPLATE_INFO.  */
   tree template_info;
 
-  union lang_decl_u2 {
-    /* In a FUNCTION_DECL for which DECL_THUNK_P holds, this is
-       THUNK_VIRTUAL_OFFSET.
-       In a VAR_DECL for which DECL_HAS_VALUE_EXPR_P holds,
-       this is DECL_CAPTURED_VARIABLE.
-       Otherwise this is DECL_ACCESS.  */
-    tree GTY ((tag ("0"))) access;
-
-    /* For TREE_STATIC VAR_DECL in function, this is DECL_DISCRIMINATOR.  */
-    int GTY ((tag ("1"))) discriminator;
-  } GTY ((desc ("%0.u.base.u2sel"))) u2;
+  /* In a DECL_THUNK_P FUNCTION_DECL, this is THUNK_VIRTUAL_OFFSET.
+     In a lambda-capture proxy VAR_DECL, this is DECL_CAPTURED_VARIABLE.
+     In a function-scope TREE_STATIC VAR_DECL or IMPLICIT_TYPEDEF_P TYPE_DECL,
+     this is DECL_DISCRIMINATOR.
+     Otherwise, in a class-scope DECL, this is DECL_ACCESS.   */
+  tree access;
 };
 
 /* Additional DECL_LANG_SPECIFIC information for functions.  */
@@ -2549,7 +2612,8 @@ struct GTY(()) lang_decl_fn {
   unsigned this_thunk_p : 1;
   unsigned hidden_friend_p : 1;
   unsigned omp_declare_reduction_p : 1;
-  unsigned spare : 13;
+  unsigned has_dependent_explicit_spec_p : 1;
+  unsigned spare : 12;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -2679,12 +2743,6 @@ struct GTY(()) lang_decl {
     lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
   &lt->u.decomp; })
 
-#define LANG_DECL_U2_CHECK(NODE, TF) __extension__		\
-({  struct lang_decl *lt = DECL_LANG_SPECIFIC (NODE);		\
-    if (!LANG_DECL_HAS_MIN (NODE) || lt->u.base.u2sel != TF)	\
-      lang_check_failed (__FILE__, __LINE__, __FUNCTION__);	\
-    &lt->u.min.u2; })
-
 #else
 
 #define LANG_DECL_MIN_CHECK(NODE) \
@@ -2701,9 +2759,6 @@ struct GTY(()) lang_decl {
 
 #define LANG_DECL_DECOMP_CHECK(NODE) \
   (&DECL_LANG_SPECIFIC (NODE)->u.decomp)
-
-#define LANG_DECL_U2_CHECK(NODE, TF) \
-  (&DECL_LANG_SPECIFIC (NODE)->u.min.u2)
 
 #endif /* ENABLE_TREE_CHECKING */
 
@@ -2812,15 +2867,13 @@ struct GTY(()) lang_decl {
 	 CLONE = DECL_CHAIN (CLONE))
 
 /* Nonzero if NODE has DECL_DISCRIMINATOR and not DECL_ACCESS.  */
-#define DECL_DISCRIMINATOR_P(NODE)	\
-  (VAR_P (NODE) && DECL_FUNCTION_SCOPE_P (NODE))
+#define DECL_DISCRIMINATOR_P(NODE)				\
+  (((TREE_CODE (NODE) == VAR_DECL && TREE_STATIC (NODE))	\
+    || DECL_IMPLICIT_TYPEDEF_P (NODE))				\
+   && DECL_FUNCTION_SCOPE_P (NODE))
 
 /* Discriminator for name mangling.  */
-#define DECL_DISCRIMINATOR(NODE) (LANG_DECL_U2_CHECK (NODE, 1)->discriminator)
-
-/* True iff DECL_DISCRIMINATOR is set for a DECL_DISCRIMINATOR_P decl.  */
-#define DECL_DISCRIMINATOR_SET_P(NODE) \
-  (DECL_LANG_SPECIFIC (NODE) && DECL_LANG_SPECIFIC (NODE)->u.base.u2sel == 1)
+#define DECL_DISCRIMINATOR(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* The index of a user-declared parameter in its function, starting at 1.
    All artificial parameters will have index 0.  */
@@ -2995,6 +3048,12 @@ struct GTY(()) lang_decl {
 #define DECL_PURE_VIRTUAL_P(NODE) \
   (LANG_DECL_FN_CHECK (NODE)->pure_virtual)
 
+/* Nonzero for FUNCTION_DECL means that this member function (either
+   a constructor or a conversion function) has an explicit specifier
+   with a value-dependent expression.  */
+#define DECL_HAS_DEPENDENT_EXPLICIT_SPEC_P(NODE) \
+  (LANG_DECL_FN_CHECK (NODE)->has_dependent_explicit_spec_p)
+
 /* True (in a FUNCTION_DECL) if NODE is a virtual function that is an
    invalid overrider for a function from a base class.  Once we have
    complained about an invalid overrider we avoid complaining about it
@@ -3083,6 +3142,14 @@ struct GTY(()) lang_decl {
 #define DECL_PRETTY_FUNCTION_P(NODE) \
   (DECL_NAME (NODE) \
    && id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__"))
+
+/* For a DECL, true if it is __func__ or similar.  */
+#define DECL_FNAME_P(NODE)					\
+  (VAR_P (NODE) && DECL_NAME (NODE) && DECL_ARTIFICIAL (NODE)	\
+   && DECL_HAS_VALUE_EXPR_P (NODE)				\
+   && (id_equal (DECL_NAME (NODE), "__PRETTY_FUNCTION__")	\
+       || id_equal (DECL_NAME (NODE), "__FUNCTION__")		\
+       || id_equal (DECL_NAME (NODE), "__func__")))
 
 /* Nonzero if the variable was declared to be thread-local.
    We need a special C++ version of this test because the middle-end
@@ -3278,7 +3345,7 @@ struct GTY(()) lang_decl {
 
 /* For a lambda capture proxy, its captured variable.  */
 #define DECL_CAPTURED_VARIABLE(NODE) \
-  (LANG_DECL_U2_CHECK (NODE, 0)->access)
+  (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* For a VAR_DECL, indicates that the variable is actually a
    non-static data member of anonymous union that has been promoted to
@@ -3620,7 +3687,7 @@ struct GTY(()) lang_decl {
   (LANG_DECL_FN_CHECK (FUNCTION_DECL_CHECK (NODE))	\
    ->u.saved_language_function)
 
-/* True if NODE is an implicit INDIRECT_EXPR from convert_from_reference.  */
+/* True if NODE is an implicit INDIRECT_REF from convert_from_reference.  */
 #define REFERENCE_REF_P(NODE)				\
   (INDIRECT_REF_P (NODE)				\
    && TREE_TYPE (TREE_OPERAND (NODE, 0))		\
@@ -4453,7 +4520,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    For example, if a member that would normally be public in a
    derived class is made protected, then the derived class and the
    protected_access_node will appear in the DECL_ACCESS for the node.  */
-#define DECL_ACCESS(NODE) (LANG_DECL_U2_CHECK (NODE, 0)->access)
+#define DECL_ACCESS(NODE) (LANG_DECL_MIN_CHECK (NODE)->access)
 
 /* Nonzero if the FUNCTION_DECL is a global constructor.  */
 #define DECL_GLOBAL_CTOR_P(NODE) \
@@ -4790,7 +4857,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    binfos.)  */
 
 #define THUNK_VIRTUAL_OFFSET(DECL) \
-  (LANG_DECL_U2_CHECK (FUNCTION_DECL_CHECK (DECL), 0)->access)
+  (LANG_DECL_MIN_CHECK (FUNCTION_DECL_CHECK (DECL))->access)
 
 /* A thunk which is equivalent to another thunk.  */
 #define THUNK_ALIAS(DECL) \
@@ -4888,6 +4955,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define RANGE_FOR_BODY(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 2)
 #define RANGE_FOR_SCOPE(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 3)
 #define RANGE_FOR_UNROLL(NODE)	TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 4)
+#define RANGE_FOR_INIT_STMT(NODE) TREE_OPERAND (RANGE_FOR_STMT_CHECK (NODE), 5)
 #define RANGE_FOR_IVDEP(NODE)	TREE_LANG_FLAG_6 (RANGE_FOR_STMT_CHECK (NODE))
 
 #define SWITCH_STMT_COND(NODE)	TREE_OPERAND (SWITCH_STMT_CHECK (NODE), 0)
@@ -5190,10 +5258,6 @@ struct local_specialization_stack
 /* in class.c */
 
 extern int current_class_depth;
-
-/* An array of all local classes present in this translation unit, in
-   declaration order.  */
-extern GTY(()) vec<tree, va_gc> *local_classes;
 
 /* in decl.c */
 
@@ -5717,6 +5781,8 @@ struct cp_decl_specifier_seq {
   /* If non-NULL, a built-in type that the user attempted to redefine
      to some other type.  */
   tree redefined_builtin_type;
+  /* The explicit-specifier, if any.  */
+  tree explicit_specifier;
   /* The storage class specified -- or sc_none if no storage class was
      explicitly specified.  */
   cp_storage_class storage_class;
@@ -5938,6 +6004,13 @@ struct GTY((chain_next ("%h.next"))) tinst_level {
   static const unsigned short refcount_infinity = (unsigned short) ~0;
 };
 
+/* BUILT_IN_FRONTEND function codes.  */
+enum cp_built_in_function {
+  CP_BUILT_IN_IS_CONSTANT_EVALUATED,
+  CP_BUILT_IN_INTEGER_PACK,
+  CP_BUILT_IN_LAST
+};
+
 bool decl_spec_seq_has_spec_p (const cp_decl_specifier_seq *, cp_decl_spec);
 
 /* Return the type of the `this' parameter of FNTYPE.  */
@@ -6052,6 +6125,9 @@ extern bool can_convert_arg_bad			(tree, tree, tree, int,
 extern int conv_flags				(int, int, tree, tree, int);
 extern struct conversion * good_conversion	(tree, tree, tree, int, tsubst_flags_t);
 extern location_t get_fndecl_argument_location  (tree, int);
+extern void complain_about_bad_argument	(location_t arg_loc,
+						 tree from_type, tree to_type,
+						 tree fndecl, int parmnum);
 
 
 /* A class for recording information about access failures (e.g. private
@@ -6062,18 +6138,27 @@ extern location_t get_fndecl_argument_location  (tree, int);
 class access_failure_info
 {
  public:
-  access_failure_info () : m_was_inaccessible (false), m_basetype_path (NULL_TREE),
-    m_field_decl (NULL_TREE) {}
+  access_failure_info () : m_was_inaccessible (false),
+    m_basetype_path (NULL_TREE),
+    m_decl (NULL_TREE), m_diag_decl (NULL_TREE) {}
 
-  void record_access_failure (tree basetype_path, tree field_decl);
+  void record_access_failure (tree basetype_path, tree decl, tree diag_decl);
+
+  bool was_inaccessible_p () const { return m_was_inaccessible; }
+  tree get_decl () const { return m_decl; }
+  tree get_diag_decl () const { return m_diag_decl; }
+  tree get_any_accessor (bool const_p) const;
   void maybe_suggest_accessor (bool const_p) const;
+  static void add_fixit_hint (rich_location *richloc, tree accessor);
 
  private:
   bool m_was_inaccessible;
   tree m_basetype_path;
-  tree m_field_decl;
+  tree m_decl;
+  tree m_diag_decl;
 };
 
+extern void complain_about_access		(tree, tree, bool);
 extern bool enforce_access			(tree, tree, tree,
 						 tsubst_flags_t,
 						 access_failure_info *afi = NULL);
@@ -6233,6 +6318,7 @@ extern void pop_switch				(void);
 extern void note_break_stmt			(void);
 extern bool note_iteration_stmt_body_start	(void);
 extern void note_iteration_stmt_body_end	(bool);
+extern void determine_local_discriminator	(tree);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree, bool);
@@ -6325,6 +6411,7 @@ extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 extern bool check_array_designated_initializer  (constructor_elt *,
 						 unsigned HOST_WIDE_INT);
 extern bool check_for_uninitialized_const_var   (tree, bool, tsubst_flags_t);
+extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 
 /* in decl2.c */
 extern void record_mangling			(tree, bool);
@@ -6395,6 +6482,7 @@ extern const char *decl_as_string		(tree, int);
 extern const char *decl_as_string_translate	(tree, int);
 extern const char *decl_as_dwarf_string		(tree, int);
 extern const char *expr_as_string		(tree, int);
+extern const char *expr_to_string		(tree);
 extern const char *lang_decl_name		(tree, int, bool);
 extern const char *lang_decl_dwarf_name		(tree, int, bool);
 extern const char *language_to_string		(enum languages);
@@ -6420,7 +6508,7 @@ extern void perform_deferred_noexcept_checks	(void);
 extern bool nothrow_spec_p			(const_tree);
 extern bool type_noexcept_p			(const_tree);
 extern bool type_throw_all_p			(const_tree);
-extern tree build_noexcept_spec			(tree, int);
+extern tree build_noexcept_spec			(tree, tsubst_flags_t);
 extern void choose_personality_routine		(enum languages);
 extern tree build_must_not_throw_expr		(tree,tree);
 extern tree eh_type_info			(tree);
@@ -6696,6 +6784,7 @@ extern bool variable_template_specialization_p  (tree);
 extern bool alias_type_or_template_p            (tree);
 extern bool alias_template_specialization_p     (const_tree);
 extern bool dependent_alias_template_spec_p     (const_tree);
+extern bool template_parm_object_p		(const_tree);
 extern bool explicit_class_specialization_p     (tree);
 extern bool push_tinst_level                    (tree);
 extern bool push_tinst_level_loc                (tree, location_t);
@@ -6724,6 +6813,7 @@ extern bool dguide_name_p			(tree);
 extern bool deduction_guide_p			(const_tree);
 extern bool copy_guide_p			(const_tree);
 extern bool template_guide_p			(const_tree);
+extern void store_explicit_specifier		(tree, tree);
 
 /* in repo.c */
 extern void init_repo				(void);
@@ -7327,6 +7417,7 @@ extern tree cp_perform_integral_promotions      (tree, tsubst_flags_t);
 extern tree finish_left_unary_fold_expr      (tree, int);
 extern tree finish_right_unary_fold_expr     (tree, int);
 extern tree finish_binary_fold_expr          (tree, tree, int);
+extern bool treat_lvalue_as_rvalue_p	     (tree, bool);
 
 /* in typeck2.c */
 extern void require_complete_eh_spec_types	(tree, tree);
@@ -7361,7 +7452,8 @@ cxx_incomplete_type_error (const_tree value, const_tree type)
 extern void cxx_incomplete_type_inform 	        (const_tree);
 extern tree error_not_base_type			(tree, tree);
 extern tree binfo_or_else			(tree, tree);
-extern void cxx_readonly_error			(tree, enum lvalue_use);
+extern void cxx_readonly_error			(location_t, tree,
+						 enum lvalue_use);
 extern void complete_type_check_abstract	(tree);
 extern int abstract_virtuals_error		(tree, tree);
 extern int abstract_virtuals_error		(abstract_class_use, tree);
@@ -7370,7 +7462,8 @@ extern int abstract_virtuals_error_sfinae	(abstract_class_use, tree, tsubst_flag
 
 extern tree store_init_value			(tree, tree, vec<tree, va_gc>**, int);
 extern tree split_nonconstant_init		(tree, tree);
-extern bool check_narrowing			(tree, tree, tsubst_flags_t);
+extern bool check_narrowing			(tree, tree, tsubst_flags_t,
+						 bool = false);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
 extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);
@@ -7379,7 +7472,7 @@ extern tree build_x_arrow			(location_t, tree,
 						 tsubst_flags_t);
 extern tree build_m_component_ref		(tree, tree, tsubst_flags_t);
 extern tree build_functional_cast		(tree, tree, tsubst_flags_t);
-extern tree add_exception_specifier		(tree, tree, int);
+extern tree add_exception_specifier		(tree, tree, tsubst_flags_t);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */
@@ -7397,6 +7490,7 @@ extern tree mangle_tls_init_fn			(tree);
 extern tree mangle_tls_wrapper_fn		(tree);
 extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
+extern tree mangle_template_parm_object		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
@@ -7433,8 +7527,6 @@ extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
 
 /* in name-lookup.c */
-extern void suggest_alternatives_for            (location_t, tree, bool);
-extern bool suggest_alternative_in_explicit_scope (location_t, tree, tree);
 extern tree strip_using_decl                    (tree);
 
 /* Tell the binding oracle what kind of binding we are looking for.  */
@@ -7552,7 +7644,7 @@ extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree cxx_constant_init			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);
-extern tree maybe_constant_init			(tree, tree = NULL_TREE);
+extern tree maybe_constant_init			(tree, tree = NULL_TREE, bool = false);
 extern tree fold_non_dependent_expr		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree fold_simple				(tree);
 extern bool is_sub_constant_expr                (tree);

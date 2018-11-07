@@ -678,7 +678,7 @@ enum reg_class {
 
 #define CONSTANT_ADDRESS_P(X)   \
   (CONST_INT_P (X)		\
-   && (unsigned HOST_WIDE_INT) (INTVAL (X) + 0x8000) < 0x10000)
+   && (UINTVAL (X) + 0x8000) < 0x10000)
 
 /* The macros REG_OK_FOR..._P assume that the arg is a REG rtx
    and check its validity for a certain class.

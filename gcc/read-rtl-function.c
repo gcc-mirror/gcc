@@ -2166,6 +2166,20 @@ test_loading_mem ()
   ASSERT_EQ (6, MEM_ADDR_SPACE (mem2));
 }
 
+/* Verify that "repeated xN" is read correctly.  */
+
+static void
+test_loading_repeat ()
+{
+  rtl_dump_test t (SELFTEST_LOCATION, locate_file ("repeat.rtl"));
+
+  rtx_insn *insn_1 = get_insn_by_uid (1);
+  ASSERT_EQ (PARALLEL, GET_CODE (PATTERN (insn_1)));
+  ASSERT_EQ (64, XVECLEN (PATTERN (insn_1), 0));
+  for (int i = 0; i < 64; i++)
+    ASSERT_EQ (const0_rtx, XVECEXP (PATTERN (insn_1), 0, i));
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2187,6 +2201,7 @@ read_rtl_function_c_tests ()
   test_loading_cfg ();
   test_loading_bb_index ();
   test_loading_mem ();
+  test_loading_repeat ();
 }
 
 } // namespace selftest

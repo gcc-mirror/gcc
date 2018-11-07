@@ -1197,17 +1197,40 @@ helper_const_non_const_cast (const char *p)
 /* Get definitions of HOST_WIDE_INT.  */
 #include "hwint.h"
 
-/* qsort comparator consistency checking: except in release-checking compilers,
-   redirect 4-argument qsort calls to qsort_chk; keep 1-argument invocations
+/* GCC qsort API-compatible functions: except in release-checking compilers,
+   redirect 4-argument qsort calls to gcc_qsort; keep 1-argument invocations
    corresponding to vec::qsort (cmp): they use C qsort internally anyway.  */
 void qsort_chk (void *, size_t, size_t, int (*)(const void *, const void *));
 void gcc_qsort (void *, size_t, size_t, int (*)(const void *, const void *));
+void gcc_stablesort (void *, size_t, size_t,
+		     int (*)(const void *, const void *));
 #define PP_5th(a1, a2, a3, a4, a5, ...) a5
 #undef qsort
-#if CHECKING_P
-#define qsort(...) PP_5th (__VA_ARGS__, qsort_chk, 3, 2, qsort, 0) (__VA_ARGS__)
-#else
 #define qsort(...) PP_5th (__VA_ARGS__, gcc_qsort, 3, 2, qsort, 0) (__VA_ARGS__)
-#endif
+
+#define ONE_K 1024
+#define ONE_M (ONE_K * ONE_K)
+
+/* Display a number as an integer multiple of either:
+   - 1024, if said integer is >= to 10 K (in base 2)
+   - 1024 * 1024, if said integer is >= 10 M in (base 2)
+ */
+#define SIZE_SCALE(x) (((x) < 10 * ONE_K \
+			? (x) \
+			: ((x) < 10 * ONE_M \
+			   ? (x) / ONE_K \
+			   : (x) / ONE_M)))
+
+/* For a given integer, display either:
+   - the character 'k', if the number is higher than 10 K (in base 2)
+     but strictly lower than 10 M (in base 2)
+   - the character 'M' if the number is higher than 10 M (in base2)
+   - the charcter ' ' if the number is strictly lower  than 10 K  */
+#define SIZE_LABEL(x) ((x) < 10 * ONE_K ? ' ' : ((x) < 10 * ONE_M ? 'k' : 'M'))
+
+/* Display an integer amount as multiple of 1K or 1M (in base 2).
+   Display the correct unit (either k, M, or ' ') after the amount, as
+   well.  */
+#define SIZE_AMOUNT(size) SIZE_SCALE (size), SIZE_LABEL (size)
 
 #endif /* ! GCC_SYSTEM_H */

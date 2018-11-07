@@ -56,6 +56,8 @@ extern void arm_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update
 extern rtx arm_simd_vect_par_cnst_half (machine_mode mode, bool high);
 extern bool arm_simd_check_vect_par_cnst_half_p (rtx op, machine_mode mode,
 						 bool high);
+extern void arm_emit_speculation_barrier_function (void);
+
 #ifdef RTX_CODE
 extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
@@ -372,6 +374,9 @@ extern const char *arm_rewrite_selected_cpu (const char *name);
 extern void arm_lang_object_attributes_init (void);
 extern void arm_register_target_pragmas (void);
 extern void arm_cpu_cpp_builtins (struct cpp_reader *);
+
+/* Defined in arm-d.c  */
+extern void arm_d_target_versions (void);
 
 extern bool arm_is_constant_pool_ref (rtx);
 

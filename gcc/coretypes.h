@@ -46,6 +46,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 typedef int64_t gcov_type;
 typedef uint64_t gcov_type_unsigned;
 
+struct bitmap_obstack;
 struct bitmap_head;
 typedef struct bitmap_head *bitmap;
 typedef const struct bitmap_head *const_bitmap;
@@ -133,6 +134,13 @@ struct gomp_sections;
 struct gomp_single;
 struct gomp_target;
 struct gomp_teams;
+
+/* Subclasses of symtab_node, using indentation to show the class
+   hierarchy.  */
+
+class symtab_node;
+  struct cgraph_node;
+  class varpool_node;
 
 union section;
 typedef union section section;
@@ -324,6 +332,14 @@ namespace gcc {
 }
 
 typedef std::pair <tree, tree> tree_pair;
+
+/* Define a name->value mapping.  */
+template <typename ValueType>
+struct kv_pair
+{
+  const char *const name;	/* the name of the value */
+  const ValueType value;	/* the value of the name */
+};
 
 #else
 

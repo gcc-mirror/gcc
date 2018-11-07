@@ -55,6 +55,9 @@ namespace __debug
       typedef typename _Base::iterator		_Base_iterator;
       typedef __gnu_debug::_Equal_to<_Base_const_iterator> _Equal;
 
+      template<typename _ItT, typename _SeqT, typename _CatT>
+	friend class ::__gnu_debug::_Safe_iterator;
+
     public:
       // types:
       typedef _Key					key_type;
@@ -225,19 +228,18 @@ namespace __debug
       template<typename... _Args>
 	iterator
 	emplace(_Args&&... __args)
-	{
-	  return iterator(_Base::emplace(std::forward<_Args>(__args)...),
-			  this);
-	}
+	{ return { _Base::emplace(std::forward<_Args>(__args)...), this }; }
 
       template<typename... _Args>
 	iterator
 	emplace_hint(const_iterator __pos, _Args&&... __args)
 	{
 	  __glibcxx_check_insert(__pos);
-	  return iterator(_Base::emplace_hint(__pos.base(),
-					      std::forward<_Args>(__args)...),
-			  this);
+	  return
+	    {
+	      _Base::emplace_hint(__pos.base(), std::forward<_Args>(__args)...),
+	      this
+	    };
 	}
 #endif
 
@@ -248,7 +250,7 @@ namespace __debug
 #if __cplusplus >= 201103L
       iterator
       insert(value_type&& __x)
-      { return iterator(_Base::insert(std::move(__x)), this); }
+      { return { _Base::insert(std::move(__x)), this }; }
 #endif
 
       iterator
@@ -263,8 +265,7 @@ namespace __debug
       insert(const_iterator __position, value_type&& __x)
       {
 	__glibcxx_check_insert(__position);
-	return iterator(_Base::insert(__position.base(), std::move(__x)),
-			this);
+	return { _Base::insert(__position.base(), std::move(__x)), this };
       }
 #endif
 
@@ -310,25 +311,26 @@ namespace __debug
 
       iterator
       insert(node_type&& __nh)
-      { return iterator(_Base::insert(std::move(__nh)), this); }
+      { return { _Base::insert(std::move(__nh)), this }; }
 
       iterator
       insert(const_iterator __hint, node_type&& __nh)
       {
 	__glibcxx_check_insert(__hint);
-	return iterator(_Base::insert(__hint.base(), std::move(__nh)), this);
+	return { _Base::insert(__hint.base(), std::move(__nh)), this };
       }
 
       using _Base::merge;
 #endif // C++17
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __position)
       {
 	__glibcxx_check_erase(__position);
 	this->_M_invalidate_if(_Equal(__position.base()));
-	return iterator(_Base::erase(__position.base()), this);
+	return { _Base::erase(__position.base()), this };
       }
 #else
       void
@@ -357,6 +359,7 @@ namespace __debug
       }
 
 #if __cplusplus >= 201103L
+      _GLIBCXX_ABI_TAG_CXX11
       iterator
       erase(const_iterator __first, const_iterator __last)
       {
@@ -366,13 +369,14 @@ namespace __debug
 	for (_Base_const_iterator __victim = __first.base();
 	     __victim != __last.base(); ++__victim)
 	  {
-	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::end(),
+	    _GLIBCXX_DEBUG_VERIFY(__victim != _Base::cend(),
 				  _M_message(__gnu_debug::__msg_valid_range)
 				  ._M_iterator(__first, "first")
 				  ._M_iterator(__last, "last"));
 	    this->_M_invalidate_if(_Equal(__victim));
 	  }
-	return iterator(_Base::erase(__first.base(), __last.base()), this);
+
+	return { _Base::erase(__first.base(), __last.base()), this };
       }
 #else
       void

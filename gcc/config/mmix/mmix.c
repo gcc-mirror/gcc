@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "insn-config.h"
+#include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -60,19 +61,16 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We have no means to tell DWARF 2 about the register stack, so we need
    to store the return address on the stack if an exception can get into
-   this function.  FIXME: Narrow condition.  Before any whole-function
-   analysis, df_regs_ever_live_p () isn't initialized.  We know it's up-to-date
-   after reload_completed; it may contain incorrect information some time
-   before that.  Within a RTL sequence (after a call to start_sequence,
-   such as in RTL expanders), leaf_function_p doesn't see all insns
-   (perhaps any insn).  But regs_ever_live is up-to-date when
-   leaf_function_p () isn't, so we "or" them together to get accurate
-   information.  FIXME: Some tweak to leaf_function_p might be
-   preferable.  */
+   this function.  We'll have an "initial value" recorded for the
+   return-register if we've seen a call instruction emitted.  This note
+   will be inaccurate before instructions are emitted, but the only caller
+   at that time is looking for modulo from stack-boundary, to which the
+   return-address does not contribute, and which is always 0 for MMIX
+   anyway.  Beware of calling leaf_function_p here, as it'll abort if
+   called within a sequence.  */
 #define MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS			\
  (flag_exceptions						\
-  && ((reload_completed && df_regs_ever_live_p (MMIX_rJ_REGNUM))	\
-      || !leaf_function_p ()))
+  && has_hard_reg_initial_val (Pmode, MMIX_INCOMING_RETURN_ADDRESS_REGNUM))
 
 #define IS_MMIX_EH_RETURN_DATA_REG(REGNO)	\
  (crtl->calls_eh_return		\
@@ -143,6 +141,7 @@ static void mmix_setup_incoming_varargs
   (cumulative_args_t, machine_mode, tree, int *, int);
 static void mmix_file_start (void);
 static void mmix_file_end (void);
+static void mmix_init_libfuncs (void);
 static bool mmix_rtx_costs (rtx, machine_mode, int, int, int *, bool);
 static int mmix_register_move_cost (machine_mode,
 				    reg_class_t, reg_class_t);
@@ -224,8 +223,14 @@ static HOST_WIDE_INT mmix_starting_frame_offset (void);
 #undef TARGET_ASM_OUTPUT_SOURCE_FILENAME
 #define TARGET_ASM_OUTPUT_SOURCE_FILENAME mmix_asm_output_source_filename
 
+#undef TARGET_INIT_LIBFUNCS
+#define TARGET_INIT_LIBFUNCS mmix_init_libfuncs
+
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE mmix_conditional_register_usage
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS mmix_rtx_costs
@@ -1308,6 +1313,20 @@ mmix_asm_output_source_filename (FILE *stream, const char *name)
   fprintf (stream, "\n");
 }
 
+/* Unfortunately, by default __builtin_ffs is expanded to ffs for
+   targets where INT_TYPE_SIZE < BITS_PER_WORD.  That together with
+   newlib since 2017-07-04 implementing ffs as __builtin_ffs leads to
+   (newlib) ffs recursively calling itself.  But, because of argument
+   promotion, and with ffs we're counting from the least bit, the
+   libgcc equivalent for ffsl works equally well for int arguments, so
+   just use that.  */
+
+static void
+mmix_init_libfuncs (void)
+{
+  set_optab_libfunc (ffs_optab, SImode, "__ffsdi2");
+}
+
 /* OUTPUT_QUOTED_STRING.  */
 
 void
@@ -1373,8 +1392,14 @@ mmix_assemble_integer (rtx x, unsigned int size, int aligned_p)
       case 1:
 	if (GET_CODE (x) != CONST_INT)
 	  {
-	    aligned_p = 0;
-	    break;
+	    /* There is no "unaligned byte" op or generic function to
+	       which we can punt, so we have to handle this here.  As
+	       the expression isn't a plain literal, the generated
+	       assembly-code can't be mmixal-equivalent (i.e. "BYTE"
+	       won't work) and thus it's ok to emit the default op
+	       ".byte". */
+	    assemble_integer_with_op ("\t.byte\t", x);
+	    return true;
 	  }
 	fputs ("\tBYTE\t", asm_out_file);
 	mmix_print_operand (asm_out_file, x, 'B');

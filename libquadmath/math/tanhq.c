@@ -1,5 +1,5 @@
-/* s_tanhl.c -- __float128 version of s_tanh.c.
- * Conversion to __float128 by Ulrich Drepper,
+/* s_tanhl.c -- long double version of s_tanh.c.
+ * Conversion to long double by Ulrich Drepper,
  * Cygnus Support, drepper@cygnus.com.
  */
 
@@ -14,36 +14,36 @@
  * ====================================================
  */
 
-/* Changes for 128-bit __float128 contributed by
+/* Changes for 128-bit long double contributed by
    Stephen L. Moshier <moshier@na-net.ornl.gov> */
 
-/* tanhl(x)
+/* tanhq(x)
  * Return the Hyperbolic Tangent of x
  *
  * Method :
  *                                      x    -x
  *                                     e  - e
- *      0. tanhl(x) is defined to be -----------
+ *      0. tanhq(x) is defined to be -----------
  *                                      x    -x
  *                                     e  + e
- *      1. reduce x to non-negative by tanhl(-x) = -tanhl(x).
- *      2.  0      <= x <= 2**-57 : tanhl(x) := x*(one+x)
+ *      1. reduce x to non-negative by tanhq(-x) = -tanhq(x).
+ *      2.  0      <= x <= 2**-57 : tanhq(x) := x*(one+x)
  *                                               -t
- *          2**-57 <  x <=  1     : tanhl(x) := -----; t = expm1l(-2x)
+ *          2**-57 <  x <=  1     : tanhq(x) := -----; t = expm1q(-2x)
  *                                              t + 2
  *                                                    2
- *          1      <= x <=  40.0  : tanhl(x) := 1-  ----- ; t=expm1l(2x)
+ *          1      <= x <=  40.0  : tanhq(x) := 1-  ----- ; t=expm1q(2x)
  *                                                  t + 2
- *          40.0   <  x <= INF    : tanhl(x) := 1.
+ *          40.0   <  x <= INF    : tanhq(x) := 1.
  *
  * Special cases:
- *      tanhl(NaN) is NaN;
- *      only tanhl(0)=0 is exact for finite argument.
+ *      tanhq(NaN) is NaN;
+ *      only tanhq(0)=0 is exact for finite argument.
  */
 
 #include "quadmath-imp.h"
 
-static const __float128 one = 1.0Q, two = 2.0Q, tiny = 1.0e-4900Q;
+static const __float128 one = 1.0, two = 2.0, tiny = 1.0e-4900Q;
 
 __float128
 tanhq (__float128 x)
@@ -59,11 +59,11 @@ tanhq (__float128 x)
   /* x is INF or NaN */
   if (ix >= 0x7fff0000)
     {
-      /* for NaN it's not important which branch: tanhl(NaN) = NaN */
+      /* for NaN it's not important which branch: tanhq(NaN) = NaN */
       if (jx & 0x80000000)
-	return one / x - one;	/* tanhl(-inf)= -1; */
+	return one / x - one;	/* tanhq(-inf)= -1; */
       else
-	return one / x + one;	/* tanhl(+inf)=+1 */
+	return one / x + one;	/* tanhq(+inf)=+1 */
     }
 
   /* |x| < 40 */

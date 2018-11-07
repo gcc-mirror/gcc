@@ -482,9 +482,7 @@ class Gcc_backend : public Backend
 
   Bfunction*
   function(Btype* fntype, const std::string& name, const std::string& asm_name,
-           bool is_visible, bool is_declaration, bool is_inlinable,
-           bool disable_split_stack, bool does_not_return,
-	   bool in_unique_section, Location);
+	   unsigned int flags, Location);
 
   Bstatement*
   function_defer_statement(Bfunction* function, Bexpression* undefer,
@@ -1948,8 +1946,8 @@ Gcc_backend::call_expression(Bfunction*, // containing fcn for call
   tree excess_type = NULL_TREE;
   if (optimize
       && TREE_CODE(fndecl) == FUNCTION_DECL
-      && DECL_IS_BUILTIN(fndecl)
-      && DECL_BUILT_IN_CLASS(fndecl) == BUILT_IN_NORMAL
+      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
+      && DECL_IS_BUILTIN (fndecl)
       && nargs > 0
       && ((SCALAR_FLOAT_TYPE_P(rettype)
 	   && SCALAR_FLOAT_TYPE_P(TREE_TYPE(args[0])))
@@ -3047,10 +3045,8 @@ Gcc_backend::label_address(Blabel* label, Location location)
 
 Bfunction*
 Gcc_backend::function(Btype* fntype, const std::string& name,
-                      const std::string& asm_name, bool is_visible,
-                      bool is_declaration, bool is_inlinable,
-                      bool disable_split_stack, bool does_not_return,
-		      bool in_unique_section, Location location)
+                      const std::string& asm_name, unsigned int flags,
+		      Location location)
 {
   tree functype = fntype->get_tree();
   if (functype != error_mark_node)
@@ -3065,9 +3061,9 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
   tree decl = build_decl(location.gcc_location(), FUNCTION_DECL, id, functype);
   if (! asm_name.empty())
     SET_DECL_ASSEMBLER_NAME(decl, get_identifier_from_string(asm_name));
-  if (is_visible)
+  if ((flags & function_is_visible) != 0)
     TREE_PUBLIC(decl) = 1;
-  if (is_declaration)
+  if ((flags & function_is_declaration) != 0)
     DECL_EXTERNAL(decl) = 1;
   else
     {
@@ -3079,16 +3075,16 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
       DECL_CONTEXT(resdecl) = decl;
       DECL_RESULT(decl) = resdecl;
     }
-  if (!is_inlinable)
+  if ((flags & function_is_inlinable) == 0)
     DECL_UNINLINABLE(decl) = 1;
-  if (disable_split_stack)
+  if ((flags & function_no_split_stack) != 0)
     {
       tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
-  if (does_not_return)
+  if ((flags & function_does_not_return) != 0)
     TREE_THIS_VOLATILE(decl) = 1;
-  if (in_unique_section)
+  if ((flags & function_in_unique_section) != 0)
     resolve_unique_section(decl, 0, 1);
 
   go_preserve_from_gc(decl);
@@ -3250,7 +3246,8 @@ Gcc_backend::write_global_definitions(
       if (decl != error_mark_node)
         {
           go_preserve_from_gc(decl);
-          gimplify_function_tree(decl);
+	  if (DECL_STRUCT_FUNCTION(decl) == NULL)
+	    allocate_struct_function(decl, false);
           cgraph_node::finalize_function(decl, true);
 
           defs[i] = decl;

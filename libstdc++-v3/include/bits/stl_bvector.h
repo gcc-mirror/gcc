@@ -473,8 +473,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	: public _Bit_alloc_type, public _Bvector_impl_data
 	{
 	public:
-	  _Bvector_impl()
-	    _GLIBCXX_NOEXCEPT_IF( noexcept(_Bit_alloc_type()) )
+	  _Bvector_impl() _GLIBCXX_NOEXCEPT_IF(
+		is_nothrow_default_constructible<_Bit_alloc_type>::value)
 	  : _Bit_alloc_type()
 	  { }
 
@@ -809,11 +809,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       iterator
       begin() _GLIBCXX_NOEXCEPT
-      { return this->_M_impl._M_start; }
+      { return iterator(this->_M_impl._M_start._M_p, 0); }
 
       const_iterator
       begin() const _GLIBCXX_NOEXCEPT
-      { return this->_M_impl._M_start; }
+      { return const_iterator(this->_M_impl._M_start._M_p, 0); }
 
       iterator
       end() _GLIBCXX_NOEXCEPT
@@ -842,7 +842,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #if __cplusplus >= 201103L
       const_iterator
       cbegin() const noexcept
-      { return this->_M_impl._M_start; }
+      { return const_iterator(this->_M_impl._M_start._M_p, 0); }
 
       const_iterator
       cend() const noexcept

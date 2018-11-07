@@ -625,6 +625,9 @@ d_dump (struct demangle_component *dc, int indent)
     case DEMANGLE_COMPONENT_TEMPLATE_PARAM:
       printf ("template parameter %ld\n", dc->u.s_number.number);
       return;
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
+      printf ("template parameter object\n");
+      break;
     case DEMANGLE_COMPONENT_FUNCTION_PARAM:
       printf ("function parameter %ld\n", dc->u.s_number.number);
       return;
@@ -1007,6 +1010,7 @@ d_make_comp (struct d_info *di, enum demangle_component_type type,
     case DEMANGLE_COMPONENT_GLOBAL_DESTRUCTORS:
     case DEMANGLE_COMPONENT_NULLARY:
     case DEMANGLE_COMPONENT_TRINARY_ARG2:
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
       if (left == NULL)
 	return NULL;
       break;
@@ -2007,6 +2011,7 @@ d_java_resource (struct d_info *di)
                   ::= TT <type>
                   ::= TI <type>
                   ::= TS <type>
+		  ::= TA <template-arg>
                   ::= GV <(object) name>
                   ::= T <call-offset> <(base) encoding>
                   ::= Tc <call-offset> <call-offset> <(base) encoding>
@@ -2098,6 +2103,10 @@ d_special_name (struct d_info *di)
 	case 'W':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_WRAPPER,
 			      d_name (di), NULL);
+
+	case 'A':
+	  return d_make_comp (di, DEMANGLE_COMPONENT_TPARM_OBJ,
+			      d_template_arg (di), NULL);
 
 	default:
 	  return NULL;
@@ -3327,11 +3336,11 @@ d_expression_1 (struct d_info *di)
     {
       /* Brace-enclosed initializer list, untyped or typed.  */
       struct demangle_component *type = NULL;
+      d_advance (di, 2);
       if (peek == 't')
 	type = cplus_demangle_type (di);
       if (!d_peek_next_char (di))
 	return NULL;
-      d_advance (di, 2);
       return d_make_comp (di, DEMANGLE_COMPONENT_INITIALIZER_LIST,
 			  type, d_exprlist (di, 'E'));
     }
@@ -4101,6 +4110,7 @@ d_count_templates_scopes (int *num_templates, int *num_scopes,
     case DEMANGLE_COMPONENT_VECTOR_TYPE:
     case DEMANGLE_COMPONENT_ARGLIST:
     case DEMANGLE_COMPONENT_TEMPLATE_ARGLIST:
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
     case DEMANGLE_COMPONENT_INITIALIZER_LIST:
     case DEMANGLE_COMPONENT_CAST:
     case DEMANGLE_COMPONENT_CONVERSION:
@@ -4870,6 +4880,11 @@ d_print_comp_inner (struct d_print_info *dpi, int options,
 
 	  dpi->templates = hold_dpt;
 	}
+      return;
+
+    case DEMANGLE_COMPONENT_TPARM_OBJ:
+      d_append_string (dpi, "template parameter object for ");
+      d_print_comp (dpi, options, d_left (dc));
       return;
 
     case DEMANGLE_COMPONENT_CTOR:

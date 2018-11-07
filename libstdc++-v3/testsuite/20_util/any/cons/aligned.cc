@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
+// { dg-require-cstdint "" }
 
 #include <any>
 #include <cstdint>

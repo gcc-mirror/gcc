@@ -32,6 +32,8 @@ with Errout;   use Errout;
 with Exp_Prag; use Exp_Prag;
 with Exp_Tss;  use Exp_Tss;
 with Exp_Util; use Exp_Util;
+with Freeze;   use Freeze;
+with Lib;      use Lib;
 with Namet;    use Namet;
 with Nlists;   use Nlists;
 with Nmake;    use Nmake;
@@ -47,6 +49,7 @@ with Sem_Prag; use Sem_Prag;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
+with Stand;    use Stand;
 with Stringt;  use Stringt;
 with SCIL_LL;  use SCIL_LL;
 with Tbuild;   use Tbuild;
@@ -589,14 +592,48 @@ package body Contracts is
          if Skip_Assert_Exprs then
             null;
 
-         --  Otherwise analyze the pre/postconditions
+         --  Otherwise analyze the pre/postconditions.
+         --  If these come from an aspect specification, their expressions
+         --  might include references to types that are not frozen yet, in the
+         --  case where the body is a rewritten expression function that is a
+         --  completion, so freeze all types within before constructing the
+         --  contract code.
 
          else
-            Prag := Pre_Post_Conditions (Items);
-            while Present (Prag) loop
-               Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Freeze_Id);
-               Prag := Next_Pragma (Prag);
-            end loop;
+            declare
+               Bod          : Node_Id;
+               Freeze_Types : Boolean := False;
+
+            begin
+               if Present (Freeze_Id) then
+                  Bod := Unit_Declaration_Node (Freeze_Id);
+
+                  if Nkind (Bod) = N_Subprogram_Body
+                    and then Was_Expression_Function (Bod)
+                    and then Ekind (Subp_Id) = E_Function
+                    and then Chars (Subp_Id) = Chars (Freeze_Id)
+                    and then Subp_Id /= Freeze_Id
+                  then
+                     Freeze_Types := True;
+                  end if;
+               end if;
+
+               Prag := Pre_Post_Conditions (Items);
+               while Present (Prag) loop
+                  if Freeze_Types
+                    and then Present (Corresponding_Aspect (Prag))
+                  then
+                     Freeze_Expr_Types
+                       (Def_Id => Subp_Id,
+                        Typ    => Standard_Boolean,
+                        Expr   => Expression (Corresponding_Aspect (Prag)),
+                        N      => Bod);
+                  end if;
+
+                  Analyze_Pre_Post_Condition_In_Decl_Part (Prag, Freeze_Id);
+                  Prag := Next_Pragma (Prag);
+               end loop;
+            end;
          end if;
 
          --  Analyze contract-cases and test-cases
@@ -888,8 +925,8 @@ package body Contracts is
 
                if not Is_Library_Level_Entity (Obj_Id) then
                   Error_Msg_N
-                    ("volatile variable & must be declared at library level",
-                     Obj_Id);
+                    ("volatile variable & must be declared at library level "
+                     & "(SPARK RM 7.1.3(3))", Obj_Id);
 
                --  An object of a discriminated type cannot be effectively
                --  volatile except for protected objects (SPARK RM 7.1.3(5)).
@@ -2821,14 +2858,26 @@ package body Contracts is
          -------------------------------
 
          procedure Process_Preconditions_For (Subp_Id : Entity_Id) is
-            Items : constant Node_Id := Contract (Subp_Id);
-
+            Items     : constant Node_Id := Contract (Subp_Id);
+            Subp_Decl : constant Node_Id := Unit_Declaration_Node (Subp_Id);
             Decl      : Node_Id;
+            Freeze_T  : Boolean;
             Prag      : Node_Id;
-            Subp_Decl : Node_Id;
 
          begin
-            --  Process the contract
+            --  Process the contract. If the body is an expression function
+            --  that is a completion, freeze types within, because this may
+            --  not have been done yet, when the subprogram declaration and
+            --  its completion by an expression function appear in distinct
+            --  declarative lists of the same unit (visible and private).
+
+            Freeze_T :=
+              Was_Expression_Function (Body_Decl)
+                and then Sloc (Body_Id) /= Sloc (Subp_Id)
+                and then In_Same_Source_Unit (Body_Id, Subp_Id)
+                and then List_Containing (Body_Decl) /=
+                         List_Containing (Subp_Decl)
+                and then not In_Instance;
 
             if Present (Items) then
                Prag := Pre_Post_Conditions (Items);
@@ -2836,6 +2885,16 @@ package body Contracts is
                   if Pragma_Name (Prag) = Name_Precondition
                     and then Is_Checked (Prag)
                   then
+                     if Freeze_T
+                       and then Present (Corresponding_Aspect (Prag))
+                     then
+                        Freeze_Expr_Types
+                          (Def_Id => Subp_Id,
+                           Typ    => Standard_Boolean,
+                           Expr   => Expression (Corresponding_Aspect (Prag)),
+                           N      => Body_Decl);
+                     end if;
+
                      Prepend_To_Decls_Or_Save (Prag);
                   end if;
 
@@ -2847,8 +2906,6 @@ package body Contracts is
             --  stub. The stub may carry a precondition pragma, in which case
             --  it must be taken into account. The pragma appears after the
             --  stub.
-
-            Subp_Decl := Unit_Declaration_Node (Subp_Id);
 
             if Nkind (Subp_Decl) = N_Subprogram_Body_Stub then
 

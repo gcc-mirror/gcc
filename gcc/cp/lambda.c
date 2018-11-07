@@ -262,6 +262,7 @@ is_capture_proxy (tree decl)
 	  && DECL_HAS_VALUE_EXPR_P (decl)
 	  && !DECL_ANON_UNION_VAR_P (decl)
 	  && !DECL_DECOMPOSITION_P (decl)
+	  && !DECL_FNAME_P (decl)
 	  && LAMBDA_FUNCTION_P (DECL_CONTEXT (decl)));
 }
 
@@ -695,14 +696,10 @@ tree
 add_default_capture (tree lambda_stack, tree id, tree initializer)
 {
   bool this_capture_p = (id == this_identifier);
-
   tree var = NULL_TREE;
-
   tree saved_class_type = current_class_type;
 
-  tree node;
-
-  for (node = lambda_stack;
+  for (tree node = lambda_stack;
        node;
        node = TREE_CHAIN (node))
     {
@@ -720,6 +717,19 @@ add_default_capture (tree lambda_stack, tree id, tree initializer)
 				 == CPLD_REFERENCE)),
 			    /*explicit_init_p=*/false);
       initializer = convert_from_reference (var);
+
+      /* Warn about deprecated implicit capture of this via [=].  */
+      if (cxx_dialect >= cxx2a
+	  && this_capture_p
+	  && LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda) == CPLD_COPY
+	  && !in_system_header_at (LAMBDA_EXPR_LOCATION (lambda)))
+	{
+	  if (warning_at (LAMBDA_EXPR_LOCATION (lambda), OPT_Wdeprecated,
+			  "implicit capture of %qE via %<[=]%> is deprecated "
+			  "in C++20", this_identifier))
+	    inform (LAMBDA_EXPR_LOCATION (lambda), "add explicit %<this%> or "
+		    "%<*this%> capture");
+	}
     }
 
   current_class_type = saved_class_type;
@@ -1214,8 +1224,7 @@ maybe_add_lambda_conv_op (tree type)
 
   /* Now build up the thunk to be returned.  */
 
-  name = get_identifier ("_FUN");
-  tree statfn = build_lang_decl (FUNCTION_DECL, name, stattype);
+  tree statfn = build_lang_decl (FUNCTION_DECL, fun_identifier, stattype);
   SET_DECL_LANGUAGE (statfn, lang_cplusplus);
   fn = statfn;
   DECL_SOURCE_LOCATION (fn) = DECL_SOURCE_LOCATION (callop);
@@ -1511,8 +1520,8 @@ prune_lambda_captures (tree body)
       tree cap = *capp;
       if (tree var = var_to_maybe_prune (cap))
 	{
-	  tree *use = *const_vars.get (var);
-	  if (TREE_CODE (*use) == DECL_EXPR)
+	  tree **use = const_vars.get (var);
+	  if (use && TREE_CODE (**use) == DECL_EXPR)
 	    {
 	      /* All uses of this capture were folded away, leaving only the
 		 proxy declaration.  */
@@ -1527,7 +1536,7 @@ prune_lambda_captures (tree body)
 	      *fieldp = DECL_CHAIN (*fieldp);
 
 	      /* And remove the capture proxy declaration.  */
-	      *use = void_node;
+	      **use = void_node;
 	      continue;
 	    }
 	}

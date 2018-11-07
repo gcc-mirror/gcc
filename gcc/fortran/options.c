@@ -417,7 +417,7 @@ gfc_post_options (const char **pfilename)
      specified it directly.  */
 
   if (flag_frontend_optimize == -1)
-    flag_frontend_optimize = optimize;
+    flag_frontend_optimize = optimize && !optimize_debug;
 
   /* Same for front end loop interchange.  */
 
@@ -565,7 +565,7 @@ gfc_handle_runtime_check_option (const char *arg)
 	      result = 1;
 	      break;
 	    }
-	  else if (optname[n] && pos > 3 && strncmp ("no-", arg, 3) == 0
+	  else if (optname[n] && pos > 3 && gfc_str_startswith (arg, "no-")
 		   && strncmp (optname[n], arg+3, pos-3) == 0)
 	    {
 	      gfc_option.rtcheck &= ~optmask[n];
@@ -585,7 +585,7 @@ gfc_handle_runtime_check_option (const char *arg)
    recognized and handled.  */
 
 bool
-gfc_handle_option (size_t scode, const char *arg, int value,
+gfc_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 		   int kind ATTRIBUTE_UNUSED, location_t loc ATTRIBUTE_UNUSED,
 		   const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED)
 {

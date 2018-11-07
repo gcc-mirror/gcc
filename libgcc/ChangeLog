@@ -1,3 +1,211 @@
+2018-11-04  Venkataramanan Kumar  <Venkataramanan.kumar@amd.com>
+
+	* config/i386/cpuinfo.c: (get_amd_cpu): Add znver2.
+	* config/i386/cpuinfo.h (processor_types): Add znver2.
+
+2018-11-01  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11 (LIB2ADD): Add divmod.c.
+	(HOST_LIBGCC2_CFLAGS): Change to optimize for size.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* configure.ac: Remove AC_PREREQ.  Use AC_LANG_SOURCE.
+	* configure: Regenerate.
+
+2018-10-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/lib1funcs.S (_muldi3): New function.
+	* config/arc/t-arc (LIB1ASMFUNCS): Add _muldi3.
+
+2018-10-30  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config/gthr-vxworks.h (__gthread_mutex_destroy): Call semDelete.
+
+2018-10-25  Martin Liska  <mliska@suse.cz>
+
+	PR other/87735
+	* libgcov-profiler.c: Revert.
+
+2018-10-24  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c: Start from 1 in order to distinguish
+	functions which were seen and these that were not.
+
+2018-10-18  Paul Koning  <ni1d@arrl.net>
+
+	* udivmodsi4.c (__udivmodsi4): Rename to conform to coding
+	standard.
+	* divmod.c: Update references to __udivmodsi4.
+	* udivmod.c: Ditto.
+	* udivhi3.c: New file.
+	* udivmodhi4.c: New file.
+	* config/pdp11/t-pdp11 (LIB2ADD): Add the new files.
+
+2018-10-17  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* Makefile.in (LIB2FUNCS_ST): Filter out LIB2FUNCS_EXCLUDE.
+
+2018-10-12  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/ibm-ldouble.c: Augment the toplevel guard with
+	defined (__FLOAT128_TYPE__) || defined (__LONG_DOUBLE_128__).
+
+2018-10-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/t-pdp11: Remove -mfloat32 switch.
+
+2018-10-04  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/84107
+	* libgcov-profiler.c (__gcov_indirect_call):
+	Change type to indirect_call_tuple.
+	(struct indirect_call_tuple): New struct.
+	(__gcov_indirect_call_topn_profiler): Change type.
+	(__gcov_indirect_call_profiler_v2): Use the new
+	variables.
+	* libgcov.h (struct indirect_call_tuple): New struct
+	definition.
+
+2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* libgcc2.c (isnan): Use __builtin_isnan.
+	(isfinite): Use __builtin_isfinite.
+	(isinf): Use __builtin_isinf.
+
+2018-09-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/crtprec.c (set_precision): Use fnstcw instead of fstcw.
+
+2018-09-21  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/vxcache.c: New file.  Provide __clear_cache, based on
+	the cacheTextUpdate VxWorks service.
+	* config/t-vxworks (LIB2ADD): Add vxcache.c.
+	(LIB2FUNCS_EXCLUDE): Add _clear_cache.
+	* config/t-vxwoks7: Likewise.
+
+2018-09-21  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-driver.c (crc32_unsigned): Remove.
+	(gcov_histogram_insert): Likewise.
+	(gcov_compute_histogram): Likewise.
+	(compute_summary): Simplify rapidly.
+	(merge_one_data): Do not handle PROGRAM_SUMMARY tag.
+	(merge_summary): Rapidly simplify.
+	(dump_one_gcov): Ignore gcov_summary.
+	(gcov_do_dump): Do not handle program summary, it's not
+	used.
+	* libgcov-util.c (tag_summary): Remove.
+	(read_gcda_finalize): Fix coding style.
+	(read_gcda_file): Initialize curr_object_summary.
+	(compute_summary): Remove.
+	(calculate_overlap): Remove settings of run_max.
+
+2018-09-21  Monk Chiang  <sh.chiang04@gmail.com>
+
+	* config/nds32/linux-unwind.h (struct _rt_sigframe): Use struct
+	ucontext_t type instead.
+	(nds32_fallback_frame_state): Remove struct _sigframe statement.
+
+2018-09-21  Kito Cheng  <kito.cheng@gmail.com>
+
+	* config/nds32/t-nds32-glibc: New file.
+
+2018-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (solaris_ld_v2_maps): New test.
+	* configure: Regenerate.
+	* Makefile.in (solaris_ld_v2_maps): New variable.
+	* config/t-slibgcc-sld (libgcc-unwind.map): Emit v2 mapfile syntax
+	if supported.
+
+2018-08-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/86951
+	* config/arm/lib1funcs.asm (speculation_barrier): New function.
+	* config/arm/t-arm (LIB1ASMFUNCS): Add it to list of functions
+	to build.
+
+2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/unwind-dw2-fde-darwin.c 
+	(_darwin10_Unwind_FindEnclosingFunction): move from here ...
+	* config/darwin10-unwind-find-enc-func.c: … to here.
+	* config/t-darwin: Build Darwin10 unwinder shim crt.
+	* libgcc/config.host: Add the Darwin10 unwinder shim.
+
+2018-08-21  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* config.host: Add crtbegin.o and crtend.o for
+	powerpc-wrs-vxworks target.
+
+2018-08-17  Jojo  <jijie_rong@c-sky.com>
+	    Huibin Wang  <huibin_wang@c-sky.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+	    Chung-Lin Tang  <cltang@codesourcery.com>
+
+	C-SKY port: libgcc
+
+	* config.host: Add C-SKY support.
+	* config/csky/*: New.
+
+2018-08-12  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/t-nds32-isr: Rearrange object dependency.
+	* config/nds32/initfini.c: Add dwarf2 unwinding support.
+	* config/nds32/isr-library/adj_intr_lvl.inc: Consider new extensions
+	and registers usage.
+	* config/nds32/isr-library/excp_isr.S: Ditto.
+	* config/nds32/isr-library/intr_isr.S: Ditto.
+	* config/nds32/isr-library/reset.S: Ditto.
+	* config/nds32/isr-library/restore_all.inc: Ditto.
+	* config/nds32/isr-library/restore_mac_regs.inc: Ditto.
+	* config/nds32/isr-library/restore_partial.inc: Ditto.
+	* config/nds32/isr-library/restore_usr_regs.inc: Ditto.
+	* config/nds32/isr-library/save_all.inc: Ditto.
+	* config/nds32/isr-library/save_mac_regs.inc: Ditto.
+	* config/nds32/isr-library/save_partial.inc: Ditto.
+	* config/nds32/isr-library/save_usr_regs.inc: Ditto.
+	* config/nds32/isr-library/vec_vid*.S: Consider 4-byte vector size.
+
+2018-08-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/linux-atomic.c: Update comment.
+	(FETCH_AND_OP_2, OP_AND_FETCH_2, FETCH_AND_OP_WORD, OP_AND_FETCH_WORD,
+	COMPARE_AND_SWAP_2, __sync_val_compare_and_swap_4,
+	SYNC_LOCK_TEST_AND_SET_2, __sync_lock_test_and_set_4): Use
+	__ATOMIC_RELAXED for atomic loads.
+	(SYNC_LOCK_RELEASE_1): New define.  Use __sync_synchronize() and
+	unordered store to release lock.
+	(__sync_lock_release_8): Likewise.
+	(SYNC_LOCK_RELEASE_2): Remove define.
+
+2018-08-02  Nicolas Pitre <nico@fluxnic.net>
+
+	PR libgcc/86512
+	* config/arm/ieee754-df.S: Don't shortcut denormal handling when
+	exponent goes negative. Update my email address.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-08-01  Martin Liska  <mliska@suse.cz>
+
+	* libgcov-profiler.c (__gcov_indirect_call_profiler_v2): Do not
+	check that  __gcov_indirect_call_callee is non-null.
+
+2018-07-30  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/ieee754-df.S: Fix comment for code working on
+	architectures >= 4.
+	* config/arm/ieee754-sf.S: Likewise.
+
+2018-07-27  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR libgcc/85334
+	* config/i386/shadow-stack-unwind.h (_Unwind_Frames_Increment):
+	Removed.
+
 2018-07-05  James Clarke  <jrtc27@jrtc27.com>
 
 	* configure: Regenerated.
@@ -58,30 +266,30 @@
 2018-06-07  Martin Liska  <mliska@suse.cz>
 
 	* libgcov-driver.c: Rename cs_all to all and assign it from
-        all_prg.
+	all_prg.
 
 2018-06-07  Martin Liska  <mliska@suse.cz>
 
-        PR bootstrap/86057
+	PR bootstrap/86057
 	* libgcov-driver-system.c (replace_filename_variables): Use
-        memcpy instead of mempcpy.
+	memcpy instead of mempcpy.
 	(allocate_filename_struct): Do not allocate filename, allocate
-        prefix and set it.
+	prefix and set it.
 	(gcov_exit_open_gcda_file): Allocate memory for gf->filename
-        here and properly copy content into it.
+	here and properly copy content into it.
 	* libgcov-driver.c (struct gcov_filename): Remove max_length
-        field, change prefix from size_t into char *.
+	field, change prefix from size_t into char *.
 	(compute_summary): Do not calculate longest filename.
 	(gcov_do_dump): Release memory of gf.filename after each file.
 	* libgcov-util.c (compute_summary): Use new signature of
-        compute_summary.
+	compute_summary.
 	(calculate_overlap): Likewise.
 
 2018-06-05  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/47618
 	* libgcov-driver-system.c (replace_filename_variables): New
-        function.
+	function.
 	(gcov_exit_open_gcda_file): Use it.
 
 2018-06-05  Martin Liska  <mliska@suse.cz>
@@ -112,15 +320,15 @@
 
 2018-05-30  Rasmus Villemoes  <rasmus.villemoes@prevas.dk>
 
-        * crtstuff.c: Remove declaration of _Jv_RegisterClasses.
+	* crtstuff.c: Remove declaration of _Jv_RegisterClasses.
 
 2018-05-29  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/85759
+	PR gcov-profile/85759
 	* libgcov-driver-system.c (gcov_error): Introduce usage of
-        GCOV_EXIT_AT_ERROR env. variable.
+	GCOV_EXIT_AT_ERROR env. variable.
 	* libgcov-driver.c (merge_one_data): Print error that we
-        overwrite a gcov file with a different timestamp.
+	overwrite a gcov file with a different timestamp.
 
 2018-05-23  Kalamatee  <kalamatee@gmail.com>
 
@@ -284,7 +492,7 @@
 
 	* config/pa/fptr.c (_dl_read_access_allowed): New.
 	(__canonicalize_funcptr_for_compare): Use it.
-	
+
 2018-02-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/83917
@@ -381,21 +589,21 @@
 	* config/rl78/t-rl78: Added smindi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/smaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added smaxdi3.S to LIB2ADD.
 
 2018-01-22  Sebastian Perta  <sebastian.perta@renesas.com>
- 
+
 	* config/rl78/umaxdi3.S: New assembly file.
 	* config/rl78/t-rl78: Added umaxdi3.S to LIB2ADD.
-	
+
 2018-01-21  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR lto/83452
 	* config/pa/stublib.c (L_gnu_lto_v1): New stub definition.
 	* config/pa/t-stublib (gnu_lto_v1-stub.o): Add make fragment.
-	
+
 2018-01-13  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/aarch64/value-unwind.h (aarch64_vg): New function.
@@ -704,8 +912,8 @@
 	config/i386/enable-execute-stack-mingw32.c
 
 2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
-            Doug Rupp  <rupp@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Doug Rupp  <rupp@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config.host (arm-wrs-vxworks*): Rework to handle arm-wrs-vxworks7
 	as well as arm-wrs-vxworks.
@@ -841,10 +1049,10 @@
 	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
 	    David Edelsohn  <dje.gcc@gmail.com>
 
-        * config/rs6000/aix-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Define
-        unconditionally.
-        (ucontext_for): Add 64-bit AIX 6.1, 7.1, 7.2 support.  Add 32-bit
-        AIX 7.2 support.
+	* config/rs6000/aix-unwind.h (MD_FALLBACK_FRAME_STATE_FOR): Define
+	unconditionally.
+	(ucontext_for): Add 64-bit AIX 6.1, 7.1, 7.2 support.  Add 32-bit
+	AIX 7.2 support.
 
 2017-06-02  Olivier Hainque  <hainque@adacore.com>
 

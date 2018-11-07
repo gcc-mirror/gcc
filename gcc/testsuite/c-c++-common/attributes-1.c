@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-prune-output "undeclared here \\(not in a function\\); did you mean .char..|\[^\n\r\]* was not declared in this scope" } */
+/* { dg-prune-output "undeclared here \\(not in a function\\)|\[^\n\r\]* was not declared in this scope" } */
 
 void* my_calloc(unsigned, unsigned) __attribute__((alloc_size(1,bar))); /* { dg-warning "outside range" } */
 void* my_realloc(void*, unsigned) __attribute__((alloc_size(bar))); /* { dg-warning "outside range" } */

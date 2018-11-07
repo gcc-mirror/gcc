@@ -2710,7 +2710,8 @@ Alternatively, you may run the script using the following command line:
   :switch:`-P {file}`
     Indicates the name of the project file that describes the set of sources
     to be processed. The exact set of argument sources depends on other options
-    specified, see below.
+    specified, see below. An aggregate project is allowed as the file parameter
+    only if it has exactly one non-aggregate project being aggregated.
 
 
   .. index:: -U (gnatmetric)
@@ -3417,9 +3418,9 @@ Alternatively, you may run the script using the following command line:
      already exists, it is overwritten.
 
 
-   .. index:: --end-of-line (gnatpp)
+   .. index:: --eol (gnatpp)
 
-   :switch:`--end-of-line={xxx}`
+   :switch:`--eol={xxx}`
      Specifies the line-ending style of the reformatted output file. The
      ``xxx`` string specified with the switch may be:
 
@@ -3441,7 +3442,7 @@ Alternatively, you may run the script using the following command line:
    Options ``--output-file`` and ``--output-force`` are allowed only if
    the call to gnatpp contains only one file to reformat.
 
-   Option ``--end-of-line`` and ``--wide-character-encoding`` cannot be used together
+   Option ``--eol`` and ``--wide-character-encoding`` cannot be used together
    with the ``--pipe`` option.
 
 
@@ -3569,6 +3570,30 @@ Alternatively, you may run the script using the following command line:
    specified (either directly or by means of ``--files`` option), and no
    ``-U`` is specified, then the set of processed sources is
    all the immediate units of the argument project.
+
+
+   .. index:: --gnat83 (gnatpp)
+
+   :switch:`--gnat83`
+     Ada 83 mode
+
+
+   .. index:: --gnat95 (gnatpp)
+
+   :switch:`--gnat95`
+     Ada 95 mode
+
+
+   .. index:: --gnat2005 (gnatpp)
+
+   :switch:`--gnat2005`
+     Ada 2005 mode
+
+
+   .. index:: --gnat2012 (gnatpp)
+
+   :switch:`--gnat2012`
+     Ada 2012 mode
 
 
    .. _Formatting_Rules:
@@ -4017,9 +4042,6 @@ Alternatively, you may run the script using the following command line:
 
    .. index:: --eol (gnatpp)
 
-   :switch:`--eol={xxx}`
-     :switch:`--end-of-line={xxx}`
-
    .. index:: -W (gnatpp)
 
    :switch:`-W{e}`
@@ -4151,7 +4173,8 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`-P {file}`
     Indicates the name of the project file that describes the set of sources
-    to be processed.
+    to be processed. An aggregate project is allowed as the file parameter only
+    if it has exactly one non-aggregate project being aggregated.
 
 
   .. index:: -X (gnatstub)
@@ -4275,8 +4298,8 @@ Alternatively, you may run the script using the following command line:
   .. index:: --no-exception (gnatstub)
 
   :switch:`--no-exception`
-    Avoid raising PROGRAM_ERROR in the generated bodies of program unit stubs.
-    This is not always possible for function stubs.
+    Avoid raising Program_Error in the generated bodies of program unit stubs,
+    except in the case of functions, where we have no value to return.
 
 
   .. index:: --no-local-header (gnatstub)

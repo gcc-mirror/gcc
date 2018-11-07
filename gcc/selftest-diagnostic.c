@@ -37,8 +37,10 @@ test_diagnostic_context::test_diagnostic_context ()
 {
   diagnostic_initialize (this, 0);
   show_caret = true;
+  show_labels_p = true;
   show_column = true;
   start_span = start_span_cb;
+  min_margin_width = 6;
 }
 
 test_diagnostic_context::~test_diagnostic_context ()

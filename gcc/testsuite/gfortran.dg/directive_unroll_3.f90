@@ -12,7 +12,7 @@ subroutine test1(a)
   DO i=1, 8, 1
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-rtl-dump-not "12:.: note: loop unrolled" "loop2_unroll" } }
+! { dg-final { scan-rtl-dump-not "12:.: optimized: loop unrolled" "loop2_unroll" } }
 end subroutine test1
 
 subroutine test2(a, n)
@@ -24,7 +24,7 @@ subroutine test2(a, n)
   DO i=1, n, 1
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-rtl-dump "24:.: note: loop unrolled 7 times" "loop2_unroll" } }
+! { dg-final { scan-rtl-dump "24:.: optimized: loop unrolled 7 times" "loop2_unroll" } }
 end subroutine test2
 
 subroutine test3(a, n)
@@ -36,7 +36,7 @@ subroutine test3(a, n)
   DO i=n, 1, -1
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-rtl-dump "36:.: note: loop unrolled 7 times" "loop2_unroll" } }
+! { dg-final { scan-rtl-dump "36:.: optimized: loop unrolled 7 times" "loop2_unroll" } }
 end subroutine test3
 
 subroutine test4(a, n)
@@ -48,5 +48,5 @@ subroutine test4(a, n)
   DO i=1, n, 2
     call dummy(a(i))
   ENDDO
-! { dg-final { scan-rtl-dump "48:.: note: loop unrolled 7 times" "loop2_unroll" } }
+! { dg-final { scan-rtl-dump "48:.: optimized: loop unrolled 7 times" "loop2_unroll" } }
 end subroutine test4

@@ -30,6 +30,7 @@
 #include "opts.h"
 #include "flags.h"
 #include "diagnostic.h"
+#include "params.h"
 
 #ifdef  TARGET_BIG_ENDIAN_DEFAULT
 #undef  TARGET_DEFAULT_TARGET_FLAGS
@@ -41,6 +42,10 @@
 
 #undef	TARGET_OPTION_OPTIMIZATION_TABLE
 #define TARGET_OPTION_OPTIMIZATION_TABLE aarch_option_optimization_table
+#undef TARGET_OPTION_DEFAULT_PARAMS
+#define TARGET_OPTION_DEFAULT_PARAMS aarch64_option_default_params
+#undef TARGET_OPTION_VALIDATE_PARAM
+#define TARGET_OPTION_VALIDATE_PARAM aarch64_option_validate_param
 
 /* Set default optimization options.  */
 static const struct default_options aarch_option_optimization_table[] =
@@ -59,6 +64,49 @@ static const struct default_options aarch_option_optimization_table[] =
 #endif
     { OPT_LEVELS_NONE, 0, NULL, 0 }
   };
+
+/* Implement target validation TARGET_OPTION_DEFAULT_PARAM.  */
+
+static bool
+aarch64_option_validate_param (const int value, const int param)
+{
+  /* Check that both parameters are the same.  */
+  if (param == (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE)
+    {
+      if (value != 12 && value != 16)
+	{
+	  error ("only values 12 (4 KB) and 16 (64 KB) are supported for guard "
+		 "size.  Given value %d (%llu KB) is out of range",
+		 value, (1ULL << value) / 1024ULL);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+/* Implement TARGET_OPTION_DEFAULT_PARAMS.  */
+
+static void
+aarch64_option_default_params (void)
+{
+  /* We assume the guard page is 64k.  */
+  int index = (int) PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE;
+  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE,
+			   DEFAULT_STK_CLASH_GUARD_SIZE == 0
+			     ? 16 : DEFAULT_STK_CLASH_GUARD_SIZE);
+
+  int guard_size
+    = default_param_value (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE);
+
+  /* Set the interval parameter to be the same as the guard size.  This way the
+     mid-end code does the right thing for us.  */
+  set_default_param_value (PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL,
+			   guard_size);
+
+  /* Validate the options.  */
+  aarch64_option_validate_param (guard_size, index);
+}
 
 /* Implement TARGET_HANDLE_OPTION.
    This function handles the target specific options for CPU/target selection.
@@ -172,10 +220,13 @@ static const struct arch_to_arch_name all_architectures[] =
 
 /* Parse the architecture extension string STR and update ISA_FLAGS
    with the architecture features turned on or off.  Return a
-   aarch64_parse_opt_result describing the result.  */
+   aarch64_parse_opt_result describing the result.
+   When the STR string contains an invalid extension,
+   a copy of the string is created and stored to INVALID_EXTENSION.  */
 
 enum aarch64_parse_opt_result
-aarch64_parse_extension (const char *str, unsigned long *isa_flags)
+aarch64_parse_extension (const char *str, unsigned long *isa_flags,
+			 std::string *invalid_extension)
 {
   /* The extension string is parsed left to right.  */
   const struct aarch64_option_extension *opt = NULL;
@@ -226,6 +277,8 @@ aarch64_parse_extension (const char *str, unsigned long *isa_flags)
       if (opt->name == NULL)
 	{
 	  /* Extension not found in list.  */
+	  if (invalid_extension)
+	    *invalid_extension = std::string (str, len);
 	  return AARCH64_PARSE_INVALID_FEATURE;
 	}
 
@@ -233,6 +286,16 @@ aarch64_parse_extension (const char *str, unsigned long *isa_flags)
     };
 
   return AARCH64_PARSE_OK;
+}
+
+/* Append all architecture extension candidates to the CANDIDATES vector.  */
+
+void
+aarch64_get_all_extension_candidates (auto_vec<const char *> *candidates)
+{
+  const struct aarch64_option_extension *opt;
+  for (opt = all_extensions; opt->name != NULL; opt++)
+    candidates->safe_push (opt->name);
 }
 
 /* Return a string representation of ISA_FLAGS.  DEFAULT_ARCH_FLAGS
@@ -322,7 +385,7 @@ aarch64_rewrite_selected_cpu (const char *name)
     fatal_error (input_location, "unknown value %qs for -mcpu", name);
 
   unsigned long extensions = p_to_a->flags;
-  aarch64_parse_extension (extension_str.c_str (), &extensions);
+  aarch64_parse_extension (extension_str.c_str (), &extensions, NULL);
 
   std::string outstr = a_to_an->arch_name
 	+ aarch64_get_extension_string_for_isa_flags (extensions,

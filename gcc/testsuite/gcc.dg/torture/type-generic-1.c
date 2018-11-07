@@ -2,7 +2,9 @@
    without any fast-math flags.  */
 
 /* { dg-do run } */
+/* { dg-require-effective-target inf } */
 /* { dg-skip-if "No Inf/NaN support" { spu-*-* } } */
+/* { dg-skip-if "No subnormal support" { csky-*-* } { "-mhard-float" } } */
 /* { dg-options "-DUNSAFE" { target tic6x*-*-* visium-*-* nvptx-*-* } } */
 /* { dg-add-options ieee } */
 

@@ -17,9 +17,9 @@ namespace __asan {
 #pragma section(".ASAN$GA", read, write)  // NOLINT
 #pragma section(".ASAN$GZ", read, write)  // NOLINT
 extern "C" __declspec(allocate(".ASAN$GA"))
-__asan_global __asan_globals_start = {};
+    ALIGNED(sizeof(__asan_global)) __asan_global __asan_globals_start = {};
 extern "C" __declspec(allocate(".ASAN$GZ"))
-__asan_global __asan_globals_end = {};
+    ALIGNED(sizeof(__asan_global)) __asan_global __asan_globals_end = {};
 #pragma comment(linker, "/merge:.ASAN=.data")
 
 static void call_on_globals(void (*hook)(__asan_global *, uptr)) {
@@ -27,7 +27,7 @@ static void call_on_globals(void (*hook)(__asan_global *, uptr)) {
   __asan_global *end = &__asan_globals_end;
   uptr bytediff = (uptr)end - (uptr)start;
   if (bytediff % sizeof(__asan_global) != 0) {
-#ifdef SANITIZER_DLL_THUNK
+#if defined(SANITIZER_DLL_THUNK) || defined(SANITIZER_DYNAMIC_RUNTIME_THUNK)
     __debugbreak();
 #else
     CHECK("corrupt asan global array");

@@ -137,8 +137,11 @@ function drop() {
 function compare(st, nm) {
     old = peek()
     if (old == 0) {
-        # This new test wasn't run last time.
-        if (verbose >= 2) printf("NA->%s:%s\n", st, nm)
+	# This new test wasn't run last time.
+	if(st == "FAIL" || st == "UNRESOLVED" || verbose >= 2) {
+	    # New test fails or we want all changes
+	    printf("NA->%s:%s\n", st, nm)
+	}
     }
     else {
 	# Compare this new test to the first queued old one.

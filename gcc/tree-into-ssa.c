@@ -2490,6 +2490,28 @@ pass_build_ssa::execute (function *fun)
 	SET_SSA_NAME_VAR_OR_IDENTIFIER (name, DECL_NAME (decl));
     }
 
+  /* Initialize SSA_NAME_POINTS_TO_READONLY_MEMORY.  */
+  tree fnspec = lookup_attribute ("fn spec",
+				  TYPE_ATTRIBUTES (TREE_TYPE (fun->decl)));
+  if (fnspec)
+    {
+      fnspec = TREE_VALUE (TREE_VALUE (fnspec));
+      unsigned i = 1;
+      for (tree arg = DECL_ARGUMENTS (cfun->decl);
+	   arg; arg = DECL_CHAIN (arg), ++i)
+	{
+	  if (i >= (unsigned) TREE_STRING_LENGTH (fnspec))
+	    break;
+	  if (TREE_STRING_POINTER (fnspec)[i]  == 'R'
+	      || TREE_STRING_POINTER (fnspec)[i] == 'r')
+	    {
+	      tree name = ssa_default_def (fun, arg);
+	      if (name)
+		SSA_NAME_POINTS_TO_READONLY_MEMORY (name) = 1;
+	    }
+	}
+    }
+
   return 0;
 }
 

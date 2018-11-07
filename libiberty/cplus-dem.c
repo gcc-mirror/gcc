@@ -4471,7 +4471,8 @@ remember_Btype (struct work_stuff *work, const char *start,
   char *tem;
 
   tem = XNEWVEC (char, len + 1);
-  memcpy (tem, start, len);
+  if (len > 0)
+    memcpy (tem, start, len);
   tem[len] = '\0';
   work -> btypevec[index] = tem;
 }

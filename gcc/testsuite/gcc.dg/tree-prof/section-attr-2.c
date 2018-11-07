@@ -28,7 +28,11 @@ main (int argc, char *argv[])
 void NOINLINE
 foo (int path)
 {
+#ifdef __APPLE__
+  static int i __attribute__ ((section ("__DATA,__data")));
+#else
   static int i __attribute__((section(".data")));
+#endif
   if (path)
     {
       for (i = 0; i < SIZE; i++)
@@ -41,4 +45,5 @@ foo (int path)
     }
 }
 
-/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold\.0" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\*\[\\n\\r\]+_foo\.cold:" { target *-*-darwin* } } } */

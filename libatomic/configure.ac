@@ -22,7 +22,6 @@
 #  see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #  <http://www.gnu.org/licenses/>.
 
-AC_PREREQ(2.59)
 AC_INIT([GNU Atomic Library], 1.0,,[libatomic])
 AC_CONFIG_HEADER(auto-config.h)
 

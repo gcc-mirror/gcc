@@ -67,6 +67,6 @@ bool operator!=(alloc<T>, alloc<U>) { return false; }
 
 int main()
 {
-  std::map<int, int, std::less<int>, alloc<int> > m;
+  std::map<int, int, std::less<int>, alloc<std::pair<const int, int>>> m;
   m[1];
 }

@@ -18,6 +18,7 @@
 // 27.6.1.3 unformatted input functions
 
 // { dg-options "-DMAX_SIZE=355" { target simulator } }
+// { dg-require-fileio "" }
 
 #ifndef MAX_SIZE
 #define MAX_SIZE 555

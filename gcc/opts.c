@@ -442,7 +442,7 @@ static const struct default_options default_options_table[] =
     /* -O1 optimizations.  */
     { OPT_LEVELS_1_PLUS, OPT_fdefer_pop, NULL, 1 },
 #if DELAY_SLOTS
-    { OPT_LEVELS_1_PLUS, OPT_fdelayed_branch, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fdelayed_branch, NULL, 1 },
 #endif
     { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fcprop_registers, NULL, 1 },
@@ -1090,6 +1090,21 @@ wrap_help (const char *help,
   while (remaining);
 }
 
+/* Data structure used to print list of valid option values.  */
+
+struct option_help_tuple
+{
+  option_help_tuple (int code, vec<const char *> values):
+    m_code (code), m_values (values)
+  {}
+
+  /* Code of an option.  */
+  int m_code;
+
+  /* List of possible values.  */
+  vec<const char *> m_values;
+};
+
 /* Print help for a specific front-end, etc.  */
 static void
 print_filtered_help (unsigned int include_flags,
@@ -1142,6 +1157,8 @@ print_filtered_help (unsigned int include_flags,
 
   if (!opts->x_help_enum_printed)
     opts->x_help_enum_printed = XCNEWVAR (char, cl_enums_count);
+
+  auto_vec<option_help_tuple> help_tuples;
 
   for (i = 0; i < cl_options_count; i++)
     {
@@ -1303,6 +1320,13 @@ print_filtered_help (unsigned int include_flags,
       if (option->var_type == CLVC_ENUM
 	  && opts->x_help_enum_printed[option->var_enum] != 2)
 	opts->x_help_enum_printed[option->var_enum] = 1;
+      else
+	{
+	  vec<const char *> option_values
+	    = targetm_common.get_valid_option_values (i, NULL);
+	  if (!option_values.is_empty ())
+	    help_tuples.safe_push (option_help_tuple (i, option_values));
+	}
     }
 
   if (! found)
@@ -1365,6 +1389,15 @@ print_filtered_help (unsigned int include_flags,
 	}
       printf ("\n\n");
       opts->x_help_enum_printed[i] = 2;
+    }
+
+  for (unsigned i = 0; i < help_tuples.length (); i++)
+    {
+      const struct cl_option *option = cl_options + help_tuples[i].m_code;
+      printf ("  Known valid arguments for %s option:\n   ", option->opt_text);
+      for (unsigned j = 0; j < help_tuples[i].m_values.length (); j++)
+	printf (" %s", help_tuples[i].m_values[j]);
+      printf ("\n\n");
     }
 }
 
@@ -1844,7 +1877,7 @@ common_handle_option (struct gcc_options *opts,
 {
   size_t scode = decoded->opt_index;
   const char *arg = decoded->arg;
-  int value = decoded->value;
+  HOST_WIDE_INT value = decoded->value;
   enum opt_code code = (enum opt_code) scode;
 
   gcc_assert (decoded->canonical_option_num_elements <= 2);
@@ -2107,22 +2140,11 @@ common_handle_option (struct gcc_options *opts,
 			       opts, opts_set, loc, dc);
       break;
 
-    case OPT_Wlarger_than_:
-      opts->x_larger_than_size = value;
-      opts->x_warn_larger_than = value != -1;
-      break;
-
     case OPT_Wfatal_errors:
       dc->fatal_errors = value;
       break;
 
-    case OPT_Wframe_larger_than_:
-      opts->x_frame_larger_than_size = value;
-      opts->x_warn_frame_larger_than = value != -1;
-      break;
-
     case OPT_Wstack_usage_:
-      opts->x_warn_stack_usage = value;
       opts->x_flag_stack_usage_info = value != -1;
       break;
 
@@ -2186,6 +2208,14 @@ common_handle_option (struct gcc_options *opts,
       dc->show_caret = value;
       break;
 
+    case OPT_fdiagnostics_show_labels:
+      dc->show_labels_p = value;
+      break;
+
+    case OPT_fdiagnostics_show_line_numbers:
+      dc->show_line_numbers_p = value;
+      break;
+
     case OPT_fdiagnostics_color_:
       diagnostic_color_init (dc, value);
       break;
@@ -2196,6 +2226,10 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fdiagnostics_show_option:
       dc->show_option_requested = value;
+      break;
+
+    case OPT_fdiagnostics_minimum_margin_width_:
+      dc->min_margin_width = value;
       break;
 
     case OPT_fdump_:
@@ -2282,7 +2316,7 @@ common_handle_option (struct gcc_options *opts,
     case OPT_fpack_struct_:
       if (value <= 0 || (value & (value - 1)) || value > 16)
 	error_at (loc,
-		  "structure alignment must be a small power of two, not %d",
+		  "structure alignment must be a small power of two, not %wu",
 		  value);
       else
 	opts->x_initial_max_fld_align = value;
@@ -2465,7 +2499,7 @@ common_handle_option (struct gcc_options *opts,
       /* FALLTHRU */
     case OPT_gdwarf_:
       if (value < 2 || value > 5)
-	error_at (loc, "dwarf version %d is not supported", value);
+	error_at (loc, "dwarf version %wu is not supported", value);
       else
 	opts->x_dwarf_version = value;
       set_debug_level (DWARF2_DEBUG, false, "", opts, opts_set, loc);

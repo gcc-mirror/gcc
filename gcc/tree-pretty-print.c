@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
-static void pretty_print_string (pretty_printer *, const char*);
+static void pretty_print_string (pretty_printer *, const char*, unsigned);
 static void newline_and_indent (pretty_printer *, int);
 static void maybe_init_pretty_print (FILE *);
 static void print_struct_decl (pretty_printer *, const_tree, int, dump_flags_t);
@@ -160,6 +160,16 @@ print_generic_expr (FILE *file, tree t, dump_flags_t flags)
   maybe_init_pretty_print (file);
   dump_generic_node (tree_pp, t, 0, flags, false);
   pp_flush (tree_pp);
+}
+
+/* Print a single expression T to string, and return it.  */
+
+char *
+print_generic_expr_to_str (tree t)
+{
+  pretty_printer pp;
+  dump_generic_node (&pp, t, 0, TDF_VOPS|TDF_MEMSYMS, false);
+  return xstrdup (pp_formatted_text (&pp));
 }
 
 /* Dump NAME, an IDENTIFIER_POINTER, sanitized so that D<num> sequences
@@ -1231,9 +1241,6 @@ dump_block_node (pretty_printer *pp, tree block, int spc, dump_flags_t flags)
   if (flags & TDF_ADDRESS)
     pp_printf (pp, "[%p] ", (void *) block);
 
-  if (BLOCK_ABSTRACT (block))
-    pp_string (pp, "[abstract] ");
-
   if (TREE_ASM_WRITTEN (block))
     pp_string (pp, "[written] ");
 
@@ -1945,10 +1952,13 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
       break;
 
     case STRING_CST:
-      pp_string (pp, "\"");
-      pretty_print_string (pp, TREE_STRING_POINTER (node));
-      pp_string (pp, "\"");
-      break;
+      {
+	pp_string (pp, "\"");
+	if (unsigned nbytes = TREE_STRING_LENGTH (node))
+	  pretty_print_string (pp, TREE_STRING_POINTER (node), nbytes);
+	pp_string (pp, "\"");
+	break;
+      }
 
     case VECTOR_CST:
       {
@@ -4009,15 +4019,16 @@ print_call_name (pretty_printer *pp, tree node, dump_flags_t flags)
     }
 }
 
-/* Parses the string STR and replaces new-lines by '\n', tabs by '\t', ...  */
+/* Print the first N characters in the array STR, replacing non-printable
+   characters (including embedded nuls) with unambiguous escape sequences.  */
 
 static void
-pretty_print_string (pretty_printer *pp, const char *str)
+pretty_print_string (pretty_printer *pp, const char *str, unsigned n)
 {
   if (str == NULL)
     return;
 
-  while (*str)
+  for ( ; n; --n, ++str)
     {
       switch (str[0])
 	{
@@ -4057,48 +4068,20 @@ pretty_print_string (pretty_printer *pp, const char *str)
 	  pp_string (pp, "\\'");
 	  break;
 
-	  /* No need to handle \0; the loop terminates on \0.  */
-
-	case '\1':
-	  pp_string (pp, "\\1");
-	  break;
-
-	case '\2':
-	  pp_string (pp, "\\2");
-	  break;
-
-	case '\3':
-	  pp_string (pp, "\\3");
-	  break;
-
-	case '\4':
-	  pp_string (pp, "\\4");
-	  break;
-
-	case '\5':
-	  pp_string (pp, "\\5");
-	  break;
-
-	case '\6':
-	  pp_string (pp, "\\6");
-	  break;
-
-	case '\7':
-	  pp_string (pp, "\\7");
-	  break;
-
 	default:
-	  if (!ISPRINT (str[0]))
+	  if (str[0] || n > 1)
 	    {
-	      char buf[5];
-	      sprintf (buf, "\\x%x", (unsigned char)str[0]);
-	      pp_string (pp, buf);
+	      if (!ISPRINT (str[0]))
+		{
+		  char buf[5];
+		  sprintf (buf, "\\x%02x", (unsigned char)str[0]);
+		  pp_string (pp, buf);
+		}
+	      else
+		pp_character (pp, str[0]);
+	      break;
 	    }
-	  else
-	    pp_character (pp, str[0]);
-	  break;
 	}
-      str++;
     }
 }
 
@@ -4124,46 +4107,21 @@ newline_and_indent (pretty_printer *pp, int spc)
 
 /* Handle the %K format for TEXT.  Separate from default_tree_printer
    so it can also be used in front ends.
-   Argument is a statement from which EXPR_LOCATION and TREE_BLOCK will
-   be recorded.  */
+   The location LOC and BLOCK are expected to be extracted by the caller
+   from the %K argument arg via EXPR_LOCATION(arg) and TREE_BLOCK(arg).  */
 
 void
-percent_K_format (text_info *text, tree t)
+percent_K_format (text_info *text, location_t loc, tree block)
 {
-  text->set_location (0, EXPR_LOCATION (t), true);
+  text->set_location (0, loc, SHOW_RANGE_WITH_CARET);
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
-  tree block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;
-
-  if (in_lto_p)
-    {
-      /* ???  LTO drops all BLOCK_ABSTRACT_ORIGINs apart from those
-         representing the outermost block of an inlined function.
-	 So walk the BLOCK tree until we hit such a scope.  */
-      while (block
-	     && TREE_CODE (block) == BLOCK)
-	{
-	  if (inlined_function_outer_scope_p (block))
-	    {
-	      *pp_ti_abstract_origin (text) = block;
-	      break;
-	    }
-	  block = BLOCK_SUPERCONTEXT (block);
-	}
-      return;
-    }
 
   while (block
 	 && TREE_CODE (block) == BLOCK
 	 && BLOCK_ABSTRACT_ORIGIN (block))
     {
       tree ao = BLOCK_ABSTRACT_ORIGIN (block);
-
-      while (TREE_CODE (ao) == BLOCK
-	     && BLOCK_ABSTRACT_ORIGIN (ao)
-	     && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	ao = BLOCK_ABSTRACT_ORIGIN (ao);
-
       if (TREE_CODE (ao) == FUNCTION_DECL)
 	{
 	  *pp_ti_abstract_origin (text) = block;

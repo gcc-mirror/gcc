@@ -16,10 +16,10 @@ volatile __mmask8 m;
 void extern
 avx512f_test (void)
 {
-  x = _mm_fixupimm_ss (x, x, y, 3);
+  x = _mm_fixupimm_ss (x, y, 3);
   x = _mm_mask_fixupimm_ss (x, m, x, y, 3);
-  x = _mm_maskz_fixupimm_ss (m, x, x, y, 3);
-  x = _mm_fixupimm_round_ss (x, x, y, 3, _MM_FROUND_NO_EXC);
+  x = _mm_maskz_fixupimm_ss (m, x, y, 3);
+  x = _mm_fixupimm_round_ss (x, y, 3, _MM_FROUND_NO_EXC);
   x = _mm_mask_fixupimm_round_ss (x, m, x, y, 3, _MM_FROUND_NO_EXC);
-  x = _mm_maskz_fixupimm_round_ss (m, x, x, y, 3, _MM_FROUND_NO_EXC);
+  x = _mm_maskz_fixupimm_round_ss (m, x, y, 3, _MM_FROUND_NO_EXC);
 }

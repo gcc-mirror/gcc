@@ -22,12 +22,16 @@ along with GCC; see the file COPYING3.  If not see
 /* This file is the lexical analyzer for GNU C++.  */
 
 #include "config.h"
+/* For use with name_hint.  */
+#define INCLUDE_UNIQUE_PTR
 #include "system.h"
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "stringpool.h"
 #include "c-family/c-pragma.h"
 #include "c-family/c-objc.h"
+#include "gcc-rich-location.h"
+#include "cp-name-hint.h"
 
 static int interface_strcmp (const char *);
 static void init_cp_pragma (void);
@@ -499,8 +503,18 @@ unqualified_name_lookup_error (tree name, location_t loc)
     {
       if (!objc_diagnose_private_ivar (name))
 	{
-	  error_at (loc, "%qD was not declared in this scope", name);
-	  suggest_alternatives_for (loc, name, true);
+	  auto_diagnostic_group d;
+	  name_hint hint = suggest_alternatives_for (loc, name, true);
+	  if (const char *suggestion = hint.suggestion ())
+	    {
+	      gcc_rich_location richloc (loc);
+	      richloc.add_fixit_replace (suggestion);
+	      error_at (&richloc,
+			"%qD was not declared in this scope; did you mean %qs?",
+			name, suggestion);
+	    }
+	  else
+	    error_at (loc, "%qD was not declared in this scope", name);
 	}
       /* Prevent repeated error messages by creating a VAR_DECL with
 	 this NAME in the innermost block scope.  */
@@ -526,6 +540,9 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   location_t loc = name_expr.get_location ();
   if (loc == UNKNOWN_LOCATION)
     loc = input_location;
+
+  if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
+    name = TREE_OPERAND (name, 0);
 
   if (processing_template_decl)
     {

@@ -137,9 +137,9 @@ void operator delete[](void*, std::size_t) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 #endif
 void* operator new(std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __malloc__));
 void* operator new[](std::size_t, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
-  __attribute__((__externally_visible__));
+  __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
   __attribute__((__externally_visible__));
 void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
@@ -148,7 +148,7 @@ void operator delete[](void*, const std::nothrow_t&) _GLIBCXX_USE_NOEXCEPT
 void* operator new(std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
 void* operator new(std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete(void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete(void*, std::align_val_t, const std::nothrow_t&)
@@ -156,7 +156,7 @@ void operator delete(void*, std::align_val_t, const std::nothrow_t&)
 void* operator new[](std::size_t, std::align_val_t)
   __attribute__((__externally_visible__));
 void* operator new[](std::size_t, std::align_val_t, const std::nothrow_t&)
-  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
+  _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__, __malloc__));
 void operator delete[](void*, std::align_val_t)
   _GLIBCXX_USE_NOEXCEPT __attribute__((__externally_visible__));
 void operator delete[](void*, std::align_val_t, const std::nothrow_t&)
@@ -182,15 +182,6 @@ inline void operator delete[](void*, void*) _GLIBCXX_USE_NOEXCEPT { }
 } // extern "C++"
 
 #if __cplusplus >= 201703L
-#if __GNUC__ >= 7
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-#elif defined __has_builtin
-// For non-GNU compilers:
-# if __has_builtin(__builtin_launder)
-#  define _GLIBCXX_HAVE_BUILTIN_LAUNDER 1
-# endif
-#endif
-
 #ifdef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 namespace std
 {
@@ -215,7 +206,6 @@ namespace std
   void launder(const volatile void*) = delete;
 }
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
-#undef _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
 
 #pragma GCC visibility pop

@@ -29,7 +29,7 @@ m4_copy_force([_AC_PREREQ], [AC_PREREQ])
 
 dnl Ensure exactly this Autoconf version is used
 m4_ifndef([_GCC_AUTOCONF_VERSION],
-  [m4_define([_GCC_AUTOCONF_VERSION], [2.64])])
+  [m4_define([_GCC_AUTOCONF_VERSION], [2.69])])
 
 dnl Test for the exact version when AC_INIT is expanded.
 dnl This allows to update the tree in steps (for testing)

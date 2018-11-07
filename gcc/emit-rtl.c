@@ -2865,6 +2865,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
+    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -3118,6 +3119,7 @@ repeat:
       /* SCRATCH must be shared because they represent distinct values.  */
       return;
     case CLOBBER:
+    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -5690,6 +5692,7 @@ copy_insn_1 (rtx orig)
     case SIMPLE_RETURN:
       return orig;
     case CLOBBER:
+    case CLOBBER_HIGH:
       /* Share clobbers of hard registers (like cc0), but do not share pseudo reg
          clobbers or clobbers of hard registers that originated as pseudos.
          This is needed to allow safe register renaming.  */
@@ -6407,13 +6410,6 @@ init_emit_once (void)
     if (GET_MODE_CLASS ((machine_mode) i) == MODE_CC)
       const_tiny_rtx[0][i] = const0_rtx;
 
-  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
-    {
-      scalar_mode smode = smode_iter.require ();
-      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (smode));
-      const_tiny_rtx[0][smode] = immed_wide_int_const (wi_zero, smode);
-    }
-
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);
   ret_rtx = gen_rtx_fmt_ (RETURN, VOIDmode);
   simple_return_rtx = gen_rtx_fmt_ (SIMPLE_RETURN, VOIDmode);
@@ -6506,6 +6502,21 @@ gen_hard_reg_clobber (machine_mode mode, unsigned int regno)
   else
     return (hard_reg_clobbers[mode][regno] =
 	    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (mode, regno)));
+}
+
+static GTY((deletable)) rtx
+hard_reg_clobbers_high[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+
+/* Return a CLOBBER_HIGH expression for register REGNO that clobbers MODE,
+   caching into HARD_REG_CLOBBERS_HIGH.  */
+rtx
+gen_hard_reg_clobber_high (machine_mode mode, unsigned int regno)
+{
+  if (hard_reg_clobbers_high[mode][regno])
+    return hard_reg_clobbers_high[mode][regno];
+  else
+    return (hard_reg_clobbers_high[mode][regno]
+	    = gen_rtx_CLOBBER_HIGH (VOIDmode, gen_rtx_REG (mode, regno)));
 }
 
 location_t prologue_location;

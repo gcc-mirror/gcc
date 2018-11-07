@@ -51,7 +51,7 @@
 ;;    M -- Constant integer with a value of 0x7fffffff.
 ;;    N -- Multiple letter constraint followed by 4 parameter letters.
 ;;         0..9,x:  number of the part counting from most to least significant
-;;         H,Q:     mode of the part
+;;         S,H,Q:   mode of the part
 ;;         D,S,H:   mode of the containing operand
 ;;         0,F:     value of the other parts (F - all bits set)
 ;;         --
@@ -89,6 +89,7 @@
 ;;    ZR -- Pointer with index register and short displacement.
 ;;    ZS -- Pointer without index register but with long displacement.
 ;;    ZT -- Pointer with index register and long displacement.
+;;    ZL -- LARL operand when in 64-bit mode, otherwise nothing.
 ;;
 ;;
 
@@ -204,7 +205,7 @@
 
 ;;    N -- Multiple letter constraint followed by 4 parameter letters.
 ;;         0..9,x:  number of the part counting from most to least significant
-;;         H,Q:     mode of the part
+;;         S,H,Q:   mode of the part
 ;;         D,S,H:   mode of the containing operand
 ;;         0,F:     value of the other parts (F = all bits set)
 ;;
@@ -224,6 +225,18 @@
   "@internal"
   (and (match_code "const_int")
        (match_test "s390_N_constraint_str (\"xQS0\", ival)")))
+
+
+(define_constraint "NxHD0"
+  "@internal"
+   (and (match_code "const_int")
+        (match_test "s390_N_constraint_str (\"xHD0\", ival)")))
+
+
+(define_constraint "NxSD0"
+  "@internal"
+   (and (match_code "const_int")
+        (match_test "s390_N_constraint_str (\"xSD0\", ival)")))
 
 
 (define_constraint "NxQD0"
@@ -550,3 +563,7 @@
 (define_address_constraint "ZT"
   "Pointer with index register and long displacement."
   (match_test "s390_mem_constraint (\"ZT\", op)"))
+
+(define_constraint "ZL"
+  "LARL operand when in 64-bit mode, otherwise nothing."
+  (match_test "TARGET_64BIT && larl_operand (op, VOIDmode)"))

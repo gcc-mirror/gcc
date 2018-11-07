@@ -29,8 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 
 EXPORTED_CONST int processor_flags_table[] =
   {
-    /* g5 */     PF_IEEE_FLOAT,
-    /* g6 */     PF_IEEE_FLOAT,
     /* z900 */   PF_IEEE_FLOAT | PF_ZARCH,
     /* z990 */   PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT,
     /* z9-109 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
@@ -46,9 +44,9 @@ EXPORTED_CONST int processor_flags_table[] =
     /* z13 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
                  | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
                  | PF_Z13 | PF_VX,
-    /* arch12 */ PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
+    /* z14 */    PF_IEEE_FLOAT | PF_ZARCH | PF_LONG_DISPLACEMENT
                  | PF_EXTIMM | PF_DFP | PF_Z10 | PF_Z196 | PF_ZEC12 | PF_TX
-                 | PF_Z13 | PF_VX | PF_VXE | PF_ARCH12
+                 | PF_Z13 | PF_VX | PF_VXE | PF_Z14
   };
 
 /* Change optimizations to be performed, depending on the

@@ -715,7 +715,7 @@ gimple_alloca_call_p (const gimple *stmt)
     return false;
 
   fndecl = gimple_call_fndecl (stmt);
-  if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_BUILT_IN_ALLOCA:
@@ -1222,77 +1222,11 @@ alloc_max_size (void)
   if (alloc_object_size_limit)
     return alloc_object_size_limit;
 
-  alloc_object_size_limit = max_object_size ();
+  HOST_WIDE_INT limit = warn_alloc_size_limit;
+  if (limit == HOST_WIDE_INT_MAX)
+    limit = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
 
-  if (!warn_alloc_size_limit)
-    return alloc_object_size_limit;
-
-  const char *optname = "-Walloc-size-larger-than=";
-
-  char *end = NULL;
-  errno = 0;
-  unsigned HOST_WIDE_INT unit = 1;
-  unsigned HOST_WIDE_INT limit
-    = strtoull (warn_alloc_size_limit, &end, 10);
-
-  /* If the value is too large to be represented use the maximum
-     representable value that strtoull sets limit to (setting
-     errno to ERANGE).  */
-
-  if (end && *end)
-    {
-      /* Numeric option arguments are at most INT_MAX.  Make it
-	 possible to specify a larger value by accepting common
-	 suffixes.  */
-      if (!strcmp (end, "kB"))
-	unit = 1000;
-      else if (!strcasecmp (end, "KiB") || !strcmp (end, "KB"))
-	unit = 1024;
-      else if (!strcmp (end, "MB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000;
-      else if (!strcasecmp (end, "MiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024;
-      else if (!strcasecmp (end, "GB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000;
-      else if (!strcasecmp (end, "GiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024;
-      else if (!strcasecmp (end, "TB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000;
-      else if (!strcasecmp (end, "TiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024;
-      else if (!strcasecmp (end, "PB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000;
-      else if (!strcasecmp (end, "PiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024;
-      else if (!strcasecmp (end, "EB"))
-	unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000
-	  * 1000;
-      else if (!strcasecmp (end, "EiB"))
-	unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024
-	  * 1024;
-      else
-	{
-	  /* This could mean an unknown suffix or a bad prefix, like
-	     "+-1".  */
-	  warning_at (UNKNOWN_LOCATION, 0,
-		      "invalid argument %qs to %qs",
-		      warn_alloc_size_limit, optname);
-
-	  /* Ignore the limit extracted by strtoull.  */
-	  unit = 0;
-	}
-    }
-
-  if (unit)
-    {
-      widest_int w = wi::mul (limit, unit);
-      if (w < wi::to_widest (alloc_object_size_limit))
-	alloc_object_size_limit
-	  = wide_int_to_tree (ptrdiff_type_node, w);
-      else
-	alloc_object_size_limit = build_all_ones_cst (size_type_node);
-    }
-
+  alloc_object_size_limit = build_int_cst (size_type_node, limit);
 
   return alloc_object_size_limit;
 }
@@ -1321,7 +1255,7 @@ get_size_range (tree exp, tree range[2], bool allow_zero /* = false */)
   bool integral = INTEGRAL_TYPE_P (exptype);
 
   wide_int min, max;
-  enum value_range_type range_type;
+  enum value_range_kind range_type;
 
   if (integral)
     range_type = determine_value_range (exp, &min, &max);
@@ -1611,10 +1545,10 @@ get_attr_nonstring_decl (tree expr, tree *ref)
 void
 maybe_warn_nonstring_arg (tree fndecl, tree exp)
 {
-  if (!fndecl || DECL_BUILT_IN_CLASS (fndecl) != BUILT_IN_NORMAL)
+  if (!fndecl || !fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     return;
 
-  if (TREE_NO_WARNING (exp))
+  if (TREE_NO_WARNING (exp) || !warn_stringop_overflow)
     return;
 
   unsigned nargs = call_expr_nargs (exp);
@@ -1642,7 +1576,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	   the range of their known or possible lengths and use it
 	   conservatively as the bound for the unbounded function,
 	   and to adjust the range of the bound of the bounded ones.  */
-	for (unsigned argno = 0; argno < nargs && !*lenrng; argno ++)
+	for (unsigned argno = 0;
+	     argno < MIN (nargs, 2)
+	     && !(lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST); argno++)
 	  {
 	    tree arg = CALL_EXPR_ARG (exp, argno);
 	    if (!get_attr_nonstring_decl (arg))
@@ -1654,12 +1590,12 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
     case BUILT_IN_STRNCAT:
     case BUILT_IN_STPNCPY:
     case BUILT_IN_STRNCPY:
-      if (2 < nargs)
+      if (nargs > 2)
 	bound = CALL_EXPR_ARG (exp, 2);
       break;
 
     case BUILT_IN_STRNDUP:
-      if (1 < nargs)
+      if (nargs > 1)
 	bound = CALL_EXPR_ARG (exp, 1);
       break;
 
@@ -1669,7 +1605,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	if (!get_attr_nonstring_decl (arg))
 	  get_range_strlen (arg, lenrng);
 
-	if (1 < nargs)
+	if (nargs > 1)
 	  bound = CALL_EXPR_ARG (exp, 1);
 	break;
       }
@@ -1709,11 +1645,9 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 	}
     }
 
-  if (*lenrng)
+  if (lenrng[1] && TREE_CODE (lenrng[1]) == INTEGER_CST)
     {
       /* Add one for the nul.  */
-      lenrng[0] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[0]),
-			       lenrng[0], size_one_node);
       lenrng[1] = const_binop (PLUS_EXPR, TREE_TYPE (lenrng[1]),
 			       lenrng[1], size_one_node);
 
@@ -1842,6 +1776,7 @@ maybe_warn_nonstring_arg (tree fndecl, tree exp)
 
       bool warned = false;
 
+      auto_diagnostic_group d;
       if (wi::ltu_p (asize, wibnd))
 	{
 	  if (bndrng[0] == bndrng[1])
@@ -3675,9 +3610,8 @@ expand_call (tree exp, rtx target, int ignore)
      pushed these optimizations into -O2.  Don't try if we're already
      expanding a call, as that means we're an argument.  Don't try if
      there's cleanups, as we know there's code to follow the call.  */
-
   if (currently_expanding_call++ != 0
-      || !flag_optimize_sibling_calls
+      || (!flag_optimize_sibling_calls && !CALL_FROM_THUNK_P (exp))
       || args_size.var
       || dbg_cnt (tail_call) == false)
     try_tail_call = 0;

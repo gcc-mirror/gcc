@@ -1,7 +1,6 @@
 dnl Process this with autoconf to create configure
 
-AC_PREREQ(2.64)
-AC_INIT
+AC_INIT([zlib], [1.1.4])
 AC_CONFIG_SRCDIR([zlib.h])
 
 if test -n "${with_target_subdir}"; then
@@ -14,7 +13,7 @@ AC_CANONICAL_SYSTEM
 mkinstalldirs="`cd $ac_aux_dir && ${PWDCMD-pwd}`/mkinstalldirs"
 AC_SUBST(mkinstalldirs)
 
-AM_INIT_AUTOMAKE(zlib, 1.1.4)
+AM_INIT_AUTOMAKE
 
 AM_MAINTAINER_MODE
 

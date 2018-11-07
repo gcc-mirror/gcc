@@ -189,6 +189,11 @@ are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 
 	  break;
 
+	case REF_INQUIRY:
+	  if (r1->u.i != r2->u.i)
+	    return false;
+	  break;
+
 	default:
 	  gfc_internal_error ("are_identical_variables: Bad type");
 	}
@@ -240,7 +245,7 @@ gfc_dep_compare_functions (gfc_expr *e1, gfc_expr *e2, bool impure_ok)
 	      /* Special case: String arguments which compare equal can have
 		 different lengths, which makes them different in calls to
 		 procedures.  */
-	      
+
 	      if (e1->expr_type == EXPR_CONSTANT
 		  && e1->ts.type == BT_CHARACTER
 		  && e2->expr_type == EXPR_CONSTANT
@@ -905,6 +910,7 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 	return subarray_p;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
       }
 
@@ -1907,7 +1913,7 @@ dummy_intent_not_in (gfc_expr **ep)
 /* Determine if an array ref, usually an array section specifies the
    entire array.  In addition, if the second, pointer argument is
    provided, the function will return true if the reference is
-   contiguous; eg. (:, 1) gives true but (1,:) gives false. 
+   contiguous; eg. (:, 1) gives true but (1,:) gives false.
    If one of the bounds depends on a dummy variable which is
    not INTENT(IN), also return false, because the user may
    have changed the variable.  */

@@ -11,4 +11,4 @@ main (void)
   return e ? 0 : (__builtin_unreachable (), 1);
 }
 
-/* { dg-output "execution reached a __builtin_unreachable\\(\\) call" } */
+/* { dg-output "execution reached an unreachable program point" } */

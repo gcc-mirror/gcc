@@ -24,7 +24,11 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "io.h"
 #include "unix.h"
+#include "async.h"
 #include <limits.h>
+#if !HAVE_UNLINK_OPEN_FILE
+#include <string.h>
+#endif
 
 typedef enum
 { CLOSE_DELETE, CLOSE_KEEP, CLOSE_UNSPECIFIED }
@@ -57,13 +61,21 @@ st_close (st_parameter_close *clp)
     find_option (&clp->common, clp->status, clp->status_len,
 		 status_opt, "Bad STATUS parameter in CLOSE statement");
 
+  u = find_unit (clp->common.unit);
+
+  if (ASYNC_IO && u && u->au)
+    if (async_wait (&(clp->common), u->au))
+      {
+	library_end ();
+	return;
+      }
+
   if ((clp->common.flags & IOPARM_LIBRETURN_MASK) != IOPARM_LIBRETURN_OK)
   {
     library_end ();
     return;
   }
 
-  u = find_unit (clp->common.unit);
   if (u != NULL)
     {
       if (close_share (u) < 0)

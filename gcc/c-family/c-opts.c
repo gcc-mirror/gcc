@@ -117,6 +117,7 @@ static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
 static void set_std_c17 (int);
+static void set_std_c2x (int);
 static void check_deps_environment_vars (void);
 static void handle_deferred_opts (void);
 static void sanitize_cpp_opts (void);
@@ -224,7 +225,7 @@ c_common_init_options (unsigned int decoded_options_count,
   parse_in = cpp_create_reader (c_dialect_cxx () ? CLK_GNUCXX: CLK_GNUC89,
 				ident_hash, line_table);
   cb = cpp_get_callbacks (parse_in);
-  cb->error = c_cpp_error;
+  cb->diagnostic = c_cpp_diagnostic;
 
   cpp_opts = cpp_get_options (parse_in);
   cpp_opts->dollars_in_ident = DOLLARS_IN_IDENTIFIERS;
@@ -262,7 +263,7 @@ c_common_init_options (unsigned int decoded_options_count,
    form of an -f or -W option was given.  Returns false if the switch was
    invalid, true if valid.  Use HANDLERS in recursive handle_option calls.  */
 bool
-c_common_handle_option (size_t scode, const char *arg, int value,
+c_common_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 			int kind, location_t loc,
 			const struct cl_option_handlers *handlers)
 {
@@ -379,16 +380,6 @@ c_common_handle_option (size_t scode, const char *arg, int value,
       /* ??? Don't add new options here. Use LangEnabledBy in c.opt.  */
 
       cpp_opts->warn_num_sign_change = value;
-      break;
-
-    case OPT_Walloca_larger_than_:
-      if (!value)
-	inform (loc, "-Walloca-larger-than=0 is meaningless");
-      break;
-
-    case OPT_Wvla_larger_than_:
-      if (!value)
-	inform (loc, "-Wvla-larger-than=0 is meaningless");
       break;
 
     case OPT_Wunknown_pragmas:
@@ -689,6 +680,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_c17 (false /* ISO */);
       break;
 
+    case OPT_std_c2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (true /* ISO */);
+      break;
+
+    case OPT_std_gnu2x:
+      if (!preprocessing_asm_p)
+	set_std_c2x (false /* ISO */);
+      break;
+
     case OPT_trigraphs:
       cpp_opts->trigraphs = 1;
       break;
@@ -941,6 +942,7 @@ c_common_post_options (const char **pfilename)
       warn_abi_version = latest_abi_version;
       if (flag_abi_version == latest_abi_version)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Wabi, "-Wabi won't warn about anything"))
 	    {
 	      inform (input_location, "-Wabi warns about differences "
@@ -1385,22 +1387,17 @@ c_finish_options (void)
 {
   if (!cpp_opts->preprocessed)
     {
-      size_t i;
+      const line_map_ordinary *bltin_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<built-in>"), 0));
+      cb_file_change (parse_in, bltin_map);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table,
-							   LC_RENAME, 0,
-							   _("<built-in>"),
-							   0)));
       /* Make sure all of the builtins about to be declared have
 	 BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (parse_in, &builtins_loc);
+      cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
 
       cpp_init_builtins (parse_in, flag_hosted);
       c_cpp_builtins (parse_in);
-
-      cpp_stop_forcing_token_locations (parse_in);
 
       /* We're about to send user input to cpplib, so make it warn for
 	 things that we previously (when we sent it internal definitions)
@@ -1413,11 +1410,14 @@ c_finish_options (void)
 	 their acceptance on the -std= setting.  */
       cpp_opts->warn_dollars = (cpp_opts->cpp_pedantic && !cpp_opts->c99);
 
-      cb_file_change (parse_in,
-		      linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
-							   _("<command-line>"), 0)));
+      const line_map_ordinary *cmd_map
+	= linemap_check_ordinary (linemap_add (line_table, LC_RENAME, 0,
+					       _("<command-line>"), 0));
+      cb_file_change (parse_in, cmd_map);
 
-      for (i = 0; i < deferred_count; i++)
+      /* All command line defines must have the same location.  */
+      cpp_force_token_locations (parse_in, cmd_map->start_location);
+      for (size_t i = 0; i < deferred_count; i++)
 	{
 	  struct deferred_opt *opt = &deferred_opts[i];
 
@@ -1434,35 +1434,30 @@ c_finish_options (void)
 	    }
 	}
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-
-      /* Handle -imacros after -D and -U.  */
-      for (i = 0; i < deferred_count; i++)
-	{
-	  struct deferred_opt *opt = &deferred_opts[i];
-
-	  if (opt->code == OPT_imacros
-	      && cpp_push_include (parse_in, opt->arg))
-	    {
-	      /* Disable push_command_line_include callback for now.  */
-	      include_cursor = deferred_count + 1;
-	      cpp_scan_nooutput (parse_in);
-	    }
-	}
+      cpp_stop_forcing_token_locations (parse_in);
     }
-  else
-    {
-      if (cpp_opts->directives_only)
-	cpp_init_special_builtins (parse_in);
+  else if (cpp_opts->directives_only)
+    cpp_init_special_builtins (parse_in);
 
-      /* Start the main input file, if the debug writer wants it. */
-      if (debug_hooks->start_end_main_source_file
-	  && !flag_preprocess_only)
-	(*debug_hooks->start_source_file) (0, this_input_filename);
-    }
+  /* Start the main input file, if the debug writer wants it. */
+  if (debug_hooks->start_end_main_source_file
+      && !flag_preprocess_only)
+    (*debug_hooks->start_source_file) (0, this_input_filename);
+
+  if (!cpp_opts->preprocessed)
+    /* Handle -imacros after -D and -U.  */
+    for (size_t i = 0; i < deferred_count; i++)
+      {
+	struct deferred_opt *opt = &deferred_opts[i];
+
+	if (opt->code == OPT_imacros
+	    && cpp_push_include (parse_in, opt->arg))
+	  {
+	    /* Disable push_command_line_include callback for now.  */
+	    include_cursor = deferred_count + 1;
+	    cpp_scan_nooutput (parse_in);
+	  }
+      }
 
   include_cursor = 0;
   push_command_line_include ();
@@ -1505,7 +1500,7 @@ push_command_line_include (void)
       include_cursor++;
       /* -Wunused-macros should only warn about macros defined hereafter.  */
       cpp_opts->warn_unused_macros = cpp_warn_unused_macros;
-      /* Restore the line map from <command line>.  */
+      /* Restore the line map back to the main file.  */
       if (!cpp_opts->preprocessed)
 	cpp_change_file (parse_in, LC_RENAME, this_input_filename);
 
@@ -1563,6 +1558,7 @@ set_std_c89 (int c94, int iso)
   flag_isoc94 = c94;
   flag_isoc99 = 0;
   flag_isoc11 = 0;
+  flag_isoc2x = 0;
   lang_hooks.name = "GNU C89";
 }
 
@@ -1574,6 +1570,7 @@ set_std_c99 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 0;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1588,6 +1585,7 @@ set_std_c11 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
@@ -1602,10 +1600,26 @@ set_std_c17 (int iso)
   flag_no_asm = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
+  flag_isoc2x = 0;
   flag_isoc11 = 1;
   flag_isoc99 = 1;
   flag_isoc94 = 1;
   lang_hooks.name = "GNU C17";
+}
+
+/* Set the C 2X standard (without GNU extensions if ISO).  */
+static void
+set_std_c2x (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_STDC2X: CLK_GNUC2X);
+  flag_no_asm = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  flag_isoc2x = 1;
+  flag_isoc11 = 1;
+  flag_isoc99 = 1;
+  flag_isoc94 = 1;
+  lang_hooks.name = "GNU C2X";
 }
 
 

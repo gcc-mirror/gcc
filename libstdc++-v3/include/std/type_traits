@@ -144,6 +144,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cplusplus >= 201703L
 
+  template<typename... _Bn>
+    inline constexpr bool __or_v = __or_<_Bn...>::value;
+  template<typename... _Bn>
+    inline constexpr bool __and_v = __and_<_Bn...>::value;
+
 #define __cpp_lib_logical_traits 201510
 
   template<typename... _Bn>
@@ -396,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_object_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, !is_function<_Tp>::value> { };
+    : public __not_<is_function<_Tp>>::type { };
 
   /// is_member_object_pointer
   template<typename _Tp>
@@ -411,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Cp>
     struct __is_member_function_pointer_helper<_Tp _Cp::*>
-    : public integral_constant<bool, is_function<_Tp>::value> { };
+    : public is_function<_Tp>::type { };
 
   /// is_member_function_pointer
   template<typename _Tp>
@@ -603,7 +608,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_compound
   template<typename _Tp>
     struct is_compound
-    : public integral_constant<bool, !is_fundamental<_Tp>::value> { };
+    : public __not_<is_fundamental<_Tp>>::type { };
 
   template<typename _Tp>
     struct __is_member_pointer_helper
@@ -826,8 +831,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   struct __do_is_nt_destructible_impl
   {
     template<typename _Tp>
-      static integral_constant<bool, noexcept(declval<_Tp&>().~_Tp())>
-        __test(int);
+      static __bool_constant<noexcept(declval<_Tp&>().~_Tp())>
+      __test(int);
 
     template<typename>
       static false_type __test(...);
@@ -1136,8 +1141,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_constructible
   template<typename _Tp, typename... _Args>
     struct is_trivially_constructible
-    : public __and_<is_constructible<_Tp, _Args...>, __bool_constant<
-		      __is_trivially_constructible(_Tp, _Args...)>>::type
+    : public __bool_constant<__is_trivially_constructible(_Tp, _Args...)>
     { };
 
   /// is_trivially_default_constructible
@@ -1235,9 +1239,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_copy_assignable_impl<_Tp, true>
-    : public __and_<is_copy_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, const _Tp&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, const _Tp&)>
     { };
 
   template<typename _Tp>
@@ -1256,9 +1258,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct __is_trivially_move_assignable_impl<_Tp, true>
-    : public __and_<is_move_assignable<_Tp>,
-		    integral_constant<bool,
-			__is_trivially_assignable(_Tp&, _Tp&&)>>
+    : public __bool_constant<__is_trivially_assignable(_Tp&, _Tp&&)>
     { };
 
   template<typename _Tp>
@@ -1269,8 +1269,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// is_trivially_destructible
   template<typename _Tp>
     struct is_trivially_destructible
-    : public __and_<is_destructible<_Tp>, integral_constant<bool,
-			      __has_trivial_destructor(_Tp)>>
+    : public __and_<is_destructible<_Tp>,
+		    __bool_constant<__has_trivial_destructor(_Tp)>>
     { };
 
 
@@ -2961,15 +2961,6 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#if __GNUC__ >= 7
-# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-#elif defined(__is_identifier)
-// For non-GNU compilers:
-# if ! __is_identifier(__has_unique_object_representations)
-#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
-# endif
-#endif
-
 #ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
@@ -2984,19 +2975,9 @@ template <typename _From, typename _To>
     inline constexpr bool has_unique_object_representations_v
       = has_unique_object_representations<_Tp>::value;
 #endif
-#undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
-
-#if __GNUC__ >= 7
-# define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined(__is_identifier)
-// For non-GNU compilers:
-# if ! __is_identifier(__is_aggregate)
-#  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-# endif
-#endif
 
 #ifdef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-#define __cpp_lib_is_aggregate 201703
+# define __cpp_lib_is_aggregate 201703
   /// is_aggregate
   template<typename _Tp>
     struct is_aggregate
@@ -3006,8 +2987,6 @@ template <typename _From, typename _To>
   template<typename _Tp>
     inline constexpr bool is_aggregate_v = is_aggregate<_Tp>::value;
 #endif
-#undef _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE
-
 #endif // C++17
 
 #if __cplusplus > 201703L

@@ -35,6 +35,9 @@
 ;; Iterator for all integer modes (up to 64-bit)
 (define_mode_iterator ALLI [QI HI SI DI])
 
+;; Iterator for all integer modes (up to 128-bit)
+(define_mode_iterator ALLI_TI [QI HI SI DI TI])
+
 ;; Iterator for all integer modes that can be extended (up to 64-bit)
 (define_mode_iterator ALLX [QI HI SI])
 
@@ -500,7 +503,6 @@
     UNSPECV_ATOMIC_CAS		; Represent an atomic CAS.
     UNSPECV_ATOMIC_SWP		; Represent an atomic SWP.
     UNSPECV_ATOMIC_OP		; Represent an atomic operation.
-    UNSPECV_ATOMIC_LDOP		; Represent an atomic load-operation
     UNSPECV_ATOMIC_LDOP_OR	; Represent an atomic load-or
     UNSPECV_ATOMIC_LDOP_BIC	; Represent an atomic load-bic
     UNSPECV_ATOMIC_LDOP_XOR	; Represent an atomic load-xor
@@ -1534,8 +1536,6 @@
 (define_int_iterator FCVT_F2FIXED [UNSPEC_FCVTZS UNSPEC_FCVTZU])
 (define_int_iterator FCVT_FIXED2F [UNSPEC_SCVTF UNSPEC_UCVTF])
 
-(define_int_iterator FRECP [UNSPEC_FRECPE UNSPEC_FRECPX])
-
 (define_int_iterator CRC [UNSPEC_CRC32B UNSPEC_CRC32H UNSPEC_CRC32W
                           UNSPEC_CRC32X UNSPEC_CRC32CB UNSPEC_CRC32CH
                           UNSPEC_CRC32CW UNSPEC_CRC32CX])
@@ -1589,6 +1589,10 @@
 (define_int_attr atomic_ldop
  [(UNSPECV_ATOMIC_LDOP_OR "set") (UNSPECV_ATOMIC_LDOP_BIC "clr")
   (UNSPECV_ATOMIC_LDOP_XOR "eor") (UNSPECV_ATOMIC_LDOP_PLUS "add")])
+
+(define_int_attr atomic_ldoptab
+ [(UNSPECV_ATOMIC_LDOP_OR "ior") (UNSPECV_ATOMIC_LDOP_BIC "bic")
+  (UNSPECV_ATOMIC_LDOP_XOR "xor") (UNSPECV_ATOMIC_LDOP_PLUS "add")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators Attributes.
@@ -1784,8 +1788,6 @@
 				 (UNSPEC_UNPACKUHI "!BYTES_BIG_ENDIAN")
 				 (UNSPEC_UNPACKSLO "BYTES_BIG_ENDIAN")
 				 (UNSPEC_UNPACKULO "BYTES_BIG_ENDIAN")])
-
-(define_int_attr frecp_suffix  [(UNSPEC_FRECPE "e") (UNSPEC_FRECPX "x")])
 
 (define_int_attr crc_variant [(UNSPEC_CRC32B "crc32b") (UNSPEC_CRC32H "crc32h")
                         (UNSPEC_CRC32W "crc32w") (UNSPEC_CRC32X "crc32x")

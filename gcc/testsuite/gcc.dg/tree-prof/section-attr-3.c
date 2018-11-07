@@ -9,7 +9,11 @@
 #define NOINLINE __attribute__((noinline)) __attribute__ ((noclone))
 
 const char *sarr[SIZE];
+#ifdef __APPLE__
+const char *buf_hot __attribute__ ((section ("__DATA,__data")));
+#else
 const char *buf_hot __attribute__ ((section (".data")));
+#endif
 const char *buf_cold;
 
 void foo (int path);
@@ -42,4 +46,5 @@ foo (int path)
     }
 }
 
-/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold\.0" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*\.text\.unlikely\[\\n\\r\]+\[\t \]*\.size\[\t \]*foo\.cold" { target *-*-linux* *-*-gnu* } } } */
+/* { dg-final-use { scan-assembler "\.section\[\t \]*__TEXT,__text_cold\*\[\\n\\r\]+_foo\.cold:" { target *-*-darwin* } } } */

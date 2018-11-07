@@ -1531,11 +1531,22 @@ package body Exp_Ch5 is
                    Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
+            --  Generate the assignment statement. When the left-hand side
+            --  is an object with an address clause present, force generated
+            --  temporaries to be renamings so as to correctly assign to any
+            --  overlaid objects.
+
             A :=
               Make_Assignment_Statement (Loc,
-                Name =>
+                Name       =>
                   Make_Selected_Component (Loc,
-                    Prefix        => Duplicate_Subexpr (Lhs),
+                    Prefix        =>
+                      Duplicate_Subexpr
+                        (Exp          => Lhs,
+                         Name_Req     => False,
+                         Renaming_Req =>
+                           Is_Entity_Name (Lhs)
+                             and then Present (Address_Clause (Entity (Lhs)))),
                     Selector_Name =>
                       New_Occurrence_Of (Find_Component (L_Typ, C), Loc)),
                 Expression => Expr);

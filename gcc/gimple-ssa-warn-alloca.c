@@ -33,9 +33,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "params.h"
 #include "tree-cfg.h"
+#include "builtins.h"
 #include "calls.h"
 #include "cfgloop.h"
 #include "intl.h"
+
+static unsigned HOST_WIDE_INT adjusted_warn_limit (bool);
 
 const pass_data pass_data_walloca = {
   GIMPLE_PASS,
@@ -78,8 +81,12 @@ pass_walloca::gate (function *fun ATTRIBUTE_UNUSED)
   if (first_time_p)
     return warn_alloca != 0;
 
-  return ((unsigned HOST_WIDE_INT) warn_alloca_limit > 0
-	  || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
+  // Warning is disabled when its size limit is greater than PTRDIFF_MAX
+  // for the target maximum, which makes the limit negative since when
+  // represented in signed HOST_WIDE_INT.
+  unsigned HOST_WIDE_INT max = tree_to_uhwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+  return (adjusted_warn_limit (false) <= max
+	  || adjusted_warn_limit (true) <= max);
 }
 
 // Possible problematic uses of alloca.
@@ -121,8 +128,36 @@ struct alloca_type_and_limit {
   alloca_type_and_limit ();
   alloca_type_and_limit (enum alloca_type type,
 			 wide_int i) : type(type), limit(i) { }
-  alloca_type_and_limit (enum alloca_type type) : type(type) { }
+  alloca_type_and_limit (enum alloca_type type) : type(type)
+  { if (type == ALLOCA_BOUND_MAYBE_LARGE
+	|| type == ALLOCA_BOUND_DEFINITELY_LARGE)
+      limit = wi::to_wide (integer_zero_node);
+  }
 };
+
+/* Return the value of the argument N to -Walloca-larger-than= or
+   -Wvla-larger-than= adjusted for the target data model so that
+   when N == HOST_WIDE_INT_MAX, the adjusted value is set to
+   PTRDIFF_MAX on the target.  This is done to prevent warnings
+   for unknown/unbounded allocations in the "permissive mode"
+   while still diagnosing excessive and necessarily invalid
+   allocations.  */
+
+static unsigned HOST_WIDE_INT
+adjusted_warn_limit (bool idx)
+{
+  static HOST_WIDE_INT limits[2];
+  if (limits[idx])
+    return limits[idx];
+
+  limits[idx] = idx ? warn_vla_limit : warn_alloca_limit;
+  if (limits[idx] != HOST_WIDE_INT_MAX)
+    return limits[idx];
+
+  limits[idx] = tree_to_shwi (TYPE_MAX_VALUE (ptrdiff_type_node));
+  return limits[idx];
+}
+
 
 // NOTE: When we get better range info, this entire function becomes
 // irrelevant, as it should be possible to get range info for an SSA
@@ -150,13 +185,25 @@ struct alloca_type_and_limit {
 // in bytes we allow for arg.
 
 static struct alloca_type_and_limit
-alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
+alloca_call_type_by_arg (tree arg, tree arg_casted, edge e,
+			 unsigned HOST_WIDE_INT max_size)
 {
   basic_block bb = e->src;
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gimple *last = gsi_stmt (gsi);
+
+  const offset_int maxobjsize = tree_to_shwi (max_object_size ());
+
+  /* When MAX_SIZE is greater than or equal to PTRDIFF_MAX treat
+     allocations that aren't visibly constrained as OK, otherwise
+     report them as (potentially) unbounded.  */
+  alloca_type unbounded_result = (max_size < maxobjsize.to_uhwi ()
+				  ? ALLOCA_UNBOUNDED : ALLOCA_OK);
+
   if (!last || gimple_code (last) != GIMPLE_COND)
-    return alloca_type_and_limit (ALLOCA_UNBOUNDED);
+    {
+      return alloca_type_and_limit (unbounded_result);
+    }
 
   enum tree_code cond_code = gimple_cond_code (last);
   if (e->flags & EDGE_TRUE_VALUE)
@@ -164,7 +211,7 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
   else if (e->flags & EDGE_FALSE_VALUE)
     cond_code = invert_tree_comparison (cond_code, false);
   else
-    return alloca_type_and_limit (ALLOCA_UNBOUNDED);
+      return alloca_type_and_limit (unbounded_result);
 
   // Check for:
   //   if (ARG .COND. N)
@@ -199,7 +246,15 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
 	    }
 	}
       else
-	return alloca_type_and_limit (ALLOCA_BOUND_UNKNOWN);
+	{
+	  /* Analogous to ALLOCA_UNBOUNDED, when MAX_SIZE is greater
+	     than or equal to PTRDIFF_MAX, treat allocations with
+	     an unknown bound as OK.  */
+	  alloca_type unknown_result
+	    = (max_size < maxobjsize.to_uhwi ()
+	       ? ALLOCA_BOUND_UNKNOWN : ALLOCA_OK);
+	  return alloca_type_and_limit (unknown_result);
+	}
     }
 
   // Similarly, but check for a comparison with an unknown LIMIT.
@@ -217,7 +272,7 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
       && TREE_CODE (limit) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type range_type = get_range_info (limit, &min, &max);
+      value_range_kind range_type = get_range_info (limit, &min, &max);
 
       if (range_type == VR_UNDEFINED || range_type == VR_VARYING)
 	return alloca_type_and_limit (ALLOCA_BOUND_UNKNOWN);
@@ -229,10 +284,10 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
       //
       // If this ever triggers, we should probably figure out why and
       // handle it, though it is likely to be just an ALLOCA_UNBOUNDED.
-      return alloca_type_and_limit (ALLOCA_UNBOUNDED);
+      return alloca_type_and_limit (unbounded_result);
     }
 
-  return alloca_type_and_limit (ALLOCA_UNBOUNDED);
+  return alloca_type_and_limit (unbounded_result);
 }
 
 // Return TRUE if SSA's definition is a cast from a signed type.
@@ -281,16 +336,12 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   edge_iterator ei;
   edge e;
 
-  gcc_assert (!is_vla || (unsigned HOST_WIDE_INT) warn_vla_limit > 0);
-  gcc_assert (is_vla || (unsigned HOST_WIDE_INT) warn_alloca_limit > 0);
+  gcc_assert (!is_vla || warn_vla_limit >= 0);
+  gcc_assert (is_vla || warn_alloca_limit >= 0);
 
   // Adjust warn_alloca_max_size for VLAs, by taking the underlying
   // type into account.
-  unsigned HOST_WIDE_INT max_size;
-  if (is_vla)
-    max_size = (unsigned HOST_WIDE_INT) warn_vla_limit;
-  else
-    max_size = (unsigned HOST_WIDE_INT) warn_alloca_limit;
+  unsigned HOST_WIDE_INT max_size = adjusted_warn_limit (is_vla);
 
   // Check for the obviously bounded case.
   if (TREE_CODE (len) == INTEGER_CST)
@@ -299,7 +350,13 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE,
 				      wi::to_wide (len));
       if (integer_zerop (len))
-	return alloca_type_and_limit (ALLOCA_ARG_IS_ZERO);
+	{
+	  const offset_int maxobjsize
+	    = wi::to_offset (max_object_size ());
+	  alloca_type result = (max_size < maxobjsize
+				? ALLOCA_ARG_IS_ZERO : ALLOCA_OK);
+	  return alloca_type_and_limit (result);
+	}
 
       return alloca_type_and_limit (ALLOCA_OK);
     }
@@ -307,7 +364,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
   // Check the range info if available.
   if (TREE_CODE (len) == SSA_NAME)
     {
-      value_range_type range_type = get_range_info (len, &min, &max);
+      value_range_kind range_type = get_range_info (len, &min, &max);
       if (range_type == VR_RANGE)
 	{
 	  if (wi::leu_p (max, max_size))
@@ -357,8 +414,15 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 		}
 	      else if (range_type == VR_ANTI_RANGE)
 		return alloca_type_and_limit (ALLOCA_UNBOUNDED);
-	      else if (range_type != VR_VARYING)
-		return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
+
+	      if (range_type != VR_VARYING)
+		{
+		  const offset_int maxobjsize
+		    = wi::to_offset (max_object_size ());
+		  alloca_type result = (max_size < maxobjsize
+					? ALLOCA_BOUND_MAYBE_LARGE : ALLOCA_OK);
+		  return alloca_type_and_limit (result, max);
+		}
 	    }
 	}
       else if (range_type == VR_ANTI_RANGE)
@@ -414,8 +478,13 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
       if (compare_tree_int (arg, max_size) <= 0)
 	ret = alloca_type_and_limit (ALLOCA_OK);
       else
-	ret = alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE,
-				     wi::to_wide (arg));
+	{
+	  const offset_int maxobjsize
+	    = wi::to_offset (max_object_size ());
+	  alloca_type result = (max_size < maxobjsize
+				? ALLOCA_BOUND_MAYBE_LARGE : ALLOCA_OK);
+	  ret = alloca_type_and_limit (result, wi::to_wide (arg));
+	}
     }
 
   return ret;
@@ -452,26 +521,37 @@ pass_walloca::execute (function *fun)
 	  // Strict mode whining for VLAs is handled by the front-end,
 	  // so we can safely ignore this case.  Also, ignore VLAs if
 	  // the user doesn't care about them.
-	  if (is_vla
-	      && (warn_vla > 0 || !warn_vla_limit))
-	    continue;
-
-	  if (!is_vla && (warn_alloca || !warn_alloca_limit))
+	  if (is_vla)
 	    {
-	      if (warn_alloca)
-		warning_at (loc, OPT_Walloca, G_("use of %<alloca%>"));
+	      if (warn_vla > 0 || warn_vla_limit < 0)
+		continue;
+	    }
+	  else if (warn_alloca)
+	    {
+	      warning_at (loc, OPT_Walloca, G_("use of %<alloca%>"));
 	      continue;
 	    }
+	  else if (warn_alloca_limit < 0)
+	    continue;
 
 	  tree invalid_casted_type = NULL;
 	  struct alloca_type_and_limit t
 	    = alloca_call_type (stmt, is_vla, &invalid_casted_type);
 
+	  unsigned HOST_WIDE_INT adjusted_alloca_limit
+	    = adjusted_warn_limit (false);
 	  // Even if we think the alloca call is OK, make sure it's not in a
 	  // loop, except for a VLA, since VLAs are guaranteed to be cleaned
 	  // up when they go out of scope, including in a loop.
 	  if (t.type == ALLOCA_OK && !is_vla && in_loop_p (stmt))
-	    t = alloca_type_and_limit (ALLOCA_IN_LOOP);
+	    {
+	      /* As in other instances, only diagnose this when the limit
+		 is less than the maximum valid object size.  */
+	      const offset_int maxobjsize
+		= wi::to_offset (max_object_size ());
+	      if (adjusted_alloca_limit < maxobjsize.to_uhwi ())
+		t = alloca_type_and_limit (ALLOCA_IN_LOOP);
+	    }
 
 	  enum opt_code wcode
 	    = is_vla ? OPT_Wvla_larger_than_ : OPT_Walloca_larger_than_;
@@ -481,29 +561,38 @@ pass_walloca::execute (function *fun)
 	    case ALLOCA_OK:
 	      break;
 	    case ALLOCA_BOUND_MAYBE_LARGE:
-	      if (warning_at (loc, wcode,
-			      is_vla ? G_("argument to variable-length array "
-					  "may be too large")
-			      : G_("argument to %<alloca%> may be too large"))
-		  && t.limit != 0)
-		{
-		  print_decu (t.limit, buff);
-		  inform (loc, G_("limit is %u bytes, but argument "
-				  "may be as large as %s"),
-			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
-		}
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, wcode,
+				is_vla ? G_("argument to variable-length "
+					    "array may be too large")
+				: G_("argument to %<alloca%> may be too "
+				     "large"))
+		    && t.limit != 0)
+		  {
+		    print_decu (t.limit, buff);
+		    inform (loc, G_("limit is %wu bytes, but argument "
+				    "may be as large as %s"),
+			    is_vla ? warn_vla_limit : adjusted_alloca_limit,
+			    buff);
+		  }
+	      }
 	      break;
 	    case ALLOCA_BOUND_DEFINITELY_LARGE:
-	      if (warning_at (loc, wcode,
-			      is_vla ? G_("argument to variable-length array "
-					  "is too large")
-			      : G_("argument to %<alloca%> is too large"))
-		  && t.limit != 0)
-		{
-		  print_decu (t.limit, buff);
-		  inform (loc, G_("limit is %u bytes, but argument is %s"),
-			  is_vla ? warn_vla_limit : warn_alloca_limit, buff);
-		}
+	      {
+		auto_diagnostic_group d;
+		if (warning_at (loc, wcode,
+				is_vla ? G_("argument to variable-length"
+					    " array is too large")
+				: G_("argument to %<alloca%> is too large"))
+		    && t.limit != 0)
+		  {
+		    print_decu (t.limit, buff);
+		    inform (loc, G_("limit is %wu bytes, but argument is %s"),
+			      is_vla ? warn_vla_limit : adjusted_alloca_limit,
+			      buff);
+		  }
+	      }
 	      break;
 	    case ALLOCA_BOUND_UNKNOWN:
 	      warning_at (loc, wcode,

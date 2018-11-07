@@ -122,7 +122,6 @@ static void pa_output_function_prologue (FILE *);
 static void update_total_code_bytes (unsigned int);
 static void pa_output_function_epilogue (FILE *);
 static int pa_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
-static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
 static int pa_reloc_rw_mask (void);
 static void pa_som_asm_init_sections (void) ATTRIBUTE_UNUSED;
@@ -280,8 +279,6 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST pa_adjust_cost
-#undef TARGET_SCHED_ADJUST_PRIORITY
-#define TARGET_SCHED_ADJUST_PRIORITY pa_adjust_priority
 #undef TARGET_SCHED_ISSUE_RATE
 #define TARGET_SCHED_ISSUE_RATE pa_issue_rate
 
@@ -427,6 +424,9 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_STARTING_FRAME_OFFSET
 #define TARGET_STARTING_FRAME_OFFSET pa_starting_frame_offset
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4990,37 +4990,6 @@ pa_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
     default:
       gcc_unreachable ();
     }
-}
-
-/* Adjust scheduling priorities.  We use this to try and keep addil
-   and the next use of %r1 close together.  */
-static int
-pa_adjust_priority (rtx_insn *insn, int priority)
-{
-  rtx set = single_set (insn);
-  rtx src, dest;
-  if (set)
-    {
-      src = SET_SRC (set);
-      dest = SET_DEST (set);
-      if (GET_CODE (src) == LO_SUM
-	  && symbolic_operand (XEXP (src, 1), VOIDmode)
-	  && ! read_only_operand (XEXP (src, 1), VOIDmode))
-	priority >>= 3;
-
-      else if (GET_CODE (src) == MEM
-	       && GET_CODE (XEXP (src, 0)) == LO_SUM
-	       && symbolic_operand (XEXP (XEXP (src, 0), 1), VOIDmode)
-	       && ! read_only_operand (XEXP (XEXP (src, 0), 1), VOIDmode))
-	priority >>= 1;
-
-      else if (GET_CODE (dest) == MEM
-	       && GET_CODE (XEXP (dest, 0)) == LO_SUM
-	       && symbolic_operand (XEXP (XEXP (dest, 0), 1), VOIDmode)
-	       && ! read_only_operand (XEXP (XEXP (dest, 0), 1), VOIDmode))
-	priority >>= 3;
-    }
-  return priority;
 }
 
 /* The 700 can only issue a single insn at a time.
@@ -10680,6 +10649,8 @@ pa_output_addr_vec (rtx lab, rtx body)
 {
   int idx, vlen = XVECLEN (body, 0);
 
+  if (!TARGET_SOM)
+    fputs ("\t.align 4\n", asm_out_file);
   targetm.asm_out.internal_label (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
   if (TARGET_GAS)
     fputs ("\t.begin_brtab\n", asm_out_file);

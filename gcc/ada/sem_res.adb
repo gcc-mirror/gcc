@@ -1671,14 +1671,17 @@ package body Sem_Res is
       T             : Entity_Id;
       With_Freezing : Boolean)
    is
-      Save_Full_Analysis   : constant Boolean := Full_Analysis;
-      Save_Must_Not_Freeze : constant Boolean := Must_Not_Freeze (N);
-
+      Save_Full_Analysis     : constant Boolean := Full_Analysis;
+      Save_Must_Not_Freeze   : constant Boolean := Must_Not_Freeze (N);
+      Save_Preanalysis_Count : constant Nat :=
+                                 Inside_Preanalysis_Without_Freezing;
    begin
       pragma Assert (Nkind (N) in N_Subexpr);
 
       if not With_Freezing then
          Set_Must_Not_Freeze (N);
+         Inside_Preanalysis_Without_Freezing :=
+           Inside_Preanalysis_Without_Freezing + 1;
       end if;
 
       Full_Analysis := False;
@@ -1708,6 +1711,14 @@ package body Sem_Res is
       Expander_Mode_Restore;
       Full_Analysis := Save_Full_Analysis;
       Set_Must_Not_Freeze (N, Save_Must_Not_Freeze);
+
+      if not With_Freezing then
+         Inside_Preanalysis_Without_Freezing :=
+           Inside_Preanalysis_Without_Freezing - 1;
+      end if;
+
+      pragma Assert
+        (Inside_Preanalysis_Without_Freezing = Save_Preanalysis_Count);
    end Preanalyze_And_Resolve;
 
    ----------------------------
@@ -3798,6 +3809,7 @@ package body Sem_Res is
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
               and then not Is_Class_Wide_Type (Etype (Expression (A)))
+              and then not Is_Interface (Etype (A))
             then
                if Ekind (F) = E_In_Out_Parameter
                  and then Is_Array_Type (Etype (F))
@@ -5015,9 +5027,10 @@ package body Sem_Res is
                if In_Instance_Body then
                   Error_Msg_Warn := SPARK_Mode /= On;
                   Error_Msg_N
-                    ("type in allocator has deeper level than "
-                     & "designated class-wide type<<", E);
+                    ("type in allocator has deeper level than designated "
+                     & "class-wide type<<", E);
                   Error_Msg_N ("\Program_Error [<<", E);
+
                   Rewrite (N,
                     Make_Raise_Program_Error (Sloc (N),
                       Reason => PE_Accessibility_Check_Failed));
@@ -5028,16 +5041,22 @@ package body Sem_Res is
                --  type. A run-time check will be performed in the instance.
 
                elsif not Is_Generic_Type (Exp_Typ) then
-                  Error_Msg_N ("type in allocator has deeper level than "
-                               & "designated class-wide type", E);
+                  Error_Msg_N
+                    ("type in allocator has deeper level than designated "
+                     & "class-wide type", E);
                end if;
             end if;
          end;
       end if;
 
-      --  Check for allocation from an empty storage pool
+      --  Check for allocation from an empty storage pool. But do not complain
+      --  if it's a return statement for a build-in-place function, because the
+      --  allocator is there just in case the caller uses an allocator. If the
+      --  caller does use an allocator, it will be caught at the call site.
 
-      if No_Pool_Assigned (Typ) then
+      if No_Pool_Assigned (Typ)
+        and then not Alloc_For_BIP_Return (N)
+      then
          Error_Msg_N ("allocation from empty storage pool!", N);
 
       --  If the context is an unchecked conversion, as may happen within an
@@ -6049,7 +6068,10 @@ package body Sem_Res is
       --  (including the body of another expression function) which would
       --  place the freeze node in the wrong scope. An expression function
       --  is frozen in the usual fashion, by the appearance of a real body,
-      --  or at the end of a declarative part.
+      --  or at the end of a declarative part. However an implicit call to
+      --  an expression function may appear when it is part of a default
+      --  expression in a call to an initialiation procedure, and must be
+      --  frozen now, even if the body is inserted at a later point.
 
       if Is_Entity_Name (Subp)
         and then not In_Spec_Expression
@@ -6058,12 +6080,20 @@ package body Sem_Res is
           (not Is_Expression_Function_Or_Completion (Entity (Subp))
             or else Scope (Entity (Subp)) = Current_Scope)
       then
+         if Is_Expression_Function (Entity (Subp)) then
+
+            --  Force freeze of expression function in call
+
+            Set_Comes_From_Source (Subp, True);
+            Set_Must_Not_Freeze   (Subp, False);
+         end if;
+
          Freeze_Expression (Subp);
       end if;
 
       --  For a predefined operator, the type of the result is the type imposed
       --  by context, except for a predefined operation on universal fixed.
-      --  Otherwise The type of the call is the type returned by the subprogram
+      --  Otherwise the type of the call is the type returned by the subprogram
       --  being called.
 
       if Is_Predefined_Op (Nam) then
@@ -6099,7 +6129,25 @@ package body Sem_Res is
             Ret_Type   : constant Entity_Id := Etype (Nam);
 
          begin
-            if Is_Access_Type (Ret_Type)
+            --  If this is a parameterless call there is no ambiguity and the
+            --  call has the type of the function.
+
+            if No (First_Actual (N)) then
+               Set_Etype (N, Etype (Nam));
+
+               if Present (First_Formal (Nam)) then
+                  Resolve_Actuals (N, Nam);
+               end if;
+
+               --  Annotate the tree by creating a call marker in case the
+               --  original call is transformed by expansion. The call marker
+               --  is automatically saved for later examination by the ABE
+               --  Processing phase.
+
+               Build_Call_Marker (N);
+
+            elsif Is_Access_Type (Ret_Type)
+
               and then Ret_Type = Component_Type (Designated_Type (Ret_Type))
             then
                Error_Msg_N
@@ -6415,7 +6463,7 @@ package body Sem_Res is
          null;
 
       elsif Expander_Active
-        and then Ekind (Nam) = E_Function
+        and then Ekind_In (Nam, E_Function, E_Subprogram_Type)
         and then Requires_Transient_Scope (Etype (Nam))
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => True);
@@ -6794,9 +6842,15 @@ package body Sem_Res is
                     ("cannot inline & (possible check on input parameters)?",
                      N, Nam_UA);
 
-               --  Otherwise, inline the call
+               --  Otherwise, inline the call, issuing an info message when
+               --  -gnatd_f is set.
 
                else
+                  if Debug_Flag_Underscore_F then
+                     Error_Msg_NE
+                       ("info: analyzing call to & in context?", N, Nam_UA);
+                  end if;
+
                   Expand_Inlined_Call (N, Nam_UA, Nam);
                end if;
             end if;

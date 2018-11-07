@@ -40,6 +40,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   arm-symbianelf avr-elf \
   bfin-elf bfin-uclinux bfin-linux-uclibc bfin-rtems bfin-openbsd \
   c6x-elf c6x-uclinux cr16-elf cris-elf cris-linux crisv32-elf crisv32-linux \
+  csky-elf csky-linux-gnu \
   epiphany-elf epiphany-elfOPT-with-stack-offset=16 fido-elf \
   fr30-elf frv-elf frv-linux ft32-elf h8300-elf hppa-linux-gnu \
   hppa-linux-gnuOPT-enable-sjlj-exceptions=yes hppa64-linux-gnu \
@@ -50,7 +51,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   i686-netbsdelf9 \
   i686-openbsd i686-elf i686-kopensolaris-gnu i686-symbolics-gnu \
   i686-pc-msdosdjgpp i686-lynxos i686-nto-qnx \
-  i686-rtems i686-solaris2.10 i686-wrs-vxworks \
+  i686-rtems i686-solaris2.11 i686-wrs-vxworks \
   i686-wrs-vxworksae \
   i686-cygwinOPT-enable-threads=yes i686-mingw32crt ia64-elf \
   ia64-freebsd6 ia64-linux ia64-hpux ia64-hp-vms iq2000-elf lm32-elf \
@@ -86,7 +87,7 @@ LIST = aarch64-elf aarch64-linux-gnu aarch64-rtems \
   sh-rtems sh-wrs-vxworks sparc-elf \
   sparc-leon-elf sparc-rtems sparc-linux-gnu \
   sparc-leon3-linux-gnuOPT-enable-target=all sparc-netbsdelf \
-  sparc64-sun-solaris2.10OPT-with-gnu-ldOPT-with-gnu-asOPT-enable-threads=posix \
+  sparc64-sun-solaris2.11OPT-with-gnu-ldOPT-with-gnu-asOPT-enable-threads=posix \
   sparc-wrs-vxworks sparc64-elf sparc64-rtems sparc64-linux sparc64-freebsd6 \
   sparc64-netbsd sparc64-openbsd spu-elf \
   tilegx-linux-gnu tilegxbe-linux-gnu tilepro-linux-gnu \

@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-obj-c++): New.
+
 2018-05-07  Nathan Sidwell  <nathan@acm.org>
 
 	* objcp-lang.c (objcxx_init_ts): Don't call init_shadowed_var_for_decl.
@@ -241,7 +245,7 @@
 
 	* Make-lang.in (cc1objplus-dummy): Remove.
 	(cc1objplus-checksum): Change to run checksum over object files
-        and options only.
+	and options only.
 
 2010-10-04  Andi Kleen  <ak@linux.intel.com>
 
@@ -388,13 +392,13 @@
 	Revert:
 
 	2008-02-07  Andreas Tobler  <andreast-list@fgznet.ch>
-	            Douglas Gregor  <doug.gregor@gmail.com>
+		    Douglas Gregor  <doug.gregor@gmail.com>
  
 	PR bootstrap/35115
 	* objcp-decl.c (objcp_comptypes): Call cp_comptypes, not comptypes.
 
 2008-02-07  Andreas Tobler  <andreast-list@fgznet.ch>
-            Douglas Gregor  <doug.gregor@gmail.com>
+	    Douglas Gregor  <doug.gregor@gmail.com>
  
 	PR bootstrap/35115
 	* objcp-decl.c (objcp_comptypes): Call cp_comptypes, not comptypes.

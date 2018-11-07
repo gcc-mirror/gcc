@@ -5529,7 +5529,6 @@ package body Exp_Util is
          then
             --  Skip the tag associated with the primary table
 
-            pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
             AI_Tag := Next_Tag_Component (First_Tag_Component (Typ));
             pragma Assert (Present (AI_Tag));
 
@@ -5590,14 +5589,12 @@ package body Exp_Util is
       --  primary dispatch table.
 
       if Is_Ancestor (Iface, Typ, Use_Full_View => True) then
-         pragma Assert (Etype (First_Tag_Component (Typ)) = RTE (RE_Tag));
          return First_Tag_Component (Typ);
 
       --  Otherwise we need to search for its associated tag component
 
       else
          Find_Tag (Typ);
-         pragma Assert (Found);
          return AI_Tag;
       end if;
    end Find_Interface_Tag;
@@ -8402,9 +8399,23 @@ package body Exp_Util is
 
                declare
                   Align_In_Bits : constant Nat := M * System_Storage_Unit;
+                  Comp : Entity_Id;
+
                begin
-                  if Component_Bit_Offset (C) mod Align_In_Bits /= 0
-                    or else Esize (C) mod Align_In_Bits /= 0
+                  Comp := C;
+
+                  --  For a component inherited in a record extension, the
+                  --  clause is inherited but position and size are not set.
+
+                  if Is_Base_Type (Etype (P))
+                    and then Is_Tagged_Type (Etype (P))
+                    and then Present (Original_Record_Component (Comp))
+                  then
+                     Comp := Original_Record_Component (Comp);
+                  end if;
+
+                  if Component_Bit_Offset (Comp) mod Align_In_Bits /= 0
+                    or else Esize (Comp) mod Align_In_Bits /= 0
                   then
                      return True;
                   end if;
@@ -8990,12 +9001,17 @@ package body Exp_Util is
    --  Generate the following code:
 
    --   type Equiv_T is record
-   --     _parent :  T (List of discriminant constraints taken from Exp);
+   --     _parent : T (List of discriminant constraints taken from Exp);
    --     Ext__50 : Storage_Array (1 .. (Exp'size - Typ'object_size)/8);
    --   end Equiv_T;
    --
-   --   ??? Note that this type does not guarantee same alignment as all
-   --   derived types
+   --  ??? Note that this type does not guarantee same alignment as all
+   --  derived types
+   --
+   --  Note: for the freezing circuitry, this looks like a record extension,
+   --  and so we need to make sure that the scalar storage order is the same
+   --  as that of the parent type. (This does not change anything for the
+   --  representation of the extension part.)
 
    function Make_CW_Equivalent_Type
      (T : Entity_Id;
@@ -9003,6 +9019,7 @@ package body Exp_Util is
    is
       Loc         : constant Source_Ptr := Sloc (E);
       Root_Typ    : constant Entity_Id  := Root_Type (T);
+      Root_Utyp   : constant Entity_Id  := Underlying_Type (Root_Typ);
       List_Def    : constant List_Id    := Empty_List;
       Comp_List   : constant List_Id    := New_List;
       Equiv_Type  : Entity_Id;
@@ -9133,6 +9150,11 @@ package body Exp_Util is
                Make_Component_Definition (Loc,
                  Aliased_Present    => False,
                  Subtype_Indication => New_Occurrence_Of (Constr_Root, Loc))));
+
+         Set_Reverse_Storage_Order
+           (Equiv_Type, Reverse_Storage_Order (Base_Type (Root_Utyp)));
+         Set_Reverse_Bit_Order
+           (Equiv_Type, Reverse_Bit_Order (Base_Type (Root_Utyp)));
       end if;
 
       Append_To (Comp_List,
@@ -9291,14 +9313,16 @@ package body Exp_Util is
 
       --  If the type is tagged, the expression may be class-wide, in which
       --  case it has to be converted to its root type, given that the
-      --  generated predicate function is not dispatching.
+      --  generated predicate function is not dispatching. The conversion
+      --  is type-safe and does not need validation, which matters when
+      --  private extensions are involved.
 
       if Is_Tagged_Type (Typ) then
          Call :=
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Func_Id, Loc),
              Parameter_Associations =>
-               New_List (Convert_To (Typ, Relocate_Node (Expr))));
+               New_List (OK_Convert_To (Typ, Relocate_Node (Expr))));
       else
          Call :=
            Make_Function_Call (Loc,

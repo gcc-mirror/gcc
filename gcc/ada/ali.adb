@@ -39,7 +39,7 @@ package body ALI is
    --  line type markers in the ALI file. This is used in Scan_ALI to detect
    --  (or skip) invalid lines. The following letters are still available:
    --
-   --    B G H J K O Q Z
+   --    B F G H J K O Q Z
 
    Known_ALI_Lines : constant array (Character range 'A' .. 'Z') of Boolean :=
      ('V'    => True,   -- version
@@ -59,7 +59,6 @@ package body ALI is
       'Y'    => True,   -- limited_with
       'Z'    => True,   -- implicit with from instantiation
       'C'    => True,   -- SCO information
-      'F'    => True,   -- SPARK cross-reference information
       'T'    => True,   -- task stack information
       others => False);
 

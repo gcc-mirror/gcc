@@ -8,12 +8,23 @@ ifeq ($(enable_shared),yes)
 
 # Linker mapfile to enforce direct binding to libgcc_s unwinder
 # (PR target/59788).
+# Emit v2 mapfile syntax if possible, otherwise ld -z guidance complains
+# every time the mapfile is used.
 libgcc-unwind.map: libgcc-std.ver
+ifeq ($(solaris_ld_v2_maps),yes)
+	@(echo '$$mapfile_version 2';		\
+	echo "SYMBOL_SCOPE {";			\
+	for f in `grep _Unwind_ $< | sort`; do	\
+	  echo "	$$f { FLAGS = EXTERN DIRECT };"; \
+	done;					\
+	echo "};" ) > $@
+else
 	@(echo "{";				\
 	for f in `grep _Unwind_ $< | sort`; do	\
 	  echo "	$$f = EXTERN DIRECT;";	\
 	done;					\
 	echo "};" ) > $@
+endif
 
 # Copy libgcc-unwind.map to the place where gcc will look for it at build-time.
 install-libgcc-unwind-map-forbuild: libgcc-unwind.map

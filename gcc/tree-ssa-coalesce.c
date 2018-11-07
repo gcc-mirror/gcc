@@ -135,6 +135,7 @@ struct coalesce_list
   coalesce_pair **sorted;	/* List when sorted.  */
   int num_sorted;		/* Number in the sorted list.  */
   cost_one_pair *cost_one_list;/* Single use coalesces with cost 1.  */
+  obstack ob;
 };
 
 #define NO_BEST_COALESCE	-1
@@ -226,8 +227,6 @@ pop_cost_one_pair (coalesce_list *cl, int *p1, int *p2)
   *p2 = ptr->second_element;
   cl->cost_one_list = ptr->next;
 
-  free (ptr);
-
   return 1;
 }
 
@@ -251,7 +250,6 @@ pop_best_coalesce (coalesce_list *cl, int *p1, int *p2)
   *p1 = node->first_element;
   *p2 = node->second_element;
   ret = node->cost;
-  free (node);
 
   return ret;
 }
@@ -273,6 +271,7 @@ create_coalesce_list (void)
   list->sorted = NULL;
   list->num_sorted = 0;
   list->cost_one_list = NULL;
+  gcc_obstack_init (&list->ob);
   return list;
 }
 
@@ -287,6 +286,7 @@ delete_coalesce_list (coalesce_list *cl)
   cl->list = NULL;
   free (cl->sorted);
   gcc_assert (cl->num_sorted == 0);
+  obstack_free (&cl->ob, NULL);
   free (cl);
 }
 
@@ -328,7 +328,7 @@ find_coalesce_pair (coalesce_list *cl, int p1, int p2, bool create)
 
   if (!*slot)
     {
-      struct coalesce_pair * pair = XNEW (struct coalesce_pair);
+      struct coalesce_pair * pair = XOBNEW (&cl->ob, struct coalesce_pair);
       gcc_assert (cl->sorted == NULL);
       pair->first_element = p.first_element;
       pair->second_element = p.second_element;
@@ -346,7 +346,7 @@ add_cost_one_coalesce (coalesce_list *cl, int p1, int p2)
 {
   cost_one_pair *pair;
 
-  pair = XNEW (cost_one_pair);
+  pair = XOBNEW (&cl->ob, cost_one_pair);
   pair->first_element = p1;
   pair->second_element = p2;
   pair->next = cl->cost_one_list;
@@ -620,7 +620,11 @@ ssa_conflicts_merge (ssa_conflicts *ptr, unsigned x, unsigned y)
     {
       bitmap bz = ptr->conflicts[z];
       if (bz)
-	bitmap_set_bit (bz, x);
+	{
+	  bool was_there = bitmap_clear_bit (bz, y);
+	  gcc_checking_assert (was_there);
+	  bitmap_set_bit (bz, x);
+	}
     }
 
   if (bx)
@@ -673,8 +677,8 @@ ssa_conflicts_dump (FILE *file, ssa_conflicts *ptr)
 struct live_track
 {
   bitmap_obstack obstack;	/* A place to allocate our bitmaps.  */
-  bitmap live_base_var;		/* Indicates if a basevar is live.  */
-  bitmap *live_base_partitions;	/* Live partitions for each basevar.  */
+  bitmap_head live_base_var;		/* Indicates if a basevar is live.  */
+  bitmap_head *live_base_partitions;	/* Live partitions for each basevar.  */
   var_map map;			/* Var_map being used for partition mapping.  */
 };
 
@@ -691,14 +695,14 @@ new_live_track (var_map map)
   /* Make sure there is a partition view in place.  */
   gcc_assert (map->partition_to_base_index != NULL);
 
-  ptr = (live_track *) xmalloc (sizeof (live_track));
+  ptr = XNEW (live_track);
   ptr->map = map;
   lim = num_basevars (map);
   bitmap_obstack_initialize (&ptr->obstack);
-  ptr->live_base_partitions = (bitmap *) xmalloc (sizeof (bitmap *) * lim);
-  ptr->live_base_var = BITMAP_ALLOC (&ptr->obstack);
+  ptr->live_base_partitions = XNEWVEC (bitmap_head, lim);
+  bitmap_initialize (&ptr->live_base_var, &ptr->obstack);
   for (x = 0; x < lim; x++)
-    ptr->live_base_partitions[x] = BITMAP_ALLOC (&ptr->obstack);
+    bitmap_initialize (&ptr->live_base_partitions[x], &ptr->obstack);
   return ptr;
 }
 
@@ -709,8 +713,8 @@ static void
 delete_live_track (live_track *ptr)
 {
   bitmap_obstack_release (&ptr->obstack);
-  free (ptr->live_base_partitions);
-  free (ptr);
+  XDELETEVEC (ptr->live_base_partitions);
+  XDELETE (ptr);
 }
 
 
@@ -722,10 +726,10 @@ live_track_remove_partition (live_track *ptr, int partition)
   int root;
 
   root = basevar_index (ptr->map, partition);
-  bitmap_clear_bit (ptr->live_base_partitions[root], partition);
+  bitmap_clear_bit (&ptr->live_base_partitions[root], partition);
   /* If the element list is empty, make the base variable not live either.  */
-  if (bitmap_empty_p (ptr->live_base_partitions[root]))
-    bitmap_clear_bit (ptr->live_base_var, root);
+  if (bitmap_empty_p (&ptr->live_base_partitions[root]))
+    bitmap_clear_bit (&ptr->live_base_var, root);
 }
 
 
@@ -739,9 +743,9 @@ live_track_add_partition (live_track *ptr, int partition)
   root = basevar_index (ptr->map, partition);
   /* If this base var wasn't live before, it is now.  Clear the element list
      since it was delayed until needed.  */
-  if (bitmap_set_bit (ptr->live_base_var, root))
-    bitmap_clear (ptr->live_base_partitions[root]);
-  bitmap_set_bit (ptr->live_base_partitions[root], partition);
+  if (bitmap_set_bit (&ptr->live_base_var, root))
+    bitmap_clear (&ptr->live_base_partitions[root]);
+  bitmap_set_bit (&ptr->live_base_partitions[root], partition);
 
 }
 
@@ -770,8 +774,8 @@ live_track_live_p (live_track *ptr, tree var)
   if (p != NO_PARTITION)
     {
       root = basevar_index (ptr->map, p);
-      if (bitmap_bit_p (ptr->live_base_var, root))
-	return bitmap_bit_p (ptr->live_base_partitions[root], p);
+      if (bitmap_bit_p (&ptr->live_base_var, root))
+	return bitmap_bit_p (&ptr->live_base_partitions[root], p);
     }
   return false;
 }
@@ -815,9 +819,9 @@ live_track_process_def (live_track *ptr, tree def, ssa_conflicts *graph)
 
   /* If the bitmap isn't empty now, conflicts need to be added.  */
   root = basevar_index (ptr->map, p);
-  if (bitmap_bit_p (ptr->live_base_var, root))
+  if (bitmap_bit_p (&ptr->live_base_var, root))
     {
-      b = ptr->live_base_partitions[root];
+      b = &ptr->live_base_partitions[root];
       EXECUTE_IF_SET_IN_BITMAP (b, 0, x, bi)
         ssa_conflicts_add (graph, p, x);
     }
@@ -846,7 +850,7 @@ live_track_clear_base_vars (live_track *ptr)
   /* Simply clear the live base list.  Anything marked as live in the element
      lists will be cleared later if/when the base variable ever comes alive
      again.  */
-  bitmap_clear (ptr->live_base_var);
+  bitmap_clear (&ptr->live_base_var);
 }
 
 
@@ -983,22 +987,6 @@ build_ssa_conflict_graph (tree_live_info_p liveinfo)
   delete_live_track (live);
   return graph;
 }
-
-
-/* Shortcut routine to print messages to file F of the form:
-   "STR1 EXPR1 STR2 EXPR2 STR3."  */
-
-static inline void
-print_exprs (FILE *f, const char *str1, tree expr1, const char *str2,
-	     tree expr2, const char *str3)
-{
-  fprintf (f, "%s", str1);
-  print_generic_expr (f, expr1, TDF_SLIM);
-  fprintf (f, "%s", str2);
-  print_generic_expr (f, expr2, TDF_SLIM);
-  fprintf (f, "%s", str3);
-}
-
 
 /* Print a failure to coalesce a MUST_COALESCE pair X and Y.  */
 
@@ -1575,22 +1563,9 @@ gimple_can_coalesce_p (tree name1, tree name2)
 
   /* If the types are not the same, see whether they are compatible.  This
      (for example) allows coalescing when the types are fundamentally the
-     same, but just have different names.
-
-     In the non-optimized case, we must first test TYPE_CANONICAL because
-     we use it to compute the partition_to_base_index of the map.  */
-  if (flag_tree_coalesce_vars)
-    {
-      if (types_compatible_p (t1, t2))
-	goto check_modes;
-    }
-  else
-    {
-      if (TYPE_CANONICAL (t1)
-	  && TYPE_CANONICAL (t1) == TYPE_CANONICAL (t2)
-	  && types_compatible_p (t1, t2))
-	goto check_modes;
-    }
+     same, but just have different names.  */
+  if (types_compatible_p (t1, t2))
+    goto check_modes;
 
   return false;
 }
@@ -1716,89 +1691,6 @@ compute_optimized_partition_bases (var_map map, bitmap used_in_copies,
   partition_delete (tentative);
 }
 
-/* Hashtable helpers.  */
-
-struct tree_int_map_hasher : nofree_ptr_hash <tree_int_map>
-{
-  static inline hashval_t hash (const tree_int_map *);
-  static inline bool equal (const tree_int_map *, const tree_int_map *);
-};
-
-inline hashval_t
-tree_int_map_hasher::hash (const tree_int_map *v)
-{
-  return tree_map_base_hash (v);
-}
-
-inline bool
-tree_int_map_hasher::equal (const tree_int_map *v, const tree_int_map *c)
-{
-  return tree_int_map_eq (v, c);
-}
-
-/* This routine will initialize the basevar fields of MAP with base
-   names.  Partitions will share the same base if they have the same
-   SSA_NAME_VAR, or, being anonymous variables, the same type.  This
-   must match gimple_can_coalesce_p in the non-optimized case.  */
-
-static void
-compute_samebase_partition_bases (var_map map)
-{
-  int x, num_part;
-  tree var;
-  struct tree_int_map *m, *mapstorage;
-
-  num_part = num_var_partitions (map);
-  hash_table<tree_int_map_hasher> tree_to_index (num_part);
-  /* We can have at most num_part entries in the hash tables, so it's
-     enough to allocate so many map elements once, saving some malloc
-     calls.  */
-  mapstorage = m = XNEWVEC (struct tree_int_map, num_part);
-
-  /* If a base table already exists, clear it, otherwise create it.  */
-  free (map->partition_to_base_index);
-  map->partition_to_base_index = (int *) xmalloc (sizeof (int) * num_part);
-
-  /* Build the base variable list, and point partitions at their bases.  */
-  for (x = 0; x < num_part; x++)
-    {
-      struct tree_int_map **slot;
-      unsigned baseindex;
-      var = partition_to_var (map, x);
-      if (SSA_NAME_VAR (var)
-	  && (!VAR_P (SSA_NAME_VAR (var))
-	      || !DECL_IGNORED_P (SSA_NAME_VAR (var))))
-	m->base.from = SSA_NAME_VAR (var);
-      else
-	/* This restricts what anonymous SSA names we can coalesce
-	   as it restricts the sets we compute conflicts for.
-	   Using TREE_TYPE to generate sets is the easiest as
-	   type equivalency also holds for SSA names with the same
-	   underlying decl.
-
-	   Check gimple_can_coalesce_p when changing this code.  */
-	m->base.from = (TYPE_CANONICAL (TREE_TYPE (var))
-			? TYPE_CANONICAL (TREE_TYPE (var))
-			: TREE_TYPE (var));
-      /* If base variable hasn't been seen, set it up.  */
-      slot = tree_to_index.find_slot (m, INSERT);
-      if (!*slot)
-	{
-	  baseindex = m - mapstorage;
-	  m->to = baseindex;
-	  *slot = m;
-	  m++;
-	}
-      else
-	baseindex = (*slot)->to;
-      map->partition_to_base_index[x] = baseindex;
-    }
-
-  map->num_basevars = m - mapstorage;
-
-  free (mapstorage);
-}
-
 /* Given an initial var_map MAP, coalesce variables and return a partition map
    with the resulting coalesce.  Note that this function is called in either
    live range computation context or out-of-ssa context, indicated by MAP.  */
@@ -1811,19 +1703,18 @@ coalesce_ssa_name (var_map map)
   coalesce_list *cl;
   auto_bitmap used_in_copies;
 
+  bitmap_tree_view (used_in_copies);
   cl = create_coalesce_list_for_region (map, used_in_copies);
   if (map->outofssa_p)
     populate_coalesce_list_for_outofssa (cl, used_in_copies);
+  bitmap_list_view (used_in_copies);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     dump_var_map (dump_file, map);
 
   partition_view_bitmap (map, used_in_copies);
 
-  if (flag_tree_coalesce_vars)
-    compute_optimized_partition_bases (map, used_in_copies, cl);
-  else
-    compute_samebase_partition_bases (map);
+  compute_optimized_partition_bases (map, used_in_copies, cl);
 
   if (num_var_partitions (map) < 1)
     {

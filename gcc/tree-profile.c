@@ -53,6 +53,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "tree-pretty-print.h"
+#include "langhooks.h"
+#include "stor-layout.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -64,9 +66,9 @@ static GTY(()) tree tree_ior_profiler_fn;
 static GTY(()) tree tree_time_profiler_counter;
 
 
-static GTY(()) tree ic_void_ptr_var;
-static GTY(()) tree ic_gcov_type_ptr_var;
-static GTY(()) tree ptr_void;
+static GTY(()) tree ic_tuple_var;
+static GTY(()) tree ic_tuple_counters_field;
+static GTY(()) tree ic_tuple_callee_field;
 
 /* Do initialization work for the edge profiler.  */
 
@@ -80,39 +82,35 @@ init_ic_make_global_vars (void)
 {
   tree gcov_type_ptr;
 
-  ptr_void = build_pointer_type (void_type_node);
-
-  ic_void_ptr_var
-    = build_decl (UNKNOWN_LOCATION, VAR_DECL,
-		  get_identifier (
-			  (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
-			   "__gcov_indirect_call_topn_callee" :
-			   "__gcov_indirect_call_callee")),
-		  ptr_void);
-  TREE_PUBLIC (ic_void_ptr_var) = 1;
-  DECL_EXTERNAL (ic_void_ptr_var) = 1;
-  TREE_STATIC (ic_void_ptr_var) = 1;
-  DECL_ARTIFICIAL (ic_void_ptr_var) = 1;
-  DECL_INITIAL (ic_void_ptr_var) = NULL;
-  if (targetm.have_tls)
-    set_decl_tls_model (ic_void_ptr_var, decl_default_tls_model (ic_void_ptr_var));
-
   gcov_type_ptr = build_pointer_type (get_gcov_type ());
 
-  ic_gcov_type_ptr_var
+  tree tuple_type = lang_hooks.types.make_type (RECORD_TYPE);
+
+  /* callee */
+  ic_tuple_callee_field = build_decl (BUILTINS_LOCATION, FIELD_DECL, NULL_TREE,
+				      ptr_type_node);
+
+  /* counters */
+  ic_tuple_counters_field = build_decl (BUILTINS_LOCATION, FIELD_DECL,
+					NULL_TREE, gcov_type_ptr);
+  DECL_CHAIN (ic_tuple_counters_field) = ic_tuple_callee_field;
+
+  finish_builtin_struct (tuple_type, "indirect_call_tuple",
+			 ic_tuple_counters_field, NULL_TREE);
+
+  ic_tuple_var
     = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 		  get_identifier (
 			  (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE) ?
-			   "__gcov_indirect_call_topn_counters" :
-			   "__gcov_indirect_call_counters")),
-		  gcov_type_ptr);
-  TREE_PUBLIC (ic_gcov_type_ptr_var) = 1;
-  DECL_EXTERNAL (ic_gcov_type_ptr_var) = 1;
-  TREE_STATIC (ic_gcov_type_ptr_var) = 1;
-  DECL_ARTIFICIAL (ic_gcov_type_ptr_var) = 1;
-  DECL_INITIAL (ic_gcov_type_ptr_var) = NULL;
+			   "__gcov_indirect_call_topn" :
+			   "__gcov_indirect_call")),
+		  tuple_type);
+  TREE_PUBLIC (ic_tuple_var) = 1;
+  DECL_ARTIFICIAL (ic_tuple_var) = 1;
+  DECL_INITIAL (ic_tuple_var) = NULL;
+  DECL_EXTERNAL (ic_tuple_var) = 1;
   if (targetm.have_tls)
-    set_decl_tls_model (ic_gcov_type_ptr_var, decl_default_tls_model (ic_gcov_type_ptr_var));
+    set_decl_tls_model (ic_tuple_var, decl_default_tls_model (tuple_type));
 }
 
 /* Create the type and function decls for the interface with gcov.  */
@@ -185,7 +183,7 @@ gimple_init_gcov_profiler (void)
       ic_profiler_fn_type
 	       = build_function_type_list (void_type_node,
 					  gcov_type_node,
-					  ptr_void,
+					  ptr_type_node,
 					  NULL_TREE);
       profiler_fn_name = "__gcov_indirect_call_profiler_v2";
       if (PARAM_VALUE (PARAM_INDIR_CALL_TOPN_PROFILE))
@@ -388,22 +386,29 @@ gimple_gen_ic_profiler (histogram_value value, unsigned tag, unsigned base)
 
   /* Insert code:
 
-    stmt1: __gcov_indirect_call_counters = get_relevant_counter_ptr ();
+    stmt1: __gcov_indirect_call.counters = get_relevant_counter_ptr ();
     stmt2: tmp1 = (void *) (indirect call argument value)
-    stmt3: __gcov_indirect_call_callee = tmp1;
+    stmt3: __gcov_indirect_call.callee = tmp1;
 
     Example:
       f_1 = foo;
-      __gcov_indirect_call_counters = &__gcov4.main[0];
+      __gcov_indirect_call.counters = &__gcov4.main[0];
       PROF_9 = f_1;
       __gcov_indirect_call_callee = PROF_9;
       _4 = f_1 ();
    */
 
-  stmt1 = gimple_build_assign (ic_gcov_type_ptr_var, ref_ptr);
-  tmp1 = make_temp_ssa_name (ptr_void, NULL, "PROF");
+  tree gcov_type_ptr = build_pointer_type (get_gcov_type ());
+
+  tree counter_ref = build3 (COMPONENT_REF, gcov_type_ptr,
+			     ic_tuple_var, ic_tuple_counters_field, NULL_TREE);
+
+  stmt1 = gimple_build_assign (counter_ref, ref_ptr);
+  tmp1 = make_temp_ssa_name (ptr_type_node, NULL, "PROF");
   stmt2 = gimple_build_assign (tmp1, unshare_expr (value->hvalue.value));
-  stmt3 = gimple_build_assign (ic_void_ptr_var, gimple_assign_lhs (stmt2));
+  tree callee_ref = build3 (COMPONENT_REF, ptr_type_node,
+			     ic_tuple_var, ic_tuple_callee_field, NULL_TREE);
+  stmt3 = gimple_build_assign (callee_ref, tmp1);
 
   gsi_insert_before (&gsi, stmt1, GSI_SAME_STMT);
   gsi_insert_before (&gsi, stmt2, GSI_SAME_STMT);
@@ -459,9 +464,12 @@ gimple_gen_ic_func_profiler (void)
      resetting __gcov_indirect_call_callee to NULL.  */
 
   gimple_stmt_iterator gsi = gsi_start_bb (cond_bb);
-  void0 = build_int_cst (build_pointer_type (void_type_node), 0);
+  void0 = build_int_cst (ptr_type_node, 0);
 
-  tree ref = force_gimple_operand_gsi (&gsi, ic_void_ptr_var, true, NULL_TREE,
+  tree callee_ref = build3 (COMPONENT_REF, ptr_type_node,
+			    ic_tuple_var, ic_tuple_callee_field, NULL_TREE);
+
+  tree ref = force_gimple_operand_gsi (&gsi, callee_ref, true, NULL_TREE,
 				       true, GSI_SAME_STMT);
 
   gcond *cond = gimple_build_cond (NE_EXPR, ref,

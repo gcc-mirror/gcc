@@ -3205,7 +3205,7 @@ df_remove_dead_eq_notes (rtx_insn *insn, bitmap live)
 	    bool deleted = false;
 
 	    FOR_EACH_INSN_EQ_USE (use, insn)
-	      if (DF_REF_REGNO (use) > FIRST_PSEUDO_REGISTER
+	      if (DF_REF_REGNO (use) >= FIRST_PSEUDO_REGISTER
 		  && DF_REF_LOC (use)
 		  && (DF_REF_FLAGS (use) & DF_REF_IN_NOTE)
 		  && !bitmap_bit_p (live, DF_REF_REGNO (use))

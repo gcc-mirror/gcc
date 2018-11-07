@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
+! { dg-options "" }
 ! Tests the fix for PR26227 in which the interface mismatches
 ! below were not detected.
 !

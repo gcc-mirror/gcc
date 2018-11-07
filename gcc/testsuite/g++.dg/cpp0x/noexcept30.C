@@ -1,5 +1,6 @@
 // PR c++/69300
 // { dg-do compile { target c++11 } }
+// { dg-options "-fdelete-null-pointer-checks" }
 
 template<typename A>
 struct F {

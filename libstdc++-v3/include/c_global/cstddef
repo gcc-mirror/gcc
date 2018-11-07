@@ -62,6 +62,7 @@ namespace std
 #if __cplusplus >= 201703L
 namespace std
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 #define __cpp_lib_byte 201603
 
   /// std::byte
@@ -187,6 +188,7 @@ namespace std
     to_integer(__byte_op_t<_IntegerType> __b) noexcept
     { return _IntegerType(__b); }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
 } // extern "C++"

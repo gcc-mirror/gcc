@@ -1,4 +1,4 @@
-/* Test for GCC diagnositc formats.  */
+/* Test for GCC diagnostic formats.  */
 /* Origin: Kaveh Ghazi <ghazi@caip.rutgers.edu> */
 /* { dg-do compile } */
 /* { dg-options "-Wformat" } */
@@ -24,6 +24,7 @@ extern int diag (const char *, ...) ATTRIBUTE_DIAG(__gcc_diag__);
 extern int tdiag (const char *, ...) ATTRIBUTE_DIAG(__gcc_tdiag__);
 extern int cdiag (const char *, ...) ATTRIBUTE_DIAG(__gcc_cdiag__);
 extern int cxxdiag (const char *, ...) ATTRIBUTE_DIAG(__gcc_cxxdiag__);
+extern int dump (const char *, ...) ATTRIBUTE_DIAG(__gcc_dump_printf__);
 
 void
 foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
@@ -39,36 +40,44 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   tdiag ("%%");
   cdiag ("%%");
   cxxdiag ("%%");
+  dump ("%%");
   diag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   tdiag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   cdiag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   cxxdiag ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
+  dump ("%d%i%o%u%x%c%s%p%%", i, i, u, u, u, i, s, p);
   diag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
   tdiag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
   cdiag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
   cxxdiag ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
+  dump ("%qd%qi%qo%qu%qx%qc%qs%qp%<%%%'%>", i, i, u, u, u, i, s, p);
   diag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   tdiag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   cdiag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   cxxdiag ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
+  dump ("%ld%li%lo%lu%lx", l, l, ul, ul, ul);
   diag ("%lld%lli%llo%llu%llx", ll, ll, ull, ull, ull);
   tdiag ("%lld%lli%llo%llu%llx", ll, ll, ull, ull, ull);
   cdiag ("%lld%lli%llo%llu%llx", ll, ll, ull, ull, ull);
   cxxdiag ("%lld%lli%llo%llu%llx", ll, ll, ull, ull, ull);
+  dump ("%lld%lli%llo%llu%llx", ll, ll, ull, ull, ull);
   diag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   tdiag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   cdiag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   cxxdiag ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
+  dump ("%wd%wi%wo%wu%wx", ll, ll, ull, ull, ull);
   diag ("%.*s", i, s);
   tdiag ("%.*s", i, s);
   cdiag ("%.*s", i, s);
   cxxdiag ("%.*s", i, s);
+  dump ("%.*s", i, s);
 
   /* Extensions provided in the diagnostic framework.  */
   diag ("%m");
   tdiag ("%m");
   cdiag ("%m");
   cxxdiag ("%m");
+  dump ("%m");
 
   /* Quote directives to avoid "warning: conversion used unquoted." */
   tdiag ("%<%D%F%T%V%>", t1, t1, t1, t1);
@@ -87,27 +96,31 @@ foo (int i, int i1, int i2, unsigned int u, double d, char *s, void *p,
   cxxdiag ("%<%+#A%+#D%+#E%+#F%+#T%+#V%>", t1, t1, t1, t1, t1, t1);
   cxxdiag ("%C%L%O%P%Q", i, i, i, i, i);
 
-  tdiag ("%v%qv%#v", i, i, i);
+  tdiag ("%v", i); /* { dg-warning "format" } */
   cdiag ("%v%qv%#v", i, i, i);
-  cxxdiag ("%v%qv%#v", i, i, i);
+  cxxdiag ("%v", i); /* { dg-warning "format" } */
 
   tdiag ("%Z", v, v_len);
   cdiag ("%Z", v, v_len);
   cxxdiag ("%Z", v, v_len);
+  dump ("%Z", v, v_len);
 
   /* Bad stuff with extensions.  */
   diag ("%m", i); /* { dg-warning "format" "extra arg" } */
   tdiag ("%m", i); /* { dg-warning "format" "extra arg" } */
   cdiag ("%m", i); /* { dg-warning "format" "extra arg" } */
   cxxdiag ("%m", i); /* { dg-warning "format" "extra arg" } */
+  dump ("%m", i); /* { dg-warning "format" "extra arg" } */
   diag ("%#m"); /* { dg-warning "format" "bogus modifier" } */
   tdiag ("%#m"); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%#m"); /* { dg-warning "format" "bogus modifier" } */
   cxxdiag ("%#m"); /* { dg-warning "format" "bogus modifier" } */
+  dump ("%#m"); /* { dg-warning "format" "bogus modifier" } */
   diag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   tdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   cxxdiag ("%+m"); /* { dg-warning "format" "bogus modifier" } */
+  dump ("%+m"); /* { dg-warning "format" "bogus modifier" } */
   diag ("%D", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%A", t1); /* { dg-warning "format" "bogus tree" } */
   tdiag ("%E", t1);

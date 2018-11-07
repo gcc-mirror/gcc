@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++14 } }
+// { dg-require-cstdint "" }
 // { dg-require-effective-target random_device }
 // { dg-require-effective-target tls_runtime }
 // { dg-add-options tls }

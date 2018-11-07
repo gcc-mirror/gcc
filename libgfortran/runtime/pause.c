@@ -64,11 +64,15 @@ export_proto(pause_string);
 void
 pause_string (char *string, size_t len)
 {
-  estr_write ("PAUSE ");
-  ssize_t w = write (STDERR_FILENO, string, len);
-  (void) sizeof (w); /* Avoid compiler warning about not using write
-			return val.  */
-  estr_write ("\n");
+  struct iovec iov[3];
+
+  iov[0].iov_base = (char*) "PAUSE ";
+  iov[0].iov_len = strlen (iov[0].iov_base);
+  iov[1].iov_base = string;
+  iov[1].iov_len = len;
+  iov[2].iov_base = (char*) "\n";
+  iov[2].iov_len = 1;
+  estr_writev (iov, 3);
 
   do_pause ();
 }

@@ -194,7 +194,7 @@ will be removed, and the Makefile will not work.
 
 Having said that, you can often get away with using cpp on things which
 are not C@.  Other Algol-ish programming languages are often safe
-(Pascal, Ada, etc.) So is assembly, with caution.  @option{-traditional-cpp}
+(Ada, etc.) So is assembly, with caution.  @option{-traditional-cpp}
 mode preserves more white space, and is otherwise more permissive.  Many
 of the problems can be avoided by writing C or C++ style comments
 instead of native language comments, and keeping macros simple.
@@ -1887,7 +1887,8 @@ the 1999 revision of the C standard; the value @code{201112L}
 signifies the 2011 revision of the C standard; the value
 @code{201710L} signifies the 2017 revision of the C standard (which is
 otherwise identical to the 2011 version apart from correction of
-defects).
+defects).  An unspecified value larger than @code{201710L} is used for
+the experimental @option{-std=c2x} and @option{-std=gnu2x} modes.
 
 This macro is not defined if the @option{-traditional-cpp} option is
 used, nor when compiling C++ or Objective-C@.
@@ -2380,6 +2381,10 @@ If GCC cannot determine the current date, it will emit a warning message
 @itemx __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
 These macros are defined when the target processor supports atomic compare
 and swap operations on operands 1, 2, 4, 8 or 16 bytes in length, respectively.
+
+@item __HAVE_SPECULATION_SAFE_VALUE
+This macro is defined with the value 1 to show that this version of GCC
+supports @code{__builtin_speculation_safe_value}.
 
 @item __GCC_HAVE_DWARF2_CFI_ASM
 This macro is defined when the compiler is emitting DWARF CFI directives

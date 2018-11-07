@@ -24,7 +24,17 @@
 #include <testsuite_hooks.h>
 
 using std::filesystem::path;
-using __gnu_test::compare_paths;
+
+void
+compare_paths(path p, std::string expected)
+{
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  for (auto& c : expected)
+    if (c == '/')
+      c = '\\';
+#endif
+  __gnu_test::compare_paths(p, expected);
+}
 
 void
 test01()
@@ -69,8 +79,11 @@ test03()
     {"/foo"        , "/foo" },
     {"/foo/"       , "/foo/" },
     {"/foo/."      , "/foo/" },
-    {"/foo/bar/.." , "/foo/" },
     {"/foo/.."     , "/" },
+    {"/foo/../.."  , "/" },
+    {"/foo/bar/.." , "/foo/" },
+    {"/foo/bar/../.." , "/" },
+    {"/foo/bar/baz/../../.." , "/" }, // PR libstdc++/87116
 
     {"/."          , "/" },
     {"/./"         , "/" },
@@ -88,10 +101,11 @@ test03()
     {"foo/.."      , "." },
     {"foo/../"     , "." },
     {"foo/../.."   , ".." },
+    {"foo/../../..", "../.." },
 
     // with root name (OS-dependent):
 #if defined(_WIN32) && !defined(__CYGWIN__)
-    {"C:bar/.."    , "C:." },
+    {"C:bar/.."    , "C:" },
 #else
     {"C:bar/.."    , "." },
 #endif
@@ -119,10 +133,53 @@ test03()
     compare_paths( path(test.input).lexically_normal(), test.normalized );
 }
 
+void
+test04()
+{
+  // PR libstdc++/87116
+  path p = "a/b/c";
+  compare_paths( (p/"../..").lexically_normal(), "a/" );
+
+  p = "a/b/c/d/e";
+  compare_paths( (p/"..").lexically_normal(),  "a/b/c/d/" );
+  compare_paths( (p/"../..").lexically_normal(),  "a/b/c/" );
+  compare_paths( (p/"../../..").lexically_normal(),  "a/b/" );
+  compare_paths( (p/"../../../..").lexically_normal(),  "a/" );
+  compare_paths( (p/"../../../../..").lexically_normal(),  "." );
+  compare_paths( (p/"../../../../../..").lexically_normal(),  ".." );
+
+  p = "/a/b/c/d/e";
+  compare_paths( (p/"..").lexically_normal(),  "/a/b/c/d/" );
+  compare_paths( (p/"../..").lexically_normal(),  "/a/b/c/" );
+  compare_paths( (p/"../../..").lexically_normal(),  "/a/b/" );
+  compare_paths( (p/"../../../..").lexically_normal(),  "/a/" );
+  compare_paths( (p/"../../../../..").lexically_normal(),  "/" );
+  compare_paths( (p/"../../../../../..").lexically_normal(),  "/" );
+
+#if defined(_WIN32) && !defined(__CYGWIN__)
+  p = "A:b/c/d/e";
+  compare_paths( (p/"..").lexically_normal(),  "A:b/c/d/" );
+  compare_paths( (p/"../..").lexically_normal(),  "A:b/c/" );
+  compare_paths( (p/"../../..").lexically_normal(),  "A:b/" );
+  compare_paths( (p/"../../../..").lexically_normal(),  "A:" );
+  compare_paths( (p/"../../../../..").lexically_normal(),  "A:.." );
+  compare_paths( (p/"../../../../../..").lexically_normal(),  "A:../.." );
+
+  p = "A:/b/c/d/e";
+  compare_paths( (p/"..").lexically_normal(),  "A:/b/c/d/" );
+  compare_paths( (p/"../..").lexically_normal(),  "A:/b/c/" );
+  compare_paths( (p/"../../..").lexically_normal(),  "A:/b/" );
+  compare_paths( (p/"../../../..").lexically_normal(),  "A:/" );
+  compare_paths( (p/"../../../../..").lexically_normal(),  "A:/" );
+  compare_paths( (p/"../../../../../..").lexically_normal(),  "A:/" );
+#endif
+}
+
 int
 main()
 {
   test01();
   test02();
   test03();
+  test04();
 }

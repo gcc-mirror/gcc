@@ -1,8 +1,7 @@
 // Ensure that a non-scalar dummy arguments which are implicitly used inside
 // offloaded regions are properly mapped using present_or_copy semantics.
 
-// { dg-xfail-if "TODO" { *-*-* } }
-// { dg-excess-errors "ICE" }
+// { dg-do run }
 
 #include <cassert>
 

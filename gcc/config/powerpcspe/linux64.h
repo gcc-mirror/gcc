@@ -391,6 +391,19 @@ extern int dot_symbols;
     }							\
   while (0)
 
+#define GNU_USER_TARGET_D_OS_VERSIONS()			\
+    do {						\
+	builtin_version ("linux");			\
+	if (OPTION_GLIBC)				\
+	  builtin_version ("CRuntime_Glibc");		\
+	else if (OPTION_UCLIBC)				\
+	  builtin_version ("CRuntime_UClibc");		\
+	else if (OPTION_BIONIC)				\
+	  builtin_version ("CRuntime_Bionic");		\
+	else if (OPTION_MUSL)				\
+	  builtin_version ("CRuntime_Musl");		\
+    } while (0)
+
 #undef  CPP_OS_DEFAULT_SPEC
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux) %(include_extra)"
 

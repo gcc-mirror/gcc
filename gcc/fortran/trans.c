@@ -61,26 +61,6 @@ gfc_advance_chain (tree t, int n)
   return t;
 }
 
-
-/* Strip off a legitimate source ending from the input
-   string NAME of length LEN.  */
-
-static inline void
-remove_suffix (char *name, int len)
-{
-  int i;
-
-  for (i = 2; i < 8 && len > i; i++)
-    {
-      if (name[len - i] == '.')
-	{
-	  name[len - i] = '\0';
-	  break;
-	}
-    }
-}
-
-
 /* Creates a variable declaration with a given TYPE.  */
 
 tree
@@ -327,6 +307,15 @@ get_array_span (tree type, tree decl)
 					TYPE_SIZE_UNIT (TREE_TYPE (type))),
 			  span);
     }
+  else if (type && TREE_CODE (type) == ARRAY_TYPE
+	   && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+	   && integer_zerop (TYPE_MAX_VALUE (TYPE_DOMAIN (type))))
+    {
+      if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (decl)))
+	span = gfc_conv_descriptor_span_get (decl);
+      else
+	span = NULL_TREE;
+    }
   /* Likewise for class array or pointer array references.  */
   else if (TREE_CODE (decl) == FIELD_DECL
 	   || VAR_OR_FUNCTION_DECL_P (decl)
@@ -407,7 +396,12 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
   if (vptr)
     span = gfc_vptr_size_get (vptr);
   else if (decl)
-    span = get_array_span (type, decl);
+    {
+      if (TREE_CODE (decl) == COMPONENT_REF)
+	span = gfc_conv_descriptor_span_get (decl);
+      else
+	span = get_array_span (type, decl);
+    }
 
   /* If a non-null span has been generated reference the element with
      pointer arithmetic.  */

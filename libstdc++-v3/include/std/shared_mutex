@@ -46,7 +46,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * @{
    */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
 #ifdef _GLIBCXX_HAS_GTHREADS
 
 #if __cplusplus >= 201703L
@@ -675,8 +674,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     swap(shared_lock<_Mutex>& __x, shared_lock<_Mutex>& __y) noexcept
     { __x.swap(__y); }
-
-#endif // _GLIBCXX_USE_C99_STDINT_TR1
 
   // @} group mutexes
 _GLIBCXX_END_NAMESPACE_VERSION

@@ -600,11 +600,13 @@
 ;;   somehow modify them to become inelegible for delay slots if a decision
 ;;   is made that makes conditional execution required.
 
-(define_attr "tune" "none,arc600,arc700_4_2_std,arc700_4_2_xmac, core_3, \
-archs4x, archs4xd, archs4xd_slow"
+(define_attr "tune" "none,arc600,arc7xx,arc700_4_2_std,arc700_4_2_xmac, \
+core_3, archs4x, archs4xd, archs4xd_slow"
   (const
    (cond [(symbol_ref "arc_tune == TUNE_ARC600")
 	  (const_string "arc600")
+	  (symbol_ref "arc_tune == ARC_TUNE_ARC7XX")
+	  (const_string "arc7xx")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_STD")
 	  (const_string "arc700_4_2_std")
 	  (symbol_ref "arc_tune == TUNE_ARC700_4_2_XMAC")
@@ -619,7 +621,7 @@ archs4x, archs4xd, archs4xd_slow"
 	 (const_string "none"))))
 
 (define_attr "tune_arc700" "false,true"
-  (if_then_else (eq_attr "tune" "arc700_4_2_std, arc700_4_2_xmac")
+  (if_then_else (eq_attr "tune" "arc7xx, arc700_4_2_std, arc700_4_2_xmac")
 		(const_string "true")
 		(const_string "false")))
 
@@ -1294,19 +1296,24 @@ archs4x, archs4xd, archs4xd_slow"
   "if (prepare_move_operands (operands, SFmode)) DONE;")
 
 (define_insn "*movsf_insn"
-  [(set (match_operand:SF 0 "move_dest_operand"    "=h,w,w,r,m")
-	(match_operand:SF 1 "move_src_operand"   "hCm1,c,E,m,c"))]
+  [(set (match_operand:SF 0 "move_dest_operand"   "=h,h,   r,r,  q,S,Usc,r,m")
+	(match_operand:SF 1 "move_src_operand"  "hCfZ,E,rCfZ,E,Uts,q,  E,m,r"))]
   "register_operand (operands[0], SFmode)
    || register_operand (operands[1], SFmode)"
   "@
-   mov%? %0,%1
-   mov%? %0,%1
-   mov%? %0,%1 ; %A1
-   ld%U1%V1 %0,%1
-   st%U0%V0 %1,%0"
-  [(set_attr "type" "move,move,move,load,store")
-   (set_attr "predicable" "no,yes,yes,no,no")
-   (set_attr "iscompact" "true,false,false,false,false")])
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   mov%?\\t%0,%1
+   mov%?\\t%0,%1 ; %A1
+   ld%?%U1\\t%0,%1
+   st%?\\t%1,%0
+   st%U0%V0\\t%1,%0
+   ld%U1%V1\\t%0,%1
+   st%U0%V0\\t%1,%0"
+  [(set_attr "type" "move,move,move,move,load,store,store,load,store")
+   (set_attr "predicable" "no,no,yes,yes,no,no,no,no,no")
+   (set_attr "length" "*,*,4,*,*,*,*,*,*")
+   (set_attr "iscompact" "true,true_limm,false,false,true,true,false,false,false")])
 
 (define_expand "movdf"
   [(set (match_operand:DF 0 "move_dest_operand" "")
@@ -2071,43 +2078,20 @@ archs4x, archs4xd, archs4xd_slow"
 ;; SI <- SI * SI
 
 (define_expand "mulsi3"
- [(set (match_operand:SI 0 "nonimmediate_operand"            "")
+ [(set (match_operand:SI 0 "register_operand"            "")
 	(mult:SI (match_operand:SI 1 "register_operand"  "")
 		 (match_operand:SI 2 "nonmemory_operand" "")))]
-  ""
+  "TARGET_ANY_MPY"
 {
-  if (TARGET_MPY)
+  if (TARGET_MUL64_SET)
     {
-      if (!register_operand (operands[0], SImode))
-	{
-	  rtx result = gen_reg_rtx (SImode);
-
-	  emit_insn (gen_mulsi3 (result, operands[1], operands[2]));
-	  emit_move_insn (operands[0], result);
-	  DONE;
-	}
-    }
-  else if (TARGET_MUL64_SET)
-    {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi64 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi64 (operands[0], operands[1], operands[2]));
      DONE;
     }
   else if (TARGET_MULMAC_32BY16_SET)
     {
-     rtx tmp = gen_reg_rtx (SImode);
-     emit_insn (gen_mulsi32x16 (tmp, operands[1], operands[2]));
-     emit_move_insn (operands[0], tmp);
+     emit_insn (gen_mulsi32x16 (operands[0], operands[1], operands[2]));
      DONE;
-    }
-  else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_mulsi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (SImode, R0_REG));
-      DONE;
     }
 })
 
@@ -2223,27 +2207,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "type" "multi,multi,multi,multi")
    (set_attr "predicable" "yes,yes,no,yes")
    (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
-
-; If we compile without an mul option enabled, but link with libraries
-; for a mul option, we'll see clobbers of multiplier output registers.
-; There is also an implementation using norm that clobbers the loop registers.
-(define_insn "mulsi3_600_lib"
-  [(set (reg:SI R0_REG)
-	(mult:SI (reg:SI R0_REG) (reg:SI R1_REG)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:SI R2_REG))
-   (clobber (reg:SI R3_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:SI LP_COUNT))
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__mulsi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
 
 (define_insn_and_split "mulsidi_600"
   [(set (match_operand:DI 0 "register_operand"                               "=c, c,c,  c")
@@ -2499,48 +2462,6 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "predicable" "yes,no,yes,no")
    (set_attr "cond" "canuse,nocond,canuse,nocond")])
 
-; Implementations include additional labels for umulsidi3, so we got all
-; the same clobbers - plus one for the result low part.  */
-(define_insn "umulsi3_highpart_600_lib_le"
-  [(set (reg:SI R1_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R0_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "!TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "umulsi3_highpart_600_lib_be"
-  [(set (reg:SI R0_REG)
-	(truncate:SI
-	 (lshiftrt:DI
-	  (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		   (zero_extend:DI (reg:SI R1_REG)))
-	  (const_int 32))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:SI R1_REG))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-  "TARGET_BIG_ENDIAN
-   && !TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsi3_highpart\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
 ;; (zero_extend:DI (const_int)) leads to internal errors in combine, so we
 ;; need a separate pattern for immediates
 ;; ??? This is fine for combine, but not for reload.
@@ -2567,22 +2488,10 @@ archs4x, archs4xd, archs4xd_slow"
 	   (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 	   (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" "")))
 	  (const_int 32))))]
-  "!TARGET_MUL64_SET && !TARGET_MULMAC_32BY16_SET"
+  "TARGET_MPY"
   "
 {
   rtx target = operands[0];
-
-  if (!TARGET_MPY)
-    {
-      emit_move_insn (gen_rtx_REG (SImode, 0), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, 1), operands[2]);
-      if (TARGET_BIG_ENDIAN)
-	emit_insn (gen_umulsi3_highpart_600_lib_be ());
-      else
-	emit_insn (gen_umulsi3_highpart_600_lib_le ());
-      emit_move_insn (target, gen_rtx_REG (SImode, 0));
-      DONE;
-    }
 
   if (!register_operand (target, SImode))
     target = gen_reg_rtx (SImode);
@@ -2602,7 +2511,7 @@ archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:DI 0 "register_operand" "")
 	(mult:DI (zero_extend:DI (match_operand:SI 1 "register_operand" ""))
 		 (zero_extend:DI (match_operand:SI 2 "nonmemory_operand" ""))))]
-  ""
+  "TARGET_ANY_MPY"
 {
   if (TARGET_PLUS_MACD)
     {
@@ -2641,12 +2550,8 @@ archs4x, archs4xd, archs4xd_slow"
       DONE;
     }
   else
-    {
-      emit_move_insn (gen_rtx_REG (SImode, R0_REG), operands[1]);
-      emit_move_insn (gen_rtx_REG (SImode, R1_REG), operands[2]);
-      emit_insn (gen_umulsidi3_600_lib ());
-      emit_move_insn (operands[0], gen_rtx_REG (DImode, R0_REG));
-      DONE;
+  {
+   gcc_unreachable ();
     }
 })
 
@@ -2724,7 +2629,7 @@ archs4x, archs4xd, archs4xd_slow"
 		 (zero_extend:DI (match_operand:SI 2 "extend_operand" "cL"))))]
   "TARGET_MPY && !TARGET_PLUS_MACD"
   "#"
-  "reload_completed"
+  "TARGET_MPY && !TARGET_PLUS_MACD && reload_completed"
   [(const_int 0)]
 {
   int hi = !TARGET_BIG_ENDIAN;
@@ -2737,42 +2642,6 @@ archs4x, archs4xd, archs4xd_slow"
 }
   [(set_attr "type" "umulti")
   (set_attr "length" "8")])
-
-(define_insn "umulsidi3_600_lib"
-  [(set (reg:DI R0_REG)
-	(mult:DI (zero_extend:DI (reg:SI R0_REG))
-		 (zero_extend:DI (reg:SI R1_REG))))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))
-   (clobber (reg:DI R2_REG))
-   (clobber (reg:SI R12_REG))
-   (clobber (reg:DI MUL64_OUT_REG))
-   (clobber (reg:CC CC_REG))]
-   "!TARGET_ANY_MPY
-   && SFUNC_CHECK_PREDICABLE"
-  "*return arc_output_libcall (\"__umulsidi3\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_peephole2
-  [(parallel
-     [(set (reg:DI R0_REG)
-	   (mult:DI (zero_extend:DI (reg:SI R0_REG))
-		    (zero_extend:DI (reg:SI R1_REG))))
-      (clobber (reg:SI RETURN_ADDR_REGNUM))
-      (clobber (reg:DI R2_REG))
-      (clobber (reg:SI R12_REG))
-      (clobber (reg:DI MUL64_OUT_REG))
-      (clobber (reg:CC CC_REG))])]
-  "!TARGET_ANY_MPY
-   && peep2_regno_dead_p (1, TARGET_BIG_ENDIAN ? R1_REG : R0_REG)"
-  [(pc)]
-{
-  if (TARGET_BIG_ENDIAN)
-    emit_insn (gen_umulsi3_highpart_600_lib_be ());
-  else
-    emit_insn (gen_umulsi3_highpart_600_lib_le ());
-  DONE;
-})
 
 (define_expand "addsi3"
   [(set (match_operand:SI 0 "dest_reg_operand" "")
@@ -3168,30 +3037,17 @@ archs4x, archs4xd, archs4xd_slow"
    (set (match_dup 3) (match_dup 4))])
 
 (define_insn "*add_n"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcw,W,W,w,w")
-	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "Rcqq,c,c,c,c,c")
-	                    (match_operand:SI 2 "_1_2_3_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand" "0,0,c,?Cal,?c,??Cal")))]
-  ""
-  "add%c2%? %0,%3,%1%&"
-  [(set_attr "type" "shift")
-   (set_attr "length" "*,4,4,8,4,8")
-   (set_attr "predicable" "yes,yes,no,no,no,no")
-   (set_attr "cond" "canuse,canuse,nocond,nocond,nocond,nocond")
-   (set_attr "iscompact" "maybe,false,false,false,false,false")])
-
-(define_insn "*add_n"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,Rcw,W,W,w,w")
-	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "Rcqq,c,c,c,c,c")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=q,r,r")
+	(plus:SI (mult:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			  (match_operand:SI 2 "_2_4_8_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand" "0,0,c,?Cal,?c,??Cal")))]
+		 (match_operand:SI 3 "nonmemory_operand" "0,r,Csz")))]
   ""
-  "add%z2%? %0,%3,%1%&"
+  "add%z2%?\\t%0,%3,%1%&"
   [(set_attr "type" "shift")
-   (set_attr "length" "*,4,4,8,4,8")
-   (set_attr "predicable" "yes,yes,no,no,no,no")
-   (set_attr "cond" "canuse,canuse,nocond,nocond,nocond,nocond")
-   (set_attr "iscompact" "maybe,false,false,false,false,false")])
+   (set_attr "length" "*,4,8")
+   (set_attr "predicable" "yes,no,no")
+   (set_attr "cond" "canuse,nocond,nocond")
+   (set_attr "iscompact" "maybe,false,false")])
 
 ;; N.B. sub[123] has the operands of the MINUS in the opposite order from
 ;; what synth_mult likes.
@@ -3608,7 +3464,7 @@ archs4x, archs4xd, archs4xd_slow"
 ; provide one alternatice for this, without condexec support.
 (define_insn "*ashlsi3_insn"
   [(set (match_operand:SI 0 "dest_reg_operand"           "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCal")
+	(ashift:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
 		   (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
@@ -3621,7 +3477,7 @@ archs4x, archs4xd, archs4xd_slow"
 
 (define_insn "*ashrsi3_insn"
   [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcq,Rcqq,Rcqq,Rcw, w,   w")
-	(ashiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCal")
+	(ashiftrt:SI (match_operand:SI 1 "nonmemory_operand" "!0,Rcqq,   0,  0, c,cCsz")
 		     (match_operand:SI 2 "nonmemory_operand"  "K,  K,RcqqM, cL,cL,cCal")))]
   "TARGET_BARREL_SHIFTER
    && (register_operand (operands[1], SImode)
@@ -3648,7 +3504,7 @@ archs4x, archs4xd, archs4xd_slow"
 
 (define_insn "rotrsi3"
   [(set (match_operand:SI 0 "dest_reg_operand"             "=Rcw, w,   w")
-	(rotatert:SI (match_operand:SI 1 "register_operand"  " 0,cL,cCal")
+	(rotatert:SI (match_operand:SI 1 "register_operand"  " 0,cL,cCsz")
 		     (match_operand:SI 2 "nonmemory_operand" "cL,cL,cCal")))]
   "TARGET_BARREL_SHIFTER"
   "ror%? %0,%1,%2"
@@ -4114,60 +3970,70 @@ archs4x, archs4xd, archs4xd_slow"
    (set_attr "cond" "canuse,canuse_limm,canuse,canuse,canuse")])
 
 ;; Implement a switch statement.
-
 (define_expand "casesi"
-  [(set (match_dup 5)
-	(minus:SI (match_operand:SI 0 "register_operand" "")
-		  (match_operand:SI 1 "nonmemory_operand" "")))
-   (set (reg:CC CC_REG)
-	(compare:CC (match_dup 5)
-		    (match_operand:SI 2 "nonmemory_operand" "")))
-   (set (pc)
-	(if_then_else (gtu (reg:CC CC_REG)
-			   (const_int 0))
-		      (label_ref (match_operand 4 "" ""))
-		      (pc)))
-   (set (match_dup 6)
-	(unspec:SI [(match_operand 3 "" "")
-		    (match_dup 5) (match_dup 7)] UNSPEC_ARC_CASESI))
-   (parallel [(set (pc) (match_dup 6)) (use (match_dup 7))])]
+  [(match_operand:SI 0 "register_operand" "")	; Index
+   (match_operand:SI 1 "const_int_operand" "")	; Lower bound
+   (match_operand:SI 2 "const_int_operand" "")	; Total range
+   (match_operand:SI 3 "" "")		; Table label
+   (match_operand:SI 4 "" "")]		; Out of range label
   ""
-  "
 {
-  rtx x;
-
-  operands[5] = gen_reg_rtx (SImode);
-  operands[6] = gen_reg_rtx (SImode);
-  operands[7] = operands[3];
-  emit_insn (gen_subsi3 (operands[5], operands[0], operands[1]));
-  emit_insn (gen_cmpsi_cc_insn_mixed (operands[5], operands[2]));
-  x = gen_rtx_GTU (VOIDmode, gen_rtx_REG (CCmode, CC_REG), const0_rtx);
-  x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    gen_rtx_LABEL_REF (VOIDmode, operands[4]), pc_rtx);
-  emit_jump_insn (gen_rtx_SET (pc_rtx, x));
-  if (TARGET_COMPACT_CASESI)
+  if (operands[1] != const0_rtx)
     {
-      emit_jump_insn (gen_casesi_compact_jump (operands[5], operands[7]));
+      rtx reg = gen_reg_rtx (SImode);
+      emit_insn (gen_subsi3 (reg, operands[0], operands[1]));
+      operands[0] = reg;
     }
+  emit_jump_insn (gen_cbranchsi4 (gen_rtx_GTU (SImode, operands[0],
+					       operands[2]),
+				  operands[0], operands[2], operands[4]));
+  if (TARGET_BI_BIH)
+    emit_jump_insn (gen_casesi_dispatch (operands[0], operands[3]));
   else
     {
+      rtx reg = gen_reg_rtx (SImode);
+      rtx lbl = operands[3];
       operands[3] = gen_rtx_LABEL_REF (VOIDmode, operands[3]);
-      if (flag_pic || !cse_not_expected)
+      if (flag_pic)
 	operands[3] = force_reg (Pmode, operands[3]);
-      emit_insn (gen_casesi_load (operands[6],
-				  operands[3], operands[5], operands[7]));
+      emit_insn (gen_casesi_load (reg,
+				  operands[3], operands[0], lbl));
       if (CASE_VECTOR_PC_RELATIVE || flag_pic)
-	emit_insn (gen_addsi3 (operands[6], operands[6], operands[3]));
-      emit_jump_insn (gen_casesi_jump (operands[6], operands[7]));
+	emit_insn (gen_addsi3 (reg, reg, operands[3]));
+      emit_jump_insn (gen_casesi_jump (reg, lbl));
     }
   DONE;
-}")
+})
+
+(define_insn "casesi_dispatch"
+  [(set (pc)
+	(unspec:SI [(match_operand:SI 0 "register_operand" "r")
+		    (label_ref (match_operand 1 "" ""))]
+		   UNSPEC_ARC_CASESI))]
+  "TARGET_BI_BIH"
+{
+  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
+  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
+  switch (GET_MODE (diff_vec))
+    {
+    case E_SImode:
+      return \"bi\\t[%0]\";
+    case E_HImode:
+    case E_QImode:
+      return \"bih\\t[%0]\";
+    default: gcc_unreachable ();
+    }
+}
+  [(set_attr "type" "brcc_no_delay_slot")
+   (set_attr "iscompact" "false")
+   (set_attr "length" "4")])
 
 (define_insn "casesi_load"
-  [(set (match_operand:SI 0 "register_operand"             "=Rcq,r,r")
-	(unspec:SI [(match_operand:SI 1 "nonmemory_operand" "Rcq,c,Cal")
-		    (match_operand:SI 2 "register_operand"  "Rcq,c,c")
-		    (label_ref (match_operand 3 "" ""))] UNSPEC_ARC_CASESI))]
+  [(set (match_operand:SI 0 "register_operand"             "=q,r,r")
+	(mem:SI (unspec:SI [(match_operand:SI 1 "nonmemory_operand" "q,r,Cal")
+			    (match_operand:SI 2 "register_operand"  "q,r,r")]
+			   UNSPEC_ARC_CASESI)))
+   (use (label_ref (match_operand 3 "" "")))]
   ""
   "*
 {
@@ -4183,15 +4049,15 @@ archs4x, archs4xd, archs4xd_slow"
   switch (GET_MODE (diff_vec))
     {
     case E_SImode:
-      return \"ld.as %0,[%1,%2]%&\";
+      return \"ld.as\\t%0,[%1,%2]%&\";
     case E_HImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ld%_.as %0,[%1,%2]\";
-      return \"ld%_.x.as %0,[%1,%2]\";
+	return \"ld%_.as\\t%0,[%1,%2]\";
+      return \"ld%_.x.as\\t%0,[%1,%2]\";
     case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	return \"ldb%? %0,[%1,%2]%&\";
-      return \"ldb.x %0,[%1,%2]\";
+	return \"ldb%?\\t%0,[%1,%2]%&\";
+      return \"ldb.x\\t%0,[%1,%2]\";
     default:
       gcc_unreachable ();
     }
@@ -4230,110 +4096,6 @@ archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "jump")
    (set_attr "iscompact" "false,maybe,false")
    (set_attr "cond" "canuse")])
-
-(define_insn "casesi_compact_jump"
-  [(set (pc)
-	(unspec:SI [(match_operand:SI 0 "register_operand" "c,q")]
-		   UNSPEC_ARC_CASESI))
-   (use (label_ref (match_operand 1 "" "")))
-   (clobber (match_scratch:SI 2 "=q,0"))]
-  "TARGET_COMPACT_CASESI"
-  "*
-{
-  rtx diff_vec = PATTERN (next_nonnote_insn (as_a<rtx_insn *> (operands[1])));
-  int unalign = arc_get_unalign ();
-  rtx xop[3];
-  const char *s;
-
-  xop[0] = operands[0];
-  xop[2] = operands[2];
-  gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
-
-  switch (GET_MODE (diff_vec))
-    {
-    case E_SImode:
-      /* Max length can be 12 in this case, but this is OK because
-	 2 of these are for alignment, and are anticipated in the length
-	 of the ADDR_DIFF_VEC.  */
-      if (unalign && !satisfies_constraint_Rcq (xop[0]))
-	s = \"add2 %2,pcl,%0\n\tld_s %2,[%2,12]\";
-      else if (unalign)
-	s = \"add_s %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      else
-	s = \"add %2,%0,2\n\tld.as %2,[pcl,%2]\";
-      arc_clear_unalign ();
-      break;
-    case E_HImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      else
-	{
-	  if (satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %2,%0,%1\n\tld%_.x.as %2,[pcl,%2]\";
-	      xop[1] = GEN_INT ((10 - unalign) / 2U);
-	    }
-	  else
-	    {
-	      s = \"add1 %2,pcl,%0\n\tld%__s.x %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	    }
-	}
-      arc_toggle_unalign ();
-      break;
-    case E_QImode:
-      if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
-	{
-	  if ((rtx_equal_p (xop[2], xop[0])
-	       || find_reg_note (insn, REG_DEAD, xop[0]))
-	      && satisfies_constraint_Rcq (xop[0]))
-	    {
-	      s = \"add_s %0,%0,pcl\n\tldb_s %2,[%0,%1]\";
-	      xop[1] = GEN_INT (8 + unalign);
-	    }
-	  else
-	    {
-	      s = \"add %2,%0,pcl\n\tldb_s %2,[%2,%1]\";
-	      xop[1] = GEN_INT (10 + unalign);
-	      arc_toggle_unalign ();
-	    }
-	}
-      else if ((rtx_equal_p (xop[0], xop[2])
-		|| find_reg_note (insn, REG_DEAD, xop[0]))
-	       && satisfies_constraint_Rcq (xop[0]))
-	{
-	  s = \"add_s %0,%0,%1\n\tldb.x %2,[pcl,%0]\";
-	  xop[1] = GEN_INT (10 - unalign);
-	  arc_toggle_unalign ();
-	}
-      else
-	{
-	  /* ??? Length is 12.  */
-	  s = \"add %2,%0,%1\n\tldb.x %2,[pcl,%2]\";
-	  xop[1] = GEN_INT (8 + unalign);
-	}
-      break;
-    default:
-      gcc_unreachable ();
-    }
-  output_asm_insn (s, xop);
-  return \"add_s %2,%2,pcl\n\tj_s%* [%2]\";
-}"
-  [(set_attr "length" "10")
-   (set_attr "type" "jump")
-   (set_attr "iscompact" "true")
-   (set_attr "cond" "nocond")])
 
 (define_expand "call"
   ;; operands[1] is stack_size_rtx
@@ -4489,16 +4251,16 @@ archs4x, archs4xd, archs4xd_slow"
 (define_peephole2
   [(set (match_operand:SI 0 "dest_reg_operand" "")
 	(ashift:SI (match_operand:SI 1 "register_operand" "")
-		   (match_operand:SI 2 "const_int_operand" "")))
+		   (match_operand:SI 2 "_1_2_3_operand" "")))
   (set (match_operand:SI 3 "dest_reg_operand" "")
        (plus:SI (match_operand:SI 4 "nonmemory_operand" "")
 		(match_operand:SI 5 "nonmemory_operand" "")))]
-  "(INTVAL (operands[2]) == 1
-    || INTVAL (operands[2]) == 2
-    || INTVAL (operands[2]) == 3)
-   && (true_regnum (operands[4]) == true_regnum (operands[0])
+  "(true_regnum (operands[4]) == true_regnum (operands[0])
        || true_regnum (operands[5]) == true_regnum (operands[0]))
-   && (peep2_reg_dead_p (2, operands[0]) || (true_regnum (operands[3]) == true_regnum (operands[0])))"
+   && (peep2_reg_dead_p (2, operands[0])
+       || (true_regnum (operands[3]) == true_regnum (operands[0])))
+   && !(optimize_size && satisfies_constraint_I (operands[4]))
+   && !(optimize_size && satisfies_constraint_I (operands[5]))"
  ;; the preparation statements take care to put proper operand in operands[4]
  ;; operands[4] will always contain the correct operand. This is added to satisfy commutativity
   [(set (match_dup 3)
@@ -5456,27 +5218,6 @@ archs4x, archs4xd, archs4xd_slow"
   [(set_attr "type" "call")
    (set_attr "is_SIBCALL" "yes")])
 
-(define_insn "tls_load_tp_soft"
-  [(set (reg:SI R0_REG) (unspec:SI [(const_int 0)] UNSPEC_TLS_OFF))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  "*return arc_output_libcall (\"__read_tp\");"
-  [(set_attr "is_sfunc" "yes")
-   (set_attr "predicable" "yes")])
-
-(define_insn "tls_gd_get_addr"
-  [(set (reg:SI R0_REG)
-	(call:SI (mem:SI (unspec:SI [(match_operand:SI 0
-				      "symbolic_operand" "X,X")]
-			  UNSPEC_TLS_GD))
-		 (const_int 0)))
-   (clobber (reg:SI RETURN_ADDR_REGNUM))]
-  ""
-  ".tls_gd_ld %0`bl%* __tls_get_addr@plt"
-  [(set_attr "type" "call")
-   ; With TARGET_MEDIUM_CALLS, plt calls are not predicable.
-   (set_attr "predicable" "no")])
-
 ;; For thread pointer builtins
 (define_expand "get_thread_pointersi"
   [(set (match_operand:SI 0 "register_operand") (match_dup 1))]
@@ -6304,7 +6045,7 @@ archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD)
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
      emit_insn (gen_macd (operands[0], operands[1], operands[2]));
    else
      {
@@ -6404,7 +6145,7 @@ archs4x, archs4xd, archs4xd_slow"
   "{
    rtx acc_reg = gen_rtx_REG (DImode, ACC_REG_FIRST);
    emit_move_insn (acc_reg, operands[3]);
-   if (TARGET_PLUS_MACD)
+   if (TARGET_PLUS_MACD && even_register_operand (operands[0], DImode))
      emit_insn (gen_macdu (operands[0], operands[1], operands[2]));
    else
      {
@@ -6555,7 +6296,7 @@ archs4x, archs4xd, archs4xd_slow"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
 	(plus:SI (ashift:SI (match_operand:SI 1 "register_operand" "q,r,r")
 			    (match_operand:SI 2 "_1_2_3_operand" ""))
-		 (match_operand:SI 3 "nonmemory_operand"  "0,r,Cal")))]
+		 (match_operand:SI 3 "nonmemory_operand"  "0,r,Csz")))]
   ""
   "add%2%?\\t%0,%3,%1"
   [(set_attr "length" "*,4,8")

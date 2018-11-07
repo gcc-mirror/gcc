@@ -1,5 +1,5 @@
 // Testcase from P0170R1
-// { dg-options -std=c++17 }
+// { dg-do compile { target c++17 } }
 
 auto monoid = [](auto v) { return [=] { return v; }; };
 auto add = [](auto m1) constexpr {

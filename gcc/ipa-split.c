@@ -899,8 +899,7 @@ visit_bb (basic_block bb, basic_block return_bb,
       /* Check builtins that prevent splitting.  */
       if (gimple_code (stmt) == GIMPLE_CALL
 	  && (decl = gimple_call_fndecl (stmt)) != NULL_TREE
-	  && DECL_BUILT_IN (decl)
-	  && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL)
+	  && fndecl_built_in_p (decl, BUILT_IN_NORMAL))
 	switch (DECL_FUNCTION_CODE (decl))
 	  {
 	  /* FIXME: once we will allow passing non-parm values to split part,
@@ -1347,7 +1346,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
   /* For usual cloning it is enough to clear builtin only when signature
      changes.  For partial inlining we however can not expect the part
      of builtin implementation to have same semantic as the whole.  */
-  if (DECL_BUILT_IN (node->decl))
+  if (fndecl_built_in_p (node->decl))
     {
       DECL_BUILT_IN_CLASS (node->decl) = NOT_BUILT_IN;
       DECL_FUNCTION_CODE (node->decl) = (enum built_in_function) 0;

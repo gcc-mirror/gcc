@@ -122,11 +122,19 @@ static int last_linenum;
 /* Column number of last NOTE.  */
 static int last_columnnum;
 
-/* Last discriminator written to assembly.  */
+/* Discriminator written to assembly.  */
 static int last_discriminator;
 
-/* Discriminator of current block.  */
+/* Discriminator to be written to assembly for current instruction.
+   Note: actual usage depends on loc_discriminator_kind setting.  */
 static int discriminator;
+
+/* Discriminator identifying current basic block among others sharing
+   the same locus.  */
+static int bb_discriminator;
+
+/* Basic block discriminator for previous instruction.  */
+static int last_bb_discriminator;
 
 /* Highest line number in current block.  */
 static int high_block_linenum;
@@ -1701,6 +1709,7 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
   last_linenum = LOCATION_LINE (prologue_location);
   last_columnnum = LOCATION_COLUMN (prologue_location);
   last_discriminator = discriminator = 0;
+  last_bb_discriminator = bb_discriminator = 0;
 
   high_block_linenum = high_function_linenum = last_linenum;
 
@@ -1778,14 +1787,14 @@ final_start_function_1 (rtx_insn **firstp, FILE *file, int *seen,
       TREE_ASM_WRITTEN (DECL_INITIAL (current_function_decl)) = 1;
     }
 
-  HOST_WIDE_INT min_frame_size = constant_lower_bound (get_frame_size ());
-  if (warn_frame_larger_than
-      && min_frame_size > frame_larger_than_size)
+  unsigned HOST_WIDE_INT min_frame_size
+    = constant_lower_bound (get_frame_size ());
+  if (min_frame_size > (unsigned HOST_WIDE_INT) warn_frame_larger_than_size)
     {
       /* Issue a warning */
       warning (OPT_Wframe_larger_than_,
-	       "the frame size of %wd bytes is larger than %wd bytes",
-	       min_frame_size, frame_larger_than_size);
+	       "the frame size of %wu bytes is larger than %wu bytes",
+	       min_frame_size, warn_frame_larger_than_size);
     }
 
   /* First output the function prologue: code to set up the stack frame.  */
@@ -2223,6 +2232,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      ASM_OUTPUT_LABEL (asm_out_file,
 				IDENTIFIER_POINTER (cold_function_name));
 #endif
+	      if (dwarf2out_do_frame ()
+	          && cfun->fde->dw_fde_second_begin != NULL)
+		ASM_OUTPUT_LABEL (asm_out_file, cfun->fde->dw_fde_second_begin);
 	    }
 	  break;
 
@@ -2236,8 +2248,7 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	  if (targetm.asm_out.unwind_emit)
 	    targetm.asm_out.unwind_emit (asm_out_file, insn);
 
-          discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
-
+	  bb_discriminator = NOTE_BASIC_BLOCK (insn)->discriminator;
 	  break;
 
 	case NOTE_INSN_EH_REGION_BEG:
@@ -3144,6 +3155,62 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p,
 }
 
 
+
+/* Map DECLs to instance discriminators.  This is allocated and
+   defined in ada/gcc-interfaces/trans.c, when compiling with -gnateS.
+   Mappings from this table are saved and restored for LTO, so
+   link-time compilation will have this map set, at least in
+   partitions containing at least one DECL with an associated instance
+   discriminator.  */
+
+decl_to_instance_map_t *decl_to_instance_map;
+
+/* Return the instance number assigned to DECL.  */
+
+static inline int
+map_decl_to_instance (const_tree decl)
+{
+  int *inst;
+
+  if (!decl_to_instance_map || !decl || !DECL_P (decl))
+    return 0;
+
+  inst = decl_to_instance_map->get (decl);
+
+  if (!inst)
+    return 0;
+
+  return *inst;
+}
+
+/* Set DISCRIMINATOR to the appropriate value, possibly derived from LOC.  */
+
+static inline void
+maybe_set_discriminator (location_t loc)
+{
+  if (!decl_to_instance_map)
+    discriminator = bb_discriminator;
+  else
+    {
+      tree block = LOCATION_BLOCK (loc);
+
+      while (block && TREE_CODE (block) == BLOCK
+	     && !inlined_function_outer_scope_p (block))
+	block = BLOCK_SUPERCONTEXT (block);
+
+      tree decl;
+
+      if (!block)
+	decl = current_function_decl;
+      else if (DECL_P (block))
+	decl = block;
+      else
+	decl = block_ultimate_origin (block);
+
+      discriminator = map_decl_to_instance (decl);
+    }
+}
+
 /* Return whether a source line note needs to be emitted before INSN.
    Sets IS_STMT to TRUE if the line should be marked as a possible
    breakpoint location.  */
@@ -3157,17 +3224,6 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
   if (NOTE_MARKER_P (insn))
     {
       location_t loc = NOTE_MARKER_LOCATION (insn);
-      /* The inline entry markers (gimple, insn, note) carry the
-	 location of the call, because that's what we want to carry
-	 during compilation, but the location we want to output in
-	 debug information for the inline entry point is the location
-	 of the function itself.  */
-      if (NOTE_KIND (insn) == NOTE_INSN_INLINE_ENTRY)
-	{
-	  tree block = LOCATION_BLOCK (loc);
-	  tree fn = block_ultimate_origin (block);
-	  loc = DECL_SOURCE_LOCATION (fn);
-	}
       expanded_location xloc = expand_location (loc);
       if (xloc.line == 0)
 	{
@@ -3178,6 +3234,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (loc);
       force_source_line = true;
     }
   else if (override_filename)
@@ -3192,6 +3249,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       filename = xloc.file;
       linenum = xloc.line;
       columnnum = xloc.column;
+      maybe_set_discriminator (INSN_LOCATION (insn));
     }
   else
     {

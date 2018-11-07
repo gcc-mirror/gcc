@@ -152,22 +152,10 @@ DEF_GO_RUNTIME(CHANRECV1, "runtime.chanrecv1", P2(CHAN, POINTER), R0())
 DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 
-// Start building a select statement.
-DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P3(POINTER, INT64, INT32), R0())
-
-// Add a default clause to a select statement.
-DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault", P1(POINTER), R0())
-
-// Add a send clause to a select statement.
-DEF_GO_RUNTIME(SELECTSEND, "runtime.selectsend", P3(POINTER, CHAN, POINTER),
-	       R0())
-
-// Add a receive clause to a select statement.
-DEF_GO_RUNTIME(SELECTRECV, "runtime.selectrecv",
-	       P4(POINTER, CHAN, POINTER, BOOLPTR), R0())
-
-// Run a select, returning the index of the selected clause.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT))
+// Run a select, returning the index of the selected clause and
+// whether that channel received a value.
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P3(POINTER, POINTER, INT),
+	       R2(INT, BOOL))
 
 
 // Panic.
@@ -314,7 +302,7 @@ DEF_GO_RUNTIME(IFACEEFACEEQ, "runtime.ifaceefaceeq", P2(IFACE, EFACE),
 
 
 // Set *dst = src where dst is a pointer to a pointer and src is a pointer.
-DEF_GO_RUNTIME(WRITEBARRIERPTR, "runtime.writebarrierptr",
+DEF_GO_RUNTIME(GCWRITEBARRIER, "runtime.gcWriteBarrier",
 	       P2(POINTER, POINTER), R0())
 
 // Set *dst = *src for an arbitrary type.

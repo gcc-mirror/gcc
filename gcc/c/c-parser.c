@@ -1328,6 +1328,9 @@ disable_extension_diagnostics (void)
 	     /* Similarly for warn_c99_c11_compat.  */
 	     | ((warn_c99_c11_compat == 1) << 9)
 	     | ((warn_c99_c11_compat == -1) << 10)
+	     /* Similarly for warn_c11_c2x_compat.  */
+	     | ((warn_c11_c2x_compat == 1) << 11)
+	     | ((warn_c11_c2x_compat == -1) << 12)
 	     );
   cpp_opts->cpp_pedantic = pedantic = 0;
   warn_pointer_arith = 0;
@@ -1338,6 +1341,7 @@ disable_extension_diagnostics (void)
   warn_overlength_strings = 0;
   warn_c90_c99_compat = 0;
   warn_c99_c11_compat = 0;
+  warn_c11_c2x_compat = 0;
   return ret;
 }
 
@@ -1357,6 +1361,7 @@ restore_extension_diagnostics (int flags)
   /* See above for why is this needed.  */
   warn_c90_c99_compat = (flags >> 7) & 1 ? 1 : ((flags >> 8) & 1 ? -1 : 0);
   warn_c99_c11_compat = (flags >> 9) & 1 ? 1 : ((flags >> 10) & 1 ? -1 : 0);
+  warn_c11_c2x_compat = (flags >> 11) & 1 ? 1 : ((flags >> 12) & 1 ? -1 : 0);
 }
 
 /* Helper data structure for parsing #pragma acc routine.  */
@@ -1817,14 +1822,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	}
       else
 	{
+	  auto_diagnostic_group d;
 	  name_hint hint = lookup_name_fuzzy (name, FUZZY_LOOKUP_TYPENAME,
 					      here);
-	  if (hint)
+	  if (const char *suggestion = hint.suggestion ())
 	    {
-	      richloc.add_fixit_replace (hint.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			name, hint.suggestion ());
+			name, suggestion);
 	    }
 	  else
 	    error_at (here, "unknown type name %qE", name);
@@ -2406,6 +2412,10 @@ c_parser_static_assert_declaration (c_parser *parser)
 
    static_assert-declaration-no-semi:
      _Static_assert ( constant-expression , string-literal )
+
+   C2X:
+   static_assert-declaration-no-semi:
+     _Static_assert ( constant-expression )
 */
 
 static void
@@ -2413,7 +2423,7 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
 {
   location_t assert_loc, value_loc;
   tree value;
-  tree string;
+  tree string = NULL_TREE;
 
   gcc_assert (c_parser_next_token_is_keyword (parser, RID_STATIC_ASSERT));
   assert_loc = c_parser_peek_token (parser)->location;
@@ -2431,27 +2441,33 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
   value = c_parser_expr_no_commas (parser, NULL).value;
   value_loc = EXPR_LOC_OR_LOC (value, value_tok_loc);
   parser->lex_untranslated_string = true;
-  if (!c_parser_require (parser, CPP_COMMA, "expected %<,%>"))
+  if (c_parser_next_token_is (parser, CPP_COMMA))
     {
-      parser->lex_untranslated_string = false;
-      return;
-    }
-  switch (c_parser_peek_token (parser)->type)
-    {
-    case CPP_STRING:
-    case CPP_STRING16:
-    case CPP_STRING32:
-    case CPP_WSTRING:
-    case CPP_UTF8STRING:
-      string = c_parser_peek_token (parser)->value;
       c_parser_consume_token (parser);
-      parser->lex_untranslated_string = false;
-      break;
-    default:
-      c_parser_error (parser, "expected string literal");
-      parser->lex_untranslated_string = false;
-      return;
+      switch (c_parser_peek_token (parser)->type)
+	{
+	case CPP_STRING:
+	case CPP_STRING16:
+	case CPP_STRING32:
+	case CPP_WSTRING:
+	case CPP_UTF8STRING:
+	  string = c_parser_peek_token (parser)->value;
+	  c_parser_consume_token (parser);
+	  parser->lex_untranslated_string = false;
+	  break;
+	default:
+	  c_parser_error (parser, "expected string literal");
+	  parser->lex_untranslated_string = false;
+	  return;
+	}
     }
+  else if (flag_isoc11)
+    /* If pedantic for pre-C11, the use of _Static_assert itself will
+       have been diagnosed, so do not also diagnose the use of this
+       new C2X feature of _Static_assert.  */
+    pedwarn_c11 (assert_loc, OPT_Wpedantic,
+		 "ISO C11 does not support omitting the string in "
+		 "%<_Static_assert%>");
   parens.require_close (parser);
 
   if (!INTEGRAL_TYPE_P (TREE_TYPE (value)))
@@ -2475,7 +2491,12 @@ c_parser_static_assert_declaration_no_semi (c_parser *parser)
     }
   constant_expression_warning (value);
   if (integer_zerop (value))
-    error_at (assert_loc, "static assertion failed: %E", string);
+    {
+      if (string)
+	error_at (assert_loc, "static assertion failed: %E", string);
+      else
+	error_at (assert_loc, "static assertion failed");
+    }
 }
 
 /* Parse some declaration specifiers (possibly none) (C90 6.5, C99
@@ -4052,16 +4073,17 @@ c_parser_parameter_declaration (c_parser *parser, tree attrs)
       c_parser_set_source_position_from_token (token);
       if (c_parser_next_tokens_start_typename (parser, cla_prefer_type))
 	{
+	  auto_diagnostic_group d;
 	  name_hint hint = lookup_name_fuzzy (token->value,
 					      FUZZY_LOOKUP_TYPENAME,
 					      token->location);
-	  if (hint)
+	  if (const char *suggestion = hint.suggestion ())
 	    {
 	      gcc_rich_location richloc (token->location);
-	      richloc.add_fixit_replace (hint.suggestion ());
+	      richloc.add_fixit_replace (suggestion);
 	      error_at (&richloc,
 			"unknown type name %qE; did you mean %qs?",
-			token->value, hint.suggestion ());
+			token->value, suggestion);
 	    }
 	  else
 	    error_at (token->location, "unknown type name %qE", token->value);
@@ -6867,14 +6889,18 @@ c_parser_binary_expression (c_parser *parser, struct c_expr *after,
 		&& !(TREE_CODE (first_arg) == PARM_DECL			      \
 		     && C_ARRAY_PARAMETER (first_arg)			      \
 		     && warn_sizeof_array_argument))			      \
-	      if (warning_at (stack[sp].loc, OPT_Wsizeof_pointer_div,	      \
-			      "division %<sizeof (%T) / sizeof (%T)%> does "  \
-			      "not compute the number of array elements",     \
-			      type0, type1))				      \
-		if (DECL_P (first_arg))					      \
-		  inform (DECL_SOURCE_LOCATION (first_arg),		      \
-			  "first %<sizeof%> operand was declared here");      \
-	  }								      \
+	      {								\
+		auto_diagnostic_group d;					\
+		if (warning_at (stack[sp].loc, OPT_Wsizeof_pointer_div, \
+				  "division %<sizeof (%T) / sizeof (%T)%> " \
+				  "does not compute the number of array " \
+				  "elements",				\
+				  type0, type1))			\
+		  if (DECL_P (first_arg))				\
+		    inform (DECL_SOURCE_LOCATION (first_arg),		\
+			      "first %<sizeof%> operand was declared here"); \
+	      }								\
+	  }								\
 	break;								      \
       default:								      \
 	break;								      \
@@ -9098,6 +9124,147 @@ sizeof_ptr_memacc_comptypes (tree type1, tree type2)
   return comptypes (type1, type2) == 1;
 }
 
+/* Warn for patterns where abs-like function appears to be used incorrectly,
+   gracefully ignore any non-abs-like function.  The warning location should
+   be LOC.  FNDECL is the declaration of called function, it must be a
+   BUILT_IN_NORMAL function.  ARG is the first and only argument of the
+   call.  */
+
+static void
+warn_for_abs (location_t loc, tree fndecl, tree arg)
+{
+  tree atype = TREE_TYPE (arg);
+
+  /* Casts from pointers (and thus arrays and fndecls) will generate
+     -Wint-conversion warnings.  Most other wrong types hopefully lead to type
+     mismatch errors.  TODO: Think about what to do with FIXED_POINT_TYPE_P
+     types and possibly other exotic types.  */
+  if (!INTEGRAL_TYPE_P (atype)
+      && !SCALAR_FLOAT_TYPE_P (atype)
+      && TREE_CODE (atype) != COMPLEX_TYPE)
+    return;
+
+  enum built_in_function fcode = DECL_FUNCTION_CODE (fndecl);
+
+  switch (fcode)
+    {
+    case BUILT_IN_ABS:
+    case BUILT_IN_LABS:
+    case BUILT_IN_LLABS:
+    case BUILT_IN_IMAXABS:
+      if (!INTEGRAL_TYPE_P (atype))
+	{
+	  if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using integer absolute value function %qD when "
+			"argument is of floating point type %qT",
+			fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using integer absolute value function %qD when "
+			"argument is of complex type %qT", fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      if (TYPE_UNSIGNED (atype))
+	warning_at (loc, OPT_Wabsolute_value,
+		    "taking the absolute value of unsigned type %qT "
+		    "has no effect", atype);
+      break;
+
+    CASE_FLT_FN (BUILT_IN_FABS):
+    CASE_FLT_FN_FLOATN_NX (BUILT_IN_FABS):
+      if (!SCALAR_FLOAT_TYPE_P (atype)
+	  || DECIMAL_FLOAT_MODE_P (TYPE_MODE (atype)))
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD "
+			"when argument is of integer type %qT", fndecl, atype);
+	  else if (DECIMAL_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD "
+			"when argument is of decimal floating point type %qT",
+			fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using floating point absolute value function %qD when "
+			"argument is of complex type %qT", fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      break;
+
+    CASE_FLT_FN (BUILT_IN_CABS):
+      if (TREE_CODE (atype) != COMPLEX_TYPE)
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using complex absolute value function %qD when "
+			"argument is of integer type %qT", fndecl, atype);
+	  else if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using complex absolute value function %qD when "
+			"argument is of floating point type %qT",
+			fndecl, atype);
+	  else
+	    gcc_unreachable ();
+
+	  return;
+	}
+      break;
+
+    case BUILT_IN_FABSD32:
+    case BUILT_IN_FABSD64:
+    case BUILT_IN_FABSD128:
+      if (!DECIMAL_FLOAT_TYPE_P (atype))
+	{
+	  if (INTEGRAL_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of integer type %qT",
+			fndecl, atype);
+	  else if (SCALAR_FLOAT_TYPE_P (atype))
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of floating point "
+			"type %qT", fndecl, atype);
+	  else if (TREE_CODE (atype) == COMPLEX_TYPE)
+	    warning_at (loc, OPT_Wabsolute_value,
+			"using decimal floating point absolute value "
+			"function %qD when argument is of complex type %qT",
+			fndecl, atype);
+	  else
+	    gcc_unreachable ();
+	  return;
+	}
+      break;
+
+    default:
+      return;
+    }
+
+  if (!TYPE_ARG_TYPES (TREE_TYPE (fndecl)))
+    return;
+
+  tree ftype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fndecl)));
+  if (TREE_CODE (atype) == COMPLEX_TYPE)
+    {
+      gcc_assert (TREE_CODE (ftype) == COMPLEX_TYPE);
+      atype = TREE_TYPE (atype);
+      ftype = TREE_TYPE (ftype);
+    }
+
+  if (TYPE_PRECISION (ftype) < TYPE_PRECISION (atype))
+    warning_at (loc, OPT_Wabsolute_value,
+		"absolute value function %qD given an argument of type %qT "
+		"but has parameter of type %qT which may cause truncation "
+		"of value", fndecl, atype, ftype);
+}
+
+
 /* Parse a postfix expression after the initial primary or compound
    literal; that is, parse a series of postfix operators.
 
@@ -9162,14 +9329,19 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 					      expr.value, exprlist,
 					      sizeof_arg,
 					      sizeof_ptr_memacc_comptypes);
-	  if (TREE_CODE (expr.value) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (expr.value) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (expr.value) == BUILT_IN_MEMSET
-	      && vec_safe_length (exprlist) == 3)
+	  if (TREE_CODE (expr.value) == FUNCTION_DECL)
 	    {
-	      tree arg0 = (*exprlist)[0];
-	      tree arg2 = (*exprlist)[2];
-	      warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
+	      if (fndecl_built_in_p (expr.value, BUILT_IN_MEMSET)
+		  && vec_safe_length (exprlist) == 3)
+		{
+		  tree arg0 = (*exprlist)[0];
+		  tree arg2 = (*exprlist)[2];
+		  warn_for_memset (expr_loc, arg0, arg2, literal_zero_mask);
+		}
+	      if (warn_absolute_value
+		  && fndecl_built_in_p (expr.value, BUILT_IN_NORMAL)
+		  && vec_safe_length (exprlist) == 1)
+		warn_for_abs (expr_loc, expr.value, (*exprlist)[0]);
 	    }
 
 	  start = expr.get_start ();
@@ -9182,8 +9354,7 @@ c_parser_postfix_expression_after_primary (c_parser *parser,
 	  expr.original_code = ERROR_MARK;
 	  if (TREE_CODE (expr.value) == INTEGER_CST
 	      && TREE_CODE (orig_expr.value) == FUNCTION_DECL
-	      && DECL_BUILT_IN_CLASS (orig_expr.value) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (orig_expr.value) == BUILT_IN_CONSTANT_P)
+	      && fndecl_built_in_p (orig_expr.value, BUILT_IN_CONSTANT_P))
 	    expr.original_code = C_MAYBE_CONST_EXPR;
 	  expr.original_type = NULL;
 	  if (exprlist)

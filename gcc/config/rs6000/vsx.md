@@ -381,6 +381,7 @@
    UNSPEC_VSX_SIEXPDP
    UNSPEC_VSX_SIEXPQP
    UNSPEC_VSX_SCMPEXPDP
+   UNSPEC_VSX_SCMPEXPQP
    UNSPEC_VSX_STSTDC
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTH
    UNSPEC_VSX_VEXTRACT_FP_FROM_SHORTL
@@ -388,7 +389,6 @@
    UNSPEC_VSX_VXSIG
    UNSPEC_VSX_VIEXP
    UNSPEC_VSX_VTSTDC
-   UNSPEC_VSX_VEC_INIT
    UNSPEC_VSX_VSIGNED2
 
    UNSPEC_LXVL
@@ -1413,7 +1413,7 @@
     }
 })
 
-(define_insn "*vsx_ld_elemrev_v16qi_internal"
+(define_insn "vsx_ld_elemrev_v16qi_internal"
   [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
         (vec_select:V16QI
           (match_operand:V16QI 1 "memory_operand" "Z")
@@ -2946,23 +2946,41 @@
 }
   [(set_attr "type" "vecperm")])
 
-;; V4SImode initialization splitter
-(define_insn_and_split "vsx_init_v4si"
-  [(set (match_operand:V4SI 0 "gpc_reg_operand" "=&r")
-	(unspec:V4SI
-	 [(match_operand:SI 1 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 2 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 3 "reg_or_cint_operand" "rn")
-	  (match_operand:SI 4 "reg_or_cint_operand" "rn")]
-	 UNSPEC_VSX_VEC_INIT))
-   (clobber (match_scratch:DI 5 "=&r"))
-   (clobber (match_scratch:DI 6 "=&r"))]
+;; Concatenate 4 SImode elements into a V4SImode reg.
+(define_expand "vsx_init_v4si"
+  [(use (match_operand:V4SI 0 "gpc_reg_operand"))
+   (use (match_operand:SI 1 "gpc_reg_operand"))
+   (use (match_operand:SI 2 "gpc_reg_operand"))
+   (use (match_operand:SI 3 "gpc_reg_operand"))
+   (use (match_operand:SI 4 "gpc_reg_operand"))]
    "VECTOR_MEM_VSX_P (V4SImode) && TARGET_DIRECT_MOVE_64BIT"
-   "#"
-   "&& reload_completed"
-   [(const_int 0)]
 {
-  rs6000_split_v4si_init (operands);
+  rtx a = gen_reg_rtx (DImode);
+  rtx b = gen_reg_rtx (DImode);
+  rtx c = gen_reg_rtx (DImode);
+  rtx d = gen_reg_rtx (DImode);
+  emit_insn (gen_zero_extendsidi2 (a, operands[1]));
+  emit_insn (gen_zero_extendsidi2 (b, operands[2]));
+  emit_insn (gen_zero_extendsidi2 (c, operands[3]));
+  emit_insn (gen_zero_extendsidi2 (d, operands[4]));
+  if (!BYTES_BIG_ENDIAN)
+    {
+      std::swap (a, b);
+      std::swap (c, d);
+    }
+
+  rtx aa = gen_reg_rtx (DImode);
+  rtx ab = gen_reg_rtx (DImode);
+  rtx cc = gen_reg_rtx (DImode);
+  rtx cd = gen_reg_rtx (DImode);
+  emit_insn (gen_ashldi3 (aa, a, GEN_INT (32)));
+  emit_insn (gen_ashldi3 (cc, c, GEN_INT (32)));
+  emit_insn (gen_iordi3 (ab, aa, b));
+  emit_insn (gen_iordi3 (cd, cc, d));
+
+  rtx abcd = gen_reg_rtx (V2DImode);
+  emit_insn (gen_vsx_concat_v2di (abcd, ab, cd));
+  emit_move_insn (operands[0], gen_lowpart (V4SImode, abcd));
   DONE;
 })
 
@@ -3248,10 +3266,9 @@
   "VECTOR_MEM_VSX_P (<MODE>mode)"
   "@
    stfd%U0%X0 %1,%0
-   stxsd%U0x %x1,%y0
+   stxsdx %x1,%y0
    stxsd %1,%0"
-  [(set_attr "type" "fpstore")
-   (set_attr "length" "4")])
+  [(set_attr "type" "fpstore")])
 
 ;; Variable V2DI/V2DF extract shift
 (define_insn "vsx_vslo_<mode>"
@@ -3607,7 +3624,7 @@
   if (MEM_P (operands[0]))
     {
       if (can_create_pseudo_p ())
-	dest = rs6000_address_for_fpconvert (dest);
+	dest = rs6000_force_indexed_or_indirect_mem (dest);
 
       if (TARGET_P8_VECTOR)
 	emit_move_insn (dest, gen_rtx_REG (SImode, REGNO (vec_tmp)));
@@ -4071,7 +4088,7 @@
 {
   rtx op1 = operands[1];
   if (MEM_P (op1))
-    operands[1] = rs6000_address_for_fpconvert (op1);
+    operands[1] = rs6000_force_indexed_or_indirect_mem (op1);
   else if (!REG_P (op1))
     op1 = force_reg (<VSX_D:VS_scalar>mode, op1);
 })
@@ -4542,6 +4559,34 @@
 	 (match_operand:SI 3 "zero_constant" "j")))]
   "TARGET_P9_VECTOR"
   "xscmpexpdp %0,%x1,%x2"
+  [(set_attr "type" "fpcompare")])
+
+;; VSX Scalar Compare Exponents Quad-Precision
+(define_expand "xscmpexpqp_<code>_<mode>"
+  [(set (match_dup 3)
+	(compare:CCFP
+	 (unspec:IEEE128
+	  [(match_operand:IEEE128 1 "vsx_register_operand" "v")
+	   (match_operand:IEEE128 2 "vsx_register_operand" "v")]
+	  UNSPEC_VSX_SCMPEXPQP)
+	 (const_int 0)))
+   (set (match_operand:SI 0 "register_operand" "=r")
+	(CMP_TEST:SI (match_dup 3)
+		     (const_int 0)))]
+  "TARGET_P9_VECTOR"
+{
+  operands[3] = gen_reg_rtx (CCFPmode);
+})
+
+(define_insn "*xscmpexpqp"
+  [(set (match_operand:CCFP 0 "cc_reg_operand" "=y")
+	(compare:CCFP
+	 (unspec:IEEE128 [(match_operand:IEEE128 1 "altivec_register_operand" "v")
+		          (match_operand:IEEE128 2 "altivec_register_operand" "v")]
+	  UNSPEC_VSX_SCMPEXPQP)
+	 (match_operand:SI 3 "zero_constant" "j")))]
+  "TARGET_P9_VECTOR"
+  "xscmpexpqp %0,%1,%2"
   [(set_attr "type" "fpcompare")])
 
 ;; VSX Scalar Test Data Class Quad-Precision
@@ -5033,6 +5078,22 @@
 	 UNSPEC_VCMPNEZB))]
   "TARGET_P9_VECTOR"
   "vcmpnezb %0,%1,%2"
+  [(set_attr "type" "vecsimple")])
+
+;; Vector Compare Not Equal or Zero Byte predicate or record-form
+(define_insn "vcmpnezb_p"
+  [(set (reg:CC CR6_REGNO)
+	(unspec:CC
+	 [(match_operand:V16QI 1 "altivec_register_operand" "v")
+	  (match_operand:V16QI 2 "altivec_register_operand" "v")]
+	 UNSPEC_VCMPNEZB))
+   (set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI
+	 [(match_dup 1)
+	  (match_dup 2)]
+	 UNSPEC_VCMPNEZB))]
+  "TARGET_P9_VECTOR"
+  "vcmpnezb. %0,%1,%2"
   [(set_attr "type" "vecsimple")])
 
 ;; Vector Compare Not Equal Half Word (specified/not+eq:)

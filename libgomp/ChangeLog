@@ -1,3 +1,301 @@
+2018-11-06  Chung-Lin Tang <cltang@codesourcery.com>
+
+	* oacc-mem.c (memcpy_tofrom_device): New function, combined from
+	acc_memcpy_to/from_device functions, now with async parameter.
+	(acc_memcpy_to_device): Modify to use memcpy_tofrom_device.
+	(acc_memcpy_from_device): Likewise.
+	(acc_memcpy_to_device_async): New API function.
+	(acc_memcpy_from_device_async): Likewise.
+	(present_create_copy): Add async parameter and async setting/unsetting.
+	(acc_create): Adjust present_create_copy call.
+	(acc_copyin): Likewise.
+	(acc_present_or_create): Likewise.
+	(acc_present_or_copyin): Likewise.
+	(acc_create_async): New API function.
+	(acc_copyin_async): New API function.
+	(delete_copyout): Add async parameter and async setting/unsetting.
+	(acc_delete): Adjust delete_copyout call.
+	(acc_copyout): Likewise.
+	(acc_delete_async): New API function.
+	(acc_copyout_async): Likewise.
+	(update_dev_host): Add async parameter and async setting/unsetting.
+	(acc_update_device): Adjust update_dev_host call.
+	(acc_update_self): Likewise.
+	(acc_update_device_async): New API function.
+	(acc_update_self_async): Likewise.
+	* openacc.h (acc_copyin_async): Declare new API function.
+	(acc_create_async): Likewise.
+	(acc_copyout_async): Likewise.
+	(acc_delete_async): Likewise.
+	(acc_update_device_async): Likewise.
+	(acc_update_self_async): Likewise.
+	(acc_memcpy_to_device_async): Likewise.
+	(acc_memcpy_from_device_async): Likewise.
+	* openacc_lib.h (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* openacc.f90 (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* libgomp.map (OACC_2.5): Add acc_copyin_async*, acc_copyout_async*,
+	acc_copyout_finalize_async*, acc_create_async*, acc_delete_async*,
+	acc_delete_finalize_async*, acc_memcpy_from_device_async*,
+	acc_memcpy_to_device_async*, acc_update_device_async*, and
+	acc_update_self_async* entries.
+	* testsuite/libgomp.oacc-c-c++-common/lib-94.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: New test.
+	* testsuite/libgomp.oacc-fortran/lib-16.f90: New test.
+
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am
+	(AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(CLEANFILES): Remove libgomp.info.
+	* configure.ac: Remove AC_PREREQ.
+	* testsuite/Makefile.am (RUNTEST): Remove quotes.
+	* Makefile.in, aclocal.m4, configure, testsuite/Makefile.in:
+	Regenerate.
+
+2018-10-29  Joseph Myers  <joseph@codesourcery.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c++/this.C: New.
+
+2018-09-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct cuda_map): New.
+	(struct ptx_stream): Replace d, h, h_begin, h_end, h_next, h_prev,
+	h_tail with (cuda_map *) map.
+	(cuda_map_create): New function.
+	(cuda_map_destroy): New function.
+	(map_init): Update to use a linked list of cuda_map objects.
+	(map_fini): Likewise.
+	(map_pop): Likewise.
+	(map_push): Likewise.  Return CUdeviceptr instead of void.
+	(init_streams_for_device): Remove stales references to ptx_stream
+	members.
+	(select_stream_for_async): Likewise.
+	(nvptx_exec): Update call to map_init.
+
+2018-09-09  Cesar Philippidis  <cesar@codesourcery.com>
+            Julian Brown  <julian@codesourcery.com>
+
+	PR middle-end/86336
+	* testsuite/libgomp.oacc-c++/non-scalar-data.C: Remove XFAIL.
+
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
+2018-08-13  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	PR target/85590
+	* plugin/cuda/cuda.h (CUoccupancyB2DSize): New typedef.
+	(cuOccupancyMaxPotentialBlockSize): Declare.
+	* plugin/cuda-lib.def (cuOccupancyMaxPotentialBlockSize): New
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (CUDA_VERSION < 6050): Define
+	CUoccupancyB2DSize and declare
+	cuOccupancyMaxPotentialBlockSize.
+	(nvptx_exec): Use cuOccupancyMaxPotentialBlockSize to set the
+	default num_gangs and num_workers when the driver supports it.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def (cuLinkAddData_v2, cuLinkCreate_v2): Declare using
+	CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuLinkAddData, cuLinkCreate): Undef and declare.
+	(cuLinkAddData_v2, cuLinkCreate_v2): Declare.
+	(link_ptx): Fall back to cuLinkAddData/cuLinkCreate if the _v2 versions
+	are not found.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def (cuGetErrorString): Use CUDA_ONE_CALL_MAYBE_NULL.
+	* plugin/plugin-nvptx.c (cuda_error): Handle if cuGetErrorString is not
+	present.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c
+	(CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR): Define.
+	(nvptx_open_device): Use
+	CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR.
+
+2018-08-08  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (cuda_error): Move declaration of cuGetErrorString ...
+	(cuGetErrorString): ... here.  Guard with CUDA_VERSION < 6000.
+
+2018-08-07  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (DO_PRAGMA): Define.
+	(struct cuda_lib_s): Add def/undef of CUDA_ONE_CALL_MAYBE_NULL.
+	(init_cuda_lib): Add new param to CUDA_ONE_CALL_1.  Add arg to
+	corresponding call in CUDA_ONE_CALL.  Add def/undef of
+	CUDA_ONE_CALL_MAYBE_NULL.
+	(CUDA_CALL_EXISTS): Define.
+
+2018-08-07  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct cuda_lib_s, init_cuda_lib): Put
+	CUDA_ONE_CALL defines right before the cuda-lib.def include, and the
+	corresponding undefs right after.
+
+2018-08-04  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/configfrag.ac: For --without-cuda-driver, set
+	CUDA_DRIVER_INCLUDE and CUDA_DRIVER_LIB to no.  Handle
+	CUDA_DRIVER_INCLUDE == no and CUDA_DRIVER_LIB == no.
+	* configure: Regenerate.
+
+2018-08-02  Tom de Vries  <tdevries@suse.de>
+
+	PR target/86660
+	* testsuite/libgomp.oacc-c++/routine-1-auto.C: Remove -fno-exceptions.
+	* testsuite/libgomp.oacc-c++/routine-1-template-auto.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template-trailing-return-type.C:
+	Same.
+	* testsuite/libgomp.oacc-c++/routine-1-template.C: Same.
+	* testsuite/libgomp.oacc-c++/routine-1-trailing-return-type.C: Same.
+	* testsuite/libgomp.oacc-c-c++-common/routine-1.c: Same.
+
+2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
+	    Thomas Schwinge <thomas@codesourcery.com>
+
+	* config/nvptx/oacc-parallel.c: Truncate.
+
+2018-08-01  Cesar Philippidis  <cesar@codesourcery.com>
+	    James Norris <jnorris@codesourcery.com>
+
+	* plugin/plugin-nvptx.c (struct map): Removed.
+	(map_init, map_pop): Remove use of struct map.
+	(map_push): Likewise and change argument list.
+	* testsuite/libgomp.oacc-c-c++-common/mapping-1.c: New
+
+2018-08-01  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/cuda-lib.def: New file.  Factor out of ...
+	* plugin/plugin-nvptx.c (CUDA_CALLS): ... here.
+	(struct cuda_lib_s, init_cuda_lib): Include cuda-lib.def instead of
+	using CUDA_CALLS.
+
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'.
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
+2018-07-30  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (MIN, MAX): Redefine.
+	(nvptx_exec): Ensure worker and vector default dims don't exceed
+	targ_fn->max_threads_per_block.
+
+2018-07-30  Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct ptx_device): Add default_dims field.
+	(nvptx_open_device): Init default_dims for device.
+	(nvptx_exec): Use default_dims from device.
+
+2018-07-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/86660
+	* testsuite/libgomp.c++/for-15.C (results): Include it in
+	omp declare target region.
+	(main): Use map (always, tofrom: results) instead of
+	map (tofrom: results).
+
+	PR middle-end/86660
+	* testsuite/libgomp.c/pr86660.c: New test.
+
+2018-07-26  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (nvptx_exec): Error if the hardware doesn't have
+	sufficient resources to launch a kernel, and give a hint on how to fix
+	it.
+
+2018-07-26  Cesar Philippidis  <cesar@codesourcery.com>
+	    Tom de Vries  <tdevries@suse.de>
+
+	* plugin/plugin-nvptx.c (struct ptx_device): Add warp_size,
+	max_threads_per_block and max_threads_per_multiprocessor fields.
+	(nvptx_open_device): Initialize new fields.
+	(nvptx_exec): Use num_sms, and new fields.
+
+2018-07-26  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/lib-12.f90: Move acc_async_test calls
+	to correct locations.  Remove xfail.
+
+2018-07-26  Tom de Vries  <tdevries@suse.de>
+
+	* testsuite/libgomp.oacc-fortran/lib-13.f90: Replace acc_wait_all with
+	acc_wait.  Move acc_async_test calls to correct locations.  Remove
+	xfail.
+
+2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* testsuite/libgomp.fortran/async_io_1.f90: New test.
+	* testsuite/libgomp.fortran/async_io_2.f90: New test.
+	* testsuite/libgomp.fortran/async_io_3.f90: New test.
+	* testsuite/libgomp.fortran/async_io_4.f90: New test.
+	* testsuite/libgomp.fortran/async_io_5.f90: New test.
+	* testsuite/libgomp.fortran/async_io_6.f90: New test.
+	* testsuite/libgomp.fortran/async_io_7.f90: New test.
+
 2018-07-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/86542
@@ -618,6 +916,17 @@
 	PR testsuite/85346
 	* testsuite/libgomp.fortran/do_concurrent_5.f90: Move modified
 	test from gfortran.dg to here.
+
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: Revert 259346.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: Likewise.
+
+2018-04-12  Cesar Philippidis  <cesar@codesourcery.com>
+
+	PR middle-end/84955
+	* testsuite/libgomp.oacc-c-c++-common/pr84955.c: New test.
+	* testsuite/libgomp.oacc-fortran/pr84955.f90: New test.
 
 2018-04-05  Tom de Vries  <tom@codesourcery.com>
 
@@ -1691,7 +2000,7 @@
 	* config/nvptx/affinity.c: Delete to use fallback implementation.
 
 2016-11-23  Alexander Monakov  <amonakov@ispras.ru>
-            Jakub Jelinek  <jakub@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
 	    Dmitry Melnik  <dm@ispras.ru>
 
 	* Makefile.am (libgomp_la_SOURCES): Add atomic.c, icv.c, icv-device.c.
@@ -1793,7 +2102,7 @@
 	* testsuite/libgomp.hsa.c/tiling-2.c: Likewise.
 
 2016-11-23  Martin Liska  <mliska@suse.cz>
-            Martin Jambor  <mjambor@suse.cz>
+	    Martin Jambor  <mjambor@suse.cz>
 
 	* plugin/hsa.h: New file.
 	* plugin/hsa_ext_finalize.h: New file.
@@ -1843,7 +2152,7 @@
 	* testsuite/Makefile.in: Likewise.
 
 2016-11-15  Martin Jambor  <mjambor@suse.cz>
-            Alexander Monakov  <amonakov@ispras.ru>
+	    Alexander Monakov  <amonakov@ispras.ru>
 
 	* testsuite/libgomp.fortran/examples-4/device-1.f90 (e_57_1): Add
 	mapping clauses to target constructs.
@@ -2233,7 +2542,7 @@
 
 2016-05-16  Martin Jambor  <mjambor@suse.cz>
 
-        * testsuite/libgomp.hsa.c/complex-align-2.c: New test.
+	* testsuite/libgomp.hsa.c/complex-align-2.c: New test.
 
 2016-05-02  Nathan Sidwell  <nathan@codesourcery.com>
 

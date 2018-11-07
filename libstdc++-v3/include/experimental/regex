@@ -44,10 +44,9 @@ namespace experimental
 {
 inline namespace fundamentals_v2
 {
+#if _GLIBCXX_USE_CXX11_ABI
 namespace pmr
 {
-_GLIBCXX_BEGIN_NAMESPACE_CXX11
-
   template<typename _BidirectionalIterator>
     using match_results
       = std::match_results<_BidirectionalIterator, polymorphic_allocator<
@@ -58,9 +57,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   typedef match_results<string::const_iterator> smatch;
   typedef match_results<wstring::const_iterator> wsmatch;
 
-_GLIBCXX_END_NAMESPACE_CXX11
 } // namespace pmr
-
+#endif
 } // namespace fundamentals_v2
 } // namespace experimental
 _GLIBCXX_END_NAMESPACE_VERSION

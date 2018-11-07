@@ -306,7 +306,7 @@ GTM::gtm_thread::serialirr_mode ()
       // We're already serial, so we don't need to ensure privatization safety
       // for other transactions here.
       gtm_word priv_time = 0;
-      bool ok = disp->trycommit (priv_time);
+      bool ok __attribute__((unused)) = disp->trycommit (priv_time);
       // Given that we're already serial, the trycommit better work.
       assert (ok);
     }

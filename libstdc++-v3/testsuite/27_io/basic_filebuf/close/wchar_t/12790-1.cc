@@ -17,6 +17,8 @@
 
 // 27.8.1.3 filebuf member functions
 
+// { dg-require-fileio "" }
+
 #include <locale>
 #include <fstream>
 #include <testsuite_hooks.h>

@@ -228,7 +228,9 @@ static int *insn_n_alternatives;
 /* Stores, for each insn code, a bitmap that has bits on for each possible
    alternative.  */
 
-static uint64_t *insn_alternatives;
+/* Keep this in sync with recog.h.  */
+typedef uint64_t alternative_mask;
+static alternative_mask *insn_alternatives;
 
 /* Used to simplify expressions.  */
 
@@ -256,7 +258,7 @@ static char *attr_printf           (unsigned int, const char *, ...)
   ATTRIBUTE_PRINTF_2;
 static rtx make_numeric_value      (int);
 static struct attr_desc *find_attr (const char **, int);
-static rtx mk_attr_alt             (uint64_t);
+static rtx mk_attr_alt             (alternative_mask);
 static char *next_comma_elt	   (const char **);
 static rtx insert_right_side	   (enum rtx_code, rtx, rtx, int, int);
 static rtx copy_boolean		   (rtx);
@@ -494,26 +496,26 @@ attr_rtx_1 (enum rtx_code code, va_list p)
 	}
     }
   else if (GET_RTX_LENGTH (code) == 2
-	   && GET_RTX_FORMAT (code)[0] == 'i'
-	   && GET_RTX_FORMAT (code)[1] == 'i')
+	   && GET_RTX_FORMAT (code)[0] == 'w'
+	   && GET_RTX_FORMAT (code)[1] == 'w')
     {
-      int  arg0 = va_arg (p, int);
-      int  arg1 = va_arg (p, int);
+      HOST_WIDE_INT arg0 = va_arg (p, HOST_WIDE_INT);
+      HOST_WIDE_INT arg1 = va_arg (p, HOST_WIDE_INT);
 
       hashcode = ((HOST_WIDE_INT) code + RTL_HASH (arg0) + RTL_HASH (arg1));
       for (h = attr_hash_table[hashcode % RTL_HASH_SIZE]; h; h = h->next)
 	if (h->hashcode == hashcode
 	    && GET_CODE (h->u.rtl) == code
-	    && XINT (h->u.rtl, 0) == arg0
-	    && XINT (h->u.rtl, 1) == arg1)
+	    && XWINT (h->u.rtl, 0) == arg0
+	    && XWINT (h->u.rtl, 1) == arg1)
 	  return h->u.rtl;
 
       if (h == 0)
 	{
 	  rtl_obstack = hash_obstack;
 	  rt_val = rtx_alloc (code);
-	  XINT (rt_val, 0) = arg0;
-	  XINT (rt_val, 1) = arg1;
+	  XWINT (rt_val, 0) = arg0;
+	  XWINT (rt_val, 1) = arg1;
 	}
     }
   else if (code == CONST_INT)
@@ -703,7 +705,8 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 	  if (attr2 == NULL)
 	    {
 	      if (! strcmp (XSTR (exp, 0), "alternative"))
-		return mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
+		return mk_attr_alt (((alternative_mask) 1)
+				    << atoi (XSTR (exp, 1)));
 	      else
 		fatal_at (loc, "unknown attribute `%s' in definition of"
 			  " attribute `%s'", XSTR (exp, 0), attr->name);
@@ -750,7 +753,7 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 
 	      name_ptr = XSTR (exp, 1);
 	      while ((p = next_comma_elt (&name_ptr)) != NULL)
-		set |= ((uint64_t) 1) << atoi (p);
+		set |= ((alternative_mask) 1) << atoi (p);
 
 	      return mk_attr_alt (set);
 	    }
@@ -1224,7 +1227,7 @@ get_attr_value (file_location loc, rtx value, struct attr_desc *attr,
 		int insn_code)
 {
   struct attr_value *av;
-  uint64_t num_alt = 0;
+  alternative_mask num_alt = 0;
 
   value = make_canonical (loc, attr, value);
   if (compares_alternatives_p (value))
@@ -1868,7 +1871,7 @@ insert_right_side (enum rtx_code code, rtx exp, rtx term, int insn_code, int ins
    This routine is passed an expression and either AND or IOR.  It returns a
    bitmask indicating which alternatives are mentioned within EXP.  */
 
-static uint64_t
+static alternative_mask
 compute_alternative_mask (rtx exp, enum rtx_code code)
 {
   const char *string;
@@ -1887,11 +1890,11 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
 
   else if (GET_CODE (exp) == EQ_ATTR_ALT)
     {
-      if (code == AND && XINT (exp, 1))
-	return XINT (exp, 0);
+      if (code == AND && XWINT (exp, 1))
+	return XWINT (exp, 0);
 
-      if (code == IOR && !XINT (exp, 1))
-	return XINT (exp, 0);
+      if (code == IOR && !XWINT (exp, 1))
+	return XWINT (exp, 0);
 
       return 0;
     }
@@ -1899,15 +1902,15 @@ compute_alternative_mask (rtx exp, enum rtx_code code)
     return 0;
 
   if (string[1] == 0)
-    return ((uint64_t) 1) << (string[0] - '0');
-  return ((uint64_t) 1) << atoi (string);
+    return ((alternative_mask) 1) << (string[0] - '0');
+  return ((alternative_mask) 1) << atoi (string);
 }
 
 /* Given I, a single-bit mask, return RTX to compare the `alternative'
    attribute with the value represented by that bit.  */
 
 static rtx
-make_alternative_compare (uint64_t mask)
+make_alternative_compare (alternative_mask mask)
 {
   return mk_attr_alt (mask);
 }
@@ -2286,19 +2289,19 @@ simplify_test_exp_in_temp (rtx exp, int insn_code, int insn_index)
 static bool
 attr_alt_subset_p (rtx s1, rtx s2)
 {
-  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+  switch ((XWINT (s1, 1) << 1) | XWINT (s2, 1))
     {
     case (0 << 1) | 0:
-      return !(XINT (s1, 0) &~ XINT (s2, 0));
+      return !(XWINT (s1, 0) &~ XWINT (s2, 0));
 
     case (0 << 1) | 1:
-      return !(XINT (s1, 0) & XINT (s2, 0));
+      return !(XWINT (s1, 0) & XWINT (s2, 0));
 
     case (1 << 1) | 0:
       return false;
 
     case (1 << 1) | 1:
-      return !(XINT (s2, 0) &~ XINT (s1, 0));
+      return !(XWINT (s2, 0) &~ XWINT (s1, 0));
 
     default:
       gcc_unreachable ();
@@ -2310,16 +2313,16 @@ attr_alt_subset_p (rtx s1, rtx s2)
 static bool
 attr_alt_subset_of_compl_p (rtx s1, rtx s2)
 {
-  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+  switch ((XWINT (s1, 1) << 1) | XWINT (s2, 1))
     {
     case (0 << 1) | 0:
-      return !(XINT (s1, 0) & XINT (s2, 0));
+      return !(XWINT (s1, 0) & XWINT (s2, 0));
 
     case (0 << 1) | 1:
-      return !(XINT (s1, 0) & ~XINT (s2, 0));
+      return !(XWINT (s1, 0) & ~XWINT (s2, 0));
 
     case (1 << 1) | 0:
-      return !(XINT (s2, 0) &~ XINT (s1, 0));
+      return !(XWINT (s2, 0) &~ XWINT (s1, 0));
 
     case (1 << 1) | 1:
       return false;
@@ -2334,27 +2337,27 @@ attr_alt_subset_of_compl_p (rtx s1, rtx s2)
 static rtx
 attr_alt_intersection (rtx s1, rtx s2)
 {
-  int result;
+  alternative_mask result;
 
-  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+  switch ((XWINT (s1, 1) << 1) | XWINT (s2, 1))
     {
     case (0 << 1) | 0:
-      result = XINT (s1, 0) & XINT (s2, 0);
+      result = XWINT (s1, 0) & XWINT (s2, 0);
       break;
     case (0 << 1) | 1:
-      result = XINT (s1, 0) & ~XINT (s2, 0);
+      result = XWINT (s1, 0) & ~XWINT (s2, 0);
       break;
     case (1 << 1) | 0:
-      result = XINT (s2, 0) & ~XINT (s1, 0);
+      result = XWINT (s2, 0) & ~XWINT (s1, 0);
       break;
     case (1 << 1) | 1:
-      result = XINT (s1, 0) | XINT (s2, 0);
+      result = XWINT (s1, 0) | XWINT (s2, 0);
       break;
     default:
       gcc_unreachable ();
     }
 
-  return attr_rtx (EQ_ATTR_ALT, result, XINT (s1, 1) & XINT (s2, 1));
+  return attr_rtx (EQ_ATTR_ALT, result, XWINT (s1, 1) & XWINT (s2, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing union of S1 and S2.  */
@@ -2362,27 +2365,27 @@ attr_alt_intersection (rtx s1, rtx s2)
 static rtx
 attr_alt_union (rtx s1, rtx s2)
 {
-  int result;
+  alternative_mask result;
 
-  switch ((XINT (s1, 1) << 1) | XINT (s2, 1))
+  switch ((XWINT (s1, 1) << 1) | XWINT (s2, 1))
     {
     case (0 << 1) | 0:
-      result = XINT (s1, 0) | XINT (s2, 0);
+      result = XWINT (s1, 0) | XWINT (s2, 0);
       break;
     case (0 << 1) | 1:
-      result = XINT (s2, 0) & ~XINT (s1, 0);
+      result = XWINT (s2, 0) & ~XWINT (s1, 0);
       break;
     case (1 << 1) | 0:
-      result = XINT (s1, 0) & ~XINT (s2, 0);
+      result = XWINT (s1, 0) & ~XWINT (s2, 0);
       break;
     case (1 << 1) | 1:
-      result = XINT (s1, 0) & XINT (s2, 0);
+      result = XWINT (s1, 0) & XWINT (s2, 0);
       break;
     default:
       gcc_unreachable ();
     }
 
-  return attr_rtx (EQ_ATTR_ALT, result, XINT (s1, 1) | XINT (s2, 1));
+  return attr_rtx (EQ_ATTR_ALT, result, XWINT (s1, 1) | XWINT (s2, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing complement of S.  */
@@ -2390,16 +2393,17 @@ attr_alt_union (rtx s1, rtx s2)
 static rtx
 attr_alt_complement (rtx s)
 {
-  return attr_rtx (EQ_ATTR_ALT, XINT (s, 0), 1 - XINT (s, 1));
+  return attr_rtx (EQ_ATTR_ALT, XWINT (s, 0),
+                   ((HOST_WIDE_INT) 1) - XWINT (s, 1));
 }
 
 /* Return EQ_ATTR_ALT expression representing set containing elements set
    in E.  */
 
 static rtx
-mk_attr_alt (uint64_t e)
+mk_attr_alt (alternative_mask e)
 {
-  return attr_rtx (EQ_ATTR_ALT, (int)e, 0);
+  return attr_rtx (EQ_ATTR_ALT, (HOST_WIDE_INT) e, (HOST_WIDE_INT) 0);
 }
 
 /* Given an expression, see if it can be simplified for a particular insn
@@ -2419,7 +2423,7 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
   struct attr_value *av;
   struct insn_ent *ie;
   struct attr_value_list *iv;
-  uint64_t i;
+  alternative_mask i;
   rtx newexp = exp;
   bool left_alt, right_alt;
 
@@ -2484,14 +2488,14 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
 		    && XSTR (XEXP (left, 0), 0) == alternative_name);
       else
 	left_alt = (GET_CODE (left) == EQ_ATTR_ALT
-		    && XINT (left, 1));
+		    && XWINT (left, 1));
 
       if (GET_CODE (right) == NOT)
 	right_alt = (GET_CODE (XEXP (right, 0)) == EQ_ATTR
 		     && XSTR (XEXP (right, 0), 0) == alternative_name);
       else
 	right_alt = (GET_CODE (right) == EQ_ATTR_ALT
-		     && XINT (right, 1));
+		     && XWINT (right, 1));
 
       if (insn_code >= 0
 	  && (GET_CODE (left) == AND
@@ -2602,12 +2606,12 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       else if (insn_code >= 0
 	       && (GET_CODE (left) == IOR
 		   || (GET_CODE (left) == EQ_ATTR_ALT
-		       && !XINT (left, 1))
+		       && !XWINT (left, 1))
 		   || (GET_CODE (left) == EQ_ATTR
 		       && XSTR (left, 0) == alternative_name)
 		   || GET_CODE (right) == IOR
 		   || (GET_CODE (right) == EQ_ATTR_ALT
-		       && !XINT (right, 1))
+		       && !XWINT (right, 1))
 		   || (GET_CODE (right) == EQ_ATTR
 		       && XSTR (right, 0) == alternative_name)))
 	{
@@ -2688,14 +2692,15 @@ simplify_test_exp (rtx exp, int insn_code, int insn_index)
       break;
 
     case EQ_ATTR_ALT:
-      if (!XINT (exp, 0))
-	return XINT (exp, 1) ? true_rtx : false_rtx;
+      if (!XWINT (exp, 0))
+	return XWINT (exp, 1) ? true_rtx : false_rtx;
       break;
 
     case EQ_ATTR:
       if (XSTR (exp, 0) == alternative_name)
 	{
-	  newexp = mk_attr_alt (((uint64_t) 1) << atoi (XSTR (exp, 1)));
+	  newexp = mk_attr_alt (((alternative_mask) 1)
+				<< atoi (XSTR (exp, 1)));
 	  break;
 	}
 
@@ -3568,7 +3573,8 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
 
     case EQ_ATTR_ALT:
 	{
-	  int set = XINT (exp, 0), bit = 0;
+	  alternative_mask set = XWINT (exp, 0);
+	  int bit = 0;
 
 	  if (flags & FLG_BITWISE)
 	    fatal ("EQ_ATTR_ALT not valid inside comparison");
@@ -3578,6 +3584,11 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
 
 	  if (!(set & (set - 1)))
 	    {
+	      if (!(set & 0xffffffff))
+		{
+		  bit += 32;
+		  set >>= 32;
+		}
 	      if (!(set & 0xffff))
 		{
 		  bit += 16;
@@ -3602,12 +3613,13 @@ write_test_expr (FILE *outf, rtx exp, unsigned int attrs_cached, int flags,
 		bit++;
 
 	      fprintf (outf, "which_alternative %s= %d",
-		       XINT (exp, 1) ? "!" : "=", bit);
+		       XWINT (exp, 1) ? "!" : "=", bit);
 	    }
 	  else
 	    {
-	      fprintf (outf, "%s((1 << which_alternative) & %#x)",
-		       XINT (exp, 1) ? "!" : "", set);
+	      fprintf (outf, "%s((1ULL << which_alternative) & %#" PRIx64
+			     "ULL)",
+		       XWINT (exp, 1) ? "!" : "", set);
 	    }
 	}
       break;
@@ -5220,11 +5232,11 @@ main (int argc, const char **argv)
 
   /* Make `insn_alternatives'.  */
   int num_insn_codes = get_num_insn_codes ();
-  insn_alternatives = oballocvec (uint64_t, num_insn_codes);
+  insn_alternatives = oballocvec (alternative_mask, num_insn_codes);
   for (id = defs; id; id = id->next)
     if (id->insn_code >= 0)
       insn_alternatives[id->insn_code]
-	= (((uint64_t) 1) << id->num_alternatives) - 1;
+	= (((alternative_mask) 1) << id->num_alternatives) - 1;
 
   /* Make `insn_n_alternatives'.  */
   insn_n_alternatives = oballocvec (int, num_insn_codes);

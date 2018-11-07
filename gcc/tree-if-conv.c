@@ -118,6 +118,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "internal-fn.h"
 #include "fold-const.h"
+#include "tree-ssa-sccvn.h"
 
 /* Only handle PHIs with no more arguments unless we are asked to by
    simd pragma.  */
@@ -1079,7 +1080,7 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 		&& !(flags & ECF_LOOPING_CONST_OR_PURE)
 		/* We can only vectorize some builtins at the moment,
 		   so restrict if-conversion to those.  */
-		&& DECL_BUILT_IN (fndecl))
+		&& fndecl_built_in_p (fndecl))
 	      return true;
 	  }
 	return false;
@@ -1112,19 +1113,6 @@ all_preds_critical_p (basic_block bb)
     if (EDGE_COUNT (e->src->succs) == 1)
       return false;
   return true;
-}
-
-/* Returns true if at least one successor in on critical edge.  */
-static inline bool
-has_pred_critical_p (basic_block bb)
-{
-  edge e;
-  edge_iterator ei;
-
-  FOR_EACH_EDGE (e, ei, bb->preds)
-    if (EDGE_COUNT (e->src->succs) > 1)
-      return true;
-  return false;
 }
 
 /* Return true when BB is if-convertible.  This routine does not check
@@ -2992,6 +2980,7 @@ tree_if_conversion (struct loop *loop)
   unsigned int todo = 0;
   bool aggressive_if_conv;
   struct loop *rloop;
+  bitmap exit_bbs;
 
  again:
   rloop = NULL;
@@ -3068,6 +3057,14 @@ tree_if_conversion (struct loop *loop)
 
   /* Delete dead predicate computations.  */
   ifcvt_local_dce (loop->header);
+
+  /* Perform local CSE, this esp. helps the vectorizer analysis if loads
+     and stores are involved.
+     ???  We'll still keep dead stores though.  */
+  exit_bbs = BITMAP_ALLOC (NULL);
+  bitmap_set_bit (exit_bbs, single_exit (loop)->dest->index);
+  todo |= do_rpo_vn (cfun, loop_preheader_edge (loop), exit_bbs);
+  BITMAP_FREE (exit_bbs);
 
   todo |= TODO_cleanup_cfg;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-// +build aix darwin dragonfly freebsd linux nacl netbsd openbsd solaris
+// +build aix darwin dragonfly freebsd js,wasm linux nacl netbsd openbsd solaris
 
 package os
 
@@ -32,4 +32,8 @@ func basename(name string) string {
 	}
 
 	return name
+}
+
+func fixRootDirectory(p string) string {
+	return p
 }

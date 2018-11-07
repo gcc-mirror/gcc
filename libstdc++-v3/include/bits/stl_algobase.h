@@ -288,7 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // No need to wrap, iterator already has the right type.
   template<typename _Iterator>
     inline _Iterator
-    __niter_wrap(_Iterator, _Iterator __res)
+    __niter_wrap(const _Iterator&, _Iterator __res)
     { return __res; }
 
   // All of these auxiliary structs serve two purposes.  (1) Replace
@@ -391,7 +391,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_II>::value_type _ValueTypeI;
       typedef typename iterator_traits<_OI>::value_type _ValueTypeO;
       typedef typename iterator_traits<_II>::iterator_category _Category;
-      const bool __simple = (__is_trivial(_ValueTypeI)
+      const bool __simple = (__is_trivially_copyable(_ValueTypeI)
 			     && __is_pointer<_II>::__value
 			     && __is_pointer<_OI>::__value
 			     && __are_same<_ValueTypeI, _ValueTypeO>::__value);
@@ -593,7 +593,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       typedef typename iterator_traits<_BI1>::value_type _ValueType1;
       typedef typename iterator_traits<_BI2>::value_type _ValueType2;
       typedef typename iterator_traits<_BI1>::iterator_category _Category;
-      const bool __simple = (__is_trivial(_ValueType1)
+      const bool __simple = (__is_trivially_copyable(_ValueType1)
 			     && __is_pointer<_BI1>::__value
 			     && __is_pointer<_BI2>::__value
 			     && __are_same<_ValueType1, _ValueType2>::__value);

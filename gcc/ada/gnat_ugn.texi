@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Jul 13, 2018
+GNAT User's Guide for Native Platforms , Aug 20, 2018
 
 AdaCore
 
@@ -9429,13 +9429,39 @@ Long_Size                  : Pos; -- Standard.Long_Integer'Size
 Maximum_Alignment          : Pos; -- Maximum permitted alignment
 Max_Unaligned_Field        : Pos; -- Maximum size for unaligned bit field
 Pointer_Size               : Pos; -- System.Address'Size
-Short_Enums                : Nat; -- Short foreign convention enums?
+Short_Enums                : Nat; -- Foreign enums use short size?
 Short_Size                 : Pos; -- Standard.Short_Integer'Size
 Strict_Alignment           : Nat; -- Strict alignment?
 System_Allocator_Alignment : Nat; -- Alignment for malloc calls
 Wchar_T_Size               : Pos; -- Interfaces.C.wchar_t'Size
 Words_BE                   : Nat; -- Words stored big-endian?
 @end example
+
+@code{Bits_Per_Unit} is the number of bits in a storage unit, the equivalent of
+GCC macro @code{BITS_PER_UNIT} documented as follows: @cite{Define this macro to be the number of bits in an addressable storage unit (byte); normally 8.}
+
+@code{Bits_Per_Word} is the number of bits in a machine word, the equivalent of
+GCC macro @code{BITS_PER_WORD} documented as follows: @cite{Number of bits in a word; normally 32.}
+
+@code{Double_Scalar_Alignment} is the alignment for a scalar whose size is two
+machine words. It should be the same as the alignment for C @code{long_long} on
+most targets.
+
+@code{Maximum_Alignment} is the maximum alignment that the compiler might choose
+by default for a type or object, which is also the maximum alignment that can
+be specified in GNAT. It is computed for GCC backends as @code{BIGGEST_ALIGNMENT
+/ BITS_PER_UNIT} where GCC macro @code{BIGGEST_ALIGNMENT} is documented as
+follows: @cite{Biggest alignment that any data type can require on this machine@comma{} in bits.}
+
+@code{Max_Unaligned_Field} is the maximum size for unaligned bit field, which is
+64 for the majority of GCC targets (but can be different on some targets like
+AAMP).
+
+@code{Strict_Alignment} is the equivalent of GCC macro @code{STRICT_ALIGNMENT}
+documented as follows: @cite{Define this macro to be the value 1 if instructions will fail to work if given data not on the nominal alignment. If instructions will merely go slower in that case@comma{} define this macro as 0.}
+
+@code{System_Allocator_Alignment} is the guaranteed alignment of data returned
+by calls to @code{malloc}.
 
 The format of the input file is as follows. First come the values of
 the variables defined above, with one line per value:
@@ -22606,20 +22632,19 @@ to use the proper subtypes in object declarations.
 @geindex MKS_Type type
 
 The simplest way to impose dimensionality checking on a computation is to make
-use of the package @code{System.Dim.Mks},
-which is part of the GNAT library. This
-package defines a floating-point type @code{MKS_Type},
-for which a sequence of
-dimension names are specified, together with their conventional abbreviations.
-The following should be read together with the full specification of the
-package, in file @code{s-dimmks.ads}.
+use of one of the instantiations of the package @code{System.Dim.Generic_Mks}, which
+are part of the GNAT library. This generic package defines a floating-point
+type @code{MKS_Type}, for which a sequence of dimension names are specified,
+together with their conventional abbreviations.  The following should be read
+together with the full specification of the package, in file
+@code{s-digemk.ads}.
 
 @quotation
 
-@geindex s-dimmks.ads file
+@geindex s-digemk.ads file
 
 @example
-type Mks_Type is new Long_Long_Float
+type Mks_Type is new Float_Type
   with
    Dimension_System => (
      (Unit_Name => Meter,    Unit_Symbol => 'm',   Dim_Symbol => 'L'),
@@ -22674,10 +22699,25 @@ as well as useful multiples of these units:
 @end example
 @end quotation
 
-Using this package, you can then define a derived unit by
-providing the aspect that
-specifies its dimensions within the MKS system, as well as the string to
-be used for output of a value of that unit:
+There are three instantiations of @code{System.Dim.Generic_Mks} defined in the
+GNAT library:
+
+
+@itemize *
+
+@item 
+@code{System.Dim.Float_Mks} based on @code{Float} defined in @code{s-diflmk.ads}.
+
+@item 
+@code{System.Dim.Long_Mks} based on @code{Long_Float} defined in @code{s-dilomk.ads}.
+
+@item 
+@code{System.Dim.Mks} based on @code{Long_Long_Float} defined in @code{s-dimmks.ads}.
+@end itemize
+
+Using one of these packages, you can then define a derived unit by providing
+the aspect that specifies its dimensions within the MKS system, as well as the
+string to be used for output of a value of that unit:
 
 @quotation
 

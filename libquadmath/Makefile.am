@@ -1,7 +1,6 @@
 ## Process this file with automake to produce Makefile.in
 
-AUTOMAKE_OPTIONS = 1.8 foreign
-
+AUTOMAKE_OPTIONS = foreign info-in-builddir
 
 ## Skip over everything if the quadlib is not available:
 if BUILD_LIBQUADMATH
@@ -45,7 +44,7 @@ nodist_libsubinclude_HEADERS = quadmath.h quadmath_weak.h
 libsubincludedir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
 
 libquadmath_la_SOURCES = \
-  math/x2y2m1q.c math/isinf_nsq.c math/acoshq.c math/fmodq.c \
+  math/x2y2m1q.c math/acoshq.c math/fmodq.c \
   math/acosq.c math/frexpq.c \
   math/rem_pio2q.c math/asinhq.c math/hypotq.c math/remainderq.c \
   math/asinq.c math/rintq.c math/atan2q.c math/isinfq.c \
@@ -59,6 +58,8 @@ libquadmath_la_SOURCES = \
   math/tanhq.c math/expq.c math/modfq.c math/tanq.c math/fabsq.c \
   math/nanq.c math/tgammaq.c math/finiteq.c math/nextafterq.c \
   math/truncq.c math/floorq.c math/powq.c math/fmaq.c math/logbq.c \
+  math/exp2q.c math/issignalingq.c math/lgammaq_neg.c math/lgammaq_product.c \
+  math/tanq_kernel.c math/tgammaq_product.c math/casinhq_kernel.c \
   math/cacoshq.c math/cacosq.c math/casinhq.c math/casinq.c \
   math/catanhq.c math/catanq.c math/cimagq.c math/conjq.c math/cprojq.c \
   math/crealq.c math/fdimq.c math/fmaxq.c math/fminq.c math/ilogbq.c \
@@ -123,6 +124,7 @@ STAMP_GENINSRC = stamp-geninsrc
 else
 STAMP_GENINSRC =
 endif
+ALL_LOCAL_DEPS = $(STAMP_GENINSRC)
 
 # AM_CONDITIONAL on configure check ACX_CHECK_PROG_VER([MAKEINFO])
 if BUILD_INFO
@@ -132,8 +134,6 @@ STAMP_BUILD_INFO =
 endif
 
 
-all-local: $(STAMP_GENINSRC)
-
 stamp-geninsrc: libquadmath.info
 	cp -p $(top_builddir)/libquadmath.info $(srcdir)/libquadmath.info
 	@touch $@
@@ -142,10 +142,12 @@ stamp-build-info: libquadmath.texi $(libquadmath_TEXINFOS)
 	$(MAKEINFO) $(AM_MAKEINFOFLAGS) $(MAKEINFOFLAGS) -I $(srcdir) -o libquadmath.info $(srcdir)/libquadmath.texi
 	@touch $@
 
-CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO) libquadmath.info
+CLEANFILES = $(STAMP_GENINSRC) $(STAMP_BUILD_INFO)
 MAINTAINERCLEANFILES = $(srcdir)/libquadmath.info
 
 endif BUILD_LIBQUADMATH
+
+all-local: $(ALL_LOCAL_DEPS)
 
 # Unconditionally override this target, so that automake's definition
 # does not wrongly interfere.
@@ -172,3 +174,5 @@ libquadmath_TEXINFOS = libquadmath-vers.texi
 
 libquadmath-vers.texi:
 	echo "@set BUGURL $(REPORT_BUGS_TEXI)" > $@
+
+include $(top_srcdir)/../multilib.am

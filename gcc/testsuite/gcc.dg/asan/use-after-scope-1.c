@@ -15,4 +15,4 @@ main (void)
 
 // { dg-output "ERROR: AddressSanitizer: stack-use-after-scope on address.*(\n|\r\n|\r)" }
 // { dg-output "READ of size 1 at.*" }
-// { dg-output ".*'my_char' <== Memory access at offset \[0-9\]* is inside this variable.*" }
+// { dg-output ".*'my_char' \\(line 9\\) <== Memory access at offset \[0-9\]* is inside this variable.*" }

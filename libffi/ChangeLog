@@ -1,3 +1,25 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	(AUTOMAKE_OPTIONS): Add info-in-builddir.
+	(CLEANFILES): Remove doc/libffi.info.
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, configure, fficonfig.h.in,
+	include/Makefile.in, man/Makefile.in, testsuite/Makefile.in:
+	Regenerate.
+
+2018-08-15  Andreas Schwab  <schwab@suse.de>
+
+	Backport of RISC-V support for libffi go closures
+	* src/riscv/ffi.c (ffi_call_go, ffi_prep_go_closure): New
+	functions.
+	(ffi_call_int): Renamed from ffi_call.
+	(ffi_call_asm, ffi_closure_inner): Adjust interface.
+	* src/riscv/ffitarget.h (FFI_GO_CLOSURES): Define.
+	* src/riscv/sysv.S (ffi_go_closure_asm): New function.
+	(ffi_closure_asm, ffi_call_asm): Update for adjusted interfaces.
+
 2018-05-08  Andreas Schwab  <schwab@suse.de>
 
 	Backport of RISC-V support for libffi
@@ -451,7 +473,7 @@
 	* configure: Rebuild.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-            Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* README: Add details of aarch64 port.
 	* src/aarch64/ffi.c: New.
@@ -462,7 +484,7 @@
 	* Makefile.in, configure: Rebuilt.
 
 2012-10-30  James Greenhalgh  <james.greenhalgh at arm.com>
-            Marcus Shawcroft  <marcus.shawcroft at arm.com>
+	    Marcus Shawcroft  <marcus.shawcroft at arm.com>
 
 	* testsuite/lib/libffi.exp: Add support for aarch64.
 	* testsuite/libffi.call/cls_struct_va1.c: New.

@@ -4931,7 +4931,10 @@ nvptx_file_start (void)
 {
   fputs ("// BEGIN PREAMBLE\n", asm_out_file);
   fputs ("\t.version\t3.1\n", asm_out_file);
-  fputs ("\t.target\tsm_30\n", asm_out_file);
+  if (TARGET_SM35)
+    fputs ("\t.target\tsm_35\n", asm_out_file);
+  else
+    fputs ("\t.target\tsm_30\n", asm_out_file);
   fprintf (asm_out_file, "\t.address_size %d\n", GET_MODE_BITSIZE (Pmode));
   fputs ("// END PREAMBLE\n", asm_out_file);
 }
@@ -5165,7 +5168,7 @@ nvptx_expand_builtin (tree exp, rtx target, rtx ARG_UNUSED (subtarget),
 /* Define dimension sizes for known hardware.  */
 #define PTX_VECTOR_LENGTH 32
 #define PTX_WORKER_LENGTH 32
-#define PTX_GANG_DEFAULT  0 /* Defer to runtime.  */
+#define PTX_DEFAULT_RUNTIME_DIM 0 /* Defer to runtime.  */
 
 /* Implement TARGET_SIMT_VF target hook: number of threads in a warp.  */
 
@@ -5214,9 +5217,9 @@ nvptx_goacc_validate_dims (tree decl, int dims[], int fn_level)
     {
       dims[GOMP_DIM_VECTOR] = PTX_VECTOR_LENGTH;
       if (dims[GOMP_DIM_WORKER] < 0)
-	dims[GOMP_DIM_WORKER] = PTX_WORKER_LENGTH;
+	dims[GOMP_DIM_WORKER] = PTX_DEFAULT_RUNTIME_DIM;
       if (dims[GOMP_DIM_GANG] < 0)
-	dims[GOMP_DIM_GANG] = PTX_GANG_DEFAULT;
+	dims[GOMP_DIM_GANG] = PTX_DEFAULT_RUNTIME_DIM;
       changed = true;
     }
 
@@ -5230,9 +5233,6 @@ nvptx_dim_limit (int axis)
 {
   switch (axis)
     {
-    case GOMP_DIM_WORKER:
-      return PTX_WORKER_LENGTH;
-
     case GOMP_DIM_VECTOR:
       return PTX_VECTOR_LENGTH;
 
@@ -6050,6 +6050,9 @@ nvptx_can_change_mode_class (machine_mode, machine_mode, reg_class_t)
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS nvptx_can_change_mode_class
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

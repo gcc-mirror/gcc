@@ -1,5 +1,5 @@
 /* Quad-precision floating point cosine on <-pi/4,pi/4>.
-   Copyright (C) 1999 Free Software Foundation, Inc.
+   Copyright (C) 1999-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jj@ultra.linux.cz>
 
@@ -14,9 +14,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -70,14 +69,14 @@ static const __float128 c[] = {
 -2.50521016467996193495359189395805639E-08Q, /* bfe5ae644ee90c47dc71839de75b2787 */
 };
 
-#define SINCOSQ_COS_HI 0
-#define SINCOSQ_COS_LO 1
-#define SINCOSQ_SIN_HI 2
-#define SINCOSQ_SIN_LO 3
+#define SINCOSL_COS_HI 0
+#define SINCOSL_COS_LO 1
+#define SINCOSL_SIN_HI 2
+#define SINCOSL_SIN_LO 3
 extern const __float128 __sincosq_table[];
 
 __float128
-__quadmath_kernel_cosq (__float128 x, __float128 y)
+__quadmath_kernel_cosq(__float128 x, __float128 y)
 {
   __float128 h, l, z, sin_l, cos_l_m1;
   int64_t ix;
@@ -98,7 +97,7 @@ __quadmath_kernel_cosq (__float128 x, __float128 y)
   else
     {
       /* So that we don't have to use too large polynomial,  we find
-	 l and h such that x = l + h,  where fabsl(l) <= 1.0/256 with 83
+	 l and h such that x = l + h,  where fabsq(l) <= 1.0/256 with 83
 	 possible values for h.  We look up cosq(h) and sinq(h) in
 	 pre-computed tables,  compute cosq(l) and sinq(l) using a
 	 Chebyshev polynomial of degree 10(11) and compute
@@ -106,10 +105,10 @@ __quadmath_kernel_cosq (__float128 x, __float128 y)
       index = 0x3ffe - (tix >> 16);
       hix = (tix + (0x200 << index)) & (0xfffffc00 << index);
       if (signbitq (x))
-       {
-         x = -x;
-         y = -y;
-       }
+	{
+	  x = -x;
+	  y = -y;
+	}
       switch (index)
 	{
 	case 0: index = ((45 << 10) + hix - 0x3ffe0000) >> 8; break;
@@ -123,9 +122,9 @@ __quadmath_kernel_cosq (__float128 x, __float128 y)
       z = l * l;
       sin_l = l*(ONE+z*(SSIN1+z*(SSIN2+z*(SSIN3+z*(SSIN4+z*SSIN5)))));
       cos_l_m1 = z*(SCOS1+z*(SCOS2+z*(SCOS3+z*(SCOS4+z*SCOS5))));
-      return __sincosq_table [index + SINCOSQ_COS_HI]
-	     + (__sincosq_table [index + SINCOSQ_COS_LO]
-		- (__sincosq_table [index + SINCOSQ_SIN_HI] * sin_l
-		   - __sincosq_table [index + SINCOSQ_COS_HI] * cos_l_m1));
+      return __sincosq_table [index + SINCOSL_COS_HI]
+	     + (__sincosq_table [index + SINCOSL_COS_LO]
+		- (__sincosq_table [index + SINCOSL_SIN_HI] * sin_l
+		   - __sincosq_table [index + SINCOSL_COS_HI] * cos_l_m1));
     }
 }

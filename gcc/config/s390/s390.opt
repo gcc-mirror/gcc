@@ -59,15 +59,6 @@ Enum
 Name(processor_type) Type(enum processor_type)
 
 EnumValue
-Enum(processor_type) String(g5) Value(PROCESSOR_9672_G5)
-
-EnumValue
-Enum(processor_type) String(arch3) Value(PROCESSOR_9672_G5)
-
-EnumValue
-Enum(processor_type) String(g6) Value(PROCESSOR_9672_G6)
-
-EnumValue
 Enum(processor_type) String(z900) Value(PROCESSOR_2064_Z900)
 
 EnumValue

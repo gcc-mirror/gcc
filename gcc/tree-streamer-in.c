@@ -367,7 +367,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -398,7 +397,6 @@ static void
 unpack_ts_block_value_fields (struct data_in *data_in,
 			      struct bitpack_d *bp, tree expr)
 {
-  BLOCK_ABSTRACT (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* BLOCK_NUMBER is recomputed.  */
   stream_input_location (&BLOCK_SOURCE_LOCATION (expr), bp, data_in);
 }
@@ -771,7 +769,6 @@ static void
 lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
 					  struct data_in *data_in, tree expr)
 {
-  DECL_VINDEX (expr) = stream_read_tree (ib, data_in);
   /* DECL_STRUCT_FUNCTION is loaded on demand by cgraph_get_body.  */
   DECL_FUNCTION_PERSONALITY (expr) = stream_read_tree (ib, data_in);
 #ifndef ACCEL_COMPILER
@@ -822,7 +819,6 @@ lto_input_ts_type_common_tree_pointers (struct lto_input_block *ib,
   TYPE_CONTEXT (expr) = stream_read_tree (ib, data_in);
   /* TYPE_CANONICAL gets re-computed during type merging.  */
   TYPE_CANONICAL (expr) = NULL_TREE;
-  TYPE_STUB_DECL (expr) = stream_read_tree (ib, data_in);
 }
 
 /* Read all pointer fields in the TS_TYPE_NON_COMMON structure of EXPR
@@ -920,6 +916,12 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
+     which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
+     ultimate origin.  Fixup here.
+     ???  This should get fixed with moving to DIE references.  */
+  if (DECL_P (BLOCK_ORIGIN (expr)))
+    BLOCK_ABSTRACT_ORIGIN (expr) = DECL_ORIGIN (BLOCK_ABSTRACT_ORIGIN (expr));
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

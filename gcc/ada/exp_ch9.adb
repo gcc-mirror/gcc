@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Aspects;  use Aspects;
 with Atree;    use Atree;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
@@ -53,6 +54,7 @@ with Sem_Ch9;  use Sem_Ch9;
 with Sem_Ch11; use Sem_Ch11;
 with Sem_Elab; use Sem_Elab;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -290,7 +292,7 @@ package body Exp_Ch9 is
      (N   : Node_Id;
       Pid : Node_Id) return Node_Id;
    --  This routine constructs the unprotected version of a protected
-   --  subprogram body, which is contains all of the code in the original,
+   --  subprogram body, which contains all of the code in the original,
    --  unexpanded body. This is the version of the protected subprogram that is
    --  called from all protected operations on the same object, including the
    --  protected version of the same subprogram.
@@ -474,10 +476,13 @@ package body Exp_Ch9 is
    --    ...
    --    <actualN> := P.<formalN>;
 
-   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id);
-   --  Reset the scope of declarations and blocks at the top level of Proc_Body
-   --  to be E. Used after expanding entry bodies into their corresponding
-   --  procedures.
+   procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id);
+   --  Reset the scope of declarations and blocks at the top level of Bod
+   --  to be E. Bod is either a block or a subprogram body.  Used after
+   --  expanding various kinds of entry bodies into their corresponding
+   --  constructs. This is needed during unnesting to determine whether a
+   --  body generated for an entry or an accept alternative includes uplevel
+   --  references.
 
    function Trivial_Accept_OK return Boolean;
    --  If there is no DO-END block for an accept, or if the DO-END block has
@@ -3483,13 +3488,94 @@ package body Exp_Ch9 is
    function Build_Private_Protected_Declaration
      (N : Node_Id) return Entity_Id
    is
+      procedure Analyze_Pragmas (From : Node_Id);
+      --  Analyze all pragmas which follow arbitrary node From
+
+      procedure Move_Pragmas (From : Node_Id; To : Node_Id);
+      --  Find all suitable source pragmas at the top of subprogram body From's
+      --  declarations and insert them after arbitrary node To.
+
+      ---------------------
+      -- Analyze_Pragmas --
+      ---------------------
+
+      procedure Analyze_Pragmas (From : Node_Id) is
+         Decl : Node_Id;
+
+      begin
+         Decl := Next (From);
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Pragma then
+               Analyze_Pragma (Decl);
+
+            --  No candidate pragmas are available for analysis
+
+            else
+               exit;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end Analyze_Pragmas;
+
+      ------------------
+      -- Move_Pragmas --
+      ------------------
+
+      procedure Move_Pragmas (From : Node_Id; To : Node_Id) is
+         Decl       : Node_Id;
+         Insert_Nod : Node_Id;
+         Next_Decl  : Node_Id;
+
+      begin
+         pragma Assert (Nkind (From) = N_Subprogram_Body);
+
+         --  The pragmas are moved in an order-preserving fashion
+
+         Insert_Nod := To;
+
+         --  Inspect the declarations of the subprogram body and relocate all
+         --  candidate pragmas.
+
+         Decl := First (Declarations (From));
+         while Present (Decl) loop
+
+            --  Preserve the following declaration for iteration purposes, due
+            --  to possible relocation of a pragma.
+
+            Next_Decl := Next (Decl);
+
+            if Nkind (Decl) = N_Pragma then
+               Remove (Decl);
+               Insert_After (Insert_Nod, Decl);
+               Insert_Nod := Decl;
+
+            --  Skip internally generated code
+
+            elsif not Comes_From_Source (Decl) then
+               null;
+
+            --  No candidate pragmas are available for relocation
+
+            else
+               exit;
+            end if;
+
+            Decl := Next_Decl;
+         end loop;
+      end Move_Pragmas;
+
+      --  Local variables
+
+      Body_Id  : constant Entity_Id  := Defining_Entity (N);
       Loc      : constant Source_Ptr := Sloc (N);
-      Body_Id  : constant Entity_Id := Defining_Entity (N);
       Decl     : Node_Id;
-      Plist    : List_Id;
       Formal   : Entity_Id;
-      New_Spec : Node_Id;
+      Formals  : List_Id;
+      Spec     : Node_Id;
       Spec_Id  : Entity_Id;
+
+   --  Start of processing for Build_Private_Protected_Declaration
 
    begin
       Formal := First_Formal (Body_Id);
@@ -3499,33 +3585,14 @@ package body Exp_Ch9 is
       --  expansion is enabled.
 
       if Present (Formal) or else Expander_Active then
-         Plist := Copy_Parameter_List (Body_Id);
+         Formals := Copy_Parameter_List (Body_Id);
       else
-         Plist := No_List;
+         Formals := No_List;
       end if;
 
-      if Nkind (Specification (N)) = N_Procedure_Specification then
-         New_Spec :=
-           Make_Procedure_Specification (Loc,
-              Defining_Unit_Name       =>
-                Make_Defining_Identifier (Sloc (Body_Id),
-                  Chars => Chars (Body_Id)),
-              Parameter_Specifications =>
-                Plist);
-      else
-         New_Spec :=
-           Make_Function_Specification (Loc,
-             Defining_Unit_Name       =>
-               Make_Defining_Identifier (Sloc (Body_Id),
-                 Chars => Chars (Body_Id)),
-             Parameter_Specifications => Plist,
-             Result_Definition        =>
-               New_Occurrence_Of (Etype (Body_Id), Loc));
-      end if;
-
-      Decl := Make_Subprogram_Declaration (Loc, Specification => New_Spec);
-      Insert_Before (N, Decl);
-      Spec_Id := Defining_Unit_Name (New_Spec);
+      Spec_Id :=
+        Make_Defining_Identifier (Sloc (Body_Id),
+          Chars => Chars (Body_Id));
 
       --  Indicate that the entity comes from source, to ensure that cross-
       --  reference information is properly generated. The body itself is
@@ -3533,9 +3600,46 @@ package body Exp_Ch9 is
       --  calls to the operation.
 
       Set_Comes_From_Source (Spec_Id, True);
+
+      if Nkind (Specification (N)) = N_Procedure_Specification then
+         Spec :=
+           Make_Procedure_Specification (Loc,
+              Defining_Unit_Name       => Spec_Id,
+              Parameter_Specifications => Formals);
+      else
+         Spec :=
+           Make_Function_Specification (Loc,
+             Defining_Unit_Name       => Spec_Id,
+             Parameter_Specifications => Formals,
+             Result_Definition        =>
+               New_Occurrence_Of (Etype (Body_Id), Loc));
+      end if;
+
+      Decl := Make_Subprogram_Declaration (Loc, Specification => Spec);
+      Set_Corresponding_Body (Decl, Body_Id);
+      Set_Corresponding_Spec (N,    Spec_Id);
+
+      Insert_Before (N, Decl);
+
+      --  Associate all aspects and pragmas of the body with the spec. This
+      --  ensures that these annotations apply to the initial declaration of
+      --  the subprogram body.
+
+      Move_Aspects (From => N, To => Decl);
+      Move_Pragmas (From => N, To => Decl);
+
       Analyze (Decl);
+
+      --  The analysis of the spec may generate pragmas which require manual
+      --  analysis. Since the generation of the spec and the relocation of the
+      --  annotations is driven by the expansion of the stand-alone body, the
+      --  pragmas will not be analyzed in a timely manner. Do this now.
+
+      Analyze_Pragmas (Decl);
+
+      Set_Convention     (Spec_Id, Convention_Protected);
       Set_Has_Completion (Spec_Id);
-      Set_Convention (Spec_Id, Convention_Protected);
+
       return Spec_Id;
    end Build_Private_Protected_Declaration;
 
@@ -3706,7 +3810,7 @@ package body Exp_Ch9 is
                                New_Occurrence_Of
                                  (RTE (RE_Get_GNAT_Exception), Loc)))))))));
 
-         Reset_Scopes_To (Proc_Body, Bod_Id);
+         Reset_Scopes_To (Proc_Body, Protected_Body_Subprogram (Ent));
          return Proc_Body;
       end if;
    end Build_Protected_Entry;
@@ -8137,6 +8241,8 @@ package body Exp_Ch9 is
       end if;
 
       Analyze (N);
+
+      Reset_Scopes_To (N, Entity (Identifier (N)));
    end Expand_N_Conditional_Entry_Call;
 
    ---------------------------------------
@@ -12550,7 +12656,7 @@ package body Exp_Ch9 is
           Expression          => D_Disc));
 
       --  Do the assignment at this stage only because the evaluation of the
-      --  expression must not occur before (see ACVC C97302A).
+      --  expression must not occur earlier (see ACVC C97302A).
 
       Append_To (Stmts,
         Make_Assignment_Statement (Loc,
@@ -12747,7 +12853,7 @@ package body Exp_Ch9 is
          end loop;
 
          --  Do the assignment at this stage only because the evaluation
-         --  of the expression must not occur before (see ACVC C97302A).
+         --  of the expression must not occur earlier (see ACVC C97302A).
 
          Insert_Before (Stmt,
            Make_Assignment_Statement (Loc,
@@ -12832,6 +12938,21 @@ package body Exp_Ch9 is
             Make_Handled_Sequence_Of_Statements (Loc, Stmts)));
 
       Analyze (N);
+
+      --  Some items in Decls used to be in the N_Block in  E_Call that
+      --  is constructed in Expand_Entry_Call, and are now in the new
+      --  Block into which N has been rewritten.  Adjust their scopes
+      --  to reflect that.
+
+      if Nkind (E_Call) = N_Block_Statement then
+         Obj := First_Entity (Entity (Identifier (E_Call)));
+         while Present (Obj) loop
+            Set_Scope (Obj, Entity (Identifier (N)));
+            Next_Entity (Obj);
+         end loop;
+      end if;
+
+      Reset_Scopes_To (N, Entity (Identifier (N)));
    end Expand_N_Timed_Entry_Call;
 
    ----------------------------------------
@@ -14729,11 +14850,12 @@ package body Exp_Ch9 is
    -- Reset_Scopes_To --
    ---------------------
 
-   procedure Reset_Scopes_To (Proc_Body : Node_Id; E : Entity_Id) is
+   procedure Reset_Scopes_To (Bod : Node_Id; E : Entity_Id) is
       function Reset_Scope (N : Node_Id) return Traverse_Result;
       --  Temporaries may have been declared during expansion of the procedure
-      --  alternative. Indicate that their scope is the new body, to prevent
-      --  generation of spurious uplevel references for these entities.
+      --  created for an entry body or an accept alternative. Indicate that
+      --  their scope is the new body, to ensure proper generation of uplevel
+      --  references where needed during unnesting.
 
       procedure Reset_Scopes is new Traverse_Proc (Reset_Scope);
 
@@ -14748,19 +14870,26 @@ package body Exp_Ch9 is
          --  If this is a block statement with an Identifier, it forms a scope,
          --  so we want to reset its scope but not look inside.
 
-         if Nkind (N) = N_Block_Statement
+         if N /= Bod
+           and then Nkind (N) = N_Block_Statement
            and then Present (Identifier (N))
          then
             Set_Scope (Entity (Identifier (N)), E);
             return Skip;
 
-         elsif Nkind (N) = N_Package_Declaration then
+         --  Ditto for a package declaration or a full type declaration, etc.
+
+         elsif Nkind (N) = N_Package_Declaration
+           or else Nkind (N) in N_Declaration
+           or else Nkind (N) in N_Renaming_Declaration
+         then
             Set_Scope (Defining_Entity (N), E);
             return Skip;
 
-         elsif N = Proc_Body then
+         elsif N = Bod then
 
-            --  Scan declarations
+            --  Scan declarations in new body. Declarations in the statement
+            --  part will be handled during later traversal.
 
             Decl := First (Declarations (N));
             while Present (Decl) loop
@@ -14768,10 +14897,8 @@ package body Exp_Ch9 is
                Next (Decl);
             end loop;
 
-         elsif N /= Proc_Body and then Nkind (N) in N_Proper_Body then
+         elsif N /= Bod and then Nkind (N) in N_Proper_Body then
             return Skip;
-         elsif Nkind (N) = N_Defining_Identifier then
-            Set_Scope (N, E);
          end if;
 
          return OK;
@@ -14780,7 +14907,7 @@ package body Exp_Ch9 is
    --  Start of processing for Reset_Scopes_To
 
    begin
-      Reset_Scopes (Proc_Body);
+      Reset_Scopes (Bod);
    end Reset_Scopes_To;
 
    ----------------------

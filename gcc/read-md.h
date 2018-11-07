@@ -91,6 +91,48 @@ struct enum_type {
   unsigned int num_values;
 };
 
+/* Describes one instance of an overloaded_name.  */
+struct overloaded_instance {
+  /* The next instance in the chain, or null if none.  */
+  overloaded_instance *next;
+
+  /* The values that the overloaded_name arguments should have for this
+     instance to be chosen.  Each value is a C token.  */
+  vec<const char *> arg_values;
+
+  /* The full (non-overloaded) name of the pattern.  */
+  const char *name;
+
+  /* The corresponding define_expand or define_insn.  */
+  rtx insn;
+};
+
+/* Describes a define_expand or define_insn whose name was preceded by '@'.
+   Overloads are uniquely determined by their name and the types of their
+   arguments; it's possible to have overloads with the same name but
+   different argument types.  */
+struct overloaded_name {
+  /* The next overloaded name in the chain.  */
+  overloaded_name *next;
+
+  /* The overloaded name (i.e. the name with "@" character and
+     "<...>" placeholders removed).  */
+  const char *name;
+
+  /* The C types of the iterators that determine the underlying pattern,
+     in the same order as in the pattern name.  E.g. "<mode>" in the
+     pattern name would give a "machine_mode" argument here.  */
+  vec<const char *> arg_types;
+
+  /* The first instance associated with this overloaded_name.  */
+  overloaded_instance *first_instance;
+
+  /* Where to chain new overloaded_instances.  */
+  overloaded_instance **next_instance_ptr;
+};
+
+struct mapping;
+
 /* A class for reading .md files and RTL dump files.
 
    Implemented in read-md.c.
@@ -165,6 +207,7 @@ class md_reader
 				      rtx x, unsigned int index,
 				      const char *name);
   struct mapping *read_mapping (struct iterator_group *group, htab_t table);
+  overloaded_name *handle_overloaded_name (rtx, vec<mapping *> *);
 
   const char *get_top_level_filename () const { return m_toplevel_fname; }
   const char *get_filename () const { return m_read_md_filename; }
@@ -173,6 +216,8 @@ class md_reader
 
   struct obstack *get_string_obstack () { return &m_string_obstack; }
   htab_t get_md_constants () { return m_md_constants; }
+
+  overloaded_name *get_overloads () const { return m_first_overload; }
 
  private:
   /* A singly-linked list of filenames.  */
@@ -253,6 +298,16 @@ class md_reader
   /* If non-zero, filter the input to just this subset of lines.  */
   int m_first_line;
   int m_last_line;
+
+  /* The first overloaded_name.  */
+  overloaded_name *m_first_overload;
+
+  /* Where to chain further overloaded_names,  */
+  overloaded_name **m_next_overload_ptr;
+
+  /* A hash table of overloaded_names, keyed off their name and the types of
+     their arguments.  */
+  htab_t m_overloads_htab;
 };
 
 /* Global singleton; constrast with rtx_reader_ptr below.  */

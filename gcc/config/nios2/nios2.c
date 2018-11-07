@@ -1539,6 +1539,19 @@ nios2_rtx_costs (rtx x, machine_mode mode,
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
 	  else 
 	    *total = COSTS_N_INSNS (1);
+	  if (TARGET_HAS_MULX && GET_MODE (x) == DImode)
+	    {
+	      enum rtx_code c0 = GET_CODE (XEXP (x, 0));
+	      enum rtx_code c1 = GET_CODE (XEXP (x, 1));
+	      if ((c0 == SIGN_EXTEND && c1 == SIGN_EXTEND)
+		  || (c0 == ZERO_EXTEND && c1 == ZERO_EXTEND))
+		/* This is the <mul>sidi3 pattern, which expands into 4 insns,
+		   2 multiplies and 2 moves.  */
+		{
+		  *total = *total * 2 + COSTS_N_INSNS (2);
+		  return true;
+		}
+	    }
           return false;
         }
 
@@ -4264,8 +4277,8 @@ nios2_valid_target_attribute_rec (tree args)
 			    continue;
 			  if (!ISDIGIT (*t))
 			    {			 
-			      error ("`custom-%s=' argument requires "
-				     "numeric digits", N2FPU_NAME (code));
+			      error ("%<custom-%s=%> argument should be "
+				     "a non-negative integer", N2FPU_NAME (code));
 			      return false;
 			    }
 			}
@@ -5403,8 +5416,8 @@ nios2_label_align (rtx label)
   int n = CODE_LABEL_NUMBER (label);
 
   if (label_align && n >= min_labelno && n <= max_labelno)
-    return MAX (label_align[n - min_labelno], align_labels_log);
-  return align_labels_log;
+    return MAX (label_align[n - min_labelno], align_labels.levels[0].log);
+  return align_labels.levels[0].log;
 }
 
 /* Implement ADJUST_REG_ALLOC_ORDER.  We use the default ordering
@@ -5571,6 +5584,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_CONSTANT_ALIGNMENT
 #define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
+#undef TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

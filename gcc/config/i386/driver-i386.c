@@ -649,6 +649,8 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_GEODE;
       else if (has_movbe && family == 22)
 	processor = PROCESSOR_BTVER2;
+      else if (has_clwb)
+	processor = PROCESSOR_ZNVER2;
       else if (has_clzero)
 	processor = PROCESSOR_ZNVER1;
       else if (has_avx2)
@@ -1011,6 +1013,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_ZNVER1:
       cpu = "znver1";
+      break;
+    case PROCESSOR_ZNVER2:
+      cpu = "znver2";
       break;
     case PROCESSOR_BTVER1:
       cpu = "btver1";

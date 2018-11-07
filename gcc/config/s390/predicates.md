@@ -212,7 +212,7 @@
     (INTVAL (op), false, GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
-;; Return true if OP is ligitimate for any LOC instruction.
+;; Return true if OP is legitimate for any LOC instruction.
 
 (define_predicate "loc_operand"
   (ior (match_operand 0 "nonimmediate_operand")
@@ -533,4 +533,16 @@
 {
   unsigned HOST_WIDE_INT val = INTVAL (op);
   return val <= 128 && val % 8 == 0;
+})
+
+;; Certain operations (e.g. CS) cannot access SYMBOL_REF directly, it needs to
+;; be loaded into some register first.  In theory, if we put a SYMBOL_REF into
+;; a corresponding insn anyway, reload will generate a load for it, but, when
+;; coupled with constant propagation, this will lead to an inefficient code
+;; (see PR 80080).
+
+(define_predicate "nonsym_memory_operand"
+  (match_code "mem")
+{
+  return memory_operand (op, mode) && !contains_symbol_ref_p (op);
 })

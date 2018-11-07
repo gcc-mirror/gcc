@@ -71,6 +71,7 @@ enum arc_tune_attr
   {
     ARC_TUNE_NONE,
     ARC_TUNE_ARC600,
+    ARC_TUNE_ARC7XX,
     ARC_TUNE_ARC700_4_2_STD,
     ARC_TUNE_ARC700_4_2_XMAC,
     ARC_TUNE_CORE_3,

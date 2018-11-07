@@ -2198,6 +2198,7 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 	  {
 	    struct label_entry *l;
 	    bool warned_p = false;
+	    auto_diagnostic_group d;
 	    if (!should_warn_for_implicit_fallthrough (gsi_p, label))
 	      /* Quiet.  */;
 	    else if (gimple_code (prev) == GIMPLE_LABEL
@@ -3235,8 +3236,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
      transform all calls in the same manner as the expanders do, but
      we do transform most of them.  */
   fndecl = get_callee_fndecl (*expr_p);
-  if (fndecl
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
     switch (DECL_FUNCTION_CODE (fndecl))
       {
       CASE_BUILT_IN_ALLOCA:
@@ -3271,7 +3271,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       default:
         ;
       }
-  if (fndecl && DECL_BUILT_IN (fndecl))
+  if (fndecl && fndecl_built_in_p (fndecl))
     {
       tree new_tree = fold_call_expr (input_location, *expr_p, !want_value);
       if (new_tree && new_tree != *expr_p)
@@ -3323,9 +3323,7 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, bool want_value)
       tree last_arg_fndecl = get_callee_fndecl (last_arg);
 
       if (last_arg_fndecl
-	  && TREE_CODE (last_arg_fndecl) == FUNCTION_DECL
-	  && DECL_BUILT_IN_CLASS (last_arg_fndecl) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (last_arg_fndecl) == BUILT_IN_VA_ARG_PACK)
+	  && fndecl_built_in_p (last_arg_fndecl, BUILT_IN_VA_ARG_PACK))
 	{
 	  tree call = *expr_p;
 
@@ -3799,8 +3797,7 @@ gimple_boolify (tree expr)
       /* For __builtin_expect ((long) (x), y) recurse into x as well
 	 if x is truth_value_p.  */
       if (fn
-	  && DECL_BUILT_IN_CLASS (fn) == BUILT_IN_NORMAL
-	  && DECL_FUNCTION_CODE (fn) == BUILT_IN_EXPECT
+	  && fndecl_built_in_p (fn, BUILT_IN_EXPECT)
 	  && call_expr_nargs (call) == 2)
 	{
 	  tree arg = CALL_EXPR_ARG (call, 0);
@@ -5745,8 +5742,7 @@ gimplify_modify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
 	  STRIP_USELESS_TYPE_CONVERSION (CALL_EXPR_FN (*from_p));
 	  tree fndecl = get_callee_fndecl (*from_p);
 	  if (fndecl
-	      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (fndecl) == BUILT_IN_EXPECT
+	      && fndecl_built_in_p (fndecl, BUILT_IN_EXPECT)
 	      && call_expr_nargs (*from_p) == 3)
 	    call_stmt = gimple_build_call_internal (IFN_BUILTIN_EXPECT, 3,
 						    CALL_EXPR_ARG (*from_p, 0),
@@ -6004,7 +6000,7 @@ gimplify_addr_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 being taken (we can unify those cases here) then we can mark
 	 the builtin for implicit generation by GCC.  */
       if (TREE_CODE (op0) == FUNCTION_DECL
-	  && DECL_BUILT_IN_CLASS (op0) == BUILT_IN_NORMAL
+	  && fndecl_built_in_p (op0, BUILT_IN_NORMAL)
 	  && builtin_decl_declared_p (DECL_FUNCTION_CODE (op0)))
 	set_builtin_decl_implicit_p (DECL_FUNCTION_CODE (op0), true);
 
@@ -8003,6 +7999,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
       case OMP_TARGET_EXIT_DATA:
       case OACC_DECLARE:
       case OACC_HOST_DATA:
+      case OACC_PARALLEL:
+      case OACC_KERNELS:
 	ctx->target_firstprivatize_array_bases = true;
       default:
 	break;
@@ -9217,7 +9215,8 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 
       if (code == OACC_DATA
 	  && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-	  && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER)
+	  && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_POINTER
+	      || OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_FIRSTPRIVATE_REFERENCE))
 	remove = true;
       if (remove)
 	*list_p = OMP_CLAUSE_CHAIN (c);
@@ -13297,9 +13296,15 @@ gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       /* An lvalue will do.  Take the address of the expression, store it
 	 in a temporary, and replace the expression with an INDIRECT_REF of
 	 that temporary.  */
+      tree ref_alias_type = reference_alias_ptr_type (*expr_p);
+      unsigned int ref_align = get_object_alignment (*expr_p);
+      tree ref_type = TREE_TYPE (*expr_p);
       tmp = build_fold_addr_expr_loc (input_location, *expr_p);
       gimplify_expr (&tmp, pre_p, post_p, is_gimple_reg, fb_rvalue);
-      *expr_p = build_simple_mem_ref (tmp);
+      if (TYPE_ALIGN (ref_type) != ref_align)
+	ref_type = build_aligned_type (ref_type, ref_align);
+      *expr_p = build2 (MEM_REF, ref_type,
+			tmp, build_zero_cst (ref_alias_type));
     }
   else if ((fallback & fb_rvalue) && is_gimple_reg_rhs_or_call (*expr_p))
     {
@@ -13837,6 +13842,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
       /* Unfortunately, this is merely undefined, rather than a constraint
 	 violation, so we cannot make this an error.  If this call is never
 	 executed, the program is still strictly conforming.  */
+      auto_diagnostic_group d;
       warned = warning_at (xloc, 0,
 			   "%qT is promoted to %qT when passed through %<...%>",
 			   type, promoted_type);

@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "optinfo.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 
@@ -552,19 +553,15 @@ remove_unused_scope_block_p (tree scope, bool in_ctor_dtor_block)
      ;
    /* When not generating debug info we can eliminate info on unused
       variables.  */
-   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE)
+   else if (!flag_auto_profile && debug_info_level == DINFO_LEVEL_NONE
+	    && !optinfo_wants_inlining_info_p ())
      {
        /* Even for -g0 don't prune outer scopes from artificial
 	  functions, otherwise diagnostics using tree_nonartificial_location
 	  will not be emitted properly.  */
        if (inlined_function_outer_scope_p (scope))
 	 {
-	   tree ao = scope;
-
-	   while (ao
-		  && TREE_CODE (ao) == BLOCK
-		  && BLOCK_ABSTRACT_ORIGIN (ao) != ao)
-	     ao = BLOCK_ABSTRACT_ORIGIN (ao);
+	   tree ao = BLOCK_ORIGIN (scope);
 	   if (ao
 	       && TREE_CODE (ao) == FUNCTION_DECL
 	       && DECL_DECLARED_INLINE_P (ao)
@@ -646,9 +643,8 @@ dump_scope_block (FILE *file, int indent, tree scope, dump_flags_t flags)
   tree var, t;
   unsigned int i;
 
-  fprintf (file, "\n%*s{ Scope block #%i%s%s",indent, "" , BLOCK_NUMBER (scope),
-  	   TREE_USED (scope) ? "" : " (unused)",
-	   BLOCK_ABSTRACT (scope) ? " (abstract)": "");
+  fprintf (file, "\n%*s{ Scope block #%i%s",indent, "" , BLOCK_NUMBER (scope),
+  	   TREE_USED (scope) ? "" : " (unused)");
   if (LOCATION_LOCUS (BLOCK_SOURCE_LOCATION (scope)) != UNKNOWN_LOCATION)
     {
       expanded_location s = expand_location (BLOCK_SOURCE_LOCATION (scope));

@@ -961,7 +961,7 @@ go_format_type (struct godump_container *container, tree type,
 		   unions.  */
 		if (!is_anon_substructure)
 		  {
-		    if ((DECL_NAME (field) == NULL))
+		    if (DECL_NAME (field) == NULL)
 		      *p_art_i = go_append_artificial_name (ob, *p_art_i);
 		    else
 		      go_append_decl_name

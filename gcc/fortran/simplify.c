@@ -2011,11 +2011,11 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
   ssize_t *shiftvec, *hptr;
   ssize_t shift_val, len;
   ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
-    hs_ex[GFC_MAX_DIMENSIONS],
+    hs_ex[GFC_MAX_DIMENSIONS + 1],
     hstride[GFC_MAX_DIMENSIONS], sstride[GFC_MAX_DIMENSIONS],
     a_extent[GFC_MAX_DIMENSIONS], a_stride[GFC_MAX_DIMENSIONS],
     h_extent[GFC_MAX_DIMENSIONS],
-    ss_ex[GFC_MAX_DIMENSIONS];
+    ss_ex[GFC_MAX_DIMENSIONS + 1];
   ssize_t rsoffset;
   int d, n;
   bool continue_loop;
@@ -2110,6 +2110,8 @@ gfc_simplify_cshift (gfc_expr *array, gfc_expr *shift, gfc_expr *dim)
 	  n++;
 	}
     }
+  ss_ex[n] = 0;
+  hs_ex[n] = 0;
 
   if (shiftvec)
     {
@@ -2403,7 +2405,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
   ssize_t shift_val, len;
   ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
     sstride[GFC_MAX_DIMENSIONS], a_extent[GFC_MAX_DIMENSIONS],
-    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS];
+    a_stride[GFC_MAX_DIMENSIONS], ss_ex[GFC_MAX_DIMENSIONS + 1];
   ssize_t rsoffset;
   int d, n;
   bool continue_loop;
@@ -2546,6 +2548,7 @@ gfc_simplify_eoshift (gfc_expr *array, gfc_expr *shift, gfc_expr *boundary,
 	  n++;
 	}
     }
+  ss_ex[n] = 0;
 
   continue_loop = true;
   d = array->rank;
@@ -4179,6 +4182,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  continue;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  continue;
 	}
     }
@@ -4321,6 +4325,7 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  continue;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  continue;
 	}
     }
@@ -4958,11 +4963,9 @@ static gfc_expr *
 simplify_min_max (gfc_expr *expr, int sign)
 {
   gfc_actual_arglist *arg, *last, *extremum;
-  gfc_intrinsic_sym * specific;
 
   last = NULL;
   extremum = NULL;
-  specific = expr->value.function.isym;
 
   arg = expr->value.function.actual;
 
@@ -4991,15 +4994,6 @@ simplify_min_max (gfc_expr *expr, int sign)
      expression.  */
   if (expr->value.function.actual->next != NULL)
     return NULL;
-
-  /* Convert to the correct type and kind.  */
-  if (expr->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (expr->value.function.actual->expr,
-	expr->ts.type, expr->ts.kind);
-
-  if (specific->ts.type != BT_UNKNOWN)
-    return gfc_convert_constant (expr->value.function.actual->expr,
-	specific->ts.type, specific->ts.kind);
 
   return gfc_copy_expr (expr->value.function.actual->expr);
 }
@@ -5369,7 +5363,7 @@ simplify_minmaxloc_to_array (gfc_expr *result, gfc_expr *array,
 
 /* Simplify minloc and maxloc for constant arrays.  */
 
-gfc_expr *
+static gfc_expr *
 gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 			gfc_expr *kind, gfc_expr *back, int sign)
 {
@@ -5403,7 +5397,7 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 
       back_val = back->value.logical;
     }
-  
+
   if (sign < 0)
     init_val = INT_MAX;
   else if (sign > 0)
@@ -5447,6 +5441,358 @@ gfc_simplify_maxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask, gfc_expr *k
 		     gfc_expr *back)
 {
   return gfc_simplify_minmaxloc (array, dim, mask, kind, back, 1);
+}
+
+/* Simplify findloc to scalar.  Similar to
+   simplify_minmaxloc_to_scalar.  */
+
+static gfc_expr *
+simplify_findloc_to_scalar (gfc_expr *result, gfc_expr *array, gfc_expr *value,
+			    gfc_expr *mask, int back_val)
+{
+  gfc_expr *a, *m;
+  gfc_constructor *array_ctor, *mask_ctor;
+  mpz_t count;
+
+  mpz_set_si (result->value.integer, 0);
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+  else
+    mask_ctor = NULL;
+
+  mpz_init_set_si (count, 0);
+  while (array_ctor)
+    {
+      mpz_add_ui (count, count, 1);
+      a = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+      /* A constant MASK equals .TRUE. here and can be ignored.  */
+      if (mask_ctor)
+	{
+	  m = mask_ctor->expr;
+	  mask_ctor = gfc_constructor_next (mask_ctor);
+	  if (!m->value.logical)
+	    continue;
+	}
+      if (gfc_compare_expr (a, value, INTRINSIC_EQ) == 0)
+	{
+	  /* We have a match.  If BACK is true, continue so we find
+	     the last one.  */
+	  mpz_set (result->value.integer, count);
+	  if (!back_val)
+	    break;
+	}
+    }
+  mpz_clear (count);
+  return result;
+}
+
+/* Simplify findloc in the absence of a dim argument.  Similar to
+   simplify_minmaxloc_nodim.  */
+
+static gfc_expr *
+simplify_findloc_nodim (gfc_expr *result, gfc_expr *value, gfc_expr *array,
+			gfc_expr *mask, bool back_val)
+{
+  ssize_t res[GFC_MAX_DIMENSIONS];
+  int i, n;
+  gfc_constructor *result_ctor, *array_ctor, *mask_ctor;
+  ssize_t count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+    sstride[GFC_MAX_DIMENSIONS];
+  gfc_expr *a, *m;
+  bool continue_loop;
+  bool ma;
+
+  for (i = 0; i<array->rank; i++)
+    res[i] = -1;
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    goto finish;
+
+  for (i = 0; i < array->rank; i++)
+    {
+      count[i] = 0;
+      sstride[i] = (i == 0) ? 1 : sstride[i-1] * mpz_get_si (array->shape[i-1]);
+      extent[i] = mpz_get_si (array->shape[i]);
+      if (extent[i] <= 0)
+	goto finish;
+    }
+
+  continue_loop = true;
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  if (mask && mask->rank > 0)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+  else
+    mask_ctor = NULL;
+
+  /* Loop over the array elements (and mask), keeping track of
+     the indices to return.  */
+  while (continue_loop)
+    {
+      do
+	{
+	  a = array_ctor->expr;
+	  if (mask_ctor)
+	    {
+	      m = mask_ctor->expr;
+	      ma = m->value.logical;
+	      mask_ctor = gfc_constructor_next (mask_ctor);
+	    }
+	  else
+	    ma = true;
+
+	  if (ma && gfc_compare_expr (a, value, INTRINSIC_EQ) == 0)
+	    {
+	      for (i = 0; i<array->rank; i++)
+		res[i] = count[i];
+	      if (!back_val)
+		goto finish;
+	    }
+	  array_ctor = gfc_constructor_next (array_ctor);
+	  count[0] ++;
+	} while (count[0] != extent[0]);
+      n = 0;
+      do
+	{
+	  /* When we get to the end of a dimension, reset it and increment
+	     the next dimension.  */
+	  count[n] = 0;
+	  n++;
+	  if (n >= array->rank)
+	    {
+	      continue_loop = false;
+	      break;
+	    }
+	  else
+	    count[n] ++;
+	} while (count[n] == extent[n]);
+    }
+
+ finish:
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i<array->rank; i++)
+    {
+      gfc_expr *r_expr;
+      r_expr = result_ctor->expr;
+      mpz_set_si (r_expr->value.integer, res[i] + 1);
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+  return result;
+}
+
+
+/* Simplify findloc to an array.  Similar to
+   simplify_minmaxloc_to_array.  */
+
+static gfc_expr *
+simplify_findloc_to_array (gfc_expr *result, gfc_expr *array, gfc_expr *value,
+			   gfc_expr *dim, gfc_expr *mask, bool back_val)
+{
+  mpz_t size;
+  int done, i, n, arraysize, resultsize, dim_index, dim_extent, dim_stride;
+  gfc_expr **arrayvec, **resultvec, **base, **src, **dest;
+  gfc_constructor *array_ctor, *mask_ctor, *result_ctor;
+
+  int count[GFC_MAX_DIMENSIONS], extent[GFC_MAX_DIMENSIONS],
+      sstride[GFC_MAX_DIMENSIONS], dstride[GFC_MAX_DIMENSIONS],
+      tmpstride[GFC_MAX_DIMENSIONS];
+
+  /* Shortcut for constant .FALSE. MASK.  */
+  if (mask
+      && mask->expr_type == EXPR_CONSTANT
+      && !mask->value.logical)
+    return result;
+
+  /* Build an indexed table for array element expressions to minimize
+     linked-list traversal. Masked elements are set to NULL.  */
+  gfc_array_size (array, &size);
+  arraysize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  arrayvec = XCNEWVEC (gfc_expr*, arraysize);
+
+  array_ctor = gfc_constructor_first (array->value.constructor);
+  mask_ctor = NULL;
+  if (mask && mask->expr_type == EXPR_ARRAY)
+    mask_ctor = gfc_constructor_first (mask->value.constructor);
+
+  for (i = 0; i < arraysize; ++i)
+    {
+      arrayvec[i] = array_ctor->expr;
+      array_ctor = gfc_constructor_next (array_ctor);
+
+      if (mask_ctor)
+	{
+	  if (!mask_ctor->expr->value.logical)
+	    arrayvec[i] = NULL;
+
+	  mask_ctor = gfc_constructor_next (mask_ctor);
+	}
+    }
+
+  /* Same for the result expression.  */
+  gfc_array_size (result, &size);
+  resultsize = mpz_get_ui (size);
+  mpz_clear (size);
+
+  resultvec = XCNEWVEC (gfc_expr*, resultsize);
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i < resultsize; ++i)
+    {
+      resultvec[i] = result_ctor->expr;
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+
+  gfc_extract_int (dim, &dim_index);
+
+  dim_index -= 1;	/* Zero-base index.  */
+  dim_extent = 0;
+  dim_stride = 0;
+
+  for (i = 0, n = 0; i < array->rank; ++i)
+    {
+      count[i] = 0;
+      tmpstride[i] = (i == 0) ? 1 : tmpstride[i-1] * mpz_get_si (array->shape[i-1]);
+      if (i == dim_index)
+	{
+	  dim_extent = mpz_get_si (array->shape[i]);
+	  dim_stride = tmpstride[i];
+	  continue;
+	}
+
+      extent[n] = mpz_get_si (array->shape[i]);
+      sstride[n] = tmpstride[i];
+      dstride[n] = (n == 0) ? 1 : dstride[n-1] * extent[n-1];
+      n += 1;
+    }
+
+  done = resultsize <= 0;
+  base = arrayvec;
+  dest = resultvec;
+  while (!done)
+    {
+      for (src = base, n = 0; n < dim_extent; src += dim_stride, ++n)
+	{
+	  if (*src && gfc_compare_expr (*src, value, INTRINSIC_EQ) == 0)
+	    {
+	      mpz_set_si ((*dest)->value.integer, n + 1);
+	      if (!back_val)
+		break;
+	    }
+	}
+
+      count[0]++;
+      base += sstride[0];
+      dest += dstride[0];
+
+      n = 0;
+      while (!done && count[n] == extent[n])
+	{
+	  count[n] = 0;
+	  base -= sstride[n] * extent[n];
+	  dest -= dstride[n] * extent[n];
+
+	  n++;
+	  if (n < result->rank)
+	    {
+	      /* If the nested loop is unrolled GFC_MAX_DIMENSIONS
+		 times, we'd warn for the last iteration, because the
+		 array index will have already been incremented to the
+		 array sizes, and we can't tell that this must make
+		 the test against result->rank false, because ranks
+		 must not exceed GFC_MAX_DIMENSIONS.  */
+	      GCC_DIAGNOSTIC_PUSH_IGNORED (-Warray-bounds)
+	      count[n]++;
+	      base += sstride[n];
+	      dest += dstride[n];
+	      GCC_DIAGNOSTIC_POP
+	    }
+	  else
+	    done = true;
+       }
+    }
+
+  /* Place updated expression in result constructor.  */
+  result_ctor = gfc_constructor_first (result->value.constructor);
+  for (i = 0; i < resultsize; ++i)
+    {
+      result_ctor->expr = resultvec[i];
+      result_ctor = gfc_constructor_next (result_ctor);
+    }
+
+  free (arrayvec);
+  free (resultvec);
+  return result;
+}
+
+/* Simplify findloc.  */
+
+gfc_expr *
+gfc_simplify_findloc (gfc_expr *array, gfc_expr *value, gfc_expr *dim,
+		      gfc_expr *mask, gfc_expr *kind, gfc_expr *back)
+{
+  gfc_expr *result;
+  int ikind;
+  bool back_val = false;
+
+  if (!is_constant_array_expr (array)
+      || !gfc_is_constant_expr (dim))
+    return NULL;
+
+  if (! gfc_is_constant_expr (value))
+    return 0;
+
+  if (mask
+      && !is_constant_array_expr (mask)
+      && mask->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  if (kind)
+    {
+      if (gfc_extract_int (kind, &ikind, -1))
+	return NULL;
+    }
+  else
+    ikind = gfc_default_integer_kind;
+
+  if (back)
+    {
+      if (back->expr_type != EXPR_CONSTANT)
+	return NULL;
+
+      back_val = back->value.logical;
+    }
+
+  if (dim)
+    {
+      result = transformational_result (array, dim, BT_INTEGER,
+					ikind, &array->where);
+      init_result_expr (result, 0, array);
+
+      if (array->rank == 1)
+	return simplify_findloc_to_scalar (result, array, value, mask,
+					   back_val);
+      else
+	return simplify_findloc_to_array (result, array, value, dim, mask,
+      					  back_val);
+    }
+  else
+    {
+      result = new_array (BT_INTEGER, ikind, array->rank, &array->where);
+      return simplify_findloc_nodim (result, value, array, mask, back_val);
+    }
+  return NULL;
 }
 
 gfc_expr *
@@ -5525,52 +5871,55 @@ gfc_simplify_modulo (gfc_expr *a, gfc_expr *p)
   gfc_expr *result;
   int kind;
 
-  if (a->expr_type != EXPR_CONSTANT || p->expr_type != EXPR_CONSTANT)
+  /* First check p.  */
+  if (p->expr_type != EXPR_CONSTANT)
+    return NULL;
+
+  /* p shall not be 0.  */
+  switch (p->ts.type)
+    {
+      case BT_INTEGER:
+	if (mpz_cmp_ui (p->value.integer, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MODULO at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      case BT_REAL:
+	if (mpfr_cmp_ui (p->value.real, 0) == 0)
+	  {
+	    gfc_error ("Argument %qs of MODULO at %L shall not be zero",
+			"P", &p->where);
+	    return &gfc_bad_expr;
+	  }
+	break;
+      default:
+	gfc_internal_error ("gfc_simplify_modulo(): Bad arguments");
+    }
+
+  if (a->expr_type != EXPR_CONSTANT)
     return NULL;
 
   kind = a->ts.kind > p->ts.kind ? a->ts.kind : p->ts.kind;
   result = gfc_get_constant_expr (a->ts.type, kind, &a->where);
 
-  switch (a->ts.type)
-    {
-      case BT_INTEGER:
-	if (mpz_cmp_ui (p->value.integer, 0) == 0)
-	  {
-	    /* Result is processor-dependent. This processor just opts
-	      to not handle it at all.  */
-	    gfc_error ("Second argument of MODULO at %L is zero", &a->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
+  if (a->ts.type == BT_INTEGER)
 	mpz_fdiv_r (result->value.integer, a->value.integer, p->value.integer);
-
-	break;
-
-      case BT_REAL:
-	if (mpfr_cmp_ui (p->value.real, 0) == 0)
-	  {
-	    /* Result is processor-dependent.  */
-	    gfc_error ("Second argument of MODULO at %L is zero", &p->where);
-	    gfc_free_expr (result);
-	    return &gfc_bad_expr;
-	  }
-
-	gfc_set_model_kind (kind);
-	mpfr_fmod (result->value.real, a->value.real, p->value.real,
-		   GFC_RND_MODE);
-	if (mpfr_cmp_ui (result->value.real, 0) != 0)
-	  {
-	    if (mpfr_signbit (a->value.real) != mpfr_signbit (p->value.real))
-	      mpfr_add (result->value.real, result->value.real, p->value.real,
-			GFC_RND_MODE);
-	  }
-	else
-	  mpfr_copysign (result->value.real, result->value.real,
-			 p->value.real, GFC_RND_MODE);
-	break;
-
-      default:
-	gfc_internal_error ("gfc_simplify_modulo(): Bad arguments");
+  else
+    {
+      gfc_set_model_kind (kind);
+      mpfr_fmod (result->value.real, a->value.real, p->value.real,
+                 GFC_RND_MODE);
+      if (mpfr_cmp_ui (result->value.real, 0) != 0)
+        {
+          if (mpfr_signbit (a->value.real) != mpfr_signbit (p->value.real))
+            mpfr_add (result->value.real, result->value.real, p->value.real,
+                      GFC_RND_MODE);
+	    }
+	  else
+        mpfr_copysign (result->value.real, result->value.real,
+                       p->value.real, GFC_RND_MODE);
     }
 
   return range_check (result, "MODULO");

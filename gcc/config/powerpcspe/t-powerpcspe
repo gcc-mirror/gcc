@@ -26,6 +26,10 @@ powerpcspe-c.o: $(srcdir)/config/powerpcspe/powerpcspe-c.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+powerpcspe-d.o: $(srcdir)/config/powerpcspe/powerpcspe-d.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 $(srcdir)/config/powerpcspe/powerpcspe-tables.opt: $(srcdir)/config/powerpcspe/genopt.sh \
   $(srcdir)/config/powerpcspe/powerpcspe-cpus.def
 	$(SHELL) $(srcdir)/config/powerpcspe/genopt.sh $(srcdir)/config/powerpcspe > \

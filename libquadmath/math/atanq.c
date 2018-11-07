@@ -1,15 +1,15 @@
 /*							s_atanl.c
  *
- *	Inverse circular tangent for 128-bit __float128 precision
+ *	Inverse circular tangent for 128-bit long double precision
  *      (arctangent)
  *
  *
  *
  * SYNOPSIS:
  *
- * __float128 x, y, atanl();
+ * long double x, y, atanq();
  *
- * y = atanl( x );
+ * y = atanq( x );
  *
  *
  *
@@ -55,9 +55,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
-
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -228,7 +227,7 @@ atanq (__float128 x)
       /* Index of nearest table element.
 	 Roundoff to integer is asymmetrical to avoid cancellation when t < 0
          (cf. fdlibm). */
-      k = 8.0Q * x + 0.25Q;
+      k = 8.0 * x + 0.25;
       u = 0.125Q * k;
       /* Small arctan argument.  */
       t = (x - u) / (1.0 + x * u);

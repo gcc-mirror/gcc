@@ -953,7 +953,7 @@ gfc_format_decoder (pretty_printer *pp, text_info *text, const char *spec,
 	  = linemap_position_for_loc_and_offset (line_table,
 						 loc->lb->location,
 						 offset);
-	text->set_location (loc_num, src_loc, true);
+	text->set_location (loc_num, src_loc, SHOW_RANGE_WITH_CARET);
 	pp_string (pp, result[loc_num]);
 	return true;
       }

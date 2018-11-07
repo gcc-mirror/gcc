@@ -438,7 +438,7 @@ path::lexically_normal() const
     {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
       // Replace each slash character in the root-name
-      if (p._M_type == _Type::_Root_name)
+      if (p._M_type == _Type::_Root_name || p._M_type == _Type::_Root_dir)
 	{
 	  string_type s = p.native();
 	  std::replace(s.begin(), s.end(), L'/', L'\\');
@@ -458,7 +458,8 @@ path::lexically_normal() const
 	    }
 	  else if (!ret.has_relative_path())
 	    {
-	      if (!ret.is_absolute())
+	      // remove a dot-dot filename immediately after root-directory
+	      if (!ret.has_root_directory())
 		ret /= p;
 	    }
 	  else
@@ -471,8 +472,18 @@ path::lexically_normal() const
 		{
 		  // Remove the filename before the trailing slash
 		  // (equiv. to ret = ret.parent_path().remove_filename())
-		  ret._M_pathname.erase(elem._M_cur->_M_pos);
-		  ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
+
+		  if (elem == ret.begin())
+		    ret.clear();
+		  else
+		    {
+		      ret._M_pathname.erase(elem._M_cur->_M_pos);
+		      // Do we still have a trailing slash?
+		      if (std::prev(elem)->_M_type == _Type::_Filename)
+			ret._M_cmpts.erase(elem._M_cur);
+		      else
+			ret._M_cmpts.erase(elem._M_cur, ret._M_cmpts.end());
+		    }
 		}
 	      else // ???
 		ret /= p;

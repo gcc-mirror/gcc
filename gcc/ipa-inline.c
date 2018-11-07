@@ -430,9 +430,9 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, bool report,
       ipa_fn_summary *caller_info = ipa_fn_summaries->get (caller);
       ipa_fn_summary *callee_info = ipa_fn_summaries->get (callee);
 
-     /* Until GCC 4.9 we did not check the semantics alterning flags
-	bellow and inline across optimization boundry.
-	Enabling checks bellow breaks several packages by refusing
+     /* Until GCC 4.9 we did not check the semantics-altering flags
+	below and inlined across optimization boundaries.
+	Enabling checks below breaks several packages by refusing
 	to inline library always_inline functions. See PR65873.
 	Disable the check for early inlining for now until better solution
 	is found.  */
@@ -779,7 +779,7 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
     {
       int growth = estimate_edge_growth (e);
       ipa_hints hints = estimate_edge_hints (e);
-      bool big_speedup = big_speedup_p (e);
+      int big_speedup = -1; /* compute this lazily */
 
       if (growth <= 0)
 	;
@@ -787,13 +787,13 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 hints suggests that inlining given function is very profitable.  */
       else if (DECL_DECLARED_INLINE_P (callee->decl)
 	       && growth >= MAX_INLINE_INSNS_SINGLE
-	       && ((!big_speedup
-		    && !(hints & (INLINE_HINT_indirect_call
+	       && (growth >= MAX_INLINE_INSNS_SINGLE * 16
+		   || (!(hints & (INLINE_HINT_indirect_call
 				  | INLINE_HINT_known_hot
 				  | INLINE_HINT_loop_iterations
 				  | INLINE_HINT_array_index
-				  | INLINE_HINT_loop_stride)))
-		   || growth >= MAX_INLINE_INSNS_SINGLE * 16))
+				  | INLINE_HINT_loop_stride))
+		       && !(big_speedup = big_speedup_p (e)))))
 	{
           e->inline_failed = CIF_MAX_INLINE_INSNS_SINGLE_LIMIT;
 	  want_inline = false;
@@ -813,7 +813,6 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 	 Upgrade it to MAX_INLINE_INSNS_SINGLE when hints suggests that
 	 inlining given function is very profitable.  */
       else if (!DECL_DECLARED_INLINE_P (callee->decl)
-	       && !big_speedup
 	       && !(hints & INLINE_HINT_known_hot)
 	       && growth >= ((hints & (INLINE_HINT_indirect_call
 				       | INLINE_HINT_loop_iterations
@@ -821,7 +820,8 @@ want_inline_small_function_p (struct cgraph_edge *e, bool report)
 				       | INLINE_HINT_loop_stride))
 			     ? MAX (MAX_INLINE_INSNS_AUTO,
 				    MAX_INLINE_INSNS_SINGLE)
-			     : MAX_INLINE_INSNS_AUTO))
+			     : MAX_INLINE_INSNS_AUTO)
+	       && !(big_speedup == -1 ? big_speedup_p (e) : big_speedup))
 	{
 	  /* growth_likely_positive is expensive, always test it last.  */
           if (growth >= MAX_INLINE_INSNS_SINGLE
@@ -2219,10 +2219,11 @@ inline_to_all_callers_1 (struct cgraph_node *node, void *data,
 
       if (dump_file)
 	{
+	  cgraph_node *ultimate = node->ultimate_alias_target ();
 	  fprintf (dump_file,
 		   "\nInlining %s size %i.\n",
-		   node->name (),
-		   ipa_fn_summaries->get (node)->size);
+		   ultimate->name (),
+		   ipa_fn_summaries->get (ultimate)->size);
 	  fprintf (dump_file,
 		   " Called once from %s %i insns.\n",
 		   node->callers->caller->name (),

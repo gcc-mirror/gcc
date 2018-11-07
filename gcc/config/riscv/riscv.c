@@ -802,7 +802,13 @@ riscv_address_insns (rtx x, machine_mode mode, bool might_split_p)
   int n = 1;
 
   if (!riscv_classify_address (&addr, x, mode, false))
-    return 0;
+    {
+      /* This could be a pattern from the pic.md file.  In which case we want
+	 this address to always have a cost of 3 to make it as expensive as the
+	 most expensive symbol.  This prevents constant propagation from
+	 preferring symbols over register plus offset.  */
+      return 3;
+    }
 
   /* BLKmode is used for single unaligned loads and stores and should
      not count as a multiword mode. */
@@ -1097,6 +1103,11 @@ riscv_split_symbol (rtx temp, rtx addr, machine_mode mode, rtx *low_out)
 
 	  label = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
 	  SYMBOL_REF_FLAGS (label) |= SYMBOL_FLAG_LOCAL;
+	  /* ??? Ugly hack to make weak symbols work.  May need to change the
+	     RTL for the auipc and/or low patterns to get a better fix for
+	     this.  */
+	  if (! nonzero_address_p (addr))
+	    SYMBOL_REF_WEAK (label) = 1;
 
 	  if (temp == NULL)
 	    temp = gen_reg_rtx (Pmode);

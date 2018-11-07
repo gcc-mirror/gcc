@@ -4,6 +4,8 @@
 
 # This script merges libsanitizer sources from upstream.
 
+VCS=${1:-svn}
+
 get_upstream() {
   rm -rf upstream
   #cp -rf orig upstream
@@ -46,10 +48,10 @@ merge() {
     elif [ -f $upstream_path/$f ]; then
       echo "FOUND IN UPSTREAM :" $f
       cp -v $upstream_path/$f $local_path
-      svn add $local_path/$f
+      $VCS add $local_path/$f
     elif [ -f $local_path/$f ]; then
       echo "FOUND IN LOCAL    :" $f
-      svn remove $local_path/$f
+      $VCS rm $local_path/$f
     fi
   done
 

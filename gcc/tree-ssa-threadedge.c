@@ -166,7 +166,7 @@ record_temporary_equivalences_from_phis (edge e,
 	     away in the VR stack.  */
 	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
 	  value_range *new_vr = vr_values->allocate_value_range ();
-	  memset (new_vr, 0, sizeof (value_range));
+	  *new_vr = value_range ();
 
 	  /* There are three cases to consider:
 
@@ -179,7 +179,7 @@ record_temporary_equivalences_from_phis (edge e,
 	       Otherwise set NEW_VR to varying.  This may be overly
 	       conservative.  */
 	  if (TREE_CODE (src) == SSA_NAME)
-	    copy_value_range (new_vr, vr_values->get_value_range (src));
+	    new_vr->deep_copy (vr_values->get_value_range (src));
 	  else if (TREE_CODE (src) == INTEGER_CST)
 	    set_value_range_to_value (new_vr, src,  NULL);
 	  else
@@ -977,11 +977,12 @@ thread_around_empty_blocks (edge taken_edge,
 	  || TREE_CODE (cond) == CASE_LABEL_EXPR))
     {
       if (TREE_CODE (cond) == CASE_LABEL_EXPR)
-	taken_edge = find_edge (bb, label_to_block (CASE_LABEL (cond)));
+	taken_edge = find_edge (bb, label_to_block (cfun, CASE_LABEL (cond)));
       else
 	taken_edge = find_taken_edge (bb, cond);
 
-      if ((taken_edge->flags & EDGE_DFS_BACK) != 0)
+      if (!taken_edge
+	  || (taken_edge->flags & EDGE_DFS_BACK) != 0)
 	return false;
 
       if (bitmap_bit_p (visited, taken_edge->dest->index))
@@ -1109,7 +1110,7 @@ thread_through_normal_block (edge e,
 	  edge taken_edge;
 	  if (TREE_CODE (cond) == CASE_LABEL_EXPR)
 	    taken_edge = find_edge (e->dest,
-				    label_to_block (CASE_LABEL (cond)));
+				    label_to_block (cfun, CASE_LABEL (cond)));
 	  else
 	    taken_edge = find_taken_edge (e->dest, cond);
 

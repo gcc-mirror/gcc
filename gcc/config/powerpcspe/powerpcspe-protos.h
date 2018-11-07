@@ -162,7 +162,7 @@ extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 extern rtx rs6000_address_for_fpconvert (rtx);
 extern rtx rs6000_address_for_altivec (rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
-extern int rs6000_loop_align (rtx);
+extern align_flags rs6000_loop_align (rtx);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 #endif /* RTX_CODE */
 
@@ -230,6 +230,9 @@ extern bool rs6000_pragma_target_parse (tree, tree);
 extern void rs6000_target_modify_macros (bool, HOST_WIDE_INT, HOST_WIDE_INT);
 extern void (*rs6000_target_modify_macros_ptr) (bool, HOST_WIDE_INT,
 						HOST_WIDE_INT);
+
+/* Declare functions in powerpcspe-d.c  */
+extern void rs6000_d_target_versions (void);
 
 #if TARGET_MACHO
 char *output_call (rtx_insn *, rtx *, int, int);

@@ -662,8 +662,6 @@ enum tree_index {
   TI_CONST_FEXCEPT_T_PTR_TYPE,
   TI_POINTER_SIZED_TYPE,
 
-  TI_POINTER_BOUNDS_TYPE,
-
   TI_DFLOAT32_TYPE,
   TI_DFLOAT64_TYPE,
   TI_DFLOAT128_TYPE,
@@ -1282,6 +1280,9 @@ struct GTY(()) tree_base {
        IDENTIFIER_TRANSPARENT_ALIAS in
            IDENTIFIER_NODE
 
+       SSA_NAME_POINTS_TO_READONLY_MEMORY in
+	   SSA_NAME
+
    visited:
 
        TREE_VISITED in
@@ -1525,8 +1526,7 @@ struct GTY(()) tree_block {
   struct tree_base base;
   tree chain;
 
-  unsigned abstract_flag : 1;
-  unsigned block_num : 31;
+  unsigned block_num;
 
   location_t locus;
   location_t end_locus;
@@ -1833,8 +1833,8 @@ struct GTY(()) tree_function_decl {
   unsigned pure_flag : 1;
   unsigned looping_const_or_pure_flag : 1;
   unsigned has_debug_args_flag : 1;
-  unsigned tm_clone_flag : 1;
   unsigned versioned_function : 1;
+  unsigned lambda_function: 1;
   /* No bits left.  */
 };
 

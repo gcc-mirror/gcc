@@ -4346,7 +4346,7 @@ _mm_maskz_packus_epi32 (__mmask8 __M, __m128i __A, __m128i __B)
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_packus_epi32 (__m128i __W, __mmask16 __M, __m128i __A,
+_mm_mask_packus_epi32 (__m128i __W, __mmask8 __M, __m128i __A,
 		       __m128i __B)
 {
   return (__m128i) __builtin_ia32_packusdw128_mask ((__v4si) __A,
@@ -4389,7 +4389,7 @@ _mm_maskz_packs_epi32 (__mmask8 __M, __m128i __A, __m128i __B)
 
 extern __inline __m128i
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_mask_packs_epi32 (__m128i __W, __mmask16 __M, __m128i __A,
+_mm_mask_packs_epi32 (__m128i __W, __mmask8 __M, __m128i __A,
 		      __m128i __B)
 {
   return (__m128i) __builtin_ia32_packssdw128_mask ((__v4si) __A,

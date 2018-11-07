@@ -1,5 +1,5 @@
-/* Complex tangent function for complex __float128.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Complex tangent function for a complex float type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,56 +19,58 @@
 
 #include "quadmath-imp.h"
 
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-#endif
-
-
 __complex128
 ctanq (__complex128 x)
 {
   __complex128 res;
 
-  if (__builtin_expect (!finiteq (__real__ x) || !finiteq (__imag__ x), 0))
+  if (__glibc_unlikely (!finiteq (__real__ x) || !finiteq (__imag__ x)))
     {
-      if (__quadmath_isinf_nsq (__imag__ x))
+      if (isinfq (__imag__ x))
 	{
-	  __real__ res = copysignq (0.0Q, __real__ x);
-	  __imag__ res = copysignq (1.0Q, __imag__ x);
+	  if (finiteq (__real__ x) && fabsq (__real__ x) > 1)
+	    {
+	      __float128 sinrx, cosrx;
+	      sincosq (__real__ x, &sinrx, &cosrx);
+	      __real__ res = copysignq (0, sinrx * cosrx);
+	    }
+	  else
+	    __real__ res = copysignq (0, __real__ x);
+	  __imag__ res = copysignq (1, __imag__ x);
 	}
-      else if (__real__ x == 0.0Q)
+      else if (__real__ x == 0)
 	{
 	  res = x;
 	}
       else
 	{
 	  __real__ res = nanq ("");
-	  __imag__ res = nanq ("");
+	  if (__imag__ x == 0)
+	    __imag__ res = __imag__ x;
+	  else
+	    __imag__ res = nanq ("");
 
-#ifdef HAVE_FENV_H
-	  if (__quadmath_isinf_nsq (__real__ x))
+	  if (isinfq (__real__ x))
 	    feraiseexcept (FE_INVALID);
-#endif
 	}
     }
   else
     {
       __float128 sinrx, cosrx;
       __float128 den;
-      const int t = (int) ((FLT128_MAX_EXP - 1) * M_LN2q / 2.0Q);
-      int rcls = fpclassifyq (__real__ x);
+      const int t = (int) ((FLT128_MAX_EXP - 1) * M_LN2q / 2);
 
       /* tan(x+iy) = (sin(2x) + i*sinh(2y))/(cos(2x) + cosh(2y))
 	 = (sin(x)*cos(x) + i*sinh(y)*cosh(y)/(cos(x)^2 + sinh(y)^2). */
 
-      if (__builtin_expect (rcls != QUADFP_SUBNORMAL, 1))
+      if (__glibc_likely (fabsq (__real__ x) > FLT128_MIN))
 	{
 	  sincosq (__real__ x, &sinrx, &cosrx);
 	}
       else
 	{
 	  sinrx = __real__ x;
-	  cosrx = 1.0Q;
+	  cosrx = 1;
 	}
 
       if (fabsq (__imag__ x) > t)
@@ -79,7 +81,7 @@ ctanq (__complex128 x)
 	     sin(x)*cos(x)/sinh(y)^2 = 4*sin(x)*cos(x)/exp(2y).  */
 	  __float128 exp_2t = expq (2 * t);
 
-	  __imag__ res = copysignq (1.0Q, __imag__ x);
+	  __imag__ res = copysignq (1, __imag__ x);
 	  __real__ res = 4 * sinrx * cosrx;
 	  __imag__ x = fabsq (__imag__ x);
 	  __imag__ x -= t;
@@ -104,7 +106,7 @@ ctanq (__complex128 x)
 	  else
 	    {
 	      sinhix = __imag__ x;
-	      coshix = 1.0Q;
+	      coshix = 1;
 	    }
 
 	  if (fabsq (sinhix) > fabsq (cosrx) * FLT128_EPSILON)
@@ -114,6 +116,7 @@ ctanq (__complex128 x)
 	  __real__ res = sinrx * cosrx / den;
 	  __imag__ res = sinhix * coshix / den;
 	}
+      math_check_force_underflow_complex (res);
     }
 
   return res;

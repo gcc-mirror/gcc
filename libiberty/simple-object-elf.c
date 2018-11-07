@@ -22,6 +22,10 @@ Boston, MA 02110-1301, USA.  */
 #include "simple-object.h"
 
 #include <errno.h>
+/* mingw.org's MinGW doesn't have ENOTSUP.  */
+#ifndef ENOTSUP
+# define ENOTSUP ENOSYS
+#endif
 #include <stddef.h>
 
 #ifdef HAVE_STDLIB_H

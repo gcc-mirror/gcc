@@ -375,7 +375,7 @@ use_thunk (tree thunk_fndecl, bool emit_p)
   gcc_checking_assert (funcn);
   thunk_node = funcn->create_thunk (thunk_fndecl, function,
 				    this_adjusting, fixed_offset, virtual_value,
-				    virtual_offset, alias);
+				    0, virtual_offset, alias);
   if (DECL_ONE_ONLY (function))
     thunk_node->add_to_same_comdat_group (funcn);
 
@@ -1144,11 +1144,11 @@ static tree
 constructible_expr (tree to, tree from)
 {
   tree expr;
+  cp_unevaluated cp_uneval_guard;
   if (CLASS_TYPE_P (to))
     {
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
-      cp_unevaluated cp_uneval_guard;
       if (!TYPE_REF_P (to))
 	to = cp_build_reference_type (to, /*rval*/false);
       tree ob = build_stub_object (to);
@@ -2421,7 +2421,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
 
   /* Add it to the class  */
   bool added = add_method (type, fn, false);
-  gcc_assert (added);
+  gcc_assert (added || errorcount);
 
   /* Add it to TYPE_FIELDS.  */
   if (sfk == sfk_destructor

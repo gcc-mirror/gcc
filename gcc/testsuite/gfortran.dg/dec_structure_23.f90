@@ -13,8 +13,8 @@ program p
   integer :: nn
   real :: rr
   structure /s/
-    integer x(n)    /1/   ! { dg-error "must have an explicit shape" }
-    integer xx(nn)  /1/   ! { dg-error "must have an explicit shape" }
-    integer xxx(rr) /1.0/ ! { dg-error "must have an explicit shape" }
+    integer x(n)    /1/   ! { dg-error "array with nonconstant bounds" }
+    integer xx(nn)  /1/   ! { dg-error "array with nonconstant bounds" }
+    integer xxx(rr) /1.0/ ! { dg-error "array with nonconstant bounds" }
   end structure
 end

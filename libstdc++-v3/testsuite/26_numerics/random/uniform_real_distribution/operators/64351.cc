@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target { c++11 && { ! simulator } } } }
+// { dg-require-cstdint "" }
 
 #include <random>
 #include <testsuite_hooks.h>

@@ -301,9 +301,10 @@ DEFTREECODE (IF_STMT, "if_stmt", tcc_statement, 4)
 DEFTREECODE (FOR_STMT, "for_stmt", tcc_statement, 5)
 
 /* Used to represent a range-based `for' statement. The operands are
-   RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY, and RANGE_FOR_SCOPE,
-   RANGE_FOR_UNROLL respectively.  Only used in templates.  */
-DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 5)
+   RANGE_FOR_DECL, RANGE_FOR_EXPR, RANGE_FOR_BODY, RANGE_FOR_SCOPE,
+   RANGE_FOR_UNROLL, and RANGE_FOR_INIT_STMT, respectively.  Only used in
+   templates.  */
+DEFTREECODE (RANGE_FOR_STMT, "range_for_stmt", tcc_statement, 6)
 
 /* Used to represent a 'while' statement. The operands are WHILE_COND
    and WHILE_BODY, respectively.  */

@@ -312,6 +312,16 @@ DEF_RTL_EXPR(USE, "use", "e", RTX_EXTRA)
    is considered undeletable before reload.  */
 DEF_RTL_EXPR(CLOBBER, "clobber", "e", RTX_EXTRA)
 
+/* Indicate that the upper parts of something are clobbered in a way that we
+   don't want to explain.  The MODE references the lower bits that will be
+   preserved.  Anything above that size will be clobbered.
+
+   CLOBBER_HIGH only occurs as the operand of a PARALLEL rtx.  It cannot appear
+   in other contexts, and unlike CLOBBER, it cannot appear on its own.
+   CLOBBER_HIGH can only be used with fixed register rtxes.  */
+
+DEF_RTL_EXPR(CLOBBER_HIGH, "clobber_high", "e", RTX_EXTRA)
+
 /* Call a subroutine.
    Operand 1 is the address to call.
    Operand 2 is the number of arguments.  */
@@ -1300,7 +1310,7 @@ DEF_RTL_EXPR(EQ_ATTR, "eq_attr", "ss", RTX_EXTRA)
 
 /* A special case of the above representing a set of alternatives.  The first
    operand is bitmap of the set, the second one is the default value.  */
-DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ii", RTX_EXTRA)
+DEF_RTL_EXPR(EQ_ATTR_ALT, "eq_attr_alt", "ww", RTX_EXTRA)
 
 /* A conditional expression which is true if the specified flag is
    true for the insn being scheduled in reorg.

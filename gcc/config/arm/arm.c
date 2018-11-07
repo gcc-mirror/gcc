@@ -2466,8 +2466,9 @@ arm_set_fixed_conv_libfunc (convert_optab optable, machine_mode to,
   set_conv_libfunc (optable, to, from, buffer);
 }
 
-/* Set up library functions unique to ARM.  */
+static GTY(()) rtx speculation_barrier_libfunc;
 
+/* Set up library functions unique to ARM.  */
 static void
 arm_init_libfuncs (void)
 {
@@ -2753,6 +2754,8 @@ arm_init_libfuncs (void)
 
   if (TARGET_AAPCS_BASED)
     synchronize_libfunc = init_one_libfunc ("__sync_synchronize");
+
+  speculation_barrier_libfunc = init_one_libfunc ("__speculation_barrier");
 }
 
 /* On AAPCS systems, this is the "struct __va_list".  */
@@ -2890,17 +2893,22 @@ arm_option_check_internal (struct gcc_options *opts)
       flag_pic = 0;
     }
 
-  /* We only support -mpure-code and -mslow-flash-data on M-profile targets
-     with MOVT.  */
-  if ((target_pure_code || target_slow_flash_data)
-      && (!TARGET_HAVE_MOVT || arm_arch_notm || flag_pic || TARGET_NEON))
+  if (target_pure_code || target_slow_flash_data)
     {
       const char *flag = (target_pure_code ? "-mpure-code" :
 					     "-mslow-flash-data");
-      error ("%s only supports non-pic code on M-profile targets with the "
-	     "MOVT instruction", flag);
-    }
 
+      /* We only support -mpure-code and -mslow-flash-data on M-profile targets
+	 with MOVT.  */
+      if (!TARGET_HAVE_MOVT || arm_arch_notm || flag_pic || TARGET_NEON)
+	error ("%s only supports non-pic code on M-profile targets with the "
+	       "MOVT instruction", flag);
+
+      /* Cannot load addresses: -mslow-flash-data forbids literal pool and
+	 -mword-relocations forbids relocation of MOVT/MOVW.  */
+      if (target_word_relocations)
+	error ("%s incompatible with -mword-relocations", flag);
+    }
 }
 
 /* Recompute the global settings depending on target attribute options.  */
@@ -3485,6 +3493,9 @@ arm_option_override (void)
       else
 	arm_pic_register = pic_register;
     }
+
+  if (flag_pic)
+    target_word_relocations = 1;
 
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
@@ -15938,7 +15949,7 @@ get_label_padding (rtx label)
 {
   HOST_WIDE_INT align, min_insn_size;
 
-  align = 1 << label_to_alignment (label);
+  align = 1 << label_to_alignment (label).levels[0].log;
   min_insn_size = TARGET_THUMB ? 2 : 4;
   return align > min_insn_size ? align - min_insn_size : 0;
 }
@@ -17644,7 +17655,11 @@ arm_reorg (void)
 
   if (use_cmse)
     cmse_nonsecure_call_clear_caller_saved ();
-  if (TARGET_THUMB1)
+
+  /* We cannot run the Thumb passes for thunks because there is no CFG.  */
+  if (cfun->is_thunk)
+    ;
+  else if (TARGET_THUMB1)
     thumb1_reorg ();
   else if (TARGET_THUMB2)
     thumb2_reorg ();
@@ -26718,6 +26733,8 @@ static void
 arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 		       HOST_WIDE_INT vcall_offset, tree function)
 {
+  const bool long_call_p = arm_is_long_call_p (function);
+
   /* On ARM, this_regno is R0 or R1 depending on
      whether the function returns an aggregate or not.
   */
@@ -26755,9 +26772,22 @@ arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
       TREE_USED (function) = 1;
     }
   rtx funexp = XEXP (DECL_RTL (function), 0);
+  if (long_call_p)
+    {
+      emit_move_insn (temp, funexp);
+      funexp = temp;
+    }
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  rtx_insn * insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx_insn *insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
   SIBLING_CALL_P (insn) = 1;
+  emit_barrier ();
+
+  /* Indirect calls require a bit of fixup in PIC mode.  */
+  if (long_call_p)
+    {
+      split_all_insns_noflow ();
+      arm_reorg ();
+    }
 
   insn = get_insns ();
   shorten_branches (insn);
@@ -28623,7 +28653,7 @@ arm_expand_compare_and_swap (rtx operands[])
 void
 arm_split_compare_and_swap (rtx operands[])
 {
-  rtx rval, mem, oldval, newval, neg_bval;
+  rtx rval, mem, oldval, newval, neg_bval, mod_s_rtx;
   machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
@@ -28635,20 +28665,16 @@ arm_split_compare_and_swap (rtx operands[])
   oldval = operands[3];
   newval = operands[4];
   is_weak = (operands[5] != const0_rtx);
-  mod_s = memmodel_from_int (INTVAL (operands[6]));
+  mod_s_rtx = operands[6];
+  mod_s = memmodel_from_int (INTVAL (mod_s_rtx));
   mod_f = memmodel_from_int (INTVAL (operands[7]));
   neg_bval = TARGET_THUMB1 ? operands[0] : operands[8];
   mode = GET_MODE (mem);
 
   bool is_armv8_sync = arm_arch8 && is_mm_sync (mod_s);
 
-  bool use_acquire = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
-			  || is_mm_release (mod_s));
-		
-  bool use_release = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (mod_s) || is_mm_consume (mod_s)
-			  || is_mm_acquire (mod_s));
+  bool use_acquire = TARGET_HAVE_LDACQ && aarch_mm_needs_acquire (mod_s_rtx);
+  bool use_release = TARGET_HAVE_LDACQ && aarch_mm_needs_release (mod_s_rtx);
 
   /* For ARMv8, the load-acquire is too weak for __sync memory orders.  Instead,
      a full barrier is emitted after the store-release.  */
@@ -28743,13 +28769,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 
   bool is_armv8_sync = arm_arch8 && is_mm_sync (model);
 
-  bool use_acquire = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (model) || is_mm_consume (model)
-			  || is_mm_release (model));
-
-  bool use_release = TARGET_HAVE_LDACQ
-                     && !(is_mm_relaxed (model) || is_mm_consume (model)
-			  || is_mm_acquire (model));
+  bool use_acquire = TARGET_HAVE_LDACQ && aarch_mm_needs_acquire (model_rtx);
+  bool use_release = TARGET_HAVE_LDACQ && aarch_mm_needs_release (model_rtx);
 
   /* For ARMv8, a load-acquire is too weak for __sync memory orders.  Instead,
      a full barrier is emitted after the store-release.  */
@@ -30046,7 +30067,6 @@ arm_block_set_aligned_vect (rtx dstbase,
   rtx dst, addr, mem;
   rtx val_vec, reg;
   machine_mode mode;
-  unsigned HOST_WIDE_INT v = value;
   unsigned int offset = 0;
 
   gcc_assert ((align & 0x3) == 0);
@@ -30065,10 +30085,8 @@ arm_block_set_aligned_vect (rtx dstbase,
 
   dst = copy_addr_to_reg (XEXP (dstbase, 0));
 
-  v = sext_hwi (v, BITS_PER_WORD);
-
   reg = gen_reg_rtx (mode);
-  val_vec = gen_const_vec_duplicate (mode, GEN_INT (v));
+  val_vec = gen_const_vec_duplicate (mode, gen_int_mode (value, QImode));
   /* Emit instruction loading the constant value.  */
   emit_move_insn (reg, val_vec);
 
@@ -30841,7 +30859,7 @@ arm_insert_attributes (tree fndecl, tree * attributes)
     return;
 
   if (TREE_CODE (fndecl) != FUNCTION_DECL || DECL_EXTERNAL(fndecl)
-      || DECL_BUILT_IN (fndecl) || DECL_ARTIFICIAL (fndecl))
+      || fndecl_built_in_p (fndecl) || DECL_ARTIFICIAL (fndecl))
    return;
 
   /* Nested definitions must inherit mode.  */
@@ -31512,8 +31530,8 @@ arm_can_change_mode_class (machine_mode from, machine_mode to,
 {
   if (TARGET_BIG_END
       && !(GET_MODE_SIZE (from) == 16 && GET_MODE_SIZE (to) == 8)
-      && (GET_MODE_UNIT_SIZE (from) > UNITS_PER_WORD
-	  || GET_MODE_UNIT_SIZE (to) > UNITS_PER_WORD)
+      && (GET_MODE_SIZE (from) > UNITS_PER_WORD
+	  || GET_MODE_SIZE (to) > UNITS_PER_WORD)
       && reg_classes_intersect_p (VFP_REGS, rclass))
     return false;
   return true;
@@ -31529,6 +31547,16 @@ arm_constant_alignment (const_tree exp, HOST_WIDE_INT align)
   if (TREE_CODE (exp) == STRING_CST && !optimize_size)
     return MAX (align, BITS_PER_WORD * factor);
   return align;
+}
+
+/* Emit a speculation barrier on target architectures that do not have
+   DSB/ISB directly.  Such systems probably don't need a barrier
+   themselves, but if the code is ever run on a later architecture, it
+   might become a problem.  */
+void
+arm_emit_speculation_barrier_function ()
+{
+  emit_library_call (speculation_barrier_libfunc, LCT_NORMAL, VOIDmode);
 }
 
 #if CHECKING_P

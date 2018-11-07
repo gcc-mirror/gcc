@@ -102,7 +102,7 @@ along with GCC; see the file COPYING3.  If not see
 #define C_DECL_ISNT_PROTOTYPE(EXP)			\
        (EXP == 0					\
 	|| (!prototype_p (TREE_TYPE (EXP))	\
-	    && !DECL_BUILT_IN (EXP)))
+	    && !fndecl_built_in_p (EXP)))
 
 /* For FUNCTION_TYPE, a hidden list of types of arguments.  The same as
    TYPE_ARG_TYPES for functions with prototypes, but created for functions
@@ -761,6 +761,8 @@ extern bool tag_exists_p (enum tree_code, tree);
 extern bool pedwarn_c90 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 extern bool pedwarn_c99 (location_t, int opt, const char *, ...)
+    ATTRIBUTE_GCC_DIAG(3,4);
+extern bool pedwarn_c11 (location_t, int opt, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
 
 extern void

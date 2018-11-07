@@ -376,7 +376,7 @@ gimple_build_call_from_tree (tree t, tree fnptrtype)
   gimple_call_set_must_tail (call, CALL_EXPR_MUST_TAIL_CALL (t));
   gimple_call_set_return_slot_opt (call, CALL_EXPR_RETURN_SLOT_OPT (t));
   if (fndecl
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+      && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
       && ALLOCA_FUNCTION_CODE_P (DECL_FUNCTION_CODE (fndecl)))
     gimple_call_set_alloca_for_var (call, CALL_ALLOCA_FOR_VAR_P (t));
   else
@@ -2157,15 +2157,16 @@ dump_gimple_statistics (void)
   fprintf (stderr, "---------------------------------------\n");
   for (i = 0; i < (int) gimple_alloc_kind_all; ++i)
     {
-      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
-	       gimple_alloc_kind_names[i], gimple_alloc_counts[i],
-	       gimple_alloc_sizes[i]);
+      fprintf (stderr, "%-20s %7" PRIu64 "%c %10" PRIu64 "%c\n",
+	       gimple_alloc_kind_names[i],
+	       SIZE_AMOUNT (gimple_alloc_counts[i]),
+	       SIZE_AMOUNT (gimple_alloc_sizes[i]));
       total_tuples += gimple_alloc_counts[i];
       total_bytes += gimple_alloc_sizes[i];
     }
   fprintf (stderr, "---------------------------------------\n");
-  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
-	   total_tuples, total_bytes);
+  fprintf (stderr, "%-20s %7" PRIu64 "%c %10" PRIu64 "%c\n", "Total",
+	   SIZE_AMOUNT (total_tuples), SIZE_AMOUNT (total_bytes));
   fprintf (stderr, "---------------------------------------\n");
 }
 
@@ -2689,8 +2690,7 @@ gimple_call_builtin_p (const gimple *stmt, enum built_in_function code)
   tree fndecl;
   if (is_gimple_call (stmt)
       && (fndecl = gimple_call_fndecl (stmt)) != NULL_TREE
-      && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL 
-      && DECL_FUNCTION_CODE (fndecl) == code)
+      && fndecl_built_in_p (fndecl, code))
     return gimple_builtin_call_types_compatible_p (stmt, fndecl);
   return false;
 }
@@ -2709,7 +2709,7 @@ gimple_call_combined_fn (const gimple *stmt)
 
       tree fndecl = gimple_call_fndecl (stmt);
       if (fndecl
-	  && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL
+	  && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL)
 	  && gimple_builtin_call_types_compatible_p (stmt, fndecl))
 	return as_combined_fn (DECL_FUNCTION_CODE (fndecl));
     }

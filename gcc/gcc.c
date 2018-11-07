@@ -355,12 +355,12 @@ static inline void mark_matching_switches (const char *, const char *, int);
 static inline void process_marked_switches (void);
 static const char *process_brace_body (const char *, const char *, const char *, int, int);
 static const struct spec_function *lookup_spec_function (const char *);
-static const char *eval_spec_function (const char *, const char *);
-static const char *handle_spec_function (const char *, bool *);
+static const char *eval_spec_function (const char *, const char *, const char *);
+static const char *handle_spec_function (const char *, bool *, const char *);
 static char *save_string (const char *, int);
 static void set_collect_gcc_options (void);
 static int do_spec_1 (const char *, int, const char *);
-static int do_spec_2 (const char *);
+static int do_spec_2 (const char *, const char *);
 static void do_option_spec (const char *, const char *);
 static void do_self_spec (const char *);
 static const char *find_file (const char *);
@@ -372,7 +372,6 @@ static void give_switch (int, int);
 static int default_arg (const char *, int);
 static void set_multilib_dir (void);
 static void print_multilib_info (void);
-static void perror_with_name (const char *);
 static void display_help (void);
 static void add_preprocessor_option (const char *, int);
 static void add_assembler_option (const char *, int);
@@ -872,7 +871,7 @@ proper position among the other output files.  */
    -lgcc and -lc order specially, yet not require them to override all
    of LINK_COMMAND_SPEC.  */
 #ifndef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %L %G"
+#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L %G}"
 #endif
 
 #ifndef LINK_SSP_SPEC
@@ -981,20 +980,20 @@ proper position among the other output files.  */
 /* Linker command line options for -fsanitize= early on the command line.  */
 #ifndef SANITIZER_EARLY_SPEC
 #define SANITIZER_EARLY_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
+%{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_EARLY_SPEC "} \
     %{%:sanitize(thread):" LIBTSAN_EARLY_SPEC "} \
-    %{%:sanitize(leak):" LIBLSAN_EARLY_SPEC "}}}"
+    %{%:sanitize(leak):" LIBLSAN_EARLY_SPEC "}}}}"
 #endif
 
 /* Linker command line options for -fsanitize= late on the command line.  */
 #ifndef SANITIZER_SPEC
 #define SANITIZER_SPEC "\
-%{!nostdlib:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
+%{!nostdlib:%{!r:%{!nodefaultlibs:%{%:sanitize(address):" LIBASAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=address}}\
     %{%:sanitize(thread):" LIBTSAN_SPEC "\
     %{static:%ecannot specify -static with -fsanitize=thread}}\
     %{%:sanitize(undefined):" LIBUBSAN_SPEC "}\
-    %{%:sanitize(leak):" LIBLSAN_SPEC "}}}"
+    %{%:sanitize(leak):" LIBLSAN_SPEC "}}}}"
 #endif
 
 #ifndef POST_LINK_SPEC
@@ -1008,8 +1007,8 @@ proper position among the other output files.  */
 #ifndef VTABLE_VERIFICATION_SPEC
 #if ENABLE_VTABLE_VERIFY
 #define VTABLE_VERIFICATION_SPEC "\
-%{!nostdlib:%{fvtable-verify=std: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}\
-    %{fvtable-verify=preinit: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}}"
+%{!nostdlib:%{!r:%{fvtable-verify=std: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}\
+    %{fvtable-verify=preinit: -lvtv -u_vtable_map_vars_start -u_vtable_map_vars_end}}}"
 #else
 #define VTABLE_VERIFICATION_SPEC "\
 %{fvtable-verify=none:} \
@@ -1041,7 +1040,7 @@ proper position among the other output files.  */
     %{flto} %{fno-lto} %{flto=*} %l " LINK_PIE_SPEC \
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
-    %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
+    %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!r:%{!nostartfiles:%S}}} \
     %{static|no-pie|static-pie:} %@{L*} %(mfwrap) %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o "" \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
@@ -1049,8 +1048,8 @@ proper position among the other output files.  */
     %{fgnu-tm:%:include(libitm.spec)%(link_itm)}\
     %(mflib) " STACK_SPLIT_SPEC "\
     %{fprofile-arcs|fprofile-generate*|coverage:-lgcov} " SANITIZER_SPEC " \
-    %{!nostdlib:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}\
-    %{!nostdlib:%{!nostartfiles:%E}} %{T*}  \n%(post_link) }}}}}}"
+    %{!nostdlib:%{!r:%{!nodefaultlibs:%(link_ssp) %(link_gcc_c_sequence)}}}\
+    %{!nostdlib:%{!r:%{!nostartfiles:%E}}} %{T*}  \n%(post_link) }}}}}}"
 #endif
 
 #ifndef LINK_LIBGCC_SPEC
@@ -1306,6 +1305,7 @@ static const struct compiler default_compilers[] =
   {".f08", "#Fortran", 0, 0, 0}, {".F08", "#Fortran", 0, 0, 0},
   {".r", "#Ratfor", 0, 0, 0},
   {".go", "#Go", 0, 1, 0},
+  {".d", "#D", 0, 1, 0}, {".dd", "#D", 0, 1, 0}, {".di", "#D", 0, 1, 0},
   /* Next come the entries for C.  */
   {".c", "@c", 0, 0, 1},
   {"@c",
@@ -2100,15 +2100,20 @@ load_specs (const char *filename)
   /* Open and stat the file.  */
   desc = open (filename, O_RDONLY, 0);
   if (desc < 0)
-    pfatal_with_name (filename);
+    {
+    failed:
+      /* This leaves DESC open, but the OS will save us.  */
+      fatal_error (input_location, "cannot read spec file %qs: %m", filename);
+    }
+
   if (stat (filename, &statbuf) < 0)
-    pfatal_with_name (filename);
+    goto failed;
 
   /* Read contents of file into BUFFER.  */
   buffer = XNEWVEC (char, statbuf.st_size + 1);
   readlen = read (desc, buffer, (unsigned) statbuf.st_size);
   if (readlen < 0)
-    pfatal_with_name (filename);
+    goto failed;
   buffer[readlen] = 0;
   close (desc);
 
@@ -2489,7 +2494,7 @@ do                                                      \
     if (stat (NAME, &ST) >= 0 && S_ISREG (ST.st_mode))  \
       if (unlink (NAME) < 0)                            \
 	if (VERBOSE_FLAG)                               \
-	  perror_with_name (NAME);                      \
+	  error ("%s: %m", (NAME));			\
   } while (0)
 #endif
 
@@ -3168,13 +3173,11 @@ execute (void)
 			NULL, NULL, &err);
       if (errmsg != NULL)
 	{
-	  if (err == 0)
-	    fatal_error (input_location, errmsg);
-	  else
-	    {
-	      errno = err;
-	      pfatal_with_name (errmsg);
-	    }
+	  errno = err;
+	  fatal_error (input_location,
+		       err ? G_("cannot execute %qs: %s: %m")
+		       : G_("cannot execute %qs: %s"),
+		       string, errmsg);
 	}
 
       if (i && string != commands[i].prog)
@@ -4544,10 +4547,8 @@ process_command (unsigned int decoded_options_count,
 
           if (strcmp (fname, "-") != 0 && access (fname, F_OK) < 0)
 	    {
-	      if (fname[0] == '@' && access (fname + 1, F_OK) < 0)
-		perror_with_name (fname + 1);
-	      else
-		perror_with_name (fname);
+	      bool resp = fname[0] == '@' && access (fname + 1, F_OK) < 0;
+	      error ("%s: %m", fname + resp);
 	    }
           else
 	    add_infile (arg, spec_lang);
@@ -4939,7 +4940,7 @@ do_spec (const char *spec)
 {
   int value;
 
-  value = do_spec_2 (spec);
+  value = do_spec_2 (spec, NULL);
 
   /* Force out any unfinished command.
      If -pipe, this forces out the last command if it ended in `|'.  */
@@ -4958,8 +4959,11 @@ do_spec (const char *spec)
   return value;
 }
 
+/* Process the spec SPEC, with SOFT_MATCHED_PART designating the current value
+   of a matched * pattern which may be re-injected by way of %*.  */
+
 static int
-do_spec_2 (const char *spec)
+do_spec_2 (const char *spec, const char *soft_matched_part)
 {
   int result;
 
@@ -4972,13 +4976,12 @@ do_spec_2 (const char *spec)
   input_from_pipe = 0;
   suffix_subst = NULL;
 
-  result = do_spec_1 (spec, 0, NULL);
+  result = do_spec_1 (spec, 0, soft_matched_part);
 
   end_going_arg ();
 
   return result;
 }
-
 
 /* Process the given spec string and add any new options to the end
    of the switches/n_switches array.  */
@@ -5037,7 +5040,7 @@ do_self_spec (const char *spec)
 {
   int i;
 
-  do_spec_2 (spec);
+  do_spec_2 (spec, NULL);
   do_spec_1 (" ", 0, NULL);
 
   /* Mark %<S switches processed by do_self_spec to be ignored permanently.
@@ -5877,7 +5880,7 @@ do_spec_1 (const char *spec, int inswitch, const char *soft_matched_part)
 	    break;
 
 	  case ':':
-	    p = handle_spec_function (p, NULL);
+	    p = handle_spec_function (p, NULL, soft_matched_part);
 	    if (p == 0)
 	      return -1;
 	    break;
@@ -6039,7 +6042,8 @@ lookup_spec_function (const char *name)
 /* Evaluate a spec function.  */
 
 static const char *
-eval_spec_function (const char *func, const char *args)
+eval_spec_function (const char *func, const char *args,
+		    const char *soft_matched_part)
 {
   const struct spec_function *sf;
   const char *funcval;
@@ -6089,7 +6093,7 @@ eval_spec_function (const char *func, const char *args)
      arguments.  */
 
   alloc_args ();
-  if (do_spec_2 (args) < 0)
+  if (do_spec_2 (args, soft_matched_part) < 0)
     fatal_error (input_location, "error in args to spec function %qs", func);
 
   /* argbuf_index is an index for the next argument to be inserted, and
@@ -6126,10 +6130,14 @@ eval_spec_function (const char *func, const char *args)
    NULL if no processing is required.
 
    If RETVAL_NONNULL is not NULL, then store a bool whether function
-   returned non-NULL.  */
+   returned non-NULL.
+
+   SOFT_MATCHED_PART holds the current value of a matched * pattern, which
+   may be re-expanded with a %* as part of the function arguments.  */
 
 static const char *
-handle_spec_function (const char *p, bool *retval_nonnull)
+handle_spec_function (const char *p, bool *retval_nonnull,
+		      const char *soft_matched_part)
 {
   char *func, *args;
   const char *endp, *funcval;
@@ -6172,7 +6180,7 @@ handle_spec_function (const char *p, bool *retval_nonnull)
 
   /* p now points to just past the end of the spec function expression.  */
 
-  funcval = eval_spec_function (func, args);
+  funcval = eval_spec_function (func, args, soft_matched_part);
   if (funcval != NULL && do_spec_1 (funcval, 0, NULL) < 0)
     p = NULL;
   if (retval_nonnull)
@@ -6326,7 +6334,7 @@ handle_braces (const char *p)
 	{
 	  atom = NULL;
 	  end_atom = NULL;
-	  p = handle_spec_function (p + 2, &a_matched);
+	  p = handle_spec_function (p + 2, &a_matched, NULL);
 	}
       else
 	{
@@ -6878,13 +6886,11 @@ run_attempt (const char **new_argv, const char *out_temp,
 		    err_temp, &err);
   if (errmsg != NULL)
     {
-      if (err == 0)
-	fatal_error (input_location, errmsg);
-      else
-	{
-	  errno = err;
-	  pfatal_with_name (errmsg);
-	}
+      errno = err;
+      fatal_error (input_location,
+		   err ? G_ ("cannot execute %qs: %s: %m")
+		   : G_ ("cannot execute %qs: %s"),
+		   new_argv[0], errmsg);
     }
 
   if (!pex_get_status (pex, 1, &exit_status))
@@ -7561,7 +7567,7 @@ driver::set_up_specs () const
   /* Process sysroot_suffix_spec.  */
   if (*sysroot_suffix_spec != 0
       && !no_sysroot_suffix
-      && do_spec_2 (sysroot_suffix_spec) == 0)
+      && do_spec_2 (sysroot_suffix_spec, NULL) == 0)
     {
       if (argbuf.length () > 1)
         error ("spec failure: more than one arg to SYSROOT_SUFFIX_SPEC");
@@ -7585,7 +7591,7 @@ driver::set_up_specs () const
   /* Process sysroot_hdrs_suffix_spec.  */
   if (*sysroot_hdrs_suffix_spec != 0
       && !no_sysroot_suffix
-      && do_spec_2 (sysroot_hdrs_suffix_spec) == 0)
+      && do_spec_2 (sysroot_hdrs_suffix_spec, NULL) == 0)
     {
       if (argbuf.length () > 1)
         error ("spec failure: more than one arg to SYSROOT_HEADERS_SUFFIX_SPEC");
@@ -7595,7 +7601,7 @@ driver::set_up_specs () const
 
   /* Look for startfiles in the standard places.  */
   if (*startfile_prefix_spec != 0
-      && do_spec_2 (startfile_prefix_spec) == 0
+      && do_spec_2 (startfile_prefix_spec, NULL) == 0
       && do_spec_1 (" ", 0, NULL) == 0)
     {
       const char *arg;
@@ -8399,19 +8405,6 @@ save_string (const char *s, int len)
   return result;
 }
 
-void
-pfatal_with_name (const char *name)
-{
-  perror_with_name (name);
-  delete_temp_files ();
-  exit (1);
-}
-
-static void
-perror_with_name (const char *name)
-{
-  error ("%s: %m", name);
-}
 
 static inline void
 validate_switches_from_spec (const char *spec, bool user)
@@ -9244,7 +9237,11 @@ print_multilib_info (void)
    Returns the value of the environment variable given by its first argument,
    concatenated with the second argument.  If the variable is not defined, a
    fatal error is issued unless such undefs are internally allowed, in which
-   case the variable name is used as the variable value.  */
+   case the variable name prefixed by a '/' is used as the variable value.
+
+   The leading '/' allows using the result at a spot where a full path would
+   normally be expected and when the actual value doesn't really matter since
+   undef vars are allowed.  */
 
 static const char *
 getenv_spec_function (int argc, const char **argv)
@@ -9262,8 +9259,15 @@ getenv_spec_function (int argc, const char **argv)
   varname = argv[0];
   value = env.get (varname);
 
+  /* If the variable isn't defined and this is allowed, craft our expected
+     return value.  Assume variable names used in specs strings don't contain
+     any active spec character so don't need escaping.  */
   if (!value && spec_undefvar_allowed)
-    value = varname;
+    {
+      result = XNEWVAR (char, strlen(varname) + 2);
+      sprintf (result, "/%s", varname);
+      return result;
+    }
 
   if (!value)
     fatal_error (input_location,
@@ -9629,7 +9633,7 @@ compare_debug_dump_opt_spec_function (int arg,
     fatal_error (input_location,
 		 "too many arguments to %%:compare-debug-dump-opt");
 
-  do_spec_2 ("%{fdump-final-insns=*:%*}");
+  do_spec_2 ("%{fdump-final-insns=*:%*}", NULL);
   do_spec_1 (" ", 0, NULL);
 
   if (argbuf.length () > 0
@@ -9647,13 +9651,13 @@ compare_debug_dump_opt_spec_function (int arg,
 
       if (argbuf.length () > 0)
 	{
-	  do_spec_2 ("%{o*:%*}%{!o:%{!S:%b%O}%{S:%b.s}}");
+	  do_spec_2 ("%{o*:%*}%{!o:%{!S:%b%O}%{S:%b.s}}", NULL);
 	  ext = ".gkd";
 	}
       else if (!compare_debug)
 	return NULL;
       else
-	do_spec_2 ("%g.gkd");
+	do_spec_2 ("%g.gkd", NULL);
 
       do_spec_1 (" ", 0, NULL);
 
@@ -9705,7 +9709,7 @@ compare_debug_self_opt_spec_function (int arg,
   if (compare_debug >= 0)
     return NULL;
 
-  do_spec_2 ("%{c|S:%{o*:%*}}");
+  do_spec_2 ("%{c|S:%{o*:%*}}", NULL);
   do_spec_1 (" ", 0, NULL);
 
   if (argbuf.length () > 0)

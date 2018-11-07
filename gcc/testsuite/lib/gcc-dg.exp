@@ -299,9 +299,11 @@ proc gcc-dg-test-1 { target_compile prog do_what extra_tool_flags } {
     foreach x [split $finalcode "\n"] {
 	set finalcmd [lindex $x 0]
 	if { [info procs ${finalcmd}_required_options] != "" } {
-	    set req [${finalcmd}_required_options]
-	    if { $req != "" && [lsearch -exact $extra_tool_flags $req] == -1 } {
-		lappend extra_tool_flags $req
+	    foreach req [${finalcmd}_required_options] {
+		if { $req != ""
+		     && [lsearch -exact $extra_tool_flags $req] == -1 } {
+		    lappend extra_tool_flags $req
+		}
 	    }
 	}
     }
@@ -1190,6 +1192,26 @@ proc dg-locus { args } {
     set newentry [lreplace $newentry 2 2 $expmsg]
     set dg-messages [lreplace ${dg-messages} end end $newentry]
     verbose "process-message:\n${dg-messages}" 2
+}
+
+# Handle output from -fopt-info for MSG_OPTIMIZED_LOCATIONS:
+# a successful optimization.
+
+proc dg-optimized { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "optimized: " "$args"
+}
+
+# Handle output from -fopt-info for MSG_MISSED_OPTIMIZATION:
+# a missed optimization.
+
+proc dg-missed { args } {
+    # Make this variable available here and to the saved proc.
+    upvar dg-messages dg-messages
+
+    process-message saved-dg-error "missed: " "$args"
 }
 
 # Check the existence of a gdb in the path, and return true if there

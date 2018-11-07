@@ -212,22 +212,13 @@ func cgoCheckArg(t *_type, p unsafe.Pointer, indir, top bool, msg string) {
 // pointer into Go memory. If it does, we panic.
 // The return values are unused but useful to see in panic tracebacks.
 func cgoCheckUnknownPointer(p unsafe.Pointer, msg string) (base, i uintptr) {
-	if cgoInRange(p, mheap_.arena_start, mheap_.arena_used) {
-		if !inheap(uintptr(p)) {
-			// On 32-bit systems it is possible for C's allocated memory
-			// to have addresses between arena_start and arena_used.
-			// Either this pointer is a stack or an unused span or it's
-			// a C allocation. Escape analysis should prevent the first,
-			// garbage collection should prevent the second,
-			// and the third is completely OK.
-			return
-		}
-
-		b, hbits, span, _ := heapBitsForObject(uintptr(p), 0, 0, false)
+	if inheap(uintptr(p)) {
+		b, span, _ := findObject(uintptr(p), 0, 0, false)
 		base = b
 		if base == 0 {
 			return
 		}
+		hbits := heapBitsForAddr(base)
 		n := span.elemsize
 		for i = uintptr(0); i < n; i += sys.PtrSize {
 			if i != 1*sys.PtrSize && !hbits.morePointers() {
@@ -243,17 +234,21 @@ func cgoCheckUnknownPointer(p unsafe.Pointer, msg string) (base, i uintptr) {
 		return
 	}
 
-	roots := gcRoots
-	for roots != nil {
-		for j := 0; j < roots.count; j++ {
-			pr := roots.roots[j]
-			addr := uintptr(pr.decl)
-			if cgoInRange(p, addr, addr+pr.size) {
-				cgoCheckBits(pr.decl, pr.gcdata, 0, pr.ptrdata)
-				return
-			}
+	lo := 0
+	hi := len(gcRootsIndex)
+	for lo < hi {
+		m := lo + (hi-lo)/2
+		pr := gcRootsIndex[m]
+		addr := uintptr(pr.decl)
+		if cgoInRange(p, addr, addr+pr.size) {
+			cgoCheckBits(pr.decl, pr.gcdata, 0, pr.ptrdata)
+			return
 		}
-		roots = roots.next
+		if uintptr(p) < addr {
+			hi = m
+		} else {
+			lo = m + 1
+		}
 	}
 
 	return

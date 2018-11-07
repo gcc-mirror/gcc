@@ -162,8 +162,8 @@ create_dispatcher_calls (struct cgraph_node *node)
     }
 
   symtab->change_decl_assembler_name (node->decl,
-				      clone_function_name (node->decl,
-							   "default"));
+				      clone_function_name_numbered (
+					  node->decl, "default"));
 
   /* FIXME: copy of cgraph_node::make_local that should be cleaned up
 	    in next stage1.  */
@@ -312,8 +312,8 @@ create_target_clone (cgraph_node *node, bool definition, char *name)
       new_node = cgraph_node::get_create (new_decl);
       /* Generate a new name for the new version.  */
       symtab->change_decl_assembler_name (new_node->decl,
-					  clone_function_name (node->decl,
-							       name));
+					  clone_function_name_numbered (
+					      node->decl, name));
     }
   return new_node;
 }
@@ -347,6 +347,7 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   if (node->definition
       && !tree_versionable_function_p (node->decl))
     {
+      auto_diagnostic_group d;
       error_at (DECL_SOURCE_LOCATION (node->decl),
 		"clones for %<target_clones%> attribute cannot be created");
       const char *reason = NULL;
@@ -450,6 +451,54 @@ expand_target_clones (struct cgraph_node *node, bool definition)
   return ret;
 }
 
+/* When NODE is a target clone, consider all callees and redirect
+   to a clone with equal target attributes.  That prevents multiple
+   multi-versioning dispatches and a call-chain can be optimized.  */
+
+static void
+redirect_to_specific_clone (cgraph_node *node)
+{
+  cgraph_function_version_info *fv = node->function_version ();
+  if (fv == NULL)
+    return;
+
+  tree attr_target = lookup_attribute ("target", DECL_ATTRIBUTES (node->decl));
+  if (attr_target == NULL_TREE)
+    return;
+
+  /* We need to remember NEXT_CALLER as it could be modified in the loop.  */
+  for (cgraph_edge *e = node->callees; e ; e = e->next_callee)
+    {
+      cgraph_function_version_info *fv2 = e->callee->function_version ();
+      if (!fv2)
+	continue;
+
+      tree attr_target2 = lookup_attribute ("target",
+					    DECL_ATTRIBUTES (e->callee->decl));
+
+      /* Function is not calling proper target clone.  */
+      if (!attribute_list_equal (attr_target, attr_target2))
+	{
+	  while (fv2->prev != NULL)
+	    fv2 = fv2->prev;
+
+	  /* Try to find a clone with equal target attribute.  */
+	  for (; fv2 != NULL; fv2 = fv2->next)
+	    {
+	      cgraph_node *callee = fv2->this_node;
+	      attr_target2 = lookup_attribute ("target",
+					       DECL_ATTRIBUTES (callee->decl));
+	      if (attribute_list_equal (attr_target, attr_target2))
+		{
+		  e->redirect_callee (callee);
+		  e->redirect_call_stmt_to_callee ();
+		  break;
+		}
+	    }
+	}
+    }
+}
+
 static unsigned int
 ipa_target_clone (void)
 {
@@ -462,6 +511,9 @@ ipa_target_clone (void)
 
   for (unsigned i = 0; i < to_dispatch.length (); i++)
     create_dispatcher_calls (to_dispatch[i]);
+
+  FOR_EACH_FUNCTION (node)
+    redirect_to_specific_clone (node);
 
   return 0;
 }

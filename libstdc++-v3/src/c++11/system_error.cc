@@ -29,6 +29,7 @@
 #include <system_error>
 #include <bits/functexcept.h>
 #include <limits>
+#include <errno.h>
 #undef __sso_string
 
 namespace
@@ -64,6 +65,261 @@ namespace
       // XXX locale issues: how does one get or set loc.
       // _GLIBCXX_HAVE_STRERROR_L, strerror_l(i, cloc)
       return string(strerror(i));
+    }
+
+    virtual std::error_condition
+    default_error_condition(int ev) const noexcept
+    {
+      switch (ev)
+      {
+      // List of errno macros from [cerrno.syn].
+      // C11 only defines EDOM, EILSEQ and ERANGE, the rest are from POSIX.
+      // They expand to integer constant expressions with type int,
+      // and distinct positive values, suitable for use in #if directives.
+      // POSIX adds more macros (but they're not defined on all targets,
+      // see config/os/*/error_constants.h), and POSIX allows
+      // EAGAIN == EWOULDBLOCK and ENOTSUP == EOPNOTSUPP.
+
+#ifdef E2BIG
+      case E2BIG:
+#endif
+#ifdef EACCES
+      case EACCES:
+#endif
+#ifdef EADDRINUSE
+      case EADDRINUSE:
+#endif
+#ifdef EADDRNOTAVAIL
+      case EADDRNOTAVAIL:
+#endif
+#ifdef EAFNOSUPPORT
+      case EAFNOSUPPORT:
+#endif
+#ifdef EAGAIN
+      case EAGAIN:
+#endif
+#ifdef EALREADY
+      case EALREADY:
+#endif
+#ifdef EBADF
+      case EBADF:
+#endif
+#ifdef EBADMSG
+      case EBADMSG:
+#endif
+#ifdef EBUSY
+      case EBUSY:
+#endif
+#ifdef ECANCELED
+      case ECANCELED:
+#endif
+#ifdef ECHILD
+      case ECHILD:
+#endif
+#ifdef ECONNABORTED
+      case ECONNABORTED:
+#endif
+#ifdef ECONNREFUSED
+      case ECONNREFUSED:
+#endif
+#ifdef ECONNRESET
+      case ECONNRESET:
+#endif
+#ifdef EDEADLK
+      case EDEADLK:
+#endif
+#ifdef EDESTADDRREQ
+      case EDESTADDRREQ:
+#endif
+      case EDOM:
+#ifdef EEXIST
+      case EEXIST:
+#endif
+#ifdef EFAULT
+      case EFAULT:
+#endif
+#ifdef EFBIG
+      case EFBIG:
+#endif
+#ifdef EHOSTUNREACH
+      case EHOSTUNREACH:
+#endif
+#ifdef EIDRM
+      case EIDRM:
+#endif
+      case EILSEQ:
+#ifdef EINPROGRESS
+      case EINPROGRESS:
+#endif
+#ifdef EINTR
+      case EINTR:
+#endif
+#ifdef EINVAL
+      case EINVAL:
+#endif
+#ifdef EIO
+      case EIO:
+#endif
+#ifdef EISCONN
+      case EISCONN:
+#endif
+#ifdef EISDIR
+      case EISDIR:
+#endif
+#ifdef ELOOP
+      case ELOOP:
+#endif
+#ifdef EMFILE
+      case EMFILE:
+#endif
+#ifdef EMLINK
+      case EMLINK:
+#endif
+#ifdef EMSGSIZE
+      case EMSGSIZE:
+#endif
+#ifdef ENAMETOOLONG
+      case ENAMETOOLONG:
+#endif
+#ifdef ENETDOWN
+      case ENETDOWN:
+#endif
+#ifdef ENETRESET
+      case ENETRESET:
+#endif
+#ifdef ENETUNREACH
+      case ENETUNREACH:
+#endif
+#ifdef ENFILE
+      case ENFILE:
+#endif
+#ifdef ENOBUFS
+      case ENOBUFS:
+#endif
+#ifdef ENODATA
+      case ENODATA:
+#endif
+#ifdef ENODEV
+      case ENODEV:
+#endif
+#ifdef ENOENT
+      case ENOENT:
+#endif
+#ifdef ENOEXEC
+      case ENOEXEC:
+#endif
+#ifdef ENOLCK
+      case ENOLCK:
+#endif
+#ifdef ENOLINK
+      case ENOLINK:
+#endif
+#ifdef ENOMEM
+      case ENOMEM:
+#endif
+#ifdef ENOMSG
+      case ENOMSG:
+#endif
+#ifdef ENOPROTOOPT
+      case ENOPROTOOPT:
+#endif
+#ifdef ENOSPC
+      case ENOSPC:
+#endif
+#ifdef ENOSR
+      case ENOSR:
+#endif
+#ifdef ENOSTR
+      case ENOSTR:
+#endif
+#ifdef ENOSYS
+      case ENOSYS:
+#endif
+#ifdef ENOTCONN
+      case ENOTCONN:
+#endif
+#ifdef ENOTDIR
+      case ENOTDIR:
+#endif
+#if defined ENOTEMPTY && (!defined EEXIST || ENOTEMPTY != EEXIST)
+      // AIX sometimes uses the same value for EEXIST and ENOTEMPTY
+      case ENOTEMPTY:
+#endif
+#ifdef ENOTRECOVERABLE
+      case ENOTRECOVERABLE:
+#endif
+#ifdef ENOTSOCK
+      case ENOTSOCK:
+#endif
+#ifdef ENOTSUP
+      case ENOTSUP:
+#endif
+#ifdef ENOTTY
+      case ENOTTY:
+#endif
+#ifdef ENXIO
+      case ENXIO:
+#endif
+#if defined EOPNOTSUPP && (!defined ENOTSUP || EOPNOTSUPP != ENOTSUP)
+      case EOPNOTSUPP:
+#endif
+#ifdef EOVERFLOW
+      case EOVERFLOW:
+#endif
+#ifdef EOWNERDEAD
+      case EOWNERDEAD:
+#endif
+#ifdef EPERM
+      case EPERM:
+#endif
+#ifdef EPIPE
+      case EPIPE:
+#endif
+#ifdef EPROTO
+      case EPROTO:
+#endif
+#ifdef EPROTONOSUPPORT
+      case EPROTONOSUPPORT:
+#endif
+#ifdef EPROTOTYPE
+      case EPROTOTYPE:
+#endif
+      case ERANGE:
+#ifdef EROFS
+      case EROFS:
+#endif
+#ifdef ESPIPE
+      case ESPIPE:
+#endif
+#ifdef ESRCH
+      case ESRCH:
+#endif
+#ifdef ETIME
+      case ETIME:
+#endif
+#ifdef ETIMEDOUT
+      case ETIMEDOUT:
+#endif
+#ifdef ETXTBSY
+      case ETXTBSY:
+#endif
+#if defined EWOULDBLOCK && (!defined EAGAIN || EWOULDBLOCK != EAGAIN)
+      case EWOULDBLOCK:
+#endif
+#ifdef EXDEV
+      case EXDEV:
+#endif
+        return std::error_condition(ev, std::generic_category());
+
+      /* Additional system-dependent mappings from non-standard error codes
+       * to one of the POSIX values above would go here, e.g.
+      case EBLAH:
+	return std::error_condition(EINVAL, std::generic_category());
+       */
+
+      default:
+	return std::error_condition(ev, std::system_category());
+      }
     }
   };
 

@@ -222,7 +222,7 @@ build_function_decl_skip_args (tree orig_decl, bitmap args_to_skip,
     DECL_VINDEX (new_decl) = NULL_TREE;
 
   /* When signature changes, we need to clear builtin info.  */
-  if (DECL_BUILT_IN (new_decl)
+  if (fndecl_built_in_p (new_decl)
       && args_to_skip
       && !bitmap_empty_p (args_to_skip))
     {
@@ -274,10 +274,11 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   cgraph_edge *cs;
   for (cs = node->callers; cs; cs = cs->next_caller)
     if (cs->caller->thunk.thunk_p
-	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
 	&& cs->caller->thunk.fixed_offset == thunk->thunk.fixed_offset
-	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p
-	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value)
+	&& cs->caller->thunk.virtual_value == thunk->thunk.virtual_value
+	&& cs->caller->thunk.indirect_offset == thunk->thunk.indirect_offset
+	&& cs->caller->thunk.this_adjusting == thunk->thunk.this_adjusting
+	&& cs->caller->thunk.virtual_offset_p == thunk->thunk.virtual_offset_p)
       return cs->caller;
 
   tree new_decl;
@@ -316,7 +317,8 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
   gcc_checking_assert (!DECL_RESULT (new_decl));
   gcc_checking_assert (!DECL_RTL_SET_P (new_decl));
 
-  DECL_NAME (new_decl) = clone_function_name (thunk->decl, "artificial_thunk");
+  DECL_NAME (new_decl) = clone_function_name_numbered (thunk->decl,
+						       "artificial_thunk");
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
 
   new_thunk = cgraph_node::create (new_decl);
@@ -482,8 +484,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 	 version.  The only exception is when the edge was proved to
 	 be unreachable during the clonning procedure.  */
       if (!e->callee
-	  || DECL_BUILT_IN_CLASS (e->callee->decl) != BUILT_IN_NORMAL
-	  || DECL_FUNCTION_CODE (e->callee->decl) != BUILT_IN_UNREACHABLE)
+	  || !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
         e->redirect_callee_duplicating_thunks (new_node);
     }
   new_node->expand_all_artificial_thunks ();
@@ -514,11 +515,41 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
 
 static GTY(()) unsigned int clone_fn_id_num;
 
-/* Return a new assembler name for a clone with SUFFIX of a decl named
-   NAME.  */
+/* Return a new assembler name for a clone of decl named NAME.  Apart
+   from the string SUFFIX, the new name will end with a unique (for
+   each NAME) unspecified number.  If clone numbering is not needed
+   then the two argument clone_function_name should be used instead.
+   Should not be called directly except for by
+   lto-partition.c:privatize_symbol_name_1.  */
 
 tree
-clone_function_name_1 (const char *name, const char *suffix)
+clone_function_name_numbered (const char *name, const char *suffix)
+{
+  return clone_function_name (name, suffix, clone_fn_id_num++);
+}
+
+/* Return a new assembler name for a clone of DECL.  Apart from string
+   SUFFIX, the new name will end with a unique (for each DECL
+   assembler name) unspecified number.  If clone numbering is not
+   needed then the two argument clone_function_name should be used
+   instead.  */
+
+tree
+clone_function_name_numbered (tree decl, const char *suffix)
+{
+  tree name = DECL_ASSEMBLER_NAME (decl);
+  return clone_function_name_numbered (IDENTIFIER_POINTER (name),
+				       suffix);
+}
+
+/* Return a new assembler name for a clone of decl named NAME.  Apart
+   from the string SUFFIX, the new name will end with the specified
+   NUMBER.  If clone numbering is not needed then the two argument
+   clone_function_name should be used instead.  */
+
+tree
+clone_function_name (const char *name, const char *suffix,
+		     unsigned long number)
 {
   size_t len = strlen (name);
   char *tmp_name, *prefix;
@@ -527,17 +558,34 @@ clone_function_name_1 (const char *name, const char *suffix)
   memcpy (prefix, name, len);
   strcpy (prefix + len + 1, suffix);
   prefix[len] = symbol_table::symbol_suffix_separator ();
-  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, clone_fn_id_num++);
+  ASM_FORMAT_PRIVATE_NAME (tmp_name, prefix, number);
   return get_identifier (tmp_name);
 }
 
-/* Return a new assembler name for a clone of DECL with SUFFIX.  */
+/* Return a new assembler name ending with the string SUFFIX for a
+   clone of DECL.  */
 
 tree
 clone_function_name (tree decl, const char *suffix)
 {
-  tree name = DECL_ASSEMBLER_NAME (decl);
-  return clone_function_name_1 (IDENTIFIER_POINTER (name), suffix);
+  tree identifier = DECL_ASSEMBLER_NAME (decl);
+  /* For consistency this needs to behave the same way as
+     ASM_FORMAT_PRIVATE_NAME does, but without the final number
+     suffix.  */
+  char *separator = XALLOCAVEC (char, 2);
+  separator[0] = symbol_table::symbol_suffix_separator ();
+  separator[1] = 0;
+#if defined (NO_DOT_IN_LABEL) && defined (NO_DOLLAR_IN_LABEL)
+  const char *prefix = "__";
+#else
+  const char *prefix = "";
+#endif
+  char *result = ACONCAT ((prefix,
+			   IDENTIFIER_POINTER (identifier),
+			   separator,
+			   suffix,
+			   (char*)0));
+  return get_identifier (result);
 }
 
 
@@ -585,7 +633,8 @@ cgraph_node::create_virtual_clone (vec<cgraph_edge *> redirect_callers,
   strcpy (name + len + 1, suffix);
   name[len] = '.';
   DECL_NAME (new_decl) = get_identifier (name);
-  SET_DECL_ASSEMBLER_NAME (new_decl, clone_function_name (old_decl, suffix));
+  SET_DECL_ASSEMBLER_NAME (new_decl, clone_function_name_numbered (old_decl,
+								   suffix));
   SET_DECL_RTL (new_decl, NULL);
 
   new_node = create_clone (new_decl, count, false,
@@ -964,9 +1013,11 @@ cgraph_node::create_version_clone_with_body
       = build_function_decl_skip_args (old_decl, args_to_skip, skip_return);
 
   /* Generate a new name for the new version. */
-  DECL_NAME (new_decl) = clone_function_name (old_decl, suffix);
+  DECL_NAME (new_decl) = clone_function_name_numbered (old_decl, suffix);
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
   SET_DECL_RTL (new_decl, NULL);
+
+  DECL_VIRTUAL_P (new_decl) = 0;
 
   /* When the old decl was a con-/destructor make sure the clone isn't.  */
   DECL_STATIC_CONSTRUCTOR (new_decl) = 0;

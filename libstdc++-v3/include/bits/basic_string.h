@@ -100,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       ///  Value returned by various member functions when they fail.
       static const size_type	npos = static_cast<size_type>(-1);
 
-    private:
+    protected:
       // type used for positions in insert, erase etc.
 #if __cplusplus < 201103L
       typedef iterator __const_iterator;
@@ -108,6 +108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       typedef const_iterator __const_iterator;
 #endif
 
+    private:
 #if __cplusplus > 201402L
       // A helper type for avoiding boiler-plate.
       typedef basic_string_view<_CharT, _Traits> __sv_type;
@@ -743,20 +744,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	// Replace allocator if POCMA is true.
 	std::__alloc_on_move(_M_get_allocator(), __str._M_get_allocator());
 
-	if (!__str._M_is_local()
-	    && (_Alloc_traits::_S_propagate_on_move_assign()
-	      || _Alloc_traits::_S_always_equal()))
+	if (__str._M_is_local())
 	  {
+	    // We've always got room for a short string, just copy it.
+	    if (__str.size())
+	      this->_S_copy(_M_data(), __str._M_data(), __str.size());
+	    _M_set_length(__str.size());
+	  }
+	else if (_Alloc_traits::_S_propagate_on_move_assign()
+	    || _Alloc_traits::_S_always_equal()
+	    || _M_get_allocator() == __str._M_get_allocator())
+	  {
+	    // Just move the allocated pointer, our allocator can free it.
 	    pointer __data = nullptr;
 	    size_type __capacity;
 	    if (!_M_is_local())
 	      {
 		if (_Alloc_traits::_S_always_equal())
 		  {
+		    // __str can reuse our existing storage.
 		    __data = _M_data();
 		    __capacity = _M_allocated_capacity;
 		  }
-		else
+		else // __str can't use it, so free it.
 		  _M_destroy(_M_allocated_capacity);
 	      }
 
@@ -771,8 +781,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    else
 	      __str._M_data(__str._M_local_buf);
 	  }
-	else
-	    assign(__str);
+	else // Need to do a deep copy
+	  assign(__str);
 	__str.clear();
 	return *this;
       }
@@ -3118,6 +3128,10 @@ _GLIBCXX_END_NAMESPACE_CXX11
                                                             const_iterator;
       typedef std::reverse_iterator<const_iterator>	const_reverse_iterator;
       typedef std::reverse_iterator<iterator>		    reverse_iterator;
+
+    protected:
+      // type used for positions in insert, erase etc.
+      typedef iterator __const_iterator;
 
     private:
       // _Rep: string representation
@@ -6662,7 +6676,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 #endif /* _GLIBCXX_COMPATIBILITY_CXX0X */
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
   /// std::hash specialization for u16string.
   template<>
     struct hash<u16string>
@@ -6692,7 +6705,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<>
     struct __is_fast_hash<hash<u32string>> : std::false_type
     { };
-#endif
 
 #if __cplusplus > 201103L
 
@@ -6716,7 +6728,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return basic_string<wchar_t>{__str, __len}; }
 #endif
 
-#ifdef _GLIBCXX_USE_C99_STDINT_TR1
     _GLIBCXX_DEFAULT_ABI_TAG
     inline basic_string<char16_t>
     operator""s(const char16_t* __str, size_t __len)
@@ -6726,7 +6737,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline basic_string<char32_t>
     operator""s(const char32_t* __str, size_t __len)
     { return basic_string<char32_t>{__str, __len}; }
-#endif
 
 #pragma GCC diagnostic pop
   } // inline namespace string_literals

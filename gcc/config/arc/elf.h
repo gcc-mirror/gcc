@@ -77,4 +77,4 @@ along with GCC; see the file COPYING3.  If not see
 /* If no specs file is enforced, default to nosys libarary.  */
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC				\
-  "--start-group %G %{!specs=*:-lc -lnosys} --end-group"
+  "--start-group %G %{!specs=*:%{!nolibc:-lc -lnosys}} --end-group"

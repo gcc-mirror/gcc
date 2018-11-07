@@ -178,6 +178,7 @@ warn_uninit (enum opt_code wc, tree t, tree expr, tree var,
   cfun_loc = DECL_SOURCE_LOCATION (cfun->decl);
   xloc = expand_location (location);
   floc = expand_location (cfun_loc);
+  auto_diagnostic_group d;
   if (warning_at (location, wc, gmsgid, expr))
     {
       TREE_NO_WARNING (expr) = 1;
@@ -724,7 +725,7 @@ convert_control_dep_chain_into_preds (vec<edge> *dep_chains,
 	      for (idx = 0; idx < gimple_switch_num_labels (gs); ++idx)
 		{
 		  tree tl = gimple_switch_label (gs, idx);
-		  if (e->dest == label_to_block (CASE_LABEL (tl)))
+		  if (e->dest == label_to_block (cfun, CASE_LABEL (tl)))
 		    {
 		      if (!l)
 			l = tl;
@@ -1583,16 +1584,6 @@ is_superset_of (pred_chain_union preds1, pred_chain_union preds2)
     }
 
   return true;
-}
-
-/* Returns true if TC is AND or OR.  */
-
-static inline bool
-is_and_or_or_p (enum tree_code tc, tree type)
-{
-  return (tc == BIT_IOR_EXPR
-	  || (tc == BIT_AND_EXPR
-	      && (type == 0 || TREE_CODE (type) == BOOLEAN_TYPE)));
 }
 
 /* Returns true if X1 is the negate of X2.  */

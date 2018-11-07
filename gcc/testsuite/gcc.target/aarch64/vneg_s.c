@@ -75,7 +75,19 @@ extern void abort (void);
       }									\
   }
 
-int
+#define RUN_TEST_SCALAR(test_val, answ_val, a, b)     \
+  {                                                   \
+    int64_t res;                                      \
+    INHIB_OPTIMIZATION;                               \
+    a = test_val;                                     \
+    b = answ_val;                                     \
+    force_simd (b);                                   \
+    force_simd (a);                                   \
+    res = vnegd_s64 (a);                              \
+    force_simd (res);                                 \
+  }
+
+int __attribute__ ((noinline))
 test_vneg_s8 ()
 {
   int8x8_t a;
@@ -95,7 +107,7 @@ test_vneg_s8 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.8b, v\[0-9\]+\.8b" 1 } } */
 
-int
+int __attribute__ ((noinline))
 test_vneg_s16 ()
 {
   int16x4_t a;
@@ -115,7 +127,7 @@ test_vneg_s16 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.4h, v\[0-9\]+\.4h" 2 } } */
 
-int
+int __attribute__ ((noinline))
 test_vneg_s32 ()
 {
   int32x2_t a;
@@ -141,7 +153,7 @@ test_vneg_s32 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s" 4 } } */
 
-int
+int __attribute__ ((noinline))
 test_vneg_s64 ()
 {
   int64x1_t a;
@@ -177,9 +189,26 @@ test_vneg_s64 ()
   return 0;
 }
 
-/* { dg-final { scan-assembler-times "neg\\td\[0-9\]+, d\[0-9\]+" 8 } } */
+int __attribute__ ((noinline))
+test_vnegd_s64 ()
+{
+  int64_t a, b;
 
-int
+  RUN_TEST_SCALAR (TEST0, ANSW0, a, b);
+  RUN_TEST_SCALAR (TEST1, ANSW1, a, b);
+  RUN_TEST_SCALAR (TEST2, ANSW2, a, b);
+  RUN_TEST_SCALAR (TEST3, ANSW3, a, b);
+  RUN_TEST_SCALAR (TEST4, ANSW4, a, b);
+  RUN_TEST_SCALAR (TEST5, ANSW5, a, b);
+  RUN_TEST_SCALAR (LLONG_MAX, LLONG_MIN + 1, a, b);
+  RUN_TEST_SCALAR (LLONG_MIN, LLONG_MIN, a, b);
+
+  return 0;
+}
+
+/* { dg-final { scan-assembler-times "neg\\td\[0-9\]+, d\[0-9\]+" 16 } } */
+
+int __attribute__ ((noinline))
 test_vnegq_s8 ()
 {
   int8x16_t a;
@@ -202,7 +231,7 @@ test_vnegq_s8 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.16b, v\[0-9\]+\.16b" 1 } } */
 
-int
+int __attribute__ ((noinline))
 test_vnegq_s16 ()
 {
   int16x8_t a;
@@ -222,7 +251,7 @@ test_vnegq_s16 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.8h, v\[0-9\]+\.8h" 1 } } */
 
-int
+int __attribute__ ((noinline))
 test_vnegq_s32 ()
 {
   int32x4_t a;
@@ -242,7 +271,7 @@ test_vnegq_s32 ()
 
 /* { dg-final { scan-assembler-times "neg\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s" 2 } } */
 
-int
+int __attribute__ ((noinline))
 test_vnegq_s64 ()
 {
   int64x2_t a;
@@ -281,6 +310,9 @@ main (int argc, char **argv)
     abort ();
 
   if (test_vneg_s64 ())
+    abort ();
+
+  if (test_vnegd_s64 ())
     abort ();
 
   if (test_vnegq_s8 ())

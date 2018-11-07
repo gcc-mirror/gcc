@@ -59,7 +59,9 @@ int main (int argc, const char* argv[])
 
 /* { dg-final { scan-tree-dump-times "vectorized 0 loops" 2 "vect" { target { ! { vect_perm_short || vect_load_lanes } } } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_perm_short || vect_load_lanes } } } } */
-/* { dg-final { scan-tree-dump-times "permutation requires at least three vectors" 1 "vect" { target { vect_perm_short && { ! vect_perm3_short } } } } } */
+/* We don't try permutes with a group size of 3 for variable-length
+   vectors.  */
+/* { dg-final { scan-tree-dump-times "permutation requires at least three vectors" 1 "vect" { target { vect_perm_short && { ! vect_perm3_short } } xfail vect_variable_length } } } */
 /* { dg-final { scan-tree-dump-not "permutation requires at least three vectors" "vect" { target vect_perm3_short } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 0 "vect" { target { { ! vect_perm3_short } || vect_load_lanes } } } } */
 /* { dg-final { scan-tree-dump-times "vectorizing stmts using SLP" 1 "vect" { target { vect_perm3_short && { ! vect_load_lanes } } } } } */

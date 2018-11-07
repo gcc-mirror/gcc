@@ -1,3 +1,20 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	Merge from binutils-gdb:
+	2018-06-19  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* configure.ac: Add AC_USE_SYSTEM_EXTENSIONS, remove AC_PREREQ.
+	* configure: Re-generate.
+	* config.h.in: Re-generate.
+	* aclocal.m4: Re-generate.
+
+2018-09-18  Simon Marchi  <simon.marchi@ericsson.com>
+
+	* libgnuintl.h (_INTL_MAY_RETURN_STRING_ARG, gettext, dgettext,
+	dcgettext, ngettext, dngettext, dcngettext): Backport changes
+	from upstream gettext.
+
 2017-11-07  Alan Modra  <amodra@gmail.com>
 
 	* configure.ac: Invoke AM_GNU_GETTEXT with need_ngettext.
@@ -132,8 +149,8 @@
 
 2004-04-25  Paolo Bonzini  <bonzini@gnu.org>
 
-        * configure.ac: Point config.intl to the parent directory of
-        ${top_builddir}.
+	* configure.ac: Point config.intl to the parent directory of
+	${top_builddir}.
 	* configure: Regenerate.
 
 2004-03-10  Kelley Cook  <kcook@gcc.gnu.org>

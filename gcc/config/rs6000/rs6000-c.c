@@ -220,21 +220,23 @@ rs6000_macro_to_expand (cpp_reader *pfile, const cpp_token *tok)
       else if (ident && (ident != C_CPP_HASHNODE (__vector_keyword)))
 	{
 	  enum rid rid_code = (enum rid)(ident->rid_code);
-	  enum node_type itype = ident->type;
+	  bool is_macro = cpp_macro_p (ident);
+
 	  /* If there is a function-like macro, check if it is going to be
 	     invoked with or without arguments.  Without following ( treat
 	     it like non-macro, otherwise the following cpp_get_token eats
 	     what should be preserved.  */
-	  if (itype == NT_MACRO && cpp_fun_like_macro_p (ident))
+	  if (is_macro && cpp_fun_like_macro_p (ident))
 	    {
 	      int idx2 = idx;
 	      do
 		tok = cpp_peek_token (pfile, idx2++);
 	      while (tok->type == CPP_PADDING);
 	      if (tok->type != CPP_OPEN_PAREN)
-		itype = NT_VOID;
+		is_macro = false;
 	    }
-	  if (itype == NT_MACRO)
+
+	  if (is_macro)
 	    {
 	      do
 		(void) cpp_get_token (pfile);
@@ -5059,14 +5061,22 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { P9V_BUILTIN_VEC_VSIEDP, P9V_BUILTIN_VSIEQPF,
     RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, RS6000_BTI_UINTDI, 0 },
 
-  { P9V_BUILTIN_VEC_VSCEDPGT, P9V_BUILTIN_VSCEDPGT,
+  { P9V_BUILTIN_VEC_VSCEGT, P9V_BUILTIN_VSCEDPGT,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
-  { P9V_BUILTIN_VEC_VSCEDPLT, P9V_BUILTIN_VSCEDPLT,
+  { P9V_BUILTIN_VEC_VSCEGT, P9V_BUILTIN_VSCEQPGT,
+    RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
+  { P9V_BUILTIN_VEC_VSCELT, P9V_BUILTIN_VSCEDPLT,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
-  { P9V_BUILTIN_VEC_VSCEDPEQ, P9V_BUILTIN_VSCEDPEQ,
+  { P9V_BUILTIN_VEC_VSCELT, P9V_BUILTIN_VSCEQPLT,
+    RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
+  { P9V_BUILTIN_VEC_VSCEEQ, P9V_BUILTIN_VSCEDPEQ,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
-  { P9V_BUILTIN_VEC_VSCEDPUO, P9V_BUILTIN_VSCEDPUO,
+  { P9V_BUILTIN_VEC_VSCEEQ, P9V_BUILTIN_VSCEQPEQ,
+    RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
+  { P9V_BUILTIN_VEC_VSCEUO, P9V_BUILTIN_VSCEDPUO,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
+  { P9V_BUILTIN_VEC_VSCEUO, P9V_BUILTIN_VSCEQPUO,
+    RS6000_BTI_INTSI, RS6000_BTI_ieee128_float, RS6000_BTI_ieee128_float, 0 },
 
   { P9V_BUILTIN_VEC_XL_LEN_R, P9V_BUILTIN_XL_LEN_R,
     RS6000_BTI_unsigned_V16QI, ~RS6000_BTI_UINTQI,

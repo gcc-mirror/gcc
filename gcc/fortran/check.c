@@ -148,6 +148,21 @@ int_or_real_or_char_check_f2003 (gfc_expr *e, int n)
   return true;
 }
 
+/* Check that an expression is an intrinsic type.  */
+static bool
+intrinsic_type_check (gfc_expr *e, int n)
+{
+  if (e->ts.type != BT_INTEGER && e->ts.type != BT_REAL
+      && e->ts.type != BT_COMPLEX && e->ts.type != BT_CHARACTER
+      && e->ts.type != BT_LOGICAL)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L must be of intrinsic type",
+		 gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic, &e->where);
+      return false;
+    }
+  return true;
+}
 
 /* Check that an expression is real or complex.  */
 
@@ -3336,6 +3351,82 @@ gfc_check_minloc_maxloc (gfc_actual_arglist *ap)
 				 "arguments '%s' and '%s' for intrinsic %s",
 				 gfc_current_intrinsic_arg[0]->name,
 				 gfc_current_intrinsic_arg[2]->name,
+				 gfc_current_intrinsic))
+    return false;
+
+  if (!kind_check (k, 1, BT_INTEGER))
+    return false;
+
+  return true;
+}
+
+/* Check function for findloc.  Mostly like gfc_check_minloc_maxloc
+   above, with the additional "value" argument.  */
+
+bool
+gfc_check_findloc (gfc_actual_arglist *ap)
+{
+  gfc_expr *a, *v, *m, *d, *k, *b;
+
+  a = ap->expr;
+  if (!intrinsic_type_check (a, 0) || !array_check (a, 0))
+    return false;
+
+  v = ap->next->expr;
+  if (!scalar_check (v,1))
+    return false;
+
+  /* Check if the type is compatible.  */
+
+  if ((a->ts.type == BT_LOGICAL && v->ts.type != BT_LOGICAL)
+      || (a->ts.type != BT_LOGICAL && v->ts.type == BT_LOGICAL))
+    {
+      gfc_error ("Argument %qs of %qs intrinsic at %L must be in type "
+		 "conformance to argument %qs at %L",
+		 gfc_current_intrinsic_arg[0]->name,
+		 gfc_current_intrinsic, &a->where,
+		 gfc_current_intrinsic_arg[1]->name, &v->where);
+    }
+	 
+  d = ap->next->next->expr;
+  m = ap->next->next->next->expr;
+  k = ap->next->next->next->next->expr;
+  b = ap->next->next->next->next->next->expr;
+
+  if (b)
+    {
+      if (!type_check (b, 5, BT_LOGICAL) || !scalar_check (b,4))
+	return false;
+    }
+  else
+    {
+      b = gfc_get_logical_expr (gfc_logical_4_kind, NULL, 0);
+      ap->next->next->next->next->next->expr = b;
+    }
+
+  if (m == NULL && d != NULL && d->ts.type == BT_LOGICAL
+      && ap->next->name == NULL)
+    {
+      m = d;
+      d = NULL;
+      ap->next->next->expr = NULL;
+      ap->next->next->next->expr = m;
+    }
+
+  if (!dim_check (d, 2, false))
+    return false;
+
+  if (!dim_rank_check (d, a, 0))
+    return false;
+
+  if (m != NULL && !type_check (m, 3, BT_LOGICAL))
+    return false;
+
+  if (m != NULL
+      && !gfc_check_conformance (a, m,
+				 "arguments '%s' and '%s' for intrinsic %s",
+				 gfc_current_intrinsic_arg[0]->name,
+				 gfc_current_intrinsic_arg[3]->name,
 				 gfc_current_intrinsic))
     return false;
 

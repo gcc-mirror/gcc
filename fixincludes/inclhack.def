@@ -426,7 +426,17 @@ fix = {
     replace     = <<- _EndOfHeader_
 	#ifndef _REGS_H
 	#define _REGS_H
+	/* regs.h depends on CPU_FAMILY being properly defined, which
+	   is done by vxCpu.h.  */
+	#include <types/vxCpu.h>
+	/* regs.h includes a CPU_FAMILY-specific header that requires
+	   vxTypesOld.h to already have been included.  Those headers
+	   contain proper _ASMLANGUAGE guards around their typedefs,
+	   but vxTypesOld.h itself does not. So we avoid including
+	   vxTypesOld.h from assembly.  */
+	#ifndef _ASMLANGUAGE
 	#include <types/vxTypesOld.h>
+	#endif
 	#include_next <arch/../regs.h>
 	#endif
 	_EndOfHeader_;
@@ -921,6 +931,20 @@ fix = {
     c_fix     = format;
     c_fix_arg = "typedef int sig_atomic_t";
     test_text = "typedef volatile int sig_atomic_t;";
+};
+
+/*
+ *  AIX unistd.h defines a static function with an empty parameter list.
+ */
+fix = {
+    hackname  = aix_unistd;
+    mach      = "*-*-aix*";
+    files     = unistd.h;
+
+    select    = "[ \t]+static[ \t]+int[ \t]+getdtablesize\\(\\)";
+    c_fix     = format;
+    c_fix_arg = "\tstatic int\t\tgetdtablesize(void)";
+    test_text = "	static int		getdtablesize()";
 };
 
 /*
@@ -4902,7 +4926,7 @@ fix = {
 
     c_fix       = format;
     c_fix_arg   = "%0\n"
-        "#define ioctl(fd, func, arg) (ioctl)(fd, func, (int)(arg))\n";
+        "#define ioctl(fd, func, arg) ioctl(fd, func, (int)(arg))\n";
     c_fix_arg   = "extern[\t ]+int[\t ]+ioctl[\t ]*\\([\t ,[:alnum:]]*\\);";
         
     test_text   = "extern int ioctl ( int asdf1234, int jkl , int qwerty ) ;";

@@ -119,6 +119,13 @@ extern int darwin_emit_branch_islands;
    mcpu=G5:ppc970;				\
    :ppc}}"
 
+/* We need to jam the crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_CRT1_SPEC
+#define DARWIN_CRT1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -lcrt1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -lcrt1.10.5.o)	\
+   %{fgnu-tm: -lcrttms.o}"
+
 /* crt2.o is at least partially required for 10.3.x and earlier.  */
 #define DARWIN_CRT2_SPEC \
   "%{!m64:%:version-compare(!> 10.4 mmacosx-version-min= crt2.o%s)}"
@@ -129,6 +136,12 @@ extern int darwin_emit_branch_islands;
   { "darwin_arch", DARWIN_ARCH_SPEC },		\
   { "darwin_crt2", DARWIN_CRT2_SPEC },		\
   { "darwin_subarch", DARWIN_SUBARCH_SPEC },
+
+/* We need to jam the dylib crt to 10.5 for 10.6 (Rosetta) use.  */
+#undef DARWIN_DYLIB1_SPEC
+#define DARWIN_DYLIB1_SPEC						\
+  "%:version-compare(!> 10.5 mmacosx-version-min= -ldylib1.o)		\
+   %:version-compare(>< 10.5 10.7 mmacosx-version-min= -ldylib1.10.5.o)"
 
 /* Output a .machine directive.  */
 #undef TARGET_ASM_FILE_START
@@ -146,17 +159,45 @@ extern int darwin_emit_branch_islands;
 #undef  RS6000_PIC_OFFSET_TABLE_REGNUM
 #define RS6000_PIC_OFFSET_TABLE_REGNUM 31
 
-/* Pad the outgoing args area to 16 bytes instead of the usual 8.  */
+/* Darwin's stack must remain 16-byte aligned for both 32 and 64 bit
+   ABIs.  */
+
+#undef  STACK_BOUNDARY
+#define STACK_BOUNDARY 128
+
+/* Offset within stack frame to start allocating local variables at.
+   For supported Darwin versions, FRAME_GROWS_DOWNWARD is true, therefore
+   this value is the offset to the END of the first local allocated.
+
+   On the RS/6000, the frame pointer is the same as the stack pointer,
+   except for dynamic allocations.  So we start after the fixed area and
+   outgoing parameter area.
+
+   If the function uses dynamic stack space (CALLS_ALLOCA is set), that
+   space needs to be aligned to STACK_BOUNDARY, i.e. the sum of the
+   sizes of the fixed area and the parameter area must be a multiple of
+   STACK_BOUNDARY.  */
 
 #undef RS6000_STARTING_FRAME_OFFSET
 #define RS6000_STARTING_FRAME_OFFSET					\
-  (RS6000_ALIGN (crtl->outgoing_args_size, 16)				\
-   + RS6000_SAVE_AREA)
+  (cfun->calls_alloca							\
+   ? RS6000_ALIGN (crtl->outgoing_args_size + RS6000_SAVE_AREA, 16)	\
+   : (RS6000_ALIGN (crtl->outgoing_args_size, 16) + RS6000_SAVE_AREA))
+
+/* Offset from the stack pointer register to an item dynamically
+   allocated on the stack, e.g., by `alloca'.
+
+   The default value for this macro is `STACK_POINTER_OFFSET' plus the
+   length of the outgoing arguments.  The default is correct for most
+   machines.  See `function.c' for details.
+
+   This value must be a multiple of STACK_BOUNDARY (hard coded in
+   `emit-rtl.c').  */
 
 #undef STACK_DYNAMIC_OFFSET
 #define STACK_DYNAMIC_OFFSET(FUNDECL)					\
-  (RS6000_ALIGN (crtl->outgoing_args_size.to_constant (), 16)		\
-   + (STACK_POINTER_OFFSET))
+  RS6000_ALIGN (crtl->outgoing_args_size.to_constant()			\
+		+ STACK_POINTER_OFFSET, 16)
 
 /* Darwin uses a function call if everything needs to be saved/restored.  */
 

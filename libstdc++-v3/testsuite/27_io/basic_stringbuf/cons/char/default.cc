@@ -17,6 +17,7 @@
 
 // C++11 27.8.2.1  basic_stringbuf constructors  [stringbuf.cons]
 
+// { dg-options "-O0" }
 // { dg-do run { target c++11 } }
 
 #include <sstream>
@@ -29,7 +30,15 @@ void test01()
   test.operator()<std::stringbuf>();
 }
 
-int main() 
+void test02()
+{
+  // PR libstdc++/87618
+  // Compiled without optimisation to check this constructor is exported.
+  std::stringbuf sb;
+}
+
+int main()
 {
   test01();
+  test02();
 }

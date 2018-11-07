@@ -3,7 +3,7 @@
 struct A { };
 struct B: public A {
   A a;
-  operator A () { return a; }  // { dg-warning "3:conversion to a base class will never use a type conversion operator" }
+  operator A () { return a; }  // { dg-warning "3:converting .B. to a base class .A. will never use a type conversion operator" }
 };
 void f (const A&);
 void g()

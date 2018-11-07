@@ -142,8 +142,9 @@ static void cb_include (cpp_reader *, source_location, const unsigned char *,
 static void cb_ident (cpp_reader *, source_location, const cpp_string *);
 static void cb_used_define (cpp_reader *, source_location, cpp_hashnode *);
 static void cb_used_undef (cpp_reader *, source_location, cpp_hashnode *);
-static bool cb_cpp_error (cpp_reader *, int, int, rich_location *,
-			  const char *, va_list *)
+static bool cb_cpp_diagnostic (cpp_reader *, enum cpp_diagnostic_level,
+			       enum cpp_warning_reason, rich_location *,
+			       const char *, va_list *)
      ATTRIBUTE_GCC_DIAG(5,0);
 void pp_dir_change (cpp_reader *, const char *);
 
@@ -504,7 +505,7 @@ gfc_cpp_init_0 (void)
   cb->line_change = cb_line_change;
   cb->ident = cb_ident;
   cb->def_pragma = cb_def_pragma;
-  cb->error = cb_cpp_error;
+  cb->diagnostic = cb_cpp_diagnostic;
 
   if (gfc_cpp_option.dump_includes)
     cb->include = cb_include;
@@ -578,8 +579,7 @@ gfc_cpp_init (void)
     {
       /* Make sure all of the builtins about to be declared have
 	BUILTINS_LOCATION has their source_location.  */
-      source_location builtins_loc = BUILTINS_LOCATION;
-      cpp_force_token_locations (cpp_in, &builtins_loc);
+      cpp_force_token_locations (cpp_in, BUILTINS_LOCATION);
 
       cpp_define_builtins (cpp_in);
 
@@ -881,10 +881,7 @@ cb_file_change (cpp_reader * ARG_UNUSED (pfile), const line_map_ordinary *map)
 	{
 	  /* Bring current file to correct line when entering a new file.  */
 	  if (map->reason == LC_ENTER)
-	    {
-	      const line_map_ordinary *from = INCLUDED_FROM (line_table, map);
-	      maybe_print_line (LAST_SOURCE_LINE_LOCATION (from));
-	    }
+	    maybe_print_line (linemap_included_from (map));
 	  if (map->reason == LC_ENTER)
 	    flags = " 1";
 	  else if (map->reason == LC_LEAVE)
@@ -993,7 +990,7 @@ cb_include (cpp_reader *pfile ATTRIBUTE_UNUSED, source_location line,
 static int
 dump_macro (cpp_reader *pfile, cpp_hashnode *node, void *v ATTRIBUTE_UNUSED)
 {
-  if (node->type == NT_MACRO && !(node->flags & NODE_BUILTIN))
+  if (cpp_user_macro_p (node))
     {
       fputs ("#define ", print.outf);
       fputs ((const char *) cpp_macro_definition (pfile, node),
@@ -1023,9 +1020,11 @@ cb_used_define (cpp_reader *pfile, source_location line ATTRIBUTE_UNUSED,
    Returns true if a diagnostic was emitted, false otherwise.  */
 
 static bool
-cb_cpp_error (cpp_reader *pfile ATTRIBUTE_UNUSED, int level, int reason,
-	      rich_location *richloc,
-	      const char *msg, va_list *ap)
+cb_cpp_diagnostic (cpp_reader *pfile ATTRIBUTE_UNUSED,
+		   enum cpp_diagnostic_level level,
+		   enum cpp_warning_reason reason,
+		   rich_location *richloc,
+		   const char *msg, va_list *ap)
 {
   diagnostic_info diagnostic;
   diagnostic_t dlevel;

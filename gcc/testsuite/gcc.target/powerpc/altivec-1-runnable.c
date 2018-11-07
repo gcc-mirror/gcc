@@ -31,15 +31,8 @@ int main ()
   vector signed int vec_si_result, vec_si_expected;
   vector signed char vec_sc_arg;
   vector signed char vec_sc_result, vec_sc_expected;
-  vector float vec_float_arg;
-  vector double vec_double_result, vec_double_expected;
   vector pixel vec_pixel_arg;
   vector unsigned int vec_ui_result, vec_ui_expected;
-
-  union conv {
-	  double d;
-	  unsigned long long l;
-  } conv_exp, conv_val;
 
   vec_bs_arg = (vector bool short){ 0, 101, 202, 303,
 				    404, 505, 606, 707 };
@@ -208,49 +201,6 @@ int main ()
 #else
        abort();
 #endif
-  }
-  
-
-  vec_float_arg = (vector float){ 0.0, 1.5, 2.5, 3.5 };
-
-  vec_double_expected = (vector double){ 0.0, 1.5 };
-
-  vec_double_result = vec_unpackh (vec_float_arg);
-
-  for (i = 0; i < 2; i++) {
-    if (vec_double_expected[i] != vec_double_result[i])
-      {
-#if DEBUG
-	 printf("ERROR: vec_unpackh(), vec_double_expected[%d] = %f does not match vec_double_result[%d] = %f\n",
-		i, vec_double_expected[i], i, vec_double_result[i]);
-	 conv_val.d = vec_double_result[i];
-	 conv_exp.d = vec_double_expected[i];
-	 printf("     vec_unpackh(), vec_double_expected[%d] = 0x%llx does not match vec_double_result[%d] = 0x%llx\n",
-		i, conv_exp.l, i,conv_val.l);
-#else
-	 abort();
-#endif
-    }
-  }
-
-  vec_double_expected = (vector double){ 2.5, 3.5 };
-
-  vec_double_result = vec_unpackl (vec_float_arg);
-
-  for (i = 0; i < 2; i++) {
-    if (vec_double_expected[i] != vec_double_result[i])
-      {
-#if DEBUG
-         printf("ERROR: vec_unpackl() vec_double_expected[%d] = %f does not match vec_double_result[%d] = %f\n",
-		i, vec_double_expected[i], i, vec_double_result[i]);
-	 conv_val.d = vec_double_result[i];
-	 conv_exp.d = vec_double_expected[i];
-	 printf("     vec_unpackh(), vec_double_expected[%d] = 0x%llx does not match vec_double_result[%d] = 0x%llx\n",
-		i, conv_exp.l, i,conv_val.l);
-#else
-         abort();
-#endif
-      }
   }
 
   return 0;

@@ -6128,7 +6128,7 @@
   [(set (match_operand:SI 0 "arm_general_register_operand" "")
        (match_operand:SI 1 "general_operand" ""))]
   "TARGET_USE_MOVT && GET_CODE (operands[1]) == SYMBOL_REF
-   && !flag_pic && !target_word_relocations
+   && !target_word_relocations
    && !arm_tls_referenced_p (operands[1])"
   [(clobber (const_int 0))]
 {
@@ -12011,6 +12011,33 @@
 }
   [(set_attr "length" "4")
    (set_attr "type" "coproc")])
+
+(define_expand "speculation_barrier"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
+  "TARGET_EITHER"
+  "
+  /* For thumb1 (except Armv8 derivatives), and for pre-Armv7 we don't
+     have a usable barrier (and probably don't need one in practice).
+     But to be safe if such code is run on later architectures, call a
+     helper function in libgcc that will do the thing for the active
+     system.  */
+  if (!(arm_arch7 || arm_arch8))
+    {
+      arm_emit_speculation_barrier_function ();
+      DONE;
+    }
+  "
+)
+
+;; Generate a hard speculation barrier when we have not enabled speculation
+;; tracking.
+(define_insn "*speculation_barrier_insn"
+  [(unspec_volatile [(const_int 0)] VUNSPEC_SPECULATION_BARRIER)]
+  "arm_arch7 || arm_arch8"
+  "isb\;dsb\\tsy"
+  [(set_attr "type" "block")
+   (set_attr "length" "8")]
+)
 
 ;; Vector bits common to IWMMXT and Neon
 (include "vec-common.md")

@@ -1,5 +1,5 @@
 // PR c++/82836
-// { dg-options "-std=c++17" }
+// { dg-do compile { target c++17 } }
 // { dg-require-effective-target int128 }
 // { dg-require-effective-target __float128 }
 // { dg-additional-options "-Wno-pedantic -Wno-return-type" }

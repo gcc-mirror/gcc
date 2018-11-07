@@ -23,6 +23,8 @@
 // working, not to mention other major details like char_traits, and
 // all of the string class.
 
+// { dg-require-fileio "" }
+
 #include <string>
 #include <fstream>
 #include <iostream>

@@ -4067,6 +4067,8 @@ package body Exp_Ch4 is
          Op_Expr  : constant Node_Id := New_Op_Node (Nkind (N), Loc);
          Mod_Expr : constant Node_Id := New_Op_Node (N_Op_Mod, Loc);
 
+         Target_Type   : Entity_Id;
+
       begin
          --  Convert nonbinary modular type operands into integer values. Thus
          --  we avoid never-ending loops expanding them, and we also ensure
@@ -4083,11 +4085,21 @@ package body Exp_Ch4 is
               Unchecked_Convert_To (Standard_Integer, Op_Expr));
 
          else
+            --  If the modulus of the type is larger than Integer'Last
+            --  use a larger type for the operands, to prevent spurious
+            --  constraint errors on large legal literals of the type.
+
+            if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
+               Target_Type := Standard_Long_Integer;
+            else
+               Target_Type := Standard_Integer;
+            end if;
+
             Set_Left_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Integer,
+              Unchecked_Convert_To (Target_Type,
                 New_Copy_Tree (Left_Opnd (N))));
             Set_Right_Opnd (Op_Expr,
-              Unchecked_Convert_To (Standard_Integer,
+              Unchecked_Convert_To (Target_Type,
                 New_Copy_Tree (Right_Opnd (N))));
 
             --  Link this node to the tree to analyze it
@@ -4417,6 +4429,7 @@ package body Exp_Ch4 is
             Set_Storage_Pool (N, Pool);
 
             if Is_RTE (Pool, RE_SS_Pool) then
+               Check_Restriction (No_Secondary_Stack, N);
                Set_Procedure_To_Call (N, RTE (RE_SS_Allocate));
 
             --  In the case of an allocator for a simple storage pool, locate
@@ -11693,6 +11706,11 @@ package body Exp_Ch4 is
             elsif Is_Integer_Type (Etype (N)) then
                Expand_Convert_Fixed_To_Integer (N);
 
+               --  The result of the conversion might need a range check,
+               --   so do not assume that the result is in bounds.
+
+               Set_Etype (N, Base_Type (Target_Type));
+
             else
                pragma Assert (Is_Floating_Point_Type (Etype (N)));
                Expand_Convert_Fixed_To_Float (N);
@@ -12547,7 +12565,7 @@ package body Exp_Ch4 is
             Sel_Comp := Parent (Sel_Comp);
          end loop;
 
-         return Ekind (Entity (Prefix (Sel_Comp))) in Formal_Kind;
+         return Is_Formal (Entity (Prefix (Sel_Comp)));
       end Prefix_Is_Formal_Parameter;
 
    --  Start of processing for Has_Inferable_Discriminants

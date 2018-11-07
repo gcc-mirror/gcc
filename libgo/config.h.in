@@ -141,6 +141,9 @@
 /* Define to 1 if you have the `matherr' function. */
 #undef HAVE_MATHERR
 
+/* Define to 1 if you have the `memmem' function. */
+#undef HAVE_MEMMEM
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 

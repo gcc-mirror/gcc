@@ -144,7 +144,8 @@ Currently, @file{rtl.def} defines these classes:
 An RTX code that represents an actual object, such as a register
 (@code{REG}) or a memory location (@code{MEM}, @code{SYMBOL_REF}).
 @code{LO_SUM}) is also included; instead, @code{SUBREG} and
-@code{STRICT_LOW_PART} are not in this class, but in class @code{x}.
+@code{STRICT_LOW_PART} are not in this class, but in class
+@code{RTX_EXTRA}.
 
 @item RTX_CONST_OBJ
 An RTX code that represents a constant object.  @code{HIGH} is also
@@ -166,7 +167,7 @@ An RTX code for a unary arithmetic operation, such as @code{NEG},
 @item RTX_COMM_ARITH
 An RTX code for a commutative binary operation, such as @code{PLUS} or
 @code{AND}.  @code{NE} and @code{EQ} are comparisons, so they have class
-@code{<}.
+@code{RTX_COMM_COMPARE}.
 
 @item RTX_BIN_ARITH
 An RTX code for a non-commutative binary operation, such as @code{MINUS},
@@ -284,26 +285,28 @@ Some classes of RTX codes always have the same format.  For example, it
 is safe to assume that all comparison operations have format @code{ee}.
 
 @table @code
-@item 1
+@item RTX_UNARY
 All codes of this class have format @code{e}.
 
-@item <
-@itemx c
-@itemx 2
+@item RTX_BIN_ARITH
+@itemx RTX_COMM_ARITH
+@itemx RTX_COMM_COMPARE
+@itemx RTX_COMPARE
 All codes of these classes have format @code{ee}.
 
-@item b
-@itemx 3
+@item RTX_BITFIELD_OPS
+@itemx RTX_TERNARY
 All codes of these classes have format @code{eee}.
 
-@item i
+@item RTX_INSN
 All codes of this class have formats that begin with @code{iuueiee}.
 @xref{Insns}.  Note that not all RTL objects linked onto an insn chain
-are of class @code{i}.
+are of class @code{RTX_INSN}.
 
-@item o
-@itemx m
-@itemx x
+@item RTX_CONST_OBJ
+@itemx RTX_OBJ
+@itemx RTX_MATCH
+@itemx RTX_EXTRA
 You can make no assumptions about the format of these codes.
 @end table
 
@@ -1390,11 +1393,6 @@ Complex floating point modes.  By default these are @code{QCmode},
 @code{HCmode}, @code{SCmode}, @code{DCmode}, @code{XCmode}, and
 @code{TCmode}.
 
-@findex MODE_FUNCTION
-@item MODE_FUNCTION
-Algol or Pascal function variables including a static chain.
-(These are not currently implemented).
-
 @findex MODE_CC
 @item MODE_CC
 Modes representing condition code values.  These are @code{CCmode} plus
@@ -1734,7 +1732,7 @@ Note that this generally is smaller than the number of
 @code{HOST_WIDE_INT}s implied by the mode size.
 
 @findex CONST_WIDE_INT_ELT
-@item CONST_WIDE_INT_NUNITS (@var{code},@var{i})
+@item CONST_WIDE_INT_ELT (@var{code},@var{i})
 Returns the @code{i}th element of the array.   Element 0 is contains
 the low order bits of the constant.
 
@@ -1808,7 +1806,7 @@ CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 3
 Thus the first 6 elements (@samp{@{ 0, 1, 2, 6, 3, 8 @}}) are enough
 to determine the whole sequence; we refer to them as the ``encoded''
 elements.  They are the only elements present in the square brackets
-for variable-length @code{const_vector}s (i.e. for
+for variable-length @code{const_vector}s (i.e.@: for
 @code{const_vector}s whose mode @var{m} has a variable number of
 elements).  However, as a convenience to code that needs to handle
 both @code{const_vector}s and @code{parallel}s, all elements are
@@ -2936,11 +2934,12 @@ a set bit indicates it is taken from @var{vec1}.
 @item (vec_select:@var{m} @var{vec1} @var{selection})
 This describes an operation that selects parts of a vector.  @var{vec1} is
 the source vector, and @var{selection} is a @code{parallel} that contains a
-@code{const_int} for each of the subparts of the result vector, giving the
-number of the source subpart that should be stored into it.
-The result mode @var{m} is either the submode for a single element of
-@var{vec1} (if only one subpart is selected), or another vector mode
-with that element submode (if multiple subparts are selected).
+@code{const_int} (or another expression, if the selection can be made at
+runtime) for each of the subparts of the result vector, giving the number of
+the source subpart that should be stored into it.  The result mode @var{m} is
+either the submode for a single element of @var{vec1} (if only one subpart is
+selected), or another vector mode with that element submode (if multiple
+subparts are selected).
 
 @findex vec_concat
 @item (vec_concat:@var{m} @var{x1} @var{x2})
@@ -3296,6 +3295,18 @@ There is one other known use for clobbering a pseudo register in a
 clobbered by the insn.  In this case, using the same pseudo register in
 the clobber and elsewhere in the insn produces the expected results.
 
+@findex clobber_high
+@item (clobber_high @var{x})
+Represents the storing or possible storing of an unpredictable,
+undescribed value into the upper parts of @var{x}. The mode of the expression
+represents the lower parts of the register which will not be overwritten.
+@code{reg} must be a reg expression.
+
+One place this is used is when calling into functions where the registers are
+preserved, but only up to a given number of bits.  For example when using
+Aarch64 SVE, calling a TLS descriptor will cause only the lower 128 bits of
+each of the vector registers to be preserved.
+
 @findex use
 @item (use @var{x})
 Represents the use of the value of @var{x}.  It indicates that the
@@ -3349,7 +3360,8 @@ Represents several side effects performed in parallel.  The square
 brackets stand for a vector; the operand of @code{parallel} is a
 vector of expressions.  @var{x0}, @var{x1} and so on are individual
 side effect expressions---expressions of code @code{set}, @code{call},
-@code{return}, @code{simple_return}, @code{clobber} or @code{use}.
+@code{return}, @code{simple_return}, @code{clobber} @code{use} or
+@code{clobber_high}.
 
 ``In parallel'' means that first all the values used in the individual
 side-effects are computed, and second all the actual side-effects are
@@ -3405,7 +3417,7 @@ side-effects.
 @item (sequence [@var{insns} @dots{}])
 Represents a sequence of insns.  If a @code{sequence} appears in the
 chain of insns, then each of the @var{insns} that appears in the sequence
-must be suitable for appearing in the chain of insns, i.e. must satisfy
+must be suitable for appearing in the chain of insns, i.e.@: must satisfy
 the @code{INSN_P} predicate.
 
 After delay-slot scheduling is completed, an insn and all the insns that

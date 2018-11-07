@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-fwhole-file" }
+! { dg-options "" }
 !
 ! PR fortran/41235
 !

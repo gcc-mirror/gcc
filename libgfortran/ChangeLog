@@ -1,3 +1,460 @@
+2018-10-31  Joseph Myers  <joseph@codesourcery.com>
+
+	PR bootstrap/82856
+	* Makefile.am: Include multilib.am.
+	* configure.ac: Remove AC_PREREQ.
+	* Makefile.in, aclocal.m4, config.h.in, configure: Regenerate.
+
+2017-10-28  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54613
+	* Makefile.am: Add files for findloc.
+	* Makefile.in: Regenerated.
+	* libgfortran.h (gfc_array_index_type): Add.
+	(gfc_array_s1): Add using GFC_UINTEGER_1.
+	(gfc_array_s4): Likewise.
+	Replace unnecessary comment.
+	(HAVE_GFC_UINTEGER_1): Define.
+	(HAVE_GFC_UINTEGER_4): Define.
+	* m4/findloc0.m4: New file.
+	* m4/findloc0s.m4: New file.
+	* m4/findloc1.m4: New file.
+	* m4/findloc1s.m4: New file.
+	* m4/findloc2s.m4: New file.
+	* m4/ifindloc0.m4: New file.
+	* m4/ifindloc1.m4: New file.
+	* m4/ifindloc2.m4: New file.
+	* m4/iparm.m4: Use unsigned integer for characters.
+        * generated/findloc0_c16.c: New file.
+        * generated/findloc0_c4.c: New file.
+        * generated/findloc0_c8.c: New file.
+        * generated/findloc0_i1.c: New file.
+        * generated/findloc0_i16.c: New file.
+        * generated/findloc0_i2.c: New file.
+        * generated/findloc0_i4.c: New file.
+        * generated/findloc0_i8.c: New file.
+        * generated/findloc0_r16.c: New file.
+        * generated/findloc0_r4.c: New file.
+        * generated/findloc0_r8.c: New file.
+        * generated/findloc0_s1.c: New file.
+        * generated/findloc0_s4.c: New file.
+        * generated/findloc1_c16.c: New file.
+        * generated/findloc1_c4.c: New file.
+        * generated/findloc1_c8.c: New file.
+        * generated/findloc1_i1.c: New file.
+        * generated/findloc1_i16.c: New file.
+        * generated/findloc1_i2.c: New file.
+        * generated/findloc1_i4.c: New file.
+        * generated/findloc1_i8.c: New file.
+        * generated/findloc1_r16.c: New file.
+        * generated/findloc1_r4.c: New file.
+        * generated/findloc1_r8.c: New file.
+        * generated/findloc1_s1.c: New file.
+        * generated/findloc1_s4.c: New file.
+        * generated/findloc2_s1.c: New file.
+        * generated/findloc2_s4.c: New file.
+        * generated/maxloc0_16_s1.c: Regenerated.
+        * generated/maxloc0_16_s4.c: Regenerated.
+        * generated/maxloc0_4_s1.c: Regenerated.
+        * generated/maxloc0_4_s4.c: Regenerated.
+        * generated/maxloc0_8_s1.c: Regenerated.
+        * generated/maxloc0_8_s4.c: Regenerated.
+        * generated/maxloc1_16_s1.c: Regenerated.
+        * generated/maxloc1_16_s4.c: Regenerated.
+        * generated/maxloc1_4_s1.c: Regenerated.
+        * generated/maxloc1_4_s4.c: Regenerated.
+        * generated/maxloc1_8_s1.c: Regenerated.
+        * generated/maxloc1_8_s4.c: Regenerated.
+        * generated/maxloc2_16_s1.c: Regenerated.
+        * generated/maxloc2_16_s4.c: Regenerated.
+        * generated/maxloc2_4_s1.c: Regenerated.
+        * generated/maxloc2_4_s4.c: Regenerated.
+        * generated/maxloc2_8_s1.c: Regenerated.
+        * generated/maxloc2_8_s4.c: Regenerated.
+        * generated/maxval0_s1.c: Regenerated.
+        * generated/maxval0_s4.c: Regenerated.
+        * generated/maxval1_s1.c: Regenerated.
+        * generated/maxval1_s4.c: Regenerated.
+        * generated/minloc0_16_s1.c: Regenerated.
+        * generated/minloc0_16_s4.c: Regenerated.
+        * generated/minloc0_4_s1.c: Regenerated.
+        * generated/minloc0_4_s4.c: Regenerated.
+        * generated/minloc0_8_s1.c: Regenerated.
+        * generated/minloc0_8_s4.c: Regenerated.
+        * generated/minloc1_16_s1.c: Regenerated.
+        * generated/minloc1_16_s4.c: Regenerated.
+        * generated/minloc1_4_s1.c: Regenerated.
+        * generated/minloc1_4_s4.c: Regenerated.
+        * generated/minloc1_8_s1.c: Regenerated.
+        * generated/minloc1_8_s4.c: Regenerated.
+        * generated/minloc2_16_s1.c: Regenerated.
+        * generated/minloc2_16_s4.c: Regenerated.
+        * generated/minloc2_4_s1.c: Regenerated.
+        * generated/minloc2_4_s4.c: Regenerated.
+        * generated/minloc2_8_s1.c: Regenerated.
+        * generated/minloc2_8_s4.c: Regenerated.
+        * generated/minval0_s1.c: Regenerated.
+        * generated/minval0_s4.c: Regenerated.
+        * generated/minval1_s1.c: Regenerated.
+        * generated/minval1_s4.c: Regenerated.
+
+2018-10-06  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* io/unix.c (compare_file_filename): Use gfc_charlen_type instead
+	of int for string length.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_access): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+	* io/unix.h (compare_file_filename): Likewise.
+	(inquire_sequential): Likewise.
+	(inquire_direct): Likewise.
+	(inquire_formatted): Likewise.
+	(inquire_unformatted): Likewise.
+	(inquire_read): Likewise.
+	(inquire_write): Likewise.
+	(inquire_readwrite): Likewise.
+
+2018-10-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* io/close.c [!HAVE_UNLINK_OPEN_FILE]: Include <string.h>.
+
+2018-09-21  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+	* configure.ac: Check for writev and sys/uio.h.
+	* libgfortran.h: Include sys/uio.h.
+	(st_vprintf): Remove prototype.
+	(struct iovec): Define if not available.
+	(estr_writev): New prototype.
+	* runtime/backtrace.c (error_callback): Use estr_writev.
+	* runtime/error.c (ST_VPRINTF_SIZE): Remove.
+	(estr_writev): New function.
+	(st_vprintf): Remove.
+	(gf_vsnprintf): New function.
+	(ST_ERRBUF_SIZE): New macro.
+	(st_printf): Use vsnprintf.
+	(os_error): Use estr_writev.
+	(runtime_error): Use vsnprintf and estr_writev.
+	(runtime_error_at): Likewise.
+	(runtime_warning_at): Likewise.
+	(internal_error): Use estr_writev.
+	(generate_error_common): Likewise.
+	(generate_warning): Likewise.
+	(notify_std): Likewise.
+	* runtime/pause.c (pause_string): Likewise.
+	* runtime/stop.c (report_exception): Likewise.
+	(stop_string): Likewise.
+	(error_stop_string): Likewise.
+
+2018-09-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/37802
+	* m4/matmul_internal.m4: Adjust error messages.
+        * generated/matmul_c10.c: Regenerated.
+        * generated/matmul_c16.c: Regenerated.
+        * generated/matmul_c4.c: Regenerated.
+        * generated/matmul_c8.c: Regenerated.
+        * generated/matmul_i1.c: Regenerated.
+        * generated/matmul_i16.c: Regenerated.
+        * generated/matmul_i2.c: Regenerated.
+        * generated/matmul_i4.c: Regenerated.
+        * generated/matmul_i8.c: Regenerated.
+        * generated/matmul_r10.c: Regenerated.
+        * generated/matmul_r16.c: Regenerated.
+        * generated/matmul_r4.c: Regenerated.
+        * generated/matmul_r8.c: Regenerated.
+        * generated/matmulavx128_c10.c: Regenerated.
+        * generated/matmulavx128_c16.c: Regenerated.
+        * generated/matmulavx128_c4.c: Regenerated.
+        * generated/matmulavx128_c8.c: Regenerated.
+        * generated/matmulavx128_i1.c: Regenerated.
+        * generated/matmulavx128_i16.c: Regenerated.
+        * generated/matmulavx128_i2.c: Regenerated.
+        * generated/matmulavx128_i4.c: Regenerated.
+        * generated/matmulavx128_i8.c: Regenerated.
+        * generated/matmulavx128_r10.c: Regenerated.
+        * generated/matmulavx128_r16.c: Regenerated.
+        * generated/matmulavx128_r4.c: Regenerated.
+        * generated/matmulavx128_r8.c: Regenerated.
+
+2018-09-14  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* io/unix.c (fallback_access): Avoid calling close on
+	uninitialized file descriptor.
+
+2018-09-12  Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* runtime/minimal.c (estr_write): Define in terms of write.
+
+2018-09-12  Andrew Stubbs  <ams@codesourcery.com>
+
+	* runtime/minimal.c (exit): Only work around nvptx bugs on nvptx.
+
+2018-09-07  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* runtime/environ.c (init_unsigned_integer): Remove.
+
+2018-09-05  Hans-Peter Nilsson  <hp@axis.com>
+
+	* io/async.h: Use __gthread_mutex_t, not pthread_mutex_t.
+
+2018-09-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* io/io.h: Change declaration of vlist type to
+	gfc_full_array_i4 to eliminate warning for mismatched type.
+	* io/format.c ((parse_format_list): Use gfc_full_array_i4.
+	* io/io.h: Use gfc_full_array_i4.
+
+2018-08-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR libfortran/86704
+	* m4/matmul_internal.m4: Correct calculation of needed buffer size
+	for arrays of shape (1,n).
+	* generated/matmul_c10.c: Regenerated
+	* generated/matmul_c16.c: Regenerated
+	* generated/matmul_c4.c: Regenerated
+	* generated/matmul_c8.c: Regenerated
+	* generated/matmul_i1.c: Regenerated
+	* generated/matmul_i16.c: Regenerated
+	* generated/matmul_i2.c: Regenerated
+	* generated/matmul_i4.c: Regenerated
+	* generated/matmul_i8.c: Regenerated
+	* generated/matmul_r10.c: Regenerated
+	* generated/matmul_r16.c: Regenerated
+	* generated/matmul_r4.c: Regenerated
+	* generated/matmul_r8.c: Regenerated
+	* generated/matmulavx128_c10.c: Regenerated
+	* generated/matmulavx128_c16.c: Regenerated
+	* generated/matmulavx128_c4.c: Regenerated
+	* generated/matmulavx128_c8.c: Regenerated
+	* generated/matmulavx128_i1.c: Regenerated
+	* generated/matmulavx128_i16.c: Regenerated
+	* generated/matmulavx128_i2.c: Regenerated
+	* generated/matmulavx128_i4.c: Regenerated
+	* generated/matmulavx128_i8.c: Regenerated
+	* generated/matmulavx128_r10.c: Regenerated
+	* generated/matmulavx128_r16.c: Regenerated
+	* generated/matmulavx128_r4.c: Regenerated
+	* generated/matmulavx128_r8.c: Regenerated
+
+2018-08-23  David Edelsohn  <dje.gcc@gmail.com>
+
+	* async.h (ASYNC_IO): Revert _AIX test.
+
+2018-08-22  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* async.h: Set ASYNC_IO to zero if _AIX is defined.
+	(struct adv_cond): If ASYNC_IO is zero, the struct has no members.
+	(async_unit): If ASYNC_IO is zero, remove unneeded members.
+
+2018-08-21  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* Makefile.am: Add async.c to gfor_io_src.
+	Add async.h to gfor_io_headers.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_st_wait_async.
+	* io/async.c: New file.
+	* io/async.h: New file.
+	* io/close.c: Include async.h.
+	(st_close): Call async_wait for an asynchronous unit.
+	* io/file_pos.c (st_backspace): Likewise.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	(st_flush): Likewise.
+	* io/inquire.c: Add handling for asynchronous PENDING
+	and ID arguments.
+	* io/io.h (st_parameter_dt): Add async bit.
+	(st_parameter_wait): Correct.
+	(gfc_unit): Add au pointer.
+	(st_wait_async): Add prototype.
+	(transfer_array_inner): Likewise.
+	(st_write_done_worker): Likewise.
+	* io/open.c: Include async.h.
+	(new_unit): Initialize asynchronous unit.
+	* io/transfer.c (async_opt): New struct.
+	(wrap_scalar_transfer): New function.
+	(transfer_integer): Call wrap_scalar_transfer to do the work.
+	(transfer_real): Likewise.
+	(transfer_real_write): Likewise.
+	(transfer_character): Likewise.
+	(transfer_character_wide): Likewise.
+	(transfer_complex): Likewise.
+	(transfer_array_inner): New function.
+	(transfer_array): Call transfer_array_inner.
+	(transfer_derived): Call wrap_scalar_transfer.
+	(data_transfer_init): Check for asynchronous I/O.
+	Perform a wait operation on any pending asynchronous I/O
+	if the data transfer is synchronous. Copy PDT and enqueue
+	thread for data transfer.
+	(st_read_done_worker): New function.
+	(st_read_done): Enqueue transfer or call st_read_done_worker.
+	(st_write_done_worker): New function.
+	(st_write_done): Enqueue transfer or call st_read_done_worker.
+	(st_wait): Document as no-op for compatibility reasons.
+	(st_wait_async): New function.
+	* io/unit.c (insert_unit): Use macros LOCK, UNLOCK and TRYLOCK;
+	add NOTE where necessary.
+	(get_gfc_unit): Likewise.
+	(init_units): Likewise.
+	(close_unit_1): Likewise. Call async_close if asynchronous.
+	(close_unit): Use macros LOCK and UNLOCK.
+	(finish_last_advance_record): Likewise.
+	(newunit_alloc): Likewise.
+	* io/unix.c (find_file): Likewise.
+	(flush_all_units_1): Likewise.
+	(flush_all_units): Likewise.
+	* libgfortran.h (generate_error_common): Add prototype.
+	* runtime/error.c: Include io.h and async.h.
+	(generate_error_common): New function.
+
+2018-08-15  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac: Check for <sys/random.h>.
+	* configure, config.h.in: Regenerate.
+	* intrinsics/random.c [HAVE_SYS_RANDOM_H]: Include <sys/random.h>.
+
+2018-08-13  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* configure.ac: Check for getentropy.
+	* intrinsics/random.c (getosrandom): Use getentropy if available.
+	* config.h.in: Regenerated.
+	* configure: Regenerated.
+
+2018-07-31  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Revert 'AsyncI/O patch committed'
+	2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+		Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* Makefile.am: Add async.c to gfor_io_src.
+	Add async.h to gfor_io_headers.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_st_wait_async.
+	* io/async.c: New file.
+	* io/async.h: New file.
+	* io/close.c: Include async.h.
+	(st_close): Call async_wait for an asynchronous unit.
+	* io/file_pos.c (st_backspace): Likewise.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	(st_flush): Likewise.
+	* io/inquire.c: Add handling for asynchronous PENDING
+	and ID arguments.
+	* io/io.h (st_parameter_dt): Add async bit.
+	(st_parameter_wait): Correct.
+	(gfc_unit): Add au pointer.
+	(st_wait_async): Add prototype.
+	(transfer_array_inner): Likewise.
+	(st_write_done_worker): Likewise.
+	* io/open.c: Include async.h.
+	(new_unit): Initialize asynchronous unit.
+	* io/transfer.c (async_opt): New struct.
+	(wrap_scalar_transfer): New function.
+	(transfer_integer): Call wrap_scalar_transfer to do the work.
+	(transfer_real): Likewise.
+	(transfer_real_write): Likewise.
+	(transfer_character): Likewise.
+	(transfer_character_wide): Likewise.
+	(transfer_complex): Likewise.
+	(transfer_array_inner): New function.
+	(transfer_array): Call transfer_array_inner.
+	(transfer_derived): Call wrap_scalar_transfer.
+	(data_transfer_init): Check for asynchronous I/O.
+	Perform a wait operation on any pending asynchronous I/O
+	if the data transfer is synchronous. Copy PDT and enqueue
+	thread for data transfer.
+	(st_read_done_worker): New function.
+	(st_read_done): Enqueue transfer or call st_read_done_worker.
+	(st_write_done_worker): New function.
+	(st_write_done): Enqueue transfer or call st_read_done_worker.
+	(st_wait): Document as no-op for compatibility reasons.
+	(st_wait_async): New function.
+	* io/unit.c (insert_unit): Use macros LOCK, UNLOCK and TRYLOCK;
+	add NOTE where necessary.
+	(get_gfc_unit): Likewise.
+	(init_units): Likewise.
+	(close_unit_1): Likewise. Call async_close if asynchronous.
+	(close_unit): Use macros LOCK and UNLOCK.
+	(finish_last_advance_record): Likewise.
+	(newunit_alloc): Likewise.
+	* io/unix.c (find_file): Likewise.
+	(flush_all_units_1): Likewise.
+	(flush_all_units): Likewise.
+	* libgfortran.h (generate_error_common): Add prototype.
+	* runtime/error.c: Include io.h and async.h.
+	(generate_error_common): New function.
+
+2018-07-25  Nicolas Koenig  <koenigni@gcc.gnu.org>
+	Thomas Koenig <tkoenig@gcc.gnu.org>
+
+	PR fortran/25829
+	* Makefile.am: Add async.c to gfor_io_src.
+	Add async.h to gfor_io_headers.
+	* Makefile.in: Regenerated.
+	* gfortran.map: Add _gfortran_st_wait_async.
+	* io/async.c: New file.
+	* io/async.h: New file.
+	* io/close.c: Include async.h.
+	(st_close): Call async_wait for an asynchronous unit.
+	* io/file_pos.c (st_backspace): Likewise.
+	(st_endfile): Likewise.
+	(st_rewind): Likewise.
+	(st_flush): Likewise.
+	* io/inquire.c: Add handling for asynchronous PENDING
+	and ID arguments.
+	* io/io.h (st_parameter_dt): Add async bit.
+	(st_parameter_wait): Correct.
+	(gfc_unit): Add au pointer.
+	(st_wait_async): Add prototype.
+	(transfer_array_inner): Likewise.
+	(st_write_done_worker): Likewise.
+	* io/open.c: Include async.h.
+	(new_unit): Initialize asynchronous unit.
+	* io/transfer.c (async_opt): New struct.
+	(wrap_scalar_transfer): New function.
+	(transfer_integer): Call wrap_scalar_transfer to do the work.
+	(transfer_real): Likewise.
+	(transfer_real_write): Likewise.
+	(transfer_character): Likewise.
+	(transfer_character_wide): Likewise.
+	(transfer_complex): Likewise.
+	(transfer_array_inner): New function.
+	(transfer_array): Call transfer_array_inner.
+	(transfer_derived): Call wrap_scalar_transfer.
+	(data_transfer_init): Check for asynchronous I/O.
+	Perform a wait operation on any pending asynchronous I/O
+	if the data transfer is synchronous. Copy PDT and enqueue
+	thread for data transfer.
+	(st_read_done_worker): New function.
+	(st_read_done): Enqueue transfer or call st_read_done_worker.
+	(st_write_done_worker): New function.
+	(st_write_done): Enqueue transfer or call st_read_done_worker.
+	(st_wait): Document as no-op for compatibility reasons.
+	(st_wait_async): New function.
+	* io/unit.c (insert_unit): Use macros LOCK, UNLOCK and TRYLOCK;
+	add NOTE where necessary.
+	(get_gfc_unit): Likewise.
+	(init_units): Likewise.
+	(close_unit_1): Likewise. Call async_close if asynchronous.
+	(close_unit): Use macros LOCK and UNLOCK.
+	(finish_last_advance_record): Likewise.
+	(newunit_alloc): Likewise.
+	* io/unix.c (find_file): Likewise.
+	(flush_all_units_1): Likewise.
+	(flush_all_units): Likewise.
+	* libgfortran.h (generate_error_common): Add prototype.
+	* runtime/error.c: Include io.h and async.h.
+	(generate_error_common): New function.
+
 2018-06-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/86070

@@ -436,7 +436,8 @@ record_edge_info (basic_block bb)
 	      for (i = 0; i < n_labels; i++)
 		{
 		  tree label = gimple_switch_label (switch_stmt, i);
-		  basic_block target_bb = label_to_block (CASE_LABEL (label));
+		  basic_block target_bb
+		    = label_to_block (cfun, CASE_LABEL (label));
 		  if (CASE_HIGH (label)
 		      || !CASE_LOW (label)
 		      || info[target_bb->index])
@@ -881,25 +882,27 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 	return NULL_TREE;
 
       value_range *vr = x_vr_values->get_value_range (op);
-      if ((vr->type != VR_RANGE && vr->type != VR_ANTI_RANGE)
-	  || symbolic_range_p (vr))
+      if (vr->undefined_p ()
+	  || vr->varying_p ()
+	  || vr->symbolic_p ())
 	return NULL_TREE;
 
-      if (vr->type == VR_RANGE)
+      if (vr->kind () == VR_RANGE)
 	{
 	  size_t i, j;
 
-	  find_case_label_range (switch_stmt, vr->min, vr->max, &i, &j);
+	  find_case_label_range (switch_stmt, vr->min (), vr->max (), &i, &j);
 
 	  if (i == j)
 	    {
 	      tree label = gimple_switch_label (switch_stmt, i);
+	      tree singleton;
 
 	      if (CASE_HIGH (label) != NULL_TREE
-		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min) <= 0
-		     && tree_int_cst_compare (CASE_HIGH (label), vr->max) >= 0)
-		  : (tree_int_cst_equal (CASE_LOW (label), vr->min)
-		     && tree_int_cst_equal (vr->min, vr->max)))
+		  ? (tree_int_cst_compare (CASE_LOW (label), vr->min ()) <= 0
+		     && tree_int_cst_compare (CASE_HIGH (label), vr->max ()) >= 0)
+		  : (vr->singleton_p (&singleton)
+		     && tree_int_cst_equal (CASE_LOW (label), singleton)))
 		return label;
 
 	      if (i > j)
@@ -907,7 +910,7 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 	    }
 	}
 
-      if (vr->type == VR_ANTI_RANGE)
+      if (vr->kind () == VR_ANTI_RANGE)
           {
             unsigned n = gimple_switch_num_labels (switch_stmt);
             tree min_label = gimple_switch_label (switch_stmt, 1);
@@ -916,10 +919,10 @@ simplify_stmt_for_jump_threading (gimple *stmt,
             /* The default label will be taken only if the anti-range of the
                operand is entirely outside the bounds of all the (non-default)
                case labels.  */
-            if (tree_int_cst_compare (vr->min, CASE_LOW (min_label)) <= 0
+            if (tree_int_cst_compare (vr->min (), CASE_LOW (min_label)) <= 0
                 && (CASE_HIGH (max_label) != NULL_TREE
-                    ? tree_int_cst_compare (vr->max, CASE_HIGH (max_label)) >= 0
-                    : tree_int_cst_compare (vr->max, CASE_LOW (max_label)) >= 0))
+                    ? tree_int_cst_compare (vr->max (), CASE_HIGH (max_label)) >= 0
+                    : tree_int_cst_compare (vr->max (), CASE_LOW (max_label)) >= 0))
             return gimple_switch_label (switch_stmt, 0);
           }
 	return NULL_TREE;
@@ -935,11 +938,12 @@ simplify_stmt_for_jump_threading (gimple *stmt,
 	{
 	  edge dummy_e;
 	  tree dummy_tree;
-	  value_range new_vr = VR_INITIALIZER;
+	  value_range new_vr;
 	  x_vr_values->extract_range_from_stmt (stmt, &dummy_e,
 					      &dummy_tree, &new_vr);
-	  if (range_int_cst_singleton_p (&new_vr))
-	    return new_vr.min;
+	  tree singleton;
+	  if (new_vr.singleton_p (&singleton))
+	    return singleton;
 	}
     }
   return NULL;
@@ -1700,7 +1704,7 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
    CONST_AND_COPIES.  */
 
 static void
-cprop_operand (gimple *stmt, use_operand_p op_p)
+cprop_operand (gimple *stmt, use_operand_p op_p, vr_values *vr_values)
 {
   tree val;
   tree op = USE_FROM_PTR (op_p);
@@ -1709,6 +1713,9 @@ cprop_operand (gimple *stmt, use_operand_p op_p)
      copy of some other variable, use the value or copy stored in
      CONST_AND_COPIES.  */
   val = SSA_NAME_VALUE (op);
+  if (!val)
+    val = vr_values->op_with_constant_singleton_value_range (op);
+
   if (val && val != op)
     {
       /* Do not replace hard register operands in asm statements.  */
@@ -1765,7 +1772,7 @@ cprop_operand (gimple *stmt, use_operand_p op_p)
    vdef_ops of STMT.  */
 
 static void
-cprop_into_stmt (gimple *stmt)
+cprop_into_stmt (gimple *stmt, vr_values *vr_values)
 {
   use_operand_p op_p;
   ssa_op_iter iter;
@@ -1782,7 +1789,7 @@ cprop_into_stmt (gimple *stmt)
 	 operands.  */
       if (old_op != last_copy_propagated_op)
 	{
-	  cprop_operand (stmt, op_p);
+	  cprop_operand (stmt, op_p, vr_values);
 
 	  tree new_op = USE_FROM_PTR (op_p);
 	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
@@ -1925,7 +1932,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
   opt_stats.num_stmts++;
 
   /* Const/copy propagate into USES, VUSES and the RHS of VDEFs.  */
-  cprop_into_stmt (stmt);
+  cprop_into_stmt (stmt, evrp_range_analyzer.get_vr_values ());
 
   /* If the statement has been modified with constant replacements,
      fold its RHS before checking for redundant computations.  */
@@ -1983,8 +1990,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 	     certain that the value simply isn't constant.  */
 	  tree callee = gimple_call_fndecl (stmt);
 	  if (callee
-	      && DECL_BUILT_IN_CLASS (callee) == BUILT_IN_NORMAL
-	      && DECL_FUNCTION_CODE (callee) == BUILT_IN_CONSTANT_P)
+	      && fndecl_built_in_p (callee, BUILT_IN_CONSTANT_P))
 	    {
 	      propagate_tree_value_into_stmt (&si, integer_zero_node);
 	      stmt = gsi_stmt (si);

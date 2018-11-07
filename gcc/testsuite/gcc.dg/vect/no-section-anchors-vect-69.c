@@ -119,5 +119,6 @@ int main (void)
   return main1 ();
 } 
 
-/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { {! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_hw_misalign } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 3 loops" 1 "vect" { target { ! vect_hw_misalign } } } } */
+/* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" { target { { ! vector_alignment_reachable } && { ! vect_hw_misalign } } } } } */

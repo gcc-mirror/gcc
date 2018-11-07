@@ -894,7 +894,7 @@ lto_maybe_register_decl (struct data_in *data_in, tree t, unsigned ix)
   if (TREE_CODE (t) == VAR_DECL)
     lto_register_var_decl_in_symtab (data_in, t, ix);
   else if (TREE_CODE (t) == FUNCTION_DECL
-	   && !DECL_BUILT_IN (t))
+	   && !fndecl_built_in_p (t))
     lto_register_function_decl_in_symtab (data_in, t, ix);
 }
 
@@ -1638,6 +1638,21 @@ unify_scc (struct data_in *data_in, unsigned from,
 	     to the tree node mapping computed by compare_tree_sccs.  */
 	  if (len == 1)
 	    {
+	      /* If we got a debug reference queued, see if the prevailing
+	         tree has a debug reference and if not, register the one
+		 for the tree we are about to throw away.  */
+	      if (dref_queue.length () == 1)
+		{
+		  dref_entry e = dref_queue.pop ();
+		  gcc_assert (e.decl
+			      == streamer_tree_cache_get_tree (cache, from));
+		  const char *sym;
+		  unsigned HOST_WIDE_INT off;
+		  if (!debug_hooks->die_ref_for_decl (pscc->entries[0], &sym,
+						      &off))
+		    debug_hooks->register_external_die (pscc->entries[0],
+							e.sym, e.off);
+		}
 	      lto_maybe_register_decl (data_in, pscc->entries[0], from);
 	      streamer_tree_cache_replace_tree (cache, pscc->entries[0], from);
 	    }
@@ -1669,7 +1684,9 @@ unify_scc (struct data_in *data_in, unsigned from,
 	      free_node (scc->entries[i]);
 	    }
 
-	  /* Drop DIE references.  */
+	  /* Drop DIE references.
+	     ???  Do as in the size-one SCC case which involves sorting
+	     the queue.  */
 	  dref_queue.truncate (0);
 
 	  break;
@@ -1810,7 +1827,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		     type canonical of a derived type in the same SCC.  */
 		  if (!TYPE_CANONICAL (t))
 		    gimple_register_canonical_type (t);
-		  if (odr_type_p (t))
+		  if (TYPE_MAIN_VARIANT (t) == t && odr_type_p (t))
 		    odr_types.safe_push (t);
 		}
 	      /* Link shared INTEGER_CSTs into TYPE_CACHED_VALUEs of its
@@ -2906,7 +2923,8 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
   FOR_EACH_SYMBOL (snode)
     if (snode->externally_visible && snode->real_symbol_p ()
 	&& snode->lto_file_data && snode->lto_file_data->resolution_map
-	&& !is_builtin_fn (snode->decl)
+	&& !(TREE_CODE (snode->decl) == FUNCTION_DECL
+	     && fndecl_built_in_p (snode->decl))
 	&& !(VAR_P (snode->decl) && DECL_HARD_REGISTER (snode->decl)))
       {
 	ld_plugin_symbol_resolution_t *res;
@@ -3402,7 +3420,9 @@ lto_main (void)
 	    lto_promote_statics_nonwpa ();
 
 	  /* Annotate the CU DIE and mark the early debug phase as finished.  */
+	  debuginfo_early_start ();
 	  debug_hooks->early_finish ("<artificial>");
+	  debuginfo_early_stop ();
 
 	  /* Let the middle end know that we have read and merged all of
 	     the input files.  */ 

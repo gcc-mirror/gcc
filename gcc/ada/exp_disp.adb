@@ -1339,8 +1339,36 @@ package body Exp_Disp is
             Opnd := Designated_Type (Opnd);
          end if;
 
+         Opnd := Underlying_Record_Type (Opnd);
+
          if not Is_Interface (Opnd)
            and then Is_Ancestor (Iface_Typ, Opnd, Use_Full_View => True)
+         then
+            return;
+         end if;
+
+         --  When the type of the operand and the target interface type match,
+         --  it is generally safe to skip generating code to displace the
+         --  pointer to the object to reference the secondary dispatch table
+         --  associated with the target interface type. The exception to this
+         --  general rule is when the underlying object of the type conversion
+         --  is an object built by means of a dispatching constructor (since in
+         --  such case the expansion of the constructor call is a direct call
+         --  to an object primitive, i.e. without thunks, and the expansion of
+         --  the constructor call adds an explicit conversion to the target
+         --  interface type to force the displacement of the pointer to the
+         --  object to reference the corresponding secondary dispatch table
+         --  (cf. Make_DT and Expand_Dispatching_Constructor_Call)).
+
+         --  At this stage we cannot identify whether the underlying object is
+         --  a BIP object and hence we cannot skip generating the code to try
+         --  displacing the pointer to the object. However, under configurable
+         --  runtime it is safe to skip generating code to displace the pointer
+         --  to the object, because generic dispatching constructors are not
+         --  supported.
+
+         if Opnd = Iface_Typ
+           and then not RTE_Available (RE_Displace)
          then
             return;
          end if;
@@ -1454,7 +1482,7 @@ package body Exp_Disp is
       end if;
 
       Iface_Tag := Find_Interface_Tag (Operand_Typ, Iface_Typ);
-      pragma Assert (Iface_Tag /= Empty);
+      pragma Assert (Present (Iface_Tag));
 
       --  Keep separate access types to interfaces because one internal
       --  function is used to handle the null value (see following comments)
@@ -2046,6 +2074,7 @@ package body Exp_Disp is
       Set_Ekind (Thunk_Id, Ekind (Prim));
       Set_Is_Thunk (Thunk_Id);
       Set_Convention (Thunk_Id, Convention (Prim));
+      Set_Needs_Debug_Info (Thunk_Id, Needs_Debug_Info (Target));
       Set_Thunk_Entity (Thunk_Id, Target);
 
       --  Procedure case
@@ -2458,9 +2487,10 @@ package body Exp_Disp is
      (Typ : Entity_Id) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (Typ);
-      Def_Id : constant Node_Id    :=
+      Def_Id : constant Entity_Id :=
                  Make_Defining_Identifier (Loc,
                    Name_uDisp_Asynchronous_Select);
+      B_Id   : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_uB);
       Params : constant List_Id    := New_List;
 
    begin
@@ -2471,6 +2501,9 @@ package body Exp_Disp is
       --  P : Address;                        --  Wrapped parameters
       --  B : out Dummy_Communication_Block;  --  Communication block dummy
       --  F : out Boolean;                    --  Status flag
+
+      --  The B parameter may be left uninitialized
+      Set_Warnings_Off (B_Id);
 
       Append_List_To (Params, New_List (
 
@@ -2489,7 +2522,7 @@ package body Exp_Disp is
           Parameter_Type      => New_Occurrence_Of (RTE (RE_Address), Loc)),
 
         Make_Parameter_Specification (Loc,
-          Defining_Identifier => Make_Defining_Identifier (Loc, Name_uB),
+          Defining_Identifier => B_Id,
           Parameter_Type      =>
             New_Occurrence_Of (RTE (RE_Dummy_Communication_Block), Loc),
           Out_Present         => True),
@@ -7202,18 +7235,19 @@ package body Exp_Disp is
                   Make_Subtype_Indication (Loc,
                     Subtype_Mark =>
                       New_Occurrence_Of (RTE (RE_Address_Array), Loc),
-                    Constraint =>
+                    Constraint   =>
                       Make_Index_Or_Discriminant_Constraint (Loc, New_List (
                         Make_Range (Loc,
                           Low_Bound  => Make_Integer_Literal (Loc, 1),
-                          High_Bound => Make_Integer_Literal (Loc,
-                                         DT_Entry_Count
-                                           (First_Tag_Component (Typ)))))))));
+                          High_Bound =>
+                            Make_Integer_Literal (Loc,
+                              DT_Entry_Count
+                                (First_Tag_Component (Typ)))))))));
 
             Append_To (Result,
               Make_Full_Type_Declaration (Loc,
                 Defining_Identifier => DT_Prims_Acc,
-                Type_Definition =>
+                Type_Definition     =>
                    Make_Access_To_Object_Definition (Loc,
                      Subtype_Indication =>
                        New_Occurrence_Of (DT_Prims, Loc))));

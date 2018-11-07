@@ -114,6 +114,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __ios_failure(const char* s) : failure(s)
     { __construct_ios_failure(buf, runtime_error::what()); }
 
+    __ios_failure(const char* s, int e) : failure(s, to_error_code(e))
+    { __construct_ios_failure(buf, runtime_error::what()); }
+
     ~__ios_failure()
     { __destroy_ios_failure(buf); }
 
@@ -122,6 +125,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // There are assertions in src/c++98/ios_failure.cc to ensure the size
     // and alignment assumptions are valid.
     alignas(runtime_error) unsigned char buf[sizeof(runtime_error)];
+
+    static error_code
+    to_error_code(int e)
+    { return e ? error_code(e, system_category()) : io_errc::stream; }
   };
 
   // Custom type info for __ios_failure.
@@ -160,6 +167,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_ios_failure(const char* __s __attribute__((unused)))
   { _GLIBCXX_THROW_OR_ABORT(__ios_failure(_(__s))); }
+
+  void
+  __throw_ios_failure(const char* str __attribute__((unused)),
+		      int err __attribute__((unused)))
+  { _GLIBCXX_THROW_OR_ABORT(__ios_failure(_(str), err)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

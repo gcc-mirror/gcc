@@ -1,5 +1,4 @@
 // { dg-do compile { target c++11 } }
-// { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
 // Copyright (C) 2010-2018 Free Software Foundation, Inc.

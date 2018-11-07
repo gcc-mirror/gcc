@@ -725,7 +725,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
     /* We need a new temporary; don't take this shortcut.  */;
   else if (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (e)))
     {
-      if (same_type_p (type, TREE_TYPE (e)))
+      tree etype = TREE_TYPE (e);
+      if (same_type_p (type, etype))
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparison in fold is just equality of pointers, not a
@@ -743,7 +744,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
 	     type of the temporary.  */
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
 	  TREE_TYPE (e) = TREE_TYPE (TARGET_EXPR_SLOT (e)) = type;
+	  return e;
+	}
+      else if (TREE_CODE (e) == CONSTRUCTOR)
+	{
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
+	  TREE_TYPE (e) = type;
 	  return e;
 	}
       else
@@ -1017,6 +1025,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
   if (implicit != ICV_CAST && fn
       && lookup_attribute ("nodiscard", DECL_ATTRIBUTES (fn)))
     {
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result,
 		      "ignoring return value of %qD, "
 		      "declared with attribute nodiscard", fn))
@@ -1025,6 +1034,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
   else if (implicit != ICV_CAST
 	   && lookup_attribute ("nodiscard", TYPE_ATTRIBUTES (rettype)))
     {
+      auto_diagnostic_group d;
       if (warning_at (loc, OPT_Wunused_result,
 		      "ignoring returned value of type %qT, "
 		      "declared with attribute nodiscard", rettype))
@@ -1043,6 +1053,7 @@ maybe_warn_nodiscard (tree expr, impl_conv_void implicit)
 	 result is used, so handle that case here.  */
       if (fn)
 	{
+	  auto_diagnostic_group d;
 	  if (warning_at (loc, OPT_Wunused_result,
 			  "ignoring return value of %qD, "
 			  "declared with attribute warn_unused_result",

@@ -704,7 +704,7 @@ remap_block (tree *block, copy_body_data *id)
   old_block = *block;
   new_block = make_node (BLOCK);
   TREE_USED (new_block) = TREE_USED (old_block);
-  BLOCK_ABSTRACT_ORIGIN (new_block) = old_block;
+  BLOCK_ABSTRACT_ORIGIN (new_block) = BLOCK_ORIGIN (old_block);
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
   BLOCK_NONLOCALIZED_VARS (new_block)
     = vec_safe_copy (BLOCK_NONLOCALIZED_VARS (old_block));
@@ -1703,7 +1703,7 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 	  case GIMPLE_CALL:
 	    {
 	      tree r, fndecl = gimple_call_fndecl (copy);
-	      if (fndecl && DECL_BUILT_IN_CLASS (fndecl) == BUILT_IN_NORMAL)
+	      if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
 		switch (DECL_FUNCTION_CODE (fndecl))
 		  {
 		  case BUILT_IN_EH_COPY_VALUES:
@@ -1940,9 +1940,7 @@ copy_bb (copy_body_data *id, basic_block bb,
 	  else if (call_stmt
 		   && id->call_stmt
 		   && (decl = gimple_call_fndecl (stmt))
-		   && DECL_BUILT_IN_CLASS (decl) == BUILT_IN_NORMAL
-		   && DECL_FUNCTION_CODE (decl) == BUILT_IN_VA_ARG_PACK_LEN
-		   && ! gimple_call_va_arg_pack_p (id->call_stmt))
+		   && fndecl_built_in_p (decl, BUILT_IN_VA_ARG_PACK_LEN))
 	    {
 	      /* __builtin_va_arg_pack_len () should be replaced by
 		 the number of anonymous arguments.  */
@@ -1953,10 +1951,28 @@ copy_bb (copy_body_data *id, basic_block bb,
 	      for (p = DECL_ARGUMENTS (id->src_fn); p; p = DECL_CHAIN (p))
 		nargs--;
 
-	      count = build_int_cst (integer_type_node, nargs);
-	      new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
-	      gsi_replace (&copy_gsi, new_stmt, false);
-	      stmt = new_stmt;
+	      if (!gimple_call_lhs (stmt))
+		{
+		  /* Drop unused calls.  */
+		  gsi_remove (&copy_gsi, false);
+		  continue;
+		}
+	      else if (!gimple_call_va_arg_pack_p (id->call_stmt))
+		{
+		  count = build_int_cst (integer_type_node, nargs);
+		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt), count);
+		  gsi_replace (&copy_gsi, new_stmt, false);
+		  stmt = new_stmt;
+		}
+	      else if (nargs != 0)
+		{
+		  tree newlhs = create_tmp_reg_or_ssa_name (integer_type_node);
+		  count = build_int_cst (integer_type_node, nargs);
+		  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+						  PLUS_EXPR, newlhs, count);
+		  gimple_call_set_lhs (stmt, newlhs);
+		  gsi_insert_after (&copy_gsi, new_stmt, GSI_NEW_STMT);
+		}
 	    }
 	  else if (call_stmt
 		   && id->call_stmt
@@ -2231,7 +2247,7 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
          propagation can change an INDIRECT_REF which throws
          into a COMPONENT_REF which doesn't.  If the copy
          can throw, the original could also throw.  */
-      can_throw = stmt_can_throw_internal (copy_stmt);
+      can_throw = stmt_can_throw_internal (cfun, copy_stmt);
       nonlocal_goto
 	= (stmt_can_make_abnormal_goto (copy_stmt)
 	   && !computed_goto_p (copy_stmt));
@@ -2499,7 +2515,7 @@ maybe_move_debug_stmts_to_successors (copy_body_data *id, basic_block new_bb)
 
   if (gsi_end_p (si)
       || gsi_one_before_end_p (si)
-      || !(stmt_can_throw_internal (gsi_stmt (si))
+      || !(stmt_can_throw_internal (cfun, gsi_stmt (si))
 	   || stmt_can_make_abnormal_goto (gsi_stmt (si))))
     return;
 
@@ -2616,7 +2632,7 @@ copy_loops (copy_body_data *id,
     }
 }
 
-/* Call cgraph_redirect_edge_call_stmt_to_callee on all calls in BB */
+/* Call redirect_call_stmt_to_callee on all calls in BB.  */
 
 void
 redirect_all_calls (copy_body_data * id, basic_block bb)
@@ -4023,7 +4039,7 @@ estimate_num_insns (gimple *stmt, eni_weights *weights)
 	if (gimple_call_internal_p (stmt))
 	  return 0;
 	else if ((decl = gimple_call_fndecl (stmt))
-		 && DECL_BUILT_IN (decl))
+		 && fndecl_built_in_p (decl))
 	  {
 	    /* Do not special case builtins where we see the body.
 	       This just confuse inliner.  */
@@ -4417,6 +4433,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 	       /* Avoid warnings during early inline pass. */
 	       && symtab->global_info_ready)
 	{
+	  auto_diagnostic_group d;
 	  if (warning (OPT_Winline, "inlining failed in call to %q+F: %s",
 		       fn, _(cgraph_inline_failed_string (reason))))
 	    {
@@ -4457,7 +4474,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
 			 GSI_NEW_STMT);
       gcc_assert (id->src_node->thunk.this_adjusting);
       op = thunk_adjust (&iter, op, 1, id->src_node->thunk.fixed_offset,
-			 virtual_offset);
+			 virtual_offset, id->src_node->thunk.indirect_offset);
 
       gimple_call_set_arg (stmt, 0, op);
       gimple_call_set_fndecl (stmt, edge->callee->decl);
@@ -4511,10 +4528,16 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
      not refer to them in any way to not break GC for locations.  */
   if (gimple_block (stmt))
     {
+      /* We do want to assign a not UNKNOWN_LOCATION BLOCK_SOURCE_LOCATION
+         to make inlined_function_outer_scope_p return true on this BLOCK.  */
+      location_t loc = LOCATION_LOCUS (gimple_location (stmt));
+      if (loc == UNKNOWN_LOCATION)
+	loc = LOCATION_LOCUS (DECL_SOURCE_LOCATION (fn));
+      if (loc == UNKNOWN_LOCATION)
+	loc = BUILTINS_LOCATION;
       id->block = make_node (BLOCK);
-      BLOCK_ABSTRACT_ORIGIN (id->block) = fn;
-      BLOCK_SOURCE_LOCATION (id->block) 
-	= LOCATION_LOCUS (gimple_location (stmt));
+      BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
+      BLOCK_SOURCE_LOCATION (id->block) = loc;
       prepend_lexical_block (gimple_block (stmt), id->block);
     }
 
@@ -4570,7 +4593,8 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     {
       gimple_stmt_iterator si = gsi_last_bb (bb);
       gsi_insert_after (&si, gimple_build_debug_inline_entry
-			(id->block, input_location), GSI_NEW_STMT);
+			(id->block, DECL_SOURCE_LOCATION (id->src_fn)),
+			GSI_NEW_STMT);
     }
 
   if (DECL_INITIAL (fn))
@@ -4886,7 +4910,7 @@ fold_marked_statements (int first, hash_set<gimple *> *statements)
 	      gimple *old_stmt = gsi_stmt (gsi);
 	      tree old_decl = is_gimple_call (old_stmt) ? gimple_call_fndecl (old_stmt) : 0;
 
-	      if (old_decl && DECL_BUILT_IN (old_decl))
+	      if (old_decl && fndecl_built_in_p (old_decl))
 		{
 		  /* Folding builtins can create multiple instructions,
 		     we need to look at all of them.  */

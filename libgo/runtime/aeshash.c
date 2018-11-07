@@ -573,13 +573,412 @@ uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
 
 #endif // !defined(__x86_64__)
 
-#else // !defined(__i386__) && !defined(__x86_64__) || !defined(HAVE_AS_X86_AES)
+#elif defined(__aarch64__)
+
+// Undefine some identifiers that we pick up from the Go runtime package that
+// are used in arm_neon.h.
+
+#undef t1
+#undef tx
+#undef t2
+#undef t3
+#undef t4
+#undef t5
+
+#include <arm_neon.h>
+
+// Force appropriate CPU level.  We won't call here unless the CPU
+// supports it.
+
+#pragma GCC target("+crypto")
+
+// The arm64 version of aeshashbody.
+
+uintptr aeshashbody(void* p, uintptr seed, uintptr size, Slice aeskeysched) {
+	uint8x16_t *pseed;
+	uint32x4_t vinit32;
+	uint8x16_t vinit;
+	uint8x16_t vseed, vseed2, vseed3, vseed4;
+	uint8x16_t vseed5, vseed6, vseed7, vseed8;
+	uint8x16_t vval, vval2, vval3, vval4;
+	uint8x16_t vval5, vval6, vval7, vval8;
+	uint8x16_t vvalLoop, vvalLoop2, vvalLoop3, vvalLoop4;
+	uint8x16_t vvalLoop5, vvalLoop6, vvalLoop7, vvalLoop8;
+	uint8x16x2_t avval2;
+	uint8x16x3_t avseed3;
+
+	pseed = (uint8x16_t*)(aeskeysched.__values);
+
+	// Combined hash seed and length.
+	vinit32 = vdupq_n_u32(0);
+	vinit32[0] = (uint32)seed;
+	vinit32[1] = (uint32)size;
+	vinit = vreinterpretq_u8_u32(vinit32);
+
+	// Mix in per-process seed.
+	vseed = vaeseq_u8(*pseed, vinit);
+	++pseed;
+	// Scramble seed.
+	vseed = vaesmcq_u8(vseed);
+
+	if (size <= 16) {
+		if (size == 0) {
+			// Return 64 bits of scrambled input seed.
+			return vreinterpretq_u64_u8(vseed)[0];
+		} else if (size < 16) {
+			vval = vreinterpretq_u8_u32(vdupq_n_u32(0));
+			if ((size & 8) != 0) {
+				vval = vreinterpretq_u8_u64(vld1q_lane_u64((uint64_t*)(p), vreinterpretq_u64_u8(vval), 0));
+				p = (void*)((uint64_t*)(p) + 1);
+			}
+			if ((size & 4) != 0) {
+				vval = vreinterpretq_u8_u32(vld1q_lane_u32((uint32_t*)(p), vreinterpretq_u32_u8(vval), 2));
+				p = (void*)((uint32_t*)(p) + 1);
+			}
+			if ((size & 2) != 0) {
+				vval = vreinterpretq_u8_u16(vld1q_lane_u16((uint16_t*)(p), vreinterpretq_u16_u8(vval), 6));
+				p = (void*)((uint16_t*)(p) + 1);
+			}
+			if ((size & 1) != 0) {
+				vval = vld1q_lane_u8((uint8*)(p), vval, 14);
+			}
+		} else {
+			vval = *(uint8x16_t*)(p);
+		}
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval = vaeseq_u8(vval, vseed);
+		return vreinterpretq_u64_u8(vval)[0];
+	} else if (size <= 32) {
+		// Make a second seed.
+		vseed2 = vaeseq_u8(*pseed, vinit);
+		vseed2 = vaesmcq_u8(vseed2);
+		vval = *(uint8x16_t*)(p);
+		vval2 = *(uint8x16_t*)((char*)(p) + (size - 16));
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval2 = vaeseq_u8(vval2, vseed2);
+
+		vval ^= vval2;
+
+		return vreinterpretq_u64_u8(vval)[0];
+	} else if (size <= 64) {
+		avseed3 = vld1q_u8_x3((uint8*)(pseed));
+		vseed2 = avseed3.val[0];
+		vseed3 = avseed3.val[1];
+		vseed4 = avseed3.val[2];
+
+		vseed2 = vaeseq_u8(vseed2, vinit);
+		vseed2 = vaesmcq_u8(vseed2);
+		vseed3 = vaeseq_u8(vseed3, vinit);
+		vseed3 = vaesmcq_u8(vseed3);
+		vseed4 = vaeseq_u8(vseed4, vinit);
+		vseed4 = vaesmcq_u8(vseed4);
+
+		avval2 = vld1q_u8_x2((uint8*)(p));
+		vval = avval2.val[0];
+		vval2 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 32));
+		vval3 = avval2.val[0];
+		vval4 = avval2.val[1];
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+		vval4 = vaesmcq_u8(vval4);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+		vval4 = vaesmcq_u8(vval4);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+
+		vval ^= vval3;
+		vval2 ^= vval4;
+		vval ^= vval2;
+
+		return vreinterpretq_u64_u8(vval)[0];
+	} else if (size <= 128) {
+		// For some reason vld1q_u8_x4 is missing.
+		avseed3 = vld1q_u8_x3((uint8*)(pseed));
+		vseed2 = avseed3.val[0];
+		vseed3 = avseed3.val[1];
+		vseed4 = avseed3.val[2];
+		avseed3 = vld1q_u8_x3((uint8*)(pseed + 3));
+		vseed5 = avseed3.val[0];
+		vseed6 = avseed3.val[1];
+		vseed7 = avseed3.val[2];
+		vseed8 = *(pseed + 6);
+
+		vseed2 = vaeseq_u8(vseed2, vinit);
+		vseed2 = vaesmcq_u8(vseed2);
+		vseed3 = vaeseq_u8(vseed3, vinit);
+		vseed3 = vaesmcq_u8(vseed3);
+		vseed4 = vaeseq_u8(vseed4, vinit);
+		vseed4 = vaesmcq_u8(vseed4);
+		vseed5 = vaeseq_u8(vseed5, vinit);
+		vseed5 = vaesmcq_u8(vseed5);
+		vseed6 = vaeseq_u8(vseed6, vinit);
+		vseed6 = vaesmcq_u8(vseed6);
+		vseed7 = vaeseq_u8(vseed7, vinit);
+		vseed7 = vaesmcq_u8(vseed7);
+		vseed8 = vaeseq_u8(vseed8, vinit);
+		vseed8 = vaesmcq_u8(vseed8);
+
+		avval2 = vld1q_u8_x2((uint8*)(p));
+		vval = avval2.val[0];
+		vval2 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + 32);
+		vval3 = avval2.val[0];
+		vval4 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 64));
+		vval5 = avval2.val[0];
+		vval6 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 32));
+		vval7 = avval2.val[0];
+		vval8 = avval2.val[1];
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+		vval4 = vaesmcq_u8(vval4);
+		vval5 = vaeseq_u8(vval5, vseed5);
+		vval5 = vaesmcq_u8(vval5);
+		vval6 = vaeseq_u8(vval6, vseed6);
+		vval6 = vaesmcq_u8(vval6);
+		vval7 = vaeseq_u8(vval7, vseed7);
+		vval7 = vaesmcq_u8(vval7);
+		vval8 = vaeseq_u8(vval8, vseed8);
+		vval8 = vaesmcq_u8(vval8);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+		vval4 = vaesmcq_u8(vval4);
+		vval5 = vaeseq_u8(vval5, vseed5);
+		vval5 = vaesmcq_u8(vval5);
+		vval6 = vaeseq_u8(vval6, vseed6);
+		vval6 = vaesmcq_u8(vval6);
+		vval7 = vaeseq_u8(vval7, vseed7);
+		vval7 = vaesmcq_u8(vval7);
+		vval8 = vaeseq_u8(vval8, vseed8);
+		vval8 = vaesmcq_u8(vval8);
+
+		vval = vaeseq_u8(vval, vseed);
+		vval2 = vaeseq_u8(vval2, vseed2);
+		vval3 = vaeseq_u8(vval3, vseed3);
+		vval4 = vaeseq_u8(vval4, vseed4);
+		vval5 = vaeseq_u8(vval5, vseed5);
+		vval6 = vaeseq_u8(vval6, vseed6);
+		vval7 = vaeseq_u8(vval7, vseed7);
+		vval8 = vaeseq_u8(vval8, vseed8);
+
+		vval ^= vval5;
+		vval2 ^= vval6;
+		vval3 ^= vval7;
+		vval4 ^= vval8;
+		vval ^= vval3;
+		vval2 ^= vval4;
+		vval ^= vval2;
+
+		return vreinterpretq_u64_u8(vval)[0];
+	} else {
+		// For some reason vld1q_u8_x4 is missing.
+		avseed3 = vld1q_u8_x3((uint8*)(pseed));
+		vseed2 = avseed3.val[0];
+		vseed3 = avseed3.val[1];
+		vseed4 = avseed3.val[2];
+		avseed3 = vld1q_u8_x3((uint8*)(pseed + 3));
+		vseed5 = avseed3.val[0];
+		vseed6 = avseed3.val[1];
+		vseed7 = avseed3.val[2];
+		vseed8 = *(pseed + 6);
+
+		vseed2 = vaeseq_u8(vseed2, vinit);
+		vseed2 = vaesmcq_u8(vseed2);
+		vseed3 = vaeseq_u8(vseed3, vinit);
+		vseed3 = vaesmcq_u8(vseed3);
+		vseed4 = vaeseq_u8(vseed4, vinit);
+		vseed4 = vaesmcq_u8(vseed4);
+		vseed5 = vaeseq_u8(vseed5, vinit);
+		vseed5 = vaesmcq_u8(vseed5);
+		vseed6 = vaeseq_u8(vseed6, vinit);
+		vseed6 = vaesmcq_u8(vseed6);
+		vseed7 = vaeseq_u8(vseed7, vinit);
+		vseed7 = vaesmcq_u8(vseed7);
+		vseed8 = vaeseq_u8(vseed8, vinit);
+		vseed8 = vaesmcq_u8(vseed8);
+
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 128));
+		vval = avval2.val[0];
+		vval2 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 96));
+		vval3 = avval2.val[0];
+		vval4 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 64));
+		vval5 = avval2.val[0];
+		vval6 = avval2.val[1];
+		avval2 = vld1q_u8_x2((uint8*)(p) + (size - 32));
+		vval7 = avval2.val[0];
+		vval8 = avval2.val[1];
+
+		vvalLoop = vseed;
+		vvalLoop2 = vseed2;
+		vvalLoop3 = vseed3;
+		vvalLoop4 = vseed4;
+		vvalLoop5 = vseed5;
+		vvalLoop6 = vseed6;
+		vvalLoop7 = vseed7;
+		vvalLoop8 = vseed8;
+
+		size--;
+		size >>= 7;
+		do {
+			vval = vaeseq_u8(vval, vvalLoop);
+			vval = vaesmcq_u8(vval);
+			vval2 = vaeseq_u8(vval2, vvalLoop2);
+			vval2 = vaesmcq_u8(vval2);
+			vval3 = vaeseq_u8(vval3, vvalLoop3);
+			vval3 = vaesmcq_u8(vval3);
+			vval4 = vaeseq_u8(vval4, vvalLoop4);
+			vval4 = vaesmcq_u8(vval4);
+			vval5 = vaeseq_u8(vval5, vvalLoop5);
+			vval5 = vaesmcq_u8(vval5);
+			vval6 = vaeseq_u8(vval6, vvalLoop6);
+			vval6 = vaesmcq_u8(vval6);
+			vval7 = vaeseq_u8(vval7, vvalLoop7);
+			vval7 = vaesmcq_u8(vval7);
+			vval8 = vaeseq_u8(vval8, vvalLoop8);
+			vval8 = vaesmcq_u8(vval8);
+
+			avval2 = vld1q_u8_x2((uint8*)(p));
+			vvalLoop = avval2.val[0];
+			vvalLoop2 = avval2.val[1];
+			avval2 = vld1q_u8_x2((uint8*)(p) + 32);
+			vvalLoop3 = avval2.val[0];
+			vvalLoop4 = avval2.val[1];
+			avval2 = vld1q_u8_x2((uint8*)(p) + 64);
+			vvalLoop5 = avval2.val[0];
+			vvalLoop6 = avval2.val[1];
+			avval2 = vld1q_u8_x2((uint8*)(p) + 96);
+			vvalLoop7 = avval2.val[0];
+			vvalLoop8 = avval2.val[1];
+
+			p = (void *)((uint8*)(p) + 128);
+
+			vval = vaeseq_u8(vval, vvalLoop);
+			vval = vaesmcq_u8(vval);
+			vval2 = vaeseq_u8(vval2, vvalLoop2);
+			vval2 = vaesmcq_u8(vval2);
+			vval3 = vaeseq_u8(vval3, vvalLoop3);
+			vval3 = vaesmcq_u8(vval3);
+			vval4 = vaeseq_u8(vval4, vvalLoop4);
+			vval4 = vaesmcq_u8(vval4);
+			vval5 = vaeseq_u8(vval5, vvalLoop5);
+			vval5 = vaesmcq_u8(vval5);
+			vval6 = vaeseq_u8(vval6, vvalLoop6);
+			vval6 = vaesmcq_u8(vval6);
+			vval7 = vaeseq_u8(vval7, vvalLoop7);
+			vval7 = vaesmcq_u8(vval7);
+			vval8 = vaeseq_u8(vval8, vvalLoop8);
+			vval8 = vaesmcq_u8(vval8);
+		} while (--size > 0);
+
+		vval = vaeseq_u8(vval, vvalLoop);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vvalLoop2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vvalLoop3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vvalLoop4);
+		vval4 = vaesmcq_u8(vval4);
+		vval5 = vaeseq_u8(vval5, vvalLoop5);
+		vval5 = vaesmcq_u8(vval5);
+		vval6 = vaeseq_u8(vval6, vvalLoop6);
+		vval6 = vaesmcq_u8(vval6);
+		vval7 = vaeseq_u8(vval7, vvalLoop7);
+		vval7 = vaesmcq_u8(vval7);
+		vval8 = vaeseq_u8(vval8, vvalLoop8);
+		vval8 = vaesmcq_u8(vval8);
+
+
+		vval = vaeseq_u8(vval, vvalLoop);
+		vval = vaesmcq_u8(vval);
+		vval2 = vaeseq_u8(vval2, vvalLoop2);
+		vval2 = vaesmcq_u8(vval2);
+		vval3 = vaeseq_u8(vval3, vvalLoop3);
+		vval3 = vaesmcq_u8(vval3);
+		vval4 = vaeseq_u8(vval4, vvalLoop4);
+		vval4 = vaesmcq_u8(vval4);
+		vval5 = vaeseq_u8(vval5, vvalLoop5);
+		vval5 = vaesmcq_u8(vval5);
+		vval6 = vaeseq_u8(vval6, vvalLoop6);
+		vval6 = vaesmcq_u8(vval6);
+		vval7 = vaeseq_u8(vval7, vvalLoop7);
+		vval7 = vaesmcq_u8(vval7);
+		vval8 = vaeseq_u8(vval8, vvalLoop8);
+		vval8 = vaesmcq_u8(vval8);
+
+		vval = vaeseq_u8(vval, vvalLoop);
+		vval2 = vaeseq_u8(vval2, vvalLoop2);
+		vval3 = vaeseq_u8(vval3, vvalLoop3);
+		vval4 = vaeseq_u8(vval4, vvalLoop4);
+		vval5 = vaeseq_u8(vval5, vvalLoop5);
+		vval6 = vaeseq_u8(vval6, vvalLoop6);
+		vval7 = vaeseq_u8(vval7, vvalLoop7);
+		vval8 = vaeseq_u8(vval8, vvalLoop8);
+
+		vval ^= vval5;
+		vval2 ^= vval6;
+		vval3 ^= vval7;
+		vval4 ^= vval8;
+		vval ^= vval3;
+		vval2 ^= vval4;
+		vval ^= vval2;
+
+		return vreinterpretq_u64_u8(vval)[0];
+	}
+}
+
+#else // (!defined(__i386__) && !defined(__x86_64__) || !defined(HAVE_AS_X86_AES)) && !defined(__aarch64__)
 
 uintptr aeshashbody(void* p __attribute__((unused)),
 		    uintptr seed __attribute__((unused)),
 		    uintptr size __attribute__((unused)),
 		    Slice aeskeysched __attribute__((unused))) {
-	// We should never get here on a non-x86 system.
+	// We should never get here on a non-x86, non-arm64 system.
 	runtime_throw("impossible call to aeshashbody");
 }
 

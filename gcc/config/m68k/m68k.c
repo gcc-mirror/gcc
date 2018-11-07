@@ -353,6 +353,9 @@ static machine_mode m68k_promote_function_mode (const_tree, machine_mode,
 #undef TARGET_PROMOTE_FUNCTION_MODE
 #define TARGET_PROMOTE_FUNCTION_MODE m68k_promote_function_mode
 
+#undef  TARGET_HAVE_SPECULATION_SAFE_VALUE
+#define TARGET_HAVE_SPECULATION_SAFE_VALUE speculation_safe_value_not_needed
+
 static const struct attribute_spec m68k_attribute_table[] =
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
@@ -2326,14 +2329,11 @@ m68k_unwrap_symbol (rtx orig, bool unwrap_reloc32_p)
   return m68k_unwrap_symbol_1 (orig, unwrap_reloc32_p, NULL);
 }
 
-/* Prescan insn before outputing assembler for it.  */
+/* Adjust decorated address operand before outputing assembler for it.  */
 
-void
-m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
-			 rtx *operands, int n_operands)
+static void
+m68k_adjust_decorated_operand (rtx op)
 {
-  int i;
-
   /* Combine and, possibly, other optimizations may do good job
      converting
        (const (unspec [(symbol)]))
@@ -2352,45 +2352,38 @@ m68k_final_prescan_insn (rtx_insn *insn ATTRIBUTE_UNUSED,
      to patch up anything outside of the operand.  */
 
   subrtx_var_iterator::array_type array;
-  for (i = 0; i < n_operands; ++i)
+  FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
     {
-      rtx op;
-
-      op = operands[i];
-
-      FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
+      rtx x = *iter;
+      if (m68k_unwrap_symbol (x, true) != x)
 	{
-	  rtx x = *iter;
-	  if (m68k_unwrap_symbol (x, true) != x)
+	  rtx plus;
+
+	  gcc_assert (GET_CODE (x) == CONST);
+	  plus = XEXP (x, 0);
+
+	  if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
 	    {
-	      rtx plus;
+	      rtx unspec;
+	      rtx addend;
 
-	      gcc_assert (GET_CODE (x) == CONST);
-	      plus = XEXP (x, 0);
+	      unspec = XEXP (plus, 0);
+	      gcc_assert (GET_CODE (unspec) == UNSPEC);
+	      addend = XEXP (plus, 1);
+	      gcc_assert (CONST_INT_P (addend));
 
-	      if (GET_CODE (plus) == PLUS || GET_CODE (plus) == MINUS)
-		{
-		  rtx unspec;
-		  rtx addend;
+	      /* We now have all the pieces, rearrange them.  */
 
-		  unspec = XEXP (plus, 0);
-		  gcc_assert (GET_CODE (unspec) == UNSPEC);
-		  addend = XEXP (plus, 1);
-		  gcc_assert (CONST_INT_P (addend));
+	      /* Move symbol to plus.  */
+	      XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
 
-		  /* We now have all the pieces, rearrange them.  */
+	      /* Move plus inside unspec.  */
+	      XVECEXP (unspec, 0, 0) = plus;
 
-		  /* Move symbol to plus.  */
-		  XEXP (plus, 0) = XVECEXP (unspec, 0, 0);
-
-		  /* Move plus inside unspec.  */
-		  XVECEXP (unspec, 0, 0) = plus;
-
-		  /* Move unspec to top level of const.  */
-		  XEXP (x, 0) = unspec;
-		}
-	      iter.skip_subrtxes ();
+	      /* Move unspec to top level of const.  */
+	      XEXP (x, 0) = unspec;
 	    }
+	  iter.skip_subrtxes ();
 	}
     }
 }
@@ -3493,7 +3486,6 @@ handle_move_double (rtx operands[2],
 
   /* Normal case: do the two words, low-numbered first.  */
 
-  m68k_final_prescan_insn (NULL, operands, 2);
   handle_movsi (operands);
 
   /* Do the middle one of the three words for long double */
@@ -3504,7 +3496,6 @@ handle_move_double (rtx operands[2],
       if (addreg1)
 	handle_reg_adjust (addreg1, 4);
 
-      m68k_final_prescan_insn (NULL, middlehalf, 2);
       handle_movsi (middlehalf);
     }
 
@@ -3515,7 +3506,6 @@ handle_move_double (rtx operands[2],
     handle_reg_adjust (addreg1, 4);
 
   /* Do that word.  */
-  m68k_final_prescan_insn (NULL, latehalf, 2);
   handle_movsi (latehalf);
 
   /* Undo the adds we just did.  */
@@ -4461,6 +4451,9 @@ floating_exact_log2 (rtx x)
 void
 print_operand (FILE *file, rtx op, int letter)
 {
+  if (op != NULL_RTX)
+    m68k_adjust_decorated_operand (op);
+
   if (letter == '.')
     {
       if (MOTOROLA)
@@ -4708,6 +4701,8 @@ void
 print_operand_address (FILE *file, rtx addr)
 {
   struct m68k_address address;
+
+  m68k_adjust_decorated_operand (addr);
 
   if (!m68k_decompose_address (QImode, addr, true, &address))
     gcc_unreachable ();

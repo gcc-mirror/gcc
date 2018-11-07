@@ -16,8 +16,8 @@ contains
   end subroutine
 
   subroutine p (i)   ! { dg-error "is already defined" }
-   integer :: i
-  end subroutine
+   integer :: i   ! { dg-error "Unexpected data declaration statement in CONTAINS section" }
+  end subroutine  ! { dg-error "Expecting END MODULE statement" }
 end module
 !
 ! PR25124 - would happily ignore the declaration of foo in the main program.
@@ -27,8 +27,8 @@ x = bar ()          ! This is OK because it is a regular reference.
 x = foo ()
 contains
     function foo () ! { dg-error "explicit interface from a previous" }
-      foo = 1.0
-    end function foo
+      foo = 1.0  ! { dg-error "Unexpected assignment statement in CONTAINS section" }
+    end function foo ! { dg-error "Expecting END PROGRAM statement" }
     function bar ()
       bar = 1.0
     end function bar

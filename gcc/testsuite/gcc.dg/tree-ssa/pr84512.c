@@ -12,5 +12,5 @@ int foo()
   return res;
 }
 
-/* Target nvptx xfail due to PR84958.  */
-/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { nvptx*-*-* || { sparc*-*-* && lp64 } } } } } */
+/* Listed targets xfailed due to PR84958.  */
+/* { dg-final { scan-tree-dump "return 285;" "optimized" { xfail { { alpha*-*-* nvptx*-*-* } || { sparc*-*-* && lp64 } } } } } */

@@ -1,3 +1,7 @@
+2018-10-17  David Malcolm  <dmalcolm@redhat.com>
+
+	* Make-lang.in (selftest-jit): New.
+
 2018-06-28  Martin Liska  <mliska@suse.cz>
 
 	* jit-playback.c: Include opt-suggestions.h.
@@ -2158,7 +2162,7 @@
 
 2014-12-09  David Malcolm  <dmalcolm@redhat.com>
 
-        PR jit/64206
+	PR jit/64206
 	* Make-lang.in (jit_OBJS): Add jit/jit-tempdir.o.
 	* jit-common.h (gcc::jit::tempdir): New forward decl.
 	* jit-playback.c: Include jit-tempdir.h.
