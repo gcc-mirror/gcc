@@ -11244,7 +11244,7 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p)
 
     case PRAGMA_OMP_REQUIRES:
       c_parser_omp_requires (parser);
-      return false;     
+      return false;
 
     case PRAGMA_OMP_ORDERED:
       return c_parser_omp_ordered (parser, context, if_p);
@@ -14115,7 +14115,7 @@ c_parser_omp_iterators (c_parser *parser)
 
    OpenMP 5.0:
    depend ( depend-modifier , depend-kind: variable-list )
-   
+
    depend-kind:
      in | out | inout | mutexinoutset | depobj
 

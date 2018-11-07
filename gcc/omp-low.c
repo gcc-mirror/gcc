@@ -1871,7 +1871,7 @@ scan_omp_parallel (gimple_stmt_iterator *gsi, omp_context *outer_ctx)
        c; c = omp_find_clause (OMP_CLAUSE_CHAIN (c), OMP_CLAUSE_REDUCTION))
     if (OMP_CLAUSE_REDUCTION_TASK (c))
       {
-        tree type = build_pointer_type (pointer_sized_int_node);
+	tree type = build_pointer_type (pointer_sized_int_node);
 	tree temp = create_tmp_var (type);
 	tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE__REDUCTEMP_);
 	if (outer_ctx)
@@ -3942,7 +3942,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			}
 		    }
 		}
-              else if (OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c))
+	      else if (OMP_CLAUSE_REDUCTION_OMP_ORIG_REF (c))
 		reduction_omp_orig_ref = true;
 	      break;
 	    case OMP_CLAUSE__REDUCTEMP_:
@@ -4137,7 +4137,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 			cnt = task_reduction_cntorig - 1;
 		      x = build4 (ARRAY_REF, ptr_type_node, tskred_avar,
 				  size_int (cnt), NULL_TREE, NULL_TREE);
-		  
+
 		      gimple *g = gimple_build_assign (xv, x);
 		      gimple_seq_add_stmt (ilist, g);
 		    }

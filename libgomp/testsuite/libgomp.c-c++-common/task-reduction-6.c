@@ -97,9 +97,9 @@ main ()
     #pragma omp taskloop in_reduction (+: g, m) in_reduction (*: h, n)
     for (i = 0; i < 64; ++i)
       {
-        g.s += 3 * a[i];
-        h.s *= (3 - c[i]);
-        m.s += 4 * a[i];
+	g.s += 3 * a[i];
+	h.s *= (3 - c[i]);
+	m.s += 4 * a[i];
 	n.s *= c[i];
 	if ((g.t != 7 && g.t != 3) || (h.t != 5 && h.t != 9)
 	    || (m.t != 7 && m.t != 3) || (n.t != 5 && n.t != 9))

@@ -85,14 +85,14 @@ bar ()
       else
 	arr[i] = arr[i] + 2;
     #pragma omp task depend (iterator (unsigned n=begu:endu:step2, unsigned int o = 512: 1024U: (unsigned char) 128), inout : \
-			     foo (5, n + 128, o)[0]) 
+			     foo (5, n + 128, o)[0])
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 3)
 	abort ();
       else
 	arr[i] = arr[i] + 4;
     #pragma omp task depend (iterator (int unsigned p=endu:begu:step,unsigned q= 1025U:513U:(signed char) -128), in : \
-			     foo (6, p + 128, q)[0]) 
+			     foo (6, p + 128, q)[0])
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 7)
 	abort ();
@@ -127,14 +127,14 @@ baz (A beg, A end, A step, D begu, D endu, A step2)
       else
 	arr[i] = arr[i] + 2;
     #pragma omp task depend (iterator (D n=begu:endu:step2, D o = 512: 1024U:(E) 128), inout : \
-			     foo (5, n + 128, o)[0]) 
+			     foo (5, n + 128, o)[0])
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 3)
 	abort ();
       else
 	arr[i] = arr[i] + 4;
     #pragma omp task depend (iterator (D p=endu:begu:step,D q= 1025U:513U:(F) -128), in : \
-			     foo (6, p + 128, q)[0]) 
+			     foo (6, p + 128, q)[0])
     for (i = 0; i < 64; i++)
       if (arr[i] != i + 7)
 	abort ();

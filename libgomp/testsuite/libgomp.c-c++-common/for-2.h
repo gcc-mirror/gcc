@@ -565,7 +565,7 @@ N(test) (void)
       for (k = 0; k < 10; k++)
 	if (b[i][j][k] != i + 1.0 + 1.5 * j - 1.5 * k)
 	  return 1;
-  N(f28) ();	  
+  N(f28) ();
   OMPFROM (b);
   for (i = 0; i < 10; i++)
     for (j = 0; j < 15; j++)

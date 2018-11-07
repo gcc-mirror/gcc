@@ -64,7 +64,7 @@ foo (int n, S *c, S *d, S m[3], S *r, S o[4], S *p, S q[4][2])
   #pragma omp taskloop in_reduction (+: a, c[:2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
 		       reduction (default, +: o[n:n*2], m[1], p[0]) in_reduction (+: k[1:2][:], f[2:2]) \
 		       reduction (+: q[1:2][:], r[2:2]) in_reduction (+: g[n:n*2], e[1], h[0]) \
-		       in_reduction (*: s[1:2], t[2:2][:]) 
+		       in_reduction (*: s[1:2], t[2:2][:])
   for (i = 0; i < 2; i++)
     {
       a[0].s += 7;
