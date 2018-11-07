@@ -1,3 +1,7 @@
+2018-11-17  Nikolai Merinov <n.merinov@inango-systems.com>
+
+         * gcc.dg/Wno-attribute-warning.c: New test.
+
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87904

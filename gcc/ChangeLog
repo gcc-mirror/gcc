@@ -1,3 +1,10 @@
+2018-11-17  Nikolai Merinov <n.merinov@inango-systems.com>
+
+         * common.opt: Add -Wattribute-warning.
+         * doc/invoke.texi: Add documentation for -Wno-attribute-warning.
+         * expr.c (expand_expr_real_1): Add new attribute to warning_at
+         call to allow user configure behavior of "warning" attribute.
+
 2018-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* target.def: Put @: after every vs., e.g., and i.e. where it is

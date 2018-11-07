@@ -292,6 +292,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
 -Wdelete-incomplete @gol
+-Wno-attribute-warning @gol
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
@@ -6977,6 +6978,15 @@ about every identifier that contains the letter O because it might be
 confused with the digit 0, and so is not the default, but may be
 useful as a local coding convention if the programming environment 
 cannot be fixed to display these characters distinctly.
+
+@item -Wno-attribute-warning
+@opindex Wno-attribute-warning
+@opindex Wattribute-warning
+Do not warn about usage of functions (@pxref{Function Attributes})
+declared with @code{warning} attribute.  By default, this warning is
+enabled.  @option{-Wno-attribute-warning} can be used to disable the
+warning or @option{-Wno-error=attribute-warning} can be used to
+disable the error when compiled with @option{-Werror} flag.
 
 @item -Wno-deprecated
 @opindex Wno-deprecated
