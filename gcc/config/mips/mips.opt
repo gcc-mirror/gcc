@@ -463,3 +463,7 @@ Enum(mips_cb_setting) String(always) Value(MIPS_CB_ALWAYS)
 mloongson-mmi
 Target Report Mask(LOONGSON_MMI)
 Use Loongson MultiMedia extensions Instructions (MMI) instructions.
+
+mloongson-ext
+Target Report Mask(LOONGSON_EXT)
+Use Loongson EXTension (EXT) instructions.

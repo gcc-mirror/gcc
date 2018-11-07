@@ -1,5 +1,12 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* gcc.target/mips/mips.exp (mips_option_groups): Add
+	-mloongson-ext option.
+	(mips-dg-options): Add mips_option_dependency options
+	"-mmicromips" vs "-mno-loongson-ext",
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* gcc.target/mips/loongson-shift-count-truncated-1.c
 	(dg-options): Run under -mloongson-mmi option.
 	Include loongson-mmiintrin.h instead of loongson.h.
