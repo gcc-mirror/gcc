@@ -2393,7 +2393,7 @@ Version 9, which first appeared in G++ 5.2, corrects the alignment of
 
 Version 10, which first appeared in G++ 6.1, adds mangling of
 attributes that affect type identity, such as ia32 calling convention
-attributes (e.g. @samp{stdcall}).
+attributes (e.g.@: @samp{stdcall}).
 
 Version 11, which first appeared in G++ 7, corrects the mangling of
 sizeof... expressions and operator names.  For multiple entities with
@@ -2632,7 +2632,7 @@ nonconforming code to compile.
 When an error message refers to a specialization of a function
 template, the compiler normally prints the signature of the
 template followed by the template arguments and any typedefs or
-typenames in the signature (e.g. @code{void f(T) [with T = int]}
+typenames in the signature (e.g.@: @code{void f(T) [with T = int]}
 rather than @code{void f(int)}) so that it's clear which template is
 involved.  When an error message refers to a specialization of a class
 template, the compiler omits any template arguments that match
@@ -2817,7 +2817,7 @@ more things if an older ABI version is selected (with
 
 @option{-Wabi} can also be used with an explicit version number to
 warn about compatibility with a particular @option{-fabi-version}
-level, e.g. @option{-Wabi=2} to warn about changes relative to
+level, e.g.@: @option{-Wabi=2} to warn about changes relative to
 @option{-fabi-version=2}.
 
 If an explicit version number is provided and
@@ -5288,7 +5288,7 @@ void store (int *i)
 @item -Wmaybe-uninitialized
 @opindex Wmaybe-uninitialized
 @opindex Wno-maybe-uninitialized
-For an automatic (i.e.@ local) variable, if there exists a path from the
+For an automatic (i.e.@: local) variable, if there exists a path from the
 function entry to a use of the variable that is initialized, but there exist
 some other paths for which the variable is not initialized, the compiler
 emits a warning if it cannot prove the uninitialized paths are not
@@ -6444,7 +6444,7 @@ Warn when a function pointer is cast to an incompatible function pointer.
 In a cast involving function types with a variable argument list only
 the types of initial arguments that are provided are considered.
 Any parameter of pointer-type matches any other pointer-type.  Any benign
-differences in integral types are ignored, like @code{int} vs. @code{long}
+differences in integral types are ignored, like @code{int} vs.@: @code{long}
 on ILP32 targets.  Likewise type qualifiers are ignored.  The function
 type @code{void (*) (void)} is special and matches everything, which can
 be used to suppress this warning.
@@ -6733,7 +6733,7 @@ the element size.  This warning is enabled by @option{-Wall}.
 @opindex Wmemset-transposed-args
 @opindex Wno-memset-transposed-args
 Warn for suspicious calls to the @code{memset} built-in function, if the
-second argument is not zero and the third argument is zero.  This warns e.g.@
+second argument is not zero and the third argument is zero.  This warns e.g.@:
 about @code{memset (buf, sizeof buf, 0)} where most probably
 @code{memset (buf, 0, sizeof buf)} was meant instead.  The diagnostics
 is only emitted if the third argument is literal zero.  If it is some
@@ -8067,7 +8067,7 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -foptimize-strlen
 @opindex foptimize-strlen
-Optimize various standard C string functions (e.g. @code{strlen},
+Optimize various standard C string functions (e.g.@: @code{strlen},
 @code{strchr} or @code{strcpy}) and
 their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
@@ -8379,7 +8379,7 @@ This option is enabled by default.
 @item -funconstrained-commons
 @opindex funconstrained-commons
 This option tells the compiler that variables declared in common blocks
-(e.g. Fortran) may later be overridden with longer trailing arrays. This
+(e.g.@: Fortran) may later be overridden with longer trailing arrays. This
 prevents certain optimizations that depend on knowing the array bounds.
 
 @item -fcrossjumping
@@ -8506,7 +8506,7 @@ the object is destroyed.  Normally dead store elimination will take
 advantage of this; if your code relies on the value of the object
 storage persisting beyond the lifetime of the object, you can use this
 flag to disable this optimization.  To preserve stores before the
-constructor starts (e.g. because your operator new clears the object
+constructor starts (e.g.@: because your operator new clears the object
 storage) but still treat the object as dead after the destructor you,
 can use @option{-flifetime-dse=1}.  The default behavior can be
 explicitly selected with @option{-flifetime-dse=2}.
@@ -10832,7 +10832,7 @@ for analysis of the number of iterations of the loop tries to evaluate.
 
 @item hot-bb-count-ws-permille
 A basic block profile count is considered hot if it contributes to 
-the given permillage (i.e. 0...1000) of the entire profiled execution.
+the given permillage (i.e.@: 0...1000) of the entire profiled execution.
 
 @item hot-bb-frequency-fraction
 Select fraction of the entry block frequency of executions of basic block in
@@ -10848,7 +10848,7 @@ loop without bounds appears artificially cold relative to the other one.
 
 @item builtin-expect-probability
 Control the probability of the expression having the specified value. This
-parameter takes a percentage (i.e. 0 ... 100) as input.
+parameter takes a percentage (i.e.@: 0 ... 100) as input.
 
 @item builtin-string-cmp-inline-length
 The maximum length of a constant string for a builtin string cmp call 
@@ -11206,7 +11206,7 @@ enable the compiler to find more complex debug expressions, but compile
 time and memory use may grow.
 
 @item max-debug-marker-count
-Sets a threshold on the number of debug markers (e.g. begin stmt
+Sets a threshold on the number of debug markers (e.g.@: begin stmt
 markers) to avoid complexity explosion at inlining or expanding to RTL.
 If a function has more such gimple stmts than the set limit, such stmts
 will be dropped from the inlined copy of a function, and from its RTL
@@ -12133,7 +12133,7 @@ call/jmp-oriented programming (COP/JOP).
 
 The value @code{branch} tells the compiler to implement checking of
 validity of control-flow transfer at the point of indirect branch
-instructions, i.e. call/jmp instructions.  The value @code{return}
+instructions, i.e.@: call/jmp instructions.  The value @code{return}
 implements checking of validity at the point of returning from a
 function.  The value @code{full} is an alias for specifying both
 @code{branch} and @code{return}. The value @code{none} turns off
@@ -12560,7 +12560,7 @@ binary. In this case @option{-fpic} and @option{-fpie} are both disabled.
 If @var{type} is @samp{dyn} the code generation is configured to produce shared
 library. In this case @option{-fpic} or @option{-fPIC} is preserved, but not
 enabled automatically.  This makes it possible to build shared libraries without
-position independent code on architectures this is possible, i.e. on x86.
+position independent code on architectures this is possible, i.e.@: on x86.
 
 If @var{type} is @samp{pie} the code generation is configured to produce
 @option{-fpie} executable. This result in similar optimizations as @samp{exec}
@@ -16056,7 +16056,7 @@ the case.
 @opindex mlra
 Enable Local Register Allocation.  This is still experimental for ARC,
 so by default the compiler uses standard reload
-(i.e. @option{-mno-lra}).
+(i.e.@: @option{-mno-lra}).
 
 @item -mlra-priority-none
 @opindex mlra-priority-none
@@ -16853,7 +16853,7 @@ compiler to select the floating-point and Advanced SIMD instructions
 based on the settings of @option{-mcpu} and @option{-march}.
 
 If the selected floating-point hardware includes the NEON extension
-(e.g. @option{-mfpu=neon}), note that floating-point
+(e.g.@: @option{-mfpu=neon}), note that floating-point
 operations are not generated by GCC's auto-vectorization pass unless
 @option{-funsafe-math-optimizations} is also specified.  This is
 because NEON hardware does not fully implement the IEEE 754 standard for
@@ -17039,7 +17039,7 @@ this option and always use the original scheme.
 
 @item -mword-relocations
 @opindex mword-relocations
-Only generate absolute relocations on word-sized values (i.e. R_ARM_ABS32).
+Only generate absolute relocations on word-sized values (i.e.@: R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
 loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
 is specified. This option conflicts with @option{-mslow-flash-data}.
@@ -17292,7 +17292,7 @@ resulting address space is not contained in the incoming address space.
 @item -Wmisspelled-isr
 @opindex Wmisspelled-isr
 @opindex Wno-misspelled-isr
-Warn if the ISR is misspelled, i.e. without __vector prefix.
+Warn if the ISR is misspelled, i.e.@: without __vector prefix.
 Enabled by default.
 @end table
 
@@ -22656,7 +22656,7 @@ when linking.  This option is only useful in conjunction with @option{-mhal}.
 @opindex msys-lib
 @var{systemlib} is the library name of the library that provides
 low-level system calls required by the C library,
-e.g. @code{read} and @code{write}.
+e.g.@: @code{read} and @code{write}.
 This option is typically used to link with a library provided by a HAL BSP.
 
 @end table
@@ -22678,7 +22678,7 @@ Generate code for 32-bit or 64-bit ABI.
 
 @item -misa=@var{ISA-string}
 @opindex march
-Generate code for given the specified PTX ISA (e.g.@ @samp{sm_35}).  ISA
+Generate code for given the specified PTX ISA (e.g.@: @samp{sm_35}).  ISA
 strings must be lower-case.  Valid ISA strings include @samp{sm_30} and
 @samp{sm_35}.  The default ISA is sm_30.
 
@@ -23703,7 +23703,7 @@ these instructions.
 
 @item -march=@var{ISA-string}
 @opindex march
-Generate code for given RISC-V ISA (e.g.@ @samp{rv64im}).  ISA strings must be
+Generate code for given RISC-V ISA (e.g.@: @samp{rv64im}).  ISA strings must be
 lower-case.  Examples include @samp{rv64i}, @samp{rv32g}, @samp{rv32e}, and
 @samp{rv32imaf}.
 
@@ -25352,7 +25352,7 @@ facility introduced with the IBM z13 machine generation.
 This option adds support for @samp{vector} to be used as a keyword to
 define vector type variables and arguments.  @samp{vector} is only
 available when GNU extensions are enabled.  It will not be expanded
-when requesting strict standard compliance e.g. with @option{-std=c99}.
+when requesting strict standard compliance e.g.@: with @option{-std=c99}.
 In addition to the GCC low-level builtins @option{-mzvector} enables
 a set of builtins added for compatibility with AltiVec-style
 implementations like Power and Cell.  In order to make use of these
@@ -25723,7 +25723,7 @@ can be overridden by specifying either @option{-mieee} or @option{-mno-ieee}.
 Inline code to invalidate instruction cache entries after setting up
 nested function trampolines.
 This option has no effect if @option{-musermode} is in effect and the selected
-code generation option (e.g. @option{-m4}) does not allow the use of the @code{icbi}
+code generation option (e.g.@: @option{-m4}) does not allow the use of the @code{icbi}
 instruction.
 If the selected code generation option does not allow the use of the @code{icbi}
 instruction, and @option{-musermode} is not in effect, the inlined code
@@ -26983,7 +26983,7 @@ These @samp{-m} options are defined for the VMS implementations:
 @item -mvms-return-codes
 @opindex mvms-return-codes
 Return VMS condition codes from @code{main}. The default is to return POSIX-style
-condition (e.g.@ error) codes.
+condition (e.g.@: error) codes.
 
 @item -mdebug-main=@var{prefix}
 @opindex mdebug-main=@var{prefix}
@@ -28092,7 +28092,7 @@ are generated only when @option{-funsafe-math-optimizations} is enabled
 together with @option{-ffinite-math-only} and @option{-fno-trapping-math}.
 Note that while the throughput of the sequence is higher than the throughput
 of the non-reciprocal instruction, the precision of the sequence can be
-decreased by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
+decreased by up to 2 ulp (i.e.@: the inverse of 1.0 equals 0.99999994).
 
 Note that GCC implements @code{1.0f/sqrtf(@var{x})} in terms of @code{RSQRTSS}
 (or @code{RSQRTPS}) already with @option{-ffast-math} (or the above option

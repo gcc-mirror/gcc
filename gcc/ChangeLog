@@ -1,3 +1,21 @@
+2018-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* target.def: Put @: after every vs., e.g., and i.e. where it is
+	followed by whitespace.
+	* doc/extend.texi: Ditto.
+	* doc/fragments.texi: Ditto.
+	* doc/gimple.texi: Ditto.
+	* doc/implement-c.texi: Ditto.
+	* doc/install.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+	* doc/md.texi: Ditto.
+	* doc/plugins.texi: Ditto.
+	* doc/rtl.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+	* doc/tm.texi.in: Ditto.
+	* doc/ux.texi: Ditto.
+	* doc/tm.texi: Regenerate.
+
 2018-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/arm/arm-cpus.in (ares): New entry.
