@@ -1,4 +1,4 @@
-/* Test cases for Loongson EXT2 instrutions.  */
+/* Test cases for Loongson EXT2 instructions.  */
 
 /* { dg-do compile } */
 /* { dg-options "-mloongson-ext2" } */

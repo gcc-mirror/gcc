@@ -1,3 +1,8 @@
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/loongson-ctz.c: Fix typo.
+	* gcc.target/mips/loongson-dctz.c: Fix typo.
+
 2018-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* g++.dg/lto/odr-1_1.C: Fix template.
