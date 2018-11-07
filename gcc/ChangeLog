@@ -1,5 +1,23 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* config/mips/gs464e.md: New.
+	* config/mips/mips-cpus.def: Define gs464e.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_rtx_cost_data): Add DEFAULT_COSTS for
+	gs464e.
+	(mips_issue_rate): Add support for gs464e.
+	(mips_multipass_dfa_lookahead): Likewise.
+	(mips_option_override): Enable MMI, EXT and EXT2 for gs464e.
+	* config/mips/mips.h: Define TARGET_GS464E and TUNE_GS464E.
+	(MIPS_ISA_LEVEL_SPEC): Infer mips64r2 from gs464e.
+	(ISA_HAS_FUSED_MADD4): Enable for TARGET_GS464E.
+	(ISA_HAS_UNFUSED_MADD4): Exclude TARGET_GS464E.
+	* config/mips/mips.md: Include gs464e.md.
+	(processor): Add gs464e.
+	* doc/invoke.texi: Add gs464e to supported architectures.
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* config/mips/loongson3a.md: Rename to ...
 	* config/mips/gs464.md: ... here.
 	* config/mips/mips-cpus.def: Define gs464; Add loongson3a
