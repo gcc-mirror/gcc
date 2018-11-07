@@ -1,5 +1,12 @@
 2018-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/arm/arm-cpus.in (ares): New entry.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/arm-tune.md: Likewise.
+	* doc/invoke.texi (ARM Options): Document ares.
+
+2018-11-07  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/aarch64/aarch64-cores.def (ares): Define.
 	* config/aarch64/aarch64-tune.md: Regenerate.
 	* doc/invoke.texi (AArch64 Options): Document ares value for mtune.
