@@ -1,3 +1,9 @@
+2018-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87906
+	* tree-streamer-in.c (lto_input_ts_block_tree_pointers): Fixup
+	BLOCK_ABSTRACT_ORIGIN to be the ultimate origin.
+
 2018-11-07  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/87874
