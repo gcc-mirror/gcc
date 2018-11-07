@@ -37,7 +37,7 @@
   74kf3_2
   loongson_2e
   loongson_2f
-  loongson_3a
+  gs464
   m4k
   octeon
   octeon2
@@ -1173,7 +1173,7 @@
 (include "9000.md")
 (include "10000.md")
 (include "loongson2ef.md")
-(include "loongson3a.md")
+(include "gs464.md")
 (include "octeon.md")
 (include "sb1.md")
 (include "sr71k.md")
