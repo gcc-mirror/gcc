@@ -1483,6 +1483,9 @@ extern opt_result vect_analyze_stmt (stmt_vec_info, bool *, slp_tree,
 extern bool vectorizable_condition (stmt_vec_info, gimple_stmt_iterator *,
 				    stmt_vec_info *, tree, int, slp_tree,
 				    stmt_vector_for_cost *);
+extern bool vectorizable_shift (stmt_vec_info, gimple_stmt_iterator *,
+				stmt_vec_info *, slp_tree,
+				stmt_vector_for_cost *);
 extern void vect_get_load_cost (stmt_vec_info, int, bool,
 				unsigned int *, unsigned int *,
 				stmt_vector_for_cost *,

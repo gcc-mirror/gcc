@@ -1461,6 +1461,16 @@ vect_get_vec_def_for_operand_1 (stmt_vec_info def_stmt_info,
       /* Code should use vect_get_vec_def_for_operand.  */
       gcc_unreachable ();
 
+    /* Operand is defined by a loop header phi.  In case of nested
+       cycles we also may have uses of the backedge def.  */
+    case vect_reduction_def:
+    case vect_double_reduction_def:
+    case vect_nested_cycle:
+    case vect_induction_def:
+      gcc_assert (gimple_code (def_stmt_info->stmt) == GIMPLE_PHI
+		  || dt == vect_nested_cycle);
+      /* Fallthru.  */
+
     /* operand is defined inside the loop.  */
     case vect_internal_def:
       {
@@ -1473,23 +1483,6 @@ vect_get_vec_def_for_operand_1 (stmt_vec_info def_stmt_info,
 	  vec_stmt_info = (STMT_VINFO_VEC_STMT
 			   (STMT_VINFO_RELATED_STMT (def_stmt_info)));
 	gcc_assert (vec_stmt_info);
-	if (gphi *phi = dyn_cast <gphi *> (vec_stmt_info->stmt))
-	  vec_oprnd = PHI_RESULT (phi);
-	else
-	  vec_oprnd = gimple_get_lhs (vec_stmt_info->stmt);
-	return vec_oprnd;
-      }
-
-    /* operand is defined by a loop header phi.  */
-    case vect_reduction_def:
-    case vect_double_reduction_def:
-    case vect_nested_cycle:
-    case vect_induction_def:
-      {
-	gcc_assert (gimple_code (def_stmt_info->stmt) == GIMPLE_PHI);
-
-	/* Get the def from the vectorized stmt.  */
-	vec_stmt_info = STMT_VINFO_VEC_STMT (def_stmt_info);
 	if (gphi *phi = dyn_cast <gphi *> (vec_stmt_info->stmt))
 	  vec_oprnd = PHI_RESULT (phi);
 	else
@@ -5363,7 +5356,7 @@ vect_supportable_shift (enum tree_code code, tree scalar_type)
    stmt to replace it, put it in VEC_STMT, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
-static bool
+bool
 vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		    stmt_vec_info *vec_stmt, slp_tree slp_node,
 		    stmt_vector_for_cost *cost_vec)
@@ -5401,6 +5394,7 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     return false;
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
+      && STMT_VINFO_DEF_TYPE (stmt_info) != vect_nested_cycle
       && ! vec_stmt)
     return false;
 
@@ -5480,7 +5474,8 @@ vectorizable_shift (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
      shift/rotate amount is a vector, use the vector/vector shift optabs.  */
 
   if ((dt[1] == vect_internal_def
-       || dt[1] == vect_induction_def)
+       || dt[1] == vect_induction_def
+       || dt[1] == vect_nested_cycle)
       && !slp_node)
     scalar_shift_arg = false;
   else if (dt[1] == vect_constant_def
@@ -9540,7 +9535,6 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	  || vectorizable_simd_clone_call (stmt_info, NULL, NULL, node,
 					   cost_vec)
 	  || vectorizable_conversion (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_operation (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_assignment (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
@@ -9549,6 +9543,7 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	  || vectorizable_reduction (stmt_info, NULL, NULL, node,
 				     node_instance, cost_vec)
 	  || vectorizable_induction (stmt_info, NULL, NULL, node, cost_vec)
+	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
 				     cost_vec)
 	  || vectorizable_comparison (stmt_info, NULL, NULL, NULL, node,

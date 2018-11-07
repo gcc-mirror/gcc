@@ -1,3 +1,10 @@
+2018-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87914
+	* lib/target-supports.exp (check_effective_target_vect_var_shift): New.
+	(check_avx2_available): Likewise.
+	* g++.dg/vect/pr87914.cc: New testcase.
+
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/loongson-ctz.c: Fix typo.

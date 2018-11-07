@@ -2843,6 +2843,11 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           return NULL;
         }
 
+      /* For inner loop reductions in nested vectorization there are no
+         constraints on the number of uses in the inner loop.  */
+      if (loop == vect_loop->inner)
+	continue;
+
       nloop_uses++;
       if (nloop_uses > 1)
         {
@@ -2901,13 +2906,19 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       else
 	/* We can have more than one loop-closed PHI.  */
 	lcphis.safe_push (as_a <gphi *> (use_stmt));
-      if (nloop_uses > 1)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduction used in loop.\n");
-	  return NULL;
-	}
+    }
+
+  /* If this isn't a nested cycle or if the nested cycle reduction value
+     is used ouside of the inner loop we cannot handle uses of the reduction
+     value.  */
+  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
+  if ((!nested_in_vect_loop || !lcphis.is_empty ())
+      && nloop_uses > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "reduction used in loop.\n");
+      return NULL;
     }
 
   /* If DEF_STMT is a phi node itself, we expect it to have a single argument
@@ -2968,8 +2979,14 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
     }
 
   gassign *def_stmt = as_a <gassign *> (def_stmt_info->stmt);
-  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
   code = orig_code = gimple_assign_rhs_code (def_stmt);
+
+  if (nested_in_vect_loop && !check_reduction)
+    {
+      if (dump_enabled_p ())
+	report_vect_op (MSG_NOTE, def_stmt, "detected nested cycle: ");
+      return def_stmt_info;
+    }
 
   /* We can handle "res -= x[i]", which is non-associative by
      simply rewriting this into "res += -x[i]".  Avoid changing
@@ -6448,6 +6465,19 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   vec_mode = TYPE_MODE (vectype_in);
   poly_uint64 nunits_out = TYPE_VECTOR_SUBPARTS (vectype_out);
 
+  if (nested_cycle)
+    {
+      def_bb = gimple_bb (reduc_def_phi);
+      def_stmt_loop = def_bb->loop_father;
+      def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
+                                       loop_preheader_edge (def_stmt_loop));
+      stmt_vec_info def_arg_stmt_info = loop_vinfo->lookup_def (def_arg);
+      if (def_arg_stmt_info
+	  && (STMT_VINFO_DEF_TYPE (def_arg_stmt_info)
+	      == vect_double_reduction_def))
+        double_reduc = true;
+    }
+
   if (code == COND_EXPR)
     {
       /* Only call during the analysis stage, otherwise we'll lose
@@ -6462,20 +6492,26 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  return false;
         }
     }
+  else if (code == LSHIFT_EXPR || code == RSHIFT_EXPR
+	   || code == LROTATE_EXPR || code == RROTATE_EXPR)
+    {
+      /* Only call during the analysis stage, otherwise we'll lose
+	 STMT_VINFO_TYPE.  We only support this for nested cycles
+	 without double reductions at the moment.  */
+      if (!nested_cycle
+	  || double_reduc
+	  || (!vec_stmt && !vectorizable_shift (stmt_info, gsi, NULL,
+						NULL, cost_vec)))
+	{
+          if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "unsupported shift or rotation in reduction\n");
+	  return false;
+	}
+    }
   else
     {
       /* 4. Supportable by target?  */
-
-      if (code == LSHIFT_EXPR || code == RSHIFT_EXPR
-	  || code == LROTATE_EXPR || code == RROTATE_EXPR)
-	{
-	  /* Shifts and rotates are only supported by vectorizable_shifts,
-	     not vectorizable_reduction.  */
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "unsupported shift or rotation.\n");
-	  return false;
-	}
 
       /* 4.1. check support for the operation in the loop  */
       optab = optab_for_tree_code (code, vectype_in, optab_default);
@@ -6578,19 +6614,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	}
       else if (reduction_type == INTEGER_INDUC_COND_REDUCTION)
 	orig_code = cond_reduc_op_code;
-    }
-
-  if (nested_cycle)
-    {
-      def_bb = gimple_bb (reduc_def_phi);
-      def_stmt_loop = def_bb->loop_father;
-      def_arg = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi,
-                                       loop_preheader_edge (def_stmt_loop));
-      stmt_vec_info def_arg_stmt_info = loop_vinfo->lookup_def (def_arg);
-      if (def_arg_stmt_info
-	  && (STMT_VINFO_DEF_TYPE (def_arg_stmt_info)
-	      == vect_double_reduction_def))
-        double_reduc = true;
     }
 
   reduc_fn = IFN_LAST;
@@ -6963,6 +6986,12 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           /* Multiple types are not supported for condition.  */
           break;
         }
+      if (code == LSHIFT_EXPR
+	  || code == RSHIFT_EXPR)
+	{
+	  vectorizable_shift (stmt_info, gsi, vec_stmt, slp_node, NULL);
+	  break;
+	}
 
       /* Handle uses.  */
       if (j == 0)

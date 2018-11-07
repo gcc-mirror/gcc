@@ -1,3 +1,19 @@
+2018-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87914
+	* tree-vect-loop.c (vect_is_simple_reduction): Improve detection
+	of nested cycles.
+	(vectorizable_reduction): Handle shifts and rotates by dispatching
+	to vectorizable_shift.
+	* tree-vect-stmts.c (vect_get_vec_def_for_operand_1): Handle
+	in-loop uses of vect_nested_cycle defs.  Merge cycle and internal
+	def cases.
+	(vectorizable_shift): Export and handle being called as
+	vect_nested_cycle.
+	(vect_analyze_stmt): Call vectorizable_shift after
+	vectorizable_reduction.
+	* tree-vectorizer.h (vectorizable_shift): Declare.
+
 2018-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* ipa-devirt.c (odr_types_equivalent_p): Expect constants
