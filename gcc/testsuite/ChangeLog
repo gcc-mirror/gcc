@@ -1,3 +1,7 @@
+2018-11-07  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr87874.c: Compile only for int128 effective target.
+
 2018-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87914
