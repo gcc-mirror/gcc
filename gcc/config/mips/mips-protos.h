@@ -323,6 +323,7 @@ extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int mips_dspalu_bypass_p (rtx, rtx);
 extern rtx mips_prefetch_cookie (rtx, rtx);
+extern rtx mips_loongson_ext2_prefetch_cookie (rtx, rtx);
 
 extern const char *current_section_name (void);
 extern unsigned int current_section_flags (void);

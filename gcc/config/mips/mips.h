@@ -600,6 +600,13 @@ struct mips_cpu_info {
       if (TARGET_LOONGSON_EXT)						\
 	{								\
 	  builtin_define ("__mips_loongson_ext");			\
+	  if (TARGET_LOONGSON_EXT2)					\
+	    {								\
+	      builtin_define ("__mips_loongson_ext2");			\
+	      builtin_define ("__mips_loongson_ext_rev=2");		\
+	    }								\
+	  else								\
+	      builtin_define ("__mips_loongson_ext_rev=1");		\
 	}								\
 									\
       /* Historical Octeon macro.  */					\
@@ -1134,6 +1141,9 @@ struct mips_cpu_info {
 /* ISA has count leading zeroes/ones instruction (not implemented).  */
 #define ISA_HAS_CLZ_CLO		(mips_isa_rev >= 1 && !TARGET_MIPS16)
 
+/* ISA has count tailing zeroes/ones instruction.  */
+#define ISA_HAS_CTZ_CTO		(TARGET_LOONGSON_EXT2)
+
 /* ISA has three operand multiply instructions that put
    the high part in an accumulator: mulhi or mulhiu.  */
 #define ISA_HAS_MULHI		((TARGET_MIPS5400			 \
@@ -1195,7 +1205,9 @@ struct mips_cpu_info {
    'prefx', along with TARGET_HARD_FLOAT and TARGET_DOUBLE_FLOAT.
    (prefx is a cop1x instruction, so can only be used if FP is
    enabled.)  */
-#define ISA_HAS_PREFETCHX	ISA_HAS_FP4
+#define ISA_HAS_PREFETCHX	(ISA_HAS_FP4				\
+				 || TARGET_LOONGSON_EXT			\
+				 || TARGET_LOONGSON_EXT2)
 
 /* True if trunc.w.s and trunc.w.d are real (not synthetic)
    instructions.  Both require TARGET_HARD_FLOAT, and trunc.w.d
@@ -1379,6 +1391,7 @@ struct mips_cpu_info {
 %{mmsa} %{mno-msa} \
 %{mloongson-mmi} %{mno-loongson-mmi} \
 %{mloongson-ext} %{mno-loongson-ext} \
+%{mloongson-ext2} %{mno-loongson-ext2} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-rm7000} %{mno-fix-rm7000} \

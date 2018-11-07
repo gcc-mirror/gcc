@@ -922,6 +922,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmsa  -mno-msa @gol
 -mloongson-mmi  -mno-loongson-mmi @gol
 -mloongson-ext  -mno-loongson-ext @gol
+-mloongson-ext2  -mno-loongson-ext2 @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -21299,6 +21300,12 @@ Use (do not use) the MIPS Loongson MultiMedia extensions Instructions (MMI).
 @opindex mloongson-ext
 @opindex mno-loongson-ext
 Use (do not use) the MIPS Loongson EXTensions (EXT) instructions.
+
+@item -mloongson-ext2
+@itemx -mno-loongson-ext2
+@opindex mloongson-ext2
+@opindex mno-loongson-ext2
+Use (do not use) the MIPS Loongson EXTensions r2 (EXT2) instructions.
 
 @item -mlong64
 @opindex mlong64

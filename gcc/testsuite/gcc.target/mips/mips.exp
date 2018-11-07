@@ -298,6 +298,7 @@ foreach option {
     msa
     loongson-mmi
     loongson-ext
+    loongson-ext2
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
