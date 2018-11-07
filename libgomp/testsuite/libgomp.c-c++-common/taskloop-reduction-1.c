@@ -4,7 +4,7 @@ extern
 #endif
 void abort (void);
 
-struct S { unsigned long int s, t; };
+struct S { unsigned long long int s, t; };
 
 void
 rbar (struct S *p, struct S *o)

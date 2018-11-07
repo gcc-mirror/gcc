@@ -1,3 +1,8 @@
+2018-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/atomic-5.C (f1): Adjust expected lines of read-only
+	variable messages.
+
 2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/gomp/for-6.C: Change expected library call.

@@ -12,12 +12,12 @@ void f1(void)
     x = x + 1;
   #pragma omp atomic
     x = 1;		/* { dg-error "invalid form" } */
-  #pragma omp atomic
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
     ++y;		/* { dg-error "read-only variable" } */
-  #pragma omp atomic
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
     y--;		/* { dg-error "read-only variable" } */
-  #pragma omp atomic
-    y += 1;		/* { dg-error "read-only variable" } */
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
+    y += 1;
   #pragma omp atomic
     bar();		/* { dg-error "invalid operator" } */
   #pragma omp atomic
