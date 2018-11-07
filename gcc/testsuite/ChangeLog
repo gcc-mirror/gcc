@@ -1,5 +1,10 @@
 2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* gcc.c-torture/compile/pr65595.c: Change type of "num" argument to
+	memcpy from "unsigned long" to __SIZE_TYPE__.
+
+2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	PR c/87691
 	* gcc.target/msp430/pr87691.c: New test.
 
