@@ -1328,9 +1328,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 			   " is defined in another translation unit"));
 	      return false;
 	    }
-	  if (TREE_VALUE (v1) != TREE_VALUE (v2)
-	      && !operand_equal_p (DECL_INITIAL (TREE_VALUE (v1)),
-				   DECL_INITIAL (TREE_VALUE (v2)), 0))
+	  if (TREE_VALUE (v1) != TREE_VALUE (v2))
 	    {
 	      warn_odr (t1, t2, NULL, NULL, warn, warned,
 			G_("an enum with different values is defined"
@@ -2191,6 +2189,7 @@ static void
 dump_type_inheritance_graph (FILE *f)
 {
   unsigned int i;
+  unsigned int num_all_types = 0, num_types = 0, num_duplicates = 0;
   if (!odr_types_ptr)
     return;
   fprintf (f, "\n\nType inheritance graph:\n");
@@ -2201,26 +2200,70 @@ dump_type_inheritance_graph (FILE *f)
     }
   for (i = 0; i < odr_types.length (); i++)
     {
-      if (odr_types[i] && odr_types[i]->types && odr_types[i]->types->length ())
+      if (!odr_types[i])
+	continue;
+
+      num_all_types++;
+      if (!odr_types[i]->types || !odr_types[i]->types->length ())
+	continue;
+
+      /* To aid ODR warnings we also mangle integer constants but do
+	 not consinder duplicates there.  */
+      if (TREE_CODE (odr_types[i]->type) == INTEGER_TYPE)
+	continue;
+
+      /* It is normal to have one duplicate and one normal variant.  */
+      if (odr_types[i]->types->length () == 1
+	  && COMPLETE_TYPE_P (odr_types[i]->type)
+	  && !COMPLETE_TYPE_P ((*odr_types[i]->types)[0]))
+	continue;
+
+      num_types ++;
+
+      unsigned int j;
+      fprintf (f, "Duplicate tree types for odr type %i\n", i);
+      print_node (f, "", odr_types[i]->type, 0);
+      print_node (f, "", TYPE_NAME (odr_types[i]->type), 0);
+      putc ('\n',f);
+      for (j = 0; j < odr_types[i]->types->length (); j++)
 	{
-	  unsigned int j;
-	  fprintf (f, "Duplicate tree types for odr type %i\n", i);
-	  print_node (f, "", odr_types[i]->type, 0);
-	  for (j = 0; j < odr_types[i]->types->length (); j++)
+	  tree t;
+	  num_duplicates ++;
+	  fprintf (f, "duplicate #%i\n", j);
+	  print_node (f, "", (*odr_types[i]->types)[j], 0);
+	  t = (*odr_types[i]->types)[j];
+	  while (TYPE_P (t) && TYPE_CONTEXT (t))
 	    {
-	      tree t;
-	      fprintf (f, "duplicate #%i\n", j);
-	      print_node (f, "", (*odr_types[i]->types)[j], 0);
-	      t = (*odr_types[i]->types)[j];
-	      while (TYPE_P (t) && TYPE_CONTEXT (t))
-		{
-		  t = TYPE_CONTEXT (t);
-	          print_node (f, "", t, 0);
-		}
-	      putc ('\n',f);
+	      t = TYPE_CONTEXT (t);
+	      print_node (f, "", t, 0);
 	    }
+	  print_node (f, "", TYPE_NAME ((*odr_types[i]->types)[j]), 0);
+	  putc ('\n',f);
 	}
     }
+  fprintf (f, "Out of %i types there are %i types with duplicates; "
+	   "%i duplicates overall\n", num_all_types, num_types, num_duplicates);
+}
+
+/* Save some WPA->ltrans streaming by freeing enum values.  */
+
+static void
+free_enum_values ()
+{
+  static bool enum_values_freed = false;
+  if (enum_values_freed || !flag_wpa || !odr_types_ptr)
+    return;
+  enum_values_freed = true;
+  unsigned int i;
+  for (i = 0; i < odr_types.length (); i++)
+    if (odr_types[i] && TREE_CODE (odr_types[i]->type) == ENUMERAL_TYPE)
+      {
+	TYPE_VALUES (odr_types[i]->type) = NULL;
+	if (odr_types[i]->types)
+          for (unsigned int j = 0; j < odr_types[i]->types->length (); j++)
+	    TYPE_VALUES ((*odr_types[i]->types)[j]) = NULL;
+      }
+  enum_values_freed = true;
 }
 
 /* Initialize IPA devirt and build inheritance tree graph.  */
@@ -2233,7 +2276,10 @@ build_type_inheritance_graph (void)
   dump_flags_t flags;
 
   if (odr_hash)
-    return;
+    {
+      free_enum_values ();
+      return;
+    }
   timevar_push (TV_IPA_INHERITANCE);
   inheritance_dump_file = dump_begin (TDI_inheritance, &flags);
   odr_hash = new odr_hash_type (23);
@@ -2278,6 +2324,7 @@ build_type_inheritance_graph (void)
       dump_type_inheritance_graph (inheritance_dump_file);
       dump_end (TDI_inheritance, inheritance_dump_file);
     }
+  free_enum_values ();
   timevar_pop (TV_IPA_INHERITANCE);
 }
 
