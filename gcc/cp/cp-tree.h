@@ -723,8 +723,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
-/* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
-   fns.  */
+/* OVL_HIDDEN_P nodes come before other nodes.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;

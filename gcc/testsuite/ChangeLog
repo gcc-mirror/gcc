@@ -1,3 +1,8 @@
+2018-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87904
+	* g++.dg/lookup/pr87904.C: New.
+
 2018-11-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr87874.c: Compile only for int128 effective target.
