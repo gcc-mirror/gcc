@@ -1,3 +1,107 @@
+2018-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* libgomp_g.h (GOMP_loop_start, GOMP_loop_ordered_start,
+	GOMP_loop_doacross_start, GOMP_loop_ull_start,
+	GOMP_loop_ull_ordered_start, GOMP_loop_ull_doacross_start,
+	GOMP_workshare_task_reduction_unregister, GOMP_sections2_start): New
+	prototypes.
+	* libgomp.h (struct gomp_doacross_work_share): Add extra field.
+	(struct gomp_work_share): Add task_reductions field.
+	(struct gomp_taskgroup): Add workshare flag.
+	(gomp_doacross_init, gomp_doacross_ull_init): Add size_t argument.
+	(gomp_workshare_taskgroup_start,
+	gomp_workshare_task_reduction_register): New prototypes.
+	(gomp_init_work_share, gomp_work_share_start): Change bool argument
+	to size_t.
+	* libgomp.map (GOMP_5.0): Export GOMP_loop_start,
+	GOMP_loop_ordered_start, GOMP_loop_doacross_start,
+	GOMP_loop_ull_start, GOMP_loop_ull_ordered_start,
+	GOMP_loop_ull_doacross_start,
+	GOMP_workshare_task_reduction_unregister and GOMP_sections2_start.
+	* loop.c: Include string.h.
+	(GOMP_loop_runtime_next): Add ialias.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(gomp_loop_static_start, gomp_loop_dynamic_start,
+	gomp_loop_guided_start, gomp_loop_ordered_static_start,
+	gomp_loop_ordered_dynamic_start, gomp_loop_ordered_guided_start,
+	gomp_loop_doacross_static_start, gomp_loop_doacross_dynamic_start,
+	gomp_loop_doacross_guided_start): Adjust gomp_work_share_start
+	or gomp_doacross_init callers.
+	(gomp_adjust_sched, GOMP_loop_start, GOMP_loop_ordered_start,
+	GOMP_loop_doacross_start): New functions.
+	* loop_ull.c: Include string.h.
+	(GOMP_loop_ull_runtime_next): Add ialias.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(gomp_loop_ull_static_start, gomp_loop_ull_dynamic_start,
+	gomp_loop_ull_guided_start, gomp_loop_ull_ordered_static_start,
+	gomp_loop_ull_ordered_dynamic_start,
+	gomp_loop_ull_ordered_guided_start,
+	gomp_loop_ull_doacross_static_start,
+	gomp_loop_ull_doacross_dynamic_start,
+	gomp_loop_ull_doacross_guided_start): Adjust gomp_work_share_start
+	and gomp_doacross_ull_init callers.
+	(gomp_adjust_sched, GOMP_loop_ull_start, GOMP_loop_ull_ordered_start,
+	GOMP_loop_ull_doacross_start): New functions.
+	* sections.c: Include string.h.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(GOMP_sections_start): Adjust gomp_work_share_start caller.
+	(GOMP_sections2_start): New function.
+	* ordered.c (gomp_doacross_init, gomp_doacross_ull_init): Add
+	EXTRA argument.  If not needed to prepare array, if extra is 0,
+	clear ws->doacross, otherwise allocate just doacross structure and
+	extra payload.  If array is needed, allocate also extra payload.
+	(GOMP_doacross_post, GOMP_doacross_wait, GOMP_doacross_ull_post,
+	GOMP_doacross_ull_wait): Handle doacross->array == NULL like
+	doacross == NULL.
+	* parallel.c (GOMP_cancellation_point): If taskgroup has workshare
+	flag set, check cancelled of prev taskgroup if any.
+	(GOMP_cancel): If taskgroup has workshare flag set, set cancelled
+	on prev taskgroup if any.
+	* single.c (GOMP_single_start, GOMP_single_copy_start): Adjust
+	gomp_work_share_start callers.
+	* target.c (GOMP_target_update_ext, GOMP_target_enter_exit_data):
+	If taskgroup has workshare flag set, check cancelled on prev
+	taskgroup if any.  Guard all cancellation tests with
+	gomp_cancel_var test.
+	* taskloop.c (GOMP_taskloop): Likewise.
+	* task.c (GOMP_task, gomp_create_target_task, gomp_task_run_pre,
+	GOMP_taskwait_depend): Likewise.
+	(gomp_taskgroup_init): Clear workshare flag, reorder initialization.
+	(gomp_reduction_register): Add always_inline attribute.  Add
+	ORIG argument, if non-NULL, don't allocate memory, but copy it
+	from there.
+	(gomp_create_artificial_team): New function.
+	(GOMP_taskgroup_reduction_register): Extend function comment.
+	Use gomp_create_artificial_team.  Adjust gomp_reduction_register
+	caller.
+	(gomp_parallel_reduction_register): Adjust gomp_reduction_register
+	caller.
+	(gomp_workshare_task_reduction_register,
+	gomp_workshare_taskgroup_start,
+	GOMP_workshare_task_reduction_unregister): New functions.
+	* team.c (gomp_new_team): Adjust gomp_init_work_share caller.
+	* work.c (gomp_init_work_share): Change ORDERED argument from
+	bool to size_t, if more than 1 allocate also extra payload at the
+	end of array.  Never keep ordered_team_ids NULL, set it
+	to inline_ordered_team_ids instead.
+	(gomp_work_share_start): Change ORDERED argument from bool to size_t,
+	return true instead of ws.
+	* testsuite/libgomp.c-c++-common/cancel-parallel-1.c: New test.
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-3.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-6.c (struct S):
+	Use unsigned long long int instead of unsigned long int.
+	(main): Verify r == t.
+	* testsuite/libgomp.c-c++-common/task-reduction-8.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-9.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-11.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-12.c: New test.
+	* testsuite/libgomp.c++/task-reduction-14.C: New test.
+	* testsuite/libgomp.c++/task-reduction-15.C: New test.
+	* testsuite/libgomp.c++/task-reduction-16.C: New test.
+	* testsuite/libgomp.c++/task-reduction-17.C: New test.
+	* testsuite/libgomp.c++/task-reduction-18.C: New test.
+	* testsuite/libgomp.c++/task-reduction-19.C: New test.
+
 2018-10-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Define unless

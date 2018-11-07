@@ -1,3 +1,53 @@
+2018-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_VOID_BOOL, BT_FN_UINT_UINT_PTR_PTR,
+	BT_FN_BOOL_UINT_LONGPTR_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_UINT_ULLPTR_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR,
+	BT_FN_BOOL_LONG_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR): New.
+	* omp-builtins.def (BUILT_IN_GOMP_LOOP_START,
+	BUILT_IN_GOMP_LOOP_ORDERED_START, BUILT_IN_GOMP_LOOP_DOACROSS_START,
+	BUILT_IN_GOMP_LOOP_ULL_START, BUILT_IN_GOMP_LOOP_ULL_ORDERED_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_START, BUILT_IN_GOMP_SECTIONS2_START,
+	BUILT_IN_GOMP_WORKSHARE_TASK_REDUCTION_UNREGISTER): New.
+	* omp-general.h (struct omp_for_data): Add have_reductemp member.
+	* omp-general.c (omp_extract_for_data): Initialize it.
+	* omp-low.c (build_outer_var_ref): Ignore taskgroup outer contexts.
+	Fix up the condition when lookup_decl should be used.
+	(scan_sharing_clauses): Call install_var_local for reductions with
+	task modifier even in worksharing contexts.
+	(lower_rec_input_clauses): Don't lookup_decl reductemp in worksharing
+	contexts.  Handle reductions with task modifier in worksharing
+	contexts.  Ignore _reductemp_ clause in worksharing contexts.
+	(lower_reduction_clauses): Ignore reduction clause with task modifiers
+	even in worksharing contexts.
+	(lower_send_clauses): Likewise.
+	(maybe_add_implicit_barrier_cancel): Add OMP_RETURN argument, don't
+	rely that it is the last stmt in body so far.  Ignore outer taskgroup
+	contexts.
+	(omp_task_reductions_find_first): Move earlier.
+	(lower_omp_task_reductions): Add forward declaration.  Handle
+	OMP_FOR and OMP_SECTIONS, add support for parallel cancellation.
+	(lower_omp_sections): Handle reduction clauses with taskgroup
+	modifiers.  Adjust maybe_add_implicit_barrier_cancel caller.
+	(lower_omp_single): Adjust maybe_add_implicit_barrier_cancel caller.
+	(lower_omp_for): Likewise.  Handle reduction clauses with taskgroup
+	modifiers.
+	* omp-expand.c (omp_adjust_chunk_size): Don't adjust anything if
+	chunk_size is zero.
+	(determine_parallel_type): Don't combine parallel with worksharing
+	which has _reductemp_ clause.
+	(expand_omp_for_generic): Add SCHED_ARG argument.  Handle expansion
+	of worksharing loops with task reductions.
+	(expand_omp_for_static_nochunk): Handle expansion of worksharing
+	loops with task reductions.
+	(expand_omp_for_static_chunk): Likewise.
+	(expand_omp_for): Adjust expand_omp_for_generic caller, use
+	GOMP_loop{,_ull}{,_ordered,_doacross}_start builtins if there are
+	task reductions.
+	(expand_omp_sections): Handle expansion of sections with task
+	reductions.
+
 2018-10-25  Jakub Jelinek  <jakub@redhat.com>
 
 	* omp-builtins.def (BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_START,

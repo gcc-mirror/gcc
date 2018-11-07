@@ -1,7 +1,7 @@
 #include <omp.h>
 #include <stdlib.h>
 
-struct S { unsigned long int s, t; };
+struct S { unsigned long long int s, t; };
 
 void
 rbar (struct S *p, struct S *o)
@@ -118,6 +118,8 @@ main ()
   if (h.s != (1ULL << 42) || h.t != 5)
     abort ();
   if (m.s != 63 * 64 * 4 || m.t != 7)
+    abort ();
+  if (r != t)
     abort ();
   return 0;
 }

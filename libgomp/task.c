@@ -363,10 +363,20 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
 #endif
 
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   if ((flags & GOMP_TASK_FLAG_PRIORITY) == 0)
     priority = 0;
@@ -464,14 +474,26 @@ GOMP_task (void (*fn) (void *), void *data, void (*cpyfn) (void *, void *),
       gomp_mutex_lock (&team->task_lock);
       /* If parallel or taskgroup has been cancelled, don't start new
 	 tasks.  */
-      if (__builtin_expect ((gomp_team_barrier_cancelled (&team->barrier)
-			     || (taskgroup && taskgroup->cancelled))
-			    && !task->copy_ctors_done, 0))
+      if (__builtin_expect (gomp_cancel_var, 0)
+	  && !task->copy_ctors_done)
 	{
-	  gomp_mutex_unlock (&team->task_lock);
-	  gomp_finish_task (task);
-	  free (task);
-	  return;
+	  if (gomp_team_barrier_cancelled (&team->barrier))
+	    {
+	    do_cancel:
+	      gomp_mutex_unlock (&team->task_lock);
+	      gomp_finish_task (task);
+	      free (task);
+	      return;
+	    }
+	  if (taskgroup)
+	    {
+	      if (taskgroup->cancelled)
+		goto do_cancel;
+	      if (taskgroup->workshare
+		  && taskgroup->prev
+		  && taskgroup->prev->cancelled)
+		goto do_cancel;
+	    }
 	}
       if (taskgroup)
 	taskgroup->num_children++;
@@ -662,10 +684,20 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   struct gomp_team *team = thr->ts.team;
 
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return true;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return true;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return true;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return true;
+	}
+    }
 
   struct gomp_target_task *ttask;
   struct gomp_task *task;
@@ -748,13 +780,25 @@ gomp_create_target_task (struct gomp_device_descr *devicep,
   task->final_task = 0;
   gomp_mutex_lock (&team->task_lock);
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (__builtin_expect (gomp_team_barrier_cancelled (&team->barrier)
-			|| (taskgroup && taskgroup->cancelled), 0))
+  if (__builtin_expect (gomp_cancel_var, 0))
     {
-      gomp_mutex_unlock (&team->task_lock);
-      gomp_finish_task (task);
-      free (task);
-      return true;
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	{
+	do_cancel:
+	  gomp_mutex_unlock (&team->task_lock);
+	  gomp_finish_task (task);
+	  free (task);
+	  return true;
+	}
+      if (taskgroup)
+	{
+	  if (taskgroup->cancelled)
+	    goto do_cancel;
+	  if (taskgroup->workshare
+	      && taskgroup->prev
+	      && taskgroup->prev->cancelled)
+	    goto do_cancel;
+	}
     }
   if (depend_size)
     {
@@ -1047,10 +1091,21 @@ gomp_task_run_pre (struct gomp_task *child_task, struct gomp_task *parent,
 
   if (--team->task_queued_count == 0)
     gomp_team_barrier_clear_task_pending (&team->barrier);
-  if ((gomp_team_barrier_cancelled (&team->barrier)
-       || (taskgroup && taskgroup->cancelled))
+  if (__builtin_expect (gomp_cancel_var, 0)
       && !child_task->copy_ctors_done)
-    return true;
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return true;
+      if (taskgroup)
+	{
+	  if (taskgroup->cancelled)
+	    return true;
+	  if (taskgroup->workshare
+	      && taskgroup->prev
+	      && taskgroup->prev->cancelled)
+	    return true;
+	}
+    }
   return false;
 }
 
@@ -1527,10 +1582,20 @@ GOMP_taskwait_depend (void **depend)
   struct gomp_team *team = thr->ts.team;
 
   /* If parallel or taskgroup has been cancelled, return early.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   if (thr->task && thr->task->depend_hash)
     gomp_task_maybe_wait_for_dependencies (depend);
@@ -1770,9 +1835,10 @@ gomp_taskgroup_init (struct gomp_taskgroup *prev)
     = gomp_malloc (sizeof (struct gomp_taskgroup));
   taskgroup->prev = prev;
   priority_queue_init (&taskgroup->taskgroup_queue);
-  taskgroup->in_taskgroup_wait = false;
   taskgroup->reductions = prev ? prev->reductions : NULL;
+  taskgroup->in_taskgroup_wait = false;
   taskgroup->cancelled = false;
+  taskgroup->workshare = false;
   taskgroup->num_children = 0;
   gomp_sem_init (&taskgroup->taskgroup_sem, 0);
   return taskgroup;
@@ -1956,21 +2022,34 @@ GOMP_taskgroup_end (void)
   free (taskgroup);
 }
 
-static inline void
-gomp_reduction_register (uintptr_t *data, uintptr_t *old, unsigned nthreads)
+static inline __attribute__((always_inline)) void
+gomp_reduction_register (uintptr_t *data, uintptr_t *old, uintptr_t *orig,
+			 unsigned nthreads)
 {
   size_t total_cnt = 0;
   uintptr_t *d = data;
   struct htab *old_htab = NULL, *new_htab;
   do
     {
-      size_t sz = d[1] * nthreads;
-      /* Should use omp_alloc if d[3] is not -1.  */
-      void *ptr = gomp_aligned_alloc (d[2], sz);
-      memset (ptr, '\0', sz);
-      d[2] = (uintptr_t) ptr;
+      if (__builtin_expect (orig != NULL, 0))
+	{
+	  /* For worksharing task reductions, memory has been allocated
+	     already by some other thread that encountered the construct
+	     earlier.  */
+	  d[2] = orig[2];
+	  d[6] = orig[6];
+	  orig = (uintptr_t *) orig[4];
+	}
+      else
+	{
+	  size_t sz = d[1] * nthreads;
+	  /* Should use omp_alloc if d[3] is not -1.  */
+	  void *ptr = gomp_aligned_alloc (d[2], sz);
+	  memset (ptr, '\0', sz);
+	  d[2] = (uintptr_t) ptr;
+	  d[6] = d[2] + sz;
+	}
       d[5] = 0;
-      d[6] = d[2] + sz;
       total_cnt += d[0];
       if (d[4] == 0)
 	{
@@ -2028,6 +2107,38 @@ gomp_reduction_register (uintptr_t *data, uintptr_t *old, unsigned nthreads)
   d[5] = (uintptr_t) new_htab;
 }
 
+static void
+gomp_create_artificial_team (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_task_icv *icv;
+  struct gomp_team *team = gomp_new_team (1);
+  struct gomp_task *task = thr->task;
+  icv = task ? &task->icv : &gomp_global_icv;
+  team->prev_ts = thr->ts;
+  thr->ts.team = team;
+  thr->ts.team_id = 0;
+  thr->ts.work_share = &team->work_shares[0];
+  thr->ts.last_work_share = NULL;
+#ifdef HAVE_SYNC_BUILTINS
+  thr->ts.single_count = 0;
+#endif
+  thr->ts.static_trip = 0;
+  thr->task = &team->implicit_task[0];
+  gomp_init_task (thr->task, NULL, icv);
+  if (task)
+    {
+      thr->task = task;
+      gomp_end_task ();
+      free (task);
+      thr->task = &team->implicit_task[0];
+    }
+#ifdef LIBGOMP_USE_PTHREADS
+  else
+    pthread_setspecific (gomp_thread_destructor, thr);
+#endif
+}
+
 /* The format of data is:
    data[0]	cnt
    data[1]	size
@@ -2039,7 +2150,12 @@ gomp_reduction_register (uintptr_t *data, uintptr_t *old, unsigned nthreads)
    cnt times
    ent[0]	address
    ent[1]	offset
-   ent[2]	used internally (pointer to data[0]).  */
+   ent[2]	used internally (pointer to data[0])
+   The entries are sorted by increasing offset, so that a binary
+   search can be performed.  Normally, data[8] is 0, exception is
+   for worksharing construct task reductions in cancellable parallel,
+   where at offset 0 there should be space for a pointer and an integer
+   which are used internally.  */
 
 void
 GOMP_taskgroup_reduction_register (uintptr_t *data)
@@ -2047,41 +2163,18 @@ GOMP_taskgroup_reduction_register (uintptr_t *data)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   struct gomp_task *task;
+  unsigned nthreads;
   if (__builtin_expect (team == NULL, 0))
     {
       /* The task reduction code needs a team and task, so for
 	 orphaned taskgroups just create the implicit team.  */
-      struct gomp_task_icv *icv;
-      team = gomp_new_team (1);
-      task = thr->task;
-      icv = task ? &task->icv : &gomp_global_icv;
-      team->prev_ts = thr->ts;
-      thr->ts.team = team;
-      thr->ts.team_id = 0;
-      thr->ts.work_share = &team->work_shares[0];
-      thr->ts.last_work_share = NULL;
-#ifdef HAVE_SYNC_BUILTINS
-      thr->ts.single_count = 0;
-#endif
-      thr->ts.static_trip = 0;
-      thr->task = &team->implicit_task[0];
-      gomp_init_task (thr->task, NULL, icv);
-      if (task)
-	{
-	  thr->task = task;
-	  gomp_end_task ();
-	  free (task);
-	  thr->task = &team->implicit_task[0];
-	}
-#ifdef LIBGOMP_USE_PTHREADS
-      else
-	pthread_setspecific (gomp_thread_destructor, thr);
-#endif
-      GOMP_taskgroup_start ();
+      gomp_create_artificial_team ();
+      ialias_call (GOMP_taskgroup_start) ();
+      team = thr->ts.team;
     }
-  unsigned nthreads = team->nthreads;
+  nthreads = team->nthreads;
   task = thr->task;
-  gomp_reduction_register (data, task->taskgroup->reductions, nthreads);
+  gomp_reduction_register (data, task->taskgroup->reductions, NULL, nthreads);
   task->taskgroup->reductions = data;
 }
 
@@ -2175,9 +2268,54 @@ struct gomp_taskgroup *
 gomp_parallel_reduction_register (uintptr_t *data, unsigned nthreads)
 {
   struct gomp_taskgroup *taskgroup = gomp_taskgroup_init (NULL);
-  gomp_reduction_register (data, NULL, nthreads);
+  gomp_reduction_register (data, NULL, NULL, nthreads);
   taskgroup->reductions = data;
   return taskgroup;
+}
+
+void
+gomp_workshare_task_reduction_register (uintptr_t *data, uintptr_t *orig)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_task *task = thr->task;
+  unsigned nthreads = team->nthreads;
+  gomp_reduction_register (data, task->taskgroup->reductions, orig, nthreads);
+  task->taskgroup->reductions = data;
+}
+
+void
+gomp_workshare_taskgroup_start (void)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  struct gomp_task *task;
+
+  if (team == NULL)
+    {
+      gomp_create_artificial_team ();
+      team = thr->ts.team;
+    }
+  task = thr->task;
+  task->taskgroup = gomp_taskgroup_init (task->taskgroup);
+  task->taskgroup->workshare = true;
+}
+
+void
+GOMP_workshare_task_reduction_unregister (bool cancelled)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_task *task = thr->task;
+  struct gomp_team *team = thr->ts.team;
+  uintptr_t *data = task->taskgroup->reductions;
+  ialias_call (GOMP_taskgroup_end) ();
+  if (thr->ts.team_id == 0)
+    ialias_call (GOMP_taskgroup_reduction_unregister) (data);
+  else
+    htab_free ((struct htab *) data[5]);
+
+  if (!cancelled)
+    gomp_team_barrier_wait (&team->barrier);
 }
 
 int

@@ -62,7 +62,7 @@ struct omp_for_data
   tree tiling;  /* Tiling values (if non null).  */
   int collapse;  /* Collapsed loops, 1 for a non-collapsed loop.  */
   int ordered;
-  bool have_nowait, have_ordered, simd_schedule;
+  bool have_nowait, have_ordered, simd_schedule, have_reductemp;
   unsigned char sched_modifiers;
   enum omp_clause_schedule_kind sched_kind;
   struct omp_for_data_loop *loops;

@@ -27,8 +27,12 @@
 
 #include <limits.h>
 #include <stdlib.h>
+#include <string.h>
 #include "libgomp.h"
 
+
+ialias (GOMP_loop_runtime_next)
+ialias_redirect (GOMP_taskgroup_reduction_register)
 
 /* Initialize the given work share construct from the given arguments.  */
 
@@ -101,7 +105,7 @@ gomp_loop_static_start (long start, long end, long incr, long chunk_size,
   struct gomp_thread *thr = gomp_thread ();
 
   thr->ts.static_trip = 0;
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_STATIC, chunk_size);
@@ -123,7 +127,7 @@ gomp_loop_dynamic_start (long start, long end, long incr, long chunk_size,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_DYNAMIC, chunk_size);
@@ -151,7 +155,7 @@ gomp_loop_guided_start (long start, long end, long incr, long chunk_size,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_GUIDED, chunk_size);
@@ -197,6 +201,100 @@ GOMP_loop_runtime_start (long start, long end, long incr,
     }
 }
 
+static long
+gomp_adjust_sched (long sched, long *chunk_size)
+{
+  sched &= ~GFS_MONOTONIC;
+  switch (sched)
+    {
+    case GFS_STATIC:
+    case GFS_DYNAMIC:
+    case GFS_GUIDED:
+      return sched;
+    /* GFS_RUNTIME is used for runtime schedule without monotonic
+       or nonmonotonic modifiers on the clause.
+       GFS_RUNTIME|GFS_MONOTONIC for runtime schedule with monotonic
+       modifier.  */
+    case GFS_RUNTIME:
+    /* GFS_AUTO is used for runtime schedule with nonmonotonic
+       modifier.  */
+    case GFS_AUTO:
+      {
+	struct gomp_task_icv *icv = gomp_icv (false);
+	sched = icv->run_sched_var & ~GFS_MONOTONIC;
+	switch (sched)
+	  {
+	  case GFS_STATIC:
+	  case GFS_DYNAMIC:
+	  case GFS_GUIDED:
+	    *chunk_size = icv->run_sched_chunk_size;
+	    break;
+	  case GFS_AUTO:
+	    sched = GFS_STATIC;
+	    *chunk_size = 0;
+	    break;
+	  default:
+	    abort ();
+	  }
+	return sched;
+      }
+    default:
+      abort ();
+    }
+}
+
+bool
+GOMP_loop_start (long start, long end, long incr, long sched,
+		 long chunk_size, long *istart, long *iend,
+		 uintptr_t *reductions, void **mem)
+{
+  struct gomp_thread *thr = gomp_thread ();
+
+  thr->ts.static_trip = 0;
+  if (reductions)
+    gomp_workshare_taskgroup_start ();
+  if (gomp_work_share_start (0))
+    {
+      sched = gomp_adjust_sched (sched, &chunk_size);
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      sched, chunk_size);
+      if (reductions)
+	{
+	  GOMP_taskgroup_reduction_register (reductions);
+	  thr->task->taskgroup->workshare = true;
+	  thr->ts.work_share->task_reductions = reductions;
+	}
+      if (mem)
+	{
+	  uintptr_t size = (uintptr_t) *mem;
+	  if (size > (sizeof (struct gomp_work_share)
+		      - offsetof (struct gomp_work_share,
+				  inline_ordered_team_ids)))
+	    thr->ts.work_share->ordered_team_ids
+	      = gomp_malloc_cleared (size);
+	  else
+	    memset (thr->ts.work_share->ordered_team_ids, '\0', size);
+	  *mem = (void *) thr->ts.work_share->ordered_team_ids;
+	}
+      gomp_work_share_init_done ();
+    }
+  else
+    {
+      if (reductions)
+	{
+	  uintptr_t *first_reductions = thr->ts.work_share->task_reductions;
+	  gomp_workshare_task_reduction_register (reductions,
+						  first_reductions);
+	}
+      if (mem)
+	*mem = (void *) thr->ts.work_share->ordered_team_ids;
+    }
+
+  if (!istart)
+    return true;
+  return ialias_call (GOMP_loop_runtime_next) (istart, iend);
+}
+
 /* The *_ordered_*_start routines are similar.  The only difference is that
    this work-share construct is initialized to expect an ORDERED section.  */
 
@@ -207,7 +305,7 @@ gomp_loop_ordered_static_start (long start, long end, long incr,
   struct gomp_thread *thr = gomp_thread ();
 
   thr->ts.static_trip = 0;
-  if (gomp_work_share_start (true))
+  if (gomp_work_share_start (1))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_STATIC, chunk_size);
@@ -225,7 +323,7 @@ gomp_loop_ordered_dynamic_start (long start, long end, long incr,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (true))
+  if (gomp_work_share_start (1))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_DYNAMIC, chunk_size);
@@ -250,7 +348,7 @@ gomp_loop_ordered_guided_start (long start, long end, long incr,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (true))
+  if (gomp_work_share_start (1))
     {
       gomp_loop_init (thr->ts.work_share, start, end, incr,
 		      GFS_GUIDED, chunk_size);
@@ -297,6 +395,81 @@ GOMP_loop_ordered_runtime_start (long start, long end, long incr,
     }
 }
 
+bool
+GOMP_loop_ordered_start (long start, long end, long incr, long sched,
+			 long chunk_size, long *istart, long *iend,
+			 uintptr_t *reductions, void **mem)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  size_t ordered = 1;
+  bool ret;
+
+  thr->ts.static_trip = 0;
+  if (reductions)
+    gomp_workshare_taskgroup_start ();
+  if (mem)
+    ordered += (uintptr_t) *mem;
+  if (gomp_work_share_start (ordered))
+    {
+      sched = gomp_adjust_sched (sched, &chunk_size);
+      gomp_loop_init (thr->ts.work_share, start, end, incr,
+		      sched, chunk_size);
+      if (reductions)
+	{
+	  GOMP_taskgroup_reduction_register (reductions);
+	  thr->task->taskgroup->workshare = true;
+	  thr->ts.work_share->task_reductions = reductions;
+	}
+      if (sched == GFS_STATIC)
+	gomp_ordered_static_init ();
+      else
+	gomp_mutex_lock (&thr->ts.work_share->lock);
+      gomp_work_share_init_done ();
+    }
+  else
+    {
+      if (reductions)
+	{
+	  uintptr_t *first_reductions = thr->ts.work_share->task_reductions;
+	  gomp_workshare_task_reduction_register (reductions,
+						  first_reductions);
+	}
+      sched = thr->ts.work_share->sched;
+      if (sched != GFS_STATIC)
+	gomp_mutex_lock (&thr->ts.work_share->lock);
+    }
+
+  if (mem)
+    {
+      uintptr_t p
+	= (uintptr_t) (thr->ts.work_share->ordered_team_ids
+		       + (thr->ts.team ? thr->ts.team->nthreads : 1));
+      p += __alignof__ (long long) - 1;
+      p &= ~(__alignof__ (long long) - 1);
+      *mem = (void *) p;
+    }
+
+  switch (sched)
+    {
+    case GFS_STATIC:
+    case GFS_AUTO:
+      return !gomp_iter_static_next (istart, iend);
+    case GFS_DYNAMIC:
+      ret = gomp_iter_dynamic_next_locked (istart, iend);
+      break;
+    case GFS_GUIDED:
+      ret = gomp_iter_guided_next_locked (istart, iend);
+      break;
+    default:
+      abort ();
+    }
+
+  if (ret)
+    gomp_ordered_first ();
+  gomp_mutex_unlock (&thr->ts.work_share->lock);
+  return ret;
+}
+
 /* The *_doacross_*_start routines are similar.  The only difference is that
    this work-share construct is initialized to expect an ORDERED(N) - DOACROSS
    section, and the worksharing loop iterates always from 0 to COUNTS[0] - 1
@@ -310,11 +483,11 @@ gomp_loop_doacross_static_start (unsigned ncounts, long *counts,
   struct gomp_thread *thr = gomp_thread ();
 
   thr->ts.static_trip = 0;
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
 		      GFS_STATIC, chunk_size);
-      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size, 0);
       gomp_work_share_init_done ();
     }
 
@@ -328,11 +501,11 @@ gomp_loop_doacross_dynamic_start (unsigned ncounts, long *counts,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
 		      GFS_DYNAMIC, chunk_size);
-      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size, 0);
       gomp_work_share_init_done ();
     }
 
@@ -354,11 +527,11 @@ gomp_loop_doacross_guided_start (unsigned ncounts, long *counts,
   struct gomp_thread *thr = gomp_thread ();
   bool ret;
 
-  if (gomp_work_share_start (false))
+  if (gomp_work_share_start (0))
     {
       gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
 		      GFS_GUIDED, chunk_size);
-      gomp_doacross_init (ncounts, counts, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size, 0);
       gomp_work_share_init_done ();
     }
 
@@ -400,6 +573,50 @@ GOMP_loop_doacross_runtime_start (unsigned ncounts, long *counts,
     default:
       abort ();
     }
+}
+
+bool
+GOMP_loop_doacross_start (unsigned ncounts, long *counts, long sched,
+			  long chunk_size, long *istart, long *iend,
+			  uintptr_t *reductions, void **mem)
+{
+  struct gomp_thread *thr = gomp_thread ();
+
+  thr->ts.static_trip = 0;
+  if (reductions)
+    gomp_workshare_taskgroup_start ();
+  if (gomp_work_share_start (0))
+    {
+      size_t extra = 0;
+      if (mem)
+	extra = (uintptr_t) *mem;
+      sched = gomp_adjust_sched (sched, &chunk_size);
+      gomp_loop_init (thr->ts.work_share, 0, counts[0], 1,
+		      sched, chunk_size);
+      gomp_doacross_init (ncounts, counts, chunk_size, extra);
+      if (reductions)
+	{
+	  GOMP_taskgroup_reduction_register (reductions);
+	  thr->task->taskgroup->workshare = true;
+	  thr->ts.work_share->task_reductions = reductions;
+	}
+      gomp_work_share_init_done ();
+    }
+  else
+    {
+      if (reductions)
+	{
+	  uintptr_t *first_reductions = thr->ts.work_share->task_reductions;
+	  gomp_workshare_task_reduction_register (reductions,
+						  first_reductions);
+	}
+      sched = thr->ts.work_share->sched;
+    }
+
+  if (mem)
+    *mem = thr->ts.work_share->doacross->extra;
+
+  return ialias_call (GOMP_loop_runtime_next) (istart, iend);
 }
 
 /* The *_next routines are called when the thread completes processing of

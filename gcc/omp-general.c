@@ -138,6 +138,7 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
   fd->pre = NULL;
   fd->have_nowait = distribute || simd;
   fd->have_ordered = false;
+  fd->have_reductemp = false;
   fd->tiling = NULL_TREE;
   fd->collapse = 1;
   fd->ordered = 0;
@@ -188,6 +189,8 @@ omp_extract_for_data (gomp_for *for_stmt, struct omp_for_data *fd,
 	collapse_iter = &OMP_CLAUSE_TILE_ITERVAR (t);
 	collapse_count = &OMP_CLAUSE_TILE_COUNT (t);
 	break;
+      case OMP_CLAUSE__REDUCTEMP_:
+	fd->have_reductemp = true;
       default:
 	break;
       }

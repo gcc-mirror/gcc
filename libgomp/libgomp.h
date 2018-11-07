@@ -188,6 +188,8 @@ struct gomp_doacross_work_share
     /* Likewise, but for the ull implementation.  */
     unsigned long long boundary_ull;
   };
+  /* Pointer to extra memory if needed for lastprivate(conditional).  */
+  void *extra;
   /* Array of shift counts for each dimension if they can be flattened.  */
   unsigned int shift_counts[];
 };
@@ -288,6 +290,9 @@ struct gomp_work_share
        through this.  */
     struct gomp_work_share *next_free;
   };
+
+  /* Task reductions for this work-sharing construct.  */
+  uintptr_t *task_reductions;
 
   /* If only few threads are in the team, ordered_team_ids can point
      to this array which fills the padding at the end of this struct.  */
@@ -490,6 +495,7 @@ struct gomp_taskgroup
   uintptr_t *reductions;
   bool in_taskgroup_wait;
   bool cancelled;
+  bool workshare;
   gomp_sem_t taskgroup_sem;
   size_t num_children;
 };
@@ -795,9 +801,9 @@ extern void gomp_ordered_next (void);
 extern void gomp_ordered_static_init (void);
 extern void gomp_ordered_static_next (void);
 extern void gomp_ordered_sync (void);
-extern void gomp_doacross_init (unsigned, long *, long);
+extern void gomp_doacross_init (unsigned, long *, long, size_t);
 extern void gomp_doacross_ull_init (unsigned, unsigned long long *,
-				    unsigned long long);
+				    unsigned long long, size_t);
 
 /* parallel.c */
 
@@ -822,6 +828,8 @@ extern bool gomp_create_target_task (struct gomp_device_descr *,
 				     enum gomp_target_task_state);
 extern struct gomp_taskgroup *gomp_parallel_reduction_register (uintptr_t *,
 								unsigned);
+extern void gomp_workshare_taskgroup_start (void);
+extern void gomp_workshare_task_reduction_register (uintptr_t *, uintptr_t *);
 
 static void inline
 gomp_finish_task (struct gomp_task *task)
@@ -1061,9 +1069,9 @@ extern bool gomp_remove_var (struct gomp_device_descr *, splay_tree_key);
 
 /* work.c */
 
-extern void gomp_init_work_share (struct gomp_work_share *, bool, unsigned);
+extern void gomp_init_work_share (struct gomp_work_share *, size_t, unsigned);
 extern void gomp_fini_work_share (struct gomp_work_share *);
-extern bool gomp_work_share_start (bool);
+extern bool gomp_work_share_start (size_t);
 extern void gomp_work_share_end (void);
 extern bool gomp_work_share_end_cancel (void);
 extern void gomp_work_share_end_nowait (void);

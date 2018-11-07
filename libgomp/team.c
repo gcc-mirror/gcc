@@ -187,7 +187,7 @@ gomp_new_team (unsigned nthreads)
   team->single_count = 0;
 #endif
   team->work_shares_to_free = &team->work_shares[0];
-  gomp_init_work_share (&team->work_shares[0], false, nthreads);
+  gomp_init_work_share (&team->work_shares[0], 0, nthreads);
   team->work_shares[0].next_alloc = NULL;
   team->work_share_list_free = NULL;
   team->work_share_list_alloc = &team->work_shares[1];

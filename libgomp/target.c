@@ -1854,11 +1854,20 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
 	      struct gomp_team *team = thr->ts.team;
 	      /* If parallel or taskgroup has been cancelled, don't start new
 		 tasks.  */
-	      if (team
-		  && (gomp_team_barrier_cancelled (&team->barrier)
-		      || (thr->task->taskgroup
-			  && thr->task->taskgroup->cancelled)))
-		return;
+	      if (__builtin_expect (gomp_cancel_var, 0) && team)
+		{
+		  if (gomp_team_barrier_cancelled (&team->barrier))
+		    return;
+		  if (thr->task->taskgroup)
+		    {
+		      if (thr->task->taskgroup->cancelled)
+			return;
+		      if (thr->task->taskgroup->workshare
+			  && thr->task->taskgroup->prev
+			  && thr->task->taskgroup->prev->cancelled)
+			return;
+		    }
+		}
 
 	      gomp_task_maybe_wait_for_dependencies (depend);
 	    }
@@ -1873,10 +1882,20 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   gomp_update (devicep, mapnum, hostaddrs, sizes, kinds, true);
 }
@@ -1985,11 +2004,20 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	      struct gomp_team *team = thr->ts.team;
 	      /* If parallel or taskgroup has been cancelled, don't start new
 		 tasks.  */
-	      if (team
-		  && (gomp_team_barrier_cancelled (&team->barrier)
-		      || (thr->task->taskgroup
-			  && thr->task->taskgroup->cancelled)))
-		return;
+	      if (__builtin_expect (gomp_cancel_var, 0) && team)
+		{
+		  if (gomp_team_barrier_cancelled (&team->barrier))
+		    return;
+		  if (thr->task->taskgroup)
+		    {
+		      if (thr->task->taskgroup->cancelled)
+			return;
+		      if (thr->task->taskgroup->workshare
+			  && thr->task->taskgroup->prev
+			  && thr->task->taskgroup->prev->cancelled)
+			return;
+		    }
+		}
 
 	      gomp_task_maybe_wait_for_dependencies (depend);
 	    }
@@ -2004,10 +2032,20 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   size_t i;
   if ((flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)

@@ -205,8 +205,15 @@ GOMP_cancellation_point (int which)
     }
   else if (which & GOMP_CANCEL_TASKGROUP)
     {
-      if (thr->task->taskgroup && thr->task->taskgroup->cancelled)
-	return true;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return true;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return true;
+	}
       /* FALLTHRU into the GOMP_CANCEL_PARALLEL case,
 	 as #pragma omp cancel parallel also cancels all explicit
 	 tasks.  */
@@ -238,11 +245,17 @@ GOMP_cancel (int which, bool do_cancel)
     }
   else if (which & GOMP_CANCEL_TASKGROUP)
     {
-      if (thr->task->taskgroup && !thr->task->taskgroup->cancelled)
+      if (thr->task->taskgroup)
 	{
-	  gomp_mutex_lock (&team->task_lock);
-	  thr->task->taskgroup->cancelled = true;
-	  gomp_mutex_unlock (&team->task_lock);
+	  struct gomp_taskgroup *taskgroup = thr->task->taskgroup;
+	  if (taskgroup->workshare && taskgroup->prev)
+	    taskgroup = taskgroup->prev;
+	  if (!taskgroup->cancelled)
+	    {
+	      gomp_mutex_lock (&team->task_lock);
+	      taskgroup->cancelled = true;
+	      gomp_mutex_unlock (&team->task_lock);
+	    }
 	}
       return true;
     }
