@@ -458,7 +458,7 @@ microblaze*-*-*)
 mips*-*-*)
 	cpu_type=mips
 	d_target_objs="mips-d.o"
-	extra_headers="loongson.h msa.h"
+	extra_headers="loongson.h loongson-mmiintrin.h msa.h"
 	extra_objs="frame-header-opt.o"
 	extra_options="${extra_options} g.opt fused-madd.opt mips/mips-tables.opt"
 	;;

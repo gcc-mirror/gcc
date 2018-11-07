@@ -296,6 +296,7 @@ foreach option {
     mcount-ra-address
     odd-spreg
     msa
+    loongson-mmi
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -883,6 +884,12 @@ proc mips-dg-init {} {
 	    "-mno-msa"
 	    #endif
 
+	    #ifdef __mips_loongson_mmi
+	    "-mloongson-mmi"
+	    #else
+	    "-mno-loongson-mmi"
+	    #endif
+
 	    0
 	};
     } 0]
@@ -1045,6 +1052,9 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mno-plt" "addressing=unknown"
     mips_option_dependency options "-mabicalls" "-G0"
     mips_option_dependency options "-mno-gpopt" "-mexplicit-relocs"
+    mips_option_dependency options "-mips16" "-mno-loongson-mmi"
+    mips_option_dependency options "-mmicromips" "-mno-loongson-mmi"
+    mips_option_dependency options "-msoft-float" "-mno-loongson-mmi"
 
     # Work out information about the current ABI.
     set abi_test_option_p [mips_test_option_p options abi]

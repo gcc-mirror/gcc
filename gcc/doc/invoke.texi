@@ -920,6 +920,7 @@ Objective-C and Objective-C++ Dialects}.
 -mginv -mno-ginv @gol
 -mmicromips  -mno-micromips @gol
 -mmsa  -mno-msa @gol
+-mloongson-mmi  -mno-loongson-mmi @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -21285,6 +21286,12 @@ Use (do not use) the MIPS Cyclic Redundancy Check (CRC) instructions.
 @opindex mginv
 @opindex mno-ginv
 Use (do not use) the MIPS Global INValidate (GINV) instructions.
+
+@item -mloongson-mmi
+@itemx -mno-loongson-mmi
+@opindex mloongson-mmi
+@opindex mno-loongson-mmi
+Use (do not use) the MIPS Loongson MultiMedia extensions Instructions (MMI).
 
 @item -mlong64
 @opindex mlong64

@@ -1,3 +1,34 @@
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* config.gcc (extra_headers): Add loongson-mmiintrin.h.
+	* config/mips/loongson.md: Move to ...
+	* config/mips/loongson-mmi.md: here; Adjustment.
+	* config/mips/loongson.h: Move to ...
+	State as deprecated. Include loongson-mmiintrin.h for back
+	compatibility and warning.
+	* config/mips/loongson-mmiintrin.h: ... here.
+	* config/mips/mips.c (mips_hard_regno_mode_ok_uncached,
+	mips_vector_mode_supported_p, AVAIL_NON_MIPS16): Use
+	TARGET_LOONGSON_MMI instead of TARGET_LOONGSON_VECTORS.
+	(mips_option_override): Make sure MMI use hard float;
+	(mips_shift_truncation_mask, mips_expand_vpc_loongson_even_odd,
+	mips_expand_vpc_loongson_pshufh, mips_expand_vpc_loongson_bcast,
+	mips_expand_vector_init): Use TARGET_LOONGSON_MMI instead of
+	TARGET_LOONGSON_VECTORS.
+	* gcc/config/mips/mips.h (TARGET_LOONGSON_VECTORS): Delete.
+	(TARGET_CPU_CPP_BUILTINS): Add __mips_loongson_mmi.
+	(MIPS_ASE_DSP_SPEC, MIPS_ASE_LOONGSON_MMI_SPEC): New.
+	(BASE_DRIVER_SELF_SPECS): march=loongson2e/2f/3a implies
+	-mloongson-mmi.
+	(SHIFT_COUNT_TRUNCATED): Use TARGET_LOONGSON_MMI instead of
+	TARGET_LOONGSON_VECTORS.
+	* gcc/config/mips/mips.md (MOVE64, MOVE128): Use
+	TARGET_LOONGSON_MMI instead of TARGET_LOONGSON_VECTORS.
+	(Loongson MMI patterns): Include loongson-mmi.md instead of
+	loongson.md.
+	* gcc/config/mips/mips.opt (-mloongson-mmi): New option.
+	* gcc/doc/invoke.texi (-mloongson-mmi): Document.
+
 2018-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR lto/87906

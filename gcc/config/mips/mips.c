@@ -12797,8 +12797,9 @@ mips_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
       if (mode == CCFmode)
 	return !(TARGET_FLOATXX && (regno & 1) != 0);
 
-      /* Allow 64-bit vector modes for Loongson-2E/2F.  */
-      if (TARGET_LOONGSON_VECTORS
+      /* Allow 64-bit vector modes for Loongson MultiMedia extensions
+	 Instructions (MMI).  */
+      if (TARGET_LOONGSON_MMI
 	  && (mode == V2SImode
 	      || mode == V4HImode
 	      || mode == V8QImode
@@ -13368,7 +13369,7 @@ mips_vector_mode_supported_p (machine_mode mode)
     case E_V2SImode:
     case E_V4HImode:
     case E_V8QImode:
-      return TARGET_LOONGSON_VECTORS;
+      return TARGET_LOONGSON_MMI;
 
     default:
       return MSA_SUPPORTED_MODE_P (mode);
@@ -15203,7 +15204,7 @@ AVAIL_NON_MIPS16 (dspr2, TARGET_DSPR2)
 AVAIL_NON_MIPS16 (dsp_32, !TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dsp_64, TARGET_64BIT && TARGET_DSP)
 AVAIL_NON_MIPS16 (dspr2_32, !TARGET_64BIT && TARGET_DSPR2)
-AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_VECTORS)
+AVAIL_NON_MIPS16 (loongson, TARGET_LOONGSON_MMI)
 AVAIL_NON_MIPS16 (cache, TARGET_CACHE_BUILTIN)
 AVAIL_NON_MIPS16 (msa, TARGET_MSA)
 
@@ -20164,6 +20165,12 @@ mips_option_override (void)
       TARGET_DSPR2 = false;
     }
 
+  /* Make sure that when TARGET_LOONGSON_MMI is true, TARGET_HARD_FLOAT_ABI
+     is true.  In o32 pairs of floating-point registers provide 64-bit
+     values.  */
+  if (TARGET_LOONGSON_MMI &&  !TARGET_HARD_FLOAT_ABI)
+    error ("%<-mloongson-mmi%> must be used with %<-mhard-float%>");
+
   /* .eh_frame addresses should be the same width as a C pointer.
      Most MIPS ABIs support only one pointer size, so the assembler
      will usually know exactly how big an .eh_frame address is.
@@ -21149,12 +21156,12 @@ void mips_function_profiler (FILE *file)
 
 /* Implement TARGET_SHIFT_TRUNCATION_MASK.  We want to keep the default
    behavior of TARGET_SHIFT_TRUNCATION_MASK for non-vector modes even
-   when TARGET_LOONGSON_VECTORS is true.  */
+   when TARGET_LOONGSON_MMI is true.  */
 
 static unsigned HOST_WIDE_INT
 mips_shift_truncation_mask (machine_mode mode)
 {
-  if (TARGET_LOONGSON_VECTORS && VECTOR_MODE_P (mode))
+  if (TARGET_LOONGSON_MMI && VECTOR_MODE_P (mode))
     return 0;
 
   return GET_MODE_BITSIZE (mode) - 1;
@@ -21255,7 +21262,7 @@ mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
   unsigned i, odd, nelt = d->nelt;
   rtx t0, t1, t2, t3;
 
-  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI))
     return false;
   /* Even-odd for V2SI/V2SFmode is matched by interleave directly.  */
   if (nelt < 4)
@@ -21312,7 +21319,7 @@ mips_expand_vpc_loongson_pshufh (struct expand_vec_perm_d *d)
   unsigned i, mask;
   rtx rmask;
 
-  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI))
     return false;
   if (d->vmode != V4HImode)
     return false;
@@ -21364,7 +21371,7 @@ mips_expand_vpc_loongson_bcast (struct expand_vec_perm_d *d)
   unsigned i, elt;
   rtx t0, t1;
 
-  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS))
+  if (!(TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI))
     return false;
   /* Note that we've already matched V2SI via punpck and V4HI via pshufh.  */
   if (d->vmode != V8QImode)
@@ -21958,7 +21965,7 @@ mips_expand_vector_init (rtx target, rtx vals)
     }
 
   /* Loongson is the only cpu with vectors with more elements.  */
-  gcc_assert (TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS);
+  gcc_assert (TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI);
 
   /* If all values are identical, broadcast the value.  */
   if (all_same)
