@@ -1,3 +1,7 @@
+2018-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* g++.dg/lto/odr-1_1.C: Fix template.
+
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/loongson-ctz.c: New test.

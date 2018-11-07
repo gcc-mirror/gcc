@@ -1,3 +1,9 @@
+2018-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (free_lang_data_in_type): Add fld parameter; simplify
+	return and parameter types of function and method types.
+	(free_lang_data_in_cgraph): Update.
+
 2018-11-07  Martin Liska  <mliska@suse.cz>
 
 	PR rtl-optimization/87868

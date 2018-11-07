@@ -5261,7 +5261,7 @@ free_lang_data_in_binfo (tree binfo)
 /* Reset all language specific information still present in TYPE.  */
 
 static void
-free_lang_data_in_type (tree type)
+free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 {
   gcc_assert (TYPE_P (type));
 
@@ -5280,6 +5280,7 @@ free_lang_data_in_type (tree type)
 
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
+      TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
       /* Remove the const and volatile qualifiers from arguments.  The
 	 C++ front end removes them, but the C front end does not,
 	 leading to false ODR violation errors when merging two
@@ -5287,6 +5288,7 @@ free_lang_data_in_type (tree type)
 	 different front ends.  */
       for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
 	{
+          TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
 	  tree arg_type = TREE_VALUE (p);
 
 	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
@@ -5295,16 +5297,22 @@ free_lang_data_in_type (tree type)
 			  & ~TYPE_QUAL_CONST
 			  & ~TYPE_QUAL_VOLATILE;
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
-	      free_lang_data_in_type (TREE_VALUE (p));
+	      free_lang_data_in_type (TREE_VALUE (p), fld);
 	    }
 	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
 	  TREE_PURPOSE (p) = NULL;
 	}
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
-    for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
-      /* C++ FE uses TREE_PURPOSE to store initial values.  */
-      TREE_PURPOSE (p) = NULL;
+    {
+      TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
+      for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+	{
+	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
+	  TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
+	  TREE_PURPOSE (p) = NULL;
+	}
+    }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
       /* Remove members that are not FIELD_DECLs from the field list
@@ -5468,6 +5476,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node;
+      TREE_TYPE (decl) = fld_simplified_type (TREE_TYPE (decl), fld);
       if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
 	{
@@ -5985,7 +5994,7 @@ free_lang_data_in_cgraph (void)
 
   /* Traverse every type found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.types, i, t)
-    free_lang_data_in_type (t);
+    free_lang_data_in_type (t, &fld);
   if (flag_checking)
     {
       FOR_EACH_VEC_ELT (fld.types, i, t)
