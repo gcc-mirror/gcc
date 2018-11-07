@@ -5329,6 +5329,15 @@ proc check_effective_target_vect_shift { } {
 		 && [check_effective_target_s390_vx]) }}]
 }
 
+# Return 1 if the target supports hardware vector shift by register operation.
+
+proc check_effective_target_vect_var_shift { } {
+    return [check_cached_effective_target_indexed vect_var_shift {
+      expr {(([istarget i?86-*-*] || [istarget x86_64-*-*])
+	     && [check_avx2_available])
+      }}]
+}
+
 proc check_effective_target_whole_vector_shift { } {
     if { [istarget i?86-*-*] || [istarget x86_64-*-*]
 	 || [istarget ia64-*-*]
@@ -7155,6 +7164,19 @@ proc check_effective_target_automatic_stack_alignment  { } {
 proc check_avx_available { } {
   if { [check_no_compiler_messages avx_available assembly {
     #ifndef __AVX__
+    #error unsupported
+    #endif
+  } ""] } {
+    return 1;
+  }
+  return 0;
+}
+
+# Return true if we are compiling for AVX2 target.
+
+proc check_avx2_available { } {
+  if { [check_no_compiler_messages avx_available assembly {
+    #ifndef __AVX2__
     #error unsupported
     #endif
   } ""] } {
