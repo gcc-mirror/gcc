@@ -1,9 +1,8 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-g -O1 -fgcse -fno-dce -fno-tree-ccp -fno-tree-coalesce-vars -fno-tree-copy-prop -fno-tree-dce -fno-tree-dominator-opts -fno-tree-fre -fno-tree-loop-optimize -fno-tree-sink" } */
 
 int *vk;
 int m2;
-#if __SIZEOF_INT128__
 __int128 nb;
 
 void
@@ -32,4 +31,3 @@ em (int u5, int fo, int s7)
           }
     }
 }
-#endif
