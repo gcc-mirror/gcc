@@ -1,3 +1,9 @@
+2018-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR 87926
+	* Makefile.in (bitmap.o-warn): Add -Wno-error to unbreak
+	--disable-checking bootstrap.
+
 2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* configure: Regenerated.
