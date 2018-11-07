@@ -15142,6 +15142,22 @@ mips_prefetch_cookie (rtx write, rtx locality)
   /* store_retained / load_retained.  */
   return GEN_INT (INTVAL (write) + 6);
 }
+
+/* Loongson EXT2 only implements perf hint=0 (prefetch for load) and hint=1
+   (prefetch for store), other hint just scale to hint = 0 and hint = 1.  */
+
+rtx
+mips_loongson_ext2_prefetch_cookie (rtx write, rtx locality)
+{
+  /* store.  */
+  if (INTVAL (write) == 1)
+    return GEN_INT (INTVAL (write));
+
+  /* load.  */
+  if (INTVAL (write) == 0)
+    return GEN_INT (INTVAL (write));
+}
+
 
 /* Flags that indicate when a built-in function is available.
 
@@ -20170,6 +20186,18 @@ mips_option_override (void)
      values.  */
   if (TARGET_LOONGSON_MMI &&  !TARGET_HARD_FLOAT_ABI)
     error ("%<-mloongson-mmi%> must be used with %<-mhard-float%>");
+
+  /* If TARGET_LOONGSON_EXT2, enable TARGET_LOONGSON_EXT.  */
+  if (TARGET_LOONGSON_EXT2)
+    {
+      /* Make sure that when TARGET_LOONGSON_EXT2 is true, TARGET_LOONGSON_EXT
+	 is true.  If a user explicitly says -mloongson-ext2 -mno-loongson-ext
+	 then that is an error.  */
+      if (!TARGET_LOONGSON_EXT
+	  && !((target_flags_explicit & MASK_LOONGSON_EXT) == 0))
+	error ("%<-mloongson-ext2%> must be used with %<-mloongson-ext%>");
+      target_flags |= MASK_LOONGSON_EXT;
+    }
 
   /* .eh_frame addresses should be the same width as a C pointer.
      Most MIPS ABIs support only one pointer size, so the assembler

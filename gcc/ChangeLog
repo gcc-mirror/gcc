@@ -1,5 +1,25 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* config/mips/mips-protos.h
+	(mips_loongson_ext2_prefetch_cookie): New prototype.
+	* config/mips/mips.c (mips_loongson_ext2_prefetch_cookie): New.
+	(mips_option_override): Enable TARGET_LOONGSON_EXT when
+	TARGET_LOONGSON_EXT2 is true.
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Define
+	__mips_loongson_ext2, __mips_loongson_ext_rev=2.
+	(ISA_HAS_CTZ_CTO): New, true if TARGET_LOONGSON_EXT2.
+	(ISA_HAS_PREFETCH): Include TARGET_LOONGSON_EXT and
+	TARGET_LOONGSON_EXT2.
+	(ASM_SPEC): Add mloongson-ext2 and mno-loongson-ext2.
+	(define_insn "ctz<mode>2"): New insn pattern.
+	(define_insn "prefetch"): Include TARGET_LOONGSON_EXT2.
+	(define_insn "prefetch_indexed_<mode>"): Include
+	TARGET_LOONGSON_EXT and TARGET_LOONGSON_EXT2.
+	* config/mips/mips.opt (-mloongson-ext2): Add option.
+	* gcc/doc/invoke.texi (-mloongson-ext2): Document.
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add
 	__mips_loongson_ext.
 	(MIPS_ASE_LOONGSON_EXT_SPEC): New.

@@ -467,3 +467,7 @@ Use Loongson MultiMedia extensions Instructions (MMI) instructions.
 mloongson-ext
 Target Report Mask(LOONGSON_EXT)
 Use Loongson EXTension (EXT) instructions.
+
+mloongson-ext2
+Target Report Mask(LOONGSON_EXT2)
+Use Loongson EXTension R2 (EXT2) instructions.

@@ -3149,6 +3149,23 @@
 ;;
 ;;  ...................
 ;;
+;;  Count tailing zeroes.
+;;
+;;  ...................
+;;
+
+(define_insn "ctz<mode>2"
+  [(set (match_operand:GPR 0 "register_operand" "=d")
+	(ctz:GPR (match_operand:GPR 1 "register_operand" "d")))]
+  "ISA_HAS_CTZ_CTO"
+  "<d>ctz\t%0,%1"
+  [(set_attr "type" "clz")
+   (set_attr "mode" "<MODE>")])
+
+
+;;
+;;  ...................
+;;
 ;;  Count number of set bits.
 ;;
 ;;  ...................
@@ -7136,13 +7153,20 @@
 	     (match_operand 2 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCH && TARGET_EXPLICIT_RELOCS"
 {
-  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT)
+  if (TARGET_LOONGSON_2EF || TARGET_LOONGSON_EXT || TARGET_LOONGSON_EXT2)
     {
-      /* Loongson 2[ef] and Loongson 3a use load to $0 for prefetching.  */
+      /* Loongson ext2 implementation pref insnstructions.  */
+      if (TARGET_LOONGSON_EXT2)
+	{
+  	  operands[1] = mips_loongson_ext2_prefetch_cookie (operands[1],
+							    operands[2]);
+	  return "pref\t%1, %a0";
+	}
+      /* Loongson 2[ef] and Loongson ext use load to $0 for prefetching.  */
       if (TARGET_64BIT)
-        return "ld\t$0,%a0";
+	return "ld\t$0,%a0";
       else
-        return "lw\t$0,%a0";
+	return "lw\t$0,%a0";
     }
   operands[1] = mips_prefetch_cookie (operands[1], operands[2]);
   return "pref\t%1,%a0";
@@ -7156,6 +7180,21 @@
 	     (match_operand 3 "const_int_operand" "n"))]
   "ISA_HAS_PREFETCHX && TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT"
 {
+  if (TARGET_LOONGSON_EXT || TARGET_LOONGSON_EXT2)
+    {
+      /* Loongson ext2 implementation pref insnstructions.  */
+      if (TARGET_LOONGSON_EXT2)
+	{
+  	  operands[2] = mips_loongson_ext2_prefetch_cookie (operands[2],
+							    operands[3]);
+	  return "prefx\t%2,%1(%0)";
+	}
+      /* Loongson Loongson ext use index load to $0 for prefetching.  */
+      if (TARGET_64BIT)
+	return "gsldx\t$0,0(%0,%1)";
+      else
+	return "gslwx\t$0,0(%0,%1)";
+    }
   operands[2] = mips_prefetch_cookie (operands[2], operands[3]);
   return "prefx\t%2,%1(%0)";
 }
