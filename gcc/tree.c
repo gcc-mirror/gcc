@@ -5106,12 +5106,15 @@ static bool
 fld_type_variant_equal_p (tree t, tree v)
 {
   if (TYPE_QUALS (t) != TYPE_QUALS (v)
-      || TYPE_ALIGN (t) != TYPE_ALIGN (v)
+      /* We want to match incomplete variants with complete types.
+	 In this case we need to ignore alignment.   */
+      || ((!RECORD_OR_UNION_TYPE_P (t) || COMPLETE_TYPE_P (v))
+	  && TYPE_ALIGN (t) != TYPE_ALIGN (v))
       || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
 			        TYPE_ATTRIBUTES (v)))
     return false;
-
+ 
   return true;
 }
 
@@ -5134,7 +5137,10 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
   TYPE_NAME (v) = TYPE_NAME (t);
   TYPE_ATTRIBUTES (v) = TYPE_ATTRIBUTES (t);
   TYPE_CANONICAL (v) = TYPE_CANONICAL (t);
-  SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
+  /* Variants of incomplete types should have alignment 
+     set to BITS_PER_UNIT.  Do not copy the actual alignment.  */
+  if (!RECORD_OR_UNION_TYPE_P (v) || COMPLETE_TYPE_P (v))
+    SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
   gcc_checking_assert (fld_type_variant_equal_p (t,v));
   add_tree_to_fld_list (v, fld);
   return v;

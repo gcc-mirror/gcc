@@ -1,3 +1,10 @@
+2018-11-07  Jan Hubicka  <jh@suse.cz>
+
+	* tree.c (fld_type_variant_equal_p): Skip TYPE_ALIGN check when
+	building incomplete variant of complete type.
+	(fld_type_variant): Do not copy TYPE_ALIGN when building incomplete
+	variant of complete type.
+
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* config/mips/mips.c: Fix typo in documentation of
