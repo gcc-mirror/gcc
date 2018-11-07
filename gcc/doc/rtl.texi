@@ -1806,7 +1806,7 @@ CONST_VECTOR_NELTS_PER_PATTERN (@var{v}) == 3
 Thus the first 6 elements (@samp{@{ 0, 1, 2, 6, 3, 8 @}}) are enough
 to determine the whole sequence; we refer to them as the ``encoded''
 elements.  They are the only elements present in the square brackets
-for variable-length @code{const_vector}s (i.e. for
+for variable-length @code{const_vector}s (i.e.@: for
 @code{const_vector}s whose mode @var{m} has a variable number of
 elements).  However, as a convenience to code that needs to handle
 both @code{const_vector}s and @code{parallel}s, all elements are
@@ -3417,7 +3417,7 @@ side-effects.
 @item (sequence [@var{insns} @dots{}])
 Represents a sequence of insns.  If a @code{sequence} appears in the
 chain of insns, then each of the @var{insns} that appears in the sequence
-must be suitable for appearing in the chain of insns, i.e. must satisfy
+must be suitable for appearing in the chain of insns, i.e.@: must satisfy
 the @code{INSN_P} predicate.
 
 After delay-slot scheduling is completed, an insn and all the insns that

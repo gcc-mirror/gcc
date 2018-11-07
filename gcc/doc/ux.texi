@@ -143,7 +143,7 @@ user's source code.  Examples include:
   at the declaration
 
   @item
-  something is erroneously duplicated (e.g. an error, due to breaking a
+  something is erroneously duplicated (e.g.@: an error, due to breaking a
   uniqueness requirement, or a warning, if it's suggestive of a bug)
 
   @item
@@ -545,7 +545,7 @@ hints, rather than replacement fix-it hints.  For example, consider this:
 @end smallexample
 
 @noindent
-which is intended to e.g. replace a @code{std::move} with the underlying
+which is intended to e.g.@: replace a @code{std::move} with the underlying
 value:
 
 @smallexample

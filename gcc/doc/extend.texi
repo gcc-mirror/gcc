@@ -3232,7 +3232,7 @@ change the number of NOPs to any desired value.  The two-value syntax
 is the same as for the command-line switch
 @option{-fpatchable-function-entry=N,M}, generating @var{N} NOPs, with
 the function entry point before the @var{M}th NOP instruction.
-@var{M} defaults to 0 if omitted e.g. function entry point is before
+@var{M} defaults to 0 if omitted e.g.@: function entry point is before
 the first NOP.
 
 If patchable function entries are enabled globally using the command-line
@@ -5329,7 +5329,7 @@ depended upon to work reliably and are not supported.
 @cindex @code{vector} function attribute, RX
 This RX attribute is similar to the @code{interrupt} attribute, including its
 parameters, but does not make the function an interrupt-handler type
-function (i.e. it retains the normal C function calling ABI).  See the
+function (i.e.@: it retains the normal C function calling ABI).  See the
 @code{interrupt} attribute for a description of its arguments.
 @end table
 
@@ -7260,7 +7260,7 @@ possible for these fields to have a different scalar storage order than the
 enclosing type.
 
 This attribute is supported only for targets that use a uniform default
-scalar storage order (fortunately, most of them), i.e. targets that store
+scalar storage order (fortunately, most of them), i.e.@: targets that store
 the scalars either all in big-endian or all in little-endian.
 
 Additional restrictions are enforced for types with the reverse scalar
@@ -8489,7 +8489,7 @@ This code copies @code{src} to @code{dst} and add 1 to @code{dst}.
 GCC's optimizers sometimes discard @code{asm} statements if they determine 
 there is no need for the output variables. Also, the optimizers may move 
 code out of loops if they believe that the code will always return the same 
-result (i.e. none of its input values change between calls). Using the 
+result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
 that have no output operands, including @code{asm goto} statements, 
 are implicitly volatile.
@@ -8754,7 +8754,7 @@ Operands are separated by commas.  Each operand has this format:
 Specifies a symbolic name for the operand.
 Reference the name in the assembler template 
 by enclosing it in square brackets 
-(i.e. @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
@@ -8994,7 +8994,7 @@ Operands are separated by commas.  Each operand has this format:
 Specifies a symbolic name for the operand.
 Reference the name in the assembler template 
 by enclosing it in square brackets 
-(i.e. @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
