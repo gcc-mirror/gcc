@@ -1,3 +1,9 @@
+2018-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87904
+	* cp-tree.h (struct tree_overload): Fix comment.
+	* tree.c (ovl_iterator::reveal_node): Propagate OVL_DEDUP_P.
+
 2018-11-04  Jason Merrill  <jason@redhat.com>
 
 	Implement UDL changes from P0732R2.

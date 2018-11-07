@@ -2261,13 +2261,17 @@ ovl_iterator::reveal_node (tree overload, tree node)
 
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
-    if (TREE_CODE (chain) == OVERLOAD
-	&& (OVL_USING_P (chain) || OVL_HIDDEN_P (chain)))
+    if (TREE_CODE (chain) == OVERLOAD)
       {
-	/* The node needs moving, and the simplest way is to remove it
-	   and reinsert.  */
-	overload = remove_node (overload, node);
-	overload = ovl_insert (OVL_FUNCTION (node), overload);
+	if (OVL_HIDDEN_P (chain))
+	  {
+	    /* The node needs moving, and the simplest way is to remove it
+	       and reinsert.  */
+	    overload = remove_node (overload, node);
+	    overload = ovl_insert (OVL_FUNCTION (node), overload);
+	  }
+	else if (OVL_DEDUP_P (chain))
+	  OVL_DEDUP_P (node) = true;
       }
   return overload;
 }
