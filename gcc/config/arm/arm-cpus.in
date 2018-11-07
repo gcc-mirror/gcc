@@ -1376,6 +1376,17 @@ begin cpu cortex-a76
  part d0b
 end cpu cortex-a76
 
+begin cpu ares
+ cname ares
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d0c
+end cpu ares
+
 # ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
 begin cpu cortex-a75.cortex-a55
  cname cortexa75cortexa55
