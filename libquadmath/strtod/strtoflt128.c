@@ -30,12 +30,15 @@
 #endif
 #define MPN2FLOAT	mpn_construct_float128
 #define FLOAT_HUGE_VAL	HUGE_VALQ
-#define SET_MANTISSA(flt, mant) \
-  do { ieee854_float128 u;						      \
-       u.value = (flt);							      \
-       u.ieee.mant_high = 0x800000000000ULL;				      \
-       u.ieee.mant_low = mant;						      \
-       (flt) = u.value;							      \
+#define SET_MANTISSA(flt, mant)			\
+  do { ieee854_float128 u;			\
+       u.value = (flt);				\
+       u.ieee_nan.mantissa0 = 0;		\
+       u.ieee_nan.mantissa1 = 0;		\
+       u.ieee_nan.mantissa2 = (mant) >> 32;	\
+       u.ieee_nan.mantissa3 = (mant);		\
+       u.ieee_nan.quiet_nan = 1;		\
+       (flt) = u.value;				\
   } while (0)
 
 static inline __attribute__((__always_inline__))

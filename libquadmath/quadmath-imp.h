@@ -96,11 +96,15 @@ typedef union
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;
     unsigned exponent:15;
-    uint64_t mant_high:48;
-    uint64_t mant_low:64;
+    unsigned mantissa0:16;
+    unsigned mantissa1:32;
+    unsigned mantissa2:32;
+    unsigned mantissa3:32;
 #else
-    uint64_t mant_low:64;
-    uint64_t mant_high:48;
+    unsigned mantissa3:32;
+    unsigned mantissa2:32;
+    unsigned mantissa1:32;
+    unsigned mantissa0:16;
     unsigned exponent:15;
     unsigned negative:1;
 #endif
@@ -142,16 +146,20 @@ typedef union
     unsigned negative:1;
     unsigned exponent:15;
     unsigned quiet_nan:1;
-    uint64_t mant_high:47;
-    uint64_t mant_low:64;
+    unsigned mantissa0:15;
+    unsigned mantissa1:32;
+    unsigned mantissa2:32;
+    unsigned mantissa3:32;
 #else
-    uint64_t mant_low:64;
-    uint64_t mant_high:47;
+    unsigned mantissa3:32;
+    unsigned mantissa2:32;
+    unsigned mantissa1:32;
+    unsigned mantissa0:15;
     unsigned quiet_nan:1;
     unsigned exponent:15;
     unsigned negative:1;
 #endif
-  } nan;
+  } ieee_nan;
 
 } ieee854_float128;
 
