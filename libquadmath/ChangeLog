@@ -1,3 +1,17 @@
+2018-11-07  Joseph Myers  <joseph@codesourcery.com>
+
+	* quadmath-imp.h (ieee854_float128): Use mantissa0, mantissa1,
+	mantissa2 and mantissa3 fields instead of mant_high and mant_low.
+	Change nan field to ieee_nan.
+	* update-quadmath.py (update_sources): Also update fmaq.c.
+	* math/nanq.c (nanq): Use ieee_nan field of union.
+	Zero-initialize f.  Set quiet_nan field.
+	* printf/flt1282mpn.c, printf/printf_fphex.c, strtod/mpn2flt128.c,
+	strtod/strtoflt128.c: Use mantissa0, mantissa1, mantissa2 and
+	mantissa3 fields.  Use ieee_nan and quiet_nan field.
+	* math/fmaq.c: Regenerate from glibc sources with
+	update-quadmath.py.
+
 2018-11-05  Joseph Myers  <joseph@codesourcery.com>
 
 	PR libquadmath/68686

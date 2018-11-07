@@ -143,8 +143,7 @@ def update_sources(glibc_srcdir, quadmath_srcdir):
     # Replace all #includes with a single include of quadmath-imp.h.
     repl_map['(\n+#include[^\n]*)+\n+'] = '\n\n#include "quadmath-imp.h"\n\n'
     # Omitted from this list because code comes from more than one
-    # glibc source file: rem_pio2.  Omitted because of a union not
-    # currently provided in libquadmath: fma.
+    # glibc source file: rem_pio2.
     ldbl_files = {
         'e_acoshl.c': 'acoshq.c', 'e_acosl.c': 'acosq.c',
         's_asinhl.c': 'asinhq.c', 'e_asinl.c': 'asinq.c',
@@ -155,7 +154,7 @@ def update_sources(glibc_srcdir, quadmath_srcdir):
         's_erfl.c': 'erfq.c', 's_expm1l.c': 'expm1q.c', 'e_expl.c': 'expq.c',
         't_expl.h': 'expq_table.h', 's_fabsl.c': 'fabsq.c',
         's_finitel.c': 'finiteq.c', 's_floorl.c': 'floorq.c',
-        'e_fmodl.c': 'fmodq.c', 's_frexpl.c': 'frexpq.c',
+        's_fmal.c': 'fmaq.c', 'e_fmodl.c': 'fmodq.c', 's_frexpl.c': 'frexpq.c',
         'e_lgammal_r.c': 'lgammaq.c', 'lgamma_negl.c': 'lgammaq_neg.c',
         'lgamma_productl.c': 'lgammaq_product.c', 'e_hypotl.c': 'hypotq.c',
         'e_ilogbl.c': 'ilogbq.c', 's_isinfl.c': 'isinfq.c',
