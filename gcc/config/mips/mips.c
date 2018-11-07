@@ -836,7 +836,7 @@ static const struct mips_rtx_cost_data
   { /* Loongson-2F */
     DEFAULT_COSTS
   },
-  { /* Loongson-3A */
+  { /* Loongson gs464.  */
     DEFAULT_COSTS
   },
   { /* M4k */
@@ -14614,7 +14614,7 @@ mips_issue_rate (void)
 
     case PROCESSOR_LOONGSON_2E:
     case PROCESSOR_LOONGSON_2F:
-    case PROCESSOR_LOONGSON_3A:
+    case PROCESSOR_GS464:
     case PROCESSOR_P5600:
     case PROCESSOR_P6600:
       return 4;
@@ -14746,7 +14746,7 @@ mips_multipass_dfa_lookahead (void)
   if (TUNE_SB1)
     return 4;
 
-  if (TUNE_LOONGSON_2EF || TUNE_LOONGSON_3A)
+  if (TUNE_LOONGSON_2EF || TUNE_GS464)
     return 4;
 
   if (TUNE_OCTEON)

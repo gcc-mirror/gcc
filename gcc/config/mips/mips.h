@@ -266,7 +266,7 @@ struct mips_cpu_info {
 #define TARGET_LOONGSON_2E          (mips_arch == PROCESSOR_LOONGSON_2E)
 #define TARGET_LOONGSON_2F          (mips_arch == PROCESSOR_LOONGSON_2F)
 #define TARGET_LOONGSON_2EF         (TARGET_LOONGSON_2E || TARGET_LOONGSON_2F)
-#define TARGET_LOONGSON_3A          (mips_arch == PROCESSOR_LOONGSON_3A)
+#define TARGET_GS464		    (mips_arch == PROCESSOR_GS464)
 #define TARGET_MIPS3900             (mips_arch == PROCESSOR_R3900)
 #define TARGET_MIPS4000             (mips_arch == PROCESSOR_R4000)
 #define TARGET_MIPS4120             (mips_arch == PROCESSOR_R4120)
@@ -298,7 +298,7 @@ struct mips_cpu_info {
 				     || mips_tune == PROCESSOR_74KF3_2)
 #define TUNE_LOONGSON_2EF           (mips_tune == PROCESSOR_LOONGSON_2E	\
 				     || mips_tune == PROCESSOR_LOONGSON_2F)
-#define TUNE_LOONGSON_3A            (mips_tune == PROCESSOR_LOONGSON_3A)
+#define TUNE_GS464		    (mips_tune == PROCESSOR_GS464)
 #define TUNE_MIPS3000               (mips_tune == PROCESSOR_R3000)
 #define TUNE_MIPS3900               (mips_tune == PROCESSOR_R3900)
 #define TUNE_MIPS4000               (mips_tune == PROCESSOR_R4000)
@@ -792,7 +792,8 @@ struct mips_cpu_info {
      %{march=mips32r6: -mips32r6} \
      %{march=mips64|march=5k*|march=20k*|march=sb1*|march=sr71000 \
        |march=xlr: -mips64} \
-     %{march=mips64r2|march=loongson3a|march=octeon|march=xlp: -mips64r2} \
+     %{march=mips64r2|march=loongson3a|march=gs464|march=octeon	\
+       |march=xlp: -mips64r2} \
      %{march=mips64r3: -mips64r3} \
      %{march=mips64r5: -mips64r5} \
      %{march=mips64r6|march=i6400|march=i6500|march=p6600: -mips64r6}}"
@@ -909,7 +910,7 @@ struct mips_cpu_info {
 
 #define MIPS_ASE_LOONGSON_EXT_SPEC						\
   "%{!mno-loongson-ext:								\
-     %{march=loongson3a: -mloongson-ext}}"
+     %{march=loongson3a|march=gs464: -mloongson-ext}}"
 
 #define DRIVER_SELF_SPECS \
   MIPS_ISA_LEVEL_SPEC,	  \
@@ -962,7 +963,7 @@ struct mips_cpu_info {
 
 /* ISA has 32 single-precision registers.  */
 #define ISA_HAS_ODD_SPREG	((mips_isa_rev >= 1			\
-				  && !TARGET_LOONGSON_3A)		\
+				  && !TARGET_GS464)			\
 				 || TARGET_FLOAT64			\
 				 || TARGET_MIPS5900)
 
@@ -1005,7 +1006,7 @@ struct mips_cpu_info {
    because the former are faster and can also have the effect of reducing
    code size.  */
 #define ISA_AVOID_DIV_HILO	((TARGET_LOONGSON_2EF			\
-				  || TARGET_LOONGSON_3A)		\
+				  || TARGET_GS464)			\
 				 && !TARGET_MIPS16)
 
 /* ISA supports instructions DDIV and DDIVU. */
@@ -1098,14 +1099,14 @@ struct mips_cpu_info {
    'd = [+-] (a * b [+-] c)'.  */
 #define ISA_HAS_FUSED_MADD4	(mips_madd4				\
 				 && (TARGET_MIPS8000			\
-				     || TARGET_LOONGSON_3A))
+				     || TARGET_GS464))
 
 /* ISA has 4 operand unfused madd instructions of the form
    'd = [+-] (a * b [+-] c)'.  */
 #define ISA_HAS_UNFUSED_MADD4	(mips_madd4				\
 				 && ISA_HAS_FP4				\
 				 && !TARGET_MIPS8000			\
-				 && !TARGET_LOONGSON_3A)
+				 && !TARGET_GS464)
 
 /* ISA has 3 operand r6 fused madd instructions of the form
    'c = c [+-] (a * b)'.  */

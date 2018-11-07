@@ -1,5 +1,27 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* config/mips/loongson3a.md: Rename to ...
+	* config/mips/gs464.md: ... here.
+	* config/mips/mips-cpus.def: Define gs464; Add loongson3a
+	as an alias of gs464 processor.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_issue_rate): Use PROCESSOR_GS464
+	instead of PROCESSOR_LOONGSON_3A.
+	(mips_multipass_dfa_lookahead): Use TUNE_GS464 instead of
+	TUNE_LOONGSON_3A.
+	(mips_option_override): Enable MMI and EXT for gs464.
+	* config/mips/mips.h: Rename TARGET_LOONGSON_3A to TARGET_GS464;
+	Rename TUNE_LOONGSON_3A to TUNE_GS464.
+	(MIPS_ISA_LEVEL_SPEC): Infer mips64r2 from gs464.
+	(ISA_HAS_ODD_SPREG, ISA_AVOID_DIV_HILO, ISA_HAS_FUSED_MADD4,
+	ISA_HAS_UNFUSED_MADD4): Use TARGET_GS464 instead of
+	TARGET_LOONGSON_3A.
+	* config/mips/mips.md: Include gs464.md instead of loongson3a.md.
+	(processor): Add gs464;
+	* doc/invoke.texi: Add gs464 to supported architectures.
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* config/mips/mips-protos.h
 	(mips_loongson_ext2_prefetch_cookie): New prototype.
 	* config/mips/mips.c (mips_loongson_ext2_prefetch_cookie): New.
