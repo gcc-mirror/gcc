@@ -20799,7 +20799,7 @@ The processor names are:
 @samp{i6400}, @samp{i6500},
 @samp{interaptiv},
 @samp{loongson2e}, @samp{loongson2f}, @samp{loongson3a}, @samp{gs464},
-@samp{gs464e},
+@samp{gs464e}, @samp{gs264e},
 @samp{m4k},
 @samp{m14k}, @samp{m14kc}, @samp{m14ke}, @samp{m14kec},
 @samp{m5100}, @samp{m5101},

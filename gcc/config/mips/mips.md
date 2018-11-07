@@ -39,6 +39,7 @@
   loongson_2f
   gs464
   gs464e
+  gs264e
   m4k
   octeon
   octeon2
@@ -1176,6 +1177,7 @@
 (include "loongson2ef.md")
 (include "gs464.md")
 (include "gs464e.md")
+(include "gs264e.md")
 (include "octeon.md")
 (include "sb1.md")
 (include "sr71k.md")

@@ -1,5 +1,25 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* config/mips/gs264e.md: New.
+	* config/mips/mips-cpus.def: Define gs264e.
+	* config/mips/mips-tables.opt: Regenerate.
+	* config/mips/mips.c (mips_rtx_cost_data): Add DEFAULT_COSTS for
+	gs264e.
+	(mips_issue_rate): Add support for gs264e.
+	(mips_multipass_dfa_lookahead): Likewise.
+	* config/mips/mips.h: Define TARGET_GS264E and TUNE_GS264E.
+	(MIPS_ISA_LEVEL_SPEC): Infer mips64r2 from gs264e.
+	(MIPS_ASE_MSA_SPEC): New.
+	(BASE_DRIVER_SELF_SPECS): march=gs264e implies -mmsa.
+	(ISA_HAS_FUSED_MADD4): Enable for TARGET_GS264E.
+	(ISA_HAS_UNFUSED_MADD4): Exclude TARGET_GS264E.
+	* config/mips/mips.md: Include gs264e.md.
+	(processor): Add gs264e.
+	* config/mips/mips.opt (MSA): Use Mask instead of Var.
+	* doc/invoke.texi: Add gs264e to supported architectures.
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* config/mips/gs464e.md: New.
 	* config/mips/mips-cpus.def: Define gs464e.
 	* config/mips/mips-tables.opt: Regenerate.
