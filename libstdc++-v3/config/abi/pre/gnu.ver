@@ -2061,8 +2061,8 @@ GLIBCXX_3.4.26 {
     _ZNSt3pmr28unsynchronized_pool_resourceC[12]ERKNS_12pool_optionsEPNS_15memory_resourceE;
     _ZNSt3pmr28unsynchronized_pool_resourceD[12]Ev;
     _ZNSt3pmr28unsynchronized_pool_resource7releaseEv;
-    _ZNSt3pmr28unsynchronized_pool_resource11do_allocateEmm;
-    _ZNSt3pmr28unsynchronized_pool_resource13do_deallocateEPvmm;
+    _ZNSt3pmr28unsynchronized_pool_resource11do_allocateE[jmy][jmy];
+    _ZNSt3pmr28unsynchronized_pool_resource13do_deallocateEPv[jmy][jmy];
 
 } GLIBCXX_3.4.25;
 
