@@ -914,6 +914,12 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
+     which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
+     ultimate origin.  Fixup here.
+     ???  This should get fixed with moving to DIE references.  */
+  if (DECL_P (BLOCK_ORIGIN (expr)))
+    BLOCK_ABSTRACT_ORIGIN (expr) = DECL_ORIGIN (BLOCK_ABSTRACT_ORIGIN (expr));
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */
