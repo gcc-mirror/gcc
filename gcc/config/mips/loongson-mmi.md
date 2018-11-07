@@ -1,5 +1,4 @@
-;; Machine description for Loongson-specific patterns, such as
-;; ST Microelectronics Loongson-2E/2F etc.
+;; Machine description for Loongson MultiMedia extensions Instructions (MMI).
 ;; Copyright (C) 2008-2018 Free Software Foundation, Inc.
 ;; Contributed by CodeSourcery.
 ;;
@@ -102,7 +101,7 @@
 (define_expand "mov<mode>"
   [(set (match_operand:VWHB 0)
 	(match_operand:VWHB 1))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   if (mips_legitimize_move (<MODE>mode, operands[0], operands[1]))
     DONE;
@@ -112,7 +111,7 @@
 (define_insn "mov<mode>_internal"
   [(set (match_operand:VWHB 0 "nonimmediate_operand" "=m,f,d,f,  d,  m,  d")
 	(match_operand:VWHB 1 "move_operand"          "f,m,f,dYG,dYG,dYG,m"))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   { return mips_output_move (operands[0], operands[1]); }
   [(set_attr "move_type" "fpstore,fpload,mfc,mtc,move,store,load")
    (set_attr "mode" "DI")])
@@ -122,7 +121,7 @@
 (define_expand "vec_init<mode><unitmode>"
   [(set (match_operand:VWHB 0 "register_operand")
 	(match_operand 1 ""))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vector_init (operands[0], operands[1]);
   DONE;
@@ -135,7 +134,7 @@
 	(unspec:VHB [(truncate:<V_inner>
 		       (match_operand:DI 1 "reg_or_0_operand" "Jd"))]
 		    UNSPEC_LOONGSON_VINIT))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "dmtc1\t%z1,%0"
   [(set_attr "move_type" "mtc")
    (set_attr "mode" "DI")])
@@ -146,7 +145,7 @@
 	(vec_concat:V2SI
 	  (match_operand:SI 1 "register_operand" "f")
 	  (match_operand:SI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -160,7 +159,7 @@
 	  (match_operand:VWH 1 "register_operand" "f"))
 	 (ss_truncate:<V_squash>
 	  (match_operand:VWH 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "packss<V_squash_double_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -172,7 +171,7 @@
 	  (match_operand:VH 1 "register_operand" "f"))
 	 (us_truncate:<V_squash>
 	  (match_operand:VH 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "packus<V_squash_double_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -181,7 +180,7 @@
   [(set (match_operand:VWHB 0 "register_operand" "=f")
         (plus:VWHB (match_operand:VWHB 1 "register_operand" "f")
 		   (match_operand:VWHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "padd<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -196,7 +195,7 @@
         (unspec:DI [(match_operand:DI 1 "register_operand" "f")
 		    (match_operand:DI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PADDD))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "paddd\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -205,7 +204,7 @@
   [(set (match_operand:VHB 0 "register_operand" "=f")
         (ss_plus:VHB (match_operand:VHB 1 "register_operand" "f")
 		     (match_operand:VHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "padds<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -214,7 +213,7 @@
   [(set (match_operand:VHB 0 "register_operand" "=f")
         (us_plus:VHB (match_operand:VHB 1 "register_operand" "f")
 		     (match_operand:VHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "paddus<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -224,7 +223,7 @@
         (and:VWHBDI
 	 (not:VWHBDI (match_operand:VWHBDI 1 "register_operand" "f"))
 	 (match_operand:VWHBDI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pandn\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -233,7 +232,7 @@
   [(set (match_operand:VWHB 0 "register_operand" "=f")
 	(and:VWHB (match_operand:VWHB 1 "register_operand" "f")
 		  (match_operand:VWHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "and\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -242,7 +241,7 @@
   [(set (match_operand:VWHB 0 "register_operand" "=f")
 	(ior:VWHB (match_operand:VWHB 1 "register_operand" "f")
 		  (match_operand:VWHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "or\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -251,7 +250,7 @@
   [(set (match_operand:VWHB 0 "register_operand" "=f")
 	(xor:VWHB (match_operand:VWHB 1 "register_operand" "f")
 		  (match_operand:VWHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "xor\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -261,7 +260,7 @@
 	(and:VWHB
 	  (not:VWHB (match_operand:VWHB 1 "register_operand" "f"))
 	  (not:VWHB (match_operand:VWHB 2 "register_operand" "f"))))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "nor\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -269,7 +268,7 @@
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:VWHB 0 "register_operand" "=f")
 	(not:VWHB (match_operand:VWHB 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "nor\t%0,%1,%1"
   [(set_attr "type" "fmul")])
 
@@ -279,7 +278,7 @@
         (unspec:VHB [(match_operand:VHB 1 "register_operand" "f")
 		     (match_operand:VHB 2 "register_operand" "f")]
 		    UNSPEC_LOONGSON_PAVG))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pavg<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -289,7 +288,7 @@
         (unspec:VWHB [(match_operand:VWHB 1 "register_operand" "f")
 		      (match_operand:VWHB 2 "register_operand" "f")]
 		     UNSPEC_LOONGSON_PCMPEQ))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pcmpeq<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -299,7 +298,7 @@
         (unspec:VWHB [(match_operand:VWHB 1 "register_operand" "f")
 		      (match_operand:VWHB 2 "register_operand" "f")]
 		     UNSPEC_LOONGSON_PCMPGT))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pcmpgt<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -309,7 +308,7 @@
         (unspec:V4HI [(match_operand:V4HI 1 "register_operand" "f")
 		      (match_operand:SI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PEXTR))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pextrh\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -322,7 +321,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 4) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pinsrh_0\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -334,7 +333,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pinsrh_1\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -346,7 +345,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 4) (const_int 3)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pinsrh_2\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -358,7 +357,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 4)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pinsrh_3\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -368,7 +367,7 @@
 		      (match_operand:SI 2 "register_operand" "f")
 		      (match_operand:SI 3 "const_0_to_3_operand" "")]
 		     UNSPEC_LOONGSON_PINSRH))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pinsrh_%3\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -378,7 +377,7 @@
 		      (match_operand:HI 2 "register_operand" "f")
 		      (match_operand:SI 3 "const_0_to_3_operand" "")]
 		     UNSPEC_LOONGSON_PINSRH))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx ext = gen_reg_rtx (SImode);
   emit_move_insn (ext, gen_lowpart (SImode, operands[2]));
@@ -391,7 +390,7 @@
         (unspec:V2SI [(match_operand:V4HI 1 "register_operand" "f")
 		      (match_operand:V4HI 2 "register_operand" "f")]
 		     UNSPEC_LOONGSON_PMADD))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmaddhw\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -400,7 +399,7 @@
    (match_operand:V4HI 1 "register_operand" "")
    (match_operand:V4HI 2 "register_operand" "")
    (match_operand:V2SI 3 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx t = gen_reg_rtx (V2SImode);
   emit_insn (gen_loongson_pmaddhw (t, operands[1], operands[2]));
@@ -413,7 +412,7 @@
   [(set (match_operand:V4HI 0 "register_operand" "=f")
         (smax:V4HI (match_operand:V4HI 1 "register_operand" "f")
 		   (match_operand:V4HI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmaxsh\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -421,7 +420,7 @@
   [(match_operand:VWB 0 "register_operand" "")
    (match_operand:VWB 1 "register_operand" "")
    (match_operand:VWB 2 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_minmax (operands[0], operands[1], operands[2],
 			  gen_loongson_pcmpgt<V_suffix>, false);
@@ -433,7 +432,7 @@
   [(set (match_operand:V8QI 0 "register_operand" "=f")
         (umax:V8QI (match_operand:V8QI 1 "register_operand" "f")
 		   (match_operand:V8QI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmaxub\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -442,7 +441,7 @@
   [(set (match_operand:V4HI 0 "register_operand" "=f")
         (smin:V4HI (match_operand:V4HI 1 "register_operand" "f")
 		   (match_operand:V4HI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pminsh\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -450,7 +449,7 @@
   [(match_operand:VWB 0 "register_operand" "")
    (match_operand:VWB 1 "register_operand" "")
    (match_operand:VWB 2 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_minmax (operands[0], operands[1], operands[2],
 			  gen_loongson_pcmpgt<V_suffix>, true);
@@ -462,7 +461,7 @@
   [(set (match_operand:V8QI 0 "register_operand" "=f")
         (umin:V8QI (match_operand:V8QI 1 "register_operand" "f")
 		   (match_operand:V8QI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pminub\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -471,7 +470,7 @@
   [(set (match_operand:VB 0 "register_operand" "=f")
         (unspec:VB [(match_operand:VB 1 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PMOVMSK))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmovmsk<V_suffix>\t%0,%1"
   [(set_attr "type" "fabs")])
 
@@ -481,7 +480,7 @@
         (unspec:VH [(match_operand:VH 1 "register_operand" "f")
 		    (match_operand:VH 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PMULHU))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmulhu<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -491,7 +490,7 @@
         (unspec:VH [(match_operand:VH 1 "register_operand" "f")
 		    (match_operand:VH 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PMULH))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmulh<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -500,7 +499,7 @@
   [(set (match_operand:VH 0 "register_operand" "=f")
         (mult:VH (match_operand:VH 1 "register_operand" "f")
                  (match_operand:VH 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmull<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -510,7 +509,7 @@
         (unspec:DI [(match_operand:VW 1 "register_operand" "f")
 		    (match_operand:VW 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PMULU))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pmulu<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -520,7 +519,7 @@
         (unspec:VB [(match_operand:VB 1 "register_operand" "f")
 		    (match_operand:VB 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PASUBUB))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pasubub\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -529,7 +528,7 @@
   [(set (match_operand:<V_stretch_half> 0 "register_operand" "=f")
         (unspec:<V_stretch_half> [(match_operand:VB 1 "register_operand" "f")]
 				 UNSPEC_LOONGSON_BIADD))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "biadd\t%0,%1"
   [(set_attr "type" "fabs")])
 
@@ -537,7 +536,7 @@
   [(set (match_operand:V8QI 0 "register_operand" "=f")
 	(unspec:V8QI [(match_operand:V8QI 1 "register_operand" "f")]
 		     UNSPEC_LOONGSON_BIADD))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "biadd\t%0,%1"
   [(set_attr "type" "fabs")])
 
@@ -547,7 +546,7 @@
         (unspec:<V_stretch_half> [(match_operand:VB 1 "register_operand" "f")
 				  (match_operand:VB 2 "register_operand" "f")]
 				 UNSPEC_LOONGSON_PSADBH))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pasubub\t%0,%1,%2;biadd\t%0,%0"
   [(set_attr "type" "fadd")])
 
@@ -557,7 +556,7 @@
         (unspec:VH [(match_operand:VH 1 "register_operand" "f")
 		    (match_operand:SI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PSHUFH))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "pshufh\t%0,%1,%2"
   [(set_attr "type" "fmul")])
 
@@ -566,7 +565,7 @@
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (ashift:VWH (match_operand:VWH 1 "register_operand" "f")
 		    (match_operand:SI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psll<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -575,7 +574,7 @@
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (ashiftrt:VWH (match_operand:VWH 1 "register_operand" "f")
 		      (match_operand:SI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psra<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -584,7 +583,7 @@
   [(set (match_operand:VWH 0 "register_operand" "=f")
         (lshiftrt:VWH (match_operand:VWH 1 "register_operand" "f")
 		      (match_operand:SI 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psrl<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -593,7 +592,7 @@
   [(set (match_operand:VWHB 0 "register_operand" "=f")
         (minus:VWHB (match_operand:VWHB 1 "register_operand" "f")
 		    (match_operand:VWHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psub<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -606,7 +605,7 @@
         (unspec:DI [(match_operand:DI 1 "register_operand" "f")
 		    (match_operand:DI 2 "register_operand" "f")]
 		   UNSPEC_LOONGSON_PSUBD))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psubd\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -615,7 +614,7 @@
   [(set (match_operand:VHB 0 "register_operand" "=f")
         (ss_minus:VHB (match_operand:VHB 1 "register_operand" "f")
 		      (match_operand:VHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psubs<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -624,7 +623,7 @@
   [(set (match_operand:VHB 0 "register_operand" "=f")
         (us_minus:VHB (match_operand:VHB 1 "register_operand" "f")
 		      (match_operand:VHB 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "psubus<V_suffix>\t%0,%1,%2"
   [(set_attr "type" "fadd")])
 
@@ -639,7 +638,7 @@
 		     (const_int 5) (const_int 13)
 		     (const_int 6) (const_int 14)
 		     (const_int 7) (const_int 15)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhbh\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -651,7 +650,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 2) (const_int 6)
 		     (const_int 3) (const_int 7)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhhw\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -665,7 +664,7 @@
 		     (const_int 12) (const_int 13)
 		     (const_int 6)  (const_int 7)
 		     (const_int 14) (const_int 15)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhhw\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -676,7 +675,7 @@
 	    (match_operand:V2SI 1 "register_operand" "f")
 	    (match_operand:V2SI 2 "register_operand" "f"))
 	  (parallel [(const_int 1) (const_int 3)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -690,7 +689,7 @@
 		     (const_int 6) (const_int 7)
 		     (const_int 12) (const_int 13)
 		     (const_int 14) (const_int 15)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -702,7 +701,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 2) (const_int 3)
 		     (const_int 6) (const_int 7)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpckhwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -717,7 +716,7 @@
 		     (const_int 1) (const_int 9)
 		     (const_int 2) (const_int 10)
 		     (const_int 3) (const_int 11)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklbh\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -729,7 +728,7 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 4)
 		     (const_int 1) (const_int 5)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklhw\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -743,7 +742,7 @@
 		     (const_int 8)  (const_int 9)
 		     (const_int 2)  (const_int 3)
 		     (const_int 10) (const_int 11)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklhw\t%0,%1,%2"
   [(set_attr "type" "fdiv")])
 
@@ -754,7 +753,7 @@
 	    (match_operand:V2SI 1 "register_operand" "f")
 	    (match_operand:V2SI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 2)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -768,7 +767,7 @@
 		     (const_int 2) (const_int 3)
 		     (const_int 8) (const_int 9)
 		     (const_int 10) (const_int 11)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -780,14 +779,14 @@
 	    (match_operand:V4HI 2 "register_operand" "f"))
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 4) (const_int 5)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "punpcklwd\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<V_stretch_half> 0 "register_operand" "")
    (match_operand:VHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_unpack (operands, false, false);
   DONE;
@@ -796,7 +795,7 @@
 (define_expand "vec_unpacks_hi_<mode>"
   [(match_operand:<V_stretch_half> 0 "register_operand" "")
    (match_operand:VHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_unpack (operands, false, true);
   DONE;
@@ -805,7 +804,7 @@
 (define_expand "vec_unpacku_lo_<mode>"
   [(match_operand:<V_stretch_half> 0 "register_operand" "")
    (match_operand:VHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_unpack (operands, true, false);
   DONE;
@@ -814,7 +813,7 @@
 (define_expand "vec_unpacku_hi_<mode>"
   [(match_operand:<V_stretch_half> 0 "register_operand" "")
    (match_operand:VHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   mips_expand_vec_unpack (operands, true, true);
   DONE;
@@ -826,7 +825,7 @@
         (unspec:VWHBDI [(match_operand:VWHBDI 1 "register_operand" "f")
                         (match_operand:SI 2 "register_operand" "f")]
                        UNSPEC_LOONGSON_DSLL))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "dsll\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -835,7 +834,7 @@
         (unspec:VWHBDI [(match_operand:VWHBDI 1 "register_operand" "f")
                         (match_operand:SI 2 "register_operand" "f")]
                        UNSPEC_LOONGSON_DSRL))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "dsrl\t%0,%1,%2"
   [(set_attr "type" "fcvt")])
 
@@ -844,14 +843,14 @@
         (vec_select:<V_inner>
           (match_operand:VWHB 1 "register_operand" "f")
           (parallel [(const_int 0)])))]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
   "mfc1\t%0,%1"
   [(set_attr "type" "mfc")])
 
 (define_expand "reduc_plus_scal_<mode>"
   [(match_operand:<V_inner> 0 "register_operand" "")
    (match_operand:VWHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
   mips_expand_vec_reduc (tmp, operands[1], gen_add<mode>3);
@@ -862,7 +861,7 @@
 (define_expand "reduc_smax_scal_<mode>"
   [(match_operand:<V_inner> 0 "register_operand" "")
    (match_operand:VWHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
   mips_expand_vec_reduc (tmp, operands[1], gen_smax<mode>3);
@@ -873,7 +872,7 @@
 (define_expand "reduc_smin_scal_<mode>"
   [(match_operand:<V_inner> 0 "register_operand" "")
    (match_operand:VWHB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
   mips_expand_vec_reduc (tmp, operands[1], gen_smin<mode>3);
@@ -884,7 +883,7 @@
 (define_expand "reduc_umax_scal_<mode>"
   [(match_operand:<V_inner> 0 "register_operand" "")
    (match_operand:VB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
   mips_expand_vec_reduc (tmp, operands[1], gen_umax<mode>3);
@@ -895,7 +894,7 @@
 (define_expand "reduc_umin_scal_<mode>"
   [(match_operand:<V_inner> 0 "register_operand" "")
    (match_operand:VB 1 "register_operand" "")]
-  "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"
+  "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
   mips_expand_vec_reduc (tmp, operands[1], gen_umin<mode>3);

@@ -319,13 +319,6 @@ struct mips_cpu_info {
 #define TUNE_I6400                  (mips_tune == PROCESSOR_I6400)
 #define TUNE_P6600                  (mips_tune == PROCESSOR_P6600)
 
-/* Whether vector modes and intrinsics for ST Microelectronics
-   Loongson-2E/2F processors should be enabled.  In o32 pairs of
-   floating-point registers provide 64-bit values.  */
-#define TARGET_LOONGSON_VECTORS	    (TARGET_HARD_FLOAT_ABI		\
-				     && (TARGET_LOONGSON_2EF		\
-					 || TARGET_LOONGSON_3A))
-
 /* True if the pre-reload scheduler should try to create chains of
    multiply-add or multiply-subtract instructions.  For example,
    suppose we have:
@@ -596,9 +589,12 @@ struct mips_cpu_info {
       if (TARGET_ABICALLS)						\
 	builtin_define ("__mips_abicalls");				\
 									\
-      /* Whether Loongson vector modes are enabled.  */                 \
-      if (TARGET_LOONGSON_VECTORS)					\
-        builtin_define ("__mips_loongson_vector_rev");                  \
+      /* Whether Loongson vector modes are enabled.  */			\
+      if (TARGET_LOONGSON_MMI)						\
+	{								\
+	  builtin_define ("__mips_loongson_vector_rev");		\
+	  builtin_define ("__mips_loongson_mmi");			\
+	}								\
 									\
       /* Historical Octeon macro.  */					\
       if (TARGET_OCTEON)						\
@@ -880,13 +876,22 @@ struct mips_cpu_info {
 
 /* A spec that infers the:
    -mnan=2008 setting from a -mips argument,
-   -mdsp setting from a -march argument.  */
-#define BASE_DRIVER_SELF_SPECS \
-  MIPS_ISA_NAN2008_SPEC,       \
+   -mdsp setting from a -march argument.
+   -mloongson-mmi setting from a -march argument.  */
+#define BASE_DRIVER_SELF_SPECS	\
+  MIPS_ISA_NAN2008_SPEC,	\
+  MIPS_ASE_DSP_SPEC, 		\
+  MIPS_ASE_LOONGSON_MMI_SPEC
+
+#define MIPS_ASE_DSP_SPEC \
   "%{!mno-dsp: \
      %{march=24ke*|march=34kc*|march=34kf*|march=34kx*|march=1004k* \
        |march=interaptiv: -mdsp} \
      %{march=74k*|march=m14ke*: %{!mno-dspr2: -mdspr2 -mdsp}}}"
+
+#define MIPS_ASE_LOONGSON_MMI_SPEC						\
+  "%{!mno-loongson-mmi:								\
+     %{march=loongson2e|march=loongson2f|march=loongson3a: -mloongson-mmi}}"
 
 #define DRIVER_SELF_SPECS \
   MIPS_ISA_LEVEL_SPEC,	  \
@@ -1361,6 +1366,7 @@ struct mips_cpu_info {
 %{mcrc} %{mno-crc} \
 %{mginv} %{mno-ginv} \
 %{mmsa} %{mno-msa} \
+%{mloongson-mmi} %{mno-loongson-mmi} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-rm7000} %{mno-fix-rm7000} \
@@ -2638,9 +2644,9 @@ typedef struct mips_args {
 #define SLOW_BYTE_ACCESS (!TARGET_MIPS16)
 
 /* Standard MIPS integer shifts truncate the shift amount to the
-   width of the shifted operand.  However, Loongson vector shifts
+   width of the shifted operand.  However, Loongson MMI shifts
    do not truncate the shift amount at all.  */
-#define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_VECTORS)
+#define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_MMI)
 
 
 /* Specify the machine mode that pointers have.

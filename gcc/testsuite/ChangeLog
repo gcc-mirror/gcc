@@ -1,3 +1,32 @@
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/loongson-shift-count-truncated-1.c
+	(dg-options): Run under -mloongson-mmi option.
+	Include loongson-mmiintrin.h instead of loongson.h.
+	* gcc.target/mips/loongson-simd.c: Likewise.
+	* gcc.target/mips/mips.exp (mips_option_groups): Add
+	-mloongson-mmi option.
+	(mips-dg-options): Add mips_option_dependency options "-mips16" vs
+	"-mno-loongson-mmi", "-mmicromips" vs "-mno-loongson-mmi",
+	"-msoft-float" vs "-mno-loongson-mmi".
+	(mips-dg-init): Add -mloongson-mmi option.
+	* lib/target-supports.exp: Rename check_mips_loongson_hw_available
+	to check_mips_loongson_mmi_hw_available.
+	Rename check_effective_target_mips_loongson_runtime to
+	check_effective_target_mips_loongson_mmi_runtime.
+	(check_effective_target_vect_int): Use mips_loongson_mmi instead
+	of mips_loongson when check et-is-effective-target.
+	(add_options_for_mips_loongson_mmi): New proc.
+	Rename check_effective_target_mips_loongson to
+	check_effective_target_mips_loongson_mmi.
+	(check_effective_target_vect_shift,
+	check_effective_target_whole_vector_shift,
+	check_effective_target_vect_no_int_min_max,
+	check_effective_target_vect_no_align,
+	check_effective_target_vect_short_mult,
+	check_vect_support_and_set_flags):Use mips_loongson_mmi instead
+	of mips_loongson when check et-is-effective-target.
+
 2018-11-07  Richard Biener  <rguenther@suse.de>
 
 	PR lto/87906

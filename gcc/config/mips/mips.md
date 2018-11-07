@@ -834,9 +834,9 @@
 (define_mode_iterator MOVE64
   [DI DF
    (V2SF "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT")
-   (V2SI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
-   (V4HI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")
-   (V8QI "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS")])
+   (V2SI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")
+   (V4HI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")
+   (V8QI "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI")])
 
 ;; 128-bit modes for which we provide move patterns on 64-bit targets.
 (define_mode_iterator MOVE128 [TI TF])
@@ -863,9 +863,9 @@
   [(DF "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (DI "!TARGET_64BIT && TARGET_DOUBLE_FLOAT")
    (V2SF "!TARGET_64BIT && TARGET_PAIRED_SINGLE_FLOAT")
-   (V2SI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
-   (V4HI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
-   (V8QI "!TARGET_64BIT && TARGET_LOONGSON_VECTORS")
+   (V2SI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
+   (V4HI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
+   (V8QI "!TARGET_64BIT && TARGET_LOONGSON_MMI")
    (TF "TARGET_64BIT && TARGET_FLOAT64")])
 
 ;; In GPR templates, a string like "<d>subu" will expand to "subu" in the
@@ -7690,8 +7690,8 @@
 ; microMIPS patterns.
 (include "micromips.md")
 
-; ST-Microelectronics Loongson-2E/2F-specific patterns.
-(include "loongson.md")
+; Loongson MultiMedia extensions Instructions (MMI) patterns.
+(include "loongson-mmi.md")
 
 ; The MIPS MSA Instructions.
 (include "mips-msa.md")
