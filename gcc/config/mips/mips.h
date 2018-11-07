@@ -596,6 +596,12 @@ struct mips_cpu_info {
 	  builtin_define ("__mips_loongson_mmi");			\
 	}								\
 									\
+      /* Whether Loongson EXT modes are enabled.  */			\
+      if (TARGET_LOONGSON_EXT)						\
+	{								\
+	  builtin_define ("__mips_loongson_ext");			\
+	}								\
+									\
       /* Historical Octeon macro.  */					\
       if (TARGET_OCTEON)						\
 	builtin_define ("__OCTEON__");					\
@@ -881,7 +887,8 @@ struct mips_cpu_info {
 #define BASE_DRIVER_SELF_SPECS	\
   MIPS_ISA_NAN2008_SPEC,	\
   MIPS_ASE_DSP_SPEC, 		\
-  MIPS_ASE_LOONGSON_MMI_SPEC
+  MIPS_ASE_LOONGSON_MMI_SPEC,	\
+  MIPS_ASE_LOONGSON_EXT_SPEC
 
 #define MIPS_ASE_DSP_SPEC \
   "%{!mno-dsp: \
@@ -892,6 +899,10 @@ struct mips_cpu_info {
 #define MIPS_ASE_LOONGSON_MMI_SPEC						\
   "%{!mno-loongson-mmi:								\
      %{march=loongson2e|march=loongson2f|march=loongson3a: -mloongson-mmi}}"
+
+#define MIPS_ASE_LOONGSON_EXT_SPEC						\
+  "%{!mno-loongson-ext:								\
+     %{march=loongson3a: -mloongson-ext}}"
 
 #define DRIVER_SELF_SPECS \
   MIPS_ISA_LEVEL_SPEC,	  \
@@ -1367,6 +1378,7 @@ struct mips_cpu_info {
 %{mginv} %{mno-ginv} \
 %{mmsa} %{mno-msa} \
 %{mloongson-mmi} %{mno-loongson-mmi} \
+%{mloongson-ext} %{mno-loongson-ext} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
 %{mfix-rm7000} %{mno-fix-rm7000} \

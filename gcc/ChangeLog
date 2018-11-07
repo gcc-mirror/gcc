@@ -1,5 +1,19 @@
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
 
+	* config/mips/mips.h (TARGET_CPU_CPP_BUILTINS): Add
+	__mips_loongson_ext.
+	(MIPS_ASE_LOONGSON_EXT_SPEC): New.
+	(BASE_DRIVER_SELF_SPECS): march=loongson3a implies
+	-mloongson-ext.
+	(ASM_SPEC): Add mloongson-ext and mno-loongson-ext.
+	* config/mips/mips.md (mul<mode>3, mul<mode>3_mul3_nohilo,
+	<u>div<mode>3, <u>mod<mode>3, prefetch): Use TARGET_LOONGSON_EXT
+	instead of TARGET_LOONGSON_3A.
+	* config/mips/mips.opt (-mloongson-ext): Add option.
+	* gcc/doc/invoke.texi (-mloongson-ext): Document.
+
+2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
+
 	* config.gcc (extra_headers): Add loongson-mmiintrin.h.
 	* config/mips/loongson.md: Move to ...
 	* config/mips/loongson-mmi.md: here; Adjustment.

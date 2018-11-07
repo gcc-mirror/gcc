@@ -297,6 +297,7 @@ foreach option {
     odd-spreg
     msa
     loongson-mmi
+    loongson-ext
 } {
     lappend mips_option_groups $option "-m(no-|)$option"
 }
@@ -1055,6 +1056,7 @@ proc mips-dg-options { args } {
     mips_option_dependency options "-mips16" "-mno-loongson-mmi"
     mips_option_dependency options "-mmicromips" "-mno-loongson-mmi"
     mips_option_dependency options "-msoft-float" "-mno-loongson-mmi"
+    mips_option_dependency options "-mmicromips" "-mno-loongson-ext"
 
     # Work out information about the current ABI.
     set abi_test_option_p [mips_test_option_p options abi]

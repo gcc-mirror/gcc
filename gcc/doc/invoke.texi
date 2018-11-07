@@ -921,6 +921,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmicromips  -mno-micromips @gol
 -mmsa  -mno-msa @gol
 -mloongson-mmi  -mno-loongson-mmi @gol
+-mloongson-ext  -mno-loongson-ext @gol
 -mfpu=@var{fpu-type} @gol
 -msmartmips  -mno-smartmips @gol
 -mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx @gol
@@ -21292,6 +21293,12 @@ Use (do not use) the MIPS Global INValidate (GINV) instructions.
 @opindex mloongson-mmi
 @opindex mno-loongson-mmi
 Use (do not use) the MIPS Loongson MultiMedia extensions Instructions (MMI).
+
+@item -mloongson-ext
+@itemx -mno-loongson-ext
+@opindex mloongson-ext
+@opindex mno-loongson-ext
+Use (do not use) the MIPS Loongson EXTensions (EXT) instructions.
 
 @item -mlong64
 @opindex mlong64
