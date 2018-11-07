@@ -1,6 +1,11 @@
-2018-11-17  Nikolai Merinov <n.merinov@inango-systems.com>
+2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-         * gcc.dg/Wno-attribute-warning.c: New test.
+	PR c/87691
+	* gcc.target/msp430/pr87691.c: New test.
+
+2018-11-07  Nikolai Merinov  <n.merinov@inango-systems.com>
+
+	* gcc.dg/Wno-attribute-warning.c: New test.
 
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
