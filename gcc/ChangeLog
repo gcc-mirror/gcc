@@ -1,3 +1,8 @@
+2018-11-07  Richard Biener  <rguenther@suse.de>
+
+	* ipa-inline.c (want_inline_small_function_p): Compute
+	big_speedup_p lazily and last.
+
 2018-11-07  Jan Hubicka  <jh@suse.cz>
 
 	* tree.c (fld_type_variant_equal_p): Skip TYPE_ALIGN check when
