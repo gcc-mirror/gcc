@@ -1,3 +1,10 @@
+2018-11-07  Max Filippov  <jcmvbkbc@gmail.com>
+
+	Backport from mainline
+	2018-11-05  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/uclinux.h (XTENSA_ALWAYS_PIC): Change to 0.
+
 2018-11-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87859
