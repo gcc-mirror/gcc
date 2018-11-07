@@ -1,5 +1,12 @@
 2018-11-07  Martin Liska  <mliska@suse.cz>
 
+	PR rtl-optimization/87868
+	* postreload-gcse.c (eliminate_partially_redundant_load): Set
+	threshold to max_count if we would overflow.
+	* profile-count.h: Make max_count a public constant.
+
+2018-11-07  Martin Liska  <mliska@suse.cz>
+
 	* mem-stats.h: Fix GNU coding style.
 
 2018-11-07  Chenghua Xu  <paul.hua.gm@gmail.com>
