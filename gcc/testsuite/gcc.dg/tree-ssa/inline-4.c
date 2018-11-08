@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline" } */
+/* { dg-options "-O2 -fdump-tree-einline-optimized -fopt-info-inline" } */
 /* { dg-add-options bind_pic_locally } */
 
 extern int rand(void);
@@ -13,7 +13,7 @@ int my_id;
 
 int main()
 {
-  int res = get_data_for (my_id);
+  int res = get_data_for (my_id); /* { dg-optimized "Inlining get_data_for/\[0-9\]+ into main/\[0-9\]+." } */
   switch (res)
     {
       case 0:
@@ -23,4 +23,4 @@ int main()
     }
 }
 
-/* { dg-final { scan-tree-dump "Inlining get_data_for into main" "einline" } } */
+/* { dg-final { scan-tree-dump "Inlining get_data_for/\[0-9\]* into main/\[0-9\]*" "einline" } } */

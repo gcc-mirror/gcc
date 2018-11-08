@@ -1,5 +1,24 @@
 2018-11-08  David Malcolm  <dmalcolm@redhat.com>
 
+	PR ipa/86395
+	* doc/invoke.texi (-fdump-ipa-): Document the "-optimized",
+	"-missed", "-note", and "-all" sub-options.
+	* ipa-inline.c (caller_growth_limits): Port from fprintf to dump
+	API.
+	(can_early_inline_edge_p): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(want_inline_self_recursive_call_p): Likewise.
+	(recursive_inlining): Likewise.
+	(inline_small_functions): Likewise.
+	(flatten_function): Likewise.
+	(ipa_inline): Likewise.
+	(inline_always_inline_functions): Likewise.
+	(early_inline_small_functions): Likewise.
+	(early_inliner): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* pretty-print.c (pp_format): Handle %f.
 	(selftest::test_pp_format): Add test of %f.
 	* pretty-print.h (pp_double): New macro.
