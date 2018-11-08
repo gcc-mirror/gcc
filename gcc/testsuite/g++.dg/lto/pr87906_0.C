@@ -3,13 +3,13 @@
 // { dg-extra-ld-options "-shared -nostdlib" }
 
 namespace com {
-namespace sun {
+namespace moon {
 namespace star {}
-} // namespace sun
+} // namespace moon
 } // namespace com
-namespace a = com::sun::star;
+namespace a = com::moon::star;
 namespace com {
-namespace sun {
+namespace moon {
 namespace star {
 namespace uno {
 class a {
@@ -28,7 +28,7 @@ class c {
 class RuntimeException : b {};
 } // namespace uno
 } // namespace star
-} // namespace sun
+} // namespace moon
 } // namespace com
 template <typename> void d(int) { throw a::uno::RuntimeException(); }
 int f;
