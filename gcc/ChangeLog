@@ -1,3 +1,8 @@
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* tree-complex.c (expand_complex_comparison): Clean EH.
+
 2018-11-08  Martin Liska  <mliska@suse.cz>
 
 	* doc/extend.texi: Reword.
