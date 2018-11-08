@@ -1,3 +1,10 @@
+2018-11-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87600
+	* gcc.dg/pr87600.h: New file.
+	* gcc.dg/pr87600-1.c: New test.
+	* gcc.dg/pr87600-2.c: Likewise.
+
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-17.c: New test.
