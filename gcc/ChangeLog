@@ -1,3 +1,401 @@
+2018-11-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/constraints.md: Add "Z" series constraints for use
+	with pre-dec and post-inc addressing.
+	* config/pdp11/pdp11-protos.m (expand_block_move): Delete.
+	(pdp11_expand_operands): Add int argument (word count).
+	(pdp11_sp_frame_offset): Delete.
+	(pdp11_cmp_length): New function.
+	(pushpop_regeq): New function.
+	* config/pdp11/pdp11.c (TARGET_STACK_PROTECT_RUNTIME_ENABLED_P):
+	Add hook.
+	(pdp11_expand_prologue, pdp11_expand_epilogue): Rewrite for new
+	frame layout.
+	(pdp11_initial_elimination_offset): Ditto.
+	(pdp11_expand_operands): Add word count argument.  Bugfixes.
+	(output_move_multiple): Change how pointer adjustment is done.
+	(pdp11_gen_int_label): Correct format.
+	(output_ascii): Ditto.
+	(pdp11_asm_output_var): Add code for DEC assembler case.
+	(pdp11_asm_print_operand): Bugfix for CONST_DOUBLE holding integer
+	value.
+	(legitimate_const_double_p): Ditto.
+	(pdp11_register_move_cost): Adjust for new register classes.
+	(pdp11_regno_reg_class): Ditto.
+	(expand_block_move): Delete.
+	(pushpop_regeq): New function.
+	(pdp11_legitimate_address_p): Bugfix in check for constant
+	offset.
+	(pdp11_sp_frame_offset): Delete.
+	(pdp11_reg_save_size): New helper function for new frame layout.
+	(output_addr_const_pdp11): Remove CONST_DOUBLE case.
+	(pdp11_expand_shift): Bugfix in check for constant shift count.
+	(pdp11_shift_length): Ditto.
+	(pdp11_assemble_shift): Copy input to pdp11_expand_operands.
+	(pdp11_cmp_length): New function.
+	* config/pdp11/pdp11.h (TARGET_CPU_CPP_BUILTINS): Add macros for
+	some compile options.
+	(FIXED_REGISTERS): Remove HARD_FRAME_POINTER_REGNUM.
+	(CALL_USED_REGISTERS): Ditto.
+	(ELIMINABLE_REGS): Ditto.
+	(REGISTER_NAMES): Ditto.
+	(reg_class): Add classes NOTR0_REG through NOTSP_REG for use by Z
+	constraints.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.  Also remove
+	HARD_FRAME_POINTER_REGNUM.
+	(CPU_REG_CLASS): New macro.
+	(CLASS_MAX_NREGS): Adjust for new register classes.
+	(FUNCTION_PROFILER): Make no-op.
+	(may_call_alloca): Remove unused declaration.
+	(ASM_OUTPUT_ALIGN): Add workaround for PR87795.
+	(ASM_OUTPUT_SKIP): Fix format.
+	* config/pdp11/pdp11.md (unspecv): Add UNSPECV_MOVMEM.
+	(HARD_FRAME_POINTER_REGNUM): Remove.
+	(return): Delete.
+	(*rts): Rename.  Remove epilogue related checks.
+	(cmpsi, cmpdi): New insn.
+	(cbranch<mode>4): Change to apply to SI and DI modes as well.
+	(mov<mode>): Change constraints to enforce that push/pop
+	destination cannot use the same register as source.
+	(*mov<mode><cc_cc>): Ditto.
+	(movmemhi, movmemhi1, movmemhi_nocc): Change to expand block move
+	at assembly output rather than as RTL expander.
+	(zero_extendqihi2): Bugfix in check for same registers.
+	(adddi3_nocc): Bugfix in check for constant operand.
+	(addsi3_nocc): Ditto.
+	(subdi3_nocc): Ditto.
+	(subsi3_nocc): Ditto.
+	(negdi2_nocc): Copy input to pdp11_expand_operands.
+	(negsi2_nocc): Ditto.
+	(bswap2_nocc): Ditto.
+	* config/pdp11/pdp11.opt (mlra): Fix documentation.
+	* config/pdp11/t-pdp11: Use -Os.
+
+2018-11-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (/alias/): New parsing rule.
+	(/begin cpu/): Check that the cpu name hasn't been previously defined.
+	(gen_comm_data): Print out CPU alias tables.
+	(check_cpu): Match aliases when checking the CPU name.
+	* config/arm/arm-protos.h (cpu_alias): New structure.
+	(cpu_option): Add entry for aliases.
+	* config/arm/arm-cpus.in (strongarm): Add aliases for strongarm110
+	strongarm1100 and strongarm1110.
+	(strongarm110, strongarm1100, strongarm1110): Delete CPU entries.
+	(config/arm/arm-generic.md): Remove redundant references to
+	strongarm110, strongarm1100 and strongarm1110.
+	* common/config/arm/arm-common.c (arm_print_hint_for_cpu_option):
+	Scan aliases for additional hints.
+	(arm_parse_cpu_option_name): Also match a cpu name against the list
+	of aliases.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* builtin-types.def (BT_FN_VOID_BOOL, BT_FN_VOID_SIZE_SIZE_PTR,
+	BT_FN_UINT_UINT_PTR_PTR, BT_FN_UINT_OMPFN_PTR_UINT_UINT,
+	BT_FN_BOOL_UINT_LONGPTR_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_UINT_ULLPTR_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR,
+	BT_FN_BOOL_LONG_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR): New.
+	* gengtype.c (open_base_files): Add omp-general.h.
+	* gimple.c (gimple_build_omp_critical):
+	(gimple_build_omp_taskgroup): Add CLAUSES argument.  Call
+	gimple_omp_taskgroup_set_clauses.
+	(gimple_build_omp_atomic_load): Add mo argument, call
+	gimple_omp_atomic_set_memory_order.
+	(gimple_build_omp_atomic_store): Likewise.
+	(gimple_copy): Adjust handling of GIMPLE_OMP_TASKGROUP.
+	* gimple.def (GIMPLE_OMP_TASKGROUP): Use GSS_OMP_SINGLE_LAYOUT
+	instead of GSS_OMP.
+	(GIMPLE_OMP_TEAMS): Use GSS_OMP_PARALLEL_LAYOUT instead
+	of GSS_OMP_SINGLE_LAYOUT, adjust comments.
+	* gimple.h (enum gf_mask): Add GF_OMP_TEAMS_HOST, GF_OMP_TASK_TASKWAIT
+	and GF_OMP_ATOMIC_MEMORY_ORDER.  Remove GF_OMP_ATOMIC_SEQ_CST, use
+	different value for GF_OMP_ATOMIC_NEED_VALUE.
+	(struct gimple_statement_omp_taskreg): Add GIMPLE_OMP_TEAMS to
+	comments.
+	(struct gimple_statement_omp_single_layout): And remove here.
+	(struct gomp_teams): Inherit from gimple_statement_omp_taskreg rather
+	than gimple_statement_omp_single_layout.
+	(is_a_helper <gimple_statement_omp_taskreg *>::test): Allow
+	GIMPLE_OMP_TEAMS.
+	(is_a_helper <const gimple_statement_omp_taskreg *>::test): Likewise.
+	(gimple_omp_subcode): Formatting fix.
+	(gimple_omp_teams_child_fn, gimple_omp_teams_child_fn_ptr,
+	gimple_omp_teams_set_child_fn, gimple_omp_teams_data_arg,
+	gimple_omp_teams_data_arg_ptr, gimple_omp_teams_set_data_arg,
+	gimple_omp_teams_host, gimple_omp_teams_set_host,
+	gimple_omp_task_taskwait_p, gimple_omp_task_set_taskwait_p,
+	gimple_omp_taskgroup_clauses, gimple_omp_taskgroup_clauses_ptr,
+	gimple_omp_taskgroup_set_clauses): New inline functions.
+	(gimple_build_omp_atomic_load): Add enum omp_memory_order argument.
+	(gimple_build_omp_atomic_store): Likewise.
+	(gimple_omp_atomic_seq_cst_p): Remove.
+	(gimple_omp_atomic_memory_order): New function.
+	(gimple_omp_atomic_set_seq_cst): Remove.
+	(gimple_omp_atomic_set_memory_order): New function.
+	(gimple_build_omp_taskgroup): Add clauses argument.
+	* gimple-pretty-print.c (dump_gimple_omp_taskgroup): New function.
+	(dump_gimple_omp_task): Print taskwait with depend clauses.
+	(dump_gimple_omp_atomic_load, dump_gimple_omp_atomic_store): Use
+	dump_omp_atomic_memory_order.
+	(pp_gimple_stmt_1): Handle GIMPLE_OMP_TASKGROUP.
+	* gimplify.c (enum gimplify_omp_var_data): Add GOVD_MAP_ALLOC_ONLY,
+	GOVD_MAP_FROM_ONLY and GOVD_NONTEMPORAL.
+	(enum omp_region_type): Reserve bits 1 and 2 for auxiliary flags,
+	renumber values of most of ORT_* enumerators, add ORT_HOST_TEAMS,
+	ORT_COMBINED_HOST_TEAMS, ORT_TASKGROUP, ORT_TASKLOOP and
+	ORT_UNTIED_TASKLOOP enumerators.
+	(enum gimplify_defaultmap_kind): New.
+	(struct gimplify_omp_ctx): Remove target_map_scalars_firstprivate and
+	target_map_pointers_as_0len_arrays members, add defaultmap.
+	(new_omp_context): Initialize defaultmap member.
+	(gimple_add_tmp_var): Handle ORT_TASKGROUP like ORT_WORKSHARE.
+	(maybe_fold_stmt): Don't fold even in host teams regions.
+	(omp_firstprivatize_variable): Handle ORT_TASKGROUP like
+	ORT_WORKSHARE.  Test ctx->defaultmap[GDMK_SCALAR] instead of
+	ctx->omp_firstprivatize_variable.
+	(omp_add_variable): Don't add private/firstprivate for VLAs in
+	ORT_TASKGROUP.
+	(omp_default_clause): Print "taskloop" rather than "task" if
+	ORT_*TASKLOOP.
+	(omp_notice_variable): Handle ORT_TASKGROUP like ORT_WORKSHARE.
+	Handle new defaultmap clause kinds.
+	(omp_is_private): Handle ORT_TASKGROUP like ORT_WORKSHARE.  Allow simd
+	iterator to be lastprivate or private.  Fix up diagnostics if linear
+	is used on collapse>1 simd iterator.
+	(omp_check_private): Handle ORT_TASKGROUP like ORT_WORKSHARE.
+	(gimplify_omp_depend): New function.
+	(gimplify_scan_omp_clauses): Add shared clause on parallel for
+	combined parallel master taskloop{, simd} if taskloop has
+	firstprivate, lastprivate or reduction clause.  Handle
+	OMP_CLAUSE_REDUCTION_TASK diagnostics.  Adjust tests for
+	ORT_COMBINED_TEAMS.  Gimplify depend clauses with iterators.  Handle
+	cancel and simd OMP_CLAUSE_IF_MODIFIERs.  Handle
+	OMP_CLAUSE_NONTEMPORAL.  Handle new defaultmap clause kinds.  Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.  Diagnose invalid conditional
+	lastprivate.
+	(gimplify_adjust_omp_clauses_1): Ignore GOVD_NONTEMPORAL.  Handle
+	GOVD_MAP_ALLOC_ONLY and GOVD_MAP_FROM_ONLY.  
+	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_NONTEMPORAL.  Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	(gimplify_omp_task): Handle taskwait with depend clauses.
+	(gimplify_omp_for): Add shared clause on parallel for combined
+	parallel master taskloop{, simd} if taskloop has firstprivate,
+	lastprivate or reduction clause.  Use ORT_TASKLOOP or
+	ORT_UNTIED_TASKLOOP instead of ORT_TASK or ORT_UNTIED_TASK.  Adjust
+	tests for ORT_COMBINED_TEAMS.  Handle C++ range for loops with
+	NULL TREE_PURPOSE in OMP_FOR_ORIG_DECLS.  Firstprivatize
+	__for_end and __for_range temporaries on OMP_PARALLEL for
+	distribute parallel for{, simd}.  Move OMP_CLAUSE_REDUCTION
+	and OMP_CLAUSE_IN_REDUCTION from taskloop to the task construct
+	sandwiched in between two taskloops.
+	(computable_teams_clause): Test ctx->defaultmap[GDMK_SCALAR]
+	instead of ctx->omp_firstprivatize_variable.
+	(gimplify_omp_workshare): Set ort to ORT_HOST_TEAMS or
+	ORT_COMBINED_HOST_TEAMS if not inside of target construct.  If
+	host teams, use gimplify_and_return_first etc. for body like
+	for target or target data constructs, and at the end call
+	gimple_omp_teams_set_host on the GIMPLE_OMP_TEAMS object.
+	(gimplify_omp_atomic): Use OMP_ATOMIC_MEMORY_ORDER instead
+	of OMP_ATOMIC_SEQ_CST, pass it as new argument to
+	gimple_build_omp_atomic_load and gimple_build_omp_atomic_store, remove
+	gimple_omp_atomic_set_seq_cst calls.
+	(gimplify_expr) <case OMP_TASKGROUP>: Move handling into a separate
+	case, handle taskgroup clauses.
+	* lto-streamer-out.c (hash_tree): Handle
+	OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	* Makefile.in (GTFILES): Add omp-general.h.
+	* omp-builtins.def (BUILT_IN_GOMP_TASKWAIT_DEPEND,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_START, BUILT_IN_GOMP_LOOP_ORDERED_START,
+	BUILT_IN_GOMP_LOOP_DOACROSS_START,
+	BUILT_IN_GOMP_LOOP_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_MAYBE_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_MAYBE_NONMONOTONIC_RUNTIME_START,
+	BUILT_IN_GOMP_LOOP_ULL_START, BUILT_IN_GOMP_LOOP_ULL_ORDERED_START,
+	BUILT_IN_GOMP_LOOP_ULL_DOACROSS_START,
+	BUILT_IN_GOMP_LOOP_ULL_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_LOOP_ULL_MAYBE_NONMONOTONIC_RUNTIME_NEXT,
+	BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_RUNTIME,
+	BUILT_IN_GOMP_PARALLEL_LOOP_MAYBE_NONMONOTONIC_RUNTIME,
+	BUILT_IN_GOMP_PARALLEL_REDUCTIONS, BUILT_IN_GOMP_SECTIONS2_START,
+	BUILT_IN_GOMP_TEAMS_REG, BUILT_IN_GOMP_TASKGROUP_REDUCTION_REGISTER,
+	BUILT_IN_GOMP_TASKGROUP_REDUCTION_UNREGISTER,
+	BUILT_IN_GOMP_TASK_REDUCTION_REMAP,
+	BUILT_IN_GOMP_WORKSHARE_TASK_REDUCTION_UNREGISTER): New builtins.
+	* omp-expand.c (workshare_safe_to_combine_p): Return false for
+	non-worksharing loops.
+	(omp_adjust_chunk_size): Don't adjust anything if chunk_size is zero.
+	(determine_parallel_type): Don't combine parallel with worksharing
+	which has _reductemp_ clause.
+	(expand_parallel_call): Emit the GOMP_*nonmonotonic_runtime* or
+	GOMP_*maybe_nonmonotonic_runtime* builtins instead of GOMP_*runtime*
+	if there is nonmonotonic modifier or if there is no modifier and no
+	ordered clause.  For dynamic and guided schedule without monotonic
+	and nonmonotonic modifier, default to nonmonotonic.
+	(expand_omp_for): Likewise.  Adjust expand_omp_for_generic caller, use
+	GOMP_loop{,_ull}{,_ordered,_doacross}_start builtins if there are
+	task reductions.
+	(expand_task_call): Add GOMP_TASK_FLAG_REDUCTION flag to flags if
+	there are any reduction clauses.
+	(expand_taskwait_call): New function.
+	(expand_teams_call): New function.
+	(expand_omp_taskreg): Allow GIMPLE_OMP_TEAMS and call
+	expand_teams_call for it.  Formatting fix.  Handle taskwait with
+	depend clauses.
+	(expand_omp_for_generic): Add SCHED_ARG argument.  Handle expansion
+	of worksharing loops with task reductions.
+	(expand_omp_for_static_nochunk, expand_omp_for_static_chunk): Handle
+	expansion of worksharing loops with task reductions.
+	(expand_omp_sections): Handle expansion of sections with task
+	reductions.
+	(expand_omp_synch): For host teams call expand_omp_taskreg.
+	(omp_memory_order_to_memmodel): New function.
+	(expand_omp_atomic_load, expand_omp_atomic_store,
+	expand_omp_atomic_fetch_op): Use it and gimple_omp_atomic_memory_order
+	instead of gimple_omp_atomic_seq_cst_p.
+	(build_omp_regions_1, omp_make_gimple_edges): Treat taskwait with
+	depend clauses as a standalone directive.
+	* omp-general.c (enum omp_requires): New variable.
+	(omp_extract_for_data): Initialize have_reductemp member.  Allow
+	NE_EXPR even in OpenMP loops, transform them into LT_EXPR or
+	GT_EXPR loops depending on incr sign.  Formatting fixes.
+	* omp-general.h (struct omp_for_data): Add have_reductemp member.
+	(enum omp_requires): New enum.
+	(omp_requires_mask): Declare.
+	* omp-grid.c (grid_eliminate_combined_simd_part): Formatting fix.
+	Fix comment typos.
+	* omp-low.c (struct omp_context): Add task_reductions and
+	task_reduction_map fields.
+	(is_host_teams_ctx): New function.
+	(is_taskreg_ctx): Return true also if is_host_teams_ctx.
+	(use_pointer_for_field): Use is_global_var instead of
+	TREE_STATIC || DECL_EXTERNAL, and apply only if not privatized
+	in outer contexts.
+	(build_outer_var_ref): Ignore taskgroup outer contexts.
+	(delete_omp_context): Release task_reductions and task_reduction_map.
+	(scan_sharing_clauses): Don't add any fields for reduction clause on
+	taskloop.  Handle OMP_CLAUSE__REDUCTEMP_.  Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION and OMP_CLAUSE_REDUCTION with task
+	modifier.  Don't ignore shared clauses in is_host_teams_ctx contexts.
+	Handle OMP_CLAUSE_NONTEMPORAL.
+	(add_taskreg_looptemp_clauses): Add OMP_CLAUSE__REDUCTEMP_ clause if
+	needed.
+	(scan_omp_parallel): Add _reductemp_ clause if there are any reduction
+	clauses with task modifier.
+	(scan_omp_task): Handle taskwait with depend clauses.
+	(finish_taskreg_scan): Move field corresponding to _reductemp_ clause
+	first.  Move also OMP_CLAUSE__REDUCTEMP_ clause in front if present.
+	Handle GIMPLE_OMP_TEAMS like GIMPLE_OMP_PARALLEL.
+	(scan_omp_for): Fix comment formatting.
+	(scan_omp_teams): Handle host teams constructs.
+	(check_omp_nesting_restrictions): Allow teams with no outer
+	OpenMP context.  Adjust diagnostics for teams strictly nested into
+	some explicit OpenMP construct other than target.  Allow OpenMP atomics
+	inside of simd regions.
+	(scan_omp_1_stmt): Call scan_sharing_clauses for taskgroups.
+	(scan_omp_1_stmt) <case GIMPLE_OMP_TEAMS>: Temporarily bump
+	taskreg_nesting_level while scanning host teams construct.
+	(task_reduction_read): New function.
+	(lower_rec_input_clauses): Handle OMP_CLAUSE_REDUCTION on taskloop
+	construct.  Handle OMP_CLAUSE_IN_REDUCTION and OMP_CLAUSE__REDUCTEMP_
+	clauses.  Handle OMP_CLAUSE_REDUCTION with task modifier.  Remove
+	second argument create_tmp_var if it is NULL.  Don't ignore shared
+	clauses in is_host_teams_ctx contexts.  Handle
+	OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE on OMP_CLAUSE_FIRSTPRIVATE
+	clauses.
+	(lower_reduction_clauses): Ignore reduction clauses with task
+	modifier.  Remove second argument create_tmp_var if it is NULL.
+	Initialize OMP_ATOMIC_MEMORY_ORDER to relaxed.
+	(lower_send_clauses): Ignore reduction clauses with task modifier.
+	Handle OMP_CLAUSE__REDUCTEMP_.  Don't send anything for
+	OMP_CLAUSE_REDUCTION on taskloop.  Handle OMP_CLAUSE_IN_REDUCTION.
+	(maybe_add_implicit_barrier_cancel): Add OMP_RETURN argument, don't
+	rely that it is the last stmt in body so far.  Ignore outer taskgroup
+	contexts.
+	(omp_task_reductions_find_first, omp_task_reduction_iterate,
+	lower_omp_task_reductions): New functions.
+	(lower_omp_sections): Handle reduction clauses with taskgroup
+	modifiers.  Adjust maybe_add_implicit_barrier_cancel caller.
+	(lower_omp_single): Adjust maybe_add_implicit_barrier_cancel caller.
+	(lower_omp_for): Likewise.  Handle reduction clauses with taskgroup
+	modifiers.
+	(lower_omp_taskgroup): Handle taskgroup reductions.
+	(create_task_copyfn): Copy over OMP_CLAUSE__REDUCTEMP_ pointer.
+	Handle OMP_CLAUSE_IN_REDUCTION and OMP_CLAUSE_REDUCTION clauses.
+	(lower_depend_clauses): If there are any
+	OMP_CLAUSE_DEPEND_DEPOBJ or OMP_CLAUSE_DEPEND_MUTEXINOUTSET
+	depend clauses, use a new array format.  If OMP_CLAUSE_DEPEND_LAST is
+	seen, assume lowering is done already and return early.  Set kind
+	on artificial depend clause to OMP_CLAUSE_DEPEND_LAST.
+	(lower_omp_taskreg): Handle reduction clauses with task modifier on
+	parallel construct.  Handle reduction clause on taskloop construct.
+	Handle taskwait with depend clauses.
+	(lower_omp_1): Use lower_omp_taskreg instead of lower_omp_teams
+	for host teams constructs.
+	* tree.c (omp_clause_num_ops): Add in_reduction, task_reduction,
+	nontemporal and _reductemp_ clause entries.
+	(omp_clause_code_name): Likewise.
+	(walk_tree_1): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION,
+	OMP_CLAUSE_NONTEMPORAL and OMP_CLAUSE__REDUCTEMP_.
+	* tree-core.h (enum omp_clause_code): Add
+	OMP_CLAUSE_{{IN,TASK}_REDUCTION,NONTEMPORAL,_REDUCTEMP_}.
+	(enum omp_clause_defaultmap_kind, enum omp_memory_order): New.
+	(struct tree_base): Add omp_atomic_memory_order field into union.
+	Remove OMP_ATOMIC_SEQ_CST comment.
+	(enum omp_clause_depend_kind): Add OMP_CLAUSE_DEPEND_MUTEXINOUTSET
+	and OMP_CLAUSE_DEPEND_DEPOBJ.
+	(struct tree_omp_clause): Add subcode.defaultmap_kind.
+	* tree.def (OMP_TASKGROUP): Add another operand, move next to other
+	OpenMP constructs with body and clauses operands.
+	* tree.h (OMP_BODY): Use OMP_MASTER instead of OMP_TASKGROUP.
+	(OMP_CLAUSES): Use OMP_TASKGROUP instead of OMP_SINGLE.
+	(OMP_TASKGROUP_CLAUSES): Define.
+	(OMP_CLAUSE_DECL): Use OMP_CLAUSE__REDUCTEMP_ instead of
+	OMP_CLAUSE__LOOPTEMP_.
+	(OMP_ATOMIC_SEQ_CST): Remove.
+	(OMP_ATOMIC_MEMORY_ORDER, OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE,
+	OMP_CLAUSE_LASTPRIVATE_CONDITIONAL): Define.
+	(OMP_CLAUSE_REDUCTION_CODE, OMP_CLAUSE_REDUCTION_INIT,
+	OMP_CLAUSE_REDUCTION_MERGE, OMP_CLAUSE_REDUCTION_PLACEHOLDER,
+	OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER,
+	OMP_CLAUSE_REDUCTION_OMP_ORIG_REF): Handle
+	OMP_CLAUSE_{,IN_,TASK_}REDUCTION.
+	(OMP_CLAUSE_REDUCTION_TASK, OMP_CLAUSE_REDUCTION_INSCAN,
+	OMP_CLAUSE_DEFAULTMAP_KIND, OMP_CLAUSE_DEFAULTMAP_CATEGORY,
+	OMP_CLAUSE_DEFAULTMAP_BEHAVIOR, OMP_CLAUSE_DEFAULTMAP_SET_KIND):
+	Define.
+	* tree-inline.c (remap_gimple_stmt): Remap taskgroup clauses.
+	* tree-nested.c (convert_nonlocal_omp_clauses): Handle
+	OMP_CLAUSE__REDUCTEMP_, OMP_CLAUSE_NONTEMPORAL.
+	(convert_local_omp_clauses): Likewise.  Remove useless test.
+	* tree-parloops.c (create_call_for_reduction_1): Pass
+	OMP_MEMORY_ORDER_RELAXED as new argument to
+	dump_gimple_omp_atomic_load and dump_gimple_omp_atomic_store.
+	* tree-pretty-print.c (dump_omp_iterators): New function.
+	(dump_omp_clause): Handle OMP_CLAUSE__REDUCTEMP_,
+	OMP_CLAUSE_NONTEMPORAL, OMP_CLAUSE_{TASK,IN}_REDUCTION.  Print
+	reduction modifiers.  Handle OMP_CLAUSE_DEPEND_DEPOBJ and
+	OMP_CLAUSE_DEPEND_MUTEXINOUTSET.  Print iterators in depend clauses.
+	Print __internal__ for OMP_CLAUSE_DEPEND_LAST.  Handle cancel and
+	simd OMP_CLAUSE_IF_MODIFIERs.  Handle new kinds of
+	OMP_CLAUSE_DEFAULTMAP. Print conditional: for
+	OMP_CLAUSE_LASTPRIVATE_CONDITIONAL.
+	(dump_omp_atomic_memory_order): New function.
+	(dump_generic_node): Use it.  Print taskgroup clauses.  Print
+	taskwait with depend clauses.
+	* tree-pretty-print.h (dump_omp_atomic_memory_order): Declare.
+	* tree-streamer-in.c (unpack_ts_omp_clause_value_fields):
+	Handle OMP_CLAUSE_{TASK,IN}_REDUCTION.
+	* tree-streamer-out.c (pack_ts_omp_clause_value_fields,
+	write_ts_omp_clause_tree_pointers): Likewise.
+
 2018-11-08  David Malcolm  <dmalcolm@redhat.com>
 
 	PR ipa/86395

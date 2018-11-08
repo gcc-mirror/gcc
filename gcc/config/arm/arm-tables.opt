@@ -34,15 +34,6 @@ EnumValue
 Enum(processor_type) String(strongarm) Value( TARGET_CPU_strongarm)
 
 EnumValue
-Enum(processor_type) String(strongarm110) Value( TARGET_CPU_strongarm110)
-
-EnumValue
-Enum(processor_type) String(strongarm1100) Value( TARGET_CPU_strongarm1100)
-
-EnumValue
-Enum(processor_type) String(strongarm1110) Value( TARGET_CPU_strongarm1110)
-
-EnumValue
 Enum(processor_type) String(fa526) Value( TARGET_CPU_fa526)
 
 EnumValue

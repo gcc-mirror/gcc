@@ -617,6 +617,7 @@ end arch iwmmxt2
 # format:
 # begin cpu <name>
 #   [cname <c-compatible-name>]
+#   [alias <name>+]
 #   [tune for <cpu-name>]
 #   [tune flags <list>]
 #   architecture <name>
@@ -630,6 +631,9 @@ end arch iwmmxt2
 #
 # If omitted, cname is formed from transforming the cpuname to convert
 # non-valid punctuation characters to '_'.
+# Any number of alias names may be specified for a CPU.  If the name starts
+# with a '!' then it will be recognized as a valid name, but will not
+# be printed in any help text listing permitted CPUs.
 # If specified, tune for specifies a CPU target to use for tuning this core.
 # isa flags are appended to those defined by the architecture.
 # Each add option must have a distinct feature set and each remove
@@ -658,28 +662,11 @@ begin cpu arm810
 end cpu arm810
 
 begin cpu strongarm
+ alias strongarm110 !strongarm1100 !strongarm1110
  tune flags LDSCHED STRONG
  architecture armv4
  costs strongarm
 end cpu strongarm
-
-begin cpu strongarm110
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm110
-
-begin cpu strongarm1100
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm1100
-
-begin cpu strongarm1110
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm1110
 
 begin cpu fa526
  tune flags LDSCHED

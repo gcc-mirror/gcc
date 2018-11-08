@@ -14115,7 +14115,7 @@ information on callsites that were inlined, along with callsites
 that were not inlined.
 
 By default, the dump will contain messages about successful
-optimizations (equivalent to @option {-optimized}) together with
+optimizations (equivalent to @option{-optimized}) together with
 low-level details about the analysis.
 
 @item -fdump-lang-all
