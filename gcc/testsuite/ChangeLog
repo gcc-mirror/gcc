@@ -1,3 +1,8 @@
+2018-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr87874.c (em): Declare uint64_max as
+	const unsigned long long int.
+
 2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.dg/attr-alloc_size-10.c: Fix calculation of USHRT_MAX to prevent
@@ -24,7 +29,7 @@
 
 2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* lib/gcc-dg.exp (gcc-dg-prune): Add new regexps for when the size of 
+	* lib/gcc-dg.exp (gcc-dg-prune): Add new regexps for when the size of
 	an output section is too large for a memory region, or a memory
 	region overflows.
 
