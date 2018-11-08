@@ -1,3 +1,17 @@
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c: Include "selftest.h".
+	(saved_symtab): New variable.
+	(selftest::symbol_table_test::symbol_table_test): New ctor.
+	(selftest::symbol_table_test::~symbol_table_test): New dtor.
+	(selftest::test_symbol_table_test): New test.
+	(selftest::cgraph_c_tests): New.
+	* cgraph.h (saved_symtab): New decl.
+	(selftest::symbol_table_test): New class.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::cgraph_c_tests.
+	* selftest.h (selftest::cgraph_c_tests): New decl.
+
 2018-11-08  Richard Biener  <rguenther@suse.de>
 
 	* tree-data-ref.h (lambda_int): New typedef.
