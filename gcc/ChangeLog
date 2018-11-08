@@ -1,3 +1,77 @@
+2018-11-08  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/constraints.md: Add "Z" series constraints for use
+	with pre-dec and post-inc addressing.
+	* config/pdp11/pdp11-protos.m (expand_block_move): Delete.
+	(pdp11_expand_operands): Add int argument (word count).
+	(pdp11_sp_frame_offset): Delete.
+	(pdp11_cmp_length): New function.
+	(pushpop_regeq): New function.
+	* config/pdp11/pdp11.c (TARGET_STACK_PROTECT_RUNTIME_ENABLED_P):
+	Add hook.
+	(pdp11_expand_prologue, pdp11_expand_epilogue): Rewrite for new
+	frame layout.
+	(pdp11_initial_elimination_offset): Ditto.
+	(pdp11_expand_operands): Add word count argument.  Bugfixes.
+	(output_move_multiple): Change how pointer adjustment is done.
+	(pdp11_gen_int_label): Correct format.
+	(output_ascii): Ditto.
+	(pdp11_asm_output_var): Add code for DEC assembler case.
+	(pdp11_asm_print_operand): Bugfix for CONST_DOUBLE holding integer
+	value.
+	(legitimate_const_double_p): Ditto.
+	(pdp11_register_move_cost): Adjust for new register classes.
+	(pdp11_regno_reg_class): Ditto.
+	(expand_block_move): Delete.
+	(pushpop_regeq): New function.
+	(pdp11_legitimate_address_p): Bugfix in check for constant
+	offset.
+	(pdp11_sp_frame_offset): Delete.
+	(pdp11_reg_save_size): New helper function for new frame layout.
+	(output_addr_const_pdp11): Remove CONST_DOUBLE case.
+	(pdp11_expand_shift): Bugfix in check for constant shift count.
+	(pdp11_shift_length): Ditto.
+	(pdp11_assemble_shift): Copy input to pdp11_expand_operands.
+	(pdp11_cmp_length): New function.
+	* config/pdp11/pdp11.h (TARGET_CPU_CPP_BUILTINS): Add macros for
+	some compile options.
+	(FIXED_REGISTERS): Remove HARD_FRAME_POINTER_REGNUM.
+	(CALL_USED_REGISTERS): Ditto.
+	(ELIMINABLE_REGS): Ditto.
+	(REGISTER_NAMES): Ditto.
+	(reg_class): Add classes NOTR0_REG through NOTSP_REG for use by Z
+	constraints.
+	(REG_CLASS_NAMES): Ditto.
+	(REG_CLASS_CONTENTS): Ditto.  Also remove
+	HARD_FRAME_POINTER_REGNUM.
+	(CPU_REG_CLASS): New macro.
+	(CLASS_MAX_NREGS): Adjust for new register classes.
+	(FUNCTION_PROFILER): Make no-op.
+	(may_call_alloca): Remove unused declaration.
+	(ASM_OUTPUT_ALIGN): Add workaround for PR87795.
+	(ASM_OUTPUT_SKIP): Fix format.
+	* config/pdp11/pdp11.md (unspecv): Add UNSPECV_MOVMEM.
+	(HARD_FRAME_POINTER_REGNUM): Remove.
+	(return): Delete.
+	(*rts): Rename.  Remove epilogue related checks.
+	(cmpsi, cmpdi): New insn.
+	(cbranch<mode>4): Change to apply to SI and DI modes as well.
+	(mov<mode>): Change constraints to enforce that push/pop
+	destination cannot use the same register as source.
+	(*mov<mode><cc_cc>): Ditto.
+	(movmemhi, movmemhi1, movmemhi_nocc): Change to expand block move
+	at assembly output rather than as RTL expander.
+	(zero_extendqihi2): Bugfix in check for same registers.
+	(adddi3_nocc): Bugfix in check for constant operand.
+	(addsi3_nocc): Ditto.
+	(subdi3_nocc): Ditto.
+	(subsi3_nocc): Ditto.
+	(negdi2_nocc): Copy input to pdp11_expand_operands.
+	(negsi2_nocc): Ditto.
+	(bswap2_nocc): Ditto.
+	* config/pdp11/pdp11.opt (mlra): Fix documentation.
+	* config/pdp11/t-pdp11: Use -Os.
+
 2018-11-08  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (/alias/): New parsing rule.

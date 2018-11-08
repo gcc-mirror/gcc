@@ -18,6 +18,10 @@
 
 MULTILIB_OPTIONS = msoft-float
 
+# Optimize for space
+LIBGCC2_CFLAGS = -Os
+CRTSTUFF_T_CFLAGS = -Os
+
 # Because the pdp11 POINTER_SIZE is only 16, in dwarf2out.c,
 # DWARF_ARANGES_PAD_SIZE is 0, thus a loop in output_aranges that checks
 # (i < (unsigned) DWARF_ARANGES_PAD_SIZE) elicits a warning that the
