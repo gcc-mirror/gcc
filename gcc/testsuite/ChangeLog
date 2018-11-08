@@ -1,3 +1,9 @@
+2018-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr87906_0.C: Use moon instead of possibly predefined
+	sun.
+	* g++.dg/lto/pr87906_1.C: Likewise.
+
 2018-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87913
