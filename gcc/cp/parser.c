@@ -4634,64 +4634,55 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	  continue;
 	}
 
-      bool exporting = token->keyword == RID_EXPORT;
-      cp_token *next
-	= exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
-
-      if (next->type != CPP_NAME)
-	goto is_other;
-
-      if (flag_modules)
+      if (modules_p ())
 	{
-	  if (C_RID_CODE (next->u.value) == RID_MODULE
-	      && !cp_lexer_nth_token_is (parser->lexer,
-					 exporting ? 3 : 2, CPP_SCOPE))
-	    goto is_module;
-
-	  if (C_RID_CODE (next->u.value) == RID_IMPORT
-	      && !cp_lexer_nth_token_is (parser->lexer,
-					 exporting ? 3 : 2, CPP_SCOPE))
-	    goto is_import;
+	  bool exporting = token->keyword == RID_EXPORT;
+	  cp_token *next
+	    = exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
+	  cp_token *after = next->type == CPP_NAME
+	    ? cp_lexer_peek_nth_token (parser->lexer, exporting + 2) : NULL;
+	  if (!after || after->type == CPP_SCOPE)
+	    ;
+	  else if (C_RID_CODE (next->u.value) == RID_MODULE)
+	    {
+	      if (!exporting && first
+		  && after->type == CPP_SEMICOLON)
+		{
+		  cp_lexer_consume_token (parser->lexer); /* module */
+		  cp_lexer_consume_token (parser->lexer); /* ; */
+		}
+	      else
+		{
+		  if (deferred_imports)
+		    /* The GMF may have deferred imports.  Do them before
+		       we become a module.  */
+		    process_deferred_imports (parse_in);
+		  if (exporting)
+		    cp_lexer_consume_token (parser->lexer);
+		  cp_parser_module_declaration (parser, exporting);
+		  preamble = +1; /* In preamble.  */
+		}
+	      deferred_imports = true;
+	      first = false;
+	      continue;
+	    }
+	  else if (C_RID_CODE (next->u.value) == RID_IMPORT)
+	    {
+	      if (first)
+		module_purview = -1;
+	      first = false;
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_import_declaration (parser, exporting, preamble < 0);
+	      
+	      if (next == imp_tok)
+		/* This was a macro-affecting import.  */
+		break;
+	      deferred_imports = true;
+	      continue;
+	    }
 	}
-      goto is_other;
 
-    is_module:
-      if (!exporting && first
-	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
-	{
-	  cp_lexer_consume_token (parser->lexer); /* module */
-	  cp_lexer_consume_token (parser->lexer); /* ; */
-	}
-      else
-	{
-	  if (deferred_imports)
-	    /* The GMF may have deferred imports.  Do them before
-	       we become a module.  */
-	    process_deferred_imports (parse_in);
-	  if (exporting)
-	    cp_lexer_consume_token (parser->lexer);
-	  cp_parser_module_declaration (parser, exporting);
-	  preamble = +1; /* In preamble.  */
-	}
-      deferred_imports = true;
-      first = false;
-      continue;
-          
-    is_import:
-      if (first)
-	module_purview = -1;
-      first = false;
-      if (exporting)
-	cp_lexer_consume_token (parser->lexer);
-      cp_parser_import_declaration (parser, exporting, preamble < 0);
-
-      if (next == imp_tok)
-	/* This was a macro-affecting import.  */
-	break;
-      deferred_imports = true;
-      continue;
-
-    is_other:
       if (first)
 	module_purview = -1;
       first = false;

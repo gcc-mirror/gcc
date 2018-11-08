@@ -1,5 +1,8 @@
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* parser.c (cp_parser_translation_unit): Refactor.
+
 	Implement d0924r1 (to be written).
 	gcc/cp/
 	* lex.c (init_reswords): Set D_CXX_MODULES mask.
