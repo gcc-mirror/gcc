@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -finline-small-functions --param early-inlining-insns=0 -fdump-tree-einline" } */
+/* { dg-options "-O -finline-small-functions --param early-inlining-insns=0 -fdump-tree-einline-optimized" } */
 
 int foo0();
 void bar0() { foo0(); }

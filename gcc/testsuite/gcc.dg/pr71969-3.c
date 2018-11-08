@@ -35,4 +35,4 @@ main ()
 }
 
 /* { dg-final { scan-tree-dump-times "will not early inline" 8 "einline" } } */
-/* { dg-final { scan-tree-dump-times "Inlining foo into main" 4 "einline" } } */
+/* { dg-final { scan-tree-dump-times "Inlining foo/\[0-9\]* into main/\[0-9\]*" 4 "einline" } } */

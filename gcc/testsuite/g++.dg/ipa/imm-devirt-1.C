@@ -1,7 +1,7 @@
 /* Verify that virtual calls are folded even early inlining puts them into one
    function with the definition.  */
 /* { dg-do run } */
-/* { dg-options "-O2 -fdump-tree-einline"  } */
+/* { dg-options "-O2 -fdump-tree-einline-optimized"  } */
 
 extern "C" void abort (void);
 
