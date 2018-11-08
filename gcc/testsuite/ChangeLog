@@ -1,3 +1,8 @@
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* gcc.dg/pr87929.c: New testcase.
+
 2018-11-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/pr87811.c: Update scanned pattern.

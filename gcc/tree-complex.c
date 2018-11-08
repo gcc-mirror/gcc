@@ -1558,6 +1558,8 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
     }
 
   update_stmt (stmt);
+  if (maybe_clean_eh_stmt (stmt))
+    gimple_purge_dead_eh_edges (gimple_bb (stmt));
 }
 
 /* Expand inline asm that sets some complex SSA_NAMEs.  */
