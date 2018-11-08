@@ -1579,10 +1579,6 @@ fmodule-lazy
 C++ ObjC++ Var(flag_module_lazy) Init(1)
 Enable lazy module importing.
 
-fmodule-keywords
-C++ ObjC++ Var(flag_module_keywords) Init(1)
-Enable 'module' and 'import' as keywords.
-
 fforce-module-macros
 C++ ObjC++ RejectNegative Var(flag_module_macros) Init(0)
 Ensure all imported macros are loaded.

@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fno-module-keywords" }
+// { dg-additional-options "-fmodules-ts" }
 
 import bob;
 

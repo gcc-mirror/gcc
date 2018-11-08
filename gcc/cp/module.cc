@@ -11043,7 +11043,6 @@ module_state_config::get_opts ()
 
       /* Drop module-related options we don't need to preserve.  */
       if (opt->opt_index == OPT_fmodule_lazy
-	  || opt->opt_index == OPT_fmodule_keywords
 	  || opt->opt_index == OPT_fmodule_legacy_
 	  || opt->opt_index == OPT_fmodule_legacy
 	  || opt->opt_index == OPT_fforce_module_macros
@@ -12179,7 +12178,16 @@ declare_module (module_state *state, location_t from_loc, bool exporting_p,
 		tree, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ());
-  gcc_assert (module_gmf_p ());
+
+  if (module_purview_p ())
+    {
+      error_at (from_loc, "module purview already started");
+      inform ((*modules)[MODULE_PURVIEW]->from_loc, "module declared here");
+      return;
+    }
+
+  if (!module_gmf_p ())
+    error_at (from_loc, "global module fragment not present");
 
   from_loc = ordinary_loc_of (line_table, from_loc);
   gcc_assert (!(*modules)[MODULE_PURVIEW]);

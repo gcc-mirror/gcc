@@ -233,8 +233,7 @@ init_reswords (void)
     mask |= D_CXX_CONCEPTS;
   if (!flag_coroutines)
     mask |= D_CXX_COROUTINES;
-  if (!flag_modules || !flag_module_keywords)
-    mask |= D_CXX_MODULES;
+  mask |= D_CXX_MODULES;
   if (!flag_tm)
     mask |= D_TRANSMEM;
   if (flag_no_asm)

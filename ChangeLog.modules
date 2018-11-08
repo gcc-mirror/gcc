@@ -1,5 +1,23 @@
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
+	Implement d0924r1 (to be written).
+	gcc/cp/
+	* lex.c (init_reswords): Set D_CXX_MODULES mask.
+	* module.cc (declare_module): Check purview state.
+	* parser.c (cp_parser_translation_unit): Module and import are
+	always conditional.
+	(cp_parser_tokenize): Likewise.
+	gcc/
+	* doc/invoke.texi (fno-module-keywords): Delete.
+	gcc/c-family/
+	* c-common.c (c_common_reswords): Don't mark import, module for CXXWARN.
+	* c.opt (fmodule-keywords): Delete.
+	gcc/testsuite/
+	* g++.dg/modules/atom-decl-1.C: Delete.
+	* g++.dg/modules/keyword-1_[ab].C: Adjust.
+	g++.dg/modules/mod-decl-[13].C: Adjust.
+	g++.dg/modules/p0713-3.C: Adjust.
+
 	gcc/cp/
 	* cp-tree.h (module_gmf_p): Adjust.
 	(not_module_p): New.

@@ -4594,9 +4594,11 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 
   bool implicit_extern_c = false;
   bool first = modules_p ();
-  bool gmf = false; /* Global Module Fragment.  */
   int preamble = 0; /* Not seen a preamble.  */
   bool deferred_imports = false;
+
+  if (!first)
+    module_purview = -1;
 
   /* Tell the tokenizer there are no tokens to copy.  */
   parser->lexer->last_token = NULL;
@@ -4636,16 +4638,10 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       cp_token *next
 	= exporting ? cp_lexer_peek_nth_token (parser->lexer, 2) : token;
 
-      if (next->keyword == RID_MODULE)
-	goto is_module;
-
-      if (next->keyword == RID_IMPORT)
-	goto is_import;
-
       if (next->type != CPP_NAME)
 	goto is_other;
 
-      if (flag_modules && !flag_module_keywords)
+      if (flag_modules)
 	{
 	  if (C_RID_CODE (next->u.value) == RID_MODULE
 	      && !cp_lexer_nth_token_is (parser->lexer,
@@ -4660,15 +4656,11 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       goto is_other;
 
     is_module:
-      if (!first && !gmf)
-	goto is_other;
-
-      if (!exporting && !gmf
+      if (!exporting && first
 	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_SEMICOLON))
 	{
 	  cp_lexer_consume_token (parser->lexer); /* module */
 	  cp_lexer_consume_token (parser->lexer); /* ; */
-	  gmf = true;
 	}
       else
 	{
@@ -4680,20 +4672,19 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    cp_lexer_consume_token (parser->lexer);
 	  cp_parser_module_declaration (parser, exporting);
 	  preamble = +1; /* In preamble.  */
-	  gmf = false;
 	}
       deferred_imports = true;
       first = false;
       continue;
           
     is_import:
+      if (first)
+	module_purview = -1;
+      first = false;
       if (exporting)
 	cp_lexer_consume_token (parser->lexer);
       cp_parser_import_declaration (parser, exporting, preamble < 0);
 
-      if (first)
-	module_purview = -1;
-      first = false;
       if (next == imp_tok)
 	/* This was a macro-affecting import.  */
 	break;
@@ -4704,6 +4695,8 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
       if (first)
 	module_purview = -1;
       first = false;
+      if (preamble > 0)
+	preamble = -1;
       if (token->type == CPP_CLOSE_BRACE)
 	{
 	  cp_parser_error (parser, "expected declaration");
@@ -4721,10 +4714,7 @@ cp_parser_translation_unit (cp_parser* parser, cp_token *tok)
 	    }
 	  cp_parser_toplevel_declaration (parser);
 	}
-      if (preamble > 0)
-	preamble = -1;
     }
-
 
   if (imp_tok)
     {
@@ -39449,9 +39439,8 @@ cp_parser_tokenize (cp_parser *parser, cp_token *tok)
 	}
       else if (tok->keyword == RID_EXPORT)
 	;
-      else if (tok->keyword == RID_IMPORT
-	       || (!in_decl && !depth && tok->type == CPP_NAME && flag_modules
-		   && C_RID_CODE (tok->u.value) == RID_IMPORT))
+      else if (!in_decl && !depth && tok->type == CPP_NAME && flag_modules
+	       && C_RID_CODE (tok->u.value) == RID_IMPORT)
 	{
 	  cpp_enable_filename_token (parse_in, true);
 	  cp_lexer_get_preprocessor_token (C_LEX_STRING_NO_JOIN

@@ -2578,15 +2578,6 @@ Enable experimental support for n4720:``Working Draft, Extensions to
 C++ for Modules'' via p1103r1 ``Merging Modules'' The @option{-fno-modules} is
 usually not needed, as that is the default.  For now.
 
-@item -fno-module-keywords
-@opindex fno-module-keywords
-Disable @code{module} and @code{import} as keywords, thus allowing
-them to be used as identifiers even when @option{-fmodules-ts} is in
-effect.  At the outermost scope, at the start of a declaration (after
-an optional @code{export}) and provided they are not followed by
-@code{::}, they are treated as keywords.  Otherwise they are regular
-identifiers.  This is a non-standard extension.
-
 @item -fno-module-lazy
 @opindex fno-module-lazy
 @opindex fmodule-lazy
@@ -29812,11 +29803,6 @@ particular namespace-scope name.
 The @option{-fmodule-legacy} family of options enable compilation of a
 header file as a legacy header module.  Using this option implies
 @option{-fmodules-ts}.
-
-As @code{module} and @code{import} are not-infrequently used as
-identifiers in existing codebases, making them unconditional keywords
-can present difficulties.  The @option{-fno-module-keywords} option
-may be used to make them context sensitive.
 
 The @option{-fmodule-only} disables generation of the associated
 object file for compiling a module interface.  Only the binary module

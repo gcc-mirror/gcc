@@ -6,24 +6,25 @@ export module frist;
 
 import frist; // { dg-error {cannot import module.* in its own purview} }
 
-module foo.second; // { dg-error "expected" }
+module foo.second; // { dg-error "already started" }
 
 namespace Foo 
 {
-  module third; // { dg-error "expected" }
+  module third; // { dg-error "does not name a type" }
 }
 
 struct Baz
 {
-  module forth;  // { dg-error "expected" }
+  module forth;  // { dg-error "does not name a type" }
 };
 
 void Bink ()
 {
-  module fifth;  // { dg-error "expected" }
+  module fifth;  // { dg-error "not declared" }
 }
 
 module a.; // { dg-error "expected" }
+// { dg-error "already started" "" { target *-*-* } .-1 }
 
 
 // { dg-warning "not exporting module" "" { target *-*-* } 0 }
