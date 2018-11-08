@@ -1,5 +1,10 @@
 2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR middle-end/42726
+	* doc/invoke.texi (Code Gen Options): Clarify -fno-common behavior.
+
+2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
 	* doc/invoke.texi: Remove leading dash from @opindex entries
 	throughout the file.
 
