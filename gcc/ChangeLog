@@ -1,3 +1,23 @@
+2018-11-08  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (/alias/): New parsing rule.
+	(/begin cpu/): Check that the cpu name hasn't been previously defined.
+	(gen_comm_data): Print out CPU alias tables.
+	(check_cpu): Match aliases when checking the CPU name.
+	* config/arm/arm-protos.h (cpu_alias): New structure.
+	(cpu_option): Add entry for aliases.
+	* config/arm/arm-cpus.in (strongarm): Add aliases for strongarm110
+	strongarm1100 and strongarm1110.
+	(strongarm110, strongarm1100, strongarm1110): Delete CPU entries.
+	(config/arm/arm-generic.md): Remove redundant references to
+	strongarm110, strongarm1100 and strongarm1110.
+	* common/config/arm/arm-common.c (arm_print_hint_for_cpu_option):
+	Scan aliases for additional hints.
+	(arm_parse_cpu_option_name): Also match a cpu name against the list
+	of aliases.
+	* config/arm/arm-tables.opt: Regenerated.
+	* config/arm/arm-tune.md: Regenerated.
+
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* builtin-types.def (BT_FN_VOID_BOOL, BT_FN_VOID_SIZE_SIZE_PTR,

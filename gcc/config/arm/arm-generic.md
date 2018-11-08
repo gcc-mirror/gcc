@@ -122,8 +122,7 @@
 (define_insn_reservation "mult_ldsched_strongarm" 3
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "tune"
-		  "strongarm,strongarm110,strongarm1100,strongarm1110")
+	    (and (eq_attr "tune" "strongarm")
 		 (ior (eq_attr "mul32" "yes")
 		      (eq_attr "mul64" "yes")))))
   "core*2")
@@ -131,8 +130,7 @@
 (define_insn_reservation "mult_ldsched" 4
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "tune"
-		  "!strongarm,strongarm110,strongarm1100,strongarm1110")
+	    (and (eq_attr "tune" "!strongarm")
 	         (ior (eq_attr "mul32" "yes")
 		      (eq_attr "mul64" "yes")))))
   "core*4")
