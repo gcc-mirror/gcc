@@ -977,6 +977,7 @@ pp_indent (pretty_printer *pp)
    %ld, %li, %lo, %lu, %lx: long versions of the above.
    %lld, %lli, %llo, %llu, %llx: long long versions.
    %wd, %wi, %wo, %wu, %wx: HOST_WIDE_INT versions.
+   %f: double
    %c: character.
    %s: string.
    %p: pointer (printed in a host-dependent manner).
@@ -1305,6 +1306,10 @@ pp_format (pretty_printer *pp, text_info *text)
 	  else
 	    pp_integer_with_precision
 	      (pp, *text->args_ptr, precision, unsigned, "u");
+	  break;
+
+	case 'f':
+	  pp_double (pp, va_arg (*text->args_ptr, double));
 	  break;
 
 	case 'Z':
@@ -2160,6 +2165,7 @@ test_pp_format ()
   ASSERT_PP_FORMAT_2 ("17 12345678", "%wo %x", (HOST_WIDE_INT)15, 0x12345678);
   ASSERT_PP_FORMAT_2 ("0xcafebabe 12345678", "%wx %x", (HOST_WIDE_INT)0xcafebabe,
 		      0x12345678);
+  ASSERT_PP_FORMAT_2 ("1.000000 12345678", "%f %x", 1.0, 0x12345678);
   ASSERT_PP_FORMAT_2 ("A 12345678", "%c %x", 'A', 0x12345678);
   ASSERT_PP_FORMAT_2 ("hello world 12345678", "%s %x", "hello world",
 		      0x12345678);

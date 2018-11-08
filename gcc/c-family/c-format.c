@@ -810,6 +810,9 @@ static const format_char_info gcc_dump_printf_char_table[] =
   /* T requires a "tree" at runtime.  */
   { "T",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
+  /* %f requires a "double"; it doesn't support modifiers.  */
+  { "f",   0, STD_C89, { T89_D,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
 
