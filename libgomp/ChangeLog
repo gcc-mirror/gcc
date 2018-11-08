@@ -1,5 +1,8 @@
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
+	* testsuite/libgomp.c-c++-common/task-reduction-8.c (bar): Add
+	in_reduction clause for s[0].
+
 	* affinity.c (gomp_display_affinity_place): New function.
 	* affinity-fmt.c: New file.
 	* alloc.c (gomp_aligned_alloc, gomp_aligned_free): New functions.
