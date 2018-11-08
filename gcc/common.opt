@@ -2732,6 +2732,10 @@ fuse-ld=gold
 Common Driver Negative(fuse-ld=bfd)
 Use the gold linker instead of the default linker.
 
+fuse-ld=lld
+Common Driver Negative(fuse-ld=lld)
+Use the lld LLVM linker instead of the default linker.
+
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)
 

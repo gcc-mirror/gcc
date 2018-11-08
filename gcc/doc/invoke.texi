@@ -12610,6 +12610,10 @@ Use the @command{bfd} linker instead of the default linker.
 @opindex fuse-ld=gold
 Use the @command{gold} linker instead of the default linker.
 
+@item -fuse-ld=lld
+@opindex fuse-ld=lld
+Use the LLVM @command{lld} linker instead of the default linker.
+
 @cindex Libraries
 @item -l@var{library}
 @itemx -l @var{library}
