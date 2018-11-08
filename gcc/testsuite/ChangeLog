@@ -1,3 +1,13 @@
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/null_pointer_deref1.adb: Remove -gnatp and add pragma.
+	* gnat.dg/null_pointer_deref2.adb: Likewise.
+	* gnat.dg/null_pointer_deref3.adb: Likewise.
+	* gnat.dg/opt74.adb: New test.
+	* gnat.dg/opt74_pkg.ad[sb]: New helper.
+	* gnat.dg/warn12.adb: Delete.
+	* gnat.dg/warn12_pkg.ads: Likewise.
+
 2018-11-03  Tobias Burnus  <burnus@net-b.de>
 	Thomas Koenig  <tkoenig@gcc.gnu.org>
 

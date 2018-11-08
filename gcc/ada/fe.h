@@ -177,6 +177,7 @@ extern Boolean In_Same_Source_Unit              (Node_Id, Node_Id);
 #define GNAT_Mode                      opt__gnat_mode
 #define List_Representation_Info       opt__list_representation_info
 #define No_Strict_Aliasing_CP          opt__no_strict_aliasing
+#define Suppress_Checks                opt__suppress_checks
 
 typedef enum {
   Front_End_SJLJ, Back_End_ZCX, Back_End_SJLJ
@@ -191,6 +192,7 @@ extern Boolean Generate_SCO_Instance_Table;
 extern Boolean GNAT_Mode;
 extern Int List_Representation_Info;
 extern Boolean No_Strict_Aliasing_CP;
+extern Boolean Suppress_Checks;
 
 #define ZCX_Exceptions            opt__zcx_exceptions
 #define SJLJ_Exceptions           opt__sjlj_exceptions
