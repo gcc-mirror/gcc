@@ -4,6 +4,15 @@
 	* doc/invoke.texi (Optimize Options): Clarify default behavior
 	for -fno-sched-interblock and -fno-sched-spec.
 
+2018-11-08  Roman Geissler  <roman.geissler@amadeus.com>
+
+	* collect2.c (linker_select):  Add USE_LLD_LD.
+	(ld_suffixes): Add ld.lld.
+	(main): Handle -fuse-ld=lld.
+	* common.opt (-fuse-ld=lld): New option.
+	* doc/invoke.texi (-fuse-ld=lld): Document.
+	* opts.c (common_handle_option): Handle OPT_fuse_ld_lld.
+	
 2018-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/constraints.md: Add "Z" series constraints for use
