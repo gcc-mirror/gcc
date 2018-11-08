@@ -748,6 +748,18 @@ dump_context::dump_generic_expr_loc (dump_flags_t dump_kind,
   dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
 
+/* Make an item for the given dump call.  */
+
+static optinfo_item *
+make_item_for_dump_symtab_node (symtab_node *node)
+{
+  location_t loc = DECL_SOURCE_LOCATION (node->decl);
+  optinfo_item *item
+    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
+			xstrdup (node->dump_name ()));
+  return item;
+}
+
 /* dump_pretty_printer's ctor.  */
 
 dump_pretty_printer::dump_pretty_printer (dump_context *context,
@@ -881,6 +893,8 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
    Supported format codes (in addition to the standard pretty_printer ones)
    are:
 
+   %C: cgraph_node *:
+       Equivalent to: dump_symtab_node (MSG_*, node)
    %E: gimple *:
        Equivalent to: dump_gimple_expr (MSG_*, TDF_SLIM, stmt, 0)
    %G: gimple *:
@@ -888,7 +902,9 @@ dump_pretty_printer::format_decoder_cb (pretty_printer *pp, text_info *text,
    %T: tree:
        Equivalent to: dump_generic_expr (MSG_*, arg, TDF_SLIM).
 
-   FIXME: add symtab_node?
+   TODO: add a format code that can handle (symtab_node*) *and* both
+   subclasses (presumably means teaching -Wformat about non-virtual
+   subclasses).
 
    These format codes build optinfo_item instances, thus capturing metadata
    about the arguments being dumped, as well as the textual output.  */
@@ -901,6 +917,16 @@ dump_pretty_printer::decode_format (text_info *text, const char *spec,
      for later use (to capture metadata, rather than plain text).  */
   switch (*spec)
     {
+    case 'C':
+      {
+	cgraph_node *node = va_arg (*text->args_ptr, cgraph_node *);
+
+	/* Make an item for the node, and stash it.  */
+	optinfo_item *item = make_item_for_dump_symtab_node (node);
+	stash_item (buffer_ptr, item);
+	return true;
+      }
+
     case 'E':
       {
 	gimple *stmt = va_arg (*text->args_ptr, gimple *);
@@ -1021,18 +1047,6 @@ dump_context::dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
     }
   else
     delete item;
-}
-
-/* Make an item for the given dump call.  */
-
-static optinfo_item *
-make_item_for_dump_symtab_node (symtab_node *node)
-{
-  location_t loc = DECL_SOURCE_LOCATION (node->decl);
-  optinfo_item *item
-    = new optinfo_item (OPTINFO_ITEM_KIND_SYMTAB_NODE, loc,
-			xstrdup (node->dump_name ()));
-  return item;
 }
 
 /* Output the name of NODE on appropriate dump streams.  */
@@ -2067,18 +2081,26 @@ test_capture_of_dump_calls (const line_table_case &case_)
   linemap_add (line_table, LC_ENTER, false, "test.txt", 0);
   linemap_line_start (line_table, 5, 100);
   linemap_add (line_table, LC_LEAVE, false, NULL, 0);
-  location_t where = linemap_position_for_column (line_table, 10);
-  if (where > LINE_MAP_MAX_LOCATION_WITH_COLS)
+  location_t decl_loc = linemap_position_for_column (line_table, 8);
+  location_t stmt_loc = linemap_position_for_column (line_table, 10);
+  if (stmt_loc > LINE_MAP_MAX_LOCATION_WITH_COLS)
     return;
 
-  dump_location_t loc = dump_location_t::from_location_t (where);
+  dump_location_t loc = dump_location_t::from_location_t (stmt_loc);
 
   gimple *stmt = gimple_build_return (NULL);
-  gimple_set_location (stmt, where);
+  gimple_set_location (stmt, stmt_loc);
 
-  tree test_decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+  tree test_decl = build_decl (decl_loc, FUNCTION_DECL,
 			       get_identifier ("test_decl"),
-			       integer_type_node);
+			       build_function_type_list (void_type_node,
+							 NULL_TREE));
+
+  symbol_table_test tmp_symtab;
+
+  cgraph_node *node = cgraph_node::get_create (test_decl);
+  gcc_assert (node);
+
   /* Run all tests twice, with and then without optinfo enabled, to ensure
      that immediate destinations vs optinfo-based destinations both
      work, independently of each other, with no leaks.  */
@@ -2135,7 +2157,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
-	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;");
 	  }
       }
 
@@ -2153,7 +2175,25 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "gimple: ");
-	    ASSERT_IS_GIMPLE (info->get_item (1), where, "return;\n");
+	    ASSERT_IS_GIMPLE (info->get_item (1), stmt_loc, "return;\n");
+	  }
+      }
+
+      /* Test of dump_printf with %C.  */
+      {
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+	dump_printf (MSG_NOTE, "node: %C", node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "node: test_decl/0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 2);
+	    ASSERT_IS_TEXT (info->get_item (0), "node: ");
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (1), decl_loc, "test_decl/0");
 	  }
       }
 
@@ -2184,8 +2224,8 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	    ASSERT_IS_TEXT (info->get_item (2), " and ");
 	    ASSERT_IS_TREE (info->get_item (3), UNKNOWN_LOCATION, "test_decl");
 	    ASSERT_IS_TEXT (info->get_item (4), " 42 consecutive ");
-	    ASSERT_IS_GIMPLE (info->get_item (5), where, "return;");
-	    ASSERT_IS_GIMPLE (info->get_item (6), where, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (5), stmt_loc, "return;");
+	    ASSERT_IS_GIMPLE (info->get_item (6), stmt_loc, "return;");
 	    ASSERT_IS_TEXT (info->get_item (7), " after\n");
 	  }
       }
@@ -2202,7 +2242,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_location_t (), stmt_loc);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 2);
 	    ASSERT_IS_TEXT (info->get_item (0), "test of tree: ");
@@ -2221,7 +2261,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	  {
 	    optinfo *info = tmp.get_pending_optinfo ();
 	    ASSERT_TRUE (info != NULL);
-	    ASSERT_EQ (info->get_location_t (), where);
+	    ASSERT_EQ (info->get_location_t (), stmt_loc);
 	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
 	    ASSERT_EQ (info->num_items (), 1);
 	    ASSERT_IS_TREE (info->get_item (0), UNKNOWN_LOCATION, "1");
@@ -2242,7 +2282,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
 	    }
 	}
 
@@ -2258,7 +2298,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;\n");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;\n");
 	    }
 	}
 
@@ -2274,7 +2314,7 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
 	    }
 	}
 
@@ -2290,9 +2330,26 @@ test_capture_of_dump_calls (const line_table_case &case_)
 	      optinfo *info = tmp.get_pending_optinfo ();
 	      ASSERT_TRUE (info != NULL);
 	      ASSERT_EQ (info->num_items (), 1);
-	      ASSERT_IS_GIMPLE (info->get_item (0), where, "return;");
+	      ASSERT_IS_GIMPLE (info->get_item (0), stmt_loc, "return;");
 	    }
 	}
+      }
+
+      /* symtab_node.  */
+      {
+	temp_dump_context tmp (with_optinfo, true,
+			       MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+	dump_symtab_node (MSG_NOTE, node);
+
+	ASSERT_DUMPED_TEXT_EQ (tmp, "test_decl/0");
+	if (with_optinfo)
+	  {
+	    optinfo *info = tmp.get_pending_optinfo ();
+	    ASSERT_TRUE (info != NULL);
+	    ASSERT_EQ (info->get_kind (), OPTINFO_KIND_NOTE);
+	    ASSERT_EQ (info->num_items (), 1);
+	    ASSERT_IS_SYMTAB_NODE (info->get_item (0), decl_loc, "test_decl/0");
+	  }
       }
 
       /* poly_int.  */

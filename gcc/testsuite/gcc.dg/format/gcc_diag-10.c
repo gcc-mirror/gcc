@@ -20,7 +20,7 @@ typedef union tree_node *tree;
 typedef struct gimple gimple;
 
 /* Likewise for gimple.  */
-typedef struct gimple gimple;
+typedef struct cgraph_node cgraph_node;
 
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
@@ -162,7 +162,7 @@ void test_cxxdiag (tree t, gimple *gc)
   cxxdiag ("%<%X%>", t);
 }
 
-void test_dump (tree t, gimple *stmt)
+void test_dump (tree t, gimple *stmt, cgraph_node *node)
 {
   dump ("%<");   /* { dg-warning "unterminated quoting directive" } */
   dump ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -182,4 +182,5 @@ void test_dump (tree t, gimple *stmt)
   dump ("%E", stmt);
   dump ("%T", t);
   dump ("%G", stmt);
+  dump ("%C", node);
 }

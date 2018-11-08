@@ -1,3 +1,8 @@
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-10.c (cgraph_node): New typedef.
+	(test_dump): Add testing of %C.
+
 2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/pr87916.C: New test.
