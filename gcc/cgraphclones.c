@@ -321,6 +321,10 @@ duplicate_thunk_for_node (cgraph_node *thunk, cgraph_node *node)
 						       "artificial_thunk");
   SET_DECL_ASSEMBLER_NAME (new_decl, DECL_NAME (new_decl));
 
+  /* We need to force DECL_IGNORED_P because the new thunk is created after
+     early debug was run.  */
+  DECL_IGNORED_P (new_decl) = 1;
+
   new_thunk = cgraph_node::create (new_decl);
   set_new_clone_decl_and_node_flags (new_thunk);
   new_thunk->definition = true;
