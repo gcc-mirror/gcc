@@ -8146,23 +8146,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 
   /* Chain the variant part at the end of the field list.  */
   if (gnu_variant_part)
-    {
-      /* We make an exception if the variant part is at offset 0, has a fixed
-	 size, and there is a single rep'ed field placed after it because, in
-	 this case, there is an obvious order of increasing position.  */
-      if (variants_have_rep
-	  && TREE_CODE (DECL_SIZE_UNIT (gnu_variant_part)) == INTEGER_CST
-	  && gnu_rep_list
-	  && gnu_field_list == gnu_rep_list
-	  && !tree_int_cst_lt (DECL_FIELD_OFFSET (gnu_rep_list),
-			       DECL_SIZE_UNIT (gnu_variant_part)))
-	{
-	  DECL_CHAIN (gnu_variant_part) = gnu_field_list;
-	  gnu_field_list = gnu_variant_part;
-	}
-      else
-	gnu_field_list = chainon (gnu_field_list, gnu_variant_part);
-    }
+    gnu_field_list = chainon (gnu_field_list, gnu_variant_part);
 
   if (cancel_alignment)
     SET_TYPE_ALIGN (gnu_record_type, 0);
