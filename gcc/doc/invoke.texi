@@ -8632,14 +8632,14 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fno-sched-interblock
 @opindex fno-sched-interblock
-Don't schedule instructions across basic blocks.  This is normally
-enabled by default when scheduling before register allocation, i.e.@:
+Disable instruction scheduling across basic blocks, which
+is normally enabled when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @item -fno-sched-spec
 @opindex fno-sched-spec
-Don't allow speculative motion of non-load instructions.  This is normally
-enabled by default when scheduling before register allocation, i.e.@:
+Disable speculative motion of non-load instructions, which
+is normally enabled when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @item -fsched-pressure
