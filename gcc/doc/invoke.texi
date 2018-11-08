@@ -13294,7 +13294,7 @@ C, and on some targets may carry a speed or code size penalty on
 variable references.
 
 The @option{-fno-common} option specifies that the compiler should instead
-place uninitialized global variables in the data section of the object file.
+place uninitialized global variables in the BSS section of the object file.
 This inhibits the merging of tentative definitions by the linker so
 you get a multiple-definition error if the same 
 variable is defined in more than one compilation unit.
