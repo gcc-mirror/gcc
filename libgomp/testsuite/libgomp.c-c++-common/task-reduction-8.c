@@ -45,7 +45,8 @@ unsigned long long int
 bar (int z, int *a, unsigned long long int *b, int *s)
 {
   unsigned long long int x = 1;
-  #pragma omp taskloop reduction (*:x) in_reduction (*:b[0])
+  #pragma omp taskloop reduction (*:x) in_reduction (*:b[0]) \
+		       in_reduction (+:s[0])
   for (int i = z; i < z + 8; i++)
     {
       #pragma omp task in_reduction (*:x)
