@@ -2470,8 +2470,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  if (TREE_CODE (r) != REAL_CST)
 		    {
 		      error_at (gimple_location (def),
-				"probability argument %qE must be a compile "
-				"time constant", prob);
+				"probability %qE must be "
+				"constant floating-point expression", prob);
 		      return NULL;
 		    }
 		  HOST_WIDE_INT probi
@@ -2483,8 +2483,8 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		    }
 		  else
 		    error_at (gimple_location (def),
-			      "probability argument %qE must be a in the "
-			      "range 0.0 to 1.0", prob);
+			      "probability %qE is outside "
+			      "the range [0.0, 1.0]", prob);
 
 		  return gimple_call_arg (def, 1);
 		}

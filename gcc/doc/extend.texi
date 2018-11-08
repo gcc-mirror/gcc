@@ -12047,7 +12047,7 @@ This function has the same semantics as @code{__builtin_expect},
 but the caller provides the expected probability that @var{exp} == @var{c}.
 The last argument, @var{probability}, is a floating-point value in the
 range 0.0 to 1.0, inclusive.  The @var{probability} argument must be
-a compiler time constant.
+constant floating-point expression.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_trap (void)
