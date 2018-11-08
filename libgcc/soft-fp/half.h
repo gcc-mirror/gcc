@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Definitions for IEEE Half Precision.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -75,7 +75,7 @@ union _FP_UNION_H
     unsigned exp  : _FP_EXPBITS_H;
     unsigned sign : 1;
 #endif
-  } bits __attribute__ ((packed));
+  } bits;
 };
 
 #define FP_DECL_H(X)		_FP_DECL (1, X)
