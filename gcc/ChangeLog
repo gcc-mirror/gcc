@@ -1,3 +1,8 @@
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87916
+	* cgraphclones.c (duplicate_thunk_for_node): Also set DECL_IGNORED_P.
+
 2018-11-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* cgraph.c: Include "selftest.h".
