@@ -26,6 +26,8 @@
 /* This is a generic stub implementation of a CPU affinity setting.  */
 
 #include "libgomp.h"
+#include <string.h>
+#include <stdio.h>
 
 void
 gomp_init_affinity (void)
@@ -142,7 +144,6 @@ void
 gomp_display_affinity_place (char *buffer, size_t size, size_t *ret,
 			     int place)
 {
-  cpu_set_t *cpusetp;
   char buf[sizeof (long) * 3 + 4];
   if (gomp_available_cpus > 1)
     sprintf (buf, "0-%lu", gomp_available_cpus - 1);

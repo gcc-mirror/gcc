@@ -26,6 +26,7 @@
 /* This file handles the host TEAMS construct.  */
 
 #include "libgomp.h"
+#include <limits.h>
 
 static unsigned gomp_num_teams = 1, gomp_team_num = 0;
 
