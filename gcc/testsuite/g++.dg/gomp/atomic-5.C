@@ -12,18 +12,18 @@ void f1(void)
     x = x + 1;
   #pragma omp atomic
     x = 1;		/* { dg-error "invalid form" } */
-  #pragma omp atomic
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
     ++y;		/* { dg-error "read-only variable" } */
-  #pragma omp atomic
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
     y--;		/* { dg-error "read-only variable" } */
-  #pragma omp atomic
-    y += 1;		/* { dg-error "read-only variable" } */
+  #pragma omp atomic	/* { dg-error "read-only variable" } */
+    y += 1;
   #pragma omp atomic
     bar();		/* { dg-error "invalid operator" } */
   #pragma omp atomic
     bar() += 1;		/* { dg-error "lvalue required" } */
   #pragma omp atomic a	/* { dg-error "expected end of line" } */
-    x++;
+    x++;		/* { dg-error "expected 'read', 'write', 'update', 'capture', 'seq_cst', 'acq_rel', 'release', 'relaxed' or 'hint' clause" "" { target *-*-* } .-1 } */
   #pragma omp atomic
     ;			/* { dg-error "expected primary-expression" } */
   #pragma omp atomic

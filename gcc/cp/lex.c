@@ -293,7 +293,7 @@ cxx_init (void)
    IF_STMT,		CLEANUP_STMT,	FOR_STMT,
    RANGE_FOR_STMT,	WHILE_STMT,	DO_STMT,
    BREAK_STMT,		CONTINUE_STMT,	SWITCH_STMT,
-   EXPR_STMT
+   EXPR_STMT,		OMP_DEPOBJ
   };
 
   memset (&statement_code_p, 0, sizeof (statement_code_p));

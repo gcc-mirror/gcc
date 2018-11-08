@@ -446,6 +446,7 @@ cp_common_init_ts (void)
   MARK_TS_TYPED (UNARY_RIGHT_FOLD_EXPR);
   MARK_TS_TYPED (BINARY_LEFT_FOLD_EXPR);
   MARK_TS_TYPED (BINARY_RIGHT_FOLD_EXPR);
+  MARK_TS_TYPED (OMP_DEPOBJ);
 }
 
 #include "gt-cp-cp-objcp-common.h"

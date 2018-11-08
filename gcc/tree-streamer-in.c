@@ -447,6 +447,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 			  OMP_CLAUSE_PROC_BIND_LAST);
       break;
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       OMP_CLAUSE_REDUCTION_CODE (expr)
 	= bp_unpack_enum (bp, tree_code, MAX_TREE_CODES);
       break;

@@ -4874,9 +4874,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (TREE_LANG_FLAG_1 (SCOPE_REF_CHECK (NODE)))
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
-   as an expr in operand 1, and integer_zero_node in operand 0.  */
+   as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
-  (TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == INTEGER_CST)
+  (TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == INTEGER_CST \
+   || TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == OMP_CLAUSE)
 
 /* Used while gimplifying continue statements bound to OMP_FOR nodes.  */
 #define OMP_FOR_GIMPLIFYING_P(NODE) \
@@ -5015,6 +5016,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if the ALIGNOF_EXPR was spelled "alignof".  */
 #define ALIGNOF_EXPR_STD_P(NODE) \
   TREE_LANG_FLAG_0 (ALIGNOF_EXPR_CHECK (NODE))
+
+/* OMP_DEPOBJ accessors. These give access to the depobj expression of the
+   #pragma omp depobj directive and the clauses, respectively.  If
+   OMP_DEPOBJ_CLAUSES is INTEGER_CST, it is instead the update clause kind
+   or OMP_CLAUSE_DEPEND_LAST for destroy clause.  */
+#define OMP_DEPOBJ_DEPOBJ(NODE)	 TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 0)
+#define OMP_DEPOBJ_CLAUSES(NODE) TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 1)
 
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
@@ -6630,6 +6638,9 @@ extern bool maybe_clone_body			(tree);
 /* In parser.c */
 extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
 				  unsigned short);
+extern void cp_convert_omp_range_for (tree &, vec<tree, va_gc> *, tree &,
+				      tree &, tree &, tree &, tree &, tree &);
+extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
@@ -7054,11 +7065,16 @@ extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, tree, vec<tree> *, tree);
-extern void finish_omp_atomic			(enum tree_code, enum tree_code,
-						 tree, tree, tree, tree, tree,
-						 bool);
+extern tree finish_omp_for_block		(tree, tree);
+extern void finish_omp_atomic			(location_t, enum tree_code,
+						 enum tree_code, tree, tree,
+						 tree, tree, tree, tree,
+						 enum omp_memory_order);
 extern void finish_omp_barrier			(void);
-extern void finish_omp_flush			(void);
+extern void finish_omp_depobj			(location_t, tree,
+						 enum omp_clause_depend_kind,
+						 tree);
+extern void finish_omp_flush			(int);
 extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);

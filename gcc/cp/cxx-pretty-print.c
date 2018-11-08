@@ -2112,6 +2112,42 @@ cxx_pretty_printer::statement (tree t)
       declaration (t);
       break;
 
+    case OMP_DEPOBJ:
+      pp_cxx_ws_string (this, "#pragma omp depobj");
+      pp_space (this);
+      pp_cxx_left_paren (this);
+      expression (OMP_DEPOBJ_DEPOBJ (t));
+      pp_cxx_right_paren (this);
+      if (OMP_DEPOBJ_CLAUSES (t) && OMP_DEPOBJ_CLAUSES (t) != error_mark_node)
+	{
+	  if (TREE_CODE (OMP_DEPOBJ_CLAUSES (t)) == OMP_CLAUSE)
+	    dump_omp_clauses (this, OMP_DEPOBJ_CLAUSES (t),
+			      pp_indentation (this), TDF_NONE);
+	  else
+	    switch (tree_to_uhwi (OMP_DEPOBJ_CLAUSES (t)))
+	      {
+	      case OMP_CLAUSE_DEPEND_IN:
+		pp_cxx_ws_string (this, " update(in)");
+		break;
+	      case OMP_CLAUSE_DEPEND_INOUT:
+		pp_cxx_ws_string (this, " update(inout)");
+		break;
+	      case OMP_CLAUSE_DEPEND_OUT:
+		pp_cxx_ws_string (this, " update(out)");
+		break;
+	      case OMP_CLAUSE_DEPEND_MUTEXINOUTSET:
+		pp_cxx_ws_string (this, " update(mutexinoutset)");
+		break;
+	      case OMP_CLAUSE_DEPEND_LAST:
+		pp_cxx_ws_string (this, " destroy");
+		break;
+	      default:
+		break;
+	      }
+	}
+      pp_needs_newline (this) = true;
+      break;
+
     default:
       c_pretty_printer::statement (t);
       break;

@@ -138,5 +138,18 @@ gomp_get_place_proc_ids_8 (int place_num, int64_t *ids)
   (void) ids;
 }
 
+void
+gomp_display_affinity_place (char *buffer, size_t size, size_t *ret,
+			     int place)
+{
+  cpu_set_t *cpusetp;
+  char buf[sizeof (long) * 3 + 4];
+  if (gomp_available_cpus > 1)
+    sprintf (buf, "0-%lu", gomp_available_cpus - 1);
+  else
+    strcpy (buf, "0");
+  gomp_display_string (buffer, size, ret, buf, strlen (buf));
+}
+
 ialias(omp_get_place_num_procs)
 ialias(omp_get_place_proc_ids)

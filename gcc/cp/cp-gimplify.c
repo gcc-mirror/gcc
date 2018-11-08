@@ -1178,6 +1178,8 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	    *walk_subtrees = 0;
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
 	  /* Don't dereference an invisiref in reduction clause's
 	     OMP_CLAUSE_DECL either.  OMP_CLAUSE_REDUCTION_{INIT,MERGE}
 	     still needs to be genericized.  */
@@ -1986,10 +1988,10 @@ cxx_omp_predetermined_sharing_1 (tree decl)
 	return OMP_CLAUSE_DEFAULT_SHARED;
     }
 
-  /* Const qualified vars having no mutable member are predetermined
-     shared.  */
-  if (cxx_omp_const_qual_no_mutable (decl))
-    return OMP_CLAUSE_DEFAULT_SHARED;
+  /* this may not be specified in data-sharing clauses, still we need
+     to predetermined it firstprivate.  */
+  if (decl == current_class_ptr)
+    return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE;
 
   return OMP_CLAUSE_DEFAULT_UNSPECIFIED;
 }

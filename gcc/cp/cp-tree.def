@@ -499,6 +499,11 @@ DEFTREECODE (BASES, "bases", tcc_type, 0)
    instantiation time.  */
 DEFTREECODE (TEMPLATE_INFO, "template_info", tcc_exceptional, 0)
 
+/* OpenMP - #pragma omp depobj
+   Operand 0: OMP_DEPOBJ_DEPOBJ: Depobj expression
+   Operand 1: OMP_DEPOBJ_CLAUSES: List of clauses.  */
+DEFTREECODE (OMP_DEPOBJ, "omp_depobj", tcc_statement, 2)
+
 /* Extensions for Concepts. */
 
 /* Used to represent information associated with constrained declarations. */

@@ -1,3 +1,167 @@
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (potential_constant_expression_1): Handle OMP_DEPOBJ.
+	* cp-gimplify.c (cp_genericize_r): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION.
+	(cxx_omp_predetermined_sharing_1): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls with no mutable
+	member.  Return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE for this pointer.
+	* cp-objcp-common.c (cp_common_init_ts): Handle OMP_DEPOBJ.
+	* cp-tree.def (OMP_DEPOBJ): New tree code.
+	* cp-tree.h (OMP_ATOMIC_DEPENDENT_P): Return true also for first
+	argument being OMP_CLAUSE.
+	(OMP_DEPOBJ_DEPOBJ, OMP_DEPOBJ_CLAUSES): Define.
+	(cp_convert_omp_range_for, cp_finish_omp_range_for): Declare.
+	(finish_omp_atomic): Add LOC, CLAUSES and MO arguments.  Remove
+	SEQ_CST argument.
+	(finish_omp_for_block): Declare.
+	(finish_omp_flush): Add MO argument.
+	(finish_omp_depobj): Declare.
+	* cxx-pretty-print.c (cxx_pretty_printer::statement): Handle
+	OMP_DEPOBJ.
+	* dump.c (cp_dump_tree): Likewise.
+	* lex.c (cxx_init): Likewise.
+	* parser.c: Include memmodel.h.
+	(cp_parser_for): Pass false as new is_omp argument to
+	cp_parser_range_for.
+	(cp_parser_range_for): Add IS_OMP argument, return before finalizing
+	if it is true.
+	(cp_parser_omp_clause_name): Handle nontemporal, in_reduction and
+	task_reduction clauses.
+        (cp_parser_omp_var_list_no_open): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION.  For OMP_CLAUSE_DEPEND, parse clause
+	operands as either an array section, or lvalue assignment expression.
+	(cp_parser_omp_clause_if): Handle cancel and simd modifiers.
+	(cp_parser_omp_clause_defaultmap): Parse new kinds of defaultmap
+	clause.
+	(cp_parser_omp_clause_reduction): Add IS_OMP and KIND arguments.
+	Parse reduction modifiers.  Pass KIND to c_parser_omp_variable_list.
+	(cp_parser_omp_clause_lastprivate, cp_parser_omp_iterators): New
+	functions.
+	(cp_parser_omp_clause_depend): Parse iterator modifier and handle
+	iterators.  Parse mutexinoutset and depobj kinds.
+	(cp_parser_oacc_all_clauses): Adjust cp_parser_omp_clause_reduction
+	callers.
+	(cp_parser_omp_all_clauses): Likewise.  Handle
+	PRAGMA_OMP_CLAUSE_NONTEMPORAL and
+	PRAGMA_OMP_CLAUSE_{IN,TASK}_REDUCTION.  Call
+	cp_parser_omp_clause_lastprivate for OpenMP lastprivate clause.
+	(cp_parser_omp_atomic): Pass pragma_tok->location as
+	LOC to finish_omp_atomic.  Parse hint and memory order clauses.
+	Handle default memory order from requires directive if any.  Adjust
+	finish_omp_atomic caller.
+	(cp_parser_omp_critical): Allow comma in between (name) and hint
+	clause.
+	(cp_parser_omp_depobj): New function.
+	(cp_parser_omp_flush): Parse flush with memory-order-clause.
+	(cp_parser_omp_for_cond): Allow NE_EXPR even in OpenMP loops.
+	(cp_convert_omp_range_for, cp_finish_omp_range_for): New functions.
+	(cp_parser_omp_for_loop): Parse C++11 range for loops among omp
+	loops.  Handle OMP_CLAUSE_IN_REDUCTION like OMP_CLAUSE_REDUCTION.
+	(OMP_SIMD_CLAUSE_MASK): Add if and nontemporal clauses.
+	(cp_parser_omp_simd, cp_parser_omp_for): Call keep_next_level before
+	begin_omp_structured_block and call finish_omp_for_block on
+	finish_omp_structured_block result.
+	(cp_parser_omp_master): Add p_name, mask and cclauses arguments.
+	Allow to be called while parsing combined parallel master.
+	Parse combined master taskloop{, simd}.
+	(cp_parser_omp_parallel): Parse combined
+	parallel master{, taskloop{, simd}} constructs.
+	(cp_parser_omp_single): Use SET_EXPR_LOCATION.
+	(OMP_TASK_CLAUSE_MASK): Add in_reduction clause.
+	(OMP_TASKWAIT_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskwait): Handle taskwait with depend clauses.
+	(OMP_TASKGROUP_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskgroup): Parse taskgroup clauses, adjust
+	c_finish_omp_taskgroup caller.
+	(cp_parser_omp_distribute): Call keep_next_level before
+	begin_omp_structured_block and call finish_omp_for_block on
+	finish_omp_structured_block result.
+	(cp_parser_omp_teams): Force a BIND_EXPR with BLOCK around teams
+	body.
+	(cp_parser_omp_target_data): Allow target data with only
+	use_device_ptr clauses.
+	(cp_parser_omp_target): Set OMP_REQUIRES_TARGET_USED bit in
+	omp_requires_mask.
+	(cp_parser_omp_requires): New function.
+	(OMP_TASKLOOP_CLAUSE_MASK): Add reduction and in_reduction clauses.
+	(cp_parser_omp_taskloop): Add forward declaration.  Disallow
+	in_reduction clause when combined with parallel master.  Call
+	keep_next_level before begin_omp_structured_block and call
+	finish_omp_for_block on finish_omp_structured_block result.
+	(cp_parser_omp_construct): Adjust cp_parser_omp_master caller.
+	(cp_parser_pragma): Handle PRAGMA_OMP_DEPOBJ and PRAGMA_OMP_REQUIRES.
+	* pt.c (tsubst_omp_clause_decl): Add iterators_cache argument.
+	Adjust recursive calls.  Handle iterators.
+	(tsubst_omp_clauses): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION and
+	OMP_CLAUSE_NONTEMPORAL.  Adjust tsubst_omp_clause_decl callers.
+	(tsubst_decomp_names):
+	(tsubst_omp_for_iterator): Change orig_declv into a reference.
+	Handle range for loops.  Move orig_declv handling after declv/initv
+	handling.
+	(tsubst_expr): Force a BIND_EXPR with BLOCK around teams body.
+	Adjust finish_omp_atomic caller.  Call keep_next_level before
+	begin_omp_structured_block.  Call cp_finish_omp_range_for for range
+	for loops and use {begin,finish}_omp_structured_block instead of
+	{push,pop}_stmt_list if there are any range for loops.  Call
+	finish_omp_for_block on finish_omp_structured_block result.
+	Handle OMP_DEPOBJ.  Handle taskwait with depend clauses.  For
+	OMP_ATOMIC call tsubst_omp_clauses on clauses if any, adjust
+	finish_omp_atomic caller.  Use OMP_ATOMIC_MEMORY_ORDER rather
+	than OMP_ATOMIC_SEQ_CST.  Handle clauses on OMP_TASKGROUP.
+	(dependent_omp_for_p): Always return true for range for loops if
+	processing_template_decl.  Return true if class type iterator
+	does not have INTEGER_CST increment.
+	* semantics.c: Include memmodel.h.
+	(handle_omp_array_sections_1): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION
+	like OMP_CLAUSE_REDUCTION.
+	(handle_omp_array_sections): Likewise.  Call save_expr on array
+	reductions before calling build_index_type.  Handle depend clauses
+	with iterators.
+	(finish_omp_reduction_clause): Call save_expr for whole array
+	reduction sizes.  Don't mark OMP_CLAUSE_DECL addressable if it has
+	reference type.  Do mark decl_placeholder addressable if needed.
+	Use error_at with OMP_CLAUSE_LOCATION (c) as first argument instead
+	of error.
+	(cp_omp_finish_iterators): New function.
+	(finish_omp_clauses): Don't diagnose nonmonotonic clause with static,
+	runtime or auto schedule kinds.  Diagnose nogroup clause used with
+	reduction clause(s).  Handle depend clause with
+	OMP_CLAUSE_DEPEND_DEPOBJ.  Diagnose bit-fields.  Require
+	omp_depend_t type for OMP_CLAUSE_DEPEND_DEPOBJ kinds and
+	some different type for other kinds.  Use cp_build_addr_expr
+	and cp_build_indirect_ref instead of cxx_mark_addressable.
+	Handle depend clauses with iterators.  Only handle static data members
+	in the special case that const qualified vars may be specified in
+	firstprivate clause.  Complain if const qualified vars without mutable
+	members are mentioned in data-sharing clauses other than firstprivate
+	or shared.  Use error_at with OMP_CLAUSE_LOCATION (c) as first
+	argument instead of error.  Diagnose more than one nontemporal clause
+	refering to the same variable.  Use error_at rather than error for
+	priority and hint clause diagnostics.  Fix pasto for hint clause.
+	Diagnose hint expression that doesn't fold into INTEGER_CST.
+	Diagnose if clause with modifier other than cancel.  Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION like OMP_CLAUSE_REDUCTION.  Allow any
+	lvalue as OMP_CLAUSE_DEPEND operand (besides array section), adjust
+	diagnostics.
+	(handle_omp_for_class_iterator): Don't create a new TREE_LIST if one
+	has been created already for range for, just fill TREE_PURPOSE and
+	TREE_VALUE.  Call cp_fully_fold on incr.
+	(finish_omp_for): Don't check cond/incr if cond is global_namespace.
+	Pass to c_omp_check_loop_iv_exprs orig_declv if non-NULL.  Don't
+	use IS_EMPTY_STMT on NULL pre_body.  Adjust c_finish_omp_for caller.
+	(finish_omp_for_block): New function.
+	(finish_omp_atomic): Add LOC argument, pass it through
+	to c_finish_omp_atomic and set it as location of OMP_ATOMIC* trees.
+	Remove SEQ_CST argument.  Add CLAUSES and MO arguments.  Adjust
+	c_finish_omp_atomic caller.  Stick clauses if any into first argument
+	of wrapping OMP_ATOMIC.
+	(finish_omp_depobj): New function.
+	(finish_omp_flush): Add MO argument, if not
+	MEMMODEL_LAST, emit __atomic_thread_fence call with the given value.
+	(finish_omp_cancel): Diagnose if clause with modifier other than
+	cancel.
+
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87904
