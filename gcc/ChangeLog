@@ -1,3 +1,8 @@
+2018-11-08  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Reword.
+	* predict.c (expr_expected_value_1): Likewise.
+
 2018-11-08  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87913

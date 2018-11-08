@@ -1,3 +1,8 @@
+2018-11-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr87811.c: Update scanned pattern.
+	* gcc.dg/pr87811-2.c: Likewise.
+
 2018-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* g++.dg/lto/pr87906_0.C: Use moon instead of possibly predefined
