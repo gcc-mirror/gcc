@@ -524,6 +524,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-e @var{entry}  --entry=@var{entry} @gol
 -pie  -pthread  -r  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
@@ -12711,6 +12712,15 @@ library subroutines.
 (An example of such an internal subroutine is @code{__main}, used to ensure C++
 constructors are called; @pxref{Collect2,,@code{collect2}, gccint,
 GNU Compiler Collection (GCC) Internals}.)
+
+@item -e @var{entry}
+@itemx --entry=@var{entry}
+@opindex e
+@opindex entry
+
+Specify that the program entry point is @var{entry}.  The argument is
+interpreted by the linker; the GNU linker accepts either a symbol name
+or an address.
 
 @item -pie
 @opindex pie
