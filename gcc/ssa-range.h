@@ -69,9 +69,11 @@ extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 // determine what ssa-names can have range information generated for them and
 // cache this information.  
 //
-// single_import () provides the "input" name to the chain of statements for
-// name that can change the calculation of its range.
-// ie, in the above example, b_6 is the "single_import" returned for both
+// termnial_name () provides the "input" name to the chain of statements for
+// name that can change the calculation of its range.  This is usually outside 
+// the current basic block, but can also occur when the statement defining
+// the name either isn't understood, or itself has multiple terminal names.
+// ie, in the above example, b_6 is the "terminal_name" returned for both
 // a_2 and c_3 since a change in the range of b_6 used to calculate their
 // ranges may result in a different range.
  
@@ -87,24 +89,18 @@ class ssa_range
   static bool supports_p (tree expr);
   static tree valid_ssa_p (tree exp);
 
-  // Calculate a range for a tree expr, originating on optional stmt S.
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
-
-  // Calculate a range for a gimple statement which support range operations.
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
-
-  // Calculate the range for NAME on edge E.
-  bool range_on_edge (irange &r, edge e, tree name);
-
-  // Calculate the range for NAME on entry to block BB.
+  virtual bool range_on_edge (irange &r, edge e, tree name);
   virtual bool range_on_entry (irange &r, basic_block bb, tree name);
-
-  // Calculate the range for NAME at the end of block BB
-  bool range_on_exit (irange &r, basic_block bb, tree name);
+  virtual bool range_on_exit (irange &r, basic_block bb, tree name);
 
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
-  tree single_import (tree name);
+
+  // Defintion chain
+  bitmap def_chain (tree name);
+  tree terminal_name (tree name);
 
   void dump (FILE *f);
   void exercise (FILE *f);
@@ -125,21 +121,21 @@ protected:
   // Evaluate the range for name on stmt S if the lhs has range LHS.
   bool compute_operand_range (irange &r, gimple *s, tree name,
 			      const irange &lhs);
-  bool compute_operand_range_op (irange &r, grange_op *stmt, tree name,
-				 const irange &lhs);
   bool compute_operand_range_switch (irange &r, gswitch *s, tree name,
 				     const irange &lhs);
-  // Evaluate the range for NAME on S is NAME is on the stmt.
+  bool compute_operand_range_op (irange &r, grange_op *stmt, tree name,
+				 const irange &lhs);
+  // Helpers for compute_operand_range_op.
   bool compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
 				      const irange &lhs);
-  bool compute_logical_operands (grange_op *s, irange &r, tree name,
-				 const irange &lhs);
   bool compute_operand1_range (grange_op *s, irange &r, tree name,
 			       const irange &lhs);
   bool compute_operand2_range (grange_op *s, irange &r, tree name,
 			       const irange &lhs);
   bool compute_operand1_and_operand2_range (grange_op *s, irange &r, tree name,
 					    const irange &lhs);
+  bool compute_logical_operands (grange_op *s, irange &r, tree name,
+				 const irange &lhs);
 };
 
   

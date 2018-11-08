@@ -319,7 +319,7 @@ class bb_paths
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)
   {
-    return ranger.single_import (name);
+    return ranger.terminal_name(name);
   }
   const vec<basic_block> &operator[] (unsigned i) const { return all_paths[i]; }
   vec<basic_block> &operator[] (unsigned i) { return all_paths[i]; }

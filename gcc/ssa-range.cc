@@ -377,7 +377,7 @@ ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
   // Determine if there is an outgoing edge.
   gimple *s = gimple_outgoing_edge_range_p (lhs, e);
 
-  // If therre are no gori tables, we only look at this statement 
+  // If there are no gori tables, we only look at this statement 
   if (!m_gori)
     {
       if (!s)
@@ -533,22 +533,27 @@ class gori_map
 public:
   gori_map ();
   ~gori_map ();
-  bool in_chain_p (tree name, tree def, basic_block bb = NULL);
+
+  tree terminal_name (tree name);
+  bitmap get_def_chain (tree name);
+
+  bool in_chain_p (tree name, tree def);
   bool is_export_p (tree name, basic_block bb);
   bool is_import_p (tree name, basic_block bb);
-  tree single_import (tree name);
+
   void dump (FILE *f);
   void dump (FILE *f, basic_block bb);
 private:
   vec<bitmap> m_outgoing;	// BB: Outgoing ranges generated.
   vec<bitmap> m_incoming;	// BB: ranges coming in.
   vec<bitmap> m_def_chain;	// SSA_NAME : def chain components.
+  vec<tree> m_terminal;	        // SSA_NAME : chain terminal name.
+  void maybe_add_gori (tree name, basic_block bb);
   void calculate_gori (basic_block bb);
-  bool in_chain_p (unsigned name, unsigned def);
   bitmap imports (basic_block bb);
   bitmap exports (basic_block bb);
-  bitmap calc_def_chain (tree name, basic_block bb);
-  void process_stmt (gimple *s, bitmap result, basic_block bb);
+  tree build_def_chain (tree name, bitmap result, basic_block bb);
+//  void process_stmt (gimple *s, bitmap result, basic_block bb);
 };
 
 
@@ -562,6 +567,9 @@ gori_map::gori_map ()
   m_incoming.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_def_chain.create (0);
   m_def_chain.safe_grow_cleared (num_ssa_names);
+  m_terminal.create (0);
+  m_terminal.safe_grow_cleared (num_ssa_names);
+
 }
 
 // Free any memory the GORI map allocated.
@@ -583,6 +591,7 @@ gori_map::~gori_map ()
     if (m_def_chain[x])
       BITMAP_FREE (m_def_chain[x]);
   m_def_chain.release ();
+  m_terminal.release ();
 }
 
 // Return the bitmap vector of all imports to BB. Calculate if necessary
@@ -625,152 +634,172 @@ gori_map::is_export_p (tree name, basic_block bb)
 // return true if the defining statement of DEF is in BB.
 
 bool
-gori_map::in_chain_p (tree name, tree def, basic_block bb)
+gori_map::in_chain_p (tree name, tree def)
 {
-  if (TREE_CODE (def) != SSA_NAME || TREE_CODE (name) != SSA_NAME)
+  gcc_checking_assert (ssa_range::valid_ssa_p (def));
+  gcc_checking_assert (ssa_range::valid_ssa_p (name));
+
+  // Get the defintion chain for DEF
+  bitmap chain = get_def_chain (def);
+
+  if (chain == NULL)
     return false;
-
-  unsigned def_index = SSA_NAME_VERSION (def);
-  unsigned name_index = SSA_NAME_VERSION (name);
-  gimple *stmt;
-
-  // Nothing is in the def chain of a default definition.
-  if (SSA_NAME_IS_DEFAULT_DEF (def))
-    return false;
-
-  stmt = SSA_NAME_DEF_STMT (def);
-  if (bb)
-    {
-      // If the definition is not in a specified BB, return false.
-      if (gimple_bb (stmt) != bb)
-        return false;
-    }
-  else
-    bb = gimple_bb (stmt);
-
-  // Calculate gori info for the block if it hasnt been done yet.
-  if (m_outgoing[bb->index] == NULL)
-    calculate_gori (bb);
-
-  return in_chain_p (name_index, def_index);
-}
-
-// Return true if ssa_name version NAME is set in vector version DEF.
-// This assumes all vectors have been created, so NULL means there is 
-// nothing in the defintion chain.
-
-bool
-gori_map::in_chain_p (unsigned name, unsigned def)
-{
-  if (m_def_chain[def] == NULL)
-    return false;
-  return bitmap_bit_p (m_def_chain[def], name);
+  return bitmap_bit_p (chain, SSA_NAME_VERSION (name));
 }
 
 // If NAME has a definition chain, and the chain has a single import into
 // the block, return the name of that import.
 
 tree
-gori_map::single_import (tree name)
+gori_map::terminal_name (tree name)
 {
-  tree ret = NULL_TREE;
-  unsigned name_index = SSA_NAME_VERSION (name);
-  unsigned index;
-  basic_block bb;
-  bitmap_iterator bi;
-
-  bb = gimple_bb (SSA_NAME_DEF_STMT (name));
-  if (bb && !m_incoming[bb->index])
-    calculate_gori (bb);
-  if (m_def_chain [name_index] == NULL)
-    return NULL_TREE;
-
-  // Now make sure it is the ONLY import. 
-  EXECUTE_IF_AND_IN_BITMAP (m_def_chain [name_index], m_incoming[bb->index], 0,
-			    index, bi)
-    {
-      if (!ret)
-        ret = ssa_name (index);
-      else
-	return NULL_TREE;
-    }
-  return ret;
+  // Ensure the def chain has been calculated.
+  get_def_chain (name);
+  return m_terminal[SSA_NAME_VERSION (name)];
 }
 
-// Process STMT to build m_def_chains in BB.. Recursively create m_def_chains
-// for any operand contained in STMT, and set the def chain bits in RESULT.
+// Given up to 3 ssa names, return the common name or NULL_TREE.   NULL_TREE's
+// passed in can be ignored, but all specified ssa-names must be the same name.
 
-void
-gori_map::process_stmt (gimple *s, bitmap result, basic_block bb)
+static inline tree
+pick_import (tree ssa1, tree ssa2, tree ssa3)
 {
-  bitmap b;
-  tree ssa1 = NULL_TREE;
-  tree ssa2 = NULL_TREE;
-
-  grange_op *stmt = dyn_cast<grange_op *>(s);
-  if (stmt)
-    {
-      ssa1 = ssa_range::valid_ssa_p (stmt->operand1 ());
-      ssa2 = ssa_range::valid_ssa_p (stmt->operand2 ());
-    }
-  else
-    if (gimple_code (s) == GIMPLE_SWITCH)
-      ssa1 = gimple_switch_index (as_a<gswitch *> (s));
-    else
-      return;
-
-
   if (ssa1)
     {
-      // Get the def chain for the operand
-      b = calc_def_chain (ssa1, bb);
-      // If there was one, copy it into result.
-      if (b)
-	bitmap_copy (result, b);
-      // Now add this operand into the result.
-      bitmap_set_bit (result, SSA_NAME_VERSION (ssa1));
+      if (ssa2 && ssa1 != ssa2)
+        return NULL_TREE;	// No match.
+      // Either ssa2 is NULL, or it is the same as ssa1.
+      if (!ssa3 || ssa1 == ssa3)
+        return ssa1;	// ssa1 is the import.
+      return NULL_TREE;
     }
-
-  // Now do the second operand.
   if (ssa2)
     {
-      b = calc_def_chain (ssa2, bb);
-      // Have to ior def chain in now since thre are previous results present.
-      if (b)
-	bitmap_ior_into (result, b);
-      bitmap_set_bit (result, SSA_NAME_VERSION (ssa2));
+      // If there is no ssa3 or ssa3 is thr same as ssa2, thats the import.
+      if (!ssa3 || ssa2 == ssa3)
+        return ssa2;
+      // They must both be different, so no import.
+      return NULL_TREE;
     }
-  return;
+  return ssa3;
 }
 
+// Build def_chains for NAME if it is in BB.. copy the def chain into RESULT.
+// Return the import for name, or NAME if it is an import.
 
-// Calculate the def chain for NAME, but only using names in BB.  Return 
-// the bimap of all names in the m_def_chain
+tree
+gori_map::build_def_chain (tree name, bitmap result, basic_block bb)
+{
+  bitmap b;
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  // Add this operand into the result.
+  bitmap_set_bit (result, SSA_NAME_VERSION (name));
+
+  if (gimple_bb (def_stmt) == bb)
+    {
+      // Get the def chain for the operand
+      b = get_def_chain (name);
+      // If there was one, copy it into result and retuirn the terminal name.
+      if (b)
+        {
+	  bitmap_ior_into (result, b);
+	  return m_terminal [SSA_NAME_VERSION (name)];
+	}
+      // If there is no def chain, this terminal is within the same BB.
+    }
+  return name;	// This is an import.
+}
+
+// Calculate the def chain for NAME and all of its dependent operands. Only
+// using names in the same BB.  Return the bitmap of all names in the 
+// m_def_chain.   This only works for supported range statements.
 
 bitmap
-gori_map::calc_def_chain (tree name, basic_block bb)
+gori_map::get_def_chain (tree name)
 {
+  tree ssa1, ssa2, ssa3;
   unsigned v = SSA_NAME_VERSION (name);
-  gimple *s = SSA_NAME_DEF_STMT (name);
-  // a switch cant be a DEF stmt, so dont bother checking for it.
-  grange_op *stmt = dyn_cast <grange_op *>(s);
-
-  if (!stmt || gimple_bb (stmt) != bb)
-    {
-      // If its an import, set the bit. PHIs are also considere3d imports
-      bitmap_set_bit (m_incoming[bb->index], v);
-      return NULL;
-    }
 
   // If it has already been processed, just return the cached value.
   if (m_def_chain[v])
     return m_def_chain[v];
 
+  // No definition chain for default defs.
+  if (SSA_NAME_IS_DEFAULT_DEF (name))
+    return NULL;
+
+  gimple *s = SSA_NAME_DEF_STMT (name);
+  if (is_a<grange_op *> (s))
+    { 
+      grange_op *stmt = as_a<grange_op *> (s);
+      ssa1 = ssa_range::valid_ssa_p (stmt->operand1 ());
+      ssa2 = ssa_range::valid_ssa_p (stmt->operand2 ());
+      ssa3 = NULL_TREE;
+    }
+  else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
+    {
+      gassign *st = as_a<gassign *> (s);
+      ssa1 = ssa_range::valid_ssa_p (gimple_assign_rhs1 (st));
+      ssa2 = ssa_range::valid_ssa_p (gimple_assign_rhs2 (st));
+      ssa3 = ssa_range::valid_ssa_p (gimple_assign_rhs3 (st));
+    }
+  else
+    return NULL;
+
+  basic_block bb = gimple_bb (s);
+
   // Allocate a new bitmap and initialize it.
   m_def_chain[v] = BITMAP_ALLOC (NULL);
-  process_stmt (stmt, m_def_chain[v], bb);
 
+  // build_def_chain returns the terminal name. If we have more than one unique
+  // terminal name, then this statement will have no terminal.
+  if (ssa1)
+    ssa1 = build_def_chain (ssa1, m_def_chain[v], bb);
+  if (ssa2)
+    ssa2 = build_def_chain (ssa2, m_def_chain[v], bb);
+  if (ssa3)
+    ssa3 = build_def_chain (ssa3, m_def_chain[v], bb);
+
+  m_terminal[v] = pick_import (ssa1, ssa2, ssa3);
+  // If we run into pathological cases where the defintion chains are huge
+  // (I'm thinking fppp for instance.. huge basic block fully unrolled)
+  // we might be able to limit this by deciding here that if there is no
+  // import AND 2 or more ssa names, we change the def_chain back to be
+  // just the ssa-names.  that should prevent  a_2 = b_6 + a_8 from creating
+  // a pathological case yet allow us to still handle it when b_6 and a_8 are
+  // derived from the same base name.
+  // thoughts?
   return m_def_chain[v];
+}
+
+
+// If NAME is non-NULL and defined in block BB, calculate the def chain
+// and add it to m_outgoing, and any imports to m_incoming.
+
+void
+gori_map::maybe_add_gori (tree name, basic_block bb)
+{
+  if (name)
+    {
+      bitmap r = get_def_chain (name);
+      if (r)
+        {
+	  bitmap_copy (m_outgoing[bb->index], r);
+	  tree im = m_terminal[SSA_NAME_VERSION (name)];
+	  if (im)
+	    bitmap_set_bit (m_incoming[bb->index], SSA_NAME_VERSION (im));
+	}
+      else
+        {
+	  // IF there is no def chain, and name originates outside this block
+	  // then this name is also an import.
+	  if (gimple_bb (SSA_NAME_DEF_STMT (name)) != bb)
+	    bitmap_set_bit (m_incoming[bb->index], SSA_NAME_VERSION (name));
+	}
+      // Def chain doesn't include itself, and even if there isn't a def
+      // chain, this name should be added to exports.
+      bitmap_set_bit (m_outgoing[bb->index], SSA_NAME_VERSION (name));
+    }
 }
 
 // Calculate all the required information for BB.
@@ -778,6 +807,7 @@ gori_map::calc_def_chain (tree name, basic_block bb)
 void
 gori_map::calculate_gori (basic_block bb)
 {
+  tree name;
   gcc_assert (m_outgoing[bb->index] == NULL);
   m_outgoing[bb->index] = BITMAP_ALLOC (NULL);
   m_incoming[bb->index] = BITMAP_ALLOC (NULL);
@@ -787,7 +817,21 @@ gori_map::calculate_gori (basic_block bb)
   gimple *s = gimple_outgoing_range_stmt_p (bb);
   if (!s)
     return;
-  process_stmt (s, m_outgoing[bb->index], bb);
+  if (is_a<gcond *> (s))
+    {
+      gcond *gc = as_a<gcond *>(s);
+      name = ssa_range::valid_ssa_p (gimple_cond_lhs (gc));
+      maybe_add_gori (name, gimple_bb (s));
+
+      name = ssa_range::valid_ssa_p (gimple_cond_rhs (gc));
+      maybe_add_gori (name, gimple_bb (s));
+    }
+  else
+    {
+      gswitch *gs = as_a<gswitch *>(s);
+      name = ssa_range::valid_ssa_p (gimple_switch_index (gs));
+      maybe_add_gori (name, gimple_bb (s));
+    }
 }
 
 // Dump the table information for BB to file F.
@@ -816,7 +860,7 @@ gori_map::dump(FILE *f, basic_block bb)
 	  !bitmap_empty_p (m_def_chain[x]))
         {
 	  print_generic_expr (f, name, TDF_SLIM);
-	  if ((t = single_import (name)))
+	  if ((t = terminal_name (name)))
 	    {
 	      fprintf (f, "  : (single import : ");
 	      print_generic_expr (f, t, TDF_SLIM);
@@ -949,7 +993,7 @@ ssa_range::compute_operand_range_switch (irange &r, gswitch *s, tree name,
     }
 
   // If op1 is in the defintion chain, pass lhs back.
-  if (m_gori && m_gori->in_chain_p (name, op1))
+  if (m_gori && valid_ssa_p (op1) && m_gori->in_chain_p (name, op1))
     return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, lhs);
 
   return false;
@@ -973,8 +1017,8 @@ ssa_range::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
       return true;
     }
 
-  op1 = stmt->operand1 ();
-  op2 = stmt->operand2 ();
+  op1 = valid_ssa_p (stmt->operand1 ());
+  op2 = valid_ssa_p (stmt->operand2 ());
 
   // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
@@ -987,7 +1031,7 @@ ssa_range::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
 
   // Reaching this point means NAME is not in this stmt, but one of the
   // names in it ought to be derived from it. 
-  op1_in_chain = m_gori->in_chain_p (name, op1);
+  op1_in_chain = op1 && m_gori->in_chain_p (name, op1);
   op2_in_chain = op2 && m_gori->in_chain_p (name, op2);
 
   if (op2_in_chain)
@@ -1130,8 +1174,8 @@ ssa_range::compute_logical_operands (grange_op *s, irange &r, tree name,
   op2 = s->operand2 ();
   gcc_checking_assert (op1 != name && op2 != name);
 
-  op1_in_chain = m_gori->in_chain_p (name, op1);
-  op2_in_chain = m_gori->in_chain_p (name, op2);
+  op1_in_chain = valid_ssa_p (op1) && m_gori->in_chain_p (name, op1);
+  op2_in_chain = valid_ssa_p (op2) && m_gori->in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)
@@ -1289,14 +1333,22 @@ ssa_range::dump (FILE *f)
   fprintf (f, "\n");
 }
 
-// If NAME's derived chain has a single import into the block, return it.
-// Otherwise return NULL_TREE.
+// If NAME's derived chain has a termnial name, return it otherwise NULL_TREE.
 
 tree
-ssa_range::single_import (tree name)
+ssa_range::terminal_name (tree name)
 {
   gcc_checking_assert (m_gori);
-  return m_gori->single_import (name);
+  return m_gori->terminal_name (name);
+}
+
+// Return the definition chain, if any, for NAME.
+
+bitmap
+ssa_range::def_chain (tree name)
+{
+  gcc_checking_assert (m_gori);
+  return m_gori->get_def_chain (name);
 }
 
 // Return TRUE if the outgoing edges of block BB define a range for NAME.
