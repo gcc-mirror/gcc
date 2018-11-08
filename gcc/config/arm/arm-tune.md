@@ -22,7 +22,6 @@
 
 (define_attr "tune"
 	"arm8,arm810,strongarm,
-	strongarm110,strongarm1100,strongarm1110,
 	fa526,fa626,arm7tdmi,
 	arm7tdmis,arm710t,arm720t,
 	arm740t,arm9,arm9tdmi,
