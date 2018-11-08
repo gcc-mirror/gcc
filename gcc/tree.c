@@ -282,11 +282,14 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_FIRSTPRIVATE  */
   2, /* OMP_CLAUSE_LASTPRIVATE  */
   5, /* OMP_CLAUSE_REDUCTION  */
+  5, /* OMP_CLAUSE_TASK_REDUCTION  */
+  5, /* OMP_CLAUSE_IN_REDUCTION  */
   1, /* OMP_CLAUSE_COPYIN  */
   1, /* OMP_CLAUSE_COPYPRIVATE  */
   3, /* OMP_CLAUSE_LINEAR  */
   2, /* OMP_CLAUSE_ALIGNED  */
   1, /* OMP_CLAUSE_DEPEND  */
+  1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_TO_DECLARE  */
   1, /* OMP_CLAUSE_LINK  */
@@ -302,6 +305,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_AUTO  */
   0, /* OMP_CLAUSE_SEQ  */
   1, /* OMP_CLAUSE__LOOPTEMP_  */
+  1, /* OMP_CLAUSE__REDUCTEMP_  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
@@ -355,11 +359,14 @@ const char * const omp_clause_code_name[] =
   "firstprivate",
   "lastprivate",
   "reduction",
+  "task_reduction",
+  "in_reduction",
   "copyin",
   "copyprivate",
   "linear",
   "aligned",
   "depend",
+  "nontemporal",
   "uniform",
   "to",
   "link",
@@ -375,6 +382,7 @@ const char * const omp_clause_code_name[] =
   "auto",
   "seq",
   "_looptemp_",
+  "_reductemp_",
   "if",
   "num_threads",
   "schedule",
@@ -11886,6 +11894,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_NONTEMPORAL:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DEVICE:
@@ -11902,6 +11911,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
@@ -11959,6 +11969,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  {
 	    int i;
 	    for (i = 0; i < 5; i++)

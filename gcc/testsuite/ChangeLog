@@ -1,3 +1,114 @@
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/atomic-17.c: New test.
+	* c-c++-common/gomp/atomic-18.c: New test.
+	* c-c++-common/gomp/atomic-19.c: New test.
+	* c-c++-common/gomp/atomic-20.c: New test.
+	* c-c++-common/gomp/atomic-21.c: New test.
+	* c-c++-common/gomp/atomic-22.c: New test.
+	* c-c++-common/gomp/clauses-1.c (r2): New variable.
+	(foo): Add ntm argument and test if and nontemporal clauses on
+	constructs with simd.
+	(bar): Put taskloop simd inside of taskgroup with task_reduction,
+	use in_reduction clause instead of reduction.  Add another
+	taskloop simd without nogroup clause, but with reduction clause and
+	a new in_reduction.  Add ntm and i3 arguments.  Test if and
+	nontemporal clauses on constructs with simd.  Change if clauses on
+	some constructs from specific to the particular constituents to one
+	without a modifier.  Add new tests for combined host teams and for
+	new parallel master and {,parallel }master taskloop{, simd} combined
+	constructs.
+	(baz): New function with host teams tests.
+	* gcc.dg/gomp/combined-1.c: Moved to ...
+	* c-c++-common/gomp/combined-1.c: ... here.  Adjust expected library
+	call.
+	* c-c++-common/gomp/combined-2.c: New test.
+	* c-c++-common/gomp/combined-3.c: New test.
+	* c-c++-common/gomp/critical-1.c: New test.
+	* c-c++-common/gomp/critical-2.c: New test.
+	* c-c++-common/gomp/default-1.c: New test.
+	* c-c++-common/gomp/defaultmap-1.c: New test.
+	* c-c++-common/gomp/defaultmap-2.c: New test.
+	* c-c++-common/gomp/defaultmap-3.c: New test.
+	* c-c++-common/gomp/depend-5.c: New test.
+	* c-c++-common/gomp/depend-6.c: New test.
+	* c-c++-common/gomp/depend-iterator-1.c: New test.
+	* c-c++-common/gomp/depend-iterator-2.c: New test.
+	* c-c++-common/gomp/depobj-1.c: New test.
+	* c-c++-common/gomp/flush-1.c: New test.
+	* c-c++-common/gomp/flush-2.c: New test.
+	* c-c++-common/gomp/for-1.c: New test.
+	* c-c++-common/gomp/for-2.c: New test.
+	* c-c++-common/gomp/for-3.c: New test.
+	* c-c++-common/gomp/for-4.c: New test.
+	* c-c++-common/gomp/for-5.c: New test.
+	* c-c++-common/gomp/for-6.c: New test.
+	* c-c++-common/gomp/for-7.c: New test.
+	* c-c++-common/gomp/if-1.c (foo): Add some further tests.
+	* c-c++-common/gomp/if-2.c (foo): Likewise.  Expect slightly different
+	diagnostics wording in one case.
+	* c-c++-common/gomp/if-3.c: New test.
+	* c-c++-common/gomp/master-combined-1.c: New test.
+	* c-c++-common/gomp/master-combined-2.c: New test.
+	* c-c++-common/gomp/nontemporal-1.c: New test.
+	* c-c++-common/gomp/nontemporal-2.c: New test.
+	* c-c++-common/gomp/reduction-task-1.c: New test.
+	* c-c++-common/gomp/reduction-task-2.c: New test.
+	* c-c++-common/gomp/requires-1.c: New test.
+	* c-c++-common/gomp/requires-2.c: New test.
+	* c-c++-common/gomp/requires-3.c: New test.
+	* c-c++-common/gomp/requires-4.c: New test.
+	* c-c++-common/gomp/schedule-modifiers-1.c (bar): Don't expect
+	diagnostics for nonmonotonic modifier with static, runtime or auto
+	schedule kinds.
+	* c-c++-common/gomp/simd7.c: New test.
+	* c-c++-common/gomp/target-data-1.c: New test.
+	* c-c++-common/gomp/taskloop-reduction-1.c: New test.
+	* c-c++-common/gomp/taskwait-depend-1.c: New test.
+	* c-c++-common/gomp/teams-1.c: New test.
+	* c-c++-common/gomp/teams-2.c: New test.
+	* gcc.dg/gomp/appendix-a/a.24.1.c: Update from OpenMP examples.  Add
+	shared(c) clause.
+	* gcc.dg/gomp/atomic-5.c (f1): Add another expected error.
+	* gcc.dg/gomp/clause-1.c: Adjust expected diagnostics for const
+	qualified vars without mutable member no longer being predeterined
+	shared.
+	* gcc.dg/gomp/sharing-1.c: Likewise.
+	* g++.dg/gomp/clause-3.C: Likewise.
+	* g++.dg/gomp/member-2.C: Likewise.
+	* g++.dg/gomp/predetermined-1.C: Likewise.
+	* g++.dg/gomp/private-1.C: Likewise.
+	* g++.dg/gomp/sharing-1.C: Likewise.
+	* g++.dg/gomp/sharing-2.C: Likewise.  Add a few tests with aggregate
+	const static data member without mutable elements.
+	* gcc.dg/gomp/for-4.c: Expected nonmonotonic functions in the dumps.
+	* gcc.dg/gomp/for-5.c: Likewise.
+	* gcc.dg/gomp/for-6.c: Change expected library call.
+	* gcc.dg/gomp/pr39495-2.c (foo): Don't expect errors on !=.
+	* gcc.dg/gomp/reduction-2.c: New test.
+	* gcc.dg/gomp/simd-1.c: New test.
+	* gcc.dg/gomp/teams-1.c: Adjust expected diagnostic lines.
+	* g++.dg/gomp/atomic-18.C: New test.
+	* g++.dg/gomp/atomic-19.C: New test.
+	* g++.dg/gomp/atomic-5.C (f1): Adjust expected lines of read-only
+	variable messages.  Add another expected error.
+	* g++.dg/gomp/critical-3.C: New test.
+	* g++.dg/gomp/depend-iterator-1.C: New test.
+	* g++.dg/gomp/depend-iterator-2.C: New test.
+	* g++.dg/gomp/depobj-1.C: New test.
+	* g++.dg/gomp/doacross-1.C: New test.
+	* g++.dg/gomp/for-21.C: New test.
+	* g++.dg/gomp/for-4.C: Expected nonmonotonic functions in the dumps.
+	* g++.dg/gomp/for-5.C: Likewise.
+	* g++.dg/gomp/for-6.C: Change expected library call.
+	* g++.dg/gomp/loop-4.C: New test.
+	* g++.dg/gomp/pr33372-1.C: Adjust location of the expected
+	diagnostics.
+	* g++.dg/gomp/pr33372-3.C: Likewise.
+	* g++.dg/gomp/pr39495-2.C (foo): Don't expect errors on !=.
+	* g++.dg/gomp/simd-2.C: New test.
+	* g++.dg/gomp/tpl-atomic-2.C: Adjust expected diagnostic lines.
+
 2018-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.dg/pr87874.c (em): Declare uint64_max as

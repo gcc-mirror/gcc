@@ -1,3 +1,41 @@
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (c_finish_omp_taskgroup): Add CLAUSES argument.
+	(c_finish_omp_atomic): Replace bool SEQ_CST argument with
+	enum omp_memory_order MEMORY_ORDER.
+	(c_finish_omp_flush): Add MO argument.
+	(c_omp_depend_t_p, c_finish_omp_depobj): Declare.
+	(c_finish_omp_for): Add FINAL_P argument.
+	* c-omp.c: Include memmodel.h.
+	(c_finish_omp_taskgroup): Add CLAUSES argument.  Set
+	OMP_TASKGROUP_CLAUSES to it.
+	(c_finish_omp_atomic): Replace bool SEQ_CST argument with
+	enum omp_memory_order MEMORY_ORDER.  Set OMP_ATOMIC_MEMORY_ORDER
+	instead of OMP_ATOMIC_SEQ_CST.
+	(c_omp_depend_t_p, c_finish_omp_depobj): New functions.
+	(c_finish_omp_flush): Add MO argument, if not MEMMODEL_LAST, emit
+	__atomic_thread_fence call with the given value.
+	(check_omp_for_incr_expr): Formatting fixes.
+	(c_finish_omp_for): Add FINAL_P argument.  Allow NE_EXPR
+	even in OpenMP loops, diagnose if NE_EXPR and incr expression
+	is not constant expression 1 or -1.  Transform NE_EXPR loops
+	with iterators pointers to VLA into LT_EXPR or GT_EXPR loops.
+	(c_omp_check_loop_iv_r): Look for orig decl of C++ range for
+	loops too.
+	(c_omp_split_clauses): Add support for combined
+	#pragma omp parallel master and
+	#pragma omp {,parallel }master taskloop{, simd} constructs.
+	Handle OMP_CLAUSE_IN_REDUCTION.  Handle OMP_CLAUSE_REDUCTION_TASK.
+	Handle OMP_CLAUSE_NONTEMPORAL.  Handle splitting OMP_CLAUSE_IF
+	also to OMP_SIMD.  Copy OMP_CLAUSE_LASTPRIVATE_CONDITIONAL.
+	(c_omp_predetermined_sharing): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls.
+	* c-pragma.c (omp_pragmas): Add PRAGMA_OMP_DEPOBJ and
+	PRAGMA_OMP_REQUIRES.
+	* c-pragma.h (enum pragma_kind): Likewise.
+	(enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_NONTEMPORAL
+	and PRAGMA_OMP_CLAUSE_{IN,TASK}_REDUCTION.
+
 2018-11-08  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-format.c (gcc_dump_printf_char_table): Add entry for %f.

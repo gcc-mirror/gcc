@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gcc-rich-location.h"
 #include "tree-iterator.h"
 #include "cp-name-hint.h"
+#include "memmodel.h"
 
 
 /* The lexer.  */
@@ -2110,7 +2111,7 @@ static tree cp_parser_for
 static tree cp_parser_c_for
   (cp_parser *, tree, tree, bool, unsigned short);
 static tree cp_parser_range_for
-  (cp_parser *, tree, tree, tree, bool, unsigned short);
+  (cp_parser *, tree, tree, tree, bool, unsigned short, bool);
 static void do_range_for_auto_deduction
   (tree, tree);
 static tree cp_parser_perform_range_for_lookup
@@ -11843,7 +11844,8 @@ cp_parser_for (cp_parser *parser, bool ivdep, unsigned short unroll)
   is_range_for = cp_parser_init_statement (parser, &decl);
 
   if (is_range_for)
-    return cp_parser_range_for (parser, scope, init, decl, ivdep, unroll);
+    return cp_parser_range_for (parser, scope, init, decl, ivdep, unroll,
+				false);
   else
     return cp_parser_c_for (parser, scope, init, ivdep, unroll);
 }
@@ -11901,7 +11903,7 @@ cp_parser_c_for (cp_parser *parser, tree scope, tree init, bool ivdep,
 
 static tree
 cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
-		     bool ivdep, unsigned short unroll)
+		     bool ivdep, unsigned short unroll, bool is_omp)
 {
   tree stmt, range_expr;
   auto_vec <cxx_binding *, 16> bindings;
@@ -11960,6 +11962,11 @@ cp_parser_range_for (cp_parser *parser, tree scope, tree init, tree range_decl,
       binding->previous = IDENTIFIER_BINDING (names[i]);
       IDENTIFIER_BINDING (names[i]) = binding;
     }
+
+  /* finish_omp_for has its own code for the following, so just
+     return the range_expr instead.  */
+  if (is_omp)
+    return range_expr;
 
   /* If in template, STMT is converted to a normal for-statement
      at instantiation. If not, it is done just ahead. */
@@ -31490,7 +31497,7 @@ cp_parser_objc_at_dynamic_declaration (cp_parser *parser)
 }
 
 
-/* OpenMP 2.5 / 3.0 / 3.1 / 4.0 parsing routines.  */
+/* OpenMP 2.5 / 3.0 / 3.1 / 4.0 / 4.5 / 5.0 parsing routines.  */
 
 /* Returns name of the next clause.
    If the clause is not recognized PRAGMA_OMP_CLAUSE_NONE is returned and
@@ -31580,6 +31587,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'i':
 	  if (!strcmp ("if_present", p))
 	    result = PRAGMA_OACC_CLAUSE_IF_PRESENT;
+	  else if (!strcmp ("in_reduction", p))
+	    result = PRAGMA_OMP_CLAUSE_IN_REDUCTION;
 	  else if (!strcmp ("inbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_INBRANCH;
 	  else if (!strcmp ("independent", p))
@@ -31604,6 +31613,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	case 'n':
 	  if (!strcmp ("nogroup", p))
 	    result = PRAGMA_OMP_CLAUSE_NOGROUP;
+	  else if (!strcmp ("nontemporal", p))
+	    result = PRAGMA_OMP_CLAUSE_NONTEMPORAL;
 	  else if (!strcmp ("notinbranch", p))
 	    result = PRAGMA_OMP_CLAUSE_NOTINBRANCH;
 	  else if (!strcmp ("nowait", p))
@@ -31668,7 +31679,9 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_SIMDLEN;
 	  break;
 	case 't':
-	  if (!strcmp ("taskgroup", p))
+	  if (!strcmp ("task_reduction", p))
+	    result = PRAGMA_OMP_CLAUSE_TASK_REDUCTION;
+	  else if (!strcmp ("taskgroup", p))
 	    result = PRAGMA_OMP_CLAUSE_TASKGROUP;
 	  else if (!strcmp ("thread_limit", p))
 	    result = PRAGMA_OMP_CLAUSE_THREAD_LIMIT;
@@ -31759,6 +31772,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
     {
       tree name, decl;
 
+      if (kind == OMP_CLAUSE_DEPEND)
+	cp_parser_parse_tentatively (parser);
       token = cp_lexer_peek_token (parser->lexer);
       if (kind != 0
 	  && current_class_ptr
@@ -31778,15 +31793,25 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 					  /*declarator_p=*/false,
 					  /*optional_p=*/false);
 	  if (name == error_mark_node)
-	    goto skip_comma;
+	    {
+	      if (kind == OMP_CLAUSE_DEPEND
+		  && cp_parser_simulate_error (parser))
+		goto depend_lvalue;
+	      goto skip_comma;
+	    }
 
 	  if (identifier_p (name))
 	    decl = cp_parser_lookup_name_simple (parser, name, token->location);
 	  else
 	    decl = name;
 	  if (decl == error_mark_node)
-	    cp_parser_name_lookup_error (parser, name, decl, NLE_NULL,
-					 token->location);
+	    {
+	      if (kind == OMP_CLAUSE_DEPEND
+		  && cp_parser_simulate_error (parser))
+		goto depend_lvalue;
+	      cp_parser_name_lookup_error (parser, name, decl, NLE_NULL,
+					   token->location);
+	    }
 	}
       if (decl == error_mark_node)
 	;
@@ -31822,6 +31847,8 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 	      /* FALLTHROUGH.  */
 	    case OMP_CLAUSE_DEPEND:
 	    case OMP_CLAUSE_REDUCTION:
+	    case OMP_CLAUSE_IN_REDUCTION:
+	    case OMP_CLAUSE_TASK_REDUCTION:
 	      while (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_SQUARE))
 		{
 		  tree low_bound = NULL_TREE, length = NULL_TREE;
@@ -31839,7 +31866,14 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		    {
 		      /* Look for `:'.  */
 		      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-			goto skip_comma;
+			{
+			  if (kind == OMP_CLAUSE_DEPEND
+			      && cp_parser_simulate_error (parser))
+			    goto depend_lvalue;
+			  goto skip_comma;
+			}
+		      if (kind == OMP_CLAUSE_DEPEND)
+			cp_parser_commit_to_tentative_parse (parser);
 		      if (!cp_lexer_next_token_is (parser->lexer,
 						   CPP_CLOSE_SQUARE))
 			length = cp_parser_expression (parser);
@@ -31847,13 +31881,33 @@ cp_parser_omp_var_list_no_open (cp_parser *parser, enum omp_clause_code kind,
 		  /* Look for the closing `]'.  */
 		  if (!cp_parser_require (parser, CPP_CLOSE_SQUARE,
 					  RT_CLOSE_SQUARE))
-		    goto skip_comma;
+		    {
+		      if (kind == OMP_CLAUSE_DEPEND
+			  && cp_parser_simulate_error (parser))
+			goto depend_lvalue;
+		      goto skip_comma;
+		    }
 
 		  decl = tree_cons (low_bound, length, decl);
 		}
 	      break;
 	    default:
 	      break;
+	    }
+
+	  if (kind == OMP_CLAUSE_DEPEND)
+	    {
+	      if (cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA)
+		  && cp_lexer_next_token_is_not (parser->lexer, CPP_CLOSE_PAREN)
+		  && cp_parser_simulate_error (parser))
+		{
+		depend_lvalue:
+		  cp_parser_abort_tentative_parse (parser);
+		  decl = cp_parser_assignment_expression (parser, NULL,
+							  false, false);
+		}
+	      else
+		cp_parser_parse_definitely (parser);
 	    }
 
 	  tree u = build_omp_clause (token->location, kind);
@@ -32440,7 +32494,11 @@ cp_parser_omp_clause_final (cp_parser *parser, tree list, location_t location)
 
    directive-name-modifier:
      parallel | task | taskloop | target data | target | target update
-     | target enter data | target exit data  */
+     | target enter data | target exit data
+
+   OpenMP 5.0:
+   directive-name-modifier:
+     ... | simd | cancel  */
 
 static tree
 cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
@@ -32459,8 +32517,12 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
       const char *p = IDENTIFIER_POINTER (id);
       int n = 2;
 
-      if (strcmp ("parallel", p) == 0)
+      if (strcmp ("cancel", p) == 0)
+	if_modifier = VOID_CST;
+      else if (strcmp ("parallel", p) == 0)
 	if_modifier = OMP_PARALLEL;
+      else if (strcmp ("simd", p) == 0)
+	if_modifier = OMP_SIMD;
       else if (strcmp ("task", p) == 0)
 	if_modifier = OMP_TASK;
       else if (strcmp ("taskloop", p) == 0)
@@ -32547,7 +32609,9 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
 	    const char *p = NULL;
 	    switch (if_modifier)
 	      {
+	      case VOID_CST: p = "cancel"; break;
 	      case OMP_PARALLEL: p = "parallel"; break;
+	      case OMP_SIMD: p = "simd"; break;
 	      case OMP_TASK: p = "task"; break;
 	      case OMP_TASKLOOP: p = "taskloop"; break;
 	      case OMP_TARGET_DATA: p = "target data"; break;
@@ -32774,7 +32838,10 @@ cp_parser_omp_clause_hint (cp_parser *parser, tree list,
 }
 
 /* OpenMP 4.5:
-   defaultmap ( tofrom : scalar ) */
+   defaultmap ( tofrom : scalar )
+
+   OpenMP 5.0:
+   defaultmap ( implicit-behavior [ : variable-category ] ) */
 
 static tree
 cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
@@ -32782,47 +32849,163 @@ cp_parser_omp_clause_defaultmap (cp_parser *parser, tree list,
 {
   tree c, id;
   const char *p;
+  enum omp_clause_defaultmap_kind behavior = OMP_CLAUSE_DEFAULTMAP_DEFAULT;
+  enum omp_clause_defaultmap_kind category
+    = OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DEFAULT))
+    p = "default";
+  else if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
-      cp_parser_error (parser, "expected %<tofrom%>");
+    invalid_behavior:
+      cp_parser_error (parser, "expected %<alloc%>, %<to%>, %<from%>, "
+			       "%<tofrom%>, %<firstprivate%>, %<none%> "
+			       "or %<default%>");
       goto out_err;
     }
-  id = cp_lexer_peek_token (parser->lexer)->u.value;
-  p = IDENTIFIER_POINTER (id);
-  if (strcmp (p, "tofrom") != 0)
+  else
     {
-      cp_parser_error (parser, "expected %<tofrom%>");
-      goto out_err;
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
     }
-  cp_lexer_consume_token (parser->lexer);
-  if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
-    goto out_err;
 
-  if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  switch (p[0])
     {
-      cp_parser_error (parser, "expected %<scalar%>");
-      goto out_err;
-    }
-  id = cp_lexer_peek_token (parser->lexer)->u.value;
-  p = IDENTIFIER_POINTER (id);
-  if (strcmp (p, "scalar") != 0)
-    {
-      cp_parser_error (parser, "expected %<scalar%>");
-      goto out_err;
+    case 'a':
+      if (strcmp ("alloc", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_ALLOC;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'd':
+      if (strcmp ("default", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_DEFAULT;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'f':
+      if (strcmp ("firstprivate", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_FIRSTPRIVATE;
+      else if (strcmp ("from", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_FROM;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 'n':
+      if (strcmp ("none", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_NONE;
+      else
+	goto invalid_behavior;
+      break;
+
+    case 't':
+      if (strcmp ("tofrom", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_TOFROM;
+      else if (strcmp ("to", p) == 0)
+	behavior = OMP_CLAUSE_DEFAULTMAP_TO;
+      else
+	goto invalid_behavior;
+      break;
+
+    default:
+      goto invalid_behavior;
     }
   cp_lexer_consume_token (parser->lexer);
+
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+    {
+      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	goto out_err;
+
+      if (!cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	invalid_category:
+	  cp_parser_error (parser, "expected %<scalar%>, %<aggregate%> or "
+				   "%<pointer%>");
+	  goto out_err;
+	}
+      id = cp_lexer_peek_token (parser->lexer)->u.value;
+      p = IDENTIFIER_POINTER (id);
+
+      switch (p[0])
+	{
+	case 'a':
+	  if (strcmp ("aggregate", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE;
+	  else
+	    goto invalid_category;
+	  break;
+
+	case 'p':
+	  if (strcmp ("pointer", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER;
+	  else
+	    goto invalid_category;
+	  break;
+
+	case 's':
+	  if (strcmp ("scalar", p) == 0)
+	    category = OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR;
+	  else
+	    goto invalid_category;
+	  break;
+
+	default:
+	  goto invalid_category;
+	}
+
+      cp_lexer_consume_token (parser->lexer);
+    }
   if (!parens.require_close (parser))
     goto out_err;
 
-  check_no_duplicate_clause (list, OMP_CLAUSE_DEFAULTMAP, "defaultmap",
-			     location);
+  for (c = list; c ; c = OMP_CLAUSE_CHAIN (c))
+    if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEFAULTMAP
+	&& (category == OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED
+	    || OMP_CLAUSE_DEFAULTMAP_CATEGORY (c) == category
+	    || (OMP_CLAUSE_DEFAULTMAP_CATEGORY (c)
+		== OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED)))
+      {
+	enum omp_clause_defaultmap_kind cat = category;
+	location_t loc = OMP_CLAUSE_LOCATION (c);
+	if (cat == OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED)
+	  cat = OMP_CLAUSE_DEFAULTMAP_CATEGORY (c);
+	p = NULL;
+	switch (cat)
+	  {
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_UNSPECIFIED:
+	    p = NULL;
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_AGGREGATE:
+	    p = "aggregate";
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_POINTER:
+	    p = "pointer";
+	    break;
+	  case OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR:
+	    p = "scalar";
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
+	if (p)
+	  error_at (loc, "too many %<defaultmap%> clauses with %qs category",
+		    p);
+	else
+	  error_at (loc, "too many %<defaultmap%> clauses with unspecified "
+			 "category");
+	break;
+      }
 
   c = build_omp_clause (location, OMP_CLAUSE_DEFAULTMAP);
+  OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, behavior, category);
   OMP_CLAUSE_CHAIN (c) = list;
   return c;
 
@@ -32897,16 +33080,49 @@ cp_parser_omp_clause_ordered (cp_parser *parser,
 
    reduction-operator:
      One of: + * - & ^ | && ||
-     id-expression  */
+     id-expression
+
+   OpenMP 5.0:
+   reduction ( reduction-modifier, reduction-operator : variable-list )
+   in_reduction ( reduction-operator : variable-list )
+   task_reduction ( reduction-operator : variable-list )  */
 
 static tree
-cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
+cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
+				bool is_omp, tree list)
 {
   enum tree_code code = ERROR_MARK;
   tree nlist, c, id = NULL_TREE;
+  bool task = false;
+  bool inscan = false;
 
   if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
     return list;
+
+  if (kind == OMP_CLAUSE_REDUCTION && is_omp)
+    {
+      if (cp_lexer_next_token_is_keyword (parser->lexer, RID_DEFAULT)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	       && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COMMA))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+	  if (strcmp (p, "task") == 0)
+	    task = true;
+	  else if (strcmp (p, "inscan") == 0)
+	    inscan = true;
+	  if (task || inscan)
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	}
+    }
 
   switch (cp_lexer_peek_token (parser->lexer)->type)
     {
@@ -32980,11 +33196,15 @@ cp_parser_omp_clause_reduction (cp_parser *parser, tree list)
   if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
     goto resync_fail;
 
-  nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_REDUCTION, list,
+  nlist = cp_parser_omp_var_list_no_open (parser, kind, list,
 					  NULL);
   for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
     {
       OMP_CLAUSE_REDUCTION_CODE (c) = code;
+      if (task)
+	OMP_CLAUSE_REDUCTION_TASK (c) = 1;
+      else if (inscan)
+	OMP_CLAUSE_REDUCTION_INSCAN (c) = 1;
       OMP_CLAUSE_REDUCTION_PLACEHOLDER (c) = id;
     }
 
@@ -33303,6 +33523,43 @@ cp_parser_omp_clause_aligned (cp_parser *parser, tree list)
   return nlist;
 }
 
+/* OpenMP 2.5:
+   lastprivate ( variable-list )
+
+   OpenMP 5.0:
+   lastprivate ( [ lastprivate-modifier : ] variable-list )  */
+
+static tree
+cp_parser_omp_clause_lastprivate (cp_parser *parser, tree list)
+{
+  bool conditional = false;
+
+  if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+    return list;
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (strcmp ("conditional", p) == 0)
+	{
+	  conditional = true;
+	  cp_lexer_consume_token (parser->lexer);
+	  cp_lexer_consume_token (parser->lexer);
+	}
+    }
+
+  tree nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_LASTPRIVATE,
+					       list, NULL);
+
+  if (conditional)
+    for (tree c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
+      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 1;
+  return nlist;
+}
+
 /* OpenMP 4.0:
    linear ( variable-list )
    linear ( variable-list : expression )
@@ -33545,6 +33802,118 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
   return list;
 }
 
+/* OpenMP 5.0:
+   iterators ( iterators-definition )
+
+   iterators-definition:
+     iterator-specifier
+     iterator-specifier , iterators-definition
+
+   iterator-specifier:
+     identifier = range-specification
+     iterator-type identifier = range-specification
+
+   range-specification:
+     begin : end
+     begin : end : step  */
+
+static tree
+cp_parser_omp_iterators (cp_parser *parser)
+{
+  tree ret = NULL_TREE, *last = &ret;
+  cp_lexer_consume_token (parser->lexer);
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+
+  bool saved_colon_corrects_to_scope_p
+    = parser->colon_corrects_to_scope_p;
+  bool saved_colon_doesnt_start_class_def_p
+    = parser->colon_doesnt_start_class_def_p;
+
+  do
+    {
+      tree iter_type;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_EQ))
+	iter_type = integer_type_node;
+      else
+	{
+	  const char *saved_message
+	    = parser->type_definition_forbidden_message;
+	  parser->type_definition_forbidden_message
+	    = G_("types may not be defined in iterator type");
+
+	  iter_type = cp_parser_type_id (parser);
+
+	  parser->type_definition_forbidden_message = saved_message;
+	}
+
+      location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	{
+	  cp_parser_error (parser, "expected identifier");
+	  break;
+	}
+
+      tree id = cp_parser_identifier (parser);
+      if (id == error_mark_node)
+	break;
+
+      if (!cp_parser_require (parser, CPP_EQ, RT_EQ))
+	break;
+
+      parser->colon_corrects_to_scope_p = false;
+      parser->colon_doesnt_start_class_def_p = true;
+      tree begin = cp_parser_assignment_expression (parser);
+
+      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	break;
+
+      tree end = cp_parser_assignment_expression (parser);
+
+      tree step = integer_one_node;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  step = cp_parser_assignment_expression (parser);
+	}
+
+      tree iter_var = build_decl (loc, VAR_DECL, id, iter_type);
+      DECL_ARTIFICIAL (iter_var) = 1;
+      DECL_CONTEXT (iter_var) = current_function_decl;
+      pushdecl (iter_var);
+
+      *last = make_tree_vec (6);
+      TREE_VEC_ELT (*last, 0) = iter_var;
+      TREE_VEC_ELT (*last, 1) = begin;
+      TREE_VEC_ELT (*last, 2) = end;
+      TREE_VEC_ELT (*last, 3) = step;
+      last = &TREE_CHAIN (*last);
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	{
+	  cp_lexer_consume_token (parser->lexer);
+	  continue;
+	}
+      break;
+    }
+  while (1);
+
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
+  parser->colon_doesnt_start_class_def_p
+    = saved_colon_doesnt_start_class_def_p;
+
+  if (!parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser,
+					   /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  return ret ? ret : error_mark_node;
+}
+
 /* OpenMP 4.0:
    depend ( depend-kind : variable-list )
 
@@ -33554,40 +33923,72 @@ cp_parser_omp_clause_depend_sink (cp_parser *parser, location_t clause_loc,
    OpenMP 4.5:
    depend ( source )
 
-   depend ( sink : vec ) */
+   depend ( sink : vec )
+
+   OpenMP 5.0:
+   depend ( depend-modifier , depend-kind: variable-list )
+
+   depend-kind:
+     in | out | inout | mutexinoutset | depobj
+
+   depend-modifier:
+     iterator ( iterators-definition )  */
 
 static tree
 cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
 {
-  tree nlist, c;
-  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_INOUT;
+  tree nlist, c, iterators = NULL_TREE;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_LAST;
 
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  do
     {
+      if (cp_lexer_next_token_is_not (parser->lexer, CPP_NAME))
+	goto invalid_kind;
+
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
 
+      if (strcmp ("iterator", p) == 0 && iterators == NULL_TREE)
+	{
+	  begin_scope (sk_omp, NULL);
+	  iterators = cp_parser_omp_iterators (parser);
+	  cp_parser_require (parser, CPP_COMMA, RT_COMMA);
+	  continue;
+	}
       if (strcmp ("in", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_IN;
       else if (strcmp ("inout", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_INOUT;
+      else if (strcmp ("mutexinoutset", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
       else if (strcmp ("out", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_OUT;
-      else if (strcmp ("source", p) == 0)
-	kind = OMP_CLAUSE_DEPEND_SOURCE;
+      else if (strcmp ("depobj", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_SINK;
+      else if (strcmp ("source", p) == 0)
+	kind = OMP_CLAUSE_DEPEND_SOURCE;
       else
 	goto invalid_kind;
+      break;
     }
-  else
-    goto invalid_kind;
+  while (1);
 
   cp_lexer_consume_token (parser->lexer);
+
+  if (iterators
+      && (kind == OMP_CLAUSE_DEPEND_SOURCE || kind == OMP_CLAUSE_DEPEND_SINK))
+    {
+      poplevel (0, 1, 0);
+      error_at (loc, "%<iterator%> modifier incompatible with %qs",
+		kind == OMP_CLAUSE_DEPEND_SOURCE ? "source" : "sink");
+      iterators = NULL_TREE;
+    }
 
   if (kind == OMP_CLAUSE_DEPEND_SOURCE)
     {
@@ -33612,14 +34013,30 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
       nlist = cp_parser_omp_var_list_no_open (parser, OMP_CLAUSE_DEPEND,
 					      list, NULL);
 
+      if (iterators)
+	{
+	  tree block = poplevel (1, 1, 0);
+	  if (iterators == error_mark_node)
+	    iterators = NULL_TREE;
+	  else
+	    TREE_VEC_ELT (iterators, 5) = block;
+	}
+
       for (c = nlist; c != list; c = OMP_CLAUSE_CHAIN (c))
-	OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	{
+	  OMP_CLAUSE_DEPEND_KIND (c) = kind;
+	  if (iterators)
+	    OMP_CLAUSE_DECL (c)
+	      = build_tree_list (iterators, OMP_CLAUSE_DECL (c));
+	}
     }
   return nlist;
 
  invalid_kind:
   cp_parser_error (parser, "invalid depend kind");
  resync_fail:
+  if (iterators)
+    poplevel (0, 1, 0);
   cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					 /*or_comma=*/false,
 					 /*consume_paren=*/true);
@@ -34022,7 +34439,9 @@ cp_parser_oacc_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "private";
 	  break;
 	case PRAGMA_OACC_CLAUSE_REDUCTION:
-	  clauses = cp_parser_omp_clause_reduction (parser, clauses);
+	  clauses
+	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
+					      false, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OACC_CLAUSE_SEQ:
@@ -34169,9 +34588,14 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 					     true);
 	  c_name = "if";
 	  break;
+	case PRAGMA_OMP_CLAUSE_IN_REDUCTION:
+	  clauses
+	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_IN_REDUCTION,
+					      true, clauses);
+	  c_name = "in_reduction";
+	  break;
 	case PRAGMA_OMP_CLAUSE_LASTPRIVATE:
-	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_LASTPRIVATE,
-					    clauses);
+	  clauses = cp_parser_omp_clause_lastprivate (parser, clauses);
 	  c_name = "lastprivate";
 	  break;
 	case PRAGMA_OMP_CLAUSE_MERGEABLE:
@@ -34209,7 +34633,9 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  c_name = "private";
 	  break;
 	case PRAGMA_OMP_CLAUSE_REDUCTION:
-	  clauses = cp_parser_omp_clause_reduction (parser, clauses);
+	  clauses
+	    = cp_parser_omp_clause_reduction (parser, OMP_CLAUSE_REDUCTION,
+					      true, clauses);
 	  c_name = "reduction";
 	  break;
 	case PRAGMA_OMP_CLAUSE_SCHEDULE:
@@ -34222,6 +34648,13 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 					    clauses);
 	  c_name = "shared";
 	  break;
+	case PRAGMA_OMP_CLAUSE_TASK_REDUCTION:
+	  clauses
+	    = cp_parser_omp_clause_reduction (parser,
+					      OMP_CLAUSE_TASK_REDUCTION,
+					      true, clauses);
+	  c_name = "task_reduction";
+	  break;
 	case PRAGMA_OMP_CLAUSE_UNTIED:
 	  clauses = cp_parser_omp_clause_untied (parser, clauses,
 						 token->location);
@@ -34231,6 +34664,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_clause_branch (parser, OMP_CLAUSE_INBRANCH,
 						 clauses, token->location);
 	  c_name = "inbranch";
+	  break;
+	case PRAGMA_OMP_CLAUSE_NONTEMPORAL:
+	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_NONTEMPORAL,
+					    clauses);
+	  c_name = "nontemporal";
 	  break;
 	case PRAGMA_OMP_CLAUSE_NOTINBRANCH:
 	  clauses = cp_parser_omp_clause_branch (parser,
@@ -34494,61 +34932,153 @@ cp_parser_omp_atomic (cp_parser *parser, cp_token *pragma_tok)
 {
   tree lhs = NULL_TREE, rhs = NULL_TREE, v = NULL_TREE, lhs1 = NULL_TREE;
   tree rhs1 = NULL_TREE, orig_lhs;
-  enum tree_code code = OMP_ATOMIC, opcode = NOP_EXPR;
+  location_t loc = pragma_tok->location;
+  enum tree_code code = ERROR_MARK, opcode = NOP_EXPR;
+  enum omp_memory_order memory_order = OMP_MEMORY_ORDER_UNSPECIFIED;
   bool structured_block = false;
-  bool seq_cst = false;
+  bool first = true;
+  tree clauses = NULL_TREE;
 
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
     {
-      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
-      const char *p = IDENTIFIER_POINTER (id);
-
-      if (!strcmp (p, "seq_cst"))
-	{
-	  seq_cst = true;
-	  cp_lexer_consume_token (parser->lexer);
-	  if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
-	      && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
-	    cp_lexer_consume_token (parser->lexer);
-	}
-    }
-  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
-    {
-      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
-      const char *p = IDENTIFIER_POINTER (id);
-
-      if (!strcmp (p, "read"))
-	code = OMP_ATOMIC_READ;
-      else if (!strcmp (p, "write"))
-	code = NOP_EXPR;
-      else if (!strcmp (p, "update"))
-	code = OMP_ATOMIC;
-      else if (!strcmp (p, "capture"))
-	code = OMP_ATOMIC_CAPTURE_NEW;
-      else
-	p = NULL;
-      if (p)
+      if (!first && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
 	cp_lexer_consume_token (parser->lexer);
-    }
-  if (!seq_cst)
-    {
-      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
-	  && cp_lexer_peek_nth_token (parser->lexer, 2)->type == CPP_NAME)
-	cp_lexer_consume_token (parser->lexer);
+
+      first = false;
 
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	{
 	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  location_t cloc = cp_lexer_peek_token (parser->lexer)->location;
 	  const char *p = IDENTIFIER_POINTER (id);
+	  enum tree_code new_code = ERROR_MARK;
+	  enum omp_memory_order new_memory_order
+	    = OMP_MEMORY_ORDER_UNSPECIFIED;
 
-	  if (!strcmp (p, "seq_cst"))
+	  if (!strcmp (p, "read"))
+	    new_code = OMP_ATOMIC_READ;
+	  else if (!strcmp (p, "write"))
+	    new_code = NOP_EXPR;
+	  else if (!strcmp (p, "update"))
+	    new_code = OMP_ATOMIC;
+	  else if (!strcmp (p, "capture"))
+	    new_code = OMP_ATOMIC_CAPTURE_NEW;
+	  else if (!strcmp (p, "seq_cst"))
+	    new_memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  else if (!strcmp (p, "acq_rel"))
+	    new_memory_order = OMP_MEMORY_ORDER_ACQ_REL;
+	  else if (!strcmp (p, "release"))
+	    new_memory_order = OMP_MEMORY_ORDER_RELEASE;
+	  else if (!strcmp (p, "acquire"))
+	    new_memory_order = OMP_MEMORY_ORDER_ACQUIRE;
+	  else if (!strcmp (p, "relaxed"))
+	    new_memory_order = OMP_MEMORY_ORDER_RELAXED;
+	  else if (!strcmp (p, "hint"))
 	    {
-	      seq_cst = true;
 	      cp_lexer_consume_token (parser->lexer);
+	      clauses = cp_parser_omp_clause_hint (parser, clauses, cloc);
+	      continue;
+	    }
+	  else
+	    {
+	      p = NULL;
+	      error_at (cloc, "expected %<read%>, %<write%>, %<update%>, "
+			      "%<capture%>, %<seq_cst%>, %<acq_rel%>, "
+			      "%<release%>, %<relaxed%> or %<hint%> clause");
+	    }
+	  if (p)
+	    {
+	      if (new_code != ERROR_MARK)
+		{
+		  if (code != ERROR_MARK)
+		    error_at (cloc, "too many atomic clauses");
+		  else
+		    code = new_code;
+		}
+	      else if (new_memory_order != OMP_MEMORY_ORDER_UNSPECIFIED)
+		{
+		  if (memory_order != OMP_MEMORY_ORDER_UNSPECIFIED)
+		    error_at (cloc, "too many memory order clauses");
+		  else
+		    memory_order = new_memory_order;
+		}
+	      cp_lexer_consume_token (parser->lexer);
+	      continue;
 	    }
 	}
+      break;
     }
   cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  if (code == ERROR_MARK)
+    code = OMP_ATOMIC;
+  if (memory_order == OMP_MEMORY_ORDER_UNSPECIFIED)
+    {
+      omp_requires_mask
+	= (enum omp_requires) (omp_requires_mask
+			       | OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED);
+      switch ((enum omp_memory_order)
+	      (omp_requires_mask & OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER))
+	{
+	case OMP_MEMORY_ORDER_UNSPECIFIED:
+	case OMP_MEMORY_ORDER_RELAXED:
+	  memory_order = OMP_MEMORY_ORDER_RELAXED;
+	  break;
+	case OMP_MEMORY_ORDER_SEQ_CST:
+	  memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  break;
+	case OMP_MEMORY_ORDER_ACQ_REL:
+	  switch (code)
+	    {
+	    case OMP_ATOMIC_READ:
+	      memory_order = OMP_MEMORY_ORDER_ACQUIRE;
+	      break;
+	    case NOP_EXPR: /* atomic write */
+	    case OMP_ATOMIC:
+	      memory_order = OMP_MEMORY_ORDER_RELEASE;
+	      break;
+	    default:
+	      memory_order = OMP_MEMORY_ORDER_ACQ_REL;
+	      break;
+	    }
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+  else
+    switch (code)
+      {
+      case OMP_ATOMIC_READ:
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_RELEASE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic read%> incompatible with "
+			   "%<acq_rel%> or %<release%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      case NOP_EXPR: /* atomic write */
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic write%> incompatible with "
+			   "%<acq_rel%> or %<acquire%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      case OMP_ATOMIC:
+	if (memory_order == OMP_MEMORY_ORDER_ACQ_REL
+	    || memory_order == OMP_MEMORY_ORDER_ACQUIRE)
+	  {
+	    error_at (loc, "%<#pragma omp atomic update%> incompatible with "
+			   "%<acq_rel%> or %<acquire%> clauses");
+	    memory_order = OMP_MEMORY_ORDER_SEQ_CST;
+	  }
+	break;
+      default:
+	break;
+      }
 
   switch (code)
     {
@@ -34849,7 +35379,9 @@ stmt_done:
       cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
     }
 done:
-  finish_omp_atomic (code, opcode, lhs, rhs, v, lhs1, rhs1, seq_cst);
+  clauses = finish_omp_clauses (clauses, C_ORT_OMP);
+  finish_omp_atomic (pragma_tok->location, code, opcode, lhs, rhs, v, lhs1,
+		     rhs1, clauses, memory_order);
   if (!structured_block)
     cp_parser_consume_semicolon_at_end_of_statement (parser);
   return;
@@ -34911,6 +35443,10 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       if (name == error_mark_node)
 	name = NULL;
 
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME))
+	cp_lexer_consume_token (parser->lexer);
+
       clauses = cp_parser_omp_all_clauses (parser,
 					   OMP_CRITICAL_CLAUSE_MASK,
 					   "#pragma omp critical", pragma_tok);
@@ -34922,26 +35458,151 @@ cp_parser_omp_critical (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
   return c_finish_omp_critical (input_location, stmt, name, clauses);
 }
 
+/* OpenMP 5.0:
+   # pragma omp depobj ( depobj ) depobj-clause new-line
+
+   depobj-clause:
+     depend (dependence-type : locator)
+     destroy
+     update (dependence-type)
+
+   dependence-type:
+     in
+     out
+     inout
+     mutexinout  */
+
+static void
+cp_parser_omp_depobj (cp_parser *parser, cp_token *pragma_tok)
+{
+  location_t loc = pragma_tok->location;
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    {
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return;
+    }
+
+  tree depobj = cp_parser_assignment_expression (parser);
+
+  if (!parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  tree clause = NULL_TREE;
+  enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_SOURCE;
+  location_t c_loc = cp_lexer_peek_token (parser->lexer)->location;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      cp_lexer_consume_token (parser->lexer);
+      if (!strcmp ("depend", p))
+	{
+	  clause = cp_parser_omp_clause_depend (parser, NULL_TREE, c_loc);
+	  if (clause)
+	    clause = finish_omp_clauses (clause, C_ORT_OMP);
+	  if (!clause)
+	    clause = error_mark_node;
+	}
+      else if (!strcmp ("destroy", p))
+	kind = OMP_CLAUSE_DEPEND_LAST;
+      else if (!strcmp ("update", p))
+	{
+	  matching_parens c_parens;
+	  if (c_parens.require_open (parser))
+	    {
+	      location_t c2_loc
+		= cp_lexer_peek_token (parser->lexer)->location;
+	      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+		{
+		  tree id2 = cp_lexer_peek_token (parser->lexer)->u.value;
+		  const char *p2 = IDENTIFIER_POINTER (id2);
+
+		  cp_lexer_consume_token (parser->lexer);
+		  if (!strcmp ("in", p2))
+		    kind = OMP_CLAUSE_DEPEND_IN;
+		  else if (!strcmp ("out", p2))
+		    kind = OMP_CLAUSE_DEPEND_OUT;
+		  else if (!strcmp ("inout", p2))
+		    kind = OMP_CLAUSE_DEPEND_INOUT;
+		  else if (!strcmp ("mutexinoutset", p2))
+		    kind = OMP_CLAUSE_DEPEND_MUTEXINOUTSET;
+		}
+	      if (kind == OMP_CLAUSE_DEPEND_SOURCE)
+		{
+		  clause = error_mark_node;
+		  error_at (c2_loc, "expected %<in%>, %<out%>, %<inout%> or "
+				    "%<mutexinoutset%>");
+		}
+	      if (!c_parens.require_close (parser))
+		cp_parser_skip_to_closing_parenthesis (parser,
+						       /*recovering=*/true,
+						       /*or_comma=*/false,
+						       /*consume_paren=*/true);
+	    }
+	  else
+	    clause = error_mark_node;
+	}
+    }
+  if (!clause && kind == OMP_CLAUSE_DEPEND_SOURCE)
+    {
+      clause = error_mark_node;
+      error_at (c_loc, "expected %<depend%>, %<destroy%> or %<update%> clause");
+    }
+  cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  finish_omp_depobj (loc, depobj, kind, clause);
+}
+
+
 /* OpenMP 2.5:
    # pragma omp flush flush-vars[opt] new-line
 
    flush-vars:
-     ( variable-list ) */
+     ( variable-list )
+
+   OpenMP 5.0:
+   # pragma omp flush memory-order-clause new-line  */
 
 static void
 cp_parser_omp_flush (cp_parser *parser, cp_token *pragma_tok)
 {
+  enum memmodel mo = MEMMODEL_LAST;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+      if (!strcmp (p, "acq_rel"))
+	mo = MEMMODEL_ACQ_REL;
+      else if (!strcmp (p, "release"))
+	mo = MEMMODEL_RELEASE;
+      else if (!strcmp (p, "acquire"))
+	mo = MEMMODEL_ACQUIRE;
+      else
+	error_at (cp_lexer_peek_token (parser->lexer)->location,
+		  "expected %<acq_rel%>, %<release%> or %<acquire%>");
+      cp_lexer_consume_token (parser->lexer);
+    }
   if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN))
-    (void) cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL);
+    {
+      if (mo != MEMMODEL_LAST)
+	error_at (cp_lexer_peek_token (parser->lexer)->location,
+		  "%<flush%> list specified together with memory order "
+		  "clause");
+      (void) cp_parser_omp_var_list (parser, OMP_CLAUSE_ERROR, NULL);
+    }
   cp_parser_require_pragma_eol (parser, pragma_tok);
 
-  finish_omp_flush ();
+  finish_omp_flush (mo);
 }
 
 /* Helper function, to parse omp for increment expression.  */
 
 static tree
-cp_parser_omp_for_cond (cp_parser *parser, tree decl)
+cp_parser_omp_for_cond (cp_parser *parser, tree decl, enum tree_code code)
 {
   tree cond = cp_parser_binary_expression (parser, false, true,
 					   PREC_NOT_OPERATOR, NULL);
@@ -34960,7 +35621,8 @@ cp_parser_omp_for_cond (cp_parser *parser, tree decl)
     case LE_EXPR:
       break;
     case NE_EXPR:
-      /* Fall through: OpenMP disallows NE_EXPR.  */
+      if (code != OACC_LOOP)
+	break;
       gcc_fallthrough ();
     default:
       return error_mark_node;
@@ -35304,6 +35966,192 @@ cp_parser_omp_for_loop_init (cp_parser *parser,
   return add_private_clause;
 }
 
+/* Helper for cp_parser_omp_for_loop, handle one range-for loop.  */
+
+void
+cp_convert_omp_range_for (tree &this_pre_body, vec<tree, va_gc> *for_block,
+			  tree &decl, tree &orig_decl, tree &init,
+			  tree &orig_init, tree &cond, tree &incr)
+{
+  tree begin, end, range_temp_decl = NULL_TREE;
+  tree iter_type, begin_expr, end_expr;
+
+  if (processing_template_decl)
+    {
+      if (check_for_bare_parameter_packs (init))
+	init = error_mark_node;
+      if (!type_dependent_expression_p (init)
+	  /* do_auto_deduction doesn't mess with template init-lists.  */
+	  && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	{
+	  tree d = decl;
+	  if (decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (decl))
+	    {
+	      tree v = DECL_VALUE_EXPR (decl);
+	      if (TREE_CODE (v) == ARRAY_REF
+		  && VAR_P (TREE_OPERAND (v, 0))
+		  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+		d = TREE_OPERAND (v, 0);
+	    }
+	  do_range_for_auto_deduction (d, init);
+	}
+      cond = global_namespace;
+      incr = NULL_TREE;
+      orig_init = init;
+      if (this_pre_body)
+	this_pre_body = pop_stmt_list (this_pre_body);
+      return;
+    }
+
+  init = mark_lvalue_use (init);
+
+  if (decl == error_mark_node || init == error_mark_node)
+    /* If an error happened previously do nothing or else a lot of
+       unhelpful errors would be issued.  */
+    begin_expr = end_expr = iter_type = error_mark_node;
+  else
+    {
+      tree range_temp;
+
+      if (VAR_P (init)
+	  && array_of_runtime_bound_p (TREE_TYPE (init)))
+	/* Can't bind a reference to an array of runtime bound.  */
+	range_temp = init;
+      else
+	{
+	  range_temp = build_range_temp (init);
+	  DECL_NAME (range_temp) = NULL_TREE;
+	  pushdecl (range_temp);
+	  cp_finish_decl (range_temp, init,
+			  /*is_constant_init*/false, NULL_TREE,
+			  LOOKUP_ONLYCONVERTING);
+	  range_temp_decl = range_temp;
+	  range_temp = convert_from_reference (range_temp);
+	}
+      iter_type = cp_parser_perform_range_for_lookup (range_temp,
+						      &begin_expr, &end_expr);
+    }
+
+  tree end_iter_type = iter_type;
+  if (cxx_dialect >= cxx17)
+    end_iter_type = cv_unqualified (TREE_TYPE (end_expr));
+  end = build_decl (input_location, VAR_DECL, NULL_TREE, end_iter_type);
+  TREE_USED (end) = 1;
+  DECL_ARTIFICIAL (end) = 1;
+  pushdecl (end);
+  cp_finish_decl (end, end_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  /* The new for initialization statement.  */
+  begin = build_decl (input_location, VAR_DECL, NULL_TREE, iter_type);
+  TREE_USED (begin) = 1;
+  DECL_ARTIFICIAL (begin) = 1;
+  pushdecl (begin);
+  orig_init = init;
+  if (CLASS_TYPE_P (iter_type))
+    init = NULL_TREE;
+  else
+    {
+      init = begin_expr;
+      begin_expr = NULL_TREE;
+    }
+  cp_finish_decl (begin, begin_expr,
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+
+  /* The new for condition.  */
+  if (CLASS_TYPE_P (iter_type))
+    cond = build2 (NE_EXPR, boolean_type_node, begin, end);
+  else
+    cond = build_x_binary_op (input_location, NE_EXPR,
+			      begin, ERROR_MARK,
+			      end, ERROR_MARK,
+			      NULL, tf_warning_or_error);
+
+  /* The new increment expression.  */
+  if (CLASS_TYPE_P (iter_type))
+    incr = build2 (PREINCREMENT_EXPR, iter_type, begin, NULL_TREE);
+  else
+    incr = finish_unary_op_expr (input_location,
+				 PREINCREMENT_EXPR, begin,
+				 tf_warning_or_error);
+
+  orig_decl = decl;
+  decl = begin;
+  if (for_block)
+    {
+      vec_safe_push (for_block, this_pre_body);
+      this_pre_body = NULL_TREE;
+    }
+
+  tree decomp_first_name = NULL_TREE;
+  unsigned decomp_cnt = 0;
+  if (orig_decl != error_mark_node && DECL_HAS_VALUE_EXPR_P (orig_decl))
+    {
+      tree v = DECL_VALUE_EXPR (orig_decl);
+      if (TREE_CODE (v) == ARRAY_REF
+	  && VAR_P (TREE_OPERAND (v, 0))
+	  && DECL_DECOMPOSITION_P (TREE_OPERAND (v, 0)))
+	{
+	  tree d = orig_decl;
+	  orig_decl = TREE_OPERAND (v, 0);
+	  decomp_cnt = tree_to_uhwi (TREE_OPERAND (v, 1)) + 1;
+	  decomp_first_name = d;
+	}
+    }
+
+  tree auto_node = type_uses_auto (TREE_TYPE (orig_decl));
+  if (auto_node)
+    {
+      tree t = build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
+				     tf_none);
+      if (!error_operand_p (t))
+	TREE_TYPE (orig_decl) = do_auto_deduction (TREE_TYPE (orig_decl),
+						   t, auto_node);
+    }
+
+  tree v = make_tree_vec (decomp_cnt + 3);
+  TREE_VEC_ELT (v, 0) = range_temp_decl;
+  TREE_VEC_ELT (v, 1) = end;
+  TREE_VEC_ELT (v, 2) = orig_decl;
+  for (unsigned i = 0; i < decomp_cnt; i++)
+    {
+      TREE_VEC_ELT (v, i + 3) = decomp_first_name;
+      decomp_first_name = DECL_CHAIN (decomp_first_name);
+    }
+  orig_decl = tree_cons (NULL_TREE, NULL_TREE, v);
+}
+
+/* Helper for cp_parser_omp_for_loop, finalize part of range for
+   inside of the collapsed body.  */
+
+void
+cp_finish_omp_range_for (tree orig, tree begin)
+{
+  gcc_assert (TREE_CODE (orig) == TREE_LIST
+	      && TREE_CODE (TREE_CHAIN (orig)) == TREE_VEC);
+  tree decl = TREE_VEC_ELT (TREE_CHAIN (orig), 2);
+  tree decomp_first_name = NULL_TREE;
+  unsigned int decomp_cnt = 0;
+
+  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+    {
+      decomp_first_name = TREE_VEC_ELT (TREE_CHAIN (orig), 3);
+      decomp_cnt = TREE_VEC_LENGTH (TREE_CHAIN (orig)) - 3;
+      cp_maybe_mangle_decomp (decl, decomp_first_name, decomp_cnt);
+    }
+
+  /* The declaration is initialized with *__begin inside the loop body.  */
+  cp_finish_decl (decl,
+		  build_x_indirect_ref (input_location, begin, RO_UNARY_STAR,
+					tf_warning_or_error),
+		  /*is_constant_init*/false, NULL_TREE,
+		  LOOKUP_ONLYCONVERTING);
+  if (VAR_P (decl) && DECL_DECOMPOSITION_P (decl))
+    cp_finish_decomp (decl, decomp_first_name, decomp_cnt);
+}
+
 /* Parse the restricted form of the for statement allowed by OpenMP.  */
 
 static tree
@@ -35311,7 +36159,8 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 			tree *cclauses, bool *if_p)
 {
   tree init, orig_init, cond, incr, body, decl, pre_body = NULL_TREE, ret;
-  tree real_decl, initv, condv, incrv, declv;
+  tree orig_decl;
+  tree real_decl, initv, condv, incrv, declv, orig_declv;
   tree this_pre_body, cl, ordered_cl = NULL_TREE;
   location_t loc_first;
   bool collapse_err = false;
@@ -35364,6 +36213,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
   initv = make_tree_vec (count);
   condv = make_tree_vec (count);
   incrv = make_tree_vec (count);
+  orig_declv = NULL_TREE;
 
   loc_first = cp_lexer_peek_token (parser->lexer)->location;
 
@@ -35385,8 +36235,70 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
       if (!parens.require_open (parser))
 	return NULL;
 
-      init = orig_init = decl = real_decl = NULL;
+      init = orig_init = decl = real_decl = orig_decl = NULL_TREE;
       this_pre_body = push_stmt_list ();
+
+      if (code != OACC_LOOP && cxx_dialect >= cxx11)
+	{
+	  /* Save tokens so that we can put them back.  */
+	  cp_lexer_save_tokens (parser->lexer);
+
+	  /* Look for ':' that is not nested in () or {}.  */
+	  bool is_range_for
+	    = (cp_parser_skip_to_closing_parenthesis_1 (parser,
+							/*recovering=*/false,
+							CPP_COLON,
+							/*consume_paren=*/
+							false) == -1);
+
+	  /* Roll back the tokens we skipped.  */
+	  cp_lexer_rollback_tokens (parser->lexer);
+
+	  if (is_range_for)
+	    {
+	      bool saved_colon_corrects_to_scope_p
+		= parser->colon_corrects_to_scope_p;
+
+	      /* A colon is used in range-based for.  */
+	      parser->colon_corrects_to_scope_p = false;
+
+	      /* Parse the declaration.  */
+	      cp_parser_simple_declaration (parser,
+					    /*function_definition_allowed_p=*/
+					    false, &decl);
+	      parser->colon_corrects_to_scope_p
+		= saved_colon_corrects_to_scope_p;
+
+	      cp_parser_require (parser, CPP_COLON, RT_COLON);
+
+	      init = cp_parser_range_for (parser, NULL_TREE, NULL_TREE, decl,
+					  false, 0, true);
+
+	      cp_convert_omp_range_for (this_pre_body, for_block, decl,
+					orig_decl, init, orig_init,
+					cond, incr);
+	      if (this_pre_body)
+		{
+		  if (pre_body)
+		    {
+		      tree t = pre_body;
+		      pre_body = push_stmt_list ();
+		      add_stmt (t);
+		      add_stmt (this_pre_body);
+		      pre_body = pop_stmt_list (pre_body);
+		    }
+		  else
+		    pre_body = this_pre_body;
+		}
+
+	      if (ordered_cl)
+		error_at (OMP_CLAUSE_LOCATION (ordered_cl),
+			  "%<ordered%> clause with parameter on "
+			  "range-based %<for%> loop");
+
+	      goto parse_close_paren;
+	    }
+	}
 
       add_private_clause
 	= cp_parser_omp_for_loop_init (parser, this_pre_body, for_block,
@@ -35464,7 +36376,8 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 		error_at (loc, "iteration variable %qD "
 			  "should not be firstprivate",
 			  decl);
-	      else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+	      else if ((OMP_CLAUSE_CODE (c) == OMP_CLAUSE_REDUCTION
+			|| OMP_CLAUSE_CODE (c) == OMP_CLAUSE_IN_REDUCTION)
 		       && OMP_CLAUSE_DECL (c) == decl)
 		error_at (loc, "iteration variable %qD should not be reduction",
 			  decl);
@@ -35493,7 +36406,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
       cond = NULL;
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
-	cond = cp_parser_omp_for_cond (parser, decl);
+	cond = cp_parser_omp_for_cond (parser, decl, code);
       cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
 
       incr = NULL;
@@ -35513,6 +36426,7 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	    protected_set_expr_location (incr, input_location);
 	}
 
+    parse_close_paren:
       if (!parens.require_close (parser))
 	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
 					       /*or_comma=*/false,
@@ -35527,6 +36441,14 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 	  orig_inits.safe_grow_cleared (i + 1);
 	  orig_inits[i] = orig_init;
 	}
+      if (orig_decl)
+	{
+	  if (!orig_declv)
+	    orig_declv = copy_node (declv);
+	  TREE_VEC_ELT (orig_declv, i) = orig_decl;
+	}
+      else if (orig_declv)
+	TREE_VEC_ELT (orig_declv, i) = decl;
 
       if (i == count - 1)
 	break;
@@ -35575,15 +36497,27 @@ cp_parser_omp_for_loop (cp_parser *parser, enum tree_code code, tree clauses,
 
   /* Note that the grammar doesn't call for a structured block here,
      though the loop as a whole is a structured block.  */
-  body = push_stmt_list ();
+  if (orig_declv)
+    {
+      body = begin_omp_structured_block ();
+      for (i = 0; i < count; i++)
+	if (TREE_VEC_ELT (orig_declv, i) != TREE_VEC_ELT (declv, i))
+	  cp_finish_omp_range_for (TREE_VEC_ELT (orig_declv, i),
+				   TREE_VEC_ELT (declv, i));
+    }
+  else
+    body = push_stmt_list ();
   cp_parser_statement (parser, NULL_TREE, false, if_p);
-  body = pop_stmt_list (body);
+  if (orig_declv)
+    body = finish_omp_structured_block (body);
+  else
+    body = pop_stmt_list (body);
 
   if (declv == NULL_TREE)
     ret = NULL_TREE;
   else
-    ret = finish_omp_for (loc_first, code, declv, NULL, initv, condv, incrv,
-			  body, pre_body, &orig_inits, clauses);
+    ret = finish_omp_for (loc_first, code, declv, orig_declv, initv, condv,
+			  incrv, body, pre_body, &orig_inits, clauses);
 
   while (nbraces)
     {
@@ -35647,7 +36581,9 @@ cp_omp_split_clauses (location_t loc, enum tree_code code,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LASTPRIVATE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_COLLAPSE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NONTEMPORAL))
 
 static tree
 cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
@@ -35678,13 +36614,14 @@ cp_parser_omp_simd (cp_parser *parser, cp_token *pragma_tok,
 	}
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_SIMD, clauses, cclauses, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -35777,26 +36714,78 @@ cp_parser_omp_for (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_FOR];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_FOR, clauses, cclauses, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
+
+static tree cp_parser_omp_taskloop (cp_parser *, cp_token *, char *,
+				    omp_clause_mask, tree *, bool *);
 
 /* OpenMP 2.5:
    # pragma omp master new-line
      structured-block  */
 
 static tree
-cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
+cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok,
+		      char *p_name, omp_clause_mask mask, tree *cclauses,
+		      bool *if_p)
 {
-  cp_parser_require_pragma_eol (parser, pragma_tok);
-  return c_finish_omp_master (input_location,
+  tree clauses, sb, ret;
+  unsigned int save;
+  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  strcat (p_name, " master");
+
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      const char *p = IDENTIFIER_POINTER (id);
+
+      if (strcmp (p, "taskloop") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  if (cclauses == NULL)
+	    cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  if (!flag_openmp)  /* flag_openmp_simd  */
+	    return cp_parser_omp_taskloop (parser, pragma_tok, p_name, mask,
+					   cclauses, if_p);
+	  sb = begin_omp_structured_block ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  ret = cp_parser_omp_taskloop (parser, pragma_tok, p_name, mask,
+					cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  tree body = finish_omp_structured_block (sb);
+	  if (ret == NULL)
+	    return ret;
+	  return c_finish_omp_master (loc, body);
+	}
+    }
+  if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return NULL_TREE;
+    }
+
+  if (cclauses)
+    {
+      clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
+					   false);
+      cp_omp_split_clauses (loc, OMP_MASTER, mask, clauses, cclauses);
+    }
+  else
+    cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  return c_finish_omp_master (loc,
 			      cp_parser_omp_structured_block (parser, if_p));
 }
 
@@ -36038,16 +37027,34 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return NULL_TREE;
     }
-  else if (!flag_openmp)  /* flag_openmp_simd  */
-    {
-      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
-      return NULL_TREE;
-    }
   else if (cclauses == NULL && cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
       tree id = cp_lexer_peek_token (parser->lexer)->u.value;
       const char *p = IDENTIFIER_POINTER (id);
-      if (strcmp (p, "sections") == 0)
+      if (strcmp (p, "master") == 0)
+	{
+	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
+	  cclauses = cclauses_buf;
+
+	  cp_lexer_consume_token (parser->lexer);
+	  block = begin_omp_parallel ();
+	  save = cp_parser_begin_omp_structured_block (parser);
+	  tree ret = cp_parser_omp_master (parser, pragma_tok, p_name, mask,
+					   cclauses, if_p);
+	  cp_parser_end_omp_structured_block (parser, save);
+	  stmt = finish_omp_parallel (cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
+				      block);
+	  OMP_PARALLEL_COMBINED (stmt) = 1;
+	  if (ret == NULL_TREE)
+	    return ret;
+	  return stmt;
+	}
+      else if (!flag_openmp)  /* flag_openmp_simd  */
+	{
+	  cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	  return NULL_TREE;
+	}
+      else if (strcmp (p, "sections") == 0)
 	{
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
 	  cclauses = cclauses_buf;
@@ -36062,6 +37069,11 @@ cp_parser_omp_parallel (cp_parser *parser, cp_token *pragma_tok,
 	  OMP_PARALLEL_COMBINED (stmt) = 1;
 	  return stmt;
 	}
+    }
+  else if (!flag_openmp)  /* flag_openmp_simd  */
+    {
+      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+      return NULL_TREE;
     }
 
   clauses = cp_parser_omp_all_clauses (parser, mask, p_name, pragma_tok,
@@ -36095,6 +37107,7 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 {
   tree stmt = make_node (OMP_SINGLE);
   TREE_TYPE (stmt) = void_type_node;
+  SET_EXPR_LOCATION (stmt, pragma_tok->location);
 
   OMP_SINGLE_CLAUSES (stmt)
     = cp_parser_omp_all_clauses (parser, OMP_SINGLE_CLAUSE_MASK,
@@ -36118,7 +37131,8 @@ cp_parser_omp_single (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FINAL)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 
 static tree
 cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
@@ -36136,13 +37150,32 @@ cp_parser_omp_task (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 }
 
 /* OpenMP 3.0:
-   # pragma omp taskwait new-line  */
+   # pragma omp taskwait new-line
+
+   OpenMP 5.0:
+   # pragma omp taskwait taskwait-clause[opt] new-line  */
+
+#define OMP_TASKWAIT_CLAUSE_MASK				\
+	(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)
 
 static void
 cp_parser_omp_taskwait (cp_parser *parser, cp_token *pragma_tok)
 {
-  cp_parser_require_pragma_eol (parser, pragma_tok);
-  finish_omp_taskwait ();
+  tree clauses
+    = cp_parser_omp_all_clauses (parser, OMP_TASKWAIT_CLAUSE_MASK,
+				 "#pragma omp taskwait", pragma_tok);
+
+  if (clauses)
+    {
+      tree stmt = make_node (OMP_TASK);
+      TREE_TYPE (stmt) = void_node;
+      OMP_TASK_CLAUSES (stmt) = clauses;
+      OMP_TASK_BODY (stmt) = NULL_TREE;
+      SET_EXPR_LOCATION (stmt, pragma_tok->location);
+      add_stmt (stmt);
+    }
+  else
+    finish_omp_taskwait ();
 }
 
 /* OpenMP 3.1:
@@ -36157,15 +37190,24 @@ cp_parser_omp_taskyield (cp_parser *parser, cp_token *pragma_tok)
 
 /* OpenMP 4.0:
    # pragma omp taskgroup new-line
-     structured-block  */
+     structured-block
+
+   OpenMP 5.0:
+   # pragma omp taskgroup taskgroup-clause[optseq] new-line  */
+
+#define OMP_TASKGROUP_CLAUSE_MASK				\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TASK_REDUCTION))
 
 static tree
 cp_parser_omp_taskgroup (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 {
-  cp_parser_require_pragma_eol (parser, pragma_tok);
+  tree clauses
+    = cp_parser_omp_all_clauses (parser, OMP_TASKGROUP_CLAUSE_MASK,
+				 "#pragma omp taskgroup", pragma_tok);
   return c_finish_omp_taskgroup (input_location,
 				 cp_parser_omp_structured_block (parser,
-								 if_p));
+								 if_p),
+				 clauses);
 }
 
 
@@ -36338,13 +37380,14 @@ cp_parser_omp_distribute (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_DISTRIBUTE];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
   ret = cp_parser_omp_for_loop (parser, OMP_DISTRIBUTE, clauses, NULL, if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -36388,6 +37431,7 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
 					     cclauses, if_p);
+	  keep_next_level (true);
 	  sb = begin_omp_structured_block ();
 	  save = cp_parser_begin_omp_structured_block (parser);
 	  ret = cp_parser_omp_distribute (parser, pragma_tok, p_name, mask,
@@ -36423,6 +37467,7 @@ cp_parser_omp_teams (cp_parser *parser, cp_token *pragma_tok,
   tree stmt = make_node (OMP_TEAMS);
   TREE_TYPE (stmt) = void_type_node;
   OMP_TEAMS_CLAUSES (stmt) = clauses;
+  keep_next_level (true);
   OMP_TEAMS_BODY (stmt) = cp_parser_omp_structured_block (parser, if_p);
   SET_EXPR_LOCATION (stmt, loc);
 
@@ -36473,6 +37518,8 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 	    *pc = OMP_CLAUSE_CHAIN (*pc);
 	    continue;
 	  }
+      else if (OMP_CLAUSE_CODE (*pc) == OMP_CLAUSE_USE_DEVICE_PTR)
+	map_seen = 3;
       pc = &OMP_CLAUSE_CHAIN (*pc);
     }
 
@@ -36481,7 +37528,7 @@ cp_parser_omp_target_data (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
       if (map_seen == 0)
 	error_at (pragma_tok->location,
 		  "%<#pragma omp target data%> must contain at least "
-		  "one %<map%> clause");
+		  "one %<map%> or %<use_device_ptr%> clause");
       return NULL_TREE;
     }
 
@@ -36738,6 +37785,10 @@ cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,
 		      enum pragma_context context, bool *if_p)
 {
   tree *pc = NULL, stmt;
+
+  if (flag_openmp)
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_TARGET_USED);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -38092,6 +39143,147 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
   return false;
 }
 
+/* OpenMP 5.0
+   #pragma omp requires clauses[optseq] new-line  */
+
+static bool
+cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
+{
+  bool first = true;
+  enum omp_requires new_req = (enum omp_requires) 0;
+
+  location_t loc = pragma_tok->location;
+  while (cp_lexer_next_token_is_not (parser->lexer, CPP_PRAGMA_EOL))
+    {
+      if (!first && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+
+      first = false;
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  const char *p = IDENTIFIER_POINTER (id);
+	  location_t cloc = cp_lexer_peek_token (parser->lexer)->location;
+	  enum omp_requires this_req = (enum omp_requires) 0;
+
+	  if (!strcmp (p, "unified_address"))
+	    this_req = OMP_REQUIRES_UNIFIED_ADDRESS;
+	  else if (!strcmp (p, "unified_shared_memory"))
+	    this_req = OMP_REQUIRES_UNIFIED_SHARED_MEMORY;
+	  else if (!strcmp (p, "dynamic_allocators"))
+	    this_req = OMP_REQUIRES_DYNAMIC_ALLOCATORS;
+	  else if (!strcmp (p, "reverse_offload"))
+	    this_req = OMP_REQUIRES_REVERSE_OFFLOAD;
+	  else if (!strcmp (p, "atomic_default_mem_order"))
+	    {
+	      cp_lexer_consume_token (parser->lexer);
+
+	      matching_parens parens;
+	      if (parens.require_open (parser))
+		{
+		  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+		    {
+		      id = cp_lexer_peek_token (parser->lexer)->u.value;
+		      p = IDENTIFIER_POINTER (id);
+
+		      if (!strcmp (p, "seq_cst"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_SEQ_CST;
+		      else if (!strcmp (p, "relaxed"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_RELAXED;
+		      else if (!strcmp (p, "acq_rel"))
+			this_req
+			  = (enum omp_requires) OMP_MEMORY_ORDER_ACQ_REL;
+		    }
+		  if (this_req == 0)
+		    {
+		      error_at (cp_lexer_peek_token (parser->lexer)->location,
+				"expected %<seq_cst%>, %<relaxed%> or "
+				"%<acq_rel%>");
+		      if (cp_lexer_nth_token_is (parser->lexer, 2,
+						 CPP_CLOSE_PAREN))
+			cp_lexer_consume_token (parser->lexer);
+		    }
+		  else
+		    cp_lexer_consume_token (parser->lexer);
+
+		  if (!parens.require_close (parser))
+		    cp_parser_skip_to_closing_parenthesis (parser,
+							   /*recovering=*/true,
+							   /*or_comma=*/false,
+							   /*consume_paren=*/
+							   true);
+
+		  if (this_req == 0)
+		    {
+		      cp_parser_require_pragma_eol (parser, pragma_tok);
+		      return false;
+		    }
+		}
+	      p = NULL;
+	    }
+	  else
+	    {
+	      error_at (cloc, "expected %<unified_address%>, "
+			      "%<unified_shared_memory%>, "
+			      "%<dynamic_allocators%>, "
+			       "%<reverse_offload%> "
+			       "or %<atomic_default_mem_order%> clause");
+	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	      return false;
+	    }
+	  if (p)
+	    cp_lexer_consume_token (parser->lexer);
+	  if (this_req)
+	    {
+	      if ((this_req & ~OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  if ((this_req & new_req) != 0)
+		    error_at (cloc, "too many %qs clauses", p);
+		  if (this_req != OMP_REQUIRES_DYNAMIC_ALLOCATORS
+		      && (omp_requires_mask & OMP_REQUIRES_TARGET_USED) != 0)
+		    error_at (cloc, "%qs clause used lexically after first "
+				    "target construct or offloading API", p);
+		}
+	      else if ((new_req & OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  error_at (cloc, "too many %qs clauses",
+			    "atomic_default_mem_order");
+		  this_req = (enum omp_requires) 0;
+		}
+	      else if ((omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER) != 0)
+		{
+		  error_at (cloc, "more than one %<atomic_default_mem_order%>"
+				  " clause in a single compilation unit");
+		  this_req
+		    = (enum omp_requires)
+		       (omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER);
+		}
+	      else if ((omp_requires_mask
+			& OMP_REQUIRES_ATOMIC_DEFAULT_MEM_ORDER_USED) != 0)
+		error_at (cloc, "%<atomic_default_mem_order%> clause used "
+				"lexically after first %<atomic%> construct "
+				"without memory order clause");
+	      new_req = (enum omp_requires) (new_req | this_req);
+	      omp_requires_mask
+		= (enum omp_requires) (omp_requires_mask | this_req);
+	      continue;
+	    }
+	}
+      break;
+    }
+  cp_parser_require_pragma_eol (parser, pragma_tok);
+
+  if (new_req == 0)
+    error_at (loc, "%<pragma omp requires%> requires at least one clause");
+  return false;
+}
+
+
 /* OpenMP 4.5:
    #pragma omp taskloop taskloop-clause[optseq] new-line
      for-loop
@@ -38113,7 +39305,9 @@ cp_parser_omp_declare (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FINAL)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MERGEABLE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOGROUP)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIORITY)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION))
 
 static tree
 cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
@@ -38126,6 +39320,10 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
 
   strcat (p_name, " taskloop");
   mask |= OMP_TASKLOOP_CLAUSE_MASK;
+  /* #pragma omp parallel master taskloop{, simd} disallow in_reduction
+     clause.  */
+  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NUM_THREADS)) != 0)
+    mask &= ~(OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION);
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
     {
@@ -38173,6 +39371,7 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
       clauses = cclauses[C_OMP_CLAUSE_SPLIT_TASKLOOP];
     }
 
+  keep_next_level (true);
   sb = begin_omp_structured_block ();
   save = cp_parser_begin_omp_structured_block (parser);
 
@@ -38180,7 +39379,7 @@ cp_parser_omp_taskloop (cp_parser *parser, cp_token *pragma_tok,
 				if_p);
 
   cp_parser_end_omp_structured_block (parser, save);
-  add_stmt (finish_omp_structured_block (sb));
+  add_stmt (finish_omp_for_block (finish_omp_structured_block (sb), ret));
 
   return ret;
 }
@@ -38487,7 +39686,9 @@ cp_parser_omp_construct (cp_parser *parser, cp_token *pragma_tok, bool *if_p)
 				if_p);
       break;
     case PRAGMA_OMP_MASTER:
-      stmt = cp_parser_omp_master (parser, pragma_tok, if_p);
+      strcpy (p_name, "#pragma omp");
+      stmt = cp_parser_omp_master (parser, pragma_tok, p_name, mask, NULL,
+				   if_p);
       break;
     case PRAGMA_OMP_PARALLEL:
       strcpy (p_name, "#pragma omp");
@@ -38947,6 +40148,21 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
 	}
       break;
 
+    case PRAGMA_OMP_DEPOBJ:
+      switch (context)
+	{
+	case pragma_compound:
+	  cp_parser_omp_depobj (parser, pragma_tok);
+	  return false;
+	case pragma_stmt:
+	  error_at (pragma_tok->location, "%<#pragma %s%> may only be "
+		    "used in compound statements", "omp depobj");
+	  break;
+	default:
+	  goto bad_stmt;
+	}
+      break;
+
     case PRAGMA_OMP_FLUSH:
       switch (context)
 	{
@@ -39113,6 +40329,9 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
       cp_parser_omp_construct (parser, pragma_tok, if_p);
       pop_omp_privatization_clauses (stmt);
       return true;
+
+    case PRAGMA_OMP_REQUIRES:
+      return cp_parser_omp_requires (parser, pragma_tok);
 
     case PRAGMA_OMP_ORDERED:
       if (context != pragma_stmt && context != pragma_compound)

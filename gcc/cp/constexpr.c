@@ -5917,6 +5917,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_ATOMIC_READ:
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
+    case OMP_DEPOBJ:
     case OACC_PARALLEL:
     case OACC_KERNELS:
     case OACC_DATA:

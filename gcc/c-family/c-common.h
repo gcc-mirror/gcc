@@ -1149,18 +1149,21 @@ enum c_omp_region_type
 };
 
 extern tree c_finish_omp_master (location_t, tree);
-extern tree c_finish_omp_taskgroup (location_t, tree);
+extern tree c_finish_omp_taskgroup (location_t, tree, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool, bool,
-				 bool = false);
-extern void c_finish_omp_flush (location_t);
+				 tree, tree, tree, tree, tree, bool,
+				 enum omp_memory_order, bool = false);
+extern bool c_omp_depend_t_p (tree);
+extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
+				 tree);
+extern void c_finish_omp_flush (location_t, int);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree, tree);
+			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
 extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
 				       walk_tree_lh);

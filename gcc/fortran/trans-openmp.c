@@ -2866,6 +2866,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
   if (clauses->defaultmap)
     {
       c = build_omp_clause (where.lb->location, OMP_CLAUSE_DEFAULTMAP);
+      OMP_CLAUSE_DEFAULTMAP_SET_KIND (c, OMP_CLAUSE_DEFAULTMAP_TOFROM,
+				      OMP_CLAUSE_DEFAULTMAP_CATEGORY_SCALAR);
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
   if (clauses->depend_source)
@@ -3166,7 +3168,9 @@ gfc_trans_omp_atomic (gfc_code *code)
   enum tree_code op = ERROR_MARK;
   enum tree_code aop = OMP_ATOMIC;
   bool var_on_left = false;
-  bool seq_cst = (atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST) != 0;
+  enum omp_memory_order mo
+    = ((atomic_code->ext.omp_atomic & GFC_OMP_ATOMIC_SEQ_CST)
+       ? OMP_MEMORY_ORDER_SEQ_CST : OMP_MEMORY_ORDER_RELAXED);
 
   code = code->block->next;
   gcc_assert (code->op == EXEC_ASSIGN);
@@ -3198,7 +3202,7 @@ gfc_trans_omp_atomic (gfc_code *code)
       lhsaddr = gfc_build_addr_expr (NULL, lse.expr);
 
       x = build1 (OMP_ATOMIC_READ, type, lhsaddr);
-      OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+      OMP_ATOMIC_MEMORY_ORDER (x) = mo;
       x = convert (TREE_TYPE (vse.expr), x);
       gfc_add_modify (&block, vse.expr, x);
 
@@ -3398,7 +3402,7 @@ gfc_trans_omp_atomic (gfc_code *code)
   if (aop == OMP_ATOMIC)
     {
       x = build2_v (OMP_ATOMIC, lhsaddr, convert (type, x));
-      OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+      OMP_ATOMIC_MEMORY_ORDER (x) = mo;
       gfc_add_expr_to_block (&block, x);
     }
   else
@@ -3421,7 +3425,7 @@ gfc_trans_omp_atomic (gfc_code *code)
 	  gfc_add_block_to_block (&block, &lse.pre);
 	}
       x = build2 (aop, type, lhsaddr, convert (type, x));
-      OMP_ATOMIC_SEQ_CST (x) = seq_cst;
+      OMP_ATOMIC_MEMORY_ORDER (x) = mo;
       x = convert (TREE_TYPE (vse.expr), x);
       gfc_add_modify (&block, vse.expr, x);
     }
@@ -4586,8 +4590,12 @@ gfc_trans_omp_task (gfc_code *code)
 static tree
 gfc_trans_omp_taskgroup (gfc_code *code)
 {
-  tree stmt = gfc_trans_code (code->block->next);
-  return build1_loc (input_location, OMP_TASKGROUP, void_type_node, stmt);
+  tree body = gfc_trans_code (code->block->next);
+  tree stmt = make_node (OMP_TASKGROUP);
+  TREE_TYPE (stmt) = void_type_node;
+  OMP_TASKGROUP_BODY (stmt) = body;
+  OMP_TASKGROUP_CLAUSES (stmt) = NULL_TREE;
+  return stmt;
 }
 
 static tree

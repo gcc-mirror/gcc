@@ -1356,6 +1356,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	  val = OMP_CLAUSE_PROC_BIND_KIND (t);
 	  break;
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  val = OMP_CLAUSE_REDUCTION_CODE (t);
 	  break;
 	default:

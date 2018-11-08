@@ -18,6 +18,8 @@ foo (int a, int b, int *p, int *q, int task)
     ;
   #pragma omp parallel if (target update:a) /* { dg-error "expected .parallel. .if. clause modifier rather than .target update." } */
     ;
+  #pragma omp parallel if (cancel:a) /* { dg-error "expected .parallel. .if. clause modifier rather than .cancel." } */
+    ;
   #pragma omp parallel for simd if (target update: a) /* { dg-error "expected .parallel. .if. clause modifier rather than .target update." } */
   for (i = 0; i < 16; i++)
     ;
@@ -27,12 +29,15 @@ foo (int a, int b, int *p, int *q, int task)
     ;
   #pragma omp task if (parallel: a) /* { dg-error "expected .task. .if. clause modifier rather than .parallel." } */
     ;
+  #pragma omp simd if (cancel: a) /* { dg-error "expected .simd. .if. clause modifier rather than .cancel." } */
+  for (i = 0; i < 16; i++)
+    ;
   #pragma omp taskloop if (task : a) /* { dg-error "expected .taskloop. .if. clause modifier rather than .task." } */
   for (i = 0; i < 16; i++)
     ;
   #pragma omp target if (taskloop: a) /* { dg-error "expected .target. .if. clause modifier rather than .taskloop." } */
     ;
-  #pragma omp target teams distribute parallel for simd if (target exit data : a) /* { dg-error "expected .parallel. or .target. .if. clause modifier" } */
+  #pragma omp target teams distribute parallel for simd if (target exit data : a) /* { dg-error "expected .target. .if. clause modifier" } */
   for (i = 0; i < 16; i++)
     ;
   #pragma omp target data if (target: a) map (p[0:2]) /* { dg-error "expected .target data. .if. clause modifier rather than .target." } */
@@ -40,4 +45,9 @@ foo (int a, int b, int *p, int *q, int task)
   #pragma omp target enter data if (target data: a) map (to: p[0:2]) /* { dg-error "expected .target enter data. .if. clause modifier rather than .target data." } */
   #pragma omp target exit data if (target enter data: a) map (from: p[0:2]) /* { dg-error "expected .target exit data. .if. clause modifier rather than .target enter data." } */
   #pragma omp target update if (target exit data:a) to (q[0:3]) /* { dg-error "expected .target update. .if. clause modifier rather than .target exit data." } */
+  #pragma omp for
+  for (i = 0; i < 16; i++)
+    {
+      #pragma omp cancel for if (target exit data:a) /* { dg-error "expected .cancel. .if. clause modifier" } */
+    }
 }

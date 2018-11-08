@@ -60,17 +60,17 @@ B::m1 ()
 int
 B::m2 ()
 {
-  #pragma omp parallel private (h)	// { dg-error "is predetermined .shared. for .private." }
+  #pragma omp parallel private (h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     ;
   #pragma omp parallel firstprivate (h)
     ;
-  #pragma omp parallel for lastprivate (h)	// { dg-error "is predetermined .shared. for .lastprivate." }
+  #pragma omp parallel for lastprivate (h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp simd linear (h : 1)	// { dg-error "is predetermined .shared. for .linear." }
+  #pragma omp simd linear (h : 1)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel for reduction (+:h)	// { dg-error "is predetermined .shared. for .reduction." }
+  #pragma omp parallel for reduction (+:h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
   #pragma omp parallel for reduction (+:g)	// { dg-error "has const type for .reduction." }
@@ -88,7 +88,7 @@ B::m2 ()
     ;
   #pragma omp parallel shared (g)
     ;
-  #pragma omp parallel shared (h)	// { dg-error "is predetermined .shared. for .shared." }
+  #pragma omp parallel shared (h)
     ;
   return 0;
 }
@@ -118,30 +118,30 @@ B::m3 () const
 int
 B::m4 () const
 {
-  #pragma omp parallel private (a)	// { dg-error "is predetermined .shared. for .private." }
+  #pragma omp parallel private (a)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     ;
   #pragma omp parallel firstprivate (a)
     ;
-  #pragma omp parallel for lastprivate (a)	// { dg-error "is predetermined .shared. for .lastprivate." }
+  #pragma omp parallel for lastprivate (a)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp simd linear (a : 1)	// { dg-error "is predetermined .shared. for .linear." }
+  #pragma omp simd linear (a : 1)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel for reduction (+:a)	// { dg-error "is predetermined .shared. for .reduction." }
+  #pragma omp parallel for reduction (+:a)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel private (h)	// { dg-error "is predetermined .shared. for .private." }
+  #pragma omp parallel private (h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     ;
   #pragma omp parallel firstprivate (h)
     ;
-  #pragma omp parallel for lastprivate (h)	// { dg-error "is predetermined .shared. for .lastprivate." }
+  #pragma omp parallel for lastprivate (h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp simd linear (h : 1)	// { dg-error "is predetermined .shared. for .linear." }
+  #pragma omp simd linear (h : 1)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel for reduction (+:h)	// { dg-error "is predetermined .shared. for .reduction." }
+  #pragma omp parallel for reduction (+:h)	// { dg-error "may appear only in .shared. or .firstprivate. clauses" }
     for (int i = 0; i < 10; i++)
       ;
   #pragma omp parallel for reduction (+:e)	// { dg-error "has const type for .reduction." }
@@ -150,7 +150,7 @@ B::m4 () const
   #pragma omp parallel for reduction (+:g)	// { dg-error "has const type for .reduction." }
     for (int i = 0; i < 10; i++)
       ;
-  #pragma omp parallel shared (a)	// { dg-error "is predetermined .shared. for .shared." }
+  #pragma omp parallel shared (a)
     ;
   #pragma omp parallel shared (b)
     ;
@@ -162,7 +162,7 @@ B::m4 () const
     ;
   #pragma omp parallel shared (g)
     ;
-  #pragma omp parallel shared (h)	// { dg-error "is predetermined .shared. for .shared." }
+  #pragma omp parallel shared (h)
     ;
   return 0;
 }
