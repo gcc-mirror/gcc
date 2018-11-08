@@ -394,6 +394,14 @@ proc gcc-dg-prune { system text } {
         return "::unsupported::memory full"
     }
 
+    if [regexp "(^|\n)\[^\n\]* section.*will not fit in region" $text] {
+	return "::unsupported::memory full"
+    }
+
+    if [regexp "(^|\n)\[^\n\]* region.*overflowed by" $text] {
+	return "::unsupported::memory full"
+    }
+
     # Likewise, if we see ".text exceeds local store range" or
     # similar.
     if {[string match "spu-*" $system] && \

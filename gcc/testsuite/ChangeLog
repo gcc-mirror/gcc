@@ -1,3 +1,9 @@
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/gcc-dg.exp (gcc-dg-prune): Add new regexps for when the size of 
+	an output section is too large for a memory region, or a memory
+	region overflows.
+
 2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/null_pointer_deref1.adb: Remove -gnatp and add pragma.
