@@ -16,7 +16,7 @@ em (int u5, int fo, int s7)
       if (es == 0)
         if (nb == *vk)
           {
-            const unsigned long int uint64_max = 18446744073709551615ul;
+            const unsigned long long int uint64_max = 18446744073709551615ull;
             __int128 ks = uint64_max / 2 + 1;
 
             while (s7 < 1)

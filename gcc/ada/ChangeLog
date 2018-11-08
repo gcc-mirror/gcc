@@ -1,3 +1,26 @@
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Suppress_Checks): Declare.
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Set -fnon-call-exceptions
+	only if checks are not suppressed and -faggressive-loop-optimizations
+	only if they are.
+	* gcc-interface/trans.c (struct loop_info_d): Remove has_checks and
+	warned_aggressive_loop_optimizations fields.
+	(gigi): Do not clear warn_aggressive_loop_optimizations here.
+	(Raise_Error_to_gnu): Do not set has_checks.
+	(gnat_to_gnu) <N_Indexed_Component>: Remove support for aggressive
+	loop optimizations.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Remove obsolete kludge.
+	* gcc-interface/utils.c (make_packable_type): Set TYPE_PACKED on the
+	new type but do not take into account the setting on the old type for
+	the new fields.  Rename a local variable.
+	(finish_record_type): Clear DECL_BIT_FIELD_TYPE on a variant part at
+	offset 0, if any.
+	(create_field_decl): Tweak comment.
+
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (unchecked_convert): Use local variables for

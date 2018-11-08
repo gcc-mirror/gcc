@@ -6,7 +6,7 @@ void bar (void);
 void
 foo (int i)
 {
-  if (__builtin_expect_with_probability (i, 0, 2.0f)) /* { dg-error "probability argument .* must be a in the range 0\\\.0 to 1\\\.0" } */
+  if (__builtin_expect_with_probability (i, 0, 2.0f)) /* { dg-error "probability .* is outside the range \\\[0\\\.0, 1\\\.0\\\]" } */
     bar ();
 }
 

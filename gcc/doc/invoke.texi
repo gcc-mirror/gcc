@@ -292,6 +292,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
 -Wdelete-incomplete @gol
+-Wno-attribute-warning @gol
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init @gol
 -Wdisabled-optimization @gol
 -Wno-discarded-qualifiers  -Wno-discarded-array-qualifiers @gol
@@ -523,6 +524,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib @gol
+-e @var{entry}  --entry=@var{entry} @gol
 -pie  -pthread  -r  -rdynamic @gol
 -s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
@@ -2932,7 +2934,7 @@ union U @{
 
 @item -Wabi-tag @r{(C++ and Objective-C++ only)}
 @opindex Wabi-tag
-@opindex -Wabi-tag
+@opindex Wabi-tag
 Warn when a type with an ABI tag is used in a context that does not
 have that ABI tag.  See @ref{C++ Attributes} for more information
 about ABI tags.
@@ -3843,7 +3845,7 @@ a left margin is printed, showing line numbers.  This option suppresses this
 left margin.
 
 @item -fdiagnostics-minimum-margin-width=@var{width}
-@opindex -fdiagnostics-minimum-margin-width
+@opindex fdiagnostics-minimum-margin-width
 This option controls the minimum width of the left margin printed by
 @option{-fdiagnostics-show-line-numbers}.  It defaults to 6.
 
@@ -5732,8 +5734,8 @@ larger.
 This option warns on all uses of @code{alloca} in the source.
 
 @item -Walloca-larger-than=@var{byte-size}
-@opindex -Walloca-larger-than=
-@opindex -Wno-alloca-larger-than
+@opindex Walloca-larger-than=
+@opindex Wno-alloca-larger-than
 This option warns on calls to @code{alloca} with an integer argument whose
 value is either zero, or that is not bounded by a controlling predicate
 that limits its value to at most @var{byte-size}.  It also warns for calls
@@ -6659,8 +6661,8 @@ real to lower precision real values.  This option is also enabled by
 @option{-Wconversion}.
 
 @item -Wno-scalar-storage-order
-@opindex -Wno-scalar-storage-order
-@opindex -Wscalar-storage-order
+@opindex Wno-scalar-storage-order
+@opindex Wscalar-storage-order
 Do not warn on suspicious constructs involving reverse scalar storage order.
 
 @item -Wsized-deallocation @r{(C++ and Objective-C++ only)}
@@ -6978,6 +6980,15 @@ confused with the digit 0, and so is not the default, but may be
 useful as a local coding convention if the programming environment 
 cannot be fixed to display these characters distinctly.
 
+@item -Wno-attribute-warning
+@opindex Wno-attribute-warning
+@opindex Wattribute-warning
+Do not warn about usage of functions (@pxref{Function Attributes})
+declared with @code{warning} attribute.  By default, this warning is
+enabled.  @option{-Wno-attribute-warning} can be used to disable the
+warning or @option{-Wno-error=attribute-warning} can be used to
+disable the error when compiled with @option{-Werror} flag.
+
 @item -Wno-deprecated
 @opindex Wno-deprecated
 @opindex Wdeprecated
@@ -7252,8 +7263,8 @@ Warn if a variable-length array is used in the code.
 the variable-length array.
 
 @item -Wvla-larger-than=@var{byte-size}
-@opindex -Wvla-larger-than=
-@opindex -Wno-vla-larger-than
+@opindex Wvla-larger-than=
+@opindex Wno-vla-larger-than
 If this option is used, the compiler will warn for declarations of
 variable-length arrays whose size is either unbounded, or bounded
 by an argument that allows the array size to exceed @var{byte-size}
@@ -8931,13 +8942,13 @@ it may significantly increase code size
 This flag is enabled by default at @option{-O3}.
 
 @item -fipa-bit-cp
-@opindex -fipa-bit-cp
+@opindex fipa-bit-cp
 When enabled, perform interprocedural bitwise constant
 propagation. This flag is enabled by default at @option{-O2}. It
 requires that @option{-fipa-cp} is enabled.
 
 @item -fipa-vrp
-@opindex -fipa-vrp
+@opindex fipa-vrp
 When enabled, perform interprocedural propagation of value
 ranges. This flag is enabled by default at @option{-O2}. It requires
 that @option{-fipa-cp} is enabled.
@@ -12548,7 +12559,7 @@ object file names should not be used as arguments.  @xref{Overall
 Options}.
 
 @item -flinker-output=@var{type}
-@opindex -flinker-output
+@opindex flinker-output
 This option controls the code generation of the link time optimizer.  By
 default the linker output is determined by the linker plugin automatically. For
 debugging the compiler and in the case of incremental linking to non-lto object
@@ -12701,6 +12712,15 @@ library subroutines.
 (An example of such an internal subroutine is @code{__main}, used to ensure C++
 constructors are called; @pxref{Collect2,,@code{collect2}, gccint,
 GNU Compiler Collection (GCC) Internals}.)
+
+@item -e @var{entry}
+@itemx --entry=@var{entry}
+@opindex e
+@opindex entry
+
+Specify that the program entry point is @var{entry}.  The argument is
+interpreted by the linker; the GNU linker accepts either a symbol name
+or an address.
 
 @item -pie
 @opindex pie
@@ -13274,7 +13294,7 @@ C, and on some targets may carry a speed or code size penalty on
 variable references.
 
 The @option{-fno-common} option specifies that the compiler should instead
-place uninitialized global variables in the data section of the object file.
+place uninitialized global variables in the BSS section of the object file.
 This inhibits the merging of tentative definitions by the linker so
 you get a multiple-definition error if the same 
 variable is defined in more than one compilation unit.
@@ -14065,6 +14085,7 @@ instruction numbers for the links to the previous and next instructions
 in a sequence.
 
 @item -fdump-ipa-@var{switch}
+@itemx -fdump-ipa-@var{switch}-@var{options}
 @opindex fdump-ipa
 Control the dumping at various stages of inter-procedural analysis
 language tree to a file.  The file name is generated by appending a
@@ -14084,6 +14105,18 @@ and inlining decisions.
 Dump after function inlining.
 
 @end table
+
+Additionally, the options @option{-optimized}, @option{-missed},
+@option{-note}, and @option{-all} can be provided, with the same meaning
+as for @option{-fopt-info}, defaulting to @option{-optimized}.
+
+For example, @option{-fdump-ipa-inline-optimized-missed} will emit
+information on callsites that were inlined, along with callsites
+that were not inlined.
+
+By default, the dump will contain messages about successful
+optimizations (equivalent to @option {-optimized}) together with
+low-level details about the analysis.
 
 @item -fdump-lang-all
 @itemx -fdump-lang-@var{switch}
@@ -15085,8 +15118,8 @@ single precision and to 32 bits for double precision.
 
 @item -mlow-precision-sqrt
 @itemx -mno-low-precision-sqrt
-@opindex -mlow-precision-sqrt
-@opindex -mno-low-precision-sqrt
+@opindex mlow-precision-sqrt
+@opindex mno-low-precision-sqrt
 Enable or disable the square root approximation.
 This option only has an effect if @option{-ffast-math} or
 @option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
@@ -15096,8 +15129,8 @@ If enabled, it implies @option{-mlow-precision-recip-sqrt}.
 
 @item -mlow-precision-div
 @itemx -mno-low-precision-div
-@opindex -mlow-precision-div
-@opindex -mno-low-precision-div
+@opindex mlow-precision-div
+@opindex mno-low-precision-div
 Enable or disable the division approximation.
 This option only has an effect if @option{-ffast-math} or
 @option{-funsafe-math-optimizations} is used as well.  Enabling this reduces
@@ -18089,11 +18122,11 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 @item -mbig-endian
 @opindex mbig-endian
 @itemx -EB
-@opindex -EB
+@opindex EB
 @itemx -mlittle-endian
 @opindex mlittle-endian
 @itemx -EL
-@opindex -EL
+@opindex EL
 
 Select big- or little-endian code.  The default is little-endian.
 
@@ -27930,7 +27963,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mvaes
 @need 200
 @itemx -mwaitpkg
-@opindex -mwaitpkg
+@opindex mwaitpkg
 @need 200
 @itemx -mvpclmulqdq
 @opindex mvpclmulqdq
@@ -28516,7 +28549,7 @@ prevents the compiler from using floating-point, vector, mask and bound
 registers.
 
 @item -mindirect-branch=@var{choice}
-@opindex -mindirect-branch
+@opindex mindirect-branch
 Convert indirect call and jump with @var{choice}.  The default is
 @samp{keep}, which keeps indirect call and jump unmodified.
 @samp{thunk} converts indirect call and jump to call and return thunk.
@@ -28536,7 +28569,7 @@ Note that @option{-mindirect-branch=thunk-extern} is incompatible with
 to disable control-flow check.
 
 @item -mfunction-return=@var{choice}
-@opindex -mfunction-return
+@opindex mfunction-return
 Convert function return with @var{choice}.  The default is @samp{keep},
 which keeps function return unmodified.  @samp{thunk} converts function
 return to call and return thunk.  @samp{thunk-inline} converts function
@@ -28553,7 +28586,7 @@ not be reachable in the large code model.
 
 
 @item -mindirect-branch-register
-@opindex -mindirect-branch-register
+@opindex mindirect-branch-register
 Force indirect call and jump via register.
 
 @end table

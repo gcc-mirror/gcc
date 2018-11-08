@@ -1,3 +1,123 @@
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/86395
+	* doc/invoke.texi (-fdump-ipa-): Document the "-optimized",
+	"-missed", "-note", and "-all" sub-options.
+	* ipa-inline.c (caller_growth_limits): Port from fprintf to dump
+	API.
+	(can_early_inline_edge_p): Likewise.
+	(want_early_inline_function_p): Likewise.
+	(want_inline_self_recursive_call_p): Likewise.
+	(recursive_inlining): Likewise.
+	(inline_small_functions): Likewise.
+	(flatten_function): Likewise.
+	(ipa_inline): Likewise.
+	(inline_always_inline_functions): Likewise.
+	(early_inline_small_functions): Likewise.
+	(early_inliner): Likewise.
+	* tree-inline.c (expand_call_inline): Likewise.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (pp_format): Handle %f.
+	(selftest::test_pp_format): Add test of %f.
+	* pretty-print.h (pp_double): New macro.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h (ASSERT_IS_CGRAPH_NODE): New macro.
+	* dumpfile.c (make_item_for_dump_cgraph_node): Move to before...
+	(dump_pretty_printer::decode_format): Implement "%C" for
+	cgraph_node *.
+	(selftest::test_capture_of_dump_calls): Rename "where" to
+	"stmt_loc".  Convert test_decl to a function decl and set its
+	location.  Add a symbol_table_test RAII instance and a
+	cgraph_node, using it to test "%C" and dump_symtab_node.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/87916
+	* cgraphclones.c (duplicate_thunk_for_node): Also set DECL_IGNORED_P.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* cgraph.c: Include "selftest.h".
+	(saved_symtab): New variable.
+	(selftest::symbol_table_test::symbol_table_test): New ctor.
+	(selftest::symbol_table_test::~symbol_table_test): New dtor.
+	(selftest::test_symbol_table_test): New test.
+	(selftest::cgraph_c_tests): New.
+	* cgraph.h (saved_symtab): New decl.
+	(selftest::symbol_table_test): New class.
+	* selftest-run-tests.c (selftest::run_tests): Call
+	selftest::cgraph_c_tests.
+	* selftest.h (selftest::cgraph_c_tests): New decl.
+
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-data-ref.h (lambda_int): New typedef.
+	(lambda_vector_gcd): Adjust.
+	(lambda_vector_new): Likewise.
+	(lambda_matrix_new): Likewise.
+	* tree-data-ref.c  (print_lambda_vector): Adjust.
+
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* tree-complex.c (expand_complex_comparison): Clean EH.
+
+2018-11-08  Martin Liska  <mliska@suse.cz>
+
+	* doc/extend.texi: Reword.
+	* predict.c (expr_expected_value_1): Likewise.
+
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87913
+	* tree-ssa-phiopt.c (minmax_replacement): Turn EQ/NE compares
+	of extreme values to ordered comparisons.
+
+2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/42726
+	* doc/invoke.texi (Code Gen Options): Clarify -fno-common behavior.
+
+2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi: Remove leading dash from @opindex entries
+	throughout the file.
+
+2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR driver/80828
+	* doc/invoke.texi (Option Summary): Add -e and --entry.
+	(Link Options): Likewise.
+
+2018-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR 87926
+	* Makefile.in (bitmap.o-warn): Add -Wno-error to unbreak
+	--disable-checking bootstrap.
+
+2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* configure: Regenerated.
+
+2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR c/87691
+	* stor-layout.c (compute_record_mode): Set TYPE_MODE of UNION_TYPE
+	to the mode of the widest field iff the widest field has mode class
+	MODE_INT, or MODE_PARTIAL_INT and the union would be passed by
+	reference.
+
+2018-11-07  Nikolai Merinov  <n.merinov@inango-systems.com>
+
+	* common.opt: Add -Wattribute-warning.
+	* doc/invoke.texi: Add documentation for -Wno-attribute-warning.
+	* expr.c (expand_expr_real_1): Add new attribute to warning_at
+	call to allow user configure behavior of "warning" attribute.
+
 2018-11-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* target.def: Put @: after every vs., e.g., and i.e. where it is

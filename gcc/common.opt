@@ -571,6 +571,10 @@ Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.
 
+Wattribute-warning
+Common Var(warn_attribute_warning) Init(1) Warning
+Warn about uses of __attribute__((warning)) declarations.
+
 Wdeprecated-declarations
 Common Var(warn_deprecated_decl) Init(1) Warning
 Warn about uses of __attribute__((deprecated)) declarations.

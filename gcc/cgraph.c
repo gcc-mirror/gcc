@@ -62,6 +62,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "selftest.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"
@@ -3764,5 +3765,71 @@ cgraph_edge::sreal_frequency ()
 			       ? caller->global.inlined_to->count
 			       : caller->count);
 }
+
+/* A stashed copy of "symtab" for use by selftest::symbol_table_test.
+   This needs to be a global so that it can be a GC root, and thus
+   prevent the stashed copy from being garbage-collected if the GC runs
+   during a symbol_table_test.  */
+
+symbol_table *saved_symtab;
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* class selftest::symbol_table_test.  */
+
+/* Constructor.  Store the old value of symtab, and create a new one.  */
+
+symbol_table_test::symbol_table_test ()
+{
+  gcc_assert (saved_symtab == NULL);
+  saved_symtab = symtab;
+  symtab = new (ggc_cleared_alloc <symbol_table> ()) symbol_table ();
+}
+
+/* Destructor.  Restore the old value of symtab.  */
+
+symbol_table_test::~symbol_table_test ()
+{
+  gcc_assert (saved_symtab != NULL);
+  symtab = saved_symtab;
+  saved_symtab = NULL;
+}
+
+/* Verify that symbol_table_test works.  */
+
+static void
+test_symbol_table_test ()
+{
+  /* Simulate running two selftests involving symbol tables.  */
+  for (int i = 0; i < 2; i++)
+    {
+      symbol_table_test stt;
+      tree test_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+				   get_identifier ("test_decl"),
+				   build_function_type_list (void_type_node,
+							     NULL_TREE));
+      cgraph_node *node = cgraph_node::get_create (test_decl);
+      gcc_assert (node);
+
+      /* Verify that the node has order 0 on both iterations,
+	 and thus that nodes have predictable dump names in selftests.  */
+      ASSERT_EQ (node->order, 0);
+      ASSERT_STREQ (node->dump_name (), "test_decl/0");
+    }
+}
+
+/* Run all of the selftests within this file.  */
+
+void
+cgraph_c_tests ()
+{
+  test_symbol_table_test ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #include "gt-cgraph.h"

@@ -6,7 +6,7 @@ void bar (void);
 void
 foo (int i, double d)
 {
-  if (__builtin_expect_with_probability (i, 0, d)) /* { dg-error "probability argument .d. must be a compile time constant" } */
+  if (__builtin_expect_with_probability (i, 0, d)) /* { dg-error "probability .d. must be constant floating-point expression" } */
     bar ();
 }
 

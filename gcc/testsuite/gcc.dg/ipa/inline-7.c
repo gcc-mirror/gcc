@@ -1,6 +1,6 @@
 /* Check that early inliner works out that a is empty of parameter 0.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-einline -fno-partial-inlining"  } */
+/* { dg-options "-O2 -fdump-tree-einline-optimized -fopt-info-inline -fno-partial-inlining"  } */
 void t(void);
 int a (int b)
 {
@@ -18,7 +18,7 @@ int a (int b)
 void
 m()
 {
- a(1);
+ a(1); /* { dg-optimized "Inlining a/\[0-9\]* into m/\[0-9\]*" } */
  a(0);
 }
-/* { dg-final { scan-tree-dump-times "Inlining a into m" 1 "einline"  } } */
+/* { dg-final { scan-tree-dump-times "Inlining a.* into m.*" 1 "einline"  } } */

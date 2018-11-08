@@ -10930,7 +10930,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 					 DECL_ATTRIBUTES (fndecl))) != NULL)
 	  {
 	    const char *ident = lang_hooks.decl_printable_name (fndecl, 1);
-	    warning_at (tree_nonartificial_location (exp), 0,
+	    warning_at (tree_nonartificial_location (exp),
+			OPT_Wattribute_warning,
 			"%Kcall to %qs declared with attribute warning: %s",
 			exp, identifier_to_locale (ident),
 			TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (attr))));

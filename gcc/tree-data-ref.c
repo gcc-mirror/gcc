@@ -393,7 +393,7 @@ print_lambda_vector (FILE * outfile, lambda_vector vector, int n)
   int i;
 
   for (i = 0; i < n; i++)
-    fprintf (outfile, "%3d ", vector[i]);
+    fprintf (outfile, "%3d ", (int)vector[i]);
   fprintf (outfile, "\n");
 }
 

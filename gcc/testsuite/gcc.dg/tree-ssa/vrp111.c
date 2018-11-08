@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-evrp -fdelete-null-pointer-checks" } */
+/* { dg-skip-if "" { keeps_null_pointer_checks } } */
 
 void foo (void *p) __attribute__((nonnull(1)));
 

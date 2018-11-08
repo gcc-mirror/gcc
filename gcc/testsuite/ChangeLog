@@ -1,3 +1,149 @@
+2018-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr87874.c (em): Declare uint64_max as
+	const unsigned long long int.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.dg/attr-alloc_size-10.c: Fix calculation of USHRT_MAX to prevent
+	integer overflow when sizeof(short) == sizeof(int).
+	* gcc.dg/attr-alloc_size-11.c: Likewise.
+	* gcc.dg/attr-alloc_size-3.c: Likewise.
+	* gcc.dg/attr-alloc_size-5.c: Likewise.
+	* gcc.dg/builtin-stringop-chk-7.c: Likewise.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-c++-common/patchable_function_entry-decl.c: Add regex to search for
+	uppercase "NOP" instructions in assembler output.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* c-c++-common/pr27336.c: Skip test if the target keeps null pointer
+	checks.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr78154.c: Likewise.
+	* gcc.dg/tree-ssa/vrp111.c: Likewise.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/gcc-dg.exp (gcc-dg-prune): Add new regexps for when the size of
+	an output section is too large for a memory region, or a memory
+	region overflows.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/null_pointer_deref1.adb: Remove -gnatp and add pragma.
+	* gnat.dg/null_pointer_deref2.adb: Likewise.
+	* gnat.dg/null_pointer_deref3.adb: Likewise.
+	* gnat.dg/opt74.adb: New test.
+	* gnat.dg/opt74_pkg.ad[sb]: New helper.
+	* gnat.dg/warn12.adb: Delete.
+	* gnat.dg/warn12_pkg.ads: Likewise.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/86395
+	* g++.dg/ipa/devirt-12.C: Add "-all" suffix to
+	"-fdump-ipa-inline".
+	* g++.dg/ipa/imm-devirt-1.C: Add "-optimized" suffix to
+	"-fdump-tree-einline".
+	* g++.dg/tree-prof/inline_mismatch_args.C: Add "-all" suffix to
+	"-fdump-tree-einline".
+	* g++.dg/tree-ssa/inline-1.C: Add "-optimized" suffix to
+	"-fdump-tree-einline".
+	* g++.dg/tree-ssa/inline-2.C: Likewise.
+	* g++.dg/tree-ssa/inline-3.C: Likewise.
+	* g++.dg/tree-ssa/inline-4.C: New test, based on inline-1.C, but
+	using "-fopt-info-inline".
+	* gcc.dg/ipa/fopt-info-inline-1.c: New test.
+	* gcc.dg/ipa/inline-4.c:  Add "-all" suffix to
+	"-fdump-ipa-inline".  Add "-fopt-info-inline" and dg-optimized
+	directive.
+	* gcc.dg/ipa/inline-7.c: Add "-optimized" suffix to
+	"-fdump-tree-einline".  Add "-fopt-info-inline" and dg-optimized
+	directive.  Update scan-tree-dump-times to reflect /order
+	suffixes.
+	* gcc.dg/ipa/inlinehint-4.c: Update scan-tree-dump-times to
+	reflect /order suffixes.
+	* gcc.dg/plugin/dump-1.c: Add "-loop" to "-fopt-info-note" to
+	avoid getting extra messages from inliner.
+	* gcc.dg/plugin/dump-2.c: Likewise.
+	* gcc.dg/pr26570.c: Add dg-prune-output to ignore new
+	"function body not available" missed optimization messages.
+	* gcc.dg/pr71969-2.c: Update scan-tree-dump-times to reflect
+	/order suffixes.
+	* gcc.dg/pr71969-3.c: Likewise.
+	* gcc.dg/tree-ssa/inline-11.c: Add "-all" suffix to
+	"-fdump-tree-einline".
+	* gcc.dg/tree-ssa/inline-3.c: Add "-optimized" suffix to
+	"-fdump-tree-einline".  Update scan-tree-dump-times to reflect
+	/order suffixes.
+	* gcc.dg/tree-ssa/inline-4.c: Add "-optimized" suffix to
+	"-fdump-tree-einline".  Add "-fopt-info-inline" and dg-optimized
+	directive.
+	* gcc.dg/tree-ssa/inline-8.c: Add "-optimized" suffix to
+	"-fdump-tree-einline".
+	* gfortran.dg/pr79966.f90: Update scan-ipa-dump to reflect /order
+	suffixes.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-10.c: Add coverage for %f.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/gcc_diag-10.c (cgraph_node): New typedef.
+	(test_dump): Add testing of %C.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/pr87916.C: New test.
+
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87929
+	* gcc.dg/pr87929.c: New testcase.
+
+2018-11-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/pr87811.c: Update scanned pattern.
+	* gcc.dg/pr87811-2.c: Likewise.
+
+2018-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lto/pr87906_0.C: Use moon instead of possibly predefined
+	sun.
+	* g++.dg/lto/pr87906_1.C: Likewise.
+
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87913
+	* gcc.dg/tree-ssa/phi-opt-20.c: New testcase.
+
+2018-11-08  Chenghua Xu  <paul.hua.gm@gmail.com>
+
+	* gcc.target/mips/mips.exp (mips-dg-options):
+	Add mips_option_dependency msoft-float vs no-mmi and
+	mips16/micromips vs no-mmi/ext/ext2 only gcc
+	config with Loongson target.
+
+2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* gcc.c-torture/compile/pr65595.c: Change type of "num" argument to
+	memcpy from "unsigned long" to __SIZE_TYPE__.
+
+2018-11-07  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR c/87691
+	* gcc.target/msp430/pr87691.c: New test.
+
+2018-11-07  Nikolai Merinov  <n.merinov@inango-systems.com>
+
+	* gcc.dg/Wno-attribute-warning.c: New test.
+
 2018-11-07  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87904

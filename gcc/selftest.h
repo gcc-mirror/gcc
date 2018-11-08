@@ -215,6 +215,7 @@ class test_runner
    alphabetical order.  */
 extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
+extern void cgraph_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void dumpfile_c_tests ();

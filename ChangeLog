@@ -1,3 +1,8 @@
+2018-11-06  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* config/iconv.m4 (AM_ICONV_LINK): Don't overwrite CPPFLAGS.
+	Append $INCICONV to it.
+
 2018-11-04  Stafford Horne  <shorne@gmail.com>
 
 	* MAINTAINERS (Write After Approval): Add myself.

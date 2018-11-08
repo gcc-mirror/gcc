@@ -1,3 +1,17 @@
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (gcc_dump_printf_char_table): Add entry for %f.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-format.c (local_cgraph_node_ptr_node): New variable.
+	(gcc_dump_printf_char_table): Add entry for %C.
+	(get_pointer_to_named_type): New function, taken from the handling
+	code for "gimple *" from...
+	(init_dynamic_diag_info): ...here.  Add handling for
+	"cgraph_node *".
+	* c-format.h (T_CGRAPH_NODE): New.
+
 2018-10-19  Jason Merrill  <jason@redhat.com>
 
 	* c-cppbuiltin.c (c_cpp_builtins): Add
