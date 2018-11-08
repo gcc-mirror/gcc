@@ -1,5 +1,11 @@
 2018-11-08  David Malcolm  <dmalcolm@redhat.com>
 
+	* pretty-print.c (pp_format): Handle %f.
+	(selftest::test_pp_format): Add test of %f.
+	* pretty-print.h (pp_double): New macro.
+
+2018-11-08  David Malcolm  <dmalcolm@redhat.com>
+
 	* dump-context.h (ASSERT_IS_CGRAPH_NODE): New macro.
 	* dumpfile.c (make_item_for_dump_cgraph_node): Move to before...
 	(dump_pretty_printer::decode_format): Implement "%C" for

@@ -183,4 +183,6 @@ void test_dump (tree t, gimple *stmt, cgraph_node *node)
   dump ("%T", t);
   dump ("%G", stmt);
   dump ("%C", node);
+  dump ("%f", 1.0);
+  dump ("%4.2f", 1.0); /* { dg-warning "format" } */
 }
