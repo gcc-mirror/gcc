@@ -2146,9 +2146,32 @@ process_alt_operands (int only_alternative)
 		      }
 		    else
 		      {
-			/* Operands don't match.  Both operands must
-			   allow a reload register, otherwise we
-			   cannot make them match.  */
+			/* Operands don't match.  If the operands are
+			   different user defined explicit hard registers,
+			   then we cannot make them match.  */
+			if ((REG_P (*curr_id->operand_loc[nop])
+			     || SUBREG_P (*curr_id->operand_loc[nop]))
+			    && (REG_P (*curr_id->operand_loc[m])
+				|| SUBREG_P (*curr_id->operand_loc[m])))
+			  {
+			    rtx nop_reg = *curr_id->operand_loc[nop];
+			    if (SUBREG_P (nop_reg))
+			      nop_reg = SUBREG_REG (nop_reg);
+			    rtx m_reg = *curr_id->operand_loc[m];
+			    if (SUBREG_P (m_reg))
+			      m_reg = SUBREG_REG (m_reg);
+
+			    if (REG_P (nop_reg)
+				&& HARD_REGISTER_P (nop_reg)
+				&& REG_USERVAR_P (nop_reg)
+				&& REG_P (m_reg)
+				&& HARD_REGISTER_P (m_reg)
+				&& REG_USERVAR_P (m_reg))
+			      break;
+			  }
+
+			/* Both operands must allow a reload register,
+			   otherwise we cannot make them match.  */
 			if (curr_alt[m] == NO_REGS)
 			  break;
 			/* Retroactively mark the operand we had to
@@ -2910,18 +2933,31 @@ process_alt_operands (int only_alternative)
 		if (first_conflict_j < 0)
 		  first_conflict_j = j;
 		last_conflict_j = j;
+		/* Both the earlyclobber operand and conflicting operand
+		   cannot both be user defined hard registers.  */
+		if (HARD_REGISTER_P (operand_reg[i])
+		    && REG_USERVAR_P (operand_reg[i])
+		    && operand_reg[j] != NULL_RTX
+		    && HARD_REGISTER_P (operand_reg[j])
+		    && REG_USERVAR_P (operand_reg[j]))
+		  fatal_insn ("unable to generate reloads for "
+			      "impossible constraints:", curr_insn);
 	      }
 	  if (last_conflict_j < 0)
 	    continue;
-	  /* If earlyclobber operand conflicts with another
-	     non-matching operand which is actually the same register
-	     as the earlyclobber operand, it is better to reload the
-	     another operand as an operand matching the earlyclobber
-	     operand can be also the same.  */
-	  if (first_conflict_j == last_conflict_j
-	      && operand_reg[last_conflict_j] != NULL_RTX
-	      && ! curr_alt_match_win[last_conflict_j]
-	      && REGNO (operand_reg[i]) == REGNO (operand_reg[last_conflict_j]))
+
+	  /* If an earlyclobber operand conflicts with another non-matching
+	     operand (ie, they have been assigned the same hard register),
+	     then it is better to reload the other operand, as there may
+	     exist yet another operand with a matching constraint associated
+	     with the earlyclobber operand.  However, if one of the operands
+	     is an explicit use of a hard register, then we must reload the
+	     other non-hard register operand.  */
+	  if (HARD_REGISTER_P (operand_reg[i])
+	      || (first_conflict_j == last_conflict_j
+		  && operand_reg[last_conflict_j] != NULL_RTX
+		  && !curr_alt_match_win[last_conflict_j]
+		  && !HARD_REGISTER_P (operand_reg[last_conflict_j])))
 	    {
 	      curr_alt_win[last_conflict_j] = false;
 	      curr_alt_dont_inherit_ops[curr_alt_dont_inherit_ops_num++]

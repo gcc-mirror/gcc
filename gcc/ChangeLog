@@ -1,3 +1,16 @@
+2018-11-08  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87600
+	* cfgexpand.c (expand_asm_stmt): Catch illegal asm constraint usage.
+	* lra-constraints.c (process_alt_operands): Skip illegal hard
+	register usage.  Prefer reloading non hard register operands.
+
+gcc/testsuite/
+	PR rtl-optimization/87600
+	* gcc.dg/pr87600.h: New file.
+	* gcc.dg/pr87600-1.c: New test.
+	* gcc.dg/pr87600-2.c: Likewise.
+
 2018-11-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/36572
@@ -12,7 +25,7 @@
 	* common.opt (-fuse-ld=lld): New option.
 	* doc/invoke.texi (-fuse-ld=lld): Document.
 	* opts.c (common_handle_option): Handle OPT_fuse_ld_lld.
-	
+
 2018-11-08  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/constraints.md: Add "Z" series constraints for use
