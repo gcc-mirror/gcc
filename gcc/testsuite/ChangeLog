@@ -1,5 +1,12 @@
 2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* c-c++-common/patchable_function_entry-decl.c: Add regex to search for
+	uppercase "NOP" instructions in assembler output.
+	* c-c++-common/patchable_function_entry-default.c: Likewise.
+	* c-c++-common/patchable_function_entry-definition.c: Likewise.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* c-c++-common/pr27336.c: Skip test if the target keeps null pointer
 	checks.
 	* gcc.dg/addr_equal-1.c: Likewise.
