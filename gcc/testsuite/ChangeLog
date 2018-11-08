@@ -1,5 +1,13 @@
 2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* c-c++-common/pr27336.c: Skip test if the target keeps null pointer
+	checks.
+	* gcc.dg/addr_equal-1.c: Likewise.
+	* gcc.dg/tree-ssa/pr78154.c: Likewise.
+	* gcc.dg/tree-ssa/vrp111.c: Likewise.
+
+2018-11-08  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* lib/gcc-dg.exp (gcc-dg-prune): Add new regexps for when the size of 
 	an output section is too large for a memory region, or a memory
 	region overflows.
