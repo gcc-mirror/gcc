@@ -1,3 +1,8 @@
+2018-11-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87913
+	* gcc.dg/tree-ssa/phi-opt-20.c: New testcase.
+
 2018-11-08  Chenghua Xu  <paul.hua.gm@gmail.com>
 
 	* gcc.target/mips/mips.exp (mips-dg-options):

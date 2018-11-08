@@ -1204,7 +1204,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 		    edge e0, edge e1, gimple *phi,
 		    tree arg0, tree arg1)
 {
-  tree result, type;
+  tree result, type, rhs;
   gcond *cond;
   gassign *new_stmt;
   edge true_edge, false_edge;
@@ -1220,6 +1220,25 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   cond = as_a <gcond *> (last_stmt (cond_bb));
   cmp = gimple_cond_code (cond);
+  rhs = gimple_cond_rhs (cond);
+
+  /* Turn EQ/NE of extreme values to order comparisons.  */
+  if ((cmp == NE_EXPR || cmp == EQ_EXPR)
+      && TREE_CODE (rhs) == INTEGER_CST)
+    {
+      if (wi::eq_p (wi::to_wide (rhs), wi::min_value (TREE_TYPE (rhs))))
+	{
+	  cmp = (cmp == EQ_EXPR) ? LT_EXPR : GE_EXPR;
+	  rhs = wide_int_to_tree (TREE_TYPE (rhs),
+				  wi::min_value (TREE_TYPE (rhs)) + 1);
+	}
+      else if (wi::eq_p (wi::to_wide (rhs), wi::max_value (TREE_TYPE (rhs))))
+	{
+	  cmp = (cmp == EQ_EXPR) ? GT_EXPR : LE_EXPR;
+	  rhs = wide_int_to_tree (TREE_TYPE (rhs),
+				  wi::max_value (TREE_TYPE (rhs)) - 1);
+	}
+    }
 
   /* This transformation is only valid for order comparisons.  Record which
      operand is smaller/larger if the result of the comparison is true.  */
@@ -1228,7 +1247,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   if (cmp == LT_EXPR || cmp == LE_EXPR)
     {
       smaller = gimple_cond_lhs (cond);
-      larger = gimple_cond_rhs (cond);
+      larger = rhs;
       /* If we have smaller < CST it is equivalent to smaller <= CST-1.
 	 Likewise smaller <= CST is equivalent to smaller < CST+1.  */
       if (TREE_CODE (larger) == INTEGER_CST)
@@ -1255,7 +1274,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
     }
   else if (cmp == GT_EXPR || cmp == GE_EXPR)
     {
-      smaller = gimple_cond_rhs (cond);
+      smaller = rhs;
       larger = gimple_cond_lhs (cond);
       /* If we have larger > CST it is equivalent to larger >= CST+1.
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
