@@ -1,5 +1,10 @@
 2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
 
+	* doc/invoke.texi: Remove leading dash from @opindex entries
+	throughout the file.
+
+2018-11-07  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR driver/80828
 	* doc/invoke.texi (Option Summary): Add -e and --entry.
 	(Link Options): Likewise.
