@@ -683,35 +683,18 @@ end cpu fa626
 
 # V4T Architecture Processors
 begin cpu arm7tdmi
+ alias arm7tdmi-s
  tune flags CO_PROC
  architecture armv4t
  costs fastmul
 end cpu arm7tdmi
 
-begin cpu arm7tdmi-s
- cname arm7tdmis
- tune flags CO_PROC
- architecture armv4t
- costs fastmul
-end cpu arm7tdmi-s
-
 begin cpu arm710t
+ alias arm720t arm740t
  tune flags WBUF
  architecture armv4t
  costs fastmul
 end cpu arm710t
-
-begin cpu arm720t
- tune flags WBUF
- architecture armv4t
- costs fastmul
-end cpu arm720t
-
-begin cpu arm740t
- tune flags WBUF
- architecture armv4t
- costs fastmul
-end cpu arm740t
 
 begin cpu arm9
  tune flags LDSCHED
@@ -725,104 +708,40 @@ begin cpu arm9tdmi
  costs fastmul
 end cpu arm9tdmi
 
-begin cpu arm920
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm920
-
 begin cpu arm920t
+ alias arm920 arm922t arm940t ep9312
  tune flags LDSCHED
  architecture armv4t
  costs fastmul
 end cpu arm920t
 
-begin cpu arm922t
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm922t
-
-begin cpu arm940t
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm940t
-
-begin cpu ep9312
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu ep9312
-
 
 # V5T Architecture Processors
 # These used VFPv1 which isn't supported by GCC
 begin cpu arm10tdmi
+ alias arm1020t
  tune flags LDSCHED
  architecture armv5t
  costs fastmul
 end cpu arm10tdmi
 
-begin cpu arm1020t
- tune flags LDSCHED
- architecture armv5t
- costs fastmul
-end cpu arm1020t
-
 
 # V5TE Architecture Processors
 begin cpu arm9e
+ alias arm946e-s arm966e-s arm968e-s
  tune flags LDSCHED
  architecture armv5te+fp
  option nofp remove ALL_FP
  costs 9e
 end cpu arm9e
 
-begin cpu arm946e-s
- cname arm946es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm946e-s
-
-begin cpu arm966e-s
- cname arm966es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm966e-s
-
-begin cpu arm968e-s
- cname arm968es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm968e-s
-
 begin cpu arm10e
+ alias arm1020e arm1022e
  tune flags LDSCHED
  architecture armv5te+fp
  option nofp remove ALL_FP
  costs fastmul
 end cpu arm10e
-
-begin cpu arm1020e
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs fastmul
-end cpu arm1020e
-
-begin cpu arm1022e
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs fastmul
-end cpu arm1022e
 
 begin cpu xscale
  tune flags LDSCHED XSCALE

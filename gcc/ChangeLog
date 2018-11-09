@@ -1,3 +1,25 @@
+2018-11-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm-cpus.in (arm7tdmi): Add an alias for arm7tdmi-s.
+	(arm7tdmi-s): Delete CPU.
+	(arm710t): Add aliases for arm720t and arm740t.
+	(arm720t, arm740t): Delete CPUs.
+	(arm920t): Add aliases for arm920, arm922t and arm940t.
+	(arm920, arm922t, arm940t): Delete CPUs.
+	(arm10tdmi): Add alias for arm1020t.
+	(arm1020t): Delete CPU.
+	(arm9e): Add aliases for arm946e-s, arm966e-s and arm968e-s.
+	(arm946e-s, arm966e-s, arm968e-s): Delete CPUs.
+	(arm10e): Add aliases for arm1020e and arm1022e.
+	(arm1020e, arm1022e): Delete CPU.
+	* config/arm/arm.md (generic_sched): Remove entries that are now
+	handled by aliases.
+	(generic_vfp): Likewise.
+	* config/arm/arm1020e.md: Simplify tuning selection based on alias
+	changes.
+	* config/arm/arm-tune.md: Regenerated.
+	* config/arm/arm-tables.opt: Regenerated.
+
 2018-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87621

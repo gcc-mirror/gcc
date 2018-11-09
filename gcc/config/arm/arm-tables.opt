@@ -43,16 +43,7 @@ EnumValue
 Enum(processor_type) String(arm7tdmi) Value( TARGET_CPU_arm7tdmi)
 
 EnumValue
-Enum(processor_type) String(arm7tdmi-s) Value( TARGET_CPU_arm7tdmis)
-
-EnumValue
 Enum(processor_type) String(arm710t) Value( TARGET_CPU_arm710t)
-
-EnumValue
-Enum(processor_type) String(arm720t) Value( TARGET_CPU_arm720t)
-
-EnumValue
-Enum(processor_type) String(arm740t) Value( TARGET_CPU_arm740t)
 
 EnumValue
 Enum(processor_type) String(arm9) Value( TARGET_CPU_arm9)
@@ -61,46 +52,16 @@ EnumValue
 Enum(processor_type) String(arm9tdmi) Value( TARGET_CPU_arm9tdmi)
 
 EnumValue
-Enum(processor_type) String(arm920) Value( TARGET_CPU_arm920)
-
-EnumValue
 Enum(processor_type) String(arm920t) Value( TARGET_CPU_arm920t)
-
-EnumValue
-Enum(processor_type) String(arm922t) Value( TARGET_CPU_arm922t)
-
-EnumValue
-Enum(processor_type) String(arm940t) Value( TARGET_CPU_arm940t)
-
-EnumValue
-Enum(processor_type) String(ep9312) Value( TARGET_CPU_ep9312)
 
 EnumValue
 Enum(processor_type) String(arm10tdmi) Value( TARGET_CPU_arm10tdmi)
 
 EnumValue
-Enum(processor_type) String(arm1020t) Value( TARGET_CPU_arm1020t)
-
-EnumValue
 Enum(processor_type) String(arm9e) Value( TARGET_CPU_arm9e)
 
 EnumValue
-Enum(processor_type) String(arm946e-s) Value( TARGET_CPU_arm946es)
-
-EnumValue
-Enum(processor_type) String(arm966e-s) Value( TARGET_CPU_arm966es)
-
-EnumValue
-Enum(processor_type) String(arm968e-s) Value( TARGET_CPU_arm968es)
-
-EnumValue
 Enum(processor_type) String(arm10e) Value( TARGET_CPU_arm10e)
-
-EnumValue
-Enum(processor_type) String(arm1020e) Value( TARGET_CPU_arm1020e)
-
-EnumValue
-Enum(processor_type) String(arm1022e) Value( TARGET_CPU_arm1022e)
 
 EnumValue
 Enum(processor_type) String(xscale) Value( TARGET_CPU_xscale)
