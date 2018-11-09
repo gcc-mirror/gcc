@@ -1,3 +1,25 @@
+2018-11-09  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/87762
+	* config/s390/s390.c (s390_safe_relative_long_p): New function.
+	(annotate_constant_pool_refs): Skip insns which support
+	relative addressing.
+	(annotate_constant_pool_refs_1): New helper function.
+	(find_constant_pool_ref): Skip insns which support relative
+	addression.
+	(find_constant_pool_ref_1): New helper function.
+	(replace_constant_pool_ref): Skip insns which support
+	relative addressing.
+	(replace_constant_pool_ref_1): New helper function.
+	(s390_mainpool_start): Adapt to the new signature.
+	(s390_mainpool_finish): Likewise.
+	(s390_chunkify_start): Likewise.
+	(s390_chunkify_finish): Likewise.
+	(pass_s390_early_mach::execute): Likewise.
+	(s390_prologue_plus_offset): Likewise.
+	(s390_emit_prologue): Likewise.
+	(s390_emit_epilogue): Likewise.
+
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gimplify.c (gimplify_scan_omp_clauses): Call sorry_at for valid
