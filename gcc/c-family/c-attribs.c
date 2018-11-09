@@ -1813,8 +1813,11 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   else if (TYPE_P (*node))
     type = node, is_type = true;
 
+  /* True to consider invalid alignments greater than MAX_OFILE_ALIGNMENT.  */
+  bool objfile = (TREE_CODE (*node) == FUNCTION_DECL
+		  || (VAR_P (*node) && TREE_STATIC (*node)));
   /* Log2 of specified alignment.  */
-  int pow2align = check_user_alignment (align_expr, true);
+  int pow2align = check_user_alignment (align_expr, objfile, true);
   if (pow2align == -1
       || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
     {

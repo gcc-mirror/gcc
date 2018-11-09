@@ -11034,7 +11034,7 @@ declspecs_add_alignas (source_location loc,
   specs->locations[cdw_alignas] = loc;
   if (align == error_mark_node)
     return specs;
-  align_log = check_user_alignment (align, true);
+  align_log = check_user_alignment (align, false, true);
   if (align_log > specs->align_log)
     specs->align_log = align_log;
   return specs;
