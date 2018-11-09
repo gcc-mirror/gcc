@@ -414,7 +414,7 @@ Objective-C and Objective-C++ Dialects}.
 -finline-small-functions  -fipa-cp  -fipa-cp-clone @gol
 -fipa-bit-cp -fipa-vrp @gol
 -fipa-pta  -fipa-profile  -fipa-pure-const  -fipa-reference  -fipa-reference-addressable @gol
--fipa-icf  -fira-algorithm=@var{algorithm} @gol
+-fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm} @gol
 -fira-region=@var{region}  -fira-hoist-pressure @gol
 -fira-loop-pressure  -fno-ira-share-save-slots @gol
 -fno-ira-share-spill-slots @gol
@@ -8916,6 +8916,11 @@ Enabled by default at @option{-O} and higher.
 @opindex fipa-reference-addressable
 Discover read-only, write-only and non-addressable static variables.
 Enabled by default at @option{-O} and higher.
+
+@item -fipa-stack-alignment
+@opindex fipa-stack-alignment
+Reduce stack alignment on call sites if possible.
+Enabled by default.
 
 @item -fipa-pta
 @opindex fipa-pta

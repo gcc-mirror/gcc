@@ -4890,7 +4890,8 @@ rest_of_clean_state (void)
   /* We can reduce stack alignment on call site only when we are sure that
      the function body just produced will be actually used in the final
      executable.  */
-  if (decl_binds_to_current_def_p (current_function_decl))
+  if (flag_ipa_stack_alignment
+      && decl_binds_to_current_def_p (current_function_decl))
     {
       unsigned int pref = crtl->preferred_stack_boundary;
       if (crtl->stack_alignment_needed > crtl->preferred_stack_boundary)

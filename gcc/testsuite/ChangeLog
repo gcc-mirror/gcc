@@ -1,5 +1,9 @@
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
+	* gcc.target/i386/ipa-stack-alignment.c: New test.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/tree-ssa/writeonly-2.c: New test.
 
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>

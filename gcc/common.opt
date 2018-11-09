@@ -1728,6 +1728,10 @@ fipa-reference-addressable
 Common Report Var(flag_ipa_reference_addressable) Init(0) Optimization
 Discover read-only, write-only and non-addressable static variables.
 
+fipa-stack-alignment
+Common Report Var(flag_ipa_stack_alignment) Init(1) Optimization
+Reduce stack alignment on call sites if possible.
+
 fipa-matrix-reorg
 Common Ignore
 Does nothing. Preserved for backward compatibility.

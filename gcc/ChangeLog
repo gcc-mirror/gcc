@@ -1,5 +1,12 @@
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
+	* common.opt: Add -fipa-stack-alignment flag.
+	* doc/invoke.texi: Document it.
+	* final.c (rest_of_clean_state): Guard stack
+	shrinking with flag.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
 	* cgraph.h (ipa_discover_readonly_nonaddressable_vars): Rename
 	to ...
 	(ipa_discover_variable_flags): ... this.
