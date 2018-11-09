@@ -1,3 +1,8 @@
+2018-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimplify.c (gimplify_scan_omp_clauses): Call sorry_at for valid
+	but unsupported lastprivate with conditional modifier.
+
 2018-11-09  Jeff Law  <law@redhat.com>
 
 	* config/mips/mips.c (mips_loongson_ext2_prefetch_cookie): Handle
