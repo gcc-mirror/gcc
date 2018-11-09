@@ -1,3 +1,64 @@
+2018-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/gomp/workshare-reduction-1.c: New test.
+	* gcc.dg/gomp/workshare-reduction-2.c: New test.
+	* gcc.dg/gomp/workshare-reduction-3.c: New test.
+	* gcc.dg/gomp/workshare-reduction-4.c: New test.
+	* gcc.dg/gomp/workshare-reduction-5.c: New test.
+	* gcc.dg/gomp/workshare-reduction-6.c: New test.
+	* gcc.dg/gomp/workshare-reduction-7.c: New test.
+	* gcc.dg/gomp/workshare-reduction-8.c: New test.
+	* gcc.dg/gomp/workshare-reduction-9.c: New test.
+	* gcc.dg/gomp/workshare-reduction-10.c: New test.
+	* gcc.dg/gomp/workshare-reduction-11.c: New test.
+	* gcc.dg/gomp/workshare-reduction-12.c: New test.
+	* gcc.dg/gomp/workshare-reduction-13.c: New test.
+	* gcc.dg/gomp/workshare-reduction-14.c: New test.
+	* gcc.dg/gomp/workshare-reduction-15.c: New test.
+	* gcc.dg/gomp/workshare-reduction-16.c: New test.
+	* gcc.dg/gomp/workshare-reduction-17.c: New test.
+	* gcc.dg/gomp/workshare-reduction-18.c: New test.
+	* gcc.dg/gomp/workshare-reduction-19.c: New test.
+	* gcc.dg/gomp/workshare-reduction-20.c: New test.
+	* gcc.dg/gomp/workshare-reduction-21.c: New test.
+	* gcc.dg/gomp/workshare-reduction-22.c: New test.
+	* gcc.dg/gomp/workshare-reduction-23.c: New test.
+	* gcc.dg/gomp/workshare-reduction-24.c: New test.
+	* gcc.dg/gomp/workshare-reduction-25.c: New test.
+	* gcc.dg/gomp/workshare-reduction-26.c: New test.
+	* gcc.dg/gomp/workshare-reduction-27.c: New test.
+	* gcc.dg/gomp/workshare-reduction-28.c: New test.
+	* gcc.dg/gomp/workshare-reduction-29.c: New test.
+	* gcc.dg/gomp/workshare-reduction-30.c: New test.
+	* gcc.dg/gomp/workshare-reduction-31.c: New test.
+	* gcc.dg/gomp/workshare-reduction-32.c: New test.
+	* gcc.dg/gomp/workshare-reduction-33.c: New test.
+	* gcc.dg/gomp/workshare-reduction-34.c: New test.
+	* gcc.dg/gomp/workshare-reduction-35.c: New test.
+	* gcc.dg/gomp/workshare-reduction-36.c: New test.
+	* gcc.dg/gomp/workshare-reduction-37.c: New test.
+	* gcc.dg/gomp/workshare-reduction-38.c: New test.
+	* gcc.dg/gomp/workshare-reduction-39.c: New test.
+	* gcc.dg/gomp/workshare-reduction-40.c: New test.
+	* gcc.dg/gomp/workshare-reduction-41.c: New test.
+	* gcc.dg/gomp/workshare-reduction-42.c: New test.
+	* gcc.dg/gomp/workshare-reduction-43.c: New test.
+	* gcc.dg/gomp/workshare-reduction-44.c: New test.
+	* gcc.dg/gomp/workshare-reduction-45.c: New test.
+	* gcc.dg/gomp/workshare-reduction-46.c: New test.
+	* gcc.dg/gomp/workshare-reduction-47.c: New test.
+	* gcc.dg/gomp/workshare-reduction-48.c: New test.
+	* gcc.dg/gomp/workshare-reduction-49.c: New test.
+	* gcc.dg/gomp/workshare-reduction-50.c: New test.
+	* gcc.dg/gomp/workshare-reduction-51.c: New test.
+	* gcc.dg/gomp/workshare-reduction-52.c: New test.
+	* gcc.dg/gomp/workshare-reduction-53.c: New test.
+	* gcc.dg/gomp/workshare-reduction-54.c: New test.
+	* gcc.dg/gomp/workshare-reduction-55.c: New test.
+	* gcc.dg/gomp/workshare-reduction-56.c: New test.
+	* gcc.dg/gomp/workshare-reduction-57.c: New test.
+	* gcc.dg/gomp/workshare-reduction-58.c: New test.
+
 2018-11-09  Stafford Horne  <shorne@gmail.com>
 	    Richard Henderson  <rth@twiddle.net>
 
