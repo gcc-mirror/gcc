@@ -1,3 +1,9 @@
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/87965
+	* c-c++-common/pr60226.c: Adjust text of expected diagnostic.
+	* gcc.dg/pr39323-1.c: Ditto.
+
 2018-11-09  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.dg/Walloca-16.c: Ignore conflicting types for built-in
