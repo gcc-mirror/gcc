@@ -1,3 +1,8 @@
+2018-11-09  Jeff Law  <law@redhat.com>
+
+	* config/mips/mips.c (mips_loongson_ext2_prefetch_cookie): Handle
+	unused argument better.  Add gcc_unreachable to silence warning.
+
 2018-11-09  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81824

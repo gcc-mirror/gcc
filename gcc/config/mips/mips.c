@@ -15155,7 +15155,7 @@ mips_prefetch_cookie (rtx write, rtx locality)
    (prefetch for store), other hint just scale to hint = 0 and hint = 1.  */
 
 rtx
-mips_loongson_ext2_prefetch_cookie (rtx write, rtx locality)
+mips_loongson_ext2_prefetch_cookie (rtx write, rtx)
 {
   /* store.  */
   if (INTVAL (write) == 1)
@@ -15164,6 +15164,8 @@ mips_loongson_ext2_prefetch_cookie (rtx write, rtx locality)
   /* load.  */
   if (INTVAL (write) == 0)
     return GEN_INT (INTVAL (write));
+
+  gcc_unreachable ();
 }
 
 
