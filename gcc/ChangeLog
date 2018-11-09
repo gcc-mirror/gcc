@@ -1,3 +1,8 @@
+2018-11-09  Alexandre Oliva <oliva@adacore.com>
+
+	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Adjust
+	for non-w64 x86_64 biarch.
+
 2018-11-09  Alexandre Oliva <aoliva@redhat.com>
 
 	PR rtl-optimization/86438
