@@ -1,3 +1,10 @@
+2018-11-09  Bill Schmidt  <wschmidt@linux.ibm.com>
+	    Jinsong Ji  <jji@us.ibm.com>
+
+	* config/rs6000/xmmintrin.h (_mm_cvtss_si32): Fix incorrect
+	constraints by introducing a new temporary.
+	(_mm_cvtss_si64): Likewise.
+
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
 	* common.opt: Add -fipa-stack-alignment flag.
