@@ -39235,6 +39235,9 @@ cp_parser_omp_requires (cp_parser *parser, cp_token *pragma_tok)
 	      return false;
 	    }
 	  if (p)
+	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
+			    "supported yet", p);
+	  if (p)
 	    cp_lexer_consume_token (parser->lexer);
 	  if (this_req)
 	    {
