@@ -1,5 +1,9 @@
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
+	* LOCAL_PATCHES: Include one local patch.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/87892
 	* sanitizer_common/sanitizer_linux_libcdep.cc (defined): Return
 	1 when CPU_COUNT macro is not defined.
