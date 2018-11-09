@@ -1010,6 +1010,11 @@ Objective-C and Objective-C++ Dialects}.
 @emph{Nvidia PTX Options}
 @gccoptlist{-m32  -m64  -mmainkernel  -moptimize}
 
+@emph{OpenRISC Options}
+@gccoptlist{-mboard=@var{name} -mnewlib -mhard-mul -mhard-div @gol
+-msoft-mul -msoft-div @gol
+-mcmov -mror -msext -msfimm -mshftimm}
+
 @emph{PDP-11 Options}
 @gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10 @gol
 -mint32  -mno-int16 -mint16  -mno-int32 @gol
@@ -14984,6 +14989,7 @@ platform.
 * NDS32 Options::
 * Nios II Options::
 * Nvidia PTX Options::
+* OpenRISC Options::
 * PDP-11 Options::
 * picoChip Options::
 * PowerPC Options::
@@ -22759,6 +22765,68 @@ with current lane index to compute the master lane index.
 @opindex mgomp
 Generate code for use in OpenMP offloading: enables @option{-msoft-stack} and
 @option{-muniform-simt} options, and selects corresponding multilib variant.
+
+@end table
+
+@node OpenRISC Options
+@subsection OpenRISC Options
+@cindex OpenRISC Options
+
+These options are defined for OpenRISC:
+
+@table @gcctabopt
+
+@item -mboard=@var{name}
+@opindex mboard
+Configure a board specific runtime.  This will be passed to the linker for
+newlib board library linking.  The default is @code{or1ksim}.
+
+@item -mnewlib
+@opindex mnewlib
+For compatibility, it's always newlib for elf now.
+
+@item -mhard-div
+@opindex mhard-div
+Generate code for hardware which supports divide instructions.  This is the
+default.
+
+@item -mhard-mul
+@opindex mhard-mul
+Generate code for hardware which supports multiply instructions.  This is the
+default.
+
+@item -mcmov
+@opindex mcmov
+Generate code for hardware which supports the conditional move (@code{l.cmov})
+instruction.
+
+@item -mror
+@opindex mror
+Generate code for hardware which supports rotate right instructions.
+
+@item -msext
+@opindex msext
+Generate code for hardware which supports sign-extension instructions.
+
+@item -msfimm
+@opindex msfimm
+Generate code for hardware which supports set flag immediate (@code{l.sf*i})
+instructions.
+
+@item -mshftimm
+@opindex mshftimm
+Generate code for hardware which supports shift immediate related instructions
+(i.e. @code{l.srai}, @code{l.srli}, @code{l.slli}, @code{1.rori}).  Note, to
+enable generation of the @code{l.rori} instruction the @option{-mror} flag must
+also be specified.
+
+@item -msoft-div
+@opindex msoft-div
+Generate code for hardware which requires divide instruction emulation.
+
+@item -msoft-mul
+@opindex msoft-mul
+Generate code for hardware which requires multiply instruction emulation.
 
 @end table
 

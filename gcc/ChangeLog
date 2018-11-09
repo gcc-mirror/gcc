@@ -1,3 +1,16 @@
+2018-11-09  Stafford Horne  <shorne@gmail.com>
+	    Richard Henderson  <rth@twiddle.net>
+	    Joel Sherrill  <joel@rtems.org>
+
+	* common/config/or1k/or1k-common.c: New file.
+	* config/or1k/*: New.
+	* config.gcc (or1k*-*-*): New.
+	* configure.ac (or1k*-*-*): New test for openrisc tls.
+	* configure: Regenerated.
+	* doc/install.texi: Document OpenRISC triplets.
+	* doc/invoke.texi: Document OpenRISC arguments.
+	* doc/md.texi: Document OpenRISC.
+
 2018-11-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/arm-cpus.in (arm7tdmi): Add an alias for arm7tdmi-s.
