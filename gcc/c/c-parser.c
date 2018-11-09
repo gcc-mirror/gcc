@@ -12184,8 +12184,19 @@ c_parser_omp_clause_final (c_parser *parser, tree list)
   location_t loc = c_parser_peek_token (parser)->location;
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
     {
-      tree t = c_parser_paren_condition (parser);
-      tree c;
+      matching_parens parens;
+      tree t, c;
+      if (!parens.require_open (parser))
+	t = error_mark_node;
+      else
+	{
+	  location_t eloc = c_parser_peek_token (parser)->location;
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  t = convert_lvalue_to_rvalue (eloc, expr, true, true).value;
+	  t = c_objc_common_truthvalue_conversion (eloc, t);
+	  t = c_fully_fold (t, false, NULL);
+	  parens.skip_until_found_close (parser);
+	}
 
       check_no_duplicate_clause (list, OMP_CLAUSE_FINAL, "final");
 
@@ -12305,7 +12316,11 @@ c_parser_omp_clause_if (c_parser *parser, tree list, bool is_omp)
 	}
     }
 
-  tree t = c_parser_condition (parser), c;
+  location_t loc = c_parser_peek_token (parser)->location;
+  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+  expr = convert_lvalue_to_rvalue (loc, expr, true, true);
+  tree t = c_objc_common_truthvalue_conversion (loc, expr.value), c;
+  t = c_fully_fold (t, false, NULL);
   parens.skip_until_found_close (parser);
 
   for (c = list; c ; c = OMP_CLAUSE_CHAIN (c))
@@ -12440,7 +12455,7 @@ c_parser_omp_clause_num_threads (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -12486,7 +12501,7 @@ c_parser_omp_clause_num_tasks (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -12532,7 +12547,7 @@ c_parser_omp_clause_grainsize (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -12578,7 +12593,7 @@ c_parser_omp_clause_priority (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -12625,7 +12640,7 @@ c_parser_omp_clause_hint (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -13646,7 +13661,7 @@ c_parser_omp_clause_num_teams (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -13691,7 +13706,7 @@ c_parser_omp_clause_thread_limit (c_parser *parser, tree list)
   if (parens.require_open (parser))
     {
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       tree c, t = expr.value;
       t = c_fully_fold (t, false, NULL);
@@ -13812,7 +13827,7 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
     {
       c_parser_consume_token (parser);
       location_t expr_loc = c_parser_peek_token (parser)->location;
-      c_expr expr = c_parser_expression (parser);
+      c_expr expr = c_parser_expr_no_commas (parser, NULL);
       expr = convert_lvalue_to_rvalue (expr_loc, expr, false, true);
       step = expr.value;
       step = c_fully_fold (step, false, NULL);

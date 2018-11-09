@@ -32469,7 +32469,7 @@ cp_parser_omp_clause_final (cp_parser *parser, tree list, location_t location)
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_condition (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32592,7 +32592,7 @@ cp_parser_omp_clause_if (cp_parser *parser, tree list, location_t location,
 	}
     }
 
-  t = cp_parser_condition (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32696,7 +32696,7 @@ cp_parser_omp_clause_num_threads (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32727,7 +32727,7 @@ cp_parser_omp_clause_num_tasks (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32758,7 +32758,7 @@ cp_parser_omp_clause_grainsize (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32789,7 +32789,7 @@ cp_parser_omp_clause_priority (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -32811,8 +32811,7 @@ cp_parser_omp_clause_priority (cp_parser *parser, tree list,
    hint ( expression ) */
 
 static tree
-cp_parser_omp_clause_hint (cp_parser *parser, tree list,
-			   location_t location)
+cp_parser_omp_clause_hint (cp_parser *parser, tree list, location_t location)
 {
   tree t, c;
 
@@ -32820,7 +32819,7 @@ cp_parser_omp_clause_hint (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -33442,7 +33441,7 @@ cp_parser_omp_clause_num_teams (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -33473,7 +33472,7 @@ cp_parser_omp_clause_thread_limit (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))
@@ -33641,7 +33640,7 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
 	    step = NULL_TREE;
 	}
       if (!step)
-	step = cp_parser_expression (parser);
+	step = cp_parser_assignment_expression (parser);
 
       if (!parens.require_close (parser))
 	cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
@@ -34151,7 +34150,7 @@ cp_parser_omp_clause_device (cp_parser *parser, tree list,
   if (!parens.require_open (parser))
     return list;
 
-  t = cp_parser_expression (parser);
+  t = cp_parser_assignment_expression (parser);
 
   if (t == error_mark_node
       || !parens.require_close (parser))

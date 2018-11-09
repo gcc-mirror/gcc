@@ -1,5 +1,18 @@
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-parser.c (c_parser_omp_clause_final): Use
+	c_parser_expr_no_commas, convert_lvalue_to_rvalue,
+	c_objc_common_truthvalue_conversion, c_fully_fold and parentheses
+	parsing instead of c_parser_paren_condition.
+	(c_parser_omp_clause_if): Use c_parser_expr_no_commas,
+	convert_lvalue_to_rvalue, c_objc_common_truthvalue_conversion and
+	c_fully_fold instead of c_parser_condition.
+	(c_parser_omp_clause_num_threads, c_parser_omp_clause_num_tasks,
+	c_parser_omp_clause_grainsize, c_parser_omp_clause_priority,
+	c_parser_omp_clause_hint, c_parser_omp_clause_num_teams,
+	c_parser_omp_clause_thread_limit, c_parser_omp_clause_linear): Use
+	c_parser_expr_no_commas instead of c_parser_expression.
+
 	* c-parser.c (c_parser_omp_clause_reduction): Call sorry_at on
 	reduction clause with inscan modifier.
 
