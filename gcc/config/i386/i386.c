@@ -2796,7 +2796,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
     { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
     { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
-    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE }
+    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
+    { "-mptwrite",	OPTION_MASK_ISA_PTWRITE }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -3878,6 +3879,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_WBNOINVD) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_WBNOINVD))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD;
+	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PTWRITE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
@@ -5080,6 +5084,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
     IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
+    IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -30183,6 +30188,8 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
   tree decl = NULL_TREE;
 
   ix86_builtins_isa[(int) code].isa2 = mask;
+  if (tcode == VOID_FTYPE_UINT64)
+    ix86_builtins_isa[(int) code].isa = OPTION_MASK_ISA_64BIT;
 
   if (mask == 0
       || (mask & ix86_isa_flags2) != 0

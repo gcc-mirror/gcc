@@ -1,3 +1,26 @@
+2018-11-08  Andi Kleen  <ak@linux.intel.com>
+
+	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PTWRITE_SET): New.
+	(OPTION_MASK_ISA_PTWRITE_UNSET): New.
+	(ix86_handle_option): Handle OPT_mptwrite.
+	* config/i386/cpuid.h (bit_PTWRITE): Add.
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect ptwrite.
+	* config/i386/i386-builtin.def (BDESC): Add ptwrite32/64.
+	* config/i386/i386-c.c (ix86_target_macros_internal): Define __PTWRITE__.
+	* config/i386/i386.c (ix86_target_string): Handle ptwrite.
+	(ix86_option_override_internal): Handle PTA_PTWRITE.
+	(ix86_valid_target_attribute_inner_p): Define ptwrite.
+	(def_builtin2): Force UINT64 to be 64bit only.
+	* config/i386/i386.h (TARGET_PTWRITE): Add.
+	(TARGET_PTWRITE_P): Add.
+	(PTA_PTWRITE): Add.
+	* config/i386/i386.md: Define ptwrite.
+	* config/i386/i386.opt: Add -mptwrite.
+	* config/i386/immintrin.h (_ptwrite64): Add.
+	(_ptwrite32): Add
+	* doc/extend.texi: Document __builtin_ia32_ptwrite*.
+	* doc/invoke.texi: Document -mptwrite.
+
 2018-11-08  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87600

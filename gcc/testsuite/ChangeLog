@@ -1,3 +1,8 @@
+2018-11-08  Andi Kleen  <ak@linux.intel.com>
+
+	* gcc.target/i386/ptwrite1.c: New test.
+	* gcc.target/i386/ptwrite2.c: New test.
+
 2018-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/78351
