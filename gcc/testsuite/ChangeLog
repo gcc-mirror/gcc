@@ -1,3 +1,7 @@
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/writeonly-2.c: New test.
+
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/gomp/workshare-reduction-1.c: New test.
