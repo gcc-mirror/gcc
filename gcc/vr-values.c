@@ -121,15 +121,9 @@ vr_values::get_value_range (const_tree var)
 	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
 	    {
-	      wide_int min, max;
-	      value_range_kind rtype = get_range_info (var, &min, &max);
-	      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
-		set_value_range (vr, rtype,
-				 wide_int_to_tree (TREE_TYPE (var), min),
-				 wide_int_to_tree (TREE_TYPE (var), max),
-				 NULL);
-	      else
-		set_value_range_to_varying (vr);
+	      get_range_info (var, *vr);
+	      if (vr->undefined_p ())
+		vr->set_varying ();
 	    }
 	  else
 	    set_value_range_to_varying (vr);
@@ -178,17 +172,10 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
      factor that in.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
     {
-      wide_int min, max;
-      value_range_kind rtype = get_range_info (var, &min, &max);
+      value_range nr;
+      value_range_kind rtype = get_range_info (var, nr);
       if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
-	{
-	  tree nr_min, nr_max;
-	  nr_min = wide_int_to_tree (TREE_TYPE (var), min);
-	  nr_max = wide_int_to_tree (TREE_TYPE (var), max);
-	  value_range nr;
-	  nr.set_and_canonicalize (rtype, nr_min, nr_max, NULL);
-	  new_vr->intersect (&nr);
-	}
+	new_vr->intersect (&nr);
     }
 
   /* Update the value range, if necessary.  */
