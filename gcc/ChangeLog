@@ -169,12 +169,6 @@
 	* lra-constraints.c (process_alt_operands): Skip illegal hard
 	register usage.  Prefer reloading non hard register operands.
 
-gcc/testsuite/
-	PR rtl-optimization/87600
-	* gcc.dg/pr87600.h: New file.
-	* gcc.dg/pr87600-1.c: New test.
-	* gcc.dg/pr87600-2.c: Likewise.
-
 2018-11-08  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/36572
