@@ -250,10 +250,10 @@ value_range::may_contain_p (tree val) const
 
   if (m_kind == VR_ANTI_RANGE)
     {
-      int res = value_inside_range (val, m_min, m_max);
+      int res = value_inside_range (val, min (), max ());
       return res == 0 || res == -2;
     }
-  return value_inside_range (val, m_min, m_max) != 0;
+  return value_inside_range (val, min (), max ()) != 0;
 }
 
 void
