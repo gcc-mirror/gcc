@@ -1,3 +1,9 @@
+2018-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87953
+	* tree-vect-loop.c (vectorizable_reduction): For analysis
+	always pass ops[0] to vectorizable_condition.
+
 2018-11-09  Stafford Horne  <shorne@gmail.com>
 	    Richard Henderson  <rth@twiddle.net>
 	    Joel Sherrill  <joel@rtems.org>
