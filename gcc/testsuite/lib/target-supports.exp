@@ -8429,6 +8429,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget riscv*-*-*]
 	 || [istarget v850*-*-*]
 	 || [istarget visium-*-*]
+	 || [istarget or1k*-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }

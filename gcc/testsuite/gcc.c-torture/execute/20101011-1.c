@@ -100,6 +100,9 @@ __aeabi_idiv0 (int return_value)
 #elif defined (__moxie__)
   /* Not all moxie configurations may raise exceptions.  */
 # define DO_TEST 0
+#elif defined (__or1k__)
+  /* On OpenRISC division by zero does not trap.  */
+# define DO_TEST 0
 #else
 # define DO_TEST 1
 #endif
