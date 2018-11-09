@@ -1,3 +1,8 @@
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR c/87795
+	* gcc.dg/attr-aligned.c: New test.
+
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
 	* gcc.target/i386/ipa-stack-alignment.c: New test.
@@ -120,6 +125,7 @@
 	* gcc.dg/pr87600-1.c: New test.
 	* gcc.dg/pr87600-2.c: Likewise.
 
+>>>>>>> .r265976
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-17.c: New test.
