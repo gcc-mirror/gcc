@@ -1,3 +1,8 @@
+2018-11-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR target/87793
+	* gcc.dg/pr87793.c: New.
+
 2018-11-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.target/arm/neon-vect-div-1.c: New test.
