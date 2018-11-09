@@ -1,3 +1,12 @@
+2018-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87621
+	* tree-vect-loop.c (vectorizable_reduction): Handle reduction
+	op with only phi inputs.
+	* tree-ssa-loop-ch.c: Include tree-ssa-sccvn.h.
+	(ch_base::copy_headers): Run CSE on copied loop headers.
+	(pass_ch_vect::process_loop_p): Simplify.
+
 2018-11-09  Alexandre Oliva <oliva@adacore.com>
 
 	* config/i386/mingw32.h (LINK_SPEC_LARGE_ADDR_AWARE): Adjust
