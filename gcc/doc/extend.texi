@@ -21335,6 +21335,15 @@ unsigned int __builtin_ia32_rdrand32_step (unsigned int *)
 unsigned int __builtin_ia32_rdrand64_step (unsigned long long *)
 @end smallexample
 
+The following built-in function is available when @option{-mptwrite} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+void __builtin_ia32_ptwrite32 (unsigned)
+void __builtin_ia32_ptwrite64 (unsigned long long)
+@end smallexample
+
 The following built-in functions are available when @option{-msse4a} is used.
 All of them generate the machine instruction that is part of the name.
 

@@ -140,6 +140,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_FSGSBASE_SET OPTION_MASK_ISA_FSGSBASE
 #define OPTION_MASK_ISA_RDRND_SET OPTION_MASK_ISA_RDRND
+#define OPTION_MASK_ISA_PTWRITE_SET OPTION_MASK_ISA_PTWRITE
 #define OPTION_MASK_ISA_F16C_SET \
   (OPTION_MASK_ISA_F16C | OPTION_MASK_ISA_AVX_SET)
 #define OPTION_MASK_ISA_MWAITX_SET OPTION_MASK_ISA_MWAITX
@@ -267,6 +268,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA_FSGSBASE_UNSET OPTION_MASK_ISA_FSGSBASE
 #define OPTION_MASK_ISA_RDRND_UNSET OPTION_MASK_ISA_RDRND
+#define OPTION_MASK_ISA_PTWRITE_UNSET OPTION_MASK_ISA_PTWRITE
 #define OPTION_MASK_ISA_F16C_UNSET OPTION_MASK_ISA_F16C
 
 #define OPTION_MASK_ISA_GENERAL_REGS_ONLY_UNSET \
@@ -1122,6 +1124,19 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags &= ~OPTION_MASK_ISA_RDRND_UNSET;
 	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_RDRND_UNSET;
+	}
+      return true;
+
+    case OPT_mptwrite:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PTWRITE_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA_PTWRITE_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA_PTWRITE_UNSET;
 	}
       return true;
 

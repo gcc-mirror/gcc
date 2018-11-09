@@ -191,6 +191,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define TARGET_WAITPKG_P(x)	TARGET_ISA_WAITPKG_P(x)
 #define TARGET_CLDEMOTE	TARGET_ISA_CLDEMOTE
 #define TARGET_CLDEMOTE_P(x) TARGET_ISA_CLDEMOTE_P(x)
+#define TARGET_PTWRITE	TARGET_ISA_PTWRITE
+#define TARGET_PTWRITE_P(x)	TARGET_ISA_PTWRITE_P(x)
 
 #define TARGET_LP64	TARGET_ABI_64
 #define TARGET_LP64_P(x)	TARGET_ABI_64_P(x)
@@ -2356,6 +2358,7 @@ const wide_int_bitmask PTA_RDPID (0, HOST_WIDE_INT_1U << 6);
 const wide_int_bitmask PTA_PCONFIG (0, HOST_WIDE_INT_1U << 7);
 const wide_int_bitmask PTA_WBNOINVD (0, HOST_WIDE_INT_1U << 8);
 const wide_int_bitmask PTA_WAITPKG (0, HOST_WIDE_INT_1U << 9);
+const wide_int_bitmask PTA_PTWRITE (0, HOST_WIDE_INT_1U << 10);
 
 const wide_int_bitmask PTA_CORE2 = PTA_64BIT | PTA_MMX | PTA_SSE | PTA_SSE2
   | PTA_SSE3 | PTA_SSSE3 | PTA_CX16 | PTA_FXSR;
@@ -2391,7 +2394,7 @@ const wide_int_bitmask PTA_GOLDMONT = PTA_SILVERMONT | PTA_SHA | PTA_XSAVE
   | PTA_RDSEED | PTA_XSAVEC | PTA_XSAVES | PTA_CLFLUSHOPT | PTA_XSAVEOPT
   | PTA_FSGSBASE;
 const wide_int_bitmask PTA_GOLDMONT_PLUS = PTA_GOLDMONT | PTA_RDPID
-  | PTA_SGX;
+  | PTA_SGX | PTA_PTWRITE;
 const wide_int_bitmask PTA_TREMONT = PTA_GOLDMONT_PLUS | PTA_CLWB
   | PTA_GFNI;
 const wide_int_bitmask PTA_KNM = PTA_KNL | PTA_AVX5124VNNIW

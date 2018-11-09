@@ -1286,7 +1286,7 @@ See RS/6000 and PowerPC Options.
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
--mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma -mpconfig -mwbnoinvd @gol
+-mpclmul  -mfsgsbase  -mrdrnd  -mf16c  -mfma -mpconfig -mwbnoinvd -mptwrite @gol
 -mprefetchwt1  -mclflushopt  -mxsavec  -mxsaves @gol
 -msse4a  -m3dnow  -m3dnowa  -mpopcnt  -mabm  -mbmi  -mtbm  -mfma4  -mxop @gol
 -mlzcnt  -mbmi2  -mfxsr  -mxsave  -mxsaveopt  -mrtm  -mlwp @gol
@@ -27880,6 +27880,9 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @itemx -mfsgsbase
 @opindex mfsgsbase
 @need 200
+@itemx -mptwrite
+@opindex mptwrite
+@need 200
 @itemx -mrdrnd
 @opindex mrdrnd
 @need 200
@@ -27988,7 +27991,7 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mcldemote
 These switches enable the use of instructions in the MMX, SSE,
 SSE2, SSE3, SSSE3, SSE4.1, AVX, AVX2, AVX512F, AVX512PF, AVX512ER, AVX512CD,
-SHA, AES, PCLMUL, FSGSBASE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
+SHA, AES, PCLMUL, FSGSBASE, PTWRITE, RDRND, F16C, FMA, SSE4A, FMA4, XOP, LWP, ABM,
 AVX512VL, AVX512BW, AVX512DQ, AVX512IFMA, AVX512VBMI, BMI, BMI2, VAES, WAITPKG,
 FXSR, XSAVE, XSAVEOPT, LZCNT, RTM, MWAITX, PKU, IBT, SHSTK, AVX512VBMI2,
 GFNI, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B,

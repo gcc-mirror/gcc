@@ -785,6 +785,10 @@ mwbnoinvd
 Target Report Mask(ISA_WBNOINVD) Var(ix86_isa_flags2) Save
 Support WBNOINVD built-in functions and code generation.
 
+mptwrite
+Target Report Mask(ISA_PTWRITE) Var(ix86_isa_flags2) Save
+Support PTWRITE built-in functions and code generation.
+
 msgx
 Target Report Mask(ISA_SGX) Var(ix86_isa_flags2) Save
 Support SGX built-in functions and code generation.
