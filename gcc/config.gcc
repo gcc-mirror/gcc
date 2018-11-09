@@ -484,6 +484,9 @@ nios2-*-*)
 nvptx-*-*)
 	cpu_type=nvptx
 	;;
+or1k*-*-*)
+	cpu_type=or1k
+	;;
 powerpc*-*-*spe*)
 	cpu_type=powerpcspe
 	extra_headers="ppc-asm.h altivec.h spe.h ppu_intrinsics.h paired.h spu2vmx.h vec_types.h si2vmx.h htmintrin.h htmxlintrin.h"
@@ -2489,6 +2492,48 @@ nvptx-*)
 		extra_programs="${extra_programs} mkoffload\$(exeext)"
 		tm_file="${tm_file} nvptx/offload.h"
 	fi
+	;;
+or1k*-*-*)
+	tm_file="elfos.h ${tm_file}"
+	tmake_file="${tmake_file} or1k/t-or1k"
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+
+	# Handle --with-multilib-list=...
+	or1k_multilibs="${with_multilib_list}"
+	if test "$or1k_multilibs" = "default"; then
+		or1k_multilibs="mcmov,msoft-mul,msoft-div"
+	fi
+	or1k_multilibs=`echo $or1k_multilibs | sed -e 's/,/ /g'`
+	for or1k_multilib in ${or1k_multilibs}; do
+		case ${or1k_multilib} in
+		mcmov | msext | msfimm | \
+		mhard-div | mhard-mul | \
+		msoft-div | msoft-mul )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${or1k_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${with_multilib_list} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+
+	case ${target} in
+	or1k*-*-linux*)
+		tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h"
+		tm_file="${tm_file} or1k/linux.h"
+		;;
+	or1k*-*-elf*)
+		tm_file="${tm_file} newlib-stdint.h or1k/elf.h"
+		extra_options="${extra_options} or1k/elf.opt"
+		;;
+	or1k*-*-rtems*)
+		tm_file="${tm_file} newlib-stdint.h or1k/rtems.h rtems.h"
+		tmake_file="${tmake_file} or1k/t-rtems"
+		;;
+	esac
 	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"

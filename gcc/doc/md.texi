@@ -3003,6 +3003,31 @@ representing a supported PIC or TLS relocation.
 
 @end table
 
+@item OpenRISC---@file{config/or1k/constraints.md}
+@table @code
+@item I
+Integer that is valid as an immediate operand in an
+instruction taking a signed 16-bit number. Range
+@minus{}32768 to 32767.
+
+@item K
+Integer that is valid as an immediate operand in an
+instruction taking an unsigned 16-bit number. Range
+0 to 65535.
+
+@item M
+Signed 16-bit constant shifted left 16 bits. (Used with @code{l.movhi})
+
+@item O
+Zero
+
+@ifset INTERNALS
+@item c
+Register usable for sibcalls.
+@end ifset
+
+@end table
+
 @item PDP-11---@file{config/pdp11/constraints.md}
 @table @code
 @item a

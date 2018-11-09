@@ -3269,6 +3269,10 @@ information have to.
 @item
 @uref{#nvptx-x-none,,nvptx-*-none}
 @item
+@uref{#or1k-x-elf,,or1k-*-elf}
+@item
+@uref{#or1k-x-linux,,or1k-*-linux}
+@item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
 @uref{#powerpc-x-darwin,,powerpc-*-darwin*}
@@ -4235,6 +4239,21 @@ the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.
+
+@html
+<hr />
+@end html
+@anchor{or1k-x-elf}
+@heading or1k-*-elf
+The OpenRISC 1000 32-bit processor with delay slots.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{or1k-x-linux}
+@heading or1k-*-linux
+The OpenRISC 1000 32-bit processor with delay slots.
 
 @html
 <hr />
