@@ -5117,7 +5117,8 @@ fld_type_variant_equal_p (tree t, tree v)
       /* We want to match incomplete variants with complete types.
 	 In this case we need to ignore alignment.   */
       || ((!RECORD_OR_UNION_TYPE_P (t) || COMPLETE_TYPE_P (v))
-	  && TYPE_ALIGN (t) != TYPE_ALIGN (v))
+	  && (TYPE_ALIGN (t) != TYPE_ALIGN (v)
+	      || TYPE_USER_ALIGN (t) != TYPE_USER_ALIGN (v)))
       || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
 			        TYPE_ATTRIBUTES (v)))
@@ -5148,7 +5149,10 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
   /* Variants of incomplete types should have alignment 
      set to BITS_PER_UNIT.  Do not copy the actual alignment.  */
   if (!RECORD_OR_UNION_TYPE_P (v) || COMPLETE_TYPE_P (v))
-    SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
+    {
+      SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
+      TYPE_USER_ALIGN (v) = TYPE_USER_ALIGN (t);
+    }
   gcc_checking_assert (fld_type_variant_equal_p (t,v));
   add_tree_to_fld_list (v, fld);
   return v;
@@ -5202,6 +5206,7 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  TYPE_SIZE (copy) = NULL;
 	  SET_TYPE_MODE (copy, VOIDmode);
 	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
+	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
 	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
 	  TYPE_TYPELESS_STORAGE (copy) = 0;
