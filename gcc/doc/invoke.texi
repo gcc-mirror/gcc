@@ -8062,12 +8062,11 @@ optimizations to be performed is desired.
 @table @gcctabopt
 @item -fno-defer-pop
 @opindex fno-defer-pop
-Always pop the arguments to each function call as soon as that function
-returns.  For machines that must pop arguments after a function call,
-the compiler normally lets arguments accumulate on the stack for several
-function calls and pops them all at once.
-
-Disabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+For machines that must pop arguments after a function call, always pop 
+the arguments as soon as each function returns.  
+At levels @option{-O1} and higher, @option{-fdefer-pop} is the default;
+this allows the compiler to let arguments accumulate on the stack for several
+function calls and pop them all at once.
 
 @item -fforward-propagate
 @opindex fforward-propagate
@@ -8284,18 +8283,16 @@ life-range analysis.  This option is effective only with
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg
-Avoid running a pass scanning for opportunities to use ``decrement and
-branch'' instructions on a count register instead of generating sequences
-of instructions that decrement a register, compare it against zero, and
+Disable the optimization pass that scans for opportunities to use 
+``decrement and branch'' instructions on a count register instead of
+instruction sequences that decrement a register, compare it against zero, and
 then branch based upon the result.  This option is only meaningful on
 architectures that support such instructions, which include x86, PowerPC,
 IA-64 and S/390.  Note that the @option{-fno-branch-count-reg} option
 doesn't remove the decrement and branch instructions from the generated
 instruction stream introduced by other optimization passes.
 
-Enabled by default at @option{-O1} and higher.
-
-The default is @option{-fbranch-count-reg}.
+The default is @option{-fbranch-count-reg} at @option{-O1} and higher.
 
 @item -fno-function-cse
 @opindex fno-function-cse
@@ -9684,9 +9681,10 @@ are not removed.  This option is intended to support existing code
 that relies on a particular ordering.  For new code, it is better to
 use attributes when possible.
 
-Enabled at level @option{-O0}.  When disabled explicitly, it also implies
-@option{-fno-section-anchors}, which is otherwise enabled at @option{-O0} on some
-targets.
+@option{-ftoplevel-reorder} is the default at @option{-O1} and higher, and
+also at @option{-O0} if @option{-fsection-anchors} is explicitly requested.
+Additionally @option{-fno-toplevel-reorder} implies
+@option{-fno-section-anchors}.
 
 @item -fweb
 @opindex fweb
