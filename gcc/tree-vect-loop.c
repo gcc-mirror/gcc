@@ -6485,9 +6485,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   if (code == COND_EXPR)
     {
       /* Only call during the analysis stage, otherwise we'll lose
-	 STMT_VINFO_TYPE.  */
+	 STMT_VINFO_TYPE.  We'll pass ops[0] as reduc_op, it's only
+	 used as a flag during analysis.  */
       if (!vec_stmt && !vectorizable_condition (stmt_info, gsi, NULL,
-						ops[reduc_index], 0, NULL,
+						ops[0], 0, NULL,
 						cost_vec))
         {
           if (dump_enabled_p ())
