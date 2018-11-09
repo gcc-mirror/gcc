@@ -1,3 +1,10 @@
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	* config/aarch64/aarch64.c (aarch64_parse_arch): Do not copy
+	string to a stack buffer.
+	(aarch64_parse_cpu): Likewise.
+	(aarch64_parse_tune): Likewise.
+
 2018-11-09  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87953
