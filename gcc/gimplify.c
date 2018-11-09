@@ -8065,6 +8065,10 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 			"%<lastprivate%> clause", decl);
 	      OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c) = 0;
 	    }
+	  if (OMP_CLAUSE_LASTPRIVATE_CONDITIONAL (c))
+	    sorry_at (OMP_CLAUSE_LOCATION (c),
+		      "%<conditional%> modifier on %<lastprivate%> clause "
+		      "not supported yet");
 	  if (outer_ctx
 	      && (outer_ctx->region_type == ORT_COMBINED_PARALLEL
 		  || ((outer_ctx->region_type & ORT_COMBINED_TEAMS)
