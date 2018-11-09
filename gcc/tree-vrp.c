@@ -157,7 +157,7 @@ value_range::check ()
       }
     case VR_UNDEFINED:
     case VR_VARYING:
-      gcc_assert (!m_min && !m_max);
+      gcc_assert (!min () && !max ());
       gcc_assert (!m_equiv || bitmap_empty_p (m_equiv));
       break;
     default:
@@ -291,11 +291,11 @@ bool
 value_range::singleton_p (tree *result) const
 {
   if (m_kind == VR_RANGE
-      && vrp_operand_equal_p (m_min, m_max)
-      && is_gimple_min_invariant (m_min))
+      && vrp_operand_equal_p (min (), max ())
+      && is_gimple_min_invariant (min ()))
     {
       if (result)
-        *result = m_min;
+        *result = min ();
       return true;
     }
   return false;
@@ -306,8 +306,8 @@ value_range::type () const
 {
   /* Types are only valid for VR_RANGE and VR_ANTI_RANGE, which are
      known to have non-zero min/max.  */
-  gcc_assert (m_min);
-  return TREE_TYPE (m_min);
+  gcc_assert (min ());
+  return TREE_TYPE (min ());
 }
 
 /* Dump value range to FILE.  */
@@ -6558,9 +6558,7 @@ vrp_prop::vrp_finalize (bool warn_array_bounds_p)
 	  && range_includes_zero_p (vr) == 0)
 	set_ptr_nonnull (name);
       else if (!POINTER_TYPE_P (TREE_TYPE (name)))
-	set_range_info (name, vr->kind (),
-			wi::to_wide (vr->min ()),
-			wi::to_wide (vr->max ()));
+	set_range_info (name, *vr);
     }
 
   /* If we're checking array refs, we want to merge information on

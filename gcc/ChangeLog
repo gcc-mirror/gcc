@@ -1,5 +1,13 @@
 2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (value_range::check): Do not access internals
+	directly.
+	(value_range::singleton_p): Same.
+	(value_range::type): Same.
+	(vrp_finalize): Use value_range API.
+
+2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
 	* tree-vrp.c (may_contain_p): Do not access m_min/m_max directly.
 
 2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
