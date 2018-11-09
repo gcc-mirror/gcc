@@ -13280,7 +13280,11 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	      if (strcmp (p, "task") == 0)
 		task = true;
 	      else if (strcmp (p, "inscan") == 0)
-		inscan = true;
+		{
+		  inscan = true;
+		  sorry ("%<inscan%> modifier on %<reduction%> clause "
+			 "not supported yet");
+		}
 	      if (task || inscan)
 		{
 		  c_parser_consume_token (parser);

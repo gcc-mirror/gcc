@@ -1,5 +1,8 @@
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_omp_clause_reduction): Call sorry_at on
+	reduction clause with inscan modifier.
+
 	* parser.c (cp_parser_omp_requires): Call sorry_at on requires
 	clauses other than atomic_default_mem_order.
 
