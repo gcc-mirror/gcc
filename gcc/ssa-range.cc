@@ -191,11 +191,15 @@ ssa_range::range_of_expr (irange &r, tree expr, gimple *s ATTRIBUTE_UNUSED)
 // cannot be calculated, return false.  
 
 bool
-ssa_range::range_of_range_op (irange &r, grange_op *s)
+ssa_range::range_of_range_op (irange &r, grange_op *s, tree name,
+			      const irange *name_range, gimple *eval_from)
 {
   irange range1, range2;
-  bool res;
+  bool res = true;
   gcc_checking_assert (supports_type_p (gimple_expr_type (s)));
+
+  if (!eval_from)
+    eval_from = s;
 
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
@@ -204,11 +208,19 @@ ssa_range::range_of_range_op (irange &r, grange_op *s)
   // ie,   int_a_2 = (int) float_f_2.
   
   // Calculate a range for operand 1.
-  res = range_of_expr (range1, op1, s);
+  if (op1 == name)
+    range1 = *name_range;
+  else
+    res = range_of_expr (range1, op1, eval_from);
 
   // Calculate a result for op2 if it is needed.
   if (res && op2)
-      res = range_of_expr (range2, op2, s);
+    {
+      if (op2 == name)
+	range2 = *name_range;
+      else
+	res = range_of_expr (range2, op2, eval_from);
+    }
 
   // If we have all the operands we need, call fold.
   if (res)
@@ -229,7 +241,8 @@ ssa_range::range_of_range_op (irange &r, grange_op *s)
 // cannot be calculated, return false.  
 
 bool
-ssa_range::range_of_phi (irange &r, gphi *phi)
+ssa_range::range_of_phi (irange &r, gphi *phi, tree name,
+			 const irange *name_range, gimple *eval_from)
 {
   tree phi_def = gimple_phi_result (phi);
   tree type = TREE_TYPE (phi_def);
@@ -246,11 +259,13 @@ ssa_range::range_of_phi (irange &r, gphi *phi)
       irange arg_range;
       tree arg = gimple_phi_arg_def (phi, x);
       edge e = gimple_phi_arg_edge (phi, x);
+      if (name == arg)
+        arg_range = *name_range;
+      else if (valid_ssa_p (arg) && !eval_from)
       // Try to find a range from the edge.  If that fails, return varying.
-      if (valid_ssa_p (arg))
 	gcc_assert (range_on_edge (arg_range, e, arg));
       else
-	gcc_assert (range_of_expr (arg_range, arg));
+	gcc_assert (range_of_expr (arg_range, arg, eval_from));
 
       r.union_ (arg_range);
       // Once the value reaches varying, stop looking.
@@ -265,7 +280,9 @@ ssa_range::range_of_phi (irange &r, gphi *phi)
 // cannot be calculated, return false. 
 
 bool
-ssa_range::range_of_call (irange &r, gcall *call)
+ssa_range::range_of_call (irange &r, gcall *call, tree name ATTRIBUTE_UNUSED,
+			  const irange *name_range ATTRIBUTE_UNUSED,
+			  gimple *eval_from ATTRIBUTE_UNUSED)
 {
   tree type = gimple_call_return_type (call);
   if (!supports_type_p (type))
@@ -284,7 +301,8 @@ ssa_range::range_of_call (irange &r, gcall *call)
 // cannot be calculated, return false. 
 
 bool
-ssa_range::range_of_cond_expr  (irange &r, gassign *s)
+ssa_range::range_of_cond_expr  (irange &r, gassign *s, tree name,
+				const irange *name_range, gimple *eval_from)
 {
   irange cond_range, range1, range2;
   tree cond = gimple_assign_rhs1 (s);
@@ -297,9 +315,23 @@ ssa_range::range_of_cond_expr  (irange &r, gassign *s)
   if (!supports_type_p (TREE_TYPE (op1)))
     return false;
 
-  gcc_assert (range_of_expr (cond_range, cond, s));
-  gcc_assert (range_of_expr (range1, op1, s));
-  gcc_assert (range_of_expr (range2, op2, s));
+  if (!eval_from)
+    eval_from = s;
+
+  if (name == cond)
+    cond_range = *name_range;
+  else
+    gcc_assert (range_of_expr (cond_range, cond, eval_from));
+
+  if (name == op1)
+    range1 = *name_range;
+  else
+    gcc_assert (range_of_expr (range1, op1, eval_from));
+
+  if (name == op2)
+    range2 = *name_range;
+  else
+    gcc_assert (range_of_expr (range2, op2, eval_from));
 
   if (cond_range.singleton_p ())
     {
@@ -315,7 +347,9 @@ ssa_range::range_of_cond_expr  (irange &r, gassign *s)
 }
 
 
-// Calculate a range for statement S and return it in R.  If a range cannot
+// Calculate a range for statement S and return it in R. If NAME is provided it
+// represents the SSA_NAME on the LHS of the statement. It is only required
+// if there is more than one lhs/output.  If a range cannot
 // be calculated, return false.
 
 bool
@@ -343,6 +377,50 @@ ssa_range::range_of_stmt (irange &r, gimple *s, tree name)
   r = range_from_ssa (name);
   return true;
 }
+
+// Calculate a range for statement S and return it in R.  If NAME is found
+// in any of the operands, replace it with NAME_RANGE rather than looking it
+// up. If a range cannot be calculated on this statement, return false.
+
+bool
+ssa_range::range_of_stmt_with_range (irange &r, gimple *s, tree name,
+				     const irange *name_range)
+{
+  if (is_a<grange_op *> (s))
+    return range_of_range_op (r, as_a<grange_op *> (s), name, name_range);
+  if (is_a<gphi *>(s))
+    return range_of_phi (r, as_a<gphi *> (s), name, name_range);
+  if (is_a<gcall *>(s))
+    return range_of_call (r, as_a<gcall *> (s), name, name_range);
+  if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
+    return range_of_cond_expr (r, as_a<gassign *> (s), name, name_range);
+
+  return false;
+}
+
+// Calculate a range for NAME as if its defining statement was actually
+// at location S and return it in R.  This involves evaluting its arguments
+// at location S and recalculating the result.
+
+bool
+ssa_range::reevaluate_range_of_name (irange &r, tree name, gimple *s)
+{
+  if (SSA_NAME_IS_DEFAULT_DEF (name))
+    return false;
+
+  gimple *def = SSA_NAME_DEF_STMT (name);
+  if (is_a<grange_op *> (def))
+    return range_of_range_op (r, as_a<grange_op *> (def), NULL_TREE, NULL, s);
+  if (is_a<gphi *>(def))
+    return range_of_phi (r, as_a<gphi *> (def), NULL_TREE, NULL, s);
+  if (is_a<gcall *>(def))
+    return range_of_call (r, as_a<gcall *> (def), NULL_TREE, NULL, s);
+  if (is_a<gassign *> (def) && gimple_assign_rhs_code (def) == COND_EXPR)
+    return range_of_cond_expr (r, as_a<gassign *> (def), NULL_TREE, NULL, s);
+
+  return false;
+}
+
 
 // Calculate a range for NAME on edge E and return it in R.  
 // Return false if no range can be determined.
@@ -539,6 +617,7 @@ public:
 
   bool in_chain_p (tree name, tree def);
   bool is_export_p (tree name, basic_block bb);
+  bool def_chain_in_export_p (tree name, basic_block bb);
   bool is_import_p (tree name, basic_block bb);
 
   void dump (FILE *f);
@@ -628,6 +707,19 @@ bool
 gori_map::is_export_p (tree name, basic_block bb)
 {
   return bitmap_bit_p (exports (bb), SSA_NAME_VERSION (name));
+}
+
+// Return true if any element in the def chain of NAME is in the export list
+// for BB.
+
+bool
+gori_map::def_chain_in_export_p (tree name, basic_block bb)
+{
+  bitmap a = exports (bb);
+  bitmap b = get_def_chain (name);
+  if (a && b)
+    return bitmap_intersect_p (a, b);
+  return false;
 }
 
 // Return true if NAME is in the def chain of DEF.  If BB is provided, only
@@ -1999,6 +2091,15 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  pred_range.intersect (er);
 	  er.intersect (pred_range);
 	}
+      else if (m_gori->def_chain_in_export_p (name,  src))
+        {
+	  // NAME is not refined in SRC, but something it depends on is, so
+	  // reevaluate NAME here, but we can only do it if we have a stmt
+	  // in BB.
+	  gimple *st = first_stmt (bb);
+	  if (st && reevaluate_range_of_name (er, name, st))
+	    pred_range.intersect (er);
+	}
 
       // Union the range on that edge with our accumulating range on all edges.
       block_result.union_ (pred_range);
@@ -2054,9 +2155,11 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 }
 
 
-// Calculate a range for statement S and return it in R.  Check the globhal
-// cache first to see if the evaluation can be avoided.  If a range cannot
-// be calculated, return false.
+// Calculate a range for statement S and return it in R.  If NAME is provided
+// it represents the SSA_NAME on the LHS of the statement. It is only required
+// if there is more than one lhs/output.
+// Check the global cache for NAME first to see if the evaluation can be
+// avoided.  If a range cannot be calculated, return false.
 
 bool
 global_ranger::range_of_stmt (irange &r, gimple *s, tree name)

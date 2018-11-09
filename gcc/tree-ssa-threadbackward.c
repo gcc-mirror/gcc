@@ -77,10 +77,6 @@ public:
   /* Evaluate statement G assuming entry only via edge E */
   bool range_of_stmt_edge (irange& r, gimple *g, edge e);
 
-  // Calculate a range for a statement if NAME has a specified range
-  bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
-				 const irange &nr);
-
   bool path_range_list (irange &r, tree name, const vec<basic_block> &bbs,
 		        enum path_range_direction, edge start_edge = NULL);
 private:
@@ -141,44 +137,6 @@ thread_ranger::range_of_stmt_edge (irange &r, gimple *g, edge e)
     if (!range_of_expr (range2, op))
       return false;
   return stmt->fold (r, range1, range2);
-}
-
-// Calculate a range for range_op statement S by replacing any occurrence of
-// ssa_name NAME with the RANGE_OF_NAME. If it can be evaluated, TRUE is 
-// returned and the resulting range returned in R. 
-
-bool
-thread_ranger::range_of_stmt_with_range  (irange &r, gimple *g, tree name,
-					 const irange &range_of_name)
-{
-  irange range1, range2;
-  grange_op *s = dyn_cast<grange_op *>(g);
-
-  if (!g)
-    return false;
-
-  tree op1 = s->operand1 ();
-  tree op2 = s->operand2 ();
-
-  gcc_checking_assert (valid_ssa_p (name));
-//  gcc_checking_assert (useless_type_conversion_p (TREE_TYPE (name),
-//						  range_of_name.type ()));
-  if (op1 == name)
-    range1 = range_of_name;
-  else
-    if (!range_of_expr (range1, op1))
-      return false;
-
-  if (!op2)
-    return s->fold (r, range1);
-
-  if (op2 == name)
-    range2 = range_of_name;
-  else
-    if (!range_of_expr (range2, op2))
-      return false;
-
-  return s->fold (r, range1, range2);
 }
 
 // Calculate the known range for NAME on a path of basic blocks in
@@ -314,7 +272,7 @@ class bb_paths
   bool range_of_folded_stmt (irange &r, gimple *stmt, tree var,
 			     const irange var_range)
   {
-    return ranger.range_of_stmt_with_range (r, stmt, var, var_range);
+    return ranger.range_of_stmt_with_range (r, stmt, var, &var_range);
   }
   /* Return the ultimate SSA name for which NAME depends on.  */
   tree terminal_name (void)
