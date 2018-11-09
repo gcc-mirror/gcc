@@ -255,7 +255,6 @@ read_sf_internal (st_parameter_dt *dtp, size_t *length)
      requested length could go past the end of a comma shortened
      string.  We only do this if -std=legacy was given at compile
      time.  We also do not support this on kind=4 strings.  */
-  printf("allow_std=%d\n", compile_options.warn_std);
   if (unlikely(compile_options.warn_std == 0)) // the slow legacy way.
     {
       size_t n;
