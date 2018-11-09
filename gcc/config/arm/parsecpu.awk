@@ -684,7 +684,7 @@ BEGIN {
     for (n = 2; n <= alias_count; n++) {
 	visible = "true"
 	alias = $n
-	if (alias ~ /!.*/) {
+	if (alias ~ /^!.*/) {
 	    visible = "false"
 	    gsub(/^!/, "", alias)
 	}
@@ -700,7 +700,6 @@ BEGIN {
 	}
 	cpu_all_aliases[alias] = cpu_name
     }
-    cpu_has_alias[cpu_name] = 1
     parse_ok = 1
 }
 

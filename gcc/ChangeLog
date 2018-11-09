@@ -1,3 +1,8 @@
+2018-11-09  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/parsecpu.awk (/alias/): Tighten invisible alias
+	matching criteria.  Remove unused array initializer.
+
 2018-11-09  Bill Schmidt  <wschmidt@linux.ibm.com>
 	    Jinsong Ji  <jji@us.ibm.com>
 
