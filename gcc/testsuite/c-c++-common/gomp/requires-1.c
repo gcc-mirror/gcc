@@ -13,3 +13,5 @@ foo ()
     i++;
   #pragma omp requries atomic_default_mem_order(seq_cst)
 }
+
+/* { dg-prune-output "not supported yet" } */

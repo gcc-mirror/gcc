@@ -19017,6 +19017,9 @@ c_parser_omp_requires (c_parser *parser)
 	      return;
 	    }
 	  if (p)
+	    sorry_at (cloc, "%qs clause on %<requires%> directive not "
+			    "supported yet", p);
+	  if (p)
 	    c_parser_consume_token (parser);
 	  if (this_req)
 	    {

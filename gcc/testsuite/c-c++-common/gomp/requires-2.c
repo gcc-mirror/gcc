@@ -16,3 +16,5 @@ foo ()
 }
 
 #pragma omp requires atomic_default_mem_order (seq_cst)	/* { dg-error "more than one 'atomic_default_mem_order' clause in a single compilation unit" } */
+
+/* { dg-prune-output "not supported yet" } */

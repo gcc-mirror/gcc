@@ -9,3 +9,5 @@ foo (void)
 
 #pragma omp requires unified_address	/* { dg-error "'unified_address' clause used lexically after first target construct or offloading API" } */
 #pragma omp requires reverse_offload	/* { dg-error "'reverse_offload' clause used lexically after first target construct or offloading API" } */
+
+/* { dg-prune-output "not supported yet" } */
