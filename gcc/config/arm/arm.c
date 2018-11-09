@@ -17663,7 +17663,11 @@ arm_reorg (void)
 
   if (use_cmse)
     cmse_nonsecure_call_clear_caller_saved ();
-  if (TARGET_THUMB1)
+
+  /* We cannot run the Thumb passes for thunks because there is no CFG.  */
+  if (cfun->is_thunk)
+    ;
+  else if (TARGET_THUMB1)
     thumb1_reorg ();
   else if (TARGET_THUMB2)
     thumb2_reorg ();
@@ -26737,6 +26741,8 @@ static void
 arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 		       HOST_WIDE_INT vcall_offset, tree function)
 {
+  const bool long_call_p = arm_is_long_call_p (function);
+
   /* On ARM, this_regno is R0 or R1 depending on
      whether the function returns an aggregate or not.
   */
@@ -26774,9 +26780,22 @@ arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
       TREE_USED (function) = 1;
     }
   rtx funexp = XEXP (DECL_RTL (function), 0);
+  if (long_call_p)
+    {
+      emit_move_insn (temp, funexp);
+      funexp = temp;
+    }
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
-  rtx_insn * insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
+  rtx_insn *insn = emit_call_insn (gen_sibcall (funexp, const0_rtx, NULL_RTX));
   SIBLING_CALL_P (insn) = 1;
+  emit_barrier ();
+
+  /* Indirect calls require a bit of fixup in PIC mode.  */
+  if (long_call_p)
+    {
+      split_all_insns_noflow ();
+      arm_reorg ();
+    }
 
   insn = get_insns ();
   shorten_branches (insn);

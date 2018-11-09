@@ -1,3 +1,12 @@
+2018-11-09  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+        Backport from mainiline
+        2018-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * g++.dg/other/thunk2a.C: New test.
+        * g++.dg/other/thunk2b.C: Likewise.
+	* g++.dg/other/vthunk1.C: Rename as thunk1.C
+
 2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/null_pointer_deref1.adb: Remove -gnatp and add pragma.

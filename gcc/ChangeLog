@@ -1,3 +1,12 @@
+2018-11-09  Mihail Ionescu  <mihail.ionsecu@arm.com>
+
+	PR target/87867
+	Backport from mainline
+        2018-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * g++.dg/other/thunk2a.C: New test.
+        * g++.dg/other/thunk2b.C: Likewise.
+
 2018-11-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
