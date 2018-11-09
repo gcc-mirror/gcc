@@ -11358,18 +11358,15 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
       tree arg0 = TREE_OPERAND (arg, 0);
       tree arg1 = TREE_OPERAND (arg, 1);
 
-      STRIP_NOPS (arg0);
-      STRIP_NOPS (arg1);
-
-      if (TREE_CODE (arg0) == ADDR_EXPR)
-	;   /* Do nothing.  */
-      else if (TREE_CODE (arg1) == ADDR_EXPR)
-	std::swap (arg0, arg1);
-      else
-	return NULL_TREE;
-
       tree offset;
-      if (tree str = string_constant (arg0, &offset, mem_size, decl))
+      tree str = string_constant (arg0, &offset, mem_size, decl);
+      if (!str)
+	{
+	   str = string_constant (arg1, &offset, mem_size, decl);
+	   arg1 = arg0;
+	}
+
+      if (str)
 	{
 	  /* Avoid pointers to arrays (see bug 86622).  */
 	  if (POINTER_TYPE_P (TREE_TYPE (arg))
@@ -11380,7 +11377,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 		   && tree_int_cst_equal (*mem_size, DECL_SIZE_UNIT (*decl))))
 	    return NULL_TREE;
 
-	  tree type = TREE_TYPE (arg1);
+	  tree type = TREE_TYPE (offset);
+	  arg1 = fold_convert (type, arg1);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, arg1);
 	  return str;
 	}
@@ -11412,7 +11410,8 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	    return NULL_TREE;
 
 	  tree rhs2 = gimple_assign_rhs2 (stmt);
-	  tree type = TREE_TYPE (rhs2);
+	  tree type = TREE_TYPE (offset);
+	  rhs2 = fold_convert (type, rhs2);
 	  *ptr_offset = fold_build2 (PLUS_EXPR, type, offset, rhs2);
 	  return str;
 	}
