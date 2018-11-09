@@ -1,5 +1,9 @@
 2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
+	* tree-vrp.c (may_contain_p): Do not access m_min/m_max directly.
+
+2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
 	* vr-values.c (vr_values::get_value_range): Use value_range API
 	instead of piecing together ranges.
 	(vr_values::update_value_range): Same.
