@@ -1,3 +1,7 @@
+2018-11-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* json.cc (selftest::test_writing_literals): Fix comment.
+
 2018-11-09  Martin Liska  <mliska@suse.cz>
 
 	* config/aarch64/aarch64.c (aarch64_parse_arch): Do not copy
