@@ -1,5 +1,14 @@
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_omp_clause_final, cp_parser_omp_clause_if): Use
+	cp_parser_assignment_expression instead of cp_parser_condition.
+	(cp_parser_omp_clause_num_threads, cp_parser_omp_clause_num_tasks,
+	cp_parser_omp_clause_grainsize, cp_parser_omp_clause_priority,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_thread_limit,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_device): Use
+	cp_parser_assignment_expression instead of cp_parser_expression.
+	(cp_parser_omp_clause_hint): Likewise.  Formatting fix.
+
 	* parser.c (cp_parser_omp_clause_reduction): Call sorry_at on
 	reduction clause with inscan modifier.
 

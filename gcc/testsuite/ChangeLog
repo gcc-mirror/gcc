@@ -1,5 +1,7 @@
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-c++-common/gomp/clauses-5.c: New test.
+
 	* c-c++-common/gomp/requires-1.c: Prune not supported yet messages.
 	* c-c++-common/gomp/requires-2.c: Likewise.
 	* c-c++-common/gomp/requires-4.c: Likewise.
