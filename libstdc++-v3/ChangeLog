@@ -1,3 +1,9 @@
+2018-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87787
+	* include/bits/stl_uninitialized.h (__relocate_a_1): Do not call
+	memmove when there's nothing to copy (and pointers could be null).
+
 2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
 	* configure: Regenerated.
