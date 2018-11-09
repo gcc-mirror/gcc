@@ -620,6 +620,38 @@
                     (const_string "neon_mul_<V_elem_ch><q>")))]
 )
 
+/* Perform division using multiply-by-reciprocal.
+   Reciprocal is calculated using Newton-Raphson method.
+   Enabled with -funsafe-math-optimizations -freciprocal-math
+   and disabled for -Os since it increases code size .  */
+
+(define_expand "div<mode>3"
+  [(set (match_operand:VCVTF 0 "s_register_operand" "=w")
+        (div:VCVTF (match_operand:VCVTF 1 "s_register_operand" "w")
+		  (match_operand:VCVTF 2 "s_register_operand" "w")))]
+  "TARGET_NEON && !optimize_size
+   && flag_reciprocal_math"
+  {
+    rtx rec = gen_reg_rtx (<MODE>mode);
+    rtx vrecps_temp = gen_reg_rtx (<MODE>mode);
+
+    /* Reciprocal estimate.  */
+    emit_insn (gen_neon_vrecpe<mode> (rec, operands[2]));
+
+    /* Perform 2 iterations of newton-raphson method.  */
+    for (int i = 0; i < 2; i++)
+      {
+	emit_insn (gen_neon_vrecps<mode> (vrecps_temp, rec, operands[2]));
+	emit_insn (gen_mul<mode>3 (rec, rec, vrecps_temp));
+      }
+
+    /* We now have reciprocal in rec, perform operands[0] = operands[1] * rec.  */
+    emit_insn (gen_mul<mode>3 (operands[0], operands[1], rec));
+    DONE;
+  }
+)
+
+
 (define_insn "mul<mode>3add<mode>_neon"
   [(set (match_operand:VDQW 0 "s_register_operand" "=w")
         (plus:VDQW (mult:VDQW (match_operand:VDQW 2 "s_register_operand" "w")
