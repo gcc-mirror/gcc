@@ -743,7 +743,7 @@ vrp_bitmap_equal_p (const_bitmap b1, const_bitmap b2)
 static inline bool
 range_is_null (const value_range *vr)
 {
-  return vr->null_p ();
+  return vr->zero_p ();
 }
 
 static inline bool

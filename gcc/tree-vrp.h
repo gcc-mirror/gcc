@@ -63,7 +63,7 @@ class GTY((for_user)) value_range
 
   /* Misc methods.  */
   tree type () const;
-  bool null_p () const;
+  bool zero_p () const;
   bool may_contain_p (tree) const;
   bool singleton_p (tree *result = NULL) const;
   void deep_copy (const value_range *);
@@ -150,7 +150,7 @@ value_range::undefined_p () const
 /* Return TRUE if range is the constant zero.  */
 
 inline bool
-value_range::null_p () const
+value_range::zero_p () const
 {
   return (m_kind == VR_RANGE
 	  && integer_zerop (m_min)
