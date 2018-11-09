@@ -1,5 +1,11 @@
 2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
+	* vr-values.c (vr_values::get_value_range): Use value_range API
+	instead of piecing together ranges.
+	(vr_values::update_value_range): Same.
+
+2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
+
 	* gimple-fold.c (size_must_be_zero_p): Use value_range API instead
 	of performing ad-hoc calculations.
 	* tree-ssanames.c (set_range_info): New overloaded function
