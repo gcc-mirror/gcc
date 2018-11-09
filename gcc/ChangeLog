@@ -1,3 +1,9 @@
+2018-11-09  Alexandre Oliva <aoliva@redhat.com>
+
+	PR target/87793
+	* config/i386/i386.c (ix86_const_not_ok_for_debug_p): Reject
+	non-toplevel UNSPEC.
+
 2018-11-08  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range::check): Do not access internals
