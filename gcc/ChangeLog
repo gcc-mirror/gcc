@@ -1,3 +1,7 @@
+2018-11-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* config/arm/neon.md (div<mode>3): New pattern.
+
 2018-11-08  Andi Kleen  <ak@linux.intel.com>
 
 	* common/config/i386/i386-common.c (OPTION_MASK_ISA_PTWRITE_SET): New.

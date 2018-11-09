@@ -1,3 +1,8 @@
+2018-11-09  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.target/arm/neon-vect-div-1.c: New test.
+	* gcc.target/arm/neon-vect-div-2.c: Likewise.
+
 2018-11-08  Andi Kleen  <ak@linux.intel.com>
 
 	* gcc.target/i386/ptwrite1.c: New test.
