@@ -1149,16 +1149,26 @@ extern int gomp_test_nest_lock_25 (omp_nest_lock_25_t *) __GOMP_NOTHROW;
 # define attribute_hidden
 #endif
 
+#if __GNUC__ >= 9
+#  define HAVE_ATTRIBUTE_COPY
+#endif
+
+#ifdef HAVE_ATTRIBUTE_COPY
+# define attribute_copy(arg) __attribute__ ((copy (arg)))
+#else
+# define attribute_copy(arg)
+#endif
+
 #ifdef HAVE_ATTRIBUTE_ALIAS
 # define strong_alias(fn, al) \
-  extern __typeof (fn) al __attribute__ ((alias (#fn)));
+  extern __typeof (fn) al __attribute__ ((alias (#fn))) attribute_copy (fn);
 
 # define ialias_ulp	ialias_str1(__USER_LABEL_PREFIX__)
 # define ialias_str1(x)	ialias_str2(x)
 # define ialias_str2(x)	#x
 # define ialias(fn) \
   extern __typeof (fn) gomp_ialias_##fn \
-    __attribute__ ((alias (#fn))) attribute_hidden;
+    __attribute__ ((alias (#fn))) attribute_hidden attribute_copy (fn);
 # define ialias_redirect(fn) \
   extern __typeof (fn) fn __asm__ (ialias_ulp "gomp_ialias_" #fn) attribute_hidden;
 # define ialias_call(fn) gomp_ialias_ ## fn

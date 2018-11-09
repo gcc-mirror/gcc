@@ -1,5 +1,10 @@
 2018-11-09  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/81824
+	* c-attribs.c (handle_copy_attribute): New function.
+
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
 	PR c/87795
 	* c-common.c (check_user_alignment): Use MAX_OFILE_ALIGNMENT.
 

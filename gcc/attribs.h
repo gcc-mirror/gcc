@@ -105,6 +105,12 @@ extern int attribute_list_contained (const_tree, const_tree);
 extern tree private_lookup_attribute (const char *attr_name, size_t attr_len,
 				      tree list);
 
+extern unsigned decls_mismatched_attributes (tree, tree, tree,
+					     const char* const[],
+					     pretty_printer*);
+
+extern void maybe_diag_alias_attributes (tree, tree);
+
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
 

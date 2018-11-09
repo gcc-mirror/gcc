@@ -1364,7 +1364,7 @@ maybe_diag_incompatible_alias (tree alias, tree target)
 
 	  auto_diagnostic_group d;
 	  if (warning_at (DECL_SOURCE_LOCATION (target),
-			  OPT_Wattribute_alias,
+			  OPT_Wattribute_alias_,
 			  "%<ifunc%> resolver for %qD should return %qT",
 			  alias, funcptr))
 	    inform (DECL_SOURCE_LOCATION (alias),
@@ -1374,11 +1374,11 @@ maybe_diag_incompatible_alias (tree alias, tree target)
 	{
 	  auto_diagnostic_group d;
 	  if (warning_at (DECL_SOURCE_LOCATION (alias),
-			    OPT_Wattribute_alias,
+			    OPT_Wattribute_alias_,
 			    "%qD alias between functions of incompatible "
 			    "types %qT and %qT", alias, altype, targtype))
 	    inform (DECL_SOURCE_LOCATION (target),
-		      "aliased declaration here");
+		    "aliased declaration here");
 	}
     }
 }
@@ -1440,6 +1440,8 @@ handle_alias_pairs (void)
           && target_node && is_a <cgraph_node *> (target_node))
 	{
 	  maybe_diag_incompatible_alias (p->decl, target_node->decl);
+
+	  maybe_diag_alias_attributes (p->decl, target_node->decl);
 
 	  cgraph_node *src_node = cgraph_node::get (p->decl);
 	  if (src_node && src_node->definition)

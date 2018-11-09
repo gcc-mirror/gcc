@@ -1,3 +1,9 @@
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* pt.c (warn_spec_missing_attributes): Move code to attribs.c.
+	Call decls_mismatched_attributes.
+
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* constexpr.c (potential_constant_expression_1): Handle OMP_DEPOBJ.
