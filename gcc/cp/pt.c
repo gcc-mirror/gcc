@@ -2647,81 +2647,19 @@ warn_spec_missing_attributes (tree tmpl, tree spec, tree attrlist)
   if (DECL_FUNCTION_TEMPLATE_P (tmpl))
     tmpl = DECL_TEMPLATE_RESULT (tmpl);
 
-  if (TREE_CODE (tmpl) != FUNCTION_DECL)
-    return;
-
-  /* Avoid warning if either declaration or its type is deprecated.  */
-  if (TREE_DEPRECATED (tmpl)
-      || TREE_DEPRECATED (spec))
-    return;
-
-  tree tmpl_type = TREE_TYPE (tmpl);
-  tree spec_type = TREE_TYPE (spec);
-
-  if (TREE_DEPRECATED (tmpl_type)
-      || TREE_DEPRECATED (spec_type)
-      || TREE_DEPRECATED (TREE_TYPE (tmpl_type))
-      || TREE_DEPRECATED (TREE_TYPE (spec_type)))
-    return;
-
-  tree tmpl_attrs[] = { DECL_ATTRIBUTES (tmpl), TYPE_ATTRIBUTES (tmpl_type) };
-  tree spec_attrs[] = { DECL_ATTRIBUTES (spec), TYPE_ATTRIBUTES (spec_type) };
-
-  if (!spec_attrs[0])
-    spec_attrs[0] = attrlist;
-  else if (!spec_attrs[1])
-    spec_attrs[1] = attrlist;
-
-  /* Avoid warning if the primary has no attributes.  */
-  if (!tmpl_attrs[0] && !tmpl_attrs[1])
-    return;
-
-  /* Avoid warning if either declaration contains an attribute on
-     the white list below.  */
-  const char* const whitelist[] = {
-    "error", "warning"
-  };
-
-  for (unsigned i = 0; i != 2; ++i)
-    for (unsigned j = 0; j != sizeof whitelist / sizeof *whitelist; ++j)
-      if (lookup_attribute (whitelist[j], tmpl_attrs[i])
-	  || lookup_attribute (whitelist[j], spec_attrs[i]))
-	return;
-
   /* Avoid warning if the difference between the primary and
      the specialization is not in one of the attributes below.  */
   const char* const blacklist[] = {
     "alloc_align", "alloc_size", "assume_aligned", "format",
-    "format_arg", "malloc", "nonnull"
+    "format_arg", "malloc", "nonnull", NULL
   };
 
   /* Put together a list of the black listed attributes that the primary
      template is declared with that the specialization is not, in case
      it's not apparent from the most recent declaration of the primary.  */
-  unsigned nattrs = 0;
   pretty_printer str;
-
-  for (unsigned i = 0; i != sizeof blacklist / sizeof *blacklist; ++i)
-    {
-      for (unsigned j = 0; j != 2; ++j)
-	{
-	  if (!lookup_attribute (blacklist[i], tmpl_attrs[j]))
-	    continue;
-
-	  for (unsigned k = 0; k != 1 + !!spec_attrs[1]; ++k)
-	    {
-	      if (lookup_attribute (blacklist[i], spec_attrs[k]))
-		break;
-
-	      if (nattrs)
-		pp_string (&str, ", ");
-	      pp_begin_quote (&str, pp_show_color (global_dc->printer));
-	      pp_string (&str, blacklist[i]);
-	      pp_end_quote (&str, pp_show_color (global_dc->printer));
-	      ++nattrs;
-	    }
-	}
-    }
+  unsigned nattrs = decls_mismatched_attributes (tmpl, spec, attrlist,
+						 blacklist, &str);
 
   if (!nattrs)
     return;

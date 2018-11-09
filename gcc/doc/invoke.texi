@@ -283,7 +283,8 @@ Objective-C and Objective-C++ Dialects}.
 -Walloc-zero  -Walloc-size-larger-than=@var{byte-size}
 -Walloca  -Walloca-larger-than=@var{byte-size} @gol
 -Wno-aggressive-loop-optimizations  -Warray-bounds  -Warray-bounds=@var{n} @gol
--Wno-attributes  -Wbool-compare  -Wbool-operation @gol
+-Wno-attributes -Wno-attribute-alias @gol
+-Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
 -Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wc++17-compat  @gol
@@ -316,7 +317,7 @@ Objective-C and Objective-C++ Dialects}.
 -Winvalid-pch  -Wlarger-than=@var{byte-size} @gol
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
--Wmisleading-indentation  -Wmissing-attributes -Wmissing-braces @gol
+-Wmisleading-indentation  -Wno-missing-attributes -Wmissing-braces @gol
 -Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
@@ -4805,13 +4806,24 @@ about the layout of the file that the directive references.
 
 This warning is enabled by @option{-Wall} in C and C++.
 
-@item -Wmissing-attributes
+@item -Wno-missing-attributes
 @opindex Wmissing-attributes
 @opindex Wno-missing-attributes
 Warn when a declaration of a function is missing one or more attributes
 that a related function is declared with and whose absence may adversely
-affect the correctness or efficiency of generated code.  For example, in
-C++, the warning is issued when an explicit specialization of a primary
+affect the correctness or efficiency of generated code.  For example,
+the warning is issued for declarations of aliases that use attributes
+to specify less restrictive requirements than those of their targets.
+This typically represents a potential optimization oportunity rather
+than a hidden bug.  The @option{-Wattribute-alias} option controls warnings
+issued for mismatches between declarations of aliases and their targets
+that might be indicative of code generation bugs.
+Attributes considered include @code{alloc_align}, @code{alloc_size},
+@code{cold}, @code{const}, @code{hot}, @code{leaf}, @code{malloc},
+@code{nonnull}, @code{noreturn}, @code{nothrow}, @code{pure},
+@code{returns_nonnull}, and @code{returns_twice}.
+
+In C++, the warning is issued when an explicit specialization of a primary
 template declared with attribute @code{alloc_align}, @code{alloc_size},
 @code{assume_aligned}, @code{format}, @code{format_arg}, @code{malloc},
 or @code{nonnull} is declared without it.  Attributes @code{deprecated},
@@ -5831,10 +5843,28 @@ pointers. This warning level may give a larger number of
 false positives and is deactivated by default.
 @end table
 
-@item -Wattribute-alias
+@item -Wattribute-alias=@var{n}
+@itemx -Wno-attribute-alias
+@opindex -Wattribute-alias
+@opindex -Wno-attribute-alias
 Warn about declarations using the @code{alias} and similar attributes whose
-target is incompatible with the type of the alias.  @xref{Function Attributes,
-,Declaring Attributes of Functions}.
+target is incompatible with the type of the alias.
+@xref{Function Attributes,,Declaring Attributes of Functions}.
+The @option{-Wattribute-alias=1} is  enabled by @option{-Wall}.
+
+@table @gcctabopt
+@item -Wattribute-alias=1
+The default warning level of the @option{-Wattribute-alias} option diagnoses
+incompatibilities between the type of the alias declaration and that of its
+target.  Such incompatibilities are typically indicative of bugs.
+
+@item -Wattribute-alias=2
+At this level @option{-Wattribute-alias} also diagnoses mismatches between
+the set of attributes of the alias declaration and the attributes applied
+to its target.  Although in some cases such mismatches may indicate bugs,
+in other cases they may be benign and could be resolved simply by adding
+the missing attribute to the target.
+@end table
 
 @item -Wbool-compare
 @opindex Wno-bool-compare

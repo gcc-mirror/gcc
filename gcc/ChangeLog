@@ -1,3 +1,18 @@
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* attribs.c (has_attribute): New helper function.
+	(decls_mismatched_attributes, maybe_diag_alias_attributes): Same.
+	* attribs.h (decls_mismatched_attributes): Declare.
+	* cgraphunit.c (handle_alias_pairs): Call maybe_diag_alias_attributes.
+	(maybe_diag_incompatible_alias): Use OPT_Wattribute_alias_.
+	* common.opt (-Wattribute-alias): Take an argument.
+	(-Wno-attribute-alias): New option.
+	* doc/extend.texi (Common Function Attributes): Document copy.
+	(Common Variable Attributes): Same.
+	* doc/invoke.texi (-Wmissing-attributes): Document enhancement.
+	(-Wattribute-alias): Document new option argument.
+
 2018-11-09  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (/alias/): Tighten invisible alias

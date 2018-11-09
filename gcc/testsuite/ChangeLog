@@ -1,5 +1,15 @@
 2018-11-09  Martin Sebor  <msebor@redhat.com>
 
+	PR middle-end/81824
+	* gcc.dg/Wattribute-alias.c: New test.
+	* gcc.dg/Wmissing-attributes.c: New test.
+	* gcc.dg/attr-copy.c: New test.
+	* gcc.dg/attr-copy-2.c: New test.
+	* gcc.dg/attr-copy-3.c: New test.
+	* gcc.dg/attr-copy-4.c: New test.
+
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
 	PR c/87795
 	* gcc.dg/attr-aligned.c: New test.
 
