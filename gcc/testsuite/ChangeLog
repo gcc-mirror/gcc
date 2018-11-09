@@ -1,3 +1,14 @@
+2018-11-09  Paul Koning  <ni1d@arrl.net>
+
+	* gcc.dg/Walloca-16.c: Ignore conflicting types for built-in
+	warnings.
+	* gcc.dg/Wrestrict-4.c: Ditto.
+	* gcc.dg/Wrestrict-5.c: Ditto.
+	* gcc.dg/pr83463.c: Ditto.
+	* gcc.dg/torture/pr55890-2.c: Ditto.
+	* gcc.dg/torture/pr55890-3.c: Ditto.
+	* gcc.dg/torture/pr71816.c: Ditto.
+
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/clauses-5.c: New test.
