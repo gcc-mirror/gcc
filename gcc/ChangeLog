@@ -1,3 +1,20 @@
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	* cgraph.h (ipa_discover_readonly_nonaddressable_vars): Rename
+	to ...
+	(ipa_discover_variable_flags): ... this.
+	* common.opt: Come up with new flag -fipa-reference-addressable.
+	* doc/invoke.texi: Document it.
+	* ipa-reference.c (propagate): Call the renamed fn.
+	* ipa-visibility.c (whole_program_function_and_variable_visibility):
+	Likewise.
+	* ipa.c (ipa_discover_readonly_nonaddressable_vars): Renamed to
+	...
+	(ipa_discover_variable_flags): ... this.  Discover
+	non-addressable variables only with the newly added flag.
+	* opts.c: Enable the newly added flag with -O1 and higher
+	optimization level.
+
 2018-11-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* json.cc (selftest::test_writing_literals): Fix comment.

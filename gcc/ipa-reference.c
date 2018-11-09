@@ -705,7 +705,7 @@ propagate (void)
   if (dump_file)
     cgraph_node::dump_cgraph (dump_file);
 
-  remove_p = ipa_discover_readonly_nonaddressable_vars ();
+  remove_p = ipa_discover_variable_flags ();
   generate_summary ();
 
   /* Propagate the local information through the call graph to produce

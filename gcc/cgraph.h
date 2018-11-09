@@ -2403,7 +2403,7 @@ void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
 void cgraph_build_static_cdtor (char which, tree body, int priority);
-bool ipa_discover_readonly_nonaddressable_vars (void);
+bool ipa_discover_variable_flags (void);
 
 /* In varpool.c  */
 tree ctor_for_folding (tree);

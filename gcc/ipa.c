@@ -752,10 +752,10 @@ clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
   return false;
 }
 
-/* Discover variables that have no longer address taken or that are read only
-   and update their flags.
+/* Discover variables that have no longer address taken, are read-only or
+   write-only and update their flags.
 
-   Return true when unreachable symbol removan should be done.
+   Return true when unreachable symbol removal should be done.
 
    FIXME: This can not be done in between gimplify and omp_expand since
    readonly flag plays role on what is shared and what is not.  Currently we do
@@ -764,8 +764,11 @@ clear_addressable_bit (varpool_node *vnode, void *data ATTRIBUTE_UNUSED)
    make sense to do it before early optimizations.  */
 
 bool
-ipa_discover_readonly_nonaddressable_vars (void)
+ipa_discover_variable_flags (void)
 {
+  if (!flag_ipa_reference_addressable)
+    return false;
+
   bool remove_p = false;
   varpool_node *vnode;
   if (dump_file)
