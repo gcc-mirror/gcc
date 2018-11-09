@@ -6075,6 +6075,10 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	    vectype_in = get_vectype_for_scalar_type (TREE_TYPE (op));
 	  break;
 	}
+      /* For a nested cycle we might end up with an operation like
+         phi_result * phi_result.  */
+      if (!vectype_in)
+	vectype_in = STMT_VINFO_VECTYPE (stmt_info);
       gcc_assert (vectype_in);
 
       if (slp_node)
