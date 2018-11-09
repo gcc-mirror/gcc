@@ -1,3 +1,9 @@
+2018-11-09  Maya Rashish  <coypu@sdf.org>
+
+	PR target/87221
+	* config/netbsd-elf.h (NETBSD_STARTFILE_SPEC): Use crtbeginS.o for PIE.
+	(NETBSD_ENDFILE_SPEC): Use crtendS.o for PIE.
+
 2018-11-09  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR driver/41179
