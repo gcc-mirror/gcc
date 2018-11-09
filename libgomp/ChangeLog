@@ -1,5 +1,11 @@
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
+	* affinity-fmt.c: Include inttypes.h if HAVE_INTTYPES_H.
+	(gomp_display_affinity): Use __builtin_choose_expr to handle
+	properly handle argument having integral, or pointer or some other
+	type.  If inttypes.h is available and PRIx64 is defined, use PRIx64
+	with uint64_t type instead of %llx and unsigned long long.
+
 	* testsuite/libgomp.c-c++-common/task-reduction-13.c: New test.
 	* testsuite/libgomp.c-c++-common/task-reduction-14.c: New test.
 
