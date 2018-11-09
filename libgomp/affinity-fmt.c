@@ -30,6 +30,9 @@
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
 #endif
+#ifdef HAVE_INTTYPES_H
+# include <inttypes.h>  /* For PRIx64.  */
+#endif
 #ifdef HAVE_UNAME
 #include <sys/utsname.h>
 #endif
@@ -356,37 +359,42 @@ gomp_display_affinity (char *buffer, size_t size,
 	  goto do_int;
 	case 'i':
 #if defined(LIBGOMP_USE_PTHREADS) && defined(__GNUC__)
-	  /* Handle integral pthread_t.  */
-	  if (__builtin_classify_type (handle) == 1)
-	    {
-	      char buf[3 * (sizeof (handle) + sizeof (int)) + 4];
+	  {
+	    char buf[3 * (sizeof (handle) + sizeof (uintptr_t) + sizeof (int))
+		     + 4];
+	    /* This macro returns expr unmodified for integral or pointer
+	       types and 0 for anything else (e.g. aggregates).  */
+#define gomp_nonaggregate(expr) \
+  __builtin_choose_expr (__builtin_classify_type (expr) == 1		    \
+			 || __builtin_classify_type (expr) == 5, expr, 0)
+	    /* This macro returns expr unmodified for integral types,
+	       (uintptr_t) (expr) for pointer types and 0 for anything else
+	       (e.g. aggregates).  */
+#define gomp_integral(expr) \
+  __builtin_choose_expr (__builtin_classify_type (expr) == 5,		    \
+			 (uintptr_t) gomp_nonaggregate (expr),		    \
+			 gomp_nonaggregate (expr))
 
-	      if (sizeof (handle) == sizeof (long))
-		sprintf (buf, "0x%lx", (long) handle);
-	      else if (sizeof (handle) == sizeof (long long))
-		sprintf (buf, "0x%llx", (long long) handle);
-	      else
-		sprintf (buf, "0x%x", (int) handle);
-	      gomp_display_num (buffer, size, &ret, zero, right, sz, buf);
-	      break;
-	    }
-	  /* And pointer pthread_t.  */
-	  else if (__builtin_classify_type (handle) == 5)
-	    {
-	      char buf[3 * (sizeof (uintptr_t) + sizeof (int)) + 4];
-
-	      if (sizeof (uintptr_t) == sizeof (long))
-		sprintf (buf, "0x%lx", (long) (uintptr_t) handle);
-	      else if (sizeof (uintptr_t) == sizeof (long long))
-		sprintf (buf, "0x%llx", (long long) (uintptr_t) handle);
-	      else
-		sprintf (buf, "0x%x", (int) (uintptr_t) handle);
-	      gomp_display_num (buffer, size, &ret, zero, right, sz, buf);
-	      break;
-	    }
+	    if (sizeof (gomp_integral (handle)) == sizeof (unsigned long))
+	      sprintf (buf, "0x%lx", (unsigned long) gomp_integral (handle));
+#if defined (HAVE_INTTYPES_H) && defined (PRIx64)
+	    else if (sizeof (gomp_integral (handle)) == sizeof (uint64_t))
+	      sprintf (buf, "0x%" PRIx64, (uint64_t) gomp_integral (handle));
+#else
+	    else if (sizeof (gomp_integral (handle))
+		     == sizeof (unsigned long long))
+	      sprintf (buf, "0x%llx",
+		       (unsigned long long) gomp_integral (handle));
 #endif
+	    else
+	      sprintf (buf, "0x%x", (unsigned int) gomp_integral (handle));
+	    gomp_display_num (buffer, size, &ret, zero, right, sz, buf);
+	    break;
+	  }
+#else
 	  val = 0;
 	  goto do_int;
+#endif
 	case 'A':
 	  if (sz == (size_t) -1)
 	    gomp_display_affinity_place (buffer, size, &ret,
