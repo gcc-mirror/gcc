@@ -1,3 +1,7 @@
+2018-11-09  Jeff Law  <law@redhat.com>
+
+	gcc.dg/torture/stackalign/builtin-apply-2.c: Skip on v850.
+
 2018-11-09  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81824
