@@ -1,3 +1,9 @@
+2018-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from mainline
+	PR libfortran/78351
+	* gfortran.dg/read_legacy_comma.f90: New test.
+
 2018-11-09  Mihail Ionescu  <mihail.ionescu@arm.com>
 
         Backport from mainiline
