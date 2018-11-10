@@ -150,6 +150,13 @@ execute_ranger_vrp ()
 		    }
 		}
 	    }
+	  else
+	    {
+	      // The expression doesn't fold, but see if any operand
+	      // evaluates to an empty range on one side, indicating the
+	      // edge is not executable.
+
+	    }
 	}
 
     }

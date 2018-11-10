@@ -90,17 +90,20 @@ class ssa_range
   static tree valid_ssa_p (tree exp);
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+  virtual bool range_of_expr (irange &r, tree expr, edge e);
   virtual bool range_on_edge (irange &r, edge e, tree name);
   virtual bool range_on_entry (irange &r, basic_block bb, tree name);
   virtual bool range_on_exit (irange &r, basic_block bb, tree name);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
-  bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
-				 const irange *name_range);
-  bool reevaluate_range_of_name (irange &r, tree name, gimple *s);
-
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
+
+  
+  bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
+				 const irange &name_range);
+  bool reevaluate_range_of_name (irange &r, tree name, gimple *s);
+  bool reevaluate_range_of_name (irange &r, tree name, edge on_edge);
 
   // Defintion chain
   bitmap def_chain (tree name);
@@ -115,17 +118,27 @@ protected:
   irange m_bool_one;		/* Bolean true cached.  */
 
   // Calculate a range for a kind of gimple statement .
-  bool range_of_range_op  (irange &r, grange_op *s, tree name = NULL_TREE,
-			   const irange *name_range = NULL,
-			   gimple *eval_from = NULL);
+  bool range_of_range_op_core (irange &r, grange_op *s, bool valid,
+			       irange &range1, irange &range2);
+  bool range_of_range_op  (irange &r, grange_op *s);
+  bool range_of_range_op  (irange &r, grange_op *s, tree name,
+			   const irange &name_range);
+  bool range_of_range_op  (irange &r, grange_op *s, gimple *eval_from);
+  bool range_of_range_op  (irange &r, grange_op *s, edge on_edge);
+
   bool range_of_phi (irange &r, gphi *phi, tree name = NULL_TREE,
-		     const irange *name_range = NULL, gimple *eval_from = NULL);
+		     const irange *name_range = NULL, gimple *eval_from = NULL,
+		     edge on_edge = NULL);
+
   bool range_of_call (irange &r, gcall *call, tree name = NULL_TREE,
 		      const irange *name_range = NULL,
-		      gimple *eval_from = NULL);
+		      gimple *eval_from = NULL, edge on_edge = NULL);
+
+  bool range_of_cond_expr (irange &r, gassign* call, edge on_edge);
   bool range_of_cond_expr (irange &r, gassign* call, tree name = NULL_TREE,
 			   const irange *name_range = NULL,
 			   gimple *eval_from = NULL);
+
 
   bool range_p (basic_block bb, tree name);
 
@@ -167,6 +180,7 @@ public:
   ~global_ranger ();
 
   virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
+  virtual bool range_of_expr (irange &r, tree expr, edge e);
   virtual bool range_on_entry (irange &r, basic_block bb, tree name);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
