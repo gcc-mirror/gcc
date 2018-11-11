@@ -292,6 +292,9 @@ extern int csky_arch_isa_features[];
 /* The register that holds the return address in exception handlers.  */
 #define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (SImode, CSKY_EH_STACKADJ_REGNUM)
 
+/* Select a format to encode pointers in exception handling data.  */
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel | DW_EH_PE_sdata4)
 
 /* Registers That Address the Stack Frame  */
 
