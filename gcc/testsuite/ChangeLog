@@ -1,3 +1,8 @@
+2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/87928
+	* gcc.target/i386/pr87928.c: New test.
+
 2018-11-09  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/87965
