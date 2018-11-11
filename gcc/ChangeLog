@@ -1,3 +1,40 @@
+2018-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.h (class value_range_base): New base class for
+	value_range containing all but the m_equiv member.
+	(dump_value_range_base): Add.
+	(range_includes_zero_p): Work on value_range_base.
+	* tree-vrp.c (value_range_base::set): Split out base handling
+	from...
+	(value_range::set): this.
+	(value_range::set_equiv): New.
+	(value_range_base::value_range_base): New constructors.
+	(value_range_base::check): Split out base handling from...
+	(value_range::check): this.
+	(value_range::equal_p): Refactor in terms of
+	ignore_equivs_equal_p which is now member of the base.
+	(value_range_base::set_undefined): New.
+	(value_range_base::set_varying): Likewise.
+	(value_range_base::dump):Split out base handling from...
+	(value_range::dump): this.
+	(value_range_base::set_and_canonicalize): Split out base handling
+	from...
+	(value_range::set_and_canonicalize): this.
+	(value_range_base::union_): New.
+	* ipa-prop.h (struct ipa_jump_func): Use value_range_base *
+	for m_vr.
+	* ipa-cp.c (class ipcp_vr_lattice): Use value_range_base
+	instead of value_range everywhere.
+	(ipcp_vr_lattice::print): Use dump_value_range_base.
+	(ipcp_vr_lattice::meet_with): Adjust.
+	(ipcp_vr_lattice::meet_with_1): Likewise.
+	(ipa_vr_operation_and_type_effects): Likewise.
+	(propagate_vr_across_jump_function): Likewise.
+	* ipa-prop.c (struct ipa_vr_ggc_hash_traits): Likewise.
+	(ipa_get_value_range): Likewise.
+	(ipa_set_jfunc_vr): Likewise.
+	(ipa_compute_jump_functions_for_edge): Likewise.
+
 2018-11-10  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/65703
