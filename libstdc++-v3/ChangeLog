@@ -1,3 +1,11 @@
+2018-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement P1007R3 std::assume_aligned
+	* include/std/memory (assume_aligned): Implement for C++17.
+	* testsuite/20_util/assume_aligned/1.cc: New test.
+	* testsuite/20_util/assume_aligned/2_neg.cc: New test.
+	* testsuite/20_util/assume_aligned/3.cc: New test.
+
 2018-11-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87787
