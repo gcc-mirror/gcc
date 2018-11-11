@@ -1,3 +1,10 @@
+2018-11-10  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/65703
+	* doc/invoke.texi (Optimize Options): Add @opindex entries
+	for the positive forms of -fno-xxx and -mno-xxx options
+	that were lacking them.
+
 2018-11-10  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* combine.c (make_more_copies): Only make an intermediate copy if the
