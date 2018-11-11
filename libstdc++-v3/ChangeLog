@@ -2,7 +2,7 @@
 
 	PR libstdc++-v3/54005
 	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
-	__atomic_base<_PTp*>::is_lock_free()): Call __atomic_always_lock_free
+	__atomic_base<_PTp*>::is_lock_free()): Call __atomic_is_lock_free
 	with the type-derived _S_alignment instead of __alignof the object.
 	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
 
