@@ -1,3 +1,11 @@
+2018-11-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++-v3/54005
+	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
+	__atomic_base<_PTp*>::is_lock_free()): Call __atomic_always_lock_free
+	with the type-derived _S_alignment instead of __alignof the object.
+	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
+
 2018-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	Implement P0318R1 unwrap_ref_decay and unwrap_reference
