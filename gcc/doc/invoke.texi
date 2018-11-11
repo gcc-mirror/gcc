@@ -2101,6 +2101,7 @@ supported for C as this construct is allowed by C++.
 
 @item -fno-asm
 @opindex fno-asm
+@opindex fasm
 Do not recognize @code{asm}, @code{inline} or @code{typeof} as a
 keyword, so that code can use these words as identifiers.  You can use
 the keywords @code{__asm__}, @code{__inline__} and @code{__typeof__}
@@ -2116,6 +2117,7 @@ switch only affects the @code{asm} and @code{typeof} keywords, since
 @item -fno-builtin
 @itemx -fno-builtin-@var{function}
 @opindex fno-builtin
+@opindex fbuiltin
 @cindex built-in functions
 Don't recognize built-in functions that do not begin with
 @samp{__builtin_} as prefix.  @xref{Other Builtins,,Other built-in
@@ -2439,6 +2441,7 @@ option is used for the warning.
 
 @item -fno-access-control
 @opindex fno-access-control
+@opindex faccess-control
 Turn off all access checking.  This switch is mainly useful for working
 around bugs in the access control code.
 
@@ -2512,6 +2515,7 @@ deprecated, and may be removed in a future version of G++.
 
 @item -fno-elide-constructors
 @opindex fno-elide-constructors
+@opindex felide-constructors
 The C++ standard allows an implementation to omit creating a temporary
 that is only used to initialize another object of the same type.
 Specifying this option disables that optimization, and forces G++ to
@@ -2523,6 +2527,7 @@ option still affects trivial member functions.
 
 @item -fno-enforce-eh-specs
 @opindex fno-enforce-eh-specs
+@opindex fenforce-eh-specs
 Don't generate code to check for violation of exception specifications
 at run time.  This option violates the C++ standard, but may be useful
 for reducing code size in production builds, much like defining
@@ -2556,6 +2561,7 @@ aliases, the default is @option{-fno-extern-tls-init}.
 
 @item -fno-gnu-keywords
 @opindex fno-gnu-keywords
+@opindex fgnu-keywords
 Do not recognize @code{typeof} as a keyword, so that code can use this
 word as an identifier.  You can use the keyword @code{__typeof__} instead.
 This option is implied by the strict ISO C++ dialects: @option{-ansi},
@@ -2563,18 +2569,21 @@ This option is implied by the strict ISO C++ dialects: @option{-ansi},
 
 @item -fno-implicit-templates
 @opindex fno-implicit-templates
+@opindex fimplicit-templates
 Never emit code for non-inline templates that are instantiated
 implicitly (i.e.@: by use); only emit code for explicit instantiations.
 @xref{Template Instantiation}, for more information.
 
 @item -fno-implicit-inline-templates
 @opindex fno-implicit-inline-templates
+@opindex fimplicit-inline-templates
 Don't emit code for implicit instantiations of inline templates, either.
 The default is to handle inlines differently so that compiles with and
 without optimization need the same set of explicit instantiations.
 
 @item -fno-implement-inlines
 @opindex fno-implement-inlines
+@opindex fimplement-inlines
 To save space, do not emit out-of-line copies of inline functions
 controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
@@ -2601,6 +2610,7 @@ with fewer template parameters.  This flag is enabled by default for
 
 @item -fno-nonansi-builtins
 @opindex fno-nonansi-builtins
+@opindex fnonansi-builtins
 Disable built-in declarations of functions that are not mandated by
 ANSI/ISO C@.  These include @code{ffs}, @code{alloca}, @code{_exit},
 @code{index}, @code{bzero}, @code{conjf}, and other related functions.
@@ -2619,12 +2629,14 @@ to @code{terminate} rather than @code{unexpected}.
 
 @item -fno-operator-names
 @opindex fno-operator-names
+@opindex foperator-names
 Do not treat the operator name keywords @code{and}, @code{bitand},
 @code{bitor}, @code{compl}, @code{not}, @code{or} and @code{xor} as
 synonyms as keywords.
 
 @item -fno-optional-diags
 @opindex fno-optional-diags
+@opindex foptional-diags
 Disable diagnostics that the standard says a compiler does not need to
 issue.  Currently, the only such diagnostic issued by G++ is the one for
 a name having multiple meanings within a class.
@@ -2637,6 +2649,7 @@ nonconforming code to compile.
 
 @item -fno-pretty-templates
 @opindex fno-pretty-templates
+@opindex fpretty-templates
 When an error message refers to a specialization of a function
 template, the compiler normally prints the signature of the
 template followed by the template arguments and any typedefs or
@@ -2656,6 +2669,7 @@ Instantiation}, for more information.
 
 @item -fno-rtti
 @opindex fno-rtti
+@opindex frtti
 Disable generation of information about every class with virtual
 functions for use by the C++ run-time type identification features
 (@code{dynamic_cast} and @code{typeid}).  If you don't use those parts
@@ -2712,6 +2726,7 @@ can run out of stack space before hitting 1024 in some situations.
 
 @item -fno-threadsafe-statics
 @opindex fno-threadsafe-statics
+@opindex fthreadsafe-statics
 Do not emit the extra code to use the routines specified in the C++
 ABI for thread-safe initialization of local statics.  You can use this
 option to reduce code size slightly in code that doesn't need to be
@@ -2727,6 +2742,7 @@ destructors, but only works if your C library supports
 
 @item -fno-use-cxa-get-exception-ptr
 @opindex fno-use-cxa-get-exception-ptr
+@opindex fuse-cxa-get-exception-ptr
 Don't use the @code{__cxa_get_exception_ptr} runtime routine.  This
 causes @code{std::uncaught_exception} to be incorrect, but is necessary
 if the runtime routine is not available.
@@ -2795,6 +2811,7 @@ violation of the ODR to define types with the same name differently.
 
 @item -fno-weak
 @opindex fno-weak
+@opindex fweak
 Do not use weak symbol support, even if it is provided by the linker.
 By default, G++ uses weak symbols if they are available.  This
 option exists only for testing, and should not be used by end-users;
@@ -3461,6 +3478,7 @@ used.
 
 @item -fno-nil-receivers
 @opindex fno-nil-receivers
+@opindex fnil-receivers
 Assume that all Objective-C message dispatches (@code{[receiver
 message:arg]}) in this translation unit ensure that the receiver is
 not @code{nil}.  This allows for more efficient entry points in the
@@ -3950,6 +3968,7 @@ This flag also affects the output of the
 
 @item -fno-show-column
 @opindex fno-show-column
+@opindex fshow-column
 Do not print column numbers in diagnostics.  This may be necessary if
 diagnostics are being scanned by a program that does not understand the
 column numbers, such as @command{dejagnu}.
@@ -8062,6 +8081,7 @@ optimizations to be performed is desired.
 @table @gcctabopt
 @item -fno-defer-pop
 @opindex fno-defer-pop
+@opindex fdefer-pop
 For machines that must pop arguments after a function call, always pop 
 the arguments as soon as each function returns.  
 At levels @option{-O1} and higher, @option{-fdefer-pop} is the default;
@@ -8121,6 +8141,7 @@ Enabled at levels @option{-O2}, @option{-O3}.
 
 @item -fno-inline
 @opindex fno-inline
+@opindex finline
 Do not expand any functions inline apart from those marked with
 the @code{always_inline} attribute.  This is the default when not
 optimizing.
@@ -8217,6 +8238,7 @@ release to an another.
 
 @item -fno-keep-inline-dllexport
 @opindex fno-keep-inline-dllexport
+@opindex fkeep-inline-dllexport
 This is a more fine-grained version of @option{-fkeep-inline-functions},
 which applies only to functions that are declared using the @code{dllexport}
 attribute or declspec.  @xref{Function Attributes,,Declaring Attributes of
@@ -8283,6 +8305,7 @@ life-range analysis.  This option is effective only with
 
 @item -fno-branch-count-reg
 @opindex fno-branch-count-reg
+@opindex fbranch-count-reg
 Disable the optimization pass that scans for opportunities to use 
 ``decrement and branch'' instructions on a count register instead of
 instruction sequences that decrement a register, compare it against zero, and
@@ -8296,6 +8319,7 @@ The default is @option{-fbranch-count-reg} at @option{-O1} and higher.
 
 @item -fno-function-cse
 @opindex fno-function-cse
+@opindex ffunction-cse
 Do not put function addresses in registers; make each instruction that
 calls a constant function contain the function's address explicitly.
 
@@ -8307,6 +8331,7 @@ The default is @option{-ffunction-cse}
 
 @item -fno-zero-initialized-in-bss
 @opindex fno-zero-initialized-in-bss
+@opindex fzero-initialized-in-bss
 If the target supports a BSS section, GCC by default puts variables that
 are initialized to zero into BSS@.  This can save space in the resulting
 code.
@@ -8543,6 +8568,7 @@ Enabled for Alpha, AArch64 and x86 at levels @option{-O2},
 
 @item -fno-lifetime-dse
 @opindex fno-lifetime-dse
+@opindex flifetime-dse
 In C++ the value of an object is only affected by changes within its
 lifetime: when the constructor begins, the object has an indeterminate
 value, and any changes during the lifetime of the object are dead when
@@ -8616,6 +8642,7 @@ This option is enabled at level @option{-O3} for some targets.
 
 @item -fno-ira-share-save-slots
 @opindex fno-ira-share-save-slots
+@opindex fira-share-save-slots
 Disable sharing of stack slots used for saving call-used hard
 registers living through a call.  Each hard register gets a
 separate stack slot, and as a result function stack frames are
@@ -8623,6 +8650,7 @@ larger.
 
 @item -fno-ira-share-spill-slots
 @opindex fno-ira-share-spill-slots
+@opindex fira-share-spill-slots
 Disable sharing of stack slots allocated for pseudo-registers.  Each
 pseudo-register that does not get a hard register gets a separate
 stack slot, and as a result function stack frames are larger.
@@ -8665,12 +8693,14 @@ Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -fno-sched-interblock
 @opindex fno-sched-interblock
+@opindex fsched-interblock
 Disable instruction scheduling across basic blocks, which
 is normally enabled when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
 
 @item -fno-sched-spec
 @opindex fno-sched-spec
+@opindex fsched-spec
 Disable speculative motion of non-load instructions, which
 is normally enabled when scheduling before register allocation, i.e.@:
 with @option{-fschedule-insns} or at @option{-O2} or higher.
@@ -9405,6 +9435,7 @@ Disabled at level @option{-Os}.
 
 @item -fno-printf-return-value
 @opindex fno-printf-return-value
+@opindex fprintf-return-value
 Do not substitute constants for known return value of formatted output
 functions such as @code{sprintf}, @code{snprintf}, @code{vsprintf}, and
 @code{vsnprintf} (but not @code{printf} of @code{fprintf}).  This
@@ -9431,7 +9462,9 @@ options.  The @option{-fprintf-return-value} option is enabled by default.
 @item -fno-peephole
 @itemx -fno-peephole2
 @opindex fno-peephole
+@opindex fpeephole
 @opindex fno-peephole2
+@opindex fpeephole2
 Disable any machine-specific peephole optimizations.  The difference
 between @option{-fno-peephole} and @option{-fno-peephole2} is in how they
 are implemented in the compiler; some targets use one, some use the
@@ -9442,6 +9475,7 @@ other, a few use both.
 
 @item -fno-guess-branch-probability
 @opindex fno-guess-branch-probability
+@opindex fguess-branch-probability
 Do not guess branch probabilities using heuristics.
 
 GCC uses heuristics to guess branch probabilities if they are
@@ -9674,6 +9708,7 @@ Enabled by default.
 
 @item -fno-toplevel-reorder
 @opindex fno-toplevel-reorder
+@opindex ftoplevel-reorder
 Do not reorder top-level functions, variables, and @code{asm}
 statements.  Output them in the same order that they appear in the
 input file.  When this option is used, unreferenced static variables
@@ -10134,6 +10169,7 @@ that do not require the guarantees of these specifications.
 
 @item -fno-math-errno
 @opindex fno-math-errno
+@opindex fmath-errno
 Do not set @code{errno} after calling math functions that are executed
 with a single instruction, e.g., @code{sqrt}.  A program that relies on
 IEEE exceptions for math error handling may want to use this flag
@@ -10214,6 +10250,7 @@ The default is @option{-fno-finite-math-only}.
 
 @item -fno-signed-zeros
 @opindex fno-signed-zeros
+@opindex fsigned-zeros
 Allow optimizations for floating-point arithmetic that ignore the
 signedness of zero.  IEEE arithmetic specifies the behavior of
 distinct +0.0 and @minus{}0.0 values, which then prohibits simplification
@@ -10224,6 +10261,7 @@ The default is @option{-fsigned-zeros}.
 
 @item -fno-trapping-math
 @opindex fno-trapping-math
+@opindex ftrapping-math
 Compile code assuming that floating-point operations cannot generate
 user-visible traps.  These traps include division by zero, overflow,
 underflow, inexact result and invalid operation.  This option requires
@@ -10274,6 +10312,7 @@ disable all GCC optimizations that affect signaling NaN behavior.
 
 @item -fno-fp-int-builtin-inexact
 @opindex fno-fp-int-builtin-inexact
+@opindex ffp-int-builtin-inexact
 Do not allow the built-in functions @code{ceil}, @code{floor},
 @code{round} and @code{trunc}, and their @code{float} and @code{long
 double} variants, to generate code that raises the ``inexact''
@@ -13253,6 +13292,7 @@ unwinding from asynchronous events (such as debugger or garbage collector).
 
 @item -fno-gnu-unique
 @opindex fno-gnu-unique
+@opindex fgnu-unique
 On systems with recent GNU assembler and C library, the C++ compiler
 uses the @code{STB_GNU_UNIQUE} binding to make sure that definitions
 of template static data members and static local variables in inline
@@ -13324,6 +13364,7 @@ Use it to conform to a non-default application binary interface.
 
 @item -fno-common
 @opindex fno-common
+@opindex fcommon
 @cindex tentative definitions
 In C code, this option controls the placement of global variables 
 defined without an initializer, known as @dfn{tentative definitions} 
@@ -13353,6 +13394,7 @@ variable definitions this way.
 
 @item -fno-ident
 @opindex fno-ident
+@opindex fident
 Ignore the @code{#ident} directive.
 
 @item -finhibit-size-directive
@@ -13521,6 +13563,7 @@ for @option{-fpie} and 2 for @option{-fPIE}.
 
 @item -fno-plt
 @opindex fno-plt
+@opindex fplt
 Do not use the PLT for external function calls in position-independent code.
 Instead, load the callee address at call sites from the GOT and branch to it.
 This leads to more efficient code by eliminating PLT stubs and exposing
@@ -13538,6 +13581,7 @@ functions that are marked to not use the PLT to use the GOT instead.
 
 @item -fno-jump-tables
 @opindex fno-jump-tables
+@opindex fjump-tables
 Do not use jump tables for switch statements even where it would be
 more efficient than other code generation strategies.  This option is
 of use in conjunction with @option{-fpic} or @option{-fPIC} for
@@ -15429,6 +15473,7 @@ Emit @var{num} NOPs before every other generated instruction.
 
 @item -mno-soft-cmpsf
 @opindex mno-soft-cmpsf
+@opindex msoft-cmpsf
 For single-precision floating-point comparisons, emit an @code{fsub} instruction
 and test the flags.  This is faster than a software comparison, but can
 get incorrect results in the presence of NaNs, or when two different small
@@ -15452,6 +15497,7 @@ toolchain with the appropriate @option{--with-stack-offset=@var{num}} option.
 
 @item -mno-round-nearest
 @opindex mno-round-nearest
+@opindex mround-nearest
 Make the scheduler assume that the rounding mode has been set to
 truncating.  The default is @option{-mround-nearest}.
 
@@ -15511,12 +15557,15 @@ integer multiply, or integer multiply-and-accumulate.
 
 The default is @option{-mfp-mode=caller}
 
-@item -mnosplit-lohi
+@item -mno-split-lohi
 @itemx -mno-postinc
 @itemx -mno-postmodify
-@opindex mnosplit-lohi
+@opindex mno-split-lohi
+@opindex msplit-lohi
 @opindex mno-postinc
+@opindex mpostinc
 @opindex mno-postmodify
+@opindex mpostmodify
 Code generation tweaks that disable, respectively, splitting of 32-bit
 loads, generation of post-increment addresses, and generation of
 post-modify addresses.  The defaults are @option{msplit-lohi},
@@ -15524,6 +15573,7 @@ post-modify addresses.  The defaults are @option{msplit-lohi},
 
 @item -mnovect-double
 @opindex mno-vect-double
+@opindex mvect-double
 Change the preferred SIMD mode to SImode.  The default is
 @option{-mvect-double}, which uses DImode as preferred SIMD mode.
 
@@ -15687,6 +15737,7 @@ supported.  This is always enabled for @option{-mcpu=ARC700}.
 
 @item -mno-mpy
 @opindex mno-mpy
+@opindex mmpy
 Do not generate @code{mpy}-family instructions for ARC700.  This option is
 deprecated.
 
@@ -16055,6 +16106,7 @@ load/store operations.
 
 @item -mno-sdata
 @opindex mno-sdata
+@opindex msdata
 Do not generate sdata references.  This is the default for tool chains
 built for @w{@code{arc-linux-uclibc}} and @w{@code{arceb-linux-uclibc}}
 targets.
@@ -16066,6 +16118,7 @@ default.
 
 @item -mno-volatile-cache
 @opindex mno-volatile-cache
+@opindex mvolatile-cache
 Enable cache bypass for volatile references.
 
 @end table
@@ -16382,6 +16435,7 @@ configurations this option is meaningless.
 
 @item -mno-sched-prolog
 @opindex mno-sched-prolog
+@opindex msched-prolog
 Prevent the reordering of instructions in the function prologue, or the
 merging of those instruction with the instructions in the function's
 body.  This means that all functions start with a recognizable set
@@ -17775,6 +17829,7 @@ contain speculative loads after jump instructions. If this option is used,
 
 @item -mno-specld-anomaly
 @opindex mno-specld-anomaly
+@opindex mspecld-anomaly
 Don't generate extra code to prevent speculative loads from occurring.
 
 @item -mcsync-anomaly
@@ -17785,16 +17840,17 @@ If this option is used, @code{__WORKAROUND_SPECULATIVE_SYNCS} is defined.
 
 @item -mno-csync-anomaly
 @opindex mno-csync-anomaly
+@opindex mcsync-anomaly
 Don't generate extra code to prevent CSYNC or SSYNC instructions from
 occurring too soon after a conditional branch.
 
-@item -mlow-64k
-@opindex mlow-64k
+@item -mlow64k
+@opindex mlow64k
 When enabled, the compiler is free to take advantage of the knowledge that
 the entire program fits into the low 64k of memory.
 
-@item -mno-low-64k
-@opindex mno-low-64k
+@item -mno-low64k
+@opindex mno-low64k
 Assume that the program is arbitrarily large.  This is the default.
 
 @item -mstack-check-l1
@@ -17811,6 +17867,7 @@ With a @samp{bfin-elf} target, this option implies @option{-msim}.
 
 @item -mno-id-shared-library
 @opindex mno-id-shared-library
+@opindex mid-shared-library
 Generate code that doesn't assume ID-based shared libraries are being used.
 This is the default.
 
@@ -17823,6 +17880,7 @@ and calls.
 
 @item -mno-leaf-id-shared-library
 @opindex mno-leaf-id-shared-library
+@opindex mleaf-id-shared-library
 Do not assume that the code being compiled won't link against any ID shared
 libraries.  Slower code is generated for jump and call insns.
 
@@ -17842,6 +17900,7 @@ against the text section.
 
 @item -mno-sep-data
 @opindex mno-sep-data
+@opindex msep-data
 Generate code that assumes that the data segment follows the text segment.
 This is the default.
 
@@ -18022,6 +18081,7 @@ compare and test instructions before use of condition codes.
 
 @item -mno-side-effects
 @opindex mno-side-effects
+@opindex mside-effects
 Do not emit instructions with side effects in addressing modes other than
 post-increment.
 
@@ -19037,6 +19097,7 @@ Change ABI to use double word insns.
 
 @item -mno-dword
 @opindex mno-dword
+@opindex mdword
 
 Do not use double word instructions.
 
@@ -19278,6 +19339,7 @@ compiler-generated code.  It is enabled by default.
 
 @item -mno-optimize-membar
 @opindex mno-optimize-membar
+@opindex moptimize-membar
 
 This switch disables the automatic removal of redundant @code{membar}
 instructions from the generated code.
@@ -19384,6 +19446,7 @@ This option is valid only for H8S targets.
 
 @item -mno-exr
 @opindex mno-exr
+@opindex mexr
 Extended registers are not stored on stack before execution of function 
 with monitor attribute. Default option is @option{-mno-exr}. 
 This option is valid only for H8S targets.
@@ -19452,6 +19515,7 @@ rather obscure problems when compiling MIG generated code under MACH@.
 
 @item -mno-space-regs
 @opindex mno-space-regs
+@opindex mspace-regs
 Generate code that assumes the target has no space registers.  This allows
 GCC to generate faster indirect calls and use unscaled index address modes.
 
@@ -19555,6 +19619,7 @@ HP-UX GCC, i.e.@: configured with @samp{hppa*64*-*-hpux*}.
 
 @item -mlong-calls
 @opindex mno-long-calls
+@opindex mlong-calls
 Generate code that uses long call sequences.  This ensures that a call
 is always able to reach linker generated stubs.  The default is to generate
 long calls only when the distance from the call site to the beginning
@@ -19726,6 +19791,7 @@ using the maximum throughput algorithm.
 
 @item -mno-inline-int-divide
 @opindex mno-inline-int-divide
+@opindex minline-int-divide
 Do not generate inline code for divides of integer values.
 
 @item -minline-sqrt-min-latency
@@ -20388,10 +20454,7 @@ harmlessly ignored.)
 The @code{rtd} instruction is supported by the 68010, 68020, 68030,
 68040, 68060 and CPU32 processors, but not by the 68000 or 5200.
 
-@item -mno-rtd
-@opindex mno-rtd
-Do not use the calling conventions selected by @option{-mrtd}.
-This is the default.
+The default is @option{-mno-rtd}.
 
 @item -malign-int
 @itemx -mno-align-int
@@ -22093,8 +22156,8 @@ Allow the compiler to generate @emph{Long Instruction Word}
 instructions if the target is the @samp{AM33} or later.  This is the
 default.  This option defines the preprocessor macro @code{__LIW__}.
 
-@item -mnoliw
-@opindex mnoliw
+@item -mno-liw
+@opindex mno-liw
 Do not allow the compiler to generate @emph{Long Instruction Word}
 instructions.  This option defines the preprocessor macro
 @code{__NO_LIW__}.
@@ -22105,8 +22168,8 @@ Allow the compiler to generate the @emph{SETLB} and @emph{Lcc}
 instructions if the target is the @samp{AM33} or later.  This is the
 default.  This option defines the preprocessor macro @code{__SETLB__}.
 
-@item -mnosetlb
-@opindex mnosetlb
+@item -mno-setlb
+@opindex mno-setlb
 Do not allow the compiler to generate @emph{SETLB} or @emph{Lcc}
 instructions.  This option defines the preprocessor macro
 @code{__NO_SETLB__}.
@@ -22297,27 +22360,27 @@ Generate conditional move instructions.
 Do not generate conditional move instructions.
 
 @item -mext-perf
-@opindex mperf-ext
+@opindex mext-perf
 Generate performance extension instructions.
 
 @item -mno-ext-perf
-@opindex mno-perf-ext
+@opindex mno-ext-perf
 Do not generate performance extension instructions.
 
 @item -mext-perf2
-@opindex mperf-ext
+@opindex mext-perf2
 Generate performance extension 2 instructions.
 
 @item -mno-ext-perf2
-@opindex mno-perf-ext
+@opindex mno-ext-perf2
 Do not generate performance extension 2 instructions.
 
 @item -mext-string
-@opindex mperf-ext
+@opindex mext-string
 Generate string extension instructions.
 
 @item -mno-ext-string
-@opindex mno-perf-ext
+@opindex mno-ext-string
 Do not generate string extension instructions.
 
 @item -mv3push
@@ -27672,6 +27735,7 @@ register stack, some floating-point opcodes may be emitted even if
 
 @item -mno-fp-ret-in-387
 @opindex mno-fp-ret-in-387
+@opindex mfp-ret-in-387
 Do not use the FPU registers for return values of functions.
 
 The usual calling convention has functions return values of types
@@ -27684,6 +27748,7 @@ in ordinary CPU registers instead.
 
 @item -mno-fancy-math-387
 @opindex mno-fancy-math-387
+@opindex mfancy-math-387
 Some 387 emulators do not support the @code{sin}, @code{cos} and
 @code{sqrt} instructions for the 387.  Specify this option to avoid
 generating those instructions.
@@ -28506,6 +28571,7 @@ Here, @code{t5} takes up 2 bytes.
 
 @item -mno-align-stringops
 @opindex mno-align-stringops
+@opindex malign-stringops
 Do not align the destination of inlined string operations.  This switch reduces
 code size and improves performance in case the destination is already aligned,
 but GCC doesn't know about it.
@@ -28742,6 +28808,7 @@ psABI.  It requires the @option{-m32} option to be turned on.
 
 @item -mno-red-zone
 @opindex mno-red-zone
+@opindex mred-zone
 Do not use a so-called ``red zone'' for x86-64 code.  The red zone is mandated
 by the x86-64 ABI; it is a 128-byte area beyond the location of the
 stack pointer that is not modified by signal or interrupt handlers
@@ -28843,6 +28910,7 @@ appropriately.
 
 @item -fno-set-stack-executable
 @opindex fno-set-stack-executable
+@opindex fset-stack-executable
 This option is available for MinGW targets. It specifies that
 the executable flag for the stack used by nested functions isn't
 set. This is necessary for binaries running in kernel mode of
@@ -28851,6 +28919,7 @@ privileges, isn't available.
 
 @item -fwritable-relocated-rdata
 @opindex fno-writable-relocated-rdata
+@opindex fwritable-relocated-rdata
 This option is available for MinGW and Cygwin targets.  It specifies
 that relocated-data in read-only section is put into the @code{.data}
 section.  This is a necessary for older runtimes not supporting
