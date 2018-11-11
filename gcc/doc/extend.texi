@@ -12121,6 +12121,12 @@ if (__builtin_expect (ptr != NULL, 1))
 
 @noindent
 when testing pointer or floating-point values.
+
+For the purposes of branch prediction optimizations, the probability that
+a @code{__builtin_expect} expression is true is controlled by GCC's
+@code{builtin-expect-probability} parameter, which defaults to 90%.  
+You can also use @code{__builtin_expect_with_probability} to explicitly 
+assign a probability value to individual expressions.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect_with_probability

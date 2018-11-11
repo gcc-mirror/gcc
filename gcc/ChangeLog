@@ -1,3 +1,9 @@
+2018-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/26366
+	* doc/extend.texi (Other Builtins): Document probability associated
+	with __builtin_expect.
+
 2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/87928
