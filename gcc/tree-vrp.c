@@ -73,16 +73,19 @@ along with GCC; see the file COPYING3.  If not see
    for still active basic-blocks.  */
 static sbitmap *live;
 
-/* Initialize value_range.  */
-
 void
-value_range::set (enum value_range_kind kind, tree min, tree max,
-		  bitmap equiv)
+value_range_base::set (enum value_range_kind kind, tree min, tree max)
 {
   m_kind = kind;
   m_min = min;
   m_max = max;
+  if (flag_checking)
+    check ();
+}
 
+void
+value_range::set_equiv (bitmap equiv)
+{
   /* Since updating the equivalence set involves deep copying the
      bitmaps, only do it if absolutely necessary.
 
@@ -99,8 +102,23 @@ value_range::set (enum value_range_kind kind, tree min, tree max,
       else
 	bitmap_clear (m_equiv);
     }
+}
+
+/* Initialize value_range.  */
+
+void
+value_range::set (enum value_range_kind kind, tree min, tree max,
+		  bitmap equiv)
+{
+  value_range_base::set (kind, min, max);
+  set_equiv (equiv);
   if (flag_checking)
     check ();
+}
+
+value_range_base::value_range_base (value_range_kind kind, tree min, tree max)
+{
+  set (kind, min, max);
 }
 
 value_range::value_range (value_range_kind kind, tree min, tree max,
@@ -108,6 +126,12 @@ value_range::value_range (value_range_kind kind, tree min, tree max,
 {
   m_equiv = NULL;
   set (kind, min, max, equiv);
+}
+
+value_range::value_range (const value_range_base &other)
+{
+  m_equiv = NULL;
+  set (other.kind (), other.min(), other.max (), NULL);
 }
 
 /* Like above, but keep the equivalences intact.  */
@@ -133,7 +157,7 @@ value_range::deep_copy (const value_range *from)
 /* Check the validity of the range.  */
 
 void
-value_range::check ()
+value_range_base::check ()
 {
   switch (m_kind)
     {
@@ -158,10 +182,22 @@ value_range::check ()
     case VR_UNDEFINED:
     case VR_VARYING:
       gcc_assert (!min () && !max ());
-      gcc_assert (!m_equiv || bitmap_empty_p (m_equiv));
       break;
     default:
       gcc_unreachable ();
+    }
+}
+
+void
+value_range::check ()
+{
+  value_range_base::check ();
+  switch (m_kind)
+    {
+    case VR_UNDEFINED:
+    case VR_VARYING:
+      gcc_assert (!m_equiv || bitmap_empty_p (m_equiv));
+    default:;
     }
 }
 
@@ -171,9 +207,7 @@ value_range::check ()
 bool
 value_range::equal_p (const value_range &other, bool ignore_equivs) const
 {
-  return (m_kind == other.m_kind
-	  && vrp_operand_equal_p (m_min, other.m_min)
-	  && vrp_operand_equal_p (m_max, other.m_max)
+  return (ignore_equivs_equal_p (other)
 	  && (ignore_equivs
 	      || vrp_bitmap_equal_p (m_equiv, other.m_equiv)));
 }
@@ -181,9 +215,11 @@ value_range::equal_p (const value_range &other, bool ignore_equivs) const
 /* Return equality while ignoring equivalence bitmap.  */
 
 bool
-value_range::ignore_equivs_equal_p (const value_range &other) const
+value_range_base::ignore_equivs_equal_p (const value_range_base &other) const
 {
-  return equal_p (other, /*ignore_equivs=*/true);
+  return (m_kind == other.m_kind
+	  && vrp_operand_equal_p (m_min, other.m_min)
+	  && vrp_operand_equal_p (m_max, other.m_max));
 }
 
 bool
@@ -224,10 +260,22 @@ value_range::constant_p () const
 }
 
 void
+value_range_base::set_undefined ()
+{
+  *this = value_range_base (VR_UNDEFINED, NULL, NULL);
+}
+
+void
 value_range::set_undefined ()
 {
   equiv_clear ();
   *this = value_range (VR_UNDEFINED, NULL, NULL, NULL);
+}
+
+void
+value_range_base::set_varying ()
+{
+  *this = value_range_base (VR_VARYING, NULL, NULL);
 }
 
 void
@@ -240,7 +288,7 @@ value_range::set_varying ()
 /* Return TRUE if it is possible that range contains VAL.  */
 
 bool
-value_range::may_contain_p (tree val) const
+value_range_base::may_contain_p (tree val) const
 {
   if (varying_p ())
     return true;
@@ -302,7 +350,7 @@ value_range::singleton_p (tree *result) const
 }
 
 tree
-value_range::type () const
+value_range_base::type () const
 {
   /* Types are only valid for VR_RANGE and VR_ANTI_RANGE, which are
      known to have non-zero min/max.  */
@@ -313,7 +361,7 @@ value_range::type () const
 /* Dump value range to FILE.  */
 
 void
-value_range::dump (FILE *file) const
+value_range_base::dump (FILE *file) const
 {
   if (undefined_p ())
     fprintf (file, "UNDEFINED");
@@ -339,28 +387,34 @@ value_range::dump (FILE *file) const
 	print_generic_expr (file, max ());
 
       fprintf (file, "]");
-
-      if (m_equiv)
-	{
-	  bitmap_iterator bi;
-	  unsigned i, c = 0;
-
-	  fprintf (file, "  EQUIVALENCES: { ");
-
-	  EXECUTE_IF_SET_IN_BITMAP (m_equiv, 0, i, bi)
-	    {
-	      print_generic_expr (file, ssa_name (i));
-	      fprintf (file, " ");
-	      c++;
-	    }
-
-	  fprintf (file, "} (%u elements)", c);
-	}
     }
   else if (varying_p ())
     fprintf (file, "VARYING");
   else
     fprintf (file, "INVALID RANGE");
+}
+
+void
+value_range::dump (FILE *file) const
+{
+  value_range_base::dump (file);
+  if ((m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
+      && m_equiv)
+    {
+      bitmap_iterator bi;
+      unsigned i, c = 0;
+
+      fprintf (file, "  EQUIVALENCES: { ");
+
+      EXECUTE_IF_SET_IN_BITMAP (m_equiv, 0, i, bi)
+	{
+	  print_generic_expr (file, ssa_name (i));
+	  fprintf (file, " ");
+	  c++;
+	}
+
+      fprintf (file, "} (%u elements)", c);
+    }
 }
 
 void
@@ -573,8 +627,8 @@ set_value_range (value_range *vr, enum value_range_kind kind,
    extract ranges from var + CST op limit.  */
 
 void
-value_range::set_and_canonicalize (enum value_range_kind kind,
-				   tree min, tree max, bitmap equiv)
+value_range_base::set_and_canonicalize (enum value_range_kind kind,
+					tree min, tree max)
 {
   /* Use the canonical setters for VR_UNDEFINED and VR_VARYING.  */
   if (kind == VR_UNDEFINED)
@@ -592,7 +646,7 @@ value_range::set_and_canonicalize (enum value_range_kind kind,
   if (TREE_CODE (min) != INTEGER_CST
       || TREE_CODE (max) != INTEGER_CST)
     {
-      set_value_range (this, kind, min, max, equiv);
+      set (kind, min, max);
       return;
     }
 
@@ -680,7 +734,18 @@ value_range::set_and_canonicalize (enum value_range_kind kind,
      to make sure VRP iteration terminates, otherwise we can get into
      oscillations.  */
 
-  set_value_range (this, kind, min, max, equiv);
+  set (kind, min, max);
+}
+
+void
+value_range::set_and_canonicalize (enum value_range_kind kind,
+				   tree min, tree max, bitmap equiv)
+{
+  value_range_base::set_and_canonicalize (kind, min, max);
+  if (this->kind () == VR_RANGE || this->kind () == VR_ANTI_RANGE)
+    set_equiv (equiv);
+  else
+    equiv_clear ();
 }
 
 /* Set value range VR to a single value.  This function is only called
@@ -1084,7 +1149,7 @@ value_inside_range (tree val, tree min, tree max)
 /* Return TRUE if *VR includes the value zero.  */
 
 bool
-range_includes_zero_p (const value_range *vr)
+range_includes_zero_p (const value_range_base *vr)
 {
   if (vr->varying_p () || vr->undefined_p ())
     return true;
@@ -2112,6 +2177,15 @@ void debug_vr_equiv (bitmap);
 
 void
 dump_value_range (FILE *file, const value_range *vr)
+{
+  if (!vr)
+    fprintf (file, "[]");
+  else
+    vr->dump (file);
+}
+
+void
+dump_value_range_base (FILE *file, const value_range_base *vr)
 {
   if (!vr)
     fprintf (file, "[]");
@@ -6011,6 +6085,63 @@ value_range::intersect (const value_range *other)
       dump_value_range (dump_file, this);
       fprintf (dump_file, "\n");
     }
+}
+
+/* Meet operation for value ranges.  Given two value ranges VR0 and
+   VR1, store in VR0 a range that contains both VR0 and VR1.  This
+   may not be the smallest possible such range.  */
+
+void
+value_range_base::union_ (const value_range_base *other)
+{
+  if (other->undefined_p ())
+    {
+      /* this already has the resulting range.  */
+      return;
+    }
+
+  if (this->undefined_p ())
+    {
+      *this = *other;
+      return;
+    }
+
+  if (this->varying_p ())
+    {
+      /* Nothing to do.  VR0 already has the resulting range.  */
+      return;
+    }
+
+  if (other->varying_p ())
+    {
+      this->set_varying ();
+      return;
+    }
+
+  value_range saved (*this);
+  value_range_kind vr0type = this->kind ();
+  tree vr0min = this->min ();
+  tree vr0max = this->max ();
+  union_ranges (&vr0type, &vr0min, &vr0max,
+		other->kind (), other->min (), other->max ());
+  *this = value_range_base (vr0type, vr0min, vr0max);
+  if (this->varying_p ())
+    {
+      /* Failed to find an efficient meet.  Before giving up and setting
+	 the result to VARYING, see if we can at least derive a useful
+	 anti-range.  */
+      if (range_includes_zero_p (&saved) == 0
+	  && range_includes_zero_p (other) == 0)
+	{
+	  tree zero = build_int_cst (saved.type (), 0);
+	  *this = value_range_base (VR_ANTI_RANGE, zero, zero);
+	  return;
+	}
+
+      this->set_varying ();
+      return;
+    }
+  this->set_and_canonicalize (this->kind (), this->min (), this->max ());
 }
 
 /* Meet operation for value ranges.  Given two value ranges VR0 and
