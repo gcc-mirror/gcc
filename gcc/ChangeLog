@@ -1,5 +1,11 @@
 2018-11-11  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR c++/43105
+	* doc/invoke.texi (C++ Dialect Options): Add warning about mixing
+	-frtti and -fno-rtti code.
+
+2018-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR c/26366
 	* doc/extend.texi (Other Builtins): Document probability associated
 	with __builtin_expect.
