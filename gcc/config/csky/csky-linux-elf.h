@@ -35,6 +35,7 @@
 #define CC1_SPEC  \
   "%{EB:-EB}	  \
    %{EL:-EL}	  \
+   %{profile:-p}  \
   "
 
 #undef ASM_SPEC

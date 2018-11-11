@@ -1,5 +1,9 @@
 2018-11-11  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
+	* config/csky/csky-linux-elf.h (CC1_SPEC): Support -profile.
+
+2018-11-11  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
 	* config/csky/csky.h (ASM_PREFERRED_EH_DATA_FORMAT): Define.
 
 2018-11-11  Richard Biener  <rguenther@suse.de>
