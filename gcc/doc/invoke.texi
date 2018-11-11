@@ -2679,6 +2679,11 @@ needed. The @code{dynamic_cast} operator can still be used for casts that
 do not require run-time type information, i.e.@: casts to @code{void *} or to
 unambiguous base classes.
 
+Mixing code compiled with @option{-frtti} with that compiled with
+@option{-fno-rtti} may not work.  For example, programs may
+fail to link if a class compiled with @option{-fno-rtti} is used as a base 
+for a class compiled with @option{-frtti}.  
+
 @item -fsized-deallocation
 @opindex fsized-deallocation
 Enable the built-in global declarations
