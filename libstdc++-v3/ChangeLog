@@ -1,5 +1,11 @@
 2018-11-11  Jonathan Wakely  <jwakely@redhat.com>
 
+	Implement P0318R1 unwrap_ref_decay and unwrap_reference
+	* include/std/type_traits (unwrap_reference, unwrap_reference_t)
+	(unwrap_ref_decay, unwrap_ref_decay_t): New traits and aliases.
+	* testsuite/20_util/unwrap_reference/1.cc: New test.
+	* testsuite/20_util/unwrap_reference/2.cc: New test.
+
 	Implement P1007R3 std::assume_aligned
 	* include/std/memory (assume_aligned): Implement for C++17.
 	* testsuite/20_util/assume_aligned/1.cc: New test.
