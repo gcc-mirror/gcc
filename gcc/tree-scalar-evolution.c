@@ -257,7 +257,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
+#include "optabs-query.h"
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
@@ -282,6 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "tree-into-ssa.h"
 #include "builtins.h"
+#include "case-cfn-macros.h"
 
 static tree analyze_scalar_evolution_1 (struct loop *, tree);
 static tree analyze_scalar_evolution_for_address_of (struct loop *loop,
@@ -3500,6 +3503,36 @@ expression_expensive_p (tree expr)
     {
       tree arg;
       call_expr_arg_iterator iter;
+      /* Even though is_inexpensive_builtin might say true, we will get a
+	 library call for popcount when backend does not have an instruction
+	 to do so.  We consider this to be expenseive and generate
+	 __builtin_popcount only when backend defines it.  */
+      combined_fn cfn = get_call_combined_fn (expr);
+      switch (cfn)
+	{
+	CASE_CFN_POPCOUNT:
+	  /* Check if opcode for popcount is available in the mode required.  */
+	  if (optab_handler (popcount_optab,
+			     TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (expr, 0))))
+	      == CODE_FOR_nothing)
+	    {
+	      machine_mode mode;
+	      mode = TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (expr, 0)));
+	      scalar_int_mode int_mode;
+
+	      /* If the mode is of 2 * UNITS_PER_WORD size, we can handle
+		 double-word popcount by emitting two single-word popcount
+		 instructions.  */
+	      if (is_a <scalar_int_mode> (mode, &int_mode)
+		  && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+		  && (optab_handler (popcount_optab, word_mode)
+		      != CODE_FOR_nothing))
+		  break;
+	      return true;
+	    }
+	default:
+	  break;
+	}
 
       if (!is_inexpensive_builtin (get_callee_fndecl (expr)))
 	return true;

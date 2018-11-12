@@ -1,3 +1,10 @@
+2018-11-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	PR middle-end/86677
+	PR middle-end/87528
+	* tree-scalar-evolution.c (expression_expensive_p): Make BUILTIN POPCOUNT
+	as expensive when backend does not define it.
+
 2018-11-12  Fredrik Noring  <noring@nocrew.org>
 
 	* config.gcc: Update with-llsc defaults for MIPS r5900.
