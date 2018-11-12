@@ -2079,6 +2079,14 @@ fprofile-update=
 Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
 -fprofile-update=[single|atomic|prefer-atomic]	Set the profile update method.
 
+fprofile-filter-files=
+Common Joined RejectNegative Var(flag_profile_filter_files)
+Instrument only functions from files where names match any regular expression (separated by a semi-colon).
+
+fprofile-exclude-files=
+Common Joined RejectNegative Var(flag_profile_exclude_files)
+Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon).
+
 Enum
 Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
 

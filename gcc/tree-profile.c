@@ -55,6 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "langhooks.h"
 #include "stor-layout.h"
+#include "xregex.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -610,6 +611,82 @@ gimple_gen_ior_profiler (histogram_value value, unsigned tag, unsigned base)
   gsi_insert_before (&gsi, call, GSI_NEW_STMT);
 }
 
+static vec<regex_t> profile_filter_files;
+static vec<regex_t> profile_exclude_files;
+
+/* Parse list of provided REGEX (separated with semi-collon) and
+   create expressions (of type regex_t) and save them into V vector.
+   If there is a regular expression parsing error, error message is
+   printed for FLAG_NAME.  */
+
+static void
+parse_profile_filter (const char *regex, vec<regex_t> *v,
+		      const char *flag_name)
+{
+  v->create (4);
+  if (regex != NULL)
+    {
+      char *str = xstrdup (regex);
+      for (char *p = strtok (str, ";"); p != NULL; p = strtok (NULL, ";"))
+	{
+	  regex_t r;
+	  if (regcomp (&r, p, REG_EXTENDED | REG_NOSUB) != 0)
+	    {
+	      error ("invalid regular expression '%s' in %<%s%>",
+		     p, flag_name);
+	      return;
+	    }
+
+	  v->safe_push (r);
+	}
+    }
+}
+
+/* Parse values of -fprofile-filter-files and -fprofile-exclude-files
+   options.  */
+
+static void
+parse_profile_file_filtering ()
+{
+  parse_profile_filter (flag_profile_filter_files, &profile_filter_files,
+			"-fprofile-filter-files");
+  parse_profile_filter (flag_profile_exclude_files, &profile_exclude_files,
+			"-fprofile-exclude-files");
+}
+
+/* Parse vectors of regular expressions.  */
+
+static void
+release_profile_file_filtering ()
+{
+  profile_filter_files.release ();
+  profile_exclude_files.release ();
+}
+
+/* Return true when FILENAME should be instrumented based on
+   -fprofile-filter-files and -fprofile-exclude-files options.  */
+
+static bool
+include_source_file_for_profile (const char *filename)
+{
+  /* First check whether file is included in flag_profile_exclude_files.  */
+  for (unsigned i = 0; i < profile_exclude_files.length (); i++)
+    if (regexec (&profile_exclude_files[i],
+		 filename, 0, NULL, 0) == REG_NOERROR)
+      return false;
+
+  /* For non-empty flag_profile_filter_files include only files matching a
+     regex in the flag.  */
+  if (profile_filter_files.is_empty ())
+    return true;
+
+  for (unsigned i = 0; i < profile_filter_files.length (); i++)
+    if (regexec (&profile_filter_files[i], filename, 0, NULL, 0) == REG_NOERROR)
+      return true;
+
+  return false;
+}
+
 #ifndef HAVE_sync_compare_and_swapsi
 #define HAVE_sync_compare_and_swapsi 0
 #endif
@@ -658,6 +735,7 @@ tree_profiling (void)
   gcc_assert (symtab->state == IPA_SSA);
 
   init_node_map (true);
+  parse_profile_file_filtering ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -676,6 +754,10 @@ tree_profiling (void)
 	 will get acocunted), testsuite expects that.  */
       if (DECL_EXTERNAL (node->decl)
 	  && flag_test_coverage)
+	continue;
+
+      const char *file = LOCATION_FILE (DECL_SOURCE_LOCATION (node->decl));
+      if (!include_source_file_for_profile (file))
 	continue;
 
       push_cfun (DECL_STRUCT_FUNCTION (node->decl));
@@ -705,6 +787,8 @@ tree_profiling (void)
       free_dominance_info (CDI_POST_DOMINATORS);
       pop_cfun ();
     }
+
+  release_profile_file_filtering ();
 
   /* Drop pure/const flags from instrumented functions.  */
   if (profile_arc_flag || flag_test_coverage)
