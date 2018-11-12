@@ -421,7 +421,7 @@ namespace pmr
     // The chunk has space for n blocks, followed by a bitset of size n
     // that begins at address words.
     // This object does not own p or words, the caller will free it.
-    chunk(void* p, size_t bytes, void* words, size_t n)
+    chunk(void* p, uint32_t bytes, void* words, size_t n)
     : bitset(words, n),
       _M_bytes(bytes),
       _M_p(static_cast<std::byte*>(p))
@@ -442,7 +442,7 @@ namespace pmr
     }
 
     // Allocated size of chunk:
-    unsigned _M_bytes = 0;
+    uint32_t _M_bytes = 0;
     // Start of allocated chunk:
     std::byte* _M_p = nullptr;
 
@@ -508,12 +508,9 @@ namespace pmr
     { return std::less<const void*>{}(p, c._M_p); }
   };
 
-#ifdef __LP64__
-  // TODO pad up to 4*sizeof(void*) to avoid splitting across cache lines?
-  static_assert(sizeof(chunk) == (3 * sizeof(void*)), "");
-#else
-  static_assert(sizeof(chunk) == (4 * sizeof(void*)), "");
-#endif
+  // For 64-bit this is 3*sizeof(void*) and for 32-bit it's 4*sizeof(void*).
+  // TODO pad 64-bit to 4*sizeof(void*) to avoid splitting across cache lines?
+  static_assert(sizeof(chunk) == 2 * sizeof(uint32_t) + 2 * sizeof(void*));
 
   // An oversized allocation that doesn't fit in a pool.
   struct big_block
@@ -523,7 +520,7 @@ namespace pmr
     static constexpr unsigned _S_sizebits
       = numeric_limits<size_t>::digits - _S_alignbits;
     // The maximum value that can be stored in _S_size
-    static constexpr size_t all_ones = (1ul << _S_sizebits) - 1u;
+    static constexpr size_t all_ones = (1ull << _S_sizebits) - 1u;
     // The minimum size of a big block
     static constexpr size_t min = 1u << _S_alignbits;
 

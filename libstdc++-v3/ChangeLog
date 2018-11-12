@@ -1,3 +1,11 @@
+2018-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87963
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type from
+	unsigned to uint32_t.
+	(chunk): Fix static assertion for 64-bit targets that aren't LP64.
+	(bigblock::all_ones): Fix undefined shift.
+
 2018-11-11  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libstdc++-v3/54005
