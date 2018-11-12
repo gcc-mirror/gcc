@@ -1883,14 +1883,14 @@ of relocation operator.  @var{m} should be a valid address mode.
 
 @findex high
 @item (high:@var{m} @var{exp})
-Represents the high-order bits of @var{exp}, usually a
-@code{symbol_ref}.  The number of bits is machine-dependent and is
+Represents the high-order bits of @var{exp}.  
+The number of bits is machine-dependent and is
 normally the number of bits specified in an instruction that initializes
 the high order bits of a register.  It is used with @code{lo_sum} to
 represent the typical two-instruction sequence used in RISC machines to
-reference a global memory location.
-
-@var{m} should be @code{Pmode}.
+reference large immediate values and/or link-time constants such
+as global memory addresses.  In the latter case, @var{m} is @code{Pmode}
+and @var{exp} is usually a constant expression involving @code{symbol_ref}.
 @end table
 
 @findex CONST0_RTX
@@ -2429,14 +2429,14 @@ saturates at the maximum signed value representable in @var{m};
 
 This expression represents the sum of @var{x} and the low-order bits
 of @var{y}.  It is used with @code{high} (@pxref{Constants}) to
-represent the typical two-instruction sequence used in RISC machines
-to reference a global memory location.
+represent the typical two-instruction sequence used in RISC machines to
+reference large immediate values and/or link-time constants such
+as global memory addresses.  In the latter case, @var{m} is @code{Pmode}
+and @var{y} is usually a constant expression involving @code{symbol_ref}.
 
 The number of low order bits is machine-dependent but is
-normally the number of bits in a @code{Pmode} item minus the number of
+normally the number of bits in mode @var{m} minus the number of
 bits set by @code{high}.
-
-@var{m} should be @code{Pmode}.
 
 @findex minus
 @findex ss_minus
