@@ -1,3 +1,9 @@
+2018-11-12  Renlin Li  <renlin.li@arm.com>
+
+	PR target/87815
+	* dse.c (get_stored_val): Add check for compile-time constantness
+	of gap.
+
 2018-11-12  Sudakshina Das  <sudi.das@arm.com>
 
 	* config/arm/arm-cpus.in (armv8_5, sb, predres): New features.
