@@ -1,3 +1,10 @@
+2018-11-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (set_value_range_to_nonnull): Clear equiv.
+	(set_value_range_to_null): Likewise.
+	* vr-values.c (vr_values::extract_range_from_comparison):
+	Clear equiv for constant singleton ranges.
+
 2018-11-12 Wei Xiao <wei3.xiao@intel.com>
 
 	* config/i386/sse.md: Combine VFIXUPIMM* patterns
