@@ -20422,11 +20422,17 @@ is of type @var{cpuname}
 and returns @code{0} otherwise. The following CPU names can be detected:
 
 @table @samp
+@item amd
+AMD CPU.
+
 @item intel
 Intel CPU.
 
 @item atom
 Intel Atom CPU.
+
+@item slm
+Intel Silvermont CPU.
 
 @item core2
 Intel Core 2 CPU.
@@ -20443,8 +20449,50 @@ Intel Core i7 Westmere CPU.
 @item sandybridge
 Intel Core i7 Sandy Bridge CPU.
 
-@item amd
-AMD CPU.
+@item ivybridge
+Intel Core i7 Ivy Bridge CPU.
+
+@item haswell
+Intel Core i7 Haswell CPU.
+
+@item broadwell
+Intel Core i7 Broadwell CPU.
+
+@item skylake
+Intel Core i7 Skylake CPU.
+
+@item skylake-avx512
+Intel Core i7 Skylake AVX512 CPU.
+
+@item cannonlake
+Intel Core i7 Cannon Lake CPU.
+
+@item icelake-client
+Intel Core i7 Ice Lake Client CPU.
+
+@item icelake-server
+Intel Core i7 Ice Lake Server CPU.
+
+@item bonnell
+Intel Atom Bonnell CPU.
+
+@item silvermont
+Intel Atom Silvermont CPU.
+
+@item goldmont
+Intel Atom Goldmont CPU.
+
+@item goldmont-plus
+Intel Atom Goldmont Plus CPU.
+
+@item tremont
+Intel Atom Tremont CPU.
+
+@item knl
+Intel Knights Landing CPU.
+
+@item knm
+Intel Knights Mill CPU.
 
 @item amdfam10h
 AMD Family 10h CPU.
@@ -20530,8 +20578,56 @@ SSE4.2 instructions.
 AVX instructions.
 @item avx2
 AVX2 instructions.
+@item sse4a
+SSE4A instructions.
+@item fma4
+FMA4 instructions.
+@item xop
+XOP instructions.
+@item fma
+FMA instructions.
 @item avx512f
 AVX512F instructions.
+@item bmi
+BMI instructions.
+@item bmi2
+BMI2 instructions.
+@item aes
+AES instructions.
+@item pclmul
+PCLMUL instructions.
+@item avx512vl
+AVX512VL instructions.
+@item avx512bw
+AVX512BW instructions.
+@item avx512dq
+AVX512DQ instructions.
+@item avx512cd
+AVX512CD instructions.
+@item avx512er
+AVX512ER instructions.
+@item avx512pf
+AVX512PF instructions.
+@item avx512vbmi
+AVX512VBMI instructions.
+@item avx512ifma
+AVX512IFMA instructions.
+@item avx5124vnniw
+AVX5124VNNIW instructions.
+@item avx5124fmaps
+AVX5124FMAPS instructions.
+@item avx512vpopcntdq
+AVX512VPOPCNTDQ instructions.
+@item avx512vbmi2
+AVX512VBMI2 instructions.
+@item gfni
+GFNI instructions.
+@item vpclmulqdq
+VPCLMULQDQ instructions.
+@item avx512vnni
+AVX512VNNI instructions.
+@item avx512bitalg
+AVX512BITALG instructions.
 @end table
 
 Here is an example:

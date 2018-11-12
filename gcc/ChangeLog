@@ -1,3 +1,9 @@
+2018-11-12  Martin Liska  <mliska@suse.cz>
+
+	PR target/87903
+	* doc/extend.texi: Add missing values for __builtin_cpu_is and
+	__builtin_cpu_supports for x86 target.
+
 2018-11-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/21110
