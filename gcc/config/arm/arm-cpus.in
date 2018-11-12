@@ -114,6 +114,9 @@ define feature armv8_3
 # Architecture rel 8.4.
 define feature armv8_4
 
+# Architecture rel 8.5.
+define feature armv8_5
+
 # M-Profile security extensions.
 define feature cmse
 
@@ -173,6 +176,14 @@ define feature quirk_cm3_ldrd
 
 # (Very) slow multiply operations.  Should probably be a tuning bit.
 define feature smallmul
+
+# Speculation Barrier Instruction for v8-A architectures, added by
+# default to v8.5-A
+define feature sb
+
+# Execution and Data Prediction Restriction Instruction for
+# v8-A architectures, added by default from v8.5-A
+define feature predres
 
 # Feature groups.  Conventionally all (or mostly) upper case.
 # ALL_FPU lists all the feature bits associated with the floating-point
@@ -235,6 +246,7 @@ define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
 define fgroup ARMv8_2a    ARMv8_1a armv8_2
 define fgroup ARMv8_3a    ARMv8_2a armv8_3
 define fgroup ARMv8_4a    ARMv8_3a armv8_4
+define fgroup ARMv8_5a    ARMv8_4a armv8_5 sb predres
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
@@ -505,6 +517,8 @@ begin arch armv8-a
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8-a
 
 begin arch armv8.1-a
@@ -517,6 +531,8 @@ begin arch armv8.1-a
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8.1-a
 
 begin arch armv8.2-a
@@ -532,6 +548,8 @@ begin arch armv8.2-a
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
+ option sb add sb
+ option predres add predres
 end arch armv8.2-a
 
 begin arch armv8.3-a
@@ -547,6 +565,8 @@ begin arch armv8.3-a
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
+ option sb add sb
+ option predres add predres
 end arch armv8.3-a
 
 begin arch armv8.4-a
@@ -560,7 +580,22 @@ begin arch armv8.4-a
  option crypto add FP_ARMv8 CRYPTO DOTPROD
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8.4-a
+
+begin arch armv8.5-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_5a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8.5-a
 
 begin arch armv8-m.base
  tune for cortex-m23

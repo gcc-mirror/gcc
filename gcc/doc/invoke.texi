@@ -16500,6 +16500,7 @@ Permissible names are:
 @samp{armv7}, @samp{armv7-a}, @samp{armv7ve}, 
 @samp{armv8-a}, @samp{armv8.1-a}, @samp{armv8.2-a}, @samp{armv8.3-a},
 @samp{armv8.4-a},
+@samp{armv8.5-a},
 @samp{armv7-r},
 @samp{armv8-r},
 @samp{armv6-m}, @samp{armv6s-m},
@@ -16676,6 +16677,10 @@ The cryptographic instructions.
 Disable the cryptographic instructions.
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
+@item +sb
+Speculation Barrier Instruction.
+@item +predres
+Execution and Data Prediction Restriction Instructions.
 @end table
 
 @item armv8.1-a
@@ -16692,6 +16697,12 @@ Disable the cryptographic instructions.
 
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +sb
+Speculation Barrier Instruction.
+
+@item +predres
+Execution and Data Prediction Restriction Instructions.
 @end table
 
 @item armv8.2-a
@@ -16721,9 +16732,44 @@ Disable the cryptographic extension.
 
 @item +nofp
 Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +sb
+Speculation Barrier Instruction.
+
+@item +predres
+Execution and Data Prediction Restriction Instructions.
 @end table
 
 @item armv8.4-a
+@table @samp
+@item +fp16
+The half-precision floating-point data processing instructions.
+This also enables the Advanced SIMD and floating-point instructions as well
+as the Dot Product extension and the half-precision floating-point fmla
+extension.
+
+@item +simd
+The ARMv8.3-A Advanced SIMD and floating-point instructions as well as the
+Dot Product extension.
+
+@item +crypto
+The cryptographic instructions.  This also enables the Advanced SIMD and
+floating-point instructions as well as the Dot Product extension.
+
+@item +nocrypto
+Disable the cryptographic extension.
+
+@item +nofp
+Disable the floating-point, Advanced SIMD and cryptographic instructions.
+
+@item +sb
+Speculation Barrier Instruction.
+
+@item +predres
+Execution and Data Prediction Restriction Instructions.
+@end table
+
+@item armv8.5-a
 @table @samp
 @item +fp16
 The half-precision floating-point data processing instructions.

@@ -1,3 +1,8 @@
+2018-11-12  Sudakshina Das  <sudi.das@arm.com>
+
+	* gcc.target/arm/multilib.exp: Add some -march=armv8.5-a
+	combination tests.
+
 2018-11-11  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* gcc.target/csky/fnmul-1.c: New.

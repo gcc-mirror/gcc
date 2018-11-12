@@ -70,6 +70,7 @@ v8_a_simd_variants	:= $(call all_feat_combs, simd crypto)
 v8_1_a_simd_variants	:= $(call all_feat_combs, simd crypto)
 v8_2_a_simd_variants	:= $(call all_feat_combs, simd fp16 fp16fml crypto dotprod)
 v8_4_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
+v8_5_a_simd_variants	:= $(call all_feat_combs, simd fp16 crypto)
 v8_r_nosimd_variants	:= +crc
 
 ifneq (,$(HAS_APROFILE))
@@ -162,6 +163,13 @@ MULTILIB_MATCHES	+= march?armv7=march?armv8.4-a
 # Map all v8.4-a SIMD variants
 MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_4_a_simd_variants), \
 			     march?armv7+fp=march?armv8.4-a$(ARCH))
+
+# Baseline v8.5-a: map down to baseline v8-a
+MULTILIB_MATCHES	+= march?armv7=march?armv8.5-a
+
+# Map all v8.5-a SIMD variants
+MULTILIB_MATCHES	+= $(foreach ARCH, $(v8_5_a_simd_variants), \
+			     march?armv7+fp=march?armv8.5-a$(ARCH))
 
 # Use Thumb libraries for everything.
 
