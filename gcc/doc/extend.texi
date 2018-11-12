@@ -7101,8 +7101,11 @@ up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
-The @code{aligned} attribute can only increase alignment.  Alignment
-can be decreased by specifying the @code{packed} attribute.  See below.
+When used on a struct, or struct member, the @code{aligned} attribute can
+only increase the alignment; in order to decrease it, the @code{packed}
+attribute must be specified as well.  When used as part of a typedef, the
+@code{aligned} attribute can both increase and decrease alignment, and
+specifying the @code{packed} attribute generates a warning.
 
 @cindex @code{warn_if_not_aligned} type attribute
 @item warn_if_not_aligned (@var{alignment})
