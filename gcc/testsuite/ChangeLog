@@ -1,3 +1,10 @@
+2018-11-11  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* gcc.target/csky/fnmul-1.c: New.
+	* gcc.target/csky/fnmul-2.c: New.
+	* gcc.target/csky/fnmul-3.c: New.
+	* gcc.target/csky/fnmul-4.c: New.
+
 2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/87928
