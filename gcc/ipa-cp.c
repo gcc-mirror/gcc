@@ -522,7 +522,7 @@ ipcp_bits_lattice::print (FILE *f)
 void
 ipcp_vr_lattice::print (FILE * f)
 {
-  dump_value_range_base (f, &m_vr);
+  dump_value_range (f, &m_vr);
 }
 
 /* Print all ipcp_lattices of all functions to F.  */
