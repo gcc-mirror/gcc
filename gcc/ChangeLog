@@ -1,3 +1,18 @@
+2018-11-12  Sudakshina Das  <sudi.das@arm.com>
+
+	* config/arm/arm-cpus.in (armv8_5, sb, predres): New features.
+	(ARMv8_5a): New fgroup.
+	(armv8.5-a): New arch.
+	(armv8-a, armv8.1-a, armv8.2-a, armv8.3-a, armv8.4-a): New options
+	sb and predres.
+	* config/arm/arm-tables.opt: Regenerate.
+	* config/arm/t-aprofile: Add matching rules for -march=armv8.5-a
+	* config/arm/t-arm-elf (all_v8_archs): Add armv8.5-a.
+	* config/arm/t-multilib (v8_5_a_simd_variants): New variable.
+	Add matching rules for -march=armv8.5-a and extensions.
+	* doc/invoke.texi (ARM options): Document -march=armv8.5-a.
+	Add sb and predres to all armv8-a except armv8.5-a.
+
 2018-11-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.h (value_range[_base]::set): Make public.  Provide
