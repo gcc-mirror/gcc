@@ -1,3 +1,10 @@
+2018-11-11  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/69502
+	* doc/extend.texi (Common Type Attributes): For the align type
+	attribute, copy language about decreasing alignment from the
+	corresponding variable attribute.
+
 2018-11-11  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config/csky/csky.md (*fpuv2_nmulsf3_1, *fpuv2_nmuldf3_1): Handle
