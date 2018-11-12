@@ -1,3 +1,8 @@
+2018-11-12  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81824
+	* gcc.dg/Wattribute-alias.c: Require ifunc support.
+
 2018-11-12  Renlin Li  <renlin.li@arm.com>
 
 	PR target/87815
@@ -189,7 +194,6 @@
 	* gcc.dg/pr87600-1.c: New test.
 	* gcc.dg/pr87600-2.c: Likewise.
 
->>>>>>> .r265976
 2018-11-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/gomp/atomic-17.c: New test.
