@@ -896,7 +896,7 @@ vr_values::extract_range_from_comparison (value_range *vr, enum tree_code code,
 	 type.  */
       val = fold_convert (type, val);
       if (is_gimple_min_invariant (val))
-	set_value_range_to_value (vr, val, vr->equiv ());
+	set_value_range_to_value (vr, val, NULL);
       else
 	vr->update (VR_RANGE, val, val);
     }
@@ -1672,7 +1672,7 @@ vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      set_value_range_to_value (vr, chrec, vr->equiv ());
+      set_value_range_to_value (vr, chrec, NULL);
       return;
     }
 

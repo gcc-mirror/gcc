@@ -767,7 +767,7 @@ void
 set_value_range_to_nonnull (value_range *vr, tree type)
 {
   tree zero = build_int_cst (type, 0);
-  vr->update (VR_ANTI_RANGE, zero, zero);
+  set_value_range (vr, VR_ANTI_RANGE, zero, zero, NULL);
 }
 
 
@@ -776,7 +776,7 @@ set_value_range_to_nonnull (value_range *vr, tree type)
 void
 set_value_range_to_null (value_range *vr, tree type)
 {
-  set_value_range_to_value (vr, build_int_cst (type, 0), vr->equiv ());
+  set_value_range_to_value (vr, build_int_cst (type, 0), NULL);
 }
 
 /* Return true, if VAL1 and VAL2 are equal values for VRP purposes.  */
