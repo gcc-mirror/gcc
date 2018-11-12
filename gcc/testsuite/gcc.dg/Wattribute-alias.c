@@ -1,5 +1,6 @@
 /* PR middle-end/81824 - Warn for missing attributes with function aliases
    { dg-do compile }
+   { dg-require-ifunc "require ifunc support" }
    { dg-options "-Wall -Wattribute-alias=2" } */
 
 #define ATTR(...)   __attribute__ ((__VA_ARGS__))
