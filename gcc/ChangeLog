@@ -1,5 +1,36 @@
 2018-11-12  Richard Biener  <rguenther@suse.de>
 
+	* tree-vrp.h (value_range_base::symbolic_p,
+	value_range_base::constant_p, value_range_base::zero_p,
+	value_range_base::singleton_p): Move from value_range.
+	(value_range::dump): Add.
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_phis): Use set_varying.
+	* ipa-cp.c (ipcp_vr_lattice::print): Use dump_value_range.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Use set_varying.
+	* tree-vrp.c (value_range::symbolic_p): Move to value_range_base.
+	(value_range::constant_p): Likewise.
+	(value_range::singleton_p): Likewise.
+	(value_range_base::dump): Add.
+	(set_value_range_to_undefined): Remove.
+	(set_value_range_to_varying): Likewise.
+	(range_int_cst_p): Take value_range_base argument.
+	(range_int_cst_singleton_p): Likewise.
+	(value_range_constant_singleton): Likewise.
+	(vrp_set_zero_nonzero_bits): Likewise.
+	(extract_range_from_multiplicative_op): Use set_varying.
+	(extract_range_from_binary_expr_1): Likewise. Use set_undefined.
+	(extract_range_from_unary_expr): Likewise.
+	(dump_value_range_base): Change to overload of dump_value_range.
+	(vrp_prop::vrp_initialize): Use set_varying and set_undefined.
+	(vrp_prop::visit_stmt): Likewise.
+	(value_range::intersect_helper): Likewise.
+	(value_range::union_helper): Likewise.
+	(determine_value_range_1): Likewise.
+
+2018-11-12  Richard Biener  <rguenther@suse.de>
+
 	* tree-vrp.c (set_value_range_to_nonnull): Clear equiv.
 	(set_value_range_to_null): Likewise.
 	* vr-values.c (vr_values::extract_range_from_comparison):

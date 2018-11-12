@@ -183,7 +183,7 @@ record_temporary_equivalences_from_phis (edge e,
 	  else if (TREE_CODE (src) == INTEGER_CST)
 	    set_value_range_to_value (new_vr, src,  NULL);
 	  else
-	    set_value_range_to_varying (new_vr);
+	    new_vr->set_varying ();
 
 	  /* This is a temporary range for DST, so push it.  */
 	  evrp_range_analyzer->push_value_range (dst, new_vr);

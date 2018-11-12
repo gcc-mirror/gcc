@@ -64,7 +64,7 @@ static inline void
 set_value_range_to_truthvalue (value_range *vr, tree type)
 {
   if (TYPE_PRECISION (type) == 1)
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
   else
     vr->update (VR_RANGE, build_int_cst (type, 0), build_int_cst (type, 1));
 }
@@ -126,7 +126,7 @@ vr_values::get_value_range (const_tree var)
 		vr->set_varying ();
 	    }
 	  else
-	    set_value_range_to_varying (vr);
+	    vr->set_varying ();
 	}
       else if (TREE_CODE (sym) == RESULT_DECL
 	       && DECL_BY_REFERENCE (sym))
@@ -148,7 +148,7 @@ vr_values::set_defs_to_varying (gimple *stmt)
       value_range *vr = get_value_range (def);
       /* Avoid writing to vr_const_varying get_value_range may return.  */
       if (!vr->varying_p ())
-	set_value_range_to_varying (vr);
+	vr->set_varying ();
     }
 }
 
@@ -192,8 +192,8 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 called.  */
       if (new_vr->undefined_p ())
 	{
-	  set_value_range_to_varying (old_vr);
-	  set_value_range_to_varying (new_vr);
+	  old_vr->set_varying ();
+	  new_vr->set_varying ();
 	  return true;
 	}
       else
@@ -387,7 +387,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
   if ((POINTER_TYPE_P (type) && cond_code != NE_EXPR && cond_code != EQ_EXPR)
       || limit == var)
     {
-      set_value_range_to_varying (vr_p);
+      vr_p->set_varying ();
       return;
     }
 
@@ -547,7 +547,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 	 all should be optimized away above us.  */
       if (cond_code == LT_EXPR
 	  && compare_values (max, min) == 0)
-	set_value_range_to_varying (vr_p);
+	vr_p->set_varying ();
       else
 	{
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
@@ -587,7 +587,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 	 all should be optimized away above us.  */
       if (cond_code == GT_EXPR
 	  && compare_values (min, max) == 0)
-	set_value_range_to_varying (vr_p);
+	vr_p->set_varying ();
       else
 	{
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
@@ -694,14 +694,14 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
   else if (is_gimple_min_invariant (op0))
     set_value_range_to_value (&vr0, op0, NULL);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(get_value_range (op1));
   else if (is_gimple_min_invariant (op1))
     set_value_range_to_value (&vr1, op1, NULL);
   else
-    set_value_range_to_varying (&vr1);
+    vr1.set_varying ();
 
   /* If one argument is varying, we can sometimes still deduce a
      range for the output: any + [3, +INF] is in [MIN+3, +INF].  */
@@ -839,7 +839,7 @@ vr_values::extract_range_from_unary_expr (value_range *vr, enum tree_code code,
   else if (is_gimple_min_invariant (op0))
     set_value_range_to_value (&vr0, op0, NULL);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   ::extract_range_from_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
 }
@@ -860,7 +860,7 @@ vr_values::extract_range_from_cond_expr (value_range *vr, gassign *stmt)
   else if (is_gimple_min_invariant (op0))
     set_value_range_to_value (&vr0, op0, NULL);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   tree op1 = gimple_assign_rhs3 (stmt);
   value_range vr1;
@@ -869,7 +869,7 @@ vr_values::extract_range_from_cond_expr (value_range *vr, gassign *stmt)
   else if (is_gimple_min_invariant (op1))
     set_value_range_to_value (&vr1, op1, NULL);
   else
-    set_value_range_to_varying (&vr1);
+    vr1.set_varying ();
 
   /* The resulting value range is the union of the operand ranges */
   vr->deep_copy (&vr0);
@@ -921,14 +921,14 @@ vr_values::check_for_binary_op_overflow (enum tree_code subcode, tree type,
   else if (TREE_CODE (op0) == INTEGER_CST)
     set_value_range_to_value (&vr0, op0, NULL);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *get_value_range (op1);
   else if (TREE_CODE (op1) == INTEGER_CST)
     set_value_range_to_value (&vr1, op1, NULL);
   else
-    set_value_range_to_varying (&vr1);
+    vr1.set_varying ();
 
   tree vr0min = vr0.min (), vr0max = vr0.max ();
   tree vr1min = vr1.min (), vr1max = vr1.max ();
@@ -1256,7 +1256,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	  if (vr->kind () == VR_RANGE
 	      && (vr->min () == vr->max ()
 		  || operand_equal_p (vr->min (), vr->max (), 0)))
-	    set_value_range_to_varying (vr);
+	    vr->set_varying ();
 	  return;
 	}
     }
@@ -1314,7 +1314,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 						  NULL);
 		      else if (TYPE_PRECISION (type) == 1
 			       && !TYPE_UNSIGNED (type))
-			set_value_range_to_varying (vr);
+			vr->set_varying ();
 		      else
 			set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
 					 build_int_cst (type, 1), NULL);
@@ -1356,7 +1356,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
   else if (vrp_stmt_computes_nonzero (stmt))
     set_value_range_to_nonnull (vr, type);
   else
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
 }
 
 
@@ -1392,7 +1392,7 @@ vr_values::extract_range_from_assignment (value_range *vr, gassign *stmt)
 	   && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
     set_value_range_to_value (vr, gimple_assign_rhs1 (stmt), NULL);
   else
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
 
   if (vr->varying_p ())
     extract_range_basic (vr, stmt);
@@ -2875,7 +2875,7 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
   goto update_range;
 
 varying:
-  set_value_range_to_varying (vr_result);
+  vr_result->set_varying ();
 
 scev_check:
   /* If this is a loop PHI node SCEV may known more about its value-range.
@@ -2896,7 +2896,7 @@ infinite_check:
 	   || compare_values (vr_result->min (), vr_result->max ()) > 0))
     ;
   else
-    set_value_range_to_varying (vr_result);
+    vr_result->set_varying ();
 
   /* If the new range is different than the previous value, keep
      iterating.  */
