@@ -1,3 +1,7 @@
+2018-11-12  Fredrik Noring  <noring@nocrew.org>
+
+	* config.gcc: Update with-llsc defaults for MIPS r5900.
+
 2018-11-12  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/87442
