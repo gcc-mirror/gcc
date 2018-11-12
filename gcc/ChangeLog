@@ -1,3 +1,7 @@
+2018-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/mcore/mcore.h (WORD_REGISTER_OPERATIONS): Remove duplicate.
+
 2018-11-12  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.h (value_range_base::symbolic_p,
