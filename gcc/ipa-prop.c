@@ -1885,12 +1885,10 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      && (type = get_range_info (arg, &min, &max))
 	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
-	      /* ???  We'd want to use value_range_base here but the
-	         VRP workers need to be adjusted first.  */
-	      value_range resvr;
-	      value_range tmpvr (type,
-				 wide_int_to_tree (TREE_TYPE (arg), min),
-				 wide_int_to_tree (TREE_TYPE (arg), max));
+	      value_range_base resvr;
+	      value_range_base tmpvr (type,
+				      wide_int_to_tree (TREE_TYPE (arg), min),
+				      wide_int_to_tree (TREE_TYPE (arg), max));
 	      extract_range_from_unary_expr (&resvr, NOP_EXPR, param_type,
 					     &tmpvr, TREE_TYPE (arg));
 	      if (!resvr.undefined_p () && !resvr.varying_p ())

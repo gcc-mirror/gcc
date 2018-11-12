@@ -97,7 +97,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 	  && vrp_operand_equal_p (old_vr->max (), vr.max ()))
 	return NULL;
       value_range *new_vr = vr_values->allocate_value_range ();
-      *new_vr = vr;
+      new_vr->move (&vr);
       return new_vr;
     }
   return NULL;
@@ -319,8 +319,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */
 	      value_range *new_vr = vr_values->allocate_value_range ();
-	      *new_vr = vr;
-	      new_vr->equiv_clear ();
+	      new_vr->set (vr.kind (), vr.min (), vr.max ());
+	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }
 	}

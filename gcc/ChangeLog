@@ -1,3 +1,76 @@
+2018-11-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.h (value_range[_base]::set): Make public.  Provide
+	overload for single value.
+	(value_range[_base]::set_nonnull): New.
+	(value_range[_base]::set_null): Likewise.
+	(value_range): Document bitmap copying behavior, mark
+	copy constructor and assignment operator deleted.
+	(value_range::move): New.
+	(value_range::set_and_canonicalize): Default bitmap to zero.
+	(set_value_range_to_nonnull): Remove.
+	(set_value_range_to_null): Likewise.
+	(set_value_range): Likewise.
+	(set_value_range_to_value): Likewise.
+	(extract_range_from_unary_expr): Work on value_range_base.
+	(extract_range_from_binary_expr_1): Likewise.  Rename to...
+	(extract_range_from_binary_expr): ... this.
+	* tree-vrp.c (value_range::update): Clear equiv bitmap
+	if required.
+	(value_range::move): New, move equiv bitmap.
+	(value_range_base::set_undefined): Avoid assignment.
+	(value_range::set_undefined): Likewise.
+	(value_range_base::set_varying): Likewise.
+	(value_range::set_varying): Likewise.
+	(set_value_range): Remove.
+	(value_range_base::set): New overload for value.
+	(value_range::set): Likewise.
+	(set_value_range_to_nonnull): Remove.
+	(value_range_base::set_nonnull): New.
+	(value_range::set_nonnull): Likewise.
+	(set_value_range_to_null): Remove.
+	(value_range_base::set_null): New.
+	(value_range::set_null): Likewise.
+	(range_is_null): Work on value_range_base.
+	(range_is_nonnull): Likewise.
+	(ranges_from_anti_range): Likewise.
+	(extract_range_into_wide_ints): Likewise.
+	(extract_range_from_multiplicative_op): Likewise.
+	(extract_range_from_binary_expr): Likewise.  Update for API changes.
+	(extract_range_from_unary_expr): Likewise.  Remove OBJ_TYPE_REF
+	handling.
+	(value_range::intersect_helper): Avoid copy and assignment.
+	(value_range::union_helper): Likewise.
+	(determine_value_range_1): Adjust.
+	* gimple-ssa-evrp-analyze.c (evrp_range_analyzer::try_find_new_range):
+	Avoid assignment by using move.
+	(evrp_range_analyzer::record_ranges_from_stmt): Avoid assignment.
+	* tree-ssa-threadedge.c (record_temporary_equivalences_from_phis):
+	Likewise.
+	* tree-ssanames.c (get_range_info): Likewise.
+	* vr-values.h (vr_values::get_vr_for_comparison): Adjust API.
+	* vr-values.c (vr_values::get_value_range): Adjust.
+	(vr_values::update_value_range): Likewise.
+	(symbolic_range_based_on_p): Work on value_range_base.
+	(vr_values::extract_range_from_binary_expr): Use value_range_base.
+	(vr_values::extract_range_from_unary_expr): Likewise.
+	(vr_values::extract_range_from_cond_expr): Avoid assignment.
+	(vr_values::extract_range_from_comparison): Adjust.
+	(vr_values::check_for_binary_op_overflow): Use value_range_base.
+	(vr_values::extract_range_basic): Adjust.
+	(vr_values::adjust_range_with_scev): Likewise.
+	(vr_values::vrp_visit_assignment_or_call): Likewise.
+	(vr_values::get_vr_for_comparison): Change API to avoid
+	assignment and copy construction.
+	(vr_values::compare_name_with_value): Adjust accordingly.
+	(vr_values::compare_names): Likewise.
+	(vr_values::extract_range_from_phi_node): Avoid assignment and
+	bogus in-place modify of equiv bitmap.
+	(vr_values::simplify_bit_ops_using_ranges): Use value_range_base.
+	* ipa-prop.c (ipa_compute_jump_functions_for_edge): Adjust
+	for extract_range_from_unary_expr API change.
+	* ipa-cp.c (ipa_vr_operation_and_type_effects): Likewise.
+
 2018-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/mcore/mcore.h (WORD_REGISTER_OPERATIONS): Remove duplicate.
