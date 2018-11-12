@@ -6522,6 +6522,17 @@ proc check_effective_target_sync_long_long { } {
     }
 }
 
+# Return 1 if the target supports popcount on long.
+
+proc check_effective_target_popcountl { } {
+    return [check_no_messages_and_pattern popcountl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_popcountl (b);
+	  }
+    } "" ]
+}
+
 # Return 1 if the target supports atomic operations on "long long"
 # and can execute them.
 #
