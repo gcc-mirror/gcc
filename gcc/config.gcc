@@ -3795,13 +3795,13 @@ fi
 # Infer a default setting for --with-llsc.
 if test x$with_llsc = x; then
   case ${target} in
-    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
-      # The R5900 doesn't support LL(D) and SC(D).
-      with_llsc=no
-      ;;
     mips*-*-linux*)
       # The kernel emulates LL and SC where necessary.
       with_llsc=yes
+      ;;
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 doesn't support LL(D) and SC(D).
+      with_llsc=no
       ;;
   esac
 fi
