@@ -1,3 +1,10 @@
+2018-11-12  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/21110
+	* doc/rtl.texi (Constants): Clarify that mode of "high" doesn't
+	have to be Pmode.
+	(Arithmetic): Likewise for "lo_sum".
+
 2018-11-12  Renlin Li  <renlin.li@arm.com>
 
 	PR target/87815
