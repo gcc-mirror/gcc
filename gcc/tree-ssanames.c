@@ -447,7 +447,7 @@ get_range_info (const_tree name, value_range &vr)
       min = wide_int_to_tree (TREE_TYPE (name), wmin);
       max = wide_int_to_tree (TREE_TYPE (name), wmax);
     }
-  vr = value_range (kind, min, max);
+  vr.set (kind, min, max);
   return kind;
 }
 

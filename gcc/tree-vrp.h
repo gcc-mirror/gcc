@@ -44,6 +44,11 @@ public:
   value_range_base ();
   value_range_base (value_range_kind, tree, tree);
 
+  void set (value_range_kind, tree, tree);
+  void set (tree);
+  void set_nonnull (tree);
+  void set_null (tree);
+
   enum value_range_kind kind () const;
   tree min () const;
   tree max () const;
@@ -71,7 +76,6 @@ public:
   void dump () const;
 
 protected:
-  void set (value_range_kind, tree, tree);
   void check ();
 
   enum value_range_kind m_kind;
@@ -96,8 +100,25 @@ class GTY((user)) value_range : public value_range_base
  public:
   value_range ();
   value_range (const value_range_base &);
+  /* Deep-copies equiv bitmap argument.  */
   value_range (value_range_kind, tree, tree, bitmap = NULL);
+
+  /* Shallow-copies equiv bitmap.  */
+  value_range (const value_range &) /* = delete */;
+  /* Shallow-copies equiv bitmap.  */
+  value_range& operator=(const value_range&) /* = delete */;
+
+  /* Move equiv bitmap from source range.  */
+  void move (value_range *);
+
+  /* Leaves equiv bitmap alone.  */
   void update (value_range_kind, tree, tree);
+  /* Deep-copies equiv bitmap argument.  */
+  void set (value_range_kind, tree, tree, bitmap = NULL);
+  void set (tree);
+  void set_nonnull (tree);
+  void set_null (tree);
+
   bool operator== (const value_range &) const;
   bool operator!= (const value_range &) const;
   void intersect (const value_range *);
@@ -114,12 +135,12 @@ class GTY((user)) value_range : public value_range_base
 
   /* Misc methods.  */
   void deep_copy (const value_range *);
-  void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap);
+  void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap = NULL);
   void dump (FILE *) const;
   void dump () const;
 
  private:
-  void set (value_range_kind, tree, tree, bitmap);
+  /* Deep-copies bitmap argument.  */
   void set_equiv (bitmap);
   void check ();
   bool equal_p (const value_range &, bool ignore_equivs) const;
@@ -225,12 +246,6 @@ extern bool stmt_interesting_for_vrp (gimple *);
 extern bool range_includes_zero_p (const value_range_base *);
 extern bool infer_value_range (gimple *, tree, tree_code *, tree *);
 
-extern void set_value_range_to_nonnull (value_range *, tree);
-extern void set_value_range_to_null (value_range *, tree);
-extern void set_value_range (value_range *, enum value_range_kind, tree,
-			     tree, bitmap);
-extern void set_value_range_to_value (value_range *, tree, bitmap);
-
 extern bool vrp_bitmap_equal_p (const_bitmap, const_bitmap);
 
 extern tree value_range_constant_singleton (const value_range_base *);
@@ -247,14 +262,15 @@ extern int value_inside_range (tree, tree, tree);
 extern tree vrp_val_min (const_tree);
 extern tree vrp_val_max (const_tree);
 
-extern void extract_range_from_unary_expr (value_range *vr,
+extern void extract_range_from_unary_expr (value_range_base *vr,
 					   enum tree_code code,
 					   tree type,
-					   const value_range *vr0_,
+					   const value_range_base *vr0_,
 					   tree op0_type);
-extern void extract_range_from_binary_expr_1 (value_range *, enum tree_code,
-					      tree, const value_range *,
-					      const value_range *);
+extern void extract_range_from_binary_expr (value_range_base *,
+					    enum tree_code,
+					    tree, const value_range_base *,
+					    const value_range_base *);
 
 extern bool vrp_operand_equal_p (const_tree, const_tree);
 extern enum value_range_kind intersect_range_with_nonzero_bits
