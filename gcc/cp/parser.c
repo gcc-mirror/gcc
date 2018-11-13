@@ -10395,6 +10395,17 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  continue;
 	}
 
+      bool init_pack_expansion = false;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
+	{
+	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+	  if (cxx_dialect < cxx2a)
+	    pedwarn (loc, 0, "pack init-capture only available with "
+			     "-std=c++2a or -std=gnu++2a");
+	  cp_lexer_consume_token (parser->lexer);
+	  init_pack_expansion = true;
+	}
+
       /* Remember whether we want to capture as a reference or not.  */
       if (cp_lexer_next_token_is (parser->lexer, CPP_AND))
 	{
@@ -10438,6 +10449,8 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	      error ("empty initializer for lambda init-capture");
 	      capture_init_expr = error_mark_node;
 	    }
+	  if (init_pack_expansion)
+	    capture_init_expr = make_pack_expansion (capture_init_expr);
 	}
       else
 	{

@@ -12151,7 +12151,7 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 	       where it isn't expected).  */
 	    unsubstituted_fn_pack = true;
 	}
-      else if (is_normal_capture_proxy (parm_pack))
+      else if (is_capture_proxy (parm_pack))
 	{
 	  arg_pack = retrieve_local_specialization (parm_pack);
 	  if (argument_pack_element_is_expansion_p (arg_pack, 0))
@@ -16769,6 +16769,55 @@ tsubst_decomp_names (tree decl, tree pattern_decl, tree args,
   return decl;
 }
 
+/* Return the proper local_specialization for init-capture pack DECL.  */
+
+static tree
+lookup_init_capture_pack (tree decl)
+{
+  /* We handle normal pack captures by forwarding to the specialization of the
+     captured parameter.  We can't do that for pack init-captures; we need them
+     to have their own local_specialization.  We created the individual
+     VAR_DECLs (if any) under build_capture_proxy, and we need to collect them
+     when we process the DECL_EXPR for the pack init-capture in the template.
+     So, how do we find them?  We don't know the capture proxy pack when
+     building the individual resulting proxies, and we don't know the
+     individual proxies when instantiating the pack.  What we have in common is
+     the FIELD_DECL.
+
+     So...when we instantiate the FIELD_DECL, we stick the result in
+     local_specializations.  Then at the DECL_EXPR we look up that result, see
+     how many elements it has, synthesize the names, and look them up.  */
+
+  tree cname = DECL_NAME (decl);
+  tree val = DECL_VALUE_EXPR (decl);
+  tree field = TREE_OPERAND (val, 1);
+  gcc_assert (TREE_CODE (field) == FIELD_DECL);
+  tree fpack = retrieve_local_specialization (field);
+  if (fpack == error_mark_node)
+    return error_mark_node;
+
+  int len = 1;
+  tree vec = NULL_TREE;
+  tree r = NULL_TREE;
+  if (TREE_CODE (fpack) == TREE_VEC)
+    {
+      len = TREE_VEC_LENGTH (fpack);
+      vec = make_tree_vec (len);
+      r = make_node (NONTYPE_ARGUMENT_PACK);
+      SET_ARGUMENT_PACK_ARGS (r, vec);
+    }
+  for (int i = 0; i < len; ++i)
+    {
+      tree ename = vec ? make_ith_pack_parameter_name (cname, i) : cname;
+      tree elt = lookup_name_real (ename, 0, 0, true, 0, LOOKUP_NORMAL);
+      if (vec)
+	TREE_VEC_ELT (vec, i) = elt;
+      else
+	r = elt;
+    }
+  return r;
+}
+
 /* Like tsubst_copy for expressions, etc. but also does semantic
    processing.  */
 
@@ -16854,18 +16903,21 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	    /* We're in tsubst_lambda_expr, we've already inserted a new
 	       capture proxy, so look it up and register it.  */
 	    tree inst;
-	    if (DECL_PACK_P (decl))
+	    if (!DECL_PACK_P (decl))
+	      {
+		inst = lookup_name_real (DECL_NAME (decl), 0, 0,
+					 /*block_p=*/true, 0, LOOKUP_HIDDEN);
+		gcc_assert (inst != decl && is_capture_proxy (inst));
+	      }
+	    else if (is_normal_capture_proxy (decl))
 	      {
 		inst = (retrieve_local_specialization
 			(DECL_CAPTURED_VARIABLE (decl)));
 		gcc_assert (TREE_CODE (inst) == NONTYPE_ARGUMENT_PACK);
 	      }
 	    else
-	      {
-		inst = lookup_name_real (DECL_NAME (decl), 0, 0,
-					 /*block_p=*/true, 0, LOOKUP_HIDDEN);
-		gcc_assert (inst != decl && is_capture_proxy (inst));
-	      }
+	      inst = lookup_init_capture_pack (decl);
+
 	    register_local_specialization (inst, decl);
 	    break;
 	  }
@@ -17812,13 +17864,22 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   gcc_assert (LAMBDA_EXPR_THIS_CAPTURE (t) == NULL_TREE
 	      && LAMBDA_EXPR_PENDING_PROXIES (t) == NULL);
 
+  vec<tree,va_gc>* field_packs = NULL;
+
   for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (t); cap;
        cap = TREE_CHAIN (cap))
     {
-      tree field = TREE_PURPOSE (cap);
-      if (PACK_EXPANSION_P (field))
-	field = PACK_EXPANSION_PATTERN (field);
-      field = tsubst_decl (field, args, complain);
+      tree ofield = TREE_PURPOSE (cap);
+      if (PACK_EXPANSION_P (ofield))
+	ofield = PACK_EXPANSION_PATTERN (ofield);
+      tree field = tsubst_decl (ofield, args, complain);
+
+      if (DECL_PACK_P (ofield) && !DECL_NORMAL_CAPTURE_P (ofield))
+	{
+	  /* Remember these for when we've pushed local_specializations.  */
+	  vec_safe_push (field_packs, ofield);
+	  vec_safe_push (field_packs, field);
+	}
 
       if (field == error_mark_node)
 	return error_mark_node;
@@ -17907,6 +17968,16 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       local_specialization_stack s (lss_copy);
 
       tree body = start_lambda_function (fn, r);
+
+      /* Now record them for lookup_init_capture_pack.  */
+      int fplen = vec_safe_length (field_packs);
+      for (int i = 0; i < fplen; )
+	{
+	  tree pack = (*field_packs)[i++];
+	  tree inst = (*field_packs)[i++];
+	  register_local_specialization (inst, pack);
+	}
+      release_tree_vector (field_packs);
 
       register_parameter_specializations (oldfn, fn);
 

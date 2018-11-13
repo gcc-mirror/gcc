@@ -1,5 +1,13 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	Implement P0780R2, pack expansion in lambda init-capture.
+	* parser.c (cp_parser_lambda_introducer): Parse pack init-capture.
+	* pt.c (tsubst_pack_expansion): Handle init-capture packs.
+	(lookup_init_capture_pack): New.
+	(tsubst_expr) [DECL_EXPR]: Use it.
+	(tsubst_lambda_expr): Remember field pack expansions for
+	init-captures.
+
 	* cp-tree.h (struct cp_evaluated): New.
 	* init.c (get_nsdmi): Use it.
 	* parser.c (cp_parser_enclosed_template_argument_list): Use it.
