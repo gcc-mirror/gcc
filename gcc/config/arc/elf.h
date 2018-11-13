@@ -78,3 +78,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC				\
   "--start-group %G %{!specs=*:%{!nolibc:-lc -lnosys}} --end-group"
+
+/* Emit rtl for profiling.  Output assembler code to FILE
+   to call "_mcount" for profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)					\
+  {								\
+    rtx fun;							\
+    fun = gen_rtx_SYMBOL_REF (Pmode, "__mcount");		\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode);		\
+  }
