@@ -1,3 +1,9 @@
+2018-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* toplev.c (output_stack_usage): Turn test on flag_stack_usage into
+	test on stack_usage_file.
+	(lang_dependent_init): Do not open the .su file if generating LTO.
+
 2018-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87918
