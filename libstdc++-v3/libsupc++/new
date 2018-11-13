@@ -208,6 +208,18 @@ namespace std
 #endif // _GLIBCXX_HAVE_BUILTIN_LAUNDER
 #endif // C++17
 
+#if __cpp_impl_destroying_delete
+#define __cpp_lib_destroying_delete 201806L
+namespace std
+{
+  struct destroying_delete_t
+  {
+    explicit destroying_delete_t() = default;
+  };
+  inline constexpr destroying_delete_t destroying_delete{};
+}
+#endif // destroying delete
+
 #pragma GCC visibility pop
 
 #endif

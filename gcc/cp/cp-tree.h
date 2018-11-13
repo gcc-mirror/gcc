@@ -6127,6 +6127,7 @@ extern tree build_new_op			(location_t, enum tree_code,
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
+extern tree destroying_delete_p			(tree);
 extern bool usual_deallocation_fn_p		(tree);
 extern tree build_op_delete_call		(enum tree_code, tree, tree,
 						 bool, tree, tree,
@@ -6456,7 +6457,7 @@ extern void cplus_decl_attributes		(tree *, tree, int);
 extern void finish_anon_union			(tree);
 extern void cxx_post_compilation_parsing_cleanups (void);
 extern tree coerce_new_type			(tree, location_t);
-extern tree coerce_delete_type			(tree, location_t);
+extern void coerce_delete_type			(tree, location_t);
 extern void comdat_linkage			(tree);
 extern void determine_visibility		(tree);
 extern void constrain_class_visibility		(tree);

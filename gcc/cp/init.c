@@ -4782,6 +4782,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 
   tree head = NULL_TREE;
   tree do_delete = NULL_TREE;
+  bool destroying_delete = false;
 
   if (!deleting)
     {
@@ -4820,6 +4821,11 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 					complain);
       /* Call the complete object destructor.  */
       auto_delete = sfk_complete_destructor;
+      if (do_delete != error_mark_node)
+	{
+	  tree fn = get_callee_fndecl (do_delete);
+	  destroying_delete = destroying_delete_p (fn);
+	}
     }
   else if (TYPE_GETS_REG_DELETE (type))
     {
@@ -4832,7 +4838,7 @@ build_delete (tree otype, tree addr, special_function_kind auto_delete,
 			    complain);
     }
 
-  if (type_build_dtor_call (type))
+  if (!destroying_delete && type_build_dtor_call (type))
     expr = build_dtor_call (cp_build_fold_indirect_ref (addr),
 			    auto_delete, flags, complain);
   else
