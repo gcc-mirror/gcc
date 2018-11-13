@@ -1,5 +1,15 @@
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc (munge_options): Round up value of
+	largest_required_pool_block to multiple of smallest pool size. Round
+	excessively large values down to largest pool size.
+	(select_num_pools): Increase number of pools by one unless it exactly
+	matches requested largest_required_pool_block.
+	(__pool_resource::_M_alloc_pools()): Make largest pool size equal
+	largest_required_pool_block.
+	* testsuite/20_util/unsynchronized_pool_resource/options.cc: Check
+	that pool_options::largest_required_pool_block is set appropriately.
+
 	* src/c++17/memory_resource.cc (big_block): Improve comments.
 	(big_block::all_ones): Remove.
 	(big_block::big_block(size_t, size_t)): Use alloc_size.

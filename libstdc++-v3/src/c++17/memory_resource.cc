@@ -830,6 +830,19 @@ namespace pmr
 
   namespace {
 
+  constexpr size_t pool_sizes[] = {
+      8, 16, 24,
+      32, 48,
+      64, 80, 96, 112,
+      128, 192,
+      256, 320, 384, 448,
+      512, 768,
+      1024, 1536,
+      2048, 3072,
+      1<<12, 1<<13, 1<<14, 1<<15, 1<<16, 1<<17,
+      1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
+  };
+
   pool_options
   munge_options(pool_options opts)
   {
@@ -860,28 +873,24 @@ namespace pmr
       }
     else
       {
-	// TODO round to preferred granularity ?
+	// Round to preferred granularity
+	static_assert(std::__ispow2(pool_sizes[0]));
+	constexpr size_t mask = pool_sizes[0] - 1;
+	opts.largest_required_pool_block += mask;
+	opts.largest_required_pool_block &= ~mask;
       }
 
     if (opts.largest_required_pool_block < big_block::min)
       {
 	opts.largest_required_pool_block = big_block::min;
       }
+    else if (opts.largest_required_pool_block > std::end(pool_sizes)[-1])
+      {
+	// Setting _M_opts to the largest pool allows users to query it:
+	opts.largest_required_pool_block = std::end(pool_sizes)[-1];
+      }
     return opts;
   }
-
-  const size_t pool_sizes[] = {
-      8, 16, 24,
-      32, 48,
-      64, 80, 96, 112,
-      128, 192,
-      256, 320, 384, 448,
-      512, 768,
-      1024, 1536,
-      2048, 3072,
-      1<<12, 1<<13, 1<<14, 1<<15, 1<<16, 1<<17,
-      1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
-  };
 
   inline int
   pool_index(size_t block_size, int npools)
@@ -898,9 +907,10 @@ namespace pmr
   {
     auto p = std::lower_bound(std::begin(pool_sizes), std::end(pool_sizes),
 			      opts.largest_required_pool_block);
-    if (int npools = p - std::begin(pool_sizes))
-      return npools;
-    return 1;
+    const int n = p - std::begin(pool_sizes);
+    if (p == std::end(pool_sizes) || *p == opts.largest_required_pool_block)
+      return n;
+    return n + 1;
   }
 
   } // namespace
@@ -971,7 +981,11 @@ namespace pmr
     _Pool* p = alloc.allocate(_M_npools);
     for (int i = 0; i < _M_npools; ++i)
       {
-	const size_t block_size = pool_sizes[i];
+	// For last pool use largest_required_pool_block
+	const size_t block_size = (i+1 == _M_npools)
+	  ? _M_opts.largest_required_pool_block
+	  : pool_sizes[i];
+
 	// Decide on initial number of blocks per chunk.
 	// Always have at least 16 blocks per chunk:
 	const size_t min_blocks_per_chunk = 16;
