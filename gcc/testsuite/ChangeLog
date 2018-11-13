@@ -1,3 +1,8 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87967
+	* g++.dg/opt/pr87967.C: New testcase.
+
 2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* gcc.target/arc/builtin_eh.c: New test.

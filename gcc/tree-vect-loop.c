@@ -8264,7 +8264,7 @@ vect_transform_loop (loop_vec_info loop_vinfo)
       e = single_exit (LOOP_VINFO_SCALAR_LOOP (loop_vinfo));
       if (! single_pred_p (e->dest))
 	{
-	  split_loop_exit_edge (e);
+	  split_loop_exit_edge (e, true);
 	  if (dump_enabled_p ())
 	    dump_printf (MSG_NOTE, "split exit edge of scalar loop\n");
 	}
