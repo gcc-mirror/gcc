@@ -71,9 +71,7 @@ public:
   void set_and_canonicalize (enum value_range_kind, tree, tree);
   bool zero_p () const;
   bool singleton_p (tree *result = NULL) const;
-
   void dump (FILE *) const;
-  void dump () const;
 
 protected:
   void check ();
@@ -139,7 +137,6 @@ class GTY((user)) value_range : public value_range_base
   void deep_copy (const value_range *);
   void set_and_canonicalize (enum value_range_kind, tree, tree, bitmap = NULL);
   void dump (FILE *) const;
-  void dump () const;
 
  private:
   /* Deep-copies bitmap argument.  */

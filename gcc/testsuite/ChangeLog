@@ -1,3 +1,9 @@
+2018-11-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gcc.dg/tree-ssa/pr64130.c: Adjust for new value_range pretty
+	printer.
+	* gcc.dg/tree-ssa/vrp92.c: Same.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87931

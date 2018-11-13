@@ -365,8 +365,6 @@ value_range_base::type () const
   return TREE_TYPE (min ());
 }
 
-/* Dump value range to FILE.  */
-
 void
 value_range_base::dump (FILE *file) const
 {
@@ -374,21 +372,26 @@ value_range_base::dump (FILE *file) const
     fprintf (file, "UNDEFINED");
   else if (m_kind == VR_RANGE || m_kind == VR_ANTI_RANGE)
     {
-      tree type = TREE_TYPE (min ());
+      tree ttype = type ();
+
+      print_generic_expr (file, ttype);
+      fprintf (file, " ");
 
       fprintf (file, "%s[", (m_kind == VR_ANTI_RANGE) ? "~" : "");
 
-      if (INTEGRAL_TYPE_P (type)
-	  && !TYPE_UNSIGNED (type)
-	  && vrp_val_is_min (min ()))
+      if (INTEGRAL_TYPE_P (ttype)
+	  && !TYPE_UNSIGNED (ttype)
+	  && vrp_val_is_min (min ())
+	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "-INF");
       else
 	print_generic_expr (file, min ());
 
       fprintf (file, ", ");
 
-      if (INTEGRAL_TYPE_P (type)
-	  && vrp_val_is_max (max ()))
+      if (INTEGRAL_TYPE_P (ttype)
+	  && vrp_val_is_max (max ())
+	  && TYPE_PRECISION (ttype) != 1)
 	fprintf (file, "+INF");
       else
 	print_generic_expr (file, max ());
@@ -398,7 +401,7 @@ value_range_base::dump (FILE *file) const
   else if (varying_p ())
     fprintf (file, "VARYING");
   else
-    fprintf (file, "INVALID RANGE");
+    gcc_unreachable ();
 }
 
 void
@@ -425,17 +428,45 @@ value_range::dump (FILE *file) const
 }
 
 void
-value_range_base::dump () const
+dump_value_range (FILE *file, const value_range *vr)
 {
-  dump_value_range (stderr, this);
-  fprintf (stderr, "\n");
+  if (!vr)
+    fprintf (file, "[]");
+  else
+    vr->dump (file);
 }
 
 void
-value_range::dump () const
+dump_value_range (FILE *file, const value_range_base *vr)
 {
-  dump_value_range (stderr, this);
-  fprintf (stderr, "\n");
+  if (!vr)
+    fprintf (file, "[]");
+  else
+    vr->dump (file);
+}
+
+DEBUG_FUNCTION void
+debug (const value_range_base *vr)
+{
+  dump_value_range (stderr, vr);
+}
+
+DEBUG_FUNCTION void
+debug (const value_range_base &vr)
+{
+  dump_value_range (stderr, &vr);
+}
+
+DEBUG_FUNCTION void
+debug (const value_range *vr)
+{
+  dump_value_range (stderr, vr);
+}
+
+DEBUG_FUNCTION void
+debug (const value_range &vr)
+{
+  dump_value_range (stderr, &vr);
 }
 
 /* Return true if the SSA name NAME is live on the edge E.  */
@@ -2164,43 +2195,6 @@ extract_range_from_unary_expr (value_range_base *vr,
   vr->set_varying ();
   return;
 }
-
-/* Debugging dumps.  */
-
-void
-dump_value_range (FILE *file, const value_range *vr)
-{
-  if (!vr)
-    fprintf (file, "[]");
-  else
-    vr->dump (file);
-}
-
-void
-dump_value_range (FILE *file, const value_range_base *vr)
-{
-  if (!vr)
-    fprintf (file, "[]");
-  else
-    vr->dump (file);
-}
-
-/* Dump value range VR to stderr.  */
-
-DEBUG_FUNCTION void
-debug_value_range (const value_range_base *vr)
-{
-  dump_value_range (stderr, vr);
-}
-
-/* Dump value range VR to stderr.  */
-
-DEBUG_FUNCTION void
-debug_value_range (const value_range *vr)
-{
-  dump_value_range (stderr, vr);
-}
-
 
 /* Given a COND_EXPR COND of the form 'V OP W', and an SSA name V,
    create a new SSA name N and return the assertion assignment
