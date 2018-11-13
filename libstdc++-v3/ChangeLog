@@ -1,5 +1,8 @@
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc (_Pool::deallocate): Restore
+	attributes to parameters that are only used in assertions.
+
 	* src/c++17/memory_resource.cc (bitset::find_first_unset()): Remove
 	unused function.
 	(bitset::get_first_unset()): Remove loop, if there's are unset bits
