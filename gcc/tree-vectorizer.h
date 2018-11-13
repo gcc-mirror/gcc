@@ -775,7 +775,7 @@ struct dr_vec_info {
   int misalignment;
   /* The byte alignment that we'd ideally like the reference to have,
      and the value that misalignment is measured against.  */
-  int target_alignment;
+  poly_uint64 target_alignment;
   /* If true the alignment of base_decl needs to be increased.  */
   bool base_misaligned;
   tree base_decl;
@@ -1281,7 +1281,7 @@ vect_known_alignment_in_bytes (dr_vec_info *dr_info)
   if (DR_MISALIGNMENT (dr_info) == DR_MISALIGNMENT_UNKNOWN)
     return TYPE_ALIGN_UNIT (TREE_TYPE (DR_REF (dr_info->dr)));
   if (DR_MISALIGNMENT (dr_info) == 0)
-    return DR_TARGET_ALIGNMENT (dr_info);
+    return known_alignment (DR_TARGET_ALIGNMENT (dr_info));
   return DR_MISALIGNMENT (dr_info) & -DR_MISALIGNMENT (dr_info);
 }
 
@@ -1503,7 +1503,7 @@ extern opt_result vect_get_vector_types_for_stmt (stmt_vec_info, tree *,
 extern opt_tree vect_get_mask_type_for_stmt (stmt_vec_info);
 
 /* In tree-vect-data-refs.c.  */
-extern bool vect_can_force_dr_alignment_p (const_tree, unsigned int);
+extern bool vect_can_force_dr_alignment_p (const_tree, poly_uint64);
 extern enum dr_alignment_support vect_supportable_dr_alignment
                                            (dr_vec_info *, bool);
 extern tree vect_get_smallest_scalar_type (stmt_vec_info, HOST_WIDE_INT *,

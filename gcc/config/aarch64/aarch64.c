@@ -14187,7 +14187,7 @@ aarch64_simd_vector_alignment (const_tree type)
 }
 
 /* Implement target hook TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
-static HOST_WIDE_INT
+static poly_uint64
 aarch64_vectorize_preferred_vector_alignment (const_tree type)
 {
   if (aarch64_sve_data_mode_p (TYPE_MODE (type)))
@@ -14212,9 +14212,11 @@ aarch64_simd_vector_alignment_reachable (const_tree type, bool is_packed)
   /* For fixed-length vectors, check that the vectorizer will aim for
      full-vector alignment.  This isn't true for generic GCC vectors
      that are wider than the ABI maximum of 128 bits.  */
+  poly_uint64 preferred_alignment =
+    aarch64_vectorize_preferred_vector_alignment (type);
   if (TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (wi::to_widest (TYPE_SIZE (type))
-	  != aarch64_vectorize_preferred_vector_alignment (type)))
+      && maybe_ne (wi::to_widest (TYPE_SIZE (type)),
+		   preferred_alignment))
     return false;
 
   /* Vectors whose size is <= BIGGEST_ALIGNMENT are naturally aligned.  */

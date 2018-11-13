@@ -1567,8 +1567,9 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
 
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
-  gcc_assert (target_align != 0);
+  poly_uint64 target_align = DR_TARGET_ALIGNMENT (dr_info);
+  unsigned HOST_WIDE_INT target_align_c;
+  tree target_align_minus_1;
 
   bool negative = tree_int_cst_compare (DR_STEP (dr_info->dr),
 					size_zero_node) < 0;
@@ -1578,7 +1579,18 @@ get_misalign_in_elems (gimple **seq, loop_vec_info loop_vinfo)
   tree start_addr = vect_create_addr_base_for_vector_ref (stmt_info, seq,
 							  offset);
   tree type = unsigned_type_for (TREE_TYPE (start_addr));
-  tree target_align_minus_1 = build_int_cst (type, target_align - 1);
+  if (target_align.is_constant (&target_align_c))
+    target_align_minus_1 = build_int_cst (type, target_align_c - 1);
+  else
+    {
+      tree vla = build_int_cst (type, target_align);
+      tree vla_align = fold_build2 (BIT_AND_EXPR, type, vla,
+				    fold_build2 (MINUS_EXPR, type,
+						 build_int_cst (type, 0), vla));
+      target_align_minus_1 = fold_build2 (MINUS_EXPR, type, vla_align,
+					  build_int_cst (type, 1));
+    }
+
   HOST_WIDE_INT elem_size
     = int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
   tree elem_size_log = build_int_cst (type, exact_log2 (elem_size));
@@ -1637,7 +1649,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
   tree iters, iters_name;
   stmt_vec_info stmt_info = dr_info->stmt;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
-  unsigned int target_align = DR_TARGET_ALIGNMENT (dr_info);
+  poly_uint64 target_align = DR_TARGET_ALIGNMENT (dr_info);
 
   if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) > 0)
     {
@@ -1656,8 +1668,12 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
       tree type = TREE_TYPE (misalign_in_elems);
       HOST_WIDE_INT elem_size
 	= int_cst_value (TYPE_SIZE_UNIT (TREE_TYPE (vectype)));
-      HOST_WIDE_INT align_in_elems = target_align / elem_size;
-      tree align_in_elems_minus_1 = build_int_cst (type, align_in_elems - 1);
+      /* We only do prolog peeling if the target alignment is known at compile
+         time.  */
+      poly_uint64 align_in_elems =
+	exact_div (target_align, elem_size);
+      tree align_in_elems_minus_1 =
+	build_int_cst (type, align_in_elems - 1);
       tree align_in_elems_tree = build_int_cst (type, align_in_elems);
 
       /* Create:  (niters_type) ((align_in_elems - misalign_in_elems)
@@ -1672,7 +1688,11 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     misalign_in_elems);
       iters = fold_build2 (BIT_AND_EXPR, type, iters, align_in_elems_minus_1);
       iters = fold_convert (niters_type, iters);
-      *bound = align_in_elems - 1;
+      unsigned HOST_WIDE_INT align_in_elems_c;
+      if (align_in_elems.is_constant (&align_in_elems_c))
+	*bound = align_in_elems_c - 1;
+      else
+	*bound = -1;
     }
 
   if (dump_enabled_p ())
@@ -2410,6 +2430,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   profile_probability prob_prolog, prob_vector, prob_epilog;
   int estimated_vf;
   int prolog_peeling = 0;
+  /* We currently do not support prolog peeling if the target alignment is not
+     known at compile time.  'vect_gen_prolog_loop_niters' depends on the
+     target alignment being constant.  */
+  dr_vec_info *dr_info = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
+  if (dr_info && !DR_TARGET_ALIGNMENT (dr_info).is_constant ())
+    return NULL;
+
   if (!vect_use_loop_mask_for_alignment_p (loop_vinfo))
     prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 
