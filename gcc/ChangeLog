@@ -2,6 +2,7 @@
 
 	* config/rs6000/predicates.md (logical_const_operand),
 	(logical_operand): Correct comment.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Comment fix.
 
 2018-11-13  Alan Modra  <amodra@gmail.com>
 
