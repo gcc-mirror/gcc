@@ -45,6 +45,8 @@ extern bool compact_memory_operand_p (rtx, machine_mode, bool, bool);
 extern int arc_return_address_register (unsigned int);
 extern unsigned int arc_compute_function_type (struct function *);
 extern bool arc_is_uncached_mem_p (rtx);
+extern bool arc_lra_p (void);
+extern bool gen_operands_ldd_std (rtx *operands, bool load, bool commute);
 #endif /* RTX_CODE */
 
 extern unsigned int arc_compute_frame_size (int);

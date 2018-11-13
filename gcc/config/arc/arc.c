@@ -10880,6 +10880,167 @@ arc_cannot_substitute_mem_equiv_p (rtx)
   return true;
 }
 
+/* Checks whether the operands are valid for use in an LDD/STD
+   instruction.  Assumes that RT, and RT2 are REG.  This is guaranteed
+   by the patterns.  Assumes that the address in the base register RN
+   is word aligned.  Pattern guarantees that both memory accesses use
+   the same base register, the offsets are constants within the range,
+   and the gap between the offsets is 4.  If reload complete then
+   check that registers are legal.  */
+
+static bool
+operands_ok_ldd_std (rtx rt, rtx rt2, HOST_WIDE_INT offset)
+{
+  unsigned int t, t2;
+
+  if (!reload_completed)
+    return true;
+
+  if (!(SMALL_INT_RANGE (offset, (GET_MODE_SIZE (DImode) - 1) & (~0x03),
+			 (offset & (GET_MODE_SIZE (DImode) - 1) & 3
+			  ? 0 : -(-GET_MODE_SIZE (DImode) | (~0x03)) >> 1))))
+    return false;
+
+  t = REGNO (rt);
+  t2 = REGNO (rt2);
+
+  if ((t2 == PROGRAM_COUNTER_REGNO)
+      || (t % 2 != 0)	/* First destination register is not even.  */
+      || (t2 != t + 1))
+      return false;
+
+  return true;
+}
+
+/* Helper for gen_operands_ldd_std.  Returns true iff the memory
+   operand MEM's address contains an immediate offset from the base
+   register and has no side effects, in which case it sets BASE and
+   OFFSET accordingly.  */
+
+static bool
+mem_ok_for_ldd_std (rtx mem, rtx *base, rtx *offset)
+{
+  rtx addr;
+
+  gcc_assert (base != NULL && offset != NULL);
+
+  /* TODO: Handle more general memory operand patterns, such as
+     PRE_DEC and PRE_INC.  */
+
+  if (side_effects_p (mem))
+    return false;
+
+  /* Can't deal with subregs.  */
+  if (GET_CODE (mem) == SUBREG)
+    return false;
+
+  gcc_assert (MEM_P (mem));
+
+  *offset = const0_rtx;
+
+  addr = XEXP (mem, 0);
+
+  /* If addr isn't valid for DImode, then we can't handle it.  */
+  if (!arc_legitimate_address_p (DImode, addr,
+				reload_in_progress || reload_completed))
+    return false;
+
+  if (REG_P (addr))
+    {
+      *base = addr;
+      return true;
+    }
+  else if (GET_CODE (addr) == PLUS || GET_CODE (addr) == MINUS)
+    {
+      *base = XEXP (addr, 0);
+      *offset = XEXP (addr, 1);
+      return (REG_P (*base) && CONST_INT_P (*offset));
+    }
+
+  return false;
+}
+
+/* Called from peephole2 to replace two word-size accesses with a
+   single LDD/STD instruction.  Returns true iff we can generate a new
+   instruction sequence.  That is, both accesses use the same base
+   register and the gap between constant offsets is 4.  OPERANDS are
+   the operands found by the peephole matcher; OPERANDS[0,1] are
+   register operands, and OPERANDS[2,3] are the corresponding memory
+   operands.  LOAD indicates whether the access is load or store.  */
+
+bool
+gen_operands_ldd_std (rtx *operands, bool load, bool commute)
+{
+  int i, gap;
+  HOST_WIDE_INT offsets[2], offset;
+  int nops = 2;
+  rtx cur_base, cur_offset, tmp;
+  rtx base = NULL_RTX;
+
+  /* Check that the memory references are immediate offsets from the
+     same base register.  Extract the base register, the destination
+     registers, and the corresponding memory offsets.  */
+  for (i = 0; i < nops; i++)
+    {
+      if (!mem_ok_for_ldd_std (operands[nops+i], &cur_base, &cur_offset))
+	return false;
+
+      if (i == 0)
+	base = cur_base;
+      else if (REGNO (base) != REGNO (cur_base))
+	return false;
+
+      offsets[i] = INTVAL (cur_offset);
+      if (GET_CODE (operands[i]) == SUBREG)
+	{
+	  tmp = SUBREG_REG (operands[i]);
+	  gcc_assert (GET_MODE (operands[i]) == GET_MODE (tmp));
+	  operands[i] = tmp;
+	}
+    }
+
+  /* Make sure there is no dependency between the individual loads.  */
+  if (load && REGNO (operands[0]) == REGNO (base))
+    return false; /* RAW.  */
+
+  if (load && REGNO (operands[0]) == REGNO (operands[1]))
+    return false; /* WAW.  */
+
+  /* Make sure the instructions are ordered with lower memory access first.  */
+  if (offsets[0] > offsets[1])
+    {
+      gap = offsets[0] - offsets[1];
+      offset = offsets[1];
+
+      /* Swap the instructions such that lower memory is accessed first.  */
+      std::swap (operands[0], operands[1]);
+      std::swap (operands[2], operands[3]);
+    }
+  else
+    {
+      gap = offsets[1] - offsets[0];
+      offset = offsets[0];
+    }
+
+  /* Make sure accesses are to consecutive memory locations.  */
+  if (gap != 4)
+    return false;
+
+  /* Make sure we generate legal instructions.  */
+  if (operands_ok_ldd_std (operands[0], operands[1], offset))
+    return true;
+
+  if (load && commute)
+    {
+      /* Try reordering registers.  */
+      std::swap (operands[0], operands[1]);
+      if (operands_ok_ldd_std (operands[0], operands[1], offset))
+	return true;
+    }
+
+  return false;
+}
+
 #undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
 #define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
