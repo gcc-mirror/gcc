@@ -3409,13 +3409,16 @@ parallelize_loops (bool oacc_kernels_p)
       changed = true;
       skip_loop = loop->inner;
 
-      dump_user_location_t loop_loc = find_loop_location (loop);
-      if (loop->inner)
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
-			 "parallelizing outer loop %d\n", loop->num);
-      else
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
-			 "parallelizing inner loop %d\n", loop->num);
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loop_loc = find_loop_location (loop);
+	  if (loop->inner)
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			     "parallelizing outer loop %d\n", loop->num);
+	  else
+	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loop_loc,
+			     "parallelizing inner loop %d\n", loop->num);
+	}
 
       gen_parallel_loop (loop, &reduction_list,
 			 n_threads, &niter_desc, oacc_kernels_p);

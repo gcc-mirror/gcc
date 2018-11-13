@@ -2630,7 +2630,7 @@ number_of_iterations_exit (struct loop *loop, edge exit,
   if (integer_nonzerop (niter->assumptions))
     return true;
 
-  if (warn)
+  if (warn && dump_enabled_p ())
     dump_printf_loc (MSG_MISSED_OPTIMIZATION, stmt,
 		     "missed loop optimization: niters analysis ends up "
 		     "with assumptions.\n");
