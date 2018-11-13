@@ -426,6 +426,10 @@
 # error "__cpp_nontype_template_parameter_class != 201806"
 #endif
 
+#if __cpp_impl_destroying_delete != 201806
+# error "__cpp_impl_destroying_delete != 201806"
+#endif
+
 #ifdef __has_cpp_attribute
 
 #  if ! __has_cpp_attribute(maybe_unused)

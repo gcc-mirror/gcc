@@ -1739,10 +1739,11 @@ coerce_new_type (tree type, location_t loc)
   return type;
 }
 
-tree
-coerce_delete_type (tree type, location_t loc)
+void
+coerce_delete_type (tree decl, location_t loc)
 {
   int e = 0;
+  tree type = TREE_TYPE (decl);
   tree args = TYPE_ARG_TYPES (type);
 
   gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
@@ -1754,19 +1755,38 @@ coerce_delete_type (tree type, location_t loc)
 		void_type_node);
     }
 
+  tree ptrtype = ptr_type_node;
+  if (destroying_delete_p (decl))
+    {
+      if (DECL_CLASS_SCOPE_P (decl))
+	/* If the function is a destroying operator delete declared in class type
+	   C, the type of its first parameter shall be C*.  */
+	ptrtype = TYPE_POINTER_TO (DECL_CONTEXT (decl));
+      else
+	/* A destroying operator delete shall be a class member function named
+	   operator delete.  */
+	error_at (loc, "destroying operator delete must be a member function");
+      const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (decl));
+      if (op->flags & OVL_OP_FLAG_VEC)
+	error_at (loc, "operator delete[] cannot be a destroying delete");
+      if (!usual_deallocation_fn_p (decl))
+	error_at (loc, "destroying operator delete must be a usual "
+		  "deallocation function");
+    }
+
   if (!args || args == void_list_node
-      || !same_type_p (TREE_VALUE (args), ptr_type_node))
+      || !same_type_p (TREE_VALUE (args), ptrtype))
     {
       e = 2;
       if (args && args != void_list_node)
 	args = TREE_CHAIN (args);
       error_at (loc, "%<operator delete%> takes type %qT as first parameter",
-		ptr_type_node);
+		ptrtype);
     }
   switch (e)
   {
     case 2:
-      args = tree_cons (NULL_TREE, ptr_type_node, args);
+      args = tree_cons (NULL_TREE, ptrtype, args);
       /* Fall through.  */
     case 1:
       type = (cxx_copy_lang_qualifiers
@@ -1776,7 +1796,7 @@ coerce_delete_type (tree type, location_t loc)
     default:;
   }
 
-  return type;
+  TREE_TYPE (decl) = type;
 }
 
 /* DECL is a VAR_DECL for a vtable: walk through the entries in the vtable

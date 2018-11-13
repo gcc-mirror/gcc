@@ -1,5 +1,14 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	Implement P0722R3, destroying operator delete.
+	* call.c (std_destroying_delete_t_p, destroying_delete_p): New.
+	(aligned_deallocation_fn_p, usual_deallocation_fn_p): Use
+	destroying_delete_p.
+	(build_op_delete_call): Handle destroying delete.
+	* decl2.c (coerce_delete_type): Handle destroying delete.
+	* init.c (build_delete): Don't call dtor with destroying delete.
+	* optimize.c (build_delete_destructor_body): Likewise.
+
 	Implement P0780R2, pack expansion in lambda init-capture.
 	* parser.c (cp_parser_lambda_introducer): Parse pack init-capture.
 	* pt.c (tsubst_pack_expansion): Handle init-capture packs.

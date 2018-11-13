@@ -1,5 +1,8 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	* c-cppbuiltin.c (c_cpp_builtins): Define
+	__cpp_impl_destroying_delete.
+
 	* c-cppbuiltin.c (c_cpp_builtins): Change __cpp_explicit_bool to
 	__cpp_conditional_explicit.
 
