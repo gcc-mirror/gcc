@@ -1,5 +1,11 @@
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc (bitset::find_first_unset()): Remove
+	unused function.
+	(bitset::get_first_unset()): Remove loop, if there's are unset bits
+	then _M_next_word refers to the first one and there's no need to loop.
+	(_Pool::_Pool(size_t, size_t), _Pool::block_size()): Remove dead code.
+
 	* src/c++17/memory_resource.cc (munge_options): Round up value of
 	largest_required_pool_block to multiple of smallest pool size. Round
 	excessively large values down to largest pool size.
