@@ -3139,6 +3139,16 @@ write_expression (tree expr)
 	write_expression (val);
       write_char ('E');
     }
+  else if (code == LAMBDA_EXPR)
+    {
+      /* [temp.over.link] Two lambda-expressions are never considered
+	 equivalent.
+
+	 So just use the closure type mangling.  */
+      write_string ("tl");
+      write_type (LAMBDA_EXPR_CLOSURE (expr));
+      write_char ('E');
+    }
   else if (dependent_name (expr))
     {
       write_unqualified_id (dependent_name (expr));

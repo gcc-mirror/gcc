@@ -1,5 +1,20 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	Implement P0315R4, Lambdas in unevaluated contexts.
+	* decl2.c (min_vis_expr_r): Handle LAMBDA_EXPR.
+	* mangle.c (write_expression): Handle LAMBDA_EXPR.
+	* parser.c (cp_parser_lambda_expression): Allow lambdas in
+	unevaluated context.  Start the tentative firewall sooner.
+	(cp_parser_lambda_body): Use cp_evaluated.
+	* pt.c (iterative_hash_template_arg): Handle LAMBDA_EXPR.
+	(tsubst_function_decl): Substitute a lambda even if it isn't
+	dependent.
+	(tsubst_lambda_expr): Use cp_evaluated.  Always complain.
+	(tsubst_copy_and_build) [LAMBDA_EXPR]: Do nothing if tf_partial.
+	* semantics.c (begin_class_definition): Allow in template parm list.
+	* tree.c (strip_typedefs_expr): Pass through LAMBDA_EXPR.
+	(cp_tree_equal): Handle LAMBDA_EXPR.
+
 	* pt.c (fn_type_unification): If we have a full set of explicit
 	arguments, go straight to substitution.
 

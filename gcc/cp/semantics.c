@@ -2988,12 +2988,6 @@ begin_class_definition (tree t)
   if (error_operand_p (t) || error_operand_p (TYPE_MAIN_DECL (t)))
     return error_mark_node;
 
-  if (processing_template_parmlist)
-    {
-      error ("definition of %q#T inside template parameter list", t);
-      return error_mark_node;
-    }
-
   /* According to the C++ ABI, decimal classes defined in ISO/IEC TR 24733
      are passed the same as decimal scalar types.  */
   if (TREE_CODE (t) == RECORD_TYPE

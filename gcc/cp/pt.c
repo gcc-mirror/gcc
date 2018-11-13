@@ -1814,10 +1814,11 @@ iterative_hash_template_arg (tree arg, hashval_t val)
       return iterative_hash_template_arg (TREE_OPERAND (arg, 2), val);
 
     case LAMBDA_EXPR:
-      /* A lambda can't appear in a template arg, but don't crash on
-	 erroneous input.  */
-      gcc_assert (seen_error ());
-      return val;
+      /* [temp.over.link] Two lambda-expressions are never considered
+	 equivalent.
+
+         So just hash the closure type.  */
+      return iterative_hash_template_arg (TREE_TYPE (arg), val);
 
     case CAST_EXPR:
     case IMPLICIT_CONV_EXPR:
@@ -12842,7 +12843,8 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (TREE_CODE (DECL_TI_TEMPLATE (t)) == TEMPLATE_DECL)
     {
       /* If T is not dependent, just return it.  */
-      if (!uses_template_parms (DECL_TI_ARGS (t)))
+      if (!uses_template_parms (DECL_TI_ARGS (t))
+	  && !LAMBDA_FUNCTION_P (t))
 	return t;
 
       /* Calculate the most general template of which R is a
@@ -17957,6 +17959,10 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       /* Let finish_function set this.  */
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
 
+      /* The body of a lambda-expression is not a subexpression of the
+	 enclosing expression.  */
+      cp_evaluated ev;
+
       bool nested = cfun;
       if (nested)
 	push_function_context ();
@@ -17991,6 +17997,11 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  current_function_returns_abnormally = ol->returns_abnormally;
 	  current_function_infinite_loop = ol->infinite_loop;
 	}
+
+      /* [temp.deduct] A lambda-expression appearing in a function type or a
+	 template parameter is not considered part of the immediate context for
+	 the purposes of template argument deduction. */
+      complain = tf_warning_or_error;
 
       tsubst_expr (DECL_SAVED_TREE (oldfn), args, complain, r,
 		   /*constexpr*/false);
@@ -19285,6 +19296,13 @@ tsubst_copy_and_build (tree t,
 
     case LAMBDA_EXPR:
       {
+	if (complain & tf_partial)
+	  {
+	    /* We don't have a full set of template arguments yet; don't touch
+	       the lambda at all.  */
+	    gcc_assert (processing_template_decl);
+	    return t;
+	  }
 	tree r = tsubst_lambda_expr (t, args, complain, in_decl);
 
 	RETURN (build_lambda_object (r));
