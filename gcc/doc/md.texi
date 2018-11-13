@@ -3273,7 +3273,7 @@ instructions.
 Vector constant that can be loaded with XXSPLTIB & sign extension.
 
 @item h
-@samp{MQ}, @samp{CTR}, or @samp{LINK} register
+@samp{VRSAVE}, @samp{CTR}, or @samp{LINK} register
 
 @item c
 @samp{CTR} register
