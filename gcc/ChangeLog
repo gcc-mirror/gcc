@@ -21,6 +21,28 @@
 	(dump_dec): Likewise.
 	(dump_hex): Likewise.
 	(dump_symtab_node): Likewise.
+	* gimple-loop-interchange.cc (tree_loop_interchange::interchange):
+	Guard dump call with dump_enabled_p.
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl): Likewise.
+	* graphite-optimize-isl.c (optimize_isl): Likewise.
+	* graphite.c (graphite_transform_loops): Likewise.
+	* tree-loop-distribution.c (pass_loop_distribution::execute): Likewise.
+	* tree-parloops.c (parallelize_loops): Likewise.
+	* tree-ssa-loop-niter.c (number_of_iterations_exit): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_group_access_1): Likewise.
+	(vect_prune_runtime_alias_test_list): Likewise.
+	* tree-vect-loop.c (vect_update_vf_for_slp): Likewise.
+	(vect_estimate_min_profitable_iters): Likewise.
+	* tree-vect-slp.c (vect_record_max_nunits): Likewise.
+	(vect_build_slp_tree_2): Likewise.
+	(vect_supported_load_permutation_p): Likewise.
+	(vect_slp_analyze_operations): Likewise.
+	(vect_slp_analyze_bb_1): Likewise.
+	(vect_slp_bb): Likewise.
+	* tree-vect-stmts.c (vect_analyze_stmt): Likewise.
+	* tree-vectorizer.c (try_vectorize_loop_1): Likewise.
+	(pass_slp_vectorize::execute): Likewise.
+	(increase_alignment): Likewise.
 
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
