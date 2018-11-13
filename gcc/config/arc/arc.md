@@ -6432,6 +6432,182 @@ core_3, archs4x, archs4xd, archs4xd_slow"
    }
 )
 
+(define_insn "*push_multi_fp"
+  [(match_parallel 0 "push_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (mem:SI (plus:SI (reg:SI SP_REG)
+					  (match_dup 1)))
+			 (reg:SI 13))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (MEM_P (XEXP (tmp, 0)))
+     {
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2} ; sp=sp-%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 3);
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, fp} ; sp=sp-%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*push_multi_fp_blink"
+  [(match_parallel 0 "push_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (mem:SI (plus:SI (reg:SI SP_REG)
+					  (match_dup 1)))
+			 (reg:SI RETURN_ADDR_REGNUM))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (MEM_P (XEXP (tmp, 0)))
+     {
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, blink} ; sp=sp-%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 3);
+      operands[2] = XEXP (tmp, 1);
+      return "enter_s\\t{r13-%2, fp, blink} ; sp=sp-%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI 13)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_blink"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI RETURN_ADDR_REGNUM)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, blink} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, blink} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_ret"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(return)
+		    (set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI 13)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, pcl} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, pcl} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
+(define_insn "*pop_multi_fp_blink_ret"
+  [(match_parallel 0 "pop_multi_operand"
+		   [(return)
+		    (set (reg:SI SP_REG)
+			 (plus:SI (reg:SI SP_REG)
+				  (match_operand 1 "immediate_operand" "")))
+		    (set (reg:SI RETURN_ADDR_REGNUM)
+			 (mem:SI
+			  (plus:SI
+			   (reg:SI SP_REG)
+			   (match_operand 2 "immediate_operand" ""))))])]
+  "TARGET_CODE_DENSITY"
+  {
+   int len = XVECLEN (operands[0], 0);
+   rtx tmp = XVECEXP (operands[0], 0, len - 1);
+   if (XEXP (tmp, 0) != frame_pointer_rtx)
+     {
+      operands[3] = XEXP (tmp, 0);
+      gcc_assert (INTVAL (operands[1]) == INTVAL (operands[2]));
+      return "leave_s\\t{r13-%3, blink, pcl} ; sp=sp+%1";
+     }
+   else
+     {
+      tmp = XVECEXP (operands[0], 0, len - 2);
+      operands[3] = XEXP (tmp, 0);
+      return "leave_s\\t{r13-%3, fp, blink, pcl} ; sp=sp+%1";
+     }
+  }
+  [(set_attr "type" "call_no_delay_slot")
+   (set_attr "length" "2")])
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

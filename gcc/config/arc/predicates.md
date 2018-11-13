@@ -800,3 +800,15 @@
 (define_predicate "arc_short_operand"
   (ior (match_test "register_operand (op, mode)")
        (match_test "short_unsigned_const_operand (op, mode)")))
+
+(define_special_predicate "push_multi_operand"
+  (match_code "parallel")
+  {
+   return arc_check_multi (op, true);
+})
+
+(define_special_predicate "pop_multi_operand"
+  (match_code "parallel")
+  {
+   return arc_check_multi (op, false);
+})

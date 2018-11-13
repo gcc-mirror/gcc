@@ -193,9 +193,9 @@ msdata
 Target Report InverseMask(NO_SDATA_SET)
 Generate sdata references.  This is the default, unless you compile for PIC.
 
-mno-millicode
-Target Report Mask(NO_MILLICODE_THUNK_SET)
-Do not generate millicode thunks (needed only with -Os).
+mmillicode
+Target Report Mask(MILLICODE_THUNK_SET)
+Generate millicode thunks.
 
 mspfp
 Target Report Mask(SPFP_COMPACT_SET)
@@ -538,3 +538,7 @@ Enable 16-entry register file.
 mbranch-index
 Target Report Var(TARGET_BRANCH_INDEX) Init(DEFAULT_BRANCH_INDEX)
 Enable use of BI/BIH instructions when available.
+
+mcode-density-frame
+Target Report Var(TARGET_CODE_DENSITY_FRAME)
+Enable ENTER_S and LEAVE_S opcodes for ARCv2.
