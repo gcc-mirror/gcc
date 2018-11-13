@@ -244,13 +244,15 @@ report_inline_failed_reason (struct cgraph_edge *e)
 			   e->callee->ultimate_alias_target ()->lto_file_data->file_name);
 	}
       if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH)
-	cl_target_option_print_diff
-	 (dump_file, 2, target_opts_for_fn (e->caller->decl),
-          target_opts_for_fn (e->callee->ultimate_alias_target ()->decl));
+	if (dump_file)
+	  cl_target_option_print_diff
+	    (dump_file, 2, target_opts_for_fn (e->caller->decl),
+	     target_opts_for_fn (e->callee->ultimate_alias_target ()->decl));
       if (e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
-	cl_optimization_print_diff
-	  (dump_file, 2, opts_for_fn (e->caller->decl),
-	   opts_for_fn (e->callee->ultimate_alias_target ()->decl));
+	if (dump_file)
+	  cl_optimization_print_diff
+	    (dump_file, 2, opts_for_fn (e->caller->decl),
+	     opts_for_fn (e->callee->ultimate_alias_target ()->decl));
     }
 }
 

@@ -1,5 +1,12 @@
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
+	PR ipa/87955
+	* ipa-inline.c (report_inline_failed_reason): Guard calls to
+	cl_target_option_print_diff and cl_optimization_print_diff with
+	if (dump_file).
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
 	* doc/invoke.texi (-fsave-optimization-record): Note that the
 	output is compressed.
 	* optinfo-emit-json.cc: Include <zlib.h>.
