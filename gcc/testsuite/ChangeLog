@@ -1,3 +1,8 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	PR ipa/87955
+	* gcc.target/i386/pr87955.c: New test.
+
 2018-11-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gcc.dg/tree-ssa/pr64130.c: Adjust for new value_range pretty
