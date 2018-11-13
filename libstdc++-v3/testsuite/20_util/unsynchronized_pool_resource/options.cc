@@ -20,6 +20,13 @@
 
 #include <memory_resource>
 #include <testsuite_hooks.h>
+#include <testsuite_allocator.h>
+
+bool eq(const std::pmr::pool_options& lhs, const std::pmr::pool_options& rhs)
+{
+  return lhs.max_blocks_per_chunk == rhs.max_blocks_per_chunk
+    && lhs.largest_required_pool_block == rhs.largest_required_pool_block;
+}
 
 void
 test01()
@@ -30,13 +37,62 @@ test01()
   VERIFY( opts.largest_required_pool_block != 0 );
 
   std::pmr::unsynchronized_pool_resource r1(opts);
-  auto [max_blocks_per_chunk, largest_required_pool_block ] = r1.options();
-  VERIFY( max_blocks_per_chunk == opts.max_blocks_per_chunk );
-  VERIFY( largest_required_pool_block == opts.largest_required_pool_block );
+  const auto opts1 = r1.options();
+  VERIFY( eq(opts, opts1) );
+
+  std::pmr::unsynchronized_pool_resource r2(std::pmr::pool_options{0, 0});
+  const auto opts2 = r2.options();
+  VERIFY( eq(opts, opts2) );
+}
+
+void
+test02()
+{
+  std::pmr::pool_options opts{0, 0};
+  std::size_t num_allocs = 0;
+
+  __gnu_test::memory_resource test_mr;
+
+  std::pmr::unsynchronized_pool_resource r1(opts, &test_mr);
+  opts = r1.options();
+  // opts.largest_required_pool_block should be set to the block size of
+  // the largest pool (this is a GNU extension). Confirm this by checking
+  // that allocations larger than opts.largest_required_pool_block come
+  // directly from the upstream allocator, test_mr, not from r1's pools.
+
+  // The following should result in a "large" allocation direct from upstream:
+  (void) r1.allocate(opts.largest_required_pool_block + 1);
+  num_allocs = test_mr.number_of_active_allocations();
+  // This should result in another "large" allocation direct from upstream:
+  (void) r1.allocate(opts.largest_required_pool_block + 1);
+  // Which means the number of upstream allocations should have increased:
+  VERIFY( test_mr.number_of_active_allocations() > num_allocs );
+  r1.release();
+
+  // Repeat with a user-specified block size:
+  opts.largest_required_pool_block = 64;
+  std::pmr::unsynchronized_pool_resource r2(opts, &test_mr);
+  opts = r2.options();
+  (void) r2.allocate(opts.largest_required_pool_block + 1);
+  num_allocs = test_mr.number_of_active_allocations();
+  (void) r2.allocate(opts.largest_required_pool_block + 1);
+  VERIFY( test_mr.number_of_active_allocations() > num_allocs );
+  r2.release();
+
+  // Repeat with an odd user-specified block size:
+  opts.largest_required_pool_block = 71;
+  std::pmr::unsynchronized_pool_resource r3(opts, &test_mr);
+  opts = r3.options();
+  (void) r3.allocate(opts.largest_required_pool_block + 1);
+  num_allocs = test_mr.number_of_active_allocations();
+  (void) r3.allocate(opts.largest_required_pool_block + 1);
+  VERIFY( test_mr.number_of_active_allocations() > num_allocs );
+  r3.release();
 }
 
 int
 main()
 {
   test01();
+  test02();
 }
