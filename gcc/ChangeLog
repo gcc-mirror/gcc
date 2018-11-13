@@ -1,5 +1,11 @@
 2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.h (FUNCTION_PROFILER): Redefine to empty.
+	* config/arc/elf.h (PROFILE_HOOK): Define.
+	* config/arc/linux.h (PROFILE_HOOK): Likewise.
+
+2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (hwloop_optimize): Bailout when detecting a
 	jump table data in the text section.
 
