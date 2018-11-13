@@ -1,3 +1,11 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/86991
+	* tree-vect-loop.c (vect_is_slp_reduction): Delay reduction
+	group building until we have successfully detected the SLP
+	reduction.
+	(vect_is_simple_reduction): Remove fixup code here.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* dumpfile.c (VERIFY_DUMP_ENABLED_P): New macro.
