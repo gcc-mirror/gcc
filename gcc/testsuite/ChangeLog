@@ -1,3 +1,8 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87931
+	* gcc.dg/graphite/pr87931.c: New testcase.
+
 2018-11-13  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/87930

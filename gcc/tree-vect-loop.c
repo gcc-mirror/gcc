@@ -2976,6 +2976,22 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 
   if (nested_in_vect_loop && !check_reduction)
     {
+      /* FIXME: Even for non-reductions code generation is funneled
+	 through vectorizable_reduction for the stmt defining the
+	 PHI latch value.  So we have to artificially restrict ourselves
+	 for the supported operations.  */
+      switch (get_gimple_rhs_class (code))
+	{
+	case GIMPLE_BINARY_RHS:
+	case GIMPLE_TERNARY_RHS:
+	  break;
+	default:
+	  /* Not supported by vectorizable_reduction.  */
+	  if (dump_enabled_p ())
+	    report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			    "nested cycle: not handled operation: ");
+	  return NULL;
+	}
       if (dump_enabled_p ())
 	report_vect_op (MSG_NOTE, def_stmt, "detected nested cycle: ");
       return def_stmt_info;

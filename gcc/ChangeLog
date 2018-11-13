@@ -1,3 +1,10 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87931
+	* tree-vect-loop.c (vect_is_simple_reduction): Restrict
+	nested cycles we support to latch computations vectorizable_reduction
+	handles.
+
 2018-11-13  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/87885
