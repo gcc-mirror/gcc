@@ -5068,22 +5068,20 @@ rtl_duplicate_bb (basic_block bb)
 }
 
 /* Do book-keeping of basic block BB for the profile consistency checker.
-   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
-   then do post-pass accounting.  Store the counting in RECORD.  */
+   Store the counting in RECORD.  */
 static void
-rtl_account_profile_record (basic_block bb, int after_pass,
-			    struct profile_record *record)
+rtl_account_profile_record (basic_block bb, struct profile_record *record)
 {
   rtx_insn *insn;
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
-	record->size[after_pass] += insn_cost (insn, false);
+	record->size += insn_cost (insn, false);
 	if (bb->count.initialized_p ())
-	  record->time[after_pass]
+	  record->time
 	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	  record->time[after_pass]
+	  record->time
 	    += insn_cost (insn, true) * bb->count.to_frequency (cfun);
       }
 }

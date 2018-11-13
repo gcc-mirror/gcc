@@ -1738,12 +1738,12 @@ emergency_dump_function ()
 static struct profile_record *profile_record;
 
 /* Do profile consistency book-keeping for the pass with static number INDEX.
-   If SUBPASS is zero, we run _before_ the pass, and if SUBPASS is one, then
-   we run _after_ the pass.  RUN is true if the pass really runs, or FALSE
+   RUN is true if the pass really runs, or FALSE
    if we are only book-keeping on passes that may have selectively disabled
    themselves on a given function.  */
+
 static void
-check_profile_consistency (int index, int subpass, bool run)
+check_profile_consistency (int index, bool run)
 {
   pass_manager *passes = g->get_passes ();
   if (index == -1)
@@ -1752,9 +1752,27 @@ check_profile_consistency (int index, int subpass, bool run)
     profile_record = XCNEWVEC (struct profile_record,
 			       passes->passes_by_id_size);
   gcc_assert (index < passes->passes_by_id_size && index >= 0);
-  gcc_assert (subpass < 2);
   profile_record[index].run |= run;
-  account_profile_record (&profile_record[index], subpass);
+  profile_record_check_consistency (&profile_record[index]);
+}
+
+/* Account profile the pass with static number INDEX.
+   RUN is true if the pass really runs, or FALSE
+   if we are only book-keeping on passes that may have selectively disabled
+   themselves on a given function.  */
+
+static void
+account_profile (int index, bool run)
+{
+  pass_manager *passes = g->get_passes ();
+  if (index == -1)
+    return;
+  if (!profile_record)
+    profile_record = XCNEWVEC (struct profile_record,
+			       passes->passes_by_id_size);
+  gcc_assert (index < passes->passes_by_id_size && index >= 0);
+  profile_record[index].run |= run;
+  profile_record_account_profile (&profile_record[index]);
 }
 
 /* Output profile consistency.  */
@@ -1768,7 +1786,6 @@ dump_profile_report (void)
 void
 pass_manager::dump_profile_report () const
 {
-  int i, j;
   int last_freq_in = 0, last_count_in = 0, last_freq_out = 0, last_count_out = 0;
   gcov_type last_time = 0, last_size = 0;
   double rel_time_change, rel_size_change;
@@ -1777,86 +1794,86 @@ pass_manager::dump_profile_report () const
   if (!profile_record)
     return;
   fprintf (stderr, "\nProfile consistency report:\n\n");
-  fprintf (stderr, "Pass name                        |mismatch in |mismated out|Overall\n");
-  fprintf (stderr, "                                 |freq count  |freq count  |size      time\n");
+  fprintf (stderr, "                                 |mismatch     |mismatch     |                     |\n");
+  fprintf (stderr, "Pass name                        |IN    |IN    |OUT   |OUT   |overall              |\n");
+  fprintf (stderr, "                                 |freq  |count |freq  |count |size      |time      |\n");
 	   
-  for (i = 0; i < passes_by_id_size; i++)
-    for (j = 0 ; j < 2; j++)
-      if (profile_record[i].run)
-	{
-	  if (last_time)
-	    rel_time_change = (profile_record[i].time[j]
-			       - (double)last_time) * 100 / (double)last_time;
-	  else
-	    rel_time_change = 0;
-	  if (last_size)
-	    rel_size_change = (profile_record[i].size[j]
-			       - (double)last_size) * 100 / (double)last_size;
-	  else
-	    rel_size_change = 0;
+  for (int i = 1; i < passes_by_id_size; i++)
+    if (profile_record[i].run)
+      {
+	if (last_time)
+	  rel_time_change = (profile_record[i].time
+			     - (double)last_time) * 100 / (double)last_time;
+	else
+	  rel_time_change = 0;
+	if (last_size)
+	  rel_size_change = (profile_record[i].size
+			     - (double)last_size) * 100 / (double)last_size;
+	else
+	  rel_size_change = 0;
 
-	  if (profile_record[i].num_mismatched_freq_in[j] != last_freq_in
-	      || profile_record[i].num_mismatched_freq_out[j] != last_freq_out
-	      || profile_record[i].num_mismatched_count_in[j] != last_count_in
-	      || profile_record[i].num_mismatched_count_out[j] != last_count_out
-	      || rel_time_change || rel_size_change)
-	    {
-	      last_reported = i;
-              fprintf (stderr, "%-20s %s",
-		       passes_by_id [i]->name,
-		       j ? "(after TODO)" : "            ");
-	      if (profile_record[i].num_mismatched_freq_in[j] != last_freq_in)
-		fprintf (stderr, "| %+5i",
-		         profile_record[i].num_mismatched_freq_in[j]
-			  - last_freq_in);
-	      else
-		fprintf (stderr, "|      ");
-	      if (profile_record[i].num_mismatched_count_in[j] != last_count_in)
-		fprintf (stderr, " %+5i",
-		         profile_record[i].num_mismatched_count_in[j]
-			  - last_count_in);
-	      else
-		fprintf (stderr, "      ");
-	      if (profile_record[i].num_mismatched_freq_out[j] != last_freq_out)
-		fprintf (stderr, "| %+5i",
-		         profile_record[i].num_mismatched_freq_out[j]
-			  - last_freq_out);
-	      else
-		fprintf (stderr, "|      ");
-	      if (profile_record[i].num_mismatched_count_out[j] != last_count_out)
-		fprintf (stderr, " %+5i",
-		         profile_record[i].num_mismatched_count_out[j]
-			  - last_count_out);
-	      else
-		fprintf (stderr, "      ");
+	if (profile_record[i].num_mismatched_freq_in != last_freq_in
+	    || profile_record[i].num_mismatched_freq_out != last_freq_out
+	    || profile_record[i].num_mismatched_count_in != last_count_in
+	    || profile_record[i].num_mismatched_count_out != last_count_out
+	    || rel_time_change || rel_size_change)
+	  {
+	    last_reported = i;
+	    fprintf (stderr, "%-33s", passes_by_id[i]->name);
+	    if (profile_record[i].num_mismatched_freq_in != last_freq_in)
+	      fprintf (stderr, "| %+5i",
+		       profile_record[i].num_mismatched_freq_in
+		       - last_freq_in);
+	    else
+	      fprintf (stderr, "|      ");
+	    if (profile_record[i].num_mismatched_count_in != last_count_in)
+	      fprintf (stderr, "| %+5i",
+		       profile_record[i].num_mismatched_count_in
+		       - last_count_in);
+	    else
+	      fprintf (stderr, "|      ");
+	    if (profile_record[i].num_mismatched_freq_out != last_freq_out)
+	      fprintf (stderr, "| %+5i",
+		       profile_record[i].num_mismatched_freq_out
+		       - last_freq_out);
+	    else
+	      fprintf (stderr, "|      ");
+	    if (profile_record[i].num_mismatched_count_out != last_count_out)
+	      fprintf (stderr, "| %+5i",
+		       profile_record[i].num_mismatched_count_out
+		       - last_count_out);
+	    else
+	      fprintf (stderr, "|      ");
 
-	      /* Size/time units change across gimple and RTL.  */
-	      if (i == pass_expand_1->static_pass_number)
-		fprintf (stderr, "|----------");
-	      else
-		{
-		  if (rel_size_change)
-		    fprintf (stderr, "| %+8.4f%%", rel_size_change);
-		  else
-		    fprintf (stderr, "|          ");
-		  if (rel_time_change)
-		    fprintf (stderr, " %+8.4f%%", rel_time_change);
-		}
-	      fprintf (stderr, "\n");
-	      last_freq_in = profile_record[i].num_mismatched_freq_in[j];
-	      last_freq_out = profile_record[i].num_mismatched_freq_out[j];
-	      last_count_in = profile_record[i].num_mismatched_count_in[j];
-	      last_count_out = profile_record[i].num_mismatched_count_out[j];
-	    }
-	  else if (j && last_reported != i)
-	    {
-	      last_reported = i;
-              fprintf (stderr, "%-20s ------------|            |            |\n",
-		       passes_by_id [i]->name);
-	    }
-	  last_time = profile_record[i].time[j];
-	  last_size = profile_record[i].size[j];
-	}
+	    /* Size/time units change across gimple and RTL.  */
+	    if (i == pass_expand_1->static_pass_number)
+	      fprintf (stderr, "|----------|----------");
+	    else
+	      {
+		if (rel_size_change)
+		  fprintf (stderr, "| %+8.1f%%", rel_size_change);
+		else
+		  fprintf (stderr, "|          ");
+		if (rel_time_change)
+		  fprintf (stderr, "| %+8.1f%%", rel_time_change);
+		else
+		  fprintf (stderr, "|          ");
+	      }
+	    fprintf (stderr, "|\n");
+	    last_freq_in = profile_record[i].num_mismatched_freq_in;
+	    last_freq_out = profile_record[i].num_mismatched_freq_out;
+	    last_count_in = profile_record[i].num_mismatched_count_in;
+	    last_count_out = profile_record[i].num_mismatched_count_out;
+	  }
+	else if (last_reported != i)
+	  {
+	    last_reported = i;
+	    fprintf (stderr, "%-20s ------------|      |      |      |      |          |          |\n",
+		     passes_by_id[i]->name);
+	  }
+	last_time = profile_record[i].time;
+	last_size = profile_record[i].size;
+      }
 }
 
 /* Perform all TODO actions that ought to be done on each function.  */
@@ -2163,20 +2180,20 @@ execute_one_ipa_transform_pass (struct cgraph_node *node,
   if (pass->tv_id != TV_NONE)
     timevar_push (pass->tv_id);
 
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, true);
+
   /* Run pre-pass verification.  */
   execute_todo (ipa_pass->function_transform_todo_flags_start);
 
   /* Do it!  */
   todo_after = ipa_pass->function_transform (node);
 
-  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
-    check_profile_consistency (pass->static_pass_number, 0, true);
-
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after);
   verify_interpass_invariants ();
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
-    check_profile_consistency (pass->static_pass_number, 1, true);
+    account_profile (pass->static_pass_number, true);
 
   /* Stop timevar.  */
   if (pass->tv_id != TV_NONE)
@@ -2387,8 +2404,8 @@ execute_one_pass (opt_pass *pass)
 	 are not miscounted.  */
       if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
 	{
-          check_profile_consistency (pass->static_pass_number, 0, false);
-          check_profile_consistency (pass->static_pass_number, 1, false);
+	  check_profile_consistency (pass->static_pass_number, false);
+	  account_profile (pass->static_pass_number, false);
 	}
       current_pass = NULL;
       return false;
@@ -2416,6 +2433,9 @@ execute_one_pass (opt_pass *pass)
   /* If a timevar is present, start it.  */
   if (pass->tv_id != TV_NONE)
     timevar_push (pass->tv_id);
+
+  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
+    check_profile_consistency (pass->static_pass_number, true);
 
   /* Run pre-pass verification.  */
   execute_todo (pass->todo_flags_start);
@@ -2461,13 +2481,10 @@ execute_one_pass (opt_pass *pass)
 
   do_per_function (update_properties_after_pass, pass);
 
-  if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
-    check_profile_consistency (pass->static_pass_number, 0, true);
-
   /* Run post-pass cleanup and verification.  */
   execute_todo (todo_after | pass->todo_flags_finish | TODO_verify_il);
   if (profile_report && cfun && (cfun->curr_properties & PROP_cfg))
-    check_profile_consistency (pass->static_pass_number, 1, true);
+    account_profile (pass->static_pass_number, true);
 
   verify_interpass_invariants ();
 

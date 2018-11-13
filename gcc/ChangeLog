@@ -1,5 +1,35 @@
 2018-11-13  Martin Liska  <mliska@suse.cz>
 
+	PR tree-optimization/87885
+	* cfghooks.c (account_profile_record): Rename
+	to ...
+	(profile_record_check_consistency): ... this.
+	Calculate missing num_mismatched_freq_in.
+	(profile_record_account_profile): New function
+	that calculates time and size of a function.
+	* cfghooks.h (struct profile_record): Remove
+	all tuples.
+	(struct cfg_hooks): Remove after_pass flag.
+	(account_profile_record): Rename to ...
+	(profile_record_check_consistency): ... this.
+	(profile_record_account_profile): New.
+	* cfgrtl.c (rtl_account_profile_record): Remove
+	after_pass flag.
+	* passes.c (check_profile_consistency): Do only
+	checking.
+	(account_profile): Calculate size and time of
+	function only.
+	(pass_manager::dump_profile_report): Reformat
+	output.
+	(execute_one_ipa_transform_pass): Call
+	consistency check before clean upand call account_profile
+	after a clean up is done.
+	(execute_one_pass): Call check_profile_consistency and
+	account_profile instead of using after_pass flag..
+	* tree-cfg.c (gimple_account_profile_record): Likewise.
+
+2018-11-13  Martin Liska  <mliska@suse.cz>
+
 	PR sanitizer/87930
 	* config/i386/i386.c (ix86_option_override_internal): Error
 	about usage -mabi=ms and -fsanitize={,kernel-}address.
