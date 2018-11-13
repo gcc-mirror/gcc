@@ -3653,7 +3653,7 @@ symbol, not necessarily in the same translation unit.
 The effect is equivalent to moving all references to the alias to a
 separate translation unit, renaming the alias to the aliased symbol,
 declaring it as weak, compiling the two separate translation units and
-performing a reloadable link on them.
+performing a link with relocatable output (ie: @code{ld -r}) on them.
 
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
