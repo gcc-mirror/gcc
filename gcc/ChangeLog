@@ -1,3 +1,9 @@
+2018-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87918
+	* simplify-rtx.c (simplify_merge_mask): For COMPARISON_P, use
+	simplify_gen_relational rather than simplify_gen_binary.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssanames.h (set_range_info): Use value_range_base.

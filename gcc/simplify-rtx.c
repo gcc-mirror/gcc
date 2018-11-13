@@ -5647,9 +5647,19 @@ simplify_merge_mask (rtx x, rtx mask, int op)
       rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
       rtx top1 = simplify_merge_mask (XEXP (x, 1), mask, op);
       if (top0 || top1)
-	return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
-				    top0 ? top0 : XEXP (x, 0),
-				    top1 ? top1 : XEXP (x, 1));
+	{
+	  if (COMPARISON_P (x))
+	    return simplify_gen_relational (GET_CODE (x), GET_MODE (x),
+					    GET_MODE (XEXP (x, 0)) != VOIDmode
+					    ? GET_MODE (XEXP (x, 0))
+					    : GET_MODE (XEXP (x, 1)),
+					    top0 ? top0 : XEXP (x, 0),
+					    top1 ? top1 : XEXP (x, 1));
+	  else
+	    return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
+					top0 ? top0 : XEXP (x, 0),
+					top1 ? top1 : XEXP (x, 1));
+	}
     }
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_TERNARY
       && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))
