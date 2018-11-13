@@ -6363,6 +6363,75 @@ core_3, archs4x, archs4xd, archs4xd_slow"
   [(set (reg:CC CC_REG) (compare:CC (match_dup 3)
 				    (ashift:SI (match_dup 1) (match_dup 2))))])
 
+(define_peephole2 ; std
+  [(set (match_operand:SI 2 "memory_operand" "")
+	(match_operand:SI 0 "register_operand" ""))
+   (set (match_operand:SI 3 "memory_operand" "")
+	(match_operand:SI 1 "register_operand" ""))]
+  "TARGET_LL64"
+  [(const_int 0)]
+{
+  if (!gen_operands_ldd_std (operands, false, false))
+    FAIL;
+  operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  operands[2] = adjust_address (operands[2], DImode, 0);
+  emit_insn (gen_rtx_SET (operands[2], operands[0]));
+  DONE;
+})
+
+(define_peephole2 ; ldd
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 2 "memory_operand" ""))
+   (set (match_operand:SI 1 "register_operand" "")
+	(match_operand:SI 3 "memory_operand" ""))]
+  "TARGET_LL64"
+  [(const_int 0)]
+{
+  if (!gen_operands_ldd_std (operands, true, false))
+    FAIL;
+  operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+  operands[2] = adjust_address (operands[2], DImode, 0);
+  emit_insn (gen_rtx_SET (operands[0], operands[2]));
+  DONE;
+})
+
+;; We require consecutive registers for LDD instruction.  Check if we
+;; can reorder them and use an LDD.
+
+(define_peephole2 ; swap the destination registers of two loads
+		  ; before a commutative operation.
+  [(set (match_operand:SI 0 "register_operand" "")
+	(match_operand:SI 2 "memory_operand" ""))
+   (set (match_operand:SI 1 "register_operand" "")
+	(match_operand:SI 3 "memory_operand" ""))
+   (set (match_operand:SI 4 "register_operand" "")
+	(match_operator:SI 5 "commutative_operator"
+			   [(match_operand 6 "register_operand" "")
+			    (match_operand 7 "register_operand" "") ]))]
+  "TARGET_LL64
+   && (((rtx_equal_p (operands[0], operands[6]))
+	 && (rtx_equal_p (operands[1], operands[7])))
+	|| ((rtx_equal_p (operands[0], operands[7]))
+	     && (rtx_equal_p (operands[1], operands[6]))))
+   && (peep2_reg_dead_p (3, operands[0])
+       || rtx_equal_p (operands[0], operands[4]))
+   && (peep2_reg_dead_p (3, operands[1])
+       || rtx_equal_p (operands[1], operands[4]))"
+  [(set (match_dup 0) (match_dup 2))
+   (set (match_dup 4) (match_op_dup 5 [(match_dup 6) (match_dup 7)]))]
+  {
+    if (!gen_operands_ldd_std (operands, true, true))
+     {
+	FAIL;
+     }
+    else
+     {
+	operands[0] = gen_rtx_REG (DImode, REGNO (operands[0]));
+	operands[2] = adjust_address (operands[2], DImode, 0);
+     }
+   }
+)
+
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

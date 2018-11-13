@@ -1,3 +1,11 @@
+2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (gen_operands_ldd_std): Add.
+	* config/arc/arc.c (operands_ok_ldd_std): New function.
+	(mem_ok_for_ldd_std): Likewise.
+	(gen_operands_ldd_std): Likewise.
+	* config/arc/arc.md: Add peephole2 rules for std/ldd.
+
 2018-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* toplev.c (output_stack_usage): Turn test on flag_stack_usage into
