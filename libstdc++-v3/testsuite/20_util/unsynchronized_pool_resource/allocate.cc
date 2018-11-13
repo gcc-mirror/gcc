@@ -128,7 +128,8 @@ test03()
 void
 test04()
 {
-  std::pmr::unsynchronized_pool_resource r({256, 256});
+  __gnu_test::memory_resource test_mr;
+  std::pmr::unsynchronized_pool_resource r({256, 256}, &test_mr);
   // Check alignment
   void* p1 = r.allocate(2, 64);
   VERIFY( (std::uintptr_t)p1 % 64 == 0 );
@@ -145,6 +146,95 @@ test04()
   r.deallocate(p4, 2 * largest_pool, 1024);
 }
 
+void
+test05()
+{
+  __gnu_test::memory_resource test_mr;
+  std::pmr::pool_options opts{};
+  opts.max_blocks_per_chunk = 1;
+  opts.largest_required_pool_block = 1;
+  std::pmr::unsynchronized_pool_resource r(opts, &test_mr);
+  opts = r.options();
+  // Test unpooled allocations
+  void** p = new void*[opts.largest_required_pool_block];
+  for (unsigned a : {64, 128, 256, 512})
+  {
+    for (unsigned i = 0; i < opts.largest_required_pool_block; ++i)
+      p[i] = r.allocate(i, a);
+    for (unsigned i = 0; i < opts.largest_required_pool_block; ++i)
+      r.deallocate(p[i], i, a);
+  }
+  delete[] p;
+}
+
+void
+test06()
+{
+  struct custom_mr : std::pmr::memory_resource
+  {
+    size_t expected_size = 0;
+    size_t expected_alignment = 0;
+
+    struct bad_size { };
+    struct bad_alignment { };
+
+    void* do_allocate(std::size_t b, std::size_t a)
+    {
+      if (expected_size != 0)
+      {
+	if (b < expected_size)
+	  throw bad_size();
+	else if (a != expected_alignment)
+	  throw bad_alignment();
+	// Else just throw, don't try to allocate:
+	throw std::bad_alloc();
+      }
+
+      return std::pmr::new_delete_resource()->allocate(b, a);
+    }
+
+    void do_deallocate(void* p, std::size_t b, std::size_t a)
+    { std::pmr::new_delete_resource()->deallocate(p, b, a); }
+
+    bool do_is_equal(const memory_resource& r) const noexcept
+    { return false; }
+  };
+
+  custom_mr c;
+  std::pmr::unsynchronized_pool_resource r({1, 1}, &c);
+  std::pmr::pool_options opts = r.options();
+  const std::size_t largest_pool = opts.largest_required_pool_block;
+  const std::size_t large_alignment = 1024;
+  // Ensure allocations won't fit in pools:
+  VERIFY( largest_pool < large_alignment );
+
+  // Ensure the vector of large allocations has some capacity
+  // and won't need to reallocate:
+  r.deallocate(r.allocate(largest_pool + 1, 1), largest_pool + 1, 1);
+
+  // Try allocating various very large sizes and ensure the size requested
+  // from the upstream allocator is at least as large as needed.
+  for (int i = 1; i < 64; ++i)
+  {
+    for (auto b : { -1, 0, 1, 3 })
+    {
+      std::size_t bytes = std::size_t(1) << i;
+      bytes += b;
+      c.expected_size = bytes;
+      c.expected_alignment = large_alignment;
+      try {
+	(void) r.allocate(bytes, large_alignment);
+      } catch (const std::bad_alloc&) {
+	// expect to catch bad_alloc
+      } catch (custom_mr::bad_size) {
+	VERIFY(false);
+      } catch (custom_mr::bad_alignment) {
+	VERIFY(false);
+      }
+    }
+  }
+}
+
 int
 main()
 {
@@ -152,4 +242,6 @@ main()
   test02();
   test03();
   test04();
+  test05();
+  test06();
 }
