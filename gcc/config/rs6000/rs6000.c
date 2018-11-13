@@ -19701,7 +19701,10 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
 
       if ((addr_mask & RELOAD_REG_PRE_INCDEC) == 0)
 	{
-	  emit_insn (gen_add2_insn (op_reg, GEN_INT (GET_MODE_SIZE (mode))));
+	  int delta = GET_MODE_SIZE (mode);
+	  if (GET_CODE (addr) == PRE_DEC)
+	    delta = -delta;
+	  emit_insn (gen_add2_insn (op_reg, GEN_INT (delta)));
 	  new_addr = op_reg;
 	}
       break;
@@ -19901,17 +19904,6 @@ rs6000_secondary_reload_gpr (rtx reg, rtx mem, rtx scratch, bool store_p)
 		  && GET_CODE (XEXP (addr, 1)) == PLUS
 		  && XEXP (XEXP (addr, 1), 0) == XEXP (addr, 0));
       scratch_or_premodify = XEXP (addr, 0);
-      if (!HARD_REGISTER_P (scratch_or_premodify))
-	/* If we have a pseudo here then reload will have arranged
-	   to have it replaced, but only in the original insn.
-	   Use the replacement here too.  */
-	scratch_or_premodify = find_replacement (&XEXP (addr, 0));
-
-      /* RTL emitted by rs6000_secondary_reload_gpr uses RTL
-	 expressions from the original insn, without unsharing them.
-	 Any RTL that points into the original insn will of course
-	 have register replacements applied.  That is why we don't
-	 need to look for replacements under the PLUS.  */
       addr = XEXP (addr, 1);
     }
   gcc_assert (GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM);
