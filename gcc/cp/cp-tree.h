@@ -5783,7 +5783,7 @@ enum cp_decl_spec {
 struct cp_decl_specifier_seq {
   /* An array of locations for the declaration sepecifiers, indexed by
      enum cp_decl_spec_word.  */
-  source_location locations[ds_last];
+  location_t locations[ds_last];
   /* The primary type, if any, given by the decl-specifier-seq.
      Modifiers, like "short", "const", and "unsigned" are not
      reflected here.  This field will be a TYPE, unless a typedef-name
@@ -6183,7 +6183,7 @@ extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern tree convert_arg_to_ellipsis		(tree, tsubst_flags_t);
-extern tree build_x_va_arg			(source_location, tree, tree);
+extern tree build_x_va_arg			(location_t, tree, tree);
 extern tree cxx_type_promotes_to		(tree);
 extern tree type_passed_as			(tree);
 extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
@@ -6351,7 +6351,7 @@ extern tree build_cp_library_fn_ptr		(const char *, tree, int);
 extern tree push_library_fn			(tree, tree, tree, int);
 extern tree push_void_library_fn		(tree, tree, int);
 extern tree push_throw_library_fn		(tree, tree);
-extern void warn_misplaced_attr_for_class_type  (source_location location,
+extern void warn_misplaced_attr_for_class_type  (location_t location,
 						 tree class_type);
 extern tree check_tag_decl			(cp_decl_specifier_seq *, bool);
 extern tree shadow_tag				(cp_decl_specifier_seq *);

@@ -777,11 +777,11 @@ compatible_locations_p (location_t loc_a, location_t loc_b)
 	  /* Expand each location towards the spelling location, and
 	     recurse.  */
 	  const line_map_macro *macro_map = linemap_check_macro (map_a);
-	  source_location loc_a_toward_spelling
+	  location_t loc_a_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_a);
-	  source_location loc_b_toward_spelling
+	  location_t loc_b_toward_spelling
 	    = linemap_macro_map_loc_unwind_toward_spelling (line_table,
 							    macro_map,
 							    loc_b);

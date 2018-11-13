@@ -1393,7 +1393,7 @@ c_finish_options (void)
       cb_file_change (parse_in, bltin_map);
 
       /* Make sure all of the builtins about to be declared have
-	 BUILTINS_LOCATION has their source_location.  */
+	 BUILTINS_LOCATION has their location_t.  */
       cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
 
       cpp_init_builtins (parse_in, flag_hosted);

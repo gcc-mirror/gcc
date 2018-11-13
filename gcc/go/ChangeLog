@@ -1,3 +1,11 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* go-gcc-diagnostics.cc: Replace "source_location" with "location_t".
+	* go-gcc.cc: Likewise.
+	* go-linemap.cc: Likewise.
+	* go-location.h: Likewise.
+	* gofrontend/README: Likewise.
+
 2018-10-31  Ian Lance Taylor  <iant@golang.org>
 
 	* go-gcc.cc (Gcc_backend::write_global_definitions): Don't call

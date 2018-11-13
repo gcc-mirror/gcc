@@ -60,7 +60,7 @@ struct fun_macro
   size_t offset;
 
   /* The line the macro name appeared on.  */
-  source_location line;
+  location_t line;
 
   /* Number of parameters.  */
   unsigned int paramc;
@@ -161,7 +161,7 @@ static const uchar *
 copy_comment (cpp_reader *pfile, const uchar *cur, int in_define)
 {
   bool unterminated, copy = false;
-  source_location src_loc = pfile->line_table->highest_line;
+  location_t src_loc = pfile->line_table->highest_line;
   cpp_buffer *buffer = pfile->buffer;
 
   buffer->cur = cur;

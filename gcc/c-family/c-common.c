@@ -862,13 +862,13 @@ c_get_substring_location (const substring_loc &substr_loc,
   if (tok_type == CPP_OTHER)
     return "unrecognized string type";
 
-  return get_source_location_for_substring (parse_in, g_string_concat_db,
-					    substr_loc.get_fmt_string_loc (),
-					    tok_type,
-					    substr_loc.get_caret_idx (),
-					    substr_loc.get_start_idx (),
-					    substr_loc.get_end_idx (),
-					    out_loc);
+  return get_location_within_string (parse_in, g_string_concat_db,
+				     substr_loc.get_fmt_string_loc (),
+				     tok_type,
+				     substr_loc.get_caret_idx (),
+				     substr_loc.get_start_idx (),
+				     substr_loc.get_end_idx (),
+				     out_loc);
 }
 
 

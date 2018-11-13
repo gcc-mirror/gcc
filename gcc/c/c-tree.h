@@ -288,7 +288,7 @@ enum c_declspec_word {
    specifier is added, please update the enum c_declspec_word above
    accordingly.  */
 struct c_declspecs {
-  source_location locations[cdw_number_of_elements];
+  location_t locations[cdw_number_of_elements];
   /* The type specified, if a single type specifier such as a struct,
      union or enum specifier, typedef name or typeof specifies the
      whole type, or NULL_TREE if none or a keyword such as "void" or
@@ -592,19 +592,19 @@ extern struct c_declarator *build_id_declarator (tree);
 extern struct c_declarator *make_pointer_declarator (struct c_declspecs *,
 						     struct c_declarator *);
 extern struct c_declspecs *build_null_declspecs (void);
-extern struct c_declspecs *declspecs_add_qual (source_location,
+extern struct c_declspecs *declspecs_add_qual (location_t,
 					       struct c_declspecs *, tree);
 extern struct c_declspecs *declspecs_add_type (location_t,
 					       struct c_declspecs *,
 					       struct c_typespec);
-extern struct c_declspecs *declspecs_add_scspec (source_location,
+extern struct c_declspecs *declspecs_add_scspec (location_t,
 						 struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_attrs (source_location,
+extern struct c_declspecs *declspecs_add_attrs (location_t,
 						struct c_declspecs *, tree);
-extern struct c_declspecs *declspecs_add_addrspace (source_location,
+extern struct c_declspecs *declspecs_add_addrspace (location_t,
 						    struct c_declspecs *,
 						    addr_space_t);
-extern struct c_declspecs *declspecs_add_alignas (source_location,
+extern struct c_declspecs *declspecs_add_alignas (location_t,
 						  struct c_declspecs *, tree);
 extern struct c_declspecs *finish_declspecs (struct c_declspecs *);
 

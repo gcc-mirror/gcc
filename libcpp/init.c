@@ -633,7 +633,7 @@ cpp_post_options (cpp_reader *pfile)
 const char *
 cpp_read_main_file (cpp_reader *pfile, const char *fname)
 {
-  const source_location loc = 0;
+  const location_t loc = 0;
 
   if (CPP_OPTION (pfile, deps.style) != DEPS_NONE)
     {

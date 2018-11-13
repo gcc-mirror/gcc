@@ -13840,7 +13840,7 @@ gimplify_va_arg_expr (tree *expr_p, gimple_seq *pre_p,
       bool warned;
       /* Use the expansion point to handle cases such as passing bool (defined
 	 in a system header) through `...'.  */
-      source_location xloc
+      location_t xloc
 	= expansion_point_location_if_in_system_header (loc);
 
       /* Unfortunately, this is merely undefined, rather than a constraint

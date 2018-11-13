@@ -2827,7 +2827,7 @@ handle_locations ()
   FOR_EACH_VEC_ELT (m_cached_locations, i, cached_location)
     {
       tree t = cached_location->first;
-      source_location srcloc = cached_location->second->m_srcloc;
+      location_t srcloc = cached_location->second->m_srcloc;
 
       /* This covers expressions: */
       if (CAN_HAVE_LOCATION_P (t))
@@ -2927,7 +2927,7 @@ new_location (recording::location *rloc,
 /* Deferred setting of the location for a given tree, by adding the
    (tree, playback::location) pair to a list of deferred associations.
    We will actually set the location on the tree later on once
-   the source_location for the playback::location exists.  */
+   the location_t for the playback::location exists.  */
 
 void
 playback::context::

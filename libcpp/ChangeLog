@@ -1,3 +1,23 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* charset.c: Replace "source_location" with "location_t".
+	* directives-only.c: Likewise.
+	* directives.c: Likewise.
+	* errors.c: Likewise.
+	* expr.c: Likewise.
+	* files.c: Likewise.
+	* include/cpplib.h: Likewise.  Rename MAX_SOURCE_LOCATION to
+	MAX_LOCATION_T.
+	* include/line-map.h: Likewise.
+	* init.c: Likewise.
+	* internal.h: Likewise.
+	* lex.c: Likewise.
+	* line-map.c: Likewise.
+	* location-example.txt: Likewise.
+	* macro.c: Likewise.
+	* pch.c: Likewise.
+	* traditional.c: Likewise.
+
 2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
 
         * configure: Regenerated.

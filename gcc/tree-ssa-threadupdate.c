@@ -431,7 +431,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
       gphi *src_phi = gsi.phi ();
       gphi *dest_phi = gsi2.phi ();
       tree val = gimple_phi_arg_def (src_phi, src_idx);
-      source_location locus = gimple_phi_arg_location (src_phi, src_idx);
+      location_t locus = gimple_phi_arg_location (src_phi, src_idx);
 
       SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
       gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
@@ -445,7 +445,7 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
 
 static tree
 get_value_locus_in_path (tree def, vec<jump_thread_edge *> *path,
-			 basic_block bb, int idx, source_location *locus)
+			 basic_block bb, int idx, location_t *locus)
 {
   tree arg;
   gphi *def_phi;
@@ -499,7 +499,7 @@ copy_phi_args (basic_block bb, edge src_e, edge tgt_e,
     {
       gphi *phi = gsi.phi ();
       tree def = gimple_phi_arg_def (phi, src_indx);
-      source_location locus = gimple_phi_arg_location (phi, src_indx);
+      location_t locus = gimple_phi_arg_location (phi, src_indx);
 
       if (TREE_CODE (def) == SSA_NAME
 	  && !virtual_operand_p (gimple_phi_result (phi)))

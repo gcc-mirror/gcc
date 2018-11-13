@@ -423,7 +423,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   tree temp, result;
   gphi *newphi;
   gimple_stmt_iterator gsi, gsi_for_def;
-  source_location locus = gimple_location (phi);
+  location_t locus = gimple_location (phi);
   enum tree_code convert_code;
 
   /* Handle only PHI statements with two arguments.  TODO: If all
@@ -669,7 +669,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (!useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (new_var)))
     {
-      source_location locus_0, locus_1;
+      location_t locus_0, locus_1;
 
       new_var2 = make_ssa_name (TREE_TYPE (result));
       new_stmt = gimple_build_assign (new_var2, CONVERT_EXPR, new_var);
@@ -2049,7 +2049,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   gphi *newphi;
   gassign *new_stmt;
   gimple_stmt_iterator gsi;
-  source_location locus;
+  location_t locus;
 
   /* Check if middle_bb contains of only one store.  */
   if (!assign
@@ -2133,7 +2133,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 				  gimple *else_assign)
 {
   tree lhs_base, lhs, then_rhs, else_rhs, name;
-  source_location then_locus, else_locus;
+  location_t then_locus, else_locus;
   gimple_stmt_iterator gsi;
   gphi *newphi;
   gassign *new_stmt;

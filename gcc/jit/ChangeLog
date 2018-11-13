@@ -1,3 +1,7 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c: Replace "source_location" with "location_t".
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-jit): New.

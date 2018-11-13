@@ -1,3 +1,37 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* builtins.c: Replace "source_location" with "location_t".
+	* diagnostic-show-locus.c: Likewise.
+	* diagnostic.c: Likewise.
+	* dumpfile.c: Likewise.
+	* gcc-rich-location.h: Likewise.
+	* genmatch.c: Likewise.
+	* gimple.h: Likewise.
+	* gimplify.c: Likewise.
+	* input.c: Likewise.
+	* input.h: Likewise.  Eliminate the typedef.
+	* omp-expand.c: Likewise.
+	* selftest.h: Likewise.
+	* substring-locations.h (get_source_location_for_substring):
+	Rename to..
+	(get_location_within_string): ...this.
+	* tree-cfg.c: Replace "source_location" with "location_t".
+	* tree-cfgcleanup.c: Likewise.
+	* tree-diagnostic.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-outof-ssa.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-phinodes.c: Likewise.
+	* tree-phinodes.h: Likewise.
+	* tree-ssa-loop-ivopts.c: Likewise.
+	* tree-ssa-loop-manip.c: Likewise.
+	* tree-ssa-phiopt.c: Likewise.
+	* tree-ssa-phiprop.c: Likewise.
+	* tree-ssa-threadupdate.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-ssa.h: Likewise.
+	* tree-vect-loop-manip.c: Likewise.
+
 2018-11-13  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* doc/extend.texi: Fix typo in the weakref description.
