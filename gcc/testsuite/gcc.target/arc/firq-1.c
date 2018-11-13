@@ -20,8 +20,8 @@ handler1 (void)
        : "r0", "r1", "r2", "r3", "r4",
 	 "r5", "r6", "r7", "r8", "r9");
 }
-/* { dg-final { scan-assembler-times "r2,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r4,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r6,\\\[sp,\[0-9\]+\\\]" 2 } } */
-/* { dg-final { scan-assembler-times "r8,\\\[sp,\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times "r2,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r4,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r6,\\\[sp" 2 } } */
+/* { dg-final { scan-assembler-times "r8,\\\[sp" 2 } } */
 /* { dg-final { scan-assembler "rtie" } } */
