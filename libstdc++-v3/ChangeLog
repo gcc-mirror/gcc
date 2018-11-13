@@ -1,3 +1,20 @@
+2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc (bitset::full()): Handle edge case
+	for _M_next_word maximum value.
+	(bitset::get_first_unset(), bitset::set(size_type)): Use
+	update_next_word() to update _M_next_word.
+	(bitset::update_next_word()): New function, avoiding wraparound of
+	unsigned _M_next_word member.
+	(bitset::max_word_index()): New function.
+	(chunk::chunk(void*, uint32_t, void*, size_t)): Add assertion.
+	(chunk::max_bytes_per_chunk()): New function.
+	(pool::replenish(memory_resource*, const pool_options&)): Prevent
+	_M_blocks_per_chunk from exceeding max_blocks_per_chunk or from
+	causing chunk::max_bytes_per_chunk() to be exceeded.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate-max-chunks.cc:
+	New test.
+
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
 	* libsupc++/new (std::destroying_delete_t): New.
