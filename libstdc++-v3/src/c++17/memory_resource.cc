@@ -280,7 +280,7 @@ namespace pmr
     // Number of blocks
     size_t size() const noexcept { return _M_size; }
 
-    // Number of unset bits
+    // Number of free blocks (unset bits)
     size_t free() const noexcept
     {
       size_t n = 0;
@@ -289,7 +289,7 @@ namespace pmr
       return n;
     }
 
-    // True if all bits are set
+    // True if there are no free blocks (all bits are set)
     bool full() const noexcept
     {
       if (_M_next_word >= nwords())
@@ -303,7 +303,7 @@ namespace pmr
       return false;
     }
 
-    // True if size() != 0 and no bits are set.
+    // True if size() != 0 and all blocks are free (no bits are set).
     bool empty() const noexcept
     {
       if (nwords() == 0)
@@ -333,29 +333,19 @@ namespace pmr
       return _M_words[wd] & bit;
     }
 
-    size_type find_first_unset() const noexcept
-    {
-      for (size_type i = _M_next_word; i < nwords(); ++i)
-	{
-	  const size_type n = std::__countr_one(_M_words[i]);
-	  if (n < bits_per_word)
-	    return (i * bits_per_word) + n;
-	}
-      return size_type(-1);
-    }
-
     size_type get_first_unset() noexcept
     {
-      for (size_type i = _M_next_word; i < nwords(); ++i)
+      if (_M_next_word < nwords())
 	{
-	  const size_type n = std::__countr_one(_M_words[i]);
+	  const size_type n = std::__countr_one(_M_words[_M_next_word]);
 	  if (n < bits_per_word)
 	    {
 	      const word bit = word(1) << n;
-	      _M_words[i] |= bit;
-	      if (i == _M_next_word)
+	      _M_words[_M_next_word] |= bit;
+	      const size_t res = (_M_next_word * bits_per_word) + n;
+	      if (n == (bits_per_word - 1))
 		update_next_word();
-	      return (i * bits_per_word) + n;
+	      return res;
 	    }
 	}
       return size_type(-1);
@@ -605,9 +595,7 @@ namespace pmr
     : _M_chunks(),
       _M_block_sz(__block_size),
       _M_blocks_per_chunk(__blocks_per_chunk)
-    {
-      __glibcxx_assert(block_size() == __block_size);
-    }
+    { }
 
     // Must call release(r) before destruction!
     ~_Pool() { __glibcxx_assert(_M_chunks.empty()); }
@@ -617,11 +605,7 @@ namespace pmr
 
     // Size of blocks in this pool
     size_t block_size() const noexcept
-#if POW2_BLKSZ
-    { return _S_min_block << _M_blksize_mul; }
-#else
     { return _M_block_sz; }
-#endif
 
     // Allocate a block if the pool is not full, otherwise return null.
     void* try_allocate() noexcept
