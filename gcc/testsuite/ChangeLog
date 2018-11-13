@@ -1,5 +1,10 @@
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87962
+	* gcc.dg/pr87962.c: New testcase.
+
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87967
 	* g++.dg/opt/pr87967.C: New testcase.
 
