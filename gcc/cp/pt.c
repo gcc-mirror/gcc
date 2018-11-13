@@ -19800,6 +19800,11 @@ fn_type_unification (tree fn,
   tsubst_flags_t complain = (explain_p ? tf_warning_or_error : tf_none);
   bool ok;
   static int deduction_depth;
+  /* type_unification_real will pass back any access checks from default
+     template argument substitution.  */
+  vec<deferred_access_check, va_gc> *checks = NULL;
+  /* We don't have all the template args yet.  */
+  bool incomplete = true;
 
   tree orig_fn = fn;
   if (flag_new_inheriting_ctors)
@@ -19857,7 +19862,7 @@ fn_type_unification (tree fn,
 	 template results in an invalid type, type deduction fails.  */
       int i, len = TREE_VEC_LENGTH (tparms);
       location_t loc = input_location;
-      bool incomplete = false;
+      incomplete = false;
 
       if (explicit_targs == error_mark_node)
 	goto fail;
@@ -19923,32 +19928,51 @@ fn_type_unification (tree fn,
             }
         }
 
-      if (!push_tinst_level (fn, explicit_targs))
+      if (incomplete)
 	{
-	  excessive_deduction_depth = true;
-	  goto fail;
-	}
-      processing_template_decl += incomplete;
-      input_location = DECL_SOURCE_LOCATION (fn);
-      /* Ignore any access checks; we'll see them again in
-	 instantiate_template and they might have the wrong
-	 access path at this point.  */
-      push_deferring_access_checks (dk_deferred);
-      fntype = tsubst (TREE_TYPE (fn), explicit_targs,
-		       complain | tf_partial | tf_fndecl_type, NULL_TREE);
-      pop_deferring_access_checks ();
-      input_location = loc;
-      processing_template_decl -= incomplete;
-      pop_tinst_level ();
+	  if (!push_tinst_level (fn, explicit_targs))
+	    {
+	      excessive_deduction_depth = true;
+	      goto fail;
+	    }
+	  ++processing_template_decl;
+	  input_location = DECL_SOURCE_LOCATION (fn);
+	  /* Ignore any access checks; we'll see them again in
+	     instantiate_template and they might have the wrong
+	     access path at this point.  */
+	  push_deferring_access_checks (dk_deferred);
+	  tsubst_flags_t ecomplain = complain | tf_partial | tf_fndecl_type;
+	  fntype = tsubst (TREE_TYPE (fn), explicit_targs, ecomplain, NULL_TREE);
+	  pop_deferring_access_checks ();
+	  input_location = loc;
+	  --processing_template_decl;
+	  pop_tinst_level ();
 
-      if (fntype == error_mark_node)
-	goto fail;
+	  if (fntype == error_mark_node)
+	    goto fail;
+	}
 
       /* Place the explicitly specified arguments in TARGS.  */
       explicit_targs = INNERMOST_TEMPLATE_ARGS (explicit_targs);
       for (i = NUM_TMPL_ARGS (explicit_targs); i--;)
 	TREE_VEC_ELT (targs, i) = TREE_VEC_ELT (explicit_targs, i);
+      if (!incomplete && CHECKING_P
+	  && !NON_DEFAULT_TEMPLATE_ARGS_COUNT (targs))
+	SET_NON_DEFAULT_TEMPLATE_ARGS_COUNT
+	  (targs, NUM_TMPL_ARGS (explicit_targs));
     }
+
+  if (return_type && strict != DEDUCE_CALL)
+    {
+      tree *new_args = XALLOCAVEC (tree, nargs + 1);
+      new_args[0] = return_type;
+      memcpy (new_args + 1, args, nargs * sizeof (tree));
+      args = new_args;
+      ++nargs;
+    }
+
+  if (!incomplete)
+    goto deduced;
 
   /* Never do unification on the 'this' parameter.  */
   parms = skip_artificial_parms_for (fn, TYPE_ARG_TYPES (fntype));
@@ -19963,14 +19987,7 @@ fn_type_unification (tree fn,
     }
   else if (return_type)
     {
-      tree *new_args;
-
       parms = tree_cons (NULL_TREE, TREE_TYPE (fntype), parms);
-      new_args = XALLOCAVEC (tree, nargs + 1);
-      new_args[0] = return_type;
-      memcpy (new_args + 1, args, nargs * sizeof (tree));
-      args = new_args;
-      ++nargs;
     }
 
   /* We allow incomplete unification without an error message here
@@ -19987,11 +20004,6 @@ fn_type_unification (tree fn,
       excessive_deduction_depth = true;
       goto fail;
     }
-
-  /* type_unification_real will pass back any access checks from default
-     template argument substitution.  */
-  vec<deferred_access_check, va_gc> *checks;
-  checks = NULL;
 
   ok = !type_unification_real (DECL_INNERMOST_TEMPLATE_PARMS (fn),
 			       full_targs, parms, args, nargs, /*subr=*/0,
@@ -20035,6 +20047,7 @@ fn_type_unification (tree fn,
 				       convs, explain_p))
     goto fail;
 
+ deduced:
   /* All is well so far.  Now, check:
 
      [temp.deduct]

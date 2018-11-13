@@ -1,5 +1,8 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (fn_type_unification): If we have a full set of explicit
+	arguments, go straight to substitution.
+
 	* decl2.c (min_vis_expr_r, expr_visibility): New.
 	(min_vis_r): Call expr_visibility.
 	(constrain_visibility_for_template): Likewise.
