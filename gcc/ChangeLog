@@ -1,3 +1,9 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87967
+	* tree-vect-loop.c (vect_transform_loop): Also copy PHIs
+	for constants for the scalar loop.
+
 2018-11-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/linux64.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Exclude
