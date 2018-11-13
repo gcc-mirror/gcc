@@ -537,22 +537,22 @@ namespace pmr
   // An oversized allocation that doesn't fit in a pool.
   struct big_block
   {
+    // Alignment must be a power-of-two so we only need to use enough bits
+    // to store the power, not the actual value:
     static constexpr unsigned _S_alignbits
-      = std::__log2p1((unsigned)numeric_limits<size_t>::digits) - 1;
+      = std::__log2p1((unsigned)numeric_limits<size_t>::digits - 1);
+    // Use the remaining bits to store the size:
     static constexpr unsigned _S_sizebits
       = numeric_limits<size_t>::digits - _S_alignbits;
     // The maximum value that can be stored in _S_size
-    static constexpr size_t all_ones = (1ull << _S_sizebits) - 1u;
-    // The minimum size of a big block
+    static constexpr size_t all_ones = size_t(-1) >> _S_alignbits;
+    // The minimum size of a big block (smaller sizes will be rounded up).
     static constexpr size_t min = 1u << _S_alignbits;
 
     big_block(size_t bytes, size_t alignment)
-    : _M_size((bytes + min - 1u) >> _S_alignbits),
+    : _M_size(alloc_size(bytes) >> _S_alignbits),
       _M_align_exp(std::__log2p1(alignment) - 1u)
-    {
-      if (__builtin_expect(std::__countl_one(bytes) == _S_sizebits, false))
-	_M_size = all_ones;
-    }
+    { }
 
     void* pointer = nullptr;
     size_t _M_size : numeric_limits<size_t>::digits - _S_alignbits;
@@ -560,13 +560,26 @@ namespace pmr
 
     size_t size() const noexcept
     {
-      if (__builtin_expect(_M_size == all_ones, false))
+      // If all bits are set in _M_size it means the maximum possible size:
+      if (__builtin_expect(_M_size == (size_t(-1) >> _S_alignbits), false))
 	return (size_t)-1;
       else
 	return _M_size << _S_alignbits;
     }
 
-    size_t align() const noexcept { return 1ul << _M_align_exp; }
+    size_t align() const noexcept { return size_t(1) << _M_align_exp; }
+
+    // Calculate size to be allocated instead of requested number of bytes.
+    // The requested value will be rounded up to a multiple of big_block::min,
+    // so the low _S_alignbits bits are all zero and don't need to be stored.
+    static constexpr size_t alloc_size(size_t bytes) noexcept
+    {
+      const size_t s = bytes + min - 1u;
+      if (__builtin_expect(s < bytes, false))
+	return size_t(-1); // addition wrapped past zero, return max value
+      else
+	return s & ~(min - 1u);
+    }
 
     friend bool operator<(void* p, const big_block& b) noexcept
     { return less<void*>{}(p, b.pointer); }
@@ -915,6 +928,7 @@ namespace pmr
   {
     auto& b = _M_unpooled.emplace_back(bytes, alignment);
     __try {
+      // N.B. need to allocate b.size(), which might be larger than bytes.
       void* p = resource()->allocate(b.size(), alignment);
       b.pointer = p;
       if (_M_unpooled.size() > 1)
@@ -932,8 +946,7 @@ namespace pmr
   }
 
   void
-  __pool_resource::deallocate(void* p, size_t bytes [[maybe_unused]],
-			      size_t alignment [[maybe_unused]])
+  __pool_resource::deallocate(void* p, size_t bytes, size_t alignment)
   {
     const auto it
       = std::lower_bound(_M_unpooled.begin(), _M_unpooled.end(), p);
@@ -941,9 +954,10 @@ namespace pmr
     if (it != _M_unpooled.end() && it->pointer == p) // [[likely]]
       {
 	const auto b = *it;
-	__glibcxx_assert(b.size() == bytes);
+	__glibcxx_assert(b.size() == b.alloc_size(bytes));
 	__glibcxx_assert(b.align() == alignment);
 	_M_unpooled.erase(it);
+	// N.B. need to deallocate b.size(), which might be larger than bytes.
 	resource()->deallocate(p, b.size(), b.align());
       }
   }

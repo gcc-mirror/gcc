@@ -1,5 +1,18 @@
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc (big_block): Improve comments.
+	(big_block::all_ones): Remove.
+	(big_block::big_block(size_t, size_t)): Use alloc_size.
+	(big_block::size()): Add comment, replace all_ones with equivalent
+	expression.
+	(big_block::align()): Shift value of correct type.
+	(big_block::alloc_size(size_t)): New function to round up size.
+	(__pool_resource::allocate(size_t, size_t)): Add comment.
+	(__pool_resource::deallocate(void*, size_t, size_t)): Likewise. Fix
+	incorrect assertion by using big_block::alloc_size(size_t).
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Add
+	more tests for unpooled allocations.
+
 	* src/c++17/memory_resource.cc (bitset::full()): Handle edge case
 	for _M_next_word maximum value.
 	(bitset::get_first_unset(), bitset::set(size_type)): Use
