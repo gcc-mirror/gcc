@@ -408,10 +408,15 @@ gnat_init_gcc_eh (void)
      as permitted in Ada.
      Turn off -faggressive-loop-optimizations because it may optimize away
      out-of-bound array accesses that we want to be able to catch.
-     If checks are disabled, we use the same settings as the C++ compiler.  */
+     If checks are disabled, we use the same settings as the C++ compiler,
+     except for the runtime on platforms where S'Machine_Overflow is true
+     because the runtime depends on FP (hardware) checks being properly
+     handled despite being compiled in -gnatp mode.  */
   flag_exceptions = 1;
   flag_delete_dead_exceptions = 1;
-  if (!Suppress_Checks)
+  if (Suppress_Checks)
+    flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
+  else
     {
       flag_non_call_exceptions = 1;
       flag_aggressive_loop_optimizations = 0;
