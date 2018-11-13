@@ -2458,7 +2458,8 @@ vect_analyze_group_access_1 (dr_vec_info *dr_info)
 	  return true;
 	}
 
-      dump_printf_loc (MSG_NOTE, vect_location, "using strided accesses\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "using strided accesses\n");
       STMT_VINFO_STRIDED_P (stmt_info) = true;
       return true;
     }
@@ -3558,9 +3559,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
   unsigned int count = (comp_alias_ddrs.length ()
 			+ check_unequal_addrs.length ());
 
-  dump_printf_loc (MSG_NOTE, vect_location,
-		   "improved number of alias checks from %d to %d\n",
-		   may_alias_ddrs.length (), count);
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "improved number of alias checks from %d to %d\n",
+		     may_alias_ddrs.length (), count);
   if ((int) count > PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
     return opt_result::failure_at
       (vect_location,

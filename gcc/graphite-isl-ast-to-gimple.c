@@ -1518,10 +1518,13 @@ graphite_regenerate_ast_isl (scop_p scop)
 
   if (t.codegen_error_p ())
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-		       "loop nest not optimized, code generation error\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			   "loop nest not optimized, code generation error\n");
+	}
 
       /* Remove the unreachable region.  */
       remove_edge_and_dominated_blocks (if_region->true_region->region.entry);

@@ -1184,6 +1184,19 @@ dump_context dump_context::s_default;
 /* Implementation of dump_* API calls, calling into dump_context
    member functions.  */
 
+/* Calls to the dump_* functions do non-trivial work, so they ought
+   to be guarded by:
+     if (dump_enabled_p ())
+   Assert that they are guarded, and, if assertions are disabled,
+   bail out if the calls weren't properly guarded.  */
+
+#define VERIFY_DUMP_ENABLED_P \
+  do {					\
+    gcc_assert (dump_enabled_p ());	\
+    if (!dump_enabled_p ())		\
+      return;				\
+  } while (0)
+
 /* Dump gimple statement GS with SPC indentation spaces and
    EXTRA_DUMP_FLAGS on the dump streams if DUMP_KIND is enabled.  */
 
@@ -1191,6 +1204,7 @@ void
 dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 		  gimple *gs, int spc)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_gimple_stmt (dump_kind, extra_dump_flags, gs, spc);
 }
 
@@ -1200,6 +1214,7 @@ void
 dump_gimple_stmt_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_gimple_stmt_loc (dump_kind, loc, extra_dump_flags,
 					     gs, spc);
 }
@@ -1212,6 +1227,7 @@ void
 dump_gimple_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 		  gimple *gs, int spc)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_gimple_expr (dump_kind, extra_dump_flags, gs, spc);
 }
 
@@ -1221,6 +1237,7 @@ void
 dump_gimple_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		      dump_flags_t extra_dump_flags, gimple *gs, int spc)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_gimple_expr_loc (dump_kind, loc, extra_dump_flags,
 					     gs, spc);
 }
@@ -1232,6 +1249,7 @@ void
 dump_generic_expr (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
 		   tree t)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_generic_expr (dump_kind, extra_dump_flags, t);
 }
 
@@ -1242,6 +1260,7 @@ void
 dump_generic_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		       dump_flags_t extra_dump_flags, tree t)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_generic_expr_loc (dump_kind, loc, extra_dump_flags,
 					      t);
 }
@@ -1251,6 +1270,7 @@ dump_generic_expr_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 void
 dump_printf (dump_flags_t dump_kind, const char *format, ...)
 {
+  VERIFY_DUMP_ENABLED_P;
   va_list ap;
   va_start (ap, format);
   dump_context::get ().dump_printf_va (dump_kind, format, &ap);
@@ -1264,6 +1284,7 @@ void
 dump_printf_loc (dump_flags_t dump_kind, const dump_location_t &loc,
 		 const char *format, ...)
 {
+  VERIFY_DUMP_ENABLED_P;
   va_list ap;
   va_start (ap, format);
   dump_context::get ().dump_printf_loc_va (dump_kind, loc, format, &ap);
@@ -1276,6 +1297,7 @@ template<unsigned int N, typename C>
 void
 dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_dec (dump_kind, value);
 }
 
@@ -1288,6 +1310,7 @@ template void dump_dec (dump_flags_t, const poly_widest_int &);
 void
 dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 {
+  VERIFY_DUMP_ENABLED_P;
   if (dump_file
       && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_dec (value, dump_file, sgn);
@@ -1302,6 +1325,7 @@ dump_dec (dump_flags_t dump_kind, const poly_wide_int &value, signop sgn)
 void
 dump_hex (dump_flags_t dump_kind, const poly_wide_int &value)
 {
+  VERIFY_DUMP_ENABLED_P;
   if (dump_file
       && dump_context::get ().apply_dump_filter_p (dump_kind, pflags))
     print_hex (value, dump_file);
@@ -1325,6 +1349,7 @@ dumpfile_ensure_any_optinfo_are_flushed ()
 void
 dump_symtab_node (dump_flags_t dump_kind, symtab_node *node)
 {
+  VERIFY_DUMP_ENABLED_P;
   dump_context::get ().dump_symtab_node (dump_kind, node);
 }
 

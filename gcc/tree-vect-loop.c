@@ -1399,14 +1399,16 @@ vect_update_vf_for_slp (loop_vec_info loop_vinfo)
 
   if (only_slp_in_loop)
     {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "Loop contains only SLP stmts\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Loop contains only SLP stmts\n");
       vectorization_factor = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
     }
   else
     {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "Loop contains SLP and non-SLP stmts\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Loop contains SLP and non-SLP stmts\n");
       /* Both the vectorization factor and unroll factor have the form
 	 current_vector_size * X for some rational X, so they must have
 	 a common multiple.  */
@@ -3337,7 +3339,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Cost model disabled.  */
   if (unlimited_cost_model (LOOP_VINFO_LOOP (loop_vinfo)))
     {
-      dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "cost model disabled.\n");
       *ret_min_profitable_niters = 0;
       *ret_min_profitable_estimate = 0;
       return;
@@ -3350,9 +3353,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       unsigned len = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo).length ();
       (void) add_stmt_cost (target_cost_data, len, vector_stmt, NULL, 0,
 			    vect_prologue);
-      dump_printf (MSG_NOTE,
-                   "cost model: Adding cost of checks for loop "
-                   "versioning to treat misalignment.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE,
+		     "cost model: Adding cost of checks for loop "
+		     "versioning to treat misalignment.\n");
     }
 
   /* Requires loop versioning with alias checks.  */
@@ -3379,9 +3383,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	  (void) add_stmt_cost (target_cost_data, nstmts, scalar_stmt,
 				NULL, 0, vect_prologue);
 	}
-      dump_printf (MSG_NOTE,
-                   "cost model: Adding cost of checks for loop "
-                   "versioning aliasing.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE,
+		     "cost model: Adding cost of checks for loop "
+		     "versioning aliasing.\n");
     }
 
   /* Requires loop versioning with niter checks.  */
@@ -3390,9 +3395,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       /*  FIXME: Make cost depend on complexity of individual check.  */
       (void) add_stmt_cost (target_cost_data, 1, vector_stmt, NULL, 0,
 			    vect_prologue);
-      dump_printf (MSG_NOTE,
-		   "cost model: Adding cost of checks for loop "
-		   "versioning niters.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE,
+		     "cost model: Adding cost of checks for loop "
+		     "versioning niters.\n");
     }
 
   if (LOOP_REQUIRES_VERSIONING (loop_vinfo))
@@ -3440,15 +3446,17 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   else if (npeel < 0)
     {
       peel_iters_prologue = assumed_vf / 2;
-      dump_printf (MSG_NOTE, "cost model: "
-                   "prologue peel iters set to vf/2.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "prologue peel iters set to vf/2.\n");
 
       /* If peeling for alignment is unknown, loop bound of main loop becomes
          unknown.  */
       peel_iters_epilogue = assumed_vf / 2;
-      dump_printf (MSG_NOTE, "cost model: "
-                   "epilogue peel iters set to vf/2 because "
-                   "peeling for alignment is unknown.\n");
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "cost model: "
+		     "epilogue peel iters set to vf/2 because "
+		     "peeling for alignment is unknown.\n");
 
       /* If peeled iterations are unknown, count a taken branch and a not taken
          branch per peeled loop. Even if scalar loop iterations are known,
@@ -3653,9 +3661,10 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       return;
     }
 
-  dump_printf (MSG_NOTE,
-	       "  Calculated minimum iters for profitability: %d\n",
-	       min_profitable_iters);
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE,
+		 "  Calculated minimum iters for profitability: %d\n",
+		 min_profitable_iters);
 
   if (!LOOP_VINFO_FULLY_MASKED_P (loop_vinfo)
       && min_profitable_iters < (assumed_vf + peel_iters_prologue))

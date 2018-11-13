@@ -9530,8 +9530,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 
   if (PURE_SLP_STMT (stmt_info) && !node)
     {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "handled only by SLP analysis\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "handled only by SLP analysis\n");
       return opt_result::success ();
     }
 
