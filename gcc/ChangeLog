@@ -1,3 +1,12 @@
+2018-11-13  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-vrp.c (value_range_base::dump): Dump type.
+	Do not use INF nomenclature for 1-bit types.
+	(dump_value_range): Group all variants to common dumping code.
+	(debug): New overloaded functions for value_ranges.
+	(value_range_base::dump): Remove no argument version.
+	(value_range::dump): Same.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87931
