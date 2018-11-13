@@ -6126,8 +6126,10 @@ ensure_base_align (dr_vec_info *dr_info)
     {
       tree base_decl = dr_info->base_decl;
 
-      unsigned int align_base_to
-	= DR_TARGET_ALIGNMENT (dr_info) * BITS_PER_UNIT;
+      // We should only be able to increase the alignment of a base object if
+      // we know what its new alignment should be at compile time.
+      unsigned HOST_WIDE_INT align_base_to =
+	DR_TARGET_ALIGNMENT (dr_info).to_constant () * BITS_PER_UNIT;
 
       if (decl_in_symtab_p (base_decl))
 	symtab_node::get (base_decl)->increase_alignment (align_base_to);
@@ -7075,7 +7077,8 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	  stmt_vec_info next_stmt_info = first_stmt_info;
 	  for (i = 0; i < vec_num; i++)
 	    {
-	      unsigned align, misalign;
+	      unsigned misalign;
+	      unsigned HOST_WIDE_INT align;
 
 	      tree final_mask = NULL_TREE;
 	      if (loop_masks)
@@ -7116,7 +7119,7 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		   vect_permute_store_chain().  */
 		vec_oprnd = result_chain[i];
 
-	      align = DR_TARGET_ALIGNMENT (first_dr_info);
+	      align = known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 	      if (aligned_access_p (first_dr_info))
 		misalign = 0;
 	      else if (DR_MISALIGNMENT (first_dr_info) == -1)
@@ -8304,7 +8307,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		case dr_aligned:
 		case dr_unaligned_supported:
 		  {
-		    unsigned int align, misalign;
+		    unsigned int misalign;
+		    unsigned HOST_WIDE_INT align;
 
 		    if (memory_access_type == VMAT_GATHER_SCATTER)
 		      {
@@ -8324,7 +8328,8 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 			break;
 		      }
 
-		    align = DR_TARGET_ALIGNMENT (dr_info);
+		    align =
+		      known_alignment (DR_TARGET_ALIGNMENT (first_dr_info));
 		    if (alignment_support_scheme == dr_aligned)
 		      {
 			gcc_assert (aligned_access_p (first_dr_info));
@@ -8391,7 +8396,10 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		      ptr = copy_ssa_name (dataref_ptr);
 		    else
 		      ptr = make_ssa_name (TREE_TYPE (dataref_ptr));
-		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr_info);
+		    // For explicit realign the target alignment should be
+		    // known at compile time.
+		    unsigned HOST_WIDE_INT align =
+		      DR_TARGET_ALIGNMENT (first_dr_info).to_constant ();
 		    new_stmt = gimple_build_assign
 				 (ptr, BIT_AND_EXPR, dataref_ptr,
 				  build_int_cst
@@ -8435,7 +8443,10 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		      new_temp = copy_ssa_name (dataref_ptr);
 		    else
 		      new_temp = make_ssa_name (TREE_TYPE (dataref_ptr));
-		    unsigned int align = DR_TARGET_ALIGNMENT (first_dr_info);
+		    // We should only be doing this if we know the target
+		    // alignment at compile time.
+		    unsigned HOST_WIDE_INT align =
+		      DR_TARGET_ALIGNMENT (first_dr_info).to_constant ();
 		    new_stmt = gimple_build_assign
 		      (new_temp, BIT_AND_EXPR, dataref_ptr,
 		       build_int_cst (TREE_TYPE (dataref_ptr),

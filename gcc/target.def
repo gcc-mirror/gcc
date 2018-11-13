@@ -1802,7 +1802,7 @@ for alignment.\n\
 \n\
 The default hook returns @code{TYPE_ALIGN (@var{type})}, which is\n\
 correct for most targets.",
- HOST_WIDE_INT, (const_tree type),
+ poly_uint64, (const_tree type),
  default_preferred_vector_alignment)
 
 /* Return true if vector alignment is reachable (by peeling N

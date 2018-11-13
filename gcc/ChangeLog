@@ -1,3 +1,41 @@
+2018-11-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_vectorize_preferred_vector_alignment): Change return type to
+	poly_uint64.
+	(aarch64_simd_vector_alignment_reachable): Adapt to preferred vector
+	alignment being a poly int.
+	* doc/tm.texi (TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT): Change
+	return type to poly_uint64.
+	* target.def (default_preferred_vector_alignment): Likewise.
+	* targhooks.c (default_preferred_vector_alignment): Likewise.
+	* targhooks.h (default_preferred_vector_alignment): Likewise.
+	* tree-vect-data-refs.c (vect_calculate_target_alignment): Likewise.
+	(vect_compute_data_ref_alignment): Adapt to vector alignment being a
+	poly int.
+	(vect_update_misalignment_for_peel): Likewise.
+	(vect_enhance_data_refs_alignment): Likewise.
+	(vect_find_same_alignment_drs): Likewise.
+	(vect_duplicate_ssa_name_ptr_info): Likewise.
+	(vect_setup_realignment): Likewise.
+	(vect_can_force_dr_alignment_p): Change alignment parameter type to
+	poly_uint64.
+	* tree-vect-loop-manip.c (get_misalign_in_elems): Learn to construct a
+	mask with a compile time variable vector alignment.
+	(vect_gen_prolog_loop_niters): Adapt to vector alignment being a poly
+	int.
+	(vect_do_peeling): Exit early if vector alignment is not constant.
+	* tree-vect-stmts.c (ensure_base_align): Adapt to vector alignment being
+	a poly int.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likweise.
+	* tree-vectorizer.h (struct dr_vec_info): Make target_alignment field a
+	poly_uint64.
+	(vect_known_alignment_in_bytes): Adapt to vector alignment being a
+	poly int.
+	(vect_can_force_dr_alignment_p): Change alignment parameter type to
+	poly_uint64.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87962
