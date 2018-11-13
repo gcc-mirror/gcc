@@ -940,7 +940,8 @@ namespace pmr
   }
 
   void
-  __pool_resource::deallocate(void* p, size_t bytes, size_t alignment)
+  __pool_resource::deallocate(void* p, size_t bytes [[maybe_unused]],
+			      size_t alignment [[maybe_unused]])
   {
     const auto it
       = std::lower_bound(_M_unpooled.begin(), _M_unpooled.end(), p);
