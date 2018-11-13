@@ -1,3 +1,8 @@
+2018-11-13  Martin Liska  <mliska@suse.cz>
+
+	* gcc.target/i386/pr87930.c: Move to ...
+	* gcc.dg/asan/pr87930.c: ... here.  Guard for i?86/x86_64 targets.
+
 2018-11-10  Stafford Horne  <shorne@gmail.com>
 
 	* MAINTAINERS (CPU Port Maintainers): Add myself for or1k.
