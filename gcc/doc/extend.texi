@@ -22064,6 +22064,10 @@ code originally written for other compilers.  Note that in general
 we do not recommend the use of pragmas; @xref{Function Attributes},
 for further explanation.
 
+The GNU C preprocessor recognizes several pragmas in addition to the
+compiler pragmas documented here.  Refer to the CPP manual for more
+information.
+
 @menu
 * AArch64 Pragmas::
 * ARM Pragmas::
