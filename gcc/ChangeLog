@@ -1,3 +1,7 @@
+2018-11-13  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* doc/extend.texi: Fix typo in the weakref description.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86991
