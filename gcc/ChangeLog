@@ -1,3 +1,30 @@
+2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87899
+	* lra-lives.c (start_living): Update white space in comment.
+	(enum point_type): New.
+	(sparseset_contains_pseudos_p): New function.
+	(update_pseudo_point): Likewise.
+	(make_hard_regno_live): Use HARD_REGISTER_NUM_P macro.
+	(make_hard_regno_dead): Likewise.  Remove ignore_reg_for_conflicts
+	handling.  Move early exit after adding conflicts.
+	(mark_pseudo_live): Use HARD_REGISTER_NUM_P macro.  Add early exit
+	if regno is already live.  Remove all handling of program points.
+	(mark_pseudo_dead): Use HARD_REGISTER_NUM_P macro.  Add early exit
+	after adding conflicts.  Remove all handling of program points and
+	ignore_reg_for_conflicts.
+	(mark_regno_live): Use HARD_REGISTER_NUM_P macro.  Remove return value
+	and do not guard call to mark_pseudo_live.
+	(mark_regno_dead): Use HARD_REGISTER_NUM_P macro.  Remove return value
+	and do not guard call to mark_pseudo_dead.
+	(check_pseudos_live_through_calls): Use HARD_REGISTER_NUM_P macro.
+	(process_bb_lives): Use HARD_REGISTER_NUM_P and HARD_REGISTER_P macros.
+	Use new function update_pseudo_point.  Handle register copies by
+	removing the source register from the live set.  Handle INOUT operands.
+	Update to the next program point using the unused_set, dead_set and
+	start_dying sets.
+	(lra_create_live_ranges_1): Use HARD_REGISTER_NUM_P macro.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* builtins.c: Replace "source_location" with "location_t".
