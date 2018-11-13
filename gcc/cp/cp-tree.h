@@ -5231,6 +5231,21 @@ struct cp_unevaluated
   ~cp_unevaluated ();
 };
 
+/* The reverse: an RAII class used for nested contexts that are evaluated even
+   if the enclosing context is not.  */
+
+struct cp_evaluated
+{
+  int uneval;
+  int inhibit;
+  cp_evaluated ()
+    : uneval(cp_unevaluated_operand), inhibit(c_inhibit_evaluation_warnings)
+  { cp_unevaluated_operand = c_inhibit_evaluation_warnings = 0; }
+  ~cp_evaluated ()
+  { cp_unevaluated_operand = uneval;
+    c_inhibit_evaluation_warnings = inhibit; }
+};
+
 /* in pt.c  */
 
 /* These values are used for the `STRICT' parameter to type_unification and

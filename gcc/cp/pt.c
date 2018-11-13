@@ -8256,8 +8256,6 @@ coerce_template_parms (tree parms,
   tree inner_args;
   tree new_args;
   tree new_inner_args;
-  int saved_unevaluated_operand;
-  int saved_inhibit_evaluation_warnings;
 
   /* When used as a boolean value, indicates whether this is a
      variadic template parameter list. Since it's an int, we can also
@@ -8374,10 +8372,8 @@ coerce_template_parms (tree parms,
 
   /* We need to evaluate the template arguments, even though this
      template-id may be nested within a "sizeof".  */
-  saved_unevaluated_operand = cp_unevaluated_operand;
-  cp_unevaluated_operand = 0;
-  saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
-  c_inhibit_evaluation_warnings = 0;
+  cp_evaluated ev;
+
   new_inner_args = make_tree_vec (nparms);
   new_args = add_outermost_template_args (args, new_inner_args);
   int pack_adjust = 0;
@@ -8517,8 +8513,6 @@ coerce_template_parms (tree parms,
 	lost++;
       TREE_VEC_ELT (new_inner_args, arg_idx - pack_adjust) = arg;
     }
-  cp_unevaluated_operand = saved_unevaluated_operand;
-  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
   if (missing || arg_idx < nargs - variadic_args_p)
     {
@@ -12655,14 +12649,9 @@ tsubst_aggr_type (tree t,
 	  tree argvec;
 	  tree context;
 	  tree r;
-	  int saved_unevaluated_operand;
-	  int saved_inhibit_evaluation_warnings;
 
 	  /* In "sizeof(X<I>)" we need to evaluate "I".  */
-	  saved_unevaluated_operand = cp_unevaluated_operand;
-	  cp_unevaluated_operand = 0;
-	  saved_inhibit_evaluation_warnings = c_inhibit_evaluation_warnings;
-	  c_inhibit_evaluation_warnings = 0;
+	  cp_evaluated ev;
 
 	  /* First, determine the context for the type we are looking
 	     up.  */
@@ -12695,9 +12684,6 @@ tsubst_aggr_type (tree t,
 					 entering_scope, complain);
 	      r = cp_build_qualified_type_real (r, cp_type_quals (t), complain);
 	    }
-
-	  cp_unevaluated_operand = saved_unevaluated_operand;
-	  c_inhibit_evaluation_warnings = saved_inhibit_evaluation_warnings;
 
 	  return r;
 	}
