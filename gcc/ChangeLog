@@ -1,5 +1,11 @@
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/87962
+	* tree-vect-loop.c (vect_is_simple_reduction): More reliably
+	detect outer reduction for disqualifying in-loop uses.
+
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/87967
 	* tree-vect-loop.c (vect_transform_loop): Also copy PHIs
 	for constants for the scalar loop.

@@ -2807,11 +2807,11 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   gphi *phi = as_a <gphi *> (phi_info->stmt);
   struct loop *loop = (gimple_bb (phi))->loop_father;
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
+  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
   gimple *phi_use_stmt = NULL;
   enum tree_code orig_code, code;
   tree op1, op2, op3 = NULL_TREE, op4 = NULL_TREE;
   tree type;
-  int nloop_uses;
   tree name;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2827,7 +2827,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
      can be constant.  See PR60382.  */
   if (has_zero_uses (phi_name))
     return NULL;
-  nloop_uses = 0;
+  unsigned nphi_def_loop_uses = 0;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, phi_name)
     {
       gimple *use_stmt = USE_STMT (use_p);
@@ -2843,20 +2843,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
           return NULL;
         }
 
-      /* For inner loop reductions in nested vectorization there are no
-         constraints on the number of uses in the inner loop.  */
-      if (loop == vect_loop->inner)
-	continue;
-
-      nloop_uses++;
-      if (nloop_uses > 1)
-        {
-          if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "reduction value used in loop.\n");
-          return NULL;
-        }
-
+      nphi_def_loop_uses++;
       phi_use_stmt = use_stmt;
     }
 
@@ -2894,26 +2881,32 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       return NULL;
     }
 
-  nloop_uses = 0;
+  unsigned nlatch_def_loop_uses = 0;
   auto_vec<gphi *, 3> lcphis;
+  bool inner_loop_of_double_reduc = false;
   FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
     {
       gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
 	continue;
       if (flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
-	nloop_uses++;
+	nlatch_def_loop_uses++;
       else
-	/* We can have more than one loop-closed PHI.  */
-	lcphis.safe_push (as_a <gphi *> (use_stmt));
+	{
+	  /* We can have more than one loop-closed PHI.  */
+	  lcphis.safe_push (as_a <gphi *> (use_stmt));
+	  if (nested_in_vect_loop
+	      && (STMT_VINFO_DEF_TYPE (loop_info->lookup_stmt (use_stmt))
+		  == vect_double_reduction_def))
+	    inner_loop_of_double_reduc = true;
+	}
     }
 
   /* If this isn't a nested cycle or if the nested cycle reduction value
      is used ouside of the inner loop we cannot handle uses of the reduction
      value.  */
-  bool nested_in_vect_loop = flow_loop_nested_p (vect_loop, loop);
-  if ((!nested_in_vect_loop || !lcphis.is_empty ())
-      && nloop_uses > 1)
+  if ((!nested_in_vect_loop || inner_loop_of_double_reduc)
+      && (nlatch_def_loop_uses > 1 || nphi_def_loop_uses > 1))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
