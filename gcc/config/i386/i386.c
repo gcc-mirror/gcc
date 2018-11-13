@@ -3546,6 +3546,11 @@ ix86_option_override_internal (bool main_args_p,
     error ("-mabi=ms not supported with X32 ABI");
   gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
 
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS) && opts->x_ix86_abi == MS_ABI)
+    error ("%<-mabi=ms%> not supported with %<-fsanitize=address%>");
+  if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_ix86_abi == MS_ABI)
+    error ("%<-mabi=ms%> not supported with %<-fsanitize=kernel-address%>");
+
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */

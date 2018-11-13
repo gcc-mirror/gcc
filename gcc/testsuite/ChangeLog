@@ -1,3 +1,8 @@
+2018-11-13  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/87930
+	* gcc.target/i386/pr87930.c: New test.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87962
