@@ -1,9 +1,19 @@
+2018-11-13  Alan Modra  <amodra@gmail.com>
+
+	* gcc/doc/md.texi (Machine Constraints): Correct rs6000 h constraint
+	description.
+	* config/rs6000/rs6000.md (movsi_internal1): Delete MT%0 case
+	covered by alternative.
+	(movcc_internal1): Ignore h for register preference.
+	(mov<mode>_hardfloat64): Likewise.
+	(mov<mode>_softfloat): Ignore c, l, h for register preference.
+
 2018-11-12  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR preprocessor/47823
 	* doc/cpp.texi (Alternatives to Wrapper #ifndef): Move #pragma once
 	documentation to...
-	(Pragmas): ...here.  
+	(Pragmas): ...here.
 	* doc/extend.texi (Pragmas): Note additional pragmas documented
 	in the CPP manual.
 
