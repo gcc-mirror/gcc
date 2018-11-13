@@ -1,5 +1,9 @@
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
+	* decl2.c (min_vis_expr_r, expr_visibility): New.
+	(min_vis_r): Call expr_visibility.
+	(constrain_visibility_for_template): Likewise.
+
 	Implement P0722R3, destroying operator delete.
 	* call.c (std_destroying_delete_t_p, destroying_delete_p): New.
 	(aligned_deallocation_fn_p, usual_deallocation_fn_p): Use
