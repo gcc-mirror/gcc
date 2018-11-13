@@ -77,6 +77,8 @@ public:
 
 protected:
   void check ();
+  static value_range_base union_helper (const value_range_base *,
+					const value_range_base *);
 
   enum value_range_kind m_kind;
 
@@ -145,7 +147,6 @@ class GTY((user)) value_range : public value_range_base
   void check ();
   bool equal_p (const value_range &, bool ignore_equivs) const;
   void intersect_helper (value_range *, const value_range *);
-  void union_helper (value_range *, const value_range *);
 
   /* Set of SSA names whose value ranges are equivalent to this one.
      This set is only valid when TYPE is VR_RANGE or VR_ANTI_RANGE.  */

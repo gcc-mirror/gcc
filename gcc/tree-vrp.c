@@ -6084,6 +6084,49 @@ value_range::intersect (const value_range *other)
     }
 }
 
+/* Helper for meet operation for value ranges.  Given two value ranges VR0 and
+   VR1, return a range that contains both VR0 and VR1.  This may not be the
+   smallest possible such range.  */
+
+value_range_base
+value_range_base::union_helper (const value_range_base *vr0,
+				const value_range_base *vr1)
+{
+  /* VR0 has the resulting range if VR1 is undefined or VR0 is varying.  */
+  if (vr1->undefined_p ()
+      || vr0->varying_p ())
+    return *vr0;
+
+  /* VR1 has the resulting range if VR0 is undefined or VR1 is varying.  */
+  if (vr0->undefined_p ()
+      || vr1->varying_p ())
+    return *vr1;
+
+  value_range_kind vr0type = vr0->kind ();
+  tree vr0min = vr0->min ();
+  tree vr0max = vr0->max ();
+  union_ranges (&vr0type, &vr0min, &vr0max,
+		vr1->kind (), vr1->min (), vr1->max ());
+
+  /* Work on a temporary so we can still use vr0 when union returns varying.  */
+  value_range tem;
+  tem.set_and_canonicalize (vr0type, vr0min, vr0max);
+
+  /* Failed to find an efficient meet.  Before giving up and setting
+     the result to VARYING, see if we can at least derive a useful
+     anti-range.  */
+  if (tem.varying_p ()
+      && range_includes_zero_p (vr0) == 0
+      && range_includes_zero_p (vr1) == 0)
+    {
+      tem.set_nonnull (vr0->type ());
+      return tem;
+    }
+
+  return tem;
+}
+
+
 /* Meet operation for value ranges.  Given two value ranges VR0 and
    VR1, store in VR0 a range that contains both VR0 and VR1.  This
    may not be the smallest possible such range.  */
@@ -6091,118 +6134,23 @@ value_range::intersect (const value_range *other)
 void
 value_range_base::union_ (const value_range_base *other)
 {
-  if (other->undefined_p ())
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      /* this already has the resulting range.  */
-      return;
+      fprintf (dump_file, "Meeting\n  ");
+      dump_value_range (dump_file, this);
+      fprintf (dump_file, "\nand\n  ");
+      dump_value_range (dump_file, other);
+      fprintf (dump_file, "\n");
     }
 
-  if (this->undefined_p ())
+  *this = union_helper (this, other);
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      *this = *other;
-      return;
+      fprintf (dump_file, "to\n  ");
+      dump_value_range (dump_file, this);
+      fprintf (dump_file, "\n");
     }
-
-  if (this->varying_p ())
-    {
-      /* Nothing to do.  VR0 already has the resulting range.  */
-      return;
-    }
-
-  if (other->varying_p ())
-    {
-      this->set_varying ();
-      return;
-    }
-
-  value_range saved (*this);
-  value_range_kind vr0type = this->kind ();
-  tree vr0min = this->min ();
-  tree vr0max = this->max ();
-  union_ranges (&vr0type, &vr0min, &vr0max,
-		other->kind (), other->min (), other->max ());
-  *this = value_range_base (vr0type, vr0min, vr0max);
-  if (this->varying_p ())
-    {
-      /* Failed to find an efficient meet.  Before giving up and setting
-	 the result to VARYING, see if we can at least derive a useful
-	 anti-range.  */
-      if (range_includes_zero_p (&saved) == 0
-	  && range_includes_zero_p (other) == 0)
-	{
-	  tree zero = build_int_cst (saved.type (), 0);
-	  *this = value_range_base (VR_ANTI_RANGE, zero, zero);
-	  return;
-	}
-
-      this->set_varying ();
-      return;
-    }
-  this->set_and_canonicalize (this->kind (), this->min (), this->max ());
-}
-
-/* Meet operation for value ranges.  Given two value ranges VR0 and
-   VR1, store in VR0 a range that contains both VR0 and VR1.  This
-   may not be the smallest possible such range.  */
-
-void
-value_range::union_helper (value_range *vr0, const value_range *vr1)
-{
-  if (vr1->undefined_p ())
-    {
-      /* VR0 already has the resulting range.  */
-      return;
-    }
-
-  if (vr0->undefined_p ())
-    {
-      vr0->deep_copy (vr1);
-      return;
-    }
-
-  if (vr0->varying_p ())
-    {
-      /* Nothing to do.  VR0 already has the resulting range.  */
-      return;
-    }
-
-  if (vr1->varying_p ())
-    {
-      vr0->set_varying ();
-      return;
-    }
-
-  value_range_kind vr0type = vr0->kind ();
-  tree vr0min = vr0->min ();
-  tree vr0max = vr0->max ();
-  union_ranges (&vr0type, &vr0min, &vr0max,
-		vr1->kind (), vr1->min (), vr1->max ());
-  /* Work on a temporary so we can still use vr0 when union returns varying.  */
-  value_range tem;
-  tem.set_and_canonicalize (vr0type, vr0min, vr0max);
-  if (tem.varying_p ())
-    {
-      /* Failed to find an efficient meet.  Before giving up and setting
-	 the result to VARYING, see if we can at least derive a useful
-	 anti-range.  */
-      if (range_includes_zero_p (vr0) == 0
-	  && range_includes_zero_p (vr1) == 0)
-	{
-	  vr0->set_nonnull (vr0->type ());
-	  return;
-	}
-
-      vr0->set_varying ();
-      return;
-    }
-  vr0->update (tem.kind (), tem.min (), tem.max ());
-
-  /* The resulting set of equivalences is always the intersection of
-     the two sets.  */
-  if (vr0->m_equiv && vr1->m_equiv && vr0->m_equiv != vr1->m_equiv)
-    bitmap_and_into (vr0->m_equiv, vr1->m_equiv);
-  else if (vr0->m_equiv && !vr1->m_equiv)
-    bitmap_clear (vr0->m_equiv);
 }
 
 void
@@ -6216,7 +6164,24 @@ value_range::union_ (const value_range *other)
       dump_value_range (dump_file, other);
       fprintf (dump_file, "\n");
     }
-  union_helper (this, other);
+
+  /* If THIS is undefined we want to pick up equivalences from OTHER.
+     Just special-case this here rather than trying to fixup after the fact.  */
+  if (this->undefined_p ())
+    this->deep_copy (other);
+  else
+    {
+      value_range_base tem = union_helper (this, other);
+      this->update (tem.kind (), tem.min (), tem.max ());
+
+      /* The resulting set of equivalences is always the intersection of
+	 the two sets.  */
+      if (this->m_equiv && other->m_equiv && this->m_equiv != other->m_equiv)
+	bitmap_and_into (this->m_equiv, other->m_equiv);
+      else if (this->m_equiv && !other->m_equiv)
+	bitmap_clear (this->m_equiv);
+    }
+
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "to\n  ");
@@ -6867,11 +6832,11 @@ make_pass_vrp (gcc::context *ctxt)
 /* Worker for determine_value_range.  */
 
 static void
-determine_value_range_1 (value_range *vr, tree expr)
+determine_value_range_1 (value_range_base *vr, tree expr)
 {
   if (BINARY_CLASS_P (expr))
     {
-      value_range vr0, vr1;
+      value_range_base vr0, vr1;
       determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
       determine_value_range_1 (&vr1, TREE_OPERAND (expr, 1));
       extract_range_from_binary_expr (vr, TREE_CODE (expr), TREE_TYPE (expr),
@@ -6879,7 +6844,7 @@ determine_value_range_1 (value_range *vr, tree expr)
     }
   else if (UNARY_CLASS_P (expr))
     {
-      value_range vr0;
+      value_range_base vr0;
       determine_value_range_1 (&vr0, TREE_OPERAND (expr, 0));
       extract_range_from_unary_expr (vr, TREE_CODE (expr), TREE_TYPE (expr),
 				     &vr0, TREE_TYPE (TREE_OPERAND (expr, 0)));
@@ -6908,7 +6873,7 @@ determine_value_range_1 (value_range *vr, tree expr)
 value_range_kind
 determine_value_range (tree expr, wide_int *min, wide_int *max)
 {
-  value_range vr;
+  value_range_base vr;
   determine_value_range_1 (&vr, expr);
   if (vr.constant_p ())
     {
