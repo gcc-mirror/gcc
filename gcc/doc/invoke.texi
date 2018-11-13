@@ -11164,13 +11164,13 @@ streams being prefetched (see @option{simultaneous-prefetches}).
 Maximum number of prefetches that can run at the same time.
 
 @item l1-cache-line-size
-The size of cache line in L1 cache, in bytes.
+The size of cache line in L1 data cache, in bytes.
 
 @item l1-cache-size
-The size of L1 cache, in kilobytes.
+The size of L1 data cache, in kilobytes.
 
 @item l2-cache-size
-The size of L2 cache, in kilobytes.
+The size of L2 data cache, in kilobytes.
 
 @item prefetch-dynamic-strides
 Whether the loop array prefetch pass should issue software prefetch hints
