@@ -1,5 +1,10 @@
 2018-11-13  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (logical_const_operand),
+	(logical_operand): Correct comment.
+
+2018-11-13  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.md (addsi3_high): Prefix with '*'.
 
 2018-11-13  Alan Modra  <amodra@gmail.com>
