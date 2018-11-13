@@ -1,3 +1,9 @@
+2018-11-13  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/linux-unwind.h (_sig_ucontext_t): Remove.
+	(csky_fallback_frame_state): Modify the check of the 
+	instructions to adapt to changes in the kernel
+
 2018-11-09  Stafford Horne  <shorne@gmail.com>
 	    Richard Henderson  <rth@twiddle.net>
 
