@@ -1,3 +1,10 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/invoke.texi (-fsave-optimization-record): Note that the
+	output is compressed.
+	* optinfo-emit-json.cc: Include <zlib.h>.
+	(optrecord_json_writer::write): Compress the output.
+
 2018-11-13  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-vrp.c (value_range_base::dump): Dump type.

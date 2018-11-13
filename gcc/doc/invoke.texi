@@ -14524,11 +14524,11 @@ dumps from the vectorizer about missed opportunities.
 
 @item -fsave-optimization-record
 @opindex fsave-optimization-record
-Write a SRCFILE.opt-record.json file detailing what optimizations
+Write a SRCFILE.opt-record.json.gz file detailing what optimizations
 were performed, for those optimizations that support @option{-fopt-info}.
 
-This option is experimental and the format of the data within the JSON
-file is subject to change.
+This option is experimental and the format of the data within the
+compressed JSON file is subject to change.
 
 It is roughly equivalent to a machine-readable version of
 @option{-fopt-info-all}, as a collection of messages with source file,
