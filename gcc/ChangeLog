@@ -1,3 +1,9 @@
+2018-11-13  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_secondary_reload_inner): Negate
+	offset for PRE_DEC.
+	(rs6000_secondary_reload_gpr): Don't call find_replacement.
+
 2018-11-13  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/59634
