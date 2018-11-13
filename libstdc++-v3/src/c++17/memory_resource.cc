@@ -892,7 +892,7 @@ namespace pmr
     auto p = std::lower_bound(std::begin(pool_sizes), std::end(pool_sizes),
 			      opts.largest_required_pool_block);
     const int n = p - std::begin(pool_sizes);
-    if (p == std::end(pool_sizes) || *p == opts.largest_required_pool_block)
+    if (p == std::end(pool_sizes))
       return n;
     return n + 1;
   }

@@ -1,5 +1,8 @@
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* src/c++17/memory_resource.cc (select_num_pools): Fix off-by-one
+	error when block_size is equal to one of the values in the array.
+
 	* src/c++17/memory_resource.cc (_Pool::deallocate): Restore
 	attributes to parameters that are only used in assertions.
 
