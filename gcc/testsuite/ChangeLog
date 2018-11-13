@@ -1,5 +1,9 @@
 2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/builtin_eh.c: New test.
+
+2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/firq-1.c: Update test.
 	* gcc.target/arc/firq-3.c: Likewise.
 	* gcc.target/arc/firq-4.c: Likewise.
