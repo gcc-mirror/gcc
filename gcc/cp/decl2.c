@@ -2288,6 +2288,7 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
     case DYNAMIC_CAST_EXPR:
     case NEW_EXPR:
     case CONSTRUCTOR:
+    case LAMBDA_EXPR:
       tpvis = type_visibility (TREE_TYPE (*tp));
       break;
 

@@ -10175,12 +10175,15 @@ cp_parser_lambda_expression (cp_parser* parser)
 
   LAMBDA_EXPR_LOCATION (lambda_expr) = token->location;
 
-  if (cp_unevaluated_operand)
+  if (cxx_dialect >= cxx2a)
+    /* C++20 allows lambdas in unevaluated context.  */;
+  else if (cp_unevaluated_operand)
     {
       if (!token->error_reported)
 	{
 	  error_at (LAMBDA_EXPR_LOCATION (lambda_expr),
-		    "lambda-expression in unevaluated context");
+		    "lambda-expression in unevaluated context"
+		    " only available with -std=c++2a or -std=gnu++2a");
 	  token->error_reported = true;
 	}
       ok = false;
@@ -10189,7 +10192,8 @@ cp_parser_lambda_expression (cp_parser* parser)
     {
       if (!token->error_reported)
 	{
-	  error_at (token->location, "lambda-expression in template-argument");
+	  error_at (token->location, "lambda-expression in template-argument"
+		    " only available with -std=c++2a or -std=gnu++2a");
 	  token->error_reported = true;
 	}
       ok = false;
@@ -10200,6 +10204,8 @@ cp_parser_lambda_expression (cp_parser* parser)
   push_deferring_access_checks (dk_no_deferred);
 
   cp_parser_lambda_introducer (parser, lambda_expr);
+  if (cp_parser_error_occurred (parser))
+    return error_mark_node;
 
   type = begin_lambda_type (lambda_expr);
   if (type == error_mark_node)
@@ -10238,6 +10244,9 @@ cp_parser_lambda_expression (cp_parser* parser)
     /* By virtue of defining a local class, a lambda expression has access to
        the private variables of enclosing classes.  */
 
+    if (cp_parser_start_tentative_firewall (parser))
+      start = token;
+
     ok &= cp_parser_lambda_declarator_opt (parser, lambda_expr);
 
     if (ok && cp_parser_error_occurred (parser))
@@ -10245,9 +10254,6 @@ cp_parser_lambda_expression (cp_parser* parser)
 
     if (ok)
       {
-	if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE)
-	    && cp_parser_start_tentative_firewall (parser))
-	  start = token;
 	cp_parser_lambda_body (parser, lambda_expr);
       }
     else if (cp_parser_require (parser, CPP_OPEN_BRACE, RT_OPEN_BRACE))
@@ -10735,6 +10741,10 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
   bool nested = (current_function_decl != NULL_TREE);
   bool local_variables_forbidden_p = parser->local_variables_forbidden_p;
   bool in_function_body = parser->in_function_body;
+
+  /* The body of a lambda-expression is not a subexpression of the enclosing
+     expression.  */
+  cp_evaluated ev;
 
   if (nested)
     push_function_context ();

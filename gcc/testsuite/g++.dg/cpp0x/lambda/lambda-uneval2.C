@@ -3,5 +3,8 @@
 
 struct A
 {
-  decltype( [](){ return this; }() ) x; // { dg-error "unevaluated" }
+  decltype( [](){ return this; }() ) x; // { dg-error "unevaluated" "" { target c++17_down } }
+  // { dg-error "not captured" "" { target c++2a } .-1 }
 };
+
+// { dg-prune-output "declared void" }
