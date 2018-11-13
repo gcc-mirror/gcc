@@ -290,7 +290,18 @@ namespace pmr
     }
 
     // True if all bits are set
-    bool full() const noexcept { return _M_next_word >= nwords(); }
+    bool full() const noexcept
+    {
+      if (_M_next_word >= nwords())
+	return true;
+      // For a bitset with size() > (max_blocks_per_chunk() - 64) we will
+      // have nwords() == (max_word_index() + 1) and so _M_next_word will
+      // never be equal to nwords().
+      // In that case, check if the last word is full:
+      if (_M_next_word == max_word_index())
+	return _M_words[_M_next_word] == word(-1);
+      return false;
+    }
 
     // True if size() != 0 and no bits are set.
     bool empty() const noexcept
@@ -343,11 +354,7 @@ namespace pmr
 	      const word bit = word(1) << n;
 	      _M_words[i] |= bit;
 	      if (i == _M_next_word)
-		{
-		  while (_M_words[_M_next_word] == word(-1)
-		      && ++_M_next_word != nwords())
-		    { }
-		}
+		update_next_word();
 	      return (i * bits_per_word) + n;
 	    }
 	}
@@ -361,11 +368,7 @@ namespace pmr
       const word bit = word(1) << (n % bits_per_word);
       _M_words[wd] |= bit;
       if (wd == _M_next_word)
-	{
-	  while (_M_words[_M_next_word] == word(-1)
-	      && ++_M_next_word != nwords())
-	    { }
-	}
+	update_next_word();
     }
 
     void clear(size_type n) noexcept
@@ -376,6 +379,18 @@ namespace pmr
       _M_words[wd] &= ~bit;
       if (wd < _M_next_word)
 	_M_next_word = wd;
+    }
+
+    // Update _M_next_word to refer to the next word with an unset bit.
+    // The size of the _M_next_word bit-field means it cannot represent
+    // the maximum possible nwords() value. To avoid wraparound to zero
+    // this function saturates _M_next_word at max_word_index().
+    void update_next_word() noexcept
+    {
+      size_t next = _M_next_word;
+      while (_M_words[next] == word(-1) && ++next < nwords())
+	{ }
+      _M_next_word = std::min(next, max_word_index());
     }
 
     void swap(bitset& b) noexcept
@@ -395,6 +410,10 @@ namespace pmr
     // Maximum value that can be stored in bitset::_M_size member (approx 500k)
     static constexpr size_t max_blocks_per_chunk() noexcept
     { return (1ull << _S_size_digits) - 1; }
+
+    // Maximum value that can be stored in bitset::_M_next_word member (8191).
+    static constexpr size_t max_word_index() noexcept
+    { return (max_blocks_per_chunk() + bits_per_word - 1) / bits_per_word; }
 
     word* data() const noexcept { return _M_words; }
 
@@ -425,7 +444,7 @@ namespace pmr
     : bitset(words, n),
       _M_bytes(bytes),
       _M_p(static_cast<std::byte*>(p))
-    { }
+    { __glibcxx_assert(bytes <= chunk::max_bytes_per_chunk()); }
 
     chunk(chunk&& c) noexcept
     : bitset(std::move(c)), _M_bytes(c._M_bytes), _M_p(c._M_p)
@@ -450,6 +469,9 @@ namespace pmr
     using bitset::full;
     // Number of blocks in this chunk
     using bitset::size;
+
+    static constexpr uint32_t max_bytes_per_chunk() noexcept
+    { return numeric_limits<decltype(_M_bytes)>::max(); }
 
     // Determine if block with address p and size block_size
     // is contained within this chunk.
@@ -639,8 +661,7 @@ namespace pmr
     void replenish(memory_resource* __r, const pool_options& __opts)
     {
       using word = chunk::word;
-      const size_t __blocks
-	= std::min<size_t>(__opts.max_blocks_per_chunk, _M_blocks_per_chunk);
+      const size_t __blocks = _M_blocks_per_chunk;
       const auto __bits = chunk::bits_per_word;
       const size_t __words = (__blocks + __bits - 1) / __bits;
       const size_t __block_size = block_size();
@@ -658,7 +679,16 @@ namespace pmr
 	  __r->deallocate(__p, __bytes, __alignment);
 	}
       if (_M_blocks_per_chunk < __opts.max_blocks_per_chunk)
-	_M_blocks_per_chunk *= 2;
+	{
+	  const size_t max_blocks
+	    = (chunk::max_bytes_per_chunk() - sizeof(word))
+	    / (__block_size + 0.125);
+	  _M_blocks_per_chunk = std::min({
+	      max_blocks,
+	      __opts.max_blocks_per_chunk,
+	      (size_t)_M_blocks_per_chunk * 2
+	  });
+	}
     }
 
     void release(memory_resource* __r)
