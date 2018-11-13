@@ -2468,7 +2468,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
   struct loop *vect_loop = LOOP_VINFO_LOOP (loop_info);
   enum tree_code code;
   gimple *loop_use_stmt = NULL;
-  stmt_vec_info use_stmt_info, current_stmt_info = NULL;
+  stmt_vec_info use_stmt_info;
   tree lhs;
   imm_use_iterator imm_iter;
   use_operand_p use_p;
@@ -2478,6 +2478,7 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
   if (loop != vect_loop)
     return false;
 
+  auto_vec<stmt_vec_info, 8> reduc_chain;
   lhs = PHI_RESULT (phi);
   code = gimple_assign_rhs_code (first_stmt);
   while (1)
@@ -2530,17 +2531,9 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 
       /* Insert USE_STMT into reduction chain.  */
       use_stmt_info = loop_info->lookup_stmt (loop_use_stmt);
-      if (current_stmt_info)
-        {
-	  REDUC_GROUP_NEXT_ELEMENT (current_stmt_info) = use_stmt_info;
-          REDUC_GROUP_FIRST_ELEMENT (use_stmt_info)
-            = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
-        }
-      else
-	REDUC_GROUP_FIRST_ELEMENT (use_stmt_info) = use_stmt_info;
+      reduc_chain.safe_push (use_stmt_info);
 
       lhs = gimple_assign_lhs (loop_use_stmt);
-      current_stmt_info = use_stmt_info;
       size++;
    }
 
@@ -2550,10 +2543,9 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
   /* Swap the operands, if needed, to make the reduction operand be the second
      operand.  */
   lhs = PHI_RESULT (phi);
-  stmt_vec_info next_stmt_info = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
-  while (next_stmt_info)
+  for (unsigned i = 0; i < reduc_chain.length (); ++i)
     {
-      gassign *next_stmt = as_a <gassign *> (next_stmt_info->stmt);
+      gassign *next_stmt = as_a <gassign *> (reduc_chain[i]->stmt);
       if (gimple_assign_rhs2 (next_stmt) == lhs)
 	{
 	  tree op = gimple_assign_rhs1 (next_stmt);
@@ -2567,7 +2559,6 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
 	      && vect_valid_reduction_input_p (def_stmt_info))
 	    {
 	      lhs = gimple_assign_lhs (next_stmt);
-	      next_stmt_info = REDUC_GROUP_NEXT_ELEMENT (next_stmt_info);
  	      continue;
 	    }
 
@@ -2602,14 +2593,20 @@ vect_is_slp_reduction (loop_vec_info loop_info, gimple *phi,
         }
 
       lhs = gimple_assign_lhs (next_stmt);
-      next_stmt_info = REDUC_GROUP_NEXT_ELEMENT (next_stmt_info);
     }
 
+  /* Build up the actual chain.  */
+  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
+    {
+      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
+      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
+    }
+  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
+  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
+
   /* Save the chain for further analysis in SLP detection.  */
-  stmt_vec_info first_stmt_info
-    = REDUC_GROUP_FIRST_ELEMENT (current_stmt_info);
-  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (first_stmt_info);
-  REDUC_GROUP_SIZE (first_stmt_info) = size;
+  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
+  REDUC_GROUP_SIZE (reduc_chain[0]) = size;
 
   return true;
 }
@@ -3198,16 +3195,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 			"reduction: detected reduction chain: ");
 
       return def_stmt_info;
-    }
-
-  /* Dissolve group eventually half-built by vect_is_slp_reduction.  */
-  stmt_vec_info first = REDUC_GROUP_FIRST_ELEMENT (def_stmt_info);
-  while (first)
-    {
-      stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
-      REDUC_GROUP_FIRST_ELEMENT (first) = NULL;
-      REDUC_GROUP_NEXT_ELEMENT (first) = NULL;
-      first = next;
     }
 
   /* Look for the expression computing loop_arg from loop PHI result.  */
