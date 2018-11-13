@@ -418,6 +418,10 @@
 
 // C++20 features
 
+#if __cpp_conditional_explicit != 201806
+# error "__cpp_conditional_explicit != 201806"
+#endif
+
 #if __cpp_nontype_template_parameter_class != 201806
 # error "__cpp_nontype_template_parameter_class != 201806"
 #endif
