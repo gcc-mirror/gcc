@@ -2239,14 +2239,17 @@ handle_copy_attribute (tree *node, tree name, tree args,
       /* Copy decl attributes from REF to DECL.  */
       for (tree at = attrs; at; at = TREE_CHAIN (at))
 	{
-	  /* Avoid copying attributes that affect a symbol linkage or
-	     visibility since those in all likelihood only apply to
-	     the target.
+	  /* Avoid copying attributes that affect a symbol linkage,
+	     inlining, or visibility since those in all likelihood
+	     only apply to the target.
 	     FIXME: make it possible to specify which attributes to
 	     copy or not to copy in the copy attribute itself.  */
 	  tree atname = get_attribute_name (at);
 	  if (is_attribute_p ("alias", atname)
+	      || is_attribute_p ("always_inline", atname)
+	      || is_attribute_p ("gnu_inline", atname)
 	      || is_attribute_p ("ifunc", atname)
+	      || is_attribute_p ("noinline", atname)
 	      || is_attribute_p ("visibility", atname)
 	      || is_attribute_p ("weak", atname)
 	      || is_attribute_p ("weakref", atname))
@@ -2458,9 +2461,18 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
   tree decl = *node;
   enum tls_model kind;
 
-  if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
+  if (!VAR_P (decl))
     {
-      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD "
+	       "is not a variable",
+	       name, decl);
+      return NULL_TREE;
+    }
+
+  if (!DECL_THREAD_LOCAL_P (decl))
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored because %qD does "
+	       "not have thread storage duration", name, decl);
       return NULL_TREE;
     }
 
@@ -2468,7 +2480,7 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
   id = TREE_VALUE (args);
   if (TREE_CODE (id) != STRING_CST)
     {
-      error ("tls_model argument not a string");
+      error ("%qE argument not a string", name);
       return NULL_TREE;
     }
 
@@ -2481,7 +2493,9 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
   else if (!strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
     kind = TLS_MODEL_GLOBAL_DYNAMIC;
   else
-    error ("tls_model argument must be one of \"local-exec\", \"initial-exec\", \"local-dynamic\" or \"global-dynamic\"");
+    error ("%qE argument must be one of %qs, %qs, %qs, or %qs",
+	   name,
+	   "local-exec", "initial-exec", "local-dynamic", "global-dynamic");
 
   set_decl_tls_model (decl, kind);
   return NULL_TREE;

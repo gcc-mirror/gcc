@@ -1,3 +1,9 @@
+2018-11-13  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* gcc.dg/attr-copy-5.c: New test.
+	* gcc.dg/tls/diag-6.c: Adjust expected diagnostics.
+
 2018-11-13  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/86991
