@@ -1,3 +1,9 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/plugin/comment_plugin.c: Replace "source_location" with
+	"location_t".
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c: Likewise.
+
 2018-11-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81824

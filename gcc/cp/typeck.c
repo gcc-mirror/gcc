@@ -4433,7 +4433,7 @@ cp_build_binary_op (location_t location,
 	      && !TYPE_PTR_OR_PTRMEM_P (type1)))
       && (complain & tf_warning))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       warning_at (loc, OPT_Wpointer_arith, "NULL used in arithmetic");

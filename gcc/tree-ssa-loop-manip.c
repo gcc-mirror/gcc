@@ -786,7 +786,7 @@ split_loop_exit_edge (edge exit, bool copy_constants_p)
   tree new_name, name;
   use_operand_p op_p;
   gphi_iterator psi;
-  source_location locus;
+  location_t locus;
 
   for (psi = gsi_start_phis (dest); !gsi_end_p (psi); gsi_next (&psi))
     {

@@ -6226,7 +6226,7 @@ pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
-  source_location exploc = expansion_point_location_if_in_system_header (loc);
+  location_t exploc = expansion_point_location_if_in_system_header (loc);
   auto_diagnostic_group d;
   va_list ap;
   va_start (ap, gmsgid);
@@ -6254,7 +6254,7 @@ warning_init (location_t loc, int opt, const char *gmsgid)
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
-  source_location exploc = expansion_point_location_if_in_system_header (loc);
+  location_t exploc = expansion_point_location_if_in_system_header (loc);
 
   /* The gmsgid may be a format string with %< and %>. */
   warned = warning_at (exploc, opt, gmsgid);
@@ -10234,7 +10234,7 @@ c_finish_return (location_t loc, tree retval, tree origtype)
 
   /* Use the expansion point to handle cases such as returning NULL
      in a function returning void.  */
-  source_location xloc = expansion_point_location_if_in_system_header (loc);
+  location_t xloc = expansion_point_location_if_in_system_header (loc);
 
   if (TREE_THIS_VOLATILE (current_function_decl))
     warning_at (xloc, 0,

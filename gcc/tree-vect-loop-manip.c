@@ -2172,7 +2172,7 @@ slpeel_update_phi_nodes_for_guard1 (struct loop *skip_loop,
 				    struct loop *update_loop,
 				    edge guard_edge, edge merge_edge)
 {
-  source_location merge_loc, guard_loc;
+  location_t merge_loc, guard_loc;
   edge orig_e = loop_preheader_edge (skip_loop);
   edge update_e = loop_preheader_edge (update_loop);
   gphi_iterator gsi_orig, gsi_update;

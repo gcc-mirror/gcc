@@ -52,7 +52,7 @@ static hash_map<edge, auto_vec<edge_var_map> > *edge_var_maps;
 /* Add a mapping with PHI RESULT and PHI DEF associated with edge E.  */
 
 void
-redirect_edge_var_map_add (edge e, tree result, tree def, source_location locus)
+redirect_edge_var_map_add (edge e, tree result, tree def, location_t locus)
 {
   edge_var_map new_node;
 
@@ -151,7 +151,7 @@ ssa_redirect_edge (edge e, basic_block dest)
     for (gsi = gsi_start_phis (e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	tree def;
-	source_location locus ;
+	location_t locus;
 
 	phi = gsi.phi ();
 	def = gimple_phi_arg_def (phi, e->dest_idx);

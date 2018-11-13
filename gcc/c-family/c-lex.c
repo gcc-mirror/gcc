@@ -237,7 +237,7 @@ fe_file_change (const line_map_ordinary *new_map)
 }
 
 static void
-cb_def_pragma (cpp_reader *pfile, source_location loc)
+cb_def_pragma (cpp_reader *pfile, location_t loc)
 {
   /* Issue a warning message if we have been asked to do so.  Ignore
      unknown pragmas in system headers unless an explicit
@@ -265,7 +265,7 @@ cb_def_pragma (cpp_reader *pfile, source_location loc)
 
 /* #define callback for DWARF and DWARF2 debug info.  */
 static void
-cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
+cb_define (cpp_reader *pfile, location_t loc, cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);
   (*debug_hooks->define) (SOURCE_LINE (linemap_check_ordinary (map), loc),
@@ -274,7 +274,7 @@ cb_define (cpp_reader *pfile, source_location loc, cpp_hashnode *node)
 
 /* #undef callback for DWARF and DWARF2 debug info.  */
 static void
-cb_undef (cpp_reader * ARG_UNUSED (pfile), source_location loc,
+cb_undef (cpp_reader * ARG_UNUSED (pfile), location_t loc,
 	  cpp_hashnode *node)
 {
   const struct line_map *map = linemap_lookup (line_table, loc);

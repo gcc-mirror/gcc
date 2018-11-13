@@ -1687,7 +1687,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       warning_at (loc, OPT_Wconversion_null,

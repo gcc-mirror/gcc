@@ -5441,7 +5441,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	  {
 	    tree expression;
 	    tree type;
-	    source_location type_location;
+	    location_t type_location;
 	    location_t start_loc
 	      = cp_lexer_peek_token (parser->lexer)->location;
 	    /* The `__builtin_va_arg' construct is used to handle
@@ -28525,7 +28525,7 @@ set_and_check_decl_spec_loc (cp_decl_specifier_seq *decl_specs,
   if (decl_specs == NULL)
     return;
 
-  source_location location = token->location;
+  location_t location = token->location;
 
   if (decl_specs->locations[ds] == 0)
     {

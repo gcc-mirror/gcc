@@ -1,3 +1,12 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c: Replace "source_location" with "location_t".
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* typeck.c: Likewise.
+
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
 	Implement P0315R4, Lambdas in unevaluated contexts.

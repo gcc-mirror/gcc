@@ -4752,7 +4752,7 @@ fixup_anonymous_aggr (tree t)
    class-key, in it class-specifier.  */
 
 void
-warn_misplaced_attr_for_class_type (source_location location,
+warn_misplaced_attr_for_class_type (location_t location,
 				    tree class_type)
 {
   gcc_assert (OVERLOAD_TYPE_P (class_type));
@@ -10257,7 +10257,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
-  source_location saved_loc = input_location;
+  location_t saved_loc = input_location;
   tree reqs = NULL_TREE;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);

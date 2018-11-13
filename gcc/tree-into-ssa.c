@@ -2119,7 +2119,7 @@ rewrite_update_phi_arguments (basic_block bb)
           /* Update the argument if there is a reaching def.  */
 	  if (reaching_def)
 	    {
-	      source_location locus;
+	      location_t locus;
 	      int arg_i = PHI_ARG_INDEX_FROM_USE (arg_p);
 
 	      SET_USE (arg_p, reaching_def);

@@ -143,7 +143,7 @@ struct elim_graph
   auto_vec<int> edge_list;
 
   /* Source locus on each edge */
-  auto_vec<source_location> edge_locus;
+  auto_vec<location_t> edge_locus;
 
   /* Visited vector.  */
   auto_sbitmap visited;
@@ -162,7 +162,7 @@ struct elim_graph
   auto_vec<tree> const_copies;
 
   /* Source locations for any constant copies.  */
-  auto_vec<source_location> copy_locus;
+  auto_vec<location_t> copy_locus;
 };
 
 
@@ -238,7 +238,7 @@ emit_partition_copy (rtx dest, rtx src, int unsignedsrcp, tree sizeexp)
 /* Insert a copy instruction from partition SRC to DEST onto edge E.  */
 
 static void
-insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
+insert_partition_copy_on_edge (edge e, int dest, int src, location_t locus)
 {
   tree var;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -272,7 +272,7 @@ insert_partition_copy_on_edge (edge e, int dest, int src, source_location locus)
    onto edge E.  */
 
 static void
-insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
+insert_value_copy_on_edge (edge e, int dest, tree src, location_t locus)
 {
   rtx dest_rtx, seq, x;
   machine_mode dest_mode, src_mode;
@@ -333,7 +333,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src, source_location locus)
 
 static void
 insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
-			    source_location locus)
+			    location_t locus)
 {
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -367,7 +367,7 @@ insert_rtx_to_part_on_edge (edge e, int dest, rtx src, int unsignedsrcp,
    onto edge E.  */
 
 static void
-insert_part_to_rtx_on_edge (edge e, rtx dest, int src, source_location locus)
+insert_part_to_rtx_on_edge (edge e, rtx dest, int src, location_t locus)
 {
   tree var;
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -444,7 +444,7 @@ elim_graph_add_node (elim_graph *g, int node)
 /* Add the edge PRED->SUCC to graph G.  */
 
 static inline void
-elim_graph_add_edge (elim_graph *g, int pred, int succ, source_location locus)
+elim_graph_add_edge (elim_graph *g, int pred, int succ, location_t locus)
 {
   g->edge_list.safe_push (pred);
   g->edge_list.safe_push (succ);
@@ -456,7 +456,7 @@ elim_graph_add_edge (elim_graph *g, int pred, int succ, source_location locus)
    return the successor node.  -1 is returned if there is no such edge.  */
 
 static inline int
-elim_graph_remove_succ_edge (elim_graph *g, int node, source_location *locus)
+elim_graph_remove_succ_edge (elim_graph *g, int node, location_t *locus)
 {
   int y;
   unsigned x;
@@ -556,7 +556,7 @@ eliminate_build (elim_graph *g)
   for (gsi = gsi_start_phis (g->e->dest); !gsi_end_p (gsi); gsi_next (&gsi))
     {
       gphi *phi = gsi.phi ();
-      source_location locus;
+      location_t locus;
 
       p0 = var_to_partition (g->map, gimple_phi_result (phi));
       /* Ignore results which are not in partitions.  */
@@ -597,7 +597,7 @@ static void
 elim_forward (elim_graph *g, int T)
 {
   int S;
-  source_location locus;
+  location_t locus;
 
   bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_SUCC (g, T, S, locus,
@@ -615,7 +615,7 @@ static int
 elim_unvisited_predecessor (elim_graph *g, int T)
 {
   int P;
-  source_location locus;
+  location_t locus;
 
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
     {
@@ -631,7 +631,7 @@ static void
 elim_backward (elim_graph *g, int T)
 {
   int P;
-  source_location locus;
+  location_t locus;
 
   bitmap_set_bit (g->visited, T);
   FOR_EACH_ELIM_GRAPH_PRED (g, T, P, locus,
@@ -666,7 +666,7 @@ static void
 elim_create (elim_graph *g, int T)
 {
   int P, S;
-  source_location locus;
+  location_t locus;
 
   if (elim_unvisited_predecessor (g, T))
     {
@@ -741,7 +741,7 @@ eliminate_phi (edge e, elim_graph *g)
     {
       int dest;
       tree src;
-      source_location locus;
+      location_t locus;
 
       src = g->const_copies.pop ();
       dest = g->const_dests.pop ();

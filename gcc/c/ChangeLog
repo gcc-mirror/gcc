@@ -1,3 +1,10 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Replace "source_location" with "location_t".
+	* c-tree.h: Likewise.
+	* c-typeck.c: Likewise.
+	* gimple-parser.c: Likewise.
+
 2018-11-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.c (c_parser_omp_clause_final): Use

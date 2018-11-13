@@ -6681,7 +6681,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       if (fn)
@@ -6710,7 +6710,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (null_ptr_cst_p (expr) &&
 	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
     {
-      source_location loc =
+      location_t loc =
        expansion_point_location_if_in_system_header (input_location);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
@@ -7386,7 +7386,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 /* va_arg (EXPR, TYPE) is a builtin. Make sure it is not abused.  */
 
 tree
-build_x_va_arg (source_location loc, tree expr, tree type)
+build_x_va_arg (location_t loc, tree expr, tree type)
 {
   if (processing_template_decl)
     {

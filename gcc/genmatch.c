@@ -53,7 +53,7 @@ unsigned verbose;
 static struct line_maps *line_table;
 
 /* The rich_location class within libcpp requires a way to expand
-   source_location instances, and relies on the client code
+   location_t instances, and relies on the client code
    providing a symbol named
      linemap_client_expand_location_to_spelling_point
    to do this.
@@ -61,7 +61,7 @@ static struct line_maps *line_table;
    This is the implementation for genmatch.  */
 
 expanded_location
-linemap_client_expand_location_to_spelling_point (source_location loc,
+linemap_client_expand_location_to_spelling_point (location_t loc,
 						  enum location_aspect)
 {
   const struct line_map_ordinary *map;
@@ -78,7 +78,7 @@ diagnostic_cb (cpp_reader *, enum cpp_diagnostic_level errtype,
 	       const char *msg, va_list *ap)
 {
   const line_map_ordinary *map;
-  source_location location = richloc->get_loc ();
+  location_t location = richloc->get_loc ();
   linemap_resolve_location (line_table, location, LRK_SPELLING_LOCATION, &map);
   expanded_location loc = linemap_expand_location (line_table, map, location);
   fprintf (stderr, "%s:%d:%d %s: ", loc.file, loc.line, loc.column,
@@ -131,7 +131,7 @@ static void
 #if GCC_VERSION >= 4001
 __attribute__((format (printf, 2, 3)))
 #endif
-fatal_at (source_location loc, const char *msg, ...)
+fatal_at (location_t loc, const char *msg, ...)
 {
   rich_location richloc (line_table, loc);
   va_list ap;
@@ -157,7 +157,7 @@ static void
 #if GCC_VERSION >= 4001
 __attribute__((format (printf, 2, 3)))
 #endif
-warning_at (source_location loc, const char *msg, ...)
+warning_at (location_t loc, const char *msg, ...)
 {
   rich_location richloc (line_table, loc);
   va_list ap;
@@ -184,7 +184,7 @@ fprintf_indent (FILE *f, unsigned int indent, const char *format, ...)
 }
 
 static void
-output_line_directive (FILE *f, source_location location,
+output_line_directive (FILE *f, location_t location,
 		       bool dumpfile = false, bool fnargs = false)
 {
   const line_map_ordinary *map;
@@ -667,10 +667,10 @@ struct capture_info;
 
 struct operand {
   enum op_type { OP_PREDICATE, OP_EXPR, OP_CAPTURE, OP_C_EXPR, OP_IF, OP_WITH };
-  operand (enum op_type type_, source_location loc_)
+  operand (enum op_type type_, location_t loc_)
     : type (type_), location (loc_) {}
   enum op_type type;
-  source_location location;
+  location_t location;
   virtual void gen_transform (FILE *, int, const char *, bool, int,
 			      const char *, capture_info *,
 			      dt_operand ** = 0,
@@ -682,7 +682,7 @@ struct operand {
 
 struct predicate : public operand
 {
-  predicate (predicate_id *p_, source_location loc)
+  predicate (predicate_id *p_, location_t loc)
     : operand (OP_PREDICATE, loc), p (p_) {}
   predicate_id *p;
 };
@@ -692,7 +692,7 @@ struct predicate : public operand
 
 struct expr : public operand
 {
-  expr (id_base *operation_, source_location loc, bool is_commutative_ = false)
+  expr (id_base *operation_, location_t loc, bool is_commutative_ = false)
     : operand (OP_EXPR, loc), operation (operation_),
       ops (vNULL), expr_type (NULL), is_commutative (is_commutative_),
       is_generic (false), force_single_use (false) {}
@@ -733,7 +733,7 @@ struct c_expr : public operand
     id_tab (const char *id_, const char *oper_): id (id_), oper (oper_) {}
   };
 
-  c_expr (cpp_reader *r_, source_location loc,
+  c_expr (cpp_reader *r_, location_t loc,
 	  vec<cpp_token> code_, unsigned nr_stmts_,
 	  vec<id_tab> ids_, cid_map_t *capture_ids_)
     : operand (OP_C_EXPR, loc), r (r_), code (code_),
@@ -755,7 +755,7 @@ struct c_expr : public operand
 
 struct capture : public operand
 {
-  capture (source_location loc, unsigned where_, operand *what_, bool value_)
+  capture (location_t loc, unsigned where_, operand *what_, bool value_)
       : operand (OP_CAPTURE, loc), where (where_), value_match (value_),
         what (what_) {}
   /* Identifier index for the value.  */
@@ -775,7 +775,7 @@ struct capture : public operand
 
 struct if_expr : public operand
 {
-  if_expr (source_location loc)
+  if_expr (location_t loc)
     : operand (OP_IF, loc), cond (NULL), trueexpr (NULL), falseexpr (NULL) {}
   c_expr *cond;
   operand *trueexpr;
@@ -786,7 +786,7 @@ struct if_expr : public operand
 
 struct with_expr : public operand
 {
-  with_expr (source_location loc)
+  with_expr (location_t loc)
     : operand (OP_WITH, loc), with (NULL), subexpr (NULL) {}
   c_expr *with;
   operand *subexpr;
@@ -1797,13 +1797,13 @@ decision_tree::find_node (vec<dt_node *>& ops, dt_node *p)
 	    {
 	      if (verbose >= 1)
 		{
-		  source_location p_loc = 0;
+		  location_t p_loc = 0;
 		  if (p->type == dt_node::DT_OPERAND)
 		    p_loc = as_a <dt_operand *> (p)->op->location;
-		  source_location op_loc = 0;
+		  location_t op_loc = 0;
 		  if (ops[i]->type == dt_node::DT_OPERAND)
 		    op_loc = as_a <dt_operand *> (ops[i])->op->location;
-		  source_location true_loc = 0;
+		  location_t true_loc = 0;
 		  true_loc = true_node->op->location;
 		  warning_at (p_loc,
 			      "failed to merge decision tree node");
@@ -3925,7 +3925,7 @@ private:
   c_expr *parse_c_expr (cpp_ttype);
   operand *parse_op ();
 
-  void record_operlist (source_location, user_id *);
+  void record_operlist (location_t, user_id *);
 
   void parse_pattern ();
   operand *parse_result (operand *, predicate_id *);
@@ -3933,10 +3933,10 @@ private:
 		      vec<simplify *>&, operand *, operand *);
   void parse_simplify (simplify::simplify_kind,
 		       vec<simplify *>&, predicate_id *, operand *);
-  void parse_for (source_location);
-  void parse_if (source_location);
-  void parse_predicates (source_location);
-  void parse_operator_list (source_location);
+  void parse_for (location_t);
+  void parse_if (location_t);
+  void parse_predicates (location_t);
+  void parse_operator_list (location_t);
 
   void finish_match_operand (operand *);
 
@@ -4094,7 +4094,7 @@ parser::get_internal_capture_id ()
 /* Record an operator-list use for transparent for handling.  */
 
 void
-parser::record_operlist (source_location loc, user_id *p)
+parser::record_operlist (location_t loc, user_id *p)
 {
   if (!oper_lists_set->add (p))
     {
@@ -4168,7 +4168,7 @@ parser::parse_operation ()
 struct operand *
 parser::parse_capture (operand *op, bool require_existing)
 {
-  source_location src_loc = eat_token (CPP_ATSIGN)->src_loc;
+  location_t src_loc = eat_token (CPP_ATSIGN)->src_loc;
   const cpp_token *token = peek ();
   const char *id = NULL;
   bool value_match = false;
@@ -4324,7 +4324,7 @@ parser::parse_c_expr (cpp_ttype start)
   unsigned opencnt;
   vec<cpp_token> code = vNULL;
   unsigned nr_stmts = 0;
-  source_location loc = eat_token (start)->src_loc;
+  location_t loc = eat_token (start)->src_loc;
   if (start == CPP_OPEN_PAREN)
     end = CPP_CLOSE_PAREN;
   else if (start == CPP_OPEN_BRACE)
@@ -4513,7 +4513,7 @@ parser::parse_result (operand *result, predicate_id *matcher)
   else if (peek_ident ("switch"))
     {
       token = eat_ident ("switch");
-      source_location ifloc = eat_token (CPP_OPEN_PAREN)->src_loc;
+      location_t ifloc = eat_token (CPP_OPEN_PAREN)->src_loc;
       eat_ident ("if");
       if_expr *ife = new if_expr (ifloc);
       operand *res = ife;
@@ -4652,7 +4652,7 @@ parser::parse_simplify (simplify::simplify_kind kind,
      subst = <ident> '(' <ident>... ')'  */
 
 void
-parser::parse_for (source_location)
+parser::parse_for (location_t)
 {
   auto_vec<const cpp_token *> user_id_tokens;
   vec<user_id *> user_ids = vNULL;
@@ -4766,7 +4766,7 @@ parser::parse_for (source_location)
      oprs = '(' 'define_operator_list' <ident> <ident>... ')'  */
 
 void
-parser::parse_operator_list (source_location)
+parser::parse_operator_list (location_t)
 {
   const cpp_token *token = peek (); 
   const char *id = get_ident ();
@@ -4818,7 +4818,7 @@ parser::parse_operator_list (source_location)
      if = '(' 'if' '(' <c-expr> ')' <pattern> ')'  */
 
 void
-parser::parse_if (source_location)
+parser::parse_if (location_t)
 {
   c_expr *ifexpr = parse_c_expr (CPP_OPEN_PAREN);
 
@@ -4842,7 +4842,7 @@ parser::parse_if (source_location)
      preds = '(' 'define_predicates' <ident>... ')'  */
 
 void
-parser::parse_predicates (source_location)
+parser::parse_predicates (location_t)
 {
   do
     {
@@ -4873,7 +4873,7 @@ parser::parse_pattern ()
   else if (strcmp (id, "match") == 0)
     {
       bool with_args = false;
-      source_location e_loc = peek ()->src_loc;
+      location_t e_loc = peek ()->src_loc;
       if (peek ()->type == CPP_OPEN_PAREN)
 	{
 	  eat_token (CPP_OPEN_PAREN);

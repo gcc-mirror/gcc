@@ -28,7 +28,7 @@ class gcc_rich_location : public rich_location
   /* Constructors.  */
 
   /* Constructing from a location.  */
-  gcc_rich_location (source_location loc, const range_label *label = NULL)
+  gcc_rich_location (location_t loc, const range_label *label = NULL)
   : rich_location (line_table, loc, label)
   {
   }

@@ -351,7 +351,7 @@ create_phi_node (tree var, basic_block bb)
    PHI points to the reallocated phi node when we return.  */
 
 void
-add_phi_arg (gphi *phi, tree def, edge e, source_location locus)
+add_phi_arg (gphi *phi, tree def, edge e, location_t locus)
 {
   basic_block bb = e->dest;
 

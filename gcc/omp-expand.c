@@ -3333,7 +3333,7 @@ expand_omp_for_generic (struct omp_region *region,
 	  gphi_iterator psi;
 	  for (psi = gsi_start_phis (l3_bb); !gsi_end_p (psi); gsi_next (&psi))
 	    {
-	      source_location locus;
+	      location_t locus;
 	      gphi *nphi;
 	      gphi *exit_phi = psi.phi ();
 
@@ -4476,7 +4476,7 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	   gsi_next (&psi), ++i)
 	{
 	  gphi *nphi;
-	  source_location locus;
+	  location_t locus;
 
 	  phi = psi.phi ();
 	  if (operand_equal_p (gimple_phi_arg_def (phi, 0),

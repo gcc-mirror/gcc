@@ -47,7 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 
 static dump_flags_t pflags;		      /* current dump_flags */
 
-static void dump_loc (dump_flags_t, FILE *, source_location);
+static void dump_loc (dump_flags_t, FILE *, location_t);
 
 /* Current -fopt-info output stream, if any, and flags.  */
 static FILE *alt_dump_file = NULL;
@@ -466,7 +466,7 @@ kind_as_string (dump_flags_t dump_kind)
 /* Print source location on DFILE if enabled.  */
 
 static void
-dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
+dump_loc (dump_flags_t dump_kind, FILE *dfile, location_t loc)
 {
   if (dump_kind)
     {
@@ -487,7 +487,7 @@ dump_loc (dump_flags_t dump_kind, FILE *dfile, source_location loc)
 /* Print source location to PP if enabled.  */
 
 static void
-dump_loc (dump_flags_t dump_kind, pretty_printer *pp, source_location loc)
+dump_loc (dump_flags_t dump_kind, pretty_printer *pp, location_t loc)
 {
   if (dump_kind)
     {

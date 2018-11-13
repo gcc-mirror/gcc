@@ -794,12 +794,12 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
   for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc->get_fixit_hint (i);
-      source_location start_loc = hint->get_start_loc ();
+      location_t start_loc = hint->get_start_loc ();
       expanded_location start_exploc = expand_location (start_loc);
       pp_string (pp, "fix-it:");
       print_escaped_string (pp, start_exploc.file);
       /* For compatibility with clang, print as a half-open range.  */
-      source_location next_loc = hint->get_next_loc ();
+      location_t next_loc = hint->get_next_loc ();
       expanded_location next_exploc = expand_location (next_loc);
       pp_printf (pp, ":{%i:%i-%i:%i}:",
 		 start_exploc.line, start_exploc.column,

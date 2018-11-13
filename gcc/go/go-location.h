@@ -18,16 +18,16 @@ class Location
     : gcc_loc_(UNKNOWN_LOCATION)
   { }
 
-  explicit Location(source_location loc)
+  explicit Location(location_t loc)
     : gcc_loc_(loc)
   { }
 
-  source_location
+  location_t
   gcc_location() const
   { return this->gcc_loc_; }
 
  private:
-  source_location gcc_loc_;
+  location_t gcc_loc_;
 };
 
 // The Go frontend requires the ability to compare Locations.

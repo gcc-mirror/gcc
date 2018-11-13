@@ -1,3 +1,11 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_get_substring_location): Update for renaming of
+	get_source_location_for_substring to get_location_within_string.
+	* c-lex.c: Replace "source_location" with "location_t".
+	* c-opts.c: Likewise.
+	* c-ppoutput.c: Likewise.
+
 2018-11-13  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81824

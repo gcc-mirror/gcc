@@ -6151,7 +6151,7 @@ get_memmodel (tree exp)
 {
   rtx op;
   unsigned HOST_WIDE_INT val;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (input_location);
 
   /* If the parameter is not a constant, it's a run time value so we'll just
@@ -6227,7 +6227,7 @@ expand_builtin_atomic_compare_exchange (machine_mode mode, tree exp,
   enum memmodel success, failure;
   tree weak;
   bool is_weak;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (input_location);
 
   success = get_memmodel (CALL_EXPR_ARG (exp, 4));
@@ -6354,7 +6354,7 @@ expand_ifn_atomic_compare_exchange (gcall *call)
   enum memmodel success, failure;
   tree lhs;
   bool is_weak;
-  source_location loc
+  location_t loc
     = expansion_point_location_if_in_system_header (gimple_location (call));
 
   success = get_memmodel (gimple_call_arg (call, 4));
@@ -6426,7 +6426,7 @@ expand_builtin_atomic_load (machine_mode mode, tree exp, rtx target)
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
   if (is_mm_release (model) || is_mm_acq_rel (model))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_load%>");
@@ -6458,7 +6458,7 @@ expand_builtin_atomic_store (machine_mode mode, tree exp)
   if (!(is_mm_relaxed (model) || is_mm_seq_cst (model)
 	|| is_mm_release (model)))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_store%>");
@@ -6651,7 +6651,7 @@ expand_builtin_atomic_clear (tree exp)
 
   if (is_mm_consume (model) || is_mm_acquire (model) || is_mm_acq_rel (model))
     {
-      source_location loc
+      location_t loc
 	= expansion_point_location_if_in_system_header (input_location);
       warning_at (loc, OPT_Winvalid_memory_model,
 		  "invalid memory model for %<__atomic_store%>");
@@ -10200,7 +10200,7 @@ fold_builtin_next_arg (tree exp, bool va_start_p)
      definition of the va_start macro (perhaps on the token for
      builtin) in a system header, so warnings will not be emitted.
      Use the location in real source code.  */
-  source_location current_location =
+  location_t current_location =
     linemap_unwind_to_first_non_reserved_loc (line_table, input_location,
 					      NULL);
 
