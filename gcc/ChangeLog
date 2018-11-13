@@ -1,3 +1,8 @@
+2018-11-13  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/linux64.h (ASM_OUTPUT_SPECIAL_POOL_ENTRY_P): Exclude
+	integer constants when -mcmodel=medium.
+
 2018-11-13  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.h (FUNCTION_PROFILER): Redefine to empty.
