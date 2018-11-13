@@ -569,8 +569,7 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	}
       else
 	{
-	  int un = cp_unevaluated_operand;
-	  cp_unevaluated_operand = 0;
+	  cp_evaluated ev;
 
 	  location_t sloc = input_location;
 	  input_location = expr_loc;
@@ -616,7 +615,6 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 	    }
 
 	  input_location = sloc;
-	  cp_unevaluated_operand = un;
 	}
     }
   else
