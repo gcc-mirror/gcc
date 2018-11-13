@@ -922,7 +922,7 @@
 		    && !satisfies_constraint_L (op)")))
 
 ;; Return 1 if the operand is a constant that can be used as the operand
-;; of an OR or XOR.
+;; of an AND, OR or XOR.
 (define_predicate "logical_const_operand"
   (match_code "const_int")
 {
@@ -935,7 +935,7 @@
 })
 
 ;; Return 1 if the operand is a non-special register or a constant that
-;; can be used as the operand of an OR or XOR.
+;; can be used as the operand of an AND, OR or XOR.
 (define_predicate "logical_operand"
   (ior (match_operand 0 "gpc_reg_operand")
        (match_operand 0 "logical_const_operand")))
