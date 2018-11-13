@@ -401,7 +401,7 @@ set_range_info (tree name, enum value_range_kind range_type,
 /* Store range information for NAME from a value_range.  */
 
 void
-set_range_info (tree name, const value_range &vr)
+set_range_info (tree name, const value_range_base &vr)
 {
   wide_int min = wi::to_wide (vr.min ());
   wide_int max = wi::to_wide (vr.max ());
@@ -434,7 +434,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
    in a value_range VR.  Returns the value_range_kind.  */
 
 enum value_range_kind
-get_range_info (const_tree name, value_range &vr)
+get_range_info (const_tree name, value_range_base &vr)
 {
   tree min, max;
   wide_int wmin, wmax;

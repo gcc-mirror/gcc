@@ -1,3 +1,18 @@
+2018-11-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssanames.h (set_range_info): Use value_range_base.
+	(get_range_info): Likewise.
+	* tree-ssanames.c (set_range_info): Likewise.
+	(get_range_info): Likewise.
+	* tree-vrp.c (value_range_base::union_helper): Split
+	out common parts of value_range[_base]::union_.
+	(value_range_base::union_): Update.
+	(value_range::union_): Likewise.
+	(determine_value_range_1): Use value_range_base.
+	(determine_value_range): Likewise.
+	* tree-vrp.h (value_range_base::union_helper): Move ...
+	(value_range::union_helper): ... from here.
+
 2018-11-13  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_secondary_reload_inner): Negate
