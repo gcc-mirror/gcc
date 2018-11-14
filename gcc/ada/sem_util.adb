@@ -25269,6 +25269,26 @@ package body Sem_Util is
       end if;
    end Type_Without_Stream_Operation;
 
+   ---------------------
+   -- Ultimate_Prefix --
+   ---------------------
+
+   function Ultimate_Prefix (N : Node_Id) return Node_Id is
+      Pref : Node_Id;
+
+   begin
+      Pref := N;
+      while Nkind_In (Pref, N_Explicit_Dereference,
+                            N_Indexed_Component,
+                            N_Selected_Component,
+                            N_Slice)
+      loop
+         Pref := Prefix (Pref);
+      end loop;
+
+      return Pref;
+   end Ultimate_Prefix;
+
    ----------------------------
    -- Unique_Defining_Entity --
    ----------------------------
