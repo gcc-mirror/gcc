@@ -1,5 +1,10 @@
 2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
 
+	* bindgen.adb, exp_cg.adb, repinfo.adb, sprint.adb: Minor reuse
+	Cancel_Special_Output where possible.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
 	* exp_dbug.ads, sem_util.ads: Minor fixes in comments.
 
 2018-11-14  Arnaud Charlet  <charlet@adacore.com>

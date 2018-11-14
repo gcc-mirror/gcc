@@ -1756,7 +1756,7 @@ package body Repinfo is
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
-                  Set_Special_Output (null);
+                  Cancel_Special_Output;
                   Close_Repinfo_File_Access.all;
                end if;
             end if;

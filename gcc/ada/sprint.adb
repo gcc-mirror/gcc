@@ -660,7 +660,7 @@ package body Sprint is
                   Write_Source_Lines (Last_Source_Line (Current_Source_File));
                   Write_Eol;
                   Close_Debug_Source;
-                  Set_Special_Output (null);
+                  Cancel_Special_Output;
 
                --  Normal output to standard output file
 
