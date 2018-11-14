@@ -7298,16 +7298,16 @@ package body Exp_Ch4 is
       Bodies : constant List_Id    := New_List;
       A_Typ  : constant Entity_Id  := Etype (Lhs);
 
-      Typl    : Entity_Id := A_Typ;
-      Op_Name : Entity_Id;
-      Prim    : Elmt_Id;
-
       procedure Build_Equality_Call (Eq : Entity_Id);
       --  If a constructed equality exists for the type or for its parent,
       --  build and analyze call, adding conversions if the operation is
       --  inherited.
 
-      function Has_Unconstrained_UU_Component (Typ : Node_Id) return Boolean;
+      function Find_Equality (Prims : Elist_Id) return Entity_Id;
+      --  Find a primitive equality function within primitive operation list
+      --  Prims.
+
+      function Has_Unconstrained_UU_Component (Typ : Entity_Id) return Boolean;
       --  Determines whether a type has a subcomponent of an unconstrained
       --  Unchecked_Union subtype. Typ is a record type.
 
@@ -7456,7 +7456,6 @@ package body Exp_Ch4 is
                --  Infer the discriminant values from the constraint.
 
                else
-
                   Discr := First_Discriminant (Lhs_Type);
                   while Present (Discr) loop
                      Append_Elmt
@@ -7556,12 +7555,70 @@ package body Exp_Ch4 is
          Analyze_And_Resolve (N, Standard_Boolean, Suppress => All_Checks);
       end Build_Equality_Call;
 
+      -------------------
+      -- Find_Equality --
+      -------------------
+
+      function Find_Equality (Prims : Elist_Id) return Entity_Id is
+         Formal_1  : Entity_Id;
+         Formal_2  : Entity_Id;
+         Prim      : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+
+      begin
+         --  Assume that the tagged type lacks an equality
+
+         Prim := Empty;
+
+         --  Inspect the list of primitives looking for a suitable equality
+
+         Prim_Elmt := First_Elmt (Prims);
+         while Present (Prim_Elmt) loop
+
+            --  Traverse a potential chain of derivations to recover the parent
+            --  equality.
+
+            Prim := Ultimate_Alias (Node (Prim_Elmt));
+
+            --  The current primitives denotes function "=" that returns a
+            --  Boolean. This could be the suitable equality if the formal
+            --  parameters agree.
+
+            if Ekind (Prim) = E_Function
+              and then Chars (Prim) = Name_Op_Eq
+              and then Base_Type (Etype (Prim)) = Standard_Boolean
+            then
+               Formal_1 := First_Formal (Prim);
+               Formal_2 := Empty;
+
+               if Present (Formal_1) then
+                  Formal_2 := Next_Formal (Formal_1);
+               end if;
+
+               if Present (Formal_1)
+                 and then Present (Formal_2)
+                 and then Etype (Formal_1) = Etype (Formal_2)
+               then
+                  exit;
+               end if;
+            end if;
+
+            Next_Elmt (Prim_Elmt);
+         end loop;
+
+         --  A tagged type should have an equality in its list of primitives
+
+         pragma Assert (Present (Prim));
+
+         return Prim;
+      end Find_Equality;
+
       ------------------------------------
       -- Has_Unconstrained_UU_Component --
       ------------------------------------
 
       function Has_Unconstrained_UU_Component
-        (Typ : Node_Id) return Boolean
+        (Typ : Entity_Id) return Boolean
       is
          Tdef  : constant Node_Id :=
                    Type_Definition (Declaration_Node (Base_Type (Typ)));
@@ -7697,6 +7754,10 @@ package body Exp_Ch4 is
          return False;
       end Has_Unconstrained_UU_Component;
 
+      --  Local variables
+
+      Typl : Entity_Id;
+
    --  Start of processing for Expand_N_Op_Eq
 
    begin
@@ -7704,12 +7765,13 @@ package body Exp_Ch4 is
 
       --  Deal with private types
 
+      Typl := A_Typ;
+
       if Ekind (Typl) = E_Private_Type then
          Typl := Underlying_Type (Typl);
+
       elsif Ekind (Typl) = E_Private_Subtype then
          Typl := Underlying_Type (Base_Type (Typl));
-      else
-         null;
       end if;
 
       --  It may happen in error situations that the underlying type is not
@@ -7851,25 +7913,8 @@ package body Exp_Ch4 is
             --  primitive may have been overridden in its untagged full view).
 
             if Inherits_From_Tagged_Full_View (A_Typ) then
-
-               --  Search for equality operation, checking that the operands
-               --  have the same type. Note that we must find a matching entry,
-               --  or something is very wrong.
-
-               Prim := First_Elmt (Collect_Primitive_Operations (A_Typ));
-
-               while Present (Prim) loop
-                  exit when Chars (Node (Prim)) = Name_Op_Eq
-                    and then Etype (First_Formal (Node (Prim))) =
-                             Etype (Next_Formal (First_Formal (Node (Prim))))
-                    and then
-                      Base_Type (Etype (Node (Prim))) = Standard_Boolean;
-
-                  Next_Elmt (Prim);
-               end loop;
-
-               pragma Assert (Present (Prim));
-               Op_Name := Node (Prim);
+               Build_Equality_Call
+                 (Find_Equality (Collect_Primitive_Operations (A_Typ)));
 
             --  Find the type's predefined equality or an overriding
             --  user-defined equality. The reason for not simply calling
@@ -7883,22 +7928,9 @@ package body Exp_Ch4 is
                   Typl := Find_Specific_Type (Typl);
                end if;
 
-               Prim := First_Elmt (Primitive_Operations (Typl));
-               while Present (Prim) loop
-                  exit when Chars (Node (Prim)) = Name_Op_Eq
-                    and then Etype (First_Formal (Node (Prim))) =
-                             Etype (Next_Formal (First_Formal (Node (Prim))))
-                    and then
-                      Base_Type (Etype (Node (Prim))) = Standard_Boolean;
-
-                  Next_Elmt (Prim);
-               end loop;
-
-               pragma Assert (Present (Prim));
-               Op_Name := Node (Prim);
+               Build_Equality_Call
+                 (Find_Equality (Primitive_Operations (Typl)));
             end if;
-
-            Build_Equality_Call (Op_Name);
 
          --  Ada 2005 (AI-216): Program_Error is raised when evaluating the
          --  predefined equality operator for a type which has a subcomponent
@@ -7967,22 +7999,9 @@ package body Exp_Ch4 is
          --  the root Super_String type.
 
          elsif Is_Bounded_String (Typl) then
-            Prim :=
-              First_Elmt (Collect_Primitive_Operations (Root_Type (Typl)));
-
-            while Present (Prim) loop
-               exit when Chars (Node (Prim)) = Name_Op_Eq
-                 and then Etype (First_Formal (Node (Prim))) =
-                          Etype (Next_Formal (First_Formal (Node (Prim))))
-                 and then Base_Type (Etype (Node (Prim))) = Standard_Boolean;
-
-               Next_Elmt (Prim);
-            end loop;
-
-            --  A Super_String type should always have a primitive equality
-
-            pragma Assert (Present (Prim));
-            Build_Equality_Call (Node (Prim));
+            Build_Equality_Call
+              (Find_Equality
+                (Collect_Primitive_Operations (Root_Type (Typl))));
 
          --  Otherwise expand the component by component equality. Note that
          --  we never use block-bit comparisons for records, because of the

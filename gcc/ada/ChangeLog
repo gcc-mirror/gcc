@@ -1,3 +1,9 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Remove duplicated code and use
+	routine Find_Equality instead.
+	(Find_Equality): New routine.
+
 2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* sem_util.adb (First_From_Global_List): Do not expect

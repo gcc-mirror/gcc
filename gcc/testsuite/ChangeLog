@@ -1,3 +1,10 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/equal4.adb, gnat.dg/equal4.ads,
+	gnat.dg/equal4_controlled_filter.ads,
+	gnat.dg/equal4_full_selector_filter.ads,
+	gnat.dg/equal4_smart_pointers.ads: New testcase.
+
 2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* gnat.dg/generic_actuals.adb: New testcase.
