@@ -1,3 +1,12 @@
+2018-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/nsdmi-union6.C: Test locations too.
+	* g++.dg/cpp0x/nsdmi6.C: Likewise.
+	* g++.dg/ext/flexary4.C: Likewise.
+	* g++.dg/ext/flexary9.C: Likewise.
+	* g++.dg/other/incomplete2.C: Likewise.
+	* g++.dg/parse/friend12.C: Likewise.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	P1236R1 - Signed integers are two's complement

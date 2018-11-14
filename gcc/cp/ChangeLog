@@ -1,3 +1,15 @@
+2018-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (make_id_declarator): Add location_t parameter.
+	(cp_parser_lambda_declarator_opt): Adjust call.
+	(cp_parser_decomposition_declaration): Likewise.
+	(cp_parser_alias_declaration): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_objc_class_ivars): Likewise.
+	* decl.c (grokdeclarator): Use declarator->id_loc in two error
+	messages.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	P1236R1 - Signed integers are two's complement

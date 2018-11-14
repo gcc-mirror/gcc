@@ -136,7 +136,8 @@ struct Sx23 {
 // array warning.
 struct Sx24 {
   struct S;
-  S a_x [0];                // { dg-message "incomplete type|zero-size array" }
+  S a_x [0];                // { dg-error "5:field .a_x. has incomplete type" }
+// { dg-warning "zero-size array" "" { target *-*-* } .-1 }
 };
 
 struct Sx25 {
