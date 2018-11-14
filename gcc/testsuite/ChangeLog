@@ -1,3 +1,8 @@
+2018-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87985
+	* gcc.dg/pr87985.c: New testcase.
+
 2018-11-14  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/mrecord-mcount.c (profileme): Expect .long in
