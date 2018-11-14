@@ -1,3 +1,10 @@
+2018-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/create_testsuite_files: Add special_functions to the list
+	of directories to search. Add comment referring to conformance.exp.
+	* testsuite/libstdc++-dg/conformance.exp: Add comment referring
+	to create_testsuite_files.
+
 2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* src/c++17/memory_resource.cc (select_num_pools): Fix off-by-one
