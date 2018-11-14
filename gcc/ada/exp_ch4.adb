@@ -7560,57 +7560,96 @@ package body Exp_Ch4 is
       -------------------
 
       function Find_Equality (Prims : Elist_Id) return Entity_Id is
-         Formal_1  : Entity_Id;
-         Formal_2  : Entity_Id;
-         Prim      : Entity_Id;
-         Prim_Elmt : Elmt_Id;
+         function Find_Aliased_Equality (Prim : Entity_Id) return Entity_Id;
+         --  Find an equality in a possible alias chain starting from primitive
+         --  operation Prim.
 
-      begin
-         --  Assume that the tagged type lacks an equality
+         function Is_Equality (Id : Entity_Id) return Boolean;
+         --  Determine whether arbitrary entity Id denotes an equality
 
-         Prim := Empty;
+         ---------------------------
+         -- Find_Aliased_Equality --
+         ---------------------------
 
-         --  Inspect the list of primitives looking for a suitable equality
+         function Find_Aliased_Equality (Prim : Entity_Id) return Entity_Id is
+            Candid : Entity_Id;
 
-         Prim_Elmt := First_Elmt (Prims);
-         while Present (Prim_Elmt) loop
+         begin
+            --  Inspect each candidate in the alias chain, checking whether it
+            --  denotes an equality.
 
-            --  Traverse a potential chain of derivations to recover the parent
-            --  equality.
+            Candid := Prim;
+            while Present (Candid) loop
+               if Is_Equality (Candid) then
+                  return Candid;
+               end if;
 
-            Prim := Ultimate_Alias (Node (Prim_Elmt));
+               Candid := Alias (Candid);
+            end loop;
 
-            --  The current primitives denotes function "=" that returns a
-            --  Boolean. This could be the suitable equality if the formal
-            --  parameters agree.
+            return Empty;
+         end Find_Aliased_Equality;
 
-            if Ekind (Prim) = E_Function
-              and then Chars (Prim) = Name_Op_Eq
-              and then Base_Type (Etype (Prim)) = Standard_Boolean
+         -----------------
+         -- Is_Equality --
+         -----------------
+
+         function Is_Equality (Id : Entity_Id) return Boolean is
+            Formal_1 : Entity_Id;
+            Formal_2 : Entity_Id;
+
+         begin
+            --  The equality function carries name "=", returns Boolean, and
+            --  has exactly two formal parameters of an identical type.
+
+            if Ekind (Id) = E_Function
+              and then Chars (Id) = Name_Op_Eq
+              and then Base_Type (Etype (Id)) = Standard_Boolean
             then
-               Formal_1 := First_Formal (Prim);
+               Formal_1 := First_Formal (Id);
                Formal_2 := Empty;
 
                if Present (Formal_1) then
                   Formal_2 := Next_Formal (Formal_1);
                end if;
 
-               if Present (Formal_1)
-                 and then Present (Formal_2)
-                 and then Etype (Formal_1) = Etype (Formal_2)
-               then
-                  exit;
-               end if;
+               return
+                 Present (Formal_1)
+                   and then Present (Formal_2)
+                   and then Etype (Formal_1) = Etype (Formal_2)
+                   and then No (Next_Formal (Formal_2));
             end if;
+
+            return False;
+         end Is_Equality;
+
+         --  Local variables
+
+         Eq_Prim   : Entity_Id;
+         Prim_Elmt : Elmt_Id;
+
+      --  Start of processing for Find_Equality
+
+      begin
+         --  Assume that the tagged type lacks an equality
+
+         Eq_Prim := Empty;
+
+         --  Inspect the list of primitives looking for a suitable equality
+         --  within a possible chain of aliases.
+
+         Prim_Elmt := First_Elmt (Prims);
+         while Present (Prim_Elmt) and then No (Eq_Prim) loop
+            Eq_Prim := Find_Aliased_Equality (Node (Prim_Elmt));
 
             Next_Elmt (Prim_Elmt);
          end loop;
 
-         --  A tagged type should have an equality in its list of primitives
+         --  A tagged type should always have an equality
 
-         pragma Assert (Present (Prim));
+         pragma Assert (Present (Eq_Prim));
 
-         return Prim;
+         return Eq_Prim;
       end Find_Equality;
 
       ------------------------------------

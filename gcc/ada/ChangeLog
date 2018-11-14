@@ -1,5 +1,11 @@
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* exp_ch4.adb (Find_Aliased_Equality): New routine.
+	(Find_Equality): Reimplemented.
+	(Is_Equality): New routine.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* ghost.adb (Ghost_Entity): New routine.
 	(Mark_And_Set_Ghost_Assignment): Reimplemented.
 	* sem_ch5.adb (Analyze_Assignment): Assess whether the target of
