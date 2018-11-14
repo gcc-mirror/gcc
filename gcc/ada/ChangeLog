@@ -1,3 +1,11 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type): If the given low bound
+	of the type is less than the nearest model number, do not expand
+	the range of the type to include the model number below the
+	bound. Similar adjustment if the upper bound is larger than the
+	nearest model number.
+
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* checks.adb (Install_Primitive_Elaboration_Check): Do not

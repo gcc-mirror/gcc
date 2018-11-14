@@ -8008,7 +8008,8 @@ package body Freeze is
                Set_Realval (Lo, Loval);
             end if;
 
-            --  Compute the fudged bounds. If the number is a model number,
+            --  Compute the fudged bounds. If the bound is a model number,
+            --  (or greater if given low bound, smaller if high bound)
             --  then we do nothing to include it, but we are allowed to backoff
             --  to the next adjacent model number when we exclude it. If it is
             --  not a model number then we straddle the two values with the
@@ -8016,7 +8017,7 @@ package body Freeze is
 
             Model_Num := UR_Trunc (Loval / Small) * Small;
 
-            if Loval = Model_Num then
+            if UR_Ge (Loval, Model_Num) then
                Loval_Incl_EP := Model_Num;
             else
                Loval_Incl_EP := Model_Num - Small;
@@ -8050,7 +8051,7 @@ package body Freeze is
 
             Model_Num := UR_Trunc (Hival / Small) * Small;
 
-            if Hival = Model_Num then
+            if UR_Le (Hival, Model_Num) then
                Hival_Incl_EP := Model_Num;
             else
                Hival_Incl_EP := Model_Num + Small;
