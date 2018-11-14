@@ -1963,10 +1963,12 @@ last_stmt_in_scope (gimple *stmt)
 
 static gimple *
 collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
-			    auto_vec <struct label_entry> *labels)
+			    auto_vec <struct label_entry> *labels,
+			    location_t *prevloc)
 {
   gimple *prev = NULL;
 
+  *prevloc = UNKNOWN_LOCATION;
   do
     {
       if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_BIND)
@@ -2003,7 +2005,7 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	      /* It might be a label without a location.  Use the
 		 location of the scope then.  */
 	      if (!gimple_has_location (prev))
-		gimple_set_location (prev, bind_loc);
+		*prevloc = bind_loc;
 	    }
 	  gsi_next (gsi_p);
 	  continue;
@@ -2086,6 +2088,8 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	 && (gimple_code (gsi_stmt (*gsi_p)) != GIMPLE_LABEL
 	     || !gimple_has_location (gsi_stmt (*gsi_p))));
 
+  if (prev && gimple_has_location (prev))
+    *prevloc = gimple_location (prev);
   return prev;
 }
 
@@ -2182,7 +2186,8 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 
 	/* Vector of labels that fall through.  */
 	auto_vec <struct label_entry> labels;
-	gimple *prev = collect_fallthrough_labels (gsi_p, &labels);
+	location_t prevloc;
+	gimple *prev = collect_fallthrough_labels (gsi_p, &labels, &prevloc);
 
 	/* There might be no more statements.  */
 	if (gsi_end_p (*gsi_p))
@@ -2210,8 +2215,8 @@ warn_implicit_fallthrough_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		     /* Try to be clever and don't warn when the statement
 			can't actually fall through.  */
 		     && gimple_stmt_may_fallthru (prev)
-		     && gimple_has_location (prev))
-	      warned_p = warning_at (gimple_location (prev),
+		     && prevloc != UNKNOWN_LOCATION)
+	      warned_p = warning_at (prevloc,
 				     OPT_Wimplicit_fallthrough_,
 				     "this statement may fall through");
 	    if (warned_p)

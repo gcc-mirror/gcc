@@ -1,3 +1,11 @@
+2018-11-14  Michael Matz  <matz@suse.de>
+
+	PR middle-end/86575
+	* gimplify.c (collect_fallthrough_labels): Add new argument,
+	return location via that, don't modify statements.
+	(warn_implicit_fallthrough_r): Adjust call, don't use
+	statement location directly.
+
 2018-11-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87985
