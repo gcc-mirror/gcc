@@ -1,3 +1,11 @@
+2018-11-14  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/global-array-almost-huge-element.c: Run only
+	in 64-bit mode.
+	* gcc.target/s390/global-array-almost-negative-huge-element.c:
+	Likewise.
+	* gcc.target/s390/global-array-even-element.c: Likewise.
+
 2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 
