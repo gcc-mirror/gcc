@@ -5523,8 +5523,6 @@ parse_optimize_options (tree args, bool attr_p)
 		  next_p = NULL;
 		}
 
-	      r = q = (char *) ggc_alloc_atomic (len2 + 3);
-
 	      /* If the user supplied -Oxxx or -fxxx, only allow -Oxxx or -fxxx
 		 options.  */
 	      if (*p == '-' && p[1] != 'O' && p[1] != 'f')
@@ -5538,6 +5536,9 @@ parse_optimize_options (tree args, bool attr_p)
 			     "bad option %qs to pragma %<optimize%>", p);
 		  continue;
 		}
+
+	      /* Can't use GC memory here, see PR88007.  */
+	      r = q = XOBNEWVEC (&opts_obstack, char, len2 + 3);
 
 	      if (*p != '-')
 		{
