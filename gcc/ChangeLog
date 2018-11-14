@@ -1,3 +1,10 @@
+2018-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87898
+	* omp-simd-clone.c (ipa_simd_modify_stmt_ops): Formatting fix.
+	(ipa_simd_modify_function_body): Remove debug stmts where the first
+	argument was changed into a non-decl.
+
 2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87899
