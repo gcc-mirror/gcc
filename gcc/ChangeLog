@@ -1,3 +1,9 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR bootstrap/86739
+	* hash-map.h (hash_map::iterator::reference_pair): New class.
+	(hash_map::iterator::operator*): Return it rather than std::pair.
+
 2018-11-14  Jeff Law  <law@redhat.com>
 
 	* optabs.c (expand_binop): Pass INT_MODE to operand_subword_force
