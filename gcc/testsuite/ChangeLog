@@ -1,5 +1,8 @@
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR other/88007
+	* gcc.dg/pr88007.c: New test.
+
 	PR rtl-optimization/87817
 	* gcc.target/i386/bmi2-bzhi-3.c (main): Add a couple of new tests.
 
