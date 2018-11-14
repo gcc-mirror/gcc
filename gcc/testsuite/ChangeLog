@@ -1,3 +1,8 @@
+2018-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87974
+	* g++.dg/opt/pr87974.C: New testcase.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87977
