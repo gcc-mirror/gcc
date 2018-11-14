@@ -1,3 +1,7 @@
+2018-11-14  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/enum5.adb: New testcase.
+
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* gnat.dg/bip_exception.adb, gnat.dg/bip_exception.ads,
