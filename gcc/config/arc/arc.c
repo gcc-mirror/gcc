@@ -3457,10 +3457,13 @@ arc_expand_epilogue (int sibcall_p)
 /* Return rtx for the location of the return address on the stack,
    suitable for use in __builtin_eh_return.  The new return address
    will be written to this location in order to redirect the return to
-   the exception handler.  */
+   the exception handler.  Our ABI says the blink is pushed first on
+   stack followed by an unknown number of register saves, and finally
+   by fp.  Hence we cannot use the EH_RETURN_ADDRESS macro as the
+   stack is not finalized.  */
 
-rtx
-arc_eh_return_address_location (void)
+void
+arc_eh_return_address_location (rtx source)
 {
   rtx mem;
   int offset;
@@ -3488,8 +3491,8 @@ arc_eh_return_address_location (void)
      remove this store seems perfectly sensible.  Marking the memory
      address as volatile obviously has the effect of preventing DSE
      from removing the store.  */
-  MEM_VOLATILE_P (mem) = 1;
-  return mem;
+  MEM_VOLATILE_P (mem) = true;
+  emit_move_insn (mem, source);
 }
 
 /* PIC */

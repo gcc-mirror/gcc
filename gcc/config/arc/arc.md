@@ -162,6 +162,7 @@
   VUNSPEC_ARC_SC
   VUNSPEC_ARC_LL
   VUNSPEC_ARC_BLOCKAGE
+  VUNSPEC_ARC_EH_RETURN
   ])
 
 (define_constants
@@ -6613,6 +6614,20 @@
   [(set (reg:CC CC_REG) (compare:CC (match_dup 3)
 				    (ashift:SI (match_dup 1) (match_dup 2))))])
 
+;; Patterns for exception handling
+(define_insn_and_split "eh_return"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    VUNSPEC_ARC_EH_RETURN)]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  "
+  {
+    arc_eh_return_address_location (operands[0]);
+    DONE;
+  }"
+)
 ;; include the arc-FPX instructions
 (include "fpx.md")
 

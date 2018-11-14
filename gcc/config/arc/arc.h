@@ -1367,8 +1367,6 @@ do { \
 
 #define EH_RETURN_STACKADJ_RTX   gen_rtx_REG (Pmode, 2)
 
-#define EH_RETURN_HANDLER_RTX    arc_eh_return_address_location ()
-
 /* Turn off splitting of long stabs.  */
 #define DBX_CONTIN_LENGTH 0
 
