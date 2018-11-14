@@ -1,5 +1,24 @@
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* checks.adb (Install_Primitive_Elaboration_Check): Do not
+	create the check when exceptions cannot be used.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Do not raise
+	Program_Errror when exceptions cannot be used. Analyze the
+	generated code with all checks suppressed.
+	* exp_ch7.adb (Build_Finalizer): Remove the declaration of
+	Exceptions_OK.
+	(Make_Deep_Array_Body): Remove the declaration of Exceptions_OK.
+	(Make_Deep_Record_Body): Remove the declaration of
+	Exceptions_OK.
+	(Process_Transients_In_Scope): Remove the declaration of
+	Exceptions_OK.
+	* exp_util.adb (Exceptions_In_Finalization_OK): Renamed to
+	Exceptions_OK.
+	* exp_util.ads (Exceptions_In_Finalization_OK): Renamed to
+	Exceptions_OK.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch4.adb (Expand_N_Op_Eq): Remove duplicated code and use
 	routine Find_Equality instead.
 	(Find_Equality): New routine.

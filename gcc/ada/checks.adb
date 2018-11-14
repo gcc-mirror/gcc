@@ -7960,6 +7960,12 @@ package body Checks is
       elsif Restriction_Active (No_Elaboration_Code) then
          return;
 
+      --  Do not generate an elaboration check if exceptions cannot be used,
+      --  caught, or propagated.
+
+      elsif not Exceptions_OK then
+         return;
+
       --  Do not consider subprograms which act as compilation units, because
       --  they cannot be the target of a dispatching call.
 

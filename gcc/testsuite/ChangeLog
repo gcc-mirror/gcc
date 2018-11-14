@@ -1,5 +1,10 @@
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* gnat.dg/bip_exception.adb, gnat.dg/bip_exception.ads,
+	gnat.dg/bip_exception_pkg.ads: New testcase.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* gnat.dg/equal4.adb, gnat.dg/equal4.ads,
 	gnat.dg/equal4_controlled_filter.ads,
 	gnat.dg/equal4_full_selector_filter.ads,
