@@ -1,3 +1,9 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87817
+	* config/i386/i386.c (ix86_fold_builtin): For _bzhi_u{32,64} if
+	last argument has low 8 bits clear, fold to 0.
+
 2018-11-14  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Cast

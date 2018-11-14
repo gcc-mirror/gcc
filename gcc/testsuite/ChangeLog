@@ -1,3 +1,8 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87817
+	* gcc.target/i386/bmi2-bzhi-3.c (main): Add a couple of new tests.
+
 2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
 
 	* gcc.target/aarch64/pr62178.c: Relax scan-assembler checks.
