@@ -8594,8 +8594,7 @@ package body Sem_Util is
          --  Single global item declaration (only input items)
 
          elsif Nkind_In (List, N_Expanded_Name,
-                               N_Identifier,
-                               N_Selected_Component)
+                               N_Identifier)
          then
             if Global_Mode = Name_Input then
                return List;
@@ -8648,10 +8647,10 @@ package body Sem_Util is
       Body_Id : Entity_Id;
 
    begin
-      pragma Assert (Global_Mode = Name_Input
-                      or else Global_Mode = Name_Output
-                      or else Global_Mode = Name_In_Out
-                      or else Global_Mode = Name_Proof_In);
+      pragma Assert (Nam_In (Global_Mode, Name_Input,
+                                          Name_Output,
+                                          Name_In_Out,
+                                          Name_Proof_In));
 
       --  Retrieve the suitable pragma Global or Refined_Global. In the second
       --  case, it can only be located on the body entity.
