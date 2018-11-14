@@ -7306,7 +7306,17 @@ hwloop_optimize (hwloop_info loop)
   for (insn = loop->start_label;
        insn && insn != loop->loop_end;
        insn = NEXT_INSN (insn))
-    length += NONDEBUG_INSN_P (insn) ? get_attr_length (insn) : 0;
+    {
+      length += NONDEBUG_INSN_P (insn) ? get_attr_length (insn) : 0;
+      if (JUMP_TABLES_IN_TEXT_SECTION
+	  && JUMP_TABLE_DATA_P (insn))
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d has a jump table\n",
+		     loop->loop_no);
+	  return false;
+	}
+    }
 
   if (!insn)
     {

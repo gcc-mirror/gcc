@@ -1,6 +1,12 @@
 2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline
+	* config/arc/arc.c (hwloop_optimize): Bailout when detecting a
+	jump table data in the text section.
+
+2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
 	* config/arc/arc.c (arc_eh_return_address_location): Repurpose it
 	to fit the eh_return pattern.
 	* config/arc/arc.md (eh_return): Define.
