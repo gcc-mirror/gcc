@@ -1688,7 +1688,7 @@ package body Exp_Prag is
       --  condition is subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Generate:
@@ -1722,7 +1722,7 @@ package body Exp_Prag is
       Proc_Body_Id := Defining_Entity (Proc_Body);
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Body_Id);
+         Set_Debug_Info_Needed (Proc_Body_Id);
       end if;
 
       --  The location of the initial condition procedure call must be as close

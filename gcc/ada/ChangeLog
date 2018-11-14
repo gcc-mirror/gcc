@@ -1,3 +1,20 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Use the proper routine to
+	set the need for debug info.
+	* exp_dbug.adb (Build_Subprogram_Instance_Renamings): Use the
+	proper routine to set the need for debug info.
+	* exp_prag.adb (Expand_Pragma_Initial_Condition): Use the proper
+	routine to set the need for debug info.
+	* exp_util.adb (Build_DIC_Procedure_Declaration): Use the proper
+	routine to set the need for debug info.
+	(Build_Invariant_Procedure_Declaration): Use the proper routine
+	to set the need for debug info.
+	* ghost.adb (Record_Ignored_Ghost_Node): Add statements as a
+	whole class to the list of top level ignored Ghost nodes.
+	* sem_util.adb (Set_Debug_Info_Needed): Do not generate debug
+	info for an ignored Ghost entity.
+
 2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
 
 	* bindgen.adb, exp_cg.adb, repinfo.adb, sprint.adb: Minor reuse
