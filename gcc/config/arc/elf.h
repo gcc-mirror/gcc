@@ -73,3 +73,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END arc_file_end
+
+/* Emit rtl for profiling.  Output assembler code to FILE
+   to call "_mcount" for profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)					\
+  {								\
+    rtx fun;							\
+    fun = gen_rtx_SYMBOL_REF (Pmode, "__mcount");		\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode);		\
+  }
