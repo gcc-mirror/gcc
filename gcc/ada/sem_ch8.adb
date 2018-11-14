@@ -9685,12 +9685,17 @@ package body Sem_Ch8 is
             --  current one would have been visible, so make the other one
             --  not use_visible.
 
+            --  In certain pathological cases it is possible that unrelated
+            --  homonyms from distinct formal packages may exist in an
+            --  uninstalled scope. We must test for that here.
+
             elsif Present (Current_Instance)
               and then Is_Potentially_Use_Visible (Prev)
               and then not Is_Overloadable (Prev)
               and then Scope (Id) /= Scope (Prev)
               and then Used_As_Generic_Actual (Scope (Prev))
               and then Used_As_Generic_Actual (Scope (Id))
+              and then Is_List_Member (Scope (Prev))
               and then not In_Same_List (Current_Use_Clause (Scope (Prev)),
                                          Current_Use_Clause (Scope (Id)))
             then
