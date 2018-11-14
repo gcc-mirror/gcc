@@ -1,3 +1,12 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb: Change the profile of
+	Silly_Boolean_Array_Xor_Test, adding a formal that can be a copy
+	of the right opersnd. This prevents unnesting anomalies when
+	that operand contains uplevel references.
+	* exp_ch4.adb (Expand_Boolean_Operation): Use this new profile.
+	* exp_pakd.adb (Expand_Packed_Boolean_Operator): Ditto.
+
 2018-11-14  Patrick Bernardi  <bernardi@adacore.com>
 
 	* libgnarl/a-intnam__linux.ads: Add SIGSYS.

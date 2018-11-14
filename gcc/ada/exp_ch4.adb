@@ -2031,7 +2031,7 @@ package body Exp_Ch4 is
       declare
          Loc       : constant Source_Ptr := Sloc (N);
          L         : constant Node_Id    := Relocate_Node (Left_Opnd  (N));
-         R         : constant Node_Id    := Relocate_Node (Right_Opnd (N));
+         R         : Node_Id             := Relocate_Node (Right_Opnd (N));
          Func_Body : Node_Id;
          Func_Name : Entity_Id;
 
@@ -2043,7 +2043,8 @@ package body Exp_Ch4 is
          Apply_Length_Check (R, Etype (L));
 
          if Nkind (N) = N_Op_Xor then
-            Silly_Boolean_Array_Xor_Test (N, Etype (L));
+            R := Duplicate_Subexpr (R);
+            Silly_Boolean_Array_Xor_Test (N, R, Etype (L));
          end if;
 
          if Nkind (Parent (N)) = N_Assignment_Statement

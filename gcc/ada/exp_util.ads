@@ -1140,11 +1140,14 @@ package Exp_Util is
    --  the boolean array is False..False or True..True, where it is required
    --  that a Constraint_Error exception be raised (RM 4.5.6(6)).
 
-   procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id);
-   --  N is the node for a boolean array XOR operation, and T is the type of
-   --  the array. This routine deals with the silly case where the subtype of
-   --  the boolean array is True..True, where a raise of a Constraint_Error
-   --  exception is required (RM 4.5.6(6)).
+   procedure Silly_Boolean_Array_Xor_Test
+     (N : Node_Id; R : Node_Id;  T : Entity_Id);
+   --  N is the node for a boolean array XOR operation, T is the type of the
+   --  array, and R is a copy of the right operand of N, required to prevent
+   --  scope anomalies when unnesting is in effect. This routine deals with
+   --  the admitedly silly case where the subtype of the boolean array is
+   --  True..True, where a raise of a Constraint_Error exception is required
+   --  (RM 4.5.6(6)) and ACATS-tested.
 
    function Target_Has_Fixed_Ops
      (Left_Typ   : Entity_Id;
