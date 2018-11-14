@@ -1,3 +1,8 @@
+2018-11-14  Jeff Law  <law@redhat.com>
+
+	* optabs.c (expand_binop): Pass INT_MODE to operand_subword_force
+	iff the operand is a constant.
+
 2018-11-14  Aldy Hernandez  <aldyh@redhat.com>
 
 	* gimple-ssa-evrp-analyze.c

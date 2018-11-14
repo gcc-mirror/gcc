@@ -1,3 +1,7 @@
+2018-11-14  Jeff Law  <law@redhat.com>
+
+	* gcc.c-torture/compile/20181114.c: New test.
+
 2018-11-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87985
