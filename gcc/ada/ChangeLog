@@ -1,5 +1,13 @@
 2018-11-14  Ed Schonberg  <schonberg@adacore.com>
 
+	* exp_ch7.adb (Check_Unnesting_In_Declarations): New procedure
+	to transform blocks that appear in the declarative part of a
+	package body into subprograms if they contain generated
+	subprograms (such as finalization routines). Needed to generate
+	the proper upward references in unnesting mode.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
 	* freeze.adb (Freeze_Fixed_Point_Type): If the given low bound
 	of the type is less than the nearest model number, do not expand
 	the range of the type to include the model number below the
