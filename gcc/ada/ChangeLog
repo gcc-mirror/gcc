@@ -1,3 +1,16 @@
+2018-11-14  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/a-intnam__linux.ads: Add SIGSYS.
+	* libgnarl/s-linux__alpha.ads, libgnarl/s-linux__android.ads,
+	libgnarl/s-linux__hppa.ads, libgnarl/s-linux__mips.ads,
+	libgnarl/s-linux__riscv.ads, libgnarl/s-linux__sparc.ads,
+	libgnarl/s-linux__x32.ads: Rename SIGLTHRRES, SIGLTHRCAN and
+	SIGLTHRDBG to SIG32, SIG33 and SIG34 as their names are
+	implementation specific.
+	* libgnarl/s-osinte__linux.ads, libgnarl/s-linux.ads: Add
+	SIGSYS.  Move SIG32, SIG33 and SIG34 from the unmasked list to
+	the reserved list.
+
 2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Is_Static_Element): New predicate extracted

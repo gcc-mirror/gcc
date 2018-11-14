@@ -112,9 +112,9 @@ package System.Linux is
    SIGUSR1    : constant := 30; --  user defined signal 1
    SIGUSR2    : constant := 31; --  user defined signal 2
 
-   SIGLTHRRES : constant := 32; --  GNU/LinuxThreads restart signal
-   SIGLTHRCAN : constant := 33; --  GNU/LinuxThreads cancel signal
-   SIGLTHRDBG : constant := 34; --  GNU/LinuxThreads debugger signal
+   SIG32      : constant := 32; --  glibc internal signal
+   SIG33      : constant := 33; --  glibc internal signal
+   SIG34      : constant := 34; --  glibc internal signal
 
    SIGUNUSED  : constant := 0;
    SIGSTKFLT  : constant := 0;
