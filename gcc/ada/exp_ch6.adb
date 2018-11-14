@@ -5099,6 +5099,7 @@ package body Exp_Ch6 is
                      Alloc_Obj_Id   : Entity_Id;
                      Alloc_Obj_Decl : Node_Id;
                      Alloc_If_Stmt  : Node_Id;
+                     Guard_Except   : Node_Id;
                      Heap_Allocator : Node_Id;
                      Pool_Decl      : Node_Id;
                      Pool_Allocator : Node_Id;
@@ -5298,6 +5299,18 @@ package body Exp_Ch6 is
                        (Return_Statement_Entity (N));
                      Set_Enclosing_Sec_Stack_Return (N);
 
+                     --  Guard against poor expansion on the caller side by
+                     --  using a raise statement to catch out-of-range values
+                     --  of formal parameter BIP_Alloc_Form.
+
+                     if Exceptions_OK then
+                        Guard_Except :=
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Build_In_Place_Mismatch);
+                     else
+                        Guard_Except := Make_Null_Statement (Loc);
+                     end if;
+
                      --  Create an if statement to test the BIP_Alloc_Form
                      --  formal and initialize the access object to either the
                      --  BIP_Object_Access formal (BIP_Alloc_Form =
@@ -5400,9 +5413,7 @@ package body Exp_Ch6 is
                          --  Raise Program_Error if it's none of the above;
                          --  this is a compiler bug.
 
-                         Else_Statements => New_List (
-                           Make_Raise_Program_Error (Loc,
-                             Reason => PE_Build_In_Place_Mismatch)));
+                         Else_Statements => New_List (Guard_Except));
 
                      --  If a separate initialization assignment was created
                      --  earlier, append that following the assignment of the
@@ -5477,7 +5488,7 @@ package body Exp_Ch6 is
       Set_Comes_From_Extended_Return_Statement (Return_Stmt);
 
       Rewrite (N, Result);
-      Analyze (N);
+      Analyze (N, Suppress => All_Checks);
    end Expand_N_Extended_Return_Statement;
 
    ----------------------------

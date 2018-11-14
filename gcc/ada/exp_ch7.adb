@@ -1337,7 +1337,7 @@ package body Exp_Ch7 is
                              or else
                                (Present (Clean_Stmts)
                                  and then Is_Non_Empty_List (Clean_Stmts));
-      Exceptions_OK    : constant Boolean := Exceptions_In_Finalization_OK;
+
       For_Package_Body : constant Boolean := Nkind (N) = N_Package_Body;
       For_Package_Spec : constant Boolean := Nkind (N) = N_Package_Declaration;
       For_Package      : constant Boolean :=
@@ -5328,8 +5328,6 @@ package body Exp_Ch7 is
          Last_Object  : Node_Id;
          Related_Node : Node_Id)
       is
-         Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
-
          Must_Hook : Boolean := False;
          --  Flag denoting whether the context requires transient object
          --  export to the outer finalizer.
@@ -5997,8 +5995,6 @@ package body Exp_Ch7 is
      (Prim : Final_Primitives;
       Typ  : Entity_Id) return List_Id
    is
-      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
-
       function Build_Adjust_Or_Finalize_Statements
         (Typ : Entity_Id) return List_Id;
       --  Create the statements necessary to adjust or finalize an array of
@@ -6829,8 +6825,6 @@ package body Exp_Ch7 is
       Typ      : Entity_Id;
       Is_Local : Boolean := False) return List_Id
    is
-      Exceptions_OK : constant Boolean := Exceptions_In_Finalization_OK;
-
       function Build_Adjust_Statements (Typ : Entity_Id) return List_Id;
       --  Build the statements necessary to adjust a record type. The type may
       --  have discriminants and contain variant parts. Generate:
