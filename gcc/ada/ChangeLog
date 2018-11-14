@@ -1,3 +1,20 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.adb (Ghost_Entity): New routine.
+	(Mark_And_Set_Ghost_Assignment): Reimplemented.
+	* sem_ch5.adb (Analyze_Assignment): Assess whether the target of
+	the assignment is an ignored Ghost entity before analyzing the
+	left hand side.
+	* sem_ch8.adb (Find_Direct_Name): Update the subprogram
+	signature. Do not generate markers and references when they are
+	not desired.
+	(Nvis_Messages): Do not execute when errors are not desired.
+	(Undefined): Do not emit errors when they are not desired.
+	* sem_ch8.ads (Find_Direct_Name): Update the subprogram
+	signature and comment on usage.
+	* sem_util.adb (Ultimate_Prefix): New routine.
+	* sem_util.ads (Ultimate_Prefix): New routine.
+
 2018-11-14  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch7.adb (Uninstall_Declarations): Add conditional to avoid

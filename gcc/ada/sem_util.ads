@@ -2810,6 +2810,10 @@ package Sem_Util is
    --  prevents the construction of a composite stream operation. If Op is
    --  specified we check only for the given stream operation.
 
+   function Ultimate_Prefix (N : Node_Id) return Node_Id;
+   --  Obtain the "outermost" prefix of arbitrary node N. Return N if no such
+   --  prefix exists.
+
    function Unique_Defining_Entity (N : Node_Id) return Entity_Id;
    --  Return the entity that represents declaration N, so that different
    --  views of the same entity have the same unique defining entity:
