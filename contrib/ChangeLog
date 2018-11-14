@@ -1,3 +1,7 @@
+2018-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc_update (files_and_dependencies): Handle libphobos.
+
 2018-10-25  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* dg-cmp-results.sh: Print NA-FAIL and NA->UNRESOLVED changes at
