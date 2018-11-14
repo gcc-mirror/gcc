@@ -1,3 +1,7 @@
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* gnat.dg/generic_actuals.adb: New testcase.
+
 2018-11-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/87974
