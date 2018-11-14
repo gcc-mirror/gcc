@@ -8611,17 +8611,17 @@ package body Exp_Ch3 is
    ------------------
 
    function Init_Formals (Typ : Entity_Id) return List_Id is
-      Unc_Arr : constant Boolean :=
-        Is_Array_Type (Typ) and then not Is_Constrained (Typ);
+      Loc        : constant Source_Ptr := Sloc (Typ);
+      Unc_Arr    : constant Boolean :=
+                     Is_Array_Type (Typ) and then not Is_Constrained (Typ);
       With_Prot  : constant Boolean :=
-        Has_Protected (Typ)
-          or else (Is_Record_Type (Typ)
-                     and then Is_Protected_Record_Type (Typ));
+                     Has_Protected (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-        Has_Task (Typ)
-          or else (Is_Record_Type (Typ)
-                     and then Is_Task_Record_Type (Typ));
-      Loc     : constant Source_Ptr := Sloc (Typ);
+                     Has_Task (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Task_Record_Type (Typ));
       Formals : List_Id;
 
    begin
@@ -9038,8 +9038,8 @@ package body Exp_Ch3 is
       Stmt : Node_Id;
 
    begin
-      --  We must skip SCIL nodes because they may have been added to the
-      --  list by Insert_Actions.
+      --  We must skip SCIL nodes because they may have been added to the list
+      --  by Insert_Actions.
 
       Stmt := First_Non_SCIL_Node (Stmts);
       while Present (Stmt) loop

@@ -752,14 +752,10 @@ package body Exp_Unst is
             procedure Register_Subprogram (E : Entity_Id; Bod : Node_Id) is
                L : constant Nat := Get_Level (Subp, E);
 
-            --  Subprograms declared in tasks and protected types cannot
-            --  be eliminated because calls to them may be in other units,
-            --  so they must be treated as reachable.
-
             begin
-               --  Subprograms declared in tasks and protected types cannot
-               --  be eliminated because calls to them may be in other units,
-               --  so they must be treated as reachable.
+               --  Subprograms declared in tasks and protected types cannot be
+               --  eliminated because calls to them may be in other units, so
+               --  they must be treated as reachable.
 
                Subps.Append
                  ((Ent           => E,
@@ -1154,9 +1150,9 @@ package body Exp_Unst is
                      return Skip;
                   end if;
 
-               --  Pragmas and component declarations can be ignored.
-               --  Quantified expressions are expanded into explicit loops
-               --  and the original epression must be ignored.
+               --  Pragmas and component declarations are ignored. Quantified
+               --  expressions are expanded into explicit loops and the
+               --  original epression must be ignored.
 
                when N_Component_Declaration
                   | N_Pragma
@@ -1389,10 +1385,10 @@ package body Exp_Unst is
 
                         --  If this entity was marked reachable because it is
                         --  in a task or protected type, there may not appear
-                        --  to be any calls to it, which would normally
-                        --  adjust the levels of the parent subprograms.
-                        --  So we need to be sure that the uplevel reference
-                        --  of that entity takes into account possible calls.
+                        --  to be any calls to it, which would normally adjust
+                        --  the levels of the parent subprograms. So we need to
+                        --  be sure that the uplevel reference of that entity
+                        --  takes into account possible calls.
 
                         if In_Synchronized_Unit (SUBF.Ent)
                           and then SUBT.Lev < SUBI.Uplevel_Ref
@@ -1408,9 +1404,9 @@ package body Exp_Unst is
                   --  We do not add types to this list, only actual references
                   --  to objects that will be referenced uplevel, and we use
                   --  the flag Is_Uplevel_Referenced_Entity to avoid making
-                  --  duplicate entries in the list.
-                  --  Discriminants are also excluded, only the enclosing
-                  --  object can appear in the list.
+                  --  duplicate entries in the list. Discriminants are also
+                  --  excluded, only the enclosing object can appear in the
+                  --  list.
 
                   if not Is_Uplevel_Referenced_Entity (URJ.Ent)
                     and then Ekind (URJ.Ent) /= E_Discriminant
@@ -1750,8 +1746,8 @@ package body Exp_Unst is
                      --  Declaration nodes for the AREC entities we build
 
                   begin
-                     --  Build list of component declarations for ARECnT
-                     --  and load System.Address.
+                     --  Build list of component declarations for ARECnT and
+                     --  load System.Address.
 
                      Clist := Empty_List;
 
@@ -2009,10 +2005,11 @@ package body Exp_Unst is
                                     Attr := Name_Address;
                                  end if;
 
-                                 Rhs :=  Make_Attribute_Reference (Loc,
-                                         Prefix         =>
-                                           New_Occurrence_Of (Ent, Loc),
-                                         Attribute_Name => Attr);
+                                 Rhs :=
+                                  Make_Attribute_Reference (Loc,
+                                    Prefix         =>
+                                      New_Occurrence_Of (Ent, Loc),
+                                    Attribute_Name => Attr);
 
                                  --  If the entity is an unconstrained formal
                                  --  we wrap the attribute reference in an
@@ -2024,15 +2021,15 @@ package body Exp_Unst is
                                  if Is_Formal (Ent)
                                    and then not Is_Constrained (Etype (Ent))
                                  then
-                                    --  Find target component and its type.
+                                    --  Find target component and its type
 
                                     Comp := First_Component (STJ.ARECnT);
                                     while Chars (Comp) /= Chars (Ent) loop
                                        Comp := Next_Component (Comp);
                                     end loop;
 
-                                    Rhs := Unchecked_Convert_To (
-                                              Etype (Comp), Rhs);
+                                    Rhs :=
+                                      Unchecked_Convert_To (Etype (Comp), Rhs);
                                  end if;
 
                                  Asn :=

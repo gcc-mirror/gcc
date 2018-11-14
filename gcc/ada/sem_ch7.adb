@@ -2855,13 +2855,13 @@ package body Sem_Ch7 is
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
 
-            --  We need to avoid incorrectly marking enumeration literals
-            --  as non-visible when a visible use-all-type clause is in effect.
+            --  We need to avoid incorrectly marking enumeration literals as
+            --  non-visible when a visible use-all-type clause is in effect.
 
             elsif Type_In_Use (Etype (Id))
-                    and then Nkind (Current_Use_Clause (Etype (Id))) =
-                               N_Use_Type_Clause
-                    and then All_Present (Current_Use_Clause (Etype (Id)))
+              and then Nkind (Current_Use_Clause (Etype (Id))) =
+                         N_Use_Type_Clause
+              and then All_Present (Current_Use_Clause (Etype (Id)))
             then
                null;
 

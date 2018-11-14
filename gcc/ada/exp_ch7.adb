@@ -362,10 +362,10 @@ package body Exp_Ch7 is
 
    procedure Check_Unnesting_In_Declarations (N : Node_Id);
    --  Similarly, the declarations in the package body may have created
-   --  blocks with nested subprograms. Such a block must be transformed
-   --  into a procedure followed by a call to it, so that unnesting can
-   --  handle uplevel references within these nested subprograms (typically
-   --  generated subprograms to handle finalization actions).
+   --  blocks with nested subprograms. Such a block must be transformed into a
+   --  procedure followed by a call to it, so that unnesting can handle uplevel
+   --  references within these nested subprograms (typically generated
+   --  subprograms to handle finalization actions).
 
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
@@ -4177,16 +4177,16 @@ package body Exp_Ch7 is
 
    procedure Check_Unnesting_In_Declarations (N : Node_Id) is
       Decl       : Node_Id;
+      Ent        : Entity_Id;
       Inner_Decl : Node_Id;
       Loc        : Source_Ptr;
       Local_Body : Node_Id;
       Local_Call : Node_Id;
-
-      Ent        : Entity_Id;
       Local_Proc : Entity_Id;
 
    begin
       Local_Call := Empty;
+
       if Unnest_Subprogram_Mode
         and then Present (Declarations (N))
         and then Is_Compilation_Unit (Current_Scope)
@@ -4198,7 +4198,6 @@ package body Exp_Ch7 is
                Inner_Decl := First (Declarations (Decl));
 
                while Present (Inner_Decl) loop
-
                   if Nkind (Inner_Decl) = N_Subprogram_Body then
                      Loc := Sloc (Decl);
                      Local_Proc :=
@@ -4213,6 +4212,7 @@ package body Exp_Ch7 is
                              Declarations       => Declarations (Decl),
                          Handled_Statement_Sequence =>
                            Handled_Statement_Sequence (Decl));
+
                      Rewrite (Decl, Local_Body);
                      Analyze (Decl);
                      Set_Has_Nested_Subprogram (Local_Proc);
@@ -4220,6 +4220,7 @@ package body Exp_Ch7 is
                      Local_Call :=
                        Make_Procedure_Call_Statement (Loc,
                          Name => New_Occurrence_Of (Local_Proc, Loc));
+
                      Insert_After (Decl, Local_Call);
                      Analyze (Local_Call);
 

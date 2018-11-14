@@ -4085,9 +4085,9 @@ package body Exp_Ch4 is
               Unchecked_Convert_To (Standard_Integer, Op_Expr));
 
          else
-            --  If the modulus of the type is larger than Integer'Last
-            --  use a larger type for the operands, to prevent spurious
-            --  constraint errors on large legal literals of the type.
+            --  If the modulus of the type is larger than Integer'Last use a
+            --  larger type for the operands, to prevent spurious constraint
+            --  errors on large legal literals of the type.
 
             if Modulus (Etype (N)) > UI_From_Int (Int (Integer'Last)) then
                Target_Type := Standard_Long_Integer;
@@ -11764,8 +11764,8 @@ package body Exp_Ch4 is
             elsif Is_Integer_Type (Etype (N)) then
                Expand_Convert_Fixed_To_Integer (N);
 
-               --  The result of the conversion might need a range check,
-               --   so do not assume that the result is in bounds.
+               --  The result of the conversion might need a range check, so do
+               --  not assume that the result is in bounds.
 
                Set_Etype (N, Base_Type (Target_Type));
 

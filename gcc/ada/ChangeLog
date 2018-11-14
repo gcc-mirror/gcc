@@ -1,5 +1,12 @@
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* back_end.adb, checks.adb, exp_ch3.adb, exp_ch4.adb,
+	exp_ch7.adb, exp_disp.adb, exp_unst.adb, exp_util.adb,
+	freeze.adb, sem_ch13.adb, sem_ch6.adb, sem_ch7.adb,
+	sem_prag.adb, sem_spark.adb, sem_util.adb: Minor reformatting.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_ch4.adb (Find_Aliased_Equality): New routine.
 	(Find_Equality): Reimplemented.
 	(Is_Equality): New routine.

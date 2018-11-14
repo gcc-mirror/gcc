@@ -8925,9 +8925,9 @@ package body Sem_Ch6 is
                  and then Discriminal_Link (Entity (E1)) =
                           Discriminal_Link (Entity (E2)))
 
-             --  AI12-050: The loop variables of quantified expressions
-             --  match if they have the same identifier, even though they
-             --  are different entities.
+             --  AI12-050: The loop variables of quantified expressions match
+             --  if they have the same identifier, even though they may have
+             --  different entities.
 
               or else
                 (Chars (Entity (E1)) = Chars (Entity (E2))
@@ -8935,8 +8935,8 @@ package body Sem_Ch6 is
                   and then Ekind (Entity (E2)) = E_Loop_Parameter)
 
               --  A call to an instantiation of Unchecked_Conversion is
-              --  rewritten with the name of the generated function
-              --  created for the instance, and this must be special-cased.
+              --  rewritten with the name of the generated function created for
+              --  the instance, and this must be special-cased.
 
               or else
                  (Ekind (Entity (E1)) = E_Function
