@@ -1,3 +1,15 @@
+2018-11-14  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (To_Address): Simplify setting of
+	Is_Static_Expression. Remove second (unconditional) call to
+	Set_Is_Static_Expression -- surely it's not static if the
+	operand is not.  Initialize Static on declaration.  Do not try
+	to fold 'To_Address, even though it's static.
+	* exp_attr.adb (To_Address): Preserve Is_Static_Expression.
+	* sinfo.ads, sem_eval.ads, sem_eval.adb (Is_Static_Expression,
+	Is_OK_Static_Expression, Raises_Constraint_Error): Simplify
+	documentation.  There was too much repetition and redundancy.
+
 2018-11-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch3.adb (Analyze_Object_Declaration): Use the
