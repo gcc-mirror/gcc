@@ -1378,9 +1378,12 @@ _mm_load_ps1 (float const *__P)
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))
 _mm_extract_pi16 (__m64 const __A, int const __N)
 {
-  const int shiftr = (__N & 3) * 16;
+  unsigned int shiftr = __N & 3;
+#ifdef __BIG_ENDIAN__
+  shiftr = 3 - shiftr;
+#endif
 
-  return ((__A >> shiftr) & 0xffff);
+  return ((__A >> (shiftr * 16)) & 0xffff);
 }
 
 extern __inline int __attribute__((__gnu_inline__, __always_inline__, __artificial__))

@@ -1,3 +1,8 @@
+2018-11-14  Paul A. Clarke  <pc@us.ibm.com>
+
+	Backport from mainline
+	* config/rs6000/xmmintrin.h (_mm_extract_pi16): Fix for big-endian.
+
 2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline
