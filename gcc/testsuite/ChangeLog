@@ -1,3 +1,10 @@
+2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
+	    Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR 71026/tree-optimization
+	* gcc.dg/div-cmp-1.c: New test.
+	* gcc.dg/div-cmp-2.c: New test.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR other/88007
