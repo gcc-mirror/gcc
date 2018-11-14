@@ -1,3 +1,12 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): Verify that the subtypes
+	of all dependent expressions obey the constraints of the
+	expected type for the if-expression.
+	(Analyze_Expression): Only add qualificiation to the dependent
+	expressions when the context type is constrained. Small
+	adjustment to previous patch.
+
 2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Don't
