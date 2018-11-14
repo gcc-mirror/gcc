@@ -32671,6 +32671,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      unsigned int idx = tree_to_uhwi (args[1]) & 0xff;
 	      if (idx >= TYPE_PRECISION (TREE_TYPE (args[0])))
 		return args[0];
+	      if (idx == 0)
+		return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), 0);
 	      if (!tree_fits_uhwi_p (args[0]))
 		break;
 	      unsigned HOST_WIDE_INT res = tree_to_uhwi (args[0]);
