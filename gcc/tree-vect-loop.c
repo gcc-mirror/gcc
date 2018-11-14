@@ -6066,13 +6066,17 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	return true;
 
       gassign *reduc_stmt = as_a <gassign *> (reduc_stmt_info->stmt);
+      code = gimple_assign_rhs_code (reduc_stmt);
       for (unsigned k = 1; k < gimple_num_ops (reduc_stmt); ++k)
 	{
 	  tree op = gimple_op (reduc_stmt, k);
 	  if (op == phi_result)
 	    continue;
-	  if (k == 1
-	      && gimple_assign_rhs_code (reduc_stmt) == COND_EXPR)
+	  if (k == 1 && code == COND_EXPR)
+	    continue;
+	  bool is_simple_use = vect_is_simple_use (op, loop_vinfo, &dt);
+	  gcc_assert (is_simple_use);
+	  if (dt == vect_constant_def || dt == vect_external_def)
 	    continue;
 	  if (!vectype_in
 	      || (GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype_in)))

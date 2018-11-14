@@ -1,3 +1,10 @@
+2018-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87974
+	* tree-vect-loop.c (vectorizable_reduction): When computing
+	the vectorized reduction PHI vector type ignore constant
+	and external defs.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87977
