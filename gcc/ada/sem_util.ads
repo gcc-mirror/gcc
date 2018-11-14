@@ -1006,7 +1006,7 @@ package Sem_Util is
    function Get_Default_External_Name (E : Node_Or_Entity_Id) return Node_Id;
    --  This is used to construct the string literal node representing a
    --  default external name, i.e. one that is constructed from the name of an
-   --  entity, or (in the case of extended DEC import/export pragmas, an
+   --  entity, or (in the case of extended DEC import/export pragmas) an
    --  identifier provided as the external name. Letters in the name are
    --  according to the setting of Opt.External_Name_Default_Casing.
 
