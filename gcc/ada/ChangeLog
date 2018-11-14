@@ -1,3 +1,13 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb: (Expand_N_Object_Declaration): If the expression
+	is a limited aggregate its resolution is delayed until the
+	object declaration is expanded.
+	* sem_ch3.adb: (Analyze_Object_Declaration): If the expression
+	is a limited aggregate and the declaration has a following
+	address clause indicate that resolution of the aggregate (which
+	must be built in place) must be delayed.
+
 2018-11-14  Bob Duff  <duff@adacore.com>
 
 	* sem_attr.adb (To_Address): Simplify setting of

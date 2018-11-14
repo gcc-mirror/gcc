@@ -1,3 +1,8 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/limited_aggr.adb, gnat.dg/limited_aggr.ads: New
+	testcase.
+
 2018-11-14  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/enum5.adb: New testcase.

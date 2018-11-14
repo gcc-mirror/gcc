@@ -4283,6 +4283,14 @@ package body Sem_Ch3 is
          then
             Set_Etype (E, T);
 
+            --  If the aggregate is limited it will be built in place,
+            --  and its expansion is deferred until the object declaration
+            --  is expanded.
+
+            if Is_Limited_Type (T) then
+               Set_Expansion_Delayed (E);
+            end if;
+
          else
 
             --  If the expression is a formal that is a "subprogram pointer"
