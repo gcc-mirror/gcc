@@ -1,3 +1,12 @@
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Static_Element): New predicate extracted
+	from...
+	(Check_Static_Components): ...here.  Call Is_Static_Element on
+	each element of the component association list, if any.
+	(Flatten): Duplicate the expression of an others choice only if
+	it is static or is an aggregate which can itself be flattened.
+
 2018-11-14  Olivier Hainque  <hainque@adacore.com>
 
 	* sigtramp-vxworks-target.inc: Fix stack checking test errors in
