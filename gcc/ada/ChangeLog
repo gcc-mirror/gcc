@@ -1,3 +1,15 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Use the
+	Actual_Subtype to preserve information about a constant
+	initialized with a non-static entity that is known to be valid,
+	when the type of the entity has a narrower range than that of
+	the nominal subtype of the constant.
+	* checks.adb (Determine_Range): If the expression is a constant
+	entity that is known-valid and has a defined Actual_Subtype, use
+	it to determine the actual bounds of the value, to enable
+	additional optimizations.
+
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* back_end.adb, checks.adb, exp_ch3.adb, exp_ch4.adb,
