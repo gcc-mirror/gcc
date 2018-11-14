@@ -411,7 +411,9 @@ ternary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
   if (codegen_error_p ())
     return NULL_TREE;
 
-  return fold_build3 (COND_EXPR, type, a, b, c);
+  return fold_build3 (COND_EXPR, type, a,
+		      rewrite_to_non_trapping_overflow (b),
+		      rewrite_to_non_trapping_overflow (c));
 }
 
 /* Converts a unary isl_ast_expr_op expression E to a GCC expression tree of
