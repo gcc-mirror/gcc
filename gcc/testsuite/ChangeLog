@@ -1,3 +1,9 @@
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/compile_time_error1.adb,
+	gnat.dg/compile_time_error1.ads,
+	gnat.dg/compile_time_error1_pkg.ads: New testcase.
+
 2018-11-14  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/generic_pkg.adb: New testcase.

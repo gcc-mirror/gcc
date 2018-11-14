@@ -7545,6 +7545,7 @@ package body Sem_Prag is
          begin
             if Nkind (N) = N_Attribute_Reference
               and then Is_Entity_Name (Prefix (N))
+              and then not Is_Generic_Unit (Scope (Entity (Prefix (N))))
             then
                declare
                   Attr_Id : constant Attribute_Id :=
