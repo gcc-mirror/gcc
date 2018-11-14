@@ -1367,9 +1367,7 @@ package body Exp_Disp is
          --  to the object, because generic dispatching constructors are not
          --  supported.
 
-         if Opnd = Iface_Typ
-           and then not RTE_Available (RE_Displace)
-         then
+         if Opnd = Iface_Typ and then not RTE_Available (RE_Displace) then
             return;
          end if;
       end;
@@ -2487,10 +2485,10 @@ package body Exp_Disp is
      (Typ : Entity_Id) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (Typ);
-      Def_Id : constant Entity_Id :=
+      B_Id   : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_uB);
+      Def_Id : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc,
                    Name_uDisp_Asynchronous_Select);
-      B_Id   : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_uB);
       Params : constant List_Id    := New_List;
 
    begin
@@ -2503,6 +2501,7 @@ package body Exp_Disp is
       --  F : out Boolean;                    --  Status flag
 
       --  The B parameter may be left uninitialized
+
       Set_Warnings_Off (B_Id);
 
       Append_List_To (Params, New_List (

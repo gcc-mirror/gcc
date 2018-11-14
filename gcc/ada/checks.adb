@@ -3552,8 +3552,8 @@ package body Checks is
                else
                   --  Conversions involving fixed-point types are expanded
                   --  separately, and do not need a Range_Check flag, except
-                  --  in SPARK_Mode, where the explicit constraint check will
-                  --  not be generated.
+                  --  in GNATprove_Mode, where the explicit constraint check
+                  --  will not be generated.
 
                   if GNATprove_Mode
                     or else not Is_Fixed_Point_Type (Expr_Type)

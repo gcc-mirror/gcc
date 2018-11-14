@@ -27743,8 +27743,9 @@ package body Sem_Prag is
                else
                   pragma Assert (Present (Global));
                   Error_Msg_Sloc := Sloc (Global);
-                  SPARK_Msg_NE ("extra global item & does not refine or " &
-                                "repeat any global item #", Item, Item_Id);
+                  SPARK_Msg_NE
+                    ("extra global item & does not refine or repeat any "
+                     & "global item #", Item, Item_Id);
                end if;
             end if;
          end Check_Refined_Global_Item;
