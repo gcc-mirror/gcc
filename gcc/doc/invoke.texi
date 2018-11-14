@@ -7897,9 +7897,10 @@ each of them.
 Not all optimizations are controlled directly by a flag.  Only
 optimizations that have a flag are listed in this section.
 
-Most optimizations are only enabled if an @option{-O} level is set on
-the command line.  Otherwise they are disabled, even if individual
-optimization flags are specified.
+Most optimizations are completely disabled at @option{-O0} or if an
+@option{-O} level is not set on the command line, even if individual
+optimization flags are specified.  Similarly, @option{-Og} suppresses
+many optimization passes.
 
 Depending on the target and how GCC was configured, a slightly different
 set of optimizations may be enabled at each @option{-O} level than
@@ -7919,9 +7920,14 @@ With @option{-O}, the compiler tries to reduce code size and execution
 time, without performing any optimizations that take a great deal of
 compilation time.
 
+@c Note that in addition to the default_options_table list in opts.c,
+@c several optimization flags default to true but control optimization
+@c passes that are explicitly disabled at -O0.
+
 @option{-O} turns on the following optimization flags:
-@gccoptlist{
--fauto-inc-dec @gol
+
+@c Please keep the following list alphabetized.
+@gccoptlist{-fauto-inc-dec @gol
 -fbranch-count-reg @gol
 -fcombine-stack-adjustments @gol
 -fcompare-elim @gol
@@ -7932,11 +7938,11 @@ compilation time.
 -fdse @gol
 -fforward-propagate @gol
 -fguess-branch-probability @gol
--fif-conversion2 @gol
 -fif-conversion @gol
+-fif-conversion2 @gol
 -finline-functions-called-once @gol
--fipa-pure-const @gol
 -fipa-profile @gol
+-fipa-pure-const @gol
 -fipa-reference @gol
 -fipa-reference-addressable @gol
 -fmerge-constants @gol
@@ -7959,11 +7965,11 @@ compilation time.
 -ftree-forwprop @gol
 -ftree-fre @gol
 -ftree-phiprop @gol
+-ftree-pta @gol
 -ftree-scev-cprop @gol
 -ftree-sink @gol
 -ftree-slsr @gol
 -ftree-sra @gol
--ftree-pta @gol
 -ftree-ter @gol
 -funit-at-a-time}
 
@@ -7976,10 +7982,12 @@ and the performance of the generated code.
 
 @option{-O2} turns on all optimization flags specified by @option{-O}.  It
 also turns on the following optimization flags:
-@gccoptlist{-fthread-jumps @gol
--falign-functions  -falign-jumps @gol
--falign-loops  -falign-labels @gol
+
+@c Please keep the following list alphabetized!
+@gccoptlist{-falign-functions  -falign-jumps @gol
+-falign-labels  -falign-loops @gol
 -fcaller-saves @gol
+-fcode-hoisting @gol
 -fcrossjumping @gol
 -fcse-follow-jumps  -fcse-skip-blocks @gol
 -fdelete-null-pointer-checks @gol
@@ -7989,11 +7997,8 @@ also turns on the following optimization flags:
 -fhoist-adjacent-loads @gol
 -finline-small-functions @gol
 -findirect-inlining @gol
--fipa-cp @gol
--fipa-bit-cp @gol
--fipa-vrp @gol
--fipa-sra @gol
--fipa-icf @gol
+-fipa-bit-cp  -fipa-cp  -fipa-icf @gol
+-fipa-ra  -fipa-sra  -fipa-vrp @gol
 -fisolate-erroneous-paths-dereference @gol
 -flra-remat @gol
 -foptimize-sibling-calls @gol
@@ -8003,16 +8008,15 @@ also turns on the following optimization flags:
 -freorder-blocks-algorithm=stc @gol
 -freorder-blocks-and-partition -freorder-functions @gol
 -frerun-cse-after-loop  @gol
--fsched-interblock  -fsched-spec @gol
 -fschedule-insns  -fschedule-insns2 @gol
+-fsched-interblock  -fsched-spec @gol
 -fstore-merging @gol
 -fstrict-aliasing @gol
+-fthread-jumps @gol
 -ftree-builtin-call-dce @gol
--ftree-switch-conversion -ftree-tail-merge @gol
--fcode-hoisting @gol
 -ftree-pre @gol
--ftree-vrp @gol
--fipa-ra}
+-ftree-switch-conversion -ftree-tail-merge @gol
+-ftree-vrp}
 
 Please note the warning under @option{-fgcse} about
 invoking @option{-O2} on programs that use computed gotos.
@@ -8021,21 +8025,23 @@ invoking @option{-O2} on programs that use computed gotos.
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified
 by @option{-O2} and also turns on the following optimization flags:
-@gccoptlist{-finline-functions @gol
--funswitch-loops @gol
--fpredictive-commoning @gol
--fgcse-after-reload @gol
--ftree-loop-vectorize @gol
--ftree-loop-distribution @gol
--ftree-loop-distribute-patterns @gol
+
+@c Please keep the following list alphabetized!
+@gccoptlist{-fgcse-after-reload @gol
+-finline-functions @gol
+-fipa-cp-clone
 -floop-interchange @gol
 -floop-unroll-and-jam @gol
--fsplit-paths @gol
--ftree-slp-vectorize @gol
--fvect-cost-model @gol
--ftree-partial-pre @gol
 -fpeel-loops @gol
--fipa-cp-clone}
+-fpredictive-commoning @gol
+-fsplit-paths @gol
+-ftree-loop-distribute-patterns @gol
+-ftree-loop-distribution @gol
+-ftree-loop-vectorize @gol
+-ftree-partial-pre @gol
+-ftree-slp-vectorize @gol
+-funswitch-loops @gol
+-fvect-cost-model}
 
 @item -O0
 @opindex O0
@@ -8044,13 +8050,16 @@ results.  This is the default.
 
 @item -Os
 @opindex Os
-Optimize for size.  @option{-Os} enables all @option{-O2} optimizations that
-do not typically increase code size.  It also performs further
-optimizations designed to reduce code size.
+Optimize for size.  @option{-Os} enables all @option{-O2} optimizations 
+except those that often increase code size:
 
-@option{-Os} disables the following optimization flags:
-@gccoptlist{-falign-functions  -falign-jumps  -falign-loops @gol
--falign-labels  -fprefetch-loop-arrays}
+@gccoptlist{-falign-functions  -falign-jumps @gol
+-falign-labels  -falign-loops @gol
+-fprefetch-loop-arrays  -freorder-blocks-algorithm=stc}
+
+It also enables @option{-finline-functions}, causes the compiler to tune for
+code size rather than execution speed, and performs further optimizations
+designed to reduce code size.  
 
 @item -Ofast
 @opindex Ofast
@@ -8063,11 +8072,24 @@ specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
-Optimize debugging experience.  @option{-Og} enables optimizations
-that do not interfere with debugging. It should be the optimization
+Optimize debugging experience.  @option{-Og} should be the optimization
 level of choice for the standard edit-compile-debug cycle, offering
 a reasonable level of optimization while maintaining fast compilation
-and a good debugging experience.
+and a good debugging experience.  It is a better choice than @option{-O0}
+for producing debuggable code because some compiler passes
+that collect debug information are disabled at @option{-O0}.
+
+Like @option{-O0}, @option{-Og} completely disables a number of 
+optimization passes so that individual options controlling them have
+no effect.  Otherwise @option{-Og} enables all @option{-O1} 
+optimization flags except for those that may interfere with debugging:
+
+@gccoptlist{-fbranch-count-reg  -fdelayed-branch @gol
+-fif-conversion  -fif-conversion2  @gol
+-finline-functions-called-once @gol
+-fmove-loop-invariants  -fssa-phiopt @gol
+-ftree-bit-ccp  -ftree-pta  -ftree-sra}
+
 @end table
 
 If you use multiple @option{-O} options, with or without level numbers,
@@ -8194,7 +8216,8 @@ caller even if they are not marked @code{inline}.  If a call to a given
 function is integrated, then the function is not output as assembler code
 in its own right.
 
-Enabled at levels @option{-O1}, @option{-O2}, @option{-O3} and @option{-Os}.
+Enabled at levels @option{-O1}, @option{-O2}, @option{-O3} and @option{-Os},
+but not @option{-Og}.
 
 @item -fearly-inlining
 @opindex fearly-inlining
@@ -8322,7 +8345,8 @@ IA-64 and S/390.  Note that the @option{-fno-branch-count-reg} option
 doesn't remove the decrement and branch instructions from the generated
 instruction stream introduced by other optimization passes.
 
-The default is @option{-fbranch-count-reg} at @option{-O1} and higher.
+The default is @option{-fbranch-count-reg} at @option{-O1} and higher,
+except for @option{-Og}.
 
 @item -fno-function-cse
 @opindex fno-function-cse
@@ -8490,14 +8514,16 @@ includes use of conditional moves, min, max, set flags and abs instructions, and
 some tricks doable by standard arithmetics.  The use of conditional execution
 on chips where it is available is controlled by @option{-fif-conversion2}.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}, but
+not with @option{-Og}.
 
 @item -fif-conversion2
 @opindex fif-conversion2
 Use conditional execution (where available) to transform conditional jumps into
 branch-less equivalents.
 
-Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}, but
+not with @option{-Og}.
 
 @item -fdeclone-ctor-dtor
 @opindex fdeclone-ctor-dtor
@@ -9072,7 +9098,8 @@ enabled by default at @option{-O} and higher.
 Perform sparse conditional bit constant propagation on trees and propagate
 pointer alignment information.
 This pass only operates on local scalar variables and is enabled by default
-at @option{-O} and higher.  It requires that @option{-ftree-ccp} is enabled.
+at @option{-O1} and higher, except for @option{-Og}.
+It requires that @option{-ftree-ccp} is enabled.
 
 @item -ftree-ccp
 @opindex ftree-ccp
@@ -9090,7 +9117,8 @@ enabled by default at @option{-O} and higher.
 @item -fssa-phiopt
 @opindex fssa-phiopt
 Perform pattern matching on SSA PHI nodes to optimize conditional
-code.  This pass is enabled by default at @option{-O} and higher.
+code.  This pass is enabled by default at @option{-O1} and higher,
+except for @option{-Og}.
 
 @item -ftree-switch-conversion
 @opindex ftree-switch-conversion
@@ -9312,13 +9340,14 @@ that have support for @option{-pthread}.
 @item -ftree-pta
 @opindex ftree-pta
 Perform function-local points-to analysis on trees.  This flag is
-enabled by default at @option{-O} and higher.
+enabled by default at @option{-O1} and higher, except for @option{-Og}.
 
 @item -ftree-sra
 @opindex ftree-sra
 Perform scalar replacement of aggregates.  This pass replaces structure
 references with scalars to prevent committing structures to memory too
-early.  This flag is enabled by default at @option{-O} and higher.
+early.  This flag is enabled by default at @option{-O1} and higher,
+except for @option{-Og}.
 
 @item -fstore-merging
 @opindex fstore-merging
@@ -10475,7 +10504,7 @@ Enabled with @option{-O3} and/or @option{-fprofile-use}.
 @item -fmove-loop-invariants
 @opindex fmove-loop-invariants
 Enables the loop invariant motion pass in the RTL loop optimizer.  Enabled
-at level @option{-O1}
+at level @option{-O1} and higher, except for @option{-Og}.
 
 @item -fsplit-loops
 @opindex fsplit-loops
