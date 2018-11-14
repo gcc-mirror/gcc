@@ -734,11 +734,6 @@ arc_secondary_reload (bool in_p,
   if (cl == DOUBLE_REGS)
     return GENERAL_REGS;
 
-  /* The loop counter register can be stored, but not loaded directly.  */
-  if ((cl == LPCOUNT_REG || cl == WRITABLE_CORE_REGS)
-      && in_p && MEM_P (x))
-    return GENERAL_REGS;
-
  /* If we have a subreg (reg), where reg is a pseudo (that will end in
     a memory location), then we may need a scratch register to handle
     the fp/sp+largeoffset address.  */
@@ -756,8 +751,9 @@ arc_secondary_reload (bool in_p,
 	  if (regno != -1)
 	    return NO_REGS;
 
-	  /* It is a pseudo that ends in a stack location.  */
-	  if (reg_equiv_mem (REGNO (x)))
+	  /* It is a pseudo that ends in a stack location.  This
+	     procedure only works with the old reload step.  */
+	  if (reg_equiv_mem (REGNO (x)) && !lra_in_progress)
 	    {
 	      /* Get the equivalent address and check the range of the
 		 offset.  */
@@ -1659,8 +1655,6 @@ enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 enum reg_class
 arc_preferred_reload_class (rtx, enum reg_class cl)
 {
-  if ((cl) == CHEAP_CORE_REGS  || (cl) == WRITABLE_CORE_REGS)
-    return GENERAL_REGS;
   return cl;
 }
 
@@ -1758,25 +1752,21 @@ arc_conditional_register_usage (void)
       strcpy (rname29, "ilink");
       strcpy (rname30, "r30");
 
-      if (!TEST_HARD_REG_BIT (overrideregs, 30))
+      if (!TEST_HARD_REG_BIT (overrideregs, R30_REG))
 	{
 	  /* No user interference.  Set the r30 to be used by the
 	     compiler.  */
-	  call_used_regs[30] = 1;
-	  fixed_regs[30] = 0;
+	  call_used_regs[R30_REG] = 1;
+	  fixed_regs[R30_REG] = 0;
 
-	  arc_regno_reg_class[30] = WRITABLE_CORE_REGS;
-	  SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], 30);
-	  SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], 30);
+	  arc_regno_reg_class[R30_REG] = GENERAL_REGS;
 	}
    }
 
   if (TARGET_MUL64_SET)
     {
-      fix_start = 57;
-      fix_end = 59;
+      fix_start = R57_REG;
+      fix_end = R59_REG;
 
       /* We don't provide a name for mmed.  In rtl / assembly resource lists,
 	 you are supposed to refer to it as mlo & mhi, e.g
@@ -1799,8 +1789,8 @@ arc_conditional_register_usage (void)
 
   if (TARGET_MULMAC_32BY16_SET)
     {
-      fix_start = 56;
-      fix_end = fix_end > 57 ? fix_end : 57;
+      fix_start = MUL32x16_REG;
+      fix_end = fix_end > R57_REG ? fix_end : R57_REG;
       strcpy (rname56, TARGET_BIG_ENDIAN ? "acc1" : "acc2");
       strcpy (rname57, TARGET_BIG_ENDIAN ? "acc2" : "acc1");
     }
@@ -1862,130 +1852,59 @@ arc_conditional_register_usage (void)
   /* Reduced configuration: don't use r4-r9, r16-r25.  */
   if (TARGET_RF16)
     {
-      for (i = 4; i <= 9; i++)
-	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	}
-      for (i = 16; i <= 25; i++)
-	{
-	  fixed_regs[i] = call_used_regs[i] = 1;
-	}
-    }
-
-  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-    if (!call_used_regs[regno])
-      CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
-  for (regno = 32; regno < 60; regno++)
-    if (!fixed_regs[regno])
-      SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], regno);
-  if (!TARGET_ARC600_FAMILY)
-    {
-      for (regno = 32; regno <= 60; regno++)
-	CLEAR_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], regno);
-
-      /* If they have used -ffixed-lp_count, make sure it takes
-	 effect.  */
-      if (fixed_regs[LP_COUNT])
-	{
-	  CLEAR_HARD_REG_BIT (reg_class_contents[LPCOUNT_REG], LP_COUNT);
-	  CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], LP_COUNT);
-	  CLEAR_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], LP_COUNT);
-
-	  /* Instead of taking out SF_MODE like below, forbid it outright.  */
-	  arc_hard_regno_modes[60] = 0;
-	}
-      else
-	arc_hard_regno_modes[60] = 1 << (int) S_MODE;
+      for (i = R4_REG; i <= R9_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
+      for (i = R16_REG; i <= R25_REG; i++)
+	fixed_regs[i] = call_used_regs[i] = 1;
     }
 
   /* ARCHS has 64-bit data-path which makes use of the even-odd paired
      registers.  */
   if (TARGET_HS)
-    {
-      for (regno = 1; regno < 32; regno +=2)
-	{
-	  arc_hard_regno_modes[regno] = S_MODES;
-	}
-    }
+    for (regno = R1_REG; regno < R32_REG; regno +=2)
+      arc_hard_regno_modes[regno] = S_MODES;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    {
-      if (i < 29)
-	{
-	  if ((TARGET_Q_CLASS || TARGET_RRQ_CLASS)
-	      && ((i <= 3) || ((i >= 12) && (i <= 15))))
-	    arc_regno_reg_class[i] = ARCOMPACT16_REGS;
-	  else
-	    arc_regno_reg_class[i] = GENERAL_REGS;
-	}
-      else if (i < 60)
-	arc_regno_reg_class[i]
-	  = (fixed_regs[i]
-	     ? (TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i)
-		? CHEAP_CORE_REGS : ALL_CORE_REGS)
-	     : (((!TARGET_ARC600_FAMILY)
-		 && TEST_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], i))
-		? CHEAP_CORE_REGS : WRITABLE_CORE_REGS));
-      else
-	arc_regno_reg_class[i] = NO_REGS;
-    }
-
-  /* ARCOMPACT16_REGS is empty, if TARGET_Q_CLASS / TARGET_RRQ_CLASS
-     has not been activated.  */
-  if (!TARGET_Q_CLASS && !TARGET_RRQ_CLASS)
-    CLEAR_HARD_REG_SET(reg_class_contents [ARCOMPACT16_REGS]);
-  if (!TARGET_Q_CLASS)
-    CLEAR_HARD_REG_SET(reg_class_contents [AC16_BASE_REGS]);
-
-  gcc_assert (FIRST_PSEUDO_REGISTER >= 144);
+    if (i < ILINK1_REG)
+      {
+	if ((TARGET_Q_CLASS || TARGET_RRQ_CLASS)
+	    && ((i <= R3_REG) || ((i >= R12_REG) && (i <= R15_REG))))
+	  arc_regno_reg_class[i] = ARCOMPACT16_REGS;
+	else
+	  arc_regno_reg_class[i] = GENERAL_REGS;
+      }
+    else if (i < LP_COUNT)
+      arc_regno_reg_class[i] = GENERAL_REGS;
+    else
+      arc_regno_reg_class[i] = NO_REGS;
 
   /* Handle Special Registers.  */
-  arc_regno_reg_class[29] = LINK_REGS; /* ilink1 register.  */
-  if (!TARGET_V2)
-    arc_regno_reg_class[30] = LINK_REGS; /* ilink2 register.  */
-  arc_regno_reg_class[31] = LINK_REGS; /* blink register.  */
-  arc_regno_reg_class[60] = LPCOUNT_REG;
-  arc_regno_reg_class[61] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
+  arc_regno_reg_class[CC_REG] = NO_REGS;      /* CC_REG: must be NO_REGS.  */
   arc_regno_reg_class[62] = GENERAL_REGS;
 
   if (TARGET_DPFP)
-    {
-      for (i = 40; i < 44; ++i)
-	{
-	  arc_regno_reg_class[i] = DOUBLE_REGS;
-
-	  /* Unless they want us to do 'mov d1, 0x00000000' make sure
-	     no attempt is made to use such a register as a destination
-	     operand in *movdf_insn.  */
-	  if (!TARGET_ARGONAUT_SET)
-	    {
-	    /* Make sure no 'c', 'w', 'W', or 'Rac' constraint is
-	       interpreted to mean they can use D1 or D2 in their insn.  */
-	    CLEAR_HARD_REG_BIT(reg_class_contents[CHEAP_CORE_REGS       ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[ALL_CORE_REGS         ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[WRITABLE_CORE_REGS    ], i);
-	    CLEAR_HARD_REG_BIT(reg_class_contents[MPY_WRITABLE_CORE_REGS], i);
-	    }
-	}
-    }
+    for (i = R40_REG; i < R44_REG; ++i)
+      {
+	arc_regno_reg_class[i] = DOUBLE_REGS;
+	if (!TARGET_ARGONAUT_SET)
+	  CLEAR_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], i);
+      }
   else
     {
-      /* Disable all DOUBLE_REGISTER settings,
-	 if not generating DPFP code.  */
-      arc_regno_reg_class[40] = ALL_REGS;
-      arc_regno_reg_class[41] = ALL_REGS;
-      arc_regno_reg_class[42] = ALL_REGS;
-      arc_regno_reg_class[43] = ALL_REGS;
+      /* Disable all DOUBLE_REGISTER settings, if not generating DPFP
+	 code.  */
+      arc_regno_reg_class[R40_REG] = ALL_REGS;
+      arc_regno_reg_class[R41_REG] = ALL_REGS;
+      arc_regno_reg_class[R42_REG] = ALL_REGS;
+      arc_regno_reg_class[R43_REG] = ALL_REGS;
 
-      fixed_regs[40] = 1;
-      fixed_regs[41] = 1;
-      fixed_regs[42] = 1;
-      fixed_regs[43] = 1;
+      fixed_regs[R40_REG] = 1;
+      fixed_regs[R41_REG] = 1;
+      fixed_regs[R42_REG] = 1;
+      fixed_regs[R43_REG] = 1;
 
-      arc_hard_regno_modes[40] = 0;
-      arc_hard_regno_modes[42] = 0;
-
-      CLEAR_HARD_REG_SET(reg_class_contents [DOUBLE_REGS]);
+      arc_hard_regno_modes[R40_REG] = 0;
+      arc_hard_regno_modes[R42_REG] = 0;
     }
 
   if (TARGET_SIMD_SET)
@@ -2007,23 +1926,15 @@ arc_conditional_register_usage (void)
     }
 
   /* pc : r63 */
-  arc_regno_reg_class[PROGRAM_COUNTER_REGNO] = GENERAL_REGS;
+  arc_regno_reg_class[PCL_REG] = NO_REGS;
 
   /*ARCV2 Accumulator.  */
   if ((TARGET_V2
        && (TARGET_FP_DP_FUSED || TARGET_FP_SP_FUSED))
       || TARGET_PLUS_DMPY)
   {
-    arc_regno_reg_class[ACCL_REGNO] = WRITABLE_CORE_REGS;
-    arc_regno_reg_class[ACCH_REGNO] = WRITABLE_CORE_REGS;
-    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[CHEAP_CORE_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[GENERAL_REGS], ACCH_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCL_REGNO);
-    SET_HARD_REG_BIT (reg_class_contents[MPY_WRITABLE_CORE_REGS], ACCH_REGNO);
+    arc_regno_reg_class[ACCL_REGNO] = GENERAL_REGS;
+    arc_regno_reg_class[ACCH_REGNO] = GENERAL_REGS;
 
     /* Allow the compiler to freely use them.  */
     if (!TEST_HARD_REG_BIT (overrideregs, ACCL_REGNO))
@@ -7801,6 +7712,25 @@ hwloop_fail (hwloop_info loop)
   delete_insn (loop->loop_end);
 }
 
+/* Return the next insn after INSN that is not a NOTE, but stop the
+   search before we enter another basic block.  This routine does not
+   look inside SEQUENCEs.  */
+
+static rtx_insn *
+next_nonnote_insn_bb (rtx_insn *insn)
+{
+  while (insn)
+    {
+      insn = NEXT_INSN (insn);
+      if (insn == 0 || !NOTE_P (insn))
+	break;
+      if (NOTE_INSN_BASIC_BLOCK_P (insn))
+	return NULL;
+    }
+
+  return insn;
+}
+
 /* Optimize LOOP.  */
 
 static bool
@@ -7818,32 +7748,32 @@ hwloop_optimize (hwloop_info loop)
   if (loop->depth > 1)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not innermost\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not innermost\n",
+		 loop->loop_no);
       return false;
     }
 
   if (!loop->incoming_dest)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has more than one entry\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has more than one entry\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->incoming_dest != loop->head)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d is not entered from head\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d is not entered from head\n",
+		 loop->loop_no);
       return false;
     }
 
   if (loop->has_call || loop->has_asm)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d has invalid insn\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d has invalid insn\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7851,8 +7781,8 @@ hwloop_optimize (hwloop_info loop)
   if (loop->iter_reg_used || loop->iter_reg_used_outside)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d uses iterator\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d uses iterator\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7876,8 +7806,8 @@ hwloop_optimize (hwloop_info loop)
   if (!insn)
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7895,12 +7825,21 @@ hwloop_optimize (hwloop_info loop)
       return false;
     }
 
-  /* Check if we use a register or not.  */
+  /* Check if we use a register or not.	 */
   if (!REG_P (loop->iter_reg))
     {
       if (dump_file)
-        fprintf (dump_file, ";; loop %d iterator is MEM\n",
-                 loop->loop_no);
+	fprintf (dump_file, ";; loop %d iterator is MEM\n",
+		 loop->loop_no);
+      return false;
+    }
+
+  /* Check if we use a register or not.	 */
+  if (!REG_P (loop->iter_reg))
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d iterator is MEM\n",
+		 loop->loop_no);
       return false;
     }
 
@@ -7918,7 +7857,11 @@ hwloop_optimize (hwloop_info loop)
 	  || (loop->incoming_src
 	      && REGNO_REG_SET_P (df_get_live_out (loop->incoming_src),
 				  LP_COUNT)))
-	return false;
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d, lp_count is alive", loop->loop_no);
+	  return false;
+	}
       else
 	need_fix = true;
     }
@@ -8033,7 +7976,7 @@ hwloop_optimize (hwloop_info loop)
     {
       /* The loop uses a R-register, but the lp_count is free, thus
 	 use lp_count.  */
-      emit_insn (gen_movsi (lp_reg, iter_reg));
+      emit_insn (gen_rtx_SET (lp_reg, iter_reg));
       SET_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT);
       iter_reg = lp_reg;
       if (dump_file)
@@ -8043,8 +7986,7 @@ hwloop_optimize (hwloop_info loop)
 	}
     }
 
-  insn = emit_insn (gen_arc_lp (iter_reg,
-				loop->start_label,
+  insn = emit_insn (gen_arc_lp (loop->start_label,
 				loop->end_label));
 
   seq = get_insns ();
@@ -8062,12 +8004,12 @@ hwloop_optimize (hwloop_info loop)
       seq = emit_label_before (gen_label_rtx (), seq);
       new_bb = create_basic_block (seq, insn, entry_bb);
       FOR_EACH_EDGE (e, ei, loop->incoming)
-        {
-          if (!(e->flags & EDGE_FALLTHRU))
-            redirect_edge_and_branch_force (e, new_bb);
-          else
-            redirect_edge_succ (e, new_bb);
-        }
+	{
+	  if (!(e->flags & EDGE_FALLTHRU))
+	    redirect_edge_and_branch_force (e, new_bb);
+	  else
+	    redirect_edge_succ (e, new_bb);
+	}
 
       make_edge (new_bb, loop->head, 0);
     }
@@ -8075,17 +8017,19 @@ hwloop_optimize (hwloop_info loop)
     {
 #if 0
       while (DEBUG_INSN_P (entry_after)
-             || (NOTE_P (entry_after)
-		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK))
+	     || (NOTE_P (entry_after)
+		 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK
+		 /* Make sure we don't split a call and its corresponding
+		    CALL_ARG_LOCATION note.  */
+		 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
         entry_after = NEXT_INSN (entry_after);
 #endif
-      entry_after = next_nonnote_nondebug_insn_bb (entry_after);
+      entry_after = next_nonnote_insn_bb (entry_after);
 
       gcc_assert (entry_after);
       emit_insn_before (seq, entry_after);
     }
 
-  delete_insn (loop->loop_end);
   /* Insert the loop end label before the last instruction of the
      loop.  */
   emit_label_after (end_label, loop->last_insn);
@@ -8737,26 +8681,6 @@ int
 arc_register_move_cost (machine_mode,
 			enum reg_class from_class, enum reg_class to_class)
 {
-  /* The ARC600 has no bypass for extension registers, hence a nop might be
-     needed to be inserted after a write so that reads are safe.  */
-  if (TARGET_ARC600)
-    {
-      if (to_class == MPY_WRITABLE_CORE_REGS)
-	return 3;
-     /* Instructions modifying LP_COUNT need 4 additional cycles before
-	the register will actually contain the value.  */
-      else if (to_class == LPCOUNT_REG)
-	return 6;
-      else if (to_class == WRITABLE_CORE_REGS)
-	return 6;
-    }
-
-  /* Using lp_count as scratch reg is a VERY bad idea.  */
-  if (from_class == LPCOUNT_REG)
-    return 1000;
-  if (to_class == LPCOUNT_REG)
-    return 6;
-
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
   if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
       && from_class == DOUBLE_REGS && to_class == DOUBLE_REGS)
@@ -9975,17 +9899,20 @@ split_subsi (rtx *operands)
 static bool
 arc_process_double_reg_moves (rtx *operands)
 {
+  enum usesDxState { none, srcDx, destDx, maxDx };
+  enum usesDxState state = none;
   rtx dest = operands[0];
   rtx src  = operands[1];
 
-  enum usesDxState { none, srcDx, destDx, maxDx };
-  enum usesDxState state = none;
-
   if (refers_to_regno_p (40, 44, src, 0))
-    state = srcDx;
+    {
+      state = srcDx;
+      gcc_assert (REG_P (dest));
+    }
   if (refers_to_regno_p (40, 44, dest, 0))
     {
       /* Via arc_register_move_cost, we should never see D,D moves.  */
+      gcc_assert (REG_P (src));
       gcc_assert (state == none);
       state = destDx;
     }
@@ -10337,11 +10264,11 @@ arc_return_address_register (unsigned int fn_type)
   if (ARC_INTERRUPT_P (fn_type))
     {
       if ((fn_type & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_FIRQ)) != 0)
-        regno = ILINK1_REGNUM;
+	regno = ILINK1_REG;
       else if ((fn_type & ARC_FUNCTION_ILINK2) != 0)
-        regno = ILINK2_REGNUM;
+	regno = ILINK2_REG;
       else
-        gcc_unreachable ();
+	gcc_unreachable ();
     }
   else if (ARC_NORMAL_P (fn_type) || ARC_NAKED_P (fn_type))
     regno = RETURN_ADDR_REGNUM;
@@ -10392,14 +10319,12 @@ arc_eh_uses (int regno)
   return false;
 }
 
-#ifndef TARGET_NO_LRA
-#define TARGET_NO_LRA !TARGET_LRA
-#endif
+/* Return true if we use LRA instead of reload pass.  */
 
-static bool
+bool
 arc_lra_p (void)
 {
-  return !TARGET_NO_LRA;
+  return arc_lra_flag;
 }
 
 /* ??? Should we define TARGET_REGISTER_PRIORITY?  We might perfer to use
@@ -11338,7 +11263,7 @@ operands_ok_ldd_std (rtx rt, rtx rt2, HOST_WIDE_INT offset)
   t = REGNO (rt);
   t2 = REGNO (rt2);
 
-  if ((t2 == PROGRAM_COUNTER_REGNO)
+  if ((t2 == PCL_REG)
       || (t % 2 != 0)	/* First destination register is not even.  */
       || (t2 != t + 1))
       return false;
