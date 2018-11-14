@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-recip" } */
+/* { dg-options "-Ofast -fdump-tree-recip -fcompare-debug" } */
 
 double res, res2, tmp;
 void

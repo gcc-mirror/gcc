@@ -1,3 +1,12 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87977
+	* tree-ssa-math-opts.c (optimize_recip_sqrt): Don't reuse division
+	stmt, build a new one and replace the old one with it.  Formatting fix.
+	Call release_ssa_name (x) if !has_other_use and !delete_div.
+	(pass_cse_reciprocals::execute): Before calling optimize_recip_sqrt
+	verify lhs of stmt is still def.
+
 2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87507
