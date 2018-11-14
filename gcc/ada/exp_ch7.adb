@@ -360,6 +360,13 @@ package body Exp_Ch7 is
    --  a call to this subprogram. This is only done if blocks are present
    --  in the statement list of the body.
 
+   procedure Check_Unnesting_In_Declarations (N : Node_Id);
+   --  Similarly, the declarations in the package body may have created
+   --  blocks with nested subprograms. Such a block must be transformed
+   --  into a procedure followed by a call to it, so that unnesting can
+   --  handle uplevel references within these nested subprograms (typically
+   --  generated subprograms to handle finalization actions).
+
    procedure Check_Visibly_Controlled
      (Prim : Final_Primitives;
       Typ  : Entity_Id;
@@ -4164,6 +4171,73 @@ package body Exp_Ch7 is
       end if;
    end Check_Unnesting_Elaboration_Code;
 
+   -------------------------------------
+   -- Check_Unnesting_In_Declarations --
+   -------------------------------------
+
+   procedure Check_Unnesting_In_Declarations (N : Node_Id) is
+      Decl       : Node_Id;
+      Inner_Decl : Node_Id;
+      Loc        : Source_Ptr;
+      Local_Body : Node_Id;
+      Local_Call : Node_Id;
+
+      Ent        : Entity_Id;
+      Local_Proc : Entity_Id;
+
+   begin
+      Local_Call := Empty;
+      if Unnest_Subprogram_Mode
+        and then Present (Declarations (N))
+        and then Is_Compilation_Unit (Current_Scope)
+      then
+         Decl := First (Declarations (N));
+         while Present (Decl) loop
+            if Nkind (Decl) = N_Block_Statement then
+               Ent := First_Entity (Entity (Identifier (Decl)));
+               Inner_Decl := First (Declarations (Decl));
+
+               while Present (Inner_Decl) loop
+
+                  if Nkind (Inner_Decl) = N_Subprogram_Body then
+                     Loc := Sloc (Decl);
+                     Local_Proc :=
+                       Make_Defining_Identifier (Loc,
+                         Chars => New_Internal_Name ('P'));
+
+                     Local_Body :=
+                       Make_Subprogram_Body (Loc,
+                         Specification              =>
+                           Make_Procedure_Specification (Loc,
+                             Defining_Unit_Name => Local_Proc),
+                             Declarations       => Declarations (Decl),
+                         Handled_Statement_Sequence =>
+                           Handled_Statement_Sequence (Decl));
+                     Rewrite (Decl, Local_Body);
+                     Analyze (Decl);
+                     Set_Has_Nested_Subprogram (Local_Proc);
+
+                     Local_Call :=
+                       Make_Procedure_Call_Statement (Loc,
+                         Name => New_Occurrence_Of (Local_Proc, Loc));
+                     Insert_After (Decl, Local_Call);
+                     Analyze (Local_Call);
+
+                     while Present (Ent) loop
+                        Set_Scope (Ent, Local_Proc);
+                        Next_Entity (Ent);
+                     end loop;
+                  end if;
+
+                  Next (Inner_Decl);
+               end loop;
+            end if;
+
+            Next (Decl);
+         end loop;
+      end if;
+   end Check_Unnesting_In_Declarations;
+
    ------------------------------
    -- Check_Visibly_Controlled --
    ------------------------------
@@ -4893,6 +4967,7 @@ package body Exp_Ch7 is
 
          Expand_Pragma_Initial_Condition (Spec_Id, N);
          Check_Unnesting_Elaboration_Code (N);
+         Check_Unnesting_In_Declarations (N);
 
          Pop_Scope;
       end if;
