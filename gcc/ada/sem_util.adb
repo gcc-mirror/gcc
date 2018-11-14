@@ -24184,17 +24184,26 @@ package body Sem_Util is
    --  Start of processing for Set_Debug_Info_Needed
 
    begin
-      --  Nothing to do if argument is Empty or has Debug_Info_Off set, which
-      --  indicates that Debug_Info_Needed is never required for the entity.
+      --  Nothing to do if there is no available entity
+
+      if No (T) then
+         return;
+
+      --  Nothing to do for an entity with suppressed debug information
+
+      elsif Debug_Info_Off (T) then
+         return;
+
+      --  Nothing to do for an ignored Ghost entity because the entity will be
+      --  eliminated from the tree.
+
+      elsif Is_Ignored_Ghost_Entity (T) then
+         return;
+
       --  Nothing to do if entity comes from a predefined file. Library files
       --  are compiled without debug information, but inlined bodies of these
       --  routines may appear in user code, and debug information on them ends
       --  up complicating debugging the user code.
-
-      if No (T)
-        or else Debug_Info_Off (T)
-      then
-         return;
 
       elsif In_Inlined_Body and then In_Predefined_Unit (T) then
          Set_Needs_Debug_Info (T, False);

@@ -1933,7 +1933,7 @@ package body Exp_Util is
       --  is subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -3407,7 +3407,7 @@ package body Exp_Util is
       --  subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type

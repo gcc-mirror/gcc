@@ -1648,8 +1648,8 @@ package body Ghost is
         or else Nkind (N) in N_Push_Pop_xxx_Label
         or else Nkind (N) in N_Raise_xxx_Error
         or else Nkind (N) in N_Representation_Clause
-        or else Nkind_In (N, N_Assignment_Statement,
-                             N_Call_Marker,
+        or else Nkind (N) in N_Statement_Other_Than_Procedure_Call
+        or else Nkind_In (N, N_Call_Marker,
                              N_Freeze_Entity,
                              N_Freeze_Generic_Entity,
                              N_Itype_Reference,
