@@ -180,7 +180,7 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
-  is_new = *old_vr != *new_vr;
+  is_new = !old_vr->equal_p (*new_vr, /*ignore_equivs=*/false);
 
   if (is_new)
     {

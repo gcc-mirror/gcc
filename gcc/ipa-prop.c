@@ -121,7 +121,7 @@ struct ipa_vr_ggc_hash_traits : public ggc_cache_remove <value_range_base *>
   static bool
   equal (const value_range_base *a, const value_range_base *b)
     {
-      return a->ignore_equivs_equal_p (*b);
+      return a->equal_p (*b);
     }
   static void
   mark_empty (value_range_base *&p)
