@@ -6335,7 +6335,8 @@ vect_can_force_dr_alignment_p (const_tree decl, poly_uint64 alignment)
     return false;
 
   if (TREE_STATIC (decl))
-    return (known_le (alignment, MAX_OFILE_ALIGNMENT));
+    return (known_le (alignment,
+		      (unsigned HOST_WIDE_INT) MAX_OFILE_ALIGNMENT));
   else
     return (known_le (alignment, (unsigned HOST_WIDE_INT) MAX_STACK_ALIGNMENT));
 }
