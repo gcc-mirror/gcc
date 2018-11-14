@@ -1,3 +1,13 @@
+2018-11-14  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/59658
+	* doc/invoke.texi (Optimize Options): Clarify that -O0 and -Og
+	also suppress many optimizations.  Alphabetize option lists for
+	-O1, -O2, and -Os.  Add list of options disabled with -Og, and
+	correct documentation for those options to say that.
+	* opts.c (default_options_table): Sort table by level and option
+	name, to make it easier to correlate to the manual.
+
 2018-11-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_print_operand_address_as): Simplify
