@@ -1,3 +1,10 @@
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): Set
+	Corresponding_Generic_Association on generic actuals with
+	default expression.
+	* sinfo.ads (Corresponding_Generic_Association): Update comment.
+
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): Use the proper routine to

@@ -1106,9 +1106,11 @@ package Sinfo is
    --  Corresponding_Generic_Association (Node5-Sem)
    --    This field is defined for object declarations and object renaming
    --    declarations. It is set for the declarations within an instance that
-   --    map generic formals to their actuals. If set, the field points to
-   --    a generic_association which is the original parent of the expression
-   --    or name appearing in the declaration. This simplifies ASIS queries.
+   --    map generic formals to their actuals. If set, the field points either
+   --    to a copy of a default expression for an actual of mode IN or to a
+   --    generic_association which is the original parent of the expression or
+   --    name appearing in the declaration. This simplifies ASIS and GNATprove
+   --    queries.
 
    --  Corresponding_Integer_Value (Uint4-Sem)
    --    This field is set in real literals of fixed-point types (it is not
