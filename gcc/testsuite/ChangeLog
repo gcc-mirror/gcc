@@ -1,3 +1,9 @@
+2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87507
+	* gcc.target/powerpc/pr87507.c: New test.
+	* gcc.target/powerpc/pr68805.c: Update expected results.
+
 2018-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87898

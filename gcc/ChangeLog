@@ -1,3 +1,12 @@
+2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/87507
+	* lower-subreg.c (operand_for_swap_move_operator): New function.
+	(simple_move): Strip simple operators.
+	(find_pseudo_copy): Likewise.
+	(resolve_operand_for_swap_move_operator): New function.
+	(resolve_simple_move): Strip simple operators and swap operands.
+
 2018-11-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87898
