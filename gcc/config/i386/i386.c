@@ -12018,8 +12018,7 @@ ix86_update_stack_boundary (void)
   ix86_incoming_stack_boundary
     = ix86_minimum_incoming_stack_boundary (false);
 
-  /* x86_64 vararg needs 16byte stack alignment for register save
-     area.  */
+  /* x86_64 vararg needs 16byte stack alignment for register save area.  */
   if (TARGET_64BIT
       && cfun->stdarg
       && crtl->stack_alignment_estimated < 128)
@@ -18303,15 +18302,20 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 
   if (!ADDR_SPACE_GENERIC_P (as))
     {
-      const char *string;
+      if (ASSEMBLER_DIALECT == ASM_ATT)
+	putc ('%', file);
 
-      if (as == ADDR_SPACE_SEG_FS)
-	string = (ASSEMBLER_DIALECT == ASM_ATT ? "%fs:" : "fs:");
-      else if (as == ADDR_SPACE_SEG_GS)
-	string = (ASSEMBLER_DIALECT == ASM_ATT ? "%gs:" : "gs:");
-      else
-	gcc_unreachable ();
-      fputs (string, file);
+      switch (as)
+	{
+	case ADDR_SPACE_SEG_FS:
+	  fputs ("fs:", file);
+	  break;
+	case ADDR_SPACE_SEG_GS:
+	  fputs ("gs:", file);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
 
   /* Use one byte shorter RIP relative addressing for 64bit mode.  */
