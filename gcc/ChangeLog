@@ -1,3 +1,8 @@
+2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
+	* config/arc/linux.h (CLEAR_INSN_CACHE): Define.
+
 2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
