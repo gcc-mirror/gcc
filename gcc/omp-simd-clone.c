@@ -834,11 +834,8 @@ ipa_simd_modify_stmt_ops (tree *tp, int *walk_subtrees, void *data)
   struct ipa_parm_adjustment *cand = NULL;
   if (TREE_CODE (*tp) == PARM_DECL)
     cand = ipa_get_adjustment_candidate (&tp, NULL, info->adjustments, true);
-  else
-    {
-      if (TYPE_P (*tp))
-	*walk_subtrees = 0;
-    }
+  else if (TYPE_P (*tp))
+    *walk_subtrees = 0;
 
   tree repl = NULL_TREE;
   if (cand)
@@ -1014,6 +1011,21 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	  if (info.modified)
 	    {
 	      update_stmt (stmt);
+	      /* If the above changed the var of a debug bind into something
+		 different, remove the debug stmt.  We could also for all the
+		 replaced parameters add VAR_DECLs for debug info purposes,
+		 add debug stmts for those to be the simd array accesses and
+		 replace debug stmt var operand with that var.  Debugging of
+		 vectorized loops doesn't work too well, so don't bother for
+		 now.  */
+	      if ((gimple_debug_bind_p (stmt)
+		   && !DECL_P (gimple_debug_bind_get_var (stmt)))
+		  || (gimple_debug_source_bind_p (stmt)
+		      && !DECL_P (gimple_debug_source_bind_get_var (stmt))))
+		{
+		  gsi_remove (&gsi, true);
+		  continue;
+		}
 	      if (maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (gimple_bb (stmt));
 	    }

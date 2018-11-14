@@ -1,3 +1,8 @@
+2018-11-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87898
+	* gcc.dg/gomp/pr87898.c: New test.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/plugin/comment_plugin.c: Replace "source_location" with
