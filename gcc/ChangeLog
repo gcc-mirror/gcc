@@ -1,3 +1,8 @@
+2018-11-14  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* tree-vect-data-refs.c (vect_can_force_dr_alignment_p): Cast
+	MAX_OFILE_ALIGNMENT as needed.
+
 2018-11-14  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88019
