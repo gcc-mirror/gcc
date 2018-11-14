@@ -1,3 +1,10 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): Capture Ghost and
+	SPARK-related global state at the start of the routine. Set the
+	Ghost mode of the completed spec if any.  Restore the saved
+	Ghost and SPARK-related global state on exit from the routine.
+
 2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
