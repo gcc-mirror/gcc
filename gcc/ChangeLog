@@ -1,6 +1,13 @@
 2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	Backport from mainline
+	PR target/85968
+	* config/arc/arc.c (arc_return_address_register): Fix
+	if-condition.
+
+2018-11-14  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	Backport from mainline
 	* config/arc/arc.h (FUNCTION_PROFILER): Redefine to empty.
 	* config/arc/elf.h (PROFILE_HOOK): Define.
 	* config/arc/linux.h (PROFILE_HOOK): Likewise.
