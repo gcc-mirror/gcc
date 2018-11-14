@@ -3398,8 +3398,9 @@ lambda_matrix_id (lambda_matrix mat, int size)
       mat[i][j] = (i == j) ? 1 : 0;
 }
 
-/* Return the first nonzero element of vector VEC1 between START and N.
-   We must have START <= N.   Returns N if VEC1 is the zero vector.  */
+/* Return the index of the first nonzero element of vector VEC1 between
+   START and N.  We must have START <= N.
+   Returns N if VEC1 is the zero vector.  */
 
 static int
 lambda_vector_first_nz (lambda_vector vec1, int n, int start)
@@ -3414,7 +3415,8 @@ lambda_vector_first_nz (lambda_vector vec1, int n, int start)
    R2 = R2 + CONST1 * R1.  */
 
 static void
-lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
+lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2,
+		       lambda_int const1)
 {
   int i;
 
@@ -3430,7 +3432,7 @@ lambda_matrix_row_add (lambda_matrix mat, int n, int r1, int r2, int const1)
 
 static void
 lambda_vector_mult_const (lambda_vector vec1, lambda_vector vec2,
-			  int size, int const1)
+			  int size, lambda_int const1)
 {
   int i;
 
@@ -3495,7 +3497,7 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 	    {
 	      while (S[i][j] != 0)
 		{
-		  int sigma, factor, a, b;
+		  lambda_int sigma, factor, a, b;
 
 		  a = S[i-1][j];
 		  b = S[i][j];
