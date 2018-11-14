@@ -1186,7 +1186,7 @@ package body Bindgen is
       end loop;
       WBI ("     & ASCII.NUL;");
 
-      Set_Special_Output (null);
+      Cancel_Special_Output;
 
       Bind_Env_String_Built := True;
    end Gen_Bind_Env_String;
