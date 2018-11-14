@@ -210,37 +210,27 @@ value_range::check ()
     }
 }
 
-/* Returns TRUE if THIS == OTHER.  Ignores the equivalence bitmap if
-   IGNORE_EQUIVS is TRUE.  */
+/* Equality operator.  We purposely do not overload ==, to avoid
+   confusion with the equality bitmap in the derived value_range
+   class.  */
 
 bool
-value_range::equal_p (const value_range &other, bool ignore_equivs) const
-{
-  return (ignore_equivs_equal_p (other)
-	  && (ignore_equivs
-	      || vrp_bitmap_equal_p (m_equiv, other.m_equiv)));
-}
-
-/* Return equality while ignoring equivalence bitmap.  */
-
-bool
-value_range_base::ignore_equivs_equal_p (const value_range_base &other) const
+value_range_base::equal_p (const value_range_base &other) const
 {
   return (m_kind == other.m_kind
 	  && vrp_operand_equal_p (m_min, other.m_min)
 	  && vrp_operand_equal_p (m_max, other.m_max));
 }
 
-bool
-value_range::operator== (const value_range &other) const
-{
-  return equal_p (other, /*ignore_equivs=*/false);
-}
+/* Returns TRUE if THIS == OTHER.  Ignores the equivalence bitmap if
+   IGNORE_EQUIVS is TRUE.  */
 
 bool
-value_range::operator!= (const value_range &other) const
+value_range::equal_p (const value_range &other, bool ignore_equivs) const
 {
-  return !(*this == other);
+  return (value_range_base::equal_p (other)
+	  && (ignore_equivs
+	      || vrp_bitmap_equal_p (m_equiv, other.m_equiv)));
 }
 
 /* Return TRUE if this is a symbolic range.  */
@@ -5382,7 +5372,7 @@ vrp_prop::visit_stmt (gimple *stmt, edge *taken_edge_p, tree *output_p)
 		value_range new_vr;
 		extract_range_basic (&new_vr, use_stmt);
 		const value_range *old_vr = get_value_range (use_lhs);
-		if (*old_vr != new_vr)
+		if (!old_vr->equal_p (new_vr, /*ignore_equivs=*/false))
 		  res = SSA_PROP_INTERESTING;
 		else
 		  res = SSA_PROP_NOT_INTERESTING;

@@ -63,7 +63,9 @@ public:
 
   void union_ (const value_range_base *);
 
-  bool ignore_equivs_equal_p (const value_range_base &) const;
+  bool operator== (const value_range_base &) const /* = delete */;
+  bool operator!= (const value_range_base &) const /* = delete */;
+  bool equal_p (const value_range_base &) const;
 
   /* Misc methods.  */
   tree type () const;
@@ -119,10 +121,11 @@ class GTY((user)) value_range : public value_range_base
   void set_nonnull (tree);
   void set_null (tree);
 
-  bool operator== (const value_range &) const;
-  bool operator!= (const value_range &) const;
+  bool operator== (const value_range &) const /* = delete */;
+  bool operator!= (const value_range &) const /* = delete */;
   void intersect (const value_range *);
   void union_ (const value_range *);
+  bool equal_p (const value_range &, bool ignore_equivs) const;
 
   /* Types of value ranges.  */
   void set_undefined ();
@@ -142,7 +145,6 @@ class GTY((user)) value_range : public value_range_base
   /* Deep-copies bitmap argument.  */
   void set_equiv (bitmap);
   void check ();
-  bool equal_p (const value_range &, bool ignore_equivs) const;
   void intersect_helper (value_range *, const value_range *);
 
   /* Set of SSA names whose value ranges are equivalent to this one.

@@ -928,7 +928,7 @@ ipcp_vr_lattice::meet_with_1 (const value_range_base *other_vr)
 
   value_range_base save (m_vr);
   m_vr.union_ (other_vr);
-  return !m_vr.ignore_equivs_equal_p (save);
+  return !m_vr.equal_p (save);
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */

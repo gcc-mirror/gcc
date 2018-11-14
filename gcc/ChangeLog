@@ -1,3 +1,19 @@
+2018-11-14  Aldy Hernandez  <aldyh@redhat.com>
+
+	* gimple-ssa-evrp-analyze.c
+	(evrp_range_analyzer::record_ranges_from_incoming_edge): Rename
+	ignore_equivs_equal_p to equal_p.
+	* ipa-cp.c (meet_with_1): Use equal_p instead of
+	ignore_equivs_equal_p.
+	* ipa-prop.c (ipa_vr_ggc_hash_traits::equal): Same.
+	* tree-vrp.c (value_range::ignore_equivs_equal_p): Remove.
+	(value_range::operator==): Remove.
+	(value_range::operator!=): Remove.
+	(vrp_prop::visit_stmt): Use equal_p.
+	* tree-vrp.h (value_range): Remove operator==, operator!=,
+	ignore_equivs_equal_p.
+	* vr-values.c (update_value_range): Use equal_p.
+
 2018-11-14  Michael Matz  <matz@suse.de>
 
 	PR middle-end/86575
