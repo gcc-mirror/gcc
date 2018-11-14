@@ -1,3 +1,13 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Check_Pragma_Thread_Local_Storage): New routine. A
+	variable with suppressed initialization has no initialization
+	for purposes of the pragma.
+	(Freeze_Object_Declaration): Remove variable
+	Has_Default_Initialization as it is no longer used. Use routine
+	Check_Pragma_Thread_Local_Storage to verify the semantics of
+	pragma Thread_Local_Storage.
+
 2018-11-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_If_Expression): Verify that the subtypes
