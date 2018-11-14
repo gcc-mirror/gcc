@@ -1,3 +1,12 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87977
+	* gcc.dg/recip_sqrt_mult_1.c: Add -fcompare-debug to dg-options.
+	* gcc.dg/recip_sqrt_mult_2.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_3.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_4.c: Likewise.
+	* gcc.dg/recip_sqrt_mult_5.c: Likewise.
+
 2018-11-13  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/87507

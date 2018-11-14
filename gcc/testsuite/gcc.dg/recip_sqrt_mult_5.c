@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-recip" } */
+/* { dg-options "-Ofast -fdump-tree-recip -fcompare-debug" } */
 
 /* We want to do the recip_sqrt transformations here there is already
    a multiplication on the main path.  */
