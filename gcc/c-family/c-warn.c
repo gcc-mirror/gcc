@@ -2286,6 +2286,8 @@ diagnose_mismatched_attributes (tree olddecl, tree newdecl)
 /* Warn if signed left shift overflows.  We don't warn
    about left-shifting 1 into the sign bit in C++14; cf.
    <http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2012/n3367.html#1457>
+   and don't warn for C++2a at all, as signed left shifts never
+   overflow.
    LOC is a location of the shift; OP0 and OP1 are the operands.
    Return true if an overflow is detected, false otherwise.  */
 
@@ -2300,7 +2302,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
   unsigned int prec0 = TYPE_PRECISION (type0);
 
   /* Left-hand operand must be signed.  */
-  if (TYPE_UNSIGNED (type0))
+  if (TYPE_UNSIGNED (type0) || cxx_dialect >= cxx2a)
     return false;
 
   unsigned int min_prec = (wi::min_precision (wi::to_wide (op0), SIGNED)
@@ -2309,7 +2311,7 @@ maybe_warn_shift_overflow (location_t loc, tree op0, tree op1)
    * However, shifting 1 _out_ of the sign bit, as in
    * INT_MIN << 1, is considered an overflow.
    */
-  if (!tree_int_cst_sign_bit(op0) && min_prec == prec0 + 1)
+  if (!tree_int_cst_sign_bit (op0) && min_prec == prec0 + 1)
     {
       /* Never warn for C++14 onwards.  */
       if (cxx_dialect >= cxx14)

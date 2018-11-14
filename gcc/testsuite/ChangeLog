@@ -1,3 +1,17 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P1236R1 - Signed integers are two's complement
+	* g++.dg/cpp2a/constexpr-shift1.C: New test.
+	* g++.dg/warn/permissive-1.C (enum A, enum D): Don't expect
+	diagnostics here for c++2a.
+	* g++.dg/cpp0x/constexpr-shift1.C (fn3, i3, fn4, i4): Don't expect
+	diagnostics here for c++2a.
+	* g++.dg/cpp0x/constexpr-60049.C (f3, x3, y3): Likewise.
+	* g++.dg/ubsan/cxx11-shift-1.C (main): Add some further tests.
+	* g++.dg/ubsan/cxx11-shift-2.C (main): Likewise.
+	* g++.dg/ubsan/cxx2a-shift-1.C: New test.
+	* g++.dg/ubsan/cxx2a-shift-2.C: New test.
+
 2018-11-14  Jeff Law  <law@redhat.com>
 
 	* gcc.c-torture/compile/20181114.c: New test.

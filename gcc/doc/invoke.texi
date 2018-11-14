@@ -5074,11 +5074,12 @@ This is the warning level of @option{-Wshift-overflow} and is enabled
 by default in C99 and C++11 modes (and newer).  This warning level does
 not warn about left-shifting 1 into the sign bit.  (However, in C, such
 an overflow is still rejected in contexts where an integer constant expression
-is required.)
+is required.)  No warning is emitted in C++2A mode (and newer), as signed left
+shifts always wrap.
 
 @item -Wshift-overflow=2
 This warning level also warns about left-shifting 1 into the sign bit,
-unless C++14 mode is active.
+unless C++14 mode (or newer) is active.
 @end table
 
 @item -Wswitch
