@@ -1,3 +1,12 @@
+2018-11-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Extend handling of
+	renamings of the predefined equality primitive.
+	(Make_Secondary_DT): When calling Expand_Interface_Thunk() pass
+	it the primitive, instead of its Ultimate_Alias; required to
+	allow the called routine to identify renamings of the predefined
+	equality operation.
+
 2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb (Check_Pragma_Thread_Local_Storage): New routine. A
