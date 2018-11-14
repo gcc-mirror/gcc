@@ -1,5 +1,11 @@
 2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
 
+	* sem_util.adb (First_From_Global_List): Do not expect
+	N_Selected_Component in the Global contract; simplify assertion
+	with Nam_In.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
 	* sem_ch12.adb (Instantiate_Object): Set
 	Corresponding_Generic_Association on generic actuals with
 	default expression.
