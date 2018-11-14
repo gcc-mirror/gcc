@@ -1453,7 +1453,7 @@ make_declarator (cp_declarator_kind kind)
 
 static cp_declarator *
 make_id_declarator (tree qualifying_scope, tree unqualified_name,
-		    special_function_kind sfk)
+		    special_function_kind sfk, location_t id_location)
 {
   cp_declarator *declarator;
 
@@ -1478,7 +1478,8 @@ make_id_declarator (tree qualifying_scope, tree unqualified_name,
   declarator->u.id.qualifying_scope = qualifying_scope;
   declarator->u.id.unqualified_name = unqualified_name;
   declarator->u.id.sfk = sfk;
-  
+  declarator->id_loc = id_location;
+
   return declarator;
 }
 
@@ -10686,7 +10687,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     p = obstack_alloc (&declarator_obstack, 0);
 
-    declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none);
+    declarator = make_id_declarator (NULL_TREE, call_op_identifier, sfk_none,
+				     LAMBDA_EXPR_LOCATION (lambda_expr));
 
     quals = (LAMBDA_EXPR_MUTABLE_P (lambda_expr)
 	     ? TYPE_UNQUALIFIED : TYPE_QUAL_CONST);
@@ -10697,7 +10699,6 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 				       exception_spec,
                                        return_type,
                                        /*requires_clause*/NULL_TREE);
-    declarator->id_loc = LAMBDA_EXPR_LOCATION (lambda_expr);
     declarator->std_attributes = attributes;
 
     fco = grokmethod (&return_type_specs,
@@ -13473,10 +13474,13 @@ cp_parser_decomposition_declaration (cp_parser *parser,
   FOR_EACH_VEC_ELT (v, i, e)
     {
       if (i == 0)
-	declarator = make_id_declarator (NULL_TREE, e.get_value (), sfk_none);
+	declarator = make_id_declarator (NULL_TREE, e.get_value (),
+					 sfk_none, e.get_location ());
       else
-	declarator->u.id.unqualified_name = e.get_value ();
-      declarator->id_loc = e.get_location ();
+	{
+	  declarator->u.id.unqualified_name = e.get_value ();
+	  declarator->id_loc = e.get_location ();
+	}
       tree elt_pushed_scope;
       tree decl2 = start_decl (declarator, &decl_specs, SD_INITIALIZED,
 			       NULL_TREE, NULL_TREE, &elt_pushed_scope);
@@ -19294,8 +19298,7 @@ cp_parser_alias_declaration (cp_parser* parser)
 					       /*declarator=*/NULL))
     return error_mark_node;
 
-  declarator = make_id_declarator (NULL_TREE, id, sfk_none);
-  declarator->id_loc = id_location;
+  declarator = make_id_declarator (NULL_TREE, id, sfk_none, id_location);
 
   member_p = at_class_scope_p ();
   if (member_p)
@@ -20699,9 +20702,8 @@ cp_parser_direct_declarator (cp_parser* parser,
 	      }
 	    declarator = make_id_declarator (qualifying_scope,
 					     unqualified_name,
-					     sfk);
+					     sfk, token->location);
 	    declarator->std_attributes = attrs;
-	    declarator->id_loc = token->location;
 	    declarator->parameter_pack_p = pack_expansion_p;
 
 	    if (pack_expansion_p)
@@ -23993,6 +23995,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      tree identifier;
 	      tree width;
 	      tree late_attributes = NULL_TREE;
+	      location_t id_location
+		= cp_lexer_peek_token (parser->lexer)->location;
 
 	      if (named_bitfld)
 		identifier = cp_parser_identifier (parser);
@@ -24061,7 +24065,8 @@ cp_parser_member_declaration (cp_parser* parser)
 	      decl = grokbitfield (identifier
 				   ? make_id_declarator (NULL_TREE,
 							 identifier,
-							 sfk_none)
+							 sfk_none,
+							 id_location)
 				   : NULL,
 				   &decl_specifiers,
 				   width, initializer,
@@ -30608,7 +30613,7 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	      /* Get the name of the bitfield.  */
 	      declarator = make_id_declarator (NULL_TREE,
 					       cp_parser_identifier (parser),
-					       sfk_none);
+					       sfk_none, token->location);
 
 	     eat_colon:
 	      cp_lexer_consume_token (parser->lexer);  /* Eat ':'.  */

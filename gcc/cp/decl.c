@@ -12408,8 +12408,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (unqualified_id)
 		  {
-		    error ("field %qD has incomplete type %qT",
-			   unqualified_id, type);
+		    error_at (declarator->id_loc,
+			      "field %qD has incomplete type %qT",
+			      unqualified_id, type);
 		    cxx_incomplete_type_inform (strip_array_types (type));
 		  }
 		else
@@ -12423,8 +12424,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    if (friendp)
 	      {
-		error ("%qE is neither function nor member function; "
-		       "cannot be declared friend", unqualified_id);
+		error_at (declarator->id_loc,
+			  "%qE is neither function nor member function; "
+			  "cannot be declared friend", unqualified_id);
 		return error_mark_node;
 	      }
 	    decl = NULL_TREE;
