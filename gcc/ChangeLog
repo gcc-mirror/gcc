@@ -1,3 +1,8 @@
+2018-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_address_as): Simplify
+	printing of the names of segment registers.
+
 2018-11-14  Nathan Sidwell  <nathan@acm.org>
 
 	PR debug/88006
@@ -12,8 +17,7 @@
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	P1236R1 - Signed integers are two's complement
-	* doc/invoke.texi (Wshift-overflow): Adjust documentation for
-	c++2a.
+	* doc/invoke.texi (Wshift-overflow): Adjust documentation for c++2a.
 
 	PR bootstrap/86739
 	* hash-map.h (hash_map::iterator::reference_pair): New class.
@@ -64,7 +68,7 @@
 	(lambda_vector_mult_const): Likewise.
 	(lambda_matrix_right_hermite): Use lambda_int temporaries.
 
-2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
+2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR 71026/tree-optimization
@@ -105,10 +109,8 @@
 	(arc_init_reg_tables): Remove unused register classes.
 	(arc_register_move_cost): Likewise.
 	(arc_preferred_reload_class): Likewise.
-	(hwloop_optimize): Update rtx patterns involving lp_count
-	register.
-	(arc_return_address_register): Rename ILINK1, INLINK2 regnums
-	macros.
+	(hwloop_optimize): Update rtx patterns involving lp_count register.
+	(arc_return_address_register): Rename ILINK1, INLINK2 regnums macros.
 	* config/arc/constraints.md ("c"): Choose between GENERAL_REGS and
 	CHEAP_CORE_REGS.  Former one will be used for LRA.
 	("Rac"): Choose between GENERAL_REGS and ALL_CORE_REGS.  Former
@@ -216,7 +218,7 @@
 	* omp-expand.c: Likewise.
 	* selftest.h: Likewise.
 	* substring-locations.h (get_source_location_for_substring):
-	Rename to..
+	Rename to...
 	(get_location_within_string): ...this.
 	* tree-cfg.c: Replace "source_location" with "location_t".
 	* tree-cfgcleanup.c: Likewise.
@@ -548,8 +550,8 @@
 
 	PR middle-end/86677
 	PR middle-end/87528
-	* tree-scalar-evolution.c (expression_expensive_p): Make BUILTIN POPCOUNT
-	as expensive when backend does not define it.
+	* tree-scalar-evolution.c (expression_expensive_p): Make
+	BUILTIN POPCOUNT as expensive when backend does not define it.
 
 2018-11-12  Fredrik Noring  <noring@nocrew.org>
 
@@ -2041,7 +2043,7 @@
 2018-11-05  Robin Dapp  <rdapp@linux.ibm.com>
 
 	* config/s390/s390.c (s390_register_move_cost): Increase costs for
-        moves involving the CC reg.
+	moves involving the CC reg.
 
 2018-11-05  Richard Biener  <rguenther@suse.de>
 
@@ -3103,15 +3105,15 @@
 	* options.texi (Deprecated): Move list to Var section.
 
 2018-10-24  Bill Schmidt  <wschmidt@linux.ibm.com>
-            Jinsong Ji <jji@us.ibm.com>
+	    Jinsong Ji <jji@us.ibm.com>
 
-        * config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Change deprecated
-        __vector long to __vector long long.
-        (_mm_cvtpd_ps): Likewise.
-        (_mm_cvttpd_epi32): Likewise.
-        (_mm_cvtpi32_pd): Likewise.
-        (_mm_unpackhi_epi64): Likewise.
-        (_mm_unpacklo_epi64): Likewise.
+	* config/rs6000/emmintrin.h (_mm_cvtpd_epi32): Change deprecated
+	__vector long to __vector long long.
+	(_mm_cvtpd_ps): Likewise.
+	(_mm_cvttpd_epi32): Likewise.
+	(_mm_cvtpi32_pd): Likewise.
+	(_mm_unpackhi_epi64): Likewise.
+	(_mm_unpacklo_epi64): Likewise.
 
 2018-10-24  Segher Boessenkool  <segher@kernel.crashing.org>
 
@@ -3209,8 +3211,8 @@
 
 2018-10-12  Jeff Law  <law@redhat.com>
 
-        * config/h8300/h8300.c (h8300_expand_prologue): Fix stm generation
-        for H8/S.
+	* config/h8300/h8300.c (h8300_expand_prologue): Fix stm generation
+	for H8/S.
 
 2018-10-23  Richard Biener  <rguenther@suse.de>
 
@@ -3272,13 +3274,13 @@
 	the case we do not find the taken edge.
 
 2018-10-22  Bill Schmidt  <wschmidt@linux.ibm.com>
-            Jinsong Ji  <jji@us.ibm.com>
+	    Jinsong Ji  <jji@us.ibm.com>
 
-        * config/rs6000/emmintrin.h (_MM_SHUFFLE2): Comment cleanup.
-        (_mm_store_pd): Use unaligned vector type for pointer cast.
-        (_mm_maskmoveu_si128): Likewise.
-        * config/rs6000/xmmintrin.h (__m128_u): New typedef.
-        (_mm_store_ps): Use unaligned vector type for pointer cast.
+	* config/rs6000/emmintrin.h (_MM_SHUFFLE2): Comment cleanup.
+	(_mm_store_pd): Use unaligned vector type for pointer cast.
+	(_mm_maskmoveu_si128): Likewise.
+	* config/rs6000/xmmintrin.h (__m128_u): New typedef.
+	(_mm_store_ps): Use unaligned vector type for pointer cast.
 
 2018-10-22  Paul Koning  <ni1d@arrl.net>
 
@@ -3532,23 +3534,23 @@
 	(*add<mode>3<mask_name>_bcst): Likewise.
 
 2018-10-21  Bill Schmidt  <wschmidt@linux.ibm.com>
-            Jinsong Ji  <jji@us.ibm.com>
+	    Jinsong Ji  <jji@us.ibm.com>
 
-        * config/rs6000/emmintrin.h (_mm_movemask_pd): Replace __vector
-        __m64 with __vector unsigned long long for compatibility.
-        (_mm_movemask_epi8): Likewise.
-        * config/rs6000/xmmintrin.h (_mm_cvtps_pi32): Likewise.
-        (_mm_cvttps_pi32): Likewise.
-        (_mm_cvtpi32_ps): Likewise.
-        (_mm_cvtps_pi16): Likewise.
-        (_mm_loadh_pi): Likewise.
-        (_mm_storeh_pi): Likewise.
-        (_mm_movehl_ps): Likewise.
-        (_mm_movelh_ps): Likewise.
-        (_mm_loadl_pi): Likewise.
-        (_mm_storel_pi): Likewise.
-        (_mm_movemask_ps): Likewise.
-        (_mm_shuffle_pi16): Likewise.
+	* config/rs6000/emmintrin.h (_mm_movemask_pd): Replace __vector
+	__m64 with __vector unsigned long long for compatibility.
+	(_mm_movemask_epi8): Likewise.
+	* config/rs6000/xmmintrin.h (_mm_cvtps_pi32): Likewise.
+	(_mm_cvttps_pi32): Likewise.
+	(_mm_cvtpi32_ps): Likewise.
+	(_mm_cvtps_pi16): Likewise.
+	(_mm_loadh_pi): Likewise.
+	(_mm_storeh_pi): Likewise.
+	(_mm_movehl_ps): Likewise.
+	(_mm_movelh_ps): Likewise.
+	(_mm_loadl_pi): Likewise.
+	(_mm_storel_pi): Likewise.
+	(_mm_movemask_ps): Likewise.
+	(_mm_shuffle_pi16): Likewise.
 
 2018-10-21  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -3906,9 +3908,9 @@
 	Revert
 	2018-02-07  Richard Biener  <rguenther@suse.de>
 
-        PR tree-optimization/84204
-        * tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
-        this place.
+	PR tree-optimization/84204
+	* tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
+	this place.
 
 2018-10-18  H.J. Lu  <hongjiu.lu@intel.com>
 
@@ -4090,18 +4092,18 @@
 
 2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
-        * tree-vrp.c (extract_range_from_multiplicative_op): Remove
+	* tree-vrp.c (extract_range_from_multiplicative_op): Remove
 	overflow wraps argument.
-        (extract_range_from_binary_expr_1): Do not pass overflow wraps to
+	(extract_range_from_binary_expr_1): Do not pass overflow wraps to
 	wide_int_range_multiplicative_op.
-        * wide-int-range.cc (wide_int_range_mult_wrapping): Remove
+	* wide-int-range.cc (wide_int_range_mult_wrapping): Remove
 	overflow wraps argument.
-        (wide_int_range_multiplicative_op): Same.
-        (wide_int_range_lshift): Same.
-        (wide_int_range_div): Same.
-        * wide-int-range.h (wide_int_range_multiplicative_op): Same.
-        (wide_int_range_lshift): Same.
-        (wide_int_range_div): Same.
+	(wide_int_range_multiplicative_op): Same.
+	(wide_int_range_lshift): Same.
+	(wide_int_range_div): Same.
+	* wide-int-range.h (wide_int_range_multiplicative_op): Same.
+	(wide_int_range_lshift): Same.
+	(wide_int_range_div): Same.
 
 2018-10-17  Aldy Hernandez  <aldyh@redhat.com>
 
@@ -4317,7 +4319,7 @@
 	Use HOST_WIDE_INT_1U for shift.
 
 2018-10-11  Doug Rupp  <rupp@adacore.com>
-            Olivier Hainque  <hainque@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
 
 	* config/rs6000/vxworks.h (VXWORKS_RELAX_LINK_SPEC): New macro.
 	Pass --relax to the linker for RTPs.
@@ -4451,7 +4453,7 @@
 	the REF_REVERSE_STORAGE_ORDER flag on the value.
 	(gimple_simplify) <GIMPLE_ASSIGN>: For BIT_FIELD_REF, propagate the
 	REF_REVERSE_STORAGE_ORDER flag and avoid simplifying if it is set.
-        
+	
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63155
@@ -4961,8 +4963,9 @@
 2018-10-04  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	PR tree-optimization/85787
-	* ipa-pure-const.c (malloc_candidate_p_1): Move most of malloc_candidate_p
-	into this function and add support for detecting multiple phis.
+	* ipa-pure-const.c (malloc_candidate_p_1): Move most of
+	malloc_candidate_p into this function and add support for
+	detecting multiple phis.
 	(DUMP_AND_RETURN): Move from malloc_candidate_p into top-level macro.
 
 2018-10-04  Martin Liska  <mliska@suse.cz>
@@ -4973,10 +4976,10 @@
 
 2018-10-03  Jeff Law  <law@redhat.com>
 
-        * gimple-ssa-sprintf.c (format_string): Do not hardcode size of
-        target's wchar_t.
-        * tree.c (get_typenode_from_name): Moved from fortran/trans-types.c.
-        * tree.h (get_typenode_from_name): Prototype.
+	* gimple-ssa-sprintf.c (format_string): Do not hardcode size of
+	target's wchar_t.
+	* tree.c (get_typenode_from_name): Moved from fortran/trans-types.c.
+	* tree.h (get_typenode_from_name): Prototype.
 
 2018-10-03  Uros Bizjak  <ubizjak@gmail.com>
 
