@@ -1,3 +1,9 @@
+2018-11-14  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Fix stack checking test errors in
+	ACATS, now that GCC can emit CFI rules referring to sp in
+	absence of a frame pointer.
+
 2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_aggr.adb (Check_Static_Components): Remove dead test.
