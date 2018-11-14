@@ -1396,12 +1396,23 @@ package body Sem_Ch6 is
    -- Analyze_Null_Procedure --
    ----------------------------
 
+   --  WARNING: This routine manages Ghost regions. Return statements must be
+   --  replaced by gotos that jump to the end of the routine and restore the
+   --  Ghost mode.
+
    procedure Analyze_Null_Procedure
      (N             : Node_Id;
       Is_Completion : out Boolean)
    is
-      Loc        : constant Source_Ptr := Sloc (N);
-      Spec       : constant Node_Id    := Specification (N);
+      Loc  : constant Source_Ptr := Sloc (N);
+      Spec : constant Node_Id    := Specification (N);
+
+      Saved_GM   : constant Ghost_Mode_Type := Ghost_Mode;
+      Saved_IGR  : constant Node_Id         := Ignored_Ghost_Region;
+      Saved_ISMP : constant Boolean         :=
+                     Ignore_SPARK_Mode_Pragmas_In_Instance;
+      --  Save the Ghost and SPARK mode-related data to restore on exit
+
       Designator : Entity_Id;
       Form       : Node_Id;
       Null_Body  : Node_Id := Empty;
@@ -1409,6 +1420,17 @@ package body Sem_Ch6 is
       Prev       : Entity_Id;
 
    begin
+      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
+
+      --  A null procedure is Ghost when it is stand-alone and is subject to
+      --  pragma Ghost, or when the corresponding spec is Ghost. Set the mode
+      --  now, to ensure that any nodes generated during analysis and expansion
+      --  are properly marked as Ghost.
+
+      if Present (Prev) then
+         Mark_And_Set_Ghost_Body (N, Prev);
+      end if;
+
       --  Capture the profile of the null procedure before analysis, for
       --  expansion at the freeze point and at each point of call. The body is
       --  used if the procedure has preconditions, or if it is a completion. In
@@ -1453,8 +1475,6 @@ package body Sem_Ch6 is
       --  and set minimal semantic information on the original declaration,
       --  which is rewritten as a null statement.
 
-      Prev := Current_Entity_In_Scope (Defining_Entity (Spec));
-
       if Present (Prev) and then Is_Generic_Subprogram (Prev) then
          Insert_Before (N, Null_Body);
          Set_Ekind (Defining_Entity (N), Ekind (Prev));
@@ -1462,7 +1482,8 @@ package body Sem_Ch6 is
          Rewrite (N, Make_Null_Statement (Loc));
          Analyze_Generic_Subprogram_Body (Null_Body, Prev);
          Is_Completion := True;
-         return;
+
+         goto Leave;
 
       else
          --  Resolve the types of the formals now, because the freeze point may
@@ -1535,6 +1556,10 @@ package body Sem_Ch6 is
          Rewrite (N, Null_Body);
          Analyze (N);
       end if;
+
+   <<Leave>>
+      Ignore_SPARK_Mode_Pragmas_In_Instance := Saved_ISMP;
+      Restore_Ghost_Region (Saved_GM, Saved_IGR);
    end Analyze_Null_Procedure;
 
    -----------------------------
@@ -1583,7 +1608,7 @@ package body Sem_Ch6 is
    ----------------------------
 
    --  WARNING: This routine manages Ghost regions. Return statements must be
-   --  replaced by gotos which jump to the end of the routine and restore the
+   --  replaced by gotos that jump to the end of the routine and restore the
    --  Ghost mode.
 
    procedure Analyze_Procedure_Call (N : Node_Id) is
@@ -2249,7 +2274,7 @@ package body Sem_Ch6 is
    --  the subprogram, or to perform conformance checks.
 
    --  WARNING: This routine manages Ghost regions. Return statements must be
-   --  replaced by gotos which jump to the end of the routine and restore the
+   --  replaced by gotos that jump to the end of the routine and restore the
    --  Ghost mode.
 
    procedure Analyze_Subprogram_Body_Helper (N : Node_Id) is
@@ -3394,7 +3419,7 @@ package body Sem_Ch6 is
          if Is_Generic_Subprogram (Prev_Id) then
             Spec_Id := Prev_Id;
 
-            --  A subprogram body is Ghost when it is stand alone and subject
+            --  A subprogram body is Ghost when it is stand-alone and subject
             --  to pragma Ghost or when the corresponding spec is Ghost. Set
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.
@@ -3446,7 +3471,7 @@ package body Sem_Ch6 is
             if Is_Private_Concurrent_Primitive (Body_Id) then
                Spec_Id := Disambiguate_Spec;
 
-               --  A subprogram body is Ghost when it is stand alone and
+               --  A subprogram body is Ghost when it is stand-alone and
                --  subject to pragma Ghost or when the corresponding spec is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
@@ -3462,7 +3487,7 @@ package body Sem_Ch6 is
             else
                Spec_Id := Find_Corresponding_Spec (N);
 
-               --  A subprogram body is Ghost when it is stand alone and
+               --  A subprogram body is Ghost when it is stand-alone and
                --  subject to pragma Ghost or when the corresponding spec is
                --  Ghost. Set the mode now to ensure that any nodes generated
                --  during analysis and expansion are properly marked as Ghost.
@@ -3569,7 +3594,7 @@ package body Sem_Ch6 is
          else
             Spec_Id := Corresponding_Spec (N);
 
-            --  A subprogram body is Ghost when it is stand alone and subject
+            --  A subprogram body is Ghost when it is stand-alone and subject
             --  to pragma Ghost or when the corresponding spec is Ghost. Set
             --  the mode now to ensure that any nodes generated during analysis
             --  and expansion are properly marked as Ghost.

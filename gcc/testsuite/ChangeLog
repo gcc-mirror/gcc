@@ -1,3 +1,7 @@
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* gnat.dg/ghost1.adb, gnat.dg/ghost1.ads: New testcase.
+
 2018-11-14  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/equal5.adb, gnat.dg/equal5.ads: New testcase.
