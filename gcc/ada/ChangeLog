@@ -1,3 +1,8 @@
+2018-11-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* adabkend.adb (Scan_Back_End_Switches): Handle -gx switches
+	explicitly.
+
 2018-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.c (gnat_init_gcc_eh): Set -fnon-call-exceptions
