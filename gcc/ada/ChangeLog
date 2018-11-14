@@ -1,3 +1,22 @@
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnatR): Document new -gnatR4 level.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info): Bump upper bound to 4.
+	* repinfo.adb: Add with clause for GNAT.HTable.
+	(Relevant_Entities_Size): New constant.
+	(Entity_Header_Num): New type.
+	(Entity_Hash): New function.
+	(Relevant_Entities): New set implemented with GNAT.HTable.
+	(List_Entities): Also list compiled-generated entities present
+	in the Relevant_Entities set. Consider that the Component_Type
+	of an array type is relevant.
+	(List_Rep_Info): Reset Relevant_Entities for each unit.
+	* switch-c.adb (Scan_Front_End_Switches): Add support for -gnatR4.
+	* switch-m.adb (Normalize_Compiler_Switches): Likewise
+	* usage.adb (Usage): Likewise.
+
 2018-11-14  Javier Miranda  <miranda@adacore.com>
 
 	* exp_disp.adb (Expand_Interface_Thunk): Extend handling of
