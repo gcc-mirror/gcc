@@ -1,3 +1,7 @@
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dbug.ads, sem_util.ads: Minor fixes in comments.
+
 2018-11-14  Arnaud Charlet  <charlet@adacore.com>
 
 	* adabkend.adb (Scan_Back_End_Switches): Handle -gx switches
