@@ -1,3 +1,8 @@
+2018-11-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Use_One_Package): Add test for out-of-scope
+	homonyms.
+
 2018-11-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_ch3.adb: (Expand_N_Object_Declaration): If the expression
