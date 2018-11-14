@@ -1920,9 +1920,14 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
      if E1 has a signed type and non-negative value, and E1x2^E2 is
      representable in the corresponding unsigned type of the result type,
      then that value, converted to the result type, is the resulting value;
-     otherwise, the behavior is undefined.  */
-  if (code == LSHIFT_EXPR && !TYPE_UNSIGNED (lhstype)
-      && (cxx_dialect >= cxx11))
+     otherwise, the behavior is undefined.
+     For C++2a:
+     The value of E1 << E2 is the unique value congruent to E1 x 2^E2 modulo
+     2^N, where N is the range exponent of the type of the result.  */
+  if (code == LSHIFT_EXPR
+      && !TYPE_UNSIGNED (lhstype)
+      && cxx_dialect >= cxx11
+      && cxx_dialect < cxx2a)
     {
       if (tree_int_cst_sgn (lhs) == -1)
 	{

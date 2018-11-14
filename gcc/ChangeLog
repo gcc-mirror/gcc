@@ -1,5 +1,9 @@
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	P1236R1 - Signed integers are two's complement
+	* doc/invoke.texi (Wshift-overflow): Adjust documentation for
+	c++2a.
+
 	PR bootstrap/86739
 	* hash-map.h (hash_map::iterator::reference_pair): New class.
 	(hash_map::iterator::operator*): Return it rather than std::pair.

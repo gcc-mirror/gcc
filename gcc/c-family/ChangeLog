@@ -1,5 +1,10 @@
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
+	P1236R1 - Signed integers are two's complement
+	* c-warn.c (maybe_warn_shift_overflow): Don't warn for c++2a.
+	* c-ubsan.c (ubsan_instrument_shift): Make signed shifts
+	with in-range second operand well defined for -std=c++2a.
+
 	PR other/88007
 	* c-common.c (parse_optimize_options): Allocate option string from
 	opts_obstack rather than as GC memory.  Move the allocation after

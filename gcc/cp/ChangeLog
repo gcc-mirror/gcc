@@ -1,3 +1,9 @@
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P1236R1 - Signed integers are two's complement
+	* constexpr.c (cxx_eval_check_shift_p): Disable the signed LSHIFT_EXPR
+	checks for c++2a.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c: Replace "source_location" with "location_t".
