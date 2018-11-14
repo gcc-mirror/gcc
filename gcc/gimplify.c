@@ -1959,7 +1959,9 @@ last_stmt_in_scope (gimple *stmt)
 }
 
 /* Collect interesting labels in LABELS and return the statement preceding
-   another case label, or a user-defined label.  */
+   another case label, or a user-defined label.  Store a location useful
+   to give warnings at *PREVLOC (usually the location of the returned
+   statement or of its surrounding scope).  */
 
 static gimple *
 collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
