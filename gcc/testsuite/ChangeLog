@@ -1,3 +1,7 @@
+2018-11-15  Wilco Dijkstra  <wdijkstr@arm.com>  
+
+	* gcc.target/aarch64/pr62178.c: Fix spaces.
+
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88030
