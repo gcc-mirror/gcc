@@ -412,7 +412,10 @@ gnat_init_gcc_eh (void)
   flag_exceptions = 1;
   flag_delete_dead_exceptions = 1;
   if (Suppress_Checks)
-    flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
+    {
+      if (!global_options_set.x_flag_non_call_exceptions)
+	flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
+    }
   else
     {
       flag_non_call_exceptions = 1;
