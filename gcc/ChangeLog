@@ -1,3 +1,12 @@
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87541
+	PR c++/87542
+	* tree.c (type_argument_type): New function.
+	* tree.h (type_argument_type): Declare it.
+	* gcc/doc/extend.texi (alloc_align): Update and clarify.
+	(alloc_size, nonnull, sentinel): Same.
+
 2018-11-15  Andrew Stubbs  <ams@codesourcery.com>
             Kwok Cheung Yeung  <kcy@codesourcery.com>
 

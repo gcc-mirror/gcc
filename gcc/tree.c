@@ -4955,7 +4955,8 @@ build_nt_call_vec (tree fn, vec<tree, va_gc> *args)
   return ret;
 }
 
-/* Create a DECL_... node of code CODE, name NAME and data type TYPE.
+/* Create a DECL_... node of code CODE, name NAME  (if non-null)
+   and data type TYPE.
    We do NOT enter this node in any sort of symbol table.
 
    LOC is the location of the decl.
@@ -6944,12 +6945,11 @@ type_list_equal (const_tree l1, const_tree l2)
    then this function counts only the ordinary arguments.  */
 
 int
-type_num_arguments (const_tree type)
+type_num_arguments (const_tree fntype)
 {
   int i = 0;
-  tree t;
 
-  for (t = TYPE_ARG_TYPES (type); t; t = TREE_CHAIN (t))
+  for (tree t = TYPE_ARG_TYPES (fntype); t; t = TREE_CHAIN (t))
     /* If the function does not take a variable number of arguments,
        the last element in the list will have type `void'.  */
     if (VOID_TYPE_P (TREE_VALUE (t)))
@@ -6958,6 +6958,40 @@ type_num_arguments (const_tree type)
       ++i;
 
   return i;
+}
+
+/* Return the type of the function TYPE's argument ARGNO if known.
+   For vararg function's where ARGNO refers to one of the variadic
+   arguments return null.  Otherwise, return a void_type_node for
+   out-of-bounds ARGNO.  */
+
+tree
+type_argument_type (const_tree fntype, unsigned argno)
+{
+  /* Treat zero the same as an out-of-bounds argument number.  */
+  if (!argno)
+    return void_type_node;
+
+  function_args_iterator iter;
+
+  tree argtype;
+  unsigned i = 1;
+  FOREACH_FUNCTION_ARGS (fntype, argtype, iter)
+    {
+      /* A vararg function's argument list ends in a null.  Otherwise,
+	 an ordinary function's argument list ends with void.  Return
+	 null if ARGNO refers to a vararg argument, void_type_node if
+	 it's out of bounds, and the formal argument type otherwise.  */
+      if (!argtype)
+	break;
+
+      if (i == argno || VOID_TYPE_P (argtype))
+	return argtype;
+
+      ++i;
+    }
+
+  return NULL_TREE;
 }
 
 /* Nonzero if integer constants T1 and T2
