@@ -1,3 +1,8 @@
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* c-opts.c (c_diagnostic_finalizer): Add diagnostic_t param.
+
 2018-11-14  Jakub Jelinek  <jakub@redhat.com>
 
 	P1236R1 - Signed integers are two's complement

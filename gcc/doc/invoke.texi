@@ -268,6 +268,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-fmessage-length=@var{n}  @gol
 -fdiagnostics-show-location=@r{[}once@r{|}every-line@r{]}  @gol
 -fdiagnostics-color=@r{[}auto@r{|}never@r{|}always@r{]}  @gol
+-fdiagnostics-format=@r{[}text@r{|}json@r{]}  @gol
 -fno-diagnostics-show-option  -fno-diagnostics-show-caret @gol
 -fno-diagnostics-show-labels -fno-diagnostics-show-line-numbers @gol
 -fdiagnostics-minimum-margin-width=@var{width} @gol
@@ -3978,6 +3979,193 @@ This flag also affects the output of the
 Do not print column numbers in diagnostics.  This may be necessary if
 diagnostics are being scanned by a program that does not understand the
 column numbers, such as @command{dejagnu}.
+
+@item -fdiagnostics-format=@var{FORMAT}
+@opindex fdiagnostics-format
+Select a different format for printing diagnostics.
+@var{FORMAT} is @samp{text} or @samp{json}.
+The default is @samp{text}.
+
+The @samp{json} format consists of a top-level JSON array containing JSON
+objects representing the diagnostics.
+
+The JSON is emitted as one line, without formatting; the examples below
+have been formatted for clarity.
+
+Diagnostics can have child diagnostics.  For example, this error and note:
+
+@smallexample
+misleading-indentation.c:15:3: warning: this 'if' clause does not
+  guard... [-Wmisleading-indentation]
+   15 |   if (flag)
+      |   ^~
+misleading-indentation.c:17:5: note: ...this statement, but the latter
+  is misleadingly indented as if it were guarded by the 'if'
+   17 |     y = 2;
+      |     ^
+@end smallexample
+
+@noindent
+might be printed in JSON form (after formatting) like this:
+
+@smallexample
+[
+    @{
+        "kind": "warning",
+        "locations": [
+            @{
+                "caret": @{
+                    "column": 3,
+                    "file": "misleading-indentation.c",
+                    "line": 15
+                @},
+                "finish": @{
+                    "column": 4,
+                    "file": "misleading-indentation.c",
+                    "line": 15
+                @}
+            @}
+        ],
+        "message": "this \u2018if\u2019 clause does not guard...",
+        "option": "-Wmisleading-indentation",
+        "children": [
+            @{
+                "kind": "note",
+                "locations": [
+                    @{
+                        "caret": @{
+                            "column": 5,
+                            "file": "misleading-indentation.c",
+                            "line": 17
+                        @}
+                    @}
+                ],
+                "message": "...this statement, but the latter is @dots{}"
+            @}
+        ]
+    @},
+    @dots{}
+]
+@end smallexample
+
+@noindent
+where the @code{note} is a child of the @code{warning}.
+
+A diagnostic has a @code{kind}.  If this is @code{warning}, then there is
+an @code{option} key describing the command-line option controlling the
+warning.
+
+A diagnostic can contain zero or more locations.  Each location has up
+to three positions within it: a @code{caret} position and optional
+@code{start} and @code{finish} positions.  A location can also have
+an optional @code{label} string.  For example, this error:
+
+@smallexample
+bad-binary-ops.c:64:23: error: invalid operands to binary + (have 'S' @{aka
+   'struct s'@} and 'T' @{aka 'struct t'@})
+   64 |   return callee_4a () + callee_4b ();
+      |          ~~~~~~~~~~~~ ^ ~~~~~~~~~~~~
+      |          |              |
+      |          |              T @{aka struct t@}
+      |          S @{aka struct s@}
+@end smallexample
+
+@noindent
+has three locations.  Its primary location is at the ``+'' token at column
+23.  It has two secondary locations, describing the left and right-hand sides
+of the expression, which have labels.  It might be printed in JSON form as:
+
+@smallexample
+    @{
+        "children": [],
+        "kind": "error",
+        "locations": [
+            @{
+                "caret": @{
+                    "column": 23, "file": "bad-binary-ops.c", "line": 64
+                @}
+            @},
+            @{
+                "caret": @{
+                    "column": 10, "file": "bad-binary-ops.c", "line": 64
+                @},
+                "finish": @{
+                    "column": 21, "file": "bad-binary-ops.c", "line": 64
+                @},
+                "label": "S @{aka struct s@}"
+            @},
+            @{
+                "caret": @{
+                    "column": 25, "file": "bad-binary-ops.c", "line": 64
+                @},
+                "finish": @{
+                    "column": 36, "file": "bad-binary-ops.c", "line": 64
+                @},
+                "label": "T @{aka struct t@}"
+            @}
+        ],
+        "message": "invalid operands to binary + @dots{}"
+    @}
+@end smallexample
+
+If a diagnostic contains fix-it hints, it has a @code{fixits} array,
+consisting of half-open intervals, similar to the output of
+@option{-fdiagnostics-parseable-fixits}.  For example, this diagnostic
+with a replacement fix-it hint:
+
+@smallexample
+demo.c:8:15: error: 'struct s' has no member named 'colour'; did you
+  mean 'color'?
+    8 |   return ptr->colour;
+      |               ^~~~~~
+      |               color
+@end smallexample
+
+@noindent
+might be printed in JSON form as:
+
+@smallexample
+    @{
+        "children": [],
+        "fixits": [
+            @{
+                "next": @{
+                    "column": 21,
+                    "file": "demo.c",
+                    "line": 8
+                @},
+                "start": @{
+                    "column": 15,
+                    "file": "demo.c",
+                    "line": 8
+                @},
+                "string": "color"
+            @}
+        ],
+        "kind": "error",
+        "locations": [
+            @{
+                "caret": @{
+                    "column": 15,
+                    "file": "demo.c",
+                    "line": 8
+                @},
+                "finish": @{
+                    "column": 20,
+                    "file": "demo.c",
+                    "line": 8
+                @}
+            @}
+        ],
+        "message": "\u2018struct s\u2019 has no member named @dots{}"
+    @}
+@end smallexample
+
+@noindent
+where the fix-it hint suggests replacing the text from @code{start} up
+to but not including @code{next} with @code{string}'s value.  Deletions
+are expressed via an empty value for @code{string}, insertions by
+having @code{start} equal @code{next}.
 
 @end table
 
