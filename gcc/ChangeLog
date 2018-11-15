@@ -1,5 +1,12 @@
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
+        PR middle-end/88029
+        * gimple.c (gimple_call_flags): Union flags from decl, type
+        and call fntype.
+        * trans-mem.c (is_tm_pure_call): Simplify.
+
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88031
 	* tree-vect-loop.c (vectorizable_reduction): Move check
 	for multiple types earlier so we get the expected dump.
