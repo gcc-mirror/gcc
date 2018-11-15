@@ -1,3 +1,10 @@
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR debug/88006
+	PR debug/87462
+	* dwarf2out.c (dwarf2out_finish): Apply resolve_addr to comdat
+	type list.
+
 2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
