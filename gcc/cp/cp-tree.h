@@ -5099,7 +5099,8 @@ enum special_function_kind {
 			      deletes the object after it has been
 			      destroyed.  */
   sfk_conversion,	   /* A conversion operator.  */
-  sfk_deduction_guide	   /* A class template deduction guide.  */
+  sfk_deduction_guide,	   /* A class template deduction guide.  */
+  sfk_virtual_destructor   /* Used by member synthesis fns.  */
 };
 
 /* The various kinds of linkage.  From [basic.link],

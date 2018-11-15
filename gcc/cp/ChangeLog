@@ -1,5 +1,15 @@
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
+	DR 2336
+	* cp-tree.h (enum special_function_kind): Add sfk_virtual_destructor.
+	* method.c (type_has_trivial_fn): Add it.
+	(SFK_DTOR_P): Likewise.
+	(synthesized_method_base_walk): Don't check access of vbases of
+	abstract classes when sfk_virtual_destructor.
+	(synthesized_method_walk): Skip vbases of abstract classes except
+	when sfk_virtual_destructor.
+	(get_defaulted_eh_spec): Set sfk_virtual_destructor as needed.
+
 	* cp-tree.h (enum special_function_kind): Reorder and comment.
 	* method.c (SFK_CTOR_P, SFK_DTOR_P, SFK_ASSIGN_P, SFK_COPY_P)
 	(SFK_MOVE_P): New predicates.

@@ -402,6 +402,7 @@ type_has_trivial_fn (tree ctype, special_function_kind sfk)
     case sfk_move_assignment:
       return !TYPE_HAS_COMPLEX_MOVE_ASSIGN (ctype);
     case sfk_destructor:
+    case sfk_virtual_destructor:
       return !TYPE_HAS_NONTRIVIAL_DESTRUCTOR (ctype);
     case sfk_inheriting_constructor:
       return false;
@@ -1287,7 +1288,7 @@ process_subob_fn (tree fn, tree *spec_p, bool *trivial_p,
 #define SFK_CTOR_P(sfk) \
   ((sfk) >= sfk_constructor && (sfk) <= sfk_move_constructor)
 #define SFK_DTOR_P(sfk) \
-  ((sfk) == sfk_destructor)
+  ((sfk) == sfk_destructor || (sfk) == sfk_virtual_destructor)
 #define SFK_ASSIGN_P(sfk) \
   ((sfk) == sfk_copy_assignment || (sfk) == sfk_move_assignment)
 #define SFK_COPY_P(sfk) \
@@ -1481,12 +1482,11 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
       if (flag_new_inheriting_ctors)
 	defer = dk_deferred;
     }
-  /* To be conservative, ignore access to the base dtor that
-     DR1658 instructs us to ignore.  See the comment in
-     synthesized_method_walk.  */
-  else if (cxx_dialect >= cxx14 && fnname == complete_dtor_identifier
+  else if (cxx_dialect >= cxx14 && sfk == sfk_virtual_destructor
 	   && BINFO_VIRTUAL_P (base_binfo)
 	   && ABSTRACT_CLASS_TYPE_P (BINFO_TYPE (binfo)))
+    /* Don't check access when looking at vbases of abstract class's
+       virtual destructor.  */
     defer = dk_no_check;
 
   if (defer != dk_no_deferred)
@@ -1572,7 +1572,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   bool check_vdtor = false;
   tree fnname;
 
-if (SFK_DTOR_P (sfk))
+  if (SFK_DTOR_P (sfk))
     {
       check_vdtor = true;
       /* The synthesized method will call base dtors, but check complete
@@ -1696,12 +1696,11 @@ if (SFK_DTOR_P (sfk))
   else if (vec_safe_is_empty (vbases))
     /* No virtual bases to worry about.  */;
   else if (ABSTRACT_CLASS_TYPE_P (ctype) && cxx_dialect >= cxx14
-	   /* DR 1658 specifies that vbases of abstract classes are
-	      ignored for both ctors and dtors.  However, that breaks
-	      virtual dtor overriding when the ignored base has a
-	      throwing destructor.  So, ignore that piece of 1658.  A
-	      defect has been filed (no number yet).  */
-	   && sfk != sfk_destructor)
+	   /* DR 1658 specifis that vbases of abstract classes are
+	      ignored for both ctors and dtors.  Except DR 2338
+	      overrides that skipping when determing the eh-spec of a
+	      virtual destructor.  */
+	   && sfk != sfk_virtual_destructor)
     /* Vbase cdtors are not relevant.  */;
   else
     {
@@ -1748,6 +1747,9 @@ get_defaulted_eh_spec (tree decl, tsubst_flags_t complain)
   tree spec = empty_except_spec;
   bool diag = !DECL_DELETED_FN (decl) && (complain & tf_error);
   tree inh = DECL_INHERITED_CTOR (decl);
+  if (SFK_DTOR_P (sfk) && DECL_VIRTUAL_P (decl))
+    /* We have to examine virtual bases even if abstract.  */
+    sfk = sfk_virtual_destructor;
   synthesized_method_walk (ctype, sfk, const_p, &spec, NULL, NULL,
 			   NULL, diag, &inh, parms);
   return spec;
