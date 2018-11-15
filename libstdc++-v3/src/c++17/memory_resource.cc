@@ -335,17 +335,16 @@ namespace pmr
 
     size_type get_first_unset() noexcept
     {
-      if (_M_next_word < nwords())
+      const size_type wd = _M_next_word;
+      if (wd < nwords())
 	{
-	  const size_type n = std::__countr_one(_M_words[_M_next_word]);
+	  const size_type n = std::__countr_one(_M_words[wd]);
 	  if (n < bits_per_word)
 	    {
 	      const word bit = word(1) << n;
-	      _M_words[_M_next_word] |= bit;
-	      const size_t res = (_M_next_word * bits_per_word) + n;
-	      if (n == (bits_per_word - 1))
-		update_next_word();
-	      return res;
+	      _M_words[wd] |= bit;
+	      update_next_word();
+	      return (wd * bits_per_word) + n;
 	    }
 	}
       return size_type(-1);

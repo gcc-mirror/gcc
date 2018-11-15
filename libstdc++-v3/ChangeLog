@@ -1,5 +1,13 @@
 2018-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
+	* scripts/check_performance: Allow tests to choose a -std flag.
+	* src/c++17/memory_resource.cc (bitset::get_first_unset()): Use local
+	variables of the right types. Call update_next_word() unconditionally.
+	* testsuite/20_util/unsynchronized_pool_resource/cons.cc: New test.
+	* testsuite/performance/20_util/memory_resource/pools.cc: New test.
+	* testsuite/util/testsuite_performance.h (time_counter): Allow
+	timer to be restarted.
+
 	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Fix
 	test for 32-bit targets. Test additional allocation sizes.
 
