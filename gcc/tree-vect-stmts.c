@@ -8675,17 +8675,14 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
    stmt using VEC_COND_EXPR  to replace it, put it in VEC_STMT, and insert it
    at GSI.
 
-   When STMT_INFO is vectorized as a nested cycle, REDUC_DEF is the vector
-   variable to be used at REDUC_INDEX (in then clause if REDUC_INDEX is 1,
-   and in else clause if it is 2).
+   When STMT_INFO is vectorized as a nested cycle, for_reduction is true.
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
 bool
 vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			stmt_vec_info *vec_stmt, tree reduc_def,
-			int reduc_index, slp_tree slp_node,
-			stmt_vector_for_cost *cost_vec)
+			stmt_vec_info *vec_stmt, bool for_reduction,
+			slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   vec_info *vinfo = stmt_info->vinfo;
   tree scalar_dest = NULL_TREE;
@@ -8714,7 +8711,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
   tree vec_cmp_type;
   bool masked = false;
 
-  if (reduc_index && STMT_SLP_TYPE (stmt_info))
+  if (for_reduction && STMT_SLP_TYPE (stmt_info))
     return false;
 
   vect_reduction_type reduction_type
@@ -8726,7 +8723,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
       if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
 	  && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
-	       && reduc_def))
+	       && for_reduction))
 	return false;
 
       /* FORNOW: not yet supported.  */
@@ -8758,7 +8755,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   gcc_assert (ncopies >= 1);
-  if (reduc_index && ncopies > 1)
+  if (for_reduction && ncopies > 1)
     return false; /* FORNOW */
 
   cond_expr = gimple_assign_rhs1 (stmt);
@@ -8928,22 +8925,12 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 						    stmt_info, comp_vectype);
 		  vect_is_simple_use (cond_expr1, loop_vinfo, &dts[1]);
 		}
-	      if (reduc_index == 1)
-		vec_then_clause = reduc_def;
-	      else
-		{
-		  vec_then_clause = vect_get_vec_def_for_operand (then_clause,
-								  stmt_info);
-		  vect_is_simple_use (then_clause, loop_vinfo, &dts[2]);
-		}
-	      if (reduc_index == 2)
-		vec_else_clause = reduc_def;
-	      else
-		{
-		  vec_else_clause = vect_get_vec_def_for_operand (else_clause,
-								  stmt_info);
-		  vect_is_simple_use (else_clause, loop_vinfo, &dts[3]);
-		}
+	      vec_then_clause = vect_get_vec_def_for_operand (then_clause,
+							      stmt_info);
+	      vect_is_simple_use (then_clause, loop_vinfo, &dts[2]);
+	      vec_else_clause = vect_get_vec_def_for_operand (else_clause,
+							      stmt_info);
+	      vect_is_simple_use (else_clause, loop_vinfo, &dts[3]);
 	    }
 	}
       else
@@ -9023,7 +9010,6 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vect_finish_stmt_generation (stmt_info, new_stmt, gsi);
 		  vec_compare = vec_compare_name;
 		}
-	      gcc_assert (reduc_index == 2);
 	      gcall *new_stmt = gimple_build_call_internal
 		(IFN_FOLD_EXTRACT_LAST, 3, else_clause, vec_compare,
 		 vec_then_clause);
@@ -9085,7 +9071,7 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 
 static bool
 vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
-			 stmt_vec_info *vec_stmt, tree reduc_def,
+			 stmt_vec_info *vec_stmt,
 			 slp_tree slp_node, stmt_vector_for_cost *cost_vec)
 {
   vec_info *vinfo = stmt_info->vinfo;
@@ -9123,9 +9109,7 @@ vectorizable_comparison (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   gcc_assert (ncopies >= 1);
-  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def
-      && !(STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle
-	   && reduc_def))
+  if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_internal_def)
     return false;
 
   if (STMT_VINFO_LIVE_P (stmt_info))
@@ -9556,9 +9540,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 				     node_instance, cost_vec)
 	  || vectorizable_induction (stmt_info, NULL, NULL, node, cost_vec)
 	  || vectorizable_shift (stmt_info, NULL, NULL, node, cost_vec)
-	  || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
+	  || vectorizable_condition (stmt_info, NULL, NULL, false, node,
 				     cost_vec)
-	  || vectorizable_comparison (stmt_info, NULL, NULL, NULL, node,
+	  || vectorizable_comparison (stmt_info, NULL, NULL, node,
 				      cost_vec));
   else
     {
@@ -9575,9 +9559,9 @@ vect_analyze_stmt (stmt_vec_info stmt_info, bool *need_to_vectorize,
 	      || vectorizable_load (stmt_info, NULL, NULL, node, node_instance,
 				    cost_vec)
 	      || vectorizable_store (stmt_info, NULL, NULL, node, cost_vec)
-	      || vectorizable_condition (stmt_info, NULL, NULL, NULL, 0, node,
+	      || vectorizable_condition (stmt_info, NULL, NULL, false, node,
 					 cost_vec)
-	      || vectorizable_comparison (stmt_info, NULL, NULL, NULL, node,
+	      || vectorizable_comparison (stmt_info, NULL, NULL, node,
 					  cost_vec));
     }
 
@@ -9680,13 +9664,13 @@ vect_transform_stmt (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
       break;
 
     case condition_vec_info_type:
-      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, NULL, 0,
+      done = vectorizable_condition (stmt_info, gsi, &vec_stmt, false,
 				     slp_node, NULL);
       gcc_assert (done);
       break;
 
     case comparison_vec_info_type:
-      done = vectorizable_comparison (stmt_info, gsi, &vec_stmt, NULL,
+      done = vectorizable_comparison (stmt_info, gsi, &vec_stmt,
 				      slp_node, NULL);
       gcc_assert (done);
       break;

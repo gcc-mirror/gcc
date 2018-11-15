@@ -6491,14 +6491,24 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
         double_reduc = true;
     }
 
+  vect_reduction_type reduction_type
+    = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info);
+  if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
+      && ncopies > 1)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "multiple types in double reduction or condition "
+			 "reduction.\n");
+      return false;
+    }
+
   if (code == COND_EXPR)
     {
       /* Only call during the analysis stage, otherwise we'll lose
-	 STMT_VINFO_TYPE.  We'll pass ops[0] as reduc_op, it's only
-	 used as a flag during analysis.  */
+	 STMT_VINFO_TYPE.  */
       if (!vec_stmt && !vectorizable_condition (stmt_info, gsi, NULL,
-						ops[0], 0, NULL,
-						cost_vec))
+						true, NULL, cost_vec))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6598,8 +6608,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
           (and also the same tree-code) when generating the epilog code and
           when generating the code inside the loop.  */
 
-  vect_reduction_type reduction_type
-    = STMT_VINFO_VEC_REDUCTION_TYPE (stmt_info);
   if (orig_stmt_info
       && (reduction_type == TREE_CODE_REDUCTION
 	  || reduction_type == FOLD_LEFT_REDUCTION))
@@ -6686,16 +6694,6 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			 "missing target support for reduction on"
 			 " variable-length vectors.\n");
-      return false;
-    }
-
-  if ((double_reduc || reduction_type != TREE_CODE_REDUCTION)
-      && ncopies > 1)
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "multiple types in double reduction or condition "
-			 "reduction.\n");
       return false;
     }
 
@@ -6963,7 +6961,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
     {
       gcc_assert (!slp_node);
       return vectorizable_condition (stmt_info, gsi, vec_stmt,
-				     NULL, reduc_index, NULL, NULL);
+				     true, NULL, NULL);
     }
 
   /* Create the destination vector  */
@@ -6995,9 +6993,7 @@ vectorizable_reduction (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
         {
           gcc_assert (!slp_node);
 	  vectorizable_condition (stmt_info, gsi, vec_stmt,
-				  PHI_RESULT (phis[0]->stmt),
-				  reduc_index, NULL, NULL);
-          /* Multiple types are not supported for condition.  */
+				  true, NULL, NULL);
           break;
         }
       if (code == LSHIFT_EXPR
