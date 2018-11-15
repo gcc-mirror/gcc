@@ -42,3 +42,6 @@ void test_strncpy_nowarn (char *d)
 {
   strncpy (d + 1, d + 3, "");
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" }
+   { dg-prune-output "\\\[-Wint-conversion]" } */

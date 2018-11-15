@@ -1,3 +1,19 @@
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/83656
+	* c-decl.c (header_for_builtin_fn): Declare.
+	(diagnose_mismatched_decls): Diagnose declarations of built-in
+	functions without a prototype.
+	* c-typeck.c (maybe_warn_builtin_no_proto_arg): New function.
+	(convert_argument): Same.
+	(convert_arguments): Factor code out into convert_argument.
+	Detect mismatches between built-in formal arguments in calls
+	to built-in without prototype.
+	(build_conditional_expr): Same.
+	(type_or_builtin_type): New function.
+	(convert_for_assignment): Add argument.  Conditionally issue
+	warnings instead of errors for mismatches.
+
 2018-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c: Replace "source_location" with "location_t".

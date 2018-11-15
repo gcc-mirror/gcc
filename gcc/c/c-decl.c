@@ -604,6 +604,7 @@ static tree grokparms (struct c_arg_info *, bool);
 static void layout_array_type (tree);
 static void warn_defaults_to (location_t, int, const char *, ...)
     ATTRIBUTE_GCC_DIAG(3,4);
+static const char *header_for_builtin_fn (enum built_in_function);
 
 /* T is a statement.  Add it to the statement-tree.  This is the
    C/ObjC version--C++ has a slightly different version of this
@@ -1887,12 +1888,25 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	    *oldtypep = oldtype = trytype;
 	  else
 	    {
+	      const char *header
+		= header_for_builtin_fn (DECL_FUNCTION_CODE (olddecl));
+	      location_t loc = DECL_SOURCE_LOCATION (newdecl);
+	      if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+			      "conflicting types for built-in function %q+D; "
+			      "expected %qT",
+			      newdecl, oldtype)
+		  && header)
+		{
+		  /* Suggest the right header to include as the preferred
+		     solution rather than the spelling of the declaration.  */
+		  rich_location richloc (line_table, loc);
+		  maybe_add_include_fixit (&richloc, header, true);
+		  inform (&richloc,
+			  "%qD is declared in header %qs", olddecl, header);
+		}
 	      /* If types don't match for a built-in, throw away the
 		 built-in.  No point in calling locate_old_decl here, it
 		 won't print anything.  */
-	      warning (OPT_Wbuiltin_declaration_mismatch,
-		       "conflicting types for built-in function %q+D",
-		       newdecl);
 	      return false;
 	    }
 	}
@@ -2026,15 +2040,33 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 	 can't validate the argument list) the built-in definition is
 	 overridden, but optionally warn this was a bad choice of name.  */
       if (fndecl_built_in_p (olddecl)
-	  && !C_DECL_DECLARED_BUILTIN (olddecl)
-	  && (!TREE_PUBLIC (newdecl)
-	      || (DECL_INITIAL (newdecl)
-		  && !prototype_p (TREE_TYPE (newdecl)))))
+	  && !C_DECL_DECLARED_BUILTIN (olddecl))
 	{
-	  warning (OPT_Wshadow, "declaration of %q+D shadows "
-		   "a built-in function", newdecl);
-	  /* Discard the old built-in function.  */
-	  return false;
+	  if (!TREE_PUBLIC (newdecl)
+	      || (DECL_INITIAL (newdecl)
+		  && !prototype_p (TREE_TYPE (newdecl))))
+	    {
+	      warning_at (DECL_SOURCE_LOCATION (newdecl),
+			  OPT_Wshadow, "declaration of %qD shadows "
+			  "a built-in function", newdecl);
+	      /* Discard the old built-in function.  */
+	      return false;
+	    }
+
+	  if (!prototype_p (TREE_TYPE (newdecl)))
+	    {
+	      /* Set for built-ins that take no arguments.  */
+	      bool func_void_args = false;
+	      if (tree at = TYPE_ARG_TYPES (oldtype))
+		func_void_args = VOID_TYPE_P (TREE_VALUE (at));
+
+	      if (extra_warnings && !func_void_args)
+		warning_at (DECL_SOURCE_LOCATION (newdecl),
+			    OPT_Wbuiltin_declaration_mismatch,
+			    "declaration of built-in function %qD without "
+			    "a prototype; expected %qT",
+			    newdecl, TREE_TYPE (olddecl));
+	    }
 	}
 
       if (DECL_INITIAL (newdecl))

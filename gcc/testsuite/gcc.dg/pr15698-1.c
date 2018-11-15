@@ -21,3 +21,5 @@ char *rindex(a, b)
 {
   return 0;
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */
