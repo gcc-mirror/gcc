@@ -170,7 +170,7 @@ test05()
 void
 test06()
 {
-  struct custom_mr : std::pmr::memory_resource
+  struct checking_mr : std::pmr::memory_resource
   {
     size_t expected_size = 0;
     size_t expected_alignment = 0;
@@ -178,29 +178,30 @@ test06()
     struct bad_size { };
     struct bad_alignment { };
 
-    void* do_allocate(std::size_t b, std::size_t a)
+    void* do_allocate(std::size_t bytes, std::size_t align)
     {
-      if (expected_size != 0)
-      {
-	if (b < expected_size)
-	  throw bad_size();
-	else if (a != expected_alignment)
-	  throw bad_alignment();
-	// Else just throw, don't try to allocate:
-	throw std::bad_alloc();
-      }
+      // Internal data structures in unsynchronized_pool_resource need to
+      // allocate memory, so handle those normally:
+      if (align <= alignof(std::max_align_t))
+	return std::pmr::new_delete_resource()->allocate(bytes, align);
 
-      return std::pmr::new_delete_resource()->allocate(b, a);
+      // This is a large, unpooled allocation. Check the arguments:
+      if (bytes < expected_size)
+	throw bad_size();
+      else if (align != expected_alignment)
+	throw bad_alignment();
+      // Else just throw, don't really try to allocate:
+      throw std::bad_alloc();
     }
 
-    void do_deallocate(void* p, std::size_t b, std::size_t a)
-    { std::pmr::new_delete_resource()->deallocate(p, b, a); }
+    void do_deallocate(void* p, std::size_t bytes, std::size_t align)
+    { std::pmr::new_delete_resource()->deallocate(p, bytes, align); }
 
     bool do_is_equal(const memory_resource& r) const noexcept
     { return false; }
   };
 
-  custom_mr c;
+  checking_mr c;
   std::pmr::unsynchronized_pool_resource r({1, 1}, &c);
   std::pmr::pool_options opts = r.options();
   const std::size_t largest_pool = opts.largest_required_pool_block;
@@ -214,23 +215,26 @@ test06()
 
   // Try allocating various very large sizes and ensure the size requested
   // from the upstream allocator is at least as large as needed.
-  for (int i = 1; i < 64; ++i)
+  for (int i = 0; i < std::numeric_limits<std::size_t>::digits; ++i)
   {
-    for (auto b : { -1, 0, 1, 3 })
+    for (auto b : { -63, -5, -1, 0, 1, 3, std::numeric_limits<int>::max() })
     {
       std::size_t bytes = std::size_t(1) << i;
-      bytes += b;
+      bytes += b; // For negative b this can wrap to a large positive value.
       c.expected_size = bytes;
       c.expected_alignment = large_alignment;
+      bool caught_bad_alloc = false;
       try {
 	(void) r.allocate(bytes, large_alignment);
       } catch (const std::bad_alloc&) {
 	// expect to catch bad_alloc
-      } catch (custom_mr::bad_size) {
-	VERIFY(false);
-      } catch (custom_mr::bad_alignment) {
-	VERIFY(false);
+	caught_bad_alloc = true;
+      } catch (checking_mr::bad_size) {
+	VERIFY( ! "allocation from upstream resource had expected size" );
+      } catch (checking_mr::bad_alignment) {
+	VERIFY( ! "allocation from upstream resource had expected alignment" );
       }
+      VERIFY( caught_bad_alloc );
     }
   }
 }
