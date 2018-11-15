@@ -1,3 +1,8 @@
+2018-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Fix
+	test for 32-bit targets. Test additional allocation sizes.
+
 2018-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	* scripts/create_testsuite_files: Add special_functions to the list
