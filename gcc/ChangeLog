@@ -1,3 +1,8 @@
+2018-11-15  Joern Rennecke  <joern.rennecke@riscy-ip.com>
+
+	* gensupport.c (add_predicate_code): Properly handle ZERO_EXTRACT
+	as an lvalue.
+
 2018-11-14  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR lto/55102
