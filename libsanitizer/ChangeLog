@@ -1,3 +1,49 @@
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	* LOCAL_PATCHES: Include one local patch.
+
+2018-11-09  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/87892
+	* sanitizer_common/sanitizer_linux_libcdep.cc (defined): Return
+	1 when CPU_COUNT macro is not defined.
+
+2018-11-08  Bill Seurer  <seurer@linux.vnet.ibm.com>
+
+	* libsanitizer/sanitizer_common/sanitizer_linux.cc (CheckASLR):
+	Disable ASLR for powerpc64 when using sanitizers.
+
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* configure.tgt (sparc*-*-solaris2.11*): Enable.
+	(x86_64-*-solaris2.11* | i?86-*-solaris2.11*): Enable.
+
+2018-11-06  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR sanitizer/80953
+	* sanitizer_common/sanitizer_internal_defs.h,
+	sanitizer_common/sanitizer_platform_limits_solaris.h,
+	sanitizer_common/sanitizer_procmaps_solaris.cc,
+	sanitizer_common/sanitizer_solaris.cc: Cherry-pick compiler-rt
+	revision 346153.
+	* sanitizer_common/sanitizer_stacktrace.h,
+	sanitizer_common/sanitizer_stacktrace_sparc.cc: Cherry-pick
+	compiler-rt revision 346155.
+
+2018-11-05  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* LOCAL_PATCHES: Add r258525.
+	* sanitizer_common/sanitizer_stacktrace.cc
+	(BufferedStackTrace::FastUnwindStack): Use the correct frame offset
+	for PowerPC SYSV ABI.
+
+2018-11-05  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/87860
+	* sanitizer_common/sanitizer_linux.cc:  Cherry-pick upstream
+	r346129.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

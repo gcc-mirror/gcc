@@ -4778,7 +4778,7 @@ fixup_anonymous_aggr (tree t)
    class-key, in it class-specifier.  */
 
 void
-warn_misplaced_attr_for_class_type (source_location location,
+warn_misplaced_attr_for_class_type (location_t location,
 				    tree class_type)
 {
   gcc_assert (OVERLOAD_TYPE_P (class_type));
@@ -8864,7 +8864,9 @@ grokfndecl (tree ctype,
 	     the information in the TEMPLATE_ID_EXPR.  */
 	  SET_DECL_IMPLICIT_INSTANTIATION (decl);
 
-	  gcc_assert (identifier_p (fns) || TREE_CODE (fns) == OVERLOAD);
+	  gcc_assert (identifier_p (fns)
+		      || TREE_CODE (fns) == OVERLOAD
+		      || TREE_CODE (fns) == FUNCTION_DECL);
 	  DECL_TEMPLATE_INFO (decl) = build_template_info (fns, args);
 
 	  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
@@ -10286,7 +10288,7 @@ grokdeclarator (const cp_declarator *declarator,
   bool constexpr_p = decl_spec_seq_has_spec_p (declspecs, ds_constexpr);
   bool late_return_type_p = false;
   bool array_parameter_p = false;
-  source_location saved_loc = input_location;
+  location_t saved_loc = input_location;
   tree reqs = NULL_TREE;
 
   signed_p = decl_spec_seq_has_spec_p (declspecs, ds_signed);
@@ -12440,8 +12442,9 @@ grokdeclarator (const cp_declarator *declarator,
 	      {
 		if (unqualified_id)
 		  {
-		    error ("field %qD has incomplete type %qT",
-			   unqualified_id, type);
+		    error_at (declarator->id_loc,
+			      "field %qD has incomplete type %qT",
+			      unqualified_id, type);
 		    cxx_incomplete_type_inform (strip_array_types (type));
 		  }
 		else
@@ -12455,8 +12458,9 @@ grokdeclarator (const cp_declarator *declarator,
 	  {
 	    if (friendp)
 	      {
-		error ("%qE is neither function nor member function; "
-		       "cannot be declared friend", unqualified_id);
+		error_at (declarator->id_loc,
+			  "%qE is neither function nor member function; "
+			  "cannot be declared friend", unqualified_id);
 		return error_mark_node;
 	      }
 	    decl = NULL_TREE;
@@ -13433,7 +13437,7 @@ grok_op_properties (tree decl, bool complain)
 	}
 
       if (op_flags & OVL_OP_FLAG_DELETE)
-	TREE_TYPE (decl) = coerce_delete_type (TREE_TYPE (decl), loc);
+	coerce_delete_type (decl, loc);
       else
 	{
 	  DECL_IS_OPERATOR_NEW (decl) = 1;

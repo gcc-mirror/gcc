@@ -1,13 +1,13 @@
-/*							log1pl.c
+/*							log1pq.c
  *
  *      Relative error logarithm
- *	Natural logarithm of 1+x for __float128 precision
+ *	Natural logarithm of 1+x, 128-bit long double precision
  *
  *
  *
  * SYNOPSIS:
  *
- * __float128 x, y, log1pl();
+ * long double x, y, log1pq();
  *
  * y = log1pq( x );
  *
@@ -49,9 +49,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
-
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -74,7 +73,7 @@ static const __float128
   P2 = 2.014652742082537582487669938141683759923E5Q,
   P1 = 7.771154681358524243729929227226708890930E4Q,
   P0 = 1.313572404063446165910279910527789794488E4Q,
-  /* Q12 = 1.000000000000000000000000000000000000000E0Q, */
+  /* Q12 = 1.000000000000000000000000000000000000000E0L, */
   Q11 = 4.839208193348159620282142911143429644326E1Q,
   Q10 = 9.104928120962988414618126155557301584078E2Q,
   Q9 = 9.147150349299596453976674231612674085381E3Q,
@@ -101,7 +100,7 @@ static const __float128
   R2 = 2.048819892795278657810231591630928516206E4Q,
   R1 = -8.977257995689735303686582344659576526998E4Q,
   R0 = 1.418134209872192732479751274970992665513E5Q,
-  /* S6 = 1.000000000000000000000000000000000000000E0Q, */
+  /* S6 = 1.000000000000000000000000000000000000000E0L, */
   S5 = -1.186359407982897997337150403816839480438E2Q,
   S4 = 3.998526750980007367835804959888064681098E3Q,
   S3 = -5.748542087379434595104154610899551484314E4Q,
@@ -114,8 +113,8 @@ static const __float128 C1 = 6.93145751953125E-1Q;
 static const __float128 C2 = 1.428606820309417232121458176568075500134E-6Q;
 
 static const __float128 sqrth = 0.7071067811865475244008443621048490392848Q;
-static const __float128 zero = 0.0Q;
-
+/* ln (2^16384 * (1 - 2^-113)) */
+static const __float128 zero = 0;
 
 __float128
 log1pq (__float128 xm1)
@@ -140,19 +139,19 @@ log1pq (__float128 xm1)
     {
       math_check_force_underflow (xm1);
       if ((int) xm1 == 0)
-       return xm1;
+	return xm1;
     }
 
   if (xm1 >= 0x1p113Q)
     x = xm1;
   else
-    x = xm1 + 1.0Q;
+    x = xm1 + 1;
 
   /* log1p(-1) = -inf */
-  if (x <= 0.0Q)
+  if (x <= 0)
     {
-      if (x == 0.0Q)
-	return (-1.0Q / zero);	/* log1p(-1) = -inf */
+      if (x == 0)
+	return (-1 / zero);  /* log1p(-1) = -inf */
       else
 	return (zero / (x - x));
     }
@@ -207,14 +206,14 @@ log1pq (__float128 xm1)
     {
       e -= 1;
       if (e != 0)
-	x = 2.0Q * x - 1.0Q;	/*  2x - 1  */
+	x = 2 * x - 1;	/*  2x - 1  */
       else
 	x = xm1;
     }
   else
     {
       if (e != 0)
-	x = x - 1.0Q;
+	x = x - 1;
       else
 	x = xm1;
     }

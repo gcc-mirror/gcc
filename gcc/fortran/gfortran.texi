@@ -1479,7 +1479,7 @@ contains a negative number, then there is a preceding subrecord.
 
 In the most simple case, with only one subrecord per logical record,
 both record markers contain the number of bytes of user data in the
-record,
+record.
 
 The format for unformatted sequential data can be duplicated using
 unformatted stream, as shown in the example program for an unformatted

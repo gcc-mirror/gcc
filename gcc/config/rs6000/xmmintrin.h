@@ -908,13 +908,15 @@ _mm_cvtss_si32 (__m128 __A)
   __m64 res = 0;
 #ifdef _ARCH_PWR8
   __m128 vtmp;
+  double dtmp;
   __asm__(
-      "xxsldwi %x1,%x2,%x2,3;\n"
-      "xscvspdp %x1,%x1;\n"
-      "fctiw  %1,%1;\n"
-      "mfvsrd  %0,%x1;\n"
+      "xxsldwi %x1,%x3,%x3,3;\n"
+      "xscvspdp %x2,%x1;\n"
+      "fctiw  %2,%2;\n"
+      "mfvsrd  %0,%x2;\n"
       : "=r" (res),
-	"=&wi" (vtmp)
+      	"=&wa" (vtmp),
+        "=f" (dtmp)
       : "wa" (__A)
       : );
 #else
@@ -939,13 +941,15 @@ _mm_cvtss_si64 (__m128 __A)
   __m64 res = 0;
 #ifdef _ARCH_PWR8
   __m128 vtmp;
+  double dtmp;
   __asm__(
-      "xxsldwi %x1,%x2,%x2,3;\n"
-      "xscvspdp %x1,%x1;\n"
-      "fctid  %1,%1;\n"
-      "mfvsrd  %0,%x1;\n"
+      "xxsldwi %x1,%x3,%x3,3;\n"
+      "xscvspdp %x2,%x1;\n"
+      "fctid  %2,%2;\n"
+      "mfvsrd  %0,%x2;\n"
       : "=r" (res),
-	"=&wi" (vtmp)
+        "=&wa" (vtmp),
+        "=f" (dtmp)
       : "wa" (__A)
       : );
 #else

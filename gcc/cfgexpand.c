@@ -3010,6 +3010,55 @@ expand_asm_stmt (gasm *stmt)
 				    &allows_mem, &allows_reg, &is_inout))
 	return;
 
+      /* If the output is a hard register, verify it doesn't conflict with
+	 any other operand's possible hard register use.  */
+      if (DECL_P (val)
+	  && REG_P (DECL_RTL (val))
+	  && HARD_REGISTER_P (DECL_RTL (val)))
+	{
+	  unsigned j, output_hregno = REGNO (DECL_RTL (val));
+	  bool early_clobber_p = strchr (constraints[i], '&') != NULL;
+	  unsigned long match;
+
+	  /* Verify the other outputs do not use the same hard register.  */
+	  for (j = i + 1; j < noutputs; ++j)
+	    if (DECL_P (output_tvec[j])
+		&& REG_P (DECL_RTL (output_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (output_tvec[j]))
+		&& output_hregno == REGNO (DECL_RTL (output_tvec[j])))
+	      error ("invalid hard register usage between output operands");
+
+	  /* Verify matching constraint operands use the same hard register
+	     and that the non-matching constraint operands do not use the same
+	     hard register if the output is an early clobber operand.  */
+	  for (j = 0; j < ninputs; ++j)
+	    if (DECL_P (input_tvec[j])
+		&& REG_P (DECL_RTL (input_tvec[j]))
+		&& HARD_REGISTER_P (DECL_RTL (input_tvec[j])))
+	      {
+		unsigned input_hregno = REGNO (DECL_RTL (input_tvec[j]));
+		switch (*constraints[j + noutputs])
+		  {
+		  case '0':  case '1':  case '2':  case '3':  case '4':
+		  case '5':  case '6':  case '7':  case '8':  case '9':
+		    match = strtoul (constraints[j + noutputs], NULL, 10);
+		    break;
+		  default:
+		    match = ULONG_MAX;
+		    break;
+		  }
+		if (i == match
+		    && output_hregno != input_hregno)
+		  error ("invalid hard register usage between output operand "
+			 "and matching constraint operand");
+		else if (early_clobber_p
+			 && i != match
+			 && output_hregno == input_hregno)
+		  error ("invalid hard register usage between earlyclobber "
+			 "operand and input operand");
+	      }
+	}
+
       if (! allows_reg
 	  && (allows_mem
 	      || is_inout
@@ -6510,18 +6559,20 @@ pass_expand::execute (function *fun)
   find_many_sub_basic_blocks (blocks);
   purge_all_dead_edges ();
 
+  /* After initial rtl generation, call back to finish generating
+     exception support code.  We need to do this before cleaning up
+     the CFG as the code does not expect dead landing pads.  */
+  if (fun->eh->region_tree != NULL)
+    finish_eh_generation ();
+
+  /* Call expand_stack_alignment after finishing all
+     updates to crtl->preferred_stack_boundary.  */
   expand_stack_alignment ();
 
   /* Fixup REG_EQUIV notes in the prologue if there are tailcalls in this
      function.  */
   if (crtl->tail_call_emit)
     fixup_tail_calls ();
-
-  /* After initial rtl generation, call back to finish generating
-     exception support code.  We need to do this before cleaning up
-     the CFG as the code does not expect dead landing pads.  */
-  if (fun->eh->region_tree != NULL)
-    finish_eh_generation ();
 
   /* BB subdivision may have created basic blocks that are are only reachable
      from unlikely bbs but not marked as such in the profile.  */

@@ -251,4 +251,30 @@ _rdrand64_step (unsigned long long *__P)
 
 #endif /* __x86_64__  */
 
+#ifndef __PTWRITE__
+#pragma GCC push_options
+#pragma GCC target("ptwrite")
+#define __DISABLE_PTWRITE__
+#endif
+
+#ifdef __x86_64__
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_ptwrite64 (unsigned long long __B)
+{
+  __builtin_ia32_ptwrite64 (__B);
+}
+#endif /* __x86_64__ */
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_ptwrite32 (unsigned __B)
+{
+  __builtin_ia32_ptwrite32 (__B);
+}
+#ifdef __DISABLE_PTWRITE__
+#undef __DISABLE_PTWRITE__
+#pragma GCC pop_options
+#endif /* __DISABLE_PTWRITE__ */
+
 #endif /* _IMMINTRIN_H_INCLUDED */

@@ -189,6 +189,11 @@ are_identical_variables (gfc_expr *e1, gfc_expr *e2)
 
 	  break;
 
+	case REF_INQUIRY:
+	  if (r1->u.i != r2->u.i)
+	    return false;
+	  break;
+
 	default:
 	  gfc_internal_error ("are_identical_variables: Bad type");
 	}
@@ -905,6 +910,7 @@ gfc_ref_needs_temporary_p (gfc_ref *ref)
 	return subarray_p;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
       }
 

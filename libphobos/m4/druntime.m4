@@ -50,8 +50,8 @@ AC_DEFUN([DRUNTIME_MULTILIB],
 # DRUNTIME_INSTALL_DIRECTORIES
 # ----------------------------
 # Setup various install directories for headers.
-# Add the cross-host option and substitute the toolexecdir
-# toolexeclibdir and gdc_include_dir variables.
+# Add the cross-host option and substitute the libphobos_toolexecdir
+# libphobos_toolexeclibdir and gdc_include_dir variables.
 AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
 [
   AC_REQUIRE([AC_PROG_GDC])
@@ -65,33 +65,43 @@ AC_DEFUN([DRUNTIME_INSTALL_DIRECTORIES],
     AC_HELP_STRING([--with-cross-host=HOST],
                    [configuring with a cross compiler]))
 
-  toolexecdir=no
-  toolexeclibdir=no
+  libphobos_toolexecdir=no
+  libphobos_toolexeclibdir=no
 
-  version_specific_libs=no
+  AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
+  AC_ARG_ENABLE([version-specific-runtime-libs],
+    AC_HELP_STRING([--enable-version-specific-runtime-libs],
+		   [Specify that runtime libraries should be installed in a compiler-specific directory]),
+    [case "$enableval" in
+      yes) version_specific_libs=yes ;;
+      no)  version_specific_libs=no ;;
+      *)   AC_MSG_ERROR([Unknown argument to enable/disable version-specific libs]);;
+     esac],
+    [version_specific_libs=no])
+  AC_MSG_RESULT($version_specific_libs)
 
   # Version-specific runtime libs processing.
   if test $version_specific_libs = yes; then
-      toolexecdir='${libdir}/gcc/${host_alias}'
-      toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
+    libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
+    libphobos_toolexeclibdir='${toolexecdir}/${gcc_version}$(MULTISUBDIR)'
   else
-      # Calculate toolexecdir, toolexeclibdir
-      # Install a library built with a cross compiler in tooldir, not libdir.
-      if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
-          toolexecdir='${exec_prefix}/${host_alias}'
-          toolexeclibdir='${toolexecdir}/lib'
-      else
-          toolexecdir='${libdir}/gcc/${host_alias}'
-          toolexeclibdir='${libdir}'
-      fi
-      multi_os_directory=`$GDC -print-multi-os-directory`
-      case $multi_os_directory in
-          .) ;; # Avoid trailing /.
-          *) toolexeclibdir=${toolexeclibdir}/${multi_os_directory} ;;
-      esac
+    # Calculate libphobos_toolexecdir, libphobos_toolexeclibdir
+    # Install a library built with a cross compiler in tooldir, not libdir.
+    if test -n "$with_cross_host" && test x"$with_cross_host" != x"no"; then
+      libphobos_toolexecdir='${exec_prefix}/${host_alias}'
+      libphobos_toolexeclibdir='${toolexecdir}/lib'
+    else
+      libphobos_toolexecdir='${libdir}/gcc/${host_alias}'
+      libphobos_toolexeclibdir='${libdir}'
+    fi
+    multi_os_directory=`$GDC -print-multi-os-directory`
+    case $multi_os_directory in
+      .) ;; # Avoid trailing /.
+      *) libphobos_toolexeclibdir=${libphobos_toolexeclibdir}/${multi_os_directory} ;;
+    esac
   fi
-  AC_SUBST(toolexecdir)
-  AC_SUBST(toolexeclibdir)
+  AC_SUBST(libphobos_toolexecdir)
+  AC_SUBST(libphobos_toolexeclibdir)
 
   # Default case for install directory for D sources files.
   gdc_include_dir='$(libdir)/gcc/${target_alias}/${gcc_version}/include/d'

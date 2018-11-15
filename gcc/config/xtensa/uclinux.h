@@ -59,8 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #undef LOCAL_LABEL_PREFIX
 #define LOCAL_LABEL_PREFIX	"."
 
-/* Always enable "-fpic" for Xtensa Linux.  */
-#define XTENSA_ALWAYS_PIC 1
+/* Don't enable "-fpic" for Xtensa uclinux.  */
+#define XTENSA_ALWAYS_PIC 0
 
 #undef TARGET_LIBC_HAS_FUNCTION
 #define TARGET_LIBC_HAS_FUNCTION no_c99_libc_has_function

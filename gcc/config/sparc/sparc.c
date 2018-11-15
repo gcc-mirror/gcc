@@ -674,6 +674,7 @@ static unsigned int sparc_function_arg_boundary (machine_mode,
 						 const_tree);
 static int sparc_arg_partial_bytes (cumulative_args_t,
 				    machine_mode, tree, bool);
+static unsigned HOST_WIDE_INT sparc_asan_shadow_offset (void);
 static void sparc_output_dwarf_dtprel (FILE *, int, rtx) ATTRIBUTE_UNUSED;
 static void sparc_file_end (void);
 static bool sparc_frame_pointer_required (void);
@@ -838,6 +839,9 @@ char sparc_hard_reg_printed[8];
 #define TARGET_EXPAND_BUILTIN_SAVEREGS sparc_builtin_saveregs
 #undef TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING sparc_strict_argument_naming
+
+#undef TARGET_ASAN_SHADOW_OFFSET
+#define TARGET_ASAN_SHADOW_OFFSET sparc_asan_shadow_offset
 
 #undef TARGET_EXPAND_BUILTIN_VA_START
 #define TARGET_EXPAND_BUILTIN_VA_START sparc_va_start
@@ -5583,7 +5587,6 @@ sparc_initial_elimination_offset (int to)
 void
 sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 {
-#ifdef HAVE_AS_REGISTER_PSEUDO_OP
   int i;
 
   if (TARGET_ARCH32)
@@ -5604,7 +5607,6 @@ sparc_output_scratch_registers (FILE *file ATTRIBUTE_UNUSED)
 	}
       if (i == 3) i = 5;
     }
-#endif
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)
@@ -12478,7 +12480,15 @@ sparc_init_machine_status (void)
 {
   return ggc_cleared_alloc<machine_function> ();
 }
+
+/* Implement the TARGET_ASAN_SHADOW_OFFSET hook.  */
 
+static unsigned HOST_WIDE_INT
+sparc_asan_shadow_offset (void)
+{
+  return TARGET_ARCH64 ? HOST_WIDE_INT_C (0x7fff8000) : (HOST_WIDE_INT_1 << 29);
+}
+
 /* This is called from dwarf2out.c via TARGET_ASM_OUTPUT_DWARF_DTPREL.
    We need to emit DTP-relative relocations.  */
 

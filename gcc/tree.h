@@ -1312,9 +1312,9 @@ extern tree maybe_wrap_with_location (tree, location_t);
 /* Generic accessors for OMP nodes that keep the body as operand 0, and clauses
    as operand 1.  */
 #define OMP_BODY(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_TASKGROUP), 0)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_MASTER), 0)
 #define OMP_CLAUSES(NODE) \
-  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_SINGLE), 1)
+  TREE_OPERAND (TREE_RANGE_CHECK (NODE, OACC_PARALLEL, OMP_TASKGROUP), 1)
 
 /* Generic accessors for OMP nodes that keep clauses as operand 0.  */
 #define OMP_STANDALONE_CLAUSES(NODE) \
@@ -1375,6 +1375,8 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define OMP_MASTER_BODY(NODE)	   TREE_OPERAND (OMP_MASTER_CHECK (NODE), 0)
 
 #define OMP_TASKGROUP_BODY(NODE)   TREE_OPERAND (OMP_TASKGROUP_CHECK (NODE), 0)
+#define OMP_TASKGROUP_CLAUSES(NODE) \
+  TREE_OPERAND (OMP_TASKGROUP_CHECK (NODE), 1)
 
 #define OMP_ORDERED_BODY(NODE)	   TREE_OPERAND (OMP_ORDERED_CHECK (NODE), 0)
 #define OMP_ORDERED_CLAUSES(NODE)  TREE_OPERAND (OMP_ORDERED_CHECK (NODE), 1)
@@ -1412,7 +1414,7 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define OMP_CLAUSE_DECL(NODE)      					\
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (OMP_CLAUSE_CHECK (NODE),	\
 					      OMP_CLAUSE_PRIVATE,	\
-					      OMP_CLAUSE__LOOPTEMP_), 0)
+					      OMP_CLAUSE__REDUCTEMP_), 0)
 #define OMP_CLAUSE_HAS_LOCATION(NODE) \
   (LOCATION_LOCUS ((OMP_CLAUSE_CHECK (NODE))->omp_clause.locus)		\
   != UNKNOWN_LOCATION)
@@ -1438,11 +1440,10 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define OMP_TARGET_COMBINED(NODE) \
   (OMP_TARGET_CHECK (NODE)->base.private_flag)
 
-/* True if OMP_ATOMIC* is supposed to be sequentially consistent
-   as opposed to relaxed.  */
-#define OMP_ATOMIC_SEQ_CST(NODE) \
+/* Memory order for OMP_ATOMIC*.  */
+#define OMP_ATOMIC_MEMORY_ORDER(NODE) \
   (TREE_RANGE_CHECK (NODE, OMP_ATOMIC, \
-		     OMP_ATOMIC_CAPTURE_NEW)->base.private_flag)
+		     OMP_ATOMIC_CAPTURE_NEW)->base.u.omp_atomic_memory_order)
 
 /* True on a PRIVATE clause if its decl is kept around for debugging
    information only and its DECL_VALUE_EXPR is supposed to point
@@ -1465,6 +1466,11 @@ extern tree maybe_wrap_with_location (tree, location_t);
 #define OMP_CLAUSE_FIRSTPRIVATE_IMPLICIT(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE)->base.public_flag)
 
+/* True on a FIRSTPRIVATE clause if only the reference and not what it refers
+   to should be firstprivatized.  */
+#define OMP_CLAUSE_FIRSTPRIVATE_NO_REFERENCE(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_FIRSTPRIVATE))
+
 /* True on a LASTPRIVATE clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain.  */
 #define OMP_CLAUSE_LASTPRIVATE_FIRSTPRIVATE(NODE) \
@@ -1481,6 +1487,10 @@ extern tree maybe_wrap_with_location (tree, location_t);
    task).  */
 #define OMP_CLAUSE_LASTPRIVATE_TASKLOOP_IV(NODE) \
   TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
+
+/* True if a LASTPRIVATE clause has CONDITIONAL: modifier.  */
+#define OMP_CLAUSE_LASTPRIVATE_CONDITIONAL(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_LASTPRIVATE))
 
 /* True on a SHARED clause if a FIRSTPRIVATE clause for the same
    decl is present in the chain (this can happen only for taskloop
@@ -1585,24 +1595,38 @@ extern tree maybe_wrap_with_location (tree, location_t);
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_ORDERED), 0)
 
 #define OMP_CLAUSE_REDUCTION_CODE(NODE)	\
-  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION)->omp_clause.subcode.reduction_code)
+  (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+     OMP_CLAUSE_IN_REDUCTION)->omp_clause.subcode.reduction_code)
 #define OMP_CLAUSE_REDUCTION_INIT(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 1)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+					      OMP_CLAUSE_IN_REDUCTION), 1)
 #define OMP_CLAUSE_REDUCTION_MERGE(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 2)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+					      OMP_CLAUSE_IN_REDUCTION), 2)
 #define OMP_CLAUSE_REDUCTION_GIMPLE_INIT(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_init
 #define OMP_CLAUSE_REDUCTION_GIMPLE_MERGE(NODE) \
   (OMP_CLAUSE_CHECK (NODE))->omp_clause.gimple_reduction_merge
 #define OMP_CLAUSE_REDUCTION_PLACEHOLDER(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 3)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+					      OMP_CLAUSE_IN_REDUCTION), 3)
 #define OMP_CLAUSE_REDUCTION_DECL_PLACEHOLDER(NODE) \
-  OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION), 4)
+  OMP_CLAUSE_OPERAND (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+					      OMP_CLAUSE_IN_REDUCTION), 4)
 
 /* True if a REDUCTION clause may reference the original list item (omp_orig)
    in its OMP_CLAUSE_REDUCTION_{,GIMPLE_}INIT.  */
 #define OMP_CLAUSE_REDUCTION_OMP_ORIG_REF(NODE) \
-  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION)->base.public_flag)
+  (OMP_CLAUSE_RANGE_CHECK (NODE, OMP_CLAUSE_REDUCTION, \
+			   OMP_CLAUSE_IN_REDUCTION)->base.public_flag)
+
+/* True if a REDUCTION clause has task reduction-modifier.  */
+#define OMP_CLAUSE_REDUCTION_TASK(NODE) \
+  TREE_PROTECTED (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION))
+
+/* True if a REDUCTION clause has inscan reduction-modifier.  */
+#define OMP_CLAUSE_REDUCTION_INSCAN(NODE) \
+  TREE_PRIVATE (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_REDUCTION))
 
 /* True if a LINEAR clause doesn't need copy in.  True for iterator vars which
    are always initialized inside of the loop construct, false otherwise.  */
@@ -1670,6 +1694,18 @@ extern tree maybe_wrap_with_location (tree, location_t);
 
 #define OMP_CLAUSE_DEFAULT_KIND(NODE) \
   (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULT)->omp_clause.subcode.default_kind)
+
+#define OMP_CLAUSE_DEFAULTMAP_KIND(NODE) \
+  (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_DEFAULTMAP)->omp_clause.subcode.defaultmap_kind)
+#define OMP_CLAUSE_DEFAULTMAP_CATEGORY(NODE) \
+  ((enum omp_clause_defaultmap_kind) \
+   (OMP_CLAUSE_DEFAULTMAP_KIND (NODE) & OMP_CLAUSE_DEFAULTMAP_CATEGORY_MASK))
+#define OMP_CLAUSE_DEFAULTMAP_BEHAVIOR(NODE) \
+  ((enum omp_clause_defaultmap_kind) \
+   (OMP_CLAUSE_DEFAULTMAP_KIND (NODE) & OMP_CLAUSE_DEFAULTMAP_MASK))
+#define OMP_CLAUSE_DEFAULTMAP_SET_KIND(NODE, BEHAVIOR, CATEGORY) \
+  (OMP_CLAUSE_DEFAULTMAP_KIND (NODE) \
+   = (enum omp_clause_defaultmap_kind) (CATEGORY | BEHAVIOR))
 
 #define OMP_CLAUSE_TILE_LIST(NODE) \
   OMP_CLAUSE_OPERAND (OMP_CLAUSE_SUBCODE_CHECK (NODE, OMP_CLAUSE_TILE), 0)

@@ -1,5 +1,7 @@
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r266161.
+
 	gcc/
 	* doc/invoke.texi: Rename cookie->ident, people read too much into
 	'cookie'.

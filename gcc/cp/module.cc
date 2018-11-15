@@ -7086,7 +7086,7 @@ loc_spans::init (const line_map_ordinary *map)
   spans.reserve (20);
 
   span interval;
-  interval.macro.first = interval.macro.second = MAX_SOURCE_LOCATION + 1;
+  interval.macro.first = interval.macro.second = MAX_LOCATION_T + 1;
   interval.ordinary_delta = interval.macro_delta = 0;
 
   /* A span for fixed locs.  */
@@ -7171,7 +7171,7 @@ loc_spans::close ()
    in.  NULL if it is not in an interval.  */
 
 const loc_spans::span *
-loc_spans::ordinary (source_location loc)
+loc_spans::ordinary (location_t loc)
 {
   unsigned len = spans.length ();
   unsigned pos = 0;
@@ -7196,7 +7196,7 @@ loc_spans::ordinary (source_location loc)
    resides in.   */
 
 const loc_spans::span *
-loc_spans::macro (source_location loc)
+loc_spans::macro (location_t loc)
 {
   unsigned len = spans.length ();
   unsigned pos = 0;
@@ -9526,7 +9526,7 @@ module_state::write_location (bytes_out &sec, location_t loc)
   if (IS_ADHOC_LOC (loc))
     {
       dump (dumper::LOCATIONS) && dump ("Adhoc location");
-      sec.u (MAX_SOURCE_LOCATION + 1);
+      sec.u (MAX_LOCATION_T + 1);
       location_t locus = get_location_from_adhoc_loc (line_table, loc);
       write_location (sec, locus);
       source_range range = get_range_from_loc (line_table, loc);
@@ -9722,7 +9722,7 @@ module_state::write_locations (elf_out *to, unsigned max_rager, unsigned *crc_p)
 	{
 	  unsigned count
 	    = linemap_lookup_macro_index (line_table, span.macro.first) + 1;
-	  if (span.macro.second != MAX_SOURCE_LOCATION + 1)
+	  if (span.macro.second != MAX_LOCATION_T + 1)
 	    count -= linemap_lookup_macro_index (line_table,
 						 span.macro.second - 1);
 	  dump () && dump ("Span:%u %u macro maps", ix, count);
@@ -12536,7 +12536,7 @@ init_module_processing ()
 static int
 load_macros (cpp_reader *reader, cpp_hashnode *node, void *)
 {
-  source_location main_loc
+  location_t main_loc
     = MAP_START_LOCATION (LINEMAPS_ORDINARY_MAP_AT (line_table, 0));
 
   if (cpp_user_macro_p (node)

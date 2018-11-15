@@ -1053,8 +1053,8 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
   while (*tgt)
     tgt = &OMP_CLAUSE_CHAIN (*tgt);
 
-  /* Copy over all clauses, except for linaer clauses, which are turned into
-     private clauses, and all other simd-specificl clauses, which are
+  /* Copy over all clauses, except for linear clauses, which are turned into
+     private clauses, and all other simd-specific clauses, which are
      ignored.  */
   tree *pc = gimple_omp_for_clauses_ptr (simd);
   while (*pc)
@@ -1083,7 +1083,7 @@ grid_eliminate_combined_simd_part (gomp_for *parloop)
 	  *pc = OMP_CLAUSE_CHAIN (c);
 	  OMP_CLAUSE_CHAIN (c) = NULL;
 	  *tgt = c;
-	  tgt = &OMP_CLAUSE_CHAIN(c);
+	  tgt = &OMP_CLAUSE_CHAIN (c);
 	  break;
 	}
     }

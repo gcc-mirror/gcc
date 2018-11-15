@@ -1,3 +1,161 @@
+2018-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/check_performance: Allow tests to choose a -std flag.
+	* src/c++17/memory_resource.cc (bitset::get_first_unset()): Use local
+	variables of the right types. Call update_next_word() unconditionally.
+	* testsuite/20_util/unsynchronized_pool_resource/cons.cc: New test.
+	* testsuite/performance/20_util/memory_resource/pools.cc: New test.
+	* testsuite/util/testsuite_performance.h (time_counter): Allow
+	timer to be restarted.
+
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Fix
+	test for 32-bit targets. Test additional allocation sizes.
+
+2018-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* scripts/create_testsuite_files: Add special_functions to the list
+	of directories to search. Add comment referring to conformance.exp.
+	* testsuite/libstdc++-dg/conformance.exp: Add comment referring
+	to create_testsuite_files.
+
+2018-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++17/memory_resource.cc (select_num_pools): Fix off-by-one
+	error when block_size is equal to one of the values in the array.
+
+	* src/c++17/memory_resource.cc (_Pool::deallocate): Restore
+	attributes to parameters that are only used in assertions.
+
+	* src/c++17/memory_resource.cc (bitset::find_first_unset()): Remove
+	unused function.
+	(bitset::get_first_unset()): Remove loop, if there's are unset bits
+	then _M_next_word refers to the first one and there's no need to loop.
+	(_Pool::_Pool(size_t, size_t), _Pool::block_size()): Remove dead code.
+
+	* src/c++17/memory_resource.cc (munge_options): Round up value of
+	largest_required_pool_block to multiple of smallest pool size. Round
+	excessively large values down to largest pool size.
+	(select_num_pools): Increase number of pools by one unless it exactly
+	matches requested largest_required_pool_block.
+	(__pool_resource::_M_alloc_pools()): Make largest pool size equal
+	largest_required_pool_block.
+	* testsuite/20_util/unsynchronized_pool_resource/options.cc: Check
+	that pool_options::largest_required_pool_block is set appropriately.
+
+	* src/c++17/memory_resource.cc (big_block): Improve comments.
+	(big_block::all_ones): Remove.
+	(big_block::big_block(size_t, size_t)): Use alloc_size.
+	(big_block::size()): Add comment, replace all_ones with equivalent
+	expression.
+	(big_block::align()): Shift value of correct type.
+	(big_block::alloc_size(size_t)): New function to round up size.
+	(__pool_resource::allocate(size_t, size_t)): Add comment.
+	(__pool_resource::deallocate(void*, size_t, size_t)): Likewise. Fix
+	incorrect assertion by using big_block::alloc_size(size_t).
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: Add
+	more tests for unpooled allocations.
+
+	* src/c++17/memory_resource.cc (bitset::full()): Handle edge case
+	for _M_next_word maximum value.
+	(bitset::get_first_unset(), bitset::set(size_type)): Use
+	update_next_word() to update _M_next_word.
+	(bitset::update_next_word()): New function, avoiding wraparound of
+	unsigned _M_next_word member.
+	(bitset::max_word_index()): New function.
+	(chunk::chunk(void*, uint32_t, void*, size_t)): Add assertion.
+	(chunk::max_bytes_per_chunk()): New function.
+	(pool::replenish(memory_resource*, const pool_options&)): Prevent
+	_M_blocks_per_chunk from exceeding max_blocks_per_chunk or from
+	causing chunk::max_bytes_per_chunk() to be exceeded.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate-max-chunks.cc:
+	New test.
+
+2018-11-12  Jason Merrill  <jason@redhat.com>
+
+	* libsupc++/new (std::destroying_delete_t): New.
+
+2018-11-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87963
+	* src/c++17/memory_resource.cc (chunk::_M_bytes): Change type from
+	unsigned to uint32_t.
+	(chunk): Fix static assertion for 64-bit targets that aren't LP64.
+	(bigblock::all_ones): Fix undefined shift.
+
+2018-11-11  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libstdc++-v3/54005
+	* include/bits/atomic_base.h (__atomic_base<_TTp>::is_lock_free(),
+	__atomic_base<_PTp*>::is_lock_free()): Call __atomic_is_lock_free
+	with the type-derived _S_alignment instead of __alignof the object.
+	* include/std/atomic (atomic<T>::is_lock_free()): Likewise.
+
+2018-11-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement P0318R1 unwrap_ref_decay and unwrap_reference
+	* include/std/type_traits (unwrap_reference, unwrap_reference_t)
+	(unwrap_ref_decay, unwrap_ref_decay_t): New traits and aliases.
+	* testsuite/20_util/unwrap_reference/1.cc: New test.
+	* testsuite/20_util/unwrap_reference/2.cc: New test.
+
+	Implement P1007R3 std::assume_aligned
+	* include/std/memory (assume_aligned): Implement for C++17.
+	* testsuite/20_util/assume_aligned/1.cc: New test.
+	* testsuite/20_util/assume_aligned/2_neg.cc: New test.
+	* testsuite/20_util/assume_aligned/3.cc: New test.
+
+2018-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87787
+	* include/bits/stl_uninitialized.h (__relocate_a_1): Do not call
+	memmove when there's nothing to copy (and pointers could be null).
+
+2018-11-07  Hafiz Abid Qadeer  <abidh@codesourcery.com>
+
+	* configure: Regenerated.
+
+2018-11-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Fix patterns for size_t parameters.
+
+2018-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement std::pmr::unsynchronized_pool_resource
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* include/std/memory_resource (std::pmr::__pool_resource): New class.
+	(std::pmr::unsynchronized_pool_resource): New class.
+	* src/c++17/Makefile.am: Add -fimplicit-templates to flags for
+	memory_resource.cc
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++17/memory_resource.cc (bitset, chunk, big_block): New
+	internal classes.
+	(__pool_resource::_Pool): Define new class.
+	(munge_options, pool_index, select_num_pools): New internal functions.
+	(__pool_resource::__pool_resource, __pool_resource::~__pool_resource)
+	(__pool_resource::allocate, __pool_resource::deallocate)
+	(__pool_resource::_M_alloc_pools): Define member functions.
+	(unsynchronized_pool_resource::unsynchronized_pool_resource)
+	(unsynchronized_pool_resource::~unsynchronized_pool_resource)
+	(unsynchronized_pool_resource::release)
+	(unsynchronized_pool_resource::_M_find_pool)
+	(unsynchronized_pool_resource::do_allocate)
+	(unsynchronized_pool_resource::do_deallocate): Define member
+	functions.
+	* testsuite/20_util/unsynchronized_pool_resource/allocate.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/is_equal.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/options.cc: New
+	test.
+	* testsuite/20_util/unsynchronized_pool_resource/release.cc: New
+	test.
+
+2018-11-06  John Bytheway  <jbytheway@gmail.com>
+
+	PR libstdc++/87872
+	* include/debug/safe_sequence.tcc
+	(_Safe_sequence<>::_M_transfer_from_if): Skip transfer to self.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/sideeffect.c
  */
 
-#include <stdio.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 #include "mars.h"
 #include "init.h"

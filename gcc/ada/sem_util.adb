@@ -8593,10 +8593,7 @@ package body Sem_Util is
 
          --  Single global item declaration (only input items)
 
-         elsif Nkind_In (List, N_Expanded_Name,
-                               N_Identifier,
-                               N_Selected_Component)
-         then
+         elsif Nkind_In (List, N_Expanded_Name, N_Identifier) then
             if Global_Mode = Name_Input then
                return List;
             else
@@ -8648,10 +8645,10 @@ package body Sem_Util is
       Body_Id : Entity_Id;
 
    begin
-      pragma Assert (Global_Mode = Name_Input
-                      or else Global_Mode = Name_Output
-                      or else Global_Mode = Name_In_Out
-                      or else Global_Mode = Name_Proof_In);
+      pragma Assert (Nam_In (Global_Mode, Name_In_Out,
+                                          Name_Input,
+                                          Name_Output,
+                                          Name_Proof_In));
 
       --  Retrieve the suitable pragma Global or Refined_Global. In the second
       --  case, it can only be located on the body entity.
@@ -24184,17 +24181,26 @@ package body Sem_Util is
    --  Start of processing for Set_Debug_Info_Needed
 
    begin
-      --  Nothing to do if argument is Empty or has Debug_Info_Off set, which
-      --  indicates that Debug_Info_Needed is never required for the entity.
+      --  Nothing to do if there is no available entity
+
+      if No (T) then
+         return;
+
+      --  Nothing to do for an entity with suppressed debug information
+
+      elsif Debug_Info_Off (T) then
+         return;
+
+      --  Nothing to do for an ignored Ghost entity because the entity will be
+      --  eliminated from the tree.
+
+      elsif Is_Ignored_Ghost_Entity (T) then
+         return;
+
       --  Nothing to do if entity comes from a predefined file. Library files
       --  are compiled without debug information, but inlined bodies of these
       --  routines may appear in user code, and debug information on them ends
       --  up complicating debugging the user code.
-
-      if No (T)
-        or else Debug_Info_Off (T)
-      then
-         return;
 
       elsif In_Inlined_Body and then In_Predefined_Unit (T) then
          Set_Needs_Debug_Info (T, False);
@@ -25260,6 +25266,26 @@ package body Sem_Util is
          return Empty;
       end if;
    end Type_Without_Stream_Operation;
+
+   ---------------------
+   -- Ultimate_Prefix --
+   ---------------------
+
+   function Ultimate_Prefix (N : Node_Id) return Node_Id is
+      Pref : Node_Id;
+
+   begin
+      Pref := N;
+      while Nkind_In (Pref, N_Explicit_Dereference,
+                            N_Indexed_Component,
+                            N_Selected_Component,
+                            N_Slice)
+      loop
+         Pref := Prefix (Pref);
+      end loop;
+
+      return Pref;
+   end Ultimate_Prefix;
 
    ----------------------------
    -- Unique_Defining_Entity --

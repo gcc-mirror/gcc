@@ -1027,12 +1027,15 @@ If not defined, the default value is @code{STACK_BOUNDARY}.
 @defmac MAX_OFILE_ALIGNMENT
 Biggest alignment supported by the object file format of this machine.
 Use this macro to limit the alignment which can be specified using the
-@code{__attribute__ ((aligned (@var{n})))} construct.  If not defined,
-the default value is @code{BIGGEST_ALIGNMENT}.
+@code{__attribute__ ((aligned (@var{n})))} construct for functions and
+objects with static storage duration.  The alignment of automatic
+objects may exceed the object file format maximum up to the maximum
+supported by GCC.  If not defined, the default value is
+@code{BIGGEST_ALIGNMENT}.
 
 On systems that use ELF, the default (in @file{config/elfos.h}) is
 the largest supported 32-bit ELF section alignment representable on
-a 32-bit host e.g. @samp{(((uint64_t) 1 << 28) * 8)}.
+a 32-bit host e.g.@: @samp{(((uint64_t) 1 << 28) * 8)}.
 On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
@@ -4370,7 +4373,7 @@ bit) are not set in the same way as a test instruction, so that a different
 branch instruction must be used for some conditional branches.  When
 this happens, use the machine mode of the condition code register to
 record different formats of the condition code register.  Modes can
-also be used to record which compare instruction (e.g. a signed or an
+also be used to record which compare instruction (e.g.@: a signed or an
 unsigned comparison) produced the condition codes.
 
 If other modes than @code{CCmode} are required, add them to
@@ -6989,7 +6992,7 @@ A C statement to issue assembly directives that create a difference
 
 @defmac ASM_OUTPUT_DWARF_VMS_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
-between the two given labels in system defined units, e.g. instruction
+between the two given labels in system defined units, e.g.@: instruction
 slots on IA64 VMS, using an integer of the given size.
 @end defmac
 

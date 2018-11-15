@@ -30,7 +30,7 @@ along with this program; see the file COPYING3.  If not see
 struct if_stack
 {
   struct if_stack *next;
-  source_location line;		/* Line where condition started.  */
+  location_t line;		/* Line where condition started.  */
   const cpp_hashnode *mi_cmacro;/* macro name for #ifndef around entire file */
   bool skip_elses;		/* Can future #else / #elif be skipped?  */
   bool was_skipping;		/* If were skipping on entry.  */
@@ -98,7 +98,7 @@ static void directive_diagnostics (cpp_reader *, const directive *, int);
 static void run_directive (cpp_reader *, int, const char *, size_t);
 static char *glue_header_name (cpp_reader *);
 static const char *parse_include (cpp_reader *, int *, const cpp_token ***,
-				  source_location *);
+				  location_t *);
 static void push_conditional (cpp_reader *, int, int, const cpp_hashnode *);
 static unsigned int read_flag (cpp_reader *, unsigned int);
 static bool strtolinenum (const uchar *, size_t, linenum_type *, bool *);
@@ -124,8 +124,8 @@ static void do_linemarker (cpp_reader *);
 static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
 static void destringize_and_run (cpp_reader *, const cpp_string *,
-				 source_location);
-static bool parse_answer (cpp_reader *, int, source_location, cpp_macro **);
+				 location_t);
+static bool parse_answer (cpp_reader *, int, location_t, cpp_macro **);
 static cpp_hashnode *parse_assertion (cpp_reader *, int, cpp_macro **);
 static cpp_macro **find_answer (cpp_hashnode *, const cpp_macro *);
 static void handle_assertion (cpp_reader *, const char *, int);
@@ -757,7 +757,7 @@ glue_header_name (cpp_reader *pfile)
 
 static const char *
 parse_include (cpp_reader *pfile, int *pangle_brackets,
-	       const cpp_token ***buf, source_location *location)
+	       const cpp_token ***buf, location_t *location)
 {
   char *fname;
   const cpp_token *header;
@@ -815,7 +815,7 @@ do_include_common (cpp_reader *pfile, enum include_type type)
   const char *fname;
   int angle_brackets;
   const cpp_token **buf = NULL;
-  source_location location;
+  location_t location;
 
   /* Re-enable saving of comments if requested, so that the include
      callback can dump comments which follow #include.  */
@@ -1120,7 +1120,7 @@ do_linemarker (cpp_reader *pfile)
     }
   /* Compensate for the increment in linemap_add that occurs in
      _cpp_do_file_change.  We're currently at the start of the line
-     *following* the #line directive.  A separate source_location for this
+     *following* the #line directive.  A separate location_t for this
      location makes no sense (until we do the LC_LEAVE), and
      complicates LAST_SOURCE_LINE_LOCATION.  */
   pfile->line_table->highest_location--;
@@ -1162,7 +1162,7 @@ do_diagnostic (cpp_reader *pfile, enum cpp_diagnostic_level code,
 {
   const unsigned char *dir_name;
   unsigned char *line;
-  source_location src_loc = pfile->cur_token[-1].src_loc;
+  location_t src_loc = pfile->cur_token[-1].src_loc;
 
   if (print_dir)
     dir_name = pfile->directive->name;
@@ -1459,7 +1459,7 @@ do_pragma (cpp_reader *pfile)
 {
   const struct pragma_entry *p = NULL;
   const cpp_token *token, *pragma_token;
-  source_location pragma_token_virt_loc = 0;
+  location_t pragma_token_virt_loc = 0;
   cpp_token ns_token;
   unsigned int count = 1;
 
@@ -1565,7 +1565,7 @@ do_pragma_push_macro (cpp_reader *pfile)
   txt = get__Pragma_string (pfile);
   if (!txt)
     {
-      source_location src_loc = pfile->cur_token[-1].src_loc;
+      location_t src_loc = pfile->cur_token[-1].src_loc;
       cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 		 "invalid #pragma push_macro directive");
       check_eol (pfile, false);
@@ -1620,7 +1620,7 @@ do_pragma_pop_macro (cpp_reader *pfile)
   txt = get__Pragma_string (pfile);
   if (!txt)
     {
-      source_location src_loc = pfile->cur_token[-1].src_loc;
+      location_t src_loc = pfile->cur_token[-1].src_loc;
       cpp_error_with_line (pfile, CPP_DL_ERROR, src_loc, 0,
 		 "invalid #pragma pop_macro directive");
       check_eol (pfile, false);
@@ -1722,7 +1722,7 @@ do_pragma_dependency (cpp_reader *pfile)
 {
   const char *fname;
   int angle_brackets, ordering;
-  source_location location;
+  location_t location;
 
   fname = parse_include (pfile, &angle_brackets, NULL, &location);
   if (!fname)
@@ -1828,7 +1828,7 @@ get__Pragma_string (cpp_reader *pfile)
    \" and \\ sequences, and process the result as a #pragma directive.  */
 static void
 destringize_and_run (cpp_reader *pfile, const cpp_string *in,
-		     source_location expansion_loc)
+		     location_t expansion_loc)
 {
   const unsigned char *src, *limit;
   char *dest, *result;
@@ -1948,7 +1948,7 @@ destringize_and_run (cpp_reader *pfile, const cpp_string *in,
 
 /* Handle the _Pragma operator.  Return 0 on error, 1 if ok.  */
 int
-_cpp_do__Pragma (cpp_reader *pfile, source_location expansion_loc)
+_cpp_do__Pragma (cpp_reader *pfile, location_t expansion_loc)
 {
   const cpp_token *string = get__Pragma_string (pfile);
   pfile->directive_result.type = CPP_PADDING;
@@ -2173,7 +2173,7 @@ push_conditional (cpp_reader *pfile, int skip, int type,
    ANSWERP to point to the answer.  PRED_LOC is the location of the
    predicate.  */
 static bool
-parse_answer (cpp_reader *pfile, int type, source_location pred_loc,
+parse_answer (cpp_reader *pfile, int type, location_t pred_loc,
 	      cpp_macro **answer_ptr)
 {
   /* In a conditional, it is legal to not have an open paren.  We

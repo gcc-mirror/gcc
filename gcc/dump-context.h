@@ -251,6 +251,14 @@ verify_item (const location &loc,
 		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
   SELFTEST_END_STMT
 
+/* Verify that ITEM is a symtab node, with the expected values.  */
+
+#define ASSERT_IS_SYMTAB_NODE(ITEM, EXPECTED_LOCATION, EXPECTED_TEXT) \
+  SELFTEST_BEGIN_STMT						    \
+    verify_item (SELFTEST_LOCATION, (ITEM), OPTINFO_ITEM_KIND_SYMTAB_NODE, \
+		 (EXPECTED_LOCATION), (EXPECTED_TEXT));	    \
+  SELFTEST_END_STMT
+
 } // namespace selftest
 
 #endif /* CHECKING_P */

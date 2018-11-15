@@ -14956,9 +14956,11 @@ make_more_copies (void)
 	  rtx set = single_set (insn);
 	  if (!set)
 	    continue;
+
 	  rtx dest = SET_DEST (set);
-	  if (dest == pc_rtx)
-	    continue;
+	  if (!(REG_P (dest) && !HARD_REGISTER_P (dest)))
+	      continue;
+
 	  rtx src = SET_SRC (set);
 	  if (!(REG_P (src) && HARD_REGISTER_P (src)))
 	    continue;

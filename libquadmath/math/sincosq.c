@@ -1,5 +1,5 @@
 /* Compute sine and cosine of argument.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
 		  Jakub Jelinek <jj@ultra.linux.cz>.
@@ -15,11 +15,9 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
-#include <errno.h>
 #include "quadmath-imp.h"
 
 void
@@ -33,7 +31,7 @@ sincosq (__float128 x, __float128 *sinx, __float128 *cosx)
   /* |x| ~< pi/4 */
   ix &= 0x7fffffffffffffffLL;
   if (ix <= 0x3ffe921fb54442d1LL)
-    __quadmath_kernel_sincosq (x, 0.0Q, sinx, cosx, 0);
+    __quadmath_kernel_sincosq (x, 0, sinx, cosx, 0);
   else if (ix >= 0x7fff000000000000LL)
     {
       /* sin(Inf or NaN) is NaN */

@@ -1350,6 +1350,14 @@ gfc_match_assignment (void)
 
   rvalue = NULL;
   m = gfc_match (" %e%t", &rvalue);
+
+  if (lvalue->expr_type == EXPR_CONSTANT)
+    {
+      /* This clobbers %len and %kind.  */
+      m = MATCH_ERROR;
+      gfc_error ("Assignment to a constant expression at %C");
+    }
+
   if (m != MATCH_YES)
     {
       gfc_current_locus = old_loc;

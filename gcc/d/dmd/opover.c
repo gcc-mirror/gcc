@@ -8,12 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/opover.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <assert.h>
-#include <string.h>                     // memset()
-
+#include "root/dsystem.h"               // memset()
 #include "root/rmem.h"
 
 #include "mars.h"

@@ -543,7 +543,7 @@ struct ivopts_data
 {
   /* The currently optimized loop.  */
   struct loop *current_loop;
-  source_location loop_loc;
+  location_t loop_loc;
 
   /* Numbers of iterations for all exits of the current loop.  */
   hash_map<edge, tree_niter_desc *> *niters;

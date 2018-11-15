@@ -89,6 +89,9 @@
 
 #if __cplusplus >= 201103L
 #include <cstdint>
+#if __cplusplus > 201703L
+# include <bit>			// for ispow2
+#endif
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -150,6 +153,18 @@ undeclare_no_pointers(char*, size_t) { }
 
 inline pointer_safety
 get_pointer_safety() noexcept { return pointer_safety::relaxed; }
+
+#if __cplusplus > 201703L
+  /// Inform the compiler that a pointer is aligned.
+  template<size_t _Align, class _Tp>
+    [[nodiscard,__gnu__::__always_inline__]]
+    constexpr _Tp* assume_aligned(_Tp* __ptr)
+    {
+      static_assert(std::ispow2(_Align));
+      _GLIBCXX_DEBUG_ASSERT((std::uintptr_t)__ptr % _Align == 0);
+      return static_cast<_Tp*>(__builtin_assume_aligned(__ptr, _Align));
+    }
+#endif // C++2a
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

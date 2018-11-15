@@ -23,7 +23,7 @@ struct TypeC
   //   TypeC::fn()
   // we don't want to see the template header, return type, or parameter bindings
   // for TypeB::fn.
-  template <int N> auto fn() -> decltype(b.fn<N>()); // { dg-bogus "typename|with" }
+  template <int N> auto fn() -> decltype(b.fn<N>()); // { dg-bogus "typename" }
 };
 
 int main()

@@ -1,3 +1,340 @@
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	DR 2336
+	* cp-tree.h (enum special_function_kind): Add sfk_virtual_destructor.
+	* method.c (type_has_trivial_fn): Add it.
+	(SFK_DTOR_P): Likewise.
+	(synthesized_method_base_walk): Don't check access of vbases of
+	abstract classes when sfk_virtual_destructor.
+	(synthesized_method_walk): Skip vbases of abstract classes except
+	when sfk_virtual_destructor.
+	(get_defaulted_eh_spec): Set sfk_virtual_destructor as needed.
+
+	* cp-tree.h (enum special_function_kind): Reorder and comment.
+	* method.c (SFK_CTOR_P, SFK_DTOR_P, SFK_ASSIGN_P, SFK_COPY_P)
+	(SFK_MOVE_P): New predicates.
+	(walk_field_subobs, synthesized_method_base_walk): Drop
+	copy_arg_p, move_p, assign_p args.  Use new SFK predicates.  Order
+	parameters consistently.
+	(synthesized_method_walk): Drop ctor_p, copy_arg_p, move_p,
+	assign_p calculations.  Use new SFK predicates.  Adjust calls to
+	worker functions.
+
+2018-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* parser.c (make_id_declarator): Add location_t parameter.
+	(cp_parser_lambda_declarator_opt): Adjust call.
+	(cp_parser_decomposition_declaration): Likewise.
+	(cp_parser_alias_declaration): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_member_declaration): Likewise.
+	(cp_parser_objc_class_ivars): Likewise.
+	* decl.c (grokdeclarator): Use declarator->id_loc in two error
+	messages.
+
+2018-11-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P1236R1 - Signed integers are two's complement
+	* constexpr.c (cxx_eval_check_shift_p): Disable the signed LSHIFT_EXPR
+	checks for c++2a.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c: Replace "source_location" with "location_t".
+	* cp-tree.h: Likewise.
+	* cvt.c: Likewise.
+	* name-lookup.c: Likewise.
+	* parser.c: Likewise.
+	* typeck.c: Likewise.
+
+2018-11-12  Jason Merrill  <jason@redhat.com>
+
+	Implement P0315R4, Lambdas in unevaluated contexts.
+	* decl2.c (min_vis_expr_r): Handle LAMBDA_EXPR.
+	* mangle.c (write_expression): Handle LAMBDA_EXPR.
+	* parser.c (cp_parser_lambda_expression): Allow lambdas in
+	unevaluated context.  Start the tentative firewall sooner.
+	(cp_parser_lambda_body): Use cp_evaluated.
+	* pt.c (iterative_hash_template_arg): Handle LAMBDA_EXPR.
+	(tsubst_function_decl): Substitute a lambda even if it isn't
+	dependent.
+	(tsubst_lambda_expr): Use cp_evaluated.  Always complain.
+	(tsubst_copy_and_build) [LAMBDA_EXPR]: Do nothing if tf_partial.
+	* semantics.c (begin_class_definition): Allow in template parm list.
+	* tree.c (strip_typedefs_expr): Pass through LAMBDA_EXPR.
+	(cp_tree_equal): Handle LAMBDA_EXPR.
+
+	* pt.c (fn_type_unification): If we have a full set of explicit
+	arguments, go straight to substitution.
+
+	* decl2.c (min_vis_expr_r, expr_visibility): New.
+	(min_vis_r): Call expr_visibility.
+	(constrain_visibility_for_template): Likewise.
+
+	Implement P0722R3, destroying operator delete.
+	* call.c (std_destroying_delete_t_p, destroying_delete_p): New.
+	(aligned_deallocation_fn_p, usual_deallocation_fn_p): Use
+	destroying_delete_p.
+	(build_op_delete_call): Handle destroying delete.
+	* decl2.c (coerce_delete_type): Handle destroying delete.
+	* init.c (build_delete): Don't call dtor with destroying delete.
+	* optimize.c (build_delete_destructor_body): Likewise.
+
+	Implement P0780R2, pack expansion in lambda init-capture.
+	* parser.c (cp_parser_lambda_introducer): Parse pack init-capture.
+	* pt.c (tsubst_pack_expansion): Handle init-capture packs.
+	(lookup_init_capture_pack): New.
+	(tsubst_expr) [DECL_EXPR]: Use it.
+	(tsubst_lambda_expr): Remember field pack expansions for
+	init-captures.
+
+	* cp-tree.h (struct cp_evaluated): New.
+	* init.c (get_nsdmi): Use it.
+	* parser.c (cp_parser_enclosed_template_argument_list): Use it.
+	* pt.c (coerce_template_parms, tsubst_aggr_type): Use it.
+
+2018-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.c (cp_parser_omp_clause_final, cp_parser_omp_clause_if): Use
+	cp_parser_assignment_expression instead of cp_parser_condition.
+	(cp_parser_omp_clause_num_threads, cp_parser_omp_clause_num_tasks,
+	cp_parser_omp_clause_grainsize, cp_parser_omp_clause_priority,
+	cp_parser_omp_clause_num_teams, cp_parser_omp_clause_thread_limit,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_device): Use
+	cp_parser_assignment_expression instead of cp_parser_expression.
+	(cp_parser_omp_clause_hint): Likewise.  Formatting fix.
+
+	* parser.c (cp_parser_omp_clause_reduction): Call sorry_at on
+	reduction clause with inscan modifier.
+
+	* parser.c (cp_parser_omp_requires): Call sorry_at on requires
+	clauses other than atomic_default_mem_order.
+
+2018-11-09  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81824
+	* pt.c (warn_spec_missing_attributes): Move code to attribs.c.
+	Call decls_mismatched_attributes.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.c (potential_constant_expression_1): Handle OMP_DEPOBJ.
+	* cp-gimplify.c (cp_genericize_r): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION.
+	(cxx_omp_predetermined_sharing_1): Don't return
+	OMP_CLAUSE_DEFAULT_SHARED for const qualified decls with no mutable
+	member.  Return OMP_CLAUSE_DEFAULT_FIRSTPRIVATE for this pointer.
+	* cp-objcp-common.c (cp_common_init_ts): Handle OMP_DEPOBJ.
+	* cp-tree.def (OMP_DEPOBJ): New tree code.
+	* cp-tree.h (OMP_ATOMIC_DEPENDENT_P): Return true also for first
+	argument being OMP_CLAUSE.
+	(OMP_DEPOBJ_DEPOBJ, OMP_DEPOBJ_CLAUSES): Define.
+	(cp_convert_omp_range_for, cp_finish_omp_range_for): Declare.
+	(finish_omp_atomic): Add LOC, CLAUSES and MO arguments.  Remove
+	SEQ_CST argument.
+	(finish_omp_for_block): Declare.
+	(finish_omp_flush): Add MO argument.
+	(finish_omp_depobj): Declare.
+	* cxx-pretty-print.c (cxx_pretty_printer::statement): Handle
+	OMP_DEPOBJ.
+	* dump.c (cp_dump_tree): Likewise.
+	* lex.c (cxx_init): Likewise.
+	* parser.c: Include memmodel.h.
+	(cp_parser_for): Pass false as new is_omp argument to
+	cp_parser_range_for.
+	(cp_parser_range_for): Add IS_OMP argument, return before finalizing
+	if it is true.
+	(cp_parser_omp_clause_name): Handle nontemporal, in_reduction and
+	task_reduction clauses.
+        (cp_parser_omp_var_list_no_open): Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION.  For OMP_CLAUSE_DEPEND, parse clause
+	operands as either an array section, or lvalue assignment expression.
+	(cp_parser_omp_clause_if): Handle cancel and simd modifiers.
+	(cp_parser_omp_clause_defaultmap): Parse new kinds of defaultmap
+	clause.
+	(cp_parser_omp_clause_reduction): Add IS_OMP and KIND arguments.
+	Parse reduction modifiers.  Pass KIND to c_parser_omp_variable_list.
+	(cp_parser_omp_clause_lastprivate, cp_parser_omp_iterators): New
+	functions.
+	(cp_parser_omp_clause_depend): Parse iterator modifier and handle
+	iterators.  Parse mutexinoutset and depobj kinds.
+	(cp_parser_oacc_all_clauses): Adjust cp_parser_omp_clause_reduction
+	callers.
+	(cp_parser_omp_all_clauses): Likewise.  Handle
+	PRAGMA_OMP_CLAUSE_NONTEMPORAL and
+	PRAGMA_OMP_CLAUSE_{IN,TASK}_REDUCTION.  Call
+	cp_parser_omp_clause_lastprivate for OpenMP lastprivate clause.
+	(cp_parser_omp_atomic): Pass pragma_tok->location as
+	LOC to finish_omp_atomic.  Parse hint and memory order clauses.
+	Handle default memory order from requires directive if any.  Adjust
+	finish_omp_atomic caller.
+	(cp_parser_omp_critical): Allow comma in between (name) and hint
+	clause.
+	(cp_parser_omp_depobj): New function.
+	(cp_parser_omp_flush): Parse flush with memory-order-clause.
+	(cp_parser_omp_for_cond): Allow NE_EXPR even in OpenMP loops.
+	(cp_convert_omp_range_for, cp_finish_omp_range_for): New functions.
+	(cp_parser_omp_for_loop): Parse C++11 range for loops among omp
+	loops.  Handle OMP_CLAUSE_IN_REDUCTION like OMP_CLAUSE_REDUCTION.
+	(OMP_SIMD_CLAUSE_MASK): Add if and nontemporal clauses.
+	(cp_parser_omp_simd, cp_parser_omp_for): Call keep_next_level before
+	begin_omp_structured_block and call finish_omp_for_block on
+	finish_omp_structured_block result.
+	(cp_parser_omp_master): Add p_name, mask and cclauses arguments.
+	Allow to be called while parsing combined parallel master.
+	Parse combined master taskloop{, simd}.
+	(cp_parser_omp_parallel): Parse combined
+	parallel master{, taskloop{, simd}} constructs.
+	(cp_parser_omp_single): Use SET_EXPR_LOCATION.
+	(OMP_TASK_CLAUSE_MASK): Add in_reduction clause.
+	(OMP_TASKWAIT_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskwait): Handle taskwait with depend clauses.
+	(OMP_TASKGROUP_CLAUSE_MASK): Define.
+	(cp_parser_omp_taskgroup): Parse taskgroup clauses, adjust
+	c_finish_omp_taskgroup caller.
+	(cp_parser_omp_distribute): Call keep_next_level before
+	begin_omp_structured_block and call finish_omp_for_block on
+	finish_omp_structured_block result.
+	(cp_parser_omp_teams): Force a BIND_EXPR with BLOCK around teams
+	body.
+	(cp_parser_omp_target_data): Allow target data with only
+	use_device_ptr clauses.
+	(cp_parser_omp_target): Set OMP_REQUIRES_TARGET_USED bit in
+	omp_requires_mask.
+	(cp_parser_omp_requires): New function.
+	(OMP_TASKLOOP_CLAUSE_MASK): Add reduction and in_reduction clauses.
+	(cp_parser_omp_taskloop): Add forward declaration.  Disallow
+	in_reduction clause when combined with parallel master.  Call
+	keep_next_level before begin_omp_structured_block and call
+	finish_omp_for_block on finish_omp_structured_block result.
+	(cp_parser_omp_construct): Adjust cp_parser_omp_master caller.
+	(cp_parser_pragma): Handle PRAGMA_OMP_DEPOBJ and PRAGMA_OMP_REQUIRES.
+	* pt.c (tsubst_omp_clause_decl): Add iterators_cache argument.
+	Adjust recursive calls.  Handle iterators.
+	(tsubst_omp_clauses): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION and
+	OMP_CLAUSE_NONTEMPORAL.  Adjust tsubst_omp_clause_decl callers.
+	(tsubst_decomp_names):
+	(tsubst_omp_for_iterator): Change orig_declv into a reference.
+	Handle range for loops.  Move orig_declv handling after declv/initv
+	handling.
+	(tsubst_expr): Force a BIND_EXPR with BLOCK around teams body.
+	Adjust finish_omp_atomic caller.  Call keep_next_level before
+	begin_omp_structured_block.  Call cp_finish_omp_range_for for range
+	for loops and use {begin,finish}_omp_structured_block instead of
+	{push,pop}_stmt_list if there are any range for loops.  Call
+	finish_omp_for_block on finish_omp_structured_block result.
+	Handle OMP_DEPOBJ.  Handle taskwait with depend clauses.  For
+	OMP_ATOMIC call tsubst_omp_clauses on clauses if any, adjust
+	finish_omp_atomic caller.  Use OMP_ATOMIC_MEMORY_ORDER rather
+	than OMP_ATOMIC_SEQ_CST.  Handle clauses on OMP_TASKGROUP.
+	(dependent_omp_for_p): Always return true for range for loops if
+	processing_template_decl.  Return true if class type iterator
+	does not have INTEGER_CST increment.
+	* semantics.c: Include memmodel.h.
+	(handle_omp_array_sections_1): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION
+	like OMP_CLAUSE_REDUCTION.
+	(handle_omp_array_sections): Likewise.  Call save_expr on array
+	reductions before calling build_index_type.  Handle depend clauses
+	with iterators.
+	(finish_omp_reduction_clause): Call save_expr for whole array
+	reduction sizes.  Don't mark OMP_CLAUSE_DECL addressable if it has
+	reference type.  Do mark decl_placeholder addressable if needed.
+	Use error_at with OMP_CLAUSE_LOCATION (c) as first argument instead
+	of error.
+	(cp_omp_finish_iterators): New function.
+	(finish_omp_clauses): Don't diagnose nonmonotonic clause with static,
+	runtime or auto schedule kinds.  Diagnose nogroup clause used with
+	reduction clause(s).  Handle depend clause with
+	OMP_CLAUSE_DEPEND_DEPOBJ.  Diagnose bit-fields.  Require
+	omp_depend_t type for OMP_CLAUSE_DEPEND_DEPOBJ kinds and
+	some different type for other kinds.  Use cp_build_addr_expr
+	and cp_build_indirect_ref instead of cxx_mark_addressable.
+	Handle depend clauses with iterators.  Only handle static data members
+	in the special case that const qualified vars may be specified in
+	firstprivate clause.  Complain if const qualified vars without mutable
+	members are mentioned in data-sharing clauses other than firstprivate
+	or shared.  Use error_at with OMP_CLAUSE_LOCATION (c) as first
+	argument instead of error.  Diagnose more than one nontemporal clause
+	refering to the same variable.  Use error_at rather than error for
+	priority and hint clause diagnostics.  Fix pasto for hint clause.
+	Diagnose hint expression that doesn't fold into INTEGER_CST.
+	Diagnose if clause with modifier other than cancel.  Handle
+	OMP_CLAUSE_{IN,TASK}_REDUCTION like OMP_CLAUSE_REDUCTION.  Allow any
+	lvalue as OMP_CLAUSE_DEPEND operand (besides array section), adjust
+	diagnostics.
+	(handle_omp_for_class_iterator): Don't create a new TREE_LIST if one
+	has been created already for range for, just fill TREE_PURPOSE and
+	TREE_VALUE.  Call cp_fully_fold on incr.
+	(finish_omp_for): Don't check cond/incr if cond is global_namespace.
+	Pass to c_omp_check_loop_iv_exprs orig_declv if non-NULL.  Don't
+	use IS_EMPTY_STMT on NULL pre_body.  Adjust c_finish_omp_for caller.
+	(finish_omp_for_block): New function.
+	(finish_omp_atomic): Add LOC argument, pass it through
+	to c_finish_omp_atomic and set it as location of OMP_ATOMIC* trees.
+	Remove SEQ_CST argument.  Add CLAUSES and MO arguments.  Adjust
+	c_finish_omp_atomic caller.  Stick clauses if any into first argument
+	of wrapping OMP_ATOMIC.
+	(finish_omp_depobj): New function.
+	(finish_omp_flush): Add MO argument, if not
+	MEMMODEL_LAST, emit __atomic_thread_fence call with the given value.
+	(finish_omp_cancel): Diagnose if clause with modifier other than
+	cancel.
+
+2018-11-07  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87904
+	* cp-tree.h (struct tree_overload): Fix comment.
+	* tree.c (ovl_iterator::reveal_node): Propagate OVL_DEDUP_P.
+
+2018-11-04  Jason Merrill  <jason@redhat.com>
+
+	Implement UDL changes from P0732R2.
+	* cp-tree.h (struct releasing_vec): Move from mangle.c.
+	Add get_ref method.
+	* parser.c (cp_parser_userdef_string_literal): Use it.  Handle
+	passing the string to a single template parameter of class type.
+	(cp_parser_template_declaration_after_parameters): Allow it.
+	Pedwarn about the character pack template that was proposed but not
+	accepted for C++14, and don't suggest it.
+
+	Implement P0732R2, class types in non-type template parameters.
+	* error.c (dump_simple_decl): Look through a template parm object.
+	* mangle.c (write_template_arg): Likewise.
+	(mangle_template_parm_object): New.
+	* pt.c (template_parm_object_p, get_template_parm_object): New.
+	(invalid_tparm_referent_p): Factor from convert_nontype_argument.
+	(convert_nontype_argument, invalid_nontype_parm_type_p): Handle
+	class-type template arguments.
+	* tree.c (lvalue_kind): Likewise.
+
+	* cvt.c (ocp_convert): Don't wrap a CONSTRUCTOR in a NOP_EXPR.
+	* constexpr.c (initialized_type): Fix AGGR_INIT_EXPR handling.
+	(cxx_eval_vec_init_1): Correct type of AGGR_INIT_EXPR.
+	(cxx_eval_outermost_constant_expr): Make sure a CONSTRUCTOR has the
+	right type.  Don't wrap a CONSTRUCTOR if one was passed in.
+	* tree.c (build_aggr_init_expr): Check for void.
+
+	PR c++/60503 - wrong lambda attribute syntax.
+	* parser.c (cp_parser_lambda_declarator_opt): Fix attribute
+	handling.
+
+2018-11-02  Nathan Sidwell  <nathan@acm.org>
+
+	* decl.c (duplicate_decls): Refactor checks.
+
+2018-11-01  Marek Polacek  <polacek@redhat.com>
+
+	Implement P0846R0, ADL and function templates.
+	* decl.c (grokfndecl): Allow FUNCTION_DECL in assert.
+	* lex.c (unqualified_fn_lookup_error): Handle TEMPLATE_ID_EXPR.
+	* parser.c (cp_parser_postfix_expression): Do ADL for a template-name.
+	(cp_parser_template_id): Give errors if parsing the template argument
+	list didn't go well.  Allow FUNCTION_DECL in assert.
+	(cp_parser_template_name): Consider a name to refer to a template if
+	it is an unqualified-id followed by a <.  Don't return the identifier
+	if the decl is a function and dependent.
+	* pt.c (tsubst_copy) <case OVERLOAD>: Remove assert.
+
 2018-11-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (struct lang_function): Delete x_local_names field.

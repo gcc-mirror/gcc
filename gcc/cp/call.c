@@ -6190,6 +6190,31 @@ aligned_allocation_fn_p (tree t)
   return (a && same_type_p (TREE_VALUE (a), align_type_node));
 }
 
+/* True if T is std::destroying_delete_t.  */
+
+static bool
+std_destroying_delete_t_p (tree t)
+{
+  return (TYPE_CONTEXT (t) == std_node
+	  && id_equal (TYPE_IDENTIFIER (t), "destroying_delete_t"));
+}
+
+/* A deallocation function with at least two parameters whose second parameter
+   type is of type std::destroying_delete_t is a destroying operator delete. A
+   destroying operator delete shall be a class member function named operator
+   delete. [ Note: Array deletion cannot use a destroying operator
+   delete. --end note ] */
+
+tree
+destroying_delete_p (tree t)
+{
+  tree a = TYPE_ARG_TYPES (TREE_TYPE (t));
+  if (!a || !TREE_CHAIN (a))
+    return NULL_TREE;
+  tree type = TREE_VALUE (TREE_CHAIN (a));
+  return std_destroying_delete_t_p (type) ? type : NULL_TREE;
+}
+
 /* Returns true iff T, an element of an OVERLOAD chain, is a usual deallocation
    function (3.7.4.2 [basic.stc.dynamic.deallocation]) with a parameter of
    std::align_val_t.  */
@@ -6207,6 +6232,8 @@ aligned_deallocation_fn_p (tree t)
     return false;
 
   tree a = FUNCTION_ARG_CHAIN (t);
+  if (destroying_delete_p (t))
+    a = TREE_CHAIN (a);
   if (same_type_p (TREE_VALUE (a), align_type_node)
       && TREE_CHAIN (a) == void_list_node)
     return true;
@@ -6242,6 +6269,8 @@ usual_deallocation_fn_p (tree t)
   tree chain = FUNCTION_ARG_CHAIN (t);
   if (!chain)
     return false;
+  if (destroying_delete_p (t))
+    chain = TREE_CHAIN (chain);
   if (chain == void_list_node
       || ((!global || flag_sized_deallocation)
 	  && second_parm_is_size_t (t)))
@@ -6307,6 +6336,7 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
     fns = lookup_name_nonclass (fnname);
 
   /* Strip const and volatile from addr.  */
+  tree oaddr = addr;
   addr = cp_convert (ptr_type_node, addr, complain);
 
   if (placement)
@@ -6484,9 +6514,24 @@ build_op_delete_call (enum tree_code code, tree addr, tree size,
 	}
       else
 	{
+	  tree destroying = destroying_delete_p (fn);
+	  if (destroying)
+	    {
+	      /* Strip const and volatile from addr but retain the type of the
+		 object.  */
+	      tree rtype = TREE_TYPE (TREE_TYPE (oaddr));
+	      rtype = cv_unqualified (rtype);
+	      rtype = TYPE_POINTER_TO (rtype);
+	      addr = cp_convert (rtype, oaddr, complain);
+	      destroying = build_functional_cast (destroying, NULL_TREE,
+						  complain);
+	    }
+
 	  tree ret;
 	  vec<tree, va_gc> *args = make_tree_vector ();
 	  args->quick_push (addr);
+	  if (destroying)
+	    args->quick_push (destroying);
 	  if (second_parm_is_size_t (fn))
 	    args->quick_push (size);
 	  if (aligned_deallocation_fn_p (fn))
@@ -6636,7 +6681,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   if (null_node_p (expr) && TREE_CODE (totype) != BOOLEAN_TYPE
       && ARITHMETIC_TYPE_P (totype))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       if (fn)
@@ -6665,7 +6710,7 @@ conversion_null_warnings (tree totype, tree expr, tree fn, int argnum)
   else if (null_ptr_cst_p (expr) &&
 	   (TYPE_PTR_OR_PTRMEM_P (totype) || NULLPTR_TYPE_P (totype)))
     {
-      source_location loc =
+      location_t loc =
        expansion_point_location_if_in_system_header (input_location);
       maybe_warn_zero_as_null_pointer_constant (expr, loc);
     }
@@ -7341,7 +7386,7 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 /* va_arg (EXPR, TYPE) is a builtin. Make sure it is not abused.  */
 
 tree
-build_x_va_arg (source_location loc, tree expr, tree type)
+build_x_va_arg (location_t loc, tree expr, tree type)
 {
   if (processing_template_decl)
     {

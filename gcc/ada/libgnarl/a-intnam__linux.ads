@@ -160,4 +160,7 @@ package Ada.Interrupts.Names is
    SIGPWR : constant Interrupt_ID :=
      System.OS_Interface.SIGPWR;        --  Power failure
 
+   SIGSYS : constant Interrupt_ID :=
+     System.OS_Interface.SIGSYS;       --  bad system call
+
 end Ada.Interrupts.Names;

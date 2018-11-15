@@ -1739,10 +1739,11 @@ coerce_new_type (tree type, location_t loc)
   return type;
 }
 
-tree
-coerce_delete_type (tree type, location_t loc)
+void
+coerce_delete_type (tree decl, location_t loc)
 {
   int e = 0;
+  tree type = TREE_TYPE (decl);
   tree args = TYPE_ARG_TYPES (type);
 
   gcc_assert (TREE_CODE (type) == FUNCTION_TYPE);
@@ -1754,19 +1755,38 @@ coerce_delete_type (tree type, location_t loc)
 		void_type_node);
     }
 
+  tree ptrtype = ptr_type_node;
+  if (destroying_delete_p (decl))
+    {
+      if (DECL_CLASS_SCOPE_P (decl))
+	/* If the function is a destroying operator delete declared in class type
+	   C, the type of its first parameter shall be C*.  */
+	ptrtype = TYPE_POINTER_TO (DECL_CONTEXT (decl));
+      else
+	/* A destroying operator delete shall be a class member function named
+	   operator delete.  */
+	error_at (loc, "destroying operator delete must be a member function");
+      const ovl_op_info_t *op = IDENTIFIER_OVL_OP_INFO (DECL_NAME (decl));
+      if (op->flags & OVL_OP_FLAG_VEC)
+	error_at (loc, "operator delete[] cannot be a destroying delete");
+      if (!usual_deallocation_fn_p (decl))
+	error_at (loc, "destroying operator delete must be a usual "
+		  "deallocation function");
+    }
+
   if (!args || args == void_list_node
-      || !same_type_p (TREE_VALUE (args), ptr_type_node))
+      || !same_type_p (TREE_VALUE (args), ptrtype))
     {
       e = 2;
       if (args && args != void_list_node)
 	args = TREE_CHAIN (args);
       error_at (loc, "%<operator delete%> takes type %qT as first parameter",
-		ptr_type_node);
+		ptrtype);
     }
   switch (e)
   {
     case 2:
-      args = tree_cons (NULL_TREE, ptr_type_node, args);
+      args = tree_cons (NULL_TREE, ptrtype, args);
       /* Fall through.  */
     case 1:
       type = (cxx_copy_lang_qualifiers
@@ -1776,7 +1796,7 @@ coerce_delete_type (tree type, location_t loc)
     default:;
   }
 
-  return type;
+  TREE_TYPE (decl) = type;
 }
 
 /* DECL is a VAR_DECL for a vtable: walk through the entries in the vtable
@@ -2218,6 +2238,9 @@ maybe_emit_vtables (tree ctype)
 
 enum { VISIBILITY_ANON = VISIBILITY_INTERNAL+1 };
 
+static int expr_visibility (tree);
+static int type_visibility (tree);
+
 /* walk_tree helper function for type_visibility.  */
 
 static tree
@@ -2237,7 +2260,54 @@ min_vis_r (tree *tp, int *walk_subtrees, void *data)
   else if (CLASS_TYPE_P (*tp)
 	   && CLASSTYPE_VISIBILITY (*tp) > *vis_p)
     *vis_p = CLASSTYPE_VISIBILITY (*tp);
+  else if (TREE_CODE (*tp) == ARRAY_TYPE
+	   && uses_template_parms (TYPE_DOMAIN (*tp)))
+    {
+      int evis = expr_visibility (TYPE_MAX_VALUE (TYPE_DOMAIN (*tp)));
+      if (evis > *vis_p)
+	*vis_p = evis;
+    }
   return NULL;
+}
+
+/* walk_tree helper function for expr_visibility.  */
+
+static tree
+min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
+{
+  int *vis_p = (int *)data;
+  int tpvis = VISIBILITY_DEFAULT;
+
+  switch (TREE_CODE (*tp))
+    {
+    case CAST_EXPR:
+    case IMPLICIT_CONV_EXPR:
+    case STATIC_CAST_EXPR:
+    case REINTERPRET_CAST_EXPR:
+    case CONST_CAST_EXPR:
+    case DYNAMIC_CAST_EXPR:
+    case NEW_EXPR:
+    case CONSTRUCTOR:
+    case LAMBDA_EXPR:
+      tpvis = type_visibility (TREE_TYPE (*tp));
+      break;
+
+    case VAR_DECL:
+    case FUNCTION_DECL:
+      if (! TREE_PUBLIC (*tp))
+	tpvis = VISIBILITY_ANON;
+      else
+	tpvis = DECL_VISIBILITY (*tp);
+      break;
+
+    default:
+      break;
+    }
+
+  if (tpvis > *vis_p)
+    *vis_p = tpvis;
+
+  return NULL_TREE;
 }
 
 /* Returns the visibility of TYPE, which is the minimum visibility of its
@@ -2248,6 +2318,18 @@ type_visibility (tree type)
 {
   int vis = VISIBILITY_DEFAULT;
   cp_walk_tree_without_duplicates (&type, min_vis_r, &vis);
+  return vis;
+}
+
+/* Returns the visibility of an expression EXPR that appears in the signature
+   of a function template, which is the minimum visibility of names that appear
+   in its mangling.  */
+
+static int
+expr_visibility (tree expr)
+{
+  int vis = VISIBILITY_DEFAULT;
+  cp_walk_tree_without_duplicates (&expr, min_vis_expr_r, &vis);
   return vis;
 }
 
@@ -2309,21 +2391,7 @@ constrain_visibility_for_template (tree decl, tree targs)
       if (TYPE_P (arg))
 	vis = type_visibility (arg);
       else
-	{
-	  if (REFERENCE_REF_P (arg))
-	    arg = TREE_OPERAND (arg, 0);
-	  if (TREE_TYPE (arg))
-	    STRIP_NOPS (arg);
-	  if (TREE_CODE (arg) == ADDR_EXPR)
-	    arg = TREE_OPERAND (arg, 0);
-	  if (VAR_OR_FUNCTION_DECL_P (arg))
-	    {
-	      if (! TREE_PUBLIC (arg))
-		vis = VISIBILITY_ANON;
-	      else
-		vis = DECL_VISIBILITY (arg);
-	    }
-	}
+	vis = expr_visibility (arg);
       if (vis)
 	constrain_visibility (decl, vis, true);
     }

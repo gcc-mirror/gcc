@@ -28980,7 +28980,7 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -41274,7 +41274,7 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -47392,7 +47392,7 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
@@ -60238,7 +60238,7 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       if test x$gcc_no_link = xyes; then
   as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5

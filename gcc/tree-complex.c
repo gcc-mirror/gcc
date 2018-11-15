@@ -80,6 +80,9 @@ static vec<tree> complex_ssa_name_components;
    non-SSA_NAME/non-invariant args that need to be replaced by SSA_NAMEs.  */
 static vec<gphi *> phis_to_revisit;
 
+/* BBs that need EH cleanup.  */
+static bitmap need_eh_cleanup;
+
 /* Lookup UID in the complex_variable_components hashtable and return the
    associated tree.  */
 static tree
@@ -701,7 +704,7 @@ update_complex_assignment (gimple_stmt_iterator *gsi, tree r, tree i)
   stmt = gsi_stmt (*gsi);
   update_stmt (stmt);
   if (maybe_clean_eh_stmt (stmt))
-    gimple_purge_dead_eh_edges (gimple_bb (stmt));
+    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 
   update_complex_components (gsi, gsi_stmt (*gsi), r, i);
 }
@@ -1558,6 +1561,8 @@ expand_complex_comparison (gimple_stmt_iterator *gsi, tree ar, tree ai,
     }
 
   update_stmt (stmt);
+  if (maybe_clean_eh_stmt (stmt))
+    bitmap_set_bit (need_eh_cleanup, gimple_bb (stmt)->index);
 }
 
 /* Expand inline asm that sets some complex SSA_NAMEs.  */
@@ -1771,6 +1776,8 @@ tree_lower_complex (void)
   class complex_propagate complex_propagate;
   complex_propagate.ssa_propagate ();
 
+  need_eh_cleanup = BITMAP_ALLOC (NULL);
+
   complex_variable_components = new int_tree_htab_type (10);
 
   complex_ssa_name_components.create (2 * num_ssa_names);
@@ -1816,11 +1823,15 @@ tree_lower_complex (void)
 
   gsi_commit_edge_inserts ();
 
+  unsigned todo
+    = gimple_purge_all_dead_eh_edges (need_eh_cleanup) ? TODO_cleanup_cfg : 0;
+  BITMAP_FREE (need_eh_cleanup);
+
   delete complex_variable_components;
   complex_variable_components = NULL;
   complex_ssa_name_components.release ();
   complex_lattice_values.release ();
-  return 0;
+  return todo;
 }
 
 namespace {

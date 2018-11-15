@@ -978,7 +978,9 @@ c_cpp_builtins (cpp_reader *pfile)
       if (cxx_dialect > cxx17)
 	{
 	  /* Set feature test macros for C++2a.  */
-	  cpp_define (pfile, "__cpp_explicit_bool=201806");
+	  cpp_define (pfile, "__cpp_conditional_explicit=201806");
+	  cpp_define (pfile, "__cpp_nontype_template_parameter_class=201806");
+	  cpp_define (pfile, "__cpp_impl_destroying_delete=201806");
 	}
       if (flag_concepts)
 	cpp_define (pfile, "__cpp_concepts=201507");

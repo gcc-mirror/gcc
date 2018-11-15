@@ -1260,7 +1260,7 @@ default_vector_alignment (const_tree type)
 /* The default implementation of
    TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
 
-HOST_WIDE_INT
+poly_uint64
 default_preferred_vector_alignment (const_tree type)
 {
   return TYPE_ALIGN (type);

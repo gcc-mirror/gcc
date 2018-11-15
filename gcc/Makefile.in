@@ -221,6 +221,7 @@ libgcov-merge-tool.o-warn = -Wno-error
 gimple-match.o-warn = -Wno-unused
 generic-match.o-warn = -Wno-unused
 dfp.o-warn = -Wno-strict-aliasing
+bitmap.o-warn = -Wno-error # PR 87926
 
 # All warnings have to be shut off in stage1 if the compiler used then
 # isn't gcc; configure determines that.  WARN_CFLAGS will be either
@@ -1394,7 +1395,6 @@ OBJS = \
 	ira-color.o \
 	ira-emit.o \
 	ira-lives.o \
-	json.o \
 	jump.o \
 	langhooks.o \
 	lcm.o \
@@ -1618,6 +1618,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
+	diagnostic-format-json.o json.o \
 	edit-context.o \
 	pretty-print.o intl.o \
 	sbitmap.o \
@@ -2232,7 +2233,7 @@ s-bversion: BASE-VER
 	$(STAMP) s-bversion
 
 CFLAGS-toplev.o += -DTARGET_NAME=\"$(target_noncanonical)\"
-CFLAGS-optinfo-emit-json.o += -DTARGET_NAME=\"$(target_noncanonical)\"
+CFLAGS-optinfo-emit-json.o += -DTARGET_NAME=\"$(target_noncanonical)\" $(ZLIBINC)
 
 pass-instances.def: $(srcdir)/passes.def $(PASSES_EXTRA) \
 		    $(srcdir)/gen-pass-instances.awk
@@ -2578,6 +2579,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/internal-fn.h \
   $(srcdir)/hsa-common.c \
   $(srcdir)/calls.c \
+  $(srcdir)/omp-general.h \
   @all_gtfiles@
 
 # Compute the list of GT header files from the corresponding C sources,

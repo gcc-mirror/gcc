@@ -3,6 +3,7 @@
    point directives.
    { dg-do compile }
    { dg-require-effective-target double64plus }
+   { dg-skip-if "not IEEE float layout" { "pdp11-*-*" } }
    { dg-options "-O2 -Wformat -Wformat-overflow -ftrack-macro-expansion=0" } */
 
 typedef __builtin_va_list va_list;

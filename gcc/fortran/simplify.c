@@ -4182,6 +4182,7 @@ simplify_bound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  continue;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  continue;
 	}
     }
@@ -4324,6 +4325,7 @@ simplify_cobound (gfc_expr *array, gfc_expr *dim, gfc_expr *kind, int upper)
 	  continue;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  continue;
 	}
     }
@@ -5395,7 +5397,7 @@ gfc_simplify_minmaxloc (gfc_expr *array, gfc_expr *dim, gfc_expr *mask,
 
       back_val = back->value.logical;
     }
-  
+
   if (sign < 0)
     init_val = INT_MAX;
   else if (sign > 0)

@@ -405,6 +405,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (rdiv @0 (negate @1))
  (rdiv (negate @0) @1))
 
+(if (flag_unsafe_math_optimizations)
+ /* Simplify (C / x op 0.0) to x op 0.0 for C != 0, C != Inf/Nan.
+    Since C / x may underflow to zero, do this only for unsafe math.  */
+ (for op (lt le gt ge)
+      neg_op (gt ge lt le)
+  (simplify
+   (op (rdiv REAL_CST@0 @1) real_zerop@2)
+   (if (!HONOR_SIGNED_ZEROS (@1) && !HONOR_INFINITIES (@1))
+    (switch
+     (if (real_less (&dconst0, TREE_REAL_CST_PTR (@0)))
+      (op @1 @2))
+     /* For C < 0, use the inverted operator.  */
+     (if (real_less (TREE_REAL_CST_PTR (@0), &dconst0))
+      (neg_op @1 @2)))))))
+
 /* Optimize (X & (-A)) / A where A is a power of 2, to X >> log2(A) */
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  (simplify
@@ -1572,6 +1587,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (op:c (plus:c@2 @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
        && (CONSTANT_CLASS_P (@0) || single_use (@2)))
    (op @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 /* For equality, this is also true with wrapping overflow.  */
@@ -4096,6 +4112,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (op (rdiv @0 @1)
        (rdiv @2 @1))
    (rdiv (op @0 @2) @1)))
+
+ (for cmp (lt le gt ge)
+      neg_cmp (gt ge lt le)
+  /* Simplify (x * C1) cmp C2 -> x cmp (C2 / C1), where C1 != 0.  */
+  (simplify
+   (cmp (mult @0 REAL_CST@1) REAL_CST@2)
+   (with
+    { tree tem = const_binop (RDIV_EXPR, type, @2, @1); }
+    (if (tem
+	 && !(REAL_VALUE_ISINF (TREE_REAL_CST (tem))
+	      || (real_zerop (tem) && !real_zerop (@1))))
+     (switch
+      (if (real_less (&dconst0, TREE_REAL_CST_PTR (@1)))
+       (cmp @0 { tem; }))
+      (if (real_less (TREE_REAL_CST_PTR (@1), &dconst0))
+       (neg_cmp @0 { tem; })))))))
 
  /* Simplify sqrt(x) * sqrt(y) -> sqrt(x*y).  */
  (for root (SQRT CBRT)

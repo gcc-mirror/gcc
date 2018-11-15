@@ -2584,18 +2584,18 @@ dump_cfg_stats (FILE *file)
   size = n_basic_blocks_for_fn (cfun) * sizeof (struct basic_block_def);
   total += size;
   fprintf (file, fmt_str_1, "Basic blocks", n_basic_blocks_for_fn (cfun),
-	   SCALE (size), LABEL (size));
+	   SIZE_AMOUNT (size));
 
   num_edges = 0;
   FOR_EACH_BB_FN (bb, cfun)
     num_edges += EDGE_COUNT (bb->succs);
   size = num_edges * sizeof (struct edge_def);
   total += size;
-  fprintf (file, fmt_str_2, "Edges", num_edges, SCALE (size), LABEL (size));
+  fprintf (file, fmt_str_2, "Edges", num_edges, SIZE_AMOUNT (size));
 
   fprintf (file, "---------------------------------------------------------\n");
-  fprintf (file, fmt_str_3, "Total memory used by CFG data", SCALE (total),
-	   LABEL (total));
+  fprintf (file, fmt_str_3, "Total memory used by CFG data",
+	   SIZE_AMOUNT (total));
   fprintf (file, "---------------------------------------------------------\n");
   fprintf (file, "\n");
 
@@ -8798,23 +8798,22 @@ gimple_lv_add_condition_to_bb (basic_block first_head ATTRIBUTE_UNUSED,
 
 
 /* Do book-keeping of basic block BB for the profile consistency checker.
-   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
-   then do post-pass accounting.  Store the counting in RECORD.  */
+   Store the counting in RECORD.  */
 static void
-gimple_account_profile_record (basic_block bb, int after_pass,
+gimple_account_profile_record (basic_block bb,
 			       struct profile_record *record)
 {
   gimple_stmt_iterator i;
   for (i = gsi_start_bb (bb); !gsi_end_p (i); gsi_next (&i))
     {
-      record->size[after_pass]
+      record->size
 	+= estimate_num_insns (gsi_stmt (i), &eni_size_weights);
       if (bb->count.initialized_p ())
-	record->time[after_pass]
+	record->time
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->count.to_gcov_type ();
       else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	record->time[after_pass]
+	record->time
 	  += estimate_num_insns (gsi_stmt (i),
 				 &eni_time_weights) * bb->count.to_frequency (cfun);
     }
@@ -9213,7 +9212,7 @@ public:
 unsigned int
 pass_warn_function_return::execute (function *fun)
 {
-  source_location location;
+  location_t location;
   gimple *last;
   edge e;
   edge_iterator ei;

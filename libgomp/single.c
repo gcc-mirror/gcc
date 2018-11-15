@@ -47,7 +47,7 @@ GOMP_single_start (void)
   return __sync_bool_compare_and_swap (&team->single_count, single_count,
 				       single_count + 1L);
 #else
-  bool ret = gomp_work_share_start (false);
+  bool ret = gomp_work_share_start (0);
   if (ret)
     gomp_work_share_init_done ();
   gomp_work_share_end_nowait ();
@@ -68,7 +68,7 @@ GOMP_single_copy_start (void)
   bool first;
   void *ret;
 
-  first = gomp_work_share_start (false);
+  first = gomp_work_share_start (0);
   
   if (first)
     {

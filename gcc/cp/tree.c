@@ -280,6 +280,12 @@ lvalue_kind (const_tree ref)
     case PAREN_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
 
+    case TEMPLATE_PARM_INDEX:
+      if (CLASS_TYPE_P (TREE_TYPE (ref)))
+	/* A template parameter object is an lvalue.  */
+	return clk_ordinary;
+      return clk_none;
+
     default:
     default_:
       if (!TREE_TYPE (ref))
@@ -575,6 +581,8 @@ build_aggr_init_expr (tree type, tree init)
   tree slot;
   tree rval;
   int is_ctor;
+
+  gcc_assert (!VOID_TYPE_P (type));
 
   /* Don't build AGGR_INIT_EXPR in a template.  */
   if (processing_template_decl)
@@ -1826,8 +1834,7 @@ strip_typedefs_expr (tree t, bool *remove_attributes)
       }
 
     case LAMBDA_EXPR:
-      error ("lambda-expression in a constant expression");
-      return error_mark_node;
+      return t;
 
     case STATEMENT_LIST:
       error ("statement-expression in a constant expression");
@@ -2331,12 +2338,17 @@ ovl_iterator::reveal_node (tree overload, tree node)
 
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
-    if (TREE_CODE (chain) == OVERLOAD && OVL_HIDDEN_P (chain))
+    if (TREE_CODE (chain) == OVERLOAD)
       {
-	/* The node needs moving, and the simplest way is to remove it
-	   and reinsert.  What about this making it exported?  */
-	overload = remove_node (overload, node);
-	overload = ovl_insert (OVL_FUNCTION (node), overload);
+	if (OVL_HIDDEN_P (chain))
+	  {
+	    /* The node needs moving, and the simplest way is to remove it
+	       and reinsert.  */
+	    overload = remove_node (overload, node);
+	    overload = ovl_insert (OVL_FUNCTION (node), overload);
+	  }
+	else if (OVL_DEDUP_P (chain))
+	  OVL_DEDUP_P (node) = true;
       }
   return overload;
 }
@@ -2844,7 +2856,18 @@ no_linkage_check (tree t, bool relaxed_p)
 {
   tree r;
 
-  /* There's no point in checking linkage on template functions; we
+  /* Lambda types that don't have mangling scope have no linkage.  We
+     check CLASSTYPE_LAMBDA_EXPR for error_mark_node because
+     when we get here from pushtag none of the lambda information is
+     set up yet, so we want to assume that the lambda has linkage and
+     fix it up later if not.  We need to check this even in templates so
+     that we properly handle a lambda-expression in the signature.  */
+  if (LAMBDA_TYPE_P (t)
+      && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node
+      && LAMBDA_TYPE_EXTRA_SCOPE (t) == NULL_TREE)
+    return t;
+
+  /* Otherwise there's no point in checking linkage on template functions; we
      can't know their complete types.  */
   if (processing_template_decl)
     return NULL_TREE;
@@ -2854,15 +2877,6 @@ no_linkage_check (tree t, bool relaxed_p)
     case RECORD_TYPE:
       if (TYPE_PTRMEMFUNC_P (t))
 	goto ptrmem;
-      /* Lambda types that don't have mangling scope have no linkage.  We
-	 check CLASSTYPE_LAMBDA_EXPR for error_mark_node because
-	 when we get here from pushtag none of the lambda information is
-	 set up yet, so we want to assume that the lambda has linkage and
-	 fix it up later if not.  */
-      if (CLASSTYPE_LAMBDA_EXPR (t)
-	  && CLASSTYPE_LAMBDA_EXPR (t) != error_mark_node
-	  && LAMBDA_TYPE_EXTRA_SCOPE (t) == NULL_TREE)
-	return t;
       /* Fall through.  */
     case UNION_TYPE:
       if (!CLASS_TYPE_P (t))
@@ -3914,6 +3928,10 @@ cp_tree_equal (tree t1, tree t2)
 			       USING_DECL_SCOPE (t2))
 		&& cp_tree_equal (DECL_NAME (t1),
 				  DECL_NAME (t2)));
+      return false;
+
+    case LAMBDA_EXPR:
+      /* Two lambda-expressions are never considered equivalent.  */
       return false;
 
     default:

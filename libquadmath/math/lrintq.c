@@ -1,6 +1,6 @@
 /* Round argument to nearest integral value according to current rounding
    direction.
-   Copyright (C) 1997-2017 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997 and
 		  Jakub Jelinek <jj@ultra.linux.cz>, 1999.
@@ -16,9 +16,8 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
 
@@ -56,9 +55,7 @@ lrintq (__float128 x)
 	      /* In the event of overflow we must raise the "invalid"
 		 exception, but not "inexact".  */
 	      t = nearbyintq (x);
-#ifdef USE_FENV_H
 	      feraiseexcept (t == LONG_MAX ? FE_INEXACT : FE_INVALID);
-#endif
 	    }
 	  else
 #endif
@@ -85,9 +82,7 @@ lrintq (__float128 x)
 	      /* In the event of overflow we must raise the "invalid"
 		 exception, but not "inexact".  */
 	      t = nearbyintq (x);
-#ifdef USE_FENV_H
 	      feraiseexcept (t == LONG_MAX ? FE_INEXACT : FE_INVALID);
-#endif
 	    }
 	  else
 #endif
@@ -113,16 +108,20 @@ lrintq (__float128 x)
 	 unspecified.  */
 #if defined FE_INVALID || defined FE_INEXACT
       if (x < (__float128) LONG_MIN
-	  && x > (__float128) LONG_MIN - 1.0Q)
+	  && x > (__float128) LONG_MIN - 1)
 	{
 	  /* If truncation produces LONG_MIN, the cast will not raise
 	     the exception, but may raise "inexact".  */
 	  t = nearbyintq (x);
-#ifdef USE_FENV_H
 	  feraiseexcept (t == LONG_MIN ? FE_INEXACT : FE_INVALID);
-#endif
 	  return LONG_MIN;
 	}
+      else if (FIX_FLT128_LONG_CONVERT_OVERFLOW && x != (__float128) LONG_MIN)
+	{
+	  feraiseexcept (FE_INVALID);
+	  return sx == 0 ? LONG_MAX : LONG_MIN;
+	}
+
 #endif
       return (long int) x;
     }

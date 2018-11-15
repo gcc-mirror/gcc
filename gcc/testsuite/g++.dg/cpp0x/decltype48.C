@@ -6,7 +6,7 @@ template<typename T> struct baz { };
 template<typename T> T bar();
 
 template<typename T, typename ... U>
-baz<decltype(bar<Int>(bar<U>() ...))> // { dg-error "no match" }
+baz<decltype(bar<Int>(bar<U>() ...))> // { dg-error "" }
 foo();
 
 int main()

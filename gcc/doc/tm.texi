@@ -1081,12 +1081,15 @@ If not defined, the default value is @code{STACK_BOUNDARY}.
 @defmac MAX_OFILE_ALIGNMENT
 Biggest alignment supported by the object file format of this machine.
 Use this macro to limit the alignment which can be specified using the
-@code{__attribute__ ((aligned (@var{n})))} construct.  If not defined,
-the default value is @code{BIGGEST_ALIGNMENT}.
+@code{__attribute__ ((aligned (@var{n})))} construct for functions and
+objects with static storage duration.  The alignment of automatic
+objects may exceed the object file format maximum up to the maximum
+supported by GCC.  If not defined, the default value is
+@code{BIGGEST_ALIGNMENT}.
 
 On systems that use ELF, the default (in @file{config/elfos.h}) is
 the largest supported 32-bit ELF section alignment representable on
-a 32-bit host e.g. @samp{(((uint64_t) 1 << 28) * 8)}.
+a 32-bit host e.g.@: @samp{(((uint64_t) 1 << 28) * 8)}.
 On 32-bit ELF the largest supported section alignment in bits is
 @samp{(0x80000000 * 8)}, but this is not representable on 32-bit hosts.
 @end defmac
@@ -5086,7 +5089,7 @@ The hook is used for options that have a non-trivial list of possible option val
 Set to true if each call that binds to a local definition explicitly
 clobbers or sets all non-fixed registers modified by performing the call.
 That is, by the call pattern itself, or by code that might be inserted by the
-linker (e.g. stubs, veneers, branch islands), but not including those
+linker (e.g.@: stubs, veneers, branch islands), but not including those
 modifiable by the callee.  The affected registers may be mentioned explicitly
 in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.
 The default version of this hook is set to false.  The purpose of this hook
@@ -5898,7 +5901,7 @@ For vector memory operations the cost may depend on type (@var{vectype}) and
 misalignment value (@var{misalign}).
 @end deftypefn
 
-@deftypefn {Target Hook} HOST_WIDE_INT TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT (const_tree @var{type})
+@deftypefn {Target Hook} poly_uint64 TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT (const_tree @var{type})
 This hook returns the preferred alignment in bits for accesses to
 vectors of type @var{type} in vectorized code.  This might be less than
 or greater than the ABI-defined value returned by
@@ -6319,7 +6322,7 @@ bit) are not set in the same way as a test instruction, so that a different
 branch instruction must be used for some conditional branches.  When
 this happens, use the machine mode of the condition code register to
 record different formats of the condition code register.  Modes can
-also be used to record which compare instruction (e.g. a signed or an
+also be used to record which compare instruction (e.g.@: a signed or an
 unsigned comparison) produced the condition codes.
 
 If other modes than @code{CCmode} are required, add them to
@@ -6586,7 +6589,7 @@ other fields in the same word of the structure, but to different bytes.
 This hook returns true if memory accesses described by the
 @var{mode} and @var{alignment} parameters have a cost many times greater
 than aligned accesses, for example if they are emulated in a trap handler.
-This hook is invoked only for unaligned accesses, i.e. when
+This hook is invoked only for unaligned accesses, i.e.@: when
 @code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.
 
 When this hook returns true, the compiler will act as if
@@ -10075,7 +10078,7 @@ A C statement to issue assembly directives that create a difference
 
 @defmac ASM_OUTPUT_DWARF_VMS_DELTA (@var{stream}, @var{size}, @var{label1}, @var{label2})
 A C statement to issue assembly directives that create a difference
-between the two given labels in system defined units, e.g. instruction
+between the two given labels in system defined units, e.g.@: instruction
 slots on IA64 VMS, using an integer of the given size.
 @end defmac
 
@@ -11939,7 +11942,7 @@ memory model bits are allowed.
 @end deftypefn
 
 @deftypevr {Target Hook} {unsigned char} TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
-This value should be set if the result written by @code{atomic_test_and_set} is not exactly 1, i.e. the @code{bool} @code{true}.
+This value should be set if the result written by @code{atomic_test_and_set} is not exactly 1, i.e.@: the @code{bool} @code{true}.
 @end deftypevr
 
 @deftypefn {Target Hook} bool TARGET_HAS_IFUNC_P (void)

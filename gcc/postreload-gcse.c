@@ -1170,8 +1170,18 @@ eliminate_partially_redundant_load (basic_block bb, rtx_insn *insn,
   if (ok_count.to_gcov_type ()
       < GCSE_AFTER_RELOAD_PARTIAL_FRACTION * not_ok_count.to_gcov_type ())
     goto cleanup;
-  if (ok_count.to_gcov_type ()
-      < GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count.to_gcov_type ())
+
+  gcov_type threshold;
+#if (GCC_VERSION >= 5000)
+  if (__builtin_mul_overflow (GCSE_AFTER_RELOAD_CRITICAL_FRACTION,
+			      critical_count.to_gcov_type (), &threshold))
+    threshold = profile_count::max_count;
+#else
+  threshold
+    = GCSE_AFTER_RELOAD_CRITICAL_FRACTION * critical_count.to_gcov_type ();
+#endif
+
+  if (ok_count.to_gcov_type () < threshold)
     goto cleanup;
 
   /* Generate moves to the loaded register from where

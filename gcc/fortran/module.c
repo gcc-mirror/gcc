@@ -2125,6 +2125,7 @@ DECL_MIO_NAME (procedure_type)
 DECL_MIO_NAME (ref_type)
 DECL_MIO_NAME (sym_flavor)
 DECL_MIO_NAME (sym_intent)
+DECL_MIO_NAME (inquiry_type)
 #undef DECL_MIO_NAME
 
 /* Symbol attributes are stored in list with the first three elements
@@ -3140,6 +3141,15 @@ static const mstring ref_types[] = {
     minit ("ARRAY", REF_ARRAY),
     minit ("COMPONENT", REF_COMPONENT),
     minit ("SUBSTRING", REF_SUBSTRING),
+    minit ("INQUIRY", REF_INQUIRY),
+    minit (NULL, -1)
+};
+
+static const mstring inquiry_types[] = {
+    minit ("RE", INQUIRY_RE),
+    minit ("IM", INQUIRY_IM),
+    minit ("KIND", INQUIRY_KIND),
+    minit ("LEN", INQUIRY_LEN),
     minit (NULL, -1)
 };
 
@@ -3169,6 +3179,10 @@ mio_ref (gfc_ref **rp)
       mio_expr (&r->u.ss.start);
       mio_expr (&r->u.ss.end);
       mio_charlen (&r->u.ss.length);
+      break;
+
+    case REF_INQUIRY:
+      r->u.i = MIO_NAME (inquiry_type) (r->u.i, inquiry_types);
       break;
     }
 

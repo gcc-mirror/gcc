@@ -40,6 +40,8 @@ extern void print_generic_stmt_indented (FILE *, tree, dump_flags_t, int);
 extern void print_generic_expr (FILE *, tree, dump_flags_t = TDF_NONE);
 extern char *print_generic_expr_to_str (tree);
 extern void dump_omp_clauses (pretty_printer *, tree, int, dump_flags_t);
+extern void dump_omp_atomic_memory_order (pretty_printer *,
+					  enum omp_memory_order);
 extern int dump_generic_node (pretty_printer *, tree, int, dump_flags_t, bool);
 extern void print_declaration (pretty_printer *, tree, int, dump_flags_t);
 extern int op_code_prio (enum tree_code);

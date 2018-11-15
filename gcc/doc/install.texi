@@ -1904,7 +1904,7 @@ Specify whether @code{long double} uses the IBM extended double format
 or the IEEE 128-bit floating point format on PowerPC Linux systems.
 This configuration switch will only work on little endian PowerPC
 Linux systems and on big endian 64-bit systems where the default cpu
-is at least power7 (i.e. @option{--with-cpu=power7},
+is at least power7 (i.e.@: @option{--with-cpu=power7},
 @option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
 
 If you use the @option{--with-long-double-64} configuration option,
@@ -2291,7 +2291,7 @@ continues.
 Specify search directories for the garbage collector header files and
 libraries. @var{list} is a comma separated list of key value pairs of the
 form @samp{@var{multilibdir}=@var{path}}, where the default multilib key
-is named as @samp{.} (dot), or is omitted (e.g.
+is named as @samp{.} (dot), or is omitted (e.g.@:
 @samp{--with-target-bdw-gc=/opt/bdw-gc,32=/opt-bdw-gc32}).
 
 The options @option{--with-target-bdw-gc-include} and
@@ -2299,7 +2299,7 @@ The options @option{--with-target-bdw-gc-include} and
 for each multilib variant and they take precedence over
 @option{--with-target-bdw-gc}.  If @option{--with-target-bdw-gc-include}
 is missing values for a multilib, then the value for the default
-multilib is used (e.g. @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
+multilib is used (e.g.@: @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
 @samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
 If none of these options are specified, the library is assumed in
 default locations.
@@ -2480,7 +2480,7 @@ Analogous to @code{bootstrap-O1}.
 Enables Link-Time Optimization for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-lto} is equivalent to adding
 @option{-flto} to @samp{BOOT_CFLAGS}.  This option assumes that the host
-supports the linker plugin (e.g. GNU ld version 2.21 or later or GNU gold
+supports the linker plugin (e.g.@: GNU ld version 2.21 or later or GNU gold
 version 2.21 or later).
 
 @item @samp{bootstrap-lto-noplugin}
@@ -2541,7 +2541,7 @@ must be used along with @code{bootstrap-debug-lean} and
 This option enables Intel CET for host tools during bootstrapping.
 @samp{BUILD_CONFIG=bootstrap-cet} is equivalent to adding
 @option{-fcf-protection} to @samp{BOOT_CFLAGS}.  This option
-assumes that the host supports Intel CET (e.g. GNU assembler version
+assumes that the host supports Intel CET (e.g.@: GNU assembler version
 2.30 or later).
 
 @item @samp{bootstrap-time}
@@ -3268,6 +3268,10 @@ information have to.
 @uref{#nds32be-x-elf,,nds32be-*-elf}
 @item
 @uref{#nvptx-x-none,,nvptx-*-none}
+@item
+@uref{#or1k-x-elf,,or1k-*-elf}
+@item
+@uref{#or1k-x-linux,,or1k-*-linux}
 @item
 @uref{#powerpc-x-x,,powerpc*-*-*}
 @item
@@ -4235,6 +4239,21 @@ the GCC sources.
 
 Use the @option{--disable-sjlj-exceptions} and
 @option{--enable-newlib-io-long-long} options when configuring.
+
+@html
+<hr />
+@end html
+@anchor{or1k-x-elf}
+@heading or1k-*-elf
+The OpenRISC 1000 32-bit processor with delay slots.
+This configuration is intended for embedded systems.
+
+@html
+<hr />
+@end html
+@anchor{or1k-x-linux}
+@heading or1k-*-linux
+The OpenRISC 1000 32-bit processor with delay slots.
 
 @html
 <hr />

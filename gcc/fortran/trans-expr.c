@@ -2510,6 +2510,40 @@ conv_parent_component_references (gfc_se * se, gfc_ref * ref)
   conv_parent_component_references (se, &parent);
 }
 
+
+static void
+conv_inquiry (gfc_se * se, gfc_ref * ref, gfc_expr *expr, gfc_typespec *ts)
+{
+  tree res = se->expr;
+
+  switch (ref->u.i)
+    {
+    case INQUIRY_RE:
+      res = fold_build1_loc (input_location, REALPART_EXPR,
+			     TREE_TYPE (TREE_TYPE (res)), res);
+      break;
+
+    case INQUIRY_IM:
+      res = fold_build1_loc (input_location, IMAGPART_EXPR,
+			     TREE_TYPE (TREE_TYPE (res)), res);
+      break;
+
+    case INQUIRY_KIND:
+      res = build_int_cst (gfc_typenode_for_spec (&expr->ts),
+			   ts->kind);
+      break;
+
+    case INQUIRY_LEN:
+      res = fold_convert (gfc_typenode_for_spec (&expr->ts),
+			  se->string_length);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+  se->expr = res;
+}
+
 /* Return the contents of a variable. Also handles reference/pointer
    variables (all Fortran pointer references are implicit).  */
 
@@ -2720,6 +2754,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       gcc_assert (se->string_length);
     }
 
+  gfc_typespec *ts = &sym->ts;
   while (ref)
     {
       switch (ref->type)
@@ -2740,6 +2775,7 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	  break;
 
 	case REF_COMPONENT:
+	  ts = &ref->u.c.component->ts;
 	  if (first_time && is_classarray && sym->attr.dummy
 	      && se->descriptor_only
 	      && !CLASS_DATA (sym)->attr.allocatable
@@ -2765,6 +2801,10 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
 	case REF_SUBSTRING:
 	  gfc_conv_substring (se, ref, expr->ts.kind,
 			      expr->symtree->name, &expr->where);
+	  break;
+
+	case REF_INQUIRY:
+	  conv_inquiry (se, ref, expr, ts);
 	  break;
 
 	default:
@@ -4135,6 +4175,7 @@ gfc_apply_interface_mapping_to_ref (gfc_interface_mapping * mapping,
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:

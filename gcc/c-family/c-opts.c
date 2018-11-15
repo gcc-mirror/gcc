@@ -165,7 +165,8 @@ c_common_option_lang_mask (void)
 /* Diagnostic finalizer for C/C++/Objective-C/Objective-C++.  */
 static void
 c_diagnostic_finalizer (diagnostic_context *context,
-			diagnostic_info *diagnostic)
+			diagnostic_info *diagnostic,
+			diagnostic_t)
 {
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   /* By default print macro expansion contexts in the diagnostic
@@ -1398,7 +1399,7 @@ c_finish_options (void)
       cb_file_change (parse_in, bltin_map);
 
       /* Make sure all of the builtins about to be declared have
-	 BUILTINS_LOCATION has their source_location.  */
+	 BUILTINS_LOCATION has their location_t.  */
       cpp_force_token_locations (parse_in, BUILTINS_LOCATION);
 
       cpp_init_builtins (parse_in, flag_hosted);

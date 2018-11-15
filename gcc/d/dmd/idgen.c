@@ -14,10 +14,7 @@
 //      id.h
 //      id.c
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
+#include "root/dsystem.h"
 
 struct Msgtable
 {

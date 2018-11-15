@@ -112,8 +112,10 @@ fini_ssanames (struct function *fn)
 void
 ssanames_print_statistics (void)
 {
-  fprintf (stderr, "SSA_NAME nodes allocated: %u\n", ssa_name_nodes_created);
-  fprintf (stderr, "SSA_NAME nodes reused: %u\n", ssa_name_nodes_reused);
+  fprintf (stderr, "SSA_NAME nodes allocated: %u%c\n",
+	   SIZE_AMOUNT (ssa_name_nodes_created));
+  fprintf (stderr, "SSA_NAME nodes reused: %u%c\n",
+	   SIZE_AMOUNT (ssa_name_nodes_reused));
 }
 
 /* Verify the state of the SSA_NAME lists.
@@ -396,6 +398,15 @@ set_range_info (tree name, enum value_range_kind range_type,
   set_range_info_raw (name, range_type, min, max);
 }
 
+/* Store range information for NAME from a value_range.  */
+
+void
+set_range_info (tree name, const value_range_base &vr)
+{
+  wide_int min = wi::to_wide (vr.min ());
+  wide_int max = wi::to_wide (vr.max ());
+  set_range_info (name, vr.kind (), min, max);
+}
 
 /* Gets range information MIN, MAX and returns enum value_range_kind
    corresponding to tree ssa_name NAME.  enum value_range_kind returned
@@ -417,6 +428,27 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
   *min = ri->get_min ();
   *max = ri->get_max ();
   return SSA_NAME_RANGE_TYPE (name);
+}
+
+/* Gets range information corresponding to ssa_name NAME and stores it
+   in a value_range VR.  Returns the value_range_kind.  */
+
+enum value_range_kind
+get_range_info (const_tree name, value_range_base &vr)
+{
+  tree min, max;
+  wide_int wmin, wmax;
+  enum value_range_kind kind = get_range_info (name, &wmin, &wmax);
+
+  if (kind == VR_VARYING || kind == VR_UNDEFINED)
+    min = max = NULL;
+  else
+    {
+      min = wide_int_to_tree (TREE_TYPE (name), wmin);
+      max = wide_int_to_tree (TREE_TYPE (name), wmax);
+    }
+  vr.set (kind, min, max);
+  return kind;
 }
 
 /* Set nonnull attribute to pointer NAME.  */

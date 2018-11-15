@@ -2021,7 +2021,7 @@ B register
 M register
 
 @item c
-Registers used for circular buffering, i.e. I, B, or L registers.
+Registers used for circular buffering, i.e.@: I, B, or L registers.
 
 @item C
 The CC register.
@@ -3003,6 +3003,31 @@ representing a supported PIC or TLS relocation.
 
 @end table
 
+@item OpenRISC---@file{config/or1k/constraints.md}
+@table @code
+@item I
+Integer that is valid as an immediate operand in an
+instruction taking a signed 16-bit number. Range
+@minus{}32768 to 32767.
+
+@item K
+Integer that is valid as an immediate operand in an
+instruction taking an unsigned 16-bit number. Range
+0 to 65535.
+
+@item M
+Signed 16-bit constant shifted left 16 bits. (Used with @code{l.movhi})
+
+@item O
+Zero
+
+@ifset INTERNALS
+@item c
+Register usable for sibcalls.
+@end ifset
+
+@end table
+
 @item PDP-11---@file{config/pdp11/constraints.md}
 @table @code
 @item a
@@ -3248,7 +3273,7 @@ instructions.
 Vector constant that can be loaded with XXSPLTIB & sign extension.
 
 @item h
-@samp{MQ}, @samp{CTR}, or @samp{LINK} register
+@samp{VRSAVE}, @samp{CTR}, or @samp{LINK} register
 
 @item c
 @samp{CTR} register
@@ -4095,7 +4120,7 @@ Second from top of 80387 floating-point stack (@code{%st(1)}).
 
 @ifset INTERNALS
 @item Yk
-Any mask register that can be used as a predicate, i.e. @code{k1-k7}.
+Any mask register that can be used as a predicate, i.e.@: @code{k1-k7}.
 
 @item k
 Any mask register.
@@ -5234,7 +5259,7 @@ calculations.  The expanded code is not allowed to clobber the
 condition code.  It only needs to be defined if @code{add@var{m}3}
 sets the condition code.  If adds used for address calculations and
 normal adds are not compatible it is required to expand a distinct
-pattern (e.g. using an unspec).  The pattern is used by LRA to emit
+pattern (e.g.@: using an unspec).  The pattern is used by LRA to emit
 address calculations.  @code{add@var{m}3} is used if
 @code{addptr@var{m}3} is not defined.
 
@@ -5382,7 +5407,7 @@ of a wider mode.)
 
 @cindex @code{vec_shl_insert_@var{m}} instruction pattern
 @item @samp{vec_shl_insert_@var{m}}
-Shift the elements in vector input operand 1 left one element (i.e.
+Shift the elements in vector input operand 1 left one element (i.e.@:
 away from element 0) and fill the vacated element 0 with the scalar
 in operand 2.  Store the result in vector output operand 0.  Operands
 0 and 1 have mode @var{m} and operand 2 has the mode appropriate for
@@ -5390,7 +5415,7 @@ one element of @var{m}.
 
 @cindex @code{vec_shr_@var{m}} instruction pattern
 @item @samp{vec_shr_@var{m}}
-Whole vector right shift in bits, i.e. towards element 0.
+Whole vector right shift in bits, i.e.@: towards element 0.
 Operand 1 is a vector to be shifted.
 Operand 2 is an integer shift amount in bits.
 Operand 0 is where the resulting shifted vector is stored.
@@ -6159,8 +6184,9 @@ all cases. This expected alignment is also in bytes, just like operand 4.
 Expected size, when unknown, is set to @code{(const_int -1)}.
 Operand 7 is the minimal size of the block and operand 8 is the
 maximal size of the block (NULL if it can not be represented as CONST_INT).
-Operand 9 is the probable maximal size (i.e. we can not rely on it for correctness,
-but it can be used for choosing proper code sequence for a given size).
+Operand 9 is the probable maximal size (i.e.@: we can not rely on it for
+correctness, but it can be used for choosing proper code sequence for a
+given size).
 
 The use for multiple @code{setmem@var{m}} is as for @code{movmem@var{m}}.
 
@@ -7543,8 +7569,8 @@ more flexible approach with one @code{define_expand} is used in GCC.
 The machine description becomes clearer for architectures that
 have compare-and-branch instructions but no condition code.  It also
 works better when different sets of comparison operators are supported
-by different kinds of conditional branches (e.g. integer vs. floating-point),
-or by conditional branches with respect to conditional stores.
+by different kinds of conditional branches (e.g.@: integer vs.@:
+floating-point), or by conditional branches with respect to conditional stores.
 
 Two separate insns are always used if the machine description represents
 a condition code register using the legacy RTL expression @code{(cc0)},
@@ -8881,7 +8907,7 @@ generation. @xref{Disable Insn Alternatives}.
 
 @item mnemonic
 The @code{mnemonic} attribute can be defined to implement instruction
-specific checks in e.g. the pipeline description.
+specific checks in e.g.@: the pipeline description.
 @xref{Mnemonic Attribute}.
 @end table
 
@@ -10214,7 +10240,7 @@ input-template of the @code{define_subst}.  In such case the copy is
 deleted.
 
 @code{define_subst} can be used only in @code{define_insn} and
-@code{define_expand}, it cannot be used in other expressions (e.g. in
+@code{define_expand}, it cannot be used in other expressions (e.g.@: in
 @code{define_insn_and_split}).
 
 @menu

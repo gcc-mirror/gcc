@@ -6,11 +6,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/stringtable.c
  */
 
-#include <stdio.h>
-#include <stdint.h>                     // uint{8|16|32}_t
-#include <string.h>                     // memcpy()
-#include <stdlib.h>
-
+#include "dsystem.h"                    // uint{8|16|32}_t, memcpy()
 #include "root.h"
 #include "rmem.h"                       // mem
 #include "stringtable.h"

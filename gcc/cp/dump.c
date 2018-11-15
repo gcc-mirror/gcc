@@ -328,6 +328,12 @@ cp_dump_tree (void* dump_info, tree t)
       dump_child ("expr", EXPR_STMT_EXPR (t));
       break;
 
+    case OMP_DEPOBJ:
+      dump_stmt (di, t);
+      dump_child ("depobj", OMP_DEPOBJ_DEPOBJ (t));
+      dump_child ("clauses", OMP_DEPOBJ_CLAUSES (t));
+      break;
+
     default:
       break;
     }

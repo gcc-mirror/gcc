@@ -19,18 +19,18 @@ constexpr int i2 = fn2 (1, 200); // { dg-message "in .constexpr. expansion of " 
 constexpr int
 fn3 (int i, int j)
 {
-  return i << j; // { dg-error "is negative" }
+  return i << j; // { dg-error "is negative" "" { target c++17_down } }
 }
 
-constexpr int i3 = fn3 (-1, 2); // { dg-message "in .constexpr. expansion of " }
+constexpr int i3 = fn3 (-1, 2); // { dg-message "in .constexpr. expansion of " "" { target c++17_down } }
 
 constexpr int
 fn4 (int i, int j)
 {
-  return i << j; // { dg-error "overflows" }
+  return i << j; // { dg-error "overflows" "" { target c++17_down } }
 }
 
-constexpr int i4 = fn4 (__INT_MAX__, 2); // { dg-message "in .constexpr. expansion of " }
+constexpr int i4 = fn4 (__INT_MAX__, 2); // { dg-message "in .constexpr. expansion of " "" { target c++17_down } }
 
 constexpr int
 fn5 (int i, int j)

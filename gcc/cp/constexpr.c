@@ -1936,9 +1936,14 @@ cxx_eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
      if E1 has a signed type and non-negative value, and E1x2^E2 is
      representable in the corresponding unsigned type of the result type,
      then that value, converted to the result type, is the resulting value;
-     otherwise, the behavior is undefined.  */
-  if (code == LSHIFT_EXPR && !TYPE_UNSIGNED (lhstype)
-      && (cxx_dialect >= cxx11))
+     otherwise, the behavior is undefined.
+     For C++2a:
+     The value of E1 << E2 is the unique value congruent to E1 x 2^E2 modulo
+     2^N, where N is the range exponent of the type of the result.  */
+  if (code == LSHIFT_EXPR
+      && !TYPE_UNSIGNED (lhstype)
+      && cxx_dialect >= cxx11
+      && cxx_dialect < cxx2a)
     {
       if (tree_int_cst_sgn (lhs) == -1)
 	{
@@ -2794,8 +2799,10 @@ initialized_type (tree t)
 {
   if (TYPE_P (t))
     return t;
-  tree type = cv_unqualified (TREE_TYPE (t));
-  if (TREE_CODE (t) == CALL_EXPR || TREE_CODE (t) == AGGR_INIT_EXPR)
+  tree type = TREE_TYPE (t);
+  if (!VOID_TYPE_P (type))
+    /* No need to look deeper.  */;
+  else if (TREE_CODE (t) == CALL_EXPR)
     {
       /* A constructor call has void type, so we need to look deeper.  */
       tree fn = get_function_named_in_call (t);
@@ -2803,7 +2810,9 @@ initialized_type (tree t)
 	  && DECL_CXX_CONSTRUCTOR_P (fn))
 	type = DECL_CONTEXT (fn);
     }
-  return type;
+  else if (TREE_CODE (t) == AGGR_INIT_EXPR)
+    type = TREE_TYPE (AGGR_INIT_EXPR_SLOT (t));
+  return cv_unqualified (type);
 }
 
 /* We're about to initialize element INDEX of an array or class from VALUE.
@@ -3016,7 +3025,7 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
 					&argvec, elttype, LOOKUP_NORMAL,
 					complain);
       release_tree_vector (argvec);
-      init = build_aggr_init_expr (TREE_TYPE (init), init);
+      init = build_aggr_init_expr (elttype, init);
       pre_init = true;
     }
 
@@ -5105,7 +5114,7 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 	r = build_nop (TREE_TYPE (r), r);
       TREE_CONSTANT (r) = false;
     }
-  else if (non_constant_p || r == t)
+  else if (non_constant_p)
     return t;
 
   if (should_unshare)
@@ -5113,18 +5122,18 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   if (TREE_CODE (r) == CONSTRUCTOR && CLASS_TYPE_P (TREE_TYPE (r)))
     {
+      r = adjust_temp_type (type, r);
       if (TREE_CODE (t) == TARGET_EXPR
 	  && TARGET_EXPR_INITIAL (t) == r)
 	return t;
-      else
+      else if (TREE_CODE (t) != CONSTRUCTOR)
 	{
 	  r = get_target_expr (r);
 	  TREE_CONSTANT (r) = true;
-	  return r;
 	}
     }
-  else
-    return r;
+
+  return r;
 }
 
 /* Returns true if T is a valid subexpression of a constant expression,
@@ -5929,6 +5938,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case OMP_ATOMIC_READ:
     case OMP_ATOMIC_CAPTURE_OLD:
     case OMP_ATOMIC_CAPTURE_NEW:
+    case OMP_DEPOBJ:
     case OACC_PARALLEL:
     case OACC_KERNELS:
     case OACC_DATA:

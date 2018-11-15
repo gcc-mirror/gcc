@@ -336,13 +336,13 @@ struct lang_hooks
 
   /* Translate include hook hook.  */
   int (*preprocess_translate_include)
-    (cpp_reader *, line_maps *, source_location, const char *fname, bool);
+    (cpp_reader *, line_maps *, location_t, const char *fname, bool);
 
   /* Undefining a macro.  */
-  void (*preprocess_undef) (cpp_reader *, source_location, cpp_hashnode *);
+  void (*preprocess_undef) (cpp_reader *, location_t, cpp_hashnode *);
 
   /* Define a deferred macro.  */
-  struct cpp_macro *(*preprocess_deferred_macro) (cpp_reader *, source_location,
+  struct cpp_macro *(*preprocess_deferred_macro) (cpp_reader *, location_t,
 						  cpp_hashnode *);
 
   /* Observer for preprocessing stream.  */

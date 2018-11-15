@@ -904,7 +904,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   _Tp* __result, allocator<_Up>& __alloc)
     {
       ptrdiff_t __count = __last - __first;
-      __builtin_memmove(__result, __first, __count * sizeof(_Tp));
+      if (__count > 0)
+	__builtin_memmove(__result, __first, __count * sizeof(_Tp));
       return __result + __count;
     }
 

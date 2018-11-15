@@ -1896,20 +1896,20 @@ proc check_mpaired_single_hw_available { } {
 # Return 1 if the target supports executing Loongson vector instructions,
 # 0 otherwise.  Cache the result.
 
-proc check_mips_loongson_hw_available { } {
-    return [check_cached_effective_target mips_loongson_hw_available {
+proc check_mips_loongson_mmi_hw_available { } {
+    return [check_cached_effective_target mips_loongson_mmi_hw_available {
 	# If this is not the right target then we can skip the test.
 	if { !([istarget mips*-*-*]) } {
 	    expr 0
 	} else {
-	    check_runtime_nocache mips_loongson_hw_available {
-	      #include <loongson.h>
+	    check_runtime_nocache mips_loongson_mmi_hw_available {
+	      #include <loongson-mmiintrin.h>
 	      int main()
 	      {
 		asm volatile ("paddw $f2,$f4,$f6");
 		return 0;
 	      }
-	    } ""
+	    } "-mloongson-mmi"
 	}
     }]
 }
@@ -1963,9 +1963,9 @@ proc check_effective_target_mpaired_single_runtime { } {
 
 # Return 1 if the target supports running Loongson executables, 0 otherwise.
 
-proc check_effective_target_mips_loongson_runtime { } {
-    if { [check_effective_target_mips_loongson]
-	 && [check_mips_loongson_hw_available] } {
+proc check_effective_target_mips_loongson_mmi_runtime { } {
+    if { [check_effective_target_mips_loongson_mmi]
+	 && [check_mips_loongson_mmi_hw_available] } {
 	return 1
     }
     return 0
@@ -3085,7 +3085,7 @@ proc check_effective_target_vect_int { } {
 	 || [istarget aarch64*-*-*]
 	 || [is-effective-target arm_neon]
 	 || ([istarget mips*-*-*]
-	     && ([et-is-effective-target mips_loongson]
+	     && ([et-is-effective-target mips_loongson_mmi]
 	     || [et-is-effective-target mips_msa]))
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
@@ -4708,11 +4708,24 @@ proc add_options_for_mips_msa { flags } {
   return "$flags -mmsa"
 }
 
+# Add the options needed for MIPS Loongson MMI Architecture.
+
+proc add_options_for_mips_loongson_mmi { flags } {
+  if { ! [check_effective_target_mips_loongson_mmi] } {
+    return "$flags"
+  }
+  return "$flags -mloongson-mmi"
+}
+
+
 # Return 1 if this a Loongson-2E or -2F target using an ABI that supports
 # the Loongson vector modes.
 
-proc check_effective_target_mips_loongson { } {
+proc check_effective_target_mips_loongson_mmi { } {
     return [check_no_compiler_messages loongson assembly {
+	#if !defined(__mips_loongson_mmi)
+	#error !__mips_loongson_mmi
+	#endif
 	#if !defined(__mips_loongson_vector_rev)
 	#error !__mips_loongson_vector_rev
 	#endif
@@ -5311,9 +5324,18 @@ proc check_effective_target_vect_shift { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && ([et-is-effective-target mips_msa]
-		     || [et-is-effective-target mips_loongson]))
+		     || [et-is-effective-target mips_loongson_mmi]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx]) }}]
+}
+
+# Return 1 if the target supports hardware vector shift by register operation.
+
+proc check_effective_target_vect_var_shift { } {
+    return [check_cached_effective_target_indexed vect_var_shift {
+      expr {(([istarget i?86-*-*] || [istarget x86_64-*-*])
+	     && [check_avx2_available])
+      }}]
 }
 
 proc check_effective_target_whole_vector_shift { } {
@@ -5324,7 +5346,7 @@ proc check_effective_target_whole_vector_shift { } {
 	 || ([is-effective-target arm_neon]
 	     && [check_effective_target_arm_little_endian])
 	 || ([istarget mips*-*-*]
-	     && [et-is-effective-target mips_loongson])
+	     && [et-is-effective-target mips_loongson_mmi])
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx]) } {
 	set answer 1
@@ -5464,7 +5486,7 @@ proc check_effective_target_vect_no_int_min_max { } {
 	     || [istarget spu-*-*]
 	     || [istarget alpha*-*-*]
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_loongson]) }}]
+		 && [et-is-effective-target mips_loongson_mmi]) }}]
 }
 
 # Return 1 if the target plus current options does not support a vector
@@ -5933,7 +5955,7 @@ proc check_effective_target_vect_no_align { } {
 	     || [check_effective_target_arm_vect_no_misalign]
 	     || ([istarget powerpc*-*-*] && [check_p8vector_hw_available])
 	     || ([istarget mips*-*-*]
-		 && [et-is-effective-target mips_loongson]) }}]
+		 && [et-is-effective-target mips_loongson_mmi]) }}]
 }
 
 # Return 1 if the target supports a vector misalign access, 0 otherwise.
@@ -6167,7 +6189,7 @@ proc check_effective_target_vect_short_mult { } {
 	     || [check_effective_target_arm32]
 	     || ([istarget mips*-*-*]
 		 && ([et-is-effective-target mips_msa]
-		     || [et-is-effective-target mips_loongson]))
+		     || [et-is-effective-target mips_loongson_mmi]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx]) }}]
 }
@@ -6498,6 +6520,17 @@ proc check_effective_target_sync_long_long { } {
     } else {
 	return 0
     }
+}
+
+# Return 1 if the target supports popcount on long.
+
+proc check_effective_target_popcountl { } {
+    return [check_no_messages_and_pattern popcountl "!\\(call" rtl-expand {
+	int foo (long b)
+	  {
+	    return __builtin_popcountl (b);
+	  }
+    } "" ]
 }
 
 # Return 1 if the target supports atomic operations on "long long"
@@ -7142,6 +7175,19 @@ proc check_effective_target_automatic_stack_alignment  { } {
 proc check_avx_available { } {
   if { [check_no_compiler_messages avx_available assembly {
     #ifndef __AVX__
+    #error unsupported
+    #endif
+  } ""] } {
+    return 1;
+  }
+  return 0;
+}
+
+# Return true if we are compiling for AVX2 target.
+
+proc check_avx2_available { } {
+  if { [check_no_compiler_messages avx_available assembly {
+    #ifndef __AVX2__
     #error unsupported
     #endif
   } ""] } {
@@ -8155,8 +8201,8 @@ proc check_vect_support_and_set_flags { } {
 	if { [check_effective_target_mpaired_single] } {
 	    lappend EFFECTIVE_TARGETS mpaired_single
 	}
-	if { [check_effective_target_mips_loongson] } {
-	    lappend EFFECTIVE_TARGETS mips_loongson
+	if { [check_effective_target_mips_loongson_mmi] } {
+	    lappend EFFECTIVE_TARGETS mips_loongson_mmi
 	}
 	if { [check_effective_target_mips_msa] } {
 	    lappend EFFECTIVE_TARGETS mips_msa
@@ -8394,6 +8440,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget riscv*-*-*]
 	 || [istarget v850*-*-*]
 	 || [istarget visium-*-*]
+	 || [istarget or1k*-*-*]
 	 || [check_effective_target_arm_cortex_m] } {
 	return 1
     }
@@ -8932,4 +8979,11 @@ proc check_effective_target_cet { } {
 	  asm ("setssbsy");
 	}
     } "-O2" ]
+}
+
+# Return 1 if target supports floating point "infinite"
+proc check_effective_target_inf { } {
+    return [check_no_compiler_messages supports_inf assembly {
+        const double pinf = __builtin_inf ();
+    }]
 }

@@ -42,7 +42,7 @@ public:
     Import(Loc loc, Identifiers *packages, Identifier *id, Identifier *aliasId,
         int isstatic);
     void addAlias(Identifier *name, Identifier *alias);
-    const char *kind();
+    const char *kind() const;
     Prot prot();
     Dsymbol *syntaxCopy(Dsymbol *s);    // copy only syntax trees
     void load(Scope *sc);

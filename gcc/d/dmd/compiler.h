@@ -10,6 +10,8 @@
 
 #pragma once
 
+#include "root/array.h"
+
 // This file contains a data structure that describes a back-end compiler
 // and implements compiler-specific actions.
 
@@ -17,6 +19,11 @@ class Expression;
 class Module;
 class Type;
 struct Scope;
+
+// DMD-generated module `__entrypoint` where the C main resides
+extern Module *entrypoint;
+// Module in which the D main is
+extern Module *rootHasMain;
 
 struct Compiler
 {

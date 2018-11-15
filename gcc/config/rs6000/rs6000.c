@@ -6560,7 +6560,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	{
 	  rtx element0 = XVECEXP (vals, 0, 0);
 	  if (MEM_P (element0))
-	    element0 = rs6000_address_for_fpconvert (element0);
+	    element0 = rs6000_force_indexed_or_indirect_mem (element0);
 	  else
 	    element0 = force_reg (SImode, element0);
 
@@ -6601,7 +6601,7 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	  if (TARGET_P9_VECTOR)
 	    {
 	      if (MEM_P (element0))
-		element0 = rs6000_address_for_fpconvert (element0);
+		element0 = rs6000_force_indexed_or_indirect_mem (element0);
 
 	      emit_insn (gen_vsx_splat_v4sf (target, element0));
 	    }
@@ -8422,23 +8422,6 @@ rs6000_const_not_ok_for_debug_p (rtx x)
 
   return false;
 }
-
-/* Helper function for making sure we will make full
-   use of indexed addressing.  */
-
-rtx
-rs6000_force_indexed_or_indirect_mem (rtx x)
-{
-  machine_mode m = GET_MODE (x);
-  if (!indexed_or_indirect_operand (x, m))
-    {
-      rtx addr = XEXP (x, 0);
-      addr = force_reg (Pmode, addr);
-      x = replace_equiv_address_nv (x, addr);
-    }
-  return x;
-}
-
 
 /* Implement the TARGET_LEGITIMATE_COMBINED_INSN hook.  */
 
@@ -19718,7 +19701,10 @@ rs6000_secondary_reload_inner (rtx reg, rtx mem, rtx scratch, bool store_p)
 
       if ((addr_mask & RELOAD_REG_PRE_INCDEC) == 0)
 	{
-	  emit_insn (gen_add2_insn (op_reg, GEN_INT (GET_MODE_SIZE (mode))));
+	  int delta = GET_MODE_SIZE (mode);
+	  if (GET_CODE (addr) == PRE_DEC)
+	    delta = -delta;
+	  emit_insn (gen_add2_insn (op_reg, GEN_INT (delta)));
 	  new_addr = op_reg;
 	}
       break;
@@ -19918,17 +19904,6 @@ rs6000_secondary_reload_gpr (rtx reg, rtx mem, rtx scratch, bool store_p)
 		  && GET_CODE (XEXP (addr, 1)) == PLUS
 		  && XEXP (XEXP (addr, 1), 0) == XEXP (addr, 0));
       scratch_or_premodify = XEXP (addr, 0);
-      if (!HARD_REGISTER_P (scratch_or_premodify))
-	/* If we have a pseudo here then reload will have arranged
-	   to have it replaced, but only in the original insn.
-	   Use the replacement here too.  */
-	scratch_or_premodify = find_replacement (&XEXP (addr, 0));
-
-      /* RTL emitted by rs6000_secondary_reload_gpr uses RTL
-	 expressions from the original insn, without unsharing them.
-	 Any RTL that points into the original insn will of course
-	 have register replacements applied.  That is why we don't
-	 need to look for replacements under the PLUS.  */
       addr = XEXP (addr, 1);
     }
   gcc_assert (GET_CODE (addr) == PLUS || GET_CODE (addr) == LO_SUM);
@@ -26741,7 +26716,7 @@ rs6000_emit_prologue (void)
     }
 
   /* If we need to save CR, put it into r12 or r11.  Choose r12 except when
-     r12 will be needed by out-of-line gpr restore.  */
+     r12 will be needed by out-of-line gpr save.  */
   cr_save_regno = ((DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
 		   && !(strategy & (SAVE_INLINE_GPRS
 				    | SAVE_NOINLINE_GPRS_SAVES_LR))
@@ -37312,21 +37287,19 @@ rs6000_allocate_stack_temp (machine_mode mode,
   return stack;
 }
 
-/* Given a memory reference, if it is not a reg or reg+reg addressing, convert
-   to such a form to deal with memory reference instructions like STFIWX that
-   only take reg+reg addressing.  */
+/* Given a memory reference, if it is not a reg or reg+reg addressing,
+   convert to such a form to deal with memory reference instructions
+   like STFIWX and LDBRX that only take reg+reg addressing.  */
 
 rtx
-rs6000_address_for_fpconvert (rtx x)
+rs6000_force_indexed_or_indirect_mem (rtx x)
 {
-  rtx addr;
+  machine_mode mode = GET_MODE (x);
 
   gcc_assert (MEM_P (x));
-  addr = XEXP (x, 0);
-  if (can_create_pseudo_p ()
-      && ! legitimate_indirect_address_p (addr, reload_completed)
-      && ! legitimate_indexed_address_p (addr, reload_completed))
+  if (can_create_pseudo_p () && !indexed_or_indirect_operand (x, mode))
     {
+      rtx addr = XEXP (x, 0);
       if (GET_CODE (addr) == PRE_INC || GET_CODE (addr) == PRE_DEC)
 	{
 	  rtx reg = XEXP (addr, 0);
@@ -37346,7 +37319,7 @@ rs6000_address_for_fpconvert (rtx x)
 	  addr = reg;
 	}
 
-      x = replace_equiv_address (x, copy_addr_to_reg (addr));
+      x = replace_equiv_address (x, force_reg (Pmode, addr));
     }
 
   return x;

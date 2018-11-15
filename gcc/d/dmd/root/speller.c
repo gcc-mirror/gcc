@@ -6,16 +6,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/speller.c
  */
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <limits.h>
-
-#if __sun || _MSC_VER
-#include <alloca.h>
-#endif
-
+#include "dsystem.h"
 #include "speller.h"
 
 const char idchars[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_";

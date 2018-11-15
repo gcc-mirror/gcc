@@ -1539,6 +1539,19 @@ nios2_rtx_costs (rtx x, machine_mode mode,
 	    *total = COSTS_N_INSNS (2);  /* Latency adjustment.  */
 	  else 
 	    *total = COSTS_N_INSNS (1);
+	  if (TARGET_HAS_MULX && GET_MODE (x) == DImode)
+	    {
+	      enum rtx_code c0 = GET_CODE (XEXP (x, 0));
+	      enum rtx_code c1 = GET_CODE (XEXP (x, 1));
+	      if ((c0 == SIGN_EXTEND && c1 == SIGN_EXTEND)
+		  || (c0 == ZERO_EXTEND && c1 == ZERO_EXTEND))
+		/* This is the <mul>sidi3 pattern, which expands into 4 insns,
+		   2 multiplies and 2 moves.  */
+		{
+		  *total = *total * 2 + COSTS_N_INSNS (2);
+		  return true;
+		}
+	    }
           return false;
         }
 

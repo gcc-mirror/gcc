@@ -9023,8 +9023,9 @@ build_abbrev_table (dw_die_ref die, external_ref_hash_type *extern_map)
 	struct external_ref *ref_p;
 	gcc_assert (AT_ref (a)->comdat_type_p || AT_ref (a)->die_id.die_symbol);
 
-	ref_p = lookup_external_ref (extern_map, c);
-	if (ref_p->stub && ref_p->stub != die)
+	if (is_type_die (c)
+	    && (ref_p = lookup_external_ref (extern_map, c))
+	    && ref_p->stub && ref_p->stub != die)
 	  change_AT_die_ref (a, ref_p->stub);
 	else
 	  /* We aren't changing this reference, so mark it external.  */
@@ -24266,6 +24267,7 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_labels:
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
+      case OPT_fdiagnostics_format_:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:
@@ -31181,6 +31183,8 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
+    resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
 

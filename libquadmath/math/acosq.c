@@ -10,11 +10,11 @@
  */
 
 /*
-   __float128 expansions are
+   Long double expansions are
    Copyright (C) 2001 Stephen L. Moshier <moshier@na-net.ornl.gov>
-   and are incorporated herein by permission of the author.  The author 
+   and are incorporated herein by permission of the author.  The author
    reserves the right to distribute this material elsewhere under different
-   copying permissions.  These modifications are distributed here under 
+   copying permissions.  These modifications are distributed here under
    the following terms:
 
     This library is free software; you can redistribute it and/or
@@ -28,8 +28,8 @@
     Lesser General Public License for more details.
 
     You should have received a copy of the GNU Lesser General Public
-    License along with this library; if not, write to the Free Software
-    Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307  USA */
+    License along with this library; if not, see
+    <http://www.gnu.org/licenses/>.  */
 
 /* acosq(x)
  * Method :
@@ -57,7 +57,7 @@
 #include "quadmath-imp.h"
 
 static const __float128
-  one = 1.0Q,
+  one = 1,
   pio2_hi = 1.5707963267948966192313216916397514420986Q,
   pio2_lo = 4.3359050650618905123985220130216759843812E-35Q,
 
@@ -272,11 +272,11 @@ acosq (__float128 x)
       s = sqrtq (z);
       /* Compute an extended precision square root from
 	 the Newton iteration  s -> 0.5 * (s + z / s).
-         The change w from s to the improved value is
+	 The change w from s to the improved value is
 	    w = 0.5 * (s + z / s) - s  = (s^2 + z)/2s - s = (z - s^2)/2s.
-          Express s = f1 + f2 where f1 * f1 is exactly representable.
+	  Express s = f1 + f2 where f1 * f1 is exactly representable.
 	  w = (z - s^2)/2s = (z - f1^2 - 2 f1 f2 - f2^2)/2s .
-          s + w has extended precision.  */
+	  s + w has extended precision.  */
       u.value = s;
       u.words32.w2 = 0;
       u.words32.w3 = 0;

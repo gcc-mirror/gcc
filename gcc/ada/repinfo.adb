@@ -50,6 +50,8 @@ with Urealp;  use Urealp;
 
 with Ada.Unchecked_Conversion;
 
+with GNAT.HTable;
+
 package body Repinfo is
 
    SSU : constant := 8;
@@ -117,6 +119,28 @@ package body Repinfo is
    --  Set True if a blank line is needed before outputting any information for
    --  the current entity. Set True when a new entity is processed, and false
    --  when the blank line is output.
+
+   -------------------------------
+   --  Set of Relevant Entities --
+   -------------------------------
+
+   Relevant_Entities_Size : constant := 4093;
+   --  Number of headers in hash table
+
+   subtype Entity_Header_Num is Integer range 0 .. Relevant_Entities_Size - 1;
+   --  Range of headers in hash table
+
+   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num;
+   --  Simple hash function for Entity_Ids
+
+   package Relevant_Entities is new GNAT.Htable.Simple_HTable
+     (Header_Num => Entity_Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Entity_Id,
+      Hash       => Entity_Hash,
+      Equal      => "=");
+   --  Hash table to record which compiler-generated entities are relevant
 
    -----------------------
    -- Local Subprograms --
@@ -264,6 +288,15 @@ package body Repinfo is
       return UI_From_Int (-Rep_Table.Last);
    end Create_Node;
 
+   -----------------
+   -- Entity_Hash --
+   -----------------
+
+   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num is
+   begin
+      return Entity_Header_Num (Id mod Relevant_Entities_Size);
+   end Entity_Hash;
+
    ---------------------------
    -- Get_Dynamic_SO_Entity --
    ---------------------------
@@ -403,9 +436,11 @@ package body Repinfo is
             Need_Blank_Line := True;
 
             --  We list entities that come from source (excluding private or
-            --  incomplete types or deferred constants, where we will list the
-            --  info for the full view). If debug flag A is set, then all
-            --  entities are listed
+            --  incomplete types or deferred constants, for which we will list
+            --  the information for the full view). If requested, we also list
+            --  relevant entities that have been generated when processing the
+            --  original entities coming from source. But if debug flag A is
+            --  set, then all entities are listed.
 
             if ((Comes_From_Source (E)
                    or else (Ekind (E) = E_Block
@@ -416,6 +451,8 @@ package body Repinfo is
               and then not Is_Incomplete_Or_Private_Type (E)
               and then not (Ekind (E) = E_Constant
                               and then Present (Full_View (E))))
+              or else (List_Representation_Info = 4
+                         and then Relevant_Entities.Get (E))
               or else Debug_Flag_AA
             then
                if Is_Subprogram (E) then
@@ -446,6 +483,15 @@ package body Repinfo is
                elsif Is_Array_Type (E) then
                   if List_Representation_Info >= 1 then
                      List_Array_Info (E, Bytes_Big_Endian);
+                  end if;
+
+                  --  The component type is relevant for an array
+
+                  if List_Representation_Info = 4
+                    and then Is_Itype (Component_Type (Base_Type (E)))
+                  then
+                     Relevant_Entities.Set
+                       (Component_Type (Base_Type (E)), True);
                   end if;
 
                elsif Is_Type (E) then
@@ -1239,7 +1285,7 @@ package body Repinfo is
             Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
 
          elsif Known_Normalized_Position (Ent)
-           and then List_Representation_Info = 3
+           and then List_Representation_Info >= 3
          then
             Spaces (Max_Spos_Length - 2);
 
@@ -1730,6 +1776,10 @@ package body Repinfo is
             if In_Extended_Main_Source_Unit (Cunit_Entity (U)) then
                Unit_Casing := Identifier_Casing (Source_Index (U));
 
+               if List_Representation_Info = 4 then
+                  Relevant_Entities.Reset;
+               end if;
+
                --  Normal case, list to standard output
 
                if not List_Representation_Info_To_File then
@@ -1756,7 +1806,7 @@ package body Repinfo is
                     (Get_Name_String (File_Name (Source_Index (U))));
                   Set_Special_Output (Write_Info_Line'Access);
                   List_Entities (Cunit_Entity (U), Bytes_Big_Endian);
-                  Set_Special_Output (null);
+                  Cancel_Special_Output;
                   Close_Repinfo_File_Access.all;
                end if;
             end if;

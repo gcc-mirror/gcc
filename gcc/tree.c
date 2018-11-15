@@ -282,11 +282,14 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_FIRSTPRIVATE  */
   2, /* OMP_CLAUSE_LASTPRIVATE  */
   5, /* OMP_CLAUSE_REDUCTION  */
+  5, /* OMP_CLAUSE_TASK_REDUCTION  */
+  5, /* OMP_CLAUSE_IN_REDUCTION  */
   1, /* OMP_CLAUSE_COPYIN  */
   1, /* OMP_CLAUSE_COPYPRIVATE  */
   3, /* OMP_CLAUSE_LINEAR  */
   2, /* OMP_CLAUSE_ALIGNED  */
   1, /* OMP_CLAUSE_DEPEND  */
+  1, /* OMP_CLAUSE_NONTEMPORAL  */
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_TO_DECLARE  */
   1, /* OMP_CLAUSE_LINK  */
@@ -302,6 +305,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_AUTO  */
   0, /* OMP_CLAUSE_SEQ  */
   1, /* OMP_CLAUSE__LOOPTEMP_  */
+  1, /* OMP_CLAUSE__REDUCTEMP_  */
   1, /* OMP_CLAUSE_IF  */
   1, /* OMP_CLAUSE_NUM_THREADS  */
   1, /* OMP_CLAUSE_SCHEDULE  */
@@ -355,11 +359,14 @@ const char * const omp_clause_code_name[] =
   "firstprivate",
   "lastprivate",
   "reduction",
+  "task_reduction",
+  "in_reduction",
   "copyin",
   "copyprivate",
   "linear",
   "aligned",
   "depend",
+  "nontemporal",
   "uniform",
   "to",
   "link",
@@ -375,6 +382,7 @@ const char * const omp_clause_code_name[] =
   "auto",
   "seq",
   "_looptemp_",
+  "_reductemp_",
   "if",
   "num_threads",
   "schedule",
@@ -5083,6 +5091,21 @@ fld_worklist_push (tree t, struct free_lang_data_d *fld)
 
 
 
+/* Return simplified TYPE_NAME of TYPE.  */
+
+static tree
+fld_simplified_type_name (tree type)
+{
+  if (!TYPE_NAME (type) || TREE_CODE (TYPE_NAME (type)) != TYPE_DECL)
+    return TYPE_NAME (type);
+  /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
+     TYPE_DECL if the type doesn't have linkage.
+     this must match fld_  */
+  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
+    return DECL_NAME (TYPE_NAME (type));
+  return TYPE_NAME (type);
+}
+
 /* Do same comparsion as check_qualified_type skipping lang part of type
    and be more permissive about type names: we only care that names are
    same (for diagnostics) and that ODR names are the same.  */
@@ -5091,12 +5114,16 @@ static bool
 fld_type_variant_equal_p (tree t, tree v)
 {
   if (TYPE_QUALS (t) != TYPE_QUALS (v)
-      || TYPE_NAME (t) != TYPE_NAME (v)
-      || TYPE_ALIGN (t) != TYPE_ALIGN (v)
+      /* We want to match incomplete variants with complete types.
+	 In this case we need to ignore alignment.   */
+      || ((!RECORD_OR_UNION_TYPE_P (t) || COMPLETE_TYPE_P (v))
+	  && (TYPE_ALIGN (t) != TYPE_ALIGN (v)
+	      || TYPE_USER_ALIGN (t) != TYPE_USER_ALIGN (v)))
+      || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
 			        TYPE_ATTRIBUTES (v)))
     return false;
-
+ 
   return true;
 }
 
@@ -5118,6 +5145,15 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
   TYPE_ADDR_SPACE (v) = TYPE_ADDR_SPACE (t);
   TYPE_NAME (v) = TYPE_NAME (t);
   TYPE_ATTRIBUTES (v) = TYPE_ATTRIBUTES (t);
+  TYPE_CANONICAL (v) = TYPE_CANONICAL (t);
+  /* Variants of incomplete types should have alignment 
+     set to BITS_PER_UNIT.  Do not copy the actual alignment.  */
+  if (!RECORD_OR_UNION_TYPE_P (v) || COMPLETE_TYPE_P (v))
+    {
+      SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
+      TYPE_USER_ALIGN (v) = TYPE_USER_ALIGN (t);
+    }
+  gcc_checking_assert (fld_type_variant_equal_p (t,v));
   add_tree_to_fld_list (v, fld);
   return v;
 }
@@ -5146,6 +5182,8 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  else
 	    first = build_reference_type_for_mode (t2, TYPE_MODE (t),
 						TYPE_REF_CAN_ALIAS_ALL (t));
+	  gcc_assert (TYPE_CANONICAL (t2) != t2
+		      && TYPE_CANONICAL (t2) == TYPE_CANONICAL (TREE_TYPE (t)));
 	  add_tree_to_fld_list (first, fld);
 	  return fld_type_variant (first, t, fld);
 	}
@@ -5168,7 +5206,11 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	  TYPE_SIZE (copy) = NULL;
 	  SET_TYPE_MODE (copy, VOIDmode);
 	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
+	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
+	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
+	  TYPE_TYPELESS_STORAGE (copy) = 0;
+	  TREE_ADDRESSABLE (copy) = 0;
 	  if (AGGREGATE_TYPE_P (t))
 	    {
 	      TYPE_FIELDS (copy) = NULL;
@@ -5239,7 +5281,7 @@ free_lang_data_in_binfo (tree binfo)
 /* Reset all language specific information still present in TYPE.  */
 
 static void
-free_lang_data_in_type (tree type)
+free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
 {
   gcc_assert (TYPE_P (type));
 
@@ -5254,8 +5296,11 @@ free_lang_data_in_type (tree type)
   TREE_LANG_FLAG_5 (type) = 0;
   TREE_LANG_FLAG_6 (type) = 0;
 
+  TYPE_NEEDS_CONSTRUCTING (type) = 0;
+
   if (TREE_CODE (type) == FUNCTION_TYPE)
     {
+      TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
       /* Remove the const and volatile qualifiers from arguments.  The
 	 C++ front end removes them, but the C front end does not,
 	 leading to false ODR violation errors when merging two
@@ -5263,6 +5308,7 @@ free_lang_data_in_type (tree type)
 	 different front ends.  */
       for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
 	{
+          TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
 	  tree arg_type = TREE_VALUE (p);
 
 	  if (TYPE_READONLY (arg_type) || TYPE_VOLATILE (arg_type))
@@ -5271,16 +5317,22 @@ free_lang_data_in_type (tree type)
 			  & ~TYPE_QUAL_CONST
 			  & ~TYPE_QUAL_VOLATILE;
 	      TREE_VALUE (p) = build_qualified_type (arg_type, quals);
-	      free_lang_data_in_type (TREE_VALUE (p));
+	      free_lang_data_in_type (TREE_VALUE (p), fld);
 	    }
 	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
 	  TREE_PURPOSE (p) = NULL;
 	}
     }
   else if (TREE_CODE (type) == METHOD_TYPE)
-    for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
-      /* C++ FE uses TREE_PURPOSE to store initial values.  */
-      TREE_PURPOSE (p) = NULL;
+    {
+      TREE_TYPE (type) = fld_simplified_type (TREE_TYPE (type), fld);
+      for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+	{
+	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
+	  TREE_VALUE (p) = fld_simplified_type (TREE_VALUE (p), fld);
+	  TREE_PURPOSE (p) = NULL;
+	}
+    }
   else if (RECORD_OR_UNION_TYPE_P (type))
     {
       /* Remove members that are not FIELD_DECLs from the field list
@@ -5307,6 +5359,20 @@ free_lang_data_in_type (tree type)
 	   || SCALAR_FLOAT_TYPE_P (type)
 	   || FIXED_POINT_TYPE_P (type))
     {
+      if (TREE_CODE (type) == ENUMERAL_TYPE)
+	{
+	  /* Type values are used only for C++ ODR checking.  Drop them
+	     for all type variants and non-ODR types.  */
+	  if (TYPE_MAIN_VARIANT (type) != type
+	      || !type_with_linkage_p (type))
+	    TYPE_VALUES (type) = NULL;
+	  else
+	  /* Simplify representation by recording only values rather
+	     than const decls.  */
+	    for (tree e = TYPE_VALUES (type); e; e = TREE_CHAIN (e))
+	      if (TREE_CODE (TREE_VALUE (e)) == CONST_DECL)
+		TREE_VALUE (e) = DECL_INITIAL (TREE_VALUE (e));
+	}
       free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
       free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
     }
@@ -5329,12 +5395,11 @@ free_lang_data_in_type (tree type)
     }
 
   /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
-     TYPE_DECL if the type doesn't have linkage.  */
+     TYPE_DECL if the type doesn't have linkage.
+     this must match fld_  */
   if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
-    {
-      TYPE_NAME (type) = TYPE_IDENTIFIER (type);
-      TYPE_STUB_DECL (type) = NULL;
-    }
+    TYPE_STUB_DECL (type) = NULL;
+  TYPE_NAME (type) = fld_simplified_type_name (type);
 }
 
 
@@ -5445,6 +5510,18 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
  if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       struct cgraph_node *node;
+      /* Frontends do not set TREE_ADDRESSABLE on public variables even though
+	 the address may be taken in other unit, so this flag has no practical
+	 use for middle-end.
+
+	 It would make more sense if frontends set TREE_ADDRESSABLE to 0 only
+	 for public objects that indeed can not be adressed, but it is not
+	 the case.  Set the flag to true so we do not get merge failures for
+	 i.e. virtual tables between units that take address of it and
+	 units that don't.  */
+      if (TREE_PUBLIC (decl))
+	TREE_ADDRESSABLE (decl) = true;
+      TREE_TYPE (decl) = fld_simplified_type (TREE_TYPE (decl), fld);
       if (!(node = cgraph_node::get (decl))
 	  || (!node->definition && !node->clones))
 	{
@@ -5499,6 +5576,9 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     }
   else if (VAR_P (decl))
     {
+      /* See comment above why we set the flag for functoins.  */
+      if (TREE_PUBLIC (decl))
+	TREE_ADDRESSABLE (decl) = true;
       if ((DECL_EXTERNAL (decl)
 	   && (!TREE_STATIC (decl) || !TREE_READONLY (decl)))
 	  || (decl_function_context (decl) && !TREE_STATIC (decl)))
@@ -5508,8 +5588,13 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     {
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
+      /* TREE_PUBLIC is used to tell if type is anonymous.  */
+      TYPE_DECL_SUPPRESS_DEBUG (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
+      DECL_MODE (decl) = VOIDmode;
+      TREE_TYPE (decl) = void_type_node;
+      SET_DECL_ALIGN (decl, 0);
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     {
@@ -5960,7 +6045,7 @@ free_lang_data_in_cgraph (void)
 
   /* Traverse every type found freeing its language data.  */
   FOR_EACH_VEC_ELT (fld.types, i, t)
-    free_lang_data_in_type (t);
+    free_lang_data_in_type (t, &fld);
   if (flag_checking)
     {
       FOR_EACH_VEC_ELT (fld.types, i, t)
@@ -6008,6 +6093,13 @@ free_lang_data (void)
   lang_hooks.dwarf_name = lhd_dwarf_name;
   lang_hooks.decl_printable_name = gimple_decl_printable_name;
   lang_hooks.gimplify_expr = lhd_gimplify_expr;
+  lang_hooks.overwrite_decl_assembler_name = lhd_overwrite_decl_assembler_name;
+  lang_hooks.print_xnode = lhd_print_tree_nothing;
+  lang_hooks.print_decl = lhd_print_tree_nothing;
+  lang_hooks.print_type = lhd_print_tree_nothing;
+  lang_hooks.print_identifier = lhd_print_tree_nothing;
+
+  lang_hooks.tree_inlining.var_mod_type_p = hook_bool_tree_tree_false;
 
   /* We do not want the default decl_assembler_name implementation,
      rather if we have fixed everything we want a wrapper around it
@@ -9224,6 +9316,28 @@ get_call_combined_fn (const_tree call)
   return CFN_LAST;
 }
 
+/* Comparator of indices based on tree_node_counts.  */
+
+static int
+tree_nodes_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return tree_node_counts[*n1] - tree_node_counts[*n2];
+}
+
+/* Comparator of indices based on tree_code_counts.  */
+
+static int
+tree_codes_cmp (const void *p1, const void *p2)
+{
+  const unsigned *n1 = (const unsigned *)p1;
+  const unsigned *n2 = (const unsigned *)p2;
+
+  return tree_code_counts[*n1] - tree_code_counts[*n2];
+}
+
 #define TREE_MEM_USAGE_SPACES 40
 
 /* Print debugging information about tree nodes generated during the compile,
@@ -9234,34 +9348,55 @@ dump_tree_statistics (void)
 {
   if (GATHER_STATISTICS)
     {
-      int i;
       uint64_t total_nodes, total_bytes;
       fprintf (stderr, "\nKind                   Nodes      Bytes\n");
       mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
       total_nodes = total_bytes = 0;
-      for (i = 0; i < (int) all_kinds; i++)
-	{
-	  fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n",
-		   tree_node_kind_names[i], tree_node_counts[i],
-		   tree_node_sizes[i]);
-	  total_nodes += tree_node_counts[i];
-	  total_bytes += tree_node_sizes[i];
-	}
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "%-20s %7" PRIu64 " %10" PRIu64 "\n", "Total",
-	       total_nodes, total_bytes);
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "Code                   Nodes\n");
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      for (i = 0; i < (int) MAX_TREE_CODES; i++)
-	fprintf (stderr, "%-32s %7" PRIu64 "\n",
-		 get_tree_code_name ((enum tree_code) i), tree_code_counts[i]);
-      mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
-      fprintf (stderr, "\n");
-      ssanames_print_statistics ();
-      fprintf (stderr, "\n");
-      phinodes_print_statistics ();
-      fprintf (stderr, "\n");
+
+      {
+	auto_vec<unsigned> indices (all_kinds);
+	for (unsigned i = 0; i < all_kinds; i++)
+	  indices.quick_push (i);
+	indices.qsort (tree_nodes_cmp);
+
+	for (unsigned i = 0; i < (int) all_kinds; i++)
+	  {
+	    unsigned j = indices[i];
+	    fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n",
+		     tree_node_kind_names[i], SIZE_AMOUNT (tree_node_counts[j]),
+		     SIZE_AMOUNT (tree_node_sizes[j]));
+	    total_nodes += tree_node_counts[j];
+	    total_bytes += tree_node_sizes[j];
+	  }
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+	fprintf (stderr, "%-20s %6" PRIu64 "%c %9" PRIu64 "%c\n", "Total",
+		 SIZE_AMOUNT (total_nodes), SIZE_AMOUNT (total_bytes));
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+      }
+
+      {
+	fprintf (stderr, "Code                              Nodes\n");
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+
+	auto_vec<unsigned> indices (MAX_TREE_CODES);
+	for (unsigned i = 0; i < MAX_TREE_CODES; i++)
+	  indices.quick_push (i);
+	indices.qsort (tree_codes_cmp);
+
+	for (unsigned i = 0; i < MAX_TREE_CODES; i++)
+	  {
+	    unsigned j = indices[i];
+	    fprintf (stderr, "%-32s %6" PRIu64 "%c\n",
+		     get_tree_code_name ((enum tree_code) j),
+		     SIZE_AMOUNT (tree_code_counts[j]));
+	  }
+	mem_usage::print_dash_line (TREE_MEM_USAGE_SPACES);
+	fprintf (stderr, "\n");
+	ssanames_print_statistics ();
+	fprintf (stderr, "\n");
+	phinodes_print_statistics ();
+	fprintf (stderr, "\n");
+      }
     }
   else
     fprintf (stderr, "(No per-node statistics)\n");
@@ -11764,6 +11899,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_SCHEDULE:
 	case OMP_CLAUSE_UNIFORM:
 	case OMP_CLAUSE_DEPEND:
+	case OMP_CLAUSE_NONTEMPORAL:
 	case OMP_CLAUSE_NUM_TEAMS:
 	case OMP_CLAUSE_THREAD_LIMIT:
 	case OMP_CLAUSE_DEVICE:
@@ -11780,6 +11916,7 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	case OMP_CLAUSE_USE_DEVICE_PTR:
 	case OMP_CLAUSE_IS_DEVICE_PTR:
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (*tp, 0));
 	  /* FALLTHRU */
@@ -11837,6 +11974,8 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (*tp));
 
 	case OMP_CLAUSE_REDUCTION:
+	case OMP_CLAUSE_TASK_REDUCTION:
+	case OMP_CLAUSE_IN_REDUCTION:
 	  {
 	    int i;
 	    for (i = 0; i < 5; i++)
@@ -13435,7 +13574,8 @@ verify_type_variant (const_tree t, tree tv)
     }
 
   /* Check various uses of TYPE_VALUES_RAW.  */
-  if (TREE_CODE (t) == ENUMERAL_TYPE)
+  if (TREE_CODE (t) == ENUMERAL_TYPE
+      && TYPE_VALUES (t))
     verify_variant_match (TYPE_VALUES);
   else if (TREE_CODE (t) == ARRAY_TYPE)
     verify_variant_match (TYPE_DOMAIN);
@@ -13835,7 +13975,8 @@ verify_type (const_tree t)
 	      with variably sized arrays because their sizes possibly
 	      gimplified to different variables.  */
 	   && !variably_modified_type_p (ct, NULL)
-	   && !gimple_canonical_types_compatible_p (t, ct, false))
+	   && !gimple_canonical_types_compatible_p (t, ct, false)
+	   && COMPLETE_TYPE_P (t))
     {
       error ("TYPE_CANONICAL is not compatible");
       debug_tree (ct);

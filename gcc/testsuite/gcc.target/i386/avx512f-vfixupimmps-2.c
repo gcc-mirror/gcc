@@ -104,9 +104,9 @@ TEST (void)
 	  CALC (&res_ref[j], s1.a[j], s2.a[j]);
 	}
 
-      res1.x = INTRINSIC (_fixupimm_ps) (res1.x, s1.x, s2.x, 0);
+      res1.x = INTRINSIC (_fixupimm_ps) (s1.x, s2.x, 0);
       res2.x = INTRINSIC (_mask_fixupimm_ps) (res2.x, mask, s1.x, s2.x, 0);
-      res3.x = INTRINSIC (_maskz_fixupimm_ps) (mask, res3.x, s1.x, s2.x, 0);
+      res3.x = INTRINSIC (_maskz_fixupimm_ps) (mask, s1.x, s2.x, 0);
 
       if (UNION_CHECK (AVX512F_LEN,) (res1, res_ref))
 	abort ();

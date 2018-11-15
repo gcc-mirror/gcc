@@ -124,6 +124,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__znver1");
       def_or_undef (parse_in, "__znver1__");
       break;
+    case PROCESSOR_ZNVER2:
+      def_or_undef (parse_in, "__znver2");
+      def_or_undef (parse_in, "__znver2__");
+      break;
     case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__btver1");
       def_or_undef (parse_in, "__btver1__");
@@ -287,6 +291,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_ZNVER1:
       def_or_undef (parse_in, "__tune_znver1__");
+      break;
+    case PROCESSOR_ZNVER2:
+      def_or_undef (parse_in, "__tune_znver2__");
       break;
     case PROCESSOR_BTVER1:
       def_or_undef (parse_in, "__tune_btver1__");
@@ -532,6 +539,8 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__WAITPKG__");
   if (isa_flag2 & OPTION_MASK_ISA_CLDEMOTE)
     def_or_undef (parse_in, "__CLDEMOTE__");
+  if (isa_flag2 & OPTION_MASK_ISA_PTWRITE)
+    def_or_undef (parse_in, "__PTWRITE__");
   if (TARGET_IAMCU)
     {
       def_or_undef (parse_in, "__iamcu");

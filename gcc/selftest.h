@@ -141,7 +141,7 @@ class auto_fix_quotes
    - line_table->default_range_bits: some frontends use a non-zero value
    and others use zero
    - the fallback modes within line-map.c: there are various threshold
-   values for source_location/location_t beyond line-map.c changes
+   values for location_t beyond line-map.c changes
    behavior (disabling of the range-packing optimization, disabling
    of column-tracking).  We can exercise these by starting the line_table
    at interesting values at or near these thresholds.
@@ -215,6 +215,7 @@ class test_runner
    alphabetical order.  */
 extern void attribute_c_tests ();
 extern void bitmap_c_tests ();
+extern void cgraph_c_tests ();
 extern void diagnostic_c_tests ();
 extern void diagnostic_show_locus_c_tests ();
 extern void dumpfile_c_tests ();

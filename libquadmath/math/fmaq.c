@@ -1,5 +1,5 @@
 /* Compute x * y + z as ternary operation.
-   Copyright (C) 2010-2017 Free Software Foundation, Inc.
+   Copyright (C) 2010-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2010.
 
@@ -18,16 +18,6 @@
    <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-#include <math.h>
-#include <float.h>
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-# if defined HAVE_FEHOLDEXCEPT && defined HAVE_FESETROUND \
-     && defined HAVE_FEUPDATEENV && defined HAVE_FETESTEXCEPT \
-     && defined FE_TOWARDZERO && defined FE_INEXACT
-#  define USE_FENV_H
-# endif
-#endif
 
 /* This implementation uses rounding to odd to avoid problems with
    double rounding.  See a paper by Boldo and Melquiond:
@@ -73,7 +63,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
       if (u.ieee.exponent + v.ieee.exponent
 	  > 0x7fff + IEEE854_FLOAT128_BIAS)
 	return x * y;
-      /* If x * y is less than 1/4 of FLT128_DENORM_MIN, neither the
+      /* If x * y is less than 1/4 of FLT128_TRUE_MIN, neither the
 	 result nor whether there is underflow depends on its exact
 	 value, only on its sign.  */
       if (u.ieee.exponent + v.ieee.exponent
@@ -94,8 +84,10 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	      : (w.ieee.exponent == 0
 		 || (w.ieee.exponent == 1
 		     && w.ieee.negative != neg
-		     && w.ieee.mant_low == 0
-		     && w.ieee.mant_high == 0)))
+		     && w.ieee.mantissa3 == 0
+		     && w.ieee.mantissa2 == 0
+		     && w.ieee.mantissa1 == 0
+		     && w.ieee.mantissa0 == 0)))
 	    {
 	      __float128 force_underflow = x * y;
 	      math_force_eval (force_underflow);
@@ -124,7 +116,7 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	     very small, adjust them up to avoid spurious underflows,
 	     rather than down.  */
 	  if (u.ieee.exponent + v.ieee.exponent
-	      <= IEEE854_FLOAT128_BIAS + FLT128_MANT_DIG)
+	      <= IEEE854_FLOAT128_BIAS + 2 * FLT128_MANT_DIG)
 	    {
 	      if (u.ieee.exponent > v.ieee.exponent)
 		u.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
@@ -181,17 +173,15 @@ fmaq (__float128 x, __float128 y, __float128 z)
     }
 
   /* Ensure correct sign of exact 0 + 0.  */
-  if (__builtin_expect ((x == 0 || y == 0) && z == 0, 0))
+  if (__glibc_unlikely ((x == 0 || y == 0) && z == 0))
     {
       x = math_opt_barrier (x);
       return x * y + z;
     }
 
-#ifdef USE_FENV_H
   fenv_t env;
   feholdexcept (&env);
   fesetround (FE_TONEAREST);
-#endif
 
   /* Multiplication m1 + m2 = x * y using Dekker's algorithm.  */
 #define C ((1LL << (FLT128_MANT_DIG + 1) / 2) + 1)
@@ -214,62 +204,46 @@ fmaq (__float128 x, __float128 y, __float128 z)
   /* Ensure the arithmetic is not scheduled after feclearexcept call.  */
   math_force_eval (m2);
   math_force_eval (a2);
-#ifdef USE_FENV_H
   feclearexcept (FE_INEXACT);
-#endif
 
   /* If the result is an exact zero, ensure it has the correct sign.  */
   if (a1 == 0 && m2 == 0)
     {
-#ifdef USE_FENV_H
       feupdateenv (&env);
-#endif
       /* Ensure that round-to-nearest value of z + m1 is not reused.  */
       z = math_opt_barrier (z);
       return z + m1;
     }
 
-#ifdef USE_FENV_H
   fesetround (FE_TOWARDZERO);
-#endif
   /* Perform m2 + a2 addition with round to odd.  */
   u.value = a2 + m2;
 
-  if (__builtin_expect (adjust == 0, 1))
+  if (__glibc_likely (adjust == 0))
     {
-#ifdef USE_FENV_H
-      if ((u.ieee.mant_low & 1) == 0 && u.ieee.exponent != 0x7fff)
-	u.ieee.mant_low |= fetestexcept (FE_INEXACT) != 0;
+      if ((u.ieee.mantissa3 & 1) == 0 && u.ieee.exponent != 0x7fff)
+	u.ieee.mantissa3 |= fetestexcept (FE_INEXACT) != 0;
       feupdateenv (&env);
-#endif
       /* Result is a1 + u.value.  */
       return a1 + u.value;
     }
-  else if (__builtin_expect (adjust > 0, 1))
+  else if (__glibc_likely (adjust > 0))
     {
-#ifdef USE_FENV_H
-      if ((u.ieee.mant_low & 1) == 0 && u.ieee.exponent != 0x7fff)
-	u.ieee.mant_low |= fetestexcept (FE_INEXACT) != 0;
+      if ((u.ieee.mantissa3 & 1) == 0 && u.ieee.exponent != 0x7fff)
+	u.ieee.mantissa3 |= fetestexcept (FE_INEXACT) != 0;
       feupdateenv (&env);
-#endif
       /* Result is a1 + u.value, scaled up.  */
       return (a1 + u.value) * 0x1p113Q;
     }
   else
     {
-#ifdef USE_FENV_H
-      if ((u.ieee.mant_low & 1) == 0)
-	u.ieee.mant_low |= fetestexcept (FE_INEXACT) != 0;
-#endif
+      if ((u.ieee.mantissa3 & 1) == 0)
+	u.ieee.mantissa3 |= fetestexcept (FE_INEXACT) != 0;
       v.value = a1 + u.value;
       /* Ensure the addition is not scheduled after fetestexcept call.  */
-      asm volatile ("" : : "m" (v.value));
-#ifdef USE_FENV_H
+      math_force_eval (v.value);
       int j = fetestexcept (FE_INEXACT) != 0;
       feupdateenv (&env);
-#else
-      int j = 0;
-#endif
       /* Ensure the following computations are performed in default rounding
 	 mode instead of just reusing the round to zero computation.  */
       asm volatile ("" : "=m" (u) : "m" (u));
@@ -281,11 +255,11 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	 rounding will occur.  */
       if (v.ieee.exponent > 228)
 	return (a1 + u.value) * 0x1p-228Q;
-      /* If v.value * 0x1p-228Q with round to zero is a subnormal above
-	 or equal to FLT128_MIN / 2, then v.value * 0x1p-228Q shifts mantissa
-	 down just by 1 bit, which means v.ieee.mant_low |= j would
+      /* If v.value * 0x1p-228L with round to zero is a subnormal above
+	 or equal to FLT128_MIN / 2, then v.value * 0x1p-228L shifts mantissa
+	 down just by 1 bit, which means v.ieee.mantissa3 |= j would
 	 change the round bit, not sticky or guard bit.
-	 v.value * 0x1p-228Q never normalizes by shifting up,
+	 v.value * 0x1p-228L never normalizes by shifting up,
 	 so round bit plus sticky bit should be already enough
 	 for proper rounding.  */
       if (v.ieee.exponent == 228)
@@ -301,18 +275,18 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	      if (w.ieee.exponent == 229)
 		return w.value * 0x1p-228Q;
 	    }
-	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
-	     v.ieee.mant_low & 1 is the round bit and j is our sticky
-	     bit. */
-	  w.value = 0.0Q;
-	  w.ieee.mant_low = ((v.ieee.mant_low & 3) << 1) | j;
+	  /* v.ieee.mantissa3 & 2 is LSB bit of the result before rounding,
+	     v.ieee.mantissa3 & 1 is the round bit and j is our sticky
+	     bit.  */
+	  w.value = 0;
+	  w.ieee.mantissa3 = ((v.ieee.mantissa3 & 3) << 1) | j;
 	  w.ieee.negative = v.ieee.negative;
-	  v.ieee.mant_low &= ~3U;
+	  v.ieee.mantissa3 &= ~3U;
 	  v.value *= 0x1p-228Q;
 	  w.value *= 0x1p-2Q;
 	  return v.value + w.value;
 	}
-      v.ieee.mant_low |= j;
+      v.ieee.mantissa3 |= j;
       return v.value * 0x1p-228Q;
     }
 }

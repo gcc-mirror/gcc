@@ -8,9 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/cond.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-#include <string.h>                     // strcmp()
+#include "root/dsystem.h"               // strcmp()
 
 #include "mars.h"
 #include "id.h"

@@ -1,5 +1,5 @@
-/* Complex sine function for complex __float128.
-   Copyright (C) 1997-2012 Free Software Foundation, Inc.
+/* Complex sine function for float types.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -19,11 +19,6 @@
 
 #include "quadmath-imp.h"
 
-#ifdef HAVE_FENV_H
-# include <fenv.h>
-#endif
-
-
 __complex128
 csinq (__complex128 x)
 {
@@ -34,24 +29,27 @@ csinq (__complex128 x)
 
   __real__ x = fabsq (__real__ x);
 
-  if (__builtin_expect (icls >= QUADFP_ZERO, 1))
+  if (__glibc_likely (icls >= QUADFP_ZERO))
     {
       /* Imaginary part is finite.  */
-      if (__builtin_expect (rcls >= QUADFP_ZERO, 1))
+      if (__glibc_likely (rcls >= QUADFP_ZERO))
 	{
 	  /* Real part is finite.  */
 	  const int t = (int) ((FLT128_MAX_EXP - 1) * M_LN2q);
 	  __float128 sinix, cosix;
 
-	  if (__builtin_expect (rcls != QUADFP_SUBNORMAL, 1))
+	  if (__glibc_likely (__real__ x > FLT128_MIN))
 	    {
 	      sincosq (__real__ x, &sinix, &cosix);
 	    }
 	  else
 	    {
 	      sinix = __real__ x;
-	      cosix = 1.0Q;
+	      cosix = 1;
 	    }
+
+	  if (negate)
+	    sinix = -sinix;
 
 	  if (fabsq (__imag__ x) > t)
 	    {
@@ -60,8 +58,8 @@ csinq (__complex128 x)
 	      if (signbitq (__imag__ x))
 		cosix = -cosix;
 	      ix -= t;
-	      sinix *= exp_t / 2.0Q;
-	      cosix *= exp_t / 2.0Q;
+	      sinix *= exp_t / 2;
+	      cosix *= exp_t / 2;
 	      if (ix > t)
 		{
 		  ix -= t;
@@ -87,30 +85,22 @@ csinq (__complex128 x)
 	      __imag__ retval = sinhq (__imag__ x) * cosix;
 	    }
 
-	  if (negate)
-	    __real__ retval = -__real__ retval;
+	  math_check_force_underflow_complex (retval);
 	}
       else
 	{
 	  if (icls == QUADFP_ZERO)
 	    {
 	      /* Imaginary part is 0.0.  */
-	      __real__ retval = nanq ("");
+	      __real__ retval = __real__ x - __real__ x;
 	      __imag__ retval = __imag__ x;
-
-#ifdef HAVE_FENV_H
-	      if (rcls == QUADFP_INFINITE)
-		feraiseexcept (FE_INVALID);
-#endif
 	    }
 	  else
 	    {
 	      __real__ retval = nanq ("");
 	      __imag__ retval = nanq ("");
 
-#ifdef HAVE_FENV_H
 	      feraiseexcept (FE_INVALID);
-#endif
 	    }
 	}
     }
@@ -120,7 +110,7 @@ csinq (__complex128 x)
       if (rcls == QUADFP_ZERO)
 	{
 	  /* Real part is 0.0.  */
-	  __real__ retval = copysignq (0.0Q, negate ? -1.0Q : 1.0Q);
+	  __real__ retval = copysignq (0, negate ? -1 : 1);
 	  __imag__ retval = __imag__ x;
 	}
       else if (rcls > QUADFP_ZERO)
@@ -128,14 +118,14 @@ csinq (__complex128 x)
 	  /* Real part is finite.  */
 	  __float128 sinix, cosix;
 
-	  if (__builtin_expect (rcls != QUADFP_SUBNORMAL, 1))
+	  if (__glibc_likely (__real__ x > FLT128_MIN))
 	    {
 	      sincosq (__real__ x, &sinix, &cosix);
 	    }
 	  else
 	    {
 	      sinix = __real__ x;
-	      cosix = 1.0;
+	      cosix = 1;
 	    }
 
 	  __real__ retval = copysignq (HUGE_VALQ, sinix);
@@ -148,20 +138,14 @@ csinq (__complex128 x)
 	}
       else
 	{
-	  /* The addition raises the invalid exception.  */
-	  __real__ retval = nanq ("");
+	  __real__ retval = __real__ x - __real__ x;
 	  __imag__ retval = HUGE_VALQ;
-
-#ifdef HAVE_FENV_H
-	  if (rcls == QUADFP_INFINITE)
-	    feraiseexcept (FE_INVALID);
-#endif
 	}
     }
   else
     {
       if (rcls == QUADFP_ZERO)
-	__real__ retval = copysignq (0.0Q, negate ? -1.0Q : 1.0Q);
+	__real__ retval = copysignq (0, negate ? -1 : 1);
       else
 	__real__ retval = nanq ("");
       __imag__ retval = nanq ("");

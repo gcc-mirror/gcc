@@ -1022,6 +1022,9 @@ dump_module_suffix (cxx_pretty_printer *pp, tree decl)
 static void
 dump_simple_decl (cxx_pretty_printer *pp, tree t, tree type, int flags)
 {
+  if (template_parm_object_p (t))
+    return dump_expr (pp, DECL_INITIAL (t), flags);
+
   if (flags & TFF_DECL_SPECIFIERS)
     {
       if (VAR_P (t) && DECL_DECLARED_CONSTEXPR_P (t))

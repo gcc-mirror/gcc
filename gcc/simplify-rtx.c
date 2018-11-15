@@ -2857,6 +2857,38 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 					XEXP (op0, 1));
         }
 
+      /* The following happens with bitfield merging.
+         (X & C) | ((X | Y) & ~C) -> X | (Y & ~C) */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == AND
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1))
+	  && (INTVAL (XEXP (op0, 1))
+	      == ~INTVAL (XEXP (op1, 1))))
+	{
+	  /* The IOR may be on both sides.  */
+	  rtx top0 = NULL_RTX, top1 = NULL_RTX;
+	  if (GET_CODE (XEXP (op1, 0)) == IOR)
+	    top0 = op0, top1 = op1;
+	  else if (GET_CODE (XEXP (op0, 0)) == IOR)
+	    top0 = op1, top1 = op0;
+	  if (top0 && top1)
+	    {
+	      /* X may be on either side of the inner IOR.  */
+	      rtx tem = NULL_RTX;
+	      if (rtx_equal_p (XEXP (top0, 0),
+			       XEXP (XEXP (top1, 0), 0)))
+		tem = XEXP (XEXP (top1, 0), 1);
+	      else if (rtx_equal_p (XEXP (top0, 0),
+				    XEXP (XEXP (top1, 0), 1)))
+		tem = XEXP (XEXP (top1, 0), 0);
+	      if (tem)
+		return simplify_gen_binary (IOR, mode, XEXP (top0, 0),
+					    simplify_gen_binary
+					      (AND, mode, tem, XEXP (top1, 1)));
+	    }
+	}
+
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
@@ -5615,9 +5647,19 @@ simplify_merge_mask (rtx x, rtx mask, int op)
       rtx top0 = simplify_merge_mask (XEXP (x, 0), mask, op);
       rtx top1 = simplify_merge_mask (XEXP (x, 1), mask, op);
       if (top0 || top1)
-	return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
-				    top0 ? top0 : XEXP (x, 0),
-				    top1 ? top1 : XEXP (x, 1));
+	{
+	  if (COMPARISON_P (x))
+	    return simplify_gen_relational (GET_CODE (x), GET_MODE (x),
+					    GET_MODE (XEXP (x, 0)) != VOIDmode
+					    ? GET_MODE (XEXP (x, 0))
+					    : GET_MODE (XEXP (x, 1)),
+					    top0 ? top0 : XEXP (x, 0),
+					    top1 ? top1 : XEXP (x, 1));
+	  else
+	    return simplify_gen_binary (GET_CODE (x), GET_MODE (x),
+					top0 ? top0 : XEXP (x, 0),
+					top1 ? top1 : XEXP (x, 1));
+	}
     }
   if (GET_RTX_CLASS (GET_CODE (x)) == RTX_TERNARY
       && VECTOR_MODE_P (GET_MODE (XEXP (x, 0)))

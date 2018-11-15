@@ -9955,7 +9955,7 @@ build_null_declspecs (void)
    SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_addrspace (source_location location,
+declspecs_add_addrspace (location_t location,
 			 struct c_declspecs *specs, addr_space_t as)
 {
   specs->non_sc_seen_p = true;
@@ -9978,7 +9978,7 @@ declspecs_add_addrspace (source_location location,
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_qual (source_location loc,
+declspecs_add_qual (location_t loc,
 		    struct c_declspecs *specs, tree qual)
 {
   enum rid i;
@@ -10895,7 +10895,7 @@ declspecs_add_type (location_t loc, struct c_declspecs *specs,
    declaration specifiers SPECS, returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_scspec (source_location loc,
+declspecs_add_scspec (location_t loc,
 		      struct c_declspecs *specs,
 		      tree scspec)
 {
@@ -11014,7 +11014,7 @@ declspecs_add_scspec (source_location loc,
    returning SPECS.  */
 
 struct c_declspecs *
-declspecs_add_attrs (source_location loc, struct c_declspecs *specs, tree attrs)
+declspecs_add_attrs (location_t loc, struct c_declspecs *specs, tree attrs)
 {
   specs->attrs = chainon (attrs, specs->attrs);
   specs->locations[cdw_attributes] = loc;
@@ -11026,7 +11026,7 @@ declspecs_add_attrs (source_location loc, struct c_declspecs *specs, tree attrs)
    alignment is ALIGN) to the declaration specifiers SPECS, returning
    SPECS.  */
 struct c_declspecs *
-declspecs_add_alignas (source_location loc,
+declspecs_add_alignas (location_t loc,
 		       struct c_declspecs *specs, tree align)
 {
   int align_log;
@@ -11034,7 +11034,7 @@ declspecs_add_alignas (source_location loc,
   specs->locations[cdw_alignas] = loc;
   if (align == error_mark_node)
     return specs;
-  align_log = check_user_alignment (align, true);
+  align_log = check_user_alignment (align, false, true);
   if (align_log > specs->align_log)
     specs->align_log = align_log;
   return specs;

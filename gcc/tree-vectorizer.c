@@ -925,8 +925,9 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 	    }
 	  if (!require_loop_vectorize && vect_slp_bb (bb))
 	    {
-	      dump_printf_loc (MSG_NOTE, vect_location,
-			       "basic block vectorized\n");
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "basic block vectorized\n");
 	      fold_loop_internal_call (loop_vectorized_call,
 				       boolean_true_node);
 	      loop_vectorized_call = NULL;
@@ -955,12 +956,15 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
     set_uid_loop_bbs (loop_vinfo, loop_vectorized_call);
 
   unsigned HOST_WIDE_INT bytes;
-  if (current_vector_size.is_constant (&bytes))
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-		     "loop vectorized using %wu byte vectors\n", bytes);
-  else
-    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-		     "loop vectorized using variable length vectors\n");
+  if (dump_enabled_p ())
+    {
+      if (current_vector_size.is_constant (&bytes))
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			 "loop vectorized using %wu byte vectors\n", bytes);
+      else
+	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+			 "loop vectorized using variable length vectors\n");
+    }
 
   loop_p new_loop = vect_transform_loop (loop_vinfo);
   (*num_vectorized_loops)++;
@@ -1289,7 +1293,8 @@ pass_slp_vectorize::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     {
       if (vect_slp_bb (bb))
-	dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
+	if (dump_enabled_p ())
+	  dump_printf_loc (MSG_NOTE, vect_location, "basic block vectorized\n");
     }
 
   if (!in_loop_pipeline)
@@ -1447,7 +1452,8 @@ increase_alignment (void)
       if (alignment && vect_can_force_dr_alignment_p (decl, alignment))
         {
 	  vnode->increase_alignment (alignment);
-          dump_printf (MSG_NOTE, "Increasing alignment of decl: %T\n", decl);
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "Increasing alignment of decl: %T\n", decl);
         }
     }
 

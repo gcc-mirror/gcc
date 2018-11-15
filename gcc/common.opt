@@ -550,9 +550,13 @@ Wattributes
 Common Var(warn_attributes) Init(1) Warning
 Warn about inappropriate attribute usage.
 
-Wattribute-alias
-Common Var(warn_attributes) Init(1) Warning
-Warn about type safety and similar errors in attribute alias and related.
+Wattribute-alias=
+Common Joined RejectNegative UInteger Var(warn_attribute_alias) Init(1) Warning IntegerRange(0, 2)
+Warn about type safety and similar errors and mismatches in attribute alias and related.
+
+Wno-attribute-alias
+Common Alias(Wattribute_alias=, 0, 0) Warning
+Disable -Wattribute-alias.
 
 Wcannot-profile
 Common Var(warn_cannot_profile) Init(1) Warning
@@ -570,6 +574,10 @@ Warn about pointer casts which increase alignment.
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.
+
+Wattribute-warning
+Common Var(warn_attribute_warning) Init(1) Warning
+Warn about uses of __attribute__((warning)) declarations.
 
 Wdeprecated-declarations
 Common Var(warn_deprecated_decl) Init(1) Warning
@@ -1269,6 +1277,23 @@ Enum(diagnostic_color_rule) String(always) Value(DIAGNOSTICS_COLOR_YES)
 EnumValue
 Enum(diagnostic_color_rule) String(auto) Value(DIAGNOSTICS_COLOR_AUTO)
 
+fdiagnostics-format=
+Common Joined RejectNegative Enum(diagnostics_output_format)
+-fdiagnostics-format=[text|json] Select output format
+
+; Required for these enum values.
+SourceInclude
+diagnostic.h
+
+Enum
+Name(diagnostics_output_format) Type(int)
+
+EnumValue
+Enum(diagnostics_output_format) String(text) Value(DIAGNOSTICS_OUTPUT_FORMAT_TEXT)
+
+EnumValue
+Enum(diagnostics_output_format) String(json) Value(DIAGNOSTICS_OUTPUT_FORMAT_JSON)
+
 fdiagnostics-parseable-fixits
 Common Var(flag_diagnostics_parseable_fixits)
 Print fix-it hints in machine-readable form.
@@ -1718,7 +1743,15 @@ Perform Identical Code Folding for variables.
 
 fipa-reference
 Common Report Var(flag_ipa_reference) Init(0) Optimization
-Discover readonly and non addressable static variables.
+Discover read-only and non addressable static variables.
+
+fipa-reference-addressable
+Common Report Var(flag_ipa_reference_addressable) Init(0) Optimization
+Discover read-only, write-only and non-addressable static variables.
+
+fipa-stack-alignment
+Common Report Var(flag_ipa_stack_alignment) Init(1) Optimization
+Reduce stack alignment on call sites if possible.
 
 fipa-matrix-reorg
 Common Ignore
@@ -2062,6 +2095,14 @@ Enable correction of flow inconsistent profile data input.
 fprofile-update=
 Common Joined RejectNegative Enum(profile_update) Var(flag_profile_update) Init(PROFILE_UPDATE_SINGLE)
 -fprofile-update=[single|atomic|prefer-atomic]	Set the profile update method.
+
+fprofile-filter-files=
+Common Joined RejectNegative Var(flag_profile_filter_files)
+Instrument only functions from files where names match any regular expression (separated by a semi-colon).
+
+fprofile-exclude-files=
+Common Joined RejectNegative Var(flag_profile_exclude_files)
+Instrument only functions from files where names do not match all the regular expressions (separated by a semi-colon).
 
 Enum
 Name(profile_update) Type(enum profile_update) UnknownError(unknown profile update method %qs)
@@ -2727,6 +2768,10 @@ Use the bfd linker instead of the default linker.
 fuse-ld=gold
 Common Driver Negative(fuse-ld=bfd)
 Use the gold linker instead of the default linker.
+
+fuse-ld=lld
+Common Driver Negative(fuse-ld=lld)
+Use the lld LLVM linker instead of the default linker.
 
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)

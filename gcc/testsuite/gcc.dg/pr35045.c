@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-skip-if "" { { i?86-*-* x86_64-*-* } && { ia32 && { ! nonpic } } } } */
+/* { dg-skip-if "Not enough registers" { "pdp11-*-*" } } */
 /* { dg-options "-O2 -fgcse-after-reload" } */
 
 extern void abort (void);

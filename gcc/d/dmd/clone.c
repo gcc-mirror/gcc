@@ -8,11 +8,9 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/clone.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-#include <new>
-
+#include "root/dsystem.h"
 #include "root/root.h"
+
 #include "aggregate.h"
 #include "scope.h"
 #include "mtype.h"

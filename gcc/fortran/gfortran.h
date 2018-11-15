@@ -952,7 +952,7 @@ typedef struct gfc_file
 
 typedef struct gfc_linebuf
 {
-  source_location location;
+  location_t location;
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
@@ -1937,7 +1937,10 @@ gfc_array_ref;
    before the component component.  */
 
 enum ref_type
-  { REF_ARRAY, REF_COMPONENT, REF_SUBSTRING };
+  { REF_ARRAY, REF_COMPONENT, REF_SUBSTRING, REF_INQUIRY };
+
+enum inquiry_type
+  { INQUIRY_RE, INQUIRY_IM, INQUIRY_KIND, INQUIRY_LEN };
 
 typedef struct gfc_ref
 {
@@ -1960,6 +1963,8 @@ typedef struct gfc_ref
       gfc_charlen *length;
     }
     ss;
+
+    inquiry_type i;
 
   }
   u;

@@ -863,7 +863,6 @@ package body Sem_SPARK is
    -----------------------
 
    procedure Check_Declaration (Decl : Node_Id) is
-
       Target_Ent : constant Entity_Id := Defining_Identifier (Decl);
       Target_Typ : Node_Id renames Etype (Target_Ent);
 

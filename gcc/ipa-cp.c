@@ -307,18 +307,18 @@ private:
 class ipcp_vr_lattice
 {
 public:
-  value_range m_vr;
+  value_range_base m_vr;
 
   inline bool bottom_p () const;
   inline bool top_p () const;
   inline bool set_to_bottom ();
-  bool meet_with (const value_range *p_vr);
+  bool meet_with (const value_range_base *p_vr);
   bool meet_with (const ipcp_vr_lattice &other);
   void init () { gcc_assert (m_vr.undefined_p ()); }
   void print (FILE * f);
 
 private:
-  bool meet_with_1 (const value_range *other_vr);
+  bool meet_with_1 (const value_range_base *other_vr);
 };
 
 /* Structure containing lattices for a parameter itself and for pieces of
@@ -909,7 +909,7 @@ ipcp_vr_lattice::meet_with (const ipcp_vr_lattice &other)
    lattice.  */
 
 bool
-ipcp_vr_lattice::meet_with (const value_range *p_vr)
+ipcp_vr_lattice::meet_with (const value_range_base *p_vr)
 {
   return meet_with_1 (p_vr);
 }
@@ -918,7 +918,7 @@ ipcp_vr_lattice::meet_with (const value_range *p_vr)
    OTHER_VR lattice.  Return TRUE if anything changed.  */
 
 bool
-ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
+ipcp_vr_lattice::meet_with_1 (const value_range_base *other_vr)
 {
   if (bottom_p ())
     return false;
@@ -926,9 +926,9 @@ ipcp_vr_lattice::meet_with_1 (const value_range *other_vr)
   if (other_vr->varying_p ())
     return set_to_bottom ();
 
-  value_range save (m_vr);
+  value_range_base save (m_vr);
   m_vr.union_ (other_vr);
-  return !m_vr.ignore_equivs_equal_p (save);
+  return !m_vr.equal_p (save);
 }
 
 /* Return true if value range information in the lattice is yet unknown.  */
@@ -1871,12 +1871,13 @@ propagate_bits_across_jump_function (cgraph_edge *cs, int idx,
    the result is a range or an anti-range.  */
 
 static bool
-ipa_vr_operation_and_type_effects (value_range *dst_vr, value_range *src_vr,
+ipa_vr_operation_and_type_effects (value_range_base *dst_vr,
+				   value_range_base *src_vr,
 				   enum tree_code operation,
 				   tree dst_type, tree src_type)
 {
-  *dst_vr = value_range ();
-  extract_range_from_unary_expr (dst_vr, operation, dst_type, src_vr, src_type);
+  extract_range_from_unary_expr (dst_vr, operation, dst_type,
+				 src_vr, src_type);
   if (dst_vr->varying_p () || dst_vr->undefined_p ())
     return false;
   return true;
@@ -1915,7 +1916,7 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 
 	  if (src_lats->m_value_range.bottom_p ())
 	    return dest_lat->set_to_bottom ();
-	  value_range vr;
+	  value_range_base vr;
 	  if (ipa_vr_operation_and_type_effects (&vr,
 						 &src_lats->m_value_range.m_vr,
 						 operation, param_type,
@@ -1932,12 +1933,12 @@ propagate_vr_across_jump_function (cgraph_edge *cs, ipa_jump_func *jfunc,
 	  if (TREE_OVERFLOW_P (val))
 	    val = drop_tree_overflow (val);
 
-	  value_range tmpvr (VR_RANGE, val, val);
+	  value_range_base tmpvr (VR_RANGE, val, val);
 	  return dest_lat->meet_with (&tmpvr);
 	}
     }
 
-  value_range vr;
+  value_range_base vr;
   if (jfunc->m_vr
       && ipa_vr_operation_and_type_effects (&vr, jfunc->m_vr, NOP_EXPR,
 					    param_type,

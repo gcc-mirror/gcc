@@ -871,13 +871,13 @@ c_get_substring_location (const substring_loc &substr_loc,
   if (tok_type == CPP_OTHER)
     return "unrecognized string type";
 
-  return get_source_location_for_substring (parse_in, g_string_concat_db,
-					    substr_loc.get_fmt_string_loc (),
-					    tok_type,
-					    substr_loc.get_caret_idx (),
-					    substr_loc.get_start_idx (),
-					    substr_loc.get_end_idx (),
-					    out_loc);
+  return get_location_within_string (parse_in, g_string_concat_db,
+				     substr_loc.get_fmt_string_loc (),
+				     tok_type,
+				     substr_loc.get_caret_idx (),
+				     substr_loc.get_start_idx (),
+				     substr_loc.get_end_idx (),
+				     out_loc);
 }
 
 
@@ -5132,37 +5132,59 @@ c_init_attributes (void)
 #undef DEF_ATTR_TREE_LIST
 }
 
-/* Check whether ALIGN is a valid user-specified alignment.  If so,
-   return its base-2 log; if not, output an error and return -1.  If
-   ALLOW_ZERO then 0 is valid and should result in a return of -1 with
-   no error.  */
-int
-check_user_alignment (const_tree align, bool allow_zero)
-{
-  int i;
+/* Check whether the byte alignment ALIGN is a valid user-specified
+   alignment less than the supported maximum.  If so, return ALIGN's
+   base-2 log; if not, output an error and return -1.  If OBJFILE
+   then reject alignments greater than MAX_OFILE_ALIGNMENT when
+   converted to bits.  Otherwise, consider valid only alignments
+   that are less than HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT.
+   If ALLOW_ZERO then 0 is valid and should result in
+   a return of -1 with no error.  */
 
+int
+check_user_alignment (const_tree align, bool objfile, bool allow_zero)
+{
   if (error_operand_p (align))
     return -1;
+
   if (TREE_CODE (align) != INTEGER_CST
       || !INTEGRAL_TYPE_P (TREE_TYPE (align)))
     {
       error ("requested alignment is not an integer constant");
       return -1;
     }
-  else if (allow_zero && integer_zerop (align))
+
+  if (allow_zero && integer_zerop (align))
     return -1;
-  else if (tree_int_cst_sgn (align) == -1
-           || (i = tree_log2 (align)) == -1)
+
+  int log2bitalign;
+  if (tree_int_cst_sgn (align) == -1
+      || (log2bitalign = tree_log2 (align)) == -1)
     {
-      error ("requested alignment is not a positive power of 2");
+      error ("requested alignment %qE is not a positive power of 2",
+	     align);
       return -1;
     }
-  else if (i >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+
+  if (objfile)
     {
-      error ("requested alignment is too large");
+      unsigned maxalign = MAX_OFILE_ALIGNMENT / BITS_PER_UNIT;
+      if (tree_to_shwi (align) > maxalign)
+	{
+	  error ("requested alignment %qE exceeds object file maximum %u",
+		 align, maxalign);
+	  return -1;
+	}
+    }
+
+  if (log2bitalign >= HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT)
+    {
+      error ("requested alignment %qE exceeds maximum %u",
+	     align, 1U << (HOST_BITS_PER_INT - 1));
       return -1;
     }
-  return i;
+
+  return log2bitalign;
 }
 
 /* Determine the ELF symbol visibility for DECL, which is either a
@@ -5510,8 +5532,6 @@ parse_optimize_options (tree args, bool attr_p)
 		  next_p = NULL;
 		}
 
-	      r = q = (char *) ggc_alloc_atomic (len2 + 3);
-
 	      /* If the user supplied -Oxxx or -fxxx, only allow -Oxxx or -fxxx
 		 options.  */
 	      if (*p == '-' && p[1] != 'O' && p[1] != 'f')
@@ -5525,6 +5545,9 @@ parse_optimize_options (tree args, bool attr_p)
 			     "bad option %qs to pragma %<optimize%>", p);
 		  continue;
 		}
+
+	      /* Can't use GC memory here, see PR88007.  */
+	      r = q = XOBNEWVEC (&opts_obstack, char, len2 + 3);
 
 	      if (*p != '-')
 		{

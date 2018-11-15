@@ -14,7 +14,7 @@
 
 #define SHRT_MAX   __SHRT_MAX__
 #define SHRT_MIN   (-SHRT_MAX - 1)
-#define USHRT_MAX  (SHRT_MAX * 2 + 1)
+#define USHRT_MAX  (SHRT_MAX * 2U + 1)
 
 #define INT_MAX    __INT_MAX__
 #define INT_MIN    (-INT_MAX - 1)

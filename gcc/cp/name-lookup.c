@@ -6735,7 +6735,7 @@ class macro_use_before_def : public deferred_diagnostic
   static macro_use_before_def *
   maybe_make (location_t use_loc, cpp_hashnode *macro)
   {
-    source_location def_loc = cpp_macro_definition_location (macro);
+    location_t def_loc = cpp_macro_definition_location (macro);
     if (def_loc == UNKNOWN_LOCATION)
       return NULL;
 

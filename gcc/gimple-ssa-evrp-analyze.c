@@ -97,7 +97,7 @@ evrp_range_analyzer::try_find_new_range (tree name,
 	  && vrp_operand_equal_p (old_vr->max (), vr.max ()))
 	return NULL;
       value_range *new_vr = vr_values->allocate_value_range ();
-      *new_vr = vr;
+      new_vr->move (&vr);
       return new_vr;
     }
   return NULL;
@@ -209,7 +209,7 @@ evrp_range_analyzer::record_ranges_from_incoming_edge (basic_block bb)
 	      value_range *old_vr = get_value_range (vrs[i].first);
 	      value_range tem (old_vr->kind (), old_vr->min (), old_vr->max ());
 	      tem.intersect (vrs[i].second);
-	      if (tem.ignore_equivs_equal_p (*old_vr))
+	      if (tem.equal_p (*old_vr, /*ignore_equivs=*/true))
 		continue;
 	      push_value_range (vrs[i].first, vrs[i].second);
 	      if (is_fallthru
@@ -252,7 +252,7 @@ evrp_range_analyzer::record_ranges_from_phis (basic_block bb)
 	vr_values->extract_range_from_phi_node (phi, &vr_result);
       else
 	{
-	  set_value_range_to_varying (&vr_result);
+	  vr_result.set_varying ();
 	  /* When we have an unvisited executable predecessor we can't
 	     use PHI arg ranges which may be still UNDEFINED but have
 	     to use VARYING for them.  But we can still resort to
@@ -319,8 +319,8 @@ evrp_range_analyzer::record_ranges_from_stmt (gimple *stmt, bool temporary)
 		 also have to be very careful about sharing the underlying
 		 bitmaps.  Ugh.  */
 	      value_range *new_vr = vr_values->allocate_value_range ();
-	      *new_vr = vr;
-	      new_vr->equiv_clear ();
+	      new_vr->set (vr.kind (), vr.min (), vr.max ());
+	      vr.equiv_clear ();
 	      push_value_range (output, new_vr);
 	    }
 	}

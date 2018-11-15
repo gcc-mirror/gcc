@@ -4740,6 +4740,7 @@ find_array_spec (gfc_expr *e)
 	break;
 
       case REF_SUBSTRING:
+      case REF_INQUIRY:
 	break;
       }
 
@@ -4962,13 +4963,13 @@ gfc_resolve_substring_charlen (gfc_expr *e)
 
   for (char_ref = e->ref; char_ref; char_ref = char_ref->next)
     {
-      if (char_ref->type == REF_SUBSTRING)
-      	break;
+      if (char_ref->type == REF_SUBSTRING || char_ref->type == REF_INQUIRY)
+	break;
       if (char_ref->type == REF_COMPONENT)
 	ts = &char_ref->u.c.component->ts;
     }
 
-  if (!char_ref)
+  if (!char_ref || char_ref->type == REF_INQUIRY)
     return;
 
   gcc_assert (char_ref->next == NULL);
@@ -5056,6 +5057,7 @@ resolve_ref (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
+      case REF_INQUIRY:
 	break;
 
       case REF_SUBSTRING:
@@ -5129,6 +5131,7 @@ resolve_ref (gfc_expr *expr)
 	  break;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  break;
 	}
 
@@ -7233,6 +7236,7 @@ resolve_deallocate_expr (gfc_expr *e)
 	  break;
 
 	case REF_SUBSTRING:
+	case REF_INQUIRY:
 	  allocatable = 0;
 	  break;
 	}
@@ -7525,6 +7529,7 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
 		break;
 
 	      case REF_SUBSTRING:
+	      case REF_INQUIRY:
 		allocatable = 0;
 		pointer = 0;
 		break;

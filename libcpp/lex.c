@@ -1232,7 +1232,7 @@ static int
 skip_line_comment (cpp_reader *pfile)
 {
   cpp_buffer *buffer = pfile->buffer;
-  source_location orig_line = pfile->line_table->highest_line;
+  location_t orig_line = pfile->line_table->highest_line;
 
   while (*buffer->cur != '\n')
     buffer->cur++;
@@ -1901,7 +1901,7 @@ lex_raw_string (cpp_reader *pfile, cpp_token *token, const uchar *base,
 	  _cpp_process_line_notes (pfile, false);
 	  if (!_cpp_get_fresh_line (pfile))
 	    {
-	      source_location src_loc = token->src_loc;
+	      location_t src_loc = token->src_loc;
 	      token->type = CPP_EOF;
 	      /* Tell the compiler the line number of the EOF token.  */
 	      token->src_loc = pfile->line_table->highest_line;
@@ -3790,11 +3790,11 @@ cpp_token_val_index (const cpp_token *tok)
 }
 
 /* All tokens lexed in R after calling this function will be forced to
-   have their source_location to be P, until
+   have their location_t to be P, until
    cpp_stop_forcing_token_locations is called for R.  */
 
 void
-cpp_force_token_locations (cpp_reader *r, source_location loc)
+cpp_force_token_locations (cpp_reader *r, location_t loc)
 {
   r->forced_token_location = loc;
 }

@@ -435,115 +435,127 @@ maybe_default_options (struct gcc_options *opts,
 			  lang_mask, handlers, loc, dc);
 }
 
-/* Table of options enabled by default at different levels.  */
+/* Table of options enabled by default at different levels.
+   Please keep this list sorted by level and alphabetized within
+   each level; this makes it easier to keep the documentation
+   in sync.  */
 
 static const struct default_options default_options_table[] =
   {
-    /* -O1 optimizations.  */
-    { OPT_LEVELS_1_PLUS, OPT_fdefer_pop, NULL, 1 },
-#if DELAY_SLOTS
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fdelayed_branch, NULL, 1 },
-#endif
-    { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
+    /* -O1 and -Og optimizations.  */
+    { OPT_LEVELS_1_PLUS, OPT_fcombine_stack_adjustments, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fcompare_elim, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fcprop_registers, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fdefer_pop, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fforward_propagate, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion2, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fguess_branch_probability, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fipa_profile, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_pure_const, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fipa_reference, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fipa_profile, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fipa_reference_addressable, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fmerge_constants, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_freorder_blocks, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fshrink_wrap, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_fsplit_wide_types, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_ccp, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_bit_ccp, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_ch, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_coalesce_vars, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_copy_prop, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_dce, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_dominator_opts, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_dse, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_sra, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_fre, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_ftree_copy_prop, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_sink, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_ftree_ch, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fcombine_stack_adjustments, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fcompare_elim, NULL, 1 },
     { OPT_LEVELS_1_PLUS, OPT_ftree_slsr, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_ftree_builtin_call_dce, NULL, 1 },
-    { OPT_LEVELS_1_PLUS, OPT_fomit_frame_pointer, NULL, 1 },
+    { OPT_LEVELS_1_PLUS, OPT_ftree_ter, NULL, 1 },
 
-    /* -O2 optimizations.  */
-    { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_findirect_inlining, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fpartial_inlining, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fthread_jumps, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fcrossjumping, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_foptimize_sibling_calls, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fcse_follow_jumps, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fgcse, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fexpensive_optimizations, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_frerun_cse_after_loop, NULL, 1 },
+    /* -O1 (and not -Og) optimizations.  */
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fbranch_count_reg, NULL, 1 },
+#if DELAY_SLOTS
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fdelayed_branch, NULL, 1 },
+#endif
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fif_conversion2, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fmove_loop_invariants, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_fssa_phiopt, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_bit_ccp, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_sra, NULL, 1 },
+    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_ftree_pta, NULL, 1 },
+
+    /* -O2 and -Os optimizations.  */
     { OPT_LEVELS_2_PLUS, OPT_fcaller_saves, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcode_hoisting, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcrossjumping, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fcse_follow_jumps, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fexpensive_optimizations, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fgcse, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_findirect_inlining, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_finline_small_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_bit_cp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_icf, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_ra, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fipa_vrp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_flra_remat, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_foptimize_sibling_calls, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fpartial_inlining, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fpeephole2, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_frerun_cse_after_loop, NULL, 1 },
 #ifdef INSN_SCHEDULING
-  /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
-    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_fschedule_insns2, NULL, 1 },
 #endif
     { OPT_LEVELS_2_PLUS, OPT_fstrict_aliasing, NULL, 1 },
-    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
-      REORDER_BLOCKS_ALGORITHM_STC },
-    { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fcode_hoisting, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fstore_merging, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fthread_jumps, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_pre, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_ftree_switch_conversion, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_cp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_bit_cp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_vrp, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fdevirtualize, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fdevirtualize_speculatively, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_sra, NULL, 1 },
-    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_ftree_vrp, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
+
+    /* -O2 and -Os optimizations.  */
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_jumps, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_labels, NULL, 1 },
-    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_functions, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_ftree_tail_merge, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_CHEAP },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_loops, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fhoist_adjacent_loads, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_icf, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fisolate_erroneous_paths_dereference, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fipa_ra, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_flra_remat, NULL, 1 },
-    { OPT_LEVELS_2_PLUS, OPT_fstore_merging, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
+      REORDER_BLOCKS_ALGORITHM_STC },
+#ifdef INSN_SCHEDULING
+  /* Only run the pre-regalloc scheduling pass if optimizing for speed.  */
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fschedule_insns, NULL, 1 },
+#endif
 
-    /* -O3 optimizations.  */
-    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_floop_interchange, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
+    /* -O3 and -Os optimizations.  */
     /* Inlining of functions reducing size is a good idea with -Os
        regardless of them being declared inline.  */
     { OPT_LEVELS_3_PLUS_AND_SIZE, OPT_finline_functions, NULL, 1 },
-    { OPT_LEVELS_1_PLUS_NOT_DEBUG, OPT_finline_functions_called_once, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_floop_unroll_and_jam, NULL, 1 },
+
+    /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_fgcse_after_reload, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_DYNAMIC },
     { OPT_LEVELS_3_PLUS, OPT_fipa_cp_clone, NULL, 1 },
-    { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_interchange, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_floop_unroll_and_jam, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fpeel_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fsplit_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_vectorize, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_partial_pre, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_slp_vectorize, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_funswitch_loops, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_fvect_cost_model_, NULL, VECT_COST_MODEL_DYNAMIC },
 
     /* -Ofast adds optimizations to -O3.  */
     { OPT_LEVELS_FAST, OPT_ffast_math, NULL, 1 },
@@ -2220,6 +2232,11 @@ common_handle_option (struct gcc_options *opts,
       diagnostic_color_init (dc, value);
       break;
 
+    case OPT_fdiagnostics_format_:
+      diagnostic_output_format_init (dc,
+				     (enum diagnostics_output_format)value);
+      break;
+
     case OPT_fdiagnostics_parseable_fixits:
       dc->parseable_fixits_p = value;
       break;
@@ -2557,6 +2574,7 @@ common_handle_option (struct gcc_options *opts,
 
     case OPT_fuse_ld_bfd:
     case OPT_fuse_ld_gold:
+    case OPT_fuse_ld_lld:
     case OPT_fuse_linker_plugin:
       /* No-op. Used by the driver and passed to us because it starts with f.*/
       break;

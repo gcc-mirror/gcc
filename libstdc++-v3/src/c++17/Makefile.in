@@ -731,6 +731,11 @@ uninstall-am:
 
 vpath % $(top_srcdir)/src/c++17
 
+memory_resource.lo: memory_resource.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $< -o $@
+memory_resource.o: memory_resource.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $< -o $@
+
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
 .NOEXPORT:

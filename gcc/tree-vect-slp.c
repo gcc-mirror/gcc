@@ -575,9 +575,10 @@ vect_record_max_nunits (stmt_vec_info stmt_info, unsigned int group_size,
       && (!nunits.is_constant (&const_nunits)
 	  || const_nunits > group_size))
     {
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-		       "Build SLP failed: unrolling required "
-		       "in basic block SLP\n");
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Build SLP failed: unrolling required "
+			 "in basic block SLP\n");
       /* Fatal mismatch.  */
       return false;
     }
@@ -1231,9 +1232,10 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 		    vect_free_slp_tree (grandchild, false);
 		  SLP_TREE_CHILDREN (child).truncate (0);
 
-		  dump_printf_loc (MSG_NOTE, vect_location,
-				   "Building parent vector operands from "
-				   "scalars instead\n");
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Building parent vector operands from "
+				     "scalars instead\n");
 		  oprnd_info->def_stmts = vNULL;
 		  SLP_TREE_DEF_TYPE (child) = vect_external_def;
 		  children.safe_push (child);
@@ -1261,8 +1263,9 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	     scalar version.  */
 	  && !is_pattern_stmt_p (stmt_info))
 	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Building vector operands from scalars\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Building vector operands from scalars\n");
 	  child = vect_create_new_slp_node (oprnd_info->def_stmts);
 	  SLP_TREE_DEF_TYPE (child) = vect_external_def;
 	  children.safe_push (child);
@@ -1334,16 +1337,19 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 	  while (j != group_size);
 
 	  /* Swap mismatched definition stmts.  */
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Re-trying with swapped operands of stmts ");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "Re-trying with swapped operands of stmts ");
 	  for (j = 0; j < group_size; ++j)
 	    if (matches[j] == !swap_not_matching)
 	      {
 		std::swap (oprnds_info[0]->def_stmts[j],
 			   oprnds_info[1]->def_stmts[j]);
-		dump_printf (MSG_NOTE, "%d ", j);
+		if (dump_enabled_p ())
+		  dump_printf (MSG_NOTE, "%d ", j);
 	      }
-	  dump_printf (MSG_NOTE, "\n");
+	  if (dump_enabled_p ())
+	    dump_printf (MSG_NOTE, "\n");
 	  /* And try again with scratch 'matches' ... */
 	  bool *tem = XALLOCAVEC (bool, group_size);
 	  if ((child = vect_build_slp_tree (vinfo, oprnd_info->def_stmts,
@@ -1399,9 +1405,10 @@ vect_build_slp_tree_2 (vec_info *vinfo,
 			vect_free_slp_tree (grandchild, false);
 		      SLP_TREE_CHILDREN (child).truncate (0);
 
-		      dump_printf_loc (MSG_NOTE, vect_location,
-				       "Building parent vector operands from "
-				       "scalars instead\n");
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_NOTE, vect_location,
+					 "Building parent vector operands from "
+					 "scalars instead\n");
 		      oprnd_info->def_stmts = vNULL;
 		      SLP_TREE_DEF_TYPE (child) = vect_external_def;
 		      children.safe_push (child);
@@ -1757,9 +1764,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	      if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&nunits)
 		  || maxk >= (DR_GROUP_SIZE (group_info) & ~(nunits - 1)))
 		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				   "BB vectorization with gaps at the end of "
-				   "a load is not supported\n");
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "BB vectorization with gaps at the end of "
+				     "a load is not supported\n");
 		  return false;
 		}
 
@@ -1769,9 +1777,10 @@ vect_supported_load_permutation_p (slp_instance slp_instn)
 	      if (!vect_transform_slp_perm_load (node, tem, NULL,
 						 1, slp_instn, true, &n_perms))
 		{
-		  dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				   vect_location,
-				   "unsupported load permutation\n");
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
+				     vect_location,
+				     "unsupported load permutation\n");
 		  return false;
 		}
 	    }
@@ -2592,9 +2601,10 @@ vect_slp_analyze_operations (vec_info *vinfo)
         {
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
 	  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "removing SLP instance operations starting from: %G",
-			   stmt_info->stmt);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "removing SLP instance operations starting from: %G",
+			     stmt_info->stmt);
 	  vect_free_slp_instance (instance, false);
           vinfo->slp_instances.ordered_remove (i);
 	  cost_vec.release ();
@@ -2779,6 +2789,8 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 		       vec<data_reference_p> datarefs, int n_stmts,
 		       bool &fatal, vec_info_shared *shared)
 {
+  DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
+
   bb_vec_info bb_vinfo;
   slp_instance instance;
   int i;
@@ -2886,9 +2898,10 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
 	{
 	  slp_tree node = SLP_INSTANCE_TREE (instance);
 	  stmt_vec_info stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "removing SLP instance operations starting from: %G",
-			   stmt_info->stmt);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "removing SLP instance operations starting from: %G",
+			     stmt_info->stmt);
 	  vect_free_slp_instance (instance, false);
 	  BB_VINFO_SLP_INSTANCES (bb_vinfo).ordered_remove (i);
 	  continue;
@@ -2949,8 +2962,6 @@ vect_slp_bb (basic_block bb)
   bool any_vectorized = false;
   auto_vector_sizes vector_sizes;
 
-  DUMP_VECT_SCOPE ("vect_slp_analyze_bb");
-
   /* Autodetect first vector size we try.  */
   current_vector_size = 0;
   targetm.vectorize.autovectorize_vector_sizes (&vector_sizes);
@@ -3006,14 +3017,17 @@ vect_slp_bb (basic_block bb)
 	  vect_schedule_slp (bb_vinfo);
 
 	  unsigned HOST_WIDE_INT bytes;
-	  if (current_vector_size.is_constant (&bytes))
-	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block part vectorized using %wu byte "
-			     "vectors\n", bytes);
-	  else
-	    dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
-			     "basic block part vectorized using variable "
-			     "length vectors\n");
+	  if (dump_enabled_p ())
+	    {
+	      if (current_vector_size.is_constant (&bytes))
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				 "basic block part vectorized using %wu byte "
+				 "vectors\n", bytes);
+	      else
+		dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, vect_location,
+				 "basic block part vectorized using variable "
+				 "length vectors\n");
+	    }
 
 	  vectorized = true;
 	}

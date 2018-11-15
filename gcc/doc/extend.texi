@@ -2396,7 +2396,8 @@ alignment this overrides the effect of the
 function.
 
 Note that the effectiveness of @code{aligned} attributes may be
-limited by inherent limitations in your linker.  On many systems, the
+limited by inherent limitations in the system linker 
+and/or object file format.  On some systems, the
 linker is only able to arrange for functions to be aligned up to a
 certain maximum alignment.  (For some linkers, the maximum supported
 alignment may be very very small.)  See your linker documentation for
@@ -2551,6 +2552,40 @@ constructors for C++ objects with static storage duration and functions
 decorated with attribute @code{constructor} are invoked is unspecified.
 In mixed declarations, attribute @code{init_priority} can be used to
 impose a specific ordering.
+
+@item copy
+@itemx copy (@var{function})
+@cindex @code{copy} function attribute
+The @code{copy} attribute applies the set of attributes with which
+@var{function} has been declared to the declaration of the function
+to which the attribute is applied.  The attribute is designed for
+libraries that define aliases or function resolvers that are expected
+to specify the same set of attributes as their targets.  The @code{copy}
+attribute can be used with functions, variables, or types.  However,
+the kind of symbol to which the attribute is applied (either function
+or variable) must match the kind of symbol to which the argument refers.
+The @code{copy} attribute copies only syntaxtic and semantic attributes
+but attributes that affect a symbol's linkage or visibility such as
+@code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
+attribute is also not copied.  @xref{Common Type Attributes}.
+@xref{Common Variable Attributes}.
+
+For example, the @var{StrongAlias} macro below makes use of the @code{alias}
+and @code{copy} attributes to define an alias named @var{alloc} for function
+@var{allocate} declated with attributes @var{alloc_size}, @var{malloc}, and
+@var{nothrow}.  Thanks to the @code{__typeof__} operator the alias has
+the same type as the target function.  As a result of the @code{copy}
+attribute the alias also shares the same attributes as the target.
+
+@smallexample
+#define StrongAlias(TagetFunc, AliasDecl)   \
+  extern __typeof__ (TargetFunc) AliasDecl  \
+    __attribute__ ((alias (#TargetFunc), copy (TargetFunc)));
+
+extern __attribute__ ((alloc_size (1), malloc, nothrow))
+  void* allocate (size_t);
+StrongAlias (allocate, alloc);
+@end smallexample
 
 @item deprecated
 @itemx deprecated (@var{msg})
@@ -3232,7 +3267,7 @@ change the number of NOPs to any desired value.  The two-value syntax
 is the same as for the command-line switch
 @option{-fpatchable-function-entry=N,M}, generating @var{N} NOPs, with
 the function entry point before the @var{M}th NOP instruction.
-@var{M} defaults to 0 if omitted e.g. function entry point is before
+@var{M} defaults to 0 if omitted e.g.@: function entry point is before
 the first NOP.
 
 If patchable function entries are enabled globally using the command-line
@@ -3619,7 +3654,7 @@ symbol, not necessarily in the same translation unit.
 The effect is equivalent to moving all references to the alias to a
 separate translation unit, renaming the alias to the aliased symbol,
 declaring it as weak, compiling the two separate translation units and
-performing a reloadable link on them.
+performing a link with relocatable output (ie: @code{ld -r}) on them.
 
 At present, a declaration to which @code{weakref} is attached can
 only be @code{static}.
@@ -5329,7 +5364,7 @@ depended upon to work reliably and are not supported.
 @cindex @code{vector} function attribute, RX
 This RX attribute is similar to the @code{interrupt} attribute, including its
 parameters, but does not make the function an interrupt-handler type
-function (i.e. it retains the normal C function calling ABI).  See the
+function (i.e.@: it retains the normal C function calling ABI).  See the
 @code{interrupt} attribute for a description of its arguments.
 @end table
 
@@ -6098,14 +6133,18 @@ attribute must be specified as well.  When used as part of a typedef, the
 @code{aligned} attribute can both increase and decrease alignment, and
 specifying the @code{packed} attribute generates a warning.
 
-Note that the effectiveness of @code{aligned} attributes may be limited
-by inherent limitations in your linker.  On many systems, the linker is
+Note that the effectiveness of @code{aligned} attributes for static
+variables may be limited by inherent limitations in the system linker
+and/or object file format.  On some systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
 alignment.  (For some linkers, the maximum supported alignment may
 be very very small.)  If your linker is only able to align variables
 up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
+
+Stack variables are not affected by linker restrictions; GCC can properly
+align them on any target.
 
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
@@ -6173,6 +6212,23 @@ opposite---to allocate space for it directly.
 
 These attributes override the default chosen by the
 @option{-fno-common} and @option{-fcommon} flags respectively.
+
+@item copy
+@itemx copy (@var{variable})
+@cindex @code{copy} variable attribute
+The @code{copy} attribute applies the set of attributes with which
+@var{variable} has been declared to the declaration of the variable
+to which the attribute is applied.  The attribute is designed for
+libraries that define aliases that are expected to specify the same
+set of attributes as the aliased symbols.  The @code{copy} attribute
+can be used with variables, functions or types.  However, the kind
+of symbol to which the attribute is applied (either varible or
+function) must match the kind of symbol to which the argument refers.
+The @code{copy} attribute copies only syntaxtic and semantic attributes
+but attributes that affect a symbol's linkage or visibility such as
+@code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
+attribute is also not copied.  @xref{Common Function Attributes}.
+@xref{Common Type Attributes}.
 
 @item deprecated
 @itemx deprecated (@var{msg})
@@ -7050,8 +7106,11 @@ up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
-The @code{aligned} attribute can only increase alignment.  Alignment
-can be decreased by specifying the @code{packed} attribute.  See below.
+When used on a struct, or struct member, the @code{aligned} attribute can
+only increase the alignment; in order to decrease it, the @code{packed}
+attribute must be specified as well.  When used as part of a typedef, the
+@code{aligned} attribute can both increase and decrease alignment, and
+specifying the @code{packed} attribute generates a warning.
 
 @cindex @code{warn_if_not_aligned} type attribute
 @item warn_if_not_aligned (@var{alignment})
@@ -7104,6 +7163,38 @@ struct foo
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
+
+@item copy
+@itemx copy (@var{expression})
+@cindex @code{copy} type attribute
+The @code{copy} attribute applies the set of attributes with which
+the type of the @var{expression} has been declared to the declaration
+of the type to which the attribute is applied.  The attribute is
+designed for libraries that define aliases that are expected to
+specify the same set of attributes as the aliased symbols.
+The @code{copy} attribute can be used with types, variables, or
+functions.  However, the kind of symbol to which the attribute is
+applied (either varible or function) must match the kind of symbol
+to which the argument refers.
+The @code{copy} attribute copies only syntaxtic and semantic attributes
+but attributes that affect a symbol's linkage or visibility such as
+@code{alias}, @code{visibility}, or @code{weak}.  The @code{deprecated}
+attribute is also not copied.  @xref{Common Function Attributes}.
+@xref{Common Variable Attributes}.
+
+For example, suppose @code{struct A} below is defined in some third
+partly library header to have the alignment requirement @code{N} and
+to force a warning whenever a variable of the type is not so aligned
+due to attribute @code{packed}.  Specifying the @code{copy} attribute
+on the definition on the unrelated @code{struct B} has the effect of
+copying all relevant attributes from the type referenced by the pointer
+expression to @code{struct B}.
+
+@smallexample
+struct __attribute__ ((aligned (N), warn_if_not_aligned (N)))
+A @{ /* @r{@dots{}} */ @};
+struct __attribute__ ((copy ( (struct A *)0)) B @{ /* @r{@dots{}} */ @};
+@end smallexample
 
 @item deprecated
 @itemx deprecated (@var{msg})
@@ -7260,7 +7351,7 @@ possible for these fields to have a different scalar storage order than the
 enclosing type.
 
 This attribute is supported only for targets that use a uniform default
-scalar storage order (fortunately, most of them), i.e. targets that store
+scalar storage order (fortunately, most of them), i.e.@: targets that store
 the scalars either all in big-endian or all in little-endian.
 
 Additional restrictions are enforced for types with the reverse scalar
@@ -8489,7 +8580,7 @@ This code copies @code{src} to @code{dst} and add 1 to @code{dst}.
 GCC's optimizers sometimes discard @code{asm} statements if they determine 
 there is no need for the output variables. Also, the optimizers may move 
 code out of loops if they believe that the code will always return the same 
-result (i.e. none of its input values change between calls). Using the 
+result (i.e.@: none of its input values change between calls). Using the 
 @code{volatile} qualifier disables these optimizations. @code{asm} statements 
 that have no output operands, including @code{asm goto} statements, 
 are implicitly volatile.
@@ -8754,7 +8845,7 @@ Operands are separated by commas.  Each operand has this format:
 Specifies a symbolic name for the operand.
 Reference the name in the assembler template 
 by enclosing it in square brackets 
-(i.e. @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
@@ -8994,7 +9085,7 @@ Operands are separated by commas.  Each operand has this format:
 Specifies a symbolic name for the operand.
 Reference the name in the assembler template 
 by enclosing it in square brackets 
-(i.e. @samp{%[Value]}). The scope of the name is the @code{asm} statement 
+(i.e.@: @samp{%[Value]}). The scope of the name is the @code{asm} statement 
 that contains the definition. Any valid C variable name is acceptable, 
 including names already defined in the surrounding code. No two operands 
 within the same @code{asm} statement can use the same symbolic name.
@@ -12038,6 +12129,12 @@ if (__builtin_expect (ptr != NULL, 1))
 
 @noindent
 when testing pointer or floating-point values.
+
+For the purposes of branch prediction optimizations, the probability that
+a @code{__builtin_expect} expression is true is controlled by GCC's
+@code{builtin-expect-probability} parameter, which defaults to 90%.  
+You can also use @code{__builtin_expect_with_probability} to explicitly 
+assign a probability value to individual expressions.
 @end deftypefn
 
 @deftypefn {Built-in Function} long __builtin_expect_with_probability
@@ -12046,7 +12143,8 @@ when testing pointer or floating-point values.
 This function has the same semantics as @code{__builtin_expect},
 but the caller provides the expected probability that @var{exp} == @var{c}.
 The last argument, @var{probability}, is a floating-point value in the
-range 0.0 to 1.0, inclusive.
+range 0.0 to 1.0, inclusive.  The @var{probability} argument must be
+constant floating-point expression.
 @end deftypefn
 
 @deftypefn {Built-in Function} void __builtin_trap (void)
@@ -20329,11 +20427,17 @@ is of type @var{cpuname}
 and returns @code{0} otherwise. The following CPU names can be detected:
 
 @table @samp
+@item amd
+AMD CPU.
+
 @item intel
 Intel CPU.
 
 @item atom
 Intel Atom CPU.
+
+@item slm
+Intel Silvermont CPU.
 
 @item core2
 Intel Core 2 CPU.
@@ -20350,8 +20454,50 @@ Intel Core i7 Westmere CPU.
 @item sandybridge
 Intel Core i7 Sandy Bridge CPU.
 
-@item amd
-AMD CPU.
+@item ivybridge
+Intel Core i7 Ivy Bridge CPU.
+
+@item haswell
+Intel Core i7 Haswell CPU.
+
+@item broadwell
+Intel Core i7 Broadwell CPU.
+
+@item skylake
+Intel Core i7 Skylake CPU.
+
+@item skylake-avx512
+Intel Core i7 Skylake AVX512 CPU.
+
+@item cannonlake
+Intel Core i7 Cannon Lake CPU.
+
+@item icelake-client
+Intel Core i7 Ice Lake Client CPU.
+
+@item icelake-server
+Intel Core i7 Ice Lake Server CPU.
+
+@item bonnell
+Intel Atom Bonnell CPU.
+
+@item silvermont
+Intel Atom Silvermont CPU.
+
+@item goldmont
+Intel Atom Goldmont CPU.
+
+@item goldmont-plus
+Intel Atom Goldmont Plus CPU.
+
+@item tremont
+Intel Atom Tremont CPU.
+
+@item knl
+Intel Knights Landing CPU.
+
+@item knm
+Intel Knights Mill CPU.
 
 @item amdfam10h
 AMD Family 10h CPU.
@@ -20391,6 +20537,9 @@ AMD Family 17h CPU.
 
 @item znver1
 AMD Family 17h Zen version 1.
+
+@item znver2
+AMD Family 17h Zen version 2.
 @end table
 
 Here is an example:
@@ -20434,8 +20583,56 @@ SSE4.2 instructions.
 AVX instructions.
 @item avx2
 AVX2 instructions.
+@item sse4a
+SSE4A instructions.
+@item fma4
+FMA4 instructions.
+@item xop
+XOP instructions.
+@item fma
+FMA instructions.
 @item avx512f
 AVX512F instructions.
+@item bmi
+BMI instructions.
+@item bmi2
+BMI2 instructions.
+@item aes
+AES instructions.
+@item pclmul
+PCLMUL instructions.
+@item avx512vl
+AVX512VL instructions.
+@item avx512bw
+AVX512BW instructions.
+@item avx512dq
+AVX512DQ instructions.
+@item avx512cd
+AVX512CD instructions.
+@item avx512er
+AVX512ER instructions.
+@item avx512pf
+AVX512PF instructions.
+@item avx512vbmi
+AVX512VBMI instructions.
+@item avx512ifma
+AVX512IFMA instructions.
+@item avx5124vnniw
+AVX5124VNNIW instructions.
+@item avx5124fmaps
+AVX5124FMAPS instructions.
+@item avx512vpopcntdq
+AVX512VPOPCNTDQ instructions.
+@item avx512vbmi2
+AVX512VBMI2 instructions.
+@item gfni
+GFNI instructions.
+@item vpclmulqdq
+VPCLMULQDQ instructions.
+@item avx512vnni
+AVX512VNNI instructions.
+@item avx512bitalg
+AVX512BITALG instructions.
 @end table
 
 Here is an example:
@@ -21331,6 +21528,15 @@ unsigned int __builtin_ia32_rdrand32_step (unsigned int *)
 unsigned int __builtin_ia32_rdrand64_step (unsigned long long *)
 @end smallexample
 
+The following built-in function is available when @option{-mptwrite} is
+used.  All of them generate the machine instruction that is part of the
+name.
+
+@smallexample
+void __builtin_ia32_ptwrite32 (unsigned)
+void __builtin_ia32_ptwrite64 (unsigned long long)
+@end smallexample
+
 The following built-in functions are available when @option{-msse4a} is used.
 All of them generate the machine instruction that is part of the name.
 
@@ -21862,6 +22068,10 @@ GCC supports several types of pragmas, primarily in order to compile
 code originally written for other compilers.  Note that in general
 we do not recommend the use of pragmas; @xref{Function Attributes},
 for further explanation.
+
+The GNU C preprocessor recognizes several pragmas in addition to the
+compiler pragmas documented here.  Refer to the CPP manual for more
+information.
 
 @menu
 * AArch64 Pragmas::

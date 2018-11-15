@@ -6586,6 +6586,16 @@ package body Exp_Ch3 is
          --  thus avoid creating a temporary.
 
          if Is_Delayed_Aggregate (Expr_Q) then
+
+            --  An aggregate that must be built in place is not resolved
+            --  and expanded until the enclosing construct is expanded.
+            --  This will happen when the aggregqte is limited and the
+            --  declared object has a following address clause.
+
+            if Is_Limited_Type (Typ) and then not Analyzed (Expr) then
+               Resolve (Expr, Typ);
+            end if;
+
             Convert_Aggr_In_Object_Decl (N);
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
@@ -7022,7 +7032,7 @@ package body Exp_Ch3 is
                --  Given that the type is limited we cannot perform a copy. If
                --  Expr_Q is the reference to a variable we mark the variable
                --  as OK_To_Rename to expand this declaration into a renaming
-               --  declaration (see bellow).
+               --  declaration (see below).
 
                if Is_Entity_Name (Expr_Q) then
                   Set_OK_To_Rename (Entity (Expr_Q));
@@ -8611,17 +8621,17 @@ package body Exp_Ch3 is
    ------------------
 
    function Init_Formals (Typ : Entity_Id) return List_Id is
-      Unc_Arr : constant Boolean :=
-        Is_Array_Type (Typ) and then not Is_Constrained (Typ);
+      Loc        : constant Source_Ptr := Sloc (Typ);
+      Unc_Arr    : constant Boolean :=
+                     Is_Array_Type (Typ) and then not Is_Constrained (Typ);
       With_Prot  : constant Boolean :=
-        Has_Protected (Typ)
-          or else (Is_Record_Type (Typ)
-                     and then Is_Protected_Record_Type (Typ));
+                     Has_Protected (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-        Has_Task (Typ)
-          or else (Is_Record_Type (Typ)
-                     and then Is_Task_Record_Type (Typ));
-      Loc     : constant Source_Ptr := Sloc (Typ);
+                     Has_Task (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Task_Record_Type (Typ));
       Formals : List_Id;
 
    begin
@@ -9038,8 +9048,8 @@ package body Exp_Ch3 is
       Stmt : Node_Id;
 
    begin
-      --  We must skip SCIL nodes because they may have been added to the
-      --  list by Insert_Actions.
+      --  We must skip SCIL nodes because they may have been added to the list
+      --  by Insert_Actions.
 
       Stmt := First_Non_SCIL_Node (Stmts);
       while Present (Stmt) loop

@@ -641,8 +641,8 @@ public:
      type to hold various extra stages.  */
 
   static const int n_bits = 61;
-private:
   static const uint64_t max_count = ((uint64_t) 1 << n_bits) - 2;
+private:
   static const uint64_t uninitialized_count = ((uint64_t) 1 << n_bits) - 1;
 
   uint64_t m_val : n_bits;

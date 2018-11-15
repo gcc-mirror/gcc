@@ -60,6 +60,7 @@ struct function_format_info
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
 static GTY(()) tree local_gimple_ptr_node;
+static GTY(()) tree local_cgraph_node_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -803,8 +804,14 @@ static const format_char_info gcc_dump_printf_char_table[] =
   /* E and G require a "gimple *" argument at runtime.  */
   { "EG",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
+  /* C requires a "cgraph_node *" argument at runtime.  */
+  { "C",   1, STD_C89, { T_CGRAPH_NODE,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
   /* T requires a "tree" at runtime.  */
   { "T",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  /* %f requires a "double"; it doesn't support modifiers.  */
+  { "f",   0, STD_C89, { T89_D,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -3887,6 +3894,33 @@ init_dynamic_gfc_info (void)
     }
 }
 
+/* Lookup the type named NAME and return a pointer-to-NAME type if found.
+   Otherwise, return void_type_node if NAME has not been used yet, or NULL_TREE if
+   NAME is not a type (issuing an error).  */
+
+static tree
+get_pointer_to_named_type (const char *name)
+{
+  tree result;
+  if ((result = maybe_get_identifier (name)))
+    {
+      result = identifier_global_value (result);
+      if (result)
+	{
+	  if (TREE_CODE (result) != TYPE_DECL)
+	    {
+	      error ("%qs is not defined as a type", name);
+	      result = NULL_TREE;
+	    }
+	  else
+	    result = TREE_TYPE (result);
+	}
+    }
+  else
+    result = void_type_node;
+  return result;
+}
+
 /* Determine the types of "tree" and "location_t" in the code being
    compiled for use in GCC's diagnostic custom format attributes.  You
    must have set dynamic_format_types before calling this function.  */
@@ -3932,20 +3966,15 @@ init_dynamic_diag_info (void)
 	  local_tree_type_node = t;
 	}
 
-  /* Similar to the above but for gimple.  */
-  if (!local_gimple_ptr_node)
-    if (tree id = maybe_get_identifier ("gimple"))
-      if (tree t = identifier_global_value (id))
-	{
-	  if (TREE_CODE (t) != TYPE_DECL)
-	    {
-	      error ("%qE is not defined as a type", id);
-	      t = void_type_node;
-	    }
-	  else
-	    t = TREE_TYPE (t);
-	  local_gimple_ptr_node = t;
-	}
+  /* Similar to the above but for gimple*.  */
+  if (!local_gimple_ptr_node
+      || local_gimple_ptr_node == void_type_node)
+    local_gimple_ptr_node = get_pointer_to_named_type ("gimple");
+
+  /* Similar to the above but for cgraph_node*.  */
+  if (!local_cgraph_node_ptr_node
+      || local_cgraph_node_ptr_node == void_type_node)
+    local_cgraph_node_ptr_node = get_pointer_to_named_type ("cgraph_node");
 
   static tree hwi;
 

@@ -1249,7 +1249,7 @@ match_sym_complex_part (gfc_expr **result)
   if (sym->attr.flavor != FL_PARAMETER)
     {
       /* Give the matcher for implied do-loops a chance to run.  This yields
-	 a much saner error message for "write(*,*) (i, i=1, 6" where the 
+	 a much saner error message for "write(*,*) (i, i=1, 6" where the
 	 right parenthesis is missing.  */
       char c;
       gfc_gobble_whitespace ();
@@ -1936,6 +1936,40 @@ extend_ref (gfc_expr *primary, gfc_ref *tail)
 }
 
 
+/* Used by gfc_match_varspec() to match an inquiry reference.  */
+
+static bool
+is_inquiry_ref (const char *name, gfc_ref **ref)
+{
+  inquiry_type type;
+
+  if (name == NULL)
+    return false;
+
+  if (ref) *ref = NULL;
+
+  if (strcmp (name, "re") == 0)
+    type = INQUIRY_RE;
+  else if (strcmp (name, "im") == 0)
+    type = INQUIRY_IM;
+  else if (strcmp (name, "kind") == 0)
+    type = INQUIRY_KIND;
+  else if (strcmp (name, "len") == 0)
+    type = INQUIRY_LEN;
+  else
+    return false;
+
+  if (ref)
+    {
+      *ref = gfc_get_ref ();
+      (*ref)->type = REF_INQUIRY;
+      (*ref)->u.i = type;
+    }
+
+  return true;
+}
+
+
 /* Match any additional specifications associated with the current
    variable like member references or substrings.  If equiv_flag is
    set we only match stuff that is allowed inside an EQUIVALENCE
@@ -1955,6 +1989,8 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   gfc_expr *tgt_expr = NULL;
   match m;
   bool unknown;
+  bool inquiry;
+  locus old_loc;
   char sep;
 
   tail = NULL;
@@ -2087,6 +2123,19 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
   if (m == MATCH_ERROR)
     return MATCH_ERROR;
 
+  inquiry = false;
+  if (m == MATCH_YES && sep == '%'
+      && primary->ts.type != BT_CLASS
+      && primary->ts.type != BT_DERIVED)
+    {
+      match mm;
+      old_loc = gfc_current_locus;
+      mm = gfc_match_name (name);
+      if (mm == MATCH_YES && is_inquiry_ref (name, &tmp))
+	inquiry = true;
+      gfc_current_locus = old_loc;
+    }
+
   if (sym->ts.type == BT_UNKNOWN && m == MATCH_YES
       && gfc_get_default_type (sym->name, sym->ns)->type == BT_DERIVED)
     gfc_set_default_type (sym, 0, sym->ns);
@@ -2118,18 +2167,21 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	}
     }
   else if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
-           && m == MATCH_YES)
+           && m == MATCH_YES && !inquiry)
     {
       gfc_error ("Unexpected %<%c%> for nonderived-type variable %qs at %C",
 		 sep, sym->name);
       return MATCH_ERROR;
     }
 
-  if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS)
+  if ((sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS && !inquiry)
       || m != MATCH_YES)
     goto check_substring;
 
-  sym = sym->ts.u.derived;
+  if (!inquiry)
+    sym = sym->ts.u.derived;
+  else
+    sym = NULL;
 
   for (;;)
     {
@@ -2141,6 +2193,15 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	gfc_error ("Expected structure component name at %C");
       if (m != MATCH_YES)
 	return MATCH_ERROR;
+
+      if (primary->ts.type != BT_CLASS && primary->ts.type != BT_DERIVED)
+	{
+	  inquiry = is_inquiry_ref (name, &tmp);
+	  if (inquiry)
+	    sym = NULL;
+	}
+      else
+	inquiry = false;
 
       if (sym && sym->f2k_derived)
 	tbp = gfc_find_typebound_proc (sym, &t, name, false, &gfc_current_locus);
@@ -2197,24 +2258,89 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	  break;
 	}
 
-      component = gfc_find_component (sym, name, false, false, &tmp);
-      if (component == NULL)
+      if (!inquiry)
+	component = gfc_find_component (sym, name, false, false, &tmp);
+      else
+	component = NULL;
+
+      if (component == NULL && !inquiry)
 	return MATCH_ERROR;
 
-      /* Extend the reference chain determined by gfc_find_component.  */
+      /* Extend the reference chain determined by gfc_find_component or
+	 is_inquiry_ref.  */
       if (primary->ref == NULL)
-        primary->ref = tmp;
+	primary->ref = tmp;
       else
-        {
-          /* Set by the for loop below for the last component ref.  */
-          gcc_assert (tail != NULL);
-          tail->next = tmp;
-        }
+	{
+	  /* Set by the for loop below for the last component ref.  */
+	  gcc_assert (tail != NULL);
+	  tail->next = tmp;
+	}
 
       /* The reference chain may be longer than one hop for union
-         subcomponents; find the new tail.  */
+	 subcomponents; find the new tail.  */
       for (tail = tmp; tail->next; tail = tail->next)
-        ;
+	;
+
+      if (tmp && tmp->type == REF_INQUIRY)
+	{
+	  gfc_simplify_expr (primary, 0);
+
+	  if (primary->expr_type == EXPR_CONSTANT)
+	    goto check_done;
+
+	  switch (tmp->u.i)
+	    {
+	    case INQUIRY_RE:
+	    case INQUIRY_IM:
+	      if (!gfc_notify_std (GFC_STD_F2008, "RE or IM part_ref at %C"))
+		return MATCH_ERROR;
+
+	      if (primary->ts.type != BT_COMPLEX)
+		{
+		  gfc_error ("The RE or IM part_ref at %C must be "
+			     "applied to a COMPLEX expression");
+		  return MATCH_ERROR;
+		}
+	      primary->ts.type = BT_REAL;
+	      break;
+
+	    case INQUIRY_LEN:
+	      if (!gfc_notify_std (GFC_STD_F2003, "LEN part_ref at %C"))
+		return MATCH_ERROR;
+
+	      if (primary->ts.type != BT_CHARACTER)
+		{
+		  gfc_error ("The LEN part_ref at %C must be applied "
+			     "to a CHARACTER expression");
+		  return MATCH_ERROR;
+		}
+	      primary->ts.u.cl = NULL;
+	      primary->ts.type = BT_INTEGER;
+	      primary->ts.kind = gfc_default_integer_kind;
+	      break;
+
+	    case INQUIRY_KIND:
+	      if (!gfc_notify_std (GFC_STD_F2003, "KIND part_ref at %C"))
+		return MATCH_ERROR;
+
+	      if (primary->ts.type == BT_CLASS
+		  || primary->ts.type == BT_DERIVED)
+		{
+		  gfc_error ("The KIND part_ref at %C must be applied "
+			     "to an expression of intrinsic type");
+		  return MATCH_ERROR;
+		}
+	      primary->ts.type = BT_INTEGER;
+	      primary->ts.kind = gfc_default_integer_kind;
+	      break;
+
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  goto check_done;
+	}
 
       primary->ts = component->ts;
 
@@ -2263,11 +2389,25 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	    return m;
 	}
 
-      if ((component->ts.type != BT_DERIVED && component->ts.type != BT_CLASS)
-	  || gfc_match_member_sep (component->ts.u.derived) != MATCH_YES)
+check_done:
+      /* In principle, we could have eg. expr%re%kind so we must allow for
+	 this possibility.  */
+      if (gfc_match_char ('%') == MATCH_YES)
+	{
+	  if (component && (component->ts.type == BT_DERIVED
+			    || component->ts.type == BT_CLASS))
+	    sym = component->ts.u.derived;
+	  continue;
+	}
+      else if (inquiry)
 	break;
 
-      sym = component->ts.u.derived;
+      if ((component->ts.type != BT_DERIVED && component->ts.type != BT_CLASS)
+  	  || gfc_match_member_sep (component->ts.u.derived) != MATCH_YES)
+	break;
+
+      if (component->ts.type == BT_DERIVED || component->ts.type == BT_CLASS)
+	sym = component->ts.u.derived;
     }
 
 check_substring:
@@ -2358,6 +2498,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *comp;
+  bool has_inquiry_part;
 
   if (expr->expr_type != EXPR_VARIABLE && expr->expr_type != EXPR_FUNCTION)
     gfc_internal_error ("gfc_variable_attr(): Expression isn't a variable");
@@ -2386,6 +2527,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
   if (ts != NULL && expr->ts.type == BT_UNKNOWN)
     *ts = sym->ts;
+
+  has_inquiry_part = false;
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_INQUIRY)
+      {
+	has_inquiry_part = true;
+	break;
+      }
 
   for (ref = expr->ref; ref; ref = ref->next)
     switch (ref->type)
@@ -2423,7 +2572,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
       case REF_COMPONENT:
 	comp = ref->u.c.component;
 	attr = comp->attr;
-	if (ts != NULL)
+	if (ts != NULL && !has_inquiry_part)
 	  {
 	    *ts = comp->ts;
 	    /* Don't set the string length if a substring reference
@@ -2450,6 +2599,7 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	break;
 
+      case REF_INQUIRY:
       case REF_SUBSTRING:
 	allocatable = pointer = 0;
 	break;
@@ -2630,6 +2780,7 @@ caf_variable_attr (gfc_expr *expr, bool in_allocate, bool *refs_comp)
 	break;
 
       case REF_SUBSTRING:
+      case REF_INQUIRY:
 	allocatable = pointer = 0;
 	break;
       }
@@ -2914,7 +3065,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	      to = e < c ? e : c;
 	      for (i = 0; i < to; i++)
 		dest[i] = actual->expr->value.character.string[i];
-	      
+
 	      for (i = e; i < c; i++)
 		dest[i] = ' ';
 

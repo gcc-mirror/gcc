@@ -1,3 +1,11 @@
+2018-10-23  Jason Merrill  <jason@redhat.com>
+
+	Implement P0732R2, class types in non-type template parameters.
+	* cp-demangle.c (d_dump, d_make_comp, d_count_templates_scopes)
+	(d_print_comp_inner): Handle DEMANGLE_COMPONENT_TPARM_OBJ.
+	(d_special_name): Handle TA.
+	(d_expresion_1): Fix demangling of brace-enclosed initializer list.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

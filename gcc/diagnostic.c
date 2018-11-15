@@ -131,6 +131,28 @@ diagnostic_set_caret_max_width (diagnostic_context *context, int value)
   context->caret_max_width = value;
 }
 
+/* Default implementation of final_cb.  */
+
+static void
+default_diagnostic_final_cb (diagnostic_context *context)
+{
+  /* Some of the errors may actually have been warnings.  */
+  if (diagnostic_kind_count (context, DK_WERROR))
+    {
+      /* -Werror was given.  */
+      if (context->warning_as_error_requested)
+	pp_verbatim (context->printer,
+		     _("%s: all warnings being treated as errors"),
+		     progname);
+      /* At least one -Werror= was given.  */
+      else
+	pp_verbatim (context->printer,
+		     _("%s: some warnings being treated as errors"),
+		     progname);
+      pp_newline_and_flush (context->printer);
+    }
+}
+
 /* Initialize the diagnostic message outputting machinery.  */
 void
 diagnostic_initialize (diagnostic_context *context, int n_opts)
@@ -185,6 +207,7 @@ diagnostic_initialize (diagnostic_context *context, int n_opts)
   context->diagnostic_group_emission_count = 0;
   context->begin_group_cb = NULL;
   context->end_group_cb = NULL;
+  context->final_cb = default_diagnostic_final_cb;
 }
 
 /* Maybe initialize the color support. We require clients to do this
@@ -220,21 +243,8 @@ diagnostic_color_init (diagnostic_context *context, int value /*= -1 */)
 void
 diagnostic_finish (diagnostic_context *context)
 {
-  /* Some of the errors may actually have been warnings.  */
-  if (diagnostic_kind_count (context, DK_WERROR))
-    {
-      /* -Werror was given.  */
-      if (context->warning_as_error_requested)
-	pp_verbatim (context->printer,
-		     _("%s: all warnings being treated as errors"),
-		     progname);
-      /* At least one -Werror= was given.  */
-      else
-	pp_verbatim (context->printer,
-		     _("%s: some warnings being treated as errors"),
-		     progname);
-      pp_newline_and_flush (context->printer);
-    }
+  if (context->final_cb)
+    context->final_cb (context);
 
   diagnostic_file_cache_fini ();
 
@@ -659,7 +669,8 @@ default_diagnostic_start_span_fn (diagnostic_context *context,
 
 void
 default_diagnostic_finalizer (diagnostic_context *context,
-			      diagnostic_info *diagnostic)
+			      diagnostic_info *diagnostic,
+			      diagnostic_t)
 {
   diagnostic_show_locus (context, diagnostic->richloc, diagnostic->kind);
   pp_destroy_prefix (context->printer);
@@ -811,12 +822,12 @@ print_parseable_fixits (pretty_printer *pp, rich_location *richloc)
   for (unsigned i = 0; i < richloc->get_num_fixit_hints (); i++)
     {
       const fixit_hint *hint = richloc->get_fixit_hint (i);
-      source_location start_loc = hint->get_start_loc ();
+      location_t start_loc = hint->get_start_loc ();
       expanded_location start_exploc = expand_location (start_loc);
       pp_string (pp, "fix-it:");
       print_escaped_string (pp, start_exploc.file);
       /* For compatibility with clang, print as a half-open range.  */
-      source_location next_loc = hint->get_next_loc ();
+      location_t next_loc = hint->get_next_loc ();
       expanded_location next_exploc = expand_location (next_loc);
       pp_printf (pp, ":{%i:%i-%i:%i}:",
 		 start_exploc.line, start_exploc.column,
@@ -1023,7 +1034,7 @@ diagnostic_report_diagnostic (diagnostic_context *context,
   pp_output_formatted_text (context->printer);
   if (context->show_option_requested)
     print_option_information (context, diagnostic, orig_diag_kind);
-  (*diagnostic_finalizer (context)) (context, diagnostic);
+  (*diagnostic_finalizer (context)) (context, diagnostic, orig_diag_kind);
   if (context->parseable_fixits_p)
     {
       print_parseable_fixits (context->printer, diagnostic->richloc);

@@ -2467,6 +2467,13 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		  base = build_real_from_int_cst (t, base);
 		  tree r = fold_build2_initializer_loc (UNKNOWN_LOCATION,
 							MULT_EXPR, t, prob, base);
+		  if (TREE_CODE (r) != REAL_CST)
+		    {
+		      error_at (gimple_location (def),
+				"probability %qE must be "
+				"constant floating-point expression", prob);
+		      return NULL;
+		    }
 		  HOST_WIDE_INT probi
 		    = real_to_integer (TREE_REAL_CST_PTR (r));
 		  if (probi >= 0 && probi <= REG_BR_PROB_BASE)
@@ -2474,6 +2481,11 @@ expr_expected_value_1 (tree type, tree op0, enum tree_code code,
 		      *predictor = PRED_BUILTIN_EXPECT_WITH_PROBABILITY;
 		      *probability = probi;
 		    }
+		  else
+		    error_at (gimple_location (def),
+			      "probability %qE is outside "
+			      "the range [0.0, 1.0]", prob);
+
 		  return gimple_call_arg (def, 1);
 		}
 

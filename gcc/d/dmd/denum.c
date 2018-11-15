@@ -8,10 +8,9 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/enum.c
  */
 
-#include <stdio.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
+
 #include "errors.h"
 #include "enum.h"
 #include "mtype.h"
@@ -457,7 +456,7 @@ Type *EnumDeclaration::getType()
     return type;
 }
 
-const char *EnumDeclaration::kind()
+const char *EnumDeclaration::kind() const
 {
     return "enum";
 }
@@ -515,7 +514,7 @@ Dsymbol *EnumMember::syntaxCopy(Dsymbol *s)
         origType ? origType->syntaxCopy() : NULL);
 }
 
-const char *EnumMember::kind()
+const char *EnumMember::kind() const
 {
     return "enum member";
 }

@@ -993,7 +993,7 @@ output_stack_usage (void)
       stack_usage += current_function_dynamic_stack_size;
     }
 
-  if (flag_stack_usage)
+  if (stack_usage_file)
     {
       expanded_location loc
 	= expand_location (DECL_SOURCE_LOCATION (current_function_decl));
@@ -1938,7 +1938,7 @@ lang_dependent_init (const char *name)
       init_asm_output (name);
 
       /* If stack usage information is desired, open the output file.  */
-      if (flag_stack_usage)
+      if (flag_stack_usage && !flag_generate_lto)
 	stack_usage_file = open_auxiliary_file ("su");
     }
 

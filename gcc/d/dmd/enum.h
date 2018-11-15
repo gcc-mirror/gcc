@@ -50,7 +50,7 @@ public:
     void semantic(Scope *sc);
     bool oneMember(Dsymbol **ps, Identifier *ident);
     Type *getType();
-    const char *kind();
+    const char *kind() const;
     Dsymbol *search(const Loc &loc, Identifier *ident, int flags = SearchLocalsOnly);
     bool isDeprecated();                // is Dsymbol deprecated?
     Prot prot();
@@ -86,7 +86,7 @@ public:
 
     EnumMember(Loc loc, Identifier *id, Expression *value, Type *origType);
     Dsymbol *syntaxCopy(Dsymbol *s);
-    const char *kind();
+    const char *kind() const;
     void semantic(Scope *sc);
     Expression *getVarExp(Loc loc, Scope *sc);
 

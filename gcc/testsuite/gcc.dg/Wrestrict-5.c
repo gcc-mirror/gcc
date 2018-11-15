@@ -2,6 +2,7 @@
    functions declared with no prototype are checked for overlap, and that
    invalid calls are ignored.
   { dg-do compile }
+  { dg-prune-output "conflicting types for built-in" }
   { dg-options "-O2 -Wrestrict" }  */
 
 typedef __SIZE_TYPE__ size_t;

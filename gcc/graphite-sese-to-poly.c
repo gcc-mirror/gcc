@@ -1218,7 +1218,8 @@ build_poly_scop (scop_p scop)
   enum isl_error err = isl_ctx_last_error (scop->isl_context);
   isl_ctx_reset_error (scop->isl_context);
   isl_options_set_on_error (scop->isl_context, old_err);
-  if (err != isl_error_none)
+  if (err != isl_error_none
+      && dump_enabled_p ())
     dump_printf (MSG_MISSED_OPTIMIZATION,
 		 "ISL error while building poly scop\n");
 

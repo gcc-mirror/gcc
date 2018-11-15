@@ -1,3 +1,118 @@
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-decl.c: Replace "source_location" with "location_t".
+	* c-tree.h: Likewise.
+	* c-typeck.c: Likewise.
+	* gimple-parser.c: Likewise.
+
+2018-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c (c_parser_omp_clause_final): Use
+	c_parser_expr_no_commas, convert_lvalue_to_rvalue,
+	c_objc_common_truthvalue_conversion, c_fully_fold and parentheses
+	parsing instead of c_parser_paren_condition.
+	(c_parser_omp_clause_if): Use c_parser_expr_no_commas,
+	convert_lvalue_to_rvalue, c_objc_common_truthvalue_conversion and
+	c_fully_fold instead of c_parser_condition.
+	(c_parser_omp_clause_num_threads, c_parser_omp_clause_num_tasks,
+	c_parser_omp_clause_grainsize, c_parser_omp_clause_priority,
+	c_parser_omp_clause_hint, c_parser_omp_clause_num_teams,
+	c_parser_omp_clause_thread_limit, c_parser_omp_clause_linear): Use
+	c_parser_expr_no_commas instead of c_parser_expression.
+
+	* c-parser.c (c_parser_omp_clause_reduction): Call sorry_at on
+	reduction clause with inscan modifier.
+
+	* c-parser.c (c_parser_omp_requires): Call sorry_at on requires
+	clauses other than atomic_default_mem_order.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.c: Include memmode.h.
+	(c_parser_omp_depobj, c_parser_omp_requires): New functions.
+	(c_parser_pragma): Handle PRAGMA_OMP_DEPOBJ and PRAGMA_OMP_REQUIRES.
+	(c_parser_omp_clause_name): Handle nontemporal, in_reduction and
+	task_reduction clauses.
+	(c_parser_omp_variable_list): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION.
+	For OMP_CLAUSE_DEPEND, parse clause operands as either an array
+	section, or lvalue assignment expression.
+	(c_parser_omp_clause_if): Handle cancel and simd modifiers.
+	(c_parser_omp_clause_lastprivate): Parse optional
+	conditional: modifier.
+	(c_parser_omp_clause_hint): Require constant integer expression rather
+	than just integer expression.
+	(c_parser_omp_clause_defaultmap): Parse new kinds of defaultmap
+	clause.
+	(c_parser_omp_clause_reduction): Add IS_OMP and KIND arguments.
+	Parse reduction modifiers.  Pass KIND to c_parser_omp_variable_list.
+	(c_parser_omp_clause_nontemporal, c_parser_omp_iterators): New
+	functions.
+	(c_parser_omp_clause_depend): Parse iterator modifier and handle
+	iterators.  Parse mutexinoutset and depobj kinds.
+	(c_parser_oacc_all_clauses): Adjust c_parser_omp_clause_reduction
+	callers.
+	(c_parser_omp_all_clauses): Likewise.  Handle
+	PRAGMA_OMP_CLAUSE_NONTEMPORAL and
+	PRAGMA_OMP_CLAUSE_{IN,TASK}_REDUCTION.
+	(c_parser_omp_atomic): Parse hint and memory order clauses.  Handle
+	default memory order from requires directive if any.  Adjust
+	c_finish_omp_atomic caller.
+	(c_parser_omp_critical): Allow comma in between (name) and hint clause.
+	(c_parser_omp_flush): Parse flush with memory-order-clause.
+	(c_parser_omp_for_loop): Allow NE_EXPR even in
+	OpenMP loops, adjust c_finish_omp_for caller.
+	(OMP_SIMD_CLAUSE_MASK): Add if and nontemporal clauses.
+	(c_parser_omp_master): Add p_name, mask and cclauses arguments.
+	Allow to be called while parsing combined parallel master.
+	Parse combined master taskloop{, simd}.
+	(c_parser_omp_parallel): Parse combined
+	parallel master{, taskloop{, simd}} constructs.
+	(OMP_TASK_CLAUSE_MASK): Add in_reduction clause.
+	(OMP_TASKGROUP_CLAUSE_MASK): Define.
+	(c_parser_omp_taskgroup): Add LOC argument.  Parse taskgroup clauses.
+	(OMP_TASKWAIT_CLAUSE_MASK): Define.
+	(c_parser_omp_taskwait): Handle taskwait with depend clauses.
+	(c_parser_omp_teams): Force a BIND_EXPR with BLOCK
+	around teams body.  Use SET_EXPR_LOCATION.
+	(c_parser_omp_target_data): Allow target data
+	with only use_device_ptr clauses.
+	(c_parser_omp_target): Use SET_EXPR_LOCATION.  Set
+	OMP_REQUIRES_TARGET_USED bit in omp_requires_mask.
+	(c_parser_omp_requires): New function.
+	(c_finish_taskloop_clauses): New function.
+	(OMP_TASKLOOP_CLAUSE_MASK): Add reduction and in_reduction clauses.
+	(c_parser_omp_taskloop): Use c_finish_taskloop_clauses.  Add forward
+	declaration.  Disallow in_reduction clause when combined with parallel
+	master.
+	(c_parser_omp_construct): Adjust c_parser_omp_master and
+	c_parser_omp_taskgroup callers.
+	* c-typeck.c (c_finish_omp_cancel): Diagnose if clause with modifier
+	other than cancel.
+	(handle_omp_array_sections_1): Handle OMP_CLAUSE_{IN,TASK}_REDUCTION
+	like OMP_CLAUSE_REDUCTION.
+	(handle_omp_array_sections): Likewise.  Call save_expr on array
+	reductions before calling build_index_type.  Handle depend clauses
+	with iterators.
+	(struct c_find_omp_var_s): New type.
+	(c_find_omp_var_r, c_omp_finish_iterators): New functions.
+	(c_finish_omp_clauses): Don't diagnose nonmonotonic clause
+	with static, runtime or auto schedule kinds.  Call save_expr for whole
+	array reduction sizes.  Diagnose reductions with zero sized elements
+	or variable length structures.  Diagnose nogroup clause used with
+	reduction clause(s).  Handle depend clause with
+	OMP_CLAUSE_DEPEND_DEPOBJ.  Diagnose bit-fields.  Require
+	omp_depend_t type for OMP_CLAUSE_DEPEND_DEPOBJ kinds and
+	some different type for other kinds.  Use build_unary_op with
+	ADDR_EXPR and build_indirect_ref instead of c_mark_addressable.
+	Handle depend clauses with iterators.  Remove no longer needed special
+	case that predetermined const qualified vars may be specified in
+	firstprivate clause.  Complain if const qualified vars are mentioned
+	in data-sharing clauses other than firstprivate or shared.  Use
+	error_at with OMP_CLAUSE_LOCATION (c) as first argument instead of
+	error.  Formatting fix.  Handle OMP_CLAUSE_NONTEMPORAL and
+	OMP_CLAUSE_{IN,TASK}_REDUCTION.  Allow any lvalue as
+	OMP_CLAUSE_DEPEND operand (besides array section), adjust diagnostics.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-decl.c (implicit_decl_warning): Update "is there a suggestion"

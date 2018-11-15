@@ -68,6 +68,9 @@ namespace __gnu_debug
       _Safe_sequence<_Sequence>::
       _M_transfer_from_if(_Safe_sequence& __from, _Predicate __pred)
       {
+	if (this == std::__addressof(__from))
+	  return;
+
 	typedef typename _Sequence::iterator iterator;
 	typedef typename _Sequence::const_iterator const_iterator;
 

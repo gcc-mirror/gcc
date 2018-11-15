@@ -8,9 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/entity.c
  */
 
-#include <string.h>
-#include <ctype.h>
-
+#include "root/dsystem.h"
 #include "root/port.h"
 
 /*********************************************

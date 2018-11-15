@@ -3657,7 +3657,7 @@ package body Sem_Ch3 is
       Prev_Entity : Entity_Id := Empty;
 
       procedure Check_Dynamic_Object (Typ : Entity_Id);
-      --  A library-level object with non-static discriminant constraints may
+      --  A library-level object with nonstatic discriminant constraints may
       --  require dynamic allocation. The declaration is illegal if the
       --  profile includes the restriction No_Implicit_Heap_Allocations.
 
@@ -3672,7 +3672,7 @@ package body Sem_Ch3 is
       --  This function is called when a non-generic library level object of a
       --  task type is declared. Its function is to count the static number of
       --  tasks declared within the type (it is only called if Has_Task is set
-      --  for T). As a side effect, if an array of tasks with non-static bounds
+      --  for T). As a side effect, if an array of tasks with nonstatic bounds
       --  or a variant record type is encountered, Check_Restriction is called
       --  indicating the count is unknown.
 
@@ -4283,6 +4283,14 @@ package body Sem_Ch3 is
          then
             Set_Etype (E, T);
 
+            --  If the aggregate is limited it will be built in place,
+            --  and its expansion is deferred until the object declaration
+            --  is expanded.
+
+            if Is_Limited_Type (T) then
+               Set_Expansion_Delayed (E);
+            end if;
+
          else
 
             --  If the expression is a formal that is a "subprogram pointer"
@@ -4357,8 +4365,24 @@ package body Sem_Ch3 is
                Set_Current_Value (Id, E);
             end if;
 
-         elsif Is_Scalar_Type (T) and then Is_OK_Static_Expression (E) then
+         elsif Is_Scalar_Type (T)
+            and then Is_OK_Static_Expression (E)
+         then
             Set_Is_Known_Valid (Id);
+
+         --  If it is a constant initialized with a valid nonstatic entity,
+         --  the constant is known valid as well, and can inherit the subtype
+         --  of the entity if it is a subtype of the given type. This info
+         --  is preserved on the actual subtype of the constant.
+
+         elsif Is_Scalar_Type (T)
+           and then Is_Entity_Name (E)
+           and then Is_Known_Valid (Entity (E))
+           and then In_Subrange_Of (Etype (Entity (E)), T)
+         then
+            Set_Is_Known_Valid (Id);
+            Set_Ekind (Id, E_Constant);
+            Set_Actual_Subtype (Id, Etype (Entity (E)));
          end if;
 
          --  Deal with setting of null flags
@@ -5399,7 +5423,7 @@ package body Sem_Ch3 is
                        ("subtype mark required", One_Cstr);
 
                   --  String subtype must have a lower bound of 1 in SPARK.
-                  --  Note that we do not need to test for the non-static case
+                  --  Note that we do not need to test for the nonstatic case
                   --  here, since that was already taken care of in
                   --  Process_Range_Expr_In_Decl.
 
@@ -12471,7 +12495,7 @@ package body Sem_Ch3 is
       end if;
 
       --  It is unsafe to share the bounds of a scalar type, because the Itype
-      --  is elaborated on demand, and if a bound is non-static then different
+      --  is elaborated on demand, and if a bound is nonstatic, then different
       --  orders of elaboration in different units will lead to different
       --  external symbols.
 
@@ -16421,7 +16445,7 @@ package body Sem_Ch3 is
 
       --  Because the implicit base is used in the conversion of the bounds, we
       --  have to freeze it now. This is similar to what is done for numeric
-      --  types, and it equally suspicious, but otherwise a non-static bound
+      --  types, and it equally suspicious, but otherwise a nonstatic bound
       --  will have a reference to an unfrozen type, which is rejected by Gigi
       --  (???). This requires specific care for definition of stream
       --  attributes. For details, see comments at the end of
@@ -19343,8 +19367,8 @@ package body Sem_Ch3 is
          end if;
 
          --  In the subtype indication case, if the immediate parent of the
-         --  new subtype is non-static, then the subtype we create is non-
-         --  static, even if its bounds are static.
+         --  new subtype is nonstatic, then the subtype we create is nonstatic,
+         --  even if its bounds are static.
 
          if Nkind (N) = N_Subtype_Indication
            and then not Is_OK_Static_Subtype (Entity (Subtype_Mark (N)))

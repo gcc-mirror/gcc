@@ -8,11 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/attrib.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>                     // memcpy()
-
+#include "root/dsystem.h"               // memcmp()
 #include "root/rmem.h"
 
 #include "mars.h"

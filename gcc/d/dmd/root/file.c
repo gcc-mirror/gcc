@@ -6,29 +6,14 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/file.c
  */
 
+#include "dsystem.h"
 #include "file.h"
-
-#if defined (__sun)
-#include <alloca.h>
-#endif
-
-#if _MSC_VER ||__MINGW32__
-#include <malloc.h>
-#include <string>
-#endif
 
 #if _WIN32
 #include <windows.h>
-#include <direct.h>
-#include <errno.h>
 #endif
 
 #if POSIX
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
 #include <utime.h>
 #endif
 
@@ -104,7 +89,11 @@ bool File::read()
         goto err2;
     }
     size = (size_t)buf.st_size;
+#ifdef IN_GCC
+    buffer = (unsigned char *) ::xmalloc(size + 2);
+#else
     buffer = (unsigned char *) ::malloc(size + 2);
+#endif
     if (!buffer)
     {
         printf("\tmalloc error, errno = %d\n",errno);
@@ -155,7 +144,11 @@ err1:
     ref = 0;
 
     size = GetFileSize(h,NULL);
+#ifdef IN_GCC
+    buffer = (unsigned char *) ::xmalloc(size + 2);
+#else
     buffer = (unsigned char *) ::malloc(size + 2);
+#endif
     if (!buffer)
         goto err2;
 

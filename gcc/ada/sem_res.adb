@@ -8460,8 +8460,35 @@ package body Sem_Res is
       Condition : constant Node_Id := First (Expressions (N));
       Then_Expr : Node_Id;
       Else_Expr : Node_Id;
-      Else_Typ  : Entity_Id;
-      Then_Typ  : Entity_Id;
+
+      procedure Apply_Check (Expr : Node_Id);
+      --  When a dependent expression is of a subtype different from the
+      --  context subtype, then insert a qualification  to ensure the
+      --  generation of a constraint check. This was previously done only
+      --  for scalar types.
+
+      -----------------
+      -- Apply_Check --
+      -----------------
+
+      procedure Apply_Check (Expr : Node_Id) is
+         Loc       : constant Source_Ptr := Sloc (Expr);
+         Expr_Type : constant Entity_Id := Etype (Expr);
+      begin
+
+         if Expr_Type /= Typ
+            and then not Is_Tagged_Type (Typ)
+            and then not Is_Access_Type (Typ)
+            and then Is_Constrained (Typ)
+            and then not Inside_A_Generic
+         then
+            Rewrite (Expr,
+                 Make_Qualified_Expression (Loc,
+                   Subtype_Mark => New_Occurrence_Of (Typ, Loc),
+                   Expression   => Relocate_Node (Expr)));
+            Analyze_And_Resolve (Expr, Typ);
+         end if;
+      end Apply_Check;
 
    begin
       --  Defend against malformed expressions
@@ -8480,17 +8507,7 @@ package body Sem_Res is
 
       Resolve (Condition, Any_Boolean);
       Resolve (Then_Expr, Typ);
-      Then_Typ := Etype (Then_Expr);
-
-      --  When the "then" expression is of a scalar subtype different from the
-      --  result subtype, then insert a conversion to ensure the generation of
-      --  a constraint check. The same is done for the else part below, again
-      --  comparing subtypes rather than base types.
-
-      if Is_Scalar_Type (Then_Typ) and then Then_Typ /= Typ then
-         Rewrite (Then_Expr, Convert_To (Typ, Then_Expr));
-         Analyze_And_Resolve (Then_Expr, Typ);
-      end if;
+      Apply_Check (Then_Expr);
 
       --  If ELSE expression present, just resolve using the determined type
       --  If type is universal, resolve to any member of the class.
@@ -8506,16 +8523,12 @@ package body Sem_Res is
             Resolve (Else_Expr, Typ);
          end if;
 
-         Else_Typ := Etype (Else_Expr);
-
-         if Is_Scalar_Type (Else_Typ) and then Else_Typ /= Typ then
-            Rewrite (Else_Expr, Convert_To (Typ, Else_Expr));
-            Analyze_And_Resolve (Else_Expr, Typ);
+         Apply_Check (Else_Expr);
 
          --  Apply RM 4.5.7 (17/3): whether the expression is statically or
          --  dynamically tagged must be known statically.
 
-         elsif Is_Tagged_Type (Typ) and then not Is_Class_Wide_Type (Typ) then
+         if Is_Tagged_Type (Typ) and then not Is_Class_Wide_Type (Typ) then
             if Is_Dynamically_Tagged (Then_Expr) /=
                Is_Dynamically_Tagged (Else_Expr)
             then
