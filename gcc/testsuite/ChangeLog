@@ -1,3 +1,29 @@
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/83656
+	* gcc.dg/20021006-1.c
+	* gcc.dg/Wbuiltin-declaration-mismatch.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-2.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-3.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: New test.
+	* gcc.dg/Walloca-16.c: Adjust.
+	* gcc.dg/Wrestrict-4.c: Adjust.
+	* gcc.dg/Wrestrict-5.c: Adjust.
+	* gcc.dg/atomic/stdatomic-generic.c: Adjust.
+	* gcc.dg/atomic/stdatomic-lockfree.c: Adjust.
+	* gcc.dg/initpri1.c: Adjust.
+	* gcc.dg/pr15698-1.c: Adjust.
+	* gcc.dg/pr69156.c: Adjust.
+	* gcc.dg/pr83463.c: Adjust.
+	* gcc.dg/redecl-4.c: Adjust.
+	* gcc.dg/tls/thr-init-2.c: Adjust.
+	* gcc.dg/torture/pr55890-2.c: Adjust.
+	* gcc.dg/torture/pr55890-3.c: Adjust.
+	* gcc.dg/torture/pr67741.c: Adjust.
+	* gcc.dg/torture/stackalign/sibcall-1.c: Adjust.
+	* gcc.dg/torture/tls/thr-init-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c: Adjust.
+
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/86246
