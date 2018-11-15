@@ -1,3 +1,9 @@
+2018-11-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/84648
+	* gcc.dg/tree-ssa/pr84648.c: New test.
+	* gcc.dg/pr68317.c: Add warning check on overflow.
+
 2018-11-14  Nathan Sidwell  <nathan@acm.org>
 
 	PR debug/88006
