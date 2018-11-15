@@ -79,10 +79,12 @@ namespace __gnu_test
     clock_t	elapsed_end;
     tms		tms_begin;
     tms		tms_end;
+    std::size_t splits[3];
 
   public:
     explicit
-    time_counter() : elapsed_begin(), elapsed_end(), tms_begin(), tms_end()
+    time_counter()
+    : elapsed_begin(), elapsed_end(), tms_begin(), tms_end(), splits()
     { }
 
     void
@@ -92,6 +94,7 @@ namespace __gnu_test
       elapsed_end = clock_t();
       tms_begin = tms();
       tms_end = tms();
+      splits[0] = splits[1] = splits[2] = 0;
     }
 
     void
@@ -113,17 +116,29 @@ namespace __gnu_test
 	std::__throw_runtime_error("time_counter::stop");
     }
 
+    void
+    restart()
+    {
+      splits[0] += (elapsed_end - elapsed_begin);
+      splits[1] += (tms_end.tms_utime - tms_begin.tms_utime);
+      splits[2] += (tms_end.tms_stime - tms_begin.tms_stime);
+      elapsed_begin = times(&tms_begin);
+      const clock_t err = clock_t(-1);
+      if (elapsed_begin == err)
+	std::__throw_runtime_error("time_counter::restart");
+    }
+
     std::size_t
     real_time() const
-    { return elapsed_end - elapsed_begin; }
+    { return (elapsed_end - elapsed_begin) + splits[0]; }
 
     std::size_t
     user_time() const
-    { return tms_end.tms_utime - tms_begin.tms_utime; }
+    { return (tms_end.tms_utime - tms_begin.tms_utime) + splits[1]; }
 
     std::size_t
     system_time() const
-    { return tms_end.tms_stime - tms_begin.tms_stime; }
+    { return (tms_end.tms_stime - tms_begin.tms_stime) + splits[1]; }
   };
 
   class resource_counter
