@@ -1,3 +1,8 @@
+2018-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Use
+	DECL_SOURCE_LOCATION in error_at calls.
+
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	DR 2336

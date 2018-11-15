@@ -1,3 +1,12 @@
+2018-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-diag3.C: Check locations too.
+	* g++.dg/cpp0x/constexpr-ice19.C: Likewise.
+	* g++.dg/cpp0x/constexpr-nonlit2.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda15.C: Likewise.
+	* g++.dg/ext/constexpr-vla5.C: Likewise.
+	* g++.dg/gomp/pr85134.C: Likewise.
+
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	DR 2336
