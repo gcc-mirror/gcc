@@ -1,3 +1,11 @@
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/88015
+	* graphite-isl-ast-to-gimple.c
+	(translate_isl_ast_to_gimple::scop_to_isl_ast): Add missing check
+	for dump_enabled_p.
+	* graphite-sese-to-poly.c (build_poly_scop): Likewise.
+
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
         PR middle-end/88029

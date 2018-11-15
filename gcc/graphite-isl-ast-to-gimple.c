@@ -1411,17 +1411,20 @@ scop_to_isl_ast (scop_p scop)
   isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
   if (isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
-      dump_user_location_t loc = find_loop_location
-	(scop->scop_info->region.entry->dest->loop_father);
-      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, AST generation timed out "
-			 "after %d operations [--param max-isl-operations]\n",
-			 max_operations);
-      else
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-			 "loop nest not optimized, ISL AST generation "
-			 "signalled an error\n");
+      if (dump_enabled_p ())
+	{
+	  dump_user_location_t loc = find_loop_location
+	    (scop->scop_info->region.entry->dest->loop_father);
+	  if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, AST generation timed out "
+			     "after %d operations [--param max-isl-operations]\n",
+			     max_operations);
+	  else
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			     "loop nest not optimized, ISL AST generation "
+			     "signalled an error\n");
+	}
       isl_ast_node_free (ast_isl);
       return NULL;
     }
