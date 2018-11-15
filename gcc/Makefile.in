@@ -1395,7 +1395,6 @@ OBJS = \
 	ira-color.o \
 	ira-emit.o \
 	ira-lives.o \
-	json.o \
 	jump.o \
 	langhooks.o \
 	lcm.o \
@@ -1619,6 +1618,7 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = diagnostic.o diagnostic-color.o diagnostic-show-locus.o \
+	diagnostic-format-json.o json.o \
 	edit-context.o \
 	pretty-print.o intl.o \
 	sbitmap.o \

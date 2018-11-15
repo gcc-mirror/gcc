@@ -110,7 +110,8 @@ jit_begin_diagnostic (diagnostic_context */*context*/,
 
 static void
 jit_end_diagnostic (diagnostic_context *context,
-		    diagnostic_info *diagnostic)
+		    diagnostic_info *diagnostic,
+		    diagnostic_t)
 {
   gcc_assert (gcc::jit::active_playback_ctxt);
   JIT_LOG_SCOPE (gcc::jit::active_playback_ctxt->get_logger ());

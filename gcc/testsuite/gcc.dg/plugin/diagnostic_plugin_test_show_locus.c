@@ -129,7 +129,8 @@ static bool force_show_locus_color = false;
 
 static void
 custom_diagnostic_finalizer (diagnostic_context *context,
-			     diagnostic_info *diagnostic)
+			     diagnostic_info *diagnostic,
+			     diagnostic_t)
 {
   bool old_show_color = pp_show_color (context->printer);
   if (force_show_locus_color)

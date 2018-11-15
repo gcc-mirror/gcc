@@ -1,5 +1,34 @@
 2018-11-15  David Malcolm  <dmalcolm@redhat.com>
 
+	PR other/19165
+	* Makefile.in (OBJS): Move json.o to...
+	(OBJS-libcommon): ...here and add diagnostic-format-json.o.
+	* common.opt (fdiagnostics-format=): New option.
+	(diagnostics_output_format): New enum.
+	* diagnostic-format-json.cc: New file.
+	* diagnostic.c (default_diagnostic_final_cb): New function, taken
+	from start of diagnostic_finish.
+	(diagnostic_initialize): Initialize final_cb to
+	default_diagnostic_final_cb.
+	(diagnostic_finish): Move "being treated as errors" messages to
+	default_diagnostic_final_cb.  Call any final_cb.
+	(default_diagnostic_finalizer): Add diagnostic_t param.
+	(diagnostic_report_diagnostic): Pass "orig_diag_kind" to
+	diagnostic_finalizer callback.
+	* diagnostic.h (enum diagnostics_output_format): New enum.
+	(diagnostic_finalizer_fn): Reimplement, adding diagnostic_t param.
+	(struct diagnostic_context): Add "final_cb".
+	(default_diagnostic_finalizer): Add diagnostic_t param.
+	(diagnostic_output_format_init): New decl.
+	* doc/invoke.texi (-fdiagnostics-format): New option.
+	* dwarf2out.c (gen_producer_string): Ignore
+	OPT_fdiagnostics_format_.
+	* gcc.c (driver_handle_option): Handle OPT_fdiagnostics_format_.
+	* lto-wrapper.c (append_diag_options): Ignore it.
+	* opts.c (common_handle_option): Handle it.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
 	PR tree-optimization/88015
 	* graphite-isl-ast-to-gimple.c
 	(translate_isl_ast_to_gimple::scop_to_isl_ast): Add missing check

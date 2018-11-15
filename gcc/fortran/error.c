@@ -1132,7 +1132,8 @@ gfc_diagnostic_start_span (diagnostic_context *context,
 
 static void
 gfc_diagnostic_finalizer (diagnostic_context *context,
-			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED)
+			  diagnostic_info *diagnostic ATTRIBUTE_UNUSED,
+			  diagnostic_t orig_diag_kind ATTRIBUTE_UNUSED)
 {
   pp_destroy_prefix (context->printer);
   pp_newline_and_flush (context->printer);

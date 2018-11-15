@@ -24267,6 +24267,7 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_labels:
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
+      case OPT_fdiagnostics_format_:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:

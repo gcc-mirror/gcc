@@ -1,3 +1,20 @@
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* c-c++-common/diagnostic-format-json-1.c: New test.
+	* c-c++-common/diagnostic-format-json-2.c: New test.
+	* c-c++-common/diagnostic-format-json-3.c: New test.
+	* c-c++-common/diagnostic-format-json-4.c: New test.
+	* c-c++-common/diagnostic-format-json-5.c: New test.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.c
+	(custom_diagnostic_finalizer): Add diagnostic_t param.
+	* gcc.dg/plugin/location_overflow_plugin.c
+	(verify_unpacked_ranges): Likewise.
+	(verify_no_columns): Likewise.
+	* gfortran.dg/diagnostic-format-json-1.F90: New test.
+	* gfortran.dg/diagnostic-format-json-2.F90: New test.
+	* gfortran.dg/diagnostic-format-json-3.F90: New test.
+
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
         PR middle-end/88029
