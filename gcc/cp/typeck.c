@@ -2884,7 +2884,12 @@ finish_class_member_access_expr (cp_expr object, tree name, bool template_p,
 	     expression is dependent.  */
 	  || (TREE_CODE (name) == SCOPE_REF
 	      && TYPE_P (TREE_OPERAND (name, 0))
-	      && dependent_scope_p (TREE_OPERAND (name, 0))))
+	      && dependent_scope_p (TREE_OPERAND (name, 0)))
+	  /* If NAME is operator T where "T" is dependent, we can't
+	     lookup until we instantiate the T.  */
+	  || (TREE_CODE (name) == IDENTIFIER_NODE
+	      && IDENTIFIER_CONV_OP_P (name)
+	      && dependent_type_p (TREE_TYPE (name))))
 	{
 	dependent:
 	  return build_min_nt_loc (UNKNOWN_LOCATION, COMPONENT_REF,
