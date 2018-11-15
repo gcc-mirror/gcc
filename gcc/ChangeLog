@@ -1,3 +1,9 @@
+2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/csky-linux-elf.h (LINUX_DYNAMIC_LINKER): Remove.
+	(GLIBC_DYNAMIC_LINKER): Define.
+	(LINUX_TARGET_LINK_SPEC): Update the dynamic linker's name.
+
 2018-11-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/84648
