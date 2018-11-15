@@ -1,3 +1,8 @@
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87917
+	* gcc.dg/tree-ssa/pr87917.c: New testcase.
+
 2018-11-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
 
 	PR tree-optimization/84648

@@ -1,3 +1,9 @@
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87917
+	* tree-data-ref.c (analyze_miv_subscript): Guard calls to
+	analyze_subscript_affine_affine properly.
+
 2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config/csky/csky-linux-elf.h (LINUX_DYNAMIC_LINKER): Remove.

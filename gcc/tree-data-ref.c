@@ -4038,9 +4038,9 @@ analyze_miv_subscript (tree chrec_a,
       dependence_stats.num_miv_independent++;
     }
 
-  else if (evolution_function_is_affine_multivariate_p (chrec_a, loop_nest->num)
+  else if (evolution_function_is_affine_in_loop (chrec_a, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_a)
-	   && evolution_function_is_affine_multivariate_p (chrec_b, loop_nest->num)
+	   && evolution_function_is_affine_in_loop (chrec_b, loop_nest->num)
 	   && !chrec_contains_symbols (chrec_b))
     {
       /* testsuite/.../ssa-chrec-35.c
