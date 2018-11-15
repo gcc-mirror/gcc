@@ -2607,10 +2607,10 @@ Load legacy module macros at end of compilation.  This is not standard
 conforming, but can be helpful to confirm all imported macros are
 consistent.
 
-@item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{cookie}@r{]}
-@itemx -fmodule-mapper=|@var{program}@r{[}?@var{cookie}@r{]} @var{args...}
-@itemx -fmodule-mapper==@var{socket}@r{[}?@var{cookie}@r{]}
-@itemx -fmodule-mapper=@var{file}@r{[}?@var{cookie}@r{]}
+@item -fmodule-mapper=@r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=|@var{program}@r{[}?@var{ident}@r{]} @var{args...}
+@itemx -fmodule-mapper==@var{socket}@r{[}?@var{ident}@r{]}
+@itemx -fmodule-mapper=@var{file}@r{[}?@var{ident}@r{]}
 @opindex fmodule-mapper
 An oracle to query for module name to filename mappings.  If
 unspecified a default is provided.
@@ -29829,7 +29829,7 @@ operand may have one of the following forms:
 
 @table @gcctabopt
 
-@item @r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{cookie}@r{]}
+@item @r{[}@var{hostname}@r{]}:@var{port}@r{[}?@var{ident}@r{]}
 An optional hostname and a numeric port number to connect to.  If the
 hostname is omitted, the loopback address is used.  If the hostname
 corresponds to multiple IPV6 addresses, these are tried in turn, until
@@ -29838,17 +29838,17 @@ non-functional.  If you must use ipv4 @emph{get with the 21st century},
 or failing that use @option{-fmodule-mapper='|ncat @var{ipv4host}
 @var{port}'}.
 
-@item =@var{socket}@r{[}?@var{cookie}@r{]}
+@item =@var{socket}@r{[}?@var{ident}@r{]}
 A local domain socket.  If your host lacks local domain sockets, this
 form is non-functional.
 
-@item |@var{program}@r{[}?@var{cookie}@r{]} @r{[}@var{args...}@r{]}
+@item |@var{program}@r{[}?@var{ident}@r{]} @r{[}@var{args...}@r{]}
 A program to spawn, and communicate with on its stdin/stdout streams.
 Your @var{PATH} environment variable is searched for the program.
 Arguments are separated by space characters, (it is not possible for
 one of the arguments delivered to the program to contain a space).
 
-@item @var{file}@r{[}?@var{cookie}@r{]}
+@item @var{file}@r{[}?@var{ident}@r{]}
 A mapping file consisting of space-separated module-name, filename
 pairs, one per line.  Only the mappings for the direct imports and any
 module export name need be provided.  If other mappings are provided,
@@ -29858,16 +29858,16 @@ module name in the first active line.
 
 @end table
 
-As shown, an optional cookie may suffix the first word of the option.
-It is introduced by a @samp{?}, which is not part of the cookie.  The
-cookie is used in the initial handshake with the module server, or to
-specify a prefix on mapping file lines.  In the server case, the main
-source file name is used if no cookie is specified.  In the file case,
-all non-blank lines are significant, unless a cookie is specified, in
-which case only lines beginning with the cookie are significant.  The
-cookie must be separated by whitespace from the module name.  Be aware
-that @samp{?} and @samp{|} characters are often significant to the
-shell, and therefore may need quoting.
+As shown, an optional @var{ident} may suffix the first word of the
+option, indicated by a @samp{?} prefix.  The value is used in the
+initial handshake with the module server, or to specify a prefix on
+mapping file lines.  In the server case, the main source file name is
+used if no @var{ident} is specified.  In the file case, all non-blank
+lines are significant, unless a value is specified, in which case only
+lines beginning with @var{ident} are significant.  The @var{ident}
+must be separated by whitespace from the module name.  Be aware that
+@samp{?}  and @samp{|} characters are often significant to the shell,
+and therefore may need quoting.
 
 The mapper is connected to or loaded lazily, when the first module
 mapping is required.  The networking protocols are only supported on
@@ -29892,7 +29892,7 @@ completed the object-file generation of the interface unit.
 The compilation is of a module interface unit, and will generate a BMI
 for @var{module}.  The response should be @samp{OK @var{bmipath}}.
 
-@item HELLO @var{ver} @var{kind} @var{cookie}
+@item HELLO @var{ver} @var{kind} @var{ident}
 This is the first command.  It informs the server of the name of the
 source being compiled.  Response is either @samp{OK
 @var{ver} @var{repopath}}, or @samp{ERROR @var{msg}}.
@@ -29948,9 +29948,9 @@ A module name.  Legacy header module names are quoted with
 @item @var{msg}
 A human readable message.  This may contain whitespace.
 
-@item @var{cookie}
-A cookie provided when invoking the compiler.  This may be helpful to
-distinguish different connections to a common server.
+@item @var{ident}
+An identity provided when invoking the compiler.  This may be helpful
+to distinguish different connections to a common server.
 
 @item @var{ver}
 A numeric version number, currently 0.
