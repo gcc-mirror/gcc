@@ -9822,15 +9822,11 @@ The above generates bytecode for @file{foo.c} and @file{bar.c},
 merges them together into a single GIMPLE representation and optimizes
 them as usual to produce @file{myprog}.
 
-The only important thing to keep in mind is that to enable link-time
+The important thing to keep in mind is that to enable link-time
 optimizations you need to use the GCC driver to perform the link step.
-GCC then automatically performs link-time optimization if any of the
+GCC automatically performs link-time optimization if any of the
 objects involved were compiled with the @option{-flto} command-line option.  
-You generally
-should specify the optimization options to be used for link-time
-optimization though GCC tries to be clever at guessing an
-optimization level to use from the options used at compile time
-if you fail to specify one at link time.  You can always override
+You can always override
 the automatic decision to do link-time optimization
 by passing @option{-fno-lto} to the link command.
 
@@ -9844,8 +9840,8 @@ the linker plugin is not available, @option{-fwhole-program} should be
 used to allow the compiler to make these assumptions, which leads
 to more aggressive optimization decisions.
 
-When @option{-fuse-linker-plugin} is not enabled, when a file is
-compiled with @option{-flto}, the generated object file is larger than
+When a file is compiled with @option{-flto} without
+@option{-fuse-linker-plugin}, the generated object file is larger than
 a regular object file because it contains GIMPLE bytecodes and the usual
 final code (see @option{-ffat-lto-objects}.  This means that
 object files with LTO information can be linked as normal object
@@ -9854,20 +9850,6 @@ interprocedural optimizations are applied.  Note that when
 @option{-fno-fat-lto-objects} is enabled the compile stage is faster
 but you cannot perform a regular, non-LTO link on them.
 
-Additionally, the optimization flags used to compile individual files
-are not necessarily related to those used at link time.  For instance,
-
-@smallexample
-gcc -c -O0 -ffat-lto-objects -flto foo.c
-gcc -c -O0 -ffat-lto-objects -flto bar.c
-gcc -o myprog -O3 foo.o bar.o
-@end smallexample
-
-This produces individual object files with unoptimized assembler
-code, but the resulting binary @file{myprog} is optimized at
-@option{-O3}.  If, instead, the final binary is generated with
-@option{-fno-lto}, then @file{myprog} is not optimized.
-
 When producing the final binary, GCC only
 applies link-time optimizations to those files that contain bytecode.
 Therefore, you can mix and match object files and libraries with
@@ -9875,15 +9857,22 @@ GIMPLE bytecodes and final object code.  GCC automatically selects
 which files to optimize in LTO mode and which files to link without
 further processing.
 
-There are some code generation flags preserved by GCC when
-generating bytecodes, as they need to be used during the final link
-stage.  Generally options specified at link time override those
-specified at compile time.
+Generally, options specified at link time override those
+specified at compile time, although in some cases GCC attempts to infer
+link-time options from the settings used to compile the input files.
 
 If you do not specify an optimization level option @option{-O} at
 link time, then GCC uses the highest optimization level 
-used when compiling the object files.
+used when compiling the object files.  Note that it is generally 
+ineffective to specify an optimization level option only at link time and 
+not at compile time, for two reasons.  First, compiling without 
+optimization suppresses compiler passes that gather information 
+needed for effective optimization at link time.  Second, some early
+optimization passes can be performed only at compile time and 
+not at link time.
 
+There are some code generation flags preserved by GCC when
+generating bytecodes, as they need to be used during the final link.
 Currently, the following options and their settings are taken from
 the first object file that explicitly specifies them: 
 @option{-fPIC}, @option{-fpic}, @option{-fpie}, @option{-fcommon},

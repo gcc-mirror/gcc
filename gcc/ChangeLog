@@ -1,5 +1,14 @@
 2018-11-14  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR lto/55102
+	PR lto/56700
+	* doc/invoke.texi (Optimize Options): Remove bad example about
+	interaction between -flto and -O.  Replace it with a note that
+	you need to compile with -O and not just link.  Copy-edit -flto
+	discussion to reduce verbiage and improve flow.
+
+2018-11-14  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR middle-end/59658
 	* doc/invoke.texi (Optimize Options): Clarify that -O0 and -Og
 	also suppress many optimizations.  Alphabetize option lists for
