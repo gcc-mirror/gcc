@@ -1,3 +1,20 @@
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87541
+	PR c++/87542
+	* c-attribs.c (positional_argument): New function.
+	(handle_alloc_size_attribute): Use it and simplify.
+	(handle_alloc_align_attribute): Same.
+	(handle_assume_aligned_attribute): Same.
+	(handle_nonnull_attribute): Same.
+	* c-common.c (check_function_arguments): Pass fntype to
+	check_function_format.
+	* c-common.h (check_function_format): Add an argument.
+	(PosArgFlags, positional_argument): Declare new type and function.
+	* c-format.c (decode_format_attr): Add arguments.
+	(check_format_string, get_constant): Same.
+	(convert_format_name_to_system_name): Adjust.
+
 2018-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR other/19165

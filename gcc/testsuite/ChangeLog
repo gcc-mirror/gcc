@@ -1,5 +1,25 @@
 2018-11-15  Martin Sebor  <msebor@redhat.com>
 
+	PR c++/87541
+	PR c++/87542
+	* g++.dg/ext/attr-alloc_size.C: New test.
+	* c-c++-common/pr71574.c: Adjust diagnostics.
+	* c-c++-common/attributes-1.c: Same.
+	* gcc.dg/attr-alloc_align-2.c: Same.
+	* gcc.dg/attr-alloc_align-4.c: New test.
+	* gcc.dg/attr-alloc_size-2.c: Adjust diagnostics.
+	* gcc.dg/attr-alloc_size.c: Same.
+	* gcc.dg/attr-assume_aligned-4.c: New test.
+	* gcc.dg/format/attr-3.c: Adjust diagnostics.
+	* gcc.dg/nonnull-2.c: Same.
+	* gcc.dg/torture/pr80612.c: Same.
+	* obj-c++.dg/attributes/method-format-1.mm: Same.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: Same.
+	* objc.dg/attributes/method-format-1.m: same.
+	* objc.dg/attributes/method-nonnull-1.m: Same.
+
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
 	PR c/83656
 	* gcc.dg/20021006-1.c
 	* gcc.dg/Wbuiltin-declaration-mismatch.c: New test.
