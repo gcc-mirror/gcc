@@ -1,3 +1,10 @@
+2018-11-15  Bin Cheng  <bin.cheng@linux.alibaba.com>
+
+	PR tree-optimization/84648
+	* tree-ssa-loop-niter.c (adjust_cond_for_loop_until_wrap): New.
+	(number_of_iterations_cond): Adjust exit cond for loop-until-wrap case
+	by calling adjust_cond_for_loop_until_wrap.
+
 2018-11-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/56334
