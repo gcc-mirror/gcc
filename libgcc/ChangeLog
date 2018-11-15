@@ -1,3 +1,7 @@
+2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
+	* config/csky/linux-unwind.h: Fix coding style.
+
 2018-11-13  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config/csky/linux-unwind.h (_sig_ucontext_t): Remove.

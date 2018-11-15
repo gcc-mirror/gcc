@@ -25,10 +25,8 @@
 
 #ifndef inhibit_libc
 
-/*
- * Do code reading to identify a signal frame, and set the frame state data
- * appropriately.  See unwind-dw2.c for the structs.
- */
+/* Do code reading to identify a signal frame, and set the frame state data
+   appropriately.  See unwind-dw2.c for the structs.  */
 
 #include <signal.h>
 #include <asm/unistd.h>
