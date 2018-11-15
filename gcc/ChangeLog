@@ -1,3 +1,10 @@
+2018-11-15  Andrew Stubbs  <ams@codesourcery.com>
+            Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* tree-vect-stmts.c (vectorizable_store): Don't ICE when
+	int_mode_for_size fails.
+	(vectorizable_load): Likewise.
+
 2018-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/ux.texi (Group logically-related diagnostics): Move
