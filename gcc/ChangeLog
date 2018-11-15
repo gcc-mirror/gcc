@@ -1,5 +1,11 @@
 2018-11-15  David Malcolm  <dmalcolm@redhat.com>
 
+	* doc/ux.texi (Group logically-related diagnostics): Move
+	discussion of auto_diagnostic_group into this new subsection.
+	Give an example of where this grouping is used.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
 	PR other/19165
 	* Makefile.in (OBJS): Move json.o to...
 	(OBJS-libcommon): ...here and add diagnostic-format-json.o.
