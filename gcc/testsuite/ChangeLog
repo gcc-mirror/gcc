@@ -1,3 +1,8 @@
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88030
+	* gcc.dg/tsan/pr88030.c: New testcase.
+
 2018-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88018
