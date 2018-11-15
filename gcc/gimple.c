@@ -1446,15 +1446,17 @@ gimple_call_same_target_p (const gimple *c1, const gimple *c2)
 int
 gimple_call_flags (const gimple *stmt)
 {
-  int flags;
-  tree decl = gimple_call_fndecl (stmt);
+  int flags = 0;
 
-  if (decl)
-    flags = flags_from_decl_or_type (decl);
-  else if (gimple_call_internal_p (stmt))
+  if (gimple_call_internal_p (stmt))
     flags = internal_fn_flags (gimple_call_internal_fn (stmt));
   else
-    flags = flags_from_decl_or_type (gimple_call_fntype (stmt));
+    {
+      tree decl = gimple_call_fndecl (stmt);
+      if (decl)
+	flags = flags_from_decl_or_type (decl);
+      flags |= flags_from_decl_or_type (gimple_call_fntype (stmt));
+    }
 
   if (stmt->subcode & GF_CALL_NOTHROW)
     flags |= ECF_NOTHROW;
