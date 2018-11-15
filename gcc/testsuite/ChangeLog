@@ -1,3 +1,10 @@
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR debug/88006
+	PR debug/87462
+	* g++.dg/debug/dwarf2/pr87462.C: New.
+	* g++.dg/debug/dwarf2/pr88006.C: New.
+
 2018-11-11  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
