@@ -2396,7 +2396,8 @@ alignment this overrides the effect of the
 function.
 
 Note that the effectiveness of @code{aligned} attributes may be
-limited by inherent limitations in your linker.  On many systems, the
+limited by inherent limitations in the system linker 
+and/or object file format.  On some systems, the
 linker is only able to arrange for functions to be aligned up to a
 certain maximum alignment.  (For some linkers, the maximum supported
 alignment may be very very small.)  See your linker documentation for
@@ -6132,14 +6133,18 @@ attribute must be specified as well.  When used as part of a typedef, the
 @code{aligned} attribute can both increase and decrease alignment, and
 specifying the @code{packed} attribute generates a warning.
 
-Note that the effectiveness of @code{aligned} attributes may be limited
-by inherent limitations in your linker.  On many systems, the linker is
+Note that the effectiveness of @code{aligned} attributes for static
+variables may be limited by inherent limitations in the system linker
+and/or object file format.  On some systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
 alignment.  (For some linkers, the maximum supported alignment may
 be very very small.)  If your linker is only able to align variables
 up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
+
+Stack variables are not affected by linker restrictions; GCC can properly
+align them on any target.
 
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
