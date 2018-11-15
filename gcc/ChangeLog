@@ -1,3 +1,12 @@
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88030
+	* tree-complex.c (need_eh_cleanup): New global.
+	(update_complex_assignment): Mark blocks that need EH update.
+	(expand_complex_comparison): Likewise.
+	(tree_lower_complex): Allocate and deallocate need_eh_cleanup,
+	perform EH cleanup and schedule CFG cleanup if that did anything.
+
 2018-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/88018
