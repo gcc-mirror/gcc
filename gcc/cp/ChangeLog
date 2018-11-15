@@ -1,3 +1,15 @@
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (enum special_function_kind): Reorder and comment.
+	* method.c (SFK_CTOR_P, SFK_DTOR_P, SFK_ASSIGN_P, SFK_COPY_P)
+	(SFK_MOVE_P): New predicates.
+	(walk_field_subobs, synthesized_method_base_walk): Drop
+	copy_arg_p, move_p, assign_p args.  Use new SFK predicates.  Order
+	parameters consistently.
+	(synthesized_method_walk): Drop ctor_p, copy_arg_p, move_p,
+	assign_p calculations.  Use new SFK predicates.  Adjust calls to
+	worker functions.
+
 2018-11-14  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* parser.c (make_id_declarator): Add location_t parameter.

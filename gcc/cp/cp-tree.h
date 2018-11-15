@@ -5084,20 +5084,22 @@ enum special_function_kind {
   sfk_none = 0,		   /* Not a special function.  This enumeral
 			      must have value zero; see
 			      special_function_p.  */
+  /* The following are ordered, for use by member synthesis fns.  */
+  sfk_destructor,	   /* A destructor.  */
   sfk_constructor,	   /* A constructor.  */
+  sfk_inheriting_constructor, /* An inheriting constructor */
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_move_constructor,    /* A move constructor.  */
   sfk_copy_assignment,     /* A copy assignment operator.  */
   sfk_move_assignment,     /* A move assignment operator.  */
-  sfk_destructor,	   /* A destructor.  */
+  /* The following are unordered.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
   sfk_base_destructor,     /* A destructor for base subobjects.  */
   sfk_deleting_destructor, /* A destructor for complete objects that
 			      deletes the object after it has been
 			      destroyed.  */
   sfk_conversion,	   /* A conversion operator.  */
-  sfk_deduction_guide,	   /* A class template deduction guide.  */
-  sfk_inheriting_constructor /* An inheriting constructor */
+  sfk_deduction_guide	   /* A class template deduction guide.  */
 };
 
 /* The various kinds of linkage.  From [basic.link],
