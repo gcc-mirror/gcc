@@ -1,5 +1,17 @@
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88031
+	* tree-vect-loop.c (vectorizable_reduction): Move check
+	for multiple types earlier so we get the expected dump.
+	Simplify calls to vectorizable_condition.
+	* tree-vect-stmts.h (vectorizable_condition): Update prototype.
+	* tree-vect-stmts.c (vectorizable_condition): Instead of
+	reduc_def and reduc_index take just a flag.  Simplify
+	code-generation now that we can rely on the defs being set up.
+	(vectorizable_comparison): Remove unused argument.
+
+2018-11-15  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88030
 	* tree-complex.c (need_eh_cleanup): New global.
 	(update_complex_assignment): Mark blocks that need EH update.
