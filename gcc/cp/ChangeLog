@@ -1,3 +1,10 @@
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86246
+	PR c++/87989
+	* typeck.c (finish_class_member_access_expr): Conversion operator
+	to dependent type is dependent.
+
 2018-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* constexpr.c (ensure_literal_type_for_constexpr_object): Use
