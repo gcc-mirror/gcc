@@ -1,3 +1,9 @@
+2018-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/88018
+	* cfgrtl.c (fixup_abnormal_edges): Guard moving insns to fallthru edge
+	on the presence of fallthru edge, rather than if it is a USE or not.
+
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87917
