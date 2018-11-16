@@ -1,3 +1,18 @@
+2018-11-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/87927
+	* target-def.h: Initialize TARGET_ASM_{,UN}ALIGNED_P{S,D,T}I_OP.
+	Add them to the TARGET_ASM_{,UN}ALIGNED_INT_OP structs.
+	* target.def: Enumerate TARGET_ASM_{,UN}ALIGNED_P{S,D,T}I_OP in
+	the byte_op hook.
+	* target.h: Add psi, pdi, pti to struct asm_int_op definition.
+	* targhooks.c (default_print_patchable_function_entry): Assert
+	asm_int_op does not return a NULL string.
+	* varasm.c (integer_asm_op): Return the op for a partial int type
+	when the requested size does not correspond to an integer type.
+	* config/msp430/msp430.c: Initialize TARGET_ASM_{,UN}ALIGNED_PSI_OP.
+	* doc/tm.texi: Regenerate.
+
 2018-11-12  Jason Merrill  <jason@redhat.com>
 
 	* gimplify.c (gimplify_case_label_expr): Handle hot/cold attributes.
