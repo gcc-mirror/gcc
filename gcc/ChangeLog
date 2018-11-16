@@ -1,3 +1,9 @@
+2018-11-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/25759
+	* doc/extend.texi (Common Type Attributes): Make it explicit
+	that attribute "packed" can apply to C++ classes.
+
 2018-11-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c++/87541
