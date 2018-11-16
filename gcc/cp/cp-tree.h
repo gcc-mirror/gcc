@@ -7541,6 +7541,8 @@ extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
+extern tree lookup_hotness_attribute		(tree);
+extern tree process_stmt_hotness_attribute	(tree);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);

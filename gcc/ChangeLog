@@ -1,3 +1,7 @@
+2018-11-12  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_case_label_expr): Handle hot/cold attributes.
+
 2018-11-16  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config/rs6000/constraints.md (wF constraint): Remove power9
