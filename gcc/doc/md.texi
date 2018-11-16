@@ -3238,7 +3238,7 @@ Int constant that is the element number of the 64-bit scalar in a vector.
 Vector constant that can be loaded with the XXSPLTIB instruction.
 
 @item wF
-Memory operand suitable for power9 fusion load/stores.
+Memory operand suitable for power8 GPR load fusion
 
 @item wG
 Memory operand suitable for TOC fusion memory references.

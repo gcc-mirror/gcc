@@ -1,3 +1,53 @@
+2018-11-16  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (wF constraint): Remove power9
+	fusion documentation.  Just document wF's use for power8 fusion.
+	* config/rs6000/predicates.md (p9_fusion_reg_operand): Delete.
+	(fusion_gpr_addis): Delete power9 fusion support.  Change power8
+	fusion support to require the upper 12 bits to be all 0's or all
+	1's.
+	(fusion_gpr_mem_load): Add comment.
+	(fusion_addis_mem_combo_load): Remove power9 fusion support.
+	(fusion_addis_mem_combo_store): Delete.
+	(fusion_offsettable_mem_operand): Delete.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Do not set
+	power8 fusion here.
+	(ISA_3_0_MASKS_SERVER): Delete power9 fusion.
+	(POWERPC_MASKS): Delete power9 fusion.
+	* config/rs6000/rs6000-protos.h (emit_fusion_load_store): Delete.
+	(fusion_p9_p): Delete.
+	(expand_fusion_p9_load): Delete.
+	(expand_fusion_p9_store): Delete.
+	(emit_fusion_p9_load): Delete.
+	(emit_fusion_p9_store): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Delete power9
+	fusion support.
+	(rs6000_option_override_internal): Set power8 fusion based on
+	whether we are tuning for power8.  Delete power9 fusion support.
+	(rs6000_opt_masks): Delete -mpower9-fusion switch.
+	(emit_fusion_load): Rename emit_fusion_load_store to
+	emit_fusion_load, and drop fusion store support.  Update callers.
+	(emit_fusion_load_store): Likewise.
+	(emit_fusion_gpr_load): Likewise.
+	(fusion_p9_p): Delete.
+	(expand_fusion_p9_load): Delete.
+	(expand_fusion_p9_store): Delete.
+	(emit_fusion_p9_load): Delete.
+	(emit_fusion_p9_store): Delete.
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_P9): Delete.
+	(GPR_FUSION): Delete.
+	(FPR_FUSION): Delete.
+	(power9 fusion peephole2s): Delete.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_load): Delete.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_store): Delete.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_load): Delete.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_store): Delete.
+	(fusion_p9_<mode>_constant): Delete.
+	* config/rs6000/rs6000.opt (-mpower9-fusion): Delete undocumented
+	power9 fusion switch.
+	* doc/md.texi (PowerPC constraints): Update wF constraint
+	documentation for power8 fusion only.
+
 2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87475
