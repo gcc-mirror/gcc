@@ -1268,11 +1268,13 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
 
 	  /* If the substitution doesn't succeed, die.  This can happen
 	     if the back end emitted unrecognizable instructions or if
-	     target is exit block on some arches.  */
+	     target is exit block on some arches.  Or for crossing
+	     jumps.  */
 	  if (!redirect_jump (as_a <rtx_jump_insn *> (insn),
 			      block_label (new_bb), 0))
 	    {
-	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun));
+	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+			  || CROSSING_JUMP_P (insn));
 	      return false;
 	    }
 	}
@@ -4459,6 +4461,9 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
     }
   else
     ret = redirect_branch_edge (e, dest);
+
+  if (!ret)
+    return NULL;
 
   fixup_partition_crossing (ret);
   /* We don't want simplejumps in the insn stream during cfglayout.  */
