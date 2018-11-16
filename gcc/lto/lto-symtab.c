@@ -894,10 +894,11 @@ lto_symtab_merge_symbols_1 (symtab_node *prevailing)
        e = next)
     {
       next = e->next_sharing_asm_name;
-
-      if (!lto_symtab_symbol_p (e))
-	continue;
       cgraph_node *ce = dyn_cast <cgraph_node *> (e);
+
+      if ((!TREE_PUBLIC (e->decl) && !DECL_EXTERNAL (e->decl))
+	  || (ce != NULL && ce->global.inlined_to))
+	continue;
       symtab_node *to = symtab_node::get (lto_symtab_prevailing_decl (e->decl));
 
       /* No matter how we are going to deal with resolution, we will ultimately

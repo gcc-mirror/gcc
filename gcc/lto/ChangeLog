@@ -1,3 +1,10 @@
+2018-11-16  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88004
+	* lto-symtab.c (lto_symtab_merge_symbols_1): Do not call
+	lto_symtab_symbol_p as it does checking of transparent alias.
+	These needs to be also merged in the function.
+
 2018-10-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* lto-partition.c (privatize_symbol_name_1): Use
