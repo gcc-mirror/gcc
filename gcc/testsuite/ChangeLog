@@ -1,3 +1,8 @@
+2018-11-16  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion3.c: Delete.
+	* gcc.target/powerpc/fusion4.c: Delete.
+
 2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87475
