@@ -1,5 +1,11 @@
 2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
+	* config/csky/linux-unwind.h (sc_pt_regs): Update for kernel. 
+	(sc_pt_regs_lr): Update for kernel.
+	(sc_pt_regs_tls): Update for kernel.
+
+2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
+
 	* config/csky/linux-unwind.h: Fix coding style.
 
 2018-11-13  Xianmiao Qu  <xianmiao_qu@c-sky.com>
