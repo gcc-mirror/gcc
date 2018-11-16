@@ -1,3 +1,13 @@
+2018-11-16  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworks.h (TARGET_VXWORKS_HAVE_CTORS_DTORS): New macro.
+	Default to TARGET_VXWORKS_RTP.
+	(SUPPORTS_INIT_PRIORITY): Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
+	of TARGET_VXWORKS_RTP.
+	* config/vxworksae.h: Also define TARGET_VXWORKS_HAVE_CTORS_DTORS.
+	* config/vxworks.c: Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
+	of TARGET_VXWORKS_RTP to set targetm.have_ctors_dtors.
+
 2018-11-15  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c++/25759

@@ -142,13 +142,18 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
 
-/* RTPs support prioritized constructors and destructors: the
-   implementation relies on numbered .ctors* sections. If the compiler
-   was built with --enable-initfini-array, we assume the user uses a
-   linker script that sorts and merges the .init_array.* sections
-   appropriately.  */
+/* Whether the VxWorks variant and mode supports constructors/destructors
+   placed in .ctors/.dtors section or if we should generate proxy functions
+   for them, with special names which munch knows how to collect.  On most
+   versions of VxWorks, only the RTP loader supports .ctors/.dtors sections,
+   not the kernel module loader.  */
+#define TARGET_VXWORKS_HAVE_CTORS_DTORS TARGET_VXWORKS_RTP
+
+/* Support for prioritized ctors/dtors is in sync with the support for sections
+   on the VxWorks front, and is assumed to be provided by whatever linker level
+   glue is required if we were configured with --enable-initfini-array.  */
 #define SUPPORTS_INIT_PRIORITY \
-  (TARGET_VXWORKS_RTP || HAVE_INITFINI_ARRAY_SUPPORT)
+  (TARGET_VXWORKS_HAVE_CTORS_DTORS || HAVE_INITFINI_ARRAY_SUPPORT)
 
 #if !HAVE_INITFINI_ARRAY_SUPPORT
 /* VxWorks requires special handling of constructors and destructors.
