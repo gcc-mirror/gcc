@@ -1,3 +1,8 @@
+2018-11-16  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.c-torture/execute/printf-2.c: Skip on wrapped boards.
+	* gcc.c-torture/execute/user-printf.c: Likewise.
+
 2018-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87269
