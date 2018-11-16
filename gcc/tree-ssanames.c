@@ -112,9 +112,9 @@ fini_ssanames (struct function *fn)
 void
 ssanames_print_statistics (void)
 {
-  fprintf (stderr, "SSA_NAME nodes allocated: %u%c\n",
+  fprintf (stderr, "SSA_NAME nodes allocated: " PRsa (11) "\n",
 	   SIZE_AMOUNT (ssa_name_nodes_created));
-  fprintf (stderr, "SSA_NAME nodes reused: %u%c\n",
+  fprintf (stderr, "SSA_NAME nodes reused: " PRsa (11) "\n",
 	   SIZE_AMOUNT (ssa_name_nodes_reused));
 }
 

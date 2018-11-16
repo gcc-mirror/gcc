@@ -821,7 +821,7 @@ dump_rtx_statistics (void)
       unsigned j = indices[i];
       if (rtx_alloc_counts[j])
 	{
-	  fprintf (stderr, "%-24s %6zu%c %9zu%c\n",
+	  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
 		   GET_RTX_NAME (j),
 		   SIZE_AMOUNT (rtx_alloc_counts[j]),
 		   SIZE_AMOUNT (rtx_alloc_sizes[j]));
@@ -832,14 +832,14 @@ dump_rtx_statistics (void)
 
   if (rtvec_alloc_counts)
     {
-      fprintf (stderr, "%-24s %6zu%c %9zu%c\n", "rtvec",
+      fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n", "rtvec",
 	       SIZE_AMOUNT (rtvec_alloc_counts),
 	       SIZE_AMOUNT (rtvec_alloc_sizes));
       total_counts += rtvec_alloc_counts;
       total_sizes += rtvec_alloc_sizes;
     }
   fprintf (stderr, "-----------------------------------------------\n");
-  fprintf (stderr, "%-24s %6d%c %9d%c\n",
+  fprintf (stderr, "%-24s " PRsa (6) " " PRsa (9) "\n",
 	   "Total", SIZE_AMOUNT (total_counts),
 	   SIZE_AMOUNT (total_sizes));
   fprintf (stderr, "-----------------------------------------------\n");

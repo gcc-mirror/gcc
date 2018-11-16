@@ -2288,14 +2288,15 @@ ggc_print_statistics (void)
 	  overhead += (sizeof (page_entry) - sizeof (long)
 		       + BITMAP_SIZE (OBJECTS_IN_PAGE (p) + 1));
 	}
-      fprintf (stderr, "%-8zu %10zu%c %10zu%c %10zu%c\n",
-	       OBJECT_SIZE (i),
+      fprintf (stderr, "%-8" PRIu64 " " PRsa (10) " " PRsa (10) " "
+	       PRsa (10) "\n",
+	       (uint64_t)OBJECT_SIZE (i),
 	       SIZE_AMOUNT (allocated),
 	       SIZE_AMOUNT (in_use),
 	       SIZE_AMOUNT (overhead));
       total_overhead += overhead;
     }
-  fprintf (stderr, "%-8s %10zu%c %10zu%c %10zu%c\n",
+  fprintf (stderr, "%-8s " PRsa (10) " " PRsa (10) " " PRsa (10) "\n",
 	   "Total",
 	   SIZE_AMOUNT (G.bytes_mapped),
 	   SIZE_AMOUNT (G.allocated),
@@ -2306,42 +2307,42 @@ ggc_print_statistics (void)
       fprintf (stderr, "\nTotal allocations and overheads during "
 	       "the compilation process\n");
 
-      fprintf (stderr, "Total Overhead:                          %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Overhead:                          "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_overhead));
-      fprintf (stderr, "Total Allocated:                         %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Allocated:                         "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_allocated));
 
-      fprintf (stderr, "Total Overhead  under  32B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Overhead  under  32B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_overhead_under32));
-      fprintf (stderr, "Total Allocated under  32B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Allocated under  32B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_allocated_under32));
-      fprintf (stderr, "Total Overhead  under  64B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Overhead  under  64B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_overhead_under64));
-      fprintf (stderr, "Total Allocated under  64B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Allocated under  64B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_allocated_under64));
-      fprintf (stderr, "Total Overhead  under 128B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Overhead  under 128B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_overhead_under128));
-      fprintf (stderr, "Total Allocated under 128B:              %9"
-	       HOST_LONG_LONG_FORMAT "d%c\n",
+      fprintf (stderr, "Total Allocated under 128B:              "
+	       PRsa (9) "\n",
 	       SIZE_AMOUNT (G.stats.total_allocated_under128));
 
       for (i = 0; i < NUM_ORDERS; i++)
 	if (G.stats.total_allocated_per_order[i])
 	  {
-	    fprintf (stderr, "Total Overhead  page size %9zu:     %9"
-		     HOST_LONG_LONG_FORMAT "d%c\n",
-		     OBJECT_SIZE (i),
+	    fprintf (stderr, "Total Overhead  page size %9" PRIu64 ":     "
+		     PRsa (9) "\n",
+		     (uint64_t)OBJECT_SIZE (i),
 		     SIZE_AMOUNT (G.stats.total_overhead_per_order[i]));
-	    fprintf (stderr, "Total Allocated page size %9zu:     %9"
-		     HOST_LONG_LONG_FORMAT "d%c\n",
-		     OBJECT_SIZE (i),
+	    fprintf (stderr, "Total Allocated page size %9" PRIu64 ":     "
+		     PRsa (9) "\n",
+		     (uint64_t)OBJECT_SIZE (i),
 		     SIZE_AMOUNT (G.stats.total_allocated_per_order[i]));
 	  }
   }

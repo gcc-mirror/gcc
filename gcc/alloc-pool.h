@@ -63,8 +63,8 @@ struct pool_usage: public mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-32s%-48s %5zu%c%9zu%c:%5.1f%%%9zu"
-	     "%c%9zu%c:%5.1f%%%12zu\n",
+    fprintf (stderr, "%-32s%-48s " PRsa(5) PRsa(9) ":%5.1f%%"
+	     PRsa(9) PRsa(9) ":%5.1f%%%12" PRIu64 "\n",
 	     m_pool_name, location_string,
 	     SIZE_AMOUNT (m_instances),
 	     SIZE_AMOUNT (m_allocated),
@@ -72,7 +72,7 @@ struct pool_usage: public mem_usage
 	     SIZE_AMOUNT (m_peak),
 	     SIZE_AMOUNT (m_times),
 	     get_percent (m_times, total.m_times),
-	     m_element_size);
+	     (uint64_t)m_element_size);
 
     free (location_string);
   }
@@ -91,7 +91,7 @@ struct pool_usage: public mem_usage
   dump_footer ()
   {
     print_dash_line ();
-    fprintf (stderr, "%s%82zu%c%10zu%c\n", "Total",
+    fprintf (stderr, "%s" PRsa(82) PRsa(10) "\n", "Total",
 	     SIZE_AMOUNT (m_instances), SIZE_AMOUNT (m_allocated));
     print_dash_line ();
   }

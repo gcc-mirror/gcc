@@ -205,8 +205,8 @@ struct mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %9zu%c:%5.1f%%"
-	     "%9zu%c%9zu%c:%5.1f%%%10s\n",
+    fprintf (stderr, "%-48s " PRsa (9) ":%5.1f%%"
+	     PRsa (9) PRsa (9) ":%5.1f%%%10s\n",
 	     location_string, SIZE_AMOUNT (m_allocated),
 	     get_percent (m_allocated, total.m_allocated),
 	     SIZE_AMOUNT (m_peak), SIZE_AMOUNT (m_times),
@@ -220,7 +220,7 @@ struct mem_usage
   dump_footer () const
   {
     print_dash_line ();
-    fprintf (stderr, "%s%53zu%c%26zu%c\n", "Total",
+    fprintf (stderr, "%s" PRsa (53) PRsa (26) "\n", "Total",
 	     SIZE_AMOUNT (m_allocated), SIZE_AMOUNT (m_times));
     print_dash_line ();
   }

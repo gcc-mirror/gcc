@@ -239,9 +239,9 @@ struct bitmap_usage: public mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %9zu%c:%5.1f%%"
-	     "%9zu%c%9zu%c:%5.1f%%"
-	     "%11" PRIu64 "%c%11" PRIu64 "%c%10s\n",
+    fprintf (stderr, "%-48s " PRsa (9) ":%5.1f%%"
+	     PRsa (9) PRsa (9) ":%5.1f%%"
+	     PRsa (11) PRsa (11) "%10s\n",
 	     location_string, SIZE_AMOUNT (m_allocated),
 	     get_percent (m_allocated, total.m_allocated),
 	     SIZE_AMOUNT (m_peak), SIZE_AMOUNT (m_times),
