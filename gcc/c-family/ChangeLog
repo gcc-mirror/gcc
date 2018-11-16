@@ -1,3 +1,8 @@
+2018-11-16  Jason Merrill  <jason@redhat.com>
+
+	* c-lex.c (c_common_has_attribute): Handle likely/unlikely.
+	* c-attribs.c (attr_cold_hot_exclusions): Make public.
+
 2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/87854

@@ -456,6 +456,18 @@
 #    error "__has_cpp_attribute(no_unique_address) != 201803"
 #  endif
 
+#  if ! __has_cpp_attribute(likely)
+#    error "__has_cpp_attribute(likely)"
+#  elif __has_cpp_attribute(likely) != 201803
+#    error "__has_cpp_attribute(likely) != 201803"
+#  endif
+
+#  if ! __has_cpp_attribute(unlikely)
+#    error "__has_cpp_attribute(unlikely)"
+#  elif __has_cpp_attribute(unlikely) != 201803
+#    error "__has_cpp_attribute(unlikely) != 201803"
+#  endif
+
 #else
 #  error "__has_cpp_attribute"
 #endif

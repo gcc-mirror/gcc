@@ -163,7 +163,7 @@ static const struct attribute_spec::exclusions attr_aligned_exclusions[] =
   ATTR_EXCL (NULL, false, false, false)
 };
 
-static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
 {
   ATTR_EXCL ("cold", true, true, true),
   ATTR_EXCL ("hot", true, true, true),

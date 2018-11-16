@@ -1,3 +1,18 @@
+2018-11-16  Jason Merrill  <jason@redhat.com>
+
+	Implement P0479R5, [[likely]] and [[unlikely]].
+	* tree.c (handle_likeliness_attribute): New.
+	(std_attribute_table): Add likely/unlikely.
+	* cp-gimplify.c (lookup_hotness_attribute, remove_hotness_attribute)
+	(process_stmt_hotness_attribute, first_stmt): New.
+	(genericize_if_stmt): Check for duplicate predictions.
+	* parser.c (cp_parser_statement): Call
+	process_stmt_hotness_attribute.
+	(cp_parser_label_for_labeled_statement): Apply attributes to case.
+	* decl.c (finish_case_label): Give label in template type void.
+	* pt.c (tsubst_expr) [CASE_LABEL_EXPR]: Copy attributes.
+	[PREDICT_EXPR]: Handle.
+
 2018-11-16  Nathan Sidwell  <nathan@acm.org>
 
 	Remove ovl_used, it is no longer needed

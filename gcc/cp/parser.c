@@ -10880,6 +10880,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
   /* Remember the location of the first token in the statement.  */
+  cp_token *statement_token = token;
   statement_location = token->location;
   add_debug_begin_stmt (statement_location);
   /* If this is a keyword, then that will often determine what kind of
@@ -10901,12 +10902,14 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 
 	case RID_IF:
 	case RID_SWITCH:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_selection_statement (parser, if_p, chain);
 	  break;
 
 	case RID_WHILE:
 	case RID_DO:
 	case RID_FOR:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_iteration_statement (parser, if_p, false, 0);
 	  break;
 
@@ -10914,6 +10917,7 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_CONTINUE:
 	case RID_RETURN:
 	case RID_GOTO:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_jump_statement (parser);
 	  break;
 
@@ -10923,15 +10927,24 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_AT_FINALLY:
 	case RID_AT_SYNCHRONIZED:
 	case RID_AT_THROW:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_objc_statement (parser);
 	  break;
 
 	case RID_TRY:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_try_block (parser);
 	  break;
 
 	case RID_NAMESPACE:
 	  /* This must be a namespace alias definition.  */
+	  if (std_attrs != NULL_TREE)
+	    {
+	      /*  Attributes should be parsed as part of the the
+		  declaration, so let's un-parse them.  */
+	      saved_tokens.rollback();
+	      std_attrs = NULL_TREE;
+	    }
 	  cp_parser_declaration_statement (parser);
 	  return;
 	  
@@ -10940,9 +10953,11 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	case RID_SYNCHRONIZED:
 	case RID_ATOMIC_NOEXCEPT:
 	case RID_ATOMIC_CANCEL:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_transaction (parser, token);
 	  break;
 	case RID_TRANSACTION_CANCEL:
+	  std_attrs = process_stmt_hotness_attribute (std_attrs);
 	  statement = cp_parser_transaction_cancel (parser);
 	  break;
 
@@ -11001,12 +11016,9 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	{
 	  if (std_attrs != NULL_TREE)
-	    {
-	      /*  Attributes should be parsed as part of the the
-		  declaration, so let's un-parse them.  */
-	      saved_tokens.rollback();
-	      std_attrs = NULL_TREE;
-	    }
+	    /* Attributes should be parsed as part of the declaration,
+	       so let's un-parse them.  */
+	    saved_tokens.rollback();
 
 	  cp_parser_parse_tentatively (parser);
 	  /* Try to parse the declaration-statement.  */
@@ -11014,10 +11026,15 @@ cp_parser_statement (cp_parser* parser, tree in_statement_expr,
 	  /* If that worked, we're done.  */
 	  if (cp_parser_parse_definitely (parser))
 	    return;
+	  /* It didn't work, restore the post-attribute position.  */
+	  if (std_attrs)
+	    cp_lexer_set_token_position (parser->lexer, statement_token);
 	}
       /* All preceding labels have been parsed at this point.  */
       if (loc_after_labels != NULL)
 	*loc_after_labels = statement_location;
+
+      std_attrs = process_stmt_hotness_attribute (std_attrs);
 
       /* Look for an expression-statement instead.  */
       statement = cp_parser_expression_statement (parser, in_statement_expr);
@@ -11131,7 +11148,10 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
 	  {
 	    tree l = finish_case_label (token->location, expr, expr_hi);
 	    if (l && TREE_CODE (l) == CASE_LABEL_EXPR)
-	      FALLTHROUGH_LABEL_P (CASE_LABEL (l)) = fallthrough_p;
+	      {
+		label = CASE_LABEL (l);
+		FALLTHROUGH_LABEL_P (label) = fallthrough_p;
+	      }
 	  }
 	else
 	  error_at (token->location,
@@ -11148,7 +11168,10 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
 	{
 	  tree l = finish_case_label (token->location, NULL_TREE, NULL_TREE);
 	  if (l && TREE_CODE (l) == CASE_LABEL_EXPR)
-	    FALLTHROUGH_LABEL_P (CASE_LABEL (l)) = fallthrough_p;
+	      {
+		label = CASE_LABEL (l);
+		FALLTHROUGH_LABEL_P (label) = fallthrough_p;
+	      }
 	}
       else
 	error_at (token->location, "case label not within a switch statement");
@@ -11178,6 +11201,8 @@ cp_parser_label_for_labeled_statement (cp_parser* parser, tree attributes)
       cp_parser_parse_tentatively (parser);
       attrs = cp_parser_gnu_attributes_opt (parser);
       if (attrs == NULL_TREE
+	  /* And fallthrough always binds to the expression-statement.  */
+	  || attribute_fallthrough_p (attrs)
 	  || cp_lexer_next_token_is_not (parser->lexer, CPP_SEMICOLON))
 	cp_parser_abort_tentative_parse (parser);
       else if (!cp_parser_parse_definitely (parser))
