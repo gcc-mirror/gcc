@@ -1377,8 +1377,12 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       start_sequence ();
 
       /* Do the actual arithmetic.  */
-      enum machine_mode op0_mode = CONSTANT_P (op0) ? int_mode : VOIDmode;
-      enum machine_mode op1_mode = CONSTANT_P (op1) ? int_mode : VOIDmode;
+      enum machine_mode op0_mode = GET_MODE (op0);
+      enum machine_mode op1_mode = GET_MODE (op1);
+      if (op0_mode == VOIDmode)
+	op0_mode = int_mode;
+      if (op1_mode == VOIDmode)
+	op1_mode = int_mode;
       for (i = 0; i < GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD; i++)
 	{
 	  rtx target_piece = operand_subword (target, i, 1, int_mode);
