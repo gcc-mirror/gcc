@@ -1,3 +1,10 @@
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87475
+	* cfgrtl.c (patch_jump_insn): Allow redirection failure for
+	CROSSING_JUMP_P insns.
+	(cfg_layout_redirect_edge_and_branch): Don't ICE if ret is NULL.
+
 2018-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88051
