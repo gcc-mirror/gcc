@@ -1,3 +1,17 @@
+2018-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-switch-conversion.h (switch_decision_tree::emit_case_nodes): Add
+	location_t parameter.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Likewise.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	* tree-switch-conversion.c (switch_decision_tree::emit): Pass location
+	of switch statement to emit_case_nodes.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Add LOC parameter and
+	set it on the newly built GIMPLE comparison statement.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	(switch_decision_tree::emit_case_nodes): Add LOC parameter and pass it
+	in calls to do_jump_if_equal as well as recursive calls.
+
 2018-11-16  Andi Kleen  <ak@linux.intel.com>
 
 	* config/i386/i386.md: Allow memory operands to ptwrite.
