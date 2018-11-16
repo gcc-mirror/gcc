@@ -21,6 +21,9 @@
   ;; SSE
   UNSPEC_MOVNT
 
+  ;; SSE2
+  UNSPEC_MOVDI_TO_SSE
+
   ;; SSE3
   UNSPEC_LDDQU
 
@@ -1235,10 +1238,10 @@
 ;; from there.
 
 (define_insn_and_split "movdi_to_sse"
-  [(parallel
-    [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
-	  (subreg:V4SI (match_operand:DI 1 "nonimmediate_operand" "r,m") 0))
-     (clobber (match_scratch:V4SI 2 "=&x,X"))])]
+  [(set (match_operand:V4SI 0 "register_operand" "=?x,x")
+	(unspec:V4SI [(match_operand:DI 1 "nonimmediate_operand" "r,m")]
+		     UNSPEC_MOVDI_TO_SSE))
+     (clobber (match_scratch:V4SI 2 "=&x,X"))]
   "!TARGET_64BIT && TARGET_SSE2 && TARGET_INTER_UNIT_MOVES_TO_VEC"
   "#"
   "&& reload_completed"

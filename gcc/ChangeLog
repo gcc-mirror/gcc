@@ -1,3 +1,10 @@
+2018-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88051
+	* config/i386/i386.md (floatunsdidf2): Allow only 64bit AVX512F targets.
+	* config/i386/sse.md (UNSPEC_MOVDI_TO_SSE): New UNSPEC.
+	(movdi_to_sse): Rewrite using UNSPEC_MOVDI_TO_SSE unspec.
+
 2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/88032
