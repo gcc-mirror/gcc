@@ -1,3 +1,9 @@
+2018-11-16  Renlin Li  <renlin.li@arm.com>
+	    Tejas Belagod  <tejas.belagod@arm.com>
+
+	testsuite/lib/libstdc++.exp (check_v3_target_prop_cached): New proc.
+	(check_v3_target): Use the check_v3_target_prop_cached.
+
 2018-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* scripts/check_performance: Allow tests to choose a -std flag.
