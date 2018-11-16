@@ -4294,11 +4294,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 		 work in presence of default arguments on the literal
 		 operator parameters.  */
 	      && parmtypes == void_list_node)
-	    {
-	      if (processing_template_decl)
-		lookup_keep (decl);
-	      return decl;
-	    }
+	    return decl;
 	}
     }
 
@@ -5683,14 +5679,6 @@ cp_parser_primary_expression (cp_parser *parser,
 		return error_mark_node;
 	      }
 	  }
-
-	if (processing_template_decl)
-	  if (tree fns = maybe_get_fns (decl))
-	    /* It's too difficult to mark ths in all the places where
-	       we know for sure we need to keep the lookup, so do it
-	       now.  The cost is extra GC to recycle the lookups
-	       resolved at parse time.  */
-	    lookup_keep (fns);
 
 	decl = (finish_id_expression
 		(id_expression, decl, parser->scope,
