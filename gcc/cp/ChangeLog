@@ -1,3 +1,10 @@
+2018-11-16  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	DR 1207
+	PR c++/52869
+	* parser.c (cp_parser_noexcept_specification_opt): Call
+	inject_this_parameter.
+
 2018-11-16  Jason Merrill  <jason@redhat.com>
 
 	Implement P0479R5, [[likely]] and [[unlikely]].

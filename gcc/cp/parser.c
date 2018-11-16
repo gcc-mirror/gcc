@@ -24668,6 +24668,12 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	  matching_parens parens;
 	  parens.consume_open (parser);
 
+	  tree save_ccp = current_class_ptr;
+	  tree save_ccr = current_class_ref;
+
+	  if (current_class_type)
+	    inject_this_parameter (current_class_type, TYPE_UNQUALIFIED);
+
 	  if (require_constexpr)
 	    {
 	      /* Types may not be defined in an exception-specification.  */
@@ -24687,6 +24693,9 @@ cp_parser_noexcept_specification_opt (cp_parser* parser,
 	    }
 
 	  parens.require_close (parser);
+
+	  current_class_ptr = save_ccp;
+	  current_class_ref = save_ccr;
 	}
       else
 	{
