@@ -1,5 +1,19 @@
 2018-11-16  Nathan Sidwell  <nathan@acm.org>
 
+	Remove ovl_used, it is no longer needed
+	* cp-tree.h (OVL_USED_P): Delete.
+	(lookup_keep): Delete.
+	* friend.c (add_friend): Don't call it.
+	* parser.c (lookup_literal_operator): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	* semantics.c (perform_koenig_lookup): Likewise.
+	* pt.c (tsubst_copy <OVERLOAD>): Don't assert OVL_USED_P.
+	* tree.c (ovl_copy): Delete.
+	(ovl_insert): Remove OVL_USED_P checks.
+	(ovl_iterator::reveal_node): Likewise.
+	(ovl_iterator::remove__node): Likewise.
+	(ovl_used, lookup_keep): Delete.
+
 	PR c++/87269
 	* parser.c (lookup_literal_operator): Mark overload for keeping
 	when inside template.  Refactor.

@@ -2167,23 +2167,6 @@ ovl_make (tree fn, tree next)
   return result;
 }
 
-static tree
-ovl_copy (tree ovl)
-{
-  tree result = make_node (OVERLOAD);
-
-  gcc_checking_assert (!OVL_NESTED_P (ovl) && OVL_USED_P (ovl));
-  TREE_TYPE (result) = TREE_TYPE (ovl);
-  OVL_FUNCTION (result) = OVL_FUNCTION (ovl);
-  OVL_CHAIN (result) = OVL_CHAIN (ovl);
-  OVL_DEDUP_P (result) = OVL_DEDUP_P (ovl);
-  OVL_LOOKUP_P (result) = OVL_LOOKUP_P (ovl);
-  OVL_HIDDEN_P (result) = OVL_HIDDEN_P (ovl);
-  OVL_USING_P (result) = OVL_USING_P (ovl);
-
-  return result;
-}
-
 /* Add FN to the (potentially NULL) overload set OVL.  USING_P is
    true, if FN is via a using declaration.  We also pay attention to
    DECL_HIDDEN.  We keep the hidden decls first, but remaining ones
@@ -2200,8 +2183,7 @@ ovl_insert (tree fn, tree maybe_ovl, bool using_p)
 	 && OVL_HIDDEN_P (maybe_ovl);
        maybe_ovl = OVL_CHAIN (maybe_ovl))
     {
-      gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl)
-			   && !OVL_USED_P (maybe_ovl));
+      gcc_checking_assert (!OVL_LOOKUP_P (maybe_ovl));
       insert_after = maybe_ovl;
     }
 
@@ -2254,9 +2236,8 @@ ovl_skip_hidden (tree ovl)
 tree
 ovl_iterator::reveal_node (tree overload, tree node)
 {
-  /* We cannot have returned NODE as part of a lookup overload, so it
-     cannot be USED.  */
-  gcc_checking_assert (!OVL_USED_P (node));
+  /* We cannot have returned NODE as part of a lookup overload, so we
+     don't have to worry about preserving that.  */
 
   OVL_HIDDEN_P (node) = false;
   if (tree chain = OVL_CHAIN (node))
@@ -2275,8 +2256,7 @@ ovl_iterator::reveal_node (tree overload, tree node)
   return overload;
 }
 
-/* NODE is on the overloads of OVL.  Remove it.  If a predecessor is
-   OVL_USED_P we must copy OVL nodes, because those are immutable.
+/* NODE is on the overloads of OVL.  Remove it.  
    The removed node is unaltered and may continue to be iterated
    from (i.e. it is safe to remove a node from an overload one is
    currently iterating over).  */
@@ -2284,20 +2264,11 @@ ovl_iterator::reveal_node (tree overload, tree node)
 tree
 ovl_iterator::remove_node (tree overload, tree node)
 {
-  bool copying = false; /* Checking use only.  */
-
   tree *slot = &overload;
   while (*slot != node)
     {
       tree probe = *slot;
-      gcc_checking_assert (!OVL_LOOKUP_P (probe)
-			   && (!copying || OVL_USED_P (probe)));
-      if (OVL_USED_P (probe))
-	{
-	  copying = true;
-	  probe = ovl_copy (probe);
-	  *slot = probe;
-	}
+      gcc_checking_assert (!OVL_LOOKUP_P (probe));
 
       slot = &OVL_CHAIN (probe);
     }
@@ -2386,40 +2357,6 @@ lookup_maybe_add (tree fns, tree lookup, bool deduping)
     lookup = lookup_add (fns, lookup);
 
   return lookup;
-}
-
-/* Regular overload OVL is part of a kept lookup.  Mark the nodes on
-   it as immutable.  */
-
-static void
-ovl_used (tree ovl)
-{
-  for (;
-       ovl && TREE_CODE (ovl) == OVERLOAD
-	 && !OVL_USED_P (ovl);
-       ovl = OVL_CHAIN (ovl))
-    {
-      gcc_checking_assert (!OVL_LOOKUP_P (ovl));
-      OVL_USED_P (ovl) = true;
-    }
-}
-
-/* Preserve the contents of a lookup so that it is available for a
-   later instantiation.  */
-
-void
-lookup_keep (tree lookup)
-{
-  for (;
-       lookup && TREE_CODE (lookup) == OVERLOAD
-	 && OVL_LOOKUP_P (lookup) && !OVL_USED_P (lookup);
-       lookup = OVL_CHAIN (lookup))
-    {
-      OVL_USED_P (lookup) = true;
-      ovl_used (OVL_FUNCTION (lookup));
-    }
-
-  ovl_used (lookup);
 }
 
 /* Returns nonzero if X is an expression for a (possibly overloaded)
