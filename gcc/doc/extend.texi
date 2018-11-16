@@ -7314,17 +7314,16 @@ or @code{__pointer__} for the mode used to represent pointers.
 
 @item packed
 @cindex @code{packed} type attribute
-This attribute, attached to @code{struct} or @code{union} type
-definition, specifies that each member (other than zero-width bit-fields)
-of the structure or union is placed to minimize the memory required.  When
-attached to an @code{enum} definition, it indicates that the smallest
-integral type should be used.
+This attribute, attached to @code{struct}, @code{union}, or C++ @code{class}
+type definition, specifies that each of its members (other than zero-width
+bit-fields) is placed to minimize the memory required.  This is equivalent
+to specifying the @code{packed} attribute on each of the members.
 
 @opindex fshort-enums
-Specifying the @code{packed} attribute for @code{struct} and @code{union}
-types is equivalent to specifying the @code{packed} attribute on each
-of the structure or union members.  Specifying the @option{-fshort-enums}
-flag on the command line is equivalent to specifying the @code{packed}
+When attached to an @code{enum} definition, the @code{packed} attribute
+indicates that the smallest integral type should be used.
+Specifying the @option{-fshort-enums} flag on the command line
+is equivalent to specifying the @code{packed}
 attribute on all @code{enum} definitions.
 
 In the following example @code{struct my_packed_struct}'s members are
@@ -7348,8 +7347,9 @@ struct __attribute__ ((__packed__)) my_packed_struct
 @end smallexample
 
 You may only specify the @code{packed} attribute attribute on the definition
-of an @code{enum}, @code{struct} or @code{union}, not on a @code{typedef}
-that does not also define the enumerated type, structure or union.
+of an @code{enum}, @code{struct}, @code{union}, or @code{class}, 
+not on a @code{typedef} that does not also define the enumerated type,
+structure, union, or class.
 
 @item scalar_storage_order ("@var{endianness}")
 @cindex @code{scalar_storage_order} type attribute
