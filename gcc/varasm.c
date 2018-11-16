@@ -2733,10 +2733,24 @@ integer_asm_op (int size, int aligned_p)
       return targetm.asm_out.byte_op;
     case 2:
       return ops->hi;
+    case 3:
+      return ops->psi;
     case 4:
       return ops->si;
+    case 5:
+    case 6:
+    case 7:
+      return ops->pdi;
     case 8:
       return ops->di;
+    case 9:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+      return ops->pti;
     case 16:
       return ops->ti;
     default:
