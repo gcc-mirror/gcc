@@ -1,3 +1,9 @@
+2018-11-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/md/rXsbg_mode_sXl.c: Do not use arithmetic in
+	r{o,x}sbg expectations.
+	* gcc.target/s390/risbg-ll-2.c: Likewise.
+
 2018-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/88053
