@@ -1,3 +1,8 @@
+2018-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/88053
+	* g++.dg/lto/pr54625-2_0.c: Add -w.
+
 2018-11-16  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	* gcc.target/s390/md/rXsbg_mode_sXl.c: Do not use arithmetic in
