@@ -4259,20 +4259,21 @@ cp_parser_string_literal (cp_parser *parser, bool translate, bool wide_ok,
 static tree
 lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 {
-  tree decl;
-  decl = lookup_name (name);
+  tree decl = lookup_name (name);
   if (!decl || !is_overloaded_fn (decl))
     return error_mark_node;
 
   for (lkp_iterator iter (decl); iter; ++iter)
     {
-      unsigned int ix;
-      bool found = true;
       tree fn = *iter;
-      tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (fn));
-      if (parmtypes != NULL_TREE)
+
+      if (tree parmtypes = TYPE_ARG_TYPES (TREE_TYPE (fn)))
 	{
-	  for (ix = 0; ix < vec_safe_length (args) && parmtypes != NULL_TREE;
+	  unsigned int ix;
+	  bool found = true;
+
+	  for (ix = 0;
+	       found && ix < vec_safe_length (args) && parmtypes != NULL_TREE;
 	       ++ix, parmtypes = TREE_CHAIN (parmtypes))
 	    {
 	      tree tparm = TREE_VALUE (parmtypes);
@@ -4285,6 +4286,7 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 				       TREE_TYPE (targ))))
 		found = false;
 	    }
+
 	  if (found
 	      && ix == vec_safe_length (args)
 	      /* May be this should be sufficient_parms_p instead,
@@ -4292,7 +4294,11 @@ lookup_literal_operator (tree name, vec<tree, va_gc> *args)
 		 work in presence of default arguments on the literal
 		 operator parameters.  */
 	      && parmtypes == void_list_node)
-	    return decl;
+	    {
+	      if (processing_template_decl)
+		lookup_keep (decl);
+	      return decl;
+	    }
 	}
     }
 
