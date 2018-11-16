@@ -1905,7 +1905,7 @@ extract_range_from_binary_expr (value_range_base *vr,
 			       TYPE_OVERFLOW_UNDEFINED (expr_type),
 			       extra_range_p, extra_min, extra_max))
 	{
-	  vr->set_undefined ();
+	  vr->set_varying ();
 	  return;
 	}
       vr->set (VR_RANGE, wide_int_to_tree (expr_type, wmin),
