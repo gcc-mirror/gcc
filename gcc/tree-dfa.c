@@ -184,8 +184,8 @@ dump_dfa_stats (FILE *file)
 
   unsigned long size, total = 0;
   const char * const fmt_str   = "%-30s%-13s%12s\n";
-  const char * const fmt_str_1 = "%-30s%13lu%11lu%c\n";
-  const char * const fmt_str_3 = "%-43s%11lu%c\n";
+  const char * const fmt_str_1 = "%-30s%13lu" PRsa (11) "\n";
+  const char * const fmt_str_3 = "%-43s" PRsa (11) "\n";
   const char *funcname
     = lang_hooks.decl_printable_name (current_function_decl, 2);
 

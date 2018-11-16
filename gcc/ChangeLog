@@ -1,3 +1,23 @@
+2018-11-16  Michael Matz  <matz@suse.de>
+
+	* system.h (PRsa): New macro.
+	(SIZE_AMOUNT): Cast number to uint64_t.
+	* alloc-pool.h (pool_usage::dump): Don't use %zu but PRsa.
+	(pool_usage::dump_footer): Likewise and also use PRIu64.
+	* bitmap.h (bitmap_usage::dump): Likewise.
+	* ggc-common.c (ggc_usage::dump): Likewise.
+	* ggc-page.c (ggc_print_statistics): Likewise.
+	* input.c (dump_line_table_statistics): Likewise.
+	* mem-stats.h (mem_usage::dump): Likewise.
+	(mem_usage::dump_footer): Likewise.
+	* rtl.c (dump_rtx_statistics): Likewise.
+	* tree-cfg.c (dump_cfg_stats): Likewise.
+	* tree-dfa.c (dump_dfa_stats): Likewise.
+	* tree-phinodes.c (phinodes_print_statistics): Likewise.
+	* tree-ssanames (ssanames_print_statistics): Likewise.
+	* vec.c (vec_usage::dump): Likewise.
+	(vec_usage::dump_footer): Likewise.
+
 2018-11-16  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88011
@@ -40,7 +60,7 @@
 	(alloc_size, nonnull, sentinel): Same.
 
 2018-11-15  Andrew Stubbs  <ams@codesourcery.com>
-            Kwok Cheung Yeung  <kcy@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
 
 	* tree-vect-stmts.c (vectorizable_store): Don't ICE when
 	int_mode_for_size fails.
@@ -91,10 +111,10 @@
 
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
-        PR middle-end/88029
-        * gimple.c (gimple_call_flags): Union flags from decl, type
-        and call fntype.
-        * trans-mem.c (is_tm_pure_call): Simplify.
+	PR middle-end/88029
+	* gimple.c (gimple_call_flags): Union flags from decl, type
+	and call fntype.
+	* trans-mem.c (is_tm_pure_call): Simplify.
 
 2018-11-15  Richard Biener  <rguenther@suse.de>
 

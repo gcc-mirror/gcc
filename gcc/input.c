@@ -940,35 +940,35 @@ dump_line_table_statistics (void)
   fprintf (stderr,
            "\nLine Table allocations during the "
 	   "compilation process\n");
-  fprintf (stderr, "Number of ordinary maps used:        %5ld%c\n",
+  fprintf (stderr, "Number of ordinary maps used:        " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.num_ordinary_maps_used));
-  fprintf (stderr, "Ordinary map used size:              %5ld%c\n",
+  fprintf (stderr, "Ordinary map used size:              " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.ordinary_maps_used_size));
-  fprintf (stderr, "Number of ordinary maps allocated:   %5ld%c\n",
+  fprintf (stderr, "Number of ordinary maps allocated:   " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.num_ordinary_maps_allocated));
-  fprintf (stderr, "Ordinary maps allocated size:        %5ld%c\n",
+  fprintf (stderr, "Ordinary maps allocated size:        " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.ordinary_maps_allocated_size));
-  fprintf (stderr, "Number of macro maps used:           %5ld%c\n",
+  fprintf (stderr, "Number of macro maps used:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.num_macro_maps_used));
-  fprintf (stderr, "Macro maps used size:                %5ld%c\n",
+  fprintf (stderr, "Macro maps used size:                " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.macro_maps_used_size));
-  fprintf (stderr, "Macro maps locations size:           %5ld%c\n",
+  fprintf (stderr, "Macro maps locations size:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.macro_maps_locations_size));
-  fprintf (stderr, "Macro maps size:                     %5ld%c\n",
+  fprintf (stderr, "Macro maps size:                     " PRsa (5) "\n",
 	   SIZE_AMOUNT (macro_maps_size));
-  fprintf (stderr, "Duplicated maps locations size:      %5ld%c\n",
+  fprintf (stderr, "Duplicated maps locations size:      " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.duplicated_macro_maps_locations_size));
-  fprintf (stderr, "Total allocated maps size:           %5ld%c\n",
+  fprintf (stderr, "Total allocated maps size:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (total_allocated_map_size));
-  fprintf (stderr, "Total used maps size:                %5ld%c\n",
+  fprintf (stderr, "Total used maps size:                " PRsa (5) "\n",
 	   SIZE_AMOUNT (total_used_map_size));
-  fprintf (stderr, "Ad-hoc table size:                   %5ld%c\n",
+  fprintf (stderr, "Ad-hoc table size:                   " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.adhoc_table_size));
-  fprintf (stderr, "Ad-hoc table entries used:           %5ld%c\n",
+  fprintf (stderr, "Ad-hoc table entries used:           " PRsa (5) "\n",
 	   SIZE_AMOUNT (s.adhoc_table_entries_used));
-  fprintf (stderr, "optimized_ranges:                    %5xu%c\n",
+  fprintf (stderr, "optimized_ranges:                    " PRsa (5) "\n",
 	   SIZE_AMOUNT (line_table->num_optimized_ranges));
-  fprintf (stderr, "unoptimized_ranges:                  %5xu%c\n",
+  fprintf (stderr, "unoptimized_ranges:                  " PRsa (5) "\n",
 	   SIZE_AMOUNT (line_table->num_unoptimized_ranges));
 
   fprintf (stderr, "\n");
