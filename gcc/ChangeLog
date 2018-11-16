@@ -1,3 +1,7 @@
+2018-11-16  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/i386.md: Allow memory operands to ptwrite.
+
 2018-11-16  Michael Matz  <matz@suse.de>
 
 	* system.h (PRsa): New macro.
