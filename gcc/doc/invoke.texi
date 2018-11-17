@@ -2574,6 +2574,9 @@ This option is implied by the strict ISO C++ dialects: @option{-ansi},
 @opindex fimplicit-templates
 Never emit code for non-inline templates that are instantiated
 implicitly (i.e.@: by use); only emit code for explicit instantiations.
+If you use this option, you must take care to structure your code to
+include all the necessary explicit instantiations to avoid getting
+undefined symbols at link time.
 @xref{Template Instantiation}, for more information.
 
 @item -fno-implicit-inline-templates
