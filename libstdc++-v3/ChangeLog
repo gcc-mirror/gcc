@@ -1,3 +1,40 @@
+2018-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Implement std::pmr::synchronized_pool_resource
+	* config/abi/pre/gnu.ver: Add new symbols.
+	* include/std/memory_resource [_GLIBCXX_HAS_GTHREADS]
+	(__cpp_lib_memory_resource): Define to expected value, 201603.
+	(synchronized_pool_resource): New class.
+	[!_GLIBCXX_HAS_GTHREADS] (__cpp_lib_memory_resource): Define to 1.
+	* include/std/shared_mutex (__glibcxx_rwlock_rdlock)
+	(__glibcxx_rwlock_tryrdlock, __glibcxx_rwlock_wrlock)
+	(__glibcxx_rwlock_trywrlock, __glibcxx_rwlock_unlock)
+	(__glibcxx_rwlock_destroy, __glibcxx_rwlock_init)
+	(__glibcxx_rwlock_timedrdlock, __glibcxx_rwlock_timedwrlock): Define
+	weak symbols for POSIX rwlock functions.
+	(__shared_mutex_pthread): Use weak symbols.
+	* include/std/version (__cpp_lib_memory_resource): Define.
+	* src/c++17/memory_resource.cc [_GLIBCXX_HAS_GTHREADS]
+	(synchronized_pool_resource::_TPools): New class.
+	(destroy_TPools): New function for pthread_key_create destructor.
+	(synchronized_pool_resource::synchronized_pool_resource)
+	(synchronized_pool_resource::~synchronized_pool_resource)
+	(synchronized_pool_resource::release)
+	(synchronized_pool_resource::do_allocate)
+	(synchronized_pool_resource::do_deallocate): Define public members.
+	(synchronized_pool_resource::_M_thread_specific_pools)
+	(synchronized_pool_resource::_M_alloc_tpools)
+	(synchronized_pool_resource::_M_alloc_shared_tpools): Define private
+	members.
+	* testsuite/20_util/synchronized_pool_resource/allocate.cc: New test.
+	* testsuite/20_util/synchronized_pool_resource/cons.cc: New test.
+	* testsuite/20_util/synchronized_pool_resource/is_equal.cc: New test.
+	* testsuite/20_util/synchronized_pool_resource/multithreaded.cc: New
+	test.
+	* testsuite/20_util/synchronized_pool_resource/release.cc: New test.
+	* testsuite/performance/20_util/memory_resource/pools.cc: Add
+	multithreaded tests using pmr::synchronized_pool_resource.
+
 2018-11-16  Renlin Li  <renlin.li@arm.com>
 	    Tejas Belagod  <tejas.belagod@arm.com>
 

@@ -37,6 +37,7 @@
 #include <utility>			// pair, index_sequence
 #include <vector>			// vector
 #include <cstddef>			// size_t, max_align_t
+#include <shared_mutex>			// shared_mutex
 #include <debug/assertions.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -44,7 +45,13 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 namespace pmr
 {
-// #define __cpp_lib_memory_resource 201603
+#ifdef _GLIBCXX_HAS_GTHREADS
+  // Header and all contents are present.
+# define __cpp_lib_memory_resource 201603
+#else
+  // The pmr::synchronized_pool_resource type is missing.
+# define __cpp_lib_memory_resource 1
+#endif
 
   class memory_resource;
 
@@ -60,7 +67,9 @@ namespace pmr
 
   // Pool resource classes
   struct pool_options;
+#ifdef _GLIBCXX_HAS_GTHREADS
   class synchronized_pool_resource;
+#endif
   class unsynchronized_pool_resource;
   class monotonic_buffer_resource;
 
@@ -338,7 +347,72 @@ namespace pmr
     const int _M_npools;
   };
 
-  // TODO class synchronized_pool_resource
+#ifdef _GLIBCXX_HAS_GTHREADS
+  /// A thread-safe memory resource that manages pools of fixed-size blocks.
+  class synchronized_pool_resource : public memory_resource
+  {
+  public:
+    synchronized_pool_resource(const pool_options& __opts,
+				 memory_resource* __upstream)
+    __attribute__((__nonnull__));
+
+    synchronized_pool_resource()
+    : synchronized_pool_resource(pool_options(), get_default_resource())
+    { }
+
+    explicit
+    synchronized_pool_resource(memory_resource* __upstream)
+    __attribute__((__nonnull__))
+    : synchronized_pool_resource(pool_options(), __upstream)
+    { }
+
+    explicit
+    synchronized_pool_resource(const pool_options& __opts)
+    : synchronized_pool_resource(__opts, get_default_resource()) { }
+
+    synchronized_pool_resource(const synchronized_pool_resource&) = delete;
+
+    virtual ~synchronized_pool_resource();
+
+    synchronized_pool_resource&
+    operator=(const synchronized_pool_resource&) = delete;
+
+    void release();
+
+    memory_resource*
+    upstream_resource() const noexcept
+    __attribute__((__returns_nonnull__))
+    { return _M_impl.resource(); }
+
+    pool_options options() const noexcept { return _M_impl._M_opts; }
+
+  protected:
+    void*
+    do_allocate(size_t __bytes, size_t __alignment) override;
+
+    void
+    do_deallocate(void* __p, size_t __bytes, size_t __alignment) override;
+
+    bool
+    do_is_equal(const memory_resource& __other) const noexcept override
+    { return this == &__other; }
+
+  public:
+    // Thread-specific pools (only public for access by implementation details)
+    struct _TPools;
+
+  private:
+    _TPools* _M_alloc_tpools(lock_guard<shared_mutex>&);
+    _TPools* _M_alloc_shared_tpools(lock_guard<shared_mutex>&);
+    auto _M_thread_specific_pools() noexcept;
+
+    __pool_resource _M_impl;
+    __gthread_key_t _M_key;
+    // Linked list of thread-specific pools. All threads share _M_tpools[0].
+    _TPools* _M_tpools = nullptr;
+    mutable shared_mutex _M_mx;
+  };
+#endif
 
   /// A non-thread-safe memory resource that manages pools of fixed-size blocks.
   class unsynchronized_pool_resource : public memory_resource

@@ -896,6 +896,11 @@ namespace pmr
     return n + 1;
   }
 
+#ifdef _GLIBCXX_HAS_GTHREADS
+  using shared_lock = std::shared_lock<shared_mutex>;
+  using exclusive_lock = lock_guard<shared_mutex>;
+#endif
+
   } // namespace
 
   __pool_resource::
@@ -986,6 +991,292 @@ namespace pmr
       }
     return p;
   }
+
+#ifdef _GLIBCXX_HAS_GTHREADS
+  // synchronized_pool_resource members.
+
+  /* Notes on implementation and thread safety:
+   *
+   * Each synchronized_pool_resource manages an linked list of N+1 _TPools
+   * objects, where N is the number of threads using the pool resource.
+   * Each _TPools object has its own set of pools, with their own chunks.
+   * The first element of the list, _M_tpools[0], can be used by any thread.
+   * The rest of the list contains a _TPools object for each thread,
+   * accessed via the thread-specific key _M_key (and referred to for
+   * exposition as _M_tpools[_M_key]).
+   * The first element, _M_tpools[0], contains "orphaned chunks" which were
+   * allocated by a thread which has since exited, and so there is no
+   * _M_tpools[_M_key] for that thread.
+   * A thread can access its own thread-specific set of pools via _M_key
+   * while holding a shared lock on _M_mx. Accessing _M_impl._M_unpooled
+   * or _M_tpools[0] or any other thread's _M_tpools[_M_key] requires an
+   * exclusive lock.
+   * The upstream_resource() pointer can be obtained without a lock, but
+   * any dereference of that pointer requires an exclusive lock.
+   * The _M_impl._M_opts and _M_impl._M_npools members are immutable,
+   * and can safely be accessed concurrently.
+   */
+
+  extern "C" {
+    static void destroy_TPools(void*);
+  }
+
+  struct synchronized_pool_resource::_TPools
+  {
+    // Exclusive lock must be held in the thread where this constructor runs.
+    explicit
+    _TPools(synchronized_pool_resource& owner, exclusive_lock&)
+    : owner(owner), pools(owner._M_impl._M_alloc_pools())
+    {
+      // __builtin_printf("%p constructing\n", this);
+      __glibcxx_assert(pools);
+    }
+
+    // Exclusive lock must be held in the thread where this destructor runs.
+    ~_TPools()
+    {
+      __glibcxx_assert(pools);
+      if (pools)
+	{
+	  memory_resource* r = owner.upstream_resource();
+	  for (int i = 0; i < owner._M_impl._M_npools; ++i)
+	    pools[i].release(r);
+	  std::destroy_n(pools, owner._M_impl._M_npools);
+	  polymorphic_allocator<__pool_resource::_Pool> a(r);
+	  a.deallocate(pools, owner._M_impl._M_npools);
+	}
+      if (prev)
+	prev->next = next;
+      if (next)
+	next->prev = prev;
+    }
+
+    // Exclusive lock must be held in the thread where this function runs.
+    void move_nonempty_chunks()
+    {
+      __glibcxx_assert(pools);
+      if (!pools)
+	return;
+      memory_resource* r = owner.upstream_resource();
+      // move all non-empty chunks to the shared _TPools
+      for (int i = 0; i < owner._M_impl._M_npools; ++i)
+	for (auto& c : pools[i]._M_chunks)
+	  if (!c.empty())
+	    owner._M_tpools->pools[i]._M_chunks.insert(std::move(c), r);
+    }
+
+    synchronized_pool_resource& owner;
+    __pool_resource::_Pool* pools = nullptr;
+    _TPools* prev = nullptr;
+    _TPools* next = nullptr;
+
+    static void destroy(_TPools* p)
+    {
+      exclusive_lock l(p->owner._M_mx);
+      // __glibcxx_assert(p != p->owner._M_tpools);
+      p->move_nonempty_chunks();
+      polymorphic_allocator<_TPools> a(p->owner.upstream_resource());
+      p->~_TPools();
+      a.deallocate(p, 1);
+    }
+  };
+
+  // Called when a thread exits
+  extern "C" {
+    static void destroy_TPools(void* p)
+    {
+      using _TPools = synchronized_pool_resource::_TPools;
+      _TPools::destroy(static_cast<_TPools*>(p));
+    }
+  }
+
+  // Constructor
+  synchronized_pool_resource::
+  synchronized_pool_resource(const pool_options& opts,
+			     memory_resource* upstream)
+  : _M_impl(opts, upstream)
+  {
+    if (int err = __gthread_key_create(&_M_key, destroy_TPools))
+      __throw_system_error(err);
+    exclusive_lock l(_M_mx);
+    _M_tpools = _M_alloc_shared_tpools(l);
+  }
+
+  // Destructor
+  synchronized_pool_resource::~synchronized_pool_resource()
+  {
+    release();
+    __gthread_key_delete(_M_key); // does not run destroy_TPools
+  }
+
+  void
+  synchronized_pool_resource::release()
+  {
+    exclusive_lock l(_M_mx);
+    if (_M_tpools)
+      {
+	__gthread_key_delete(_M_key); // does not run destroy_TPools
+	__gthread_key_create(&_M_key, destroy_TPools);
+	polymorphic_allocator<_TPools> a(upstream_resource());
+	// destroy+deallocate each _TPools
+	do
+	  {
+	    _TPools* p = _M_tpools;
+	    _M_tpools = _M_tpools->next;
+	    p->~_TPools();
+	    a.deallocate(p, 1);
+	  }
+	while (_M_tpools);
+      }
+    // release unpooled memory
+    _M_impl.release();
+  }
+
+  // Caller must hold shared or exclusive lock to ensure the pointer
+  // isn't invalidated before it can be used.
+  auto
+  synchronized_pool_resource::_M_thread_specific_pools() noexcept
+  {
+    __pool_resource::_Pool* pools = nullptr;
+    if (auto tp = static_cast<_TPools*>(__gthread_getspecific(_M_key)))
+      {
+      pools = tp->pools;
+      __glibcxx_assert(tp->pools);
+      }
+    return pools;
+  }
+
+  // Override for memory_resource::do_allocate
+  void*
+  synchronized_pool_resource::
+  do_allocate(size_t bytes, size_t alignment)
+  {
+    const auto block_size = std::max(bytes, alignment);
+    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+      {
+	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
+	memory_resource* const r = upstream_resource();
+	const pool_options opts = _M_impl._M_opts;
+	{
+	  // Try to allocate from the thread-specific pool
+	  shared_lock l(_M_mx);
+	  if (auto pools = _M_thread_specific_pools()) // [[likely]]
+	    {
+	      // Need exclusive lock to replenish so use try_allocate:
+	      if (void* p = pools[index].try_allocate())
+		return p;
+	      // Need to take exclusive lock and replenish pool.
+	    }
+	  // Need to allocate or replenish thread-specific pools using
+	  // upstream resource, so need to hold exclusive lock.
+	}
+	// N.B. Another thread could call release() now lock is not held.
+	exclusive_lock excl(_M_mx);
+	if (!_M_tpools) // [[unlikely]]
+	  _M_tpools = _M_alloc_shared_tpools(excl);
+	auto pools = _M_thread_specific_pools();
+	if (!pools)
+	  pools = _M_alloc_tpools(excl)->pools;
+	return pools[index].allocate(r, opts);
+      }
+    exclusive_lock l(_M_mx);
+    return _M_impl.allocate(bytes, alignment); // unpooled allocation
+  }
+
+  // Override for memory_resource::do_deallocate
+  void
+  synchronized_pool_resource::
+  do_deallocate(void* p, size_t bytes, size_t alignment)
+  {
+    size_t block_size = std::max(bytes, alignment);
+    if (block_size <= _M_impl._M_opts.largest_required_pool_block)
+      {
+	const ptrdiff_t index = pool_index(block_size, _M_impl._M_npools);
+	__glibcxx_assert(index != -1);
+	{
+	  shared_lock l(_M_mx);
+	  auto pools = _M_thread_specific_pools();
+	  if (pools)
+	    {
+	      // No need to lock here, no other thread is accessing this pool.
+	      if (pools[index].deallocate(upstream_resource(), p))
+		return;
+	    }
+	  // Block might have come from a different thread's pool,
+	  // take exclusive lock and check every pool.
+	}
+	// TODO store {p, bytes, alignment} somewhere and defer returning
+	// the block to the correct thread-specific pool until we next
+	// take the exclusive lock.
+	exclusive_lock excl(_M_mx);
+	for (_TPools* t = _M_tpools; t != nullptr; t = t->next)
+	  {
+	    if (t->pools) // [[likely]]
+	      {
+		if (t->pools[index].deallocate(upstream_resource(), p))
+		  return;
+	      }
+	  }
+      }
+    exclusive_lock l(_M_mx);
+    _M_impl.deallocate(p, bytes, alignment);
+  }
+
+  // Allocate a thread-specific _TPools object and add it to the linked list.
+  auto
+  synchronized_pool_resource::_M_alloc_tpools(exclusive_lock& l)
+  -> _TPools*
+  {
+    __glibcxx_assert(_M_tpools != nullptr);
+    // dump_list(_M_tpools);
+    polymorphic_allocator<_TPools> a(upstream_resource());
+    _TPools* p = a.allocate(1);
+    bool constructed = false;
+    __try
+      {
+	a.construct(p, *this, l);
+	constructed = true;
+	// __glibcxx_assert(__gthread_getspecific(_M_key) == nullptr);
+	if (int err = __gthread_setspecific(_M_key, p))
+	  __throw_system_error(err);
+      }
+    __catch(...)
+      {
+	if (constructed)
+	  a.destroy(p);
+	a.deallocate(p, 1);
+	__throw_exception_again;
+      }
+    p->prev = _M_tpools;
+    p->next = _M_tpools->next;
+    _M_tpools->next = p;
+    if (p->next)
+      p->next->prev = p;
+    return p;
+  }
+
+  // Allocate the shared _TPools object, _M_tpools[0]
+  auto
+  synchronized_pool_resource::_M_alloc_shared_tpools(exclusive_lock& l)
+  -> _TPools*
+  {
+    __glibcxx_assert(_M_tpools == nullptr);
+    polymorphic_allocator<_TPools> a(upstream_resource());
+    _TPools* p = a.allocate(1);
+    __try
+      {
+	a.construct(p, *this, l);
+      }
+    __catch(...)
+      {
+	a.deallocate(p, 1);
+	__throw_exception_again;
+      }
+    // __glibcxx_assert(p->next == nullptr);
+    // __glibcxx_assert(p->prev == nullptr);
+    return p;
+  }
+#endif // _GLIBCXX_HAS_GTHREADS
 
   // unsynchronized_pool_resource member functions
 

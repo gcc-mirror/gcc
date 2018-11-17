@@ -118,6 +118,11 @@
 #define __cpp_lib_map_insertion 201411
 #define __cpp_lib_map_try_emplace 201411
 #define __cpp_lib_math_special_functions 201603L
+#ifdef _GLIBCXX_HAS_GTHREADS
+# define __cpp_lib_memory_resource 201603
+#else
+# define __cpp_lib_memory_resource 1
+#endif
 #define __cpp_lib_node_extract 201606
 #define __cpp_lib_nonmember_container_access 201411
 #define __cpp_lib_not_fn 201603
