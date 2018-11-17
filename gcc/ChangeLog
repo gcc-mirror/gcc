@@ -1,3 +1,9 @@
+2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/4025
+	* doc/invoke.texi (C++ Dialect Options): Clarify usage of
+	-fno-implicit-templates.
+
 2018-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/87546
