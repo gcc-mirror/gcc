@@ -1131,6 +1131,9 @@ header, no matter where it was found.  Code that comes before the
 system_header}} has no effect in the primary source file.
 @end itemize
 
+On some targets, such as RS/6000 AIX, GCC implicitly surrounds all
+system headers with an @samp{extern "C"} block when compiling as C++.
+
 @node Macros
 @chapter Macros
 

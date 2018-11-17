@@ -1,5 +1,11 @@
 2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR c++/4225
+	* doc/cpp.texi (System Headers): Add note about implicit
+	extern "C" block on targets that define SYSTEM_IMPLICIT_EXTERN_C.
+
+2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR c++/4025
 	* doc/invoke.texi (C++ Dialect Options): Clarify usage of
 	-fno-implicit-templates.
