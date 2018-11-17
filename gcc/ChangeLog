@@ -1,3 +1,8 @@
+2018-11-16  Jeff Law  <law@redhat.com>
+
+	* config/mn10300/mn10300.md (adddi3_degenerate): Remove bogus
+	gcc_assert.
+
 2018-11-16  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR middle-end/23197
