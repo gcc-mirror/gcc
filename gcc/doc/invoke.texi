@@ -8412,7 +8412,8 @@ If all calls to a given function are integrated, and the function is
 declared @code{static}, then the function is normally not output as
 assembler code in its own right.
 
-Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.  Also enabled
+by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -finline-functions-called-once
 @opindex finline-functions-called-once
@@ -8670,6 +8671,8 @@ Not enabled at any optimization level.
 When @option{-fgcse-after-reload} is enabled, a redundant load elimination
 pass is performed after reload.  The purpose of this pass is to clean up
 redundant spilling.
+
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -faggressive-loop-optimizations
 @opindex faggressive-loop-optimizations
@@ -9241,6 +9244,7 @@ to functions are constants and then optimizes accordingly.
 This optimization can substantially increase performance
 if the application has constants passed to functions.
 This flag is enabled by default at @option{-O2}, @option{-Os} and @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -fipa-cp-clone
 @opindex fipa-cp-clone
@@ -9251,12 +9255,14 @@ Because this optimization can create multiple copies of functions,
 it may significantly increase code size
 (see @option{--param ipcp-unit-growth=@var{value}}).
 This flag is enabled by default at @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -fipa-bit-cp
 @opindex fipa-bit-cp
 When enabled, perform interprocedural bitwise constant
-propagation. This flag is enabled by default at @option{-O2}. It
-requires that @option{-fipa-cp} is enabled.
+propagation. This flag is enabled by default at @option{-O2} and
+by @option{-fprofile-use} and @option{-fauto-profile}.
+It requires that @option{-fipa-cp} is enabled.  
 
 @item -fipa-vrp
 @opindex fipa-vrp
@@ -9455,7 +9461,8 @@ ENDDO
 @item -ftree-loop-distribute-patterns
 @opindex ftree-loop-distribute-patterns
 Perform loop distribution of patterns that can be code generated with
-calls to a library.  This flag is enabled by default at @option{-O3}.
+calls to a library.  This flag is enabled by default at @option{-O3}, and
+by @option{-fprofile-use} and @option{-fauto-profile}.
 
 This pass distributes the initialization loops and generates a call to
 memset zero.  For example, the loop
@@ -9584,12 +9591,14 @@ and @option{-ftree-slp-vectorize} if not explicitly specified.
 @item -ftree-loop-vectorize
 @opindex ftree-loop-vectorize
 Perform loop vectorization on trees. This flag is enabled by default at
-@option{-O3} and when @option{-ftree-vectorize} is enabled.
+@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+and @option{-fauto-profile}.
 
 @item -ftree-slp-vectorize
 @opindex ftree-slp-vectorize
 Perform basic block vectorization on trees. This flag is enabled by default at
-@option{-O3} and when @option{-ftree-vectorize} is enabled.
+@option{-O3} and by @option{-ftree-vectorize}, @option{-fprofile-use},
+and @option{-fauto-profile}.
 
 @item -fvect-cost-model=@var{model}
 @opindex fvect-cost-model
@@ -9663,6 +9672,7 @@ Perform predictive commoning optimization, i.e., reusing computations
 iterations of loops.
 
 This option is enabled at level @option{-O3}.
+It is also enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -fprefetch-loop-arrays
 @opindex fprefetch-loop-arrays
@@ -10276,15 +10286,22 @@ be inconsistent due to missed counter updates. When this option is specified,
 GCC uses heuristics to correct or smooth out such inconsistencies. By
 default, GCC emits an error message when an inconsistent profile is detected.
 
+This option is enabled by @option{-fauto-profile}.
+
 @item -fprofile-use
 @itemx -fprofile-use=@var{path}
 @opindex fprofile-use
 Enable profile feedback-directed optimizations, 
-and the following optimizations
-which are generally profitable only with profile feedback available:
-@option{-fbranch-probabilities}, @option{-fvpt},
-@option{-funroll-loops}, @option{-fpeel-loops}, @option{-ftracer}, 
-@option{-ftree-vectorize}, and @option{ftree-loop-distribute-patterns}.
+and the following optimizations, many of which
+are generally profitable only with profile feedback available:
+
+@gccoptlist{-fbranch-probabilities  -fprofile-values @gol
+-funroll-loops  -fpeel-loops  -ftracer  -fvpt @gol
+-finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp @gol
+-fpredictive-commoning  -fsplit-loops  -funswitch-loops @gol
+-fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize @gol
+-fvect-cost-model=dynamic  -ftree-loop-distribute-patterns @gol
+-fprofile-reorder-functions}
 
 Before you can use this option, you must first generate profiling information.
 @xref{Instrumentation Options}, for information about the
@@ -10294,7 +10311,7 @@ By default, GCC emits an error message if the feedback profiles do not
 match the source code.  This error can be turned into a warning by using
 @option{-Wno-error=coverage-mismatch}.  Note this may result in poorly
 optimized code.  Additionally, by default, GCC also emits a warning message if
-the feedback profiles do not exist (See @option{-Wmissing-profile}).
+the feedback profiles do not exist (see @option{-Wmissing-profile}).
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.
@@ -10303,14 +10320,16 @@ the profile feedback data files. See @option{-fprofile-dir}.
 @itemx -fauto-profile=@var{path}
 @opindex fauto-profile
 Enable sampling-based feedback-directed optimizations, 
-and the following optimizations
-which are generally profitable only with profile feedback available:
-@option{-fbranch-probabilities}, @option{-fvpt},
-@option{-funroll-loops}, @option{-fpeel-loops}, @option{-ftracer}, 
-@option{-ftree-vectorize},
-@option{-finline-functions}, @option{-fipa-cp}, @option{-fipa-cp-clone},
-@option{-fpredictive-commoning}, @option{-funswitch-loops},
-@option{-fgcse-after-reload}, and @option{-ftree-loop-distribute-patterns}.
+and the following optimizations,
+many of which are generally profitable only with profile feedback available:
+
+@gccoptlist{-fbranch-probabilities  -fprofile-values @gol
+-funroll-loops  -fpeel-loops  -ftracer  -fvpt @gol
+-finline-functions  -fipa-cp  -fipa-cp-clone  -fipa-bit-cp @gol
+-fpredictive-commoning  -fsplit-loops  -funswitch-loops @gol
+-fgcse-after-reload  -ftree-loop-vectorize  -ftree-slp-vectorize @gol
+-fvect-cost-model=dynamic  -ftree-loop-distribute-patterns @gol
+-fprofile-correction}
 
 @var{path} is the name of a file containing AutoFDO profile information.
 If omitted, it defaults to @file{fbdata.afdo} in the current directory.
@@ -10613,6 +10632,8 @@ used in one place: in @file{reorg.c}, instead of guessing which path a
 branch is most likely to take, the @samp{REG_BR_PROB} values are used to
 exactly determine which path is taken more often.
 
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
+
 @item -fprofile-values
 @opindex fprofile-values
 If combined with @option{-fprofile-arcs}, it adds code so that some
@@ -10621,7 +10642,8 @@ data about values of expressions in the program is gathered.
 With @option{-fbranch-probabilities}, it reads back the data gathered
 from profiling values of expressions for usage in optimizations.
 
-Enabled with @option{-fprofile-generate} and @option{-fprofile-use}.
+Enabled by @option{-fprofile-generate}, @option{-fprofile-use}, and
+@option{-fauto-profile}.
 
 @item -fprofile-reorder-functions
 @opindex fprofile-reorder-functions
@@ -10640,6 +10662,8 @@ With @option{-fbranch-probabilities}, it reads back the data gathered
 and actually performs the optimizations based on them.
 Currently the optimizations include specialization of division operations
 using the knowledge about the value of the denominator.
+
+Enabled with @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -frename-registers
 @opindex frename-registers
@@ -10666,7 +10690,7 @@ Perform tail duplication to enlarge superblock size.  This transformation
 simplifies the control flow of the function allowing other optimizations to do
 a better job.
 
-Enabled with @option{-fprofile-use}.
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -funroll-loops
 @opindex funroll-loops
@@ -10677,7 +10701,7 @@ It also turns on complete loop peeling (i.e.@: complete removal of loops with
 a small constant number of iterations).  This option makes code larger, and may
 or may not make it run faster.
 
-Enabled with @option{-fprofile-use}.
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -funroll-all-loops
 @opindex funroll-all-loops
@@ -10693,7 +10717,7 @@ roll much (from profile feedback or static analysis).  It also turns on
 complete loop peeling (i.e.@: complete removal of loops with small constant
 number of iterations).
 
-Enabled with @option{-O3} and/or @option{-fprofile-use}.
+Enabled by @option{-O3}, @option{-fprofile-use}, and @option{-fauto-profile}.
 
 @item -fmove-loop-invariants
 @opindex fmove-loop-invariants
@@ -10705,10 +10729,14 @@ at level @option{-O1} and higher, except for @option{-Og}.
 Split a loop into two if it contains a condition that's always true
 for one side of the iteration space and false for the other.
 
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
+
 @item -funswitch-loops
 @opindex funswitch-loops
 Move branches with loop invariant conditions out of the loop, with duplicates
 of the loop on both branches (modified according to result of the condition).
+
+Enabled by @option{-fprofile-use} and @option{-fauto-profile}.
 
 @item -ffunction-sections
 @itemx -fdata-sections
@@ -12096,7 +12124,9 @@ profile useful for later recompilation with profile feedback based
 optimization.  You must use @option{-fprofile-generate} both when
 compiling and when linking your program.
 
-The following options are enabled: @option{-fprofile-arcs}, @option{-fprofile-values}, @option{-fvpt}.
+The following options are enabled:
+@option{-fprofile-arcs}, @option{-fprofile-values},
+@option{-finline-functions}, and @option{-fipa-bit-cp}.
 
 If @var{path} is specified, GCC looks at the @var{path} to find
 the profile feedback data files. See @option{-fprofile-dir}.

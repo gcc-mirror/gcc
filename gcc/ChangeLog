@@ -1,3 +1,9 @@
+2018-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23197
+	* doc/invoke.texi (Optimize Options): Update options enabled by
+	fprofile-generate, -fprofile-use, and -fauto-profile.
+
 2018-11-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR target/87927
