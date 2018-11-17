@@ -1,3 +1,11 @@
+2018-11-17  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (epilogue_cfa_sp_offset): New.
+	(riscv_restore_reg): If restoring HARD_FRAME_POINTER_REGNUM, and
+	epilogue_cfa_sp_offset set, then add REG_CFA_DEF_CFA regnote.
+	(riscv_expand_epilogue): Initialize epilogue_cfa_sp_offset.  Set it
+	to step2 if frame_pointer_needed and step1 is 0.
+
 2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c++/4225
