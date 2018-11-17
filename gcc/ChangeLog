@@ -1,3 +1,12 @@
+2018-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Fix whitespace and line
+	breaks in @gccoptlist environments.
+	(Warning Options): Likewise.
+	(Optimize Options): Likewise.
+	(PowerPC SPE Options): Likewise.
+	(RS/6000 and PowerPC Options): Likewise.
+
 2018-11-16  Jeff Law  <law@redhat.com>
 
 	* config/mn10300/mn10300.md (adddi3_degenerate): Remove bogus
