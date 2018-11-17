@@ -1,3 +1,11 @@
+2018-11-17  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR middle-end/87854
+	* g++.dg/parse/concat1.C: Add dg-error for targets with size_t < 32
+	bits. Update comment.
+	* gcc.dg/concat2.c: Likewise.
+	* gcc.c-torture/compile/pr46534.c: Likewise.
+
 2018-11-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87269
