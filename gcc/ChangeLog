@@ -1,3 +1,11 @@
+2018-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87546
+	* tree-vect-patterns.c (vect_look_through_possible_promotion): Add
+	min_precision variable, initially set it to orig_precision, only does
+	something if op_type's precision is <= min_precision and update
+	min_precision whenever calling set_op.
+
 2018-11-16  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/87957

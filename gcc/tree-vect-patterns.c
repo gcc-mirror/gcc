@@ -367,6 +367,7 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
   tree res = NULL_TREE;
   tree op_type = TREE_TYPE (op);
   unsigned int orig_precision = TYPE_PRECISION (op_type);
+  unsigned int min_precision = orig_precision;
   stmt_vec_info caster = NULL;
   while (TREE_CODE (op) == SSA_NAME && INTEGRAL_TYPE_P (op_type))
     {
@@ -385,7 +386,7 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	 This copes with cases such as the result of an arithmetic
 	 operation being truncated before being stored, and where that
 	 arithmetic operation has been recognized as an over-widened one.  */
-      if (TYPE_PRECISION (op_type) <= orig_precision)
+      if (TYPE_PRECISION (op_type) <= min_precision)
 	{
 	  /* Use OP as the UNPROM described above if we haven't yet
 	     found a promotion, or if using the new input preserves the
@@ -393,7 +394,10 @@ vect_look_through_possible_promotion (vec_info *vinfo, tree op,
 	  if (!res
 	      || TYPE_PRECISION (unprom->type) == orig_precision
 	      || TYPE_SIGN (unprom->type) == TYPE_SIGN (op_type))
-	    unprom->set_op (op, dt, caster);
+	    {
+	      unprom->set_op (op, dt, caster);
+	      min_precision = TYPE_PRECISION (op_type);
+	    }
 	  /* Stop if we've already seen a promotion and if this
 	     conversion does more than change the sign.  */
 	  else if (TYPE_PRECISION (op_type)

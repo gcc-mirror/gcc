@@ -1,3 +1,8 @@
+2018-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87546
+	* gcc.dg/vect/O3-pr87546.c: New test.
+
 2018-11-17  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	PR middle-end/87854
