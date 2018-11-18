@@ -45,7 +45,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    provides part of the support for getting C++ file-scope static
    object constructed before entering `main'.  */
 
-#if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_STARTFILE_SPEC \
   "%{shared:; \
      pg|p|profile:%{static-pie:grcrt1.o%s;:gcrt1.o%s}; \
@@ -59,22 +58,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      :crtbegin.o%s} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s} \
-   " CRTOFFLOADBEGIN
-#else
-#define GNU_USER_TARGET_STARTFILE_SPEC \
-  "%{shared:; \
-     pg|p|profile:gcrt1.o%s; \
-     :crt1.o%s} \
-   crti.o%s \
-   %{static:crtbeginT.o%s; \
-     shared|pie|static-pie:crtbeginS.o%s; \
-     :crtbegin.o%s} \
-   %{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_start_preinit.o%s; \
-     fvtable-verify=std:vtv_start.o%s} \
-   " CRTOFFLOADBEGIN
-#endif
+     fvtable-verify=std:vtv_start.o%s} " \
+   CRTOFFLOADBEGIN
 #undef  STARTFILE_SPEC
 #define STARTFILE_SPEC GNU_USER_TARGET_STARTFILE_SPEC
 
@@ -84,7 +69,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    object constructed before entering `main', followed by a normal
    GNU userspace "finalizer" file, `crtn.o'.  */
 
-#if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
@@ -92,19 +76,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    %{static:crtend.o%s; \
      shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
      :crtend.o%s} \
-   crtn.o%s \
-   " CRTOFFLOADEND
-#else
-#define GNU_USER_TARGET_ENDFILE_SPEC \
-  "%{fvtable-verify=none:%s; \
-     fvtable-verify=preinit:vtv_end_preinit.o%s; \
-     fvtable-verify=std:vtv_end.o%s} \
-   %{static:crtend.o%s; \
-     shared|pie|static-pie:crtendS.o%s; \
-     :crtend.o%s} \
-   crtn.o%s \
-   " CRTOFFLOADEND
-#endif
+   crtn.o%s " \
+   CRTOFFLOADEND
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC
 

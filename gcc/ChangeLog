@@ -1,8 +1,14 @@
+2018-11-18  Alan Modra  <amodra@gmail.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Delete
+	!HAVE_LD_PIE variant.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Likewise.
+
 2018-11-17  Nick Clifton  <nickc@redhat.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR driver/31357
-	* doc/invoke.texi (Overall Options): Document that --help and 
+	* doc/invoke.texi (Overall Options): Document that --help and
 	--help=<value> options cannot be combined.
 
 2018-11-17  Jim Wilson  <jimw@sifive.com>
@@ -1626,7 +1632,7 @@
 	OMP_CLAUSE_{TASK,IN}_REDUCTION.  Diagnose invalid conditional
 	lastprivate.
 	(gimplify_adjust_omp_clauses_1): Ignore GOVD_NONTEMPORAL.  Handle
-	GOVD_MAP_ALLOC_ONLY and GOVD_MAP_FROM_ONLY.  
+	GOVD_MAP_ALLOC_ONLY and GOVD_MAP_FROM_ONLY.
 	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_NONTEMPORAL.  Handle
 	OMP_CLAUSE_{TASK,IN}_REDUCTION.
 	(gimplify_omp_task): Handle taskwait with depend clauses.
@@ -4816,7 +4822,7 @@
 	the REF_REVERSE_STORAGE_ORDER flag on the value.
 	(gimple_simplify) <GIMPLE_ASSIGN>: For BIT_FIELD_REF, propagate the
 	REF_REVERSE_STORAGE_ORDER flag and avoid simplifying if it is set.
-	
+
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63155
