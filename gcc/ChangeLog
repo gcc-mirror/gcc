@@ -1,3 +1,10 @@
+2018-11-17  Eric Gallager  <egallager@gcc.gnu.org>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR driver/31357
+	* doc/invoke.texi (Overall Options): Document that --help and 
+	--help=<value> options cannot be combined.
+
 2018-11-17  Jim Wilson  <jimw@sifive.com>
 
 	* config/riscv/riscv.c (epilogue_cfa_sp_offset): New.
