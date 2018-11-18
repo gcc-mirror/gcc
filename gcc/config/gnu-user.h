@@ -40,6 +40,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define CRTOFFLOADEND ""
 #endif
 
+#define GNU_USER_TARGET_CRTI "crti.o%s"
+#define GNU_USER_TARGET_CRTN "crtn.o%s"
+
 /* Provide a STARTFILE_SPEC appropriate for GNU userspace.  Here we add
    the GNU userspace magical crtbegin.o file (see crtstuff.c) which
    provides part of the support for getting C++ file-scope static
@@ -51,8 +54,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      static:crt1.o%s; \
      static-pie:rcrt1.o%s; \
      " PIE_SPEC ":Scrt1.o%s; \
-     :crt1.o%s} \
-   crti.o%s \
+     :crt1.o%s} " \
+   GNU_USER_TARGET_CRTI " \
    %{static:crtbeginT.o%s; \
      shared|static-pie|" PIE_SPEC ":crtbeginS.o%s; \
      :crtbegin.o%s} \
@@ -75,8 +78,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
      fvtable-verify=std:vtv_end.o%s} \
    %{static:crtend.o%s; \
      shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
-     :crtend.o%s} \
-   crtn.o%s " \
+     :crtend.o%s} " \
+   GNU_USER_TARGET_CRTN " " \
    CRTOFFLOADEND
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC GNU_USER_TARGET_ENDFILE_SPEC
@@ -106,10 +109,12 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
-#undef LINK_GCC_C_SEQUENCE_SPEC
-#define LINK_GCC_C_SEQUENCE_SPEC \
+#define GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC \
   "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
+
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define LINK_GCC_C_SEQUENCE_SPEC GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC
 
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED

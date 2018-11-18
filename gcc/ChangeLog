@@ -1,5 +1,13 @@
 2018-11-18  Alan Modra  <amodra@gmail.com>
 
+	* config/gnu-user.h (GNU_USER_TARGET_CRTI): Define.
+	(GNU_USER_TARGET_STARTFILE_SPEC): Use it here.
+	(GNU_USER_TARGET_CRTN): Define.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Use it here.
+	(GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC): Define.
+
+2018-11-18  Alan Modra  <amodra@gmail.com>
+
 	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Delete
 	!HAVE_LD_PIE variant.
 	(GNU_USER_TARGET_ENDFILE_SPEC): Likewise.
