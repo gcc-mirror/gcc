@@ -1,5 +1,10 @@
 2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/88073
+	* gfortran.dg/where_7.f90: New test.
+
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/70260
 	* gfortran.dg/proc_ptr_result_5.f90:  Add dg-error directive.
 	* gfortran.dg/protected_4.f90: Split line to allow for extra error.
