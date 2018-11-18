@@ -193,10 +193,8 @@ am__objects_1 = etc/c/curl.lo etc/c/sqlite3.lo etc/c/zlib.lo \
 	std/experimental/logger/package.lo \
 	std/experimental/typecons.lo std/file.lo std/format.lo \
 	std/functional.lo std/getopt.lo std/internal/cstring.lo \
-	std/internal/digest/sha_SSSE3.lo \
 	std/internal/math/biguintcore.lo \
 	std/internal/math/biguintnoasm.lo \
-	std/internal/math/biguintx86.lo \
 	std/internal/math/errorfunction.lo \
 	std/internal/math/gammafunction.lo std/internal/scopebuffer.lo \
 	std/internal/test/dummyrange.lo std/internal/test/range.lo \
@@ -282,10 +280,8 @@ am__DEPENDENCIES_1 = etc/c/curl.t.lo etc/c/sqlite3.t.lo \
 	std/experimental/logger/package.t.lo \
 	std/experimental/typecons.t.lo std/file.t.lo std/format.t.lo \
 	std/functional.t.lo std/getopt.t.lo std/internal/cstring.t.lo \
-	std/internal/digest/sha_SSSE3.t.lo \
 	std/internal/math/biguintcore.t.lo \
 	std/internal/math/biguintnoasm.t.lo \
-	std/internal/math/biguintx86.t.lo \
 	std/internal/math/errorfunction.t.lo \
 	std/internal/math/gammafunction.t.lo \
 	std/internal/scopebuffer.t.lo \
@@ -392,10 +388,8 @@ am__DEPENDENCIES_4 = etc/c/curl.t.o etc/c/sqlite3.t.o etc/c/zlib.t.o \
 	std/experimental/logger/package.t.o \
 	std/experimental/typecons.t.o std/file.t.o std/format.t.o \
 	std/functional.t.o std/getopt.t.o std/internal/cstring.t.o \
-	std/internal/digest/sha_SSSE3.t.o \
 	std/internal/math/biguintcore.t.o \
 	std/internal/math/biguintnoasm.t.o \
-	std/internal/math/biguintx86.t.o \
 	std/internal/math/errorfunction.t.o \
 	std/internal/math/gammafunction.t.o \
 	std/internal/scopebuffer.t.o std/internal/test/dummyrange.t.o \
@@ -788,9 +782,8 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/experimental/logger/multilogger.d \
 	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
 	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
-	std/getopt.d std/internal/cstring.d std/internal/digest/sha_SSSE3.d \
-	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
-	std/internal/math/biguintx86.d std/internal/math/errorfunction.d \
+	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
+	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
 	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
 	std/internal/test/dummyrange.d std/internal/test/range.d \
 	std/internal/test/uda.d std/internal/unicode_comp.d \
@@ -1032,16 +1025,11 @@ std/internal/$(am__dirstamp):
 	@$(MKDIR_P) std/internal
 	@: > std/internal/$(am__dirstamp)
 std/internal/cstring.lo: std/internal/$(am__dirstamp)
-std/internal/digest/$(am__dirstamp):
-	@$(MKDIR_P) std/internal/digest
-	@: > std/internal/digest/$(am__dirstamp)
-std/internal/digest/sha_SSSE3.lo: std/internal/digest/$(am__dirstamp)
 std/internal/math/$(am__dirstamp):
 	@$(MKDIR_P) std/internal/math
 	@: > std/internal/math/$(am__dirstamp)
 std/internal/math/biguintcore.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/biguintnoasm.lo: std/internal/math/$(am__dirstamp)
-std/internal/math/biguintx86.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/errorfunction.lo: std/internal/math/$(am__dirstamp)
 std/internal/math/gammafunction.lo: std/internal/math/$(am__dirstamp)
 std/internal/scopebuffer.lo: std/internal/$(am__dirstamp)
@@ -1174,8 +1162,6 @@ mostlyclean-compile:
 	-rm -f std/experimental/logger/*.lo
 	-rm -f std/internal/*.$(OBJEXT)
 	-rm -f std/internal/*.lo
-	-rm -f std/internal/digest/*.$(OBJEXT)
-	-rm -f std/internal/digest/*.lo
 	-rm -f std/internal/math/*.$(OBJEXT)
 	-rm -f std/internal/math/*.lo
 	-rm -f std/internal/test/*.$(OBJEXT)
@@ -1401,7 +1387,6 @@ clean-libtool:
 	-rm -rf std/experimental/allocator/building_blocks/.libs std/experimental/allocator/building_blocks/_libs
 	-rm -rf std/experimental/logger/.libs std/experimental/logger/_libs
 	-rm -rf std/internal/.libs std/internal/_libs
-	-rm -rf std/internal/digest/.libs std/internal/digest/_libs
 	-rm -rf std/internal/math/.libs std/internal/math/_libs
 	-rm -rf std/internal/test/.libs std/internal/test/_libs
 	-rm -rf std/internal/windows/.libs std/internal/windows/_libs
@@ -1529,7 +1514,6 @@ distclean-generic:
 	-rm -f std/experimental/allocator/building_blocks/$(am__dirstamp)
 	-rm -f std/experimental/logger/$(am__dirstamp)
 	-rm -f std/internal/$(am__dirstamp)
-	-rm -f std/internal/digest/$(am__dirstamp)
 	-rm -f std/internal/math/$(am__dirstamp)
 	-rm -f std/internal/test/$(am__dirstamp)
 	-rm -f std/internal/windows/$(am__dirstamp)

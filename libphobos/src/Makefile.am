@@ -156,9 +156,8 @@ PHOBOS_DSOURCES = etc/c/curl.d etc/c/sqlite3.d etc/c/zlib.d \
 	std/experimental/logger/multilogger.d \
 	std/experimental/logger/nulllogger.d std/experimental/logger/package.d \
 	std/experimental/typecons.d std/file.d std/format.d std/functional.d \
-	std/getopt.d std/internal/cstring.d std/internal/digest/sha_SSSE3.d \
-	std/internal/math/biguintcore.d std/internal/math/biguintnoasm.d \
-	std/internal/math/biguintx86.d std/internal/math/errorfunction.d \
+	std/getopt.d std/internal/cstring.d std/internal/math/biguintcore.d \
+	std/internal/math/biguintnoasm.d std/internal/math/errorfunction.d \
 	std/internal/math/gammafunction.d std/internal/scopebuffer.d \
 	std/internal/test/dummyrange.d std/internal/test/range.d \
 	std/internal/test/uda.d std/internal/unicode_comp.d \
