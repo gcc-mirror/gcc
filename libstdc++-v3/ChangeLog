@@ -1,3 +1,17 @@
+2018-11-18  Michele Pezzutti <mpezz@tiscali.it>
+	    Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	PR libstdc++/83566 - cyl_bessel_j returns wrong result for x>1000
+	for high orders.
+	* include/tr1/bessel_function.tcc: Perform no fewer than nu/2 iterations
+	of the asymptotic series (nu is the Bessel order).
+	* testsuite/tr1/5_numerical_facilities/special_functions/
+	09_cyl_bessel_j/check_value.cc: Add tests at nu=100, 1000<=x<=2000.
+	* testsuite/tr1/5_numerical_facilities/special_functions/	
+	11_cyl_neumann/check_value.cc: Ditto.
+	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Ditto.
+	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Ditto.
+
 2018-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Implement std::pmr::synchronized_pool_resource
