@@ -1,4 +1,4 @@
-2018-11-17  Eric Gallager  <egallager@gcc.gnu.org>
+2018-11-17  Nick Clifton  <nickc@redhat.com>
 	    Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR driver/31357
