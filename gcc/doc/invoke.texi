@@ -1676,7 +1676,9 @@ optimization options, use:
 
 The @option{--help=} option can be repeated on the command line.  Each
 successive use displays its requested class of options, skipping
-those that have already been displayed.
+those that have already been displayed.  If @option{--help} is also
+specified anywhere on the command line then this takes precedence
+over any @option{--help=} option.
 
 If the @option{-Q} option appears on the command line before the
 @option{--help=} option, then the descriptive text displayed by
