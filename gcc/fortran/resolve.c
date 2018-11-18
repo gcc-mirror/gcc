@@ -11420,10 +11420,11 @@ start:
 	      t = gfc_check_vardef_context (e, false, false, false,
 					    _("pointer assignment"));
 	    gfc_free_expr (e);
+
+	    t = gfc_check_pointer_assign (code->expr1, code->expr2, !t) && t;
+
 	    if (!t)
 	      break;
-
-	    gfc_check_pointer_assign (code->expr1, code->expr2);
 
 	    /* Assigning a class object always is a regular assign.  */
 	    if (code->expr2->ts.type == BT_CLASS
@@ -12540,6 +12541,9 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
     {
       gfc_error ("Function %qs at %L cannot have an initializer",
 		 sym->name, &sym->declared_at);
+
+      /* Make sure no second error is issued for this.  */
+      sym->value->error = 1;
       return false;
     }
 

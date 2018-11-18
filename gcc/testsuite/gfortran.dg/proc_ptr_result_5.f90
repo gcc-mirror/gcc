@@ -14,6 +14,6 @@ contains
      logical(1) function f()
      end function
    end interface
-   f = .true._1
+   f = .true._1 ! { dg-error "Illegal assignment" }
  end function f
 end program test
