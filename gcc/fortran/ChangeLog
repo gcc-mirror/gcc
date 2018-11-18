@@ -1,5 +1,11 @@
 2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
+	PR fortran/88073
+	* frontend-passes.c (combine_array_constructor): Do not do
+	anything if in a WHERE statement.
+
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
 	PR fortran/70260
 	* expr.c (gfc_check_assign): Reject assigning to an external
 	symbol.
