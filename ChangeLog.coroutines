@@ -1,5 +1,10 @@
 2018-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/testsuite/g++.dg/coroutines/coro.h: Migrate to use the
+	builtin functions declared to implement the core library functions.
+
+2018-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/c-family/c-cppbuiltin.c (c_cpp_builtins): Update coroutines
 	version to 201806.
 	* gcc/testsuite/g++.dg/coroutines/coro-missing-ret-void.C: Update

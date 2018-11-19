@@ -17,85 +17,70 @@ template<typename _R, typename...> struct coroutine_traits {
 template <typename Promise = void> struct coroutine_handle;
 
 template <> struct coroutine_handle<void> {
-    protected:
-      // shown as explicit type, could move to simple
-      // void pointer when __builtin_coro_X are implemented
-      struct __resume_data {
-	// the coroutine resumer (let's cross the streams).
-	void (*__resume) (__resume_data *p);
-	// (Gozer) the destructor.
-	void (*__destroy) (__resume_data *p);
-	// -1: unstarted
-	//  0: final-suspend
-	// N>0: other suspend-point
-        int __resume_at;
-      };
-    public:
+  public:
       // 21.11.2.1 construct/reset
-      constexpr coroutine_handle () noexcept
-		: __rd (0) {}
-      constexpr coroutine_handle (decltype(nullptr) __rd) noexcept
-		: __rd (__rd) {}
-      coroutine_handle &operator= (decltype(nullptr) __rd) noexcept {
-	this->__rd = __rd; return *this;
-      }
+  constexpr coroutine_handle () noexcept
+    : __handle (0) {}
+  constexpr coroutine_handle (decltype(nullptr) __h) noexcept
+    : __handle (__h) {}
+  coroutine_handle &operator= (decltype(nullptr)) noexcept {
+    __handle = nullptr;
+    return *this;
+  }
 
-    public:
-     // 21.11.2.2 export/import
-      constexpr void *address () const noexcept {
-        return __rd;
-      }
-      constexpr static coroutine_handle from_address (void *addr) noexcept {
-        coroutine_handle __self;
-	__self.__rd = static_cast<struct __resume_data *>(addr);
-	return __self;
-        // return coroutine_handle (__rd);
-      }
-    public:
+  public:
+    // 21.11.2.2 export/import
+    constexpr void *address () const noexcept { return __handle; }
+    constexpr static coroutine_handle from_address (void *__a) noexcept {
+      coroutine_handle __self;
+      __self.__handle = __a;
+      return __self;
+    }
+  public:
       // 21.11.2.3 observers
-      constexpr explicit operator bool () const noexcept {
-        return bool (__rd);
-      }
-      bool done () const noexcept {
-	// __builtin_coro_done (__rd)
-	return !__rd->__resume_at;
-      }
+    constexpr explicit operator bool () const noexcept {
+      return bool (__handle);
+    }
+    bool done () const noexcept {
+      return __builtin_coro_done (__handle);
+    }
       // 21.11.2.4 resumption
-      void operator () () const { resume (); }
-      void resume () const {
-	// __builtin_coro_resume (__rd)
-	__rd->__resume (__rd);
-      }
-      void destroy () const {
-	// __builtin_coro_destroy (__rd)
-	__rd->__destroy (__rd);
-      }
-    protected:
-      __resume_data *__rd;
+    void operator () () const { resume (); }
+    void resume () const {
+      __builtin_coro_resume (__handle);
+    }
+    void destroy () const {
+      __builtin_coro_destroy (__handle);
+    }
+  protected:
+    void *__handle;
 };
 
-template <class Promise>
+template <class _Promise>
 struct coroutine_handle : coroutine_handle<> {
   // 21.11.2.1 construct/reset
   using coroutine_handle<>::coroutine_handle;
-  static coroutine_handle from_promise(Promise &p){
-    // __builtin_coro_from_promise
+  static coroutine_handle from_promise(_Promise &p) {
     coroutine_handle __self;
-    __self.__rd = reinterpret_cast<struct __resume_data *>
-                  ((char *)&p - sizeof (__resume_data));
+    __self.__handle = 
+      __builtin_coro_promise((char *)&p,  __alignof(_Promise), true);
     return __self;
   }
-  coroutine_handle& operator=(decltype(nullptr)) noexcept;
+  coroutine_handle& operator=(decltype(nullptr)) noexcept {
+    coroutine_handle<>::operator=(nullptr);
+    return *this;
+  }
   // 21.11.2.2 export/import
-  constexpr static coroutine_handle from_address(void* addr){
+  constexpr static coroutine_handle from_address(void* __a){
     coroutine_handle __self;
-    __self.__rd = static_cast<struct __resume_data *>(addr);;
+    __self.__handle = __a;
     return __self;
   }
   // 21.11.2.5 promise access
-  Promise& promise() const {
-    char *t = (char *)this + sizeof (__resume_data);
-    return reinterpret_cast<Promise &>(t);
+  _Promise& promise() const {
+    void * __t = __builtin_coro_promise(this->__handle,
+					__alignof(_Promise), false);
+    return *static_cast<_Promise*>(__t);
   }
 };
 
