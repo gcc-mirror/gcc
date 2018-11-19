@@ -1,3 +1,12 @@
+2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/cuintp.c (UI_From_gnu): Remove code for 32-bit hosts.
+
+2018-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the switch
+	-fnon-call-exceptions passed on the command line in -gnatp mode.
+
 2018-11-14  Ed Schonberg  <schonberg@adacore.com>
 
 	* exp_util.ads, exp_util.adb: Change the profile of
@@ -6,11 +15,6 @@
 	that operand contains uplevel references.
 	* exp_ch4.adb (Expand_Boolean_Operation): Use this new profile.
 	* exp_pakd.adb (Expand_Packed_Boolean_Operator): Ditto.
-
-2018-11-15  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the switch
-	-fnon-call-exceptions passed on the command line in -gnatp mode.
 
 2018-11-14  Patrick Bernardi  <bernardi@adacore.com>
 
