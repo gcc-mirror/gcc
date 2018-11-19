@@ -7317,7 +7317,7 @@ or @code{__pointer__} for the mode used to represent pointers.
 
 @item packed
 @cindex @code{packed} type attribute
-This attribute, attached to @code{struct}, @code{union}, or C++ @code{class}
+This attribute, attached to a @code{struct}, @code{union}, or C++ @code{class}
 type definition, specifies that each of its members (other than zero-width
 bit-fields) is placed to minimize the memory required.  This is equivalent
 to specifying the @code{packed} attribute on each of the members.
@@ -7349,7 +7349,7 @@ struct __attribute__ ((__packed__)) my_packed_struct
   @};
 @end smallexample
 
-You may only specify the @code{packed} attribute attribute on the definition
+You may only specify the @code{packed} attribute on the definition
 of an @code{enum}, @code{struct}, @code{union}, or @code{class}, 
 not on a @code{typedef} that does not also define the enumerated type,
 structure, union, or class.
