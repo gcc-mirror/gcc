@@ -1,3 +1,11 @@
+2018-11-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/40498
+	* doc/extend.texi (Common Function Attributes): Document that
+	no_instrument_function applies to -p and -pg, too.
+	* doc/invoke.texi (Instrumentation Options): Add cross-references
+	to docs for -p, -pg, and -finstrument-functions.
+
 2018-11-18  Alan Modra  <amodra@gmail.com>
 
 	* config/gnu-user.h (GNU_USER_TARGET_CRTI): Define.
