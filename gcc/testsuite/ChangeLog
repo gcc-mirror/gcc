@@ -1,3 +1,8 @@
+2018-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87229
+	* g++.dg/lto/pr87229_0.C: New testcase.
+
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/gcov/pr84548.C: Remove remove-gcda.
