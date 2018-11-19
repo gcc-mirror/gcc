@@ -1,3 +1,18 @@
+2018-11-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/87855
+	Also implement P0602R4 (variant and optional
+	should propagate copy/move triviality) for std::optional.
+	* include/std/optional (_Optional_payload): Change
+	the main constraints to check constructibility in
+	addition to assignability.
+	(operator=): Make constexpr.
+	(_M_reset): Likewise.
+	(_M_construct): Likewise.
+	(operator->): Likewise.
+	* testsuite/20_util/optional/assignment/8.cc: Adjust.
+	* testsuite/20_util/optional/assignment/9.cc: New.
+
 2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88084 - Implement LWG 2777
