@@ -1,3 +1,11 @@
+2018-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/87039
+	* g++.dg/gomp/pr78363-4.C: New test.
+	* g++.dg/gomp/pr78363-5.C: New test.
+	* g++.dg/gomp/pr78363-6.C: New test.
+	* g++.dg/gomp/pr78363-7.C: New test.
+
 2018-11-19  Richard Biener  <rguenther@suse.de>
 
 	PR lto/87229

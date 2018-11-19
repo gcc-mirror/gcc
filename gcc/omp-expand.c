@@ -56,7 +56,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
-#include "debug.h"
 #include "stringpool.h"
 #include "attribs.h"
 
@@ -517,27 +516,44 @@ parallel_needs_hsa_kernel_p (struct omp_region *region)
    function will be emitted with the correct lexical scope.  */
 
 static void
-adjust_context_and_scope (tree entry_block, tree child_fndecl)
+adjust_context_and_scope (struct omp_region *region, tree entry_block,
+			  tree child_fndecl)
 {
+  tree parent_fndecl = NULL_TREE;
+  gimple *entry_stmt;
+  /* OMP expansion expands inner regions before outer ones, so if
+     we e.g. have explicit task region nested in parallel region, when
+     expanding the task region current_function_decl will be the original
+     source function, but we actually want to use as context the child
+     function of the parallel.  */
+  for (region = region->outer;
+       region && parent_fndecl == NULL_TREE; region = region->outer)
+    switch (region->type)
+      {
+      case GIMPLE_OMP_PARALLEL:
+      case GIMPLE_OMP_TASK:
+      case GIMPLE_OMP_TEAMS:
+	entry_stmt = last_stmt (region->entry);
+	parent_fndecl = gimple_omp_taskreg_child_fn (entry_stmt);
+	break;
+      case GIMPLE_OMP_TARGET:
+	entry_stmt = last_stmt (region->entry);
+	parent_fndecl
+	  = gimple_omp_target_child_fn (as_a <gomp_target *> (entry_stmt));
+	break;
+      default:
+	break;
+      }
+
+  if (parent_fndecl == NULL_TREE)
+    parent_fndecl = current_function_decl;
+  DECL_CONTEXT (child_fndecl) = parent_fndecl;
+
   if (entry_block != NULL_TREE && TREE_CODE (entry_block) == BLOCK)
     {
       tree b = BLOCK_SUPERCONTEXT (entry_block);
-
       if (TREE_CODE (b) == BLOCK)
         {
-	  tree parent_fndecl;
-
-	  /* Follow supercontext chain until the parent fndecl
-	     is found.  */
-	  for (parent_fndecl = BLOCK_SUPERCONTEXT (b);
-	       TREE_CODE (parent_fndecl) == BLOCK;
-	       parent_fndecl = BLOCK_SUPERCONTEXT (parent_fndecl))
-	    ;
-
-	  gcc_assert (TREE_CODE (parent_fndecl) == FUNCTION_DECL);
-
-	  DECL_CONTEXT (child_fndecl) = parent_fndecl;
-
 	  DECL_CHAIN (child_fndecl) = BLOCK_VARS (b);
 	  BLOCK_VARS (b) = child_fndecl;
 	}
@@ -722,8 +738,6 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     t1 = build_fold_addr_expr (t);
   tree child_fndecl = gimple_omp_parallel_child_fn (entry_stmt);
   t2 = build_fold_addr_expr (child_fndecl);
-
-  adjust_context_and_scope (gimple_block (entry_stmt), child_fndecl);
 
   vec_alloc (args, 4 + vec_safe_length (ws_args));
   args->quick_push (t2);
@@ -951,8 +965,6 @@ expand_teams_call (basic_block bb, gomp_teams *entry_stmt)
     t1 = build_fold_addr_expr (t);
   tree child_fndecl = gimple_omp_teams_child_fn (entry_stmt);
   tree t2 = build_fold_addr_expr (child_fndecl);
-
-  adjust_context_and_scope (gimple_block (entry_stmt), child_fndecl);
 
   vec<tree, va_gc> *args;
   vec_alloc (args, 5);
@@ -1412,11 +1424,6 @@ expand_omp_taskreg (struct omp_region *region)
       else
 	block = gimple_block (entry_stmt);
 
-      /* Make sure to generate early debug for the function before
-         outlining anything.  */
-      if (! gimple_in_ssa_p (cfun))
-	(*debug_hooks->early_global_decl) (cfun->decl);
-
       new_bb = move_sese_region_to_fn (child_cfun, entry_bb, exit_bb, block);
       if (exit_bb)
 	single_succ_edge (new_bb)->flags = EDGE_FALLTHRU;
@@ -1496,6 +1503,8 @@ expand_omp_taskreg (struct omp_region *region)
 	  dump_function_to_file (child_fn, dump_file, dump_flags);
 	}
     }
+
+  adjust_context_and_scope (region, gimple_block (entry_stmt), child_fn);
 
   if (gimple_code (entry_stmt) == GIMPLE_OMP_PARALLEL)
     expand_parallel_call (region, new_bb,
@@ -7399,11 +7408,6 @@ expand_omp_target (struct omp_region *region)
 	  gsi_remove (&gsi, true);
 	}
 
-      /* Make sure to generate early debug for the function before
-         outlining anything.  */
-      if (! gimple_in_ssa_p (cfun))
-	(*debug_hooks->early_global_decl) (cfun->decl);
-
       /* Move the offloading region into CHILD_CFUN.  */
 
       block = gimple_block (entry_stmt);
@@ -7480,6 +7484,8 @@ expand_omp_target (struct omp_region *region)
 	  dump_function_header (dump_file, child_fn, dump_flags);
 	  dump_function_to_file (child_fn, dump_file, dump_flags);
 	}
+
+      adjust_context_and_scope (region, gimple_block (entry_stmt), child_fn);
     }
 
   /* Emit a library call to launch the offloading region, or do data
@@ -7976,11 +7982,6 @@ grid_expand_target_grid_body (struct omp_region *target)
   cfun->function_end_locus = gimple_location (tgt_stmt);
   init_tree_ssa (cfun);
   pop_cfun ();
-
-  /* Make sure to generate early debug for the function before
-     outlining anything.  */
-  if (! gimple_in_ssa_p (cfun))
-    (*debug_hooks->early_global_decl) (cfun->decl);
 
   tree old_parm_decl = DECL_ARGUMENTS (kern_fndecl);
   gcc_assert (!DECL_CHAIN (old_parm_decl));
