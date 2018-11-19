@@ -2268,12 +2268,14 @@ free_enum_values ()
   enum_values_freed = true;
   unsigned int i;
   for (i = 0; i < odr_types.length (); i++)
-    if (odr_types[i] && TREE_CODE (odr_types[i]->type) == ENUMERAL_TYPE)
+    if (odr_types[i])
       {
-	TYPE_VALUES (odr_types[i]->type) = NULL;
+	if (TREE_CODE (odr_types[i]->type) == ENUMERAL_TYPE)
+	  TYPE_VALUES (odr_types[i]->type) = NULL;
 	if (odr_types[i]->types)
           for (unsigned int j = 0; j < odr_types[i]->types->length (); j++)
-	    TYPE_VALUES ((*odr_types[i]->types)[j]) = NULL;
+	    if (TREE_CODE ((*odr_types[i]->types)[j]) == ENUMERAL_TYPE)
+	      TYPE_VALUES ((*odr_types[i]->types)[j]) = NULL;
       }
   enum_values_freed = true;
 }

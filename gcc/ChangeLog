@@ -1,3 +1,8 @@
+2018-11-19  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/87957
+	* ipa-devirt.c (free_enum_values): Do not ICE on ODR vilations.
+
 2018-11-19  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR driver/50250
