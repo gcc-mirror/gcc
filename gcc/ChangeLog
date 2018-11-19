@@ -1,3 +1,8 @@
+2018-11-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* tree-vect-loop.c (vect_transform_loop): Disable further unrolling
+	of the loop if vf is non-constant.
+
 2018-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/87025

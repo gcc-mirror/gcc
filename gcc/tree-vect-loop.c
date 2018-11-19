@@ -8515,6 +8515,15 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* Loops vectorized with a variable factor won't benefit from
+     unrolling/peeling.  */
+  if (!vf.is_constant ())
+    {
+      loop->unroll = 1;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Disabling unrolling due to"
+			 " variable-length vectorization factor\n");
+    }
   /* Free SLP instances here because otherwise stmt reference counting
      won't work.  */
   slp_instance instance;
