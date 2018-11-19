@@ -1,5 +1,17 @@
 2018-11-19  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/c-family/c-cppbuiltin.c (c_cpp_builtins): Update coroutines
+	version to 201806.
+	* gcc/testsuite/g++.dg/coroutines/coro-missing-ret-void.C: Update
+	to cater for n4775 changes to coro.h.  Move bad promise example to
+	this file from coro.h.
+	* gcc/testsuite/g++.dg/coroutines/coro-pre-proc.C: Amend to version
+	to 201806.
+	* gcc/testsuite/g++.dg/coroutines/coro.h: Update to n4775. Remove
+	examples of coroutine and promise classes.
+
+2018-11-19  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r266264.
 
 2018-11-03  Iain Sandoe  <iain@sandoe.co.uk>

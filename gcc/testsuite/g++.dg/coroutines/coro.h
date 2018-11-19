@@ -1,13 +1,12 @@
-
-#ifndef __CORO_TESTSUITE_HEADER_A
-#define __CORO_TESTSUITE_HEADER_A
+#ifndef __CORO_H_N4775
+#define __CORO_H_N4775
 
 // Fragments (with short-cuts) to mimic enough of the library header to
 // make some progress.
 
 namespace std {
 namespace experimental {
-inline namespace coroutines_n4760 {
+inline namespace coroutines_n4775 {
 
 // 21.11.1 coroutine traits
 template<typename _R, typename...> struct coroutine_traits {
@@ -114,44 +113,6 @@ struct suspend_never {
   void await_resume() {}
 };
 
-}}} // namespace std::experimental::coroutines_n4760
+}}} // namespace std::experimental::coroutines_n4775
 
-namespace coro = std::experimental::coroutines_n4760;
-
-struct Coro {
-  coro::coroutine_handle<> handle;
-  Coro (coro::coroutine_handle<> handle) : handle (handle) {}
-  struct Promise {
-    coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
-    Coro get_return_object() {
-      return Coro (coro::coroutine_handle<Promise>::from_promise (*this));
-    }
-    void return_void() {};
-    void unhandled_exception() { /*std::terminate();*/ };
-  };
-};
-
-template<> struct coro::coroutine_traits<Coro> {
-    using promise_type = Coro::Promise;
-};
-
-/* Diagose missing return_void() in the promise type.  */
-struct MissingRetVoid {
-  coro::coroutine_handle<> handle;
-  MissingRetVoid (coro::coroutine_handle<> handle) : handle (handle) {}
-  struct missing_retvoid {
-    coro::suspend_never initial_suspend() { return {}; }
-    coro::suspend_never final_suspend() { return {}; }
-    MissingRetVoid get_return_object() {
-      return MissingRetVoid (coro::coroutine_handle<missing_retvoid>::from_promise (*this));
-    }
-    void unhandled_exception() { /*std::terminate();*/ };
-  };
-};
-
-template<> struct coro::coroutine_traits<MissingRetVoid> {
-    using promise_type = MissingRetVoid::missing_retvoid;
-};
-
-#endif
+#endif // __CORO_H_N4775

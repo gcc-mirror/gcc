@@ -4,6 +4,6 @@
 #error "coroutines should engaged."
 #endif
 
-#if __cpp_coroutines != 201803L
+#if __cpp_coroutines != 201806L
 #error "coroutine version out of sync."
 #endif
