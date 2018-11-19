@@ -725,7 +725,8 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
     /* We need a new temporary; don't take this shortcut.  */;
   else if (same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (e)))
     {
-      if (same_type_p (type, TREE_TYPE (e)))
+      tree etype = TREE_TYPE (e);
+      if (same_type_p (type, etype))
 	/* The call to fold will not always remove the NOP_EXPR as
 	   might be expected, since if one of the types is a typedef;
 	   the comparison in fold is just equality of pointers, not a
@@ -743,7 +744,14 @@ ocp_convert (tree type, tree expr, int convtype, int flags,
 	{
 	  /* Don't build a NOP_EXPR of class type.  Instead, change the
 	     type of the temporary.  */
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
 	  TREE_TYPE (e) = TREE_TYPE (TARGET_EXPR_SLOT (e)) = type;
+	  return e;
+	}
+      else if (TREE_CODE (e) == CONSTRUCTOR)
+	{
+	  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, etype));
+	  TREE_TYPE (e) = type;
 	  return e;
 	}
       else
@@ -1679,7 +1687,7 @@ build_expr_type_conversion (int desires, tree expr, bool complain)
       && (desires & WANT_INT)
       && !(desires & WANT_NULL))
     {
-      source_location loc =
+      location_t loc =
 	expansion_point_location_if_in_system_header (input_location);
 
       warning_at (loc, OPT_Wconversion_null,

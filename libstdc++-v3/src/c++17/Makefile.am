@@ -63,6 +63,11 @@ AM_CXXFLAGS = \
 AM_MAKEFLAGS = \
 	"gxx_include_dir=$(gxx_include_dir)"
 
+memory_resource.lo: memory_resource.cc
+	$(LTCXXCOMPILE) -fimplicit-templates -c $< -o $@
+memory_resource.o: memory_resource.cc
+	$(CXXCOMPILE) -fimplicit-templates -c $< -o $@
+
 # Libtool notes
 
 # 1) In general, libtool expects an argument such as `--tag=CXX' when

@@ -9,7 +9,7 @@
 #define UCHAR_MAX (SCHAR_MAX * 2 + 1)
 
 #define SHRT_MAX  __SHRT_MAX__
-#define USHRT_MAX (SHRT_MAX * 2 + 1)
+#define USHRT_MAX (SHRT_MAX * 2U + 1)
 
 #define INT_MAX   __INT_MAX__
 #define UINT_MAX  (INT_MAX * 2U + 1)

@@ -102,7 +102,7 @@ extern HOST_WIDE_INT constant_alignment_word_strings (const_tree,
 						      HOST_WIDE_INT);
 extern HOST_WIDE_INT default_vector_alignment (const_tree);
 
-extern HOST_WIDE_INT default_preferred_vector_alignment (const_tree);
+extern poly_uint64 default_preferred_vector_alignment (const_tree);
 extern bool default_builtin_vector_alignment_reachable (const_tree, bool);
 extern bool
 default_builtin_support_vector_misalignment (machine_mode mode,

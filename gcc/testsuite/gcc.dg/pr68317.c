@@ -11,5 +11,5 @@ foo ()
  for (index; index <= 10; index--)
    /* Result of the following multiply will overflow
       when converted to signed int.  */
-   bar ((0xcafe + index) * 0xdead);
+   bar ((0xcafe + index) * 0xdead);  /* { dg-warning "iteration \[0-9\]+ invokes undefined behavior" } */
 }

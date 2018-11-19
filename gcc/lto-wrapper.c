@@ -646,6 +646,7 @@ append_diag_options (obstack *argv_obstack, struct cl_decoded_option *opts,
       switch (option->opt_index)
 	{
 	case OPT_fdiagnostics_color_:
+	case OPT_fdiagnostics_format_:
 	case OPT_fdiagnostics_show_caret:
 	case OPT_fdiagnostics_show_labels:
 	case OPT_fdiagnostics_show_line_numbers:

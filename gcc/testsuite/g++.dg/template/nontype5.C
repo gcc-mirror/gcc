@@ -8,7 +8,7 @@
 template <int> struct A
 {
     typedef A<0> B;
-    template <B> struct C {};	// { dg-error "not a valid type" }
+    template <B> struct C {};	// { dg-error "class type|incomplete" }
 };
 
 A<0> a;

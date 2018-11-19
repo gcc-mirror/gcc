@@ -7,10 +7,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/access.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/root.h"
 #include "root/rmem.h"
 

@@ -114,6 +114,9 @@ define feature armv8_3
 # Architecture rel 8.4.
 define feature armv8_4
 
+# Architecture rel 8.5.
+define feature armv8_5
+
 # M-Profile security extensions.
 define feature cmse
 
@@ -173,6 +176,14 @@ define feature quirk_cm3_ldrd
 
 # (Very) slow multiply operations.  Should probably be a tuning bit.
 define feature smallmul
+
+# Speculation Barrier Instruction for v8-A architectures, added by
+# default to v8.5-A
+define feature sb
+
+# Execution and Data Prediction Restriction Instruction for
+# v8-A architectures, added by default from v8.5-A
+define feature predres
 
 # Feature groups.  Conventionally all (or mostly) upper case.
 # ALL_FPU lists all the feature bits associated with the floating-point
@@ -235,6 +246,7 @@ define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
 define fgroup ARMv8_2a    ARMv8_1a armv8_2
 define fgroup ARMv8_3a    ARMv8_2a armv8_3
 define fgroup ARMv8_4a    ARMv8_3a armv8_4
+define fgroup ARMv8_5a    ARMv8_4a armv8_5 sb predres
 define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
 define fgroup ARMv8m_main ARMv7m armv8 cmse
 define fgroup ARMv8r      ARMv8a
@@ -505,6 +517,8 @@ begin arch armv8-a
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8-a
 
 begin arch armv8.1-a
@@ -517,6 +531,8 @@ begin arch armv8.1-a
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8.1-a
 
 begin arch armv8.2-a
@@ -532,6 +548,8 @@ begin arch armv8.2-a
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
+ option sb add sb
+ option predres add predres
 end arch armv8.2-a
 
 begin arch armv8.3-a
@@ -547,6 +565,8 @@ begin arch armv8.3-a
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
  option dotprod add FP_ARMv8 DOTPROD
+ option sb add sb
+ option predres add predres
 end arch armv8.3-a
 
 begin arch armv8.4-a
@@ -560,7 +580,22 @@ begin arch armv8.4-a
  option crypto add FP_ARMv8 CRYPTO DOTPROD
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
+ option sb add sb
+ option predres add predres
 end arch armv8.4-a
+
+begin arch armv8.5-a
+ tune for cortex-a53
+ tune flags CO_PROC
+ base 8A
+ profile A
+ isa ARMv8_5a
+ option simd add FP_ARMv8 DOTPROD
+ option fp16 add fp16 fp16fml FP_ARMv8 DOTPROD
+ option crypto add FP_ARMv8 CRYPTO DOTPROD
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8.5-a
 
 begin arch armv8-m.base
  tune for cortex-m23
@@ -617,6 +652,7 @@ end arch iwmmxt2
 # format:
 # begin cpu <name>
 #   [cname <c-compatible-name>]
+#   [alias <name>+]
 #   [tune for <cpu-name>]
 #   [tune flags <list>]
 #   architecture <name>
@@ -630,6 +666,9 @@ end arch iwmmxt2
 #
 # If omitted, cname is formed from transforming the cpuname to convert
 # non-valid punctuation characters to '_'.
+# Any number of alias names may be specified for a CPU.  If the name starts
+# with a '!' then it will be recognized as a valid name, but will not
+# be printed in any help text listing permitted CPUs.
 # If specified, tune for specifies a CPU target to use for tuning this core.
 # isa flags are appended to those defined by the architecture.
 # Each add option must have a distinct feature set and each remove
@@ -658,28 +697,11 @@ begin cpu arm810
 end cpu arm810
 
 begin cpu strongarm
+ alias strongarm110 !strongarm1100 !strongarm1110
  tune flags LDSCHED STRONG
  architecture armv4
  costs strongarm
 end cpu strongarm
-
-begin cpu strongarm110
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm110
-
-begin cpu strongarm1100
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm1100
-
-begin cpu strongarm1110
- tune flags LDSCHED STRONG
- architecture armv4
- costs strongarm
-end cpu strongarm1110
 
 begin cpu fa526
  tune flags LDSCHED
@@ -696,35 +718,18 @@ end cpu fa626
 
 # V4T Architecture Processors
 begin cpu arm7tdmi
+ alias arm7tdmi-s
  tune flags CO_PROC
  architecture armv4t
  costs fastmul
 end cpu arm7tdmi
 
-begin cpu arm7tdmi-s
- cname arm7tdmis
- tune flags CO_PROC
- architecture armv4t
- costs fastmul
-end cpu arm7tdmi-s
-
 begin cpu arm710t
+ alias arm720t arm740t
  tune flags WBUF
  architecture armv4t
  costs fastmul
 end cpu arm710t
-
-begin cpu arm720t
- tune flags WBUF
- architecture armv4t
- costs fastmul
-end cpu arm720t
-
-begin cpu arm740t
- tune flags WBUF
- architecture armv4t
- costs fastmul
-end cpu arm740t
 
 begin cpu arm9
  tune flags LDSCHED
@@ -738,104 +743,40 @@ begin cpu arm9tdmi
  costs fastmul
 end cpu arm9tdmi
 
-begin cpu arm920
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm920
-
 begin cpu arm920t
+ alias arm920 arm922t arm940t ep9312
  tune flags LDSCHED
  architecture armv4t
  costs fastmul
 end cpu arm920t
 
-begin cpu arm922t
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm922t
-
-begin cpu arm940t
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu arm940t
-
-begin cpu ep9312
- tune flags LDSCHED
- architecture armv4t
- costs fastmul
-end cpu ep9312
-
 
 # V5T Architecture Processors
 # These used VFPv1 which isn't supported by GCC
 begin cpu arm10tdmi
+ alias arm1020t
  tune flags LDSCHED
  architecture armv5t
  costs fastmul
 end cpu arm10tdmi
 
-begin cpu arm1020t
- tune flags LDSCHED
- architecture armv5t
- costs fastmul
-end cpu arm1020t
-
 
 # V5TE Architecture Processors
 begin cpu arm9e
+ alias arm946e-s arm966e-s arm968e-s
  tune flags LDSCHED
  architecture armv5te+fp
  option nofp remove ALL_FP
  costs 9e
 end cpu arm9e
 
-begin cpu arm946e-s
- cname arm946es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm946e-s
-
-begin cpu arm966e-s
- cname arm966es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm966e-s
-
-begin cpu arm968e-s
- cname arm968es
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs 9e
-end cpu arm968e-s
-
 begin cpu arm10e
+ alias arm1020e arm1022e
  tune flags LDSCHED
  architecture armv5te+fp
  option nofp remove ALL_FP
  costs fastmul
 end cpu arm10e
-
-begin cpu arm1020e
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs fastmul
-end cpu arm1020e
-
-begin cpu arm1022e
- tune flags LDSCHED
- architecture armv5te+fp
- option nofp remove ALL_FP
- costs fastmul
-end cpu arm1022e
 
 begin cpu xscale
  tune flags LDSCHED XSCALE
@@ -1375,6 +1316,17 @@ begin cpu cortex-a76
  vendor 41
  part d0b
 end cpu cortex-a76
+
+begin cpu ares
+ cname ares
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16+dotprod+simd
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a57
+ vendor 41
+ part d0c
+end cpu ares
 
 # ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
 begin cpu cortex-a75.cortex-a55

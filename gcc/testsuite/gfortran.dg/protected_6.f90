@@ -22,7 +22,8 @@ program main
   a = 43       ! { dg-error "variable definition context" }
   ap => null() ! { dg-error "pointer association context" }
   nullify(ap)  ! { dg-error "pointer association context" }
-  ap => at     ! { dg-error "pointer association context" }
+  ap => &      ! { dg-error "pointer association context" }
+       & at    ! { dg-error "Pointer assignment target has PROTECTED attribute" }
   ap = 3       ! OK
   allocate(ap) ! { dg-error "pointer association context" }
   ap = 73      ! OK

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-recip" } */
+/* { dg-options "-Ofast -fdump-tree-recip -fcompare-debug" } */
 
 /* The main path doesn't have any multiplications.
    Avoid introducing them in the recip pass.  */

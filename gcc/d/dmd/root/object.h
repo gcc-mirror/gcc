@@ -6,11 +6,9 @@
  * https://github.com/dlang/dmd/blob/master/src/root/object.h
  */
 
-#define POSIX (__linux__ || __APPLE__ || __FreeBSD__ || __OpenBSD__ || __sun)
-
 #pragma once
 
-#include <stddef.h>
+#include "dsystem.h"
 
 typedef size_t hash_t;
 
@@ -25,7 +23,7 @@ enum DYNCAST
     DYNCAST_IDENTIFIER,
     DYNCAST_TUPLE,
     DYNCAST_PARAMETER,
-    DYNCAST_STATEMENT,
+    DYNCAST_STATEMENT
 };
 
 /*

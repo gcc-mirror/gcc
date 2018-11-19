@@ -1933,7 +1933,7 @@ package body Exp_Util is
       --  is subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -3407,7 +3407,7 @@ package body Exp_Util is
       --  subject to Source Coverage Obligations.
 
       if Generate_SCO then
-         Set_Needs_Debug_Info (Proc_Id);
+         Set_Debug_Info_Needed (Proc_Id);
       end if;
 
       --  Obtain all views of the input type
@@ -4940,17 +4940,17 @@ package body Exp_Util is
       end if;
    end Evolve_Or_Else;
 
-   -----------------------------------
-   -- Exceptions_In_Finalization_OK --
-   -----------------------------------
+   -------------------
+   -- Exceptions_OK --
+   -------------------
 
-   function Exceptions_In_Finalization_OK return Boolean is
+   function Exceptions_OK return Boolean is
    begin
       return
         not (Restriction_Active (No_Exception_Handlers)    or else
              Restriction_Active (No_Exception_Propagation) or else
              Restriction_Active (No_Exceptions));
-   end Exceptions_In_Finalization_OK;
+   end Exceptions_OK;
 
    -----------------------------------------
    -- Expand_Static_Predicates_In_Choices --
@@ -7062,7 +7062,6 @@ package body Exp_Util is
                | N_Procedure_Instantiation
                | N_Protected_Body
                | N_Protected_Body_Stub
-               | N_Protected_Type_Declaration
                | N_Single_Task_Declaration
                | N_Subprogram_Body
                | N_Subprogram_Body_Stub
@@ -7071,7 +7070,6 @@ package body Exp_Util is
                | N_Subtype_Declaration
                | N_Task_Body
                | N_Task_Body_Stub
-               | N_Task_Type_Declaration
 
                --  Use clauses can appear in lists of declarations
 
@@ -7134,6 +7132,21 @@ package body Exp_Util is
                   Insert_List_Before_And_Analyze (P, Ins_Actions);
                   return;
                end if;
+
+            --  the expansion of Task and protected type declarations can
+            --  create declarations for temporaries which, like other actions
+            --  are inserted and analyzed before the current declaraation.
+            --  However, the current scope is the synchronized type, and
+            --  for unnesting it is critical that the proper scope for these
+            --  generated entities be the enclosing one.
+
+            when N_Task_Type_Declaration
+               | N_Protected_Type_Declaration =>
+
+               Push_Scope (Scope (Current_Scope));
+               Insert_List_Before_And_Analyze (P, Ins_Actions);
+               Pop_Scope;
+               return;
 
             --  A special case, N_Raise_xxx_Error can act either as a statement
             --  or a subexpression. We tell the difference by looking at the
@@ -9313,9 +9326,9 @@ package body Exp_Util is
 
       --  If the type is tagged, the expression may be class-wide, in which
       --  case it has to be converted to its root type, given that the
-      --  generated predicate function is not dispatching. The conversion
-      --  is type-safe and does not need validation, which matters when
-      --  private extensions are involved.
+      --  generated predicate function is not dispatching. The conversion is
+      --  type-safe and does not need validation, which matters when private
+      --  extensions are involved.
 
       if Is_Tagged_Type (Typ) then
          Call :=
@@ -13400,7 +13413,8 @@ package body Exp_Util is
    --  required for the case of False .. False, since False xor False = False.
    --  See also Silly_Boolean_Array_Not_Test
 
-   procedure Silly_Boolean_Array_Xor_Test (N : Node_Id; T : Entity_Id) is
+   procedure Silly_Boolean_Array_Xor_Test
+     (N : Node_Id; R : Node_Id;  T : Entity_Id) is
       Loc : constant Source_Ptr := Sloc (N);
       CT  : constant Entity_Id  := Component_Type (T);
 
@@ -13435,7 +13449,7 @@ package body Exp_Util is
                         Prefix         => New_Occurrence_Of (CT, Loc),
                         Attribute_Name => Name_Last))),
 
-              Right_Opnd => Make_Non_Empty_Check (Loc, Right_Opnd (N))),
+              Right_Opnd => Make_Non_Empty_Check (Loc, R)),
           Reason => CE_Range_Check_Failed));
    end Silly_Boolean_Array_Xor_Test;
 

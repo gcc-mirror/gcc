@@ -1260,7 +1260,7 @@ default_vector_alignment (const_tree type)
 /* The default implementation of
    TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.  */
 
-HOST_WIDE_INT
+poly_uint64
 default_preferred_vector_alignment (const_tree type)
 {
   return TYPE_ALIGN (type);
@@ -1807,13 +1807,15 @@ default_print_patchable_function_entry (FILE *file,
       char buf[256];
       static int patch_area_number;
       section *previous_section = in_section;
+      const char *asm_op = integer_asm_op (POINTER_SIZE_UNITS, false);
 
+      gcc_assert (asm_op != NULL);
       patch_area_number++;
       ASM_GENERATE_INTERNAL_LABEL (buf, "LPFE", patch_area_number);
 
       switch_to_section (get_section ("__patchable_function_entries",
 				      0, NULL));
-      fputs (integer_asm_op (POINTER_SIZE_UNITS, false), file);
+      fputs (asm_op, file);
       assemble_name_raw (file, buf);
       fputc ('\n', file);
 

@@ -1,3 +1,303 @@
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.ads, exp_util.adb: Change the profile of
+	Silly_Boolean_Array_Xor_Test, adding a formal that can be a copy
+	of the right opersnd. This prevents unnesting anomalies when
+	that operand contains uplevel references.
+	* exp_ch4.adb (Expand_Boolean_Operation): Use this new profile.
+	* exp_pakd.adb (Expand_Packed_Boolean_Operator): Ditto.
+
+2018-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Do not override the switch
+	-fnon-call-exceptions passed on the command line in -gnatp mode.
+
+2018-11-14  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnarl/a-intnam__linux.ads: Add SIGSYS.
+	* libgnarl/s-linux__alpha.ads, libgnarl/s-linux__android.ads,
+	libgnarl/s-linux__hppa.ads, libgnarl/s-linux__mips.ads,
+	libgnarl/s-linux__riscv.ads, libgnarl/s-linux__sparc.ads,
+	libgnarl/s-linux__x32.ads: Rename SIGLTHRRES, SIGLTHRCAN and
+	SIGLTHRDBG to SIG32, SIG33 and SIG34 as their names are
+	implementation specific.
+	* libgnarl/s-osinte__linux.ads, libgnarl/s-linux.ads: Add
+	SIGSYS.  Move SIG32, SIG33 and SIG34 from the unmasked list to
+	the reserved list.
+
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Is_Static_Element): New predicate extracted
+	from...
+	(Check_Static_Components): ...here.  Call Is_Static_Element on
+	each element of the component association list, if any.
+	(Flatten): Duplicate the expression of an others choice only if
+	it is static or is an aggregate which can itself be flattened.
+
+2018-11-14  Olivier Hainque  <hainque@adacore.com>
+
+	* sigtramp-vxworks-target.inc: Fix stack checking test errors in
+	ACATS, now that GCC can emit CFI rules referring to sp in
+	absence of a frame pointer.
+
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Check_Static_Components): Remove dead test.
+	(Flatten): Likewise.  Move comment around.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Analyze_Null_Procedure): Capture Ghost and
+	SPARK-related global state at the start of the routine. Set the
+	Ghost mode of the completed spec if any.  Restore the saved
+	Ghost and SPARK-related global state on exit from the routine.
+
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnatR): Document new -gnatR4 level.
+	* gnat_ugn.texi: Regenerate.
+	* opt.ads (List_Representation_Info): Bump upper bound to 4.
+	* repinfo.adb: Add with clause for GNAT.HTable.
+	(Relevant_Entities_Size): New constant.
+	(Entity_Header_Num): New type.
+	(Entity_Hash): New function.
+	(Relevant_Entities): New set implemented with GNAT.HTable.
+	(List_Entities): Also list compiled-generated entities present
+	in the Relevant_Entities set. Consider that the Component_Type
+	of an array type is relevant.
+	(List_Rep_Info): Reset Relevant_Entities for each unit.
+	* switch-c.adb (Scan_Front_End_Switches): Add support for -gnatR4.
+	* switch-m.adb (Normalize_Compiler_Switches): Likewise
+	* usage.adb (Usage): Likewise.
+
+2018-11-14  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Thunk): Extend handling of
+	renamings of the predefined equality primitive.
+	(Make_Secondary_DT): When calling Expand_Interface_Thunk() pass
+	it the primitive, instead of its Ultimate_Alias; required to
+	allow the called routine to identify renamings of the predefined
+	equality operation.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb (Check_Pragma_Thread_Local_Storage): New routine. A
+	variable with suppressed initialization has no initialization
+	for purposes of the pragma.
+	(Freeze_Object_Declaration): Remove variable
+	Has_Default_Initialization as it is no longer used. Use routine
+	Check_Pragma_Thread_Local_Storage to verify the semantics of
+	pragma Thread_Local_Storage.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_If_Expression): Verify that the subtypes
+	of all dependent expressions obey the constraints of the
+	expected type for the if-expression.
+	(Analyze_Expression): Only add qualificiation to the dependent
+	expressions when the context type is constrained. Small
+	adjustment to previous patch.
+
+2018-11-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Process_Compile_Time_Warning_Or_Error): Don't
+	register a compile-time warning or error for 'Alignment or 'Size
+	of an entity declared in a generic unit.
+
+2018-11-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Use_One_Package): Add test for out-of-scope
+	homonyms.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb: (Expand_N_Object_Declaration): If the expression
+	is a limited aggregate its resolution is delayed until the
+	object declaration is expanded.
+	* sem_ch3.adb: (Analyze_Object_Declaration): If the expression
+	is a limited aggregate and the declaration has a following
+	address clause indicate that resolution of the aggregate (which
+	must be built in place) must be delayed.
+
+2018-11-14  Bob Duff  <duff@adacore.com>
+
+	* sem_attr.adb (To_Address): Simplify setting of
+	Is_Static_Expression. Remove second (unconditional) call to
+	Set_Is_Static_Expression -- surely it's not static if the
+	operand is not.  Initialize Static on declaration.  Do not try
+	to fold 'To_Address, even though it's static.
+	* exp_attr.adb (To_Address): Preserve Is_Static_Expression.
+	* sinfo.ads, sem_eval.ads, sem_eval.adb (Is_Static_Expression,
+	Is_OK_Static_Expression, Raises_Constraint_Error): Simplify
+	documentation.  There was too much repetition and redundancy.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Object_Declaration): Use the
+	Actual_Subtype to preserve information about a constant
+	initialized with a non-static entity that is known to be valid,
+	when the type of the entity has a narrower range than that of
+	the nominal subtype of the constant.
+	* checks.adb (Determine_Range): If the expression is a constant
+	entity that is known-valid and has a defined Actual_Subtype, use
+	it to determine the actual bounds of the value, to enable
+	additional optimizations.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* back_end.adb, checks.adb, exp_ch3.adb, exp_ch4.adb,
+	exp_ch7.adb, exp_disp.adb, exp_unst.adb, exp_util.adb,
+	freeze.adb, sem_ch13.adb, sem_ch6.adb, sem_ch7.adb,
+	sem_prag.adb, sem_spark.adb, sem_util.adb: Minor reformatting.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Find_Aliased_Equality): New routine.
+	(Find_Equality): Reimplemented.
+	(Is_Equality): New routine.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* ghost.adb (Ghost_Entity): New routine.
+	(Mark_And_Set_Ghost_Assignment): Reimplemented.
+	* sem_ch5.adb (Analyze_Assignment): Assess whether the target of
+	the assignment is an ignored Ghost entity before analyzing the
+	left hand side.
+	* sem_ch8.adb (Find_Direct_Name): Update the subprogram
+	signature. Do not generate markers and references when they are
+	not desired.
+	(Nvis_Messages): Do not execute when errors are not desired.
+	(Undefined): Do not emit errors when they are not desired.
+	* sem_ch8.ads (Find_Direct_Name): Update the subprogram
+	signature and comment on usage.
+	* sem_util.adb (Ultimate_Prefix): New routine.
+	* sem_util.ads (Ultimate_Prefix): New routine.
+
+2018-11-14  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch7.adb (Uninstall_Declarations): Add conditional to avoid
+	uninstalling potential visibility during freezing on enumeration
+	literals.
+
+2018-11-14  Jerome Lambourg  <lambourg@adacore.com>
+
+	* env.c: Do not include crt_externs.h on iOS, as it does not
+	exist there. This is also true for the iPhone Simulator SDK.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch7.adb (Check_Unnesting_In_Declarations): New procedure
+	to transform blocks that appear in the declarative part of a
+	package body into subprograms if they contain generated
+	subprograms (such as finalization routines). Needed to generate
+	the proper upward references in unnesting mode.
+
+2018-11-14  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Fixed_Point_Type): If the given low bound
+	of the type is less than the nearest model number, do not expand
+	the range of the type to include the model number below the
+	bound. Similar adjustment if the upper bound is larger than the
+	nearest model number.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Install_Primitive_Elaboration_Check): Do not
+	create the check when exceptions cannot be used.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Do not raise
+	Program_Errror when exceptions cannot be used. Analyze the
+	generated code with all checks suppressed.
+	* exp_ch7.adb (Build_Finalizer): Remove the declaration of
+	Exceptions_OK.
+	(Make_Deep_Array_Body): Remove the declaration of Exceptions_OK.
+	(Make_Deep_Record_Body): Remove the declaration of
+	Exceptions_OK.
+	(Process_Transients_In_Scope): Remove the declaration of
+	Exceptions_OK.
+	* exp_util.adb (Exceptions_In_Finalization_OK): Renamed to
+	Exceptions_OK.
+	* exp_util.ads (Exceptions_In_Finalization_OK): Renamed to
+	Exceptions_OK.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Remove duplicated code and use
+	routine Find_Equality instead.
+	(Find_Equality): New routine.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (First_From_Global_List): Do not expect
+	N_Selected_Component in the Global contract; simplify assertion
+	with Nam_In.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_ch12.adb (Instantiate_Object): Set
+	Corresponding_Generic_Association on generic actuals with
+	default expression.
+	* sinfo.ads (Corresponding_Generic_Association): Update comment.
+
+2018-11-14  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Use the proper routine to
+	set the need for debug info.
+	* exp_dbug.adb (Build_Subprogram_Instance_Renamings): Use the
+	proper routine to set the need for debug info.
+	* exp_prag.adb (Expand_Pragma_Initial_Condition): Use the proper
+	routine to set the need for debug info.
+	* exp_util.adb (Build_DIC_Procedure_Declaration): Use the proper
+	routine to set the need for debug info.
+	(Build_Invariant_Procedure_Declaration): Use the proper routine
+	to set the need for debug info.
+	* ghost.adb (Record_Ignored_Ghost_Node): Add statements as a
+	whole class to the list of top level ignored Ghost nodes.
+	* sem_util.adb (Set_Debug_Info_Needed): Do not generate debug
+	info for an ignored Ghost entity.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* bindgen.adb, exp_cg.adb, repinfo.adb, sprint.adb: Minor reuse
+	Cancel_Special_Output where possible.
+
+2018-11-14  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_dbug.ads, sem_util.ads: Minor fixes in comments.
+
+2018-11-14  Arnaud Charlet  <charlet@adacore.com>
+
+	* adabkend.adb (Scan_Back_End_Switches): Handle -gx switches
+	explicitly.
+
+2018-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Set -fnon-call-exceptions
+	for the runtime on platforms where System.Machine_Overflow is true.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Suppress_Checks): Declare.
+	* gcc-interface/misc.c (gnat_init_gcc_eh): Set -fnon-call-exceptions
+	only if checks are not suppressed and -faggressive-loop-optimizations
+	only if they are.
+	* gcc-interface/trans.c (struct loop_info_d): Remove has_checks and
+	warned_aggressive_loop_optimizations fields.
+	(gigi): Do not clear warn_aggressive_loop_optimizations here.
+	(Raise_Error_to_gnu): Do not set has_checks.
+	(gnat_to_gnu) <N_Indexed_Component>: Remove support for aggressive
+	loop optimizations.
+
+2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (components_to_record): Remove obsolete kludge.
+	* gcc-interface/utils.c (make_packable_type): Set TYPE_PACKED on the
+	new type but do not take into account the setting on the old type for
+	the new fields.  Rename a local variable.
+	(finish_record_type): Clear DECL_BIT_FIELD_TYPE on a variant part at
+	offset 0, if any.
+	(create_field_decl): Tweak comment.
+
 2018-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (unchecked_convert): Use local variables for

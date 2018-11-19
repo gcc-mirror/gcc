@@ -1,5 +1,5 @@
-/* Return arc tangent of complex __float128 value.
-   Copyright (C) 1997, 1998 Free Software Foundation, Inc.
+/* Return arc tangent of complex float type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,12 +14,10 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 
 __complex128
 catanq (__complex128 x)
@@ -28,12 +26,12 @@ catanq (__complex128 x)
   int rcls = fpclassifyq (__real__ x);
   int icls = fpclassifyq (__imag__ x);
 
-  if (rcls <= QUADFP_INFINITE || icls <= QUADFP_INFINITE)
+  if (__glibc_unlikely (rcls <= QUADFP_INFINITE || icls <= QUADFP_INFINITE))
     {
       if (rcls == QUADFP_INFINITE)
 	{
 	  __real__ res = copysignq (M_PI_2q, __real__ x);
-	  __imag__ res = copysignq (0.0, __imag__ x);
+	  __imag__ res = copysignq (0, __imag__ x);
 	}
       else if (icls == QUADFP_INFINITE)
 	{
@@ -41,12 +39,12 @@ catanq (__complex128 x)
 	    __real__ res = copysignq (M_PI_2q, __real__ x);
 	  else
 	    __real__ res = nanq ("");
-	  __imag__ res = copysignq (0.0, __imag__ x);
+	  __imag__ res = copysignq (0, __imag__ x);
 	}
       else if (icls == QUADFP_ZERO || icls == QUADFP_INFINITE)
 	{
 	  __real__ res = nanq ("");
-	  __imag__ res = copysignq (0.0, __imag__ x);
+	  __imag__ res = copysignq (0, __imag__ x);
 	}
       else
 	{
@@ -54,27 +52,84 @@ catanq (__complex128 x)
 	  __imag__ res = nanq ("");
 	}
     }
-  else if (rcls == QUADFP_ZERO && icls == QUADFP_ZERO)
+  else if (__glibc_unlikely (rcls == QUADFP_ZERO && icls == QUADFP_ZERO))
     {
       res = x;
     }
   else
     {
-      __float128 r2, num, den;
+      if (fabsq (__real__ x) >= 16 / FLT128_EPSILON
+	  || fabsq (__imag__ x) >= 16 / FLT128_EPSILON)
+	{
+	  __real__ res = copysignq (M_PI_2q, __real__ x);
+	  if (fabsq (__real__ x) <= 1)
+	    __imag__ res = 1 / __imag__ x;
+	  else if (fabsq (__imag__ x) <= 1)
+	    __imag__ res = __imag__ x / __real__ x / __real__ x;
+	  else
+	    {
+	      __float128 h = hypotq (__real__ x / 2, __imag__ x / 2);
+	      __imag__ res = __imag__ x / h / h / 4;
+	    }
+	}
+      else
+	{
+	  __float128 den, absx, absy;
 
-      r2 = __real__ x * __real__ x;
+	  absx = fabsq (__real__ x);
+	  absy = fabsq (__imag__ x);
+	  if (absx < absy)
+	    {
+	      __float128 t = absx;
+	      absx = absy;
+	      absy = t;
+	    }
 
-      den = 1 - r2 - __imag__ x * __imag__ x;
+	  if (absy < FLT128_EPSILON / 2)
+	    {
+	      den = (1 - absx) * (1 + absx);
+	      if (den == 0)
+		den = 0;
+	    }
+	  else if (absx >= 1)
+	    den = (1 - absx) * (1 + absx) - absy * absy;
+	  else if (absx >= 0.75Q || absy >= 0.5Q)
+	    den = -__quadmath_x2y2m1q (absx, absy);
+	  else
+	    den = (1 - absx) * (1 + absx) - absy * absy;
 
-      __real__ res = 0.5 * atan2q (2.0 * __real__ x, den);
+	  __real__ res = 0.5Q * atan2q (2 * __real__ x, den);
 
-      num = __imag__ x + 1.0;
-      num = r2 + num * num;
+	  if (fabsq (__imag__ x) == 1
+	      && fabsq (__real__ x) < FLT128_EPSILON * FLT128_EPSILON)
+	    __imag__ res = (copysignq (0.5Q, __imag__ x)
+			    * ((__float128) M_LN2q
+			       - logq (fabsq (__real__ x))));
+	  else
+	    {
+	      __float128 r2 = 0, num, f;
 
-      den = __imag__ x - 1.0;
-      den = r2 + den * den;
+	      if (fabsq (__real__ x) >= FLT128_EPSILON * FLT128_EPSILON)
+		r2 = __real__ x * __real__ x;
 
-      __imag__ res = 0.25 * logq (num / den);
+	      num = __imag__ x + 1;
+	      num = r2 + num * num;
+
+	      den = __imag__ x - 1;
+	      den = r2 + den * den;
+
+	      f = num / den;
+	      if (f < 0.5Q)
+		__imag__ res = 0.25Q * logq (f);
+	      else
+		{
+		  num = 4 * __imag__ x;
+		  __imag__ res = 0.25Q * log1pq (num / den);
+		}
+	    }
+	}
+
+      math_check_force_underflow_complex (res);
     }
 
   return res;

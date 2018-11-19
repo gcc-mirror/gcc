@@ -130,18 +130,16 @@ int test_7 (int one, T two, float three);
 
 int test_7 (int first, int second, float third)
 {
-  return test_7 <const char *> (first, second, third); // { dg-error "no matching function" }
-  /* { dg-begin-multiline-output "" }
-   return test_7 <const char *> (first, second, third);
-                                                     ^
-     { dg-end-multiline-output "" } */
+  return test_7 <const char *> (first, second, third); // { dg-error "invalid conversion from 'int' to 'const char\\*'" }
   /* { dg-begin-multiline-output "" }
    return test_7 <const char *> (first, second, third);
                                         ^~~~~~
+                                        |
+                                        int
      { dg-end-multiline-output "" } */
   /* { dg-begin-multiline-output "" }
  int test_7 (int one, T two, float three);
-     ^~~~~~
+                      ~~^~~
      { dg-end-multiline-output "" } */
 }
 

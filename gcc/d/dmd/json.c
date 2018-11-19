@@ -10,10 +10,7 @@
 
 // This implements the JSON capability.
 
-#include <stdio.h>
-#include <string.h>
-#include <assert.h>
-
+#include "root/dsystem.h"
 #include "root/rmem.h"
 
 #include "mars.h"

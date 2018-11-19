@@ -1,3 +1,440 @@
+2018-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* affinity-fmt.c: Include inttypes.h if HAVE_INTTYPES_H.
+	(gomp_display_affinity): Use __builtin_choose_expr to handle
+	properly handle argument having integral, or pointer or some other
+	type.  If inttypes.h is available and PRIx64 is defined, use PRIx64
+	with uint64_t type instead of %llx and unsigned long long.
+
+	* testsuite/libgomp.c-c++-common/task-reduction-13.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-14.c: New test.
+
+2018-11-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* affinity.c: Include <string.h>, <stdio.h>.
+	(gomp_display_affinity_place): Remove cpusetp.
+	* teams.c: Include <limits.h>.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c-c++-common/task-reduction-8.c (bar): Add
+	in_reduction clause for s[0].
+
+	* affinity.c (gomp_display_affinity_place): New function.
+	* affinity-fmt.c: New file.
+	* alloc.c (gomp_aligned_alloc, gomp_aligned_free): New functions.
+	* config/linux/affinity.c (gomp_display_affinity_place): New function.
+	* config/nvptx/icv-device.c (omp_get_num_teams, omp_get_team_num):
+	Move these functions to ...
+	* config/nvptx/teams.c: ... here.  New file.
+	* config/nvptx/target.c (omp_pause_resource, omp_pause_resource_all):
+	New functions.
+	* config/nvptx/team.c (gomp_team_start, gomp_pause_host): New
+	functions.
+	* configure.ac: Check for aligned_alloc, posix_memalign, memalign
+	and _aligned_malloc.
+	(HAVE_UNAME, HAVE_GETHOSTNAME, HAVE_GETPID): Add new tests.
+	* configure.tgt: Add -DUSING_INITIAL_EXEC_TLS to XCFLAGS for Linux.
+	* env.c (gomp_display_affinity_var, gomp_affinity_format_var,
+	gomp_affinity_format_len): New variables.
+	(parse_schedule): Parse monotonic and nonmonotonic modifiers in
+	OMP_SCHEDULE variable.  Set GFS_MONOTONIC for monotonic schedules.
+	(handle_omp_display_env): Display monotonic/nonmonotonic schedule
+	modifiers.  Display (non-default) chunk sizes.  Print
+	OMP_DISPLAY_AFFINITY and OMP_AFFINITY_FORMAT.
+	(initialize_env): Don't call pthread_attr_setdetachstate.  Handle
+	OMP_DISPLAY_AFFINITY and OMP_AFFINITY_FORMAT env vars.
+	* fortran.c: Include stdio.h and string.h.
+	(omp_pause_resource, omp_pause_resource_all): Add ialias_redirect.
+	(omp_get_schedule_, omp_get_schedule_8_): Mask off GFS_MONOTONIC bit.
+	(omp_set_affinity_format_, omp_get_affinity_format_,
+	omp_display_affinity_, omp_capture_affinity_, omp_pause_resource_,
+	omp_pause_resource_all_): New functions.
+	* icv.c (omp_set_schedule): Mask off omp_sched_monotonic bit in
+	switch.
+	* icv-device.c (omp_get_num_teams, omp_get_team_num): Move these
+	functions to ...
+	* teams.c: ... here.  New file.
+	* libgomp_g.h: Include gstdint.h.
+	(GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_loop_maybe_nonmonotonic_runtime_start, GOMP_loop_start,
+	GOMP_loop_ordered_start, GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_next, GOMP_loop_doacross_start,
+	GOMP_parallel_loop_nonmonotonic_runtime,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_loop_ull_nonmonotonic_runtime_start,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start, GOMP_loop_ull_start,
+	GOMP_loop_ull_ordered_start, GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_ull_doacross_start, GOMP_parallel_reductions,
+	GOMP_taskwait_depend, GOMP_taskgroup_reduction_register,
+	GOMP_taskgroup_reduction_unregister, GOMP_task_reduction_remap,
+	GOMP_workshare_task_reduction_unregister, GOMP_sections2_start,
+	GOMP_teams_reg): Declare.
+	* libgomp.h (GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC): Define unless
+	gomp_aligned_alloc uses fallback implementation.
+	(gomp_aligned_alloc, gomp_aligned_free): Declare.
+	(enum gomp_schedule_type): Add GFS_MONOTONIC.
+	(struct gomp_doacross_work_share): Add extra field.
+	(struct gomp_work_share): Add task_reductions field.
+	(struct gomp_taskgroup): Add workshare and reductions fields.
+	(GOMP_NEEDS_THREAD_HANDLE): Define if needed.
+	(gomp_thread_handle): New typedef.
+	(gomp_display_affinity_place, gomp_set_affinity_format,
+	gomp_display_string, gomp_display_affinity,
+	gomp_display_affinity_thread): Declare.
+	(gomp_doacross_init, gomp_doacross_ull_init): Add size_t argument.
+	(gomp_parallel_reduction_register, gomp_workshare_taskgroup_start,
+	gomp_workshare_task_reduction_register): Declare.
+	(gomp_team_start): Add taskgroup argument.
+	(gomp_pause_host): Declare.
+	(gomp_init_work_share, gomp_work_share_start): Change bool argument
+	to size_t.
+	(gomp_thread_self, gomp_thread_to_pthread_t): New inline functions.
+	* libgomp.map (GOMP_5.0): Export GOMP_loop_start,
+	GOMP_loop_ordered_start, GOMP_loop_doacross_start,
+	GOMP_loop_ull_start, GOMP_loop_ull_ordered_start,
+	GOMP_loop_ull_doacross_start,
+	GOMP_workshare_task_reduction_unregister, GOMP_sections2_start,
+	GOMP_loop_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_nonmonotonic_runtime_start,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_parallel_loop_nonmonotonic_runtime, GOMP_parallel_reductions,
+	GOMP_taskgroup_reduction_register,
+	GOMP_taskgroup_reduction_unregister, GOMP_task_reduction_remap,
+	GOMP_teams_reg and GOMP_taskwait_depend.
+	(OMP_5.0): Export omp_pause_resource{,_all}{,_},
+	omp_{capture,display}_affinity{,_}, and
+	omp_[gs]et_affinity_format{,_}.
+	* loop.c: Include string.h.
+	(GOMP_loop_runtime_next): Add ialias.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(gomp_loop_static_start, gomp_loop_dynamic_start,
+	gomp_loop_guided_start, gomp_loop_ordered_static_start,
+	gomp_loop_ordered_dynamic_start, gomp_loop_ordered_guided_start,
+	gomp_loop_doacross_static_start, gomp_loop_doacross_dynamic_start,
+	gomp_loop_doacross_guided_start): Adjust gomp_work_share_start
+	or gomp_doacross_init callers.
+	(gomp_adjust_sched, GOMP_loop_start, GOMP_loop_ordered_start,
+	GOMP_loop_doacross_start): New functions.
+	(GOMP_loop_runtime_start, GOMP_loop_ordered_runtime_start,
+	GOMP_loop_doacross_runtime_start, GOMP_parallel_loop_runtime_start):
+	Mask off GFS_MONOTONIC bit.
+	(GOMP_loop_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_nonmonotonic_runtime_next,
+	GOMP_loop_nonmonotonic_runtime_start,
+	GOMP_parallel_loop_maybe_nonmonotonic_runtime,
+	GOMP_parallel_loop_nonmonotonic_runtime): New aliases or wrapper
+	functions.
+	(gomp_parallel_loop_start): Pass NULL as taskgroup to
+	gomp_team_start.
+	* loop_ull.c: Include string.h.
+	(GOMP_loop_ull_runtime_next): Add ialias.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(gomp_loop_ull_static_start, gomp_loop_ull_dynamic_start,
+	gomp_loop_ull_guided_start, gomp_loop_ull_ordered_static_start,
+	gomp_loop_ull_ordered_dynamic_start,
+	gomp_loop_ull_ordered_guided_start,
+	gomp_loop_ull_doacross_static_start,
+	gomp_loop_ull_doacross_dynamic_start,
+	gomp_loop_ull_doacross_guided_start): Adjust gomp_work_share_start
+	and gomp_doacross_ull_init callers.
+	(gomp_adjust_sched, GOMP_loop_ull_start, GOMP_loop_ull_ordered_start,
+	GOMP_loop_ull_doacross_start): New functions.
+	(GOMP_loop_ull_runtime_start,
+	GOMP_loop_ull_ordered_runtime_start,
+	GOMP_loop_ull_doacross_runtime_start): Mask off GFS_MONOTONIC bit.
+	(GOMP_loop_ull_maybe_nonmonotonic_runtime_next,
+	GOMP_loop_ull_maybe_nonmonotonic_runtime_start,
+	GOMP_loop_ull_nonmonotonic_runtime_next,
+	GOMP_loop_ull_nonmonotonic_runtime_start): Likewise.
+	* Makefile.am (libgomp_la_SOURCES): Add teams.c and affinity-fmt.c.
+	* omp.h.in (enum omp_sched_t): Add omp_sched_monotonic.
+	(omp_pause_resource_t, omp_depend_t): New typedefs.
+	(enum omp_lock_hint_t): Renamed to ...
+	(enum omp_sync_hint_t): ... this.  Define omp_sync_hint_*
+	enumerators using numbers and omp_lock_hint_* as their aliases.
+	(omp_lock_hint_t): New typedef.  Rename to ...
+	(omp_sync_hint_t): ... this.
+	(omp_init_lock_with_hint, omp_init_nest_lock_with_hint): Use
+	omp_sync_hint_t instead of omp_lock_hint_t.
+	(omp_pause_resource, omp_pause_resource_all, omp_set_affinity_format,
+	omp_get_affinity_format, omp_display_affinity, omp_capture_affinity):
+	Declare.
+	(omp_target_is_present, omp_target_disassociate_ptr):
+	Change first argument from void * to const void *.
+	(omp_target_memcpy, omp_target_memcpy_rect): Change second argument
+	from void * to const void *.
+	(omp_target_associate_ptr): Change first and second arguments from
+	void * to const void *.
+	* omp_lib.f90.in (omp_pause_resource_kind, omp_pause_soft,
+	omp_pause_hard): New parameters.
+	(omp_pause_resource, omp_pause_resource_all, omp_set_affinity_format,
+	omp_get_affinity_format, omp_display_affinity, omp_capture_affinity):
+	New interfaces.
+	* omp_lib.h.in (omp_pause_resource_kind, omp_pause_soft,
+	omp_pause_hard): New parameters.
+	(omp_pause_resource, omp_pause_resource_all, omp_set_affinity_format,
+	omp_get_affinity_format, omp_display_affinity, omp_capture_affinity):
+	New externals.
+	* ordered.c (gomp_doacross_init, gomp_doacross_ull_init): Add
+	EXTRA argument.  If not needed to prepare array, if extra is 0,
+	clear ws->doacross, otherwise allocate just doacross structure and
+	extra payload.  If array is needed, allocate also extra payload.
+	(GOMP_doacross_post, GOMP_doacross_wait, GOMP_doacross_ull_post,
+	GOMP_doacross_ull_wait): Handle doacross->array == NULL like
+	doacross == NULL.
+	* parallel.c (GOMP_parallel_start): Pass NULL as taskgroup to
+	gomp_team_start.
+	(GOMP_parallel): Likewise.  Formatting fix.
+	(GOMP_parallel_reductions): New function.
+	(GOMP_cancellation_point): If taskgroup has workshare
+	flag set, check cancelled of prev taskgroup if any.
+	(GOMP_cancel): If taskgroup has workshare flag set, set cancelled
+	on prev taskgroup if any.
+	* sections.c: Include string.h.
+	(GOMP_taskgroup_reduction_register): Add ialias_redirect.
+	(GOMP_sections_start): Adjust gomp_work_share_start caller.
+	(GOMP_sections2_start): New function.
+	(GOMP_parallel_sections_start, GOMP_parallel_sections):
+	Pass NULL as taskgroup to gomp_team_start.
+	* single.c (GOMP_single_start, GOMP_single_copy_start): Adjust
+	gomp_work_share_start callers.
+	* target.c (GOMP_target_update_ext, GOMP_target_enter_exit_data):
+	If taskgroup has workshare flag set, check cancelled on prev
+	taskgroup if any.  Guard all cancellation tests with
+	gomp_cancel_var test.
+	(omp_target_is_present, omp_target_disassociate_ptr):
+	Change ptr argument from void * to const void *.
+	(omp_target_memcpy): Change src argument from void * to const void *.
+	(omp_target_memcpy_rect): Likewise.
+	(omp_target_memcpy_rect_worker): Likewise.  Use const char * casts
+	instead of char * where needed.
+	(omp_target_associate_ptr): Change host_ptr and device_ptr arguments
+	from void * to const void *.
+	(omp_pause_resource, omp_pause_resource_all): New functions.
+	* task.c (gomp_task_handle_depend): Handle new depend array format
+	in addition to the old.  Handle mutexinoutset kinds the same as
+	inout for now, handle unspecified kinds.
+	(gomp_create_target_task): If taskgroup has workshare flag set, check
+	cancelled on prev taskgroup if any.  Guard all cancellation tests with
+	gomp_cancel_var test.  Handle new depend array format count in
+	addition to the old.
+	(GOMP_task): Likewise.  Adjust function comment.
+	(gomp_task_run_pre): If taskgroup has workshare flag set, check
+	cancelled on prev taskgroup if any.  Guard all cancellation tests with
+	gomp_cancel_var test.
+	(GOMP_taskwait_depend): New function.
+	(gomp_task_maybe_wait_for_dependencies): Handle new depend array
+	format in addition to the old.  Handle mutexinoutset kinds the same as
+	inout for now, handle unspecified kinds.  Fix a function comment typo.
+	(gomp_taskgroup_init): New function.
+	(GOMP_taskgroup_start): Use it.
+	(gomp_reduction_register, gomp_create_artificial_team,
+	GOMP_taskgroup_reduction_register,
+	GOMP_taskgroup_reduction_unregister, GOMP_task_reduction_remap,
+	gomp_parallel_reduction_register,
+	gomp_workshare_task_reduction_register,
+	gomp_workshare_taskgroup_start,
+	GOMP_workshare_task_reduction_unregister): New functions.
+	* taskloop.c (GOMP_taskloop): If taskgroup has workshare flag set,
+	check cancelled on prev taskgroup if any.  Guard all cancellation
+	tests with gomp_cancel_var test.  Handle GOMP_TASK_FLAG_REDUCTION flag
+	by calling GOMP_taskgroup_reduction_register.
+	* team.c (gomp_thread_attr): Remove comment.
+	(struct gomp_thread_start_data): Add handle field.
+	(gomp_thread_start): Call pthread_detach.
+	(gomp_new_team): Adjust gomp_init_work_share caller.
+	(gomp_free_pool_helper): Call pthread_detach.
+	(gomp_team_start): Add taskgroup argument, initialize implicit
+	tasks' taskgroup field to that.  Don't call
+	pthread_attr_setdetachstate.  Handle OMP_DISPLAY_AFFINITY env var.
+	(gomp_team_end): Determine nesting by thr->ts.level != 0
+	rather than thr->ts.team != NULL.
+	(gomp_pause_pool_helper, gomp_pause_host): New functions.
+	* work.c (alloc_work_share): Use gomp_aligned_alloc instead of
+	gomp_malloc if GOMP_HAVE_EFFICIENT_ALIGNED_ALLOC is defined.
+	(gomp_init_work_share): Change ORDERED argument from bool to size_t,
+	if more than 1 allocate also extra payload at the end of array.  Never
+	keep ordered_team_ids NULL, set it to inline_ordered_team_ids instead.
+	(gomp_work_share_start): Change ORDERED argument from bool to size_t,
+	return true instead of ws.
+	* Makefile.in: Regenerated.
+	* configure: Regenerated.
+	* config.h.in: Regenerated.
+	* testsuite/libgomp.c/cancel-for-2.c (foo): Use cancel modifier
+	in some cases.
+	* testsuite/libgomp.c-c++-common/cancel-parallel-1.c: New test.
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-3.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-iterator-1.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-iterator-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-mutexinout-1.c: New test.
+	* testsuite/libgomp.c-c++-common/depend-mutexinout-2.c: New test.
+	* testsuite/libgomp.c-c++-common/depobj-1.c: New test.
+	* testsuite/libgomp.c-c++-common/display-affinity-1.c: New test.
+	* testsuite/libgomp.c-c++-common/for-10.c: New test.
+	* testsuite/libgomp.c-c++-common/for-11.c: New test.
+	* testsuite/libgomp.c-c++-common/for-12.c: New test.
+	* testsuite/libgomp.c-c++-common/for-13.c: New test.
+	* testsuite/libgomp.c-c++-common/for-14.c: New test.
+	* testsuite/libgomp.c-c++-common/for-15.c: New test.
+	* testsuite/libgomp.c-c++-common/for-2.h: If CONDNE macro is defined,
+	define a different N(test), don't define N(f0) to N(f14), but instead
+	define N(f20) to N(f34) using != comparisons.
+	* testsuite/libgomp.c-c++-common/for-7.c: New test.
+	* testsuite/libgomp.c-c++-common/for-8.c: New test.
+	* testsuite/libgomp.c-c++-common/for-9.c: New test.
+	* testsuite/libgomp.c-c++-common/master-combined-1.c: New test.
+	* testsuite/libgomp.c-c++-common/pause-1.c: New test.
+	* testsuite/libgomp.c-c++-common/pause-2.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-10.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-11.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-12.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-13.c: New test.
+	* testsuite/libgomp.c-c++-common/pr66199-14.c: New test.
+	* testsuite/libgomp.c-c++-common/simd-1.c: New test.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-1.c: New test.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-2.c: New test.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-3.c: New test.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-4.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-11.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-12.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-1.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-2.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-3.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-4.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-5.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-6.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-7.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-8.c: New test.
+	* testsuite/libgomp.c-c++-common/task-reduction-9.c: New test.
+	* testsuite/libgomp.c-c++-common/taskwait-depend-1.c: New test.
+	* testsuite/libgomp.c++/depend-1.C: New test.
+	* testsuite/libgomp.c++/depend-iterator-1.C: New test.
+	* testsuite/libgomp.c++/depobj-1.C: New test.
+	* testsuite/libgomp.c++/for-16.C: New test.
+	* testsuite/libgomp.c++/for-21.C: New test.
+	* testsuite/libgomp.c++/for-22.C: New test.
+	* testsuite/libgomp.c++/for-23.C: New test.
+	* testsuite/libgomp.c++/for-24.C: New test.
+	* testsuite/libgomp.c++/for-25.C: New test.
+	* testsuite/libgomp.c++/for-26.C: New test.
+	* testsuite/libgomp.c++/taskloop-reduction-1.C: New test.
+	* testsuite/libgomp.c++/taskloop-reduction-2.C: New test.
+	* testsuite/libgomp.c++/taskloop-reduction-3.C: New test.
+	* testsuite/libgomp.c++/taskloop-reduction-4.C: New test.
+	* testsuite/libgomp.c++/task-reduction-10.C: New test.
+	* testsuite/libgomp.c++/task-reduction-11.C: New test.
+	* testsuite/libgomp.c++/task-reduction-12.C: New test.
+	* testsuite/libgomp.c++/task-reduction-13.C: New test.
+	* testsuite/libgomp.c++/task-reduction-14.C: New test.
+	* testsuite/libgomp.c++/task-reduction-15.C: New test.
+	* testsuite/libgomp.c++/task-reduction-16.C: New test.
+	* testsuite/libgomp.c++/task-reduction-17.C: New test.
+	* testsuite/libgomp.c++/task-reduction-18.C: New test.
+	* testsuite/libgomp.c++/task-reduction-19.C: New test.
+	* testsuite/libgomp.c/task-reduction-1.c: New test.
+	* testsuite/libgomp.c++/task-reduction-1.C: New test.
+	* testsuite/libgomp.c/task-reduction-2.c: New test.
+	* testsuite/libgomp.c++/task-reduction-2.C: New test.
+	* testsuite/libgomp.c++/task-reduction-3.C: New test.
+	* testsuite/libgomp.c++/task-reduction-4.C: New test.
+	* testsuite/libgomp.c++/task-reduction-5.C: New test.
+	* testsuite/libgomp.c++/task-reduction-6.C: New test.
+	* testsuite/libgomp.c++/task-reduction-7.C: New test.
+	* testsuite/libgomp.c++/task-reduction-8.C: New test.
+	* testsuite/libgomp.c++/task-reduction-9.C: New test.
+	* testsuite/libgomp.c/teams-1.c: New test.
+	* testsuite/libgomp.c/teams-2.c: New test.
+	* testsuite/libgomp.c/thread-limit-4.c: New test.
+	* testsuite/libgomp.c/thread-limit-5.c: New test.
+	* testsuite/libgomp.fortran/display-affinity-1.f90: New test.
+
+2018-11-06  Chung-Lin Tang <cltang@codesourcery.com>
+
+	* oacc-mem.c (memcpy_tofrom_device): New function, combined from
+	acc_memcpy_to/from_device functions, now with async parameter.
+	(acc_memcpy_to_device): Modify to use memcpy_tofrom_device.
+	(acc_memcpy_from_device): Likewise.
+	(acc_memcpy_to_device_async): New API function.
+	(acc_memcpy_from_device_async): Likewise.
+	(present_create_copy): Add async parameter and async setting/unsetting.
+	(acc_create): Adjust present_create_copy call.
+	(acc_copyin): Likewise.
+	(acc_present_or_create): Likewise.
+	(acc_present_or_copyin): Likewise.
+	(acc_create_async): New API function.
+	(acc_copyin_async): New API function.
+	(delete_copyout): Add async parameter and async setting/unsetting.
+	(acc_delete): Adjust delete_copyout call.
+	(acc_copyout): Likewise.
+	(acc_delete_async): New API function.
+	(acc_copyout_async): Likewise.
+	(update_dev_host): Add async parameter and async setting/unsetting.
+	(acc_update_device): Adjust update_dev_host call.
+	(acc_update_self): Likewise.
+	(acc_update_device_async): New API function.
+	(acc_update_self_async): Likewise.
+	* openacc.h (acc_copyin_async): Declare new API function.
+	(acc_create_async): Likewise.
+	(acc_copyout_async): Likewise.
+	(acc_delete_async): Likewise.
+	(acc_update_device_async): Likewise.
+	(acc_update_self_async): Likewise.
+	(acc_memcpy_to_device_async): Likewise.
+	(acc_memcpy_from_device_async): Likewise.
+	* openacc_lib.h (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* openacc.f90 (acc_copyin_async_32_h): New subroutine.
+	(acc_copyin_async_64_h): New subroutine.
+	(acc_copyin_async_array_h): New subroutine.
+	(acc_create_async_32_h): New subroutine.
+	(acc_create_async_64_h): New subroutine.
+	(acc_create_async_array_h): New subroutine.
+	(acc_copyout_async_32_h): New subroutine.
+	(acc_copyout_async_64_h): New subroutine.
+	(acc_copyout_async_array_h): New subroutine.
+	(acc_delete_async_32_h): New subroutine.
+	(acc_delete_async_64_h): New subroutine.
+	(acc_delete_async_array_h): New subroutine.
+	(acc_update_device_async_32_h): New subroutine.
+	(acc_update_device_async_64_h): New subroutine.
+	(acc_update_device_async_array_h): New subroutine.
+	(acc_update_self_async_32_h): New subroutine.
+	(acc_update_self_async_64_h): New subroutine.
+	(acc_update_self_async_array_h): New subroutine.
+	* libgomp.map (OACC_2.5): Add acc_copyin_async*, acc_copyout_async*,
+	acc_copyout_finalize_async*, acc_create_async*, acc_delete_async*,
+	acc_delete_finalize_async*, acc_memcpy_from_device_async*,
+	acc_memcpy_to_device_async*, acc_update_device_async*, and
+	acc_update_self_async* entries.
+	* testsuite/libgomp.oacc-c-c++-common/lib-94.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/lib-95.c: New test.
+	* testsuite/libgomp.oacc-fortran/lib-16.f90: New test.
+
 2018-10-31  Joseph Myers  <joseph@codesourcery.com>
 
 	PR bootstrap/82856

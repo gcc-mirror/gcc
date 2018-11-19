@@ -123,3 +123,13 @@ along with GCC; see the file COPYING3.  If not see
 		    : "=r" (_beg)					\
 		    : "0" (_beg), "r" (_end), "r" (_xtr), "r" (_scno));	\
 }
+
+/* Emit rtl for profiling.  Output assembler code to FILE
+   to call "_mcount" for profiling a function entry.  */
+#define PROFILE_HOOK(LABEL)					\
+  {								\
+   rtx fun, rt;							\
+   rt = get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);	\
+   fun = gen_rtx_SYMBOL_REF (Pmode, "_mcount");			\
+   emit_library_call (fun, LCT_NORMAL, VOIDmode, rt, Pmode);	\
+  }

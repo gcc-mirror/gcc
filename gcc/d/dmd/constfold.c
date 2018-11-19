@@ -8,12 +8,11 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/constfold.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>                     // mem{cpy|set|cmp}()
+#include "root/dsystem.h"               // mem{cpy|set|cmp}()
+
+#ifndef IN_GCC
 #include <math.h>
-#include <new>
+#endif
 
 #include "root/rmem.h"
 #include "root/root.h"
@@ -481,13 +480,21 @@ UnionExp Mod(Loc loc, Type *type, Expression *e1, Expression *e2)
         {
             real_t r2 = e2->toReal();
 
+#ifdef IN_GCC
             c = complex_t(e1->toReal() % r2, e1->toImaginary() % r2);
+#else
+            c = complex_t(::fmodl(e1->toReal(), r2), ::fmodl(e1->toImaginary(), r2));
+#endif
         }
         else if (e2->type->isimaginary())
         {
             real_t i2 = e2->toImaginary();
 
+#ifdef IN_GCC
             c = complex_t(e1->toReal() % i2, e1->toImaginary() % i2);
+#else
+            c = complex_t(::fmodl(e1->toReal(), i2), ::fmodl(e1->toImaginary(), i2));
+#endif
         }
         else
             assert(0);

@@ -1506,7 +1506,7 @@ package body Exp_Pakd is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
       L   : constant Node_Id    := Relocate_Node (Left_Opnd  (N));
-      R   : constant Node_Id    := Relocate_Node (Right_Opnd (N));
+      R   :          Node_Id    := Relocate_Node (Right_Opnd (N));
 
       Ltyp : Entity_Id;
       Rtyp : Entity_Id;
@@ -1528,7 +1528,8 @@ package body Exp_Pakd is
       --  True .. True where an exception must be raised.
 
       if Nkind (N) = N_Op_Xor then
-         Silly_Boolean_Array_Xor_Test (N, Rtyp);
+         R := Duplicate_Subexpr (R);
+         Silly_Boolean_Array_Xor_Test (N, R, Rtyp);
       end if;
 
       --  Now that that silliness is taken care of, get packed array type

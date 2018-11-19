@@ -24267,6 +24267,7 @@ gen_producer_string (void)
       case OPT_fdiagnostics_show_labels:
       case OPT_fdiagnostics_show_line_numbers:
       case OPT_fdiagnostics_color_:
+      case OPT_fdiagnostics_format_:
       case OPT_fverbose_asm:
       case OPT____:
       case OPT__sysroot_:
@@ -31182,6 +31183,8 @@ dwarf2out_finish (const char *filename)
     FOR_EACH_CHILD (die, c, gcc_assert (! c->die_mark));
   }
 #endif
+  for (ctnode = comdat_type_list; ctnode != NULL; ctnode = ctnode->next)
+    resolve_addr (ctnode->root_die);
   resolve_addr (comp_unit_die ());
   move_marked_base_types ();
 

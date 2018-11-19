@@ -722,7 +722,7 @@ package body Checks is
       --  Generate a check to raise PE if alignment may be inappropriate
 
       else
-         --  If the original expression is a non-static constant, use the name
+         --  If the original expression is a nonstatic constant, use the name
          --  of the constant itself rather than duplicating its initialization
          --  expression, which was extracted above.
 
@@ -3552,8 +3552,8 @@ package body Checks is
                else
                   --  Conversions involving fixed-point types are expanded
                   --  separately, and do not need a Range_Check flag, except
-                  --  in SPARK_Mode, where the explicit constraint check will
-                  --  not be generated.
+                  --  in GNATprove_Mode, where the explicit constraint check
+                  --  will not be generated.
 
                   if GNATprove_Mode
                     or else not Is_Fixed_Point_Type (Expr_Type)
@@ -4563,6 +4563,17 @@ package body Checks is
         or else Assume_No_Invalid_Values
         or else Assume_Valid
       then
+         --  If this is a known valid constant with a nonstatic value, it may
+         --  have inherited a narrower subtype from its initial value; use this
+         --  saved subtype (see sem_ch3.adb).
+
+         if Is_Entity_Name (N)
+           and then Ekind (Entity (N)) = E_Constant
+           and then Present (Actual_Subtype (Entity (N)))
+         then
+            Typ := Actual_Subtype (Entity (N));
+         end if;
+
          null;
       else
          Typ := Underlying_Type (Base_Type (Typ));
@@ -7958,6 +7969,12 @@ package body Checks is
       --  Do not generate an elaboration check if such code is not desirable
 
       elsif Restriction_Active (No_Elaboration_Code) then
+         return;
+
+      --  Do not generate an elaboration check if exceptions cannot be used,
+      --  caught, or propagated.
+
+      elsif not Exceptions_OK then
          return;
 
       --  Do not consider subprograms which act as compilation units, because

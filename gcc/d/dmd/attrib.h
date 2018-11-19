@@ -212,10 +212,10 @@ public:
     Dsymbols *cache;
 
     Dsymbol *syntaxCopy(Dsymbol *s);
-    bool oneMember(Dsymbol *ps, Identifier *ident);
+    bool oneMember(Dsymbol **ps, Identifier *ident);
     Dsymbols *include(Scope *sc, ScopeDsymbol *sds);
     void addMember(Scope *sc, ScopeDsymbol *sds);
-    void addComment(const char *comment);
+    void addComment(const utf8_t *comment);
     void setScope(Scope *sc);
     void importAll(Scope *sc);
     void semantic(Scope *sc);

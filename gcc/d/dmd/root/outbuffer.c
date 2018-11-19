@@ -6,16 +6,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/root/outbuffer.c
  */
 
-#include <assert.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#if __sun
-#include <alloca.h>
-#endif
-
+#include "dsystem.h"
 #include "outbuffer.h"
 #include "object.h"
 

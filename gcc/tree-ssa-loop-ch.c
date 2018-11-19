@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-inline.h"
 #include "tree-ssa-scopedtables.h"
 #include "tree-ssa-threadedge.h"
+#include "tree-ssa-sccvn.h"
 #include "params.h"
 
 /* Duplicates headers of loops if they are small enough, so that the statements
@@ -297,11 +298,13 @@ ch_base::copy_headers (function *fun)
   bool changed = false;
 
   if (number_of_loops (fun) <= 1)
-      return 0;
+    return 0;
 
   bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   copied_bbs = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
   bbs_size = n_basic_blocks_for_fn (fun);
+
+  auto_vec<std::pair<edge, loop_p> > copied;
 
   FOR_EACH_LOOP (loop, 0)
     {
@@ -371,6 +374,7 @@ ch_base::copy_headers (function *fun)
 	  fprintf (dump_file, "Duplication failed.\n");
 	  continue;
 	}
+      copied.safe_push (std::make_pair (entry, loop));
 
       /* If the loop has the form "for (i = j; i < j + 10; i++)" then
 	 this copying can introduce a case where we rely on undefined
@@ -422,7 +426,28 @@ ch_base::copy_headers (function *fun)
     }
 
   if (changed)
-    update_ssa (TODO_update_ssa);
+    {
+      update_ssa (TODO_update_ssa);
+      /* After updating SSA form perform CSE on the loop header
+	 copies.  This is esp. required for the pass before
+	 vectorization since nothing cleans up copied exit tests
+	 that can now be simplified.  CSE from the entry of the
+	 region we copied till all loop exit blocks but not
+	 entering the loop itself.  */
+      for (unsigned i = 0; i < copied.length (); ++i)
+	{
+	  edge entry = copied[i].first;
+	  loop_p loop = copied[i].second;
+	  vec<edge> exit_edges = get_loop_exit_edges (loop);
+	  bitmap exit_bbs = BITMAP_ALLOC (NULL);
+	  for (unsigned j = 0; j < exit_edges.length (); ++j)
+	    bitmap_set_bit (exit_bbs, exit_edges[j]->dest->index);
+	  bitmap_set_bit (exit_bbs, loop->header->index);
+	  do_rpo_vn (cfun, entry, exit_bbs);
+	  BITMAP_FREE (exit_bbs);
+	  exit_edges.release ();
+	}
+    }
   free (bbs);
   free (copied_bbs);
 
@@ -473,24 +498,13 @@ pass_ch_vect::process_loop_p (struct loop *loop)
   if (loop->dont_vectorize)
     return false;
 
-  if (!do_while_loop_p (loop))
-    return true;
-
- /* The vectorizer won't handle anything with multiple exits, so skip.  */
+  /* The vectorizer won't handle anything with multiple exits, so skip.  */
   edge exit = single_exit (loop);
   if (!exit)
     return false;
 
-  /* Copy headers iff there looks to be code in the loop after the exit block,
-     i.e. the exit block has an edge to another block (besides the latch,
-     which should be empty).  */
-  edge_iterator ei;
-  edge e;
-  FOR_EACH_EDGE (e, ei, exit->src->succs)
-    if (!loop_exit_edge_p (loop, e)
-	&& e->dest != loop->header
-	&& e->dest != loop->latch)
-      return true;
+  if (!do_while_loop_p (loop))
+    return true;
 
   return false;
 }

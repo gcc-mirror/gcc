@@ -143,7 +143,7 @@ user's source code.  Examples include:
   at the declaration
 
   @item
-  something is erroneously duplicated (e.g. an error, due to breaking a
+  something is erroneously duplicated (e.g.@: an error, due to breaking a
   uniqueness requirement, or a warning, if it's suggestive of a bug)
 
   @item
@@ -376,12 +376,15 @@ where the @code{double} and @code{int} are colorized to highlight them.
 
 @c %H and %I were added in r248698.
 
+@subsection Group logically-related diagnostics
+
 Use @code{auto_diagnostic_group} when issuing multiple related
 diagnostics (seen in various examples on this page).  This informs the
 diagnostic subsystem that all diagnostics issued within the lifetime
-of the @code{auto_diagnostic_group} are related.  (Currently it doesn't
-do anything with this information, but we may implement that in the
-future).
+of the @code{auto_diagnostic_group} are related.  For example,
+@option{-fdiagnostics-format=json} will treat the first diagnostic
+emitted within the group as a top-level diagnostic, and all subsequent
+diagnostics within the group as its children.
 
 @subsection Quoting
 Text should be quoted by either using the @samp{q} modifier in a directive
@@ -545,7 +548,7 @@ hints, rather than replacement fix-it hints.  For example, consider this:
 @end smallexample
 
 @noindent
-which is intended to e.g. replace a @code{std::move} with the underlying
+which is intended to e.g.@: replace a @code{std::move} with the underlying
 value:
 
 @smallexample

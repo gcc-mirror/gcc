@@ -134,7 +134,10 @@ ubsan_instrument_shift (location_t loc, enum tree_code code,
   if (TYPE_OVERFLOW_WRAPS (type0)
       || maybe_ne (GET_MODE_BITSIZE (TYPE_MODE (type0)),
 		   TYPE_PRECISION (type0))
-      || !sanitize_flags_p (SANITIZE_SHIFT_BASE))
+      || !sanitize_flags_p (SANITIZE_SHIFT_BASE)
+      /* In C++2a and later, shifts are well defined except when
+	 the second operand is not within bounds.  */
+      || cxx_dialect >= cxx2a)
     ;
 
   /* For signed x << y, in C99/C11, the following:

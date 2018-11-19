@@ -239,14 +239,14 @@ struct bitmap_usage: public mem_usage
   {
     char *location_string = loc->to_string ();
 
-    fprintf (stderr, "%-48s %10" PRIu64 ":%5.1f%%"
-	     "%10" PRIu64 "%10" PRIu64 ":%5.1f%%"
-	     "%12" PRIu64 "%12" PRIu64 "%10s\n",
-	     location_string, (uint64_t)m_allocated,
+    fprintf (stderr, "%-48s " PRsa (9) ":%5.1f%%"
+	     PRsa (9) PRsa (9) ":%5.1f%%"
+	     PRsa (11) PRsa (11) "%10s\n",
+	     location_string, SIZE_AMOUNT (m_allocated),
 	     get_percent (m_allocated, total.m_allocated),
-	     (uint64_t)m_peak, (uint64_t)m_times,
+	     SIZE_AMOUNT (m_peak), SIZE_AMOUNT (m_times),
 	     get_percent (m_times, total.m_times),
-	     m_nsearches, m_search_iter,
+	     SIZE_AMOUNT (m_nsearches), SIZE_AMOUNT (m_search_iter),
 	     loc->m_ggc ? "ggc" : "heap");
 
     free (location_string);

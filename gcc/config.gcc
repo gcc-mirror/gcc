@@ -458,7 +458,7 @@ microblaze*-*-*)
 mips*-*-*)
 	cpu_type=mips
 	d_target_objs="mips-d.o"
-	extra_headers="loongson.h msa.h"
+	extra_headers="loongson.h loongson-mmiintrin.h msa.h"
 	extra_objs="frame-header-opt.o"
 	extra_options="${extra_options} g.opt fused-madd.opt mips/mips-tables.opt"
 	;;
@@ -483,6 +483,9 @@ nios2-*-*)
 	;;
 nvptx-*-*)
 	cpu_type=nvptx
+	;;
+or1k*-*-*)
+	cpu_type=or1k
 	;;
 powerpc*-*-*spe*)
 	cpu_type=powerpcspe
@@ -664,11 +667,11 @@ pentium4 pentium4m pentiumpro prescott lakemont"
 # 64-bit x86 processors supported by --with-arch=.  Each processor
 # MUST be separated by exactly one space.
 x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
-bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
-core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
-sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
-skylake-avx512 cannonlake icelake-client icelake-server skylake goldmont \
-goldmont-plus tremont x86-64 native"
+bdver3 bdver4 znver1 znver2 btver1 btver2 k8 k8-sse3 opteron \
+opteron-sse3 nocona core2 corei7 corei7-avx core-avx-i core-avx2 atom \
+slm nehalem westmere sandybridge ivybridge haswell broadwell bonnell \
+silvermont knl knm skylake-avx512 cannonlake icelake-client icelake-server \
+skylake goldmont goldmont-plus tremont x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -917,6 +920,7 @@ case ${target} in
   tmake_file="${tmake_file} t-sol2 t-slibgcc"
   c_target_objs="${c_target_objs} sol2-c.o"
   cxx_target_objs="${cxx_target_objs} sol2-c.o sol2-cxx.o"
+  d_target_objs="${d_target_objs} sol2-d.o"
   extra_objs="${extra_objs} sol2.o sol2-stubs.o"
   extra_options="${extra_options} sol2.opt"
   case ${enable_threads}:${have_pthread_h}:${have_thread_h} in
@@ -924,6 +928,7 @@ case ${target} in
       thread_file=posix
       ;;
   esac
+  target_has_targetdm=yes
   ;;
 *-*-*vms*)
   extra_options="${extra_options} vms/vms.opt"
@@ -2488,6 +2493,48 @@ nvptx-*)
 		tm_file="${tm_file} nvptx/offload.h"
 	fi
 	;;
+or1k*-*-*)
+	tm_file="elfos.h ${tm_file}"
+	tmake_file="${tmake_file} or1k/t-or1k"
+	# Force .init_array support.  The configure script cannot always
+	# automatically detect that GAS supports it, yet we require it.
+	gcc_cv_initfini_array=yes
+
+	# Handle --with-multilib-list=...
+	or1k_multilibs="${with_multilib_list}"
+	if test "$or1k_multilibs" = "default"; then
+		or1k_multilibs="mcmov,msoft-mul,msoft-div"
+	fi
+	or1k_multilibs=`echo $or1k_multilibs | sed -e 's/,/ /g'`
+	for or1k_multilib in ${or1k_multilibs}; do
+		case ${or1k_multilib} in
+		mcmov | msext | msfimm | \
+		mhard-div | mhard-mul | \
+		msoft-div | msoft-mul )
+			TM_MULTILIB_CONFIG="${TM_MULTILIB_CONFIG},${or1k_multilib}"
+			;;
+		*)
+			echo "--with-multilib-list=${with_multilib_list} not supported."
+			exit 1
+		esac
+	done
+	TM_MULTILIB_CONFIG=`echo $TM_MULTILIB_CONFIG | sed 's/^,//'`
+
+	case ${target} in
+	or1k*-*-linux*)
+		tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h"
+		tm_file="${tm_file} or1k/linux.h"
+		;;
+	or1k*-*-elf*)
+		tm_file="${tm_file} newlib-stdint.h or1k/elf.h"
+		extra_options="${extra_options} or1k/elf.opt"
+		;;
+	or1k*-*-rtems*)
+		tm_file="${tm_file} newlib-stdint.h or1k/rtems.h rtems.h"
+		tmake_file="${tmake_file} or1k/t-rtems"
+		;;
+	esac
+	;;
 pdp11-*-*)
 	tm_file="${tm_file} newlib-stdint.h"
 	use_gcc_stdint=wrap
@@ -3337,6 +3384,10 @@ case ${target} in
 	arch=znver1
 	cpu=znver1
 	;;
+      znver2-*)
+	arch=znver2
+	cpu=znver2
+	;;
       bdver4-*)
         arch=bdver4
         cpu=bdver4
@@ -3453,6 +3504,10 @@ case ${target} in
       znver1-*)
 	arch=znver1
 	cpu=znver1
+	;;
+      znver2-*)
+	arch=znver2
+	cpu=znver2
 	;;
       bdver4-*)
         arch=bdver4
@@ -3740,13 +3795,13 @@ fi
 # Infer a default setting for --with-llsc.
 if test x$with_llsc = x; then
   case ${target} in
-    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
-      # The R5900 doesn't support LL(D) and SC(D).
-      with_llsc=no
-      ;;
     mips*-*-linux*)
       # The kernel emulates LL and SC where necessary.
       with_llsc=yes
+      ;;
+    mips64r5900-*-* | mips64r5900el-*-* | mipsr5900-*-* | mipsr5900el-*-*)
+      # The R5900 doesn't support LL(D) and SC(D).
+      with_llsc=no
       ;;
   esac
 fi

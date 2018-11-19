@@ -952,7 +952,7 @@ typedef struct gfc_file
 
 typedef struct gfc_linebuf
 {
-  source_location location;
+  location_t location;
   struct gfc_file *file;
   struct gfc_linebuf *next;
 
@@ -3219,7 +3219,8 @@ int gfc_kind_max (gfc_expr *, gfc_expr *);
 
 bool gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
 bool gfc_check_assign (gfc_expr *, gfc_expr *, int, bool c = true);
-bool gfc_check_pointer_assign (gfc_expr *, gfc_expr *);
+bool gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
+  bool suppres_type_test = false);
 bool gfc_check_assign_symbol (gfc_symbol *, gfc_component *, gfc_expr *);
 
 gfc_expr *gfc_build_default_init_expr (gfc_typespec *, locus *);

@@ -14,7 +14,7 @@ header files.
 Issues to be faced in this transition:
 
 * Representation of source locations.
-  + Currently the frontend uses gcc's source_location codes, using the
+  + Currently the frontend uses gcc's location_t codes, using the
     interface in libcpp/line-map.h.
 
 * Handling of error messages.

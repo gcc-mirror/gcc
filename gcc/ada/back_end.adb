@@ -237,22 +237,21 @@ package body Back_End is
          Last  : constant Natural  := Switch_Last (Switch_Chars);
 
       begin
-         --  Skip -o or internal GCC switches together with their argument.
+         --  Skip -o or internal GCC switches together with their argument
 
          if Switch_Chars (First .. Last) = "o"
            or else Is_Internal_GCC_Switch (Switch_Chars)
          then
             Next_Arg := Next_Arg + 1;
 
-         --  Store -G xxx as -Gxxx and go directly to the next argument.
+         --  Store -G xxx as -Gxxx and go directly to the next argument
 
          elsif Switch_Chars (First .. Last) = "G" then
             Next_Arg := Next_Arg + 1;
 
             --  Should never get there with -G not followed by an argument,
-            --  but use defensive code nonetheless.
-            --  Store as -Gxxx to avoid storing parameters in ALI files that
-            --  might create confusion.
+            --  but use defensive code nonetheless. Store as -Gxxx to avoid
+            --  storing parameters in ALI files that might create confusion.
 
             if Next_Arg <= Args'Last then
                Store_Compilation_Switch (Switch_Chars & Args (Next_Arg).all);

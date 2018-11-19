@@ -1367,9 +1367,7 @@ package body Exp_Disp is
          --  to the object, because generic dispatching constructors are not
          --  supported.
 
-         if Opnd = Iface_Typ
-           and then not RTE_Available (RE_Displace)
-         then
+         if Opnd = Iface_Typ and then not RTE_Available (RE_Displace) then
             return;
          end if;
       end;
@@ -1830,6 +1828,9 @@ package body Exp_Disp is
       Formal        : Node_Id;
       Ftyp          : Entity_Id;
       Iface_Formal  : Node_Id := Empty;  -- initialize to prevent warning
+      Is_Predef_Op  : constant Boolean :=
+                        Is_Predefined_Dispatching_Operation (Prim)
+                          or else Is_Predefined_Dispatching_Operation (Target);
       New_Arg       : Node_Id;
       Offset_To_Top : Node_Id;
       Target_Formal : Entity_Id;
@@ -1840,7 +1841,7 @@ package body Exp_Disp is
 
       --  No thunk needed if the primitive has been eliminated
 
-      if Is_Eliminated (Ultimate_Alias (Prim)) then
+      if Is_Eliminated (Target) then
          return;
 
       --  In case of primitives that are functions without formals and a
@@ -1861,9 +1862,10 @@ package body Exp_Disp is
       --  actual object) generate code that modify its contents.
 
       --  Note: This special management is not done for predefined primitives
-      --  because???
+      --  because they don't have available the Interface_Alias attribute (see
+      --  Sem_Ch3.Add_Internal_Interface_Entities).
 
-      if not Is_Predefined_Dispatching_Operation (Prim) then
+      if not Is_Predef_Op then
          Iface_Formal := First_Formal (Interface_Alias (Prim));
       end if;
 
@@ -1874,9 +1876,7 @@ package body Exp_Disp is
          --  Use the interface type as the type of the controlling formal (see
          --  comment above).
 
-         if not Is_Controlling_Formal (Formal)
-           or else Is_Predefined_Dispatching_Operation (Prim)
-         then
+         if not Is_Controlling_Formal (Formal) or else Is_Predef_Op then
             Ftyp := Etype (Formal);
             Expr := New_Copy_Tree (Expression (Parent (Formal)));
          else
@@ -1894,7 +1894,7 @@ package body Exp_Disp is
              Parameter_Type => New_Occurrence_Of (Ftyp, Loc),
              Expression => Expr));
 
-         if not Is_Predefined_Dispatching_Operation (Prim) then
+         if not Is_Predef_Op then
             Next_Formal (Iface_Formal);
          end if;
 
@@ -2487,10 +2487,10 @@ package body Exp_Disp is
      (Typ : Entity_Id) return Node_Id
    is
       Loc    : constant Source_Ptr := Sloc (Typ);
-      Def_Id : constant Entity_Id :=
+      B_Id   : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_uB);
+      Def_Id : constant Entity_Id  :=
                  Make_Defining_Identifier (Loc,
                    Name_uDisp_Asynchronous_Select);
-      B_Id   : constant Entity_Id  := Make_Defining_Identifier (Loc, Name_uB);
       Params : constant List_Id    := New_List;
 
    begin
@@ -2503,6 +2503,7 @@ package body Exp_Disp is
       --  F : out Boolean;                    --  Status flag
 
       --  The B parameter may be left uninitialized
+
       Set_Warnings_Off (B_Id);
 
       Append_List_To (Params, New_List (
@@ -4062,8 +4063,7 @@ package body Exp_Disp is
                           Alias (Prim);
 
                      else
-                        Expand_Interface_Thunk
-                          (Ultimate_Alias (Prim), Thunk_Id, Thunk_Code);
+                        Expand_Interface_Thunk (Prim, Thunk_Id, Thunk_Code);
 
                         if Present (Thunk_Id) then
                            Append_To (Result, Thunk_Code);

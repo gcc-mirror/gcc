@@ -166,7 +166,7 @@ record_temporary_equivalences_from_phis (edge e,
 	     away in the VR stack.  */
 	  vr_values *vr_values = evrp_range_analyzer->get_vr_values ();
 	  value_range *new_vr = vr_values->allocate_value_range ();
-	  *new_vr = value_range ();
+	  new (new_vr) value_range ();
 
 	  /* There are three cases to consider:
 
@@ -181,9 +181,9 @@ record_temporary_equivalences_from_phis (edge e,
 	  if (TREE_CODE (src) == SSA_NAME)
 	    new_vr->deep_copy (vr_values->get_value_range (src));
 	  else if (TREE_CODE (src) == INTEGER_CST)
-	    set_value_range_to_value (new_vr, src,  NULL);
+	    new_vr->set (src);
 	  else
-	    set_value_range_to_varying (new_vr);
+	    new_vr->set_varying ();
 
 	  /* This is a temporary range for DST, so push it.  */
 	  evrp_range_analyzer->push_value_range (dst, new_vr);

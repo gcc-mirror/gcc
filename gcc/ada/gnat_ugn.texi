@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Aug 20, 2018
+GNAT User's Guide for Native Platforms , Nov 09, 2018
 
 AdaCore
 
@@ -9977,7 +9977,7 @@ Treat pragma Restrictions as Restriction_Warnings.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
 
 Output representation information for declared types, objects and
 subprograms. Note that this switch is not allowed if a previous
@@ -15092,7 +15092,7 @@ restriction warnings rather than restrictions.
 
 @table @asis
 
-@item @code{-gnatR[0|1|2|3][e][j][m][s]}
+@item @code{-gnatR[0|1|2|3|4][e][j][m][s]}
 
 This switch controls output from the compiler of a listing showing
 representation information for declared types, objects and subprograms.
@@ -15100,6 +15100,7 @@ For @code{-gnatR0}, no information is output (equivalent to omitting
 the @code{-gnatR} switch). For @code{-gnatR1} (which is the default,
 so @code{-gnatR} with no parameter has the same effect), size and
 alignment information is listed for declared array and record types.
+
 For @code{-gnatR2}, size and alignment information is listed for all
 declared types and objects. The @code{Linker_Section} is also listed for any
 entity for which the @code{Linker_Section} is set explicitly or implicitly (the
@@ -15112,9 +15113,13 @@ a mostly obvious format with #n being used to represent the value of the
 n'th discriminant. See source files @code{repinfo.ads/adb} in the
 GNAT sources for full details on the format of @code{-gnatR3} output.
 
+For @code{-gnatR4}, information for relevant compiler-generated types
+is also listed, i.e. when they are structurally part of other declared
+types and objects.
+
 If the switch is followed by an @code{e} (e.g. @code{-gnatR2e}), then
 extended representation information for record sub-components of records
-are included.
+is included.
 
 If the switch is followed by an @code{m} (e.g. @code{-gnatRm}), then
 subprogram conventions and parameter passing mechanisms for all the

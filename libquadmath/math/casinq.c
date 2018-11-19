@@ -1,5 +1,5 @@
-/* Return arc sine of complex __float128 value.
-   Copyright (C) 1997 Free Software Foundation, Inc.
+/* Return arc sine of a complex float type.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Ulrich Drepper <drepper@cygnus.com>, 1997.
 
@@ -14,12 +14,10 @@
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, write to the Free
-   Software Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA
-   02111-1307 USA.  */
+   License along with the GNU C Library; if not, see
+   <http://www.gnu.org/licenses/>.  */
 
 #include "quadmath-imp.h"
-
 
 __complex128
 casinq (__complex128 x)
@@ -28,7 +26,7 @@ casinq (__complex128 x)
 
   if (isnanq (__real__ x) || isnanq (__imag__ x))
     {
-      if (__real__ x == 0.0)
+      if (__real__ x == 0)
 	{
 	  res = x;
 	}

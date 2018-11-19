@@ -2135,7 +2135,7 @@ _cpp_default_encoding (void)
 /* Constructor for cpp_string_location_reader.  */
 
 cpp_string_location_reader::
-cpp_string_location_reader (source_location src_loc,
+cpp_string_location_reader (location_t src_loc,
 			    line_maps *line_table)
 : m_line_table (line_table)
 {

@@ -10,8 +10,7 @@
 
 #pragma once
 
-#include <string.h>                     // memset()
-
+#include "root/dsystem.h"               // memset()
 #include "dsymbol.h"
 
 void genhdrfile(Module *m);

@@ -32,7 +32,7 @@ class Nspace : public ScopeDsymbol
     int apply(Dsymbol_apply_ft_t fp, void *param);
     bool hasPointers();
     void setFieldOffset(AggregateDeclaration *ad, unsigned *poffset, bool isunion);
-    const char *kind();
+    const char *kind() const;
     Nspace *isNspace() { return this; }
     void accept(Visitor *v) { v->visit(this); }
 };

@@ -1,3 +1,13 @@
+2018-11-17  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87824
+	* d-target.cc (Target::alignsize): Return min_align_of_type.
+
+2018-11-05  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87865
+	* d-system.h: New file.
+
 2018-11-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR d/87824

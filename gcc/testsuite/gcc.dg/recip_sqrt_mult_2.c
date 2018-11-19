@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-optimized" } */
+/* { dg-options "-Ofast -fdump-tree-optimized -fcompare-debug" } */
 
 float
 foo (float a)

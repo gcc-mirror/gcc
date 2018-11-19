@@ -1314,6 +1314,8 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      convert_nonlocal_reference_op
 		(&OMP_CLAUSE_ALIGNED_ALIGNMENT (clause), &dummy, wi);
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_NONTEMPORAL:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -1322,8 +1324,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  if (decl_function_context (decl) != info->context)
 	    {
 	      OMP_CLAUSE_DECL (clause) = get_nonlocal_debug_decl (info, decl);
-	      if (OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_PRIVATE)
-		need_chain = true;
+	      need_chain = true;
 	    }
 	  break;
 
@@ -1365,6 +1366,7 @@ convert_nonlocal_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  /* The following clauses are only added during OMP lowering; nested
 	     function decomposition happens before that.  */
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
 	  /* Anything else.  */
@@ -2000,6 +2002,8 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	      convert_local_reference_op
 		(&OMP_CLAUSE_ALIGNED_ALIGNMENT (clause), &dummy, wi);
 	    }
+	  /* FALLTHRU */
+	case OMP_CLAUSE_NONTEMPORAL:
 	  /* Like do_decl_clause, but don't add any suppression.  */
 	  decl = OMP_CLAUSE_DECL (clause);
 	  if (VAR_P (decl)
@@ -2056,6 +2060,7 @@ convert_local_omp_clauses (tree *pclauses, struct walk_stmt_info *wi)
 	  /* The following clauses are only added during OMP lowering; nested
 	     function decomposition happens before that.  */
 	case OMP_CLAUSE__LOOPTEMP_:
+	case OMP_CLAUSE__REDUCTEMP_:
 	case OMP_CLAUSE__SIMDUID_:
 	case OMP_CLAUSE__GRIDDIM_:
 	  /* Anything else.  */

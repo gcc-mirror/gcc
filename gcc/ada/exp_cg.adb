@@ -146,7 +146,7 @@ package body Exp_CG is
          end if;
       end loop;
 
-      Set_Special_Output (null);
+      Cancel_Special_Output;
    end Generate_CG_Output;
 
    ----------------

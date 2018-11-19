@@ -126,6 +126,10 @@
 #define bit_XSAVEC	(1 << 1)
 #define bit_XSAVES	(1 << 3)
 
+/* PT sub leaf (%eax == 14, %ecx == 0) */
+/* %ebx */
+#define bit_PTWRITE	(1 << 4)
+
 /* Signatures for different CPU implementations as returned in uses
    of cpuid with level 0.  */
 #define signature_AMD_ebx	0x68747541

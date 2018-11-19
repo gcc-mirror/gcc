@@ -410,7 +410,8 @@ graphite_transform_loops (void)
 	  continue;
 
 	changed = true;
-	if (graphite_regenerate_ast_isl (scop))
+	if (graphite_regenerate_ast_isl (scop)
+	    && dump_enabled_p ())
 	  {
 	    dump_user_location_t loc = find_loop_location
 	      (scops[i]->scop_info->region.entry->dest->loop_father);

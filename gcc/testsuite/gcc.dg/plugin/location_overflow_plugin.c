@@ -39,7 +39,8 @@ static diagnostic_finalizer_fn original_finalizer = NULL;
 
 static void
 verify_unpacked_ranges  (diagnostic_context *context,
-			 diagnostic_info *diagnostic)
+			 diagnostic_info *diagnostic,
+			 diagnostic_t orig_diag_kind)
 {
   /* Verify that the locations are ad-hoc, not packed. */
   location_t loc = diagnostic_location (diagnostic);
@@ -47,12 +48,13 @@ verify_unpacked_ranges  (diagnostic_context *context,
 
   /* We're done testing; chain up to original finalizer.  */
   gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic);
+  original_finalizer (context, diagnostic, orig_diag_kind);
 }
 
 static void
 verify_no_columns  (diagnostic_context *context,
-		    diagnostic_info *diagnostic)
+		    diagnostic_info *diagnostic,
+		    diagnostic_t orig_diag_kind)
 {
   /* Verify that the locations have no columns. */
   location_t loc = diagnostic_location (diagnostic);
@@ -60,7 +62,7 @@ verify_no_columns  (diagnostic_context *context,
 
   /* We're done testing; chain up to original finalizer.  */
   gcc_assert (original_finalizer);
-  original_finalizer (context, diagnostic);
+  original_finalizer (context, diagnostic, orig_diag_kind);
 }
 
 int

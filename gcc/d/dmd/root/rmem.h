@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <stddef.h>     // for size_t
+#include "dsystem.h"    // for size_t
 
 #if __APPLE__ && __i386__
     /* size_t is 'unsigned long', which makes it mangle differently

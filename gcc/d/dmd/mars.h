@@ -54,9 +54,7 @@ the target object file format:
  */
 
 
-#include <stdio.h>
-#include <stdint.h>
-#include <stdarg.h>
+#include "root/dsystem.h"
 
 #ifdef __DMC__
 #ifdef DEBUG

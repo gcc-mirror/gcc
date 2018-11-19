@@ -1204,7 +1204,7 @@ package body Switch.C is
 
                   case C is
 
-                  when '0' .. '3' =>
+                  when '0' .. '4' =>
                      List_Representation_Info :=
                        Character'Pos (C) - Character'Pos ('0');
 

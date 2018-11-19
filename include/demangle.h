@@ -392,6 +392,9 @@ enum demangle_component_type
      template argument, and the right subtree is either NULL or
      another TEMPLATE_ARGLIST node.  */
   DEMANGLE_COMPONENT_TEMPLATE_ARGLIST,
+  /* A template parameter object (C++20).  The left subtree is the
+     corresponding template argument.  */
+  DEMANGLE_COMPONENT_TPARM_OBJ,
   /* An initializer list.  The left subtree is either an explicit type or
      NULL, and the right subtree is a DEMANGLE_COMPONENT_ARGLIST.  */
   DEMANGLE_COMPONENT_INITIALIZER_LIST,

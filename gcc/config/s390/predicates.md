@@ -212,7 +212,7 @@
     (INTVAL (op), false, GET_MODE_BITSIZE (mode), NULL, NULL);
 })
 
-;; Return true if OP is ligitimate for any LOC instruction.
+;; Return true if OP is legitimate for any LOC instruction.
 
 (define_predicate "loc_operand"
   (ior (match_operand 0 "nonimmediate_operand")

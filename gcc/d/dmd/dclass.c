@@ -8,11 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/class.c
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <assert.h>
-#include <string.h>                     // mem{cpy|set}()
-
+#include "root/dsystem.h"               // mem{cpy|set}()
 #include "root/root.h"
 #include "root/rmem.h"
 
@@ -1389,7 +1385,7 @@ int ClassDeclaration::vtblOffset() const
 /****************************************
  */
 
-const char *ClassDeclaration::kind()
+const char *ClassDeclaration::kind() const
 {
     return "class";
 }
@@ -1827,7 +1823,7 @@ bool InterfaceDeclaration::isCPPinterface() const
 /*******************************************
  */
 
-const char *InterfaceDeclaration::kind()
+const char *InterfaceDeclaration::kind() const
 {
     return "interface";
 }

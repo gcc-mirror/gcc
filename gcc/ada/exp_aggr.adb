@@ -4302,8 +4302,6 @@ package body Exp_Aggr is
       --  Check whether all components of the aggregate are compile-time known
       --  values, and can be passed as is to the back-end without further
       --  expansion.
-      --  An Iterated_Component_Association is treated as nonstatic, but there
-      --  are possibilities for optimization here.
 
       function Flatten
         (N   : Node_Id;
@@ -4317,6 +4315,14 @@ package body Exp_Aggr is
       --  Return True iff the array N is flat (which is not trivial in the case
       --  of multidimensional aggregates).
 
+      function Is_Static_Element (N : Node_Id) return Boolean;
+      --  Return True if N, an element of a component association list, i.e.
+      --  N_Component_Association or N_Iterated_Component_Association, has a
+      --  compile-time known value and can be passed as is to the back-end
+      --  without further expansion.
+      --  An Iterated_Component_Association is treated as nonstatic in most
+      --  cases for now, so there are possibilities for optimization.
+
       -----------------------------
       -- Check_Static_Components --
       -----------------------------
@@ -4324,7 +4330,8 @@ package body Exp_Aggr is
       --  Could use some comments in this body ???
 
       procedure Check_Static_Components is
-         Expr : Node_Id;
+         Assoc : Node_Id;
+         Expr  : Node_Id;
 
       begin
          Static_Components := True;
@@ -4350,31 +4357,14 @@ package body Exp_Aggr is
          if Nkind (N) = N_Aggregate
            and then Present (Component_Associations (N))
          then
-            Expr := First (Component_Associations (N));
-            while Present (Expr) loop
-               if Nkind_In (Expression (Expr), N_Integer_Literal,
-                                               N_Real_Literal)
-               then
-                  null;
-
-               elsif Is_Entity_Name (Expression (Expr))
-                 and then Present (Entity (Expression (Expr)))
-                 and then Ekind (Entity (Expression (Expr))) =
-                                                       E_Enumeration_Literal
-               then
-                  null;
-
-               elsif Nkind (Expression (Expr)) /= N_Aggregate
-                 or else not Compile_Time_Known_Aggregate (Expression (Expr))
-                 or else Expansion_Delayed (Expression (Expr))
-                 or else Nkind_In (Expr, N_Iterated_Component_Association,
-                                         N_Quantified_Expression)
-               then
+            Assoc := First (Component_Associations (N));
+            while Present (Assoc) loop
+               if not Is_Static_Element (Assoc) then
                   Static_Components := False;
                   exit;
                end if;
 
-               Next (Expr);
+               Next (Assoc);
             end loop;
          end if;
       end Check_Static_Components;
@@ -4521,16 +4511,15 @@ package body Exp_Aggr is
 
                   --  If we have an others choice, fill in the missing elements
                   --  subject to the limit established by Max_Others_Replicate.
-                  --  If the expression involves a construct that generates
-                  --  a loop, we must generate individual assignments and
-                  --  no flattening is possible.
 
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
 
-                     if Nkind_In (Expression (Elmt),
-                                  N_Iterated_Component_Association,
-                                  N_Quantified_Expression)
+                     --  If the expression involves a construct that generates
+                     --  a loop, we must generate individual assignments and
+                     --  no flattening is possible.
+
+                     if Nkind (Expression (Elmt)) = N_Quantified_Expression
                      then
                         return False;
                      end if;
@@ -4555,8 +4544,8 @@ package body Exp_Aggr is
                                 Cunit_Entity (Current_Sem_Unit);
 
                            begin
-                              --  Check if duplication OK and if so continue
-                              --  processing.
+                              --  Check if duplication is always OK and, if so,
+                              --  continue processing.
 
                               if Restriction_Active (No_Elaboration_Code)
                                 or else Restriction_Active (No_Implicit_Loops)
@@ -4573,17 +4562,23 @@ package body Exp_Aggr is
                               then
                                  null;
 
-                              --  If duplication not OK, then we return False
-                              --  if the replication count is too high
+                              --  If duplication is not always OK, continue
+                              --  only if either the element is static or is
+                              --  an aggregate which can itself be flattened,
+                              --  and the replication count is not too high.
 
-                              elsif Rep_Count > Max_Others_Replicate then
-                                 return False;
+                              elsif (Is_Static_Element (Elmt)
+                                       or else
+                                     (Nkind (Expression (Elmt)) = N_Aggregate
+                                       and then Present (Next_Index (Ix))))
+                                and then Rep_Count <= Max_Others_Replicate
+                              then
+                                 null;
 
-                              --  Continue on if duplication not OK, but the
-                              --  replication count is not excessive.
+                              --  Return False in all the other cases
 
                               else
-                                 null;
+                                 return False;
                               end if;
                            end;
                         end if;
@@ -4707,6 +4702,37 @@ package body Exp_Aggr is
             return True;
          end if;
       end Is_Flat;
+
+      -------------------------
+      --  Is_Static_Element  --
+      -------------------------
+
+      function Is_Static_Element (N : Node_Id) return Boolean is
+         Expr : constant Node_Id := Expression (N);
+
+      begin
+         if Nkind_In (Expr, N_Integer_Literal, N_Real_Literal) then
+            return True;
+
+         elsif Is_Entity_Name (Expr)
+           and then Present (Entity (Expr))
+           and then Ekind (Entity (Expr)) = E_Enumeration_Literal
+         then
+            return True;
+
+         elsif Nkind (N) = N_Iterated_Component_Association then
+            return False;
+
+         elsif Nkind (Expr) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Expr)
+           and then not Expansion_Delayed (Expr)
+         then
+            return True;
+
+         else
+            return False;
+         end if;
+      end Is_Static_Element;
 
    --  Start of processing for Convert_To_Positional
 

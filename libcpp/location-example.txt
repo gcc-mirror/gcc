@@ -20,17 +20,17 @@ extern int foo ();
 
 
 The undocumented -fdump-internal-locations option outputs this information
-to stderr, showing what each source_location value means.  Source code
-lines are quoted, showing both per-line source_location values and
-per-line&column source_location values (written vertically under the
+to stderr, showing what each location_t value means.  Source code
+lines are quoted, showing both per-line location_t values and
+per-line&column location_t values (written vertically under the
 corresponding character of source code).
 
 VVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV
 RESERVED LOCATIONS
-  source_location interval: 0 <= loc < 2
+  location_t interval: 0 <= loc < 2
 
 ORDINARY MAP: 0
-  source_location interval: 32 <= loc < 64
+  location_t interval: 32 <= loc < 64
   file: test.c
   starting at line: 1
   column bits: 12
@@ -40,21 +40,21 @@ test.c:  1|loc:   32|#include "test.h"
                     |46802468024680246
 
 ORDINARY MAP: 1
-  source_location interval: 64 <= loc < 96
+  location_t interval: 64 <= loc < 96
   file: <built-in>
   starting at line: 0
   column bits: 0
   range bits: 0
 
 ORDINARY MAP: 2
-  source_location interval: 96 <= loc < 128
+  location_t interval: 96 <= loc < 128
   file: <command-line>
   starting at line: 0
   column bits: 0
   range bits: 0
 
 ORDINARY MAP: 3
-  source_location interval: 128 <= loc < 160128
+  location_t interval: 128 <= loc < 160128
   file: /usr/include/stdc-predef.h
   starting at line: 1
   column bits: 12
@@ -62,14 +62,14 @@ ORDINARY MAP: 3
 (contents of /usr/include/stdc-predef.h snipped for brevity)
 
 ORDINARY MAP: 4
-  source_location interval: 160128 <= loc < 160160
+  location_t interval: 160128 <= loc < 160160
   file: <command-line>
   starting at line: 32
   column bits: 12
   range bits: 5
 
 ORDINARY MAP: 5
-  source_location interval: 160160 <= loc < 164256
+  location_t interval: 160160 <= loc < 164256
   file: test.c
   starting at line: 1
   column bits: 12
@@ -81,7 +81,7 @@ test.c:  1|loc:160160|#include "test.h"
                     |24680246802468024
 
 ORDINARY MAP: 6
-  source_location interval: 164256 <= loc < 173280
+  location_t interval: 164256 <= loc < 173280
   file: test.h
   starting at line: 1
   column bits: 12
@@ -103,7 +103,7 @@ test.h:  3|loc:172448|#define PLUS(A, B) A + B
                     |024680246802468024680246
 
 ORDINARY MAP: 7
-  source_location interval: 173280 <= loc < 202016
+  location_t interval: 173280 <= loc < 202016
   file: test.c
   starting at line: 2
   column bits: 12
@@ -150,10 +150,10 @@ test.c:  9|loc:201952|}
                     |4
 
 UNALLOCATED LOCATIONS
-  source_location interval: 202016 <= loc < 2147483633
+  location_t interval: 202016 <= loc < 2147483633
 
 MACRO 1: PLUS (7 tokens)
-  source_location interval: 2147483633 <= loc < 2147483640
+  location_t interval: 2147483633 <= loc < 2147483640
 test.c:7:11: note: expansion point is location 194115
    int b = PLUS (3,4);
            ^~~~
@@ -189,7 +189,7 @@ x-location == y-location == 2947526575 encodes token # 800042942
 x-location == y-location == 2947526575 encodes token # 800042942
 
 MACRO 0: PLUS (7 tokens)
-  source_location interval: 2147483640 <= loc < 2147483647
+  location_t interval: 2147483640 <= loc < 2147483647
 test.c:6:11: note: expansion point is location 190019
    int a = PLUS (1,2);
            ^~~~
@@ -224,9 +224,9 @@ x-location == y-location == 2947526575 encodes token # 800042935
     6: 2947526575, 2947526575
 x-location == y-location == 2947526575 encodes token # 800042935
 
-MAX_SOURCE_LOCATION
-  source_location interval: 2147483647 <= loc < 2147483648
+MAX_LOCATION_T
+  location_t interval: 2147483647 <= loc < 2147483648
 
 AD-HOC LOCATIONS
-  source_location interval: 2147483648 <= loc < 4294967295
+  location_t interval: 2147483648 <= loc < 4294967295
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^

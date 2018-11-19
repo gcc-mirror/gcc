@@ -169,12 +169,14 @@ const struct processor_costs *ix86_cost = NULL;
 #define m_BDVER3 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER3)
 #define m_BDVER4 (HOST_WIDE_INT_1U<<PROCESSOR_BDVER4)
 #define m_ZNVER1 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER1)
+#define m_ZNVER2 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER2)
 #define m_BTVER1 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER1)
 #define m_BTVER2 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER2)
 #define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3 | m_BDVER4)
 #define m_BTVER (m_BTVER1 | m_BTVER2)
+#define m_ZNVER	(m_ZNVER1 | m_ZNVER2)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER \
-			| m_ZNVER1)
+			| m_ZNVER)
 
 #define m_GENERIC (HOST_WIDE_INT_1U<<PROCESSOR_GENERIC)
 
@@ -868,6 +870,7 @@ static const struct processor_costs *processor_cost_table[PROCESSOR_max] =
   &btver1_cost,
   &btver2_cost,
   &znver1_cost,
+  &znver2_cost
 };
 
 static unsigned int
@@ -2793,7 +2796,8 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
     { "-mmwaitx",	OPTION_MASK_ISA_MWAITX },
     { "-mmovdir64b",	OPTION_MASK_ISA_MOVDIR64B },
     { "-mwaitpkg",	OPTION_MASK_ISA_WAITPKG },
-    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE }
+    { "-mcldemote",	OPTION_MASK_ISA_CLDEMOTE },
+    { "-mptwrite",	OPTION_MASK_ISA_PTWRITE }
   };
   static struct ix86_target_opts isa_opts[] =
   {
@@ -3542,6 +3546,11 @@ ix86_option_override_internal (bool main_args_p,
     error ("-mabi=ms not supported with X32 ABI");
   gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
 
+  if ((opts->x_flag_sanitize & SANITIZE_USER_ADDRESS) && opts->x_ix86_abi == MS_ABI)
+    error ("%<-mabi=ms%> not supported with %<-fsanitize=address%>");
+  if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_ix86_abi == MS_ABI)
+    error ("%<-mabi=ms%> not supported with %<-fsanitize=kernel-address%>");
+
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
@@ -3875,6 +3884,9 @@ ix86_option_override_internal (bool main_args_p,
 	if (((processor_alias_table[i].flags & PTA_WBNOINVD) != 0)
 	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_WBNOINVD))
 	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_WBNOINVD;
+	if (((processor_alias_table[i].flags & PTA_PTWRITE) != 0)
+	    && !(opts->x_ix86_isa_flags2_explicit & OPTION_MASK_ISA_PTWRITE))
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA_PTWRITE;
 
 	if ((processor_alias_table[i].flags
 	   & (PTA_PREFETCH_SSE | PTA_SSE)) != 0)
@@ -5077,6 +5089,7 @@ ix86_valid_target_attribute_inner_p (tree args, char *p_strings[],
     IX86_ATTR_ISA ("movdir64b", OPT_mmovdir64b),
     IX86_ATTR_ISA ("waitpkg", OPT_mwaitpkg),
     IX86_ATTR_ISA ("cldemote", OPT_mcldemote),
+    IX86_ATTR_ISA ("ptwrite",   OPT_mptwrite),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),
@@ -12005,8 +12018,7 @@ ix86_update_stack_boundary (void)
   ix86_incoming_stack_boundary
     = ix86_minimum_incoming_stack_boundary (false);
 
-  /* x86_64 vararg needs 16byte stack alignment for register save
-     area.  */
+  /* x86_64 vararg needs 16byte stack alignment for register save area.  */
   if (TARGET_64BIT
       && cfun->stdarg
       && crtl->stack_alignment_estimated < 128)
@@ -17169,6 +17181,18 @@ ix86_const_not_ok_for_debug_p (rtx x)
   if (SYMBOL_REF_P (x) && strcmp (XSTR (x, 0), GOT_SYMBOL_NAME) == 0)
     return true;
 
+  /* Reject UNSPECs within expressions.  We could accept symbol@gotoff
+     + literal_constant, but that would hardly come up in practice,
+     and it's not worth the trouble of having to reject that as an
+     operand to pretty much anything else.  */
+  if (UNARY_P (x)
+      && GET_CODE (XEXP (x, 0)) == UNSPEC)
+    return true;
+  if (BINARY_P (x)
+      && (GET_CODE (XEXP (x, 0)) == UNSPEC
+	  || GET_CODE (XEXP (x, 1)) == UNSPEC))
+    return true;
+
   return false;
 }
 
@@ -18278,15 +18302,20 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 
   if (!ADDR_SPACE_GENERIC_P (as))
     {
-      const char *string;
+      if (ASSEMBLER_DIALECT == ASM_ATT)
+	putc ('%', file);
 
-      if (as == ADDR_SPACE_SEG_FS)
-	string = (ASSEMBLER_DIALECT == ASM_ATT ? "%fs:" : "fs:");
-      else if (as == ADDR_SPACE_SEG_GS)
-	string = (ASSEMBLER_DIALECT == ASM_ATT ? "%gs:" : "gs:");
-      else
-	gcc_unreachable ();
-      fputs (string, file);
+      switch (as)
+	{
+	case ADDR_SPACE_SEG_FS:
+	  fputs ("fs:", file);
+	  break;
+	case ADDR_SPACE_SEG_GS:
+	  fputs ("gs:", file);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
 
   /* Use one byte shorter RIP relative addressing for 64bit mode.  */
@@ -30180,6 +30209,8 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
   tree decl = NULL_TREE;
 
   ix86_builtins_isa[(int) code].isa2 = mask;
+  if (tcode == VOID_FTYPE_UINT64)
+    ix86_builtins_isa[(int) code].isa = OPTION_MASK_ISA_64BIT;
 
   if (mask == 0
       || (mask & ix86_isa_flags2) != 0
@@ -31601,6 +31632,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "znver1";
 	      priority = P_PROC_AVX2;
 	      break;
+	    case PROCESSOR_ZNVER2:
+	      arg_str = "znver2";
+	      priority = P_PROC_AVX2;
+	      break;
 	    }
 	}
 
@@ -32276,7 +32311,8 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_COREI7_SKYLAKE_AVX512,
     M_INTEL_COREI7_CANNONLAKE,
     M_INTEL_COREI7_ICELAKE_CLIENT,
-    M_INTEL_COREI7_ICELAKE_SERVER
+    M_INTEL_COREI7_ICELAKE_SERVER,
+    M_AMDFAM17H_ZNVER2
   };
 
   static struct _arch_names_table
@@ -32323,6 +32359,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"btver2", M_AMD_BTVER2},
       {"amdfam17h", M_AMDFAM17H},
       {"znver1", M_AMDFAM17H_ZNVER1},
+      {"znver2", M_AMDFAM17H_ZNVER2},
     };
 
   static struct _isa_names_table
@@ -32638,6 +32675,8 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	      unsigned int idx = tree_to_uhwi (args[1]) & 0xff;
 	      if (idx >= TYPE_PRECISION (TREE_TYPE (args[0])))
 		return args[0];
+	      if (idx == 0)
+		return build_int_cst (TREE_TYPE (TREE_TYPE (fndecl)), 0);
 	      if (!tree_fits_uhwi_p (args[0]))
 		break;
 	      unsigned HOST_WIDE_INT res = tree_to_uhwi (args[0]);
@@ -34744,6 +34783,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V32HI_FTYPE_V32HI_V32HI_INT:
     case V16SI_FTYPE_V16SI_V16SI_INT:
     case V8DI_FTYPE_V8DI_V8DI_INT:
+    case V4DF_FTYPE_V4DF_V4DI_INT:
+    case V8SF_FTYPE_V8SF_V8SI_INT:
+    case V2DF_FTYPE_V2DF_V2DI_INT:
+    case V4SF_FTYPE_V4SF_V4SI_INT:
       nargs = 3;
       nargs_constant = 1;
       break;
@@ -34899,6 +34942,10 @@ ix86_expand_args_builtin (const struct builtin_description *d,
       break;
     case UQI_FTYPE_V8DI_V8DI_INT_UQI:
     case UHI_FTYPE_V16SI_V16SI_INT_UHI:
+    case V4DF_FTYPE_V4DF_V4DI_INT_UQI:
+    case V8SF_FTYPE_V8SF_V8SI_INT_UQI:
+    case V2DF_FTYPE_V2DF_V2DI_INT_UQI:
+    case V4SF_FTYPE_V4SF_V4SI_INT_UQI:
       mask_pos = 1;
       nargs = 4;
       nargs_constant = 1;
@@ -34964,17 +35011,17 @@ ix86_expand_args_builtin (const struct builtin_description *d,
     case V8SI_FTYPE_V8SI_V4SI_INT_V8SI_UQI:
     case V4DI_FTYPE_V4DI_V2DI_INT_V4DI_UQI:
     case V4DF_FTYPE_V4DF_V2DF_INT_V4DF_UQI:
+    case V4DF_FTYPE_V4DF_V4DI_INT_V4DF_UQI:
+    case V8SF_FTYPE_V8SF_V8SI_INT_V8SF_UQI:
+    case V2DF_FTYPE_V2DF_V2DI_INT_V2DF_UQI:
+    case V4SF_FTYPE_V4SF_V4SI_INT_V4SF_UQI:
       nargs = 5;
       mask_pos = 2;
       nargs_constant = 1;
       break;
     case V8DI_FTYPE_V8DI_V8DI_V8DI_INT_UQI:
     case V16SI_FTYPE_V16SI_V16SI_V16SI_INT_UHI:
-    case V2DF_FTYPE_V2DF_V2DF_V2DI_INT_UQI:
-    case V4SF_FTYPE_V4SF_V4SF_V4SI_INT_UQI:
-    case V8SF_FTYPE_V8SF_V8SF_V8SI_INT_UQI:
     case V8SI_FTYPE_V8SI_V8SI_V8SI_INT_UQI:
-    case V4DF_FTYPE_V4DF_V4DF_V4DI_INT_UQI:
     case V4DI_FTYPE_V4DI_V4DI_V4DI_INT_UQI:
     case V4SI_FTYPE_V4SI_V4SI_V4SI_INT_UQI:
     case V2DI_FTYPE_V2DI_V2DI_V2DI_INT_UQI:
@@ -35438,6 +35485,10 @@ ix86_expand_round_builtin (const struct builtin_description *d,
       break;
     case V4SF_FTYPE_V4SF_V4SF_INT_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_INT:
+    case V8DF_FTYPE_V8DF_V8DI_INT_INT:
+    case V16SF_FTYPE_V16SF_V16SI_INT_INT:
+    case V2DF_FTYPE_V2DF_V2DI_INT_INT:
+    case V4SF_FTYPE_V4SF_V4SI_INT_INT:
       nargs_constant = 2;
       nargs = 4;
       break;
@@ -35463,6 +35514,10 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case UQI_FTYPE_V2DF_V2DF_INT_UQI_INT:
     case UHI_FTYPE_V16SF_V16SF_INT_UHI_INT:
     case UQI_FTYPE_V4SF_V4SF_INT_UQI_INT:
+    case V8DF_FTYPE_V8DF_V8DI_INT_QI_INT:
+    case V16SF_FTYPE_V16SF_V16SI_INT_HI_INT:
+    case V2DF_FTYPE_V2DF_V2DI_INT_QI_INT:
+    case V4SF_FTYPE_V4SF_V4SI_INT_QI_INT:
       nargs_constant = 3;
       nargs = 5;
       break;
@@ -35472,15 +35527,12 @@ ix86_expand_round_builtin (const struct builtin_description *d,
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_QI_INT:
     case V2DF_FTYPE_V2DF_V2DF_INT_V2DF_UQI_INT:
     case V4SF_FTYPE_V4SF_V4SF_INT_V4SF_UQI_INT:
+    case V8DF_FTYPE_V8DF_V8DI_INT_V8DF_QI_INT:
+    case V16SF_FTYPE_V16SF_V16SI_INT_V16SF_HI_INT:
+    case V2DF_FTYPE_V2DF_V2DI_INT_V2DF_QI_INT:
+    case V4SF_FTYPE_V4SF_V4SI_INT_V4SF_QI_INT:
       nargs = 6;
       nargs_constant = 4;
-      break;
-    case V8DF_FTYPE_V8DF_V8DF_V8DI_INT_QI_INT:
-    case V16SF_FTYPE_V16SF_V16SF_V16SI_INT_HI_INT:
-    case V2DF_FTYPE_V2DF_V2DF_V2DI_INT_QI_INT:
-    case V4SF_FTYPE_V4SF_V4SF_V4SI_INT_QI_INT:
-      nargs = 6;
-      nargs_constant = 3;
       break;
     default:
       gcc_unreachable ();
@@ -49200,8 +49252,8 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 
       /* Integer vector instructions execute in FP unit
 	 and can execute 3 additions and one multiplication per cycle.  */
-      if (ix86_tune == PROCESSOR_ZNVER1 && INTEGRAL_MODE_P (mode)
-	  && op != PLUS && op != MINUS)
+      if ((ix86_tune == PROCESSOR_ZNVER1 || ix86_tune == PROCESSOR_ZNVER2)
+	   && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	return 1;
 
       /* Account for targets that splits wide vectors into multiple parts.  */

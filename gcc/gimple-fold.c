@@ -635,9 +635,8 @@ var_decl_component_p (tree var)
 	      && TREE_CODE (TREE_OPERAND (inner, 0)) == ADDR_EXPR));
 }
 
-/* If the SIZE argument representing the size of an object is in a range
-   of values of which exactly one is valid (and that is zero), return
-   true, otherwise false.  */
+/* Return TRUE if the SIZE argument, representing the size of an
+   object, is in a range of values of which exactly zero is valid.  */
 
 static bool
 size_must_be_zero_p (tree size)
@@ -648,21 +647,19 @@ size_must_be_zero_p (tree size)
   if (TREE_CODE (size) != SSA_NAME || !INTEGRAL_TYPE_P (TREE_TYPE (size)))
     return false;
 
-  wide_int min, max;
-  enum value_range_kind rtype = get_range_info (size, &min, &max);
-  if (rtype != VR_ANTI_RANGE)
-    return false;
-
   tree type = TREE_TYPE (size);
   int prec = TYPE_PRECISION (type);
-
-  wide_int wone = wi::one (prec);
 
   /* Compute the value of SSIZE_MAX, the largest positive value that
      can be stored in ssize_t, the signed counterpart of size_t.  */
   wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
-
-  return wi::eq_p (min, wone) && wi::geu_p (max, ssize_max);
+  value_range valid_range (VR_RANGE,
+			   build_int_cst (type, 0),
+			   wide_int_to_tree (type, ssize_max));
+  value_range vr;
+  get_range_info (size, vr);
+  vr.intersect (&valid_range);
+  return vr.zero_p ();
 }
 
 /* Fold function call to builtin mem{{,p}cpy,move}.  Try to detect and
@@ -2715,6 +2712,7 @@ gimple_fold_builtin_stxcpy_chk (gimple_stmt_iterator *gsi,
 		return false;
 
 	      gimple_seq stmts = NULL;
+	      len = force_gimple_operand (len, &stmts, true, NULL_TREE);
 	      len = gimple_convert (&stmts, loc, size_type_node, len);
 	      len = gimple_build (&stmts, loc, PLUS_EXPR, size_type_node, len,
 				  build_int_cst (size_type_node, 1));

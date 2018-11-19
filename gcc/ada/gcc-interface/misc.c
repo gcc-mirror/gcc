@@ -392,7 +392,7 @@ gnat_init_gcc_eh (void)
   using_eh_for_cleanups ();
 
   /* Turn on -fexceptions, -fnon-call-exceptions and -fdelete-dead-exceptions.
-     The first one triggers the generation of the necessary exception tables.
+     The first one activates the support for exceptions in the compiler.
      The second one is useful for two reasons: 1/ we map some asynchronous
      signals like SEGV to exceptions, so we need to ensure that the insns
      which can lead to such signals are correctly attached to the exception
@@ -402,10 +402,26 @@ gnat_init_gcc_eh (void)
      for such calls to actually raise in Ada.
      The third one is an optimization that makes it possible to delete dead
      instructions that may throw exceptions, most notably loads and stores,
-     as permitted in Ada.  */
+     as permitted in Ada.
+     Turn off -faggressive-loop-optimizations because it may optimize away
+     out-of-bound array accesses that we want to be able to catch.
+     If checks are disabled, we use the same settings as the C++ compiler,
+     except for the runtime on platforms where S'Machine_Overflow is true
+     because the runtime depends on FP (hardware) checks being properly
+     handled despite being compiled in -gnatp mode.  */
   flag_exceptions = 1;
-  flag_non_call_exceptions = 1;
   flag_delete_dead_exceptions = 1;
+  if (Suppress_Checks)
+    {
+      if (!global_options_set.x_flag_non_call_exceptions)
+	flag_non_call_exceptions = Machine_Overflows_On_Target && GNAT_Mode;
+    }
+  else
+    {
+      flag_non_call_exceptions = 1;
+      flag_aggressive_loop_optimizations = 0;
+      warn_aggressive_loop_optimizations = 0;
+    }
 
   init_eh ();
 }

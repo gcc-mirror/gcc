@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -c -fdump-ipa-inline -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
+/* { dg-options "-Os -c -fdump-ipa-inline-all -fopt-info-inline -fno-early-inlining -fno-partial-inlining -fno-ipa-cp"  } */
 /* { dg-add-options bind_pic_locally } */
 
 void work_hard (void);
@@ -20,7 +20,7 @@ void do_something (int shall_i_work)
 }
 int foo (int invariant)
 {
-  do_something (0);
+  do_something (0); // { dg-optimized "Inlined do_something/\[0-9]+ into foo/\[0-9]+" }
   do_something (1);
 }
 

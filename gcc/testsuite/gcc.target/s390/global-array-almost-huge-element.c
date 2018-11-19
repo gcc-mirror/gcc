@@ -1,5 +1,5 @@
 /* Test the maximum possible LARL offset.  */
-/* { dg-do compile } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-O1" } */
 
 extern char a[] __attribute__ ((aligned (2)));

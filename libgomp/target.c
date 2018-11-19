@@ -1854,11 +1854,20 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
 	      struct gomp_team *team = thr->ts.team;
 	      /* If parallel or taskgroup has been cancelled, don't start new
 		 tasks.  */
-	      if (team
-		  && (gomp_team_barrier_cancelled (&team->barrier)
-		      || (thr->task->taskgroup
-			  && thr->task->taskgroup->cancelled)))
-		return;
+	      if (__builtin_expect (gomp_cancel_var, 0) && team)
+		{
+		  if (gomp_team_barrier_cancelled (&team->barrier))
+		    return;
+		  if (thr->task->taskgroup)
+		    {
+		      if (thr->task->taskgroup->cancelled)
+			return;
+		      if (thr->task->taskgroup->workshare
+			  && thr->task->taskgroup->prev
+			  && thr->task->taskgroup->prev->cancelled)
+			return;
+		    }
+		}
 
 	      gomp_task_maybe_wait_for_dependencies (depend);
 	    }
@@ -1873,10 +1882,20 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   gomp_update (devicep, mapnum, hostaddrs, sizes, kinds, true);
 }
@@ -1985,11 +2004,20 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	      struct gomp_team *team = thr->ts.team;
 	      /* If parallel or taskgroup has been cancelled, don't start new
 		 tasks.  */
-	      if (team
-		  && (gomp_team_barrier_cancelled (&team->barrier)
-		      || (thr->task->taskgroup
-			  && thr->task->taskgroup->cancelled)))
-		return;
+	      if (__builtin_expect (gomp_cancel_var, 0) && team)
+		{
+		  if (gomp_team_barrier_cancelled (&team->barrier))
+		    return;
+		  if (thr->task->taskgroup)
+		    {
+		      if (thr->task->taskgroup->cancelled)
+			return;
+		      if (thr->task->taskgroup->workshare
+			  && thr->task->taskgroup->prev
+			  && thr->task->taskgroup->prev->cancelled)
+			return;
+		    }
+		}
 
 	      gomp_task_maybe_wait_for_dependencies (depend);
 	    }
@@ -2004,10 +2032,20 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   /* If parallel or taskgroup has been cancelled, don't start new tasks.  */
-  if (team
-      && (gomp_team_barrier_cancelled (&team->barrier)
-	  || (thr->task->taskgroup && thr->task->taskgroup->cancelled)))
-    return;
+  if (__builtin_expect (gomp_cancel_var, 0) && team)
+    {
+      if (gomp_team_barrier_cancelled (&team->barrier))
+	return;
+      if (thr->task->taskgroup)
+	{
+	  if (thr->task->taskgroup->cancelled)
+	    return;
+	  if (thr->task->taskgroup->workshare
+	      && thr->task->taskgroup->prev
+	      && thr->task->taskgroup->prev->cancelled)
+	    return;
+	}
+    }
 
   size_t i;
   if ((flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0)
@@ -2164,7 +2202,7 @@ omp_target_free (void *device_ptr, int device_num)
 }
 
 int
-omp_target_is_present (void *ptr, int device_num)
+omp_target_is_present (const void *ptr, int device_num)
 {
   if (ptr == NULL)
     return 1;
@@ -2196,8 +2234,9 @@ omp_target_is_present (void *ptr, int device_num)
 }
 
 int
-omp_target_memcpy (void *dst, void *src, size_t length, size_t dst_offset,
-		   size_t src_offset, int dst_device_num, int src_device_num)
+omp_target_memcpy (void *dst, const void *src, size_t length,
+		   size_t dst_offset, size_t src_offset, int dst_device_num,
+		   int src_device_num)
 {
   struct gomp_device_descr *dst_devicep = NULL, *src_devicep = NULL;
   bool ret;
@@ -2264,7 +2303,7 @@ omp_target_memcpy (void *dst, void *src, size_t length, size_t dst_offset,
 }
 
 static int
-omp_target_memcpy_rect_worker (void *dst, void *src, size_t element_size,
+omp_target_memcpy_rect_worker (void *dst, const void *src, size_t element_size,
 			       int num_dims, const size_t *volume,
 			       const size_t *dst_offsets,
 			       const size_t *src_offsets,
@@ -2286,21 +2325,25 @@ omp_target_memcpy_rect_worker (void *dst, void *src, size_t element_size,
 	return EINVAL;
       if (dst_devicep == NULL && src_devicep == NULL)
 	{
-	  memcpy ((char *) dst + dst_off, (char *) src + src_off, length);
+	  memcpy ((char *) dst + dst_off, (const char *) src + src_off,
+		  length);
 	  ret = 1;
 	}
       else if (src_devicep == NULL)
 	ret = dst_devicep->host2dev_func (dst_devicep->target_id,
 					  (char *) dst + dst_off,
-					  (char *) src + src_off, length);
+					  (const char *) src + src_off,
+					  length);
       else if (dst_devicep == NULL)
 	ret = src_devicep->dev2host_func (src_devicep->target_id,
 					  (char *) dst + dst_off,
-					  (char *) src + src_off, length);
+					  (const char *) src + src_off,
+					  length);
       else if (src_devicep == dst_devicep)
 	ret = src_devicep->dev2dev_func (src_devicep->target_id,
 					 (char *) dst + dst_off,
-					 (char *) src + src_off, length);
+					 (const char *) src + src_off,
+					 length);
       else
 	ret = 0;
       return ret ? 0 : EINVAL;
@@ -2321,7 +2364,7 @@ omp_target_memcpy_rect_worker (void *dst, void *src, size_t element_size,
   for (j = 0; j < volume[0]; j++)
     {
       ret = omp_target_memcpy_rect_worker ((char *) dst + dst_off,
-					   (char *) src + src_off,
+					   (const char *) src + src_off,
 					   element_size, num_dims - 1,
 					   volume + 1, dst_offsets + 1,
 					   src_offsets + 1, dst_dimensions + 1,
@@ -2336,7 +2379,7 @@ omp_target_memcpy_rect_worker (void *dst, void *src, size_t element_size,
 }
 
 int
-omp_target_memcpy_rect (void *dst, void *src, size_t element_size,
+omp_target_memcpy_rect (void *dst, const void *src, size_t element_size,
 			int num_dims, const size_t *volume,
 			const size_t *dst_offsets,
 			const size_t *src_offsets,
@@ -2395,8 +2438,8 @@ omp_target_memcpy_rect (void *dst, void *src, size_t element_size,
 }
 
 int
-omp_target_associate_ptr (void *host_ptr, void *device_ptr, size_t size,
-			  size_t device_offset, int device_num)
+omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
+			  size_t size, size_t device_offset, int device_num)
 {
   if (device_num == GOMP_DEVICE_HOST_FALLBACK)
     return EINVAL;
@@ -2457,7 +2500,7 @@ omp_target_associate_ptr (void *host_ptr, void *device_ptr, size_t size,
 }
 
 int
-omp_target_disassociate_ptr (void *ptr, int device_num)
+omp_target_disassociate_ptr (const void *ptr, int device_num)
 {
   if (device_num == GOMP_DEVICE_HOST_FALLBACK)
     return EINVAL;
@@ -2497,6 +2540,31 @@ omp_target_disassociate_ptr (void *ptr, int device_num)
   gomp_mutex_unlock (&devicep->lock);
   return ret;
 }
+
+int
+omp_pause_resource (omp_pause_resource_t kind, int device_num)
+{
+  (void) kind;
+  if (device_num == GOMP_DEVICE_HOST_FALLBACK)
+    return gomp_pause_host ();
+  if (device_num < 0 || device_num >= gomp_get_num_devices ())
+    return -1;
+  /* Do nothing for target devices for now.  */
+  return 0;
+}
+
+int
+omp_pause_resource_all (omp_pause_resource_t kind)
+{
+  (void) kind;
+  if (gomp_pause_host ())
+    return -1;
+  /* Do nothing for target devices for now.  */
+  return 0;
+}
+
+ialias (omp_pause_resource)
+ialias (omp_pause_resource_all)
 
 #ifdef PLUGIN_SUPPORT
 

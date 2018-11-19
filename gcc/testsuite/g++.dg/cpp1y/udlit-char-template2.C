@@ -1,5 +1,6 @@
 // PR c++/85864
 // { dg-do compile { target c++14 } }
+// { dg-options -w }
 
 template<class T, T... S> struct String_template {};
 

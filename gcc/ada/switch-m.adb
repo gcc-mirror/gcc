@@ -462,37 +462,29 @@ package body Switch.M is
                      Add_Switch_Component
                        (Storing (Storing'First .. Last_Stored));
 
-                  --  -gnatR may be followed by '0', '1', '2' or '3',
-                  --  then by 's'
+                  --  -gnatR may be followed by '0', '1', '2', '3' or '4',
+                  --  then by 'e', 'j', 'm' or 's'.
 
                   when 'R' =>
                      Last_Stored := First_Stored;
                      Storing (Last_Stored) := 'R';
                      Ptr := Ptr + 1;
 
-                     if Ptr <= Max
-                       and then Switch_Chars (Ptr) in '0' .. '9'
-                     then
+                     while Ptr <= Max loop
                         C := Switch_Chars (Ptr);
 
-                        if C in '4' .. '9' then
-                           Last := 0;
-                           return;
+                        case C is
 
-                        else
+                        when '0' .. '4' | 'e' | 'j' | 'm' | 's' =>
                            Last_Stored := Last_Stored + 1;
                            Storing (Last_Stored) := C;
                            Ptr := Ptr + 1;
 
-                           if Ptr <= Max
-                             and then Switch_Chars (Ptr) = 's'
-                           then
-                              Last_Stored := Last_Stored + 1;
-                              Storing (Last_Stored) := 's';
-                              Ptr := Ptr + 1;
-                           end if;
-                        end if;
-                     end if;
+                        when others =>
+                           Last := 0;
+                           return;
+                        end case;
+                     end loop;
 
                      Add_Switch_Component
                        (Storing (Storing'First .. Last_Stored));

@@ -3469,6 +3469,11 @@ msp430_print_operand_raw (FILE * file, rtx op)
     }
 }
 
+#undef  TARGET_ASM_ALIGNED_PSI_OP
+#define TARGET_ASM_ALIGNED_PSI_OP "\t.long\t"
+#undef  TARGET_ASM_UNALIGNED_PSI_OP
+#define TARGET_ASM_UNALIGNED_PSI_OP TARGET_ASM_ALIGNED_PSI_OP
+
 #undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS	msp430_print_operand_addr
 

@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "pass_manager.h"
 #include "selftest.h"
 #include "dump-context.h"
+#include <zlib.h>
 
 /* A class for writing out optimization records in JSON format.  */
 
@@ -133,16 +134,34 @@ optrecord_json_writer::~optrecord_json_writer ()
 void
 optrecord_json_writer::write () const
 {
-  char *filename = concat (dump_base_name, ".opt-record.json", NULL);
-  FILE *outfile = fopen (filename, "w");
-  if (outfile)
+  pretty_printer pp;
+  m_root_tuple->print (&pp);
+
+  bool emitted_error = false;
+  char *filename = concat (dump_base_name, ".opt-record.json.gz", NULL);
+  gzFile outfile = gzopen (filename, "w");
+  if (outfile == NULL)
     {
-      m_root_tuple->dump (outfile);
-      fclose (outfile);
+      error_at (UNKNOWN_LOCATION, "cannot open file %qs for writing optimization records",
+		filename); // FIXME: more info?
+      goto cleanup;
     }
-  else
-    error_at (UNKNOWN_LOCATION, "unable to write optimization records to %qs",
-	      filename); // FIXME: more info?
+
+  if (gzputs (outfile, pp_formatted_text (&pp)) <= 0)
+    {
+      int tmp;
+      error_at (UNKNOWN_LOCATION, "error writing optimization records to %qs: %s",
+		filename, gzerror (outfile, &tmp));
+      emitted_error = true;
+    }
+
+ cleanup:
+  if (outfile)
+    if (gzclose (outfile) != Z_OK)
+      if (!emitted_error)
+	error_at (UNKNOWN_LOCATION, "error closing optimization records %qs",
+		  filename);
+
   free (filename);
 }
 

@@ -1,6 +1,6 @@
 /* Software floating-point emulation.
    Basic four-word fraction declaration and manipulation.
-   Copyright (C) 1997-2016 Free Software Foundation, Inc.
+   Copyright (C) 1997-2018 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Richard Henderson (rth@cygnus.com),
 		  Jakub Jelinek (jj@ultra.linux.cz),
@@ -696,39 +696,46 @@
 #endif
 
 #ifndef __FP_FRAC_SUB_3
-# define __FP_FRAC_SUB_3(r2, r1, r0, x2, x1, x0, y2, y1, y0)	\
-  do								\
-    {								\
-      _FP_W_TYPE __FP_FRAC_SUB_3_c1, __FP_FRAC_SUB_3_c2;	\
-      r0 = x0 - y0;						\
-      __FP_FRAC_SUB_3_c1 = r0 > x0;				\
-      r1 = x1 - y1;						\
-      __FP_FRAC_SUB_3_c2 = r1 > x1;				\
-      r1 -= __FP_FRAC_SUB_3_c1;					\
-      __FP_FRAC_SUB_3_c2 |= __FP_FRAC_SUB_3_c1 && (y1 == x1);	\
-      r2 = x2 - y2 - __FP_FRAC_SUB_3_c2;			\
-    }								\
+# define __FP_FRAC_SUB_3(r2, r1, r0, x2, x1, x0, y2, y1, y0)    \
+  do                                                            \
+    {                                                           \
+      _FP_W_TYPE __FP_FRAC_SUB_3_tmp[2];                        \
+      _FP_W_TYPE __FP_FRAC_SUB_3_c1, __FP_FRAC_SUB_3_c2;        \
+      __FP_FRAC_SUB_3_tmp[0] = x0 - y0;                         \
+      __FP_FRAC_SUB_3_c1 = __FP_FRAC_SUB_3_tmp[0] > x0;         \
+      __FP_FRAC_SUB_3_tmp[1] = x1 - y1;                         \
+      __FP_FRAC_SUB_3_c2 = __FP_FRAC_SUB_3_tmp[1] > x1;         \
+      __FP_FRAC_SUB_3_tmp[1] -= __FP_FRAC_SUB_3_c1;             \
+      __FP_FRAC_SUB_3_c2 |= __FP_FRAC_SUB_3_c1 && (y1 == x1);   \
+      r2 = x2 - y2 - __FP_FRAC_SUB_3_c2;                        \
+      r1 = __FP_FRAC_SUB_3_tmp[1];                              \
+      r0 = __FP_FRAC_SUB_3_tmp[0];                              \
+    }                                                           \
   while (0)
 #endif
 
 #ifndef __FP_FRAC_SUB_4
 # define __FP_FRAC_SUB_4(r3, r2, r1, r0, x3, x2, x1, x0, y3, y2, y1, y0) \
-  do									\
-    {									\
-      _FP_W_TYPE __FP_FRAC_SUB_4_c1, __FP_FRAC_SUB_4_c2;		\
-      _FP_W_TYPE __FP_FRAC_SUB_4_c3;					\
-      r0 = x0 - y0;							\
-      __FP_FRAC_SUB_4_c1 = r0 > x0;					\
-      r1 = x1 - y1;							\
-      __FP_FRAC_SUB_4_c2 = r1 > x1;					\
-      r1 -= __FP_FRAC_SUB_4_c1;						\
-      __FP_FRAC_SUB_4_c2 |= __FP_FRAC_SUB_4_c1 && (y1 == x1);		\
-      r2 = x2 - y2;							\
-      __FP_FRAC_SUB_4_c3 = r2 > x2;					\
-      r2 -= __FP_FRAC_SUB_4_c2;						\
-      __FP_FRAC_SUB_4_c3 |= __FP_FRAC_SUB_4_c2 && (y2 == x2);		\
-      r3 = x3 - y3 - __FP_FRAC_SUB_4_c3;				\
-    }									\
+  do                                                                     \
+    {                                                                    \
+      _FP_W_TYPE __FP_FRAC_SUB_4_tmp[3];                                 \
+      _FP_W_TYPE __FP_FRAC_SUB_4_c1, __FP_FRAC_SUB_4_c2;                 \
+      _FP_W_TYPE __FP_FRAC_SUB_4_c3;                                     \
+      __FP_FRAC_SUB_4_tmp[0] = x0 - y0;                                  \
+      __FP_FRAC_SUB_4_c1 = __FP_FRAC_SUB_4_tmp[0] > x0;                  \
+      __FP_FRAC_SUB_4_tmp[1] = x1 - y1;                                  \
+      __FP_FRAC_SUB_4_c2 = __FP_FRAC_SUB_4_tmp[1] > x1;                  \
+      __FP_FRAC_SUB_4_tmp[1] -= __FP_FRAC_SUB_4_c1;                      \
+      __FP_FRAC_SUB_4_c2 |= __FP_FRAC_SUB_4_c1 && (y1 == x1);            \
+      __FP_FRAC_SUB_4_tmp[2] = x2 - y2;                                  \
+      __FP_FRAC_SUB_4_c3 = __FP_FRAC_SUB_4_tmp[2] > x2;                  \
+      __FP_FRAC_SUB_4_tmp[2] -= __FP_FRAC_SUB_4_c2;                      \
+      __FP_FRAC_SUB_4_c3 |= __FP_FRAC_SUB_4_c2 && (y2 == x2);            \
+      r3 = x3 - y3 - __FP_FRAC_SUB_4_c3;                                 \
+      r2 = __FP_FRAC_SUB_4_tmp[2];                                       \
+      r1 = __FP_FRAC_SUB_4_tmp[1];                                       \
+      r0 = __FP_FRAC_SUB_4_tmp[0];                                       \
+    }                                                                    \
   while (0)
 #endif
 

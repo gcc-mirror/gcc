@@ -1,3 +1,12 @@
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* dummy-frontend.c (jit_begin_diagnostic): Add diagnostic_t param.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-playback.c: Replace "source_location" with "location_t".
+
 2018-10-17  David Malcolm  <dmalcolm@redhat.com>
 
 	* Make-lang.in (selftest-jit): New.

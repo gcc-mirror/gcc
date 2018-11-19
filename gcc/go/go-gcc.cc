@@ -2243,9 +2243,9 @@ Gcc_backend::switch_statement(
     {
       if (pc->empty())
 	{
-	  source_location loc = (*ps != NULL
-                                 ? EXPR_LOCATION((*ps)->get_tree())
-                                 : UNKNOWN_LOCATION);
+	  location_t loc = (*ps != NULL
+			    ? EXPR_LOCATION((*ps)->get_tree())
+			    : UNKNOWN_LOCATION);
 	  tree label = create_artificial_label(loc);
 	  tree c = build_case_label(NULL_TREE, NULL_TREE, label);
 	  append_to_statement_list(c, &stmt_list);
@@ -2259,7 +2259,7 @@ Gcc_backend::switch_statement(
 	      tree t = (*pcv)->get_tree();
 	      if (t == error_mark_node)
 		return this->error_statement();
-	      source_location loc = EXPR_LOCATION(t);
+	      location_t loc = EXPR_LOCATION(t);
 	      tree label = create_artificial_label(loc);
 	      tree c = build_case_label((*pcv)->get_tree(), NULL_TREE, label);
 	      append_to_statement_list(c, &stmt_list);

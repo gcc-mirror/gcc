@@ -2403,7 +2403,7 @@ void record_references_in_initializer (tree, bool);
 
 /* In ipa.c  */
 void cgraph_build_static_cdtor (char which, tree body, int priority);
-bool ipa_discover_readonly_nonaddressable_vars (void);
+bool ipa_discover_variable_flags (void);
 
 /* In varpool.c  */
 tree ctor_for_folding (tree);
@@ -3352,5 +3352,28 @@ xstrdup_for_dump (const char *transient_str)
 {
   return ggc_strdup (transient_str);
 }
+
+extern GTY(()) symbol_table *saved_symtab;
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* An RAII-style class for use in selftests for temporarily using a different
+   symbol_table, so that such tests can be isolated from each other.  */
+
+class symbol_table_test
+{
+ public:
+  /* Constructor.  Override "symtab".  */
+  symbol_table_test ();
+
+  /* Destructor.  Restore the saved_symtab.  */
+  ~symbol_table_test ();
+};
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 #endif  /* GCC_CGRAPH_H  */

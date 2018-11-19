@@ -2605,12 +2605,19 @@ handle_builtin_strcat (enum built_in_function bcode, gimple_stmt_iterator *gsi)
   if (endptr)
     dst = fold_convert_loc (loc, TREE_TYPE (dst), unshare_expr (endptr));
   else
-    dst = fold_build2_loc (loc, POINTER_PLUS_EXPR,
-			   TREE_TYPE (dst), unshare_expr (dst),
+    dst = fold_build2_loc (loc, POINTER_PLUS_EXPR, TREE_TYPE (dst), dst,
 			   fold_convert_loc (loc, sizetype,
 					     unshare_expr (dstlen)));
   dst = force_gimple_operand_gsi (gsi, dst, true, NULL_TREE, true,
 				  GSI_SAME_STMT);
+  if (objsz)
+    {
+      objsz = fold_build2_loc (loc, MINUS_EXPR, TREE_TYPE (objsz), objsz,
+			       fold_convert_loc (loc, TREE_TYPE (objsz),
+						 unshare_expr (dstlen)));
+      objsz = force_gimple_operand_gsi (gsi, objsz, true, NULL_TREE, true,
+					GSI_SAME_STMT);
+    }
   if (dump_file && (dump_flags & TDF_DETAILS) != 0)
     {
       fprintf (dump_file, "Optimizing: ");

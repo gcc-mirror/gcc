@@ -1961,7 +1961,7 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p,
       machine_mode inner_mode = GET_MODE (new_reg);
 
       if (mode != inner_mode
-	  && ! (CONST_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
+	  && ! (CONST_SCALAR_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
 	{
 	  poly_uint64 offset = 0;
 	  if (partial_subreg_p (mode, inner_mode)

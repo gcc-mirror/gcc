@@ -1268,11 +1268,13 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
 
 	  /* If the substitution doesn't succeed, die.  This can happen
 	     if the back end emitted unrecognizable instructions or if
-	     target is exit block on some arches.  */
+	     target is exit block on some arches.  Or for crossing
+	     jumps.  */
 	  if (!redirect_jump (as_a <rtx_jump_insn *> (insn),
 			      block_label (new_bb), 0))
 	    {
-	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun));
+	      gcc_assert (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+			  || CROSSING_JUMP_P (insn));
 	      return false;
 	    }
 	}
@@ -3332,8 +3334,15 @@ fixup_abnormal_edges (void)
 			 If it's placed after a trapping call (i.e. that
 			 call is the last insn anyway), we have no fallthru
 			 edge.  Simply delete this use and don't try to insert
-			 on the non-existent edge.  */
-		      if (GET_CODE (PATTERN (insn)) != USE)
+			 on the non-existent edge.
+			 Similarly, sometimes a call that can throw is
+			 followed in the source with __builtin_unreachable (),
+			 meaning that there is UB if the call returns rather
+			 than throws.  If there weren't any instructions
+			 following such calls before, supposedly even the ones
+			 we've deleted aren't significant and can be
+			 removed.  */
+		      if (e)
 			{
 			  /* We're not deleting it, we're moving it.  */
 			  insn->set_undeleted ();
@@ -4453,6 +4462,9 @@ cfg_layout_redirect_edge_and_branch (edge e, basic_block dest)
   else
     ret = redirect_branch_edge (e, dest);
 
+  if (!ret)
+    return NULL;
+
   fixup_partition_crossing (ret);
   /* We don't want simplejumps in the insn stream during cfglayout.  */
   gcc_assert (!simplejump_p (BB_END (src)) || CROSSING_JUMP_P (BB_END (src)));
@@ -5068,22 +5080,20 @@ rtl_duplicate_bb (basic_block bb)
 }
 
 /* Do book-keeping of basic block BB for the profile consistency checker.
-   If AFTER_PASS is 0, do pre-pass accounting, or if AFTER_PASS is 1
-   then do post-pass accounting.  Store the counting in RECORD.  */
+   Store the counting in RECORD.  */
 static void
-rtl_account_profile_record (basic_block bb, int after_pass,
-			    struct profile_record *record)
+rtl_account_profile_record (basic_block bb, struct profile_record *record)
 {
   rtx_insn *insn;
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
-	record->size[after_pass] += insn_cost (insn, false);
+	record->size += insn_cost (insn, false);
 	if (bb->count.initialized_p ())
-	  record->time[after_pass]
+	  record->time
 	    += insn_cost (insn, true) * bb->count.to_gcov_type ();
 	else if (profile_status_for_fn (cfun) == PROFILE_GUESSED)
-	  record->time[after_pass]
+	  record->time
 	    += insn_cost (insn, true) * bb->count.to_frequency (cfun);
       }
 }

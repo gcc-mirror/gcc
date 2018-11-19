@@ -707,8 +707,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
-/* If set, this is a persistant lookup. */
-#define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -724,8 +722,7 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_SINGLE_P(NODE) \
   (TREE_CODE (NODE) != OVERLOAD || !OVL_CHAIN (NODE))
 
-/* OVL_HIDDEN_P nodes come first, then OVL_USING_P nodes, then regular
-   fns.  */
+/* OVL_HIDDEN_P nodes come before other nodes.  */
 
 struct GTY(()) tree_overload {
   struct tree_common common;
@@ -870,6 +867,34 @@ struct named_decl_hash : ggc_remove <tree>
   /* Nothing is deletable.  Everything is insertable.  */
   static bool is_deleted (value_type) { return false; }
   static void mark_deleted (value_type) { gcc_unreachable (); }
+};
+
+/* Simplified unique_ptr clone to release a tree vec on exit.  */
+
+struct releasing_vec
+{
+  typedef vec<tree, va_gc> vec_t;
+
+  releasing_vec (vec_t *v): v(v) { }
+  releasing_vec (): v(make_tree_vector ()) { }
+
+  /* Copy ops are deliberately declared but not defined,
+     copies must always be elided.  */
+  releasing_vec (const releasing_vec &);
+  releasing_vec &operator= (const releasing_vec &);
+
+  vec_t &operator* () const { return *v; }
+  vec_t *operator-> () const { return v; }
+  vec_t *get() const { return v; }
+  operator vec_t *() const { return v; }
+  tree& operator[] (unsigned i) const { return (*v)[i]; }
+
+  /* Necessary for use with vec** and vec*& interfaces.  */
+  vec_t *&get_ref () { return v; }
+
+  ~releasing_vec() { release_tree_vector (v); }
+private:
+  vec_t *v;
 };
 
 struct GTY(()) tree_template_decl {
@@ -4870,9 +4895,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->promise_type)
 
 /* True for an OMP_ATOMIC that has dependent parameters.  These are stored
-   as an expr in operand 1, and integer_zero_node in operand 0.  */
+   as an expr in operand 1, and integer_zero_node or clauses in operand 0.  */
 #define OMP_ATOMIC_DEPENDENT_P(NODE) \
-  (TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == INTEGER_CST)
+  (TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == INTEGER_CST \
+   || TREE_CODE (TREE_OPERAND (OMP_ATOMIC_CHECK (NODE), 0)) == OMP_CLAUSE)
 
 /* Used while gimplifying continue statements bound to OMP_FOR nodes.  */
 #define OMP_FOR_GIMPLIFYING_P(NODE) \
@@ -5012,6 +5038,13 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 #define ALIGNOF_EXPR_STD_P(NODE) \
   TREE_LANG_FLAG_0 (ALIGNOF_EXPR_CHECK (NODE))
 
+/* OMP_DEPOBJ accessors. These give access to the depobj expression of the
+   #pragma omp depobj directive and the clauses, respectively.  If
+   OMP_DEPOBJ_CLAUSES is INTEGER_CST, it is instead the update clause kind
+   or OMP_CLAUSE_DEPEND_LAST for destroy clause.  */
+#define OMP_DEPOBJ_DEPOBJ(NODE)	 TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 0)
+#define OMP_DEPOBJ_CLAUSES(NODE) TREE_OPERAND (OMP_DEPOBJ_CHECK (NODE), 1)
+
 /* An enumeration of the kind of tags that C++ accepts.  */
 enum tag_types {
   none_type = 0, /* Not a tag type.  */
@@ -5072,12 +5105,15 @@ enum special_function_kind {
   sfk_none = 0,		   /* Not a special function.  This enumeral
 			      must have value zero; see
 			      special_function_p.  */
+  /* The following are ordered, for use by member synthesis fns.  */
+  sfk_destructor,	   /* A destructor.  */
   sfk_constructor,	   /* A constructor.  */
+  sfk_inheriting_constructor, /* An inheriting constructor */
   sfk_copy_constructor,    /* A copy constructor.  */
   sfk_move_constructor,    /* A move constructor.  */
   sfk_copy_assignment,     /* A copy assignment operator.  */
   sfk_move_assignment,     /* A move assignment operator.  */
-  sfk_destructor,	   /* A destructor.  */
+  /* The following are unordered.  */
   sfk_complete_destructor, /* A destructor for complete objects.  */
   sfk_base_destructor,     /* A destructor for base subobjects.  */
   sfk_deleting_destructor, /* A destructor for complete objects that
@@ -5085,7 +5121,7 @@ enum special_function_kind {
 			      destroyed.  */
   sfk_conversion,	   /* A conversion operator.  */
   sfk_deduction_guide,	   /* A class template deduction guide.  */
-  sfk_inheriting_constructor /* An inheriting constructor */
+  sfk_virtual_destructor   /* Used by member synthesis fns.  */
 };
 
 /* The various kinds of linkage.  From [basic.link],
@@ -5217,6 +5253,21 @@ struct cp_unevaluated
 {
   cp_unevaluated ();
   ~cp_unevaluated ();
+};
+
+/* The reverse: an RAII class used for nested contexts that are evaluated even
+   if the enclosing context is not.  */
+
+struct cp_evaluated
+{
+  int uneval;
+  int inhibit;
+  cp_evaluated ()
+    : uneval(cp_unevaluated_operand), inhibit(c_inhibit_evaluation_warnings)
+  { cp_unevaluated_operand = c_inhibit_evaluation_warnings = 0; }
+  ~cp_evaluated ()
+  { cp_unevaluated_operand = uneval;
+    c_inhibit_evaluation_warnings = inhibit; }
 };
 
 /* in pt.c  */
@@ -5756,7 +5807,7 @@ enum cp_decl_spec {
 struct cp_decl_specifier_seq {
   /* An array of locations for the declaration sepecifiers, indexed by
      enum cp_decl_spec_word.  */
-  source_location locations[ds_last];
+  location_t locations[ds_last];
   /* The primary type, if any, given by the decl-specifier-seq.
      Modifiers, like "short", "const", and "unsigned" are not
      reflected here.  This field will be a TYPE, unless a typedef-name
@@ -6100,6 +6151,7 @@ extern tree build_new_op			(location_t, enum tree_code,
 extern tree build_op_call			(tree, vec<tree, va_gc> **,
 						 tsubst_flags_t);
 extern bool aligned_allocation_fn_p		(tree);
+extern tree destroying_delete_p			(tree);
 extern bool usual_deallocation_fn_p		(tree);
 extern tree build_op_delete_call		(enum tree_code, tree, tree,
 						 bool, tree, tree,
@@ -6155,7 +6207,7 @@ extern void pop_defarg_context			(void);
 extern tree convert_default_arg			(tree, tree, tree, int,
 						 tsubst_flags_t);
 extern tree convert_arg_to_ellipsis		(tree, tsubst_flags_t);
-extern tree build_x_va_arg			(source_location, tree, tree);
+extern tree build_x_va_arg			(location_t, tree, tree);
 extern tree cxx_type_promotes_to		(tree);
 extern tree type_passed_as			(tree);
 extern tree convert_for_arg_passing		(tree, tree, tsubst_flags_t);
@@ -6323,7 +6375,7 @@ extern tree build_cp_library_fn_ptr		(const char *, tree, int);
 extern tree push_library_fn			(tree, tree, tree, int);
 extern tree push_void_library_fn		(tree, tree, int);
 extern tree push_throw_library_fn		(tree, tree);
-extern void warn_misplaced_attr_for_class_type  (source_location location,
+extern void warn_misplaced_attr_for_class_type  (location_t location,
 						 tree class_type);
 extern tree check_tag_decl			(cp_decl_specifier_seq *, bool);
 extern tree shadow_tag				(cp_decl_specifier_seq *);
@@ -6429,7 +6481,7 @@ extern void cplus_decl_attributes		(tree *, tree, int);
 extern void finish_anon_union			(tree);
 extern void cxx_post_compilation_parsing_cleanups (void);
 extern tree coerce_new_type			(tree, location_t);
-extern tree coerce_delete_type			(tree, location_t);
+extern void coerce_delete_type			(tree, location_t);
 extern void comdat_linkage			(tree);
 extern void determine_visibility		(tree);
 extern void constrain_class_visibility		(tree);
@@ -6626,6 +6678,9 @@ extern bool maybe_clone_body			(tree);
 /* In parser.c */
 extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool,
 				  unsigned short);
+extern void cp_convert_omp_range_for (tree &, vec<tree, va_gc> *, tree &,
+				      tree &, tree &, tree &, tree &, tree &);
+extern void cp_finish_omp_range_for (tree, tree);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
@@ -6769,6 +6824,7 @@ extern bool variable_template_specialization_p  (tree);
 extern bool alias_type_or_template_p            (tree);
 extern bool alias_template_specialization_p     (const_tree);
 extern bool dependent_alias_template_spec_p     (const_tree);
+extern bool template_parm_object_p		(const_tree);
 extern bool explicit_class_specialization_p     (tree);
 extern bool push_tinst_level                    (tree);
 extern bool push_tinst_level_loc                (tree, location_t);
@@ -7050,11 +7106,16 @@ extern tree finish_omp_task			(tree, tree);
 extern tree finish_omp_for			(location_t, enum tree_code,
 						 tree, tree, tree, tree, tree,
 						 tree, tree, vec<tree> *, tree);
-extern void finish_omp_atomic			(enum tree_code, enum tree_code,
-						 tree, tree, tree, tree, tree,
-						 bool);
+extern tree finish_omp_for_block		(tree, tree);
+extern void finish_omp_atomic			(location_t, enum tree_code,
+						 enum tree_code, tree, tree,
+						 tree, tree, tree, tree,
+						 enum omp_memory_order);
 extern void finish_omp_barrier			(void);
-extern void finish_omp_flush			(void);
+extern void finish_omp_depobj			(location_t, tree,
+						 enum omp_clause_depend_kind,
+						 tree);
+extern void finish_omp_flush			(int);
 extern void finish_omp_taskwait			(void);
 extern void finish_omp_taskyield		(void);
 extern void finish_omp_cancel			(tree);
@@ -7183,7 +7244,6 @@ extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup,
 						 bool deduping);
-extern void lookup_keep				(tree lookup);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
@@ -7471,6 +7531,7 @@ extern tree mangle_tls_init_fn			(tree);
 extern tree mangle_tls_wrapper_fn		(tree);
 extern bool decl_tls_wrapper_p			(tree);
 extern tree mangle_ref_init_variable		(tree);
+extern tree mangle_template_parm_object		(tree);
 extern char * get_mangled_vtable_map_var_name   (tree);
 extern bool mangle_return_type_p		(tree);
 extern tree mangle_decomp			(tree, vec<tree> &);
@@ -7505,6 +7566,8 @@ extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
+extern tree lookup_hotness_attribute		(tree);
+extern tree process_stmt_hotness_attribute	(tree);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);

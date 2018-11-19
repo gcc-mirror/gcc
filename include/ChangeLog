@@ -1,3 +1,14 @@
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* gomp-constants.h (GOMP_TASK_FLAG_REDUCTION,
+	GOMP_DEPEND_IN, GOMP_DEPEND_OUT, GOMP_DEPEND_INOUT,
+	GOMP_DEPEND_MUTEXINOUTSET): Define.
+
+2018-10-19  Jason Merrill  <jason@redhat.com>
+
+	* demangle.h (enum demangle_component_type): Add
+	DEMANGLE_COMPONENT_TPARM_OBJ.
+
 2018-10-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* unique-ptr.h (gnu::move): Generalize so it applies to all

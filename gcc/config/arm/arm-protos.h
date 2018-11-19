@@ -498,6 +498,16 @@ struct arm_build_target
 
 extern struct arm_build_target arm_active_target;
 
+/* Table entry for a CPU alias.  */
+struct cpu_alias
+{
+  /* The alias name.  */
+  const char *const name;
+  /* True if the name should be displayed in help text listing cpu names.  */
+  bool visible;
+};
+
+/* Table entry for an architectural feature extension.  */
 struct cpu_arch_extension
 {
   /* Feature name.  */
@@ -511,6 +521,7 @@ struct cpu_arch_extension
   const enum isa_feature isa_bits[isa_num_bits];
 };
 
+/* Common elements of both CPU and architectural options.  */
 struct cpu_arch_option
 {
   /* Name for this option.  */
@@ -521,6 +532,7 @@ struct cpu_arch_option
   enum isa_feature isa_bits[isa_num_bits];
 };
 
+/* Table entry for an architecture entry.  */
 struct arch_option
 {
   /* Common option fields.  */
@@ -535,10 +547,13 @@ struct arch_option
   enum processor_type tune_id;
 };
 
+/* Table entry for a CPU entry.  */
 struct cpu_option
 {
   /* Common option fields.  */
   cpu_arch_option common;
+  /* List of aliases for this CPU.  */
+  const struct cpu_alias *aliases;
   /* Architecture upon which this CPU is based.  */
   enum arch_type arch;
 };

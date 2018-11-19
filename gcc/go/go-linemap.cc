@@ -77,7 +77,7 @@ std::string
 Gcc_linemap::to_string(Location location)
 {
   const line_map_ordinary *lmo;
-  source_location resolved_location;
+  location_t resolved_location;
 
   // Screen out unknown and predeclared locations; produce output
   // only for simple file:line locations.

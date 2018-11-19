@@ -43,7 +43,7 @@ _cpp_preprocess_dir_only (cpp_reader *pfile,
   unsigned flags;
   linenum_type lines;
   int col;
-  source_location loc;
+  location_t loc;
 
  restart:
   /* Buffer initialization ala _cpp_clean_line(). */

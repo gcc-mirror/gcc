@@ -1515,7 +1515,8 @@ remap_gimple_stmt (gimple *stmt, copy_body_data *id)
 
 	case GIMPLE_OMP_TASKGROUP:
 	  s1 = remap_gimple_seq (gimple_omp_body (stmt), id);
-	  copy = gimple_build_omp_taskgroup (s1);
+	  copy = gimple_build_omp_taskgroup
+		   (s1, gimple_omp_taskgroup_clauses (stmt));
 	  break;
 
 	case GIMPLE_OMP_ORDERED:
@@ -4673,14 +4674,20 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
   /* Add local vars in this inlined callee to caller.  */
   add_local_variables (id->src_cfun, cfun, id);
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
+  if (dump_enabled_p ())
     {
-      fprintf (dump_file, "Inlining %s to %s with frequency %4.2f\n",
-	       id->src_node->dump_name (),
-	       id->dst_node->dump_name (),
-	       cg_edge->sreal_frequency ().to_double ());
-      id->src_node->dump (dump_file);
-      id->dst_node->dump (dump_file);
+      char buf[128];
+      snprintf (buf, sizeof(buf), "%4.2f",
+		cg_edge->sreal_frequency ().to_double ());
+      dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
+		       call_stmt,
+		       "Inlining %C to %C with frequency %s\n",
+		       id->src_node, id->dst_node, buf);
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  id->src_node->dump (dump_file);
+	  id->dst_node->dump (dump_file);
+	}
     }
 
   /* This is it.  Duplicate the callee body.  Assume callee is

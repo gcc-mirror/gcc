@@ -4001,6 +4001,11 @@ driver_handle_option (struct gcc_options *opts,
       diagnostic_color_init (dc, value);
       break;
 
+    case OPT_fdiagnostics_format_:
+      diagnostic_output_format_init (dc,
+				     (enum diagnostics_output_format)value);
+      break;
+
     case OPT_Wa_:
       {
 	int prev, j;

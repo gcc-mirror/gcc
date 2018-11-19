@@ -1,3 +1,50 @@
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88073
+	* frontend-passes.c (combine_array_constructor): Do not do
+	anything if in a WHERE statement.
+
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70260
+	* expr.c (gfc_check_assign): Reject assigning to an external
+	symbol.
+	(gfc_check_pointer_assign): Add suppress_type_test
+	argument. Insert line after if. A non-proc pointer can not point
+	to a constant.  Only check types if suppress_type_test is false.
+	* gfortran.h (gfc_check_pointer_assign): Add optional
+	suppress_type_test argument.
+	* resolve.c (gfc_resolve_code):  Move up gfc_check_pointer_assign
+	and give it the extra argument.
+	(resolve_fl_procedure): Set error on value for a function with
+	an inizializer.
+
+2018-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/19165
+	* error.c (gfc_diagnostic_finalizer): Add diagnostic_t param.
+
+2018-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* cpp.c: Replace "source_location" with "location_t".
+	* gfortran.h: Likewise.
+
+2018-11-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-openmp.c (gfc_trans_omp_clauses): Use
+	OMP_CLAUSE_DEFAULTMAP_SET_KIND.
+	(gfc_trans_omp_atomic): Set OMP_ATOMIC_MEMORY_ORDER
+	rather than OMP_ATOMIC_SEQ_CST.
+	(gfc_trans_omp_taskgroup): Build OMP_TASKGROUP using
+	make_node instead of build1_loc.
+	* types.def (BT_FN_VOID_BOOL, BT_FN_VOID_SIZE_SIZE_PTR,
+	BT_FN_UINT_UINT_PTR_PTR, BT_FN_UINT_OMPFN_PTR_UINT_UINT,
+	BT_FN_BOOL_UINT_LONGPTR_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_UINT_ULLPTR_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR,
+	BT_FN_BOOL_LONG_LONG_LONG_LONG_LONG_LONGPTR_LONGPTR_PTR_PTR,
+	BT_FN_BOOL_BOOL_ULL_ULL_ULL_LONG_ULL_ULLPTR_ULLPTR_PTR_PTR): New.
+	(BT_FN_VOID_INT_OMPFN_SIZE_PTR_PTR_PTR_UINT_PTR_PTR): Formatting fix.
+
 2018-11-02  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/46020

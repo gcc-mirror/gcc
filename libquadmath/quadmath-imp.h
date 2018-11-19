@@ -21,10 +21,16 @@ Boston, MA 02110-1301, USA.  */
 #ifndef QUADMATH_IMP_H
 #define QUADMATH_IMP_H
 
+#include <errno.h>
+#include <limits.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include "quadmath.h"
 #include "config.h"
+#ifdef HAVE_FENV_H
+# include <fenv.h>
+#endif
 
 
 /* Under IEEE 754, an architecture may determine tininess of
@@ -36,6 +42,10 @@ Boston, MA 02110-1301, USA.  */
 
 #define TININESS_AFTER_ROUNDING   1
 
+#define HIGH_ORDER_BIT_IS_SET_FOR_SNAN 0
+
+#define FIX_FLT128_LONG_CONVERT_OVERFLOW 0
+#define FIX_FLT128_LLONG_CONVERT_OVERFLOW 0
 
 /* Prototypes for internal functions.  */
 extern int32_t __quadmath_rem_pio2q (__float128, __float128 *);
@@ -43,9 +53,24 @@ extern void __quadmath_kernel_sincosq (__float128, __float128, __float128 *,
 				       __float128 *, int);
 extern __float128 __quadmath_kernel_sinq (__float128, __float128, int);
 extern __float128 __quadmath_kernel_cosq (__float128, __float128);
+extern __float128 __quadmath_kernel_tanq (__float128, __float128, int);
+extern __float128 __quadmath_gamma_productq (__float128, __float128, int,
+					     __float128 *);
+extern __float128 __quadmath_gammaq_r (__float128, int *);
+extern __float128 __quadmath_lgamma_negq (__float128, int *);
+extern __float128 __quadmath_lgamma_productq (__float128, __float128,
+					      __float128, int);
+extern __float128 __quadmath_lgammaq_r (__float128, int *);
 extern __float128 __quadmath_x2y2m1q (__float128 x, __float128 y);
-extern int __quadmath_isinf_nsq (__float128 x);
+extern __complex128 __quadmath_kernel_casinhq (__complex128, int);
 
+static inline void
+mul_splitq (__float128 *hi, __float128 *lo, __float128 x, __float128 y)
+{
+  /* Fast built-in fused multiply-add.  */
+  *hi = x * y;
+  *lo = fmaq (x, y, -*hi);
+}
 
 
 
@@ -71,11 +96,15 @@ typedef union
 #if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
     unsigned negative:1;
     unsigned exponent:15;
-    uint64_t mant_high:48;
-    uint64_t mant_low:64;
+    unsigned mantissa0:16;
+    unsigned mantissa1:32;
+    unsigned mantissa2:32;
+    unsigned mantissa3:32;
 #else
-    uint64_t mant_low:64;
-    uint64_t mant_high:48;
+    unsigned mantissa3:32;
+    unsigned mantissa2:32;
+    unsigned mantissa1:32;
+    unsigned mantissa0:16;
     unsigned exponent:15;
     unsigned negative:1;
 #endif
@@ -117,16 +146,20 @@ typedef union
     unsigned negative:1;
     unsigned exponent:15;
     unsigned quiet_nan:1;
-    uint64_t mant_high:47;
-    uint64_t mant_low:64;
+    unsigned mantissa0:15;
+    unsigned mantissa1:32;
+    unsigned mantissa2:32;
+    unsigned mantissa3:32;
 #else
-    uint64_t mant_low:64;
-    uint64_t mant_high:47;
+    unsigned mantissa3:32;
+    unsigned mantissa2:32;
+    unsigned mantissa1:32;
+    unsigned mantissa0:15;
     unsigned quiet_nan:1;
     unsigned exponent:15;
     unsigned negative:1;
 #endif
-  } nan;
+  } ieee_nan;
 
 } ieee854_float128;
 
@@ -226,5 +259,87 @@ do {                                   \
 	}							\
     }								\
   while (0)
+
+/* Likewise, for both real and imaginary parts of a complex
+   result.  */
+#define math_check_force_underflow_complex(x)				\
+  do									\
+    {									\
+      __typeof (x) force_underflow_complex_tmp = (x);			\
+      math_check_force_underflow (__real__ force_underflow_complex_tmp); \
+      math_check_force_underflow (__imag__ force_underflow_complex_tmp); \
+    }									\
+  while (0)
+
+#ifndef HAVE_FENV_H
+# define feraiseexcept(arg) ((void) 0)
+typedef int fenv_t;
+# define feholdexcept(arg) ((void) 0)
+# define fesetround(arg) ((void) 0)
+# define feupdateenv(arg) ((void) (arg))
+# define fesetenv(arg) ((void) (arg))
+# define fetestexcept(arg) 0
+# define feclearexcept(arg) ((void) 0)
+#else
+# ifndef HAVE_FEHOLDEXCEPT
+#  define feholdexcept(arg) ((void) 0)
+# endif
+# ifndef HAVE_FESETROUND
+#  define fesetround(arg) ((void) 0)
+# endif
+# ifndef HAVE_FEUPDATEENV
+#  define feupdateenv(arg) ((void) (arg))
+# endif
+# ifndef HAVE_FESETENV
+#  define fesetenv(arg) ((void) (arg))
+# endif
+# ifndef HAVE_FETESTEXCEPT
+#  define fetestexcept(arg) 0
+# endif
+#endif
+
+#ifndef __glibc_likely
+# define __glibc_likely(cond)	__builtin_expect ((cond), 1)
+#endif
+
+#ifndef __glibc_unlikely
+# define __glibc_unlikely(cond)	__builtin_expect ((cond), 0)
+#endif
+
+#if defined HAVE_FENV_H && defined HAVE_FESETROUND && defined HAVE_FEUPDATEENV
+struct rm_ctx
+{
+  fenv_t env;
+  bool updated_status;
+};
+
+# define SET_RESTORE_ROUNDF128(RM)					\
+  struct rm_ctx ctx __attribute__((cleanup (libc_feresetround_ctx)));	\
+  libc_feholdsetround_ctx (&ctx, (RM))
+
+static inline __attribute__ ((always_inline)) void
+libc_feholdsetround_ctx (struct rm_ctx *ctx, int round)
+{
+  ctx->updated_status = false;
+
+  /* Update rounding mode only if different.  */
+  if (__glibc_unlikely (round != fegetround ()))
+    {
+      ctx->updated_status = true;
+      fegetenv (&ctx->env);
+      fesetround (round);
+    }
+}
+
+static inline __attribute__ ((always_inline)) void
+libc_feresetround_ctx (struct rm_ctx *ctx)
+{
+  /* Restore the rounding mode if updated.  */
+  if (__glibc_unlikely (ctx->updated_status))
+    feupdateenv (&ctx->env);
+}
+#else
+# define SET_RESTORE_ROUNDF128(RM) ((void) 0)
+#endif
 
 #endif

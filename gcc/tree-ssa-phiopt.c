@@ -423,7 +423,7 @@ factor_out_conditional_conversion (edge e0, edge e1, gphi *phi,
   tree temp, result;
   gphi *newphi;
   gimple_stmt_iterator gsi, gsi_for_def;
-  source_location locus = gimple_location (phi);
+  location_t locus = gimple_location (phi);
   enum tree_code convert_code;
 
   /* Handle only PHI statements with two arguments.  TODO: If all
@@ -669,7 +669,7 @@ conditional_replacement (basic_block cond_bb, basic_block middle_bb,
 
   if (!useless_type_conversion_p (TREE_TYPE (result), TREE_TYPE (new_var)))
     {
-      source_location locus_0, locus_1;
+      location_t locus_0, locus_1;
 
       new_var2 = make_ssa_name (TREE_TYPE (result));
       new_stmt = gimple_build_assign (new_var2, CONVERT_EXPR, new_var);
@@ -1204,7 +1204,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 		    edge e0, edge e1, gimple *phi,
 		    tree arg0, tree arg1)
 {
-  tree result, type;
+  tree result, type, rhs;
   gcond *cond;
   gassign *new_stmt;
   edge true_edge, false_edge;
@@ -1220,6 +1220,25 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
 
   cond = as_a <gcond *> (last_stmt (cond_bb));
   cmp = gimple_cond_code (cond);
+  rhs = gimple_cond_rhs (cond);
+
+  /* Turn EQ/NE of extreme values to order comparisons.  */
+  if ((cmp == NE_EXPR || cmp == EQ_EXPR)
+      && TREE_CODE (rhs) == INTEGER_CST)
+    {
+      if (wi::eq_p (wi::to_wide (rhs), wi::min_value (TREE_TYPE (rhs))))
+	{
+	  cmp = (cmp == EQ_EXPR) ? LT_EXPR : GE_EXPR;
+	  rhs = wide_int_to_tree (TREE_TYPE (rhs),
+				  wi::min_value (TREE_TYPE (rhs)) + 1);
+	}
+      else if (wi::eq_p (wi::to_wide (rhs), wi::max_value (TREE_TYPE (rhs))))
+	{
+	  cmp = (cmp == EQ_EXPR) ? GT_EXPR : LE_EXPR;
+	  rhs = wide_int_to_tree (TREE_TYPE (rhs),
+				  wi::max_value (TREE_TYPE (rhs)) - 1);
+	}
+    }
 
   /* This transformation is only valid for order comparisons.  Record which
      operand is smaller/larger if the result of the comparison is true.  */
@@ -1228,7 +1247,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
   if (cmp == LT_EXPR || cmp == LE_EXPR)
     {
       smaller = gimple_cond_lhs (cond);
-      larger = gimple_cond_rhs (cond);
+      larger = rhs;
       /* If we have smaller < CST it is equivalent to smaller <= CST-1.
 	 Likewise smaller <= CST is equivalent to smaller < CST+1.  */
       if (TREE_CODE (larger) == INTEGER_CST)
@@ -1255,7 +1274,7 @@ minmax_replacement (basic_block cond_bb, basic_block middle_bb,
     }
   else if (cmp == GT_EXPR || cmp == GE_EXPR)
     {
-      smaller = gimple_cond_rhs (cond);
+      smaller = rhs;
       larger = gimple_cond_lhs (cond);
       /* If we have larger > CST it is equivalent to larger >= CST+1.
 	 Likewise larger >= CST is equivalent to larger > CST-1.  */
@@ -2030,7 +2049,7 @@ cond_store_replacement (basic_block middle_bb, basic_block join_bb,
   gphi *newphi;
   gassign *new_stmt;
   gimple_stmt_iterator gsi;
-  source_location locus;
+  location_t locus;
 
   /* Check if middle_bb contains of only one store.  */
   if (!assign
@@ -2114,7 +2133,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 				  gimple *else_assign)
 {
   tree lhs_base, lhs, then_rhs, else_rhs, name;
-  source_location then_locus, else_locus;
+  location_t then_locus, else_locus;
   gimple_stmt_iterator gsi;
   gphi *newphi;
   gassign *new_stmt;

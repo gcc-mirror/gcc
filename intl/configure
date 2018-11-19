@@ -5639,7 +5639,7 @@ rm -f core conftest.err conftest.$ac_objext \
     if test "$am_cv_func_iconv" != yes; then
       am_save_CPPFLAGS="$CPPFLAGS"
       am_save_LIBS="$LIBS"
-      CPPFLAGS="$LIBS $INCICONV"
+      CPPFLAGS="$CPPFLAGS $INCICONV"
       LIBS="$LIBS $LIBICONV"
       cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */

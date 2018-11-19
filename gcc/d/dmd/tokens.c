@@ -8,8 +8,7 @@
  * https://github.com/D-Programming-Language/dmd/blob/master/src/lexer.c
  */
 
-#include <stdio.h>
-#include <ctype.h>
+#include "root/dsystem.h"
 
 #include "tokens.h"
 #include "root/rmem.h"

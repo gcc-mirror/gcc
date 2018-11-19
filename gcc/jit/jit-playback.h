@@ -686,7 +686,7 @@ public:
 
   recording::location *get_recording_loc () const { return m_recording_loc; }
 
-  source_location m_srcloc;
+  location_t m_srcloc;
 
 private:
   recording::location *m_recording_loc;

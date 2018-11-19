@@ -803,7 +803,7 @@ extern void finish_fname_decls (void);
 extern const char *fname_as_string (int);
 extern tree fname_decl (location_t, unsigned, tree);
 
-extern int check_user_alignment (const_tree, bool);
+extern int check_user_alignment (const_tree, bool, bool);
 extern bool check_function_arguments (location_t loc, const_tree, const_tree,
 				      int, tree *, vec<location_t> *);
 extern void check_function_arguments_recurse (void (*)
@@ -813,7 +813,8 @@ extern void check_function_arguments_recurse (void (*)
 					      unsigned HOST_WIDE_INT);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
-extern void check_function_format (tree, int, tree *, vec<location_t> *);
+extern void check_function_format (const_tree, tree, int, tree *,
+				   vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
@@ -1154,18 +1155,21 @@ enum c_omp_region_type
 };
 
 extern tree c_finish_omp_master (location_t, tree);
-extern tree c_finish_omp_taskgroup (location_t, tree);
+extern tree c_finish_omp_taskgroup (location_t, tree, tree);
 extern tree c_finish_omp_critical (location_t, tree, tree, tree);
 extern tree c_finish_omp_ordered (location_t, tree, tree);
 extern void c_finish_omp_barrier (location_t);
 extern tree c_finish_omp_atomic (location_t, enum tree_code, enum tree_code,
-				 tree, tree, tree, tree, tree, bool, bool,
-				 bool = false);
-extern void c_finish_omp_flush (location_t);
+				 tree, tree, tree, tree, tree, bool,
+				 enum omp_memory_order, bool = false);
+extern bool c_omp_depend_t_p (tree);
+extern void c_finish_omp_depobj (location_t, tree, enum omp_clause_depend_kind,
+				 tree);
+extern void c_finish_omp_flush (location_t, int);
 extern void c_finish_omp_taskwait (location_t);
 extern void c_finish_omp_taskyield (location_t);
 extern tree c_finish_omp_for (location_t, enum tree_code, tree, tree, tree,
-			      tree, tree, tree, tree);
+			      tree, tree, tree, tree, bool);
 extern bool c_omp_check_loop_iv (tree, tree, walk_tree_lh);
 extern bool c_omp_check_loop_iv_exprs (location_t, tree, tree, tree, tree,
 				       walk_tree_lh);
@@ -1331,6 +1335,19 @@ extern int parse_tm_stmt_attr (tree, int);
 extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
+
+/* A bitmap of flags to positional_argument.  */
+enum posargflags {
+  /* Consider positional attribute argument value zero valid.  */
+  POSARG_ZERO = 1,
+  /* Consider positional attribute argument value valid if it refers
+     to the ellipsis (i.e., beyond the last typed argument).  */
+  POSARG_ELLIPSIS = 2
+};
+
+extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);

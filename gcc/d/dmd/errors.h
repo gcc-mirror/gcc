@@ -10,6 +10,7 @@
 
 #pragma once
 
+#include "root/dsystem.h"
 #include "globals.h"
 
 bool isConsoleColorSupported();

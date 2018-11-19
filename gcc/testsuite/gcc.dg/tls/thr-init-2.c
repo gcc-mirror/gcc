@@ -2,7 +2,7 @@
 /* { dg-require-effective-target tls_runtime } */
 /* { dg-add-options tls } */
 
-extern void abort() ;
+extern void abort (void);
 
 static __thread int fstat ;
 static __thread int fstat = 1;

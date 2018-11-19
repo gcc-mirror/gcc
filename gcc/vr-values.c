@@ -64,7 +64,7 @@ static inline void
 set_value_range_to_truthvalue (value_range *vr, tree type)
 {
   if (TYPE_PRECISION (type) == 1)
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
   else
     vr->update (VR_RANGE, build_int_cst (type, 0), build_int_cst (type, 1));
 }
@@ -118,25 +118,19 @@ vr_values::get_value_range (const_tree var)
 	  if (POINTER_TYPE_P (TREE_TYPE (sym))
 	      && (nonnull_arg_p (sym)
 		  || get_ptr_nonnull (var)))
-	    set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+	    vr->set_nonnull (TREE_TYPE (sym));
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (sym)))
 	    {
-	      wide_int min, max;
-	      value_range_kind rtype = get_range_info (var, &min, &max);
-	      if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
-		set_value_range (vr, rtype,
-				 wide_int_to_tree (TREE_TYPE (var), min),
-				 wide_int_to_tree (TREE_TYPE (var), max),
-				 NULL);
-	      else
-		set_value_range_to_varying (vr);
+	      get_range_info (var, *vr);
+	      if (vr->undefined_p ())
+		vr->set_varying ();
 	    }
 	  else
-	    set_value_range_to_varying (vr);
+	    vr->set_varying ();
 	}
       else if (TREE_CODE (sym) == RESULT_DECL
 	       && DECL_BY_REFERENCE (sym))
-	set_value_range_to_nonnull (vr, TREE_TYPE (sym));
+	vr->set_nonnull (TREE_TYPE (sym));
     }
 
   return vr;
@@ -154,7 +148,7 @@ vr_values::set_defs_to_varying (gimple *stmt)
       value_range *vr = get_value_range (def);
       /* Avoid writing to vr_const_varying get_value_range may return.  */
       if (!vr->varying_p ())
-	set_value_range_to_varying (vr);
+	vr->set_varying ();
     }
 }
 
@@ -178,22 +172,15 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
      factor that in.  */
   if (INTEGRAL_TYPE_P (TREE_TYPE (var)))
     {
-      wide_int min, max;
-      value_range_kind rtype = get_range_info (var, &min, &max);
+      value_range nr;
+      value_range_kind rtype = get_range_info (var, nr);
       if (rtype == VR_RANGE || rtype == VR_ANTI_RANGE)
-	{
-	  tree nr_min, nr_max;
-	  nr_min = wide_int_to_tree (TREE_TYPE (var), min);
-	  nr_max = wide_int_to_tree (TREE_TYPE (var), max);
-	  value_range nr;
-	  nr.set_and_canonicalize (rtype, nr_min, nr_max, NULL);
-	  new_vr->intersect (&nr);
-	}
+	new_vr->intersect (&nr);
     }
 
   /* Update the value range, if necessary.  */
   old_vr = get_value_range (var);
-  is_new = *old_vr != *new_vr;
+  is_new = !old_vr->equal_p (*new_vr, /*ignore_equivs=*/false);
 
   if (is_new)
     {
@@ -205,13 +192,13 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 	 called.  */
       if (new_vr->undefined_p ())
 	{
-	  set_value_range_to_varying (old_vr);
-	  set_value_range_to_varying (new_vr);
+	  old_vr->set_varying ();
+	  new_vr->set_varying ();
 	  return true;
 	}
       else
-	set_value_range (old_vr, new_vr->kind (),
-			 new_vr->min (), new_vr->max (), new_vr->equiv ());
+	old_vr->set (new_vr->kind (),
+		     new_vr->min (), new_vr->max (), new_vr->equiv ());
     }
 
   new_vr->equiv_clear ();
@@ -222,7 +209,7 @@ vr_values::update_value_range (const_tree var, value_range *new_vr)
 /* Return true if value range VR involves exactly one symbol SYM.  */
 
 static bool
-symbolic_range_based_on_p (value_range *vr, const_tree sym)
+symbolic_range_based_on_p (value_range_base *vr, const_tree sym)
 {
   bool neg, min_has_symbol, max_has_symbol;
   tree inv;
@@ -400,7 +387,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
   if ((POINTER_TYPE_P (type) && cond_code != NE_EXPR && cond_code != EQ_EXPR)
       || limit == var)
     {
-      set_value_range_to_varying (vr_p);
+      vr_p->set_varying ();
       return;
     }
 
@@ -560,7 +547,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 	 all should be optimized away above us.  */
       if (cond_code == LT_EXPR
 	  && compare_values (max, min) == 0)
-	set_value_range_to_varying (vr_p);
+	vr_p->set_varying ();
       else
 	{
 	  /* For LT_EXPR, we create the range [MIN, MAX - 1].  */
@@ -600,7 +587,7 @@ vr_values::extract_range_for_var_from_comparison_expr (tree var,
 	 all should be optimized away above us.  */
       if (cond_code == GT_EXPR
 	  && compare_values (min, max) == 0)
-	set_value_range_to_varying (vr_p);
+	vr_p->set_varying ();
       else
 	{
 	  /* For GT_EXPR, we create the range [MIN + 1, MAX].  */
@@ -685,7 +672,7 @@ vr_values::extract_range_from_ssa_name (value_range *vr, tree var)
   if (!var_vr->varying_p ())
     vr->deep_copy (var_vr);
   else
-    set_value_range (vr, VR_RANGE, var, var, NULL);
+    vr->set (var);
 
   vr->equiv_add (var, get_value_range (var), &vrp_equiv_obstack);
 }
@@ -701,20 +688,20 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 {
   /* Get value ranges for each operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
-  value_range vr0, vr1;
+  value_range_base vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
+    vr0.set (op0);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(get_value_range (op1));
   else if (is_gimple_min_invariant (op1))
-    set_value_range_to_value (&vr1, op1, NULL);
+    vr1.set (op1);
   else
-    set_value_range_to_varying (&vr1);
+    vr1.set_varying ();
 
   /* If one argument is varying, we can sometimes still deduce a
      range for the output: any + [3, +INF] is in [MIN+3, +INF].  */
@@ -731,7 +718,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 			   vrp_val_max (expr_type));
     }
 
-  extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &vr1);
+  ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &vr1);
 
   /* Set value_range for n in following sequence:
      def = __builtin_memchr (arg, 0, sz)
@@ -761,7 +748,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 	      wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 	      tree range_min = build_zero_cst (expr_type);
 	      tree range_max = wide_int_to_tree (expr_type, wmax - 1);
-	      set_value_range (vr, VR_RANGE, range_min, range_max, NULL);
+	      vr->set (VR_RANGE, range_min, range_max);
 	      return;
 	    }
      }
@@ -782,17 +769,17 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 
       /* Try with VR0 and [-INF, OP1].  */
       if (is_gimple_min_invariant (minus_p ? vr0.max () : vr0.min ()))
-	set_value_range (&n_vr1, VR_RANGE, vrp_val_min (expr_type), op1, NULL);
+	n_vr1.set (VR_RANGE, vrp_val_min (expr_type), op1);
 
       /* Try with VR0 and [OP1, +INF].  */
       else if (is_gimple_min_invariant (minus_p ? vr0.min () : vr0.max ()))
-	set_value_range (&n_vr1, VR_RANGE, op1, vrp_val_max (expr_type), NULL);
+	n_vr1.set (VR_RANGE, op1, vrp_val_max (expr_type));
 
       /* Try with VR0 and [OP1, OP1].  */
       else
-	set_value_range (&n_vr1, VR_RANGE, op1, op1, NULL);
+	n_vr1.set (VR_RANGE, op1, op1);
 
-      extract_range_from_binary_expr_1 (vr, code, expr_type, &vr0, &n_vr1);
+      ::extract_range_from_binary_expr (vr, code, expr_type, &vr0, &n_vr1);
     }
 
   if (vr->varying_p ()
@@ -806,17 +793,17 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 
       /* Try with [-INF, OP0] and VR1.  */
       if (is_gimple_min_invariant (minus_p ? vr1.max () : vr1.min ()))
-	set_value_range (&n_vr0, VR_RANGE, vrp_val_min (expr_type), op0, NULL);
+	n_vr0.set (VR_RANGE, vrp_val_min (expr_type), op0);
 
       /* Try with [OP0, +INF] and VR1.  */
       else if (is_gimple_min_invariant (minus_p ? vr1.min (): vr1.max ()))
-	set_value_range (&n_vr0, VR_RANGE, op0, vrp_val_max (expr_type), NULL);
+	n_vr0.set (VR_RANGE, op0, vrp_val_max (expr_type));
 
       /* Try with [OP0, OP0] and VR1.  */
       else
-	set_value_range (&n_vr0, VR_RANGE, op0, op0, NULL);
+	n_vr0.set (op0);
 
-      extract_range_from_binary_expr_1 (vr, code, expr_type, &n_vr0, &vr1);
+      ::extract_range_from_binary_expr (vr, code, expr_type, &n_vr0, &vr1);
     }
 
   /* If we didn't derive a range for MINUS_EXPR, and
@@ -832,7 +819,7 @@ vr_values::extract_range_from_binary_expr (value_range *vr,
 	  || (vr1.kind () == VR_ANTI_RANGE
 	      && vr1.min () == op0
 	      && vr1.min () == vr1.max ())))
-      set_value_range_to_nonnull (vr, expr_type);
+      vr->set_nonnull (expr_type);
 }
 
 /* Extract range information from a unary expression CODE OP0 based on
@@ -843,16 +830,16 @@ void
 vr_values::extract_range_from_unary_expr (value_range *vr, enum tree_code code,
 					  tree type, tree op0)
 {
-  value_range vr0;
+  value_range_base vr0;
 
   /* Get value ranges for the operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
+    vr0.set (op0);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   ::extract_range_from_unary_expr (vr, code, type, &vr0, TREE_TYPE (op0));
 }
@@ -867,26 +854,28 @@ vr_values::extract_range_from_cond_expr (value_range *vr, gassign *stmt)
   /* Get value ranges for each operand.  For constant operands, create
      a new value range with the operand to simplify processing.  */
   tree op0 = gimple_assign_rhs2 (stmt);
-  value_range vr0;
+  value_range tem0;
+  value_range *vr0 = &tem0;
   if (TREE_CODE (op0) == SSA_NAME)
-    vr0 = *(get_value_range (op0));
+    vr0 = get_value_range (op0);
   else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
+    tem0.set (op0);
   else
-    set_value_range_to_varying (&vr0);
+    tem0.set_varying ();
 
   tree op1 = gimple_assign_rhs3 (stmt);
-  value_range vr1;
+  value_range tem1;
+  value_range *vr1 = &tem1;
   if (TREE_CODE (op1) == SSA_NAME)
-    vr1 = *(get_value_range (op1));
+    vr1 = get_value_range (op1);
   else if (is_gimple_min_invariant (op1))
-    set_value_range_to_value (&vr1, op1, NULL);
+    tem1.set (op1);
   else
-    set_value_range_to_varying (&vr1);
+    tem1.set_varying ();
 
   /* The resulting value range is the union of the operand ranges */
-  vr->deep_copy (&vr0);
-  vr->union_ (&vr1);
+  vr->deep_copy (vr0);
+  vr->union_ (vr1);
 }
 
 
@@ -909,7 +898,7 @@ vr_values::extract_range_from_comparison (value_range *vr, enum tree_code code,
 	 type.  */
       val = fold_convert (type, val);
       if (is_gimple_min_invariant (val))
-	set_value_range_to_value (vr, val, vr->equiv ());
+	vr->set (val);
       else
 	vr->update (VR_RANGE, val, val);
     }
@@ -928,20 +917,20 @@ bool
 vr_values::check_for_binary_op_overflow (enum tree_code subcode, tree type,
 					 tree op0, tree op1, bool *ovf)
 {
-  value_range vr0, vr1;
+  value_range_base vr0, vr1;
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *get_value_range (op0);
   else if (TREE_CODE (op0) == INTEGER_CST)
-    set_value_range_to_value (&vr0, op0, NULL);
+    vr0.set (op0);
   else
-    set_value_range_to_varying (&vr0);
+    vr0.set_varying ();
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *get_value_range (op1);
   else if (TREE_CODE (op1) == INTEGER_CST)
-    set_value_range_to_value (&vr1, op1, NULL);
+    vr1.set (op1);
   else
-    set_value_range_to_varying (&vr1);
+    vr1.set_varying ();
 
   tree vr0min = vr0.min (), vr0max = vr0.max ();
   tree vr1min = vr1.min (), vr1max = vr1.max ();
@@ -1057,7 +1046,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	      && TREE_CODE (SSA_NAME_VAR (arg)) == PARM_DECL
 	      && cfun->after_inlining)
 	    {
-	      set_value_range_to_null (vr, type);
+	      vr->set_null (type);
 	      return;
 	    }
 	  break;
@@ -1198,8 +1187,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	  maxi = prec - 1;
 	  goto bitop_builtin;
 	bitop_builtin:
-	  set_value_range (vr, VR_RANGE, build_int_cst (type, mini),
-			   build_int_cst (type, maxi), NULL);
+	  vr->set (VR_RANGE, build_int_cst (type, mini),
+		   build_int_cst (type, maxi));
 	  return;
 	case CFN_UBSAN_CHECK_ADD:
 	  subcode = PLUS_EXPR;
@@ -1226,10 +1215,9 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	      size = targetm.goacc.dim_limit (axis);
 
 	    tree type = TREE_TYPE (gimple_call_lhs (stmt));
-	    set_value_range (vr, VR_RANGE,
-			     build_int_cst (type, is_pos ? 0 : 1),
-			     size ? build_int_cst (type, size - is_pos)
-			          : vrp_val_max (type), NULL);
+	    vr->set(VR_RANGE, build_int_cst (type, is_pos ? 0 : 1),
+		    size
+		    ? build_int_cst (type, size - is_pos) : vrp_val_max (type));
 	  }
 	  return;
 	case CFN_BUILT_IN_STRLEN:
@@ -1243,7 +1231,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		wide_int wmax = wi::to_wide (max, TYPE_PRECISION (TREE_TYPE (max)));
 		tree range_min = build_zero_cst (type);
 		tree range_max = wide_int_to_tree (type, wmax - 1);
-		set_value_range (vr, VR_RANGE, range_min, range_max, NULL);
+		vr->set (VR_RANGE, range_min, range_max);
 		return;
 	      }
 	  break;
@@ -1269,7 +1257,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 	  if (vr->kind () == VR_RANGE
 	      && (vr->min () == vr->max ()
 		  || operand_equal_p (vr->min (), vr->max (), 0)))
-	    set_value_range_to_varying (vr);
+	    vr->set_varying ();
 	  return;
 	}
     }
@@ -1305,8 +1293,8 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		    {
 		      /* This is the boolean return value whether compare and
 			 exchange changed anything or not.  */
-		      set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
-				       build_int_cst (type, 1), NULL);
+		      vr->set (VR_RANGE, build_int_cst (type, 0),
+			       build_int_cst (type, 1));
 		      return;
 		    }
 		  break;
@@ -1322,15 +1310,13 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 		      bool ovf = false;
 		      if (check_for_binary_op_overflow (subcode, type,
 							op0, op1, &ovf))
-			set_value_range_to_value (vr,
-						  build_int_cst (type, ovf),
-						  NULL);
+			vr->set (build_int_cst (type, ovf));
 		      else if (TYPE_PRECISION (type) == 1
 			       && !TYPE_UNSIGNED (type))
-			set_value_range_to_varying (vr);
+			vr->set_varying ();
 		      else
-			set_value_range (vr, VR_RANGE, build_int_cst (type, 0),
-					 build_int_cst (type, 1), NULL);
+			vr->set (VR_RANGE, build_int_cst (type, 0),
+				 build_int_cst (type, 1));
 		    }
 		  else if (types_compatible_p (type, TREE_TYPE (op0))
 			   && types_compatible_p (type, TREE_TYPE (op1)))
@@ -1354,7 +1340,7 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
 						     type, op0);
 		      extract_range_from_unary_expr (&vr1, NOP_EXPR,
 						     type, op1);
-		      extract_range_from_binary_expr_1 (vr, subcode, type,
+		      ::extract_range_from_binary_expr (vr, subcode, type,
 							&vr0, &vr1);
 		      flag_wrapv = saved_flag_wrapv;
 		    }
@@ -1367,9 +1353,9 @@ vr_values::extract_range_basic (value_range *vr, gimple *stmt)
       && gimple_stmt_nonnegative_warnv_p (stmt, &sop))
     set_value_range_to_nonnegative (vr, type);
   else if (vrp_stmt_computes_nonzero (stmt))
-    set_value_range_to_nonnull (vr, type);
+    vr->set_nonnull (type);
   else
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
 }
 
 
@@ -1403,9 +1389,9 @@ vr_values::extract_range_from_assignment (value_range *vr, gassign *stmt)
 				   gimple_assign_rhs2 (stmt));
   else if (get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
 	   && is_gimple_min_invariant (gimple_assign_rhs1 (stmt)))
-    set_value_range_to_value (vr, gimple_assign_rhs1 (stmt), NULL);
+    vr->set (gimple_assign_rhs1 (stmt));
   else
-    set_value_range_to_varying (vr);
+    vr->set_varying ();
 
   if (vr->varying_p ())
     extract_range_basic (vr, stmt);
@@ -1685,7 +1671,7 @@ vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
   /* Like in PR19590, scev can return a constant function.  */
   if (is_gimple_min_invariant (chrec))
     {
-      set_value_range_to_value (vr, chrec, vr->equiv ());
+      vr->set (chrec);
       return;
     }
 
@@ -1764,12 +1750,12 @@ vr_values::adjust_range_with_scev (value_range *vr, struct loop *loop,
 	      /* Likewise if the addition did.  */
 	      if (maxvr.kind () == VR_RANGE)
 		{
-		  value_range initvr;
+		  value_range_base initvr;
 
 		  if (TREE_CODE (init) == SSA_NAME)
 		    initvr = *(get_value_range (init));
 		  else if (is_gimple_min_invariant (init))
-		    set_value_range_to_value (&initvr, init, NULL);
+		    initvr.set (init);
 		  else
 		    return;
 
@@ -2006,7 +1992,7 @@ vr_values::vrp_visit_assignment_or_call (gimple *stmt, tree *output_p,
 	    }
 	  else if (is_gimple_min_invariant (tem))
 	    {
-	      set_value_range_to_value (vr, tem, NULL);
+	      vr->set (tem);
 	      return;
 	    }
 	}
@@ -2020,18 +2006,22 @@ vr_values::vrp_visit_assignment_or_call (gimple *stmt, tree *output_p,
 
 /* Helper that gets the value range of the SSA_NAME with version I
    or a symbolic range containing the SSA_NAME only if the value range
-   is varying or undefined.  */
+   is varying or undefined.  Uses TEM as storage for the alternate range.  */
 
-value_range
-vr_values::get_vr_for_comparison (int i)
+value_range *
+vr_values::get_vr_for_comparison (int i, value_range *tem)
 {
-  value_range vr = *get_value_range (ssa_name (i));
+  /* Shallow-copy equiv bitmap.  */
+  value_range *vr = get_value_range (ssa_name (i));
 
   /* If name N_i does not have a valid range, use N_i as its own
      range.  This allows us to compare against names that may
      have N_i in their ranges.  */
-  if (vr.varying_p () || vr.undefined_p ())
-    vr = value_range (VR_RANGE, ssa_name (i), ssa_name (i), NULL);
+  if (vr->varying_p () || vr->undefined_p ())
+    {
+      tem->set (ssa_name (i));
+      return tem;
+    }
 
   return vr;
 }
@@ -2051,7 +2041,7 @@ vr_values::compare_name_with_value (enum tree_code comp, tree var, tree val,
   tree retval, t;
   int used_strict_overflow;
   bool sop;
-  value_range equiv_vr;
+  value_range *equiv_vr, tem_vr;
 
   /* Get the set of equivalences for VAR.  */
   e = get_value_range (var)->equiv ();
@@ -2061,9 +2051,9 @@ vr_values::compare_name_with_value (enum tree_code comp, tree var, tree val,
   used_strict_overflow = -1;
 
   /* Compare vars' value range with val.  */
-  equiv_vr = get_vr_for_comparison (SSA_NAME_VERSION (var));
+  equiv_vr = get_vr_for_comparison (SSA_NAME_VERSION (var), &tem_vr);
   sop = false;
-  retval = compare_range_with_value (comp, &equiv_vr, val, &sop);
+  retval = compare_range_with_value (comp, equiv_vr, val, &sop);
   if (retval)
     used_strict_overflow = sop ? 1 : 0;
 
@@ -2087,9 +2077,9 @@ vr_values::compare_name_with_value (enum tree_code comp, tree var, tree val,
 	  && prop_simulate_again_p (SSA_NAME_DEF_STMT (name)))
 	continue;
 
-      equiv_vr = get_vr_for_comparison (i);
+      equiv_vr = get_vr_for_comparison (i, &tem_vr);
       sop = false;
-      t = compare_range_with_value (comp, &equiv_vr, val, &sop);
+      t = compare_range_with_value (comp, equiv_vr, val, &sop);
       if (t)
 	{
 	  /* If we get different answers from different members
@@ -2186,7 +2176,8 @@ vr_values::compare_names (enum tree_code comp, tree n1, tree n2,
       if (! ssa_name (i1))
 	continue;
 
-      value_range vr1 = get_vr_for_comparison (i1);
+      value_range tem_vr1;
+      value_range *vr1 = get_vr_for_comparison (i1, &tem_vr1);
 
       t = retval = NULL_TREE;
       EXECUTE_IF_SET_IN_BITMAP (e2, 0, i2, bi2)
@@ -2196,9 +2187,10 @@ vr_values::compare_names (enum tree_code comp, tree n1, tree n2,
 
 	  bool sop = false;
 
-	  value_range vr2 = get_vr_for_comparison (i2);
+	  value_range tem_vr2;
+	  value_range *vr2 = get_vr_for_comparison (i2, &tem_vr2);
 
-	  t = compare_ranges (comp, &vr1, &vr2, &sop);
+	  t = compare_ranges (comp, vr1, vr2, &sop);
 	  if (t)
 	    {
 	      /* If we get different answers from different members
@@ -2750,7 +2742,8 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
       if (e->flags & EDGE_EXECUTABLE)
 	{
 	  tree arg = PHI_ARG_DEF (phi, i);
-	  value_range vr_arg;
+	  value_range vr_arg_tem;
+	  value_range *vr_arg = &vr_arg_tem;
 
 	  ++edges;
 
@@ -2763,30 +2756,35 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
 		  && e->flags & EDGE_DFS_BACK)
 		may_simulate_backedge_again = true;
 
-	      vr_arg = *(get_value_range (arg));
+	      value_range *vr_arg_ = get_value_range (arg);
 	      /* Do not allow equivalences or symbolic ranges to leak in from
 		 backedges.  That creates invalid equivalencies.
 		 See PR53465 and PR54767.  */
 	      if (e->flags & EDGE_DFS_BACK)
 		{
-		  if (!vr_arg.varying_p () && !vr_arg.undefined_p ())
+		  if (!vr_arg_->varying_p () && !vr_arg_->undefined_p ())
 		    {
-		      vr_arg.equiv_clear ();
-		      if (vr_arg.symbolic_p ())
-			vr_arg.set_varying ();
+		      vr_arg_tem.set (vr_arg_->kind (), vr_arg_->min (),
+				      vr_arg_->max (), NULL);
+		      if (vr_arg_tem.symbolic_p ())
+			vr_arg_tem.set_varying ();
 		    }
+		  else
+		    vr_arg = vr_arg_;
 		}
 	      /* If the non-backedge arguments range is VR_VARYING then
 		 we can still try recording a simple equivalence.  */
-	      else if (vr_arg.varying_p ())
-		vr_arg = value_range (VR_RANGE, arg, arg, NULL);
+	      else if (vr_arg_->varying_p ())
+		vr_arg_tem.set (arg);
+	      else
+		vr_arg = vr_arg_;
 	    }
 	  else
 	    {
 	      if (TREE_OVERFLOW_P (arg))
 		arg = drop_tree_overflow (arg);
 
-	      vr_arg = value_range (VR_RANGE, arg, arg);
+	      vr_arg_tem.set (arg);
 	    }
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2794,14 +2792,14 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
 	      fprintf (dump_file, "\t");
 	      print_generic_expr (dump_file, arg, dump_flags);
 	      fprintf (dump_file, ": ");
-	      dump_value_range (dump_file, &vr_arg);
+	      dump_value_range (dump_file, vr_arg);
 	      fprintf (dump_file, "\n");
 	    }
 
 	  if (first)
-	    vr_result->deep_copy (&vr_arg);
+	    vr_result->deep_copy (vr_arg);
 	  else
-	    vr_result->union_ (&vr_arg);
+	    vr_result->union_ (vr_arg);
 	  first = false;
 
 	  if (vr_result->varying_p ())
@@ -2873,8 +2871,7 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
 				   vrp_val_max (vr_result->type ()),
 				   build_int_cst (vr_result->type (), 1));
 
-      *vr_result = value_range (vr_result->kind (), new_min, new_max,
-				vr_result->equiv ());
+      vr_result->update (vr_result->kind (), new_min, new_max);
 
       /* If we dropped either bound to +-INF then if this is a loop
 	 PHI node SCEV may known more about its value-range.  */
@@ -2888,7 +2885,7 @@ vr_values::extract_range_from_phi_node (gphi *phi, value_range *vr_result)
   goto update_range;
 
 varying:
-  set_value_range_to_varying (vr_result);
+  vr_result->set_varying ();
 
 scev_check:
   /* If this is a loop PHI node SCEV may known more about its value-range.
@@ -2909,7 +2906,7 @@ infinite_check:
 	   || compare_values (vr_result->min (), vr_result->max ()) > 0))
     ;
   else
-    set_value_range_to_varying (vr_result);
+    vr_result->set_varying ();
 
   /* If the new range is different than the previous value, keep
      iterating.  */
@@ -3232,7 +3229,7 @@ vr_values::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
   tree op0 = gimple_assign_rhs1 (stmt);
   tree op1 = gimple_assign_rhs2 (stmt);
   tree op = NULL_TREE;
-  value_range vr0, vr1;
+  value_range_base vr0, vr1;
   wide_int may_be_nonzero0, may_be_nonzero1;
   wide_int must_be_nonzero0, must_be_nonzero1;
   wide_int mask;
@@ -3240,14 +3237,14 @@ vr_values::simplify_bit_ops_using_ranges (gimple_stmt_iterator *gsi,
   if (TREE_CODE (op0) == SSA_NAME)
     vr0 = *(get_value_range (op0));
   else if (is_gimple_min_invariant (op0))
-    set_value_range_to_value (&vr0, op0, NULL);
+    vr0.set (op0);
   else
     return false;
 
   if (TREE_CODE (op1) == SSA_NAME)
     vr1 = *(get_value_range (op1));
   else if (is_gimple_min_invariant (op1))
-    set_value_range_to_value (&vr1, op1, NULL);
+    vr1.set (op1);
   else
     return false;
 

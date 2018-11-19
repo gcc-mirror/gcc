@@ -45,12 +45,18 @@ DEFHOOKPODX (close_paren, const char *, ")")
 DEFHOOKPOD
 (byte_op,
  "@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_HI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PSI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_SI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PDI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_DI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_PTI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_ALIGNED_TI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_HI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PSI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_SI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PDI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_DI_OP\n\
+@deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_PTI_OP\n\
 @deftypevrx {Target Hook} {const char *} TARGET_ASM_UNALIGNED_TI_OP\n\
 These hooks specify assembly directives for creating certain kinds\n\
 of integer object.  The @code{TARGET_ASM_BYTE_OP} directive creates a\n\
@@ -1802,7 +1808,7 @@ for alignment.\n\
 \n\
 The default hook returns @code{TYPE_ALIGN (@var{type})}, which is\n\
 correct for most targets.",
- HOST_WIDE_INT, (const_tree type),
+ poly_uint64, (const_tree type),
  default_preferred_vector_alignment)
 
 /* Return true if vector alignment is reachable (by peeling N
@@ -3552,7 +3558,7 @@ DEFHOOK
  "This hook returns true if memory accesses described by the\n\
 @var{mode} and @var{alignment} parameters have a cost many times greater\n\
 than aligned accesses, for example if they are emulated in a trap handler.\n\
-This hook is invoked only for unaligned accesses, i.e. when\n\
+This hook is invoked only for unaligned accesses, i.e.@: when\n\
 @code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.\n\
 \n\
 When this hook returns true, the compiler will act as if\n\
@@ -6303,7 +6309,7 @@ DEFHOOKPOD
  "Set to true if each call that binds to a local definition explicitly\n\
 clobbers or sets all non-fixed registers modified by performing the call.\n\
 That is, by the call pattern itself, or by code that might be inserted by the\n\
-linker (e.g. stubs, veneers, branch islands), but not including those\n\
+linker (e.g.@: stubs, veneers, branch islands), but not including those\n\
 modifiable by the callee.  The affected registers may be mentioned explicitly\n\
 in the call pattern, or included as clobbers in CALL_INSN_FUNCTION_USAGE.\n\
 The default version of this hook is set to false.  The purpose of this hook\n\
@@ -6465,7 +6471,7 @@ defined to 1.",
 DEFHOOKPOD
 (atomic_test_and_set_trueval,
  "This value should be set if the result written by\
- @code{atomic_test_and_set} is not exactly 1, i.e. the\
+ @code{atomic_test_and_set} is not exactly 1, i.e.@: the\
  @code{bool} @code{true}.",
  unsigned char, 1)
 

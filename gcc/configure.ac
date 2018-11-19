@@ -3475,6 +3475,18 @@ foo:	.long	25
 	tls_first_minor=20
 	tls_as_opt='--fatal-warnings'
 	;;
+  or1k*-*-*)
+    conftest_s='
+	.section ".tdata","awT",@progbits
+foo:	.long	25
+	.text
+	l.movhi	r3, tpoffha(foo)
+	l.add	r3, r3, r10
+	l.lwz	r4, tpofflo(foo)(r3)'
+    tls_first_major=2
+    tls_first_minor=30
+    tls_as_opt=--fatal-warnings
+    ;;
   powerpc-ibm-aix*)
     conftest_s='
 	.extern __get_tpointer

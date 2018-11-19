@@ -35,6 +35,7 @@
 #define CC1_SPEC  \
   "%{EB:-EB}	  \
    %{EL:-EL}	  \
+   %{profile:-p}  \
   "
 
 #undef ASM_SPEC
@@ -60,7 +61,7 @@
   %{mvdsp:-mvdsp}		\
   "
 
-#define LINUX_DYNAMIC_LINKER  "/lib/ld.so.1"
+#define GLIBC_DYNAMIC_LINKER "/lib/ld-linux-cskyv2%{mhard-float:-hf}%{mbig-endian:-be}.so.1"
 
 #define LINUX_TARGET_LINK_SPEC	"%{h*} %{version:-v}		\
    %{b}								\
@@ -69,7 +70,7 @@
    %{symbolic:-Bsymbolic}					\
    %{!static:							\
      %{rdynamic:-export-dynamic}				\
-     %{!shared:-dynamic-linker " LINUX_DYNAMIC_LINKER "}}	\
+     %{!shared:-dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}	\
    -X								\
    %{mbig-endian:-EB} %{mlittle-endian:-EL}			\
    %{EB:-EB} %{EL:-EL}"

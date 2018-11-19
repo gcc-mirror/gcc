@@ -234,22 +234,13 @@ struct Global
 
 extern Global global;
 
-// Because int64_t and friends may be any integral type of the
-// correct size, we have to explicitly ask for the correct
-// integer type to get the correct mangling with ddmd
-#if __LP64__
 // Be careful not to care about sign when using dinteger_t
 // use this instead of integer_t to
 // avoid conflicts with system #include's
-typedef unsigned long dinteger_t;
+typedef uint64_t dinteger_t;
 // Signed and unsigned variants
-typedef long sinteger_t;
-typedef unsigned long uinteger_t;
-#else
-typedef unsigned long long dinteger_t;
-typedef long long sinteger_t;
-typedef unsigned long long uinteger_t;
-#endif
+typedef int64_t sinteger_t;
+typedef uint64_t uinteger_t;
 
 typedef int8_t                  d_int8;
 typedef uint8_t                 d_uns8;

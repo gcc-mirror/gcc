@@ -2820,8 +2820,9 @@ package body Sem_Ch7 is
          --  a) If the entity is an operator, it may be a primitive operator of
          --  a type for which there is a visible use-type clause.
 
-         --  b) for other entities, their use-visibility is determined by a
-         --  visible use clause for the package itself. For a generic instance,
+         --  b) For other entities, their use-visibility is determined by a
+         --  visible use clause for the package itself or a use-all-type clause
+         --  applied directly to the entity's type. For a generic instance,
          --  the instantiation of the formals appears in the visible part,
          --  but the formals are private and remain so.
 
@@ -2853,6 +2854,16 @@ package body Sem_Ch7 is
                else
                   Set_Is_Potentially_Use_Visible (Id);
                end if;
+
+            --  We need to avoid incorrectly marking enumeration literals as
+            --  non-visible when a visible use-all-type clause is in effect.
+
+            elsif Type_In_Use (Etype (Id))
+              and then Nkind (Current_Use_Clause (Etype (Id))) =
+                         N_Use_Type_Clause
+              and then All_Present (Current_Use_Clause (Etype (Id)))
+            then
+               null;
 
             else
                Set_Is_Potentially_Use_Visible (Id, False);

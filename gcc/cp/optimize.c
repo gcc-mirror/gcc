@@ -117,11 +117,6 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
   tree parm = DECL_ARGUMENTS (delete_dtor);
   tree virtual_size = cxx_sizeof (current_class_type);
 
-  /* Call the corresponding complete destructor.  */
-  gcc_assert (complete_dtor);
-  tree call_dtor = build_cxx_call (complete_dtor, 1, &parm,
-				   tf_warning_or_error);
-
   /* Call the delete function.  */
   tree call_delete = build_op_delete_call (DELETE_EXPR, current_class_ptr,
 					   virtual_size,
@@ -130,10 +125,26 @@ build_delete_destructor_body (tree delete_dtor, tree complete_dtor)
 					   /*alloc_fn=*/NULL_TREE,
 					   tf_warning_or_error);
 
-  /* Operator delete must be called, whether or not the dtor throws.  */
-  add_stmt (build2 (TRY_FINALLY_EXPR, void_type_node, call_dtor, call_delete));
+  tree op = get_callee_fndecl (call_delete);
+  if (op && DECL_P (op) && destroying_delete_p (op))
+    {
+      /* The destroying delete will handle calling complete_dtor.  */
+      add_stmt (call_delete);
+    }
+  else
+    {
+      /* Call the corresponding complete destructor.  */
+      gcc_assert (complete_dtor);
+      tree call_dtor = build_cxx_call (complete_dtor, 1, &parm,
+				       tf_warning_or_error);
 
-  /* Return the address of the object.  */
+      /* Operator delete must be called, whether or not the dtor throws.  */
+      add_stmt (build2 (TRY_FINALLY_EXPR, void_type_node,
+			call_dtor, call_delete));
+    }
+
+  /* Return the address of the object.
+     ??? How is it useful to return an invalid address?  */
   if (targetm.cxx.cdtor_returns_this ())
     {
       tree val = DECL_ARGUMENTS (delete_dtor);

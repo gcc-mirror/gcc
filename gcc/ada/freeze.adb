@@ -2178,9 +2178,6 @@ package body Freeze is
       Formal : Entity_Id;
       Indx   : Node_Id;
 
-      Has_Default_Initialization : Boolean := False;
-      --  This flag gets set to true for a variable with default initialization
-
       Result : List_Id := No_List;
       --  List of freezing actions, left at No_List if none
 
@@ -3213,6 +3210,10 @@ package body Freeze is
          --  wrap-around arithmetic might yield a meaningless value for the
          --  length of the array, or its corresponding attribute.
 
+         procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id);
+         --  Ensure that the initialization state of variable Var_Id subject to
+         --  pragma Thread_Local_Storage satisfies the semantics of the pragma.
+
          -------------------------------
          -- Check_Large_Modular_Array --
          -------------------------------
@@ -3291,6 +3292,58 @@ package body Freeze is
                    Reason    => SE_Object_Too_Large));
             end if;
          end Check_Large_Modular_Array;
+
+         ---------------------------------------
+         -- Check_Pragma_Thread_Local_Storage --
+         ---------------------------------------
+
+         procedure Check_Pragma_Thread_Local_Storage (Var_Id : Entity_Id) is
+            Decl : constant Node_Id := Declaration_Node (Var_Id);
+            Expr : constant Node_Id := Expression (Decl);
+
+         begin
+            --  A variable whose initialization is suppressed lacks default
+            --  initialization.
+
+            if Suppress_Initialization (Var_Id) then
+               null;
+
+            --  The variable has some form of initialization. Check whether it
+            --  is compatible with the semantics of the pragma.
+
+            elsif Has_Init_Expression (Decl)
+              and then Present (Expr)
+              and then
+
+               --  The variable is initialized with "null"
+
+                (Nkind (Expr) = N_Null
+                   or else
+
+               --  The variable is initialized with a static constant
+
+                 Is_OK_Static_Expression (Expr)
+                   or else
+
+               --  The variable is initialized with a static aggregate
+
+                (Nkind (Expr) = N_Aggregate
+                   and then Compile_Time_Known_Aggregate (Expr)))
+            then
+               null;
+
+            --  Otherwise the initialization of the variable violates the
+            --  semantics of pragma Thread_Local_Storage.
+
+            else
+               Error_Msg_NE
+                 ("Thread_Local_Storage variable& is improperly initialized",
+                  Decl, Var_Id);
+               Error_Msg_NE
+                 ("\only allowed initialization is explicit NULL, static "
+                  & "expression or static aggregate", Decl, Var_Id);
+            end if;
+         end Check_Pragma_Thread_Local_Storage;
 
          --  Local variables
 
@@ -3420,42 +3473,19 @@ package body Freeze is
                 (Needs_Simple_Initialization (Typ)
                   and then not Is_Internal (E)))
          then
-            Has_Default_Initialization := True;
             Check_Restriction
               (No_Default_Initialization, Declaration_Node (E));
          end if;
 
-         --  Check that a Thread_Local_Storage variable does not have default
-         --  initialization, and any explicit initialization must either be the
-         --  null constant or a static constant.
+         --  Ensure that a variable subject to pragma Thread_Local_Storage
+         --
+         --    * Lacks default initialization, or
+         --
+         --    * The initialization expression is either "null", a static
+         --      constant, or a compile-time known aggregate.
 
          if Has_Pragma_Thread_Local_Storage (E) then
-            declare
-               Decl : constant Node_Id := Declaration_Node (E);
-            begin
-               if Has_Default_Initialization
-                 or else
-                   (Has_Init_Expression (Decl)
-                     and then
-                      (No (Expression (Decl))
-                        or else not
-                          (Is_OK_Static_Expression (Expression (Decl))
-                            or else Nkind (Expression (Decl)) = N_Null)))
-               then
-                  if Nkind (Expression (Decl)) = N_Aggregate
-                    and then Compile_Time_Known_Aggregate (Expression (Decl))
-                  then
-                     null;
-                  else
-                     Error_Msg_NE
-                       ("Thread_Local_Storage variable& is improperly "
-                        & "initialized", Decl, E);
-                     Error_Msg_NE
-                       ("\only allowed initialization is explicit NULL, "
-                        & "static expression or static aggregate", Decl, E);
-                  end if;
-               end if;
-            end;
+            Check_Pragma_Thread_Local_Storage (E);
          end if;
 
          --  For imported objects, set Is_Public unless there is also an
@@ -8008,15 +8038,16 @@ package body Freeze is
                Set_Realval (Lo, Loval);
             end if;
 
-            --  Compute the fudged bounds. If the number is a model number,
-            --  then we do nothing to include it, but we are allowed to backoff
-            --  to the next adjacent model number when we exclude it. If it is
-            --  not a model number then we straddle the two values with the
-            --  model numbers on either side.
+            --  Compute the fudged bounds. If the bound is a model number, (or
+            --  greater if given low bound, smaller if high bound) then we do
+            --  nothing to include it, but we are allowed to backoff to the
+            --  next adjacent model number when we exclude it. If it is not a
+            --  model number then we straddle the two values with the model
+            --  numbers on either side.
 
             Model_Num := UR_Trunc (Loval / Small) * Small;
 
-            if Loval = Model_Num then
+            if UR_Ge (Loval, Model_Num) then
                Loval_Incl_EP := Model_Num;
             else
                Loval_Incl_EP := Model_Num - Small;
@@ -8050,7 +8081,7 @@ package body Freeze is
 
             Model_Num := UR_Trunc (Hival / Small) * Small;
 
-            if Hival = Model_Num then
+            if UR_Le (Hival, Model_Num) then
                Hival_Incl_EP := Model_Num;
             else
                Hival_Incl_EP := Model_Num + Small;

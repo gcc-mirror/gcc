@@ -2827,6 +2827,7 @@ add_predicate_code (struct pred_data *pred, enum rtx_code code)
 	  && code != CONCAT
 	  && code != PARALLEL
 	  && code != STRICT_LOW_PART
+	  && code != ZERO_EXTRACT
 	  && code != SCRATCH)
 	pred->allows_non_lvalue = true;
 

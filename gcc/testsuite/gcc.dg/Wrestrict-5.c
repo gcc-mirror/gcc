@@ -2,6 +2,7 @@
    functions declared with no prototype are checked for overlap, and that
    invalid calls are ignored.
   { dg-do compile }
+  { dg-prune-output "conflicting types for built-in" }
   { dg-options "-O2 -Wrestrict" }  */
 
 typedef __SIZE_TYPE__ size_t;
@@ -41,3 +42,6 @@ void test_strncpy_nowarn (char *d)
 {
   strncpy (d + 1, d + 3, "");
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" }
+   { dg-prune-output "\\\[-Wint-conversion]" } */

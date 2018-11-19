@@ -367,7 +367,6 @@ unpack_ts_type_common_value_fields (struct bitpack_d *bp, tree expr)
   TYPE_STRING_FLAG (expr) = (unsigned) bp_unpack_value (bp, 1);
   /* TYPE_NO_FORCE_BLK is private to stor-layout and need
      no streaming.  */
-  TYPE_NEEDS_CONSTRUCTING (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_PACKED (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_RESTRICT (expr) = (unsigned) bp_unpack_value (bp, 1);
   TYPE_USER_ALIGN (expr) = (unsigned) bp_unpack_value (bp, 1);
@@ -448,6 +447,8 @@ unpack_ts_omp_clause_value_fields (struct data_in *data_in,
 			  OMP_CLAUSE_PROC_BIND_LAST);
       break;
     case OMP_CLAUSE_REDUCTION:
+    case OMP_CLAUSE_TASK_REDUCTION:
+    case OMP_CLAUSE_IN_REDUCTION:
       OMP_CLAUSE_REDUCTION_CODE (expr)
 	= bp_unpack_enum (bp, tree_code, MAX_TREE_CODES);
       break;
@@ -915,6 +916,12 @@ lto_input_ts_block_tree_pointers (struct lto_input_block *ib,
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree (ib, data_in);
   BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
+  /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
+     which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
+     ultimate origin.  Fixup here.
+     ???  This should get fixed with moving to DIE references.  */
+  if (DECL_P (BLOCK_ORIGIN (expr)))
+    BLOCK_ABSTRACT_ORIGIN (expr) = DECL_ORIGIN (BLOCK_ABSTRACT_ORIGIN (expr));
   /* Do not stream BLOCK_NONLOCALIZED_VARS.  We cannot handle debug information
      for early inlined BLOCKs so drop it on the floor instead of ICEing in
      dwarf2out.c.  */

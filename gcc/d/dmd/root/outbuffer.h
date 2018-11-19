@@ -8,10 +8,7 @@
 
 #pragma once
 
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <assert.h>
+#include "dsystem.h"
 #include "port.h"
 #include "rmem.h"
 

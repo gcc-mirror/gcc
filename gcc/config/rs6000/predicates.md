@@ -406,48 +406,6 @@
   return FP_REGNO_P (r);
 })
 
-;; Return true if this is a register that can has D-form addressing (GPR,
-;; traditional FPR registers, and Altivec registers for scalars).  Unlike
-;; power8 fusion, this fusion does not depend on putting the ADDIS instruction
-;; into the GPR register being loaded.
-(define_predicate "p9_fusion_reg_operand"
-  (match_code "reg,subreg")
-{
-  HOST_WIDE_INT r;
-  bool gpr_p = (mode == QImode || mode == HImode || mode == SImode
-		|| mode == SFmode
-		|| (TARGET_POWERPC64 && (mode == DImode || mode == DFmode)));
-  bool fpr_p = (TARGET_P9_FUSION
-		&& (mode == DFmode || mode == SFmode
-		    || (TARGET_POWERPC64 && mode == DImode)));
-  bool vmx_p = (TARGET_P9_FUSION && TARGET_P9_VECTOR
-		&& (mode == DFmode || mode == SFmode));
-
-  if (!TARGET_P8_FUSION)
-    return 0;
-
-  if (GET_CODE (op) == SUBREG)
-    op = SUBREG_REG (op);
-
-  if (!REG_P (op))
-    return 0;
-
-  r = REGNO (op);
-  if (r >= FIRST_PSEUDO_REGISTER)
-    return (gpr_p || fpr_p || vmx_p);
-
-  if (INT_REGNO_P (r))
-    return gpr_p;
-
-  if (FP_REGNO_P (r))
-    return fpr_p;
-
-  if (ALTIVEC_REGNO_P (r))
-    return vmx_p;
-
-  return 0;
-})
-
 ;; Return 1 if op is a HTM specific SPR register.
 (define_predicate "htm_spr_reg_operand"
   (match_operand 0 "register_operand")
@@ -922,7 +880,7 @@
 		    && !satisfies_constraint_L (op)")))
 
 ;; Return 1 if the operand is a constant that can be used as the operand
-;; of an OR or XOR.
+;; of an AND, OR or XOR.
 (define_predicate "logical_const_operand"
   (match_code "const_int")
 {
@@ -935,7 +893,7 @@
 })
 
 ;; Return 1 if the operand is a non-special register or a constant that
-;; can be used as the operand of an OR or XOR.
+;; can be used as the operand of an AND, OR or XOR.
 (define_predicate "logical_operand"
   (ior (match_operand 0 "gpc_reg_operand")
        (match_operand 0 "logical_const_operand")))
@@ -1691,13 +1649,9 @@
   if ((value & (HOST_WIDE_INT)0xffff0000) == 0)
     return 0;
 
-  /* Power8 currently will only do the fusion if the top 11 bits of the addis
-     value are all 1's or 0's.  Ignore this restriction if we are testing
-     advanced fusion.  */
-  if (TARGET_P9_FUSION)
-    return 1;
-
-  return (IN_RANGE (value >> 16, -32, 31));
+  /* Power8 only does the fusion if the top 12 bits of the addis value are all
+     1's or 0's.  */
+  return (IN_RANGE (value >> 16, -16, 15));
 })
 
 ;; Match the second insn (lbz, lhz, lwz, ld) in fusing the combination of addis
@@ -1730,6 +1684,8 @@
 	return 0;
       break;
 
+    /* Do not allow SF/DFmode in GPR fusion.  While the loads do occur, they
+       are not common.  */
     default:
       return 0;
     }
@@ -1762,14 +1718,13 @@
 ;; Match a GPR load (lbz, lhz, lwz, ld) that uses a combined address in the
 ;; memory field with both the addis and the memory offset.  Sign extension
 ;; is not handled here, since lha and lwa are not fused.
-;; With P9 fusion, also match a fpr/vector load and float_extend
 (define_predicate "fusion_addis_mem_combo_load"
-  (match_code "mem,zero_extend,float_extend")
+  (match_code "mem,zero_extend")
 {
   rtx addr, base, offset;
 
-  /* Handle zero/float extend.  */
-  if (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == FLOAT_EXTEND)
+  /* Handle zero extend.  */
+  if (GET_CODE (op) == ZERO_EXTEND)
     {
       op = XEXP (op, 0);
       mode = GET_MODE (op);
@@ -1792,20 +1747,8 @@
 	return 0;
       break;
 
-    /* ISA 2.08/power8 only had fusion of GPR loads.  */
-    case E_SFmode:
-      if (!TARGET_P9_FUSION)
-	return 0;
-      break;
-
-    /* ISA 2.08/power8 only had fusion of GPR loads.  Do not allow 64-bit
-       DFmode in 32-bit if -msoft-float since it splits into two separate
-       instructions.  */
-    case E_DFmode:
-      if ((!TARGET_POWERPC64 && !TARGET_HARD_FLOAT) || !TARGET_P9_FUSION)
-	return 0;
-      break;
-
+    /* Do not allow SF/DFmode in GPR fusion.  While the loads do occur, they
+       are not common.  */
     default:
       return 0;
     }
@@ -1832,81 +1775,4 @@
     }
 
   return 0;
-})
-
-;; Like fusion_addis_mem_combo_load, but for stores
-(define_predicate "fusion_addis_mem_combo_store"
-  (match_code "mem")
-{
-  rtx addr, base, offset;
-
-  if (!MEM_P (op) || !TARGET_P9_FUSION)
-    return 0;
-
-  switch (mode)
-    {
-    case E_QImode:
-    case E_HImode:
-    case E_SImode:
-    case E_SFmode:
-      break;
-
-    /* Do not fuse 64-bit DImode in 32-bit since it splits into two
-       separate instructions.  */
-    case E_DImode:
-      if (!TARGET_POWERPC64)
-	return 0;
-      break;
-
-    /* Do not allow 64-bit DFmode in 32-bit if -msoft-float since it splits
-       into two separate instructions.  Do allow fusion if we have hardware
-       floating point.  */
-    case E_DFmode:
-      if (!TARGET_POWERPC64 && !TARGET_HARD_FLOAT)
-	return 0;
-      break;
-
-    default:
-      return 0;
-    }
-
-  addr = XEXP (op, 0);
-  if (GET_CODE (addr) != PLUS && GET_CODE (addr) != LO_SUM)
-    return 0;
-
-  base = XEXP (addr, 0);
-  if (!fusion_gpr_addis (base, GET_MODE (base)))
-    return 0;
-
-  offset = XEXP (addr, 1);
-  if (GET_CODE (addr) == PLUS)
-    return satisfies_constraint_I (offset);
-
-  else if (GET_CODE (addr) == LO_SUM)
-    {
-      if (TARGET_XCOFF || (TARGET_ELF && TARGET_POWERPC64))
-	return small_toc_ref (offset, GET_MODE (offset));
-
-      else if (TARGET_ELF && !TARGET_POWERPC64)
-	return CONSTANT_P (offset);
-    }
-
-  return 0;
-})
-
-;; Return true if the operand is a float_extend or zero extend of an
-;; offsettable memory operand suitable for use in fusion
-(define_predicate "fusion_offsettable_mem_operand"
-  (match_code "mem,zero_extend,float_extend")
-{
-  if (GET_CODE (op) == ZERO_EXTEND || GET_CODE (op) == FLOAT_EXTEND)
-    {
-      op = XEXP (op, 0);
-      mode = GET_MODE (op);
-    }
-
-  if (!memory_operand (op, mode))
-    return 0;
-
-  return offsettable_nonstrict_memref_p (op);
 })

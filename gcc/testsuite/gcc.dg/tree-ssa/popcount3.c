@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target popcountl } */
 /* { dg-options "-O2 -fdump-tree-phiopt4 -fdump-tree-optimized" } */
 
 int PopCount (long b) {
