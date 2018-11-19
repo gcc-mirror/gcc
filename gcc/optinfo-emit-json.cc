@@ -169,6 +169,9 @@ void
 optrecord_json_writer::pop_scope ()
 {
   m_scopes.pop ();
+
+  /* We should never pop the top-level records array.  */
+  gcc_assert (m_scopes.length () > 0);
 }
 
 /* Create a JSON object representing LOC.  */

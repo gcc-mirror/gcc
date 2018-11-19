@@ -1,3 +1,8 @@
+2018-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87025
+	* gcc.dg/pr87025.c: New test.
+
 2018-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88071

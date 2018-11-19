@@ -133,6 +133,9 @@ optinfo::emit_for_opt_problem () const
 void
 optinfo::handle_dump_file_kind (dump_flags_t dump_kind)
 {
+  /* Any optinfo for a "scope" should have been emitted separately.  */
+  gcc_assert (m_kind != OPTINFO_KIND_SCOPE);
+
   if (dump_kind & MSG_OPTIMIZED_LOCATIONS)
     m_kind = OPTINFO_KIND_SUCCESS;
   else if (dump_kind & MSG_MISSED_OPTIMIZATION)
