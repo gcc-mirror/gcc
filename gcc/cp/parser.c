@@ -18009,6 +18009,14 @@ cp_parser_elaborated_type_specifier (cp_parser* parser,
 	 template-id or not.  */
       if (!template_p)
 	cp_parser_parse_tentatively (parser);
+      /* The `template' keyword must follow a nested-name-specifier.  */
+      else if (!nested_name_specifier)
+	{
+	  cp_parser_error (parser, "%<template%> must follow a nested-"
+			   "name-specifier");
+	  return error_mark_node;
+	}
+
       /* Parse the template-id.  */
       token = cp_lexer_peek_token (parser->lexer);
       decl = cp_parser_template_id (parser, template_p,
