@@ -1,3 +1,8 @@
+2018-11-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/88033
+	* gcc.target/i386/pr88033.c: New test.
+
 2018-11-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gcc.target/aarch64/sve/unroll-1.c: New test.

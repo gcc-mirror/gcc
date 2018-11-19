@@ -1,3 +1,9 @@
+2018-11-19  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR rtl-optimization/88033
+	* ira-lives.c (non_conflicting_reg_copy_p): Skip copies from a register
+	to itself.  Use HARD_REGISTER_NUM_P.
+
 2018-11-19  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* tree-vect-loop.c (vect_transform_loop): Disable further unrolling
