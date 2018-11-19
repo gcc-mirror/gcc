@@ -1,3 +1,13 @@
+2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88084 - Implement LWG 2777
+	* include/std/string_view (basic_string_view::copy): Use traits to
+	copy.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/2.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/2.cc:
+	New test.
+
 2018-11-18  Michele Pezzutti <mpezz@tiscali.it>
 	    Edward Smith-Rowland  <3dw4rd@verizon.net>
 
