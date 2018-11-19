@@ -5,3 +5,5 @@
 
 void *alloca ();
 __typeof__(alloca ()) a () { return alloca (); }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

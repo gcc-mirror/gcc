@@ -98,8 +98,9 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	  if (DECL_DECLARED_CONSTEXPR_P (decl))
 	    {
 	      auto_diagnostic_group d;
-	      error ("the type %qT of %<constexpr%> variable %qD "
-		     "is not literal", type, decl);
+	      error_at (DECL_SOURCE_LOCATION (decl),
+			"the type %qT of %<constexpr%> variable %qD "
+			"is not literal", type, decl);
 	      explain_non_literal_class (type);
 	      decl = error_mark_node;
 	    }
@@ -108,8 +109,9 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	      if (!is_instantiation_of_constexpr (current_function_decl))
 		{
 		  auto_diagnostic_group d;
-		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
-			 "function", decl, type);
+		  error_at (DECL_SOURCE_LOCATION (decl),
+			    "variable %qD of non-literal type %qT in "
+			    "%<constexpr%> function", decl, type);
 		  explain_non_literal_class (type);
 		  decl = error_mark_node;
 		}
@@ -119,8 +121,9 @@ ensure_literal_type_for_constexpr_object (tree decl)
       else if (DECL_DECLARED_CONSTEXPR_P (decl)
 	       && variably_modified_type_p (type, NULL_TREE))
 	{
-	  error ("%<constexpr%> variable %qD has variably-modified type %qT",
-		 decl, type);
+	  error_at (DECL_SOURCE_LOCATION (decl),
+		    "%<constexpr%> variable %qD has variably-modified "
+		    "type %qT", decl, type);
 	  decl = error_mark_node;
 	}
     }

@@ -1,3 +1,287 @@
+2018-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87229
+	* tree.c (free_lang_data_in_one_sizepos): Free non-gimple-val
+	sizepos values.
+
+2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* compare-elim.c (struct comparison): Add not_in_a field.
+	(is_not): New static function.
+	(strip_not): Likewise.
+	(conforming_compare): Handle a NOT in the first operand.
+	(can_eliminate_compare): Likewise.
+	(find_comparison_dom_walker::before_dom_children): Likewise.
+	(try_eliminate_compare): Likewise.
+	* config/visium/visium.md (negsi2_insn_set_carry): Turn into...
+	(neg<mode>2_insn_set_carry): ...this and add missing NEG operation.
+
+2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Common Type Attributes): Fix typos.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88045
+	* coverage.c (coverage_begin_function): Add assert.
+
+2018-11-18  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/40498
+	* doc/extend.texi (Common Function Attributes): Document that
+	no_instrument_function applies to -p and -pg, too.
+	* doc/invoke.texi (Instrumentation Options): Add cross-references
+	to docs for -p, -pg, and -finstrument-functions.
+
+2018-11-18  Alan Modra  <amodra@gmail.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_CRTI): Define.
+	(GNU_USER_TARGET_STARTFILE_SPEC): Use it here.
+	(GNU_USER_TARGET_CRTN): Define.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Use it here.
+	(GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC): Define.
+
+2018-11-18  Alan Modra  <amodra@gmail.com>
+
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Delete
+	!HAVE_LD_PIE variant.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Likewise.
+
+2018-11-17  Nick Clifton  <nickc@redhat.com>
+	    Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR driver/31357
+	* doc/invoke.texi (Overall Options): Document that --help and
+	--help=<value> options cannot be combined.
+
+2018-11-17  Jim Wilson  <jimw@sifive.com>
+
+	* config/riscv/riscv.c (epilogue_cfa_sp_offset): New.
+	(riscv_restore_reg): If restoring HARD_FRAME_POINTER_REGNUM, and
+	epilogue_cfa_sp_offset set, then add REG_CFA_DEF_CFA regnote.
+	(riscv_expand_epilogue): Initialize epilogue_cfa_sp_offset.  Set it
+	to step2 if frame_pointer_needed and step1 is 0.
+
+2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/4225
+	* doc/cpp.texi (System Headers): Add note about implicit
+	extern "C" block on targets that define SYSTEM_IMPLICIT_EXTERN_C.
+
+2018-11-17  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/4025
+	* doc/invoke.texi (C++ Dialect Options): Clarify usage of
+	-fno-implicit-templates.
+
+2018-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87546
+	* tree-vect-patterns.c (vect_look_through_possible_promotion): Add
+	min_precision variable, initially set it to orig_precision, only does
+	something if op_type's precision is <= min_precision and update
+	min_precision whenever calling set_op.
+
+2018-11-16  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/87957
+	* ipa-devirt.c (warn_odr): Look for main variant to get TYPE_DECL.
+
+2018-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	* doc/invoke.texi (Option Summary): Fix whitespace and line
+	breaks in @gccoptlist environments.
+	(Warning Options): Likewise.
+	(Optimize Options): Likewise.
+	(PowerPC SPE Options): Likewise.
+	(RS/6000 and PowerPC Options): Likewise.
+
+2018-11-16  Jeff Law  <law@redhat.com>
+
+	* config/mn10300/mn10300.md (adddi3_degenerate): Remove bogus
+	gcc_assert.
+
+2018-11-16  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR middle-end/23197
+	* doc/invoke.texi (Optimize Options): Update options enabled by
+	fprofile-generate, -fprofile-use, and -fauto-profile.
+
+2018-11-16  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR target/87927
+	* target-def.h: Initialize TARGET_ASM_{,UN}ALIGNED_P{S,D,T}I_OP.
+	Add them to the TARGET_ASM_{,UN}ALIGNED_INT_OP structs.
+	* target.def: Enumerate TARGET_ASM_{,UN}ALIGNED_P{S,D,T}I_OP in
+	the byte_op hook.
+	* target.h: Add psi, pdi, pti to struct asm_int_op definition.
+	* targhooks.c (default_print_patchable_function_entry): Assert
+	asm_int_op does not return a NULL string.
+	* varasm.c (integer_asm_op): Return the op for a partial int type
+	when the requested size does not correspond to an integer type.
+	* config/msp430/msp430.c: Initialize TARGET_ASM_{,UN}ALIGNED_PSI_OP.
+	* doc/tm.texi: Regenerate.
+
+2018-11-12  Jason Merrill  <jason@redhat.com>
+
+	* gimplify.c (gimplify_case_label_expr): Handle hot/cold attributes.
+
+2018-11-16  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (wF constraint): Remove power9
+	fusion documentation.  Just document wF's use for power8 fusion.
+	* config/rs6000/predicates.md (p9_fusion_reg_operand): Delete.
+	(fusion_gpr_addis): Delete power9 fusion support.  Change power8
+	fusion support to require the upper 12 bits to be all 0's or all
+	1's.
+	(fusion_gpr_mem_load): Add comment.
+	(fusion_addis_mem_combo_load): Remove power9 fusion support.
+	(fusion_addis_mem_combo_store): Delete.
+	(fusion_offsettable_mem_operand): Delete.
+	* config/rs6000/rs6000-cpus.def (ISA_2_7_MASKS_SERVER): Do not set
+	power8 fusion here.
+	(ISA_3_0_MASKS_SERVER): Delete power9 fusion.
+	(POWERPC_MASKS): Delete power9 fusion.
+	* config/rs6000/rs6000-protos.h (emit_fusion_load_store): Delete.
+	(fusion_p9_p): Delete.
+	(expand_fusion_p9_load): Delete.
+	(expand_fusion_p9_store): Delete.
+	(emit_fusion_p9_load): Delete.
+	(emit_fusion_p9_store): Delete.
+	* config/rs6000/rs6000.c (rs6000_debug_reg_global): Delete power9
+	fusion support.
+	(rs6000_option_override_internal): Set power8 fusion based on
+	whether we are tuning for power8.  Delete power9 fusion support.
+	(rs6000_opt_masks): Delete -mpower9-fusion switch.
+	(emit_fusion_load): Rename emit_fusion_load_store to
+	emit_fusion_load, and drop fusion store support.  Update callers.
+	(emit_fusion_load_store): Likewise.
+	(emit_fusion_gpr_load): Likewise.
+	(fusion_p9_p): Delete.
+	(expand_fusion_p9_load): Delete.
+	(expand_fusion_p9_store): Delete.
+	(emit_fusion_p9_load): Delete.
+	(emit_fusion_p9_store): Delete.
+	* config/rs6000/rs6000.md (UNSPEC_FUSION_P9): Delete.
+	(GPR_FUSION): Delete.
+	(FPR_FUSION): Delete.
+	(power9 fusion peephole2s): Delete.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_load): Delete.
+	(fusion_gpr_<P:mode>_<GPR_FUSION:mode>_store): Delete.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_load): Delete.
+	(fusion_vsx_<P:mode>_<FPR_FUSION:mode>_store): Delete.
+	(fusion_p9_<mode>_constant): Delete.
+	* config/rs6000/rs6000.opt (-mpower9-fusion): Delete undocumented
+	power9 fusion switch.
+	* doc/md.texi (PowerPC constraints): Update wF constraint
+	documentation for power8 fusion only.
+
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87475
+	* cfgrtl.c (patch_jump_insn): Allow redirection failure for
+	CROSSING_JUMP_P insns.
+	(cfg_layout_redirect_edge_and_branch): Don't ICE if ret is NULL.
+
+2018-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88051
+	* config/i386/i386.md (floatunsdidf2): Allow only 64bit AVX512F targets.
+	* config/i386/sse.md (UNSPEC_MOVDI_TO_SSE): New UNSPEC.
+	(movdi_to_sse): Rewrite using UNSPEC_MOVDI_TO_SSE unspec.
+
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/88032
+	* optabs.c (expand_binop): For op0_mode use GET_MODE (op0), unless it
+	is VOIDmode, in which case use int_mode.  Similarly for op1_mode.
+
+2018-11-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-switch-conversion.h (switch_decision_tree::emit_case_nodes): Add
+	location_t parameter.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Likewise.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	* tree-switch-conversion.c (switch_decision_tree::emit): Pass location
+	of switch statement to emit_case_nodes.
+	(switch_decision_tree::emit_cmp_and_jump_insns): Add LOC parameter and
+	set it on the newly built GIMPLE comparison statement.
+	(switch_decision_tree::do_jump_if_equal): Likewise.
+	(switch_decision_tree::emit_case_nodes): Add LOC parameter and pass it
+	in calls to do_jump_if_equal as well as recursive calls.
+
+2018-11-16  Andi Kleen  <ak@linux.intel.com>
+
+	* config/i386/i386.md: Allow memory operands to ptwrite.
+
+2018-11-16  Michael Matz  <matz@suse.de>
+
+	* system.h (PRsa): New macro.
+	(SIZE_AMOUNT): Cast number to uint64_t.
+	* alloc-pool.h (pool_usage::dump): Don't use %zu but PRsa.
+	(pool_usage::dump_footer): Likewise and also use PRIu64.
+	* bitmap.h (bitmap_usage::dump): Likewise.
+	* ggc-common.c (ggc_usage::dump): Likewise.
+	* ggc-page.c (ggc_print_statistics): Likewise.
+	* input.c (dump_line_table_statistics): Likewise.
+	* mem-stats.h (mem_usage::dump): Likewise.
+	(mem_usage::dump_footer): Likewise.
+	* rtl.c (dump_rtx_statistics): Likewise.
+	* tree-cfg.c (dump_cfg_stats): Likewise.
+	* tree-dfa.c (dump_dfa_stats): Likewise.
+	* tree-phinodes.c (phinodes_print_statistics): Likewise.
+	* tree-ssanames (ssanames_print_statistics): Likewise.
+	* vec.c (vec_usage::dump): Likewise.
+	(vec_usage::dump_footer): Likewise.
+
+2018-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88011
+	* tree-vrp.c (extract_range_from_binary_expr): Fix error in
+	replacing set_value_range_to_undefined and
+	set_value_range_to_varying with method calls.
+
+2018-11-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* config/s390/s390.md
+	(*r<noxa>sbg_<mode>_srl_bitmask): Do not delegate arithmetic to
+	assembler.
+	(*r<noxa>sbg_<mode>_sll): Likewise.
+	(*r<noxa>sbg_<mode>_srl): Likewise.
+	(*r<noxa>sbg_sidi_srl): New pattern.
+
+2018-11-16  Jerome Lambourg  <lambourg@adacore.com>
+
+	* config/vxworks.h (TARGET_VXWORKS_HAVE_CTORS_DTORS): New macro.
+	Default to TARGET_VXWORKS_RTP.
+	(SUPPORTS_INIT_PRIORITY): Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
+	of TARGET_VXWORKS_RTP.
+	* config/vxworksae.h: Also define TARGET_VXWORKS_HAVE_CTORS_DTORS.
+	* config/vxworks.c: Use TARGET_VXWORKS_HAVE_CTORS_DTORS instead
+	of TARGET_VXWORKS_RTP to set targetm.have_ctors_dtors.
+
+2018-11-15  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c++/25759
+	* doc/extend.texi (Common Type Attributes): Make it explicit
+	that attribute "packed" can apply to C++ classes.
+
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87541
+	PR c++/87542
+	* tree.c (type_argument_type): New function.
+	* tree.h (type_argument_type): Declare it.
+	* gcc/doc/extend.texi (alloc_align): Update and clarify.
+	(alloc_size, nonnull, sentinel): Same.
+
+2018-11-15  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcy@codesourcery.com>
+
+	* tree-vect-stmts.c (vectorizable_store): Don't ICE when
+	int_mode_for_size fails.
+	(vectorizable_load): Likewise.
+
 2018-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/ux.texi (Group logically-related diagnostics): Move
@@ -43,10 +327,10 @@
 
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
-        PR middle-end/88029
-        * gimple.c (gimple_call_flags): Union flags from decl, type
-        and call fntype.
-        * trans-mem.c (is_tm_pure_call): Simplify.
+	PR middle-end/88029
+	* gimple.c (gimple_call_flags): Union flags from decl, type
+	and call fntype.
+	* trans-mem.c (is_tm_pure_call): Simplify.
 
 2018-11-15  Richard Biener  <rguenther@suse.de>
 
@@ -1391,7 +1675,7 @@
 	OMP_CLAUSE_{TASK,IN}_REDUCTION.  Diagnose invalid conditional
 	lastprivate.
 	(gimplify_adjust_omp_clauses_1): Ignore GOVD_NONTEMPORAL.  Handle
-	GOVD_MAP_ALLOC_ONLY and GOVD_MAP_FROM_ONLY.  
+	GOVD_MAP_ALLOC_ONLY and GOVD_MAP_FROM_ONLY.
 	(gimplify_adjust_omp_clauses): Handle OMP_CLAUSE_NONTEMPORAL.  Handle
 	OMP_CLAUSE_{TASK,IN}_REDUCTION.
 	(gimplify_omp_task): Handle taskwait with depend clauses.
@@ -4581,7 +4865,7 @@
 	the REF_REVERSE_STORAGE_ORDER flag on the value.
 	(gimple_simplify) <GIMPLE_ASSIGN>: For BIT_FIELD_REF, propagate the
 	REF_REVERSE_STORAGE_ORDER flag and avoid simplifying if it is set.
-	
+
 2018-10-08  Richard Sandiford  <richard.sandiford@arm.com>
 
 	PR middle-end/63155

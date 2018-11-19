@@ -1,3 +1,11 @@
+2018-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	* src/Makefile.am: Remove std.internal.digest.sha_SSSE3 and
+	std.internal.math.biguintx86 modules.
+	* src/Makefile.in: Rebuild.
+	* src/std/internal/digest/sha_SSSE3.d: Remove.
+	* src/std/internal/math/biguintx86.d: Remove.
+
 2018-11-02  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/87827

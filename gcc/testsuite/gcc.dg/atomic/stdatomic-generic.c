@@ -4,7 +4,7 @@
 
 #include <stdatomic.h>
 
-extern void abort ();
+extern void abort (void);
 extern int memcmp (const void *, const void *, __SIZE_TYPE__);
 
 typedef struct test {

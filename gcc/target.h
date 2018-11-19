@@ -158,8 +158,11 @@ extern bool stmt_in_inner_loop_p (struct _stmt_vec_info *);
 struct asm_int_op
 {
   const char *hi;
+  const char *psi;
   const char *si;
+  const char *pdi;
   const char *di;
+  const char *pti;
   const char *ti;
 };
 

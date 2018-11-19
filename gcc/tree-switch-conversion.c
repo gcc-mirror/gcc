@@ -1942,7 +1942,8 @@ switch_decision_tree::emit (basic_block bb, tree index_expr,
       dump_case_nodes (dump_file, m_case_list, indent_step, 0);
     }
 
-  bb = emit_case_nodes (bb, index_expr, m_case_list, default_prob, index_type);
+  bb = emit_case_nodes (bb, index_expr, m_case_list, default_prob, index_type,
+			gimple_location (m_switch));
 
   if (bb)
     emit_jump (bb, m_default_bb);
@@ -2085,12 +2086,14 @@ basic_block
 switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
 					       tree op1, tree_code comparison,
 					       basic_block label_bb,
-					       profile_probability prob)
+					       profile_probability prob,
+					       location_t loc)
 {
   // TODO: it's once called with lhs != index.
   op1 = fold_convert (TREE_TYPE (op0), op1);
 
   gcond *cond = gimple_build_cond (comparison, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond, loc);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gsi_insert_after (&gsi, cond, GSI_NEW_STMT);
 
@@ -2114,11 +2117,13 @@ switch_decision_tree::emit_cmp_and_jump_insns (basic_block bb, tree op0,
 basic_block
 switch_decision_tree::do_jump_if_equal (basic_block bb, tree op0, tree op1,
 					basic_block label_bb,
-					profile_probability prob)
+					profile_probability prob,
+					location_t loc)
 {
   op1 = fold_convert (TREE_TYPE (op0), op1);
 
   gcond *cond = gimple_build_cond (EQ_EXPR, op0, op1, NULL_TREE, NULL_TREE);
+  gimple_set_location (cond, loc);
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
   gsi_insert_before (&gsi, cond, GSI_SAME_STMT);
 
@@ -2145,7 +2150,7 @@ basic_block
 switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 				       case_tree_node *node,
 				       profile_probability default_prob,
-				       tree index_type)
+				       tree index_type, location_t loc)
 {
   profile_probability p;
 
@@ -2160,7 +2165,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	 this node and then check our children, if any.  */
       p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
       bb = do_jump_if_equal (bb, index, node->m_c->get_low (),
-			     node->m_c->m_case_bb, p);
+			     node->m_c->m_case_bb, p, loc);
       /* Since this case is taken at this point, reduce its weight from
 	 subtree_weight.  */
       node->m_c->m_subtree_prob -= p;
@@ -2181,12 +2186,12 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_right->m_c->m_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
-				     node->m_right->m_c->m_case_bb, p);
+				     node->m_right->m_c->m_case_bb, p, loc);
 
 	      p = (node->m_left->m_c->m_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
-				     node->m_left->m_c->m_case_bb, p);
+				     node->m_left->m_c->m_case_bb, p, loc);
 	    }
 	  else
 	    {
@@ -2199,12 +2204,12 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 		    + default_prob.apply_scale (1, 2))
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					    GT_EXPR, test_bb, p);
+					    GT_EXPR, test_bb, p, loc);
 	      default_prob = default_prob.apply_scale (1, 2);
 
 	      /* Handle the left-hand subtree.  */
 	      bb = emit_case_nodes (bb, index, node->m_left,
-				    default_prob, index_type);
+				    default_prob, index_type, loc);
 
 	      /* If the left-hand subtree fell through,
 		 don't let it fall into the right-hand subtree.  */
@@ -2212,7 +2217,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 		emit_jump (bb, m_default_bb);
 
 	      bb = emit_case_nodes (test_bb, index, node->m_right,
-				    default_prob, index_type);
+				    default_prob, index_type, loc);
 	    }
 	}
       else if (node->m_left == NULL && node->m_right != NULL)
@@ -2232,11 +2237,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (default_prob.apply_scale (1, 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
-					    LT_EXPR, m_default_bb, p);
+					    LT_EXPR, m_default_bb, p, loc);
 	      default_prob = default_prob.apply_scale (1, 2);
 
 	      bb = emit_case_nodes (bb, index, node->m_right, default_prob,
-				    index_type);
+				    index_type, loc);
 	    }
 	  else
 	    {
@@ -2246,7 +2251,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_right->m_c->m_subtree_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_right->m_c->get_low (),
-				     node->m_right->m_c->m_case_bb, p);
+				     node->m_right->m_c->m_case_bb, p, loc);
 	    }
 	}
       else if (node->m_left != NULL && node->m_right == NULL)
@@ -2259,11 +2264,11 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (default_prob.apply_scale (1, 2)
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					    GT_EXPR, m_default_bb, p);
+					    GT_EXPR, m_default_bb, p, loc);
 		  default_prob = default_prob.apply_scale (1, 2);
 
 	      bb = emit_case_nodes (bb, index, node->m_left, default_prob,
-				    index_type);
+				    index_type, loc);
 	    }
 	  else
 	    {
@@ -2273,7 +2278,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	      p = (node->m_left->m_c->m_subtree_prob
 		   / (node->m_c->m_subtree_prob + default_prob));
 	      bb = do_jump_if_equal (bb, index, node->m_left->m_c->get_low (),
-				     node->m_left->m_c->m_case_bb, p);
+				     node->m_left->m_c->m_case_bb, p, loc);
 	    }
 	}
     }
@@ -2297,17 +2302,17 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	       / (node->m_c->m_subtree_prob + default_prob));
 
 	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_high (),
-					GT_EXPR, test_bb, p);
+					GT_EXPR, test_bb, p, loc);
 	  default_prob = default_prob.apply_scale (1, 2);
 
 	  /* Value belongs to this node or to the left-hand subtree.  */
 	  p = node->m_c->m_prob / (node->m_c->m_subtree_prob + default_prob);
 	  bb = emit_cmp_and_jump_insns (bb, index, node->m_c->get_low (),
-					GE_EXPR, node->m_c->m_case_bb, p);
+					GE_EXPR, node->m_c->m_case_bb, p, loc);
 
 	  /* Handle the left-hand subtree.  */
 	  bb = emit_case_nodes (bb, index, node->m_left,
-				default_prob, index_type);
+				default_prob, index_type, loc);
 
 	  /* If the left-hand subtree fell through,
 	     don't let it fall into the right-hand subtree.  */
@@ -2315,7 +2320,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	    emit_jump (bb, m_default_bb);
 
 	  bb = emit_case_nodes (test_bb, index, node->m_right,
-				default_prob, index_type);
+				default_prob, index_type, loc);
 	}
       else
 	{
@@ -2328,7 +2333,7 @@ switch_decision_tree::emit_case_nodes (basic_block bb, tree index,
 	  p = default_prob / (node->m_c->m_subtree_prob + default_prob);
 
 	  bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
-					m_default_bb, p);
+					m_default_bb, p, loc);
 
 	  emit_jump (bb, node->m_c->m_case_bb);
 	  return NULL;

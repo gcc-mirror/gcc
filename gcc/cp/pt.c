@@ -15541,8 +15541,6 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return t;
 
     case OVERLOAD:
-      /* We must have marked any lookups as persistent.  */
-      gcc_assert (!OVL_LOOKUP_P (t) || OVL_USED_P (t));
       return t;
 
     case BASELINK:
@@ -17177,12 +17175,17 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 
     case CASE_LABEL_EXPR:
       {
+	tree decl = CASE_LABEL (t);
 	tree low = RECUR (CASE_LOW (t));
 	tree high = RECUR (CASE_HIGH (t));
 	tree l = finish_case_label (EXPR_LOCATION (t), low, high);
 	if (l && TREE_CODE (l) == CASE_LABEL_EXPR)
-	  FALLTHROUGH_LABEL_P (CASE_LABEL (l))
-	    = FALLTHROUGH_LABEL_P (CASE_LABEL (t));
+	  {
+	    tree label = CASE_LABEL (l);
+	    FALLTHROUGH_LABEL_P (label) = FALLTHROUGH_LABEL_P (decl);
+	    if (DECL_ATTRIBUTES (decl) != NULL_TREE)
+	      cplus_decl_attributes (&label, DECL_ATTRIBUTES (decl), 0);
+	  }
       }
       break;
 
@@ -17732,6 +17735,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 			  TREE_TYPE (tmp), tmp,
 			  RECUR (TREE_OPERAND (t, 1)),
 			  RECUR (TREE_OPERAND (t, 2))));
+
+    case PREDICT_EXPR:
+      RETURN (add_stmt (copy_node (t)));
 
     default:
       gcc_assert (!STATEMENT_CODE_P (TREE_CODE (t)));

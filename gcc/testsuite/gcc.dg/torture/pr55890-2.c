@@ -3,3 +3,5 @@
 
 extern void *memcpy();
 int main() { memcpy(); }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

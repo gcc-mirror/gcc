@@ -47,9 +47,9 @@
 #define MOVI_R7_139_V2_PART0 0xea07
 #define MOVI_R7_139_V2_PART1 139
 
-#define sc_pt_regs(x) (sc->sc_##x)
-#define sc_pt_regs_lr (sc->sc_r15)
-#define sc_pt_regs_tls(x) (sc->sc_exregs[15])
+#define sc_pt_regs(x) (sc->sc_pt_regs.x)
+#define sc_pt_regs_lr (sc->sc_pt_regs.lr)
+#define sc_pt_regs_tls(x) sc_pt_regs(x)
 
 #define MD_FALLBACK_FRAME_STATE_FOR csky_fallback_frame_state
 

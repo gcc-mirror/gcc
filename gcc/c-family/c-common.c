@@ -746,30 +746,43 @@ tree
 fix_string_type (tree value)
 {
   int length = TREE_STRING_LENGTH (value);
-  int nchars;
+  int nchars, charsz;
   tree e_type, i_type, a_type;
 
   /* Compute the number of elements, for the array type.  */
   if (TREE_TYPE (value) == char_array_type_node || !TREE_TYPE (value))
     {
-      nchars = length;
+      charsz = 1;
       e_type = char_type_node;
     }
   else if (TREE_TYPE (value) == char16_array_type_node)
     {
-      nchars = length / (TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (char16_type_node) / BITS_PER_UNIT;
       e_type = char16_type_node;
     }
   else if (TREE_TYPE (value) == char32_array_type_node)
     {
-      nchars = length / (TYPE_PRECISION (char32_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (char32_type_node) / BITS_PER_UNIT;
       e_type = char32_type_node;
     }
   else
     {
-      nchars = length / (TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT);
+      charsz = TYPE_PRECISION (wchar_type_node) / BITS_PER_UNIT;
       e_type = wchar_type_node;
     }
+
+  /* This matters only for targets where ssizetype has smaller precision
+     than 32 bits.  */
+  if (wi::lts_p (wi::to_wide (TYPE_MAX_VALUE (ssizetype)), length))
+    {
+      error ("size of string literal is too large");
+      length = tree_to_shwi (TYPE_MAX_VALUE (ssizetype)) / charsz * charsz;
+      char *str = CONST_CAST (char *, TREE_STRING_POINTER (value));
+      memset (str + length, '\0',
+	      MIN (TREE_STRING_LENGTH (value) - length, charsz));
+      TREE_STRING_LENGTH (value) = length;
+    }
+  nchars = length / charsz;
 
   /* C89 2.2.4.1, C99 5.2.4.1 (Translation limits).  The analogous
      limit in C++98 Annex B is very large (65536) and is not normative,
@@ -5667,7 +5680,8 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray, arglocs);
+    check_function_format (fntype, TYPE_ATTRIBUTES (fntype), nargs, argarray,
+			   arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);

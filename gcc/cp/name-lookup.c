@@ -53,7 +53,7 @@ static name_hint suggest_alternatives_for_1 (location_t location, tree name,
    stat hack.  */
 
 #define STAT_HACK_P(N) ((N) && TREE_CODE (N) == OVERLOAD && OVL_LOOKUP_P (N))
-#define STAT_TYPE_VISIBLE_P(N) OVL_USED_P (N)
+#define STAT_TYPE_VISIBLE_P(N) TREE_USED (OVERLOAD_CHECK (N))
 #define STAT_TYPE(N) TREE_TYPE (N)
 #define STAT_DECL(N) OVL_FUNCTION (N)
 #define STAT_VISIBLE(N) OVL_CHAIN (N)

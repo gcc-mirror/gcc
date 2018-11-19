@@ -711,8 +711,6 @@ typedef struct ptrmem_cst * ptrmem_cst_t;
 #define OVL_NESTED_P(NODE)	TREE_LANG_FLAG_3 (OVERLOAD_CHECK (NODE))
 /* If set, this overload was constructed during lookup.  */
 #define OVL_LOOKUP_P(NODE)	TREE_LANG_FLAG_4 (OVERLOAD_CHECK (NODE))
-/* If set, this is a persistant lookup. */
-#define OVL_USED_P(NODE)	TREE_USED (OVERLOAD_CHECK (NODE))
 
 /* The first decl of an overload.  */
 #define OVL_FIRST(NODE)	ovl_first (NODE)
@@ -7392,7 +7390,6 @@ extern void lookup_mark				(tree lookup, bool val);
 extern tree lookup_add				(tree fns, tree lookup);
 extern tree lookup_maybe_add			(tree fns, tree lookup,
 						 bool deduping);
-extern void lookup_keep				(tree lookup);
 extern int is_overloaded_fn			(tree) ATTRIBUTE_PURE;
 extern bool really_overloaded_fn		(tree) ATTRIBUTE_PURE;
 extern tree dependent_name			(tree);
@@ -7716,6 +7713,8 @@ extern bool cxx_omp_disregard_value_expr	(tree, bool);
 extern void cp_fold_function			(tree);
 extern tree cp_fully_fold			(tree);
 extern void clear_fold_cache			(void);
+extern tree lookup_hotness_attribute		(tree);
+extern tree process_stmt_hotness_attribute	(tree);
 
 /* in name-lookup.c */
 extern tree strip_using_decl                    (tree);

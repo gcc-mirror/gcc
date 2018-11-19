@@ -1,3 +1,62 @@
+2018-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* decl2.c (grokfield): Remove obsolete _vptr check; fix
+	explicit template argument list error location.
+
+2018-11-16  Kamlesh Kumar  <kamleshbhalui@gmail.com>
+
+	DR 1207
+	PR c++/52869
+	* parser.c (cp_parser_noexcept_specification_opt): Call
+	inject_this_parameter.
+
+2018-11-16  Jason Merrill  <jason@redhat.com>
+
+	Implement P0479R5, [[likely]] and [[unlikely]].
+	* tree.c (handle_likeliness_attribute): New.
+	(std_attribute_table): Add likely/unlikely.
+	* cp-gimplify.c (lookup_hotness_attribute, remove_hotness_attribute)
+	(process_stmt_hotness_attribute, first_stmt): New.
+	(genericize_if_stmt): Check for duplicate predictions.
+	* parser.c (cp_parser_statement): Call
+	process_stmt_hotness_attribute.
+	(cp_parser_label_for_labeled_statement): Apply attributes to case.
+	* decl.c (finish_case_label): Give label in template type void.
+	* pt.c (tsubst_expr) [CASE_LABEL_EXPR]: Copy attributes.
+	[PREDICT_EXPR]: Handle.
+
+2018-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	Remove ovl_used, it is no longer needed
+	* cp-tree.h (OVL_USED_P): Delete.
+	(lookup_keep): Delete.
+	* friend.c (add_friend): Don't call it.
+	* parser.c (lookup_literal_operator): Likewise.
+	(cp_parser_primary_expression): Likewise.
+	* semantics.c (perform_koenig_lookup): Likewise.
+	* pt.c (tsubst_copy <OVERLOAD>): Don't assert OVL_USED_P.
+	* tree.c (ovl_copy): Delete.
+	(ovl_insert): Remove OVL_USED_P checks.
+	(ovl_iterator::reveal_node): Likewise.
+	(ovl_iterator::remove__node): Likewise.
+	(ovl_used, lookup_keep): Delete.
+
+	PR c++/87269
+	* parser.c (lookup_literal_operator): Mark overload for keeping
+	when inside template.  Refactor.
+
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86246
+	PR c++/87989
+	* typeck.c (finish_class_member_access_expr): Conversion operator
+	to dependent type is dependent.
+
+2018-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Use
+	DECL_SOURCE_LOCATION in error_at calls.
+
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	DR 2336

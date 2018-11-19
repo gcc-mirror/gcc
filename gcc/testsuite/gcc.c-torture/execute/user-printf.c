@@ -1,6 +1,7 @@
 /* Verify that calls to a function declared wiith attribute format (printf)
    don't get eliminated even if their result on success can be computed at
    compile time (they can fail).
+   { dg-require-effective-target unwrapped }
    { dg-skip-if "requires io" { freestanding } } */
 
 #include <stdarg.h>

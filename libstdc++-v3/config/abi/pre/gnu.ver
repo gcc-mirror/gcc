@@ -2039,13 +2039,6 @@ GLIBCXX_3.4.26 {
     _ZNSt7__cxx1118basic_stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
     _ZNSt7__cxx1119basic_[io]stringstreamI[cw]St11char_traitsI[cw]ESaI[cw]EEC[12]Ev;
 
-    _ZNSt3pmr19new_delete_resourceEv;
-    _ZNSt3pmr20null_memory_resourceEv;
-    _ZNSt3pmr20get_default_resourceEv;
-    _ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE;
-    _ZNSt3pmr25monotonic_buffer_resource13_M_new_bufferE[jmy][jmy];
-    _ZNSt3pmr25monotonic_buffer_resource18_M_release_buffersEv;
-
     # std::__throw_ios_failure(const char*, int);
     _ZSt19__throw_ios_failurePKci;
 
@@ -2057,6 +2050,18 @@ GLIBCXX_3.4.26 {
     _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPNS_19_Safe_sequence_baseEb;
 
     # <memory_resource> members
+    _ZNSt3pmr19new_delete_resourceEv;
+    _ZNSt3pmr20null_memory_resourceEv;
+    _ZNSt3pmr20get_default_resourceEv;
+    _ZNSt3pmr20set_default_resourceEPNS_15memory_resourceE;
+    _ZNSt3pmr25monotonic_buffer_resource13_M_new_bufferE[jmy][jmy];
+    _ZNSt3pmr25monotonic_buffer_resource18_M_release_buffersEv;
+    _ZTINSt3pmr26synchronized_pool_resourceE;
+    _ZNSt3pmr26synchronized_pool_resourceC[12]ERKNS_12pool_optionsEPNS_15memory_resourceE;
+    _ZNSt3pmr26synchronized_pool_resourceD[12]Ev;
+    _ZNSt3pmr26synchronized_pool_resource7releaseEv;
+    _ZNSt3pmr26synchronized_pool_resource11do_allocateE[jmy][jmy];
+    _ZNSt3pmr26synchronized_pool_resource13do_deallocateEPv[jmy][jmy];
     _ZTINSt3pmr28unsynchronized_pool_resourceE;
     _ZNSt3pmr28unsynchronized_pool_resourceC[12]ERKNS_12pool_optionsEPNS_15memory_resourceE;
     _ZNSt3pmr28unsynchronized_pool_resourceD[12]Ev;

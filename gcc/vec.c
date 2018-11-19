@@ -83,13 +83,13 @@ struct vec_usage: public mem_usage
     s[48] = '\0';
 
     fprintf (stderr,
-	     "%-48s %10zu%10zu%c:%4.1f%%%9zu%c%10zu"
-	     ":%4.1f%%%10zu%c%10zu%c\n",
+	     "%-48s %10" PRIu64 PRsa (10) ":%4.1f%%" PRsa (9) "%10" PRIu64
+	     ":%4.1f%%" PRsa (10) PRsa (10) "\n",
 	     s,
-	     m_element_size,
+	     (uint64_t)m_element_size,
 	     SIZE_AMOUNT (m_allocated),
 	     m_allocated * 100.0 / total.m_allocated,
-	     SIZE_AMOUNT (m_peak), m_times,
+	     SIZE_AMOUNT (m_peak), (uint64_t)m_times,
 	     m_times * 100.0 / total.m_times,
 	     SIZE_AMOUNT (m_items), SIZE_AMOUNT (m_items_peak));
   }
@@ -99,7 +99,7 @@ struct vec_usage: public mem_usage
   dump_footer ()
   {
     print_dash_line ();
-    fprintf (stderr, "%s%64zu%c%25zu%c%16zu%c\n",
+    fprintf (stderr, "%s" PRsa (64) PRsa (25) PRsa (16) "\n",
 	     "Total", SIZE_AMOUNT (m_allocated),
 	     SIZE_AMOUNT (m_times), SIZE_AMOUNT (m_items));
     print_dash_line ();

@@ -2345,11 +2345,6 @@ perform_koenig_lookup (cp_expr fn, vec<tree, va_gc> *args,
 	  else
 	    fn = identifier;
 	}
-      else if (TREE_CODE (fn) == OVERLOAD && processing_template_decl)
-	/* FIXME: We shouldn't really need to mark the lookup here, as
-	   resolving the (non-dependent) call should save the single
-	   function we resolve to.  Related to PR c++/83529.  */
-	lookup_keep (fn);
     }
 
   if (fn && template_id && fn != error_mark_node)

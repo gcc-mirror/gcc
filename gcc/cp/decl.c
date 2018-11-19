@@ -3645,7 +3645,7 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
 
       /* For templates, just add the case label; we'll do semantic
 	 analysis at instantiation-time.  */
-      label = build_decl (loc, LABEL_DECL, NULL_TREE, NULL_TREE);
+      label = build_decl (loc, LABEL_DECL, NULL_TREE, void_type_node);
       return add_stmt (build_case_label (low_value, high_value, label));
     }
 

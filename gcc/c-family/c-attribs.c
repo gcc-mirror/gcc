@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "opts.h"
 #include "gimplify.h"
+#include "tree-pretty-print.h"
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -162,7 +163,7 @@ static const struct attribute_spec::exclusions attr_aligned_exclusions[] =
   ATTR_EXCL (NULL, false, false, false)
 };
 
-static const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[] =
 {
   ATTR_EXCL ("cold", true, true, true),
   ATTR_EXCL ("hot", true, true, true),
@@ -494,6 +495,188 @@ attribute_takes_identifier_p (const_tree attr_id)
   else
     return targetm.attribute_takes_identifier_p (attr_id);
 }
+
+/* Verify that argument value POS at position ARGNO to attribute NAME
+   applied to function TYPE refers to a function parameter at position
+   POS and the expected type CODE.  If so, return POS after default
+   conversions, if any.  Otherwise, issue appropriate warnings and
+   return null.  A non-zero 1-based ARGNO should be passed ib by
+   callers only for attributes with more than one argument.  */
+
+tree
+positional_argument (const_tree fntype, const_tree atname, tree pos,
+		     tree_code code, int argno /* = 0 */,
+		     int flags /* = posargflags () */)
+{
+  if (pos && TREE_CODE (pos) != IDENTIFIER_NODE
+      && TREE_CODE (pos) != FUNCTION_DECL)
+    pos = default_conversion (pos);
+
+  tree postype = TREE_TYPE (pos);
+  if (pos == error_mark_node || !postype)
+    {
+      /* Only mention the positional argument number when it's non-zero.  */
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument is invalid", atname);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i is invalid", atname, argno);
+
+      return NULL_TREE;
+    }
+
+  if (!INTEGRAL_TYPE_P (postype))
+    {
+      /* Handle this case specially to avoid mentioning the value
+	 of pointer constants in diagnostics.  Only mention
+	 the positional argument number when it's non-zero.  */
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument has type %qT",
+		 atname, postype);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i has type %qT",
+		 atname, argno, postype);
+
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (pos) != INTEGER_CST)
+    {
+      /* Only mention the argument number when it's non-zero.  */
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE is not an integer "
+		 "constant",
+		 atname, pos);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i value %qE is not an integer "
+		 "constant",
+		 atname, argno, pos);
+
+      return NULL_TREE;
+    }
+
+  /* Argument positions are 1-based.  */
+  if (integer_zerop (pos))
+    {
+      if (flags & POSARG_ZERO)
+	/* Zero is explicitly allowed.  */
+	return pos;
+
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE does not refer to "
+		 "a function parameter",
+		 atname, pos);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i value %qE does not refer to "
+		 "a function parameter",
+		 atname, argno, pos);
+
+      return NULL_TREE;
+    }
+
+  if (!prototype_p (fntype))
+    return pos;
+
+  /* Verify that the argument position does not exceed the number
+     of formal arguments to the function.  When POSARG_ELLIPSIS
+     is set, ARGNO may be beyond the last argument of a vararg
+     function.  */
+  unsigned nargs = type_num_arguments (fntype);
+  if (!nargs
+      || !tree_fits_uhwi_p (pos)
+      || ((flags & POSARG_ELLIPSIS) == 0
+	  && !IN_RANGE (tree_to_uhwi (pos), 1, nargs)))
+    {
+
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE exceeds the number "
+		 "of function parameters %u",
+		 atname, pos, nargs);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i value %qE exceeds the number "
+		 "of function parameters %u",
+		 atname, argno, pos, nargs);
+      return NULL_TREE;
+    }
+
+  /* Verify that the type of the referenced formal argument matches
+     the expected type.  */
+  unsigned HOST_WIDE_INT ipos = tree_to_uhwi (pos);
+
+  /* Zero was handled above.  */
+  gcc_assert (ipos != 0);
+
+  if (tree argtype = type_argument_type (fntype, ipos))
+    {
+      if (flags & POSARG_ELLIPSIS)
+	{
+	  if (argno < 1)
+	    error ("%qE attribute argument value %qE does not refer to "
+		   "a variable argument list",
+		   atname, pos);
+	  else
+	    error ("%qE attribute argument %i value %qE does not refer to "
+		   "a variable argument list",
+		   atname, argno, pos);
+	  return NULL_TREE;
+	}
+
+      /* Where the expected code is STRING_CST accept any pointer
+	 to a narrow character type, qualified or otherwise.  */
+      bool type_match;
+      if (code == STRING_CST && POINTER_TYPE_P (argtype))
+	{
+	  tree type = TREE_TYPE (argtype);
+	  type = TYPE_MAIN_VARIANT (type);
+	  type_match = (type == char_type_node
+			|| type == signed_char_type_node
+			|| type == unsigned_char_type_node);
+	}
+      else
+	type_match = TREE_CODE (argtype) == code;
+
+      if (!type_match)
+	{
+	  if (argno < 1)
+	    warning (OPT_Wattributes,
+		     "%qE attribute argument value %qE refers to "
+		     "parameter type %qT",
+		     atname, pos, argtype);
+	  else
+	    warning (OPT_Wattributes,
+		   "%qE attribute argument %i value %qE refers to "
+		     "parameter type %qT",
+		     atname, argno, pos, argtype);
+	  return NULL_TREE;
+	}
+    }
+  else if (!(flags & POSARG_ELLIPSIS))
+    {
+      if (argno < 1)
+	warning (OPT_Wattributes,
+		 "%qE attribute argument value %qE refers to "
+		 "a variadic function parameter of unknown type",
+		 atname, pos);
+      else
+	warning (OPT_Wattributes,
+		 "%qE attribute argument %i value %qE refers to "
+		 "a variadic function parameter of unknown type",
+		 atname, argno, pos);
+      return NULL_TREE;
+    }
+
+  return pos;
+}
+
 
 /* Attribute handlers common to C front ends.  */
 
@@ -2563,27 +2746,40 @@ handle_malloc_attribute (tree *node, tree name, tree ARG_UNUSED (args),
    struct attribute_spec.handler.  */
 
 static tree
-handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+handle_alloc_size_attribute (tree *node, tree name, tree args,
 			     int ARG_UNUSED (flags), bool *no_add_attrs)
 {
-  unsigned arg_count = type_num_arguments (*node);
-  for (; args; args = TREE_CHAIN (args))
+  tree decl = *node;
+  tree rettype = TREE_TYPE (decl);
+  if (!POINTER_TYPE_P (rettype))
     {
-      tree position = TREE_VALUE (args);
-      if (position && TREE_CODE (position) != IDENTIFIER_NODE
-	  && TREE_CODE (position) != FUNCTION_DECL)
-	position = default_conversion (position);
-
-      if (!tree_fits_uhwi_p (position)
-	  || !arg_count
-	  || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
-	{
-	  warning (OPT_Wattributes,
-	           "alloc_size parameter outside range");
-	  *no_add_attrs = true;
-	  return NULL_TREE;
-	}
+      warning (OPT_Wattributes,
+	       "%qE attribute ignored on a function returning %qT",
+	       name, rettype);
+      *no_add_attrs = true;
+      return NULL_TREE;
     }
+
+  for (int i = 1; args; ++i)
+    {
+      tree pos = TREE_VALUE (args);
+      /* NEXT is null when the attribute includes just one argument.
+	 That's used to tell positional_argument to avoid mentioning
+	 the argument number in diagnostics (since there's just one
+	 mentioning it is unnecessary and coule be confusing).  */
+      tree next = TREE_CHAIN (args);
+      if (tree val = positional_argument (decl, name, pos, INTEGER_TYPE,
+					  next || i > 1 ? i : 0))
+	TREE_VALUE (args) = val;
+      else
+	{
+	  *no_add_attrs = true;
+	  break;
+	}
+
+      args = next;
+    }
+
   return NULL_TREE;
 }
 
@@ -2591,24 +2787,23 @@ handle_alloc_size_attribute (tree *node, tree ARG_UNUSED (name), tree args,
    struct attribute_spec.handler.  */
 
 static tree
-handle_alloc_align_attribute (tree *node, tree, tree args, int,
+handle_alloc_align_attribute (tree *node, tree name, tree args, int,
 			      bool *no_add_attrs)
 {
-  unsigned arg_count = type_num_arguments (*node);
-  tree position = TREE_VALUE (args);
-  if (position && TREE_CODE (position) != IDENTIFIER_NODE
-      && TREE_CODE (position) != FUNCTION_DECL)
-    position = default_conversion (position);
-
-  if (!tree_fits_uhwi_p (position)
-      || !arg_count
-      || !IN_RANGE (tree_to_uhwi (position), 1, arg_count))
+  tree decl = *node;
+  tree rettype = TREE_TYPE (decl);
+  if (!POINTER_TYPE_P (rettype))
     {
       warning (OPT_Wattributes,
-	       "alloc_align parameter outside range");
+	       "%qE attribute ignored on a function returning %qT",
+	       name, rettype);
       *no_add_attrs = true;
       return NULL_TREE;
     }
+
+  if (!positional_argument (*node, name, TREE_VALUE (args), INTEGER_TYPE))
+    *no_add_attrs = true;
+
   return NULL_TREE;
 }
 
@@ -2616,20 +2811,60 @@ handle_alloc_align_attribute (tree *node, tree, tree args, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_assume_aligned_attribute (tree *, tree, tree args, int,
+handle_assume_aligned_attribute (tree *node, tree name, tree args, int,
 				 bool *no_add_attrs)
 {
+  tree decl = *node;
+  tree rettype = TREE_TYPE (decl);
+  if (TREE_CODE (rettype) != POINTER_TYPE)
+    {
+      warning (OPT_Wattributes,
+	       "%qE attribute ignored on a function returning %qT",
+	       name, rettype);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  /* The alignment specified by the first argument.  */
+  tree align = NULL_TREE;
+
   for (; args; args = TREE_CHAIN (args))
     {
-      tree position = TREE_VALUE (args);
-      if (position && TREE_CODE (position) != IDENTIFIER_NODE
-	  && TREE_CODE (position) != FUNCTION_DECL)
-	position = default_conversion (position);
+      tree val = TREE_VALUE (args);
+      if (val && TREE_CODE (val) != IDENTIFIER_NODE
+	  && TREE_CODE (val) != FUNCTION_DECL)
+	val = default_conversion (val);
 
-      if (TREE_CODE (position) != INTEGER_CST)
+      if (!tree_fits_shwi_p (val))
 	{
 	  warning (OPT_Wattributes,
-		   "assume_aligned parameter not integer constant");
+		   "%qE attribute %E is not an integer constant",
+		   name, val);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+
+      if (!align)
+	{
+	  /* Validate and save the alignment.  */
+	  if (!integer_pow2p (val))
+	    {
+	      warning (OPT_Wattributes,
+		       "%qE attribute argument %E is not a power of 2",
+		       name, val);
+	      *no_add_attrs = true;
+	      return NULL_TREE;
+	    }
+
+	  align = val;
+	}
+      else if (tree_int_cst_sgn (val) < 0 || tree_int_cst_le (align, val))
+	{
+	  /* The misalignment specified by the second argument
+	     must be non-negative and less than the alignment.  */
+	  warning (OPT_Wattributes,
+		   "%qE attribute argument %E is not in the range [0, %E)",
+		   name, val, align);
 	  *no_add_attrs = true;
 	  return NULL_TREE;
 	}
@@ -3262,12 +3497,11 @@ handle_vector_size_attribute (tree *node, tree name, tree args,
 /* Handle the "nonnull" attribute.  */
 
 static tree
-handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
+handle_nonnull_attribute (tree *node, tree name,
 			  tree args, int ARG_UNUSED (flags),
 			  bool *no_add_attrs)
 {
   tree type = *node;
-  unsigned HOST_WIDE_INT attr_arg_num;
 
   /* If no arguments are specified, all pointer arguments should be
      non-null.  Verify a full prototype is given so that the arguments
@@ -3286,57 +3520,23 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
       return NULL_TREE;
     }
 
-  /* Argument list specified.  Verify that each argument number references
-     a pointer argument.  */
-  for (attr_arg_num = 1; args; attr_arg_num++, args = TREE_CHAIN (args))
+  for (int i = 1; args; ++i)
     {
-      unsigned HOST_WIDE_INT arg_num = 0, ck_num;
-
-      tree arg = TREE_VALUE (args);
-      if (arg && TREE_CODE (arg) != IDENTIFIER_NODE
-	  && TREE_CODE (arg) != FUNCTION_DECL)
-	TREE_VALUE (args) = arg = default_conversion (arg);
-
-      if (!get_nonnull_operand (arg, &arg_num))
+      tree pos = TREE_VALUE (args);
+      /* NEXT is null when the attribute includes just one argument.
+	 That's used to tell positional_argument to avoid mentioning
+	 the argument number in diagnostics (since there's just one
+	 mentioning it is unnecessary and coule be confusing).  */
+      tree next = TREE_CHAIN (args);
+      if (tree val = positional_argument (type, name, pos, POINTER_TYPE,
+					  next || i > 1 ? i : 0))
+	TREE_VALUE (args) = val;
+      else
 	{
-	  error ("nonnull argument has invalid operand number (argument %lu)",
-		 (unsigned long) attr_arg_num);
 	  *no_add_attrs = true;
-	  return NULL_TREE;
+	  break;
 	}
-
-      if (prototype_p (type))
-	{
-	  function_args_iterator iter;
-	  tree argument;
-
-	  function_args_iter_init (&iter, type);
-	  for (ck_num = 1; ; ck_num++, function_args_iter_next (&iter))
-	    {
-	      argument = function_args_iter_cond (&iter);
-	      if (argument == NULL_TREE || ck_num == arg_num)
-		break;
-	    }
-
-	  if (!argument
-	      || TREE_CODE (argument) == VOID_TYPE)
-	    {
-	      error ("nonnull argument with out-of-range operand number "
-		     "(argument %lu, operand %lu)",
-		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
-	      *no_add_attrs = true;
-	      return NULL_TREE;
-	    }
-
-	  if (TREE_CODE (argument) != POINTER_TYPE)
-	    {
-	      error ("nonnull argument references non-pointer operand "
-		     "(argument %lu, operand %lu)",
-		     (unsigned long) attr_arg_num, (unsigned long) arg_num);
-	      *no_add_attrs = true;
-	      return NULL_TREE;
-	    }
-	}
+      args = next;
     }
 
   return NULL_TREE;

@@ -2787,7 +2787,7 @@ rs6000_debug_reg_global (void)
     {
       char options[80];
 
-      strcpy (options, (TARGET_P9_FUSION) ? "power9" : "power8");
+      strcpy (options, "power8");
       if (TARGET_P8_FUSION_SIGN)
 	strcat (options, ", sign");
 
@@ -4163,10 +4163,15 @@ rs6000_option_override_internal (bool global_init_p)
     rs6000_isa_flags |= OPTION_MASK_SAVE_TOC_INDIRECT;
 
   /* Enable power8 fusion if we are tuning for power8, even if we aren't
-     generating power8 instructions.  */
+     generating power8 instructions.  Power9 does not optimize power8 fusion
+     cases.  */
   if (!(rs6000_isa_flags_explicit & OPTION_MASK_P8_FUSION))
-    rs6000_isa_flags |= (processor_target_table[tune_index].target_enable
-			 & OPTION_MASK_P8_FUSION);
+    {
+      if (processor_target_table[tune_index].processor == PROCESSOR_POWER8)
+	rs6000_isa_flags |= OPTION_MASK_P8_FUSION;
+      else
+	rs6000_isa_flags &= ~OPTION_MASK_P8_FUSION;
+    }
 
   /* Setting additional fusion flags turns on base fusion.  */
   if (!TARGET_P8_FUSION && TARGET_P8_FUSION_SIGN)
@@ -4182,28 +4187,6 @@ rs6000_option_override_internal (bool global_init_p)
       else
 	rs6000_isa_flags |= OPTION_MASK_P8_FUSION;
     }
-
-  /* Power9 fusion is a superset over power8 fusion.  */
-  if (TARGET_P9_FUSION && !TARGET_P8_FUSION)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_P8_FUSION)
-	{
-	  /* We prefer to not mention undocumented options in
-	     error messages.  However, if users have managed to select
-	     power9-fusion without selecting power8-fusion, they
-	     already know about undocumented flags.  */
-	  error ("%qs requires %qs", "-mpower9-fusion", "-mpower8-fusion");
-	  rs6000_isa_flags &= ~OPTION_MASK_P9_FUSION;
-	}
-      else
-	rs6000_isa_flags |= OPTION_MASK_P8_FUSION;
-    }
-
-  /* Enable power9 fusion if we are tuning for power9, even if we aren't
-     generating power9 instructions.  */
-  if (!(rs6000_isa_flags_explicit & OPTION_MASK_P9_FUSION))
-    rs6000_isa_flags |= (processor_target_table[tune_index].target_enable
-			 & OPTION_MASK_P9_FUSION);
 
   /* Power8 does not fuse sign extended loads with the addis.  If we are
      optimizing at high levels for speed, convert a sign extended load into a
@@ -36002,7 +35985,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
   { "power8-fusion-sign",	OPTION_MASK_P8_FUSION_SIGN,	false, true  },
   { "power8-vector",		OPTION_MASK_P8_VECTOR,		false, true  },
-  { "power9-fusion",		OPTION_MASK_P9_FUSION,		false, true  },
   { "power9-minmax",		OPTION_MASK_P9_MINMAX,		false, true  },
   { "power9-misc",		OPTION_MASK_P9_MISC,		false, true  },
   { "power9-vector",		OPTION_MASK_P9_VECTOR,		false, true  },
@@ -38106,14 +38088,13 @@ emit_fusion_addis (rtx target, rtx addis_value)
 /* Emit a D-form load or store instruction that is the second instruction
    of a fusion sequence.  */
 
-void
-emit_fusion_load_store (rtx load_store_reg, rtx addis_reg, rtx offset,
-			const char *insn_str)
+static void
+emit_fusion_load (rtx load_reg, rtx addis_reg, rtx offset, const char *insn_str)
 {
   rtx fuse_ops[10];
   char insn_template[80];
 
-  fuse_ops[0] = load_store_reg;
+  fuse_ops[0] = load_reg;
   fuse_ops[1] = addis_reg;
 
   if (CONST_INT_P (offset) && satisfies_constraint_I (offset))
@@ -38251,366 +38232,11 @@ emit_fusion_gpr_load (rtx target, rtx mem)
   emit_fusion_addis (target, addis_value);
 
   /* Emit the D-form load instruction.  */
-  emit_fusion_load_store (target, target, load_offset, load_str);
+  emit_fusion_load (target, target, load_offset, load_str);
 
   return "";
 }
 
-
-/* Return true if the peephole2 can combine a load/store involving a
-   combination of an addis instruction and the memory operation.  This was
-   added to the ISA 3.0 (power9) hardware.  */
-
-bool
-fusion_p9_p (rtx addis_reg,		/* register set via addis.  */
-	     rtx addis_value,		/* addis value.  */
-	     rtx dest,			/* destination (memory or register). */
-	     rtx src)			/* source (register or memory).  */
-{
-  rtx addr, mem, offset;
-  machine_mode mode = GET_MODE (src);
-
-  /* Validate arguments.  */
-  if (!base_reg_operand (addis_reg, GET_MODE (addis_reg)))
-    return false;
-
-  if (!fusion_gpr_addis (addis_value, GET_MODE (addis_value)))
-    return false;
-
-  /* Ignore extend operations that are part of the load.  */
-  if (GET_CODE (src) == FLOAT_EXTEND || GET_CODE (src) == ZERO_EXTEND)
-    src = XEXP (src, 0);
-
-  /* Test for memory<-register or register<-memory.  */
-  if (fpr_reg_operand (src, mode) || int_reg_operand (src, mode))
-    {
-      if (!MEM_P (dest))
-	return false;
-
-      mem = dest;
-    }
-
-  else if (MEM_P (src))
-    {
-      if (!fpr_reg_operand (dest, mode) && !int_reg_operand (dest, mode))
-	return false;
-
-      mem = src;
-    }
-
-  else
-    return false;
-
-  addr = XEXP (mem, 0);			/* either PLUS or LO_SUM.  */
-  if (GET_CODE (addr) == PLUS)
-    {
-      if (!rtx_equal_p (addis_reg, XEXP (addr, 0)))
-	return false;
-
-      return satisfies_constraint_I (XEXP (addr, 1));
-    }
-
-  else if (GET_CODE (addr) == LO_SUM)
-    {
-      if (!rtx_equal_p (addis_reg, XEXP (addr, 0)))
-	return false;
-
-      offset = XEXP (addr, 1);
-      if (TARGET_XCOFF || (TARGET_ELF && TARGET_POWERPC64))
-	return small_toc_ref (offset, GET_MODE (offset));
-
-      else if (TARGET_ELF && !TARGET_POWERPC64)
-	return CONSTANT_P (offset);
-    }
-
-  return false;
-}
-
-/* During the peephole2 pass, adjust and expand the insns for an extended fusion
-   load sequence.
-
-   The operands are:
-	operands[0]	register set with addis
-	operands[1]	value set via addis
-	operands[2]	target register being loaded
-	operands[3]	D-form memory reference using operands[0].
-
-  This is similar to the fusion introduced with power8, except it scales to
-  both loads/stores and does not require the result register to be the same as
-  the base register.  At the moment, we only do this if register set with addis
-  is dead.  */
-
-void
-expand_fusion_p9_load (rtx *operands)
-{
-  rtx tmp_reg = operands[0];
-  rtx addis_value = operands[1];
-  rtx target = operands[2];
-  rtx orig_mem = operands[3];
-  rtx  new_addr, new_mem, orig_addr, offset, set, clobber, insn;
-  enum rtx_code plus_or_lo_sum;
-  machine_mode target_mode = GET_MODE (target);
-  machine_mode extend_mode = target_mode;
-  machine_mode ptr_mode = Pmode;
-  enum rtx_code extend = UNKNOWN;
-
-  if (GET_CODE (orig_mem) == FLOAT_EXTEND || GET_CODE (orig_mem) == ZERO_EXTEND)
-    {
-      extend = GET_CODE (orig_mem);
-      orig_mem = XEXP (orig_mem, 0);
-      target_mode = GET_MODE (orig_mem);
-    }
-
-  gcc_assert (MEM_P (orig_mem));
-
-  orig_addr = XEXP (orig_mem, 0);
-  plus_or_lo_sum = GET_CODE (orig_addr);
-  gcc_assert (plus_or_lo_sum == PLUS || plus_or_lo_sum == LO_SUM);
-
-  offset = XEXP (orig_addr, 1);
-  new_addr = gen_rtx_fmt_ee (plus_or_lo_sum, ptr_mode, addis_value, offset);
-  new_mem = replace_equiv_address_nv (orig_mem, new_addr, false);
-
-  if (extend != UNKNOWN)
-    new_mem = gen_rtx_fmt_e (extend, extend_mode, new_mem);
-
-  new_mem = gen_rtx_UNSPEC (extend_mode, gen_rtvec (1, new_mem),
-			    UNSPEC_FUSION_P9);
-
-  set = gen_rtx_SET (target, new_mem);
-  clobber = gen_rtx_CLOBBER (VOIDmode, tmp_reg);
-  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber));
-  emit_insn (insn);
-
-  return;
-}
-
-/* During the peephole2 pass, adjust and expand the insns for an extended fusion
-   store sequence.
-
-   The operands are:
-	operands[0]	register set with addis
-	operands[1]	value set via addis
-	operands[2]	target D-form memory being stored to
-	operands[3]	register being stored
-
-  This is similar to the fusion introduced with power8, except it scales to
-  both loads/stores and does not require the result register to be the same as
-  the base register.  At the moment, we only do this if register set with addis
-  is dead.  */
-
-void
-expand_fusion_p9_store (rtx *operands)
-{
-  rtx tmp_reg = operands[0];
-  rtx addis_value = operands[1];
-  rtx orig_mem = operands[2];
-  rtx src = operands[3];
-  rtx  new_addr, new_mem, orig_addr, offset, set, clobber, insn, new_src;
-  enum rtx_code plus_or_lo_sum;
-  machine_mode target_mode = GET_MODE (orig_mem);
-  machine_mode ptr_mode = Pmode;
-
-  gcc_assert (MEM_P (orig_mem));
-
-  orig_addr = XEXP (orig_mem, 0);
-  plus_or_lo_sum = GET_CODE (orig_addr);
-  gcc_assert (plus_or_lo_sum == PLUS || plus_or_lo_sum == LO_SUM);
-
-  offset = XEXP (orig_addr, 1);
-  new_addr = gen_rtx_fmt_ee (plus_or_lo_sum, ptr_mode, addis_value, offset);
-  new_mem = replace_equiv_address_nv (orig_mem, new_addr, false);
-
-  new_src = gen_rtx_UNSPEC (target_mode, gen_rtvec (1, src),
-			    UNSPEC_FUSION_P9);
-
-  set = gen_rtx_SET (new_mem, new_src);
-  clobber = gen_rtx_CLOBBER (VOIDmode, tmp_reg);
-  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, clobber));
-  emit_insn (insn);
-
-  return;
-}
-
-/* Return a string to fuse an addis instruction with a load using extended
-   fusion.  The address that is used is the logical address that was formed
-   during peephole2: (lo_sum (high) (low-part))
-
-   The code is complicated, so we call output_asm_insn directly, and just
-   return "".  */
-
-const char *
-emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
-{
-  machine_mode mode = GET_MODE (reg);
-  rtx hi;
-  rtx lo;
-  rtx addr;
-  const char *load_string;
-  int r;
-
-  if (GET_CODE (mem) == FLOAT_EXTEND || GET_CODE (mem) == ZERO_EXTEND)
-    {
-      mem = XEXP (mem, 0);
-      mode = GET_MODE (mem);
-    }
-
-  if (GET_CODE (reg) == SUBREG)
-    {
-      gcc_assert (SUBREG_BYTE (reg) == 0);
-      reg = SUBREG_REG (reg);
-    }
-
-  if (!REG_P (reg))
-    fatal_insn ("emit_fusion_p9_load, bad reg #1", reg);
-
-  r = REGNO (reg);
-  if (FP_REGNO_P (r))
-    {
-      if (mode == SFmode)
-	load_string = "lfs";
-      else if (mode == DFmode || mode == DImode)
-	load_string = "lfd";
-      else
-	gcc_unreachable ();
-    }
-  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_VECTOR)
-    {
-      if (mode == SFmode)
-	load_string = "lxssp";
-      else if (mode == DFmode || mode == DImode)
-	load_string = "lxsd";
-      else
-	gcc_unreachable ();
-    }
-  else if (INT_REGNO_P (r))
-    {
-      switch (mode)
-	{
-	case E_QImode:
-	  load_string = "lbz";
-	  break;
-	case E_HImode:
-	  load_string = "lhz";
-	  break;
-	case E_SImode:
-	case E_SFmode:
-	  load_string = "lwz";
-	  break;
-	case E_DImode:
-	case E_DFmode:
-	  if (!TARGET_POWERPC64)
-	    gcc_unreachable ();
-	  load_string = "ld";
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  else
-    fatal_insn ("emit_fusion_p9_load, bad reg #2", reg);
-
-  if (!MEM_P (mem))
-    fatal_insn ("emit_fusion_p9_load not MEM", mem);
-
-  addr = XEXP (mem, 0);
-  fusion_split_address (addr, &hi, &lo);
-
-  /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi);
-
-  /* Emit the D-form load instruction.  */
-  emit_fusion_load_store (reg, tmp_reg, lo, load_string);
-
-  return "";
-}
-
-/* Return a string to fuse an addis instruction with a store using extended
-   fusion.  The address that is used is the logical address that was formed
-   during peephole2: (lo_sum (high) (low-part))
-
-   The code is complicated, so we call output_asm_insn directly, and just
-   return "".  */
-
-const char *
-emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
-{
-  machine_mode mode = GET_MODE (reg);
-  rtx hi;
-  rtx lo;
-  rtx addr;
-  const char *store_string;
-  int r;
-
-  if (GET_CODE (reg) == SUBREG)
-    {
-      gcc_assert (SUBREG_BYTE (reg) == 0);
-      reg = SUBREG_REG (reg);
-    }
-
-  if (!REG_P (reg))
-    fatal_insn ("emit_fusion_p9_store, bad reg #1", reg);
-
-  r = REGNO (reg);
-  if (FP_REGNO_P (r))
-    {
-      if (mode == SFmode)
-	store_string = "stfs";
-      else if (mode == DFmode)
-	store_string = "stfd";
-      else
-	gcc_unreachable ();
-    }
-  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_VECTOR)
-    {
-      if (mode == SFmode)
-	store_string = "stxssp";
-      else if (mode == DFmode || mode == DImode)
-	store_string = "stxsd";
-      else
-	gcc_unreachable ();
-    }
-  else if (INT_REGNO_P (r))
-    {
-      switch (mode)
-	{
-	case E_QImode:
-	  store_string = "stb";
-	  break;
-	case E_HImode:
-	  store_string = "sth";
-	  break;
-	case E_SImode:
-	case E_SFmode:
-	  store_string = "stw";
-	  break;
-	case E_DImode:
-	case E_DFmode:
-	  if (!TARGET_POWERPC64)
-	    gcc_unreachable ();
-	  store_string = "std";
-	  break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
-  else
-    fatal_insn ("emit_fusion_p9_store, bad reg #2", reg);
-
-  if (!MEM_P (mem))
-    fatal_insn ("emit_fusion_p9_store not MEM", mem);
-
-  addr = XEXP (mem, 0);
-  fusion_split_address (addr, &hi, &lo);
-
-  /* Emit the addis instruction.  */
-  emit_fusion_addis (tmp_reg, hi);
-
-  /* Emit the D-form load instruction.  */
-  emit_fusion_load_store (reg, tmp_reg, lo, store_string);
-
-  return "";
-}
 
 #ifdef RS6000_GLIBC_ATOMIC_FENV
 /* Function declarations for rs6000_atomic_assign_expand_fenv.  */

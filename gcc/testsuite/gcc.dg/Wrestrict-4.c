@@ -109,3 +109,5 @@ void* test_strncpy_2 (char *d, const char *s)
 {
   return strncpy (d, s);
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

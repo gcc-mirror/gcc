@@ -1773,6 +1773,10 @@ combine_array_constructor (gfc_expr *e)
   if (iterator_level > 0)
     return false;
 
+  /* WHERE also doesn't work.  */
+  if (in_where > 0)
+    return false;
+
   op1 = e->value.op.op1;
   op2 = e->value.op.op2;
 

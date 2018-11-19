@@ -1,3 +1,162 @@
+2018-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87229
+	* g++.dg/lto/pr87229_0.C: New testcase.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/gcov/pr84548.C: Remove remove-gcda.
+	* g++.dg/gcov/ternary.C: Likewise.
+	* lib/gcov.exp: Support pattern of following form:
+	count(1*).
+
+2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/visium/overflow8.c: Remove -fno-if-conversion and
+	unrelated final test.
+	* gcc.target/visium/overflow16: Likewise.
+	* gcc.target/visium/overflow32.c: Likewise.
+
+2018-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/crash91.C: Check location too.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88045
+	* g++.dg/gcov/pr88045.C: New test.
+
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/88073
+	* gfortran.dg/where_7.f90: New test.
+
+2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/70260
+	* gfortran.dg/proc_ptr_result_5.f90:  Add dg-error directive.
+	* gfortran.dg/protected_4.f90: Split line to allow for extra error.
+	* gfortran.dg/protected_6.f90: Likewise.
+	* gfortran.dg/assign_11.f90: New test.
+	* gfortran.dg/pointer_assign_12.f90: New test.
+
+2018-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87546
+	* gcc.dg/vect/O3-pr87546.c: New test.
+
+2018-11-17  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	PR middle-end/87854
+	* g++.dg/parse/concat1.C: Add dg-error for targets with size_t < 32
+	bits. Update comment.
+	* gcc.dg/concat2.c: Likewise.
+	* gcc.c-torture/compile/pr46534.c: Likewise.
+
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87269
+	* g++.dg/lookup/pr87269.C (std::size_t): New typedef.
+	(operator"" _a) Change unsigned long type to std::size_t.
+
+2018-11-16  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/fusion3.c: Delete.
+	* gcc.target/powerpc/fusion4.c: Delete.
+
+2018-11-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87475
+	* g++.dg/opt/pr87475.C: New test.
+
+2018-11-16  Matthew Malcomson  <matthew.malcomson@arm.com>
+
+	* gcc.c-torture/execute/printf-2.c: Skip on wrapped boards.
+	* gcc.c-torture/execute/user-printf.c: Likewise.
+
+2018-11-16  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/87269
+	* g++.dg/lookup/pr87269.C: New.
+
+2018-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/88053
+	* g++.dg/lto/pr54625-2_0.c: Add -w.
+
+2018-11-16  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	* gcc.target/s390/md/rXsbg_mode_sXl.c: Do not use arithmetic in
+	r{o,x}sbg expectations.
+	* gcc.target/s390/risbg-ll-2.c: Likewise.
+
+2018-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/88053
+	* g++.dg/lto/pr54625-1_0.c: Add -w.
+
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/87541
+	PR c++/87542
+	* g++.dg/ext/attr-alloc_size.C: New test.
+	* c-c++-common/pr71574.c: Adjust diagnostics.
+	* c-c++-common/attributes-1.c: Same.
+	* gcc.dg/attr-alloc_align-2.c: Same.
+	* gcc.dg/attr-alloc_align-4.c: New test.
+	* gcc.dg/attr-alloc_size-2.c: Adjust diagnostics.
+	* gcc.dg/attr-alloc_size.c: Same.
+	* gcc.dg/attr-assume_aligned-4.c: New test.
+	* gcc.dg/format/attr-3.c: Adjust diagnostics.
+	* gcc.dg/nonnull-2.c: Same.
+	* gcc.dg/torture/pr80612.c: Same.
+	* obj-c++.dg/attributes/method-format-1.mm: Same.
+	* obj-c++.dg/attributes/method-nonnull-1.mm: Same.
+	* objc.dg/attributes/method-format-1.m: same.
+	* objc.dg/attributes/method-nonnull-1.m: Same.
+
+2018-11-15  Martin Sebor  <msebor@redhat.com>
+
+	PR c/83656
+	* gcc.dg/20021006-1.c
+	* gcc.dg/Wbuiltin-declaration-mismatch.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-2.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-3.c: New test.
+	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: New test.
+	* gcc.dg/Walloca-16.c: Adjust.
+	* gcc.dg/Wrestrict-4.c: Adjust.
+	* gcc.dg/Wrestrict-5.c: Adjust.
+	* gcc.dg/atomic/stdatomic-generic.c: Adjust.
+	* gcc.dg/atomic/stdatomic-lockfree.c: Adjust.
+	* gcc.dg/initpri1.c: Adjust.
+	* gcc.dg/pr15698-1.c: Adjust.
+	* gcc.dg/pr69156.c: Adjust.
+	* gcc.dg/pr83463.c: Adjust.
+	* gcc.dg/redecl-4.c: Adjust.
+	* gcc.dg/tls/thr-init-2.c: Adjust.
+	* gcc.dg/torture/pr55890-2.c: Adjust.
+	* gcc.dg/torture/pr55890-3.c: Adjust.
+	* gcc.dg/torture/pr67741.c: Adjust.
+	* gcc.dg/torture/stackalign/sibcall-1.c: Adjust.
+	* gcc.dg/torture/tls/thr-init-1.c: Adjust.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-ub.c: Adjust.
+
+2018-11-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/86246
+	PR c++/87989
+	* g++.dg/template/pr86246.C: New.
+	* g++.dg/template/pr87989.C: New.
+
+2018-11-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-diag3.C: Check locations too.
+	* g++.dg/cpp0x/constexpr-ice19.C: Likewise.
+	* g++.dg/cpp0x/constexpr-nonlit2.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda15.C: Likewise.
+	* g++.dg/ext/constexpr-vla5.C: Likewise.
+	* g++.dg/gomp/pr85134.C: Likewise.
+
 2018-11-15  Nathan Sidwell  <nathan@acm.org>
 
 	DR 2336
@@ -30,7 +189,7 @@
 	PR tree-optimization/88031
 	* gcc.dg/pr88031.c: New testcase.
 
-2018-11-15  Wilco Dijkstra  <wdijkstr@arm.com>  
+2018-11-15  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/pr62178.c: Fix spaces.
 

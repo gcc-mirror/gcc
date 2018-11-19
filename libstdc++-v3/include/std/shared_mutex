@@ -57,6 +57,90 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   class shared_timed_mutex;
 
 #if _GLIBCXX_USE_PTHREAD_RWLOCK_T
+#ifdef __gthrw
+#define _GLIBCXX_GTHRW(name) \
+  __gthrw(pthread_ ## name); \
+  static inline int \
+  __glibcxx_ ## name (pthread_rwlock_t *__rwlock) \
+  { \
+    if (__gthread_active_p ()) \
+      return __gthrw_(pthread_ ## name) (__rwlock); \
+    else \
+      return 0; \
+  }
+  _GLIBCXX_GTHRW(rwlock_rdlock)
+  _GLIBCXX_GTHRW(rwlock_tryrdlock)
+  _GLIBCXX_GTHRW(rwlock_wrlock)
+  _GLIBCXX_GTHRW(rwlock_trywrlock)
+  _GLIBCXX_GTHRW(rwlock_unlock)
+# ifndef PTHREAD_RWLOCK_INITIALIZER
+  _GLIBCXX_GTHRW(rwlock_destroy)
+  __gthrw(pthread_rwlock_init);
+  static inline int
+  __glibcxx_rwlock_init (pthread_rwlock_t *__rwlock)
+  {
+    if (__gthread_active_p ())
+      return __gthrw_(pthread_rwlock_init) (__rwlock, NULL);
+    else
+      return 0;
+  }
+# endif
+# if _GTHREAD_USE_MUTEX_TIMEDLOCK
+   __gthrw(pthread_rwlock_timedrdlock);
+  static inline int
+  __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
+				const timespec *__ts)
+  {
+    if (__gthread_active_p ())
+      return __gthrw_(pthread_rwlock_timedrdlock) (__rwlock, __ts);
+    else
+      return 0;
+  }
+   __gthrw(pthread_rwlock_timedwrlock);
+  static inline int
+  __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,
+				const timespec *__ts)
+  {
+    if (__gthread_active_p ())
+      return __gthrw_(pthread_rwlock_timedwrlock) (__rwlock, __ts);
+    else
+      return 0;
+  }
+# endif
+#else
+  static inline int
+  __glibcxx_rwlock_rdlock (pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_rdlock (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_tryrdlock (pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_tryrdlock (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_wrlock (pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_wrlock (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_trywrlock (pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_trywrlock (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_unlock (pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_unlock (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_destroy(pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_destroy (__rwlock); }
+  static inline int
+  __glibcxx_rwlock_init(pthread_rwlock_t *__rwlock)
+  { return pthread_rwlock_init (__rwlock, NULL); }
+# if _GTHREAD_USE_MUTEX_TIMEDLOCK
+  static inline int
+  __glibcxx_rwlock_timedrdlock (pthread_rwlock_t *__rwlock,
+				const timespec *__ts)
+  { return pthread_rwlock_timedrdlock (__rwlock, __ts); }
+  static inline int
+  __glibcxx_rwlock_timedwrlock (pthread_rwlock_t *__rwlock,
+				const timespec *__ts)
+  { return pthread_rwlock_timedwrlock (__rwlock, __ts); }
+# endif
+#endif
+
   /// A shared mutex type implemented using pthread_rwlock_t.
   class __shared_mutex_pthread
   {
@@ -74,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   public:
     __shared_mutex_pthread()
     {
-      int __ret = pthread_rwlock_init(&_M_rwlock, NULL);
+      int __ret = __glibcxx_rwlock_init(&_M_rwlock, NULL);
       if (__ret == ENOMEM)
 	__throw_bad_alloc();
       else if (__ret == EAGAIN)
@@ -87,7 +171,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     ~__shared_mutex_pthread()
     {
-      int __ret __attribute((__unused__)) = pthread_rwlock_destroy(&_M_rwlock);
+      int __ret __attribute((__unused__)) = __glibcxx_rwlock_destroy(&_M_rwlock);
       // Errors not handled: EBUSY, EINVAL
       __glibcxx_assert(__ret == 0);
     }
@@ -99,7 +183,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     lock()
     {
-      int __ret = pthread_rwlock_wrlock(&_M_rwlock);
+      int __ret = __glibcxx_rwlock_wrlock(&_M_rwlock);
       if (__ret == EDEADLK)
 	__throw_system_error(int(errc::resource_deadlock_would_occur));
       // Errors not handled: EINVAL
@@ -109,7 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     try_lock()
     {
-      int __ret = pthread_rwlock_trywrlock(&_M_rwlock);
+      int __ret = __glibcxx_rwlock_trywrlock(&_M_rwlock);
       if (__ret == EBUSY) return false;
       // Errors not handled: EINVAL
       __glibcxx_assert(__ret == 0);
@@ -119,7 +203,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     unlock()
     {
-      int __ret __attribute((__unused__)) = pthread_rwlock_unlock(&_M_rwlock);
+      int __ret __attribute((__unused__)) = __glibcxx_rwlock_unlock(&_M_rwlock);
       // Errors not handled: EPERM, EBUSY, EINVAL
       __glibcxx_assert(__ret == 0);
     }
@@ -135,7 +219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // is okay based on the current specification of forward progress
       // guarantees by the standard.
       do
-	__ret = pthread_rwlock_rdlock(&_M_rwlock);
+	__ret = __glibcxx_rwlock_rdlock(&_M_rwlock);
       while (__ret == EAGAIN);
       if (__ret == EDEADLK)
 	__throw_system_error(int(errc::resource_deadlock_would_occur));
@@ -146,7 +230,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bool
     try_lock_shared()
     {
-      int __ret = pthread_rwlock_tryrdlock(&_M_rwlock);
+      int __ret = __glibcxx_rwlock_tryrdlock(&_M_rwlock);
       // If the maximum number of read locks has been exceeded, we just fail
       // to acquire the lock.  Unlike for lock(), we are not allowed to throw
       // an exception.
@@ -413,7 +497,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    static_cast<long>(__ns.count())
 	  };
 
-	int __ret = pthread_rwlock_timedwrlock(&_M_rwlock, &__ts);
+	int __ret = __glibcxx_rwlock_timedwrlock(&_M_rwlock, &__ts);
 	// On self-deadlock, we just fail to acquire the lock.  Technically,
 	// the program violated the precondition.
 	if (__ret == ETIMEDOUT || __ret == EDEADLK)
@@ -466,7 +550,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// mistaken for a spurious failure, which might help users realise
 	// there is a deadlock.
 	do
-	  __ret = pthread_rwlock_timedrdlock(&_M_rwlock, &__ts);
+	  __ret = __glibcxx_rwlock_timedrdlock(&_M_rwlock, &__ts);
 	while (__ret == EAGAIN || __ret == EDEADLK);
 	if (__ret == ETIMEDOUT)
 	  return false;

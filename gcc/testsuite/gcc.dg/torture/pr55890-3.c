@@ -8,3 +8,5 @@ bar ()
 {
   return memmove ();
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

@@ -6654,12 +6654,12 @@ vectorizable_store (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     supported.  */
 		  unsigned lsize
 		    = group_size * GET_MODE_BITSIZE (elmode);
-		  elmode = int_mode_for_size (lsize, 0).require ();
 		  unsigned int lnunits = const_nunits / group_size;
 		  /* If we can't construct such a vector fall back to
 		     element extracts from the original vector type and
 		     element size stores.  */
-		  if (mode_for_vector (elmode, lnunits).exists (&vmode)
+		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && mode_for_vector (elmode, lnunits).exists (&vmode)
 		      && VECTOR_MODE_P (vmode)
 		      && targetm.vector_mode_supported_p (vmode)
 		      && (convert_optab_handler (vec_extract_optab,
@@ -7789,11 +7789,11 @@ vectorizable_load (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		     to a larger load.  */
 		  unsigned lsize
 		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-		  elmode = int_mode_for_size (lsize, 0).require ();
 		  unsigned int lnunits = const_nunits / group_size;
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
-		  if (mode_for_vector (elmode, lnunits).exists (&vmode)
+		  if (int_mode_for_size (lsize, 0).exists (&elmode)
+		      && mode_for_vector (elmode, lnunits).exists (&vmode)
 		      && VECTOR_MODE_P (vmode)
 		      && targetm.vector_mode_supported_p (vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)

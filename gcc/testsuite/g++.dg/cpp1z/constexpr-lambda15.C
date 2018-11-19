@@ -3,7 +3,7 @@
 
 struct S {
   constexpr S(int i) {
-    auto f = [i]{};		// { dg-error "literal" "" { target c++14_only } }
+    auto f = [i]{};		// { dg-error "10:variable .f. of non-literal type" "" { target c++14_only } }
   }
 };
 int main() {}

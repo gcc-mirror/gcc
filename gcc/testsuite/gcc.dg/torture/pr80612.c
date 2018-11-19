@@ -13,3 +13,5 @@ struct obstack {
 }
 void fn2(int) __attribute__((__alloc_size__(1)));
 void fn3() { fn1(fn2); }
+
+/* { dg-prune-output "attribute ignored" } */

@@ -1231,6 +1231,10 @@ void gcc_stablesort (void *, size_t, size_t,
 /* Display an integer amount as multiple of 1K or 1M (in base 2).
    Display the correct unit (either k, M, or ' ') after the amount, as
    well.  */
-#define SIZE_AMOUNT(size) SIZE_SCALE (size), SIZE_LABEL (size)
+#define SIZE_AMOUNT(size) (uint64_t)SIZE_SCALE (size), SIZE_LABEL (size)
+
+/* Format string particle for printing a SIZE_AMOUNT with N being the width
+   of the number.  */
+#define PRsa(n) "%" #n PRIu64 "%c"
 
 #endif /* ! GCC_SYSTEM_H */

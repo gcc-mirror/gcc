@@ -16,3 +16,5 @@ p ()
 {
   m (p + (long) a);
 }
+
+/* { dg-prune-output "\\\[-Wbuiltin-declaration-mismatch]" } */

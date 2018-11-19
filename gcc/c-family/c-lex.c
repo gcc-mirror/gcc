@@ -357,7 +357,9 @@ c_common_has_attribute (cpp_reader *pfile)
 		       || is_attribute_p ("nodiscard", attr_name)
 		       || is_attribute_p ("fallthrough", attr_name))
 		result = 201603;
-	      else if (is_attribute_p ("no_unique_address", attr_name))
+	      else if (is_attribute_p ("no_unique_address", attr_name)
+		       || is_attribute_p ("likely", attr_name)
+		       || is_attribute_p ("unlikely", attr_name))
 		result = 201803;
 	      if (result)
 		attr_name = NULL_TREE;

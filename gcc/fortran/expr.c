@@ -3507,6 +3507,18 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 	  return false;
 	}
     }
+  else
+    {
+      /* Reject assigning to an external symbol.  For initializers, this
+	 was already done before, in resolve_fl_procedure.  */
+      if (sym->attr.flavor == FL_PROCEDURE && sym->attr.external
+	  && sym->attr.proc != PROC_MODULE && !rvalue->error)
+	{
+	  gfc_error ("Illegal assignment to external procedure at %L",
+		     &lvalue->where);
+	  return false;
+	}
+    }
 
   if (rvalue->rank != 0 && lvalue->rank != rvalue->rank)
     {
@@ -3643,7 +3655,8 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
    NULLIFY statement.  */
 
 bool
-gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
+gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
+			  bool suppress_type_test)
 {
   symbol_attribute attr, lhs_attr;
   gfc_ref *ref;
@@ -3771,6 +3784,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 		     &rvalue->where);
 	  return false;
 	}
+
       if (rvalue->expr_type == EXPR_VARIABLE && !attr.proc_pointer)
 	{
       	  /* Check for intrinsics.  */
@@ -3967,6 +3981,16 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 
       return true;
     }
+  else
+    {
+      /* A non-proc pointer cannot point to a constant.  */
+      if (rvalue->expr_type == EXPR_CONSTANT)
+	{
+	  gfc_error_now ("Pointer assignment target cannot be a constant at %L",
+			 &rvalue->where);
+	  return false;
+	}
+    }
 
   if (!gfc_compare_types (&lvalue->ts, &rvalue->ts))
     {
@@ -3980,7 +4004,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
 		   "polymorphic, or of a type with the BIND or SEQUENCE "
 		   "attribute, to be compatible with an unlimited "
 		   "polymorphic target", &lvalue->where);
-      else
+      else if (!suppress_type_test)
 	gfc_error ("Different types in pointer assignment at %L; "
 		   "attempted assignment of %s to %s", &lvalue->where,
 		   gfc_typename (&rvalue->ts),

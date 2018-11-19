@@ -1000,11 +1000,11 @@ static void
 warn_odr (tree t1, tree t2, tree st1, tree st2,
 	  bool warn, bool *warned, const char *reason)
 {
-  tree decl2 = TYPE_NAME (t2);
+  tree decl2 = TYPE_NAME (TYPE_MAIN_VARIANT (t2));
   if (warned)
     *warned = false;
 
-  if (!warn || !TYPE_NAME(t1))
+  if (!warn || !TYPE_NAME(TYPE_MAIN_VARIANT (t1)))
     return;
 
   /* ODR warnings are output druing LTO streaming; we must apply location
@@ -1013,10 +1013,22 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
     lto_location_cache::current_cache->apply_location_cache ();
 
   auto_diagnostic_group d;
-  if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (t1)), OPT_Wodr,
-		   "type %qT violates the C++ One Definition Rule",
-		   t1))
-    return;
+  if (t1 != TYPE_MAIN_VARIANT (t1)
+      && TYPE_NAME (t1) != DECL_NAME (TYPE_MAIN_VARIANT (t1)))
+    {
+      if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (TYPE_MAIN_VARIANT (t1))),
+		       OPT_Wodr, "type %qT (typedef of %qT) violates the "
+		       "C++ One Definition Rule",
+		       t1, TYPE_MAIN_VARIANT (t1)))
+	return;
+    }
+  else
+    {
+      if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (TYPE_MAIN_VARIANT (t1))),
+		       OPT_Wodr, "type %qT violates the C++ One Definition Rule",
+		       t1))
+	return;
+    }
   if (!st1 && !st2)
     ;
   /* For FIELD_DECL support also case where one of fields is

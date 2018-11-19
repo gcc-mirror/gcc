@@ -818,7 +818,8 @@ extern void check_function_arguments_recurse (void (*)
 					      unsigned HOST_WIDE_INT);
 extern bool check_builtin_function_arguments (location_t, vec<location_t>,
 					      tree, int, tree *);
-extern void check_function_format (tree, int, tree *, vec<location_t> *);
+extern void check_function_format (const_tree, tree, int, tree *,
+				   vec<location_t> *);
 extern bool attribute_fallthrough_p (tree);
 extern tree handle_format_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
@@ -1339,6 +1340,19 @@ extern int parse_tm_stmt_attr (tree, int);
 extern int tm_attr_to_mask (tree);
 extern tree tm_mask_to_attr (int);
 extern tree find_tm_attribute (tree);
+extern const struct attribute_spec::exclusions attr_cold_hot_exclusions[];
+
+/* A bitmap of flags to positional_argument.  */
+enum posargflags {
+  /* Consider positional attribute argument value zero valid.  */
+  POSARG_ZERO = 1,
+  /* Consider positional attribute argument value valid if it refers
+     to the ellipsis (i.e., beyond the last typed argument).  */
+  POSARG_ELLIPSIS = 2
+};
+
+extern tree positional_argument (const_tree, const_tree, tree, tree_code,
+				 int = 0, int = posargflags ());
 
 extern enum flt_eval_method
 excess_precision_mode_join (enum flt_eval_method, enum flt_eval_method);

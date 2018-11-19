@@ -639,7 +639,9 @@ coverage_begin_function (unsigned lineno_checksum, unsigned cfg_checksum)
   expanded_location endloc = expand_location (cfun->function_end_locus);
 
   /* Function can start in a single file and end in another one.  */
-  gcov_write_unsigned (endloc.file == xloc.file ? endloc.line : xloc.line);
+  int end_line = endloc.file == xloc.file ? endloc.line : xloc.line;
+  gcc_assert (xloc.line <= end_line);
+  gcov_write_unsigned (end_line);
   gcov_write_length (offset);
 
   return !gcov_is_error ();

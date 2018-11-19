@@ -97,7 +97,8 @@ static int convert_arguments (location_t, vec<location_t>, tree,
 			      tree);
 static tree pointer_diff (location_t, tree, tree, tree *);
 static tree convert_for_assignment (location_t, location_t, tree, tree, tree,
-				    enum impl_conv, bool, tree, tree, int);
+				    enum impl_conv, bool, tree, tree, int,
+				    int = 0);
 static tree valid_compound_expr_initializer (tree, tree);
 static void push_string (const char *);
 static void push_member_name (tree);
@@ -3183,6 +3184,188 @@ c_build_function_call_vec (location_t loc, vec<location_t> arg_loc,
   return build_function_call_vec (loc, arg_loc, function, params, origtypes);
 }
 
+/* Helper for convert_arguments called to convert the VALue of argument
+   number ARGNUM from ORIGTYPE to the corresponding parameter number
+   PARMNUL and TYPE.  */
+
+static tree
+convert_argument (location_t ploc, tree function, tree fundecl,
+		  tree type, tree origtype, tree val, bool npc,
+		  tree rname, int parmnum, int argnum,
+		  bool excess_precision, int warnopt)
+{
+  tree valtype = TREE_TYPE (val);
+
+  tree parmval;
+
+  /* Formal parm type is specified by a function prototype.  */
+
+  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
+    {
+      error_at (ploc, "type of formal parameter %d is incomplete",
+		parmnum + 1);
+      parmval = val;
+    }
+  else
+    {
+      /* Optionally warn about conversions that differ from the default
+	 conversions.  */
+      if (warn_traditional_conversion || warn_traditional)
+	{
+	  unsigned int formal_prec = TYPE_PRECISION (type);
+
+	  if (INTEGRAL_TYPE_P (type)
+	      && TREE_CODE (valtype) == REAL_TYPE)
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as integer rather "
+			"than floating due to prototype",
+			argnum, rname);
+	  if (INTEGRAL_TYPE_P (type)
+	      && TREE_CODE (valtype) == COMPLEX_TYPE)
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as integer rather "
+			"than complex due to prototype",
+			argnum, rname);
+	  else if (TREE_CODE (type) == COMPLEX_TYPE
+		   && TREE_CODE (valtype) == REAL_TYPE)
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as complex rather "
+			"than floating due to prototype",
+			argnum, rname);
+	  else if (TREE_CODE (type) == REAL_TYPE
+		   && INTEGRAL_TYPE_P (valtype))
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as floating rather "
+			"than integer due to prototype",
+			argnum, rname);
+	  else if (TREE_CODE (type) == COMPLEX_TYPE
+		   && INTEGRAL_TYPE_P (valtype))
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as complex rather "
+			"than integer due to prototype",
+			argnum, rname);
+	  else if (TREE_CODE (type) == REAL_TYPE
+		   && TREE_CODE (valtype) == COMPLEX_TYPE)
+	    warning_at (ploc, OPT_Wtraditional_conversion,
+			"passing argument %d of %qE as floating rather "
+			"than complex due to prototype",
+			argnum, rname);
+	  /* ??? At some point, messages should be written about
+	     conversions between complex types, but that's too messy
+	     to do now.  */
+	  else if (TREE_CODE (type) == REAL_TYPE
+		   && TREE_CODE (valtype) == REAL_TYPE)
+	    {
+	      /* Warn if any argument is passed as `float',
+		 since without a prototype it would be `double'.  */
+	      if (formal_prec == TYPE_PRECISION (float_type_node)
+		  && type != dfloat32_type_node)
+		warning_at (ploc, 0,
+			    "passing argument %d of %qE as %<float%> "
+			    "rather than %<double%> due to prototype",
+			    argnum, rname);
+
+	      /* Warn if mismatch between argument and prototype
+		 for decimal float types.  Warn of conversions with
+		 binary float types and of precision narrowing due to
+		 prototype.  */
+	      else if (type != valtype
+		       && (type == dfloat32_type_node
+			   || type == dfloat64_type_node
+			   || type == dfloat128_type_node
+			   || valtype == dfloat32_type_node
+			   || valtype == dfloat64_type_node
+			   || valtype == dfloat128_type_node)
+		       && (formal_prec
+			   <= TYPE_PRECISION (valtype)
+			   || (type == dfloat128_type_node
+			       && (valtype
+				   != dfloat64_type_node
+				   && (valtype
+				       != dfloat32_type_node)))
+			   || (type == dfloat64_type_node
+			       && (valtype
+				   != dfloat32_type_node))))
+		warning_at (ploc, 0,
+			    "passing argument %d of %qE as %qT "
+			    "rather than %qT due to prototype",
+			    argnum, rname, type, valtype);
+
+	    }
+	  /* Detect integer changing in width or signedness.
+	     These warnings are only activated with
+	     -Wtraditional-conversion, not with -Wtraditional.  */
+	  else if (warn_traditional_conversion
+		   && INTEGRAL_TYPE_P (type)
+		   && INTEGRAL_TYPE_P (valtype))
+	    {
+	      tree would_have_been = default_conversion (val);
+	      tree type1 = TREE_TYPE (would_have_been);
+
+	      if (val == error_mark_node)
+		/* VAL could have been of incomplete type.  */;
+	      else if (TREE_CODE (type) == ENUMERAL_TYPE
+		       && (TYPE_MAIN_VARIANT (type)
+			   == TYPE_MAIN_VARIANT (valtype)))
+		/* No warning if function asks for enum
+		   and the actual arg is that enum type.  */
+		;
+	      else if (formal_prec != TYPE_PRECISION (type1))
+		warning_at (ploc, OPT_Wtraditional_conversion,
+			    "passing argument %d of %qE "
+			    "with different width due to prototype",
+			    argnum, rname);
+	      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
+		;
+	      /* Don't complain if the formal parameter type
+		 is an enum, because we can't tell now whether
+		 the value was an enum--even the same enum.  */
+	      else if (TREE_CODE (type) == ENUMERAL_TYPE)
+		;
+	      else if (TREE_CODE (val) == INTEGER_CST
+		       && int_fits_type_p (val, type))
+		/* Change in signedness doesn't matter
+		   if a constant value is unaffected.  */
+		;
+	      /* If the value is extended from a narrower
+		 unsigned type, it doesn't matter whether we
+		 pass it as signed or unsigned; the value
+		 certainly is the same either way.  */
+	      else if (TYPE_PRECISION (valtype) < TYPE_PRECISION (type)
+		       && TYPE_UNSIGNED (valtype))
+		;
+	      else if (TYPE_UNSIGNED (type))
+		warning_at (ploc, OPT_Wtraditional_conversion,
+			    "passing argument %d of %qE "
+			    "as unsigned due to prototype",
+			    argnum, rname);
+	      else
+		warning_at (ploc, OPT_Wtraditional_conversion,
+			    "passing argument %d of %qE "
+			    "as signed due to prototype",
+			    argnum, rname);
+	    }
+	}
+
+      /* Possibly restore an EXCESS_PRECISION_EXPR for the
+	 sake of better warnings from convert_and_check.  */
+      if (excess_precision)
+	val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
+
+      parmval = convert_for_assignment (ploc, ploc, type,
+					val, origtype, ic_argpass,
+					npc, fundecl, function,
+					parmnum + 1, warnopt);
+
+      if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
+	  && INTEGRAL_TYPE_P (type)
+	  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
+	parmval = default_conversion (parmval);
+    }
+
+  return parmval;
+}
+
 /* Convert the argument expressions in the vector VALUES
    to the types in the list TYPELIST.
 
@@ -3209,7 +3392,6 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 		   vec<tree, va_gc> *values, vec<tree, va_gc> *origtypes,
 		   tree function, tree fundecl)
 {
-  tree typetail, val;
   unsigned int parmnum;
   bool error_args = false;
   const bool type_generic = fundecl
@@ -3227,50 +3409,69 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
   /* Handle an ObjC selector specially for diagnostics.  */
   selector = objc_message_selector ();
 
+  /* For a call to a built-in function declared without a prototype,
+     set to the built-in function's argument list.  */
+  tree builtin_typelist = NULL_TREE;
+
   /* For type-generic built-in functions, determine whether excess
      precision should be removed (classification) or not
      (comparison).  */
-  if (type_generic
+  if (fundecl
       && fndecl_built_in_p (fundecl, BUILT_IN_NORMAL))
     {
-      switch (DECL_FUNCTION_CODE (fundecl))
+      built_in_function code = DECL_FUNCTION_CODE (fundecl);
+      if (C_DECL_BUILTIN_PROTOTYPE (fundecl))
 	{
-	case BUILT_IN_ISFINITE:
-	case BUILT_IN_ISINF:
-	case BUILT_IN_ISINF_SIGN:
-	case BUILT_IN_ISNAN:
-	case BUILT_IN_ISNORMAL:
-	case BUILT_IN_FPCLASSIFY:
-	  type_generic_remove_excess_precision = true;
-	  break;
-
-	case BUILT_IN_ADD_OVERFLOW_P:
-	case BUILT_IN_SUB_OVERFLOW_P:
-	case BUILT_IN_MUL_OVERFLOW_P:
-	  /* The last argument of these type-generic builtins
-	     should not be promoted.  */
-	  type_generic_overflow_p = true;
-	  break;
-
-	default:
-	  break;
+	  if (tree bdecl = builtin_decl_implicit (code))
+	    builtin_typelist = TYPE_ARG_TYPES (TREE_TYPE (bdecl));
 	}
+
+      /* For type-generic built-in functions, determine whether excess
+	 precision should be removed (classification) or not
+	 (comparison).  */
+      if (type_generic)
+	switch (code)
+	  {
+	  case BUILT_IN_ISFINITE:
+	  case BUILT_IN_ISINF:
+	  case BUILT_IN_ISINF_SIGN:
+	  case BUILT_IN_ISNAN:
+	  case BUILT_IN_ISNORMAL:
+	  case BUILT_IN_FPCLASSIFY:
+	    type_generic_remove_excess_precision = true;
+	    break;
+
+	  case BUILT_IN_ADD_OVERFLOW_P:
+	  case BUILT_IN_SUB_OVERFLOW_P:
+	  case BUILT_IN_MUL_OVERFLOW_P:
+	    /* The last argument of these type-generic builtins
+	       should not be promoted.  */
+	    type_generic_overflow_p = true;
+	    break;
+
+	  default:
+	    break;
+	  }
     }
 
   /* Scan the given expressions and types, producing individual
      converted arguments.  */
 
-  for (typetail = typelist, parmnum = 0;
+  tree typetail, builtin_typetail, val;
+  for (typetail = typelist,
+	 builtin_typetail = builtin_typelist,
+	 parmnum = 0;
        values && values->iterate (parmnum, &val);
        ++parmnum)
     {
-      tree type = typetail ? TREE_VALUE (typetail) : 0;
+      tree type = typetail ? TREE_VALUE (typetail) : NULL_TREE;
+      tree builtin_type = (builtin_typetail
+			   ? TREE_VALUE (builtin_typetail) : NULL_TREE);
       tree valtype = TREE_TYPE (val);
       tree rname = function;
       int argnum = parmnum + 1;
       const char *invalid_func_diag;
       bool excess_precision = false;
-      bool npc;
       tree parmval;
       /* Some __atomic_* builtins have additional hidden argument at
 	 position 0.  */
@@ -3289,13 +3490,25 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 	  return error_args ? -1 : (int) parmnum;
 	}
 
+      if (builtin_type == void_type_node)
+	{
+	  warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+		      "too many arguments to built-in function %qE "
+		      "expecting %d",
+		      function, parmnum);
+
+	  inform_declaration (fundecl);
+	  builtin_typetail = NULL_TREE;
+	}
+
       if (selector && argnum > 2)
 	{
 	  rname = selector;
 	  argnum -= 2;
 	}
 
-      npc = null_pointer_constant_p (val);
+      /* Determine if VAL is a null pointer constant before folding it.  */
+      bool npc = null_pointer_constant_p (val);
 
       /* If there is excess precision and a prototype, convert once to
 	 the required type rather than converting via the semantic
@@ -3340,172 +3553,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
 
       if (type != NULL_TREE)
 	{
-	  /* Formal parm type is specified by a function prototype.  */
-
-	  if (type == error_mark_node || !COMPLETE_TYPE_P (type))
-	    {
-	      error_at (ploc, "type of formal parameter %d is incomplete",
-			parmnum + 1);
-	      parmval = val;
-	    }
-	  else
-	    {
-	      tree origtype;
-
-	      /* Optionally warn about conversions that
-		 differ from the default conversions.  */
-	      if (warn_traditional_conversion || warn_traditional)
-		{
-		  unsigned int formal_prec = TYPE_PRECISION (type);
-
-		  if (INTEGRAL_TYPE_P (type)
-		      && TREE_CODE (valtype) == REAL_TYPE)
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as integer rather "
-				"than floating due to prototype",
-				argnum, rname);
-		  if (INTEGRAL_TYPE_P (type)
-		      && TREE_CODE (valtype) == COMPLEX_TYPE)
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as integer rather "
-				"than complex due to prototype",
-				argnum, rname);
-		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   && TREE_CODE (valtype) == REAL_TYPE)
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as complex rather "
-				"than floating due to prototype",
-				argnum, rname);
-		  else if (TREE_CODE (type) == REAL_TYPE
-			   && INTEGRAL_TYPE_P (valtype))
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as floating rather "
-				"than integer due to prototype",
-				argnum, rname);
-		  else if (TREE_CODE (type) == COMPLEX_TYPE
-			   && INTEGRAL_TYPE_P (valtype))
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as complex rather "
-				"than integer due to prototype",
-				argnum, rname);
-		  else if (TREE_CODE (type) == REAL_TYPE
-			   && TREE_CODE (valtype) == COMPLEX_TYPE)
-		    warning_at (ploc, OPT_Wtraditional_conversion,
-				"passing argument %d of %qE as floating rather "
-				"than complex due to prototype",
-				argnum, rname);
-		  /* ??? At some point, messages should be written about
-		     conversions between complex types, but that's too messy
-		     to do now.  */
-		  else if (TREE_CODE (type) == REAL_TYPE
-			   && TREE_CODE (valtype) == REAL_TYPE)
-		    {
-		      /* Warn if any argument is passed as `float',
-			 since without a prototype it would be `double'.  */
-		      if (formal_prec == TYPE_PRECISION (float_type_node)
-			  && type != dfloat32_type_node)
-			warning_at (ploc, 0,
-				    "passing argument %d of %qE as %<float%> "
-				    "rather than %<double%> due to prototype",
-				    argnum, rname);
-
-		      /* Warn if mismatch between argument and prototype
-			 for decimal float types.  Warn of conversions with
-			 binary float types and of precision narrowing due to
-			 prototype. */
- 		      else if (type != valtype
-			       && (type == dfloat32_type_node
-				   || type == dfloat64_type_node
-				   || type == dfloat128_type_node
-				   || valtype == dfloat32_type_node
-				   || valtype == dfloat64_type_node
-				   || valtype == dfloat128_type_node)
-			       && (formal_prec
-				   <= TYPE_PRECISION (valtype)
-				   || (type == dfloat128_type_node
-				       && (valtype
-					   != dfloat64_type_node
-					   && (valtype
-					       != dfloat32_type_node)))
-				   || (type == dfloat64_type_node
-				       && (valtype
-					   != dfloat32_type_node))))
-			warning_at (ploc, 0,
-				    "passing argument %d of %qE as %qT "
-				    "rather than %qT due to prototype",
-				    argnum, rname, type, valtype);
-
-		    }
-		  /* Detect integer changing in width or signedness.
-		     These warnings are only activated with
-		     -Wtraditional-conversion, not with -Wtraditional.  */
-		  else if (warn_traditional_conversion
-			   && INTEGRAL_TYPE_P (type)
-			   && INTEGRAL_TYPE_P (valtype))
-		    {
-		      tree would_have_been = default_conversion (val);
-		      tree type1 = TREE_TYPE (would_have_been);
-
-		      if (val == error_mark_node)
-			/* VAL could have been of incomplete type.  */;
-		      else if (TREE_CODE (type) == ENUMERAL_TYPE
-			       && (TYPE_MAIN_VARIANT (type)
-				   == TYPE_MAIN_VARIANT (valtype)))
-			/* No warning if function asks for enum
-			   and the actual arg is that enum type.  */
-			;
-		      else if (formal_prec != TYPE_PRECISION (type1))
-			warning_at (ploc, OPT_Wtraditional_conversion,
-				    "passing argument %d of %qE "
-				    "with different width due to prototype",
-				    argnum, rname);
-		      else if (TYPE_UNSIGNED (type) == TYPE_UNSIGNED (type1))
-			;
-		      /* Don't complain if the formal parameter type
-			 is an enum, because we can't tell now whether
-			 the value was an enum--even the same enum.  */
-		      else if (TREE_CODE (type) == ENUMERAL_TYPE)
-			;
-		      else if (TREE_CODE (val) == INTEGER_CST
-			       && int_fits_type_p (val, type))
-			/* Change in signedness doesn't matter
-			   if a constant value is unaffected.  */
-			;
-		      /* If the value is extended from a narrower
-			 unsigned type, it doesn't matter whether we
-			 pass it as signed or unsigned; the value
-			 certainly is the same either way.  */
-		      else if (TYPE_PRECISION (valtype) < TYPE_PRECISION (type)
-			       && TYPE_UNSIGNED (valtype))
-			;
-		      else if (TYPE_UNSIGNED (type))
-			warning_at (ploc, OPT_Wtraditional_conversion,
-				    "passing argument %d of %qE "
-				    "as unsigned due to prototype",
-				    argnum, rname);
-		      else
-			warning_at (ploc, OPT_Wtraditional_conversion,
-				    "passing argument %d of %qE "
-				    "as signed due to prototype",
-				    argnum, rname);
-		    }
-		}
-
-	      /* Possibly restore an EXCESS_PRECISION_EXPR for the
-		 sake of better warnings from convert_and_check.  */
-	      if (excess_precision)
-		val = build1 (EXCESS_PRECISION_EXPR, valtype, val);
-	      origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
-	      parmval = convert_for_assignment (loc, ploc, type,
-						val, origtype, ic_argpass,
-						npc, fundecl, function,
-						parmnum + 1);
-
-	      if (targetm.calls.promote_prototypes (fundecl ? TREE_TYPE (fundecl) : 0)
-		  && INTEGRAL_TYPE_P (type)
-		  && (TYPE_PRECISION (type) < TYPE_PRECISION (integer_type_node)))
-		parmval = default_conversion (parmval);
-	    }
+	  tree origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
+	  parmval = convert_argument (ploc, function, fundecl, type, origtype,
+				      val, npc, rname, parmnum, argnum,
+				      excess_precision, 0);
 	}
       else if (promote_float_arg)
         {
@@ -3547,8 +3598,24 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       if (parmval == error_mark_node)
 	error_args = true;
 
+      if (!type && builtin_type && TREE_CODE (builtin_type) != VOID_TYPE)
+	{
+	  /* For a call to a built-in function declared without a prototype,
+	     perform the conversions from the argument to the expected type
+	     but issue warnings rather than errors for any mismatches.
+	     Ignore the converted argument and use the PARMVAL obtained
+	     above by applying default conversions instead.  */
+	  tree origtype = (!origtypes) ? NULL_TREE : (*origtypes)[parmnum];
+	  convert_argument (ploc, function, fundecl, builtin_type, origtype,
+			    val, npc, rname, parmnum, argnum, excess_precision,
+			    OPT_Wbuiltin_declaration_mismatch);
+	}
+
       if (typetail)
 	typetail = TREE_CHAIN (typetail);
+
+      if (builtin_typetail)
+	builtin_typetail = TREE_CHAIN (builtin_typetail);
     }
 
   gcc_assert (parmnum == vec_safe_length (values));
@@ -3558,6 +3625,18 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       error_at (loc, "too few arguments to function %qE", function);
       inform_declaration (fundecl);
       return -1;
+    }
+
+  if (builtin_typetail && TREE_VALUE (builtin_typetail) != void_type_node)
+    {
+      unsigned nargs = parmnum;
+      for (tree t = builtin_typetail; t; t = TREE_CHAIN (t))
+	++nargs;
+
+      warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+		  "too few arguments to built-in function %qE expecting %u",
+		  function, nargs - 1);
+      inform_declaration (fundecl);
     }
 
   return error_args ? -1 : (int) parmnum;
@@ -4922,6 +5001,40 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
   return convert (type, expr);
 }
 
+/* If EXPR refers to a built-in declared without a prototype returns
+   the actual type of the built-in and, if non-null, set *BLTIN to
+   a pointer to the built-in.  Otherwise return the type of EXPR
+   and clear *BLTIN if non-null.  */
+
+static tree
+type_or_builtin_type (tree expr, tree *bltin = NULL)
+{
+  tree dummy;
+  if (!bltin)
+    bltin = &dummy;
+
+  *bltin = NULL_TREE;
+
+  tree type = TREE_TYPE (expr);
+  if (TREE_CODE (expr) != ADDR_EXPR)
+    return type;
+
+  tree oper = TREE_OPERAND (expr, 0);
+  if (!DECL_P (oper)
+      || TREE_CODE (oper) != FUNCTION_DECL
+      || !fndecl_built_in_p (oper, BUILT_IN_NORMAL))
+    return type;
+
+  built_in_function code = DECL_FUNCTION_CODE (oper);
+  if (!C_DECL_BUILTIN_PROTOTYPE (oper))
+    return type;
+
+  if ((*bltin = builtin_decl_implicit (code)))
+    type = build_pointer_type (TREE_TYPE (*bltin));
+
+  return type;
+}
+
 /* Build and return a conditional expression IFEXP ? OP1 : OP2.  If
    IFEXP_BCP then the condition is a call to __builtin_constant_p, and
    if folded to an integer constant then the unselected half may
@@ -4966,9 +5079,11 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       || TREE_CODE (TREE_TYPE (op2)) == ERROR_MARK)
     return error_mark_node;
 
-  type1 = TREE_TYPE (op1);
+  tree bltin1 = NULL_TREE;
+  tree bltin2 = NULL_TREE;
+  type1 = type_or_builtin_type (op1, &bltin1);
   code1 = TREE_CODE (type1);
-  type2 = TREE_TYPE (op2);
+  type2 = type_or_builtin_type (op2, &bltin2);
   code2 = TREE_CODE (type2);
 
   if (code1 == POINTER_TYPE && reject_gcc_builtin (op1))
@@ -5206,9 +5321,14 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       else
 	{
 	  int qual = ENCODE_QUAL_ADDR_SPACE (as_common);
-
-	  pedwarn (colon_loc, 0,
-		   "pointer type mismatch in conditional expression");
+	  if (bltin1 && bltin2)
+	    warning_at (colon_loc, OPT_Wincompatible_pointer_types,
+			"pointer type mismatch between %qT and %qT "
+			"of %qD and %qD in conditional expression",
+			type1, type2, bltin1, bltin2);
+	  else
+	    pedwarn (colon_loc, 0,
+		     "pointer type mismatch in conditional expression");
 	  result_type = build_pointer_type
 			  (build_qualified_type (void_type_node, qual));
 	}
@@ -6322,6 +6442,46 @@ inform_for_arg (tree fundecl, location_t ploc, int parmnum,
 	  expected_type, actual_type);
 }
 
+/* Issue a warning when an argument of ARGTYPE is passed to a built-in
+   function FUNDECL declared without prototype to parameter PARMNUM of
+   PARMTYPE when ARGTYPE does not promote to PARMTYPE.  */
+
+static void
+maybe_warn_builtin_no_proto_arg (location_t loc, tree fundecl, int parmnum,
+				 tree parmtype, tree argtype)
+{
+  tree_code parmcode = TREE_CODE (parmtype);
+  tree_code argcode = TREE_CODE (argtype);
+  tree promoted = c_type_promotes_to (argtype);
+
+  /* Avoid warning for enum arguments that promote to an integer type
+     of the same size/mode.  */
+  if (parmcode == INTEGER_TYPE
+      && argcode == ENUMERAL_TYPE
+      && TYPE_MODE (parmtype) == TYPE_MODE (argtype))
+    return;
+
+  if (parmcode == argcode
+      && TYPE_MAIN_VARIANT (parmtype) == TYPE_MAIN_VARIANT (promoted))
+    return;
+
+  /* This diagnoses even signed/unsigned mismatches.  Those might be
+     safe in many cases but GCC may emit suboptimal code for them so
+     warning on those cases drives efficiency improvements.  */
+  if (warning_at (loc, OPT_Wbuiltin_declaration_mismatch,
+		  TYPE_MAIN_VARIANT (promoted) == argtype
+		  ? G_("%qD argument %d type is %qT where %qT is expected "
+		       "in a call to built-in function declared without "
+		       "prototype")
+		  : G_("%qD argument %d promotes to %qT where %qT is expected "
+		       "in a call to built-in function declared without "
+		       "prototype"),
+		  fundecl, parmnum, promoted, parmtype))
+    inform (DECL_SOURCE_LOCATION (fundecl),
+	    "built-in %qD declared here",
+	    fundecl);
+}
+
 /* Convert value RHS to type TYPE as preparation for an assignment to
    an lvalue of type TYPE.  If ORIGTYPE is not NULL_TREE, it is the
    original type of RHS; this differs from TREE_TYPE (RHS) for enum
@@ -6346,13 +6506,16 @@ inform_for_arg (tree fundecl, location_t ploc, int parmnum,
 	    ^
 
    FUNCTION is a tree for the function being called.
-   PARMNUM is the number of the argument, for printing in error messages.  */
+   PARMNUM is the number of the argument, for printing in error messages.
+   WARNOPT may be set to a warning option to issue the corresponding warning
+   rather than an error for invalid conversions.  Used for calls to built-in
+   functions declared without a prototype.  */
 
 static tree
 convert_for_assignment (location_t location, location_t expr_loc, tree type,
 			tree rhs, tree origtype, enum impl_conv errtype,
 			bool null_pointer_constant, tree fundecl,
-			tree function, int parmnum)
+			tree function, int parmnum, int warnopt /* = 0 */)
 {
   enum tree_code codel = TREE_CODE (type);
   tree orig_rhs = rhs;
@@ -6550,7 +6713,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	 an unprototyped function, it is compile-time undefined;
 	 making it a constraint in that case was rejected in
 	 DR#252.  */
-      error_at (location, "void value not ignored as it ought to be");
+      const char msg[] = "void value not ignored as it ought to be";
+      if (warnopt)
+	warning_at (location, warnopt, msg);
+      else
+	error_at (location, msg);
       return error_mark_node;
     }
   rhs = require_complete_type (location, rhs);
@@ -6566,7 +6733,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
       if (!lvalue_p (rhs))
 	{
-	  error_at (location, "cannot pass rvalue to reference parameter");
+	  const char msg[] = "cannot pass rvalue to reference parameter";
+	  if (warnopt)
+	    warning_at (location, warnopt, msg);
+	  else
+	    error_at (location, msg);
 	  return error_mark_node;
 	}
       if (!c_mark_addressable (rhs))
@@ -6578,7 +6749,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 				    build_pointer_type (TREE_TYPE (type)),
 				    rhs, origtype, errtype,
 				    null_pointer_constant, fundecl, function,
-				    parmnum);
+				    parmnum, warnopt);
       if (rhs == error_mark_node)
 	return error_mark_node;
 
@@ -6600,15 +6771,18 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	       || coder == ENUMERAL_TYPE || coder == COMPLEX_TYPE
 	       || coder == BOOLEAN_TYPE))
     {
-      tree ret;
+      if (warnopt && errtype == ic_argpass)
+	maybe_warn_builtin_no_proto_arg (expr_loc, fundecl, parmnum, type,
+					 rhstype);
+
       bool save = in_late_binary_op;
       if (codel == BOOLEAN_TYPE || codel == COMPLEX_TYPE
 	  || (coder == REAL_TYPE
 	      && (codel == INTEGER_TYPE || codel == ENUMERAL_TYPE)
 	      && sanitize_flags_p (SANITIZE_FLOAT_CAST)))
 	in_late_binary_op = true;
-      ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
-			       ? expr_loc : location, type, orig_rhs);
+      tree ret = convert_and_check (expr_loc != UNKNOWN_LOCATION
+				    ? expr_loc : location, type, orig_rhs);
       in_late_binary_op = save;
       return ret;
     }
@@ -6742,6 +6916,12 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
   else if ((codel == POINTER_TYPE || codel == REFERENCE_TYPE)
 	   && (coder == codel))
     {
+      /* If RHS refers to a built-in declared without a prototype
+	 BLTIN is the declaration of the built-in with a prototype
+	 and RHSTYPE is set to the actual type of the built-in.  */
+      tree bltin;
+      rhstype = type_or_builtin_type (rhs, &bltin);
+
       tree ttl = TREE_TYPE (type);
       tree ttr = TREE_TYPE (rhstype);
       tree mvl = ttl;
@@ -6805,21 +6985,45 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	  switch (errtype)
 	    {
 	    case ic_argpass:
-	      error_at (expr_loc, "passing argument %d of %qE from pointer to "
-			"non-enclosed address space", parmnum, rname);
+	      {
+		const char msg[] = G_("passing argument %d of %qE from "
+				      "pointer to non-enclosed address space");
+		if (warnopt)
+		  warning_at (expr_loc, warnopt, msg, parmnum, rname);
+		else
+		  error_at (expr_loc, msg, parmnum, rname);
 	      break;
+	      }
 	    case ic_assign:
-	      error_at (location, "assignment from pointer to "
-			"non-enclosed address space");
-	      break;
+	      {
+		const char msg[] = G_("assignment from pointer to "
+				      "non-enclosed address space");
+		if (warnopt)
+		  warning_at (location, warnopt, msg);
+		else
+		  error_at (location, msg);
+		break;
+	      }
 	    case ic_init:
-	      error_at (location, "initialization from pointer to "
-			"non-enclosed address space");
-	      break;
+	      {
+		const char msg[] = G_("initialization from pointer to "
+				      "non-enclosed address space");
+		if (warnopt)
+		  warning_at (location, warnopt, msg);
+		else
+		  error_at (location, msg);
+		break;
+	      }
 	    case ic_return:
-	      error_at (location, "return from pointer to "
-			"non-enclosed address space");
-	      break;
+	      {
+		const char msg[] = G_("return from pointer to "
+				      "non-enclosed address space");
+		if (warnopt)
+		  warning_at (location, warnopt, msg);
+		else
+		  error_at (location, msg);
+		break;
+	      }
 	    default:
 	      gcc_unreachable ();
 	    }
@@ -7017,19 +7221,38 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	      }
 	      break;
 	    case ic_assign:
-	      pedwarn (location, OPT_Wincompatible_pointer_types,
-		       "assignment to %qT from incompatible pointer type %qT",
-		       type, rhstype);
+	      if (bltin)
+		pedwarn (location, OPT_Wincompatible_pointer_types,
+			 "assignment to %qT from pointer to "
+			 "%qD with incompatible type %qT",
+			 type, bltin, rhstype);
+	      else
+		pedwarn (location, OPT_Wincompatible_pointer_types,
+			 "assignment to %qT from incompatible pointer type %qT",
+			 type, rhstype);
 	      break;
 	    case ic_init:
-	      pedwarn_init (location, OPT_Wincompatible_pointer_types,
-			    "initialization of %qT from incompatible pointer "
-			    "type %qT", type, rhstype);
+	      if (bltin)
+		pedwarn_init (location, OPT_Wincompatible_pointer_types,
+			      "initialization of %qT from pointer to "
+			      "%qD with incompatible type %qT",
+			      type, bltin, rhstype);
+	      else
+		pedwarn_init (location, OPT_Wincompatible_pointer_types,
+			      "initialization of %qT from incompatible "
+			      "pointer type %qT",
+			      type, rhstype);
 	      break;
 	    case ic_return:
-	      pedwarn (location, OPT_Wincompatible_pointer_types,
-		       "returning %qT from a function with incompatible "
-		       "return type %qT", rhstype, type);
+	      if (bltin)
+		pedwarn (location, OPT_Wincompatible_pointer_types,
+			 "returning pointer to %qD of type %qT from "
+			 "a function with incompatible type %qT",
+			 bltin, rhstype, type);
+	      else
+		pedwarn (location, OPT_Wincompatible_pointer_types,
+			 "returning %qT from a function with incompatible "
+			 "return type %qT", rhstype, type);
 	      break;
 	    default:
 	      gcc_unreachable ();
@@ -7042,7 +7265,11 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
     {
       /* ??? This should not be an error when inlining calls to
 	 unprototyped functions.  */
-      error_at (location, "invalid use of non-lvalue array");
+      const char msg[] = "invalid use of non-lvalue array";
+      if (warnopt)
+	warning_at (location, warnopt, msg);
+      else
+	error_at (location, msg);
       return error_mark_node;
     }
   else if (codel == POINTER_TYPE && coder == INTEGER_TYPE)
@@ -7138,25 +7365,44 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	auto_diagnostic_group d;
 	range_label_for_type_mismatch rhs_label (rhstype, type);
 	gcc_rich_location richloc (expr_loc, &rhs_label);
-	error_at (&richloc, "incompatible type for argument %d of %qE", parmnum,
-		  rname);
+	const char msg[] = G_("incompatible type for argument %d of %qE");
+	if (warnopt)
+	  warning_at (expr_loc, warnopt, msg, parmnum, rname);
+	else
+	  error_at (&richloc, msg, parmnum, rname);
 	inform_for_arg (fundecl, expr_loc, parmnum, type, rhstype);
       }
       break;
     case ic_assign:
-      error_at (location, "incompatible types when assigning to type %qT from "
-		"type %qT", type, rhstype);
-      break;
+      {
+	const char msg[]
+	  = G_("incompatible types when assigning to type %qT from type %qT");
+	if (warnopt)
+	  warning_at (expr_loc, 0, msg, type, rhstype);
+	else
+	  error_at (expr_loc, msg, type, rhstype);
+	break;
+      }
     case ic_init:
-      error_at (location,
-		"incompatible types when initializing type %qT using type %qT",
-		type, rhstype);
-      break;
+      {
+	const char msg[]
+	  = G_("incompatible types when initializing type %qT using type %qT");
+	if (warnopt)
+	  warning_at (location, 0, msg, type, rhstype);
+	else
+	  error_at (location, msg, type, rhstype);
+	break;
+      }
     case ic_return:
-      error_at (location,
-		"incompatible types when returning type %qT but %qT was "
-		"expected", rhstype, type);
-      break;
+      {
+	const char msg[]
+	  = G_("incompatible types when returning type %qT but %qT was expected");
+	if (warnopt)
+	  warning_at (location, 0, msg, rhstype, type);
+	else
+	  error_at (location, msg, rhstype, type);
+	break;
+      }
     default:
       gcc_unreachable ();
     }

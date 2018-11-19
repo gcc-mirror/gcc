@@ -189,7 +189,7 @@ unsigned
 Target::alignsize (Type *type)
 {
   gcc_assert (type->isTypeBasic ());
-  return TYPE_ALIGN_UNIT (build_ctype (type));
+  return min_align_of_type (build_ctype (type));
 }
 
 /* Return GCC field alignment size for type TYPE.  */

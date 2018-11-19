@@ -27,6 +27,10 @@
  *  Do not attempt to use it directly. @headername{tr1/cmath}
  */
 
+/* __cyl_bessel_jn_asymp adapted from GNU GSL version 2.4 specfunc/bessel_j.c
+ * Copyright (C) 1996-2003 Gerard Jungman
+ */
+
 //
 // ISO C++ 14882 TR1: 5.2  Special functions
 //
@@ -358,24 +362,51 @@ namespace tr1
     void
     __cyl_bessel_jn_asymp(_Tp __nu, _Tp __x, _Tp & __Jnu, _Tp & __Nnu)
     {
-      const _Tp __mu   = _Tp(4) * __nu * __nu;
-      const _Tp __mum1 = __mu - _Tp(1);
-      const _Tp __mum9 = __mu - _Tp(9);
-      const _Tp __mum25 = __mu - _Tp(25);
-      const _Tp __mum49 = __mu - _Tp(49);
-      const _Tp __xx = _Tp(64) * __x * __x;
-      const _Tp __P = _Tp(1) - __mum1 * __mum9 / (_Tp(2) * __xx)
-                    * (_Tp(1) - __mum25 * __mum49 / (_Tp(12) * __xx));
-      const _Tp __Q = __mum1 / (_Tp(8) * __x)
-                    * (_Tp(1) - __mum9 * __mum25 / (_Tp(6) * __xx));
+      const _Tp __mu = _Tp(4) * __nu * __nu;
+      const _Tp __8x = _Tp(8) * __x;
+
+      _Tp __P = _Tp(0);
+      _Tp __Q = _Tp(0);
+
+      _Tp __k = _Tp(0);
+      _Tp __term = _Tp(1);
+
+      int __epsP = 0;
+      int __epsQ = 0;
+
+      _Tp __eps = std::numeric_limits<_Tp>::epsilon();
+
+      do
+        {
+          __term *= (__k == 0
+                     ? _Tp(1)
+                     : -(__mu - (2 * __k - 1) * (2 * __k - 1)) / (__k * __8x));
+
+          __epsP = std::abs(__term) < __eps * std::abs(__P);
+          __P += __term;
+
+          __k++;
+
+          __term *= (__mu - (2 * __k - 1) * (2 * __k - 1)) / (__k * __8x);
+          __epsQ = std::abs(__term) < __eps * std::abs(__Q);
+          __Q += __term;
+
+          if (__epsP && __epsQ && __k > (__nu / 2.))
+            break;
+
+          __k++;
+        }
+      while (__k < 1000);
 
       const _Tp __chi = __x - (__nu + _Tp(0.5L))
-                            * __numeric_constants<_Tp>::__pi_2();
+                             * __numeric_constants<_Tp>::__pi_2();
+
       const _Tp __c = std::cos(__chi);
       const _Tp __s = std::sin(__chi);
 
       const _Tp __coef = std::sqrt(_Tp(2)
                              / (__numeric_constants<_Tp>::__pi() * __x));
+
       __Jnu = __coef * (__c * __P - __s * __Q);
       __Nnu = __coef * (__s * __P + __c * __Q);
 

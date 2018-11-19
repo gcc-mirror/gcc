@@ -154,7 +154,7 @@
 
 ;; Extended fusion store
 (define_memory_constraint "wF"
-  "Memory operand suitable for power9 fusion load/stores"
+  "Memory operand suitable for power8 GPR load fusion"
   (match_operand 0 "fusion_addis_mem_combo_load"))
 
 (define_register_constraint "wH" "rs6000_constraints[RS6000_CONSTRAINT_wH]"

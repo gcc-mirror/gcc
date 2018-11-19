@@ -1208,14 +1208,14 @@
   "sub<s>   %0,r0,%1"
   [(set_attr "type" "arith")])
 
-(define_insn "negsi2_insn_set_carry"
+(define_insn "neg<mode>2_insn_set_carry"
   [(set (reg:CCC R_FLAGS)
-	(compare:CCC (not:SI (match_operand:SI 1 "register_operand" "r"))
+	(compare:CCC (not:I (neg:I (match_operand:I 1 "register_operand" "r")))
 		     (const_int -1)))
-   (set (match_operand:SI 0 "register_operand" "=r")
-        (neg:SI (match_dup 1)))]
+   (set (match_operand:I 0 "register_operand" "=r")
+        (neg:I (match_dup 1)))]
   "reload_completed"
-  "sub.l   %0,r0,%1"
+  "sub<s>   %0,r0,%1"
   [(set_attr "type" "arith")])
 
 (define_insn "*neg<mode>2_insn_set_overflow"
