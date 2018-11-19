@@ -1,3 +1,8 @@
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	* check_GNU_style_lib.py: Detect mixed usage
+	of spaces and tabs.
+
 2018-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gcc_update (files_and_dependencies): Handle libphobos.
