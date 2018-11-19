@@ -25,7 +25,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "pretty-print.h"
 #include "selftest.h"
+#include "optinfo.h"
 
+class optrecord_json_writer;
 namespace selftest { class temp_dump_context; }
 
 /* A class for handling the various dump_* calls.
@@ -95,14 +97,21 @@ class dump_context
   void begin_scope (const char *name, const dump_location_t &loc);
   void end_scope ();
 
-  /* For use in selftests; if true then optinfo_enabled_p is true.  */
-  bool forcibly_enable_optinfo_p () const
+  /* Should optinfo instances be created?
+     All creation of optinfos should be guarded by this predicate.
+     Return true if any optinfo destinations are active.  */
+  bool optinfo_enabled_p () const;
+
+  bool optimization_records_enabled_p () const
   {
-    return m_forcibly_enable_optinfo;
+    return m_json_writer != NULL;
   }
+  void set_json_writer (optrecord_json_writer *writer);
+  void finish_any_json_writer ();
 
   void end_any_optinfo ();
 
+  void emit_optinfo (const optinfo *info);
   void emit_item (optinfo_item *item, dump_flags_t dump_kind);
 
   bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
@@ -111,9 +120,6 @@ class dump_context
   optinfo &ensure_pending_optinfo ();
   optinfo &begin_next_optinfo (const dump_location_t &loc);
 
-  /* For use in selftests; if true then optinfo_enabled_p is true.  */
-  bool m_forcibly_enable_optinfo;
-
   /* The current nesting depth of dump scopes, for showing nesting
      via indentation).  */
   unsigned int m_scope_depth;
@@ -121,6 +127,10 @@ class dump_context
   /* The optinfo currently being accumulated since the last dump_*_loc call,
      if any.  */
   optinfo *m_pending;
+
+  /* If -fsave-optimization-record is enabled, the heap-allocated JSON writer
+     instance, otherwise NULL.  */
+  optrecord_json_writer *m_json_writer;
 
   /* For use in selftests: if non-NULL, then items are to be printed
      to this, using the given flags.  */

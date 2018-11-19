@@ -68,12 +68,6 @@ along with GCC; see the file COPYING3.  If not see
 struct opt_pass;
 class optinfo_item;
 
-/* Should optinfo instances be created?
-   All creation of optinfos should be guarded by this predicate.
-   Return true if any optinfo destinations are active.  */
-
-extern bool optinfo_enabled_p ();
-
 /* Return true if any of the active optinfo destinations make use
    of inlining information.
    (if true, then the information is preserved).  */
@@ -130,8 +124,6 @@ class optinfo
   void emit_for_opt_problem () const;
 
  private:
-  void emit () const;
-
   /* Pre-canned ways of manipulating the optinfo, for use by friend class
      dump_context.  */
   void handle_dump_file_kind (dump_flags_t);
