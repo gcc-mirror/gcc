@@ -5254,6 +5254,13 @@ free_lang_data_in_one_sizepos (tree *expr_p)
   tree expr = *expr_p;
   if (CONTAINS_PLACEHOLDER_P (expr))
     *expr_p = build0 (PLACEHOLDER_EXPR, TREE_TYPE (expr));
+  /* ???  We have to reset all non-GIMPLE sizepos because those eventually
+     refer to trees we cannot stream.  See for example PR87229 which
+     shows an example with non-gimplified abstract origins in C++.
+     Note this should only happen for abstract copies so setting sizes
+     to NULL is OK (but we cannot easily assert this).  */
+  else if (expr && !is_gimple_val (expr))
+    *expr_p = NULL_TREE;
 }
 
 

@@ -1,3 +1,9 @@
+2018-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR lto/87229
+	* tree.c (free_lang_data_in_one_sizepos): Free non-gimple-val
+	sizepos values.
+
 2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* compare-elim.c (struct comparison): Add not_in_a field.
