@@ -1131,6 +1131,7 @@ dump_context::begin_scope (const char *name, const dump_location_t &loc)
       optinfo &info = begin_next_optinfo (loc);
       info.m_kind = OPTINFO_KIND_SCOPE;
       info.add_item (item);
+      end_any_optinfo ();
     }
   else
     delete item;
@@ -2575,6 +2576,20 @@ test_capture_of_dump_calls (const line_table_case &case_)
   }
 }
 
+static void
+test_pr87025 ()
+{
+  dump_user_location_t loc
+    = dump_user_location_t::from_location_t (UNKNOWN_LOCATION);
+
+  temp_dump_context tmp (true, true,
+			 MSG_ALL_KINDS | MSG_PRIORITY_USER_FACING);
+  {
+    AUTO_DUMP_SCOPE ("outer scope", loc);
+    dump_printf (MSG_NOTE, "msg1\n");
+  }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2582,6 +2597,7 @@ dumpfile_c_tests ()
 {
   test_impl_location ();
   for_each_line_table_case (test_capture_of_dump_calls);
+  test_pr87025 ();
 }
 
 } // namespace selftest

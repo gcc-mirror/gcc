@@ -1,6 +1,18 @@
 2018-11-19  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/87025
+	* dumpfile.c (dump_context::begin_scope): Call end_any_optinfo
+	immediately after creating the scope optinfo.
+	(selftest::test_pr87025): New function.
+	(selftest::dumpfile_c_tests): Call it.
+	* optinfo-emit-json.cc (optrecord_json_writer::pop_scope): Assert
+	that we're not popping the top-level records array.
+	* optinfo.cc (optinfo::handle_dump_file_kind): Assert that we're
+	not changing the kind of a "scope" optinfo.
+
+2018-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87025
 	* dump-context.h: Include "optinfo.h".
 	(class optrecord_json_writer): New forward decl.
 	(dump_context::forcibly_enable_optinfo_p): Delete.
