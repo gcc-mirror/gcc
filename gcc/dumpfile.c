@@ -515,6 +515,28 @@ dump_context::~dump_context ()
   delete m_pending;
 }
 
+void
+dump_context::set_json_writer (optrecord_json_writer *writer)
+{
+  delete m_json_writer;
+  m_json_writer = writer;
+}
+
+/* Perform cleanup activity for -fsave-optimization-record.
+   Currently, the file is written out here in one go, before cleaning
+   up.  */
+
+void
+dump_context::finish_any_json_writer ()
+{
+  if (!m_json_writer)
+    return;
+
+  m_json_writer->write ();
+  delete m_json_writer;
+  m_json_writer = NULL;
+}
+
 /* Update the "dumps_are_enabled" global; to be called whenever dump_file
    or alt_dump_file change, or when changing dump_context in selftests.  */
 
@@ -1121,7 +1143,19 @@ dump_context::end_scope ()
 {
   end_any_optinfo ();
   m_scope_depth--;
-  optimization_records_maybe_pop_dump_scope ();
+
+  if (m_json_writer)
+    m_json_writer->pop_scope ();
+}
+
+/* Should optinfo instances be created?
+   All creation of optinfos should be guarded by this predicate.
+   Return true if any optinfo destinations are active.  */
+
+bool
+dump_context::optinfo_enabled_p () const
+{
+  return (optimization_records_enabled_p ());
 }
 
 /* Return the optinfo currently being accumulated, creating one if
@@ -1154,9 +1188,21 @@ void
 dump_context::end_any_optinfo ()
 {
   if (m_pending)
-    m_pending->emit ();
+    emit_optinfo (m_pending);
   delete m_pending;
   m_pending = NULL;
+}
+
+/* Emit the optinfo to all of the "non-immediate" destinations
+   (emission to "immediate" destinations is done by
+   dump_context::emit_item).  */
+
+void
+dump_context::emit_optinfo (const optinfo *info)
+{
+  /* -fsave-optimization-record.  */
+  if (m_json_writer)
+    m_json_writer->add_record (info);
 }
 
 /* Emit ITEM to all item destinations (those that don't require
@@ -2004,7 +2050,8 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
   m_saved (&dump_context ().get ())
 {
   dump_context::s_current = &m_context;
-  m_context.m_forcibly_enable_optinfo = forcibly_enable_optinfo;
+  if (forcibly_enable_optinfo)
+    m_context.set_json_writer (new optrecord_json_writer ());
   /* Conditionally enable the test dump, so that we can verify both the
      dump_enabled_p and the !dump_enabled_p cases in selftests.  */
   if (forcibly_enable_dumping)
@@ -2020,6 +2067,8 @@ temp_dump_context::temp_dump_context (bool forcibly_enable_optinfo,
 
 temp_dump_context::~temp_dump_context ()
 {
+  m_context.set_json_writer (NULL);
+
   dump_context::s_current = m_saved;
 
   dump_context::get ().refresh_dumps_are_enabled ();

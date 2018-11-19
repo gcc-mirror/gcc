@@ -1,3 +1,64 @@
+2018-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/87025
+	* dump-context.h: Include "optinfo.h".
+	(class optrecord_json_writer): New forward decl.
+	(dump_context::forcibly_enable_optinfo_p): Delete.
+	(dump_context::optinfo_enabled_p): New member function.
+	(dump_context::optimization_records_enabled_p): New member
+	function.
+	(dump_context::set_json_writer): New member function.
+	(dump_context::emit_optinfo): New member function.
+	(dump_context::m_forcibly_enable_optinfo): Delete.
+	(dump_context::m_json_writer): New member data.
+	* dumpfile.c (dump_context::set_json_writer): New member function.
+	(dump_context::finish_any_json_writer): New member function.
+	(dump_context::end_scope): Replace call to
+	optimization_records_maybe_pop_dump_scope with call to
+	m_json_writer->pop_scope.
+	(dump_context::optinfo_enabled_p): New member function.
+	(dump_context::end_any_optinfo): Replace call to optinfo::emit with call
+	to dump_context::emit_optinfo.
+	(dump_context::emit_optinfo): New member function.
+	(temp_dump_context::temp_dump_context): Replace
+	m_forcibly_enable_optinfo with call to set_json_writer.
+	(temp_dump_context::~temp_dump_context): Clean up any json writer.
+	* optinfo-emit-json.cc (class optrecord_json_writer): Move to
+	optinfo-emit-json.h
+	(the_json_writer): Delete.
+	(optimization_records_start): Delete.
+	(optimization_records_finish): Delete.
+	(optimization_records_enabled_p): Delete, in favor of
+	dump_context::optimization_records_enabled_p.
+	(optimization_records_maybe_record_optinfo): Delete.
+	(optimization_records_maybe_pop_dump_scope): Delete.
+	* optinfo-emit-json.h: Include "json.h".  Delete forward
+	decl of opt_pass.
+	(optimization_records_start): Delete.
+	(optimization_records_finish): Delete.
+	(optimization_records_enabled_p): Delete.
+	(optimization_records_maybe_record_optinfo): Delete.
+	(optimization_records_maybe_pop_dump_scope): Delete.
+	(class optrecord_json_writer): Move here from
+	optinfo-emit-json.cc.
+	* optinfo.cc (optinfo::emit_for_opt_problem): Replace call
+	to optinfo::emit with call to dump_context::emit_optinfo.
+	(optinfo::emit): Delete, in favor of dump_context::emit_optinfo.
+	(optinfo_enabled_p): Delete, in favor of
+	dump_context::optinfo_enabled_p.
+	(optinfo_wants_inlining_info_p): Update for conversion o
+	optimization_records_enabled_p to a member function of
+	dump_context.
+	* optinfo.h (optinfo_enabled_p): Delete, in favor of
+	dump_context::optinfo_enabled_p.
+	(optinfo::emit): Delete, in favor of dump_context::emit_optinfo.
+	* toplev.c: Include "dump-context.h".
+	(compile_file): Replace call to optimization_records_finish with
+	dump_context::finish_any_json_writer.
+	(do_compile): Replace call to optimization_records_start with
+	conditionally creating a optrecord_json_writer for the
+	dump_context.
+
 2018-11-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88071
