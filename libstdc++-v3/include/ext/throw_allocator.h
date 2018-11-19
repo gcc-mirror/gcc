@@ -87,6 +87,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   struct annotate_base
   {
+  private:
+    typedef std::pair<size_t, size_t>		data_type;
+    typedef std::map<void*, data_type>		map_alloc_type;
+    typedef map_alloc_type::value_type		entry_type;
+    typedef map_alloc_type::const_iterator	const_iterator;
+    typedef map_alloc_type::const_reference	const_reference;
+#if __cplusplus >= 201103L
+    typedef std::map<void*, size_t>		map_construct_type;
+#endif
+
+  public:
     annotate_base()
     {
       label();
@@ -104,31 +115,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     void
     insert(void* p, size_t size)
     {
+      entry_type entry = make_entry(p, size);
       if (!p)
 	{
 	  std::string error("annotate_base::insert null insert!\n");
-	  log_to_string(error, make_entry(p, size));
+	  log_to_string(error, entry);
 	  std::__throw_logic_error(error.c_str());
 	}
 
-      const_iterator found = map_alloc().find(p);
-      if (found != map_alloc().end())
+      std::pair<map_alloc_type::iterator, bool> inserted
+	= map_alloc().insert(entry);
+      if (!inserted.second)
 	{
 	  std::string error("annotate_base::insert double insert!\n");
-	  log_to_string(error, make_entry(p, size));
-	  log_to_string(error, *found);
+	  log_to_string(error, entry);
+	  log_to_string(error, *inserted.first);
 	  std::__throw_logic_error(error.c_str());
 	}
-
-      map_alloc().insert(make_entry(p, size));
     }
 
     void
     erase(void* p, size_t size)
-    {
-      check_allocated(p, size);
-      map_alloc().erase(p);
-    }
+    { map_alloc().erase(check_allocated(p, size)); }
 
 #if __cplusplus >= 201103L
     void
@@ -140,31 +148,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  std::__throw_logic_error(error.c_str());
 	}
 
-      auto found = map_construct().find(p);
-      if (found != map_construct().end())
+      auto inserted = map_construct().insert(std::make_pair(p, get_label()));
+      if (!inserted.second)
 	{
 	  std::string error("annotate_base::insert_construct double insert!\n");
 	  log_to_string(error, std::make_pair(p, get_label()));
-	  log_to_string(error, *found);
+	  log_to_string(error, *inserted.first);
 	  std::__throw_logic_error(error.c_str());
 	}
-
-      map_construct().insert(std::make_pair(p, get_label()));
     }
 
     void
     erase_construct(void* p)
-    {
-      check_constructed(p);
-      map_construct().erase(p);
-    }
+    { map_construct().erase(check_constructed(p)); }
 #endif
 
     // See if a particular address and allocation size has been saved.
-    inline void
+    inline map_alloc_type::iterator
     check_allocated(void* p, size_t size)
     {
-      const_iterator found = map_alloc().find(p);
+      map_alloc_type::iterator found = map_alloc().find(p);
       if (found == map_alloc().end())
 	{
 	  std::string error("annotate_base::check_allocated by value "
@@ -181,6 +184,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  log_to_string(error, *found);
 	  std::__throw_logic_error(error.c_str());
 	}
+
+      return found;
     }
 
     // See if a given label has been allocated.
@@ -256,7 +261,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cplusplus >= 201103L
-    inline void
+    inline map_construct_type::iterator
     check_constructed(void* p)
     {
       auto found = map_construct().find(p);
@@ -267,6 +272,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  log_to_string(error, std::make_pair(p, get_label()));
 	  std::__throw_logic_error(error.c_str());
 	}
+
+      return found;
     }
 
     inline void
@@ -292,15 +299,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
   private:
-    typedef std::pair<size_t, size_t>		data_type;
-    typedef std::map<void*, data_type> 		map_alloc_type;
-    typedef map_alloc_type::value_type 		entry_type;
-    typedef map_alloc_type::const_iterator 		const_iterator;
-    typedef map_alloc_type::const_reference 		const_reference;
-#if __cplusplus >= 201103L
-    typedef std::map<void*, size_t>		map_construct_type;
-#endif
-
     friend std::ostream&
     operator<<(std::ostream&, const annotate_base&);
 

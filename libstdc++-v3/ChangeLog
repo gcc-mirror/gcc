@@ -1,3 +1,16 @@
+2018-11-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/throw_allocator.h
+	(annotate_base::insert(void*, size_t)): Use insert result to check for
+	double insert attempt.
+	(annotate_base::insert_construct(void*)): Likewise.
+	(annotate_base::check_allocated(void*, size_t)): Return found iterator.
+	(annotate_base::erase(void*, size_t)): Use latter method returned
+	iterator.
+	(annotate_base::check_constructed(void*, size_t)): Return found iterator.
+	(annotate_base::erase_construct(void*)): Use latter method returned
+	iterator.
+
 2018-11-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	PR libstdc++/87855
@@ -32,7 +45,7 @@
 	of the asymptotic series (nu is the Bessel order).
 	* testsuite/tr1/5_numerical_facilities/special_functions/
 	09_cyl_bessel_j/check_value.cc: Add tests at nu=100, 1000<=x<=2000.
-	* testsuite/tr1/5_numerical_facilities/special_functions/	
+	* testsuite/tr1/5_numerical_facilities/special_functions/
 	11_cyl_neumann/check_value.cc: Ditto.
 	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Ditto.
 	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Ditto.
