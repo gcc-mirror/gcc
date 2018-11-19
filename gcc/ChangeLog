@@ -1,3 +1,8 @@
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88045
+	* coverage.c (coverage_begin_function): Add assert.
+
 2018-11-18  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR other/40498

@@ -1,3 +1,8 @@
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88045
+	* g++.dg/gcov/pr88045.C: New test.
+
 2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88073
