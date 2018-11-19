@@ -1720,7 +1720,7 @@ vect_finish_replace_stmt (stmt_vec_info stmt_info, gimple *vec_stmt)
   gcc_assert (gimple_get_lhs (stmt_info->stmt) == gimple_get_lhs (vec_stmt));
 
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt_info->stmt);
-  gsi_replace (&gsi, vec_stmt, false);
+  gsi_replace (&gsi, vec_stmt, true);
 
   return vect_finish_stmt_generation_1 (stmt_info, vec_stmt);
 }
