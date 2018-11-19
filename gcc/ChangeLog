@@ -1,3 +1,9 @@
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR gcov-profile/88045
+	* coverage.c (coverage_begin_function): One can't relly on the
+	fact that function ends on the same line it starts or later.
+
 2018-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
