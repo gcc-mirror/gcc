@@ -233,10 +233,12 @@ foreach src [lsort [find $srcdir/$subdir {*_a.[CH}]] {
 	    set module_bmis {}
 	    set nshort [file tail [file dirname $test]]/[file tail $test]
 	    verbose "Testing $nshort" 1
-	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
 	    if { [file extension $test] == ".C" } {
 		lappend asm_list [file rootname [file tail $test]].s
+	    } else {
+		set test [file dirname $test]/./[file tail $test]
 	    }
+	    dg-test -keep-output $test "" $DEFAULT_MODFLAGS
 	    set testcase [string range $test [string length "$srcdir/"] end]
 	    lappend mod_files [module_bmi_p $testcase $module_bmis]
 	}

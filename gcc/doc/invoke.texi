@@ -2612,13 +2612,13 @@ Disable lazy module importing and module mapper creation.
 @item -fmodule-legacy
 @itemx -fmodule-legacy=@r{[}@var{name}@r{][}?@var{macro}@r{[}=@var{value}@r{]]}
 @opindex fmodule-legacy
-Compile as a legacy header module.  The @var{name} may use
+Compile as a legacy module.  The @var{name} may use
 @samp{"..."} or @samp{<...>} to indicate a user or system header, and
 defaults to user.  If a name is omitted, the source filename is used.
 The source filename may be partitioned by a @samp{/./} component, in
 which case the fragment following is used as the name.  A @samp{?}
 character separates the legacy name from a controlling macro.  If this
-is not specified, the first macro defined in the legacy header is used
+is not specified, the first macro defined in the legacy module is used
 to determine uniqueness.  The format of the macro is the same as the
 @option{-D} option, except that an exiting definition will be chosen
 if one is available.
@@ -30379,7 +30379,7 @@ bulk of the loading to the point at which name-lookup inspects a
 particular namespace-scope name.
 
 The @option{-fmodule-legacy} family of options enable compilation of a
-header file as a legacy header module.  Using this option implies
+header as a legacy module.  Using this option implies
 @option{-fmodules-ts}.
 
 The @option{-fmodule-only} disables generation of the associated
@@ -30483,11 +30483,11 @@ the request is not fulfilable, the response is @samp{ERROR
 terminate.
 
 @item INCLUDE @var{header}
-A @code{#include} directive for @var{header} is about to be processed,
-in legacy header mode.  The response informs the compiler how to treat
-the inclusion.  A response of @samp{INCLUDE} causes textual inclusion.
-A response of @samp{IMPORT [@var{module}]} causes importation.  If the
-import response includes a module name, that will be the imported
+A @code{#include} directive for @var{header} is about to be processed.
+The response informs the compiler how to treat the inclusion.  A
+response of @samp{INCLUDE} causes textual inclusion.  A response of
+@samp{IMPORT [@var{module}]} causes importation as a legacy unit.  If
+the import response includes a module name, that will be the imported
 module.  Otherwise the import shall be @var{header}.  A subsequent
 @samp{IMPORT} query will be forthcoming.
 
@@ -30520,7 +30520,7 @@ Pathname of a BMI file.
 The source path of the file containing the import or include.
 
 @item @var{module}
-A module name.  Legacy header module names are quoted with
+A module name.  Legacy module names are quoted with
 @samp{'...'} or @samp{<...>}
 
 @item @var{msg}
@@ -30555,8 +30555,8 @@ system.
 
 The default mapper generates BMI files in the current directory,
 mapping @samp{.} & @samp{:} to @samp{-} & @samp{+} respectively and
-appending a @samp{.nms} suffix.  Legacy header modules additionally
-map @samp{/} to @samp{=} and insert a @samp{.u} or @samp{.s} just
-before the final suffix.
+appending a @samp{.nms} suffix.  Legacy modules additionally map
+@samp{/} to @samp{=} and insert a @samp{.u} or @samp{.s} just before
+the final suffix.
 
 It is expected that build systems will provide their own mappers.

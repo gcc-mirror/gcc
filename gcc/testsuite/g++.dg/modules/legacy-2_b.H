@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=legacy-2_b.H -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-2.map" }
+// { dg-additional-options "-fmodule-legacy -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-2.map" }
 // { dg-module-bmi {"legacy-2_b.H"} }
 
 #define frob FROB

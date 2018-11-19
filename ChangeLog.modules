@@ -1,5 +1,11 @@
 2018-11-19  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* module.cc (handle_module_option): Handle OPT_fmodule_legacy.
+	gcc/testsuite/
+	* g++.dg/modules/modules.exp: Insert /./ in legacy names.
+	* g++.dg/modules/*.H: Adjust as necessary.
+
 	Merge trunk r266271.
 
 2018-11-15  Nathan Sidwell  <nathan@acm.org>

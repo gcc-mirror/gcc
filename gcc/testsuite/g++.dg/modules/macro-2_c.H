@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodule-legacy=macro-2_c.H -fdump-lang-module" }
+// { dg-additional-options "-fmodule-legacy -fdump-lang-module" }
 // { dg-module-bmi {"macro-2_c.H"} }
 
 #ifndef MACRO_2c_H

@@ -1,5 +1,5 @@
 // { dg-do preprocess }
-// { dg-additional-options "-fmodule-legacy=legacy-3_b.H -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-3.map" }
+// { dg-additional-options "-fmodule-legacy -fmodule-mapper=|cxx-mapper\\ -f\\ $srcdir/g++.dg/modules/legacy-3.map" }
 
 #define frob FROB
 

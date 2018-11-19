@@ -12719,9 +12719,11 @@ handle_module_option (unsigned code, const char *str, int)
 	    else
 	      module_legacy_name = str;
 	  }
-
-	flag_modules = -1;
       }
+      /* FALLTHROUGH  */
+
+    case OPT_fmodule_legacy:
+      flag_modules = -1;
       return true;
 
     default:
