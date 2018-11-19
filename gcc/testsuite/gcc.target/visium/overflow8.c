@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fno-if-conversion" } */
+/* { dg-options "-O2" } */
 
 #include <stdbool.h>
 
@@ -36,4 +36,3 @@ bool my_neg_overflow (signed char a, signed char *res)
 /* { dg-final { scan-assembler-times "add.b" 2 } } */
 /* { dg-final { scan-assembler-times "sub.b" 4 } } */
 /* { dg-final { scan-assembler-not "cmp.b" } } */
-/* { dg-final { scan-assembler-not "mov.b" } } */

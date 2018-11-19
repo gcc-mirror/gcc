@@ -1,3 +1,15 @@
+2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* compare-elim.c (struct comparison): Add not_in_a field.
+	(is_not): New static function.
+	(strip_not): Likewise.
+	(conforming_compare): Handle a NOT in the first operand.
+	(can_eliminate_compare): Likewise.
+	(find_comparison_dom_walker::before_dom_children): Likewise.
+	(try_eliminate_compare): Likewise.
+	* config/visium/visium.md (negsi2_insn_set_carry): Turn into...
+	(neg<mode>2_insn_set_carry): ...this and add missing NEG operation.
+
 2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/extend.texi (Common Type Attributes): Fix typos.

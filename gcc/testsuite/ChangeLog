@@ -1,3 +1,10 @@
+2018-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/visium/overflow8.c: Remove -fno-if-conversion and
+	unrelated final test.
+	* gcc.target/visium/overflow16: Likewise.
+	* gcc.target/visium/overflow32.c: Likewise.
+
 2018-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/template/crash91.C: Check location too.
