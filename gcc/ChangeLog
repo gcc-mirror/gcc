@@ -1,3 +1,10 @@
+2018-11-19  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR driver/50250
+	* doc/invoke.texi (Link Options): Mention shared libraries
+	in documentation for the -l option.  Simplify discussion and
+	point to the system linker documentation for details.
+
 2018-11-19  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR rtl-optimization/88033
