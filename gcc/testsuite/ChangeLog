@@ -19,6 +19,12 @@
 
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
+	PR lto/88077
+	* gcc.dg/lto/pr88077_0.c: New test.
+	* gcc.dg/lto/pr88077_1.c: New test.
+
+2018-11-19  Martin Liska  <mliska@suse.cz>
+
 	* g++.dg/gcov/pr84548.C: Remove remove-gcda.
 	* g++.dg/gcov/ternary.C: Likewise.
 	* lib/gcov.exp: Support pattern of following form:
