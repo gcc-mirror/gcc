@@ -3015,7 +3015,10 @@ semantically equivalent function.
 @item no_instrument_function
 @cindex @code{no_instrument_function} function attribute
 @opindex finstrument-functions
-If @option{-finstrument-functions} is given, profiling function calls are
+@opindex p
+@opindex pg
+If any of @option{-finstrument-functions}, @option{-p}, or @option{-pg} are 
+given, profiling function calls are
 generated at entry and exit of most user-compiled functions.
 Functions with this attribute are not so instrumented.
 
