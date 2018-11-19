@@ -804,7 +804,6 @@ grokfield (const cp_declarator *declarator,
   tree value;
   const char *asmspec = 0;
   int flags;
-  tree name;
 
   if (init
       && TREE_CODE (init) == TREE_LIST
@@ -829,21 +828,12 @@ grokfield (const cp_declarator *declarator,
   if (value == void_type_node)
     return value;
 
-
-  name = DECL_NAME (value);
-
-  if (name != NULL_TREE)
+  if (DECL_NAME (value)
+      && TREE_CODE (DECL_NAME (value)) == TEMPLATE_ID_EXPR)
     {
-      if (TREE_CODE (name) == TEMPLATE_ID_EXPR)
-	{
-	  error ("explicit template argument list not allowed");
-	  return error_mark_node;
-	}
-
-      if (IDENTIFIER_POINTER (name)[0] == '_'
-	  && id_equal (name, "_vptr"))
-	error ("member %qD conflicts with virtual function table field name",
-	       value);
+      error_at (declarator->id_loc,
+		"explicit template argument list not allowed");
+      return error_mark_node;
     }
 
   /* Stash away type declarations.  */

@@ -1,3 +1,7 @@
+2018-11-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/template/crash91.C: Check location too.
+
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88045
