@@ -2792,9 +2792,10 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      args.quick_push (arg);
 	    }
 	  gcall *call = gimple_build_call_vec (fn, args);
+	  gimple_call_set_fntype (call, currop->type);
 	  if (sc)
 	    gimple_call_set_chain (call, sc);
-	  tree forcedname = make_ssa_name (currop->type);
+	  tree forcedname = make_ssa_name (TREE_TYPE (currop->type));
 	  gimple_call_set_lhs (call, forcedname);
 	  /* There's no CCP pass after PRE which would re-compute alignment
 	     information so make sure we re-materialize this here.  */

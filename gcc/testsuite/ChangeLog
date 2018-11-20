@@ -1,3 +1,8 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88087
+	* gcc.dg/tree-ssa/pr88087.c: New testcase.
+
 2018-11-19  Paul Koning  <ni1d@arrl.net>
 
 	* gcc.c-torture/execute/align-3.c: Skip if pdp11.

@@ -1206,7 +1206,7 @@ copy_reference_ops_from_call (gcall *call,
 
   /* Copy the type, opcode, function, static chain and EH region, if any.  */
   memset (&temp, 0, sizeof (temp));
-  temp.type = gimple_call_return_type (call);
+  temp.type = gimple_call_fntype (call);
   temp.opcode = CALL_EXPR;
   temp.op0 = gimple_call_fn (call);
   temp.op1 = gimple_call_chain (call);

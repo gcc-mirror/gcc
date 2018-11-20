@@ -1,5 +1,13 @@
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88087
+	* tree-ssa-pre.c (create_expression_by_pieces): Re-materialize
+	call fntype.
+	* tree-ssa-sccvn.c (copy_reference_ops_from_call): Remember
+	call fntype.
+
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/88089
 	* tree-data-ref.c (lambda_matrix_right_hermite): Use abs_hwi.
 
