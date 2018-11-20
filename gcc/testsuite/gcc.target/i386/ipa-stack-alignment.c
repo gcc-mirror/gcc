@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fno-ipa-stack-alignment -O" } */
+/* { dg-options "-fno-ipa-stack-alignment -O -fomit-frame-pointer" } */
 
 typedef struct {
   long a;

@@ -1,3 +1,9 @@
+2018-11-20  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/88093
+	* gcc.target/i386/ipa-stack-alignment.c: Add
+	-fomit-frame-pointer.
+
 2018-11-20  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/88083
