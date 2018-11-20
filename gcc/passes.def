@@ -106,6 +106,7 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_local_fn_summary);
   POP_INSERT_PASSES ()
 
+  NEXT_PASS (pass_ipa_remove_symbols);
   NEXT_PASS (pass_ipa_oacc);
   PUSH_INSERT_PASSES_WITHIN (pass_ipa_oacc)
       NEXT_PASS (pass_ipa_pta);

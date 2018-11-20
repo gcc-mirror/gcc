@@ -101,12 +101,32 @@ enqueue_node (symtab_node *node, symtab_node **first,
   *first = node;
 }
 
+/* Return true if NODE may get inlined later.
+   This is used to keep DECL_EXTERNAL function bodies around long enough
+   so inliner can proces them.  */
+
+static bool
+possible_inline_candidate_p (symtab_node *node)
+{
+  if (symtab->state >= IPA_SSA_AFTER_INLINING)
+    return false;
+  cgraph_node *cnode = dyn_cast <cgraph_node *> (node);
+  if (!cnode)
+    return false;
+  if (DECL_UNINLINABLE (cnode->decl))
+    return false;
+  if (opt_for_fn (cnode->decl, optimize))
+    return true;
+  if (symtab->state >= IPA_SSA)
+    return false;
+  return lookup_attribute ("always_inline", DECL_ATTRIBUTES (node->decl));
+}
+
 /* Process references.  */
 
 static void
 process_references (symtab_node *snode,
 		    symtab_node **first,
-		    bool before_inlining_p,
 		    hash_set<symtab_node *> *reachable)
 {
   int i;
@@ -118,14 +138,7 @@ process_references (symtab_node *snode,
 
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
-	      || (((before_inlining_p
-		    && (TREE_CODE (node->decl) != FUNCTION_DECL
-			|| (TREE_CODE (node->decl) == FUNCTION_DECL
-			    && opt_for_fn (body->decl, optimize))
-		        || (symtab->state < IPA_SSA
-		            && lookup_attribute
-				 ("always_inline",
-			          DECL_ATTRIBUTES (body->decl))))))
+	      || (possible_inline_candidate_p (node)
 		  /* We use variable constructors during late compilation for
 		     constant folding.  Keep references alive so partitioning
 		     knows about potential references.  */
@@ -140,7 +153,7 @@ process_references (symtab_node *snode,
 	     body.  */
 	  if (DECL_EXTERNAL (node->decl)
 	      && node->alias
-	      && before_inlining_p)
+	      && symtab->state < IPA_SSA_AFTER_INLINING)
 	    reachable->add (body);
 	  reachable->add (node);
 	}
@@ -160,8 +173,7 @@ static void
 walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 			       struct cgraph_edge *edge,
 			       symtab_node **first,
-			       hash_set<symtab_node *> *reachable,
-			       bool before_inlining_p)
+			       hash_set<symtab_node *> *reachable)
 {
   unsigned int i;
   void *cache_token;
@@ -190,15 +202,14 @@ walk_polymorphic_call_targets (hash_set<void *> *reachable_call_targets,
 	  /* Prior inlining, keep alive bodies of possible targets for
 	     devirtualization.  */
 	  if (n->definition
-	      && (before_inlining_p
-		  && opt_for_fn (body->decl, optimize)
+	      && (possible_inline_candidate_p (body)
 		  && opt_for_fn (body->decl, flag_devirtualize)))
 	     {
 		/* Be sure that we will not optimize out alias target
 		   body.  */
 		if (DECL_EXTERNAL (n->decl)
 		    && n->alias
-		    && before_inlining_p)
+		    && symtab->state < IPA_SSA_AFTER_INLINING)
 		  reachable->add (body);
 	       reachable->add (n);
 	     }
@@ -303,8 +314,6 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   hash_set<symtab_node *> reachable;
   hash_set<tree> body_needed_for_clonning;
   hash_set<void *> reachable_call_targets;
-  bool before_inlining_p = symtab->state < (!optimize && !in_lto_p ? IPA_SSA
-					    : IPA_SSA_AFTER_INLINING);
 
   timevar_push (TV_IPA_UNREACHABLE);
   build_type_inheritance_graph ();
@@ -396,7 +405,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		  enqueue_node (next, &first, &reachable);
 	    }
 	  /* Mark references as reachable.  */
-	  process_references (node, &first, before_inlining_p, &reachable);
+	  process_references (node, &first, &reachable);
 	}
 
       if (cgraph_node *cnode = dyn_cast <cgraph_node *> (node))
@@ -416,8 +425,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		      next = e->next_callee;
 		      if (e->indirect_info->polymorphic)
 			walk_polymorphic_call_targets (&reachable_call_targets,
-						       e, &first, &reachable,
-						       before_inlining_p);
+						       e, &first, &reachable);
 		    }
 		}
 	      for (e = cnode->callees; e; e = e->next_callee)
@@ -428,18 +436,13 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		      && (!e->inline_failed
 			  || !DECL_EXTERNAL (e->callee->decl)
 			  || e->callee->alias
-			  || (before_inlining_p
-			      && (opt_for_fn (body->decl, optimize)
-		                  || (symtab->state < IPA_SSA
-		                      && lookup_attribute
-				          ("always_inline",
-				           DECL_ATTRIBUTES (body->decl)))))))
+			  || possible_inline_candidate_p (e->callee)))
 		    {
 		      /* Be sure that we will not optimize out alias target
 			 body.  */
 		      if (DECL_EXTERNAL (e->callee->decl)
 			  && e->callee->alias
-			  && before_inlining_p)
+			  && symtab->state < IPA_SSA_AFTER_INLINING)
 			reachable.add (body);
 		      reachable.add (e->callee);
 		    }
@@ -654,7 +657,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		   of possible later devirtualization.  Do not mark them as
 		   local too early so we won't optimize them out before
 		   we are done with polymorphic call analysis.  */
-		&& (!before_inlining_p
+		&& (symtab->state >= IPA_SSA_AFTER_INLINING
 		    || !node->call_for_symbol_and_aliases
 		       (is_indirect_call_target_p, NULL, true)))
 	      {

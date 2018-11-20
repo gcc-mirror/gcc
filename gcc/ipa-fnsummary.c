@@ -3563,10 +3563,7 @@ public:
   virtual unsigned int execute (function *)
     {
       ipa_free_fn_summary ();
-      /* Early optimizations may make function unreachable.  We can not
-	 remove unreachable functions as part of the early opts pass because
-	 TODOs are run before subpasses.  Do it here.  */
-      return small_p ? TODO_remove_functions | TODO_dump_symtab : 0;
+      return 0;
     }
 
 private:
