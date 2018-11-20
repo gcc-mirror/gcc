@@ -4339,14 +4339,14 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
      might be nonzero in its own mode, taking into account the fact that, on
      CISC machines, accessing an object in a wider mode generally causes the
      high-order bits to become undefined, so they are not known to be zero.
-     We extend this reasoning to RISC machines for rotate operations since the
-     semantics of the operations in the larger mode is not well defined.  */
+     We extend this reasoning to RISC machines for operations that might not
+     operate on the full registers.  */
   if (GET_MODE (x) != VOIDmode
       && GET_MODE (x) != mode
       && GET_MODE_PRECISION (GET_MODE (x)) <= BITS_PER_WORD
       && GET_MODE_PRECISION (GET_MODE (x)) <= HOST_BITS_PER_WIDE_INT
       && GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (GET_MODE (x))
-      && (!WORD_REGISTER_OPERATIONS || code == ROTATE))
+      && !(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
     {
       nonzero &= cached_nonzero_bits (x, GET_MODE (x),
 				      known_x, known_mode, known_ret);
@@ -4623,13 +4623,16 @@ nonzero_bits1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	  nonzero &= cached_nonzero_bits (SUBREG_REG (x), mode,
 					  known_x, known_mode, known_ret);
 
-          /* On many CISC machines, accessing an object in a wider mode
+          /* On a typical CISC machine, accessing an object in a wider mode
 	     causes the high-order bits to become undefined.  So they are
-	     not known to be zero.  */
+	     not known to be zero.
+
+	     On a typical RISC machine, we only have to worry about the way
+	     loads are extended.  Otherwise, if we get a reload for the inner
+	     part, it may be loaded from the stack, and then we may lose all
+	     the zero bits that existed before the store to the stack.  */
 	  rtx_code extend_op;
 	  if ((!WORD_REGISTER_OPERATIONS
-	       /* If this is a typical RISC machine, we only have to worry
-		  about the way loads are extended.  */
 	       || ((extend_op = load_extend_op (inner_mode)) == SIGN_EXTEND
 		   ? val_signbit_known_set_p (inner_mode, nonzero)
 		   : extend_op != ZERO_EXTEND)
@@ -4872,10 +4875,9 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
     {
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
-	 at all about the high-order bits.  We extend this reasoning to every
-	 machine for rotate operations since the semantics of the operations
-	 in the larger mode is not well defined.  */
-      if (!WORD_REGISTER_OPERATIONS || code == ROTATE || code == ROTATERT)
+	 at all about the high-order bits.  We extend this reasoning to RISC
+	 machines for operations that might not operate on full registers.  */
+      if (!(WORD_REGISTER_OPERATIONS && word_register_operation_p (x)))
 	return 1;
 
       /* Likewise on machines that do, if the mode of the object is smaller
@@ -4965,10 +4967,10 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 
       /* For paradoxical SUBREGs on machines where all register operations
 	 affect the entire register, just look inside.  Note that we are
-	 passing MODE to the recursive call, so the number of sign bit copies
-	 will remain relative to that mode, not the inner mode.  */
+	 passing MODE to the recursive call, so the number of sign bit
+	 copies will remain relative to that mode, not the inner mode.
 
-      /* This works only if loads sign extend.  Otherwise, if we get a
+         This works only if loads sign extend.  Otherwise, if we get a
 	 reload for the inner part, it may be loaded from the stack, and
 	 then we lose all sign bit copies that existed before the store
 	 to the stack.  */

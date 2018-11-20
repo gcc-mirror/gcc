@@ -13117,6 +13117,7 @@ record_dead_and_set_regs_1 (rtx dest, const_rtx setter, void *data)
 	       && subreg_lowpart_p (SET_DEST (setter)))
 	record_value_for_reg (dest, record_dead_insn,
 			      WORD_REGISTER_OPERATIONS
+			      && word_register_operation_p (SET_SRC (setter))
 			      && paradoxical_subreg_p (SET_DEST (setter))
 			      ? SET_SRC (setter)
 			      : gen_lowpart (GET_MODE (dest),
