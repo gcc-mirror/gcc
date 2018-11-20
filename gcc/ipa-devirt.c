@@ -1720,7 +1720,8 @@ add_type_duplicate (odr_type val, tree type)
   else if (!COMPLETE_TYPE_P (val->type) && COMPLETE_TYPE_P (type))
     {
       prevail = true;
-      build_bases = TYPE_BINFO (type);
+      if (TREE_CODE (type) == RECORD_TYPE)
+        build_bases = TYPE_BINFO (type);
     }
   else if (COMPLETE_TYPE_P (val->type) && !COMPLETE_TYPE_P (type))
     ;

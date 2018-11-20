@@ -265,6 +265,8 @@ static void print_type_hash_statistics (void);
 static void print_debug_expr_statistics (void);
 static void print_value_expr_statistics (void);
 
+static tree build_array_type_1 (tree, tree, bool, bool);
+
 tree global_trees[TI_MAX];
 tree integer_types[itk_none];
 
@@ -5109,10 +5111,11 @@ fld_simplified_type_name (tree type)
 
 /* Do same comparsion as check_qualified_type skipping lang part of type
    and be more permissive about type names: we only care that names are
-   same (for diagnostics) and that ODR names are the same.  */
+   same (for diagnostics) and that ODR names are the same.
+   If INNER_TYPE is non-NULL, be sure that TREE_TYPE match it.  */
 
 static bool
-fld_type_variant_equal_p (tree t, tree v)
+fld_type_variant_equal_p (tree t, tree v, tree inner_type)
 {
   if (TYPE_QUALS (t) != TYPE_QUALS (v)
       /* We want to match incomplete variants with complete types.
@@ -5122,21 +5125,24 @@ fld_type_variant_equal_p (tree t, tree v)
 	      || TYPE_USER_ALIGN (t) != TYPE_USER_ALIGN (v)))
       || fld_simplified_type_name (t) != fld_simplified_type_name (v)
       || !attribute_list_equal (TYPE_ATTRIBUTES (t),
-			        TYPE_ATTRIBUTES (v)))
+			        TYPE_ATTRIBUTES (v))
+      || (inner_type && TREE_TYPE (v) != inner_type))
     return false;
- 
+
   return true;
 }
 
-/* Find variant of FIRST that match T and create new one if necessary.  */
+/* Find variant of FIRST that match T and create new one if necessary.
+   Set TREE_TYPE to INNER_TYPE if non-NULL.  */
 
 static tree
-fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
+fld_type_variant (tree first, tree t, struct free_lang_data_d *fld,
+		  tree inner_type = NULL)
 {
   if (first == TYPE_MAIN_VARIANT (t))
     return t;
   for (tree v = first; v; v = TYPE_NEXT_VARIANT (v))
-    if (fld_type_variant_equal_p (t, v))
+    if (fld_type_variant_equal_p (t, v, inner_type))
       return v;
   tree v = build_variant_type_copy (first);
   TYPE_READONLY (v) = TYPE_READONLY (t);
@@ -5154,7 +5160,9 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
       SET_TYPE_ALIGN (v, TYPE_ALIGN (t));
       TYPE_USER_ALIGN (v) = TYPE_USER_ALIGN (t);
     }
-  gcc_checking_assert (fld_type_variant_equal_p (t,v));
+  if (inner_type)
+    TREE_TYPE (v) = inner_type;
+  gcc_checking_assert (fld_type_variant_equal_p (t,v, inner_type));
   add_tree_to_fld_list (v, fld);
   return v;
 }
@@ -5162,6 +5170,41 @@ fld_type_variant (tree first, tree t, struct free_lang_data_d *fld)
 /* Map complete types to incomplete types.  */
 
 static hash_map<tree, tree> *fld_incomplete_types;
+
+/* Map types to simplified types.  */
+
+static hash_map<tree, tree> *fld_simplified_types;
+
+/* Produce variant of T whose TREE_TYPE is T2. If it is main variant,
+   use MAP to prevent duplicates.  */
+
+static tree
+fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
+			struct free_lang_data_d *fld)
+{
+  if (TREE_TYPE (t) == t2)
+    return t;
+
+  if (TYPE_MAIN_VARIANT (t) != t)
+    {
+      return fld_type_variant
+	       (fld_process_array_type (TYPE_MAIN_VARIANT (t),
+					TYPE_MAIN_VARIANT (t2), map, fld),
+		t, fld, t2);
+    }
+
+  bool existed;
+  tree &array
+     = map->get_or_insert (t, &existed);
+  if (!existed)
+    {
+      array = build_array_type_1 (t2, TYPE_DOMAIN (t),
+				  TYPE_TYPELESS_STORAGE (t), false);
+      TYPE_CANONICAL (array) = TYPE_CANONICAL (t);
+      add_tree_to_fld_list (array, fld);
+    }
+  return array;
+}
 
 /* For T being aggregate type try to turn it into a incomplete variant.
    Return T if no simplification is possible.  */
@@ -5190,7 +5233,12 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	}
       return t;
     }
-  if (!RECORD_OR_UNION_TYPE_P (t) || !COMPLETE_TYPE_P (t))
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return fld_process_array_type (t,
+				   fld_incomplete_type_of (TREE_TYPE (t), fld),
+				   fld_incomplete_types, fld);
+  if ((!RECORD_OR_UNION_TYPE_P (t) && TREE_CODE (t) != ENUMERAL_TYPE)
+      || !COMPLETE_TYPE_P (t))
     return t;
   if (TYPE_MAIN_VARIANT (t) == t)
     {
@@ -5202,18 +5250,18 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	{
 	  copy = build_distinct_type_copy (t);
 
-	  /* It is possible type was not seen by free_lang_data yet.  */
+	  /* It is possible that type was not seen by free_lang_data yet.  */
 	  add_tree_to_fld_list (copy, fld);
 	  TYPE_SIZE (copy) = NULL;
-	  SET_TYPE_MODE (copy, VOIDmode);
-	  SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
 	  TYPE_USER_ALIGN (copy) = 0;
 	  TYPE_SIZE_UNIT (copy) = NULL;
 	  TYPE_CANONICAL (copy) = TYPE_CANONICAL (t);
-	  TYPE_TYPELESS_STORAGE (copy) = 0;
 	  TREE_ADDRESSABLE (copy) = 0;
 	  if (AGGREGATE_TYPE_P (t))
 	    {
+	      SET_TYPE_MODE (copy, VOIDmode);
+	      SET_TYPE_ALIGN (copy, BITS_PER_UNIT);
+	      TYPE_TYPELESS_STORAGE (copy) = 0;
 	      TYPE_FIELDS (copy) = NULL;
 	      TYPE_BINFO (copy) = NULL;
 	    }
@@ -5232,8 +5280,13 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 static tree
 fld_simplified_type (tree t, struct free_lang_data_d *fld)
 {
-  if (t && POINTER_TYPE_P (t))
+  if (!t)
+    return t;
+  if (POINTER_TYPE_P (t))
     return fld_incomplete_type_of (t, fld);
+  if (TREE_CODE (t) == ARRAY_TYPE)
+    return fld_process_array_type (t, fld_simplified_type (TREE_TYPE (t), fld),
+				   fld_simplified_types, fld);
   return t;
 }
 
@@ -6070,6 +6123,7 @@ free_lang_data (void)
     return 0;
 
   fld_incomplete_types = new hash_map<tree, tree>;
+  fld_simplified_types = new hash_map<tree, tree>;
 
   /* Provide a dummy TRANSLATION_UNIT_DECL if the FE failed to provide one.  */
   if (vec_safe_is_empty (all_translation_units))
@@ -6126,6 +6180,7 @@ free_lang_data (void)
   rebuild_type_inheritance_graph ();
 
   delete fld_incomplete_types;
+  delete fld_simplified_types;
 
   return 0;
 }

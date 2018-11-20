@@ -1,5 +1,17 @@
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	* ipa-devirt.c (add_type_duplicate): Do not ICE on incomplete enums.
+	* tree.c (build_array_type_1): Forward declare.
+	(fld_type_variant_equal_p): Add INNER_TYPE parameter.
+	(fld_type_variant): Likewise.
+	(fld_simplified_types): New hash.
+	(fld_process_array_type): New function.
+	(fld_incomplete_type_of): Handle array and enumeration types.
+	(fld_simplified_type): Handle simplification of arrays.
+	(free_lang_data): Allocate and free simplified types hash.
+
+2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR lto/87957
 	* ipa-devirt.c (odr_subtypes_equivalent_p): Report ODR violation
 	when sybtype already violates ODR.
