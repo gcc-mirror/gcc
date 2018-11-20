@@ -1,3 +1,8 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88069
+	* gcc.dg/pr88069.c: New testcase.
+
 2018-11-20  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/88093
