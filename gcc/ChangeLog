@@ -1,3 +1,12 @@
+2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/87957
+	* ipa-devirt.c (odr_subtypes_equivalent_p): Report ODR violation
+	when sybtype already violates ODR.
+	(get_odr_type): Do not ICE when insert is false and type duplicate
+	is not registered yet.
+	(register_odr_type): Be sure to register subtypes first.
+
 2018-11-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* config/s390/s390.md ("clztidi2"): Swap the RTX's written to the
@@ -26,7 +35,8 @@
 	(symbol_table::remove_unreachable_nodes): Likewise.
 	* passes.c (pass_data_ipa_remove_symbols): New structure.
 	(pass_ipa_remove_symbols): New pass.
-	(make_pass_ipa_remove_symbols): New functoin.
+	(make_pass_ipa_remove_symbols): New function.
+	* tree-pass.h (make_pass_ipa_remove_symbols): Declare.
 	* passes.def (pass_ipa_remove_symbols): Schedule after early passes.
 
 2018-11-20  Richard Biener  <rguenther@suse.de>
