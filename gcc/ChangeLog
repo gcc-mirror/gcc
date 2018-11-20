@@ -1,3 +1,9 @@
+2018-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88070
+	* mode-switching.c (create_pre_exit): After reload, always split the
+	fallthrough edge to the exit block.
+
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	* ipa-devirt.c (add_type_duplicate): Do not ICE on incomplete enums.

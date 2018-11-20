@@ -1,3 +1,8 @@
+2018-11-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88070
+	* gcc.target/i386/pr88070.c: New test.
+
 2018-11-20  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/flogr-1.c: New test.
