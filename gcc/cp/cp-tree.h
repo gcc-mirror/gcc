@@ -2650,7 +2650,8 @@ struct GTY(()) lang_decl_fn {
   } GTY ((desc ("%1.pending_inline_p"))) u;
 
   /* FIXME: this state will grow and needs to be in a hashtab.
-     In a coroutine, the promise type.  */
+     In a coroutine, the handle and promise types.  */
+  tree coro_handle_type;
   tree promise_type;
 
 };
@@ -4889,6 +4890,10 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* True if NODE is a co-routine FUNCTION_DECL.  */
 #define DECL_COROUTINE_P(NODE) \
   (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coroutine_p)
+
+/* The HANDLE_TYPE associated with this coroutine type.  */
+#define DECL_COROUTINE_HANDLE_TYPE(NODE) \
+  (LANG_DECL_FN_CHECK (DECL_COMMON_CHECK (NODE))->coro_handle_type)
 
 /* The PROMISE_TYPE associated with this coroutine type.  */
 #define DECL_COROUTINE_PROMISE_TYPE(NODE) \

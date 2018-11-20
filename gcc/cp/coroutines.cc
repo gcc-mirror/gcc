@@ -42,13 +42,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "attribs.h"
 #include "gomp-constants.h"
 #include "predict.h"
+#include "tree.h"
+#include "cxx-pretty-print.h"
+
+/* DEBUG remove me.  */
+extern void debug_tree(tree);
+
+static tree find_handle_type (location_t);
+static tree find_promise_type (location_t, tree);
+static tree lookup_promise_member (tree, const char *, location_t, bool);
+static bool coro_promise_type_found_p (tree, location_t);
 
 /* Lookup the coroutine_traits template decl.
-   Instantiate that for the function signature.
-   Look for the promise_type in the instantiated.  */
+   Instantiate that for the function signature.  */
 
 static tree
-find_promise_type (location_t kw)
+find_handle_type (location_t kw)
 {
   tree h_type;
   tree promise_type;
@@ -56,7 +65,6 @@ find_promise_type (location_t kw)
   /* we want std::experimental::coroutine_traits class template decl.  */
   tree exp_name = get_identifier ("experimental");
   tree traits_name = get_identifier ("coroutine_traits");
-  tree promise_name = get_identifier ("promise_type");
   tree functyp = TREE_TYPE (current_function_decl);
   tree arg_node = TYPE_ARG_TYPES (functyp);
   tree targ = make_tree_vec (list_length (arg_node));
@@ -80,19 +88,32 @@ find_promise_type (location_t kw)
       arg_node = TREE_CHAIN (arg_node);
     }
 
-  h_type = lookup_template_class (traits_name, targ,
-				  /* in_decl */ NULL_TREE,
-				  /* context */ exp_ns,
-				  /* entering scope */ false, tf_none);
+  tree handle_type = lookup_template_class (traits_name, targ,
+					    /* in_decl */ NULL_TREE,
+					    /* context */ exp_ns,
+					    /* entering scope */ false,
+					    tf_none);
 
-  if (h_type == error_mark_node)
+  if (handle_type == error_mark_node)
     {
       error_at (kw, "couldn't instantiate coroutine_traits");
       return NULL_TREE;
     }
 
-  promise_type = lookup_member (h_type, promise_name, /* protect */1,
-				/*want_type=*/ true, tf_warning_or_error);
+  return handle_type;
+}
+
+
+/* Look for the promise_type in the instantiated.  */
+
+static tree
+find_promise_type (location_t kw, tree handle_type)
+{
+  tree promise_name = get_identifier ("promise_type");
+
+  tree promise_type = lookup_member (handle_type, promise_name,
+				     /* protect */1, /*want_type=*/ true,
+				     tf_warning_or_error);
   if (promise_type)
     promise_type = TREE_TYPE (promise_type);
 
@@ -110,7 +131,12 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 
   /* If we don't already have a current promise type, try to look it up.  */
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
-    DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (loc);
+    {
+      tree handle_type = find_handle_type (loc);
+      DECL_COROUTINE_HANDLE_TYPE(fndecl) = handle_type;
+      DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (loc,
+							       handle_type);
+    }
 
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
     {
@@ -118,6 +144,25 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
       return false;
     }
   return true;
+}
+
+/* Lookup a Promise member.  */
+
+static tree
+lookup_promise_member (tree fndecl, const char * member_name,
+		       location_t loc, bool musthave)
+{
+  tree pm_name = get_identifier (member_name);
+  tree promise = DECL_COROUTINE_PROMISE_TYPE(fndecl);
+  tree pm_memb = lookup_member (promise, pm_name,
+				/*protect*/1,  /*want_type*/ 0,
+				tf_warning_or_error);
+  if (musthave && (pm_memb == NULL_TREE || pm_memb == error_mark_node))
+    {
+      error_at (loc, "no member named %qs in %qT", member_name, promise);
+      return error_mark_node;
+    }
+  return pm_memb;
 }
 
 /* Here we will check the constraints that are comon to all keywords.  */
@@ -194,12 +239,13 @@ coro_function_valid_p (tree fndecl)
      a keyword that triggered this.  Keywords check promise validity for
      their context and thus the promise type should be known at this point.
   */
-  gcc_assert (DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
+  gcc_assert (DECL_COROUTINE_HANDLE_TYPE(fndecl) != NULL_TREE
+              && DECL_COROUTINE_PROMISE_TYPE(fndecl) != NULL_TREE);
 
   if (current_function_returns_value || current_function_returns_null)
-    /* TODO: file or extract positions of returns (and the first coro
-       keyword so that we can add notes to the diagnostic about where
-       the bad keyword is and what mad eit into a coro.  */
+    /* TODO: record or extract positions of returns (and the first coro
+       keyword) so that we can add notes to the diagnostic about where
+       the bad keyword is and what made the function into a coro.  */
     error_at (f_loc, "return statement not allowed in coroutine;"
                      " did you mean %<co_return%>?" );
 
@@ -258,33 +304,17 @@ co_return_context_valid_p (location_t kw, tree expr)
 
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
-  if (expr == NULL_TREE)
+  if (expr == NULL_TREE || VOID_TYPE_P (expr))
     {
-      /* Need to check for the result_void() promise member.  */
-      tree r_void_name = get_identifier ("return_void");
-      tree r_void_memb = lookup_member (DECL_COROUTINE_PROMISE_TYPE(current_function_decl),
-					r_void_name, /*protect*/1,  /*want_type*/ 0,
-					tf_warning_or_error);
-      if (r_void_memb == NULL_TREE || r_void_memb == error_mark_node)
-	{
-	  error_at (kw, "no member named %<return_void%> in %qT",
-		    DECL_COROUTINE_PROMISE_TYPE(current_function_decl));
-	  return false;
-	}
+      if (lookup_promise_member (current_function_decl, "return_void",
+				 kw, true /*musthave*/) == error_mark_node)
+	return false;
     }
   else
     {
-      /* Need to check for the result_value() promise member.  */
-      tree r_value_name = get_identifier ("return_value");
-      tree r_valu_memb = lookup_member (DECL_COROUTINE_PROMISE_TYPE(current_function_decl),
-					r_value_name, /*protect*/1,  /*want_type*/ 0,
-					tf_warning_or_error);
-      if (r_valu_memb == NULL_TREE || r_valu_memb == error_mark_node)
-	{
-	  error_at (kw, "no member named %<return_value%> in %qT",
-		    DECL_COROUTINE_PROMISE_TYPE(current_function_decl));
-	  return false;
-	}
+      if (lookup_promise_member (current_function_decl, "return_value",
+				 kw, true /*musthave*/) == error_mark_node)
+	return false;
     }
 
   /* Makes no sense for a co-routine really. */
