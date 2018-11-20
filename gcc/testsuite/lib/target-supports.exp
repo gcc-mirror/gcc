@@ -314,6 +314,12 @@ proc check_weak_available { } {
 	return 1
     }
 
+    # pdp11 doesn't support it
+
+    if { [istarget pdp11*-*-*] } {
+	return 0
+    }
+
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
     # other linkers, so we should try it
 
