@@ -1,5 +1,8 @@
 2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88110
+	* g++.dg/cpp2a/constexpr-virtual13.C: New test.
+
 	PR tree-optimization/87895
 	* gcc.dg/gomp/pr87895-1.c: New test.
 	* gcc.dg/gomp/pr87895-2.c: New test.
