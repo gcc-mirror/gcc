@@ -1450,7 +1450,12 @@ record_store (rtx body, bb_info_t bb_info)
 	      && offset >= s_info->begin
 	      && offset + width <= s_info->end
 	      && all_positions_needed_p (s_info, offset - s_info->begin,
-					 width))
+					 width)
+	      /* We can only remove the later store if the earlier aliases
+		 at least all accesses the later one.  */
+	      && (MEM_ALIAS_SET (mem) == MEM_ALIAS_SET (s_info->mem)
+		  || alias_set_subset_of (MEM_ALIAS_SET (mem),
+					  MEM_ALIAS_SET (s_info->mem))))
 	    {
 	      if (GET_MODE (mem) == BLKmode)
 		{
