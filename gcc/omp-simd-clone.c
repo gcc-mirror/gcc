@@ -994,6 +994,8 @@ ipa_simd_modify_function_body (struct cgraph_node *node,
 	  if (greturn *return_stmt = dyn_cast <greturn *> (stmt))
 	    {
 	      tree retval = gimple_return_retval (return_stmt);
+	      edge e = find_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun));
+	      e->flags |= EDGE_FALLTHRU;
 	      if (!retval)
 		{
 		  gsi_remove (&gsi, true);
@@ -1150,14 +1152,9 @@ simd_clone_adjust (struct cgraph_node *node)
       incr_bb = create_empty_bb (orig_exit);
       incr_bb->count = profile_count::zero ();
       add_bb_to_loop (incr_bb, body_bb->loop_father);
-      /* The succ of orig_exit was EXIT_BLOCK_PTR_FOR_FN (cfun), with an empty
-	 flag.  Set it now to be a FALLTHRU_EDGE.  */
-      gcc_assert (EDGE_COUNT (orig_exit->succs) == 1);
-      EDGE_SUCC (orig_exit, 0)->flags |= EDGE_FALLTHRU;
-      for (unsigned i = 0;
-	   i < EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds); ++i)
+      while (EDGE_COUNT (EXIT_BLOCK_PTR_FOR_FN (cfun)->preds))
 	{
-	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), i);
+	  edge e = EDGE_PRED (EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
 	  redirect_edge_succ (e, incr_bb);
 	  incr_bb->count += e->count ();
 	}
