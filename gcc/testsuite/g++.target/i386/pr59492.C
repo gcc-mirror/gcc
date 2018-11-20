@@ -1,4 +1,4 @@
-// { dg-do assemble { target { { i?86-*-* x86_64-*-* } && fpic } } }
+// { dg-do assemble { target { fpic } } }
 // { dg-options "-mx32 -fPIC" }
 // { dg-require-ifunc "" }
 // { dg-require-effective-target maybe_x32 }
