@@ -692,14 +692,17 @@ odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
      and other ODR even though it is a violation.  */
   if (types_odr_comparable (t1, t2))
     {
+      if (t1 != t2
+	  && odr_type_p (TYPE_MAIN_VARIANT (t1))
+	  && get_odr_type (TYPE_MAIN_VARIANT (t1), true)->odr_violated)
+	return false;
       if (!types_same_for_odr (t1, t2))
         return false;
       if (!type_variants_equivalent_p (t1, t2, warn, warned))
 	return false;
       /* Limit recursion: If subtypes are ODR types and we know
 	 that they are same, be happy.  */
-      if (!odr_type_p (TYPE_MAIN_VARIANT (t1))
-	  || !get_odr_type (TYPE_MAIN_VARIANT (t1), true)->odr_violated)
+      if (odr_type_p (TYPE_MAIN_VARIANT (t1)))
         return true;
     }
 
@@ -2047,10 +2050,9 @@ get_odr_type (tree type, bool insert)
       else if (*vtable_slot)
 	val = *vtable_slot;
 
-      if (val->type != type
+      if (val->type != type && insert
 	  && (!val->types_set || !val->types_set->add (type)))
 	{
-	  gcc_assert (insert);
 	  /* We have type duplicate, but it may introduce vtable name or
  	     mangled name; be sure to keep hashes in sync.  */
 	  if (in_lto_p && can_be_vtable_hashed_p (type)
@@ -2144,7 +2146,36 @@ register_odr_type (tree type)
         odr_vtable_hash = new odr_vtable_hash_type (23);
     }
   if (type == TYPE_MAIN_VARIANT (type))
-    get_odr_type (type, true);
+    {
+      /* To get ODR warings right, first register all sub-types.  */
+      if (RECORD_OR_UNION_TYPE_P (type)
+	  && COMPLETE_TYPE_P (type))
+	{
+	  /* Limit recursion on types which are already registered.  */
+	  odr_type ot = get_odr_type (type, false);
+	  if (ot
+	      && (ot->type == type
+		  || (ot->types_set
+		      && ot->types_set->contains (type))))
+	    return;
+	  for (tree f = TYPE_FIELDS (type); f; f = TREE_CHAIN (f))
+	    if (TREE_CODE (f) == FIELD_DECL)
+	      {
+		tree subtype = TREE_TYPE (f);
+
+		while (TREE_CODE (subtype) == ARRAY_TYPE)
+		  subtype = TREE_TYPE (subtype);
+		if (type_with_linkage_p (TYPE_MAIN_VARIANT (subtype)))
+		  register_odr_type (TYPE_MAIN_VARIANT (subtype));
+	      }
+	   if (TYPE_BINFO (type))
+	     for (unsigned int i = 0;
+	          i < BINFO_N_BASE_BINFOS (TYPE_BINFO (type)); i++)
+	       register_odr_type (BINFO_TYPE (BINFO_BASE_BINFO
+						 (TYPE_BINFO (type), i)));
+	}
+      get_odr_type (type, true);
+    }
 }
 
 /* Return true if type is known to have no derivations.  */
