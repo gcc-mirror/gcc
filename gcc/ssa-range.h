@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
+extern bool get_tree_range (irange &r, tree expr);
 
 // This is the basic range generator interface. 
 //
@@ -48,34 +49,20 @@ extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
 // outgoing_edge_range_p will only return a range if the edge specified 
 // defines a range for the specified name.  Otherwise false is returned.
 //
-// The calculate_* routines provide functionality to calculate ranges for 
-// ssa_names in poerand positions based on a range for the LHS. 
-// BB4:
-//     a_2 = b_6 + 6
-//     c_3 = a_2 * 4
-//     if (c_3 < 10)
-//  
-// Calculate_operand_range_on_stmt provides the ability to calculate a range
-// for c_3 on the outgoing edge since it is referenced in the statement which
-// generated the range (c_3 < 10)
-//
 // If the object is created with the support_calculations flag set to TRUE,
 // it enables building defintion chains which will allow the calculation
-// of ssa-anems found within these chains.  In this example, it can also
-// generate ranges for a_2 and b_6 on outgoing edges .
+// of ssa-names found within these chains via class gori_compute.
 // 
 // It is lightweight to declare in this case, but for each basic block that is
 // queried, it will scan some or all of the statements in the block to
 // determine what ssa-names can have range information generated for them and
 // cache this information.  
 //
-// termnial_name () provides the "input" name to the chain of statements for
-// name that can change the calculation of its range.  This is usually outside 
-// the current basic block, but can also occur when the statement defining
-// the name either isn't understood, or itself has multiple terminal names.
-// ie, in the above example, b_6 is the "terminal_name" returned for both
-// a_2 and c_3 since a change in the range of b_6 used to calculate their
-// ranges may result in a different range.
+// termninal_name () provides the "input" name to the chain of statements for
+// name that can change the calculation of its range.  This is always outside 
+// the current basic block.  ie, in the above example, b_6 is the
+// "terminal_name" returned for both a_2 and c_3 since a change in the
+// range of b_6 to calculate their results may produce a different range.
  
 class ssa_range
 {
@@ -106,16 +93,13 @@ class ssa_range
   bool reevaluate_range_of_name (irange &r, tree name, edge on_edge);
 
   // Defintion chain
-  bitmap def_chain (tree name);
   tree terminal_name (tree name);
 
   void dump (FILE *f);
   void exercise (FILE *f);
 protected:
   // Calculate the range for NAME if the result of statement S is the range LHS.
-  class gori_map *m_gori; 	/* Generates Outgoing Range Info.  */
-  irange m_bool_zero;		/* Bolean zero cached.  */
-  irange m_bool_one;		/* Bolean true cached.  */
+  class gori_compute *m_gori; 	/* Generates Outgoing Range Info.  */
 
   // Calculate a range for a kind of gimple statement .
   bool range_of_range_op_core (irange &r, grange_op *s, bool valid,
@@ -141,30 +125,11 @@ protected:
 
 
   bool range_p (basic_block bb, tree name);
-
-  // Evaluate the range for name on stmt S if the lhs has range LHS.
-  bool compute_operand_range (irange &r, gimple *s, tree name,
-			      const irange &lhs);
-  bool compute_operand_range_switch (irange &r, gswitch *s, tree name,
-				     const irange &lhs);
-  bool compute_operand_range_op (irange &r, grange_op *stmt, tree name,
-				 const irange &lhs);
-  // Helpers for compute_operand_range_op.
-  bool compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
-				      const irange &lhs);
-  bool compute_operand1_range (grange_op *s, irange &r, tree name,
-			       const irange &lhs);
-  bool compute_operand2_range (grange_op *s, irange &r, tree name,
-			       const irange &lhs);
-  bool compute_operand1_and_operand2_range (grange_op *s, irange &r, tree name,
-					    const irange &lhs);
-  bool compute_logical_operands (grange_op *s, irange &r, tree name,
-				 const irange &lhs);
 };
 
   
 
-// This class utilizes a basic block range generation summary to query the range
+// This class utilizes the gori summary to query the range
 // of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
 // of range on entry to blocks.  All work is done on-demand so it is relatively
 // lightweight until used.
@@ -199,6 +164,12 @@ private:
   class non_null_ref *m_non_null;
   bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
+  bool maybe_propagate_on_edge (tree name, edge e);
+
+  vec<basic_block> m_workback;
+  vec<basic_block> m_workfwd;
+  sbitmap m_visited;
+
 };
 
 
