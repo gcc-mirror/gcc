@@ -1,3 +1,8 @@
+2018-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	PR 87926
+	* Makefile.in (bitmap.o-warn): Use -Wno-error=array-bounds.
+
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/87997
