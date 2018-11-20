@@ -6021,44 +6021,38 @@ assign_assembler_name_if_needed (tree t)
    been set up.  */
 
 static void
-free_lang_data_in_cgraph (void)
+free_lang_data_in_cgraph (struct free_lang_data_d *fld)
 {
   struct cgraph_node *n;
   varpool_node *v;
-  struct free_lang_data_d fld;
   tree t;
   unsigned i;
   alias_pair *p;
 
   /* Find decls and types in the body of every function in the callgraph.  */
   FOR_EACH_FUNCTION (n)
-    find_decls_types_in_node (n, &fld);
+    find_decls_types_in_node (n, fld);
 
   FOR_EACH_VEC_SAFE_ELT (alias_pairs, i, p)
-    find_decls_types (p->decl, &fld);
+    find_decls_types (p->decl, fld);
 
   /* Find decls and types in every varpool symbol.  */
   FOR_EACH_VARIABLE (v)
-    find_decls_types_in_var (v, &fld);
+    find_decls_types_in_var (v, fld);
 
   /* Set the assembler name on every decl found.  We need to do this
      now because free_lang_data_in_decl will invalidate data needed
      for mangling.  This breaks mangling on interdependent decls.  */
-  FOR_EACH_VEC_ELT (fld.decls, i, t)
+  FOR_EACH_VEC_ELT (fld->decls, i, t)
     assign_assembler_name_if_needed (t);
 
   /* Traverse every decl found freeing its language data.  */
-  FOR_EACH_VEC_ELT (fld.decls, i, t)
-    free_lang_data_in_decl (t, &fld);
+  FOR_EACH_VEC_ELT (fld->decls, i, t)
+    free_lang_data_in_decl (t, fld);
 
   /* Traverse every type found freeing its language data.  */
-  FOR_EACH_VEC_ELT (fld.types, i, t)
-    free_lang_data_in_type (t, &fld);
-  if (flag_checking)
-    {
-      FOR_EACH_VEC_ELT (fld.types, i, t)
-	verify_type (t);
-    }
+  FOR_EACH_VEC_ELT (fld->types, i, t)
+    free_lang_data_in_type (t, fld);
 }
 
 
@@ -6068,6 +6062,7 @@ static unsigned
 free_lang_data (void)
 {
   unsigned i;
+  struct free_lang_data_d fld;
 
   /* If we are the LTO frontend we have freed lang-specific data already.  */
   if (in_lto_p
@@ -6088,7 +6083,7 @@ free_lang_data (void)
 
   /* Traverse the IL resetting language specific information for
      operands, expressions, etc.  */
-  free_lang_data_in_cgraph ();
+  free_lang_data_in_cgraph (&fld);
 
   /* Create gimple variants for common types.  */
   for (unsigned i = 0;
@@ -6108,6 +6103,15 @@ free_lang_data (void)
   lang_hooks.print_identifier = lhd_print_tree_nothing;
 
   lang_hooks.tree_inlining.var_mod_type_p = hook_bool_tree_tree_false;
+
+  if (flag_checking)
+    {
+      int i;
+      tree t;
+
+      FOR_EACH_VEC_ELT (fld.types, i, t)
+	verify_type (t);
+    }
 
   /* We do not want the default decl_assembler_name implementation,
      rather if we have fixed everything we want a wrapper around it
