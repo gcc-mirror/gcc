@@ -12669,20 +12669,17 @@ cp_parser_jump_statement (cp_parser* parser)
 	     expression.  */
 	  expr = NULL_TREE;
 	/* Build the return-statement.  */
-	if (current_function_auto_return_pattern && in_discarded_stmt)
-	  /* Don't deduce from a discarded return statement.  */;
-	else if (keyword == RID_CO_RETURN)
+	if (keyword == RID_CO_RETURN)
 	  {
 	    /* Check the context first, so that we point the diagnostics
-	       to the keyword being wrong, rather than the expr.  */
+	       to the keyword, rather than the expr.  */
 	    if (co_return_context_valid_p (token->location, expr))
 	      statement = finish_co_return_stmt (expr);
 	    else
 	      statement = error_mark_node;
-	    // IDS : dummy it to the same as return for now.
-	    warning_at (token->location, 0,
-		    "co_return parsed, but not implemented.");
 	  }
+	else if (current_function_auto_return_pattern && in_discarded_stmt)
+	  /* Don't deduce from a discarded return statement.  */;
 	else
 	  statement = finish_return_stmt (expr);
 	/* Look for the final `;'.  */

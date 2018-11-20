@@ -1,5 +1,11 @@
 2018-11-20  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/parser.c (cp_parser_jump_statement): Check for co_return
+	before auto return pattern to get diagnostics for invalid use of
+	'auto'.
+
+2018-11-20  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/cp-tree.def (CORO_ALLOCATOR): New tree.
 	* gcc/cp/cp-objcp-common.c (cp_common_init_ts): Mark CORO_ALLOCATOR
 	as typed.
