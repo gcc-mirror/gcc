@@ -1,3 +1,12 @@
+2018-11-20  Martin Liska  <mliska@suse.cz>
+
+	* pr57362.C: Move to g++.target/i386 folder.
+	* pr57548.C: Likewise.
+	* pr59492.C: Likewise.
+	* pr82625.C: Likewise.
+	* pr85329-2.C: Likewise.
+	* pr85329.C: Likewise.
+
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88069
