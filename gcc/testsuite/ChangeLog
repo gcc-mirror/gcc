@@ -1,3 +1,7 @@
+2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20181120-1.c: New test.
+
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88087
