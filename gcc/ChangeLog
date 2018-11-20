@@ -1,3 +1,11 @@
+2018-11-20  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/88083
+	* config/s390/s390.md: Skip LT(G) peephole when literal pool is
+	involved.
+	* rtl.h (contains_constant_pool_address_p): New function.
+	* rtlanal.c (contains_constant_pool_address_p): Likewise.
+
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/83215

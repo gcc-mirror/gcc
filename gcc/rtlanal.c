@@ -6551,6 +6551,20 @@ contains_symbolic_reference_p (const_rtx x)
   return false;
 }
 
+/* Return true if RTL X contains a constant pool address.  */
+
+bool
+contains_constant_pool_address_p (const_rtx x)
+{
+  subrtx_iterator::array_type array;
+  FOR_EACH_SUBRTX (iter, array, x, ALL)
+    if (SYMBOL_REF_P (*iter) && CONSTANT_POOL_ADDRESS_P (*iter))
+      return true;
+
+  return false;
+}
+
+
 /* Return true if X contains a thread-local symbol.  */
 
 bool

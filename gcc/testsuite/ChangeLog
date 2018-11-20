@@ -1,3 +1,8 @@
+2018-11-20  Ilya Leoshkevich  <iii@linux.ibm.com>
+
+	PR target/88083
+	* gcc.target/s390/pr88083.c: New test.
+
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/83215
