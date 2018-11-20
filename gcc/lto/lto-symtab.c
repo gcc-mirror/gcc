@@ -388,8 +388,9 @@ lto_symtab_merge (symtab_node *prevailing, symtab_node *entry)
 	 int a[]={1,2,3};
 	 here the first declaration is COMMON
 	 and sizeof(a) == sizeof (int).  */
-	else if (TREE_CODE (type) == ARRAY_TYPE)
-	  return (TYPE_SIZE (decl) == TYPE_SIZE (TREE_TYPE (type)));
+	else if (TREE_CODE (type) != ARRAY_TYPE
+		 || (TYPE_SIZE (type) != TYPE_SIZE (TREE_TYPE (type))))
+	  return false;
       }
 
   return true;

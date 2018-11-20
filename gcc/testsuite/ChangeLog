@@ -1,3 +1,12 @@
+2018-11-20  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2018-11-19  Martin Liska  <mliska@suse.cz>
+
+	PR lto/88077
+	* gcc.dg/lto/pr88077_0.c: New test.
+	* gcc.dg/lto/pr88077_1.c: New test.
+
 2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20181120-1.c: New test.
