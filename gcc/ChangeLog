@@ -1,5 +1,11 @@
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_condition): Do not get
+	at else_clause vect def for EXTRACT_LAST_REDUCTION.  Remove
+	pointless vect_is_simple_use calls.
+
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88074
 	* tree-ssa-dom.c (pass_dominator::execute): Do not walk
 	backedges.

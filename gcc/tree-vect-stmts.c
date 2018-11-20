@@ -8911,26 +8911,21 @@ vectorizable_condition (stmt_vec_info stmt_info, gimple_stmt_iterator *gsi,
 		  vec_cond_lhs
 		    = vect_get_vec_def_for_operand (cond_expr, stmt_info,
 						    comp_vectype);
-		  vect_is_simple_use (cond_expr, stmt_info->vinfo, &dts[0]);
 		}
 	      else
 		{
 		  vec_cond_lhs
 		    = vect_get_vec_def_for_operand (cond_expr0,
 						    stmt_info, comp_vectype);
-		  vect_is_simple_use (cond_expr0, loop_vinfo, &dts[0]);
-
 		  vec_cond_rhs
 		    = vect_get_vec_def_for_operand (cond_expr1,
 						    stmt_info, comp_vectype);
-		  vect_is_simple_use (cond_expr1, loop_vinfo, &dts[1]);
 		}
 	      vec_then_clause = vect_get_vec_def_for_operand (then_clause,
 							      stmt_info);
-	      vect_is_simple_use (then_clause, loop_vinfo, &dts[2]);
-	      vec_else_clause = vect_get_vec_def_for_operand (else_clause,
-							      stmt_info);
-	      vect_is_simple_use (else_clause, loop_vinfo, &dts[3]);
+	      if (reduction_type != EXTRACT_LAST_REDUCTION)
+		vec_else_clause = vect_get_vec_def_for_operand (else_clause,
+								stmt_info);
 	    }
 	}
       else
