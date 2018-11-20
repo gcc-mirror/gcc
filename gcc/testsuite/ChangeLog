@@ -1,3 +1,8 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88074
+	* gcc.dg/pr88074.c: New testcase.
+
 2018-11-20  Martin Liska  <mliska@suse.cz>
 
 	* pr57362.C: Move to g++.target/i386 folder.

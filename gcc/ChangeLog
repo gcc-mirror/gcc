@@ -1,5 +1,11 @@
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88074
+	* tree-ssa-dom.c (pass_dominator::execute): Do not walk
+	backedges.
+
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88069
 	* tree-ssa-sccvn.c (visit_phi): Do not value-number to unvisited
 	virtual PHI arguments.
