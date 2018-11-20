@@ -1,8 +1,12 @@
 // { dg-do run }
 
+#ifndef NOINLINE
+#define NOINLINE /* */
+#endif
+
 inline void* operator new(__SIZE_TYPE__, void* __p) noexcept { return __p; }
 
-long foo(char *c1, char *c2)
+long NOINLINE foo(char *c1, char *c2)
 {
   long *p1 = new (c1) long;
   *p1 = 100;

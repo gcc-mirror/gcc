@@ -1,3 +1,18 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-03-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/84777
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): For
+	force-vectorize loops ignore whether we are optimizing for size.
+
+	2018-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/84003
+	* dse.c (record_store): Only record redundant stores when
+	the earlier store aliases at least all accesses the later one does.
+
 2018-11-20  Xuepeng Guo  <xuepeng.guo@intel.com>
 
 	Backport from mainline

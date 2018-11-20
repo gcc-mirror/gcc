@@ -1,3 +1,14 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-01-26  Richard Biener  <rguenther@suse.de>
+
+	PR rtl-optimization/84003
+	* g++.dg/torture/pr77745.C: Mark foo noinline to trigger
+	latent bug in DSE if NOINLINE is appropriately defined.
+	* g++.dg/torture/pr77745-2.C: New testcase including pr77745.C
+	and defining NOINLINE.
+
 2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20181120-1.c: New test.
