@@ -459,6 +459,35 @@ public:
 
 }; // class pass_local_optimization_passes
 
+const pass_data pass_data_ipa_remove_symbols =
+{
+  SIMPLE_IPA_PASS, /* type */
+  "remove_symbols", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_NONE, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  TODO_remove_functions | TODO_dump_symtab, /* todo_flags_finish */
+};
+
+class pass_ipa_remove_symbols : public simple_ipa_opt_pass
+{
+public:
+  pass_ipa_remove_symbols (gcc::context *ctxt)
+    : simple_ipa_opt_pass (pass_data_ipa_remove_symbols, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  virtual bool gate (function *)
+    {
+      /* Don't bother doing anything if the program has errors.  */
+      return (!seen_error () && !in_lto_p);
+    }
+
+}; // class pass_local_optimization_passes
+
 } // anon namespace
 
 simple_ipa_opt_pass *
@@ -471,6 +500,12 @@ simple_ipa_opt_pass *
 make_pass_local_optimization_passes (gcc::context *ctxt)
 {
   return new pass_local_optimization_passes (ctxt);
+}
+
+simple_ipa_opt_pass *
+make_pass_ipa_remove_symbols (gcc::context *ctxt)
+{
+  return new pass_ipa_remove_symbols (ctxt);
 }
 
 namespace {
