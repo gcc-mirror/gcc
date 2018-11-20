@@ -1,3 +1,8 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/83215
+	* g++.dg/tree-ssa/pr83215.C: New testcase.
+
 2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.c-torture/execute/20181120-1.c: New test.

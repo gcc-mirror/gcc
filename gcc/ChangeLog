@@ -1,5 +1,12 @@
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/83215
+	* alias.c (component_uses_parent_alias_set_from): Remove
+	alias-set zero and TYPE_TYPELESS_STORAGE case both already
+	handled in other ways.
+
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88087
 	* tree-ssa-pre.c (create_expression_by_pieces): Re-materialize
 	call fntype.

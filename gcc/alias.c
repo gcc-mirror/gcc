@@ -601,8 +601,7 @@ objects_must_conflict_p (tree t1, tree t2)
 /* Return the outermost parent of component present in the chain of
    component references handled by get_inner_reference in T with the
    following property:
-     - the component is non-addressable, or
-     - the parent has alias set zero,
+     - the component is non-addressable
    or NULL_TREE if no such parent exists.  In the former cases, the alias
    set of this parent is the alias set that must be used for T itself.  */
 
@@ -610,10 +609,6 @@ tree
 component_uses_parent_alias_set_from (const_tree t)
 {
   const_tree found = NULL_TREE;
-
-  if (AGGREGATE_TYPE_P (TREE_TYPE (t))
-      && TYPE_TYPELESS_STORAGE (TREE_TYPE (t)))
-    return const_cast <tree> (t);
 
   while (handled_component_p (t))
     {
@@ -651,9 +646,6 @@ component_uses_parent_alias_set_from (const_tree t)
 	default:
 	  gcc_unreachable ();
 	}
-
-      if (get_alias_set (TREE_TYPE (TREE_OPERAND (t, 0))) == 0)
-	found = t;
 
       t = TREE_OPERAND (t, 0);
     }
