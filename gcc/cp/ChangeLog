@@ -1,3 +1,9 @@
+2018-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/88110
+	* constexpr.c (cxx_eval_constant_expression) <case OBJ_TYPE_REF>: Punt
+	if get_base_address of ADDR_EXPR operand is not a DECL_P.
+
 2018-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87781 - detect invalid elaborated-type-specifier.
