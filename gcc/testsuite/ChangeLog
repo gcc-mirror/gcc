@@ -4,6 +4,11 @@
 
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/87997
+	* g++.dg/torture/pr87997.C: New testcase.
+
+2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/87706
 	* gcc.dg/ipa/ctor-empty-1.c: Update template.
 
