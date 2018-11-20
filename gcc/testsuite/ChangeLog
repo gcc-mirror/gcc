@@ -1,5 +1,16 @@
 2018-11-19  Paul Koning  <ni1d@arrl.net>
 
+	* gcc.c-torture/execute/align-3.c: Skip if pdp11.
+	* gcc.c-torture/execute/pr23467.c: Ditto.
+	* gcc.c-torture/execute/pr36093.c: Ditto.
+	* gcc.c-torture/execute/pr43783.c: Ditto.
+	* gcc.dg/const-elim-2.c: Xfail if pdp11.
+	* gcc.dg/torture/pr36400.c: Ditto.
+	* gcc.dg/tree-ssa/loop-1.c: Xfail for pdp11.  Add pdp11 to check
+	for jsr.
+
+2018-11-19  Paul Koning  <ni1d@arrl.net>
+
 	* lib/target-supports.exp (check_weak_available): Return "no" for
 	pdp11.
 
