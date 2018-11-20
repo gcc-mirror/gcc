@@ -1,3 +1,8 @@
+2018-11-19  Paul Koning  <ni1d@arrl.net>
+
+	* lib/target-supports.exp (check_weak_available): Return "no" for
+	pdp11.
+
 2018-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/87781 - detect invalid elaborated-type-specifier.
