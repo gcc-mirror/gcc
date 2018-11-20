@@ -1,5 +1,12 @@
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
+	PR lto/87997
+	* tree.c (free_lang_data_in_cgraph): Add argument fld; break out
+	type checking to...
+	(free_lang_data) ... here; update call of free_lang_data_in_cgraph.
+
+2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
 	PR ipa/87706
 	* ipa-fnsummary.c (pass_ipa_fnsummary): Do not remove functions
 	* ipa.c (possible_inline_candidate_p): Break out from ..
