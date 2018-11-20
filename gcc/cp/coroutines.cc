@@ -257,13 +257,327 @@ coro_function_valid_p (tree fndecl)
       coroutine.
    b) Carry out the initial morph to create the skeleton of the
       coroutine ramp function and the rewritten body.
+
+  Assumptions.
+
+  1. We only hit this code once all dependencies are resolved.
+  2. The function body will be either a bind expr or a statement list
+  3. That cfun and current_function_decl are valid for the case we're
+     expanding.
+  4. 'input_location' will be of the final brace for the function.
+
+ We do something like this:
+ declare a dummy coro frame.
+ struct _R_frame {
+  using handle_type = coro::coroutine_handle<coro1::promise_type>;
+  void (*__resume)(struct _R_frame *);
+  void (*__destroy)(struct _R_frame *);
+  struct coro1::promise_type __p;
+  int __resume_at; // this is where clang puts it - but it's a smaller entity.
+  coro1::suspend_never_prt __is;
+  (maybe) handle_type i_hand;
+  coro1::suspend_always_prt __fs;
+  (maybe) handle_type f_hand;
+  // here could be args.
+  // and then trailing space.
+ };
+
 */
 tree morph_fn_to_coro (tree orig)
 {
-  if (!coro_function_valid_p (orig))
-    return NULL_TREE;
+  if (! orig)
+    return orig;
 
   gcc_assert (orig == current_function_decl);
+
+  if (! coro_function_valid_p (orig))
+    return NULL_TREE;
+
+  /* We shall use this as the location for diagnostics for the start-up
+     code, FIXME: This isn't working..
+     .. and input_location (assumed to be the final brace) for the
+     shut-down.   */
+  location_t fn_start;
+  if (DECL_STRUCT_FUNCTION (orig))
+    fn_start = DECL_STRUCT_FUNCTION (orig)->function_start_locus;
+  else
+    fn_start = DECL_SOURCE_LOCATION (orig);
+
+  tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
+  if (fnbody == NULL_TREE || TREE_CODE (orig) != FUNCTION_DECL)
+    return orig;
+
+  /* So, we've tied off the original body.  Now start the replacement.
+     If we encounter a fatal error we might return a now-empty body.
+     TODO: determine if it would help to restore the original.
+	   determine if looking for more errors in coro_function_valid_p()
+	   and stashing types is a better solution.
+  */
+  tree newbody = push_stmt_list ();
+  DECL_SAVED_TREE (orig) = newbody;
+
+  /* Types we already know.  */
+
+  tree fn_return_type = TREE_TYPE (TREE_TYPE (orig));
+  gcc_assert (! VOID_TYPE_P (fn_return_type));
+  tree handle_type = DECL_COROUTINE_HANDLE_TYPE(orig);
+  tree promise_type = DECL_COROUTINE_PROMISE_TYPE(orig);
+  tree initial_suspend_meth = lookup_promise_member (orig, "initial_suspend",
+						     fn_start,
+						     true /*musthave*/);
+  if (! initial_suspend_meth || initial_suspend_meth == error_mark_node)
+    return orig;
+
+  tree initial_suspend_type = TREE_TYPE (TREE_TYPE (initial_suspend_meth));
+  if (TREE_CODE (initial_suspend_type) != RECORD_TYPE)
+    {
+      error_at (fn_start, "the initial suspend type needs to be an aggregate");
+      /* FIXME: Match clang wording, add a note to the definition.  */
+      return orig;
+    }
+  tree final_suspend_meth = lookup_promise_member (orig, "final_suspend",
+						   fn_start,
+						   true /*musthave*/);
+  if (! final_suspend_meth || final_suspend_meth == error_mark_node)
+    return orig;
+
+  tree final_suspend_type = TREE_TYPE (TREE_TYPE (final_suspend_meth));
+  if (TREE_CODE (final_suspend_type) != RECORD_TYPE)
+    {
+      error_at (fn_start, "the final suspend type needs to be an aggregate");
+      /* FIXME: Match clang wording, add a note to the definition.  */
+      return orig;
+    }
+
+  /* Types we need to define.  */
+
+  tree coro_frame_type = xref_tag (record_type, get_identifier ("_R_frame"),
+				   ts_current, false);
+  DECL_CONTEXT (TYPE_NAME (coro_frame_type)) = current_scope ();
+  tree coro_frame_ptr = build_pointer_type (coro_frame_type);
+  tree act_des_fn_type = build_function_type_list (void_type_node,
+						   coro_frame_ptr, NULL_TREE);
+  tree act_des_fn_ptr = build_pointer_type (act_des_fn_type);
+
+   /* Build our dummy coro frame layout.  */
+  coro_frame_type = begin_class_definition (coro_frame_type);
+  tree resume_name = get_identifier ("__resume");
+  tree decls = build_decl (fn_start, FIELD_DECL, resume_name, act_des_fn_ptr);
+  tree destroy_name = get_identifier ("__destroy");
+  tree decl = build_decl (fn_start, FIELD_DECL, destroy_name, act_des_fn_ptr);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  tree promise_name = get_identifier ("__p");
+  decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  tree phase_name = get_identifier ("__resume_at");
+  decl = build_decl (fn_start, FIELD_DECL, phase_name, integer_type_node);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  // TODO: decide if we need to preserve things across initial susp.
+  tree init_susp_name = get_identifier ("__is");
+  decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
+		     initial_suspend_type);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  // TODO: decide if we need to preserve things across final susp.
+  tree fin_susp_name = get_identifier ("__fs");
+  decl = build_decl (fn_start, FIELD_DECL, fin_susp_name, final_suspend_type);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  TYPE_FIELDS (coro_frame_type) = decls;
+
+  TYPE_BINFO (coro_frame_type) = make_tree_binfo (0);
+  BINFO_OFFSET (TYPE_BINFO (coro_frame_type)) = size_zero_node;
+  BINFO_TYPE (TYPE_BINFO (coro_frame_type)) = coro_frame_type;
+
+  coro_frame_type = finish_struct (coro_frame_type, NULL_TREE);
+
+  /* Now build the ramp function pieces.  */
+  tree bind = build3 (BIND_EXPR, void_type_node, NULL, NULL, NULL);
+  add_stmt (bind);
+  BIND_EXPR_BODY (bind) = push_stmt_list ();
+
+  tree coro_fp = build_lang_decl (VAR_DECL, get_identifier ("coro.frameptr"),
+				  coro_frame_ptr);
+  DECL_CONTEXT (coro_fp) = current_scope ();
+  tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
+  add_stmt (r);
+#if CAN_GIMPLIFY_CORO
+  tree allocated = build1 (CORO_ALLOCATOR,
+			   build_pointer_type (void_type_node),
+			   coro_frame_type);
+#else
+  /* Placeholder.  */
+  tree allocated = build1 (CONVERT_EXPR, build_pointer_type (void_type_node),
+			   integer_zero_node);
+#endif
+  allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
+  r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
+  add_stmt (r);
+  tree varlist = coro_fp;
+
+  tree gro = build_lang_decl (VAR_DECL, get_identifier ("coro.gro"),
+			      fn_return_type);
+  DECL_CONTEXT (gro) = current_scope ();
+  r = build_stmt (fn_start, DECL_EXPR, gro);
+  add_stmt (r);
+  TREE_CHAIN (gro) = varlist; varlist = gro;
+
+  /* Collected the scope vars we need ... */
+  BIND_EXPR_VARS (bind) = nreverse (varlist);
+
+  tree deref_fp = build_x_arrow (fn_start, coro_fp, tf_warning_or_error);
+  tree promise_m = lookup_member (coro_frame_type, promise_name,
+				  /*protect*/1,  /*want_type*/ 0,
+				  tf_warning_or_error);
+  tree p = build_class_member_access_expr (deref_fp, promise_m, NULL_TREE,
+					   false, tf_warning_or_error);
+  /* Do a placement new constructor for the promise type (we never call the
+     new operator, just the constructor on the object in place in the frame.
+  */
+  r = build_special_member_call(p, complete_ctor_identifier, NULL,
+				promise_type, LOOKUP_NORMAL,
+				tf_warning_or_error);
+  add_stmt (r);
+
+  /* Set the initial_suspend var.  */
+  tree is_m = lookup_member (coro_frame_type, init_susp_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree is = build_class_member_access_expr (deref_fp, is_m, NULL_TREE,
+					   false, tf_warning_or_error);
+
+  tree get_is_meth = lookup_promise_member (orig, "initial_suspend",
+					   fn_start, true /*musthave*/);
+  r = build_new_method_call (rvalue (p), get_is_meth,
+			     NULL, NULL_TREE, LOOKUP_NORMAL,
+			     NULL, tf_warning_or_error);
+  // init our actual var.
+  r = build2 (INIT_EXPR, initial_suspend_type, is, TREE_OPERAND (r, 1));
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  add_stmt (r);
+
+  /* Set the final suspend var.  */
+  tree fs_m = lookup_member (coro_frame_type, fin_susp_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree fs = build_class_member_access_expr (deref_fp, fs_m, NULL_TREE,
+					   false, tf_warning_or_error);
+  tree get_fs_meth = lookup_promise_member (orig, "final_suspend",
+					   fn_start, true /*musthave*/);
+  r = build_new_method_call (rvalue (p), get_fs_meth,
+			     NULL, NULL_TREE, LOOKUP_NORMAL,
+			     NULL, tf_warning_or_error);
+  // init our actual var.
+  r = build2 (INIT_EXPR, final_suspend_type, fs, TREE_OPERAND (r, 1));
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  add_stmt (r);
+
+  tree gro_meth = lookup_promise_member (orig, "get_return_object",
+				    fn_start, true /*musthave*/);
+  r = build_new_method_call (rvalue (p), gro_meth,
+			     NULL, NULL_TREE, LOOKUP_NORMAL,
+			     NULL, tf_warning_or_error);
+  // init our actual var.
+  r = build2 (INIT_EXPR, TREE_TYPE (gro), gro, TREE_OPERAND (r, 1));
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  tree start_label = get_identifier ("coro.start");
+  start_label = define_label (fn_start, start_label);
+
+  start_label = build_stmt (fn_start, LABEL_EXPR, start_label);
+  add_stmt (start_label);
+
+  /* Initialise the phase to -1, not started.  */
+  tree phase_m = lookup_member (coro_frame_type, phase_name,
+				/*protect*/1,  /*want_type*/ 0,
+				tf_warning_or_error);
+  tree phase = build_class_member_access_expr (deref_fp, phase_m, NULL_TREE,
+						false, tf_warning_or_error);
+  r = build2 (INIT_EXPR, integer_type_node, phase, integer_minus_one_node);
+  r = build_stmt (fn_start, EXPR_STMT, r);
+  add_stmt (r);
+
+#if CAN_GIMPLIFY_CORO
+  tree initial_aw = build4_loc (fn_start, COAWAIT_EXPR, void_type_node,
+				is, initial_suspend_type,
+				NULL_TREE, NULL_TREE);
+  r = build_stmt (fn_start, EXPR_STMT, initial_aw);
+  add_stmt (r);
+#endif
+
+  // TODO: process fnbody for co_returns / possible expansions.
+  add_stmt (fnbody);
+
+  tree fs_label = get_identifier ("final_suspend");
+  fs_label = define_label (input_location, fs_label);
+  r = build_stmt (input_location, LABEL_EXPR, fs_label);
+  add_stmt (r);
+
+#if CAN_GIMPLIFY_CORO
+  tree final_aw = build4 (COAWAIT_EXPR, void_type_node, fs,
+			  final_suspend_type, NULL_TREE, NULL_TREE);
+  r = build_stmt (fn_start, EXPR_STMT, final_aw);
+  add_stmt (r);
+#endif
+
+  /* now do the tail of the function.  */
+  /* We can have the same label name per function (???).
+     FIXME: do we have some FE way to test for support for '.' c.f. '$' as
+     a non-user-label character.  */
+  tree ret_label = get_identifier ("coro.ret");
+  ret_label = define_label (input_location, ret_label);
+  r = build_stmt (input_location, LABEL_EXPR, ret_label);
+  add_stmt (r);
+
+  bool no_warning;
+  r = check_return_expr (rvalue (gro), &no_warning);
+  r = build_stmt (input_location, RETURN_EXPR, r);
+  TREE_NO_WARNING (r) |= no_warning;
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  /* Exit points.  */
+  tree del_promise_label = get_identifier ("coro.delete.retval");
+  del_promise_label = define_label (input_location, del_promise_label);
+  r = build_stmt (input_location, LABEL_EXPR, del_promise_label);
+  add_stmt (r);
+
+  r = build_special_member_call(gro, complete_dtor_identifier, NULL,
+				fn_return_type, LOOKUP_NORMAL,
+				tf_warning_or_error);
+  add_stmt (r);
+
+  tree del_frame_label = get_identifier ("coro.delete.frame");
+  del_frame_label = define_label (input_location, del_frame_label);
+  r = build_stmt (input_location, LABEL_EXPR, del_frame_label);
+  add_stmt (r);
+
+  /* Destructors for the things we built explicitly.  */
+  r = build_special_member_call(fs, complete_dtor_identifier, NULL,
+				final_suspend_type, LOOKUP_NORMAL,
+				tf_warning_or_error);
+  add_stmt (r);
+  r = build_special_member_call(is, complete_dtor_identifier, NULL,
+				initial_suspend_type, LOOKUP_NORMAL,
+				tf_warning_or_error);
+  add_stmt (r);
+  r = build_special_member_call(p, complete_dtor_identifier, NULL,
+				promise_type, LOOKUP_NORMAL,
+				tf_warning_or_error);
+  add_stmt (r);
+
+  /* Here deallocate the frame (if we allocated it).
+     Not yet.  */
+
+  /* Weird case of having different return types, on this path we would
+     return void (it should only be taken by the destroy actor function
+     when split).  */
+  r = build_stmt (input_location, RETURN_EXPR, NULL);
+  TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
+  r = maybe_cleanup_point_expr_void (r);
+  add_stmt (r);
+
+  DECL_SAVED_TREE (orig) = newbody;
   return orig;
 }
 

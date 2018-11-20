@@ -1,5 +1,10 @@
 2018-11-20  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Implement initial
+	function rewriting.
+
+2018-11-20  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (find_handle_type): New.
 	(find_promise_type): Refactor. (lookup_promise_member): New.
 	* gcc/cp/cp-tree.h (lang_decl_fn): Save handle type.
