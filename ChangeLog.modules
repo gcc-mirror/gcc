@@ -1,3 +1,8 @@
+2018-11-20  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (dumper): Rename dump flags.  Adjust throughout.
+
 2018-11-19  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
