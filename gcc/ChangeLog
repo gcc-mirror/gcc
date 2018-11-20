@@ -1,3 +1,9 @@
+2018-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88069
+	* tree-ssa-sccvn.c (visit_phi): Do not value-number to unvisited
+	virtual PHI arguments.
+
 2018-11-20  Ilya Leoshkevich  <iii@linux.ibm.com>
 
 	PR target/88083

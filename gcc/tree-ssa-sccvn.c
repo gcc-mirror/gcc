@@ -4194,12 +4194,19 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
      value from the backedge as that confuses the alias-walking code.
      See gcc.dg/torture/pr87176.c.  If the value is the same on a
      non-backedge everything is OK though.  */
-  if (backedge_val
-      && !seen_non_backedge
-      && TREE_CODE (backedge_val) == SSA_NAME
-      && sameval == backedge_val
-      && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
-	  || SSA_VAL (backedge_val) != backedge_val))
+  bool visited_p;
+  if ((backedge_val
+       && !seen_non_backedge
+       && TREE_CODE (backedge_val) == SSA_NAME
+       && sameval == backedge_val
+       && (SSA_NAME_IS_VIRTUAL_OPERAND (backedge_val)
+	   || SSA_VAL (backedge_val) != backedge_val))
+      /* Do not value-number a virtual operand to sth not visited though
+	 given that allows us to escape a region in alias walking.  */
+      || (sameval
+	  && TREE_CODE (sameval) == SSA_NAME
+	  && SSA_NAME_IS_VIRTUAL_OPERAND (sameval)
+	  && (SSA_VAL (sameval, &visited_p), !visited_p)))
     /* Note this just drops to VARYING without inserting the PHI into
        the hashes.  */
     result = PHI_RESULT (phi);
