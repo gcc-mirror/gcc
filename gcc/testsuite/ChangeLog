@@ -1,3 +1,7 @@
+2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.c-torture/execute/20181120-1.c: New test.
+
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88045

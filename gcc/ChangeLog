@@ -1,3 +1,12 @@
+2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR rtl-optimization/85925
+	* rtl.h (word_register_operation_p): New predicate.
+	* combine.c (record_dead_and_set_regs_1): Only apply specific handling
+	for WORD_REGISTER_OPERATIONS targets to word_register_operation_p RTX.
+	* rtlanal.c (nonzero_bits1): Likewise.  Adjust couple of comments.
+	(num_sign_bit_copies1): Likewise.
+
 2018-11-19  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/88045
