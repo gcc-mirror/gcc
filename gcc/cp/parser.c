@@ -14223,7 +14223,7 @@ cp_parser_linkage_specification (cp_parser* parser)
 
       /* Consume the `{' token.  */
       matching_braces braces;
-      braces.consume_open (parser)->location;
+      braces.consume_open (parser);
       /* Parse the declarations.  */
       cp_parser_declaration_seq_opt (parser);
       /* Look for the closing `}'.  */
