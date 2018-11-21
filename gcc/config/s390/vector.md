@@ -198,8 +198,8 @@
   ""
   "@
    vlr\t%v0,%v1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vone\t%v0
    vgbm\t%v0,%t1
@@ -549,8 +549,8 @@
   "TARGET_VX"
   "@
    vmrhg\t%v0,%1,%N1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vlvgp\t%v0,%1,%N1"
   [(set_attr "op_type" "VRR,VRX,VRX,VRI,VRR")])
@@ -561,8 +561,8 @@
   "TARGET_VX"
   "@
    vlr\t%v0,%v1
-   vl\t%v0,%1
-   vst\t%v1,%0
+   vl\t%v0,%1%A1
+   vst\t%v1,%0%A0
    vzero\t%v0
    vone\t%v0
    vlvgp\t%v0,%1,%N1"
