@@ -1,5 +1,16 @@
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/87386
+	* parser.c (cp_parser_primary_expression): Use
+	id_expression.get_location () instead of id_expr_token->location.
+	Adjust the range from id_expr_token->location to
+	id_expressio.get_finish ().
+	(cp_parser_operator_function_id): Pass location of the operator
+	token down to cp_parser_operator.
+	(cp_parser_operator): Add start_loc argument, always construct a
+	location with caret at start_loc and range from start_loc to the
+	finish of the last token.
+
 	PR c++/87393
 	* parser.c (cp_parser_linkage_specification): Remove useless
 	dereference of the consume_open method result.
