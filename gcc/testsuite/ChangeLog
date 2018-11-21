@@ -1,3 +1,8 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87839
+	* gcc.target/aarch64/pr87839.c: New test.
+
 2018-11-21  Renlin Li  <renlin.li@arm.com>
 
 	PR middle-end/84877
