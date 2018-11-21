@@ -1,3 +1,9 @@
+2018-11-20  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/88069
+	* tree-ssa-dom.c (record_equivalences_from_phis): Propagate away
+	degenerate virtual PHIs.
+
 2018-11-21  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/87317
