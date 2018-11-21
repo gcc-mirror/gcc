@@ -1186,13 +1186,13 @@ bitmap_last_set_bit (const_bitmap a)
     elt = elt->next;
 
   bit_no = elt->indx * BITMAP_ELEMENT_ALL_BITS;
-  for (ix = BITMAP_ELEMENT_WORDS - 1; ix >= 0; ix--)
+  for (ix = BITMAP_ELEMENT_WORDS - 1; ix >= 1; ix--)
     {
       word = elt->bits[ix];
       if (word)
 	goto found_bit;
     }
-  gcc_unreachable ();
+  gcc_assert (elt->bits[ix] != 0);
  found_bit:
   bit_no += ix * BITMAP_WORD_BITS;
 #if GCC_VERSION >= 3004
