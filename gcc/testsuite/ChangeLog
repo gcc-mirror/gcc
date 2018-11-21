@@ -1,3 +1,10 @@
+2018-11-21  Tom de Vries  <tdevries@suse.de>
+
+	PR driver/79855
+	* lib/options.exp (check_for_options_with_filter): New proc.
+	* gcc.misc-tests/help.exp: Check that --help=params lines end with
+	period.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 

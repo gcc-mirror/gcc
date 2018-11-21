@@ -1,3 +1,9 @@
+2018-11-21  Tom de Vries  <tdevries@suse.de>
+
+	PR driver/79855
+	* params.def (HOT_BB_COUNT_FRACTION): Terminate help message with
+	period.
+
 2018-11-21  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* configure.ac: Add check for Binutils to determine whether vector
