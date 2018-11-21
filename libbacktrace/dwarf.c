@@ -411,6 +411,25 @@ advance (struct dwarf_buf *buf, size_t count)
   return 1;
 }
 
+/* Read one zero-terminated string from BUF and advance past the string.  */
+
+static const char *
+read_string (struct dwarf_buf *buf)
+{
+  const char *p = (const char *)buf->buf;
+  size_t len = strnlen (p, buf->left);
+
+  /* - If len == left, we ran out of buffer before finding the zero terminator.
+       Generate an error by advancing len + 1.
+     - If len < left, advance by len + 1 to skip past the zero terminator.  */
+  size_t count = len + 1;
+
+  if (!advance (buf, count))
+    return NULL;
+
+  return p;
+}
+
 /* Read one byte from BUF and advance 1 byte.  */
 
 static unsigned char
@@ -694,8 +713,8 @@ read_attribute (enum dwarf_form form, struct dwarf_buf *buf,
       return 1;
     case DW_FORM_string:
       val->encoding = ATTR_VAL_STRING;
-      val->u.string = (const char *) buf->buf;
-      return advance (buf, strnlen ((const char *) buf->buf, buf->left) + 1);
+      val->u.string = read_string (buf);
+      return val->u.string == NULL ? 0 : 1;
     case DW_FORM_block:
       val->encoding = ATTR_VAL_BLOCK;
       return advance (buf, read_uleb128 (buf));
@@ -1649,11 +1668,10 @@ read_line_header (struct backtrace_state *state, struct unit *u,
       if (hdr_buf.reported_underflow)
 	return 0;
 
-      hdr->dirs[i] = (const char *) hdr_buf.buf;
-      ++i;
-      if (!advance (&hdr_buf,
-		    strnlen ((const char *) hdr_buf.buf, hdr_buf.left) + 1))
+      hdr->dirs[i] = read_string (&hdr_buf);
+      if (hdr->dirs[i] == NULL)
 	return 0;
+      ++i;
     }
   if (!advance (&hdr_buf, 1))
     return 0;
@@ -1687,9 +1705,8 @@ read_line_header (struct backtrace_state *state, struct unit *u,
       if (hdr_buf.reported_underflow)
 	return 0;
 
-      filename = (const char *) hdr_buf.buf;
-      if (!advance (&hdr_buf,
-		    strnlen ((const char *) hdr_buf.buf, hdr_buf.left) + 1))
+      filename = read_string (&hdr_buf);
+      if (filename == NULL)
 	return 0;
       dir_index = read_uleb128 (&hdr_buf);
       if (IS_ABSOLUTE_PATH (filename)
@@ -1808,8 +1825,8 @@ read_line_program (struct backtrace_state *state, struct dwarf_data *ddata,
 		const char *f;
 		unsigned int dir_index;
 
-		f = (const char *) line_buf->buf;
-		if (!advance (line_buf, strnlen (f, line_buf->left) + 1))
+		f = read_string (line_buf);
+		if (f == NULL)
 		  return 0;
 		dir_index = read_uleb128 (line_buf);
 		/* Ignore that time and length.  */
