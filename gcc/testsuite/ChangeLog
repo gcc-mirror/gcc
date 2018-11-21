@@ -1,3 +1,11 @@
+018-11-21  Lokesh Janghel  <lokeshjanghel91@gmail.com>
+
+	PR target/85667
+	* gcc.target/pr85667-1.c: New testcase.
+	* gcc.target/pr85667-2.c: New testcase.
+	* gcc.target/pr85667-3.c: New testcase.
+	* gcc.target/pr85667-4.c: New testcase.
+
 2018-11-21  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/87957

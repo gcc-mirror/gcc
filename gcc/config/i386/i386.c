@@ -9005,11 +9005,6 @@ function_value_ms_64 (machine_mode orig_mode, machine_mode mode,
 	      && !COMPLEX_MODE_P (mode))
 	    regno = FIRST_SSE_REG;
 	  break;
-	case 8:
-	case 4:
-	  if (mode == SFmode || mode == DFmode)
-	    regno = FIRST_SSE_REG;
-	  break;
 	default:
 	  break;
         }
