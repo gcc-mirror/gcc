@@ -119,7 +119,7 @@ by type.  Explanations are in the following sections.
 @gccoptlist{-fall-intrinsics -fbackslash -fcray-pointer -fd-lines-as-code @gol
 -fd-lines-as-comments @gol
 -fdec -fdec-structure -fdec-intrinsic-ints -fdec-static -fdec-math @gol
--fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
+-fdec-include -fdefault-double-8 -fdefault-integer-8 -fdefault-real-8 @gol
 -fdefault-real-10 -fdefault-real-16 -fdollar-ok -ffixed-line-length-@var{n} @gol
 -ffixed-line-length-none -ffree-form -ffree-line-length-@var{n} @gol
 -ffree-line-length-none -fimplicit-none -finteger-4-integer-8 @gol
@@ -276,6 +276,12 @@ functions (e.g. TAND, ATAND, etc...) for compatability with older code.
 @opindex @code{fdec-static}
 Enable DEC-style STATIC and AUTOMATIC attributes to explicitly specify
 the storage of variables and other objects.
+
+@item -fdec-include
+@opindex @code{fdec-include}
+Enable parsing of INCLUDE as a statement in addition to parsing it as
+INCLUDE line.  When parsed as INCLUDE statement, INCLUDE does not have to
+be on a single line and can use line continuations.
 
 @item -fdollar-ok
 @opindex @code{fdollar-ok}
