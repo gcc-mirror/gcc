@@ -1,3 +1,15 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87386
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust expected
+	line.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
 2018-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88111

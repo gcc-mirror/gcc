@@ -2312,7 +2312,7 @@ static tree cp_parser_mem_initializer_id
 static cp_expr cp_parser_operator_function_id
   (cp_parser *);
 static cp_expr cp_parser_operator
-  (cp_parser *);
+  (cp_parser *, location_t);
 
 /* Templates [gram.temp] */
 
@@ -5604,7 +5604,7 @@ cp_parser_primary_expression (cp_parser *parser,
 					  /*is_namespace=*/false,
 					  /*check_dependency=*/true,
 					  &ambiguous_decls,
-					  id_expr_token->location);
+					  id_expression.get_location ());
 	    /* If the lookup was ambiguous, an error will already have
 	       been issued.  */
 	    if (ambiguous_decls)
@@ -5675,7 +5675,7 @@ cp_parser_primary_expression (cp_parser *parser,
 	    if (parser->local_variables_forbidden_p
 		&& local_variable_p (decl))
 	      {
-		error_at (id_expr_token->location,
+		error_at (id_expression.get_location (),
 			  "local variable %qD may not appear in this context",
 			  decl.get_value ());
 		return error_mark_node;
@@ -5694,7 +5694,8 @@ cp_parser_primary_expression (cp_parser *parser,
 		 id_expression.get_location ()));
 	if (error_msg)
 	  cp_parser_error (parser, error_msg);
-	decl.set_location (id_expr_token->location);
+	decl.set_location (id_expression.get_location ());
+	decl.set_range (id_expr_token->location, id_expression.get_finish ());
 	return decl;
       }
 
@@ -15011,11 +15012,12 @@ cp_parser_mem_initializer_id (cp_parser* parser)
 static cp_expr
 cp_parser_operator_function_id (cp_parser* parser)
 {
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
   /* Look for the `operator' keyword.  */
   if (!cp_parser_require_keyword (parser, RID_OPERATOR, RT_OPERATOR))
     return error_mark_node;
   /* And then the name of the operator itself.  */
-  return cp_parser_operator (parser);
+  return cp_parser_operator (parser, start_loc);
 }
 
 /* Return an identifier node for a user-defined literal operator.
@@ -15049,7 +15051,7 @@ cp_literal_operator_id (const char* name)
    human-readable spelling of the identifier, e.g., `operator +'.  */
 
 static cp_expr
-cp_parser_operator (cp_parser* parser)
+cp_parser_operator (cp_parser* parser, location_t start_loc)
 {
   tree id = NULL_TREE;
   cp_token *token;
@@ -15058,7 +15060,7 @@ cp_parser_operator (cp_parser* parser)
   /* Peek at the next token.  */
   token = cp_lexer_peek_token (parser->lexer);
 
-  location_t start_loc = token->location;
+  location_t end_loc = token->location;
 
   /* Figure out which operator we have.  */
   enum tree_code op = ERROR_MARK;
@@ -15077,7 +15079,7 @@ cp_parser_operator (cp_parser* parser)
 	  break;
 
 	/* Consume the `new' or `delete' token.  */
-	location_t end_loc = cp_lexer_consume_token (parser->lexer)->location;
+	end_loc = cp_lexer_consume_token (parser->lexer)->location;
 
 	/* Peek at the next token.  */
 	token = cp_lexer_peek_token (parser->lexer);
@@ -15093,7 +15095,6 @@ cp_parser_operator (cp_parser* parser)
 	      end_loc = close_token->location;
 	    op = op == NEW_EXPR ? VEC_NEW_EXPR : VEC_DELETE_EXPR;
 	  }
-	start_loc = make_location (start_loc, start_loc, end_loc);
 	consumed = true;
 	break;
       }
@@ -15259,7 +15260,9 @@ cp_parser_operator (cp_parser* parser)
         matching_parens parens;
         parens.consume_open (parser);
         /* Look for the matching `)'.  */
-        parens.require_close (parser);
+        token = parens.require_close (parser);
+        if (token)
+	  end_loc = token->location;
 	op = CALL_EXPR;
 	consumed = true;
 	break;
@@ -15269,7 +15272,9 @@ cp_parser_operator (cp_parser* parser)
       /* Consume the `['.  */
       cp_lexer_consume_token (parser->lexer);
       /* Look for the matching `]'.  */
-      cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
+      token = cp_parser_require (parser, CPP_CLOSE_SQUARE, RT_CLOSE_SQUARE);
+      if (token)
+	end_loc = token->location;
       op = ARRAY_REF;
       consumed = true;
       break;
@@ -15287,7 +15292,8 @@ cp_parser_operator (cp_parser* parser)
     case CPP_STRING16_USERDEF:
     case CPP_STRING32_USERDEF:
       {
-	tree str, string_tree;
+	cp_expr str;
+	tree string_tree;
 	int sz, len;
 
 	if (cxx_dialect == cxx98)
@@ -15302,6 +15308,7 @@ cp_parser_operator (cp_parser* parser)
 	  {
 	    string_tree = USERDEF_LITERAL_VALUE (str);
 	    id = USERDEF_LITERAL_SUFFIX_ID (str);
+	    end_loc = str.get_location ();
 	  }
 	else
 	  {
@@ -15309,7 +15316,10 @@ cp_parser_operator (cp_parser* parser)
 	    /* Look for the suffix identifier.  */
 	    token = cp_lexer_peek_token (parser->lexer);
 	    if (token->type == CPP_NAME)
-	      id = cp_parser_identifier (parser);
+	      {
+		id = cp_parser_identifier (parser);
+		end_loc = token->location;
+	      }
 	    else if (token->type == CPP_KEYWORD)
 	      {
 		error ("unexpected keyword;"
@@ -15341,7 +15351,8 @@ cp_parser_operator (cp_parser* parser)
 	    const char *name = IDENTIFIER_POINTER (id);
 	    id = cp_literal_operator_id (name);
 	  }
-	return id;
+	start_loc = make_location (start_loc, start_loc, get_finish (end_loc));
+	return cp_expr (id, start_loc);
       }
 
     default:
@@ -15364,6 +15375,7 @@ cp_parser_operator (cp_parser* parser)
       id = error_mark_node;
     }
 
+  start_loc = make_location (start_loc, start_loc, get_finish (end_loc));
   return cp_expr (id, start_loc);
 }
 
