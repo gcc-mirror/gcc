@@ -1,3 +1,15 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* gfortran.dg/include_10.f: New test.
+	* gfortran.dg/include_10.inc: New file.
+	* gfortran.dg/include_11.f: New test.
+	* gfortran.dg/include_12.f: New test.
+	* gfortran.dg/include_13.f90: New test.
+	* gfortran.dg/gomp/include_1.f: New test.
+	* gfortran.dg/gomp/include_1.inc: New file.
+	* gfortran.dg/gomp/include_2.f90: New test.
+
 2018-11-21  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* gcc.target/s390/vector/align-1.c: New test.
