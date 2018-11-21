@@ -1,3 +1,16 @@
+2018-11-21  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* configure.ac: Add check for Binutils to determine whether vector
+	load/store alignments hints are being supported.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* config/s390/s390.c (print_operand): Support new output
+	modifier A.
+	* config/s390/s390.md ("movti"): Append alignment hint output
+	using the new output modifier 'A'.
+	* config/s390/vector.md ("mov<mode>", "*vec_tf_to_v1tf")
+	("*vec_ti_to_v1ti"): Likewise.
+
 2018-11-20  Martin Sebor  <msebor@redhat.com>
 
 	* doc/extend.texi (Other Builtins): Add __builtin_has_attribute.
