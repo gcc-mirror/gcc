@@ -1,3 +1,13 @@
+2018-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88113
+	* src/c++17/memory_resource.cc (bitset::size_type): Use the smaller
+	of uint32_t and size_t.
+	(bitset::size(), bitset::free(), bitset::update_next_word())
+	(bitset::max_blocks_per_chunk(), bitset::max_word_index()): Use
+	size_type consistently instead of size_t.
+	(chunk): Adjust static_assert checking sizeof(chunk).
+
 2018-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Housekeeping for the effective targets of optional's tests.

@@ -252,11 +252,13 @@ namespace pmr
 
   namespace {
 
-  // Simple bitset with runtime size. Tracks used blocks in a pooled chunk.
+  // Simple bitset with runtime size.
+  // Tracks which blocks in a pool chunk are used/unused.
   struct bitset
   {
     using word = uint64_t;
-    using size_type = uint32_t;
+    using size_type // unsigned integer type with no more than 32 bits
+      = conditional_t<numeric_limits<size_t>::digits <= 32, size_t, uint32_t>;
 
     static constexpr unsigned bits_per_word = numeric_limits<word>::digits;
 
@@ -269,7 +271,7 @@ namespace pmr
       __builtin_memset(_M_words, 0, last_word * sizeof(*_M_words));
       // Set bits beyond _M_size, so they are not treated as free blocks:
       if (const size_type extra_bits = num_blocks % bits_per_word)
-	_M_words[last_word] = (word)-1 << extra_bits;
+	_M_words[last_word] = word(-1) << extra_bits;
       __glibcxx_assert( empty() );
       __glibcxx_assert( free() == num_blocks );
     }
@@ -278,12 +280,12 @@ namespace pmr
     ~bitset() = default;
 
     // Number of blocks
-    size_t size() const noexcept { return _M_size; }
+    size_type size() const noexcept { return _M_size; }
 
     // Number of free blocks (unset bits)
-    size_t free() const noexcept
+    size_type free() const noexcept
     {
-      size_t n = 0;
+      size_type n = 0;
       for (size_type i = _M_next_word; i < nwords(); ++i)
 	n += (bits_per_word - std::__popcount(_M_words[i]));
       return n;
@@ -376,7 +378,7 @@ namespace pmr
     // this function saturates _M_next_word at max_word_index().
     void update_next_word() noexcept
     {
-      size_t next = _M_next_word;
+      size_type next = _M_next_word;
       while (_M_words[next] == word(-1) && ++next < nwords())
 	{ }
       _M_next_word = std::min(next, max_word_index());
@@ -397,11 +399,11 @@ namespace pmr
     { return (_M_size + bits_per_word - 1) / bits_per_word; }
 
     // Maximum value that can be stored in bitset::_M_size member (approx 500k)
-    static constexpr size_t max_blocks_per_chunk() noexcept
-    { return (1ull << _S_size_digits) - 1; }
+    static constexpr size_type max_blocks_per_chunk() noexcept
+    { return (size_type(1) << _S_size_digits) - 1; }
 
     // Maximum value that can be stored in bitset::_M_next_word member (8191).
-    static constexpr size_t max_word_index() noexcept
+    static constexpr size_type max_word_index() noexcept
     { return (max_blocks_per_chunk() + bits_per_word - 1) / bits_per_word; }
 
     word* data() const noexcept { return _M_words; }
@@ -519,9 +521,12 @@ namespace pmr
     { return std::less<const void*>{}(p, c._M_p); }
   };
 
-  // For 64-bit this is 3*sizeof(void*) and for 32-bit it's 4*sizeof(void*).
+  // For 64-bit pointers this is the size of three pointers i.e. 24 bytes.
+  // For 32-bit and 20-bit pointers it's four pointers (16 bytes).
+  // For 16-bit pointers it's five pointers (10 bytes).
   // TODO pad 64-bit to 4*sizeof(void*) to avoid splitting across cache lines?
-  static_assert(sizeof(chunk) == 2 * sizeof(uint32_t) + 2 * sizeof(void*));
+  static_assert(sizeof(chunk)
+      == sizeof(bitset::size_type) + sizeof(uint32_t) + 2 * sizeof(void*));
 
   // An oversized allocation that doesn't fit in a pool.
   struct big_block
