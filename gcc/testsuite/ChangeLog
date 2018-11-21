@@ -1,3 +1,13 @@
+2018-11-21  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/87957
+	* g++.dg/lto/odr-1_0.C: Extend by mismatched enum.
+	* g++.dg/lto/odr-1_1.C: Extend by mismatched enum.
+	* g++.dg/lto/odr-2_0.C: New.
+	* g++.dg/lto/odr-2_0.C: New.
+	* g++.dg/lto/odr-3_1.C: New.
+	* g++.dg/lto/odr-3_1.C: New.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87839
