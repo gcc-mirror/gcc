@@ -11140,6 +11140,7 @@ is called and the @var{flag} argument passed to it.
 @findex __builtin_call_with_static_chain
 @findex __builtin_extend_pointer
 @findex __builtin_fpclassify
+@findex __builtin_has_attribute
 @findex __builtin_isfinite
 @findex __builtin_isnormal
 @findex __builtin_isgreater
@@ -11794,6 +11795,46 @@ at compile time, for use by @option{-fstack-usage}, @option{-Wstack-usage}
 and @option{-Walloca-larger-than}.  @var{max_size} must be a constant integer
 expression, it has no effect on code generation and no attempt is made to
 check its compatibility with @var{size}.
+
+@end deftypefn
+
+@deftypefn {Built-in Function} bool __builtin_has_attribute (@var{type-or-expression}, @var{attribute})
+The @code{__builtin_has_attribute} function evaluates to an integer constant
+expression equal to @code{true} if the symbol or type referenced by
+the @var{type-or-expression} argument has been declared with
+the @var{attribute} referenced by the second argument.  Neither argument
+is evaluated.  The @var{type-or-expression} argument is subject to the same
+restrictions as the argument to @code{typeof} (@pxref{Typeof}).  The
+@var{attribute} argument is an attribute name optionally followed by
+a comma-separated list of arguments enclosed in parentheses.  Both forms
+of attribute names---with and without double leading and trailing
+underscores---are recognized.  See @xref{Attribute Syntax} for details.
+When no attribute arguments are specified for an attribute that expects
+one or more arguments the function returns @code{true} if
+@var{type-or-expression} has been declared with the attribute regardless
+of the attribute argument values.  Arguments provided for an attribute
+that expects some are validated and matched up to the provided number.
+The function returns @code{true} if all provided arguments match.  For
+example, the first call to the function below evaluates to @code{true}
+because @code{x} is declared with the @code{aligned} attribute but
+the second call evaluates to @code{false} because @code{x} is declared
+@code{aligned (8)} and not @code{aligned (4)}.
+
+@smallexample
+__attribute__ ((aligned (8))) int x;
+_Static_assert (__builtin_has_attribute (x, aligned), "aligned");
+_Static_assert (!__builtin_has_attribute (x, aligned (4)), "aligned (4)");
+@end smallexample
+
+Due to a limitation the @code{__builtin_has_attribute} function returns
+@code{false} for the @code{mode} attribute even if the type or variable
+referenced by the @var{type-or-expression} argument was declared with one.
+The function is also not supported with labels, and in C with enumerators.
+
+Note that unlike the @code{__has_attribute} preprocessor operator which
+is suitable for use in @code{#if} preprocessing directives
+@code{__builtin_has_attribute} is an intrinsic function that is not
+recognized in such contexts.
 
 @end deftypefn
 

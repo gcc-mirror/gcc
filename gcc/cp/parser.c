@@ -2048,6 +2048,8 @@ static cp_expr cp_parser_unary_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false, bool = false);
 static enum tree_code cp_parser_unary_operator
   (cp_token *);
+static tree cp_parser_has_attribute_expression
+  (cp_parser *);
 static tree cp_parser_new_expression
   (cp_parser *);
 static vec<tree, va_gc> *cp_parser_new_placement
@@ -2381,7 +2383,7 @@ static tree cp_parser_attributes_opt
 static tree cp_parser_gnu_attributes_opt
   (cp_parser *);
 static tree cp_parser_gnu_attribute_list
-  (cp_parser *);
+  (cp_parser *, bool = false);
 static tree cp_parser_std_attribute
   (cp_parser *, tree);
 static tree cp_parser_std_attribute_spec
@@ -8110,6 +8112,9 @@ cp_parser_unary_expression (cp_parser *parser, cp_id_kind * pidk,
 	    return ret_expr;
 	  }
 
+	case RID_BUILTIN_HAS_ATTRIBUTE:
+	  return cp_parser_has_attribute_expression (parser);
+
 	case RID_NEW:
 	  return cp_parser_new_expression (parser);
 
@@ -8405,6 +8410,121 @@ cp_parser_unary_operator (cp_token* token)
     default:
       return ERROR_MARK;
     }
+}
+
+/* Parse a __builtin_has_attribute([expr|type], attribute-spec) expression.
+   Returns a representation of the expression.  */
+
+static tree
+cp_parser_has_attribute_expression (cp_parser *parser)
+{
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
+
+  /* Consume the __builtin_has_attribute token.  */
+  cp_lexer_consume_token (parser->lexer);
+
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return error_mark_node;
+
+  /* Types cannot be defined in a `sizeof' expression.  Save away the
+     old message.  */
+  const char *saved_message = parser->type_definition_forbidden_message;
+  /* And create the new one.  */
+  const int kwd = RID_BUILTIN_HAS_ATTRIBUTE;
+  char *tmp = concat ("types may not be defined in %<",
+		      IDENTIFIER_POINTER (ridpointers[kwd]),
+		      "%> expressions", NULL);
+  parser->type_definition_forbidden_message = tmp;
+
+  /* The restrictions on constant-expressions do not apply inside
+     sizeof expressions.  */
+  bool saved_integral_constant_expression_p
+    = parser->integral_constant_expression_p;
+  bool saved_non_integral_constant_expression_p
+    = parser->non_integral_constant_expression_p;
+  parser->integral_constant_expression_p = false;
+
+  /* Do not actually evaluate the expression.  */
+  ++cp_unevaluated_operand;
+  ++c_inhibit_evaluation_warnings;
+
+  tree oper = NULL_TREE;
+
+  /* We can't be sure yet whether we're looking at a type-id or an
+     expression.  */
+  cp_parser_parse_tentatively (parser);
+
+  bool saved_in_type_id_in_expr_p = parser->in_type_id_in_expr_p;
+  parser->in_type_id_in_expr_p = true;
+  /* Look for the type-id.  */
+  oper = cp_parser_type_id (parser);
+  parser->in_type_id_in_expr_p = saved_in_type_id_in_expr_p;
+
+  cp_parser_parse_definitely (parser);
+
+  /* If the type-id production did not work out, then we must be
+     looking at the unary-expression production.  */
+  if (!oper || oper == error_mark_node)
+    oper = cp_parser_unary_expression (parser);
+
+  /* Go back to evaluating expressions.  */
+  --cp_unevaluated_operand;
+  --c_inhibit_evaluation_warnings;
+
+  /* Free the message we created.  */
+  free (tmp);
+  /* And restore the old one.  */
+  parser->type_definition_forbidden_message = saved_message;
+  parser->integral_constant_expression_p
+    = saved_integral_constant_expression_p;
+  parser->non_integral_constant_expression_p
+    = saved_non_integral_constant_expression_p;
+
+  /* Consume the comma if it's there.  */
+  if (!cp_parser_require (parser, CPP_COMMA, RT_COMMA))
+    {
+      cp_parser_skip_to_closing_parenthesis (parser, false, false,
+					     /*consume_paren=*/true);
+      return error_mark_node;
+    }
+
+  /* Parse the attribute specification.  */
+  bool ret = false;
+  location_t atloc = cp_lexer_peek_token (parser->lexer)->location;
+  if (tree attr = cp_parser_gnu_attribute_list (parser, /*exactly_one=*/true))
+    {
+      if (oper != error_mark_node)
+	{
+	  /* Fold constant expressions used in attributes first.  */
+	  cp_check_const_attributes (attr);
+
+	  /* Finally, see if OPER has been declared with ATTR.  */
+	  ret = has_attribute (atloc, oper, attr, default_conversion);
+	}
+
+      parens.require_close (parser);
+    }
+  else
+    {
+      error_at (atloc, "expected identifier");
+      cp_parser_skip_to_closing_parenthesis (parser, true, false, true);
+    }
+
+  /* Construct a location e.g. :
+     __builtin_has_attribute (oper, attr)
+     ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+     with start == caret at the start of the built-in token,
+     and with the endpoint at the final closing paren.  */
+  location_t finish_loc
+    = cp_lexer_previous_token (parser->lexer)->location;
+  location_t compound_loc
+    = make_location (start_loc, start_loc, finish_loc);
+
+  cp_expr ret_expr (ret ? boolean_true_node : boolean_false_node);
+  ret_expr.set_location (compound_loc);
+  ret_expr = ret_expr.maybe_add_location_wrapper ();
+  return ret_expr;
 }
 
 /* Parse a new-expression.
@@ -25376,7 +25496,7 @@ cp_parser_gnu_attributes_opt (cp_parser* parser)
    the arguments, if any.  */
 
 static tree
-cp_parser_gnu_attribute_list (cp_parser* parser)
+cp_parser_gnu_attribute_list (cp_parser* parser, bool exactly_one /* = false */)
 {
   tree attribute_list = NULL_TREE;
   bool save_translate_strings_p = parser->translate_strings_p;
@@ -25443,9 +25563,9 @@ cp_parser_gnu_attribute_list (cp_parser* parser)
 
 	  token = cp_lexer_peek_token (parser->lexer);
 	}
-      /* Now, look for more attributes.  If the next token isn't a
-	 `,', we're done.  */
-      if (token->type != CPP_COMMA)
+      /* Unless EXACTLY_ONE is set look for more attributes.
+	 If the next token isn't a `,', we're done.  */
+      if (exactly_one || token->type != CPP_COMMA)
 	break;
 
       /* Consume the comma and keep going.  */

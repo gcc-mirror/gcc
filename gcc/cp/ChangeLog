@@ -1,3 +1,11 @@
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* cp-tree.h (cp_check_const_attributes): Declare.
+	* decl2.c (cp_check_const_attributes): Declare extern.
+	* parser.c (cp_parser_has_attribute_expression): New function.
+	(cp_parser_unary_expression): Handle RID_HAS_ATTRIBUTE_EXPRESSION.
+	(cp_parser_gnu_attribute_list): Add argument.
+
 2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88110

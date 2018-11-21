@@ -1,3 +1,7 @@
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* doc/extend.texi (Other Builtins): Add __builtin_has_attribute.
+
 2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR lto/84044
