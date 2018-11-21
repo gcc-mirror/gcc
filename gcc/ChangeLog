@@ -1,3 +1,11 @@
+2018-11-21  Alexandre Oliva <oliva@adacore.com>
+
+	* final.c (compute_discriminator): Declare.  Renamed from...
+	(maybe_set_discriminator): ... this.  Set and return a local.
+	(override_discriminator): New.
+	(final_scan_insn_1): Set it.
+	(notice_source_line): Adjust.  Always set discriminator.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/87839
