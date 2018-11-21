@@ -1,5 +1,15 @@
 2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
+	Revert the revert:
+	2013-10-26  Vladimir Makarov  <vmakarov@redhat.com>
+
+	Revert:
+	2013-10-25  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* lra-spills.c (lra_final_code_change): Remove useless move insns.
+
+2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR middle-end/88129
 	* function.c (expand_function_end): Do not emit extra blockage insn.
 
