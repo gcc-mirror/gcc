@@ -1,3 +1,9 @@
+2018-11-21  Richard Biener  <rguenther@suse.de>
+
+	PR bootstrap/88133
+	* bitmap.c (bitmap_last_set_bit): Refactor to avoid warning.
+	* Makefile.in (bitmap.o-warn): Remove again.
+
 2018-11-20  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/88069
