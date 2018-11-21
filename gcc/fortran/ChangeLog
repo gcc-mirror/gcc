@@ -1,4 +1,8 @@
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* invoke.texi (-fdec-include): Document.
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 	    Mark Eggleston  <mark.eggleston@codethink.com>
 
 	* lang.opt (fdec-include): New option.
