@@ -1,3 +1,10 @@
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-parser.c (c_parser_has_attribute_expression): New function.
+	(c_parser_attribute): New function.
+	(c_parser_attributes): Move code into c_parser_attribute.
+	(c_parser_unary_expression): Handle RID_HAS_ATTRIBUTE_EXPRESSION.
+
 2018-11-15  Martin Sebor  <msebor@redhat.com>
 
 	PR c/83656
