@@ -1,3 +1,12 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/87817
+	* config/i386/i386.md (bmi2_bzhi_<mode>3, *bmi2_bzhi_<mode>3,
+	*bmi2_bzhi_<mode>3_1, *bmi2_bzhi_<mode>3_1_ccz): Use IF_THEN_ELSE
+	in the pattern to avoid triggering UB when operands[2] is zero.
+	(tbm_bextri_<mode>): New expander.  Renamed the old define_insn to ...
+	(*tbm_bextri_<mode>): ... this.
+
 2018-11-21  Tom de Vries  <tdevries@suse.de>
 
 	PR driver/79855
