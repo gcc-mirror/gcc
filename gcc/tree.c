@@ -5206,6 +5206,24 @@ fld_process_array_type (tree t, tree t2, hash_map<tree, tree> *map,
   return array;
 }
 
+/* Return CTX after removal of contexts that are not relevant  */
+
+static tree
+fld_decl_context (tree ctx)
+{
+  /* Variably modified types are needed for tree_is_indexable to decide
+     whether the type needs to go to local or global section.
+     This code is semi-broken but for now it is easiest to keep contexts
+     as expected.  */
+  if (ctx && TYPE_P (ctx)
+      && !variably_modified_type_p (ctx, NULL_TREE))
+     {
+       while (ctx && TYPE_P (ctx))
+	 ctx = TYPE_CONTEXT (ctx);
+     }
+  return ctx;
+}
+
 /* For T being aggregate type try to turn it into a incomplete variant.
    Return T if no simplification is possible.  */
 
@@ -5267,6 +5285,28 @@ fld_incomplete_type_of (tree t, struct free_lang_data_d *fld)
 	    }
 	  else
 	    TYPE_VALUES (copy) = NULL;
+
+	  /* Build copy of TYPE_DECL in TYPE_NAME if necessary.
+	     This is needed for ODR violation warnings to come out right (we
+	     want duplicate TYPE_DECLs whenever the type is duplicated because
+	     of ODR violation.  Because lang data in the TYPE_DECL may not
+	     have been freed yet, rebuild it from scratch and copy relevant
+	     fields.  */
+	  TYPE_NAME (copy) = fld_simplified_type_name (copy);
+	  tree name = TYPE_NAME (copy);
+
+	  if (name && TREE_CODE (name) == TYPE_DECL)
+	    {
+	      gcc_checking_assert (TREE_TYPE (name) == t);
+	      tree name2 = build_decl (DECL_SOURCE_LOCATION (name), TYPE_DECL,
+				       DECL_NAME (name), copy);
+	      if (DECL_ASSEMBLER_NAME_SET_P (name))
+	        SET_DECL_ASSEMBLER_NAME (name2, DECL_ASSEMBLER_NAME (name));
+	      SET_DECL_ALIGN (name2, 0);
+	      DECL_CONTEXT (name2) = fld_decl_context
+					 (DECL_CONTEXT (name));
+	      TYPE_NAME (copy) = name2;
+	    }
 	}
       return copy;
    }
@@ -5423,7 +5463,8 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
       if (TREE_CODE (type) == ENUMERAL_TYPE)
 	{
 	  /* Type values are used only for C++ ODR checking.  Drop them
-	     for all type variants and non-ODR types.  */
+	     for all type variants and non-ODR types.
+	     For ODR types the data is freed in free_odr_warning_data.  */
 	  if (TYPE_MAIN_VARIANT (type) != type
 	      || !type_with_linkage_p (type))
 	    TYPE_VALUES (type) = NULL;
@@ -5455,11 +5496,7 @@ free_lang_data_in_type (tree type, struct free_lang_data_d *fld)
       TYPE_CONTEXT (type) = ctx;
     }
 
-  /* Drop TYPE_DECLs in TYPE_NAME in favor of the identifier in the
-     TYPE_DECL if the type doesn't have linkage.
-     this must match fld_  */
-  if (type != TYPE_MAIN_VARIANT (type) || ! type_with_linkage_p (type))
-    TYPE_STUB_DECL (type) = NULL;
+  TYPE_STUB_DECL (type) = NULL;
   TYPE_NAME (type) = fld_simplified_type_name (type);
 }
 
@@ -5486,16 +5523,19 @@ need_assembler_name_p (tree decl)
      e.g.  -fno-signed-char/-fsigned-char mismatches to be handled well.
      See cp/mangle.c:write_builtin_type for details.  */
 
-  if (flag_lto_odr_type_mering
-      && TREE_CODE (decl) == TYPE_DECL
-      && DECL_NAME (decl)
-      && decl == TYPE_NAME (TREE_TYPE (decl))
-      && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TREE_TYPE (decl)
-      && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
-      && (type_with_linkage_p (TREE_TYPE (decl))
-	  || TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE)
-      && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
-    return !DECL_ASSEMBLER_NAME_SET_P (decl);
+  if (TREE_CODE (decl) == TYPE_DECL)
+    {
+      if (flag_lto_odr_type_mering
+	  && DECL_NAME (decl)
+	  && decl == TYPE_NAME (TREE_TYPE (decl))
+	  && TYPE_MAIN_VARIANT (TREE_TYPE (decl)) == TREE_TYPE (decl)
+	  && !TYPE_ARTIFICIAL (TREE_TYPE (decl))
+	  && (type_with_linkage_p (TREE_TYPE (decl))
+	      || TREE_CODE (TREE_TYPE (decl)) == INTEGER_TYPE)
+	  && !variably_modified_type_p (TREE_TYPE (decl), NULL_TREE))
+	return !DECL_ASSEMBLER_NAME_SET_P (decl);
+      return false;
+    }
   /* Only FUNCTION_DECLs and VAR_DECLs are considered.  */
   if (!VAR_OR_FUNCTION_DECL_P (decl))
     return false;
@@ -5649,13 +5689,15 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
     {
       DECL_VISIBILITY (decl) = VISIBILITY_DEFAULT;
       DECL_VISIBILITY_SPECIFIED (decl) = 0;
-      /* TREE_PUBLIC is used to tell if type is anonymous.  */
+      TREE_PUBLIC (decl) = 0;
+      TREE_PRIVATE (decl) = 0;
+      DECL_ARTIFICIAL (decl) = 0;
       TYPE_DECL_SUPPRESS_DEBUG (decl) = 0;
       DECL_INITIAL (decl) = NULL_TREE;
       DECL_ORIGINAL_TYPE (decl) = NULL_TREE;
       DECL_MODE (decl) = VOIDmode;
-      TREE_TYPE (decl) = void_type_node;
       SET_DECL_ALIGN (decl, 0);
+      /* TREE_TYPE is cleared at WPA time in free_odr_warning_data.  */
     }
   else if (TREE_CODE (decl) == FIELD_DECL)
     {
@@ -5688,20 +5730,7 @@ free_lang_data_in_decl (tree decl, struct free_lang_data_d *fld)
   if (TREE_CODE (decl) != FIELD_DECL
       && ((TREE_CODE (decl) != VAR_DECL && TREE_CODE (decl) != FUNCTION_DECL)
           || !DECL_VIRTUAL_P (decl)))
-    {
-      tree ctx = DECL_CONTEXT (decl);
-      /* Variably modified types are needed for tree_is_indexable to decide
-	 whether the type needs to go to local or global section.
-	 This code is semi-broken but for now it is easiest to keep contexts
-	 as expected.  */
-      if (ctx && TYPE_P (ctx)
-	  && !variably_modified_type_p (ctx, NULL_TREE))
-	 {
-	   while (ctx && TYPE_P (ctx))
-	     ctx = TYPE_CONTEXT (ctx);
-	   DECL_CONTEXT (decl) = ctx;
-	 }
-    }
+    DECL_CONTEXT (decl) = fld_decl_context (DECL_CONTEXT (decl));
 }
 
 

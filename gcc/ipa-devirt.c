@@ -2025,6 +2025,8 @@ get_odr_type (tree type, bool insert)
   if ((!slot || !*slot) && in_lto_p && can_be_vtable_hashed_p (type))
     {
       hash = hash_odr_vtable (type);
+      if (!odr_vtable_hash)
+        odr_vtable_hash = new odr_vtable_hash_type (23);
       vtable_slot = odr_vtable_hash->find_slot_with_hash (type, hash,
 					           insert ? INSERT : NO_INSERT);
     }
@@ -2289,27 +2291,43 @@ dump_type_inheritance_graph (FILE *f)
 	   "%i duplicates overall\n", num_all_types, num_types, num_duplicates);
 }
 
-/* Save some WPA->ltrans streaming by freeing enum values.  */
+/* Save some WPA->ltrans streaming by freeing stuff needed only for good
+   ODR warnings.
+   We free TYPE_VALUES of enums and also make TYPE_DECLs to not point back
+   to the type (which is needed to keep them in the same SCC and preserve
+   location information to output warnings) and subsequently we make all
+   TYPE_DECLS of same assembler name equivalent.  */
 
 static void
-free_enum_values ()
+free_odr_warning_data ()
 {
-  static bool enum_values_freed = false;
-  if (enum_values_freed || !flag_wpa || !odr_types_ptr)
+  static bool odr_data_freed = false;
+
+  if (odr_data_freed || !flag_wpa || !odr_types_ptr)
     return;
-  enum_values_freed = true;
-  unsigned int i;
-  for (i = 0; i < odr_types.length (); i++)
+
+  odr_data_freed = true;
+
+  for (unsigned int i = 0; i < odr_types.length (); i++)
     if (odr_types[i])
       {
-	if (TREE_CODE (odr_types[i]->type) == ENUMERAL_TYPE)
-	  TYPE_VALUES (odr_types[i]->type) = NULL;
+	tree t = odr_types[i]->type;
+
+	if (TREE_CODE (t) == ENUMERAL_TYPE)
+	  TYPE_VALUES (t) = NULL;
+	TREE_TYPE (TYPE_NAME (t)) = void_type_node;
+
 	if (odr_types[i]->types)
           for (unsigned int j = 0; j < odr_types[i]->types->length (); j++)
-	    if (TREE_CODE ((*odr_types[i]->types)[j]) == ENUMERAL_TYPE)
-	      TYPE_VALUES ((*odr_types[i]->types)[j]) = NULL;
+	    {
+	      tree td = (*odr_types[i]->types)[j];
+
+	      if (TREE_CODE (td) == ENUMERAL_TYPE)
+	        TYPE_VALUES (td) = NULL;
+	      TYPE_NAME (td) = TYPE_NAME (t);
+	    }
       }
-  enum_values_freed = true;
+  odr_data_freed = true;
 }
 
 /* Initialize IPA devirt and build inheritance tree graph.  */
@@ -2323,7 +2341,7 @@ build_type_inheritance_graph (void)
 
   if (odr_hash)
     {
-      free_enum_values ();
+      free_odr_warning_data ();
       return;
     }
   timevar_push (TV_IPA_INHERITANCE);
@@ -2370,7 +2388,7 @@ build_type_inheritance_graph (void)
       dump_type_inheritance_graph (inheritance_dump_file);
       dump_end (TDI_inheritance, inheritance_dump_file);
     }
-  free_enum_values ();
+  free_odr_warning_data ();
   timevar_pop (TV_IPA_INHERITANCE);
 }
 
