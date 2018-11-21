@@ -1,3 +1,11 @@
+2018-11-21  Renlin Li  <renlin.li@arm.com>
+
+	PR middle-end/84877
+	* explow.h (get_dynamic_stack_size): Declare it as external.
+	* explow.c (record_new_stack_level): Remove function static attribute.
+	* function.c (assign_stack_local_1): Dynamically align the stack slot
+	addr for parameter copy on the stack.
+
 2018-11-21  Richard Biener  <rguenther@suse.de>
 
 	PR bootstrap/88133
