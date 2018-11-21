@@ -1,3 +1,19 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+	    Mark Eggleston  <mark.eggleston@codethink.com>
+
+	* lang.opt (fdec-include): New option.
+	* options.c (set_dec_flags): Set also flag_dec_include.
+	* scanner.c (include_line): Change return type from bool to int.
+	In fixed form allow spaces in between include keyword letters.
+	For -fdec-include, allow in fixed form 0 in column 6.  With
+	-fdec-include return -1 if the parsed line is not full include
+	statement and it could be successfully completed on continuation
+	lines.
+	(include_stmt): New function.
+	(load_file): Adjust include_line caller.  If it returns -1, keep
+	trying include_stmt until it stops returning -1 whenever adding
+	further line of input.
+
 2018-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/88073

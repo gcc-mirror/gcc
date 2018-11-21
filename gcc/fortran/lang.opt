@@ -440,6 +440,10 @@ fdec
 Fortran Var(flag_dec)
 Enable all DEC language extensions.
 
+fdec-include
+Fortran Var(flag_dec_include)
+Enable legacy parsing of INCLUDE as statement.
+
 fdec-intrinsic-ints
 Fortran Var(flag_dec_intrinsic_ints)
 Enable kind-specific variants of integer intrinsic functions.
