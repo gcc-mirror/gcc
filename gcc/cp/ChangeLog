@@ -1,5 +1,10 @@
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88122
+	* method.c (maybe_explain_implicit_delete): If
+	FUNCTION_FIRST_USER_PARMTYPE (decl) is NULL, set const_p to false
+	instead of ICEing.
+
 	PR c++/87386
 	* parser.c (cp_parser_primary_expression): Use
 	id_expression.get_location () instead of id_expr_token->location.
