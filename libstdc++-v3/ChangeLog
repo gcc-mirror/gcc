@@ -1,5 +1,11 @@
 2018-11-21  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88111
+	* include/std/memory_resource (pool_options): Add Doxygen comments.
+	* src/c++17/memory_resource.cc (pool_sizes): Only use suitable values
+	on targets with 16-bit or 20-bit size_t type.
+	(munge_options): Make default values depend on width of size_t type.
+
 	PR libstdc++/88113
 	* src/c++17/memory_resource.cc (bitset::size_type): Use the smaller
 	of uint32_t and size_t.

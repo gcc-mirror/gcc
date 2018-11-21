@@ -825,10 +825,15 @@ namespace pmr
       128, 192,
       256, 320, 384, 448,
       512, 768,
+#if __SIZE_WIDTH__ > 16
       1024, 1536,
       2048, 3072,
-      1<<12, 1<<13, 1<<14, 1<<15, 1<<16, 1<<17,
+#if __SIZE_WIDTH__ > 20
+      1<<12, 1<<13, 1<<14,
+      1<<15, 1<<16, 1<<17,
       1<<20, 1<<21, 1<<22 // 4MB should be enough for anybody
+#endif
+#endif
   };
 
   pool_options
@@ -839,10 +844,13 @@ namespace pmr
     // replaced with implementation-defined defaults, and sizes may be
     // rounded to unspecified granularity.
 
-    // Absolute maximum. Each pool might have a smaller maximum.
+    // max_blocks_per_chunk sets the absolute maximum for the pool resource.
+    // Each pool might have a smaller maximum, because pools for very large
+    // objects might impose  smaller limit.
     if (opts.max_blocks_per_chunk == 0)
       {
-	opts.max_blocks_per_chunk = 1024 * 10; // TODO a good default?
+	// Pick a default that depends on the number of bits in size_t.
+	opts.max_blocks_per_chunk = __SIZE_WIDTH__ << 8;
       }
     else
       {
@@ -854,10 +862,15 @@ namespace pmr
 	opts.max_blocks_per_chunk = chunk::max_blocks_per_chunk();
       }
 
-    // Absolute minimum. Likely to be much larger in practice.
+    // largest_required_pool_block specifies the largest block size that will
+    // be allocated from a pool. Larger allocations will come directly from
+    // the upstream resource and so will not be pooled.
     if (opts.largest_required_pool_block == 0)
       {
-	opts.largest_required_pool_block = 4096; // TODO a good default?
+	// Pick a sensible default that depends on the number of bits in size_t
+	// (pools with larger block sizes must be explicitly requested by
+	// using a non-zero value for largest_required_pool_block).
+	opts.largest_required_pool_block = __SIZE_WIDTH__ << 6;
       }
     else
       {
