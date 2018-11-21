@@ -1,3 +1,12 @@
+2018-11-21  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	PR target/87867
+	Backport from mainiline
+	2018-09-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/arm/arm.c (arm_reorg): Skip Thumb reorg pass for thunks.
+	(arm32_output_mi_thunk): Deal with long calls.
+
 2018-11-20  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
