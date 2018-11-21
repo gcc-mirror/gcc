@@ -71,7 +71,7 @@
     (match_operand:GPI 1 "aarch64_sync_memory_operand" "+Q"))   ;; memory
    (set (match_dup 1)
     (unspec_volatile:GPI
-      [(match_operand:GPI 2 "aarch64_plus_operand" "rn")	;; expect
+      [(match_operand:GPI 2 "aarch64_plus_operand" "rIJ")	;; expect
        (match_operand:GPI 3 "aarch64_reg_or_zero" "rZ")		;; desired
        (match_operand:SI 4 "const_int_operand")			;; is_weak
        (match_operand:SI 5 "const_int_operand")			;; mod_s

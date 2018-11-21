@@ -1,3 +1,9 @@
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/87839
+	* config/aarch64/atomics.md (@aarch64_compare_and_swap<mode>): Use
+	rIJ constraint for aarch64_plus_operand rather than rn.
+
 2018-11-21  Renlin Li  <renlin.li@arm.com>
 
 	PR middle-end/84877
