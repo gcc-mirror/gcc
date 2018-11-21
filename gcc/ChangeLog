@@ -1,3 +1,15 @@
+2018-11-21  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/87957
+	* tree.c (fld_decl_context): Break out from ...
+	(free_lang_data_in_decl): ... here; free TREE_PUBLIC, TREE_PRIVATE
+	DECL_ARTIFICIAL of TYPE_DECL; do not free TREE_TYPE of TYPE_DECL.
+	(fld_incomplete_type_of): Build copy of TYP_DECL.
+	* ipa-devirt.c (free_enum_values): Rename to ...
+	(free_odr_warning_data): ... this one; free also duplicated TYPE_DECLs
+	and TREE_TYPEs of TYPE_DECLs.
+	(get_odr_type): Initialize odr_vtable_hash if needed.
+
 2018-11-21  Alexandre Oliva <oliva@adacore.com>
 
 	* final.c (compute_discriminator): Declare.  Renamed from...
