@@ -1,3 +1,8 @@
+2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR middle-end/88129
+	* function.c (expand_function_end): Do not emit extra blockage insn.
+
 2018-11-21  Lokesh Janghel  <lokeshjanghel91@gmail.com>
 
 	PR target/85667
