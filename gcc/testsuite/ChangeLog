@@ -1,3 +1,20 @@
+2018-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/87317
+	* gcc.target/i386/pr87317-1.c: New file.
+	* gcc.target/i386/pr87317-2.c: Likewise.
+	* gcc.target/i386/pr87317-3.c: Likewise.
+	* gcc.target/i386/pr87317-4.c: Likewise.
+	* gcc.target/i386/pr87317-5.c: Likewise.
+	* gcc.target/i386/pr87317-6.c: Likewise.
+	* gcc.target/i386/pr87317-7.c: Likewise.
+	* gcc.target/i386/pr87317-8.c: Likewise.
+	* gcc.target/i386/pr87317-9.c: Likewise.
+	* gcc.target/i386/pr87317-10.c: Likewise.
+	* gcc.target/i386/pr87317-11.c: Likewise.
+	* gcc.target/i386/pr87317-12.c: Likewise.
+	* gcc.target/i386/pr87317-13.c: Likewise.
+
 2018-11-21  Tom de Vries  <tdevries@suse.de>
 
 	PR driver/79855
