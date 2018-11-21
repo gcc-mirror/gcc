@@ -1343,7 +1343,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 			   " is defined in another translation unit"));
 	      return false;
 	    }
-	  if (TREE_VALUE (v1) != TREE_VALUE (v2))
+	  if (!operand_equal_p (TREE_VALUE (v1), TREE_VALUE (v2), 0))
 	    {
 	      warn_odr (t1, t2, NULL, NULL, warn, warned,
 			G_("an enum with different values is defined"

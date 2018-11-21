@@ -1,3 +1,9 @@
+2018-11-20  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR lto/84044
+	* g++.dg/lto/odr-4_0.C: New testcase.
+	* g++.dg/lto/odr-4_1.C: New testcase.
+
 2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88110
