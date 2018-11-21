@@ -299,13 +299,25 @@ namespace pmr
     { return !(__a == __b); }
 
 
+  /// Parameters for tuning a pool resource's behaviour.
   struct pool_options
   {
+    /** @brief Upper limit on number of blocks in a chunk.
+     *
+     * A lower value prevents allocating huge chunks that could remain mostly
+     * unused, but means pools will need to replenished more frequently.
+     */
     size_t max_blocks_per_chunk = 0;
+
+    /* @brief Largest block size (in bytes) that should be served from pools.
+     *
+     * Larger allocations will be served directly by the upstream resource,
+     * not from one of the pools managed by the pool resource.
+     */
     size_t largest_required_pool_block = 0;
   };
 
-  // Common implementation details for unsynchronized/synchronized pool resources.
+  // Common implementation details for un-/synchronized pool resources.
   class __pool_resource
   {
     friend class synchronized_pool_resource;
