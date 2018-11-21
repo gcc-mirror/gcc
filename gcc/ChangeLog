@@ -1,3 +1,8 @@
+2018-11-21  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* read-rtl.c (apply_subst_iterator): Handle define_split and
+	define_insn_and_split.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/87817
