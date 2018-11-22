@@ -1,3 +1,13 @@
+2018-11-22  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/88142
+	* ipa-devirt.c (type_variants_equivalent_p): Drop warn and warned
+	parameters; do not warn here.
+	(odr_subtypes_equivalent_p): Likewise.
+	(warn_odr): Fix typo.
+	(warn_types_mismatch): Do not output confused warnings on integer types.
+	(odr_types_equivalent_p): Update.
+
 2018-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_option_override_internal,

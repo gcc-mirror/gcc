@@ -636,32 +636,17 @@ set_type_binfo (tree type, tree binfo)
    same type.  */
 
 static bool
-type_variants_equivalent_p (tree t1, tree t2, bool warn, bool *warned)
+type_variants_equivalent_p (tree t1, tree t2)
 {
   if (TYPE_QUALS (t1) != TYPE_QUALS (t2))
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-	        G_("a type with different qualifiers is defined in another "
-		   "translation unit"));
-      return false;
-    }
+    return false;
 
   if (comp_type_attributes (t1, t2) != 1)
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-	        G_("a type with different attributes "
-		   "is defined in another translation unit"));
-      return false;
-    }
+    return false;
 
   if (COMPLETE_TYPE_P (t1) && COMPLETE_TYPE_P (t2)
       && TYPE_ALIGN (t1) != TYPE_ALIGN (t2))
-    {
-      warn_odr (t1, t2, NULL, NULL, warn, warned,
-		G_("a type with different alignment "
-		   "is defined in another translation unit"));
-      return false;
-    }
+    return false;
 
   return true;
 }
@@ -669,7 +654,7 @@ type_variants_equivalent_p (tree t1, tree t2, bool warn, bool *warned)
 /* Compare T1 and T2 based on name or structure.  */
 
 static bool
-odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
+odr_subtypes_equivalent_p (tree t1, tree t2,
 			   hash_set<type_pair> *visited,
 			   location_t loc1, location_t loc2)
 {
@@ -698,7 +683,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	return false;
       if (!types_same_for_odr (t1, t2))
         return false;
-      if (!type_variants_equivalent_p (t1, t2, warn, warned))
+      if (!type_variants_equivalent_p (t1, t2))
 	return false;
       /* Limit recursion: If subtypes are ODR types and we know
 	 that they are same, be happy.  */
@@ -725,7 +710,7 @@ odr_subtypes_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   if (!odr_types_equivalent_p (TYPE_MAIN_VARIANT (t1), TYPE_MAIN_VARIANT (t2),
 			      false, NULL, visited, loc1, loc2))
     return false;
-  if (!type_variants_equivalent_p (t1, t2, warn, warned))
+  if (!type_variants_equivalent_p (t1, t2))
     return false;
   return true;
 }
@@ -1017,7 +1002,7 @@ warn_odr (tree t1, tree t2, tree st1, tree st2,
 
   auto_diagnostic_group d;
   if (t1 != TYPE_MAIN_VARIANT (t1)
-      && TYPE_NAME (t1) != DECL_NAME (TYPE_MAIN_VARIANT (t1)))
+      && TYPE_NAME (t1) != TYPE_NAME (TYPE_MAIN_VARIANT (t1)))
     {
       if (!warning_at (DECL_SOURCE_LOCATION (TYPE_NAME (TYPE_MAIN_VARIANT (t1))),
 		       OPT_Wodr, "type %qT (typedef of %qT) violates the "
@@ -1279,6 +1264,11 @@ warn_types_mismatch (tree t1, tree t2, location_t loc1, location_t loc2)
     }
 
   if (types_odr_comparable (t1, t2)
+      /* We make assign integers mangled names to be able to handle
+	 signed/unsigned chars.  Accepting them here would however lead to
+	 confussing message like
+	 "type ‘const int’ itself violates the C++ One Definition Rule"  */
+      && TREE_CODE (t1) != INTEGER_TYPE
       && types_same_for_odr (t1, t2))
     inform (loc_t1,
 	    "type %qT itself violates the C++ One Definition Rule", t1);
@@ -1410,7 +1400,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	    }
 
 	  if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					  warn, warned, visited, loc1, loc2))
+					  visited, loc1, loc2))
 	    {
 	      warn_odr (t1, t2, NULL, NULL, warn, warned,
 			G_("it is defined as a pointer to different type "
@@ -1424,7 +1414,6 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 
       if ((TREE_CODE (t1) == VECTOR_TYPE || TREE_CODE (t1) == COMPLEX_TYPE)
 	  && !odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					 warn, warned,
 					 visited, loc1, loc2))
 	{
 	  /* Probably specific enough.  */
@@ -1444,7 +1433,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	/* Array types are the same if the element types are the same and
 	   the number of elements are the same.  */
 	if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-					warn, warned, visited, loc1, loc2))
+					visited, loc1, loc2))
 	  {
 	    warn_odr (t1, t2, NULL, NULL, warn, warned,
 		      G_("a different type is defined in another "
@@ -1462,7 +1451,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	/* For an incomplete external array, the type domain can be
 	   NULL_TREE.  Check this condition also.  */
 	if (i1 == NULL_TREE || i2 == NULL_TREE)
-          return type_variants_equivalent_p (t1, t2, warn, warned);
+          return type_variants_equivalent_p (t1, t2);
 
 	tree min1 = TYPE_MIN_VALUE (i1);
 	tree min2 = TYPE_MIN_VALUE (i2);
@@ -1486,7 +1475,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
       /* Function types are the same if the return type and arguments types
 	 are the same.  */
       if (!odr_subtypes_equivalent_p (TREE_TYPE (t1), TREE_TYPE (t2),
-				      warn, warned, visited, loc1, loc2))
+				      visited, loc1, loc2))
 	{
 	  warn_odr (t1, t2, NULL, NULL, warn, warned,
 		    G_("has different return value "
@@ -1498,7 +1487,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 
       if (TYPE_ARG_TYPES (t1) == TYPE_ARG_TYPES (t2)
 	  || !prototype_p (t1) || !prototype_p (t2))
-        return type_variants_equivalent_p (t1, t2, warn, warned);
+        return type_variants_equivalent_p (t1, t2);
       else
 	{
 	  tree parms1, parms2;
@@ -1508,7 +1497,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	       parms1 = TREE_CHAIN (parms1), parms2 = TREE_CHAIN (parms2))
 	    {
 	      if (!odr_subtypes_equivalent_p
-		     (TREE_VALUE (parms1), TREE_VALUE (parms2), warn, warned,
+		     (TREE_VALUE (parms1), TREE_VALUE (parms2),
 		      visited, loc1, loc2))
 		{
 		  warn_odr (t1, t2, NULL, NULL, warn, warned,
@@ -1529,7 +1518,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 	      return false;
 	    }
 
-          return type_variants_equivalent_p (t1, t2, warn, warned);
+          return type_variants_equivalent_p (t1, t2);
 	}
 
     case RECORD_TYPE:
@@ -1589,7 +1578,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 		    return false;
 		  }
 		if (!odr_subtypes_equivalent_p (TREE_TYPE (f1),
-						TREE_TYPE (f2), warn, warned,
+						TREE_TYPE (f2),
 						visited, loc1, loc2))
 		  {
 		    /* Do not warn about artificial fields and just go into
@@ -1671,7 +1660,7 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
   gcc_assert (!TYPE_SIZE_UNIT (t1) || !TYPE_SIZE_UNIT (t2)
 	      || operand_equal_p (TYPE_SIZE_UNIT (t1),
 				  TYPE_SIZE_UNIT (t2), 0));
-  return type_variants_equivalent_p (t1, t2, warn, warned);
+  return type_variants_equivalent_p (t1, t2);
 }
 
 /* Return true if TYPE1 and TYPE2 are equivalent for One Definition Rule.  */

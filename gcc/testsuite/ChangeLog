@@ -1,3 +1,9 @@
+2018-11-22  Jan Hubicka  <jh@suse.cz>
+
+	PR lto/88142
+	* g++.dg/lto/odr-5_0.C: New testcase.
+	* g++.dg/lto/odr-5_1.C: New testcase.
+
 2018-11-22  Jan Hubicka  <hubicka@ucw.cz>
 
 	* g++.dg/lto/odr-2_0.C: Drop dg-lto-options.
