@@ -1,3 +1,8 @@
+2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_avx_emit_vzeroupper): Remove.
+	(ix86_emit_mode_set) <case AVX_U128>: Emit vzeroupper here.
+
 2018-11-22  Martin Liska  <mliska@suse.cz>
 
 	* common/config/i386/i386-common.c (processor_names): Add
