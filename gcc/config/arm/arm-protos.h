@@ -28,7 +28,7 @@ extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
 extern int use_return_insn (int, rtx);
 extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
-extern void arm_load_pic_register (unsigned long);
+extern void arm_load_pic_register (unsigned long, rtx);
 extern int arm_volatile_func (void);
 extern void arm_expand_prologue (void);
 extern void arm_expand_epilogue (bool);
@@ -69,7 +69,7 @@ extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
 extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern int legitimate_pic_operand_p (rtx);
-extern rtx legitimize_pic_address (rtx, machine_mode, rtx);
+extern rtx legitimize_pic_address (rtx, machine_mode, rtx, rtx, bool);
 extern rtx legitimize_tls_address (rtx, rtx);
 extern bool arm_legitimate_address_p (machine_mode, rtx, bool);
 extern int arm_legitimate_address_outer_p (machine_mode, rtx, RTX_CODE, int);

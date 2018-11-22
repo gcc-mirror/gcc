@@ -6185,6 +6185,23 @@ stack_protect_prologue (void)
   rtx x, y;
 
   x = expand_normal (crtl->stack_protect_guard);
+
+  if (targetm.have_stack_protect_combined_set () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+
+      /* Allow the target to compute address of Y and copy it to X without
+	 leaking Y into a register.  This combined address + copy pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      if (rtx_insn *insn = targetm.gen_stack_protect_combined_set (x, y))
+	{
+	  emit_insn (insn);
+	  return;
+	}
+    }
+
   if (guard_decl)
     y = expand_normal (guard_decl);
   else

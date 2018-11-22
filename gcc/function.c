@@ -4937,18 +4937,34 @@ stack_protect_epilogue (void)
   tree guard_decl = targetm.stack_protect_guard ();
   rtx_code_label *label = gen_label_rtx ();
   rtx x, y;
-  rtx_insn *seq;
+  rtx_insn *seq = NULL;
 
   x = expand_normal (crtl->stack_protect_guard);
-  if (guard_decl)
-    y = expand_normal (guard_decl);
-  else
-    y = const0_rtx;
 
-  /* Allow the target to compare Y with X without leaking either into
-     a register.  */
-  if (targetm.have_stack_protect_test ()
-      && ((seq = targetm.gen_stack_protect_test (x, y, label)) != NULL_RTX))
+  if (targetm.have_stack_protect_combined_test () && guard_decl)
+    {
+      gcc_assert (DECL_P (guard_decl));
+      y = DECL_RTL (guard_decl);
+      /* Allow the target to compute address of Y and compare it with X without
+	 leaking Y into a register.  This combined address + compare pattern
+	 allows the target to prevent spilling of any intermediate results by
+	 splitting it after register allocator.  */
+      seq = targetm.gen_stack_protect_combined_test (x, y, label);
+    }
+  else
+    {
+      if (guard_decl)
+	y = expand_normal (guard_decl);
+      else
+	y = const0_rtx;
+
+      /* Allow the target to compare Y with X without leaking either into
+	 a register.  */
+      if (targetm.have_stack_protect_test ())
+	seq = targetm.gen_stack_protect_test (x, y, label);
+    }
+
+  if (seq)
     emit_insn (seq);
   else
     emit_cmp_and_jump_insns (x, y, EQ, NULL_RTX, ptr_mode, 1, label);
