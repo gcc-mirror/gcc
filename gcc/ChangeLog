@@ -1,3 +1,8 @@
+2018-11-22  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/88017
+	* config/i386/i386.c (ix86_option_override_internal):
+
 2018-11-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	Revert the revert:

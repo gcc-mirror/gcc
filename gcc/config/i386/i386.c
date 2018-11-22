@@ -3550,6 +3550,8 @@ ix86_option_override_internal (bool main_args_p,
     error ("%<-mabi=ms%> not supported with %<-fsanitize=address%>");
   if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_ix86_abi == MS_ABI)
     error ("%<-mabi=ms%> not supported with %<-fsanitize=kernel-address%>");
+  if ((opts->x_flag_sanitize & SANITIZE_THREAD) && opts->x_ix86_abi == MS_ABI)
+    error ("%<-mabi=ms%> not supported with %<-fsanitize=thread%>");
 
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this

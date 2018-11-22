@@ -1,3 +1,8 @@
+2018-11-22  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/88017
+	* gcc.dg/tsan/pr88017.c: New test.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88122
