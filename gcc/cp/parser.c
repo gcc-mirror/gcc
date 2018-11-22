@@ -15306,8 +15306,8 @@ cp_parser_operator (cp_parser* parser, location_t start_loc)
 	  return error_mark_node;
 	else if (TREE_CODE (str) == USERDEF_LITERAL)
 	  {
-	    string_tree = USERDEF_LITERAL_VALUE (str);
-	    id = USERDEF_LITERAL_SUFFIX_ID (str);
+	    string_tree = USERDEF_LITERAL_VALUE (str.get_value ());
+	    id = USERDEF_LITERAL_SUFFIX_ID (str.get_value ());
 	    end_loc = str.get_location ();
 	  }
 	else
