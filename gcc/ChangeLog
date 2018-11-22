@@ -1,3 +1,12 @@
+2018-11-22  Tom de Vries  <tom@codesourcery.com>
+
+	backport from trunk:
+	2017-11-19  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/82961
+	* vmsdbgout.c (vmsdbgout_early_finish): New function.
+	(vmsdbg_debug_hooks): Set early_finish field to vmsdbgout_early_finish.
+
 2018-11-21  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	PR target/87867
