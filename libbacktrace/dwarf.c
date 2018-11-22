@@ -651,6 +651,25 @@ leb128_len (const unsigned char *p)
   return ret;
 }
 
+/* Read initial_length from BUF and advance the appropriate number of bytes.  */
+
+static uint64_t
+read_initial_length (struct dwarf_buf *buf, int *is_dwarf64)
+{
+  uint64_t len;
+
+  len = read_uint32 (buf);
+  if (len == 0xffffffff)
+    {
+      len = read_uint64 (buf);
+      *is_dwarf64 = 1;
+    }
+  else
+    *is_dwarf64 = 0;
+
+  return len;
+}
+
 /* Free an abbreviations structure.  */
 
 static void
@@ -1463,14 +1482,7 @@ build_address_map (struct backtrace_state *state, uintptr_t base_address,
 
       unit_data_start = info.buf;
 
-      is_dwarf64 = 0;
-      len = read_uint32 (&info);
-      if (len == 0xffffffff)
-	{
-	  len = read_uint64 (&info);
-	  is_dwarf64 = 1;
-	}
-
+      len = read_initial_length (&info, &is_dwarf64);
       unit_buf = info;
       unit_buf.left = len;
 
@@ -2002,13 +2014,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   line_buf.data = data;
   line_buf.reported_underflow = 0;
 
-  is_dwarf64 = 0;
-  len = read_uint32 (&line_buf);
-  if (len == 0xffffffff)
-    {
-      len = read_uint64 (&line_buf);
-      is_dwarf64 = 1;
-    }
+  len = read_initial_length (&line_buf, &is_dwarf64);
   line_buf.left = len;
 
   if (!read_line_header (state, u, is_dwarf64, &line_buf, hdr))
