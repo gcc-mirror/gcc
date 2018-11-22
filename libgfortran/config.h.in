@@ -72,6 +72,9 @@
 /* Define to 1 if you have the `atanl' function. */
 #undef HAVE_ATANL
 
+/* Define to 1 if the target supports __atomic_fetch_add */
+#undef HAVE_ATOMIC_FETCH_ADD
+
 /* Define to 1 if the target supports __attribute__((alias(...))). */
 #undef HAVE_ATTRIBUTE_ALIAS
 
@@ -740,9 +743,6 @@
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
-
-/* Define to 1 if the target supports __sync_fetch_and_add */
-#undef HAVE_SYNC_FETCH_AND_ADD
 
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H
