@@ -1,5 +1,13 @@
 2018-11-22  Jakub Jelinek  <jakub@redhat.com>
 
+	* config/i386/i386.c (ix86_option_override_internal,
+	ix86_can_inline_p, classify_argument, construct_container,
+	ix86_expand_prologue, ix86_expand_split_stack_prologue,
+	ix86_expand_carry_flag_compare, expand_set_or_movmem_via_loop,
+	expand_setmem_epilogue_via_loop, promote_duplicated_reg,
+	ix86_expand_set_or_movmem, ix86_init_builtins_va_builtins_abi):
+	Formatting fixes.
+
 	* config/i386/i386.c (ix86_option_override_internal): For
 	stack_protector_guard related options, use opts_set->x_ instead
 	of global_options_set. and prefix options with opts->x_ .  Move
