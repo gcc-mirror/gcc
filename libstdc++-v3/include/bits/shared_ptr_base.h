@@ -500,7 +500,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   struct _Sp_make_shared_tag
   {
-#if !__cpp_rtti
   private:
     template<typename _Tp, _Lock_policy _Lp>
       friend class __shared_ptr;
@@ -510,10 +509,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static const type_info&
     _S_ti() noexcept _GLIBCXX_VISIBILITY(default)
     {
-      alignas(type_info) static constexpr _Sp_make_shared_tag __tag;
+      alignas(type_info) static constexpr char __tag[sizeof(type_info)] = { };
       return reinterpret_cast<const type_info&>(__tag);
     }
-#endif
   };
 
   template<typename _Tp, typename _Alloc, _Lock_policy _Lp>
@@ -562,16 +560,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	this->~_Sp_counted_ptr_inplace();
       }
 
-      // Sneaky trick so __shared_ptr can get the managed pointer
+      // Sneaky trick so __shared_ptr can get the managed pointer.
       virtual void*
-      _M_get_deleter(const std::type_info& __ti) noexcept
+      _M_get_deleter(const std::type_info& __ti) noexcept override
       {
-#if __cpp_rtti
-	if (__ti == typeid(_Sp_make_shared_tag))
-#else
+	// Check for the fake type_info first, so we don't try to access it
+	// as a real type_info object.
 	if (&__ti == &_Sp_make_shared_tag::_S_ti())
-#endif
 	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
+#if __cpp_rtti
+	// Callers compiled with old libstdc++ headers and RTTI enabled
+	// might pass this instead:
+	else if (__ti == typeid(_Sp_make_shared_tag))
+	  return const_cast<typename remove_cv<_Tp>::type*>(_M_ptr());
+#endif
 	return nullptr;
       }
 
@@ -1323,11 +1325,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // _M_ptr needs to point to the newly constructed object.
 	  // This relies on _Sp_counted_ptr_inplace::_M_get_deleter.
-#if __cpp_rtti
-	  void* __p = _M_refcount._M_get_deleter(typeid(__tag));
-#else
 	  void* __p = _M_refcount._M_get_deleter(_Sp_make_shared_tag::_S_ti());
-#endif
 	  _M_ptr = static_cast<_Tp*>(__p);
 	  _M_enable_shared_from_this_with(_M_ptr);
 	}

@@ -1,3 +1,16 @@
+2018-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85930
+	PR libstdc++/87520
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti)
+	[__cpp_rtti]: Define even when RTTI is enabled. Use array of
+	sizeof(type_info) so that type-punned reference binds to an object
+	of the correct size as well as correct alignment.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [__cpp_rtti]: Check for
+	_S_ti() reference even when RTTI is enabled.
+	(__shared_ptr(_Sp_make_shared_tag, const _Alloc&, _Args&&...))
+	[__cpp_rtti]: Pass _S_ti() instead of typeid(_Sp_make_shared_tag).
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87386
