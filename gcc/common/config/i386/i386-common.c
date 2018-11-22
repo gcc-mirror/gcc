@@ -1478,7 +1478,7 @@ i386_except_unwind_info (struct gcc_options *opts)
 #define TARGET_SUPPORTS_SPLIT_STACK ix86_supports_split_stack
 
 /* This table must be in sync with enum processor_type in i386.h.  */
-const char *const processor_names[PROCESSOR_max] =
+const char *const processor_names[] =
 {
   "generic",
   "i386",
@@ -1516,8 +1516,12 @@ const char *const processor_names[PROCESSOR_max] =
   "bdver4",
   "btver1",
   "btver2",
-  "znver1"
+  "znver1",
+  "znver2"
 };
+
+/* Guarantee that the array is aligned with enum processor_type.  */
+STATIC_ASSERT (ARRAY_SIZE (processor_names) == PROCESSOR_max);
 
 const pta processor_alias_table[] =
 {
@@ -1734,11 +1738,24 @@ ix86_get_valid_option_values (int option_code,
     {
     case OPT_march_:
       for (unsigned i = 0; i < pta_size; i++)
-	v.safe_push (processor_alias_table[i].name);
+	{
+	  const char *name = processor_alias_table[i].name;
+	  gcc_checking_assert (name != NULL);
+	  v.safe_push (name);
+	}
+#ifdef HAVE_LOCAL_CPU_DETECT
+      /* Add also "native" as possible value.  */
+      v.safe_push ("native");
+#endif
+
       break;
     case OPT_mtune_:
       for (unsigned i = 0; i < PROCESSOR_max; i++)
-	v.safe_push (processor_names[i]);
+	{
+	  const char *name = processor_names[i];
+	  gcc_checking_assert (name != NULL);
+	  v.safe_push (name);
+	}
       break;
     default:
       break;
