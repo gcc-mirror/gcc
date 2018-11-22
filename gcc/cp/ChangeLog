@@ -1,3 +1,9 @@
+2018-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87386
+	* parser.c (cp_parser_operator): Use str.get_value () instead of just
+	str in USERDEF_LITERAL_VALUE and USERDEF_LITERAL_SUFFIX_ID arguments.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88122
