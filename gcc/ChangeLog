@@ -1,3 +1,8 @@
+2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_check_avx_upper_register):
+	Return true for all SSE registers with mode bitsize > 128.
+
 2018-11-22  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/87718
