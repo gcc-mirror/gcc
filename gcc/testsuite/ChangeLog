@@ -1,3 +1,7 @@
+2018-11-22  Andreas Schwab  <schwab@suse.de>
+
+	* g++.dg/lto/odr-2_0.C: Remove extra brace
+
 2018-11-22  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/88017
@@ -33,8 +37,8 @@
 	* g++.dg/lto/odr-1_0.C: Extend by mismatched enum.
 	* g++.dg/lto/odr-1_1.C: Extend by mismatched enum.
 	* g++.dg/lto/odr-2_0.C: New.
-	* g++.dg/lto/odr-2_0.C: New.
-	* g++.dg/lto/odr-3_1.C: New.
+	* g++.dg/lto/odr-2_1.C: New.
+	* g++.dg/lto/odr-3_0.C: New.
 	* g++.dg/lto/odr-3_1.C: New.
 
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
