@@ -1,3 +1,17 @@
+2018-11-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_algobase.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_deque.h: Include <bits/stl_uninitialized.h>.
+	(__is_trivially_relocatable): Specialize for deque.
+	* include/bits/stl_iterator.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_uninitialized.h (__is_trivially_relocatable):
+	Add parameter for meta-programming.
+	(__relocate_a_1, __relocate_a): Add noexcept specification.
+	* include/bits/stl_vector.h (__use_relocate): Test __relocate_a.
+
 2018-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/85930

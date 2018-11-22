@@ -65,6 +65,10 @@
 #include <bits/move.h>
 #include <bits/ptr_traits.h>
 
+#if __cplusplus >= 201103L
+# include <type_traits>
+#endif
+
 #if __cplusplus > 201402L
 # define __cpp_lib_array_constexpr 201603
 #endif
@@ -1004,6 +1008,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Iterator, typename _Container>
     _Iterator
     __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
+    _GLIBCXX_NOEXCEPT_IF(std::is_nothrow_copy_constructible<_Iterator>::value)
     { return __it.base(); }
 
 #if __cplusplus >= 201103L
