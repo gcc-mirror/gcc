@@ -68,6 +68,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-loop.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-loop-niter.h"
 #include "tree-ssa-sccvn.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
@@ -5903,6 +5904,16 @@ process_bb (rpo_elim &avail, basic_block bb,
 	  lc_phi_nodes = true;
 	  break;
 	}
+
+  /* When we visit a loop header substitute into loop info.  */
+  if (!iterate && eliminate && bb->loop_father->header == bb)
+    {
+      /* Keep fields in sync with substitute_in_loop_info.  */
+      if (bb->loop_father->nb_iterations)
+	bb->loop_father->nb_iterations
+	  = simplify_replace_tree (bb->loop_father->nb_iterations,
+				   NULL_TREE, NULL_TREE, vn_valueize);
+    }
 
   /* Value-number all defs in the basic-block.  */
   for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);

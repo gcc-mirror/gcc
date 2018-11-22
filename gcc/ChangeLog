@@ -1,5 +1,13 @@
 2018-11-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88148
+	* tree-ssa-loop-niter.c (simplify_replace_tree): Get optional
+	valueization callback parameter and handle it.
+	* tree-ssa-loop-niter.h (simplify_replace_tree): Export.
+	* tree-ssa-sccvn.c (process_bb): Eliminate in loop niter trees.
+
+2018-11-22  Richard Biener  <rguenther@suse.de>
+
 	PR lto/87229
 	PR lto/88112
 	* lto-streamer-out.c (lto_is_streamable): Allow CALL_EXPRs
