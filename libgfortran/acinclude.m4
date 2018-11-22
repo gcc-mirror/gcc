@@ -59,17 +59,17 @@ extern void bar(void) __attribute__((alias("foo")));]],
       [Define to 1 if the target supports __attribute__((alias(...))).])
   fi])
 
-dnl Check whether the target supports __sync_fetch_and_add.
-AC_DEFUN([LIBGFOR_CHECK_SYNC_FETCH_AND_ADD], [
-  AC_CACHE_CHECK([whether the target supports __sync_fetch_and_add],
-		 libgfor_cv_have_sync_fetch_and_add, [
+dnl Check whether the target supports __atomic_fetch_add.
+AC_DEFUN([LIBGFOR_CHECK_ATOMIC_FETCH_ADD], [
+  AC_CACHE_CHECK([whether the target supports __atomic_fetch_add],
+		 libgfor_cv_have_atomic_fetch_add, [
   AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foovar = 0;]], [[
-if (foovar <= 0) return __sync_fetch_and_add (&foovar, 1);
-if (foovar > 10) return __sync_add_and_fetch (&foovar, -1);]])],
-	      libgfor_cv_have_sync_fetch_and_add=yes, libgfor_cv_have_sync_fetch_and_add=no)])
-  if test $libgfor_cv_have_sync_fetch_and_add = yes; then
-    AC_DEFINE(HAVE_SYNC_FETCH_AND_ADD, 1,
-	      [Define to 1 if the target supports __sync_fetch_and_add])
+if (foovar <= 0) return __atomic_fetch_add (&foovar, 1, __ATOMIC_ACQ_REL);
+if (foovar > 10) return __atomic_add_fetch (&foovar, -1, __ATOMIC_ACQ_REL);]])],
+	      libgfor_cv_have_atomic_fetch_add=yes, libgfor_cv_have_atomic_fetch_add=no)])
+  if test $libgfor_cv_have_atomic_fetch_add = yes; then
+    AC_DEFINE(HAVE_ATOMIC_FETCH_ADD, 1,
+	      [Define to 1 if the target supports __atomic_fetch_add])
   fi])
 
 dnl Check for pragma weak.
