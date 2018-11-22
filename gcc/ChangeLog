@@ -1,3 +1,14 @@
+2018-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/85644
+	PR target/86832
+	* config/i386/i386.c (ix86_option_override_internal): Default
+	ix86_stack_protector_guard to SSP_TLS only if TARGET_THREAD_SSP_OFFSET
+	is defined.
+	* config/i386/i386.md (stack_protect_set, stack_protect_set_<mode>,
+	stack_protect_test, stack_protect_test_<mode>): Use empty condition
+	instead of TARGET_SSP_TLS_GUARD.
+
 2018-11-22  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/88017
