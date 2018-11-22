@@ -1,3 +1,15 @@
+2018-11-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	Backport from mainline
+	2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/85925
+	* gcc.c-torture/execute/20181120-1.c: Require effective target
+	int32plus.
+	(u): New variable.
+	(main): Compare d against u.f1 rather than 0x101.  Use 0x4030201
+	instead of 0x10101.
+
 2018-11-21  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	PR target/87867
