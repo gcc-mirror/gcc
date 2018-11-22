@@ -4658,8 +4658,8 @@ ix86_option_override_internal (bool main_args_p,
       = build_target_option_node (opts);
 
   if (opts->x_flag_cf_protection != CF_NONE)
-    opts->x_flag_cf_protection =
-      (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
+    opts->x_flag_cf_protection
+      = (cf_protection_level) (opts->x_flag_cf_protection | CF_SET);
 
   if (ix86_tune_features [X86_TUNE_AVOID_128FMA_CHAINS])
     maybe_set_param_value (PARAM_AVOID_FMA_MAX_BITS, 128,
@@ -5475,10 +5475,10 @@ ix86_can_inline_p (tree caller, tree callee)
   struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
   struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
   bool ret = false;
-  bool always_inline =
-     (DECL_DISREGARD_INLINE_LIMITS (callee)
-      && lookup_attribute ("always_inline",
-			   DECL_ATTRIBUTES (callee)));
+  bool always_inline
+    = (DECL_DISREGARD_INLINE_LIMITS (callee)
+       && lookup_attribute ("always_inline",
+			    DECL_ATTRIBUTES (callee)));
 
   cgraph_node *callee_node = cgraph_node::get (callee);
   /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
@@ -7375,8 +7375,8 @@ static int
 classify_argument (machine_mode mode, const_tree type,
 		   enum x86_64_reg_class classes[MAX_CLASSES], int bit_offset)
 {
-  HOST_WIDE_INT bytes =
-    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
+  HOST_WIDE_INT bytes
+    = mode == BLKmode ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   int words = CEIL (bytes + (bit_offset % 64) / 8, UNITS_PER_WORD);
 
   /* Variable sized entities are always passed/returned in memory.  */
@@ -7432,9 +7432,8 @@ classify_argument (machine_mode mode, const_tree type,
 			   i < ((int_bit_position (field) + (bit_offset % 64))
 			        + tree_to_shwi (DECL_SIZE (field))
 				+ 63) / 8 / 8; i++)
-			classes[i] =
-			  merge_classes (X86_64_INTEGER_CLASS,
-					 classes[i]);
+			classes[i]
+			  = merge_classes (X86_64_INTEGER_CLASS, classes[i]);
 		    }
 		  else
 		    {
@@ -7471,8 +7470,8 @@ classify_argument (machine_mode mode, const_tree type,
 		      pos = (int_bit_position (field)
 			     + (bit_offset % 64)) / 8 / 8;
 		      for (i = 0; i < num && (i + pos) < words; i++)
-			classes[i + pos] =
-			  merge_classes (subclasses[i], classes[i + pos]);
+			classes[i + pos]
+			  = merge_classes (subclasses[i], classes[i + pos]);
 		    }
 		}
 	    }
@@ -7827,8 +7826,8 @@ construct_container (machine_mode mode, machine_mode orig_mode,
   static bool issued_x87_ret_error;
 
   machine_mode tmpmode;
-  int bytes =
-    (mode == BLKmode) ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
+  int bytes
+    = mode == BLKmode ? int_size_in_bytes (type) : (int) GET_MODE_SIZE (mode);
   enum x86_64_reg_class regclass[MAX_CLASSES];
   int n;
   int i;
@@ -13369,8 +13368,8 @@ ix86_expand_prologue (void)
       && frame.stack_pointer_offset > SEH_MAX_FRAME_SIZE
       && !sse_registers_saved)
     {
-      HOST_WIDE_INT sse_size =
-	frame.sse_reg_save_offset - frame.reg_save_offset;
+      HOST_WIDE_INT sse_size
+	= frame.sse_reg_save_offset - frame.reg_save_offset;
 
       gcc_assert (int_registers_saved);
 
@@ -14651,8 +14650,8 @@ ix86_expand_split_stack_prologue (void)
 
 	  if (split_stack_fn_large == NULL_RTX)
 	    {
-	      split_stack_fn_large =
-	        gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
+	      split_stack_fn_large
+		= gen_rtx_SYMBOL_REF (Pmode, "__morestack_large_model");
 	      SYMBOL_REF_FLAGS (split_stack_fn_large) |= SYMBOL_FLAG_LOCAL;
 	    }
 	  if (ix86_cmodel == CM_LARGE_PIC)
@@ -22700,8 +22699,8 @@ ix86_expand_setcc (rtx dest, enum rtx_code code, rtx op0, rtx op1)
 static bool
 ix86_expand_carry_flag_compare (enum rtx_code code, rtx op0, rtx op1, rtx *pop)
 {
-  machine_mode mode =
-    GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
+  machine_mode mode
+    = GET_MODE (op0) != VOIDmode ? GET_MODE (op0) : GET_MODE (op1);
 
   /* Do not handle double-mode compares that go through special path.  */
   if (mode == (TARGET_64BIT ? TImode : DImode))
@@ -25839,10 +25838,10 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 	    {
 	      if (i)
 		{
-		  destmem =
-		    adjust_address (copy_rtx (destmem), mode, GET_MODE_SIZE (mode));
-		  srcmem =
-		    adjust_address (copy_rtx (srcmem), mode, GET_MODE_SIZE (mode));
+		  destmem = adjust_address (copy_rtx (destmem), mode,
+					    GET_MODE_SIZE (mode));
+		  srcmem = adjust_address (copy_rtx (srcmem), mode,
+					   GET_MODE_SIZE (mode));
 		}
 	      emit_move_insn (destmem, srcmem);
 	    }
@@ -25855,19 +25854,15 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
 	    {
 	      tmpreg[i] = gen_reg_rtx (mode);
 	      if (i)
-		{
-		  srcmem =
-		    adjust_address (copy_rtx (srcmem), mode, GET_MODE_SIZE (mode));
-		}
+		srcmem = adjust_address (copy_rtx (srcmem), mode,
+					 GET_MODE_SIZE (mode));
 	      emit_move_insn (tmpreg[i], srcmem);
 	    }
 	  for (i = 0; i < unroll; i++)
 	    {
 	      if (i)
-		{
-		  destmem =
-		    adjust_address (copy_rtx (destmem), mode, GET_MODE_SIZE (mode));
-		}
+		destmem = adjust_address (copy_rtx (destmem), mode,
+					  GET_MODE_SIZE (mode));
 	      emit_move_insn (destmem, tmpreg[i]);
 	    }
 	}
@@ -25876,8 +25871,8 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
     for (i = 0; i < unroll; i++)
       {
 	if (i)
-	  destmem =
-	    adjust_address (copy_rtx (destmem), mode, GET_MODE_SIZE (mode));
+	  destmem = adjust_address (copy_rtx (destmem), mode,
+				    GET_MODE_SIZE (mode));
 	emit_move_insn (destmem, value);
       }
 
@@ -25896,7 +25891,8 @@ expand_set_or_movmem_via_loop (rtx destmem, rtx srcmem,
       else if (expected_size > REG_BR_PROB_BASE)
 	predict_jump (REG_BR_PROB_BASE - 1);
       else
-        predict_jump (REG_BR_PROB_BASE - (REG_BR_PROB_BASE + expected_size / 2) / expected_size);
+        predict_jump (REG_BR_PROB_BASE - (REG_BR_PROB_BASE + expected_size / 2)
+		      / expected_size);
     }
   else
     predict_jump (REG_BR_PROB_BASE * 80 / 100);
@@ -26239,9 +26235,8 @@ static void
 expand_setmem_epilogue_via_loop (rtx destmem, rtx destptr, rtx value,
 				 rtx count, int max_size)
 {
-  count =
-    expand_simple_binop (counter_mode (count), AND, count,
-			 GEN_INT (max_size - 1), count, 1, OPTAB_DIRECT);
+  count = expand_simple_binop (counter_mode (count), AND, count,
+			       GEN_INT (max_size - 1), count, 1, OPTAB_DIRECT);
   expand_set_or_movmem_via_loop (destmem, NULL, destptr, NULL,
 				 gen_lowpart (QImode, value), count, QImode,
 				 1, max_size / 2, true);
@@ -27051,8 +27046,8 @@ promote_duplicated_reg (machine_mode mode, rtx val)
 	{
 	  tmp = expand_simple_binop (mode, ASHIFT, reg, GEN_INT (8),
 				     NULL, 1, OPTAB_DIRECT);
-	  reg =
-	    expand_simple_binop (mode, IOR, reg, tmp, reg, 1, OPTAB_DIRECT);
+	  reg = expand_simple_binop (mode, IOR, reg, tmp, reg, 1,
+				     OPTAB_DIRECT);
 	}
       tmp = expand_simple_binop (mode, ASHIFT, reg, GEN_INT (16),
 			         NULL, 1, OPTAB_DIRECT);
@@ -27586,10 +27581,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
 
       if (size_needed < epilogue_size_needed)
 	{
-	  tmp =
-	    expand_simple_binop (counter_mode (count_exp), AND, count_exp,
-				 GEN_INT (size_needed - 1), count_exp, 1,
-				 OPTAB_DIRECT);
+	  tmp = expand_simple_binop (counter_mode (count_exp), AND, count_exp,
+				     GEN_INT (size_needed - 1), count_exp, 1,
+				     OPTAB_DIRECT);
 	  if (tmp != count_exp)
 	    emit_move_insn (count_exp, tmp);
 	}
@@ -33378,24 +33372,23 @@ ix86_init_builtins_va_builtins_abi (void)
   fnattr_ms = build_tree_list (get_identifier ("ms_abi"), NULL_TREE);
   fnattr_sysv = build_tree_list (get_identifier ("sysv_abi"), NULL_TREE);
   ms_va_ref = build_reference_type (ms_va_list_type_node);
-  sysv_va_ref =
-    build_pointer_type (TREE_TYPE (sysv_va_list_type_node));
+  sysv_va_ref = build_pointer_type (TREE_TYPE (sysv_va_list_type_node));
 
-  fnvoid_va_end_ms =
-    build_function_type_list (void_type_node, ms_va_ref, NULL_TREE);
-  fnvoid_va_start_ms =
-    build_varargs_function_type_list (void_type_node, ms_va_ref, NULL_TREE);
-  fnvoid_va_end_sysv =
-    build_function_type_list (void_type_node, sysv_va_ref, NULL_TREE);
-  fnvoid_va_start_sysv =
-    build_varargs_function_type_list (void_type_node, sysv_va_ref,
-    				       NULL_TREE);
-  fnvoid_va_copy_ms =
-    build_function_type_list (void_type_node, ms_va_ref, ms_va_list_type_node,
-    			      NULL_TREE);
-  fnvoid_va_copy_sysv =
-    build_function_type_list (void_type_node, sysv_va_ref,
-    			      sysv_va_ref, NULL_TREE);
+  fnvoid_va_end_ms = build_function_type_list (void_type_node, ms_va_ref,
+					       NULL_TREE);
+  fnvoid_va_start_ms
+    = build_varargs_function_type_list (void_type_node, ms_va_ref, NULL_TREE);
+  fnvoid_va_end_sysv
+    = build_function_type_list (void_type_node, sysv_va_ref, NULL_TREE);
+  fnvoid_va_start_sysv
+    = build_varargs_function_type_list (void_type_node, sysv_va_ref,
+					NULL_TREE);
+  fnvoid_va_copy_ms
+    = build_function_type_list (void_type_node, ms_va_ref,
+				ms_va_list_type_node, NULL_TREE);
+  fnvoid_va_copy_sysv
+    = build_function_type_list (void_type_node, sysv_va_ref,
+				sysv_va_ref, NULL_TREE);
 
   add_builtin_function ("__builtin_ms_va_start", fnvoid_va_start_ms,
   			BUILT_IN_VA_START, BUILT_IN_NORMAL, NULL, fnattr_ms);
