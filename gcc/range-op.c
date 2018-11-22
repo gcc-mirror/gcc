@@ -1526,8 +1526,11 @@ operator_cast::op1_range (irange& r, const irange& lhs,
       r.cast (op2_type);
       if (r == op2)
         {
+	  // we know the value of the RHS fits in the LHS type, so convert the
+	  // left hand side and remove any values that arent in OP2.
 	  r = lhs;
 	  r.cast (op2_type);
+	  r.intersect (op2);
 	}
       else
 	r = op2;

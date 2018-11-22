@@ -424,7 +424,7 @@ gori_map::dump(FILE *f)
 static bool
 get_tree_range (irange &r, tree expr, tree name, irange *range_of_name)
 {
-  if (expr != name)
+  if (expr != name || !range_of_name)
     return get_tree_range (r, expr);
 
   r = *range_of_name;
@@ -432,13 +432,13 @@ get_tree_range (irange &r, tree expr, tree name, irange *range_of_name)
 }
 
 // Calculate the range for NAME if the lhs of statement S has the range LHS.
-// NAME must be one of the two operands on S.  Return the result in R.
-// Return false if no range can be calculated.
+// NAME must be one of the two operands on S. If present, NAME_RANGE is any
+// known range for NAME coming into this statement,
+// Return the result in R. Return false if no range can be calculated.
 
 static bool
-compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
-			       const irange &lhs, tree import_name,
-			       irange *import)
+compute_operand_range_on_stmt (irange &r, grange_op *s, const irange &lhs,
+			       tree name, irange *name_range)
 {
   irange op1_range, op2_range;
 
@@ -453,30 +453,30 @@ compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
 	  // The second parameter to a unary operation is the range for the type
 	  // of operand1, but if it can be reduced further, the results will
 	  // be better.  Start with what we know of the range of OP1.
-	  if (get_tree_range (op1_range, op1, import_name, import))
+	  if (get_tree_range (op1_range, op1, name, name_range))
 	    return s->calc_op1_irange (r, lhs, op1_range);
 	  else
 	    return s->calc_op1_irange (r, lhs);
 	}
       // If we need the second operand, get a value and evaluate.
-      if (get_tree_range (op2_range, op2, import_name, import))
+      if (get_tree_range (op2_range, op2, name, name_range))
 	if (s->calc_op1_irange (r, lhs, op2_range))
 	  {
-	    // If op1 is also the import, intersect the 2 ranges.
-	    if (op1 == import_name)
-	      r.intersect (*import);
+	    // If op1 also has a range, intersect the 2 ranges.
+	    if (name_range)
+	      r.intersect (*name_range);
 	    return true;
 	  }
       return false;
     }
 
   gcc_checking_assert (op2 == name);
-  if (get_tree_range (op1_range, op1, import_name, import))
+  if (get_tree_range (op1_range, op1, name, name_range))
     if (s->calc_op2_irange (r, lhs, op1_range))
       {
-	// If op2 is also the import, intersect the 2 ranges.
-	if (op2 == import_name)
-	  r.intersect (*import);
+	// If op2 also has a range, intersect the 2 ranges.
+	if (name_range)
+	  r.intersect (*name_range);
 	return true;
       }
   return false;
@@ -486,19 +486,20 @@ compute_operand_range_on_stmt (irange &r, grange_op *s, tree name,
 // External entry point to calculate the range of NAME on statement S assuming
 // the lhs's range is LHS.  Return TRUE and the result in R if it is possible
 // to calculate, otherwise return FALSE.
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
-			       const irange &lhs, tree import_name,
-			       irange *import)
+compute_operand_range_on_stmt (irange &r, gimple *s, const irange &lhs,
+			       tree name, irange *name_range)
 {
   if (is_a<grange_op *> (s))
-    return compute_operand_range_on_stmt (r, as_a<grange_op *> (s), name, lhs);
+    return compute_operand_range_on_stmt (r, as_a<grange_op *> (s),  lhs, name,
+					  name_range);
   if (is_a<gswitch *> (s))
     {
       if (gimple_switch_index (as_a<gswitch *>(s)) == name)
         {
-	  gcc_assert (get_tree_range (r, name, import_name, import));
+	  gcc_assert (get_tree_range (r, name, name, name_range));
 	  r.intersect (lhs);
 	  return true;
 	}
@@ -526,27 +527,30 @@ gori_compute::~gori_compute ()
 // Given the statement S, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range (irange &r, gimple *s, tree name,
-				   const irange &lhs, irange *import)
+gori_compute::compute_operand_range (irange &r, gimple *s, const irange &lhs,
+				     tree name, irange *name_range)
 {
   if (is_a<grange_op *> (s))
-    return compute_operand_range_op (r, as_a<grange_op *> (s), name, lhs,
-				     import);
+    return compute_operand_range_op (r, as_a<grange_op *> (s), lhs, name,
+				     name_range);
   if (is_a<gswitch *> (s))
-    return compute_operand_range_switch (r, as_a<gswitch *> (s), name, lhs,
-					 import);
+    return compute_operand_range_switch (r, as_a<gswitch *> (s), lhs, name,
+					 name_range);
   return false;
 }
     
 // Given the switch S, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_switch (irange &r, gswitch *s, tree name,
-				   const irange &lhs, irange *import)
+gori_compute::compute_operand_range_switch (irange &r, gswitch *s,
+					    const irange &lhs, tree name,
+					    irange *name_range)
 {
   tree op1 = gimple_switch_index (s);
 
@@ -556,15 +560,15 @@ gori_compute::compute_operand_range_switch (irange &r, gswitch *s, tree name,
     {
       r = lhs;
       // If this is also the terminal
-      if (name && terminal_name (op1) == name)
-        r.intersect (*import);
+      if (name && name_range)
+        r.intersect (*name_range);
       return true;
     }
 
   // If op1 is in the defintion chain, pass lhs back.
   if (ssa_range::valid_ssa_p (op1) && in_chain_p (name, op1))
-    return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, lhs,
-				  import);
+    return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), lhs, name,
+				  name_range);
 
   return false;
 }
@@ -599,10 +603,12 @@ is_gimple_logical_p (const gimple *gs)
 // Given the range_op S, return an evaluation in R for NAME
 // when the lhs evaluates to LHS.  Returning false means the name being
 // looked for was not resolvable. 
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
-					const irange &lhs, irange *import)
+gori_compute::compute_operand_range_op (irange &r, grange_op *stmt, 
+					const irange &lhs, tree name,
+					irange *name_range)
 {
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
@@ -619,16 +625,12 @@ gori_compute::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
 
   // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
-    {
-      tree import_name = import ? name : NULL_TREE;
-      return compute_operand_range_on_stmt (r, stmt, name, lhs, import_name,
-					    import);
-    }
+    return compute_operand_range_on_stmt (r, stmt, lhs, name, name_range);
 
   // Check for logical combination cases which require developing ranges 
   // and combining the results based on the operation. 
   if (is_gimple_logical_p (stmt))
-    return compute_logical_operands (stmt, r, name, lhs, import);
+    return compute_logical_operands (r, stmt, lhs, name, name_range);
 
   // Reaching this point means NAME is not in this stmt, but one of the
   // names in it ought to be derived from it. 
@@ -638,13 +640,14 @@ gori_compute::compute_operand_range_op (irange &r, grange_op *stmt, tree name,
   if (op2_in_chain)
     { 
       if (op1_in_chain)
-	return compute_operand1_and_operand2_range (stmt, r, name, lhs, import);
+	return compute_operand1_and_operand2_range (r, stmt, lhs, name,
+						    name_range);
       else
-	return compute_operand2_range (stmt, r, name, lhs, import);
+	return compute_operand2_range (r, stmt, lhs, name, name_range);
     }
   else
     if (op1_in_chain)
-      return compute_operand1_range (stmt, r, name, lhs, import);
+      return compute_operand1_range (r, stmt, lhs, name, name_range);
 
   // If neither operand is derived, then this stmt tells us nothing.
   return false;
@@ -755,10 +758,12 @@ gori_compute::logical_combine (irange &r, enum tree_code code,
 
 // Given a logical STMT, calculate true and false for each potential path 
 // using NAME and resolve the outcome based on the logical operator.  
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_logical_operands (grange_op *s, irange &r, tree name,
-				        const irange &lhs, irange *import)
+gori_compute::compute_logical_operands (irange &r, grange_op *s, 
+				        const irange &lhs, tree name,
+					irange *name_range)
 {
   irange op1_range, op2_range;
   tree op1, op2;
@@ -781,21 +786,19 @@ gori_compute::compute_logical_operands (grange_op *s, irange &r, tree name,
   if (!op1_in_chain && !op2_in_chain)
     return false;
 
-  tree import_name = import ? name : NULL_TREE;
-
   /* The false path is not always a simple inversion of the true side.
      Calulate ranges for true and false on both sides. */
   if (op1_in_chain)
     {
-      ret = compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1), name,
-				   m_bool_one, import);
-      ret &= compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1), name,
-				    m_bool_zero, import);
+      ret = compute_operand_range (op1_true, SSA_NAME_DEF_STMT (op1), 
+				   m_bool_one, name, name_range);
+      ret &= compute_operand_range (op1_false, SSA_NAME_DEF_STMT (op1),
+				    m_bool_zero, name, name_range);
     }
   else
     {
       // Otherwise just get the value for name in operand 1 position
-      gcc_assert (get_tree_range (op1_true, name, import_name, import));
+      gcc_assert (get_tree_range (op1_true, name, name, name_range));
       op1_false = op1_true;
     }
 
@@ -805,14 +808,14 @@ gori_compute::compute_logical_operands (grange_op *s, irange &r, tree name,
       if (op2_in_chain)
 	{
 	  ret &= compute_operand_range (op2_true, SSA_NAME_DEF_STMT (op2),
-				      name, m_bool_one, import);
+					m_bool_one, name, name_range);
 	  ret &= compute_operand_range (op2_false, SSA_NAME_DEF_STMT (op2),
-				      name, m_bool_zero, import);
+					m_bool_zero, name, name_range);
 	}
       else
 	{
 	  // Otherwise just get the value for name in operand 2 position
-	  gcc_assert (get_tree_range (op2_true, name, import_name, import));
+	  gcc_assert (get_tree_range (op2_true, name, name, name_range));
 	  op2_false = op2_true; 
 	}
     }
@@ -826,19 +829,19 @@ gori_compute::compute_logical_operands (grange_op *s, irange &r, tree name,
 // Calculate a range for NAME from the operand 1 position of S assuming the 
 // result of the statement is LHS.  Return the range in R, or false if no
 // range could be calculated.
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand1_range (grange_op *s, irange &r, tree name,
-				      const irange &lhs, irange *import)
+gori_compute::compute_operand1_range (irange &r, grange_op *s, 
+				      const irange &lhs, tree name, 
+				      irange *name_range)
 {
   irange op1_range, op2_range;
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
-  tree import_name = import ? name : NULL_TREE;
-
   // Determine a known range for operand1 ().
-  if (!get_tree_range (op1_range, op1, import_name, import))
+  if (!get_tree_range (op1_range, op1, name, name_range))
     return false;
 
   // Now calcuated the operand and put that result in r.
@@ -852,7 +855,7 @@ gori_compute::compute_operand1_range (grange_op *s, irange &r, tree name,
     }
   else
     {
-      if (!get_tree_range (op2_range, op2, import_name, import))
+      if (!get_tree_range (op2_range, op2, name, name_range))
 	return false;
       if (!s->calc_op1_irange (r, lhs, op2_range))
 	return false;
@@ -862,27 +865,27 @@ gori_compute::compute_operand1_range (grange_op *s, irange &r, tree name,
   op1_range.intersect (r);
 
   // Then feed this range back as the LHS of the defining statement.
-  return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), name, op1_range,
-				import);
+  return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), op1_range, name,
+				name_range);
 }
 
 
 // Calculate a range for NAME from the operand 2 position of S assuming the 
 // result of the statement is LHS.  Return the range in R, or false if no
 // range could be calculated.
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand2_range (grange_op *s, irange &r, tree name,
-				      const irange &lhs, irange *import)
+gori_compute::compute_operand2_range (irange &r, grange_op *s,
+				      const irange &lhs, tree name,
+				      irange *name_range)
 {
   irange op1_range, op2_range;
   tree op1 = s->operand1 ();
   tree op2 = s->operand2 ();
 
-  tree import_name = import ? name : NULL_TREE;
-
   // Get a range for op1.
-  if (!get_tree_range (op1_range, op1, import_name, import))
+  if (!get_tree_range (op1_range, op1, name, name_range))
     return false;
 
   // calculate the range for op2 based on lhs and op1.
@@ -890,35 +893,36 @@ gori_compute::compute_operand2_range (grange_op *s, irange &r, tree name,
     return false;
 
   // Also pick up what is known about op2's range at this point
-  if (!get_tree_range (r, op2, import_name, import))
+  if (!get_tree_range (r, op2, name, name_range))
     return false;
 
   // And intersect it with the calculated result.
   op2_range.intersect (r);
 
   // Then feed this range back as the LHS of the defining statement.
-  return compute_operand_range (r, SSA_NAME_DEF_STMT (op2), name, op2_range,
-				import);
+  return compute_operand_range (r, SSA_NAME_DEF_STMT (op2), op2_range, name,
+				name_range);
 }
 
 // Calculate a range for NAME from both operand positions of S assuming the 
 // result of the statement is LHS.  Return the range in R, or false if no
 // range could be calculated.
+// If present, NAME_RANGE is any known range for NAME coming into S.
 
 bool
-gori_compute::compute_operand1_and_operand2_range (grange_op *s, irange &r,
-						   tree name, const irange &lhs,
-						   irange *import)
+gori_compute::compute_operand1_and_operand2_range (irange &r, grange_op *s,
+						   const irange &lhs, tree name,
+						   irange *name_range)
 {
   irange op_range;
 
   // Calculate a good a range for op2. Since op1 == op2, this will have
   // already included whatever the actual range of name is.
-  if (!compute_operand2_range (s, op_range, name, lhs, import))
+  if (!compute_operand2_range (op_range, s, lhs, name, name_range))
     return false;
 
   // Now get the range thru op1... 
-  if (!compute_operand1_range (s, r, name, lhs, import))
+  if (!compute_operand1_range (r, s, lhs, name, name_range))
     return false;
 
   // Whichever range is the most permissive is the one we need to use. (?)

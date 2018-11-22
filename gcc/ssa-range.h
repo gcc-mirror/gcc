@@ -84,7 +84,8 @@ class ssa_range
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   // Calculate a range on edge E only if it is defined by E.
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name);
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      irange *name_range = NULL);
 
   
   bool range_of_stmt_with_range (irange &r, gimple *s, tree name,

@@ -130,10 +130,9 @@ private:
 // It can calculate a range for c_3 of [MIN, 9] on the outgoing edge since it
 // is referenced in the statement which generats the range.
 
-extern bool compute_operand_range_on_stmt (irange &r, gimple *s, tree name,
-					   const irange &lhs,
-					   tree import_name = NULL_TREE,
-					   irange *import = NULL);
+extern bool compute_operand_range_on_stmt (irange &r, gimple *s,
+					   const irange &lhs, tree name,
+					   irange *name_range = NULL);
 
 // This class enhances the GORI map to add functionality to compute the value
 // of named operands from the def chain.  It Adds a single entry point which
@@ -156,24 +155,25 @@ public:
   ~gori_compute ();
 
   // Evaluate the range for NAME on stmt S if the lhs has range LHS. 
-  bool compute_operand_range (irange &r, gimple *s, tree name,
-			      const irange &lhs, irange *import = NULL);
+  bool compute_operand_range (irange &r, gimple *s, const irange &lhs,
+			      tree name, irange *name_range= NULL);
 private:
-  bool compute_operand_range_switch (irange &r, gswitch *s, tree name,
-				     const irange &lhs, irange *import);
-  bool compute_operand_range_op (irange &r, grange_op *stmt, tree name,
-				 const irange &lhs, irange *import);
-  bool compute_operand1_range (grange_op *s, irange &r, tree name,
-			       const irange &lhs, irange *import);
-  bool compute_operand2_range (grange_op *s, irange &r, tree name,
-			       const irange &lhs, irange *import);
-  bool compute_operand1_and_operand2_range (grange_op *s, irange &r, tree name,
-					    const irange &lhs, irange *import);
+  bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
+				     tree name, irange *name_range);
+  bool compute_operand_range_op (irange &r, grange_op *stmt, const irange &lhs,
+				 tree name, irange *name_range);
+  bool compute_operand1_range (irange &r, grange_op *s, const irange &lhs,
+			       tree name, irange *name_range);
+  bool compute_operand2_range (irange &r, grange_op *s, const irange &lhs,
+			       tree name, irange *name_range);
+  bool compute_operand1_and_operand2_range (irange &r, grange_op *s, 
+					    const irange &lhs, tree name,
+					    irange *name_range);
+  bool compute_logical_operands (irange &r, grange_op *s, const irange &lhs,
+				 tree name, irange *name_range);
   bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
 		        const irange &op1_true, const irange &op1_false,
 		        const irange &op2_true, const irange &op2_false);
-  bool compute_logical_operands (grange_op *s, irange &r, tree name,
-				 const irange &lhs, irange *import);
   
   irange m_bool_zero;           /* Boolean zero cached.  */
   irange m_bool_one;            /* Boolean true cached.  */

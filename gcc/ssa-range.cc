@@ -621,8 +621,8 @@ ssa_range::range_on_edge (irange &r, edge e, tree name)
   gcc_assert (range_on_exit (r, e->src, name));
 
   // Check to see if NAME is defined on edge e.
-  if (outgoing_edge_range_p (edge_range, e, name))
-    r.intersect (edge_range);
+  if (outgoing_edge_range_p (edge_range, e, name, &r))
+    r = edge_range;
 
   return true;
 }
@@ -632,7 +632,8 @@ ssa_range::range_on_edge (irange &r, edge e, tree name)
 // or NAME is not defined by this edge.
 
 bool
-ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
+ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name,
+				  irange *name_range)
 {
   irange lhs;
 
@@ -646,14 +647,14 @@ ssa_range::outgoing_edge_range_p (irange &r, edge e, tree name)
       if (!s)
 	return false;
       // Otherwise use the outgoing edge as a LHS and try to calculate a range.
-      return compute_operand_range_on_stmt (r, s, name, lhs);
+      return compute_operand_range_on_stmt (r, s, lhs, name, name_range);
     }
 
   if (!range_p (e->src, name))
     return false;
 
   gcc_checking_assert (s);
-  return m_gori->compute_operand_range (r, s, name, lhs);
+  return m_gori->compute_operand_range (r, s, lhs, name, name_range);
 
 }
 
@@ -1321,6 +1322,20 @@ inline void
 global_ranger::set_global_ssa_range (tree name, const irange&r)
 {
   m_globals->set_global_range (name, r);
+#if 0
+  if (r.varying_p ())
+    {
+      // we need a proper set_to_varying and undefined.
+      SSA_NAME_RANGE_INFO (name) = NULL;
+    }
+  else if (!r.undefined_p () && !POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      value_range vr;
+      irange_to_value_range (vr, r);
+      set_range_info (name, vr.kind (), wi::to_wide (vr.min ()),
+		      wi::to_wide (vr.max ()));
+    }
+#endif
 }
 
 // clear any global range for NAME.
@@ -1369,22 +1384,9 @@ global_ranger::maybe_propagate_on_edge (tree name, edge e)
   // If a range is generated on this edge, pick it up.
   if (range_p (pred, name))
     {
-      // If name is an import, feed the block's range into the computation.
-      if (m_gori->is_import_p (name, pred))
-        {
-	  irange lhs;
-	  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
-	  gcc_checking_assert (s);
-	  if (m_gori->compute_operand_range (edge_range, s, name, lhs,
-					     &block_range))
-	    block_range = edge_range;
-	}
-      else 
-        {
-	  // Otherwise pick up the edge range and intersect it with block.
-	  if (outgoing_edge_range_p (edge_range, e, name))
-	    block_range.intersect (edge_range);
-	}
+      // Otherwise pick up the edge range and intersect it with block.
+      if (outgoing_edge_range_p (edge_range, e, name, &block_range))
+	block_range = edge_range;
     }
     // else If (m_gori->def_chain_in_export_p (name,  src)) 
     //   then we'll want to reevaluate name here somehow :-P 
