@@ -4205,6 +4205,7 @@ visit_phi (gimple *phi, bool *inserted, bool backedges_varying_p)
 	 given that allows us to escape a region in alias walking.  */
       || (sameval
 	  && TREE_CODE (sameval) == SSA_NAME
+	  && !SSA_NAME_IS_DEFAULT_DEF (sameval)
 	  && SSA_NAME_IS_VIRTUAL_OPERAND (sameval)
 	  && (SSA_VAL (sameval, &visited_p), !visited_p)))
     /* Note this just drops to VARYING without inserting the PHI into

@@ -1,3 +1,9 @@
+2018-11-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88069
+	* tree-ssa-sccvn.c (visit_phi): Tweak previous fix to not
+	apply to default defs.
+
 2018-11-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/85644
