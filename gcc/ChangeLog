@@ -1,3 +1,10 @@
+2018-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): For
+	stack_protector_guard related options, use opts_set->x_ instead
+	of global_options_set. and prefix options with opts->x_ .  Move
+	defaults for offset and reg into else block.
+
 2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_check_avx_upper_register):

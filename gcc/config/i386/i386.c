@@ -4571,14 +4571,10 @@ ix86_option_override_internal (bool main_args_p,
 	opts->x_ix86_stack_protector_guard = SSP_GLOBAL;
     }
 
-#ifdef TARGET_THREAD_SSP_OFFSET
-  ix86_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
-#endif
-
-  if (global_options_set.x_ix86_stack_protector_guard_offset_str)
+  if (opts_set->x_ix86_stack_protector_guard_offset_str)
     {
       char *endp;
-      const char *str = ix86_stack_protector_guard_offset_str;
+      const char *str = opts->x_ix86_stack_protector_guard_offset_str;
 
       errno = 0;
       int64_t offset;
@@ -4598,20 +4594,16 @@ ix86_option_override_internal (bool main_args_p,
 	error ("%qs is not a valid offset "
 	       "in -mstack-protector-guard-offset=", str);
 
-      ix86_stack_protector_guard_offset = offset;
+      opts->x_ix86_stack_protector_guard_offset = offset;
     }
+#ifdef TARGET_THREAD_SSP_OFFSET
+  else
+    opts->x_ix86_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
+#endif
 
-  ix86_stack_protector_guard_reg = DEFAULT_TLS_SEG_REG;
-
-  /* The kernel uses a different segment register for performance
-     reasons; a system call would not have to trash the userspace
-     segment register, which would be expensive.  */
-  if (ix86_cmodel == CM_KERNEL)
-    ix86_stack_protector_guard_reg = ADDR_SPACE_SEG_GS;
-
-  if (global_options_set.x_ix86_stack_protector_guard_reg_str)
+  if (opts_set->x_ix86_stack_protector_guard_reg_str)
     {
-      const char *str = ix86_stack_protector_guard_reg_str;
+      const char *str = opts->x_ix86_stack_protector_guard_reg_str;
       addr_space_t seg = ADDR_SPACE_GENERIC;
 
       /* Discard optional register prefix.  */
@@ -4629,9 +4621,19 @@ ix86_option_override_internal (bool main_args_p,
       if (seg == ADDR_SPACE_GENERIC)
 	error ("%qs is not a valid base register "
 	       "in -mstack-protector-guard-reg=",
-	       ix86_stack_protector_guard_reg_str);
+	       opts->x_ix86_stack_protector_guard_reg_str);
 
-      ix86_stack_protector_guard_reg = seg;
+      opts->x_ix86_stack_protector_guard_reg = seg;
+    }
+  else
+    {
+      opts->x_ix86_stack_protector_guard_reg = DEFAULT_TLS_SEG_REG;
+
+      /* The kernel uses a different segment register for performance
+	 reasons; a system call would not have to trash the userspace
+	 segment register, which would be expensive.  */
+      if (opts->x_ix86_cmodel == CM_KERNEL)
+	opts->x_ix86_stack_protector_guard_reg = ADDR_SPACE_SEG_GS;
     }
 
   /* Handle -mmemcpy-strategy= and -mmemset-strategy=  */
