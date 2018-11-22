@@ -894,14 +894,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // This class may be specialized for specific types.
-  template<typename _Tp>
+  template<typename _Tp, typename = void>
     struct __is_trivially_relocatable
     : is_trivial<_Tp> { };
 
   template <typename _Tp, typename _Up>
     inline __enable_if_t<std::__is_trivially_relocatable<_Tp>::value, _Tp*>
     __relocate_a_1(_Tp* __first, _Tp* __last,
-		   _Tp* __result, allocator<_Up>& __alloc)
+		   _Tp* __result, allocator<_Up>& __alloc) noexcept
     {
       ptrdiff_t __count = __last - __first;
       if (__count > 0)
@@ -914,15 +914,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _ForwardIterator
     __relocate_a_1(_InputIterator __first, _InputIterator __last,
 		   _ForwardIterator __result, _Allocator& __alloc)
+    noexcept(noexcept(std::__relocate_object_a(std::addressof(*__result),
+					       std::addressof(*__first),
+					       __alloc)))
     {
       typedef typename iterator_traits<_InputIterator>::value_type
 	_ValueType;
       typedef typename iterator_traits<_ForwardIterator>::value_type
 	_ValueType2;
       static_assert(std::is_same<_ValueType, _ValueType2>::value);
-      static_assert(noexcept(std::__relocate_object_a(std::addressof(*__result),
-						      std::addressof(*__first),
-						      __alloc)));
       _ForwardIterator __cur = __result;
       for (; __first != __last; ++__first, (void)++__cur)
 	std::__relocate_object_a(std::__addressof(*__cur),
@@ -935,6 +935,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline _ForwardIterator
     __relocate_a(_InputIterator __first, _InputIterator __last,
 		 _ForwardIterator __result, _Allocator& __alloc)
+    noexcept(noexcept(__relocate_a_1(std::__niter_base(__first),
+				     std::__niter_base(__last),
+				     std::__niter_base(__result), __alloc)))
     {
       return __relocate_a_1(std::__niter_base(__first),
 			    std::__niter_base(__last),
