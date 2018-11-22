@@ -1,5 +1,23 @@
 2018-11-22  Richard Biener  <rguenther@suse.de>
 
+	PR lto/87229
+	PR lto/88112
+	* lto-streamer-out.c (lto_is_streamable): Allow CALL_EXPRs
+	which can appear in size expressions.
+	* tree-streamer-in.c (unpack_ts_base_value_fields): Stream
+	CALL_EXPR_BY_DESCRIPTOR.
+	(streamer_read_tree_bitfields): Stream CALL_EXPR_IFN.
+	* tree-streamer-out.c (pack_ts_base_value_fields): Stream
+	CALL_EXPR_BY_DESCRIPTOR.
+	(streamer_write_tree_bitfields): Stream CALL_EXPR_IFN.
+
+	Revert
+	PR lto/87229
+	* tree.c (free_lang_data_in_one_sizepos): Free non-gimple-val
+	sizepos values.
+
+2018-11-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88069
 	* tree-ssa-sccvn.c (visit_phi): Tweak previous fix to not
 	apply to default defs.
