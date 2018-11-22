@@ -94,7 +94,7 @@ if { [is-effective-target dlopen] && [is-effective-target pthread] } {
     dg-test "$srcdir/$subdir/host.c" "-ldl -pthread" "$DEFAULT_CFLAGS"
 
     # Test requires a command line argument to be passed to the program.
-    set libphobos_run_args "$objdir/../src/.libs/libgphobos.so"
+    set libphobos_run_args "${blddir}/src/.libs/libgphobos.${shlib_ext}"
     dg-test "$srcdir/$subdir/loadDR.c" "-ldl -pthread -g" "$DEFAULT_CFLAGS"
     set libphobos_run_args ""
 }
