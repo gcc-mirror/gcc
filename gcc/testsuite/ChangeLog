@@ -1,3 +1,9 @@
+2018-11-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87718
+	* gcc.target/i386/pr82361-1.c: Check only the first operand of
+	moves.
+
 2018-11-22  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* gcc.target/arm/pr85434.c: New test.

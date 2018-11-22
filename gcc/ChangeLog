@@ -1,3 +1,10 @@
+2018-11-22  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/87718
+	* ira-costs.c: Remove trailing white-spaces.
+	(record_operand_costs): Add a special treatment for moves
+	involving a hard register.
+
 2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_avx_emit_vzeroupper): Remove.
