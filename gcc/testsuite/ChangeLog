@@ -71,11 +71,12 @@
 
 2018-11-09  Mihail Ionescu  <mihail.ionescu@arm.com>
 
-        Backport from mainiline
-        2018-09-17  Eric Botcazou  <ebotcazou@adacore.com>
+	PR target/87867
+	Backport from mainiline
+	2018-09-17  Eric Botcazou  <ebotcazou@adacore.com>
 
-        * g++.dg/other/thunk2a.C: New test.
-        * g++.dg/other/thunk2b.C: Likewise.
+	* g++.dg/other/thunk2a.C: New test.
+	* g++.dg/other/thunk2b.C: Likewise.
 	* g++.dg/other/vthunk1.C: Rename as thunk1.C
 
 2018-11-08  Eric Botcazou  <ebotcazou@adacore.com>
@@ -133,11 +134,11 @@
 
 2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        Backport from mainline
-        2018-10-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+	Backport from mainline
+	2018-10-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        PR tree-optimization/87473
-        * gcc.c-torture/compile/pr87473.c: New file.
+	PR tree-optimization/87473
+	* gcc.c-torture/compile/pr87473.c: New file.
 
 2018-10-25  Richard Biener  <rguenther@suse.de>
 

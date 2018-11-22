@@ -1,3 +1,12 @@
+2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2018-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88051
+	* config/i386/sse.md (UNSPEC_MOVDI_TO_SSE): New UNSPEC.
+	(movdi_to_sse): Rewrite using UNSPEC_MOVDI_TO_SSE unspec.
+
 2018-11-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR rtl-optimization/85925
@@ -98,15 +107,6 @@
 	* cfgexpand.c (pass_expand::execute): Move the call to
 	finish_eh_generation in front of the call to expand_stack_alignment.
 
-2018-11-09  Mihail Ionescu  <mihail.ionsecu@arm.com>
-
-	PR target/87867
-	Backport from mainline
-        2018-09-17  Eric Botcazou  <ebotcazou@adacore.com>
-
-        * g++.dg/other/thunk2a.C: New test.
-        * g++.dg/other/thunk2b.C: Likewise.
-
 2018-11-07  Max Filippov  <jcmvbkbc@gmail.com>
 
 	Backport from mainline
@@ -194,26 +194,26 @@
 
 2018-10-26  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        Backport from mainline
-        2018-10-19  Bill Schmidt  <wschmidt@linux.ibm.com>
+	Backport from mainline
+	2018-10-19  Bill Schmidt  <wschmidt@linux.ibm.com>
 
-        PR tree-optimization/87473
-        * gimple-ssa-strength-reduction.c (record_phi_increments_1): For
-        phi arguments identical to the base expression of the phi
-        candidate, record a phi-adjust increment of zero minus the index
-        expression of the hidden basis.
-        (phi_incr_cost_1): For phi arguments identical to the base
-        expression of the phi candidate, the difference to compare against
-        the increment is zero minus the index expression of the hidden
-        basis, and there is no potential savings from replacing the (phi)
-        statement.
-        (ncd_with_phi): For phi arguments identical to the base expression
-        of the phi candidate, the difference to compare against the
-        increment is zero minus the index expression of the hidden basis.
-        (all_phi_incrs_profitable_1): For phi arguments identical to the
-        base expression of the phi candidate, the increment to be checked
-        for profitability is zero minus the index expression of the hidden
-        basis.
+	PR tree-optimization/87473
+	* gimple-ssa-strength-reduction.c (record_phi_increments_1): For
+	phi arguments identical to the base expression of the phi
+	candidate, record a phi-adjust increment of zero minus the index
+	expression of the hidden basis.
+	(phi_incr_cost_1): For phi arguments identical to the base
+	expression of the phi candidate, the difference to compare against
+	the increment is zero minus the index expression of the hidden
+	basis, and there is no potential savings from replacing the (phi)
+	statement.
+	(ncd_with_phi): For phi arguments identical to the base expression
+	of the phi candidate, the difference to compare against the
+	increment is zero minus the index expression of the hidden basis.
+	(all_phi_incrs_profitable_1): For phi arguments identical to the
+	base expression of the phi candidate, the increment to be checked
+	for profitability is zero minus the index expression of the hidden
+	basis.
 
 2018-10-25  Richard Biener  <rguenther@suse.de>
 
@@ -264,9 +264,9 @@
 	Revert
 	2018-02-07  Richard Biener  <rguenther@suse.de>
 
-        PR tree-optimization/84204
-        * tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
-        this place.
+	PR tree-optimization/84204
+	* tree-chrec.c (chrec_fold_plus_1): Remove size limiting in
+	this place.
 
 2018-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
@@ -565,8 +565,8 @@
 
 2018-09-14  Carl Love  <cel@us.ibm.com>
 
-        Backport from trunk
-        2018-09-14  Carl Love  <cel@us.ibm.com>
+	Backport from trunk
+	2018-09-14  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/emmintrin.h: Add _MM_SHUFFLE2.
 	* config/rs6000/xmmintrin.h: Add _MM_SHUFFLE.
@@ -802,11 +802,11 @@
 	Backport from mainline
 	2018-08-02  Martin Liska  <mliska@suse.cz>
 
-        PR gcov-profile/86817
+	PR gcov-profile/86817
 	* gcov.c (process_all_functions): New function.
 	(main): Call it.
 	(process_file): Move functions processing to
-        process_all_functions.
+	process_all_functions.
 
 2018-08-14  Siddhesh Poyarekar  <siddhesh@sourceware.org>
 
@@ -1595,8 +1595,8 @@ gcc/testsuite/ChangeLog:
 
 2018-06-11  Jason Merrill  <jason@redhat.com>
 
-        PR c++/80485 - inline function non-zero address.
-        * symtab.c (nonzero_address): Check DECL_COMDAT.
+	PR c++/80485 - inline function non-zero address.
+	* symtab.c (nonzero_address): Check DECL_COMDAT.
 
 2018-06-11  Peter Bergner  <bergner@vnet.ibm.com>
 
@@ -1889,7 +1889,7 @@ gcc/testsuite/ChangeLog:
 	Backport from mainline
 	2018-05-11  Martin Liska  <mliska@suse.cz>
 
-        PR sanitizer/85556
+	PR sanitizer/85556
 	* doc/extend.texi: Document LLVM style format for no_sanitize
 	attribute.
 
@@ -2317,9 +2317,9 @@ gcc/testsuite/ChangeLog:
 
 2018-04-20  Carl Love  <cel@us.ibm.com>
 
-        PR target/83402
-        * config/rs6000/rs6000-c.c (rs6000_gimple_fold_builtin): Add
-        size check for arg0.
+	PR target/83402
+	* config/rs6000/rs6000-c.c (rs6000_gimple_fold_builtin): Add
+	size check for arg0.
 
 2018-04-20  Nathan Sidwell  <nathan@codesourcery.com>
 	    Tom de Vries  <tom@codesourcery.com>
@@ -2681,7 +2681,7 @@ gcc/testsuite/ChangeLog:
 	PR ipa/85329
 	* multiple_target.c (create_dispatcher_calls): Set apostrophes
 	for target_clone error message.  Make default implementation
-        clone to be a local declaration.
+	clone to be a local declaration.
 	(separate_attrs): Add new argument and check for an empty
 	string.
 	(expand_target_clones): Handle it.
@@ -2783,7 +2783,7 @@ gcc/testsuite/ChangeLog:
 	* cfgloopanal.c (expected_loop_iterations_unbounded): Add
 	by_profile_only parameter.
 	* cfgloopmanip.c (scale_loop_profile): Further scale loop's profile
-        information if the loop was predicted to iterate too many times.
+	information if the loop was predicted to iterate too many times.
 	* cfgloop.h (expected_loop_iterations_unbounded): Update prototype
 
 2018-04-13  Jan Hubicka  <hubicka@ucw.cz>
@@ -5897,7 +5897,7 @@ gcc/testsuite/ChangeLog:
 
 2018-02-26  Ramana Radhakrishnan  <ramana.radhakrishnan@arm.com>
 
-        PR target/84521
+	PR target/84521
 	* common/config/aarch64/aarch64-common.c
 	(aarch_option_optimization_table[]): Switch
 	off fomit-frame-pointer
