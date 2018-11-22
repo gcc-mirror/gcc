@@ -831,7 +831,7 @@ static tree ix86_veclibabi_svml (combined_fn, tree, tree);
 static tree ix86_veclibabi_acml (combined_fn, tree, tree);
 
 /* This table must be in sync with enum processor_type in i386.h.  */ 
-static const struct processor_costs *processor_cost_table[PROCESSOR_max] =
+static const struct processor_costs *processor_cost_table[] =
 {
   &generic_cost,
   &i386_cost,
@@ -872,6 +872,9 @@ static const struct processor_costs *processor_cost_table[PROCESSOR_max] =
   &znver1_cost,
   &znver2_cost
 };
+
+/* Guarantee that the array is aligned with enum processor_type.  */
+STATIC_ASSERT (ARRAY_SIZE (processor_cost_table) == PROCESSOR_max);
 
 static unsigned int
 rest_of_handle_insert_vzeroupper (void)

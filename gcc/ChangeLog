@@ -1,3 +1,14 @@
+2018-11-22  Martin Liska  <mliska@suse.cz>
+
+	* common/config/i386/i386-common.c (processor_names): Add
+	static assert and add missing "znver2".
+	(ix86_get_valid_option_values): Add checking assert for null
+	values and add "native" value if feasible.
+	* config/i386/i386.h: Do not declare size of processor_names.
+	* common/config/i386/i386-common.c:
+	* config/i386/i386.c: Add static assert for size
+	of processor_cost_table.
+
 2018-11-22  Thomas Preud'homme  <thomas.preudhomme@linaro.org>
 
 	* target-insns.def (stack_protect_combined_set): Define new standard
