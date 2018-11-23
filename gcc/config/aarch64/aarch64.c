@@ -254,7 +254,7 @@ static const struct cpu_addrcost_table xgene1_addrcost_table =
       1, /* ti  */
     },
   1, /* pre_modify  */
-  0, /* post_modify  */
+  1, /* post_modify  */
   0, /* register_offset  */
   1, /* register_sextend  */
   1, /* register_zextend  */
