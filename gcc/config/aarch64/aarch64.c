@@ -662,6 +662,17 @@ static const cpu_prefetch_tune tsv110_prefetch_tune =
   -1                    /* default_opt_level  */
 };
 
+static const cpu_prefetch_tune xgene1_prefetch_tune =
+{
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
+  64,			/* l1_cache_line_size  */
+  256,			/* l2_cache_size  */
+  true,                 /* prefetch_dynamic_strides */
+  -1,                   /* minimum_stride */
+  -1			/* default_opt_level  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
@@ -943,7 +954,7 @@ static const struct tune_params xgene1_tunings =
   0,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &xgene1_prefetch_tune
 };
 
 static const struct tune_params qdf24xx_tunings =
