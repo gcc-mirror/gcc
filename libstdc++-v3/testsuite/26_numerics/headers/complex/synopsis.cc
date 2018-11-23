@@ -28,51 +28,71 @@ namespace std {
 
   // 26.2.6 operators:
   template<class T>
-    complex<T> operator+(const complex<T>&, const complex<T>&);
-  template<class T> complex<T> operator+(const complex<T>&, const T&);
-  template<class T> complex<T> operator+(const T&, const complex<T>&);
-  template<class T> complex<T> operator-
-    (const complex<T>&, const complex<T>&);
-  template<class T> complex<T> operator-(const complex<T>&, const T&);
-  template<class T> complex<T> operator-(const T&, const complex<T>&);
-  template<class T> complex<T> operator*
-    (const complex<T>&, const complex<T>&);
-  template<class T> complex<T> operator*(const complex<T>&, const T&);
-  template<class T> complex<T> operator*(const T&, const complex<T>&);
-  template<class T> complex<T> operator/
-    (const complex<T>&, const complex<T>&);
-  template<class T> complex<T> operator/(const complex<T>&, const T&);
-  template<class T> complex<T> operator/(const T&, const complex<T>&);
-  template<class T> complex<T> operator+(const complex<T>&);
-  template<class T> complex<T> operator-(const complex<T>&);
-  template<class T> _GLIBCXX_CONSTEXPR bool operator==
-    (const complex<T>&, const complex<T>&);
-  template<class T> _GLIBCXX_CONSTEXPR bool operator==
-    (const complex<T>&, const T&);
-  template<class T> _GLIBCXX_CONSTEXPR bool operator==
-    (const T&, const complex<T>&);
+    _GLIBCXX20_CONSTEXPR complex<T>
+    operator+(const complex<T>&, const complex<T>&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator+(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator+(const T&, const complex<T>&);
 
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T>
+    operator-(const complex<T>&, const complex<T>&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator-(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator-(const T&, const complex<T>&);
 
-  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator*
     (const complex<T>&, const complex<T>&);
-  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
-    (const complex<T>&, const T&);
-  template<class T> _GLIBCXX_CONSTEXPR bool operator!=
-    (const T&, const complex<T>&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator*(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator*(const T&, const complex<T>&);
+
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T>
+    operator/(const complex<T>&, const complex<T>&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator/(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator/(const T&, const complex<T>&);
+
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator+(const complex<T>&);
+  template<class T>
+    _GLIBCXX20_CONSTEXPR complex<T> operator-(const complex<T>&);
+
+  template<class T>
+    _GLIBCXX_CONSTEXPR bool operator==(const complex<T>&, const complex<T>&);
+  template<class T>
+     _GLIBCXX_CONSTEXPR bool operator==(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX_CONSTEXPR bool operator==(const T&, const complex<T>&);
+
+  template<class T>
+    _GLIBCXX_CONSTEXPR bool operator!=(const complex<T>&, const complex<T>&);
+  template<class T>
+    _GLIBCXX_CONSTEXPR bool operator!=(const complex<T>&, const T&);
+  template<class T>
+    _GLIBCXX_CONSTEXPR bool operator!=(const T&, const complex<T>&);
+
   template<class T, class charT, class traits>
-  basic_istream<charT, traits>&
-  operator>>(basic_istream<charT, traits>&, complex<T>&);
+    basic_istream<charT, traits>&
+    operator>>(basic_istream<charT, traits>&, complex<T>&);
   template<class T, class charT, class traits>
-  basic_ostream<charT, traits>&
-  operator<<(basic_ostream<charT, traits>&, const complex<T>&);
+    basic_ostream<charT, traits>&
+    operator<<(basic_ostream<charT, traits>&, const complex<T>&);
 
   // 26.2.7 values:
   template<class T> _GLIBCXX_CONSTEXPR T real(const complex<T>&);
   template<class T> _GLIBCXX_CONSTEXPR T imag(const complex<T>&);
   template<class T> T abs(const complex<T>&);
-  template<class T> T arg(const complex<T>&);
-  template<class T> T norm(const complex<T>&);
-  template<class T> complex<T> conj(const complex<T>&);
+  template<class T> _GLIBCXX20_CONSTEXPR T arg(const complex<T>&);
+  template<class T> _GLIBCXX20_CONSTEXPR T norm(const complex<T>&);
+  template<class T> _GLIBCXX20_CONSTEXPR complex<T> conj(const complex<T>&);
+  template<class T> _GLIBCXX20_CONSTEXPR complex<T> proj(const complex<T>&);
   template<class T> complex<T> polar(const T& rho, const T& theta);
 
   // 26.2.8 transcendentals:
