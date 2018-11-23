@@ -759,57 +759,6 @@ ssa_range::range_p (basic_block bb, tree name)
   return false;
 }
 
-// This routine will loop through all the edges and block in the program and
-// ask for the range of each ssa-name. THis exercises the ranger to make sure
-// there are no ICEs for unexpected questions, as well as provides a
-// convenient way to show all the ranges that could be calculated.
-
-void
-ssa_range::exercise (FILE *output)
-{
-
-  basic_block bb;
-  irange range;
-  
-  FOR_EACH_BB_FN (bb, cfun)
-    {
-      edge_iterator ei;
-      edge e;
-      bool printed = false;
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        {
-	  unsigned x;
-	  for (x = 1; x < num_ssa_names; x++)
-	    {
-	      tree name = ssa_name (x);
-	      if (name && outgoing_edge_range_p (range, e, name))
-		{
-		  if (output)
-		    {
-		      printed = true;
-		      fprintf (output, "BB%3d: ", bb->index);
-		      if (e->flags & EDGE_TRUE_VALUE)
-			fprintf (output, " T: ");
-		      else if (e->flags & EDGE_FALSE_VALUE)
-			fprintf (output, " F: ");
-		      print_generic_expr (output, name, TDF_SLIM);
-		      fprintf(output, "  \t");
-		      range.dump(output);
-		    }
-		}
-	    }
-	}
-      if (printed)
-        fprintf (output, "\n");
-
-    }
-    
-  if (output)
-    dump (output);
-
-}
-
-
 // Class used to track non-null references of an ssa-name
 // A vector of bitmaps indexed by ssa-name is maintained. When indexed by 
 // Basic Block, an on-bit indicates there is a non-null dereference for
@@ -1043,7 +992,7 @@ public:
   bool bb_range_p (tree name, const basic_block bb);
 
   void dump (FILE *f);
-  void dump (FILE *f, basic_block bb, bool print_varying = false);
+  void dump (FILE *f, basic_block bb, bool print_varying = true);
 private:
   vec<ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges& get_block_ranges (tree name);
@@ -1277,14 +1226,17 @@ ssa_global_cache::dump (FILE *f)
 {
   unsigned x;
   irange r;
+  fprintf (f, "Non-varying global ranges:\n");
+  fprintf (f, "=========================:\n");
   for ( x = 1; x < num_ssa_names; x++)
     if (ssa_range::valid_ssa_p (ssa_name (x)) &&
-	get_global_range (r, ssa_name (x)))
+	get_global_range (r, ssa_name (x))  && !r.varying_p ())
       {
         print_generic_expr (f, ssa_name (x), TDF_NONE);
 	fprintf (f, "  : ");
         r.dump (f);
       }
+  fputc ('\n', dump_file);
 }
 
 
@@ -1717,7 +1669,7 @@ global_ranger::dump(FILE *f)
 		    {
 		      if (!range.varying_p ())
 			{
-			  fprintf (f, "  %d->%d ", e->src->index,
+			  fprintf (f, "%d->%d ", e->src->index,
 				   e->dest->index);
 			  if (e->flags & EDGE_TRUE_VALUE)
 			    fprintf (f, " (T) ");
@@ -1734,15 +1686,19 @@ global_ranger::dump(FILE *f)
 	    }
 	}
     }
+
+  dump_global_ssa_range (dump_file);
+
+  if (dump_flags & TDF_DETAILS)
+    ssa_range::dump (dump_file);
 }
 
 
-// Exercise the ranger by visiting every block and asking for the range of 
-// every ssa_name on each outgoing edge, and optionally providing a dump
-// of everything than can be calculated by the ranger to file OUTPUT.
+// Calculate all ranges by visiting every block and asking for the range of 
+// each ssa_name on each statement, and then dump those ranges to OUTPUT.
 
 void
-global_ranger::exercise (FILE *output)
+global_ranger::calculate_and_dump (FILE *output)
 {
   basic_block bb;
   irange r;
@@ -1780,6 +1736,7 @@ global_ranger::exercise (FILE *output)
   dump (output);
 }
 
+// Constructor for trace_ranger.
 
 trace_ranger::trace_ranger ()
 {
@@ -1787,7 +1744,7 @@ trace_ranger::trace_ranger ()
   counter = 0;
 }
 
-
+// If dumping, return true and print the prefix for the next output line.
 
 inline bool
 trace_ranger::dumping ()
@@ -1795,7 +1752,8 @@ trace_ranger::dumping ()
   counter++;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "%-7u", counter);
+      // Print counter index as well as INDENT spaces.
+      fprintf (dump_file, "  %-7u", counter);
       unsigned x;
       for (x = 0; x< indent; x++)
         fputc (' ', dump_file);
@@ -1803,6 +1761,9 @@ trace_ranger::dumping ()
     }
   return false;
 }
+
+// After calling a routine, if dumping, print the CALLER, NAME, and RESULT,
+// returning RESULT.
 
 bool
 trace_ranger::trailer (const char *caller, bool result, tree name,
@@ -1828,6 +1789,7 @@ trace_ranger::trailer (const char *caller, bool result, tree name,
   return result;
 }
 
+// Tracing version of range_of_expr.  Call it with printing wrappers.
 
 bool
 trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
@@ -1850,6 +1812,8 @@ trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
   return trailer ("range_of_expr", res, expr, r);
 }
 
+// Tracing version of edge range_of_expr.  Call it with printing wrappers.
+
 bool
 trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 {
@@ -1866,6 +1830,8 @@ trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 
   return trailer ("range_of_expr", res, expr, r);
 }
+
+// Tracing version of range_on_edge.  Call it with printing wrappers.
 
 bool
 trace_ranger::range_on_edge (irange &r, edge e, tree name)
@@ -1884,6 +1850,8 @@ trace_ranger::range_on_edge (irange &r, edge e, tree name)
   return trailer ("range_on_edge", res, name, r);
 }
 
+// Tracing version of range_on_entry.  Call it with printing wrappers.
+
 bool
 trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
@@ -1901,6 +1869,8 @@ trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   return trailer ("range_on_entry", res, name, r);
 }
 
+// Tracing version of range_on_exit.  Call it with printing wrappers.
+
 bool
 trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 {
@@ -1917,6 +1887,8 @@ trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 
   return trailer ("range_on_exit", res, name, r);
 }
+
+// Tracing version of range_of_stmt.  Call it with printing wrappers.
 
 bool
 trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
@@ -1937,8 +1909,8 @@ trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
   return trailer ("range_of_stmt", res, name, r);
 }
 
+// Tracing version of outgoing_edge_range_p.  Call it with printing wrappers.
 
-  // Calculate a range on edge E only if it is defined by E.
 bool
 trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range)
@@ -1948,7 +1920,7 @@ trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
     {
       fprintf (dump_file, "outgoing_edge_range_p (");
       print_generic_expr (dump_file, name, TDF_SLIM);
-      fprintf (dump_file, ") on edge %d->%d, name_range :", e->src->index,
+      fprintf (dump_file, ") on edge %d->%d, with range ", e->src->index,
 	       e->dest->index);
       if (name_range)
         name_range->dump (dump_file);

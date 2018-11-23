@@ -149,7 +149,7 @@ execute_ranger_vrp ()
   if (details)
     { 
       global_ranger e;
-      e.exercise (dump_file);
+      e.calculate_and_dump (dump_file);
     }
 
   trace_ranger ranger;
@@ -206,7 +206,7 @@ execute_ranger_vrp_conditional ()
   if (details)
   { 
     global_ranger e;
-    e.exercise (dump_file);
+    e.calculate_and_dump (dump_file);
   }
 
   global_ranger ranger;

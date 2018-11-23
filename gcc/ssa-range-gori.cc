@@ -349,12 +349,16 @@ void
 gori_map::dump(FILE *f, basic_block bb)
 {
   tree t;
+  bool header = false;
+  const char *header_string = "bb%-4d ";
+  const char *header2 = "       ";
+  bool printed_something = false;;
   unsigned x, y;
   bitmap_iterator bi;
 
   if (!m_outgoing[bb->index])
     {
-      fprintf (f, "BB%d was not processed.\n", bb->index);
+      fprintf (f, "bb%d was not processed.\n", bb->index);
       return;
     }
 
@@ -368,14 +372,17 @@ gori_map::dump(FILE *f, basic_block bb)
       bitmap chain = (has_def_chain (name) ? get_def_chain (name) : NULL);
       if (stmt && gimple_bb (stmt) == bb && chain && !bitmap_empty_p (chain))
         {
+	  fprintf (f, header_string, bb->index);
+	  header_string = header2;
+	  header = true;
 	  print_generic_expr (f, name, TDF_SLIM);
 	  if ((t = terminal_name (name)))
 	    {
-	      fprintf (f, "  : (single import : ");
+	      fprintf (f, "  : (terminal ");
 	      print_generic_expr (f, t, TDF_SLIM);
 	      fprintf (f, ")");
 	    }
-	  fprintf (f, "  :");
+	  fprintf (f, " : ");
 	  EXECUTE_IF_SET_IN_BITMAP (chain, 0, y, bi)
 	    {
 	      print_generic_expr (f, ssa_name (y), TDF_SLIM);
@@ -385,22 +392,46 @@ gori_map::dump(FILE *f, basic_block bb)
 	}
     }
 
+  printed_something |= header;
   // Now dump the incoming vector.
-  fprintf (f, "BB%d imports: ",bb->index);
+  header = false;
   EXECUTE_IF_SET_IN_BITMAP (m_incoming[bb->index], 0, y, bi)
     {
+      if (!header)
+        {
+	  fprintf (f, header_string, bb->index);
+	  fprintf (f, "imports: ");
+	  header_string = header2;
+	  header = true;
+	}
       print_generic_expr (f, ssa_name (y), TDF_SLIM);
       fprintf (f, "  ");
     }
 
+  if (header)
+    fputc ('\n', f);
+
   // Now dump the export vector.
-  fprintf (f, "\nBB%d exports: ",bb->index);
+  printed_something |= header;
+  header = false;
   EXECUTE_IF_SET_IN_BITMAP (m_outgoing[bb->index], 0, y, bi)
     {
+      if (!header)
+        {
+	  fprintf (f, header_string, bb->index);
+	  fprintf (f, "exports: ");
+	  header_string = header2;
+	  header = true;
+	}
       print_generic_expr (f, ssa_name (y), TDF_SLIM);
       fprintf (f, "  ");
     }
-  fprintf (f, "\n");
+  if (header)
+    fputc ('\n', f);
+
+  printed_something |= header;
+  if (printed_something)
+    fprintf (f, "\n");
 }
 
 // Dump the entire GORI map structure to file F.
@@ -411,9 +442,7 @@ gori_map::dump(FILE *f)
   basic_block bb;
   FOR_EACH_BB_FN (bb, cfun)
     {
-      fprintf (f, "----BB %d----\n", bb->index);
       dump (f, bb);
-      fprintf (f, "\n");
     }
 }
 

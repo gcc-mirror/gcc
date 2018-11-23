@@ -97,7 +97,6 @@ class ssa_range
   tree terminal_name (tree name);
 
   void dump (FILE *f);
-  void exercise (FILE *f);
 protected:
   // Calculate the range for NAME if the result of statement S is the range LHS.
   class gori_compute *m_gori; 	/* Generates Outgoing Range Info.  */
@@ -151,7 +150,7 @@ public:
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   void dump (FILE *f);
-  void exercise (FILE *f);   /* Calculate all stmts and dump */
+  void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
 
 private:
   void dump_global_ssa_range (FILE *f);
