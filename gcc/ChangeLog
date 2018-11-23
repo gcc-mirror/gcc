@@ -1,4 +1,11 @@
 2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
+
+        * config/aarch64/aarch64-cores.def: Define emag.
+	* config/aarch64/aarch64-tune.md: Regenerated with emag.
+	* config/aarch64/aarch64.c (emag_tunings): New struct.
+	* doc/invoke.texi: Document mtune value.
+
+2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
 	    Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
 
 	* config/aarch64/aarch64.c (xgene1_tunings): Optimize Xgene1 tunings
