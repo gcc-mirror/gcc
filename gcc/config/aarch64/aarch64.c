@@ -944,14 +944,14 @@ static const struct tune_params xgene1_tunings =
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
   "16",	/* function_align.  */
-  "8",	/* jump_align.  */
+  "16",	/* jump_align.  */
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
-  0,	/* max_case_values.  */
+  17,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
   &xgene1_prefetch_tune
