@@ -173,6 +173,32 @@ private:
 
 };
 
+class trace_ranger : public global_ranger
+{
+public:
+  trace_ranger();
+
+  virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
+  virtual bool range_of_expr (irange &r, tree expr, edge e);
+  virtual bool range_on_edge (irange &r, edge e, tree name);
+  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
+  virtual bool range_on_exit (irange &r, basic_block bb, tree name);
+  virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+
+  // Calculate a range on edge E only if it is defined by E.
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      irange *name_range = NULL);
+private:
+  typedef global_ranger super;  // Inherited from class for easy changing.
+  static const unsigned bump = 2;
+  unsigned indent;
+  unsigned counter;
+
+  bool dumping ();
+  bool trailer (const char *caller, bool result, tree name, const irange &r);
+};
+
+  
 
 // Like global_ranger::path_range_on_stmt(), but make an on-the-fly ranger.
 // Return TRUE if SSA as seen from within STMT has a known range the is not

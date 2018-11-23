@@ -1779,3 +1779,187 @@ global_ranger::exercise (FILE *output)
   // The dump it.
   dump (output);
 }
+
+
+trace_ranger::trace_ranger ()
+{
+  indent = 0;
+  counter = 0;
+}
+
+
+
+inline bool
+trace_ranger::dumping ()
+{
+  counter++;
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "%-7u", counter);
+      unsigned x;
+      for (x = 0; x< indent; x++)
+        fputc (' ', dump_file);
+      return true;
+    }
+  return false;
+}
+
+bool
+trace_ranger::trailer (const char *caller, bool result, tree name,
+		       const irange &r)
+{
+  indent -= bump;
+  if (dumping ())
+    {
+      fputs(result ? "TRUE : " : "FALSE : ", dump_file);
+      fputs (caller, dump_file);
+      fputs (" (",dump_file);
+      if (name)
+	print_generic_expr (dump_file, name, TDF_SLIM);
+      fputs (") ",dump_file);
+      if (result)
+	r.dump (dump_file);
+      else
+	fputc('\n', dump_file);
+    }
+  // Marks the end of a request.
+  if (indent == 0)
+    fputc('\n', dump_file);
+  return result;
+}
+
+
+bool
+trace_ranger::range_of_expr (irange &r, tree expr, gimple *s)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_of_expr (");
+      print_generic_expr (dump_file, expr, TDF_SLIM);
+      fprintf (dump_file, ") at stmt ");
+      if (s)
+	print_gimple_stmt (dump_file, s , 0, TDF_SLIM);
+      else
+        fprintf (dump_file, " NULL\n");
+      indent += bump;
+    }
+
+  res =  super::range_of_expr (r, expr, s);
+
+  return trailer ("range_of_expr", res, expr, r);
+}
+
+bool
+trace_ranger::range_of_expr (irange &r, tree expr, edge e)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_of_expr (");
+      print_generic_expr (dump_file, expr, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
+      indent += bump;
+    }
+
+  res =  super::range_of_expr (r, expr, e);
+
+  return trailer ("range_of_expr", res, expr, r);
+}
+
+bool
+trace_ranger::range_on_edge (irange &r, edge e, tree name)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_on_edge (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d\n", e->src->index, e->dest->index);
+      indent += bump;
+    }
+
+  res =  super::range_on_edge (r, e, name);
+
+  return trailer ("range_on_edge", res, name, r);
+}
+
+bool
+trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_on_entry (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") to BB %d\n", bb->index);
+      indent += bump;
+    }
+
+  res =  super::range_on_entry (r, bb, name);
+
+  return trailer ("range_on_entry", res, name, r);
+}
+
+bool
+trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_on_exit (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") from BB %d\n", bb->index);
+      indent += bump;
+    }
+
+  res =  super::range_on_exit (r, bb, name);
+
+  return trailer ("range_on_exit", res, name, r);
+}
+
+bool
+trace_ranger::range_of_stmt (irange &r, gimple *s, tree name)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "range_of_stmt (");
+      if (name)
+	print_generic_expr (dump_file, name, TDF_SLIM);
+      fputs (") at stmt ", dump_file);
+      print_gimple_stmt (dump_file, s, 0, TDF_SLIM);
+      indent += bump;
+    }
+
+  res =  super::range_of_stmt (r, s, name);
+
+  return trailer ("range_of_stmt", res, name, r);
+}
+
+
+  // Calculate a range on edge E only if it is defined by E.
+bool
+trace_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
+				      irange *name_range)
+{
+  bool res;
+  if (dumping ())
+    {
+      fprintf (dump_file, "outgoing_edge_range_p (");
+      print_generic_expr (dump_file, name, TDF_SLIM);
+      fprintf (dump_file, ") on edge %d->%d, name_range :", e->src->index,
+	       e->dest->index);
+      if (name_range)
+        name_range->dump (dump_file);
+      else
+        fputs ("NULL\n", dump_file);
+      indent += bump;
+    }
+
+  res =  super::outgoing_edge_range_p (r, e, name, name_range);
+
+  return trailer ("outgoing_edge_range_p", res, name, r);
+}
+
+  

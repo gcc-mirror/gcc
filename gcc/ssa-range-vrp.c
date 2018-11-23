@@ -152,7 +152,7 @@ execute_ranger_vrp ()
       e.exercise (dump_file);
     }
 
-  global_ranger ranger;
+  trace_ranger ranger;
   basic_block bb;
   irange r;
   bitmap touched = BITMAP_ALLOC (NULL);
