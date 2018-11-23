@@ -11517,25 +11517,28 @@ build_alloca_call_expr (tree size, unsigned int align, HOST_WIDE_INT max_size)
     }
 }
 
-/* Create a new constant string literal and return a char* pointer to it.
-   The STRING_CST value is the LEN characters at STR.  */
-tree
-build_string_literal (int len, const char *str)
-{
-  tree t, elem, index, type;
+/* Create a new constant string literal consisting of elements of type
+   ELTYPE and return a tree node representing char* pointer to it as
+   an ADDR_EXPR (ARRAY_REF (ELTYPE, ...)).  The STRING_CST value is
+   the LEN bytes at STR (the representation of the string, which may
+   be wide).  */
 
-  t = build_string (len, str);
-  elem = build_type_variant (char_type_node, 1, 0);
-  index = build_index_type (size_int (len - 1));
-  type = build_array_type (elem, index);
+tree
+build_string_literal (int len, const char *str,
+		      tree eltype /* = char_type_node */)
+{
+  tree t = build_string (len, str);
+  tree index = build_index_type (size_int (len - 1));
+  eltype = build_type_variant (eltype, 1, 0);
+  tree type = build_array_type (eltype, index);
   TREE_TYPE (t) = type;
   TREE_CONSTANT (t) = 1;
   TREE_READONLY (t) = 1;
   TREE_STATIC (t) = 1;
 
-  type = build_pointer_type (elem);
+  type = build_pointer_type (eltype);
   t = build1 (ADDR_EXPR, type,
-	      build4 (ARRAY_REF, elem,
+	      build4 (ARRAY_REF, eltype,
 		      t, integer_zero_node, NULL_TREE, NULL_TREE));
   return t;
 }

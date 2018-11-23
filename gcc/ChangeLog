@@ -1,3 +1,11 @@
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR tree-optimization/87756
+	* expr.c (string_constant): Synthesize a string literal from
+	the address of a constant character.
+	* tree.c (build_string_literal): Add an argument.
+	* tree.h (build_string_literal): Same.
+
 2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
 
         * config/aarch64/aarch64-cores.def: Define emag.

@@ -1,5 +1,12 @@
 2018-11-23  Martin Sebor  <msebor@redhat.com>
 
+	PR tree-optimization/87756
+	* gcc.dg/builtin-memchr-2.c: New test.
+	* gcc.dg/builtin-memchr-3.c: Same.
+	* gcc.dg/warn-sprintf-no-nul-2.c: Same.
+
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+
 	PR testsuite/88098
 	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: Adjust.
 	* gcc.dg/Wbuiltin-declaration-mismatch-5.c: New test.
