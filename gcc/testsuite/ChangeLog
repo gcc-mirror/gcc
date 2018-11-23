@@ -1,5 +1,11 @@
 2018-11-23  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/86614
+	* c-c++-common/Warray-bounds-2.c (wrap_strncpy_dstarray_diff_neg,
+	call_strncpy_dstarray_diff_neg): Don't expect late -Warray-bounds
+	warnings, just early ones from FE.  Remove dg-prune-output.
+	* c-c++-common/Warray-bounds-6.c: New test.
+
 	* gfortran.dg/pad_source_1.f: New test.
 	* gfortran.dg/pad_source_2.f: New test.
 	* gfortran.dg/pad_source_3.f: New test.
