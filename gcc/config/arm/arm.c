@@ -28588,8 +28588,7 @@ void
 arm_expand_compare_and_swap (rtx operands[])
 {
   rtx bval, bdst, rval, mem, oldval, newval, is_weak, mod_s, mod_f, x;
-  machine_mode mode;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx, rtx, rtx, rtx);
+  machine_mode mode, cmp_mode;
 
   bval = operands[0];
   rval = operands[1];
@@ -28637,32 +28636,13 @@ arm_expand_compare_and_swap (rtx operands[])
     }
 
   if (TARGET_THUMB1)
-    {
-      switch (mode)
-	{
-	case E_QImode: gen = gen_atomic_compare_and_swapt1qi_1; break;
-	case E_HImode: gen = gen_atomic_compare_and_swapt1hi_1; break;
-	case E_SImode: gen = gen_atomic_compare_and_swapt1si_1; break;
-	case E_DImode: gen = gen_atomic_compare_and_swapt1di_1; break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
+    cmp_mode = E_SImode;
   else
-    {
-      switch (mode)
-	{
-	case E_QImode: gen = gen_atomic_compare_and_swap32qi_1; break;
-	case E_HImode: gen = gen_atomic_compare_and_swap32hi_1; break;
-	case E_SImode: gen = gen_atomic_compare_and_swap32si_1; break;
-	case E_DImode: gen = gen_atomic_compare_and_swap32di_1; break;
-	default:
-	  gcc_unreachable ();
-	}
-    }
+    cmp_mode = CC_Zmode;
 
   bdst = TARGET_THUMB1 ? bval : gen_rtx_REG (CC_Zmode, CC_REGNUM);
-  emit_insn (gen (bdst, rval, mem, oldval, newval, is_weak, mod_s, mod_f));
+  emit_insn (gen_atomic_compare_and_swap_1 (cmp_mode, mode, bdst, rval, mem,
+                                        oldval, newval, is_weak, mod_s, mod_f));
 
   if (mode == QImode || mode == HImode)
     emit_move_insn (operands[1], gen_lowpart (mode, rval));
@@ -29028,7 +29008,6 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
   int swap_nelt;
 
@@ -29062,22 +29041,6 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vuzpv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vuzpv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vuzpv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vuzpv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (swap_nelt != 0)
@@ -29088,7 +29051,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   if (odd)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vuzp_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
@@ -29099,7 +29062,6 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 {
   unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
   bool is_swapped;
 
@@ -29137,22 +29099,6 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vzipv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vzipv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vzipv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vzipv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (is_swapped)
@@ -29163,17 +29109,16 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
   if (high)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vzip_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
 /* Recognize patterns for the VREV insns.  */
-
 static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
   unsigned int i, j, diff, nelt = d->perm.length ();
-  rtx (*gen)(rtx, rtx);
+  rtx (*gen) (machine_mode, rtx, rtx);
 
   if (!d->one_vector_p)
     return false;
@@ -29182,23 +29127,29 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   switch (diff)
     {
     case 7:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_neon_vrev64v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev64v8qi;  break;
-	default:
-	  return false;
-	}
-      break;
+       switch (d->vmode)
+        {
+         case E_V16QImode:
+         case E_V8QImode:
+          gen = gen_neon_vrev64;
+          break;
+         default:
+          return false;
+        }
+       break;
     case 3:
-      switch (d->vmode)
-	{
-	case E_V16QImode: gen = gen_neon_vrev32v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev32v8qi;  break;
-	case E_V8HImode:  gen = gen_neon_vrev64v8hi;  break;
-	case E_V4HImode:  gen = gen_neon_vrev64v4hi;  break;
-	case E_V8HFmode:  gen = gen_neon_vrev64v8hf;  break;
-	case E_V4HFmode:  gen = gen_neon_vrev64v4hf;  break;
+       switch (d->vmode)
+        {
+	case E_V16QImode:
+	case E_V8QImode:
+          gen = gen_neon_vrev32;
+          break;
+	case E_V8HImode:
+	case E_V4HImode:
+	case E_V8HFmode:
+	case E_V4HFmode:
+          gen = gen_neon_vrev64;
+          break;
 	default:
 	  return false;
 	}
@@ -29206,15 +29157,21 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
     case 1:
       switch (d->vmode)
 	{
-	case E_V16QImode: gen = gen_neon_vrev16v16qi; break;
-	case E_V8QImode:  gen = gen_neon_vrev16v8qi;  break;
-	case E_V8HImode:  gen = gen_neon_vrev32v8hi;  break;
-	case E_V4HImode:  gen = gen_neon_vrev32v4hi;  break;
-	case E_V4SImode:  gen = gen_neon_vrev64v4si;  break;
-	case E_V2SImode:  gen = gen_neon_vrev64v2si;  break;
-	case E_V4SFmode:  gen = gen_neon_vrev64v4sf;  break;
-	case E_V2SFmode:  gen = gen_neon_vrev64v2sf;  break;
-	default:
+	case E_V16QImode:
+	case E_V8QImode:
+          gen = gen_neon_vrev16;
+          break;
+	case E_V8HImode:
+	case E_V4HImode:
+          gen = gen_neon_vrev32;
+          break;
+	case E_V4SImode:
+	case E_V2SImode:
+	case E_V4SFmode:
+	case E_V2SFmode:
+          gen = gen_neon_vrev64;
+	  break;
+        default:
 	  return false;
 	}
       break;
@@ -29239,7 +29196,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  emit_insn (gen (d->target, d->op0));
+  emit_insn (gen (d->vmode, d->target, d->op0));
   return true;
 }
 
@@ -29250,7 +29207,6 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 {
   unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
-  rtx (*gen)(rtx, rtx, rtx, rtx);
 
   if (GET_MODE_UNIT_SIZE (d->vmode) >= 8)
     return false;
@@ -29276,22 +29232,6 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
   if (d->testing_p)
     return true;
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vtrnv16qi_internal; break;
-    case E_V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
-    case E_V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
-    case E_V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
-    case E_V8HFmode:  gen = gen_neon_vtrnv8hf_internal;  break;
-    case E_V4HFmode:  gen = gen_neon_vtrnv4hf_internal;  break;
-    case E_V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
-    case E_V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
-    case E_V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
-    case E_V4SFmode:  gen = gen_neon_vtrnv4sf_internal;  break;
-    default:
-      gcc_unreachable ();
-    }
-
   in0 = d->op0;
   in1 = d->op1;
   if (BYTES_BIG_ENDIAN)
@@ -29305,7 +29245,7 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
   if (odd)
     std::swap (out0, out1);
 
-  emit_insn (gen (out0, in0, in1, out1));
+  emit_insn (gen_neon_vtrn_internal (d->vmode, out0, in0, in1, out1));
   return true;
 }
 
@@ -29315,7 +29255,6 @@ static bool
 arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 {
   unsigned int i, nelt = d->perm.length ();
-  rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
   unsigned int location;
@@ -29351,29 +29290,16 @@ arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 
   location = d->perm[0];
 
-  switch (d->vmode)
-    {
-    case E_V16QImode: gen = gen_neon_vextv16qi; break;
-    case E_V8QImode: gen = gen_neon_vextv8qi; break;
-    case E_V4HImode: gen = gen_neon_vextv4hi; break;
-    case E_V8HImode: gen = gen_neon_vextv8hi; break;
-    case E_V2SImode: gen = gen_neon_vextv2si; break;
-    case E_V4SImode: gen = gen_neon_vextv4si; break;
-    case E_V4HFmode: gen = gen_neon_vextv4hf; break;
-    case E_V8HFmode: gen = gen_neon_vextv8hf; break;
-    case E_V2SFmode: gen = gen_neon_vextv2sf; break;
-    case E_V4SFmode: gen = gen_neon_vextv4sf; break;
-    case E_V2DImode: gen = gen_neon_vextv2di; break;
-    default:
-      return false;
-    }
-
   /* Success! */
   if (d->testing_p)
     return true;
 
   offset = GEN_INT (location);
-  emit_insn (gen (d->target, d->op0, d->op1, offset));
+
+  if(d->vmode == E_DImode)
+    return false;
+
+  emit_insn (gen_neon_vext (d->vmode, d->target, d->op0, d->op1, offset));
   return true;
 }
 
