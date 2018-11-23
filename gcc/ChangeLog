@@ -1,3 +1,22 @@
+2018-23-11  Mihail Ionescu  <mihail.ionescu@arm.com>
+
+	* config/arm/arm.c (arm_expand_compare_and_swap): Simplify and call
+	gen_atomic_compare_swap_1.
+	(arm_evpc_neon_vuzp): Likewise gen_neon_vuzp_internal.
+	(arm_evpc_neon_vtrn): Likewise gen_neon_vtrn_internal.
+	(arm_evpc_neon_vext): Likewise gen_neon_vext_internal.
+	(arm_evpc_neon_vzip): Likewise gen_neon_vzip_internal.
+	(arm_evpc_neon_vrev): Replace the function pointer and simplify the mode
+	checks.
+	* config/arm/arm.md (neon_vext<mode>),
+	(neon_vrev64<mode>, neon_vrev32<mode>),
+	(neon_vrev16<mode>, neon_vtrn<mode>_internal),
+	(neon_vzip<mode>_internal, neon_vuzp<mode>_internal): Add an '@'character
+	before the pattern name.
+	* config/arm/sync.md:
+	(atomic_compare_and_swap<CCSI:arch><NARROW:mode>_1),
+	(atomic_compare_and_swap<CCSI:arch><SIDI:mode>_1): Likewise.
+
 2018-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86614

@@ -4822,7 +4822,7 @@ if (BYTES_BIG_ENDIAN)
   DONE;
 })
 
-(define_insn "neon_vext<mode>"
+(define_insn "@neon_vext<mode>"
   [(set (match_operand:VDQX 0 "s_register_operand" "=w")
 	(unspec:VDQX [(match_operand:VDQX 1 "s_register_operand" "w")
 		      (match_operand:VDQX 2 "s_register_operand" "w")
@@ -4836,7 +4836,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_ext<q>")]
 )
 
-(define_insn "neon_vrev64<mode>"
+(define_insn "@neon_vrev64<mode>"
   [(set (match_operand:VDQ 0 "s_register_operand" "=w")
 	(unspec:VDQ [(match_operand:VDQ 1 "s_register_operand" "w")]
                     UNSPEC_VREV64))]
@@ -4845,7 +4845,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "neon_vrev32<mode>"
+(define_insn "@neon_vrev32<mode>"
   [(set (match_operand:VX 0 "s_register_operand" "=w")
 	(unspec:VX [(match_operand:VX 1 "s_register_operand" "w")]
                    UNSPEC_VREV32))]
@@ -4854,7 +4854,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_insn "neon_vrev16<mode>"
+(define_insn "@neon_vrev16<mode>"
   [(set (match_operand:VE 0 "s_register_operand" "=w")
 	(unspec:VE [(match_operand:VE 1 "s_register_operand" "w")]
                    UNSPEC_VREV16))]
@@ -5310,7 +5310,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_tbl4")]
 )
 
-(define_expand "neon_vtrn<mode>_internal"
+(define_expand "@neon_vtrn<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
@@ -5336,7 +5336,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_permute<q>")]
 )
 
-(define_expand "neon_vzip<mode>_internal"
+(define_expand "@neon_vzip<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
@@ -5362,7 +5362,7 @@ if (BYTES_BIG_ENDIAN)
   [(set_attr "type" "neon_zip<q>")]
 )
 
-(define_expand "neon_vuzp<mode>_internal"
+(define_expand "@neon_vuzp<mode>_internal"
   [(parallel
     [(set (match_operand:VDQWH 0 "s_register_operand")
 	  (unspec:VDQWH [(match_operand:VDQWH 1 "s_register_operand")
