@@ -1,3 +1,10 @@
+2018-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/87756
+	* gcc.dg/builtin-memchr-2.c: Scan the gimple dump instead of
+	optimized.
+	* gcc.dg/builtin-memchr-3.c: Likewise.
+
 2018-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/87756

@@ -69,4 +69,4 @@ void test_memchr_cst_char (void)
   A (!memchr (psarr1c, 0, 1));
 }
 
-/* { dg-final { scan-tree-dump-not "abort" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "abort" "gimple" } } */
