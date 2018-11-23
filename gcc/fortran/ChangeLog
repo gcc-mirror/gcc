@@ -1,3 +1,10 @@
+2018-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (fpad-source): New option.
+	* scanner.c (load_line): Don't pad fixed form lines if
+	!flag_pad_source.
+	* invoke.texi (-fno-pad-source): Document.
+
 2018-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* invoke.texi (-fdec-include): Document.
