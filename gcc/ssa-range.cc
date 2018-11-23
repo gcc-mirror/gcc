@@ -1043,6 +1043,7 @@ public:
   bool bb_range_p (tree name, const basic_block bb);
 
   void dump (FILE *f);
+  void dump (FILE *f, basic_block bb, bool print_varying = false);
 private:
   vec<ssa_block_ranges *> m_ssa_ranges;
   ssa_block_ranges& get_block_ranges (tree name);
@@ -1134,6 +1135,49 @@ block_range_cache::dump (FILE *f)
   
 }
 
+// Print all known ranges on entry to blobk BB to file F.
+void
+block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
+{
+  unsigned x;
+  irange r;
+  bool summarize_varying = false;
+  for (x = 1; x < num_ssa_names; ++x)
+    {
+      if (!ssa_range::valid_ssa_p (ssa_name (x)))
+        continue;
+      if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
+        {
+	  if (!print_varying && r.varying_p ())
+	    {
+	      summarize_varying = true;
+	      continue;
+	    }
+	  print_generic_expr (f, ssa_name (x), TDF_NONE);
+	  fprintf (f, "\t");
+	  r.dump(f);
+	}
+    }
+  // If there were any varying entries, lump them all together.
+  if (summarize_varying)
+    {
+      fprintf (f, "VARYING_P on entry : ");
+      for (x = 1; x < num_ssa_names; ++x)
+	{
+	  if (!ssa_range::valid_ssa_p (ssa_name (x)))
+	    continue;
+	  if (m_ssa_ranges[x] && m_ssa_ranges[x]->get_bb_range (r, bb))
+	    {
+	      if (r.varying_p ())
+		{
+		  print_generic_expr (f, ssa_name (x), TDF_NONE);
+		  fprintf (f, "  ");
+	        }
+	    }
+	}
+      fprintf (f, "\n");
+    }
+}
 // -------------------------------------------------------------------------
 
 // This global cache is used with the range engine as markers for what
@@ -1521,7 +1565,8 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   if (!def_bb)
     def_bb = ENTRY_BLOCK_PTR_FOR_FN (cfun);
 
-  // Start with any known range. 
+  // Start with any known range.  This also ensures any prerequisites are
+  // calculated before populating the on-entry cache.
   get_global_ssa_range (r, name);
 
   // If its defined in this basic block, then there is no range on entry,
@@ -1593,11 +1638,12 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
     {
       basic_block bb = gimple_bb (s);
       gimple *def_stmt = SSA_NAME_DEF_STMT (op);
+        
       // if name is defined in this block, try to get an range from S.
       if (def_stmt && gimple_bb (def_stmt) == bb)
 	gcc_assert (range_of_stmt (r, def_stmt, op));
       else
-	// Otherwise OP comes from outside this block, try range on entry.
+	// Otherwise OP comes from outside this block, use range on entry.
 	gcc_assert (range_on_entry (r, bb, op));
 
       // No range yet, see if there is a dereference in the block.
@@ -1607,8 +1653,8 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
       // which causes an early block exit. 
       // in which case we may need to walk from S back to the def/top of block
       // to make sure the deref happens between S and there before claiming 
-      // there is a deref.   
-      if (r.varying_p ())
+      // there is a deref.   Punt for now.
+      if (!cfun->can_throw_non_call_exceptions && r.varying_p ())
 	non_null_deref_in_block (r, op, bb);
       return true;
     }
@@ -1623,8 +1669,71 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
 void
 global_ranger::dump(FILE *f)
 {
-  ssa_range::dump (f);
-  dump_global_ssa_range (f);
+  basic_block bb;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      unsigned x;
+      edge_iterator ei;
+      edge e;
+      irange range;
+      fprintf (f, "\n=========== BB %d ============\n", bb->index);
+      m_block_cache->dump (f, bb);
+
+      dump_bb (f, bb, 4, TDF_NONE);
+
+      // Now find any globals defined in this block 
+      for (x = 1; x < num_ssa_names; x++)
+	{
+	  tree name = ssa_name (x);
+	  if (valid_ssa_p (name) && SSA_NAME_DEF_STMT (name) &&
+	      gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
+	      has_global_ssa_range (range, name))
+	    {
+	      gcc_assert (get_global_ssa_range (range, name));
+	      if (!range.varying_p ())
+	       {
+		 print_generic_expr (f, name, TDF_SLIM);
+		 fprintf (f, " : ");
+		 range.dump(f);
+	       }
+
+	    }
+	}
+
+      // And now outgoing edges, if they define anything.
+      FOR_EACH_EDGE (e, ei, bb->succs)
+	{
+	  for (x = 1; x < num_ssa_names; x++)
+	    {
+	      tree name = valid_ssa_p (ssa_name (x));
+	      if (name && range_p (bb, name))
+		{
+		  // Dont print edge range if succ has no on-entry cache
+		  // as it means it's never been queried.
+		  //if (!m_block_cache->bb_range_p (name, e->dest))
+		  //  continue;
+		  if (range_on_edge (range, e, name))
+		    {
+		      if (!range.varying_p ())
+			{
+			  fprintf (f, "  %d->%d ", e->src->index,
+				   e->dest->index);
+			  if (e->flags & EDGE_TRUE_VALUE)
+			    fprintf (f, " (T) ");
+			  else if (e->flags & EDGE_FALSE_VALUE)
+			    fprintf (f, " (F) ");
+			  else
+			    fprintf (f, "     ");
+			  print_generic_expr (f, name, TDF_SLIM);
+			  fprintf(f, " : \t");
+			  range.dump(f);
+			}
+		    }
+		}
+	    }
+	}
+    }
 }
 
 
@@ -1635,147 +1744,38 @@ global_ranger::dump(FILE *f)
 void
 global_ranger::exercise (FILE *output)
 {
-
   basic_block bb;
-  irange range;
-
+  irange r;
+  
+  //  Walk every statement asking for a range.
   FOR_EACH_BB_FN (bb, cfun)
     {
-      unsigned x;
-      edge_iterator ei;
-      edge e;
-      bool printed = false;
-
-      // This dramatically slows down builds, so only when printing. 
-      if (output)
-        {
-	  fprintf (output, "========= BB%d =========\n", bb->index);
-	  for (x = 1; x < num_ssa_names; x++)
-	    {
-	      tree name = ssa_name (x);
-	      if (name && range_on_entry (range, bb, name))
-		{
-		  if (output && !range.varying_p ())
-		    {
-		      // avoid printing global values that are just global
-		      irange gl;
-		      if (has_global_ssa_range (gl, name) && gl == range)
-		        continue;
-			  
-		      if (!printed)
-			fprintf (output,"   Ranges on Entry :\n");
-		      printed = true;
-		      fprintf (output, "     ");
-		      print_generic_expr (output, name, TDF_NONE);
-		      fprintf (output, " : ");
-		      range.dump (output);
-		    }
-		}
-	    }
-	  if (printed)
-	    fprintf (output, "\n");
-	  dump_bb (output, bb, 2, TDF_NONE);
-	  printed = false;
+      for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
+	   gsi_next (&gpi))
+	{
+	  gphi *phi = gpi.phi ();
+	  tree phi_def = gimple_phi_result (phi);
+	  if (valid_ssa_p (phi_def))
+	    gcc_assert (range_of_stmt (r, phi));
 	}
 
-      // Run through the block once to visit each value.
-      FOR_EACH_EDGE (e, ei, bb->succs)
-        {
-	  for (x = 1; x < num_ssa_names; x++)
-	    {
-	      tree name = ssa_name (x);
-	      if (name && range_p (bb, name))
-		  range_on_edge (range, e, name);
-	    }
-	}
-      // Now calculate any globals in this block if we asked for details
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	for (x = 1; x < num_ssa_names; x++)
-	  {
-	    tree name = ssa_name (x);
-	    if (valid_ssa_p (name)
-		&& !SSA_NAME_IS_VIRTUAL_OPERAND (name)
-		&& SSA_NAME_DEF_STMT (name) &&
-		gimple_bb (SSA_NAME_DEF_STMT (name)) == bb &&
-		!get_global_ssa_range (range, name))
-	      range_of_stmt (range, SSA_NAME_DEF_STMT (name), name);
-	  }
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  ssa_op_iter iter;
+	  use_operand_p use_p;
 
-      if (output)
-        {
-	  // Dump any globals defined.
-	  printed = false;
-	  for (x = 1; x < num_ssa_names; x++)
+	  range_of_stmt (r, stmt);
+	  // and make sure to query every operand.
+	  FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
 	    {
-	      if (ssa_name(x) && has_global_ssa_range (range, ssa_name (x))
-		  && !range.varying_p ())
-	        {
-		  gimple *s = SSA_NAME_DEF_STMT (ssa_name (x));
-		  if (s && gimple_bb (s) == bb)
-		    {
-		      if (!printed)
-			fprintf (output, "     -- Ranges Defined -- :\n");
-		      fprintf (output, "     ");
-		      print_generic_expr (output, ssa_name (x), TDF_NONE);
-		      fprintf (output, "  : ");
-		      range.dump (output);
-		      printed = true;
-		    }
-		}
-	      else
-		// Check for a pointer and it is dereferences in this block
-		// and it had no range coming in.
-		if (ssa_name (x)
-		    && m_non_null->non_null_deref_p (ssa_name(x), bb)
-		    && !range_on_entry (range, bb, ssa_name (x)))
-		  {
-		    if (!printed)
-		      fprintf (output, "     -- Ranges Defined -- :\n");
-		    fprintf (output, "     ");
-		    print_generic_expr (output, ssa_name (x), TDF_NONE);
-		    fprintf (output, "  : non-null due to deref in block\n");
-		    printed = true;
-		  }
+	      tree use = valid_ssa_p (USE_FROM_PTR (use_p));
+	      if (use)
+	        range_of_expr (r, use, stmt);
 	    }
-	  if (printed)
-	    fprintf (output, "\n");
-
-	  // Now print any edge values.
-          printed = false;
-	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    {
-	      for (x = 1; x < num_ssa_names; x++)
-		{
-		  tree name = ssa_name (x);
-		  if (name && range_p (bb, name))
-		    {
-		      if (range_on_edge (range, e, name))
-			{
-			  if (!range.varying_p ())
-			    {
-			      printed = true;
-			      fprintf (output, "     %d->%d ", e->src->index,
-				       e->dest->index);
-			      if (e->flags & EDGE_TRUE_VALUE)
-				fprintf (output, " (T) ");
-			      else if (e->flags & EDGE_FALSE_VALUE)
-				fprintf (output, " (F) ");
-			      else
-				fprintf (output, "     ");
-			      print_generic_expr (output, name, TDF_SLIM);
-			      fprintf(output, "  \t");
-			      range.dump(output);
-			    }
-			}
-		    }
-		}
-	    }
-	  if (printed)
-	    fprintf (output, "\n");
 	}
     }
-
-  if (output && (dump_flags & TDF_DETAILS))
-    dump (output);
-
+  // The dump it.
+  dump (output);
 }

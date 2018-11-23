@@ -151,7 +151,7 @@ public:
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
 
   void dump (FILE *f);
-  void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
+  void exercise (FILE *f);   /* Calculate all stmts and dump */
 
 private:
   void dump_global_ssa_range (FILE *f);
