@@ -1,3 +1,10 @@
+2018-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88149
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Detect
+	the case where there are two different def types for the
+	same operand at different operand position in the same stmt.
+
 2018-23-11  Mihail Ionescu  <mihail.ionescu@arm.com>
 
 	* config/arm/arm.c (arm_expand_compare_and_swap): Simplify and call

@@ -1,3 +1,8 @@
+2018-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88149
+	* g++.dg/torture/pr88149.C: New testcase.
+
 2018-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/86614
