@@ -1,3 +1,9 @@
+2018-11-23  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR bootstrap/88157
+	* ira-costs.c (record_operand_costs): Use bigger hard reg class if
+	its mode does not fit to the original class.
+
 2018-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR tree-optimization/87756

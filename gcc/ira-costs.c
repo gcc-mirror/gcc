@@ -1319,6 +1319,13 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  bool dead_p = find_regno_note (insn, REG_DEAD, REGNO (src));
 
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
+	  /* Target code may return any cost for mode which does not
+	     fit the the hard reg class (e.g. DImode for AREG on
+	     i386).  Check this and use a bigger class to get the
+	     right cost.  */
+	  if (! ira_hard_reg_in_set_p (other_regno, mode,
+				       reg_class_contents[hard_reg_class]))
+	    hard_reg_class = ira_pressure_class_translate[hard_reg_class];
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
 	    {
