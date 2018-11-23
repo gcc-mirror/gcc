@@ -1,6 +1,8 @@
 2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
 	    Philipp Tomsich <philipp.tomsich@theobroma-systems.com>
 
+	* config/aarch64/aarch64.c (xgene1_tunings): Add Xgene1 specific
+	prefetch tunings.
 	* config/aarch64/aarch64.c (xgene1_addrcost_table): Correct the post-modify
 	costs.
 	* config/arm/aarch-cost-tables.h (xgene1_extra_costs): Update the cost table
