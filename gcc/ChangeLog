@@ -1,3 +1,12 @@
+2018-11-23  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from mainline.
+	2018-08-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/84711
+	* config/arm/neon.md (movv4hf, movv8hf): Refactored to..
+	(mov<mov>): ..this and enable unconditionally.
+
 2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
