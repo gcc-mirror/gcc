@@ -1,3 +1,10 @@
+2018-11-22  Sandra Loosemore  <sandra@codesourcery.com>
+	    Alan Coopersmith  <alan.coopersmith@oracle.com>
+
+	PR c/53608
+	* doc/extend.texi (Designated Inits): Clarify handling of multiple
+	initializers for unions.
+
 2018-11-22  Jan Hubicka  <jh@suse.cz>
 
 	PR lto/88142

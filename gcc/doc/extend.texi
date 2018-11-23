@@ -2104,7 +2104,7 @@ Another syntax that has the same meaning, obsolete since GCC 2.5, is
 struct point p = @{ y: yvalue, x: xvalue @};
 @end smallexample
 
-Omitted field members are implicitly initialized the same as objects
+Omitted fields are implicitly initialized the same as for objects
 that have static storage duration.
 
 @cindex designators
@@ -2162,11 +2162,13 @@ example, with the @samp{struct point} declaration above:
 struct point ptarray[10] = @{ [2].y = yv2, [2].x = xv2, [0].x = xv0 @};
 @end smallexample
 
-@noindent
-If the same field is initialized multiple times, it has the value from
-the last initialization.  If any such overridden initialization has
-side effect, it is unspecified whether the side effect happens or not.
-Currently, GCC discards them and issues a warning.
+If the same field is initialized multiple times, or overlapping
+fields of a union are initialized, the value from the last
+initialization is used.  When a field of a union is itself a structure, 
+the entire structure from the last field initialized is used.  If any previous
+initializer has side effect, it is unspecified whether the side effect
+happens or not.  Currently, GCC discards the side-effecting
+initializer expressions and issues a warning.
 
 @node Case Ranges
 @section Case Ranges
