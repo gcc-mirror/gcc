@@ -75,6 +75,9 @@ main()
 // { dg-final { regexp-test as2 {std::any containing const char \* = {\[contained value\] = 0x[[:xdigit:]]+ "stringiest"}} } }
   any am = *om;
 // { dg-final { note-test am {std::any containing std::map with 3 elements = {[1] = 2, [3] = 4, [5] = 6}} } }
+  struct local_type { int i = 99; };
+  any al = local_type{};
+// { dg-final { note-test al {std::any containing local_type = {[contained value] = {i = 99}}} } }
 
   struct S { operator int() { throw 42; }};
   variant<float, int, string_view> v0;
