@@ -1,3 +1,11 @@
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65229
+	* python/libstdcxx/v6/printers.py (StdBitsetPrinter): Handle
+	exception thrown for std::bitset<0>.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test std::bitset<0>.
+
 2018-11-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/87308 (partial)
