@@ -536,6 +536,10 @@ ffixed-line-length-
 Fortran RejectNegative Joined UInteger Var(flag_fixed_line_length) Init(72)
 -ffixed-line-length-<n>	Use n as character line width in fixed mode.
 
+fpad-source
+Fortran Var(flag_pad_source) Init(1)
+Pad shorter fixed form lines to line width with spaces.
+
 ffpe-trap=
 Fortran RejectNegative JoinedOrMissing
 -ffpe-trap=[...]	Stop on following floating point exceptions.
