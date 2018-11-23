@@ -1,3 +1,8 @@
+2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
+
+	* config/arm/aarch-cost-tables.h (xgene1_extra_costs): Update the cost table
+	for Xgene1.
+
 2018-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88149
