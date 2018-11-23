@@ -77,9 +77,9 @@ void test_integer_conversion_memset (void *d)
   /* Passing a ptrdiff_t where size_t is expected may not be unsafe
      but because GCC may emits suboptimal code for such calls warning
      for them helps improve efficiency.  */
-  memset (d, 0, diffi);       /* { dg-warning ".memset. argument 3 promotes to .ptrdiff_t. {aka .long int.} where .long unsigned int. is expected" } */
+  memset (d, 0, diffi);       /* { dg-warning ".memset. argument 3 promotes to .ptrdiff_t. {aka .\(long \)?int.} where .\(long \)?unsigned int. is expected" } */
 
-  memset (d, 0, 2.0);         /* { dg-warning ".memset. argument 3 type is .double. where 'long unsigned int' is expected" } */
+  memset (d, 0, 2.0);         /* { dg-warning ".memset. argument 3 type is .double. where '\(long \)?unsigned int' is expected" } */
 
   /* Verify that the same call as above but to the built-in doesn't
      trigger a warning.  */
@@ -108,7 +108,8 @@ void test_real_conversion_fabs (void)
   /* In C, the type of an enumeration constant is int.  */
   d = fabs (e0);    /* { dg-warning ".fabs. argument 1 type is .int. where .double. is expected in a call to built-in function declared without prototype" } */
 
-  d = fabs (e);     /* { dg-warning ".fabs. argument 1 type is .enum E. where .double. is expected in a call to built-in function declared without prototype" } */
+  d = fabs (e);     /* { dg-warning ".fabs. argument 1 type is .enum E. where .double. is expected in a call to built-in function declared without prototype" "ordinary enum" { target { ! short_enums } } } */
+  /* { dg-warning ".fabs. argument 1 promotes to .int. where .double. is expected in a call to built-in function declared without prototype" "size 1 enum" { target short_enums } .-1 } */
 
   /* No warning here since float is promoted to double.  */
   d = fabs (f);

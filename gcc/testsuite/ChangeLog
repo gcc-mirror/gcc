@@ -1,3 +1,10 @@
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+
+	PR testsuite/88098
+	* gcc.dg/Wbuiltin-declaration-mismatch-4.c: Adjust.
+	* gcc.dg/Wbuiltin-declaration-mismatch-5.c: New test.
+	* gcc.dg/torture/pr67222.c: Adjust.
+
 2018-11-23  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88149
