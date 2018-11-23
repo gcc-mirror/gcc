@@ -1,3 +1,11 @@
+2018-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87308 (partial)
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Adjust regex to
+	work around PR 88166.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test std::any
+	containing a local type.
+
 2018-11-22  Marc Glisse  <marc.glisse@inria.fr>
 
 	PR libstdc++/87106
