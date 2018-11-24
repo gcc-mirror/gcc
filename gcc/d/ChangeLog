@@ -1,3 +1,9 @@
+2018-11-24  Iain Buclaw  <ibuclaw@gdcproject.org>
+
+	PR d/87866
+	* d-incpath.cc (add_globalpaths): Use lrealpath to get canonical name.
+	(add_filepaths): Likewise.
+
 2018-11-17  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	PR d/87824
