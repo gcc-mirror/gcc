@@ -1,3 +1,9 @@
+2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/888143
+	* resolve.c (resolve_variable): Check for associate names with
+	NULL target.
+
 2018-11-23  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (fpad-source): New option.
