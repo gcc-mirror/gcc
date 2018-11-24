@@ -1,3 +1,8 @@
+2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/888143
+	* gfortran.dg/associate_46.f90: New test.
+
 2018-11-23  Jeff Law  <law@redhat.com>
 
 	PR rtl-optimization/84768
@@ -585,7 +590,7 @@
 	Likewise.
 	* gcc.target/s390/global-array-even-element.c: Likewise.
 
-2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
+2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 	    Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR 71026/tree-optimization
@@ -600,7 +605,7 @@
 	PR rtl-optimization/87817
 	* gcc.target/i386/bmi2-bzhi-3.c (main): Add a couple of new tests.
 
-2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>  
+2018-11-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* gcc.target/aarch64/pr62178.c: Relax scan-assembler checks.
 
