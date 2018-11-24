@@ -78,7 +78,7 @@ add_globalpaths (Strings *paths)
       for (size_t i = 0; i < paths->dim; i++)
 	{
 	  const char *path = (*paths)[i];
-	  const char *target = FileName::canonicalName (path);
+	  const char *target = lrealpath (path);
 
 	  if (target == NULL || !FileName::exists (target))
 	    {
@@ -105,7 +105,7 @@ add_filepaths (Strings *paths)
       for (size_t i = 0; i < paths->dim; i++)
 	{
 	  const char *path = (*paths)[i];
-	  const char *target = FileName::canonicalName (path);
+	  const char *target = lrealpath (path);
 
 	  if (!FileName::exists (target))
 	    {
