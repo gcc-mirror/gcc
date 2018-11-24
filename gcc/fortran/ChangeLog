@@ -1,6 +1,6 @@
 2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/888143
+	PR fortran/88143
 	* resolve.c (resolve_variable): Check for associate names with
 	NULL target.
 
