@@ -1,6 +1,6 @@
 2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
-	PR fortran/888143
+	PR fortran/88143
 	* gfortran.dg/associate_46.f90: New test.
 
 2018-11-23  Jeff Law  <law@redhat.com>
