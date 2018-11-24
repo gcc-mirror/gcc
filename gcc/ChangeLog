@@ -1,3 +1,9 @@
+2018-11-23  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/87468
+	* tree-ssa-threadupdate.c (create_block_for_threading): Clear
+	EDGE_IGNORE on all outgoing edges of the duplicate block.
+
 2018-11-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR bootstrap/88157

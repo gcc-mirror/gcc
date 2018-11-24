@@ -336,7 +336,17 @@ create_block_for_threading (basic_block bb,
   rd->dup_blocks[count] = duplicate_block (bb, NULL, NULL);
 
   FOR_EACH_EDGE (e, ei, rd->dup_blocks[count]->succs)
-    e->aux = NULL;
+    {
+      e->aux = NULL;
+
+      /* If we duplicate a block with an outgoing edge marked as
+	 EDGE_IGNORE, we must clear EDGE_IGNORE so that it doesn't
+	 leak out of the current pass.
+
+	 It would be better to simplify switch statements and remove
+	 the edges before we get here, but the sequencing is nontrivial.  */
+      e->flags &= ~EDGE_IGNORE;
+    }
 
   /* Zero out the profile, since the block is unreachable for now.  */
   rd->dup_blocks[count]->count = profile_count::uninitialized ();
