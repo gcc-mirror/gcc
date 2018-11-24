@@ -1,3 +1,8 @@
+2018-11-23  Jeff Law  <law@redhat.com>
+
+	PR rtl-optimization/84768
+	* gcc.c-torture/compile/pr84768.c: New test.
+
 2018-11-23  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* gcc.target/powerpc/pr70669.c: Use unary minus instead of
