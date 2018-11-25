@@ -1,3 +1,9 @@
+2018-11-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/88073
+	* gfortran.dg/where_7.f90: New test.
+
 2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backport from trunk
