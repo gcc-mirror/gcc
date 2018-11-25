@@ -1318,6 +1318,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  int cost, k;
 	  bool dead_p = find_regno_note (insn, REG_DEAD, REGNO (src));
 
+	  ira_init_register_move_cost_if_necessary (mode);
 	  hard_reg_class = REGNO_REG_CLASS (other_regno);
 	  /* Target code may return any cost for mode which does not
 	     fit the the hard reg class (e.g. DImode for AREG on
