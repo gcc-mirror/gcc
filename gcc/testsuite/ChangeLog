@@ -1,3 +1,12 @@
+2018-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (check_compile): Handle D.
+	(check_effective_target_d_runtime): New proc.
+	* lib/gdc-dg.exp (gdc-dg-test): Demote link and run tests to
+	compile unless d_runtime.
+	* gdc.dg/runnable.d: Skip unless d_runtime.
+	* gdc.dg/lto/lto.exp: Require d_runtime to run tests.
+
 2018-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/88143

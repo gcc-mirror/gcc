@@ -2106,6 +2106,9 @@ Target provides a full C99 runtime.
 Target @code{string.h} and @code{wchar.h} headers provide C++ required
 overloads for @code{strchr} etc. functions.
 
+@item d_runtime
+Target provides the D runtime.
+
 @item dummy_wcsftime
 Target uses a dummy @code{wcsftime} function that always returns zero.
 

@@ -1,5 +1,6 @@
 // { dg-additional-sources "imports/runnable.d" }
 // { dg-do run { target hw } }
+// { dg-skip-if "needs gcc/config.d" { ! d_runtime } }
 
 module runnable;
 
