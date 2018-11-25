@@ -1,3 +1,13 @@
+2018-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR other/54265
+	* doc/extend.texi (Common Variable Attributes): Use preferred
+	placement of type attributes in examples, plus whitespace fixes.
+	(Type Attributes): Clarify why placement of attributes
+	immediately after struct/union/enum keyword is preferred.
+	(Common Type Attributes): Use preferred placement of type
+	attributes in examples, plus more whitespace fixes.
+
 2018-11-25  Paul Koning  <ni1d@arrl.net>
 
 	* config/pdp11/pdp11.h (TARGET_HAS_NO_HW_DIVIDE): Define.

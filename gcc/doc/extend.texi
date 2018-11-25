@@ -6177,7 +6177,7 @@ struct foo
 @{
   int i1;
   int i2;
-  unsigned long long x __attribute__((warn_if_not_aligned(16)));
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
 @};
 @end smallexample
 
@@ -6189,12 +6189,12 @@ The compiler also issues a warning, like @samp{warning: 'x' offset
 the misaligned offset:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (16))) foo
 @{
   int i1;
   int i2;
-  unsigned long long x __attribute__((warn_if_not_aligned(16)));
-@} __attribute__((aligned(16)));
+  unsigned long long x __attribute__ ((warn_if_not_aligned (16)));
+@};
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
@@ -7019,9 +7019,10 @@ inside double parentheses.
 
 You may specify type attributes in an enum, struct or union type
 declaration or definition by placing them immediately after the
-@code{struct}, @code{union} or @code{enum} keyword.  A less preferred
-syntax is to place them just past the closing curly brace of the
-definition.
+@code{struct}, @code{union} or @code{enum} keyword.  You can also place
+them just past the closing curly brace of the definition, but this is less
+preferred because logically the type should be fully defined at 
+the closing brace.
 
 You can also include type attributes in a @code{typedef} declaration.
 @xref{Attribute Syntax}, for details of the exact syntax for using
@@ -7053,7 +7054,7 @@ alignment for the target, which is often, but by no means always, 8 or 16
 bytes.  For example, the declarations:
 
 @smallexample
-struct S @{ short f[3]; @} __attribute__ ((aligned (8)));
+struct __attribute__ ((aligned (8))) S @{ short f[3]; @};
 typedef int more_aligned_int __attribute__ ((aligned (8)));
 @end smallexample
 
@@ -7084,7 +7085,7 @@ useful alignment for the target machine you are compiling for.  For
 example, you could write:
 
 @smallexample
-struct S @{ short f[3]; @} __attribute__ ((aligned));
+struct __attribute__ ((aligned)) S @{ short f[3]; @};
 @end smallexample
 
 Whenever you leave out the alignment factor in an @code{aligned}
@@ -7119,7 +7120,7 @@ by inherent limitations in your linker.  On many systems, the linker is
 only able to arrange for variables to be aligned up to a certain maximum
 alignment.  (For some linkers, the maximum supported alignment may
 be very very small.)  If your linker is only able to align variables
-up to a maximum of 8-byte alignment, then specifying @code{aligned(16)}
+up to a maximum of 8-byte alignment, then specifying @code{aligned (16)}
 in an @code{__attribute__} still only provides you with 8-byte
 alignment.  See your linker documentation for further information.
 
@@ -7137,7 +7138,7 @@ warning will be issued.  For example, the declaration:
 
 @smallexample
 typedef unsigned long long __u64
-   __attribute__((aligned(4),warn_if_not_aligned(8)));
+   __attribute__((aligned (4), warn_if_not_aligned (8)));
 
 struct foo
 @{
@@ -7156,12 +7157,12 @@ has the same alignment when @code{__u64} is aligned at either 4 or
 8 bytes.  Align @code{struct foo} to 8 bytes:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (8))) foo
 @{
   int i1;
   int i2;
   __u64 x;
-@} __attribute__((aligned(8)));
+@};
 @end smallexample
 
 @noindent
@@ -7170,13 +7171,13 @@ silences the warning.  The compiler also issues a warning, like
 when the structure field has the misaligned offset:
 
 @smallexample
-struct foo
+struct __attribute__ ((aligned (8))) foo
 @{
   int i1;
   int i2;
   int i3;
   __u64 x;
-@} __attribute__((aligned(8)));
+@};
 @end smallexample
 
 This warning can be disabled by @option{-Wno-if-not-aligned}.
@@ -7281,7 +7282,7 @@ special semantics.
 Example of use:
 
 @smallexample
-typedef short __attribute__((__may_alias__)) short_a;
+typedef short __attribute__ ((__may_alias__)) short_a;
 
 int
 main (void)
