@@ -1,3 +1,7 @@
+2018-11-25  Paul Koning  <ni1d@arrl.net>
+
+	* config/pdp11/pdp11.h (TARGET_HAS_NO_HW_DIVIDE): Define.
+
 2018-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* doc/sourcebuild.texi (Effective-Target Keywords, Environment

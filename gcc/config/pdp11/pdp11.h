@@ -143,6 +143,11 @@ extern const struct real_format pdp11_d_format;
 /* Define this if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
+
+/* "HW_DIVIDE" actually means 64 by 32 bit divide.  While some PDP11
+   models have hardware divide, it is for 32 by 16 bits only, so we
+   call this platform "no hardware divide".  */
+#define TARGET_HAS_NO_HW_DIVIDE 1
 
 /* Standard register usage.  */
 
