@@ -164,8 +164,10 @@ int main()
   __gnu_test::test_operator_members<long double, double>();
   __gnu_test::test_operator_members<long double, long double>();
 
+#if defined(_GLIBCXX_USE_FLOAT128)
   // Test primary template.
   __gnu_test::test_operator_members<__float128, __float128>();
+#endif
 
   return 0;
 }
