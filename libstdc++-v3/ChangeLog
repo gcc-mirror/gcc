@@ -1,3 +1,8 @@
+2018-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/complex/requirements/more_constexpr.cc: Fix
+	failure on targets without __float128.
+
 2018-11-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement P0415 More constexpr for std::complex.
