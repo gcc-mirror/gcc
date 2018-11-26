@@ -319,7 +319,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wno-missing-attributes  -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
+-Wmissing-field-initializers  -Wmissing-format-attribute @gol
+-Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
@@ -339,10 +340,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
--Wstringop-overflow=@var{n}  -Wstringop-truncation @gol
+-Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
--Wmissing-format-attribute  -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wswitch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
@@ -5848,6 +5848,7 @@ attributes currently supported are listed below.
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
+@itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
@@ -5855,6 +5856,8 @@ attributes currently supported are listed below.
 @opindex Wno-suggest-attribute=const
 @opindex Wsuggest-attribute=noreturn
 @opindex Wno-suggest-attribute=noreturn
+@opindex Wmissing-noreturn
+@opindex Wno-missing-noreturn
 @opindex Wsuggest-attribute=malloc
 @opindex Wno-suggest-attribute=malloc
 
