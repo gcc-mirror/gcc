@@ -1,5 +1,26 @@
 2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
+	* c-c++-common/Warray-bounds-3.c (test_strcpy_bounds): Use long instead
+	of int if __SIZEOF_INT__ == 2.
+	* c-c++-common/Wrestrict.c: Test memcpy range with smaller length when
+	__SIZEOF_SIZE_T < 4.
+	* c-c++-common/rotate-8.c: Define smaller "large" constant when
+	__SIZEOF_INT__ == 2.
+	* gcc.dg/pr53037-1.c: Add dg-require-effective-target int32.
+	* gcc.dg/pr53037-2.c: Likewise.
+	* gcc.dg/pr53037-3.c: Likewise.
+	* gcc.dg/pr85512.c: Likewise.
+	* gcc.dg/pr59963-2.c: Add dg-warning for int16.
+	* gcc.dg/sancov/cmp0.c: Explicitly use __INT32_TYPE__ instead of int.
+	* gcc.dg/tree-ssa/addadd.c: Fix dg-final directives for int16.
+	* gcc.dg/tree-ssa/pr79327-2.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-sprintf-2.c: Filter out invalid tests for
+	int16.
+	* gcc.dg/tree-ssa/builtin-sprintf-warn-10.c: Update sizes in dg-warning
+	directives for int16.
+
+2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
 	* lib/target-supports.exp (check_effective_target_newlib_nano_io): New. 
 	* gcc.c-torture/execute/920501-8.c: Register undefined linker symbol
 	_printf_float for newlib_nano_io target.
