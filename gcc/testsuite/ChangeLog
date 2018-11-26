@@ -1,5 +1,8 @@
 2018-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88195
+	* gcc.target/i386/pr88195.c: New test.
+
 	PR testsuite/88090
 	* obj-c++.dg/attributes/method-nonnull-1.mm (my_size_t): New typedef.
 	(MyArray::removeObjectAtIndex): Use my_size_t instead of size_t and
