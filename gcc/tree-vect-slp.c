@@ -1952,6 +1952,8 @@ vect_analyze_slp_instance (vec_info *vinfo,
 	 transform the node.  In the reduction analysis phase only the last
 	 element of the chain is marked as reduction.  */
       STMT_VINFO_DEF_TYPE (stmt_info) = vect_reduction_def;
+      STMT_VINFO_REDUC_DEF (vect_orig_stmt (stmt_info))
+	= STMT_VINFO_REDUC_DEF (vect_orig_stmt (scalar_stmts.last ()));
     }
   else
     {
