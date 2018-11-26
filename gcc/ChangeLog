@@ -1,3 +1,18 @@
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86139
+	* tree-vect-generic.c (build_word_mode_vector_type): Remove
+	duplicate and harmful type_hash_canon.
+
+	2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86076
+	* tree-cfg.c (move_stmt_op): unshare invariant addresses
+	before adjusting their block.
+
 2018-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

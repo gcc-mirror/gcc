@@ -1,3 +1,11 @@
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2018-06-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/86076
+	* gcc.dg/pr86076.c: New testcase.
+
 2018-11-26  Matthias Klose  <doko@ubuntu.com>
 
 	* jit.dg/test-long-names.c: Fix build with -Wformat-security.

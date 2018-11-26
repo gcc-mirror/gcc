@@ -89,12 +89,8 @@ build_word_mode_vector_type (int nunits)
       return vector_last_type;
     }
 
-  /* We build a new type, but we canonicalize it nevertheless,
-     because it still saves some memory.  */
   vector_last_nunits = nunits;
-  vector_last_type = type_hash_canon (nunits,
-				      build_vector_type (vector_inner_type,
-							 nunits));
+  vector_last_type = build_vector_type (vector_inner_type, nunits);
   return vector_last_type;
 }
 
