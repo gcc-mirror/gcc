@@ -1,3 +1,10 @@
+2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* doc/invoke.texi: Document z14/arch12 -march option.
+
 2018-10-19  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/87645
