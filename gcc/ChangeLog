@@ -1,3 +1,9 @@
+2018-11-26  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR c/57182
+	* doc/invoke.texi (Optimize Options): Document that
+	-freorder-functions also uses "hot" and "cold" attributes.
+
 2018-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_mangle_type): Fix typo in comment.
