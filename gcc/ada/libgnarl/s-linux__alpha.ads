@@ -87,6 +87,7 @@ package System.Linux is
    SIGKILL    : constant := 9; --  kill (cannot be caught or ignored)
    SIGBUS     : constant := 10; --  bus error
    SIGSEGV    : constant := 11; --  segmentation violation
+   SIGSYS     : constant := 12; --  bad system call
    SIGPIPE    : constant := 13; --  write on a pipe with no one to read it
    SIGALRM    : constant := 14; --  alarm clock
    SIGTERM    : constant := 15; --  software termination signal from kill
