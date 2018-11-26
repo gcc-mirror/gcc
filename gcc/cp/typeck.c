@@ -4919,7 +4919,7 @@ cp_build_binary_op (location_t location,
 	      tree pfn0, delta0, e1, e2;
 
 	      if (TREE_SIDE_EFFECTS (op0))
-		op0 = save_expr (op0);
+		op0 = cp_save_expr (op0);
 
 	      pfn0 = pfn_from_ptrmemfunc (op0);
 	      delta0 = delta_from_ptrmemfunc (op0);
