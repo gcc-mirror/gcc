@@ -1,5 +1,11 @@
 2018-11-25  Sandra Loosemore  <sandra@codesourcery.com>
 
+	PR c/57166
+	* doc/invoke.texi (Option Summary): Add -Wmissing-noreturn.
+	(Warning Options): Likewise.
+
+2018-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+
 	PR web/79738
 	* doc/extend.texi (Common Function Attributes): Clarify that
 	functions with "const" attribute can read const global variables.
