@@ -2521,11 +2521,13 @@ are automatically detected and this attribute is ignored.
 Many functions do not examine any values except their arguments, and
 have no effects except to return a value.  Calls to such functions lend
 themselves to optimization such as common subexpression elimination.
+The presence of the @code{const} attribute on a function declaration 
+allows GCC to emit more efficient code for some calls to the function.  
+
 The @code{const} attribute imposes greater restrictions on a function's
-definition than the similar @code{pure} attribute below because it prohibits
-the function from reading global variables.  Consequently, the presence of
-the attribute on a function declaration allows GCC to emit more efficient
-code for some calls to the function.  Decorating the same function with
+definition than the similar @code{pure} attribute below because it
+additionally prohibits the function from reading memory except for
+constant global variables.  Decorating the same function with
 both the @code{const} and the @code{pure} attribute is diagnosed.
 
 @cindex pointer arguments
@@ -3315,8 +3317,9 @@ depending on volatile memory or other system resource, that may change between
 two consecutive calls (such as @code{feof} in a multithreading environment).
 
 The @code{pure} attribute imposes similar but looser restrictions on
-a function's defintion than the @code{const} attribute: it allows the
-function to read global variables.  Decorating the same function with
+a function's definition than the @code{const} attribute: @code{pure}
+allows the function to read any non-volatile memory, not just
+constant global variables.  Decorating the same function with
 both the @code{pure} and the @code{const} attribute is diagnosed.
 Because a @code{pure} function cannot have any side effects it does not
 make sense for such a function to return @code{void}.  Declaring such
