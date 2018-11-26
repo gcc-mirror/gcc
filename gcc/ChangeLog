@@ -1,3 +1,21 @@
+2018-11-27  Alan Modra  <amodra@gmail.com>
+
+	* config.gcc (powerpc*-*-linux*): Add linux.h to tm_file.
+	* config/rs6000/linux.h (TARGET_OS_CPP_BUILTINS): Use
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(RS6000_ABI_NAME): Define.
+	* config/rs6000/linux64.h (TARGET_OS_CPP_BUILTINS): Use
+	GNU_USER_TARGET_OS_CPP_BUILTINS.
+	(MUSL_DYNAMIC_LINKER32): Undef before defining.
+	(UCLIBC_DYNAMIC_LINKER32, UCLIBC_DYNAMIC_LINKER64): Don't define.
+	(CHOOSE_DYNAMIC_LINKER): Don't define.
+	(GNU_USER_DYNAMIC_LINKER32, GNU_USER_DYNAMIC_LINKER64): Don't define.
+	* config/rs6000/sysv4.h (MUSL_DYNAMIC_LINKER): Undef before defining.
+	(CHOOSE_DYNAMIC_LINKER, GNU_USER_DYNAMIC_LINKER): Only define when
+	not already defined.
+	(CPP_OS_LINUX_SPEC): Remove defines and asserts handled by
+	TARGET_OS_CPP_BUILTINS.
+
 2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document check_effective_target_newlib_nano_io.
