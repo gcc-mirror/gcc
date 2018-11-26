@@ -50,7 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 extern void debug_tree(tree);
 
 static tree find_handle_type (location_t);
-static tree find_promise_type (location_t, tree);
+static tree find_coro_handle_type (location_t, tree);
+static tree find_promise_type (tree);
 static tree lookup_promise_member (tree, const char *, location_t, bool);
 static bool coro_promise_type_found_p (tree, location_t);
 
@@ -60,8 +61,6 @@ static bool coro_promise_type_found_p (tree, location_t);
 static tree
 find_handle_type (location_t kw)
 {
-  tree h_type;
-  tree promise_type;
   unsigned p;
   /* we want std::experimental::coroutine_traits class template decl.  */
   tree exp_name = get_identifier ("experimental");
@@ -104,11 +103,43 @@ find_handle_type (location_t kw)
   return handle_type;
 }
 
+static tree
+find_coro_handle_type (location_t kw, tree promise_type)
+{
+  /* we want std::experimental::coroutine_handle class template decl.  */
+  tree exp_name = get_identifier ("experimental");
+  tree handle_name = get_identifier ("coroutine_handle");
+  tree exp_ns = lookup_qualified_name (std_node, exp_name, 0, false, false);
+  tree targ = make_tree_vec (1);
+
+  if (exp_ns == error_mark_node)
+    {
+      error_at (kw, "std::experimental not found");
+      return NULL_TREE;
+    }
+
+  /* So now build up a type list for the template, one entr, the promise.  */
+  TREE_VEC_ELT (targ, 0) = promise_type;
+
+  tree handle_type = lookup_template_class (handle_name, targ,
+					    /* in_decl */ NULL_TREE,
+					    /* context */ exp_ns,
+					    /* entering scope */ false,
+					    tf_none);
+
+  if (handle_type == error_mark_node)
+    {
+      error_at (kw, "couldn't instantiate coroutine_handle for promise");
+      return NULL_TREE;
+    }
+
+  return handle_type;
+}
 
 /* Look for the promise_type in the instantiated.  */
 
 static tree
-find_promise_type (location_t kw, tree handle_type)
+find_promise_type (tree handle_type)
 {
   tree promise_name = get_identifier ("promise_type");
 
@@ -134,9 +165,9 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)
     {
       tree handle_type = find_handle_type (loc);
-      DECL_COROUTINE_HANDLE_TYPE(fndecl) = handle_type;
-      DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (loc,
-							       handle_type);
+      DECL_COROUTINE_PROMISE_TYPE(fndecl) = find_promise_type (handle_type);
+      DECL_COROUTINE_HANDLE_TYPE(fndecl)
+       = find_coro_handle_type (loc, DECL_COROUTINE_PROMISE_TYPE(fndecl));
     }
 
   if (DECL_COROUTINE_PROMISE_TYPE(fndecl) == NULL_TREE)

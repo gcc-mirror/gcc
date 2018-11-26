@@ -1,5 +1,12 @@
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (find_coro_handle_type): new.
+	(find_handle_type): Remove unused vars.
+	(coro_promise_type_found_p): Save the coro handle rather than
+	the traits one.  (find_promise_type): Remove unused arg.
+
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (morph_fn_to_coro): Update initial
 	validity checks and diagnostics.  Amend comments.
 
