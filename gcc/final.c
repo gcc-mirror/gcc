@@ -2232,6 +2232,9 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	      ASM_OUTPUT_LABEL (asm_out_file,
 				IDENTIFIER_POINTER (cold_function_name));
 #endif
+	      if (dwarf2out_do_frame ()
+	          && cfun->fde->dw_fde_second_begin != NULL)
+		ASM_OUTPUT_LABEL (asm_out_file, cfun->fde->dw_fde_second_begin);
 	    }
 	  break;
 
