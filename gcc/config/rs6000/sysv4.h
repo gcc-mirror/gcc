@@ -786,8 +786,10 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 
 #define GLIBC_DYNAMIC_LINKER "/lib/ld.so.1"
 #define UCLIBC_DYNAMIC_LINKER "/lib/ld-uClibc.so.0"
+#undef MUSL_DYNAMIC_LINKER
 #define MUSL_DYNAMIC_LINKER \
   "/lib/ld-musl-powerpc" MUSL_DYNAMIC_LINKER_E "%{msoft-float:-sf}.so.1"
+#ifndef GNU_USER_DYNAMIC_LINKER
 #if DEFAULT_LIBC == LIBC_UCLIBC
 #define CHOOSE_DYNAMIC_LINKER(G, U, M) \
   "%{mglibc:" G ";:%{mmusl:" M ";:" U "}}"
@@ -803,6 +805,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 #define GNU_USER_DYNAMIC_LINKER \
   CHOOSE_DYNAMIC_LINKER (GLIBC_DYNAMIC_LINKER, UCLIBC_DYNAMIC_LINKER, \
 			 MUSL_DYNAMIC_LINKER)
+#endif
 
 #define LINK_OS_LINUX_SPEC "-m elf32ppclinux %{!shared: %{!static: \
   %{rdynamic:-export-dynamic} \
@@ -812,12 +815,7 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 # define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
-#define CPP_OS_LINUX_SPEC "-D__unix__ -D__gnu_linux__ -D__linux__ \
-%{!undef:							  \
-  %{!ansi:							  \
-    %{!std=*:-Dunix -D__unix -Dlinux -D__linux}			  \
-    %{std=gnu*:-Dunix -D__unix -Dlinux -D__linux}}}		  \
--Asystem=linux -Asystem=unix -Asystem=posix %{pthread:-D_REENTRANT}"
+#define CPP_OS_LINUX_SPEC "%{pthread:-D_REENTRANT}"
 
 /* NetBSD support.  */
 #define LIB_NETBSD_SPEC "\
