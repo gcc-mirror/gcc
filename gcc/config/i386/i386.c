@@ -30220,9 +30220,13 @@ def_builtin2 (HOST_WIDE_INT mask, const char *name,
 {
   tree decl = NULL_TREE;
 
-  ix86_builtins_isa[(int) code].isa2 = mask;
   if (tcode == VOID_FTYPE_UINT64)
-    ix86_builtins_isa[(int) code].isa = OPTION_MASK_ISA_64BIT;
+    {
+      if (!TARGET_64BIT)
+	return decl;
+      ix86_builtins_isa[(int) code].isa = OPTION_MASK_ISA_64BIT;
+    }
+  ix86_builtins_isa[(int) code].isa2 = mask;
 
   if (mask == 0
       || (mask & ix86_isa_flags2) != 0

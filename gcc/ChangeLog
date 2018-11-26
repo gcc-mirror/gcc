@@ -1,5 +1,9 @@
 2018-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88195
+	* config/i386/i386.c (def_builtin2): If tcode == VOID_FTYPE_UINT64
+	and !TARGET_64BIT, return NULL_TREE.
+
 	PR c++/86900
 	* dwarf2out.c (secname_for_decl): For functions with
 	DECL_SECTION_NAME if in_cold_section_p, try to return
