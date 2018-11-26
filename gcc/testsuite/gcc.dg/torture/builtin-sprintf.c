@@ -1,6 +1,7 @@
 /* PR tree-optimization/86274 - SEGFAULT when logging std::to_string(NAN)
    { dg-do run }
-   { dg-options "-O2 -Wall" } */
+   { dg-options "-O2 -Wall" }
+   { dg-additional-options "-Wl,-u,_printf_float" { target newlib_nano_io } } */
 
 #define X        "0xdeadbeef"
 #define nan(x)   __builtin_nan (x)

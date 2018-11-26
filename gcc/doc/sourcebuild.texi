@@ -2152,6 +2152,10 @@ Target supports @code{mmap}.
 @item newlib
 Target supports Newlib.
 
+@item newlib_nano_io
+GCC was configured with @code{--enable-newlib-nano-formatted-io}, which reduces
+the code size of Newlib formatted I/O functions.
+
 @item pow10
 Target provides @code{pow10} function.
 
