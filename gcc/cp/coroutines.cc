@@ -755,7 +755,7 @@ co_return_context_valid_p (location_t kw, tree expr)
 
   /* If the promise object doesn't have the correct return call then
      there's a mis-match between the co_return <expr> and this.  */
-  if (expr == NULL_TREE || VOID_TYPE_P (expr))
+  if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
     {
       if (lookup_promise_member (current_function_decl, "return_void",
 				 kw, true /*musthave*/) == error_mark_node)

@@ -1,5 +1,11 @@
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (co_return_context_valid_p): It is
+	a valid void co_return if the expression is either absent
+	or void type.
+
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (co_return_expander): New callback.
 	(expand_co_returns): New. (morph_fn_to_coro): Lookup the
 	promise return_void() method.  Expand co_returns. Implement
