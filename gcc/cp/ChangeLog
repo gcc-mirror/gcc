@@ -1,3 +1,8 @@
+2018-11-26  Jason Merrill  <jason@redhat.com>
+
+	PR c++/87075 - ICE with constexpr array initialization.
+	* constexpr.c (cxx_eval_vec_init_1): Handle trivial initialization.
+
 2018-10-23  Tom de Vries  <tdevries@suse.de>
 
 	backport from trunk:
