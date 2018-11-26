@@ -1,3 +1,12 @@
+2018-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88178
+	* config/i386/i386.c (dbx_register_map): Use IGNORED_DWARF_REGNUM
+	for registers for which no debug information can be generated.
+	Use INVALID_REGNUM for non-existent registers.
+	(dbx64_register_map): Ditto.
+	(svr4_dbx_register_map): Ditto.
+
 2018-11-26  Sandra Loosemore  <sandra@codesourcery.com>
 
 	PR c/57182
