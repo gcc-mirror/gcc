@@ -1,3 +1,15 @@
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87645
+	Backport from mainline
+	2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.c (gimple_resimplify1): Apply recursion
+	limit.
+	(gimple_resimplify2): Likewise.
+	(gimple_resimplify3): Likewise.
+	(gimple_resimplify4): Likewise.
+
 2018-11-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

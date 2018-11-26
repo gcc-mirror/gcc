@@ -1,3 +1,11 @@
+2018-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87645
+	Backport from mainline
+	2018-07-12  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr87645.c: New testcase.
+
 2018-11-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline

@@ -99,17 +99,34 @@ gimple_resimplify1 (gimple_seq *seq,
 	}
     }
 
+  /* Limit recursion, there are cases like PR80887 and others, for
+     example when value-numbering presents us with unfolded expressions
+     that we are really not prepared to handle without eventual
+     oscillation like ((_50 + 0) + 8) where _50 gets mapped to _50
+     itself as available expression.  */
+  static unsigned depth;
+  if (depth > 10)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Aborting expression simplification due to "
+		 "deep recursion\n");
+      return false;
+    }
+
+  ++depth;
   code_helper res_code2;
   tree res_ops2[3] = {};
   if (gimple_simplify (&res_code2, res_ops2, seq, valueize,
 		       *res_code, type, res_ops[0]))
     {
+      --depth;
       *res_code = res_code2;
       res_ops[0] = res_ops2[0];
       res_ops[1] = res_ops2[1];
       res_ops[2] = res_ops2[2];
       return true;
     }
+  --depth;
 
   return false;
 }
@@ -159,17 +176,30 @@ gimple_resimplify2 (gimple_seq *seq,
       canonicalized = true;
     }
 
+  /* Limit recursion, see gimple_resimplify1.  */
+  static unsigned depth;
+  if (depth > 10)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Aborting expression simplification due to "
+		 "deep recursion\n");
+      return false;
+    }
+
+  ++depth;
   code_helper res_code2;
   tree res_ops2[3] = {};
   if (gimple_simplify (&res_code2, res_ops2, seq, valueize,
 		       *res_code, type, res_ops[0], res_ops[1]))
     {
+      --depth;
       *res_code = res_code2;
       res_ops[0] = res_ops2[0];
       res_ops[1] = res_ops2[1];
       res_ops[2] = res_ops2[2];
       return true;
     }
+  --depth;
 
   return canonicalized;
 }
@@ -218,18 +248,31 @@ gimple_resimplify3 (gimple_seq *seq,
       canonicalized = true;
     }
 
+  /* Limit recursion, see gimple_resimplify1.  */
+  static unsigned depth;
+  if (depth > 10)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "Aborting expression simplification due to "
+		 "deep recursion\n");
+      return false;
+    }
+
+  ++depth;
   code_helper res_code2;
   tree res_ops2[3] = {};
   if (gimple_simplify (&res_code2, res_ops2, seq, valueize,
 		       *res_code, type,
 		       res_ops[0], res_ops[1], res_ops[2]))
     {
+      --depth;
       *res_code = res_code2;
       res_ops[0] = res_ops2[0];
       res_ops[1] = res_ops2[1];
       res_ops[2] = res_ops2[2];
       return true;
     }
+  --depth;
 
   return canonicalized;
 }
