@@ -36,6 +36,11 @@ if { ![check_effective_target_lto] } {
     return
 }
 
+# Likewise if the D runtime library is missing.
+if { ![check_effective_target_d_runtime] } {
+    return
+}
+
 lto_init no-mathlib
 
 # Define an identifier for use with this suite to avoid name conflicts

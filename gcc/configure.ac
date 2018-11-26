@@ -4848,6 +4848,12 @@ pointers into PC-relative form.])
       [	.machine z13+vx ],,
       [AC_DEFINE(HAVE_AS_ARCHITECTURE_MODIFIERS, 1,
 	  [Define if your assembler supports architecture modifiers.])])
+    gcc_GAS_CHECK_FEATURE([vector load/store alignment hints],
+      gcc_cv_as_s390_vector_loadstore_alignment_hints, [2,31,0],,
+      [	vl %v24,0(%r15),3 ],,
+      [AC_DEFINE(HAVE_AS_VECTOR_LOADSTORE_ALIGNMENT_HINTS, 1,
+	  [Define if your assembler supports vl/vst/vlm/vstm with an optional alignment hint argument.])])
+
     ;;
 esac
 

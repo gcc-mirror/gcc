@@ -1,3 +1,14 @@
+2018-11-20  Martin Sebor  <msebor@redhat.com>
+
+	* c-attribs.c (type_for_vector_size): New function.
+	(type_valid_for_vector_size): Same.
+	(handle_vector_size_attribute): Move code to the functions above
+	and call them.
+	(validate_attribute, has_attribute): New functions.
+	* c-common.h (has_attribute): Declare.
+	(rid): Add RID_HAS_ATTRIBUTE_EXPRESSION.
+	* c-common.c (c_common_resword): Same.
+
 2018-11-16  Jason Merrill  <jason@redhat.com>
 
 	* c-lex.c (c_common_has_attribute): Handle likely/unlikely.

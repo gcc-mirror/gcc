@@ -1,3 +1,9 @@
+2018-11-22  Johannes Pfau  <johannespfau@gmail.com>
+
+	PR d/87824
+	* testsuite/libphobos.shared/shared.exp: Set proper path to phobos
+	library for multilib builds.
+
 2018-11-19  Iain Buclaw  <ibuclaw@gdcproject.org>
 
 	* src/Makefile.am: Remove std.internal.digest.sha_SSSE3 and

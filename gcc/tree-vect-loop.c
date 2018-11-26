@@ -5861,7 +5861,7 @@ vectorize_fold_left_reduction (stmt_vec_info stmt_info,
 	  /* Remove the statement, so that we can use the same code paths
 	     as for statements that we've just created.  */
 	  gimple_stmt_iterator tmp_gsi = gsi_for_stmt (new_stmt);
-	  gsi_remove (&tmp_gsi, false);
+	  gsi_remove (&tmp_gsi, true);
 	}
 
       if (i == vec_num - 1)
@@ -8515,6 +8515,15 @@ vect_transform_loop (loop_vec_info loop_vinfo)
 	}
     }
 
+  /* Loops vectorized with a variable factor won't benefit from
+     unrolling/peeling.  */
+  if (!vf.is_constant ())
+    {
+      loop->unroll = 1;
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location, "Disabling unrolling due to"
+			 " variable-length vectorization factor\n");
+    }
   /* Free SLP instances here because otherwise stmt reference counting
      won't work.  */
   slp_instance instance;

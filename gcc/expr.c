@@ -11484,18 +11484,40 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
 	offset = off;
     }
 
-  if (!init || TREE_CODE (init) != STRING_CST)
+  if (!init)
     return NULL_TREE;
 
+  *ptr_offset = offset;
+
+  tree eltype = TREE_TYPE (init);
+  tree initsize = TYPE_SIZE_UNIT (eltype);
   if (mem_size)
-    *mem_size = TYPE_SIZE_UNIT (TREE_TYPE (init));
+    *mem_size = initsize;
+
   if (decl)
     *decl = array;
 
-  gcc_checking_assert (tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (init)))
-		       >= TREE_STRING_LENGTH (init));
+  if (TREE_CODE (init) == INTEGER_CST)
+    {
+      /* For a reference to (address of) a single constant character,
+	 store the native representation of the character in CHARBUF.   */
+      unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
+      int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
+      if (len > 0)
+	{
+	  /* Construct a string literal with elements of ELTYPE and
+	     the representation above.  Then strip
+	     the ADDR_EXPR (ARRAY_REF (...)) around the STRING_CST.  */
+	  init = build_string_literal (len, (char *)charbuf, eltype);
+	  init = TREE_OPERAND (TREE_OPERAND (init, 0), 0);
+	}
+    }
 
-  *ptr_offset = offset;
+  if (TREE_CODE (init) != STRING_CST)
+    return NULL_TREE;
+
+  gcc_checking_assert (tree_to_shwi (initsize) >= TREE_STRING_LENGTH (init));
+
   return init;
 }
 

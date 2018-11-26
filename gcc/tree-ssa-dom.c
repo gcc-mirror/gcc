@@ -777,7 +777,8 @@ pass_dominator::execute (function *fun)
 	  if (bb == NULL)
 	    continue;
 	  while (single_succ_p (bb)
-		 && (single_succ_edge (bb)->flags & EDGE_EH) == 0)
+		 && (single_succ_edge (bb)->flags
+		     & (EDGE_EH|EDGE_DFS_BACK)) == 0)
 	    bb = single_succ (bb);
 	  if (bb == EXIT_BLOCK_PTR_FOR_FN (fun))
 	    continue;
@@ -1105,9 +1106,12 @@ record_equivalences_from_phis (basic_block bb)
 {
   gphi_iterator gsi;
 
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); )
     {
       gphi *phi = gsi.phi ();
+
+      /* We might eliminate the PHI, so advance GSI now.  */
+      gsi_next (&gsi);
 
       tree lhs = gimple_phi_result (phi);
       tree rhs = NULL;
@@ -1158,9 +1162,26 @@ record_equivalences_from_phis (basic_block bb)
 	 this, since this is a true assignment and not an equivalence
 	 inferred from a comparison.  All uses of this ssa name are dominated
 	 by this assignment, so unwinding just costs time and space.  */
-      if (i == gimple_phi_num_args (phi)
-	  && may_propagate_copy (lhs, rhs))
-	set_ssa_name_value (lhs, rhs);
+      if (i == gimple_phi_num_args (phi))
+	{
+	  if (may_propagate_copy (lhs, rhs))
+	    set_ssa_name_value (lhs, rhs);
+	  else if (virtual_operand_p (lhs))
+	    {
+	      gimple *use_stmt;
+	      imm_use_iterator iter;
+	      use_operand_p use_p;
+	      /* For virtual operands we have to propagate into all uses as
+	         otherwise we will create overlapping life-ranges.  */
+	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
+	        FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
+	          SET_USE (use_p, rhs);
+	      if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	        SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rhs) = 1;
+	      gimple_stmt_iterator tmp_gsi = gsi_for_stmt (phi);
+	      remove_phi_node (&tmp_gsi, true);
+	    }
+	}
     }
 }
 

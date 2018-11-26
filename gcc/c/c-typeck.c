@@ -3422,7 +3422,10 @@ convert_arguments (location_t loc, vec<location_t> arg_loc, tree typelist,
       built_in_function code = DECL_FUNCTION_CODE (fundecl);
       if (C_DECL_BUILTIN_PROTOTYPE (fundecl))
 	{
-	  if (tree bdecl = builtin_decl_implicit (code))
+	  /* For a call to a built-in function declared without a prototype
+	     use the types of the parameters of the internal built-in to
+	     match those of the arguments to.  */
+	  if (tree bdecl = builtin_decl_explicit (code))
 	    builtin_typelist = TYPE_ARG_TYPES (TREE_TYPE (bdecl));
 	}
 
@@ -6461,7 +6464,9 @@ maybe_warn_builtin_no_proto_arg (location_t loc, tree fundecl, int parmnum,
       && TYPE_MODE (parmtype) == TYPE_MODE (argtype))
     return;
 
-  if (parmcode == argcode
+  if ((parmcode == argcode
+       || (parmcode == INTEGER_TYPE
+	   && argcode == ENUMERAL_TYPE))
       && TYPE_MAIN_VARIANT (parmtype) == TYPE_MAIN_VARIANT (promoted))
     return;
 

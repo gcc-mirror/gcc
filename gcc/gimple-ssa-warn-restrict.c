@@ -1582,6 +1582,9 @@ maybe_diag_offset_bounds (location_t loc, gimple *call, tree func, int strict,
   if (!warn_array_bounds)
     return false;
 
+  if (ref.ref && TREE_NO_WARNING (ref.ref))
+    return false;
+
   offset_int ooboff[] = { ref.offrange[0], ref.offrange[1] };
   tree oobref = ref.offset_out_of_bounds (strict, ooboff);
   if (!oobref)

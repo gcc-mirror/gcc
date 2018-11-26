@@ -129,6 +129,11 @@ pack_ts_base_value_fields (struct bitpack_d *bp, tree expr)
       bp_pack_value (bp, SSA_NAME_IS_DEFAULT_DEF (expr), 1);
       bp_pack_value (bp, 0, 8);
     }
+  else if (TREE_CODE (expr) == CALL_EXPR)
+    {
+      bp_pack_value (bp, CALL_EXPR_BY_DESCRIPTOR (expr), 1);
+      bp_pack_value (bp, 0, 8);
+    }
   else
     bp_pack_value (bp, 0, 9);
 }
@@ -457,6 +462,8 @@ streamer_write_tree_bitfields (struct output_block *ob, tree expr)
 	  if (MR_DEPENDENCE_CLIQUE (expr) != 0)
 	    bp_pack_value (&bp, MR_DEPENDENCE_BASE (expr), sizeof (short) * 8);
 	}
+      else if (code == CALL_EXPR)
+	bp_pack_enum (&bp, internal_fn, IFN_LAST, CALL_EXPR_IFN (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))

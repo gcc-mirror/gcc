@@ -254,7 +254,7 @@ static const struct cpu_addrcost_table xgene1_addrcost_table =
       1, /* ti  */
     },
   1, /* pre_modify  */
-  0, /* post_modify  */
+  1, /* post_modify  */
   0, /* register_offset  */
   1, /* register_sextend  */
   1, /* register_zextend  */
@@ -662,6 +662,17 @@ static const cpu_prefetch_tune tsv110_prefetch_tune =
   -1                    /* default_opt_level  */
 };
 
+static const cpu_prefetch_tune xgene1_prefetch_tune =
+{
+  8,			/* num_slots  */
+  32,			/* l1_cache_size  */
+  64,			/* l1_cache_line_size  */
+  256,			/* l2_cache_size  */
+  true,                 /* prefetch_dynamic_strides */
+  -1,                   /* minimum_stride */
+  -1			/* default_opt_level  */
+};
+
 static const struct tune_params generic_tunings =
 {
   &cortexa57_extra_costs,
@@ -933,17 +944,42 @@ static const struct tune_params xgene1_tunings =
   4, /* issue_rate  */
   AARCH64_FUSE_NOTHING, /* fusible_ops  */
   "16",	/* function_align.  */
-  "8",	/* jump_align.  */
+  "16",	/* jump_align.  */
   "16",	/* loop_align.  */
   2,	/* int_reassoc_width.  */
   4,	/* fp_reassoc_width.  */
   1,	/* vec_reassoc_width.  */
   2,	/* min_div_recip_mul_sf.  */
   2,	/* min_div_recip_mul_df.  */
-  0,	/* max_case_values.  */
+  17,	/* max_case_values.  */
   tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
   (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
-  &generic_prefetch_tune
+  &xgene1_prefetch_tune
+};
+
+static const struct tune_params emag_tunings =
+{
+  &xgene1_extra_costs,
+  &xgene1_addrcost_table,
+  &xgene1_regmove_cost,
+  &xgene1_vector_cost,
+  &generic_branch_cost,
+  &xgene1_approx_modes,
+  6, /* memmov_cost  */
+  4, /* issue_rate  */
+  AARCH64_FUSE_NOTHING, /* fusible_ops  */
+  "16",	/* function_align.  */
+  "16",	/* jump_align.  */
+  "16",	/* loop_align.  */
+  2,	/* int_reassoc_width.  */
+  4,	/* fp_reassoc_width.  */
+  1,	/* vec_reassoc_width.  */
+  2,	/* min_div_recip_mul_sf.  */
+  2,	/* min_div_recip_mul_df.  */
+  17,	/* max_case_values.  */
+  tune_params::AUTOPREFETCHER_OFF,	/* autoprefetcher_model.  */
+  (AARCH64_EXTRA_TUNE_NO_LDP_STP_QREGS),	/* tune_flags.  */
+  &xgene1_prefetch_tune
 };
 
 static const struct tune_params qdf24xx_tunings =

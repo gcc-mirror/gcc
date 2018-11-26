@@ -1,3 +1,187 @@
+2018-11-23  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement P0415 More constexpr for std::complex.
+	* include/std/complex (conj(complex<Tp>), norm(complex<Tp>)): Constexpr;
+	(real(Tp), imag(Tp)): Constexpr;
+	(operator@=(Tp), operator@=(complex<Tp>)): Constexpr;
+	(operator@(Tp,complex<Tp>), operator@(complex<Tp>,Tp)
+	operator@(complex<Tp>,complex<Tp>)): Constexpr.
+	* testsuite/26_numerics/complex/comparison_operators/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/operators/more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/requirements/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/complex/value_operations/
+	more_constexpr.cc: New test.
+	* testsuite/26_numerics/headers/complex/synopsis.cc:
+	Add _GLIBCXX20_CONSTEXPR to applicable operators; Add missing proj().
+	* testsuite/26_numerics/headers/complex/synopsis.cc: 
+	Add _GLIBCXX20_CONSTEXPR to relevant decls.
+
+2018-11-23  Martin Sebor  <msebor@redhat.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/65229
+	* python/libstdcxx/v6/printers.py (StdBitsetPrinter): Handle
+	exception thrown for std::bitset<0>.
+	* testsuite/libstdc++-prettyprinters/simple.cc: Test std::bitset<0>.
+
+2018-11-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/87308 (partial)
+	* python/libstdcxx/v6/printers.py (StdExpAnyPrinter): Adjust regex to
+	work around PR 88166.
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Test std::any
+	containing a local type.
+
+2018-11-22  Marc Glisse  <marc.glisse@inria.fr>
+
+	PR libstdc++/87106
+	* include/bits/stl_algobase.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_deque.h: Include <bits/stl_uninitialized.h>.
+	(__is_trivially_relocatable): Specialize for deque.
+	* include/bits/stl_iterator.h: Include <type_traits>.
+	(__niter_base): Add noexcept specification.
+	* include/bits/stl_uninitialized.h (__is_trivially_relocatable):
+	Add parameter for meta-programming.
+	(__relocate_a_1, __relocate_a): Add noexcept specification.
+	* include/bits/stl_vector.h (__use_relocate): Test __relocate_a.
+
+2018-11-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/85930
+	PR libstdc++/87520
+	* include/bits/shared_ptr_base.h (_Sp_make_shared_tag::_S_ti)
+	[__cpp_rtti]: Define even when RTTI is enabled. Use array of
+	sizeof(type_info) so that type-punned reference binds to an object
+	of the correct size as well as correct alignment.
+	(_Sp_counted_ptr_inplace::_M_get_deleter) [__cpp_rtti]: Check for
+	_S_ti() reference even when RTTI is enabled.
+	(__shared_ptr(_Sp_make_shared_tag, const _Alloc&, _Args&&...))
+	[__cpp_rtti]: Pass _S_ti() instead of typeid(_Sp_make_shared_tag).
+
+2018-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87386
+	* testsuite/20_util/scoped_allocator/69293_neg.cc: Adjust expected
+	line.
+	* testsuite/20_util/uses_allocator/cons_neg.cc: Likewise.
+	* testsuite/20_util/uses_allocator/69293_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+2018-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88111
+	* include/std/memory_resource (pool_options): Add Doxygen comments.
+	* src/c++17/memory_resource.cc (pool_sizes): Only use suitable values
+	on targets with 16-bit or 20-bit size_t type.
+	(munge_options): Make default values depend on width of size_t type.
+
+	PR libstdc++/88113
+	* src/c++17/memory_resource.cc (bitset::size_type): Use the smaller
+	of uint32_t and size_t.
+	(bitset::size(), bitset::free(), bitset::update_next_word())
+	(bitset::max_blocks_per_chunk(), bitset::max_word_index()): Use
+	size_type consistently instead of size_t.
+	(chunk): Adjust static_assert checking sizeof(chunk).
+
+2018-11-20  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Housekeeping for the effective targets of optional's tests.
+	* testsuite/20_util/optional/77288.cc: Adjust.
+	* testsuite/20_util/optional/84601.cc: Likewise.
+	* testsuite/20_util/optional/assignment/1.cc: Likewise.
+	* testsuite/20_util/optional/assignment/2.cc: Likewise.
+	* testsuite/20_util/optional/assignment/3.cc: Likewise.
+	* testsuite/20_util/optional/assignment/4.cc: Likewise.
+	* testsuite/20_util/optional/assignment/5.cc: Likewise.
+	* testsuite/20_util/optional/assignment/6.cc: Likewise.
+	* testsuite/20_util/optional/assignment/7.cc: Likewise.
+	* testsuite/20_util/optional/assignment/8.cc: Likewise.
+	* testsuite/20_util/optional/cons/77727.cc: Likewise.
+	* testsuite/20_util/optional/cons/copy.cc: Likewise.
+	* testsuite/20_util/optional/cons/deduction.cc: Likewise.
+	* testsuite/20_util/optional/cons/default.cc: Likewise.
+	* testsuite/20_util/optional/cons/move.cc: Likewise.
+	* testsuite/20_util/optional/cons/trivial.cc: Likewise.
+	* testsuite/20_util/optional/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/cons/value_neg.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/cons/default.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/cons/value.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/in_place.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/nullopt.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/constexpr/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/in_place.cc: Likewise.
+	* testsuite/20_util/optional/make_optional.cc: Likewise.
+	* testsuite/20_util/optional/nullopt.cc: Likewise.
+	* testsuite/20_util/optional/observers/1.cc: Likewise.
+	* testsuite/20_util/optional/observers/2.cc: Likewise.
+	* testsuite/20_util/optional/observers/3.cc: Likewise.
+	* testsuite/20_util/optional/observers/4.cc: Likewise.
+	* testsuite/20_util/optional/observers/5.cc: Likewise.
+	* testsuite/20_util/optional/observers/6.cc: Likewise.
+	* testsuite/20_util/optional/relops/1.cc: Likewise.
+	* testsuite/20_util/optional/relops/2.cc: Likewise.
+	* testsuite/20_util/optional/relops/3.cc: Likewise.
+	* testsuite/20_util/optional/relops/4.cc: Likewise.
+	* testsuite/20_util/optional/relops/5.cc: Likewise.
+	* testsuite/20_util/optional/relops/6.cc: Likewise.
+	* testsuite/20_util/optional/relops/7.cc: Likewise.
+	* testsuite/20_util/optional/requirements.cc: Likewise.
+	* testsuite/20_util/optional/swap/1.cc: Likewise.
+	* testsuite/20_util/optional/swap/2.cc: Likewise.
+	* testsuite/20_util/optional/typedefs.cc: Likewise.
+
+2018-11-19  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/ext/throw_allocator.h
+	(annotate_base::insert(void*, size_t)): Use insert result to check for
+	double insert attempt.
+	(annotate_base::insert_construct(void*)): Likewise.
+	(annotate_base::check_allocated(void*, size_t)): Return found iterator.
+	(annotate_base::erase(void*, size_t)): Use latter method returned
+	iterator.
+	(annotate_base::check_constructed(void*, size_t)): Return found iterator.
+	(annotate_base::erase_construct(void*)): Use latter method returned
+	iterator.
+
+2018-11-19  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	PR libstdc++/87855
+	Also implement P0602R4 (variant and optional
+	should propagate copy/move triviality) for std::optional.
+	* include/std/optional (_Optional_payload): Change
+	the main constraints to check constructibility in
+	addition to assignability.
+	(operator=): Make constexpr.
+	(_M_reset): Likewise.
+	(_M_construct): Likewise.
+	(operator->): Likewise.
+	* testsuite/20_util/optional/assignment/8.cc: Adjust.
+	* testsuite/20_util/optional/assignment/9.cc: New.
+
+2018-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/88084 - Implement LWG 2777
+	* include/std/string_view (basic_string_view::copy): Use traits to
+	copy.
+	* testsuite/21_strings/basic_string_view/operations/copy/char/2.cc:
+	New test.
+	* testsuite/21_strings/basic_string_view/operations/copy/wchar_t/2.cc:
+	New test.
+
 2018-11-18  Michele Pezzutti <mpezz@tiscali.it>
 	    Edward Smith-Rowland  <3dw4rd@verizon.net>
 
@@ -7,7 +191,7 @@
 	of the asymptotic series (nu is the Bessel order).
 	* testsuite/tr1/5_numerical_facilities/special_functions/
 	09_cyl_bessel_j/check_value.cc: Add tests at nu=100, 1000<=x<=2000.
-	* testsuite/tr1/5_numerical_facilities/special_functions/	
+	* testsuite/tr1/5_numerical_facilities/special_functions/
 	11_cyl_neumann/check_value.cc: Ditto.
 	* testsuite/special_functions/08_cyl_bessel_j/check_value.cc: Ditto.
 	* testsuite/special_functions/10_cyl_neumann/check_value.cc: Ditto.

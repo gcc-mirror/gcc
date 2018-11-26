@@ -31,6 +31,23 @@
 	      || REGNO_REG_CLASS (REGNO (op)) != NO_REGS));
 })
 
+; Predicate for stack protector guard's address in
+; stack_protect_combined_set_insn and stack_protect_combined_test_insn patterns
+(define_predicate "guard_addr_operand"
+  (match_test "true")
+{
+  return (CONSTANT_ADDRESS_P (op)
+	  || !targetm.cannot_force_const_mem (mode, op));
+})
+
+; Predicate for stack protector guard in stack_protect_combined_set and
+; stack_protect_combined_test patterns
+(define_predicate "guard_operand"
+  (match_code "mem")
+{
+  return guard_addr_operand (XEXP (op, 0), mode);
+})
+
 (define_predicate "imm_for_neon_inv_logic_operand"
   (match_code "const_vector")
 {

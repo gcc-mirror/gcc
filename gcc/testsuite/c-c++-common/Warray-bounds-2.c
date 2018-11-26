@@ -201,18 +201,16 @@ void call_strncpy_dst_diff_max (const char *s, size_t n)
 static void
 wrap_strncpy_dstarray_diff_neg (char *d, const char *s, ptrdiff_t i, size_t n)
 {
-  strncpy (d + i, s, n);   /* { dg-warning "offset -\[0-9\]+ is out of the bounds \\\[0, 90] of object .ar10. with type .(struct )?Array ?\\\[2]." "strncpy" } */
-}
+  strncpy (d + i, s, n);   /* { dg-bogus "offset -\[0-9\]+ is out of the bounds \\\[0, 90] of object .ar10. with type .(struct )?Array ?\\\[2]." "strncpy" } */
+}			   /* { dg-warning "array subscript -1 is outside array bounds" "" { target *-*-* } .-1 } */
 
 void call_strncpy_dstarray_diff_neg (const char *s, size_t n)
 {
-  struct Array ar10[2];    /* { dg-message ".ar10. declared here" } */
-  sink (&ar10);
+  struct Array ar10[2];    /* { dg-bogus ".ar10. declared here" } */
+  sink (&ar10);		   /* { dg-message "while referencing" "" { target *-*-* } .-1 } */
 
   int off = (char*)ar10[1].a17 - (char*)ar10 + 1;
   wrap_strncpy_dstarray_diff_neg (ar10[1].a17, s, -off, n);
 
   sink (&ar10);
 }
-
-/* { dg-prune-output "outside array bounds" } */

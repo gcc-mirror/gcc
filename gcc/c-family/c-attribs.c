@@ -4176,7 +4176,7 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
 	      if (expr && DECL_P (expr))
 		found_match = TREE_READONLY (expr);
 	    }
-	  else if (!strcmp ("const", namestr))
+	  else if (!strcmp ("pure", namestr))
 	    {
 	      if (expr && DECL_P (expr))
 		found_match = DECL_PURE_P (expr);

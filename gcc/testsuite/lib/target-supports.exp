@@ -31,6 +31,7 @@
 # Assume by default that CONTENTS is C code.  
 # Otherwise, code should contain:
 # "// C++" for c++,
+# "// D" for D,
 # "! Fortran" for Fortran code,
 # "/* ObjC", for ObjC
 # "// ObjC++" for ObjC++
@@ -58,6 +59,7 @@ proc check_compile {basename type contents args} {
     switch -glob -- $contents {
 	"*! Fortran*" { set src ${basename}[pid].f90 }
 	"*// C++*" { set src ${basename}[pid].cc }
+	"*// D*" { set src ${basename}[pid].d }
 	"*// ObjC++*" { set src ${basename}[pid].mm }
 	"*/* ObjC*" { set src ${basename}[pid].m }
 	"*// Go*" { set src ${basename}[pid].go }
@@ -312,6 +314,12 @@ proc check_weak_available { } {
 
     if { [istarget nvptx-*-*] } {
 	return 1
+    }
+
+    # pdp11 doesn't support it
+
+    if { [istarget pdp11*-*-*] } {
+	return 0
     }
 
     # ELF and ECOFF support it. a.out does with gas/gld but may also with
@@ -7145,6 +7153,19 @@ proc check_effective_target_c99_runtime { } {
 	}
 	check_no_compiler_messages_nocache c99_runtime assembly \
 	    $contents [add_options_for_c99_runtime ""]
+    }]
+}
+
+# Return 1 if the target provides the D runtime.
+
+proc check_effective_target_d_runtime { } {
+    return [check_no_compiler_messages d_runtime executable {
+	// D
+	module mod;
+
+	extern(C) int main() {
+	    return 0;
+	}
     }]
 }
 

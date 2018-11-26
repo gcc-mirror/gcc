@@ -608,8 +608,8 @@ fi
 LIBGFOR_CHECK_ATTRIBUTE_VISIBILITY
 LIBGFOR_CHECK_ATTRIBUTE_ALIAS
 
-# Check out sync builtins support.
-LIBGFOR_CHECK_SYNC_FETCH_AND_ADD
+# Check out atomic builtins support.
+LIBGFOR_CHECK_ATOMIC_FETCH_ADD
 
 # Check out #pragma weak.
 LIBGFOR_GTHREAD_WEAK

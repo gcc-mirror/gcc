@@ -319,7 +319,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wlogical-op  -Wlogical-not-parentheses  -Wlong-long @gol
 -Wmain  -Wmaybe-uninitialized  -Wmemset-elt-size  -Wmemset-transposed-args @gol
 -Wmisleading-indentation  -Wno-missing-attributes  -Wmissing-braces @gol
--Wmissing-field-initializers  -Wmissing-include-dirs  -Wmissing-profile @gol
+-Wmissing-field-initializers  -Wmissing-format-attribute @gol
+-Wmissing-include-dirs  -Wmissing-noreturn  -Wmissing-profile @gol
 -Wno-multichar  -Wmultistatement-macros  -Wnonnull  -Wnonnull-compare @gol
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
@@ -339,10 +340,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-pointer-memaccess  -Wsizeof-array-argument @gol
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing @gol
 -Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n} @gol
--Wstringop-overflow=@var{n}  -Wstringop-truncation @gol
+-Wstringop-overflow=@var{n}  -Wstringop-truncation  -Wsubobject-linkage @gol
 -Wsuggest-attribute=@r{[}pure@r{|}const@r{|}noreturn@r{|}format@r{|}malloc@r{]} @gol
 -Wsuggest-final-types @gol  -Wsuggest-final-methods  -Wsuggest-override @gol
--Wmissing-format-attribute  -Wsubobject-linkage @gol
 -Wswitch  -Wswitch-bool  -Wswitch-default  -Wswitch-enum @gol
 -Wswitch-unreachable  -Wsync-nand @gol
 -Wsystem-headers  -Wtautological-compare  -Wtrampolines  -Wtrigraphs @gol
@@ -5852,6 +5852,7 @@ attributes currently supported are listed below.
 @item -Wsuggest-attribute=pure
 @itemx -Wsuggest-attribute=const
 @itemx -Wsuggest-attribute=noreturn
+@itemx -Wmissing-noreturn
 @itemx -Wsuggest-attribute=malloc
 @opindex Wsuggest-attribute=pure
 @opindex Wno-suggest-attribute=pure
@@ -5859,6 +5860,8 @@ attributes currently supported are listed below.
 @opindex Wno-suggest-attribute=const
 @opindex Wsuggest-attribute=noreturn
 @opindex Wno-suggest-attribute=noreturn
+@opindex Wmissing-noreturn
+@opindex Wno-missing-noreturn
 @opindex Wsuggest-attribute=malloc
 @opindex Wno-suggest-attribute=malloc
 
@@ -12992,27 +12995,26 @@ Search the library named @var{library} when linking.  (The second
 alternative with the library as a separate argument is only for
 POSIX compliance and is not recommended.)
 
+The @option{-l} option is passed directly to the linker by GCC.  Refer
+to your linker documentation for exact details.  The general
+description below applies to the GNU linker.  
+
+The linker searches a standard list of directories for the library.
+The directories searched include several standard system directories
+plus any that you specify with @option{-L}.
+
+Static libraries are archives of object files, and have file names
+like @file{lib@var{library}.a}.  Some targets also support shared
+libraries, which typically have names like @file{lib@var{library}.so}.
+If both static and shared libraries are found, the linker gives
+preference to linking with the shared library unless the
+@option{-static} option is used.
+
 It makes a difference where in the command you write this option; the
 linker searches and processes libraries and object files in the order they
 are specified.  Thus, @samp{foo.o -lz bar.o} searches library @samp{z}
 after file @file{foo.o} but before @file{bar.o}.  If @file{bar.o} refers
 to functions in @samp{z}, those functions may not be loaded.
-
-The linker searches a standard list of directories for the library,
-which is actually a file named @file{lib@var{library}.a}.  The linker
-then uses this file as if it had been specified precisely by name.
-
-The directories searched include several standard system directories
-plus any that you specify with @option{-L}.
-
-Normally the files found this way are library files---archive files
-whose members are object files.  The linker handles an archive file by
-scanning through it for members which define symbols that have so far
-been referenced but not defined.  But if the file that is found is an
-ordinary object file, it is linked in the usual fashion.  The only
-difference between using an @option{-l} option and specifying a file name
-is that @option{-l} surrounds @var{library} with @samp{lib} and @samp{.a}
-and searches several directories.
 
 @item -lobjc
 @opindex lobjc
@@ -15570,7 +15572,7 @@ Specify the name of the target processor for which GCC should tune the
 performance of the code.  Permissible values for this option are:
 @samp{generic}, @samp{cortex-a35}, @samp{cortex-a53}, @samp{cortex-a55},
 @samp{cortex-a57}, @samp{cortex-a72}, @samp{cortex-a73}, @samp{cortex-a75},
-@samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{falkor},
+@samp{cortex-a76}, @samp{ares}, @samp{exynos-m1}, @samp{emag}, @samp{falkor},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{thunderx}, @samp{thunderxt88}, @samp{thunderxt88p1}, @samp{thunderxt81},
 @samp{tsv110}, @samp{thunderxt83}, @samp{thunderx2t99},

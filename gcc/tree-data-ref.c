@@ -3546,8 +3546,8 @@ lambda_matrix_right_hermite (lambda_matrix A, int m, int n,
 		  a = S[i-1][j];
 		  b = S[i][j];
 		  sigma = (a * b < 0) ? -1: 1;
-		  a = abs (a);
-		  b = abs (b);
+		  a = abs_hwi (a);
+		  b = abs_hwi (b);
 		  factor = sigma * (a / b);
 
 		  lambda_matrix_row_add (S, n, i, i-1, -factor);

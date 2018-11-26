@@ -63,6 +63,8 @@ check_for_options c "-v --help" "" {are likely to\n  -std} ""
 # Try various --help= classes and qualifiers.
 check_for_options c "--help=optimizers" "-O" "  -g  " ""
 check_for_options c "--help=params" "maximum number of" "-Wunsafe-loop-optimizations" ""
+check_for_options_with_filter c "--help=params" \
+    "^The --param option recognizes the following as parameters:$" "" {[^.]$} ""
 check_for_options c "--help=C" "-ansi" "-gnatO" ""
 check_for_options c {--help=C++} {-std=c\+\+} "-gnatO" ""
 check_for_options c "--help=common" "-dumpbase" "-gnatO" ""
