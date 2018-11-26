@@ -1,6 +1,16 @@
 2018-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (trees_out::tree_ref): Rename to ...
+	(trees_out::ref_node): ... this.
+	(trees_out::tree{value,decl,type,namespace}): Replace FORCE
+	paramenter with walk_kind.
+	(trees_out::tree_node): Adjust.
+	(module_state::mark_{class,enum,template}_def): Adjust.
+	(module_state::write_cluster): Adjust.
+	(module_state::find_dependencies): Adjust.
+
+	gcc/cp/
 	* modules.cc (trees_out::walk_kind): New enum.
 	(trees_out::tree_ref): Return it.
 	(trees_out::tree_{ctx,decl,node}): Use it.

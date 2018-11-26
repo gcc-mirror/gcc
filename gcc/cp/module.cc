@@ -2555,21 +2555,27 @@ public:
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
 
 public:
-  void tree_node (tree);
-  void tree_value (tree, bool force);
+  enum walk_kind
+    {
+     WK_none,	/* No walk to do.  */
+     WK_normal, /* Normal walk.  */
+     WK_body = -1,  /* Must do a by-value walk.  */
+    };
 
-private:
-  bool tree_decl (tree, bool force, bool looking_inside);
-  bool tree_type (tree, bool force, bool looking_inside);
-  void tree_namespace (tree, bool force, tree inner_decl);
+  /* Mark a node for special walking.  */
+  void mark_node (tree, walk_kind);
+  walk_kind ref_node (tree);
 
 public:
-  enum walk_kind {
-		  WK_none,  /* No walk to do.  */
-		  WK_body,  /* Must do a by-value walk.  */
-		  WK_normal,   /* Normal walk.  */
-  };
-  walk_kind tree_ref (tree);
+  void tree_node (tree);
+  void tree_value (tree, walk_kind ref);
+
+private:
+  bool tree_decl (tree, walk_kind ref, bool looking_inside);
+  bool tree_type (tree, walk_kind ref, bool looking_inside);
+  void tree_namespace (tree, walk_kind ref, tree inner_decl);
+
+public:
   void tree_ctx (tree, bool need_contents, tree inner_decl);
 
 public:
@@ -3814,22 +3820,23 @@ trees_out::unmark_trees ()
    times on the same node.  */
 
 void
-trees_out::mark_node (tree decl)
+trees_out::mark_node (tree decl, walk_kind walk)
 {
-  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
+  gcc_checking_assert (walk < 0
+		       && (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl)));
 
   if (TREE_VISITED (decl))
-    gcc_checking_assert (!*tree_map.get (decl));
+    gcc_checking_assert (*tree_map.get (decl) == ref_force_hwm + walk);
   else
     {
-      bool existed = tree_map.put (decl, int (ref_force_lwm));
+      bool existed = tree_map.put (decl, ref_force_hwm + walk);
       gcc_checking_assert (!existed);
       TREE_VISITED (decl) = true;
 
       /* If the node is a template, mark the underlying decl too.  (The
 	 reverse does not need to be checked for.)  */
-      if (TREE_CODE (decl) == TEMPLATE_DECL)
-	mark_node (DECL_TEMPLATE_RESULT (decl));
+      if (walk == WK_body && TREE_CODE (decl) == TEMPLATE_DECL)
+	mark_node (DECL_TEMPLATE_RESULT (decl), walk);
     }
 }
 
@@ -5821,7 +5828,7 @@ trees_in::tree_node_raw (tree t)
    by value, or WK_normal otherwise.  */
 
 trees_out::walk_kind
-trees_out::tree_ref (tree t)
+trees_out::ref_node (tree t)
 {
   if (!t)
     {
@@ -5879,26 +5886,25 @@ trees_out::tree_ref (tree t)
 void
 trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 {
-  walk_kind ref = tree_ref (ctx);
+  walk_kind ref = ref_node (ctx);
   if (ref != WK_none)
     {
-      bool force = ref == WK_body;
       bool by_value = false;
 
       if (TYPE_P (ctx))
-	by_value = tree_type (ctx, force, need_contents);
+	by_value = tree_type (ctx, ref, need_contents);
       else if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	tree_namespace (ctx, force, inner_decl);
+	tree_namespace (ctx, ref, inner_decl);
       else
-	by_value = tree_decl (ctx, force, need_contents);
+	by_value = tree_decl (ctx, ref, need_contents);
   
       if (by_value)
-	tree_value (ctx, force);
+	tree_value (ctx, ref);
     }
 }
 
 void
-trees_out::tree_namespace (tree ns, bool force, tree inner_decl)
+trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
 {
   unsigned owner = (inner_decl ? MAYBE_DECL_MODULE_OWNER (inner_decl)
 		    : MODULE_NONE);
@@ -5910,12 +5916,12 @@ trees_out::tree_namespace (tree ns, bool force, tree inner_decl)
       tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
       tree_node (DECL_NAME (ns));
     }
-  else if (force)
+  else if (ref == WK_body)
     tree_ctx (CP_DECL_CONTEXT (ns), true, ns);
   else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
     dep_hash->add_dependency (ns, true);
 
-  int tag = insert (ns, force);
+  int tag = insert (ns, ref == WK_body);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Wrote%s namespace:%d %C:%N@%M",
@@ -5923,18 +5929,18 @@ trees_out::tree_namespace (tree ns, bool force, tree inner_decl)
 	       owner == MODULE_NONE ? NULL : (*modules)[owner]);
 }
 
-/* Reference DECL.  FORCE is true, if we know we're writing this by
-   value.  OWNER is if this is known to be in a particular module
-   (defaults to -1, if this is the innermost decl).  Return true if we
-   should write this decl by value.  */
+/* Reference DECL.  REF indicates the walk kind we are performing.
+   LOOKING_INSIDE is true if we're looking up a member inside the
+   scope of DECL.  Return true if we should write this decl by
+   value.  */
 
 bool
-trees_out::tree_decl (tree decl, bool force, bool looking_inside)
+trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
 {
   gcc_checking_assert (DECL_P (decl)
 		       && TREE_CODE (decl) != NAMESPACE_DECL);
 
-  if (force)
+  if (ref == WK_body)
     {
       /* If we requested by-value, this better not be an import.  */
       gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
@@ -5951,7 +5957,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside)
       return true;
     }
 
-  if (tree_ref (decl) == WK_none)
+  if (ref_node (decl) == WK_none)
     /* If this is a fixed decl, we're done.  */
     return false;
 
@@ -6120,10 +6126,10 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside)
 }
 
 bool
-trees_out::tree_type (tree type, bool force, bool looking_inside)
+trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
 {
   gcc_assert (TYPE_P (type));
-  if (force)
+  if (ref == WK_body)
     return true;
 
   if (IS_FAKE_BASE_TYPE (type))
@@ -6169,11 +6175,11 @@ trees_out::tree_type (tree type, bool force, bool looking_inside)
   return true;
 }
 
-/* T is a node that must be written by value.  Do that.  FORCE is
+/* T is a node that must be written by value.  Do that.  REF is
    needed for consistency checking.  */
 
 void
-trees_out::tree_value (tree t, bool force)
+trees_out::tree_value (tree t, walk_kind ref)
 {
   if (streaming_p ())
     {
@@ -6187,7 +6193,7 @@ trees_out::tree_value (tree t, bool force)
       start (code, t);
     }
 
-  int tag = insert (t, force);
+  int tag = insert (t, ref == WK_body);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
@@ -6206,18 +6212,13 @@ void
 trees_out::tree_node (tree t)
 {
   dump.indent ();
-  bool force = false;
-  walk_kind ref = tree_ref (t);
+  walk_kind ref = ref_node (t);
   if (ref == WK_none)
     goto done;
 
-  if (ref == WK_body)
-    /* An entry we should walk into.  */
-    force = true;
-
   if (TREE_CODE (t) == IDENTIFIER_NODE)
     {
-      gcc_assert (!force);
+      gcc_assert (ref == WK_normal);
 
       /* An identifier node -> tt_id or, tt_conv_id.  */
       bool conv_op = IDENTIFIER_CONV_OP_P (t);
@@ -6239,7 +6240,7 @@ trees_out::tree_node (tree t)
 
   if (TREE_CODE (t) == TREE_BINFO)
     {
-      gcc_assert (!force);
+      gcc_assert (ref == WK_normal);
       /* A BINFO -> tt_binfo.
 	 We must do this by reference.  We stream the binfo tree
 	 itself when streaming its owning RECORD_TYPE.  */
@@ -6265,7 +6266,7 @@ trees_out::tree_node (tree t)
       /* A typeinfo object -> tt_tinfo_var.  These need recreating by
 	 the loader.  The type it is for is stashed on the name's
 	 TREE_TYPE.  */
-      gcc_assert (!force);
+      gcc_assert (ref == WK_normal);
       tree type = TREE_TYPE (DECL_NAME (t));
       if (streaming_p ())
 	i (tt_tinfo_var);
@@ -6280,7 +6281,7 @@ trees_out::tree_node (tree t)
   if (TREE_CODE (t) == TYPE_DECL && DECL_TINFO_P (t))
     {
       /* A typeinfo pseudo type -> tt_tinfo_typedef.  */
-      gcc_assert (!force);
+      gcc_assert (ref == WK_normal);
       unsigned ix = get_pseudo_tinfo_index (TREE_TYPE (t));
 
       if (streaming_p ())
@@ -6295,7 +6296,7 @@ trees_out::tree_node (tree t)
       goto done;
     }
 
-  if (TREE_CODE (t) == VAR_DECL && !force && DECL_ARTIFICIAL (t))
+  if (TREE_CODE (t) == VAR_DECL && ref == WK_normal && DECL_ARTIFICIAL (t))
     {
       tree ctx = CP_DECL_CONTEXT (t);
       if (TREE_CODE (ctx) == RECORD_TYPE && TYPE_LANG_SPECIFIC (ctx))
@@ -6319,14 +6320,14 @@ trees_out::tree_node (tree t)
 	}
     }
 
-  if (TYPE_P (t) && !tree_type (t, force, false))
+  if (TYPE_P (t) && !tree_type (t, ref, false))
     goto done;
 
-  if (DECL_P (t) && !tree_decl (t, force, false))
+  if (DECL_P (t) && !tree_decl (t, ref, false))
     goto done;
 
   /* Otherwise by value */
-  tree_value (t, force);
+  tree_value (t, ref);
 
  done:
   /* And, breath out.  */
@@ -8631,7 +8632,7 @@ module_state::mark_class_def (trees_out &out, tree type)
 {
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
-      out.mark_node (member);
+      out.mark_node (member, trees_out::WK_body);
       if (has_definition (member))
 	mark_definition (out, member);
     }
@@ -8641,14 +8642,14 @@ module_state::mark_class_def (trees_out &out, tree type)
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base && as_base != type)
 	{
-	  out.mark_node (as_base);
+	  out.mark_node (as_base, trees_out::WK_body);
 	  mark_class_def (out, as_base);
 	}
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
-	  out.mark_node (vtables);
+	  out.mark_node (vtables, trees_out::WK_body);
 	  mark_var_def (out, vtables);
 	}
     }
@@ -8770,7 +8771,7 @@ module_state::mark_enum_def (trees_out &out, tree type)
 {
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      out.mark_node (TREE_VALUE (values));
+      out.mark_node (TREE_VALUE (values), trees_out::WK_body);
 }
 
 bool
@@ -8814,7 +8815,7 @@ module_state::mark_template_def (trees_out &out, tree decl)
 	  /* In spite of its name, non-decls appear :(.  */
 	  member = TYPE_NAME (member);
 	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
-	out.mark_node (member);
+	out.mark_node (member, trees_out::WK_body);
       }
   mark_definition (out, res);
 }
@@ -9065,7 +9066,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_decl ();
 
-	  sec.mark_node (decl);
+	  sec.mark_node (decl, trees_out::WK_body);
 	  if (b->is_defn ())
 	    mark_definition (sec, decl);
 	}
@@ -10935,7 +10936,7 @@ module_state::find_dependencies (depset::hash &table)
 		 d->is_decl () ? "declaration" : "definition", decl);
       dump.indent ();
       walker.begin (&table);
-      walker.mark_node (decl);
+      walker.mark_node (decl, trees_out::WK_body);
       if (d->is_defn ())
 	mark_definition (walker, decl);
       /* Turn the Sneakoscope on when depending the decl.  */
