@@ -11,6 +11,7 @@
 #include "types.h"
 #include "expressions.h"
 #include "gogo.h"
+#include "export.h"
 #include "runtime.h"
 #include "backend.h"
 #include "statements.h"
@@ -1779,6 +1780,27 @@ Statement*
 Statement::make_statement(Expression* expr, bool is_ignored)
 {
   return new Expression_statement(expr, is_ignored);
+}
+
+// Export data for a block.
+
+void
+Block_statement::do_export_statement(Export_function_body* efb)
+{
+  // We are already indented to the right position.
+  char buf[50];
+  snprintf(buf, sizeof buf, "{ //%d\n",
+	   Linemap::location_to_line(this->block_->start_location()));
+  efb->write_c_string(buf);
+
+  this->block_->export_block(efb);
+  // The indentation is correct for the statements in the block, so
+  // subtract one for the closing curly brace.
+  efb->decrement_indent();
+  efb->indent();
+  efb->write_c_string("}");
+  // Increment back to the value the caller thinks it has.
+  efb->increment_indent();
 }
 
 // Convert a block to the backend representation of a statement.

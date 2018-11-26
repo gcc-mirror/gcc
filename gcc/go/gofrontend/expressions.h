@@ -939,6 +939,11 @@ class Expression
   copy()
   { return this->do_copy(); }
 
+  // Return the cost of this statement for inlining purposes.
+  int
+  inlining_cost()
+  { return this->do_inlining_cost(); }
+
   // Return whether the expression is addressable--something which may
   // be used as the operand of the unary & operator.
   bool
@@ -1083,6 +1088,13 @@ class Expression
   // Child class implements copying.
   virtual Expression*
   do_copy() = 0;
+
+  // Child class implements determining the cost of this statement for
+  // inlining.  The default cost is high, so we only need to define
+  // this method for expressions that can be inlined.
+  virtual int
+  do_inlining_cost()
+  { return 0x100000; }
 
   // Child class implements whether the expression is addressable.
   virtual bool

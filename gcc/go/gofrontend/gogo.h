@@ -41,6 +41,7 @@ class Label;
 class Translate_context;
 class Backend;
 class Export;
+class Export_function_body;
 class Import;
 class Bexpression;
 class Btype;
@@ -1139,6 +1140,10 @@ class Block
   bool
   may_fall_through() const;
 
+  // Write the export data for the block's statements to the string.
+  void
+  export_block(Export_function_body*);
+
   // Convert the block to the backend representation.
   Bblock*
   get_backend(Translate_context*);
@@ -1404,6 +1409,16 @@ class Function
   set_in_unique_section()
   { this->in_unique_section_ = true; }
 
+  // Return whether this function should be exported for inlining.
+  bool
+  export_for_inlining() const
+  { return this->export_for_inlining_; }
+
+  // Mark the function to be exported for inlining.
+  void
+  set_export_for_inlining()
+  { this->export_for_inlining_ = true; }
+
   // Swap with another function.  Used only for the thunk which calls
   // recover.
   void
@@ -1461,7 +1476,7 @@ class Function
   // Export a function with a type.
   static void
   export_func_with_type(Export*, const std::string& name,
-			const Function_type*, bool nointerface);
+			const Function_type*, bool nointerface, Block* block);
 
   // Import a function.
   static void
@@ -1539,6 +1554,9 @@ class Function
   // True if this function should be put in a unique section.  This is
   // turned on for field tracking.
   bool in_unique_section_ : 1;
+  // True if we should export the body of this function for
+  // cross-package inlining.
+  bool export_for_inlining_ : 1;
 };
 
 // A snapshot of the current binding state.
@@ -1654,7 +1672,8 @@ class Function_declaration
   export_func(Export* exp, const std::string& name) const
   {
     Function::export_func_with_type(exp, name, this->fntype_,
-				    this->is_method() && this->nointerface());
+				    this->is_method() && this->nointerface(),
+				    NULL);
   }
 
   // Check that the types used in this declaration's signature are defined.
