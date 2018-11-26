@@ -1,3 +1,11 @@
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* tree-vect-loop.c (vectorizable_reduction): Pick up single
+	correct reduc_def_info.
+	* tree-vect-slp.c (vect_analyze_slp_instance): Set
+	STMT_VINFO_REDUC_DEF of the first stmt.
+
 2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* doc/invoke.texi: Document z14/arch12 -march option.

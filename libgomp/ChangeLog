@@ -1,3 +1,8 @@
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88182
+	* testsuite/libgomp.c++/pr88182.C: New testcase.
+
 2018-11-20  Jakub Jelinek  <jakub@redhat.com>
 
 	PR bootstrap/88106
