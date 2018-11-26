@@ -1,6 +1,14 @@
 2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
+	2018-11-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* config/s390/s390.md ("clztidi2"): Swap the RTX's written to the
+	DImode parts of the target operand.
+
+2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
 	2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	* doc/invoke.texi: Document z14/arch12 -march option.
