@@ -2462,7 +2462,8 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   tree tree_binfo ();
-  bool tree_node_raw (tree);
+  bool tree_node_bools (tree);
+  bool tree_node_vals (tree);
 
 public:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
@@ -2519,10 +2520,6 @@ public:
   void begin (depset::hash *);
   void end ();
 
-public:
-  /* Mark a node for by-value streaming.  */
-  void mark_node (tree);
-
 private:
   void tag (int rt)
   {
@@ -2547,7 +2544,8 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   tree tree_binfo (tree, int, bool);
-  void tree_node_raw (tree);
+  void tree_node_bools (tree);
+  void tree_node_vals (tree);
 
 public:
   void chained_decls (tree);
@@ -5711,117 +5709,150 @@ trees_in::tree_binfo ()
   return binfo;
 }
 
-/* The raw tree node.  If the node is a decl, we've already determined
-   it is to be by value.  The tree's code has been written, and we've
-   been inserted into the back-reference table.  Stream the bools and
-   vals, including any {decl,type}_lang_specific piece.  */
+/* Write out the bools of T, including information about any
+   LANG_SPECIFIC information.  */
 
 void
-trees_out::tree_node_raw (tree t)
+trees_out::tree_node_bools (tree t)
 {
-  tree_code_class klass = TREE_CODE_CLASS (TREE_CODE (t));
-  bool specific = false;
+  if (!streaming_p ())
+    return;
 
-  /* The only decls we should stream out are those from this module,
-     or the global module.  All other decls should be by name.  */
-  gcc_checking_assert (klass != tcc_declaration
-		       || MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
-		       || t != get_module_owner (t));
+  /* We should never stream a namespace.  */
+  gcc_checking_assert (TREE_CODE (t) != NAMESPACE_DECL);
 
-  if (klass == tcc_type || klass == tcc_declaration)
+  core_bools (t);
+
+  switch (TREE_CODE_CLASS (TREE_CODE (t)))
     {
-      if (klass == tcc_declaration)
-	specific = DECL_LANG_SPECIFIC (t) != NULL;
-      else if (TYPE_MAIN_VARIANT (t) == t)
-	specific = TYPE_LANG_SPECIFIC (t) != NULL;
-      else
+    case tcc_declaration:
+      {
+	
+	/* The only decls we should stream out are those from this
+	   module, or the global module.  All other decls should be by
+	   name.  */
+	gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
+			     || t != get_module_owner (t));
+
+	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
+	b (specific);
+	if (specific)
+	  {
+	    if (VAR_P (t))
+	      b (DECL_DECOMPOSITION_P (t));
+	    lang_decl_bools (t);
+	  }
+      }
+      break;
+
+    case tcc_type:
+      {
+	bool specific = (TYPE_MAIN_VARIANT (t) == t
+			 && TYPE_LANG_SPECIFIC (t) != NULL);
 	gcc_assert (TYPE_LANG_SPECIFIC (t)
 		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
-      if (streaming_p ())
-	{
-	  b (specific);
-	  if (specific && VAR_P (t))
-	    b (DECL_DECOMPOSITION_P (t));
-	}
-    }
 
-  if (streaming_p ())
-    {
-      core_bools (t);
-      if (specific)
-	{
-	  if (klass == tcc_type)
-	    lang_type_bools (t);
-	  else
-	    lang_decl_bools (t);
-	}
-      bflush ();
-    }
+	b (specific);
+	if (specific)
+	  lang_type_bools (t);
+      }
+      break;
 
+    default:
+      break;
+    }
+  bflush ();
+}
+
+bool
+trees_in::tree_node_bools (tree t)
+{
+  bool ok = core_bools (t);
+
+  if (ok)
+    switch (TREE_CODE_CLASS (TREE_CODE (t)))
+      {
+      case tcc_declaration:
+	if (b ())
+	  {
+	    ok = maybe_add_lang_decl_raw (t, VAR_P (t) && b ());
+	    if (ok)
+	      ok = lang_decl_bools (t);
+	  }
+	break;
+
+      case tcc_type:
+	if (b ())
+	  {
+	    ok = maybe_add_lang_type_raw (t);
+	    if (ok)
+	      ok = lang_type_bools (t);
+	  }
+	break;
+
+      default:
+	break;
+      }
+  bflush ();
+  if (!ok || get_overrun ())
+    return false;
+
+  return true;
+}
+
+/* Write out the value fields of node T.  */
+
+void
+trees_out::tree_node_vals (tree t)
+{
   core_vals (t);
-  if (specific)
+  switch (TREE_CODE_CLASS (TREE_CODE (t)))
     {
-      if (klass == tcc_type)
-	lang_type_vals (t);
-      else
+    case tcc_declaration:
+      if (DECL_LANG_SPECIFIC (t))
 	lang_decl_vals (t);
+      break;
+
+    case tcc_type:
+      if (TYPE_MAIN_VARIANT (t) == t && TYPE_LANG_SPECIFIC (t))
+	lang_type_vals (t);
+      break;
+
+    default:
+      break;
     }
 }
 
 bool
-trees_in::tree_node_raw (tree t)
+trees_in::tree_node_vals (tree t)
 {
-  tree_code_class klass = TREE_CODE_CLASS (TREE_CODE (t));
-  bool specific = false;
-  bool lied = false;
+  bool ok = core_vals (t);
 
-  /* We should never walk a namespace.  */
-  gcc_checking_assert (TREE_CODE (t) != NAMESPACE_DECL);
-  if (klass == tcc_type || klass == tcc_declaration)
-    {
-      specific = b ();
-      if (specific
-	  &&  (klass == tcc_type
-	       ? !maybe_add_lang_type_raw (t)
-	       : !maybe_add_lang_decl_raw (t, VAR_P (t) && b ())))
-	  lied = true;
-    }
+  if (ok)
+    switch (TREE_CODE_CLASS (TREE_CODE (t)))
+      {
+      case tcc_declaration:
+	if (DECL_LANG_SPECIFIC (t))
+	  ok = lang_decl_vals (t);
+	break;
 
-  if (!core_bools (t))
-    lied = true;
-  else if (specific)
-    {
-      if (klass == tcc_type
-	  ? !lang_type_bools (t)
-	  : !lang_decl_bools (t))
-	lied = true;
-    }
-  bflush ();
-  if (lied || get_overrun ())
-    return false;
+      case tcc_type:
+	if (TYPE_LANG_SPECIFIC (t))
+	  {
+	    gcc_assert (TYPE_MAIN_VARIANT (t) == t);
+	    ok = lang_type_vals (t);
+	  }
+	else
+	  TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
+	break;
 
-  if (!core_vals (t))
-    return false;
+      default:
+	break;
+      }
 
-  if (specific)
-    {
-      if (klass == tcc_type)
-	{
-	  gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-	  if (!lang_type_vals (t))
-	    return false;
-	}
-      else
-	{
-	  if (!lang_decl_vals (t))
-	    return false;
-	}
-    }
-  else if (klass == tcc_type)
-    TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
-
-  return true;
+  return ok;
 }
+
 
 /* If T is a back reference, fixed reference or NULL, write out it's
    code and return WK_none.  Otherwise return WK_body if we must write
@@ -6199,7 +6230,8 @@ trees_out::tree_value (tree t, walk_kind ref)
       && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 	       TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
 	       && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
-  tree_node_raw (t);
+  tree_node_bools (t);
+  tree_node_vals (t);
   if (streaming_p ())
     dump (dumper::TREE) && dump ("Written:%d %C:%N", tag, TREE_CODE (t), t);
 }
@@ -6608,7 +6640,8 @@ trees_in::tree_node ()
 	tag = insert (res);
 	dump (dumper::TREE) && dump ("Reading:%d %C", tag, code);
 
-	if (!tree_node_raw (res))
+	if (!tree_node_bools (res)
+	    || !tree_node_vals (res))
 	  goto barf;
 
 	if (get_overrun ())

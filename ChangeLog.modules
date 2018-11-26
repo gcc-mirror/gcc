@@ -1,6 +1,12 @@
 2018-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (trees_{in,out}::tree_node_raw): Bifurcate to ...
+	(trees_{in,out}::tree_node_{bools,vals}): ... these.
+	(trees_out::tree_value): Adjust.
+	(trees_in::tree_node): Likewise.
+
+	gcc/cp/
 	* modules.cc (trees_out::tree_ref): Rename to ...
 	(trees_out::ref_node): ... this.
 	(trees_out::tree{value,decl,type,namespace}): Replace FORCE
