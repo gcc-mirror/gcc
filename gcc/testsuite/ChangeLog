@@ -1,3 +1,9 @@
+2018-11-26  Martin Sebor  <msebor@redhat.com>
+
+	PR 87756
+	* gcc.dg/warn-sprintf-no-nul-2.c: Move incomplete tests from here...
+	* gcc.dg/warn-sprintf-no-nul-3.c: ...to here and complete them.
+
 2018-11-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88120 - ICE when calling save_expr in a template.
@@ -26,7 +32,7 @@
 
 2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
-	* lib/target-supports.exp (check_effective_target_newlib_nano_io): New. 
+	* lib/target-supports.exp (check_effective_target_newlib_nano_io): New.
 	* gcc.c-torture/execute/920501-8.c: Register undefined linker symbol
 	_printf_float for newlib_nano_io target.
 	* gcc.c-torture/execute/930513-1.c: Likewise.
@@ -70,7 +76,7 @@
 	* gcc.dg/tree-ssa/loop-interchange-1.c: Likewise.
 	* gcc.dg/tree-ssa/loop-interchange-1b.c: Likewise.
 	* lib/target-supports.exp (check_effective_target_size20plus): New.
-	(check_effective_target_size32plus): Update comment. 
+	(check_effective_target_size32plus): Update comment.
 
 2018-11-26  Uros Bizjak  <ubizjak@gmail.com>
 

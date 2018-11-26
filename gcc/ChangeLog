@@ -1,3 +1,9 @@
+2018-11-26  Martin Sebor  <msebor@redhat.com>
+
+	PR 87756
+	* expr.c (string_constant): Handle top-level decls of all character
+	types and subobjects of narrow character type.
+
 2018-11-27  Alan Modra  <amodra@gmail.com>
 
 	* config.gcc (powerpc*-*-linux*): Add linux.h to tm_file.
