@@ -1,5 +1,10 @@
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (morph_fn_to_coro): Update initial
+	validity checks and diagnostics.  Amend comments.
+
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	Merge trunk r266446.
 
 2018-11-20  Iain Sandoe  <iain@sandoe.co.uk>

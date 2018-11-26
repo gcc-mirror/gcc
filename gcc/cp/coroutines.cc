@@ -44,6 +44,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "tree.h"
 #include "cxx-pretty-print.h"
+#include "gcc-rich-location.h"
 
 /* DEBUG remove me.  */
 extern void debug_tree(tree);
@@ -283,9 +284,10 @@ coro_function_valid_p (tree fndecl)
  };
 
 */
-tree morph_fn_to_coro (tree orig)
+tree
+morph_fn_to_coro (tree orig)
 {
-  if (! orig)
+  if (! orig || TREE_CODE (orig) != FUNCTION_DECL)
     return orig;
 
   gcc_assert (orig == current_function_decl);
@@ -293,19 +295,17 @@ tree morph_fn_to_coro (tree orig)
   if (! coro_function_valid_p (orig))
     return NULL_TREE;
 
-  /* We shall use this as the location for diagnostics for the start-up
-     code, FIXME: This isn't working..
-     .. and input_location (assumed to be the final brace) for the
-     shut-down.   */
-  location_t fn_start;
-  if (DECL_STRUCT_FUNCTION (orig))
-    fn_start = DECL_STRUCT_FUNCTION (orig)->function_start_locus;
-  else
-    fn_start = DECL_SOURCE_LOCATION (orig);
-
+  /* We can't validly get here with an empty statement list, since there's no
+     way for the FE to decide it's a coroutine in the absence of any code.  */
   tree fnbody = pop_stmt_list (DECL_SAVED_TREE (orig));
-  if (fnbody == NULL_TREE || TREE_CODE (orig) != FUNCTION_DECL)
+  if (fnbody == NULL_TREE)
     return orig;
+
+  /* We don't have the locus of the opening brace - it's filled in later (and
+     there doesn't really seem to be any easy way to get at it).
+     The closing brace is assumed to be input_location.  */
+  location_t fn_start = DECL_SOURCE_LOCATION (orig);
+  gcc_rich_location fn_start_loc (fn_start);
 
   /* So, we've tied off the original body.  Now start the replacement.
      If we encounter a fatal error we might return a now-empty body.
@@ -331,8 +331,12 @@ tree morph_fn_to_coro (tree orig)
   tree initial_suspend_type = TREE_TYPE (TREE_TYPE (initial_suspend_meth));
   if (TREE_CODE (initial_suspend_type) != RECORD_TYPE)
     {
-      error_at (fn_start, "the initial suspend type needs to be an aggregate");
-      /* FIXME: Match clang wording, add a note to the definition.  */
+      error_at (&fn_start_loc,
+		"the initial suspend type needs to be an aggregate");
+      inform (DECL_SOURCE_LOCATION
+               (MAYBE_BASELINK_FUNCTIONS (initial_suspend_meth)),
+	      "declared here");
+      /* FIXME: Match clang wording.  */
       return orig;
     }
   tree final_suspend_meth = lookup_promise_member (orig, "final_suspend",
