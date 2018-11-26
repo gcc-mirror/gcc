@@ -119,8 +119,8 @@
 (define_insn_reservation "pj4_ir_mul" 3
   (and (eq_attr "tune" "marvell_pj4")
        (ior (eq_attr "mul32" "yes")
-            (eq_attr "mul64" "yes")))
-                     "pj4_is,pj4_mul,nothing*2,pj4_cp")
+	    (eq_attr "widen_mul64" "yes")))
+		     "pj4_is,pj4_mul,nothing*2,pj4_cp")
 
 (define_insn_reservation "pj4_ir_div" 20
   (and (eq_attr "tune" "marvell_pj4") 

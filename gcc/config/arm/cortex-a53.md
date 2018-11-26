@@ -111,7 +111,7 @@
 (define_insn_reservation "cortex_a53_mul" 4
   (and (eq_attr "tune" "cortexa53")
        (ior (eq_attr "mul32" "yes")
-	    (eq_attr "mul64" "yes")))
+	    (eq_attr "widen_mul64" "yes")))
   "cortex_a53_slot_any+cortex_a53_imul")
 
 ;; From the perspective of the GCC scheduling state machine, if we wish to

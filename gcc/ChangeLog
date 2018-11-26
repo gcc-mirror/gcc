@@ -1,3 +1,18 @@
+2018-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* config/arm/types.md (mul64): Rename to...
+	(widen_mul64): ... This.
+	* config/arm/arm-generic.md: Rename mul64 to widen_mul64.
+	* config/arm/cortex-a15.md: Likewise.
+	* config/arm/cortex-a5.md: Likewise.
+	* config/arm/cortex-a53.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/cortex-a7.md: Likewise.
+	* config/arm/cortex-m4.md: Likewise.
+	* config/arm/exynos-m1.md: Likewise.
+	* config/arm/marvell-pj4.md: Likewise.
+	* config/arm/xgene1.md: Likewise.
+
 2018-11-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88182
