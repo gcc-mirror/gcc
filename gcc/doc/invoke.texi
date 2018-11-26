@@ -9796,8 +9796,9 @@ subsections @code{.text.hot} for most frequently executed functions and
 the linker so object file format must support named sections and linker must
 place them in a reasonable way.
 
-Also profile feedback must be available to make this option effective.  See
-@option{-fprofile-arcs} for details.
+This option isn't effective unless you either provide profile feedback
+(see @option{-fprofile-arcs} for details) or manually annotate functions with 
+@code{hot} or @code{cold} attributes (@pxref{Common Function Attributes}).
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
 
