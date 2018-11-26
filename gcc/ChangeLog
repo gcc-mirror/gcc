@@ -1,6 +1,32 @@
 2018-11-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* tree-ssa-structalias.c (struct vls_data): Add escaped_p member.
+	(visit_loadstore): When a used restrict tag escaped verify that
+	the points-to solution of "other" pointers do not include
+	escaped.
+	(compute_dependence_clique): If a used restrict tag escaped
+	communicated that down to visit_loadstore.
+
+	2018-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	PR tree-optimization/87745
+	* tree-vectorizer.h (get_earlier_stmt): Remove.
+	(get_later_stmt): Pick up UID from the original non-pattern stmt.
+
+	2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	* tree-vect-data-refs.c (vect_preserves_scalar_order_p): Adjust
+	to reflect reality.
+
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-06-14  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86139
