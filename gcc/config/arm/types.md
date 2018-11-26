@@ -1100,8 +1100,8 @@
     (const_string "yes")
     (const_string "no")))
 
-; Is this an (integer side) multiply with a 64-bit result?
-(define_attr "mul64" "no,yes"
+; Is this an (integer side) widening multiply with a 64-bit result?
+(define_attr "widen_mul64" "no,yes"
   (if_then_else
     (eq_attr "type"
      "smlalxy,umull,umulls,umaal,umlal,umlals,smull,smulls,smlal,smlals")
