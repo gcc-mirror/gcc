@@ -11497,10 +11497,16 @@ string_constant (tree arg, tree *ptr_offset, tree *mem_size, tree *decl)
   if (decl)
     *decl = array;
 
-  if (TREE_CODE (init) == INTEGER_CST)
+  if (TREE_CODE (init) == INTEGER_CST
+      && (TREE_CODE (TREE_TYPE (array)) == INTEGER_TYPE
+	  || TYPE_MAIN_VARIANT (eltype) == char_type_node))
     {
       /* For a reference to (address of) a single constant character,
-	 store the native representation of the character in CHARBUF.   */
+	 store the native representation of the character in CHARBUF.
+	 If the reference is to an element of an array or a member
+	 of a struct, only consider narrow characters until ctors
+	 for wide character arrays are transformed to STRING_CSTs
+	 like those for narrow arrays.  */
       unsigned char charbuf[MAX_BITSIZE_MODE_ANY_MODE / BITS_PER_UNIT];
       int len = native_encode_expr (init, charbuf, sizeof charbuf, 0);
       if (len > 0)
