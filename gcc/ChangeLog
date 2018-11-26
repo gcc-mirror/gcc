@@ -1,3 +1,14 @@
+2018-11-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_cmp_vec_sequence): Rename
+	and modify expand_strncmp_vec_sequence.
+	(emit_final_compare_vec): Rename and modify emit_final_str_compare_vec.
+	(generate_6432_conversion): New function.
+	(expand_block_compare): Add support for vsx.
+	(expand_block_compare_gpr): New function.
+	* config/rs6000/rs6000.opt (rs6000_block_compare_inline_limit): Increase
+	default limit to 63 because of more compact vsx code.
+
 2018-11-26  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/88178

@@ -326,7 +326,7 @@ Target Report Var(rs6000_block_move_inline_limit) Init(0) RejectNegative Joined 
 Max number of bytes to move inline.
 
 mblock-compare-inline-limit=
-Target Report Var(rs6000_block_compare_inline_limit) Init(31) RejectNegative Joined UInteger Save
+Target Report Var(rs6000_block_compare_inline_limit) Init(63) RejectNegative Joined UInteger Save
 Max number of bytes to compare without loops.
 
 mblock-compare-inline-loop-limit=
