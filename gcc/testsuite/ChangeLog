@@ -1,3 +1,7 @@
+2018-11-26  Matthias Klose  <doko@ubuntu.com>
+
+	* jit.dg/test-long-names.c: Fix build with -Wformat-security.
+
 2018-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* lib/target-supports.exp (check_compile): Handle D.
