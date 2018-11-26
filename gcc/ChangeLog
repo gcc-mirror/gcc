@@ -1,3 +1,9 @@
+2018-11-25  Sandra Loosemore  <sandra@codesourcery.com>
+
+	PR web/79738
+	* doc/extend.texi (Common Function Attributes): Clarify that
+	functions with "const" attribute can read const global variables.
+
 2018-11-26  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.h (OBJECT_PEF, TARGET_MACOS): Delete.
