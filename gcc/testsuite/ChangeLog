@@ -1,5 +1,10 @@
 2018-11-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/88090
+	* obj-c++.dg/attributes/method-nonnull-1.mm (my_size_t): New typedef.
+	(MyArray::removeObjectAtIndex): Use my_size_t instead of size_t and
+	expect it in diagnostics.
+
 	PR c++/86900
 	* g++.dg/debug/dwarf2/pr86900.C: New test.
 
