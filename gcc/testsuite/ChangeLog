@@ -1,3 +1,8 @@
+2018-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/88178
+	* gcc.target/pr88178.c: New test.
+
 2018-11-26  Matthias Klose  <doko@ubuntu.com>
 
 	* jit.dg/test-long-names.c: Fix build with -Wformat-security.

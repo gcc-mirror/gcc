@@ -271,32 +271,58 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
 
 int const dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
-  0, 2, 1, 3, 6, 7, 4, 5,		/* general regs */
-  12, 13, 14, 15, 16, 17, 18, 19,	/* fp regs */
-  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
-  21, 22, 23, 24, 25, 26, 27, 28,	/* SSE */
-  29, 30, 31, 32, 33, 34, 35, 36,       /* MMX */
-  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
-  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
-  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
-  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
+  /* general regs */
+  0, 2, 1, 3, 6, 7, 4, 5,
+  /* fp regs */
+  12, 13, 14, 15, 16, 17, 18, 19,
+  /* arg, flags, fpsr, frame */
+  IGNORED_DWARF_REGNUM, IGNORED_DWARF_REGNUM,
+  IGNORED_DWARF_REGNUM, IGNORED_DWARF_REGNUM,
+  /* SSE */
+  21, 22, 23, 24, 25, 26, 27, 28,
+  /* MMX */
+  29, 30, 31, 32, 33, 34, 35, 36,
+  /* extended integer registers */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* extended sse registers */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* AVX-512 registers 16-23 */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* AVX-512 registers 24-31 */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* Mask registers */
+  93, 94, 95, 96, 97, 98, 99, 100
 };
 
 /* The "default" register map used in 64bit mode.  */
 
 int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 {
-  0, 1, 2, 3, 4, 5, 6, 7,		/* general regs */
-  33, 34, 35, 36, 37, 38, 39, 40,	/* fp regs */
-  -1, -1, -1, -1,			/* arg, flags, fpsr, frame */
-  17, 18, 19, 20, 21, 22, 23, 24,	/* SSE */
-  41, 42, 43, 44, 45, 46, 47, 48,       /* MMX */
-  8,9,10,11,12,13,14,15,		/* extended integer registers */
-  25, 26, 27, 28, 29, 30, 31, 32,	/* extended SSE registers */
-  67, 68, 69, 70, 71, 72, 73, 74,       /* AVX-512 registers 16-23 */
-  75, 76, 77, 78, 79, 80, 81, 82,       /* AVX-512 registers 24-31 */
-  118, 119, 120, 121, 122, 123, 124, 125 /* Mask registers */
+  /* general regs */
+  0, 1, 2, 3, 4, 5, 6, 7,
+  /* fp regs */
+  33, 34, 35, 36, 37, 38, 39, 40,
+  /* arg, flags, fpsr, frame */
+  IGNORED_DWARF_REGNUM, IGNORED_DWARF_REGNUM,
+  IGNORED_DWARF_REGNUM, IGNORED_DWARF_REGNUM,
+  /* SSE */
+  17, 18, 19, 20, 21, 22, 23, 24,
+  /* MMX */
+  41, 42, 43, 44, 45, 46, 47, 48,
+  /* extended integer registers */
+  8, 9, 10, 11, 12, 13, 14, 15,
+  /* extended SSE registers */
+  25, 26, 27, 28, 29, 30, 31, 32,
+  /* AVX-512 registers 16-23 */
+  67, 68, 69, 70, 71, 72, 73, 74,
+  /* AVX-512 registers 24-31 */
+  75, 76, 77, 78, 79, 80, 81, 82,
+  /* Mask registers */
+  118, 119, 120, 121, 122, 123, 124, 125
 };
 
 /* Define the register numbers to be used in Dwarf debugging information.
@@ -355,16 +381,31 @@ int const dbx64_register_map[FIRST_PSEUDO_REGISTER] =
 */
 int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER] =
 {
-  0, 2, 1, 3, 6, 7, 5, 4,		/* general regs */
-  11, 12, 13, 14, 15, 16, 17, 18,	/* fp regs */
-  -1, 9, -1, -1,			/* arg, flags, fpsr, frame */
-  21, 22, 23, 24, 25, 26, 27, 28,	/* SSE registers */
-  29, 30, 31, 32, 33, 34, 35, 36,	/* MMX registers */
-  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended integer registers */
-  -1, -1, -1, -1, -1, -1, -1, -1,	/* extended SSE registers */
-  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 16-23*/
-  -1, -1, -1, -1, -1, -1, -1, -1,       /* AVX-512 registers 24-31*/
-  93, 94, 95, 96, 97, 98, 99, 100       /* Mask registers */
+  /* general regs */
+  0, 2, 1, 3, 6, 7, 5, 4,
+  /* fp regs */
+  11, 12, 13, 14, 15, 16, 17, 18,
+  /* arg, flags, fpsr, frame */
+  IGNORED_DWARF_REGNUM, 9,
+  IGNORED_DWARF_REGNUM, IGNORED_DWARF_REGNUM,
+  /* SSE registers */
+  21, 22, 23, 24, 25, 26, 27, 28,
+  /* MMX registers */
+  29, 30, 31, 32, 33, 34, 35, 36,
+  /* extended integer registers */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* extended sse registers */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* AVX-512 registers 16-23 */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* AVX-512 registers 24-31 */
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
+  /* Mask registers */
+  93, 94, 95, 96, 97, 98, 99, 100
 };
 
 /* Define parameter passing and return registers.  */
