@@ -1,3 +1,10 @@
+2018-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86900
+	* dwarf2out.c (secname_for_decl): For functions with
+	DECL_SECTION_NAME if in_cold_section_p, try to return
+	current_function_section's name if it is a named section.
+
 2018-11-26  Maya Rashish  <coypu@sdf.org>
 
 	PR target/58397
