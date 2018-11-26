@@ -1,3 +1,10 @@
+2018-11-26  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (trees_out::ref_force_{lwm.hwm}): New ref values.
+	(trees_out::{,un}mark_trees): Use them.
+	(trees_out::{mark_node,tree_ref}): Likewise.
+
 2018-11-20  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

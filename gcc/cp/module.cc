@@ -2487,6 +2487,10 @@ trees_in::~trees_in ()
 class trees_out : public bytes_out {
   typedef bytes_out parent;
 
+  /* Special marker reference numbers.  */
+  static const int ref_force_lwm = 0;
+  static const int ref_force_hwm = 1;
+
 private:
   module_state *state;		/* The module we are writing.  */
   ptr_int_hash_map tree_map; 	/* Trees to references */
@@ -2525,6 +2529,7 @@ private:
     records++;
     i (rt);
   }
+
 public:
   int insert (tree, bool = false);
   int maybe_insert_typeof (tree);
@@ -2552,10 +2557,12 @@ public:
 public:
   void tree_node (tree);
   void tree_value (tree, bool force);
+
 private:
   bool tree_decl (tree, bool force, bool looking_inside);
   bool tree_type (tree, bool force, bool looking_inside);
   void tree_namespace (tree, bool force, tree inner_decl);
+
 public:
   int tree_ref (tree);
   void tree_ctx (tree, bool need_contents, tree inner_decl);
@@ -3773,7 +3780,7 @@ trees_out::mark_trees ()
   for (unsigned ix = 0; ix != limit; ix++)
     {
       tree val = (*fixed_trees)[ix];
-      bool existed = tree_map.put (val, ix + 1);
+      bool existed = tree_map.put (val, ix + ref_force_hwm);
       gcc_checking_assert (!TREE_VISITED (val) && !existed);
       TREE_VISITED (val) = true;
     }
@@ -3791,7 +3798,8 @@ trees_out::unmark_trees ()
     {
       tree node = reinterpret_cast <tree> ((*iter).first);
       int ref = (*iter).second;
-      gcc_checking_assert (TREE_VISITED (node) && ref);
+      gcc_checking_assert (TREE_VISITED (node)
+			   && (ref < ref_force_lwm || ref >= ref_force_hwm));
       TREE_VISITED (node) = false;
     }
 }
@@ -3809,7 +3817,7 @@ trees_out::mark_node (tree decl)
     gcc_checking_assert (!*tree_map.get (decl));
   else
     {
-      bool existed = tree_map.put (decl, 0);
+      bool existed = tree_map.put (decl, int (ref_force_lwm));
       gcc_checking_assert (!existed);
       TREE_VISITED (decl) = true;
 
@@ -5827,27 +5835,29 @@ trees_out::tree_ref (tree t)
       int *val_ptr = tree_map.get (t);
       int val = *val_ptr;
 
-      if (!val)
+      if (val == ref_force_lwm)
 	/* An entry we should walk into.  */
 	return -1;
-
+	  
       if (streaming_p ())
 	{
 	  const char *kind;
 
 	  refs++;
-	  if (val < 0)
+	  if (val < ref_force_lwm)
 	    {
 	      /* Back reference -> -ve number  */
 	      i (val);
 	      kind = "backref";
 	    }
-	  else
+	  else if (val >= ref_force_hwm)
 	    {
 	      /* Fixed reference -> tt_fixed */
-	      i (tt_fixed), u (--val);
+	      i (tt_fixed), u (val -= ref_force_hwm);
 	      kind = "fixed";
 	    }
+	  else
+	    gcc_unreachable ();
 
 	  dump (dumper::TREE)
 	    && dump ("Wrote %s:%d %C:%N%S", kind, val, TREE_CODE (t), t, t);
@@ -8989,8 +8999,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
 
-  /* Determine horcrux numbers for unnamed decls.  Count lazy
-     definitions.  */
+  /* Determine horcrux numbers for unnamed decls.  */
   for (unsigned ix = 0; ix != size; ix++)
     {
       depset *b = scc[ix];
@@ -10551,7 +10560,7 @@ module_state::write_macros (elf_out *to, cpp_reader *reader, unsigned *crc_p)
     {
       dump () && dump ("No more than %u macros", macros.length ());
 
-      (macros.qsort) (macro_loc_cmp);
+      macros.qsort (macro_loc_cmp);
 
       /* Write the defs */
       bytes_out sec (to);
@@ -11497,7 +11506,7 @@ module_state::write (elf_out *to, cpp_reader *reader)
 	      && spaces.length () == n_spaces);
 
   /* Write the namespaces.  */
-  (spaces.qsort) (space_cmp);
+  spaces.qsort (space_cmp);
   write_namespaces (to, table, spaces, &crc);
 
   /* Write the bindings themselves.  */
