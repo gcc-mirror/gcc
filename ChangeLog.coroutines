@@ -1,5 +1,12 @@
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (co_return_expander): New callback.
+	(expand_co_returns): New. (morph_fn_to_coro): Lookup the
+	promise return_void() method.  Expand co_returns. Implement
+	rule for flowing off the end of a coroutine.
+
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (find_coro_handle_type): new.
 	(find_handle_type): Remove unused vars.
 	(coro_promise_type_found_p): Save the coro handle rather than

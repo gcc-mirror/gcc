@@ -284,6 +284,80 @@ coro_function_valid_p (tree fndecl)
   return true;
 }
 
+/* Support for expansion of co_return statements.  */
+struct __coro_ret_data {
+  tree promise;
+  tree return_void;
+  tree fs_label;
+
+};
+
+/* Callback that rewrites co_return as per 9.6.3.1
+   - for co_return;
+   { p.return_void (); goto final_suspend; }
+   - for co_return [void expr];
+   { expr; p.return_void(); goto final_suspend;}
+   - for co_return [non void expr];
+   { p.return_value(expr); goto final_suspend; }
+*/
+   
+static tree
+co_return_expander (tree *stmt, int *, void *d)
+{
+  struct __coro_ret_data *data = (struct __coro_ret_data *) d;
+
+  if (TREE_CODE (*stmt) != RETURN_EXPR || ! COROUTINE_RETURN_P (*stmt))
+    return NULL_TREE;
+
+  location_t loc = EXPR_LOCATION (*stmt);
+  tree expr = TREE_OPERAND (*stmt, 0);
+  tree stmt_list = NULL;
+  if (expr == NULL_TREE || VOID_TYPE_P (TREE_TYPE (expr)))
+    {
+      if (expr)
+        append_to_statement_list (expr, &stmt_list);
+      append_to_statement_list (data->return_void, &stmt_list);
+    }
+  else
+    {
+      tree pm_name = get_identifier ("return_value");
+      tree promise_type = TREE_TYPE (data->promise);
+      tree pm_memb = lookup_member (promise_type, pm_name,
+				    /*protect*/1,  /*want_type*/ 0,
+				    tf_warning_or_error);
+      if (pm_memb && pm_memb != error_mark_node)
+        {
+          vec<tree, va_gc>* args = make_tree_vector_single (expr);
+	  tree return_value = build_new_method_call (data->promise, pm_memb,
+						     &args, NULL_TREE,
+						     LOOKUP_NORMAL, NULL,
+						     tf_warning_or_error);
+          append_to_statement_list (return_value, &stmt_list);
+          release_tree_vector (args);
+	}
+      else
+	{
+	  error_at (loc, "no member named %qs in %qT",
+		    IDENTIFIER_POINTER (pm_name), promise_type);
+          append_to_statement_list (error_mark_node, &stmt_list);
+        }
+    }
+  tree r = build1_loc (loc, GOTO_EXPR, void_type_node, data->fs_label);
+  append_to_statement_list (r, &stmt_list);
+  *stmt = stmt_list;
+  return NULL_TREE;
+}
+
+/* Walk the original function body, rewriting co_returns.  */
+static tree
+expand_co_returns (tree *fnbody, tree promise,
+		   tree return_void, tree fs_label)
+{
+  struct __coro_ret_data data = { promise, return_void, fs_label};
+  cp_walk_tree (fnbody, co_return_expander, &data, NULL);
+  return *fnbody;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -540,11 +614,39 @@ morph_fn_to_coro (tree orig)
   add_stmt (r);
 #endif
 
-  // TODO: process fnbody for co_returns / possible expansions.
-  add_stmt (fnbody);
 
+  /* Now we've built the promise etc, process fnbody for co_returns.
+     We want the call to return_void () below and it has no params so
+     we can create it once here.
+     Calls to return_value () will have to be checked and created as
+     required.  */
+  
+  tree return_void = NULL_TREE;
+  tree rvm = lookup_promise_member (orig, "return_void",
+				   fn_start, false /*musthave*/);
+  if (rvm && rvm != error_mark_node)
+    return_void = build_new_method_call (p, rvm, NULL, NULL_TREE,
+					 LOOKUP_NORMAL, NULL,
+					 tf_warning_or_error);
+
+  /* co_return branches to the final_suspend label, so declare that now.  */
   tree fs_label = get_identifier ("final_suspend");
   fs_label = define_label (input_location, fs_label);
+
+  /* Expand co_returns.  */
+  fnbody = expand_co_returns (&fnbody, p, return_void, fs_label);
+
+  /* Add in our function body with the co_returns rewritten to final form.  */
+  add_stmt (fnbody);
+
+  /* 9.6.3.1 (2.2 : 3) if p.return_void() is a valid expression, flowing
+     off the end of a coroutine is equivalent to co_return; otherwise UB.
+     We just inject the call to p.return_void() here, and fall through to
+     the final_suspend: label (eliding the goto).  */
+  if (return_void != NULL_TREE)
+    add_stmt (return_void);
+
+  /* Final suspend starts here.  */
   r = build_stmt (input_location, LABEL_EXPR, fs_label);
   add_stmt (r);
 
