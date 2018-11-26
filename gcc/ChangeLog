@@ -1,3 +1,13 @@
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	Backport from mainline
+	2018-08-15  Iain Sandoe  <iain@sandoe.co.uk>
+ 
+	* config/darwin.c
+	(darwin_function_switched_text_sections): Delete.
+	* gcc/config/darwin.h
+	(TARGET_ASM_FUNCTION_SWITCHED_TEXT_SECTIONS): Likewise.
+
 2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
