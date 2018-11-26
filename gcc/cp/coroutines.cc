@@ -699,15 +699,10 @@ morph_fn_to_coro (tree orig)
   DECL_CONTEXT (coro_fp) = current_scope ();
   tree r = build_stmt (fn_start, DECL_EXPR, coro_fp);
   add_stmt (r);
-#if CAN_GIMPLIFY_CORO
-  tree allocated = build1 (CORO_ALLOCATOR,
-			   build_pointer_type (void_type_node),
-			   coro_frame_type);
-#else
-  /* Placeholder.  */
-  tree allocated = build1 (CONVERT_EXPR, build_pointer_type (void_type_node),
-			   integer_zero_node);
-#endif
+  tree allocated
+    = build_call_expr_internal_loc (fn_start, IFN_CO_FRAME,
+				    build_pointer_type (void_type_node), 1,
+				    TYPE_SIZE_UNIT (coro_frame_type));
   allocated = build1 (CONVERT_EXPR, coro_frame_ptr, allocated);
   r = build2 (INIT_EXPR, TREE_TYPE (coro_fp), coro_fp, allocated);
   add_stmt (r);
