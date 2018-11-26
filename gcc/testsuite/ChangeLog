@@ -1,3 +1,10 @@
+2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	Backport from mainline
+	2018-11-20  Andreas Krebbel  <krebbel@linux.ibm.com>
+
+	* gcc.target/s390/flogr-1.c: New test.
+
 2018-11-26  Matthias Klose  <doko@ubuntu.com>
 
 	* jit.dg/test-long-names.c: Fix build with -Wformat-security.
