@@ -1,6 +1,25 @@
 2018-11-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2018-10-15  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/87610
+	* gcc.dg/torture/restrict-6.c: New testcase.
+
+	2018-10-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	PR tree-optimization/87745
+	* gfortran.dg/20181025-1.f: New testcase.
+
+	2018-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/87665
+	* gcc.dg/torture/pr87665.c: New testcase.
+
+2018-11-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2018-06-15  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/86076

@@ -833,62 +833,6 @@ set_vinfo_for_stmt (gimple *stmt, stmt_vec_info info)
     }
 }
 
-/* Return the earlier statement between STMT1 and STMT2.  */
-
-static inline gimple *
-get_earlier_stmt (gimple *stmt1, gimple *stmt2)
-{
-  unsigned int uid1, uid2;
-
-  if (stmt1 == NULL)
-    return stmt2;
-
-  if (stmt2 == NULL)
-    return stmt1;
-
-  uid1 = gimple_uid (stmt1);
-  uid2 = gimple_uid (stmt2);
-
-  if (uid1 == 0 || uid2 == 0)
-    return NULL;
-
-  gcc_checking_assert (uid1 <= stmt_vec_info_vec.length ()
-		       && uid2 <= stmt_vec_info_vec.length ());
-
-  if (uid1 < uid2)
-    return stmt1;
-  else
-    return stmt2;
-}
-
-/* Return the later statement between STMT1 and STMT2.  */
-
-static inline gimple *
-get_later_stmt (gimple *stmt1, gimple *stmt2)
-{
-  unsigned int uid1, uid2;
-
-  if (stmt1 == NULL)
-    return stmt2;
-
-  if (stmt2 == NULL)
-    return stmt1;
-
-  uid1 = gimple_uid (stmt1);
-  uid2 = gimple_uid (stmt2);
-
-  if (uid1 == 0 || uid2 == 0)
-    return NULL;
-
-  gcc_assert (uid1 <= stmt_vec_info_vec.length ());
-  gcc_assert (uid2 <= stmt_vec_info_vec.length ());
-
-  if (uid1 > uid2)
-    return stmt1;
-  else
-    return stmt2;
-}
-
 /* Return TRUE if a statement represented by STMT_INFO is a part of a
    pattern.  */
 
@@ -905,6 +849,38 @@ is_pattern_stmt_p (stmt_vec_info stmt_info)
     return true;
 
   return false;
+}
+
+/* Return the later statement between STMT1 and STMT2.  */
+
+static inline gimple *
+get_later_stmt (gimple *stmt1, gimple *stmt2)
+{
+  unsigned int uid1, uid2;
+
+  if (stmt1 == NULL)
+    return stmt2;
+
+  if (stmt2 == NULL)
+    return stmt1;
+
+  stmt_vec_info stmt_info1 = vinfo_for_stmt (stmt1);
+  stmt_vec_info stmt_info2 = vinfo_for_stmt (stmt2);
+  uid1 = gimple_uid (is_pattern_stmt_p (stmt_info1)
+		     ? STMT_VINFO_RELATED_STMT (stmt_info1) : stmt1);
+  uid2 = gimple_uid (is_pattern_stmt_p (stmt_info2)
+		     ? STMT_VINFO_RELATED_STMT (stmt_info2) : stmt2);
+
+  if (uid1 == 0 || uid2 == 0)
+    return NULL;
+
+  gcc_assert (uid1 <= stmt_vec_info_vec.length ());
+  gcc_assert (uid2 <= stmt_vec_info_vec.length ());
+
+  if (uid1 > uid2)
+    return stmt1;
+  else
+    return stmt2;
 }
 
 /* Return true if BB is a loop header.  */

@@ -7274,6 +7274,7 @@ delete_points_to_sets (void)
 struct vls_data
 {
   unsigned short clique;
+  bool escaped_p;
   bitmap rvars;
 };
 
@@ -7285,6 +7286,7 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 {
   unsigned short clique = ((vls_data *) data)->clique;
   bitmap rvars = ((vls_data *) data)->rvars;
+  bool escaped_p = ((vls_data *) data)->escaped_p;
   if (TREE_CODE (base) == MEM_REF
       || TREE_CODE (base) == TARGET_MEM_REF)
     {
@@ -7305,7 +7307,8 @@ visit_loadstore (gimple *, tree base, tree ref, void *data)
 	    return false;
 
 	  vi = get_varinfo (find (vi->id));
-	  if (bitmap_intersect_p (rvars, vi->solution))
+	  if (bitmap_intersect_p (rvars, vi->solution)
+	      || (escaped_p && bitmap_bit_p (vi->solution, escaped_id)))
 	    return false;
 	}
 
@@ -7382,6 +7385,7 @@ compute_dependence_clique (void)
   unsigned short clique = 0;
   unsigned short last_ruid = 0;
   bitmap rvars = BITMAP_ALLOC (NULL);
+  bool escaped_p = false;
   for (unsigned i = 0; i < num_ssa_names; ++i)
     {
       tree ptr = ssa_name (i);
@@ -7451,7 +7455,12 @@ compute_dependence_clique (void)
 						 last_ruid);
 	    }
 	  if (used)
-	    bitmap_set_bit (rvars, restrict_var->id);
+	    {
+	      bitmap_set_bit (rvars, restrict_var->id);
+	      varinfo_t escaped = get_varinfo (find (escaped_id));
+	      if (bitmap_bit_p (escaped->solution, restrict_var->id))
+		escaped_p = true;
+	    }
 	}
     }
 
@@ -7464,7 +7473,7 @@ compute_dependence_clique (void)
 	 parameters) we can't restrict scoping properly thus the following
 	 is too aggressive there.  For now we have excluded those globals from
 	 getting into the MR_DEPENDENCE machinery.  */
-      vls_data data = { clique, rvars };
+      vls_data data = { clique, escaped_p, rvars };
       basic_block bb;
       FOR_EACH_BB_FN (bb, cfun)
 	for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
