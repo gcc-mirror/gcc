@@ -1,6 +1,11 @@
 2018-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* modules.cc (trees_out::walk_kind): New enum.
+	(trees_out::tree_ref): Return it.
+	(trees_out::tree_{ctx,decl,node}): Use it.
+
+	gcc/cp/
 	* modules.cc (trees_out::ref_force_{lwm.hwm}): New ref values.
 	(trees_out::{,un}mark_trees): Use them.
 	(trees_out::{mark_node,tree_ref}): Likewise.

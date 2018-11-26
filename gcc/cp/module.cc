@@ -2564,7 +2564,12 @@ private:
   void tree_namespace (tree, bool force, tree inner_decl);
 
 public:
-  int tree_ref (tree);
+  enum walk_kind {
+		  WK_none,  /* No walk to do.  */
+		  WK_body,  /* Must do a by-value walk.  */
+		  WK_normal,   /* Normal walk.  */
+  };
+  walk_kind tree_ref (tree);
   void tree_ctx (tree, bool need_contents, tree inner_decl);
 
 public:
@@ -5811,11 +5816,11 @@ trees_in::tree_node_raw (tree t)
   return true;
 }
 
-/* If T is a back reference, fixed reference or NULL, write it out and
-   return zero.  Otherwise return -1 if we must write by value, or +1
-   otherwise.  */
+/* If T is a back reference, fixed reference or NULL, write out it's
+   code and return WK_none.  Otherwise return WK_body if we must write
+   by value, or WK_normal otherwise.  */
 
-int
+trees_out::walk_kind
 trees_out::tree_ref (tree t)
 {
   if (!t)
@@ -5826,7 +5831,7 @@ trees_out::tree_ref (tree t)
 	  nulls++;
 	  i (tt_null);
 	}
-      return 0;
+      return WK_none;
     }
 
   if (TREE_VISITED (t))
@@ -5837,7 +5842,7 @@ trees_out::tree_ref (tree t)
 
       if (val == ref_force_lwm)
 	/* An entry we should walk into.  */
-	return -1;
+	return WK_body;
 	  
       if (streaming_p ())
 	{
@@ -5862,10 +5867,10 @@ trees_out::tree_ref (tree t)
 	  dump (dumper::TREE)
 	    && dump ("Wrote %s:%d %C:%N%S", kind, val, TREE_CODE (t), t, t);
 	}
-      return 0;
+      return WK_none;
     }
 
-  return 1;
+  return WK_normal;
 }
 
 /* CTX is a context of some node.  NEED_CONTENTS is true if we're
@@ -5874,9 +5879,10 @@ trees_out::tree_ref (tree t)
 void
 trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 {
-  if (int ref = tree_ref (ctx))
+  walk_kind ref = tree_ref (ctx);
+  if (ref != WK_none)
     {
-      bool force = ref < 0;
+      bool force = ref == WK_body;
       bool by_value = false;
 
       if (TYPE_P (ctx))
@@ -5945,7 +5951,7 @@ trees_out::tree_decl (tree decl, bool force, bool looking_inside)
       return true;
     }
 
-  if (!tree_ref (decl))
+  if (tree_ref (decl) == WK_none)
     /* If this is a fixed decl, we're done.  */
     return false;
 
@@ -6201,10 +6207,11 @@ trees_out::tree_node (tree t)
 {
   dump.indent ();
   bool force = false;
-  int ref = tree_ref (t);
-  if (!ref)
+  walk_kind ref = tree_ref (t);
+  if (ref == WK_none)
     goto done;
-  if (ref < 0)
+
+  if (ref == WK_body)
     /* An entry we should walk into.  */
     force = true;
 
