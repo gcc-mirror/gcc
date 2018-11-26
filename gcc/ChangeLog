@@ -1,5 +1,9 @@
 2018-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_mangle_type): Fix typo in comment.
+
+2018-11-26  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
 	* config/arm/types.md (mul64): Rename to...
 	(widen_mul64): ... This.
 	* config/arm/arm-generic.md: Rename mul64 to widen_mul64.
