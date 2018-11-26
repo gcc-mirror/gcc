@@ -1,3 +1,8 @@
+2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document check_effective_target_size20plus.
+	Clarify documentation for check_effective_target_size32plus.
+
 2018-11-26  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_cmp_vec_sequence): Rename
