@@ -2608,9 +2608,21 @@ proc check_effective_target_ptr32plus { } {
     }]
 }
 
-# Return 1 if we support 32-bit or larger array and structure sizes
-# using default options, 0 otherwise.  Avoid false positive on
-# targets with 20 or 24 bit address spaces.
+# Return 1 if we support 16-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+# This implies at least a 20-bit address space, as no targets have an address
+# space between 16 and 20 bits.
+
+proc check_effective_target_size20plus { } {
+    return [check_no_compiler_messages size20plus object {
+	char dummy[65537L];
+    }]
+}
+
+# Return 1 if we support 24-bit or larger array and structure sizes
+# using default options, 0 otherwise.
+# This implies at least a 32-bit address space, as no targets have an address
+# space between 24 and 32 bits.
 
 proc check_effective_target_size32plus { } {
     return [check_no_compiler_messages size32plus object {

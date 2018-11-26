@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O -fstack-protector -fno-strict-aliasing" } */
 /* { dg-require-effective-target fstack_protector } */
+/* { dg-require-effective-target size20plus } */
 
 extern void bar (char *);
 

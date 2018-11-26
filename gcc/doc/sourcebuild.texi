@@ -1369,8 +1369,13 @@ Target supports @code{long double} that is longer than @code{double}.
 @item ptr32plus
 Target has pointers that are 32 bits or longer.
 
+@item size20plus
+Target has a 20-bit or larger address space, so at least supports
+16-bit array and structure sizes.
+
 @item size32plus
-Target supports array and structure sizes that are 32 bits or longer.
+Target has a 32-bit or larger address space, so at least supports
+24-bit array and structure sizes.
 
 @item 4byte_wchar_t
 Target has @code{wchar_t} that is at least 4 bytes.
