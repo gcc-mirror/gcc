@@ -1,5 +1,16 @@
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
+	* gcc/cp/coroutines.cc (co_await_expander): New callback.
+	(expand_co_awaits): New.  (morph_fn_to_coro): Rename phase_name
+	to resume_idx_name, and likewise phase to resume_idx. Add
+	initial suspend and final suspend handles to the coroutine
+	frame.  Remove the inline building of initial and final susp
+	point vars.  Add a reference to the relevant awaiter to each
+	co_await tree.  Remove unused init and final awaiter destructors.
+	Expand co_await trees.
+
+2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
+
 	* gcc/cp/coroutines.cc (co_return_context_valid_p): It is
 	a valid void co_return if the expression is either absent
 	or void type.

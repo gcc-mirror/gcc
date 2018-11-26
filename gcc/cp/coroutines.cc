@@ -358,6 +358,188 @@ expand_co_returns (tree *fnbody, tree promise,
   return *fnbody;
 }
 
+/* Support for expansion of co_await statements.  */
+struct __coro_aw_data {
+  tree coro_fp;
+  tree resume_idx;
+  tree cleanup;
+  tree cororet;
+  unsigned index; // resume point.
+};
+
+/* When we come here:
+    the first operand is 'o' as defined in 8.3.8 (3.3)
+    the second operand is the var to be copy-initialised
+    the third operand is the handle for suspend.
+    the fourth operand is NULL unless this is final suspend, when it's 1.
+
+   When we leave:
+   the CO_AWAIT carries the labels of the resume and destroy
+   branch targets for this await.
+
+TODO :
+  This doesn't check the return type await_suspend, it assumes it to be void.
+  This doesn't deal with the return value from await_resume, it assumes it to
+  be void.
+
+*/
+    
+static tree
+co_await_expander (tree *stmt, int *do_subtree, void *d)
+{
+  struct __coro_aw_data *data = (struct __coro_aw_data *) d;
+
+  if (TREE_CODE (*stmt) != EXPR_STMT
+      || TREE_CODE (EXPR_STMT_EXPR (*stmt)) != COAWAIT_EXPR)
+    return NULL_TREE;
+
+  location_t loc = EXPR_LOCATION (*stmt);
+  tree saved_co_await = EXPR_STMT_EXPR (*stmt);
+  tree expr = TREE_OPERAND (saved_co_await, 0);
+  tree var = TREE_OPERAND (saved_co_await, 1);
+  tree handle = TREE_OPERAND (saved_co_await, 2);
+  bool is_final = (TREE_OPERAND (saved_co_await, 3) != NULL_TREE);
+  bool needs_dtor = TYPE_HAS_NONTRIVIAL_DESTRUCTOR (TREE_TYPE (var));
+  int resume_point = data->index;
+  size_t bufsize = sizeof ("destroy.") + 10;
+  char *buf = (char *) alloca (bufsize);
+  snprintf (buf, bufsize, "destroy.%d", resume_point);
+  tree destroy_label = get_identifier (buf);
+  destroy_label = define_label (loc, destroy_label);
+  snprintf (buf, bufsize, "resume.%d", resume_point);
+  tree resume_label = get_identifier (buf);
+  resume_label = define_label (loc, resume_label);
+  tree empty_list = build_empty_stmt (loc);
+
+
+  tree dtor = NULL_TREE;
+  if (needs_dtor)
+    dtor = build_special_member_call(var, complete_dtor_identifier, NULL,
+				     TREE_TYPE (var), LOOKUP_NORMAL,
+				     tf_warning_or_error);
+
+  tree stmt_list = NULL;
+  /* Initialise the var from the provided 'o' expression.  */
+  tree r = build2 (INIT_EXPR, TREE_TYPE (var), var, TREE_OPERAND (expr, 1));
+  r = build_stmt (loc, EXPR_STMT, r);
+  append_to_statement_list (r, &stmt_list);
+
+  /* Produce the test and suspend.  */
+  tree awr_name = get_identifier ("await_ready");
+  tree await_type = TREE_TYPE (var);
+  tree awr_memb = lookup_member (await_type, awr_name, /*protect*/1,
+				 /*want_type*/ 0, tf_warning_or_error);
+  tree ready_cond;
+  if (awr_memb && awr_memb != error_mark_node)
+    ready_cond = build_new_method_call (var, awr_memb, NULL,
+					NULL_TREE, LOOKUP_NORMAL, NULL,
+					tf_warning_or_error);
+  else
+    {
+      error_at (loc, "no member named %qs in %qT",
+		IDENTIFIER_POINTER (awr_name), await_type);
+      ready_cond = error_mark_node;
+    }
+  ready_cond = build1_loc (loc, TRUTH_NOT_EXPR, boolean_type_node, ready_cond);
+  ready_cond = build1_loc (loc, CLEANUP_POINT_EXPR,
+			   boolean_type_node, ready_cond);
+
+  tree body_list = NULL;
+  tree susp_idx = build_int_cst (integer_type_node, data->index);
+  r = build2_loc (loc, MODIFY_EXPR, integer_type_node,
+		  data->resume_idx, susp_idx);
+  r = maybe_cleanup_point_expr_void (r);
+  append_to_statement_list (r, &body_list);
+
+  tree sus_name = get_identifier ("await_suspend");
+  tree sus_memb = lookup_member (await_type, sus_name, /*protect*/1,
+				 /*want_type*/ 0, tf_warning_or_error);
+  tree suspend;
+  /* We are not (yet) going to muck around with figuring out the actions
+     for different return type on the suspend, our simple case assumes
+     it's void.  */
+  if (sus_memb && sus_memb != error_mark_node)
+    {
+      vec<tree, va_gc>* args = make_tree_vector_single (handle);
+      suspend = build_new_method_call (var, sus_memb, &args,
+				       NULL_TREE, LOOKUP_NORMAL, NULL,
+				       tf_warning_or_error);
+      release_tree_vector (args);
+    }
+  else
+    {
+      error_at (loc, "no member named %qs in %qT",
+		IDENTIFIER_POINTER (sus_name), await_type);
+      suspend = error_mark_node;
+    }
+  suspend = build_stmt (loc, EXPR_STMT, suspend);
+  suspend = maybe_cleanup_point_expr_void (suspend);
+  append_to_statement_list (suspend, &body_list);
+
+  tree d_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
+		     destroy_label);
+  tree r_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
+		     resume_label);
+  tree g_l = build1 (ADDR_EXPR, build_reference_type (void_type_node),
+		     data->cororet);
+  tree final_susp = build_int_cst (integer_type_node, is_final ? 1 : 0);
+  r =  build_call_expr_internal_loc (loc, IFN_CO_YIELD, void_type_node,
+				     6, susp_idx, final_susp, var, g_l,
+				     d_l, r_l);
+  TREE_SIDE_EFFECTS (r) = 1;
+  r = maybe_cleanup_point_expr_void (r);
+  append_to_statement_list (r, &body_list);
+
+  destroy_label = build_stmt (loc, LABEL_EXPR, destroy_label);
+  append_to_statement_list (destroy_label, &body_list);
+  if (needs_dtor)
+    append_to_statement_list (dtor, &body_list);
+  r = build1_loc (loc, GOTO_EXPR, void_type_node, data->cleanup);
+  append_to_statement_list (r, &body_list);
+  
+  r = build3_loc (loc, COND_EXPR, void_type_node,
+		  ready_cond, body_list, empty_list);
+  
+  append_to_statement_list (r, &stmt_list);
+
+  /* Resume point.  */
+  resume_label = build_stmt (loc, LABEL_EXPR, resume_label);
+  append_to_statement_list (resume_label, &stmt_list);
+  tree res_name = get_identifier ("await_resume");
+  tree res_memb = lookup_member (await_type, res_name, /*protect*/1,
+				 /*want_type*/ 0, tf_warning_or_error);
+  tree resume;
+  if (res_memb && res_memb != error_mark_node)
+    resume = build_new_method_call (var, res_memb, NULL,
+				    NULL_TREE, LOOKUP_NORMAL, NULL,
+				    tf_warning_or_error);
+  else
+    {
+      error_at (loc, "no member named %qs in %qT",
+		IDENTIFIER_POINTER (res_name), await_type);
+      resume = error_mark_node;
+    }
+
+  /* This will produce the value (if one is provided) from the co_await
+     expression.  */
+  append_to_statement_list (resume, &stmt_list);
+  if (needs_dtor)
+    append_to_statement_list (dtor, &stmt_list);
+  data->index++;
+  *stmt = stmt_list;
+  *do_subtree = 0;
+  return NULL_TREE;
+}
+
+static tree
+expand_co_awaits (tree *fnbody, tree coro_fp, tree resume_idx,
+		  tree cleanup, tree cororet)
+{
+  struct __coro_aw_data data = { coro_fp, resume_idx, cleanup, cororet, 0};
+  cp_walk_tree (fnbody, co_await_expander, &data, NULL);
+  return *fnbody;
+}
+
 /* Here we:
    a) Check that the function and promise type are valid for a
       coroutine.
@@ -478,17 +660,26 @@ morph_fn_to_coro (tree orig)
   tree promise_name = get_identifier ("__p");
   decl = build_decl (fn_start, FIELD_DECL, promise_name, promise_type);
   DECL_CHAIN (decl) = decls; decls = decl;
-  tree phase_name = get_identifier ("__resume_at");
-  decl = build_decl (fn_start, FIELD_DECL, phase_name, integer_type_node);
+  tree resume_idx_name = get_identifier ("__resume_at");
+  decl = build_decl (fn_start, FIELD_DECL, resume_idx_name, integer_type_node);
   DECL_CHAIN (decl) = decls; decls = decl;
   // TODO: decide if we need to preserve things across initial susp.
   tree init_susp_name = get_identifier ("__is");
   decl = build_decl (fn_start, FIELD_DECL, init_susp_name,
 		     initial_suspend_type);
   DECL_CHAIN (decl) = decls; decls = decl;
+  /* We really need to figure this out from the awaiter type.  */
+  tree init_hand_name = get_identifier ("__ih");
+  decl = build_decl (fn_start, FIELD_DECL, init_hand_name,
+		     handle_type);
+  DECL_CHAIN (decl) = decls; decls = decl;
   // TODO: decide if we need to preserve things across final susp.
   tree fin_susp_name = get_identifier ("__fs");
   decl = build_decl (fn_start, FIELD_DECL, fin_susp_name, final_suspend_type);
+  DECL_CHAIN (decl) = decls; decls = decl;
+  tree fin_hand_name = get_identifier ("__fh");
+  decl = build_decl (fn_start, FIELD_DECL, fin_hand_name,
+		     handle_type);
   DECL_CHAIN (decl) = decls; decls = decl;
   TYPE_FIELDS (coro_frame_type) = decls;
 
@@ -546,42 +737,9 @@ morph_fn_to_coro (tree orig)
 				tf_warning_or_error);
   add_stmt (r);
 
-  /* Set the initial_suspend var.  */
-  tree is_m = lookup_member (coro_frame_type, init_susp_name,
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree is = build_class_member_access_expr (deref_fp, is_m, NULL_TREE,
-					   false, tf_warning_or_error);
-
-  tree get_is_meth = lookup_promise_member (orig, "initial_suspend",
-					   fn_start, true /*musthave*/);
-  r = build_new_method_call (rvalue (p), get_is_meth,
-			     NULL, NULL_TREE, LOOKUP_NORMAL,
-			     NULL, tf_warning_or_error);
-  // init our actual var.
-  r = build2 (INIT_EXPR, initial_suspend_type, is, TREE_OPERAND (r, 1));
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  add_stmt (r);
-
-  /* Set the final suspend var.  */
-  tree fs_m = lookup_member (coro_frame_type, fin_susp_name,
-			     /*protect*/1,  /*want_type*/ 0,
-			     tf_warning_or_error);
-  tree fs = build_class_member_access_expr (deref_fp, fs_m, NULL_TREE,
-					   false, tf_warning_or_error);
-  tree get_fs_meth = lookup_promise_member (orig, "final_suspend",
-					   fn_start, true /*musthave*/);
-  r = build_new_method_call (rvalue (p), get_fs_meth,
-			     NULL, NULL_TREE, LOOKUP_NORMAL,
-			     NULL, tf_warning_or_error);
-  // init our actual var.
-  r = build2 (INIT_EXPR, final_suspend_type, fs, TREE_OPERAND (r, 1));
-  r = build_stmt (fn_start, EXPR_STMT, r);
-  add_stmt (r);
-
   tree gro_meth = lookup_promise_member (orig, "get_return_object",
 				    fn_start, true /*musthave*/);
-  r = build_new_method_call (rvalue (p), gro_meth,
+  r = build_new_method_call (p, gro_meth,
 			     NULL, NULL_TREE, LOOKUP_NORMAL,
 			     NULL, tf_warning_or_error);
   // init our actual var.
@@ -596,24 +754,43 @@ morph_fn_to_coro (tree orig)
   start_label = build_stmt (fn_start, LABEL_EXPR, start_label);
   add_stmt (start_label);
 
-  /* Initialise the phase to -1, not started.  */
-  tree phase_m = lookup_member (coro_frame_type, phase_name,
-				/*protect*/1,  /*want_type*/ 0,
-				tf_warning_or_error);
-  tree phase = build_class_member_access_expr (deref_fp, phase_m, NULL_TREE,
-						false, tf_warning_or_error);
-  r = build2 (INIT_EXPR, integer_type_node, phase, integer_minus_one_node);
+  /* Initialise the resume_idx_name to -1, not started.  */
+  tree resume_idx_m = lookup_member (coro_frame_type, resume_idx_name,
+				     /*protect*/1,  /*want_type*/ 0,
+				     tf_warning_or_error);
+  tree resume_idx = build_class_member_access_expr (deref_fp, resume_idx_m,
+						    NULL_TREE, false,
+						    tf_warning_or_error);
+  r = build2 (INIT_EXPR, integer_type_node, resume_idx, integer_minus_one_node);
   r = build_stmt (fn_start, EXPR_STMT, r);
   add_stmt (r);
 
-#if CAN_GIMPLIFY_CORO
+  /* Get a reference to the initial suspend var in the frame.
+     Synthesize the init expression.  */
+  tree is_m = lookup_member (coro_frame_type, init_susp_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree is = build_class_member_access_expr (deref_fp, is_m, NULL_TREE,
+					   true, tf_warning_or_error);
+  tree get_is_meth = lookup_promise_member (orig, "initial_suspend",
+					   fn_start, true /*musthave*/);
+
+  /* The result of applying 8.3.8 3.1 - 3.4 'e'.  In the case of the init
+      and final suspend points, the operations are constrained.  */
+  tree is_expr = build_new_method_call (p, get_is_meth,
+					NULL, NULL_TREE, LOOKUP_NORMAL,
+					NULL, tf_warning_or_error);
+  /* Handle for suspend.  */
+  tree ih_m = lookup_member (coro_frame_type, init_hand_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree ih = build_class_member_access_expr (deref_fp, ih_m, NULL_TREE,
+					   true, tf_warning_or_error);
+
   tree initial_aw = build4_loc (fn_start, COAWAIT_EXPR, void_type_node,
-				is, initial_suspend_type,
-				NULL_TREE, NULL_TREE);
+				is_expr, is, ih, NULL_TREE);
   r = build_stmt (fn_start, EXPR_STMT, initial_aw);
   add_stmt (r);
-#endif
-
 
   /* Now we've built the promise etc, process fnbody for co_returns.
      We want the call to return_void () below and it has no params so
@@ -650,12 +827,30 @@ morph_fn_to_coro (tree orig)
   r = build_stmt (input_location, LABEL_EXPR, fs_label);
   add_stmt (r);
 
-#if CAN_GIMPLIFY_CORO
-  tree final_aw = build4 (COAWAIT_EXPR, void_type_node, fs,
-			  final_suspend_type, NULL_TREE, NULL_TREE);
+  /* Get a reference to the final suspend var in the frame.
+     Synthesize the init expression.  */
+  tree fs_m = lookup_member (coro_frame_type, fin_susp_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree fs = build_class_member_access_expr (deref_fp, fs_m, NULL_TREE,
+					    true, tf_warning_or_error);
+  tree get_fs_meth = lookup_promise_member (orig, "final_suspend",
+					   fn_start, true /*musthave*/);
+  tree fs_expr = build_new_method_call (p, get_fs_meth,
+					NULL, NULL_TREE, LOOKUP_NORMAL,
+					NULL, tf_warning_or_error);
+  /* Handle for suspend.  */
+  tree fh_m = lookup_member (coro_frame_type, fin_hand_name,
+			     /*protect*/1,  /*want_type*/ 0,
+			     tf_warning_or_error);
+  tree fh = build_class_member_access_expr (deref_fp, fh_m, NULL_TREE,
+					   true, tf_warning_or_error);
+
+  /* We flag that this is the final suspend co_await.  */
+  tree final_aw = build4_loc (fn_start, COAWAIT_EXPR, void_type_node,
+			      fs_expr, fs, fh, integer_one_node);
   r = build_stmt (fn_start, EXPR_STMT, final_aw);
   add_stmt (r);
-#endif
 
   /* now do the tail of the function.  */
   /* We can have the same label name per function (???).
@@ -690,14 +885,6 @@ morph_fn_to_coro (tree orig)
   add_stmt (r);
 
   /* Destructors for the things we built explicitly.  */
-  r = build_special_member_call(fs, complete_dtor_identifier, NULL,
-				final_suspend_type, LOOKUP_NORMAL,
-				tf_warning_or_error);
-  add_stmt (r);
-  r = build_special_member_call(is, complete_dtor_identifier, NULL,
-				initial_suspend_type, LOOKUP_NORMAL,
-				tf_warning_or_error);
-  add_stmt (r);
   r = build_special_member_call(p, complete_dtor_identifier, NULL,
 				promise_type, LOOKUP_NORMAL,
 				tf_warning_or_error);
@@ -713,6 +900,11 @@ morph_fn_to_coro (tree orig)
   TREE_NO_WARNING (r) |= 1; /* We don't want a warning about this.  */
   r = maybe_cleanup_point_expr_void (r);
   add_stmt (r);
+
+  /* We've now rewritten the tree and added the initial and final
+     co_awaits.  Now pass over the tree and expand the co_awaits.  */
+  newbody = expand_co_awaits (&newbody, coro_fp, resume_idx,
+			      del_promise_label, ret_label);
 
   DECL_SAVED_TREE (orig) = newbody;
   return orig;
