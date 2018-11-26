@@ -1,3 +1,8 @@
+2018-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/86900
+	* g++.dg/debug/dwarf2/pr86900.C: New test.
+
 2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* gcc.c-torture/compile/20151204.c: Add dg-require-effective-target
