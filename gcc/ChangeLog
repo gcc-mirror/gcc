@@ -1,3 +1,10 @@
+2018-11-26  Maya Rashish  <coypu@sdf.org>
+
+	PR target/58397
+	* config.host (*-*-netbsd*): Use x-netbsd and host-netbsd.o.
+	* config/x-netbsd: New file.
+	* config/host-netbsd: New file.
+
 2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document check_effective_target_size20plus.
