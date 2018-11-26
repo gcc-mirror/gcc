@@ -173,6 +173,15 @@ if grep '^const ___WALL = ' gen-sysinfo.go >/dev/null 2>&1 \
    && ! grep '^const _WALL = ' gen-sysinfo.go >/dev/null 2>&1; then
   echo 'const WALL = ___WALL' >> ${OUT}
 fi
+# On GNU/Linux the os package requires WEXITED and WNOWAIT.
+if test "${GOOS}" = "linux"; then
+  if ! grep '^const WEXITED = ' ${OUT} >/dev/null 2>&1; then
+    echo 'const WEXITED = 4' >> ${OUT}
+  fi
+  if ! grep '^const WNOWAIT = ' ${OUT} >/dev/null 2>&1; then
+    echo 'const WNOWAIT = 0x01000000' >> ${OUT}
+  fi
+fi
 
 # Networking constants.
 egrep '^const _(AF|ARPHRD|ETH|IN|SOCK|SOL|SO|IPPROTO|TCP|IP|IPV6)_' gen-sysinfo.go |
