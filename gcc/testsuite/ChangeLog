@@ -1,3 +1,12 @@
+2018-11-26  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* lib/target-supports.exp (check_effective_target_newlib_nano_io): New. 
+	* gcc.c-torture/execute/920501-8.c: Register undefined linker symbol
+	_printf_float for newlib_nano_io target.
+	* gcc.c-torture/execute/930513-1.c: Likewise.
+	* gcc.dg/torture/builtin-sprintf.c: Likewise.
+	* gcc.c-torture/execute/ieee/920810-1.x: New.
+
 2018-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88195
