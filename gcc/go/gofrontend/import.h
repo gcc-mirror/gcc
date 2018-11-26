@@ -169,6 +169,11 @@ class Import
   get_char()
   { return this->stream_->get_char(); }
 
+  // Read LENGTH characters into a string and advance past them.  On
+  // EOF reports an error and returns an empty string.
+  std::string
+  read(size_t length);
+
   // Return true at the end of the stream.
   bool
   at_eof()

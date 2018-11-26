@@ -4691,11 +4691,130 @@ Gogo::check_return_statements()
   this->traverse(&traverse);
 }
 
+// Traversal class to decide whether a function body is less than the
+// inlining budget.  This adjusts *available as it goes, and stops the
+// traversal if it goes negative.
+
+class Inline_within_budget : public Traverse
+{
+ public:
+  Inline_within_budget(int* available)
+    : Traverse(traverse_statements
+	       | traverse_expressions),
+      available_(available)
+  { }
+
+  int
+  statement(Block*, size_t*, Statement*);
+
+  int
+  expression(Expression**);
+
+ private:
+  // Pointer to remaining budget.
+  int* available_;
+};
+
+// Adjust the budget for the inlining cost of a statement.
+
+int
+Inline_within_budget::statement(Block*, size_t*, Statement* s)
+{
+  if (*this->available_ < 0)
+    return TRAVERSE_EXIT;
+  *this->available_ -= s->inlining_cost();
+  return TRAVERSE_CONTINUE;
+}
+
+// Adjust the budget for the inlining cost of an expression.
+
+int
+Inline_within_budget::expression(Expression** pexpr)
+{
+  if (*this->available_ < 0)
+    return TRAVERSE_EXIT;
+  *this->available_ -= (*pexpr)->inlining_cost();
+  return TRAVERSE_CONTINUE;
+}
+
+// Traversal class to find functions whose body should be exported for
+// inlining by other packages.
+
+class Mark_inline_candidates : public Traverse
+{
+ public:
+  Mark_inline_candidates()
+    : Traverse(traverse_functions
+	       | traverse_types)
+  { }
+
+  int
+  function(Named_object*);
+
+  int
+  type(Type*);
+
+ private:
+  // We traverse the function body trying to determine how expensive
+  // it is for inlining.  We start with a budget, and decrease that
+  // budget for each statement and expression.  If the budget goes
+  // negative, we do not export the function body.  The value of this
+  // budget is a heuristic.  In the usual GCC spirit, we could
+  // consider setting this via a command line option.
+  const int budget_heuristic = 80;
+};
+
+// Mark a function if it is an inline candidate.
+
+int
+Mark_inline_candidates::function(Named_object* no)
+{
+  Function* func = no->func_value();
+  int budget = budget_heuristic;
+  Inline_within_budget iwb(&budget);
+  func->block()->traverse(&iwb);
+  if (budget >= 0)
+    func->set_export_for_inlining();
+  return TRAVERSE_CONTINUE;
+}
+
+// Mark methods if they are inline candidates.
+
+int
+Mark_inline_candidates::type(Type* t)
+{
+  Named_type* nt = t->named_type();
+  if (nt == NULL || nt->is_alias())
+    return TRAVERSE_CONTINUE;
+  const Bindings* methods = nt->local_methods();
+  if (methods == NULL)
+    return TRAVERSE_CONTINUE;
+  for (Bindings::const_definitions_iterator p = methods->begin_definitions();
+       p != methods->end_definitions();
+       ++p)
+    {
+      Named_object* no = *p;
+      go_assert(no->is_function());
+      Function *func = no->func_value();
+      int budget = budget_heuristic;
+      Inline_within_budget iwb(&budget);
+      func->block()->traverse(&iwb);
+      if (budget >= 0)
+	func->set_export_for_inlining();
+    }
+  return TRAVERSE_CONTINUE;
+}
+
 // Export identifiers as requested.
 
 void
 Gogo::do_exports()
 {
+  // Mark any functions whose body should be exported for inlining by
+  // other packages.
+  Mark_inline_candidates mic;
+  this->traverse(&mic);
+
   // For now we always stream to a section.  Later we may want to
   // support streaming to a separate file.
   Stream_to_section stream(this->backend());
@@ -4962,7 +5081,7 @@ Function::Function(Function_type* type, Named_object* enclosing, Block* block,
     results_are_named_(false), is_unnamed_type_stub_method_(false),
     calls_recover_(false), is_recover_thunk_(false), has_recover_thunk_(false),
     calls_defer_retaddr_(false), is_type_specific_function_(false),
-    in_unique_section_(false)
+    in_unique_section_(false), export_for_inlining_(false)
 {
 }
 
@@ -5316,15 +5435,20 @@ Function::defer_stack(Location location)
 void
 Function::export_func(Export* exp, const std::string& name) const
 {
+  Block* block = NULL;
+  if (this->export_for_inlining())
+    block = this->block_;
   Function::export_func_with_type(exp, name, this->type_,
-				  this->is_method() && this->nointerface());
+				  this->is_method() && this->nointerface(),
+				  block);
 }
 
 // Export a function with a type.
 
 void
 Function::export_func_with_type(Export* exp, const std::string& name,
-				const Function_type* fntype, bool nointerface)
+				const Function_type* fntype, bool nointerface,
+				Block* block)
 {
   exp->write_c_string("func ");
 
@@ -5404,7 +5528,32 @@ Function::export_func_with_type(Export* exp, const std::string& name,
 	  exp->write_c_string(")");
 	}
     }
-  exp->write_c_string("\n");
+
+  if (block == NULL)
+    exp->write_c_string("\n");
+  else
+    {
+      int indent = 1;
+      if (fntype->is_method())
+	indent++;
+
+      Export_function_body efb(indent);
+
+      efb.indent();
+      efb.write_c_string("// ");
+      efb.write_string(Linemap::location_to_file(block->start_location()));
+      efb.write_char('\n');
+      block->export_block(&efb);
+
+      const std::string& body(efb.body());
+
+      char buf[100];
+      snprintf(buf, sizeof buf, " <inl:%lu>\n",
+	       static_cast<unsigned long>(body.length()));
+      exp->write_c_string(buf);
+
+      exp->write_string(body);
+    }
 }
 
 // Import a function.
@@ -5480,7 +5629,7 @@ Function::import_func(Import* imp, std::string* pname,
   *pparameters = parameters;
 
   Typed_identifier_list* results;
-  if (imp->peek_char() != ' ')
+  if (imp->peek_char() != ' ' || imp->match_c_string(" <inl"))
     results = NULL;
   else
     {
@@ -5511,9 +5660,46 @@ Function::import_func(Import* imp, std::string* pname,
 	  imp->require_c_string(")");
 	}
     }
-  imp->require_semicolon_if_old_version();
-  imp->require_c_string("\n");
   *presults = results;
+
+  if (!imp->match_c_string(" <inl:"))
+    {
+      imp->require_semicolon_if_old_version();
+      imp->require_c_string("\n");
+    }
+  else
+    {
+      imp->require_c_string(" <inl:");
+      std::string lenstr;
+      int c;
+      while (true)
+	{
+	  c = imp->peek_char();
+	  if (c < '0' || c > '9')
+	    break;
+	  lenstr += c;
+	  imp->get_char();
+	}
+      imp->require_c_string(">\n");
+
+      errno = 0;
+      char* end;
+      long llen = strtol(lenstr.c_str(), &end, 10);
+      if (*end != '\0'
+	  || llen < 0
+	  || (llen == LONG_MAX && errno == ERANGE))
+	{
+	  go_error_at(imp->location(), "invalid inline function length %s",
+		      lenstr.c_str());
+	  return;
+	}
+
+      imp->read(static_cast<size_t>(llen));
+
+      // Here we should record the body for later parsing if we see a
+      // call to this function.  This is not yet implemented.  For now
+      // we just discard the information.
+    }
 }
 
 // Get the backend representation.
@@ -6232,6 +6418,35 @@ Block::may_fall_through() const
   if (this->statements_.empty())
     return true;
   return this->statements_.back()->may_fall_through();
+}
+
+// Write export data for a block.
+
+void
+Block::export_block(Export_function_body* efb)
+{
+  for (Block::iterator p = this->begin();
+       p != this->end();
+       ++p)
+    {
+      efb->indent();
+
+      efb->increment_indent();
+      (*p)->export_statement(efb);
+      efb->decrement_indent();
+
+      Location loc = (*p)->location();
+      if ((*p)->is_block_statement())
+	{
+	  // For a block we put the start location on the first brace
+	  // in Block_statement::do_export_statement.  Here we put the
+	  // end location on the final brace.
+	  loc = (*p)->block_statement()->block()->end_location();
+	}
+      char buf[50];
+      snprintf(buf, sizeof buf, " //%d\n", Linemap::location_to_line(loc));
+      efb->write_c_string(buf);
+    }
 }
 
 // Convert a block to the backend representation.

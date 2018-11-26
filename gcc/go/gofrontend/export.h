@@ -286,4 +286,60 @@ class Stream_to_string : public Export::Stream
   std::string string_;
 };
 
+// Class to manage exporting a function body.  This is passed around
+// to Statements and Expressions.  It builds up the export data for
+// the function.
+
+class Export_function_body
+{
+ public:
+  Export_function_body(int indent)
+    : indent_(indent)
+  { }
+
+  // Write a character to the body.
+  void
+  write_char(char c)
+  { this->body_.append(1, c); }
+
+  // Write a NUL terminated string to the body.
+  void
+  write_c_string(const char* str)
+  { this->body_.append(str); }
+
+  // Write a string to the body.
+  void
+  write_string(const std::string& str)
+  { this->body_.append(str); }
+
+  // Append as many spaces as the current indentation level.
+  void
+  indent()
+  {
+    for (int i = this->indent_; i > 0; i--)
+      this->write_char(' ');
+  }
+
+  // Increment the indentation level.
+  void
+  increment_indent()
+  { ++this->indent_; }
+
+  // Decrement the indentation level.
+  void
+  decrement_indent()
+  { --this->indent_; }
+
+  // Return a reference to the completed body.
+  const std::string&
+  body() const
+  { return this->body_; }
+
+ private:
+  // The body we are building.
+  std::string body_;
+  // Current indentation level: the number of spaces before each statement.
+  int indent_;
+};
+
 #endif // !defined(GO_EXPORT_H)
