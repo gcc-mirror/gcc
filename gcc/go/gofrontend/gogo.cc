@@ -5487,7 +5487,7 @@ Function::export_func(Export* exp, const std::string& name) const
   Block* block = NULL;
   if (this->export_for_inlining())
     block = this->block_;
-  Function::export_func_with_type(exp, name, this->type_,
+  Function::export_func_with_type(exp, name, this->type_, this->results_,
 				  this->is_method() && this->nointerface(),
 				  block, this->location_);
 }
@@ -5496,8 +5496,9 @@ Function::export_func(Export* exp, const std::string& name) const
 
 void
 Function::export_func_with_type(Export* exp, const std::string& name,
-				const Function_type* fntype, bool nointerface,
-				Block* block, Location loc)
+				const Function_type* fntype,
+				Function::Results* result_vars,
+				bool nointerface, Block* block, Location loc)
 {
   exp->write_c_string("func ");
 
@@ -5549,31 +5550,45 @@ Function::export_func_with_type(Export* exp, const std::string& name,
     }
   exp->write_c_string(")");
 
-  const Typed_identifier_list* results = fntype->results();
-  if (results != NULL)
+  const Typed_identifier_list* result_decls = fntype->results();
+  if (result_decls != NULL)
     {
-      if (results->size() == 1 && results->begin()->name().empty())
+      if (result_decls->size() == 1
+	  && result_decls->begin()->name().empty()
+	  && block == NULL)
 	{
 	  exp->write_c_string(" ");
-	  exp->write_type(results->begin()->type());
+	  exp->write_type(result_decls->begin()->type());
 	}
       else
 	{
 	  exp->write_c_string(" (");
 	  bool first = true;
-	  for (Typed_identifier_list::const_iterator p = results->begin();
-	       p != results->end();
-	       ++p)
+	  Results::const_iterator pr;
+	  if (result_vars != NULL)
+	    pr = result_vars->begin();
+	  for (Typed_identifier_list::const_iterator pd = result_decls->begin();
+	       pd != result_decls->end();
+	       ++pd)
 	    {
 	      if (first)
 		first = false;
 	      else
 		exp->write_c_string(", ");
-	      exp->write_name(p->name());
-	      exp->write_escape(p->note());
+	      // We only use pr->name, which may be artificial, if
+	      // need it for inlining.
+	      if (block == NULL || result_vars == NULL)
+		exp->write_name(pd->name());
+	      else
+		exp->write_name((*pr)->name());
+	      exp->write_escape(pd->note());
 	      exp->write_c_string(" ");
-	      exp->write_type(p->type());
+	      exp->write_type(pd->type());
+	      if (result_vars != NULL)
+		++pr;
 	    }
+	  if (result_vars != NULL)
+	    go_assert(pr == result_vars->end());
 	  exp->write_c_string(")");
 	}
     }

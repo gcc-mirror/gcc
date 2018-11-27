@@ -1513,8 +1513,8 @@ class Function
   // Export a function with a type.
   static void
   export_func_with_type(Export*, const std::string& name,
-			const Function_type*, bool nointerface, Block* block,
-			Location);
+			const Function_type*, Results*, bool nointerface,
+			Block* block, Location);
 
   // Import a function.
   static void
@@ -1740,7 +1740,7 @@ class Function_declaration
   void
   export_func(Export* exp, const std::string& name) const
   {
-    Function::export_func_with_type(exp, name, this->fntype_,
+    Function::export_func_with_type(exp, name, this->fntype_, NULL,
 				    this->is_method() && this->nointerface(),
 				    NULL, this->location_);
   }
