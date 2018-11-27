@@ -282,6 +282,15 @@ func (p *parser) parseConversion(pkg *types.Package) (val constant.Value, typ ty
 // ConstValue     = string | "false" | "true" | ["-"] (int ["'"] | FloatOrComplex) | Conversion .
 // FloatOrComplex = float ["i" | ("+"|"-") float "i"] .
 func (p *parser) parseConstValue(pkg *types.Package) (val constant.Value, typ types.Type) {
+	// v3 changed to $false, $true, $convert, to avoid confusion
+	// with variable names in inline function bodies.
+	if p.tok == '$' {
+		p.next()
+		if p.tok != scanner.Ident {
+			p.errorf("expected identifer after '$', got %s (%q)", scanner.TokenString(p.tok), p.lit)
+		}
+	}
+
 	switch p.tok {
 	case scanner.String:
 		str := p.parseString()
