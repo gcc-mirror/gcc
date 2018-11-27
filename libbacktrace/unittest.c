@@ -69,7 +69,7 @@ test1 (void)
 
   count = 0;
   res = backtrace_vector_release (state, &vec, error_callback, NULL);
-  failed = res != 1 || count != 0;
+  failed = res != 1 || count != 0 || vec.base != NULL;
 
   printf ("%s: unittest backtrace_vector_release size == 0\n",
 	  failed ? "FAIL": "PASS");

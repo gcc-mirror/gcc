@@ -1,5 +1,10 @@
 2018-11-27  Tom de Vries  <tdevries@suse.de>
 
+	* mmap.c (backtrace_vector_release): Same.
+	* unittest.c (test1): Add check.
+
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
 	* alloc.c (backtrace_vector_release): Handle vec->size == 0 using free
 	instead of realloc.
 	* Makefile.am (check_PROGRAMS): Add unittest.
