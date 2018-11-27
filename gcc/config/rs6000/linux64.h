@@ -478,6 +478,13 @@ extern int dot_symbols;
     -dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}} \
   %(link_os_extra_spec64)"
 
+/* Use gnu-user.h LINK_GCC_SEQUENCE_SPEC for linux.  */
+#undef LINK_GCC_C_SEQUENCE_SPEC
+#define	LINK_GCC_C_SEQUENCE_SPEC \
+  "%{mads|myellowknife|mmvme|msim:%G %L %G;" \
+  "!mcall-*|mcall-linux:" GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC ";" \
+  ":%G %L %G}"
+
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \
   (TARGET_64BIT						\

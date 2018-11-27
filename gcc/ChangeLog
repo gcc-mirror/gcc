@@ -1,3 +1,29 @@
+2018-11-27  Alan Modra  <amodra@gmail.com>
+
+	* config.gcc (powerpc*-*-freebsd*, powerpc-*-netbsd*),
+	(powerpc-*-eabisimaltivec*, powerpc-*-eabisim*, powerpc-*-elf*),
+	(powerpc-*-eabialtivec*, powerpc-*-eabi*, powerpc-*-rtems*),
+	(powerpc-wrs-vxworks*, powerpc-*-lynxos*, powerpcle-*-elf*),
+	(powerpcle-*-eabisim*, powerpcle-*-eabi*): Add gnu-user.h to tm_file.
+	* config/rs6000/freebsd.h (CPLUSPLUS_CPP_SPEC),
+	(LINK_GCC_C_SEQUENCE_SPEC): Undef.
+	(ASM_APP_ON, ASM_APP_OFF): Don't define.
+	* config/rs6000/freebsd64.h (ASM_APP_ON, ASM_APP_OFF): Don't define.
+	* config/rs6000/lynx.h (ASM_APP_ON, ASM_APP_OFF): Don't define.
+	* config/rs6000/linux64.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/rs6000/netbsd.h (CPLUSPLUS_CPP_SPEC),
+	(LINK_GCC_C_SEQUENCE_SPEC): Undef.
+	* config/rs6000/rtems.h (LINK_GCC_C_SEQUENCE_SPEC): Define.
+	* config/rs6000/sysv4.h (GNU_USER_TARGET_CRTI): Redefine.
+	(GNU_USER_TARGET_CRTN): Redefine.
+	(CC1_SPEC): Use GNU_USER_TARGET_CC1_SPEC.
+	(LIB_LINUX_SPEC): Use GNU_USER_TARGET_LIB_SPEC.
+	(CRTOFFLOADBEGIN, CRTOFFLOADEND): Don't define.
+	(STARTFILE_LINUX_SPEC): Define as GNU_USER_TARGET_STARTFILE_SPEC.
+	(ENDFILE_LINUX_SPEC): Define as GNU_USER_TARGET_ENDFILE_SPEC.
+	(UCLIBC_DYNAMIC_LINKER, CHOOSE_DYNAMIC_LINKER): Don't define.
+	(LINK_EH_SPEC): Don't define.
+
 2018-11-26  Martin Sebor  <msebor@redhat.com>
 
 	PR 87756
