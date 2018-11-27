@@ -2677,6 +2677,10 @@ gfc_new_file (void)
 {
   bool result;
 
+  if (flag_pre_include != NULL
+      && !load_file (flag_pre_include, NULL, false))
+    exit (FATAL_EXIT_CODE);
+
   if (gfc_cpp_enabled ())
     {
       result = gfc_cpp_preprocess (gfc_source_file);

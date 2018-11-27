@@ -670,6 +670,10 @@ fprotect-parens
 Fortran Var(flag_protect_parens) Init(-1)
 Protect parentheses in expressions.
 
+fpre-include=
+Fortran RejectNegative Joined Var(flag_pre_include) Undocumented
+Path to header file that should be pre-included before each compilation unit.
+
 frange-check
 Fortran Var(flag_range_check) Init(1)
 Enable range checking during compilation.
