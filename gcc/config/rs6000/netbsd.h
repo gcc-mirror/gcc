@@ -19,6 +19,10 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* Undef gnu-user.h macros we don't want.  */
+#undef CPLUSPLUS_CPP_SPEC
+#undef LINK_GCC_C_SEQUENCE_SPEC
+
 #undef  TARGET_OS_CPP_BUILTINS	/* FIXME: sysv4.h should not define this! */
 #define TARGET_OS_CPP_BUILTINS()		\
   do						\
