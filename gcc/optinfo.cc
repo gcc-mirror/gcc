@@ -118,7 +118,7 @@ optinfo::emit_for_opt_problem () const
   dump_kind |= MSG_PRIORITY_REEMITTED;
 
   /* Re-emit to "immediate" destinations, without creating a new optinfo.  */
-  dump_context::get ().dump_loc_immediate (dump_kind, get_dump_location ());
+  dump_context::get ().dump_loc_immediate (dump_kind, get_user_location ());
   unsigned i;
   optinfo_item *item;
   FOR_EACH_VEC_ELT (m_items, i, item)

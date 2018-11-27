@@ -1457,14 +1457,16 @@ vect_print_slp_tree (dump_flags_t dump_kind, dump_location_t loc,
   if (visited.add (node))
     return;
 
-  dump_printf_loc (dump_kind, loc, "node%s %p\n",
+  dump_metadata_t metadata (dump_kind, loc.get_impl_location ());
+  dump_user_location_t user_loc = loc.get_user_location ();
+  dump_printf_loc (metadata, user_loc, "node%s %p\n",
 		   SLP_TREE_DEF_TYPE (node) != vect_internal_def
 		   ? " (external)" : "", node);
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, stmt_info)
-    dump_printf_loc (dump_kind, loc, "\tstmt %d %G", i, stmt_info->stmt);
+    dump_printf_loc (metadata, user_loc, "\tstmt %d %G", i, stmt_info->stmt);
   if (SLP_TREE_CHILDREN (node).is_empty ())
     return;
-  dump_printf_loc (dump_kind, loc, "\tchildren");
+  dump_printf_loc (metadata, user_loc, "\tchildren");
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
     dump_printf (dump_kind, " %p", (void *)child);
   dump_printf (dump_kind, "\n");
