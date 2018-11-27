@@ -3243,6 +3243,17 @@ Gogo::finalize_methods()
   this->traverse(&finalize);
 }
 
+// Finalize the method list for a type.  This is called when a type is
+// parsed for an inlined function body, which happens after the
+// finalize_methods pass.
+
+void
+Gogo::finalize_methods_for_type(Type* type)
+{
+  Finalize_methods finalize(this);
+  Type::traverse(type, &finalize);
+}
+
 // Set types for unspecified variables and constants.
 
 void

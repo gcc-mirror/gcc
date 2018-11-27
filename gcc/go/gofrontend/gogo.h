@@ -637,6 +637,10 @@ class Gogo
   void
   finalize_methods();
 
+  // Finalize the method list for one type.
+  void
+  finalize_methods_for_type(Type*);
+
   // Work out the types to use for unspecified variables and
   // constants.
   void
