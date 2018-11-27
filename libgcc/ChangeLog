@@ -1,6 +1,13 @@
+2018-11-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/morestack.S (__stack_split_initialize),
+	(__morestack_get_guard, __morestack_set_guard),
+	(__morestack_make_guard): Provide CFI covering these functions.
+	* config/rs6000/tramp.S (__trampoline_setup): Likewise.
+
 2018-11-15  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
-	* config/csky/linux-unwind.h (sc_pt_regs): Update for kernel. 
+	* config/csky/linux-unwind.h (sc_pt_regs): Update for kernel.
 	(sc_pt_regs_lr): Update for kernel.
 	(sc_pt_regs_tls): Update for kernel.
 
@@ -11,7 +18,7 @@
 2018-11-13  Xianmiao Qu  <xianmiao_qu@c-sky.com>
 
 	* config/csky/linux-unwind.h (_sig_ucontext_t): Remove.
-	(csky_fallback_frame_state): Modify the check of the 
+	(csky_fallback_frame_state): Modify the check of the
 	instructions to adapt to changes in the kernel
 
 2018-11-09  Stafford Horne  <shorne@gmail.com>
@@ -243,7 +250,7 @@
 
 2018-08-22  Iain Sandoe  <iain@sandoe.co.uk>
 
-	* config/unwind-dw2-fde-darwin.c 
+	* config/unwind-dw2-fde-darwin.c
 	(_darwin10_Unwind_FindEnclosingFunction): move from here ...
 	* config/darwin10-unwind-find-enc-func.c: … to here.
 	* config/t-darwin: Build Darwin10 unwinder shim crt.
