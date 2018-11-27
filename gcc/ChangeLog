@@ -1,3 +1,7 @@
+2018-11-27  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/md.texi (xorsign): Document it.
+
 2018-11-27  Martin Liska  <mliska@suse.cz>
 
 	* config/gnu-user.h (TARGET_F951_OPTIONS): New.
