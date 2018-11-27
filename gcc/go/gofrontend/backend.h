@@ -726,6 +726,13 @@ class Backend
   // possible.  This is used for field tracking.
   static const unsigned int function_in_unique_section = 1 << 5;
 
+  // Set if the function should be available for inlining in the
+  // backend, but should not be emitted as a standalone function.  Any
+  // call to the function that is not inlined should be treated as a
+  // call to a function defined in a different compilation unit.  This
+  // is like a C99 function marked inline but not extern.
+  static const unsigned int function_only_inline = 1 << 6;
+
   // Declare or define a function of FNTYPE.
   // NAME is the Go name of the function.  ASM_NAME, if not the empty
   // string, is the name that should be used in the symbol table; this

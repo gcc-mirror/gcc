@@ -9785,6 +9785,15 @@ Call_expression::do_lower(Gogo* gogo, Named_object* function,
 	}
     }
 
+  // If this is a call to an imported function for which we have an
+  // inlinable function body, add it to the list of functions to give
+  // to the backend as inlining opportunities.
+  Func_expression* fe = this->fn_->func_expression();
+  if (fe != NULL
+      && fe->named_object()->is_function_declaration()
+      && fe->named_object()->func_declaration_value()->has_imported_body())
+    gogo->add_imported_inlinable_function(fe->named_object());
+
   return this;
 }
 

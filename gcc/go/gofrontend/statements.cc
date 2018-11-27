@@ -121,6 +121,14 @@ Statement::determine_types()
   this->do_determine_types();
 }
 
+// Read a statement from export data.
+
+Statement*
+Statement::import_statement(Import_function_body*, Location)
+{
+  go_unreachable();
+}
+
 // If this is a thunk statement, return it.
 
 Thunk_statement*
