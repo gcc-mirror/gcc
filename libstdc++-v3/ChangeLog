@@ -1,3 +1,28 @@
+2018-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/67843
+	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Add new macro
+	that defines _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_ENABLE_LOCK_POLICY.
+	* doc/xml/manual/configure.xml: Document new configure option.
+	* include/bits/fs_dir.h (directory_iterator): Use __shared_ptr
+	instead of shared_ptr.
+	(recursive_directory_iterator): Likewise.
+	(__shared_ptr<_Dir>): Add explicit instantiation declaration.
+	(__shared_ptr<recursive_directory_iterator::_Dir_stack>): Likewise.
+	* include/bits/shared_ptr_base.h (__allocate_shared, __make_shared):
+	Add default template argument for _Lock_policy template parameter.
+	* include/ext/concurrence.h (__default_lock_policy): Check macro
+	_GLIBCXX_HAVE_ATOMIC_LOCK_POLICY instead of checking if the current
+	target supports the builtins for compare-and-swap.
+	* src/filesystem/std-dir.cc (__shared_ptr<_Dir>): Add explicit
+	instantiation definition.
+	(__shared_ptr<recursive_directory_iterator::_Dir_stack>): Likewise.
+	(directory_iterator, recursive_directory_iterator): Use __make_shared
+	instead of make_shared.
+
 2018-11-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	PR libstdc++/88199
