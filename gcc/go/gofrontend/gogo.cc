@@ -7635,6 +7635,8 @@ Named_constant::export_const(Export* exp, const std::string& name) const
   exp->write_c_string("= ");
 
   Export_function_body efb(exp, 0);
+  if (!this->type_->is_abstract())
+    efb.set_type_context(this->type_);
   this->expr()->export_expression(&efb);
   exp->write_string(efb.body());
 
