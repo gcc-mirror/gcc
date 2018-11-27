@@ -1,3 +1,17 @@
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* gcc.dg/plugin/location-overflow-test-pr83173.c: New test.
+	* gcc.dg/plugin/location-overflow-test-pr83173.h: Header for
+	pr83173.c.
+	* gcc.dg/plugin/location-overflow-test-pr83173-1.h: Header for
+	pr83173.c.
+	* gcc.dg/plugin/location-overflow-test-pr83173-2.h: Header for
+	pr83173.c.
+	* gcc.dg/plugin/location_overflow_plugin.c: Use PLUGIN_PRAGMAS
+	instead of PLUGIN_START_UNIT.
+	* gcc.dg/plugin/plugin.exp: Enable new test.
+
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88188
