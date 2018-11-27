@@ -577,7 +577,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
            {
              informed = 1;
              dump_printf_loc (MSG_NOTE,
-			      dump_location_t::from_location_t (input_location),
+			      dump_user_location_t::from_location_t (input_location),
                               "correcting inconsistent profile data\n");
            }
          correct_negative_edge_counts ();

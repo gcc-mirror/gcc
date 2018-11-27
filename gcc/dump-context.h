@@ -50,51 +50,57 @@ class dump_context
 
   void refresh_dumps_are_enabled ();
 
-  void dump_loc (dump_flags_t dump_kind, const dump_location_t &loc);
-  void dump_loc_immediate (dump_flags_t dump_kind, const dump_location_t &loc);
+  void dump_loc (const dump_metadata_t &metadata,
+		 const dump_user_location_t &loc);
+  void dump_loc_immediate (dump_flags_t dump_kind,
+			   const dump_user_location_t &loc);
 
-  void dump_gimple_stmt (dump_flags_t dump_kind, dump_flags_t extra_dump_flags,
-			 gimple *gs, int spc);
-
-  void dump_gimple_stmt_loc (dump_flags_t dump_kind,
-			     const dump_location_t &loc,
-			     dump_flags_t extra_dump_flags,
-			     gimple *gs, int spc);
-
-  void dump_gimple_expr (dump_flags_t dump_kind,
+  void dump_gimple_stmt (const dump_metadata_t &metadata,
 			 dump_flags_t extra_dump_flags,
 			 gimple *gs, int spc);
 
-  void dump_gimple_expr_loc (dump_flags_t dump_kind,
-			    const dump_location_t &loc,
-			    dump_flags_t extra_dump_flags,
-			    gimple *gs,
-			    int spc);
+  void dump_gimple_stmt_loc (const dump_metadata_t &metadata,
+			     const dump_user_location_t &loc,
+			     dump_flags_t extra_dump_flags,
+			     gimple *gs, int spc);
 
-  void dump_generic_expr (dump_flags_t dump_kind,
+  void dump_gimple_expr (const dump_metadata_t &metadata,
+			 dump_flags_t extra_dump_flags,
+			 gimple *gs, int spc);
+
+  void dump_gimple_expr_loc (const dump_metadata_t &metadata,
+			     const dump_user_location_t &loc,
+			     dump_flags_t extra_dump_flags,
+			     gimple *gs,
+			     int spc);
+
+  void dump_generic_expr (const dump_metadata_t &metadata,
 			  dump_flags_t extra_dump_flags,
 			  tree t);
 
-  void dump_generic_expr_loc (dump_flags_t dump_kind,
-			      const dump_location_t &loc,
+  void dump_generic_expr_loc (const dump_metadata_t &metadata,
+			      const dump_user_location_t &loc,
 			      dump_flags_t extra_dump_flags,
 			      tree t);
 
-  void dump_printf_va (dump_flags_t dump_kind, const char *format,
+  void dump_printf_va (const dump_metadata_t &metadata, const char *format,
 		       va_list *ap) ATTRIBUTE_GCC_DUMP_PRINTF (3, 0);
 
-  void dump_printf_loc_va (dump_flags_t dump_kind, const dump_location_t &loc,
+  void dump_printf_loc_va (const dump_metadata_t &metadata,
+			   const dump_user_location_t &loc,
 			   const char *format, va_list *ap)
     ATTRIBUTE_GCC_DUMP_PRINTF (4, 0);
 
   template<unsigned int N, typename C>
-  void dump_dec (dump_flags_t dump_kind, const poly_int<N, C> &value);
+  void dump_dec (const dump_metadata_t &metadata, const poly_int<N, C> &value);
 
-  void dump_symtab_node (dump_flags_t dump_kind, symtab_node *node);
+  void dump_symtab_node (const dump_metadata_t &metadata, symtab_node *node);
 
   /* Managing nested scopes.  */
   unsigned int get_scope_depth () const;
-  void begin_scope (const char *name, const dump_location_t &loc);
+  void begin_scope (const char *name,
+		    const dump_user_location_t &user_location,
+		    const dump_impl_location_t &impl_location);
   void end_scope ();
 
   /* Should optinfo instances be created?
@@ -117,8 +123,9 @@ class dump_context
   bool apply_dump_filter_p (dump_flags_t dump_kind, dump_flags_t filter) const;
 
  private:
-  optinfo &ensure_pending_optinfo ();
-  optinfo &begin_next_optinfo (const dump_location_t &loc);
+  optinfo &ensure_pending_optinfo (const dump_metadata_t &metadata);
+  optinfo &begin_next_optinfo (const dump_metadata_t &metadata,
+			       const dump_user_location_t &loc);
 
   /* The current nesting depth of dump scopes, for showing nesting
      via indentation).  */

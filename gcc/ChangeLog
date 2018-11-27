@@ -1,3 +1,137 @@
+2018-11-26  David Malcolm  <dmalcolm@redhat.com>
+
+	* dump-context.h (dump_context::dump_loc): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.  Convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_context::dump_loc_immediate): Convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_context::dump_gimple_stmt): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::void dump_gimple_stmt_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_gimple_expr): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_gimple_expr_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_generic_expr): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_generic_expr_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_printf_va): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_printf_loc_va): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_dec): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_symtab_node): Likewise.
+	(dump_context::begin_scope): Split out 2nd param into
+	user and impl locations.
+	(dump_context::ensure_pending_optinfo): Add metadata param.
+	(dump_context::begin_next_optinfo): Replace dump_location_t param
+	with metadata and user location.
+	* dumpfile.c (dump_context::dump_loc): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.  Convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_context::dump_loc_immediate): Convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_context::dump_gimple_stmt): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::void dump_gimple_stmt_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_gimple_expr): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_gimple_expr_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_generic_expr): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_generic_expr_loc): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_printf_va): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_printf_loc_va): Likewise; convert
+	2nd param from const dump_location_t & to
+	const dump_user_location_t &.
+	(dump_context::dump_dec): Convert 1st param from
+	dump_flags_t to const dump_metadata_t &.
+	(dump_context::dump_symtab_node): Likewise.
+	(dump_context::begin_scope): Split out 2nd param into
+	user and impl locations.
+	(dump_context::ensure_pending_optinfo): Add metadata param.
+	(dump_context::begin_next_optinfo): Replace dump_location_t param
+	with metadata and user location.
+	(dump_gimple_stmt): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_gimple_stmt_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_gimple_expr): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_gimple_expr_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_generic_expr): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_generic_expr_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_printf): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_printf_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_dec): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_symtab_node): Likewise.
+	(dump_begin_scope): Split out 2nd param into user and impl
+	locations.
+	(selftest::assert_impl_location_eq): New function.
+	(ASSERT_IMPL_LOCATION_EQ): New macro.
+	(selftest::test_impl_location): Update to use
+	ASSERT_IMPL_LOCATION_EQ.
+	(selftest::test_capture_of_dump_calls): Convert "loc" to
+	dump_user_location_t.  Add ASSERT_IMPL_LOCATION_EQ throughout,
+	verifying line numbers of dump emissions.
+	* dumpfile.h (class dump_metadata_t): New class.
+	(dump_printf): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_printf_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_generic_expr_loc): Likewise.
+	(dump_generic_expr): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_gimple_stmt_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_gimple_stmt): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_gimple_expr_loc): Likewise; convert 2nd param from
+	const dump_location_t & to const dump_user_location_t &.
+	(dump_gimple_expr): Convert 1st param from dump_flags_t to
+	const dump_metadata_t &.
+	(dump_symtab_node): Likewise.
+	(dump_dec): Likewise.
+	(dump_begin_scope): Split out 2nd param into user and impl
+	locations.
+	(auto_dump_scope::auto_dump_scope): Split "loc" param into a user
+	location and impl_location, and capture the impl_location.
+	(AUTO_DUMP_SCOPE): Rename param from LOC to USER_LOC.
+	* loop-unroll.c (report_unroll): Update for changes to
+	dump_printf_loc and dump_printf.
+	* opt-problem.cc (opt_problem::opt_problem): Update for change to
+	dump_loc.
+	* optinfo-emit-json.cc
+	(selftest::test_building_json_from_dump_calls): Convert "loc" from
+	dump_location_t to dump_user_location_t.
+	* optinfo.cc (optinfo::emit_for_opt_problem): Update for change in
+	dump_loc_immediate.
+	* profile.c (compute_branch_probabilities): Update for change to
+	dump_printf_loc.
+	* selftest.h (ASSERT_STR_CONTAINS_AT): New macro.
+	* tree-vect-slp.c (vect_print_slp_tree): Update for change to
+	dump_printf_loc.
+
 2018-11-27  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
 
 	* doc/sourcebuild.texi: Document check_effective_target_int_eq_float

@@ -436,6 +436,15 @@ extern int num_passes;
 				   (HAYSTACK), (NEEDLE));		\
   SELFTEST_END_STMT
 
+/* Like ASSERT_STR_CONTAINS, but treat LOC as the effective location of the
+   selftest.  */
+
+#define ASSERT_STR_CONTAINS_AT(LOC, HAYSTACK, NEEDLE)			\
+  SELFTEST_BEGIN_STMT							\
+  ::selftest::assert_str_contains (LOC, #HAYSTACK, #NEEDLE,		\
+				   (HAYSTACK), (NEEDLE));		\
+  SELFTEST_END_STMT
+
 /* Evaluate STR and PREFIX and determine if STR starts with PREFIX.
      ::selftest::pass if STR does start with PREFIX.
      ::selftest::fail if does not, or either is NULL.  */

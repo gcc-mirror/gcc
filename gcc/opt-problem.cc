@@ -54,7 +54,7 @@ opt_problem::opt_problem (const dump_location_t &loc,
 
   /* Print the location to the "immediate" dump destinations.  */
   dump_context &dc = dump_context::get ();
-  dc.dump_loc (MSG_MISSED_OPTIMIZATION, loc);
+  dc.dump_loc (MSG_MISSED_OPTIMIZATION, loc.get_user_location ());
 
   /* Print the formatted string to this opt_problem's optinfo, dumping
      the items to the "immediate" dump destinations, and storing items
