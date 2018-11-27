@@ -1,5 +1,10 @@
 2018-11-27  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/27_io/filesystem/operations/canonical.cc: Remove
+	directory created by test.
+	* testsuite/27_io/filesystem/operations/symlink_status.cc: Remove
+	symlink created by test.
+
 	PR libstdc++/67843
 	* acinclude.m4 (GLIBCXX_ENABLE_LOCK_POLICY): Add new macro
 	that defines _GLIBCXX_HAVE_ATOMIC_LOCK_POLICY.
