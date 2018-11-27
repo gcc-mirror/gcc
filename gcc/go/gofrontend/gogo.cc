@@ -527,9 +527,9 @@ Gogo::import_package(const std::string& filename,
       return;
     }
 
-  Import imp(stream, location);
-  imp.register_builtin_types(this);
-  Package* package = imp.import(this, local_name, is_local_name_exported);
+  Import* imp = new Import(stream, location);
+  imp->register_builtin_types(this);
+  Package* package = imp->import(this, local_name, is_local_name_exported);
   if (package != NULL)
     {
       if (package->pkgpath() == this->pkgpath())
@@ -540,7 +540,10 @@ Gogo::import_package(const std::string& filename,
       this->imports_.insert(std::make_pair(filename, package));
     }
 
+  imp->clear_stream();
   delete stream;
+
+  // FIXME: we never delete imp; we may need it for inlinable functions.
 }
 
 Import_init *
@@ -6763,8 +6766,6 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
   const std::string& body(this->imported_body_);
   go_assert(!body.empty());
 
-  Location orig_loc = no->location();
-
   // Read the "//FILE:LINE" comment starts the export data.
 
   size_t indent = 1;
@@ -6877,7 +6878,7 @@ Function_declaration::import_function_body(Gogo* gogo, Named_object* no)
       no = rtype->add_method(no->name(), fn);
     }
 
-  Import_function_body ifb(gogo, orig_loc, no, body, nl + 1, outer, indent);
+  Import_function_body ifb(gogo, this->imp_, no, body, nl + 1, outer, indent);
 
   if (!Block::import_block(outer, &ifb, start_loc))
     return;
