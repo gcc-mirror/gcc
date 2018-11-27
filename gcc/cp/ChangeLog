@@ -1,5 +1,9 @@
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88187
+	* decl.c (grokdeclarator): Don't diagnose deduction guide errors
+	if !funcdecl_p.
+
 	PR c++/88181
 	* class.c (fixup_attribute_variants): Also propagate TYPE_PACKED
 	to variants.

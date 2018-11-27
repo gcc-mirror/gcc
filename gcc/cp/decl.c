@@ -11276,7 +11276,7 @@ grokdeclarator (const cp_declarator *declarator,
 		    if (!tmpl)
 		      if (tree late_auto = type_uses_auto (late_return_type))
 			tmpl = CLASS_PLACEHOLDER_TEMPLATE (late_auto);
-		    if (tmpl)
+		    if (tmpl && funcdecl_p)
 		      {
 			if (!dguide_name_p (unqualified_id))
 			  {
