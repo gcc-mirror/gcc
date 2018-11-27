@@ -303,7 +303,7 @@ class Export_function_body : public String_dump
 {
  public:
   Export_function_body(Export* exp, int indent)
-    : exp_(exp), indent_(indent)
+    : exp_(exp), type_context_(NULL), indent_(indent)
   { }
 
   // Write a character to the body.
@@ -325,6 +325,16 @@ class Export_function_body : public String_dump
   void
   write_type(const Type* type)
   { this->exp_->write_type_to(type, this); }
+
+  // Return the current type context.
+  Type*
+  type_context() const
+  { return this->type_context_; }
+
+  // Set the current type context.
+  void
+  set_type_context(Type* type)
+  { this->type_context_ = type; }
 
   // Append as many spaces as the current indentation level.
   void
@@ -354,6 +364,8 @@ class Export_function_body : public String_dump
   Export* exp_;
   // The body we are building.
   std::string body_;
+  // Current type context.  Used to avoid duplicate type conversions.
+  Type* type_context_;
   // Current indentation level: the number of spaces before each statement.
   int indent_;
 };

@@ -7552,6 +7552,7 @@ Array_type::do_export(Export* exp) const
   if (this->length_ != NULL)
     {
       Export_function_body efb(exp, 0);
+      efb.set_type_context(this->length_->type());
       this->length_->export_expression(&efb);
       exp->write_string(efb.body());
     }

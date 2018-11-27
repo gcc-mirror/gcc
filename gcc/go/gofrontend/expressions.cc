@@ -2142,11 +2142,25 @@ Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 void
 Integer_expression::do_export(Export_function_body* efb) const
 {
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
   Integer_expression::export_integer(efb, this->val_);
   if (this->is_character_constant_)
     efb->write_c_string("'");
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Import an integer, floating point, or complex value.  This handles
@@ -2509,9 +2523,23 @@ Float_expression::export_float(String_dump *exp, const mpfr_t val)
 void
 Float_expression::do_export(Export_function_body* efb) const
 {
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
   Float_expression::export_float(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Dump a floating point number to the dump file.
@@ -2699,9 +2727,23 @@ Complex_expression::export_complex(String_dump* exp, const mpc_t val)
 void
 Complex_expression::do_export(Export_function_body* efb) const
 {
+  bool added_type = false;
+  if (this->type_ != NULL
+      && !this->type_->is_abstract()
+      && this->type_ != efb->type_context())
+    {
+      efb->write_c_string("$convert(");
+      efb->write_type(this->type_);
+      efb->write_c_string(", ");
+      added_type = true;
+    }
+
   Complex_expression::export_complex(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
   efb->write_c_string(" ");
+
+  if (added_type)
+    efb->write_c_string(")");
 }
 
 // Dump a complex expression to the dump file.
@@ -3620,7 +3662,14 @@ Type_conversion_expression::do_export(Export_function_body* efb) const
   efb->write_c_string("$convert(");
   efb->write_type(this->type_);
   efb->write_c_string(", ");
+
+  Type* old_context = efb->type_context();
+  efb->set_type_context(this->type_);
+
   this->expr_->export_expression(efb);
+
+  efb->set_type_context(old_context);
+
   efb->write_c_string(")");
 }
 
