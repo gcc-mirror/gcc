@@ -1951,6 +1951,7 @@ fixup_attribute_variants (tree t)
   unsigned align = TYPE_ALIGN (t);
   bool user_align = TYPE_USER_ALIGN (t);
   bool may_alias = lookup_attribute ("may_alias", attrs);
+  bool packed = TYPE_PACKED (t);
 
   if (may_alias)
     fixup_may_alias (t);
@@ -1968,6 +1969,7 @@ fixup_attribute_variants (tree t)
       else
 	TYPE_USER_ALIGN (variants) = user_align;
       SET_TYPE_ALIGN (variants, valign);
+      TYPE_PACKED (variants) = packed;
       if (may_alias)
 	fixup_may_alias (variants);
     }
