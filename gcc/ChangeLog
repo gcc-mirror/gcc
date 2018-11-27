@@ -1,5 +1,11 @@
 2018-11-27  Jeff Law  <law@redhat.com>
 
+	* config/riscv/riscv (riscv_block_mvoe_straight): Use RETURN_BEGIN
+	in call to move_by_pieces.
+
+	* config/sh/sh-mem.c (expand_block_move): Use RETURN_BEGIN in call
+	to move_by_pieces.
+
 	* config/lm32/lm32.c (lm32_block_move_inline): Use RETURN_BEGIN in
 	call to move_by_pieces.
 
