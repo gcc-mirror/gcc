@@ -1484,7 +1484,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	  && can_store_by_pieces (sz, builtin_memset_read_str, &c,
 				  BITS_PER_UNIT, true))
 	store_by_pieces (shadow_mem, sz, builtin_memset_read_str, &c,
-			 BITS_PER_UNIT, true, 0);
+			 BITS_PER_UNIT, true, RETURN_BEGIN);
       else if (use_after_return_class >= 5
 	       || !set_storage_via_setmem (shadow_mem,
 					   GEN_INT (sz),
