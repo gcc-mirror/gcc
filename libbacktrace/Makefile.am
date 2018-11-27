@@ -89,6 +89,10 @@ check_PROGRAMS =
 TESTS = $(check_PROGRAMS)
 
 if NATIVE
+unittest_SOURCES = unittest.c testlib.c
+unittest_LDADD = libbacktrace.la
+
+check_PROGRAMS += unittest
 
 btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O

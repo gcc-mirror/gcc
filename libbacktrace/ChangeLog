@@ -1,3 +1,11 @@
+2018-11-27  Tom de Vries  <tdevries@suse.de>
+
+	* alloc.c (backtrace_vector_release): Handle vec->size == 0 using free
+	instead of realloc.
+	* Makefile.am (check_PROGRAMS): Add unittest.
+	* Makefile.in: Regenerate.
+	* unittest.c: New file.
+
 2018-11-22  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf.c (read_initial_length): Factor out of ...
