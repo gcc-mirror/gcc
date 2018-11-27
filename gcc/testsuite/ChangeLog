@@ -1,5 +1,8 @@
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/88187
+	* g++.dg/other/pr88187.C: New test.
+
 	PR c++/88181
 	* g++.dg/debug/pr88181.C: New test.
 
