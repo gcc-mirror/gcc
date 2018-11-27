@@ -284,10 +284,11 @@ class Import : public Import_expression
   read_type();
 
   // Return the type for a type index.  INPUT_NAME and INPUT_OFFSET
-  // are only for error reporting.
+  // are only for error reporting.  PARSED is set to whether we parsed
+  // the type information for a new type.
   Type*
   type_for_index(int index, const std::string& input_name,
-		 size_t input_offset);
+		 size_t input_offset, bool* parsed);
 
   // Read an escape note.
   std::string

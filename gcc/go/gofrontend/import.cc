@@ -886,7 +886,9 @@ Import::read_type()
   if (c == '>')
     {
       // A reference to a type defined earlier.
-      return this->type_for_index(index, "import data", stream->pos());
+      bool parsed;
+      return this->type_for_index(index, "import data", stream->pos(),
+				  &parsed);
     }
 
   if (this->version_ >= EXPORT_FORMAT_V3)
@@ -1092,12 +1094,13 @@ Import::read_named_type(int index)
   return type;
 }
 
-// Return the type given an index.
+// Return the type given an index.  Set *PARSED if we parsed it here.
 
 Type*
 Import::type_for_index(int index, const std::string& input_name,
-		       size_t input_offset)
+		       size_t input_offset, bool* parsed)
 {
+  *parsed = false;
   if (index >= 0 && !this->type_data_.empty())
     {
       if (static_cast<size_t>(index) >= this->type_offsets_.size())
@@ -1114,6 +1117,7 @@ Import::type_for_index(int index, const std::string& input_name,
 	{
 	  if (!this->parse_type(index))
 	    return Type::make_error_type();
+	  *parsed = true;
 	}
     }
 
@@ -1497,6 +1501,15 @@ Import_function_body::read_type()
       return Type::make_error_type();
     }
 
-  return this->imp_->type_for_index(static_cast<int>(val), this->name(),
-				    static_cast<unsigned long>(start));
+  bool parsed;
+  Type* type = this->imp_->type_for_index(static_cast<int>(val), this->name(),
+					  static_cast<unsigned long>(start),
+					  &parsed);
+
+  // If we just read this type's information, its methods will not
+  // have been finalized.  Do that now.
+  if (parsed)
+    this->gogo_->finalize_methods_for_type(type);
+
+  return type;
 }
