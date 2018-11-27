@@ -1,3 +1,13 @@
+2018-11-27  Fredrik Noring  <noring@nocrew.org>
+
+	* config/mips/mips.c (mips_reorg_process_insns)
+	(mips_option_override): Handle `-mfix-r5900'.
+	* config/mips/mips.h (ASM_SPEC): Add `mfix-r5900' and
+	`mno-fix-r5900'.
+	* config/mips/mips.opt (mfix-r5900): New option.
+	* doc/invoke.texi: Document the `r5900' processor name, and
+	`-mfix-r5900' and `-mno-fix-r5900' options.
+
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88188
