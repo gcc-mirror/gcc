@@ -1225,7 +1225,7 @@ Import::read_identifier()
   while (true)
     {
       c = stream->peek_char();
-      if (c == -1 || c == ' ' || c == '\n' || c == ';')
+      if (c == -1 || c == ' ' || c == '\n' || c == ';' || c == ')')
 	break;
       ret += c;
       stream->advance(1);
@@ -1450,7 +1450,7 @@ Import_function_body::read_identifier()
   for (size_t i = start; i < this->body_.length(); i++)
     {
       int c = static_cast<unsigned char>(this->body_[i]);
-      if (c == ' ' || c == '\n' || c == ';')
+      if (c == ' ' || c == '\n' || c == ';' || c == ')')
 	{
 	  this->off_ = i;
 	  return this->body_.substr(start, i - start);
