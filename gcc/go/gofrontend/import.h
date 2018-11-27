@@ -11,6 +11,7 @@
 #include "go-linemap.h"
 
 class Gogo;
+class Block;
 class Package;
 class Type;
 class Named_object;
@@ -462,6 +463,76 @@ class Stream_from_string_ref : public Import::Stream
   size_t pos_;
   // The index after the last byte we can read.
   size_t end_;
+};
+
+// Class to manage importing a function body.  This is passed around
+// to Statements and Expressions.  It parses the function into the IR.
+
+class Import_function_body
+{
+ public:
+  Import_function_body(Gogo* gogo, Location loc, Named_object* named_object,
+		       const std::string& body, size_t off, Block* block,
+		       int indent)
+    : gogo_(gogo), loc_(loc), named_object_(named_object), body_(body),
+      off_(off), block_(block), indent_(indent)
+  { }
+
+  // The IR.
+  Gogo*
+  gogo()
+  { return this->gogo_; }
+
+  // The location to report in an error message.
+  Location
+  location() const
+  { return this->loc_; }
+
+  // A reference to the body we are reading.
+  const std::string&
+  body() const
+  { return this->body_; }
+
+  // The current offset into the body.
+  size_t
+  off()
+  { return this->off_; }
+
+  // Update the offset into the body.
+  void
+  set_off(size_t off)
+  { this->off_ = off; }
+
+  // The current block.
+  Block*
+  block()
+  { return this->block_; }
+
+  // The current indentation.
+  int
+  indent() const
+  { return this->indent_; }
+
+  // The name of the function we are parsing.
+  const std::string&
+  name() const;
+
+ private:
+  // The IR.
+  Gogo* gogo_;
+  // The location to report in an error message.
+  Location loc_;
+  // The function we are parsing.
+  Named_object* named_object_;
+  // The exported data we are parsing.  Note that this is a reference;
+  // the body string must laster longer than this object.
+  const std::string& body_;
+  // The current offset into body_.
+  size_t off_;
+  // Current block.
+  Block* block_;
+  // Current expected indentation level.
+  int indent_;
 };
 
 #endif // !defined(GO_IMPORT_H)

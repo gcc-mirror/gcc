@@ -97,8 +97,6 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
 	}
     }
 
-  ::gogo->linemap()->stop();
-
   ::gogo->clear_file_scope();
 
   // If the global predeclared names are referenced but not defined,
@@ -121,6 +119,10 @@ go_parse_input_files(const char** filenames, unsigned int filename_count,
   // Now that we have seen all the names, lower the parse tree into a
   // form which is easier to use.
   ::gogo->lower_parse_tree();
+
+  // At this point we have handled all inline functions, so we no
+  // longer need the linemap.
+  ::gogo->linemap()->stop();
 
   // Create function descriptors as needed.
   ::gogo->create_function_descriptors();

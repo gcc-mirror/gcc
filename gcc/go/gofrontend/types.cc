@@ -9865,7 +9865,9 @@ Named_type::add_method(const std::string& name, Function* function)
   go_assert(!this->is_alias_);
   if (this->local_methods_ == NULL)
     this->local_methods_ = new Bindings(NULL);
-  return this->local_methods_->add_function(name, NULL, function);
+  return this->local_methods_->add_function(name,
+					    this->named_object_->package(),
+					    function);
 }
 
 // Add a method declaration to this type.

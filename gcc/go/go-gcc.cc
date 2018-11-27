@@ -3086,6 +3086,11 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
     TREE_THIS_VOLATILE(decl) = 1;
   if ((flags & function_in_unique_section) != 0)
     resolve_unique_section(decl, 0, 1);
+  if ((flags & function_only_inline) != 0)
+    {
+      DECL_EXTERNAL(decl) = 1;
+      DECL_DECLARED_INLINE_P(decl) = 1;
+    }
 
   go_preserve_from_gc(decl);
   return new Bfunction(decl);

@@ -744,8 +744,9 @@ Import::import_func(Package* package)
   Typed_identifier_list* results;
   bool is_varargs;
   bool nointerface;
-  Function::import_func(this, &name, &receiver,
-			&parameters, &results, &is_varargs, &nointerface);
+  std::string body;
+  Function::import_func(this, &name, &receiver, &parameters, &results,
+			&is_varargs, &nointerface, &body);
   Function_type *fntype = Type::make_function_type(receiver, parameters,
 						   results, this->location_);
   if (is_varargs)
@@ -788,6 +789,8 @@ Import::import_func(Package* package)
 
   if (nointerface)
     no->func_declaration_value()->set_nointerface();
+  if (!body.empty() && !no->func_declaration_value()->has_imported_body())
+    no->func_declaration_value()->set_imported_body(body);
 
   return no;
 }
@@ -1394,4 +1397,14 @@ Stream_from_file::do_advance(size_t skip)
       else
 	this->data_.clear();
     }
+}
+
+// Class Import_function_body.
+
+// The name of the function we are parsing.
+
+const std::string&
+Import_function_body::name() const
+{
+  return this->named_object_->name();
 }
