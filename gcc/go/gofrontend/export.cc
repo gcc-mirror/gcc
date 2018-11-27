@@ -936,19 +936,39 @@ Export::write_unsigned(unsigned value)
   this->write_c_string(buf);
 }
 
-// Export a type.
+// Return the index of a type.
 
-void
-Export::write_type(const Type* type)
+int
+Export::type_index(const Type* type)
 {
   type = type->forwarded();
   Type_refs::const_iterator p = type_refs.find(type);
   go_assert(p != type_refs.end());
   int index = p->second;
   go_assert(index != 0);
+  return index;
+}
+
+// Export a type.
+
+void
+Export::write_type(const Type* type)
+{
+  int index = this->type_index(type);
   char buf[30];
   snprintf(buf, sizeof buf, "<type %d>", index);
   this->write_c_string(buf);
+}
+
+// Export a type to a function body.
+
+void
+Export::write_type_to(const Type* type, Export_function_body* efb)
+{
+  int index = this->type_index(type);
+  char buf[30];
+  snprintf(buf, sizeof buf, "<type %d>", index);
+  efb->write_c_string(buf);
 }
 
 // Export escape note.

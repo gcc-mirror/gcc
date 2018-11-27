@@ -5572,7 +5572,7 @@ Function::export_func_with_type(Export* exp, const std::string& name,
       if (fntype->is_method())
 	indent++;
 
-      Export_function_body efb(indent);
+      Export_function_body efb(exp, indent);
 
       efb.indent();
       efb.write_c_string("// ");
@@ -7606,7 +7606,11 @@ Named_constant::export_const(Export* exp, const std::string& name) const
       exp->write_c_string(" ");
     }
   exp->write_c_string("= ");
-  this->expr()->export_expression(exp);
+
+  Export_function_body efb(exp, 0);
+  this->expr()->export_expression(&efb);
+  exp->write_string(efb.body());
+
   exp->write_c_string("\n");
 }
 

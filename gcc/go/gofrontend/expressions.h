@@ -65,7 +65,7 @@ class Conditional_expression;
 class Compound_expression;
 class Numeric_constant;
 class Named_object;
-class Export;
+class Export_function_body;
 class Import;
 class Temporary_statement;
 class Label;
@@ -1009,12 +1009,10 @@ class Expression
   backend_numeric_constant_expression(Translate_context*,
                                       Numeric_constant* val);
 
-  // Export the expression.  This is only used for constants.  It will
-  // be used for things like values of named constants and sizes of
-  // arrays.
+  // Export the expression.
   void
-  export_expression(Export* exp) const
-  { this->do_export(exp); }
+  export_expression(Export_function_body* efb) const
+  { this->do_export(efb); }
 
   // Import an expression.
   static Expression*
@@ -1130,7 +1128,7 @@ class Expression
 
   // Child class implements export.
   virtual void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   // For children to call to give an error for an unused value.
   void
@@ -1603,7 +1601,7 @@ class String_expression : public Expression
   export_string(String_dump* exp, const String_expression* str);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1687,7 +1685,7 @@ class Type_conversion_expression : public Expression
   do_get_backend(Translate_context* context);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -1878,7 +1876,7 @@ class Unary_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2023,7 +2021,7 @@ class Binary_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2130,7 +2128,7 @@ class String_concat_expression : public Expression
   { go_unreachable(); }
 
   void
-  do_export(Export*) const
+  do_export(Export_function_body*) const
   { go_unreachable(); }
 
   void
@@ -2456,7 +2454,7 @@ class Builtin_call_expression : public Call_expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   virtual bool
   do_is_recover_call() const;
@@ -3551,7 +3549,7 @@ class Struct_construction_expression : public Expression,
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3606,7 +3604,7 @@ protected:
   do_check_types(Gogo*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   // The indexes.
   const std::vector<unsigned long>*
@@ -3744,7 +3742,7 @@ class Map_construction_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3859,7 +3857,7 @@ class Heap_expression : public Expression
   // We only export global objects, and the parser does not generate
   // this in global scope.
   void
-  do_export(Export*) const
+  do_export(Export_function_body*) const
   { go_unreachable(); }
 
   void

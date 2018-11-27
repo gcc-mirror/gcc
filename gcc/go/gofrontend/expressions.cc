@@ -82,7 +82,7 @@ Expression::do_discarding_value()
 // only be used by expressions which may be constant.
 
 void
-Expression::do_export(Export*) const
+Expression::do_export(Export_function_body*) const
 {
   go_unreachable();
 }
@@ -1609,8 +1609,8 @@ class Boolean_expression : public Expression
   { return context->backend()->boolean_constant_expression(this->val_); }
 
   void
-  do_export(Export* exp) const
-  { exp->write_c_string(this->val_ ? "true" : "false"); }
+  do_export(Export_function_body* efb) const
+  { efb->write_c_string(this->val_ ? "true" : "false"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -1760,9 +1760,9 @@ String_expression::export_string(String_dump* exp,
 // Export a string expression.
 
 void
-String_expression::do_export(Export* exp) const
+String_expression::do_export(Export_function_body* efb) const
 {
-  String_expression::export_string(exp, this);
+  String_expression::export_string(efb, this);
 }
 
 // Import a string expression.
@@ -1996,7 +1996,7 @@ class Integer_expression : public Expression
   }
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2138,13 +2138,13 @@ Integer_expression::export_integer(String_dump* exp, const mpz_t val)
 // Export an integer in a constant expression.
 
 void
-Integer_expression::do_export(Export* exp) const
+Integer_expression::do_export(Export_function_body* efb) const
 {
-  Integer_expression::export_integer(exp, this->val_);
+  Integer_expression::export_integer(efb, this->val_);
   if (this->is_character_constant_)
-    exp->write_c_string("'");
+    efb->write_c_string("'");
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
 }
 
 // Import an integer, floating point, or complex value.  This handles
@@ -2393,7 +2393,7 @@ class Float_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2505,11 +2505,11 @@ Float_expression::export_float(String_dump *exp, const mpfr_t val)
 // Export a floating point number in a constant expression.
 
 void
-Float_expression::do_export(Export* exp) const
+Float_expression::do_export(Export_function_body* efb) const
 {
-  Float_expression::export_float(exp, this->val_);
+  Float_expression::export_float(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
 }
 
 // Dump a floating point number to the dump file.
@@ -2588,7 +2588,7 @@ class Complex_expression : public Expression
   do_get_backend(Translate_context*);
 
   void
-  do_export(Export*) const;
+  do_export(Export_function_body*) const;
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -2695,11 +2695,11 @@ Complex_expression::export_complex(String_dump* exp, const mpc_t val)
 // Export a complex number in a constant expression.
 
 void
-Complex_expression::do_export(Export* exp) const
+Complex_expression::do_export(Export_function_body* efb) const
 {
-  Complex_expression::export_complex(exp, this->val_);
+  Complex_expression::export_complex(efb, this->val_);
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
 }
 
 // Dump a complex expression to the dump file.
@@ -2804,8 +2804,8 @@ class Const_expression : public Expression
   // expression, we export the value.  We ignore the fact that it has
   // a name.
   void
-  do_export(Export* exp) const
-  { this->constant_->const_value()->expr()->export_expression(exp); }
+  do_export(Export_function_body* efb) const
+  { this->constant_->const_value()->expr()->export_expression(efb); }
 
   void
   do_dump_expression(Ast_dump_context*) const;
@@ -3161,8 +3161,8 @@ class Nil_expression : public Expression
   { return context->backend()->nil_pointer_expression(); }
 
   void
-  do_export(Export* exp) const
-  { exp->write_c_string("nil"); }
+  do_export(Export_function_body* efb) const
+  { efb->write_c_string("nil"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -3611,13 +3611,13 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 // Output a type conversion in a constant expression.
 
 void
-Type_conversion_expression::do_export(Export* exp) const
+Type_conversion_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
-  exp->write_c_string(", ");
-  this->expr_->export_expression(exp);
-  exp->write_c_string(")");
+  efb->write_c_string("convert(");
+  efb->write_type(this->type_);
+  efb->write_c_string(", ");
+  this->expr_->export_expression(efb);
+  efb->write_c_string(")");
 }
 
 // Import a type conversion or a struct construction.
@@ -4607,28 +4607,28 @@ Unary_expression::do_get_backend(Translate_context* context)
 // Export a unary expression.
 
 void
-Unary_expression::do_export(Export* exp) const
+Unary_expression::do_export(Export_function_body* efb) const
 {
   switch (this->op_)
     {
     case OPERATOR_PLUS:
-      exp->write_c_string("+ ");
+      efb->write_c_string("+ ");
       break;
     case OPERATOR_MINUS:
-      exp->write_c_string("- ");
+      efb->write_c_string("- ");
       break;
     case OPERATOR_NOT:
-      exp->write_c_string("! ");
+      efb->write_c_string("! ");
       break;
     case OPERATOR_XOR:
-      exp->write_c_string("^ ");
+      efb->write_c_string("^ ");
       break;
     case OPERATOR_AND:
     case OPERATOR_MULT:
     default:
       go_unreachable();
     }
-  this->expr_->export_expression(exp);
+  this->expr_->export_expression(efb);
 }
 
 // Import a unary expression.
@@ -6330,74 +6330,74 @@ Binary_expression::do_get_backend(Translate_context* context)
 // Export a binary expression.
 
 void
-Binary_expression::do_export(Export* exp) const
+Binary_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("(");
-  this->left_->export_expression(exp);
+  efb->write_c_string("(");
+  this->left_->export_expression(efb);
   switch (this->op_)
     {
     case OPERATOR_OROR:
-      exp->write_c_string(" || ");
+      efb->write_c_string(" || ");
       break;
     case OPERATOR_ANDAND:
-      exp->write_c_string(" && ");
+      efb->write_c_string(" && ");
       break;
     case OPERATOR_EQEQ:
-      exp->write_c_string(" == ");
+      efb->write_c_string(" == ");
       break;
     case OPERATOR_NOTEQ:
-      exp->write_c_string(" != ");
+      efb->write_c_string(" != ");
       break;
     case OPERATOR_LT:
-      exp->write_c_string(" < ");
+      efb->write_c_string(" < ");
       break;
     case OPERATOR_LE:
-      exp->write_c_string(" <= ");
+      efb->write_c_string(" <= ");
       break;
     case OPERATOR_GT:
-      exp->write_c_string(" > ");
+      efb->write_c_string(" > ");
       break;
     case OPERATOR_GE:
-      exp->write_c_string(" >= ");
+      efb->write_c_string(" >= ");
       break;
     case OPERATOR_PLUS:
-      exp->write_c_string(" + ");
+      efb->write_c_string(" + ");
       break;
     case OPERATOR_MINUS:
-      exp->write_c_string(" - ");
+      efb->write_c_string(" - ");
       break;
     case OPERATOR_OR:
-      exp->write_c_string(" | ");
+      efb->write_c_string(" | ");
       break;
     case OPERATOR_XOR:
-      exp->write_c_string(" ^ ");
+      efb->write_c_string(" ^ ");
       break;
     case OPERATOR_MULT:
-      exp->write_c_string(" * ");
+      efb->write_c_string(" * ");
       break;
     case OPERATOR_DIV:
-      exp->write_c_string(" / ");
+      efb->write_c_string(" / ");
       break;
     case OPERATOR_MOD:
-      exp->write_c_string(" % ");
+      efb->write_c_string(" % ");
       break;
     case OPERATOR_LSHIFT:
-      exp->write_c_string(" << ");
+      efb->write_c_string(" << ");
       break;
     case OPERATOR_RSHIFT:
-      exp->write_c_string(" >> ");
+      efb->write_c_string(" >> ");
       break;
     case OPERATOR_AND:
-      exp->write_c_string(" & ");
+      efb->write_c_string(" & ");
       break;
     case OPERATOR_BITCLEAR:
-      exp->write_c_string(" &^ ");
+      efb->write_c_string(" &^ ");
       break;
     default:
       go_unreachable();
     }
-  this->right_->export_expression(exp);
-  exp->write_c_string(")");
+  this->right_->export_expression(efb);
+  efb->write_c_string(")");
 }
 
 // Import a binary expression.
@@ -9454,7 +9454,7 @@ Builtin_call_expression::do_get_backend(Translate_context* context)
 // code can set a constant to the result of a builtin expression.
 
 void
-Builtin_call_expression::do_export(Export* exp) const
+Builtin_call_expression::do_export(Export_function_body* efb) const
 {
   Numeric_constant nc;
   if (!this->numeric_constant_value(&nc))
@@ -9467,28 +9467,28 @@ Builtin_call_expression::do_export(Export* exp) const
     {
       mpz_t val;
       nc.get_int(&val);
-      Integer_expression::export_integer(exp, val);
+      Integer_expression::export_integer(efb, val);
       mpz_clear(val);
     }
   else if (nc.is_float())
     {
       mpfr_t fval;
       nc.get_float(&fval);
-      Float_expression::export_float(exp, fval);
+      Float_expression::export_float(efb, fval);
       mpfr_clear(fval);
     }
   else if (nc.is_complex())
     {
       mpc_t cval;
       nc.get_complex(&cval);
-      Complex_expression::export_complex(exp, cval);
+      Complex_expression::export_complex(efb, cval);
       mpc_clear(cval);
     }
   else
     go_unreachable();
 
   // A trailing space lets us reliably identify the end of the number.
-  exp->write_c_string(" ");
+  efb->write_c_string(" ");
 }
 
 // Class Call_expression.
@@ -12957,19 +12957,19 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
 // Export a struct construction.
 
 void
-Struct_construction_expression::do_export(Export* exp) const
+Struct_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("convert(");
+  efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
        ++pv)
     {
-      exp->write_c_string(", ");
+      efb->write_c_string(", ");
       if (*pv != NULL)
-	(*pv)->export_expression(exp);
+	(*pv)->export_expression(efb);
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation of a struct construction expression.
@@ -13190,10 +13190,10 @@ Array_construction_expression::get_constructor(Translate_context* context,
 // Export an array construction.
 
 void
-Array_construction_expression::do_export(Export* exp) const
+Array_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("convert(");
+  efb->write_type(this->type_);
   if (this->vals() != NULL)
     {
       std::vector<unsigned long>::const_iterator pi;
@@ -13203,24 +13203,24 @@ Array_construction_expression::do_export(Export* exp) const
 	   pv != this->vals()->end();
 	   ++pv)
 	{
-	  exp->write_c_string(", ");
+	  efb->write_c_string(", ");
 
 	  if (this->indexes_ != NULL)
 	    {
 	      char buf[100];
 	      snprintf(buf, sizeof buf, "%lu", *pi);
-	      exp->write_c_string(buf);
-	      exp->write_c_string(":");
+	      efb->write_c_string(buf);
+	      efb->write_c_string(":");
 	    }
 
 	  if (*pv != NULL)
-	    (*pv)->export_expression(exp);
+	    (*pv)->export_expression(efb);
 
 	  if (this->indexes_ != NULL)
 	    ++pi;
 	}
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation of an array construction expression.
@@ -13707,18 +13707,18 @@ Map_construction_expression::do_get_backend(Translate_context* context)
 // Export an array construction.
 
 void
-Map_construction_expression::do_export(Export* exp) const
+Map_construction_expression::do_export(Export_function_body* efb) const
 {
-  exp->write_c_string("convert(");
-  exp->write_type(this->type_);
+  efb->write_c_string("convert(");
+  efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals_->begin();
        pv != this->vals_->end();
        ++pv)
     {
-      exp->write_c_string(", ");
-      (*pv)->export_expression(exp);
+      efb->write_c_string(", ");
+      (*pv)->export_expression(efb);
     }
-  exp->write_c_string(")");
+  efb->write_c_string(")");
 }
 
 // Dump ast representation for a map construction expression.
