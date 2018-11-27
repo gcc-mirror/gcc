@@ -321,5 +321,7 @@ backtrace_vector_release (struct backtrace_state *state,
   backtrace_free (state, (char *) vec->base + aligned, alc,
 		  error_callback, data);
   vec->alc = 0;
+  if (vec->size == 0)
+    vec->base = NULL;
   return 1;
 }
