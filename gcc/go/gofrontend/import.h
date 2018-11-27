@@ -71,6 +71,10 @@ class Import_expression
   // Read a type.
   virtual Type*
   read_type() = 0;
+
+  // Return the version number of the export data we're reading.
+  virtual Export_data_version
+  version() const = 0;
 };
 
 // This class manages importing Go declarations.
@@ -253,6 +257,10 @@ class Import : public Import_expression
   advance(size_t skip)
   { this->stream_->advance(skip); }
 
+  // Return the version number of the export data we're reading.
+  Export_data_version
+  version() const { return this->version_; }
+
   // Skip a semicolon if using an older version.
   void
   require_semicolon_if_old_version()
@@ -380,10 +388,6 @@ class Import : public Import_expression
     *ret = static_cast<unsigned>(ivalue);
     return true;
   }
-
-  // Return the version number of the export data we're reading.
-  Export_data_version
-  version() const { return this->version_; }
 
   // The general IR.
   Gogo* gogo_;
@@ -637,6 +641,10 @@ class Import_function_body : public Import_expression
   // Read a type.
   Type*
   read_type();
+
+  Export_data_version
+  version() const
+  { return this->imp_->version(); }
 
   // Implement Import_expression.
   Import_function_body*

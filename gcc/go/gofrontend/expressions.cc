@@ -1610,7 +1610,7 @@ class Boolean_expression : public Expression
 
   void
   do_export(Export_function_body* efb) const
-  { efb->write_c_string(this->val_ ? "true" : "false"); }
+  { efb->write_c_string(this->val_ ? "$true" : "$false"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -1651,6 +1651,8 @@ Boolean_expression::do_determine_type(const Type_context* context)
 Expression*
 Boolean_expression::do_import(Import_expression* imp, Location loc)
 {
+  if (imp->version() >= EXPORT_FORMAT_V3)
+    imp->require_c_string("$");
   if (imp->peek_char() == 't')
     {
       imp->require_c_string("true");
@@ -3162,7 +3164,7 @@ class Nil_expression : public Expression
 
   void
   do_export(Export_function_body* efb) const
-  { efb->write_c_string("nil"); }
+  { efb->write_c_string("$nil"); }
 
   void
   do_dump_expression(Ast_dump_context* ast_dump_context) const
@@ -3174,6 +3176,8 @@ class Nil_expression : public Expression
 Expression*
 Nil_expression::do_import(Import_expression* imp, Location loc)
 {
+  if (imp->version() >= EXPORT_FORMAT_V3)
+    imp->require_c_string("$");
   imp->require_c_string("nil");
   return Expression::make_nil(loc);
 }
@@ -3613,7 +3617,7 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
 void
 Type_conversion_expression::do_export(Export_function_body* efb) const
 {
-  efb->write_c_string("convert(");
+  efb->write_c_string("$convert(");
   efb->write_type(this->type_);
   efb->write_c_string(", ");
   this->expr_->export_expression(efb);
@@ -3625,7 +3629,7 @@ Type_conversion_expression::do_export(Export_function_body* efb) const
 Expression*
 Type_conversion_expression::do_import(Import_expression* imp, Location loc)
 {
-  imp->require_c_string("convert(");
+  imp->require_c_string("$convert(");
   Type* type = imp->read_type();
   imp->require_c_string(", ");
   Expression* val = Expression::import_expression(imp, loc);
@@ -4612,16 +4616,16 @@ Unary_expression::do_export(Export_function_body* efb) const
   switch (this->op_)
     {
     case OPERATOR_PLUS:
-      efb->write_c_string("+ ");
+      efb->write_c_string("+");
       break;
     case OPERATOR_MINUS:
-      efb->write_c_string("- ");
+      efb->write_c_string("-");
       break;
     case OPERATOR_NOT:
-      efb->write_c_string("! ");
+      efb->write_c_string("!");
       break;
     case OPERATOR_XOR:
-      efb->write_c_string("^ ");
+      efb->write_c_string("^");
       break;
     case OPERATOR_AND:
     case OPERATOR_MULT:
@@ -4654,7 +4658,8 @@ Unary_expression::do_import(Import_expression* imp, Location loc)
     default:
       go_unreachable();
     }
-  imp->require_c_string(" ");
+  if (imp->version() < EXPORT_FORMAT_V3)
+    imp->require_c_string(" ");
   Expression* expr = Expression::import_expression(imp, loc);
   return Expression::make_unary(op, expr, loc);
 }
@@ -12959,7 +12964,7 @@ Struct_construction_expression::do_get_backend(Translate_context* context)
 void
 Struct_construction_expression::do_export(Export_function_body* efb) const
 {
-  efb->write_c_string("convert(");
+  efb->write_c_string("$convert(");
   efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals()->begin();
        pv != this->vals()->end();
@@ -13192,7 +13197,7 @@ Array_construction_expression::get_constructor(Translate_context* context,
 void
 Array_construction_expression::do_export(Export_function_body* efb) const
 {
-  efb->write_c_string("convert(");
+  efb->write_c_string("$convert(");
   efb->write_type(this->type_);
   if (this->vals() != NULL)
     {
@@ -13709,7 +13714,7 @@ Map_construction_expression::do_get_backend(Translate_context* context)
 void
 Map_construction_expression::do_export(Export_function_body* efb) const
 {
-  efb->write_c_string("convert(");
+  efb->write_c_string("$convert(");
   efb->write_type(this->type_);
   for (Expression_list::const_iterator pv = this->vals_->begin();
        pv != this->vals_->end();
@@ -16141,14 +16146,15 @@ Expression*
 Expression::import_expression(Import_expression* imp, Location loc)
 {
   int c = imp->peek_char();
-  if (imp->match_c_string("- ")
-      || imp->match_c_string("! ")
-      || imp->match_c_string("^ "))
+  if (c == '+' || c == '-' || c == '!' || c == '^')
     return Unary_expression::do_import(imp, loc);
   else if (c == '(')
     return Binary_expression::do_import(imp, loc);
-  else if (imp->match_c_string("true")
-	   || imp->match_c_string("false"))
+  else if (imp->match_c_string("$true")
+	   || imp->match_c_string("$false")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && (imp->match_c_string("true")
+		   || imp->match_c_string("false"))))
     return Boolean_expression::do_import(imp, loc);
   else if (c == '"')
     return String_expression::do_import(imp, loc);
@@ -16157,9 +16163,13 @@ Expression::import_expression(Import_expression* imp, Location loc)
       // This handles integers, floats and complex constants.
       return Integer_expression::do_import(imp, loc);
     }
-  else if (imp->match_c_string("nil"))
+  else if (imp->match_c_string("$nil")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && imp->match_c_string("nil")))
     return Nil_expression::do_import(imp, loc);
-  else if (imp->match_c_string("convert"))
+  else if (imp->match_c_string("$convert")
+	   || (imp->version() < EXPORT_FORMAT_V3
+	       && imp->match_c_string("convert")))
     return Type_conversion_expression::do_import(imp, loc);
   else
     {
