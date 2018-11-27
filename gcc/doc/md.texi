@@ -6022,6 +6022,15 @@ vector floating-point mode.
 
 This pattern is not allowed to @code{FAIL}.
 
+@cindex @code{xorsign@var{m}3} instruction pattern
+@item @samp{xorsign@var{m}3}
+Equivalent to @samp{op0 = op1 * copysign (1.0, op2)}: store a value with
+the magnitude of operand 1 and the sign of operand 2 into operand 0.
+All operands have mode @var{m}, which is a scalar or vector
+floating-point mode.
+
+This pattern is not allowed to @code{FAIL}.
+
 @cindex @code{ffs@var{m}2} instruction pattern
 @item @samp{ffs@var{m}2}
 Store into operand 0 one plus the index of the least significant 1-bit
