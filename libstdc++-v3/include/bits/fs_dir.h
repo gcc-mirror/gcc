@@ -403,7 +403,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
     friend class recursive_directory_iterator;
 
-    std::shared_ptr<_Dir> _M_dir;
+    std::__shared_ptr<_Dir> _M_dir;
   };
 
   inline directory_iterator
@@ -494,7 +494,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
                const recursive_directory_iterator& __rhs);
 
     struct _Dir_stack;
-    std::shared_ptr<_Dir_stack> _M_dirs;
+    std::__shared_ptr<_Dir_stack> _M_dirs;
     directory_options _M_options = {};
     bool _M_pending = false;
   };
@@ -524,6 +524,14 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
   // @} group filesystem
 } // namespace filesystem
+
+  // Use explicit instantiations of these types. Any inconsistency in the
+  // value of __default_lock_policy between code including this header and
+  // the library will cause a linker error.
+  extern template class
+    __shared_ptr<filesystem::_Dir>;
+  extern template class
+    __shared_ptr<filesystem::recursive_directory_iterator::_Dir_stack>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

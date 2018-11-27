@@ -907,6 +907,7 @@ enable_libtool_lock
 enable_hosted_libstdcxx
 enable_libstdcxx_verbose
 enable_libstdcxx_pch
+with_libstdcxx_lock_policy
 enable_cstdio
 enable_clocale
 enable_nls
@@ -1652,6 +1653,9 @@ Optional Packages:
   --with-pic              try to use only PIC/non-PIC objects [default=use
                           both]
   --with-gnu-ld           assume the C compiler uses GNU ld [default=no]
+  --with-libstdcxx-lock-policy={atomic,mutex,auto}
+                          synchronization policy for shared_ptr reference
+                          counting [default=auto]
   --with-python-dir       the location to install Python modules. This path is
                           relative starting from the prefix.
   --with-gnu-ld           assume the C compiler uses GNU ld default=no
@@ -11840,7 +11844,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11843 "configure"
+#line 11847 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11946,7 +11950,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11949 "configure"
+#line 11953 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15632,7 +15636,7 @@ $as_echo "$glibcxx_cv_atomic_long_long" >&6; }
   # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 15635 "configure"
+#line 15639 "configure"
 int main()
 {
   typedef bool atomic_type;
@@ -15667,7 +15671,7 @@ $as_echo "$glibcxx_cv_atomic_bool" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15670 "configure"
+#line 15674 "configure"
 int main()
 {
   typedef short atomic_type;
@@ -15702,7 +15706,7 @@ $as_echo "$glibcxx_cv_atomic_short" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15705 "configure"
+#line 15709 "configure"
 int main()
 {
   // NB: _Atomic_word not necessarily int.
@@ -15738,7 +15742,7 @@ $as_echo "$glibcxx_cv_atomic_int" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15741 "configure"
+#line 15745 "configure"
 int main()
 {
   typedef long long atomic_type;
@@ -15815,11 +15819,83 @@ $as_echo "$as_me: WARNING: Performance of certain classes will degrade as a resu
 
 
 
+
+# Check whether --with-libstdcxx-lock-policy was given.
+if test "${with_libstdcxx_lock_policy+set}" = set; then :
+  withval=$with_libstdcxx_lock_policy; libstdcxx_atomic_lock_policy=$withval
+else
+  libstdcxx_atomic_lock_policy=auto
+fi
+
+
+  case "$libstdcxx_atomic_lock_policy" in
+    atomic|mutex|auto) ;;
+    *) as_fn_error $? "Invalid argument for --with-libstdcxx-lock-policy" "$LINENO" 5 ;;
+  esac
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for lock policy for shared_ptr reference counts" >&5
+$as_echo_n "checking for lock policy for shared_ptr reference counts... " >&6; }
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"auto"; then
+
+    ac_ext=cpp
+ac_cpp='$CXXCPP $CPPFLAGS'
+ac_compile='$CXX -c $CXXFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CXX -o conftest$ac_exeext $CXXFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
+
+    ac_save_CXXFLAGS="$CXXFLAGS"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    #if ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_2
+    # error "No 2-byte compare-and-swap"
+    #elif ! defined __GCC_HAVE_SYNC_COMPARE_AND_SWAP_4
+    # error "No 4-byte compare-and-swap"
+    #endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  libstdcxx_atomic_lock_policy=atomic
+else
+  libstdcxx_atomic_lock_policy=mutex
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+    CXXFLAGS="$ac_save_CXXFLAGS"
+  fi
+
+  if test x"$libstdcxx_atomic_lock_policy" = x"atomic"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: atomic" >&5
+$as_echo "atomic" >&6; }
+
+$as_echo "#define HAVE_ATOMIC_LOCK_POLICY 1" >>confdefs.h
+
+  else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: mutex" >&5
+$as_echo "mutex" >&6; }
+  fi
+
+
+
+
   # Fake what AC_TRY_COMPILE does, without linking as this is
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15822 "configure"
+#line 15898 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -15861,7 +15937,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 15864 "configure"
+#line 15940 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -15895,7 +15971,7 @@ $as_echo "$enable_int128" >&6; }
     rm -f conftest*
 
     cat > conftest.$ac_ext << EOF
-#line 15898 "configure"
+#line 15974 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
