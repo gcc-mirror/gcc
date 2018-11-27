@@ -421,4 +421,7 @@ extern char *build_message_string (const char *, ...) ATTRIBUTE_PRINTF_1;
 extern void diagnostic_output_format_init (diagnostic_context *,
 					   enum diagnostics_output_format);
 
+/* Compute the number of digits in the decimal representation of an integer.  */
+extern int num_digits (int);
+
 #endif /* ! GCC_DIAGNOSTIC_H */

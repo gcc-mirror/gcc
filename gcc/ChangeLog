@@ -1,3 +1,16 @@
+2018-11-27  Mike Gulick  <mgulick@mathworks.com>
+
+	PR preprocessor/83173
+	* input.c (dump_location_info): Dump reason and included_from
+	fields from line_map_ordinary struct.  Fix indentation when
+	location > 5 digits.
+	* diagnostic-show-locus.c (num_digits, num_digits): Move to
+	diagnostic.c to allow it to be utilized by input.c.
+	* diagnostic.c (num_digits, selftest::test_num_digits): Moved
+	here.
+	(selftest::diagnostic_c_tests): Run selftest::test_num_digits.
+	* diagnostic.h (num_digits): Add extern definition.
+
 2018-11-27  Fredrik Noring  <noring@nocrew.org>
 
 	* config/mips/mips.c (mips_reorg_process_insns)
