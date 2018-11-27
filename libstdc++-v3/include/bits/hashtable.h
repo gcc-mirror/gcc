@@ -388,6 +388,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _M_begin() const
       { return static_cast<__node_type*>(_M_before_begin._M_nxt); }
 
+      // Assign *this using another _Hashtable instance. Either elements
+      // are copy or move depends on the _NodeGenerator.
+      template<typename _Ht, typename _NodeGenerator>
+	void
+	_M_assign_elements(_Ht&&, const _NodeGenerator&);
+
       template<typename _NodeGenerator>
 	void
 	_M_assign(const _Hashtable&, const _NodeGenerator&);
@@ -1042,49 +1048,64 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       // Reuse allocated buckets and nodes.
-      __bucket_type* __former_buckets = nullptr;
-      std::size_t __former_bucket_count = _M_bucket_count;
-      const __rehash_state& __former_state = _M_rehash_policy._M_state();
-
-      if (_M_bucket_count != __ht._M_bucket_count)
-	{
-	  __former_buckets = _M_buckets;
-	  _M_buckets = _M_allocate_buckets(__ht._M_bucket_count);
-	  _M_bucket_count = __ht._M_bucket_count;
-	}
-      else
-	__builtin_memset(_M_buckets, 0,
-			 _M_bucket_count * sizeof(__bucket_type));
-
-      __try
-	{
-	  __hashtable_base::operator=(__ht);
-	  _M_element_count = __ht._M_element_count;
-	  _M_rehash_policy = __ht._M_rehash_policy;
-	  __reuse_or_alloc_node_type __roan(_M_begin(), *this);
-	  _M_before_begin._M_nxt = nullptr;
-	  _M_assign(__ht,
-		    [&__roan](const __node_type* __n)
-		    { return __roan(__n->_M_v()); });
-	  if (__former_buckets)
-	    _M_deallocate_buckets(__former_buckets, __former_bucket_count);
-	}
-      __catch(...)
-	{
-	  if (__former_buckets)
-	    {
-	      // Restore previous buckets.
-	      _M_deallocate_buckets();
-	      _M_rehash_policy._M_reset(__former_state);
-	      _M_buckets = __former_buckets;
-	      _M_bucket_count = __former_bucket_count;
-	    }
-	  __builtin_memset(_M_buckets, 0,
-			   _M_bucket_count * sizeof(__bucket_type));
-	  __throw_exception_again;
-	}
+      _M_assign_elements(__ht,
+	[](const __reuse_or_alloc_node_type& __roan, const __node_type* __n)
+	{ return __roan(__n->_M_v()); });
       return *this;
     }
+
+  template<typename _Key, typename _Value,
+	   typename _Alloc, typename _ExtractKey, typename _Equal,
+	   typename _H1, typename _H2, typename _Hash, typename _RehashPolicy,
+	   typename _Traits>
+    template<typename _Ht, typename _NodeGenerator>
+      void
+      _Hashtable<_Key, _Value, _Alloc, _ExtractKey, _Equal,
+		 _H1, _H2, _Hash, _RehashPolicy, _Traits>::
+      _M_assign_elements(_Ht&& __ht, const _NodeGenerator& __node_gen)
+      {
+	__bucket_type* __former_buckets = nullptr;
+	std::size_t __former_bucket_count = _M_bucket_count;
+	const __rehash_state& __former_state = _M_rehash_policy._M_state();
+
+	if (_M_bucket_count != __ht._M_bucket_count)
+	  {
+	    __former_buckets = _M_buckets;
+	    _M_buckets = _M_allocate_buckets(__ht._M_bucket_count);
+	    _M_bucket_count = __ht._M_bucket_count;
+	  }
+	else
+	  __builtin_memset(_M_buckets, 0,
+			   _M_bucket_count * sizeof(__bucket_type));
+
+	__try
+	  {
+	    __hashtable_base::operator=(std::forward<_Ht>(__ht));
+	    _M_element_count = __ht._M_element_count;
+	    _M_rehash_policy = __ht._M_rehash_policy;
+	    __reuse_or_alloc_node_type __roan(_M_begin(), *this);
+	    _M_before_begin._M_nxt = nullptr;
+	    _M_assign(__ht,
+		      [&__node_gen, &__roan](__node_type* __n)
+		      { return __node_gen(__roan, __n); });
+	    if (__former_buckets)
+	      _M_deallocate_buckets(__former_buckets, __former_bucket_count);
+	  }
+	__catch(...)
+	  {
+	    if (__former_buckets)
+	      {
+		// Restore previous buckets.
+		_M_deallocate_buckets();
+		_M_rehash_policy._M_reset(__former_state);
+		_M_buckets = __former_buckets;
+		_M_bucket_count = __former_bucket_count;
+	      }
+	    __builtin_memset(_M_buckets, 0,
+			     _M_bucket_count * sizeof(__bucket_type));
+	    __throw_exception_again;
+	  }
+      }
 
   template<typename _Key, typename _Value,
 	   typename _Alloc, typename _ExtractKey, typename _Equal,
@@ -1198,45 +1219,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       else
 	{
 	  // Can't move memory, move elements then.
-	  __bucket_type* __former_buckets = nullptr;
-	  size_type __former_bucket_count = _M_bucket_count;
-	  const __rehash_state& __former_state = _M_rehash_policy._M_state();
-
-	  if (_M_bucket_count != __ht._M_bucket_count)
-	    {
-	      __former_buckets = _M_buckets;
-	      _M_buckets = _M_allocate_buckets(__ht._M_bucket_count);
-	      _M_bucket_count = __ht._M_bucket_count;
-	    }
-	  else
-	    __builtin_memset(_M_buckets, 0,
-			     _M_bucket_count * sizeof(__bucket_type));
-
-	  __try
-	    {
-	      __hashtable_base::operator=(std::move(__ht));
-	      _M_element_count = __ht._M_element_count;
-	      _M_rehash_policy = __ht._M_rehash_policy;
-	      __reuse_or_alloc_node_type __roan(_M_begin(), *this);
-	      _M_before_begin._M_nxt = nullptr;
-	      _M_assign(__ht,
-			[&__roan](__node_type* __n)
-			{ return __roan(std::move_if_noexcept(__n->_M_v())); });
-	      __ht.clear();
-	    }
-	  __catch(...)
-	    {
-	      if (__former_buckets)
-		{
-		  _M_deallocate_buckets();
-		  _M_rehash_policy._M_reset(__former_state);
-		  _M_buckets = __former_buckets;
-		  _M_bucket_count = __former_bucket_count;
-		}
-	      __builtin_memset(_M_buckets, 0,
-			       _M_bucket_count * sizeof(__bucket_type));
-	      __throw_exception_again;
-	    }
+	  _M_assign_elements(std::move(__ht),
+		[](const __reuse_or_alloc_node_type& __roan, __node_type* __n)
+		{ return __roan(std::move_if_noexcept(__n->_M_v())); });
+	  __ht.clear();
 	}
     }
 
