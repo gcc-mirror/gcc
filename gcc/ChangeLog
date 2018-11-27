@@ -1,3 +1,31 @@
+2018-11-27  Martin Liska  <mliska@suse.cz>
+
+	* asan.c (asan_emit_stack_protection): Use new enum values
+	instead of int constants.
+	* builtins.c (expand_builtin_memory_copy_args): Replace int
+	type with memop_ret enum type.
+	(expand_builtin_mempcpy_args): Likewise.
+	(expand_builtin_memcpy): Use new enum values
+	instead of int constants. Likewise.
+	(expand_builtin_mempcpy): Likewise.
+	(expand_movstr): Likewise.
+	(expand_builtin_strcpy_args): Likewise.
+	(expand_builtin_stpcpy_1): Likewise.
+	(expand_builtin_strncpy): Likewise.
+	(expand_builtin_memset_args): Likewise.
+	* expr.c (move_by_pieces_d::finish_endp): Rename to ...
+	(move_by_pieces_d::finish_retmode): ... this.
+	(move_by_pieces): Change last argument type to memop_ret.
+	(store_by_pieces): Use new enum values
+	instead of int constants.
+	(emit_block_move_hints): Likewise.
+	(emit_push_insn): Likewise.
+	(store_expr): Likewise.
+	* expr.h (store_by_pieces): Change int to newly added enum
+	type.
+	* rtl.h (enum memop_ret): Define.
+	(move_by_pieces): Use the enum type.
+
 2018-11-27  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/aix71.h (ASM_SPEC): Don't select default -maix64
