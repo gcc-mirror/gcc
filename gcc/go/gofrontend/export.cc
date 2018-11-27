@@ -290,6 +290,11 @@ Find_types_to_prepare::type(Type* type)
   if (type->is_void_type())
     return TRAVERSE_SKIP_COMPONENTS;
 
+  // Skip abstract types.  We should never see these in real code,
+  // only in things like const declarations.
+  if (type->is_abstract())
+    return TRAVERSE_SKIP_COMPONENTS;
+
   if (!this->exp_->set_type_index(type))
     {
       // We've already seen this type.
@@ -367,7 +372,12 @@ Find_types_to_prepare::traverse_named_type(Named_type* nt)
 	     methods->begin_definitions();
 	   pm != methods->end_definitions();
 	   ++pm)
-	this->traverse_function((*pm)->func_value()->type());
+	{
+	  Function* fn = (*pm)->func_value();
+	  this->traverse_function(fn->type());
+	  if (fn->export_for_inlining())
+	    fn->block()->traverse(this);
+	}
 
       for (Bindings::const_declarations_iterator pm =
 	     methods->begin_declarations();
@@ -434,7 +444,12 @@ Export::prepare_types(const std::vector<Named_object*>* exports,
 	  break;
 
 	case Named_object::NAMED_OBJECT_FUNC:
-	  find.traverse_function(no->func_value()->type());
+	  {
+	    Function* fn = no->func_value();
+	    find.traverse_function(fn->type());
+	    if (fn->export_for_inlining())
+	      fn->block()->traverse(&find);
+	  }
 	  break;
 
 	case Named_object::NAMED_OBJECT_FUNC_DECLARATION:
