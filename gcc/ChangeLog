@@ -1,3 +1,16 @@
+2018-11-27  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/aix71.h (ASM_SPEC): Don't select default -maix64
+	cpu here.
+	(ASM_CPU_SPEC): Do so here.  Rewrite using if .. else if .. specs
+	form.  Error on missing -mcpu case.
+	* config/rs6000/driver-rs6000.c (asm_names <_AIX>): Update NULL case.
+	(asm_names <!_AIX>): Add missing cpus.  Update NULL case.  Apply
+	PR63177 fix for -mcpu=power8 and -mcpu=powerpc64le.
+	* config/rs6000/rs6000.h (ASM_CPU_SPEC): Rewrite using if ..
+	else if .. specs form.  Error on missing -mcpu case.  Don't output
+	duplicate -maltivec.  Apply PR63177 fix for -mcpu=powerpc64le.
+
 2018-11-26  David Malcolm  <dmalcolm@redhat.com>
 
 	* dump-context.h (dump_context::dump_loc): Convert 1st param from
