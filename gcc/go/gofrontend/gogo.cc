@@ -7631,7 +7631,7 @@ Named_constant::import_const(Import* imp, std::string* pname, Type** ptype,
       imp->require_c_string(" ");
     }
   imp->require_c_string("= ");
-  *pexpr = Expression::import_expression(imp);
+  *pexpr = Expression::import_expression(imp, imp->location());
   imp->require_semicolon_if_old_version();
   imp->require_c_string("\n");
 }

@@ -1014,9 +1014,11 @@ class Expression
   export_expression(Export_function_body* efb) const
   { this->do_export(efb); }
 
-  // Import an expression.
+  // Import an expression.  The location should be used for the
+  // returned expression.  Errors should be reported using the
+  // Import's location method.
   static Expression*
-  import_expression(Import*);
+  import_expression(Import*, Location);
 
   // Return an expression which checks that VAL, of arbitrary integer type,
   // is non-negative and is not more than the maximum integer value.
@@ -1565,7 +1567,7 @@ class String_expression : public Expression
   { return this->val_; }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
  protected:
   bool
@@ -1644,7 +1646,7 @@ class Type_conversion_expression : public Expression
 
   // Import a type conversion expression.
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
  protected:
   int
@@ -1815,7 +1817,7 @@ class Unary_expression : public Expression
 		Location, Numeric_constant* nc, bool *issued_error);
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
   // Declare that this deref does or does not require an explicit nil check.
   void
@@ -1964,7 +1966,7 @@ class Binary_expression : public Expression
 		   bool* result);
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
   // Report an error if OP can not be applied to TYPE.  Return whether
   // it can.  OTYPE is the type of the other operand.

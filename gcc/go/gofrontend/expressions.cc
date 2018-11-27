@@ -1583,7 +1583,7 @@ class Boolean_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
  protected:
   bool
@@ -1649,17 +1649,17 @@ Boolean_expression::do_determine_type(const Type_context* context)
 // Import a boolean constant.
 
 Expression*
-Boolean_expression::do_import(Import* imp)
+Boolean_expression::do_import(Import* imp, Location loc)
 {
   if (imp->peek_char() == 't')
     {
       imp->require_c_string("true");
-      return Expression::make_boolean(true, imp->location());
+      return Expression::make_boolean(true, loc);
     }
   else
     {
       imp->require_c_string("false");
-      return Expression::make_boolean(false, imp->location());
+      return Expression::make_boolean(false, loc);
     }
 }
 
@@ -1768,7 +1768,7 @@ String_expression::do_export(Export_function_body* efb) const
 // Import a string expression.
 
 Expression*
-String_expression::do_import(Import* imp)
+String_expression::do_import(Import* imp, Location loc)
 {
   imp->require_c_string("\"");
   std::string val;
@@ -1800,11 +1800,11 @@ String_expression::do_import(Import* imp)
 	  else
 	    {
 	      go_error_at(imp->location(), "bad string constant");
-	      return Expression::make_error(imp->location());
+	      return Expression::make_error(loc);
 	    }
 	}
     }
-  return Expression::make_string(val, imp->location());
+  return Expression::make_string(val, loc);
 }
 
 // Ast dump for string expression.
@@ -1944,7 +1944,7 @@ class Integer_expression : public Expression
   { mpz_init_set(this->val_, *val); }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
   // Write VAL to string dump.
   static void
@@ -2151,7 +2151,7 @@ Integer_expression::do_export(Export_function_body* efb) const
 // all these types because they all start with digits.
 
 Expression*
-Integer_expression::do_import(Import* imp)
+Integer_expression::do_import(Import* imp, Location loc)
 {
   std::string num = imp->read_identifier();
   imp->require_c_string(" ");
@@ -2169,7 +2169,7 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       if (pos == std::string::npos)
 	mpfr_set_ui(real, 0, GMP_RNDN);
@@ -2180,7 +2180,7 @@ Integer_expression::do_import(Import* imp)
 	    {
 	      go_error_at(imp->location(), "bad number in import data: %qs",
 			  real_str.c_str());
-	      return Expression::make_error(imp->location());
+	      return Expression::make_error(loc);
 	    }
 	}
 
@@ -2195,14 +2195,14 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      imag_str.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       mpc_t cval;
       mpc_init2(cval, mpc_precision);
       mpc_set_fr_fr(cval, real, imag, MPC_RNDNN);
       mpfr_clear(real);
       mpfr_clear(imag);
-      Expression* ret = Expression::make_complex(&cval, NULL, imp->location());
+      Expression* ret = Expression::make_complex(&cval, NULL, loc);
       mpc_clear(cval);
       return ret;
     }
@@ -2218,13 +2218,13 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
       Expression* ret;
       if (is_character_constant)
-	ret = Expression::make_character(&val, NULL, imp->location());
+	ret = Expression::make_character(&val, NULL, loc);
       else
-	ret = Expression::make_integer_z(&val, NULL, imp->location());
+	ret = Expression::make_integer_z(&val, NULL, loc);
       mpz_clear(val);
       return ret;
     }
@@ -2235,9 +2235,9 @@ Integer_expression::do_import(Import* imp)
 	{
 	  go_error_at(imp->location(), "bad number in import data: %qs",
 		      num.c_str());
-	  return Expression::make_error(imp->location());
+	  return Expression::make_error(loc);
 	}
-      Expression* ret = Expression::make_float(&val, NULL, imp->location());
+      Expression* ret = Expression::make_float(&val, NULL, loc);
       mpfr_clear(val);
       return ret;
     }
@@ -3133,7 +3133,7 @@ class Nil_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*);
+  do_import(Import*, Location);
 
  protected:
   bool
@@ -3172,10 +3172,10 @@ class Nil_expression : public Expression
 // Import a nil expression.
 
 Expression*
-Nil_expression::do_import(Import* imp)
+Nil_expression::do_import(Import* imp, Location loc)
 {
   imp->require_c_string("nil");
-  return Expression::make_nil(imp->location());
+  return Expression::make_nil(loc);
 }
 
 // Make a nil expression.
@@ -3623,14 +3623,14 @@ Type_conversion_expression::do_export(Export_function_body* efb) const
 // Import a type conversion or a struct construction.
 
 Expression*
-Type_conversion_expression::do_import(Import* imp)
+Type_conversion_expression::do_import(Import* imp, Location loc)
 {
   imp->require_c_string("convert(");
   Type* type = imp->read_type();
   imp->require_c_string(", ");
-  Expression* val = Expression::import_expression(imp);
+  Expression* val = Expression::import_expression(imp, loc);
   imp->require_c_string(")");
-  return Expression::make_cast(type, val, imp->location());
+  return Expression::make_cast(type, val, loc);
 }
 
 // Dump ast representation for a type conversion expression.
@@ -4634,7 +4634,7 @@ Unary_expression::do_export(Export_function_body* efb) const
 // Import a unary expression.
 
 Expression*
-Unary_expression::do_import(Import* imp)
+Unary_expression::do_import(Import* imp, Location loc)
 {
   Operator op;
   switch (imp->get_char())
@@ -4655,8 +4655,8 @@ Unary_expression::do_import(Import* imp)
       go_unreachable();
     }
   imp->require_c_string(" ");
-  Expression* expr = Expression::import_expression(imp);
-  return Expression::make_unary(op, expr, imp->location());
+  Expression* expr = Expression::import_expression(imp, loc);
+  return Expression::make_unary(op, expr, loc);
 }
 
 // Dump ast representation of an unary expression.
@@ -6403,11 +6403,11 @@ Binary_expression::do_export(Export_function_body* efb) const
 // Import a binary expression.
 
 Expression*
-Binary_expression::do_import(Import* imp)
+Binary_expression::do_import(Import* imp, Location loc)
 {
   imp->require_c_string("(");
 
-  Expression* left = Expression::import_expression(imp);
+  Expression* left = Expression::import_expression(imp, loc);
 
   Operator op;
   if (imp->match_c_string(" || "))
@@ -6508,14 +6508,14 @@ Binary_expression::do_import(Import* imp)
   else
     {
       go_error_at(imp->location(), "unrecognized binary operator");
-      return Expression::make_error(imp->location());
+      return Expression::make_error(loc);
     }
 
-  Expression* right = Expression::import_expression(imp);
+  Expression* right = Expression::import_expression(imp, loc);
 
   imp->require_c_string(")");
 
-  return Expression::make_binary(op, left, right, imp->location());
+  return Expression::make_binary(op, left, right, loc);
 }
 
 // Dump ast representation of a binary expression.
@@ -16138,33 +16138,33 @@ Expression::make_backend(Bexpression* bexpr, Type* type, Location location)
 // various class definitions.
 
 Expression*
-Expression::import_expression(Import* imp)
+Expression::import_expression(Import* imp, Location loc)
 {
   int c = imp->peek_char();
   if (imp->match_c_string("- ")
       || imp->match_c_string("! ")
       || imp->match_c_string("^ "))
-    return Unary_expression::do_import(imp);
+    return Unary_expression::do_import(imp, loc);
   else if (c == '(')
-    return Binary_expression::do_import(imp);
+    return Binary_expression::do_import(imp, loc);
   else if (imp->match_c_string("true")
 	   || imp->match_c_string("false"))
-    return Boolean_expression::do_import(imp);
+    return Boolean_expression::do_import(imp, loc);
   else if (c == '"')
-    return String_expression::do_import(imp);
+    return String_expression::do_import(imp, loc);
   else if (c == '-' || (c >= '0' && c <= '9'))
     {
       // This handles integers, floats and complex constants.
-      return Integer_expression::do_import(imp);
+      return Integer_expression::do_import(imp, loc);
     }
   else if (imp->match_c_string("nil"))
-    return Nil_expression::do_import(imp);
+    return Nil_expression::do_import(imp, loc);
   else if (imp->match_c_string("convert"))
-    return Type_conversion_expression::do_import(imp);
+    return Type_conversion_expression::do_import(imp, loc);
   else
     {
       go_error_at(imp->location(), "import error: expected expression");
-      return Expression::make_error(imp->location());
+      return Expression::make_error(loc);
     }
 }
 

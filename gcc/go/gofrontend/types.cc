@@ -6606,7 +6606,8 @@ Struct_type::do_import(Import* imp)
 	  if (imp->peek_char() == ' ')
 	    {
 	      imp->advance(1);
-	      Expression* expr = Expression::import_expression(imp);
+	      Expression* expr = Expression::import_expression(imp,
+							       imp->location());
 	      String_expression* sexpr = expr->string_expression();
 	      go_assert(sexpr != NULL);
 	      sf.set_tag(sexpr->val());
@@ -7568,7 +7569,7 @@ Array_type::do_import(Import* imp)
   if (imp->peek_char() == ']')
     length = NULL;
   else
-    length = Expression::import_expression(imp);
+    length = Expression::import_expression(imp, imp->location());
   imp->require_c_string("] ");
   Type* element_type = imp->read_type();
   return Type::make_array_type(element_type, length);

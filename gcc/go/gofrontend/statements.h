@@ -338,7 +338,9 @@ class Statement
   export_statement(Export_function_body* efb)
   { this->do_export_statement(efb); }
 
-  // Read a statement from export data.
+  // Read a statement from export data.  The location should be used
+  // for the returned statement.  Errors should be reported using the
+  // Import_function_body's location method.
   static Statement*
   import_statement(Import_function_body*, Location);
 
