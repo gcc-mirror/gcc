@@ -168,8 +168,6 @@ private:
 
   vec<basic_block> m_workback;
   vec<basic_block> m_workfwd;
-  sbitmap m_visited;
-
 };
 
 class trace_ranger : public global_ranger

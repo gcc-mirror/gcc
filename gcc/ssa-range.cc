@@ -1254,7 +1254,6 @@ global_ranger::global_ranger () : ssa_range (true)
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
   m_workfwd.create (0);
   m_workfwd.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  m_visited = sbitmap_alloc (last_basic_block_for_fn (cfun));
 }
 
 // Deallocate global_ranger members.
@@ -1266,7 +1265,6 @@ global_ranger::~global_ranger ()
   delete m_non_null;
   m_workback.release ();
   m_workfwd.release ();
-  sbitmap_free (m_visited);
 }
 
 // Print everything known about the global cache to file F.
@@ -1435,9 +1433,8 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   // the range_on_entry cache for.
   m_workback.truncate (0);
   m_workback.quick_push (bb);
+  m_block_cache->set_bb_range (name, bb, undefined);
   m_workfwd.truncate (0);
-  bitmap_clear (m_visited);
-  bitmap_set_bit (m_visited, bb->index);
 
 // fprintf (stderr, "\n");
 // print_generic_expr (stderr, name, TDF_SLIM);
@@ -1447,9 +1444,6 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
     {
       basic_block node = m_workback.pop ();
 // fprintf (stderr, "BACK visiting block %d\n", node->index);
-      // If we are visiting it, it should not have a cache set.
-      gcc_checking_assert (!m_block_cache->bb_range_p (name, node));
-      m_block_cache->set_bb_range (name, node, undefined);
 
       FOR_EACH_EDGE (e, ei, node->preds)
         {
@@ -1457,14 +1451,14 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  if (maybe_propagate_on_edge (name, e))
 	    continue;
 
-	  // If it hasn't been visited, add it to the list.
-	  if (!bitmap_bit_p (m_visited, e->src->index))
+	  // If the pred hasn't been visited, add it to the list.
+	  if (!m_block_cache->bb_range_p (name, e->src))
 	    {
-	      bitmap_set_bit (m_visited, e->src->index);
+	      m_block_cache->set_bb_range (name, e->src, undefined);
 	      m_workback.quick_push (e->src);
 	    }
-	}
-    }
+	  }
+      }
 
   // Now the workfwd queue has all the blocks that have had their entry
   // ranges "updated" from undefined. Start propagating until nothing
@@ -1478,15 +1472,10 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
       FOR_EACH_EDGE (e, ei, node->succs)
 	{
 	  basic_block dest = e->dest;
-	  // Only look at edges where the succ is in the visited list.
-	  
-	  if (!bitmap_bit_p (m_visited, dest->index))
-	    {
-	      // If the bit isnt set, there ought to be no ROE set either.
-	      // I think we can do this check instead of the visited map.
-	      gcc_checking_assert (!m_block_cache->bb_range_p (name, dest));
-	      continue;
-	    }
+
+	  // Only look at edges where the succ has been visited.
+	  if (!m_block_cache->bb_range_p (name, dest))
+	    continue;
 
 	  // Anything in this list ought to have range_on_entry set and
 	  // thus return a TRUE.
