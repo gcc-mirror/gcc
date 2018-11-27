@@ -2671,6 +2671,29 @@ proc check_effective_target_long_neq_int { } {
     }]
 }
 
+# Return 1 if int size is equal to float size,
+# 0 otherwise.
+
+proc check_effective_target_int_eq_float { } {
+    return [check_no_compiler_messages int_eq_float object {
+	int dummy[sizeof (int) >= sizeof (float) ? 1 : -1];
+    }]
+}
+
+# Return 1 if pointer size is equal to long size,
+# 0 otherwise.
+
+proc check_effective_target_ptr_eq_long { } {
+    # sizeof (void *) == 4 for msp430-elf -mlarge which is equal to
+    # sizeof (long). Avoid false positive.
+    if { [istarget msp430-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages ptr_eq_long object {
+	int dummy[sizeof (void *) == sizeof (long) ? 1 : -1];
+    }]
+}
+
 # Return 1 if the target supports long double larger than double,
 # 0 otherwise.
 
@@ -8472,6 +8495,7 @@ proc check_effective_target_logical_op_short_circuit {} {
 	 || [istarget crisv32-*-*] || [istarget cris-*-*]
 	 || [istarget csky*-*-*]
 	 || [istarget mmix-*-*]
+	 || [istarget msp430-*-*]
 	 || [istarget s390*-*-*]
 	 || [istarget powerpc*-*-*]
 	 || [istarget nios2*-*-*]

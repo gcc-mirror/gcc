@@ -1360,6 +1360,12 @@ Target has @code{int} that is 16 bits or shorter.
 @item long_neq_int
 Target has @code{int} and @code{long} with different sizes.
 
+@item int_eq_float
+Target has @code{int} and @code{float} with the same size.
+
+@item ptr_eq_long
+Target has pointers (@code{void *}) and @code{long} with the same size.
+
 @item large_double
 Target supports @code{double} that is longer than @code{float}.
 

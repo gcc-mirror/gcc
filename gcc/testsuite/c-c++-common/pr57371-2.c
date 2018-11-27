@@ -8,7 +8,7 @@
 
 int foo1(int x) {
   return (float) x != 0;
-  /* { dg-final { scan-tree-dump "\\(float\\)" "optimized" } } */
+  /* { dg-final { scan-tree-dump "\\(float\\)" "optimized" { xfail { ! int_eq_float } } } } */
 }
 
 int foo2(long long x) {

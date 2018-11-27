@@ -1,3 +1,8 @@
+2018-11-27  Jozef Lawrynowicz  <jozef.l@mittosystems.com>
+
+	* doc/sourcebuild.texi: Document check_effective_target_int_eq_float
+	and check_effective_target_ptr_eq_long.
+
 2018-11-27  Alan Modra  <amodra@gmail.com>
 
 	* config.gcc (powerpc*-*-freebsd*, powerpc-*-netbsd*),
