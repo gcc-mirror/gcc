@@ -1411,6 +1411,7 @@ struct mips_cpu_info {
 %{mloongson-ext2} %{mno-loongson-ext2} \
 %{msmartmips} %{mno-smartmips} \
 %{mmt} %{mno-mt} \
+%{mfix-r5900} %{mno-fix-r5900} \
 %{mfix-rm7000} %{mno-fix-rm7000} \
 %{mfix-vr4120} %{mfix-vr4130} \
 %{mfix-24k} \
