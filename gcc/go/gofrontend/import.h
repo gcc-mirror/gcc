@@ -554,7 +554,7 @@ class Import_function_body : public Import_expression
 		       const std::string& body, size_t off, Block* block,
 		       int indent)
     : gogo_(gogo), imp_(imp), named_object_(named_object), body_(body),
-      off_(off), block_(block), indent_(indent)
+      off_(off), block_(block), indent_(indent), saw_error_(false)
   { }
 
   // The IR.
@@ -596,6 +596,16 @@ class Import_function_body : public Import_expression
   int
   indent() const
   { return this->indent_; }
+
+  // Increment the indentation level.
+  void
+  increment_indent()
+  { ++this->indent_; }
+
+  // Decrement the indentation level.
+  void
+  decrement_indent()
+  { --this->indent_; }
 
   // The name of the function we are parsing.
   const std::string&
@@ -651,6 +661,16 @@ class Import_function_body : public Import_expression
   Import_function_body*
   ifb()
   { return this; }
+
+  // Return whether we have seen an error.
+  bool
+  saw_error() const
+  { return this->saw_error_; }
+
+  // Record that we have seen an error.
+  void
+  set_saw_error()
+  { this->saw_error_ = true; }
 
  private:
   // The IR.
