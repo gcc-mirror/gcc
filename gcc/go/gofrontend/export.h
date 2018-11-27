@@ -12,6 +12,7 @@
 class Go_sha1_helper;
 class Gogo;
 class Named_object;
+class Export_function_body;
 class Import_init;
 class Named_object;
 class Bindings;
@@ -183,6 +184,10 @@ class Export : public String_dump
   void
   write_type(const Type*);
 
+  // Write a type to an exported function body.
+  void
+  write_type_to(const Type*, Export_function_body*);
+
   // Write the escape note to the export stream.  If NOTE is NULL, write
   // nothing.
   void
@@ -241,6 +246,10 @@ class Export : public String_dump
   void
   register_builtin_type(Gogo*, const char* name, Builtin_code);
 
+  // Return the index of a type in the export data.
+  int
+  type_index(const Type*);
+
   // The stream to which we are writing data.
   Stream* stream_;
   // Index number of next type.
@@ -290,11 +299,11 @@ class Stream_to_string : public Export::Stream
 // to Statements and Expressions.  It builds up the export data for
 // the function.
 
-class Export_function_body
+class Export_function_body : public String_dump
 {
  public:
-  Export_function_body(int indent)
-    : indent_(indent)
+  Export_function_body(Export* exp, int indent)
+    : exp_(exp), indent_(indent)
   { }
 
   // Write a character to the body.
@@ -311,6 +320,11 @@ class Export_function_body
   void
   write_string(const std::string& str)
   { this->body_.append(str); }
+
+  // Write a type reference to the body.
+  void
+  write_type(const Type* type)
+  { this->exp_->write_type_to(type, this); }
 
   // Append as many spaces as the current indentation level.
   void
@@ -336,6 +350,8 @@ class Export_function_body
   { return this->body_; }
 
  private:
+  // The overall export data.
+  Export* exp_;
   // The body we are building.
   std::string body_;
   // Current indentation level: the number of spaces before each statement.

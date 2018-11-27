@@ -6566,7 +6566,11 @@ Struct_type::do_export(Export* exp) const
 	  exp->write_c_string(" ");
 	  Expression* expr =
             Expression::make_string(p->tag(), Linemap::predeclared_location());
-	  expr->export_expression(exp);
+
+	  Export_function_body efb(exp, 0);
+	  expr->export_expression(&efb);
+	  exp->write_string(efb.body());
+
 	  delete expr;
 	}
 
@@ -7545,7 +7549,11 @@ Array_type::do_export(Export* exp) const
 {
   exp->write_c_string("[");
   if (this->length_ != NULL)
-    this->length_->export_expression(exp);
+    {
+      Export_function_body efb(exp, 0);
+      this->length_->export_expression(&efb);
+      exp->write_string(efb.body());
+    }
   exp->write_c_string("] ");
   exp->write_type(this->element_type_);
 }
