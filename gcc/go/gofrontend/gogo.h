@@ -1691,8 +1691,11 @@ class Function_declaration
 
   // Record the imported body of this function.
   void
-  set_imported_body(const std::string& imported_body)
-  { this->imported_body_ = imported_body; }
+  set_imported_body(Import* imp, const std::string& imported_body)
+  {
+    this->imp_ = imp;
+    this->imported_body_ = imported_body;
+  }
 
   // Whether this declaration is on the list of inlinable functions.
   bool
@@ -1756,6 +1759,8 @@ class Function_declaration
   Bfunction* fndecl_;
   // Pragmas for this function.  This is a set of GOPRAGMA bits.
   unsigned int pragmas_;
+  // Importer for function body if imported from a different package.
+  Import* imp_;
   // Export data for function body if imported from a different package.
   std::string imported_body_;
   // Whether this declaration is already on the list of inlinable functions.

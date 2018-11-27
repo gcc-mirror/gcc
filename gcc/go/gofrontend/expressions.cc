@@ -1583,7 +1583,7 @@ class Boolean_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*, Location);
+  do_import(Import_expression*, Location);
 
  protected:
   bool
@@ -1649,7 +1649,7 @@ Boolean_expression::do_determine_type(const Type_context* context)
 // Import a boolean constant.
 
 Expression*
-Boolean_expression::do_import(Import* imp, Location loc)
+Boolean_expression::do_import(Import_expression* imp, Location loc)
 {
   if (imp->peek_char() == 't')
     {
@@ -1768,7 +1768,7 @@ String_expression::do_export(Export_function_body* efb) const
 // Import a string expression.
 
 Expression*
-String_expression::do_import(Import* imp, Location loc)
+String_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("\"");
   std::string val;
@@ -1944,7 +1944,7 @@ class Integer_expression : public Expression
   { mpz_init_set(this->val_, *val); }
 
   static Expression*
-  do_import(Import*, Location);
+  do_import(Import_expression*, Location);
 
   // Write VAL to string dump.
   static void
@@ -2151,7 +2151,7 @@ Integer_expression::do_export(Export_function_body* efb) const
 // all these types because they all start with digits.
 
 Expression*
-Integer_expression::do_import(Import* imp, Location loc)
+Integer_expression::do_import(Import_expression* imp, Location loc)
 {
   std::string num = imp->read_identifier();
   imp->require_c_string(" ");
@@ -3133,7 +3133,7 @@ class Nil_expression : public Expression
   { }
 
   static Expression*
-  do_import(Import*, Location);
+  do_import(Import_expression*, Location);
 
  protected:
   bool
@@ -3172,7 +3172,7 @@ class Nil_expression : public Expression
 // Import a nil expression.
 
 Expression*
-Nil_expression::do_import(Import* imp, Location loc)
+Nil_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("nil");
   return Expression::make_nil(loc);
@@ -3623,7 +3623,7 @@ Type_conversion_expression::do_export(Export_function_body* efb) const
 // Import a type conversion or a struct construction.
 
 Expression*
-Type_conversion_expression::do_import(Import* imp, Location loc)
+Type_conversion_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("convert(");
   Type* type = imp->read_type();
@@ -4634,7 +4634,7 @@ Unary_expression::do_export(Export_function_body* efb) const
 // Import a unary expression.
 
 Expression*
-Unary_expression::do_import(Import* imp, Location loc)
+Unary_expression::do_import(Import_expression* imp, Location loc)
 {
   Operator op;
   switch (imp->get_char())
@@ -6403,7 +6403,7 @@ Binary_expression::do_export(Export_function_body* efb) const
 // Import a binary expression.
 
 Expression*
-Binary_expression::do_import(Import* imp, Location loc)
+Binary_expression::do_import(Import_expression* imp, Location loc)
 {
   imp->require_c_string("(");
 
@@ -16138,7 +16138,7 @@ Expression::make_backend(Bexpression* bexpr, Type* type, Location location)
 // various class definitions.
 
 Expression*
-Expression::import_expression(Import* imp, Location loc)
+Expression::import_expression(Import_expression* imp, Location loc)
 {
   int c = imp->peek_char();
   if (imp->match_c_string("- ")
