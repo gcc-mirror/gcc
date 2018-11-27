@@ -1,3 +1,12 @@
+2018-11-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/88199
+	* include/bits/hashtable.h (_Hashtable<>::_M_assign_elements): New.
+	(_Hashtable<>::operator=(const _Hashtable&)): Use latter.
+	(_Hashtable<>::_M_move_assign(_Hashtable&&, false_type)): Likewise.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc
+	(test03): New.
+
 2018-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/26_numerics/complex/requirements/more_constexpr.cc: Fix
@@ -20,7 +29,7 @@
 	more_constexpr.cc: New test.
 	* testsuite/26_numerics/headers/complex/synopsis.cc:
 	Add _GLIBCXX20_CONSTEXPR to applicable operators; Add missing proj().
-	* testsuite/26_numerics/headers/complex/synopsis.cc: 
+	* testsuite/26_numerics/headers/complex/synopsis.cc:
 	Add _GLIBCXX20_CONSTEXPR to relevant decls.
 
 2018-11-23  Martin Sebor  <msebor@redhat.com>
