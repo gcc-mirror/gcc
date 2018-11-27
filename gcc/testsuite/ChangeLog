@@ -1,3 +1,12 @@
+2018-11-27  Martin Sebor  <msebor@redhat.com>
+
+	PR 87756
+	PR 88211
+	PR 88226
+	* gcc.dg/tree-ssa/builtin-fprintf-warn-1.c: Update/remove xfails.
+	* gcc.dg/tree-ssa/builtin-printf-warn-1.c: Same.
+	* gcc.dg/tree-ssa/user-printf-warn-1.c: Same.
+
 2018-11-27  Mike Gulick  <mgulick@mathworks.com>
 
 	PR preprocessor/83173
