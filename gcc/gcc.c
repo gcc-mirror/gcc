@@ -408,6 +408,7 @@ static const char *pass_through_libs_spec_func (int, const char **);
 static const char *replace_extension_spec_func (int, const char **);
 static const char *greater_than_spec_func (int, const char **);
 static const char *debug_level_greater_than_spec_func (int, const char **);
+static const char *find_fortran_preinclude_file (int, const char **);
 static char *convert_white_space (char *);
 
 /* The Specs Language
@@ -1647,6 +1648,7 @@ static const struct spec_function static_spec_functions[] =
   { "replace-extension",	replace_extension_spec_func },
   { "gt",			greater_than_spec_func },
   { "debug-level-gt",		debug_level_greater_than_spec_func },
+  { "fortran-preinclude-file",	find_fortran_preinclude_file},
 #ifdef EXTRA_SPEC_FUNCTIONS
   EXTRA_SPEC_FUNCTIONS
 #endif
@@ -9893,6 +9895,23 @@ debug_level_greater_than_spec_func (int argc, const char **argv)
 
   return NULL;
 }
+
+/* The function takes 2 arguments: OPTION name and file name.
+   When the FILE is found by find_file, return OPTION=path_to_file.  */
+
+static const char *
+find_fortran_preinclude_file (int argc, const char **argv)
+{
+  if (argc != 2)
+    return NULL;
+
+  const char *path = find_a_file (&include_prefixes, argv[1], R_OK, true);
+  if (path != NULL)
+    return concat (argv[0], path, NULL);
+
+  return NULL;
+}
+
 
 /* Insert backslash before spaces in ORIG (usually a file path), to 
    avoid being broken by spec parser.

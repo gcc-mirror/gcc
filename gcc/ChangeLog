@@ -1,5 +1,11 @@
 2018-11-27  Martin Liska  <mliska@suse.cz>
 
+	* config/gnu-user.h (TARGET_F951_OPTIONS): New.
+	* gcc.c (find_fortran_preinclude_file): New function
+	to handle Fortran pre-include.
+
+2018-11-27  Martin Liska  <mliska@suse.cz>
+
 	* asan.c (asan_emit_stack_protection): Use new enum values
 	instead of int constants.
 	* builtins.c (expand_builtin_memory_copy_args): Replace int

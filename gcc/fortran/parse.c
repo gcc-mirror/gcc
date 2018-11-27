@@ -1072,6 +1072,7 @@ decode_gcc_attribute (void)
 
   match ("attributes", gfc_match_gcc_attributes, ST_ATTR_DECL);
   match ("unroll", gfc_match_gcc_unroll, ST_NONE);
+  match ("builtin", gfc_match_gcc_builtin, ST_NONE);
 
   /* All else has failed, so give up.  See if any of the matchers has
      stored an error message of some sort.  */
@@ -5662,6 +5663,8 @@ parse_progunit (gfc_statement st)
 {
   gfc_state_data *p;
   int n;
+
+  gfc_adjust_builtins ();
 
   if (gfc_new_block
       && gfc_new_block->abr_modproc_decl
