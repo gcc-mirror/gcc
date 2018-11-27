@@ -1,5 +1,8 @@
 2018-11-27  Jeff Law  <law@redhat.com>
 
+	* config/mips/mips.c (mips_block_move_straight): Use RETURN_BEGIN
+	in call to move_by_pieces.
+
 	* config/microblaze/microblaze.c (microblaze_block_move_straight): Use
 	RETURN_BEGIN in call to move_by_pieces.
 	(microblaze_expand_block_move): Likewise.
