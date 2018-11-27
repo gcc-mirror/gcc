@@ -1,3 +1,12 @@
+2018-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88188
+	* config/rs6000/rs6000.c (print_operand) <case 'D'>: Use
+	output_operand_lossage instead of gcc_assert.
+	<case 't'>: Likewise.
+	<case 'z'>: Likewise.
+	<case 'V'>: Use output_operand_lossage instead of gcc_unreachable.
+
 2018-11-27  Jeff Law  <law@redhat.com>
 
 	* config/riscv/riscv (riscv_block_mvoe_straight): Use RETURN_BEGIN

@@ -20644,7 +20644,11 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'D':
       /* Like 'J' but get to the GT bit only.  */
-      gcc_assert (REG_P (x));
+      if (!REG_P (x))
+	{
+	  output_operand_lossage ("invalid %%D value");
+	  return;
+	}
 
       /* Bit 1 is GT bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 1;
@@ -20900,7 +20904,11 @@ print_operand (FILE *file, rtx x, int code)
 
     case 't':
       /* Like 'J' but get to the OVERFLOW/UNORDERED bit.  */
-      gcc_assert (REG_P (x) && GET_MODE (x) == CCmode);
+      if (!REG_P (x) || GET_MODE (x) != CCmode)
+	{
+	  output_operand_lossage ("invalid %%t value");
+	  return;
+	}
 
       /* Bit 3 is OV bit.  */
       i = 4 * (REGNO (x) - CR0_REGNO) + 3;
@@ -20989,7 +20997,7 @@ print_operand (FILE *file, rtx x, int code)
 	  fputs ("lge", file);  /* 5 */
 	  break;
 	default:
-	  gcc_unreachable ();
+	  output_operand_lossage ("invalid %%V value");
 	}
       break;
 
@@ -21059,7 +21067,11 @@ print_operand (FILE *file, rtx x, int code)
 	 names.  If we are configured for System V (or the embedded ABI) on
 	 the PowerPC, do not emit the period, since those systems do not use
 	 TOCs and the like.  */
-      gcc_assert (GET_CODE (x) == SYMBOL_REF);
+      if (!SYMBOL_REF_P (x))
+	{
+	  output_operand_lossage ("invalid %%z value");
+	  return;
+	}
 
       /* For macho, check to see if we need a stub.  */
       if (TARGET_MACHO)

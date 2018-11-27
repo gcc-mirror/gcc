@@ -23,5 +23,5 @@ int h(int a, int b, int c, int d)
  return a;
 }
 
-/* { dg-final { scan-tree-dump-times "if" 0 "optimized" { target { ! logical_op_short_circuit } } } } */
-/* { dg-final { scan-tree-dump-times "if" 2 "optimized" { target logical_op_short_circuit } } } */
+/* { dg-final { scan-tree-dump-times "if" 0 "optimized" { target { { ! logical_op_short_circuit } || branch_cost } } } } */
+/* { dg-final { scan-tree-dump-times "if" 2 "optimized" { target { logical_op_short_circuit && { ! branch_cost } } } } } */
