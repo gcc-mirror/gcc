@@ -1105,13 +1105,13 @@ read_abbrevs (struct backtrace_state *state, uint64_t abbrev_offset,
   if (num_abbrevs == 0)
     return 1;
 
-  abbrevs->num_abbrevs = num_abbrevs;
   abbrevs->abbrevs = ((struct abbrev *)
 		      backtrace_alloc (state,
 				       num_abbrevs * sizeof (struct abbrev),
 				       error_callback, data));
   if (abbrevs->abbrevs == NULL)
     return 0;
+  abbrevs->num_abbrevs = num_abbrevs;
   memset (abbrevs->abbrevs, 0, num_abbrevs * sizeof (struct abbrev));
 
   num_abbrevs = 0;

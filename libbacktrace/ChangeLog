@@ -1,3 +1,8 @@
+2018-11-28  Tom de Vries  <tdevries@suse.de>
+
+	* dwarf.c (read_abbrevs): Fix handling of abbrevs->abbrevs allocation
+	failure.
+
 2018-11-27  Tom de Vries  <tdevries@suse.de>
 
 	* mmap.c (backtrace_vector_release): Same.
