@@ -1,3 +1,23 @@
+2018-11-28  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* modules.cc (trees_{in,out}::tree_node_bools): Break out
+	tree_node_specific.
+	(trees_out::ref_force_{lwm.hwm}): Delete.
+	(trees_out::gme_lwm): New.
+	(trees_out::insert): Change force to walk_kind.
+	(trees_out::mark_node): Drop walk_kind arg.
+	(trees_out::{,un}mark_trees): Adjust.
+	(trees_out::{mark_node,insert}): Adjust.
+	(trees_out::start): Drop CODE parm.
+	(trees_out::{ref_node,tree_ctx}): Adjust.
+	(trees_out::tree_value): Adjust.
+	(trees_{in,out}::tree_node): Likewise.
+	(module_state::write_binfos): Likewise.
+	(module_state::mark_{class,enum}_def): Adjust.
+	(module_state::{read,write}_cluster): Adjust.
+	(module_state::find_dependencies): Adjust.
+
 2018-11-26  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

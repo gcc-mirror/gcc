@@ -2462,7 +2462,8 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   tree tree_binfo ();
-  bool tree_node_bools (tree);
+  bool tree_node_specific (tree);
+  bool tree_node_bools (tree, bool);
   bool tree_node_vals (tree);
 
 public:
@@ -2487,10 +2488,6 @@ trees_in::~trees_in ()
 /* Tree stream writer.  */
 class trees_out : public bytes_out {
   typedef bytes_out parent;
-
-  /* Special marker reference numbers.  */
-  static const int ref_force_lwm = 0;
-  static const int ref_force_hwm = 1;
 
 private:
   module_state *state;		/* The module we are writing.  */
@@ -2528,11 +2525,20 @@ private:
   }
 
 public:
-  int insert (tree, bool = false);
+  static const int gme_lwm = 1024;
+  enum walk_kind
+    {
+     WK_none,   /* No walk to do (a backref).  */
+     WK_normal, /* Normal walk (by-name if possible).  */
+     WK_body
+    };
+
+public:
+  int insert (tree, walk_kind = WK_normal);
   int maybe_insert_typeof (tree);
 
 private:
-  void start (tree_code, tree);
+  void start (tree);
 
 public:
   void core_bools (tree);
@@ -2544,6 +2550,7 @@ private:
   void lang_decl_bools (tree);
   void lang_decl_vals (tree);
   tree tree_binfo (tree, int, bool);
+  void tree_node_specific (tree);
   void tree_node_bools (tree);
   void tree_node_vals (tree);
 
@@ -2553,20 +2560,13 @@ public:
   void tree_pair_vec (vec<tree_pair_s, va_gc> *);
 
 public:
-  enum walk_kind
-    {
-     WK_none,	/* No walk to do.  */
-     WK_normal, /* Normal walk.  */
-     WK_body = -1,  /* Must do a by-value walk.  */
-    };
-
   /* Mark a node for special walking.  */
-  void mark_node (tree, walk_kind);
+  void mark_node (tree);
   walk_kind ref_node (tree);
 
 public:
   void tree_node (tree);
-  void tree_value (tree, walk_kind ref);
+  void tree_value (tree, walk_kind);
 
 private:
   bool tree_decl (tree, walk_kind ref, bool looking_inside);
@@ -3789,7 +3789,7 @@ trees_out::mark_trees ()
   for (unsigned ix = 0; ix != limit; ix++)
     {
       tree val = (*fixed_trees)[ix];
-      bool existed = tree_map.put (val, ix + ref_force_hwm);
+      bool existed = tree_map.put (val, ix + 1);
       gcc_checking_assert (!TREE_VISITED (val) && !existed);
       TREE_VISITED (val) = true;
     }
@@ -3807,8 +3807,7 @@ trees_out::unmark_trees ()
     {
       tree node = reinterpret_cast <tree> ((*iter).first);
       int ref = (*iter).second;
-      gcc_checking_assert (TREE_VISITED (node)
-			   && (ref < ref_force_lwm || ref >= ref_force_hwm));
+      gcc_checking_assert (TREE_VISITED (node) && ref && ref < gme_lwm);
       TREE_VISITED (node) = false;
     }
 }
@@ -3818,23 +3817,23 @@ trees_out::unmark_trees ()
    times on the same node.  */
 
 void
-trees_out::mark_node (tree decl, walk_kind walk)
+trees_out::mark_node (tree decl)
 {
-  gcc_checking_assert (walk < 0
-		       && (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl)));
+  gcc_checking_assert (DECL_P (decl) || IS_FAKE_BASE_TYPE (decl));
 
   if (TREE_VISITED (decl))
-    gcc_checking_assert (*tree_map.get (decl) == ref_force_hwm + walk);
+    gcc_checking_assert (!*tree_map.get (decl)
+			 || *tree_map.get (decl) > gme_lwm);
   else
     {
-      bool existed = tree_map.put (decl, ref_force_hwm + walk);
+      bool existed = tree_map.put (decl, 0);
       gcc_checking_assert (!existed);
       TREE_VISITED (decl) = true;
 
       /* If the node is a template, mark the underlying decl too.  (The
 	 reverse does not need to be checked for.)  */
-      if (walk == WK_body && TREE_CODE (decl) == TEMPLATE_DECL)
-	mark_node (DECL_TEMPLATE_RESULT (decl), walk);
+      if (TREE_CODE (decl) == TEMPLATE_DECL)
+	mark_node (DECL_TEMPLATE_RESULT (decl));
     }
 }
 
@@ -3843,14 +3842,14 @@ trees_out::mark_node (tree decl, walk_kind walk)
    entry.  */
 
 int
-trees_out::insert (tree t, bool forcing)
+trees_out::insert (tree t, walk_kind walk)
 {
-  gcc_checking_assert (TREE_VISITED (t) == forcing);
+  gcc_checking_assert (TREE_VISITED (t) == (walk != WK_normal));
   TREE_VISITED (t) = true;
 
   bool existed;
   int &slot = tree_map.get_or_insert (t, &existed);
-  gcc_checking_assert (existed == forcing && (!forcing || !slot));
+  gcc_checking_assert (existed == (walk != WK_normal));
   slot = --ref_num;
   return slot;
 }
@@ -3973,12 +3972,12 @@ trees_in::tree_pair_vec ()
    node.  */
 
 void
-trees_out::start (tree_code code, tree t)
+trees_out::start (tree t)
 {
-  switch (code)
+  switch (TREE_CODE (t))
     {
     default:
-      if (TREE_CODE_CLASS (code) == tcc_vl_exp)
+      if (TREE_CODE_CLASS (TREE_CODE (t)) == tcc_vl_exp)
 	u (VL_EXP_OPERAND_LENGTH (t));
       break;
     case IDENTIFIER_NODE:
@@ -5709,6 +5708,79 @@ trees_in::tree_binfo ()
   return binfo;
 }
 
+/* Bools to encode presence of lang_specific extension.  */
+
+void
+trees_out::tree_node_specific (tree t)
+{
+  if (!streaming_p ())
+    return;
+
+  /* We should never stream a namespace.  */
+  gcc_checking_assert (TREE_CODE (t) != NAMESPACE_DECL);
+
+  switch (TREE_CODE_CLASS (TREE_CODE (t)))
+    {
+    case tcc_declaration:
+      {
+	/* The only decls we should stream out are those from this
+	   module, or the global module.  All other decls should be by
+	   name.  */
+	gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
+			     || t != get_module_owner (t));
+
+	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
+	b (specific);
+	if (specific && VAR_P (t))
+	  b (DECL_DECOMPOSITION_P (t));
+      }
+      break;
+
+    case tcc_type:
+      {
+	bool specific = (TYPE_MAIN_VARIANT (t) == t
+			 && TYPE_LANG_SPECIFIC (t) != NULL);
+	gcc_assert (TYPE_LANG_SPECIFIC (t)
+		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
+
+	b (specific);
+      }
+      break;
+
+    default:
+      break;
+    }
+}
+
+bool
+trees_in::tree_node_specific (tree t)
+{
+  bool specific = false;
+  switch (TREE_CODE_CLASS (TREE_CODE (t)))
+    {
+    case tcc_declaration:
+      specific = b ();
+      if (specific)
+	{
+	  bool decomp = VAR_P (t) && b ();
+
+	  maybe_add_lang_decl_raw (t, decomp);
+	}
+      break;
+
+    case tcc_type:
+      specific = b ();
+      if (specific)
+	maybe_add_lang_type_raw (t);
+      break;
+
+    default:
+      break;
+    }
+
+  return specific;
+}
+
 /* Write out the bools of T, including information about any
    LANG_SPECIFIC information.  */
 
@@ -5726,36 +5798,13 @@ trees_out::tree_node_bools (tree t)
   switch (TREE_CODE_CLASS (TREE_CODE (t)))
     {
     case tcc_declaration:
-      {
-	
-	/* The only decls we should stream out are those from this
-	   module, or the global module.  All other decls should be by
-	   name.  */
-	gcc_checking_assert (MAYBE_DECL_MODULE_OWNER (t) < MODULE_IMPORT_BASE
-			     || t != get_module_owner (t));
-
-	bool specific = DECL_LANG_SPECIFIC (t) != NULL;
-	b (specific);
-	if (specific)
-	  {
-	    if (VAR_P (t))
-	      b (DECL_DECOMPOSITION_P (t));
-	    lang_decl_bools (t);
-	  }
-      }
+      if (DECL_LANG_SPECIFIC (t))
+	lang_decl_bools (t);
       break;
 
     case tcc_type:
-      {
-	bool specific = (TYPE_MAIN_VARIANT (t) == t
-			 && TYPE_LANG_SPECIFIC (t) != NULL);
-	gcc_assert (TYPE_LANG_SPECIFIC (t)
-		    == TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t)));
-
-	b (specific);
-	if (specific)
-	  lang_type_bools (t);
-      }
+      if (TYPE_MAIN_VARIANT (t) == t && TYPE_LANG_SPECIFIC (t) != NULL)
+	lang_type_bools (t);
       break;
 
     default:
@@ -5765,29 +5814,19 @@ trees_out::tree_node_bools (tree t)
 }
 
 bool
-trees_in::tree_node_bools (tree t)
+trees_in::tree_node_bools (tree t, bool specific)
 {
   bool ok = core_bools (t);
 
-  if (ok)
+  if (ok && specific)
     switch (TREE_CODE_CLASS (TREE_CODE (t)))
       {
       case tcc_declaration:
-	if (b ())
-	  {
-	    ok = maybe_add_lang_decl_raw (t, VAR_P (t) && b ());
-	    if (ok)
-	      ok = lang_decl_bools (t);
-	  }
+	ok = lang_decl_bools (t);
 	break;
 
       case tcc_type:
-	if (b ())
-	  {
-	    ok = maybe_add_lang_type_raw (t);
-	    if (ok)
-	      ok = lang_type_bools (t);
-	  }
+	ok = lang_type_bools (t);
 	break;
 
       default:
@@ -5878,34 +5917,35 @@ trees_out::ref_node (tree t)
       int *val_ptr = tree_map.get (t);
       int val = *val_ptr;
 
-      if (val == ref_force_lwm)
+      if (!val)
 	/* An entry we should walk into.  */
 	return WK_body;
-	  
+
+      walk_kind walk = WK_none;
       if (streaming_p ())
 	{
 	  const char *kind;
 
 	  refs++;
-	  if (val < ref_force_lwm)
+	  if (val < 0)
 	    {
 	      /* Back reference -> -ve number  */
 	      i (val);
 	      kind = "backref";
 	    }
-	  else if (val >= ref_force_hwm)
+	  else
 	    {
 	      /* Fixed reference -> tt_fixed */
-	      i (tt_fixed), u (val -= ref_force_hwm);
+	      i (tt_fixed), u (val -= 1);
 	      kind = "fixed";
 	    }
-	  else
-	    gcc_unreachable ();
 
 	  dump (dumper::TREE)
 	    && dump ("Wrote %s:%d %C:%N%S", kind, val, TREE_CODE (t), t, t);
 	}
-      return WK_none;
+      else
+	gcc_checking_assert (val < gme_lwm);
+      return walk;
     }
 
   return WK_normal;
@@ -5917,20 +5957,20 @@ trees_out::ref_node (tree t)
 void
 trees_out::tree_ctx (tree ctx, bool need_contents, tree inner_decl)
 {
-  walk_kind ref = ref_node (ctx);
-  if (ref != WK_none)
+  walk_kind walk = ref_node (ctx);
+  if (walk != WK_none)
     {
       bool by_value = false;
 
       if (TYPE_P (ctx))
-	by_value = tree_type (ctx, ref, need_contents);
+	by_value = tree_type (ctx, walk, need_contents);
       else if (TREE_CODE (ctx) == NAMESPACE_DECL)
-	tree_namespace (ctx, ref, inner_decl);
+	tree_namespace (ctx, walk, inner_decl);
       else
-	by_value = tree_decl (ctx, ref, need_contents);
+	by_value = tree_decl (ctx, walk, need_contents);
   
       if (by_value)
-	tree_value (ctx, ref);
+	tree_value (ctx, walk);
     }
 }
 
@@ -5952,7 +5992,7 @@ trees_out::tree_namespace (tree ns, walk_kind ref, tree inner_decl)
   else if (DECL_SOURCE_LOCATION (ns) != BUILTINS_LOCATION)
     dep_hash->add_dependency (ns, true);
 
-  int tag = insert (ns, ref == WK_body);
+  int tag = insert (ns, ref);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Wrote%s namespace:%d %C:%N@%M",
@@ -6210,26 +6250,24 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
    needed for consistency checking.  */
 
 void
-trees_out::tree_value (tree t, walk_kind ref)
+trees_out::tree_value (tree t, walk_kind walk)
 {
   if (streaming_p ())
     {
       /* A new node -> tt_node.  */
-      tree_code code = TREE_CODE (t);
-
       unique++;
       i (tt_node);
-      u (code);
-
-      start (code, t);
+      i (TREE_CODE (t));
+      start (t);
     }
 
-  int tag = insert (t, ref == WK_body);
+  int tag = insert (t, walk);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
 	       TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
 	       && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
+  tree_node_specific (t);
   tree_node_bools (t);
   tree_node_vals (t);
   if (streaming_p ())
@@ -6321,7 +6359,7 @@ trees_out::tree_node (tree t)
 	  i (tt_tinfo_typedef);
 	  u (ix);
 	}
-      unsigned tag = insert (t);
+      int tag = insert (t);
       if (streaming_p ())
 	dump (dumper::TREE)
 	  && dump ("Wrote:%d typeinfo pseudo %u %N", tag, ix, t);
@@ -6622,14 +6660,10 @@ trees_in::tree_node ()
     case tt_node:
       {
 	/* A new node.  Stream it in.  */
-	unsigned c = u ();
-	if (c >= MAX_TREE_CODES)
-	  {
-	    error_at (state->loc, "unknown tree code %qd" , c);
-	    set_overrun ();
-	  }
-	tree_code code = tree_code (c);
-	res = start (code);
+	tag = i ();
+	if (unsigned (tag) >= MAX_TREE_CODES)
+	  set_overrun ();
+	res = start (tree_code (tag));
 	if (!res)
 	  {
 	    set_overrun ();
@@ -6638,22 +6672,20 @@ trees_in::tree_node ()
 
 	/* Insert into map.  */
 	tag = insert (res);
-	dump (dumper::TREE) && dump ("Reading:%d %C", tag, code);
 
-	if (!tree_node_bools (res)
-	    || !tree_node_vals (res))
-	  goto barf;
+	dump (dumper::TREE) && dump ("Reading:%d %C", tag, TREE_CODE (res));
 
-	if (get_overrun ())
+	bool specific = tree_node_specific (res);
+	bool ok = tree_node_bools (res, specific);
+	bflush ();
+	if (!ok || !tree_node_vals (res))
 	  {
-	  barf:
 	    back_refs[~tag] = NULL_TREE;
-	    set_overrun ();
 	    res = NULL_TREE;
 	    break;
 	  }
 
-	dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, code, res);
+	dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
 	tree found = finish (res);
 
 	if (found != res)
@@ -6665,6 +6697,7 @@ trees_in::tree_node ()
 	      && dump ("Remapping:%d to %C:%N%S", tag,
 		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	  }
+
 	break;
       }
     }
@@ -8478,7 +8511,8 @@ module_state::write_binfos (trees_out &out, tree type)
       // FIXME:The assertion in this comment is wrong
       /* We might have tagged the binfo during a by-reference walk.
 	 Force a new tag now.  */
-      int tag = out.insert (child, TREE_VISITED (child));
+      int tag = out.insert (child, (TREE_VISITED (child) ? trees_out::WK_body
+				    : trees_out::WK_normal));
       if (out.streaming_p ())
 	{
 	  out.u (BINFO_N_BASE_BINFOS (child));
@@ -8665,7 +8699,7 @@ module_state::mark_class_def (trees_out &out, tree type)
 {
   for (tree member = TYPE_FIELDS (type); member; member = DECL_CHAIN (member))
     {
-      out.mark_node (member, trees_out::WK_body);
+      out.mark_node (member);
       if (has_definition (member))
 	mark_definition (out, member);
     }
@@ -8675,14 +8709,14 @@ module_state::mark_class_def (trees_out &out, tree type)
       tree as_base = CLASSTYPE_AS_BASE (type);
       if (as_base && as_base != type)
 	{
-	  out.mark_node (as_base, trees_out::WK_body);
+	  out.mark_node (as_base);
 	  mark_class_def (out, as_base);
 	}
 
       for (tree vtables = CLASSTYPE_VTABLES (type);
 	   vtables; vtables = TREE_CHAIN (vtables))
 	{
-	  out.mark_node (vtables, trees_out::WK_body);
+	  out.mark_node (vtables);
 	  mark_var_def (out, vtables);
 	}
     }
@@ -8804,7 +8838,7 @@ module_state::mark_enum_def (trees_out &out, tree type)
 {
   if (!UNSCOPED_ENUM_P (type))
     for (tree values = TYPE_VALUES (type); values; values = TREE_CHAIN (values))
-      out.mark_node (TREE_VALUE (values), trees_out::WK_body);
+      out.mark_node (TREE_VALUE (values));
 }
 
 bool
@@ -8848,7 +8882,7 @@ module_state::mark_template_def (trees_out &out, tree decl)
 	  /* In spite of its name, non-decls appear :(.  */
 	  member = TYPE_NAME (member);
 	gcc_assert (DECL_CONTEXT (member) == TREE_TYPE (decl));
-	out.mark_node (member, trees_out::WK_body);
+	out.mark_node (member);
       }
   mark_definition (out, res);
 }
@@ -9099,7 +9133,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  tree decl = b->get_decl ();
 
-	  sec.mark_node (decl, trees_out::WK_body);
+	  sec.mark_node (decl);
 	  if (b->is_defn ())
 	    mark_definition (sec, decl);
 	}
@@ -9114,13 +9148,6 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		       : "Depset:%u binding %P", ix, b->get_decl (),
 		       b->is_binding () ? b->get_name () : NULL_TREE);
       tree decl = b->get_decl ();
-#if 0
-      // FIXME:Violated by global module entities that I get wrong
-      gcc_checking_assert ((TREE_CODE (d) == NAMESPACE_DECL
-			    && !DECL_NAMESPACE_ALIAS (d)
-			    && TREE_PUBLIC (d))
-			   || DECL_MODULE_OWNER (d) == MODULE_PURVIEW);
-#endif
 
       if (b->is_binding ())
 	{
@@ -9257,7 +9284,7 @@ module_state::read_cluster (unsigned snum)
 		if (slot->is_lazy ())
 		  lazy_load (NULL, NULL, slot, false);
 		tree decl = *slot;
-		unsigned tag = sec.insert (decl);
+		int tag = sec.insert (decl);
 		if (sec.u ())
 		  sec.insert (TREE_TYPE (decl));
 		dump () && dump ("Inserted horcrux:%d %N", tag, decl);
@@ -10969,7 +10996,7 @@ module_state::find_dependencies (depset::hash &table)
 		 d->is_decl () ? "declaration" : "definition", decl);
       dump.indent ();
       walker.begin (&table);
-      walker.mark_node (decl, trees_out::WK_body);
+      walker.mark_node (decl);
       if (d->is_defn ())
 	mark_definition (walker, decl);
       /* Turn the Sneakoscope on when depending the decl.  */
@@ -12565,6 +12592,7 @@ init_module_processing ()
 	  dump () && dump ("+%u", v);
 	}
     }
+  gcc_assert (fixed_trees->length () < trees_out::gme_lwm);
   global_crc = crc32_unsigned (crc, fixed_trees->length ());
   dump ("") && dump ("Created %u unique globals, crc=%x",
 		     fixed_trees->length (), global_crc);
