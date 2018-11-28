@@ -1,3 +1,11 @@
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* gcc.dg/predict-13.c: Update template.
+	* gcc.dg/predict-13b.c: New testcase.
+	* gcc.dg/predict-22.c: New testcase.
+	* gcc.dg/tree-ssa/ipa-split-4.c: Change abort to other function to
+	get sane profile.
+
 2018-11-28  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/88222 - ICE with bit-field with invalid type.

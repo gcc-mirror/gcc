@@ -1,5 +1,13 @@
 2018-11-28  Jan Hubicka  <jh@suse.cz>
 
+	* predict.c (determine_unlikely_bbs): Forward declare; also determine
+	edges that are always known to be taken because it is only likely
+	edge out of given BB.
+	(tree_estimate_probability): Call before profile guessing to get bit
+	of extra precision.
+
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
 	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Handle
 	profile_probability::always better.
 
