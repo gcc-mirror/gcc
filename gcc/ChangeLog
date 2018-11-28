@@ -1,3 +1,8 @@
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
+	* profile-count.h (profile_count::split): Give better result when
+	splitting profile_probability::always.
+
 2018-11-28  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/88207
