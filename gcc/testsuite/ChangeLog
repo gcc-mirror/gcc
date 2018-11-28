@@ -60,6 +60,10 @@
 
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
+	PR testsuite/85368
+	* gcc.dg/tree-ssa/phi-opt-11.c: For branch_cost targets, expect 0 ifs
+	rather than 0 or 2 depending on logical_op_short_circuit.
+
 	PR target/88188
 	* gcc.target/powerpc/pr88188.c: New test.
 
