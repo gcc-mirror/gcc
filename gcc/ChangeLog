@@ -1,5 +1,13 @@
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/88223
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): When skipping
+	over a stored-same value may-alias store make sure to consider
+	partial overlaps which are valid when TBAA reasonings do not
+	apply and byte-granular overlaps are possible at all.
+
+2018-11-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88217
 	* vr-values.c (vr_values::extract_range_from_phi_node): Make
 	sure to handle results > +INF and < -INF correctly when
