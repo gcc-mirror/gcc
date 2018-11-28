@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
+#include "langhooks.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */
@@ -44,8 +45,9 @@ ubsan_instrument_division (location_t loc, tree op0, tree op1)
   /* At this point both operands should have the same type,
      because they are already converted to RESULT_TYPE.
      Use TYPE_MAIN_VARIANT since typedefs can confuse us.  */
-  gcc_assert (TYPE_MAIN_VARIANT (TREE_TYPE (op0))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (op1)));
+  tree top0 = TYPE_MAIN_VARIANT (type);
+  tree top1 = TYPE_MAIN_VARIANT (TREE_TYPE (op1));
+  gcc_checking_assert (lang_hooks.types_compatible_p (top0, top1));
 
   op0 = unshare_expr (op0);
   op1 = unshare_expr (op1);
