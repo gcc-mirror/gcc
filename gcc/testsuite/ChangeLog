@@ -1,3 +1,8 @@
+2018-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79351
+	* gcc.dg/torture/pr79351.c: New testcase.
+
 2018-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88189
@@ -13,7 +18,7 @@
 	PR c++/88215
 	* c-c++-common/ubsan/pr88215.c: New test.
 
-2018-10-19  Richard Biener  <rguenther@suse.de>
+2018-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88182
 	* g++.dg/gomp/pr88182.C: Move from libgomp and use -fopenmp-simd.
