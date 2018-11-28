@@ -485,28 +485,32 @@ fs::hash_value(const path& p) noexcept
   return seed;
 }
 
-namespace std
+#include <experimental/string_view>
+
+std::string
+fs::filesystem_error::_M_gen_what()
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-namespace filesystem
-{
-  extern string
-  fs_err_concat(const string& __what, const string& __path1,
-		const string& __path2);
-} // namespace filesystem
-
-namespace experimental::filesystem::v1 {
-_GLIBCXX_BEGIN_NAMESPACE_CXX11
-
-  std::string filesystem_error::_M_gen_what()
-  {
-    using std::filesystem::fs_err_concat;
-    return fs_err_concat(system_error::what(), _M_path1.u8string(),
-			 _M_path2.u8string());
-  }
-
-_GLIBCXX_END_NAMESPACE_CXX11
-} // namespace experimental::filesystem::v1
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace std
+  const std::string pstr1 = _M_path1.u8string();
+  const std::string pstr2 = _M_path2.u8string();
+  experimental::string_view s = this->system_error::what();
+  const size_t len = 18 + s.length()
+    + (pstr1.length() ? pstr1.length() + 3 : 0)
+    + (pstr2.length() ? pstr2.length() + 3 : 0);
+  std::string w;
+  w.reserve(len);
+  w = "filesystem error: ";
+  w.append(s.data(), s.length());
+  if (!pstr1.empty())
+    {
+      w += " [";
+      w += pstr1;
+      w += ']';
+    }
+  if (!pstr1.empty())
+    {
+      w += " [";
+      w += pstr2;
+      w += ']';
+    }
+  return w;
+}
