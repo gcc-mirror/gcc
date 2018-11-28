@@ -1,3 +1,8 @@
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88222 - ICE with bit-field with invalid type.
+	* decl.c (grokdeclarator): Check if declarator is null.
+
 2018-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/87476
