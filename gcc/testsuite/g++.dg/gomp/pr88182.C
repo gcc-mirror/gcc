@@ -1,5 +1,5 @@
 // { dg-do run }
-// { dg-options "-O -fopenmp -ftree-loop-if-convert -fno-ssa-phiopt" }
+// { dg-options "-O -fopenmp-simd -ftree-loop-if-convert -fno-ssa-phiopt" }
 
 #pragma omp declare simd simdlen(4) notinbranch
 __attribute__((noinline)) int
