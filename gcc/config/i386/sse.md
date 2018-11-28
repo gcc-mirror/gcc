@@ -15641,6 +15641,46 @@
    (set_attr "btver2_decode" "vector,vector,vector") 
    (set_attr "mode" "<MODE>")])
 
+;; Also define scalar versions.  These are used for conditional move.
+;; Using subregs into vector modes causes register allocation lossage.
+;; These patterns do not allow memory operands because the native
+;; instructions read the full 128-bits.
+
+(define_insn "sse4_1_blendv<ssemodesuffix>"
+  [(set (match_operand:MODEF 0 "register_operand" "=Yr,*x,x")
+	(unspec:MODEF
+	  [(match_operand:MODEF 1 "register_operand" "0,0,x")
+	   (match_operand:MODEF 2 "register_operand" "Yr,*x,x")
+	   (match_operand:MODEF 3 "register_operand" "Yz,Yz,x")]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+{
+  if (get_attr_mode (insn) == MODE_V4SF)
+    return (which_alternative == 2
+	    ? "vblendvps\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+	    : "blendvps\t{%3, %2, %0|%0, %2, %3}");
+  else
+    return (which_alternative == 2
+	    ? "vblendv<ssevecmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+	    : "blendv<ssevecmodesuffix>\t{%3, %2, %0|%0, %2, %3}");
+}
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector") 
+   (set (attr "mode")
+	(cond [(match_test "TARGET_SSE_PACKED_SINGLE_INSN_OPTIMAL")
+		 (const_string "V4SF")
+	       (match_test "TARGET_AVX")
+		 (const_string "<ssevecmode>")
+	       (match_test "optimize_function_for_size_p (cfun)")
+		 (const_string "V4SF")
+	       ]
+	       (const_string "<ssevecmode>")))])
+
 (define_insn "<sse4_1>_dp<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256

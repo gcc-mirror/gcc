@@ -23585,15 +23585,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
     {
       emit_insn (gen_rtx_SET (dest, cmp));
     }
-  else if (op_false == CONST0_RTX (mode)
-      && !maskcmp)
+  else if (op_false == CONST0_RTX (mode) && !maskcmp)
     {
       op_true = force_reg (mode, op_true);
       x = gen_rtx_AND (mode, cmp, op_true);
       emit_insn (gen_rtx_SET (dest, x));
     }
-  else if (op_true == CONST0_RTX (mode)
-      && !maskcmp)
+  else if (op_true == CONST0_RTX (mode) && !maskcmp)
     {
       op_false = force_reg (mode, op_false);
       x = gen_rtx_NOT (mode, cmp);
@@ -23601,14 +23599,13 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
       emit_insn (gen_rtx_SET (dest, x));
     }
   else if (INTEGRAL_MODE_P (mode) && op_true == CONSTM1_RTX (mode)
-      && !maskcmp)
+	   && !maskcmp)
     {
       op_false = force_reg (mode, op_false);
       x = gen_rtx_IOR (mode, cmp, op_false);
       emit_insn (gen_rtx_SET (dest, x));
     }
-  else if (TARGET_XOP
-      && !maskcmp)
+  else if (TARGET_XOP && !maskcmp)
     {
       op_true = force_reg (mode, op_true);
 
@@ -23638,6 +23635,20 @@ ix86_expand_sse_movcc (rtx dest, rtx cmp, rtx op_true, rtx op_false)
 	case E_V2DFmode:
 	  if (TARGET_SSE4_1)
 	    gen = gen_sse4_1_blendvpd;
+	  break;
+	case E_SFmode:
+	  if (TARGET_SSE4_1)
+	    {
+	      gen = gen_sse4_1_blendvss;
+	      op_true = force_reg (mode, op_true);
+	    }
+	  break;
+	case E_DFmode:
+	  if (TARGET_SSE4_1)
+	    {
+	      gen = gen_sse4_1_blendvsd;
+	      op_true = force_reg (mode, op_true);
+	    }
 	  break;
 	case E_V16QImode:
 	case E_V8HImode:

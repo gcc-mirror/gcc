@@ -1,3 +1,10 @@
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88189
+	* config/i386/i386.c (ix86_expand_sse_movcc): Handle DFmode and
+	SFmode using sse4_1_blendvs[sd] with TARGET_SSE4_1.  Formatting fixes.
+	* config/i386/sse.md (sse4_1_blendv<ssemodesuffix>): New pattern.
+
 2018-11-27  Martin Liska  <mliska@suse.cz>
 
 	* gcov.c (generate_results): Append current_working_directory
