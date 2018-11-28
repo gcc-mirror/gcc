@@ -1,3 +1,8 @@
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/88222 - ICE with bit-field with invalid type.
+	* g++.dg/ext/flexary31.C: New test.
+
 2018-11-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	* g++.dg/debug/dwarf2/pr86900.C: XFAIL AIX.
