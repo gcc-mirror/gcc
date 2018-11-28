@@ -1764,7 +1764,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 						     from);
 	  if (len == 1
 	      && (TREE_CODE (first) == IDENTIFIER_NODE
-		  || TREE_CODE (first) == INTEGER_CST))
+		  || (TREE_CODE (first) == INTEGER_CST
+		      && !TREE_OVERFLOW (first))))
 	    continue;
 
 	  /* Try to unify the SCC with already existing ones.  */
