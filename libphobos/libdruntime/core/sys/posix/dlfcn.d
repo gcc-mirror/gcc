@@ -25,6 +25,19 @@ else version (TVOS)
 else version (WatchOS)
     version = Darwin;
 
+version (ARM)     version = ARM_Any;
+version (AArch64) version = ARM_Any;
+version (MIPS32)  version = MIPS_Any;
+version (MIPS64)  version = MIPS_Any;
+version (PPC)     version = PPC_Any;
+version (PPC64)   version = PPC_Any;
+version (S390)    version = IBMZ_Any;
+version (SPARC)   version = SPARC_Any;
+version (SPARC64) version = SPARC_Any;
+version (SystemZ) version = IBMZ_Any;
+version (X86)     version = X86_Any;
+version (X86_64)  version = X86_Any;
+
 version (Posix):
 extern (C):
 nothrow:
@@ -47,70 +60,42 @@ void* dlsym(void*, in char*);
 
 version (CRuntime_Glibc)
 {
-    version (X86)
+    version (X86_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
         enum RTLD_GLOBAL    = 0x00100;
         enum RTLD_LOCAL     = 0x00000;
     }
-    else version (X86_64)
-    {
-        enum RTLD_LAZY      = 0x00001;
-        enum RTLD_NOW       = 0x00002;
-        enum RTLD_GLOBAL    = 0x00100;
-        enum RTLD_LOCAL     = 0x00000;
-    }
-    else version (MIPS32)
+    else version (MIPS_Any)
     {
         enum RTLD_LAZY      = 0x0001;
         enum RTLD_NOW       = 0x0002;
         enum RTLD_GLOBAL    = 0x0004;
         enum RTLD_LOCAL     = 0;
     }
-    else version (MIPS64)
-    {
-        enum RTLD_LAZY      = 0x0001;
-        enum RTLD_NOW       = 0x0002;
-        enum RTLD_GLOBAL    = 0x0004;
-        enum RTLD_LOCAL     = 0;
-    }
-    else version (PPC)
+    else version (PPC_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
         enum RTLD_GLOBAL    = 0x00100;
         enum RTLD_LOCAL     = 0;
     }
-    else version (PPC64)
+    else version (ARM_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
         enum RTLD_GLOBAL    = 0x00100;
         enum RTLD_LOCAL     = 0;
     }
-    else version (ARM)
+    else version (SPARC_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
         enum RTLD_GLOBAL    = 0x00100;
         enum RTLD_LOCAL     = 0;
     }
-    else version (AArch64)
-    {
-        enum RTLD_LAZY      = 0x00001;
-        enum RTLD_NOW       = 0x00002;
-        enum RTLD_GLOBAL    = 0x00100;
-        enum RTLD_LOCAL     = 0;
-    }
-    else version (SPARC64)
-    {
-        enum RTLD_LAZY      = 0x00001;
-        enum RTLD_NOW       = 0x00002;
-        enum RTLD_GLOBAL    = 0x00100;
-        enum RTLD_LOCAL     = 0;
-    }
-    else version (SystemZ)
+    else version (IBMZ_Any)
     {
         enum RTLD_LAZY      = 0x00001;
         enum RTLD_NOW       = 0x00002;
