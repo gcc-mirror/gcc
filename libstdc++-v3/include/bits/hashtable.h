@@ -1206,6 +1206,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      _M_assign(__ht,
 			[&__roan](__node_type* __n)
 			{ return __roan(std::move_if_noexcept(__n->_M_v())); });
+
+	      if (__former_buckets)
+		_M_deallocate_buckets(__former_buckets, __former_bucket_count);
 	      __ht.clear();
 	    }
 	  __catch(...)
