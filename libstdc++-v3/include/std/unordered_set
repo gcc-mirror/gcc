@@ -46,6 +46,7 @@
 #include <bits/hashtable.h>
 #include <bits/unordered_set.h>
 #include <bits/range_access.h>
+#include <bits/erase_if.h>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/unordered_set>
@@ -76,6 +77,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
+
+#if __cplusplus > 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
+
 #endif // C++11
 
 #endif // _GLIBCXX_UNORDERED_SET

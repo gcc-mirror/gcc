@@ -1,3 +1,33 @@
+2018-11-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Implement uniform container erasure for C++20.
+	* include/Makefile.am: Move erase_if.h.
+	* include/Makefile.in: Move erase_if.h.
+	* include/experimental/bits/erase_if.h: Move ...
+	* include/bits/erase_if.h: ... here.
+	* include/experimental/map: Move erase_if.h.
+	* include/experimental/set: Move erase_if.h.
+	* include/experimental/unordered_map: Move erase_if.h.
+	* include/experimental/unordered_set: Move erase_if.h.
+	* include/std/deque (erase_if, erase): New functions.
+	* include/std/forward_list: Ditto.
+	* include/std/list: Ditto.
+	* include/std/map: Ditto.
+	* include/std/set: Ditto.
+	* include/std/string: Ditto.
+	* include/std/unordered_map: Ditto.
+	* include/std/unordered_set: Ditto.
+	* include/std/vector: Ditto.
+	* testsuite/21_strings/basic_string/erasure.cc: New test.
+	* testsuite/23_containers/deque/erasure.cc: New test.
+	* testsuite/23_containers/forward_list/erasure.cc: New test.
+	* testsuite/23_containers/list/erasure.cc: New test.
+	* testsuite/23_containers/map/erasure.cc: New test.
+	* testsuite/23_containers/set/erasure.cc: New test.
+	* testsuite/23_containers/unordered_map/erasure.cc: New test.
+	* testsuite/23_containers/unordered_set/erasure.cc: New test.
+	* testsuite/23_containers/vector/erasure.cc: New test.
+
 2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/intro.xml: Document LWG 3096 change.

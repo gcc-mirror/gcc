@@ -106,6 +106,7 @@ bits_headers = \
 	${bits_srcdir}/cpp_type_traits.h \
 	${bits_srcdir}/deque.tcc \
 	${bits_srcdir}/enable_special_members.h \
+	${bits_srcdir}/erase_if.h \
 	${bits_srcdir}/forward_list.h \
 	${bits_srcdir}/forward_list.tcc \
 	${bits_srcdir}/fs_dir.h \
@@ -710,7 +711,6 @@ experimental_headers = \
 experimental_bits_srcdir = ${glibcxx_srcdir}/include/experimental/bits
 experimental_bits_builddir = ./experimental/bits
 experimental_bits_headers = \
-	${experimental_bits_srcdir}/erase_if.h \
 	${experimental_bits_srcdir}/lfts_config.h \
 	${experimental_bits_srcdir}/net.h \
 	${experimental_bits_srcdir}/shared_ptr.h \

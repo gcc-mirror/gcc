@@ -61,6 +61,7 @@
 #include <bits/stl_set.h>
 #include <bits/stl_multiset.h>
 #include <bits/range_access.h>
+#include <bits/erase_if.h>
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/set>
@@ -85,5 +86,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
+
+#if __cplusplus > 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _Key, typename _Compare, typename _Alloc,
+	   typename _Predicate>
+    inline void
+    erase_if(set<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
+    { __detail::__erase_nodes_if(__cont, __pred); }
+
+  template<typename _Key, typename _Compare, typename _Alloc,
+	   typename _Predicate>
+    inline void
+    erase_if(multiset<_Key, _Compare, _Alloc>& __cont, _Predicate __pred)
+    { __detail::__erase_nodes_if(__cont, __pred); }
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
 
 #endif /* _GLIBCXX_SET */
