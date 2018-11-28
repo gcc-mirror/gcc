@@ -1,3 +1,12 @@
+2018-11-28  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/88199
+	* include/bits/hashtable.h
+	(_Hashtable<>::_M_move_assign(_Hashtable&&, false_type)): Deallocate
+	former buckets after assignment.
+	* testsuite/23_containers/unordered_set/allocator/move_assign.cc
+	(test03): New.
+
 2018-11-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
