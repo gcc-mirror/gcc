@@ -1,3 +1,9 @@
+2018-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79351
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For assignments from
+	empty CONSTRUCTORs ensure the store is at a constant position.
+
 2018-11-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	Backport from mainline
