@@ -529,10 +529,12 @@ path::lexically_relative(const path& base) const
       const path& p = *b;
       if (is_dotdot(p))
 	--n;
-      else if (!is_dot(p))
+      else if (!p.empty() && !is_dot(p))
 	++n;
     }
-    if (n >= 0)
+    if (n == 0 && (a == end() || a->empty()))
+      ret = ".";
+    else if (n >= 0)
     {
       const path dotdot("..");
       while (n--)
