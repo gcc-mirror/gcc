@@ -345,7 +345,7 @@ xcoffout_source_line (unsigned int line, unsigned int column ATTRIBUTE_UNUSED,
    This function works by walking the tree structure of blocks,
    counting blocks until it finds the desired block.  */
 
-static int do_block = 0;
+static unsigned int do_block = 0;
 
 static void
 xcoffout_block (tree block, int depth, tree args)
