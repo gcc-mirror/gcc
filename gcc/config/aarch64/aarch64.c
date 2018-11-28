@@ -12017,7 +12017,7 @@ aarch64_process_target_attr (tree args)
   unsigned int num_commas = num_occurences_in_str (',', str_to_check);
 
   /* Handle multiple target attributes separated by ','.  */
-  char *token = strtok (str_to_check, ",");
+  char *token = strtok_r (str_to_check, ",", &str_to_check);
 
   unsigned int num_attrs = 0;
   while (token)
@@ -12029,7 +12029,7 @@ aarch64_process_target_attr (tree args)
 	  return false;
 	}
 
-      token = strtok (NULL, ",");
+      token = strtok_r (NULL, ",", &str_to_check);
     }
 
   if (num_attrs != num_commas + 1)
