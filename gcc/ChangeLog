@@ -1,5 +1,10 @@
 2018-11-28  Jan Hubicka  <jh@suse.cz>
 
+	* tree-ssa-ifcombine.c (update_profile_after_ifcombine): Handle
+	profile_probability::always better.
+
+2018-11-28  Jan Hubicka  <jh@suse.cz>
+
 	* profile-count.h (profile_count::split): Give better result when
 	splitting profile_probability::always.
 
