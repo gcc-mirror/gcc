@@ -90,4 +90,27 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
 
+#if __cplusplus > 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _Tp, typename _Alloc, typename _Predicate>
+    inline void
+    erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
+    {
+      __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
+		   __cont.end());
+    }
+
+  template<typename _Tp, typename _Alloc, typename _Up>
+    inline void
+    erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
+    {
+      __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
+		   __cont.end());
+    }
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
+
 #endif /* _GLIBCXX_VECTOR */

@@ -51,6 +51,7 @@
 #include <bits/range_access.h>
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
+#include <algorithm> // For remove and remove_if
 
 #if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -71,5 +72,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
+
+#if __cplusplus > 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _Predicate>
+    inline void
+    erase_if(basic_string<_CharT, _Traits, _Alloc>& __cont, _Predicate __pred)
+    {
+      __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
+		   __cont.end());
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc, typename _Up>
+    inline void
+    erase(basic_string<_CharT, _Traits, _Alloc>& __cont, const _Up& __value)
+    {
+      __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),
+		   __cont.end());
+    }
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
 
 #endif /* _GLIBCXX_STRING */

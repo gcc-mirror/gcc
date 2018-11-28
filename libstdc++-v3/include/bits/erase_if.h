@@ -1,4 +1,4 @@
-// <experimental/bits/erase_if.h> -*- C++ -*-
+// <bits/erase_if.h> -*- C++ -*-
 
 // Copyright (C) 2015-2018 Free Software Foundation, Inc.
 //
@@ -22,27 +22,22 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-/** @file experimental/bits/erase_if.h
+/** @file bits/erase_if.h
  *  This is an internal header file, included by other library headers.
  *  Do not attempt to use it directly.
  */
 
-#ifndef _GLIBCXX_EXPERIMENTAL_ERASE_IF_H
-#define _GLIBCXX_EXPERIMENTAL_ERASE_IF_H 1
+#ifndef _GLIBCXX_ERASE_IF_H
+#define _GLIBCXX_ERASE_IF_H 1
 
 #pragma GCC system_header
 
 #if __cplusplus >= 201402L
-#include <experimental/bits/lfts_config.h>
 
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-namespace experimental
-{
-inline namespace fundamentals_v2
-{
   namespace __detail
   {
     template<typename _Container, typename _Predicate>
@@ -59,12 +54,10 @@ inline namespace fundamentals_v2
 	}
       }
   } // namespace __detail
-} // inline namespace fundamentals_v2
-} // namespace experimental
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14
 
-#endif // _GLIBCXX_EXPERIMENTAL_ERASE_IF_H
+#endif // _GLIBCXX_ERASE_IF_H

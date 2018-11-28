@@ -84,4 +84,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
+
+#if __cplusplus > 201703L
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _Tp, typename _Alloc, typename _Predicate>
+    inline void
+    erase_if(list<_Tp, _Alloc>& __cont, _Predicate __pred)
+    { __cont.remove_if(__pred); }
+
+  template<typename _Tp, typename _Alloc, typename _Up>
+    inline void
+    erase(list<_Tp, _Alloc>& __cont, const _Up& __value)
+    {
+      using __elem_type = typename list<_Tp, _Alloc>::value_type;
+      erase_if(__cont, [&](__elem_type& __elem) { return __elem == __value; });
+    }
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace std
+#endif // C++20
+
 #endif /* _GLIBCXX_LIST */
