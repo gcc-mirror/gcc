@@ -128,7 +128,7 @@ private:
 // def_chains.  given :
 //  	if (c_3 < 10)
 // It can calculate a range for c_3 of [MIN, 9] on the outgoing edge since it
-// is referenced in the statement which generats the range.
+// is referenced in the statement which generates the range.
 
 extern bool compute_operand_range_on_stmt (irange &r, gimple *s,
 					   const irange &lhs, tree name,

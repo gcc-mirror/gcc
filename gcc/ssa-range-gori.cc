@@ -29,8 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "wide-int.h"
 #include "ssa-range.h"
-#include "ssa-range-gori.h"
-
 
 // Construct a range_def_chain
 
@@ -60,8 +58,8 @@ range_def_chain::~range_def_chain ()
 bool
 range_def_chain::in_chain_p (tree name, tree def)
 {
-  gcc_checking_assert (ssa_range::valid_ssa_p (def));
-  gcc_checking_assert (ssa_range::valid_ssa_p (name));
+  gcc_checking_assert (ssa_ranger::valid_ssa_p (def));
+  gcc_checking_assert (ssa_ranger::valid_ssa_p (name));
 
   // Get the defintion chain for DEF
   bitmap chain = get_def_chain (def);
@@ -164,16 +162,16 @@ range_def_chain::get_def_chain (tree name)
   if (is_a<grange_op *> (s))
     { 
       grange_op *stmt = as_a<grange_op *> (s);
-      ssa1 = ssa_range::valid_ssa_p (stmt->operand1 ());
-      ssa2 = ssa_range::valid_ssa_p (stmt->operand2 ());
+      ssa1 = ssa_ranger::valid_ssa_p (stmt->operand1 ());
+      ssa2 = ssa_ranger::valid_ssa_p (stmt->operand2 ());
       ssa3 = NULL_TREE;
     }
   else if (is_a<gassign *> (s) && gimple_assign_rhs_code (s) == COND_EXPR)
     {
       gassign *st = as_a<gassign *> (s);
-      ssa1 = ssa_range::valid_ssa_p (gimple_assign_rhs1 (st));
-      ssa2 = ssa_range::valid_ssa_p (gimple_assign_rhs2 (st));
-      ssa3 = ssa_range::valid_ssa_p (gimple_assign_rhs3 (st));
+      ssa1 = ssa_ranger::valid_ssa_p (gimple_assign_rhs1 (st));
+      ssa2 = ssa_ranger::valid_ssa_p (gimple_assign_rhs2 (st));
+      ssa3 = ssa_ranger::valid_ssa_p (gimple_assign_rhs3 (st));
     }
   else
     return NULL;
@@ -329,16 +327,16 @@ gori_map::calculate_gori (basic_block bb)
   if (is_a<gcond *> (s))
     {
       gcond *gc = as_a<gcond *>(s);
-      name = ssa_range::valid_ssa_p (gimple_cond_lhs (gc));
+      name = ssa_ranger::valid_ssa_p (gimple_cond_lhs (gc));
       maybe_add_gori (name, gimple_bb (s));
 
-      name = ssa_range::valid_ssa_p (gimple_cond_rhs (gc));
+      name = ssa_ranger::valid_ssa_p (gimple_cond_rhs (gc));
       maybe_add_gori (name, gimple_bb (s));
     }
   else
     {
       gswitch *gs = as_a<gswitch *>(s);
-      name = ssa_range::valid_ssa_p (gimple_switch_index (gs));
+      name = ssa_ranger::valid_ssa_p (gimple_switch_index (gs));
       maybe_add_gori (name, gimple_bb (s));
     }
 }
@@ -595,7 +593,7 @@ gori_compute::compute_operand_range_switch (irange &r, gswitch *s,
     }
 
   // If op1 is in the defintion chain, pass lhs back.
-  if (ssa_range::valid_ssa_p (op1) && in_chain_p (name, op1))
+  if (ssa_ranger::valid_ssa_p (op1) && in_chain_p (name, op1))
     return compute_operand_range (r, SSA_NAME_DEF_STMT (op1), lhs, name,
 				  name_range);
 
@@ -649,8 +647,8 @@ gori_compute::compute_operand_range_op (irange &r, grange_op *stmt,
       return true;
     }
 
-  op1 = ssa_range::valid_ssa_p (stmt->operand1 ());
-  op2 = ssa_range::valid_ssa_p (stmt->operand2 ());
+  op1 = ssa_ranger::valid_ssa_p (stmt->operand1 ());
+  op2 = ssa_ranger::valid_ssa_p (stmt->operand2 ());
 
   // The base ranger handles NAME on this statement.
   if (op1 == name || op2 == name)
@@ -808,8 +806,8 @@ gori_compute::compute_logical_operands (irange &r, grange_op *s,
   op2 = s->operand2 ();
   gcc_checking_assert (op1 != name && op2 != name);
 
-  op1_in_chain = ssa_range::valid_ssa_p (op1) && in_chain_p (name, op1);
-  op2_in_chain = ssa_range::valid_ssa_p (op2) && in_chain_p (name, op2);
+  op1_in_chain = ssa_ranger::valid_ssa_p (op1) && in_chain_p (name, op1);
+  op2_in_chain = ssa_ranger::valid_ssa_p (op2) && in_chain_p (name, op2);
 
   /* If neither operand is derived, then this stmt tells us nothing. */
   if (!op1_in_chain && !op2_in_chain)

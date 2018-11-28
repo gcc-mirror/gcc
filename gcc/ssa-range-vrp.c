@@ -72,7 +72,7 @@ argument_ok_to_propagate (tree name)
 }
 
 static void
-rvrp_process_bb_end (ssa_range& ranger, basic_block bb, bitmap touched)
+rvrp_process_bb_end (ssa_ranger& ranger, basic_block bb, bitmap touched)
 {
   gcond *cond;
   gimple *stmt = gimple_outgoing_range_stmt_p (bb);
