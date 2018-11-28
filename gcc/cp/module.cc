@@ -2421,7 +2421,8 @@ enum tree_tag {
   tt_inst,		/* A template instantiation.  */
   tt_binfo,		/* A BINFO.  */
   tt_as_base,		/* An As-Base type.  */
-  tt_vtable		/* A vtable.  */
+  tt_vtable,		/* A vtable.  */
+  tt_gme,
 };
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -2434,6 +2435,7 @@ class trees_in : public bytes_in {
 private:
   module_state *state;		/* Module being imported.  */
   auto_vec<tree> back_refs;	/* Back references.  */
+  auto_vec<tree> gmes;		/* Global module entities.  */
 
 public:
   trees_in (module_state *);
@@ -2462,7 +2464,7 @@ private:
   bool lang_decl_bools (tree);
   bool lang_decl_vals (tree);
   tree tree_binfo ();
-  bool tree_node_specific (tree);
+  bool tree_node_specific (tree, bool);
   bool tree_node_bools (tree, bool);
   bool tree_node_vals (tree);
 
@@ -2474,6 +2476,23 @@ public:
 public:
   /* Read a tree node.  */
   tree tree_node ();
+
+public:
+  /* Read a global module entity.  */
+  void tree_gme ();
+  void reserve_gmes (unsigned len)
+  {
+    if (gmes.length ())
+      set_overrun ();
+    gmes.reserve (len);
+  }
+  bool existing_gme (tree decl)
+  {
+    for (unsigned ix = gmes.length (); ix--;)
+      if (gmes[ix] == decl)
+	return true;
+    return false;
+  }
 };
 
 trees_in::trees_in (module_state *state)
@@ -2530,7 +2549,8 @@ public:
     {
      WK_none,   /* No walk to do (a backref).  */
      WK_normal, /* Normal walk (by-name if possible).  */
-     WK_body
+     WK_body,   /* By-value walk.  */
+     WK_gme,    /* by-valye global module entity walk.  */
     };
 
 public:
@@ -2562,11 +2582,13 @@ public:
 public:
   /* Mark a node for special walking.  */
   void mark_node (tree);
+  void mark_gme (tree);
   walk_kind ref_node (tree);
 
 public:
   void tree_node (tree);
-  void tree_value (tree, walk_kind);
+  void tree_gme (tree);
+  void tree_value (tree, walk_kind ref);
 
 private:
   bool tree_decl (tree, walk_kind ref, bool looking_inside);
@@ -3837,6 +3859,15 @@ trees_out::mark_node (tree decl)
     }
 }
 
+void
+trees_out::mark_gme (tree decl)
+{
+  gcc_checking_assert (TREE_VISITED (decl));
+  int *val = tree_map.get (decl);
+  gcc_assert (val && *val);
+  *val = gme_lwm - *val;
+}
+
 /* Insert T into the map, return its back reference number.
    FORCING indicates whether it is already expected to have a forcing
    entry.  */
@@ -3850,7 +3881,10 @@ trees_out::insert (tree t, walk_kind walk)
   bool existed;
   int &slot = tree_map.get_or_insert (t, &existed);
   gcc_checking_assert (existed == (walk != WK_normal));
-  slot = --ref_num;
+  if (walk == WK_gme)
+    slot = gme_lwm - slot;
+  else
+    slot = --ref_num;
   return slot;
 }
 
@@ -5753,7 +5787,7 @@ trees_out::tree_node_specific (tree t)
 }
 
 bool
-trees_in::tree_node_specific (tree t)
+trees_in::tree_node_specific (tree t, bool no_alloc)
 {
   bool specific = false;
   switch (TREE_CODE_CLASS (TREE_CODE (t)))
@@ -5764,13 +5798,14 @@ trees_in::tree_node_specific (tree t)
 	{
 	  bool decomp = VAR_P (t) && b ();
 
-	  maybe_add_lang_decl_raw (t, decomp);
+	  if (!no_alloc)
+	    maybe_add_lang_decl_raw (t, decomp);
 	}
       break;
 
     case tcc_type:
       specific = b ();
-      if (specific)
+      if (specific && !no_alloc)
 	maybe_add_lang_type_raw (t);
       break;
 
@@ -5933,11 +5968,18 @@ trees_out::ref_node (tree t)
 	      i (val);
 	      kind = "backref";
 	    }
-	  else
+	  else if (val < gme_lwm)
 	    {
 	      /* Fixed reference -> tt_fixed */
 	      i (tt_fixed), u (val -= 1);
 	      kind = "fixed";
+	    }
+	  else
+	    {
+	      val = gme_lwm - val;
+	      i (tt_gme), i (val);
+	      kind = "gme";
+	      walk = WK_gme;
 	    }
 
 	  dump (dumper::TREE)
@@ -6011,7 +6053,7 @@ trees_out::tree_decl (tree decl, walk_kind ref, bool looking_inside)
   gcc_checking_assert (DECL_P (decl)
 		       && TREE_CODE (decl) != NAMESPACE_DECL);
 
-  if (ref == WK_body)
+  if (ref == WK_body || ref == WK_gme)
     {
       /* If we requested by-value, this better not be an import.  */
       gcc_assert (MAYBE_DECL_MODULE_OWNER (get_module_owner (decl))
@@ -6256,9 +6298,12 @@ trees_out::tree_value (tree t, walk_kind walk)
     {
       /* A new node -> tt_node.  */
       unique++;
-      i (tt_node);
-      i (TREE_CODE (t));
-      start (t);
+      if (walk != WK_gme)
+	{
+	  i (tt_node);
+	  i (TREE_CODE (t));
+	  start (t);
+	}
     }
 
   int tag = insert (t, walk);
@@ -6657,26 +6702,52 @@ trees_in::tree_node ()
       }
       break;
 
+    case tt_gme:
     case tt_node:
       {
 	/* A new node.  Stream it in.  */
+	bool is_gme = tag == tt_gme;
+	tree existing = NULL_TREE;
+
 	tag = i ();
-	if (unsigned (tag) >= MAX_TREE_CODES)
-	  set_overrun ();
-	res = start (tree_code (tag));
-	if (!res)
+	if (is_gme)
 	  {
-	    set_overrun ();
-	    break;
+	    /* A global module entity.  We've already deduped it, but
+	       need to read in the value here.  Either in-place, or as
+	       a dummy.  */
+	    if (tag < 0 && unsigned (~tag) < back_refs.length ())
+	      res = back_refs[~tag];
+	    if (!res || TREE_CODE_CLASS (TREE_CODE (res)) != tcc_declaration)
+	      set_overrun ();
+
+	    /* Determine if we had already known about this.  */
+	    if (existing_gme (res))
+	      {
+		existing = res;
+		res = start (TREE_CODE (existing));
+	      }
+	  }
+	else
+	  {
+	    if (unsigned (tag) >= MAX_TREE_CODES)
+	      set_overrun ();
+	    res = start (tree_code (tag));
+	    if (!res)
+	      {
+		set_overrun ();
+		break;
+	      }
+
+	    /* Insert into map.  */
+	    tag = insert (res);
 	  }
 
-	/* Insert into map.  */
-	tag = insert (res);
+	res && dump (dumper::TREE)
+	  && dump ("Reading%s:%d %C", is_gme ? " global" : "", tag,
+		   TREE_CODE (res));
 
-	dump (dumper::TREE) && dump ("Reading:%d %C", tag, TREE_CODE (res));
-
-	bool specific = tree_node_specific (res);
-	bool ok = tree_node_bools (res, specific);
+	bool specific = res && tree_node_specific (res, is_gme && !existing);
+	bool ok = res && tree_node_bools (res, specific);
 	bflush ();
 	if (!ok || !tree_node_vals (res))
 	  {
@@ -6698,12 +6769,81 @@ trees_in::tree_node ()
 		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	  }
 
+	if (existing)
+	  {} // FIXME:ODR checking?
+
 	break;
       }
     }
 
   dump.outdent ();
   return res;
+}
+
+void
+trees_out::tree_gme (tree decl)
+{
+  gcc_checking_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == tcc_declaration);
+  u (TREE_CODE (decl));
+  tree_node_specific (decl);
+  bflush ();
+  tree_ctx (DECL_CONTEXT (decl), true, decl);
+  tree_node (DECL_NAME (decl));
+  state->write_location (*this, DECL_SOURCE_LOCATION (decl));
+  tree tpl = NULL_TREE;
+  tree ret = NULL_TREE;
+  tree args = NULL_TREE;
+
+  switch (TREE_CODE (decl))
+    {
+    case FUNCTION_DECL:
+      args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      break;
+    default:
+      // FIXME:More cases
+      gcc_unreachable ();
+    }
+  tree_node (tpl);
+  tree_node (ret);
+  tree_node (args);
+  int tag = insert (decl);
+  dump (dumper::GM)
+    && dump ("Wrote:%d global entity %N", tag, decl);
+}
+
+void
+trees_in::tree_gme ()
+{
+  unsigned c = u ();
+  if (c >= MAX_TREE_CODES
+      || TREE_CODE_CLASS (c) != tcc_declaration)
+    set_overrun ();
+  else if (tree decl = start (tree_code (c)))
+    {
+      tree_node_specific (decl, false);
+      bflush ();
+
+      DECL_CONTEXT (decl) = tree_node ();
+      DECL_NAME (decl) = tree_node ();
+      DECL_SOURCE_LOCATION (decl) = state->read_location (*this);
+      tree tpl = tree_node ();
+      tree ret = tree_node ();
+      tree args = tree_node ();
+
+      if (!get_overrun ())
+	{
+	  const char *kind = "new";
+	  if (tree existing = match_global_decl (decl, tpl, ret, args))
+	    {
+	      decl = existing;
+	      gmes.quick_push (decl);
+	      kind = "matched";
+	    }
+	  int tag = insert (decl);
+	  dump (dumper::GM)
+	    && dump ("Read:%d %s global entity %N", tag, kind, decl);
+	}
+    }
 }
 
 /* Rebuild a streamed in type.  */
@@ -9055,6 +9195,7 @@ enum cluster_tag {
   ct_defn,	/* A defn.  */
   ct_bind,	/* A binding.  */
   ct_horcrux,	/* Preseed reference to unnamed decl.  */
+  ct_gme,	/* A gme identification.  */
   ct_hwm
 };
 
@@ -9073,6 +9214,7 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 
   unsigned incoming_unnamed = unnamed;
   bool refs_unnamed_p = false;
+  auto_vec<tree> gmes;
 
   /* Determine horcrux numbers for unnamed decls.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -9089,6 +9231,14 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	     findable by name.  Determine its horcrux number.  */
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
+	}
+      else if (b->is_decl ())
+	{
+	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
+	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
+	    // FIXME:fns only for now
+	    if (TREE_CODE (decl) == FUNCTION_DECL)
+	      gmes.safe_push (decl);
 	}
     }
 
@@ -9120,6 +9270,23 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 		}
 	    }
 	}
+
+  if (unsigned len = gmes.length ())
+    {
+      // FIXME: When more than one, we'll have to order them using
+      // tarjan too.  Don't forget about a nested type appearing in
+      // the types of another member of this set.  Ugh!
+      gcc_assert (len == 1);
+
+      sec.u (ct_gme);
+      sec.u (len);
+      for (unsigned ix = 0; ix != len; ix++)
+	sec.tree_gme (gmes[ix]);
+      /* Now re-mark so we know to process them by value when meeting
+	 them below.  */
+      for (unsigned ix = 0; ix != len; ix++)
+	sec.mark_gme (gmes[ix]);
+    }
 
   /* Mark members for walking.  */
   for (unsigned ix = 0; ix != size; ix++)
@@ -9217,6 +9384,7 @@ module_state::read_cluster (unsigned snum)
 	    tree decls = NULL_TREE;
 	    tree type = NULL_TREE;
 	    tree visible = NULL_TREE;
+	    bool dedup = TREE_PUBLIC (ns) && (is_interface () || is_legacy ());
 
 	    while (tree decl = sec.tree_node ())
 	      {
@@ -9233,8 +9401,9 @@ module_state::read_cluster (unsigned snum)
 			 || (TREE_CODE (decl) == TEMPLATE_DECL
 			     && (TREE_CODE (DECL_TEMPLATE_RESULT (decl))
 				 == FUNCTION_DECL))
+			 // FIXME: I think the below applies to non fns too?
 			 || (TREE_CODE (decl) == FUNCTION_DECL
-			     && is_interface ()))
+			     && dedup))
 		  {
 		    if (!DECL_DECLARES_FUNCTION_P (decl)
 			|| (decls
@@ -9242,6 +9411,8 @@ module_state::read_cluster (unsigned snum)
 			    && TREE_CODE (decls) != FUNCTION_DECL))
 		      sec.set_overrun ();
 		    decls = ovl_make (decl, decls);
+		    if (dedup)
+		      OVL_DEDUP_P (decls) = true;
 		  }
 		else
 		  decls = decl;
@@ -9270,6 +9441,14 @@ module_state::read_cluster (unsigned snum)
 	    if (!set_module_binding (ns, name, mod, is_interface (),
 				     decls, type, visible))
 	      sec.set_overrun ();
+	    if (type && !sec.existing_gme (type))
+	      add_module_decl (ns, name, type);
+	    for (ovl_iterator iter (decls); iter; ++iter)
+	      {
+		tree decl = *iter;
+		if (!sec.existing_gme (decl))
+		  add_module_decl (ns, name, decl);
+	      }
 	  }
 	  break;
 
@@ -9291,6 +9470,16 @@ module_state::read_cluster (unsigned snum)
 	      }
 	    else
 	      sec.set_overrun ();
+	  }
+	  break;
+
+	case ct_gme:
+	  /* Global module entities.  */
+	  {
+	    unsigned len = sec.u ();
+	    sec.reserve_gmes (len);
+	    for (unsigned ix = 0; !sec.get_overrun () && ix != len; ix++)
+	      sec.tree_gme ();
 	  }
 	  break;
 

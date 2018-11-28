@@ -339,10 +339,12 @@ extern tree lookup_all_conversions (tree);
 
 /* Lower level interface for modules. */
 extern tree merge_global_decl (tree ctx, unsigned mod, tree decl);
+extern tree match_global_decl (tree decl, tree tpl_args, tree ret, tree args);
 extern bool import_module_binding (tree ctx, tree name, unsigned mod,
 				   unsigned snum);
 extern bool set_module_binding (tree ctx, tree name, unsigned mod, bool iface,
 				tree value, tree type, tree visible);
+extern void add_module_decl (tree ctx, tree name, tree decl);
 extern tree extract_module_binding (tree &binding, tree &maybe_type);
 extern int get_lookup_ident (tree ctx, tree name, unsigned mod, tree decl);
 extern tree lookup_by_ident (tree ctx, tree name, unsigned mod, int ident);

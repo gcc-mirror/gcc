@@ -3628,6 +3628,41 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
+tree
+match_global_decl (tree decl, tree tpl, tree ret, tree args)
+{
+  // FIXME:not yet general
+  gcc_assert (!tpl && !ret && TREE_CODE (decl) == FUNCTION_DECL);
+
+  tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
+				    true);
+  tree *gslot = &(tree &)*module_binding_slot (slot, DECL_NAME (decl),
+					       MODULE_SLOT_GLOBAL, true);
+  for (ovl_iterator iter (*gslot); iter; ++iter)
+    {
+      gcc_assert (!iter.using_p ());
+      tree glob = *iter;
+
+      if (TREE_CODE (glob) != TREE_CODE (decl))
+	continue;
+
+      switch (TREE_CODE (decl))
+	{
+	case FUNCTION_DECL:
+	  if (TREE_TYPE (glob)
+	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (glob))))
+	    return glob;
+	  break;
+
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  *gslot = ovl_make (decl, *gslot);
+  return NULL_TREE;
+}
+
 /* Given a namespace-level binding BINDING, extract & sort the current
    module's VALUE and TYPE bindings.  */
 
@@ -3694,33 +3729,27 @@ set_module_binding (tree ns, tree name, unsigned mod, bool inter_p,
   if (!mslot->is_lazy ())
     return false;
 
-  if (!TREE_PUBLIC (ns))
-    inter_p = false;
-
-  for (ovl_iterator iter (value); iter; ++iter)
-    {
-      tree decl = *iter;
-
-      gcc_assert (!iter.using_p () && !iter.hidden_p ());
-      gcc_assert (!DECL_CHAIN (decl));
-      if (inter_p)
-	iter.set_dedup ();
-      add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
-      newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
-    }
-
   tree bind = value;
   if (type || visible != bind)
     {
       bind = stat_hack (bind, type);
       STAT_VISIBLE (bind) = visible;
-      if (inter_p || (type && DECL_MODULE_EXPORT_P (type)))
+      if ((inter_p && TREE_PUBLIC (ns))
+	  || (type && DECL_MODULE_EXPORT_P (type)))
 	STAT_TYPE_VISIBLE_P (bind) = true;
     }
 
   *mslot = bind;
 
   return true;
+}
+
+void
+add_module_decl (tree ns, tree name, tree decl)
+{
+  gcc_assert (!DECL_CHAIN (decl));
+  add_decl_to_level (NAMESPACE_LEVEL (ns), decl);
+  newbinding_bookkeeping (name, decl, NAMESPACE_LEVEL (ns));
 }
 
 static tree

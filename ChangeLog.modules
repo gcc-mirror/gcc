@@ -1,5 +1,26 @@
 2018-11-28  Nathan Sidwell  <nathan@acm.org>
 
+	Global module function declaration merging.
+	gcc/cp
+	* module.cc (tree_tag): Add tt_gme.
+	(trees_in::gmes): New data member.
+	(trees_in::tree_node_specific): Add no-alloc flag.
+	(trees_in::{tree_gme,reserve_gmes,existing_gme}): New.
+	(trees_out::walk_kind): Add WK_gme.
+	(trees_out::{mark,tree}_gme): New.
+	(trees_out::{ref_node,insert}): Deal with WK_gme walk.
+	(trees_out::tree_{decl,value}): Likewise.
+	(trees_in::tree_node): Add tt_gme support.
+	(cluster_tag): Add ct_gme.
+	(module_state::{read,write}_cluster): Add gme support.
+	* name-lookup.h (match_global_decl): Declare.
+	(add_module_decl): Declare.
+	* name-lookup.c (match_global_decl): New.
+	(set_module_binding): Don't dedup here.
+	(add_module_decl): New.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-1_[abcd].[CH]: New.
+
 	gcc/cp/
 	* modules.cc (trees_{in,out}::tree_node_bools): Break out
 	tree_node_specific.
