@@ -1,3 +1,7 @@
+2018-11-28  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/aix72.h: Update to match aix71.h changes.
+
 2018-11-28  Jeff Law  <law@redhat.com>
 
 	* config/h8300/constraints.md: Add "C" constraint for call insns.
