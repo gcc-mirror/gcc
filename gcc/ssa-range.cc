@@ -1252,8 +1252,9 @@ global_ranger::global_ranger () : ssa_range (true)
   m_non_null = new non_null_ref ();
   m_workback.create (0);
   m_workback.safe_grow_cleared (last_basic_block_for_fn (cfun));
-  m_workfwd.create (0);
-  m_workfwd.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_update_list.create (0);
+  m_update_list.safe_grow_cleared (last_basic_block_for_fn (cfun));
+  m_update_list.truncate (0);
 }
 
 // Deallocate global_ranger members.
@@ -1264,7 +1265,7 @@ global_ranger::~global_ranger ()
   delete m_globals;
   delete m_non_null;
   m_workback.release ();
-  m_workfwd.release ();
+  m_update_list.release ();
 }
 
 // Print everything known about the global cache to file F.
@@ -1359,13 +1360,66 @@ global_ranger::non_null_deref_in_block (irange &r, tree name, basic_block bb)
 
 
 bool
+global_ranger::reevaluate_definition (irange &r, tree name, edge e,
+				      irange *block_range)
+{
+  basic_block bb = e->src;
+  gimple *def_stmt;
+  ssa_op_iter iter;
+  use_operand_p use_p;
+
+  // Ensure there is no outgoing range for NAME.
+  gcc_checking_assert (!range_p (bb, name));
+
+  // If nothing in the def chain is exported, there is no evaluation.
+  if (!m_gori->def_chain_in_export_p (name, bb))
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (name);
+  gcc_checking_assert (def_stmt);
+
+  // We know its possible to evaluate NAME from SOMETHING in its defintion.
+  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
+    {
+      tree use = valid_ssa_p (USE_FROM_PTR (use_p));
+      if (use)
+        {
+	  irange use_range;
+	  if (m_gori->is_export_p (use, bb))
+	    {
+	      if (!outgoing_edge_range_p (use_range, e, use))
+	        continue;
+	    }
+	  // Try reevaluating USE. we have no range on entry for USE.
+	  else if (!reevaluate_definition (use_range, use, e, NULL))
+	    continue;
+	  // Invoke a no-overhead range calculator for the statement so we dont
+	  // get any dynamic calls to range_of_expr which could cause another
+	  // iterative evaluation to fill a cache.
+	  ssa_range eval (false);
+	  gcc_assert (eval.range_of_stmt_with_range (r, def_stmt, use,
+						     use_range));
+	  // If this is the root def and it has a range, combine them.
+	  if (block_range)
+	    r.intersect (*block_range);
+	  return true;
+        }
+    }
+  return false;
+}
+
+// Check if the range for NAME on outgoing edge E may change the incoming 
+// range for NAME at the destination.  IF it does, update that range and
+// push the destination block onto the update list.
+
+bool
 global_ranger::maybe_propagate_on_edge (tree name, edge e)
 {
   basic_block pred = e->src;
   basic_block succ = e->dest;
   irange block_range;
   irange edge_range;
-  irange range_on_entry;
+  irange succ_range_on_entry;
 
   // Look for entry block, DEF block or a block will a filled cache.
   if (pred == ENTRY_BLOCK_PTR_FOR_FN (cfun))
@@ -1382,26 +1436,72 @@ global_ranger::maybe_propagate_on_edge (tree name, edge e)
       if (outgoing_edge_range_p (edge_range, e, name, &block_range))
 	block_range = edge_range;
     }
-    // else If (m_gori->def_chain_in_export_p (name,  src)) 
-    //   then we'll want to reevaluate name here somehow :-P 
+  // Check for reevaluation on this edge.
+  else if (reevaluate_definition (edge_range, name, e, &block_range))
+    block_range = edge_range;
 
-  // Check if pointers have any non=null dereferences.
-  if (block_range.varying_p () && POINTER_TYPE_P (TREE_TYPE (name)))
+  // Check if pointers have any non-null dereferences.
+  // Non-call exceptions mean we could throw in the middle of he block,
+  // so just punt for now on those.
+  if (block_range.varying_p () && POINTER_TYPE_P (TREE_TYPE (name)) &&
+      !cfun->can_throw_non_call_exceptions)
     non_null_deref_in_block (block_range, name, pred);
 
   // Now pick up the current range on entry to the successor and see if
   // union with the edge range causes a change.
-  gcc_assert (m_block_cache->get_bb_range (range_on_entry,  name, succ));
-  edge_range = range_union (range_on_entry, block_range);
+  gcc_assert (m_block_cache->get_bb_range (succ_range_on_entry, name, succ));
+  irange new_range = range_union (succ_range_on_entry, block_range);
 
-  if (edge_range != range_on_entry)
+  if (new_range != succ_range_on_entry)
     {
       // If ranges are different, Set new range and mark succ to be visited.
-      m_block_cache->set_bb_range (name, succ, edge_range);
-      if (!m_workfwd.contains (succ))
-	m_workfwd.quick_push (succ);
+      m_block_cache->set_bb_range (name, succ, new_range);
+      if (!m_update_list.contains (succ))
+	m_update_list.quick_push (succ);
     }
   return true;
+}
+
+// See if the cache for NAME may need updating on any outgoing edges of BB.
+
+inline void
+global_ranger::maybe_propagate_block (tree name, basic_block bb)
+{
+  edge_iterator ei;
+  edge e;
+
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      basic_block dest = e->dest;
+
+      // Only look at edges where the succ has been visited.
+      if (!m_block_cache->bb_range_p (name, dest))
+	continue;
+
+      // Anything in this list ought to have range_on_entry set and
+      // thus return a TRUE.
+      gcc_assert (maybe_propagate_on_edge (name, e));
+    }
+}
+
+// If there is anything in the iterative update_list, continue processing NAME
+// until the list of blocks is empty.  Note calls to maybe_propagate_block may
+// add to the current list.
+
+void
+global_ranger::iterative_cache_update (tree name)
+{
+  // Now the update_list queue has all the blocks that have had their entry
+  // ranges "updated" from undefined. Start propagating until nothing
+  // changes.
+
+  while (m_update_list.length () > 0)
+    {
+      basic_block bb = m_update_list.pop ();
+// fprintf (stderr, "FWD visiting block %d\n", bb->index);
+      maybe_propagate_block (name, bb);
+    }
+// fprintf (stderr, "DONE visiting blocks \n\n");
 }
 
 
@@ -1434,7 +1534,7 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
   m_workback.truncate (0);
   m_workback.quick_push (bb);
   m_block_cache->set_bb_range (name, bb, undefined);
-  m_workfwd.truncate (0);
+  gcc_checking_assert (m_update_list.length () == 0);
 
 // fprintf (stderr, "\n");
 // print_generic_expr (stderr, name, TDF_SLIM);
@@ -1460,31 +1560,8 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 	  }
       }
 
-  // Now the workfwd queue has all the blocks that have had their entry
-  // ranges "updated" from undefined. Start propagating until nothing
-  // changes.
-
-  while (m_workfwd.length () > 0)
-    {
-      basic_block node = m_workfwd.pop ();
-// fprintf (stderr, "FWD visiting block %d\n", node->index);
-
-      FOR_EACH_EDGE (e, ei, node->succs)
-	{
-	  basic_block dest = e->dest;
-
-	  // Only look at edges where the succ has been visited.
-	  if (!m_block_cache->bb_range_p (name, dest))
-	    continue;
-
-	  // Anything in this list ought to have range_on_entry set and
-	  // thus return a TRUE.
-	  gcc_assert (maybe_propagate_on_edge (name, e));
-	}
-    }
-// fprintf (stderr, "DONE visiting blocks \n\n");
+  iterative_cache_update (name);
 }
-
 
 // Return the range of NAME on entry to block BB in R.  Return false if there
 // is no range other than varying.

@@ -163,11 +163,16 @@ private:
   class ssa_global_cache *m_globals;
   class non_null_ref *m_non_null;
   bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
+
   void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
   bool maybe_propagate_on_edge (tree name, edge e);
+  void maybe_propagate_block (tree name, basic_block bb);
+  void iterative_cache_update (tree name);
+  bool reevaluate_definition (irange &r, tree name, edge e,
+			      irange *block_range);
 
   vec<basic_block> m_workback;
-  vec<basic_block> m_workfwd;
+  vec<basic_block> m_update_list;
 };
 
 class trace_ranger : public global_ranger

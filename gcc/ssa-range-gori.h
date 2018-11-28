@@ -155,8 +155,9 @@ public:
   ~gori_compute ();
 
   // Evaluate the range for NAME on stmt S if the lhs has range LHS. 
+  // Substituting results back until we encounter NAME.
   bool compute_operand_range (irange &r, gimple *s, const irange &lhs,
-			      tree name, irange *name_range= NULL);
+			      tree name, irange *name_range = NULL);
 private:
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
 				     tree name, irange *name_range);
