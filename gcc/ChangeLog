@@ -1,3 +1,9 @@
+2018-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88229
+	* tree-ssa.c (non_rewritable_mem_ref_base): Check DECL_SIZE_UNIT
+	is an INTEGER_CST before accessing it so.
+
 2018-11-26  Andreas Krebbel  <krebbel@linux.ibm.com>
 
 	Backport from mainline
