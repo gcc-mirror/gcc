@@ -2,6 +2,7 @@
 
 	* g++.dg/debug/dwarf2/pr86900.C: XFAIL AIX.
 	* g++.dg/opt/pr83084.C: XFAIL AIX.
+	* gcc.dg/recip_sqrt_mult_[12345]: Do not add -fcompare-debug on AIX.
 
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
