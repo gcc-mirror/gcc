@@ -631,6 +631,13 @@ class Assignment_statement : public Statement
   void
   do_check_types(Gogo*);
 
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
+
   Statement*
   do_flatten(Gogo*, Named_object*, Block*, Statement_inserter*);
 
@@ -791,6 +798,13 @@ class Return_statement : public Statement
   bool
   do_may_fall_through() const
   { return false; }
+
+  int
+  do_inlining_cost()
+  { return 1; }
+
+  void
+  do_export_statement(Export_function_body*);
 
   Bstatement*
   do_get_backend(Translate_context*);
