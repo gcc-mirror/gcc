@@ -1,3 +1,7 @@
+2018-11-28  Alan Modra  <amodra@gmail.com>
+
+	* xcoffout.c (do_block): Signed/unsigned warning fix.
+
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79351
