@@ -941,7 +941,7 @@ class Expression
 
   // Return the cost of this statement for inlining purposes.
   int
-  inlining_cost()
+  inlining_cost() const
   { return this->do_inlining_cost(); }
 
   // Return whether the expression is addressable--something which may
@@ -1093,7 +1093,7 @@ class Expression
   // inlining.  The default cost is high, so we only need to define
   // this method for expressions that can be inlined.
   virtual int
-  do_inlining_cost()
+  do_inlining_cost() const
   { return 0x100000; }
 
   // Child class implements whether the expression is addressable.
@@ -1355,6 +1355,12 @@ class Var_expression : public Expression
   do_copy()
   { return this; }
 
+  int
+  do_inlining_cost() const;
+
+  void
+  do_export(Export_function_body*) const;
+
   bool
   do_is_addressable() const
   { return true; }
@@ -1602,6 +1608,12 @@ class String_expression : public Expression
   static void
   export_string(String_dump* exp, const String_expression* str);
 
+  // Set the inlining cost a bit high since inlining may cause
+  // duplicated string literals.
+  int
+  do_inlining_cost() const
+  { return 5; }
+
   void
   do_export(Export_function_body*) const;
 
@@ -1685,6 +1697,9 @@ class Type_conversion_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context* context);
+
+  int
+  do_inlining_cost() const;
 
   void
   do_export(Export_function_body*) const;
@@ -1877,6 +1892,10 @@ class Unary_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
   do_export(Export_function_body*) const;
 
@@ -2021,6 +2040,10 @@ class Binary_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const
+  { return 1; }
 
   void
   do_export(Export_function_body*) const;

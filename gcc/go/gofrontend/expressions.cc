@@ -786,6 +786,31 @@ Var_expression::do_address_taken(bool escapes)
     }
 }
 
+// The cost to inline a variable reference.  We currently only support
+// references to parameters.
+
+int
+Var_expression::do_inlining_cost() const
+{
+  if (this->variable_->is_variable())
+    {
+      if (this->variable_->var_value()->is_parameter())
+	return 1;
+    }
+  else if (this->variable_->is_result_variable())
+    return 1;
+
+  return 0x100000;
+}
+
+// Export a reference to a variable.
+
+void
+Var_expression::do_export(Export_function_body* efb) const
+{
+  efb->write_string(Gogo::unpack_hidden_name(this->variable_->name()));
+}
+
 // Get the backend representation for a reference to a variable.
 
 Bexpression*
@@ -1608,6 +1633,10 @@ class Boolean_expression : public Expression
   do_get_backend(Translate_context* context)
   { return context->backend()->boolean_constant_expression(this->val_); }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
   do_export(Export_function_body* efb) const
   { efb->write_c_string(this->val_ ? "$true" : "$false"); }
@@ -1996,6 +2025,10 @@ class Integer_expression : public Expression
 					 : this->type_->copy_expressions()),
 					this->location());
   }
+
+  int
+  do_inlining_cost() const
+  { return 1; }
 
   void
   do_export(Export_function_body*) const;
@@ -2408,6 +2441,10 @@ class Float_expression : public Expression
   Bexpression*
   do_get_backend(Translate_context*);
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
   do_export(Export_function_body*) const;
 
@@ -2616,6 +2653,10 @@ class Complex_expression : public Expression
 
   Bexpression*
   do_get_backend(Translate_context*);
+
+  int
+  do_inlining_cost() const
+  { return 2; }
 
   void
   do_export(Export_function_body*) const;
@@ -3204,6 +3245,10 @@ class Nil_expression : public Expression
   do_get_backend(Translate_context* context)
   { return context->backend()->nil_pointer_expression(); }
 
+  int
+  do_inlining_cost() const
+  { return 1; }
+
   void
   do_export(Export_function_body* efb) const
   { efb->write_c_string("$nil"); }
@@ -3652,6 +3697,25 @@ Type_conversion_expression::do_get_backend(Translate_context* context)
           Expression::convert_for_assignment(gogo, type, this->expr_, loc);
       return conversion->get_backend(context);
     }
+}
+
+// Cost of inlining a type conversion.
+
+int
+Type_conversion_expression::do_inlining_cost() const
+{
+  Type* type = this->type_;
+  Type* expr_type = this->expr_->type();
+  if (type->interface_type() != NULL || expr_type->interface_type() != NULL)
+    return 10;
+  else if (type->is_string_type() && expr_type->integer_type() != NULL)
+    return 10;
+  else if (type->is_string_type() && expr_type->is_slice_type())
+    return 10;
+  else if (type->is_slice_type() && expr_type->is_string_type())
+    return 10;
+  else
+    return 1;
 }
 
 // Output a type conversion in a constant expression.
@@ -4677,7 +4741,11 @@ Unary_expression::do_export(Export_function_body* efb) const
       efb->write_c_string("^");
       break;
     case OPERATOR_AND:
+      efb->write_c_string("&");
+      break;
     case OPERATOR_MULT:
+      efb->write_c_string("*");
+      break;
     default:
       go_unreachable();
     }
@@ -4703,6 +4771,12 @@ Unary_expression::do_import(Import_expression* imp, Location loc)
       break;
     case '^':
       op = OPERATOR_XOR;
+      break;
+    case '&':
+      op = OPERATOR_AND;
+      break;
+    case '*':
+      op = OPERATOR_MULT;
       break;
     default:
       go_unreachable();
@@ -16195,7 +16269,7 @@ Expression*
 Expression::import_expression(Import_expression* imp, Location loc)
 {
   int c = imp->peek_char();
-  if (c == '+' || c == '-' || c == '!' || c == '^')
+  if (c == '+' || c == '-' || c == '!' || c == '^' || c == '&' || c == '*')
     return Unary_expression::do_import(imp, loc);
   else if (c == '(')
     return Binary_expression::do_import(imp, loc);
@@ -16220,11 +16294,35 @@ Expression::import_expression(Import_expression* imp, Location loc)
 	   || (imp->version() < EXPORT_FORMAT_V3
 	       && imp->match_c_string("convert")))
     return Type_conversion_expression::do_import(imp, loc);
-  else
+
+  Import_function_body* ifb = imp->ifb();
+  if (ifb == NULL)
     {
       go_error_at(imp->location(), "import error: expected expression");
       return Expression::make_error(loc);
     }
+  if (ifb->saw_error())
+    return Expression::make_error(loc);
+  std::string id = ifb->read_identifier();
+  if (id.empty())
+    {
+      if (!ifb->saw_error())
+	go_error_at(imp->location(),
+		    "import error: expected identifier at %lu",
+		    static_cast<unsigned long>(ifb->off()));
+      ifb->set_saw_error();
+      return Expression::make_error(loc);
+    }
+  Named_object* var = ifb->block()->bindings()->lookup(id);
+  if (var == NULL)
+    {
+      if (!ifb->saw_error())
+	go_error_at(imp->location(), "import error: lookup of %qs failed",
+		    id.c_str());
+      ifb->set_saw_error();
+      return Expression::make_error(loc);
+    }
+  return Expression::make_var_reference(var, loc);
 }
 
 // Class Expression_list.
