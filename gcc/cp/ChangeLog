@@ -1,3 +1,10 @@
+2018-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/87476
+	* typeck2.c (digest_init_r): Re-add handing of signed/unsigned char
+	strings and add it to the initialization of wide array from non-wide
+	string diagnostics too.
+
 2018-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88187

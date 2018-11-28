@@ -1,5 +1,9 @@
 2018-11-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c++/87476
+	* g++.dg/cpp0x/pr87476-1.C: New test.
+	* g++.dg/cpp0x/pr87476-2.C: New test.
+
 	PR c++/88215
 	* c-c++-common/ubsan/pr88215.c: New test.
 
