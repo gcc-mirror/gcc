@@ -1,3 +1,9 @@
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1094R2, Nested inline namespaces.
+	* g++.dg/cpp2a/nested-inline-ns1.C: New test.
+	* g++.dg/cpp2a/nested-inline-ns2.C: New test.
+
 2018-11-28  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87531

@@ -1,3 +1,10 @@
+2018-11-28  Marek Polacek  <polacek@redhat.com>
+
+	Implement P1094R2, Nested inline namespaces.
+	* parser.c (cp_parser_namespace_definition): Parse the optional inline
+	keyword in a nested-namespace-definition.  Adjust push_namespace call.
+	Formatting fix.
+
 2018-11-28  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87531

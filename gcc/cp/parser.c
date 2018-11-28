@@ -19004,6 +19004,7 @@ cp_parser_namespace_definition (cp_parser* parser)
   cp_ensure_no_oacc_routine (parser);
 
   bool is_inline = cp_lexer_next_token_is_keyword (parser->lexer, RID_INLINE);
+  const bool topmost_inline_p = is_inline;
 
   if (is_inline)
     {
@@ -19022,6 +19023,17 @@ cp_parser_namespace_definition (cp_parser* parser)
     {
       identifier = NULL_TREE;
       
+      bool nested_inline_p = cp_lexer_next_token_is_keyword (parser->lexer,
+							     RID_INLINE);
+      if (nested_inline_p && nested_definition_count != 0)
+	{
+	  if (cxx_dialect < cxx2a)
+	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
+		     OPT_Wpedantic, "nested inline namespace definitions only "
+		     "available with -std=c++2a or -std=gnu++2a");
+	  cp_lexer_consume_token (parser->lexer);
+	}
+
       if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
 	{
 	  identifier = cp_parser_identifier (parser);
@@ -19036,7 +19048,14 @@ cp_parser_namespace_definition (cp_parser* parser)
 	}
 
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE))
-	break;
+	{
+	  /* Don't forget that the innermost namespace might have been
+	     marked as inline.  Use |= because we cannot overwrite
+	     IS_INLINE in case the outermost namespace is inline, but
+	     there are no nested inlines.  */
+	  is_inline |= nested_inline_p;
+	  break;
+	}
   
       if (!nested_definition_count && cxx_dialect < cxx17)
         pedwarn (input_location, OPT_Wpedantic,
@@ -19045,7 +19064,9 @@ cp_parser_namespace_definition (cp_parser* parser)
 
       /* Nested namespace names can create new namespaces (unlike
 	 other qualified-ids).  */
-      if (int count = identifier ? push_namespace (identifier) : 0)
+      if (int count = (identifier
+		       ? push_namespace (identifier, nested_inline_p)
+		       : 0))
 	nested_definition_count += count;
       else
 	cp_parser_error (parser, "nested namespace name required");
@@ -19058,7 +19079,7 @@ cp_parser_namespace_definition (cp_parser* parser)
   if (nested_definition_count && attribs)
     error_at (token->location,
 	      "a nested namespace definition cannot have attributes");
-  if (nested_definition_count && is_inline)
+  if (nested_definition_count && topmost_inline_p)
     error_at (token->location,
 	      "a nested namespace definition cannot be inline");
 
@@ -19067,7 +19088,7 @@ cp_parser_namespace_definition (cp_parser* parser)
 
   bool has_visibility = handle_namespace_attrs (current_namespace, attribs);
 
-  warning  (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
+  warning (OPT_Wnamespaces, "namespace %qD entered", current_namespace);
 
   /* Look for the `{' to validate starting the namespace.  */
   matching_braces braces;
