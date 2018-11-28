@@ -1,3 +1,9 @@
+2018-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88065
+	PR c/87297
+	* c-c++-common/Wsizeof-pointer-memaccess4.c: New test.
+
 2018-11-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1094R2, Nested inline namespaces.

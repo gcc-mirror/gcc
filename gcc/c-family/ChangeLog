@@ -1,3 +1,10 @@
+2018-11-28  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88065
+	PR c/87297
+	* c-warn.c (sizeof_pointer_memaccess_warning): Bail if source
+	or destination is an error.
+
 2018-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/88215
