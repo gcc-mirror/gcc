@@ -1,3 +1,19 @@
+2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/83511
+	* include/std/string_view (basic_string_view::substr): Add default
+	argument to first parameter.
+	* include/experimental/string_view (basic_string_view::substr):
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/substr/char/
+	83511.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/substr/wchar_t/
+	83511.cc: New test.
+	* testsuite/experimental/string_view/operations/substr/char/83511.cc:
+	New test.
+	* testsuite/experimental/string_view/operations/substr/wchar_t/83511.cc:
+	New test.
+
 2018-11-28  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Implement uniform container erasure for C++20.
