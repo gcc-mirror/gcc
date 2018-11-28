@@ -1,5 +1,11 @@
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/79351
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): For assignments from
+	empty CONSTRUCTORs ensure the store is at a constant position.
+
+2018-11-28  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/88229
 	* tree-ssa.c (non_rewritable_mem_ref_base): Check DECL_SIZE_UNIT
 	is an INTEGER_CST before accessing it so.
