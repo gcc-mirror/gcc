@@ -1,7 +1,19 @@
+2018-11-28  Jeff Law  <law@redhat.com>
+
+	* config/h8300/constraints.md: Add "C" constraint for call insns.
+	* config/h8300/h8300.md (call, call_value): Turn into a define_expand
+	and define_insn pair.  Move invalid call targets into a register in
+	the expander and fix constraints in the matching pattern.
+	* config/h8300/predicates.md (call_expander_operand): Renamed from
+	call_insn_operand.  Reject things we shouldn't be trying to handle.
+	(call_insn_operand): New predicate for use by the call/call_value
+	insns.
+	(small_call_insn_operand): Update appropriately.
+
 2018-11-28  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_process_target_attr): Replace
-		calls to strtok with strtok_r.
+	calls to strtok with strtok_r.
 
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
