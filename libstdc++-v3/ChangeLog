@@ -1,5 +1,11 @@
 2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/xml/manual/intro.xml: Document LWG 3096 change.
+	* src/filesystem/std-path.cc (path::lexically_relative(const path&)):
+	Treat a final empty element equivalently to a final dot element.
+	* testsuite/27_io/filesystem/path/generation/relative.cc: Add checks
+	for the examples in the DR.
+
 	PR libstdc++/83306
 	* include/bits/fs_path.h (filesystem_error): Move data members into
 	pimpl class owned by shared_ptr. Remove inline definitions of member
