@@ -1,5 +1,14 @@
 2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/83306
+	* include/bits/fs_path.h (filesystem_error): Move data members into
+	pimpl class owned by shared_ptr. Remove inline definitions of member
+	functions.
+	* src/filesystem/std-path.cc (filesystem_error::_Impl): Define.
+	(filesystem_error): Define member functions.
+	* testsuite/27_io/filesystem/filesystem_error/cons.cc: New test.
+	* testsuite/27_io/filesystem/filesystem_error/copy.cc: New test.
+
 	* doc/xml/manual/status_cxx2017.xml: Update C++17 status.
 	* doc/html/*: Regenerate.
 
