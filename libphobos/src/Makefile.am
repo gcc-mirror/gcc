@@ -57,7 +57,7 @@ toolexeclib_DATA = libgphobos.spec
 toolexeclib_LTLIBRARIES = libgphobos.la
 libgphobos_la_SOURCES = $(ALL_PHOBOS_SOURCES) $(ZLIB_SRC)
 libgphobos_la_LIBTOOLFLAGS =
-libgphobos_la_LDFLAGS = -Xcompiler -nophoboslib -version-info $(PHOBOS_SOVERSION)
+libgphobos_la_LDFLAGS = -Xcompiler -nophoboslib -version-info $(libtool_VERSION)
 libgphobos_la_LIBADD = ../libdruntime/libgdruntime.la
 libgphobos_la_DEPENDENCIES = libgphobos.spec
 

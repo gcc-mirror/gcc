@@ -3468,14 +3468,13 @@ if (__traits(isScalar, T))
 // comparisons in the semantic analysis phase of CmpExp. The ordering
 // comparison is lowered to a call to this template.
 int __cmp(T1, T2)(T1[] s1, T2[] s2)
-if (!__traits(isScalar, T1))
+if (!__traits(isScalar, T1) && !__traits(isScalar, T2))
 {
     import core.internal.traits : Unqual;
     alias U1 = Unqual!T1;
     alias U2 = Unqual!T2;
-    static assert(is(U1 == U2), "Internal error.");
 
-    static if (is(U1 == void))
+    static if (is(U1 == void) && is(U2 == void))
         static @trusted ref inout(ubyte) at(inout(void)[] r, size_t i) { return (cast(inout(ubyte)*) r.ptr)[i]; }
     else
         static @trusted ref R at(R)(R[] r, size_t i) { return r.ptr[i]; }
@@ -3506,8 +3505,11 @@ if (!__traits(isScalar, T1))
         {
             // TODO: fix this legacy bad behavior, see
             // https://issues.dlang.org/show_bug.cgi?id=17244
+            static assert(is(U1 == U2), "Internal error.");
             import core.stdc.string : memcmp;
-            return (() @trusted => memcmp(&at(s1, u), &at(s2, u), U1.sizeof))();
+            auto c = (() @trusted => memcmp(&at(s1, u), &at(s2, u), U1.sizeof))();
+            if (c != 0)
+                return c;
         }
     }
     return s1.length < s2.length ? -1 : (s1.length > s2.length);
@@ -3566,9 +3568,15 @@ if (!__traits(isScalar, T1))
     {
         T[2] a = [T.max, T.max];
         T[2] b = [T.min_normal, T.min_normal];
+        T[2] c = [T.max, T.min_normal];
+        T[1] d = [T.max];
 
         assert(__cmp(a, b) > 0);
         assert(__cmp(b, a) < 0);
+        assert(__cmp(a, c) > 0);
+        assert(__cmp(a, d) > 0);
+        assert(__cmp(d, c) < 0);
+        assert(__cmp(c, c) == 0);
     }
 
     compareMinMax!real;
@@ -3600,6 +3608,24 @@ if (!__traits(isScalar, T1))
 
     assert(__cmp(a, b) > 0);
     assert(__cmp(b, a) < 0);
+}
+
+// arrays of arrays with mixed modifiers
+@safe unittest
+{
+    // https://issues.dlang.org/show_bug.cgi?id=17876
+    bool less1(immutable size_t[][] a, size_t[][] b) { return a < b; }
+    bool less2(const void[][] a, void[][] b) { return a < b; }
+    bool less3(inout size_t[][] a, size_t[][] b) { return a < b; }
+
+    immutable size_t[][] a = [[1, 2], [3, 4]];
+    size_t[][] b = [[1, 2], [3, 5]];
+    assert(less1(a, b));
+    assert(less3(a, b));
+
+    auto va = [cast(immutable void[])a[0], a[1]];
+    auto vb = [cast(void[])b[0], b[1]];
+    assert(less2(va, vb));
 }
 
 // objects
@@ -3642,6 +3668,7 @@ if (!__traits(isScalar, T1))
 
     assert(__cmp([c1, c1][], [c2, c2][]) < 0);
     assert(__cmp([c2, c2], [c1, c1]) > 0);
+    assert(__cmp([c2, c2], [c2, c1]) > 0);
 }
 
 // Compiler hook into the runtime implementation of array (vector) operations.
