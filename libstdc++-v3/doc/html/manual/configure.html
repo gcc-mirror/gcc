@@ -238,7 +238,25 @@
      use <code class="option">OPTION=gcc4-compatible</code> to set it to
      <code class="literal">0</code>.
      This option does not change the library ABI.
-   </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
+   </p></dd><dt><span class="term"><code class="code">--with-libstdcxx-lock-policy=OPTION</code></span></dt><dd><p>Sets the lock policy that controls how
+        <code class="classname">shared_ptr</code> reference counting is
+        synchronized.
+        The choice OPTION=atomic enables use of atomics for updates to
+        <code class="classname">shared_ptr</code> reference counts.
+        The choice OPTION=mutex enables use of a mutex to synchronize updates
+        to <code class="classname">shared_ptr</code> reference counts.
+        If the compiler's thread model is "single" then this option has no
+        effect, as no synchronization is used for the reference counts.
+	The default is OPTION=auto, which checks for the availability of
+        compiler built-ins for 2-byte and 4-byte atomic compare-and-swap,
+        and uses OPTION=atomic if they're available, OPTION=mutex otherwise.
+        This option can change the library ABI.
+        If the library is configured to use atomics and user programs are
+        compiled using a target that doesn't natively support the atomic
+        operations (e.g. the library is configured for armv7 and then code
+        is compiled with <code class="option">-march=armv5t</code>) then the program
+        might rely on support in libgcc to provide the atomics.
+    </p></dd><dt><span class="term"><code class="code">--enable-vtable-verify</code>[default]</span></dt><dd><p>Use <code class="code">-fvtable-verify=std</code> to compile the C++
     runtime with instrumentation for vtable verification. All virtual
     functions in the standard library will be verified at runtime.
     Types impacted include <code class="classname">locale</code> and
