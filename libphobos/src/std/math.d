@@ -177,7 +177,7 @@ version (StaticallyHaveSSE)
 {
     private enum bool haveSSE = true;
 }
-else
+else version (X86)
 {
     static import core.cpuid;
     private alias haveSSE = core.cpuid.sse;
@@ -887,7 +887,7 @@ Lret: {}
                 -9.889929415807650724957118893791829849557E-1L
             ];
             static immutable real[7] Q = [
-                8.650244186622719093893836740197250197602E10L
+                8.650244186622719093893836740197250197602E10L,
                 -4.152206921457208101480801635640958361612E10L,
                 2.758476078803232151774723646710890525496E9L,
                 -5.733709132766856723608447733926138506824E7L,
@@ -3141,7 +3141,8 @@ float ldexp(float n, int exp) @safe pure nothrow @nogc { return ldexp(cast(real)
 
 @safe pure nothrow @nogc unittest
 {
-    static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended)
+    static if (floatTraits!(real).realFormat == RealFormat.ieeeExtended ||
+               floatTraits!(real).realFormat == RealFormat.ieeeQuadruple)
     {
         assert(ldexp(1.0L, -16384) == 0x1p-16384L);
         assert(ldexp(1.0L, -16382) == 0x1p-16382L);
@@ -4453,6 +4454,7 @@ long lrint(real x) @trusted pure nothrow @nogc
             const j = sign ? -OF : OF;
             x = (j + x) - j;
 
+            const exp = (vu[F.EXPPOS_SHORT] & F.EXPMASK) - (F.EXPBIAS + 1);
             const implicitOne = 1UL << 48;
             auto vl = cast(ulong*)(&x);
             vl[MANTISSA_MSB] &= implicitOne - 1;
@@ -4460,7 +4462,6 @@ long lrint(real x) @trusted pure nothrow @nogc
 
             long result;
 
-            const exp = (vu[F.EXPPOS_SHORT] & F.EXPMASK) - (F.EXPBIAS + 1);
             if (exp < 0)
                 result = 0;
             else if (exp <= 48)
@@ -5337,6 +5338,7 @@ private:
             }
             else version (AArch64)
             {
+                ControlState cont;
                 asm pure nothrow @nogc
                 {
                     "mrs %0, FPCR;" : "=r" cont;
@@ -6667,6 +6669,10 @@ if (isFloatingPoint!(F) && isIntegral!(G))
     else version (ARM)
     {
         pragma(msg, "test disabled on ARM, see bug 5628");
+    }
+    else version (GNU)
+    {
+        pragma(msg, "test disabled on GNU, see bug 5628");
     }
     else
     {
