@@ -243,7 +243,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       constexpr basic_string_view
-      substr(size_type __pos, size_type __n = npos) const noexcept(false)
+      substr(size_type __pos = 0, size_type __n = npos) const noexcept(false)
       {
 	__pos = _M_check(__pos, "basic_string_view::substr");
 	const size_type __rlen = std::min(__n, _M_len - __pos);
