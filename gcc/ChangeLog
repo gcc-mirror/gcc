@@ -1,3 +1,18 @@
+2018-11-28  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	Backport from mainline
+	2018-10-25  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (expand_strncmp_gpr_sequence): Change to
+	a shorter sequence with fewer branches.
+	(emit_final_str_compare_gpr): Ditto.
+
+	Backport from mainline to allow the above code to go in:
+	2018-06-14  Aaron Sawdey  <acsawdey@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.c (do_and3, do_and3_mask,
+	do_cmpb3, do_rotl3): New functions.
+
 2018-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79351
