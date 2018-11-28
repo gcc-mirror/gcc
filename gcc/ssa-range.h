@@ -63,9 +63,9 @@ class ssa_ranger
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual bool range_of_stmt_with_range (irange &r, gimple *s, tree name,
 					 const irange &name_range);
-  virtual bool range_on_edge (irange &r, edge e, tree name);
-  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
-  virtual bool range_on_exit (irange &r, basic_block bb, tree name);
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
+  virtual void range_on_exit (irange &r, basic_block bb, tree name);
 
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
@@ -122,9 +122,9 @@ class gori_ranger : public ssa_ranger
   gori_ranger ();
   ~gori_ranger ();
 
-  virtual bool range_on_edge (irange &r, edge e, tree name);
-  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
-  virtual bool range_on_exit (irange &r, basic_block bb, tree name);
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
+  virtual void range_on_exit (irange &r, basic_block bb, tree name);
 
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range = NULL);
@@ -160,8 +160,8 @@ public:
 
   virtual bool range_of_expr (irange &r, tree op, gimple *s = NULL);
   virtual bool range_of_expr (irange &r, tree expr, edge e);
-  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
 
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
@@ -195,10 +195,10 @@ public:
 
   virtual bool range_of_expr (irange &r, tree expr, gimple *s = NULL);
   virtual bool range_of_expr (irange &r, tree expr, edge e);
-  virtual bool range_on_edge (irange &r, edge e, tree name);
-  virtual bool range_on_entry (irange &r, basic_block bb, tree name);
-  virtual bool range_on_exit (irange &r, basic_block bb, tree name);
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
+  virtual void range_on_edge (irange &r, edge e, tree name);
+  virtual void range_on_entry (irange &r, basic_block bb, tree name);
+  virtual void range_on_exit (irange &r, basic_block bb, tree name);
 
   // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,

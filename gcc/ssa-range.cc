@@ -220,7 +220,7 @@ ssa_ranger::range_of_expr (irange&r, tree op, edge e)
      return false;
   if (valid_ssa_p (op))
     {
-      gcc_assert (range_on_edge (r, e, op));
+      range_on_edge (r, e, op);
       return true;
     }
   // If it is not an SSA_NAME, just get the basic range.
@@ -230,18 +230,16 @@ ssa_ranger::range_of_expr (irange&r, tree op, edge e)
 // Calculate a range for NAME on edge E and return it in R.  
 // Return false if no range can be determined.
 
-bool
+void
 ssa_ranger::range_on_edge (irange &r, edge e, tree name)
 {
   irange edge_range;
 
-  if (!supports_ssa_p (name))
-    return false;
+  gcc_checking_assert (supports_ssa_p (name));
 
   // Check to see if NAME is defined on edge e.
-  if (outgoing_edge_range_p (r, e, name))
-    return true;
-  return range_of_expr (r, name);
+  if (!outgoing_edge_range_p (r, e, name))
+    range_of_expr (r, name);
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a range
@@ -321,25 +319,25 @@ ssa_ranger::range_of_stmt_with_range (irange &r, gimple *s, tree name,
 }
 
 // Calculate range-on-entry for NAME to BB and return in R.
-// unimplemented at the statement level.
+// At the statement level siply return the tree value.
 
-bool
-ssa_ranger::range_on_entry (irange &r ATTRIBUTE_UNUSED,
-			    basic_block bb ATTRIBUTE_UNUSED,
-			    tree name ATTRIBUTE_UNUSED)
+void
+ssa_ranger::range_on_entry (irange &r, basic_block bb ATTRIBUTE_UNUSED,
+			    tree name)
 {
-  return false;
+  gcc_checking_assert (valid_ssa_p (name));
+  gcc_checking_assert (range_of_expr (r, name));
 }
 
 // Calculate range-on-exit for NAME from BB and return in R.
-// unimplemented at the statement level.
+// At the statement level siply return the tree value.
 
-bool
-ssa_ranger::range_on_exit (irange &r ATTRIBUTE_UNUSED,
-			   basic_block bb ATTRIBUTE_UNUSED,
-			   tree name ATTRIBUTE_UNUSED)
+void
+ssa_ranger::range_on_exit (irange &r, basic_block bb ATTRIBUTE_UNUSED,
+			   tree name )
 {
-  return false;
+  gcc_checking_assert (valid_ssa_p (name));
+  gcc_checking_assert (range_of_expr (r, name));
 }
 
 
@@ -506,7 +504,7 @@ ssa_ranger::range_of_phi (irange &r, gphi *phi, tree name,
         arg_range = *name_range;
       else if (valid_ssa_p (arg) && !eval_from)
       // Try to find a range from the edge.  If that fails, return varying.
-	gcc_assert (range_on_edge (arg_range, e, arg));
+	range_on_edge (arg_range, e, arg);
       else
 	gcc_assert (range_of_expr (arg_range, arg, eval_from));
 
@@ -698,21 +696,18 @@ gori_ranger::reevaluate_range_of_name (irange &r, tree name, edge on_edge)
 // Calculate a range for NAME on edge E and return it in R.  
 // Return false if no range can be determined.
 
-bool
+void
 gori_ranger::range_on_edge (irange &r, edge e, tree name)
 {
   irange edge_range;
 
-  if (!supports_ssa_p (name))
-    return false;
+  gcc_assert (supports_ssa_p (name));
 
-  gcc_assert (range_on_exit (r, e->src, name));
+  range_on_exit (r, e->src, name);
 
   // Check to see if NAME is defined on edge e.
   if (outgoing_edge_range_p (edge_range, e, name, &r))
     r = edge_range;
-
-  return true;
 }
 
 // Calculate a range on edge E and return it in R.  Try to evaluate a range
@@ -744,7 +739,7 @@ gori_ranger::outgoing_edge_range_p (irange &r, edge e, tree name,
 // Return false if no range can be calculated.
 // Calculation is performed by unioning all the ranges on incoming edges.
 
-bool
+void
 gori_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
   edge_iterator ei;
@@ -752,8 +747,7 @@ gori_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   tree type = TREE_TYPE (name);
   irange pred_range;
 
-  if (!supports_type_p (type))
-    return false;
+  gcc_checking_assert (supports_type_p (type));
 
   // Start with an empty range.
   r.set_undefined (type);
@@ -763,20 +757,18 @@ gori_ranger::range_on_entry (irange &r, basic_block bb, tree name)
   // Visit each predecessor to resolve them.
   FOR_EACH_EDGE (e, ei, bb->preds)
     {
-      gcc_assert (range_on_edge (pred_range, e, name));
+      range_on_edge (pred_range, e, name);
       r.union_ (pred_range);
       // If varying is reach, stop processing.
       if (r.varying_p ())
         break;
     }
-
-  return true;
 }
 
 // Calculate the range for NAME at the end of block BB and return it in R.
 // Return false if no range can be calculated.
 
-bool
+void
 gori_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 {
   // on-exit from the exit block?
@@ -787,8 +779,9 @@ gori_ranger::range_on_exit (irange &r, basic_block bb, tree name)
   // go get the range_on_entry for this block.
   // For the entry block, a NULL stmt will return the global value for NAME.
   if (!s && bb != ENTRY_BLOCK_PTR_FOR_FN (cfun))
-    return range_on_entry (r, bb, name);
-  return range_of_expr (r, name, s);
+    range_on_entry (r, bb, name);
+  else
+    gcc_assert (range_of_expr (r, name, s));
 }
 
 // If the src block of edge E defines an outgoing range for a name that is
@@ -1253,7 +1246,7 @@ block_range_cache::dump (FILE *f, basic_block bb, bool print_varying)
 // global irange cache has a range associated with it, and that is returned
 // if it does.  If it does not, then any range assocaited with the
 // existing SSA_NAME_RANGE_INFO field is extracted and that is returned,
-// albeit with a false flagindicating there is not a global cache entry.
+// albeit with a false flag indicating there is not a global cache entry.
 
 class ssa_global_cache
 {
@@ -1398,9 +1391,7 @@ global_ranger::has_global_ssa_range (irange &r, tree name)
   if (!supports_ssa_p (name))
     return false;
 
-  if (m_globals->get_global_range (r, name))
-    return true;
-  return false;
+  return m_globals->get_global_range (r, name);
 }
 
 
@@ -1621,14 +1612,13 @@ global_ranger::fill_block_cache (tree name, basic_block bb, basic_block def_bb)
 // Return the range of NAME on entry to block BB in R.  Return false if there
 // is no range other than varying.
 
-bool
+void
 global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
   gimple *def_stmt;
   basic_block def_bb = NULL;
 
-  if (!supports_ssa_p (name))
-    return false;
+  gcc_checking_assert (supports_ssa_p (name));
 
   // Determine an origination block for the defining statement.
   def_stmt = SSA_NAME_DEF_STMT (name);
@@ -1654,8 +1644,6 @@ global_ranger::range_on_entry (irange &r, basic_block bb, tree name)
       gcc_checking_assert (res);
       r.intersect (entry_range);
     }
-
-  return true;
 }
 
 // Calculate a range for statement S and return it in R.  If NAME is provided
@@ -1716,7 +1704,7 @@ global_ranger::range_of_expr (irange&r, tree op, gimple *s)
 	gcc_assert (range_of_stmt (r, def_stmt, op));
       else
 	// Otherwise OP comes from outside this block, use range on entry.
-	gcc_assert (range_on_entry (r, bb, op));
+	range_on_entry (r, bb, op);
 
       // No range yet, see if there is a dereference in the block.
       // We don't care if it's between the def and a use within a block
@@ -1780,24 +1768,28 @@ global_ranger::dump (FILE *f)
 	      tree name = valid_ssa_p (ssa_name (x));
 	      if (name && outgoing_edge_range_p (range, e, name))
 		{
-		  if (range_on_edge (range, e, name))
+		  gimple *s = SSA_NAME_DEF_STMT (name);
+		  // Only print the range if this is the def block,
+		  // or the on entry cache for either end of the edge is set.
+		  if ((s && bb == gimple_bb (s)) ||
+		      m_block_cache->bb_range_p (name, bb) ||
+		      m_block_cache->bb_range_p (name, e->dest))
 		    {
+		      range_on_edge (range, e, name);
 		      if (!range.varying_p ())
 			{
 			  fprintf (f, "%d->%d ", e->src->index,
 				   e->dest->index);
+			  char c = (m_gori.is_export_p (name, bb) ? ' ' : '*');
 			  if (e->flags & EDGE_TRUE_VALUE)
-			    fprintf (f, " (T) ");
+			    fprintf (f, " (T)%c", c);
 			  else if (e->flags & EDGE_FALSE_VALUE)
-			    fprintf (f, " (F) ");
+			    fprintf (f, " (F)%c", c);
 			  else
 			    fprintf (f, "     ");
 			  print_generic_expr (f, name, TDF_SLIM);
 			  fprintf(f, " : \t");
 			  range.dump(f);
-//	Uncomment this when ranges no longer dump a newline.
-//			  if (!m_gori.is_export_p (name, bb))
-//			    fprintf (f, "(re-eval) ");
 			}
 		    }
 		}
@@ -1951,10 +1943,9 @@ trace_ranger::range_of_expr (irange &r, tree expr, edge e)
 
 // Tracing version of range_on_edge.  Call it with printing wrappers.
 
-bool
+void
 trace_ranger::range_on_edge (irange &r, edge e, tree name)
 {
-  bool res;
   if (dumping ())
     {
       fprintf (dump_file, "range_on_edge (");
@@ -1963,17 +1954,16 @@ trace_ranger::range_on_edge (irange &r, edge e, tree name)
       indent += bump;
     }
 
-  res =  super::range_on_edge (r, e, name);
+  super::range_on_edge (r, e, name);
 
-  return trailer ("range_on_edge", res, name, r);
+  trailer ("range_on_edge", true, name, r);
 }
 
 // Tracing version of range_on_entry.  Call it with printing wrappers.
 
-bool
+void
 trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
 {
-  bool res;
   if (dumping ())
     {
       fprintf (dump_file, "range_on_entry (");
@@ -1982,17 +1972,16 @@ trace_ranger::range_on_entry (irange &r, basic_block bb, tree name)
       indent += bump;
     }
 
-  res =  super::range_on_entry (r, bb, name);
+  super::range_on_entry (r, bb, name);
 
-  return trailer ("range_on_entry", res, name, r);
+  trailer ("range_on_entry", true, name, r);
 }
 
 // Tracing version of range_on_exit.  Call it with printing wrappers.
 
-bool
+void
 trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
 {
-  bool res;
   if (dumping ())
     {
       fprintf (dump_file, "range_on_exit (");
@@ -2001,9 +1990,9 @@ trace_ranger::range_on_exit (irange &r, basic_block bb, tree name)
       indent += bump;
     }
 
-  res =  super::range_on_exit (r, bb, name);
+  super::range_on_exit (r, bb, name);
 
-  return trailer ("range_on_exit", res, name, r);
+  trailer ("range_on_exit", true, name, r);
 }
 
 // Tracing version of range_of_stmt.  Call it with printing wrappers.

@@ -180,8 +180,7 @@ thread_ranger::path_range_list (irange &r, tree name,
 	  return false;
     }
   else
-    if (!range_on_entry (r, first_bb, name))
-      return false;
+    range_on_entry (r, first_bb, name);
 
   if (dir == REVERSE)
     return path_range_list_reverse (r, name, bbs);
