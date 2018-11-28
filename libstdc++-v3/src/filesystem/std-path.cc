@@ -34,8 +34,6 @@
 namespace fs = std::filesystem;
 using fs::path;
 
-fs::filesystem_error::~filesystem_error() = default;
-
 constexpr path::value_type path::preferred_separator;
 
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -741,47 +739,83 @@ fs::hash_value(const path& p) noexcept
   return seed;
 }
 
-namespace std
+struct fs::filesystem_error::_Impl
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-namespace filesystem
-{
-  string
-  fs_err_concat(const string& __what, const string& __path1,
-		  const string& __path2)
+  _Impl(const string& what_arg, const path& p1, const path& p2)
+  : path1(p1), path2(p2), what(make_what(what_arg, &p1, &p2))
+  { }
+
+  _Impl(const string& what_arg, const path& p1)
+  : path1(p1), path2(), what(make_what(what_arg, &p1, nullptr))
+  { }
+
+  _Impl(const string& what_arg)
+  : what(make_what(what_arg, nullptr, nullptr))
+  { }
+
+  static std::string
+  make_what(const std::string& s, const path* p1, const path* p2)
   {
-    const size_t __len = 18 + __what.length()
-      + (__path1.length() ? __path1.length() + 3 : 0)
-      + (__path2.length() ? __path2.length() + 3 : 0);
-    string __ret;
-    __ret.reserve(__len);
-    __ret = "filesystem error: ";
-    __ret += __what;
-    if (!__path1.empty())
+    const std::string pstr1 = p1 ? p1->u8string() : std::string{};
+    const std::string pstr2 = p2 ? p2->u8string() : std::string{};
+    const size_t len = 18 + s.length()
+      + (pstr1.length() ? pstr1.length() + 3 : 0)
+      + (pstr2.length() ? pstr2.length() + 3 : 0);
+    std::string w;
+    w.reserve(len);
+    w = "filesystem error: ";
+    w += s;
+    if (p1)
       {
-	__ret += " [";
-	__ret += __path1;
-	__ret += ']';
+	w += " [";
+	w += pstr1;
+	w += ']';
+	if (p2)
+	  {
+	    w += " [";
+	    w += pstr2;
+	    w += ']';
+	  }
       }
-    if (!__path2.empty())
-      {
-	__ret += " [";
-	__ret += __path2;
-	__ret += ']';
-      }
-    return __ret;
+    return w;
   }
 
-_GLIBCXX_BEGIN_NAMESPACE_CXX11
+  path path1;
+  path path2;
+  std::string what;
+};
 
-  std::string filesystem_error::_M_gen_what()
-  {
-    return fs_err_concat(system_error::what(), _M_path1.u8string(),
-			 _M_path2.u8string());
-  }
+template class std::__shared_ptr<const fs::filesystem_error::_Impl>;
 
-_GLIBCXX_END_NAMESPACE_CXX11
+fs::filesystem_error::
+filesystem_error(const string& what_arg, error_code ec)
+: system_error(ec, what_arg),
+  _M_impl(std::__make_shared<_Impl>(what_arg))
+{ }
 
-} // filesystem
-_GLIBCXX_END_NAMESPACE_VERSION
-} // std
+fs::filesystem_error::
+filesystem_error(const string& what_arg, const path& p1, error_code ec)
+: system_error(ec, what_arg),
+  _M_impl(std::__make_shared<_Impl>(what_arg, p1))
+{ }
+
+fs::filesystem_error::
+filesystem_error(const string& what_arg, const path& p1, const path& p2,
+		 error_code ec)
+: system_error(ec, what_arg),
+  _M_impl(std::__make_shared<_Impl>(what_arg, p1, p2))
+{ }
+
+fs::filesystem_error::~filesystem_error() = default;
+
+const fs::path&
+fs::filesystem_error::path1() const noexcept
+{ return _M_impl->path1; }
+
+const fs::path&
+fs::filesystem_error::path2() const noexcept
+{ return _M_impl->path2; }
+
+const char*
+fs::filesystem_error::what() const noexcept
+{ return _M_impl->what.c_str(); }

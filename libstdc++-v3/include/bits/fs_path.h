@@ -43,6 +43,8 @@
 #include <system_error>
 #include <bits/stl_algobase.h>
 #include <bits/locale_conv.h>
+#include <ext/concurrence.h>
+#include <bits/shared_ptr.h>
 
 #if defined(_WIN32) && !defined(__CYGWIN__)
 # define _GLIBCXX_FILESYSTEM_IS_WINDOWS 1
@@ -575,30 +577,29 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   class filesystem_error : public std::system_error
   {
   public:
-    filesystem_error(const string& __what_arg, error_code __ec)
-    : system_error(__ec, __what_arg) { }
+    filesystem_error(const string& __what_arg, error_code __ec);
 
     filesystem_error(const string& __what_arg, const path& __p1,
-		     error_code __ec)
-    : system_error(__ec, __what_arg), _M_path1(__p1) { }
+		     error_code __ec);
 
     filesystem_error(const string& __what_arg, const path& __p1,
-		     const path& __p2, error_code __ec)
-    : system_error(__ec, __what_arg), _M_path1(__p1), _M_path2(__p2)
-    { }
+		     const path& __p2, error_code __ec);
+
+    filesystem_error(const filesystem_error&) = default;
+    filesystem_error& operator=(const filesystem_error&) = default;
+
+    // No move constructor or assignment operator.
+    // Copy rvalues instead, so that _M_impl is not left empty.
 
     ~filesystem_error();
 
-    const path& path1() const noexcept { return _M_path1; }
-    const path& path2() const noexcept { return _M_path2; }
-    const char* what() const noexcept { return _M_what.c_str(); }
+    const path& path1() const noexcept;
+    const path& path2() const noexcept;
+    const char* what() const noexcept;
 
   private:
-    std::string _M_gen_what();
-
-    path _M_path1;
-    path _M_path2;
-    std::string _M_what = _M_gen_what();
+    struct _Impl;
+    std::__shared_ptr<const _Impl> _M_impl;
   };
 
   struct path::_Cmpt : path
@@ -1157,6 +1158,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   // @} group filesystem
 _GLIBCXX_END_NAMESPACE_CXX11
 } // namespace filesystem
+
+extern template class __shared_ptr<const filesystem::filesystem_error::_Impl>;
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
