@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-profile_estimate" } */
 
+void exit(int);
+
 int main(int argc, char **argv)
 {
   switch (argc)
@@ -10,9 +12,9 @@ int main(int argc, char **argv)
     case 2:
       return 2;
     case 3:
-      __builtin_abort();
+      exit(1);
     case 4:
-      __builtin_abort();
+      exit(2);
     default:
       return 5;
     }
@@ -20,5 +22,5 @@ int main(int argc, char **argv)
   return 10;
 }
 
-/* { dg-final { scan-tree-dump-times "33.33%" 3 "profile_estimate"} } */
-/* { dg-final { scan-tree-dump-times "0.00%" 3 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "combined heuristics of edge\[^:\]*: 33.30%" 3 "profile_estimate"} } */
+/* { dg-final { scan-tree-dump-times "combined heuristics of edge\[^:\]*: 0.05%" 2 "profile_estimate"} } */
