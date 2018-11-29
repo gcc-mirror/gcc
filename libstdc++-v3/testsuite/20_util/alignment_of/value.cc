@@ -20,16 +20,22 @@
 #include <type_traits>
 #include <testsuite_tr1.h>
 
+template<typename T>
+constexpr bool test()
+{
+  return __gnu_test::test_property<std::alignment_of, T>(alignof(T));
+}
+
 void test01()
 {
-  using std::alignment_of;
-  using namespace __gnu_test;
-
-  static_assert(test_property<alignment_of, char>(__alignof__(char)), "");
-  static_assert(test_property<alignment_of, short>(__alignof__(short)), "");
-  static_assert(test_property<alignment_of, int>(__alignof__(int)), "");
-  static_assert(test_property<alignment_of, double>(__alignof__(double)), "");
-  static_assert(test_property<alignment_of, int[4]>(__alignof__(int[4])), "");
-  static_assert(test_property<alignment_of,
-		ClassType>(__alignof__(ClassType)), "");
+  static_assert(test<char>(), "");
+  static_assert(test<short>(), "");
+  static_assert(test<int>(), "");
+  static_assert(test<long>(), "");
+  static_assert(test<long long>(), "");
+  static_assert(test<float>(), "");
+  static_assert(test<double>(), "");
+  static_assert(test<long double>(), "");
+  static_assert(test<int[4]>(), "");
+  static_assert(test<__gnu_test::ClassType>(), "");
 }

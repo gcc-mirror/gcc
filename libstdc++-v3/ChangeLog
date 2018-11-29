@@ -1,5 +1,13 @@
 2018-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/88119
+	* include/ext/aligned_buffer.h (__aligned_membuf): Add comment.
+	(__aligned_buffer): Use __alignof__ instead of std::alignment_of.
+	* include/std/type_traits (alignment_of): Use alignof instead of
+	__alignof__.
+	* testsuite/20_util/alignment_of/value.cc: Fix test to check values
+	match alignof not __alignof__, as required by the standard.
+
 	PR libstdc++/86910
 	PR libstdc++/87846
 	* src/filesystem/ops.cc (experimental::create_directories): Report
