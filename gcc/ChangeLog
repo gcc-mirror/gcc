@@ -1,5 +1,16 @@
 2018-11-29  Andi Kleen  <ak@linux.intel.com>
 
+	* config/i386/i386.c (x86_print_call_or_nop): Handle nop name.
+	(current_fentry_name): Add.
+	(x86_function_profiler): Handle fentry_name attribute.
+	(ix86_handle_fentry_name): Add.
+	(ix86_attribute_table): Add fentry_name.
+	* config/i386/i386.opt: Add -mfentry-name
+	* doc/extend.texi: Document fentry_name.
+	* doc/invoke.texi: Document minstrument-return.
+
+2018-11-29  Andi Kleen  <ak@linux.intel.com>
+
 	* config/i386/i386-opts.h (enum instrument_return): Add.
 	* config/i386/i386.c (output_return_instrumentation): Add.
 	(ix86_output_function_return): Call output_return_instrumentation.
