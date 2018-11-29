@@ -21367,6 +21367,50 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
   return default_assemble_integer (x, size, aligned_p);
 }
 
+/* Return a template string for assembly to emit when making an
+   external call.  FUNOP is the call mem argument operand number,
+   ARG is either NULL or a @TLSGD or @TLSLD __tls_get_addr argument
+   specifier.  */
+
+static const char *
+rs6000_call_template_1 (rtx *operands ATTRIBUTE_UNUSED, unsigned int funop,
+			bool sibcall, const char *arg)
+{
+  /* -Wformat-overflow workaround, without which gcc thinks that %u
+      might produce 10 digits.  */
+  gcc_assert (funop <= MAX_RECOG_OPERANDS);
+
+  /* The magic 32768 offset here corresponds to the offset of
+     r30 in .got2, as given by LCTOC1.  See sysv4.h:toc_section.  */
+  char z[11];
+  sprintf (z, "%%z%u%s", funop,
+	   (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic == 2
+	    ? "+32768" : ""));
+
+  static char str[32];  /* 4 spare */
+  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
+    sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
+	     sibcall ? "" : "\n\tnop");
+  else if (DEFAULT_ABI == ABI_V4)
+    sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
+	     flag_pic ? "@plt" : "");
+  else
+    gcc_unreachable ();
+  return str;
+}
+
+const char *
+rs6000_call_template (rtx *operands, unsigned int funop, const char *arg)
+{
+  return rs6000_call_template_1 (operands, funop, false, arg);
+}
+
+const char *
+rs6000_sibcall_template (rtx *operands, unsigned int funop, const char *arg)
+{
+  return rs6000_call_template_1 (operands, funop, true, arg);
+}
+
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */
@@ -32805,8 +32849,8 @@ get_prev_label (tree function_name)
    CALL_DEST is the routine we are calling.  */
 
 char *
-output_call (rtx_insn *insn, rtx *operands, int dest_operand_number,
-	     int cookie_operand_number)
+macho_call_template (rtx_insn *insn, rtx *operands, int dest_operand_number,
+		     int cookie_operand_number)
 {
   static char buf[256];
   if (darwin_emit_branch_islands
