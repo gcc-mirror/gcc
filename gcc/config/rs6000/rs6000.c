@@ -4640,16 +4640,22 @@ rs6000_option_override_internal (bool global_init_p)
   if (!global_options_set.x_rs6000_ieeequad)
     rs6000_ieeequad = TARGET_IEEEQUAD_DEFAULT;
 
-  else if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
+  else
     {
-      static bool warned_change_long_double;
-      if (!warned_change_long_double)
+      if (!TARGET_POPCNTD || !TARGET_VSX)
+	error ("%qs requires full ISA 2.06 support", "-mabi=ieeelongdouble");
+
+      if (rs6000_ieeequad != TARGET_IEEEQUAD_DEFAULT && TARGET_LONG_DOUBLE_128)
 	{
-	  warned_change_long_double = true;
-	  if (TARGET_IEEEQUAD)
-	    warning (OPT_Wpsabi, "Using IEEE extended precision long double");
-	  else
-	    warning (OPT_Wpsabi, "Using IBM extended precision long double");
+	  static bool warned_change_long_double;
+	  if (!warned_change_long_double)
+	    {
+	      warned_change_long_double = true;
+	      if (TARGET_IEEEQUAD)
+		warning (OPT_Wpsabi, "Using IEEE extended precision long double");
+	      else
+		warning (OPT_Wpsabi, "Using IBM extended precision long double");
+	    }
 	}
     }
 

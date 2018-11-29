@@ -1,3 +1,11 @@
+2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	Backport from mainline
+	2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	* gcc.target/powerpc/pr87496.c: New test.
+
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/87531
