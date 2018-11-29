@@ -123,6 +123,14 @@ enum stack_reuse_level
   SR_ALL
 };
 
+/* The live patching level.  */
+enum live_patching_level
+{
+  LIVE_PATCHING_NONE = 0,
+  LIVE_PATCHING_INLINE_ONLY_STATIC,
+  LIVE_PATCHING_INLINE_CLONE
+};
+
 /* The algorithm used for basic block reordering.  */
 enum reorder_blocks_algorithm
 {

@@ -702,6 +702,148 @@ default_options_optimization (struct gcc_options *opts,
 			 lang_mask, handlers, loc, dc);
 }
 
+/* Control IPA optimizations based on different live patching LEVEL.  */
+static void
+control_options_for_live_patching (struct gcc_options *opts,
+				   struct gcc_options *opts_set,
+				   enum live_patching_level level,
+				   location_t loc)
+{
+  gcc_assert (level > LIVE_PATCHING_NONE);
+
+  switch (level)
+    {
+    case LIVE_PATCHING_INLINE_ONLY_STATIC:
+      if (opts_set->x_flag_ipa_cp_clone && opts->x_flag_ipa_cp_clone)
+	error_at (loc,
+		  "%<-fipa-cp-clone%> is incompatible with "
+		  "%<-flive-patching=inline-only-static%>");
+      else
+	opts->x_flag_ipa_cp_clone = 0;
+
+      if (opts_set->x_flag_ipa_sra && opts->x_flag_ipa_sra)
+	error_at (loc,
+		  "%<-fipa-sra%> is incompatible with "
+		  "%<-flive-patching=inline-only-static%>");
+      else
+	opts->x_flag_ipa_sra = 0;
+
+      if (opts_set->x_flag_partial_inlining && opts->x_flag_partial_inlining)
+	error_at (loc,
+		  "%<-fpartial-inlining%> is incompatible with "
+		  "%<-flive-patching=inline-only-static%>");
+      else
+	opts->x_flag_partial_inlining = 0;
+
+      if (opts_set->x_flag_ipa_cp && opts->x_flag_ipa_cp)
+	error_at (loc,
+		  "%<-fipa-cp%> is incompatible with "
+		  "%<-flive-patching=inline-only-static%>");
+      else
+	opts->x_flag_ipa_cp = 0;
+
+      /* FALLTHROUGH.  */
+    case LIVE_PATCHING_INLINE_CLONE:
+      /* live patching should disable whole-program optimization.  */
+      if (opts_set->x_flag_whole_program && opts->x_flag_whole_program)
+	error_at (loc,
+		  "%<-fwhole-program%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_whole_program = 0;
+
+      /* visibility change should be excluded by !flag_whole_program
+	 && !in_lto_p && !flag_ipa_cp_clone && !flag_ipa_sra
+	 && !flag_partial_inlining.  */
+
+      if (opts_set->x_flag_ipa_pta && opts->x_flag_ipa_pta)
+	error_at (loc,
+		  "%<-fipa-pta%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_pta = 0;
+
+      if (opts_set->x_flag_ipa_reference && opts->x_flag_ipa_reference)
+	error_at (loc,
+		  "%<-fipa-reference%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_reference = 0;
+
+      if (opts_set->x_flag_ipa_ra && opts->x_flag_ipa_ra)
+	error_at (loc,
+		  "%<-fipa-ra%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_ra = 0;
+
+      if (opts_set->x_flag_ipa_icf && opts->x_flag_ipa_icf)
+	error_at (loc,
+		  "%<-fipa-icf%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_icf = 0;
+
+      if (opts_set->x_flag_ipa_icf_functions && opts->x_flag_ipa_icf_functions)
+	error_at (loc,
+		  "%<-fipa-icf-functions%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_icf_functions = 0;
+
+      if (opts_set->x_flag_ipa_icf_variables && opts->x_flag_ipa_icf_variables)
+	error_at (loc,
+		  "%<-fipa-icf-variables%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_icf_variables = 0;
+
+      if (opts_set->x_flag_ipa_bit_cp && opts->x_flag_ipa_bit_cp)
+	error_at (loc,
+		  "%<-fipa-bit-cp%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_bit_cp = 0;
+
+      if (opts_set->x_flag_ipa_vrp && opts->x_flag_ipa_vrp)
+	error_at (loc,
+		  "%<-fipa-vrp%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_vrp = 0;
+
+      if (opts_set->x_flag_ipa_pure_const && opts->x_flag_ipa_pure_const)
+	error_at (loc,
+		  "%<-fipa-pure-const%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_pure_const = 0;
+
+      /* FIXME: disable unreachable code removal.  */
+
+      /* discovery of functions/variables with no address taken.  */
+      if (opts_set->x_flag_ipa_reference_addressable
+	  && opts->x_flag_ipa_reference_addressable)
+	error_at (loc,
+		  "%<-fipa-reference-addressable%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_reference_addressable = 0;
+
+      /* ipa stack alignment propagation.  */
+      if (opts_set->x_flag_ipa_stack_alignment
+	  && opts->x_flag_ipa_stack_alignment)
+	error_at (loc,
+		  "%<-fipa-stack-alignment%> is incompatible with "
+		  "%<-flive-patching=inline-only-static|inline-clone%>");
+      else
+	opts->x_flag_ipa_stack_alignment = 0;
+      break;
+    default:
+      gcc_unreachable ();
+    }
+}
+
 /* After all options at LOC have been read into OPTS and OPTS_SET,
    finalize settings of those options and diagnose incompatible
    combinations.  */
@@ -1051,6 +1193,18 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if ((opts->x_flag_sanitize & SANITIZE_KERNEL_ADDRESS) && opts->x_flag_tm)
     sorry ("transactional memory is not supported with "
 	   "%<-fsanitize=kernel-address%>");
+
+  /* Currently live patching is not support for LTO.  */
+  if (opts->x_flag_live_patching && opts->x_flag_lto)
+    sorry ("live patching is not supported with LTO");
+
+  /* Control IPA optimizations based on different -flive-patching level.  */
+  if (opts->x_flag_live_patching)
+    {
+      control_options_for_live_patching (opts, opts_set,
+					 opts->x_flag_live_patching,
+					 loc);
+    }
 }
 
 #define LEFT_COLUMN	27

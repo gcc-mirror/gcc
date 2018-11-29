@@ -1,3 +1,11 @@
+2018-11-29  qing zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/live-patching-1.c: New test.
+	* gcc.dg/live-patching-2.c: New test.
+	* gcc.dg/live-patching-3.c: New test.
+	* gcc.dg/tree-ssa/writeonly-3.c: New test.
+	* gcc.target/i386/ipa-stack-alignment-2.c: New test.
+
 2018-11-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
 
 	* gcc.dg/sinhatanh-1.c: New test.
