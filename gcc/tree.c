@@ -1906,6 +1906,18 @@ build_vector_from_val (tree vectype, tree sc)
     }
 }
 
+/* If TYPE is not a vector type, just return SC, otherwise return
+   build_vector_from_val (TYPE, SC).  */
+
+tree
+build_uniform_cst (tree type, tree sc)
+{
+  if (!VECTOR_TYPE_P (type))
+    return sc;
+
+  return build_vector_from_val (type, sc);
+}
+
 /* Build a vector series of type TYPE in which element I has the value
    BASE + I * STEP.  The result is a constant if BASE and STEP are constant
    and a VEC_SERIES_EXPR otherwise.  */
@@ -11207,6 +11219,26 @@ uniform_vector_p (const_tree vec)
 	return NULL_TREE;
 
       return first;
+    }
+
+  return NULL_TREE;
+}
+
+/* If the argument is INTEGER_CST, return it.  If the argument is vector
+   with all elements the same INTEGER_CST, return that INTEGER_CST.  Otherwise
+   return NULL_TREE.  */
+
+tree
+uniform_integer_cst_p (tree t)
+{
+  if (TREE_CODE (t) == INTEGER_CST)
+    return t;
+
+  if (VECTOR_TYPE_P (TREE_TYPE (t)))
+    {
+      t = uniform_vector_p (t);
+      if (t && TREE_CODE (t) == INTEGER_CST)
+	return t;
     }
 
   return NULL_TREE;
