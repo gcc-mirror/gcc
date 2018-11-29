@@ -21411,6 +21411,83 @@ rs6000_sibcall_template (rtx *operands, unsigned int funop, const char *arg)
   return rs6000_call_template_1 (operands, funop, true, arg);
 }
 
+/* As above, for indirect calls.  */
+
+static const char *
+rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
+				 bool sibcall)
+{
+  /* -Wformat-overflow workaround, without which gcc thinks that %u
+      might produce 10 digits.  */
+  gcc_assert (funop <= MAX_RECOG_OPERANDS);
+
+  static char str[144];
+  const char *ptrload = TARGET_64BIT ? "d" : "wz";
+
+  /* We don't need the extra code to stop indirect call speculation if
+     calling via LR.  */
+  bool speculate = (TARGET_MACHO
+		    || rs6000_speculate_indirect_jumps
+		    || (REG_P (operands[funop])
+			&& REGNO (operands[funop]) == LR_REGNO));
+
+  if (DEFAULT_ABI == ABI_AIX)
+    {
+      if (speculate)
+	sprintf (str,
+		 "l%s 2,%%%u\n\t"
+		 "b%%T%ul\n\t"
+		 "l%s 2,%%%u(1)",
+		 ptrload, funop + 2, funop, ptrload, funop + 3);
+      else
+	sprintf (str,
+		 "crset 2\n\t"
+		 "l%s 2,%%%u\n\t"
+		 "beq%%T%ul-\n\t"
+		 "l%s 2,%%%u(1)",
+		 ptrload, funop + 2, funop, ptrload, funop + 3);
+    }
+  else if (DEFAULT_ABI == ABI_ELFv2)
+    {
+      if (speculate)
+	sprintf (str,
+		 "b%%T%ul\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 2);
+      else
+	sprintf (str,
+		 "crset 2\n\t"
+		 "beq%%T%ul-\n\t"
+		 "l%s 2,%%%u(1)",
+		 funop, ptrload, funop + 2);
+    }
+  else
+    {
+      if (speculate)
+	sprintf (str,
+		 "b%%T%u%s",
+		 funop, sibcall ? "" : "l");
+      else
+	sprintf (str,
+		 "crset 2\n\t"
+		 "beq%%T%u%s-%s",
+		 funop, sibcall ? "" : "l", sibcall ? "\n\tb $" : "");
+    }
+  return str;
+}
+
+const char *
+rs6000_indirect_call_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_indirect_call_template_1 (operands, funop, false);
+}
+
+const char *
+rs6000_indirect_sibcall_template (rtx *operands, unsigned int funop)
+{
+  return rs6000_indirect_call_template_1 (operands, funop, true);
+}
+
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
    VISIBILITY_TYPE.  */

@@ -107,6 +107,8 @@ extern void print_operand (FILE *, rtx, int);
 extern void print_operand_address (FILE *, rtx);
 extern const char *rs6000_call_template (rtx *, unsigned int, const char *);
 extern const char *rs6000_sibcall_template (rtx *, unsigned int, const char *);
+extern const char *rs6000_indirect_call_template (rtx *, unsigned int);
+extern const char *rs6000_indirect_sibcall_template (rtx *, unsigned int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
