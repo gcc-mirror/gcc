@@ -119,4 +119,10 @@ enum indirect_branch {
   indirect_branch_thunk_extern
 };
 
+enum instrument_return {
+  instrument_return_none = 0,
+  instrument_return_call,
+  instrument_return_nop5
+};
+
 #endif

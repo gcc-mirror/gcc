@@ -1067,3 +1067,24 @@ Support WAITPKG built-in functions and code generation.
 mcldemote
 Target Report Mask(ISA_CLDEMOTE) Var(ix86_isa_flags2) Save
 Support CLDEMOTE built-in functions and code generation.
+
+minstrument-return=
+Target Report RejectNegative Joined Enum(instrument_return) Var(ix86_instrument_return) Init(instrument_return_none)
+Instrument function exit in instrumented functions with __fentry__.
+
+Enum
+Name(instrument_return) Type(enum instrument_return)
+Known choices for return instrumentation with -minstrument-return=
+
+EnumValue
+Enum(instrument_return) String(none) Value(instrument_return_none)
+
+EnumValue
+Enum(instrument_return) String(call) Value(instrument_return_call)
+
+EnumValue
+Enum(instrument_return) String(nop5) Value(instrument_return_nop5)
+
+mrecord-return
+Target Report Var(ix86_flag_record_return) Init(0)
+Generate a __return_loc section pointing to all return instrumentation code.
