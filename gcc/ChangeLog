@@ -1,3 +1,10 @@
+2018-11-29  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	There can be at most one .resolver clone per function
+	* config/rs6000/rs6000.c (make_resolver_func): Generate
+	resolver symbol with clone_function_name instead of
+	clone_function_name_numbered.
+
 2018-11-29  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88243
