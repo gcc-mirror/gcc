@@ -6026,6 +6026,13 @@ The @code{indirect_return} attribute can be applied to a function,
 as well as variable or type of function pointer to inform the
 compiler that the function may return via indirect branch.
 
+@item fentry_name("@var{name}")
+@cindex @code{fentry_name} function attribute, x86
+On x86 targets, the @code{fentry_name} attribute sets the function to
+call on function entry when function instrumentation is enabled
+with @option{-pg -mfentry}. When @var{name} is nop then a 5 byte
+nop sequence is generated.
+
 @end table
 
 On the x86, the inliner does not inline a
