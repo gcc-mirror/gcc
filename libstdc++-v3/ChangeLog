@@ -1,3 +1,17 @@
+2018-11-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/86910
+	PR libstdc++/87846
+	* src/filesystem/ops.cc (experimental::create_directories): Report
+	an error when the path resolves to an existing non-directory (P1164).
+	* src/filesystem/std-ops.cc (create_directories): Likewise. Handle
+	empty filenames due to trailing slashes.
+	* testsuite/27_io/filesystem/operations/create_directories.cc: Test
+	when some component of the path exists and is not a directory. Test
+	trailing slashes.
+	* testsuite/experimental/filesystem/operations/create_directories.cc:
+	Likewise.
+
 2018-11-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/83306
