@@ -1,5 +1,13 @@
 2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/88152
+	* tree.h (build_uniform_cst, uniform_integer_cst_p): Declare.
+	* tree.c (build_uniform_cst, uniform_integer_cst_p): New functions.
+	* match.pd (define_predicates): Add uniform_integer_cst_p.
+	(cmp @0 INTEGER_CST@1, cmp (convert?@2 @0) INTEGER_CST@1): Adjust
+	so that it works also for vector comparisons with uniform constants
+	with INTEGER_CST element.
+
 	PR target/88234
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): For
 	vec_add and vec_sub builtins, perform PLUS_EXPR or MINUS_EXPR
