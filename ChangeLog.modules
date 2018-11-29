@@ -1,5 +1,13 @@
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* modules.cc (module_state::check_read): Adjust, print inform of
+	outer location.
+	(module_state::write_cluster): defns are decls too.
+	(lazy_load_binding): Don't inform here.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-4_c.C: Adjust regexps.
+
 	Fixing GME classes
 	gcc/cp
 	* module.cc (trees_in::tree_node_vals): Add specific bool arg,

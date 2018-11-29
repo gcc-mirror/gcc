@@ -2926,7 +2926,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   /* Check or complete a read.  */
-  bool check_read (bool outermost, tree ns = NULL_TREE, tree id = NULL_TREE);
+  bool check_read (unsigned count, tree ns = NULL_TREE, tree id = NULL_TREE);
 
  private:
   /* The README, for human consumption.  */
@@ -6803,8 +6803,7 @@ trees_in::tree_node ()
 
 	if (existing && DECL_P (res))
 	  {
-	    tree type = get_backref_gme (cookie);
-	    if (type)
+	    if (tree type = get_backref_gme (cookie))
 	      {
 		TYPE_NAME (type) = res;
 		TREE_TYPE (res) = type;
@@ -9345,15 +9344,14 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	  dump () && dump ("Unnamed %u %N", unnamed, decl);
 	  b->cluster = ++unnamed;
 	}
-      else if (b->is_decl ())
+      else if (b->is_decl () || b->is_defn ())
 	{
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
 	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
 	    // FIXME:fns, vars or classes only for now
 	    if (TREE_CODE (decl) == FUNCTION_DECL
 		|| TREE_CODE (decl) == VAR_DECL
-		|| (DECL_IMPLICIT_TYPEDEF_P (decl)
-		    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))))
+		|| DECL_IMPLICIT_TYPEDEF_P (decl))
 	      gmes.safe_push (decl);
 	}
     }
@@ -12053,7 +12051,7 @@ module_state::load_section (unsigned snum)
    name-lookup).  In the latter case NS and ID provide the binding.  */
 
 bool
-module_state::check_read (bool outermost, tree ns, tree id)
+module_state::check_read (unsigned diag_count, tree ns, tree id)
 {
   bool done = (slurp ()->current == ~0u
 	       && (from ()->get_error () || !slurp ()->remaining));
@@ -12102,7 +12100,14 @@ module_state::check_read (bool outermost, tree ns, tree id)
 	slurped ();
     }
 
-  if (!ok && outermost)
+  if (id && diag_count <= unsigned (errorcount + warningcount)
+      && flag_module_lazy)
+    inform (input_location,
+	    is_legacy () ? G_("during lazy loading of %<%E%s%E%>")
+	    : G_("during lazy loading of %<%E%s%E@%s%>"),
+	    ns, ns == global_namespace ? "" : "::", id, fullname);
+
+  if (!ok && diag_count)
     fatal_error (loc, "jumping off the crazy train to crashville");
 
   return ok;
@@ -12359,6 +12364,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
 {
   gcc_assert (global_namespace == current_scope ()
 	      && !is_imported () && loc != UNKNOWN_LOCATION);
+  unsigned diags = is_direct () ? errorcount + warningcount + 1 : 0;
 
   if (lazy_open <= 0)
     freeze_an_elf ();
@@ -12381,7 +12387,7 @@ module_state::do_import (char const *fname, cpp_reader *reader)
   imported_p = true;
   lazy_open--;
   module_state *alias = read (fd, e, reader);
-  bool ok = check_read (is_direct ());
+  bool ok = check_read (diags);
   if (alias)
     {
       slurped ();
@@ -12495,6 +12501,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
   unsigned snum = mslot->get_lazy ();
   dump () && dump ("Lazily binding %P@%N section:%u", ns, id, name, snum);
 
+  unsigned diags = outermost ? errorcount + warningcount + 1 : 0;
   if (snum < slurp ()->current && flag_module_lazy)
     load_section (snum);
 
@@ -12504,7 +12511,7 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
       from ()->set_error (elf::E_BAD_LAZY);
     }
 
-  bool ok = check_read (outermost, ns, id);
+  bool ok = check_read (diags, ns, id);
   gcc_assert (ok || !outermost);
  
   dump.pop (n);
@@ -12519,13 +12526,9 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
-  int diags = errorcount + warningcount;
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
   gcc_assert (!mslot->is_lazy ());
-  if (errorcount + warningcount != diags && flag_module_lazy)
-    inform (input_location, "during lazy loading of %<%E%s%E@%s%>", ns,
-	    ns == global_namespace ? "" : "::", id, module_name (mod));
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */
