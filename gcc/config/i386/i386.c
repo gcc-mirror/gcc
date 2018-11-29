@@ -39480,8 +39480,7 @@ sse_store_index (machine_mode mode)
    Q_REGS classes.
  */
 static inline int
-inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
-			 int in)
+inline_memory_move_cost (machine_mode mode, enum reg_class regclass, int in)
 {
   int cost;
   if (FLOAT_CLASS_P (regclass))
@@ -39528,7 +39527,7 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
 	  default:
 	    return 100;
 	}
-      if (in)
+      if (in == 2)
         return MAX (ix86_cost->mmx_load [index], ix86_cost->mmx_store [index]);
       return in ? ix86_cost->mmx_load [index] : ix86_cost->mmx_store [index];
     }
@@ -39567,7 +39566,7 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
 	if (mode == TFmode)
 	  mode = XFmode;
 	if (in == 2)
-	  cost = MAX (ix86_cost->int_load[2] , ix86_cost->int_store[2]);
+	  cost = MAX (ix86_cost->int_load[2], ix86_cost->int_store[2]);
 	else if (in)
 	  cost = ix86_cost->int_load[2];
 	else
@@ -39577,8 +39576,7 @@ inline_memory_move_cost (machine_mode mode, enum reg_class regclass,
 }
 
 static int
-ix86_memory_move_cost (machine_mode mode, reg_class_t regclass,
-		       bool in)
+ix86_memory_move_cost (machine_mode mode, reg_class_t regclass, bool in)
 {
   return inline_memory_move_cost (mode, (enum reg_class) regclass, in ? 1 : 0);
 }
