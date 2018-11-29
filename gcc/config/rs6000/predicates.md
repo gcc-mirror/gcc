@@ -644,12 +644,6 @@
 (define_predicate "easy_vector_constant"
   (match_code "const_vector")
 {
-  /* Because IEEE 128-bit floating point is considered a vector type
-     in order to pass it in VSX registers, it might use this function
-     instead of easy_fp_constant.  */
-  if (FLOAT128_VECTOR_P (mode))
-    return easy_fp_constant (op, mode);
-
   if (VECTOR_MEM_ALTIVEC_OR_VSX_P (mode))
     {
       int value = 256;
