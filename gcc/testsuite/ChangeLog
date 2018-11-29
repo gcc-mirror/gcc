@@ -1,3 +1,9 @@
+2018-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88121
+	* g++.dg/lookup/suggestions-scoped-enums.C: New test.
+	* g++.dg/lookup/suggestions-unscoped-enums.C: New test.
+
 2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87496

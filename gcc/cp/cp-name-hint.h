@@ -33,5 +33,6 @@ along with GCC; see the file COPYING3.  If not see
 extern name_hint suggest_alternatives_for (location_t, tree, bool);
 extern name_hint suggest_alternatives_in_other_namespaces (location_t, tree);
 extern name_hint suggest_alternative_in_explicit_scope (location_t, tree, tree);
+extern name_hint suggest_alternative_in_scoped_enum (tree, tree);
 
 #endif /* GCC_CP_NAME_HINT_H */
