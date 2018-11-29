@@ -1,5 +1,10 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (easy_vector_constant): Don't call
+	easy_fp_constant.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config.in (HAVE_AS_PLTSEQ): Add.
 	* config/rs6000/predicates.md (indirect_call_operand): New.
 	* config/rs6000/rs6000-protos.h (rs6000_pltseq_template),
