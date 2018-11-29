@@ -10689,7 +10689,7 @@ void
 init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 		      rtx libname ATTRIBUTE_UNUSED, int incoming,
 		      int libcall, int n_named_args,
-		      tree fndecl ATTRIBUTE_UNUSED,
+		      tree fndecl,
 		      machine_mode return_mode ATTRIBUTE_UNUSED)
 {
   static CUMULATIVE_ARGS zero_cumulative;
@@ -10715,6 +10715,27 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
 	  && lookup_attribute ("longcall", TYPE_ATTRIBUTES (fntype))
 	  && !lookup_attribute ("shortcall", TYPE_ATTRIBUTES (fntype))))
     cum->call_cookie |= CALL_LONG;
+  else if (DEFAULT_ABI != ABI_DARWIN)
+    {
+      bool is_local = (fndecl
+		       && !DECL_EXTERNAL (fndecl)
+		       && !DECL_WEAK (fndecl)
+		       && (*targetm.binds_local_p) (fndecl));
+      if (is_local)
+	;
+      else if (flag_plt)
+	{
+	  if (fntype
+	      && lookup_attribute ("noplt", TYPE_ATTRIBUTES (fntype)))
+	    cum->call_cookie |= CALL_LONG;
+	}
+      else
+	{
+	  if (!(fntype
+		&& lookup_attribute ("plt", TYPE_ATTRIBUTES (fntype))))
+	    cum->call_cookie |= CALL_LONG;
+	}
+    }
 
   if (TARGET_DEBUG_ARG)
     {
@@ -20946,6 +20967,8 @@ print_operand (FILE *file, rtx x, int code)
 
     case 'T':
       /* Print the symbolic name of a branch target register.  */
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	x = XVECEXP (x, 0, 0);
       if (GET_CODE (x) != REG || (REGNO (x) != LR_REGNO
 				  && REGNO (x) != CTR_REGNO))
 	output_operand_lossage ("invalid %%T value");
@@ -21089,6 +21112,8 @@ print_operand (FILE *file, rtx x, int code)
       return;
 
     case 'z':
+      if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	x = XVECEXP (x, 0, 1);
       /* X is a SYMBOL_REF.  Write out the name preceded by a
 	 period and without any trailing data in brackets.  Used for function
 	 names.  If we are configured for System V (or the embedded ABI) on
@@ -21208,6 +21233,8 @@ print_operand (FILE *file, rtx x, int code)
 	output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
       else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSGD)
 	output_addr_const (file, XVECEXP (x, 0, 0));
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_PLTSEQ)
+	output_addr_const (file, XVECEXP (x, 0, 1));
       else
 	output_addr_const (file, x);
       return;
@@ -21457,8 +21484,14 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
       might produce 10 digits.  */
   gcc_assert (funop <= MAX_RECOG_OPERANDS);
 
-  static char str[144];
+  static char str[144];  /* 1 spare */
+  char *s = str;
   const char *ptrload = TARGET_64BIT ? "d" : "wz";
+
+  if (DEFAULT_ABI == ABI_AIX)
+    s += sprintf (s,
+		  "l%s 2,%%%u\n\t",
+		  ptrload, funop + 2);
 
   /* We don't need the extra code to stop indirect call speculation if
      calling via LR.  */
@@ -21467,32 +21500,61 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
 		    || (REG_P (operands[funop])
 			&& REGNO (operands[funop]) == LR_REGNO));
 
+  if (!TARGET_MACHO && HAVE_AS_PLTSEQ && GET_CODE (operands[funop]) == UNSPEC)
+    {
+      const char *rel64 = TARGET_64BIT ? "64" : "";
+      char tls[29];
+      tls[0] = 0;
+      if (GET_CODE (operands[funop + 1]) == UNSPEC)
+	{
+	  if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
+	    sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%%u\n\t",
+		     rel64, funop + 1);
+	  else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
+	    sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
+		     rel64);
+	  else
+	    gcc_unreachable ();
+	}
+
+      const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
+			    && flag_pic == 2 ? "+32768" : "");
+      if (!speculate)
+	{
+	  s += sprintf (s,
+			"%s.reloc .,R_PPC%s_PLTSEQ,%%z%u%s\n\t",
+			tls, rel64, funop, addend);
+	  s += sprintf (s, "crset 2\n\t");
+	}
+      s += sprintf (s,
+		    "%s.reloc .,R_PPC%s_PLTCALL,%%z%u%s\n\t",
+		    tls, rel64, funop, addend);
+    }
+  else if (!speculate)
+    s += sprintf (s, "crset 2\n\t");
+
   if (DEFAULT_ABI == ABI_AIX)
     {
       if (speculate)
-	sprintf (str,
-		 "l%s 2,%%%u\n\t"
+	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
-		 ptrload, funop + 2, funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 3);
       else
-	sprintf (str,
-		 "crset 2\n\t"
-		 "l%s 2,%%%u\n\t"
+	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
-		 ptrload, funop + 2, funop, ptrload, funop + 3);
+		 funop, ptrload, funop + 3);
     }
   else if (DEFAULT_ABI == ABI_ELFv2)
     {
       if (speculate)
-	sprintf (str,
+	sprintf (s,
 		 "b%%T%ul\n\t"
 		 "l%s 2,%%%u(1)",
 		 funop, ptrload, funop + 2);
       else
-	sprintf (str,
-		 "crset 2\n\t"
+	sprintf (s,
 		 "beq%%T%ul-\n\t"
 		 "l%s 2,%%%u(1)",
 		 funop, ptrload, funop + 2);
@@ -21500,12 +21562,11 @@ rs6000_indirect_call_template_1 (rtx *operands, unsigned int funop,
   else
     {
       if (speculate)
-	sprintf (str,
+	sprintf (s,
 		 "b%%T%u%s",
 		 funop, sibcall ? "" : "l");
       else
-	sprintf (str,
-		 "crset 2\n\t"
+	sprintf (s,
 		 "beq%%T%u%s-%s",
 		 funop, sibcall ? "" : "l", sibcall ? "\n\tb $" : "");
     }
@@ -21523,6 +21584,72 @@ rs6000_indirect_sibcall_template (rtx *operands, unsigned int funop)
 {
   return rs6000_indirect_call_template_1 (operands, funop, true);
 }
+
+#if HAVE_AS_PLTSEQ
+/* Output indirect call insns.
+   WHICH is 0 for tocsave, 1 for plt16_ha, 2 for plt16_lo, 3 for mtctr.  */
+const char *
+rs6000_pltseq_template (rtx *operands, int which)
+{
+  const char *rel64 = TARGET_64BIT ? "64" : "";
+  char tls[28];
+  tls[0] = 0;
+  if (GET_CODE (operands[3]) == UNSPEC)
+    {
+      if (XINT (operands[3], 1) == UNSPEC_TLSGD)
+	sprintf (tls, ".reloc .,R_PPC%s_TLSGD,%%3\n\t",
+		 rel64);
+      else if (XINT (operands[3], 1) == UNSPEC_TLSLD)
+	sprintf (tls, ".reloc .,R_PPC%s_TLSLD,%%&\n\t",
+		 rel64);
+      else
+	gcc_unreachable ();
+    }
+
+  gcc_assert (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4);
+  static char str[96];  /* 15 spare */
+  const char *off = WORDS_BIG_ENDIAN ? "+2" : "";
+  const char *addend = (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT
+			&& flag_pic == 2 ? "+32768" : "");
+  switch (which)
+    {
+    case 0:
+      sprintf (str,
+	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2\n\t"
+	       "st%s",
+	       tls, rel64, TARGET_64BIT ? "d 2,24(1)" : "w 2,12(1)");
+      break;
+    case 1:
+      if (DEFAULT_ABI == ABI_V4 && !flag_pic)
+	sprintf (str,
+		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2\n\t"
+		 "lis %%0,0",
+		 tls, off, rel64);
+      else
+	sprintf (str,
+		 "%s.reloc .%s,R_PPC%s_PLT16_HA,%%z2%s\n\t"
+		 "addis %%0,%%1,0",
+		 tls, off, rel64, addend);
+      break;
+    case 2:
+      sprintf (str,
+	       "%s.reloc .%s,R_PPC%s_PLT16_LO%s,%%z2%s\n\t"
+	       "l%s %%0,0(%%1)",
+	       tls, off, rel64, TARGET_64BIT ? "_DS" : "", addend,
+	       TARGET_64BIT ? "d" : "wz");
+      break;
+    case 3:
+      sprintf (str,
+	       "%s.reloc .,R_PPC%s_PLTSEQ,%%z2%s\n\t"
+	       "mtctr %%1",
+	       tls, rel64, addend);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  return str;
+}
+#endif
 
 #if defined (HAVE_GAS_HIDDEN) && !TARGET_MACHO
 /* Emit an assembler directive to set symbol visibility for DECL to
@@ -32535,11 +32662,8 @@ rs6000_set_default_type_attributes (tree type)
    longcall attribute.  */
 
 static rtx
-rs6000_longcall_ref (rtx call_ref)
+rs6000_longcall_ref (rtx call_ref, rtx arg)
 {
-  if (GET_CODE (call_ref) != SYMBOL_REF)
-    return call_ref;
-
   /* System V adds '.' to the internal name, so skip them.  */
   const char *call_name = XSTR (call_ref, 0);
   if (*call_name == '.')
@@ -32549,6 +32673,36 @@ rs6000_longcall_ref (rtx call_ref)
 
       tree node = get_identifier (call_name);
       call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
+    }
+
+  if (HAVE_AS_PLTSEQ
+      && TARGET_TLS_MARKERS
+      && (DEFAULT_ABI == ABI_ELFv2 || DEFAULT_ABI == ABI_V4))
+    {
+      rtx base = const0_rtx;
+      int regno;
+      if (DEFAULT_ABI == ABI_ELFv2)
+	{
+	  base = gen_rtx_REG (Pmode, TOC_REGISTER);
+	  regno = 12;
+	}
+      else
+	{
+	  if (flag_pic)
+	    base = gen_rtx_REG (Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
+	  regno = 11;
+	}
+      /* Reg must match that used by linker PLT stubs.  For ELFv2, r12
+	 may be used by a function global entry point.  For SysV4, r11
+	 is used by __glink_PLTresolve lazy resolver entry.  */
+      rtx reg = gen_rtx_REG (Pmode, regno);
+      rtx hi = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, base, call_ref, arg),
+			       UNSPEC_PLT16_HA);
+      rtx lo = gen_rtx_UNSPEC (Pmode, gen_rtvec (3, reg, call_ref, arg),
+			       UNSPEC_PLT16_LO);
+      emit_insn (gen_rtx_SET (reg, hi));
+      emit_insn (gen_rtx_SET (reg, lo));
+      return reg;
     }
 
   return force_reg (Pmode, call_ref);
@@ -37520,8 +37674,7 @@ chain_already_loaded (rtx_insn *last)
 void
 rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
-  const bool direct_call_p
-    = GET_CODE (func_desc) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (func_desc);
+  rtx func = func_desc;
   rtx toc_reg = gen_rtx_REG (Pmode, TOC_REGNUM);
   rtx toc_load = NULL_RTX;
   rtx toc_restore = NULL_RTX;
@@ -37535,12 +37688,13 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
     tlsarg = global_tlsarg;
 
   /* Handle longcall attributes.  */
-  if (INTVAL (cookie) & CALL_LONG)
-    func_desc = rs6000_longcall_ref (func_desc);
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    func = rs6000_longcall_ref (func_desc, tlsarg);
 
   /* Handle indirect calls.  */
-  if (GET_CODE (func_desc) != SYMBOL_REF
-      || (DEFAULT_ABI == ABI_AIX && !SYMBOL_REF_FUNCTION_P (func_desc)))
+  if (GET_CODE (func) != SYMBOL_REF
+      || (DEFAULT_ABI == ABI_AIX && !SYMBOL_REF_FUNCTION_P (func)))
     {
       /* Save the TOC into its reserved slot before the call,
 	 and prepare to restore it after the call.  */
@@ -37561,7 +37715,17 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 					     gen_rtx_PLUS (Pmode, stack_ptr,
 							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
-	  emit_move_insn (stack_toc_mem, toc_reg);
+	  if (HAVE_AS_PLTSEQ
+	      && TARGET_TLS_MARKERS
+	      && DEFAULT_ABI == ABI_ELFv2
+	      && GET_CODE (func_desc) == SYMBOL_REF)
+	    {
+	      rtvec v = gen_rtvec (3, toc_reg, func_desc, tlsarg);
+	      rtx mark_toc_reg = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	      emit_insn (gen_rtx_SET (stack_toc_mem, mark_toc_reg));
+	    }
+	  else
+	    emit_move_insn (stack_toc_mem, toc_reg);
 	}
 
       if (DEFAULT_ABI == ABI_ELFv2)
@@ -37569,9 +37733,25 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	  /* A function pointer in the ELFv2 ABI is just a plain address, but
 	     the ABI requires it to be loaded into r12 before the call.  */
 	  func_addr = gen_rtx_REG (Pmode, 12);
-	  if (!rtx_equal_p (func_addr, func_desc))
-	    emit_move_insn (func_addr, func_desc);
+	  if (!rtx_equal_p (func_addr, func))
+	    emit_move_insn (func_addr, func);
 	  abi_reg = func_addr;
+	  /* Indirect calls via CTR are strongly preferred over indirect
+	     calls via LR, so move the address there.  Needed to mark
+	     this insn for linker plt sequence editing too.  */
+	  func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+	  if (HAVE_AS_PLTSEQ
+	      && TARGET_TLS_MARKERS
+	      && GET_CODE (func_desc) == SYMBOL_REF)
+	    {
+	      rtvec v = gen_rtvec (3, abi_reg, func_desc, tlsarg);
+	      rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	      emit_insn (gen_rtx_SET (func_addr, mark_func));
+	      v = gen_rtvec (2, func_addr, func_desc);
+	      func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	    }
+	  else
+	    emit_move_insn (func_addr, abi_reg);
 	}
       else
 	{
@@ -37583,9 +37763,15 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     not have any executable code.  */
 
 	  /* Load up address of the actual function.  */
-	  func_desc = force_reg (Pmode, func_desc);
+	  func = force_reg (Pmode, func);
 	  func_addr = gen_reg_rtx (Pmode);
-	  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func_desc));
+	  emit_move_insn (func_addr, gen_rtx_MEM (Pmode, func));
+
+	  /* Indirect calls via CTR are strongly preferred over indirect
+	     calls via LR, so move the address there.  */
+	  rtx ctr_reg = gen_rtx_REG (Pmode, CTR_REGNO);
+	  emit_move_insn (ctr_reg, func_addr);
+	  func_addr = ctr_reg;
 
 	  /* Prepare to load the TOC of the called function.  Note that the
 	     TOC load must happen immediately before the actual call so
@@ -37593,7 +37779,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     comment in frob_update_context.  */
 	  rtx func_toc_offset = GEN_INT (GET_MODE_SIZE (Pmode));
 	  rtx func_toc_mem = gen_rtx_MEM (Pmode,
-					  gen_rtx_PLUS (Pmode, func_desc,
+					  gen_rtx_PLUS (Pmode, func,
 							func_toc_offset));
 	  toc_load = gen_rtx_USE (VOIDmode, func_toc_mem);
 
@@ -37601,14 +37787,15 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	     originally direct, the 3rd word has not been written since no
 	     trampoline has been built, so we ought not to load it, lest we
 	     override a static chain value.  */
-	  if (!direct_call_p
+	  if (!(GET_CODE (func_desc) == SYMBOL_REF
+		&& SYMBOL_REF_FUNCTION_P (func_desc))
 	      && TARGET_POINTERS_TO_NESTED_FUNCTIONS
 	      && !chain_already_loaded (get_current_sequence ()->next->last))
 	    {
 	      rtx sc_reg = gen_rtx_REG (Pmode, STATIC_CHAIN_REGNUM);
 	      rtx func_sc_offset = GEN_INT (2 * GET_MODE_SIZE (Pmode));
 	      rtx func_sc_mem = gen_rtx_MEM (Pmode,
-					     gen_rtx_PLUS (Pmode, func_desc,
+					     gen_rtx_PLUS (Pmode, func,
 							   func_sc_offset));
 	      emit_move_insn (sc_reg, func_sc_mem);
 	      abi_reg = sc_reg;
@@ -37621,7 +37808,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 	 assume the TOC register is set; for non-local calls, the
 	 PLT stub needs the TOC register.  */
       abi_reg = toc_reg;
-      func_addr = func_desc;
+      func_addr = func;
     }
 
   /* Create the call.  */
@@ -37676,22 +37863,51 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 /* Expand code to perform a call under the SYSV4 ABI.  */
 
 void
-rs6000_call_sysv (rtx value, rtx func, rtx tlsarg, rtx cookie)
+rs6000_call_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
+  rtx func = func_desc;
   rtx func_addr;
   rtx call[3];
   rtx insn;
+  rtx abi_reg = NULL_RTX;
 
   if (global_tlsarg)
     tlsarg = global_tlsarg;
 
   /* Handle longcall attributes.  */
-  if (INTVAL (cookie) & CALL_LONG)
-    func = rs6000_longcall_ref (func);
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      /* If the longcall was implemented using PLT16 relocs, then r11
+	 needs to be valid at the call for lazy linking.  */
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS)
+	abi_reg = func;
+    }
 
   /* Handle indirect calls.  */
   if (GET_CODE (func) != SYMBOL_REF)
-    func_addr = force_reg (Pmode, func);
+    {
+      func = force_reg (Pmode, func);
+
+      /* Indirect calls via CTR are strongly preferred over indirect
+	 calls via LR, so move the address there.  Needed to mark
+	 this insn for linker plt sequence editing too.  */
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS
+	  && GET_CODE (func_desc) == SYMBOL_REF)
+	{
+	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
+	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	  emit_insn (gen_rtx_SET (func_addr, mark_func));
+	  v = gen_rtvec (2, func_addr, func_desc);
+	  func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	}
+      else
+	emit_move_insn (func_addr, func);
+    }
   else
     func_addr = func;
 
@@ -37707,6 +37923,73 @@ rs6000_call_sysv (rtx value, rtx func, rtx tlsarg, rtx cookie)
 
   insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
   insn = emit_call_insn (insn);
+  if (abi_reg)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
+}
+
+/* Expand code to perform a sibling call under the SysV4 ABI.  */
+
+void
+rs6000_sibcall_sysv (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
+{
+  rtx func = func_desc;
+  rtx func_addr;
+  rtx call[3];
+  rtx insn;
+  rtx abi_reg = NULL_RTX;
+
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if ((INTVAL (cookie) & CALL_LONG) != 0
+      && GET_CODE (func_desc) == SYMBOL_REF)
+    {
+      func = rs6000_longcall_ref (func_desc, tlsarg);
+      /* If the longcall was implemented using PLT16 relocs, then r11
+	 needs to be valid at the call for lazy linking.  */
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS)
+	abi_reg = func;
+    }
+
+  /* Handle indirect calls.  */
+  if (GET_CODE (func) != SYMBOL_REF)
+    {
+      func = force_reg (Pmode, func);
+
+      /* Indirect sibcalls must go via CTR.  Needed to mark
+	 this insn for linker plt sequence editing too.  */
+      func_addr = gen_rtx_REG (Pmode, CTR_REGNO);
+      if (HAVE_AS_PLTSEQ
+	  && TARGET_TLS_MARKERS
+	  && GET_CODE (func_desc) == SYMBOL_REF)
+	{
+	  rtvec v = gen_rtvec (3, func, func_desc, tlsarg);
+	  rtx mark_func = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	  emit_insn (gen_rtx_SET (func_addr, mark_func));
+	  v = gen_rtvec (2, func_addr, func_desc);
+	  func_addr = gen_rtx_UNSPEC (Pmode, v, UNSPEC_PLTSEQ);
+	}
+      else
+	emit_move_insn (func_addr, func);
+    }
+  else
+    func_addr = func;
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (value, call[0]);
+
+  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+  call[2] = simple_return_rtx;
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  insn = emit_call_insn (insn);
+  if (abi_reg)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (insn), abi_reg);
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update
