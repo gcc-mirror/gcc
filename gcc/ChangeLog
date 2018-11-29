@@ -1,3 +1,11 @@
+2018-11-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (inline_memory_move_cost):
+	Check "in" for 2 in MMX_CLASS_P case.
+	* config/i386/mmx.md (*mov<mode>_internal): Correct
+	TARGET_INTER_UNIT_MOVES_FROM_VEC and TARGET_INTER_UNIT_MOVES_TO_VEC
+	alternatives in preferred_for_speed attribute calculation.
+
 2018-11-29  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88172
@@ -20,7 +28,7 @@
 	inlining when flag_live_patching is LIVE_PATCHING_INLINE_ONLY_STATIC.
 	* opts.c (control_options_for_live_patching): New function.
 	(finish_options): Make flag_live_patching incompatible with flag_lto.
-	Control IPA optimizations based on different levels of 
+	Control IPA optimizations based on different levels of
 	flag_live_patching.
 
 2018-11-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
