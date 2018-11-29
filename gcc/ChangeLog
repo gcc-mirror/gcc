@@ -1,3 +1,21 @@
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000-protos.h (rs6000_call_template): Declare.
+	(rs6000_sibcall_template): Declare.
+	(macho_call_template): Rename from output_call.
+	* config/rs6000/rs6000.c (rs6000_call_template_1): New function.
+	(rs6000_call_template, rs6000_sibcall_template): Likewise.
+	(macho_call_template): Rename from output_call.
+	* config/rs6000/rs6000.md (tls_gd_aix, tls_gd_sysv),
+	(tls_gd_call_aix, tls_gd_call_sysv, tls_ld_aix, tls_ld_sysv),
+	(tls_ld_call_aix, tls_ld_call_sysv, call_nonlocal_sysv),
+	(call_nonlocal_sysv_secure, call_value_nonlocal_sysv),
+	(call_value_nonlocal_sysv_secure, call_nonlocal_aix),
+	(call_value_nonlocal_aix): Use rs6000_call_template and update
+	occurrences of output_call to macho_call_template.
+	(sibcall_nonlocal_sysv, sibcall_value_nonlocal_sysv, sibcall_aix),
+	(sibcall_value_aix): Use rs6000_sibcall_template.
+
 2018-11-28  Aaron Sawdey  <acsawdey@linux.ibm.com>
 
 	* config/rs6000/rs6000-string.c (expand_block_clear): Change how
