@@ -42,8 +42,8 @@ void test_type (int n)
 
   A (0, int ATTR (aligned (4)), aligned (2));
   A (0, int ATTR (aligned (2)), aligned (4));
-  /* GCC retains both attributes in the */
-  A (0, int ATTR (aligned (2), aligned (4)), aligned (2));
+  /* GCC retains both attributes when the type is defined in the builtin.  */
+  A (1, int ATTR (aligned (2), aligned (4)), aligned (2));
   A (1, int ATTR (aligned (2), aligned (4)), aligned (4));
   /* The following fails due to bug 87524.
      A (1, int ATTR (aligned (4), aligned (2))), aligned (4)); */
@@ -132,7 +132,7 @@ void test_typedef (int n)
   A (1, MAI, may_alias);
 
   typedef ATTR (aligned (4), may_alias) char A4MAC;
-  A (0, A4MAC, aligned (0));
+  A (0, A4MAC, aligned (0));    /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, A4MAC, aligned (1));
   A (0, A4MAC, aligned (2));
   A (1, A4MAC, aligned (4));
@@ -141,7 +141,7 @@ void test_typedef (int n)
 
   typedef ATTR (may_alias, aligned (8)) char A8MAC;
   A (1, A8MAC, aligned);
-  A (0, A8MAC, aligned (0));
+  A (0, A8MAC, aligned (0));    /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, A8MAC, aligned (1));
   A (0, A8MAC, aligned (2));
   A (0, A8MAC, aligned (4));

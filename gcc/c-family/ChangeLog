@@ -1,3 +1,14 @@
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* c-attribs.c (common_handle_aligned_attribute): Silently avoid setting
+	alignments to values less than the target requires.
+	(has_attribute): For attribute aligned consider both the attribute
+	and the alignment bits.
+	* c-common.c (c_init_attributes): Optionally issue a warning for
+	zero alignment.
+
 2018-11-28  Martin Sebor  <msebor@redhat.com>
 
 	PR c/88065

@@ -1,3 +1,9 @@
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* doc/extend.texi (attribute constructor): Clarify.
+
 2018-11-29  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/88246

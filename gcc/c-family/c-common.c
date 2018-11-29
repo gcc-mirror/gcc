@@ -5143,11 +5143,11 @@ c_init_attributes (void)
    then reject alignments greater than MAX_OFILE_ALIGNMENT when
    converted to bits.  Otherwise, consider valid only alignments
    that are less than HOST_BITS_PER_INT - LOG2_BITS_PER_UNIT.
-   If ALLOW_ZERO then 0 is valid and should result in
-   a return of -1 with no error.  */
+   Zero is not considered a valid argument (and results in -1 on
+   return) but it only triggers a warning when WARN_ZERO is set.  */
 
 int
-check_user_alignment (const_tree align, bool objfile, bool allow_zero)
+check_user_alignment (const_tree align, bool objfile, bool warn_zero)
 {
   if (error_operand_p (align))
     return -1;
@@ -5159,8 +5159,14 @@ check_user_alignment (const_tree align, bool objfile, bool allow_zero)
       return -1;
     }
 
-  if (allow_zero && integer_zerop (align))
-    return -1;
+  if (integer_zerop (align))
+    {
+      if (warn_zero)
+	warning (OPT_Wattributes,
+		 "requested alignment %qE is not a positive power of 2",
+		 align);
+      return -1;
+    }
 
   int log2bitalign;
   if (tree_int_cst_sgn (align) == -1

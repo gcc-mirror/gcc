@@ -1,3 +1,18 @@
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* gcc.dg/attr-aligned-2.c: New test.
+	* gcc.dg/builtin-has-attribute.c: Adjust.
+	* c-c++-common/builtin-has-attribute-2.c: Same.
+	* c-c++-common/builtin-has-attribute-3.c: Same.
+	* c-c++-common/builtin-has-attribute-4.c: Same.
+	* c-c++-common/builtin-has-attribute-5.c: New test.
+	* gcc.target/aarch64/attr-aligned.c: Same.
+	* gcc.target/i386/attr-aligned.c: Same.
+	* gcc.target/powerpc/attr-aligned.c: Same.
+	* gcc.target/sparc/attr-aligned.c: Same.
+
 2018-11-29  qing zhao  <qing.zhao@oracle.com>
 
 	* gcc.dg/live-patching-1.c: New test.
