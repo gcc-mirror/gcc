@@ -1,3 +1,9 @@
+2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
+
+	PR target/87496
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Disallow
+	-mabi=ieeelongdouble without both -mpopcntd and -mvsx.
+
 2018-11-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (inline_memory_move_cost):
