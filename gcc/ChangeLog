@@ -1,3 +1,9 @@
+2018-11-29  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/88246
+	* builtins.c (expand_movstr): Fix thinko introduced
+	when switching to the new enum.
+
 2018-11-29  qing zhao  <qing.zhao@oracle.com>
 
 	* cif-code.def (EXTERN_LIVE_ONLY_STATIC): New CIF code.

@@ -3931,7 +3931,7 @@ expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
 
   dest_mem = get_memory_rtx (dest, NULL);
   src_mem = get_memory_rtx (src, NULL);
-  if (retmode != RETURN_BEGIN)
+  if (retmode == RETURN_BEGIN)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
       dest_mem = replace_equiv_address (dest_mem, target);
