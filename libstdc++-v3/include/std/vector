@@ -58,7 +58,9 @@
 #pragma GCC system_header
 
 #include <bits/stl_algobase.h>
-#include <bits/stl_algo.h> // For remove and remove_if
+#if __cplusplus > 201703L
+#  include <bits/stl_algo.h> // For remove and remove_if
+#endif // C++20
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>

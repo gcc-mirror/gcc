@@ -1,5 +1,12 @@
 2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
+	Only include bits/stl_algo.h for C++20.
+	* include/std/deque: Only include bits/stl_algo.h for C++20.
+	* include/std/string: Ditto.
+	* include/std/vector: Ditto.
+
+2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
 	Fix erasure goofs.
 	* include/experimental/deque: Make inline.
 	* include/std/deque: Include bits/stl_algo.h.
