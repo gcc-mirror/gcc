@@ -3631,9 +3631,6 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
 tree
 match_global_decl (tree decl, tree tpl, tree ret, tree args)
 {
-  // FIXME:not yet general
-  gcc_assert (!tpl && !ret && TREE_CODE (decl) == FUNCTION_DECL);
-
   tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
 				    true);
   tree *gslot = &(tree &)*module_binding_slot (slot, DECL_NAME (decl),
@@ -3651,6 +3648,12 @@ match_global_decl (tree decl, tree tpl, tree ret, tree args)
 	case FUNCTION_DECL:
 	  if (TREE_TYPE (glob)
 	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (glob))))
+	    return glob;
+	  break;
+
+	case TYPE_DECL:
+	  if (TREE_CODE (TREE_TYPE (glob))
+	      == TREE_CODE (TREE_TYPE (decl)))
 	    return glob;
 	  break;
 

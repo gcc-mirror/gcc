@@ -2448,7 +2448,7 @@ private:
   tree finish_type (tree);
 
 private:
-  tree start (tree_code);
+  tree start (int, int = -1);
   tree finish (tree);
 
 public:
@@ -4044,9 +4044,16 @@ trees_out::start (tree t)
 /* Start tree read.  Allocate the receiving node.  */
 
 tree
-trees_in::start (tree_code code)
+trees_in::start (int code, int klass)
 {
   tree t = NULL_TREE;
+
+  if (code < 0 || code >= MAX_TREE_CODES ||
+      (klass >= 0 && TREE_CODE_CLASS (code) != klass))
+    {
+      set_overrun ();
+      return NULL_TREE;
+    }
 
   switch (code)
     {
@@ -4054,10 +4061,10 @@ trees_in::start (tree_code code)
       if (TREE_CODE_CLASS (code) == tcc_vl_exp)
 	{
 	  unsigned ops = u ();
-	  t = build_vl_exp (code, ops);
+	  t = build_vl_exp (tree_code (code), ops);
 	}
       else
-	t = make_node (code);
+	t = make_node (tree_code (code));
       break;
     case IDENTIFIER_NODE:
       gcc_unreachable ();
@@ -6717,7 +6724,9 @@ trees_in::tree_node ()
 	       a dummy.  */
 	    if (tag < 0 && unsigned (~tag) < back_refs.length ())
 	      res = back_refs[~tag];
-	    if (!res || TREE_CODE_CLASS (TREE_CODE (res)) != tcc_declaration)
+	    if (!res
+		|| (TREE_CODE_CLASS (TREE_CODE (res)) != tcc_declaration
+		    && TREE_CODE_CLASS (TREE_CODE (res)) != tcc_type))
 	      set_overrun ();
 
 	    /* Determine if we had already known about this.  */
@@ -6729,29 +6738,30 @@ trees_in::tree_node ()
 	  }
 	else
 	  {
-	    if (unsigned (tag) >= MAX_TREE_CODES)
-	      set_overrun ();
-	    res = start (tree_code (tag));
-	    if (!res)
-	      {
-		set_overrun ();
-		break;
-	      }
-
-	    /* Insert into map.  */
-	    tag = insert (res);
+	    res = start (tag);
+	    if (res)
+	      /* Insert into map.  */
+	      tag = insert (res);
 	  }
 
-	res && dump (dumper::TREE)
-	  && dump ("Reading%s:%d %C", is_gme ? " global" : "", tag,
-		   TREE_CODE (res));
+	bool specific = false;
+	bool ok = false;
 
-	bool specific = res && tree_node_specific (res, is_gme && !existing);
-	bool ok = res && tree_node_bools (res, specific);
-	bflush ();
+	if (res)
+	  {
+	    dump (dumper::TREE)
+	      && dump ("Reading%s:%d %C", is_gme ? " global" : "", tag,
+		       TREE_CODE (res));
+
+	    specific = tree_node_specific (res, is_gme && !existing);
+	    ok = tree_node_bools (res, specific);
+	    bflush ();
+	  }
+
 	if (!ok || !tree_node_vals (res))
 	  {
-	    back_refs[~tag] = NULL_TREE;
+	    if (res)
+	      back_refs[~tag] = NULL_TREE;
 	    res = NULL_TREE;
 	    break;
 	  }
@@ -6786,49 +6796,94 @@ trees_out::tree_gme (tree decl)
   gcc_checking_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == tcc_declaration);
   u (TREE_CODE (decl));
   tree_node_specific (decl);
+  core_bools (decl);
   bflush ();
   tree_ctx (DECL_CONTEXT (decl), true, decl);
   tree_node (DECL_NAME (decl));
   state->write_location (*this, DECL_SOURCE_LOCATION (decl));
-  tree tpl = NULL_TREE;
-  tree ret = NULL_TREE;
-  tree args = NULL_TREE;
+
+  bool do_type = false;
 
   switch (TREE_CODE (decl))
     {
     case FUNCTION_DECL:
-      args = TYPE_ARG_TYPES (TREE_TYPE (decl));
+      tree_node (TYPE_ARG_TYPES (TREE_TYPE (decl)));
       break;
+
+    case TYPE_DECL:
+      {
+	// FIXME:for now
+	gcc_assert (DECL_IMPLICIT_TYPEDEF_P (decl));
+	tree type = TREE_TYPE (decl);
+	gcc_assert (TYPE_MAIN_VARIANT (type) == type);
+	u (TREE_CODE (type));
+	tree_node_specific (type);
+	core_bools (type);
+	bflush ();
+	do_type = true;
+      }
+      break;
+
     default:
       // FIXME:More cases
       gcc_unreachable ();
     }
-  tree_node (tpl);
-  tree_node (ret);
-  tree_node (args);
+
   int tag = insert (decl);
   dump (dumper::GM)
-    && dump ("Wrote:%d global entity %N", tag, decl);
+    && dump ("Wrote:%d global decl %N", tag, decl);
+
+  if (do_type)
+    {
+      int tag = insert (TREE_TYPE (decl));
+      dump (dumper::GM)
+	&& dump ("Wrote:%d global type %N", tag, TREE_TYPE (decl));
+    }
 }
 
 void
 trees_in::tree_gme ()
 {
-  unsigned c = u ();
-  if (c >= MAX_TREE_CODES
-      || TREE_CODE_CLASS (c) != tcc_declaration)
-    set_overrun ();
-  else if (tree decl = start (tree_code (c)))
+  if (tree decl = start (u (), tcc_declaration))
     {
       tree_node_specific (decl, false);
+      core_bools (decl);
       bflush ();
 
       DECL_CONTEXT (decl) = tree_node ();
       DECL_NAME (decl) = tree_node ();
       DECL_SOURCE_LOCATION (decl) = state->read_location (*this);
-      tree tpl = tree_node ();
-      tree ret = tree_node ();
-      tree args = tree_node ();
+
+      tree tpl = NULL_TREE;
+      tree ret = NULL_TREE;
+      tree args = NULL_TREE;
+      bool do_type = false;
+      switch (TREE_CODE (decl))
+	{
+	case FUNCTION_DECL:
+	  args = tree_node ();
+	  break;
+
+	case TYPE_DECL:
+	  {
+	    if (!DECL_IMPLICIT_TYPEDEF_P (decl))
+	      set_overrun ();
+	    if (tree type = start (u (), tcc_type))
+	      {
+		tree_node_specific (type, false);
+		core_bools (type);
+		bflush ();
+		TREE_TYPE (decl) = type;
+		TYPE_NAME (type) = decl;
+		do_type = true;
+	      }
+	  }
+	  break;
+
+	default:
+	  // FIXME:More cases
+	  set_overrun ();
+	}
 
       if (!get_overrun ())
 	{
@@ -6841,7 +6896,14 @@ trees_in::tree_gme ()
 	    }
 	  int tag = insert (decl);
 	  dump (dumper::GM)
-	    && dump ("Read:%d %s global entity %N", tag, kind, decl);
+	    && dump ("Read:%d %s global decl %N", tag, kind, decl);
+	  if (do_type)
+	    {
+	      int tag = insert (TREE_TYPE (decl));
+	      dump (dumper::GM)
+		&& dump ("Read:%d %s global type %N", tag,
+			 kind, TREE_TYPE (decl));
+	    }
 	}
     }
 }
@@ -9236,8 +9298,10 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
 	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
-	    // FIXME:fns only for now
-	    if (TREE_CODE (decl) == FUNCTION_DECL)
+	    // FIXME:fns or classes only for now
+	    if (TREE_CODE (decl) == FUNCTION_DECL
+		|| (DECL_IMPLICIT_TYPEDEF_P (decl)
+		    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))))
 	      gmes.safe_push (decl);
 	}
     }

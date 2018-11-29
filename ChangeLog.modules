@@ -1,3 +1,16 @@
+2018-11-29  Nathan Sidwell  <nathan@acm.org>
+
+	Global module class declaration merging.
+	gcc/cp/
+	* module.cc (trees_in::start): Check code & category.
+	(trees_in::tree_node): Allow gme types.  Refactor gme/node
+	reading.
+	(trees_{in,out}::tree_gme): Allow implicit typedefs.
+	(module_state::write_cluster): GME Implicit typedefs too.
+	* name-lookup.c (match_global_decl): Match TYPE_DECLs too.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-2_[abc].[CH]: New.
+
 2018-11-28  Nathan Sidwell  <nathan@acm.org>
 
 	Global module function declaration merging.
