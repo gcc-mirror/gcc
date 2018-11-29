@@ -1,5 +1,41 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config.in (HAVE_AS_PLTSEQ): Add.
+	* config/rs6000/predicates.md (indirect_call_operand): New.
+	* config/rs6000/rs6000-protos.h (rs6000_pltseq_template),
+	(rs6000_sibcall_sysv): Declare.
+	* config/rs6000/rs6000.c (init_cumulative_args): Set cookie
+	CALL_LONG for -fno-plt.
+	(print_operand <T, z, 0>): Handle UNSPEC_PLTSEQ.
+	(rs6000_indirect_call_template_1): Emit .reloc directives for
+	UNSPEC_PLTSEQ calls.
+	(rs6000_pltseq_template): New function.
+	(rs6000_longcall_ref): Add arg parameter.  Use PLT16 insns if
+	relocs supported by assembler.  Move SYMBOL_REF test to callers.
+	(rs6000_call_aix): Adjust rs6000_longcall_ref call.  Package
+	insns in UNSPEC_PLTSEQ, preserving original func_desc.
+	(rs6000_call_sysv): Likewise.
+	(rs6000_sibcall_sysv): New function.
+	* config/rs6000/rs6000.h (HAVE_AS_PLTSEQ): Provide default.
+	* config/rs6000/rs6000.md (UNSPEC_PLTSEQ, UNSPEC_PLT16_HA,
+	UNSPEC_PLT16_LO): New.
+	(pltseq_tocsave, pltseq_plt16_ha, pltseq_plt16_lo, pltseq_mtctr): New.
+	(call_indirect_nonlocal_sysv): Don't differentiate zero from non-zero
+	cookie in constraints.  Test explicitly for flags in length attr.
+	Handle unspec operand 1.
+	(call_value_indirect_nonlocal_sysv): Likewise.
+	(call_indirect_aix, call_value_indirect_aix): Handle unspec operand 1.
+	(call_indirect_elfv2, call_value_indirect_elfv2): Likewise.
+	(sibcall, sibcall_value): Use rs6000_sibcall_sysv.
+	(sibcall_indirect_nonlocal_sysv): New pattern.
+	(sibcall_value_indirect_nonlocal_sysv): Likewise.
+	(sibcall_nonlocal_sysv, sibcall_value_nonlocal_sysv): Remove indirect
+	call alternatives.
+	* configure.ac: Check for gas plt sequence marker support.
+	* configure: Regenerate.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/predicates.md (unspec_tls): New.
 	* config/rs6000/rs6000-protos.h (rs6000_call_template),
 	(rs6000_sibcall_template): Update prototype.

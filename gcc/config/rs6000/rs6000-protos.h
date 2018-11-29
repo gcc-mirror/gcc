@@ -109,6 +109,7 @@ extern const char *rs6000_call_template (rtx *, unsigned int);
 extern const char *rs6000_sibcall_template (rtx *, unsigned int);
 extern const char *rs6000_indirect_call_template (rtx *, unsigned int);
 extern const char *rs6000_indirect_sibcall_template (rtx *, unsigned int);
+extern const char *rs6000_pltseq_template (rtx *, int);
 extern enum rtx_code rs6000_reverse_condition (machine_mode,
 					       enum rtx_code);
 extern rtx rs6000_emit_eqne (machine_mode, rtx, rtx, rtx);
@@ -198,6 +199,7 @@ extern void rs6000_emit_eh_reg_restore (rtx, rtx);
 extern void rs6000_call_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_sibcall_aix (rtx, rtx, rtx, rtx);
 extern void rs6000_call_sysv (rtx, rtx, rtx, rtx);
+extern void rs6000_sibcall_sysv (rtx, rtx, rtx, rtx);
 extern void rs6000_aix_asm_output_dwarf_table_ref (char *);
 extern void get_ppc476_thunk_name (char name[32]);
 extern bool rs6000_overloaded_builtin_p (enum rs6000_builtins);
