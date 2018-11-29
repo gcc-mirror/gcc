@@ -1,5 +1,9 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.md (movdi_internal64): Correct lengths.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/predicates.md (easy_fp_constant): Remove code
 	dealing with integers in const_double.  Assert on unexpected
 	modes.  Delete superfluous ABI_V4 test.
