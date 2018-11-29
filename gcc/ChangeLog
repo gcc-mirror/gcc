@@ -1,5 +1,24 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/darwin.md (call_indirect_nonlocal_darwin64),
+	(call_nonlocal_darwin64, call_value_indirect_nonlocal_darwin64),
+	(call_value_nonlocal_darwin64): Remove constraints from second call
+	arg, the rounded_stack_size_rtx arg.
+	* config/rs6000/rs6000.md (tls_gd_aix, tls_gd_sysv, tls_gd_call_aix),
+	(tls_gd_call_sysv, tls_ld_aix, tls_ld_sysv, tls_ld_call_aix),
+	(tls_ld_call_sysv, call_local32, call_local64, call_value_local32),
+	(call_value_local64, call_indirect_nonlocal_sysv),
+	(call_nonlocal_sysv, call_nonlocal_sysv_secure),
+	(call_value_indirect_nonlocal_sysv, call_value_nonlocal_sysv),
+	(call_value_nonlocal_sysv_secure, call_local_aix),
+	(call_value_local_aix, call_nonlocal_aix, call_value_nonlocal_aix),
+	(call_indirect_aix, call_value_indirect_aix, call_indirect_elfv2),
+	(call_value_indirect_elfv2, sibcall_local32, sibcall_local64),
+	(sibcall_value_local32, sibcall_value_local64, sibcall_aix),
+	(sibcall_value_aix): Likewise.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.md (TLSmode): Delete mode iterator.  Replace
 	with P throughout except for call mems which should use SI.
 	(tls_abi_suffix, tls_sysv_suffix, tls_insn_suffix): Delete mode
