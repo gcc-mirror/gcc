@@ -76,8 +76,59 @@ test01()
   VERIFY( count == 6 );
 }
 
+void
+test02()
+{
+  // PR libstdc++/86910
+  const auto p = __gnu_test::nonexistent_path();
+  std::error_code ec;
+  bool result;
+
+  {
+    __gnu_test::scoped_file file;
+
+    result = create_directories(file.path, ec);
+    VERIFY( !result );
+    VERIFY( ec == std::errc::not_a_directory );
+    result = create_directories(file.path / "foo", ec);
+    VERIFY( !result );
+    VERIFY( ec == std::errc::not_a_directory );
+  }
+
+  create_directories(p);
+  {
+    __gnu_test::scoped_file dir(p, __gnu_test::scoped_file::adopt_file);
+    __gnu_test::scoped_file file(dir.path/"file");
+
+    result = create_directories(file.path, ec);
+    VERIFY( !result );
+    VERIFY( ec == std::errc::not_a_directory );
+    result = create_directories(file.path/"../bar", ec);
+    VERIFY( !result );
+    VERIFY( ec == std::errc::not_a_directory );
+  }
+}
+
+void
+test03()
+{
+  // PR libstdc++/87846
+  const auto p = __gnu_test::nonexistent_path() / "";
+  bool result = create_directories(p);
+  VERIFY( result );
+  VERIFY( exists(p) );
+  remove(p);
+  result = create_directories(p/"foo/");
+  VERIFY( result );
+  VERIFY( exists(p) );
+  VERIFY( exists(p/"foo") );
+  remove_all(p);
+}
+
 int
 main()
 {
   test01();
+  test02();
+  test03();
 }
