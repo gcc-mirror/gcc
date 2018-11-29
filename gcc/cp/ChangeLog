@@ -1,3 +1,20 @@
+2018-11-29  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/88121
+	* cp-name-hint.h (suggest_alternative_in_scoped_enum): New decl.
+	* error.c (dump_scope): Ensure that we print any scope for values
+	of unscoped enums.  Print the scope of values of scoped enums.
+	(qualified_name_lookup_error): Offer suggestions for failures
+	within scoped enums by calling suggest_alternative_in_scoped_enum.
+	* name-lookup.c (class namespace_hints): Update comment to mention
+	scoped enums.
+	(namespace_hints::namespace_hints): Call
+	maybe_add_candidate_for_scoped_enum.
+	(namespace_hints::maybe_add_candidate_for_scoped_enum): New member
+	(suggest_alternatives_for): Update comment to mention scoped
+	enums.
+	(suggest_alternative_in_scoped_enum): New function.
+
 2018-11-28  Marek Polacek  <polacek@redhat.com>
 
 	Implement P1094R2, Nested inline namespaces.
