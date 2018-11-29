@@ -1,5 +1,18 @@
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
+	Fixing GME classes
+	gcc/cp
+	* module.cc (trees_in::tree_node_vals): Add specific bool arg,
+	adjust.
+	(trees_in::existing_gme): Return cookie.
+	(trees_in::{get,set}_backref_gme): New.
+	(trees_out::mark_gme): Mark typedef target.
+	(trees_out::tree_type): Don't be fooled by GME TYPE_NAME.
+	(trees_out::tree_value): Write GME type code.
+	(trees_in::tree_node): Use backref channel for typedefs.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-4_c.C: Adjust.
+
 	Some ODR checking of GMEs
 	gcc/cp/
 	* module.cc (trees_in::tree_node): Check type of matched GME.

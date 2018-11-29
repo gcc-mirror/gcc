@@ -2448,7 +2448,7 @@ private:
   tree finish_type (tree);
 
 private:
-  tree start (int, int = -1);
+  tree start (unsigned, int = -1);
   tree finish (tree);
 
 public:
@@ -2466,7 +2466,7 @@ private:
   tree tree_binfo ();
   bool tree_node_specific (tree, bool);
   bool tree_node_bools (tree, bool);
-  bool tree_node_vals (tree);
+  bool tree_node_vals (tree, bool);
 
 public:
   tree chained_decls ();  /* Follow DECL_CHAIN.  */
@@ -2478,7 +2478,8 @@ public:
   tree tree_node ();
 
 public:
-  /* Read a global module entity.  */
+  /* Read a global module entity.  We expect very few GMEs per
+     cluster, usually at most one.  */
   void tree_gme ();
   void reserve_gmes (unsigned len)
   {
@@ -2487,12 +2488,20 @@ public:
     /* Up to 3 nodes per GME (template, decl, type).  */
     gmes.reserve (len * 3);
   }
-  bool existing_gme (tree decl)
+  unsigned existing_gme (tree t)
   {
     for (unsigned ix = gmes.length (); ix--;)
-      if (gmes[ix] == decl)
-	return true;
-    return false;
+      if (gmes[ix] == t)
+	return ix + 1;
+    return 0;
+  }
+  void set_backref_gme (unsigned cookie, tree t)
+  {
+    gmes[cookie - 1] = t;
+  }
+  tree get_backref_gme (unsigned cookie)
+  {
+    return gmes[cookie];
   }
 };
 
@@ -3861,12 +3870,15 @@ trees_out::mark_node (tree decl)
 }
 
 void
-trees_out::mark_gme (tree decl)
+trees_out::mark_gme (tree t)
 {
-  gcc_checking_assert (TREE_VISITED (decl));
-  int *val = tree_map.get (decl);
+  gcc_checking_assert (TREE_VISITED (t));
+  int *val = tree_map.get (t);
   gcc_assert (val && *val);
   *val = gme_lwm - *val;
+
+  if (TREE_CODE (t) == TYPE_DECL)
+    mark_gme (TREE_TYPE (t));
 }
 
 /* Insert T into the map, return its back reference number.
@@ -4045,11 +4057,11 @@ trees_out::start (tree t)
 /* Start tree read.  Allocate the receiving node.  */
 
 tree
-trees_in::start (int code, int klass)
+trees_in::start (unsigned code, int klass)
 {
   tree t = NULL_TREE;
 
-  if (code < 0 || code >= MAX_TREE_CODES ||
+  if (code >= MAX_TREE_CODES ||
       (klass >= 0 && TREE_CODE_CLASS (code) != klass))
     {
       set_overrun ();
@@ -5906,7 +5918,7 @@ trees_out::tree_node_vals (tree t)
 }
 
 bool
-trees_in::tree_node_vals (tree t)
+trees_in::tree_node_vals (tree t, bool specific)
 {
   bool ok = core_vals (t);
 
@@ -5914,16 +5926,13 @@ trees_in::tree_node_vals (tree t)
     switch (TREE_CODE_CLASS (TREE_CODE (t)))
       {
       case tcc_declaration:
-	if (DECL_LANG_SPECIFIC (t))
+	if (specific)
 	  ok = lang_decl_vals (t);
 	break;
 
       case tcc_type:
-	if (TYPE_LANG_SPECIFIC (t))
-	  {
-	    gcc_assert (TYPE_MAIN_VARIANT (t) == t);
-	    ok = lang_type_vals (t);
-	  }
+	if (specific)
+	  ok = lang_type_vals (t);
 	else
 	  TYPE_LANG_SPECIFIC (t) = TYPE_LANG_SPECIFIC (TYPE_MAIN_VARIANT (t));
 	break;
@@ -6267,30 +6276,34 @@ trees_out::tree_type (tree type, walk_kind ref, bool looking_inside)
     }
 
   if (tree name = TYPE_NAME (type))
-    if (TREE_TYPE (name) == type && !tree_map.get (name))
+    if (TREE_TYPE (name) == type)
       {
-	/* A new named type -> tt_named_type.  */
-
-	/* Make sure this is not a named builtin. We should find
-	   those some other way to be canonically correct.  */
-	gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
-	if (streaming_p ())
+	int *name_val = tree_map.get (name);
+	if (!name_val || *name_val > gme_lwm)
 	  {
-	    i (tt_named_type);
-	    dump (dumper::TREE)
-	      && dump ("Writing interstitial named type %C:%N%S",
-		       TREE_CODE (name), name, name);
-	  }
-	tree_ctx (name, looking_inside, NULL_TREE);
-	if (streaming_p ())
-	  dump (dumper::TREE)
-	    && dump ("Wrote named type %C:%N%S", TREE_CODE (name), name, name);
+	    /* A new named type -> tt_named_type.  */
 
-	/* The type itself could be a variant of TREE_TYPE (name), so
-	   stream it out in its own right.  We'll find the name in the
-	   map, so not end up here next time.  */
-	tree_node (type);
-	return false;
+	    /* Make sure this is not a named builtin. We should find
+	       those some other way to be canonically correct.  */
+	    gcc_assert (DECL_SOURCE_LOCATION (name) != BUILTINS_LOCATION);
+	    if (streaming_p ())
+	      {
+		i (tt_named_type);
+		dump (dumper::TREE)
+		  && dump ("Writing interstitial named type %C:%N%S",
+			   TREE_CODE (name), name, name);
+	      }
+	    tree_ctx (name, looking_inside, NULL_TREE);
+	    if (streaming_p ())
+	      dump (dumper::TREE) && dump ("Wrote named type %C:%N%S",
+					   TREE_CODE (name), name, name);
+
+	    /* The type itself could be a variant of TREE_TYPE (name), so
+	       stream it out in its own right.  We'll find the name in the
+	       map, so not end up here next time.  */
+	    tree_node (type);
+	    return false;
+	  }
       }
 
   return true;
@@ -6307,19 +6320,17 @@ trees_out::tree_value (tree t, walk_kind walk)
       /* A new node -> tt_node.  */
       unique++;
       if (walk != WK_gme)
-	{
-	  i (tt_node);
-	  i (TREE_CODE (t));
-	  start (t);
-	}
+	i (tt_node);
+      u (TREE_CODE (t));
+      if (walk != WK_gme)
+	start (t);
     }
 
   int tag = insert (t, walk);
   if (streaming_p ())
     dump (dumper::TREE)
       && dump ("Writing:%d %C:%N%S%s", tag, TREE_CODE (t), t, t,
-	       TREE_CODE_CLASS (TREE_CODE (t)) == tcc_declaration
-	       && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
+	       DECL_P (t) && DECL_MODULE_EXPORT_P (t) ? " (exported)" : "");
   tree_node_specific (t);
   tree_node_bools (t);
   tree_node_vals (t);
@@ -6716,30 +6727,35 @@ trees_in::tree_node ()
 	/* A new node.  Stream it in.  */
 	bool is_gme = tag == tt_gme;
 	tree existing = NULL_TREE;
+	unsigned cookie = 0;
 
-	tag = i ();
 	if (is_gme)
 	  {
 	    /* A global module entity.  We've already deduped it, but
 	       need to read in the value here.  Either in-place, or as
 	       a dummy.  */
+	    tag = i ();
 	    if (tag < 0 && unsigned (~tag) < back_refs.length ())
 	      res = back_refs[~tag];
-	    if (!res
-		|| (TREE_CODE_CLASS (TREE_CODE (res)) != tcc_declaration
-		    && TREE_CODE_CLASS (TREE_CODE (res)) != tcc_type))
+	    if (!res || !(DECL_P (res) || TYPE_P (res)))
 	      set_overrun ();
 
 	    /* Determine if we had already known about this.  */
-	    if (existing_gme (res))
+	    cookie = existing_gme (res);
+	    unsigned c = u ();
+	    if (cookie)
 	      {
 		existing = res;
-		res = start (TREE_CODE (existing));
+		res = start (c);
+		if (TYPE_P (res))
+		  /* Save the dummy type, so we can get at it below it
+		     below.  */
+		  set_backref_gme (cookie, res);
 	      }
 	  }
 	else
 	  {
-	    res = start (tag);
+	    res = start (u ());
 	    if (res)
 	      /* Insert into map.  */
 	      tag = insert (res);
@@ -6759,7 +6775,7 @@ trees_in::tree_node ()
 	    bflush ();
 	  }
 
-	if (!ok || !tree_node_vals (res))
+	if (!ok || !tree_node_vals (res, specific))
 	  {
 	    if (res)
 	      back_refs[~tag] = NULL_TREE;
@@ -6768,26 +6784,45 @@ trees_in::tree_node ()
 	  }
 
 	dump (dumper::TREE) && dump ("Read:%d %C:%N", tag, TREE_CODE (res), res);
-	tree found = finish (res);
 
-	if (found != res)
+	if (!existing || !TYPE_P (res))
 	  {
-	    /* Update the mapping.  */
-	    res = found;
-	    back_refs[~tag] = res;
-	    dump (dumper::TREE)
-	      && dump ("Remapping:%d to %C:%N%S", tag,
-		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	    tree found = finish (res);
+
+	    if (found != res)
+	      {
+		/* Update the mapping.  */
+		res = found;
+		if (!existing)
+		  back_refs[~tag] = res;
+		dump (dumper::TREE)
+		  && dump ("Remapping:%d to %C:%N%S", tag,
+			   res ? TREE_CODE (res) : ERROR_MARK, res, res);
+	      }
 	  }
 
-	if (res && existing
-	    && !same_type_p (TREE_TYPE (existing), TREE_TYPE (res)))
+	if (existing && DECL_P (res))
 	  {
-	    error_at (DECL_SOURCE_LOCATION (res),
-		      "conflicting global module declaration %#qD", res);
-	    inform (DECL_SOURCE_LOCATION (existing),
-		    "existing declaration %#qD", existing);
+	    tree type = get_backref_gme (cookie);
+	    if (type)
+	      {
+		TYPE_NAME (type) = res;
+		TREE_TYPE (res) = type;
+	      }
+
+	    // FIXME:Inhibit TYPENAME_TYPE resolution, all the way down!
+	    if (!comptypes (TREE_TYPE (existing), TREE_TYPE (res),
+			    COMPARE_STRUCTURAL))
+	      {
+		error_at (DECL_SOURCE_LOCATION (res),
+			  "conflicting global module declaration %#qD", res);
+		inform (DECL_SOURCE_LOCATION (existing),
+			"existing declaration %#qD", existing);
+	      }
 	  }
+
+	if (existing)
+	  res = existing;
 
 	break;
       }
@@ -6800,7 +6835,7 @@ trees_in::tree_node ()
 void
 trees_out::tree_gme (tree decl)
 {
-  gcc_checking_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == tcc_declaration);
+  gcc_checking_assert (DECL_P (decl));
   u (TREE_CODE (decl));
   tree_node_specific (decl);
   core_bools (decl);
@@ -6907,8 +6942,7 @@ trees_in::tree_gme ()
 	    {
 	      decl = existing;
 	      gmes.quick_push (decl);
-	      if (do_type)
-		gmes.quick_push (TREE_TYPE (decl));
+	      gmes.quick_push (do_type ? TREE_TYPE (decl) : NULL_TREE);
 	      kind = "matched";
 	    }
 	  int tag = insert (decl);
@@ -12127,7 +12161,7 @@ tree
 get_module_owner (tree decl)
 {
  again:
-  gcc_assert (TREE_CODE_CLASS (TREE_CODE (decl)) == tcc_declaration);
+  gcc_assert (DECL_P (decl));
 
   switch (TREE_CODE (decl))
     {
