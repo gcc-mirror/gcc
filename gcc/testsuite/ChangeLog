@@ -1,3 +1,8 @@
+2018-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20181129-1.c: New test.
+	* gcc.target/sparc/20181129-2.c: Likewise.
+
 2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88152

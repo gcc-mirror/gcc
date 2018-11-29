@@ -1,3 +1,36 @@
+2018-11-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/87807
+	* config/sparc/sparc-modes.def: Minor tweak.
+	* config/sparc/sparc.c: Minor reordering.
+	(sparc_pass_by_reference): Move around.
+	(traverse_record_type): Change offset from HOST_WIDE_INT to int.
+	(classify_registers): Likewise for bitpos.
+	(function_arg_slotno): Remove dead test and tweak comments.
+	<MODE_RANDOM>: Remove useless assertion and test whether the
+	parameter is named in order to pass it in FP registers.  Return
+	the regno for floating-point vector types.
+	(compute_int_layout): Change bitpos from HOST_WIDE_INT to int.
+	(compute_fp_layout): Likewise.
+	(count_registers): Likewise.
+	(assign_int_registers): Likewise.
+	(assign_fp_registers): Likewise.
+	(assign_registers): Likewise.
+	(function_arg_record_value): Change size from HOST_WIDE_INT to int
+	and use CEIL_NWORDS to compute the number of registers.
+	(function_arg_union_value): Minor tweaks.
+	(function_arg_vector_value): Add slotno and named parameters, use
+	CEIL_NWORDS to compute the number of registers.
+	(sparc_function_arg_1): Rework handling of vector types.  Change
+	size from HOST_WIDE_INT to int.
+	(sparc_arg_partial_bytes): Rework handling of 32-bit ABI and deal
+	with vector types for the 64-bt ABI.
+	(sparc_function_arg_advance): Likewise.
+	(sparc_return_in_memory): Add reference to -fpcc-struct-return.
+	(sparc_struct_value_rtx): Return NULL_RTX instead of 0.
+	(sparc_function_value_1): Rework handling of vector types.  Change
+	size from HOST_WIDE_INT to int.
+
 2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/88152
