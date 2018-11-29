@@ -1,5 +1,21 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000-protos.h (rs6000_indirect_call_template),
+	(rs6000_indirect_sibcall_template): Declare.
+	* config/rs6000/rs6000.c (rs6000_indirect_call_template_1),
+	(rs6000_indirect_call_template, rs6000_indirect_sibcall_template):
+	New functions.
+	* config/rs6000/rs6000.md (call_indirect_nonlocal_sysv),
+	(call_value_indirect_nonlocal_sysv, sibcall_nonlocal_sysv),
+	(call_indirect_aix, call_value_indirect_aix): Use
+	rs6000_indirect_call_template and rs6000_indirect_sibcall_template.
+	call_indirect_elfv2, call_value_indirect_elfv2): Likewise, and
+	handle both speculation and non-speculation cases.
+	(call_indirect_aix_nospec, call_value_indirect_aix_nospec): Delete.
+	(call_indirect_elfv2_nospec, call_value_indirect_elfv2_nospec): Delete.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000-protos.h (rs6000_call_template): Declare.
 	(rs6000_sibcall_template): Declare.
 	(macho_call_template): Rename from output_call.
