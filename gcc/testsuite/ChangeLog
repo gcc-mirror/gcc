@@ -1,3 +1,25 @@
+2018-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* g++.dg/cpp0x/constexpr-base6b.C: New.
+	* g++.dg/cpp0x/constexpr-47969.C: Test locations too.
+	* g++.dg/cpp0x/constexpr-48324.C: Likewise.
+	* g++.dg/cpp0x/constexpr-ex2.C: Likewise.
+	* g++.dg/cpp0x/scoped_enum2.C: Likewise.
+	* g++.dg/cpp1y/pr63996.C: Likewise.
+	* g++.dg/ext/constexpr-vla5.C: Likewise.
+	* g++.dg/ext/stmtexpr15.C: Likewise.
+	* g++.dg/ext/vla1.C: Likewise.
+	* g++.dg/other/fold1.C: Likewise.
+	* g++.dg/parse/array-size2.C: Likewise.
+	* g++.dg/parse/crash36.C: Likewise.
+	* g++.dg/ubsan/pr81530.C: Likewise.
+	* g++.dg/warn/Wvla-1.C: Likewise.
+	* g++.dg/warn/Wvla-2.C: Likewise.
+	* g++.old-deja/g++.brendan/array1.C: Likewise.
+	* g++.old-deja/g++.bugs/900402_02.C: Likewise.
+	* g++.old-deja/g++.law/init3.C: Likewise.
+	* g++.old-deja/g++.mike/p6149.C: Likewise.
+
 2018-11-29  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/88121
