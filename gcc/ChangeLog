@@ -1,3 +1,9 @@
+2018-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/88243
+	* tree-vect-patterns.c (vect_mark_pattern_stmts): Set the def
+	type of all pattern-sequence stmts to vect_internal_def.
+
 2018-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	PR target/88224
