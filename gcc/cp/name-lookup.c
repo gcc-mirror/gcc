@@ -3628,6 +3628,16 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
   return old;
 }
 
+/* DECL is a yet-to-be-loaded Global Module Entity.  TPL, RET and ARGS
+   are its distinguishing features (some of which may be NULL).  Look
+   for an existing GME that matches and return that if found.
+   Otherwise add this DECL into the GME list.
+
+   We're conservative with matches, so ambiguous decls will be
+   registered as different, then lead to a lookup error if the two
+   modules are both visible.  Perhaps we want to do something similar
+   to duplicate decls to get ODR errors on loading?  */
+
 tree
 match_global_decl (tree decl, tree tpl, tree ret, tree args)
 {
@@ -3648,6 +3658,12 @@ match_global_decl (tree decl, tree tpl, tree ret, tree args)
 	case FUNCTION_DECL:
 	  if (TREE_TYPE (glob)
 	      && compparms (args, TYPE_ARG_TYPES (TREE_TYPE (glob))))
+	    return glob;
+	  break;
+
+	case VAR_DECL:
+	  if (TREE_TYPE (glob)
+	      && same_type_p (ret, TREE_TYPE (glob)))
 	    return glob;
 	  break;
 

@@ -1,5 +1,14 @@
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
+	Global module var declaration merging.
+	gcc/cp/
+	* module.cc (trees_in::reserve_gmes): Add headroom.
+	(trees_{in,out}::tree_gme): Deal with VAR_DECLs.
+	(module_state::write_cluster): Likewise.
+	* name-lookup.c (match_global_decl): Likewise.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-3_[abcd].[CH]: New.
+
 	Global module class declaration merging.
 	gcc/cp/
 	* module.cc (trees_in::start): Check code & category.

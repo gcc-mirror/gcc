@@ -1,5 +1,5 @@
 // { dg-module-do run }
 // { dg-additional-options "-fmodule-legacy" }
-// { dg-module-bmi {"leg-merge-1_a.H"} }
+// { dg-module-bmi {"leg-merge-3_a.H"} }
 
-int bob (int);
+extern int bob;

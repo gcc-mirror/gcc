@@ -2484,7 +2484,8 @@ public:
   {
     if (gmes.length ())
       set_overrun ();
-    gmes.reserve (len);
+    /* Up to 3 nodes per GME (template, decl, type).  */
+    gmes.reserve (len * 3);
   }
   bool existing_gme (tree decl)
   {
@@ -6810,6 +6811,10 @@ trees_out::tree_gme (tree decl)
       tree_node (TYPE_ARG_TYPES (TREE_TYPE (decl)));
       break;
 
+    case VAR_DECL:
+      tree_node (TREE_TYPE (decl));
+      break;
+
     case TYPE_DECL:
       {
 	// FIXME:for now
@@ -6864,6 +6869,10 @@ trees_in::tree_gme ()
 	  args = tree_node ();
 	  break;
 
+	case VAR_DECL:
+	  ret = tree_node ();
+	  break;
+
 	case TYPE_DECL:
 	  {
 	    if (!DECL_IMPLICIT_TYPEDEF_P (decl))
@@ -6892,6 +6901,8 @@ trees_in::tree_gme ()
 	    {
 	      decl = existing;
 	      gmes.quick_push (decl);
+	      if (do_type)
+		gmes.quick_push (TREE_TYPE (decl));
 	      kind = "matched";
 	    }
 	  int tag = insert (decl);
@@ -9298,8 +9309,9 @@ module_state::write_cluster (elf_out *to, depset *scc[], unsigned size,
 	{
 	  if (TREE_PUBLIC (CP_DECL_CONTEXT (decl))
 	      && (is_legacy () || !MAYBE_DECL_MODULE_OWNER (decl)))
-	    // FIXME:fns or classes only for now
+	    // FIXME:fns, vars or classes only for now
 	    if (TREE_CODE (decl) == FUNCTION_DECL
+		|| TREE_CODE (decl) == VAR_DECL
 		|| (DECL_IMPLICIT_TYPEDEF_P (decl)
 		    && RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl))))
 	      gmes.safe_push (decl);
