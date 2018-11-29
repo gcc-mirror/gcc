@@ -9967,8 +9967,8 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
   /* 128-bit constant floating-point values on Darwin should really be loaded
      as two parts.  However, this premature splitting is a problem when DFmode
      values can go into Altivec registers.  */
-  if (FLOAT128_IBM_P (mode) && !reg_addr[DFmode].scalar_in_vmx_p
-      && GET_CODE (operands[1]) == CONST_DOUBLE)
+  if (TARGET_MACHO && CONST_DOUBLE_P (operands[1]) && FLOAT128_IBM_P (mode)
+      && !reg_addr[DFmode].scalar_in_vmx_p)
     {
       rs6000_emit_move (simplify_gen_subreg (DFmode, operands[0], mode, 0),
 			simplify_gen_subreg (DFmode, operands[1], mode, 0),
