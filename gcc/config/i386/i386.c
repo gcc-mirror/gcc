@@ -28385,12 +28385,47 @@ ix86_output_indirect_jmp (rtx call_op)
     return "%!jmp\t%A0";
 }
 
+/* Output return instrumentation for current function if needed.  */
+
+static void
+output_return_instrumentation (void)
+{
+  if (ix86_instrument_return != instrument_return_none
+      && flag_fentry
+      && !DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (cfun->decl))
+    {
+      if (ix86_flag_record_return)
+	fprintf (asm_out_file, "1:\n");
+      switch (ix86_instrument_return)
+	{
+	case instrument_return_call:
+	  fprintf (asm_out_file, "\tcall\t__return__\n");
+	  break;
+	case instrument_return_nop5:
+	  /* 5 byte nop: nopl 0(%[re]ax,%[re]ax,1)  */
+	  fprintf (asm_out_file, ASM_BYTE "0x0f, 0x1f, 0x44, 0x00, 0x00\n");
+	  break;
+	case instrument_return_none:
+	  break;
+	}
+
+      if (ix86_flag_record_return)
+	{
+	  fprintf (asm_out_file, "\t.section __return_loc, \"a\",@progbits\n");
+	  fprintf (asm_out_file, "\t.%s 1b\n", TARGET_64BIT ? "quad" : "long");
+	  fprintf (asm_out_file, "\t.previous\n");
+	}
+    }
+}
+
 /* Output function return.  CALL_OP is the jump target.  Add a REP
    prefix to RET if LONG_P is true and function return is kept.  */
 
 const char *
 ix86_output_function_return (bool long_p)
 {
+  output_return_instrumentation ();
+
   if (cfun->machine->function_return_type != indirect_branch_keep)
     {
       char thunk_name[32];
@@ -28503,6 +28538,7 @@ ix86_output_call_insn (rtx_insn *insn, rtx call_op)
 
   if (SIBLING_CALL_P (insn))
     {
+      output_return_instrumentation ();
       if (direct_p)
 	{
 	  if (ix86_nopic_noplt_attribute_p (call_op))

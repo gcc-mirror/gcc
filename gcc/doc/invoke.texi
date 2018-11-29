@@ -1316,6 +1316,7 @@ See RS/6000 and PowerPC Options.
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
+-minstrument-return=@var{type} @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
@@ -29076,6 +29077,19 @@ If profiling is active (@option{-pg}), generate the calls to
 the profiling functions as NOPs. This is useful when they
 should be patched in later dynamically. This is likely only
 useful together with @option{-mrecord-mcount}.
+
+@item -minstrument-return=@var{type}
+@opindex minstrument-return
+Instrument function exit in -pg -mfentry instrumented functions with
+call to specified function. This only instruments true returns ending
+with ret, but not sibling calls ending with jump. Valid types
+are @var{none} to not instrument, @var{call} to generate a call to __return__,
+or @var{nop5} to generate a 5 byte nop.
+
+@item -mrecord-return
+@itemx -mno-record-return
+@opindex mrecord-return
+Generate a __return_loc section pointing to all return instrumentation code.
 
 @item -mskip-rax-setup
 @itemx -mno-skip-rax-setup
