@@ -14653,6 +14653,78 @@
    (set_attr "prefix" "maybe_vex")
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_lt"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	  [(lt:VF_128_256
+	     (match_operand:<sseintvecmode> 1 "register_operand" "x")
+	     (match_operand:<sseintvecmode> 2 "const0_operand" "C"))]
+	  UNSPEC_MOVMSK))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))]
+  "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_lt"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (unspec:SI
+	    [(lt:VF_128_256
+	       (match_operand:<sseintvecmode> 1 "register_operand" "x")
+	       (match_operand:<sseintvecmode> 2 "const0_operand" "C"))]
+	    UNSPEC_MOVMSK)))]
+  "TARGET_64BIT && TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+  "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_shift"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	  [(subreg:VF_128_256
+	     (ashiftrt:<sseintvecmode>
+	       (match_operand:<sseintvecmode> 1 "register_operand" "x")
+	       (match_operand:QI 2 "const_int_operand" "n")) 0)]
+	  UNSPEC_MOVMSK))]
+  "TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))]
+  "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn_and_split "*<sse>_movmsk<ssemodesuffix><avxsizesuffix>_zext_shift"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (unspec:SI
+	    [(subreg:VF_128_256
+	       (ashiftrt:<sseintvecmode>
+		 (match_operand:<sseintvecmode> 1 "register_operand" "x")
+	       (match_operand:QI 2 "const_int_operand" "n")) 0)]
+	    UNSPEC_MOVMSK)))]
+  "TARGET_64BIT && TARGET_SSE"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+  "operands[1] = gen_lowpart (<MODE>mode, operands[1]);"
+  [(set_attr "type" "ssemov")
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "<MODE>")])
+
 (define_insn "<sse2_avx2>_pmovmskb"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(unspec:SI
@@ -14677,6 +14749,49 @@
 	    UNSPEC_MOVMSK)))]
   "TARGET_64BIT && TARGET_SSE2"
   "%vpmovmskb\t{%1, %k0|%k0, %1}"
+  [(set_attr "type" "ssemov")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*<sse2_avx2>_pmovmskb_lt"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(unspec:SI
+	  [(lt:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand" "x")
+			(match_operand:VI1_AVX2 2 "const0_operand" "C"))]
+	  UNSPEC_MOVMSK))]
+  "TARGET_SSE2"
+  "#"
+  ""
+  [(set (match_dup 0)
+	(unspec:SI [(match_dup 1)] UNSPEC_MOVMSK))]
+  ""
+  [(set_attr "type" "ssemov")
+   (set (attr "prefix_data16")
+     (if_then_else
+       (match_test "TARGET_AVX")
+     (const_string "*")
+     (const_string "1")))
+   (set_attr "prefix" "maybe_vex")
+   (set_attr "mode" "SI")])
+
+(define_insn_and_split "*<sse2_avx2>_pmovmskb_zext_lt"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(zero_extend:DI
+	  (unspec:SI
+	    [(lt:VI1_AVX2 (match_operand:VI1_AVX2 1 "register_operand" "x")
+			  (match_operand:VI1_AVX2 2 "const0_operand" "C"))]
+	    UNSPEC_MOVMSK)))]
+  "TARGET_64BIT && TARGET_SSE2"
+  "#"
+  ""
+  [(set (match_dup 0)
+	(zero_extend:DI (unspec:SI [(match_dup 1)] UNSPEC_MOVMSK)))]
+  ""
   [(set_attr "type" "ssemov")
    (set (attr "prefix_data16")
      (if_then_else

@@ -1,3 +1,8 @@
+2018-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/88152
+	* g++.target/i386/pr88152.C: New test.
+
 2018-11-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	* gcc.target/i386/pr34256.c: Adjust the number of expected moves.
