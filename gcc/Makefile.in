@@ -1483,6 +1483,7 @@ OBJS = \
 	spellcheck-tree.o \
 	sreal.o \
 	ssa-range.o \
+	ssa-range-cache.o \
 	ssa-range-gori.o \
 	ssa-range-vrp.o \
 	stack-ptr-mod.o \

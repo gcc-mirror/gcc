@@ -158,6 +158,8 @@ public:
   // Substituting results back until we encounter NAME.
   bool compute_operand_range (irange &r, gimple *s, const irange &lhs,
 			      tree name, irange *name_range = NULL);
+  bool outgoing_edge_range_p (irange &r, edge e, tree name,
+			      irange *name_range = NULL);
 private:
   bool compute_operand_range_switch (irange &r, gswitch *s, const irange &lhs,
 				     tree name, irange *name_range);
@@ -175,7 +177,8 @@ private:
   bool logical_combine (irange &r, enum tree_code code, const irange &lhs,
 		        const irange &op1_true, const irange &op1_false,
 		        const irange &op2_true, const irange &op2_false);
-  
+  bool reevaluate_definition (irange &r, tree name, edge e,
+                              irange *block_range);
   irange m_bool_zero;           /* Boolean zero cached.  */
   irange m_bool_one;            /* Boolean true cached.  */
 };

@@ -459,8 +459,7 @@ get_tree_range (irange &r, tree expr, tree name, irange *range_of_name)
 }
 
 // Calculate the range for NAME if the lhs of statement S has the range LHS.
-// NAME must be one of the two operands on S. If present, NAME_RANGE is any
-// known range for NAME coming into this statement,
+// If present, NAME_RANGE is any known range for NAME coming into this stmt.
 // Return the result in R. Return false if no range can be calculated.
 
 static bool
@@ -497,8 +496,7 @@ compute_operand_range_on_stmt (irange &r, grange_op *s, const irange &lhs,
       return false;
     }
 
-  gcc_checking_assert (op2 == name);
-  if (get_tree_range (op1_range, op1, name, name_range))
+  if (op2 == name && get_tree_range (op1_range, op1, name, name_range))
     if (s->calc_op2_irange (r, lhs, op1_range))
       {
 	// If op2 also has a range, intersect the 2 ranges.
@@ -958,4 +956,87 @@ gori_compute::compute_operand1_and_operand2_range (irange &r, grange_op *s,
   return true;
 }
  
+// If the src block of edge E defines an outgoing range for a name that is
+// is in the def_chain for NAME, get the outgoing range for that ssa_name
+// and re-evaluate NAME using this value. If NAME_RANGE is supplied (normally
+// the current value of NAME), intersect this with the edge range to produce 
+// and accurate outgoing range on edge E for NAME. Return the results in R.
+// Return false if nothing can be re-evaluated, or if NAME is actually exported
+// and doesnt need redefining.
+
+bool
+gori_compute::reevaluate_definition (irange &r, tree name, edge e,
+				     irange *name_range)
+{
+  basic_block bb = e->src;
+  gimple *def_stmt;
+  ssa_op_iter iter;
+  use_operand_p use_p;
+
+  // Ensure there is no outgoing range for NAME.
+  gcc_checking_assert (!is_export_p (name, bb));
+
+  // If nothing in the def chain is exported, there is no evaluation.
+  if (!def_chain_in_export_p (name, bb))
+    return false;
+
+  def_stmt = SSA_NAME_DEF_STMT (name);
+  gcc_checking_assert (def_stmt);
+
+  // We know its possible to evaluate NAME from SOMETHING in its defintion.
+  FOR_EACH_SSA_USE_OPERAND (use_p, def_stmt, iter, SSA_OP_USE)
+    {
+      tree use = ssa_ranger::valid_ssa_p (USE_FROM_PTR (use_p));
+      if (use)
+        {
+	  irange use_range;
+	  if (is_export_p (use, bb))
+	    {
+	      if (!outgoing_edge_range_p (use_range, e, use))
+	        continue;
+	    }
+	  // Try reevaluating USE. we have no range on entry for USE.
+	  else if (!reevaluate_definition (use_range, use, e, NULL))
+	    continue;
+	  // Invoke a no-overhead range calculator for the statement so we dont
+	  // get any dynamic calls to range_of_expr which could cause another
+	  // iterative evaluation to fill a cache.
+	  ssa_ranger eval;
+	  gcc_assert (eval.range_of_stmt_with_range (r, def_stmt, use,
+						     use_range));
+	  // If this is the root def and it has a range, combine them.
+	  if (name_range)
+	    r.intersect (*name_range);
+	  return true;
+        }
+    }
+  return false;
+}
+
+// Calculate a range on edge E and return it in R.  Try to evaluate a range
+// for NAME on this edge.  Return FALSE if this is either not a control edge
+// or NAME is not defined by this edge.
+
+bool
+gori_compute::outgoing_edge_range_p (irange &r, edge e, tree name,
+				     irange *name_range)
+{
+  irange lhs;
+
+  gcc_checking_assert (ssa_ranger::valid_ssa_p (name));
+  // Determine if there is an outgoing edge.
+  gimple *s = gimple_outgoing_edge_range_p (lhs, e);
+  if (!s)
+    return false;
+
+  // If NAME can be calculated on the edge, use that.
+  if (is_export_p (name, e->src))
+    return compute_operand_range (r, s, lhs, name, name_range);
+
+  // Otherwise see if NAME is derived from something that can be calculated.
+  // This performs no dynamic lookups whatsover, so it is low cost.
+  return reevaluate_definition (r, name, e, name_range);
+}
+
+
 

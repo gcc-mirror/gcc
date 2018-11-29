@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "range.h"
 #include "range-op.h"
 #include "ssa-range-gori.h"
+#include "ssa-range-cache.h"
 
 extern gimple *gimple_outgoing_range_stmt_p (basic_block bb);
 extern gimple *gimple_outgoing_edge_range_p (irange &r, edge e);
@@ -67,10 +68,8 @@ class ssa_ranger
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
   virtual void range_on_exit (irange &r, basic_block bb, tree name);
 
-  // Calculate a range on edge E only if it is defined by E.
   virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
 				      irange *name_range = NULL);
-
   
 protected:
   // Calculate a range for a kind of gimple statement .
@@ -96,8 +95,13 @@ protected:
 			   gimple *eval_from = NULL);
 };
 
-// THe gori_ranger works at the block level. GORI stands for Generates Outgoing
-// Range Info, and utilizes the engine from ssa-range-gori.h to buil;d
+// This class utilizes the gori summary to query the range
+// of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
+// of range on entry to blocks.  All work is done on-demand so it is relatively
+// lightweight until used.
+//
+// GORI stands for Generates Outgoing Range Info
+// Itutilizes the engine from ssa-range-gori.h to build
 // defintion chains on demand which enables the calculation of ranges for 
 // various ssa names that are related to those that actually generate ranges.
 //
@@ -116,43 +120,8 @@ protected:
 // "terminal_name" returned for both a_2 and c_3 since a change in the
 // range of b_6 to calculate their results may produce a different range.
 
-class gori_ranger : public ssa_ranger
-{
-  public:
-  gori_ranger ();
-  ~gori_ranger ();
 
-  virtual void range_on_edge (irange &r, edge e, tree name);
-  virtual void range_on_entry (irange &r, basic_block bb, tree name);
-  virtual void range_on_exit (irange &r, basic_block bb, tree name);
-
-  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
-				      irange *name_range = NULL);
-  
-  tree terminal_name (tree name);
-
-  void dump (FILE *f);
-protected:
-  // Calculate the range for NAME if the result of statement S is the range LHS.
-  gori_compute m_gori; 	  /* Generates Outgoing Range Info.  */
-  bool reevaluate_definition (irange &r, tree name, edge e,
-			      irange *block_range);
-
-  // Do we need these any more?
-  bool reevaluate_range_of_name (irange &r, tree name, gimple *s);
-  bool reevaluate_range_of_name (irange &r, tree name, edge on_edge);
-};
-
-
-// This class utilizes the gori summary to query the range
-// of SSA_NAMEs across multiple basic blocks and edges.  It builds a cache
-// of range on entry to blocks.  All work is done on-demand so it is relatively
-// lightweight until used.
-// 
-// There is a global ssa-name table maintained via a set of private 
-// global_ssa_name routines.
-
-class global_ranger : public gori_ranger
+class global_ranger : public ssa_ranger
 {
 public:
   global_ranger ();
@@ -163,28 +132,15 @@ public:
   virtual bool range_of_stmt (irange &r, gimple *s, tree name = NULL_TREE);
   virtual void range_on_entry (irange &r, basic_block bb, tree name);
 
+  virtual bool outgoing_edge_range_p (irange &r, edge e, tree name,
+				      irange *name_range = NULL);
+  tree terminal_name (tree name);
+
   void dump (FILE *f);
   void calculate_and_dump (FILE *f);   /* Calculate all stmts and dump */
-
 private:
-  void dump_global_ssa_range (FILE *f);
-  bool has_global_ssa_range (irange &r, tree name);
-  bool get_global_ssa_range (irange &r, tree name);
-  void set_global_ssa_range (tree name, const irange&r);
-  void clear_global_ssa_range (tree name);
-
-  class block_range_cache *m_block_cache;
-  class ssa_global_cache *m_globals;
-  class non_null_ref *m_non_null;
-  bool non_null_deref_in_block (irange &r, tree name, basic_block bb);
-
-  void fill_block_cache (tree name, basic_block bb, basic_block def_bb);
-  bool maybe_propagate_on_edge (tree name, edge e);
-  void maybe_propagate_block (tree name, basic_block bb);
-  void iterative_cache_update (tree name);
-
-  vec<basic_block> m_workback;
-  vec<basic_block> m_update_list;
+  gori_cache m_gori; 	  /* Generates Outgoing Range Info.  */
+  ssa_global_cache m_globals;
 };
 
 
