@@ -728,8 +728,10 @@ name_lookup::search_namespace_only (tree scope)
 	  /* Scan the imported bindings.  */
 	  gcc_checking_assert (MODULE_VECTOR_SLOTS_PER_CLUSTER
 			       == MODULE_IMPORT_BASE);
+	  /* Do this in forward order, so we load modules in an order
+	     the user expects.  */
 	  for (unsigned ix = MODULE_VECTOR_NUM_CLUSTERS (val); ++cluster, --ix;)
-	    for (unsigned jx = MODULE_VECTOR_SLOTS_PER_CLUSTER; jx--;)
+	    for (unsigned jx = 0; jx != MODULE_VECTOR_SLOTS_PER_CLUSTER; jx++)
 	      {
 		/* Are we importing this module?  */
 		for (unsigned base = cluster->indices[jx].base,
@@ -3662,16 +3664,10 @@ match_global_decl (tree decl, tree tpl, tree ret, tree args)
 	  break;
 
 	case VAR_DECL:
-	  if (TREE_TYPE (glob)
-	      && same_type_p (ret, TREE_TYPE (glob)))
-	    return glob;
-	  break;
+	  return glob;
 
 	case TYPE_DECL:
-	  if (TREE_CODE (TREE_TYPE (glob))
-	      == TREE_CODE (TREE_TYPE (decl)))
-	    return glob;
-	  break;
+	  return glob;
 
 	default:
 	  gcc_unreachable ();

@@ -6780,8 +6780,14 @@ trees_in::tree_node ()
 		       res ? TREE_CODE (res) : ERROR_MARK, res, res);
 	  }
 
-	if (existing)
-	  {} // FIXME:ODR checking?
+	if (res && existing
+	    && !same_type_p (TREE_TYPE (existing), TREE_TYPE (res)))
+	  {
+	    error_at (DECL_SOURCE_LOCATION (res),
+		      "conflicting global module declaration %#qD", res);
+	    inform (DECL_SOURCE_LOCATION (existing),
+		    "existing declaration %#qD", existing);
+	  }
 
 	break;
       }
@@ -12479,9 +12485,13 @@ module_state::lazy_load (tree ns, tree id, mc_slot *mslot, bool outermost)
 void
 lazy_load_binding (unsigned mod, tree ns, tree id, mc_slot *mslot, bool outer)
 {
+  int diags = errorcount + warningcount;
   gcc_checking_assert (mod >= MODULE_IMPORT_BASE);
   (*modules)[mod]->lazy_load (ns, id, mslot, outer);
   gcc_assert (!mslot->is_lazy ());
+  if (errorcount + warningcount != diags && flag_module_lazy)
+    inform (input_location, "during lazy loading of %<%E%s%E@%s%>", ns,
+	    ns == global_namespace ? "" : "::", id, module_name (mod));
 }
 
 /* Import the module NAME into the current TU and maybe re-export it.  */

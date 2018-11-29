@@ -1,5 +1,15 @@
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
+	Some ODR checking of GMEs
+	gcc/cp/
+	* module.cc (trees_in::tree_node): Check type of matched GME.
+	(lazy_load_binding): Add note if diagnostics emitted.
+	* name-lookup.c (name_lookup::search_namespace_only): Forward
+	iterate over slots.
+	(match_global_decl): Return close matches.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-4_[abc].[CH]: New.
+
 	Global module var declaration merging.
 	gcc/cp/
 	* module.cc (trees_in::reserve_gmes): Add headroom.
