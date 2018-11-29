@@ -15682,7 +15682,7 @@
 	       ]
 	       (const_string "<ssevecmode>")))])
 
-(define_insn "*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt"
+(define_insn_and_split "*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256
 	  [(match_operand:VF_128_256 1 "register_operand" "0,0,x")
@@ -15693,10 +15693,12 @@
 	       (match_operand:<sseintvecmode> 4 "const0_operand" "C,C,C")) 0)]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "@
-   blendv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   blendv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   vblendv<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:VF_128_256
+	 [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_BLENDV))]
+  "operands[3] = gen_lowpart (<MODE>mode, operands[3]);"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssemov")
    (set_attr "length_immediate" "1")
@@ -15712,7 +15714,7 @@
 (define_mode_attr ssefltvecmode
   [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
 
-(define_insn "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_ltint"
+(define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_ltint"
   [(set (match_operand:<ssebytemode> 0 "register_operand" "=Yr,*x,x")
 	(unspec:<ssebytemode>
 	  [(match_operand:<ssebytemode> 1 "register_operand" "0,0,x")
@@ -15723,10 +15725,17 @@
 	       (match_operand:VI48_AVX 4 "const0_operand" "C,C,C")) 0)]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "@
-   blendv<ssefltmodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   blendv<ssefltmodesuffix>\t{%3, %2, %0|%0, %2, %3}
-   vblendv<ssefltmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(unspec:<ssefltvecmode>
+	 [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_BLENDV))]
+{
+  operands[0] = gen_lowpart (<ssefltvecmode>mode, operands[0]);
+  operands[1] = gen_lowpart (<ssefltvecmode>mode, operands[1]);
+  operands[2] = gen_lowpart (<ssefltvecmode>mode, operands[2]);
+  operands[3] = gen_lowpart (<ssefltvecmode>mode, operands[3]);
+}
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssemov")
    (set_attr "length_immediate" "1")
@@ -15834,7 +15843,7 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "*<sse4_1_avx2>_pblendvb_lt"
+(define_insn_and_split "*<sse4_1_avx2>_pblendvb_lt"
   [(set (match_operand:VI1_AVX2 0 "register_operand" "=Yr,*x,x")
 	(unspec:VI1_AVX2
 	  [(match_operand:VI1_AVX2 1 "register_operand"  "0,0,x")
@@ -15843,10 +15852,12 @@
 			(match_operand:VI1_AVX2 4 "const0_operand" "C,C,C"))]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
-  "@
-   pblendvb\t{%3, %2, %0|%0, %2, %3}
-   pblendvb\t{%3, %2, %0|%0, %2, %3}
-   vpblendvb\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  "#"
+  ""
+  [(set (match_dup 0)
+	(unspec:VI1_AVX2
+	 [(match_dup 1) (match_dup 2) (match_dup 3)] UNSPEC_BLENDV))]
+  ""
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssemov")
    (set_attr "prefix_extra" "1")
