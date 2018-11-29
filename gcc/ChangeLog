@@ -1,3 +1,8 @@
+2018-11-29  Giuliano Belinassi  <giuliano.belinassi@usp.br>
+
+	* match.pd (sinh (atanh (x))): New simplification rules.
+	(cosh (atanh (x))): Likewise.
+
 2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/54700
