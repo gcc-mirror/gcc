@@ -8566,6 +8566,43 @@ rs6000_legitimize_tls_address_aix (rtx addr, enum tls_model model)
   return dest;
 }
 
+/* Mess with a call, to make it look like the tls_gdld insns when
+   !TARGET_TLS_MARKERS.  These insns have an extra unspec to
+   differentiate them from standard calls, because they need to emit
+   the arg setup insns as well as the actual call.  That keeps the
+   arg setup insns immediately adjacent to the branch and link.  */
+
+static void
+edit_tls_call_insn (rtx arg)
+{
+  rtx call_insn = last_call_insn ();
+  if (!TARGET_TLS_MARKERS)
+    {
+      rtx patt = PATTERN (call_insn);
+      gcc_assert (GET_CODE (patt) == PARALLEL);
+      rtvec orig = XVEC (patt, 0);
+      rtvec v = rtvec_alloc (GET_NUM_ELEM (orig) + 1);
+      gcc_assert (GET_NUM_ELEM (orig) > 0);
+      /* The (set (..) (call (mem ..))).  */
+      RTVEC_ELT (v, 0) = RTVEC_ELT (orig, 0);
+      /* The extra unspec.  */
+      RTVEC_ELT (v, 1) = arg;
+      /* All other assorted call pattern pieces.  */
+      for (int i = 1; i < GET_NUM_ELEM (orig); i++)
+	RTVEC_ELT (v, i + 1) = RTVEC_ELT (orig, i);
+      XVEC (patt, 0) = v;
+    }
+  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
+    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
+	     pic_offset_table_rtx);
+}
+
+/* Passes the tls arg value for global dynamic and local dynamic
+   emit_library_call_value in rs6000_legitimize_tls_address to
+   rs6000_call_aix and rs6000_call_sysv.  This is used to emit the
+   marker relocs put on __tls_get_addr calls.  */
+static rtx global_tlsarg;
+
 /* ADDR contains a thread-local SYMBOL_REF.  Generate code to compute
    this (thread-local) address.  */
 
@@ -8618,7 +8655,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
     }
   else
     {
-      rtx r3, got, tga, tmp1, tmp2, call_insn;
+      rtx got, tga, tmp1, tmp2;
 
       /* We currently use relocations like @got@tlsgd for tls, which
 	 means the linker will handle allocation of tls entries, placing
@@ -8658,52 +8695,42 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 
       if (model == TLS_MODEL_GLOBAL_DYNAMIC)
 	{
+	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (2, addr, got),
+				    UNSPEC_TLSGD);
+	  global_tlsarg = arg;
+	  rtx argreg = const0_rtx;
+	  if (TARGET_TLS_MARKERS)
+	    {
+	      argreg = gen_rtx_REG (Pmode, 3);
+	      emit_insn (gen_rtx_SET (argreg, arg));
+	    }
+
 	  tga = rs6000_tls_get_addr ();
 	  emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				   const0_rtx, Pmode);
+				   argreg, Pmode);
+	  global_tlsarg = NULL_RTX;
 
-	  r3 = gen_rtx_REG (Pmode, 3);
-	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	    {
-	      if (TARGET_64BIT)
-		insn = gen_tls_gd_aix64 (r3, got, addr, tga, const0_rtx);
-	      else
-		insn = gen_tls_gd_aix32 (r3, got, addr, tga, const0_rtx);
-	    }
-	  else if (DEFAULT_ABI == ABI_V4)
-	    insn = gen_tls_gd_sysvsi (r3, got, addr, tga, const0_rtx);
-	  else
-	    gcc_unreachable ();
-	  call_insn = last_call_insn ();
-	  PATTERN (call_insn) = insn;
-	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
-	    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-		     pic_offset_table_rtx);
+	  edit_tls_call_insn (arg);
 	}
       else if (model == TLS_MODEL_LOCAL_DYNAMIC)
 	{
+	  rtx arg = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, got),
+				    UNSPEC_TLSLD);
+	  global_tlsarg = arg;
+	  rtx argreg = const0_rtx;
+	  if (TARGET_TLS_MARKERS)
+	    {
+	      argreg = gen_rtx_REG (Pmode, 3);
+	      emit_insn (gen_rtx_SET (argreg, arg));
+	    }
+
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
 	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				   const0_rtx, Pmode);
+				   argreg, Pmode);
+	  global_tlsarg = NULL_RTX;
 
-	  r3 = gen_rtx_REG (Pmode, 3);
-	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
-	    {
-	      if (TARGET_64BIT)
-		insn = gen_tls_ld_aix64 (r3, got, tga, const0_rtx);
-	      else
-		insn = gen_tls_ld_aix32 (r3, got, tga, const0_rtx);
-	    }
-	  else if (DEFAULT_ABI == ABI_V4)
-	    insn = gen_tls_ld_sysvsi (r3, got, tga, const0_rtx);
-	  else
-	    gcc_unreachable ();
-	  call_insn = last_call_insn ();
-	  PATTERN (call_insn) = insn;
-	  if (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic)
-	    use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn),
-		     pic_offset_table_rtx);
+	  edit_tls_call_insn (arg);
 
 	  if (rs6000_tls_size == 16)
 	    {
@@ -21170,19 +21197,19 @@ print_operand (FILE *file, rtx x, int code)
 	  else
 	    output_address (GET_MODE (x), XEXP (x, 0));
 	}
+      else if (toc_relative_expr_p (x, false,
+				    &tocrel_base_oac, &tocrel_offset_oac))
+	/* This hack along with a corresponding hack in
+	   rs6000_output_addr_const_extra arranges to output addends
+	   where the assembler expects to find them.  eg.
+	   (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
+	   without this hack would be output as "x@toc+4".  We
+	   want "x+4@toc".  */
+	output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
+      else if (GET_CODE (x) == UNSPEC && XINT (x, 1) == UNSPEC_TLSGD)
+	output_addr_const (file, XVECEXP (x, 0, 0));
       else
-	{
-	  if (toc_relative_expr_p (x, false, &tocrel_base_oac, &tocrel_offset_oac))
-	    /* This hack along with a corresponding hack in
-	       rs6000_output_addr_const_extra arranges to output addends
-	       where the assembler expects to find them.  eg.
-	       (plus (unspec [(symbol_ref ("x")) (reg 2)] tocrel) 4)
-	       without this hack would be output as "x@toc+4".  We
-	       want "x+4@toc".  */
-	    output_addr_const (file, CONST_CAST_RTX (tocrel_base_oac));
-	  else
-	    output_addr_const (file, x);
-	}
+	output_addr_const (file, x);
       return;
 
     case '&':
@@ -21368,17 +21395,26 @@ rs6000_assemble_integer (rtx x, unsigned int size, int aligned_p)
 }
 
 /* Return a template string for assembly to emit when making an
-   external call.  FUNOP is the call mem argument operand number,
-   ARG is either NULL or a @TLSGD or @TLSLD __tls_get_addr argument
-   specifier.  */
+   external call.  FUNOP is the call mem argument operand number.  */
 
 static const char *
-rs6000_call_template_1 (rtx *operands ATTRIBUTE_UNUSED, unsigned int funop,
-			bool sibcall, const char *arg)
+rs6000_call_template_1 (rtx *operands, unsigned int funop, bool sibcall)
 {
   /* -Wformat-overflow workaround, without which gcc thinks that %u
       might produce 10 digits.  */
   gcc_assert (funop <= MAX_RECOG_OPERANDS);
+
+  char arg[12];
+  arg[0] = 0;
+  if (TARGET_TLS_MARKERS && GET_CODE (operands[funop + 1]) == UNSPEC)
+    {
+      if (XINT (operands[funop + 1], 1) == UNSPEC_TLSGD)
+	sprintf (arg, "(%%%u@tlsgd)", funop + 1);
+      else if (XINT (operands[funop + 1], 1) == UNSPEC_TLSLD)
+	sprintf (arg, "(%%&@tlsld)");
+      else
+	gcc_unreachable ();
+    }
 
   /* The magic 32768 offset here corresponds to the offset of
      r30 in .got2, as given by LCTOC1.  See sysv4.h:toc_section.  */
@@ -21387,7 +21423,7 @@ rs6000_call_template_1 (rtx *operands ATTRIBUTE_UNUSED, unsigned int funop,
 	   (DEFAULT_ABI == ABI_V4 && TARGET_SECURE_PLT && flag_pic == 2
 	    ? "+32768" : ""));
 
-  static char str[32];  /* 4 spare */
+  static char str[32];  /* 2 spare */
   if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
     sprintf (str, "b%s %s%s%s", sibcall ? "" : "l", z, arg,
 	     sibcall ? "" : "\n\tnop");
@@ -21400,15 +21436,15 @@ rs6000_call_template_1 (rtx *operands ATTRIBUTE_UNUSED, unsigned int funop,
 }
 
 const char *
-rs6000_call_template (rtx *operands, unsigned int funop, const char *arg)
+rs6000_call_template (rtx *operands, unsigned int funop)
 {
-  return rs6000_call_template_1 (operands, funop, false, arg);
+  return rs6000_call_template_1 (operands, funop, false);
 }
 
 const char *
-rs6000_sibcall_template (rtx *operands, unsigned int funop, const char *arg)
+rs6000_sibcall_template (rtx *operands, unsigned int funop)
 {
-  return rs6000_call_template_1 (operands, funop, true, arg);
+  return rs6000_call_template_1 (operands, funop, true);
 }
 
 /* As above, for indirect calls.  */
@@ -32498,23 +32534,20 @@ rs6000_set_default_type_attributes (tree type)
 /* Return a reference suitable for calling a function with the
    longcall attribute.  */
 
-rtx
+static rtx
 rs6000_longcall_ref (rtx call_ref)
 {
-  const char *call_name;
-  tree node;
-
   if (GET_CODE (call_ref) != SYMBOL_REF)
     return call_ref;
 
   /* System V adds '.' to the internal name, so skip them.  */
-  call_name = XSTR (call_ref, 0);
+  const char *call_name = XSTR (call_ref, 0);
   if (*call_name == '.')
     {
       while (*call_name == '.')
 	call_name++;
 
-      node = get_identifier (call_name);
+      tree node = get_identifier (call_name);
       call_ref = gen_rtx_SYMBOL_REF (VOIDmode, IDENTIFIER_POINTER (node));
     }
 
@@ -37485,7 +37518,7 @@ chain_already_loaded (rtx_insn *last)
 /* Expand code to perform a call under the AIX or ELFv2 ABI.  */
 
 void
-rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
+rs6000_call_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
   const bool direct_call_p
     = GET_CODE (func_desc) == SYMBOL_REF && SYMBOL_REF_FUNCTION_P (func_desc);
@@ -37498,6 +37531,9 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
   int n_call;
   rtx insn;
 
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
   /* Handle longcall attributes.  */
   if (INTVAL (cookie) & CALL_LONG)
     func_desc = rs6000_longcall_ref (func_desc);
@@ -37508,11 +37544,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
     {
       /* Save the TOC into its reserved slot before the call,
 	 and prepare to restore it after the call.  */
-      rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
       rtx stack_toc_offset = GEN_INT (RS6000_TOC_SAVE_SLOT);
-      rtx stack_toc_mem = gen_frame_mem (Pmode,
-					 gen_rtx_PLUS (Pmode, stack_ptr,
-						       stack_toc_offset));
       rtx stack_toc_unspec = gen_rtx_UNSPEC (Pmode,
 					     gen_rtvec (1, stack_toc_offset),
 					     UNSPEC_TOCSLOT);
@@ -37524,6 +37556,10 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	cfun->machine->save_toc_in_prologue = true;
       else
 	{
+	  rtx stack_ptr = gen_rtx_REG (Pmode, STACK_POINTER_REGNUM);
+	  rtx stack_toc_mem = gen_frame_mem (Pmode,
+					     gen_rtx_PLUS (Pmode, stack_ptr,
+							   stack_toc_offset));
 	  MEM_VOLATILE_P (stack_toc_mem) = 1;
 	  emit_move_insn (stack_toc_mem, toc_reg);
 	}
@@ -37533,7 +37569,8 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 	  /* A function pointer in the ELFv2 ABI is just a plain address, but
 	     the ABI requires it to be loaded into r12 before the call.  */
 	  func_addr = gen_rtx_REG (Pmode, 12);
-	  emit_move_insn (func_addr, func_desc);
+	  if (!rtx_equal_p (func_addr, func_desc))
+	    emit_move_insn (func_addr, func_desc);
 	  abi_reg = func_addr;
 	}
       else
@@ -37588,7 +37625,7 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
     }
 
   /* Create the call.  */
-  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), flag);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
   n_call = 1;
@@ -37612,15 +37649,18 @@ rs6000_call_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 /* Expand code to perform a sibling call under the AIX or ELFv2 ABI.  */
 
 void
-rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
+rs6000_sibcall_aix (rtx value, rtx func_desc, rtx tlsarg, rtx cookie)
 {
   rtx call[2];
   rtx insn;
 
   gcc_assert (INTVAL (cookie) == 0);
 
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
   /* Create the call.  */
-  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), flag);
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_desc), tlsarg);
   if (value != NULL_RTX)
     call[0] = gen_rtx_SET (value, call[0]);
 
@@ -37631,6 +37671,42 @@ rs6000_sibcall_aix (rtx value, rtx func_desc, rtx flag, rtx cookie)
 
   /* Note use of the TOC register.  */
   use_reg (&CALL_INSN_FUNCTION_USAGE (insn), gen_rtx_REG (Pmode, TOC_REGNUM));
+}
+
+/* Expand code to perform a call under the SYSV4 ABI.  */
+
+void
+rs6000_call_sysv (rtx value, rtx func, rtx tlsarg, rtx cookie)
+{
+  rtx func_addr;
+  rtx call[3];
+  rtx insn;
+
+  if (global_tlsarg)
+    tlsarg = global_tlsarg;
+
+  /* Handle longcall attributes.  */
+  if (INTVAL (cookie) & CALL_LONG)
+    func = rs6000_longcall_ref (func);
+
+  /* Handle indirect calls.  */
+  if (GET_CODE (func) != SYMBOL_REF)
+    func_addr = force_reg (Pmode, func);
+  else
+    func_addr = func;
+
+  /* Create the call.  */
+  call[0] = gen_rtx_CALL (VOIDmode, gen_rtx_MEM (SImode, func_addr), tlsarg);
+  if (value != NULL_RTX)
+    call[0] = gen_rtx_SET (value, call[0]);
+
+  unsigned int mask = CALL_V4_SET_FP_ARGS | CALL_V4_CLEAR_FP_ARGS;
+  call[1] = gen_rtx_USE (VOIDmode, GEN_INT (INTVAL (cookie) & mask));
+
+  call[2] = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, LR_REGNO));
+
+  insn = gen_rtx_PARALLEL (VOIDmode, gen_rtvec_v (3, call));
+  insn = emit_call_insn (insn);
 }
 
 /* Return whether we need to always update the saved TOC pointer when we update

@@ -1,5 +1,38 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (unspec_tls): New.
+	* config/rs6000/rs6000-protos.h (rs6000_call_template),
+	(rs6000_sibcall_template): Update prototype.
+	(rs6000_longcall_ref): Delete.
+	(rs6000_call_sysv): Declare.
+	* config/rs6000/rs6000.c (edit_tls_call_insn): New function.
+	(global_tlsarg): New variable.
+	(rs6000_legitimize_tls_address): Rewrite __tls_get_addr call
+	handling.
+	(print_operand): Extract UNSPEC_TLSGD address operand.
+	(rs6000_call_template, rs6000_sibcall_template): Remove arg
+	parameter, extract from second call operand instead.
+	(rs6000_longcall_ref): Make static, localize vars.
+	(rs6000_call_aix): Rename parameter to reflect new usage.  Take
+	tlsarg from global_tlsarg.  Don't create unused rtl or nop insns.
+	(rs6000_sibcall_aix): Rename parameter to reflect new usage.  Take
+	tlsarg from global_tlsarg.
+	(rs6000_call_sysv): New function.
+	* config/rs6000/rs6000.md: Adjust rs6000_call_template and
+	rs6000_sibcall_template throughout.
+	(tls_gd_aix, tls_gd_sysv, tls_gd_call_aix, tls_gd_call_sysv): Delete.
+	(tls_ld_aix, tls_ld_sysv, tls_ld_call_aix, tls_ld_call_sysv): Delete.
+	(tls_gdld_nomark): New insn.
+	(tls_gd): Swap operand order.  Simplify mode selection.
+	(tls_gd_high, tls_gd_low): Swap operand order.
+	(tls_ld): Remove const_int 0 vector element from UNSPEC_TLSLD.
+	Simplify mode selection.
+	(tls_ld_high, tls_ld_low): Similarly adjust UNSPEC_TLSLD.
+	(call, call_value): Don't assert for second call operand.
+	Use rs6000_call_sysv.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/darwin.md (call_indirect_nonlocal_darwin64),
 	(call_nonlocal_darwin64, call_value_indirect_nonlocal_darwin64),
 	(call_value_nonlocal_darwin64): Remove constraints from second call

@@ -997,6 +997,13 @@
   (and (match_code "symbol_ref")
        (match_test "RS6000_SYMBOL_REF_TLS_P (op)")))
 
+;; Return 1 for the UNSPEC used in TLS call operands
+(define_predicate "unspec_tls"
+  (match_code "unspec")
+{
+  return XINT (op, 1) == UNSPEC_TLSGD || XINT (op, 1) == UNSPEC_TLSLD;
+})
+
 ;; Return 1 if the operand, used inside a MEM, is a valid first argument
 ;; to CALL.  This is a SYMBOL_REF, a pseudo-register, LR or CTR.
 (define_predicate "call_operand"
