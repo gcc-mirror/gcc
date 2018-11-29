@@ -1,3 +1,23 @@
+2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Fix erasure goofs.
+	* include/experimental/deque: Make inline.
+	* include/std/deque: Include bits/stl_algo.h.
+	(erase, erase_if): Make inline.
+	* include/std/string: Include bits/stl_algo.h.
+	* include/std/unordered_set: Add erase, erase_if!
+	* include/std/vector: Include bits/stl_algo.h.
+	* testsuite/21_strings/basic_string/erasure.cc:
+	Add { dg-options "-std=gnu++2a" }.
+	* testsuite/23_containers/deque/erasure.cc: Ditto.
+	* testsuite/23_containers/forward_list/erasure.cc: Ditto.
+	* testsuite/23_containers/list/erasure.cc: Ditto.
+	* testsuite/23_containers/map/erasure.cc: Ditto.
+	* testsuite/23_containers/set/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_map/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_set/erasure.cc: Ditto.
+	* testsuite/23_containers/vector/erasure.cc: Ditto.
+
 2018-11-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/88119

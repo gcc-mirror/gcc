@@ -58,6 +58,7 @@
 #pragma GCC system_header
 
 #include <bits/stl_algobase.h>
+#include <bits/stl_algo.h> // For remove and remove_if
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
@@ -92,7 +93,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    void
+    inline void
     erase_if(deque<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
       __cont.erase(std::remove_if(__cont.begin(), __cont.end(), __pred),
@@ -100,7 +101,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _Tp, typename _Alloc, typename _Up>
-    void
+    inline void
     erase(deque<_Tp, _Alloc>& __cont, const _Up& __value)
     {
       __cont.erase(std::remove(__cont.begin(), __cont.end(), __value),

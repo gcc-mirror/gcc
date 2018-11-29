@@ -1,3 +1,4 @@
+// { dg-options "-std=gnu++2a" }
 // { dg-do run { target c++2a } }
 
 // Copyright (C) 2018 Free Software Foundation, Inc.

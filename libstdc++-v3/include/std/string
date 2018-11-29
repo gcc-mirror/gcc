@@ -48,10 +48,10 @@
 #include <bits/stl_function.h> // For less
 #include <ext/numeric_traits.h>
 #include <bits/stl_algobase.h>
+#include <bits/stl_algo.h> // For remove and remove_if
 #include <bits/range_access.h>
 #include <bits/basic_string.h>
 #include <bits/basic_string.tcc>
-#include <algorithm> // For remove and remove_if
 
 #if __cplusplus >= 201703L && _GLIBCXX_USE_CXX11_ABI
 namespace std _GLIBCXX_VISIBILITY(default)
