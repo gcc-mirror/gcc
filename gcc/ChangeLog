@@ -1,3 +1,12 @@
+2018-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/54700
+	* config/i386/sse.md
+	(*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt,
+	*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_ltint,
+	*<sse4_1_avx2>_pblendvb_lt): Change define_insn into
+	define_insn_and_split.
+
 2018-11-29  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87496
