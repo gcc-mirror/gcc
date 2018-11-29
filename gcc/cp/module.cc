@@ -8661,8 +8661,8 @@ module_state::write_function_def (trees_out &out, tree decl)
   out.tree_node (DECL_RESULT (decl));
   out.tree_node (DECL_INITIAL (decl));
   out.tree_node (DECL_SAVED_TREE (decl));
-  if (DECL_DECLARED_CONSTEXPR_P (decl))
-    out.tree_node (find_constexpr_fundef (decl));
+  out.tree_node (DECL_DECLARED_CONSTEXPR_P (decl)
+		 ? find_constexpr_fundef (decl) : NULL_TREE);
 }
 
 void
@@ -8676,23 +8676,23 @@ module_state::read_function_def (trees_in &in, tree decl)
   tree result = in.tree_node ();
   tree initial = in.tree_node ();
   tree saved = in.tree_node ();
-  tree constexpr_body = (DECL_DECLARED_CONSTEXPR_P (decl)
-			 ? in.tree_node () : NULL_TREE);
+  tree constexpr_body = in.tree_node ();
 
   if (in.get_overrun ())
     return NULL_TREE;
 
   if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
     {
-      if (mod != MAYBE_DECL_MODULE_OWNER (decl))
+      unsigned owner = MAYBE_DECL_MODULE_OWNER (decl);
+      module_state *other = owner ? (*modules)[owner] : NULL;
+
+      if (other != this && !((!other || other->is_legacy ()) && is_legacy ()))
 	{
 	  error_at (loc, "unexpected definition of %q#D", decl);
-	  in.set_overrun ();
-	  return false;
+	  return true;
 	}
 
-      if (!MAYBE_DECL_MODULE_PURVIEW_P (decl)
-	  && DECL_SAVED_TREE (decl))
+      if (DECL_SAVED_TREE (decl))
 	return true; // FIXME check same
     }
 

@@ -1,5 +1,13 @@
 2018-11-29  Nathan Sidwell  <nathan@acm.org>
 
+	Merge global module function definitions.
+	gcc/cp/
+	* modules.cc (module_state::write_function_def ): Don't rely on
+	decl's form.
+	(module_state::read_function_def): Allow multiple decls.
+	gcc/testsuite/
+	* g++.dg/modules/leg-merge-5_[abc].[CH]: New.
+
 	gcc/cp/
 	* modules.cc (module_state::check_read): Adjust, print inform of
 	outer location.
