@@ -6033,6 +6033,12 @@ call on function entry when function instrumentation is enabled
 with @option{-pg -mfentry}. When @var{name} is nop then a 5 byte
 nop sequence is generated.
 
+@item fentry_section("@var{name}")
+@cindex @code{fentry_section} function attribute, x86
+On x86 targets, the @code{fentry_section} attribute sets the name
+of the section to record function entry instrumentation calls in when
+enabled with @option{-pg -mrecord-mcount}
+
 @end table
 
 On the x86, the inliner does not inline a

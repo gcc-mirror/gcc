@@ -1316,7 +1316,7 @@ See RS/6000 and PowerPC Options.
 -mcmodel=@var{code-model}  -mabi=@var{name}  -maddress-mode=@var{mode} @gol
 -m32  -m64  -mx32  -m16  -miamcu  -mlarge-data-threshold=@var{num} @gol
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
--minstrument-return=@var{type} -mfentry-name=@var{name} @gol
+-minstrument-return=@var{type} -mfentry-name=@var{name} -mfentry-section=@var{name} @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
@@ -29094,6 +29094,10 @@ Generate a __return_loc section pointing to all return instrumentation code.
 @item -mfentry-name=@var{name}
 @opindex mfentry-name
 Set name of __fentry__ symbol called at function entry for -pg -mfentry functions.
+
+@item -mfentry-section=@var{name}
+@opindex mfentry-section
+Set name of section to record -mrecord-mcount calls (default __mcount_loc).
 
 @item -mskip-rax-setup
 @itemx -mno-skip-rax-setup
