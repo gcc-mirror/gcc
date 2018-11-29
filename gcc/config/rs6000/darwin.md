@@ -302,7 +302,7 @@ You should have received a copy of the GNU General Public License
 
 (define_insn "*call_indirect_nonlocal_darwin64"
   [(call (mem:SI (match_operand:DI 0 "register_operand" "c,*l,c,*l"))
-	 (match_operand 1 "" "g,g,g,g"))
+	 (match_operand 1))
    (use (match_operand:SI 2 "immediate_operand" "O,O,n,n"))
    (clobber (reg:SI LR_REGNO))]
   "DEFAULT_ABI == ABI_DARWIN && TARGET_64BIT"
@@ -314,7 +314,7 @@ You should have received a copy of the GNU General Public License
 
 (define_insn "*call_nonlocal_darwin64"
   [(call (mem:SI (match_operand:DI 0 "symbol_ref_operand" "s,s"))
-	 (match_operand 1 "" "g,g"))
+	 (match_operand 1))
    (use (match_operand:SI 2 "immediate_operand" "O,n"))
    (clobber (reg:SI LR_REGNO))]
   "(DEFAULT_ABI == ABI_DARWIN)
@@ -332,7 +332,7 @@ You should have received a copy of the GNU General Public License
 (define_insn "*call_value_indirect_nonlocal_darwin64"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:DI 1 "register_operand" "c,*l,c,*l"))
-	      (match_operand 2 "" "g,g,g,g")))
+	      (match_operand 2)))
    (use (match_operand:SI 3 "immediate_operand" "O,O,n,n"))
    (clobber (reg:SI LR_REGNO))]
   "DEFAULT_ABI == ABI_DARWIN"
@@ -345,7 +345,7 @@ You should have received a copy of the GNU General Public License
 (define_insn "*call_value_nonlocal_darwin64"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand:DI 1 "symbol_ref_operand" "s,s"))
-	      (match_operand 2 "" "g,g")))
+	      (match_operand 2)))
    (use (match_operand:SI 3 "immediate_operand" "O,n"))
    (clobber (reg:SI LR_REGNO))]
   "(DEFAULT_ABI == ABI_DARWIN)
