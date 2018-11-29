@@ -1,3 +1,7 @@
+2018-11-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	* gcc.target/i386/pr34256.c: Adjust the number of expected moves.
+
 2018-11-29  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	* g++.dg/cpp0x/constexpr-base6b.C: New.
