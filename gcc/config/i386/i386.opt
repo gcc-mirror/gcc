@@ -938,6 +938,10 @@ mfentry-name=
 Target RejectNegative Joined Var(fentry_name)
 Set name of __fentry__ symbol called at function entry.
 
+mfentry-section=
+Target RejectNegative Joined Var(fentry_section)
+Set name of section to record mrecord-mcount calls.
+
 mskip-rax-setup
 Target Report Var(flag_skip_rax_setup)
 Skip setting up RAX register when passing variable arguments.

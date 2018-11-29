@@ -1,5 +1,10 @@
 2018-11-29  Andi Kleen  <ak@linux.intel.com>
 
+	* gcc.target/i386/fentryname2.c: New test.
+	* gcc.target/i386/fentryname3.c: New test.
+
+2018-11-29  Andi Kleen  <ak@linux.intel.com>
+
 	* gcc.target/i386/fentryname1.c: New test.
 
 2018-11-29  Andi Kleen  <ak@linux.intel.com>

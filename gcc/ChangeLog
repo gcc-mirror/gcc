@@ -1,5 +1,14 @@
 2018-11-29  Andi Kleen  <ak@linux.intel.com>
 
+	* config/i386/i386.c (current_fentry_section): Add.
+	(x86_function_profiler): Handle fentry section.
+	(ix86_attribute_table): Add fentry section.
+	* config/i386/i386.opt: Add -mfentry-section.
+	* doc/extend.texi: Document fentry_section attribute.
+	* doc/invoke.texi: Document -mfentry-section.
+
+2018-11-29  Andi Kleen  <ak@linux.intel.com>
+
 	* config/i386/i386.c (x86_print_call_or_nop): Handle nop name.
 	(current_fentry_name): Add.
 	(x86_function_profiler): Handle fentry_name attribute.
