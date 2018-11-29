@@ -17090,6 +17090,14 @@ The single-precision VFPv3 floating-point instructions.  The extension
 The VFPv3 floating-point instructions with 16 double-precision registers.
 The extension +vfpv3-d16 can be used as an alias for this extension.
 
+@item +vfpv3xd-d16-fp16
+The single-precision VFPv3 floating-point instructions with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
+@item +vfpv3-d16-fp16
+The VFPv3 floating-point instructions with 16 double-precision
+registers and the half-precision floating-point conversion operations.
+
 @item +nofp
 Disable the floating-point extension.
 
@@ -17259,7 +17267,8 @@ Disables the floating-point and SIMD instructions on
 
 @item +nofp.dp
 Disables the double-precision component of the floating-point instructions
-on @samp{cortex-r5}, @samp{cortex-r52} and @samp{cortex-m7}.
+on @samp{cortex-r5}, @samp{cortex-r7}, @samp{cortex-r8}, @samp{cortex-r52} and
+@samp{cortex-m7}.
 
 @item +nosimd
 Disables the SIMD (but not floating-point) instructions on
