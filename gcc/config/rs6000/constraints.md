@@ -252,17 +252,18 @@
   (and (match_code "const_int")
        (match_test "((- (unsigned HOST_WIDE_INT) ival) + 0x8000) < 0x10000")))
 
-;; Floating-point constraints
+;; Floating-point constraints.  These two are defined so that insn
+;; length attributes can be calculated exactly.
 
 (define_constraint "G"
-  "Constant that can be copied into GPR with two insns for DF/DI
-   and one for SF."
+  "Constant that can be copied into GPR with two insns for DF/DD
+   and one for SF/SD."
   (and (match_code "const_double")
        (match_test "num_insns_constant (op, mode)
-		    == (mode == SFmode ? 1 : 2)")))
+		    == (mode == SFmode || mode == SDmode ? 1 : 2)")))
 
 (define_constraint "H"
-  "DF/DI constant that takes three insns."
+  "DF/DD constant that takes three insns."
   (and (match_code "const_double")
        (match_test "num_insns_constant (op, mode) == 3")))
 

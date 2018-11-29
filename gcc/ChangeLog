@@ -1,5 +1,15 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/constraints.md (G, H): Comment on purpose of
+	constraint.  Correct mode comments and "G" mode test.
+	* config/rs6000/rs6000.md (movdi_internal32): Remove "GH" from
+	alternative handling "F".  Add length attr.  Formatting.
+	(mov<mode>_softfloat <FMOVE128>): Delete "GH" from
+	alternative, and move "F" to separate alternative.  Correct
+	insn lengths.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/predicates.md (easy_vector_constant): Don't call
 	easy_fp_constant.
 
