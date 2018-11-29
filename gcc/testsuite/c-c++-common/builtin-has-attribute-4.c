@@ -19,7 +19,7 @@ ATTR (aligned (8)) char valigned_8;
 void test_aligned (void)
 {
   A (0, vnone, aligned);
-  A (0, vnone, aligned (0));
+  A (0, vnone, aligned (0));      /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, vnone, aligned (1));
   A (0, vnone, aligned (2));
   A (0, vnone, aligned (4));
@@ -27,18 +27,18 @@ void test_aligned (void)
   A (0, vnone, aligned (16));
 
   A (1, valigned, aligned);
-  A (0, valigned, aligned (0));
+  A (0, valigned, aligned (0));   /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, valigned, aligned (1));
   A (0, valigned, aligned (2));
 
   A (1, valigned_1, aligned);
-  A (0, valigned_1, aligned (0));
+  A (0, valigned_1, aligned (0)); /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (1, valigned_1, aligned (1));
   A (0, valigned_1, aligned (2));
   A (0, valigned_1, aligned (4));
 
   A (1, valigned_2, aligned);
-  A (0, valigned_2, aligned (0));
+  A (0, valigned_2, aligned (0)); /* { dg-warning "requested alignment .0. is not a positive power of 2" } */
   A (0, valigned_2, aligned (1));
   A (1, valigned_2, aligned (2));
   A (0, valigned_2, aligned (4));

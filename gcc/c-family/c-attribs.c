@@ -2003,7 +2003,8 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   bool objfile = (TREE_CODE (*node) == FUNCTION_DECL
 		  || (VAR_P (*node) && TREE_STATIC (*node)));
   /* Log2 of specified alignment.  */
-  int pow2align = check_user_alignment (align_expr, objfile, true);
+  int pow2align = check_user_alignment (align_expr, objfile,
+					/* warn_zero = */ true);
   if (pow2align == -1
       || !check_cxx_fundamental_alignment_constraints (*node, pow2align, flags))
     {
@@ -2019,6 +2020,9 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
   unsigned curalign = 0;
   unsigned lastalign = 0;
 
+  /* True when SET_DECL_ALIGN() should be called for the decl when
+     *NO_ADD_ATTRS is false.  */
+  bool set_align = true;
   if (is_type)
     {
       if ((flags & (int) ATTR_FLAG_TYPE_IN_PLACE))
@@ -2067,23 +2071,35 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 	curalign = lastalign;
 
       curalign /= BITS_PER_UNIT;
-      bitalign /= BITS_PER_UNIT;
+      unsigned newalign = bitalign / BITS_PER_UNIT;
 
-      bool diagd = true;
       auto_diagnostic_group d;
-      if (DECL_USER_ALIGN (decl) || DECL_USER_ALIGN (last_decl))
-	diagd = warning (OPT_Wattributes,
-			  "ignoring attribute %<%E (%u)%> because it conflicts "
-			  "with attribute %<%E (%u)%>",
-			  name, bitalign, name, curalign);
+      if ((DECL_USER_ALIGN (decl)
+	   || DECL_USER_ALIGN (last_decl)))
+	{
+	  if (warning (OPT_Wattributes,
+		       "ignoring attribute %<%E (%u)%> because it conflicts "
+		       "with attribute %<%E (%u)%>",
+		       name, newalign, name, curalign)
+	      && note)
+	    inform (DECL_SOURCE_LOCATION (last_decl),
+		    "previous declaration here");
+	  /* Only reject attempts to relax/override an alignment
+	     explicitly specified previously and accept declarations
+	     that appear to relax the implicit function alignment for
+	     the target.  Both increasing and increasing the alignment
+	     set by -falign-functions setting is permitted.  */
+	  *no_add_attrs = true;
+	}
       else if (!warn_if_not_aligned_p)
-	/* Do not error out for attribute warn_if_not_aligned.  */
-	error ("alignment for %q+D must be at least %d", decl, curalign);
-
-      if (diagd && note)
-	inform (DECL_SOURCE_LOCATION (last_decl), "previous declaration here");
-
-      *no_add_attrs = true;
+	{
+	  /* Do not fail for attribute warn_if_not_aligned.  Otherwise,
+	     silently avoid applying the alignment to the declaration
+	     because it's implicitly satisfied by the target.  Apply
+	     the attribute nevertheless so it can be retrieved by
+	     __builtin_has_attribute.  */
+	  set_align = false;
+	}
     }
   else if (DECL_USER_ALIGN (decl)
 	   && DECL_ALIGN (decl) > bitalign)
@@ -2100,32 +2116,28 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
 	   && TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_ALIGN (decl) > bitalign)
     {
-      /* Don't warn function alignment here if warn_if_not_aligned_p is
-	 true.  It will be warned later.  */
+      /* Don't warn for function alignment here if warn_if_not_aligned_p
+	 is true.  It will be warned about later.  */
       if (DECL_USER_ALIGN (decl))
-	error ("alignment for %q+D was previously specified as %d "
-	       "and may not be decreased", decl,
-	       DECL_ALIGN (decl) / BITS_PER_UNIT);
-      else
-	error ("alignment for %q+D must be at least %d", decl,
-	       DECL_ALIGN (decl) / BITS_PER_UNIT);
-      *no_add_attrs = true;
+	{
+	  /* Only reject attempts to relax/override an alignment
+	     explicitly specified previously and accept declarations
+	     that appear to relax the implicit function alignment for
+	     the target.  Both increasing and increasing the alignment
+	     set by -falign-functions setting is permitted.  */
+	  error ("alignment for %q+D was previously specified as %d "
+		 "and may not be decreased", decl,
+		 DECL_ALIGN (decl) / BITS_PER_UNIT);
+	  *no_add_attrs = true;
+	}
     }
-  else
+  else if (warn_if_not_aligned_p
+	   && TREE_CODE (decl) == FIELD_DECL
+	   && !DECL_C_BIT_FIELD (decl))
     {
-      if (warn_if_not_aligned_p)
-	{
-	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_C_BIT_FIELD (decl))
-	    {
-	      SET_DECL_WARN_IF_NOT_ALIGN (decl, bitalign);
-	      warn_if_not_aligned_p = false;
-	    }
-	}
-      else
-	{
-	  SET_DECL_ALIGN (decl, bitalign);
-	  DECL_USER_ALIGN (decl) = 1;
-	}
+      SET_DECL_WARN_IF_NOT_ALIGN (decl, bitalign);
+      warn_if_not_aligned_p = false;
+      set_align = false;
     }
 
   if (warn_if_not_aligned_p)
@@ -2133,6 +2145,11 @@ common_handle_aligned_attribute (tree *node, tree name, tree args, int flags,
       error ("%<warn_if_not_aligned%> may not be specified for %q+D",
 	     decl);
       *no_add_attrs = true;
+    }
+  else if (!is_type && !*no_add_attrs && set_align)
+    {
+      SET_DECL_ALIGN (decl, bitalign);
+      DECL_USER_ALIGN (decl) = 1;
     }
 
   return NULL_TREE;
@@ -4085,11 +4102,6 @@ has_attribute (location_t atloc, tree t, tree attr, tree (*convert)(tree))
      /* True when an attribute with the sought name (though not necessarily
 	 with the sought attributes) has been found on the attribute chain.  */
       bool found_attr = false;
-
-      /* For attribute aligned ignore the attribute list and consider
-	 the tree node itself instead.  */
-      if (type && !strcmp ("aligned", namestr))
-	atlist = NULL_TREE;
 
       /* When clear, the first mismatched attribute argument results
 	 in failure.  Otherwise, the first matched attribute argument

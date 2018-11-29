@@ -2552,8 +2552,9 @@ called.  Functions with these attributes are useful for
 initializing data that is used implicitly during the execution of
 the program.
 
-You may provide an optional integer priority to control the order in
-which constructor and destructor functions are run.  A constructor
+On some targets the attributes also accept an integer argument to
+specify a priority to control the order in which constructor and
+destructor functions are run.  A constructor
 with a smaller priority number runs before a constructor with a larger
 priority number; the opposite relationship holds for destructors.  So,
 if you have a constructor that allocates a resource and a destructor
@@ -2565,6 +2566,10 @@ constructors for C++ objects with static storage duration and functions
 decorated with attribute @code{constructor} are invoked is unspecified.
 In mixed declarations, attribute @code{init_priority} can be used to
 impose a specific ordering.
+
+Using the argument forms of the @code{constructor} and @code{destructor}
+attributes on targets where the feature is not supported is rejected with
+an error.
 
 @item copy
 @itemx copy (@var{function})

@@ -1,3 +1,9 @@
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
+	PR c/88172
+	PR testsuite/88208
+	* c-decl.c (declspec_add_alignas): Adjust call to check_user_alignment.
+
 2018-11-23  Martin Sebor  <msebor@redhat.com>
 
 	PR testsuite/88098
