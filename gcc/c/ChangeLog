@@ -1,5 +1,12 @@
 2018-11-29  Martin Sebor  <msebor@redhat.com>
 
+	PR c/88091
+	* c-typeck.c (convert_argument): Add a parameter.  Adjust indentation.
+	(convert_arguments): Add comments.  Pass additional argument to
+	the function above.
+
+2018-11-29  Martin Sebor  <msebor@redhat.com>
+
 	PR c/88172
 	PR testsuite/88208
 	* c-decl.c (declspec_add_alignas): Adjust call to check_user_alignment.
