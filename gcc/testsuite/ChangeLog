@@ -1,5 +1,19 @@
 2018-11-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/54700
+	* g++.target/i386/sse4_1-pr54700-1.C: New test.
+	* g++.target/i386/sse4_1-pr54700-2.C: New test.
+	* g++.target/i386/avx-pr54700-1.C: New test.
+	* g++.target/i386/avx-pr54700-2.C: New test.
+	* g++.target/i386/avx2-pr54700-1.C: New test.
+	* g++.target/i386/avx2-pr54700-2.C: New test.
+	* g++.target/i386/sse4_1-check.h: New file.
+	* g++.target/i386/avx-check.h: New file.
+	* g++.target/i386/avx2-check.h: New file.
+	* g++.target/i386/m128-check.h: New file.
+	* g++.target/i386/m256-check.h: New file.
+	* g++.target/i386/avx-os-support.h: New file.
+
 	PR target/88152
 	* g++.dg/tree-ssa/pr88152-1.C: New test.
 	* g++.dg/tree-ssa/pr88152-2.C: New test.

@@ -601,7 +601,8 @@
    (V4DI "V8DI") (V8DI "V16DI")])
 
 (define_mode_attr ssebytemode
-  [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")])
+  [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")
+   (V16SI "V64QI") (V8SI "V32QI") (V4SI "V16QI")])
 
 ;; All 128bit vector integer modes
 (define_mode_iterator VI_128 [V16QI V8HI V4SI V2DI])
@@ -15681,6 +15682,60 @@
 	       ]
 	       (const_string "<ssevecmode>")))])
 
+(define_insn "*<sse4_1>_blendv<ssemodesuffix><avxsizesuffix>_lt"
+  [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
+	(unspec:VF_128_256
+	  [(match_operand:VF_128_256 1 "register_operand" "0,0,x")
+	   (match_operand:VF_128_256 2 "vector_operand" "YrBm,*xBm,xm")
+	   (subreg:VF_128_256
+	     (lt:<sseintvecmode>
+	       (match_operand:<sseintvecmode> 3 "register_operand" "Yz,Yz,x")
+	       (match_operand:<sseintvecmode> 4 "const0_operand" "C,C,C")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "@
+   blendv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   blendv<ssemodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vblendv<ssemodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector") 
+   (set_attr "mode" "<MODE>")])
+
+(define_mode_attr ssefltmodesuffix
+  [(V2DI "pd") (V4DI "pd") (V4SI "ps") (V8SI "ps")])
+
+(define_mode_attr ssefltvecmode
+  [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
+
+(define_insn "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_ltint"
+  [(set (match_operand:<ssebytemode> 0 "register_operand" "=Yr,*x,x")
+	(unspec:<ssebytemode>
+	  [(match_operand:<ssebytemode> 1 "register_operand" "0,0,x")
+	   (match_operand:<ssebytemode> 2 "vector_operand" "YrBm,*xBm,xm")
+	   (subreg:<ssebytemode>
+	     (lt:VI48_AVX
+	       (match_operand:VI48_AVX 3 "register_operand" "Yz,Yz,x")
+	       (match_operand:VI48_AVX 4 "const0_operand" "C,C,C")) 0)]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "@
+   blendv<ssefltmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   blendv<ssefltmodesuffix>\t{%3, %2, %0|%0, %2, %3}
+   vblendv<ssefltmodesuffix>\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix_data16" "1,1,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector") 
+   (set_attr "mode" "<ssefltvecmode>")])
+
 (define_insn "<sse4_1>_dp<ssemodesuffix><avxsizesuffix>"
   [(set (match_operand:VF_128_256 0 "register_operand" "=Yr,*x,x")
 	(unspec:VF_128_256
@@ -15765,6 +15820,27 @@
 	  [(match_operand:VI1_AVX2 1 "register_operand"  "0,0,x")
 	   (match_operand:VI1_AVX2 2 "vector_operand" "YrBm,*xBm,xm")
 	   (match_operand:VI1_AVX2 3 "register_operand" "Yz,Yz,x")]
+	  UNSPEC_BLENDV))]
+  "TARGET_SSE4_1"
+  "@
+   pblendvb\t{%3, %2, %0|%0, %2, %3}
+   pblendvb\t{%3, %2, %0|%0, %2, %3}
+   vpblendvb\t{%3, %2, %1, %0|%0, %1, %2, %3}"
+  [(set_attr "isa" "noavx,noavx,avx")
+   (set_attr "type" "ssemov")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "*,*,1")
+   (set_attr "prefix" "orig,orig,vex")
+   (set_attr "btver2_decode" "vector,vector,vector")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "*<sse4_1_avx2>_pblendvb_lt"
+  [(set (match_operand:VI1_AVX2 0 "register_operand" "=Yr,*x,x")
+	(unspec:VI1_AVX2
+	  [(match_operand:VI1_AVX2 1 "register_operand"  "0,0,x")
+	   (match_operand:VI1_AVX2 2 "vector_operand" "YrBm,*xBm,xm")
+	   (lt:VI1_AVX2 (match_operand:VI1_AVX2 3 "register_operand" "Yz,Yz,x")
+			(match_operand:VI1_AVX2 4 "const0_operand" "C,C,C"))]
 	  UNSPEC_BLENDV))]
   "TARGET_SSE4_1"
   "@
