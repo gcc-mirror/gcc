@@ -1,5 +1,12 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.md (TLSmode): Delete mode iterator.  Replace
+	with P throughout except for call mems which should use SI.
+	(tls_abi_suffix, tls_sysv_suffix, tls_insn_suffix): Delete mode
+	attributes.  Replace with bits, mode and ptrload respectively.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000-protos.h (rs6000_indirect_call_template),
 	(rs6000_indirect_sibcall_template): Declare.
 	* config/rs6000/rs6000.c (rs6000_indirect_call_template_1),
