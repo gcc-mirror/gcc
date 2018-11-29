@@ -1,3 +1,12 @@
+2018-11-29  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/88224
+	* config/arm/arm-cpus.in (armv7-r): Add FP16conv configurations.
+	(cortex-r7, cortex-r8): Update default and add new configuration.
+	* doc/invoke.texi (armv7-r): Add two new vfp options.
+	(nofp.dp): Add cortex-r7 and cortex-r8 to the list of targets that
+	support this option.
+
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_move): Disable long
