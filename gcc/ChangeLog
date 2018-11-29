@@ -1,5 +1,10 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_emit_move): Disable long
+	double split for targets other than Darwin.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.md (movdi_internal64): Correct lengths.
 
 2018-11-29  Alan Modra  <amodra@gmail.com>
@@ -692,7 +697,7 @@
 
 2018-11-23  Christoph Muellner  <christoph.muellner@theobroma-systems.com>
 
-        * config/aarch64/aarch64-cores.def: Define emag.
+	* config/aarch64/aarch64-cores.def: Define emag.
 	* config/aarch64/aarch64-tune.md: Regenerated with emag.
 	* config/aarch64/aarch64.c (emag_tunings): New struct.
 	* doc/invoke.texi: Document mtune value.
