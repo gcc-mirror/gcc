@@ -1,5 +1,17 @@
 2018-11-29  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/predicates.md (easy_fp_constant): Remove code
+	dealing with integers in const_double.  Assert on unexpected
+	modes.  Delete superfluous ABI_V4 test.
+	* config/rs6000/rs6000.c (rs6000_emit_move): Comment fixes.
+	Don't call easy_fp_constant for Pmode.
+	(rs6000_hash_constant): Remove code dealing with integers in
+	const_double.
+	(rs6000_legitimate_constant_p): Likewise.
+	(output_toc): Formatting, use CONST_DOUBLE_P.
+
+2018-11-29  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/constraints.md (G, H): Comment on purpose of
 	constraint.  Correct mode comments and "G" mode test.
 	* config/rs6000/rs6000.md (movdi_internal32): Remove "GH" from

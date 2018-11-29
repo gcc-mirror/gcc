@@ -9883,13 +9883,10 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       debug_rtx (source);
     }
 
-  /* Sanity checks.  Check that we get CONST_DOUBLE only when we should.  */
+  /* Check that we get CONST_WIDE_INT only when we should.  */
   if (CONST_WIDE_INT_P (operands[1])
       && GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-    {
-      /* This should be fixed with the introduction of CONST_WIDE_INT.  */
-      gcc_unreachable ();
-    }
+    gcc_unreachable ();
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
   /* If we use a long double type, set the flags in .gnu_attribute that say
@@ -10228,13 +10225,11 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
       else if (mode == Pmode
 	       && CONSTANT_P (operands[1])
 	       && GET_CODE (operands[1]) != HIGH
-	       && ((GET_CODE (operands[1]) != CONST_INT
-		    && ! easy_fp_constant (operands[1], mode))
-		   || (GET_CODE (operands[1]) == CONST_INT
-		       && (num_insns_constant (operands[1], mode)
-			   > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
-		   || (GET_CODE (operands[0]) == REG
-		       && FP_REGNO_P (REGNO (operands[0]))))
+	       && ((REG_P (operands[0])
+		    && FP_REGNO_P (REGNO (operands[0])))
+		   || !CONST_INT_P (operands[1])
+		   || (num_insns_constant (operands[1], mode)
+		       > (TARGET_CMODEL != CMODEL_SMALL ? 3 : 2)))
 	       && !toc_relative_expr_p (operands[1], false, NULL, NULL)
 	       && (TARGET_CMODEL == CMODEL_SMALL
 		   || can_create_pseudo_p ()
@@ -29453,10 +29448,7 @@ rs6000_hash_constant (rtx k)
       }
 
     case CONST_DOUBLE:
-      if (mode != VOIDmode)
-	return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
-      flen = 2;
-      break;
+      return real_hash (CONST_DOUBLE_REAL_VALUE (k)) * result;
 
     case CODE_LABEL:
       fidx = 3;
@@ -29661,9 +29653,9 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
   /* Handle FP constants specially.  Note that if we have a minimal
      TOC, things we put here aren't actually in the TOC, so we can allow
      FP constants.  */
-  if (GET_CODE (x) == CONST_DOUBLE &&
-      (GET_MODE (x) == TFmode || GET_MODE (x) == TDmode
-       || GET_MODE (x) == IFmode || GET_MODE (x) == KFmode))
+  if (CONST_DOUBLE_P (x)
+      && (GET_MODE (x) == TFmode || GET_MODE (x) == TDmode
+	  || GET_MODE (x) == IFmode || GET_MODE (x) == KFmode))
     {
       long k[4];
 
@@ -29701,8 +29693,8 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 	  return;
 	}
     }
-  else if (GET_CODE (x) == CONST_DOUBLE &&
-	   (GET_MODE (x) == DFmode || GET_MODE (x) == DDmode))
+  else if (CONST_DOUBLE_P (x)
+	   && (GET_MODE (x) == DFmode || GET_MODE (x) == DDmode))
     {
       long k[2];
 
@@ -29735,8 +29727,8 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 	  return;
 	}
     }
-  else if (GET_CODE (x) == CONST_DOUBLE &&
-	   (GET_MODE (x) == SFmode || GET_MODE (x) == SDmode))
+  else if (CONST_DOUBLE_P (x)
+	   && (GET_MODE (x) == SFmode || GET_MODE (x) == SDmode))
     {
       long l;
 
@@ -37638,11 +37630,13 @@ rs6000_legitimate_constant_p (machine_mode mode, rtx x)
   if (TARGET_ELF && tls_referenced_p (x))
     return false;
 
-  return ((GET_CODE (x) != CONST_DOUBLE && GET_CODE (x) != CONST_VECTOR)
-	  || GET_MODE (x) == VOIDmode
-	  || (TARGET_POWERPC64 && mode == DImode)
-	  || easy_fp_constant (x, mode)
-	  || easy_vector_constant (x, mode));
+  if (CONST_DOUBLE_P (x))
+    return easy_fp_constant (x, mode);
+
+  if (GET_CODE (x) == CONST_VECTOR)
+    return easy_vector_constant (x, mode);
+
+  return true;
 }
 
 

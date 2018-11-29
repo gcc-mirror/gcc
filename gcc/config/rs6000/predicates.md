@@ -562,12 +562,10 @@
 (define_predicate "easy_fp_constant"
   (match_code "const_double")
 {
-  if (GET_MODE (op) != mode
-      || (!SCALAR_FLOAT_MODE_P (mode) && mode != DImode))
-    return 0;
+  gcc_assert (GET_MODE (op) == mode && SCALAR_FLOAT_MODE_P (mode));
 
   /* Consider all constants with -msoft-float to be easy.  */
-  if (TARGET_SOFT_FLOAT && mode != DImode)
+  if (TARGET_SOFT_FLOAT)
     return 1;
 
   /* 0.0D is not all zero bits.  */
@@ -575,37 +573,15 @@
     return 0;
 
   /* The constant 0.0 is easy under VSX.  */
-  if (TARGET_VSX && SCALAR_FLOAT_MODE_P (mode) && op == CONST0_RTX (mode))
+  if (TARGET_VSX && op == CONST0_RTX (mode))
     return 1;
 
-  /* If we are using V.4 style PIC, consider all constants to be hard.  */
-  if (flag_pic && DEFAULT_ABI == ABI_V4)
-    return 0;
-
-  /* If we have real FPRs, consider floating point constants hard (other than
-     0.0 under VSX), so that the constant gets pushed to memory during the
-     early RTL phases.  This has the advantage that double precision constants
-     that can be represented in single precision without a loss of precision
-     will use single precision loads.  */
-
-  switch (mode)
-    {
-    case E_KFmode:
-    case E_IFmode:
-    case E_TFmode:
-    case E_DFmode:
-    case E_SFmode:
-      return 0;
-
-    case E_DImode:
-      return (num_insns_constant (op, DImode) <= 2);
-
-    case E_SImode:
-      return 1;
-
-    default:
-      gcc_unreachable ();
-    }
+  /* Otherwise consider floating point constants hard, so that the
+     constant gets pushed to memory during the early RTL phases.  This
+     has the advantage that double precision constants that can be
+     represented in single precision without a loss of precision will
+     use single precision loads.  */
+   return 0;
 })
 
 ;; Return 1 if the operand is a constant that can loaded with a XXSPLTIB
