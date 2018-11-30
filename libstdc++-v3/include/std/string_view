@@ -227,7 +227,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__sv = __tmp;
       }
 
-
       // [string.view.ops], string operations:
 
       size_type
@@ -386,6 +385,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return this->find_last_not_of(__str, __pos,
 				      traits_type::length(__str));
       }
+
+#if __cplusplus > 201703L
+      constexpr bool
+      starts_with(basic_string_view __x) const noexcept
+      {
+	return this->size() >= __x.size()
+	    && this->compare(0, __x.size(), __x) == 0;
+      }
+
+      constexpr bool
+      starts_with(_CharT __x) const noexcept
+      { return this->starts_with(basic_string_view(&__x, 1)); }
+
+      constexpr bool
+      starts_with(const _CharT* __x) const noexcept
+      { return this->starts_with(basic_string_view(__x)); }
+
+      constexpr bool
+      ends_with(basic_string_view __x) const noexcept
+      {
+	return this->size() >= __x.size()
+	    && this->compare(this->size() - __x.size(), npos, __x) == 0;
+      }
+
+      constexpr bool
+      ends_with(_CharT __x) const noexcept
+      { return this->ends_with(basic_string_view(&__x, 1)); }
+
+      constexpr bool
+      ends_with(const _CharT* __x) const noexcept
+      { return this->ends_with(basic_string_view(__x)); }
+#endif // C++20
 
       constexpr size_type
       _M_check(size_type __pos, const char* __s) const noexcept(false)
