@@ -257,6 +257,18 @@ extern int backtrace_vector_release (struct backtrace_state *state,
 				     backtrace_error_callback error_callback,
 				     void *data);
 
+/* Free the space managed by VEC.  This will reset VEC.  */
+
+static inline void
+backtrace_vector_free (struct backtrace_state *state,
+		       struct backtrace_vector *vec,
+		       backtrace_error_callback error_callback, void *data)
+{
+  vec->alc += vec->size;
+  vec->size = 0;
+  backtrace_vector_release (state, vec, error_callback, data);
+}
+
 /* Read initial debug data from a descriptor, and set the
    fileline_data, syminfo_fn, and syminfo_data fields of STATE.
    Return the fileln_fn field in *FILELN_FN--this is done this way so

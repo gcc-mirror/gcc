@@ -1,3 +1,9 @@
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
+	* internal.h (backtrace_vector_free): New static inline fuction,
+	factored out of ...
+	* dwarf.c (read_line_info): ... here.
+
 2018-11-28  Tom de Vries  <tdevries@suse.de>
 
 	* dwarf.c (read_abbrevs): Fix handling of abbrevs->abbrevs allocation
