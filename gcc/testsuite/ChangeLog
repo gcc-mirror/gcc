@@ -1,3 +1,8 @@
+2018-11-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/64242
+	* gcc.c-torture/execute/pr64242.c: New test.
+
 2018-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/parse/missing-parens-fixit.C: New test.
