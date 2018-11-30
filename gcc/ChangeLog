@@ -1,3 +1,14 @@
+2018-11-30  Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* coverage.c (get_coverage_counts): Use from_function_decl for precise
+	function location.
+	* profile-count.c (profile_count::dump): Add handling for precise
+	profile quality.
+	* profile.c (compute_branch_probabilities): Rely on exec_counts instead
+	of profile_info to set profile_status of function.
+	(branch_prob): Do not set profile_status of function based on
+	profile_info. Done above based on exec_counts.
+
 2018-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/88274

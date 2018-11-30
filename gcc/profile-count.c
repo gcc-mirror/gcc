@@ -83,6 +83,8 @@ profile_count::dump (FILE *f) const
 	fprintf (f, " (auto FDO)");
       else if (m_quality == profile_guessed)
 	fprintf (f, " (guessed)");
+      else if (m_quality == profile_precise)
+	fprintf (f, " (precise)");
     }
 }
 
