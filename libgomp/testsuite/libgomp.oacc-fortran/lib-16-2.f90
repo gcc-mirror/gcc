@@ -1,10 +1,10 @@
-! See also "lib-16-2.f90".
+! See also "lib-16.f90".
 ! { dg-do run }
 ! { dg-skip-if "" { *-*-* } { "*" } { "-DACC_MEM_SHARED=0" } }
 
 program main
-  use openacc
   implicit none
+  include "openacc_lib.h"
 
   integer, parameter :: N = 256
   integer, allocatable :: h(:)
