@@ -1,3 +1,22 @@
+2018-11-30  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81715
+	* asan.c (asan_shadow_cst): Remove, partially transform
+	into flush_redzone_payload.
+	(RZ_BUFFER_SIZE): New.
+	(struct asan_redzone_buffer): New.
+	(asan_redzone_buffer::emit_redzone_byte): Likewise.
+	(asan_redzone_buffer::flush_redzone_payload): Likewise.
+	(asan_redzone_buffer::flush_if_full): Likewise.
+	(asan_emit_stack_protection): Use asan_redzone_buffer class
+	that is responsible for proper aligned stores and flushing
+	of shadow memory payload.
+	* asan.h (ASAN_MIN_RED_ZONE_SIZE): New.
+	(asan_var_and_redzone_size): Likewise.
+	* cfgexpand.c (expand_stack_vars): Use smaller alignment
+	(ASAN_MIN_RED_ZONE_SIZE) in order to make shadow memory
+	for automatic variables more compact.
+
 2018-11-30  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/predicates.md (easy_fp_constant): Avoid long
