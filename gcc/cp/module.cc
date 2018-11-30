@@ -2422,7 +2422,7 @@ enum tree_tag {
   tt_binfo,		/* A BINFO.  */
   tt_as_base,		/* An As-Base type.  */
   tt_vtable,		/* A vtable.  */
-  tt_gme,
+  tt_gme		/* Global Module Entity.  */
 };
 
 /* Tree stream reader.  Note that reading a stream doesn't mark the
@@ -2586,7 +2586,7 @@ public:
      WK_none,   /* No walk to do (a backref).  */
      WK_normal, /* Normal walk (by-name if possible).  */
      WK_body,   /* By-value walk.  */
-     WK_gme,    /* by-valye global module entity walk.  */
+     WK_gme     /* By-value global module entity walk.  */
     };
 
 public:
@@ -10760,12 +10760,13 @@ public:
 #endif
 
   private:
-    enum layout {
-		 L_MOD = 1,
-		 L_UNDEF = MODULE_BITS + 1,
-		 L_DEF = MODULE_BITS + 2,
-		 L_MOD_MASK = (1u << MODULE_BITS) - 1,
-    };
+    enum layout
+      {
+       L_MOD = 1,		/* Bit zero is always 1.  */
+       L_UNDEF = MODULE_BITS + 1,	/* Has an undef.  */
+       L_DEF = MODULE_BITS + 2,		/* Has a def.  */
+       L_MOD_MASK = (1u << MODULE_BITS) - 1 /* Which module,  */
+      };
 
   public:
     /* Not a regular ctor, because we put it in a union, and that's

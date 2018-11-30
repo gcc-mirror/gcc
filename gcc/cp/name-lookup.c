@@ -3641,7 +3641,7 @@ merge_global_decl (tree ctx, unsigned mod_ix, tree decl)
    to duplicate decls to get ODR errors on loading?  */
 
 tree
-match_global_decl (tree decl, tree tpl, tree ret, tree args)
+match_global_decl (tree decl, tree, tree, tree args)
 {
   tree *slot = find_namespace_slot (CP_DECL_CONTEXT (decl), DECL_NAME (decl),
 				    true);
