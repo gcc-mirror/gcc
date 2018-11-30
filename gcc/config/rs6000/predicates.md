@@ -564,9 +564,26 @@
 {
   gcc_assert (GET_MODE (op) == mode && SCALAR_FLOAT_MODE_P (mode));
 
-  /* Consider all constants with -msoft-float to be easy.  */
+  /* Consider all constants with -msoft-float to be easy when regs are
+     32-bit and thus can be loaded with a maximum of 2 insns.  For
+     64-bit avoid long dependent insn sequences.  */
   if (TARGET_SOFT_FLOAT)
-    return 1;
+    {
+      if (!TARGET_POWERPC64)
+        return 1;
+
+      int size = GET_MODE_SIZE (mode);
+      if (size < 8)
+        return 1;
+
+      int load_from_mem_insns = 2;
+      if (size > 8)
+        load_from_mem_insns++;
+      if (TARGET_CMODEL != CMODEL_SMALL)
+        load_from_mem_insns++;
+      if (num_insns_constant (op, mode) <= load_from_mem_insns)
+        return 1;
+    }
 
   /* 0.0D is not all zero bits.  */
   if (DECIMAL_FLOAT_MODE_P (mode))
