@@ -1,3 +1,9 @@
+2018-11-30  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR gcov-profile/88279
+	* tree-profile.c (init_ic_make_global_vars): Call
+	decl_default_tls_model for variable and not it's type.
+
 2018-11-30  Sam Tebbs  <sam.tebbs@arm.com>
 
 	* config/arm/arm.h (TARGET_DOTPROD): Add TARGET_VFP5 constraint.
