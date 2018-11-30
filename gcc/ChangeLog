@@ -1,3 +1,10 @@
+2018-11-30  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/64242
+	* builtins.c (expand_builtin_longjmp): Use a temporary when restoring
+	the frame pointer.
+	(expand_builtin_nonlocal_goto): Likewise.
+
 2018-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-core.h (emit_diagnostic): New decl.
