@@ -956,9 +956,17 @@ struct target_var_desc {
   uintptr_t length;
 };
 
+/* Uncomment to enable reference-count consistency checking (for development
+   use only).  */
+//#define RC_CHECKING 1
+
 struct target_mem_desc {
   /* Reference count.  */
   uintptr_t refcount;
+#ifdef RC_CHECKING
+  uintptr_t refcount_chk;
+  bool mark;
+#endif
   /* All the splay nodes allocated together.  */
   splay_tree_node array;
   /* Start of the target region.  */
@@ -1017,6 +1025,10 @@ struct splay_tree_key_s {
      "present increment" operations (via "acc enter data") referring to the same
      host-memory block.  */
   uintptr_t virtual_refcount;
+#ifdef RC_CHECKING
+  /* The recalculated reference count, for verification.  */
+  uintptr_t refcount_chk;
+#endif
   struct splay_tree_aux *aux;
 };
 
@@ -1172,6 +1184,12 @@ extern void gomp_attach_pointer (struct gomp_device_descr *,
 extern void gomp_detach_pointer (struct gomp_device_descr *,
 				 struct goacc_asyncqueue *, splay_tree_key,
 				 uintptr_t, bool, struct gomp_coalesce_buf *);
+
+#ifdef RC_CHECKING
+extern void dump_tgt (const char *, struct target_mem_desc *);
+extern void gomp_rc_check (struct gomp_device_descr *,
+			   struct target_mem_desc *);
+#endif
 
 extern struct target_mem_desc *gomp_map_vars (struct gomp_device_descr *,
 					      size_t, void **, void **,

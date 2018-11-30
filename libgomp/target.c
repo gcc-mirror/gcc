@@ -38,6 +38,9 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#ifdef RC_CHECKING
+#include <stdio.h>
+#endif
 
 #ifdef PLUGIN_SUPPORT
 #include <dlfcn.h>
@@ -346,6 +349,185 @@ gomp_free_device_memory (struct gomp_device_descr *devicep, void *devptr)
       gomp_fatal ("error in freeing device memory block at %p", devptr);
     }
 }
+
+#ifdef RC_CHECKING
+void
+dump_tgt (const char *where, struct target_mem_desc *tgt)
+{
+  if (!getenv ("GOMP_DEBUG_TGT"))
+    return;
+
+  fprintf (stderr, "%s: %s: tgt=%p\n", __FUNCTION__, where, (void*) tgt);
+  fprintf (stderr, "refcount=%d\n", (int) tgt->refcount);
+  fprintf (stderr, "tgt_start=%p\n", (void*) tgt->tgt_start);
+  fprintf (stderr, "tgt_end=%p\n", (void*) tgt->tgt_end);
+  fprintf (stderr, "to_free=%p\n", tgt->to_free);
+  fprintf (stderr, "list_count=%d\n", (int) tgt->list_count);
+  for (int i = 0; i < tgt->list_count; i++)
+    {
+      fprintf (stderr, "list item %d:\n", i);
+      fprintf (stderr, "  key: %p\n", (void*) tgt->list[i].key);
+      if (tgt->list[i].key)
+	{
+	  fprintf (stderr, "  key.host_start=%p\n",
+		   (void*) tgt->list[i].key->host_start);
+	  fprintf (stderr, "  key.host_end=%p\n",
+		   (void*) tgt->list[i].key->host_end);
+	  fprintf (stderr, "  key.tgt=%p\n", (void*) tgt->list[i].key->tgt);
+	  fprintf (stderr, "  key.offset=%d\n",
+		   (int) tgt->list[i].key->tgt_offset);
+	  fprintf (stderr, "  key.refcount=%d\n",
+		   (int) tgt->list[i].key->refcount);
+	  if (tgt->list[i].key->refcount == REFCOUNT_LINK)
+	    fprintf (stderr, "  key.aux.link_key=%p\n",
+		     (void*) tgt->list[i].key->aux->link_key);
+	  else
+	    {
+	      fprintf (stderr, "  key.virtual_refcount=%d\n",
+		       (int) tgt->list[i].key->virtual_refcount);
+	      fprintf (stderr, "  key.aux.attach_count=%p\n",
+		       (void*) tgt->list[i].key->aux->attach_count);
+	    }
+	}
+    }
+  fprintf (stderr, "\n");
+}
+
+static void
+rc_check_clear (splay_tree_node node)
+{
+  splay_tree_key k = &node->key;
+
+  k->refcount_chk = 0;
+  k->tgt->refcount_chk = 0;
+  k->tgt->mark = false;
+
+  if (node->left)
+    rc_check_clear (node->left);
+  if (node->right)
+    rc_check_clear (node->right);
+}
+
+static void
+rc_check_count (splay_tree_node node)
+{
+  splay_tree_key k = &node->key;
+  struct target_mem_desc *t;
+
+  /* Add virtual reference counts ("acc enter data", etc.) for this key.  */
+  k->refcount_chk += k->virtual_refcount;
+
+  t = k->tgt;
+  t->refcount_chk++;
+
+  if (!t->mark)
+    {
+      for (int i = 0; i < t->list_count; i++)
+	if (t->list[i].key)
+	  t->list[i].key->refcount_chk++;
+
+      t->mark = true;
+    }
+
+  if (node->left)
+    rc_check_count (node->left);
+  if (node->right)
+    rc_check_count (node->right);
+}
+
+static bool
+rc_check_verify (splay_tree_node node, bool noisy, bool errors)
+{
+  splay_tree_key k = &node->key;
+  struct target_mem_desc *t;
+
+  if (k->refcount != REFCOUNT_INFINITY)
+    {
+      if (noisy)
+	fprintf (stderr, "key %p (%p..+%d): rc=%d/%d, virt_rc=%d\n", k,
+		 (void *) k->host_start, (int) (k->host_end - k->host_start),
+		 (int) k->refcount, (int) k->refcount_chk,
+		 (int) k->virtual_refcount);
+
+      if (k->refcount != k->refcount_chk)
+	{
+	  if (noisy)
+	    fprintf (stderr, "  -- key refcount mismatch!\n");
+	  errors = true;
+	}
+
+      t = k->tgt;
+
+      if (noisy)
+	fprintf (stderr, "tgt %p: rc=%d/%d\n", t, (int) t->refcount,
+		 (int) t->refcount_chk);
+
+      if (t->refcount != t->refcount_chk)
+	{
+	  if (noisy)
+	    fprintf (stderr,
+		     "  -- target memory descriptor refcount mismatch!\n");
+	  errors = true;
+	}
+    }
+
+  if (node->left)
+    errors |= rc_check_verify (node->left, noisy, errors);
+  if (node->right)
+    errors |= rc_check_verify (node->right, noisy, errors);
+
+  return errors;
+}
+
+/* Call with device locked.  */
+
+attribute_hidden void
+gomp_rc_check (struct gomp_device_descr *devicep, struct target_mem_desc *tgt)
+{
+  splay_tree sp = &devicep->mem_map;
+
+  bool noisy = getenv ("GOMP_DEBUG_TGT") != 0;
+
+  if (noisy)
+    fprintf (stderr, "\n*** GOMP_RC_CHECK ***\n\n");
+
+  if (sp->root)
+    {
+      rc_check_clear (sp->root);
+
+      for (struct target_mem_desc *t = tgt; t; t = t->prev)
+	{
+	  t->refcount_chk = 0;
+	  t->mark = false;
+	}
+
+      /* Add references for interconnected splay-tree keys.  */
+      rc_check_count (sp->root);
+
+      /* Add references for the tgt for a currently-executing kernel and/or
+	 any enclosing data directives.  */
+      for (struct target_mem_desc *t = tgt; t; t = t->prev)
+	{
+	  t->refcount_chk++;
+
+	  if (!t->mark)
+	    {
+	      for (int i = 0; i < t->list_count; i++)
+		if (t->list[i].key)
+		  t->list[i].key->refcount_chk++;
+
+	      t->mark = true;
+	    }
+	}
+
+      if (rc_check_verify (sp->root, noisy, false))
+	{
+	  gomp_mutex_unlock (&devicep->lock);
+	  gomp_fatal ("refcount checking failure");
+	}
+    }
+}
+#endif
 
 /* Handle the case where gomp_map_lookup, splay_tree_lookup or
    gomp_map_0len_lookup found oldn for newn.
