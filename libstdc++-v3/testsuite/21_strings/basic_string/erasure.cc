@@ -30,18 +30,21 @@ test01()
   };
 
   std::string str("cute fluffy kittens");
-  std::erase_if(str, is_vowel);
+  auto num = std::erase_if(str, is_vowel);
   VERIFY( str == "ct flffy kttns" );
+  VERIFY( num == 5 );
 }
 
 void
 test02()
 {
   std::string str = "cute fluffy kittens";
-  std::erase(str, 'f');
+  auto num = std::erase(str, 'f');
   VERIFY( str == "cute luy kittens" );
-  std::erase(str, 'z');
+  VERIFY( num == 3 );
+  num = std::erase(str, 'z');
   VERIFY( str == "cute luy kittens" );
+  VERIFY( num == 0 );
 }
 
 int

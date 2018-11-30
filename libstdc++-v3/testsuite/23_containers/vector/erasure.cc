@@ -27,20 +27,23 @@ test01()
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::vector<int> v{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase_if(v, is_odd);
+  auto num = std::erase_if(v, is_odd);
   std::vector<int> t{ 10, 12, 14, 18 };
   VERIFY( v == t );
+  VERIFY( num == 4 );
 }
 
 void
 test02()
 {
   std::vector<int> v{ 0, 11, 0, 0, 22, 33, 0, 0, 44, 0 };
-  std::erase(v, 0);
+  auto num = std::erase(v, 0);
   std::vector<int> t{ 11, 22, 33, 44 };
   VERIFY( v == t );
-  std::erase(v, 55);
+  VERIFY( num == 6 );
+  num = std::erase(v, 55);
   VERIFY( v == t );
+  VERIFY( num == 0 );
 }
 
 int

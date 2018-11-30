@@ -27,9 +27,10 @@ test01()
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::unordered_set<int> us{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase_if(us, is_odd);
+  auto num = std::erase_if(us, is_odd);
   std::unordered_set<int> t{ 10, 12, 14, 18 };
   VERIFY( us == t );
+  VERIFY( num == 4 );
 }
 
 void
@@ -38,9 +39,10 @@ test02()
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::unordered_multiset<int> ums{ 20, 21, 22, 22, 23, 23, 24, 25 };
-  std::erase_if(ums, is_odd);
+  auto num = std::erase_if(ums, is_odd);
   std::unordered_multiset<int> t{ 20, 22, 22, 24 };
   VERIFY( ums == t );
+  VERIFY( num == 4 );
 }
 
 int

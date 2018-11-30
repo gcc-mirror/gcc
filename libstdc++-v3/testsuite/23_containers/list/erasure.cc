@@ -36,11 +36,13 @@ void
 test02()
 {
   std::list<int> l{ 0, 11, 0, 0, 22, 33, 0, 0, 44, 0 };
-  std::erase(l, 0);
+  auto num = std::erase(l, 0);
   std::list<int> t{ 11, 22, 33, 44 };
   VERIFY( l == t );
-  std::erase(l, 55);
+  VERIFY( num == 6 );
+  num = std::erase(l, 55);
   VERIFY( l == t );
+  VERIFY( num == 0 );
 }
 
 int

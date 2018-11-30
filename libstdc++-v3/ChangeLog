@@ -1,3 +1,25 @@
+2018-11-30  Edward Smith-Rowland  <3dw4rd@verizon.net>
+
+	Pre-emptively support P0646R1 for std container erasure.
+	* include/bits/erase_if.h: Accumulate and return number of erased nodes.
+	* include/std/forward_list (): Return number of erased items.
+	* include/std/list (): Ditto.
+	* include/std/map (): Ditto.
+	* include/std/set (): Ditto.
+	* include/std/string (): Ditto.
+	* include/std/unordered_map (): Ditto.
+	* include/std/unordered_set (): Ditto.
+	* include/std/vector (): Ditto.
+	* testsuite/21_strings/basic_string/erasure.cc: Test number of erasures.
+	* testsuite/23_containers/deque/erasure.cc: Ditto.
+	* testsuite/23_containers/forward_list/erasure.cc: Ditto.
+	* testsuite/23_containers/list/erasure.cc: Ditto.
+	* testsuite/23_containers/map/erasure.cc: Ditto.
+	* testsuite/23_containers/set/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_map/erasure.cc: Ditto.
+	* testsuite/23_containers/unordered_set/erasure.cc: Ditto.
+	* testsuite/23_containers/vector/erasure.cc: Ditto.
+
 2018-11-29  Edward Smith-Rowland  <3dw4rd@verizon.net>
 
 	Only include bits/stl_algo.h for C++20.

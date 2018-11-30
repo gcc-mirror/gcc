@@ -27,20 +27,23 @@ test01()
   auto is_odd = [](const int i) { return i % 2 != 0; };
 
   std::deque<int> d{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase_if(d, is_odd);
+  auto num = std::erase_if(d, is_odd);
   std::deque<int> t{ 10, 12, 14, 18 };
   VERIFY( d == t );
+  VERIFY( num == 4 );
 }
 
 void
 test02()
 {
   std::deque<int> d{ 10, 11, 12, 14, 15, 17, 18, 19 };
-  std::erase(d, 14);
+  auto num = std::erase(d, 14);
   std::deque<int> t{ 10, 11, 12, 15, 17, 18, 19 };
   VERIFY( d == t );
-  std::erase(d, 20);
+  VERIFY( num == 1 );
+  num = std::erase(d, 20);
   VERIFY( d == t );
+  VERIFY( num == 0 );
 }
 
 int
