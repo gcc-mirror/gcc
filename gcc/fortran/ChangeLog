@@ -1,5 +1,8 @@
 2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
 
+	* gfortran.h (struct gfc_omp_clauses): Remove "wait".  Adjust all
+	users.
+
 	* openmp.c (gfc_match_omp_clauses): Support multiple OpenACC wait
 	clauses.
 
