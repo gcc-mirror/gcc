@@ -359,14 +359,20 @@ address_eliminator::address_eliminator (struct address_info *ad)
   if (m_base_loc != NULL)
     {
       m_base_reg = *m_base_loc;
-      lra_eliminate_reg_if_possible (m_base_loc);
+      /* If we have non-legitimate address which is decomposed not in
+	 the way we expected, don't do elimination here.  In such case
+	 the address will be reloaded and elimination will be done in
+	 reload insn finally.  */
+      if (REG_P (m_base_reg))
+	lra_eliminate_reg_if_possible (m_base_loc);
       if (m_ad->base_term2 != NULL)
 	*m_ad->base_term2 = *m_ad->base_term;
     }
   if (m_index_loc != NULL)
     {
       m_index_reg = *m_index_loc;
-      lra_eliminate_reg_if_possible (m_index_loc);
+      if (REG_P (m_index_reg))
+	lra_eliminate_reg_if_possible (m_index_loc);
     }
 }
 

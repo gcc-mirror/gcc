@@ -1,3 +1,9 @@
+2018-11-30  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/88179
+	* lra-constraints.c (address_eliminator::address_eliminator):
+	Don't eleminate regs in illegitimate address.
+
 2018-11-30  David Malcolm  <dmalcolm@redhat.com>
 
 	PR preprocessor/88257
