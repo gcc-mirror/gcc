@@ -1,3 +1,12 @@
+2018-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/85368
+	* params.def (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT): New param.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): If
+	--param logical-op-non-short-circuit is present, override
+	LOGICAL_OP_NON_SHORT_CIRCUIT value from the param.
+	* fold-const.c (fold_range_test, fold_truth_andor): Likewise.
+
 2018-11-30  Jeff Law  <law@redhat.com>
 
 	* optabs.c (expand_binop): Use "machine_mode" rather than
