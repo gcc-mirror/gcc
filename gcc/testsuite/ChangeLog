@@ -1,3 +1,41 @@
+2018-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/85368
+	* lib/target-supports.exp (logical_op_short_circuit): Remove.
+	* gcc.dg/builtin-bswap-7.c: Remove logical_op_short_circuit
+	effective target, drop -mbranch-cost= options from the test and
+	instead pass --param logical-op-non-short-circuit=0 or
+	--param logical-op-non-short-circuit=1 depending on what the
+	tests meant to test.
+	* gcc.dg/pr21643.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-2.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-4.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-3.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-14.c: Likewise.
+	* gcc.dg/tree-ssa/vrp47.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-16.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-5.c: Likewise.
+	* gcc.dg/tree-ssa/vrp87.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-6.c: Likewise.
+	* gcc.dg/tree-ssa/phi-opt-2.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-13.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-11.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ifcombine-ccmp-4.c: Likewise.
+	* gcc.dg/tree-ssa/forwprop-28.c: Likewise.
+	* gcc.dg/binop-xor1.c: Likewise.
+	* gcc.dg/pr46309.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-dom-thread-18.c: New test.
+	* gcc.dg/tree-ssa/reassoc-32.c: Add
+	--param logical-op-non-short-circuit=1 to dg-options.
+	* gcc.dg/tree-ssa/reassoc-33.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-34.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-35.c: Likewise.
+	* gcc.dg/tree-ssa/reassoc-36.c: Likewise.
+
 2018-11-30  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/64242

@@ -5572,12 +5572,15 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
   /* On machines where the branch cost is expensive, if this is a
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
-  else if (LOGICAL_OP_NON_SHORT_CIRCUIT
-	   && !flag_sanitize_coverage
-	   && lhs != 0 && rhs != 0
-	   && (code == TRUTH_ANDIF_EXPR
-	       || code == TRUTH_ORIF_EXPR)
-	   && operand_equal_p (lhs, rhs, 0))
+  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+    logical_op_non_short_circuit
+      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+  if (logical_op_non_short_circuit
+      && !flag_sanitize_coverage
+      && lhs != 0 && rhs != 0
+      && (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+      && operand_equal_p (lhs, rhs, 0))
     {
       /* If simple enough, just rewrite.  Otherwise, make a SAVE_EXPR
 	 unless we are at top level or LHS contains a PLACEHOLDER_EXPR, in
@@ -8229,7 +8232,11 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
   if ((tem = fold_truth_andor_1 (loc, code, type, arg0, arg1)) != 0)
     return tem;
 
-  if (LOGICAL_OP_NON_SHORT_CIRCUIT
+  bool logical_op_non_short_circuit = LOGICAL_OP_NON_SHORT_CIRCUIT;
+  if (PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT) != -1)
+    logical_op_non_short_circuit
+      = PARAM_VALUE (PARAM_LOGICAL_OP_NON_SHORT_CIRCUIT);
+  if (logical_op_non_short_circuit
       && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
           || code == TRUTH_ANDIF_EXPR
