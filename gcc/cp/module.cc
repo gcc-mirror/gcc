@@ -8828,16 +8828,12 @@ module_state::read_var_def (trees_in &in, tree decl)
 void
 module_state::write_binfos (trees_out &out, tree type)
 {
-  /* Stream out types and sizes in DFS order, forcing each binfo
+  /* Stream out types and sizes in DFS order, placing each binfo
      into the map.  */
   for (tree child = TYPE_BINFO (type); child; child = TREE_CHAIN (child))
     {
       out.tree_node (BINFO_TYPE (child));
-      // FIXME:The assertion in this comment is wrong
-      /* We might have tagged the binfo during a by-reference walk.
-	 Force a new tag now.  */
-      int tag = out.insert (child, (TREE_VISITED (child) ? trees_out::WK_body
-				    : trees_out::WK_normal));
+      int tag = out.insert (child);
       if (out.streaming_p ())
 	{
 	  out.u (BINFO_N_BASE_BINFOS (child));
