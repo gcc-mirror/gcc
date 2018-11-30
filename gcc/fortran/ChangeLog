@@ -1,3 +1,8 @@
+2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* openmp.c (gfc_match_omp_clauses): Support multiple OpenACC wait
+	clauses.
+
 2018-11-27  Martin Liska  <mliska@suse.cz>
 
 	* decl.c (gfc_match_gcc_builtin): New function.
