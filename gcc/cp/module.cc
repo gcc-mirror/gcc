@@ -4830,8 +4830,13 @@ trees_out::core_vals (tree t)
 	  WU (t->type_common.align);
 	}
 
-      WT (t->type_common.size);
-      WT (t->type_common.size_unit);
+      if (TREE_CODE (t) != RECORD_TYPE
+	  && TREE_CODE (t) != UNION_TYPE
+	  && (true || TREE_CODE (t) != ENUMERAL_TYPE)) // FIXME
+	{
+	  WT (t->type_common.size);
+	  WT (t->type_common.size_unit);
+	}
       WT (t->type_common.attributes);
 
       WT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
@@ -5244,8 +5249,13 @@ trees_in::core_vals (tree t)
       RUC (machine_mode, t->type_common.mode);
       RU (t->type_common.align);
 
-      RT (t->type_common.size);
-      RT (t->type_common.size_unit);
+      if (TREE_CODE (t) != RECORD_TYPE
+	  && TREE_CODE (t) != UNION_TYPE
+	  && (true || TREE_CODE (t) != ENUMERAL_TYPE)) // FIXME
+	{
+	  RT (t->type_common.size);
+	  RT (t->type_common.size_unit);
+	}
       RT (t->type_common.attributes);
 
       RT (t->type_common.common.chain); /* TYPE_STUB_DECL.  */
@@ -7058,7 +7068,9 @@ trees_in::finish_type (tree type)
 				   (void *)type, (void *)canon);
     }
   else if (!TYPE_STRUCTURAL_EQUALITY_P (type)
-	   && !TYPE_NAME (type))
+	   && !RECORD_OR_UNION_CODE_P (TREE_CODE (type))
+	   && TREE_CODE (type) != ENUMERAL_TYPE
+	   && !TYPE_NAME (type)) // FIXME:? why this check?
     {
       gcc_assert (TYPE_ALIGN (type));
       hashval_t hash = type_hash_canon_hash (type);
@@ -8953,6 +8965,9 @@ module_state::read_binfos (trees_in &in, tree type)
 void
 module_state::write_class_def (trees_out &out, tree type)
 {
+  dump () && dump ("Writing class definition %N", type);
+  out.tree_node (TYPE_SIZE (type));
+  out.tree_node (TYPE_SIZE_UNIT (type));
   out.chained_decls (TYPE_FIELDS (type));
   out.tree_node (TYPE_VFIELD (type));
   if (TYPE_LANG_SPECIFIC (type))
@@ -9045,6 +9060,9 @@ nop (void *, void *)
 bool
 module_state::read_class_def (trees_in &in, tree type)
 {
+  dump () && dump ("Reading class definition %N", type);
+  tree size = in.tree_node ();
+  tree size_unit = in.tree_node ();
   tree fields = in.chained_decls ();
   tree vfield = in.tree_node ();
   vec<tree, va_gc> *member_vec = NULL;
@@ -9069,12 +9087,11 @@ module_state::read_class_def (trees_in &in, tree type)
 	}
     }
 
+  // FIXME:read more stuff!
   // lang->nested_udts
 
-  // FIXME: Sanity check stuff
-
-  if (in.get_overrun ())
-    return NULL_TREE;
+  TYPE_SIZE (type) = size;
+  TYPE_SIZE_UNIT (type) = size_unit;
 
   TYPE_FIELDS (type) = fields;
   TYPE_VFIELD (type) = vfield;

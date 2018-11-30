@@ -1915,6 +1915,9 @@ fixup_type_variants (tree t)
       /* Copy whatever these are holding today.  */
       TYPE_VFIELD (variants) = TYPE_VFIELD (t);
       TYPE_FIELDS (variants) = TYPE_FIELDS (t);
+
+      TYPE_SIZE (variants) = TYPE_SIZE (t);
+      TYPE_SIZE_UNIT (variants) = TYPE_SIZE_UNIT (t);
     }
 }
 
@@ -7177,12 +7180,7 @@ finish_struct (tree t, tree attributes)
       TYPE_PRECISION (t) = maximum_field_alignment;
 
       /* Fix up any variants we've already built.  */
-      for (x = TYPE_NEXT_VARIANT (t); x; x = TYPE_NEXT_VARIANT (x))
-	{
-	  TYPE_SIZE (x) = TYPE_SIZE (t);
-	  TYPE_SIZE_UNIT (x) = TYPE_SIZE_UNIT (t);
-	  TYPE_FIELDS (x) = TYPE_FIELDS (t);
-	}
+      fixup_type_variants (t);
     }
   else
     finish_struct_1 (t);
