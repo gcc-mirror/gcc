@@ -2217,6 +2217,101 @@ test_pp_format ()
 		    "problem with %qs at line %i", "bar", 10);
 }
 
+/* A subclass of pretty_printer for use by test_prefixes_and_wrapping.  */
+
+class test_pretty_printer : public pretty_printer
+{
+ public:
+  test_pretty_printer (enum diagnostic_prefixing_rule_t rule,
+		       int max_line_length)
+  {
+    pp_set_prefix (this, xstrdup ("PREFIX: "));
+    wrapping.rule = rule;
+    pp_set_line_maximum_length (this, max_line_length);
+  }
+};
+
+/* Verify that the various values of enum diagnostic_prefixing_rule_t work
+   as expected, with and without line wrapping.  */
+
+static void
+test_prefixes_and_wrapping ()
+{
+  /* Tests of the various prefixing rules, without wrapping.
+     Newlines embedded in pp_string don't affect it; we have to
+     explicitly call pp_newline.  */
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_ONCE, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox\n"
+		  "   jumps over the lazy dog\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_NEVER, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "the quick brown fox\n"
+		  "jumps over the lazy dog\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE, 0);
+    pp_string (&pp, "the quick brown fox");
+    pp_newline (&pp);
+    pp_string (&pp, "jumps over the lazy dog");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox\n"
+		  "PREFIX: jumps over the lazy dog\n");
+  }
+
+  /* Tests of the various prefixing rules, with wrapping.  */
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_ONCE, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick \n"
+		  "   brown fox jumps \n"
+		  "   over the lazy \n"
+		  "   dog\n"
+		  "   able was I ere I \n"
+		  "   saw elba\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_NEVER, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "the quick brown fox \n"
+		  "jumps over the lazy \n"
+		  "dog\n"
+		  "able was I ere I \n"
+		  "saw elba\n");
+  }
+  {
+    test_pretty_printer pp (DIAGNOSTICS_SHOW_PREFIX_EVERY_LINE, 20);
+    pp_string (&pp, "the quick brown fox jumps over the lazy dog");
+    pp_newline (&pp);
+    pp_string (&pp, "able was I ere I saw elba");
+    pp_newline (&pp);
+    ASSERT_STREQ (pp_formatted_text (&pp),
+		  "PREFIX: the quick brown fox jumps over the lazy dog\n"
+		  "PREFIX: able was I ere I saw elba\n");
+  }
+
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -2224,6 +2319,7 @@ pretty_print_c_tests ()
 {
   test_basic_printing ();
   test_pp_format ();
+  test_prefixes_and_wrapping ();
 }
 
 } // namespace selftest

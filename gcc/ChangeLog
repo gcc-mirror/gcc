@@ -1,3 +1,10 @@
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* pretty-print.c (class selftest::test_pretty_printer): New
+	subclass of pretty_printer.
+	(selftest::test_prefixes_and_wrapping): New test.
+	(selftest::pretty_print_c_tests): Call it.
+
 2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	Minimize clone counter memory usage in create_virtual_clone.
