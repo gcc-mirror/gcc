@@ -89,10 +89,22 @@ check_PROGRAMS =
 TESTS = $(check_PROGRAMS)
 
 if NATIVE
+check_LTLIBRARIES = libbacktrace_alloc.la
+
+libbacktrace_alloc_la_SOURCES = $(libbacktrace_la_SOURCES)
+libbacktrace_alloc_la_LIBADD = $(BACKTRACE_FILE) $(FORMAT_FILE) read.lo alloc.lo
+
+libbacktrace_alloc_la_DEPENDENCIES = $(libbacktrace_alloc_la_LIBADD)
+
 unittest_SOURCES = unittest.c testlib.c
 unittest_LDADD = libbacktrace.la
 
 check_PROGRAMS += unittest
+
+unittest_alloc_SOURCES = $(unittest_SOURCES)
+unittest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += unittest_alloc
 
 btest_SOURCES = btest.c testlib.c
 btest_CFLAGS = $(AM_CFLAGS) -g -O
@@ -100,26 +112,50 @@ btest_LDADD = libbacktrace.la
 
 check_PROGRAMS += btest
 
+btest_alloc_SOURCES = $(btest_SOURCES)
+btest_alloc_CFLAGS = $(btest_CFLAGS)
+btest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += btest_alloc
+
 stest_SOURCES = stest.c
 stest_LDADD = libbacktrace.la
 
 check_PROGRAMS += stest
 
+stest_alloc_SOURCES = $(stest_SOURCES)
+stest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += stest_alloc
+
 ztest_SOURCES = ztest.c testlib.c
 ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
 ztest_LDADD = libbacktrace.la
+ztest_alloc_LDADD = libbacktrace_alloc.la
 
 if HAVE_ZLIB
 ztest_LDADD += -lz
+ztest_alloc_LDADD += -lz
 endif
 ztest_LDADD += $(CLOCK_GETTIME_LINK)
+ztest_alloc_LDADD += $(CLOCK_GETTIME_LINK)
 
 check_PROGRAMS += ztest
+
+ztest_alloc_SOURCES = $(ztest_SOURCES)
+ztest_alloc_CFLAGS = $(ztest_CFLAGS)
+
+check_PROGRAMS += ztest_alloc
 
 edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 edtest_LDADD = libbacktrace.la
 
 check_PROGRAMS += edtest
+
+edtest_alloc_SOURCES = $(edtest_SOURCES)
+edtest_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += edtest_alloc
 
 edtest2_build.c: gen_edtest2_build; @true
 gen_edtest2_build: $(srcdir)/edtest2.c
@@ -134,6 +170,12 @@ check_PROGRAMS += ttest
 ttest_SOURCES = ttest.c testlib.c
 ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
+
+check_PROGRAMS += ttest_alloc
+
+ttest_alloc_SOURCES = $(ttest_SOURCES)
+ttest_alloc_CFLAGS = $(ttest_CFLAGS)
+ttest_alloc_LDADD = libbacktrace_alloc.la
 
 endif HAVE_PTHREAD
 
@@ -160,6 +202,18 @@ ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
 ctesta_LDADD = libbacktrace.la
 
 check_PROGRAMS += ctestg ctesta
+
+ctestg_alloc_SOURCES = $(ctestg_SOURCES)
+ctestg_alloc_CFLAGS = $(ctestg_CFLAGS)
+ctestg_alloc_LDFLAGS = $(ctestg_LDFLAGS)
+ctestg_alloc_LDADD = libbacktrace_alloc.la
+
+ctesta_alloc_SOURCES = $(ctesta_SOURCES)
+ctesta_alloc_CFLAGS = $(ctesta_CFLAGS)
+ctesta_alloc_LDFLAGS = $(ctesta_LDFLAGS)
+ctesta_alloc_LDADD = libbacktrace_alloc.la
+
+check_PROGRAMS += ctestg_alloc ctesta_alloc
 
 endif
 

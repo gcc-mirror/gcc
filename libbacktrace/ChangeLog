@@ -1,5 +1,11 @@
 2018-11-30  Tom de Vries  <tdevries@suse.de>
 
+	* Makefile.am : Add _with_alloc version for each test in
+	check_PROGRAMS.
+	* Makefile.in: Regenerate.
+
+2018-11-30  Tom de Vries  <tdevries@suse.de>
+
 	* internal.h (backtrace_vector_free): New static inline fuction,
 	factored out of ...
 	* dwarf.c (read_line_info): ... here.
