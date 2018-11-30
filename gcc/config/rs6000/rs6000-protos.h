@@ -36,7 +36,6 @@ extern int vspltis_shifted (rtx);
 extern HOST_WIDE_INT const_vector_elt_as_int (rtx, unsigned int);
 extern bool macho_lo_sum_memory_operand (rtx, machine_mode);
 extern int num_insns_constant (rtx, machine_mode);
-extern int num_insns_constant_wide (HOST_WIDE_INT);
 extern int small_data_operand (rtx, machine_mode);
 extern bool mem_operand_gpr (rtx, machine_mode);
 extern bool mem_operand_ds_form (rtx, machine_mode);
