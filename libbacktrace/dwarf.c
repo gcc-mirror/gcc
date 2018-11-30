@@ -2057,9 +2057,7 @@ read_line_info (struct backtrace_state *state, struct dwarf_data *ddata,
   return 1;
 
  fail:
-  vec.vec.alc += vec.vec.size;
-  vec.vec.size = 0;
-  backtrace_vector_release (state, &vec.vec, error_callback, data);
+  backtrace_vector_free (state, &vec.vec, error_callback, data);
   free_line_header (state, hdr, error_callback, data);
   *lines = (struct line *) (uintptr_t) -1;
   *lines_count = 0;
