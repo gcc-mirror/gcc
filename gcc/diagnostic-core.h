@@ -105,6 +105,8 @@ extern void inform_n (location_t, unsigned HOST_WIDE_INT, const char *,
 extern void verbatim (const char *, ...) ATTRIBUTE_GCC_DIAG(1,2);
 extern bool emit_diagnostic (diagnostic_t, location_t, int,
 			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
+extern bool emit_diagnostic (diagnostic_t, rich_location *, int,
+			     const char *, ...) ATTRIBUTE_GCC_DIAG(4,5);
 extern bool emit_diagnostic_valist (diagnostic_t, location_t, int, const char *,
 				    va_list *) ATTRIBUTE_GCC_DIAG (4,0);
 extern bool seen_error (void);

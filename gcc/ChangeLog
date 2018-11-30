@@ -1,5 +1,11 @@
 2018-11-30  David Malcolm  <dmalcolm@redhat.com>
 
+	* diagnostic-core.h (emit_diagnostic): New decl.
+	* diagnostic.c (emit_diagnostic): New overload, taking a
+	rich_location *.
+
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
 	* pretty-print.c (class selftest::test_pretty_printer): New
 	subclass of pretty_printer.
 	(selftest::test_prefixes_and_wrapping): New test.

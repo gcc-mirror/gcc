@@ -1,3 +1,7 @@
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/parse/missing-parens-fixit.C: New test.
+
 2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 
 	* gcc.dg/independent-cloneids-1.c: New test.
