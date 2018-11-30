@@ -376,6 +376,9 @@ static profile_count max_count;
 
 static long overall_size, max_new_size;
 
+/* Node to unique clone suffix number map.  */
+static hash_map<cgraph_node *, unsigned> *clone_num_suffixes;
+
 /* Return the param lattices structure corresponding to the Ith formal
    parameter of the function described by INFO.  */
 static inline struct ipcp_param_lattices *
@@ -3829,8 +3832,11 @@ create_specialized_node (struct cgraph_node *node,
 	}
     }
 
+  unsigned &suffix_counter = clone_num_suffixes->get_or_insert (node);
   new_node = node->create_virtual_clone (callers, replace_trees,
-					 args_to_skip, "constprop");
+					 args_to_skip, "constprop",
+					 suffix_counter);
+  suffix_counter++;
 
   bool have_self_recursive_calls = !self_recursive_calls.is_empty ();
   for (unsigned j = 0; j < self_recursive_calls.length (); j++)
@@ -5044,6 +5050,7 @@ ipcp_driver (void)
 
   ipa_check_create_node_params ();
   ipa_check_create_edge_args ();
+  clone_num_suffixes = new hash_map<cgraph_node *, unsigned>;
 
   if (dump_file)
     {
@@ -5065,6 +5072,7 @@ ipcp_driver (void)
   ipcp_store_vr_results ();
 
   /* Free all IPCP structures.  */
+  delete clone_num_suffixes;
   free_toporder_info (&topo);
   delete edge_clone_summaries;
   edge_clone_summaries = NULL;

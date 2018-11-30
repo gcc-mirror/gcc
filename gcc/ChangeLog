@@ -1,4 +1,20 @@
 2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	Minimize clone counter memory usage in create_virtual_clone.
+	* cgraph.h (clone_function_name): Add a variant that takes a
+	tree decl.
+	* cgraph.h (cgraph_node::create_virtual_clone): Add a new
+	argument: num_suffix.
+	* cgraphclones.c (cgraph_node::create_virtual_clone): Pass
+	num_suffix to clone_function_name.
+	(clone_function_name): Add a variant that takes a tree decl.
+	* ipa-cp.c (create_specialized_node): Keep track of clone
+	counters in clone_num_suffixes hash map.
+	(ipcp_driver): Free the counter hash map.
+	* ipa-hsa.c (process_hsa_functions): Creates at most one hsa
+	clone per function.
+
+2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
 	Make function assembly more independent.
 
 	This is achieved by having clone_function_name assign unique clone

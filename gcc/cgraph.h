@@ -968,11 +968,13 @@ public:
 			     cgraph_node *new_inlined_to,
 			     bitmap args_to_skip, const char *suffix = NULL);
 
-  /* Create callgraph node clone with new declaration.  The actual body will
-     be copied later at compilation stage.  */
+  /* Create callgraph node clone with new declaration.  The actual body will be
+     copied later at compilation stage.  The name of the new clone will be
+     constructed from the name of the original node, SUFFIX and NUM_SUFFIX.  */
   cgraph_node *create_virtual_clone (vec<cgraph_edge *> redirect_callers,
 				     vec<ipa_replace_map *, va_gc> *tree_map,
-				     bitmap args_to_skip, const char * suffix);
+				     bitmap args_to_skip, const char * suffix,
+				     unsigned num_suffix);
 
   /* cgraph node being removed from symbol table; see if its entry can be
    replaced by other inline clone.  */
@@ -2385,6 +2387,8 @@ tree thunk_adjust (gimple_stmt_iterator *, tree, bool, HOST_WIDE_INT, tree,
 tree clone_function_name_numbered (const char *name, const char *suffix);
 tree clone_function_name_numbered (tree decl, const char *suffix);
 tree clone_function_name (const char *name, const char *suffix,
+			  unsigned long number);
+tree clone_function_name (tree decl, const char *suffix,
 			  unsigned long number);
 tree clone_function_name (tree decl, const char *suffix);
 
