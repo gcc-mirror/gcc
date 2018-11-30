@@ -1,3 +1,7 @@
+2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+
+	* gcc.dg/independent-cloneids-1.c: New test.
+
 2018-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR debug/85550

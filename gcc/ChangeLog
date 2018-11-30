@@ -1,3 +1,13 @@
+2018-11-30  Michael Ploujnikov  <michael.ploujnikov@oracle.com>
+	Make function assembly more independent.
+
+	This is achieved by having clone_function_name assign unique clone
+	numbers for each function independently.
+
+	* cgraphclones.c: Replaced clone_fn_id_num with clone_fn_ids;
+	hash map.
+	(clone_function_name_numbered): Use clone_fn_ids.
+
 2018-11-30  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/88179

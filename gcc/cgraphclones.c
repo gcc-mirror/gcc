@@ -517,7 +517,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   return new_node;
 }
 
-static GTY(()) unsigned int clone_fn_id_num;
+static GTY(()) hash_map<const char *, unsigned> *clone_fn_ids;
 
 /* Return a new assembler name for a clone of decl named NAME.  Apart
    from the string SUFFIX, the new name will end with a unique (for
@@ -529,7 +529,13 @@ static GTY(()) unsigned int clone_fn_id_num;
 tree
 clone_function_name_numbered (const char *name, const char *suffix)
 {
-  return clone_function_name (name, suffix, clone_fn_id_num++);
+  /* Initialize the function->counter mapping the first time it's
+     needed.  */
+  if (!clone_fn_ids)
+    clone_fn_ids = hash_map<const char *, unsigned int>::create_ggc (64);
+  unsigned int &suffix_counter = clone_fn_ids->get_or_insert (
+				   IDENTIFIER_POINTER (get_identifier (name)));
+  return clone_function_name (name, suffix, suffix_counter++);
 }
 
 /* Return a new assembler name for a clone of DECL.  Apart from string
