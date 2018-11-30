@@ -4437,6 +4437,7 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_ok_nocache { } {
     foreach flags {"" "-mfloat-abi=softfp -mfpu=neon-fp-armv8" "-mfloat-abi=hard -mfpu=neon-fp-armv8"} {
         if { [check_no_compiler_messages_nocache \
                   arm_v8_2a_dotprod_neon_ok object {
+	    #include <stdint.h>
             #if !defined (__ARM_FEATURE_DOTPROD)
             #error "__ARM_FEATURE_DOTPROD not defined"
             #endif
