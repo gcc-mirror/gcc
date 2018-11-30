@@ -1,3 +1,8 @@
+2018-11-30  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* c-c++-common/goacc/asyncwait-5.c: New file.
+	* gfortran.dg/goacc/asyncwait-5.f: Likewise.
+
 2018-11-30  Peter Bergner  <bergner@linux.ibm.com>
 
 	PR target/87496

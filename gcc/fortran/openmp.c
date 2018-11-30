@@ -1876,7 +1876,6 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	  break;
 	case 'w':
 	  if ((mask & OMP_CLAUSE_WAIT)
-	      && !c->wait
 	      && gfc_match ("wait") == MATCH_YES)
 	    {
 	      c->wait = true;
