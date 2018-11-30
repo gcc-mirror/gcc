@@ -1,3 +1,14 @@
+2018-11-30  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (num_insns_constant_gpr): Renamed from
+	num_insns_constant_wide.  Make static.  Revise comment.
+	(num_insns_constant_multi): New function.
+	(num_insns_constant): Formatting.  Correct CONST_WIDE_INT
+	calculation.  Simplify and extract code common to both
+	CONST_INT and CONST_DOUBLE.  Add gcc_unreachable for unhandled
+	const_double modes.
+	* config/rs6000/rs6000-protos.h (num_insns_const_wide): Delete.
+
 2018-11-30  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/88274

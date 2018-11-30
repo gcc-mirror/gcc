@@ -5821,11 +5821,12 @@ direct_return (void)
   return 0;
 }
 
-/* Return the number of instructions it takes to form a constant in an
-   integer register.  */
+/* Helper for num_insns_constant.  Calculate number of instructions to
+   load VALUE to a single gpr using combinations of addi, addis, ori,
+   oris and sldi instructions.  */
 
-int
-num_insns_constant_wide (HOST_WIDE_INT value)
+static int
+num_insns_constant_gpr (HOST_WIDE_INT value)
 {
   /* signed constant loadable with addi */
   if (((unsigned HOST_WIDE_INT) value + 0x8000) < 0x10000)
@@ -5847,85 +5848,108 @@ num_insns_constant_wide (HOST_WIDE_INT value)
       high >>= 1;
 
       if (low == 0)
-	return num_insns_constant_wide (high) + 1;
+	return num_insns_constant_gpr (high) + 1;
       else if (high == 0)
-	return num_insns_constant_wide (low) + 1;
+	return num_insns_constant_gpr (low) + 1;
       else
-	return (num_insns_constant_wide (high)
-		+ num_insns_constant_wide (low) + 1);
+	return (num_insns_constant_gpr (high)
+		+ num_insns_constant_gpr (low) + 1);
     }
 
   else
     return 2;
 }
 
+/* Helper for num_insns_constant.  Allow constants formed by the
+   num_insns_constant_gpr sequences, plus li -1, rldicl/rldicr/rlwinm,
+   and handle modes that require multiple gprs.  */
+
+static int
+num_insns_constant_multi (HOST_WIDE_INT value, machine_mode mode)
+{
+  int nregs = (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  int total = 0;
+  while (nregs-- > 0)
+    {
+      HOST_WIDE_INT low = sext_hwi (value, BITS_PER_WORD);
+      int insns = num_insns_constant_gpr (low);
+      if (insns > 2
+	  /* We won't get more than 2 from num_insns_constant_gpr
+	     except when TARGET_POWERPC64 and mode is DImode or
+	     wider, so the register mode must be DImode.  */
+	  && rs6000_is_valid_and_mask (GEN_INT (low), DImode))
+	insns = 2;
+      total += insns;
+      value >>= BITS_PER_WORD;
+    }
+  return total;
+}
+
+/* Return the number of instructions it takes to form a constant in as
+   many gprs are needed for MODE.  */
+
 int
 num_insns_constant (rtx op, machine_mode mode)
 {
-  HOST_WIDE_INT low, high;
+  HOST_WIDE_INT val;
 
   switch (GET_CODE (op))
     {
     case CONST_INT:
-      if ((INTVAL (op) >> 31) != 0 && (INTVAL (op) >> 31) != -1
-	  && rs6000_is_valid_and_mask (op, mode))
-	return 2;
-      else
-	return num_insns_constant_wide (INTVAL (op));
+      val = INTVAL (op);
+      break;
 
     case CONST_WIDE_INT:
       {
-	int i;
-	int ins = CONST_WIDE_INT_NUNITS (op) - 1;
-	for (i = 0; i < CONST_WIDE_INT_NUNITS (op); i++)
-	  ins += num_insns_constant_wide (CONST_WIDE_INT_ELT (op, i));
-	return ins;
+	int insns = 0;
+	for (int i = 0; i < CONST_WIDE_INT_NUNITS (op); i++)
+	  insns += num_insns_constant_multi (CONST_WIDE_INT_ELT (op, i),
+					     DImode);
+	return insns;
       }
 
-      case CONST_DOUBLE:
+    case CONST_DOUBLE:
+      {
+	const struct real_value *rv = CONST_DOUBLE_REAL_VALUE (op);
+
 	if (mode == SFmode || mode == SDmode)
 	  {
 	    long l;
 
-	    if (DECIMAL_FLOAT_MODE_P (mode))
-	      REAL_VALUE_TO_TARGET_DECIMAL32
-		(*CONST_DOUBLE_REAL_VALUE (op), l);
+	    if (mode == SDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL32 (*rv, l);
 	    else
-	      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (op), l);
-	    return num_insns_constant_wide ((HOST_WIDE_INT) l);
+	      REAL_VALUE_TO_TARGET_SINGLE (*rv, l);
+	    /* See the first define_split in rs6000.md handling a
+	       const_double_operand.  */
+	    val = l;
+	    mode = SImode;
 	  }
-
-	long l[2];
-	if (DECIMAL_FLOAT_MODE_P (mode))
-	  REAL_VALUE_TO_TARGET_DECIMAL64 (*CONST_DOUBLE_REAL_VALUE (op), l);
-	else
-	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (op), l);
-	high = l[WORDS_BIG_ENDIAN == 0];
-	low  = l[WORDS_BIG_ENDIAN != 0];
-
-	if (TARGET_32BIT)
-	  return (num_insns_constant_wide (low)
-		  + num_insns_constant_wide (high));
-	else
+	else if (mode == DFmode || mode == DDmode)
 	  {
-	    if ((high == 0 && low >= 0)
-		|| (high == -1 && low < 0))
-	      return num_insns_constant_wide (low);
+	    long l[2];
 
-	    else if (rs6000_is_valid_and_mask (op, mode))
-	      return 2;
-
-	    else if (low == 0)
-	      return num_insns_constant_wide (high) + 1;
-
+	    if (mode == DDmode)
+	      REAL_VALUE_TO_TARGET_DECIMAL64 (*rv, l);
 	    else
-	      return (num_insns_constant_wide (high)
-		      + num_insns_constant_wide (low) + 1);
+	      REAL_VALUE_TO_TARGET_DOUBLE (*rv, l);
+
+	    /* See the second (32-bit) and third (64-bit) define_split
+	       in rs6000.md handling a const_double_operand.  */
+	    val = (unsigned HOST_WIDE_INT) l[WORDS_BIG_ENDIAN ? 0 : 1] << 32;
+	    val |= l[WORDS_BIG_ENDIAN ? 1 : 0] & 0xffffffffUL;
+	    mode = DImode;
 	  }
+	else
+	  gcc_unreachable ();
+      }
+      break;
 
     default:
       gcc_unreachable ();
     }
+
+  return num_insns_constant_multi (val, mode);
 }
 
 /* Interpret element ELT of the CONST_VECTOR OP as an integer value.
