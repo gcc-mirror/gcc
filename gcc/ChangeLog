@@ -1,3 +1,10 @@
+2018-11-30  David Malcolm  <dmalcolm@redhat.com>
+
+	PR preprocessor/88257
+	* input.c (get_substring_ranges_for_loc): Fix indentation.
+	Bulletproof against getting a different files back from
+	linemap_resolve_location and expand_location_to_spelling_point.
+
 2018-11-30  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR gcov-profile/88279
