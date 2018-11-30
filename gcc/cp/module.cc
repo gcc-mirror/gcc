@@ -2436,6 +2436,8 @@ private:
   module_state *state;		/* Module being imported.  */
   auto_vec<tree> back_refs;	/* Back references.  */
   auto_vec<tree> gmes;		/* Global module entities.  */
+  auto_vec<tree> bad_decls;	/* ODR failed decls.  */
+  auto_vec<tree> post_decls;	/* Decls to post process.  */
 
 public:
   trees_in (module_state *);
@@ -2502,6 +2504,30 @@ public:
   tree get_backref_gme (unsigned cookie)
   {
     return gmes[cookie];
+  }
+
+public:
+  /* We expect very few bad decls, usually none!.  */
+  void record_bad_decl (tree decl)
+  {
+    bad_decls.safe_push (decl);
+  }
+  bool is_bad_decl (tree decl)
+  {
+    for (unsigned ix = bad_decls.length (); ix--;)
+      if (bad_decls[ix] == decl)
+	return true;
+    return false;
+  }
+
+public:
+  void post_process (tree decl)
+  {
+    post_decls.safe_push (decl);
+  }
+  tree post_process ()
+  {
+    return post_decls.length () ? post_decls.pop () : NULL_TREE;
   }
 };
 
@@ -2942,6 +2968,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
   bool read_config (cpp_reader *, struct module_state_config &);
 
+ public:
+  bool is_matching_decl (tree existing, tree node);
+  int is_ignorable_defn (trees_in &in, tree node, bool have_defn);
+
  private:
   /* Serialize various definitions. */
   static void mark_definition (trees_out &out, tree decl);
@@ -3278,11 +3308,11 @@ module_mapper *module_mapper::mapper;
 class dumper {
 public:
   enum {
-	LOCATION = TDF_LINENO,  /* Source location streaming.  */
-	DEPEND = TDF_GRAPH,	/* Dependency graph construction.  */
-	TREE = TDF_UID, 	/* Tree streaming.  */
-	GM = TDF_ALIAS,		/* Global Module.  */
-	ELF = TDF_BLOCKS	/* Elf data.  */
+	LOCATION = TDF_LINENO,  /* -lineno:Source location streaming.  */
+	DEPEND = TDF_GRAPH,	/* -graph:Dependency graph construction.  */
+	TREE = TDF_UID, 	/* -uid:Tree streaming.  */
+	GM = TDF_ALIAS,		/* -alias:Global Module.  */
+	ELF = TDF_BLOCKS	/* -blocks:Elf data.  */
   };
 private:
   struct impl {
@@ -6324,6 +6354,7 @@ trees_out::tree_value (tree t, walk_kind walk)
       u (TREE_CODE (t));
       if (walk != WK_gme)
 	start (t);
+      // FIXME:If GME, mark function parms etc as GME too
     }
 
   int tag = insert (t, walk);
@@ -6752,6 +6783,7 @@ trees_in::tree_node ()
 		     below.  */
 		  set_backref_gme (cookie, res);
 	      }
+	    // FIXME:Mark function parms as GME during this read in.
 	  }
 	else
 	  {
@@ -6809,15 +6841,10 @@ trees_in::tree_node ()
 		TREE_TYPE (res) = type;
 	      }
 
-	    // FIXME:Inhibit TYPENAME_TYPE resolution, all the way down!
-	    if (!comptypes (TREE_TYPE (existing), TREE_TYPE (res),
-			    COMPARE_STRUCTURAL))
-	      {
-		error_at (DECL_SOURCE_LOCATION (res),
-			  "conflicting global module declaration %#qD", res);
-		inform (DECL_SOURCE_LOCATION (existing),
-			"existing declaration %#qD", existing);
-	      }
+	    if (!state->is_matching_decl (existing, res))
+	      /* Record EXISTING as the bad decl, because that's what
+		 we'll see when reading a definition.  */
+	      record_bad_decl (existing);
 	  }
 
 	if (existing)
@@ -8648,6 +8675,62 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
   return true;
 }
 
+/* DECL is a just streamed GME decl that should match EXISTING.  Check
+   it does and issue an appropriate diagnostic if not.  */
+
+bool
+module_state::is_matching_decl (tree existing, tree decl)
+{
+  // FIXME:Inhibit TYPENAME_TYPE resolution, all the way down!
+  if (!comptypes (TREE_TYPE (existing), TREE_TYPE (decl),
+		  COMPARE_STRUCTURAL))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"conflicting global module declaration %#qD", decl);
+      inform (DECL_SOURCE_LOCATION (existing),
+	      "existing declaration %#qD", existing);
+      return false;
+    }
+
+  return true;
+}
+
+/* We're reading a definition for DECL.  Check that makes sense and
+   issue a diagnostic on errors.  Return zero if the new decl should
+   be attached.  Return +1 if it should be ignored and -1 if it
+   should be checked for ODR.  */
+
+int
+module_state::is_ignorable_defn (trees_in &in, tree decl, bool have_defn)
+{
+  if (in.get_overrun ())
+    return +1;
+
+  if (!decl || TREE_CODE (CP_DECL_CONTEXT (decl)) != NAMESPACE_DECL)
+    {
+      /* Non-namespace scope definitions should never be duplicates.  */
+      if (have_defn)
+	in.set_overrun ();
+      return have_defn ? +1 : 0;
+    }
+
+  unsigned owner = MAYBE_DECL_MODULE_OWNER (decl);
+  module_state *other = owner ? (*modules)[owner] : NULL;
+
+  if (other != this && !((!other || other->is_legacy ()) && is_legacy ()))
+    {
+      /* Only definitions from legacy modules should be mergeable.  */
+      // FIXME:Will need changing for partitions and global module fragment
+      error_at (loc, "unexpected definition of %q#D", decl);
+      return +1;
+    }
+
+  if (in.is_bad_decl (decl))
+    return +1;
+
+  return have_defn ? -1 : 0;
+}
+
 /* The following writer functions rely on the current behaviour of
    depset::hash::add_dependency making the decl and defn depset nodes
    depend on eachother.  That way we don't have to worry about seeding
@@ -8658,6 +8741,7 @@ module_state::read_imports (cpp_reader *reader, line_maps *lmaps)
 void
 module_state::write_function_def (trees_out &out, tree decl)
 {
+  dump () && dump ("Writing function definition %N", decl);
   out.tree_node (DECL_RESULT (decl));
   out.tree_node (DECL_INITIAL (decl));
   out.tree_node (DECL_SAVED_TREE (decl));
@@ -8673,6 +8757,7 @@ module_state::mark_function_def (trees_out &, tree)
 bool
 module_state::read_function_def (trees_in &in, tree decl)
 {
+  dump () && dump ("Reading function definition %N", decl);
   tree result = in.tree_node ();
   tree initial = in.tree_node ();
   tree saved = in.tree_node ();
@@ -8681,19 +8766,12 @@ module_state::read_function_def (trees_in &in, tree decl)
   if (in.get_overrun ())
     return NULL_TREE;
 
-  if (TREE_CODE (CP_DECL_CONTEXT (decl)) == NAMESPACE_DECL)
+  if (int odr = is_ignorable_defn (in, decl, DECL_SAVED_TREE (decl)))
     {
-      unsigned owner = MAYBE_DECL_MODULE_OWNER (decl);
-      module_state *other = owner ? (*modules)[owner] : NULL;
-
-      if (other != this && !((!other || other->is_legacy ()) && is_legacy ()))
-	{
-	  error_at (loc, "unexpected definition of %q#D", decl);
-	  return true;
+      if (odr < 0)
+	{ // FIXME: check matching defn
 	}
-
-      if (DECL_SAVED_TREE (decl))
-	return true; // FIXME check same
+      return true;
     }
 
   DECL_RESULT (decl) = result;
@@ -8702,24 +8780,7 @@ module_state::read_function_def (trees_in &in, tree decl)
   if (constexpr_body)
     register_constexpr_fundef (decl, constexpr_body);
 
-  /* When lazy loading is in effect, we can be in the middle of
-     parsing or instantiating a function.  */
-  // FIXME:This smells bad
-  tree old_cfd = current_function_decl;
-  struct function *old_cfun = cfun;
-  current_function_decl = decl;
-  allocate_struct_function (decl, false);
-  cfun->language = ggc_cleared_alloc<language_function> ();
-  cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
-  set_cfun (old_cfun);
-  current_function_decl = old_cfd;
-
-  if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
-    {
-      comdat_linkage (decl);
-      note_vague_linkage_fn (decl);
-      cgraph_node::finalize_function (decl, false);
-    }
+  in.post_process (decl);
 
   return true;
 }
@@ -9621,6 +9682,28 @@ module_state::read_cluster (unsigned snum)
 	  break;
 	}
     }
+
+  /* When lazy loading is in effect, we can be in the middle of
+     parsing or instantiating a function.  Save it away.  */
+  tree old_cfd = current_function_decl;
+  struct function *old_cfun = cfun;
+  while (tree decl = sec.post_process ())
+    {
+      current_function_decl = decl;
+      allocate_struct_function (decl, false);
+      cfun->language = ggc_cleared_alloc<language_function> ();
+      cfun->language->base.x_stmt_tree.stmts_are_full_exprs_p = 1;
+
+      if (!DECL_TEMPLATE_INFO (decl) || DECL_USE_TEMPLATE (decl))
+	{
+	  comdat_linkage (decl);
+	  note_vague_linkage_fn (decl);
+	  cgraph_node::finalize_function (decl, false);
+	}
+    }
+  set_cfun (old_cfun);
+  current_function_decl = old_cfd;
+
   dump.outdent ();
 
   if (!sec.end (from ()))
@@ -11954,7 +12037,7 @@ module_state::read (int fd, int e, cpp_reader *reader)
   mod = ix;
 
   (*slurp ()->remap)[MODULE_PURVIEW] = mod;
-  dump () && dump ("Assigning %N module number %u", name, mod);
+  dump () && dump ("Assigning %s module number %u", fullname, mod);
 
   if (config.controlling_node)
     {
