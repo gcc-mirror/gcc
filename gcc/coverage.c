@@ -358,7 +358,7 @@ get_coverage_counts (unsigned counter, unsigned cfg_checksum,
       if (warning_printed && dump_enabled_p ())
 	{
 	  dump_user_location_t loc
-	    = dump_user_location_t::from_location_t (input_location);
+	    = dump_user_location_t::from_function_decl (current_function_decl);
           dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
                            "use -Wno-error=coverage-mismatch to tolerate "
                            "the mismatch but performance may drop if the "
